@@ -1,0 +1,69 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e9]:
+        - generic [ref=e10]: Seating area
+        - button "Auto-layout" [ref=e11]
+        - button "Rotate zone" [ref=e12]
+        - button "Ungroup" [ref=e13]
+      - generic [ref=e14]:
+        - generic [ref=e15]:
+          - button "↶ Undo" [disabled] [ref=e16]
+          - button "↷ Redo" [disabled] [ref=e17]
+        - generic [ref=e18]:
+          - generic [ref=e19]:
+            - button "Design" [ref=e20]
+            - button "Adjust" [ref=e21]
+            - button "Cart" [ref=e22]
+            - button "Present" [ref=e23]
+          - generic [ref=e24]:
+            - button "Living Room" [ref=e25]
+            - button "+ Room" [ref=e26]
+        - generic [ref=e27]:
+          - button "Sign in with Google" [ref=e29]
+          - button "Designer" [ref=e30]
+          - button "Save (Sign in)" [ref=e31]
+    - generic [ref=e32]:
+      - generic [ref=e33]:
+        - generic [ref=e34]: You are designing as a guest
+        - generic [ref=e35]: Sign in to save to cloud and share.
+        - button "Sign in to save" [ref=e36]
+      - generic [ref=e37]:
+        - generic [ref=e38]: Style
+        - generic [ref=e39]:
+          - button "Scandi" [ref=e40]
+          - button "Luxury" [ref=e41]
+          - button "Modern" [ref=e42]
+          - button "Japandi" [ref=e43]
+          - button "Minimalistic" [ref=e44]
+        - generic [ref=e45]:
+          - generic [ref=e46]: Budget
+          - generic [ref=e47]:
+            - button "$" [ref=e48]
+            - button "$$" [ref=e49]
+            - button "$$$" [ref=e50]
+        - button "Design My Room" [ref=e51]
+        - generic [ref=e52]:
+          - button "+ Coffee Table" [disabled] [ref=e53]
+          - button "+ Rug" [disabled] [ref=e54]
+          - button "+ Chair" [disabled] [ref=e55]
+          - button "+ Lamp" [disabled] [ref=e56]
+    - generic [ref=e59]: Walkway blocked (5cm). Move furniture to clear path
+  - generic [ref=e64] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e65]:
+      - img [ref=e66]
+    - generic [ref=e69]:
+      - button "Open issues overlay" [ref=e70]:
+        - generic [ref=e71]:
+          - generic [ref=e72]: "3"
+          - generic [ref=e73]: "4"
+        - generic [ref=e74]:
+          - text: Issue
+          - generic [ref=e75]: s
+      - button "Collapse issues badge" [ref=e76]:
+        - img [ref=e77]
+  - alert [ref=e79]
+```

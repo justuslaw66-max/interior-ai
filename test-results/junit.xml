@@ -1,0 +1,277 @@
+<testsuites id="" name="" tests="11" failures="6" skipped="0" errors="0" time="88.64148">
+<testsuite name="01-onboarding.spec.ts" timestamp="2026-02-23T15:26:59.417Z" hostname="chromium" tests="2" failures="2" skipped="0" time="67.269" errors="0">
+<testcase name="1. Onboarding Activation Flow › sofa placement triggers seating zone auto-creation and completes onboarding" classname="01-onboarding.spec.ts" time="35.126">
+<failure message="01-onboarding.spec.ts:4:7 sofa placement triggers seating zone auto-creation and completes onboarding" type="FAILURE">
+<![CDATA[  [chromium] › 01-onboarding.spec.ts:4:7 › 1. Onboarding Activation Flow › sofa placement triggers seating zone auto-creation and completes onboarding 
+
+    Test timeout of 30000ms exceeded.
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../test-results/01-onboarding-1-Onboarding-21335-on-and-completes-onboarding-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../test-results/01-onboarding-1-Onboarding-21335-on-and-completes-onboarding-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|01-onboarding-1-Onboarding-21335-on-and-completes-onboarding-chromium/video.webm]]
+
+[[ATTACHMENT|01-onboarding-1-Onboarding-21335-on-and-completes-onboarding-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="1. Onboarding Activation Flow › onboarding does not reappear after completion" classname="01-onboarding.spec.ts" time="32.143">
+<failure message="01-onboarding.spec.ts:36:7 onboarding does not reappear after completion" type="FAILURE">
+<![CDATA[  [chromium] › 01-onboarding.spec.ts:36:7 › 1. Onboarding Activation Flow › onboarding does not reappear after completion 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.reload: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for navigation until "load"
+        - navigated to "http://localhost:3000/"
+
+
+      55 |     
+      56 |     // Reload page
+    > 57 |     await page.reload();
+         |                ^
+      58 |     await page.waitForLoadState('networkidle');
+      59 |     await page.waitForTimeout(2000);
+      60 |     
+        at /Users/justus/Documents/Interior-AI/interior-ai/tests/e2e/01-onboarding.spec.ts:57:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../test-results/01-onboarding-1-Onboarding-2128e-t-reappear-after-completion-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../test-results/01-onboarding-1-Onboarding-2128e-t-reappear-after-completion-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../test-results/01-onboarding-1-Onboarding-2128e-t-reappear-after-completion-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|01-onboarding-1-Onboarding-2128e-t-reappear-after-completion-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|01-onboarding-1-Onboarding-2128e-t-reappear-after-completion-chromium/video.webm]]
+
+[[ATTACHMENT|01-onboarding-1-Onboarding-2128e-t-reappear-after-completion-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="02-editor.spec.ts" timestamp="2026-02-23T15:26:59.417Z" hostname="chromium" tests="3" failures="1" skipped="0" time="77.842" errors="0">
+<testcase name="2. Editor Correctness › collision detection prevents overlapping items" classname="02-editor.spec.ts" time="22.119">
+</testcase>
+<testcase name="2. Editor Correctness › wall snap aligns items to walls" classname="02-editor.spec.ts" time="21.533">
+</testcase>
+<testcase name="2. Editor Correctness › undo/redo restores state correctly (one drag = one undo)" classname="02-editor.spec.ts" time="34.19">
+<failure message="02-editor.spec.ts:70:7 undo/redo restores state correctly (one drag = one undo)" type="FAILURE">
+<![CDATA[  [chromium] › 02-editor.spec.ts:70:7 › 2. Editor Correctness › undo/redo restores state correctly (one drag = one undo) 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.waitForLoadState: Test timeout of 30000ms exceeded.
+    =========================== logs ===========================
+      "commit" event fired
+      "domcontentloaded" event fired
+      "load" event fired
+      "commit" event fired
+      "domcontentloaded" event fired
+      "load" event fired
+    ============================================================
+
+      70 |   test('undo/redo restores state correctly (one drag = one undo)', async ({ page }) => {
+      71 |     await page.goto('/');
+    > 72 |     await page.waitForLoadState('networkidle');
+         |                ^
+      73 |     await page.waitForTimeout(2000);
+      74 |     
+      75 |     await page.locator('[data-testid="scene-canvas"]').waitFor({ state: 'visible', timeout: 10000 });
+        at /Users/justus/Documents/Interior-AI/interior-ai/tests/e2e/02-editor.spec.ts:72:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../test-results/02-editor-2-Editor-Correct-9b5cf-orrectly-one-drag-one-undo--chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../test-results/02-editor-2-Editor-Correct-9b5cf-orrectly-one-drag-one-undo--chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../test-results/02-editor-2-Editor-Correct-9b5cf-orrectly-one-drag-one-undo--chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|02-editor-2-Editor-Correct-9b5cf-orrectly-one-drag-one-undo--chromium/test-failed-1.png]]
+
+[[ATTACHMENT|02-editor-2-Editor-Correct-9b5cf-orrectly-one-drag-one-undo--chromium/video.webm]]
+
+[[ATTACHMENT|02-editor-2-Editor-Correct-9b5cf-orrectly-one-drag-one-undo--chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="03-persistence.spec.ts" timestamp="2026-02-23T15:26:59.417Z" hostname="chromium" tests="2" failures="0" skipped="0" time="32.607" errors="0">
+<testcase name="3. Save + Reload Persistence › save design persists items, zones, and views after reload" classname="03-persistence.spec.ts" time="21.333">
+</testcase>
+<testcase name="3. Save + Reload Persistence › multi-room state isolation - switch rooms without leaking state" classname="03-persistence.spec.ts" time="11.274">
+</testcase>
+</testsuite>
+<testsuite name="04-share.spec.ts" timestamp="2026-02-23T15:26:59.417Z" hostname="chromium" tests="2" failures="1" skipped="0" time="54.234" errors="0">
+<testcase name="4. Share Link Read-Only › shared design is read-only - cannot edit or move items" classname="04-share.spec.ts" time="35.189">
+<failure message="04-share.spec.ts:4:7 shared design is read-only - cannot edit or move items" type="FAILURE">
+<![CDATA[  [chromium] › 04-share.spec.ts:4:7 › 4. Share Link Read-Only › shared design is read-only - cannot edit or move items 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.waitForLoadState: Test timeout of 30000ms exceeded.
+    =========================== logs ===========================
+      "commit" event fired
+      "domcontentloaded" event fired
+      "load" event fired
+      "commit" event fired
+      "domcontentloaded" event fired
+    ============================================================
+
+       5 |     // First, create and save a design
+       6 |     await page.goto('/');
+    >  7 |     await page.waitForLoadState('networkidle');
+         |                ^
+       8 |     await page.waitForTimeout(2000);
+       9 |     
+      10 |     // Wait for canvas
+        at /Users/justus/Documents/Interior-AI/interior-ai/tests/e2e/04-share.spec.ts:7:16
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../test-results/04-share-4-Share-Link-Read-3fe64---cannot-edit-or-move-items-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../test-results/04-share-4-Share-Link-Read-3fe64---cannot-edit-or-move-items-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|04-share-4-Share-Link-Read-3fe64---cannot-edit-or-move-items-chromium/video.webm]]
+
+[[ATTACHMENT|04-share-4-Share-Link-Read-3fe64---cannot-edit-or-move-items-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="4. Share Link Read-Only › shared design - saved views work" classname="04-share.spec.ts" time="19.045">
+</testcase>
+</testsuite>
+<testsuite name="05-buy.spec.ts" timestamp="2026-02-23T15:26:59.417Z" hostname="chromium" tests="2" failures="2" skipped="0" time="60.247" errors="0">
+<testcase name="5. Buy Flow (Shopify + Affiliate) › add Shopify-mapped item to cart and checkout link works" classname="05-buy.spec.ts" time="30.09">
+<failure message="05-buy.spec.ts:4:7 add Shopify-mapped item to cart and checkout link works" type="FAILURE">
+<![CDATA[  [chromium] › 05-buy.spec.ts:4:7 › 5. Buy Flow (Shopify + Affiliate) › add Shopify-mapped item to cart and checkout link works 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.waitForLoadState: Test timeout of 30000ms exceeded.
+    =========================== logs ===========================
+      "commit" event fired
+      "domcontentloaded" event fired
+      "load" event fired
+    ============================================================
+
+      4 |   test('add Shopify-mapped item to cart and checkout link works', async ({ page }) => {
+      5 |     await page.goto('/');
+    > 6 |     await page.waitForLoadState('networkidle');
+        |                ^
+      7 |     await page.waitForTimeout(2000);
+      8 |     
+      9 |     // Wait for canvas
+        at /Users/justus/Documents/Interior-AI/interior-ai/tests/e2e/05-buy.spec.ts:6:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../test-results/05-buy-5-Buy-Flow-Shopify--c0d28-art-and-checkout-link-works-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../test-results/05-buy-5-Buy-Flow-Shopify--c0d28-art-and-checkout-link-works-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../test-results/05-buy-5-Buy-Flow-Shopify--c0d28-art-and-checkout-link-works-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|05-buy-5-Buy-Flow-Shopify--c0d28-art-and-checkout-link-works-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|05-buy-5-Buy-Flow-Shopify--c0d28-art-and-checkout-link-works-chromium/video.webm]]
+
+[[ATTACHMENT|05-buy-5-Buy-Flow-Shopify--c0d28-art-and-checkout-link-works-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="5. Buy Flow (Shopify + Affiliate) › affiliate checkout works" classname="05-buy.spec.ts" time="30.157">
+<failure message="05-buy.spec.ts:33:7 affiliate checkout works" type="FAILURE">
+<![CDATA[  [chromium] › 05-buy.spec.ts:33:7 › 5. Buy Flow (Shopify + Affiliate) › affiliate checkout works ──
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="scene-canvas"]')
+        - locator resolved to <div data-testid="scene-canvas">…</div>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is visible, enabled and stable
+          - scrolling into view if needed
+          - done scrolling
+          - <div class="text-2xl font-bold text-white">✅ Setup Complete!</div> from <div data-testid="onboarding-complete" class="fixed top-1/2 left-1/2 z-40 -translate-x-1/2 -translate-y-1/2 animate-fade-in">…</div> subtree intercepts pointer events
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is visible, enabled and stable
+          - scrolling into view if needed
+          - done scrolling
+          - <div class="text-2xl font-bold text-white">✅ Setup Complete!</div> from <div data-testid="onboarding-complete" class="fixed top-1/2 left-1/2 z-40 -translate-x-1/2 -translate-y-1/2 animate-fade-in">…</div> subtree intercepts pointer events
+        - retrying click action
+          - waiting 100ms
+        11 × waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <div class="text-2xl font-bold text-white">✅ Setup Complete!</div> from <div data-testid="onboarding-complete" class="fixed top-1/2 left-1/2 z-40 -translate-x-1/2 -translate-y-1/2 animate-fade-in">…</div> subtree intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+
+
+      48 |     
+      49 |     if (box) {
+    > 50 |       await canvas.click({ position: { x: box.width * 0.5, y: box.height * 0.5 } });
+         |                    ^
+      51 |       await page.waitForTimeout(1500);
+      52 |     }
+      53 |     
+        at /Users/justus/Documents/Interior-AI/interior-ai/tests/e2e/05-buy.spec.ts:50:20
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../test-results/05-buy-5-Buy-Flow-Shopify-Affiliate-affiliate-checkout-works-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../test-results/05-buy-5-Buy-Flow-Shopify-Affiliate-affiliate-checkout-works-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../test-results/05-buy-5-Buy-Flow-Shopify-Affiliate-affiliate-checkout-works-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|05-buy-5-Buy-Flow-Shopify-Affiliate-affiliate-checkout-works-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|05-buy-5-Buy-Flow-Shopify-Affiliate-affiliate-checkout-works-chromium/video.webm]]
+
+[[ATTACHMENT|05-buy-5-Buy-Flow-Shopify-Affiliate-affiliate-checkout-works-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+</testsuites>

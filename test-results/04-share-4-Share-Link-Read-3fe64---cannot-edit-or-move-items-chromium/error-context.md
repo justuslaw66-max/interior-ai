@@ -1,0 +1,47 @@
+# Page snapshot
+
+```yaml
+- main [ref=e2]:
+  - generic [ref=e8]:
+    - generic [ref=e9]:
+      - button "↶ Undo" [disabled] [ref=e10]
+      - button "↷ Redo" [disabled] [ref=e11]
+    - generic [ref=e12]:
+      - generic [ref=e13]:
+        - button "Design" [ref=e14]
+        - button "Adjust" [ref=e15]
+        - button "Cart" [ref=e16]
+        - button "Present" [ref=e17]
+      - generic [ref=e18]:
+        - button "Living Room" [ref=e19]
+        - button "+ Room" [ref=e20]
+    - generic [ref=e21]:
+      - button "Sign in with Google" [ref=e23]
+      - button "Designer" [ref=e24]
+      - button "Save (Sign in)" [ref=e25]
+  - generic [ref=e26]:
+    - generic [ref=e27]:
+      - generic [ref=e28]: You are designing as a guest
+      - generic [ref=e29]: Sign in to save to cloud and share.
+      - button "Sign in to save" [ref=e30]
+    - generic [ref=e31]:
+      - generic [ref=e32]: Style
+      - generic [ref=e33]:
+        - button "Scandi" [ref=e34]
+        - button "Luxury" [ref=e35]
+        - button "Modern" [ref=e36]
+        - button "Japandi" [ref=e37]
+        - button "Minimalistic" [ref=e38]
+      - generic [ref=e39]:
+        - generic [ref=e40]: Budget
+        - generic [ref=e41]:
+          - button "$" [ref=e42]
+          - button "$$" [ref=e43]
+          - button "$$$" [ref=e44]
+      - button "Design My Room" [ref=e45]
+      - generic [ref=e46]:
+        - button "+ Coffee Table" [disabled] [ref=e47]
+        - button "+ Rug" [disabled] [ref=e48]
+        - button "+ Chair" [disabled] [ref=e49]
+        - button "+ Lamp" [disabled] [ref=e50]
+```

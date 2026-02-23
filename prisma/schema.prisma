@@ -1,0 +1,229 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Design {
+  id           String   @id @default(cuid())
+  title        String   @default("Untitled Living Room")
+  roomWidth    Float
+  roomDepth    Float
+  items        Json
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  userId       String?
+  shareEnabled Boolean  @default(false)
+  shareToken   String?  @unique
+  style        String?
+  budget       String?
+  mode         String?
+  notes        String?
+  anonymousId  String?  @db.VarChar(64)
+  savedViews   Json?
+  zones        Json?
+  user         User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([anonymousId])
+}
+
+model ShopifyOrder {
+  id        String   @id @default(cuid())
+  orderRef  String   @unique
+  userId    String?
+  designId  String?
+  currency  String?
+  total     Float?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([designId])
+}
+
+model ProductClick {
+  id        String   @id @default(cuid())
+  userId    String?
+  designId  String?
+  productId String
+  price     Int?
+  retailer  String?
+  buyUrl    String?
+  createdAt DateTime @default(now())
+  clickKey  String   @unique
+
+  @@index([designId])
+  @@index([productId])
+  @@index([userId])
+}
+
+model ConversionEvent {
+  id        String   @id @default(cuid())
+  clickKey  String
+  eventType String
+  value     Float?
+  currency  String?
+  createdAt DateTime @default(now())
+
+  @@index([clickKey])
+  @@index([eventType])
+}
+
+model AppEvent {
+  id         String   @id @default(cuid())
+  eventType  String
+  userId     String?
+  designId   String?
+  shareToken String?
+  meta       Json?
+  createdAt  DateTime @default(now())
+
+  @@index([eventType])
+  @@index([createdAt])
+  @@index([designId])
+  @@index([shareToken])
+}
+
+model User {
+  id                   String    @id @default(cuid())
+  name                 String?
+  email                String?   @unique
+  emailVerified        DateTime?
+  image                String?
+  plan                 String    @default("free")
+  invitedByCode        String?
+  referralCode         String?   @unique
+  createdAt            DateTime  @default(now())
+  stripeCustomerId     String?   @unique
+  stripeSubscriptionId String?   @unique
+  updatedAt            DateTime  @updatedAt
+  accounts             Account[]
+  designs              Design[]
+  sessions             Session[]
+
+  @@index([invitedByCode])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model AiDesignNotes {
+  id         String   @id @default(cuid())
+  designId   String
+  designHash String   @db.VarChar(64)
+  mode       String   @db.VarChar(32)
+  resultJson Json
+  createdAt  DateTime @default(now())
+
+  @@unique([designId, designHash, mode])
+  @@index([designId])
+}
+
+model ModelAsset {
+  id            String        @id
+  modelUrl      String
+  thumbUrl      String
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  aabbCenterX   Float
+  aabbCenterY   Float
+  aabbCenterZ   Float
+  aabbSizeX     Float
+  aabbSizeY     Float
+  aabbSizeZ     Float
+  approved      Boolean       @default(false)
+  dimsDmm       Int
+  dimsHmm       Int
+  dimsWmm       Int
+  groundAligned Boolean       @default(true)
+  pivotOffsetX  Float         @default(0)
+  pivotOffsetZ  Float         @default(0)
+  catalogItems  CatalogItem[]
+}
+
+model CatalogItem {
+  id                 String           @id
+  slug               String           @unique
+  title              String
+  description        String?
+  defaultVariantId   String?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  aiRolesJson        Json?
+  assetId            String
+  clearanceRulesJson Json?
+  dimsDmm            Int
+  dimsHmm            Int
+  dimsWmm            Int
+  placementRulesJson Json?
+  tags               String[]         @default([])
+  variantsJson       Json?
+  category           CatalogCategory
+  styleTags          String[]         @default([])
+  toneTags           String[]         @default([])
+  roomTags           String[]         @default([])
+  asset              ModelAsset       @relation(fields: [assetId], references: [id])
+  commerce           CommerceMapping?
+}
+
+model CommerceMapping {
+  id               String       @id @default(cuid())
+  catalogItemId    String       @unique
+  shopifyVariantId String?
+  affiliateUrl     String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  reason           String?
+  retailer         String?
+  type             CommerceType
+  catalogItem      CatalogItem  @relation(fields: [catalogItemId], references: [id], onDelete: Cascade)
+}
+
+enum CatalogCategory {
+  sofa
+  coffee_table
+  rug
+  tv_console
+  accent_chair
+  floor_lamp
+}
+
+enum CommerceType {
+  shopify
+  affiliate
+  not_buyable
+}
