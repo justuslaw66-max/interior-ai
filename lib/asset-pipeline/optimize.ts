@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { execFileSync } from "node:child_process";
-import type { ImportQaLimits } from "@/lib/importQaPolicy";
+import type { ImportQaLimits } from "../importQaPolicy";
 import type { PipelineStepResult } from "./types";
 
 function runPipelineCommand(args: string[]): { ok: boolean; output: string } {

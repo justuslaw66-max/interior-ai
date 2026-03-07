@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import type { ImportQaLimits } from "@/lib/importQaPolicy";
+import type { ImportQaLimits } from "../importQaPolicy";
 import type { AssetPipelineCheck, ModelInspectStats } from "./types";
 
 type MetadataExtractionResult = {
