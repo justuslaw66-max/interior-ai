@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { isAdminEmail } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
+import ImportJobActions from "./ImportJobActions";
 
 type ImportJobDetail = {
   id: string;
@@ -155,6 +156,15 @@ export default async function ImportJobDetailPage(
           <div><span className="text-neutral-500">CatalogItem:</span> {job.catalogItemId ?? "-"}</div>
         </div>
       </section>
+
+      <ImportJobActions
+        jobId={job.id}
+        currentStatus={job.status}
+        initialNotes={job.notes ?? ""}
+        initialErrorMessage={job.errorMessage ?? ""}
+        initialCatalogItemId={job.catalogItemId ?? ""}
+        initialNormalizedAssetId={job.normalizedAssetId ?? ""}
+      />
 
       <section className="rounded-xl border p-4">
         <h2 className="text-sm font-semibold">QA Summary</h2>
