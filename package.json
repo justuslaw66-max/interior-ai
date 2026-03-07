@@ -3,16 +3,27 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --webpack",
+    "dev": "NEXT_DISABLE_TURBOPACK=1 next dev --webpack",
+    "dev:reset": "pkill -f \"next dev --webpack\" || true && rm -f .next-cache/dev/lock && NEXT_DISABLE_TURBOPACK=1 next dev --webpack",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "test:e2e": "playwright test",
+    "test:e2e:pro-upgrade": "playwright test tests/e2e/pro-upgrade.spec.ts",
+    "test:e2e:pro-upgrade:ui": "playwright test tests/e2e/pro-upgrade.spec.ts --headed",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
+    "import:model": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/import-model.ts",
+    "import:bulk": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/bulk-import-models.ts",
+    "backfill:finishes": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/backfill-finish-mappings.ts",
+    "db:backup": "bash scripts/backup-db.sh",
+    "db:restore": "bash scripts/restore-db.sh",
     "studio": "node -r dotenv/config ./node_modules/.bin/prisma studio --port 5555",
     "vercel-build": "prisma generate && prisma migrate deploy && next build",
-    "postinstall": "prisma generate"
+    "seed:finishes": "npx prisma db seed"
+  },
+  "prisma": {
+    "seed": "npx ts-node --transpile-only --compiler-options={\"module\":\"CommonJS\",\"moduleResolution\":\"node\"} prisma/seed.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
@@ -44,6 +55,7 @@
     "@playwright/test": "^1.40.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pg": "^8.18.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",

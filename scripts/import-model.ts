@@ -659,7 +659,6 @@ async function main() {
     rawMetadataJson: {
       stats: qa.stats,
       qualityScore: quality.score,
-      qualityTier: quality.tier,
       qaReport: machineQaReportEarly,
     },
   });
