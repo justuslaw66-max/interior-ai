@@ -63,12 +63,48 @@ export default async function AdminImportsPage() {
     },
   });
 
+  const summary = {
+    received: jobs.filter((job) => job.status === "received").length,
+    processing: jobs.filter((job) => ["normalizing", "optimized", "preview_generated", "metadata_extracted"].includes(job.status)).length,
+    needsMapping: jobs.filter((job) => job.status === "needs_mapping").length,
+    needsReview: jobs.filter((job) => job.status === "needs_review").length,
+    failed: jobs.filter((job) => job.status === "failed").length,
+    published: jobs.filter((job) => job.status === "published").length,
+  };
+
   return (
     <div className="p-6 space-y-6">
       <header>
         <h1 className="text-2xl font-semibold">Import Jobs</h1>
         <p className="text-sm text-neutral-600">Intake-to-handoff job tracking for asset pipeline.</p>
       </header>
+
+      <section className="grid grid-cols-2 gap-3 md:grid-cols-6">
+        <div className="rounded-lg border p-3">
+          <div className="text-xs text-neutral-500">Received</div>
+          <div className="text-lg font-semibold">{summary.received}</div>
+        </div>
+        <div className="rounded-lg border p-3">
+          <div className="text-xs text-neutral-500">Processing</div>
+          <div className="text-lg font-semibold">{summary.processing}</div>
+        </div>
+        <div className="rounded-lg border p-3">
+          <div className="text-xs text-neutral-500">Needs mapping</div>
+          <div className="text-lg font-semibold">{summary.needsMapping}</div>
+        </div>
+        <div className="rounded-lg border p-3">
+          <div className="text-xs text-neutral-500">Needs review</div>
+          <div className="text-lg font-semibold">{summary.needsReview}</div>
+        </div>
+        <div className="rounded-lg border p-3">
+          <div className="text-xs text-neutral-500">Failed</div>
+          <div className="text-lg font-semibold">{summary.failed}</div>
+        </div>
+        <div className="rounded-lg border p-3">
+          <div className="text-xs text-neutral-500">Published</div>
+          <div className="text-lg font-semibold">{summary.published}</div>
+        </div>
+      </section>
 
       <div className="overflow-x-auto rounded-xl border">
         <table className="w-full min-w-[760px] border-collapse text-sm">

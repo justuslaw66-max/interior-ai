@@ -36,6 +36,22 @@ function renderJson(value: unknown): string {
   }
 }
 
+type ParsedImportReport = {
+  warnings?: string[];
+  blockers?: string[];
+  metrics?: {
+    fileSizeBytes?: number;
+    triangleCount?: number;
+    textureCount?: number;
+    maxTextureSize?: number;
+  };
+};
+
+function parseReport(value: unknown): ParsedImportReport | null {
+  if (!value || typeof value !== "object") return null;
+  return value as ParsedImportReport;
+}
+
 export default async function ImportJobDetailPage(
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -104,6 +120,12 @@ export default async function ImportJobDetailPage(
 
   if (!job) notFound();
 
+  const parsedReport = parseReport(job.reportJson);
+  const blockers = parsedReport?.blockers ?? [];
+  const warnings = parsedReport?.warnings ?? [];
+  const hasBlockers = blockers.length > 0;
+  const hasWarnings = warnings.length > 0;
+
   return (
     <div className="p-6 space-y-6">
       <header className="space-y-1">
@@ -131,6 +153,67 @@ export default async function ImportJobDetailPage(
           <div><span className="text-neutral-500">QA report:</span> {job.qaReportUrl ?? "-"}</div>
           <div><span className="text-neutral-500">ModelAsset:</span> {job.normalizedAssetId ?? "-"}</div>
           <div><span className="text-neutral-500">CatalogItem:</span> {job.catalogItemId ?? "-"}</div>
+        </div>
+      </section>
+
+      <section className="rounded-xl border p-4">
+        <h2 className="text-sm font-semibold">QA Summary</h2>
+        <div className="mt-2 grid grid-cols-1 gap-3 md:grid-cols-2">
+          <div className="rounded border p-3">
+            <div className="text-xs text-neutral-500">Blockers</div>
+            {hasBlockers ? (
+              <ul className="mt-1 list-disc pl-5 text-xs text-red-700">
+                {blockers.map((entry) => (
+                  <li key={entry}>{entry}</li>
+                ))}
+              </ul>
+            ) : (
+              <div className="mt-1 text-xs text-green-700">No blockers detected.</div>
+            )}
+          </div>
+          <div className="rounded border p-3">
+            <div className="text-xs text-neutral-500">Warnings</div>
+            {hasWarnings ? (
+              <ul className="mt-1 list-disc pl-5 text-xs text-amber-700">
+                {warnings.map((entry) => (
+                  <li key={entry}>{entry}</li>
+                ))}
+              </ul>
+            ) : (
+              <div className="mt-1 text-xs text-neutral-600">No warnings.</div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-xl border p-4">
+        <h2 className="text-sm font-semibold">Catalog Handoff</h2>
+        <div className="mt-2 flex flex-wrap gap-4 text-sm">
+          {job.catalogItemId ? (
+            <>
+              <Link className="text-blue-700 hover:underline" href={`/admin/catalog/${job.catalogItemId}`}>
+                Open catalog item
+              </Link>
+              <Link className="text-blue-700 hover:underline" href={`/admin/catalog/${job.catalogItemId}/finishes`}>
+                Open finish mapping
+              </Link>
+              <Link className="text-blue-700 hover:underline" href={`/admin/catalog/${job.catalogItemId}/commerce`}>
+                Open commerce mapping
+              </Link>
+              <Link className="text-blue-700 hover:underline" href={`/admin/catalog/${job.catalogItemId}/qa`}>
+                Open catalog QA
+              </Link>
+            </>
+          ) : (
+            <span className="text-xs text-neutral-600">
+              No catalog item linked yet. Link this import during mapping to unlock finish and commerce handoff.
+            </span>
+          )}
+          {job.normalizedAssetId && (
+            <Link className="text-blue-700 hover:underline" href={`/admin/models/${job.normalizedAssetId}`}>
+              Open model asset
+            </Link>
+          )}
         </div>
       </section>
 

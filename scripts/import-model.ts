@@ -17,6 +17,7 @@ import {
 import { createImportJob } from "../lib/import-jobs/create-import-job";
 import { updateImportJobStatus } from "../lib/import-jobs/update-import-job-status";
 import { buildImportJobReport } from "../lib/import-jobs/build-import-job-report";
+import { buildAssetQaReport } from "../lib/asset-pipeline/build-qa-report";
 
 type ImportInput = {
   srcGlbPath: string;         // local file path
@@ -755,9 +756,10 @@ async function main() {
   };
 
   const pipelineWorkDir = fs.mkdtempSync(path.join(os.tmpdir(), `import-pipeline-${assetId}-`));
+  let terminalImportStatusSet = false;
+  let optimizedInputPath = src;
 
   try {
-  let terminalImportStatusSet = false;
   const setImportStatus = async (
     status: "received" | "normalizing" | "optimized" | "preview_generated" | "metadata_extracted" | "needs_mapping" | "needs_review" | "approved" | "published" | "failed",
     extra?: {
@@ -793,7 +795,6 @@ async function main() {
   });
 
   let qa: ImportQAResult;
-  let optimizedInputPath = src;
   const pipelineWarnings: ImportCheck[] = [];
 
   if (optimizeEnabled) {
@@ -907,6 +908,22 @@ async function main() {
     });
   }
 
+  const machineQaReportEarly = buildAssetQaReport({
+    score: quality.score,
+    blockers: qa.checks
+      .filter((c) => c.severity === "error")
+      .map((c) => `[${c.code}] ${c.message}`),
+    warnings: qa.checks
+      .filter((c) => c.severity === "warning")
+      .map((c) => `[${c.code}] ${c.message}`),
+    metrics: {
+      fileSizeBytes: optimizedStat.size,
+      triangleCount: qa.stats.triangleCount,
+      textureCount: qa.stats.textureCount,
+      maxTextureSize: qa.stats.maxTextureResolution,
+    },
+  });
+
   await setImportStatus("metadata_extracted", {
     notes: "Metadata + QA extraction complete.",
     optimizedFileUrl: optimizedInputPath,
@@ -920,6 +937,7 @@ async function main() {
       stats: qa.stats,
       qualityScore: quality.score,
       qualityTier: quality.tier,
+      qaReport: machineQaReportEarly,
     },
   });
 
@@ -927,6 +945,17 @@ async function main() {
 
   const qaErrors = qa.checks.filter((c) => c.severity === "error");
   const qaWarnings = qa.checks.filter((c) => c.severity === "warning");
+  const machineQaReport = buildAssetQaReport({
+    score: quality.score,
+    blockers: qaErrors.map((c) => `[${c.code}] ${c.message}`),
+    warnings: qaWarnings.map((c) => `[${c.code}] ${c.message}`),
+    metrics: {
+      fileSizeBytes: optimizedStat.size,
+      triangleCount: qa.stats.triangleCount,
+      textureCount: qa.stats.textureCount,
+      maxTextureSize: qa.stats.maxTextureResolution,
+    },
+  });
 
   const reportBase = {
     timestamp: new Date().toISOString(),
@@ -961,6 +990,11 @@ async function main() {
         textureCount: qa.stats.textureCount,
         maxTextureSize: qa.stats.maxTextureResolution,
       }),
+      rawMetadataJson: {
+        stats: qa.stats,
+        qualityScore: quality.score,
+        qaReport: machineQaReport,
+      },
     });
     terminalImportStatusSet = true;
 
@@ -1187,6 +1221,7 @@ async function main() {
       stats: qa.stats,
       qualityScore: quality.score,
       geometryHash,
+      qaReport: machineQaReport,
     },
   });
   terminalImportStatusSet = true;
