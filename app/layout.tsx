@@ -7,6 +7,13 @@ import { IdentifyGate } from "@/app/providers/IdentifyGate";
 import { validateCatalogOrThrow } from "@/lib/catalog-runtime";
 import { validateEnvOrThrow } from "@/lib/config";
 
+const isProdLike =
+  process.env.APP_ENV === "staging" ||
+  process.env.APP_ENV === "production" ||
+  process.env.VERCEL_ENV === "preview" ||
+  process.env.VERCEL_ENV === "production" ||
+  process.env.NODE_ENV === "production";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -32,8 +39,11 @@ export default function RootLayout({
   try {
     validateCatalogOrThrow();
   } catch (err) {
+    if (isProdLike) {
+      throw err;
+    }
     console.warn("⚠️ Catalog validation warning:", err instanceof Error ? err.message : err);
-    // Continue anyway - lenient mode allows this
+    // Continue in development for faster iteration.
   }
 
   return (
