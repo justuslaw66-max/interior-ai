@@ -20,7 +20,9 @@
     "db:restore": "bash scripts/restore-db.sh",
     "studio": "node -r dotenv/config ./node_modules/.bin/prisma studio --port 5555",
     "vercel-build": "prisma generate && prisma migrate deploy && next build",
-    "seed:finishes": "npx prisma db seed"
+    "seed:finishes": "npx prisma db seed",
+    "test:catalog-governance": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-catalog-governance-validations.ts",
+    "test:catalog-panel": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-catalog-panel-logic.ts"
   },
   "prisma": {
     "seed": "npx ts-node --transpile-only --compiler-options={\"module\":\"CommonJS\",\"moduleResolution\":\"node\"} prisma/seed.ts"
