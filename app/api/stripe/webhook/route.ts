@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { logAppEvent } from "@/lib/app-events";
+import { trackMonetization } from "@/lib/monetization-tracking";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -35,10 +36,30 @@ export async function POST(req: Request) {
 
         if (!customerId) break;
 
+        const users = await prisma.user.findMany({
+          where: { stripeCustomerId: customerId },
+          select: { id: true, plan: true },
+        });
+
         await prisma.user.updateMany({
           where: { stripeCustomerId: customerId },
           data: { plan: "pro" },
         });
+
+        await Promise.all(
+          users.map((user) =>
+            Promise.all([
+              logAppEvent({
+                eventType: "upgrade_checkout_completed",
+                userId: user.id,
+                meta: { provider: "stripe", customerId },
+              }),
+              trackMonetization("upgrade_checkout_completed", user.id, {
+                plan: "pro",
+              }),
+            ])
+          )
+        );
         break;
       }
 
@@ -63,10 +84,30 @@ export async function POST(req: Request) {
         const sub = event.data.object as Stripe.Subscription;
         const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer.id;
 
+        const users = await prisma.user.findMany({
+          where: { stripeCustomerId: customerId },
+          select: { id: true },
+        });
+
         await prisma.user.updateMany({
           where: { stripeCustomerId: customerId },
           data: { plan: "free", stripeSubscriptionId: null },
         });
+
+        await Promise.all(
+          users.map((user) =>
+            Promise.all([
+              logAppEvent({
+                eventType: "subscription_canceled",
+                userId: user.id,
+                meta: { provider: "stripe", subscriptionId: sub.id },
+              }),
+              trackMonetization("subscription_canceled", user.id, {
+                plan: "free",
+              }),
+            ])
+          )
+        );
         break;
       }
     }

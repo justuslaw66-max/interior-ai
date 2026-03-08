@@ -11,6 +11,8 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { config } from "@/lib/config";
 import { rateLimit } from "@/lib/rateLimit";
+import { logAppEvent } from "@/lib/app-events";
+import { trackMonetization } from "@/lib/monetization-tracking";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2026-01-28.clover",
@@ -57,6 +59,16 @@ export async function POST() {
       customer: user.stripeCustomerId,
       return_url: `${process.env.APP_ORIGIN}/dashboard`,
     });
+
+    await Promise.all([
+      logAppEvent({
+        eventType: "billing_portal_opened",
+        userId: user.id,
+      }),
+      trackMonetization("billing_portal_opened", user.id, {
+        plan: "pro",
+      }),
+    ]);
 
     return NextResponse.json({ url: portalSession.url });
   } catch (error) {

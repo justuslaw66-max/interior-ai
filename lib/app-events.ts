@@ -5,7 +5,13 @@ export type AppEventType =
   | "share_link_opened"
   | "export_opened"
   | "export_printed"
+  | "export_pdf_clicked"
+  | "export_upgrade_prompt_shown"
   | "checkout_started"
+  | "upgrade_checkout_started"
+  | "upgrade_checkout_completed"
+  | "billing_portal_opened"
+  | "subscription_canceled"
   | "webhook_failed";
 
 export type AppEventPayload = {
