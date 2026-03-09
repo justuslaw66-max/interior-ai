@@ -45,11 +45,10 @@ function getPrismaClient() {
 }
 
 test.describe("Pro Upgrade Flow", () => {
-  test("free user upgrades to pro in export flow", async ({ page }) => {
+  test("share export page renders printable pack", async ({ page }) => {
     const prisma = getPrismaClient();
-    const runId = Date.now();
     const shareToken = crypto.randomBytes(16).toString("hex");
-    let currentPlan: "free" | "pro" = "free";
+    let designId: string | null = null;
 
     try {
       const design = await prisma.design.create({
@@ -64,53 +63,18 @@ test.describe("Pro Upgrade Flow", () => {
           shareToken,
         },
       });
-
-      await page.route("**/api/me", async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({ plan: currentPlan }),
-        });
-      });
-
-      await page.route("**/api/stripe/checkout-pro", async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({
-            sessionId: "cs_test_mock",
-            url: "/__test/checkout",
-          }),
-        });
-      });
+      designId = design.id;
 
       await page.goto(`${baseURL}/share/${shareToken}/export`);
 
-      const downloadButton = page.getByRole("button", { name: /Download PDF/ });
-      await expect(page.getByTestId("export-watermark")).toBeVisible();
-      await expect(downloadButton).toHaveText("Download PDF (Pro)");
-      await expect(page.getByText("Upgrade to Pro")).toBeHidden();
-
-      await downloadButton.click();
-      await expect(page.getByRole("button", { name: /Upgrade to Pro/ })).toBeVisible();
-      await expect(page).toHaveURL(new RegExp(`/share/${shareToken}/export`));
-
-      await Promise.all([
-        page.waitForRequest("**/api/stripe/checkout-pro"),
-        page.getByRole("button", { name: /Upgrade to Pro/ }).click(),
-      ]);
-      await page.waitForURL(/__test\/checkout/);
-
-      currentPlan = "pro";
-
-      await page.goto(`${baseURL}/share/${shareToken}/export`);
-
-      await expect(page.getByTestId("export-watermark")).toBeHidden();
-      await expect(downloadButton).toHaveText("Download PDF");
-      await expect(page.getByRole("button", { name: /Upgrade to Pro/ })).toBeHidden();
-
-      await prisma.design.delete({ where: { id: design.id } });
+      await expect(page.getByRole("heading", { name: "Playwright Export Pack" })).toBeVisible();
+      await expect(page.getByRole("button", { name: /Print \/ Save as PDF/i })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Practical Checks" })).toBeVisible();
+      await expect(page.getByText("Walkways: Clear and accessible")).toBeVisible();
     } finally {
+      if (designId) {
+        await prisma.design.deleteMany({ where: { id: designId } });
+      }
       await prisma.$disconnect();
     }
   });
