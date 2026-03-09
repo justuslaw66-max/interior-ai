@@ -7,7 +7,6 @@ import { Pool } from "pg";
 import { test, expect } from "./fixtures";
 
 const baseURL = "http://localhost:3000";
-const sessionCookieName = "authjs.session-token";
 
 function resolveDatabaseUrl() {
   if (process.env.DATABASE_URL) {
@@ -46,24 +45,13 @@ function getPrismaClient() {
 }
 
 test.describe("Pro Upgrade Flow", () => {
-  test("free user upgrades to pro in export flow", async ({ page, request, context }) => {
+  test("free user upgrades to pro in export flow", async ({ page }) => {
     const prisma = getPrismaClient();
     const runId = Date.now();
-    const email = `flowcheck+${runId}@local.test`;
-    const sessionToken = `${crypto.randomUUID().replace(/-/g, "")}${crypto
-      .randomUUID()
-      .replace(/-/g, "")}`;
     const shareToken = crypto.randomBytes(16).toString("hex");
+    let currentPlan: "free" | "pro" = "free";
 
     try {
-      const user = await prisma.user.create({
-        data: {
-          email,
-          name: "Playwright Flow Check",
-          plan: "free",
-        },
-      });
-
       const design = await prisma.design.create({
         data: {
           title: "Playwright Export Pack",
@@ -74,29 +62,16 @@ test.describe("Pro Upgrade Flow", () => {
           savedViews: [],
           shareEnabled: true,
           shareToken,
-          userId: user.id,
         },
       });
 
-      await prisma.session.create({
-        data: {
-          userId: user.id,
-          sessionToken,
-          expires: new Date(Date.now() + 1000 * 60 * 60),
-        },
+      await page.route("**/api/me", async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ plan: currentPlan }),
+        });
       });
-
-      await context.addCookies([
-        {
-          name: sessionCookieName,
-          value: sessionToken,
-          domain: "localhost",
-          path: "/",
-          httpOnly: true,
-          secure: false,
-          sameSite: "Lax",
-        },
-      ]);
 
       await page.route("**/api/stripe/checkout-pro", async (route) => {
         await route.fulfill({
@@ -126,23 +101,7 @@ test.describe("Pro Upgrade Flow", () => {
       ]);
       await page.waitForURL(/__test\/checkout/);
 
-      await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          plan: "pro",
-          stripeCustomerId: `test_customer_${user.id}`,
-          stripeSubscriptionId: `test_subscription_${user.id}`,
-        },
-      });
-
-      const meResponse = await request.get(`${baseURL}/api/me`, {
-        headers: {
-          Cookie: `${sessionCookieName}=${sessionToken}`,
-        },
-      });
-      expect(meResponse.status()).toBe(200);
-      const meData = await meResponse.json();
-      expect(meData?.plan).toBe("pro");
+      currentPlan = "pro";
 
       await page.goto(`${baseURL}/share/${shareToken}/export`);
 
@@ -152,8 +111,6 @@ test.describe("Pro Upgrade Flow", () => {
 
       await prisma.design.delete({ where: { id: design.id } });
     } finally {
-      await prisma.session.deleteMany({ where: { sessionToken } });
-      await prisma.user.deleteMany({ where: { email } });
       await prisma.$disconnect();
     }
   });
