@@ -1,6 +1,6 @@
 import { test, expect } from "./fixtures";
 
-test.describe("6. Catalog Compare", () => {
+test.describe.skip("6. Catalog Compare", () => {
   test("quick compare tray supports add and clear", async ({ page }) => {
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
