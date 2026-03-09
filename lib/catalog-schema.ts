@@ -11,8 +11,10 @@
 
 export type ProductCategory =
   | "sofa"
+  | "accessory"
   | "rug"
   | "coffee_table"
+  | "dining_table"
   | "accent_chair"
   | "floor_lamp"
   | "tv_console"
@@ -199,6 +201,10 @@ export interface CatalogItemSchema {
   commerce: CommerceMapping;
 
   // Metadata
+  metadata?: {
+    brand?: string;
+    modelLabel?: string;
+  };
   aiRoles?: string[]; // e.g., ["seating_anchor", "living_room_focal_point"]
   tags?: string[];
   createdAt?: number;
@@ -237,6 +243,25 @@ export const CATEGORY_DEFAULTS: Record<ProductCategory, CategoryDefaults> = {
     },
     aiRoles: ["seating_anchor", "living_room_focal"],
   },
+  accessory: {
+    dimsMm: { w: 900, d: 650, h: 450 },
+    placement: {
+      floorOnly: true,
+      wallSnappable: false,
+      wallMountable: false,
+      minWallGapMm: 100,
+      allowRugOverlap: true,
+      snapMarginMm: 0,
+    },
+    clearance: {
+      walkwayMinMm: 500,
+      coffeeGapMinMm: 0,
+      coffeeGapMaxMm: 0,
+      sofaClearanceMm: 250,
+      wallClearanceMm: 100,
+    },
+    aiRoles: ["seating_accessory"],
+  },
   rug: {
     dimsMm: { w: 2800, d: 2000, h: 20 },
     placement: {
@@ -274,6 +299,25 @@ export const CATEGORY_DEFAULTS: Record<ProductCategory, CategoryDefaults> = {
       wallClearanceMm: 200,
     },
     aiRoles: ["seating_functional"],
+  },
+  dining_table: {
+    dimsMm: { w: 2200, d: 1000, h: 760 },
+    placement: {
+      floorOnly: true,
+      wallSnappable: false,
+      wallMountable: false,
+      minWallGapMm: 300,
+      allowRugOverlap: true,
+      snapMarginMm: 0,
+    },
+    clearance: {
+      walkwayMinMm: 900,
+      coffeeGapMinMm: 0,
+      coffeeGapMaxMm: 0,
+      sofaClearanceMm: 0,
+      wallClearanceMm: 300,
+    },
+    aiRoles: ["dining_anchor"],
   },
   accent_chair: {
     dimsMm: { w: 820, d: 820, h: 900 },
