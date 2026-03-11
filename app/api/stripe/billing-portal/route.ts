@@ -14,10 +14,6 @@ import { rateLimit } from "@/lib/rateLimit";
 import { logAppEvent } from "@/lib/app-events";
 import { trackMonetization } from "@/lib/monetization-tracking";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2026-01-28.clover",
-});
-
 export async function POST() {
   try {
     if (!config.features.checkoutEnabled) {
@@ -38,9 +34,12 @@ export async function POST() {
       return NextResponse.json({ error: "Too many billing portal requests" }, { status: 429 });
     }
 
-    if (!process.env.STRIPE_SECRET_KEY) {
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeSecretKey) {
       return NextResponse.json({ error: "Stripe is not configured" }, { status: 503 });
     }
+
+    const stripe = new Stripe(stripeSecretKey, { apiVersion: "2026-01-28.clover" });
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
