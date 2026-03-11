@@ -101,6 +101,7 @@ model User {
   updatedAt            DateTime  @updatedAt
   accounts             Account[]
   designs              Design[]
+  importJobs           ImportJob[]
   sessions             Session[]
 
   @@index([invitedByCode])
@@ -173,6 +174,39 @@ model ModelAsset {
   pivotOffsetX  Float         @default(0)
   pivotOffsetZ  Float         @default(0)
   catalogItems  CatalogItem[]
+  importJobs    ImportJob[]
+}
+
+model ImportJob {
+  id                String          @id @default(cuid())
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  status            ImportJobStatus @default(received)
+  sourceBrand       String?
+  sourceFileName    String
+  sourceFileUrl     String
+  uploadedByUserId  String?
+  notes             String?
+  errorMessage      String?
+  rawMetadataJson   Json?
+  reportJson        Json?
+  rawFileUrl        String?
+  normalizedFileUrl String?
+  optimizedFileUrl  String?
+  thumbnailUrl      String?
+  metadataReportUrl String?
+  qaReportUrl       String?
+  normalizedAssetId String?
+  catalogItemId     String?
+  uploadedBy        User?           @relation(fields: [uploadedByUserId], references: [id], onDelete: SetNull)
+  normalizedAsset   ModelAsset?     @relation(fields: [normalizedAssetId], references: [id], onDelete: SetNull)
+  catalogItem       CatalogItem?    @relation(fields: [catalogItemId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([uploadedByUserId])
+  @@index([normalizedAssetId])
+  @@index([catalogItemId])
 }
 
 model CatalogItem {
@@ -198,6 +232,69 @@ model CatalogItem {
   roomTags           String[]         @default([])
   asset              ModelAsset       @relation(fields: [assetId], references: [id])
   commerce           CommerceMapping?
+  brandFinishes      BrandFinish[]
+  finishMappings     VariantFinishMapping[]
+  importJobs         ImportJob[]
+}
+
+model BrandFinish {
+  id             String          @id @default(cuid())
+  catalogItemId  String
+  brandName      String
+  sourceLabel    String
+  sourceCode     String?
+  materialFamily MaterialFamily?
+  notes          String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  catalogItem    CatalogItem     @relation(fields: [catalogItemId], references: [id], onDelete: Cascade)
+  mappings       VariantFinishMapping[]
+
+  @@index([catalogItemId])
+  @@index([brandName])
+  @@index([sourceLabel])
+}
+
+model NormalizedFinish {
+  id                String          @id
+  label             String
+  presentationLabel String
+  materialFamily    MaterialFamily
+  colorFamily       ColorFamily
+  tone              Tone
+  surface           Surface
+  pattern           Pattern?
+  isActive          Boolean         @default(true)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  mappings          VariantFinishMapping[]
+
+  @@index([materialFamily])
+  @@index([colorFamily])
+  @@index([isActive])
+}
+
+model VariantFinishMapping {
+  id                 String            @id @default(cuid())
+  catalogItemId      String
+  variantId          String
+  component          FinishComponent
+  brandFinishId      String
+  normalizedFinishId String
+  sourceConfidence   MappingConfidence @default(manual)
+  needsReview        Boolean           @default(false)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  catalogItem        CatalogItem       @relation(fields: [catalogItemId], references: [id], onDelete: Cascade)
+  brandFinish        BrandFinish       @relation(fields: [brandFinishId], references: [id], onDelete: Cascade)
+  normalizedFinish   NormalizedFinish  @relation(fields: [normalizedFinishId], references: [id], onDelete: Restrict)
+
+  @@unique([catalogItemId, variantId, component, brandFinishId])
+  @@index([catalogItemId])
+  @@index([variantId])
+  @@index([brandFinishId])
+  @@index([normalizedFinishId])
+  @@index([needsReview])
 }
 
 model CommerceMapping {
@@ -226,4 +323,88 @@ enum CommerceType {
   shopify
   affiliate
   not_buyable
+}
+
+enum MaterialFamily {
+  fabric
+  leather
+  wood
+  metal
+  stone
+  glass
+  lacquer
+  composite
+  other
+}
+
+enum ColorFamily {
+  white
+  ivory
+  beige
+  taupe
+  brown
+  grey
+  charcoal
+  black
+  green
+  blue
+  red
+  terracotta
+  natural
+}
+
+enum Tone {
+  warm
+  neutral
+  cool
+}
+
+enum Surface {
+  matte
+  satin
+  semi_gloss
+  gloss
+  textured
+  brushed
+  polished
+  woven
+  smooth
+}
+
+enum Pattern {
+  plain
+  boucle
+  woven
+  grained
+  veined
+  marbled
+}
+
+enum FinishComponent {
+  primary
+  legs
+  top
+  base
+  handle
+  shade
+  frame
+}
+
+enum MappingConfidence {
+  mapped_auto_confident
+  mapped_auto_needs_review
+  manual
+}
+
+enum ImportJobStatus {
+  received
+  normalizing
+  optimized
+  preview_generated
+  metadata_extracted
+  needs_mapping
+  needs_review
+  approved
+  published
+  failed
 }

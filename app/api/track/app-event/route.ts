@@ -7,6 +7,12 @@ const ALLOWED = new Set<AppEventType>([
   "share_link_opened",
   "export_opened",
   "export_printed",
+  "export_pdf_clicked",
+  "export_upgrade_prompt_shown",
+  "upgrade_checkout_started",
+  "upgrade_checkout_completed",
+  "billing_portal_opened",
+  "subscription_canceled",
 ]);
 
 function getClientIp(req: Request) {

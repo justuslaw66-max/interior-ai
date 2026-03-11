@@ -1,0 +1,15 @@
+{
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev -- --webpack",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "regions": ["sfo1"],
+  "env": {
+    "APP_ENV": "staging"
+  },
+  "build": {
+    "env": {
+      "APP_ENV": "staging"
+    }
+  }
+}

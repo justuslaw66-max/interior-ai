@@ -85,9 +85,7 @@ const ensureSafeProdSecrets = (errors: string[]) => {
 };
 
 export function validateEnvOrThrow() {
-  // Skip validation during build if APP_ENV is not explicitly set to staging/production
-  const isExplicitProdEnv = process.env.APP_ENV === "staging" || process.env.APP_ENV === "production";
-  if (!config.isProdLike || !isExplicitProdEnv) return;
+  if (!config.isProdLike) return;
 
   const missing: string[] = [];
 

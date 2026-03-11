@@ -1,0 +1,8 @@
+# Vercel ignore file
+.git
+.next
+node_modules
+.env.local
+.env*.local
+test-results
+playwright-report

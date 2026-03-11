@@ -17,8 +17,6 @@ async function getPrisma() {
   return prisma;
 }
 
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
 /**
  * Stable hash of design snapshot. Only includes what matters for AI suggestions.
  */
@@ -205,6 +203,8 @@ export async function POST(req: Request) {
     // Call OpenAI with Structured Outputs (JSON schema) + timeout
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
+    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 
     const response = await client.chat.completions.create({
       model: "gpt-4o",

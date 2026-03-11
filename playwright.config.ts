@@ -26,7 +26,7 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'NEXT_DISABLE_TURBOPACK=1 npm run dev',
+    command: 'APP_ENV=development npx next start -p 3000',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
