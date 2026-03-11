@@ -14,9 +14,11 @@ import { rateLimit } from "@/lib/rateLimit";
 import { logAppEvent } from "@/lib/app-events";
 import { trackMonetization } from "@/lib/monetization-tracking";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2026-01-28.clover",
-});
+function getStripeClient(secretKey: string) {
+  return new Stripe(secretKey, {
+    apiVersion: "2026-01-28.clover",
+  });
+}
 
 export async function POST(request: Request) {
   try {
@@ -38,9 +40,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Too many Stripe checkout requests" }, { status: 429 });
     }
 
-    if (!process.env.STRIPE_SECRET_KEY) {
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeSecretKey) {
       return NextResponse.json({ error: "Stripe is not configured" }, { status: 503 });
     }
+
+    const stripe = getStripeClient(stripeSecretKey);
 
     const { priceId, returnUrl } = await request.json();
 

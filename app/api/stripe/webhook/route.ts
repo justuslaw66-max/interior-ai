@@ -5,9 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { logAppEvent } from "@/lib/app-events";
 import { trackMonetization } from "@/lib/monetization-tracking";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-
 export async function POST(req: Request) {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
   const sig = (await headers()).get("stripe-signature");
   if (!sig) {
     return NextResponse.json({ error: "Missing stripe-signature" }, { status: 400 });
