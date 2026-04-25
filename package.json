@@ -10,6 +10,8 @@
     "start": "next start",
     "lint": "eslint",
     "test:e2e": "npm run build:e2e && playwright test",
+    "test:e2e:rotation": "npm run build:e2e && playwright test tests/e2e/11-rotation-shortcuts.spec.ts",
+    "test:e2e:rotation:headed": "npm run build:e2e && playwright test tests/e2e/11-rotation-shortcuts.spec.ts --headed",
     "test:e2e:pro-upgrade": "npm run build:e2e && playwright test tests/e2e/pro-upgrade.spec.ts",
     "test:e2e:pro-upgrade:ui": "npm run build:e2e && playwright test tests/e2e/pro-upgrade.spec.ts --headed",
     "test:e2e:ui": "npm run build:e2e && playwright test --ui",
@@ -24,7 +26,22 @@
     "vercel-build": "prisma generate && prisma migrate deploy && next build",
     "seed:finishes": "npx prisma db seed",
     "test:catalog-governance": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-catalog-governance-validations.ts",
-    "test:catalog-panel": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-catalog-panel-logic.ts"
+    "test:import-normalization-fixtures": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-imported-variant-normalization-fixtures.ts",
+    "test:import-normalization": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-imported-variant-normalization.ts",
+    "test:catalog-quality": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-catalog-quality-audit.ts",
+    "test:catalog-quality:strict": "CATALOG_STRICT_VALIDATION=true npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-catalog-quality-audit.ts",
+    "test:catalog-asset-availability": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-catalog-asset-availability.ts",
+    "test:catalog-media-health": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-catalog-media-health.ts",
+    "test:catalog-audit": "npm run test:catalog-governance && npm run test:catalog-quality && npm run test:import-normalization-fixtures && npm run test:import-normalization && npm run test:catalog-media-health",
+    "test:import-preflight": "npm run test:catalog-governance && npm run test:catalog-quality:strict && npm run test:catalog-asset-availability && npm run lint && ./node_modules/.bin/playwright test tests/e2e/12-variant-identity.spec.ts tests/e2e/05-buy.spec.ts --reporter=list --timeout=120000",
+    "test:catalog-panel": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-catalog-panel-logic.ts",
+    "test:revenue-funnel": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-revenue-funnel-metrics.ts",
+    "test:revenue-funnel-panel": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\",\"jsx\":\"react-jsx\"}' scripts/test-revenue-funnel-panel.ts",
+    "test:paywall-performance": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-paywall-performance.ts",
+    "test:design-page-paywall": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-design-page-paywall.ts",
+    "test:catalog-route-hardening": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-catalog-route-hardening.ts",
+    "test:import-route-hardening": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-import-route-hardening.ts",
+    "test:hardening": "npm run test:import-route-hardening && npm run test:catalog-route-hardening"
   },
   "prisma": {
     "seed": "npx ts-node --transpile-only --compiler-options={\"module\":\"CommonJS\",\"moduleResolution\":\"node\"} prisma/seed.ts"
@@ -40,6 +57,7 @@
     "@sentry/nextjs": "^10.42.0",
     "@types/pdfkit": "^0.17.5",
     "jspdf": "^4.2.0",
+    "meshoptimizer": "^1.0.1",
     "next": "16.1.6",
     "next-auth": "^5.0.0-beta.30",
     "openai": "^6.22.0",
@@ -53,17 +71,20 @@
     "react-dom": "19.2.3",
     "stripe": "^20.3.1",
     "three": "^0.182.0",
-    "ws": "^8.19.0"
+    "ws": "^8.19.0",
+    "yaml": "^2.8.2"
   },
   "devDependencies": {
-    "@playwright/test": "^1.40.0",
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/pg": "^8.18.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/three": "0.182.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "playwright": "^1.59.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
