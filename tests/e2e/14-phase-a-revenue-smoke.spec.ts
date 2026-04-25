@@ -354,8 +354,13 @@ test.describe("14. Phase A Revenue Smoke", () => {
     await gotoWithRetry(page, `${baseURL}/design?paywall_variant=see_pricing&plans_open=1`, {
       waitUntil: "domcontentloaded",
     });
-    await expect(page.getByTestId("plans-layout-annual-highlight")).toBeVisible();
-    await expect(page.getByTestId("checkout-yearly")).toContainText("Start yearly and save");
-    await expect(page.getByTestId("checkout-monthly")).toContainText("Or start monthly");
+    // Wait for the specific layout element — React effects run after hydration and update pricingLayoutVariant state
+    await page.waitForSelector('[data-testid="plans-layout-annual-highlight"]', { timeout: 20000 });
+    const yearlyCta = page.getByTestId("checkout-yearly");
+    const monthlyCta = page.getByTestId("checkout-monthly");
+    await expect(yearlyCta).toBeVisible({ timeout: 15000 });
+    await expect(monthlyCta).toBeVisible({ timeout: 15000 });
+    await expect(yearlyCta).toContainText("Start yearly and save", { timeout: 15000 });
+    await expect(monthlyCta).toContainText("Or start monthly", { timeout: 15000 });
   });
 });
