@@ -49,10 +49,7 @@ import {
   type AABB,
 } from "@/lib/snapGuides";
 import { generateMeasurements, type Measure } from "@/lib/measurements";
-import {
-  getDefaultPreset,
-  getPresetById,
-} from "@/lib/materialPresets";
+import { resolveMaterialProps } from "@/lib/design-page-material-props";
 import {
   saveGuestDesign,
   loadGuestDesigns,
@@ -1397,34 +1394,13 @@ function Furniture({
   const rotatePointerIdRef = useRef<number | null>(null);
   const rotateSnapEnabledRef = useRef(true);
 
-  // Compute material properties from preset
   const materialProps = useMemo(() => {
-    // Get preset (use materialPreset if provided, otherwise get default for category)
-    let preset =
-      materialPreset && materialPreset
-        ? getPresetById(product.category, materialPreset)
-        : null;
-
-    if (!preset) {
-      preset = getDefaultPreset(product.category);
-    }
-
-    if (!preset) {
-      // Fallback if no presets for category
-      return {
-        color: variantColor,
-        roughness: 0.8,
-        metalness: 0.05,
-      };
-    }
-
-    // Apply overrides if provided.
-    // Priority: explicit override > selected variant color > preset fallback.
-    const color = materialOverrides?.colorHex || variantColor || preset.color;
-    const roughness = materialOverrides?.roughness !== undefined ? materialOverrides.roughness : preset.roughness;
-    const metalness = materialOverrides?.metalness !== undefined ? materialOverrides.metalness : preset.metalness;
-
-    return { color, roughness, metalness };
+    return resolveMaterialProps({
+      category: product.category,
+      materialPreset,
+      materialOverrides,
+      variantColor,
+    });
   }, [product.category, materialPreset, materialOverrides, variantColor]);
 
   useEffect(() => {
