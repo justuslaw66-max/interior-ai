@@ -281,3 +281,102 @@ export function buildAutoLayoutZoneItems(
   const nextItems = currentItems.map((item) => updates.get(item.instanceId) ?? item);
   return { nextItems, zoneType: zone.type };
 }
+
+type RotateZoneParams = {
+  zoneId: string;
+  deltaRot: number;
+  zones: ZoneMin[];
+  currentItems: DesignItem[];
+  isDesigner: boolean;
+  catalogItems: typeof CATALOG_ITEMS;
+  roomWidth: number;
+  roomDepth: number;
+  wallThickness: number;
+  clampToRoom: ClampToRoomFn;
+  getSelectionBounds: (selected: DesignItem[]) => SelectionBounds | null;
+  getItemAABB: (item: DesignItem) => AABB | null;
+  aabbIntersects: (a: AABB, b: AABB) => boolean;
+};
+
+export function buildRotatedZoneItems(params: RotateZoneParams): DesignItem[] | null {
+  const {
+    zoneId,
+    deltaRot,
+    zones,
+    currentItems,
+    isDesigner,
+    catalogItems,
+    roomWidth,
+    roomDepth,
+    wallThickness,
+    clampToRoom,
+    getSelectionBounds,
+    getItemAABB,
+    aabbIntersects,
+  } = params;
+
+  const zone = zones.find((z) => z.id === zoneId);
+  if (!zone) return null;
+
+  const zoneSet = new Set(zone.itemIds);
+  const movable = currentItems.filter(
+    (item) => zoneSet.has(item.instanceId) && !(isDesigner && item.locked)
+  );
+  if (!movable.length) return null;
+
+  const movableIds = new Set(movable.map((item) => item.instanceId));
+  const blockers = currentItems.filter((item) => !movableIds.has(item.instanceId));
+  const bounds = getSelectionBounds(movable);
+  if (!bounds) return null;
+
+  const pivotX = bounds.centerX;
+  const pivotZ = bounds.centerZ;
+  const cos = Math.cos(deltaRot);
+  const sin = Math.sin(deltaRot);
+
+  const nextItems = currentItems.map((item) => {
+    if (!movableIds.has(item.instanceId)) return item;
+    const product = catalogItems[item.productId];
+    if (!product) return item;
+
+    const offsetX = item.position[0] - pivotX;
+    const offsetZ = item.position[2] - pivotZ;
+    const rotatedX = offsetX * cos - offsetZ * sin;
+    const rotatedZ = offsetX * sin + offsetZ * cos;
+    const nextRot = (item.rotationY ?? 0) + deltaRot;
+    const [safeX, safeZ] = clampToRoom(
+      pivotX + rotatedX,
+      pivotZ + rotatedZ,
+      product.dimsMm.w / 1000,
+      product.dimsMm.d / 1000,
+      roomWidth,
+      roomDepth,
+      wallThickness,
+      nextRot
+    );
+
+    return {
+      ...item,
+      position: [safeX, item.position[1] ?? 0, safeZ] as [number, number, number],
+      rotationY: nextRot,
+    };
+  });
+
+  for (const moved of nextItems) {
+    if (!movableIds.has(moved.instanceId)) continue;
+    const movedProduct = catalogItems[moved.productId];
+    if (movedProduct?.category === "rug") continue;
+    const movedAABB = getItemAABB(moved);
+    if (!movedAABB) continue;
+
+    for (const blocker of blockers) {
+      const blockerProduct = catalogItems[blocker.productId];
+      if (blockerProduct?.category === "rug") continue;
+      const blockerAABB = getItemAABB(blocker);
+      if (!blockerAABB) continue;
+      if (aabbIntersects(movedAABB, blockerAABB)) return null;
+    }
+  }
+
+  return nextItems;
+}

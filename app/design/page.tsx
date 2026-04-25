@@ -166,6 +166,7 @@ import {
 import {
   buildAlignedSelectionItems as _buildAlignedSelectionItems,
   buildAutoLayoutZoneItems as _buildAutoLayoutZoneItems,
+  buildRotatedZoneItems as _buildRotatedZoneItems,
 } from "@/lib/design-page-zone-layout";
 
 type FurnitureProps = {
@@ -5673,70 +5674,22 @@ function PageContent() {
   const rotateZone = useCallback(
     (zoneId: string, deltaRot: number) => {
       try {
-        const zone = zonesRef.current.find((z) => z.id === zoneId);
-        if (!zone) return;
-        const currentItems = itemsRef.current;
-        const zoneSet = new Set(zone.itemIds);
-        const movable = currentItems.filter(
-          (item) => zoneSet.has(item.instanceId) && !(isDesigner && item.locked)
-        );
-        if (!movable.length) return;
-        const movableIds = new Set(movable.map((item) => item.instanceId));
-        const blockers = currentItems.filter((item) => !movableIds.has(item.instanceId));
-        const bounds = getSelectionBounds(movable);
-        if (!bounds) return;
-
-        const pivotX = bounds.centerX;
-        const pivotZ = bounds.centerZ;
-        const cos = Math.cos(deltaRot);
-        const sin = Math.sin(deltaRot);
-
-        const nextItems = currentItems.map((item) => {
-        if (!movableIds.has(item.instanceId)) return item;
-        const product = CATALOG_ITEMS[item.productId];
-        if (!product) return item;
-        const offsetX = item.position[0] - pivotX;
-        const offsetZ = item.position[2] - pivotZ;
-        const rotatedX = offsetX * cos - offsetZ * sin;
-        const rotatedZ = offsetX * sin + offsetZ * cos;
-        const nextRot = (item.rotationY ?? 0) + deltaRot;
-        const [safeX, safeZ] = clampToRoom(
-          pivotX + rotatedX,
-          pivotZ + rotatedZ,
-          product.dimsMm.w / 1000,
-          product.dimsMm.d / 1000,
+        const nextItems = _buildRotatedZoneItems({
+          zoneId,
+          deltaRot,
+          zones: zonesRef.current,
+          currentItems: itemsRef.current,
+          isDesigner,
+          catalogItems: CATALOG_ITEMS,
           roomWidth,
           roomDepth,
           wallThickness,
-          nextRot
-        );
-        const nextPos: [number, number, number] = [
-          safeX,
-          item.position[1] ?? 0,
-          safeZ,
-        ];
-        return {
-          ...item,
-          position: nextPos,
-          rotationY: nextRot,
-        };
+          clampToRoom,
+          getSelectionBounds,
+          getItemAABB,
+          aabbIntersects,
         });
-
-        for (const moved of nextItems) {
-        if (!movableIds.has(moved.instanceId)) continue;
-        const movedProduct = CATALOG_ITEMS[moved.productId];
-        if (movedProduct?.category === "rug") continue;
-        const movedAABB = getItemAABB(moved);
-        if (!movedAABB) continue;
-        for (const blocker of blockers) {
-          const blockerProduct = CATALOG_ITEMS[blocker.productId];
-          if (blockerProduct?.category === "rug") continue;
-          const blockerAABB = getItemAABB(blocker);
-          if (!blockerAABB) continue;
-          if (aabbIntersects(movedAABB, blockerAABB)) return;
-        }
-        }
-
+        if (!nextItems) return;
         commitItems(nextItems, "Rotate zone");
       } catch (error) {
         console.error("[Zone] Rotate failed", { zoneId, deltaRot, error });
