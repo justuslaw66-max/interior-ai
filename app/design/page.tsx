@@ -146,9 +146,12 @@ import {
   type RoomBounds,
 } from "@/lib/design-page-types";
 import {
-  hashStringToVariant,
-  normalizeExperimentSlot,
-  normalizeUpgradeVariant,
+  ANNUAL_PLAN_SAVINGS_LABEL,
+  buildPaywallContextMeta,
+  getPaywallExperimentEnvConfig,
+  getPrimaryUpgradeCtaLabel,
+  resolvePaywallVariant,
+  resolvePricingLayoutVariant,
   type FunnelEventName,
   type UpgradeCtaVariant,
   type PricingLayoutVariant,
@@ -2709,29 +2712,32 @@ function PageContent() {
   const constraintTimerRef = useRef<number | null>(null);
   const confidenceTimerRef = useRef<number | null>(null);
 
-  const qaPaywallHooksEnabled =
-    process.env.NODE_ENV !== "production" ||
-    process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS === "1" ||
-    process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS === "true";
-  const paywallWinnerDefault = normalizeUpgradeVariant(process.env.NEXT_PUBLIC_PAYWALL_WINNER_DEFAULT ?? null);
-  const paywallFallbackVariant =
-    normalizeUpgradeVariant(process.env.NEXT_PUBLIC_PAYWALL_FALLBACK_VARIANT ?? null) ?? "unlock_pro_exports";
-  const paywallForceFallback =
-    process.env.NEXT_PUBLIC_PAYWALL_FORCE_FALLBACK === "1" ||
-    process.env.NEXT_PUBLIC_PAYWALL_FORCE_FALLBACK === "true";
-  const paywallExperimentSlot = normalizeExperimentSlot(process.env.NEXT_PUBLIC_PAYWALL_EXPERIMENT_SLOT ?? null);
+  const {
+    qaPaywallHooksEnabled,
+    paywallWinnerDefault,
+    paywallFallbackVariant,
+    paywallForceFallback,
+    paywallExperimentSlot,
+  } = getPaywallExperimentEnvConfig({
+    nodeEnv: process.env.NODE_ENV,
+    enableQaHooks: process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS,
+    paywallWinnerDefault: process.env.NEXT_PUBLIC_PAYWALL_WINNER_DEFAULT,
+    paywallFallbackVariant: process.env.NEXT_PUBLIC_PAYWALL_FALLBACK_VARIANT,
+    paywallForceFallback: process.env.NEXT_PUBLIC_PAYWALL_FORCE_FALLBACK,
+    paywallExperimentSlot: process.env.NEXT_PUBLIC_PAYWALL_EXPERIMENT_SLOT,
+  });
 
   const paywallVariant = useMemo(() => {
     if (typeof window === "undefined") return "unlock_pro_exports" as UpgradeCtaVariant;
-    const override = qaPaywallHooksEnabled
-      ? normalizeUpgradeVariant(paywallVariantOverride) ??
-        normalizeUpgradeVariant(window.localStorage.getItem("paywall_variant_override"))
-      : null;
-    if (override) return override;
-    if (paywallForceFallback) return paywallFallbackVariant;
-    if (paywallWinnerDefault) return paywallWinnerDefault;
-    const seed = session?.user?.id ?? designId ?? getAnonId();
-    return hashStringToVariant(seed);
+    return resolvePaywallVariant({
+      qaPaywallHooksEnabled,
+      paywallVariantOverride,
+      storageVariantOverride: window.localStorage.getItem("paywall_variant_override"),
+      paywallForceFallback,
+      paywallFallbackVariant,
+      paywallWinnerDefault,
+      seed: session?.user?.id ?? designId ?? getAnonId(),
+    });
   }, [
     designId,
     paywallFallbackVariant,
@@ -2743,19 +2749,17 @@ function PageContent() {
   ]);
 
   const resolvedPricingLayout = useMemo<PricingLayoutVariant>(() => {
-    return paywallVariant === "see_pricing" ? "annual_highlight" : "default";
+    return resolvePricingLayoutVariant(paywallVariant);
   }, [paywallVariant]);
 
-  const primaryUpgradeCtaLabel =
-    upgradeCtaVariant === "see_pricing" ? "See pricing" : "Unlock Pro exports";
-
-  const annualPlanSavingsLabel = "Best value: yearly plan saves 20%";
-  const paywallContextMeta = {
-    cta_variant: upgradeCtaVariant,
-    pricing_layout: pricingLayoutVariant,
-    experiment_slot: paywallExperimentSlot,
-    force_fallback: paywallForceFallback,
-  };
+  const primaryUpgradeCtaLabel = getPrimaryUpgradeCtaLabel(upgradeCtaVariant);
+  const annualPlanSavingsLabel = ANNUAL_PLAN_SAVINGS_LABEL;
+  const paywallContextMeta = buildPaywallContextMeta({
+    ctaVariant: upgradeCtaVariant,
+    pricingLayout: pricingLayoutVariant,
+    experimentSlot: paywallExperimentSlot,
+    forceFallback: paywallForceFallback,
+  });
 
   const logFunnelEvent = useCallback(
     (eventType: FunnelEventName, meta?: Record<string, unknown>) => {
