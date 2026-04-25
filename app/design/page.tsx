@@ -167,6 +167,9 @@ import {
   buildAlignedSelectionItems as _buildAlignedSelectionItems,
   buildAutoLayoutZoneItems as _buildAutoLayoutZoneItems,
   buildRotatedZoneItems as _buildRotatedZoneItems,
+  buildPlanZones2D as _buildPlanZones2D,
+  getZoneBounds as _getZoneBounds,
+  getZoneLabel as _getZoneLabel,
 } from "@/lib/design-page-zone-layout";
 
 type FurnitureProps = {
@@ -5719,45 +5722,19 @@ function PageContent() {
 
   const getZoneBounds = useCallback(
     (zone: Zone) => {
-      const zoneSet = new Set(zone.itemIds);
-      const zoneItems = items.filter((item) => zoneSet.has(item.instanceId));
-      return getSelectionBounds(zoneItems);
+      return _getZoneBounds(zone, items, getSelectionBounds);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [items]
   );
 
   const getZoneLabel = (zoneType: Zone["type"]) => {
-    switch (zoneType) {
-      case "seating":
-        return "Seating area";
-      case "reading":
-        return "Reading nook";
-      case "tv":
-        return "TV area";
-      case "dining":
-        return "Dining area";
-      default:
-        return "Zone";
-    }
+    return _getZoneLabel(zoneType);
   };
 
   const planZones2D = useMemo(() => {
-    return zones
-      .map((zone) => {
-        const bounds = getZoneBounds(zone);
-        if (!bounds) return null;
-        return {
-          id: zone.id,
-          x: bounds.centerX,
-          z: bounds.centerZ,
-          w: Math.max(0.01, bounds.maxX - bounds.minX),
-          d: Math.max(0.01, bounds.maxZ - bounds.minZ),
-          label: getZoneLabel(zone.type),
-        };
-      })
-      .filter((entry): entry is { id: string; x: number; z: number; w: number; d: number; label: string } => Boolean(entry));
-  }, [getZoneBounds, getZoneLabel, zones]);
+    return _buildPlanZones2D(zones, items, getSelectionBounds);
+  }, [getSelectionBounds, items, zones]);
 
   const editorScene2D: EditorScene2D = useMemo(
     () => ({

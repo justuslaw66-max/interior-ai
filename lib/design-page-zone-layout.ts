@@ -11,6 +11,15 @@ export type SelectionBounds = {
   centerZ: number;
 };
 
+export type PlanZone2D = {
+  id: string;
+  x: number;
+  z: number;
+  w: number;
+  d: number;
+  label: string;
+};
+
 type ClampToRoomFn = (
   x: number,
   z: number,
@@ -379,4 +388,50 @@ export function buildRotatedZoneItems(params: RotateZoneParams): DesignItem[] | 
   }
 
   return nextItems;
+}
+
+export function getZoneLabel(zoneType: ZoneMin["type"]) {
+  switch (zoneType) {
+    case "seating":
+      return "Seating area";
+    case "reading":
+      return "Reading nook";
+    case "tv":
+      return "TV area";
+    case "dining":
+      return "Dining area";
+    default:
+      return "Zone";
+  }
+}
+
+export function getZoneBounds(
+  zone: ZoneMin,
+  items: DesignItem[],
+  getSelectionBounds: (selected: DesignItem[]) => SelectionBounds | null
+) {
+  const zoneSet = new Set(zone.itemIds);
+  const zoneItems = items.filter((item) => zoneSet.has(item.instanceId));
+  return getSelectionBounds(zoneItems);
+}
+
+export function buildPlanZones2D(
+  zones: ZoneMin[],
+  items: DesignItem[],
+  getSelectionBounds: (selected: DesignItem[]) => SelectionBounds | null
+): PlanZone2D[] {
+  return zones
+    .map((zone) => {
+      const bounds = getZoneBounds(zone, items, getSelectionBounds);
+      if (!bounds) return null;
+      return {
+        id: zone.id,
+        x: bounds.centerX,
+        z: bounds.centerZ,
+        w: Math.max(0.01, bounds.maxX - bounds.minX),
+        d: Math.max(0.01, bounds.maxZ - bounds.minZ),
+        label: getZoneLabel(zone.type),
+      };
+    })
+    .filter((entry): entry is PlanZone2D => Boolean(entry));
 }
