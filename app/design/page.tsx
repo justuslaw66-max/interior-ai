@@ -157,6 +157,15 @@ import {
   type PricingLayoutVariant,
   type PaywallExperimentSlot,
 } from "@/lib/design-page-paywall";
+import {
+  dimsFromBoundsCm as _dimsFromBoundsCm,
+  resolveItemConfigurationCode as _resolveItemConfigurationCode,
+  resolveItemConfigurationEntry as _resolveItemConfigurationEntry,
+  resolveConfiguredVisualDimsMm as _resolveConfiguredVisualDimsMm,
+  resolveConfiguredPlanningDimsMm as _resolveConfiguredPlanningDimsMm,
+  resolveConfiguredNodeTransforms as _resolveConfiguredNodeTransforms,
+  resolveConfiguredModelUrl as _resolveConfiguredModelUrl,
+} from "@/lib/design-page-config-resolvers";
 
 type FurnitureProps = {
   product: CatalogItemSchema;
@@ -5242,138 +5251,47 @@ function PageContent() {
     bounds: ConfigurableBoundsCm | undefined,
     fallbackHeightMm: number
   ): { w: number; d: number; h: number } | null => {
-    const widthCm = Number(bounds?.width ?? 0);
-    const depthCm = Number(bounds?.depth ?? 0);
-    const heightCm = Number(bounds?.height ?? fallbackHeightMm / 10);
-    if (!(widthCm > 0 && depthCm > 0)) return null;
-    return {
-      w: Math.round(widthCm * 10),
-      d: Math.round(depthCm * 10),
-      h: Math.round(heightCm * 10),
-    };
+    return _dimsFromBoundsCm(bounds, fallbackHeightMm);
   }, []);
 
   const resolveItemConfigurationCode = useCallback((item: DesignItem | null | undefined) => {
-    if (!item) return null;
-    const explicit = item.configurationCode?.trim();
-    if (explicit) return explicit;
-    const tracked = itemConfigurationByInstanceId[item.instanceId]?.trim();
-    if (tracked) return tracked;
-    const catalog = importedModelById.get(item.productId)?.catalog;
-    const defaultCode = catalog?.configurableMetadata?.default_configuration?.trim();
-    return defaultCode || null;
+    return _resolveItemConfigurationCode(item, { importedModelById, itemConfigurationByInstanceId });
   }, [importedModelById, itemConfigurationByInstanceId]);
 
   const resolveItemConfigurationEntry = useCallback((item: DesignItem | null | undefined) => {
-    if (!item) return null;
-    const code = resolveItemConfigurationCode(item);
-    if (!code) return null;
-
-    const catalog = importedModelById.get(item.productId)?.catalog;
-    return catalog?.configurations?.find((entry) => entry.configuration_code === code) ?? null;
-  }, [importedModelById, resolveItemConfigurationCode]);
+    return _resolveItemConfigurationEntry(item, { importedModelById, itemConfigurationByInstanceId });
+  }, [importedModelById, itemConfigurationByInstanceId]);
 
   const resolveConfiguredVisualDimsMm = useCallback((
     item: DesignItem,
     fallbackProduct: CatalogItemSchema
   ): { w: number; d: number; h: number } => {
-    const cfg = resolveItemConfigurationEntry(item);
-    if (!cfg) return { ...fallbackProduct.dimsMm };
-
-    const visualDims =
-      dimsFromBoundsCm(cfg.visual_bounds_cm, fallbackProduct.dimsMm.h) ??
-      (() => {
-        const sourceDims = cfg.dimensions_estimate ?? cfg.dimensions;
-        const widthCm = Number(sourceDims?.width_cm ?? 0);
-        const depthCm = Number(sourceDims?.depth_cm ?? 0);
-        const heightCm = Number(sourceDims?.height_cm ?? fallbackProduct.dimsMm.h / 10);
-        if (!(widthCm > 0 && depthCm > 0)) return null;
-        return {
-          w: Math.round(widthCm * 10),
-          d: Math.round(depthCm * 10),
-          h: Math.round(heightCm * 10),
-        };
-      })();
-
-    return visualDims ?? { ...fallbackProduct.dimsMm };
-  }, [dimsFromBoundsCm, resolveItemConfigurationEntry]);
+    return _resolveConfiguredVisualDimsMm(item, fallbackProduct, { importedModelById, itemConfigurationByInstanceId });
+  }, [importedModelById, itemConfigurationByInstanceId]);
 
   const resolveConfiguredPlanningDimsMm = useCallback((
     item: DesignItem,
     fallbackProduct: CatalogItemSchema
   ): { w: number; d: number; h: number } => {
-    const cfg = resolveItemConfigurationEntry(item);
-    if (!cfg) return { ...fallbackProduct.dimsMm };
-
-    const planningDims =
-      dimsFromBoundsCm(cfg.planning_bounds_cm, fallbackProduct.dimsMm.h) ??
-      (() => {
-        const recommended = cfg.dimensions_recommended_planning;
-        const footprint = cfg.placement_footprint;
-        const widthCm = Number(recommended?.width_cm ?? footprint?.planning_width_cm ?? 0);
-        const depthCm = Number(recommended?.depth_cm ?? footprint?.planning_depth_cm ?? 0);
-        const heightCm = Number(recommended?.height_cm ?? fallbackProduct.dimsMm.h / 10);
-        if (!(widthCm > 0 && depthCm > 0)) return null;
-        return {
-          w: Math.round(widthCm * 10),
-          d: Math.round(depthCm * 10),
-          h: Math.round(heightCm * 10),
-        };
-      })();
-
-    return planningDims ?? resolveConfiguredVisualDimsMm(item, fallbackProduct);
-  }, [dimsFromBoundsCm, resolveConfiguredVisualDimsMm, resolveItemConfigurationEntry]);
+    return _resolveConfiguredPlanningDimsMm(item, fallbackProduct, { importedModelById, itemConfigurationByInstanceId });
+  }, [importedModelById, itemConfigurationByInstanceId]);
 
   const resolveConfiguredNodeTransforms = useCallback((item: DesignItem | null | undefined) => {
-    const nodeTransforms = resolveItemConfigurationEntry(item)?.node_transforms;
-    if (!nodeTransforms || typeof nodeTransforms !== "object") {
-      return null;
-    }
-
-    return nodeTransforms as Record<string, ConfigurableNodeTransform>;
-  }, [resolveItemConfigurationEntry]);
+    return _resolveConfiguredNodeTransforms(item, { importedModelById, itemConfigurationByInstanceId });
+  }, [importedModelById, itemConfigurationByInstanceId]);
 
   const resolveConfiguredModelUrl = useCallback((
     item: DesignItem,
     fallbackModelUrl: string | undefined,
     variantId: string
   ) => {
-    const code = resolveItemConfigurationCode(item);
-    if (!code) return fallbackModelUrl;
-
-    const catalog = importedModelById.get(item.productId)?.catalog;
-    const assetMap = catalog?.configurableMetadata?.configuration_model_assets?.[code];
-    if (!assetMap) return fallbackModelUrl;
-
-    const variantCode = variantId
-      .replace(`imported-${item.productId}-`, "")
-      .trim()
-      .toLowerCase();
-    const variantMeta = CATALOG_ITEMS[item.productId]?.variants.find((variant) => variant.id === variantId);
-    const finishCode = String(variantMeta?.finishCode ?? "").trim().toLowerCase();
-    const lookupKeys = [
-      variantCode,
-      variantCode.replace(/-/g, "_"),
-      variantCode.split("__")[0],
-      finishCode,
-      finishCode.replace(/-/g, "_"),
-      finishCode.split("__")[0],
-    ].filter((key) => key.length > 0);
-    const candidateAssetId =
-      lookupKeys
-        .map((key) => assetMap[key])
-        .find((assetId) => typeof assetId === "string" && assetId.trim().length > 0) ||
-      assetMap.default;
-    if (!candidateAssetId) return fallbackModelUrl;
-
-    const mappedOption = importedModelById.get(candidateAssetId);
-    if (mappedOption?.modelUrl) return mappedOption.modelUrl;
-
-    const mappedUrl = importedModelUrlByAssetId[candidateAssetId];
-    if (mappedUrl) return mappedUrl;
-
-    return `/assets/models/${candidateAssetId}.glb`;
-  }, [importedModelById, importedModelUrlByAssetId, resolveItemConfigurationCode]);
+    return _resolveConfiguredModelUrl(item, fallbackModelUrl, variantId, {
+      importedModelById,
+      itemConfigurationByInstanceId,
+      importedModelUrlByAssetId,
+      catalogItems: CATALOG_ITEMS,
+    });
+  }, [importedModelById, itemConfigurationByInstanceId, importedModelUrlByAssetId]);
 
   const selectedProduct = selectedItem ? CATALOG_ITEMS[selectedItem.productId] : null;
   const selectedImportedCatalog = selectedProduct
