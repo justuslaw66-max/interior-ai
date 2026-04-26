@@ -631,6 +631,127 @@ variants:
     chaise_orientation_options: ["left_chaise"]
     set_compatibility: []
 
+  - variant: "Dawson Wide Chaise Sectional Sofa (Left Facing) / Caramel (Leather)"
+    size_label: "207/357x114/166"
+    upholstery_code: "caramel_leather"
+    upholstery_label: "Caramel (Leather)"
+    finish_code: "caramel_leather"
+    finish_label: "Caramel (Leather)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626941764/crusader/variants/LE-4016/Jonathan-Sofa-Brown_1.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626941764/crusader/variants/LE-4016/Jonathan-Sofa-Brown_1.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 3267
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 357, depth_cm: 166, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 357 }
+      depth_cm: { min: 114, max: 166 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "brown"
+    tone: "warm"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Wide Chaise Sectional Sofa (Left Facing) / Warm Taupe (Leather)"
+    size_label: "207/357x114/166"
+    upholstery_code: "warm_taupe_leather"
+    upholstery_label: "Warm Taupe (Leather)"
+    finish_code: "warm_taupe_leather"
+    finish_label: "Warm Taupe (Leather)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626941786/crusader/variants/LE-4017/Jonathan-Sofa-Taupe_1.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626941786/crusader/variants/LE-4017/Jonathan-Sofa-Taupe_1.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 3267
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 357, depth_cm: 166, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 357 }
+      depth_cm: { min: 114, max: 166 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "taupe"
+    tone: "warm"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Wide Chaise Sectional Sofa (Left Facing) / Marche Ivory (Leather)"
+    size_label: "207/357x114/166"
+    upholstery_code: "marche_ivory_leather"
+    upholstery_label: "Marche Ivory (Leather)"
+    finish_code: "marche_ivory_leather"
+    finish_label: "Marche Ivory (Leather)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728527/crusader/variants/LE-4021/Hamilton-Leather-Sofa-Ivory-Det_1-1710728524.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728527/crusader/variants/LE-4021/Hamilton-Leather-Sofa-Ivory-Det_1-1710728524.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 3267
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 357, depth_cm: 166, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 357 }
+      depth_cm: { min: 114, max: 166 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "cream"
+    tone: "warm"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Wide Chaise Sectional Sofa (Left Facing) / Marche Graphite (Leather)"
+    size_label: "207/357x114/166"
+    upholstery_code: "marche_graphite_leather"
+    upholstery_label: "Marche Graphite (Leather)"
+    finish_code: "marche_graphite_leather"
+    finish_label: "Marche Graphite (Leather)"
+    swatch_hex: "#2F3136"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728543/crusader/variants/LE-4022/Hamilton-Leather-Sofa-Graphite-Det_1-1710728540.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728543/crusader/variants/LE-4022/Hamilton-Leather-Sofa-Graphite-Det_1-1710728540.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 3267
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 357, depth_cm: 166, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 357 }
+      depth_cm: { min: 114, max: 166 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "grey"
+    tone: "cool"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Wide Chaise Sectional Sofa (Left Facing) / Marche Cocoa (Leather)"
+    size_label: "207/357x114/166"
+    upholstery_code: "marche_cocoa_leather"
+    upholstery_label: "Marche Cocoa (Leather)"
+    finish_code: "marche_cocoa_leather"
+    finish_label: "Marche Cocoa (Leather)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1741163167/crusader/variants/LE-4023/Cocoa_Swatch-1741163165.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1741163167/crusader/variants/LE-4023/Cocoa_Swatch-1741163165.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 3267
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 357, depth_cm: 166, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 357 }
+      depth_cm: { min: 114, max: 166 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "brown"
+    tone: "warm"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
 ai_flags:
   isStarterEligible: false
   isAiPlacementEligible: true

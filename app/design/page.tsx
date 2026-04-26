@@ -161,6 +161,13 @@ import {
 } from "@/lib/design-page-zone-layout";
 import { buildAutoSeatingZone, buildManualZoneFromSelection } from "@/lib/design-page-zone-orchestration";
 import { useDesignPageConfigState } from "@/lib/design-page-config-state";
+import {
+  clampToRoom,
+  aabbIntersects,
+  footprintRadius,
+  separateIfOverlapping,
+} from "@/lib/design-page-geometry";
+import { pickBestRugForSofa } from "@/lib/design-page-rug-sizing";
 import { useDesignPageProductSelectorState } from "@/lib/useDesignPageProductSelectorState";
 import { buildEditorScene2D, createPlanAnnotation } from "@/lib/design-page-plan-scene";
 import {
@@ -3257,32 +3264,6 @@ function PageContent() {
     return `i-${Date.now()}-${instanceCounterRef.current}`;
   };
 
-  function clampToRoom(
-    x: number,
-    z: number,
-    itemWidth: number,
-    itemDepth: number,
-    roomW: number,
-    roomD: number,
-    wall: number,
-    rotationY: number = 0
-  ): [number, number] {
-    const [effW, effD] = getRotatedFootprint(itemWidth, itemDepth, rotationY);
-    const minX = -roomW / 2 + wall + effW / 2;
-    const maxX = roomW / 2 - wall - effW / 2;
-    const minZ = -roomD / 2 + wall + effD / 2;
-    const maxZ = roomD / 2 - wall - effD / 2;
-
-    const clampedX = Math.max(minX, Math.min(maxX, x));
-    const clampedZ = Math.max(minZ, Math.min(maxZ, z));
-
-    return [clampedX, clampedZ];
-  }
-
-  function aabbIntersects(a: AABB, b: AABB) {
-    return a.minX < b.maxX && a.maxX > b.minX && a.minZ < b.maxZ && a.maxZ > b.minZ;
-  }
-
   function getItemAABB(
     item: PlacedItem,
     positionOverride?: [number, number, number],
@@ -3324,86 +3305,6 @@ function PageContent() {
       centerZ: (minZ + maxZ) / 2,
     };
   }
-
-  const footprintRadius = (w: number, d: number) => {
-    return Math.sqrt((w / 2) ** 2 + (d / 2) ** 2);
-  };
-
-  const separateIfOverlapping = (
-    ax: number,
-    az: number,
-    ar: number,
-    bx: number,
-    bz: number,
-    br: number,
-    padding = 0.15
-  ): [number, number] => {
-    const dx = ax - bx;
-    const dz = az - bz;
-    const dist = Math.sqrt(dx * dx + dz * dz) || 0.0001;
-    const minDist = ar + br + padding;
-
-    if (dist >= minDist) return [ax, az];
-
-    const push = minDist - dist;
-    const nx = dx / dist;
-    const nz = dz / dist;
-
-    return [ax + nx * push, az + nz * push];
-  };
-
-  const pickBestRugForSofa = ({
-    sofaWidth,
-    style: styleInput,
-    budget: budgetInput,
-  }: {
-    sofaWidth: number;
-    style: string;
-    budget: "$" | "$$" | "$$$";
-  }) => {
-    const styleNorm = styleInput.toLowerCase();
-    const minRugW = sofaWidth + 0.3;
-    const maxRugW = sofaWidth + 0.5;
-    const targetRugW = sofaWidth + 0.4;
-
-    const rugs = Object.values(CATALOG_ITEMS).filter((p) => p.category === "rug");
-    const styleRugs = rugs.filter((r) =>
-      r.styleTags.some((t) => t.toLowerCase() === styleNorm)
-    );
-
-    const pool = styleRugs.length ? styleRugs : rugs;
-    const sortedByPrice = [...pool].sort((a, b) => getItemPrice(a) - getItemPrice(b));
-    const budgetPool =
-      budgetInput === "$"
-        ? sortedByPrice.slice(
-            0,
-            Math.max(2, Math.floor(sortedByPrice.length * 0.4))
-          )
-        : budgetInput === "$$$"
-          ? sortedByPrice.slice(Math.floor(sortedByPrice.length * 0.6))
-          : sortedByPrice;
-
-    if (!budgetPool.length) return null;
-
-    const within = budgetPool.filter(
-      (r) => r.dimsMm.w / 1000 >= minRugW && r.dimsMm.w / 1000 <= maxRugW
-    );
-
-    const candidates = within.length ? within : budgetPool;
-
-    let best = candidates[0];
-    let bestDiff = Math.abs(best.dimsMm.w / 1000 - targetRugW);
-
-    for (const r of candidates) {
-      const diff = Math.abs(r.dimsMm.w / 1000 - targetRugW);
-      if (diff < bestDiff) {
-        best = r;
-        bestDiff = diff;
-      }
-    }
-
-    return best;
-  };
 
   const resizeRugToSofaRule = (sofaItem: PlacedItem) => {
     const sofaProduct = CATALOG_ITEMS[sofaItem.productId];

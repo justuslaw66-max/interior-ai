@@ -726,5 +726,43 @@ variants:
     chaise_orientation_options: ["left_chaise"]
     set_compatibility: []
 
+  - variant: "Dawson Chaise Sectional Sofa (Left Facing) / Performance Creamy White"
+    size_label: "207/321x114/207"
+    upholstery_code: "performance_creamy_white"
+    upholstery_label: "Performance Creamy White"
+    swatch_group: "upholstery_option"
+    price_usd: 2725
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 321 }
+      depth_cm: { min: 114, max: 207 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "cream"
+    tone: "warm"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Chaise Sectional Sofa (Left Facing) / Performance Textured Plain Weave (Marcel), Smoke Grey"
+    size_label: "207/321x114/207"
+    upholstery_code: "marcel_smoke_grey"
+    upholstery_label: "Performance Textured Plain Weave (Marcel), Smoke Grey"
+    swatch_group: "upholstery_option"
+    price_usd: 2725
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 321 }
+      depth_cm: { min: 114, max: 207 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "grey"
+    tone: "neutral_cool"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
 ai_flags:
   isStarterEligible: false
