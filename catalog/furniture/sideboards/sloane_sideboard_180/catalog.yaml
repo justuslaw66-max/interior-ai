@@ -1,0 +1,191 @@
+id: "castlery-sloane-sideboard-180cm"
+slug: "sloane-sideboard-180cm"
+title: "Sloane Sideboard"
+brand: "Castlery"
+retailer: "Castlery Singapore"
+source_url: "https://www.castlery.com/sg/products/sloane-sideboard?length=1_8m"
+product_family: "sloane_collection"
+
+status: "active"
+category: "sideboard"
+subcategory: "buffet_cabinet"
+
+description: >
+  Elegant fluted sideboard with brushed brass-finish accents
+  and adjustable shelving behind paneled doors.
+
+price_usd: 1599
+price_band: "mid_premium"
+brand_tier: "premium_mid"
+
+dimensions:
+  width_cm: 180
+  depth_cm: 47
+  height_cm: 78
+
+size_class: "large"
+shape: "rectangular"
+base_type: "leg_frame"
+
+design_zone: "living_zone"
+anchor_role: "storage_anchor"
+
+purchase:
+  purchase_mode: "external_retailer"
+  retailer_name: "Castlery Singapore"
+  buy_url: "https://www.castlery.com/sg/products/sloane-sideboard?length=1_8m"
+
+catalog_tags:
+  style_tags:
+    - "modern"
+    - "contemporary"
+    - "fluted"
+    - "refined"
+    - "elegant"
+    - "wood"
+  tone_tags:
+    - "grey_oak"
+    - "warm_neutral"
+    - "brass_accent"
+  room_tags:
+    - "dining_room"
+    - "living_room"
+    - "entryway"
+  function_tags:
+    - "sideboard"
+    - "buffet_storage"
+    - "cabinet_storage"
+    - "adjustable_shelves"
+  search_terms:
+    - "sloane sideboard"
+    - "castlery sloane sideboard"
+    - "fluted sideboard"
+    - "grey oak sideboard"
+    - "180cm sideboard"
+
+material_family: "wood"
+material_mix: "engineered_wood_oak_veneer_melamine_steel"
+
+materials:
+  finish:
+    label: "Wood: PU lacquer in grey oak; Metal: brushed brass"
+    finish_tags:
+      - "pu_lacquer"
+      - "grey_oak"
+      - "brushed_brass"
+      - "natural_variation"
+  main_materials:
+    - type: "engineered_wood_with_oak_veneer"
+      label: "Engineered wood with oak veneer"
+      usage: "body"
+    - type: "engineered_wood_with_melamine"
+      label: "Engineered wood with melamine"
+      usage: "leg"
+    - type: "steel"
+      label: "Steel"
+      usage: "handle"
+
+finish:
+  color_finish: "grey_oak"
+  surface_finish: "pu_lacquer"
+  hardware_finish: "brushed_brass"
+
+color_family: "brown"
+tone: "warm_neutral"
+style_cluster: "contemporary"
+style_secondary: "modern"
+design_era: "contemporary"
+
+features:
+  care_category: "storage_furniture"
+  colour_variance: "natural_variations"
+  shelves: "adjustable"
+
+safety_and_compliance:
+  standards:
+    - "low_formaldehyde"
+  safety_features:
+    - "anti_tip_prevention"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: true
+  recommended_anchor_wall: true
+  room_types:
+    - "dining_room"
+    - "living_room"
+    - "entryway"
+
+clearance_rules:
+  back_mm: 0
+  left_mm: 50
+  right_mm: 50
+  front_mm: 900
+
+top_view:
+  mode: "auto_bounds"
+  shape: "rect"
+
+storage:
+  cupboard_compartments:
+    upper:
+      count: 4
+      internal_mm:
+        width: 420
+        depth: 410
+        height: 315
+    lower:
+      count: 4
+      internal_mm:
+        width: 420
+        depth: 410
+        height: 345
+  shelves:
+    adjustable: true
+    height_options_mm:
+      - 313
+      - 345
+      - 377
+
+physical_specs:
+  product_weight_kg: 80.2
+  leg_height_mm: 60
+  max_bearing_support_kg: 100
+  packaging_boxes: 1
+
+assets:
+  asset_id: "storage-real-castlery-sloane-sideboard-180cm"
+  model_url: "/assets/models/storage-real-castlery-sloane-sideboard-180cm.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1667991789/crusader/variants/50520002/Sloane-Sideboard-Fornt-1667991786.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1667991789/crusader/variants/50520002/Sloane-Sideboard-Fornt-1667991786.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1667991865/crusader/variants/50520002/Sloane-Sideboard-Square-Set_1-1667991861.jpg"
+  materials_profile: "wood_casegoods"
+
+variants:
+  - variant: "Sloane Sideboard / 180cm"
+    size_label: "180cm"
+    finish_code: "grey_oak"
+    finish_label: "Grey Oak"
+    swatch_group: "finish"
+    color_family: "brown"
+    tone: "warm_neutral"
+    price_usd: 1599
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 180
+      depth_cm: 47
+      height_cm: 78
+
+shipping_and_warranty:
+  free_delivery_threshold_sgd: 300
+  returns_window_days: 30
+  cancellation: "Free—5 working days before delivery"
+  warranty: "5-year limited warranty"
+
+notes:
+  - "Size-specific Sloane Sideboard entry for 180cm variant."
+  - "Thumbnail uses Castlery front-facing white-background image from the 180cm page."
+  - "User note referenced a 200cm local folder, but source product link and dimensions confirm this variant is 180cm."
+  - "Local source folder provided by user: /Users/justus/Desktop/furniture/castlery/Side board/Sloane Sideboard 200cm"

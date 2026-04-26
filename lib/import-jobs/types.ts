@@ -10,6 +10,21 @@ export type ImportJobStatus =
   | "published"
   | "failed";
 
+export type CatalogWorkflowStage =
+  | "intake"
+  | "enrichment"
+  | "review"
+  | "approved"
+  | "published"
+  | "blocked";
+
+export type DimensionsVerificationStatus =
+  | "pending"
+  | "matched"
+  | "mismatch"
+  | "missing_supplier"
+  | "missing_extracted";
+
 export type ImportJobReport = {
   warnings: string[];
   blockers: string[];

@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import crypto from "crypto";
@@ -7,23 +8,63 @@ import { config } from "@/lib/config";
 
 export const runtime = "nodejs";
 
+type HashableItem = {
+  id?: unknown;
+  category?: unknown;
+  variantId?: unknown;
+  locked?: unknown;
+  price?: unknown;
+  size?: unknown;
+  tags?: unknown;
+};
+
+type HashableDesign = {
+  room?: unknown;
+  items?: HashableItem[];
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  return String(error);
+}
+
+function toInputJson(value: unknown): Prisma.InputJsonValue {
+  return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
+}
+
 // Lazy load prisma to avoid initialization issues
-let prisma: any = null;
+type PrismaModule = typeof import("@/lib/prisma");
+let prismaClient: PrismaModule["prisma"] | null = null;
 async function getPrisma() {
-  if (!prisma) {
+  if (!prismaClient) {
     const { prisma: p } = await import("@/lib/prisma");
-    prisma = p;
+    prismaClient = p;
   }
-  return prisma;
+  return prismaClient;
 }
 
 /**
  * Stable hash of design snapshot. Only includes what matters for AI suggestions.
  */
-function hashDesign(design: any): string {
+function hashDesign(design: unknown): string {
+  const data: HashableDesign = isRecord(design)
+    ? {
+        room: design.room,
+        items: Array.isArray(design.items)
+          ? design.items
+              .map((item) => (isRecord(item) ? (item as HashableItem) : null))
+              .filter((item): item is HashableItem => item !== null)
+          : [],
+      }
+    : { items: [] };
+
   const minimal = {
-    room: design?.room ?? null,
-    items: (design?.items ?? []).map((i: any) => ({
+    room: data.room ?? null,
+    items: (data.items ?? []).map((i) => ({
       id: i.id,
       category: i.category,
       variantId: i.variantId,
@@ -133,7 +174,7 @@ export async function POST(req: Request) {
         }
         // Return with cached flag for client metrics
         return NextResponse.json({
-          ...cached.resultJson,
+          ...(isRecord(cached.resultJson) ? cached.resultJson : {}),
           cached: true,
           ms,
         });
@@ -141,7 +182,7 @@ export async function POST(req: Request) {
     } catch (cacheReadErr) {
       // Log but don't fail if cache read fails - user gets fresh generation
       if (config.logLevel !== "warn") {
-        console.warn("Cache read failed:", (cacheReadErr as any)?.message);
+        console.warn("Cache read failed:", getErrorMessage(cacheReadErr));
       }
     }
 
@@ -206,7 +247,7 @@ export async function POST(req: Request) {
 
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 
-    const response = await client.chat.completions.create({
+    const requestPayload = {
       model: "gpt-4o",
       temperature: 0.3,
       messages: [
@@ -221,9 +262,13 @@ export async function POST(req: Request) {
       ],
       response_format: {
         type: "json_schema",
-        json_schema: responseSchema as any,
+        json_schema: responseSchema,
       },
-    } as any);
+    };
+
+    const response = await client.chat.completions.create(
+      requestPayload as unknown as Parameters<typeof client.chat.completions.create>[0]
+    );
 
     clearTimeout(timeout);
 
@@ -232,12 +277,16 @@ export async function POST(req: Request) {
     }
 
     // Extract the parsed JSON from the response
+    if (!("choices" in response)) {
+      throw new Error("Unexpected streaming response from OpenAI");
+    }
+
     const textContent = response.choices[0]?.message?.content || "";
     if (!textContent) {
       throw new Error("Empty AI response text");
     }
 
-    const result = JSON.parse(textContent);
+    const result = JSON.parse(textContent) as unknown;
     console.log("Successfully parsed AI response");
 
     // Store in cache for future requests with same design hash
@@ -248,37 +297,41 @@ export async function POST(req: Request) {
           designId: design.id,
           designHash,
           mode: mode ?? "homeowner",
-          resultJson: result,
+          resultJson: toInputJson(result),
         },
       });
       console.log("Cached AI result for design:", design.id);
     } catch (cacheErr) {
       // Log but don't fail if cache write fails
-      console.warn("Failed to cache AI result:", (cacheErr as any)?.message);
+      console.warn("Failed to cache AI result:", getErrorMessage(cacheErr));
     }
 
     const ms = Date.now() - startTime;
     return NextResponse.json({
-      ...result,
+      ...(isRecord(result) ? result : {}),
       cached: false,
       ms,
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = getErrorMessage(err);
+    const errCode = isRecord(err) ? err.code : undefined;
+    const errStatus = isRecord(err) ? err.status : undefined;
+
     console.error("AI design-notes error:", {
-      message: err?.message || String(err),
-      code: err?.code,
-      status: err?.status,
+      message,
+      code: errCode,
+      status: errStatus,
     });
 
     // Provide helpful error messages
-    if (err?.code === "ERR_ABORTED") {
+    if (errCode === "ERR_ABORTED") {
       return NextResponse.json(
         { error: "AI request timed out. Please try again." },
         { status: 504 }
       );
     }
 
-    if (err?.message?.includes("401") || err?.message?.includes("Unauthorized")) {
+    if (message.includes("401") || message.includes("Unauthorized")) {
       return NextResponse.json(
         { error: "OpenAI API key invalid or expired" },
         { status: 401 }
@@ -286,7 +339,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json(
-      { error: err?.message || "AI request failed" },
+      { error: message || "AI request failed" },
       { status: 500 }
     );
   }

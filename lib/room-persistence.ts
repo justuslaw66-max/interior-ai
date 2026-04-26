@@ -5,7 +5,13 @@
  * Handles migration from single-room (v1/v2) to multi-room (v3) format.
  */
 
-import type { DesignSnapshot, RoomSnapshot } from "./room-types";
+import type {
+  DesignItem,
+  DesignSnapshot,
+  RoomSnapshot,
+  SavedView,
+  ZoneMin,
+} from "./room-types";
 import { migrateToV3 } from "./room-types";
 
 /**
@@ -19,9 +25,9 @@ export interface StoredDesign {
     name: string;
     roomType: string;
     geometry: { width: number; depth: number; wallThickness?: number; height?: number };
-    items: any[];
-    zones: any[];
-    savedViews: any[];
+    items: DesignItem[];
+    zones: ZoneMin[];
+    savedViews: SavedView[];
   }>;
   activeRoomId: string;
   // Design-level metadata
@@ -70,7 +76,7 @@ export function storedToSnapshot(stored: StoredDesign): DesignSnapshot {
       activeRoomId: stored.activeRoomId,
       title: stored.title,
       style: stored.style,
-      budget: stored.budget as any,
+      budget: stored.budget as DesignSnapshot["budget"],
       lightingPreset: stored.lightingPreset,
       notes: stored.notes,
     };
@@ -78,7 +84,7 @@ export function storedToSnapshot(stored: StoredDesign): DesignSnapshot {
 
   // Otherwise migrate from legacy format
   // Otherwise migrate from legacy format
-  return migrateToV3(stored as any);
+  return migrateToV3(stored as unknown as DesignSnapshot);
 }
 
 /**
@@ -119,9 +125,9 @@ export function snapshotToLegacyApi(snapshot: DesignSnapshot): {
   title?: string;
   roomWidth: number;
   roomDepth: number;
-  items: any[];
-  zones: any[];
-  savedViews: any[];
+  items: DesignItem[];
+  zones: ZoneMin[];
+  savedViews: SavedView[];
   style?: string;
   budget?: string;
   mode?: string;
@@ -160,9 +166,9 @@ export function legacyApiToSnapshot(data: {
   title?: string;
   roomWidth: number;
   roomDepth: number;
-  items: any[];
-  zones?: any[];
-  savedViews?: any[];
+  items: DesignItem[];
+  zones?: ZoneMin[];
+  savedViews?: SavedView[];
   style?: string;
   budget?: string;
   mode?: string;
@@ -179,7 +185,7 @@ export function legacyApiToSnapshot(data: {
     },
     title: data.title,
     style: data.style,
-    budget: data.budget as any,
+    budget: data.budget as DesignSnapshot["budget"],
     notes: data.notes,
   } as DesignSnapshot);
 }

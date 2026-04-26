@@ -1,0 +1,143 @@
+brand: "Castlery"
+category: "sofa"
+
+product_family: "Jaron"
+product_name: "Jaron Recliner Sofa"
+variant: "Extended 3-Seater Slim Arm"
+
+price_usd: 3299
+price_band: "premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "sofa_anchor"
+
+dimensions:
+  width_cm: 316
+  depth_cm: 115
+  height_cm: 77
+
+seat_capacity: 4
+size_class: "extra_large"
+shape: "rectangular"
+base_type: "frame"
+
+material_family: "upholstered"
+material_mix: "upholstered_metal"
+
+color_family: "brown"
+tone: "warm"
+
+style_cluster: "contemporary"
+style_secondary: "modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "heavy"
+  edge_profile: "rounded"
+  silhouette: "linear"
+  form_language: "soft"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  walkway_clearance_cm: 100
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: true
+  clearance_sensitive: true
+  center_room_preferred: false
+
+design_pairings:
+  - "large_coffee_table"
+  - "side_table"
+  - "floor_lamp"
+  - "large_area_rug"
+
+upholstery_options:
+upholstery_library_ref: "jaron"
+
+assets:
+  asset_id: "sofa-real-castlery-jaron-extended-3s"
+  model_url: "/assets/models/sofa-real-castlery-jaron-extended-3s.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737534897/crusader/variants/AS-000669-LE4023/Jaron-Leather-Extended-3-Seater-Recliner-Slim-Arm-Sofa-Marche-Cocoa_-Front-1737534895.jpg"
+
+variants:
+  - variant: "Jaron Extended 3 Seater Slim Arm / Marche Cocoa (Leather)"
+    size_label: "316x115"
+    upholstery_code: "marche_cocoa"
+    upholstery_label: "Marche Leather, Cocoa"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737534897/crusader/variants/AS-000669-LE4023/Jaron-Leather-Extended-3-Seater-Recliner-Slim-Arm-Sofa-Marche-Cocoa_-Front-1737534895.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737534897/crusader/variants/AS-000669-LE4023/Jaron-Leather-Extended-3-Seater-Recliner-Slim-Arm-Sofa-Marche-Cocoa_-Front-1737534895.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737534896/crusader/variants/AS-000669-LE4023/Jaron-Leather-Extended-3-Seater-Recliner-Slim-Arm-Sofa-Marche-Cocoa_-Angle-1737534894.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737534897/crusader/variants/AS-000669-LE4023/Jaron-Leather-Extended-3-Seater-Recliner-Slim-Arm-Sofa-Marche-Cocoa_-Side-1737534894.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737534897/crusader/variants/AS-000669-LE4023/Jaron-Leather-Extended-3-Seater-Recliner-Slim-Arm-Sofa-Marche-Cocoa_-Back-1737534895.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1741673552/crusader/variants/AS-000669-LE4023/Jaron-Leather-Extended-3-Seater-Recliner-Slim-Arm-Sofa-With-Slim-Arm-Recliner-Armchair_-Marche-Cocoa_-Square-Set_2_3-1741673549.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1741936776/crusader/variants/AS-000669-LE4023/Jaron-Extended-3-Seater-Recliner-Slim-Arm-Sofa-Marche-Cocoa_Cover-1741936774.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1741343792/crusader/variants/AS-000669-LE4023/Jaron-Leather-Extended-3-Seater-Recliner-Slim-Arm-Sofa-With-Slim-Arm-Recliner-Armchair_-Marche-Cocoa-Square_-Set_4-1741343789.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 3299
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 316, depth_cm: 115, height_cm: 77 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "brown"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Jaron Extended 3 Seater Slim Arm / Marche Ivory (Leather)"
+    size_label: "316x115"
+    upholstery_code: "marche_ivory"
+    upholstery_label: "Marche Leather, Ivory"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760151099/crusader/variants/AS-000673-LE4021/Jaron-Leather-Extended-3-Seater-Recliner-Slim-Arm-Sofa_-Marche-Ivory-Front_-1760151099.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760151099/crusader/variants/AS-000673-LE4021/Jaron-Leather-Extended-3-Seater-Recliner-Slim-Arm-Sofa_-Marche-Ivory-Front_-1760151099.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760151099/crusader/variants/AS-000673-LE4021/Jaron-Leather-Extended-3-Seater-Recliner-Slim-Arm-Sofa_-Marche-Ivory-Angle_-1760151099.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760151099/crusader/variants/AS-000673-LE4021/Jaron-Leather-Extended-3-Seater-Recliner-Slim-Arm-Sofa-Marche-Ivory-Side_-1760151099.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760151469/crusader/variants/AS-000673-LE4021/Jaron-Leather-Extended-3-Seater-Recliner-Slim-Arm-Sofa_-Marche-Ivory-Square-Set_1-1760151469.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760151470/crusader/variants/AS-000673-LE4021/Jaron-Leather-Extended-3-Seater-Recliner-Slim-Arm-Sofa_-Marche-Ivory-Square-Set_2-1760151469.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 3299
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 316, depth_cm: 115, height_cm: 77 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "white"
+    tone: "neutral"
+    set_compatibility: []
+
+  - variant: "Jaron Extended 3 Seater Slim Arm / Performance Arvo Dune (Fabric)"
+    size_label: "316x115"
+    upholstery_code: "performance_arvo_dune"
+    upholstery_label: "Performance Arvo Dune"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737534003/crusader/variants/AS-000669-AR4001/Jaron-Extended-3-Seater-Recliner-Slim-Arm-Sofa-Performance-Arvo-Dune-Front-1737534000.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737534003/crusader/variants/AS-000669-AR4001/Jaron-Extended-3-Seater-Recliner-Slim-Arm-Sofa-Performance-Arvo-Dune-Front-1737534000.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737534003/crusader/variants/AS-000669-AR4001/Jaron-Extended-3-Seater-Recliner-Slim-Arm-Sofa-Performance-Arvo-Dune-Angle_1-1737533999.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737534002/crusader/variants/AS-000669-AR4001/Jaron-Extended-3-Seater-Recliner-Slim-Arm-Sofa-Performance-Arvo-Dune-Side-1737533999.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737534003/crusader/variants/AS-000669-AR4001/Jaron-Extended-3-Seater-Recliner-Slim-Arm-Sofa-Performance-Arvo-Dune-Back-1737534000.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1741936109/crusader/variants/AS-000669-AR4001/Jaron-Extended-3-Seater-Recliner-Slim-Arm-Sofa-Performance-Arvo-Dune_Cover-1741936107.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1737528185/crusader/variants/AS-000669-AR4001/Jaron-3-Seater-Dual-Recliner-Slim-Arm-Sofa-Performance-Arvo-Dune-Square-Det_3-1737528183.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1737528185/crusader/variants/AS-000669-AR4001/Jaron-3-Seater-Dual-Recliner-Slim-Arm-Sofa-Performance-Arvo-Dune-Square-Det_4-1737528183.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 3199
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 316, depth_cm: 115, height_cm: 77 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "beige"
+    tone: "neutral"
+    set_compatibility: []
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true

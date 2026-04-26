@@ -5,7 +5,7 @@ type TestFixtures = {
 };
 
 export const test = base.extend<TestFixtures>({
-  authenticatedPage: async ({ page }: { page: Page }, use) => {
+  authenticatedPage: async ({ page }: { page: Page }, fixtureDone) => {
     // Mock authentication by setting session in localStorage or via API
     // This assumes you have a test user seeded in the database
     await page.goto('/');
@@ -16,7 +16,7 @@ export const test = base.extend<TestFixtures>({
     // Login or set mock session (adjust based on your auth setup)
     // For now, we'll just proceed - adjust if you need actual auth token
     
-    await use(page);
+    await fixtureDone(page);
   },
 });
 

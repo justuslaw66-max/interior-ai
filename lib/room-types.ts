@@ -26,6 +26,7 @@ export interface DesignItem {
   instanceId: string;
   productId: string;
   variantId: string;
+  configurationCode?: string;
   position: [number, number, number];
   rotationY?: number;
   qty?: number;

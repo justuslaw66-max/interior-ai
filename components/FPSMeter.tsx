@@ -7,7 +7,7 @@ export function FPSMeter() {
   const [fps, setFps] = useState(60);
   const [visible, setVisible] = useState(false);
   const animationFrameRef = useRef<number | null>(null);
-  const lastTimeRef = useRef(performance.now());
+  const lastTimeRef = useRef<number>(0);
   const isDevEnv =
     process.env.NEXT_PUBLIC_APP_ENV === "development" || process.env.NODE_ENV === "development";
 
@@ -17,12 +17,13 @@ export function FPSMeter() {
       return;
     }
 
+    lastTimeRef.current = performance.now();
+
     const updateFPS = () => {
       const now = performance.now();
-      const deltaTime = now - lastTimeRef.current;
       lastTimeRef.current = now;
 
-      PerformanceMonitor.updateFPS(deltaTime);
+      PerformanceMonitor.updateFPS();
       setFps(Math.round(PerformanceMonitor.getFPS()));
 
       animationFrameRef.current = requestAnimationFrame(updateFPS);
@@ -35,7 +36,7 @@ export function FPSMeter() {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, []);
+  }, [isDevEnv]);
 
   // Toggle visibility with 'F' key
   useEffect(() => {
@@ -62,7 +63,7 @@ export function FPSMeter() {
   return (
     <div className="fixed bottom-4 right-4 rounded-lg border border-gray-300 bg-gray-900 p-3 text-sm font-mono text-white shadow-lg z-40">
       <div className={`${getColor()} font-bold`}>{fps} FPS</div>
-      <div className="text-xs text-gray-400 mt-1">Press 'F' to toggle</div>
+      <div className="text-xs text-gray-400 mt-1">Press &apos;F&apos; to toggle</div>
     </div>
   );
 }

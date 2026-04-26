@@ -4,6 +4,15 @@ import { getPostHogClient } from "@/lib/posthog-server";
 import { config } from "@/lib/config";
 import { rateLimit } from "@/lib/rateLimit";
 import { logAppEvent } from "@/lib/app-events";
+import { CATALOG_ITEMS_MAP } from "@/lib/catalog";
+import { assertStrictVariantResolution } from "@/lib/catalog/variant-resolver";
+
+type CheckoutLineInput = {
+  merchandiseId: string;
+  quantity: number;
+  productId: string;
+  variantId: string;
+};
 
 const domain = process.env.SHOPIFY_STORE_DOMAIN;
 const token = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN || process.env.SHOPIFY_STOREFRONT_TOKEN;
@@ -28,6 +37,41 @@ async function shopifyFetch(query: string, variables: unknown) {
 }
 
 export async function POST(req: Request) {
+  const body = await req.json();
+  const { lines } = body ?? {};
+
+  if (!Array.isArray(lines) || lines.length === 0) {
+    return NextResponse.json({ error: "No lines" }, { status: 400 });
+  }
+
+  const parsedLines: CheckoutLineInput[] = [];
+  for (const line of lines) {
+    if (
+      !line ||
+      typeof line !== "object" ||
+      typeof line.merchandiseId !== "string" ||
+      typeof line.productId !== "string" ||
+      typeof line.variantId !== "string" ||
+      typeof line.quantity !== "number" ||
+      !Number.isFinite(line.quantity) ||
+      line.quantity < 1
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Invalid checkout line. Each line must include merchandiseId, productId, variantId, and quantity >= 1.",
+        },
+        { status: 400 }
+      );
+    }
+    parsedLines.push({
+      merchandiseId: line.merchandiseId,
+      productId: line.productId,
+      variantId: line.variantId,
+      quantity: Math.floor(line.quantity),
+    });
+  }
+
   if (!config.features.checkoutEnabled) {
     return NextResponse.json({ error: "Checkout is disabled" }, { status: 503 });
   }
@@ -42,20 +86,87 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Shopify is not configured" }, { status: 503 });
   }
 
-  const body = await req.json();
-  const { lines } = body ?? {};
+  for (const line of parsedLines) {
+    const item = CATALOG_ITEMS_MAP.get(line.productId);
+    if (!item) {
+      await logAppEvent({
+        eventType: "checkout_variant_validation_failed",
+        meta: { reason: "unknown_catalog_item", productId: line.productId, variantId: line.variantId },
+      });
+      return NextResponse.json({ error: `Unknown catalog item: ${line.productId}` }, { status: 400 });
+    }
 
-  if (!Array.isArray(lines) || lines.length === 0) {
-    return NextResponse.json({ error: "No lines" }, { status: 400 });
+    const strict = assertStrictVariantResolution(item, line.variantId);
+    if (!strict.ok) {
+      await logAppEvent({
+        eventType: "checkout_variant_validation_failed",
+        meta: { reason: "strict_resolution_failed", productId: line.productId, variantId: line.variantId, error: strict.error },
+      });
+      return NextResponse.json({ error: strict.error }, { status: 400 });
+    }
+
+    const resolved = strict.resolved;
+    if (resolved.commerce.type !== "shopify") {
+      await logAppEvent({
+        eventType: "checkout_variant_validation_failed",
+        meta: { reason: "non_shopify_variant", productId: line.productId, variantId: line.variantId },
+      });
+      return NextResponse.json(
+        { error: `Variant ${line.variantId} for ${line.productId} is not buyable on Shopify` },
+        { status: 400 }
+      );
+    }
+    if (!resolved.commerce.variantId) {
+      await logAppEvent({
+        eventType: "checkout_variant_validation_failed",
+        meta: { reason: "missing_shopify_mapping", productId: line.productId, variantId: line.variantId },
+      });
+      return NextResponse.json(
+        { error: `Missing Shopify variant mapping for ${line.productId}/${line.variantId}` },
+        { status: 400 }
+      );
+    }
+    if (!resolved.commerce.available) {
+      await logAppEvent({
+        eventType: "checkout_variant_validation_failed",
+        meta: { reason: "variant_marked_unavailable", productId: line.productId, variantId: line.variantId },
+      });
+      return NextResponse.json(
+        { error: `Variant is marked unavailable: ${line.productId}/${line.variantId}` },
+        { status: 400 }
+      );
+    }
+    if (resolved.commerce.variantId !== line.merchandiseId) {
+      await logAppEvent({
+        eventType: "checkout_variant_validation_failed",
+        meta: {
+          reason: "merchandise_id_mismatch",
+          productId: line.productId,
+          variantId: line.variantId,
+          expectedMerchandiseId: resolved.commerce.variantId,
+          receivedMerchandiseId: line.merchandiseId,
+        },
+      });
+      return NextResponse.json(
+        {
+          error: `Variant mismatch for ${line.productId}/${line.variantId}. Expected ${resolved.commerce.variantId}.`,
+        },
+        { status: 400 }
+      );
+    }
   }
 
-  const ids = lines.map((line: { merchandiseId: string }) => line.merchandiseId);
+  const ids = parsedLines.map((line) => line.merchandiseId);
   const availabilityQuery = `
     query Check($ids: [ID!]!) {
       nodes(ids: $ids) {
         ... on ProductVariant {
           id
           availableForSale
+          price {
+            amount
+            currencyCode
+          }
           product { title }
           title
         }
@@ -73,8 +184,43 @@ export async function POST(req: Request) {
     }));
 
   if (unavailable.length > 0) {
+    await logAppEvent({
+      eventType: "checkout_variant_validation_failed",
+      meta: { reason: "shopify_availability_failed", unavailable },
+    });
     return NextResponse.json(
       { error: "Some items are out of stock", unavailable },
+      { status: 400 }
+    );
+  }
+
+  const missingPrice = (check?.nodes ?? [])
+    .filter(
+      (
+        node:
+          | {
+              id: string;
+              price?: { amount?: string };
+            }
+          | null
+      ) => {
+        if (!node) return false;
+        const amount = Number(node.price?.amount ?? NaN);
+        return !Number.isFinite(amount) || amount <= 0;
+      }
+    )
+    .map((node: { id: string }) => node.id);
+
+  if (missingPrice.length > 0) {
+    await logAppEvent({
+      eventType: "checkout_variant_validation_failed",
+      meta: { reason: "missing_price", invalidPriceVariantIds: missingPrice },
+    });
+    return NextResponse.json(
+      {
+        error: "Some variants are missing valid price data",
+        invalidPriceVariantIds: missingPrice,
+      },
       { status: 400 }
     );
   }
@@ -96,7 +242,7 @@ export async function POST(req: Request) {
 
   const data = await shopifyFetch(mutation, {
     input: {
-      lines: lines.map((line: { merchandiseId: string; quantity: number }) => ({
+      lines: parsedLines.map((line) => ({
         merchandiseId: line.merchandiseId,
         quantity: line.quantity,
       })),
@@ -119,8 +265,8 @@ export async function POST(req: Request) {
     event: "checkout_initiated",
     properties: {
       cart_id: cartId,
-      items_count: lines.length,
-      total_quantity: lines.reduce((sum: number, l: { quantity: number }) => sum + l.quantity, 0),
+      items_count: parsedLines.length,
+      total_quantity: parsedLines.reduce((sum: number, l) => sum + l.quantity, 0),
     },
   });
 

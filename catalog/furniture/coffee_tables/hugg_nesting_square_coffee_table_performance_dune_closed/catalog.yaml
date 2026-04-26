@@ -1,0 +1,430 @@
+brand: "Castlery"
+category: "coffee_table"
+
+product_family: "Hugg"
+product_name: "Hugg Nesting Square Coffee Table"
+slug: "castlery-hugg-nesting-square-coffee-table-performance-dune-closed"
+variant: "Performance Dune Closed"
+
+price_usd: 1099
+price_band: "premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "secondary"
+
+dimensions:
+  width_cm: 110
+  depth_cm: 110
+  height_cm: 43.2
+
+size_class: "medium"
+shape: "square"
+base_type: "frame"
+
+material_family: "mixed"
+material_mix:
+  - "engineered_wood"
+  - "oak_veneer"
+  - "solid_oak"
+  - "lvl"
+  - "upholstery_fabric"
+  - "foam"
+  - "fibre"
+
+color_family: "brown"
+tone: "neutral"
+
+style_cluster: "modern"
+style_secondary: "contemporary"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "rounded_soft"
+  silhouette: "nesting_coffee_table_with_nested_ottomans"
+  form_language: "soft_curved_multifunctional"
+  descriptors:
+    - "curved_edges"
+    - "multifunctional_design"
+    - "hidden_nested_seating"
+    - "upholstered_ottomans"
+    - "compact_space_saving_form"
+
+spatial_attributes:
+  footprint_shape: "square"
+  descriptors:
+    - "nesting_function"
+    - "integrated_extra_seating"
+    - "works_in_small_to_medium_living_rooms"
+    - "center_table_suitable"
+
+room_compatibility:
+  - "living_room"
+
+  - "family_room"
+  - "open_plan"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: true
+  recommended_in_front_of:
+    - "sofa"
+    - "sectional_sofa"
+    - "loveseat"
+    - "accent_chair"
+  clearance_guidance:
+    sofa_to_table_cm_min: 30
+    sofa_to_table_cm_ideal: 40
+    circulation_cm_min: 60
+  open_state_clearance_guidance:
+    min_clearance_around_item_cm: 20
+    recommended_clearance_around_item_cm: 30
+
+design_pairings:
+  - "sofa"
+  - "sectional_sofa"
+  - "loveseat"
+  - "rug"
+  - "floor_lamp"
+  - "media_console"
+  - "accent_chair"
+
+compatibility:
+  design_pairing_rules:
+    required_mode: "token_match"
+    expected_tokens:
+      - "sofa"
+      - "sectional_sofa"
+      - "rug"
+      - "floor_lamp"
+      - "media_console"
+    min_matches: 3
+    severity: "error"
+
+recommendation_metadata:
+  recommendation_role: "living_room_surface"
+  primary_use_cases:
+    - "centerpiece_surface"
+    - "extra_seating"
+    - "small_space_multifunction"
+    - "guest_ready_layout"
+  recommendation_strength:
+    same_category_alternative: "strong"
+    same_style_pairing: "medium"
+    multifunction_based_pairing: "strong"
+    room_completion: "strong"
+  suggest_when_scene_has:
+    - "sofa_without_coffee_table"
+    - "living_room_needing_extra_seating"
+    - "compact_living_room"
+    - "multifunctional_layout_needed"
+  avoid_when_scene_has:
+    - "oversized_coffee_table_already_present"
+    - "very_small_walkway_clearance"
+  substitute_for:
+    - "coffee_table"
+  complements:
+    - "sofa"
+    - "sectional_sofa"
+    - "rug"
+    - "floor_lamp"
+    - "accent_chair"
+
+bundle_metadata:
+  bundle_role: "accent"
+  can_bundle_with:
+    - "sofa"
+    - "sectional_sofa"
+    - "rug"
+    - "floor_lamp"
+    - "media_console"
+    - "accent_chair"
+  set_behavior:
+    supports_living_room_pairing: true
+    supports_extra_seating: true
+    supports_multifunctional_layouts: true
+
+feature_flags:
+  has_storage: false
+  has_nested_seating: true
+  has_hidden_function: true
+  has_upholstered_component: true
+  is_configurable: true
+
+configurable_metadata:
+  is_configurable: true
+  default_configuration: "nested_closed"
+  configuration_ui:
+    type: "segmented_control"
+    label: "Table Layout"
+    options:
+      - "nested_closed"
+      - "seats_opened"
+    option_labels:
+      nested_closed: "Nested"
+      seats_opened: "Seats Open"
+    helper_text: "Toggle to visualize the table with stools tucked in or fully pulled out."
+  configuration_behavior:
+    affects_visual_footprint: true
+    affects_space_planning: true
+    affects_collision_bounds: true
+    affects_recommendation_logic: false
+  # Map configuration to imported ModelAsset IDs.
+  # Keep these IDs aligned with the model IDs created during GLB import.
+  configuration_model_assets:
+    nested_closed:
+      default: "coffee-real-castlery-hugg-nesting-square-performance-basalt-closed"
+      performance_basalt: "coffee-real-castlery-hugg-nesting-square-performance-basalt-closed"
+      performance_dune: "coffee-real-castlery-hugg-nesting-square-performance-dune-closed"
+    seats_opened:
+      default: "coffee-real-castlery-hugg-nesting-square-performance-basalt-opened"
+      performance_basalt: "coffee-real-castlery-hugg-nesting-square-performance-basalt-opened"
+      performance_dune: "coffee-real-castlery-hugg-nesting-square-performance-dune-opened"
+
+configurations:
+  - configuration_code: "nested_closed"
+    configuration_label: "Nested"
+    state_type: "closed"
+    description: "Four ottomans fully nested under table."
+    planning_bounds_cm:
+      width: 110
+      depth: 110
+      height: 43.2
+    visual_bounds_cm:
+      width: 110
+      depth: 110
+      height: 43.2
+    dimensions:
+      width_cm: 110
+      depth_cm: 110
+      height_cm: 43.2
+    node_transforms:
+      table_top_group:
+        position: [0, 0, 0]
+      ottoman_north:
+        position: [0, 0, -0.28]
+      ottoman_east:
+        position: [0.28, 0, 0]
+      ottoman_south:
+        position: [0, 0, 0.28]
+      ottoman_west:
+        position: [-0.28, 0, 0]
+    collision_bounds:
+      type: "box"
+      width_cm: 110
+      depth_cm: 110
+      height_cm: 43.2
+    seat_modules:
+      count: 4
+      nested: true
+      usable_as_seating: false
+    placement_footprint:
+      planning_width_cm: 110
+      planning_depth_cm: 110
+
+  - configuration_code: "seats_opened"
+    configuration_label: "Seats Open"
+    state_type: "open"
+    description: "Four ottomans pulled out for seating around the table."
+    planning_bounds_cm:
+      width: 200
+      depth: 200
+      height: 43.2
+    visual_bounds_cm:
+      width: 180
+      depth: 180
+      height: 43.2
+    dimensions_estimate:
+      width_cm: 180
+      depth_cm: 180
+      height_cm: 43.2
+    dimensions_recommended_planning:
+      width_cm: 200
+      depth_cm: 200
+      height_cm: 43.2
+    node_transforms:
+      table_top_group:
+        position: [0, 0, 0]
+      ottoman_north:
+        position: [0, 0, -0.82]
+      ottoman_east:
+        position: [0.82, 0, 0]
+      ottoman_south:
+        position: [0, 0, 0.82]
+      ottoman_west:
+        position: [-0.82, 0, 0]
+    estimation_note: "Open-state footprint estimated from 110cm table width/depth plus four 54cm ottomans arranged around the table. Recommended planning footprint adds practical seating gap."
+    collision_bounds:
+      type: "box"
+      width_cm: 180
+      depth_cm: 180
+      height_cm: 43.2
+    seat_modules:
+      count: 4
+      nested: false
+      usable_as_seating: true
+      module_dimensions:
+        width_cm: 54
+        depth_cm: 54
+        height_cm: 39
+    seating_layout:
+      arrangement: "north_east_south_west"
+      seat_to_table_relationship: "pulled_out_perimeter"
+    placement_footprint:
+      planning_width_cm: 200
+      planning_depth_cm: 200
+
+construction:
+  table:
+    structure:
+      - "engineered_wood"
+    surface:
+      - "oak_veneer"
+    edge_detail:
+      - "solid_oak_edged"
+  ottoman:
+    frame:
+      - "lvl"
+    base:
+      - "upholstery_base"
+    filling:
+      - "foam"
+      - "fibre"
+    cover_type: "fixed"
+  safety:
+    - "low_formaldehyde"
+
+comfort_profile:
+  seat_comfort: "balanced_relaxed"
+  seat_depth: "deep"
+  seat_height: "low"
+  seat_softness: "soft"
+
+authoring_notes:
+  category_confidence: "high"
+  model_selected: "square"
+  note: "Open-state overall footprint is estimated for layout visualization, not supplier-official dimension."
+  open_state_reasoning: "Estimated from table 110x110cm and four ottomans at 54x54cm, based on pull-out arrangement visible in reference imagery."
+
+assets:
+  asset_id: "coffee-real-castlery-hugg-nesting-square-performance-dune-closed"
+  model_url: "/assets/models/coffee-real-castlery-hugg-nesting-square-performance-dune-closed.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1641292754/crusader/variants/50850023/Peri-Coffee-Table-Front.png"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+
+upholstery_options:
+  - upholstery_code: "performance_dune"
+    upholstery_label: "Performance Dune"
+    collection_type: "stocked"
+    swatch_group: "upholstery_fabric"
+    color_family: "beige"
+    tone: "warm"
+    material_type: "performance_fabric"
+    texture_type: "woven_fabric"
+
+  - upholstery_code: "performance_basalt"
+    upholstery_label: "Performance Basalt"
+    collection_type: "stocked"
+    swatch_group: "upholstery_fabric"
+    color_family: "grey"
+    tone: "neutral_cool"
+    material_type: "performance_fabric"
+    texture_type: "woven_fabric"
+
+variants:
+  - variant: "Hugg Nesting Square Coffee Table / Natural"
+    size_label: "110x110"
+    finish_code: "natural"
+    finish_label: "Natural"
+    swatch_group: "wood_finish"
+    swatch_hex: "#a89070"
+    price_usd: 1099
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 110
+      depth_cm: 110
+      height_cm: 43.2
+      tabletop_thickness_cm: 3.5
+    color_family: "brown"
+    tone: "warm"
+    materials:
+      table:
+        structure: "engineered_wood"
+        surface: "oak_veneer"
+        edge_detail: "solid_oak"
+      ottoman_frame:
+        structure: "lvl"
+      ottoman_fill:
+        seat: "foam_fibre"
+    finish:
+      color_finish: "natural"
+      finish_color: "natural"
+      protective_coating: "waterbase_lacquer"
+
+  - variant: "Hugg Nesting Square Coffee Table / Chestnut"
+    size_label: "110x110"
+    finish_code: "chestnut"
+    finish_label: "Chestnut"
+    swatch_group: "wood_finish"
+    swatch_hex: "#8B6F47"
+    price_usd: 1099
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 110
+      depth_cm: 110
+      height_cm: 43.2
+      tabletop_thickness_cm: 3.5
+    color_family: "brown"
+    tone: "warm"
+    materials:
+      table:
+        structure: "engineered_wood"
+        surface: "oak_veneer"
+        edge_detail: "solid_oak"
+      ottoman_frame:
+        structure: "lvl"
+      ottoman_fill:
+        seat: "foam_fibre"
+    finish:
+      color_finish: "chestnut"
+      finish_color: "chestnut"
+      protective_coating: "waterbase_lacquer"
+
+  - variant: "Hugg Nesting Square Coffee Table / Black"
+    size_label: "110x110"
+    finish_code: "black"
+    finish_label: "Black"
+    swatch_group: "wood_finish"
+    swatch_hex: "#1f1f1f"
+    price_usd: 1099
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 110
+      depth_cm: 110
+      height_cm: 43.2
+      tabletop_thickness_cm: 3.5
+    color_family: "black"
+    tone: "neutral"
+    materials:
+      table:
+        structure: "engineered_wood"
+        surface: "oak_veneer"
+        edge_detail: "solid_oak"
+      ottoman_frame:
+        structure: "lvl"
+      ottoman_fill:
+        seat: "foam_fibre"
+    finish:
+      color_finish: "black"
+      finish_color: "black"
+      protective_coating: "waterbase_lacquer"

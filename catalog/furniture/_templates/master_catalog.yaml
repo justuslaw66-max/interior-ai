@@ -1,0 +1,108 @@
+# ----------------------------
+# MASTER CATALOG TEMPLATE
+# ----------------------------
+
+# Brand & Category
+brand: ""                 # e.g., Castlery
+category: ""              # controlled categories
+
+# Product Info
+product_family: ""        # e.g., Brighton
+product_name: ""          # e.g., Brighton Oval Dining Table
+variant: ""               # e.g., Oval 180
+
+# Pricing
+price_usd: 0
+price_band: ""            # budget / mid / mid_premium / premium / luxury
+brand_tier: ""            # premium_low / premium_mid / premium_high
+
+# Design & Layout
+design_zone: ""           # living_zone / dining_zone / sleeping_zone / workspace_zone / entry_zone / decor_zone / storage_zone
+anchor_role: ""           # sofa_anchor / bed_anchor / dining_anchor / desk_anchor / secondary / decor
+
+# Dimensions
+dimensions:
+  width_cm: 0
+  depth_cm: 0
+  height_cm: 0
+
+seat_capacity: 0
+size_class: ""            # small / medium / large / extra_large
+shape: ""                 # rectangular / square / round / oval / organic
+base_type: ""             # pedestal / four_leg / cross_support / frame
+
+# Materials
+material_family: ""       # wood / metal / glass / stone / upholstered / mixed
+material_mix: ""          # optional: wood_metal / wood_stone / upholstered_wood / etc.
+materials:
+  tabletop:
+    structure: ""         # solid_wood / engineered_wood / metal / glass / stone / fabric / leather
+    surface: ""           # oak_veneer / walnut_veneer / ash_veneer / marble / tempered_glass / fabric / leather
+  base:
+    structure: ""         # same as above
+    wood_species: ""      # optional: rubberwood / oak / walnut
+
+# Finish
+finish:
+  color_finish: ""        # e.g., walnut, white, black
+  protective_coating: ""  # lacquer / matte_lacquer / wax / none
+  surface_finish: ""      # satin / gloss / matte
+  finish_color: ""        # optional duplicate for AI use
+
+# Colors & Style
+color_family: ""          # brown / beige / grey / white / black / green / blue / red / yellow / multicolor
+tone: ""                  # warm / cool / neutral
+style_cluster: ""         # modern / contemporary / scandinavian / midcentury_modern / minimalist / industrial / japandi / classic / coastal / bohemian
+style_secondary: ""       # optional secondary style
+design_era: ""            # e.g., midcentury_inspired, contemporary, classic
+
+# Visual & Spatial Attributes
+visual_attributes:
+  visual_weight: ""       # light / medium / heavy
+  edge_profile: ""        # sharp / rounded / beveled
+  silhouette: ""          # sculptural / linear / organic
+  form_language: ""       # soft / angular / geometric
+
+spatial_attributes:
+  footprint_shape: ""     # rectangle / square / oval / round / organic
+  chair_pullback_cm: 0
+  walkway_clearance_cm: 0
+
+# Room & Placement
+room_compatibility:
+  - ""                    # dining_room, living_room, bedroom, office, entry, etc.
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: false
+
+# Pairings / Recommendations
+design_pairings:
+  - ""                    # e.g., dining_chair, pendant_light, dining_rug, sideboard
+
+# Asset Links
+assets:
+  asset_id: ""              # e.g., dining-real-castlery-brighton-oval-180
+  model_url: ""             # e.g., /assets/models/dining-real-castlery-brighton-oval-180.glb
+  thumbnail_url: ""         # e.g., /assets/thumbs/dining-real-castlery-brighton-oval-180.png
+
+# Variants (optional, for shared product-level files)
+variants:
+  - variant: ""
+    price_usd: 0
+    price_band: ""
+    brand_tier: ""
+    dimensions:
+      width_cm: 0
+      depth_cm: 0
+      height_cm: 0
+    seat_capacity: 0
+    size_class: ""
+
+# AI Flags
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true

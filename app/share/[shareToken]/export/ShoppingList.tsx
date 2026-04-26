@@ -1,11 +1,16 @@
 "use client";
 
 import { CATALOG_ITEMS_MAP } from "@/lib/catalog";
+import type { CatalogItemSchema, ProductVariant } from "@/lib/catalog-schema";
+import type { DesignItem } from "@/lib/room-types";
 import ShopLink from "./ShopLink";
+import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
+
+type ShoppingItem = DesignItem & { product: CatalogItemSchema };
 
 // Helper to group items by category
-function groupByCategory(items: any[]) {
-  const grouped: Record<string, any[]> = {};
+function groupByCategory(items: DesignItem[]) {
+  const grouped: Record<string, ShoppingItem[]> = {};
   items.forEach((item) => {
     const product = CATALOG_ITEMS_MAP.get(item.productId);
     if (!product) return;
@@ -17,34 +22,25 @@ function groupByCategory(items: any[]) {
 }
 
 // Helper to get price from item
-function getItemPrice(item: any): string {
+function getItemPrice(item: ShoppingItem): string {
   if (!item.product) return "—";
-  const commerce = item.product.commerce;
-  if (commerce.type === "shopify" || commerce.type === "affiliate") {
-    const price = commerce.data?.priceHint;
+  const resolved = resolveCatalogVariant(item.product, item.variantId);
+  if (resolved.commerce.type === "affiliate") {
+    const price = resolved.commerce.priceHint;
     if (price) return `$${price}`;
   }
   return "—";
 }
 
 // Helper to get retailer link
-function getRetailerLink(item: any): { url: string; retailer: string; type: "shopify" | "affiliate" } | null {
+function getRetailerLink(item: ShoppingItem): { url: string; retailer: string; type: "shopify" | "affiliate" } | null {
   if (!item.product) return null;
-  const commerce = item.product.commerce;
-  
-  if (commerce.type === "shopify") {
-    const variant = item.product.variants.find((v: any) => v.id === item.variantId);
-    if (variant?.shopifyVariantId) {
-      return {
-        url: `/api/shopify/checkout?variantId=${variant.shopifyVariantId}&quantity=1`,
-        retailer: "Shop",
-        type: "shopify"
-      };
-    }
-  } else if (commerce.type === "affiliate") {
+  const resolved = resolveCatalogVariant(item.product, item.variantId);
+
+  if (resolved.commerce.type === "affiliate") {
     return {
-      url: commerce.data?.affiliateUrl || "#",
-      retailer: commerce.data?.retailer || "View",
+      url: resolved.commerce.url || "#",
+      retailer: resolved.commerce.retailer || "View",
       type: "affiliate"
     };
   }
@@ -53,17 +49,18 @@ function getRetailerLink(item: any): { url: string; retailer: string; type: "sho
 
 export default function ShoppingList({
   items,
-  roomName,
 }: {
-  items: any[];
+  items: DesignItem[];
   roomName: string;
 }) {
   if (!items || items.length === 0) return null;
 
+  const grouped = groupByCategory(items);
+
   return (
     <div className="mb-6">
       <h3 className="mb-2 text-lg font-semibold text-gray-800">Shopping List</h3>
-      {Object.entries(groupByCategory(items)).map(([category, categoryItems]) => (
+      {Object.entries(grouped).map(([category, categoryItems]) => (
         <div key={category} className="mb-4">
           <h4 className="mb-2 text-sm font-semibold text-gray-700">{category}</h4>
           <table className="w-full border-collapse text-sm">
@@ -76,8 +73,11 @@ export default function ShoppingList({
               </tr>
             </thead>
             <tbody>
-              {categoryItems.map((item: any) => {
-                const variant = item.product?.variants?.find((v: any) => v.id === item.variantId);
+              {categoryItems.map((item) => {
+                const resolved = item.product
+                  ? resolveCatalogVariant(item.product, item.variantId)
+                  : null;
+                const variant = resolved?.variant ?? item.product?.variants?.find((v: ProductVariant) => v.id === item.variantId);
                 const link = getRetailerLink(item);
                 return (
                   <tr key={item.instanceId} className="border-b">
@@ -89,7 +89,7 @@ export default function ShoppingList({
                         </div>
                       )}
                     </td>
-                    <td className="p-2 text-center">1</td>
+                    <td className="p-2 text-center">{item.qty ?? 1}</td>
                     <td className="p-2 text-right">{getItemPrice(item)}</td>
                     <td className="p-2 text-center no-print">
                       {link && (

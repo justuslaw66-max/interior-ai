@@ -1,7 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { legacyApiToSnapshot } from "@/lib/room-persistence";
-import type { DesignSnapshot, RoomSnapshot } from "@/lib/room-types";
+import type { DesignItem, DesignSnapshot, RoomSnapshot, SavedView, ZoneMin } from "@/lib/room-types";
+import { getExportCapabilities, type UserPlan } from "@/lib/export-capabilities";
 import Link from "next/link";
+import { ExportWatermark } from "@/components/ExportWatermark";
 import ExportTracking from "./ExportTracking";
 import PrintButton from "./PrintButton";
 import ShoppingList from "./ShoppingList";
@@ -36,6 +38,7 @@ export default async function ExportPage({
         select: {
           name: true,
           email: true,
+          plan: true,
         },
       },
     },
@@ -60,12 +63,14 @@ export default async function ExportPage({
     title: design.title,
     roomWidth: design.roomWidth,
     roomDepth: design.roomDepth,
-    items: design.items as any[],
-    zones: (design.zones as any[]) || [],
-    savedViews: (design.savedViews as any[]) || [],
+    items: design.items as unknown as DesignItem[],
+    zones: (design.zones as unknown as ZoneMin[]) || [],
+    savedViews: (design.savedViews as unknown as SavedView[]) || [],
   });
 
   const rooms = designSnapshot.rooms || [];
+  const userPlan: UserPlan = design.user?.plan === "pro" ? "pro" : "free";
+  const capabilities = getExportCapabilities(userPlan);
 
   return (
     <>
@@ -86,6 +91,7 @@ export default async function ExportPage({
       `}</style>
 
       <main className="min-h-screen bg-white">
+        {capabilities.watermark ? <ExportWatermark /> : null}
         <ExportTracking shareToken={shareToken} designId={design.id} />
         
         {/* Header - No Print */}
@@ -99,7 +105,11 @@ export default async function ExportPage({
                 ← Back to 3D View
               </Link>
             </div>
-            <PrintButton shareToken={shareToken} designId={design.id} />
+            <PrintButton
+              shareToken={shareToken}
+              designId={design.id}
+              capabilities={capabilities}
+            />
           </div>
         </div>
 
@@ -132,14 +142,14 @@ export default async function ExportPage({
                 <div className="mb-6">
                   <h3 className="mb-2 text-lg font-semibold text-gray-800">Saved Views</h3>
                   <div className="grid grid-cols-2 gap-3">
-                    {room.savedViews.map((view: any) => (
+                    {room.savedViews.map((view: SavedView) => (
                       <div
-                        key={view.name}
+                        key={view.id}
                         className="rounded-lg border bg-gray-50 p-4"
                       >
                         <div className="text-sm font-medium text-gray-700">{view.name}</div>
                         <div className="mt-1 text-xs text-gray-500">
-                          View position: {view.pos?.[0]?.toFixed(1)}, {view.pos?.[1]?.toFixed(1)}, {view.pos?.[2]?.toFixed(1)}
+                          View position: {view.cameraPosition[0].toFixed(1)}, {view.cameraPosition[1].toFixed(1)}, {view.cameraPosition[2].toFixed(1)}
                         </div>
                       </div>
                     ))}

@@ -16,11 +16,12 @@ export default function CatalogCard({ item, onPreview, onAdd, onToggleCompare, i
     <div className="rounded-xl border border-neutral-200 bg-white p-2.5">
       <div className="aspect-[4/3] overflow-hidden rounded-lg bg-neutral-100">
         {item.thumbUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={item.thumbUrl}
             alt={item.title}
             loading="lazy"
-            className="h-full w-full object-cover"
+            className={item.imageClassName}
             onMouseEnter={onHover}
           />
         ) : (
@@ -30,6 +31,7 @@ export default function CatalogCard({ item, onPreview, onAdd, onToggleCompare, i
 
       <div className="mt-2 line-clamp-1 text-sm font-semibold text-neutral-900">{item.title}</div>
       <div className="line-clamp-1 text-xs text-neutral-500">{item.brand ?? "Unknown brand"} • {item.category}</div>
+      <div className="line-clamp-1 text-xs text-neutral-500">{item.variantLabel}</div>
       <div className="mt-1 text-xs font-medium text-neutral-800">{item.priceLabel ?? "External retailer"}</div>
       <div className="text-[11px] text-neutral-500">{item.dimsLabel}</div>
       <CatalogCardSwatches swatches={item.primarySwatches} />

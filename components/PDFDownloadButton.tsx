@@ -15,7 +15,7 @@ import { track } from "@/lib/analytics";
 interface PDFDownloadButtonProps {
   capabilities: ExportCapabilities;
   shareToken: string;
-  designId: string;
+  designId?: string | null;
 }
 
 export function PDFDownloadButton({ 
@@ -29,7 +29,7 @@ export function PDFDownloadButton({
     if (!capabilities.pdfDownload) {
       track("export_upgrade_prompt_shown", {
         trigger: "pdf",
-        design_id: designId,
+        design_id: designId ?? null,
         share_token: shareToken,
       });
 
@@ -38,7 +38,7 @@ export function PDFDownloadButton({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           eventType: "export_upgrade_prompt_shown",
-          designId,
+          designId: designId ?? null,
           shareToken,
           meta: { trigger: "pdf" },
         }),
@@ -49,7 +49,7 @@ export function PDFDownloadButton({
     }
 
     track("export_pdf_clicked", {
-      design_id: designId,
+      design_id: designId ?? null,
       share_token: shareToken,
     });
 
@@ -58,7 +58,7 @@ export function PDFDownloadButton({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         eventType: "export_pdf_clicked",
-        designId,
+        designId: designId ?? null,
         shareToken,
       }),
     }).catch(() => undefined);
@@ -75,7 +75,7 @@ export function PDFDownloadButton({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         eventType: "upgrade_checkout_started",
-        designId,
+        designId: designId ?? null,
         shareToken,
         meta: { trigger: "pdf" },
       }),

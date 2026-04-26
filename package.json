@@ -39,6 +39,8 @@
     "test:revenue-funnel-panel": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\",\"jsx\":\"react-jsx\"}' scripts/test-revenue-funnel-panel.ts",
     "test:paywall-performance": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-paywall-performance.ts",
     "test:design-page-paywall": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-design-page-paywall.ts",
+    "test:phase-c-modules": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-phase-c-module-fixtures.ts",
+    "test:design-duplication": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-design-duplication-fixtures.ts",
     "test:catalog-route-hardening": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-catalog-route-hardening.ts",
     "test:import-route-hardening": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-import-route-hardening.ts",
     "test:hardening": "npm run test:import-route-hardening && npm run test:catalog-route-hardening"

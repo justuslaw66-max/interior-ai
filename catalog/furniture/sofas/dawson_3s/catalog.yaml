@@ -1,0 +1,724 @@
+brand: "Castlery"
+category: "sofa"
+
+product_family: "Dawson"
+product_name: "Dawson 3 Seater Sofa"
+variant: "Standard"
+
+price_usd: 1898
+price_band: "premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "sofa_anchor"
+
+dimensions:
+  width_cm: 228
+  depth_cm: 114
+  height_cm: 81
+
+seat_capacity: 3
+size_class: "large"
+shape: "rectangular"
+base_type: "concealed_leg"
+
+material_family: "upholstered"
+material_mix: "upholstered_composite"
+material_mix_components:
+  - "laminated_veneer_lumber"
+  - "plywood"
+  - "polyester"
+  - "linen"
+  - "plastic"
+materials:
+  frame:
+    structure:
+      - "laminated_veneer_lumber"
+      - "plywood"
+  leg_frame:
+    structure: "plastic"
+    finish: "black"
+
+color_family: "beige"
+tone: "neutral"
+
+style_cluster: "contemporary"
+style_secondary: "modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "rounded"
+  silhouette: "linear"
+  form_language: "soft"
+  descriptors:
+    - "deep_seat_profile"
+    - "oversized_back_cushions"
+    - "block_arms"
+    - "relaxed_luxury"
+    - "removable_covers"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  walkway_clearance_cm: 75
+  descriptors:
+    - "wide_anchor_piece"
+    - "deep_lounge_seating"
+    - "works_in_medium_to_large_living_rooms"
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+  - "open_plan"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: true
+  clearance_sensitive: true
+  center_room_preferred: false
+  floating_layout_supported: true
+  recommended_in_front_of:
+    - "coffee_table"
+    - "rug"
+    - "media_console"
+  clearance_guidance:
+    sofa_to_table_cm_min: 30
+    sofa_to_table_cm_ideal: 40
+    circulation_cm_min: 75
+
+design_pairings:
+  - "coffee_table"
+  - "side_table"
+  - "rug"
+  - "floor_lamp"
+  - "media_console"
+  - "accent_chair"
+  - "ottoman"
+
+compatibility:
+  related_products:
+    - product_family: "Dawson"
+      product_name: "Dawson Ottoman"
+      relationship: "matching_companion"
+      strength: "strong"
+      collection_context: "same_collection"
+    - product_family: "Dawson"
+      product_name: "Dawson Swivel Armchair"
+      relationship: "matching_companion"
+      strength: "strong"
+      collection_context: "same_collection"
+    - product_family: "Dawson"
+      product_name: "Dawson Extended Sofa"
+      relationship: "family_variant"
+      strength: "strong"
+      collection_context: "same_collection"
+
+bundle_metadata:
+  bundle_role: "living_anchor"
+  can_bundle_with:
+    - "coffee_table"
+    - "side_table"
+    - "rug"
+    - "floor_lamp"
+    - "media_console"
+    - "ottoman"
+  set_behavior:
+    supports_living_room_pairing: true
+
+construction:
+  frame:
+    structure:
+      - "laminated_veneer_lumber"
+      - "plywood"
+  leg_frame:
+    structure: "plastic"
+    finish: "black"
+  cover_type:
+    - "removable_seat_cushion_covers"
+    - "removable_back_cushion_covers"
+    - "removable_frame_covers"
+  filling:
+    seat:
+      - "foam"
+      - "fibre"
+      - "feather"
+    back:
+      - "fibre"
+      - "feather"
+  suspension: "sinuous_spring"
+
+upholstery_options:
+# Fabric palette is resolved from the shared Dawson upholstery library.
+# Edit catalog/furniture/_upholstery_libraries/dawson.yaml to update all 6 products at once.
+upholstery_library_ref: "dawson"
+
+assets:
+  asset_id: "sofa-real-castlery-dawson-3s"
+  model_url: "/assets/models/sofa-real-castlery-dawson-3s.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1634716861/crusader/variants/T50440986-NG4001/Dawson-3-Seater-Sofa-Beach-Linen-Front.jpg"
+
+variants:
+  - variant: "Dawson 3 Seater Sofa / Slub Linen Weave (Navagio), Cream (Beach Linen)"
+    size_label: "228x114"
+    upholstery_code: "beach_linen"
+    upholstery_label: "Slub Linen Weave (Navagio), Cream (Beach Linen)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1634716861/crusader/variants/T50440986-NG4001/Dawson-3-Seater-Sofa-Beach-Linen-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1640249245/crusader/variants/T50440986-NG4001/Dawson-Sofa-With-Ottoman-Beach-Linen-Square-Set_5.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1634716861/crusader/variants/T50440986-NG4001/Dawson-3-Seater-Sofa-Beach-Linen-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1641546342/crusader/variants/T50440986-NG4001/Dawson-Chaise-Sectional-Sofa-Beach-Linen-Det_1.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1634716861/crusader/variants/T50440986-NG4001/Dawson-3-Seater-Sofa-Beach-Linen-Angle.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1634716860/crusader/variants/T50440986-NG4001/Dawson-3-Seater-Sofa-Beach-Linen-Side.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1634716879/crusader/variants/T50440986-NG4001/Dawson-3-Seater-Sofa-Beach-Linen-Back.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1898
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "cream"
+    tone: "warm"
+    set_compatibility: []
+  - variant: "Dawson 3 Seater Sofa / Slub Linen Weave (Navagio), Medium Grey (Seagull)"
+    size_label: "228x114"
+    upholstery_code: "navagio_seagull"
+    upholstery_label: "Slub Linen Weave (Navagio), Medium Grey (Seagull)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1697614106/crusader/variants/AS-000374-NG4002/Dawson-3-Seater-Sofa-Seagull-Front-1697614103.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1697616548/crusader/variants/AS-000374-NG4002/Dawson-3-Seater-Sofa-With-Armchair-With-Ottoman-Seagull-Square-Set_2-1697616545.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1697614106/crusader/variants/AS-000374-NG4002/Dawson-3-Seater-Sofa-Seagull-Front-1697614103.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1697614172/crusader/variants/AS-000374-NG4002/Dawson-3-Seater-Sofa-With-Armchair-With-Ottoman-Seagull-Square-Set_5-1697614169.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1702897812/crusader/variants/AS-000374-NG4002/Dawson-3-Seater-Sofa-Seagull-Det_1-1702897808.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1724057632/crusader/variants/AS-000374-NG4002/Sofa-Armrest-Table-Natural-Square-Set_4-1724057630.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1697614106/crusader/variants/AS-000374-NG4002/Dawson-3-Seater-Sofa-Seagull-Angle-1697614103.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1697614106/crusader/variants/AS-000374-NG4002/Dawson-3-Seater-Sofa-Seagull-Side-1697614103.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1697614106/crusader/variants/AS-000374-NG4002/Dawson-3-Seater-Sofa-Seagull-Back-1697614103.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1898
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "grey"
+    tone: "neutral_cool"
+    set_compatibility: []
+  - variant: "Dawson 3 Seater Sofa / Performance Creamy White"
+    size_label: "228x114"
+    upholstery_code: "performance_creamy_white"
+    upholstery_label: "Performance Creamy White"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1731313137/crusader/variants/AS-000374C-PT4001/Dawson-3-Seater-Sofa-Creamy-White-Front-1731313134.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1731313137/crusader/variants/AS-000374C-PT4001/Dawson-3-Seater-Sofa-Creamy-White-Front-1731313134.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1898
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "cream"
+    tone: "warm"
+    set_compatibility: []
+  - variant: "Dawson 3 Seater Sofa / Performance Textured Plain Weave (Marcel), Cream (Brilliant White)"
+    size_label: "228x114"
+    upholstery_code: "marcel_brilliant_white"
+    upholstery_label: "Performance Textured Plain Weave (Marcel), Cream (Brilliant White)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1731313178/crusader/variants/AS-000374C-PM4002/Dawson-3-Seater-Sofa-Brilliant-White-Front-1731313175.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1731313178/crusader/variants/AS-000374C-PM4002/Dawson-3-Seater-Sofa-Brilliant-White-Front-1731313175.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1898
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "cream"
+    tone: "neutral_warm"
+    set_compatibility: []
+  - variant: "Dawson 3 Seater Sofa / Performance Fleece (Peyton), Ivory (Cream)"
+    size_label: "228x114"
+    upholstery_code: "peyton_ivory"
+    upholstery_label: "Performance Fleece (Peyton), Ivory (Cream)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1730946379/crusader/variants/AS-000374C-PY4001/Dawson-3-Seater-Sofa-Ivory-Front-1730946377.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1730946379/crusader/variants/AS-000374C-PY4001/Dawson-3-Seater-Sofa-Ivory-Front-1730946377.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1898
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "cream"
+    tone: "warm"
+    set_compatibility: []
+  - variant: "Dawson 3 Seater Sofa / Performance Fleece (Peyton), Medium Grey (Dove Grey)"
+    size_label: "228x114"
+    upholstery_code: "peyton_dove_grey"
+    upholstery_label: "Performance Fleece (Peyton), Medium Grey (Dove Grey)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1730946413/crusader/variants/AS-000374C-PY4002/Dawson-3-Seater-Sofa-Dove-Grey-Front-1730946410.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1730946413/crusader/variants/AS-000374C-PY4002/Dawson-3-Seater-Sofa-Dove-Grey-Front-1730946410.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1898
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "grey"
+    tone: "neutral_cool"
+    set_compatibility: []
+  - variant: "Dawson 3 Seater Sofa / Performance Textured Plain Weave (Marcel), Smoke Grey"
+    size_label: "228x114"
+    upholstery_code: "marcel_smoke_grey"
+    upholstery_label: "Performance Textured Plain Weave (Marcel), Smoke Grey"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1731313159/crusader/variants/AS-000374C-PM4001/Dawson-3-Seater-Sofa-Smoke-Grey-Front-1731313156.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1731313159/crusader/variants/AS-000374C-PM4001/Dawson-3-Seater-Sofa-Smoke-Grey-Front-1731313156.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1898
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "grey"
+    tone: "neutral_cool"
+    set_compatibility: []
+  - variant: "Dawson 3 Seater Sofa / Performance Fleece (Peyton), Moss"
+    size_label: "228x114"
+    upholstery_code: "peyton_moss"
+    upholstery_label: "Performance Fleece (Peyton), Moss"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1730946446/crusader/variants/AS-000374C-PY4003/Dawson-3-Seater-Sofa-Moss-Front-1730946444.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1730946446/crusader/variants/AS-000374C-PY4003/Dawson-3-Seater-Sofa-Moss-Front-1730946444.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1898
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "green"
+    tone: "muted_earthy"
+    set_compatibility: []
+  - variant: "Dawson 3 Seater Sofa / Performance Fleece (Peyton), Caramel (Cumin)"
+    size_label: "228x114"
+    upholstery_code: "peyton_cumin"
+    upholstery_label: "Performance Fleece (Peyton), Caramel (Cumin)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1730946570/crusader/variants/AS-000374C-PY4004/Dawson-3-Seater-Sofa-Cumin-Front-1730946567.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1730946570/crusader/variants/AS-000374C-PY4004/Dawson-3-Seater-Sofa-Cumin-Front-1730946567.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1898
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "brown"
+    tone: "warm"
+    set_compatibility: []
+  - variant: "Dawson 3 Seater Sofa / Performance Infinity Boucle, Rust (Ginger)"
+    size_label: "228x114"
+    upholstery_code: "infinity_boucle_ginger"
+    upholstery_label: "Performance Infinity Boucle, Rust (Ginger)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1731313112/crusader/variants/AS-000374C-IN4003/Dawson-3-Seater-Sofa-Ginger-Front-1731313109.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1731313112/crusader/variants/AS-000374C-IN4003/Dawson-3-Seater-Sofa-Ginger-Front-1731313109.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1898
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "rust"
+    tone: "warm"
+    set_compatibility: []
+  - variant: "Dawson 3 Seater Sofa / Performance Infinity Boucle, Light Grey (White Quartz)"
+    size_label: "228x114"
+    upholstery_code: "infinity_boucle_white_quartz"
+    upholstery_label: "Performance Infinity Boucle, Light Grey (White Quartz)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1731313073/crusader/variants/AS-000374C-IN4002/Dawson-3-Seater-Sofa-White-Quartz-Front-1731313071.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1731313073/crusader/variants/AS-000374C-IN4002/Dawson-3-Seater-Sofa-White-Quartz-Front-1731313071.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1898
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "light_grey"
+    tone: "neutral"
+    set_compatibility: []
+
+  - variant: "Dawson 3 Seater Sofa / Performance Infinity Boucle, Cream"
+    size_label: "228x114"
+    upholstery_code: "performance_boucle_cream"
+    upholstery_label: "Performance Infinity Boucle, Cream"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773903244/crusader/variants/AS-000374C-IN4005/Dawson-3-Seater-Sofa-Cream-Front-1773903241.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773903244/crusader/variants/AS-000374C-IN4005/Dawson-3-Seater-Sofa-Cream-Front-1773903241.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1898
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "cream"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson 3 Seater Sofa / Performance Infinity Boucle, Moss"
+    size_label: "228x114"
+    upholstery_code: "performance_infinity_boucle_moss"
+    upholstery_label: "Performance Infinity Boucle, Moss"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1774246106/crusader/variants/AS-000374C-IN4004/Dawson-3-Seater-Sofa-Moss-Front-1774246103.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1774246106/crusader/variants/AS-000374C-IN4004/Dawson-3-Seater-Sofa-Moss-Front-1774246103.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1898
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "green"
+    tone: "muted_earthy"
+    set_compatibility: []
+
+  - variant: "Dawson 3 Seater Sofa / Performance Twill, Pearl Beige"
+    size_label: "228x114"
+    upholstery_code: "performance_twill_pearl_beige"
+    upholstery_label: "Performance Twill, Pearl Beige"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773900669/crusader/variants/AS-000374C-PT4002/Dawson-3-Seater-Sofa-Performance-Twill-Pearl-Beige-Front-1773900666.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773900669/crusader/variants/AS-000374C-PT4002/Dawson-3-Seater-Sofa-Performance-Twill-Pearl-Beige-Front-1773900666.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1898
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "beige"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson 3 Seater Sofa / Performance Twill, Slate"
+    size_label: "228x114"
+    upholstery_code: "performance_twill_slate"
+    upholstery_label: "Performance Twill, Slate"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773900741/crusader/variants/AS-000374C-PT4003/Dawson-3-Seater-Sofa-Performance-Twill-Slate-Front-1773900738.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773900741/crusader/variants/AS-000374C-PT4003/Dawson-3-Seater-Sofa-Performance-Twill-Slate-Front-1773900738.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1898
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "grey"
+    tone: "cool"
+    set_compatibility: []
+
+  - variant: "Dawson 3 Seater Sofa / Performance Twill, Moss"
+    size_label: "228x114"
+    upholstery_code: "performance_twill_moss"
+    upholstery_label: "Performance Twill, Moss"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773900767/crusader/variants/AS-000374C-PT4004/Dawson-3-Seater-Sofa-Performance-Twill-Moss-Front-1773900764.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773900767/crusader/variants/AS-000374C-PT4004/Dawson-3-Seater-Sofa-Performance-Twill-Moss-Front-1773900764.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1898
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "green"
+    tone: "muted_earthy"
+    set_compatibility: []
+
+  - variant: "Dawson 3 Seater Sofa / Performance Twill, Medium Grey"
+    size_label: "228x114"
+    upholstery_code: "performance_twill_dove_grey"
+    upholstery_label: "Performance Twill, Medium Grey"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773900782/crusader/variants/AS-000374C-PT4005/Dawson-3-Seater-Sofa-Performance-Twill-Dove-Grey-Front-1773900779.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773900782/crusader/variants/AS-000374C-PT4005/Dawson-3-Seater-Sofa-Performance-Twill-Dove-Grey-Front-1773900779.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1898
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "grey"
+    tone: "neutral_cool"
+    set_compatibility: []
+
+  - variant: "Dawson 3 Seater Sofa / Performance Linen Weave (Genova), Sand (Oat)"
+    size_label: "228x114"
+    upholstery_code: "performance_genova_oat"
+    upholstery_label: "Performance Linen Weave (Genova), Sand (Oat)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773911115/crusader/variants/AS-000374C-PG4002/Dawson-3-Seater-Sofa-Performance-Genova-Oat-Front-1773911112.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773911115/crusader/variants/AS-000374C-PG4002/Dawson-3-Seater-Sofa-Performance-Genova-Oat-Front-1773911112.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1898
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "sand"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson 3 Seater Sofa / Performance Linen Weave (Genova), Cream"
+    size_label: "228x114"
+    upholstery_code: "performance_linen_weave_cream"
+    upholstery_label: "Performance Linen Weave (Genova), Cream"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773911135/crusader/variants/AS-000374C-PG4003/Dawson-3-Seater-Sofa-Cream-Front-1773911132.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773911135/crusader/variants/AS-000374C-PG4003/Dawson-3-Seater-Sofa-Cream-Front-1773911132.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1898
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "cream"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson 3 Seater Sofa / Performance Linen Weave (Genova), Light Grey"
+    size_label: "228x114"
+    upholstery_code: "performance_linen_weave_light_grey"
+    upholstery_label: "Performance Linen Weave (Genova), Light Grey"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773911148/crusader/variants/AS-000374C-PG4004/Dawson-3-Seater-Sofa-Light-Grey-Front-1773911145.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773911148/crusader/variants/AS-000374C-PG4004/Dawson-3-Seater-Sofa-Light-Grey-Front-1773911145.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1898
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "light_grey"
+    tone: "neutral"
+    set_compatibility: []
+
+  - variant: "Dawson 3 Seater Sofa / Washed Chenille, Cream"
+    size_label: "228x114"
+    upholstery_code: "greta_ivory"
+    upholstery_label: "Washed Chenille, Cream"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1774246163/crusader/variants/AS-000374C-GR4001/Dawson-3-Seater-Sofa-Cream-Front-1774246160.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1774246163/crusader/variants/AS-000374C-GR4001/Dawson-3-Seater-Sofa-Cream-Front-1774246160.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1898
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "cream"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson 3 Seater Sofa / Washed Chenille, Sand"
+    size_label: "228x114"
+    upholstery_code: "washed_chenille_sand"
+    upholstery_label: "Washed Chenille, Sand"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1774246184/crusader/variants/AS-000374C-GR4002/Dawson-3-Seater-Sofa-Sand-Front-1774246181.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1774246184/crusader/variants/AS-000374C-GR4002/Dawson-3-Seater-Sofa-Sand-Front-1774246181.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1898
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "sand"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson 3 Seater Sofa / Washed Chenille, Caramel"
+    size_label: "228x114"
+    upholstery_code: "greta_mustard_brown"
+    upholstery_label: "Washed Chenille, Caramel"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1774246197/crusader/variants/AS-000374C-GR4003/Dawson-3-Seater-Sofa-Caramel-Front-1774246194.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1774246197/crusader/variants/AS-000374C-GR4003/Dawson-3-Seater-Sofa-Caramel-Front-1774246194.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1898
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "brown"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson 3 Seater Sofa / Washed Chenille, Moss"
+    size_label: "228x114"
+    upholstery_code: "greta_moss"
+    upholstery_label: "Washed Chenille, Moss"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1774246216/crusader/variants/AS-000374C-GR4004/Dawson-3-Seater-Sofa-Moss-Front-1774246214.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1774246216/crusader/variants/AS-000374C-GR4004/Dawson-3-Seater-Sofa-Moss-Front-1774246214.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1898
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "green"
+    tone: "muted_earthy"
+    set_compatibility: []
+
+  - variant: "Dawson 3 Seater Sofa / Cocoa (Leather)"
+    size_label: "228x114"
+    upholstery_code: "cocoa_leather"
+    upholstery_label: "Cocoa (Leather)"
+    finish_code: "cocoa_leather"
+    finish_label: "Cocoa (Leather)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1721376225/crusader/variants/AS-000528-LE4020/Dawson-3-Seater-Sofa-Cocoa-Front-1721376223.png"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1722581194/crusader/variants/AS-000528-LE4020/Dawson-Leather-Sofa-Square-Set_2-1722581191.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1721376225/crusader/variants/AS-000528-LE4020/Dawson-3-Seater-Sofa-Cocoa-Front-1721376223.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1717749010/crusader/variants/AS-000528-LE4020/Sofa-Armrest-Table-Natural-Square-Set_4-1717749008.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1721376226/crusader/variants/AS-000528-LE4020/Dawson-3-Seater-Sofa-Cocoa-Angle-1721376223.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1715936762/crusader/variants/AS-000528-LE4020/Dawson-3-Seater-Sofa-Cocoa-Side-1715936759.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1715936762/crusader/variants/AS-000528-LE4020/Dawson-3-Seater-Sofa-Cocoa-Back-1715936759.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1898
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "brown"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson 3 Seater Sofa / Caramel (Leather)"
+    size_label: "228x114"
+    upholstery_code: "caramel_leather"
+    upholstery_label: "Caramel (Leather)"
+    finish_code: "caramel_leather"
+    finish_label: "Caramel (Leather)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773800729/crusader/variants/AS-000528C-LE4016/Dawson-3-Seater-Sofa-Caramel-Front-1773800726.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773800729/crusader/variants/AS-000528C-LE4016/Dawson-3-Seater-Sofa-Caramel-Front-1773800726.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1898
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "brown"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson 3 Seater Sofa / Warm Taupe (Leather)"
+    size_label: "228x114"
+    upholstery_code: "warm_taupe_leather"
+    upholstery_label: "Warm Taupe (Leather)"
+    finish_code: "warm_taupe_leather"
+    finish_label: "Warm Taupe (Leather)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773800747/crusader/variants/AS-000528C-LE4017/Dawson-3-Seater-Sofa-Warm-Taupe-Front-1773800745.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773800747/crusader/variants/AS-000528C-LE4017/Dawson-3-Seater-Sofa-Warm-Taupe-Front-1773800745.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1898
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "taupe"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson 3 Seater Sofa / Marche Ivory (Leather)"
+    size_label: "228x114"
+    upholstery_code: "marche_ivory_leather"
+    upholstery_label: "Marche Ivory (Leather)"
+    finish_code: "marche_ivory_leather"
+    finish_label: "Marche Ivory (Leather)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773800766/crusader/variants/AS-000528C-LE4021/Dawson-3-Seater-Sofa-Marche-Ivory-Front-1773800764.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773800766/crusader/variants/AS-000528C-LE4021/Dawson-3-Seater-Sofa-Marche-Ivory-Front-1773800764.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1898
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "cream"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson 3 Seater Sofa / Marche Graphite (Leather)"
+    size_label: "228x114"
+    upholstery_code: "marche_graphite_leather"
+    upholstery_label: "Marche Graphite (Leather)"
+    finish_code: "marche_graphite_leather"
+    finish_label: "Marche Graphite (Leather)"
+    swatch_hex: "#2F3136"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773911958/crusader/variants/AS-000528C-LE4022/Dawson-3-Seater-Sofa-Marche-Graphite-Front-1773911956.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773911958/crusader/variants/AS-000528C-LE4022/Dawson-3-Seater-Sofa-Marche-Graphite-Front-1773911956.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1898
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "grey"
+    tone: "cool"
+    set_compatibility: []
+
+  - variant: "Dawson 3 Seater Sofa / Marche Cocoa (Leather)"
+    size_label: "228x114"
+    upholstery_code: "marche_cocoa_leather"
+    upholstery_label: "Marche Cocoa (Leather)"
+    finish_code: "marche_cocoa_leather"
+    finish_label: "Marche Cocoa (Leather)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773911977/crusader/variants/AS-000528C-LE4023/Dawson-3-Seater-Sofa-Marche-Cocoa-Front-1773911974.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773911977/crusader/variants/AS-000528C-LE4023/Dawson-3-Seater-Sofa-Marche-Cocoa-Front-1773911974.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1898
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "brown"
+    tone: "warm"
+    set_compatibility: []
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true

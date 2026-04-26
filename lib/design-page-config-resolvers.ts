@@ -121,13 +121,6 @@ export function resolveConfiguredModelUrl(
   variantId: string,
   ctx: ConfigResolverContext
 ): string | undefined {
-  const code = resolveItemConfigurationCode(item, ctx);
-  if (!code) return fallbackModelUrl;
-
-  const catalog = ctx.importedModelById.get(item.productId)?.catalog;
-  const assetMap = catalog?.configurableMetadata?.configuration_model_assets?.[code];
-  if (!assetMap) return fallbackModelUrl;
-
   const variantCode = variantId
     .replace(`imported-${item.productId}-`, "")
     .trim()
@@ -142,18 +135,94 @@ export function resolveConfiguredModelUrl(
     finishCode.replace(/-/g, "_"),
     finishCode.split("__")[0],
   ].filter((key) => key.length > 0);
-  const candidateAssetId =
-    lookupKeys
-      .map((key) => assetMap[key])
-      .find((assetId) => typeof assetId === "string" && assetId.trim().length > 0) ||
-    assetMap.default;
-  if (!candidateAssetId) return fallbackModelUrl;
 
-  const mappedOption = ctx.importedModelById.get(candidateAssetId);
-  if (mappedOption?.modelUrl) return mappedOption.modelUrl;
+  const normalizeLookupToken = (value: string | null | undefined): string =>
+    String(value ?? "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "")
+      .replace(/_+/g, "_");
 
-  const mappedUrl = ctx.importedModelUrlByAssetId[candidateAssetId];
-  if (mappedUrl) return mappedUrl;
+  const resolveAssetIdToModelUrl = (assetIdLike: string | null | undefined): string | undefined => {
+    const assetId = String(assetIdLike ?? "").trim();
+    if (!assetId) return undefined;
 
-  return `/assets/models/${candidateAssetId}.glb`;
+    const mappedOption = ctx.importedModelById.get(assetId);
+    if (mappedOption?.modelUrl) return mappedOption.modelUrl;
+
+    const mappedUrl = ctx.importedModelUrlByAssetId[assetId];
+    if (mappedUrl) return mappedUrl;
+
+    return `/assets/models/${assetId}.glb`;
+  };
+
+  const normalizeModelUrlValue = (value: string | null | undefined): string | undefined => {
+    const raw = String(value ?? "").trim();
+    if (!raw) return undefined;
+    if (/^https?:\/\//i.test(raw) || raw.startsWith("/")) return raw;
+    if (raw.startsWith("assets/models/")) return `/${raw}`;
+    if (/\.glb$/i.test(raw)) return `/assets/models/${raw}`;
+    return `/assets/models/${raw}.glb`;
+  };
+
+  const catalog = ctx.importedModelById.get(item.productId)?.catalog;
+
+  const code = resolveItemConfigurationCode(item, ctx);
+  const assetMap = code ? catalog?.configurableMetadata?.configuration_model_assets?.[code] : null;
+  if (assetMap) {
+    const candidateAssetId =
+      lookupKeys
+        .map((key) => assetMap[key])
+        .find((assetId) => typeof assetId === "string" && assetId.trim().length > 0) ||
+      assetMap.default;
+    const mapped = resolveAssetIdToModelUrl(candidateAssetId);
+    if (mapped) return mapped;
+  }
+
+  const variantEntries = Array.isArray(catalog?.variants) ? catalog.variants : [];
+  if (variantEntries.length > 0) {
+    const variantDims = variantMeta?.dimensionsMm;
+    const best = variantEntries
+      .map((entry) => {
+        const entryKeys = [
+          normalizeLookupToken(String(entry?.finish_code ?? "")),
+          normalizeLookupToken(String(entry?.upholstery_code ?? "")),
+          normalizeLookupToken(String(entry?.variant ?? "")),
+          normalizeLookupToken(String(entry?.size_label ?? "")),
+        ].filter((token) => token.length > 0);
+        const keyMatch = lookupKeys
+          .map((key) => normalizeLookupToken(key))
+          .some((key) => entryKeys.includes(key));
+
+        const entryWidthMm = Math.round(Number(entry?.dimensions?.width_cm ?? 0) * 10);
+        const entryDepthMm = Math.round(Number(entry?.dimensions?.depth_cm ?? 0) * 10);
+        const dimsMatch = Boolean(
+          variantDims &&
+            entryWidthMm > 0 &&
+            entryDepthMm > 0 &&
+            Math.abs(entryWidthMm - variantDims.w) <= 10 &&
+            Math.abs(entryDepthMm - variantDims.d) <= 10
+        );
+
+        const hasExplicitModel = Boolean(
+          String(entry?.model_url ?? "").trim() || String(entry?.model_asset_id ?? "").trim()
+        );
+
+        const score = (dimsMatch ? 4 : 0) + (keyMatch ? 2 : 0) + (hasExplicitModel ? 1 : 0);
+        return { entry, score };
+      })
+      .filter(({ score }) => score > 0)
+      .sort((a, b) => b.score - a.score)[0];
+
+    if (best) {
+      const directUrl = normalizeModelUrlValue(best.entry.model_url);
+      if (directUrl) return directUrl;
+
+      const mapped = resolveAssetIdToModelUrl(best.entry.model_asset_id);
+      if (mapped) return mapped;
+    }
+  }
+
+  return fallbackModelUrl;
 }

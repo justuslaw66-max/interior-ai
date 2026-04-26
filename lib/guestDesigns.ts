@@ -14,7 +14,7 @@ export type GuestDesign = {
     title: string;
     roomWidth: number;
     roomDepth: number;
-    items: any[];
+    items: unknown[];
     style?: string | null;
     budget?: string | null;
     mode?: string | null;
@@ -36,7 +36,7 @@ function migrateLegacyDesigns() {
       title: string;
       roomWidth: number;
       roomDepth: number;
-      items: any[];
+      items: unknown[];
       style?: string | null;
       budget?: string | null;
       mode?: string | null;

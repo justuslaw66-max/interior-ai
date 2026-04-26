@@ -2,11 +2,11 @@
 
 import * as THREE from "three";
 import { Canvas, type ThreeEvent, useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls, Edges, Html, Line, useCursor } from "@react-three/drei";
+import { OrbitControls, Edges, Environment, Html, Line, useCursor } from "@react-three/drei";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { signIn, useSession } from "next-auth/react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
 import { AuthButtons } from "@/components/AuthButtons";
 import { DesignerGrid } from "@/components/scene/DesignerGrid";
 import { LoadingOverlay } from "@/components/scene/LoadingOverlay";
@@ -23,43 +23,40 @@ import { bulkSwapItems } from "@/lib/bulkSwap";
 import { isPro, type Plan } from "@/lib/plan";
 import { useEditorMode } from "@/hooks/useEditorMode";
 import { useUndoRedoHotkeys } from "@/hooks/useUndoRedoHotkeys";
-import { HistoryManager, type HistoryEntry, type Snapshot } from "@/lib/historyManager";
+import { HistoryManager } from "@/lib/historyManager";
 import { track } from "@/lib/analytics";
 import { getAnonId } from "@/lib/anon";
 import { preloadCoreAssets } from "@/lib/preloadAssets";
-import { canAddToCart, reconcileCart, getNonBuyableReason, createCommerceEvent } from "@/lib/commerce-helpers";
+import { canAddToCart, reconcileCart, getNonBuyableReason } from "@/lib/commerce-helpers";
 import { evaluateConstraints, type ConstraintResult } from "@/lib/constraints/evaluate";
 import { initializeCatalog } from "@/lib/catalog-init";
 import {
   isOnboardingEligible,
   checkActivation,
-  getEmptyStateCoaching,
   getNextBestActionNudge,
   EventDedup,
   type OnboardingState,
 } from "@/lib/onboarding";
-import { applyAISuggestionAction } from "@/lib/ai/applySuggestion";
+import { applyAISuggestionAction, type AISuggestionAction } from "@/lib/ai/applySuggestion";
 import {
   computeSnapCandidates,
   computeAABB,
-  getActiveSnaps,
   pickGuides,
   snapGuideToGuide,
-  type SnapGuide,
   type Guide,
   type AABB,
 } from "@/lib/snapGuides";
 import { generateMeasurements, type Measure } from "@/lib/measurements";
-import { MATERIAL_PRESETS, getDefaultPreset, getPresetById, getPresetsForCategory, type StyleTone } from "@/lib/materialPresets";
+import { getDefaultPreset, getPresetById, getPresetsForCategory } from "@/lib/materialPresets";
 import {
   saveGuestDesign,
   loadGuestDesigns,
   markGuestDesignClaimed,
 } from "@/lib/guestDesigns";
 import { findSwapOptions } from "../lib/swap";
-import type { DesignSnapshot as MultiRoomSnapshot, DesignItem, ZoneMin, RoomSnapshot } from "@/lib/room-types";
+import type { DesignSnapshot as MultiRoomSnapshot, DesignItem, ZoneMin } from "@/lib/room-types";
 import { getActiveRoom, switchRoom, createRoom, addRoom, migrateToV3 } from "@/lib/room-types";
-import { useActiveRoomItems, useActiveRoomZones, getAllRoomNames } from "@/lib/room-hooks";
+import { getAllRoomNames } from "@/lib/room-hooks";
 import { RoomSwitcher } from "@/components/RoomSwitcher";
 import { legacyApiToSnapshot, snapshotToLegacyApi } from "@/lib/room-persistence";
 
@@ -75,6 +72,66 @@ type CameraView = {
 type NamedCameraView = {
   name: string;
   view: CameraView;
+};
+
+type LayoutPlan = {
+  picks?: Partial<Record<"sofa" | "rug" | "coffee_table" | "tv_console" | "accent_chair" | "floor_lamp", string>>;
+};
+
+type AINotesResponse = {
+  summary: string[];
+  rationale: string;
+  suggestions: Array<{
+    id: string;
+    label: string;
+    action: AISuggestionAction;
+  }>;
+  cached?: boolean;
+  ms?: number;
+};
+
+type SnapNeighbor = {
+  aabb: AABB;
+  label: string;
+};
+
+type WallDescriptor = {
+  axis: "x" | "z";
+  coord: number;
+  min: number;
+  max: number;
+};
+
+type FurnitureProps = {
+  product: CatalogItemSchema;
+  variantColor: string;
+  initialPosition?: [number, number, number];
+  initialRotationY?: number;
+  roomWidth?: number;
+  roomDepth?: number;
+  wallThickness?: number;
+  margin?: number;
+  snapDistance?: number;
+  enableSnap?: boolean;
+  onDraggingChange?: (dragging: boolean) => void;
+  walls?: WallDescriptor[];
+  instanceId: string;
+  isSelected?: boolean;
+  onSelect?: (id: string, additive: boolean) => void;
+  onMove?: (id: string, pos: [number, number, number]) => boolean | void;
+  onRotate?: (id: string, rotationY: number) => boolean | void;
+  onDragEnd?: (id: string, pos: [number, number, number]) => void;
+  locked?: boolean;
+  interactive?: boolean;
+  showSelection?: boolean;
+  showLocks?: boolean;
+  onSnapPulse?: () => void;
+  onSnapSuccess?: () => void;
+  items?: DesignItem[];
+  materialPreset?: string;
+  materialOverrides?: DesignItem["materialOverrides"];
+  showGuidesAndMeasurements?: boolean;
+  "data-testid"?: string;
 };
 
 /**
@@ -93,8 +150,8 @@ const STORAGE_KEY = "interior-ai:v1:livingroom-design";
 // Helper to extract price from catalog item commerce mapping
 function getItemPrice(item: CatalogItemSchema | undefined | null): number {
   if (!item) return 0;
-  if (item.commerce.type === "shopify" || item.commerce.type === "affiliate") {
-    return (item.commerce.data as any).priceHint ?? 0;
+  if (item.commerce.type === "affiliate") {
+    return item.commerce.data.priceHint ?? 0;
   }
   return 0;
 }
@@ -148,7 +205,7 @@ function getRotatedFootprint(
 }
 
 
-function snapToNearest(value: number, snapDistance: number): number {
+function _snapToNearest(value: number, snapDistance: number): number {
   const snapSize = 0.5; // snap to 0.5m grid
   const snapped = Math.round(value / snapSize) * snapSize;
   return Math.abs(value - snapped) < snapDistance ? snapped : value;
@@ -170,8 +227,8 @@ function Room({
   const floorMat = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
-        color: "#e9e4dc",
-        roughness: 0.9,
+        color: "#d4c6b4",
+        roughness: 0.95,
         metalness: 0.0,
       }),
     []
@@ -180,8 +237,8 @@ function Room({
   const wallMat = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
-        color: "#f6f6f6",
-        roughness: 0.95,
+        color: "#ece4d8",
+        roughness: 0.98,
         metalness: 0.0,
       }),
     []
@@ -308,11 +365,11 @@ function Furniture({
   roomWidth = 5,
   roomDepth = 4,
   wallThickness = 0.12,
-  margin = 0.05,
+  margin: _margin = 0.05,
   snapDistance = 0.25,
   enableSnap = true,
   onDraggingChange,
-  walls,
+  walls: _walls,
   instanceId,
   isSelected,
   onSelect,
@@ -329,7 +386,7 @@ function Furniture({
   materialPreset,
   materialOverrides,
   showGuidesAndMeasurements = true,
-}: any) {
+}: FurnitureProps) {
   const width = product.dimsMm.w / 1000;
   const depth = product.dimsMm.d / 1000;
   const height = product.dimsMm.h / 1000;
@@ -378,9 +435,12 @@ function Furniture({
 
   useEffect(() => {
     if (dragging) return;
-    setPosition(initialPosition);
-    setRotation(initialRotationY);
-    setSnapType("none");
+    const frameId = window.requestAnimationFrame(() => {
+      setPosition(initialPosition);
+      setRotation(initialRotationY);
+      setSnapType("none");
+    });
+    return () => window.cancelAnimationFrame(frameId);
   }, [dragging, initialPosition, initialRotationY]);
 
   useCursor(hovered && Boolean(locked), "not-allowed");
@@ -431,10 +491,13 @@ function Furniture({
       const newZ = clamp(position[2], hardMinZ, hardMaxZ);
       
       if (newX !== position[0] || newZ !== position[2]) {
-        setPosition([newX, 0, newZ]);
+        const frameId = window.requestAnimationFrame(() => {
+          setPosition([newX, 0, newZ]);
+        });
+        return () => window.cancelAnimationFrame(frameId);
       }
     }
-  }, [rotation, snapType]);
+  }, [depth, position, roomDepth, roomWidth, rotation, snapType, wallThickness, width]);
 
   // Reuse objects (avoid recreating every render)
   const plane = useMemo(() => new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), []);
@@ -555,8 +618,8 @@ function Furniture({
     raycaster.ray.intersectPlane(plane, intersection);
 
     // Hard-clamp to room bounds to prevent going outside
-    let x = clamp(intersection.x, hardMinX, hardMaxX);
-    let z = clamp(intersection.z, hardMinZ, hardMaxZ);
+    const x = clamp(intersection.x, hardMinX, hardMaxX);
+    const z = clamp(intersection.z, hardMinZ, hardMaxZ);
 
     // Try to snap to wall if enabled
     let snappedX = x;
@@ -577,9 +640,9 @@ function Furniture({
       const selectedAABB = computeAABB(nextPos, effectiveWidth, effectiveDepth);
       
       // Find nearby furniture (simple bounds check on all items)
-      const neighborGuides = (items as any[])
-        .filter((item: any) => item.instanceId !== instanceId) // exclude self
-        .map((item: any) => {
+      const neighborGuides = items
+        .filter((item) => item.instanceId !== instanceId) // exclude self
+        .map((item): SnapNeighbor | null => {
           const itemProduct = CATALOG_ITEMS[item.productId];
           if (!itemProduct) return null;
           const itemRotation = item.rotationY ?? 0;
@@ -594,7 +657,7 @@ function Furniture({
             label: `${itemProduct.title}`,
           };
         })
-        .filter((x: any) => !!x) as any[];
+        .filter((item): item is SnapNeighbor => item !== null);
 
       // Wall snap points (flush to walls, no breathing room)
       const walls = [
@@ -634,9 +697,9 @@ function Furniture({
       setSnapGuides(picked);
 
       // Compute measurements (gaps, walkways, etc)
-      const neighborMeasures = (items as any[])
-        .filter((item: any) => item.instanceId !== instanceId)
-        .map((item: any) => {
+      const neighborMeasures = items
+        .filter((item) => item.instanceId !== instanceId)
+        .map((item): { aabb: AABB; name: string } | null => {
           const itemProduct = CATALOG_ITEMS[item.productId];
           if (!itemProduct) return null;
           const itemRotation = item.rotationY ?? 0;
@@ -650,7 +713,7 @@ function Furniture({
             name: itemProduct.title,
           };
         })
-        .filter((x: any) => !!x) as Array<{ aabb: AABB; name: string }>;
+        .filter((item): item is { aabb: AABB; name: string } => item !== null);
 
       const measures = generateMeasurements(
         selectedAABB,
@@ -712,7 +775,7 @@ function Furniture({
     }
   });
 
-  const baseColor = useMemo(() => {
+  const _baseColor = useMemo(() => {
     if (!locked) return variantColor;
     const color = new THREE.Color(variantColor);
     const hsl = { h: 0, s: 0, l: 0 };
@@ -732,7 +795,7 @@ function Furniture({
       onClick={(e) => {
         if (!interactive) return;
         e.stopPropagation();
-        onSelect(instanceId, Boolean(e.shiftKey));
+        onSelect?.(instanceId, Boolean(e.shiftKey));
       }}
       onPointerDown={onPointerDown}
       onPointerUp={onPointerUp}
@@ -833,7 +896,7 @@ function PageContent() {
   const [designId, setDesignId] = useState<string | null>(null);
   const [shareToken, setShareToken] = useState<string | null>(null);
   const [shareEnabled, setShareEnabled] = useState(false);
-  const [shareOrigin, setShareOrigin] = useState("");
+  const [_shareOrigin, setShareOrigin] = useState("");
   const [style, setStyle] = useState<Style>("Modern");
   const [budget, setBudget] = useState<"$" | "$$" | "$$$">("$$");
   const [mode, setMode] = useState<"homeowner" | "designer">(
@@ -842,14 +905,14 @@ function PageContent() {
   const [notes, setNotes] = useState("");
   const [aiSeed, setAiSeed] = useState<number>(Date.now());
   const [plan, setPlan] = useState<Plan>("free");
-  const [refreshingPlan, setRefreshingPlan] = useState(false);
+  const [_refreshingPlan, setRefreshingPlan] = useState(false);
   const [startingCheckout, setStartingCheckout] = useState(false);
   const [showPlans, setShowPlans] = useState(false);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [upgradeReason, setUpgradeReason] = useState<"designer" | "export_images" | "export_pdf" | null>(null);
   const [showAINotes, setShowAINotes] = useState(false);
   const [aiNotesLoading, setAiNotesLoading] = useState(false);
-  const [aiNotesData, setAiNotesData] = useState<any>(null);
+  const [aiNotesData, setAiNotesData] = useState<AINotesResponse | null>(null);
   const [showGrid, setShowGrid] = useState(false);
   const [snapEnabled, setSnapEnabled] = useState(true);
   const [gridPulse, setGridPulse] = useState(false);
@@ -865,11 +928,11 @@ function PageContent() {
   });
   
   // Onboarding timings and UI state
-  const [sofaNudgeVisible, setSofaNudgeVisible] = useState(false);
-  const [sofaReinforceMessage, setSofaReinforceMessage] = useState<string | null>(null);
-  const [emptyStateCoaching, setEmptyStateCoaching] = useState<string | null>(null);
+  const [_sofaNudgeVisible, setSofaNudgeVisible] = useState(false);
+  const [_sofaReinforceMessage, setSofaReinforceMessage] = useState<string | null>(null);
+  const [_emptyStateCoaching, _setEmptyStateCoaching] = useState<string | null>(null);
   const [nextBestActionNudge, setNextBestActionNudge] = useState<string | null>(null);
-  const [ghostSuggestions, setGhostSuggestions] = useState<
+  const [_ghostSuggestions, setGhostSuggestions] = useState<
     Array<{
       id: string;
       productId: string;
@@ -877,7 +940,7 @@ function PageContent() {
       rotationY?: number;
     }>
   >([]);
-  const [showGhostHint, setShowGhostHint] = useState(false);
+  const [_showGhostHint, setShowGhostHint] = useState(false);
   const [lastLocalAutosaveAt, setLastLocalAutosaveAt] = useState<number | null>(
     null
   );
@@ -893,7 +956,7 @@ function PageContent() {
     fov: 45,
   });
   const [savedViews, setSavedViews] = useState<NamedCameraView[]>([]);
-  const [showCartPanel, setShowCartPanel] = useState(false);
+  const [_showCartPanel, _setShowCartPanel] = useState(false);
   const [showPresentModal, setShowPresentModal] = useState(false);
   const [presentModeRoomId, setPresentModeRoomId] = useState<string | null>(null);
   const [sharingDesign, setSharingDesign] = useState(false);
@@ -923,10 +986,10 @@ function PageContent() {
   const snapToastTimerRef = useRef<number | null>(null);
   const ruleToastTimerRef = useRef<number | null>(null);
   const onboardingStartedAtRef = useRef<number | null>(null);
-  const onboardingStartTrackedRef = useRef(false);
+  const _onboardingStartTrackedRef = useRef(false);
   const firstItemTrackedRef = useRef(false);
-  const firstValidLayoutRef = useRef(false);
-  const onboardingCompletedRef = useRef(false);
+  const _firstValidLayoutRef = useRef(false);
+  const _onboardingCompletedRef = useRef(false);
   const seatingZoneAutoDisabledRef = useRef(false);
   const sofaNudgeTimerRef = useRef<number | null>(null);
   const ghostTimerRef = useRef<number | null>(null);
@@ -1373,7 +1436,10 @@ function PageContent() {
 
     const chairs = itemByCategory("accent_chair");
     const lamps = itemByCategory("floor_lamp");
-    const tvConsoles = itemByCategory("tv_console");
+    const tvConsoles = [
+      ...itemByCategory("tv_console"),
+      ...itemByCategory("sideboard"),
+    ];
 
     // Seating zones are created only once when the first sofa is placed.
 
@@ -1561,16 +1627,23 @@ function PageContent() {
     }
   };
 
-  const fallbackItems: PlacedItem[] = [
-    {
-      instanceId: "i-1",
-      productId: "sofa-scandi-01",
-      variantId: CATALOG_ITEMS["sofa-scandi-01"].defaultVariantId,
-      position: [0, 0, -1.4],
-      qty: 1,
-      includeInCheckout: true,
-    },
-  ];
+  const fallbackProduct =
+    Object.values(CATALOG_ITEMS).find(
+      (item) => typeof item.assets?.modelUrl === "string" && item.assets.modelUrl.length > 0
+    ) ?? Object.values(CATALOG_ITEMS)[0];
+
+  const fallbackItems: PlacedItem[] = fallbackProduct
+    ? [
+        {
+          instanceId: "i-1",
+          productId: fallbackProduct.id,
+          variantId: fallbackProduct.defaultVariantId,
+          position: [0, 0, -1.4],
+          qty: 1,
+          includeInCheckout: true,
+        },
+      ]
+    : [];
 
   // State for design snapshot with ref for synchronous access
   // NEW: Initialize with v3 multi-room format using migrateToV3
@@ -1590,7 +1663,7 @@ function PageContent() {
   }, [designSnapshot]);
 
   // Initialize HistoryManager (once)
-  const historyRef = useRef<HistoryManager | null>(null);
+  const historyRef = useRef<HistoryManager<DesignSnapshot> | null>(null);
   if (!historyRef.current) {
     historyRef.current = new HistoryManager(
       () => designSnapshotRef.current,
@@ -1600,10 +1673,10 @@ function PageContent() {
       }
     );
   }
-  const history = historyRef.current;
+  const history = historyRef.current!;
 
   // NEW: Get active room and its items/zones
-  const activeRoom = useMemo(
+  const _activeRoom = useMemo(
     () => getActiveRoom(designSnapshot),
     [designSnapshot]
   );
@@ -1768,7 +1841,7 @@ function PageContent() {
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
-  const orbitControlsRef = useRef<any>(null);
+  const orbitControlsRef = useRef<OrbitControlsImpl | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const isCameraAnimatingRef = useRef(false);
@@ -1851,7 +1924,7 @@ function PageContent() {
       requestAnimationFrame(tick);
     });
 
-  const addWatermark = (canvas: HTMLCanvasElement, isFree: boolean): HTMLCanvasElement => {
+  const _addWatermark = (canvas: HTMLCanvasElement, isFree: boolean): HTMLCanvasElement => {
     if (!isFree) return canvas;
 
     const ctx = canvas.getContext("2d");
@@ -2205,7 +2278,7 @@ function PageContent() {
         throw new Error(error?.error || `API error: ${response.statusText}`);
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as AINotesResponse & { error?: string };
 
       if (data?.error) {
         throw new Error(data.error);
@@ -2248,7 +2321,7 @@ function PageContent() {
     }
   };
 
-  const applySuggestion = async (action: any) => {
+  const applySuggestion = async (action: AISuggestionAction) => {
     try {
       await applyAISuggestionAction({
         action,
@@ -2354,6 +2427,7 @@ function PageContent() {
     } catch {
       // ignore invalid saved data
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -2370,7 +2444,7 @@ function PageContent() {
       setPlan(newPlan);
       showRuleToast(`Plan status: ${newPlan === "pro" ? "Pro" : "Free"}`);
       track("plan_refreshed", { plan: newPlan });
-    } catch (err) {
+    } catch {
       showRuleToast("Failed to refresh plan status");
       setPlan("free");
     } finally {
@@ -2378,7 +2452,7 @@ function PageContent() {
     }
   };
 
-  const openBillingPortal = async () => {
+  const _openBillingPortal = async () => {
     if (!session?.user) {
       signIn("google");
       return;
@@ -2445,6 +2519,7 @@ function PageContent() {
 
   useEffect(() => {
     refreshPlan();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -2517,6 +2592,7 @@ function PageContent() {
     return () => {
       alive = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, router, searchParams]);
 
   useEffect(() => {
@@ -2597,11 +2673,11 @@ function PageContent() {
   const roomDepth = 4;
   const roomHeight = 2.6;
   const wallThickness = 0.12;
-  const roomMargin = 0.05; // 5cm breathing room from wall
-  const snapThreshold = 0.03; // 3cm threshold for wall snapping
+  const _roomMargin = 0.05; // 5cm breathing room from wall
+  const _snapThreshold = 0.03; // 3cm threshold for wall snapping
 
   // Create room bounds object for reference
-  const roomBounds: RoomBounds = {
+  const _roomBounds: RoomBounds = {
     width: roomWidth,
     depth: roomDepth,
     height: roomHeight,
@@ -2730,6 +2806,7 @@ function PageContent() {
     }
 
     track("editor_room_switched", { roomId });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // NEW: Handle adding new room
@@ -2802,6 +2879,7 @@ function PageContent() {
     });
     setSelectedZoneId(zoneId);
     clearSelection();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clearSelection, pendingZoneType]);
 
   const autoCreateSeatingZone = useCallback(
@@ -2842,6 +2920,7 @@ function PageContent() {
       setSelectedZoneId(zoneId);
       track("seating_zone_auto_created", { zoneId, trigger: "first_sofa" });
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [editorMode, history, isClientPreview]
   );
 
@@ -2900,6 +2979,7 @@ function PageContent() {
     }
 
     commitItems(nextItems, "Align X center");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [commitItems, isDesigner, roomDepth, roomWidth, wallThickness]);
 
   const alignSelectionZ = useCallback(() => {
@@ -2950,6 +3030,7 @@ function PageContent() {
     }
 
     commitItems(nextItems, "Align Z center");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [commitItems, isDesigner, roomDepth, roomWidth, wallThickness]);
 
   const autoLayoutZone = useCallback(
@@ -3073,9 +3154,10 @@ function PageContent() {
       }
 
       if (zone.type === "tv") {
-        const consoleItem = zoneItems.find(
-          (item) => getCategory(item) === "tv_console"
-        );
+        const consoleItem = zoneItems.find((item) => {
+          const category = getCategory(item);
+          return category === "tv_console" || category === "sideboard";
+        });
         if (consoleItem && !(isDesigner && consoleItem.locked)) {
           const consoleProduct = CATALOG_ITEMS[consoleItem.productId];
           const targetX = 0;
@@ -3174,6 +3256,7 @@ function PageContent() {
 
       commitItems(nextItems, "Rotate zone");
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [commitItems, isDesigner, roomDepth, roomWidth, wallThickness]
   );
 
@@ -3201,6 +3284,7 @@ function PageContent() {
       const zoneItems = items.filter((item) => zoneSet.has(item.instanceId));
       return getSelectionBounds(zoneItems);
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [items]
   );
 
@@ -3279,7 +3363,7 @@ function PageContent() {
     };
   }, [getEyeLevelView, selectedItem, selectedProduct]);
 
-  const saveCurrentView = useCallback(() => {
+  const _saveCurrentView = useCallback(() => {
     const label = `View ${savedViews.length + 1}`;
     const next = [...savedViews, { name: label, view: cameraView }].slice(-6);
     setSavedViews(next);
@@ -3321,6 +3405,7 @@ function PageContent() {
         zones: nextZones,
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items]);
 
   useEffect(() => {
@@ -3341,7 +3426,7 @@ function PageContent() {
     } catch {
       // ignore quota errors for now
     }
-  }, [items, savedViews]);
+  }, [items, zones, savedViews]);
 
   useEffect(() => {
     if (!designId) return;
@@ -3376,7 +3461,7 @@ function PageContent() {
       cancelled = true;
       clearTimeout(t);
     };
-  }, [items, designId, savedViews]);
+  }, [items, designId, zones, savedViews]);
 
   useEffect(() => {
     if (designId || session?.user) return;
@@ -3400,7 +3485,7 @@ function PageContent() {
     }, 800);
 
     return () => clearTimeout(t);
-  }, [designId, session?.user, items, style, budget, mode, roomWidth, roomDepth]);
+  }, [designId, session?.user, items, style, budget, mode, roomWidth, roomDepth, notes]);
   // Precompute wall descriptors for Furniture to snap against (inner face coords)
   const halfW = roomWidth / 2;
   const halfD = roomDepth / 2;
@@ -3654,7 +3739,7 @@ function PageContent() {
     return { items: nextItems } as DesignSnapshot;
   };
 
-  const applyLayoutPlan = (plan: any) => {
+  const applyLayoutPlan = (plan: LayoutPlan) => {
     const picks = plan?.picks ?? {};
 
     const backWallZ = -roomDepth / 2 + wallThickness + 0.2;
@@ -3926,7 +4011,7 @@ function PageContent() {
     clearAllSelection();
   };
 
-  const getRandomSeed = () => {
+  const _getRandomSeed = () => {
     if (typeof crypto !== "undefined" && "getRandomValues" in crypto) {
       const buf = new Uint32Array(1);
       crypto.getRandomValues(buf);
@@ -3988,7 +4073,7 @@ function PageContent() {
 
   const isEmpty = items.length === 0;
   const canEdit = !isClientPreview && sceneReady;
-  const isSharedLink = Boolean(shareToken) || pathname?.includes("/share/");
+  const _isSharedLink = Boolean(shareToken) || pathname?.includes("/share/");
 
   useEffect(() => {
     if (!onboardingState.enabled || onboardingState.step === "completed") return;
@@ -4355,7 +4440,7 @@ function PageContent() {
     session?.user,
   ]);
 
-  const findByCategory = (category: string) => {
+  const _findByCategory = (category: string) => {
     return (
       items.find((i) => CATALOG_ITEMS[i.productId]?.category === category) ?? null
     );
@@ -4423,7 +4508,7 @@ function PageContent() {
     };
   }, [onboardingState.enabled, editorMode, isClientPreview, items, constraintResults, designId]);
 
-  const saveStatusText = useMemo(() => {
+  const _saveStatusText = useMemo(() => {
     if (isSaving) return "Saving...";
     if (designId && lastDbSaveAt) {
       return `Saved ${formatTimeAgo(lastDbSaveAt)}`;
@@ -4456,12 +4541,13 @@ function PageContent() {
     }, 240);
   };
 
-  const handleSnapSuccess = () => {
+  const _handleSnapSuccess = () => {
     triggerGridPulse();
     showSnapToastOnce();
   };
 
   const visibleConstraints = pickTopConstraints(constraintResults);
+  const lightConfig = LIGHTING_PRESETS[lightingPreset];
 
   return (
     <main
@@ -4473,38 +4559,59 @@ function PageContent() {
         <div className="relative h-full w-full">
           <Canvas
             data-testid="scene-canvas"
-            ref={canvasRef as any}
             shadows
-            gl={{ preserveDrawingBuffer: true, antialias: true }}
+            dpr={[1, 2]}
+            gl={{
+              preserveDrawingBuffer: true,
+              antialias: true,
+              outputColorSpace: THREE.SRGBColorSpace,
+              toneMapping: THREE.ACESFilmicToneMapping,
+              toneMappingExposure: lightConfig.exposure ?? 0.88,
+            }}
             camera={{ position: [4.5, 3.2, 5.5], fov: 45, near: 0.1, far: 100 }}
+            onCreated={({ gl }) => {
+              (gl as THREE.WebGLRenderer & { physicallyCorrectLights?: boolean }).physicallyCorrectLights = true;
+            }}
             onPointerMissed={() => clearAllSelection()}
           >
             <LoadingOverlay />
             <SceneProgressBridge onReadyChange={setSceneReady} />
+            <Suspense fallback={null}>
+              <Environment preset={lightConfig.envPreset ?? "apartment"} />
+            </Suspense>
             {/* Apply lighting preset */}
-            {(() => {
-              const lightConfig = LIGHTING_PRESETS[lightingPreset];
-              return (
-                <>
-                  <ambientLight intensity={lightConfig.ambientIntensity} />
-                  <directionalLight
-                    position={[6, 8, 4]}
-                    intensity={lightConfig.directionalIntensity}
-                    castShadow
-                    shadow-mapSize-width={2048}
-                    shadow-mapSize-height={2048}
-                    shadow-camera-near={1}
-                    shadow-camera-far={25}
-                    shadow-camera-left={-10}
-                    shadow-camera-right={10}
-                    shadow-camera-top={10}
-                    shadow-camera-bottom={-10}
-                    shadow-bias={lightConfig.shadowBias}
-                    shadow-radius={lightConfig.shadowRadius}
-                  />
-                </>
-              );
-            })()}
+            <hemisphereLight
+              args={[
+                lightConfig.skyColor ?? "#eaf1ff",
+                lightConfig.groundColor ?? "#c9b8a3",
+                lightConfig.hemiIntensity ?? 0.45,
+              ]}
+            />
+            <ambientLight
+              color={lightConfig.ambientColor ?? "#f4efe5"}
+              intensity={lightConfig.ambientIntensity}
+            />
+            <directionalLight
+              position={[6, 8, 4]}
+              color={lightConfig.keyColor ?? "#fff1db"}
+              intensity={lightConfig.keyIntensity ?? lightConfig.directionalIntensity}
+              castShadow
+              shadow-mapSize-width={2048}
+              shadow-mapSize-height={2048}
+              shadow-camera-near={1}
+              shadow-camera-far={25}
+              shadow-camera-left={-10}
+              shadow-camera-right={10}
+              shadow-camera-top={10}
+              shadow-camera-bottom={-10}
+              shadow-bias={lightConfig.shadowBias}
+              shadow-radius={lightConfig.shadowRadius}
+            />
+            <directionalLight
+              position={[-4, 4, -3]}
+              color={lightConfig.fillColor ?? "#d7e5ff"}
+              intensity={lightConfig.fillIntensity ?? lightConfig.directionalIntensity * 0.5}
+            />
 
             <Suspense fallback={<RoomSkeleton />}>
               <Room
@@ -4567,7 +4674,7 @@ function PageContent() {
                       trackFirstInteraction();
                       handleSelect(id, additive);
                     }}
-                    onMove={(id: string, pos: any) => {
+                    onMove={(id: string, pos: [number, number, number]) => {
                       trackFirstInteraction();
                       const selectedSet = selectedIdsRef.current;
                       const isGroupMove = selectedSet.size > 1 && selectedSet.has(id);
@@ -4595,7 +4702,7 @@ function PageContent() {
                             }
                           }
                         }
-                        const updater = (prev: any[]) =>
+                        const updater = (prev: PlacedItem[]) =>
                           prev.map((x) =>
                             x.instanceId === id ? { ...x, position: pos } : x
                           );
@@ -4697,8 +4804,8 @@ function PageContent() {
                       const selectedSet = selectedIdsRef.current;
                       const isGroupRotate = selectedSet.size > 1 && selectedSet.has(id);
                       if (!isGroupRotate) {
-                        commitItems((prev: any) =>
-                          prev.map((x: any) =>
+                        commitItems((prev: PlacedItem[]) =>
+                          prev.map((x) =>
                             x.instanceId === id ? { ...x, rotationY: rotY } : x
                           ),
                           "Rotate item"
@@ -6071,7 +6178,7 @@ function PageContent() {
                   <div>
                     <h3 className="font-semibold text-gray-900 dark:text-white">Suggestions</h3>
                     <div className="mt-2 space-y-2">
-                      {aiNotesData.suggestions.map((suggestion: any, idx: number) => (
+                      {aiNotesData.suggestions.map((suggestion, idx: number) => (
                         <div
                           key={idx}
                           className="flex items-center justify-between rounded-lg border border-gray-200 p-3 dark:border-gray-700"
@@ -6432,7 +6539,7 @@ function PageContent() {
                   : "text-center text-gray-500"
               }>
                 <p className="mb-2">No saved designs yet</p>
-                <p className="text-sm">Click "Save" to save your current design</p>
+                <p className="text-sm">Click &quot;Save&quot; to save your current design</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -6639,17 +6746,7 @@ function PageContent() {
 
       {/* Onboarding Complete Message */}
       {onboardingState.step === "completed" && (
-        <div data-testid="onboarding-complete" className="fixed top-1/2 left-1/2 z-40 -translate-x-1/2 -translate-y-1/2 animate-fade-in">
-          <div className="rounded-xl bg-green-600 px-8 py-6 text-center shadow-2xl">
-            <div className="text-2xl font-bold text-white">✅ Setup Complete!</div>
-            <div className="mt-2 text-sm text-green-100">Your room is ready to explore</div>
-          </div>
-        </div>
-      )}
-
-      {/* Onboarding Complete Message */}
-      {onboardingState.step === "completed" && (
-        <div data-testid="onboarding-complete" className="fixed top-1/2 left-1/2 z-40 -translate-x-1/2 -translate-y-1/2 animate-fade-in">
+        <div data-testid="onboarding-complete" className="pointer-events-none fixed top-1/2 left-1/2 z-40 -translate-x-1/2 -translate-y-1/2 animate-fade-in">
           <div className="rounded-xl bg-green-600 px-8 py-6 text-center shadow-2xl">
             <div className="text-2xl font-bold text-white">✅ Setup Complete!</div>
             <div className="mt-2 text-sm text-green-100">Your room is ready to explore</div>

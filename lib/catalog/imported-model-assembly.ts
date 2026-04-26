@@ -136,6 +136,8 @@ export type ImportedModelCatalog = {
     size_label?: string;
     finish_code?: string;
     finish_label?: string;
+    model_asset_id?: string;
+    model_url?: string;
     upholstery_code?: string;
     upholstery_label?: string;
     collection_type?: string;
@@ -496,11 +498,20 @@ export function buildImportedCatalogItem({
 
   const yamlVariants = Array.isArray(yamlCatalog?.variants) ? yamlCatalog.variants : [];
   const widthCm = imported.dimsWmm / 10;
+  const hasVariantLevelModelMapping = yamlVariants.some(
+    (entry) =>
+      Boolean(String(entry?.model_asset_id ?? "").trim()) ||
+      Boolean(String(entry?.model_url ?? "").trim())
+  );
   const sizeMatchedYamlVariants = yamlVariants.filter((entry) => {
     const entryWidth = Number(entry?.dimensions?.width_cm ?? 0);
     return Number.isFinite(entryWidth) && Math.abs(entryWidth - widthCm) <= 0.5;
   });
-  const yamlPreferredVariants = sizeMatchedYamlVariants.length > 0 ? sizeMatchedYamlVariants : yamlVariants;
+  const yamlPreferredVariants = hasVariantLevelModelMapping
+    ? yamlVariants
+    : sizeMatchedYamlVariants.length > 0
+      ? sizeMatchedYamlVariants
+      : yamlVariants;
   const firstYamlVariant = (yamlPreferredVariants[0] ?? null) as
     | { price_usd?: number; priceUsd?: number }
     | null;

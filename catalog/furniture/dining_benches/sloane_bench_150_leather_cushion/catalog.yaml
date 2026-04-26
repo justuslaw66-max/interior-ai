@@ -1,0 +1,130 @@
+brand: "Castlery"
+category: "dining_bench"
+
+product_family: "Sloane"
+product_name: "Sloane Dining Bench"
+variant: "150 Leather Cushion"
+
+price_usd: 649
+price_band: "mid_premium"
+brand_tier: "premium_mid"
+
+design_zone: "dining_zone"
+anchor_role: "secondary"
+
+dimensions:
+  width_cm: 150
+  depth_cm: 41
+  height_cm: 51.5
+
+seat_capacity: 2
+size_class: "medium"
+
+shape: "rectangular"
+base_type: "dual_panel"
+
+material_family: "mixed"
+material_mix: "wood_leather"
+
+color_family: "brown"
+tone: "warm"
+
+style_cluster: "contemporary_luxury"
+style_secondary: "minimalist"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "straight"
+  silhouette: "monolithic"
+  form_language: "linear"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  walkway_clearance_cm: 90
+
+room_compatibility:
+  - "dining_room"
+  - "open_plan"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: false
+
+design_pairings:
+  - "dining_table"
+  - "dining_rug"
+  - "pendant_light"
+  - "sideboard"
+
+ai_flags:
+  isStarterEligible: false
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+
+compatibility:
+  related_products:
+    - product_family: "Sloane"
+      product_name: "Sloane Travertine Dining Table"
+      relationship: "matching_companion"
+      strength: "strong"
+
+bundle_metadata:
+  can_bundle_with:
+    - "Sloane Travertine Dining Table"
+  bundle_role: "dining_seating"
+  set_behavior:
+    supports_with_or_without_cushion: true
+
+assets:
+  asset_id: "dining-real-castlery-sloane-bench-150-leather-cushion"
+  model_url: "/assets/models/dining-real-castlery-sloane-bench-150-leather-cushion.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1678698646/crusader/variants/50520005/Sloane-Dining-Bench-150cm-Grey-Oak-With-Leather-Cushion-Angle-1678698646.png"
+
+variants:
+  - variant: "150 Leather Cushion"
+    size_label: "150"
+    finish_code: "grey_oak"
+    finish_label: "Grey Oak"
+    upholstery_code: "top_grain_leather_tan"
+    upholstery_label: "Leather Cushion"
+    swatch_group: "upholstery_option"
+
+    price_usd: 649
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+
+    dimensions:
+      width_cm: 150
+      depth_cm: 41
+      height_cm: 51.5
+
+    seating_depth_cm: 41
+    seat_capacity: 2
+    size_class: "medium"
+
+    color_family: "brown"
+    tone: "warm"
+
+    materials:
+      frame:
+        structure: "engineered_wood"
+        surface: "oak_veneer"
+      cushion:
+        structure: "upholstered"
+        surface: "top_grain_leather"
+        leather_origin: "american_hides"
+
+    finish:
+      frame_finish: "grey_oak"
+      cushion_finish: "tan_leather"
+      surface_finish: "matte"
+      finish_color: "grey_oak_tan_leather"
+
+    set_compatibility:
+      recommended_with_products:
+        - product_name: "Sloane Travertine Dining Table"
+          recommended_table_sizes:
+            - 180

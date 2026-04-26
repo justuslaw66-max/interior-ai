@@ -11,13 +11,16 @@
 
 export type ProductCategory =
   | "sofa"
+  | "ottoman"
   | "accessory"
   | "rug"
   | "coffee_table"
   | "dining_table"
+  | "dining_bench"
   | "accent_chair"
   | "floor_lamp"
   | "tv_console"
+  | "sideboard"
   | "bookshelf"
   | "side_table"
   | "wall_art"
@@ -119,10 +122,28 @@ export type RoomTag =
 // ============================================================================
 
 export interface ProductVariant {
-  id: string; // e.g., "sofa-scandi-01-gray"
+  id: string; // e.g., "sofa-real-castlery-dawson-3s-navagio_seagull"
   label: string; // e.g., "Gray"
   colorHex: string; // e.g., "#808080"
   thumbnailUrl: string; // variant-specific thumb
+  galleryImages?: string[];
+  dimensionsMm?: DimensionsMm;
+  shopifyVariantId?: string;
+  affiliateUrl?: string;
+  priceHint?: number;
+  available?: boolean;
+  finishCode?: string;
+  finishLabel?: string;
+  materialType?: "Fabric" | "Leather";
+  swatchGroup?: string;
+  swatchHex?: string;
+  collectionType?: string; // "stocked" | "custom" from upholstery options
+  renderAssets?: {
+    baseColorMap?: string;
+    normalMap?: string;
+    roughnessMap?: string;
+    tileScale?: { x?: number; y?: number };
+  };
 }
 
 // ============================================================================
@@ -204,6 +225,23 @@ export interface CatalogItemSchema {
   metadata?: {
     brand?: string;
     modelLabel?: string;
+    productFamily?: string;
+    productName?: string;
+    importedVariantPipelineRevision?: string;
+    // Catalog YAML enrichment fields
+    styleCluster?: string;
+    styleSecondary?: string;
+    designEra?: string;
+    colorFamily?: string;
+    tone?: string;
+    priceUsd?: number;
+    priceBand?: string;
+    seatCapacity?: number;
+    materialFamily?: string;
+    designPairings?: string[];
+    compatibility?: unknown;
+    bundleMetadata?: unknown;
+    galleryImages?: string[];
   };
   aiRoles?: string[]; // e.g., ["seating_anchor", "living_room_focal_point"]
   tags?: string[];
@@ -242,6 +280,25 @@ export const CATEGORY_DEFAULTS: Record<ProductCategory, CategoryDefaults> = {
       wallClearanceMm: 0,
     },
     aiRoles: ["seating_anchor", "living_room_focal"],
+  },
+  ottoman: {
+    dimsMm: { w: 900, d: 650, h: 450 },
+    placement: {
+      floorOnly: true,
+      wallSnappable: false,
+      wallMountable: false,
+      minWallGapMm: 100,
+      allowRugOverlap: true,
+      snapMarginMm: 0,
+    },
+    clearance: {
+      walkwayMinMm: 500,
+      coffeeGapMinMm: 0,
+      coffeeGapMaxMm: 0,
+      sofaClearanceMm: 250,
+      wallClearanceMm: 100,
+    },
+    aiRoles: ["seating_accessory", "seating_secondary"],
   },
   accessory: {
     dimsMm: { w: 900, d: 650, h: 450 },
@@ -319,6 +376,25 @@ export const CATEGORY_DEFAULTS: Record<ProductCategory, CategoryDefaults> = {
     },
     aiRoles: ["dining_anchor"],
   },
+  dining_bench: {
+    dimsMm: { w: 1500, d: 410, h: 515 },
+    placement: {
+      floorOnly: true,
+      wallSnappable: false,
+      wallMountable: false,
+      minWallGapMm: 200,
+      allowRugOverlap: true,
+      snapMarginMm: 0,
+    },
+    clearance: {
+      walkwayMinMm: 900,
+      coffeeGapMinMm: 0,
+      coffeeGapMaxMm: 0,
+      sofaClearanceMm: 0,
+      wallClearanceMm: 200,
+    },
+    aiRoles: ["dining_seating"],
+  },
   accent_chair: {
     dimsMm: { w: 820, d: 820, h: 900 },
     placement: {
@@ -375,6 +451,25 @@ export const CATEGORY_DEFAULTS: Record<ProductCategory, CategoryDefaults> = {
       wallClearanceMm: 0,
     },
     aiRoles: ["focal_point", "media_center"],
+  },
+  sideboard: {
+    dimsMm: { w: 1800, d: 450, h: 760 },
+    placement: {
+      floorOnly: true,
+      wallSnappable: true,
+      wallMountable: false,
+      minWallGapMm: 0,
+      allowRugOverlap: false,
+      snapMarginMm: 50,
+    },
+    clearance: {
+      walkwayMinMm: 800,
+      coffeeGapMinMm: 0,
+      coffeeGapMaxMm: 0,
+      sofaClearanceMm: 0,
+      wallClearanceMm: 0,
+    },
+    aiRoles: ["functional_storage", "living_storage"],
   },
   bookshelf: {
     dimsMm: { w: 1000, d: 350, h: 2000 },

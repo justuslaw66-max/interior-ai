@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import CatalogSearchInput from "./CatalogSearchInput";
 import CatalogCategoryTabs from "./CatalogCategoryTabs";
@@ -23,6 +23,8 @@ import {
 } from "@/lib/catalog/view-builders";
 import { buildCatalogRecommendationSet } from "@/lib/catalog/recommendations";
 import { track } from "@/lib/analytics";
+import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
+import { trackVariantIssues } from "@/lib/catalog/variant-observability";
 
 const CARD_ROW_HEIGHT = 282;
 const GRID_HEIGHT = 540;
@@ -30,7 +32,7 @@ const GRID_HEIGHT = 540;
 type Props = {
   items: CatalogItemSchema[];
   canEdit: boolean;
-  onAddToRoom: (productId: string) => void;
+  onAddToRoom: (productId: string, variantId?: string) => void;
 };
 
 function useDebouncedValue<T>(value: T, delayMs: number): T {
@@ -51,21 +53,17 @@ export default function CatalogPanel({ items, canEdit, onAddToRoom }: Props) {
   const [selectedFinishId, setSelectedFinishId] = useState<string | undefined>(undefined);
   const [scrollTop, setScrollTop] = useState(0);
   const [compareIds, setCompareIds] = useState<string[]>([]);
+  const [detailPrefetchMap, setDetailPrefetchMap] = useState<Record<string, CatalogDetailView>>({});
+  const [variantSelectionByItem, setVariantSelectionByItem] = useState<Record<string, string>>({});
 
   const debouncedSearch = useDebouncedValue(rawSearch, 180);
-  const detailPrefetchRef = useRef<Map<string, CatalogDetailView>>(new Map());
-  const recommendationCacheRef = useRef<Map<string, ReturnType<typeof buildCatalogRecommendationSet>>>(new Map());
 
   const facets = useMemo(() => collectFilterFacets(items), [items]);
-
-  useEffect(() => {
-    setFilters((prev) => ({ ...prev, category: [selectedCategory] }));
-  }, [selectedCategory]);
 
   const categoryCounts = useMemo(() => {
     const counts: Partial<Record<CatalogTopCategory, number>> = {};
     for (const item of items) {
-      const top = mapToTopCategory(item.category);
+      const top = mapToTopCategory(item.category, item);
       counts[top] = (counts[top] ?? 0) + 1;
     }
     return counts;
@@ -76,8 +74,8 @@ export default function CatalogPanel({ items, canEdit, onAddToRoom }: Props) {
   }, [items, debouncedSearch, filters]);
 
   const cardViews = useMemo<CatalogCardView[]>(() => {
-    return filteredItems.map((item) => buildCatalogCardView(item));
-  }, [filteredItems]);
+    return filteredItems.map((item) => buildCatalogCardView(item, variantSelectionByItem[item.id]));
+  }, [filteredItems, variantSelectionByItem]);
 
   const cardById = useMemo(() => {
     return new Map(cardViews.map((card) => [card.id, card]));
@@ -96,24 +94,66 @@ export default function CatalogPanel({ items, canEdit, onAddToRoom }: Props) {
 
   const selectedDetail = useMemo(() => {
     if (!selectedItem) return null;
-    const prefetch = detailPrefetchRef.current.get(selectedItem.id);
-    return prefetch ?? buildCatalogDetailView(selectedItem);
-  }, [selectedItem]);
+    const prefetch = detailPrefetchMap[selectedItem.id];
+    return prefetch ?? buildCatalogDetailView(selectedItem, variantSelectionByItem[selectedItem.id]);
+  }, [selectedItem, detailPrefetchMap, variantSelectionByItem]);
 
-  useEffect(() => {
-    if (!selectedDetail) return;
-    if (!selectedFinishId && selectedDetail.finishOptions.length > 0) {
-      setSelectedFinishId(selectedDetail.finishOptions[0].id);
-    }
+  const activeFinishId = useMemo(() => {
+    if (!selectedDetail) return undefined;
+    if (selectedFinishId) return selectedFinishId;
+    return selectedDetail.variantId ?? selectedDetail.finishOptions[0]?.id;
   }, [selectedDetail, selectedFinishId]);
+
+  const handleSetSize = (sizeId: string) => {
+    if (!selectedId) return;
+    const selected = items.find((item) => item.id === selectedId);
+    if (!selected) return;
+
+    const requestedSize = selectedDetail?.sizeOptions.find((size) => size.id === sizeId);
+    if (!requestedSize || !requestedSize.variantIds.length) return;
+
+    const currentVariant =
+      selected.variants.find((variant) => variant.id === (activeFinishId ?? selected.defaultVariantId)) ??
+      selected.variants.find((variant) => variant.id === selected.defaultVariantId) ??
+      selected.variants[0];
+    const currentFinishCode = currentVariant?.finishCode?.trim().toLowerCase();
+    const currentFinishLabel = currentVariant?.label?.trim().toLowerCase();
+
+    const candidateVariants = requestedSize.variantIds
+      .map((variantId) => selected.variants.find((variant) => variant.id === variantId))
+      .filter((variant): variant is CatalogItemSchema['variants'][number] => Boolean(variant));
+
+    const matchedByCode =
+      currentFinishCode
+        ? candidateVariants.find((variant) => variant.finishCode?.trim().toLowerCase() === currentFinishCode)
+        : undefined;
+    const matchedByLabel =
+      currentFinishLabel
+        ? candidateVariants.find((variant) => variant.label.trim().toLowerCase() === currentFinishLabel)
+        : undefined;
+    const matchedByMaterial =
+      currentVariant?.materialType
+        ? candidateVariants.find((variant) => variant.materialType === currentVariant.materialType)
+        : undefined;
+
+    const targetVariant = matchedByCode ?? matchedByLabel ?? matchedByMaterial ?? candidateVariants[0];
+    if (!targetVariant) return;
+
+    setSelectedFinishId(targetVariant.id);
+    trackVariantIssues(resolveCatalogVariant(selected, targetVariant.id), {
+      surface: "catalog_detail_size_picker",
+      requestedVariantId: targetVariant.id,
+    });
+    setVariantSelectionByItem((prev) => ({ ...prev, [selectedId]: targetVariant.id }));
+    setDetailPrefetchMap((prev) => ({
+      ...prev,
+      [selectedId]: buildCatalogDetailView(selected, targetVariant.id),
+    }));
+  };
 
   const relatedSections = useMemo(() => {
     if (!selectedId) return [];
-    let set = recommendationCacheRef.current.get(selectedId);
-    if (!set) {
-      set = buildCatalogRecommendationSet(selectedId);
-      recommendationCacheRef.current.set(selectedId, set);
-    }
+    const set = buildCatalogRecommendationSet(selectedId);
 
     return [
       { title: "Similar items", ids: set.similar },
@@ -150,10 +190,21 @@ export default function CatalogPanel({ items, canEdit, onAddToRoom }: Props) {
   };
 
   const prefetchDetail = (id: string) => {
-    if (detailPrefetchRef.current.has(id)) return;
+    if (detailPrefetchMap[id]) return;
     const item = items.find((entry) => entry.id === id);
     if (!item) return;
-    detailPrefetchRef.current.set(id, buildCatalogDetailView(item));
+    const requestedVariantId = variantSelectionByItem[id];
+    trackVariantIssues(resolveCatalogVariant(item, requestedVariantId), {
+      surface: "catalog_panel_prefetch",
+      requestedVariantId,
+    });
+    setDetailPrefetchMap((prev) => {
+      if (prev[id]) return prev;
+      return {
+        ...prev,
+        [id]: buildCatalogDetailView(item, variantSelectionByItem[id]),
+      };
+    });
   };
 
   const toggleCompare = (id: string) => {
@@ -186,7 +237,10 @@ export default function CatalogPanel({ items, canEdit, onAddToRoom }: Props) {
       <div className="mt-2">
         <CatalogCategoryTabs
           selected={selectedCategory}
-          onSelect={setSelectedCategory}
+          onSelect={(nextCategory) => {
+            setSelectedCategory(nextCategory);
+            setFilters((prev) => ({ ...prev, category: [nextCategory] }));
+          }}
           counts={categoryCounts}
         />
       </div>
@@ -223,10 +277,10 @@ export default function CatalogPanel({ items, canEdit, onAddToRoom }: Props) {
           virtual={{ start: startIndex, end: endIndex, topPad, bottomPad }}
           onPreview={(id) => {
             setSelectedId(id);
-            setSelectedFinishId(undefined);
+            setSelectedFinishId(variantSelectionByItem[id]);
             prefetchDetail(id);
           }}
-          onAdd={(id) => onAddToRoom(id)}
+          onAdd={(id) => onAddToRoom(id, variantSelectionByItem[id])}
           onToggleCompare={toggleCompare}
           compareIds={compareIds}
           onPrefetch={prefetchDetail}
@@ -246,12 +300,12 @@ export default function CatalogPanel({ items, canEdit, onAddToRoom }: Props) {
         onPreview={(id) => {
           track("catalog_compare_open", { itemId: id, source: "tray" });
           setSelectedId(id);
-          setSelectedFinishId(undefined);
+          setSelectedFinishId(variantSelectionByItem[id]);
           prefetchDetail(id);
         }}
-        onAdd={(id) => {
+        onAdd={(id, variantId) => {
           track("catalog_compare_add_to_room", { itemId: id, source: "tray" });
-          onAddToRoom(id);
+          onAddToRoom(id, variantId ?? variantSelectionByItem[id]);
         }}
       />
 
@@ -264,22 +318,39 @@ export default function CatalogPanel({ items, canEdit, onAddToRoom }: Props) {
       <CatalogItemDrawer
         open={Boolean(selectedId)}
         detail={selectedDetail}
-        activeFinishId={selectedFinishId}
+        activeFinishId={activeFinishId}
         relatedSections={relatedSections}
         isCompared={selectedId ? compareIds.includes(selectedId) : false}
         onClose={() => setSelectedId(null)}
-        onSetFinish={setSelectedFinishId}
-        onAdd={(id) => {
+        onSetSize={handleSetSize}
+        onSetFinish={(finishId) => {
+          setSelectedFinishId(finishId);
+          if (!selectedId) return;
+          const selected = items.find((item) => item.id === selectedId);
+          if (selected) {
+            trackVariantIssues(resolveCatalogVariant(selected, finishId), {
+              surface: "catalog_detail_finish_picker",
+              requestedVariantId: finishId,
+            });
+          }
+          setVariantSelectionByItem((prev) => ({ ...prev, [selectedId]: finishId }));
+          if (!selected) return;
+          setDetailPrefetchMap((prev) => ({
+            ...prev,
+            [selectedId]: buildCatalogDetailView(selected, finishId),
+          }));
+        }}
+        onAdd={(id, variantId) => {
           if (compareIds.includes(id)) {
             track("catalog_compare_add_to_room", { itemId: id, source: "drawer" });
           }
-          onAddToRoom(id);
+          onAddToRoom(id, variantId ?? variantSelectionByItem[id]);
         }}
         onToggleCompare={toggleCompare}
         onPreviewRelated={(id) => {
           if (!cardById.has(id)) return;
           setSelectedId(id);
-          setSelectedFinishId(undefined);
+          setSelectedFinishId(variantSelectionByItem[id]);
           prefetchDetail(id);
         }}
       />

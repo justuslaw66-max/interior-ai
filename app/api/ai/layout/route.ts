@@ -6,6 +6,13 @@ import { rateLimit } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 
+type LayoutCatalogEntry = {
+  id?: string;
+  category?: string;
+  price?: number;
+  styleTags?: string[];
+};
+
 function seededRand(seedNum: number) {
   const x = Math.sin(seedNum) * 10000;
   return x - Math.floor(x);
@@ -48,8 +55,8 @@ export async function POST(req: Request) {
   const budgetNorm = String(budget ?? "$$");
   const seedNum = typeof seed === "number" ? seed : Date.now();
 
-  const matchesStyle = catalog.filter(
-    (p: any) =>
+  const matchesStyle = (catalog as LayoutCatalogEntry[]).filter(
+    (p) =>
       Array.isArray(p.styleTags) &&
       p.styleTags.some((t: string) => String(t).toLowerCase() === styleNorm)
   );
@@ -57,13 +64,13 @@ export async function POST(req: Request) {
   const pool = matchesStyle.length ? matchesStyle : catalog;
 
   const pickByCategory = (cat: string, offset: number) => {
-    const styleItems = pool
-      .filter((p: any) => p.category === cat)
-      .sort((a: any, b: any) => (a.price ?? 0) - (b.price ?? 0));
+    const styleItems = (pool as LayoutCatalogEntry[])
+      .filter((p) => p.category === cat)
+      .sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
 
-    const allItems = catalog
-      .filter((p: any) => p.category === cat)
-      .sort((a: any, b: any) => (a.price ?? 0) - (b.price ?? 0));
+    const allItems = (catalog as LayoutCatalogEntry[])
+      .filter((p) => p.category === cat)
+      .sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
 
     const items = styleItems.length >= 2 ? styleItems : allItems;
 
@@ -80,7 +87,7 @@ export async function POST(req: Request) {
       sofa: pickByCategory("sofa", 11)?.id,
       rug: pickByCategory("rug", 22)?.id,
       coffee_table: pickByCategory("coffee_table", 33)?.id,
-      tv_console: pickByCategory("tv_console", 44)?.id ?? null,
+      tv_console: pickByCategory("tv_console", 44)?.id ?? pickByCategory("sideboard", 444)?.id ?? null,
       accent_chair: pickByCategory("accent_chair", 55)?.id ?? null,
       floor_lamp: pickByCategory("floor_lamp", 66)?.id ?? null,
     },

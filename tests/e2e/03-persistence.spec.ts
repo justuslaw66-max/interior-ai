@@ -3,7 +3,7 @@ import { test, expect } from './fixtures';
 test.describe('3. Save + Reload Persistence', () => {
   test('save design persists items, zones, and views after reload', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(1000);
     
     // Wait for save button
@@ -19,7 +19,7 @@ test.describe('3. Save + Reload Persistence', () => {
     
     // Reload page
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(1000);
     
     // Verify items and zones persist
@@ -32,7 +32,7 @@ test.describe('3. Save + Reload Persistence', () => {
 
   test('multi-room state isolation - switch rooms without leaking state', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(1000);
     
     // Check if room switcher exists
@@ -48,7 +48,7 @@ test.describe('3. Save + Reload Persistence', () => {
       await page.waitForTimeout(500);
       
       // Get items in second room
-      const secondRoomItems = await page.locator('[data-testid="item-in-scene"]').count();
+      const _secondRoomItems = await page.locator('[data-testid="item-in-scene"]').count();
       
       // Switch back to first room  
       await roomOptions.nth(0).click();

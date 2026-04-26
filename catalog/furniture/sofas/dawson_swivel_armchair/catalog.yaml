@@ -1,0 +1,266 @@
+brand: "Castlery"
+category: "armchair"
+
+product_family: "Dawson"
+product_name: "Dawson Swivel Armchair"
+variant: "Standard"
+
+price_usd: 1099
+price_band: "mid_premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "secondary"
+
+dimensions:
+  width_cm: 114
+  depth_cm: 117
+  height_cm: 86
+
+seat_capacity: 1
+size_class: "large"
+shape: "rectangular"
+chair_shape_detail: "rounded_rectangular"
+base_type: "swivel_base"
+
+material_family: "upholstered"
+material_mix: "upholstered_composite"
+material_mix_components:
+  - "laminated_veneer_lumber"
+  - "plywood"
+  - "polyester"
+  - "linen"
+  - "plastic"
+materials:
+  frame:
+    structure:
+      - "laminated_veneer_lumber"
+      - "plywood"
+  leg_frame:
+    structure: "plastic"
+    finish: "black"
+
+color_family: "beige"
+tone: "neutral"
+
+style_cluster: "contemporary"
+style_secondary: "modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "rounded"
+  silhouette: "linear"
+  form_language: "soft"
+  descriptors:
+    - "deep_seat_profile"
+    - "swivel_function"
+    - "oversized_cushion"
+    - "block_arms"
+    - "relaxed_luxury"
+    - "removable_covers"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  walkway_clearance_cm: 60
+  descriptors:
+    - "lounge_chair_footprint"
+    - "deep_lounge_seating"
+    - "works_in_small_to_large_living_rooms"
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+  - "bedroom"
+  - "open_plan"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: false
+  swivel_clearance_required: true
+  floating_layout_supported: true
+  recommended_in_front_of:
+    - "side_table"
+    - "floor_lamp"
+    - "rug"
+  clearance_guidance:
+    chair_to_table_cm_min: 20
+    circulation_cm_min: 60
+
+design_pairings:
+  - "side_table"
+  - "floor_lamp"
+  - "rug"
+  - "sofa"
+  - "coffee_table"
+  - "ottoman"
+
+compatibility:
+  related_products:
+    - product_family: "Dawson"
+      product_name: "Dawson 3 Seater Sofa"
+      relationship: "matching_companion"
+      strength: "strong"
+      collection_context: "same_collection"
+    - product_family: "Dawson"
+      product_name: "Dawson Extended Sofa"
+      relationship: "matching_companion"
+      strength: "strong"
+      collection_context: "same_collection"
+    - product_family: "Dawson"
+      product_name: "Dawson Wide Chaise Sectional Sofa"
+      relationship: "matching_companion"
+      strength: "strong"
+      collection_context: "same_collection"
+    - product_family: "Dawson"
+      product_name: "Dawson Pit-Sectional Sofa"
+      relationship: "matching_companion"
+      strength: "strong"
+      collection_context: "same_collection"
+    - product_family: "Dawson"
+      product_name: "Dawson Ottoman"
+      relationship: "matching_companion"
+      strength: "strong"
+      collection_context: "same_collection"
+
+bundle_metadata:
+  bundle_role: "accent"
+  can_bundle_with:
+    - "side_table"
+    - "floor_lamp"
+    - "rug"
+    - "sofa"
+    - "ottoman"
+  set_behavior:
+    supports_reading_corner_pairing: true
+    supports_living_room_pairing: true
+
+construction:
+  frame:
+    structure:
+      - "laminated_veneer_lumber"
+      - "plywood"
+  leg_frame:
+    structure: "plastic"
+    finish: "black"
+  cover_type:
+    - "removable_seat_cushion_covers"
+    - "removable_back_cushion_covers"
+    - "removable_frame_covers"
+  filling:
+    seat:
+      - "foam"
+      - "fibre"
+      - "feather"
+    back:
+      - "fibre"
+      - "feather"
+  suspension: "sinuous_spring"
+
+upholstery_options:
+# Fabric palette is resolved from the shared Dawson upholstery library.
+# Edit catalog/furniture/_upholstery_libraries/dawson.yaml to update all 6 products at once.
+upholstery_library_ref: "dawson"
+
+assets:
+  asset_id: "sofa-real-castlery-dawson-swivel-armchair"
+  model_url: "/assets/models/sofa-real-castlery-dawson-swivel-armchair.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1692591109/crusader/variants/54000131-NG4001/Dawson-Swivel-Armchair-Angle-1692591104.jpg"
+
+variants:
+  - variant: "Dawson Swivel Armchair / Slub Linen Weave (Navagio), Cream (Beach Linen)"
+    size_label: "114x117"
+    upholstery_code: "navagio_beach_linen"
+    upholstery_label: "Slub Linen Weave (Navagio), Cream (Beach Linen)"
+    finish_code: "navagio_beach_linen"
+    finish_label: "Beach Linen"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1692591109/crusader/variants/54000131-NG4001/Dawson-Swivel-Armchair-Angle-1692591104.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692591336/crusader/variants/54000131-NG4001/Dawson-Swivel-Armchair-Beach-Linen-Square-Set_1-1692591333.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692591108/crusader/variants/54000131-NG4001/Dawson-Swivel-Armchair-Front-1692591104.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692591378/crusader/variants/54000131-NG4001/Dawson-Swivel-Armchair-With-Ottoman-Beach-Linen-Square-Set_2-1692591376.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692604180/crusader/variants/54000131-NG4001/Dawson-2-Swivel-Armchairs-Beach-Linen-Square-Set_1-1692604177.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692607683/crusader/variants/54000131-NG4001/Dawson-Swivel-Armchair-Copy-1692607681.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1724059200/crusader/variants/54000131-NG4001/Sofa-Armrest-Table-Natural-Square-Set_4-1724059198.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692591281/crusader/variants/54000131-NG4001/Dawson-Swivel-Armchair-Det_2-1692591279.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692591281/crusader/variants/54000131-NG4001/Dawson-Swivel-Armchair-Det_1-1692591278.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692607769/crusader/variants/54000131-NG4001/Beach-Linen_1-1692607767.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692591109/crusader/variants/54000131-NG4001/Dawson-Swivel-Armchair-Angle-1692591104.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692591107/crusader/variants/54000131-NG4001/Dawson-Swivel-Armchair-Angle-Cover-1692591104.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692591111/crusader/variants/54000131-NG4001/Dawson-Swivel-Armchair-Side-1692591104.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692591107/crusader/variants/54000131-NG4001/Dawson-Swivel-Armchair-Back-1692591104.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1099
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 114, depth_cm: 117, height_cm: 86 }
+    seat_capacity: 1
+    size_class: "large"
+    color_family: "beige"
+    tone: "warm"
+    set_compatibility: []
+  - variant: "Dawson Swivel Armchair / Slub Linen Weave (Navagio), Medium Grey (Seagull)"
+    size_label: "114x117"
+    upholstery_code: "navagio_seagull"
+    upholstery_label: "Slub Linen Weave (Navagio), Medium Grey (Seagull)"
+    finish_code: "navagio_seagull"
+    finish_label: "Seagull"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1697620436/crusader/variants/54000131-NG4002/Dawson-Swivel-Armchair-Seagull-Angle-1697620433.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1697621141/crusader/variants/54000131-NG4002/Dawson-Armchair-Sofa-Seagull-Square-Set_2-1697621139.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1697620436/crusader/variants/54000131-NG4002/Dawson-Swivel-Armchair-Seagull-Front-1697620433.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1697621141/crusader/variants/54000131-NG4002/Dawson-Armchair-Sofa-With-Ottoman-Seagull-Square-Set_1-1697621138.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1697621237/crusader/variants/54000131-NG4002/Dawson-Armchair-Set-of-2-Seagull-Square-Set_2-1697621235.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1706002633/crusader/variants/54000131-NG4002/Dawson-3-Seater-Sofa-Seagull-Det_1-1706002628.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1697620509/crusader/variants/54000131-NG4002/Dawson-Swivel-Armchair-Seagull_Copy-1697620506.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1724059283/crusader/variants/54000131-NG4002/Sofa-Armrest-Table-Natural-Square-Set_4-1724059281.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1697620509/crusader/variants/54000131-NG4002/Dawson-3-Seater-Sofa-Seagull-Det_2-1697620505.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1697620509/crusader/variants/54000131-NG4002/Dawson-3-Seater-Sofa-Seagull-Det_3-1697620506.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1697620509/crusader/variants/54000131-NG4002/Dawson-Swivel-Armchair-Seagull-Det_1-1697620506.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1697620519/crusader/variants/54000131-NG4002/Dawson-3-Seater-Sofa-Seagull-Det_4-1697620516.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1697620436/crusader/variants/54000131-NG4002/Dawson-Swivel-Armchair-Seagull-Angle-1697620433.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1697620436/crusader/variants/54000131-NG4002/Dawson-Swivel-Armchair-Seagull-Side-1697620433.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1697620436/crusader/variants/54000131-NG4002/Dawson-Swivel-Armchair-Seagull-Back-1697620433.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1099
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 114, depth_cm: 117, height_cm: 86 }
+    seat_capacity: 1
+    size_class: "large"
+    color_family: "grey"
+    tone: "neutral_cool"
+    set_compatibility: []
+
+  - variant: "Dawson Swivel Armchair / Cocoa (Leather)"
+    size_label: "114x117"
+    upholstery_code: "cocoa_leather"
+    upholstery_label: "Cocoa (Leather)"
+    finish_code: "cocoa_leather"
+    finish_label: "Cocoa (Leather)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1716965158/crusader/variants/54000131-LE4020/Dawson-Leather-Swivel-Armchair-Cocoa-Angle-1716965156.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1722581255/crusader/variants/54000131-LE4020/Dawson-Leather-Swivel-Armchair-Square-Set_1-1722581252.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1722581324/crusader/variants/54000131-LE4020/Dawson-Leather-Sofa-Square-Det_1-1722581321.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1717749051/crusader/variants/54000131-LE4020/Sofa-Armrest-Table-Natural-Square-Set_4-1717749048.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1716965158/crusader/variants/54000131-LE4020/Dawson-Leather-Swivel-Armchair-Cocoa-Angle-1716965156.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 1709
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 114, depth_cm: 117, height_cm: 86 }
+    seat_capacity: 1
+    size_class: "large"
+    color_family: "brown"
+    tone: "warm"
+    set_compatibility: []
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+
+feature_flags:
+  is_swivel: true

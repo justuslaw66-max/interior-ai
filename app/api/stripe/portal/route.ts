@@ -4,6 +4,11 @@ import { auth } from "@/lib/auth";
 import { config } from "@/lib/config";
 import { rateLimit } from "@/lib/rateLimit";
 
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  return String(error);
+}
+
 function getStripeClient() {
   const secretKey = process.env.STRIPE_SECRET_KEY;
   if (!secretKey || secretKey.includes("...")) {
@@ -13,7 +18,8 @@ function getStripeClient() {
 }
 
 // Lazy load prisma to avoid initialization issues
-let prisma: any = null;
+type PrismaModule = typeof import("@/lib/prisma");
+let prisma: PrismaModule["prisma"] | null = null;
 async function getPrisma() {
   if (!prisma) {
     const { prisma: p } = await import("@/lib/prisma");
@@ -62,10 +68,11 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ url: portalSession.url });
-  } catch (error: any) {
-    console.error("Stripe portal error:", error?.message || error);
+  } catch (error: unknown) {
+    const message = getErrorMessage(error);
+    console.error("Stripe portal error:", message);
     return NextResponse.json(
-      { error: error?.message || "Unable to create portal session" },
+      { error: message || "Unable to create portal session" },
       { status: 500 }
     );
   }

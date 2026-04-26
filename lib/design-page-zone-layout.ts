@@ -1,6 +1,8 @@
 import type { CATALOG_ITEMS } from "@/lib/catalog";
+import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import type { DesignItem, ZoneMin } from "@/lib/room-types";
 import type { AABB } from "@/lib/snapGuides";
+import { clamp, getRotatedFootprint } from "@/lib/design-page-utils";
 
 export type SelectionBounds = {
   minX: number;
@@ -19,6 +21,166 @@ export type PlanZone2D = {
   d: number;
   label: string;
 };
+
+type ResolveConfiguredPlanningDimsMmFn = (
+  item: DesignItem,
+  fallbackProduct: CatalogItemSchema
+) => { w: number; d: number; h: number };
+
+type NormalizeItemsToRoomParams = {
+  items: DesignItem[];
+  width: number;
+  depth: number;
+  wall: number;
+  catalogItems: typeof CATALOG_ITEMS;
+  resolveConfiguredPlanningDimsMm: ResolveConfiguredPlanningDimsMmFn;
+};
+
+export function normalizeItemsToRoom(params: NormalizeItemsToRoomParams): DesignItem[] {
+  const { items, width, depth, wall, catalogItems, resolveConfiguredPlanningDimsMm } = params;
+
+  return items.map((item) => {
+    const product = catalogItems[item.productId];
+    if (!product || !item.position) return item;
+    const rotationY = item.rotationY ?? 0;
+    const planningDims = resolveConfiguredPlanningDimsMm(item, product);
+    const [effW, effD] = getRotatedFootprint(
+      planningDims.w / 1000,
+      planningDims.d / 1000,
+      rotationY
+    );
+    const minX = -width / 2 + wall + effW / 2;
+    const maxX = width / 2 - wall - effW / 2;
+    const minZ = -depth / 2 + wall + effD / 2;
+    const maxZ = depth / 2 - wall - effD / 2;
+
+    const x = clamp(item.position[0], minX, maxX);
+    const z = clamp(item.position[2], minZ, maxZ);
+    if (x === item.position[0] && z === item.position[2]) return item;
+    return { ...item, position: [x, item.position[1] ?? 0, z] };
+  });
+}
+
+export function computeZoneAnchor(zoneItems: DesignItem[]) {
+  if (!zoneItems.length) return undefined;
+  const sum = zoneItems.reduce(
+    (acc, item) => {
+      acc.x += item.position[0];
+      acc.z += item.position[2];
+      return acc;
+    },
+    { x: 0, z: 0 }
+  );
+  const x = sum.x / zoneItems.length;
+  const z = sum.z / zoneItems.length;
+  return [x, 0, z] as [number, number, number];
+}
+
+export function normalizeZones(nextZones: ZoneMin[], allItems: DesignItem[]): ZoneMin[] {
+  const itemMap = new Map(allItems.map((item) => [item.instanceId, item]));
+  return nextZones
+    .map((zone) => {
+      const itemIds = zone.itemIds.filter((id) => itemMap.has(id));
+      const zoneItems = itemIds.map((id) => itemMap.get(id)!).filter(Boolean);
+      const anchor = computeZoneAnchor(zoneItems);
+      return {
+        ...zone,
+        itemIds,
+        anchor,
+        source: zone.source ?? "manual",
+      } as ZoneMin;
+    })
+    .filter((zone) => zone.itemIds.length > 0);
+}
+
+export function zonesEqual(a: ZoneMin[], b: ZoneMin[]) {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i += 1) {
+    const left = a[i];
+    const right = b[i];
+    if (
+      left.id !== right.id ||
+      left.type !== right.type ||
+      left.itemIds.length !== right.itemIds.length
+    ) {
+      return false;
+    }
+    for (let j = 0; j < left.itemIds.length; j += 1) {
+      if (left.itemIds[j] !== right.itemIds[j]) return false;
+    }
+  }
+  return true;
+}
+
+type BuildAutoZonesParams = {
+  allItems: DesignItem[];
+  manualZones: ZoneMin[];
+  catalogItems: typeof CATALOG_ITEMS;
+};
+
+export function buildAutoZones(params: BuildAutoZonesParams): ZoneMin[] {
+  const { allItems, manualZones, catalogItems } = params;
+  const assigned = new Set<string>();
+  for (const zone of manualZones) {
+    for (const id of zone.itemIds) assigned.add(id);
+  }
+
+  const itemByCategory = (category: string) =>
+    allItems.filter((item) => catalogItems[item.productId]?.category === category);
+
+  const distanceSq = (a: DesignItem, b: DesignItem) => {
+    const dx = a.position[0] - b.position[0];
+    const dz = a.position[2] - b.position[2];
+    return dx * dx + dz * dz;
+  };
+
+  const pickNearest = (anchor: DesignItem, candidates: DesignItem[], limit: number) => {
+    const sorted = candidates
+      .filter((item) => !assigned.has(item.instanceId))
+      .sort((a, b) => distanceSq(anchor, a) - distanceSq(anchor, b));
+    return sorted.slice(0, limit);
+  };
+
+  const autoZones: ZoneMin[] = [];
+
+  const chairs = itemByCategory("accent_chair");
+  const lamps = itemByCategory("floor_lamp");
+  const tvConsoles = [
+    ...itemByCategory("tv_console"),
+    ...itemByCategory("sideboard"),
+  ];
+
+  for (const chair of chairs) {
+    if (assigned.has(chair.instanceId)) continue;
+    const nearestLamp = pickNearest(chair, lamps, 1)[0];
+    if (!nearestLamp) continue;
+    if (assigned.has(nearestLamp.instanceId)) continue;
+    const zoneItems = [chair, nearestLamp];
+    assigned.add(chair.instanceId);
+    assigned.add(nearestLamp.instanceId);
+    autoZones.push({
+      id: `auto-reading-${chair.instanceId}`,
+      type: "reading",
+      itemIds: zoneItems.map((item) => item.instanceId),
+      anchor: computeZoneAnchor(zoneItems),
+      source: "auto",
+    });
+  }
+
+  for (const tv of tvConsoles) {
+    if (assigned.has(tv.instanceId)) continue;
+    assigned.add(tv.instanceId);
+    autoZones.push({
+      id: `auto-tv-${tv.instanceId}`,
+      type: "tv",
+      itemIds: [tv.instanceId],
+      anchor: computeZoneAnchor([tv]),
+      source: "auto",
+    });
+  }
+
+  return autoZones;
+}
 
 type ClampToRoomFn = (
   x: number,

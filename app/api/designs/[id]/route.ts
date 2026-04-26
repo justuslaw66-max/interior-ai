@@ -77,7 +77,7 @@ export async function PUT(
       );
     }
 
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (typeof title === "string") updateData.title = title;
     if (typeof roomWidth === "number") updateData.roomWidth = Number(roomWidth);
     if (typeof roomDepth === "number") updateData.roomDepth = Number(roomDepth);

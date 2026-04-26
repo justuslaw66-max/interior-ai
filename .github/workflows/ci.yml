@@ -48,6 +48,46 @@ jobs:
       - name: Run typecheck
         run: npx tsc --noEmit
 
+      - name: Run catalog audit
+        run: npm run test:catalog-audit
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
+
+      - name: Start app server for route hardening checks
+        run: npm run dev > /tmp/next-dev.log 2>&1 &
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
+          NEXTAUTH_SECRET: test-secret
+          NEXTAUTH_URL: http://localhost:3000
+
+      - name: Wait for app server
+        run: |
+          for i in {1..60}; do
+            if curl -fsS http://localhost:3000 > /dev/null 2>&1; then
+              echo "✅ App server is up"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "❌ App server did not start in time"
+          cat /tmp/next-dev.log || true
+          exit 1
+
+      - name: Run API route hardening checks
+        run: npm run test:hardening
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
+          NEXTAUTH_SECRET: test-secret
+          NEXTAUTH_URL: http://localhost:3000
+
+      - name: Stop app server after hardening checks
+        if: always()
+        run: pkill -f "next dev" || true
+
+      - name: Print app server log on failure
+        if: failure()
+        run: cat /tmp/next-dev.log || true
+
       # Temporarily skip lint/build in stable checks while staging is stabilized.
       # Full E2E still runs in a separate non-blocking job for visibility.
 
@@ -127,15 +167,118 @@ jobs:
           path: test-results/
           retention-days: 30
 
-  merge-gate:
+  e2e-variant-hard-gate:
     runs-on: ubuntu-latest
     needs: stable-checks
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: interior_ai_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Apply database migrations
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run hard-gate variant suite
+        run: npx playwright test tests/e2e/07-kelsey-variants.spec.ts tests/e2e/12-variant-identity.spec.ts tests/e2e/13-admin-variant-audit.spec.ts --reporter=line --timeout=120000
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
+          NEXTAUTH_SECRET: test-secret
+          NEXTAUTH_URL: http://localhost:3000
+
+  e2e-variant-observability:
+    runs-on: ubuntu-latest
+    needs: stable-checks
+    continue-on-error: true
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: interior_ai_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Apply database migrations
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run runtime-sensitive variant suite
+        run: npx playwright test tests/e2e/08-jaron-madison-variants.spec.ts tests/e2e/09-sloane-bench-variants.spec.ts tests/e2e/11-rotation-shortcuts.spec.ts tests/e2e/99-dawson-3s-smoke.spec.ts --reporter=line --timeout=120000
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
+          NEXTAUTH_SECRET: test-secret
+          NEXTAUTH_URL: http://localhost:3000
+
+  merge-gate:
+    runs-on: ubuntu-latest
+    needs: [stable-checks, e2e-variant-hard-gate]
     if: always()
     steps:
       - name: Check test results
         run: |
           if [ "${{ needs.stable-checks.result }}" != "success" ]; then
             echo "❌ Stable checks failed - blocking merge"
+            exit 1
+          fi
+          if [ "${{ needs.e2e-variant-hard-gate.result }}" != "success" ]; then
+            echo "❌ Hard-gate variant suite failed - blocking merge"
             exit 1
           fi
           echo "✅ Stable checks passed"

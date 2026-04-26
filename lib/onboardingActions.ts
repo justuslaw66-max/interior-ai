@@ -19,7 +19,9 @@ type OnboardingContext = {
   findByCategory: (category: CatalogItemSchema["category"]) => PlacedItem | null;
 };
 
-const DEFAULT_SOFA_ID = "sofa-scandi-01";
+const DEFAULT_SOFA_ID =
+  Object.values(CATALOG_ITEMS).find((item) => item.category === "sofa")?.id ??
+  "sofa-real-castlery-dawson-3s";
 const DEFAULT_RUG_ID = "rug-scandi-01";
 const DEFAULT_COFFEE_ID = "coffee-scandi-01";
 const DEFAULT_CHAIR_ID = "chair-scandi-01";

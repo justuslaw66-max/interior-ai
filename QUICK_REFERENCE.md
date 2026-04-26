@@ -79,7 +79,7 @@ track("commerce_event", createCommerceEvent("item_added_to_cart", item, variantI
 ```typescript
 const newItem: CatalogItemSchema = {
   id: "sofa-001",
-  slug: "sofa-scandi",
+  slug: "sofa-real-castlery-dawson-3s",
   title: "Scandinavian Sofa",
   category: "sofa",  // ← gets category defaults
   

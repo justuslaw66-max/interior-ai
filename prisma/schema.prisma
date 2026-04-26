@@ -178,29 +178,36 @@ model ModelAsset {
 }
 
 model ImportJob {
-  id                String          @id @default(cuid())
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-  status            ImportJobStatus @default(received)
-  sourceBrand       String?
-  sourceFileName    String
-  sourceFileUrl     String
-  uploadedByUserId  String?
-  notes             String?
-  errorMessage      String?
-  rawMetadataJson   Json?
-  reportJson        Json?
-  rawFileUrl        String?
-  normalizedFileUrl String?
-  optimizedFileUrl  String?
-  thumbnailUrl      String?
-  metadataReportUrl String?
-  qaReportUrl       String?
-  normalizedAssetId String?
-  catalogItemId     String?
-  uploadedBy        User?           @relation(fields: [uploadedByUserId], references: [id], onDelete: SetNull)
-  normalizedAsset   ModelAsset?     @relation(fields: [normalizedAssetId], references: [id], onDelete: SetNull)
-  catalogItem       CatalogItem?    @relation(fields: [catalogItemId], references: [id], onDelete: SetNull)
+  id                            String          @id @default(cuid())
+  createdAt                     DateTime        @default(now())
+  updatedAt                     DateTime        @updatedAt
+  status                        ImportJobStatus @default(received)
+  sourceBrand                   String?
+  sourceFileName                String
+  sourceFileUrl                 String
+  uploadedByUserId              String?
+  notes                         String?
+  errorMessage                  String?
+  rawMetadataJson               Json?
+  reportJson                    Json?
+  rawFileUrl                    String?
+  normalizedFileUrl             String?
+  optimizedFileUrl              String?
+  thumbnailUrl                  String?
+  metadataReportUrl             String?
+  qaReportUrl                   String?
+  normalizedAssetId             String?
+  catalogItemId                 String?
+  workflowStage                 String          @default("intake")
+  workflowBlockers              String[]        @default([])
+  nextAction                    String?
+  reviewNotes                   String?
+  dimensionsVerificationStatus  String?
+  sourceSku                     String?
+  sourceProductUrl              String?
+  uploadedBy                    User?           @relation(fields: [uploadedByUserId], references: [id], onDelete: SetNull)
+  normalizedAsset               ModelAsset?     @relation(fields: [normalizedAssetId], references: [id], onDelete: SetNull)
+  catalogItem                   CatalogItem?    @relation(fields: [catalogItemId], references: [id], onDelete: SetNull)
 
   @@index([status])
   @@index([createdAt])

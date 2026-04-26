@@ -29,9 +29,16 @@ export type ImportedVariantEntryLike = {
   variant?: string;
   finish_code?: string;
   finish_label?: string;
+  model_asset_id?: string;
+  model_url?: string;
   upholstery_code?: string;
   upholstery_label?: string;
   size_label?: string;
+  dimensions?: {
+    width_cm?: number;
+    depth_cm?: number;
+    height_cm?: number;
+  };
   swatch_group?: string;
   swatch_hex?: string;
   color_family?: string;
@@ -307,6 +314,18 @@ export function normalizeImportedVariants({
       id: variantId,
       label: colourLabel,
       colorHex,
+      dimensionsMm:
+        Number(entry?.dimensions?.width_cm ?? 0) > 0 && Number(entry?.dimensions?.depth_cm ?? 0) > 0
+          ? {
+              w: Math.round(Number(entry.dimensions?.width_cm ?? 0) * 10),
+              d: Math.round(Number(entry.dimensions?.depth_cm ?? 0) * 10),
+              h: Math.round(
+                Number(entry.dimensions?.height_cm ?? 0) > 0
+                  ? Number(entry.dimensions?.height_cm ?? 0) * 10
+                  : 0
+              ),
+            }
+          : undefined,
       finishCode,
       finishLabel,
       materialType,

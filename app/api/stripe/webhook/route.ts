@@ -5,6 +5,11 @@ import { prisma } from "@/lib/prisma";
 import { logAppEvent } from "@/lib/app-events";
 import { trackMonetization } from "@/lib/monetization-tracking";
 
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  return String(error);
+}
+
 export async function POST(req: Request) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
   const sig = (await headers()).get("stripe-signature");
@@ -17,13 +22,14 @@ export async function POST(req: Request) {
   let event: Stripe.Event;
   try {
     event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!);
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = getErrorMessage(err);
     await logAppEvent({
       eventType: "webhook_failed",
-      meta: { provider: "stripe", reason: err?.message || "signature" },
+      meta: { provider: "stripe", reason: message || "signature" },
     });
-    console.error("Webhook signature verification failed:", err.message);
-    return NextResponse.json({ error: err.message }, { status: 400 });
+    console.error("Webhook signature verification failed:", message);
+    return NextResponse.json({ error: message }, { status: 400 });
   }
 
   try {
@@ -112,12 +118,13 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ received: true });
-  } catch (e: any) {
+  } catch (e: unknown) {
+    const message = getErrorMessage(e);
     await logAppEvent({
       eventType: "webhook_failed",
-      meta: { provider: "stripe", reason: e?.message || "handler" },
+      meta: { provider: "stripe", reason: message || "handler" },
     });
-    console.error("Webhook handler error:", e.message);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    console.error("Webhook handler error:", message);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

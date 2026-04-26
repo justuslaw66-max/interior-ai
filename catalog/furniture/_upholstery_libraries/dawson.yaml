@@ -1,0 +1,1093 @@
+# Dawson Family — Shared Upholstery Library
+#
+# This is the single source of truth for all upholstery options
+# available across the Dawson product family (6 products).
+#
+# Referenced in each Dawson product via:
+#   upholstery_library_ref: "dawson"
+#
+# The catalog loader resolves this reference and injects the
+# upholstery_options at parse time. Variants reference options
+# by upholstery_code only.
+
+library_key: "dawson"
+product_family: "Dawson"
+swatch_group: "upholstery_option"
+
+upholstery_options:
+
+  - upholstery_code: navagio_seagull
+    upholstery_label: "Slub Linen Weave (Navagio), Medium Grey (Seagull)"
+    fabric_family: linen_slub_weave
+    fabric_label: Navagio
+    color_label: "Medium Grey (Seagull)"
+    collection_type: stocked
+    color_family: grey
+    tone: neutral_cool
+    material_type: woven_fabric
+    texture_type: slub_weave
+    pattern_scale: fine_medium
+    performance_features:
+      - natural_blends
+      - machine_washable
+    composition:
+      polyester_pct: 93
+      linen_pct: 7
+      pfas_free: false
+    care:
+      - machine_wash_below_30c
+      - do_not_bleach
+      - tumble_dry_low
+      - cool_iron_if_needed
+    display_assets:
+      swatch_image: /swatches/dawson/navagio-seagull.jpg
+      closeup_image: /materials/dawson/navagio-seagull-closeup.jpg
+    render_assets:
+      material_family_key: linen_slub_weave
+      base_color_map: /pbr/dawson/navagio-seagull/basecolor.jpg
+      normal_map: /pbr/fabrics/linen-slub-weave/normal.jpg
+      roughness_map: /pbr/fabrics/linen-slub-weave/roughness.jpg
+      tile_scale:
+        x: 2.2
+        y: 2.2
+
+  - upholstery_code: performance_creamy_white
+    upholstery_label: "Performance Creamy White"
+    fabric_family: twill_performance
+    fabric_label: Performance Creamy White
+    color_label: Creamy White
+    collection_type: custom
+    color_family: cream
+    tone: warm
+    material_type: woven_fabric
+    texture_type: twill
+    pattern_scale: fine
+    performance_features:
+      - spill_resistant
+      - pfas_free
+    composition:
+      polyester_pct: 80
+      acrylic_pct: 20
+      pfas_free: true
+    care:
+      - do_not_machine_wash
+      - do_not_bleach
+      - do_not_tumble_dry
+      - do_not_iron
+      - dry_clean
+    display_assets:
+      swatch_image: /swatches/dawson/performance-creamy-white.jpg
+      closeup_image: /materials/dawson/performance-creamy-white-closeup.jpg
+    render_assets:
+      material_family_key: twill
+      base_color_map: /pbr/dawson/performance-creamy-white/basecolor.jpg
+      normal_map: /pbr/fabrics/twill/normal.jpg
+      roughness_map: /pbr/fabrics/twill/roughness.jpg
+      tile_scale:
+        x: 2.3
+        y: 2.3
+
+  - upholstery_code: marcel_brilliant_white
+    upholstery_label: "Performance Textured Plain Weave (Marcel), Cream (Brilliant White)"
+    fabric_family: textured_plain_weave
+    fabric_label: Marcel
+    color_label: "Cream (Brilliant White)"
+    collection_type: custom
+    color_family: cream
+    tone: neutral_warm
+    material_type: woven_fabric
+    texture_type: tweed
+    pattern_scale: medium
+    performance_features:
+      - spill_resistant
+      - pfas_free
+    composition:
+      polyester_pct: 97
+      acrylic_pct: 3
+      pfas_free: true
+    care:
+      - dry_clean
+      - do_not_machine_wash
+      - do_not_bleach
+      - do_not_tumble_dry
+    display_assets:
+      swatch_image: /swatches/dawson/marcel-brilliant-white.jpg
+      closeup_image: /materials/dawson/marcel-brilliant-white-closeup.jpg
+    render_assets:
+      material_family_key: textured_plain_weave
+      base_color_map: /pbr/dawson/marcel-brilliant-white/basecolor.jpg
+      normal_map: /pbr/fabrics/textured-plain-weave/normal.jpg
+      roughness_map: /pbr/fabrics/textured-plain-weave/roughness.jpg
+      tile_scale:
+        x: 2.1
+        y: 2.1
+
+  - upholstery_code: peyton_ivory
+    upholstery_label: "Performance Fleece (Peyton), Ivory (Cream)"
+    fabric_family: performance_fleece
+    fabric_label: Peyton
+    color_label: "Ivory (Cream)"
+    collection_type: custom
+    color_family: cream
+    tone: warm
+    material_type: fleece_fabric
+    texture_type: velvet_like_fleece
+    pattern_scale: fine
+    performance_features:
+      - stain_resistant
+      - pet_friendly
+      - pfas_free
+    composition:
+      polyester_pct: 100
+      pfas_free: true
+    care:
+      - wash_cold_gently
+      - line_dry
+      - iron_low
+      - do_not_dry_clean
+      - do_not_bleach
+    display_assets:
+      swatch_image: /swatches/dawson/peyton-ivory.jpg
+      closeup_image: /materials/dawson/peyton-ivory-closeup.jpg
+    render_assets:
+      material_family_key: performance_fleece
+      base_color_map: /pbr/dawson/peyton-ivory/basecolor.jpg
+      normal_map: /pbr/fabrics/performance-fleece/normal.jpg
+      roughness_map: /pbr/fabrics/performance-fleece/roughness.jpg
+      tile_scale:
+        x: 1.2
+        y: 1.2
+
+  - upholstery_code: peyton_dove_grey
+    upholstery_label: "Performance Fleece (Peyton), Medium Grey (Dove Grey)"
+    fabric_family: performance_fleece
+    fabric_label: Peyton
+    color_label: "Medium Grey (Dove Grey)"
+    collection_type: custom
+    color_family: grey
+    tone: neutral_cool
+    material_type: fleece_fabric
+    texture_type: velvet_like_fleece
+    pattern_scale: fine
+    performance_features:
+      - stain_resistant
+      - pet_friendly
+      - pfas_free
+    composition:
+      polyester_pct: 100
+      pfas_free: true
+    care:
+      - wash_cold_gently
+      - line_dry
+      - iron_low
+      - do_not_dry_clean
+      - do_not_bleach
+    display_assets:
+      swatch_image: /swatches/dawson/peyton-dove-grey.jpg
+      closeup_image: /materials/dawson/peyton-dove-grey-closeup.jpg
+    render_assets:
+      material_family_key: performance_fleece
+      base_color_map: /pbr/dawson/peyton-dove-grey/basecolor.jpg
+      normal_map: /pbr/fabrics/performance-fleece/normal.jpg
+      roughness_map: /pbr/fabrics/performance-fleece/roughness.jpg
+      tile_scale:
+        x: 1.2
+        y: 1.2
+
+  - upholstery_code: marcel_smoke_grey
+    upholstery_label: "Performance Textured Plain Weave (Marcel), Smoke Grey"
+    fabric_family: textured_plain_weave
+    fabric_label: Marcel
+    color_label: Smoke Grey
+    collection_type: custom
+    color_family: grey
+    tone: neutral_cool
+    material_type: woven_fabric
+    texture_type: tweed
+    pattern_scale: medium
+    performance_features:
+      - spill_resistant
+      - pfas_free
+    composition:
+      polyester_pct: 97
+      acrylic_pct: 3
+      pfas_free: true
+    care:
+      - dry_clean
+      - do_not_machine_wash
+      - do_not_bleach
+      - do_not_tumble_dry
+    display_assets:
+      swatch_image: /swatches/dawson/marcel-smoke-grey.jpg
+      closeup_image: /materials/dawson/marcel-smoke-grey-closeup.jpg
+    render_assets:
+      material_family_key: textured_plain_weave
+      base_color_map: /pbr/dawson/marcel-smoke-grey/basecolor.jpg
+      normal_map: /pbr/fabrics/textured-plain-weave/normal.jpg
+      roughness_map: /pbr/fabrics/textured-plain-weave/roughness.jpg
+      tile_scale:
+        x: 2.1
+        y: 2.1
+
+  - upholstery_code: peyton_moss
+    upholstery_label: "Performance Fleece (Peyton), Moss"
+    fabric_family: performance_fleece
+    fabric_label: Peyton
+    color_label: Moss
+    collection_type: custom
+    color_family: green
+    tone: muted_earthy
+    material_type: fleece_fabric
+    texture_type: velvet_like_fleece
+    pattern_scale: fine
+    performance_features:
+      - stain_resistant
+      - pet_friendly
+      - pfas_free
+    composition:
+      polyester_pct: 100
+      pfas_free: true
+    care:
+      - wash_cold_gently
+      - line_dry
+      - iron_low
+      - do_not_dry_clean
+      - do_not_bleach
+    display_assets:
+      swatch_image: /swatches/dawson/peyton-moss.jpg
+      closeup_image: /materials/dawson/peyton-moss-closeup.jpg
+    render_assets:
+      material_family_key: performance_fleece
+      base_color_map: /pbr/dawson/peyton-moss/basecolor.jpg
+      normal_map: /pbr/fabrics/performance-fleece/normal.jpg
+      roughness_map: /pbr/fabrics/performance-fleece/roughness.jpg
+      tile_scale:
+        x: 1.2
+        y: 1.2
+
+  - upholstery_code: peyton_cumin
+    upholstery_label: "Performance Fleece (Peyton), Caramel (Cumin)"
+    fabric_family: performance_fleece
+    fabric_label: Peyton
+    color_label: "Caramel (Cumin)"
+    collection_type: custom
+    color_family: brown
+    tone: warm
+    material_type: fleece_fabric
+    texture_type: velvet_like_fleece
+    pattern_scale: fine
+    performance_features:
+      - stain_resistant
+      - pet_friendly
+      - pfas_free
+    composition:
+      polyester_pct: 100
+      pfas_free: true
+    care:
+      - wash_cold_gently
+      - line_dry
+      - iron_low
+      - do_not_dry_clean
+      - do_not_bleach
+    display_assets:
+      swatch_image: /swatches/dawson/peyton-cumin.jpg
+      closeup_image: /materials/dawson/peyton-cumin-closeup.jpg
+    render_assets:
+      material_family_key: performance_fleece
+      base_color_map: /pbr/dawson/peyton-cumin/basecolor.jpg
+      normal_map: /pbr/fabrics/performance-fleece/normal.jpg
+      roughness_map: /pbr/fabrics/performance-fleece/roughness.jpg
+      tile_scale:
+        x: 1.2
+        y: 1.2
+
+  - upholstery_code: infinity_boucle_ginger
+    upholstery_label: "Performance Infinity Boucle, Rust (Ginger)"
+    fabric_family: infinity_boucle
+    fabric_label: Infinity Boucle
+    color_label: "Rust (Ginger)"
+    collection_type: custom
+    color_family: rust
+    tone: warm
+    material_type: boucle_fabric
+    texture_type: boucle
+    pattern_scale: large
+    performance_features:
+      - spill_resistant
+      - pfas_free
+    composition:
+      polyester_pct: 100
+      pfas_free: true
+    care:
+      - dry_clean
+      - do_not_machine_wash
+      - do_not_bleach
+      - do_not_tumble_dry
+      - do_not_iron
+    display_assets:
+      swatch_image: /swatches/dawson/infinity-boucle-ginger.jpg
+      closeup_image: /materials/dawson/infinity-boucle-ginger-closeup.jpg
+    render_assets:
+      material_family_key: infinity_boucle
+      base_color_map: /pbr/dawson/infinity-boucle-ginger/basecolor.jpg
+      normal_map: /pbr/fabrics/infinity-boucle/normal.jpg
+      roughness_map: /pbr/fabrics/infinity-boucle/roughness.jpg
+      tile_scale:
+        x: 1.0
+        y: 1.0
+
+  - upholstery_code: infinity_boucle_white_quartz
+    upholstery_label: "Performance Infinity Boucle, Light Grey (White Quartz)"
+    fabric_family: infinity_boucle
+    fabric_label: Infinity Boucle
+    color_label: "Light Grey (White Quartz)"
+    collection_type: custom
+    color_family: light_grey
+    tone: neutral
+    material_type: boucle_fabric
+    texture_type: boucle
+    pattern_scale: large
+    performance_features:
+      - spill_resistant
+      - pfas_free
+    composition:
+      polyester_pct: 100
+      pfas_free: true
+    care:
+      - dry_clean
+      - do_not_machine_wash
+      - do_not_bleach
+      - do_not_tumble_dry
+      - do_not_iron
+    display_assets:
+      swatch_image: /swatches/dawson/infinity-boucle-white-quartz.jpg
+      closeup_image: /materials/dawson/infinity-boucle-white-quartz-closeup.jpg
+    render_assets:
+      material_family_key: infinity_boucle
+      base_color_map: /pbr/dawson/infinity-boucle-white-quartz/basecolor.jpg
+      normal_map: /pbr/fabrics/infinity-boucle/normal.jpg
+      roughness_map: /pbr/fabrics/infinity-boucle/roughness.jpg
+      tile_scale:
+        x: 1.0
+        y: 1.0
+
+  - upholstery_code: beach_linen
+    upholstery_label: "Slub Linen Weave (Navagio), Cream (Beach Linen)"
+    fabric_family: linen_slub_weave
+    fabric_label: Navagio
+    color_label: "Cream (Beach Linen)"
+    collection_type: stocked
+    color_family: cream
+    tone: warm
+    material_type: woven_fabric
+    texture_type: slub_weave
+    pattern_scale: fine_medium
+    performance_features:
+      - natural_blends
+      - machine_washable
+    composition:
+      polyester_pct: 93
+      linen_pct: 7
+      pfas_free: false
+    care:
+      - machine_wash_below_30c
+      - do_not_bleach
+      - tumble_dry_low
+      - cool_iron_if_needed
+    display_assets:
+      swatch_image: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1665460017/crusader/variants/NG-4001/Beach-Linen_1-1665460015.jpg"
+      closeup_image: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1665460017/crusader/variants/NG-4001/Beach-Linen_1-1665460015.jpg"
+    render_assets:
+      material_family_key: linen_slub_weave
+      base_color_map: /pbr/dawson/beach-linen/basecolor.jpg
+      normal_map: /pbr/fabrics/linen-slub-weave/normal.jpg
+      roughness_map: /pbr/fabrics/linen-slub-weave/roughness.jpg
+      tile_scale:
+        x: 2.2
+        y: 2.2
+
+  - upholstery_code: performance_boucle_cream
+    upholstery_label: "Performance Infinity Boucle, Cream"
+    fabric_family: infinity_boucle
+    fabric_label: Infinity Boucle
+    color_label: Cream
+    collection_type: custom
+    color_family: cream
+    tone: warm
+    material_type: boucle_fabric
+    texture_type: boucle
+    pattern_scale: large
+    performance_features:
+      - spill_resistant
+      - pfas_free
+    composition:
+      polyester_pct: 100
+      pfas_free: true
+    care:
+      - dry_clean
+      - do_not_machine_wash
+      - do_not_bleach
+      - do_not_tumble_dry
+      - do_not_iron
+    display_assets:
+      swatch_image: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1770191309/crusader/variants/IN-4005/IN4005-Cream-1770191306.jpg"
+      closeup_image: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1770191309/crusader/variants/IN-4005/IN4005-Cream-1770191306.jpg"
+    render_assets:
+      material_family_key: infinity_boucle
+      base_color_map: /pbr/dawson/performance-boucle-cream/basecolor.jpg
+      normal_map: /pbr/fabrics/infinity-boucle/normal.jpg
+      roughness_map: /pbr/fabrics/infinity-boucle/roughness.jpg
+      tile_scale:
+        x: 1.0
+        y: 1.0
+
+  - upholstery_code: performance_infinity_boucle_moss
+    upholstery_label: "Performance Infinity Boucle, Moss"
+    fabric_family: infinity_boucle
+    fabric_label: Infinity Boucle
+    color_label: Moss
+    collection_type: custom
+    color_family: green
+    tone: muted_earthy
+    material_type: boucle_fabric
+    texture_type: boucle
+    pattern_scale: large
+    performance_features:
+      - spill_resistant
+      - pfas_free
+    composition:
+      polyester_pct: 100
+      pfas_free: true
+    care:
+      - dry_clean
+      - do_not_machine_wash
+      - do_not_bleach
+      - do_not_tumble_dry
+      - do_not_iron
+    display_assets:
+      swatch_image: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1770098928/crusader/variants/IN-4004/IN4004-Moss-1770098923.jpg"
+      closeup_image: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1770098928/crusader/variants/IN-4004/IN4004-Moss-1770098923.jpg"
+    render_assets:
+      material_family_key: infinity_boucle
+      base_color_map: /pbr/dawson/performance-infinity-boucle-moss/basecolor.jpg
+      normal_map: /pbr/fabrics/infinity-boucle/normal.jpg
+      roughness_map: /pbr/fabrics/infinity-boucle/roughness.jpg
+      tile_scale:
+        x: 1.0
+        y: 1.0
+
+  - upholstery_code: performance_twill_pearl_beige
+    upholstery_label: "Performance Twill, Pearl Beige"
+    fabric_family: twill_performance
+    fabric_label: Performance Twill
+    color_label: Pearl Beige
+    collection_type: custom
+    color_family: beige
+    tone: warm
+    material_type: woven_fabric
+    texture_type: twill
+    pattern_scale: fine
+    performance_features:
+      - spill_resistant
+      - pfas_free
+    composition:
+      polyester_pct: 80
+      acrylic_pct: 20
+      pfas_free: true
+    care:
+      - do_not_machine_wash
+      - do_not_bleach
+      - do_not_tumble_dry
+      - do_not_iron
+      - dry_clean
+    display_assets:
+      swatch_image: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1747116409/crusader/variants/PT-4002/Levi-Office-Chair-Twill-Pearl-Beige-Square-Det_4-1747116407.jpg"
+      closeup_image: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1747116409/crusader/variants/PT-4002/Levi-Office-Chair-Twill-Pearl-Beige-Square-Det_4-1747116407.jpg"
+    render_assets:
+      material_family_key: twill
+      base_color_map: /pbr/dawson/performance-twill-pearl-beige/basecolor.jpg
+      normal_map: /pbr/fabrics/twill/normal.jpg
+      roughness_map: /pbr/fabrics/twill/roughness.jpg
+      tile_scale:
+        x: 2.3
+        y: 2.3
+
+  - upholstery_code: performance_twill_slate
+    upholstery_label: "Performance Twill, Slate"
+    fabric_family: twill_performance
+    fabric_label: Performance Twill
+    color_label: Slate
+    collection_type: custom
+    color_family: grey
+    tone: cool
+    material_type: woven_fabric
+    texture_type: twill
+    pattern_scale: fine
+    performance_features:
+      - spill_resistant
+      - pfas_free
+    composition:
+      polyester_pct: 80
+      acrylic_pct: 20
+      pfas_free: true
+    care:
+      - do_not_machine_wash
+      - do_not_bleach
+      - do_not_tumble_dry
+      - do_not_iron
+      - dry_clean
+    display_assets:
+      swatch_image: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1756361613/crusader/variants/PT-4003/Performance-Twill-Slate-1756361610.jpg"
+      closeup_image: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1756361613/crusader/variants/PT-4003/Performance-Twill-Slate-1756361610.jpg"
+    render_assets:
+      material_family_key: twill
+      base_color_map: /pbr/dawson/performance-twill-slate/basecolor.jpg
+      normal_map: /pbr/fabrics/twill/normal.jpg
+      roughness_map: /pbr/fabrics/twill/roughness.jpg
+      tile_scale:
+        x: 2.3
+        y: 2.3
+
+  - upholstery_code: performance_twill_moss
+    upholstery_label: "Performance Twill, Moss"
+    fabric_family: twill_performance
+    fabric_label: Performance Twill
+    color_label: Moss
+    collection_type: custom
+    color_family: green
+    tone: muted_earthy
+    material_type: woven_fabric
+    texture_type: twill
+    pattern_scale: fine
+    performance_features:
+      - spill_resistant
+      - pfas_free
+    composition:
+      polyester_pct: 80
+      acrylic_pct: 20
+      pfas_free: true
+    care:
+      - do_not_machine_wash
+      - do_not_bleach
+      - do_not_tumble_dry
+      - do_not_iron
+      - dry_clean
+    display_assets:
+      swatch_image: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1756438801/crusader/variants/PT-4004/Moss-1756438798.jpg"
+      closeup_image: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1756438801/crusader/variants/PT-4004/Moss-1756438798.jpg"
+    render_assets:
+      material_family_key: twill
+      base_color_map: /pbr/dawson/performance-twill-moss/basecolor.jpg
+      normal_map: /pbr/fabrics/twill/normal.jpg
+      roughness_map: /pbr/fabrics/twill/roughness.jpg
+      tile_scale:
+        x: 2.3
+        y: 2.3
+
+  - upholstery_code: performance_twill_dove_grey
+    upholstery_label: "Performance Twill, Medium Grey"
+    fabric_family: twill_performance
+    fabric_label: Performance Twill
+    color_label: Medium Grey
+    collection_type: custom
+    color_family: grey
+    tone: neutral_cool
+    material_type: woven_fabric
+    texture_type: twill
+    pattern_scale: fine
+    performance_features:
+      - spill_resistant
+      - pfas_free
+    composition:
+      polyester_pct: 80
+      acrylic_pct: 20
+      pfas_free: true
+    care:
+      - do_not_machine_wash
+      - do_not_bleach
+      - do_not_tumble_dry
+      - do_not_iron
+      - dry_clean
+    display_assets:
+      swatch_image: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1769061840/crusader/variants/PT-4005/PT4005-Performance-Twill-Dove-Grey-1769061838.jpg"
+      closeup_image: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1769061840/crusader/variants/PT-4005/PT4005-Performance-Twill-Dove-Grey-1769061838.jpg"
+    render_assets:
+      material_family_key: twill
+      base_color_map: /pbr/dawson/performance-twill-dove-grey/basecolor.jpg
+      normal_map: /pbr/fabrics/twill/normal.jpg
+      roughness_map: /pbr/fabrics/twill/roughness.jpg
+      tile_scale:
+        x: 2.3
+        y: 2.3
+
+  - upholstery_code: performance_genova_oat
+    upholstery_label: "Performance Linen Weave (Genova), Sand (Oat)"
+    fabric_family: performance_linen_weave
+    fabric_label: Genova
+    color_label: "Sand (Oat)"
+    collection_type: custom
+    color_family: sand
+    tone: warm
+    material_type: woven_fabric
+    texture_type: linen_weave
+    pattern_scale: fine_medium
+    performance_features:
+      - spill_resistant
+      - pfas_free
+    composition:
+      linen_pct: 10
+      viscose_pct: 23
+      polyester_pct: 67
+      pfas_free: true
+    care:
+      - do_not_machine_wash
+      - do_not_bleach
+      - do_not_tumble_dry
+      - dry_clean
+    display_assets:
+      swatch_image: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1757063296/crusader/variants/PG-4002/Mori-Armchair-Oat-Walnut-Leg-Det_2-1757063296.jpg"
+      closeup_image: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1757063296/crusader/variants/PG-4002/Mori-Armchair-Oat-Walnut-Leg-Det_2-1757063296.jpg"
+    render_assets:
+      material_family_key: performance_linen_weave
+      base_color_map: /pbr/dawson/performance-genova-oat/basecolor.jpg
+      normal_map: /pbr/fabrics/performance-linen-weave/normal.jpg
+      roughness_map: /pbr/fabrics/performance-linen-weave/roughness.jpg
+      tile_scale:
+        x: 2.2
+        y: 2.2
+
+  - upholstery_code: performance_linen_weave_cream
+    upholstery_label: "Performance Linen Weave (Genova), Cream"
+    fabric_family: performance_linen_weave
+    fabric_label: Genova
+    color_label: Cream
+    collection_type: custom
+    color_family: cream
+    tone: warm
+    material_type: woven_fabric
+    texture_type: linen_weave
+    pattern_scale: fine_medium
+    performance_features:
+      - spill_resistant
+      - pfas_free
+    composition:
+      linen_pct: 10
+      viscose_pct: 23
+      polyester_pct: 67
+      pfas_free: true
+    care:
+      - do_not_machine_wash
+      - do_not_bleach
+      - do_not_tumble_dry
+      - dry_clean
+    display_assets:
+      swatch_image: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1770188184/crusader/variants/PG-4003/PG4003-Cream-1770188182.jpg"
+      closeup_image: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1770188184/crusader/variants/PG-4003/PG4003-Cream-1770188182.jpg"
+    render_assets:
+      material_family_key: performance_linen_weave
+      base_color_map: /pbr/dawson/performance-linen-weave-cream/basecolor.jpg
+      normal_map: /pbr/fabrics/performance-linen-weave/normal.jpg
+      roughness_map: /pbr/fabrics/performance-linen-weave/roughness.jpg
+      tile_scale:
+        x: 2.2
+        y: 2.2
+
+  - upholstery_code: performance_linen_weave_light_grey
+    upholstery_label: "Performance Linen Weave (Genova), Light Grey"
+    fabric_family: performance_linen_weave
+    fabric_label: Genova
+    color_label: Light Grey
+    collection_type: custom
+    color_family: light_grey
+    tone: neutral
+    material_type: woven_fabric
+    texture_type: linen_weave
+    pattern_scale: fine_medium
+    performance_features:
+      - spill_resistant
+      - pfas_free
+    composition:
+      linen_pct: 10
+      viscose_pct: 23
+      polyester_pct: 67
+      pfas_free: true
+    care:
+      - do_not_machine_wash
+      - do_not_bleach
+      - do_not_tumble_dry
+      - dry_clean
+    display_assets:
+      swatch_image: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1770188172/crusader/variants/PG-4004/PG4004-Light-Grey-1770188170.jpg"
+      closeup_image: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1770188172/crusader/variants/PG-4004/PG4004-Light-Grey-1770188170.jpg"
+    render_assets:
+      material_family_key: performance_linen_weave
+      base_color_map: /pbr/dawson/performance-linen-weave-light-grey/basecolor.jpg
+      normal_map: /pbr/fabrics/performance-linen-weave/normal.jpg
+      roughness_map: /pbr/fabrics/performance-linen-weave/roughness.jpg
+      tile_scale:
+        x: 2.2
+        y: 2.2
+
+  - upholstery_code: greta_ivory
+    upholstery_label: "Washed Chenille, Cream"
+    fabric_family: washed_chenille
+    fabric_label: Greta
+    color_label: Cream
+    collection_type: custom
+    color_family: cream
+    tone: warm
+    material_type: chenille_fabric
+    texture_type: washed_chenille
+    pattern_scale: medium
+    performance_features:
+      - machine_washable
+    composition:
+      polyester_pct: 100
+      pfas_free: false
+    care:
+      - machine_wash_below_30c
+      - do_not_bleach
+      - tumble_dry_low
+    display_assets:
+      swatch_image: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1769054456/crusader/variants/GR-4001/GR4001-Greta-Ivory-1769054453.jpg"
+      closeup_image: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1769054456/crusader/variants/GR-4001/GR4001-Greta-Ivory-1769054453.jpg"
+    render_assets:
+      material_family_key: washed_chenille
+      base_color_map: /pbr/dawson/greta-ivory/basecolor.jpg
+      normal_map: /pbr/fabrics/washed-chenille/normal.jpg
+      roughness_map: /pbr/fabrics/washed-chenille/roughness.jpg
+      tile_scale:
+        x: 1.5
+        y: 1.5
+
+  - upholstery_code: washed_chenille_sand
+    upholstery_label: "Washed Chenille, Sand"
+    fabric_family: washed_chenille
+    fabric_label: Greta
+    color_label: Sand
+    collection_type: custom
+    color_family: sand
+    tone: warm
+    material_type: chenille_fabric
+    texture_type: washed_chenille
+    pattern_scale: medium
+    performance_features:
+      - machine_washable
+    composition:
+      polyester_pct: 100
+      pfas_free: false
+    care:
+      - machine_wash_below_30c
+      - do_not_bleach
+      - tumble_dry_low
+    display_assets:
+      swatch_image: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1770188296/crusader/variants/GR-4002/GR4002-Latte-1770188293.jpg"
+      closeup_image: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1770188296/crusader/variants/GR-4002/GR4002-Latte-1770188293.jpg"
+    render_assets:
+      material_family_key: washed_chenille
+      base_color_map: /pbr/dawson/washed-chenille-sand/basecolor.jpg
+      normal_map: /pbr/fabrics/washed-chenille/normal.jpg
+      roughness_map: /pbr/fabrics/washed-chenille/roughness.jpg
+      tile_scale:
+        x: 1.5
+        y: 1.5
+
+  - upholstery_code: greta_mustard_brown
+    upholstery_label: "Washed Chenille, Caramel"
+    fabric_family: washed_chenille
+    fabric_label: Greta
+    color_label: Caramel
+    collection_type: custom
+    color_family: brown
+    tone: warm
+    material_type: chenille_fabric
+    texture_type: washed_chenille
+    pattern_scale: medium
+    performance_features:
+      - machine_washable
+    composition:
+      polyester_pct: 100
+      pfas_free: false
+    care:
+      - machine_wash_below_30c
+      - do_not_bleach
+      - tumble_dry_low
+    display_assets:
+      swatch_image: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1769054464/crusader/variants/GR-4003/GR4003-Greta-Mustard-Brown-1769054461.jpg"
+      closeup_image: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1769054464/crusader/variants/GR-4003/GR4003-Greta-Mustard-Brown-1769054461.jpg"
+    render_assets:
+      material_family_key: washed_chenille
+      base_color_map: /pbr/dawson/greta-mustard-brown/basecolor.jpg
+      normal_map: /pbr/fabrics/washed-chenille/normal.jpg
+      roughness_map: /pbr/fabrics/washed-chenille/roughness.jpg
+      tile_scale:
+        x: 1.5
+        y: 1.5
+
+  - upholstery_code: greta_moss
+    upholstery_label: "Washed Chenille, Moss"
+    fabric_family: washed_chenille
+    fabric_label: Greta
+    color_label: Moss
+    collection_type: custom
+    color_family: green
+    tone: muted_earthy
+    material_type: chenille_fabric
+    texture_type: washed_chenille
+    pattern_scale: medium
+    performance_features:
+      - machine_washable
+    composition:
+      polyester_pct: 100
+      pfas_free: false
+    care:
+      - machine_wash_below_30c
+      - do_not_bleach
+      - tumble_dry_low
+    display_assets:
+      swatch_image: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1769054472/crusader/variants/GR-4004/GR4004-Greta-Moss-1769054469.jpg"
+      closeup_image: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1769054472/crusader/variants/GR-4004/GR4004-Greta-Moss-1769054469.jpg"
+    render_assets:
+      material_family_key: washed_chenille
+      base_color_map: /pbr/dawson/greta-moss/basecolor.jpg
+      normal_map: /pbr/fabrics/washed-chenille/normal.jpg
+      roughness_map: /pbr/fabrics/washed-chenille/roughness.jpg
+      tile_scale:
+        x: 1.5
+        y: 1.5
+
+  - upholstery_code: cocoa_leather
+    upholstery_label: "Cocoa (Leather)"
+    fabric_family: top_grain_leather
+    fabric_label: Leather
+    color_label: "Cocoa"
+    collection_type: stocked
+    color_family: brown
+    tone: warm
+    material_type: leather
+    texture_type: smooth_leather
+    pattern_scale: none
+    performance_features:
+      - durable
+    composition:
+      top_grain_leather_pct: 100
+      pfas_free: false
+    care:
+      - wipe_clean_damp_cloth
+      - keep_away_from_direct_sunlight
+      - leather_conditioner_periodic
+    display_assets:
+      swatch_image: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1688632818/crusader/variants/LE-4020/Arden-Leather-Swivel-Armchair-Cocoa-Square-Det_1-1688632815.jpg"
+      closeup_image: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1688632818/crusader/variants/LE-4020/Arden-Leather-Swivel-Armchair-Cocoa-Square-Det_1-1688632815.jpg"
+    render_assets:
+      material_family_key: top_grain_leather
+      base_color_map: /pbr/dawson/cocoa-leather/basecolor.jpg
+      normal_map: /pbr/leather/top-grain/normal.jpg
+      roughness_map: /pbr/leather/top-grain/roughness.jpg
+      tile_scale:
+        x: 1.2
+        y: 1.2
+
+  - upholstery_code: caramel_leather
+    upholstery_label: "Caramel (Leather)"
+    fabric_family: top_grain_leather
+    fabric_label: Leather
+    color_label: "Caramel"
+    collection_type: custom
+    color_family: brown
+    tone: warm
+    material_type: leather
+    texture_type: smooth_leather
+    pattern_scale: none
+    performance_features:
+      - durable
+    composition:
+      top_grain_leather_pct: 100
+      pfas_free: false
+    care:
+      - wipe_clean_damp_cloth
+      - keep_away_from_direct_sunlight
+      - leather_conditioner_periodic
+    display_assets:
+      swatch_image: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626941764/crusader/variants/LE-4016/Jonathan-Sofa-Brown_1.jpg"
+      closeup_image: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626941764/crusader/variants/LE-4016/Jonathan-Sofa-Brown_1.jpg"
+    render_assets:
+      material_family_key: top_grain_leather
+      base_color_map: /pbr/dawson/caramel-leather/basecolor.jpg
+      normal_map: /pbr/leather/top-grain/normal.jpg
+      roughness_map: /pbr/leather/top-grain/roughness.jpg
+      tile_scale:
+        x: 1.2
+        y: 1.2
+
+  - upholstery_code: warm_taupe_leather
+    upholstery_label: "Warm Taupe (Leather)"
+    fabric_family: top_grain_leather
+    fabric_label: Leather
+    color_label: "Warm Taupe"
+    collection_type: custom
+    color_family: taupe
+    tone: warm
+    material_type: leather
+    texture_type: smooth_leather
+    pattern_scale: none
+    performance_features:
+      - durable
+    composition:
+      top_grain_leather_pct: 100
+      pfas_free: false
+    care:
+      - wipe_clean_damp_cloth
+      - keep_away_from_direct_sunlight
+      - leather_conditioner_periodic
+    display_assets:
+      swatch_image: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626941786/crusader/variants/LE-4017/Jonathan-Sofa-Taupe_1.jpg"
+      closeup_image: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626941786/crusader/variants/LE-4017/Jonathan-Sofa-Taupe_1.jpg"
+    render_assets:
+      material_family_key: top_grain_leather
+      base_color_map: /pbr/dawson/warm-taupe-leather/basecolor.jpg
+      normal_map: /pbr/leather/top-grain/normal.jpg
+      roughness_map: /pbr/leather/top-grain/roughness.jpg
+      tile_scale:
+        x: 1.2
+        y: 1.2
+
+  - upholstery_code: marche_ivory_leather
+    upholstery_label: "Marche Ivory (Leather)"
+    fabric_family: top_grain_leather
+    fabric_label: Marche
+    color_label: "Marche Ivory"
+    collection_type: custom
+    color_family: cream
+    tone: warm
+    material_type: leather
+    texture_type: smooth_leather
+    pattern_scale: none
+    performance_features:
+      - durable
+    composition:
+      top_grain_leather_pct: 100
+      pfas_free: false
+    care:
+      - wipe_clean_damp_cloth
+      - keep_away_from_direct_sunlight
+      - leather_conditioner_periodic
+    display_assets:
+      swatch_image: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728527/crusader/variants/LE-4021/Hamilton-Leather-Sofa-Ivory-Det_1-1710728524.jpg"
+      closeup_image: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728527/crusader/variants/LE-4021/Hamilton-Leather-Sofa-Ivory-Det_1-1710728524.jpg"
+    render_assets:
+      material_family_key: top_grain_leather
+      base_color_map: /pbr/dawson/marche-ivory-leather/basecolor.jpg
+      normal_map: /pbr/leather/top-grain/normal.jpg
+      roughness_map: /pbr/leather/top-grain/roughness.jpg
+      tile_scale:
+        x: 1.2
+        y: 1.2
+
+  - upholstery_code: marche_graphite_leather
+    upholstery_label: "Marche Graphite (Leather)"
+    fabric_family: top_grain_leather
+    fabric_label: Marche
+    color_label: "Marche Graphite"
+    swatch_hex: "#2F3136"
+    collection_type: custom
+    color_family: grey
+    tone: cool
+    material_type: leather
+    texture_type: smooth_leather
+    pattern_scale: none
+    performance_features:
+      - durable
+    composition:
+      top_grain_leather_pct: 100
+      pfas_free: false
+    care:
+      - wipe_clean_damp_cloth
+      - keep_away_from_direct_sunlight
+      - leather_conditioner_periodic
+    display_assets:
+      swatch_image: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728543/crusader/variants/LE-4022/Hamilton-Leather-Sofa-Graphite-Det_1-1710728540.jpg"
+      closeup_image: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728543/crusader/variants/LE-4022/Hamilton-Leather-Sofa-Graphite-Det_1-1710728540.jpg"
+    render_assets:
+      material_family_key: top_grain_leather
+      base_color_map: /pbr/dawson/marche-graphite-leather/basecolor.jpg
+      normal_map: /pbr/leather/top-grain/normal.jpg
+      roughness_map: /pbr/leather/top-grain/roughness.jpg
+      tile_scale:
+        x: 1.2
+        y: 1.2
+
+  - upholstery_code: marche_cocoa_leather
+    upholstery_label: "Marche Cocoa (Leather)"
+    fabric_family: top_grain_leather
+    fabric_label: Marche
+    color_label: "Marche Cocoa"
+    collection_type: custom
+    color_family: brown
+    tone: warm
+    material_type: leather
+    texture_type: smooth_leather
+    pattern_scale: none
+    performance_features:
+      - durable
+    composition:
+      top_grain_leather_pct: 100
+      pfas_free: false
+    care:
+      - wipe_clean_damp_cloth
+      - keep_away_from_direct_sunlight
+      - leather_conditioner_periodic
+    display_assets:
+      swatch_image: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1741163167/crusader/variants/LE-4023/Cocoa_Swatch-1741163165.jpg"
+      closeup_image: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1741163167/crusader/variants/LE-4023/Cocoa_Swatch-1741163165.jpg"
+    render_assets:
+      material_family_key: top_grain_leather
+      base_color_map: /pbr/dawson/marche-cocoa-leather/basecolor.jpg
+      normal_map: /pbr/leather/top-grain/normal.jpg
+      roughness_map: /pbr/leather/top-grain/roughness.jpg
+      tile_scale:
+        x: 1.2
+        y: 1.2
+
+# Maps which upholstery_codes are active for this family
+# These match the 30+ fabric options available on Castlery website
+family_upholstery_map:
+  product_family: Dawson
+  supported_upholstery_codes:
+    # Stocked fabrics
+    - beach_linen
+    - navagio_beach_linen
+    - navagio_seagull
+    # Additional stocked/custom fabrics from Dawson variants
+    - marcel_brilliant_white
+    # Performance Twill - Pearl Beige, Dove Grey, Slate, Moss
+    - performance_twill_pearl_beige
+    - performance_twill_dove_grey
+    - performance_twill_slate
+    - performance_twill_moss
+    # Performance Fleece (Peyton) - Ivory, Dove Grey, Moss, Cumin
+    - peyton_ivory
+    - peyton_dove_grey
+    - peyton_moss
+    - peyton_cumin
+    # Performance Linen Weave (Genova) - Oat, Cream, Light Grey
+    - performance_genova_oat
+    - performance_linen_weave_cream
+    - performance_linen_weave_light_grey
+    # Performance Infinity Boucle - Cream, White Quartz, Moss, Ginger
+    - performance_boucle_cream
+    - infinity_boucle_white_quartz
+    - performance_infinity_boucle_moss
+    - infinity_boucle_ginger
+    # Washed Chenille (Greta) - Ivory, Sand, Mustard Brown, Moss
+    - greta_ivory
+    - washed_chenille_sand
+    - greta_mustard_brown
+    - greta_moss
+    # Leather range
+    - cocoa_leather
+    - caramel_leather
+    - warm_taupe_leather
+    - marche_ivory_leather
+    - marche_graphite_leather
+    - marche_cocoa_leather

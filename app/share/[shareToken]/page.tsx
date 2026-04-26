@@ -3,7 +3,7 @@ import ShareViewer from "@/components/ShareViewer";
 import ShareTracking from "./ShareTracking";
 import { ShareFooterCTA } from "@/components/ShareFooterCTA";
 import { legacyApiToSnapshot } from "@/lib/room-persistence";
-import type { DesignSnapshot } from "@/lib/room-types";
+import type { DesignItem, DesignSnapshot, SavedView, ZoneMin } from "@/lib/room-types";
 
 export const metadata = {
   robots: { index: false, follow: false },
@@ -50,9 +50,9 @@ export default async function SharePage({
     title: design.title,
     roomWidth: design.roomWidth,
     roomDepth: design.roomDepth,
-    items: design.items as any[],
-    zones: (design.zones as any[]) || [],
-    savedViews: (design.savedViews as any[]) || [],
+    items: design.items as unknown as DesignItem[],
+    zones: (design.zones as unknown as ZoneMin[]) || [],
+    savedViews: (design.savedViews as unknown as SavedView[]) || [],
   });
 
   return (
@@ -80,7 +80,7 @@ export default async function SharePage({
         <ShareViewer initialSnapshot={designSnapshot} />
       </div>
 
-      <ShareFooterCTA />
+      <ShareFooterCTA shareToken={shareToken} />
     </main>
   );
 }

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import DeleteDesignButton from "@/components/DeleteDesignButton";
+import DuplicateDesignButton from "@/components/DuplicateDesignButton";
 
 type DesignListItem = {
   id: string;
@@ -109,6 +110,12 @@ export default function DesignsListWithSelection({
               >
                 Open
               </Link>
+              <DuplicateDesignButton
+                sourceDesignId={design.id}
+                className="rounded-lg border px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50"
+              >
+                Duplicate
+              </DuplicateDesignButton>
               <DeleteDesignButton designId={design.id} />
             </div>
           </div>

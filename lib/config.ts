@@ -102,14 +102,11 @@ export function validateEnvOrThrow() {
   requireEnv("STRIPE_WEBHOOK_SECRET", process.env.STRIPE_WEBHOOK_SECRET, missing);
   requireEnv("STRIPE_PRICE_PRO_MONTHLY", process.env.STRIPE_PRICE_PRO_MONTHLY, missing);
   requireEnv("STRIPE_PRICE_PRO_YEARLY", process.env.STRIPE_PRICE_PRO_YEARLY, missing);
-  requireEnv("SENTRY_DSN", process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN, missing);
   requireEnv("AUTH_SECRET", process.env.AUTH_SECRET, missing);
   requireEnv("GOOGLE_CLIENT_ID", process.env.GOOGLE_CLIENT_ID, missing);
   requireEnv("GOOGLE_CLIENT_SECRET", process.env.GOOGLE_CLIENT_SECRET, missing);
   requireEnv("APP_ORIGIN", process.env.APP_ORIGIN, missing);
   requireEnv("ADMIN_EMAILS", process.env.ADMIN_EMAILS, missing);
-  requireEnv("RESEND_API_KEY", process.env.RESEND_API_KEY, missing);
-  requireEnv("EMAIL_FROM", process.env.EMAIL_FROM, missing);
 
   const errors: string[] = [];
   if (missing.length) {

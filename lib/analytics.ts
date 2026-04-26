@@ -2,7 +2,7 @@
 
 import posthog from "posthog-js";
 
-type TrackProps = Record<string, any>;
+type TrackProps = object;
 
 export function track(event: string, props: TrackProps = {}) {
   const base = {

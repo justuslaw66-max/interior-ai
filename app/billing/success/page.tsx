@@ -1,4 +1,5 @@
 import RefreshPlanButton from "./RefreshPlanButton";
+import Link from "next/link";
 
 export default async function BillingSuccessPage({
   searchParams,
@@ -22,18 +23,18 @@ export default async function BillingSuccessPage({
         )}
 
         <div className="mt-6 flex flex-col gap-2">
-          <a
+          <Link
             href="/?mode=designer"
             className="rounded-xl bg-neutral-900 px-4 py-2 text-center text-sm text-white"
           >
             Open Designer mode
-          </a>
-          <a
+          </Link>
+          <Link
             href="/dashboard"
             className="rounded-xl border px-4 py-2 text-center text-sm"
           >
             Go to dashboard
-          </a>
+          </Link>
         </div>
 
         <RefreshPlanButton />

@@ -1,6 +1,8 @@
 // app/admin/models/[id]/page.tsx
 import { prisma } from "@/lib/prisma";
+import { getFreshCatalogYamlMap } from "@/lib/catalog-yaml";
 import ModelViewer from "./viewer";
+import ModelEditForm from "./model-edit-form";
 import { auth } from "@/lib/auth";
 import { isAdminEmail } from "@/lib/admin";
 import { redirect } from "next/navigation";
@@ -20,6 +22,7 @@ export default async function ModelPage({
   const asset = await prisma.modelAsset.findUnique({
     where: { id },
   });
+  const linkedCatalogEntry = getFreshCatalogYamlMap().get(id) ?? null;
 
   if (!asset) {
     return <div className="p-6">Not found</div>;
@@ -51,6 +54,7 @@ export default async function ModelPage({
           <div className="mt-3">
             <b>Approved</b>: {asset!.approved ? "Yes" : "No"}
           </div>
+          <ModelEditForm asset={asset} catalogEntry={linkedCatalogEntry} />
         </div>
       </div>
     </div>

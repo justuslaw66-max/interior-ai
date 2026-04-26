@@ -1,0 +1,94 @@
+brand: Castlery
+category: dining_table
+product_family: Brighton
+product_name: Brighton Oval Dining Table
+variant: Oval 180
+price_usd: 899
+price_band: mid_premium
+brand_tier: premium_mid
+design_zone: dining_zone
+anchor_role: dining_anchor
+dimensions:
+  width_cm: 180
+  depth_cm: 97
+  height_cm: 76
+seat_capacity: 6
+size_class: large
+shape: oval
+base_type: pedestal
+material_family: wood
+materials:
+  tabletop:
+    structure: engineered_wood
+    surface: walnut_veneer
+  base:
+    structure: solid_wood
+    wood_species: rubberwood
+finish:
+  color_finish: walnut
+  protective_coating: lacquer
+  surface_finish: satin
+  finish_color: walnut
+color_family: brown
+tone: warm
+style_cluster: midcentury_modern
+style_secondary: scandinavian_modern
+design_era: midcentury_inspired
+visual_attributes:
+  visual_weight: medium
+  edge_profile: rounded
+  silhouette: sculptural
+  form_language: soft
+spatial_attributes:
+  footprint_shape: oval
+  chair_pullback_cm: 60
+  walkway_clearance_cm: 90
+room_compatibility:
+  - dining_room
+  - open_plan
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: true
+design_pairings:
+  - dining_chair
+  - pendant_light
+  - dining_rug
+  - sideboard
+assets:
+  asset_id: dining-real-castlery-brighton-oval-180
+  model_url: /assets/models/dining-real-castlery-brighton-oval-180.glb
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1723776680/crusader/variants/AS-000564/Sloane-Travertine-Dining-Table-180cm-Angle-1723776679.png"
+variants:
+  - variant: Oval 180
+    size_label: "180"
+    finish_code: walnut
+    finish_label: Walnut
+    price_usd: 899
+    price_band: mid_premium
+    brand_tier: premium_mid
+    dimensions:
+      width_cm: 180
+      depth_cm: 97
+      height_cm: 76
+    seat_capacity: 6
+    size_class: large
+    color_family: brown
+    tone: warm
+    materials:
+      tabletop:
+        structure: engineered_wood
+        surface: walnut_veneer
+      base:
+        structure: solid_wood
+        wood_species: rubberwood
+    finish:
+      color_finish: walnut
+      protective_coating: lacquer
+      surface_finish: satin
+      finish_color: walnut
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true

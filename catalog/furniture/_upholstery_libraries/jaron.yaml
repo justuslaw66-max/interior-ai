@@ -1,0 +1,88 @@
+# Jaron Family — Shared Upholstery Library
+#
+# This is the single source of truth for all upholstery options
+# available across the Jaron product family (4 products).
+#
+# Referenced in each Jaron product via:
+#   upholstery_library_ref: "jaron"
+#
+# The catalog loader resolves this reference and injects the
+# upholstery_options at parse time. Variants reference options
+# by upholstery_code only.
+
+library_key: "jaron"
+product_family: "Jaron"
+swatch_group: "upholstery_option"
+
+upholstery_options:
+
+  - upholstery_code: marche_cocoa
+    upholstery_label: "Marche Leather, Cocoa"
+    fabric_family: leather
+    fabric_label: Marche
+    color_label: Cocoa
+    collection_type: stocked
+    color_family: brown
+    tone: warm
+    material_type: top_grain_leather
+    texture_type: smooth
+    performance_features:
+      - top_grain_leather
+      - light_protective_finish
+    composition:
+      material: top grain American leather
+      finish: light protective coating
+    care:
+      - wipe_with_dry_cloth
+      - avoid_direct_sunlight
+      - do_not_use_harsh_chemicals
+    display_assets:
+      swatch_image: https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1741163167/crusader/variants/LE-4023/Cocoa_Swatch-1741163165.jpg
+
+  - upholstery_code: marche_ivory
+    upholstery_label: "Marche Leather, Ivory"
+    fabric_family: leather
+    fabric_label: Marche
+    color_label: Ivory
+    collection_type: stocked
+    color_family: white
+    tone: neutral
+    material_type: top_grain_leather
+    texture_type: smooth
+    performance_features:
+      - top_grain_leather
+      - light_protective_finish
+    composition:
+      material: top grain American leather
+      finish: light protective coating
+    care:
+      - wipe_with_dry_cloth
+      - avoid_direct_sunlight
+      - do_not_use_harsh_chemicals
+    display_assets:
+      swatch_image: https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728527/crusader/variants/LE-4021/Hamilton-Leather-Sofa-Ivory-Det_1-1710728524.jpg
+
+  - upholstery_code: performance_arvo_dune
+    upholstery_label: "Performance Arvo Dune"
+    fabric_family: performance_fabric
+    fabric_label: Performance Arvo
+    color_label: Dune
+    collection_type: stocked
+    color_family: beige
+    tone: neutral
+    material_type: woven_fabric
+    texture_type: plain_weave
+    performance_features:
+      - spill_resistant
+      - stain_resistant
+      - pfas_free
+    composition:
+      material: performance fabric
+      pfas_free: true
+    care:
+      - spot_clean_with_mild_detergent
+      - do_not_machine_wash
+      - do_not_bleach
+      - do_not_tumble_dry
+    display_assets:
+      swatch_image: https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/crusader/variants/AR-4001/Arvo-Dune-Swatch.jpg

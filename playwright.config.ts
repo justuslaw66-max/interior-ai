@@ -26,7 +26,7 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'APP_ENV=development npx next start -p 3000',
+    command: 'APP_ENV=development NEXT_PUBLIC_ENABLE_QA_HOOKS=1 npx next start -p 3000',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,

@@ -23,8 +23,7 @@ export function validateCatalogOrThrow() {
     (process.env.APP_ENV === "staging" ||
       process.env.APP_ENV === "production" ||
       process.env.VERCEL_ENV === "preview" ||
-      process.env.VERCEL_ENV === "production" ||
-      process.env.NODE_ENV === "production");
+      process.env.VERCEL_ENV === "production");
 
   // In prod-like environments always enforce strict catalog validation.
   // In dev, allow opt-in strict mode via CATALOG_STRICT_VALIDATION=true.

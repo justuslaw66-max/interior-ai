@@ -68,7 +68,7 @@ import EditorCamera2D from "@/components/editor/camera/EditorCamera2D";
 import RoomRenderer2D from "@/components/editor/renderers/RoomRenderer2D";
 import ItemRenderer2D from "@/components/editor/renderers/ItemRenderer2D";
 import { CanvasErrorBoundary } from "@/components/CanvasErrorBoundary";
-import { metersToMm, mmToMeters, radiansToDeg, type EditorAnnotation2D, type EditorScene2D, type FixedElement2D, type RoomOpening2D } from "@/lib/editorScene";
+import { metersToMm, radiansToDeg, type EditorAnnotation2D, type FixedElement2D, type RoomOpening2D } from "@/lib/editorScene";
 import { legacyApiToSnapshot, snapshotToLegacyApi } from "@/lib/room-persistence";
 import {
   buildImportedModelOptions,
@@ -79,9 +79,7 @@ import {
   upsertImportedCatalogItem,
 } from "@/lib/catalog/imported-model-assembly";
 import {
-  inferMaterialTypeFromText,
   sentenceCaseLabel,
-  shouldShowCollectionGrouping,
 } from "@/lib/catalog/variant-normalization";
 import { mapToTopCategory } from "@/lib/catalog/view-builders";
 import {
@@ -92,7 +90,6 @@ import {
   getItemPrice,
   getRotatedFootprint,
   normalizeRotationDegrees,
-  parseVariantLabel,
   ROTATION_SNAP_STEP_DEGREES,
   ROTATION_SNAP_STEP_RADIANS,
   snapRotationRadians,
@@ -117,16 +114,11 @@ import {
   IMPORTED_VARIANT_BY_PRODUCT_ID,
   IMPORTED_VARIANTS_BY_PRODUCT_ID,
   IMPORTED_PRODUCT_CONFIG_BY_ID,
-  SLOANE_TABLE_TO_BENCH_RECOMMENDATION,
   SLOANE_BENCH_PRODUCT_ID_BY_OPTION,
-  SLOANE_TABLE_PRODUCT_IDS,
-  SLOANE_BENCH_PRODUCT_IDS,
-  getSloaneBenchOptionFromProductId,
   getSloaneBenchProductId,
   CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE,
   CASTLERY_FABRIC_DETAIL_PROFILE_BY_KEY,
   resolveFabricDetailProfile,
-  FULL_DIMENSIONS_BY_PRODUCT_ID,
 } from "@/lib/design-page-product-data";
 import {
   STYLES,
@@ -141,7 +133,6 @@ import {
   type PlanMeasurementUnit,
   type WallDescriptor,
   type ConfigurableNodeTransform,
-  type ConfigurableBoundsCm,
   type RoomBounds,
 } from "@/lib/design-page-types";
 import {
@@ -157,1523 +148,34 @@ import {
   type PaywallExperimentSlot,
 } from "@/lib/design-page-paywall";
 import {
-  dimsFromBoundsCm as _dimsFromBoundsCm,
-  resolveItemConfigurationCode as _resolveItemConfigurationCode,
-  resolveItemConfigurationEntry as _resolveItemConfigurationEntry,
-  resolveConfiguredVisualDimsMm as _resolveConfiguredVisualDimsMm,
-  resolveConfiguredPlanningDimsMm as _resolveConfiguredPlanningDimsMm,
-  resolveConfiguredNodeTransforms as _resolveConfiguredNodeTransforms,
-  resolveConfiguredModelUrl as _resolveConfiguredModelUrl,
-} from "@/lib/design-page-config-resolvers";
-import {
   buildAlignedSelectionItems as _buildAlignedSelectionItems,
   buildAutoLayoutZoneItems as _buildAutoLayoutZoneItems,
+  buildAutoZones as _buildAutoZones,
   buildRotatedZoneItems as _buildRotatedZoneItems,
   buildPlanZones2D as _buildPlanZones2D,
   getZoneBounds as _getZoneBounds,
   getZoneLabel as _getZoneLabel,
+  normalizeItemsToRoom as _normalizeItemsToRoom,
+  normalizeZones as _normalizeZones,
+  zonesEqual as _zonesEqual,
 } from "@/lib/design-page-zone-layout";
+import { buildAutoSeatingZone, buildManualZoneFromSelection } from "@/lib/design-page-zone-orchestration";
+import { useDesignPageConfigState } from "@/lib/design-page-config-state";
+import { useDesignPageProductSelectorState } from "@/lib/useDesignPageProductSelectorState";
+import { buildEditorScene2D, createPlanAnnotation } from "@/lib/design-page-plan-scene";
+import {
+  mapPlanAnnotationsToRoomRenderer,
+  mapPlanFixedElementsToRoomRenderer,
+  mapPlanOpeningsToRoomRenderer,
+  movePlanAnnotation,
+  movePlanFixedElement,
+  movePlanOpening,
+} from "@/lib/design-page-plan-overlays";
 
-type FurnitureProps = {
-  product: CatalogItemSchema;
-  planningBoundsMm?: { w: number; d: number; h: number };
-  nodeTransforms?: Record<string, ConfigurableNodeTransform>;
-  variantColor: string;
-  variantName?: string;
-  variantId: string;
-  variantRenderAssets?: CatalogItemSchema["variants"][number]["renderAssets"];
-  initialPosition?: [number, number, number];
-  initialRotationY?: number;
-  roomWidth?: number;
-  roomDepth?: number;
-  wallThickness?: number;
-  margin?: number;
-  snapDistance?: number;
-  enableSnap?: boolean;
-  onDraggingChange?: (dragging: boolean) => void;
-  walls?: WallDescriptor[];
-  instanceId: string;
-  isSelected?: boolean;
-  isPrimarySelected?: boolean;
-  onSelect?: (id: string, additive: boolean) => void;
-  onMove?: (id: string, pos: [number, number, number]) => boolean | void;
-  onRotate?: (
-    id: string,
-    rotationY: number,
-    meta?: {
-      source?: "keyboard" | "handle" | "inspector" | "canvas";
-      snap?: boolean;
-    }
-  ) => boolean | void;
-  onDragEnd?: (id: string, pos: [number, number, number]) => void;
-  locked?: boolean;
-  interactive?: boolean;
-  showSelection?: boolean;
-  showLocks?: boolean;
-  onSnapPulse?: () => void;
-  onSnapSuccess?: () => void;
-  items?: DesignItem[];
-  materialPreset?: string;
-  materialOverrides?: DesignItem["materialOverrides"];
-  itemPlanningBoundsByInstanceId?: Record<string, { w: number; d: number; h: number }>;
-  showGuidesAndMeasurements?: boolean;
-  cartPreviewed?: boolean;
-  viewMode?: EditorViewMode;
-  planShowLabels?: boolean;
-  planShowDimensions?: boolean;
-  planMeasurementUnit?: PlanMeasurementUnit;
-  rotationSnapStepRadians?: number;
-  rotationSnapStepDegrees?: number;
-  rotationSnapEnabled?: boolean;
-  "data-testid"?: string;
-};
+import { Room } from "@/components/scene/RoomEnvironment";
+import { Furniture, CameraCapture } from "@/components/scene/FurnitureItem";
 
 const STORAGE_KEY = "interior-ai:v1:livingroom-design";
-
-type SnapType = "none" | "wall-left" | "wall-right" | "wall-front" | "wall-back";
-
-type RoomProps = {
-  width?: number;
-  depth?: number;
-  height?: number;
-  wallThickness?: number;
-};
-
-function Room({
-  width = 5,
-  depth = 4,
-  height = 2.6,
-  wallThickness = 0.12,
-}: RoomProps) {
-  const { camera, gl } = useThree();
-  const floorTexture = useMemo(() => {
-    const size = 1024;
-    const canvas = document.createElement("canvas");
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return null;
-
-    ctx.fillStyle = "#ddd6c8";
-    ctx.fillRect(0, 0, size, size);
-
-    const rowHeight = 34;
-    const gap = 2;
-    const baseColor = [221, 214, 200];
-    const noise = (seed: number) => {
-      const x = Math.sin(seed * 12.9898) * 43758.5453;
-      return x - Math.floor(x);
-    };
-
-    for (let y = 0, row = 0; y < size; y += rowHeight + gap, row += 1) {
-      let plank = 0;
-      let x = -Math.floor(noise(row + 0.17) * 120);
-      while (x < size) {
-        const plankWidth = 140 + Math.floor(noise(row * 97 + plank * 13 + 0.31) * 170);
-        const grainShift = Math.floor(noise(row * 53 + plank * 19 + 0.73) * 14) - 7;
-        const r = Math.max(170, Math.min(240, baseColor[0] + grainShift));
-        const g = Math.max(150, Math.min(225, baseColor[1] + grainShift));
-        const b = Math.max(125, Math.min(205, baseColor[2] + grainShift));
-        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-        ctx.fillRect(x, y, plankWidth, rowHeight);
-
-        ctx.globalAlpha = 0.08;
-        ctx.fillStyle = grainShift > 0 ? "#ffffff" : "#8f7a5f";
-        for (let i = 0; i < 4; i += 1) {
-          const grainY = y + 3 + i * 7;
-          ctx.fillRect(x + 3, grainY, plankWidth - 6, 1);
-        }
-        ctx.globalAlpha = 1;
-
-        x += plankWidth + gap;
-        plank += 1;
-      }
-    }
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(Math.max(1, width / 1.8), Math.max(1, depth / 1.8));
-    texture.colorSpace = THREE.SRGBColorSpace;
-    texture.anisotropy = Math.min(8, gl.capabilities.getMaxAnisotropy());
-    texture.needsUpdate = true;
-    return texture;
-  }, [depth, gl.capabilities, width]);
-
-  const floorMat = useMemo(
-    () =>
-      new THREE.MeshStandardMaterial({
-        color: "#efe8dc",
-        map: floorTexture ?? null,
-        roughness: 0.78,
-        metalness: 0,
-        emissive: "#ffffff",
-        emissiveIntensity: 0.02,
-      }),
-    [floorTexture]
-  );
-  const wallMat = useMemo(
-    () =>
-      new THREE.MeshStandardMaterial({
-        color: "#f4f4f2",
-        roughness: 0.92,
-        metalness: 0,
-        emissive: "#ffffff",
-        emissiveIntensity: 0.015,
-      }),
-    []
-  );
-  const ceilingMat = useMemo(
-    () =>
-      new THREE.MeshStandardMaterial({
-        color: "#f8f8f6",
-        roughness: 0.93,
-        metalness: 0,
-        emissive: "#ffffff",
-        emissiveIntensity: 0.01,
-      }),
-    []
-  );
-
-  useEffect(() => {
-    return () => {
-      floorTexture?.dispose();
-      floorMat.dispose();
-      wallMat.dispose();
-      ceilingMat.dispose();
-    };
-  }, [ceilingMat, floorMat, floorTexture, wallMat]);
-
-  const ceilingRef = useRef<THREE.Mesh>(null);
-  const frontWallRef = useRef<THREE.Mesh>(null);
-  const backWallRef = useRef<THREE.Mesh>(null);
-  const leftWallRef = useRef<THREE.Mesh>(null);
-  const rightWallRef = useRef<THREE.Mesh>(null);
-
-  const halfW = width / 2;
-  const halfD = depth / 2;
-  const frontZ = -halfD + wallThickness / 2;
-  const backZ = halfD - wallThickness / 2;
-  const leftX = -halfW + wallThickness / 2;
-  const rightX = halfW - wallThickness / 2;
-
-  useFrame(() => {
-    const outsideBuffer = 0.02;
-
-    const wallCandidates: Array<{ key: "front" | "back" | "left" | "right"; distance: number }> = [];
-    if (camera.position.z < frontZ - outsideBuffer) {
-      wallCandidates.push({ key: "front", distance: Math.abs(camera.position.z - frontZ) });
-    }
-    if (camera.position.z > backZ + outsideBuffer) {
-      wallCandidates.push({ key: "back", distance: Math.abs(camera.position.z - backZ) });
-    }
-    if (camera.position.x < leftX - outsideBuffer) {
-      wallCandidates.push({ key: "left", distance: Math.abs(camera.position.x - leftX) });
-    }
-    if (camera.position.x > rightX + outsideBuffer) {
-      wallCandidates.push({ key: "right", distance: Math.abs(camera.position.x - rightX) });
-    }
-
-    // At corner viewpoints, two walls can block interior visibility. Hide up to two closest.
-    const hiddenWallSet = new Set<"front" | "back" | "left" | "right">();
-    wallCandidates
-      .sort((a, b) => a.distance - b.distance)
-      .slice(0, 2)
-      .forEach((entry) => hiddenWallSet.add(entry.key));
-
-    if (frontWallRef.current) frontWallRef.current.visible = !hiddenWallSet.has("front");
-    if (backWallRef.current) backWallRef.current.visible = !hiddenWallSet.has("back");
-    if (leftWallRef.current) leftWallRef.current.visible = !hiddenWallSet.has("left");
-    if (rightWallRef.current) rightWallRef.current.visible = !hiddenWallSet.has("right");
-    if (ceilingRef.current) {
-      ceilingRef.current.visible = camera.position.y <= height + wallThickness + outsideBuffer;
-    }
-  });
-
-  return (
-    <group>
-      <mesh receiveShadow rotation-x={-Math.PI / 2} position={[0, 0, 0]}>
-        <planeGeometry args={[width, depth]} />
-        <primitive object={floorMat} attach="material" />
-      </mesh>
-
-      <mesh ref={ceilingRef} receiveShadow castShadow position={[0, height + wallThickness / 2, 0]}>
-        <boxGeometry args={[width, wallThickness, depth]} />
-        <primitive object={ceilingMat} attach="material" />
-      </mesh>
-
-      <mesh
-        ref={frontWallRef}
-        receiveShadow
-        castShadow
-        position={[0, height / 2, frontZ]}
-      >
-        <boxGeometry args={[width, height, wallThickness]} />
-        <primitive object={wallMat} attach="material" />
-      </mesh>
-
-      <mesh
-        ref={backWallRef}
-        receiveShadow
-        castShadow
-        position={[0, height / 2, backZ]}
-      >
-        <boxGeometry args={[width, height, wallThickness]} />
-        <primitive object={wallMat} attach="material" />
-      </mesh>
-
-      <mesh
-        ref={leftWallRef}
-        receiveShadow
-        castShadow
-        position={[leftX, height / 2, 0]}
-      >
-        <boxGeometry args={[wallThickness, height, depth]} />
-        <primitive object={wallMat} attach="material" />
-      </mesh>
-
-      <mesh
-        ref={rightWallRef}
-        receiveShadow
-        castShadow
-        position={[rightX, height / 2, 0]}
-      >
-        <boxGeometry args={[wallThickness, height, depth]} />
-        <primitive object={wallMat} attach="material" />
-      </mesh>
-    </group>
-  );
-}
-
-function ZoneOutline(props: ComponentProps<typeof SceneZoneOutline>) {
-  return <SceneZoneOutline {...props} />;
-}
-
-function GLBScaledModel(props: ComponentProps<typeof SceneGLBScaledModel>) {
-  return <SceneGLBScaledModel {...props} />;
-}
-
-function Furniture({
-  product,
-  planningBoundsMm,
-  nodeTransforms,
-  variantColor,
-  variantName,
-  variantId,
-  variantRenderAssets,
-  initialPosition = [0, 0, -1.4] as [number, number, number],
-  initialRotationY = 0,
-  roomWidth = 5,
-  roomDepth = 4,
-  wallThickness = 0.12,
-  snapDistance = 0.25,
-  enableSnap = true,
-  onDraggingChange,
-  instanceId,
-  isSelected,
-  isPrimarySelected = false,
-  onSelect,
-  onMove,
-  onRotate,
-  onDragEnd,
-  locked,
-  interactive = true,
-  showSelection = true,
-  showLocks = false,
-  onSnapPulse,
-  onSnapSuccess,
-  items = [],
-  materialPreset,
-  materialOverrides,
-  itemPlanningBoundsByInstanceId,
-  showGuidesAndMeasurements = true,
-  cartPreviewed = false,
-  viewMode = "3d",
-  planShowLabels = true,
-  planShowDimensions = true,
-  planMeasurementUnit = "mm",
-  rotationSnapStepRadians = ROTATION_SNAP_STEP_RADIANS,
-  rotationSnapStepDegrees = ROTATION_SNAP_STEP_DEGREES,
-  rotationSnapEnabled = true,
-}: FurnitureProps) {
-  const width = product.dimsMm.w / 1000;
-  const depth = product.dimsMm.d / 1000;
-  const height = product.dimsMm.h / 1000;
-  const planningWidth = (planningBoundsMm?.w ?? product.dimsMm.w) / 1000;
-  const planningDepth = (planningBoundsMm?.d ?? product.dimsMm.d) / 1000;
-  const [dragging, setDragging] = useState(false);
-  const [position, setPosition] = useState<[number, number, number]>(
-    initialPosition
-  );
-  const [rotation, setRotation] = useState(initialRotationY); // Y-axis rotation in radians
-  const [snapType, setSnapType] = useState<SnapType>("none"); // Track current snap type for auto-facing
-  const [snapGuides, setSnapGuides] = useState<Guide[]>([]); // Snap visualization guides
-  const [measurements, setMeasurements] = useState<Measure[]>([]); // Real-time measurements
-  const [hovered, setHovered] = useState(false);
-  const [invalidPlacement, setInvalidPlacement] = useState(false);
-  const [rotateDragging, setRotateDragging] = useState(false);
-  const [modelExists, setModelExists] = useState<boolean>(false);
-  const [runtimeModelUrl, setRuntimeModelUrl] = useState<string | null>(null);
-  const [modelLoadState, setModelLoadState] = useState<"idle" | "loading" | "ready" | "error">("idle");
-  const groupRef = useRef<THREE.Group>(null);
-  const shakeUntilRef = useRef(0);
-  const placementStartRef = useRef<number | null>(null);
-  const snapBumpUntilRef = useRef(0);
-  const rotateStartRef = useRef(initialRotationY);
-  const rotateTargetRef = useRef(initialRotationY);
-  const rotatePointerTargetRef = useRef<HTMLElement | null>(null);
-  const rotatePointerIdRef = useRef<number | null>(null);
-  const rotateSnapEnabledRef = useRef(true);
-
-  const materialProps = useMemo(() => {
-    return resolveMaterialProps({
-      category: product.category,
-      materialPreset,
-      materialOverrides,
-      variantColor,
-    });
-  }, [product.category, materialPreset, materialOverrides, variantColor]);
-
-  useEffect(() => {
-    if (dragging) return;
-    const frameId = window.requestAnimationFrame(() => {
-      setPosition(initialPosition);
-      setRotation(initialRotationY);
-      setSnapType("none");
-      rotateStartRef.current = initialRotationY;
-      rotateTargetRef.current = initialRotationY;
-    });
-    return () => window.cancelAnimationFrame(frameId);
-  }, [dragging, initialPosition, initialRotationY]);
-
-  useEffect(() => {
-    rotateTargetRef.current = rotation;
-  }, [rotation]);
-
-  useCursor(hovered && Boolean(locked), "not-allowed");
-
-  useEffect(() => {
-    if (!interactive) return;
-    placementStartRef.current = performance.now();
-  }, [instanceId, interactive]);
-
-  // Keyboard listener for rotation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (locked || !interactive || !isPrimarySelected) return;
-      if (dragging || rotateDragging) return;
-      const activeElement = document.activeElement as HTMLElement | null;
-      if (activeElement) {
-        const tagName = activeElement.tagName;
-        if (
-          tagName === "INPUT" ||
-          tagName === "TEXTAREA" ||
-          tagName === "SELECT" ||
-          activeElement.isContentEditable
-        ) {
-          return;
-        }
-      }
-
-      let nextRotation: number | null = null;
-      let isSnapped = true;
-      if ((e.key === "r" || e.key === "R") && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        nextRotation = rotation + (e.shiftKey ? -Math.PI / 2 : Math.PI / 2);
-      } else if ((e.key === "q" || e.key === "Q") && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        const step =
-          ((rotationSnapEnabled ? rotationSnapStepDegrees : 1) * Math.PI) / 180;
-        nextRotation = rotation - step;
-        isSnapped = rotationSnapEnabled;
-      } else if ((e.key === "e" || e.key === "E") && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        const step =
-          ((rotationSnapEnabled ? rotationSnapStepDegrees : 1) * Math.PI) / 180;
-        nextRotation = rotation + step;
-        isSnapped = rotationSnapEnabled;
-      } else if (e.key === "0" && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        nextRotation = 0;
-      }
-
-      if (nextRotation === null) return;
-      e.preventDefault();
-      setRotation((prev: number) => {
-        const fallback = nextRotation ?? prev;
-        const accepted = onRotate?.(instanceId, fallback, {
-          source: "keyboard",
-          snap: isSnapped,
-        });
-        return accepted === false ? prev : fallback;
-      });
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [
-    dragging,
-    interactive,
-    instanceId,
-    isPrimarySelected,
-    locked,
-    onRotate,
-    rotateDragging,
-    rotation,
-    rotationSnapEnabled,
-    rotationSnapStepDegrees,
-    rotationSnapStepRadians,
-  ]);
-
-  const getPointerRotation = (
-    e: ThreeEvent<PointerEvent>,
-    snapToStep: boolean
-  ): number | null => {
-    raycaster.setFromCamera(e.pointer, e.camera);
-    const hit = raycaster.ray.intersectPlane(plane, intersection);
-    if (!hit) return null;
-    const dx = intersection.x - position[0];
-    const dz = intersection.z - position[2];
-    if (Math.abs(dx) < 1e-4 && Math.abs(dz) < 1e-4) return null;
-    const raw = Math.atan2(dx, -dz);
-    const shouldSnap = snapToStep && rotationSnapEnabled;
-    return shouldSnap
-      ? snapRotationRadians(raw, rotationSnapStepRadians)
-      : raw;
-  };
-
-  const onRotateHandlePointerDown = (e: ThreeEvent<PointerEvent>) => {
-    e.stopPropagation();
-    if (!interactive || locked || viewMode !== "2d") {
-      if (locked) {
-        shakeUntilRef.current = Number(e.timeStamp) + 220;
-      }
-      return;
-    }
-    const pointerTarget = e.target as unknown as HTMLElement;
-    pointerTarget.setPointerCapture(e.pointerId);
-    rotatePointerTargetRef.current = pointerTarget;
-    rotatePointerIdRef.current = e.pointerId;
-    setRotateDragging(true);
-    onDraggingChange?.(true);
-    setInvalidPlacement(false);
-    rotateStartRef.current = rotation;
-    rotateTargetRef.current = rotation;
-    rotateSnapEnabledRef.current = !e.altKey;
-    const next = getPointerRotation(e, rotateSnapEnabledRef.current);
-    if (next !== null) {
-      setRotation(next);
-      rotateTargetRef.current = next;
-    }
-  };
-
-  const onRotateHandlePointerMove = (e: ThreeEvent<PointerEvent>) => {
-    if (!rotateDragging) return;
-    e.stopPropagation();
-    rotateSnapEnabledRef.current = !e.altKey;
-    const next = getPointerRotation(e, rotateSnapEnabledRef.current);
-    if (next === null) return;
-    setRotation(next);
-    rotateTargetRef.current = next;
-  };
-
-  const onRotateHandlePointerUp = (e: ThreeEvent<PointerEvent>) => {
-    if (!rotateDragging) return;
-    e.stopPropagation();
-    rotatePointerTargetRef.current = null;
-    rotatePointerIdRef.current = null;
-    try {
-      (e.target as unknown as HTMLElement).releasePointerCapture(e.pointerId);
-    } catch {}
-    setRotateDragging(false);
-    onDraggingChange?.(false);
-    const accepted = onRotate?.(instanceId, rotateTargetRef.current, {
-      source: "handle",
-      snap: rotateSnapEnabledRef.current,
-    });
-    if (accepted === false) {
-      setInvalidPlacement(true);
-      setRotation(rotateStartRef.current);
-      rotateTargetRef.current = rotateStartRef.current;
-      return;
-    }
-    setInvalidPlacement(false);
-    rotateStartRef.current = rotateTargetRef.current;
-  };
-
-  useEffect(() => {
-    if (!rotateDragging) return;
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key !== "Escape") return;
-      e.preventDefault();
-      const pointerTarget = rotatePointerTargetRef.current;
-      const pointerId = rotatePointerIdRef.current;
-      if (pointerTarget && pointerId !== null) {
-        try {
-          pointerTarget.releasePointerCapture(pointerId);
-        } catch {}
-      }
-      rotatePointerTargetRef.current = null;
-      rotatePointerIdRef.current = null;
-      setRotateDragging(false);
-      onDraggingChange?.(false);
-      setRotation(rotateStartRef.current);
-      rotateTargetRef.current = rotateStartRef.current;
-      setInvalidPlacement(false);
-      track("editor_rotate_cancelled", {
-        source: "handle_escape",
-        instanceId,
-      });
-    };
-    window.addEventListener("keydown", handleEscape);
-    return () => window.removeEventListener("keydown", handleEscape);
-  }, [instanceId, onDraggingChange, rotateDragging]);
-
-  // Update position when rotation changes to keep sofa in bounds
-  useEffect(() => {
-    // Only adjust position for rotation if NOT currently snapped to a wall
-    if (snapType === "none") {
-      // Calculate new bounds based on current rotation
-      const [effW, effD] = getRotatedFootprint(planningWidth, planningDepth, rotation);
-      
-      const halfRoomW = roomWidth / 2;
-      const halfRoomD = roomDepth / 2;
-      const halfEffW = effW / 2;
-      const halfEffD = effD / 2;
-      
-      // Use hard bounds: items must maintain distance from walls
-      // Walls have physical thickness, so we must account for that
-      const hardMinX = -halfRoomW + wallThickness + halfEffW;
-      const hardMaxX = halfRoomW - wallThickness - halfEffW;
-      const hardMinZ = -halfRoomD + wallThickness + halfEffD;
-      const hardMaxZ = halfRoomD - wallThickness - halfEffD;
-      
-      // Clamp current position to new bounds
-      const newX = clamp(position[0], hardMinX, hardMaxX);
-      const newZ = clamp(position[2], hardMinZ, hardMaxZ);
-      
-      if (newX !== position[0] || newZ !== position[2]) {
-        const frameId = window.requestAnimationFrame(() => {
-          setPosition([newX, 0, newZ]);
-        });
-        return () => window.cancelAnimationFrame(frameId);
-      }
-    }
-  }, [planningDepth, planningWidth, position, roomDepth, roomWidth, rotation, snapType, wallThickness]);
-
-  // Reuse Three.js helper objects without recreating them each render.
-  const planeRef = useRef(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0));
-  const raycasterRef = useRef(new THREE.Raycaster());
-  const intersectionRef = useRef(new THREE.Vector3());
-  const plane = planeRef.current;
-  const raycaster = raycasterRef.current;
-  const intersection = intersectionRef.current;
-
-  // Calculate effective dimensions based on rotation (axis-aligned footprint)
-  const [effectiveWidth, effectiveDepth] = getRotatedFootprint(
-    planningWidth,
-    planningDepth,
-    rotation
-  );
-
-  // Compute room bounds
-  const halfRoomW = roomWidth / 2;
-  const halfRoomD = roomDepth / 2;
-  const halfEffectiveW = effectiveWidth / 2;
-  const halfEffectiveD = effectiveDepth / 2;
-
-  // Hard constraint bounds: prevent items from exiting the room
-  // Walls have physical thickness, so we must account for that
-  // Items must stay inside the inner room boundaries (wall edges)
-  const hardMinX = -halfRoomW + wallThickness + halfEffectiveW;
-  const hardMaxX = halfRoomW - wallThickness - halfEffectiveW;
-  const hardMinZ = -halfRoomD + wallThickness + halfEffectiveD;
-  const hardMaxZ = halfRoomD - wallThickness - halfEffectiveD;
-
-  // Soft snap bounds: walls where items snap flush
-  // Items snap directly to hard bounds (wall edges), no gap
-  // The hard bounds already account for item size, so snap position is flush
-  const wallLeftX = hardMinX;
-  const wallRightX = hardMaxX;
-  const wallFrontZ = hardMinZ;
-  const wallBackZ = hardMaxZ;
-
-  // Clamp position to hard bounds (prevent going outside room)
-  const clampedPosition = [
-    clamp(position[0], hardMinX, hardMaxX),
-    position[1],
-    clamp(position[2], hardMinZ, hardMaxZ),
-  ] as [number, number, number];
-
-  // Snap to wall when within threshold (typically 3cm)
-  const applySnap = (x: number, z: number): [number, number, SnapType] => {
-    if (!enableSnap) return [x, z, "none"];
-
-    let snappedX = x;
-    let snappedZ = z;
-    let snapType: SnapType = "none";
-
-    // Check X-axis walls (left/right) - snap if within threshold
-    const distToLeftWall = Math.abs(x - wallLeftX);
-    const distToRightWall = Math.abs(x - wallRightX);
-    const minDistX = Math.min(distToLeftWall, distToRightWall);
-
-    if (minDistX < snapDistance) {
-      snappedX = distToLeftWall < distToRightWall ? wallLeftX : wallRightX;
-      snapType = distToLeftWall < distToRightWall ? "wall-left" : "wall-right";
-    }
-
-    // Check Z-axis walls (front/back) - snap if within threshold and no X snap yet
-    const distToFrontWall = Math.abs(z - wallFrontZ);
-    const distToBackWall = Math.abs(z - wallBackZ);
-    const minDistZ = Math.min(distToFrontWall, distToBackWall);
-
-    if (minDistZ < snapDistance) {
-      snappedZ = distToFrontWall < distToBackWall ? wallFrontZ : wallBackZ;
-      // Only set Z snap if no X snap (prioritize first axis snapped)
-      if (snapType === "none") {
-        snapType = distToFrontWall < distToBackWall ? "wall-front" : "wall-back";
-      }
-    }
-
-    return [snappedX, snappedZ, snapType];
-  };
-
-  const onPointerDown = (e: ThreeEvent<PointerEvent>) => {
-    e.stopPropagation();
-    if (!interactive || locked) {
-      if (locked) {
-        shakeUntilRef.current = performance.now() + 220;
-      }
-      return;
-    }
-    // Capture pointer so dragging continues even if cursor leaves the mesh
-    (e.target as unknown as HTMLElement).setPointerCapture(e.pointerId);
-    setDragging(true);
-    onDraggingChange?.(true); // notify parent
-  };
-
-  const onPointerUp = (e: ThreeEvent<PointerEvent>) => {
-    e.stopPropagation();
-    const wasSnapped = snapType !== "none";
-    try {
-      (e.target as unknown as HTMLElement).releasePointerCapture(e.pointerId);
-    } catch {}
-    setDragging(false);
-    setSnapType("none"); // Reset snap type
-    setInvalidPlacement(false);
-    onDraggingChange?.(false); // notify parent
-    if (wasSnapped && interactive) {
-      snapBumpUntilRef.current = performance.now() + 160;
-      onSnapPulse?.();
-      onSnapSuccess?.();
-    }
-    
-    // Trigger constraint check on drag end
-    if (interactive && onDragEnd) {
-      onDragEnd(instanceId, position);
-    }
-  };
-
-  const onPointerMove = (e: ThreeEvent<PointerEvent>) => {
-    if (!interactive || locked) return;
-    if (rotateDragging) return;
-    if (!dragging) return;
-    e.stopPropagation(); // prevent OrbitControls from responding
-
-    raycaster.setFromCamera(e.pointer, e.camera);
-    raycaster.ray.intersectPlane(plane, intersection);
-
-    // Hard-clamp to room bounds to prevent going outside
-    const x = clamp(intersection.x, hardMinX, hardMaxX);
-    const z = clamp(intersection.z, hardMinZ, hardMaxZ);
-
-    // Try to snap to wall if enabled
-    let snappedX = x;
-    let snappedZ = z;
-    let snap: SnapType = "none";
-
-    if (enableSnap) {
-      const [resultX, resultZ, resultSnap] = applySnap(x, z);
-      snappedX = resultX;
-      snappedZ = resultZ;
-      snap = resultSnap;
-    }
-
-    const nextPos: [number, number, number] = [snappedX, 0, snappedZ];
-
-    // Compute snap guides for visualization
-    if (dragging && enableSnap && items && items.length > 0) {
-      try {
-        const selectedAABB = computeAABB(nextPos, effectiveWidth, effectiveDepth);
-
-        // Find nearby furniture (simple bounds check on all items)
-        const neighborGuides = items
-          .filter((item) => item.instanceId !== instanceId) // exclude self
-          .map((item): SnapNeighbor | null => {
-            const itemProduct = CATALOG_ITEMS[item.productId];
-            if (!itemProduct) return null;
-            const itemPlanningBounds = itemPlanningBoundsByInstanceId?.[item.instanceId];
-            const itemRotation = item.rotationY ?? 0;
-            const [itemWidth, itemDepth] = getRotatedFootprint(
-              (itemPlanningBounds?.w ?? itemProduct.dimsMm.w) / 1000,
-              (itemPlanningBounds?.d ?? itemProduct.dimsMm.d) / 1000,
-              itemRotation
-            );
-
-            return {
-              aabb: computeAABB(item.position, itemWidth, itemDepth),
-              label: `${itemProduct.title}`,
-            };
-          })
-          .filter((item): item is SnapNeighbor => item !== null);
-
-        // Wall snap points (flush to walls, no breathing room)
-        const walls = [
-          { axis: "x" as const, coord: wallLeftX, label: "Left Wall" },
-          { axis: "x" as const, coord: wallRightX, label: "Right Wall" },
-          { axis: "z" as const, coord: wallFrontZ, label: "Front Wall" },
-          { axis: "z" as const, coord: wallBackZ, label: "Back Wall" },
-        ];
-
-        // Compute all snap candidates
-        const snapCandidates = computeSnapCandidates(selectedAABB, neighborGuides, walls, snapDistance);
-
-        // Convert to Guide type with snapped/showLine/showLabel flags
-        // snap threshold = 0.02m (2cm), near threshold = 0.06m (6cm)
-        const allGuides: Guide[] = snapCandidates.map((snap) => {
-          // Determine target type from label
-          let targetType: "wall" | "sofa" | "rug" | "item" = "item";
-          let targetId = "wall";
-
-          if (snap.label?.includes("Wall")) {
-            targetType = "wall";
-            targetId = "wall";
-          } else if (snap.label?.includes("Sofa")) {
-            targetType = "sofa";
-            targetId = "sofa";
-          } else if (snap.label?.includes("Rug")) {
-            targetType = "rug";
-            targetId = "rug";
-          }
-
-          return snapGuideToGuide(snap, instanceId, targetType, targetId, 0.02, 0.06);
-        });
-
-        // Pick the best guides (one per axis)
-        const picked = pickGuides(allGuides);
-
-        setSnapGuides(picked);
-
-        // Compute measurements (gaps, walkways, etc)
-        const neighborMeasures = items
-          .filter((item) => item.instanceId !== instanceId)
-          .map((item): { aabb: AABB; name: string } | null => {
-            const itemProduct = CATALOG_ITEMS[item.productId];
-            if (!itemProduct) return null;
-            const itemPlanningBounds = itemPlanningBoundsByInstanceId?.[item.instanceId];
-            const itemRotation = item.rotationY ?? 0;
-            const [itemWidth, itemDepth] = getRotatedFootprint(
-              (itemPlanningBounds?.w ?? itemProduct.dimsMm.w) / 1000,
-              (itemPlanningBounds?.d ?? itemProduct.dimsMm.d) / 1000,
-              itemRotation
-            );
-            return {
-              aabb: computeAABB(item.position, itemWidth, itemDepth),
-              name: itemProduct.title,
-            };
-          })
-          .filter((item): item is { aabb: AABB; name: string } => item !== null);
-
-        const measures = generateMeasurements(
-          selectedAABB,
-          product.title,
-          neighborMeasures,
-          { minX: hardMinX, maxX: hardMaxX, minZ: hardMinZ, maxZ: hardMaxZ }
-        );
-        setMeasurements(measures);
-      } catch (error) {
-        console.error("[Furniture] Drag snap computation failed", {
-          instanceId,
-          productId: product.id,
-          error,
-        });
-        setSnapGuides([]);
-        setMeasurements([]);
-      }
-    } else {
-      setSnapGuides([]);
-      setMeasurements([]);
-    }
-
-    let accepted: boolean | void | undefined;
-    try {
-      accepted = onMove?.(instanceId, nextPos);
-    } catch (error) {
-      console.error("[Furniture] onMove callback failed", {
-        instanceId,
-        productId: product.id,
-        nextPos,
-        error,
-      });
-      setInvalidPlacement(true);
-      return;
-    }
-    if (accepted === false) {
-      setInvalidPlacement(true);
-      return;
-    }
-    setInvalidPlacement(false);
-    setSnapType(snap);
-    setPosition(nextPos);
-  };
-
-
-  // Determine if current position is snapped (based on snap type rather than position)
-  const isSnapped = snapType !== "none";
-
-  useFrame(() => {
-    if (!groupRef.current) return;
-    const now = performance.now();
-    const baseX = clampedPosition[0];
-    const baseZ = clampedPosition[2];
-    const baseY = height / 2;
-    const bumpRemaining = snapBumpUntilRef.current - now;
-    const bump =
-      bumpRemaining > 0
-        ? Math.sin((bumpRemaining / 160) * Math.PI) * 0.02
-        : 0;
-
-    if (shakeUntilRef.current > now) {
-      const phase = (shakeUntilRef.current - now) / 220;
-      const offset = Math.sin(phase * Math.PI * 10) * 0.02;
-      groupRef.current.position.set(baseX + offset + bump, baseY, baseZ);
-    } else {
-      groupRef.current.position.set(baseX + bump, baseY, baseZ);
-    }
-
-    if (dragging) {
-      groupRef.current.scale.set(1, 1, 1);
-      return;
-    }
-
-    if (cartPreviewed) {
-      groupRef.current.scale.set(1.02, 1.02, 1.02);
-      return;
-    }
-
-    if (!interactive) {
-      groupRef.current.scale.set(1, 1, 1);
-      return;
-    }
-
-    const start = placementStartRef.current;
-    if (start !== null) {
-      const t = Math.min(1, (now - start) / 160);
-      const scale = 0.98 + 0.02 * t;
-      groupRef.current.scale.set(scale, scale, scale);
-      if (t >= 1) {
-        placementStartRef.current = null;
-      }
-    } else {
-      groupRef.current.scale.set(1, 1, 1);
-    }
-  });
-
-  // finalRotation is the current rotation state (set directly when snapping)
-  const finalRotation = rotation;
-  const rotationHudLabel =
-    viewMode === "2d" && rotateDragging
-      ? `${normalizeRotationDegrees(radiansToDeg(rotation))}°`
-      : null;
-  const modelUrl = product?.assets?.modelUrl as string | undefined;
-  const modelCalibration = getModelCalibration(product);
-  const variantMarker = `${String(variantName ?? "")} ${String(variantId ?? "")}`.toLowerCase();
-  const variantColorKey = String(variantColor ?? "").trim().toLowerCase();
-  const isKelseyTableVariant = product.id.startsWith("dining-real-castlery-kelsey-marble-");
-  const variantHex = variantColorKey.match(/^#([0-9a-f]{6})$/i)?.[1] ?? null;
-  const variantLuma = useMemo(() => {
-    if (!variantHex) return null;
-    const r = parseInt(variantHex.slice(0, 2), 16) / 255;
-    const g = parseInt(variantHex.slice(2, 4), 16) / 255;
-    const b = parseInt(variantHex.slice(4, 6), 16) / 255;
-    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  }, [variantHex]);
-  // variantMarker includes variantId (e.g. "cocoa_leather") so check both name and marker.
-  const isLeatherVariant = /\bleather\b/i.test(String(variantName ?? "")) || /\bleather\b/i.test(variantMarker);
-  const isMadisonStoneFabricVariant =
-    product.id.startsWith("sofa-real-castlery-madison-") &&
-    /\bstone\b/i.test(String(variantName ?? "")) &&
-    /\bfabric\b/i.test(String(variantName ?? ""));
-  const isMadisonBisqueFabricVariant =
-    product.id.startsWith("sofa-real-castlery-madison-") &&
-    /\bbisque\b/i.test(String(variantName ?? "")) &&
-    /\bfabric\b/i.test(String(variantName ?? ""));
-  const isMadisonCamilleForestFabricVariant =
-    product.id.startsWith("sofa-real-castlery-madison-") &&
-    /camille,?\s*forest/i.test(String(variantName ?? "")) &&
-    /\bfabric\b/i.test(String(variantName ?? ""));
-  const isDawsonFabricVariant =
-    product.id.startsWith("sofa-real-castlery-dawson-") && !isLeatherVariant;
-  const isDawsonCreamyWhiteVariant =
-    product.id.startsWith("sofa-real-castlery-dawson-") &&
-    /(?:\bcreamy[\s_-]*white\b|\bperformance[\s_-]*creamy[\s_-]*white\b|\bpt4001\b)/i.test(variantMarker);
-  const isDawsonPerformanceTwillVariant =
-    isDawsonFabricVariant &&
-    !isDawsonCreamyWhiteVariant &&
-    /(?:\bperformance[\s_-]*twill\b|\bperformance_twill_\w+\b|\bpt400[2-5]\b)/i.test(variantMarker);
-  const isDawsonPeytonVariant =
-    isDawsonFabricVariant &&
-    /(?:\bpeyton\b|\bpy400[1-4]\b|\bpeyton_[a-z_]+\b)/i.test(variantMarker);
-  const isDawsonGenovaVariant =
-    isDawsonFabricVariant &&
-    /(?:\bgenova\b|\bperformance_linen_weave\b|\bperformance[\s_-]*linen[\s_-]*weave\b|\bpg400[2-4]\b)/i.test(variantMarker);
-  const isDawsonBoucleVariant =
-    isDawsonFabricVariant &&
-    /(?:\bboucle\b|\bin400[2-5]\b|\bperformance_boucle_cream\b|\bperformance_infinity_boucle_moss\b|\binfinity_boucle_[a-z_]+\b)/i.test(variantMarker);
-  const isDawsonChenilleVariant =
-    isDawsonFabricVariant &&
-    /(?:\bwashed[\s_-]*chenille\b|\bgreta\b|\bgr400[1-4]\b|\bwashed_chenille_[a-z_]+\b|\bgreta_[a-z_]+\b)/i.test(variantMarker);
-  const isDawsonStockedLinenVariant =
-    isDawsonFabricVariant &&
-    /(?:\bbeach[\s_-]*linen\b|\bnavagio\b|\bseagull\b|\bng400[12]\b|\bbeach_linen\b|\bnavagio_seagull\b)/i.test(variantMarker);
-  const isPerformanceDuneFabricVariant =
-    (product.id.startsWith("sofa-real-castlery-jaron-") &&
-      /(?:\bperformance[\s_-]*dune\b|\bdune\b)/.test(variantMarker)) ||
-    (/performance\s*dune/i.test(String(variantName ?? "")) &&
-      /\bfabric\b/i.test(String(variantName ?? "")));
-  const isIvoryLeatherVariant =
-    (product.id.startsWith("sofa-real-castlery-jaron-") && /\bivory\b/.test(variantMarker)) ||
-    (isLeatherVariant && /\bivory\b/i.test(String(variantName ?? "")));
-  const isCocoaLeatherVariant =
-    (product.id.startsWith("sofa-real-castlery-jaron-") && /\bcocoa\b/.test(variantMarker)) ||
-    (isLeatherVariant && /\bcocoa\b/i.test(String(variantName ?? "")));
-  const isGraphiteLeatherVariant =
-    isLeatherVariant && /\bgraphite\b/i.test(String(variantName ?? ""));
-  const isMadisonCaramelLeatherVariant =
-    product.id.startsWith("sofa-real-castlery-madison-") &&
-    /\bcaramel\b/i.test(String(variantName ?? "")) &&
-    /\bleather\b/i.test(String(variantName ?? ""));
-  const kelseyHasWhiteToken = /white[\s_-]*wash/i.test(variantMarker);
-  const kelseyHasDarkWalnutToken = /dark[\s_-]*walnut/i.test(variantMarker);
-  const isKelseyWhiteWashVariant =
-    isKelseyTableVariant &&
-    (kelseyHasWhiteToken || variantColorKey === "#d8d0c2" || (!kelseyHasDarkWalnutToken && (variantLuma ?? 1) >= 0.72));
-  const isKelseyDarkWalnutVariant =
-    isKelseyTableVariant &&
-    (kelseyHasDarkWalnutToken || variantColorKey === "#7a4b2d" || (!kelseyHasWhiteToken && (variantLuma ?? 1) < 0.72));
-  const preferredModelUrl = modelUrl ?? null;
-  const effectiveModelCalibration: GLBCalibration | undefined = (() => {
-    if (!modelCalibration) return modelCalibration;
-
-    if (isMadisonBisqueFabricVariant) {
-      // Madison Bisque fabric: warm beige with a softer matte woven response.
-      return {
-        ...modelCalibration,
-        forceBaseColorHex: "#c5b49d",
-        brightness: 0.96,
-        saturation: 0.86,
-        roughnessOverride: 0.97,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.28,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.05,
-      };
-    }
-
-    if (isMadisonStoneFabricVariant) {
-      // Madison Stone fabric: darker charcoal gray with visible woven contrast.
-      return {
-        ...modelCalibration,
-        forceBaseColorHex: "#6b6762",
-        brightness: 0.9,
-        saturation: 0.9,
-        roughnessOverride: 0.94,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.36,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.06,
-      };
-    }
-
-    if (isMadisonCamilleForestFabricVariant) {
-      // Madison Camille, Forest fabric: deep muted green with soft matte weave.
-      return {
-        ...modelCalibration,
-        forceBaseColorHex: "#5a6356",
-        brightness: 0.88,
-        saturation: 0.84,
-        roughnessOverride: 0.98,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.36,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.04,
-      };
-    }
-
-    if (isDawsonCreamyWhiteVariant) {
-      // Dawson Creamy White should stay soft and warm relative to Sand, without the
-      // crisp, pebbled micro-relief that makes it read as artificial plaster.
-      return {
-        ...modelCalibration,
-        forceBaseColorHex: "#dfd7ca",
-        brightness: 0.95,
-        saturation: 0.88,
-        roughnessOverride: 0.9,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.18,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.04,
-        importedNormalScale: 0.012,
-      };
-    }
-
-    if (isDawsonPerformanceTwillVariant) {
-      return {
-        ...modelCalibration,
-        brightness: 0.97,
-        saturation: 0.94,
-        roughnessOverride: 0.9,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.18,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.05,
-        importedNormalScale: 0.014,
-      };
-    }
-
-    if (isDawsonPeytonVariant) {
-      return {
-        ...modelCalibration,
-        brightness: 0.96,
-        saturation: 0.94,
-        roughnessOverride: 0.93,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.14,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.03,
-        importedNormalScale: 0.014,
-      };
-    }
-
-    if (isDawsonGenovaVariant) {
-      return {
-        ...modelCalibration,
-        brightness: 0.98,
-        saturation: 0.94,
-        roughnessOverride: 0.92,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.16,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.04,
-        importedNormalScale: 0.016,
-      };
-    }
-
-    if (isDawsonBoucleVariant) {
-      return {
-        ...modelCalibration,
-        brightness: 0.97,
-        saturation: 0.95,
-        roughnessOverride: 0.95,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.12,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.025,
-        importedNormalScale: 0.02,
-      };
-    }
-
-    if (isDawsonChenilleVariant) {
-      return {
-        ...modelCalibration,
-        brightness: 0.97,
-        saturation: 0.95,
-        roughnessOverride: 0.91,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.16,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.04,
-        importedNormalScale: 0.015,
-      };
-    }
-
-    if (isDawsonStockedLinenVariant) {
-      return {
-        ...modelCalibration,
-        brightness: 0.98,
-        saturation: 0.94,
-        roughnessOverride: 0.92,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.16,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.04,
-        importedNormalScale: 0.018,
-      };
-    }
-
-
-    if (isMadisonCaramelLeatherVariant) {
-      // Keep base texture map for Madison caramel leather so non-upholstery parts
-      // (legs/frame details) retain separation instead of collapsing into one flat tint.
-      return {
-        ...modelCalibration,
-        forceBaseColorHex: "#956a43",
-        disableBaseColorMap: false,
-        brightness: 0.86,
-        saturation: 0.98,
-        roughnessOverride: 0.26,
-        metalnessOverride: 0.03,
-        aoMapIntensity: 0.36,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.5,
-        clearcoatOverride: 0.3,
-        clearcoatRoughnessOverride: 0.42,
-      };
-    }
-
-    if (isKelseyDarkWalnutVariant) {
-      // Kelsey ships as a single baked material, so tint the lower assembly by height.
-      return {
-        ...modelCalibration,
-        preserveWoodLegColorHex: "#7a4b2d",
-        lowerAssemblyTintHex: "#7a4b2d",
-        lowerAssemblyTintStrength: 0.95,
-        // Cover full legs and underframe while leaving the tabletop cap mostly unchanged.
-        lowerAssemblyFadeStart: 0.82,
-        lowerAssemblyFadeEnd: 0.94,
-      };
-    }
-
-    if (isKelseyWhiteWashVariant) {
-      return {
-        ...modelCalibration,
-        preserveWoodLegColorHex: "#d8d0c2",
-        lowerAssemblyTintHex: "#e1d6c8",
-        lowerAssemblyTintStrength: 0,
-        lowerAssemblyFadeStart: 0.82,
-        lowerAssemblyFadeEnd: 0.94,
-      };
-    }
-
-    if (product.id.startsWith("sofa-real-castlery-jaron-")) {
-      if (isPerformanceDuneFabricVariant) {
-        // Tweed-like fabric target: matte, soft contrast, almost no glossy rolloff.
-        return {
-          ...modelCalibration,
-          forceBaseColorHex: "#efeae2",
-          disableBaseColorMap: true,
-          brightness: 1.08,
-          saturation: 0.68,
-          roughnessOverride: 0.98,
-          metalnessOverride: 0,
-          aoMapIntensity: 0.3,
-          emissiveBoost: 0,
-          specularIntensityOverride: 0.02,
-          clearcoatOverride: 0,
-          clearcoatRoughnessOverride: 1,
-        };
-      }
-
-      if (!isLeatherVariant && !isCocoaLeatherVariant && !isIvoryLeatherVariant) return modelCalibration;
-
-      if (isCocoaLeatherVariant) {
-        // Cocoa Marche leather: rich warm chocolate-brown saddle tone.
-        // Reference eyedrop mid-tone #805134 → albedo ~#a87050. Lift brightness
-        // and add a small emissive fill so the GLB's baked shadows don't collapse it.
-        return {
-          ...modelCalibration,
-          forceBaseColorHex: "#a87050",
-          disableBaseColorMap: true,
-          brightness: 1.18,
-          saturation: 1.04,
-          roughnessOverride: 0.48,
-          metalnessOverride: 0.02,
-          aoMapIntensity: 0.12,
-          emissiveBoost: 0.06,
-          specularIntensityOverride: 0.38,
-          clearcoatOverride: 0.12,
-          clearcoatRoughnessOverride: 0.72,
-        };
-      }
-
-      if (isIvoryLeatherVariant) {
-        // Ivory Marche leather: warm cream/parchment. Reference eyedrop mid-tone
-        // #b4afa6 → albedo ~#d0c8b4. Reduce brightness (was 1.2 → pure white) and
-        // add warm saturation so it reads as cream, not grey-white.
-        return {
-          ...modelCalibration,
-          forceBaseColorHex: "#cfc4ae",
-          disableBaseColorMap: true,
-          brightness: 0.98,
-          saturation: 1.06,
-          roughnessOverride: 0.56,
-          metalnessOverride: 0,
-          aoMapIntensity: 0.08,
-          emissiveBoost: 0.04,
-          specularIntensityOverride: 0.22,
-          clearcoatOverride: 0.06,
-          clearcoatRoughnessOverride: 0.84,
-        };
-      }
-
-      // Jaron default leather: aligns with cross-brand leather baseline.
-      return {
-        ...modelCalibration,
-        brightness: 1.06,
-        saturation: 1.08,
-        roughnessOverride: 0.26,
-        metalnessOverride: 0.04,
-        normalScale: 0.5,
-        aoMapIntensity: 0.26,
-        emissiveBoost: 0.03,
-        specularIntensityOverride: 0.75,
-        clearcoatOverride: 0.38,
-        clearcoatRoughnessOverride: 0.44,
-      };
-    }
-
-    if (!isLeatherVariant && !isCocoaLeatherVariant && !isIvoryLeatherVariant) return modelCalibration;
-
-    if (isGraphiteLeatherVariant) {
-      // Graphite leather should stay deep, but avoid crushed blacks on large cushions.
-      return {
-        ...modelCalibration,
-        brightness: 1.18,
-        saturation: 1.05,
-        roughnessOverride: 0.3,
-        metalnessOverride: 0.04,
-        normalScale: 0.5,
-        aoMapIntensity: 0.24,
-        emissiveBoost: 0.04,
-        specularIntensityOverride: 0.7,
-        clearcoatOverride: 0.34,
-        clearcoatRoughnessOverride: 0.48,
-      };
-    }
-
-    // Leather: semi-gloss with visible clearcoat sheen regardless of geometry.
-    // Low roughness + high clearcoat so broad cushion faces still catch env reflections.
-    // normalScale: 0.5 prevents inheriting fabric-level bump (e.g. Dawson base 4.2)
-    // which scatters specular and makes leather read as matte.
-    return {
-      ...modelCalibration,
-      brightness: 1.06,
-      saturation: 1.08,
-      roughnessOverride: 0.26,
-      metalnessOverride: 0.04,
-      normalScale: 0.5,
-      aoMapIntensity: 0.32,
-      emissiveBoost: 0.03,
-      specularIntensityOverride: 0.75,
-      clearcoatOverride: 0.38,
-      clearcoatRoughnessOverride: 0.44,
-    };
-  })();
-
-  useEffect(() => {
-    let cancelled = false;
-
-    if (!modelUrl) {
-      const frameId = window.requestAnimationFrame(() => {
-        setModelExists(false);
-        setRuntimeModelUrl(null);
-        setModelLoadState("idle");
-      });
-      return () => window.cancelAnimationFrame(frameId);
-    }
-
-    const candidates = [preferredModelUrl, modelUrl].filter(
-      (value, index, arr): value is string => Boolean(value) && arr.indexOf(value) === index
-    );
-
-    if (candidates.length === 0) {
-      return;
-    }
-
-    (async () => {
-      for (const candidate of candidates) {
-        try {
-          const res = await fetch(candidate, { method: "HEAD" });
-          if (cancelled) return;
-          if (res.ok) {
-            setRuntimeModelUrl(candidate);
-            setModelExists(true);
-            setModelLoadState("loading");
-            return;
-          }
-        } catch {
-          // Try next fallback candidate.
-        }
-      }
-      if (cancelled) return;
-      setRuntimeModelUrl(null);
-      setModelExists(false);
-      setModelLoadState("error");
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [modelUrl, preferredModelUrl]);
-
-  const shouldLoadModel = viewMode === "3d" && Boolean(runtimeModelUrl) && modelExists;
-  const showModel = shouldLoadModel && modelLoadState === "ready";
-
-  return (
-    <group
-      ref={groupRef}
-      position={[clampedPosition[0], viewMode === "2d" ? 0.01 : height / 2, clampedPosition[2]]}
-      rotation-y={finalRotation}
-      onClick={(e) => {
-        if (!interactive) return;
-        e.stopPropagation();
-        onSelect?.(instanceId, Boolean(e.shiftKey));
-      }}
-      onPointerDown={onPointerDown}
-      onPointerUp={onPointerUp}
-      onPointerCancel={onPointerUp}
-      onPointerMove={onPointerMove}
-      onPointerOver={(e) => {
-        e.stopPropagation();
-        setHovered(true);
-      }}
-      onPointerOut={(e) => {
-        e.stopPropagation();
-        setHovered(false);
-      }}
-    >
-      {shouldLoadModel && runtimeModelUrl ? (
-        <Suspense fallback={null}>
-          <GLBScaledModel
-            url={runtimeModelUrl}
-            width={width}
-            height={height}
-            depth={depth}
-            nodeTransforms={nodeTransforms}
-            calibration={effectiveModelCalibration}
-            variantColorHex={variantColor}
-            variantName={variantName}
-            variantRenderAssets={variantRenderAssets}
-            onLoadStateChange={(state) => {
-              if (state === "loading") setModelLoadState("loading");
-              else if (state === "ready") setModelLoadState("ready");
-              else setModelLoadState("error");
-            }}
-          />
-        </Suspense>
-      ) : null}
-
-      {viewMode === "2d" ? (
-        <ItemRenderer2D
-          width={planningWidth}
-          depth={planningDepth}
-          color={materialProps.color}
-          category={product.category}
-          selected={Boolean(showSelection && isSelected)}
-          dragging={dragging}
-          snapped={isSnapped}
-          invalidPlacement={invalidPlacement}
-          showLabels={planShowLabels}
-          showDimensions={planShowDimensions}
-          measurementUnit={planMeasurementUnit}
-          label={product.title}
-          rotationHudLabel={rotationHudLabel}
-          onRotateHandlePointerDown={onRotateHandlePointerDown}
-          onRotateHandlePointerMove={onRotateHandlePointerMove}
-          onRotateHandlePointerUp={onRotateHandlePointerUp}
-        />
-      ) : (
-        <mesh castShadow receiveShadow visible={!showModel}>
-          <boxGeometry args={[width, height, depth]} />
-          <meshStandardMaterial
-            color={
-              dragging
-                ? isSnapped
-                  ? "#a8de7e" // green when snapped
-                  : "#b8a48a" // tan while dragging unsnaped
-                : materialProps.color
-            }
-            roughness={materialProps.roughness}
-            metalness={materialProps.metalness}
-            emissive={
-              showSelection && isSelected
-                ? "#2a66ff"
-                : cartPreviewed
-                  ? "#8f6d45"
-                : isSnapped && dragging
-                  ? "#5ec91f"
-                  : "#000000"
-            }
-            emissiveIntensity={
-              showSelection && isSelected ? 0.15 : cartPreviewed ? 0.12 : isSnapped && dragging ? 0.3 : 0
-            }
-          />
-          {showSelection && isSelected && <Edges scale={1.01} />}
-        </mesh>
-      )}
-      {Math.abs(planningWidth - width) > 0.001 || Math.abs(planningDepth - depth) > 0.001 ? (
-        <Line
-          points={[
-            [-planningWidth / 2, 0.01, -planningDepth / 2],
-            [planningWidth / 2, 0.01, -planningDepth / 2],
-            [planningWidth / 2, 0.01, planningDepth / 2],
-            [-planningWidth / 2, 0.01, planningDepth / 2],
-            [-planningWidth / 2, 0.01, -planningDepth / 2],
-          ]}
-          color="#d97706"
-          lineWidth={1.5}
-          dashed
-          dashSize={0.08}
-          gapSize={0.05}
-        />
-      ) : null}
-      <SnapGuides guides={snapGuides} visible={showGuidesAndMeasurements && dragging} isDesigner={interactive} />
-      <Measurements measures={measurements} visible={showGuidesAndMeasurements && dragging} />
-      {locked && showLocks && (
-        <Html position={[width / 2 - 0.12, height / 2 - 0.12, depth / 2 - 0.12]}>
-          <div
-            className={`designer-lock ${hovered ? "designer-lock-active" : ""}`}
-            title="Locked by designer"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              width="14"
-              height="14"
-              aria-hidden="true"
-              focusable="false"
-            >
-              <path
-                fill="currentColor"
-                d="M17 9h-1V7a4 4 0 0 0-8 0v2H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2Zm-7-2a2 2 0 1 1 4 0v2h-4V7Zm3 9a1 1 0 1 1-2 0v-2a1 1 0 1 1 2 0v2Z"
-              />
-            </svg>
-          </div>
-        </Html>
-      )}
-    </group>
-  );
-}
-
-function CameraCapture({
-  cameraRef,
-  canvasRef,
-  rendererRef,
-  sceneRef,
-}: {
-  cameraRef: React.MutableRefObject<THREE.Camera | null>;
-  canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
-  rendererRef: React.MutableRefObject<THREE.WebGLRenderer | null>;
-  sceneRef: React.MutableRefObject<THREE.Scene | null>;
-}) {
-  const { camera, gl, scene } = useThree();
-
-  useFrame(() => {
-    cameraRef.current = camera as THREE.Camera;
-    rendererRef.current = gl as THREE.WebGLRenderer;
-    sceneRef.current = scene;
-    canvasRef.current = gl.domElement as HTMLCanvasElement;
-  });
-
-  return null;
-}
-
 function PageContent() {
   const TDZ_TRACE = true;
 
@@ -2373,156 +875,6 @@ function PageContent() {
   type Zone = ZoneMin;
 
   type DesignSnapshot = MultiRoomSnapshot;
-
-  const normalizeItemsToRoom = (
-    items: PlacedItem[],
-    width: number,
-    depth: number,
-    wall: number
-  ): PlacedItem[] => {
-    return items.map((item) => {
-      const product = CATALOG_ITEMS[item.productId];
-      if (!product || !item.position) return item;
-      const rotationY = item.rotationY ?? 0;
-      const planningDims = resolveConfiguredPlanningDimsMm(item, product);
-      const [effW, effD] = getRotatedFootprint(
-        planningDims.w / 1000,
-        planningDims.d / 1000,
-        rotationY
-      );
-      const minX = -width / 2 + wall + effW / 2;
-      const maxX = width / 2 - wall - effW / 2;
-      const minZ = -depth / 2 + wall + effD / 2;
-      const maxZ = depth / 2 - wall - effD / 2;
-
-      const x = clamp(item.position[0], minX, maxX);
-      const z = clamp(item.position[2], minZ, maxZ);
-      if (x === item.position[0] && z === item.position[2]) return item;
-      return { ...item, position: [x, item.position[1] ?? 0, z] };
-    });
-  };
-
-  const computeZoneAnchor = (zoneItems: PlacedItem[]) => {
-    if (!zoneItems.length) return undefined;
-    const sum = zoneItems.reduce(
-      (acc, item) => {
-        acc.x += item.position[0];
-        acc.z += item.position[2];
-        return acc;
-      },
-      { x: 0, z: 0 }
-    );
-    const x = sum.x / zoneItems.length;
-    const z = sum.z / zoneItems.length;
-    return [x, 0, z] as [number, number, number];
-  };
-
-  const normalizeZones = (nextZones: Zone[], allItems: PlacedItem[]) => {
-    const itemMap = new Map(allItems.map((item) => [item.instanceId, item]));
-    return nextZones
-      .map((zone) => {
-        const itemIds = zone.itemIds.filter((id) => itemMap.has(id));
-        const zoneItems = itemIds.map((id) => itemMap.get(id)!).filter(Boolean);
-        const anchor = computeZoneAnchor(zoneItems);
-        return {
-          ...zone,
-          itemIds,
-          anchor,
-          source: zone.source ?? "manual",
-        } as Zone;
-      })
-      .filter((zone) => zone.itemIds.length > 0);
-  };
-
-  const zonesEqual = (a: Zone[], b: Zone[]) => {
-    if (a.length !== b.length) return false;
-    for (let i = 0; i < a.length; i += 1) {
-      const left = a[i];
-      const right = b[i];
-      if (
-        left.id !== right.id ||
-        left.type !== right.type ||
-        left.itemIds.length !== right.itemIds.length
-      ) {
-        return false;
-      }
-      for (let j = 0; j < left.itemIds.length; j += 1) {
-        if (left.itemIds[j] !== right.itemIds[j]) return false;
-      }
-    }
-    return true;
-  };
-
-  const buildAutoZones = (allItems: PlacedItem[], manualZones: Zone[]) => {
-    const assigned = new Set<string>();
-    for (const zone of manualZones) {
-      for (const id of zone.itemIds) assigned.add(id);
-    }
-
-    const itemByCategory = (category: string) =>
-      allItems.filter(
-        (item) => CATALOG_ITEMS[item.productId]?.category === category
-      );
-
-    const distanceSq = (a: PlacedItem, b: PlacedItem) => {
-      const dx = a.position[0] - b.position[0];
-      const dz = a.position[2] - b.position[2];
-      return dx * dx + dz * dz;
-    };
-
-    const pickNearest = (
-      anchor: PlacedItem,
-      candidates: PlacedItem[],
-      limit: number
-    ) => {
-      const sorted = candidates
-        .filter((item) => !assigned.has(item.instanceId))
-        .sort((a, b) => distanceSq(anchor, a) - distanceSq(anchor, b));
-      return sorted.slice(0, limit);
-    };
-
-    const autoZones: Zone[] = [];
-
-    const chairs = itemByCategory("accent_chair");
-    const lamps = itemByCategory("floor_lamp");
-    const tvConsoles = [
-      ...itemByCategory("tv_console"),
-      ...itemByCategory("sideboard"),
-    ];
-
-    // Seating zones are created only once when the first sofa is placed.
-
-    for (const chair of chairs) {
-      if (assigned.has(chair.instanceId)) continue;
-      const nearestLamp = pickNearest(chair, lamps, 1)[0];
-      if (!nearestLamp) continue;
-      if (assigned.has(nearestLamp.instanceId)) continue;
-      const zoneItems = [chair, nearestLamp];
-      assigned.add(chair.instanceId);
-      assigned.add(nearestLamp.instanceId);
-      autoZones.push({
-        id: `auto-reading-${chair.instanceId}`,
-        type: "reading",
-        itemIds: zoneItems.map((item) => item.instanceId),
-        anchor: computeZoneAnchor(zoneItems),
-        source: "auto",
-      });
-    }
-
-    for (const tv of tvConsoles) {
-      if (assigned.has(tv.instanceId)) continue;
-      assigned.add(tv.instanceId);
-      autoZones.push({
-        id: `auto-tv-${tv.instanceId}`,
-        type: "tv",
-        itemIds: [tv.instanceId],
-        anchor: computeZoneAnchor([tv]),
-        source: "auto",
-      });
-    }
-
-    return autoZones;
-  };
 
   const fetchShareStatus = async (id?: string) => {
     const targetId = id ?? designId;
@@ -3658,12 +2010,14 @@ function PageContent() {
         });
 
       if (cleaned.length) {
-        const normalized = normalizeItemsToRoom(
-          cleaned,
-          roomWidth,
-          roomDepth,
-          wallThickness
-        );
+        const normalized = _normalizeItemsToRoom({
+          items: cleaned,
+          width: roomWidth,
+          depth: roomDepth,
+          wall: wallThickness,
+          catalogItems: CATALOG_ITEMS,
+          resolveConfiguredPlanningDimsMm,
+        });
         // NEW: Use migration helper for localStorage items too
         const snapshot = migrateToV3({
           items: normalized,
@@ -4272,32 +2626,20 @@ function PageContent() {
       selectedSet.has(item.instanceId)
     );
     if (!selectedItems.length) return;
-
-    const zoneId = `zone-${Date.now().toString(36)}`;
-    const itemIds = selectedItems.map((item) => item.instanceId);
-    const anchor = computeZoneAnchor(selectedItems);
-    const newZone: Zone = {
-      id: zoneId,
-      type: pendingZoneType,
-      itemIds,
-      anchor,
-      source: "manual",
-    };
-
     const existing = zonesRef.current ?? [];
-    const manualZones = existing
-      .filter((zone) => zone.source === "manual")
-      .map((zone) => ({
-        ...zone,
-        itemIds: zone.itemIds.filter((id) => !selectedSet.has(id)),
-      }))
-      .filter((zone) => zone.itemIds.length > 0);
+    const next = buildManualZoneFromSelection({
+      selectedSet,
+      selectedItems,
+      pendingZoneType,
+      existingZones: existing,
+    });
+    if (!next) return;
 
     setDesignSnapshot({
       ...designSnapshotRef.current,
-      zones: [...manualZones, newZone],
+      zones: next.zones,
     });
-    setSelectedZoneId(zoneId);
+    setSelectedZoneId(next.zoneId);
     clearSelection();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clearSelection, pendingZoneType]);
@@ -4307,16 +2649,8 @@ function PageContent() {
       if (editorMode !== "design" || isClientPreview) return;
       if (seatingZoneAutoDisabledRef.current) return;
       const existing = zonesRef.current ?? [];
-      if (existing.some((zone) => zone.type === "seating")) return;
-
-      const zoneId = `zone-${Date.now().toString(36)}`;
-      const newZone: Zone = {
-        id: zoneId,
-        type: "seating",
-        itemIds: [sofaItem.instanceId],
-        anchor: computeZoneAnchor([sofaItem]),
-        source: "manual",
-      };
+      const next = buildAutoSeatingZone({ sofaItem, existingZones: existing });
+      if (!next) return;
 
       history.begin("auto_create_seating_zone");
 
@@ -4325,7 +2659,7 @@ function PageContent() {
       if (room) {
         const updatedRoom = {
           ...room,
-          zones: [...existing.filter((zone) => zone.source === "manual"), newZone],
+          zones: next.zones,
         };
         const nextSnapshot = {
           ...designSnapshotRef.current,
@@ -4337,8 +2671,8 @@ function PageContent() {
       }
 
       history.commit();
-      setSelectedZoneId(zoneId);
-      track("seating_zone_auto_created", { zoneId, trigger: "first_sofa" });
+      setSelectedZoneId(next.zoneId);
+      track("seating_zone_auto_created", { zoneId: next.zoneId, trigger: "first_sofa" });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [editorMode, history, isClientPreview]
@@ -4349,376 +2683,78 @@ function PageContent() {
     clearAllSelection();
   }, [clearAllSelection, isClientPreview]);
 
-  const importedModelById = useMemo(
-    () => new Map(importedModelOptions.map((option) => [option.id, option])),
-    [importedModelOptions]
-  );
-
-  const dimsFromBoundsCm = useCallback((
-    bounds: ConfigurableBoundsCm | undefined,
-    fallbackHeightMm: number
-  ): { w: number; d: number; h: number } | null => {
-    return _dimsFromBoundsCm(bounds, fallbackHeightMm);
-  }, []);
-
-  const resolveItemConfigurationCode = useCallback((item: DesignItem | null | undefined) => {
-    return _resolveItemConfigurationCode(item, { importedModelById, itemConfigurationByInstanceId });
-  }, [importedModelById, itemConfigurationByInstanceId]);
-
-  const resolveItemConfigurationEntry = useCallback((item: DesignItem | null | undefined) => {
-    return _resolveItemConfigurationEntry(item, { importedModelById, itemConfigurationByInstanceId });
-  }, [importedModelById, itemConfigurationByInstanceId]);
-
-  const resolveConfiguredVisualDimsMm = useCallback((
-    item: DesignItem,
-    fallbackProduct: CatalogItemSchema
-  ): { w: number; d: number; h: number } => {
-    return _resolveConfiguredVisualDimsMm(item, fallbackProduct, { importedModelById, itemConfigurationByInstanceId });
-  }, [importedModelById, itemConfigurationByInstanceId]);
-
-  const resolveConfiguredPlanningDimsMm = useCallback((
-    item: DesignItem,
-    fallbackProduct: CatalogItemSchema
-  ): { w: number; d: number; h: number } => {
-    return _resolveConfiguredPlanningDimsMm(item, fallbackProduct, { importedModelById, itemConfigurationByInstanceId });
-  }, [importedModelById, itemConfigurationByInstanceId]);
-
-  const resolveConfiguredNodeTransforms = useCallback((item: DesignItem | null | undefined) => {
-    return _resolveConfiguredNodeTransforms(item, { importedModelById, itemConfigurationByInstanceId });
-  }, [importedModelById, itemConfigurationByInstanceId]);
-
-  const resolveConfiguredModelUrl = useCallback((
-    item: DesignItem,
-    fallbackModelUrl: string | undefined,
-    variantId: string
-  ) => {
-    return _resolveConfiguredModelUrl(item, fallbackModelUrl, variantId, {
-      importedModelById,
-      itemConfigurationByInstanceId,
-      importedModelUrlByAssetId,
-      catalogItems: CATALOG_ITEMS,
-    });
-  }, [importedModelById, itemConfigurationByInstanceId, importedModelUrlByAssetId]);
-
-  const selectedProduct = selectedItem ? CATALOG_ITEMS[selectedItem.productId] : null;
-  const selectedImportedCatalog = selectedProduct
-    ? importedModelById.get(selectedProduct.id)?.catalog ?? null
-    : null;
-  const selectedConfigurationCode = resolveItemConfigurationCode(selectedItem);
-  const selectedConfigUi = selectedImportedCatalog?.configurableMetadata?.configuration_ui;
-  const selectedConfigOptions = selectedConfigUi?.options ?? [];
-  const selectedConfigEntry = selectedItem ? resolveItemConfigurationEntry(selectedItem) : null;
-  const selectedConfigBehavior = selectedImportedCatalog?.configurableMetadata?.configuration_behavior;
-  const fullDimensionsDetails = selectedProduct
-    ? FULL_DIMENSIONS_BY_PRODUCT_ID[selectedProduct.id] ?? null
-    : null;
-  const itemPlanningBoundsByInstanceId = useMemo(
-    () =>
-      Object.fromEntries(
-        items.map((item) => {
-          const product = CATALOG_ITEMS[item.productId];
-          if (!product) return [item.instanceId, { w: 0, d: 0, h: 0 }];
-          return [item.instanceId, resolveConfiguredPlanningDimsMm(item, product)];
-        })
-      ),
-    [items, resolveConfiguredPlanningDimsMm]
-  );
-  const selectedBrand = useMemo(() => {
-    if (!selectedProduct) return null;
-    const metadataBrand = selectedProduct.metadata?.brand?.trim();
-    if (metadataBrand) return metadataBrand;
-    // Legacy fallback for already imported titles that include brand in title.
-    if (selectedProduct.title.startsWith("Castlery ")) return "Castlery";
-    return null;
-  }, [selectedProduct]);
-  const selectedModelTitle = useMemo(() => {
-    if (!selectedProduct) return "";
-    const metadataName = selectedProduct.metadata?.productName?.trim();
-    if (metadataName) {
-      return metadataName;
-    }
-    if (selectedBrand && selectedProduct.title.startsWith(`${selectedBrand} `)) {
-      return selectedProduct.title.slice(selectedBrand.length + 1);
-    }
-    return selectedProduct.title;
-  }, [selectedProduct, selectedBrand]);
-  const modelOptionProductIds = useMemo(
-    () =>
-      selectedProduct
-        ? (MODEL_FAMILY_BY_PRODUCT_ID[selectedProduct.id] ?? [selectedProduct.id]).filter(
-            (id) => Boolean(CATALOG_ITEMS[id])
-          )
-        : [],
-    [selectedProduct]
-  );
-  const armStyleOptions = useMemo(() => {
-    if (!selectedProduct) return null;
-
-    const direct = ARM_STYLE_OPTIONS_BY_PRODUCT_ID[selectedProduct.id];
-    if (direct) return direct;
-
-    for (const options of Object.values(ARM_STYLE_OPTIONS_BY_PRODUCT_ID)) {
-      if (options.some((option) => option.productId === selectedProduct.id)) {
-        return options;
-      }
-    }
-
-    return null;
-  }, [selectedProduct]);
-  const hasStructuredVariantLabels = Boolean(
-    selectedProduct?.variants.some((v) => Boolean(v.finishLabel?.trim()) || /\(([^)]+)\)/.test(v.label))
-  );
-  const modelSelectorProductIds = useMemo(() => {
-    if (!selectedProduct) return [] as string[];
-    const explicit = MODEL_SELECTOR_PRODUCT_IDS_BY_PRODUCT_ID[selectedProduct.id];
-    if (explicit?.length) {
-      return explicit.filter((id) => Boolean(CATALOG_ITEMS[id]));
-    }
-    if (!armStyleOptions?.length) return modelOptionProductIds;
-
-    // Keep arm-style changes out of the Model selector.
-    const slimOption = armStyleOptions.find(
-      (option) => /slim\s*arm/i.test(option.label) && option.productId
-    );
-    if (slimOption?.productId && CATALOG_ITEMS[slimOption.productId]) {
-      return [slimOption.productId];
-    }
-
-    return [selectedProduct.id];
-  }, [selectedProduct, armStyleOptions, modelOptionProductIds]);
-  const selectedModelProductId = useMemo(() => {
-    if (!selectedProduct) return null;
-    if (modelSelectorProductIds.includes(selectedProduct.id)) {
-      return selectedProduct.id;
-    }
-
-    const representativeModelId =
-      MODEL_SELECTOR_REPRESENTATIVE_BY_PRODUCT_ID[selectedProduct.id];
-    if (representativeModelId && modelSelectorProductIds.includes(representativeModelId)) {
-      return representativeModelId;
-    }
-
-    if (armStyleOptions?.length) {
-      const slimOption = armStyleOptions.find(
-        (option) => /slim\s*arm/i.test(option.label) && option.productId
-      );
-      if (slimOption?.productId && modelSelectorProductIds.includes(slimOption.productId)) {
-        return slimOption.productId;
-      }
-    }
-
-    return modelSelectorProductIds[0] ?? selectedProduct.id;
-  }, [selectedProduct, modelSelectorProductIds, armStyleOptions]);
-  const lengthOptions = useMemo(() => {
-    if (!selectedProduct) return null;
-    const direct = LENGTH_OPTIONS_BY_PRODUCT_ID[selectedProduct.id];
-    if (direct?.length) return direct;
-    if (selectedModelProductId) {
-      const fromModel = LENGTH_OPTIONS_BY_PRODUCT_ID[selectedModelProductId];
-      if (fromModel?.length) return fromModel;
-    }
-    return null;
-  }, [selectedProduct, selectedModelProductId]);
-  const shapeOptions = useMemo(() => {
-    if (!selectedProduct) return null;
-    const direct = SHAPE_OPTIONS_BY_PRODUCT_ID[selectedProduct.id];
-    if (direct?.length) return direct;
-    if (selectedModelProductId) {
-      const fromModel = SHAPE_OPTIONS_BY_PRODUCT_ID[selectedModelProductId];
-      if (fromModel?.length) return fromModel;
-    }
-    return null;
-  }, [selectedProduct, selectedModelProductId]);
-  const orientationOptions = useMemo(() => {
-    if (!selectedProduct) return null;
-    const direct = ORIENTATION_OPTIONS_BY_PRODUCT_ID[selectedProduct.id];
-    if (!direct?.length) return null;
-    return direct;
-  }, [selectedProduct]);
-  const structuredVariants = useMemo(() => {
-    if (!selectedProduct) return [];
-    return selectedProduct.variants.map((variant) => {
-      const parts = parseVariantLabel(variant.label);
-      const materialType =
-        variant.materialType ??
-        inferMaterialTypeFromText(
-          variant.finishLabel,
-          variant.finishCode,
-          variant.swatchGroup,
-          parts.materialLabel,
-          variant.label
-        );
-      const collectionType = String(variant.collectionType ?? "").trim().toLowerCase();
-      return {
-        variant,
-        colourLabel: variant.label.trim() || parts.colourLabel,
-        materialLabel: materialType,
-        materialType,
-        collectionType,
-      };
-    });
-  }, [selectedProduct]);
-  const activeStructuredVariant = useMemo(() => {
-    if (!structuredVariants.length) return null;
-    return (
-      structuredVariants.find((x) => x.variant.id === selectedItem?.variantId) ??
-      structuredVariants[0]
-    );
-  }, [structuredVariants, selectedItem?.variantId]);
-  const activeMaterialLabel = activeStructuredVariant?.materialLabel ?? null;
-  const activeMaterialType = activeStructuredVariant?.materialType ?? null;
-  const activeVariantLabel = activeStructuredVariant?.variant.label ?? null;
-  const activeVariantColorHex = activeStructuredVariant?.variant.colorHex ?? null;
-  const activeColourLabel = activeStructuredVariant?.colourLabel ?? null;
-  const showFabricGroupingDebug = process.env.NODE_ENV !== "production";
-  const selectedModelLabel = selectedProduct?.metadata?.modelLabel?.trim() ?? null;
-  const selectedCategoryDebugLabel = selectedProduct
-    ? selectedProduct.category.replace(/_/g, " ")
-    : null;
-  const selectedFamily = selectedProduct?.metadata?.productFamily?.trim().toLowerCase() ?? "";
-  const selectedName = selectedProduct?.metadata?.productName?.trim().toLowerCase() ?? "";
-  const isCasaTvConsoleSelected =
-    selectedFamily === "casa" &&
-    selectedProduct?.category === "tv_console" &&
-    selectedName.includes("tv console");
-  const isSebTvConsoleSelected =
-    selectedFamily === "seb" &&
-    selectedProduct?.category === "tv_console" &&
-    selectedName.includes("tv console");
-  const isSloaneTvConsoleSelected =
-    selectedFamily === "sloane" &&
-    selectedProduct?.category === "tv_console" &&
-    selectedName.includes("tv console");
-  const isSloaneTableSelected =
-    Boolean(selectedProduct && SLOANE_TABLE_PRODUCT_IDS.includes(selectedProduct.id as (typeof SLOANE_TABLE_PRODUCT_IDS)[number])) ||
-    (selectedFamily === "sloane" && selectedProduct?.category === "dining_table");
-  const isSloaneBenchSelected =
-    Boolean(selectedProduct && SLOANE_BENCH_PRODUCT_IDS.includes(selectedProduct.id)) ||
-    (selectedFamily === "sloane" && selectedName.includes("bench"));
-  const selectedSloaneCompanionBenchItem = useMemo(() => {
-    return items.find((it) => SLOANE_BENCH_PRODUCT_IDS.includes(it.productId)) ?? null;
-  }, [items]);
-  const selectedSloaneCompanionTableItem = useMemo(() => {
-    return items.find((it) => SLOANE_TABLE_PRODUCT_IDS.includes(it.productId as (typeof SLOANE_TABLE_PRODUCT_IDS)[number])) ?? null;
-  }, [items]);
-  const selectedBenchOption = selectedProduct ? getSloaneBenchOptionFromProductId(selectedProduct.id) : null;
-  const companionBenchOption = selectedSloaneCompanionBenchItem
-    ? getSloaneBenchOptionFromProductId(selectedSloaneCompanionBenchItem.productId)
-    : null;
-  const defaultBenchSizeFromTable =
-    selectedProduct && isSloaneTableSelected
-      ? (SLOANE_TABLE_TO_BENCH_RECOMMENDATION[selectedProduct.id] ?? 150)
-      : 150;
-  const activeCompanionBenchSize: 150 | 180 =
-    companionBenchOption?.size ?? selectedBenchOption?.size ?? defaultBenchSizeFromTable;
-  const activeCompanionBenchCushion: "no" | "leather" =
-    companionBenchOption?.cushion ?? selectedBenchOption?.cushion ?? "no";
-  const activeSelectedBenchSize: 150 | 180 = selectedBenchOption?.size ?? 150;
-  const activeSelectedBenchCushion: "no" | "leather" = selectedBenchOption?.cushion ?? "no";
-  const activeCompanionTableProductId =
-    selectedSloaneCompanionTableItem?.productId ??
-    (selectedProduct && isSloaneTableSelected ? selectedProduct.id : "dining-real-castlery-sloane-travertine-220");
-  const visibleColourVariants = useMemo(() => {
-    if (!hasStructuredVariantLabels || !activeMaterialType) {
-      return structuredVariants;
-    }
-    return structuredVariants.filter((x) => x.materialType === activeMaterialType);
-  }, [structuredVariants, hasStructuredVariantLabels, activeMaterialType]);
-  const groupedVisibleColourVariants = useMemo(() => {
-    if (!shouldShowCollectionGrouping(visibleColourVariants.map((entry) => entry.collectionType))) {
-      return [{ key: "all" as const, label: null, entries: visibleColourVariants }];
-    }
-
-    const normalizeCollectionType = (value: string | null | undefined): "stocked" | "custom" =>
-      String(value ?? "").trim().toLowerCase() === "stocked" ? "stocked" : "custom";
-
-    const stocked = visibleColourVariants.filter(
-      (entry) => normalizeCollectionType(entry.collectionType) === "stocked"
-    );
-    const custom = visibleColourVariants.filter(
-      (entry) => normalizeCollectionType(entry.collectionType) === "custom"
-    );
-
-    const groups: Array<{ key: "stocked" | "custom" | "all"; label: string | null; entries: typeof visibleColourVariants }> = [];
-    if (stocked.length) groups.push({ key: "stocked", label: "Stocked", entries: stocked });
-    if (custom.length) groups.push({ key: "custom", label: "Custom", entries: custom });
-    return groups;
-  }, [visibleColourVariants]);
-  const hideColourSelector = Boolean(
-    selectedProduct?.id.startsWith("dining-real-castlery-forma-") ||
-      selectedProduct?.id.startsWith("dining-real-castlery-brighton-") ||
-      isCasaTvConsoleSelected ||
-        isSebTvConsoleSelected ||
-        isSloaneTvConsoleSelected
-  );
-  const materialOptions = useMemo(() => {
-    if (!selectedProduct) {
-      return [] as Array<{ type: "Fabric" | "Leather"; variantId: string; colorHex: string }>;
-    }
-    const orderedTypes = ["Fabric", "Leather"] as const;
-    const byType = new Map<"Fabric" | "Leather", { variantId: string; colorHex: string }>();
-
-    for (const entry of structuredVariants) {
-      if (!byType.has(entry.materialType)) {
-        byType.set(entry.materialType, {
-          variantId: entry.variant.id,
-          colorHex: entry.variant.swatchHex ?? entry.variant.colorHex,
-        });
-      }
-    }
-
-    return orderedTypes
-      .map((type) => {
-        const mapped = byType.get(type);
-        if (!mapped) return null;
-        return { type, variantId: mapped.variantId, colorHex: mapped.colorHex };
-      })
-      .filter((entry): entry is { type: "Fabric" | "Leather"; variantId: string; colorHex: string } => Boolean(entry));
-  }, [selectedProduct, structuredVariants]);
-  const useLengthOptionsAsVariants = Boolean(
-    !hasStructuredVariantLabels &&
-      !isSloaneBenchSelected &&
-      !(shapeOptions?.length && (shapeOptions?.length ?? 0) > 1) &&
-      lengthOptions?.length &&
-      (selectedProduct?.variants.length ?? 0) <= 1
-  );
-  const useShapeOptionsAsVariants = Boolean(
-    !hasStructuredVariantLabels &&
-      !isSloaneBenchSelected &&
-      shapeOptions?.length &&
-      shapeOptions.length > 1
-  );
-  const variantOptionCount = useMemo(() => {
-    if (!selectedProduct) return 0;
-    if (hasStructuredVariantLabels) {
-      return modelSelectorProductIds.length;
-    }
-    if (useShapeOptionsAsVariants) {
-      return (shapeOptions ?? []).filter((option) => Boolean(option.productId)).length;
-    }
-    if (useLengthOptionsAsVariants) {
-      return (lengthOptions ?? []).filter((option) => Boolean(option.productId)).length;
-    }
-    if (isSloaneBenchSelected) {
-      return 2;
-    }
-    return selectedProduct.variants.length;
-  }, [
+  const {
+    importedModelById,
+    resolveItemConfigurationCode,
+    resolveItemConfigurationEntry,
+    resolveConfiguredVisualDimsMm,
+    resolveConfiguredPlanningDimsMm,
+    resolveConfiguredNodeTransforms,
+    resolveConfiguredModelUrl,
     selectedProduct,
+    selectedConfigurationCode,
+    selectedConfigUi,
+    selectedConfigOptions,
+    selectedConfigEntry,
+    selectedConfigBehavior,
+    fullDimensionsDetails,
+    itemPlanningBoundsByInstanceId,
+  } = useDesignPageConfigState({
+    importedModelOptions,
+    itemConfigurationByInstanceId,
+    importedModelUrlByAssetId,
+    selectedItem,
+    items,
+    catalogItems: CATALOG_ITEMS,
+  });
+  const {
+    selectedBrand,
+    selectedModelTitle,
+    modelOptionProductIds,
+    armStyleOptions,
     hasStructuredVariantLabels,
     modelSelectorProductIds,
-    useShapeOptionsAsVariants,
-    shapeOptions,
-    useLengthOptionsAsVariants,
+    selectedModelProductId,
     lengthOptions,
+    shapeOptions,
+    orientationOptions,
+    structuredVariants,
+    activeStructuredVariant,
+    activeMaterialLabel,
+    activeMaterialType,
+    activeVariantLabel,
+    activeVariantColorHex,
+    activeColourLabel,
+    showFabricGroupingDebug,
+    selectedModelLabel,
+    selectedCategoryDebugLabel,
+    isCasaTvConsoleSelected,
+    isSebTvConsoleSelected,
+    isSloaneTvConsoleSelected,
+    isSloaneTableSelected,
     isSloaneBenchSelected,
-  ]);
-  const showVariantsSection = variantOptionCount > 1;
-  const showFinishSection =
-    !isCasaTvConsoleSelected &&
-    !isSebTvConsoleSelected &&
-    !isSloaneTvConsoleSelected &&
-    materialOptions.length > 1;
+    selectedSloaneCompanionBenchItem,
+    selectedSloaneCompanionTableItem,
+    activeCompanionBenchSize,
+    activeCompanionBenchCushion,
+    activeSelectedBenchSize,
+    activeSelectedBenchCushion,
+    activeCompanionTableProductId,
+    groupedVisibleColourVariants,
+    hideColourSelector,
+    materialOptions,
+    useLengthOptionsAsVariants,
+    useShapeOptionsAsVariants,
+    showVariantsSection,
+    showFinishSection,
+    sizeOptionsForActiveSelection,
+    showSizeSection,
+  } = useDesignPageProductSelectorState({
+    selectedProduct,
+    selectedItem,
+    items,
+    catalogItems: CATALOG_ITEMS,
+  });
 
   useEffect(() => {
     setPreviewVariantId(null);
@@ -4859,38 +2895,19 @@ function PageContent() {
     return _buildPlanZones2D(zones, items, getSelectionBounds);
   }, [getSelectionBounds, items, zones]);
 
-  const editorScene2D: EditorScene2D = useMemo(
-    () => ({
-      room: {
-        widthMm: metersToMm(roomWidth),
-        depthMm: metersToMm(roomDepth),
-      },
-      items: items.map((it) => {
-        const product = CATALOG_ITEMS[it.productId];
-        const planning = itemPlanningBoundsByInstanceId[it.instanceId];
-        const dimsW = planning?.w ?? product?.dimsMm.w ?? 0;
-        const dimsD = planning?.d ?? product?.dimsMm.d ?? 0;
-        const dimsH = planning?.h ?? product?.dimsMm.h ?? 0;
-        return {
-          id: it.instanceId,
-          catalogItemId: it.productId,
-          positionMm: {
-            x: metersToMm(it.position[0]),
-            z: metersToMm(it.position[2]),
-          },
-          rotationDeg: radiansToDeg(it.rotationY ?? 0),
-          widthMm: dimsW,
-          depthMm: dimsD,
-          heightMm: dimsH,
-          label: product?.title ?? it.productId,
-          category: product?.category ?? "item",
-        };
+  const editorScene2D = useMemo(
+    () =>
+      buildEditorScene2D({
+        roomWidth,
+        roomDepth,
+        items,
+        catalogItems: CATALOG_ITEMS,
+        itemPlanningBoundsByInstanceId,
+        selectedInstanceId,
+        planAnnotations,
+        planOpenings,
+        planFixedElements,
       }),
-      selectedItemId: selectedInstanceId,
-      annotations: planAnnotations,
-      openings: planOpenings,
-      fixedElements: planFixedElements,
-    }),
     [
       itemPlanningBoundsByInstanceId,
       items,
@@ -4920,62 +2937,23 @@ function PageContent() {
       );
       if (!text) return;
       const id = `note-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-      const base: EditorAnnotation2D = {
-        id,
-        xMm: 0,
-        zMm: 0,
-        text: text.trim(),
-        kind,
-      };
-      const withAnchor =
-        kind === "callout"
-          ? {
-              ...base,
-              xMm: 450,
-              zMm: 450,
-              anchorXMm: 0,
-              anchorZMm: 0,
-            }
-          : base;
-
-      setPlanAnnotations((prev) => [...prev, withAnchor]);
+      const nextAnnotation = createPlanAnnotation({ id, kind, text });
+      setPlanAnnotations((prev) => [...prev, nextAnnotation]);
       setSelectedPlanOverlayId(id);
     },
     []
   );
 
   const handleMoveOpening2D = useCallback((id: string, offsetMeters: number) => {
-    setPlanOpenings((prev) =>
-      prev.map((opening) => (opening.id === id ? { ...opening, offsetMm: Math.round(offsetMeters * 1000) } : opening))
-    );
+    setPlanOpenings((prev) => movePlanOpening(prev, id, offsetMeters));
   }, []);
 
   const handleMoveFixedElement2D = useCallback((id: string, xMeters: number, zMeters: number) => {
-    setPlanFixedElements((prev) =>
-      prev.map((fixed) =>
-        fixed.id === id
-          ? {
-              ...fixed,
-              xMm: metersToMm(xMeters),
-              zMm: metersToMm(zMeters),
-            }
-          : fixed
-      )
-    );
+    setPlanFixedElements((prev) => movePlanFixedElement(prev, id, xMeters, zMeters));
   }, []);
 
   const handleMoveAnnotation2D = useCallback((id: string, xMeters: number, zMeters: number) => {
-    setPlanAnnotations((prev) =>
-      prev.map((note) =>
-        note.id === id
-          ? {
-              ...note,
-              xMm: metersToMm(xMeters),
-              zMm: metersToMm(zMeters),
-            }
-          : note
-      )
-    );
+    setPlanAnnotations((prev) => movePlanAnnotation(prev, id, xMeters, zMeters));
   }, []);
 
   const getTopDownView = useCallback((): CameraView => {
@@ -5136,13 +3114,17 @@ function PageContent() {
       });
     }
     const currentZones = zonesRef.current ?? [];
-    const manualZones = normalizeZones(
+    const manualZones = _normalizeZones(
       currentZones.filter((zone) => zone.source === "manual"),
       items
     );
-    const autoZones = buildAutoZones(items, manualZones);
+    const autoZones = _buildAutoZones({
+      allItems: items,
+      manualZones,
+      catalogItems: CATALOG_ITEMS,
+    });
     const nextZones = [...manualZones, ...autoZones];
-    if (!zonesEqual(nextZones, currentZones)) {
+    if (!_zonesEqual(nextZones, currentZones)) {
       setDesignSnapshot({
         ...designSnapshotRef.current,
         zones: nextZones,
@@ -7014,30 +4996,9 @@ function PageContent() {
                   onMoveOpening={handleMoveOpening2D}
                   onMoveFixedElement={handleMoveFixedElement2D}
                   onMoveAnnotation={handleMoveAnnotation2D}
-                  openings={editorScene2D.openings.map((opening) => ({
-                    id: opening.id,
-                    wall: opening.wall,
-                    kind: opening.kind,
-                    offset: mmToMeters(opening.offsetMm),
-                    width: mmToMeters(opening.widthMm),
-                  }))}
-                  fixedElements={editorScene2D.fixedElements.map((fixed) => ({
-                    id: fixed.id,
-                    x: mmToMeters(fixed.xMm),
-                    z: mmToMeters(fixed.zMm),
-                    w: mmToMeters(fixed.widthMm),
-                    d: mmToMeters(fixed.depthMm),
-                    label: fixed.label,
-                  }))}
-                  annotations={editorScene2D.annotations.map((note) => ({
-                    id: note.id,
-                    x: mmToMeters(note.xMm),
-                    z: mmToMeters(note.zMm),
-                    text: note.text,
-                    kind: note.kind,
-                    anchorX: note.anchorXMm !== undefined ? mmToMeters(note.anchorXMm) : undefined,
-                    anchorZ: note.anchorZMm !== undefined ? mmToMeters(note.anchorZMm) : undefined,
-                  }))}
+                  openings={mapPlanOpeningsToRoomRenderer(editorScene2D.openings)}
+                  fixedElements={mapPlanFixedElementsToRoomRenderer(editorScene2D.fixedElements)}
+                  annotations={mapPlanAnnotationsToRoomRenderer(editorScene2D.annotations)}
                   zones={planZones2D}
                 />
               ) : (
@@ -7060,7 +5021,7 @@ function PageContent() {
                   const bounds = getZoneBounds(zone);
                   if (!bounds) return null;
                   return (
-                    <ZoneOutline
+                    <SceneZoneOutline
                       key={zone.id}
                       data-testid={zone.type === "seating" ? "seating-zone" : `${zone.type}-zone`}
                       bounds={bounds}
@@ -7084,8 +5045,30 @@ function PageContent() {
                 const variant =
                   product.variants.find((v) => v.id === effectiveVariantId) ??
                   product.variants[0];
-                const configuredVisualDims = resolveConfiguredVisualDimsMm(it, product);
-                const configuredPlanningDims = resolveConfiguredPlanningDimsMm(it, product);
+                const configurationEntry = resolveItemConfigurationEntry(it);
+                const configuredVisualDimsBase = resolveConfiguredVisualDimsMm(it, product);
+                const configuredPlanningDimsBase = resolveConfiguredPlanningDimsMm(it, product);
+                const variantDims = variant?.dimensionsMm;
+                const useVariantDims = Boolean(
+                  !configurationEntry &&
+                    variantDims &&
+                    Number(variantDims.w) > 0 &&
+                    Number(variantDims.d) > 0
+                );
+                const configuredVisualDims = useVariantDims
+                  ? {
+                      w: variantDims!.w,
+                      d: variantDims!.d,
+                      h: Number(variantDims!.h) > 0 ? variantDims!.h : configuredVisualDimsBase.h,
+                    }
+                  : configuredVisualDimsBase;
+                const configuredPlanningDims = useVariantDims
+                  ? {
+                      w: variantDims!.w,
+                      d: variantDims!.d,
+                      h: Number(variantDims!.h) > 0 ? variantDims!.h : configuredPlanningDimsBase.h,
+                    }
+                  : configuredPlanningDimsBase;
                 const configuredModelUrl = resolveConfiguredModelUrl(
                   it,
                   product.assets.modelUrl,
@@ -9041,6 +7024,51 @@ function PageContent() {
                   Grouping debug: fabric={activeMaterialLabel ?? "(none)"}; colour={activeColourLabel ?? "(none)"}; variant={activeVariantLabel ?? "(none)"}
                 </div>
               ) : null}
+              </div>
+            ) : null}
+
+            {showSizeSection ? (
+              <div className="pt-3">
+                <div
+                  className={
+                    showDesignerTheme
+                      ? "designer-text-primary text-sm font-semibold"
+                      : "text-sm font-semibold text-neutral-900"
+                  }
+                >
+                  Size
+                </div>
+
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {sizeOptionsForActiveSelection.map((option) => {
+                    const active = option.variantId === selectedItem?.variantId;
+                    return (
+                      <button
+                        key={option.key}
+                        className={`rounded-lg border px-3 py-2 text-sm ${
+                          showDesignerTheme ? "designer-text-primary" : "text-neutral-900"
+                        } ${active ? "designer-accent-border" : "border-neutral-200"}`}
+                        disabled={!canEdit}
+                        onClick={() => {
+                          if (!selectedItem) return;
+                          if (option.variantId === selectedItem.variantId) return;
+                          commitItems(
+                            (prev) =>
+                              prev.map((it) =>
+                                it.instanceId === selectedItem.instanceId
+                                  ? { ...it, variantId: option.variantId }
+                                  : it
+                              ),
+                            `Change size to ${option.label}`
+                          );
+                        }}
+                        title={option.label}
+                      >
+                        {option.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             ) : null}
 
@@ -11147,3 +9175,4 @@ export default function Page() {
     </Suspense>
   );
 }
+

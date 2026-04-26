@@ -85,3 +85,4 @@ Results:
 	- Stripe limits also enforced in `app/api/stripe/checkout-pro/route.ts` and `app/api/stripe/billing-portal/route.ts`.
 - [x] Backup + migration safety checklist
 	- Ops guide present in `PHASE_6_OPERATIONS.md`; executable scripts added: `scripts/backup-db.sh`, `scripts/restore-db.sh`.
+![alt text](studio.jpg)![alt text](hero.jpg)
