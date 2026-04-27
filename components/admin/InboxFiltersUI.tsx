@@ -18,22 +18,37 @@ interface StoredFilters {
 }
 
 export function InboxFiltersUI({ initialQueue, initialBlocked }: InboxFiltersUIProps) {
-  const [queue, setQueue] = useState<QueueFilter>(initialQueue);
-  const [blocked, setBlocked] = useState(initialBlocked);
-  const [mounted, setMounted] = useState(false);
-
-  // Load filters from localStorage on mount
-  useEffect(() => {
+  const [queue, setQueue] = useState<QueueFilter>(() => {
+    if (typeof window === "undefined") return initialQueue;
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored) as StoredFilters;
-        setQueue(parsed.queue);
-        setBlocked(parsed.blocked);
+        return parsed.queue;
       }
     } catch {
       // Ignore parsing errors
     }
+    return initialQueue;
+  });
+  const [blocked, setBlocked] = useState(() => {
+    if (typeof window === "undefined") return initialBlocked;
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored) as StoredFilters;
+        return parsed.blocked;
+      }
+    } catch {
+      // Ignore parsing errors
+    }
+    return initialBlocked;
+  });
+  const [mounted, setMounted] = useState(false);
+
+  // Mark client mount to avoid hydration mismatch flashes.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 

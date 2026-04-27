@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 // Script to extract Room and Furniture components from app/design/page.tsx
+/* eslint-disable @typescript-eslint/no-require-imports */
 
 const fs = require('fs');
 const path = require('path');

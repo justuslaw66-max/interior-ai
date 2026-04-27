@@ -246,7 +246,7 @@ function buildCatalogItem(product: Product): CatalogItemSchema {
       assetId,
       modelUrl:
         modelAsset?.modelUrl ??
-        (LEGACY_NO_MODEL_IDS.has(product.id)
+        (LEGACY_NO_MODEL_IDS.has(product.id) || product.category === "rug"
           ? ""
           : undefined) ??
         `/assets/models/${product.id}.glb`,

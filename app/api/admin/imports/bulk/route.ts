@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { isAdminEmail } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { getImportJobValidationBlockers } from "@/lib/import-jobs/admin-workflow";
+import type { AdminImportWorkflowJob } from "@/lib/import-jobs/admin-workflow-shared";
 
 interface BulkUpdateRequest {
   ids: string[];
@@ -57,7 +58,7 @@ export async function PATCH(request: Request) {
         findMany: (args: {
           where: { id: { in: string[] } };
           select: Record<string, boolean>;
-        }) => Promise<unknown[]>;
+        }) => Promise<AdminImportWorkflowJob[]>;
       };
     };
 
@@ -82,19 +83,18 @@ export async function PATCH(request: Request) {
       updatedAt: true,
     };
 
-    const jobs = (await prismaCompat.importJob.findMany({
+    const jobs = await prismaCompat.importJob.findMany({
       where: { id: { in: ids } },
       select: jobFields,
-    })) as unknown[];
+    });
 
     // Check for blockers if transitioning to approved or published
     if (status === "approved" || status === "published") {
       const blockersMap = new Map<string, string[]>();
       for (const job of jobs) {
-        const jobData = job as Record<string, unknown>;
-        const blockers = getImportJobValidationBlockers(jobData as any);
+        const blockers = getImportJobValidationBlockers(job);
         if (blockers.length > 0) {
-          blockersMap.set(jobData.id as string, blockers);
+          blockersMap.set(job.id, blockers);
         }
       }
 
