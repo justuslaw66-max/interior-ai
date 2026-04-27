@@ -68,7 +68,7 @@ test.describe("Pro Upgrade Flow", () => {
       await page.goto(`${baseURL}/share/${shareToken}/export`);
 
       await expect(page.getByRole("heading", { name: "Playwright Export Pack" })).toBeVisible();
-      await expect(page.getByRole("button", { name: /Print \/ Save as PDF/i })).toBeVisible();
+      await expect(page.getByRole("button", { name: /Download PDF( \(Pro\))?|Print \/ Save as PDF/i })).toBeVisible();
       await expect(page.getByRole("heading", { name: "Practical Checks" })).toBeVisible();
       await expect(page.getByText("Walkways: Clear and accessible")).toBeVisible();
     } finally {

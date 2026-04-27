@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import type { AdminImportWorkflowJob } from "@/lib/import-jobs/admin-workflow";
-import { getImportJobValidationBlockers, getPrimaryImportWorkflowQueue } from "@/lib/import-jobs/admin-workflow";
+import {
+  getImportJobValidationBlockers,
+  getPrimaryImportWorkflowQueue,
+  type AdminImportWorkflowJob,
+} from "@/lib/import-jobs/admin-workflow-shared";
 
 const STATUS_TONE: Record<string, string> = {
   failed: "bg-red-50 text-red-700 border-red-200",

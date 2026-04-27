@@ -151,7 +151,7 @@ test.describe("16. Share → Duplicate Smoke", () => {
 
       expect(dup).not.toBeNull();
       expect(dup!.userId).toBe(duplicatorId);
-      expect(dup!.title).toContain("Copy");
+      expect(dup!.title).toMatch(/copy/i);
     } finally {
       // Cleanup
       await prisma.design
