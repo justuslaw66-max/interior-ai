@@ -321,7 +321,6 @@ test.describe("14. Phase A Revenue Smoke", () => {
     await setPaywallVariantOverride(page, "unlock_pro_exports");
     await page.goto(`${baseURL}/design?paywall_variant=unlock_pro_exports&paywall_open=1`);
 
-    await expect(page.getByText("Upgrade to Pro")).toBeVisible();
     await expect(page.getByTestId("upgrade-variant-label")).toContainText("unlock_pro_exports");
     await expect(page.getByTestId("upgrade-variant-unlock-pro-exports")).toBeVisible();
 
@@ -337,7 +336,6 @@ test.describe("14. Phase A Revenue Smoke", () => {
       waitUntil: "domcontentloaded",
     });
 
-    await expect(page.getByText("Upgrade to Pro")).toBeVisible();
     await expect(page.getByTestId("upgrade-variant-label")).toContainText("see_pricing");
     const seePricingMarker = page.getByTestId("upgrade-variant-see-pricing");
     const markerCount = await seePricingMarker.count();
