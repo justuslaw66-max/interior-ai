@@ -21,7 +21,7 @@ dimensions:
 
 size_class: "large"
 shape: "rectangular"
-base_type: "leg_frame"
+base_type: "frame"
 
 material_family: "wood"
 material_mix: "solid_acacia_engineered_wood_metal"
@@ -45,7 +45,7 @@ finish:
 color_family: "brown"
 tone: "warm"
 
-style_cluster: "mid_century"
+style_cluster: "midcentury_modern"
 style_secondary: "rustic"
 design_era: "mid_century_modern"
 
@@ -61,7 +61,7 @@ spatial_attributes:
 
 room_compatibility:
   - "living_room"
-  - "media_room"
+  - "family_room"
 
 placement_rules:
   floor_only: true
@@ -135,6 +135,22 @@ variants:
       width_cm: 150
       depth_cm: 45
       height_cm: 60
+    materials:
+      body:
+        structure: "solid_wood"
+        wood_species: "acacia"
+      back_panel:
+        structure: "engineered_wood"
+      hardware:
+        structure: "metal"
+      leg_frame:
+        structure: "solid_wood"
+        wood_species: "acacia"
+    finish:
+      color_finish: "muted_honey"
+      surface_finish: "wire_brush_distressed"
+      finish_color: "muted_honey"
+      hardware_finish: "black_powdercoating"
 
 purchase:
   purchase_mode: "external_retailer"

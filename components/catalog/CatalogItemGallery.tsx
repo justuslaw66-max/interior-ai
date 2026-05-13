@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import LazyImage from "@/components/common/LazyImage";
+import PlaceholderImage from "@/components/common/PlaceholderImage";
 
 type Props = {
   images?: string[];
@@ -39,15 +41,14 @@ export default function CatalogItemGallery({ images, imageUrl, title, imageClass
   const hasMultipleImages = availableImages.length > 1;
 
   return (
-    <div data-testid="catalog-item-gallery" className="relative aspect-[4/3] overflow-hidden rounded-lg bg-neutral-100">
+    <div data-testid="catalog-item-gallery" className="relative aspect-[4/3] overflow-hidden rounded-lg">
       {activeImage ? (
         <>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <LazyImage
             src={activeImage}
             alt={title}
-            data-testid="catalog-gallery-image"
             className={imageClassName ?? "h-full w-full object-cover object-center"}
+            testId="catalog-gallery-image"
             onError={() => {
               setGalleryState((prev) => {
                 const base =
@@ -130,7 +131,7 @@ export default function CatalogItemGallery({ images, imageUrl, title, imageClass
           )}
         </>
       ) : (
-        <div className="flex h-full items-center justify-center text-xs text-neutral-400">No image</div>
+        <PlaceholderImage title={title} className={imageClassName ?? "h-full w-full"} />
       )}
     </div>
   );

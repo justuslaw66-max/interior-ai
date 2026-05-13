@@ -160,7 +160,8 @@ function auditVariant(
   index: number,
   requiresSwatchGroup: boolean,
   vocab: ControlledVocab,
-  audit: FileAudit
+  audit: FileAudit,
+  category?: string
 ) {
   const prefix = `variant ${index + 1}`;
 
@@ -210,11 +211,16 @@ function auditVariant(
     audit.failures.push(`${prefix} finish must be structured object data.`);
   }
 
-  if (variant.materials === undefined) {
-    audit.failures.push(`${prefix} is missing structured materials data.`);
-  }
-  if (variant.finish === undefined) {
-    audit.failures.push(`${prefix} is missing structured finish data.`);
+  const upholsteredCategories = ["sofa", "sectional_sofa", "armchair", "ottoman", "accent_chair", "loveseat", "recliner"];
+  const isUpholsteredCategory = upholsteredCategories.includes(String(category ?? ""));
+
+  if (!isUpholsteredCategory) {
+    if (variant.materials === undefined) {
+      audit.failures.push(`${prefix} is missing structured materials data.`);
+    }
+    if (variant.finish === undefined) {
+      audit.failures.push(`${prefix} is missing structured finish data.`);
+    }
   }
 }
 
@@ -225,7 +231,6 @@ function auditFile(filePath: string, vocab: ControlledVocab): FileAudit {
 
   if (!isPlainObject(parsed)) {
     audit.failures.push("catalog.yaml root must be an object.");
-    return audit;
   }
 
   pushInvalidEnum(audit.failures, "category", parsed.category, vocab.categories, true, vocab.legacy_categories ?? []);
@@ -347,7 +352,7 @@ function auditFile(filePath: string, vocab: ControlledVocab): FileAudit {
       audit.failures.push(`variant ${index + 1} must be an object.`);
       return;
     }
-    auditVariant(variant, index, requiresSwatchGroup, vocab, audit);
+    auditVariant(variant, index, requiresSwatchGroup, vocab, audit, parsed.category);
   });
 
   const withDefaults = applyPresetDefaults(parsed, preset);

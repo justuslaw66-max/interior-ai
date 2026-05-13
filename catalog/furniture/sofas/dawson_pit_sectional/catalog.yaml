@@ -162,7 +162,7 @@ variants:
     seat_capacity: 5
     size_class: "extra_large"
     color_family: "grey"
-    tone: "neutral_cool"
+    tone: "cool"
     set_compatibility: []
   - variant: "Dawson Pit-Sectional Sofa / Performance Creamy White"
     size_label: "321x207"
@@ -190,7 +190,7 @@ variants:
     seat_capacity: 5
     size_class: "extra_large"
     color_family: "cream"
-    tone: "neutral_warm"
+    tone: "warm"
     set_compatibility: []
   - variant: "Dawson Pit-Sectional Sofa / Performance Fleece (Peyton), Ivory (Cream)"
     size_label: "321x207"
@@ -218,7 +218,7 @@ variants:
     seat_capacity: 5
     size_class: "extra_large"
     color_family: "grey"
-    tone: "neutral_cool"
+    tone: "cool"
     set_compatibility: []
   - variant: "Dawson Pit-Sectional Sofa / Performance Textured Plain Weave (Marcel), Smoke Grey"
     size_label: "321x207"
@@ -232,7 +232,7 @@ variants:
     seat_capacity: 5
     size_class: "extra_large"
     color_family: "grey"
-    tone: "neutral_cool"
+    tone: "cool"
     set_compatibility: []
   - variant: "Dawson Pit-Sectional Sofa / Performance Fleece (Peyton), Moss"
     size_label: "321x207"
@@ -246,7 +246,7 @@ variants:
     seat_capacity: 5
     size_class: "extra_large"
     color_family: "green"
-    tone: "muted_earthy"
+    tone: "warm"
     set_compatibility: []
   - variant: "Dawson Pit-Sectional Sofa / Performance Fleece (Peyton), Caramel (Cumin)"
     size_label: "321x207"
@@ -446,7 +446,7 @@ variants:
     seat_capacity: 5
     size_class: "extra_large"
     color_family: "green"
-    tone: "muted_earthy"
+    tone: "warm"
     set_compatibility: []
 
   - variant: "Dawson Pit-Sectional Sofa / Performance Twill, Pearl Beige"
@@ -491,7 +491,7 @@ variants:
     seat_capacity: 5
     size_class: "extra_large"
     color_family: "green"
-    tone: "muted_earthy"
+    tone: "warm"
     set_compatibility: []
 
   - variant: "Dawson Pit-Sectional Sofa / Performance Twill, Medium Grey"
@@ -506,7 +506,7 @@ variants:
     seat_capacity: 5
     size_class: "extra_large"
     color_family: "grey"
-    tone: "neutral_cool"
+    tone: "cool"
     set_compatibility: []
 
   - variant: "Dawson Pit-Sectional Sofa / Performance Linen Weave (Genova), Sand (Oat)"
@@ -611,7 +611,7 @@ variants:
     seat_capacity: 5
     size_class: "extra_large"
     color_family: "green"
-    tone: "muted_earthy"
+    tone: "warm"
     set_compatibility: []
 
   - variant: "Dawson Pit-Sectional Sofa / Slub Linen Weave (Navagio), Cream (Beach Linen)"

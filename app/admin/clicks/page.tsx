@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import { isAdminEmail } from "@/lib/admin";
 
 const COMMISSION: Record<string, number> = {
-  MockStore: 0.08,
+  "Castlery Singapore": 0.08,
   Unknown: 0.05,
 };
 

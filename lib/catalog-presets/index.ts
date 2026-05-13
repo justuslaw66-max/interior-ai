@@ -6,6 +6,7 @@ export type CatalogPresetCategory =
   | "coffee_table"
   | "side_table"
   | "tv_console"
+  | "sideboard"
   | "dining_table"
   | "dining_bench"
   | "dining_chair"
@@ -166,6 +167,11 @@ const DESIGN_PAIRING_RULES: Record<CatalogPresetCategory, DesignPairingRule> = {
     severity: "warning",
   },
   tv_console: {
+    requiredMode: "token_match",
+    minMatches: 1,
+    severity: "warning",
+  },
+  sideboard: {
     requiredMode: "token_match",
     minMatches: 1,
     severity: "warning",
@@ -1010,6 +1016,60 @@ export const catalogCategoryPresets: Record<CatalogPresetCategory, CatalogCatego
       positiveNumberFields: ["price_usd", "dimensions.width_cm", "dimensions.depth_cm"],
       publishRequiresAssetLink: true,
       designPairingRules: DESIGN_PAIRING_RULES.rug,
+    },
+  },
+  sideboard: {
+    category: "sideboard",
+    label: "Sideboard",
+    designZone: "dining_zone",
+    anchorRole: "storage_anchor",
+    requiredFields: [
+      "brand",
+      "product_family",
+      "product_name",
+      "price_usd",
+      "price_band",
+      "dimensions.width_cm",
+      "dimensions.depth_cm",
+      "dimensions.height_cm",
+      "size_class",
+      "shape",
+      "base_type",
+      "material_family",
+      "style_cluster",
+      "color_family",
+      "tone",
+    ],
+    optionalFields: ["brand_tier", "style_secondary", "design_era"],
+    defaults: {
+      placement_rules: {
+        floor_only: true,
+        wall_snappable: true,
+        clearance_sensitive: true,
+        center_room_preferred: false,
+      },
+      room_compatibility: ["dining_room", "living_room", "entryway"],
+      design_pairings: ["dining_table", "dining_chair", "rug", "pendant_light"],
+      ai_flags: COMMON_AI_FLAGS,
+    },
+    enums: {
+      shape: ["rectangular", "oval", "square"],
+      base_type: ["frame", "four_leg", "dual_panel"],
+      material_family: ["wood", "mixed", "metal"],
+      style_cluster: [...STYLE_CLUSTERS],
+      color_family: [...COLOR_FAMILIES],
+      tone: [...TONES],
+      size_class: ["medium", "large", "extra_large"],
+    },
+    autoMetadata: {
+      roomType: "dining_room",
+      placementProfile: "wall_storage",
+      recommendedTags: ["storage", "dining", "accent"],
+    },
+    validationRules: {
+      positiveNumberFields: [...COMMON_POSITIVE_FIELDS],
+      publishRequiresAssetLink: true,
+      designPairingRules: DESIGN_PAIRING_RULES.sideboard,
     },
   },
   pendant_light: {

@@ -74,7 +74,19 @@ export function resolveConfiguredVisualDimsMm(
       };
     })();
 
-  return visualDims ?? { ...fallbackProduct.dimsMm };
+  const baseVisualDims = visualDims ?? { ...fallbackProduct.dimsMm };
+  const selectedVariant = fallbackProduct.variants.find((variant) => variant.id === item.variantId);
+  const variantDims = selectedVariant?.dimensionsMm;
+
+  if (!variantDims || !(variantDims.w > 0 && variantDims.d > 0)) {
+    return baseVisualDims;
+  }
+
+  return {
+    w: variantDims.w,
+    d: variantDims.d,
+    h: baseVisualDims.h,
+  };
 }
 
 export function resolveConfiguredPlanningDimsMm(
@@ -101,7 +113,19 @@ export function resolveConfiguredPlanningDimsMm(
       };
     })();
 
-  return planningDims ?? resolveConfiguredVisualDimsMm(item, fallbackProduct, ctx);
+  const basePlanningDims = planningDims ?? resolveConfiguredVisualDimsMm(item, fallbackProduct, ctx);
+  const selectedVariant = fallbackProduct.variants.find((variant) => variant.id === item.variantId);
+  const variantDims = selectedVariant?.dimensionsMm;
+
+  if (!variantDims || !(variantDims.w > 0 && variantDims.d > 0)) {
+    return basePlanningDims;
+  }
+
+  return {
+    w: variantDims.w,
+    d: variantDims.d,
+    h: basePlanningDims.h,
+  };
 }
 
 export function resolveConfiguredNodeTransforms(
@@ -167,8 +191,70 @@ export function resolveConfiguredModelUrl(
   };
 
   const catalog = ctx.importedModelById.get(item.productId)?.catalog;
+  const variantEntries = Array.isArray(catalog?.variants) ? catalog.variants : [];
+
+  const findBestVariantEntry = () => {
+    if (variantEntries.length === 0) return null;
+
+    const variantDims = variantMeta?.dimensionsMm;
+    return (
+      variantEntries
+        .map((entry) => {
+          const entryKeys = [
+            normalizeLookupToken(String(entry?.finish_code ?? "")),
+            normalizeLookupToken(String(entry?.upholstery_code ?? "")),
+            normalizeLookupToken(String(entry?.variant ?? "")),
+            normalizeLookupToken(String(entry?.size_label ?? "")),
+          ].filter((token) => token.length > 0);
+          const keyMatch = lookupKeys
+            .map((key) => normalizeLookupToken(key))
+            .some((key) => entryKeys.includes(key));
+
+          const entryWidthMm = Math.round(Number(entry?.dimensions?.width_cm ?? 0) * 10);
+          const entryDepthMm = Math.round(Number(entry?.dimensions?.depth_cm ?? 0) * 10);
+          const dimsMatch = Boolean(
+            variantDims &&
+              entryWidthMm > 0 &&
+              entryDepthMm > 0 &&
+              Math.abs(entryWidthMm - variantDims.w) <= 10 &&
+              Math.abs(entryDepthMm - variantDims.d) <= 10
+          );
+
+          const hasExplicitModel = Boolean(
+            String(entry?.model_url ?? "").trim() || String(entry?.model_asset_id ?? "").trim()
+          );
+
+          const score = (dimsMatch ? 4 : 0) + (keyMatch ? 2 : 0) + (hasExplicitModel ? 1 : 0);
+          return { entry, score };
+        })
+        .filter(({ score }) => score > 0)
+        .sort((a, b) => b.score - a.score)[0] ?? null
+    );
+  };
+
+  const bestVariantEntry = findBestVariantEntry()?.entry;
 
   const code = resolveItemConfigurationCode(item, ctx);
+
+  const resolveVariantStateAssetModelUrl = (
+    entry: (typeof variantEntries)[number] | null | undefined,
+    stateCode: string | null | undefined
+  ): string | undefined => {
+    if (!entry || !stateCode) return undefined;
+    const stateAssets = entry.state_assets;
+    if (!stateAssets || typeof stateAssets !== "object") return undefined;
+    const stateAsset = stateAssets[stateCode];
+    if (!stateAsset || typeof stateAsset !== "object") return undefined;
+
+    const directUrl = normalizeModelUrlValue(stateAsset.model_url);
+    if (directUrl) return directUrl;
+
+    return resolveAssetIdToModelUrl(stateAsset.model_asset_id);
+  };
+
+  const variantStateModelUrl = resolveVariantStateAssetModelUrl(bestVariantEntry, code);
+  if (variantStateModelUrl) return variantStateModelUrl;
+
   const assetMap = code ? catalog?.configurableMetadata?.configuration_model_assets?.[code] : null;
   if (assetMap) {
     const candidateAssetId =
@@ -180,48 +266,12 @@ export function resolveConfiguredModelUrl(
     if (mapped) return mapped;
   }
 
-  const variantEntries = Array.isArray(catalog?.variants) ? catalog.variants : [];
-  if (variantEntries.length > 0) {
-    const variantDims = variantMeta?.dimensionsMm;
-    const best = variantEntries
-      .map((entry) => {
-        const entryKeys = [
-          normalizeLookupToken(String(entry?.finish_code ?? "")),
-          normalizeLookupToken(String(entry?.upholstery_code ?? "")),
-          normalizeLookupToken(String(entry?.variant ?? "")),
-          normalizeLookupToken(String(entry?.size_label ?? "")),
-        ].filter((token) => token.length > 0);
-        const keyMatch = lookupKeys
-          .map((key) => normalizeLookupToken(key))
-          .some((key) => entryKeys.includes(key));
-
-        const entryWidthMm = Math.round(Number(entry?.dimensions?.width_cm ?? 0) * 10);
-        const entryDepthMm = Math.round(Number(entry?.dimensions?.depth_cm ?? 0) * 10);
-        const dimsMatch = Boolean(
-          variantDims &&
-            entryWidthMm > 0 &&
-            entryDepthMm > 0 &&
-            Math.abs(entryWidthMm - variantDims.w) <= 10 &&
-            Math.abs(entryDepthMm - variantDims.d) <= 10
-        );
-
-        const hasExplicitModel = Boolean(
-          String(entry?.model_url ?? "").trim() || String(entry?.model_asset_id ?? "").trim()
-        );
-
-        const score = (dimsMatch ? 4 : 0) + (keyMatch ? 2 : 0) + (hasExplicitModel ? 1 : 0);
-        return { entry, score };
-      })
-      .filter(({ score }) => score > 0)
-      .sort((a, b) => b.score - a.score)[0];
-
-    if (best) {
-      const directUrl = normalizeModelUrlValue(best.entry.model_url);
+  if (bestVariantEntry) {
+      const directUrl = normalizeModelUrlValue(bestVariantEntry.model_url);
       if (directUrl) return directUrl;
 
-      const mapped = resolveAssetIdToModelUrl(best.entry.model_asset_id);
+      const mapped = resolveAssetIdToModelUrl(bestVariantEntry.model_asset_id);
       if (mapped) return mapped;
-    }
   }
 
   return fallbackModelUrl;

@@ -11,7 +11,7 @@ price_usd: 969
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
-design_zone: "living_zone"
+design_zone: "dining_zone"
 anchor_role: "storage_anchor"
 
 dimensions:

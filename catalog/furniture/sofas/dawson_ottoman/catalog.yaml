@@ -226,7 +226,7 @@ variants:
     seat_capacity: 1
     size_class: "medium"
     color_family: "grey"
-    tone: "neutral_cool"
+    tone: "cool"
     set_compatibility: []
   - variant: "Dawson Ottoman / Performance Creamy White"
     size_label: "93x93"
@@ -256,7 +256,7 @@ variants:
     seat_capacity: 1
     size_class: "medium"
     color_family: "cream"
-    tone: "neutral_warm"
+    tone: "warm"
     set_compatibility: []
   - variant: "Dawson Ottoman / Performance Fleece (Peyton), Ivory (Cream)"
     size_label: "93x93"
@@ -286,7 +286,7 @@ variants:
     seat_capacity: 1
     size_class: "medium"
     color_family: "grey"
-    tone: "neutral_cool"
+    tone: "cool"
     set_compatibility: []
   - variant: "Dawson Ottoman / Performance Textured Plain Weave (Marcel), Smoke Grey"
     size_label: "93x93"
@@ -301,7 +301,7 @@ variants:
     seat_capacity: 1
     size_class: "medium"
     color_family: "grey"
-    tone: "neutral_cool"
+    tone: "cool"
     set_compatibility: []
   - variant: "Dawson Ottoman / Performance Fleece (Peyton), Moss"
     size_label: "93x93"
@@ -316,7 +316,7 @@ variants:
     seat_capacity: 1
     size_class: "medium"
     color_family: "green"
-    tone: "muted_earthy"
+    tone: "warm"
     set_compatibility: []
   - variant: "Dawson Ottoman / Performance Fleece (Peyton), Caramel (Cumin)"
     size_label: "93x93"
@@ -393,7 +393,7 @@ variants:
     seat_capacity: 1
     size_class: "medium"
     color_family: "green"
-    tone: "muted_earthy"
+    tone: "warm"
     set_compatibility: []
 
   - variant: "Dawson Ottoman / Performance Linen Weave (Genova), Sand (Oat)"
@@ -473,7 +473,7 @@ variants:
     seat_capacity: 1
     size_class: "medium"
     color_family: "grey"
-    tone: "neutral_cool"
+    tone: "cool"
     set_compatibility: []
 
   - variant: "Dawson Ottoman / Performance Twill, Moss"
@@ -489,7 +489,7 @@ variants:
     seat_capacity: 1
     size_class: "medium"
     color_family: "green"
-    tone: "muted_earthy"
+    tone: "warm"
     set_compatibility: []
 
   - variant: "Dawson Ottoman / Performance Twill, Medium Grey"
@@ -505,7 +505,7 @@ variants:
     seat_capacity: 1
     size_class: "medium"
     color_family: "grey"
-    tone: "neutral_cool"
+    tone: "cool"
     set_compatibility: []
 
   - variant: "Dawson Ottoman / Washed Chenille, Cream"
@@ -569,7 +569,7 @@ variants:
     seat_capacity: 1
     size_class: "medium"
     color_family: "green"
-    tone: "muted_earthy"
+    tone: "warm"
     set_compatibility: []
 
   - variant: "Dawson Ottoman / Cocoa (Leather)"

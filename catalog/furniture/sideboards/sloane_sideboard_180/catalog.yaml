@@ -1,11 +1,11 @@
 id: "castlery-sloane-sideboard-180cm"
 slug: "sloane-sideboard-180cm"
 title: "Sloane Sideboard"
+product_name: "Sloane Sideboard"
+product_family: "sloane_collection"
 brand: "Castlery"
 retailer: "Castlery Singapore"
 source_url: "https://www.castlery.com/sg/products/sloane-sideboard?length=1_8m"
-product_family: "sloane_collection"
-
 status: "active"
 category: "sideboard"
 subcategory: "buffet_cabinet"
@@ -25,10 +25,19 @@ dimensions:
 
 size_class: "large"
 shape: "rectangular"
-base_type: "leg_frame"
+base_type: "four_leg"
 
-design_zone: "living_zone"
+design_zone: "dining_zone"
 anchor_role: "storage_anchor"
+room_compatibility:
+  - "dining_room"
+  - "living_room"
+  - "entryway"
+design_pairings:
+  - "dining_table"
+  - "dining_chair"
+  - "rug"
+  - "pendant_light"
 
 purchase:
   purchase_mode: "external_retailer"
@@ -91,7 +100,7 @@ finish:
   hardware_finish: "brushed_brass"
 
 color_family: "brown"
-tone: "warm_neutral"
+tone: "warm"
 style_cluster: "contemporary"
 style_secondary: "modern"
 design_era: "contemporary"
@@ -169,10 +178,21 @@ variants:
     finish_label: "Grey Oak"
     swatch_group: "finish"
     color_family: "brown"
-    tone: "warm_neutral"
-    price_usd: 1599
+    tone: "warm"
+    price_usd: 1499
     price_band: "mid_premium"
     brand_tier: "premium_mid"
+    material_family: "wood"
+    material_mix: "engineered_wood_oak_veneer_melamine_steel"
+    materials:
+      engineered_wood_body: "Engineered wood with oak veneer"
+      melamine_leg: "Engineered wood with melamine"
+      steel_handle: "Steel"
+    finish:
+      color_finish: "grey_oak"
+      surface_finish: "pu_lacquer"
+      hardware_finish: "brushed_brass"
+      label: "Wood: PU lacquer in grey oak; Metal: brushed brass"
     dimensions:
       width_cm: 180
       depth_cm: 47

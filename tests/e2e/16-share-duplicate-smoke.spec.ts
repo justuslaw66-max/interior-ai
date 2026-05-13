@@ -113,7 +113,7 @@ test.describe("16. Share → Duplicate Smoke", () => {
 
     // 2. Create a shared design owned by that user
     const shareToken = `smoke-share-${crypto.randomBytes(8).toString("hex")}`;
-    const sourceDesign = await prisma.design.create({
+    const _sourceDesign = await prisma.design.create({
       data: {
         title: "Smoke Test Shared Design",
         roomWidth: 5,
@@ -171,7 +171,7 @@ test.describe("16. Share → Duplicate Smoke", () => {
     const { sessionToken } = await createUserSession();
 
     const fakeToken = `nonexistent-${crypto.randomBytes(8).toString("hex")}`;
-    const { response, status } = await postWithSession(
+const { response: _response, status } = await postWithSession(
       request,
       `${baseURL}/api/share/${fakeToken}/duplicate`,
       sessionToken

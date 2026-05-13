@@ -152,6 +152,13 @@ export type ImportedModelCatalog = {
       depth_cm?: number;
       height_cm?: number;
     };
+    state_assets?: Record<
+      string,
+      {
+        model_asset_id?: string;
+        model_url?: string;
+      }
+    >;
   }>;
   aiFlags?: unknown;
 };
@@ -278,7 +285,7 @@ function buildApiImportedModelOptions({
 }
 
 function buildFallbackCatalogOptions(): ImportedModelOption[] {
-  return Object.values(CATALOG_ITEMS)
+  const sideboardFallbacks = Object.values(CATALOG_ITEMS)
     .filter((item) => item.id.startsWith("castlery-sloane-sideboard-"))
     .map((item) => {
       const familyName = "Sloane";
@@ -316,6 +323,326 @@ function buildFallbackCatalogOptions(): ImportedModelOption[] {
         pickerLabel: item.title,
       } satisfies ImportedModelOption;
     });
+
+  const dawsonStorageOttomanFallback: ImportedModelOption = {
+    id: "sofa-real-castlery-dawson-storage-ottoman",
+    modelUrl: "/assets/models/sofa-real-castlery-dawson-storage-ottoman-closed.glb",
+    thumbUrl:
+      "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1634715643/crusader/variants/54000045-NG4001/Dawson-Ottoman-Beach-Linen-Front.jpg",
+    dimsWmm: 930,
+    dimsDmm: 930,
+    dimsHmm: 450,
+    catalog: {
+      brand: "Castlery",
+      category: "ottoman",
+      productName: "Dawson Storage Ottoman",
+      productFamily: "Dawson",
+      variant: "Standard",
+      priceUsd: 649,
+      priceBand: "mid",
+      featureFlags: {
+        is_configurable: true,
+        has_storage: true,
+      },
+      upholstery_options: [
+        {
+          upholstery_code: "beach_linen",
+          color_label: "Cream",
+          upholstery_label: "Slub Linen Weave (Navagio), Cream (Beach Linen)",
+          collection_type: "stocked_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "seagull",
+          color_label: "Grey",
+          upholstery_label: "Slub Linen Weave (Navagio), Medium Grey (Seagull)",
+          collection_type: "stocked_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "infinity_boucle_cream",
+          color_label: "Cream",
+          upholstery_label: "Performance Infinity Boucle, Cream",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "infinity_boucle_white_quartz",
+          color_label: "Light Grey",
+          upholstery_label: "Performance Infinity Boucle, Light Grey (White Quartz)",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "infinity_boucle_moss",
+          color_label: "Moss",
+          upholstery_label: "Performance Infinity Boucle, Moss",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "infinity_boucle_ginger",
+          color_label: "Rust",
+          upholstery_label: "Performance Infinity Boucle, Rust (Ginger)",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "fleece_peyton_cream",
+          color_label: "Cream",
+          upholstery_label: "Performance Fleece (Peyton), Ivory (Cream)",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "fleece_peyton_dove_grey",
+          color_label: "Grey",
+          upholstery_label: "Performance Fleece (Peyton), Medium Grey (Dove Grey)",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "fleece_peyton_moss",
+          color_label: "Moss",
+          upholstery_label: "Performance Fleece (Peyton), Moss",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "fleece_peyton_cumin",
+          color_label: "Caramel",
+          upholstery_label: "Performance Fleece (Peyton), Caramel (Cumin)",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "linen_weave_genova_oat",
+          color_label: "Sand",
+          upholstery_label: "Performance Linen Weave (Genova), Sand (Oat)",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "linen_weave_genova_cream",
+          color_label: "Cream",
+          upholstery_label: "Performance Linen Weave (Genova), Cream",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "linen_weave_genova_light_grey",
+          color_label: "Light Grey",
+          upholstery_label: "Performance Linen Weave (Genova), Light Grey",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "performance_creamy_white",
+          color_label: "Cream",
+          upholstery_label: "Performance Creamy White",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "performance_twill_pearl_beige",
+          color_label: "Beige",
+          upholstery_label: "Performance Twill, Pearl Beige",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "performance_twill_medium_grey",
+          color_label: "Grey",
+          upholstery_label: "Performance Twill, Medium Grey",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "performance_twill_slate",
+          color_label: "Slate",
+          upholstery_label: "Performance Twill, Slate",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "performance_twill_moss",
+          color_label: "Moss",
+          upholstery_label: "Performance Twill, Moss",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "washed_chenille_cream",
+          color_label: "Cream",
+          upholstery_label: "Washed Chenille, Cream",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "washed_chenille_sand",
+          color_label: "Sand",
+          upholstery_label: "Washed Chenille, Sand",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "washed_chenille_caramel",
+          color_label: "Caramel",
+          upholstery_label: "Washed Chenille, Caramel",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "washed_chenille_moss",
+          color_label: "Moss",
+          upholstery_label: "Washed Chenille, Moss",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "cocoa",
+          color_label: "Cocoa",
+          upholstery_label: "Cocoa Leather",
+          collection_type: "stocked_leather",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "caramel",
+          color_label: "Caramel",
+          upholstery_label: "Caramel Leather",
+          collection_type: "custom_leather",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "warm_taupe",
+          color_label: "Taupe",
+          upholstery_label: "Warm Taupe Leather",
+          collection_type: "custom_leather",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "marche_ivory",
+          color_label: "Ivory",
+          upholstery_label: "Marche Leather, Ivory",
+          collection_type: "custom_leather",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "marche_graphite",
+          color_label: "Graphite",
+          upholstery_label: "Marche Leather, Graphite",
+          collection_type: "custom_leather",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "marche_cocoa",
+          color_label: "Cocoa",
+          upholstery_label: "Marche Leather, Cocoa",
+          collection_type: "custom_leather",
+          swatch_group: "upholstery_option",
+        },
+      ],
+      configurableMetadata: {
+        is_configurable: true,
+        default_configuration: "closed",
+        configuration_ui: {
+          type: "segmented_control",
+          label: "Storage state",
+          options: ["closed", "open_storage"],
+          option_labels: {
+            closed: "Closed",
+            open_storage: "Open",
+          },
+          helper_text:
+            "Open state is for visualization only. Cart and checkout still use the selected purchasable size variant.",
+        },
+        configuration_behavior: {
+          affects_visual_footprint: false,
+          affects_space_planning: false,
+          affects_collision_bounds: false,
+          affects_recommendation_logic: false,
+        },
+      },
+      variants: [
+        {
+          variant: "Dawson Storage Ottoman / 93cm",
+          size_label: "93x93",
+          model_asset_id: "sofa-real-castlery-dawson-storage-ottoman",
+          model_url: "/assets/models/sofa-real-castlery-dawson-storage-ottoman-closed.glb",
+          thumbnail_url:
+            "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1692451017/crusader/variants/54000132-NG4001/Dawson-Square-Ottoman-Front_-1692451014.jpg",
+          swatch_group: "upholstery_option",
+          collection_type: "all_materials",
+          dimensions: {
+            width_cm: 93,
+            depth_cm: 93,
+            height_cm: 45,
+          },
+          state_assets: {
+            closed: {
+              model_url: "/assets/models/sofa-real-castlery-dawson-storage-ottoman-closed.glb",
+            },
+            open_storage: {
+              model_url: "/assets/models/sofa-real-castlery-dawson-storage-ottoman-open.glb",
+            },
+          },
+        },
+        {
+          variant: "Dawson Storage Ottoman / 114cm",
+          size_label: "114x93",
+          model_asset_id: "sofa-real-castlery-dawson-storage-ottoman",
+          model_url: "/assets/models/sofa-real-castlery-dawson-storage-ottoman-114-closed.glb",
+          thumbnail_url:
+            "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1634715643/crusader/variants/54000045-NG4001/Dawson-Ottoman-Beach-Linen-Front.jpg",
+          swatch_group: "upholstery_option",
+          collection_type: "all_materials",
+          dimensions: {
+            width_cm: 114,
+            depth_cm: 93,
+            height_cm: 45,
+          },
+          state_assets: {
+            closed: {
+              model_url: "/assets/models/sofa-real-castlery-dawson-storage-ottoman-114-closed.glb",
+            },
+            open_storage: {
+              model_url: "/assets/models/sofa-real-castlery-dawson-storage-ottoman-114-open.glb",
+            },
+          },
+        },
+      ],
+      configurations: [
+        {
+          configuration_code: "closed",
+          configuration_label: "Closed",
+          state_type: "storage_closed",
+          description: "Ottoman in closed position",
+          planning_bounds_cm: { width: 93, depth: 93, height: 45 },
+          visual_bounds_cm: { width: 93, depth: 93, height: 45 },
+        },
+        {
+          configuration_code: "open_storage",
+          configuration_label: "Open",
+          state_type: "storage_open",
+          description: "Ottoman in open position with lid raised",
+          planning_bounds_cm: { width: 93, depth: 93, height: 105 },
+          visual_bounds_cm: { width: 93, depth: 93, height: 94 },
+        },
+      ],
+      assets: {
+        asset_id: "sofa-real-castlery-dawson-storage-ottoman",
+        model_url: "/assets/models/sofa-real-castlery-dawson-storage-ottoman-closed.glb",
+        thumbnail_url:
+          "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1634715643/crusader/variants/54000045-NG4001/Dawson-Ottoman-Beach-Linen-Front.jpg",
+      },
+    } satisfies ImportedModelCatalog,
+    title: "Castlery Dawson Storage Ottoman",
+    familyKey: "castlery::dawson",
+    familyLabel: "Castlery Dawson Collection",
+    pickerLabel: "Castlery Dawson Storage Ottoman",
+  };
+
+  return [...sideboardFallbacks, dawsonStorageOttomanFallback];
 }
 
 function collectConfigurationAssetIds(options: ImportedModelOption[]): Set<string> {
@@ -400,24 +727,22 @@ export function shouldRefreshImportedCatalogItem(
 }
 
 function resolveInjectedTemplateId(productId: string): string {
-  const fallbackSofaTemplateId =
-    Object.values(CATALOG_ITEMS).find((item) => item.category === "sofa")?.id ??
-    "sofa-real-castlery-dawson-3s";
+  const fallbackTemplateId =
+    Object.values(CATALOG_ITEMS)[0]?.id ?? "castlery-sloane-sideboard-150cm";
 
   const lower = productId.toLowerCase();
-  if (lower.includes("bench")) return fallbackSofaTemplateId;
-  if (lower.startsWith("sofa-")) return fallbackSofaTemplateId;
-  if (
-    lower.startsWith("dining-") ||
-    lower.startsWith("table-") ||
-    lower.startsWith("coffee-") ||
-    lower.includes("coffee")
-  ) {
-    return "coffee-modern-01";
+  const inferredCategory = inferImportedCategoryFromProductId(productId);
+  if (inferredCategory) {
+    const categoryTemplateId = Object.values(CATALOG_ITEMS).find((item) => item.category === inferredCategory)?.id;
+    if (categoryTemplateId) return categoryTemplateId;
   }
-  if (lower.startsWith("chair-")) return "chair-modern-01";
-  if (lower.startsWith("lamp-")) return "lamp-modern-01";
-  return fallbackSofaTemplateId;
+
+  if (lower.includes("bench") || lower.startsWith("sofa-")) {
+    const sofaTemplateId = Object.values(CATALOG_ITEMS).find((item) => item.category === "sofa")?.id;
+    if (sofaTemplateId) return sofaTemplateId;
+  }
+
+  return fallbackTemplateId;
 }
 
 function resolveImportedThumbUrl(imported: ImportedModelOption, productId: string): string {

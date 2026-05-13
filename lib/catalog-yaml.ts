@@ -85,6 +85,13 @@ export type CatalogYamlVariantEntry = {
     depth_cm?: number;
     height_cm?: number;
   };
+  state_assets?: Record<
+    string,
+    {
+      model_asset_id?: string;
+      model_url?: string;
+    }
+  >;
   seating_depth_cm?: number;
   seat_capacity?: number;
   size_class?: string;

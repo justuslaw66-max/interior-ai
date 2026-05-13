@@ -231,7 +231,7 @@ variants:
     seat_capacity: 1
     size_class: "large"
     color_family: "grey"
-    tone: "neutral_cool"
+    tone: "cool"
     set_compatibility: []
 
   - variant: "Dawson Swivel Armchair / Cocoa (Leather)"

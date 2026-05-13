@@ -89,16 +89,16 @@ export async function POST(req: Request) {
   for (const line of parsedLines) {
     const item = CATALOG_ITEMS_MAP.get(line.productId);
     if (!item) {
-      await logAppEvent({
+      void logAppEvent({
         eventType: "checkout_variant_validation_failed",
         meta: { reason: "unknown_catalog_item", productId: line.productId, variantId: line.variantId },
       });
-      return NextResponse.json({ error: `Unknown catalog item: ${line.productId}` }, { status: 400 });
+      return NextResponse.json({ error: `Unknown variant: ${line.productId}` }, { status: 400 });
     }
 
     const strict = assertStrictVariantResolution(item, line.variantId);
     if (!strict.ok) {
-      await logAppEvent({
+      void logAppEvent({
         eventType: "checkout_variant_validation_failed",
         meta: { reason: "strict_resolution_failed", productId: line.productId, variantId: line.variantId, error: strict.error },
       });
@@ -107,7 +107,7 @@ export async function POST(req: Request) {
 
     const resolved = strict.resolved;
     if (resolved.commerce.type !== "shopify") {
-      await logAppEvent({
+      void logAppEvent({
         eventType: "checkout_variant_validation_failed",
         meta: { reason: "non_shopify_variant", productId: line.productId, variantId: line.variantId },
       });
@@ -117,7 +117,7 @@ export async function POST(req: Request) {
       );
     }
     if (!resolved.commerce.variantId) {
-      await logAppEvent({
+      void logAppEvent({
         eventType: "checkout_variant_validation_failed",
         meta: { reason: "missing_shopify_mapping", productId: line.productId, variantId: line.variantId },
       });
@@ -127,7 +127,7 @@ export async function POST(req: Request) {
       );
     }
     if (!resolved.commerce.available) {
-      await logAppEvent({
+      void logAppEvent({
         eventType: "checkout_variant_validation_failed",
         meta: { reason: "variant_marked_unavailable", productId: line.productId, variantId: line.variantId },
       });
@@ -137,7 +137,7 @@ export async function POST(req: Request) {
       );
     }
     if (resolved.commerce.variantId !== line.merchandiseId) {
-      await logAppEvent({
+      void logAppEvent({
         eventType: "checkout_variant_validation_failed",
         meta: {
           reason: "merchandise_id_mismatch",
@@ -184,7 +184,7 @@ export async function POST(req: Request) {
     }));
 
   if (unavailable.length > 0) {
-    await logAppEvent({
+    void logAppEvent({
       eventType: "checkout_variant_validation_failed",
       meta: { reason: "shopify_availability_failed", unavailable },
     });
@@ -212,7 +212,7 @@ export async function POST(req: Request) {
     .map((node: { id: string }) => node.id);
 
   if (missingPrice.length > 0) {
-    await logAppEvent({
+    void logAppEvent({
       eventType: "checkout_variant_validation_failed",
       meta: { reason: "missing_price", invalidPriceVariantIds: missingPrice },
     });
@@ -270,7 +270,7 @@ export async function POST(req: Request) {
     },
   });
 
-  await logAppEvent({
+  void logAppEvent({
     eventType: "checkout_started",
     userId: session?.user?.id ?? null,
     meta: { provider: "shopify", cartId },

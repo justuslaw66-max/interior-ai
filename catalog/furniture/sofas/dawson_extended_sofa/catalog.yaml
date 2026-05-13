@@ -199,7 +199,7 @@ variants:
     seat_capacity: 4
     size_class: "extra_large"
     color_family: "grey"
-    tone: "neutral_cool"
+    tone: "cool"
     set_compatibility: []
   - variant: "Dawson Extended Sofa / Performance Creamy White"
     size_label: "321x114"
@@ -233,7 +233,7 @@ variants:
     seat_capacity: 4
     size_class: "extra_large"
     color_family: "cream"
-    tone: "neutral_warm"
+    tone: "warm"
     set_compatibility: []
   - variant: "Dawson Extended Sofa / Performance Fleece (Peyton), Ivory (Cream)"
     size_label: "321x114"
@@ -267,7 +267,7 @@ variants:
     seat_capacity: 4
     size_class: "extra_large"
     color_family: "grey"
-    tone: "neutral_cool"
+    tone: "cool"
     set_compatibility: []
   - variant: "Dawson Extended Sofa / Performance Textured Plain Weave (Marcel), Smoke Grey"
     size_label: "321x114"
@@ -284,7 +284,7 @@ variants:
     seat_capacity: 4
     size_class: "extra_large"
     color_family: "grey"
-    tone: "neutral_cool"
+    tone: "cool"
     set_compatibility: []
   - variant: "Dawson Extended Sofa / Performance Fleece (Peyton), Moss"
     size_label: "321x114"
@@ -302,7 +302,7 @@ variants:
     seat_capacity: 4
     size_class: "extra_large"
     color_family: "green"
-    tone: "muted_earthy"
+    tone: "warm"
     set_compatibility: []
   - variant: "Dawson Extended Sofa / Performance Fleece (Peyton), Caramel (Cumin)"
     size_label: "321x114"
@@ -389,7 +389,7 @@ variants:
     seat_capacity: 4
     size_class: "extra_large"
     color_family: "green"
-    tone: "muted_earthy"
+    tone: "warm"
     set_compatibility: []
 
   - variant: "Dawson Extended Sofa / Performance Twill, Pearl Beige"
@@ -443,7 +443,7 @@ variants:
     seat_capacity: 4
     size_class: "extra_large"
     color_family: "green"
-    tone: "muted_earthy"
+    tone: "warm"
     set_compatibility: []
 
   - variant: "Dawson Extended Sofa / Performance Twill, Medium Grey"
@@ -461,7 +461,7 @@ variants:
     seat_capacity: 4
     size_class: "extra_large"
     color_family: "grey"
-    tone: "neutral_cool"
+    tone: "cool"
     set_compatibility: []
 
   - variant: "Dawson Extended Sofa / Performance Linen Weave (Genova), Sand (Oat)"
@@ -587,7 +587,7 @@ variants:
     seat_capacity: 4
     size_class: "extra_large"
     color_family: "green"
-    tone: "muted_earthy"
+    tone: "warm"
     set_compatibility: []
 
   - variant: "Dawson Extended Sofa / Cocoa (Leather)"

@@ -23,6 +23,7 @@ export type GLBCalibration = {
   useVariantColor?: boolean;
   swapWidthDepthAxes?: boolean;
   uniformScale?: boolean;
+  lockVerticalScaleToFootprint?: boolean;
   preserveWoodLegMaterials?: boolean;
   preserveWoodLegColorHex?: string;
   preserveWoodLegDisableBaseColorMap?: boolean;
@@ -98,6 +99,23 @@ export const GLB_CALIBRATION_BY_PRODUCT_ID: Record<string, GLBCalibration> = {
     disableBaseColorMap: true,
     disableShadingMaps: true,
     useVariantColor: true,
+  },
+  "sofa-real-castlery-dawson-storage-ottoman": {
+    brightness: 0.74,
+    saturation: 1.32,
+    variantMapTintStrength: 1,
+    normalScale: 4.2,
+    roughnessOverride: 0.68,
+    metalnessOverride: 0,
+    aoMapIntensity: 0.35,
+    emissiveBoost: 0,
+    specularIntensityOverride: 0.2,
+    disableAoMap: true,
+    disableVertexColors: true,
+    disableBaseColorMap: true,
+    disableShadingMaps: true,
+    useVariantColor: true,
+    lockVerticalScaleToFootprint: true,
   },
   "sofa-real-castlery-dawson-pit-sectional": {
     brightness: 0.74,

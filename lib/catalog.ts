@@ -17,7 +17,10 @@ export type Variant = {
 
 export type ProductCategory =
   | "sofa"
+  | "ottoman"
   | "coffee_table"
+  | "dining_table"
+  | "dining_bench"
   | "rug"
   | "tv_console"
   | "sideboard"
@@ -59,6 +62,11 @@ const LEGACY_NO_MODEL_IDS = new Set<string>([
   "castlery-sloane-sideboard-180cm",
 ]);
 
+const LEGACY_ASSET_ID_OVERRIDES: Record<string, string> = {
+  "castlery-sloane-sideboard-150cm": "storage-real-castlery-sloane-sideboard-150cm",
+  "castlery-sloane-sideboard-180cm": "storage-real-castlery-sloane-sideboard-180cm",
+};
+
 const LEGACY_THUMB_URL_OVERRIDES: Record<string, string> = {
   "castlery-sloane-sideboard-150cm": "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1756189513/crusader/variants/50520028/Sloane-Sideboard-150cm-Front-1756189510.jpg",
   "castlery-sloane-sideboard-180cm": "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1667991789/crusader/variants/50520002/Sloane-Sideboard-Fornt-1667991786.jpg",
@@ -71,6 +79,7 @@ const LEGACY_THUMB_URL_OVERRIDES: Record<string, string> = {
   "sofa-real-castlery-madison-2s": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1745287810/crusader/variants/50441008-AM4001/Madison-2-Seater-Sofa-Amalfi-Bisque-Front-1745287807.png",
   "sofa-real-castlery-madison-3s": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1646386187/crusader/variants/50440750-AM4001/Madison-3-Seater-Sofa-Bisque-Front-SG.png",
   "sofa-real-castlery-madison-ottoman": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1645673995/crusader/variants/50440732-AM4001/Madison-Ottoman-Bisque-Front.png",
+  "sofa-real-castlery-ollie-storage-ottoman": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1768892905/crusader/variants/AS-001017-GR4001/Ollie-Storage-Ottoman-Iovry-Set-1768892902.jpg",
 
   // ========== IMPORTED CASTLERY DINING (Harvested from Castlery Website) ==========
   "dining-real-castlery-sloane-travertine-180": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1723776680/crusader/variants/AS-000564/Sloane-Travertine-Dining-Table-180cm-Angle-1723776679.png",
@@ -184,7 +193,7 @@ function buildCatalogItem(product: Product): CatalogItemSchema {
   const defaults = CATEGORY_DEFAULTS[category] ?? CATEGORY_DEFAULTS.other;
   
   // Try to get asset from MODEL_ASSETS registry
-  const assetId = product.id; // For now, use product.id as assetId
+  const assetId = LEGACY_ASSET_ID_OVERRIDES[product.id] ?? product.id;
   const modelAsset = getModelAsset(assetId);
   
   // Use MODEL_ASSETS data if available, otherwise fall back to product dimensions
@@ -285,7 +294,23 @@ const CATALOG: Record<string, Product> = {
   // =========================
   // SOFAS
   // =========================
-  // Legacy non-imported sofa placeholders removed.
+  "sofa-real-castlery-ollie-storage-ottoman": {
+    id: "sofa-real-castlery-ollie-storage-ottoman",
+    name: "Castlery Ollie Storage Ottoman",
+    category: "ottoman",
+    price: 499,
+    dimensions: { w: 0.93, d: 0.77, h: 0.44 },
+    styleTags: ["modern", "minimalistic"],
+    defaultVariantId: "greta_ivory",
+    purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://www.castlery.com/sg/products/ollie-storage-ottoman",
+    variants: [
+      { id: "greta_ivory", name: "Greta Ivory", colorHex: "#e6e0d6" },
+      { id: "greta_caramel", name: "Greta Caramel", colorHex: "#a9744f" },
+      { id: "greta_moss", name: "Greta Moss", colorHex: "#7b7a60" },
+    ],
+  },
 
   // =========================
   // RUGS (10)
@@ -299,8 +324,8 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["scandi", "minimalistic"],
     defaultVariantId: "ivory",
     purchaseMode: "affiliate",
-    retailer: "MockStore",
-    buyUrl: "https://example.com/products/REPLACE_ME",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://example.com/products/UNSPECIFIED",
     variants: [
       { id: "ivory", name: "Ivory", colorHex: "#e6e0d6" },
       { id: "warmgray", name: "Warm Gray", colorHex: "#bdb6ad" },
@@ -369,7 +394,7 @@ const CATALOG: Record<string, Product> = {
     defaultVariantId: "greige",
     purchaseMode: "shopify",
     shopifyVariantId: "gid://shopify/ProductVariant/47497655615653",
-    retailer: "MockStore",
+    retailer: "Castlery Singapore",
     buyUrl: "https://example.com/products/rug-modern-01",
     variants: [
       {
@@ -457,178 +482,7 @@ const CATALOG: Record<string, Product> = {
     ],
   },
 
-  // =========================
-  // COFFEE TABLES (10)
-  // =========================
-  "coffee-scandi-01": {
-    id: "coffee-scandi-01",
-    name: "Scandi Oak 1.1m",
-    category: "coffee_table",
-    price: 259,
-    dimensions: { w: 1.1, d: 0.55, h: 0.38 },
-    styleTags: ["scandi", "minimalistic"],
-    defaultVariantId: "oak",
-    purchaseMode: "affiliate",
-    retailer: "MockStore",
-    buyUrl: "https://example.com/products/REPLACE_ME",
-    variants: [
-      { id: "oak", name: "Oak", colorHex: "#c9b18a" },
-      { id: "whiteoak", name: "White Oak", colorHex: "#d7c3a1" },
-    ],
-  },
-  "coffee-scandi-02": {
-    id: "coffee-scandi-02",
-    name: "Nordic Round 0.9m",
-    category: "coffee_table",
-    price: 219,
-    dimensions: { w: 0.9, d: 0.9, h: 0.36 },
-    styleTags: ["scandi", "modern"],
-    defaultVariantId: "oak",
-    purchaseMode: "shopify",
-    shopifyVariantId: "gid://shopify/ProductVariant/47497682813093",
-    variants: [
-      {
-        id: "oak",
-        name: "Oak",
-        colorHex: "#c9b18a",
-        shopifyVariantId: "gid://shopify/ProductVariant/47497682813093",
-      },
-      {
-        id: "black",
-        name: "Black",
-        colorHex: "#222222",
-        shopifyVariantId: "gid://shopify/ProductVariant/47497682845861",
-      },
-    ],
-  },
-  "coffee-japandi-01": {
-    id: "coffee-japandi-01",
-    name: "Low Zen Table 1.0m",
-    category: "coffee_table",
-    price: 329,
-    dimensions: { w: 1.0, d: 0.6, h: 0.33 },
-    styleTags: ["japandi", "minimalistic"],
-    defaultVariantId: "walnut",
-    purchaseMode: "affiliate",
-    variants: [
-      { id: "walnut", name: "Walnut", colorHex: "#8a6a4a" },
-      { id: "smoke", name: "Smoke", colorHex: "#6a6258" },
-    ],
-  },
-  "coffee-japandi-02": {
-    id: "coffee-japandi-02",
-    name: "Slatted Oak 1.2m",
-    category: "coffee_table",
-    price: 379,
-    dimensions: { w: 1.2, d: 0.6, h: 0.36 },
-    styleTags: ["japandi"],
-    defaultVariantId: "oak",
-    purchaseMode: "affiliate",
-    variants: [
-      { id: "oak", name: "Oak", colorHex: "#c9b18a" },
-      { id: "charcoal", name: "Charcoal", colorHex: "#595959" },
-    ],
-  },
-  "coffee-modern-01": {
-    id: "coffee-modern-01",
-    name: "Modern Glass 1.2m",
-    category: "coffee_table",
-    price: 399,
-    dimensions: { w: 1.2, d: 0.65, h: 0.38 },
-    styleTags: ["modern"],
-    defaultVariantId: "graphite",
-    purchaseMode: "shopify",
-    shopifyVariantId: "gid://shopify/ProductVariant/47497684025509",
-    retailer: "MockStore",
-    buyUrl: "https://example.com/products/coffee-modern-01",
-    variants: [
-      {
-        id: "graphite",
-        name: "Graphite",
-        colorHex: "#444444",
-        shopifyVariantId: "gid://shopify/ProductVariant/47497684025509",
-      },
-      {
-        id: "chrome",
-        name: "Chrome",
-        colorHex: "#b8b8b8",
-        shopifyVariantId: "gid://shopify/ProductVariant/47497684058277",
-      },
-    ],
-  },
-  "coffee-modern-02": {
-    id: "coffee-modern-02",
-    name: "Block Table 1.0m",
-    category: "coffee_table",
-    price: 299,
-    dimensions: { w: 1.0, d: 0.55, h: 0.4 },
-    styleTags: ["modern", "minimalistic"],
-    defaultVariantId: "ash",
-    purchaseMode: "affiliate",
-    variants: [
-      { id: "ash", name: "Ash", colorHex: "#c8c2bb" },
-      { id: "black", name: "Black", colorHex: "#222222" },
-    ],
-  },
-  "coffee-luxury-01": {
-    id: "coffee-luxury-01",
-    name: "Marble Luxe 1.1m",
-    category: "coffee_table",
-    price: 699,
-    dimensions: { w: 1.1, d: 0.6, h: 0.38 },
-    styleTags: ["luxury"],
-    defaultVariantId: "marblewhite",
-    purchaseMode: "shopify",
-    shopifyVariantId: "gid://shopify/ProductVariant/REPLACE_ME",
-    retailer: "MockStore",
-    buyUrl: "https://example.com/products/coffee-luxury-01",
-    variants: [
-      { id: "marblewhite", name: "Marble White", colorHex: "#e7e2da" },
-      { id: "marbleblack", name: "Marble Black", colorHex: "#2a2a2a" },
-    ],
-  },
-  "coffee-luxury-02": {
-    id: "coffee-luxury-02",
-    name: "Brass Frame 1.0m",
-    category: "coffee_table",
-    price: 749,
-    dimensions: { w: 1.0, d: 0.6, h: 0.4 },
-    styleTags: ["luxury", "modern"],
-    defaultVariantId: "brass",
-    purchaseMode: "affiliate",
-    variants: [
-      { id: "brass", name: "Brass", colorHex: "#b08d57" },
-      { id: "espresso", name: "Espresso", colorHex: "#3a2e27" },
-    ],
-  },
-  "coffee-min-01": {
-    id: "coffee-min-01",
-    name: "Minimal Line 1.0m",
-    category: "coffee_table",
-    price: 199,
-    dimensions: { w: 1.0, d: 0.5, h: 0.36 },
-    styleTags: ["minimalistic"],
-    defaultVariantId: "offwhite",
-    purchaseMode: "affiliate",
-    variants: [
-      { id: "offwhite", name: "Off White", colorHex: "#ece7df" },
-      { id: "lightgrey", name: "Light Grey", colorHex: "#cfcfcf" },
-    ],
-  },
-  "coffee-min-02": {
-    id: "coffee-min-02",
-    name: "Mono Round 0.85m",
-    category: "coffee_table",
-    price: 179,
-    dimensions: { w: 0.85, d: 0.85, h: 0.35 },
-    styleTags: ["minimalistic", "scandi"],
-    defaultVariantId: "stone",
-    purchaseMode: "affiliate",
-    variants: [
-      { id: "stone", name: "Stone", colorHex: "#c9c3ba" },
-      { id: "black", name: "Black", colorHex: "#222222" },
-    ],
-  },
+
 
   // =========================
   // TV CONSOLES (10)
@@ -643,8 +497,8 @@ const CATALOG: Record<string, Product> = {
     defaultVariantId: "oak",
     purchaseMode: "shopify",
     shopifyVariantId: "gid://shopify/ProductVariant/47497685336229",
-    retailer: "MockStore",
-    buyUrl: "https://example.com/products/REPLACE_ME",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://example.com/products/UNSPECIFIED",
     variants: [
       {
         id: "oak",
@@ -712,7 +566,7 @@ const CATALOG: Record<string, Product> = {
     defaultVariantId: "ash",
     purchaseMode: "shopify",
     shopifyVariantId: "gid://shopify/ProductVariant/47497686057125",
-    retailer: "MockStore",
+    retailer: "Castlery Singapore",
     buyUrl: "https://example.com/products/tv-modern-01",
     variants: [
       {
@@ -752,7 +606,7 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["luxury"],
     defaultVariantId: "marblewhite",
     purchaseMode: "shopify",
-    shopifyVariantId: "gid://shopify/ProductVariant/REPLACE_ME",
+    shopifyVariantId: "gid://shopify/ProductVariant/UNSPECIFIED",
     variants: [
       { id: "marblewhite", name: "Marble White", colorHex: "#e7e2da" },
       { id: "marbleblack", name: "Marble Black", colorHex: "#2a2a2a" },
@@ -814,8 +668,8 @@ const CATALOG: Record<string, Product> = {
     defaultVariantId: "oat",
     purchaseMode: "shopify",
     shopifyVariantId: "gid://shopify/ProductVariant/47497687007397",
-    retailer: "MockStore",
-    buyUrl: "https://example.com/products/REPLACE_ME",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://example.com/products/UNSPECIFIED",
     variants: [
       {
         id: "oat",
@@ -882,7 +736,7 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["modern"],
     defaultVariantId: "grey",
     purchaseMode: "affiliate",
-    retailer: "MockStore",
+    retailer: "Castlery Singapore",
     buyUrl: "https://example.com/products/chair-modern-01",
     variants: [
       { id: "grey", name: "Grey", colorHex: "#9a9a9a" },
@@ -1006,7 +860,7 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["scandi", "minimalistic"],
     defaultVariantId: "white",
     purchaseMode: "affiliate",
-    retailer: "MockStore",
+    retailer: "Castlery Singapore",
     buyUrl: "https://example.com/products/lamp-scandi-01",
     variants: [
       { id: "white", name: "White", colorHex: "#f3f3f3" },
@@ -1051,8 +905,8 @@ const CATALOG: Record<string, Product> = {
     defaultVariantId: "graphite",
     purchaseMode: "shopify",
     shopifyVariantId: "gid://shopify/ProductVariant/47497634611365",
-    retailer: "MockStore",
-    buyUrl: "https://example.com/products/REPLACE_ME",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://example.com/products/UNSPECIFIED",
     variants: [
       {
         id: "graphite",
@@ -1096,13 +950,445 @@ const CATALOG: Record<string, Product> = {
       { id: "black", name: "Black", colorHex: "#222222" },
     ],
   },
+  "coffee-real-castlery-harper-marble-rectangular-120": {
+    id: "coffee-real-castlery-harper-marble-rectangular-120",
+    name: "Harper Marble Coffee Table Rectangular",
+    category: "coffee_table",
+    price: 999,
+    dimensions: { w: 1.2, d: 0.6, h: 0.38 },
+    styleTags: ["modern"],
+    defaultVariantId: "harper_marble_coffee_table_rectangular_chestnut",
+    purchaseMode: "affiliate",
+    retailer: "Castlery",
+    variants: [
+      {
+        id: "harper_marble_coffee_table_rectangular_chestnut",
+        name: "Harper Marble Coffee Table Rectangular / Chestnut",
+        colorHex: "#b8b8b8",
+      },
+    ],
+  },
+  "coffee-real-castlery-harper-marble-round-915": {
+    id: "coffee-real-castlery-harper-marble-round-915",
+    name: "Harper Marble Coffee Table Round",
+    category: "coffee_table",
+    price: 1199,
+    dimensions: { w: 0.92, d: 0.92, h: 0.38 },
+    styleTags: ["modern"],
+    defaultVariantId: "harper_marble_coffee_table_round_chestnut",
+    purchaseMode: "affiliate",
+    retailer: "Castlery",
+    variants: [
+      {
+        id: "harper_marble_coffee_table_round_chestnut",
+        name: "Harper Marble Coffee Table Round / Chestnut",
+        colorHex: "#b8b8b8",
+      },
+    ],
+  },
+  "coffee-real-castlery-hugg-nesting-square-performance-basalt-closed": {
+    id: "coffee-real-castlery-hugg-nesting-square-performance-basalt-closed",
+    name: "Hugg Nesting Square Coffee Table",
+    category: "coffee_table",
+    price: 1099,
+    dimensions: { w: 1.1, d: 1.1, h: 0.43 },
+    styleTags: ["modern"],
+    defaultVariantId: "standard",
+    purchaseMode: "affiliate",
+    retailer: "Castlery",
+    variants: [{ id: "standard", name: "Standard", colorHex: "#b8b8b8" }],
+  },
+  "coffee-real-castlery-hugg-nesting-square-performance-basalt-opened": {
+    id: "coffee-real-castlery-hugg-nesting-square-performance-basalt-opened",
+    name: "Hugg Nesting Square Coffee Table",
+    category: "coffee_table",
+    price: 1099,
+    dimensions: { w: 1.1, d: 1.1, h: 0.43 },
+    styleTags: ["modern"],
+    defaultVariantId: "performance_basalt_opened",
+    purchaseMode: "affiliate",
+    retailer: "Castlery",
+    variants: [
+      {
+        id: "performance_basalt_opened",
+        name: "Performance Basalt Opened",
+        colorHex: "#b8b8b8",
+      },
+    ],
+  },
+  "coffee-real-castlery-hugg-nesting-square-performance-dune-closed": {
+    id: "coffee-real-castlery-hugg-nesting-square-performance-dune-closed",
+    name: "Hugg Nesting Square Coffee Table",
+    category: "coffee_table",
+    price: 1099,
+    dimensions: { w: 1.1, d: 1.1, h: 0.43 },
+    styleTags: ["modern"],
+    defaultVariantId: "performance_dune_closed",
+    purchaseMode: "affiliate",
+    retailer: "Castlery",
+    variants: [
+      {
+        id: "performance_dune_closed",
+        name: "Performance Dune Closed",
+        colorHex: "#b8b8b8",
+      },
+    ],
+  },
+  "coffee-real-castlery-hugg-nesting-square-performance-dune-opened": {
+    id: "coffee-real-castlery-hugg-nesting-square-performance-dune-opened",
+    name: "Hugg Nesting Square Coffee Table",
+    category: "coffee_table",
+    price: 1099,
+    dimensions: { w: 1.1, d: 1.1, h: 0.43 },
+    styleTags: ["modern"],
+    defaultVariantId: "performance_dune_opened",
+    purchaseMode: "affiliate",
+    retailer: "Castlery",
+    variants: [
+      {
+        id: "performance_dune_opened",
+        name: "Performance Dune Opened",
+        colorHex: "#b8b8b8",
+      },
+    ],
+  },
+  "coffee-real-castlery-peri-120": {
+    id: "coffee-real-castlery-peri-120",
+    name: "Peri Coffee Table",
+    category: "coffee_table",
+    price: 549,
+    dimensions: { w: 1.2, d: 0.7, h: 0.3 },
+    styleTags: ["modern"],
+    defaultVariantId: "peri_coffee_table_walnut_dark_grey_steel",
+    purchaseMode: "affiliate",
+    retailer: "Castlery",
+    variants: [
+      {
+        id: "peri_coffee_table_walnut_dark_grey_steel",
+        name: "Peri Coffee Table / Walnut / Dark Grey Steel",
+        colorHex: "#b8b8b8",
+      },
+    ],
+  },
+  "coffee-real-castlery-seb-storage-120": {
+    id: "coffee-real-castlery-seb-storage-120",
+    name: "Seb Coffee Table with Storage",
+    category: "coffee_table",
+    price: 699,
+    dimensions: { w: 1.2, d: 0.7, h: 0.45 },
+    styleTags: ["modern"],
+    defaultVariantId: "seb_coffee_table_with_storage_120cm_muted_honey",
+    purchaseMode: "affiliate",
+    retailer: "Castlery",
+    variants: [
+      {
+        id: "seb_coffee_table_with_storage_120cm_muted_honey",
+        name: "Seb Coffee Table With Storage / 120cm / Muted Honey",
+        colorHex: "#b8b8b8",
+      },
+    ],
+  },
+  "coffee-real-castlery-seb-storage-90": {
+    id: "coffee-real-castlery-seb-storage-90",
+    name: "Seb Coffee Table with Storage",
+    category: "coffee_table",
+    price: 548,
+    dimensions: { w: 0.9, d: 0.6, h: 0.45 },
+    styleTags: ["modern"],
+    defaultVariantId: "seb_coffee_table_with_storage_90cm_muted_honey",
+    purchaseMode: "affiliate",
+    retailer: "Castlery",
+    variants: [
+      {
+        id: "seb_coffee_table_with_storage_90cm_muted_honey",
+        name: "Seb Coffee Table With Storage / 90cm / Muted Honey",
+        colorHex: "#b8b8b8",
+      },
+    ],
+  },
+  "coffee-real-castlery-vento-coffee-table-120": {
+    id: "coffee-real-castlery-vento-coffee-table-120",
+    name: "Vento Coffee Table",
+    category: "coffee_table",
+    price: 599,
+    dimensions: { w: 1.2, d: 0.6, h: 0.35 },
+    styleTags: ["modern"],
+    defaultVariantId: "vento_coffee_table_waterbase_natural_walnut",
+    purchaseMode: "affiliate",
+    retailer: "Castlery",
+    variants: [
+      {
+        id: "vento_coffee_table_waterbase_natural_walnut",
+        name: "Vento Coffee Table / Waterbase Natural Walnut",
+        colorHex: "#b8b8b8",
+      },
+    ],
+  },
+  "dining-real-castlery-sloane-bench-150-no-cushion": {
+    id: "dining-real-castlery-sloane-bench-150-no-cushion",
+    name: "Sloane Dining Bench",
+    category: "dining_bench",
+    price: 499,
+    dimensions: { w: 1.5, d: 0.4, h: 0.45 },
+    styleTags: ["modern"],
+    defaultVariantId: "150_no_cushion",
+    purchaseMode: "affiliate",
+    retailer: "Castlery",
+    variants: [
+      { id: "150_no_cushion", name: "150 No Cushion", colorHex: "#b8b8b8" },
+    ],
+  },
+  "dining-real-castlery-sloane-bench-180-leather-cushion": {
+    id: "dining-real-castlery-sloane-bench-180-leather-cushion",
+    name: "Sloane Dining Bench",
+    category: "dining_bench",
+    price: 749,
+    dimensions: { w: 1.8, d: 0.41, h: 0.52 },
+    styleTags: ["modern"],
+    defaultVariantId: "180_leather_cushion",
+    purchaseMode: "affiliate",
+    retailer: "Castlery",
+    variants: [
+      {
+        id: "180_leather_cushion",
+        name: "180 Leather Cushion",
+        colorHex: "#b8b8b8",
+      },
+    ],
+  },
+  "dining-real-castlery-sloane-bench-180-no-cushion": {
+    id: "dining-real-castlery-sloane-bench-180-no-cushion",
+    name: "Sloane Dining Bench",
+    category: "dining_bench",
+    price: 549,
+    dimensions: { w: 1.8, d: 0.4, h: 0.45 },
+    styleTags: ["modern"],
+    defaultVariantId: "180_no_cushion",
+    purchaseMode: "affiliate",
+    retailer: "Castlery",
+    variants: [
+      { id: "180_no_cushion", name: "180 No Cushion", colorHex: "#b8b8b8" },
+    ],
+  },
+  "dining-real-castlery-forma-oval-150": {
+    id: "dining-real-castlery-forma-oval-150",
+    name: "Forma Oval Dining Table",
+    category: "dining_table",
+    price: 1199,
+    dimensions: { w: 1.5, d: 0.95, h: 0.75 },
+    styleTags: ["modern"],
+    defaultVariantId: "oval_150",
+    purchaseMode: "affiliate",
+    retailer: "Castlery",
+    variants: [
+      { id: "oval_150", name: "Oval 150", colorHex: "#b8b8b8" },
+    ],
+  },
+  "dining-real-castlery-forma-round-120": {
+    id: "dining-real-castlery-forma-round-120",
+    name: "Forma Round Dining Table",
+    category: "dining_table",
+    price: 1049,
+    dimensions: { w: 1.2, d: 1.2, h: 0.75 },
+    styleTags: ["modern"],
+    defaultVariantId: "round_120",
+    purchaseMode: "affiliate",
+    retailer: "Castlery",
+    variants: [
+      { id: "round_120", name: "Round 120", colorHex: "#b8b8b8" },
+    ],
+  },
+  "dining-real-castlery-forma-round-90": {
+    id: "dining-real-castlery-forma-round-90",
+    name: "Forma Round Dining Table",
+    category: "dining_table",
+    price: 749,
+    dimensions: { w: 0.9, d: 0.9, h: 0.75 },
+    styleTags: ["modern"],
+    defaultVariantId: "round_90",
+    purchaseMode: "affiliate",
+    retailer: "Castlery",
+    variants: [
+      { id: "round_90", name: "Round 90", colorHex: "#b8b8b8" },
+    ],
+  },
+  "dining-real-castlery-kelsey-marble-160": {
+    id: "dining-real-castlery-kelsey-marble-160",
+    name: "Kelsey Marble Dining Table",
+    category: "dining_table",
+    price: 1599,
+    dimensions: { w: 1.6, d: 0.9, h: 0.76 },
+    styleTags: ["modern"],
+    defaultVariantId: "160_white_wash",
+    purchaseMode: "affiliate",
+    retailer: "Castlery",
+    variants: [
+      {
+        id: "160_white_wash",
+        name: "160 White Wash",
+        colorHex: "#b8b8b8",
+      },
+    ],
+  },
+  "sofa-real-castlery-dawson-storage-ottoman": {
+    id: "sofa-real-castlery-dawson-storage-ottoman",
+    name: "Dawson Storage Ottoman",
+    category: "ottoman",
+    price: 649,
+    dimensions: { w: 0.93, d: 0.93, h: 0.45 },
+    styleTags: ["modern"],
+    defaultVariantId: "standard",
+    purchaseMode: "affiliate",
+    retailer: "Castlery",
+    variants: [
+      { id: "standard", name: "Standard", colorHex: "#b8b8b8" },
+    ],
+  },
+  "tv-real-castlery-casa-tv-console-150": {
+    id: "tv-real-castlery-casa-tv-console-150",
+    name: "Casa TV Console",
+    category: "tv_console",
+    price: 899,
+    dimensions: { w: 1.5, d: 0.45, h: 0.59 },
+    styleTags: ["modern"],
+    defaultVariantId: "150cm_white_wash",
+    purchaseMode: "affiliate",
+    retailer: "Castlery",
+    variants: [
+      {
+        id: "150cm_white_wash",
+        name: "150cm / White Wash",
+        colorHex: "#b8b8b8",
+      },
+    ],
+  },
+  "tv-real-castlery-casa-tv-console-200": {
+    id: "tv-real-castlery-casa-tv-console-200",
+    name: "Casa TV Console",
+    category: "tv_console",
+    price: 1199,
+    dimensions: { w: 2, d: 0.45, h: 0.59 },
+    styleTags: ["modern"],
+    defaultVariantId: "200cm_white_wash",
+    purchaseMode: "affiliate",
+    retailer: "Castlery",
+    variants: [
+      {
+        id: "200cm_white_wash",
+        name: "200cm / White Wash",
+        colorHex: "#b8b8b8",
+      },
+    ],
+  },
+  "tv-real-castlery-sawyer-tv-console-200": {
+    id: "tv-real-castlery-sawyer-tv-console-200",
+    name: "Sawyer TV Console",
+    category: "tv_console",
+    price: 1199,
+    dimensions: { w: 2, d: 0.45, h: 0.6 },
+    styleTags: ["modern"],
+    defaultVariantId: "200cm_natural",
+    purchaseMode: "affiliate",
+    retailer: "Castlery",
+    variants: [
+      {
+        id: "200cm_natural",
+        name: "200cm / Natural",
+        colorHex: "#b8b8b8",
+      },
+    ],
+  },
+  "tv-real-castlery-seb-tv-console-150": {
+    id: "tv-real-castlery-seb-tv-console-150",
+    name: "Seb TV Console",
+    category: "tv_console",
+    price: 799,
+    dimensions: { w: 1.5, d: 0.45, h: 0.6 },
+    styleTags: ["modern"],
+    defaultVariantId: "150cm_muted_honey",
+    purchaseMode: "affiliate",
+    retailer: "Castlery",
+    variants: [
+      {
+        id: "150cm_muted_honey",
+        name: "150cm / Muted Honey",
+        colorHex: "#b8b8b8",
+      },
+    ],
+  },
+  "tv-real-castlery-seb-tv-console-200": {
+    id: "tv-real-castlery-seb-tv-console-200",
+    name: "Seb TV Console",
+    category: "tv_console",
+    price: 1099,
+    dimensions: { w: 2, d: 0.45, h: 0.6 },
+    styleTags: ["modern"],
+    defaultVariantId: "200cm_muted_honey",
+    purchaseMode: "affiliate",
+    retailer: "Castlery",
+    variants: [
+      {
+        id: "200cm_muted_honey",
+        name: "200cm / Muted Honey",
+        colorHex: "#b8b8b8",
+      },
+    ],
+  },
+  "tv-real-castlery-sloane-tv-console-150": {
+    id: "tv-real-castlery-sloane-tv-console-150",
+    name: "Sloane TV Console",
+    category: "tv_console",
+    price: 1099,
+    dimensions: { w: 1.5, d: 0.4, h: 0.58 },
+    styleTags: ["modern"],
+    defaultVariantId: "150cm_grey_oak",
+    purchaseMode: "affiliate",
+    retailer: "Castlery",
+    variants: [
+      {
+        id: "150cm_grey_oak",
+        name: "150cm / Grey Oak",
+        colorHex: "#b8b8b8",
+      },
+    ],
+  },
+  "tv-real-castlery-sloane-tv-console-200": {
+    id: "tv-real-castlery-sloane-tv-console-200",
+    name: "Sloane TV Console",
+    category: "tv_console",
+    price: 1399,
+    dimensions: { w: 2, d: 0.47, h: 0.58 },
+    styleTags: ["modern"],
+    defaultVariantId: "200cm_grey_oak",
+    purchaseMode: "affiliate",
+    retailer: "Castlery",
+    variants: [
+      {
+        id: "200cm_grey_oak",
+        name: "200cm / Grey Oak",
+        colorHex: "#b8b8b8",
+      },
+    ],
+  },
 };
 
-const isImportedSofa = (product: Product): boolean =>
-  product.category !== "sofa" || product.id.startsWith("sofa-real-");
+const isPlaceholderProduct = (product: Product): boolean => {
+  const buyUrl = String(product.buyUrl ?? "").toLowerCase();
+  const shopifyVariantId = String(product.shopifyVariantId ?? "").toLowerCase();
+  return (
+    buyUrl.includes("example.com") ||
+    buyUrl.includes("unspecified") ||
+    shopifyVariantId.includes("unspecified")
+  );
+};
+
+const isRealCatalogProduct = (product: Product): boolean => {
+  if (isPlaceholderProduct(product)) return false;
+  return product.id.includes("-real-") || product.id.startsWith("castlery-");
+};
 
 const PUBLIC_CATALOG_ENTRIES = Object.entries(CATALOG).filter(([, product]) =>
-  isImportedSofa(product)
+  isRealCatalogProduct(product)
 );
 
 // ============================================================================

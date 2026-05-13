@@ -162,6 +162,10 @@ export function GLBScaledModel({
     let sy = size.y > 0 ? height / size.y : 1;
     let sz = size.z > 0 ? targetDepth / size.z : 1;
 
+    if (calibration?.lockVerticalScaleToFootprint) {
+      sy = (sx + sz) / 2;
+    }
+
     if (calibration?.uniformScale) {
       const uniform = Math.min(sx, sy, sz);
       sx = uniform;
@@ -500,7 +504,7 @@ export function GLBScaledModel({
       if (Array.isArray(mat)) {
         mat.forEach((m) => {
           if (!m) return;
-          const hasUpholsteryShadingMaps = Boolean(
+          const _hasUpholsteryShadingMaps = Boolean(
             upholsteryTextures.normalMap || upholsteryTextures.roughnessMap
           );
           applyPhysicalMaterialClamps(m);
@@ -662,7 +666,7 @@ export function GLBScaledModel({
           physicalMat.needsUpdate = true;
         });
       } else if (mat) {
-        const hasUpholsteryShadingMaps = Boolean(
+        const _hasUpholsteryShadingMaps = Boolean(
           upholsteryTextures.normalMap || upholsteryTextures.roughnessMap
         );
         applyPhysicalMaterialClamps(mat);

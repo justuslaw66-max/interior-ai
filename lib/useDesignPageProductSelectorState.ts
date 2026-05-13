@@ -276,30 +276,70 @@ export function useDesignPageProductSelectorState({
     return structuredVariants.filter((x) => x.materialType === activeMaterialType);
   }, [structuredVariants, hasStructuredVariantLabels, activeMaterialType]);
 
+  const dedupedVisibleColourVariants = useMemo(() => {
+    if (!visibleColourVariants.length) return visibleColourVariants;
+
+    const activeDims = activeStructuredVariant?.variant.dimensionsMm;
+    const activeW = Number(activeDims?.w ?? 0);
+    const activeD = Number(activeDims?.d ?? 0);
+
+    const grouped = new Map<string, StructuredVariantEntry[]>();
+    for (const entry of visibleColourVariants) {
+      const key = [
+        entry.materialType.trim().toLowerCase(),
+        entry.colourLabel.trim().toLowerCase(),
+        entry.collectionType.trim().toLowerCase(),
+      ].join("::");
+      const existing = grouped.get(key);
+      if (existing) {
+        existing.push(entry);
+      } else {
+        grouped.set(key, [entry]);
+      }
+    }
+
+    const pickBestEntry = (entries: StructuredVariantEntry[]): StructuredVariantEntry => {
+      const selected = entries.find((entry) => entry.variant.id === selectedItem?.variantId);
+      if (selected) return selected;
+
+      if (activeW > 0 && activeD > 0) {
+        const dimMatch = entries.find((entry) => {
+          const dims = entry.variant.dimensionsMm;
+          return Number(dims?.w ?? 0) === activeW && Number(dims?.d ?? 0) === activeD;
+        });
+        if (dimMatch) return dimMatch;
+      }
+
+      return entries[0];
+    };
+
+    return Array.from(grouped.values()).map((entries) => pickBestEntry(entries));
+  }, [visibleColourVariants, activeStructuredVariant, selectedItem?.variantId]);
+
   const groupedVisibleColourVariants = useMemo(() => {
-    if (!shouldShowCollectionGrouping(visibleColourVariants.map((entry) => entry.collectionType))) {
-      return [{ key: "all" as const, label: null, entries: visibleColourVariants }];
+    if (!shouldShowCollectionGrouping(dedupedVisibleColourVariants.map((entry) => entry.collectionType))) {
+      return [{ key: "all" as const, label: null, entries: dedupedVisibleColourVariants }];
     }
 
     const normalizeCollectionType = (value: string | null | undefined): "stocked" | "custom" =>
       String(value ?? "").trim().toLowerCase() === "stocked" ? "stocked" : "custom";
 
-    const stocked = visibleColourVariants.filter(
+    const stocked = dedupedVisibleColourVariants.filter(
       (entry) => normalizeCollectionType(entry.collectionType) === "stocked"
     );
-    const custom = visibleColourVariants.filter(
+    const custom = dedupedVisibleColourVariants.filter(
       (entry) => normalizeCollectionType(entry.collectionType) === "custom"
     );
 
     const groups: Array<{
       key: "stocked" | "custom" | "all";
       label: string | null;
-      entries: typeof visibleColourVariants;
+      entries: typeof dedupedVisibleColourVariants;
     }> = [];
     if (stocked.length) groups.push({ key: "stocked", label: "Stocked", entries: stocked });
     if (custom.length) groups.push({ key: "custom", label: "Custom", entries: custom });
     return groups;
-  }, [visibleColourVariants]);
+  }, [dedupedVisibleColourVariants]);
 
   const hideColourSelector = Boolean(
     selectedProduct?.id.startsWith("dining-real-castlery-forma-") ||

@@ -61,7 +61,7 @@ spatial_attributes:
 
 room_compatibility:
   - "living_room"
-  - "media_room"
+  - "family_room"
 
 placement_rules:
   floor_only: true
@@ -133,6 +133,13 @@ variants:
       width_cm: 200
       depth_cm: 45
       height_cm: 59
+    materials:
+      body:
+        structure: "engineered_wood"
+        surface: "acacia_veneer"
+      legs:
+        structure: "solid_wood"
+        wood_species: "acacia"
     finish:
       color_finish: "white_wash"
       surface_finish: "light_wire_brushed"

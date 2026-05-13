@@ -27,7 +27,9 @@ type RemoteCheckResult = {
   method?: "HEAD" | "GET";
 };
 
-const CHECK_REMOTE = String(process.env.CATALOG_CHECK_REMOTE_ASSETS ?? "").toLowerCase() === "true";
+const CHECK_REMOTE =
+  String(process.env.CATALOG_CHECK_REMOTE_ASSETS ?? (process.env.CI ? "true" : "false")).toLowerCase() ===
+  "true";
 const REMOTE_TIMEOUT_MS = Number(process.env.CATALOG_REMOTE_TIMEOUT_MS ?? 6000);
 const CATALOG_ROOT = path.join(process.cwd(), "catalog", "furniture");
 const ALLOWED_LOCAL_MISSING_MODELS = new Set<string>([
@@ -85,6 +87,17 @@ async function checkRemoteUrl(url: string): Promise<RemoteCheckResult> {
   }
 }
 
+function isValidAssetUrl(url: string): boolean {
+  if (url.startsWith("/")) return true;
+  if (!isRemoteUrl(url)) return false;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "https:" || parsed.protocol === "http:";
+  } catch {
+    return false;
+  }
+}
+
 function collectAssetsFromCatalog(): { filesScanned: number; refs: AssetRef[] } {
   const refs: AssetRef[] = [];
   const files = findCatalogFiles(CATALOG_ROOT);
@@ -96,12 +109,16 @@ function collectAssetsFromCatalog(): { filesScanned: number; refs: AssetRef[] } 
     const assetId = normalizeUrl(parsed.assets?.asset_id) ?? rel;
 
     const modelUrl = normalizeUrl(parsed.assets?.model_url);
-    if (modelUrl) {
+    if (!modelUrl) {
+      refs.push({ owner: assetId, kind: "model", url: "__MISSING_MODEL_URL__" });
+    } else {
       refs.push({ owner: assetId, kind: "model", url: modelUrl });
     }
 
     const thumbUrl = normalizeUrl(parsed.assets?.thumbnail_url);
-    if (thumbUrl) {
+    if (!thumbUrl) {
+      refs.push({ owner: assetId, kind: "thumb", url: "__MISSING_THUMBNAIL_URL__" });
+    } else {
       refs.push({ owner: assetId, kind: "thumb", url: thumbUrl });
     }
 
@@ -135,6 +152,18 @@ async function main() {
   const missingLines: string[] = [];
 
   for (const [url, owners] of unique.entries()) {
+    if (url === "__MISSING_MODEL_URL__" || url === "__MISSING_THUMBNAIL_URL__") {
+      const ownerStr = owners.map((entry) => `${entry.owner} (${entry.kind})`).join(", ");
+      missingLines.push(`- REQUIRED FIELD MISSING: ${url} <- ${ownerStr}`);
+      continue;
+    }
+
+    if (!isValidAssetUrl(url)) {
+      const ownerStr = owners.map((entry) => `${entry.owner} (${entry.kind})`).join(", ");
+      missingLines.push(`- INVALID URL: ${url} <- ${ownerStr}`);
+      continue;
+    }
+
     if (isRemoteUrl(url)) {
       if (!CHECK_REMOTE) continue;
       remoteChecked += 1;

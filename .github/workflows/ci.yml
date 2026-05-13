@@ -48,10 +48,34 @@ jobs:
       - name: Run typecheck
         run: npx tsc --noEmit
 
+      - name: Run lint (required)
+        run: npm run lint
+
+      - name: Run build (required)
+        run: npm run build
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
+
       - name: Run catalog audit
         run: npm run test:catalog-audit
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
+
+      - name: Run catalog asset availability gate (required)
+        run: npm run test:catalog-asset-availability
+        env:
+          CATALOG_CHECK_REMOTE_ASSETS: "true"
+
+      - name: Install Playwright browsers for import preflight
+        run: npx playwright install --with-deps
+
+      - name: Run import preflight (required)
+        run: npm run test:import-preflight
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
+          CATALOG_CHECK_REMOTE_ASSETS: "true"
+          NEXTAUTH_SECRET: test-secret
+          NEXTAUTH_URL: http://localhost:3000
 
       - name: Start app server for route hardening checks
         run: npm run dev > /tmp/next-dev.log 2>&1 &
@@ -87,9 +111,6 @@ jobs:
       - name: Print app server log on failure
         if: failure()
         run: cat /tmp/next-dev.log || true
-
-      # Temporarily skip lint/build in stable checks while staging is stabilized.
-      # Full E2E still runs in a separate non-blocking job for visibility.
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps

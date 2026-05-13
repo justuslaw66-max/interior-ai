@@ -1,4 +1,6 @@
 import type { CatalogCardView } from "@/lib/catalog/view-builders";
+import LazyImage from "@/components/common/LazyImage";
+import PlaceholderImage from "@/components/common/PlaceholderImage";
 import CatalogCardBadges from "./CatalogCardBadges";
 import CatalogCardSwatches from "./CatalogCardSwatches";
 
@@ -14,18 +16,18 @@ type Props = {
 export default function CatalogCard({ item, onPreview, onAdd, onToggleCompare, isCompared, onHover }: Props) {
   return (
     <div className="rounded-xl border border-neutral-200 bg-white p-2.5">
-      <div className="aspect-[4/3] overflow-hidden rounded-lg bg-neutral-100">
+      <div className="aspect-[4/3] overflow-hidden rounded-lg" onMouseEnter={onHover}>
         {item.thumbUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <LazyImage
             src={item.thumbUrl}
             alt={item.title}
-            loading="lazy"
             className={item.imageClassName}
-            onMouseEnter={onHover}
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-xs text-neutral-400">No image</div>
+          <PlaceholderImage
+            title={item.title}
+            className={item.imageClassName ?? "h-full w-full"}
+          />
         )}
       </div>
 

@@ -107,7 +107,7 @@ compatibility:
       collection_context: "same_collection"
     - product_family: "Dawson"
       product_name: "Dawson Chaise Sectional Sofa"
-      relationship: "orientation_variant"
+      relationship: "size_variant"
       strength: "strong"
       collection_context: "same_product"
 
@@ -194,7 +194,7 @@ variants:
     seat_capacity: 4
     size_class: "extra_large"
     color_family: "grey"
-    tone: "neutral_cool"
+    tone: "cool"
     chaise_orientation_options: ["left_chaise"]
     set_compatibility: []
 
@@ -213,7 +213,7 @@ variants:
     seat_capacity: 4
     size_class: "extra_large"
     color_family: "cream"
-    tone: "neutral_warm"
+    tone: "warm"
     chaise_orientation_options: ["left_chaise"]
     set_compatibility: []
 
@@ -251,7 +251,7 @@ variants:
     seat_capacity: 4
     size_class: "extra_large"
     color_family: "grey"
-    tone: "neutral_cool"
+    tone: "cool"
     chaise_orientation_options: ["left_chaise"]
     set_compatibility: []
 
@@ -270,7 +270,7 @@ variants:
     seat_capacity: 4
     size_class: "extra_large"
     color_family: "green"
-    tone: "muted_earthy"
+    tone: "warm"
     chaise_orientation_options: ["left_chaise"]
     set_compatibility: []
 
@@ -365,7 +365,7 @@ variants:
     seat_capacity: 4
     size_class: "extra_large"
     color_family: "green"
-    tone: "muted_earthy"
+    tone: "warm"
     chaise_orientation_options: ["left_chaise"]
     set_compatibility: []
 
@@ -441,7 +441,7 @@ variants:
     seat_capacity: 4
     size_class: "extra_large"
     color_family: "grey"
-    tone: "neutral_cool"
+    tone: "cool"
     chaise_orientation_options: ["left_chaise"]
     set_compatibility: []
 
@@ -498,7 +498,7 @@ variants:
     seat_capacity: 4
     size_class: "extra_large"
     color_family: "green"
-    tone: "muted_earthy"
+    tone: "warm"
     chaise_orientation_options: ["left_chaise"]
     set_compatibility: []
 
@@ -574,7 +574,7 @@ variants:
     seat_capacity: 4
     size_class: "extra_large"
     color_family: "green"
-    tone: "muted_earthy"
+    tone: "warm"
     chaise_orientation_options: ["left_chaise"]
     set_compatibility: []
 
@@ -760,7 +760,7 @@ variants:
     seat_capacity: 4
     size_class: "extra_large"
     color_family: "grey"
-    tone: "neutral_cool"
+    tone: "cool"
     chaise_orientation_options: ["left_chaise"]
     set_compatibility: []
 

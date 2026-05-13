@@ -107,7 +107,7 @@ compatibility:
       collection_context: "same_collection"
     - product_family: "Dawson"
       product_name: "Dawson Wide Chaise Sectional Sofa (Left Facing)"
-      relationship: "orientation_variant"
+      relationship: "size_variant"
       strength: "strong"
       collection_context: "same_collection"
 
@@ -194,7 +194,7 @@ variants:
     seat_capacity: 4
     size_class: "extra_large"
     color_family: "grey"
-    tone: "neutral_cool"
+    tone: "cool"
     chaise_orientation_options: ["left_chaise", "right_chaise"]
     set_compatibility: []
   - variant: "Dawson Wide Chaise Sectional Sofa / Performance Creamy White"
@@ -230,7 +230,7 @@ variants:
     seat_capacity: 4
     size_class: "extra_large"
     color_family: "cream"
-    tone: "neutral_warm"
+    tone: "warm"
     chaise_orientation_options: ["left_chaise", "right_chaise"]
     set_compatibility: []
   - variant: "Dawson Wide Chaise Sectional Sofa / Performance Fleece (Peyton), Ivory (Cream)"
@@ -266,7 +266,7 @@ variants:
     seat_capacity: 4
     size_class: "extra_large"
     color_family: "grey"
-    tone: "neutral_cool"
+    tone: "cool"
     chaise_orientation_options: ["left_chaise", "right_chaise"]
     set_compatibility: []
   - variant: "Dawson Wide Chaise Sectional Sofa / Performance Textured Plain Weave (Marcel), Smoke Grey"
@@ -284,7 +284,7 @@ variants:
     seat_capacity: 4
     size_class: "extra_large"
     color_family: "grey"
-    tone: "neutral_cool"
+    tone: "cool"
     chaise_orientation_options: ["left_chaise", "right_chaise"]
     set_compatibility: []
   - variant: "Dawson Wide Chaise Sectional Sofa / Performance Fleece (Peyton), Moss"
@@ -302,7 +302,7 @@ variants:
     seat_capacity: 4
     size_class: "extra_large"
     color_family: "green"
-    tone: "muted_earthy"
+    tone: "warm"
     chaise_orientation_options: ["left_chaise", "right_chaise"]
     set_compatibility: []
   - variant: "Dawson Wide Chaise Sectional Sofa / Performance Fleece (Peyton), Caramel (Cumin)"
@@ -518,7 +518,7 @@ variants:
     seat_capacity: 4
     size_class: "extra_large"
     color_family: "green"
-    tone: "muted_earthy"
+    tone: "warm"
     chaise_orientation_options: ["left_chaise", "right_chaise"]
     set_compatibility: []
 
@@ -594,7 +594,7 @@ variants:
     seat_capacity: 4
     size_class: "extra_large"
     color_family: "grey"
-    tone: "neutral_cool"
+    tone: "cool"
     chaise_orientation_options: ["left_chaise", "right_chaise"]
     set_compatibility: []
 
@@ -651,7 +651,7 @@ variants:
     seat_capacity: 4
     size_class: "extra_large"
     color_family: "green"
-    tone: "muted_earthy"
+    tone: "warm"
     chaise_orientation_options: ["left_chaise", "right_chaise"]
     set_compatibility: []
 
@@ -727,7 +727,7 @@ variants:
     seat_capacity: 4
     size_class: "extra_large"
     color_family: "green"
-    tone: "muted_earthy"
+    tone: "warm"
     chaise_orientation_options: ["left_chaise", "right_chaise"]
     set_compatibility: []
 

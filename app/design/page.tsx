@@ -1,9 +1,9 @@
 "use client";
 
 import * as THREE from "three";
-import { Canvas, type ThreeEvent, useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls, MapControls, Edges, Environment, Html, Lightformer, Line, useCursor } from "@react-three/drei";
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type ComponentProps } from "react";
+import { Canvas } from "@react-three/fiber";
+import { OrbitControls, MapControls, Environment, Lightformer } from "@react-three/drei";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { signIn, useSession } from "next-auth/react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -13,16 +13,12 @@ import { LoadingOverlay } from "@/components/scene/LoadingOverlay";
 import { RoomSkeleton } from "@/components/scene/RoomSkeleton";
 import { SceneProgressBridge } from "@/components/scene/SceneProgressBridge";
 import { ZoneOutline as SceneZoneOutline } from "@/components/scene/ZoneOutline";
-import { GLBScaledModel as SceneGLBScaledModel } from "@/components/scene/GLBScaledModel";
 import CartSidebar from "@/components/CartSidebar";
 import QuickAddPanel from "@/components/QuickAddPanel";
 import ItemCartDrawer from "@/components/ItemCartDrawer";
-import { SnapGuides } from "@/components/SnapGuides";
-import { Measurements } from "@/components/Measurements";
 import { LightingPresetsUI } from "@/components/LightingPresetsUI";
 import { LIGHTING_PRESETS, type LightingPreset } from "@/lib/lightingPresets";
 import { CATALOG_ITEMS, CATALOG_ITEMS_MAP } from "@/lib/catalog";
-import { type CatalogItemSchema, type ProductCategory, type RoomTag } from "@/lib/catalog-schema";
 import { bulkSwapItems } from "@/lib/bulkSwap";
 import { isPro, type Plan } from "@/lib/plan";
 import { useEditorMode } from "@/hooks/useEditorMode";
@@ -42,16 +38,7 @@ import {
   type OnboardingState,
 } from "@/lib/onboarding";
 import { applyAISuggestionAction, type AISuggestionAction } from "@/lib/ai/applySuggestion";
-import {
-  computeSnapCandidates,
-  computeAABB,
-  pickGuides,
-  snapGuideToGuide,
-  type Guide,
-  type AABB,
-} from "@/lib/snapGuides";
-import { generateMeasurements, type Measure } from "@/lib/measurements";
-import { resolveMaterialProps } from "@/lib/design-page-material-props";
+import { computeAABB } from "@/lib/snapGuides";
 import {
   saveGuestDesign,
   loadGuestDesigns,
@@ -66,7 +53,6 @@ import CatalogPanel from "@/components/catalog/CatalogPanel";
 import EditorViewToggle, { type EditorViewMode } from "@/components/editor/EditorViewToggle";
 import EditorCamera2D from "@/components/editor/camera/EditorCamera2D";
 import RoomRenderer2D from "@/components/editor/renderers/RoomRenderer2D";
-import ItemRenderer2D from "@/components/editor/renderers/ItemRenderer2D";
 import { CanvasErrorBoundary } from "@/components/CanvasErrorBoundary";
 import { metersToMm, radiansToDeg, type EditorAnnotation2D, type FixedElement2D, type RoomOpening2D } from "@/lib/editorScene";
 import { legacyApiToSnapshot, snapshotToLegacyApi } from "@/lib/room-persistence";
@@ -78,46 +64,29 @@ import {
   type ImportedModelOption,
   upsertImportedCatalogItem,
 } from "@/lib/catalog/imported-model-assembly";
-import {
-  sentenceCaseLabel,
-} from "@/lib/catalog/variant-normalization";
 import { mapToTopCategory } from "@/lib/catalog/view-builders";
 import {
-  clamp,
   formatMoney,
   formatTimeAgo,
   getDimensions,
   getItemPrice,
   getRotatedFootprint,
   normalizeRotationDegrees,
-  ROTATION_SNAP_STEP_DEGREES,
-  ROTATION_SNAP_STEP_RADIANS,
   snapRotationRadians,
 } from "@/lib/design-page-utils";
 import {
-  type GLBCalibration,
-  GLB_CALIBRATION_BY_PRODUCT_ID,
-  STANDARD_IMPORTED_CASTLERY_SOFA_CALIBRATION,
-  getModelCalibration,
-} from "@/lib/design-page-calibration";
-import {
   MODEL_FAMILY_BY_PRODUCT_ID,
   MODEL_SELECTOR_PRODUCT_IDS_BY_PRODUCT_ID,
-  MODEL_SELECTOR_REPRESENTATIVE_BY_PRODUCT_ID,
   ARM_STYLE_OPTIONS_BY_PRODUCT_ID,
   LENGTH_OPTIONS_BY_PRODUCT_ID,
-  SHAPE_OPTIONS_BY_PRODUCT_ID,
   ORIENTATION_OPTIONS_BY_PRODUCT_ID,
 } from "@/lib/design-page-model-maps";
 import {
-  type FabricDetailProfile,
   IMPORTED_VARIANT_BY_PRODUCT_ID,
   IMPORTED_VARIANTS_BY_PRODUCT_ID,
   IMPORTED_PRODUCT_CONFIG_BY_ID,
-  SLOANE_BENCH_PRODUCT_ID_BY_OPTION,
   getSloaneBenchProductId,
   CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE,
-  CASTLERY_FABRIC_DETAIL_PROFILE_BY_KEY,
   resolveFabricDetailProfile,
 } from "@/lib/design-page-product-data";
 import {
@@ -127,12 +96,9 @@ import {
   type NamedCameraView,
   type LayoutPlan,
   type AINotesResponse,
-  type SnapNeighbor,
   type PlanLayerPresetId,
   PLAN_LAYER_PRESETS,
   type PlanMeasurementUnit,
-  type WallDescriptor,
-  type ConfigurableNodeTransform,
   type RoomBounds,
 } from "@/lib/design-page-types";
 import {
@@ -145,7 +111,6 @@ import {
   type FunnelEventName,
   type UpgradeCtaVariant,
   type PricingLayoutVariant,
-  type PaywallExperimentSlot,
 } from "@/lib/design-page-paywall";
 import {
   buildAlignedSelectionItems as _buildAlignedSelectionItems,
@@ -323,7 +288,7 @@ function PageContent() {
   const onboardingStartedAtRef = useRef<number | null>(null);
   const firstItemTrackedRef = useRef(false);
   const seatingZoneAutoDisabledRef = useRef(false);
-  const sofaNudgeTimerRef = useRef<number | null>(null);
+  const _sofaNudgeTimerRef = useRef<number | null>(null);
   const ghostTimerRef = useRef<number | null>(null);
   const firstSofaHandledRef = useRef(false);
   const nudgeShownCountRef = useRef(0);
@@ -2648,7 +2613,6 @@ function PageContent() {
     });
     setSelectedZoneId(next.zoneId);
     clearSelection();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clearSelection, pendingZoneType]);
 
   const autoCreateSeatingZone = useCallback(
@@ -2681,7 +2645,6 @@ function PageContent() {
       setSelectedZoneId(next.zoneId);
       track("seating_zone_auto_created", { zoneId: next.zoneId, trigger: "first_sofa" });
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [editorMode, history, isClientPreview]
   );
 
@@ -2692,7 +2655,7 @@ function PageContent() {
 
   const {
     importedModelById,
-    resolveItemConfigurationCode,
+    resolveItemConfigurationCode: _resolveItemConfigurationCode,
     resolveItemConfigurationEntry,
     resolveConfiguredVisualDimsMm,
     resolveConfiguredPlanningDimsMm,
@@ -2717,7 +2680,7 @@ function PageContent() {
   const {
     selectedBrand,
     selectedModelTitle,
-    modelOptionProductIds,
+    modelOptionProductIds: _modelOptionProductIds,
     armStyleOptions,
     hasStructuredVariantLabels,
     modelSelectorProductIds,
@@ -2735,9 +2698,9 @@ function PageContent() {
     showFabricGroupingDebug,
     selectedModelLabel,
     selectedCategoryDebugLabel,
-    isCasaTvConsoleSelected,
-    isSebTvConsoleSelected,
-    isSloaneTvConsoleSelected,
+    isCasaTvConsoleSelected: _isCasaTvConsoleSelected,
+    isSebTvConsoleSelected: _isSebTvConsoleSelected,
+    isSloaneTvConsoleSelected: _isSloaneTvConsoleSelected,
     isSloaneTableSelected,
     isSloaneBenchSelected,
     selectedSloaneCompanionBenchItem,
@@ -2963,7 +2926,7 @@ function PageContent() {
     setPlanAnnotations((prev) => movePlanAnnotation(prev, id, xMeters, zMeters));
   }, []);
 
-  const getTopDownView = useCallback((): CameraView => {
+  const _getTopDownView = useCallback((): CameraView => {
     const height = Math.max(roomWidth, roomDepth) + roomHeight + 0.8;
     return {
       target: [0, roomHeight * 0.5, 0],
