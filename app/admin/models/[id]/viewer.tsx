@@ -470,7 +470,7 @@ export default function ModelViewer({ asset }: { asset: Asset }) {
         </button>
       </div>
 
-      <div className="absolute bottom-3 right-3 z-20 w-[340px] max-h-[70%] overflow-auto rounded-xl border bg-white/90 p-3 text-xs backdrop-blur">
+      <div className="absolute bottom-3 right-3 z-20 w-85 max-h-[70%] overflow-auto rounded-xl border bg-white/90 p-3 text-xs backdrop-blur">
         <div className="mb-2 flex items-center justify-between">
           <div className="font-semibold">Asset QA</div>
           <span className={`rounded-full border px-2 py-0.5 text-[11px] ${statusBadgeClass}`}>

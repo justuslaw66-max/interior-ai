@@ -69,7 +69,7 @@ export default function LazyImage({ src, alt, className = "", onError, onLoad, t
     <div ref={containerRef} className={`relative overflow-hidden bg-neutral-100 ${className}`}>
       {/* Loading skeleton */}
       {!isLoaded && (
-        <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-neutral-100 via-neutral-50 to-neutral-100" />
+        <div className="absolute inset-0 animate-pulse bg-linear-to-r from-neutral-100 via-neutral-50 to-neutral-100" />
       )}
 
       {/* Actual image (only renders if visible) */}

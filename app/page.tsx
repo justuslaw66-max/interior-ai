@@ -5276,7 +5276,7 @@ function PageContent() {
 
       {/* Exit Client Preview Button - Always Visible */}
       {isClientPreview && (
-        <div className="fixed left-1/2 top-4 z-[60] -translate-x-1/2 transform">
+        <div className="fixed left-1/2 top-4 z-60 -translate-x-1/2 transform">
           <button
             className="rounded-lg bg-red-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:bg-red-700"
             onClick={() => setClientPreview(false)}
@@ -5290,7 +5290,7 @@ function PageContent() {
       {/* Layer 2C: Commerce Panel (visible in BUY mode) */}
       {editorMode === "buy" && (
         <div
-          className={`absolute right-4 top-20 z-20 w-[340px] space-y-4 transition-opacity duration-300 ${
+          className={`absolute right-4 top-20 z-20 w-85 space-y-4 transition-opacity duration-300 ${
             isClientPreview ? "pointer-events-none opacity-0" : "opacity-100"
           }`}
           aria-hidden={isClientPreview}
@@ -5341,7 +5341,7 @@ function PageContent() {
       {/* Layer 2B: Inspector Panel (visible in ADJUST mode when item selected) */}
       {editorMode === "adjust" && selectedProduct && (
         <div
-          className={`absolute right-4 top-20 z-20 w-[340px] transition-opacity duration-300 ${
+          className={`absolute right-4 top-20 z-20 w-85 transition-opacity duration-300 ${
             isClientPreview ? "pointer-events-none opacity-0" : "opacity-100"
           }`}
           aria-hidden={isClientPreview}
@@ -5350,8 +5350,8 @@ function PageContent() {
           <div
             className={
               showDesignerTheme
-                ? "designer-panel designer-panel-strong w-[340px] rounded-xl p-4"
-                : "w-[340px] rounded-xl bg-white p-4 shadow"
+                ? "designer-panel designer-panel-strong w-85 rounded-xl p-4"
+                : "w-85 rounded-xl bg-white p-4 shadow"
             }
           >
             <div
@@ -5722,7 +5722,7 @@ function PageContent() {
 
       {/* Layer 2A: Design Panel (visible in DESIGN mode) */}
       {editorMode === "design" && (
-        <div className="absolute left-4 top-20 z-20 w-[380px] space-y-4">
+        <div className="absolute left-4 top-20 z-20 w-95 space-y-4">
           {!isClientPreview && (
           <>
             {!session?.user && (

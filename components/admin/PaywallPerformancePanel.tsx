@@ -45,7 +45,7 @@ export default function PaywallPerformancePanel({
           <div className="mt-3 text-xs text-neutral-500">No paywall variant data yet.</div>
         ) : (
           <div className="mt-3 overflow-x-auto">
-            <table className="w-full min-w-[640px] border-collapse text-xs">
+            <table className="w-full min-w-160 border-collapse text-xs">
               <thead>
                 <tr className="border-b bg-neutral-50 text-left">
                   <th className="px-2 py-2 font-medium">Variant</th>

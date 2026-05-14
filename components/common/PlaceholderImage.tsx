@@ -12,7 +12,7 @@ type Props = {
 export default function PlaceholderImage({ title, className = "" }: Props) {
   return (
     <div
-      className={`flex flex-col items-center justify-center bg-gradient-to-br from-neutral-50 to-neutral-100 ${className}`}
+      className={`flex flex-col items-center justify-center bg-linear-to-br from-neutral-50 to-neutral-100 ${className}`}
     >
       <div className="text-4xl text-neutral-200">📦</div>
       <div className="mt-2 text-center px-2">

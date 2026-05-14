@@ -451,7 +451,7 @@ export default async function AdminOverviewPage({
           <div className="mt-3 text-xs text-green-700">No live-gate rejections. All assets are currently eligible.</div>
         ) : (
           <div className="mt-3 overflow-x-auto">
-            <table className="w-full min-w-[640px] border-collapse text-xs">
+            <table className="w-full min-w-160 border-collapse text-xs">
               <thead>
                 <tr className="border-b bg-neutral-50 text-left">
                   <th className="px-2 py-2 font-medium">Asset</th>

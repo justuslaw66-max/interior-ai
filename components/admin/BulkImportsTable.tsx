@@ -122,7 +122,7 @@ export function BulkImportsTable({ jobs }: BulkImportsTableProps) {
       )}
 
       <div className="overflow-x-auto rounded-xl border">
-        <table className="w-full min-w-[1100px] border-collapse text-sm">
+        <table className="w-full min-w-275 border-collapse text-sm">
           <thead>
             <tr className="border-b bg-neutral-50 text-left">
               <th className="w-8 px-3 py-2">

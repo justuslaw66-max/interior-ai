@@ -92,7 +92,7 @@ export default function CatalogItemFinishPicker({ finishOptions, activeFinishId,
                       data-testid={`catalog-finish-option-${finish.id}`}
                       title={finish.label}
                       aria-label={finish.label}
-                      className={`group relative h-[58px] w-[58px] rounded-md border transition ${
+                      className={`group relative h-14.5 w-14.5 rounded-md border transition ${
                         active
                           ? "border-[#5a2135] ring-2 ring-[#5a2135]/30"
                           : "border-neutral-200 hover:border-neutral-400"

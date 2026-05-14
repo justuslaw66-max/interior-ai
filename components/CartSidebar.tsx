@@ -415,8 +415,8 @@ export default function CartSidebar({
       data-testid="cart-panel"
       className={
         isDesignerTheme
-          ? "designer-panel w-[340px] max-h-[60vh] overflow-auto rounded-2xl p-4"
-          : "w-[340px] max-h-[60vh] overflow-auto rounded-2xl bg-white p-4 shadow"
+          ? "designer-panel w-85 max-h-[60vh] overflow-auto rounded-2xl p-4"
+          : "w-85 max-h-[60vh] overflow-auto rounded-2xl bg-white p-4 shadow"
       }
     >
       <div className="flex items-start justify-between gap-3">

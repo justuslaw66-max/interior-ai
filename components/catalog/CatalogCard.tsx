@@ -16,7 +16,7 @@ type Props = {
 export default function CatalogCard({ item, onPreview, onAdd, onToggleCompare, isCompared, onHover }: Props) {
   return (
     <div className="rounded-xl border border-neutral-200 bg-white p-2.5">
-      <div className="aspect-[4/3] overflow-hidden rounded-lg" onMouseEnter={onHover}>
+      <div className="aspect-4/3 overflow-hidden rounded-lg" onMouseEnter={onHover}>
         {item.thumbUrl ? (
           <LazyImage
             src={item.thumbUrl}

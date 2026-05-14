@@ -404,7 +404,7 @@ export default async function ImportJobDetailPage(
         <div className="mt-3 grid grid-cols-1 gap-4 xl:grid-cols-2">
           <div className="rounded-lg border border-neutral-200 p-3">
             <div className="text-xs font-semibold uppercase tracking-[0.08em] text-neutral-500">Source side</div>
-            <pre className="mt-2 max-h-[420px] overflow-auto rounded bg-neutral-50 p-3 text-xs">
+            <pre className="mt-2 max-h-105 overflow-auto rounded bg-neutral-50 p-3 text-xs">
               {renderJson({
                 sourceBrand: job.sourceBrand,
                 sourceSku: job.sourceSku,
@@ -418,7 +418,7 @@ export default async function ImportJobDetailPage(
 
           <div className="rounded-lg border border-neutral-200 p-3">
             <div className="text-xs font-semibold uppercase tracking-[0.08em] text-neutral-500">Catalog side</div>
-            <pre className="mt-2 max-h-[420px] overflow-auto rounded bg-neutral-50 p-3 text-xs">
+            <pre className="mt-2 max-h-105 overflow-auto rounded bg-neutral-50 p-3 text-xs">
               {renderJson({
                 linkedCatalogItemId: job.catalogItemId,
                 normalizedAssetId: job.normalizedAssetId,
@@ -465,18 +465,18 @@ export default async function ImportJobDetailPage(
       <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div className="rounded-xl border p-4">
           <h2 className="text-sm font-semibold">Report JSON</h2>
-          <pre className="mt-2 max-h-[420px] overflow-auto rounded bg-neutral-50 p-3 text-xs">{renderJson(job.reportJson)}</pre>
+          <pre className="mt-2 max-h-105 overflow-auto rounded bg-neutral-50 p-3 text-xs">{renderJson(job.reportJson)}</pre>
         </div>
         <div className="rounded-xl border p-4">
           <h2 className="text-sm font-semibold">Raw Metadata JSON</h2>
-          <pre className="mt-2 max-h-[420px] overflow-auto rounded bg-neutral-50 p-3 text-xs">{renderJson(job.rawMetadataJson)}</pre>
+          <pre className="mt-2 max-h-105 overflow-auto rounded bg-neutral-50 p-3 text-xs">{renderJson(job.rawMetadataJson)}</pre>
         </div>
       </section>
 
       <section className="rounded-xl border p-4">
         <h2 className="text-sm font-semibold">Audit Trail</h2>
         <div className="mt-2 overflow-x-auto">
-          <table className="w-full min-w-[680px] border-collapse text-xs">
+          <table className="w-full min-w-170 border-collapse text-xs">
             <thead>
               <tr className="border-b bg-neutral-50 text-left">
                 <th className="px-2 py-1 font-medium">Time</th>

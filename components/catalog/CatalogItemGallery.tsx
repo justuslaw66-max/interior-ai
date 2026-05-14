@@ -41,7 +41,7 @@ export default function CatalogItemGallery({ images, imageUrl, title, imageClass
   const hasMultipleImages = availableImages.length > 1;
 
   return (
-    <div data-testid="catalog-item-gallery" className="relative aspect-[4/3] overflow-hidden rounded-lg">
+    <div data-testid="catalog-item-gallery" className="relative aspect-4/3 overflow-hidden rounded-lg">
       {activeImage ? (
         <>
           <LazyImage

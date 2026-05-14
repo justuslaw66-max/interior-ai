@@ -188,7 +188,7 @@ export default async function AdminCatalogReviewPage() {
                     Field-level diff
                   </div>
                   <div className="mt-3 overflow-x-auto">
-                    <table className="w-full min-w-[640px] border-collapse text-sm">
+                    <table className="w-full min-w-160 border-collapse text-sm">
                       <thead>
                         <tr className="border-b bg-neutral-50 text-left">
                           <th className="px-3 py-2 font-medium">Field</th>

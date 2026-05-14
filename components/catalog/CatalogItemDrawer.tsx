@@ -42,7 +42,7 @@ export default function CatalogItemDrawer({
   if (!open || !detail) return null;
 
   return (
-    <aside className="absolute right-4 top-20 z-30 w-[360px] rounded-xl border border-neutral-200 bg-white p-4 shadow-2xl">
+    <aside className="absolute right-4 top-20 z-30 w-90 rounded-xl border border-neutral-200 bg-white p-4 shadow-2xl">
       <div className="mb-2 flex items-center justify-between">
         <div className="text-sm font-semibold text-neutral-900">Product details</div>
         <button onClick={onClose} className="text-xs text-neutral-500">Close</button>

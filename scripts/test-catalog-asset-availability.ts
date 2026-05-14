@@ -31,6 +31,8 @@ const CHECK_REMOTE =
   String(process.env.CATALOG_CHECK_REMOTE_ASSETS ?? (process.env.CI ? "true" : "false")).toLowerCase() ===
   "true";
 const REMOTE_TIMEOUT_MS = Number(process.env.CATALOG_REMOTE_TIMEOUT_MS ?? 6000);
+const REMOTE_RETRIES = Math.max(0, Number(process.env.CATALOG_REMOTE_RETRIES ?? 2));
+const REMOTE_RETRY_BACKOFF_MS = Math.max(0, Number(process.env.CATALOG_REMOTE_RETRY_BACKOFF_MS ?? 250));
 const CATALOG_ROOT = path.join(process.cwd(), "catalog", "furniture");
 const ALLOWED_LOCAL_MISSING_MODELS = new Set<string>([
   "storage-real-castlery-sloane-sideboard-150cm",
@@ -57,7 +59,18 @@ function isRemoteUrl(url: string): boolean {
   return /^https?:\/\//i.test(url);
 }
 
-async function checkRemoteUrl(url: string): Promise<RemoteCheckResult> {
+function shouldRetryRemote(result: RemoteCheckResult): boolean {
+  if (result.ok) return false;
+  if (typeof result.status !== "number") return true;
+  if (result.status === 408 || result.status === 429) return true;
+  return result.status >= 500;
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function checkRemoteUrlOnce(url: string): Promise<RemoteCheckResult> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), REMOTE_TIMEOUT_MS);
   try {
@@ -85,6 +98,18 @@ async function checkRemoteUrl(url: string): Promise<RemoteCheckResult> {
   } finally {
     clearTimeout(timeout);
   }
+}
+
+async function checkRemoteUrl(url: string): Promise<RemoteCheckResult> {
+  let lastResult: RemoteCheckResult = { ok: false };
+  for (let attempt = 0; attempt <= REMOTE_RETRIES; attempt += 1) {
+    lastResult = await checkRemoteUrlOnce(url);
+    if (!shouldRetryRemote(lastResult) || attempt === REMOTE_RETRIES) {
+      return lastResult;
+    }
+    await sleep(REMOTE_RETRY_BACKOFF_MS * (attempt + 1));
+  }
+  return lastResult;
 }
 
 function isValidAssetUrl(url: string): boolean {
