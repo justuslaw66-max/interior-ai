@@ -65,6 +65,9 @@ jobs:
         run: npm run test:catalog-asset-availability
         env:
           CATALOG_CHECK_REMOTE_ASSETS: "true"
+          CATALOG_REMOTE_TIMEOUT_MS: "12000"
+          CATALOG_REMOTE_RETRIES: "5"
+          CATALOG_REMOTE_RETRY_BACKOFF_MS: "500"
 
       - name: Install Playwright browsers for import preflight
         run: npx playwright install --with-deps
@@ -74,6 +77,9 @@ jobs:
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
           CATALOG_CHECK_REMOTE_ASSETS: "true"
+          CATALOG_REMOTE_TIMEOUT_MS: "12000"
+          CATALOG_REMOTE_RETRIES: "5"
+          CATALOG_REMOTE_RETRY_BACKOFF_MS: "500"
           NEXTAUTH_SECRET: test-secret
           NEXTAUTH_URL: http://localhost:3000
 
