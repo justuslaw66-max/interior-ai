@@ -111,7 +111,7 @@ export function deriveVariantDisambiguator(
 }
 
 export function hardenDuplicateImportedVariantLabels<
-  T extends { id: string; label: string; finishLabel?: string; finishCode?: string }
+  T extends { id: string; label: string; finishLabel?: string; finishCode?: string; dimensionsMm?: { w: number; d: number } }
 >(variants: T[]): T[] {
   const labelCounts = new Map<string, number>();
   for (const variant of variants) {
@@ -119,12 +119,16 @@ export function hardenDuplicateImportedVariantLabels<
     labelCounts.set(key, (labelCounts.get(key) ?? 0) + 1);
   }
 
-  return variants.map((variant) => {
+  const withPrimaryQualifiers = variants.map((variant) => {
     const key = normalizeLabelToken(variant.label);
     const isDuplicateLabel = (labelCounts.get(key) ?? 0) > 1;
     if (!isDuplicateLabel) return variant;
 
-    const qualifier = deriveVariantDisambiguator(variant);
+    const qualifierParts = [deriveVariantDisambiguator(variant)];
+    if (variant.dimensionsMm?.w && variant.dimensionsMm?.d) {
+      qualifierParts.push(`${variant.dimensionsMm.w}x${variant.dimensionsMm.d}`);
+    }
+    const qualifier = qualifierParts.filter(Boolean).join(" ");
     if (!qualifier) return variant;
     if (new RegExp(`\\(${qualifier.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")}\\)$`, "i").test(variant.label)) {
       return variant;
@@ -133,6 +137,24 @@ export function hardenDuplicateImportedVariantLabels<
     return {
       ...variant,
       label: `${variant.label} (${qualifier})`,
+    };
+  });
+
+  const hardenedCounts = new Map<string, number>();
+  for (const variant of withPrimaryQualifiers) {
+    const key = normalizeLabelToken(variant.label);
+    hardenedCounts.set(key, (hardenedCounts.get(key) ?? 0) + 1);
+  }
+
+  return withPrimaryQualifiers.map((variant) => {
+    const key = normalizeLabelToken(variant.label);
+    if ((hardenedCounts.get(key) ?? 0) <= 1) return variant;
+
+    if (/\([^)]*\)$/.test(variant.label) && variant.label.includes(variant.id)) return variant;
+
+    return {
+      ...variant,
+      label: `${variant.label} (${variant.id})`,
     };
   });
 }

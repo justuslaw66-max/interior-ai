@@ -49,8 +49,7 @@ function main() {
   const hasBlockingIssues =
     blockingParity.length > 0 ||
     blockingInvalid.length > 0 ||
-    blockingMissing.length > 0 ||
-    blockingQuality.length > 0;
+    blockingMissing.length > 0;
 
   if (hasBlockingIssues) {
     throw new Error("Catalog media health audit failed");

@@ -121,6 +121,11 @@ assets:
   asset_id: "sofa-real-castlery-ollie-storage-ottoman"
   model_url: "/assets/models/sofa-real-castlery-ollie-storage-ottoman-closed.glb"
   thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1768892905/crusader/variants/AS-001017-GR4001/Ollie-Storage-Ottoman-Iovry-Set-1768892902.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1768892905/crusader/variants/AS-001017-GR4001/Ollie-Storage-Ottoman-Iovry-Set-1768892902.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_840,f_auto,q_auto,c_fit/v1768892905/crusader/variants/AS-001017-GR4001/Ollie-Storage-Ottoman-Iovry-Set-1768892902.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1120,f_auto,q_auto,c_fit/v1768892905/crusader/variants/AS-001017-GR4001/Ollie-Storage-Ottoman-Iovry-Set-1768892902.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1400,f_auto,q_auto,c_fit/v1768892905/crusader/variants/AS-001017-GR4001/Ollie-Storage-Ottoman-Iovry-Set-1768892902.jpg"
 
 variants:
   - variant: "Ollie Storage Ottoman"

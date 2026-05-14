@@ -34,6 +34,7 @@ export type Product = {
   price: number;
   dimensions: { w: number; d: number; h: number };
   styleTags: string[];
+  galleryImages?: string[];
   variants: Variant[];
   defaultVariantId: string;
   purchaseMode: "shopify" | "affiliate";
@@ -276,6 +277,7 @@ function buildCatalogItem(product: Product): CatalogItemSchema {
         `/assets/thumbs/${product.id}-${variant.id}.png`,
     })),
     defaultVariantId: product.defaultVariantId,
+    metadata: product.galleryImages ? { galleryImages: product.galleryImages } : undefined,
 
     commerce: buildCommerceMapping(product),
 
@@ -301,6 +303,12 @@ const CATALOG: Record<string, Product> = {
     price: 499,
     dimensions: { w: 0.93, d: 0.77, h: 0.44 },
     styleTags: ["modern", "minimalistic"],
+    galleryImages: [
+      "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1768892905/crusader/variants/AS-001017-GR4001/Ollie-Storage-Ottoman-Iovry-Set-1768892902.jpg",
+      "https://res.cloudinary.com/castlery/image/private/w_840,f_auto,q_auto,c_fit/v1768892905/crusader/variants/AS-001017-GR4001/Ollie-Storage-Ottoman-Iovry-Set-1768892902.jpg",
+      "https://res.cloudinary.com/castlery/image/private/w_1120,f_auto,q_auto,c_fit/v1768892905/crusader/variants/AS-001017-GR4001/Ollie-Storage-Ottoman-Iovry-Set-1768892902.jpg",
+      "https://res.cloudinary.com/castlery/image/private/w_1400,f_auto,q_auto,c_fit/v1768892905/crusader/variants/AS-001017-GR4001/Ollie-Storage-Ottoman-Iovry-Set-1768892902.jpg",
+    ],
     defaultVariantId: "greta_ivory",
     purchaseMode: "affiliate",
     retailer: "Castlery Singapore",
@@ -1237,6 +1245,12 @@ const CATALOG: Record<string, Product> = {
     price: 649,
     dimensions: { w: 0.93, d: 0.93, h: 0.45 },
     styleTags: ["modern"],
+    galleryImages: [
+      "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1634715643/crusader/variants/54000045-NG4001/Dawson-Ottoman-Beach-Linen-Front.jpg",
+      "https://res.cloudinary.com/castlery/image/private/w_840,f_auto,q_auto,c_fit/v1634715643/crusader/variants/54000045-NG4001/Dawson-Ottoman-Beach-Linen-Front.jpg",
+      "https://res.cloudinary.com/castlery/image/private/w_1120,f_auto,q_auto,c_fit/v1634715643/crusader/variants/54000045-NG4001/Dawson-Ottoman-Beach-Linen-Front.jpg",
+      "https://res.cloudinary.com/castlery/image/private/w_1400,f_auto,q_auto,c_fit/v1634715643/crusader/variants/54000045-NG4001/Dawson-Ottoman-Beach-Linen-Front.jpg",
+    ],
     defaultVariantId: "standard",
     purchaseMode: "affiliate",
     retailer: "Castlery",

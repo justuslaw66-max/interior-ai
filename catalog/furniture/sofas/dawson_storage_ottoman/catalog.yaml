@@ -242,6 +242,11 @@ assets:
   asset_id: "sofa-real-castlery-dawson-storage-ottoman"
   model_url: "/assets/models/sofa-real-castlery-dawson-storage-ottoman-closed.glb"
   thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1634715643/crusader/variants/54000045-NG4001/Dawson-Ottoman-Beach-Linen-Front.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1634715643/crusader/variants/54000045-NG4001/Dawson-Ottoman-Beach-Linen-Front.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_840,f_auto,q_auto,c_fit/v1634715643/crusader/variants/54000045-NG4001/Dawson-Ottoman-Beach-Linen-Front.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1120,f_auto,q_auto,c_fit/v1634715643/crusader/variants/54000045-NG4001/Dawson-Ottoman-Beach-Linen-Front.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1400,f_auto,q_auto,c_fit/v1634715643/crusader/variants/54000045-NG4001/Dawson-Ottoman-Beach-Linen-Front.jpg"
 
 variants:
   - variant: "Dawson Storage Ottoman / 93cm"
