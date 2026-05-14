@@ -24,7 +24,9 @@ const normalizeAppEnv = (raw: string | undefined): AppEnv => {
 };
 
 const appEnv = normalizeAppEnv(
-  process.env.APP_ENV || process.env.NEXT_PUBLIC_APP_ENV || process.env.VERCEL_ENV || process.env.NODE_ENV
+  // Do not treat Next.js' build-time NODE_ENV=production as a deploy signal.
+  // CI and preview builds should stay in development mode unless APP_ENV or VERCEL_ENV says otherwise.
+  process.env.APP_ENV || process.env.NEXT_PUBLIC_APP_ENV || process.env.VERCEL_ENV
 );
 
 const isDev = appEnv === "development";
