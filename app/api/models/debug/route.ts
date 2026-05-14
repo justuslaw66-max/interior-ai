@@ -12,7 +12,7 @@ export async function GET() {
 
     return NextResponse.json({
       total: assets.length,
-      models: assets.map(a => {
+      models: assets.map((a: (typeof assets)[number]) => {
         const yaml = catalogMap.get(a.id) ?? null;
         return {
           id: a.id,

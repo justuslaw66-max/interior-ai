@@ -10,7 +10,6 @@ import RevenueFunnelPanel from "@/components/admin/RevenueFunnelPanel";
 import { config } from "@/lib/config";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import type { Design, ShopifyOrder } from "@prisma/client";
 
 type WebhookFailureEvent = {
   id: string;
@@ -356,7 +355,7 @@ export default async function AdminOverviewPage({
         <div className="rounded-xl border p-4">
           <h2 className="text-lg font-semibold">Recent Designs</h2>
           <div className="mt-3 space-y-2 text-sm">
-            {recentDesigns.map((design: Design & { user: { email: string | null } | null }) => (
+            {recentDesigns.map((design: (typeof recentDesigns)[number]) => (
               <div key={design.id} className="flex items-center justify-between">
                 <div>
                   <div className="font-medium">{design.title}</div>
@@ -374,7 +373,7 @@ export default async function AdminOverviewPage({
         <div className="rounded-xl border p-4">
           <h2 className="text-lg font-semibold">Recent Orders (Shopify)</h2>
           <div className="mt-3 space-y-2 text-sm">
-            {recentOrders.map((order: ShopifyOrder) => (
+            {recentOrders.map((order: (typeof recentOrders)[number]) => (
               <div key={order.id} className="flex items-center justify-between">
                 <div>
                   <div className="font-medium">{order.orderRef}</div>
@@ -461,12 +460,12 @@ export default async function AdminOverviewPage({
                 </tr>
               </thead>
               <tbody>
-                {liveGateRejected.slice(0, 30).map((entry) => (
+                {liveGateRejected.slice(0, 30).map((entry: (typeof liveGateRejected)[number]) => (
                   <tr key={entry.id} className="border-b align-top">
                     <td className="px-2 py-2 font-medium">{entry.id}</td>
                     <td className="px-2 py-2">
                       <div className="flex flex-wrap gap-1">
-                        {entry.reasons.map((reason) => (
+                        {entry.reasons.map((reason: LiveGateReasonCode) => (
                           <span
                             key={`${entry.id}-${reason}`}
                             className="rounded border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[11px] text-amber-900"

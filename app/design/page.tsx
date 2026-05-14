@@ -816,11 +816,11 @@ function PageContent() {
     setShowMyDesigns(false);
   };
 
-  const trackFirstInteraction = () => {
+  const trackFirstInteraction = useCallback(() => {
     if (firstInteractionRef.current) return;
     track("editor_first_interaction", {
       design_id: designId ?? null,
-      items_count: items.length,
+      items_count: itemsRef.current.length,
       room_type: "living_room",
       mode,
       is_guest: !session?.user,
@@ -840,7 +840,7 @@ function PageContent() {
     }
 
     firstInteractionRef.current = true;
-  };
+  }, [designId, logFunnelEvent, mode, session?.user]);
 
   type PlacedItem = DesignItem;
 
@@ -3227,24 +3227,28 @@ function PageContent() {
     return `i-${Date.now()}-${instanceCounterRef.current}`;
   };
 
-  function getItemAABB(
-    item: PlacedItem,
-    positionOverride?: [number, number, number],
-    rotationOverride?: number
-  ) {
-    const product = CATALOG_ITEMS[item.productId];
-    if (!product) return null;
-    const configuredDims = resolveConfiguredPlanningDimsMm(item, product);
-    const rotationY = rotationOverride ?? item.rotationY ?? 0;
-    const [w, d] = getRotatedFootprint(
-      configuredDims.w / 1000,
-      configuredDims.d / 1000,
-      rotationY
-    );
-    const pos = positionOverride ?? item.position;
-    return computeAABB(pos, w, d);
-  }
+  const getItemAABB = useCallback(
+    (
+      item: PlacedItem,
+      positionOverride?: [number, number, number],
+      rotationOverride?: number
+    ) => {
+      const product = CATALOG_ITEMS[item.productId];
+      if (!product) return null;
+      const configuredDims = resolveConfiguredPlanningDimsMm(item, product);
+      const rotationY = rotationOverride ?? item.rotationY ?? 0;
+      const [w, d] = getRotatedFootprint(
+        configuredDims.w / 1000,
+        configuredDims.d / 1000,
+        rotationY
+      );
+      const pos = positionOverride ?? item.position;
+      return computeAABB(pos, w, d);
+    },
+    [resolveConfiguredPlanningDimsMm]
+  );
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   function getSelectionBounds(selected: PlacedItem[]) {
     let minX = Infinity;
     let maxX = -Infinity;
@@ -3764,6 +3768,7 @@ function PageContent() {
     commitItems((prev) => bulkSwapItems({ items: prev, style, direction }), actionName);
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const addItem = (
     productId: string,
     position: [number, number, number],
@@ -4659,7 +4664,8 @@ function PageContent() {
     },
     [
       commitItems,
-      evaluateConstraints,
+      getItemAABB,
+      getSelectionBounds,
       isDesigner,
       rotationSnapEnabled,
       rotationSnapStepRadians,

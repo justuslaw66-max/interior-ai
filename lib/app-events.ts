@@ -1,4 +1,3 @@
-import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 export type AppEventType =
@@ -37,7 +36,7 @@ export type AppEventPayload = {
 export async function logAppEvent(payload: AppEventPayload) {
   try {
     const metaValue = payload.meta
-      ? (JSON.parse(JSON.stringify(payload.meta)) as Prisma.InputJsonValue)
+      ? JSON.parse(JSON.stringify(payload.meta))
       : undefined;
 
     await prisma.appEvent.create({

@@ -826,7 +826,7 @@ export function GLBScaledModel({
     });
 
     return scene;
-  }, [loadedScene, width, height, depth, nodeTransforms, calibration, variantColorHex, upholsteryTextures, variantRenderAssets]);
+  }, [loadedScene, width, height, depth, nodeTransforms, calibration, variantColorHex, upholsteryTextures, variantRenderAssets, url, variantName]);
 
   if (!normalizedModel) return null;
 

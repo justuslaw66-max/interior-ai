@@ -33,7 +33,7 @@ export async function GET() {
     header.join(",") +
     "\n" +
     rows
-      .map((r) =>
+      .map((r: (typeof rows)[number]) =>
         [
           r.createdAt.toISOString(),
           r.productId,

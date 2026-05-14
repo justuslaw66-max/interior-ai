@@ -1,5 +1,4 @@
 import OpenAI from "openai";
-import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import crypto from "crypto";
@@ -32,8 +31,8 @@ function getErrorMessage(error: unknown): string {
   return String(error);
 }
 
-function toInputJson(value: unknown): Prisma.InputJsonValue {
-  return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
+function toInputJson(value: unknown) {
+  return JSON.parse(JSON.stringify(value));
 }
 
 // Lazy load prisma to avoid initialization issues

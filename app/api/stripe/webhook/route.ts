@@ -52,7 +52,7 @@ export async function POST(req: Request) {
         });
 
         await Promise.all(
-          users.map((user) =>
+          users.map((user: (typeof users)[number]) =>
             Promise.all([
               logAppEvent({
                 eventType: "upgrade_checkout_completed",
@@ -100,7 +100,7 @@ export async function POST(req: Request) {
         });
 
         await Promise.all(
-          users.map((user) =>
+          users.map((user: (typeof users)[number]) =>
             Promise.all([
               logAppEvent({
                 eventType: "subscription_canceled",

@@ -13,7 +13,7 @@ export default async function ModelsDebugPage() {
       </p>
 
       <div className="space-y-3 mb-8">
-        {assets.map((asset) => {
+        {assets.map((asset: (typeof assets)[number]) => {
           return (
             <div key={asset.id} className="border rounded p-4 bg-gray-50">
               <div className="flex justify-between items-start">
