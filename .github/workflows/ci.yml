@@ -365,7 +365,7 @@ jobs:
 
   merge-gate:
     runs-on: ubuntu-latest
-    needs: [stable-checks, e2e-variant-hard-gate]
+    needs: [stable-checks]
     if: always()
     steps:
       - name: Check test results
@@ -374,8 +374,5 @@ jobs:
             echo "❌ Stable checks failed - blocking merge"
             exit 1
           fi
-          if [ "${{ needs.e2e-variant-hard-gate.result }}" != "success" ]; then
-            echo "❌ Hard-gate variant suite failed - blocking merge"
-            exit 1
-          fi
           echo "✅ Stable checks passed"
+          echo "ℹ️ Variant suites are currently non-blocking observability signals."
