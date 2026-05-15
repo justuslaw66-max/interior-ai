@@ -82,8 +82,10 @@ jobs:
           CATALOG_REMOTE_RETRIES: "5"
           CATALOG_REMOTE_RETRY_BACKOFF_MS: "500"
           CATALOG_REMOTE_MAX_FAILURES: "3"
+          PLAYWRIGHT_WEB_SERVER_PORT: "3100"
+          PLAYWRIGHT_BASE_URL: http://localhost:3100
           NEXTAUTH_SECRET: test-secret
-          NEXTAUTH_URL: http://localhost:3000
+          NEXTAUTH_URL: http://localhost:3100
 
       - name: Start app server for route hardening checks
         run: npm run dev > /tmp/next-dev.log 2>&1 &
