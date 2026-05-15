@@ -110,6 +110,16 @@ async function isDatabaseReachable(): Promise<boolean> {
   }
 }
 
+function isLikelyDbConnectivityError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return (
+    message.includes("ECONNREFUSED") ||
+    message.includes("P1001") ||
+    message.includes("Can't reach database server") ||
+    message.includes("database system is starting up")
+  );
+}
+
 async function requestWithSession(
   request: { get: (url: string, opts?: { headers?: Record<string, string> }) => Promise<import("@playwright/test").APIResponse>; post: (url: string, opts?: { headers?: Record<string, string>; data?: unknown }) => Promise<import("@playwright/test").APIResponse> },
   method: "GET" | "POST",
@@ -190,7 +200,16 @@ test.describe("14. Phase A Revenue Smoke", () => {
     test.skip(!dbReachable, "Skipping DB-backed export smoke because database is unavailable");
 
     const prisma = getPrismaClient();
-    const { userId, sessionToken } = await createUserSession("free");
+    let userId: string;
+    let sessionToken: string;
+    try {
+      ({ userId, sessionToken } = await createUserSession("free"));
+    } catch (error) {
+      if (isLikelyDbConnectivityError(error)) {
+        test.skip(true, "Skipping DB-backed export smoke because DB seeding failed in this run");
+      }
+      throw error;
+    }
 
     try {
       const me = await requestWithSession(request, "GET", `${baseURL}/api/me`, sessionToken);
@@ -236,7 +255,16 @@ test.describe("14. Phase A Revenue Smoke", () => {
     test.skip(!dbReachable, "Skipping DB-backed export smoke because database is unavailable");
 
     const prisma = getPrismaClient();
-    const { userId, sessionToken } = await createUserSession("pro");
+    let userId: string;
+    let sessionToken: string;
+    try {
+      ({ userId, sessionToken } = await createUserSession("pro"));
+    } catch (error) {
+      if (isLikelyDbConnectivityError(error)) {
+        test.skip(true, "Skipping DB-backed export smoke because DB seeding failed in this run");
+      }
+      throw error;
+    }
 
     try {
       const me = await requestWithSession(request, "GET", `${baseURL}/api/me`, sessionToken);
@@ -285,12 +313,20 @@ test.describe("14. Phase A Revenue Smoke", () => {
     test.skip(!dbReachable, "Skipping DB-backed admin funnel smoke because database is unavailable");
 
     const prisma = getPrismaClient();
-    const user = await prismaWithRetry(() => prisma.user.create({
-      data: {
-        email: `phase-a-admin-${Date.now()}-${crypto.randomBytes(4).toString("hex")}@example.com`,
-        plan: "pro",
-      },
-    }));
+    let user: { id: string };
+    try {
+      user = await prismaWithRetry(() => prisma.user.create({
+        data: {
+          email: `phase-a-admin-${Date.now()}-${crypto.randomBytes(4).toString("hex")}@example.com`,
+          plan: "pro",
+        },
+      }));
+    } catch (error) {
+      if (isLikelyDbConnectivityError(error)) {
+        test.skip(true, "Skipping DB-backed admin funnel smoke because DB seeding failed in this run");
+      }
+      throw error;
+    }
 
     const sessionToken = `sess_${crypto.randomBytes(12).toString("hex")}`;
     await prismaWithRetry(() => prisma.session.create({
