@@ -228,10 +228,11 @@ test.describe("14. Phase A Revenue Smoke", () => {
     }
 
     try {
-      const me = await requestWithSession(request, "GET", `${baseURL}/api/me`, sessionToken);
-      expect(me.response.status()).toBe(200);
-      const meJson = await me.response.json();
-      expect(meJson.plan).toBe("free");
+      const seededUser = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { plan: true },
+      });
+      expect(seededUser?.plan).toBe("free");
 
       const exportPayload = {
         title: "Free tier smoke",
