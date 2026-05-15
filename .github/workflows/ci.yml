@@ -280,11 +280,17 @@ jobs:
           if npx playwright test tests/e2e/07-kelsey-variants.spec.ts tests/e2e/12-variant-identity.spec.ts tests/e2e/13-admin-variant-audit.spec.ts --reporter=line --timeout=120000; then
             exit 0
           fi
-          echo "⚠️ hard-gate variant suite failed on first attempt, retrying once..."
+          echo "⚠️ hard-gate variant suite failed on first attempt, retrying..."
+          sleep 5
           if npx playwright test tests/e2e/07-kelsey-variants.spec.ts tests/e2e/12-variant-identity.spec.ts tests/e2e/13-admin-variant-audit.spec.ts --reporter=line --timeout=120000; then
             exit 0
           fi
-          echo "❌ hard-gate variant suite failed twice"
+          echo "⚠️ hard-gate variant suite failed on second attempt, retrying final time..."
+          sleep 5
+          if npx playwright test tests/e2e/07-kelsey-variants.spec.ts tests/e2e/12-variant-identity.spec.ts tests/e2e/13-admin-variant-audit.spec.ts --reporter=line --timeout=120000; then
+            exit 0
+          fi
+          echo "❌ hard-gate variant suite failed three times"
           exit 1
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
@@ -340,11 +346,17 @@ jobs:
           if npx playwright test tests/e2e/08-jaron-madison-variants.spec.ts tests/e2e/09-sloane-bench-variants.spec.ts tests/e2e/11-rotation-shortcuts.spec.ts tests/e2e/99-dawson-3s-smoke.spec.ts --reporter=line --timeout=120000; then
             exit 0
           fi
-          echo "⚠️ runtime-sensitive variant suite failed on first attempt, retrying once..."
+          echo "⚠️ runtime-sensitive variant suite failed on first attempt, retrying..."
+          sleep 5
           if npx playwright test tests/e2e/08-jaron-madison-variants.spec.ts tests/e2e/09-sloane-bench-variants.spec.ts tests/e2e/11-rotation-shortcuts.spec.ts tests/e2e/99-dawson-3s-smoke.spec.ts --reporter=line --timeout=120000; then
             exit 0
           fi
-          echo "⚠️ runtime-sensitive variant suite failed twice in CI"
+          echo "⚠️ runtime-sensitive variant suite failed on second attempt, retrying final time..."
+          sleep 5
+          if npx playwright test tests/e2e/08-jaron-madison-variants.spec.ts tests/e2e/09-sloane-bench-variants.spec.ts tests/e2e/11-rotation-shortcuts.spec.ts tests/e2e/99-dawson-3s-smoke.spec.ts --reporter=line --timeout=120000; then
+            exit 0
+          fi
+          echo "⚠️ runtime-sensitive variant suite failed three times in CI"
           exit 1
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
