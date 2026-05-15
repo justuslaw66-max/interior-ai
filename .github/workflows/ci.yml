@@ -75,6 +75,7 @@ jobs:
           echo "⚠️ Follow-up required: investigate remote asset-check flake and re-enable hard failure."
           exit 0
         env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
           CATALOG_CHECK_REMOTE_ASSETS: "true"
           CATALOG_REMOTE_TIMEOUT_MS: "12000"
           CATALOG_REMOTE_RETRIES: "5"
