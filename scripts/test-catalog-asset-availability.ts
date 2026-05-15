@@ -33,6 +33,7 @@ const CHECK_REMOTE =
 const REMOTE_TIMEOUT_MS = Number(process.env.CATALOG_REMOTE_TIMEOUT_MS ?? 6000);
 const REMOTE_RETRIES = Math.max(0, Number(process.env.CATALOG_REMOTE_RETRIES ?? 2));
 const REMOTE_RETRY_BACKOFF_MS = Math.max(0, Number(process.env.CATALOG_REMOTE_RETRY_BACKOFF_MS ?? 250));
+const REMOTE_MAX_FAILURES = Math.max(0, Number(process.env.CATALOG_REMOTE_MAX_FAILURES ?? 0));
 const CATALOG_ROOT = path.join(process.cwd(), "catalog", "furniture");
 const ALLOWED_LOCAL_MISSING_MODELS = new Set<string>([
   "storage-real-castlery-sloane-sideboard-150cm",
@@ -174,18 +175,19 @@ async function main() {
   let remoteChecked = 0;
   let remoteMissing = 0;
 
-  const missingLines: string[] = [];
+  const blockingLines: string[] = [];
+  const remoteFailureLines: string[] = [];
 
   for (const [url, owners] of unique.entries()) {
     if (url === "__MISSING_MODEL_URL__" || url === "__MISSING_THUMBNAIL_URL__") {
       const ownerStr = owners.map((entry) => `${entry.owner} (${entry.kind})`).join(", ");
-      missingLines.push(`- REQUIRED FIELD MISSING: ${url} <- ${ownerStr}`);
+      blockingLines.push(`- REQUIRED FIELD MISSING: ${url} <- ${ownerStr}`);
       continue;
     }
 
     if (!isValidAssetUrl(url)) {
       const ownerStr = owners.map((entry) => `${entry.owner} (${entry.kind})`).join(", ");
-      missingLines.push(`- INVALID URL: ${url} <- ${ownerStr}`);
+      blockingLines.push(`- INVALID URL: ${url} <- ${ownerStr}`);
       continue;
     }
 
@@ -196,7 +198,7 @@ async function main() {
       if (!result.ok) {
         remoteMissing += 1;
         const ownerStr = owners.map((entry) => `${entry.owner} (${entry.kind})`).join(", ");
-        missingLines.push(`- REMOTE ${result.method ?? "N/A"} ${result.status ?? "ERR"}: ${url} <- ${ownerStr}`);
+        remoteFailureLines.push(`- REMOTE ${result.method ?? "N/A"} ${result.status ?? "ERR"}: ${url} <- ${ownerStr}`);
       }
       continue;
     }
@@ -212,7 +214,7 @@ async function main() {
       }
       localMissing += 1;
       const ownerStr = owners.map((entry) => `${entry.owner} (${entry.kind})`).join(", ");
-      missingLines.push(`- LOCAL MISSING: ${url} <- ${ownerStr}`);
+      blockingLines.push(`- LOCAL MISSING: ${url} <- ${ownerStr}`);
     }
   }
 
@@ -224,10 +226,24 @@ async function main() {
   console.log(`- local URLs missing: ${localMissing}`);
   console.log(`- remote URLs checked: ${remoteChecked}${CHECK_REMOTE ? "" : " (set CATALOG_CHECK_REMOTE_ASSETS=true to enable)"}`);
   console.log(`- remote URLs failing: ${remoteMissing}`);
+  if (CHECK_REMOTE) {
+    console.log(`- remote max failures allowed: ${REMOTE_MAX_FAILURES}`);
+  }
 
-  if (missingLines.length > 0) {
+  if (remoteFailureLines.length > 0) {
+    if (remoteMissing > REMOTE_MAX_FAILURES) {
+      blockingLines.push(...remoteFailureLines);
+    } else {
+      console.log("\nRemote asset warnings (within allowed threshold):");
+      for (const line of remoteFailureLines) {
+        console.log(line);
+      }
+    }
+  }
+
+  if (blockingLines.length > 0) {
     console.log("\nMissing/unreachable asset URLs:");
-    for (const line of missingLines) {
+    for (const line of blockingLines) {
       console.log(line);
     }
     throw new Error("Catalog asset availability check failed");

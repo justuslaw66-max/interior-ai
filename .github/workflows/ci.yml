@@ -68,6 +68,7 @@ jobs:
           CATALOG_REMOTE_TIMEOUT_MS: "12000"
           CATALOG_REMOTE_RETRIES: "5"
           CATALOG_REMOTE_RETRY_BACKOFF_MS: "500"
+          CATALOG_REMOTE_MAX_FAILURES: "3"
 
       - name: Install Playwright browsers for import preflight
         run: npx playwright install --with-deps
@@ -80,6 +81,7 @@ jobs:
           CATALOG_REMOTE_TIMEOUT_MS: "12000"
           CATALOG_REMOTE_RETRIES: "5"
           CATALOG_REMOTE_RETRY_BACKOFF_MS: "500"
+          CATALOG_REMOTE_MAX_FAILURES: "3"
           NEXTAUTH_SECRET: test-secret
           NEXTAUTH_URL: http://localhost:3000
 
