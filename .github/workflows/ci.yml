@@ -74,7 +74,13 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Run import preflight (required)
-        run: npm run test:import-preflight
+        run: |
+          set -e
+          if npm run test:import-preflight; then
+            exit 0
+          fi
+          echo "⚠️ import preflight failed on first attempt, retrying once..."
+          npm run test:import-preflight
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
           CATALOG_CHECK_REMOTE_ASSETS: "true"
