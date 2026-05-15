@@ -59,9 +59,15 @@ test.describe('7. Kelsey Marble Variant Integration', () => {
     // The debug route can briefly return non-200 while runtime services warm up in CI.
     const endpointReady = await expect
       .poll(async () => {
-        const response = await request.get('http://localhost:3000/api/models/debug');
-        return response.ok();
-      }, { timeout: 15000 })
+        try {
+          const response = await request.get('http://localhost:3000/api/models/debug');
+          if (!response.ok()) return false;
+          const body = (await response.json()) as { models?: unknown[] };
+          return Array.isArray(body.models) && body.models.length > 0;
+        } catch {
+          return false;
+        }
+      }, { timeout: 45000 })
       .toBeTruthy()
       .then(() => true)
       .catch(() => false);
