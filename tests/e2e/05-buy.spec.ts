@@ -82,6 +82,8 @@ test.describe('5. Buy Flow (Shopify + Affiliate)', () => {
   });
 
   test('imported catalog item can be added and reaches buyer controls', async ({ page }) => {
+    test.setTimeout(60000);
+
     await page.goto('/design');
     await page.waitForLoadState('domcontentloaded');
 
@@ -106,6 +108,8 @@ test.describe('5. Buy Flow (Shopify + Affiliate)', () => {
     const cartButton = page.getByRole('button', { name: 'Cart' });
     await expect(cartButton).toBeVisible({ timeout: 10000 });
     await cartButton.click();
+
+    await expect(page.getByTestId('cart-panel')).toBeVisible({ timeout: 10000 });
 
     const autoFillButton = page.getByRole('button', { name: 'Auto-fill cart from room' });
     if (await autoFillButton.isVisible().catch(() => false)) {

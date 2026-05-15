@@ -72,20 +72,6 @@ export async function POST(req: Request) {
     });
   }
 
-  if (!config.features.checkoutEnabled) {
-    return NextResponse.json({ error: "Checkout is disabled" }, { status: 503 });
-  }
-
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
-  const rl = rateLimit(`shopify:${ip}`, 8, 60_000);
-  if (!rl.ok) {
-    return NextResponse.json({ error: "Too many Shopify checkout requests" }, { status: 429 });
-  }
-
-  if (!domain || !token) {
-    return NextResponse.json({ error: "Shopify is not configured" }, { status: 503 });
-  }
-
   for (const line of parsedLines) {
     const item = CATALOG_ITEMS_MAP.get(line.productId);
     if (!item) {
@@ -173,6 +159,20 @@ export async function POST(req: Request) {
       }
     }
   `;
+
+  if (!config.features.checkoutEnabled) {
+    return NextResponse.json({ error: "Checkout is disabled" }, { status: 503 });
+  }
+
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
+  const rl = rateLimit(`shopify:${ip}`, 8, 60_000);
+  if (!rl.ok) {
+    return NextResponse.json({ error: "Too many Shopify checkout requests" }, { status: 429 });
+  }
+
+  if (!domain || !token) {
+    return NextResponse.json({ error: "Shopify is not configured" }, { status: 503 });
+  }
 
   const check = await shopifyFetch(availabilityQuery, { ids });
   const unavailable = (check?.nodes ?? [])
