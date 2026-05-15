@@ -289,6 +289,12 @@ export function normalizeImportedVariants({
     const variantThumbnailUrl = String(
       (entryAny.thumbnail_url as string | undefined) ?? (entryAny.thumbnailUrl as string | undefined) ?? ""
     ).trim();
+    const variantThumbLooksLocal = variantThumbnailUrl.startsWith("/assets/thumbs/");
+    const fallbackThumbLooksRemote = /^https?:\/\//i.test(fallbackThumbnailUrl);
+    const resolvedThumbnailUrl =
+      variantThumbLooksLocal && fallbackThumbLooksRemote
+        ? fallbackThumbnailUrl
+        : (variantThumbnailUrl || fallbackThumbnailUrl);
     const variantGalleryImages = [
       ...(((entryAny.gallery_images as string[] | undefined) ?? []).filter(
         (value): value is string => typeof value === "string" && value.trim().length > 0
@@ -345,7 +351,7 @@ export function normalizeImportedVariants({
               : undefined,
           }
         : undefined,
-      thumbnailUrl: variantThumbnailUrl || fallbackThumbnailUrl,
+      thumbnailUrl: resolvedThumbnailUrl,
       galleryImages: variantGalleryImages,
     } satisfies ProductVariant;
   });

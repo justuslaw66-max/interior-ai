@@ -84,7 +84,10 @@ const LEGACY_THUMB_URL_OVERRIDES: Record<string, string> = {
 
   // ========== IMPORTED CASTLERY DINING (Harvested from Castlery Website) ==========
   "dining-real-castlery-sloane-travertine-180": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1723776680/crusader/variants/AS-000564/Sloane-Travertine-Dining-Table-180cm-Angle-1723776679.png",
+  "dining-real-castlery-sloane-bench-150-no-cushion": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1678698540/crusader/variants/50520006/Sloane-Dining-Bench-150cm-Grey-Oak-No-Cushion-Angle-1678698538.png",
   "dining-real-castlery-sloane-bench-150-leather-cushion": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1678698648/crusader/variants/50520005/Sloane-Dining-Bench-150cm-Grey-Oak-With-Leather-Cushion-Angle-1678698646.png",
+  "dining-real-castlery-sloane-bench-180-no-cushion": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1668751133/crusader/variants/50520008/Sloane-Dining-Bench-180cm-Grey-Oak-No-Cushion-Angle-1668751131.png",
+  "dining-real-castlery-sloane-bench-180-leather-cushion": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1668751977/crusader/variants/50520007/Sloane-Dining-Bench-180cm-Grey-Oak-With-Leather-Cushion-Angle-1668751975.png",
 
   // ========== JARON ADDITIONAL VARIANTS ==========
   "sofa-real-castlery-jaron-leather-slim-arm": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1740989670/crusader/variants/AS-000644-LE4023/Jaron-Leather-Slim-Arm-Sofa-Performance-Marche-Cocoa-Angle-1740989669.png",
@@ -100,6 +103,7 @@ const LEGACY_THUMB_URL_OVERRIDES: Record<string, string> = {
   "sofa-real-castlery-dawson-3s": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1634716861/crusader/variants/T50440986-NG4001/Dawson-3-Seater-Sofa-Beach-Linen-Front.jpg",
   "sofa-real-castlery-dawson-extended-sofa": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1634717099/crusader/variants/T50440987-NG4001/Dawson-Extended-Sofa-Beach-Linen-Front.jpg",
   "sofa-real-castlery-dawson-ottoman": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1692451017/crusader/variants/54000132-NG4001/Dawson-Square-Ottoman-Front_-1692451014.jpg",
+  "sofa-real-castlery-dawson-storage-ottoman": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1634715643/crusader/variants/54000045-NG4001/Dawson-Ottoman-Beach-Linen-Front.jpg",
   "sofa-real-castlery-dawson-pit-sectional": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1709779174/crusader/variants/AS-000379-NG4001/Dawson-Pit-Sectional-Sofa-Front_1_-1709779171.jpg",
   "sofa-real-castlery-dawson-wide-chaise-sectional": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1724055040/crusader/variants/AS-000625-NG4001/Dawson-Wide-Chaise-Sectional-Sofa-Right-Facing-Bech-Linen-Front-1724055038.jpg",
   "sofa-real-castlery-dawson-wide-chaise-sectional-left": "/assets/thumbs/sofa-real-castlery-dawson-wide-chaise-sectional-left.png",
