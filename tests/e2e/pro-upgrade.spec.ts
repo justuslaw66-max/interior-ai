@@ -103,7 +103,8 @@ test.describe("Pro Upgrade Flow", () => {
       await expect(page.getByText("Walkways: Clear and accessible")).toBeVisible();
     } finally {
       if (designId) {
-        await prismaWithRetry(() => prisma.design.deleteMany({ where: { id: designId } }));
+        const cleanupId = designId;
+        await prismaWithRetry(() => prisma.design.deleteMany({ where: { id: cleanupId } }));
       }
       await prisma.$disconnect();
     }
