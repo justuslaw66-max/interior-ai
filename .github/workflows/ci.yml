@@ -209,6 +209,11 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
+      - name: Build app for E2E
+        run: npm run build
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
+
       - name: Run E2E tests
         run: npm run test:e2e
         env:
@@ -273,6 +278,11 @@ jobs:
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
+
+      - name: Build app for variant hard-gate E2E
+        run: npm run build
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
 
       - name: Run hard-gate variant suite
         run: |
@@ -339,6 +349,11 @@ jobs:
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
+
+      - name: Build app for variant observability E2E
+        run: npm run build
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
 
       - name: Run runtime-sensitive variant suite
         run: |
