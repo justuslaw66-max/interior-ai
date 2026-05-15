@@ -330,8 +330,8 @@ export async function POST(req: NextRequest) {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="${filename}"`,
         "Cache-Control": "no-cache, no-store, must-revalidate",
-        "X-Export-Tier": exportTier,
-        "X-Export-Watermark": exportTier === "free" ? "true" : "false",
+        "x-export-tier": exportTier,
+        "x-export-watermark": exportTier === "free" ? "true" : "false",
       },
     });
   } catch (err) {
