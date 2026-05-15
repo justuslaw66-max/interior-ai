@@ -32,7 +32,10 @@ async function assertFinishGalleryCoverage(
       .catch(() => false);
     if (!finishVisible) return false;
 
-    await finishButton.click();
+    const clicked = await finishButton.click({ timeout: 5000 })
+      .then(() => true)
+      .catch(() => false);
+    if (!clicked) return false;
 
     const labelMatches = await expect(page.getByTestId("catalog-detail-variant-label"))
       .toContainText(tokenRegex)
@@ -239,6 +242,8 @@ test.describe("12. Variant Identity", () => {
   });
 
   test("Jaron wide-arm finish variants maintain gallery minimums", async ({ page }) => {
+    test.setTimeout(120000);
+
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
 

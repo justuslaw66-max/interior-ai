@@ -127,6 +127,20 @@ async function requestWithSession(
   token: string,
   data?: unknown
 ) {
+  const forcedCookieHeader = cookieCandidates
+    .map((cookieName) => `${cookieName}=${token}`)
+    .join("; ");
+
+  const forcedHeaders = { Cookie: forcedCookieHeader };
+  const forcedResponse =
+    method === "GET"
+      ? await request.get(url, { headers: forcedHeaders })
+      : await request.post(url, { headers: forcedHeaders, data });
+
+  if (forcedResponse.status() !== 401) {
+    return { response: forcedResponse, cookieName: "all" };
+  }
+
   for (const cookieName of cookieCandidates) {
     const headers = { Cookie: `${cookieName}=${token}` };
     const response =
@@ -139,11 +153,13 @@ async function requestWithSession(
     }
   }
 
+  // Avoid falling back to ambient request-context cookies, which can mask auth bugs
+  // by authenticating as a different pre-existing test user.
   const response =
     method === "GET"
-      ? await request.get(url)
-      : await request.post(url, { data });
-  return { response, cookieName: "none" };
+      ? await request.get(url, { headers: { Cookie: `authjs.session-token=${token}` } })
+      : await request.post(url, { headers: { Cookie: `authjs.session-token=${token}` }, data });
+  return { response, cookieName: "explicit-authjs" };
 }
 
 async function gotoWithRetry(
