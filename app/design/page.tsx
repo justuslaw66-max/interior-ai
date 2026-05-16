@@ -38,7 +38,9 @@ import {
   type OnboardingState,
 } from "@/lib/onboarding";
 import { applyAISuggestionAction, type AISuggestionAction } from "@/lib/ai/applySuggestion";
-import { computeAABB } from "@/lib/snapGuides";
+import {
+  computeAABB,
+} from "@/lib/snapGuides";
 import {
   saveGuestDesign,
   loadGuestDesigns,
@@ -64,6 +66,8 @@ import {
   type ImportedModelOption,
   upsertImportedCatalogItem,
 } from "@/lib/catalog/imported-model-assembly";
+import {
+} from "@/lib/catalog/variant-normalization";
 import { mapToTopCategory } from "@/lib/catalog/view-builders";
 import {
   formatMoney,
@@ -2740,6 +2744,54 @@ function PageContent() {
     }
   }, [editorMode]);
 
+  const getItemAABB = useCallback(
+    (
+      item: PlacedItem,
+      positionOverride?: [number, number, number],
+      rotationOverride?: number
+    ) => {
+      const product = CATALOG_ITEMS[item.productId];
+      if (!product) return null;
+      const configuredDims = resolveConfiguredPlanningDimsMm(item, product);
+      const rotationY = rotationOverride ?? item.rotationY ?? 0;
+      const [w, d] = getRotatedFootprint(
+        configuredDims.w / 1000,
+        configuredDims.d / 1000,
+        rotationY
+      );
+      const pos = positionOverride ?? item.position;
+      return computeAABB(pos, w, d);
+    },
+    [resolveConfiguredPlanningDimsMm]
+  );
+
+  const getSelectionBounds = useCallback(
+    (selected: PlacedItem[]) => {
+      let minX = Infinity;
+      let maxX = -Infinity;
+      let minZ = Infinity;
+      let maxZ = -Infinity;
+      for (const item of selected) {
+        const aabb = getItemAABB(item);
+        if (!aabb) continue;
+        minX = Math.min(minX, aabb.minX);
+        maxX = Math.max(maxX, aabb.maxX);
+        minZ = Math.min(minZ, aabb.minZ);
+        maxZ = Math.max(maxZ, aabb.maxZ);
+      }
+      if (!Number.isFinite(minX)) return null;
+      return {
+        minX,
+        maxX,
+        minZ,
+        maxZ,
+        centerX: (minX + maxX) / 2,
+        centerZ: (minZ + maxZ) / 2,
+      };
+    },
+    [getItemAABB]
+  );
+
   const alignSelectionX = useCallback(() => {
     const nextItems = _buildAlignedSelectionItems({
       axis: "x",
@@ -3219,59 +3271,13 @@ function PageContent() {
   ];
 
   const instanceCounterRef = useRef(0);
-  const newInstanceId = () => {
+  const newInstanceId = useCallback(() => {
     instanceCounterRef.current += 1;
     if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
       return `i-${crypto.randomUUID()}`;
     }
     return `i-${Date.now()}-${instanceCounterRef.current}`;
-  };
-
-  const getItemAABB = useCallback(
-    (
-      item: PlacedItem,
-      positionOverride?: [number, number, number],
-      rotationOverride?: number
-    ) => {
-      const product = CATALOG_ITEMS[item.productId];
-      if (!product) return null;
-      const configuredDims = resolveConfiguredPlanningDimsMm(item, product);
-      const rotationY = rotationOverride ?? item.rotationY ?? 0;
-      const [w, d] = getRotatedFootprint(
-        configuredDims.w / 1000,
-        configuredDims.d / 1000,
-        rotationY
-      );
-      const pos = positionOverride ?? item.position;
-      return computeAABB(pos, w, d);
-    },
-    [resolveConfiguredPlanningDimsMm]
-  );
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  function getSelectionBounds(selected: PlacedItem[]) {
-    let minX = Infinity;
-    let maxX = -Infinity;
-    let minZ = Infinity;
-    let maxZ = -Infinity;
-    for (const item of selected) {
-      const aabb = getItemAABB(item);
-      if (!aabb) continue;
-      minX = Math.min(minX, aabb.minX);
-      maxX = Math.max(maxX, aabb.maxX);
-      minZ = Math.min(minZ, aabb.minZ);
-      maxZ = Math.max(maxZ, aabb.maxZ);
-    }
-    if (!Number.isFinite(minX)) return null;
-    return {
-      minX,
-      maxX,
-      minZ,
-      maxZ,
-      centerX: (minX + maxX) / 2,
-      centerZ: (minZ + maxZ) / 2,
-    };
-  }
+  }, []);
 
   const resizeRugToSofaRule = (sofaItem: PlacedItem) => {
     const sofaProduct = CATALOG_ITEMS[sofaItem.productId];
@@ -3768,8 +3774,7 @@ function PageContent() {
     commitItems((prev) => bulkSwapItems({ items: prev, style, direction }), actionName);
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const addItem = (
+  const addItem = useCallback((
     productId: string,
     position: [number, number, number],
     rotationY?: number,
@@ -3806,7 +3811,7 @@ function PageContent() {
       `Add ${product.title || "Item"}`
     );
     updateSelection(new Set([instanceId]), instanceId);
-  };
+  }, [commitItems, newInstanceId, roomDepth, roomWidth, updateSelection, wallThickness]);
 
   const addCatalogItemToRoom = useCallback((productId: string, variantId?: string) => {
     const itemCount = itemsRef.current.length;
