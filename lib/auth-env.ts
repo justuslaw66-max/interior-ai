@@ -117,7 +117,13 @@ function readAndSanitizeAuthSecretEnv(): string {
 
 function validateAuthShapeOrThrow(authEnv: AuthEnv): void {
   if (authEnv.authSecret.length < 16) {
-    throw new Error("[auth] AUTH_SECRET must be at least 16 characters");
+    if (isGitHubActionsCiBuild()) {
+      console.warn(
+        "[auth] AUTH_SECRET/NEXTAUTH_SECRET is shorter than 16 chars in GitHub Actions CI; allowing build-only usage"
+      );
+    } else {
+      throw new Error("[auth] AUTH_SECRET must be at least 16 characters");
+    }
   }
 
   if (!GOOGLE_CLIENT_ID_PATTERN.test(authEnv.googleClientId)) {

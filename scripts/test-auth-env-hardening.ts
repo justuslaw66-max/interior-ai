@@ -246,6 +246,21 @@ function run(): void {
     }
   );
 
+  withEnv(
+    {
+      AUTH_SECRET: undefined,
+      NEXTAUTH_SECRET: "test-secret",
+      GOOGLE_CLIENT_ID: undefined,
+      GOOGLE_CLIENT_SECRET: undefined,
+      CI: "true",
+      GITHUB_ACTIONS: "true",
+    },
+    () => {
+      const ciShortSecret = getAuthEnvOrThrow();
+      assert(ciShortSecret.authSecret === "test-secret", "Expected CI short secret to be accepted");
+    }
+  );
+
   console.log("Auth env hardening tests passed");
 }
 
