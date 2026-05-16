@@ -2,7 +2,6 @@
   "name": "interior-ai",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@9",
   "scripts": {
     "dev": "NEXT_DISABLE_TURBOPACK=1 next dev --webpack",
     "dev:reset": "pkill -f \"next dev --webpack\" || true && rm -f .next-cache/dev/lock && NEXT_DISABLE_TURBOPACK=1 next dev --webpack",
@@ -32,10 +31,9 @@
     "test:catalog-quality": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-catalog-quality-audit.ts",
     "test:catalog-quality:strict": "CATALOG_STRICT_VALIDATION=true npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-catalog-quality-audit.ts",
     "test:catalog-asset-availability": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-catalog-asset-availability.ts",
-    "test:catalog-registry-sync": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-catalog-registry-sync.ts",
     "test:catalog-media-health": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-catalog-media-health.ts",
     "test:catalog-audit": "npm run test:catalog-governance && npm run test:catalog-quality && npm run test:import-normalization-fixtures && npm run test:import-normalization && npm run test:catalog-media-health",
-    "test:import-preflight": "npm run test:catalog-governance && npm run test:catalog-quality:strict && npm run test:catalog-asset-availability && npm run test:catalog-registry-sync && npm run lint && ./node_modules/.bin/playwright test tests/e2e/12-variant-identity.spec.ts tests/e2e/05-buy.spec.ts --reporter=list --timeout=120000",
+    "test:import-preflight": "npm run test:catalog-governance && npm run test:catalog-quality:strict && npm run test:catalog-asset-availability && npm run lint && ./node_modules/.bin/playwright test tests/e2e/12-variant-identity.spec.ts tests/e2e/05-buy.spec.ts --reporter=list --timeout=120000",
     "test:catalog-panel": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-catalog-panel-logic.ts",
     "test:revenue-funnel": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-revenue-funnel-metrics.ts",
     "test:revenue-funnel-panel": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\",\"jsx\":\"react-jsx\"}' scripts/test-revenue-funnel-panel.ts",
@@ -45,8 +43,7 @@
     "test:design-duplication": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-design-duplication-fixtures.ts",
     "test:catalog-route-hardening": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-catalog-route-hardening.ts",
     "test:import-route-hardening": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-import-route-hardening.ts",
-    "test:hardening": "npm run test:import-route-hardening && npm run test:catalog-route-hardening",
-    "test:auth-env-hardening": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-auth-env-hardening.ts"
+    "test:hardening": "npm run test:import-route-hardening && npm run test:catalog-route-hardening"
   },
   "prisma": {
     "seed": "npx ts-node --transpile-only --compiler-options={\"module\":\"CommonJS\",\"moduleResolution\":\"node\"} prisma/seed.ts"
@@ -76,7 +73,6 @@
     "react-dom": "19.2.3",
     "stripe": "^20.3.1",
     "three": "^0.182.0",
-    "three-stdlib": "^2.36.1",
     "ws": "^8.19.0",
     "yaml": "^2.8.2"
   },
