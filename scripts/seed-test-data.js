@@ -3,12 +3,11 @@
  * Usage: node scripts/seed-test-data.js
  */
 
-require("dotenv").config();
-const { PrismaClient } = require("@prisma/client");
-
-const prisma = new PrismaClient();
-
 async function seedTestData() {
+  await import("dotenv/config");
+  const { PrismaClient } = await import("@prisma/client");
+  const prisma = new PrismaClient();
+
   try {
     console.log("🌱 Seeding test catalog data...\n");
 
@@ -110,7 +109,8 @@ async function seedTestData() {
     console.log(`  • CommerceMapping: shopify\n`);
 
   } catch (error) {
-    console.error("❌ Error seeding data:", error.message);
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("❌ Error seeding data:", message);
     process.exit(1);
   } finally {
     await prisma.$disconnect();

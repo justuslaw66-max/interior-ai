@@ -3,6 +3,17 @@ import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
+type ClaimDesignSnapshot = {
+  title?: string;
+  roomWidth?: number;
+  roomDepth?: number;
+  items?: unknown[];
+  style?: string;
+  budget?: string;
+  mode?: string;
+  notes?: string;
+};
+
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
   const {
@@ -25,7 +36,7 @@ export async function POST(req: Request) {
     budget,
     mode,
     notes,
-  } = designSnapshot ?? {};
+  } = (designSnapshot ?? {}) as ClaimDesignSnapshot;
 
   if (
     typeof roomWidth !== "number" ||
@@ -48,7 +59,7 @@ export async function POST(req: Request) {
       notes: typeof notes === "string" ? notes : null,
       shareEnabled: false,
       shareToken: null,
-    } as any,
+    },
     select: { id: true },
   });
 

@@ -10,7 +10,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { isAdminEmail } from "@/lib/admin";
 
-export async function GET(request: Request) {
+export async function GET(_request: Request) {
   try {
     const session = await auth();
     if (!session?.user?.email || !isAdminEmail(session.user.email)) {

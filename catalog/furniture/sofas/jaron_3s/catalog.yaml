@@ -1,0 +1,143 @@
+brand: "Castlery"
+category: "sofa"
+
+product_family: "Jaron"
+product_name: "Jaron Recliner Sofa"
+variant: "3-Seater Slim Arm"
+
+price_usd: 2599
+price_band: "premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "sofa_anchor"
+
+dimensions:
+  width_cm: 230
+  depth_cm: 115
+  height_cm: 77
+
+seat_capacity: 3
+size_class: "large"
+shape: "rectangular"
+base_type: "frame"
+
+material_family: "upholstered"
+material_mix: "upholstered_metal"
+
+color_family: "brown"
+tone: "warm"
+
+style_cluster: "contemporary"
+style_secondary: "modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "rounded"
+  silhouette: "linear"
+  form_language: "soft"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  walkway_clearance_cm: 90
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: true
+  clearance_sensitive: true
+  center_room_preferred: false
+
+design_pairings:
+  - "coffee_table"
+  - "side_table"
+  - "floor_lamp"
+  - "area_rug"
+
+upholstery_options:
+upholstery_library_ref: "jaron"
+
+assets:
+  asset_id: "sofa-real-castlery-jaron-3s"
+  model_url: "/assets/models/sofa-real-castlery-jaron-3s.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737527905/crusader/variants/AS-000658-LE4023/Jaron-Leather-3-Seater-Dual-Recliner-Slim-Arm-Sofa-Marche-Cocoa_-Front-1737527903.jpg"
+
+variants:
+  - variant: "Jaron 3 Seater Slim Arm / Marche Cocoa (Leather)"
+    size_label: "230x115"
+    upholstery_code: "marche_cocoa"
+    upholstery_label: "Marche Leather, Cocoa"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737527905/crusader/variants/AS-000658-LE4023/Jaron-Leather-3-Seater-Dual-Recliner-Slim-Arm-Sofa-Marche-Cocoa_-Front-1737527903.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737527905/crusader/variants/AS-000658-LE4023/Jaron-Leather-3-Seater-Dual-Recliner-Slim-Arm-Sofa-Marche-Cocoa_-Front-1737527903.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737527905/crusader/variants/AS-000658-LE4023/Jaron-Leather-3-Seater-Dual-Recliner-Slim-Arm-Sofa-Marche-Cocoa_-Angle-1737527902.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737527904/crusader/variants/AS-000658-LE4023/Jaron-Leather-3-Seater-Dual-Recliner-Slim-Arm-Sofa-Marche-Cocoa_-Side-1737527902.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737527905/crusader/variants/AS-000658-LE4023/Jaron-Leather-3-Seater-Dual-Recliner-Slim-Arm-Sofa-Marche-Cocoa_-Back-1737527903.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1741673577/crusader/variants/AS-000658-LE4023/Jaron-Leather-3-Seater-Dual-Recliner-Slim-Arm-Sofa-With-Slim-Arm-Recliner-Armchair-Marche-Cocoa_-Square-Set_3_3-1741673574.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1741936674/crusader/variants/AS-000658-LE4023/Jaron-3-Seater-Dual-Recliner-Slim-Arm-Sofa-Marche-Cocoa_Cover-1741936672.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1737527436/crusader/variants/AS-000658-LE4023/Jaron-Leather-3-Seater-Single-Recliner-Slim-Arm-Sofa-Marche-Cocoa_-Det_2-1737527434.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2599
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 230, depth_cm: 115, height_cm: 77 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "brown"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Jaron 3 Seater Slim Arm / Marche Ivory (Leather)"
+    size_label: "230x115"
+    upholstery_code: "marche_ivory"
+    upholstery_label: "Marche Leather, Ivory"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760151241/crusader/variants/AS-000666-LE4021/Jaron-Leather-3-Seater-Dual-Recliner-Slim-Arm-Sofa-Marche-Ivory-Front_-1760151241.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760151241/crusader/variants/AS-000666-LE4021/Jaron-Leather-3-Seater-Dual-Recliner-Slim-Arm-Sofa-Marche-Ivory-Front_-1760151241.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760151241/crusader/variants/AS-000666-LE4021/Jaron-Leather-3-Seater-Dual-Recliner-Slim-Arm-Sofa-Marche-Ivory-Angle_-1760151241.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760151241/crusader/variants/AS-000666-LE4021/Jaron-Leather-3-Seater-Dual-Recliner-Slim-Arm-Sofa-Marche-Ivory-Side_-1760151241.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760151570/crusader/variants/AS-000666-LE4021/Jaron-Leather-3-Seater-Dual-Recliner-Slim-Arm-Sofa-Marche-Ivory-Square-Set_1-1760151570.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760151570/crusader/variants/AS-000666-LE4021/Jaron-Leather-3-Seater-Dual-Recliner-Slim-Arm-Sofa-Marche-Ivory-Square-Set_2-1760151570.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2599
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 230, depth_cm: 115, height_cm: 77 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "white"
+    tone: "neutral"
+    set_compatibility: []
+
+  - variant: "Jaron 3 Seater Slim Arm / Performance Arvo Dune (Fabric)"
+    size_label: "230x115"
+    upholstery_code: "performance_arvo_dune"
+    upholstery_label: "Performance Arvo Dune"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737527192/crusader/variants/AS-000658-AR4001/Jaron-3-Seater-Dual-Recliner-Slim-Arm-Sofa-Performance-Arvo-Dune-Front-1737527190.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737527192/crusader/variants/AS-000658-AR4001/Jaron-3-Seater-Dual-Recliner-Slim-Arm-Sofa-Performance-Arvo-Dune-Front-1737527190.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737527192/crusader/variants/AS-000658-AR4001/Jaron-3-Seater-Dual-Recliner-Slim-Arm-Sofa-Performance-Arvo-Dune-Angle_1-1737527189.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737527192/crusader/variants/AS-000658-AR4001/Jaron-3-Seater-Dual-Recliner-Slim-Arm-Sofa-Performance-Arvo-Dune-Side-1737527189.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737527192/crusader/variants/AS-000658-AR4001/Jaron-3-Seater-Dual-Recliner-Slim-Arm-Sofa-Performance-Arvo-Dune-Back-1737527190.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1742205936/crusader/variants/AS-000666-AR4001/Jaron-3-Seater-Dual-Recliner-Slim-Arm-Sofa-Performance-Arvo-Dune-Square-Set_3-1742205935.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1742435375/crusader/variants/AS-000658-AR4001/Jaron-3-Seater-Dual-Recliner-Slim-Arm-Sofa-Performance-Arvo-Dune-_Cover-1742435373.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1742205936/crusader/variants/AS-000666-AR4001/Jaron-3-Seater-Dual-Recliner-Slim-Arm-Sofa-Performance-Arvo-Dune-Square-Set_1-1742205935.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2499
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 230, depth_cm: 115, height_cm: 77 }
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "beige"
+    tone: "neutral"
+    set_compatibility: []
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true

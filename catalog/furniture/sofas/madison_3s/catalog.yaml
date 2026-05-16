@@ -1,0 +1,198 @@
+brand: "Castlery"
+category: "sofa"
+
+product_family: "Madison"
+product_name: "Madison Sofa"
+variant: "3-Seater"
+
+price_usd: 1599
+price_band: "mid_premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "sofa_anchor"
+
+dimensions:
+  width_cm: 204
+  depth_cm: 96.5
+  height_cm: 86.5
+
+seat_capacity: 3
+size_class: "large"
+shape: "rectangular"
+base_type: "frame"
+
+material_family: "upholstered"
+material_mix: "upholstered_wood"
+
+color_family: "beige"
+tone: "neutral"
+
+style_cluster: "contemporary"
+style_secondary: "modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "rounded"
+  silhouette: "linear"
+  form_language: "soft"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  walkway_clearance_cm: 90
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: true
+  clearance_sensitive: true
+  center_room_preferred: false
+
+design_pairings:
+  - "coffee_table"
+  - "side_table"
+  - "table_lamp"
+  - "area_rug"
+
+assets:
+  asset_id: "sofa-real-castlery-madison-3s"
+  model_url: "/assets/models/sofa-real-castlery-madison-3s.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1646386187/crusader/variants/50440750-AM4001/Madison-3-Seater-Sofa-Bisque-Front-SG.png"
+
+variants:
+  - variant: "Bisque (Fabric)"
+    finish_code: "bisque_fabric"
+    finish_label: "Bisque"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1646386187/crusader/variants/50440750-AM4001/Madison-3-Seater-Sofa-Bisque-Front-SG.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1646386187/crusader/variants/50440750-AM4001/Madison-3-Seater-Sofa-Bisque-Front-SG.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1645670813/crusader/variants/50440728-AM4001/Madison-3-Seater-Sofa-Bisque-Square-Set_5.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1645688196/crusader/variants/50440728-AM4001/Madison-Sofa-Collection-Bisque-Square-Set_1.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1646386187/crusader/variants/50440750-AM4001/Madison-3-Seater-Sofa-Bisque-Angle-SG.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1645670446/crusader/variants/50440728-AM4001/Madison-3-Seater-Sofa-Bisque-Side.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1743557693/crusader/variants/50440750-AM4001/Madison-3-Seater-Sofa-Bisque-Back-SG-1743557690.jpg"
+    swatch_group: "upholstery"
+    price_usd: 1599
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 204
+      depth_cm: 96.5
+      height_cm: 86.5
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "beige"
+    tone: "neutral"
+    materials:
+      upholstery:
+        structure: "fabric"
+        surface: "woven_fabric"
+    finish:
+      color_finish: "bisque"
+      surface_finish: "matte"
+      finish_color: "bisque_fabric"
+
+  - variant: "Stone (Fabric)"
+    finish_code: "stone_fabric"
+    finish_label: "Stone"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1625218999/crusader/variants/50440750-TW4002/Madison-3-Seater-Sofa-Stone-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1625218999/crusader/variants/50440750-TW4002/Madison-3-Seater-Sofa-Stone-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1625417380/crusader/variants/50440750-TW4002/Madison-3-Seater-Sofa-Stone-Lifestyle-Crop.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1625218970/crusader/variants/50440750-TW4002/Madison-3-Seater-Sofa-Stone-Angle.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1625219005/crusader/variants/50440750-TW4002/Madison-3-Seater-Sofa-Stone-Side.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1625218985/crusader/variants/50440750-TW4002/Madison-3-Seater-Sofa-Stone-Back.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1625417364/crusader/variants/50440750-TW4002/Madison-3-Seater-Sofa-Stone-D9.jpg"
+    swatch_group: "upholstery"
+    price_usd: 1599
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 204
+      depth_cm: 96.5
+      height_cm: 86.5
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "grey"
+    tone: "neutral"
+    materials:
+      upholstery:
+        structure: "fabric"
+        surface: "woven_fabric"
+    finish:
+      color_finish: "stone"
+      surface_finish: "matte"
+      finish_color: "stone_fabric"
+
+  - variant: "Camille, Forest (Fabric)"
+    finish_code: "camille_forest_fabric"
+    finish_label: "Camille, Forest"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1757405355/crusader/variants/50440728-CM4001/Madison-3-Seater-Sofa-Forest-Front-1757405355.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1757405355/crusader/variants/50440728-CM4001/Madison-3-Seater-Sofa-Forest-Front-1757405355.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1760166302/crusader/variants/50440728-CM4001/Madison-3-Seater-Sofa-With-Armchair-Forest-Square-Set_1-1760166302.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1760166303/crusader/variants/50440728-CM4001/Madison-3-Seater-Sofa-Forest-Square-Set_2-1760166303.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1760166303/crusader/variants/50440728-CM4001/Madison-3-Seater-Sofa-With-Ottoman-Forest-Square-Set_1-1760166303.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1757405355/crusader/variants/50440728-CM4001/Madison-3-Seater-Sofa-Forest-Angle-1757405355.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1757405354/crusader/variants/50440728-CM4001/Madison-3-Seater-Sofa-Forest-Side-1757405354.jpg"
+    swatch_group: "upholstery"
+    price_usd: 1649
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 204
+      depth_cm: 96.5
+      height_cm: 86.5
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "green"
+    tone: "cool"
+    materials:
+      upholstery:
+        structure: "fabric"
+        surface: "woven_fabric"
+    finish:
+      color_finish: "camille_forest"
+      surface_finish: "matte"
+      finish_color: "camille_forest_fabric"
+
+  - variant: "Caramel (Leather)"
+    finish_code: "caramel_leather"
+    finish_label: "Caramel"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1631157536/crusader/variants/50440750-LE4016/Madison-3-Seater-Sofa-Caramel-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1631157536/crusader/variants/50440750-LE4016/Madison-3-Seater-Sofa-Caramel-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1631157511/crusader/variants/50440750-LE4016/Madison-Leather-3-Seater-Sofa-Caramel-Lifestyle-Crop.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1631157610/crusader/variants/50440750-LE4016/Madison-3-Seater-Sofa-Caramel-Square-Set_4.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1631157809/crusader/variants/50440750-LE4016/Madison-3-Seater-Sofa-Caramel-Angle.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1631157921/crusader/variants/50440750-LE4016/Madison-3-Seater-Sofa-Caramel-Side.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1631157930/crusader/variants/50440750-LE4016/Madison-3-Seater-Sofa-Caramel-Back.jpg"
+    swatch_group: "upholstery"
+    price_usd: 1799
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 204
+      depth_cm: 96.5
+      height_cm: 86.5
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "brown"
+    tone: "warm"
+    materials:
+      upholstery:
+        structure: "leather"
+        surface: "top_grain_leather"
+    finish:
+      color_finish: "caramel"
+      surface_finish: "satin"
+      finish_color: "caramel_leather"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true

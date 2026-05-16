@@ -6,7 +6,7 @@
  */
 
 import type { DesignSnapshot, RoomSnapshot, SavedView } from "./room-types";
-import { getActiveRoom, migrateToV3 } from "./room-types";
+import { migrateToV3 } from "./room-types";
 
 export interface PresentModeState {
   currentRoomId: string;

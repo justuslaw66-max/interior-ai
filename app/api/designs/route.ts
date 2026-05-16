@@ -6,7 +6,7 @@ import { config } from "@/lib/config";
 
 export const runtime = "nodejs";
 
-export async function GET(req: Request) {
+export async function GET(_req: Request) {
   try {
     const session = await auth();
 

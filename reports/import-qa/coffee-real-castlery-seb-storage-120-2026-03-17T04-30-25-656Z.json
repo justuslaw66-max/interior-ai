@@ -1,0 +1,49 @@
+{
+  "timestamp": "2026-03-17T04:30:24.912Z",
+  "assetId": "coffee-real-castlery-seb-storage-120",
+  "srcGlbPath": "/var/folders/bd/j_k8zbwx07902cg6w98lw6lc0000gp/T/import-pipeline-coffee-real-castlery-seb-storage-120-Fp2oMP/normalized.glb",
+  "limits": {
+    "maxFileSizeBytes": 20971520,
+    "maxTriangles": 120000,
+    "maxTextureCount": 8,
+    "maxTextureResolution": 2048,
+    "minAabbAxisMeters": 0.05,
+    "maxAabbAxisMeters": 8
+  },
+  "stats": {
+    "materialCount": 1,
+    "triangleCount": 49960,
+    "textureCount": 3,
+    "maxTextureResolution": 1024,
+    "hasBaseColorTexture": true
+  },
+  "checks": [
+    {
+      "severity": "warning",
+      "code": "SINGLE_MATERIAL",
+      "message": "Single material detected. Selective upholstery/wood controls may not work as expected.",
+      "details": "Split materials in Blender (e.g., Fabric vs OakLegs) before export."
+    },
+    {
+      "severity": "warning",
+      "code": "PIPELINE_NORMALIZE_FALLBACK",
+      "message": "Input already GLB; copied as normalized baseline."
+    },
+    {
+      "severity": "warning",
+      "code": "QUALITY_SINGLE_MATERIAL",
+      "message": "Single material detected; finish customization may be limited."
+    },
+    {
+      "severity": "warning",
+      "code": "THUMBNAIL_AUTOGEN_DISABLED",
+      "message": "Thumbnail generation disabled; placeholder image generated."
+    }
+  ],
+  "errorCount": 0,
+  "warningCount": 4,
+  "status": "passed",
+  "imported": true,
+  "modelUrl": "/assets/models/coffee-real-castlery-seb-storage-120.glb",
+  "thumbUrl": "/assets/thumbs/coffee-real-castlery-seb-storage-120.png"
+}

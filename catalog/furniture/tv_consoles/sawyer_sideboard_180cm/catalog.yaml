@@ -1,0 +1,169 @@
+brand: "Castlery"
+category: "sideboard"
+subcategory: "sideboard"
+
+product_family: "Sawyer"
+product_name: "Sawyer Sideboard"
+slug: "sawyer-sideboard-180cm"
+variant: "180cm / Natural"
+
+price_usd: 969
+price_band: "mid_premium"
+brand_tier: "premium_mid"
+
+design_zone: "dining_zone"
+anchor_role: "storage_anchor"
+
+dimensions:
+  width_cm: 180
+  depth_cm: 45
+  height_cm: 76
+
+size_class: "large"
+shape: "rectangular"
+base_type: "four_leg"
+
+material_family: "wood"
+material_mix: "solid_oak_oak_veneer_birch"
+materials:
+  frame:
+    structure: "solid_wood"
+    wood_species: "oak"
+  body:
+    structure: "engineered_wood"
+    surface: "oak_veneer"
+  doors:
+    structure: "solid_wood"
+    wood_species: "oak"
+  legs:
+    structure: "solid_wood"
+    wood_species: "birch"
+finish:
+  color_finish: "natural"
+  protective_coating: "lacquer"
+  surface_finish: "wire_brushed"
+  finish_color: "natural"
+
+color_family: "brown"
+tone: "warm"
+
+style_cluster: "modern"
+style_secondary: "minimalist"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "rounded_frame"
+  silhouette: "linear_storage_console"
+  form_language: "clean"
+  descriptors:
+    - "clean_lines"
+    - "sleek_profile"
+    - "buffet_storage"
+
+spatial_attributes:
+  footprint_shape: "rectangle"
+  walkway_clearance_cm: 90
+
+room_compatibility:
+  - "living_room"
+  - "dining_room"
+  - "entryway"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: true
+  clearance_sensitive: true
+  center_room_preferred: false
+
+clearance_rules:
+  back_mm: 0
+  left_mm: 50
+  right_mm: 50
+  front_mm: 900
+
+design_pairings:
+  - "sofa"
+  - "dining_table"
+  - "rug"
+  - "floor_lamp"
+
+feature_flags:
+  has_storage: true
+
+storage:
+  shelf_type: "adjustable"
+  shelves_height_cm:
+    - 24.6
+    - 27.8
+    - 31.0
+  cupboard_capacity:
+    compartments:
+      - count: 4
+        internal_cm:
+          width: 41.6
+          depth: 38.6
+          height_options:
+            - 24.6
+            - 27.8
+            - 31.0
+      - count: 4
+        internal_cm:
+          width: 42.6
+          depth: 38.6
+          height_options:
+            - 24.6
+            - 27.8
+            - 31.0
+
+assets:
+  asset_id: "storage-real-castlery-sawyer-sideboard-180cm"
+  model_url: "/assets/models/storage-real-castlery-sawyer-sideboard-180cm.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1673927310/crusader/variants/50220001/Sawyer-TV-Console-Angle-1673927308.png"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1673927310/crusader/variants/50220001/Sawyer-TV-Console-Angle-1673927308.png"
+    - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1673927310/crusader/variants/50220001/Sawyer-TV-Console-Angle-1673927308.png"
+
+variants:
+  - variant: "Sawyer Sideboard / Natural"
+    finish_code: "natural"
+    finish_label: "Natural"
+    swatch_group: "finish"
+    color_family: "brown"
+    tone: "warm"
+    price_usd: 969
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 180
+      depth_cm: 45
+      height_cm: 76
+    materials:
+      body:
+        structure: "engineered_wood"
+        surface: "oak_veneer"
+      doors:
+        structure: "solid_wood"
+        wood_species: "oak"
+      legs:
+        structure: "solid_wood"
+        wood_species: "birch"
+    finish:
+      color_finish: "natural"
+      surface_finish: "wire_brushed"
+      finish_color: "natural"
+
+purchase:
+  purchase_mode: "external_retailer"
+  retailer_name: "Castlery Singapore"
+  buy_url: "https://www.castlery.com/sg/products/sawyer-sideboard-180cm"
+
+shipping_and_warranty:
+  warranty: "5-year limited warranty"
+  cancellation: "Clearance - no cancellation"
+  returns: "Clearance - no return or exchange"
+
+notes:
+  - "Imported from provided metadata and local GLB file."
+  - "Catalog category is sideboard and uses Sawyer-specific preview imagery from Castlery product photography."
+  - "Gallery includes both isolated product and styled in-room Sawyer Sideboard images."

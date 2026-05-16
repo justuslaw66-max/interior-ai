@@ -1,0 +1,216 @@
+categories:
+  - sofa
+  - sectional_sofa
+  - loveseat
+  - armchair
+  - accent_chair
+  - recliner
+  - ottoman
+  - bench
+  - coffee_table
+  - side_table
+  - console_table
+  - media_console
+  - display_cabinet
+  - dining_table
+  - extendable_dining_table
+  - dining_chair
+  - dining_bench
+  - bar_stool
+  - bed
+  - storage_bed
+  - bunk_bed
+  - crib
+  - nightstand
+  - dresser
+  - wardrobe
+  - vanity_table
+  - desk
+  - standing_desk
+  - desk_chair
+  - filing_cabinet
+  - bookcase_desk_combo
+  - bookshelf
+  - tv_console
+  - sideboard
+  - rug
+  - dining_rug
+  - bedroom_rug
+  - desk_rug
+  - pendant_light
+  - chandelier
+  - flush_mount_light
+  - floor_lamp
+  - table_lamp
+  - wall_sconce
+  - decor_object
+  - plant
+  - mirror
+  - wall_art
+  - outdoor_sofa
+  - outdoor_dining_table
+  - outdoor_dining_chair
+
+legacy_categories:
+  - accessory
+  - decor
+  - artwork
+
+design_zones:
+  - living_zone
+  - dining_zone
+  - sleeping_zone
+  - workspace_zone
+  - entry_zone
+  - decor_zone
+  - storage_zone
+  - outdoor_zone
+  - lighting_zone
+  - bath_zone
+
+anchor_roles:
+  - sofa_anchor
+  - bed_anchor
+  - dining_anchor
+  - desk_anchor
+  - storage_anchor
+  - media_anchor
+  - lighting_anchor
+  - entry_anchor
+  - outdoor_anchor
+  - secondary
+  - decor
+
+size_classes:
+  - small
+  - medium
+  - large
+  - extra_large
+
+shapes:
+  - rectangular
+  - square
+  - round
+  - oval
+  - organic
+
+material_families:
+  - wood
+  - metal
+  - glass
+  - stone
+  - upholstered
+  - mixed
+  - fabric
+  - leather
+  - rattan
+  - marble
+  - ceramic
+
+material_structures:
+  - solid_wood
+  - engineered_wood
+  - metal
+  - glass
+  - stone
+  - fabric
+  - leather
+
+surface_materials:
+  - oak_veneer
+  - walnut_veneer
+  - ash_veneer
+  - marble
+  - tempered_glass
+  - fabric
+  - leather
+
+colors:
+  - white
+  - black
+  - grey
+  - brown
+  - beige
+  - green
+  - blue
+  - red
+  - yellow
+  - multicolor
+
+tones:
+  - warm
+  - cool
+  - neutral
+
+style_clusters:
+  - modern
+  - contemporary
+  - scandinavian
+  - midcentury_modern
+  - minimalist
+  - industrial
+  - japandi
+  - classic
+  - contemporary_luxury
+  - coastal
+  - bohemian
+  - rustic
+
+price_bands:
+  - budget
+  - mid
+  - mid_premium
+  - premium
+  - luxury
+
+brand_tiers:
+  - premium_low
+  - premium_mid
+  - premium_high
+  - luxury_entry
+  - luxury_core
+
+relationship_types:
+  - matching_companion
+  - size_variant
+  - finish_variant
+  - family_variant
+  - recommended_with
+  - bundle_component
+  - same_room_alternative
+  - same_category_alternative
+  - cheaper_alternative
+  - premium_alternative
+  - storage_alternative
+  - style_alternative
+
+relationship_strengths:
+  - weak
+  - medium
+  - strong
+
+room_compatibility:
+  - living_room
+  - family_room
+  - dining_room
+  - bedroom
+  - open_plan
+  - small_space
+  - office
+  - home_office
+  - entryway
+  - hallway
+  - outdoor
+
+swatch_groups:
+  - upholstery
+  - upholstery_option
+  - wood_finish
+  - finish
+  - material
+
+bundle_roles:
+  - dining_anchor
+  - dining_seating
+  - living_anchor
+  - accent

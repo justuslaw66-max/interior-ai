@@ -1,0 +1,703 @@
+brand: "Castlery"
+category: "ottoman"
+
+product_family: "Dawson"
+product_name: "Dawson Ottoman"
+variant: "Standard"
+
+price_usd: 549
+price_band: "mid"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "secondary"
+
+dimensions:
+  width_cm: 93
+  depth_cm: 93
+  height_cm: 45
+
+seat_capacity: 1
+size_class: "medium"
+shape: "square"
+base_type: "frame"
+
+material_family: "upholstered"
+material_mix: "upholstered_composite"
+material_mix_components:
+  - "laminated_veneer_lumber"
+  - "plywood"
+  - "polyester"
+  - "linen"
+  - "plastic"
+materials:
+  frame:
+    structure:
+      - "laminated_veneer_lumber"
+      - "plywood"
+  leg_frame:
+    structure: "plastic"
+    finish: "black"
+
+color_family: "beige"
+tone: "neutral"
+
+style_cluster: "contemporary"
+style_secondary: "modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "light"
+  edge_profile: "rounded"
+  silhouette: "linear"
+  form_language: "soft"
+  descriptors:
+    - "oversized_cushion_top"
+    - "soft_upholstered_form"
+    - "relaxed_luxury"
+    - "removable_covers"
+
+spatial_attributes:
+  footprint_shape: "square"
+  walkway_clearance_cm: 45
+  descriptors:
+    - "compact_square_footprint"
+    - "movable"
+    - "works_in_small_to_large_living_rooms"
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+  - "bedroom"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: true
+  clearance_sensitive: false
+  center_room_preferred: false
+  movable: true
+  recommended_in_front_of:
+    - "sofa"
+    - "armchair"
+    - "sectional_sofa"
+  clearance_guidance:
+    circulation_cm_min: 45
+
+design_pairings:
+  - "sofa"
+  - "sectional_sofa"
+  - "armchair"
+  - "rug"
+  - "coffee_table"
+
+compatibility:
+  related_products:
+    - product_family: "Dawson"
+      product_name: "Dawson 3 Seater Sofa"
+      relationship: "matching_companion"
+      strength: "strong"
+      collection_context: "same_collection"
+    - product_family: "Dawson"
+      product_name: "Dawson Extended Sofa"
+      relationship: "matching_companion"
+      strength: "strong"
+      collection_context: "same_collection"
+    - product_family: "Dawson"
+      product_name: "Dawson Wide Chaise Sectional Sofa"
+      relationship: "matching_companion"
+      strength: "strong"
+      collection_context: "same_collection"
+    - product_family: "Dawson"
+      product_name: "Dawson Pit-Sectional Sofa"
+      relationship: "matching_companion"
+      strength: "strong"
+      collection_context: "same_collection"
+    - product_family: "Dawson"
+      product_name: "Dawson Swivel Armchair"
+      relationship: "matching_companion"
+      strength: "strong"
+      collection_context: "same_collection"
+
+bundle_metadata:
+  bundle_role: "accent"
+  can_bundle_with:
+    - "sofa"
+    - "sectional_sofa"
+    - "armchair"
+    - "rug"
+    - "coffee_table"
+  set_behavior:
+    supports_footrest_pairing: true
+    supports_extra_seating: true
+
+construction:
+  frame:
+    structure:
+      - "laminated_veneer_lumber"
+      - "plywood"
+  leg_frame:
+    structure: "plastic"
+    finish: "black"
+  cover_type:
+    - "removable_seat_cushion_covers"
+    - "removable_frame_covers"
+  filling:
+    seat:
+      - "foam"
+      - "fibre"
+      - "feather"
+  suspension: "sinuous_spring"
+
+upholstery_options:
+# Fabric palette is resolved from the shared Dawson upholstery library.
+# Edit catalog/furniture/_upholstery_libraries/dawson.yaml to update all 6 products at once.
+upholstery_library_ref: "dawson"
+
+assets:
+  asset_id: "sofa-real-castlery-dawson-ottoman"
+  model_url: "/assets/models/sofa-real-castlery-dawson-ottoman.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1692451017/crusader/variants/54000132-NG4001/Dawson-Square-Ottoman-Front_-1692451014.jpg"
+
+variants:
+  - variant: "Dawson Ottoman / Slub Linen Weave (Navagio), Cream (Beach Linen) / 93cm"
+    size_label: "93x93"
+    model_asset_id: "sofa-real-castlery-dawson-ottoman"
+    model_url: "/assets/models/sofa-real-castlery-dawson-ottoman.glb"
+    upholstery_code: "beach_linen"
+    upholstery_label: "Slub Linen Weave (Navagio), Cream (Beach Linen)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1692451017/crusader/variants/54000132-NG4001/Dawson-Square-Ottoman-Front_-1692451014.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692591635/crusader/variants/54000132-NG4001/Dawson-Square-Ottoman-Beach-Linen-Square-Set_2-1692591632.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692451017/crusader/variants/54000132-NG4001/Dawson-Square-Ottoman-Front_-1692451014.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692591661/crusader/variants/54000132-NG4001/Dawson-Swivel-Armchair-With-Ottoman-Beach-Linen-Square-Set_1-1692591658.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692604001/crusader/variants/54000132-NG4001/Dawson-Pit-Sectional-Sofa-Square-Set_8-1692603997.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1702897291/crusader/variants/54000132-NG4001/Dawson-Extended-Sofa-With-Ottoman-Beach-Linen-Set_1-1702897291.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1702897009/crusader/variants/54000132-NG4001/Dawson-Swivel-Armchair-Copy-1702897009.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692591689/crusader/variants/54000132-NG4001/Dawson-Square-Ottoman-Det_1-1692591687.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692451016/crusader/variants/54000132-NG4001/Dawson-Square-Ottoman-Angle-1692451014.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 549
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
+    seat_capacity: 1
+    size_class: "medium"
+    color_family: "cream"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson Ottoman / Slub Linen Weave (Navagio), Cream (Beach Linen) / 114cm"
+    size_label: "114x93"
+    model_asset_id: "sofa-real-castlery-dawson-ottoman-114"
+    model_url: "/assets/models/sofa-real-castlery-dawson-ottoman-114.glb"
+    upholstery_code: "beach_linen"
+    upholstery_label: "Slub Linen Weave (Navagio), Cream (Beach Linen)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1634715643/crusader/variants/54000045-NG4001/Dawson-Ottoman-Beach-Linen-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1634784498/crusader/variants/54000045-NG4001/Dawson-Ottoman-Beach-Linen-Lifestyle-Crop.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1634715643/crusader/variants/54000045-NG4001/Dawson-Ottoman-Beach-Linen-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1635500010/crusader/variants/54000045-NG4001/Dawson-Ottoman-Beach-Linen-Square-Set_2.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1634715516/crusader/variants/54000045-NG4001/Dawson-Sofa-With-Ottoman-Beach-Linen-Square-Set_1.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1702896529/crusader/variants/54000141-NG4001/Dawson-Extended-Sofa-With-Ottoman-Beach-Linen-Set_1-1702896528.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1634715456/crusader/variants/54000045-NG4001/Dawson-Sofa-Beach-Linen-Square-Det_9.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1634715643/crusader/variants/54000045-NG4001/Dawson-Ottoman-Beach-Linen-Side.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1634715643/crusader/variants/54000045-NG4001/Dawson-Ottoman-Beach-Linen-Angle.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 649
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 114, depth_cm: 93, height_cm: 45 }
+    seat_capacity: 1
+    size_class: "large"
+    color_family: "cream"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson Ottoman / Slub Linen Weave (Navagio), Medium Grey (Seagull)"
+    size_label: "93x93"
+    upholstery_code: "navagio_seagull"
+    upholstery_label: "Slub Linen Weave (Navagio), Medium Grey (Seagull)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1697602865/crusader/variants/54000132-NG4002/Dawson-Square-Ottoman-Seagull-Front-1697602863.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 549
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
+    seat_capacity: 1
+    size_class: "medium"
+    color_family: "grey"
+    tone: "cool"
+    set_compatibility: []
+  - variant: "Dawson Ottoman / Performance Creamy White"
+    size_label: "93x93"
+    upholstery_code: "performance_creamy_white"
+    upholstery_label: "Performance Creamy White"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1720773769/crusader/variants/54000132C-PT4001/Dawson-Ottoman-Creamy-White-Front-1720773766.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 549
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
+    seat_capacity: 1
+    size_class: "medium"
+    color_family: "cream"
+    tone: "warm"
+    set_compatibility: []
+  - variant: "Dawson Ottoman / Performance Textured Plain Weave (Marcel), Cream (Brilliant White)"
+    size_label: "93x93"
+    upholstery_code: "marcel_brilliant_white"
+    upholstery_label: "Performance Textured Plain Weave (Marcel), Cream (Brilliant White)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1721012055/crusader/variants/54000132C-PM4002/Dawson-Ottoman-Performance-Brilliant-White-Front-1721012052.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 549
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
+    seat_capacity: 1
+    size_class: "medium"
+    color_family: "cream"
+    tone: "warm"
+    set_compatibility: []
+  - variant: "Dawson Ottoman / Performance Fleece (Peyton), Ivory (Cream)"
+    size_label: "93x93"
+    upholstery_code: "peyton_ivory"
+    upholstery_label: "Performance Fleece (Peyton), Ivory (Cream)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1721012023/crusader/variants/54000132C-PY4001/Dawson-Ottoman-Ivory-Front-1721012021.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 549
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
+    seat_capacity: 1
+    size_class: "medium"
+    color_family: "cream"
+    tone: "warm"
+    set_compatibility: []
+  - variant: "Dawson Ottoman / Performance Fleece (Peyton), Medium Grey (Dove Grey)"
+    size_label: "93x93"
+    upholstery_code: "peyton_dove_grey"
+    upholstery_label: "Performance Fleece (Peyton), Medium Grey (Dove Grey)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1721011746/crusader/variants/54000132C-PY4002/Dawson-Ottoman-Dove-Grey-Front-1721011744.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 549
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
+    seat_capacity: 1
+    size_class: "medium"
+    color_family: "grey"
+    tone: "cool"
+    set_compatibility: []
+  - variant: "Dawson Ottoman / Performance Textured Plain Weave (Marcel), Smoke Grey"
+    size_label: "93x93"
+    upholstery_code: "marcel_smoke_grey"
+    upholstery_label: "Performance Textured Plain Weave (Marcel), Smoke Grey"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1722411328/crusader/variants/54000141C-PM4001/Dawson-Ottoman-Performance-Smoke-Grey-Front-1722411326.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 549
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
+    seat_capacity: 1
+    size_class: "medium"
+    color_family: "grey"
+    tone: "cool"
+    set_compatibility: []
+  - variant: "Dawson Ottoman / Performance Fleece (Peyton), Moss"
+    size_label: "93x93"
+    upholstery_code: "peyton_moss"
+    upholstery_label: "Performance Fleece (Peyton), Moss"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/w_1995,f_auto,q_auto,c_fit/v1776751773/pim/converting/1776751772433/Dawson-Small-Storage-Ottoman-Performance-Fleece-Moss-Front.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 549
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
+    seat_capacity: 1
+    size_class: "medium"
+    color_family: "green"
+    tone: "warm"
+    set_compatibility: []
+  - variant: "Dawson Ottoman / Performance Fleece (Peyton), Caramel (Cumin)"
+    size_label: "93x93"
+    upholstery_code: "peyton_cumin"
+    upholstery_label: "Performance Fleece (Peyton), Caramel (Cumin)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/w_1995,f_auto,q_auto,c_fit/v1776751840/pim/converting/1776751839091/Dawson-Small-Storage-Ottoman-Performance-Fleece-Caramel-Front.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 549
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
+    seat_capacity: 1
+    size_class: "medium"
+    color_family: "brown"
+    tone: "warm"
+    set_compatibility: []
+  - variant: "Dawson Ottoman / Performance Infinity Boucle, Rust (Ginger)"
+    size_label: "93x93"
+    upholstery_code: "infinity_boucle_ginger"
+    upholstery_label: "Performance Infinity Boucle, Rust (Ginger)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1721011575/crusader/variants/54000132C-IN4003/Dawson-Ottoman-Ginger-Front-1721011572.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 549
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
+    seat_capacity: 1
+    size_class: "medium"
+    color_family: "rust"
+    tone: "warm"
+    set_compatibility: []
+  - variant: "Dawson Ottoman / Performance Infinity Boucle, Light Grey (White Quartz)"
+    size_label: "93x93"
+    upholstery_code: "infinity_boucle_white_quartz"
+    upholstery_label: "Performance Infinity Boucle, Light Grey (White Quartz)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1721011556/crusader/variants/54000132C-IN4002/Dawson-Ottoman-White-Quartz-Front-1721011553.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 549
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
+    seat_capacity: 1
+    size_class: "medium"
+    color_family: "light_grey"
+    tone: "neutral"
+    set_compatibility: []
+
+  - variant: "Dawson Ottoman / Performance Infinity Boucle, Cream"
+    size_label: "93x93"
+    upholstery_code: "performance_boucle_cream"
+    upholstery_label: "Performance Infinity Boucle, Cream"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773741458/crusader/variants/54000132C-IN4005/Dawson-Small-Storage-Ottoman-Cream-Front-1773741456.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 549
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
+    seat_capacity: 1
+    size_class: "medium"
+    color_family: "cream"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson Ottoman / Performance Infinity Boucle, Moss"
+    size_label: "93x93"
+    upholstery_code: "performance_infinity_boucle_moss"
+    upholstery_label: "Performance Infinity Boucle, Moss"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1774255348/crusader/variants/54000132C-IN4004/Dawson-Small-Storage-Ottoman-Moss-Front-1774255346.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 549
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
+    seat_capacity: 1
+    size_class: "medium"
+    color_family: "green"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson Ottoman / Performance Linen Weave (Genova), Sand (Oat)"
+    size_label: "93x93"
+    upholstery_code: "performance_genova_oat"
+    upholstery_label: "Performance Linen Weave (Genova), Sand (Oat)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773909178/crusader/variants/54000132C-PG4002/Dawson-Small-Storage-Ottoman-Performance-Genova-Oat-Front-1773909176.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 549
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
+    seat_capacity: 1
+    size_class: "medium"
+    color_family: "beige"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson Ottoman / Performance Linen Weave (Genova), Cream"
+    size_label: "93x93"
+    upholstery_code: "performance_linen_weave_cream"
+    upholstery_label: "Performance Linen Weave (Genova), Cream"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773909197/crusader/variants/54000132C-PG4003/Dawson-Small-Storage-Ottoman-Cream-Front-1773909195.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 549
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
+    seat_capacity: 1
+    size_class: "medium"
+    color_family: "cream"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson Ottoman / Performance Linen Weave (Genova), Light Grey"
+    size_label: "93x93"
+    upholstery_code: "performance_linen_weave_light_grey"
+    upholstery_label: "Performance Linen Weave (Genova), Light Grey"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773909218/crusader/variants/54000132C-PG4004/Dawson-Small-Storage-Ottoman-Light-Grey-Front-1773909216.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 549
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
+    seat_capacity: 1
+    size_class: "medium"
+    color_family: "light_grey"
+    tone: "neutral"
+    set_compatibility: []
+
+  - variant: "Dawson Ottoman / Performance Twill, Pearl Beige"
+    size_label: "93x93"
+    upholstery_code: "performance_twill_pearl_beige"
+    upholstery_label: "Performance Twill, Pearl Beige"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773902043/crusader/variants/54000132C-PT4002/Dawson-Small-Storage-Ottoman-Performance-Twill-Pearl-Beige-Front-1773902041.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 549
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
+    seat_capacity: 1
+    size_class: "medium"
+    color_family: "beige"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson Ottoman / Performance Twill, Slate"
+    size_label: "93x93"
+    upholstery_code: "performance_twill_slate"
+    upholstery_label: "Performance Twill, Slate"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773902060/crusader/variants/54000132C-PT4003/Dawson-Small-Storage-Ottoman-Performance-Twill-Slate-Front-1773902057.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 549
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
+    seat_capacity: 1
+    size_class: "medium"
+    color_family: "grey"
+    tone: "cool"
+    set_compatibility: []
+
+  - variant: "Dawson Ottoman / Performance Twill, Moss"
+    size_label: "93x93"
+    upholstery_code: "performance_twill_moss"
+    upholstery_label: "Performance Twill, Moss"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773902078/crusader/variants/54000132C-PT4004/Dawson-Small-Storage-Ottoman-Performance-Twill-Moss-Front-1773902076.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 549
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
+    seat_capacity: 1
+    size_class: "medium"
+    color_family: "green"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson Ottoman / Performance Twill, Medium Grey"
+    size_label: "93x93"
+    upholstery_code: "performance_twill_dove_grey"
+    upholstery_label: "Performance Twill, Medium Grey"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773902094/crusader/variants/54000132C-PT4005/Dawson-Small-Storage-Ottoman-Performance-Twill-Dove-Grey-Front-1773902092.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 549
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
+    seat_capacity: 1
+    size_class: "medium"
+    color_family: "grey"
+    tone: "cool"
+    set_compatibility: []
+
+  - variant: "Dawson Ottoman / Washed Chenille, Cream"
+    size_label: "93x93"
+    upholstery_code: "greta_ivory"
+    upholstery_label: "Washed Chenille, Cream"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1774255267/crusader/variants/54000132C-GR4001/Dawson-Small-Storage-Ottoman-Cream-Front-1774255265.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 549
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
+    seat_capacity: 1
+    size_class: "medium"
+    color_family: "cream"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson Ottoman / Washed Chenille, Sand"
+    size_label: "93x93"
+    upholstery_code: "washed_chenille_sand"
+    upholstery_label: "Washed Chenille, Sand"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1774255286/crusader/variants/54000132C-GR4002/Dawson-Small-Storage-Ottoman-Sand-Front-1774255284.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 549
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
+    seat_capacity: 1
+    size_class: "medium"
+    color_family: "beige"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson Ottoman / Washed Chenille, Caramel"
+    size_label: "93x93"
+    upholstery_code: "greta_mustard_brown"
+    upholstery_label: "Washed Chenille, Caramel"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1774255300/crusader/variants/54000132C-GR4003/Dawson-Small-Storage-Ottoman-Caramel-Front-1774255298.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 549
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
+    seat_capacity: 1
+    size_class: "medium"
+    color_family: "brown"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson Ottoman / Washed Chenille, Moss"
+    size_label: "93x93"
+    upholstery_code: "greta_moss"
+    upholstery_label: "Washed Chenille, Moss"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1774255317/crusader/variants/54000132C-GR4004/Dawson-Small-Storage-Ottoman-Moss-Front-1774255315.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 549
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
+    seat_capacity: 1
+    size_class: "medium"
+    color_family: "green"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson Ottoman / Cocoa (Leather)"
+    size_label: "93x93"
+    upholstery_code: "cocoa_leather"
+    upholstery_label: "Cocoa (Leather)"
+    finish_code: "cocoa_leather"
+    finish_label: "Cocoa (Leather)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1715936902/crusader/variants/54000132-LE4020/Dawson-Leather-Small-Ottoman-Cocoa-Front-1715936900.png"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1722584559/crusader/variants/54000132-LE4020/Dawson-Leather-Small-Ottoman-Cocoa-Square-Set_1__1_-1722584556.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1715936902/crusader/variants/54000132-LE4020/Dawson-Leather-Small-Ottoman-Cocoa-Front-1715936900.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1722581310/crusader/variants/54000132-LE4020/Dawson-Leather-Pit-Sectional-Sofa-Square-Set_1-1722581307.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1722581311/crusader/variants/54000132-LE4020/Dawson-Leather-Pit-Sectional-Sofa-Square-Set_2-1722581307.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1715936902/crusader/variants/54000132-LE4020/Dawson-Leather-Small-Ottoman-Cocoa-Angle-1715936900.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 549
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
+    seat_capacity: 1
+    size_class: "medium"
+    color_family: "brown"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson Ottoman / Caramel (Leather)"
+    size_label: "93x93"
+    upholstery_code: "caramel_leather"
+    upholstery_label: "Caramel (Leather)"
+    finish_code: "caramel_leather"
+    finish_label: "Caramel (Leather)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626941764/crusader/variants/LE-4016/Jonathan-Sofa-Brown_1.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626941764/crusader/variants/LE-4016/Jonathan-Sofa-Brown_1.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 549
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
+    seat_capacity: 1
+    size_class: "medium"
+    color_family: "brown"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson Ottoman / Warm Taupe (Leather)"
+    size_label: "93x93"
+    upholstery_code: "warm_taupe_leather"
+    upholstery_label: "Warm Taupe (Leather)"
+    finish_code: "warm_taupe_leather"
+    finish_label: "Warm Taupe (Leather)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626941786/crusader/variants/LE-4017/Jonathan-Sofa-Taupe_1.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626941786/crusader/variants/LE-4017/Jonathan-Sofa-Taupe_1.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 549
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
+    seat_capacity: 1
+    size_class: "medium"
+    color_family: "taupe"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson Ottoman / Marche Ivory (Leather)"
+    size_label: "93x93"
+    upholstery_code: "marche_ivory_leather"
+    upholstery_label: "Marche Ivory (Leather)"
+    finish_code: "marche_ivory_leather"
+    finish_label: "Marche Ivory (Leather)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728527/crusader/variants/LE-4021/Hamilton-Leather-Sofa-Ivory-Det_1-1710728524.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728527/crusader/variants/LE-4021/Hamilton-Leather-Sofa-Ivory-Det_1-1710728524.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 549
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
+    seat_capacity: 1
+    size_class: "medium"
+    color_family: "cream"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson Ottoman / Marche Graphite (Leather)"
+    size_label: "93x93"
+    upholstery_code: "marche_graphite_leather"
+    upholstery_label: "Marche Graphite (Leather)"
+    finish_code: "marche_graphite_leather"
+    finish_label: "Marche Graphite (Leather)"
+    swatch_hex: "#2F3136"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728543/crusader/variants/LE-4022/Hamilton-Leather-Sofa-Graphite-Det_1-1710728540.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728543/crusader/variants/LE-4022/Hamilton-Leather-Sofa-Graphite-Det_1-1710728540.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 549
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
+    seat_capacity: 1
+    size_class: "medium"
+    color_family: "grey"
+    tone: "cool"
+    set_compatibility: []
+
+  - variant: "Dawson Ottoman / Marche Cocoa (Leather)"
+    size_label: "93x93"
+    upholstery_code: "marche_cocoa_leather"
+    upholstery_label: "Marche Cocoa (Leather)"
+    finish_code: "marche_cocoa_leather"
+    finish_label: "Marche Cocoa (Leather)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1741163167/crusader/variants/LE-4023/Cocoa_Swatch-1741163165.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1741163167/crusader/variants/LE-4023/Cocoa_Swatch-1741163165.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 549
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
+    seat_capacity: 1
+    size_class: "medium"
+    color_family: "brown"
+    tone: "warm"
+    set_compatibility: []
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true

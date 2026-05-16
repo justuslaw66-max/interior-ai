@@ -1,6 +1,4 @@
-import { useMemo } from "react";
 import { Line, Html } from "@react-three/drei";
-import * as THREE from "three";
 import { Guide } from "@/lib/snapGuides";
 
 interface SnapGuidesProps {
@@ -42,7 +40,7 @@ function GuideLabel({ position, text, offset }: { position: [number, number, num
  * - Only renders guides that should be visible
  * - Staggered labels to prevent overlap
  */
-export function SnapGuides({ guides, visible = true, isDesigner = true }: SnapGuidesProps) {
+export function SnapGuides({ guides, visible = true, isDesigner: _isDesigner = true }: SnapGuidesProps) {
   if (!visible || !guides || guides.length === 0) {
     return null;
   }

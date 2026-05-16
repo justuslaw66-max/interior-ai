@@ -1,0 +1,15 @@
+{
+  "buildCommand": "pnpm prisma generate && pnpm run build",
+  "devCommand": "pnpm run dev -- --webpack",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "framework": "nextjs",
+  "regions": ["sfo1"],
+  "env": {
+    "APP_ENV": "staging"
+  },
+  "build": {
+    "env": {
+      "APP_ENV": "staging"
+    }
+  }
+}

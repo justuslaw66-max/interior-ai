@@ -1,0 +1,119 @@
+brand: "Castlery"
+category: "dining_table"
+
+product_family: "Forma"
+product_name: "Forma Round Dining Table"
+variant: "Round 120"
+
+price_usd: 1049
+price_band: "premium"
+brand_tier: "premium_mid"
+
+design_zone: "dining_zone"
+anchor_role: "dining_anchor"
+
+dimensions:
+  width_cm: 120
+  depth_cm: 120
+  height_cm: 75.1
+
+seat_capacity: 4
+size_class: "medium"
+
+shape: "round"
+base_type: "pedestal"
+
+material_family: "mixed"
+material_mix: "wood_metal"
+
+materials:
+  tabletop:
+    structure: "solid_wood"
+    wood_species: "american_walnut"
+    surface: "solid_walnut"
+  base:
+    structure: "metal"
+    surface: "powder_coated_metal"
+
+finish:
+  tabletop_finish: "natural_walnut"
+  base_finish: "black"
+  protective_coating: "pu"
+  surface_finish: "low_gloss"
+  finish_color: "walnut_black"
+
+color_family: "brown"
+tone: "warm"
+
+style_cluster: "contemporary"
+style_secondary: "midcentury_modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "rounded"
+  silhouette: "sculptural"
+  form_language: "soft"
+
+spatial_attributes:
+  footprint_shape: "round"
+  chair_pullback_cm: 60
+  walkway_clearance_cm: 90
+
+room_compatibility:
+  - "dining_room"
+  - "open_plan"
+  - "small_space"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: true
+
+design_pairings:
+  - "dining_chair"
+  - "pendant_light"
+  - "dining_rug"
+  - "sideboard"
+
+assets:
+  asset_id: "dining-real-castlery-forma-round-120"
+  model_url: "/assets/models/dining-real-castlery-forma-round-120.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1769049964/crusader/variants/AS-001037-WA/Forma-Round-Dining-Table-90cm-Walnut-Front-1769049962.png"
+
+variants:
+  - variant: "Round 120"
+    size_label: "120"
+    finish_code: "natural_walnut"
+    finish_label: "Natural Walnut"
+    price_usd: 1049
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 120
+      depth_cm: 120
+      height_cm: 75.1
+    seat_capacity: 4
+    size_class: "medium"
+    color_family: "brown"
+    tone: "warm"
+    materials:
+      tabletop:
+        structure: "solid_wood"
+        wood_species: "american_walnut"
+        surface: "solid_walnut"
+      base:
+        structure: "metal"
+        surface: "powder_coated_metal"
+    finish:
+      tabletop_finish: "natural_walnut"
+      base_finish: "black"
+      protective_coating: "pu"
+      surface_finish: "low_gloss"
+      finish_color: "walnut_black"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true

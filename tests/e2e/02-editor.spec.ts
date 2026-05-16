@@ -3,7 +3,7 @@ import { test, expect } from './fixtures';
 test.describe('2. Editor Correctness', () => {
   test('collision detection prevents overlapping items', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(2000);
     
     await page.locator('[data-testid="scene-canvas"]').waitFor({ state: 'visible', timeout: 10000 });
@@ -38,7 +38,7 @@ test.describe('2. Editor Correctness', () => {
 
   test('wall snap aligns items to walls', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(2000);
     
     await page.locator('[data-testid="scene-canvas"]').waitFor({ state: 'visible', timeout: 10000 });
@@ -69,7 +69,7 @@ test.describe('2. Editor Correctness', () => {
 
   test('undo/redo restores state correctly (one drag = one undo)', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(2000);
     
     await page.locator('[data-testid="scene-canvas"]').waitFor({ state: 'visible', timeout: 10000 });

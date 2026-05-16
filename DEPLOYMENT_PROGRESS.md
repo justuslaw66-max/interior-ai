@@ -72,9 +72,17 @@ Results:
 
 ## Phase 6 Progress (Ops Readiness)
 
-- [ ] Environments + config validation (APP_ENV, required secrets)
-- [ ] Staging deploy + release workflow checklist
-- [ ] Email (share link delivery)
-- [ ] Admin overview dashboard metrics
-- [ ] Rate limits for share/export/shopify
-- [ ] Backup + migration safety checklist
+- [x] Environments + config validation (APP_ENV, required secrets)
+	- `lib/config.ts` validates required env vars for staging/production-like contexts on boot.
+- [x] Staging deploy + release workflow checklist
+	- `STAGING_DEPLOY_GUIDE.md` documents branch, smoke test, and promotion workflow.
+- [x] Email (share link delivery)
+	- `app/api/designs/[id]/share/route.ts` calls `sendShareLinkEmail` (`lib/email.ts`).
+- [x] Admin overview dashboard metrics
+	- `app/admin/page.tsx` includes share/export/checkout/webhook + catalog gate signals.
+- [x] Rate limits for share/export/shopify
+	- `app/api/designs/[id]/share/route.ts`, `app/api/export/pdf/route.ts`, `app/api/shopify/checkout/route.ts`.
+	- Stripe limits also enforced in `app/api/stripe/checkout-pro/route.ts` and `app/api/stripe/billing-portal/route.ts`.
+- [x] Backup + migration safety checklist
+	- Ops guide present in `PHASE_6_OPERATIONS.md`; executable scripts added: `scripts/backup-db.sh`, `scripts/restore-db.sh`.
+![alt text](studio.jpg)![alt text](hero.jpg)

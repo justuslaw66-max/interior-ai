@@ -1,0 +1,768 @@
+brand: "Castlery"
+category: "sectional_sofa"
+
+product_family: "Dawson"
+product_name: "Dawson Chaise Sectional Sofa (Left Facing)"
+variant: "Standard"
+
+price_usd: 2725
+price_band: "premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "sofa_anchor"
+
+dimensions:
+  width_cm: 321
+  depth_cm: 207
+  height_cm: 81
+
+seat_capacity: 4
+size_class: "extra_large"
+shape: "rectangular"
+sectional_shape: "l_shaped"
+base_type: "concealed_leg"
+
+material_family: "upholstered"
+material_mix: "upholstered_composite"
+material_mix_components:
+  - "laminated_veneer_lumber"
+  - "plywood"
+  - "polyester"
+  - "linen"
+  - "plastic"
+materials:
+  frame:
+    structure:
+      - "laminated_veneer_lumber"
+      - "plywood"
+  leg_frame:
+    structure: "plastic"
+    finish: "black"
+
+color_family: "beige"
+tone: "neutral"
+
+style_cluster: "contemporary"
+style_secondary: "modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "heavy"
+  edge_profile: "rounded"
+  silhouette: "linear"
+  form_language: "soft"
+  descriptors:
+    - "deep_seat_profile"
+    - "chaise_extension"
+    - "oversized_back_cushions"
+    - "block_arms"
+    - "relaxed_luxury"
+    - "removable_covers"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  walkway_clearance_cm: 85
+  descriptors:
+    - "l_shaped_footprint"
+    - "lounge_focused"
+    - "chaise_extension"
+    - "works_in_large_living_rooms"
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+  - "open_plan"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: true
+  clearance_sensitive: true
+  center_room_preferred: false
+  corner_preferred: true
+  floating_layout_supported: true
+  recommended_in_front_of:
+    - "coffee_table"
+    - "rug"
+    - "media_console"
+  clearance_guidance:
+    sofa_to_table_cm_min: 30
+    sofa_to_table_cm_ideal: 40
+    circulation_cm_min: 85
+
+design_pairings:
+  - "coffee_table"
+  - "side_table"
+  - "rug"
+  - "floor_lamp"
+  - "media_console"
+  - "ottoman"
+
+compatibility:
+  related_products:
+    - product_family: "Dawson"
+      product_name: "Dawson Ottoman"
+      relationship: "matching_companion"
+      strength: "strong"
+      collection_context: "same_collection"
+    - product_family: "Dawson"
+      product_name: "Dawson Chaise Sectional Sofa"
+      relationship: "size_variant"
+      strength: "strong"
+      collection_context: "same_product"
+
+bundle_metadata:
+  bundle_role: "living_anchor"
+  can_bundle_with:
+    - "coffee_table"
+    - "side_table"
+    - "rug"
+    - "floor_lamp"
+    - "media_console"
+    - "ottoman"
+  set_behavior:
+    supports_corner_layouts: true
+    supports_lounge_pairing: true
+
+construction:
+  frame:
+    structure:
+      - "laminated_veneer_lumber"
+      - "plywood"
+  leg_frame:
+    structure: "plastic"
+    finish: "black"
+  cover_type:
+    - "removable_seat_cushion_covers"
+    - "removable_back_cushion_covers"
+    - "removable_frame_covers"
+  filling:
+    seat:
+      - "foam"
+      - "fibre"
+      - "feather"
+    back:
+      - "fibre"
+      - "feather"
+  suspension: "sinuous_spring"
+
+upholstery_options:
+# Fabric palette is resolved from the shared Dawson upholstery library.
+# Edit catalog/furniture/_upholstery_libraries/dawson.yaml to update all Dawson products at once.
+upholstery_library_ref: "dawson"
+
+assets:
+  asset_id: "sofa-real-castlery-dawson-chaise-sectional-left"
+  model_url: "/assets/models/sofa-real-castlery-dawson-chaise-sectional-left.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1634718815/crusader/variants/T50440989-NG4001/Dawson-Left_-Chaise-Sectional-sofa-Beach-Linen-Front.jpg"
+
+variants:
+  - variant: "Dawson Chaise Sectional Sofa (Left Facing) / Slub Linen Weave (Navagio), Cream (Beach Linen)"
+    size_label: "207/321x114/207"
+    upholstery_code: "beach_linen"
+    upholstery_label: "Slub Linen Weave (Navagio), Cream (Beach Linen)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1634718815/crusader/variants/T50440989-NG4001/Dawson-Left_-Chaise-Sectional-sofa-Beach-Linen-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1634718815/crusader/variants/T50440989-NG4001/Dawson-Left_-Chaise-Sectional-sofa-Beach-Linen-Front.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2725
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 321 }
+      depth_cm: { min: 114, max: 207 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "cream"
+    tone: "warm"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Chaise Sectional Sofa (Left Facing) / Slub Linen Weave (Navagio), Medium Grey (Seagull)"
+    size_label: "207/321x114/207"
+    upholstery_code: "navagio_seagull"
+    upholstery_label: "Slub Linen Weave (Navagio), Medium Grey (Seagull)"
+    swatch_group: "upholstery_option"
+    price_usd: 2725
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 321 }
+      depth_cm: { min: 114, max: 207 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "grey"
+    tone: "cool"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Chaise Sectional Sofa (Left Facing) / Performance Textured Plain Weave (Marcel), Cream (Brilliant White)"
+    size_label: "207/321x114/207"
+    upholstery_code: "marcel_brilliant_white"
+    upholstery_label: "Performance Textured Plain Weave (Marcel), Cream (Brilliant White)"
+    swatch_group: "upholstery_option"
+    price_usd: 2725
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 321 }
+      depth_cm: { min: 114, max: 207 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "cream"
+    tone: "warm"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Chaise Sectional Sofa (Left Facing) / Performance Fleece (Peyton), Ivory (Cream)"
+    size_label: "207/321x114/207"
+    upholstery_code: "peyton_ivory"
+    upholstery_label: "Performance Fleece (Peyton), Ivory (Cream)"
+    swatch_group: "upholstery_option"
+    price_usd: 2725
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 321 }
+      depth_cm: { min: 114, max: 207 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "cream"
+    tone: "warm"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Chaise Sectional Sofa (Left Facing) / Performance Fleece (Peyton), Medium Grey (Dove Grey)"
+    size_label: "207/321x114/207"
+    upholstery_code: "peyton_dove_grey"
+    upholstery_label: "Performance Fleece (Peyton), Medium Grey (Dove Grey)"
+    swatch_group: "upholstery_option"
+    price_usd: 2725
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 321 }
+      depth_cm: { min: 114, max: 207 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "grey"
+    tone: "cool"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Chaise Sectional Sofa (Left Facing) / Performance Fleece (Peyton), Moss"
+    size_label: "207/321x114/207"
+    upholstery_code: "peyton_moss"
+    upholstery_label: "Performance Fleece (Peyton), Moss"
+    swatch_group: "upholstery_option"
+    price_usd: 2725
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 321 }
+      depth_cm: { min: 114, max: 207 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "green"
+    tone: "warm"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Chaise Sectional Sofa (Left Facing) / Performance Fleece (Peyton), Caramel (Cumin)"
+    size_label: "207/321x114/207"
+    upholstery_code: "peyton_cumin"
+    upholstery_label: "Performance Fleece (Peyton), Caramel (Cumin)"
+    swatch_group: "upholstery_option"
+    price_usd: 2725
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 321 }
+      depth_cm: { min: 114, max: 207 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "brown"
+    tone: "warm"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Chaise Sectional Sofa (Left Facing) / Performance Infinity Boucle, Rust (Ginger)"
+    size_label: "207/321x114/207"
+    upholstery_code: "infinity_boucle_ginger"
+    upholstery_label: "Performance Infinity Boucle, Rust (Ginger)"
+    swatch_group: "upholstery_option"
+    price_usd: 2725
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 321 }
+      depth_cm: { min: 114, max: 207 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "rust"
+    tone: "warm"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Chaise Sectional Sofa (Left Facing) / Performance Infinity Boucle, Light Grey (White Quartz)"
+    size_label: "207/321x114/207"
+    upholstery_code: "infinity_boucle_white_quartz"
+    upholstery_label: "Performance Infinity Boucle, Light Grey (White Quartz)"
+    swatch_group: "upholstery_option"
+    price_usd: 2725
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 321 }
+      depth_cm: { min: 114, max: 207 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "light_grey"
+    tone: "neutral"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Chaise Sectional Sofa (Left Facing) / Performance Infinity Boucle, Cream"
+    size_label: "207/321x114/207"
+    upholstery_code: "performance_boucle_cream"
+    upholstery_label: "Performance Infinity Boucle, Cream"
+    swatch_group: "upholstery_option"
+    price_usd: 2725
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 321 }
+      depth_cm: { min: 114, max: 207 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "cream"
+    tone: "warm"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Chaise Sectional Sofa (Left Facing) / Performance Infinity Boucle, Moss"
+    size_label: "207/321x114/207"
+    upholstery_code: "performance_infinity_boucle_moss"
+    upholstery_label: "Performance Infinity Boucle, Moss"
+    swatch_group: "upholstery_option"
+    price_usd: 2725
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 321 }
+      depth_cm: { min: 114, max: 207 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "green"
+    tone: "warm"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Chaise Sectional Sofa (Left Facing) / Performance Linen Weave (Genova), Sand (Oat)"
+    size_label: "207/321x114/207"
+    upholstery_code: "performance_genova_oat"
+    upholstery_label: "Performance Linen Weave (Genova), Sand (Oat)"
+    swatch_group: "upholstery_option"
+    price_usd: 2725
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 321 }
+      depth_cm: { min: 114, max: 207 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "sand"
+    tone: "warm"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Chaise Sectional Sofa (Left Facing) / Performance Linen Weave (Genova), Cream"
+    size_label: "207/321x114/207"
+    upholstery_code: "performance_linen_weave_cream"
+    upholstery_label: "Performance Linen Weave (Genova), Cream"
+    swatch_group: "upholstery_option"
+    price_usd: 2725
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 321 }
+      depth_cm: { min: 114, max: 207 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "cream"
+    tone: "warm"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Chaise Sectional Sofa (Left Facing) / Performance Linen Weave (Genova), Light Grey"
+    size_label: "207/321x114/207"
+    upholstery_code: "performance_linen_weave_light_grey"
+    upholstery_label: "Performance Linen Weave (Genova), Light Grey"
+    swatch_group: "upholstery_option"
+    price_usd: 2725
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 321 }
+      depth_cm: { min: 114, max: 207 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "light_grey"
+    tone: "neutral"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Chaise Sectional Sofa (Left Facing) / Performance Twill, Medium Grey"
+    size_label: "207/321x114/207"
+    upholstery_code: "performance_twill_dove_grey"
+    upholstery_label: "Performance Twill, Medium Grey"
+    swatch_group: "upholstery_option"
+    price_usd: 2725
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 321 }
+      depth_cm: { min: 114, max: 207 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "grey"
+    tone: "cool"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Chaise Sectional Sofa (Left Facing) / Performance Twill, Pearl Beige"
+    size_label: "207/321x114/207"
+    upholstery_code: "performance_twill_pearl_beige"
+    upholstery_label: "Performance Twill, Pearl Beige"
+    swatch_group: "upholstery_option"
+    price_usd: 2725
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 321 }
+      depth_cm: { min: 114, max: 207 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "beige"
+    tone: "warm"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Chaise Sectional Sofa (Left Facing) / Performance Twill, Slate"
+    size_label: "207/321x114/207"
+    upholstery_code: "performance_twill_slate"
+    upholstery_label: "Performance Twill, Slate"
+    swatch_group: "upholstery_option"
+    price_usd: 2725
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 321 }
+      depth_cm: { min: 114, max: 207 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "grey"
+    tone: "cool"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Chaise Sectional Sofa (Left Facing) / Performance Twill, Moss"
+    size_label: "207/321x114/207"
+    upholstery_code: "performance_twill_moss"
+    upholstery_label: "Performance Twill, Moss"
+    swatch_group: "upholstery_option"
+    price_usd: 2725
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 321 }
+      depth_cm: { min: 114, max: 207 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "green"
+    tone: "warm"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Chaise Sectional Sofa (Left Facing) / Washed Chenille, Cream"
+    size_label: "207/321x114/207"
+    upholstery_code: "greta_ivory"
+    upholstery_label: "Washed Chenille, Cream"
+    swatch_group: "upholstery_option"
+    price_usd: 2725
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 321 }
+      depth_cm: { min: 114, max: 207 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "cream"
+    tone: "warm"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Chaise Sectional Sofa (Left Facing) / Washed Chenille, Sand"
+    size_label: "207/321x114/207"
+    upholstery_code: "washed_chenille_sand"
+    upholstery_label: "Washed Chenille, Sand"
+    swatch_group: "upholstery_option"
+    price_usd: 2725
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 321 }
+      depth_cm: { min: 114, max: 207 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "sand"
+    tone: "warm"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Chaise Sectional Sofa (Left Facing) / Washed Chenille, Caramel"
+    size_label: "207/321x114/207"
+    upholstery_code: "greta_mustard_brown"
+    upholstery_label: "Washed Chenille, Caramel"
+    swatch_group: "upholstery_option"
+    price_usd: 2725
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 321 }
+      depth_cm: { min: 114, max: 207 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "brown"
+    tone: "warm"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Chaise Sectional Sofa (Left Facing) / Washed Chenille, Moss"
+    size_label: "207/321x114/207"
+    upholstery_code: "greta_moss"
+    upholstery_label: "Washed Chenille, Moss"
+    swatch_group: "upholstery_option"
+    price_usd: 2725
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 321 }
+      depth_cm: { min: 114, max: 207 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "green"
+    tone: "warm"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Chaise Sectional Sofa (Left Facing) / Cocoa (Leather)"
+    size_label: "207/321x114/207"
+    upholstery_code: "cocoa_leather"
+    upholstery_label: "Cocoa (Leather)"
+    finish_code: "cocoa_leather"
+    finish_label: "Cocoa (Leather)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1715936444/crusader/variants/AS-000530-LE4020/Dawson-Left-Chaise-Sectional-Sofa-Cocoa-Front-1715936442.png"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1715936444/crusader/variants/AS-000530-LE4020/Dawson-Left-Chaise-Sectional-Sofa-Cocoa-Front-1715936442.png"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1715936444/crusader/variants/AS-000530-LE4020/Dawson-Left-Chaise-Sectional-Sofa-Cocoa-Angle-1715936442.png"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1715936444/crusader/variants/AS-000530-LE4020/Dawson-Left-Chaise-Sectional-Sofa-Cocoa-Side-1715936442.png"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1715936444/crusader/variants/AS-000530-LE4020/Dawson-Left-Chaise-Sectional-Sofa-Cocoa-Back-1715936442.png"
+    swatch_group: "upholstery_option"
+    price_usd: 2725
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 321 }
+      depth_cm: { min: 114, max: 207 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "brown"
+    tone: "warm"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Chaise Sectional Sofa (Left Facing) / Caramel (Leather)"
+    size_label: "207/321x114/207"
+    upholstery_code: "caramel_leather"
+    upholstery_label: "Caramel (Leather)"
+    finish_code: "caramel_leather"
+    finish_label: "Caramel (Leather)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626941764/crusader/variants/LE-4016/Jonathan-Sofa-Brown_1.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626941764/crusader/variants/LE-4016/Jonathan-Sofa-Brown_1.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2725
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 321 }
+      depth_cm: { min: 114, max: 207 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "brown"
+    tone: "warm"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Chaise Sectional Sofa (Left Facing) / Warm Taupe (Leather)"
+    size_label: "207/321x114/207"
+    upholstery_code: "warm_taupe_leather"
+    upholstery_label: "Warm Taupe (Leather)"
+    finish_code: "warm_taupe_leather"
+    finish_label: "Warm Taupe (Leather)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626941786/crusader/variants/LE-4017/Jonathan-Sofa-Taupe_1.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626941786/crusader/variants/LE-4017/Jonathan-Sofa-Taupe_1.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2725
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 321 }
+      depth_cm: { min: 114, max: 207 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "taupe"
+    tone: "warm"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Chaise Sectional Sofa (Left Facing) / Marche Ivory (Leather)"
+    size_label: "207/321x114/207"
+    upholstery_code: "marche_ivory_leather"
+    upholstery_label: "Marche Ivory (Leather)"
+    finish_code: "marche_ivory_leather"
+    finish_label: "Marche Ivory (Leather)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728527/crusader/variants/LE-4021/Hamilton-Leather-Sofa-Ivory-Det_1-1710728524.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728527/crusader/variants/LE-4021/Hamilton-Leather-Sofa-Ivory-Det_1-1710728524.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2725
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 321 }
+      depth_cm: { min: 114, max: 207 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "cream"
+    tone: "warm"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Chaise Sectional Sofa (Left Facing) / Marche Graphite (Leather)"
+    size_label: "207/321x114/207"
+    upholstery_code: "marche_graphite_leather"
+    upholstery_label: "Marche Graphite (Leather)"
+    finish_code: "marche_graphite_leather"
+    finish_label: "Marche Graphite (Leather)"
+    swatch_hex: "#2F3136"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728543/crusader/variants/LE-4022/Hamilton-Leather-Sofa-Graphite-Det_1-1710728540.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728543/crusader/variants/LE-4022/Hamilton-Leather-Sofa-Graphite-Det_1-1710728540.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2725
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 321 }
+      depth_cm: { min: 114, max: 207 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "grey"
+    tone: "cool"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Chaise Sectional Sofa (Left Facing) / Marche Cocoa (Leather)"
+    size_label: "207/321x114/207"
+    upholstery_code: "marche_cocoa_leather"
+    upholstery_label: "Marche Cocoa (Leather)"
+    finish_code: "marche_cocoa_leather"
+    finish_label: "Marche Cocoa (Leather)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1741163167/crusader/variants/LE-4023/Cocoa_Swatch-1741163165.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1741163167/crusader/variants/LE-4023/Cocoa_Swatch-1741163165.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2725
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 321 }
+      depth_cm: { min: 114, max: 207 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "brown"
+    tone: "warm"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Chaise Sectional Sofa (Left Facing) / Performance Creamy White"
+    size_label: "207/321x114/207"
+    upholstery_code: "performance_creamy_white"
+    upholstery_label: "Performance Creamy White"
+    swatch_group: "upholstery_option"
+    price_usd: 2725
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 321 }
+      depth_cm: { min: 114, max: 207 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "cream"
+    tone: "warm"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+  - variant: "Dawson Chaise Sectional Sofa (Left Facing) / Performance Textured Plain Weave (Marcel), Smoke Grey"
+    size_label: "207/321x114/207"
+    upholstery_code: "marcel_smoke_grey"
+    upholstery_label: "Performance Textured Plain Weave (Marcel), Smoke Grey"
+    swatch_group: "upholstery_option"
+    price_usd: 2725
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
+    dimensions_range:
+      width_cm: { min: 207, max: 321 }
+      depth_cm: { min: 114, max: 207 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "grey"
+    tone: "cool"
+    chaise_orientation_options: ["left_chaise"]
+    set_compatibility: []
+
+ai_flags:
+  isStarterEligible: false

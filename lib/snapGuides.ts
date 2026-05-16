@@ -3,6 +3,7 @@
  */
 
 import { detectWallSnapModes, pickBestWallSnap } from "./wallSnap";
+import type { AABB } from "./snap-types";
 
 export type SnapGuideType = "CENTER_X" | "EDGE_X" | "CENTER_Z" | "EDGE_Z" | "SPACING" | "WALL";
 export type SnapAxis = "x" | "z";
@@ -34,16 +35,7 @@ export interface Guide {
   showLabel: boolean; // true if snapped
 }
 
-export interface AABB {
-  minX: number;
-  maxX: number;
-  minZ: number;
-  maxZ: number;
-  centerX: number;
-  centerZ: number;
-  width: number;
-  depth: number;
-}
+export type { AABB } from "./snap-types";
 
 export interface DragContext {
   selectedAABB: AABB;

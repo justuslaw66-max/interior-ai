@@ -1,5 +1,15 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Workflow
+
+- Branching and PR guidance lives in `CONTRIBUTING.md`.
+- Use `main` as PR base and create short-lived branches like `feat/*`.
+- Optional helper for feature branches:
+
+```bash
+bash scripts/new-feature-branch.sh feat/<short-name>
+```
+
 ## Getting Started
 
 First, run the development server:

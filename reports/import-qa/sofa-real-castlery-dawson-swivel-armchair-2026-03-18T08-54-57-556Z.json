@@ -1,0 +1,44 @@
+{
+  "timestamp": "2026-03-18T08:54:51.280Z",
+  "assetId": "sofa-real-castlery-dawson-swivel-armchair",
+  "srcGlbPath": "/var/folders/bd/j_k8zbwx07902cg6w98lw6lc0000gp/T/import-pipeline-sofa-real-castlery-dawson-swivel-armchair-8eFOe3/normalized.glb",
+  "limits": {
+    "maxFileSizeBytes": 20971520,
+    "maxTriangles": 120000,
+    "maxTextureCount": 8,
+    "maxTextureResolution": 2048,
+    "minAabbAxisMeters": 0.05,
+    "maxAabbAxisMeters": 8
+  },
+  "stats": {
+    "materialCount": 1,
+    "triangleCount": 51150,
+    "textureCount": 3,
+    "maxTextureResolution": 1024,
+    "hasBaseColorTexture": true
+  },
+  "checks": [
+    {
+      "severity": "warning",
+      "code": "SINGLE_MATERIAL",
+      "message": "Single material detected. Selective upholstery/wood controls may not work as expected.",
+      "details": "Split materials in Blender (e.g., Fabric vs OakLegs) before export."
+    },
+    {
+      "severity": "warning",
+      "code": "PIPELINE_NORMALIZE_FALLBACK",
+      "message": "Input already GLB; copied as normalized baseline."
+    },
+    {
+      "severity": "warning",
+      "code": "QUALITY_SINGLE_MATERIAL",
+      "message": "Single material detected; finish customization may be limited."
+    }
+  ],
+  "errorCount": 0,
+  "warningCount": 3,
+  "status": "passed",
+  "imported": true,
+  "modelUrl": "/assets/models/sofa-real-castlery-dawson-swivel-armchair.glb",
+  "thumbUrl": "/assets/thumbs/sofa-real-castlery-dawson-swivel-armchair.png"
+}

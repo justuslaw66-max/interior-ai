@@ -9,10 +9,19 @@ export default function AdminTestPanel() {
   >("purchase");
   const [value, setValue] = useState<string>("");
 
+  type EventType = "add_to_cart" | "checkout" | "purchase";
+
+  const isEventType = (value: string): value is EventType => {
+    return value === "add_to_cart" || value === "checkout" || value === "purchase";
+  };
+
   const send = async () => {
     if (!clickKey.trim()) return alert("Paste a clickKey first");
 
-    const payload: any = { clickKey: clickKey.trim(), eventType };
+    const payload: { clickKey: string; eventType: EventType; value?: number; currency?: string } = {
+      clickKey: clickKey.trim(),
+      eventType,
+    };
     if (value.trim()) payload.value = Number(value);
     payload.currency = "SGD";
 
@@ -49,7 +58,11 @@ export default function AdminTestPanel() {
         <select
           className="rounded-lg border px-3 py-2 text-sm"
           value={eventType}
-          onChange={(e) => setEventType(e.target.value as any)}
+          onChange={(e) => {
+            if (isEventType(e.target.value)) {
+              setEventType(e.target.value);
+            }
+          }}
         >
           <option value="add_to_cart">add_to_cart</option>
           <option value="checkout">checkout</option>

@@ -1,0 +1,179 @@
+brand: "Castlery"
+category: "coffee_table"
+
+product_family: "Vento"
+product_name: "Vento Coffee Table"
+slug: "castlery-vento-coffee-table"
+variant: "Vento Coffee Table / Waterbase Natural Walnut"
+
+price_usd: 599
+price_band: "mid_premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "secondary"
+
+dimensions:
+  width_cm: 120
+  depth_cm: 60
+  height_cm: 35
+
+size_class: "medium"
+shape: "rectangular"
+base_type: "frame"
+
+material_family: "wood"
+material_mix:
+  - "engineered_wood"
+  - "walnut_veneer"
+  - "solid_rubberwood"
+
+color_family: "brown"
+tone: "warm"
+
+style_cluster: "modern"
+style_secondary: "japandi"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "grounded"
+  edge_profile: "square_softened"
+  silhouette: "low_profile_block"
+  form_language: "clean_linear_softened_edges"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  storage_integrated: true
+  low_height: true
+  center_table_suitable: true
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+  - "open_plan"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: true
+
+design_pairings:
+  - "sofa"
+  - "sectional_sofa"
+  - "loveseat"
+  - "side_table"
+  - "media_console"
+  - "rug"
+  - "floor_lamp"
+  - "accent_chair"
+
+compatibility:
+  related_products:
+    - product_family: "Jaron"
+      product_name: "Jaron Recliner Sofa"
+      relationship: "recommended_with"
+      strength: "strong"
+    - product_family: "Madison"
+      product_name: "Madison Sofa"
+      relationship: "recommended_with"
+      strength: "strong"
+
+recommendation_metadata:
+  recommendation_role: "living_room_surface"
+  primary_use_cases:
+    - "sofa_pairing"
+    - "centerpiece_surface"
+    - "storage_coffee_table"
+
+bundle_metadata:
+  bundle_role: "accent"
+  can_bundle_with:
+    - "sofa"
+    - "sectional_sofa"
+    - "side_table"
+    - "media_console"
+    - "rug"
+    - "floor_lamp"
+    - "accent_chair"
+  recommended_with_products:
+    - product_family: "Jaron"
+      product_name: "Jaron Recliner Sofa"
+      relationship: "recommended_with"
+      strength: "strong"
+    - product_family: "Madison"
+      product_name: "Madison Sofa"
+      relationship: "recommended_with"
+      strength: "strong"
+  set_behavior:
+    supports_sofa_pairing: true
+    supports_storage_surface_pairing: true
+    supports_media_console_pairing: true
+    supports_rug_grounding: true
+
+authoring_notes:
+  category_confidence: "high"
+  single_variant_expected: true
+  preset_family: "table"
+  major_family_example_candidate: true
+
+assets:
+  asset_id: "coffee-real-castlery-vento-coffee-table-120"
+  model_url: "/assets/models/coffee-real-castlery-vento-coffee-table-120.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1770256447/crusader/variants/44250004/Vento-Coffee-Table-120cm-Front_1-1770256444.png"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+
+variants:
+  - variant: "Vento Coffee Table / Waterbase Natural Walnut"
+    sku: null
+    size_label: "120x60"
+    finish_code: "waterbase_natural_walnut"
+    finish_label: "Waterbase Natural Walnut"
+    swatch_group: "wood_finish"
+
+    price_usd: 599
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+
+    dimensions:
+      width_cm: 120
+      depth_cm: 60
+      height_cm: 35
+
+    size_class: "medium"
+    color_family: "brown"
+    tone: "warm"
+
+    materials:
+      tabletop:
+        structure: "engineered_wood"
+        surface: "walnut_veneer"
+      body:
+        structure: "engineered_wood"
+        surface: "walnut_veneer"
+      slatted_panel:
+        structure: "solid_rubberwood"
+        surface: "walnut_finish"
+      legs:
+        structure: "solid_rubberwood"
+        surface: "walnut_finish"
+
+    finish:
+      color_finish: "natural_walnut"
+      finish_color: "natural_walnut"
+      surface_finish: "matte"
+      protective_coating: "waterbase"
+      finish_system: "waterbase_finish"
+
+    storage:
+      has_storage: true
+      storage_type:
+        - "open_shelf"
+        - "enclosed_compartment"
+      door_type: "sliding_slatted_panel"
+
+    set_compatibility: []

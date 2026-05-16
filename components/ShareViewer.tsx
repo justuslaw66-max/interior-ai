@@ -5,9 +5,9 @@ import { Canvas } from "@react-three/fiber";
 import { Grid, OrbitControls } from "@react-three/drei";
 import { useMemo, useState } from "react";
 import { CATALOG_ITEMS } from "@/lib/catalog";
-import type { CatalogItemSchema } from "@/lib/catalog-schema";
-import type { DesignSnapshot, RoomSnapshot } from "@/lib/room-types";
+import type { DesignSnapshot, RoomSnapshot, SavedView } from "@/lib/room-types";
 import { getActiveRoom, switchRoom } from "@/lib/room-types";
+import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 
 function Room({
   width,
@@ -25,8 +25,8 @@ function Room({
   const floorMat = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
-        color: "#e9e4dc",
-        roughness: 0.9,
+        color: "#e8decc",
+        roughness: 0.86,
         metalness: 0.0,
       }),
     []
@@ -35,8 +35,8 @@ function Room({
   const wallMat = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
-        color: "#f6f6f6",
-        roughness: 0.95,
+        color: "#f2eee6",
+        roughness: 0.92,
         metalness: 0.0,
       }),
     []
@@ -105,12 +105,12 @@ function Room({
 }
 
 function Furniture({
-  product,
+  dimsMm,
   variantColor,
   position,
   rotationY,
 }: {
-  product: CatalogItemSchema;
+  dimsMm: { w: number; d: number; h: number };
   variantColor: string;
   position: [number, number, number];
   rotationY?: number;
@@ -119,10 +119,10 @@ function Furniture({
     <mesh
       castShadow
       receiveShadow
-      position={[position[0], product.dimsMm.h / 1000 / 2, position[2]]}
+      position={[position[0], dimsMm.h / 1000 / 2, position[2]]}
       rotation-y={rotationY ?? 0}
     >
-      <boxGeometry args={[product.dimsMm.w / 1000, product.dimsMm.h / 1000, product.dimsMm.d / 1000]} />
+      <boxGeometry args={[dimsMm.w / 1000, dimsMm.h / 1000, dimsMm.d / 1000]} />
       <meshStandardMaterial color={variantColor} roughness={0.8} metalness={0.05} />
     </mesh>
   );
@@ -175,10 +175,11 @@ export default function ShareViewer({
             shadows
             camera={{ position: [4.5, 3.2, 5.5], fov: 45, near: 0.1, far: 100 }}
           >
-            <ambientLight intensity={0.4} />
+            <ambientLight intensity={0.5} color="#fff8ef" />
             <directionalLight
               position={[6, 8, 4]}
-              intensity={1.0}
+              intensity={1.1}
+              color="#fff6e8"
               castShadow
               shadow-mapSize-width={2048}
               shadow-mapSize-height={2048}
@@ -195,16 +196,15 @@ export default function ShareViewer({
               depth={activeRoom.geometry.depth} 
             />
 
-            {items.map((it: any) => {
+            {items.map((it) => {
               const product = CATALOG_ITEMS[it.productId];
               if (!product) return null;
-              const variant =
-                product.variants.find((v) => v.id === it.variantId) ?? product.variants[0];
+              const resolved = resolveCatalogVariant(product, it.variantId);
               return (
                 <Furniture
                   key={it.instanceId}
-                  product={product}
-                  variantColor={variant.colorHex}
+                  dimsMm={resolved.dimsMm}
+                  variantColor={resolved.variant.colorHex}
                   position={it.position ?? [0, 0, 0]}
                   rotationY={it.rotationY ?? 0}
                 />
@@ -231,9 +231,9 @@ export default function ShareViewer({
         <div className="rounded-lg bg-white p-4 shadow">
           <h3 className="mb-2 text-sm font-semibold text-gray-800">Saved Views</h3>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {activeRoom.savedViews.map((view: any) => (
+            {activeRoom.savedViews.map((view: SavedView) => (
               <div
-                key={view.name}
+                key={view.id}
                 className="rounded-lg border bg-gray-50 p-3 text-center"
               >
                 <div className="text-sm font-medium text-gray-700">{view.name}</div>

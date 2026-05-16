@@ -40,8 +40,8 @@ function Room({
   const floorMat = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
-        color: "#e9e4dc",
-        roughness: 0.9,
+        color: "#e8decc",
+        roughness: 0.86,
         metalness: 0.0,
       }),
     []
@@ -50,8 +50,8 @@ function Room({
   const wallMat = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
-        color: "#f6f6f6",
-        roughness: 0.95,
+        color: "#f2eee6",
+        roughness: 0.92,
         metalness: 0.0,
       }),
     []
@@ -173,10 +173,11 @@ export default function DesignerCanvas({
         shadows
         camera={{ position: [4.5, 3.2, 5.5], fov: 45, near: 0.1, far: 100 }}
       >
-        <ambientLight intensity={0.4} />
+        <ambientLight intensity={0.5} color="#fff8ef" />
         <directionalLight
           position={[6, 8, 4]}
-          intensity={1.0}
+          intensity={1.1}
+          color="#fff6e8"
           castShadow
           shadow-mapSize-width={2048}
           shadow-mapSize-height={2048}

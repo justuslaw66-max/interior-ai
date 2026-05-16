@@ -1,5 +1,13 @@
 import * as Sentry from '@sentry/nextjs';
 
+type DreiStats = {
+  drawCalls?: number;
+};
+
+type WindowWithDreiStats = Window & {
+  __DREI_STATS?: DreiStats;
+};
+
 interface PerformanceMetrics {
   fps: number;
   drawCalls?: number;
@@ -20,7 +28,7 @@ export class PerformanceMonitor {
   private static readonly DRAW_CALL_WARNING = 2000;
   private static readonly TEXTURE_WARNING = 512; // MB
 
-  static updateFPS(deltaTime: number) {
+  static updateFPS() {
     frameCount++;
     const now = performance.now();
     
@@ -32,7 +40,8 @@ export class PerformanceMonitor {
       // Log warning if FPS is too low
       if (isDevEnv) {
         if (currentFPS < this.FPS_THRESHOLD) {
-          console.warn(`⚠️ Low FPS: ${currentFPS}`, { drawCalls: (window as any).__DREI_STATS?.drawCalls });
+          const dreiWindow = window as WindowWithDreiStats;
+          console.warn(`⚠️ Low FPS: ${currentFPS}`, { drawCalls: dreiWindow.__DREI_STATS?.drawCalls });
         }
       }
     }

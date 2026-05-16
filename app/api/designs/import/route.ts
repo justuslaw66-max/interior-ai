@@ -4,6 +4,16 @@ import { auth } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
+type ImportedDesign = {
+  title?: string;
+  roomWidth?: number;
+  roomDepth?: number;
+  items?: unknown[];
+  style?: string;
+  budget?: string;
+  mode?: string;
+};
+
 export async function POST(req: Request) {
   const session = await auth();
   const userId = session?.user?.id;
@@ -19,18 +29,18 @@ export async function POST(req: Request) {
   }
 
   const created = await prisma.$transaction(
-    designs.slice(0, 10).map((d: any) => {
-      const itemsForStorage = JSON.parse(JSON.stringify(d.items ?? []));
+    designs.slice(0, 10).map((designInput: ImportedDesign) => {
+      const itemsForStorage = JSON.parse(JSON.stringify(designInput.items ?? []));
       return prisma.design.create({
         data: {
           user: { connect: { id: userId } },
-          title: typeof d.title === "string" ? d.title : "Imported Design",
-          roomWidth: Number(d.roomWidth) || 4.2,
-          roomDepth: Number(d.roomDepth) || 4.2,
+          title: typeof designInput.title === "string" ? designInput.title : "Imported Design",
+          roomWidth: Number(designInput.roomWidth) || 4.2,
+          roomDepth: Number(designInput.roomDepth) || 4.2,
           items: itemsForStorage,
-          style: typeof d.style === "string" ? d.style : null,
-          budget: typeof d.budget === "string" ? d.budget : null,
-          mode: typeof d.mode === "string" ? d.mode : "homeowner",
+          style: typeof designInput.style === "string" ? designInput.style : null,
+          budget: typeof designInput.budget === "string" ? designInput.budget : null,
+          mode: typeof designInput.mode === "string" ? designInput.mode : "homeowner",
           shareEnabled: false,
           shareToken: null,
         },

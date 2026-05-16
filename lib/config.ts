@@ -17,14 +17,16 @@ type EnvConfig = {
 };
 
 const normalizeAppEnv = (raw: string | undefined): AppEnv => {
-  const value = (raw || "").toLowerCase();
+  const value = (raw || "").trim().toLowerCase();
   if (value === "production") return "production";
   if (value === "staging") return "staging";
   return "development";
 };
 
 const appEnv = normalizeAppEnv(
-  process.env.APP_ENV || process.env.NEXT_PUBLIC_APP_ENV || process.env.VERCEL_ENV || process.env.NODE_ENV
+  // Do not treat Next.js' build-time NODE_ENV=production as a deploy signal.
+  // CI and preview builds should stay in development mode unless APP_ENV or VERCEL_ENV says otherwise.
+  process.env.APP_ENV || process.env.NEXT_PUBLIC_APP_ENV || process.env.VERCEL_ENV
 );
 
 const isDev = appEnv === "development";
@@ -34,7 +36,8 @@ const isProdLike = isStaging || isProd;
 
 const flagFromEnv = (value: string | undefined, defaultValue: boolean) => {
   if (value === undefined) return defaultValue;
-  return value.toLowerCase() === "true" || value === "1";
+  const normalized = value.trim().toLowerCase();
+  return normalized === "true" || normalized === "1";
 };
 
 const features: FeatureFlags = {
@@ -85,9 +88,7 @@ const ensureSafeProdSecrets = (errors: string[]) => {
 };
 
 export function validateEnvOrThrow() {
-  // Skip validation during build if APP_ENV is not explicitly set to staging/production
-  const isExplicitProdEnv = process.env.APP_ENV === "staging" || process.env.APP_ENV === "production";
-  if (!config.isProdLike || !isExplicitProdEnv) return;
+  if (!config.isProdLike) return;
 
   const missing: string[] = [];
 
@@ -104,14 +105,11 @@ export function validateEnvOrThrow() {
   requireEnv("STRIPE_WEBHOOK_SECRET", process.env.STRIPE_WEBHOOK_SECRET, missing);
   requireEnv("STRIPE_PRICE_PRO_MONTHLY", process.env.STRIPE_PRICE_PRO_MONTHLY, missing);
   requireEnv("STRIPE_PRICE_PRO_YEARLY", process.env.STRIPE_PRICE_PRO_YEARLY, missing);
-  requireEnv("SENTRY_DSN", process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN, missing);
   requireEnv("AUTH_SECRET", process.env.AUTH_SECRET, missing);
   requireEnv("GOOGLE_CLIENT_ID", process.env.GOOGLE_CLIENT_ID, missing);
   requireEnv("GOOGLE_CLIENT_SECRET", process.env.GOOGLE_CLIENT_SECRET, missing);
   requireEnv("APP_ORIGIN", process.env.APP_ORIGIN, missing);
   requireEnv("ADMIN_EMAILS", process.env.ADMIN_EMAILS, missing);
-  requireEnv("RESEND_API_KEY", process.env.RESEND_API_KEY, missing);
-  requireEnv("EMAIL_FROM", process.env.EMAIL_FROM, missing);
 
   const errors: string[] = [];
   if (missing.length) {

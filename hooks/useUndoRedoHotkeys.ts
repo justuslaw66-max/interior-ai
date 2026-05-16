@@ -6,6 +6,8 @@ export function useUndoRedoHotkeys(opts: {
   undo: () => void;
   redo: () => void;
 }) {
+  const { undo, redo } = opts;
+
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       const isMac = navigator.platform.toLowerCase().includes("mac");
@@ -15,17 +17,17 @@ export function useUndoRedoHotkeys(opts: {
 
       if (e.key.toLowerCase() === "z" && !e.shiftKey) {
         e.preventDefault();
-        opts.undo();
+        undo();
       } else if (
         (e.key.toLowerCase() === "z" && e.shiftKey) ||
         e.key.toLowerCase() === "y"
       ) {
         e.preventDefault();
-        opts.redo();
+        redo();
       }
     }
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [opts.undo, opts.redo]);
+  }, [undo, redo]);
 }

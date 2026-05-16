@@ -1,0 +1,162 @@
+brand: "Castlery"
+category: "tv_console"
+subcategory: "media_console"
+
+product_family: "Casa"
+product_name: "Casa TV Console"
+slug: "casa-tv-console-150cm"
+variant: "150cm / White Wash"
+
+price_usd: 899
+price_band: "mid_premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "media_anchor"
+
+dimensions:
+  width_cm: 150
+  depth_cm: 45
+  height_cm: 59
+
+size_class: "large"
+shape: "rectangular"
+base_type: "four_leg"
+
+material_family: "wood"
+material_mix: "engineered_wood_acacia_veneer_solid_acacia"
+materials:
+  body:
+    structure: "engineered_wood"
+    surface: "acacia_veneer"
+  legs:
+    structure: "solid_wood"
+    wood_species: "acacia"
+finish:
+  color_finish: "white_wash"
+  protective_coating: "nc_coating"
+  surface_finish: "light_wire_brushed"
+  finish_color: "white_wash"
+
+color_family: "brown"
+tone: "warm"
+
+style_cluster: "modern"
+style_secondary: "minimalist"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "clean_straight"
+  silhouette: "linear_media_console"
+  form_language: "clean"
+  descriptors:
+    - "clean_lines"
+    - "minimalist"
+    - "low_media_console"
+
+spatial_attributes:
+  footprint_shape: "rectangle"
+  walkway_clearance_cm: 70
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: true
+  clearance_sensitive: true
+  center_room_preferred: false
+
+clearance_rules:
+  back_mm: 0
+  left_mm: 50
+  right_mm: 50
+  front_mm: 700
+
+design_pairings:
+  - "sofa"
+  - "rug"
+  - "floor_lamp"
+  - "side_table"
+
+feature_flags:
+  has_storage: true
+  has_cable_management: true
+
+storage:
+  cable_management_holes: 4
+  shelf_type: "adjustable"
+  shelves_height_cm:
+    - 14.5
+  drawer_mechanism: "ball_bearing_side_guide"
+  drawer_capacity:
+    count: 2
+    internal_cm:
+      width: 45
+      depth: 32
+      height: 9
+  cupboard_capacity:
+    count: 4
+    internal_cm:
+      width: 45
+      depth: 32
+      height: 11
+
+safety_and_compliance:
+  standards:
+    - "low_formaldehyde"
+  safety_features:
+    - "anti_tip_prevention"
+
+assets:
+  asset_id: "tv-real-castlery-casa-tv-console-150"
+  model_url: "/assets/models/tv-real-castlery-casa-tv-console-150.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1756455117/crusader/variants/40550345/Casa-TV-Console-150cm-Front-1756455114.png"
+  gallery_images:
+    - "/assets/thumbs/tv-real-castlery-casa-tv-console-150.jpg"
+    - "/assets/thumbs/tv-real-castlery-casa-tv-console-150-hero.jpg"
+
+variants:
+  - variant: "Casa TV Console / 150cm"
+    size_label: "150cm"
+    finish_code: "white_wash"
+    finish_label: "White Wash"
+    swatch_group: "finish"
+    color_family: "brown"
+    tone: "warm"
+    price_usd: 899
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 150
+      depth_cm: 45
+      height_cm: 59
+    materials:
+      body:
+        structure: "engineered_wood"
+        surface: "acacia_veneer"
+      legs:
+        structure: "solid_wood"
+        wood_species: "acacia"
+    finish:
+      color_finish: "white_wash"
+      surface_finish: "light_wire_brushed"
+      finish_color: "white_wash"
+
+purchase:
+  purchase_mode: "external_retailer"
+  retailer_name: "Castlery Singapore"
+  buy_url: "https://www.castlery.com/sg/products/casa-tv-console"
+
+shipping_and_warranty:
+  free_delivery_threshold_sgd: 300
+  returns_window_days: 30
+  cancellation: "Free up to 5 working days before delivery"
+  warranty: "5-year limited warranty"
+
+notes:
+  - "Imported from user-provided Casa TV Console metadata and local GLB source."
+  - "This entry represents the 150cm model with dedicated GLB and local thumbnail assets."
+  - "Casa family 200cm model is imported as a separate catalog entry for one-model-per-asset compatibility."

@@ -25,7 +25,14 @@ export default async function DesignPage({
 
   return (
     <DesignerCanvas
-      initialItems={design.items as any}
+      initialItems={design.items as unknown as Array<{
+        instanceId: string;
+        productId: string;
+        variantId: string;
+        position: [number, number, number];
+        rotationY?: number;
+        includeInCheckout?: boolean;
+      }>}
       roomWidth={design.roomWidth}
       roomDepth={design.roomDepth}
     />

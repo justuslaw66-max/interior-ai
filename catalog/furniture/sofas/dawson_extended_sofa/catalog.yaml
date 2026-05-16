@@ -1,0 +1,723 @@
+brand: "Castlery"
+category: "sofa"
+
+product_family: "Dawson"
+product_name: "Dawson Extended Sofa"
+variant: "Standard"
+
+price_usd: 2747
+price_band: "premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "sofa_anchor"
+
+dimensions:
+  width_cm: 321
+  depth_cm: 114
+  height_cm: 81
+
+seat_capacity: 4
+size_class: "extra_large"
+shape: "rectangular"
+base_type: "concealed_leg"
+
+material_family: "upholstered"
+material_mix: "upholstered_composite"
+material_mix_components:
+  - "laminated_veneer_lumber"
+  - "plywood"
+  - "polyester"
+  - "linen"
+  - "plastic"
+materials:
+  frame:
+    structure:
+      - "laminated_veneer_lumber"
+      - "plywood"
+  leg_frame:
+    structure: "plastic"
+    finish: "black"
+
+color_family: "beige"
+tone: "neutral"
+
+style_cluster: "contemporary"
+style_secondary: "modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "heavy"
+  edge_profile: "rounded"
+  silhouette: "linear"
+  form_language: "soft"
+  descriptors:
+    - "extra_wide_proportion"
+    - "deep_seat_profile"
+    - "oversized_back_cushions"
+    - "block_arms"
+    - "relaxed_luxury"
+    - "removable_covers"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  walkway_clearance_cm: 85
+  descriptors:
+    - "extra_wide_anchor_piece"
+    - "deep_lounge_seating"
+    - "works_in_large_living_rooms"
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+  - "open_plan"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: true
+  clearance_sensitive: true
+  center_room_preferred: false
+  floating_layout_supported: true
+  recommended_in_front_of:
+    - "coffee_table"
+    - "rug"
+    - "media_console"
+  clearance_guidance:
+    sofa_to_table_cm_min: 30
+    sofa_to_table_cm_ideal: 40
+    circulation_cm_min: 85
+
+design_pairings:
+  - "coffee_table"
+  - "side_table"
+  - "rug"
+  - "floor_lamp"
+  - "media_console"
+  - "ottoman"
+
+compatibility:
+  related_products:
+    - product_family: "Dawson"
+      product_name: "Dawson Ottoman"
+      relationship: "matching_companion"
+      strength: "strong"
+      collection_context: "same_collection"
+    - product_family: "Dawson"
+      product_name: "Dawson Swivel Armchair"
+      relationship: "matching_companion"
+      strength: "strong"
+      collection_context: "same_collection"
+    - product_family: "Dawson"
+      product_name: "Dawson Wide Chaise Sectional Sofa"
+      relationship: "family_variant"
+      strength: "medium"
+      collection_context: "same_collection"
+
+bundle_metadata:
+  bundle_role: "living_anchor"
+  can_bundle_with:
+    - "coffee_table"
+    - "side_table"
+    - "rug"
+    - "floor_lamp"
+    - "media_console"
+    - "ottoman"
+
+construction:
+  frame:
+    structure:
+      - "laminated_veneer_lumber"
+      - "plywood"
+  leg_frame:
+    structure: "plastic"
+    finish: "black"
+  cover_type:
+    - "removable_seat_cushion_covers"
+    - "removable_back_cushion_covers"
+    - "removable_frame_covers"
+  filling:
+    seat:
+      - "foam"
+      - "fibre"
+      - "feather"
+    back:
+      - "fibre"
+      - "feather"
+  suspension: "sinuous_spring"
+
+upholstery_options:
+# Fabric palette is resolved from the shared Dawson upholstery library.
+# Edit catalog/furniture/_upholstery_libraries/dawson.yaml to update all 6 products at once.
+upholstery_library_ref: "dawson"
+
+assets:
+  asset_id: "sofa-real-castlery-dawson-extended-sofa"
+  model_url: "/assets/models/sofa-real-castlery-dawson-extended-sofa.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1634717099/crusader/variants/T50440987-NG4001/Dawson-Extended-Sofa-Beach-Linen-Front.jpg"
+
+variants:
+  - variant: "Dawson Extended Sofa / Slub Linen Weave (Navagio), Cream (Beach Linen)"
+    size_label: "321x114"
+    upholstery_code: "beach_linen"
+    upholstery_label: "Slub Linen Weave (Navagio), Cream (Beach Linen)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1634717099/crusader/variants/T50440987-NG4001/Dawson-Extended-Sofa-Beach-Linen-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1634717258/crusader/variants/T50440987-NG4001/Dawson-Extended-Sofa-With-Ottoman-Beach-Linen-Square-Set_6.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1634717099/crusader/variants/T50440987-NG4001/Dawson-Extended-Sofa-Beach-Linen-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1634717132/crusader/variants/T50440987-NG4001/Dawson-Extended-Sofa-Beach-Linen-Angle.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1634717099/crusader/variants/T50440987-NG4001/Dawson-Extended-Sofa-Beach-Linen-Side.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1634717099/crusader/variants/T50440987-NG4001/Dawson-Extended-Sofa-Beach-Linen-Back.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2747
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "cream"
+    tone: "warm"
+    set_compatibility: []
+  - variant: "Dawson Extended Sofa / Slub Linen Weave (Navagio), Medium Grey (Seagull)"
+    size_label: "321x114"
+    upholstery_code: "navagio_seagull"
+    upholstery_label: "Slub Linen Weave (Navagio), Medium Grey (Seagull)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1697616888/crusader/variants/AS-000375-NG4002/Dawson-Extended-3-Seater-Sofa-Seagull-Front-1697616885.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1697616651/crusader/variants/AS-000375-NG4002/Dawson-Extended-3-Seater-Sofa-With-Armchair-With-Ottoman-Seagull-Square-Set_2-1697616648.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1697616888/crusader/variants/AS-000375-NG4002/Dawson-Extended-3-Seater-Sofa-Seagull-Front-1697616885.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1697616651/crusader/variants/AS-000375-NG4002/Dawson-Extended-3-Seater-Sofa-With-Armchair-With-Ottoman-Seagull-Square-Set_5-1697616649.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1703840711/crusader/variants/AS-000375-NG4002/Dawson-3-Seater-Sofa-Seagull-Det_1-1703840706.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1724057765/crusader/variants/AS-000375-NG4002/Sofa-Armrest-Table-Natural-Square-Set_4-1724057763.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1697616888/crusader/variants/AS-000375-NG4002/Dawson-Extended-3-Seater-Sofa-Seagull-Angle-1697616885.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1697616888/crusader/variants/AS-000375-NG4002/Dawson-Extended-3-Seater-Sofa-Seagull-Side-1697616885.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1697616888/crusader/variants/AS-000375-NG4002/Dawson-Extended-3-Seater-Sofa-Seagull-Back-1697616885.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2747
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "grey"
+    tone: "cool"
+    set_compatibility: []
+  - variant: "Dawson Extended Sofa / Performance Creamy White"
+    size_label: "321x114"
+    upholstery_code: "performance_creamy_white"
+    upholstery_label: "Performance Creamy White"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1721283373/crusader/variants/AS-000375C-PT4001/Dawson-Extended-Sofa-Creamy-White-Front-1721283371.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1721283373/crusader/variants/AS-000375C-PT4001/Dawson-Extended-Sofa-Creamy-White-Front-1721283371.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2747
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "cream"
+    tone: "warm"
+    set_compatibility: []
+  - variant: "Dawson Extended Sofa / Performance Textured Plain Weave (Marcel), Cream (Brilliant White)"
+    size_label: "321x114"
+    upholstery_code: "marcel_brilliant_white"
+    upholstery_label: "Performance Textured Plain Weave (Marcel), Cream (Brilliant White)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1721283322/crusader/variants/AS-000375C-PM4002/Dawson-Extended-Sofa-Brilliant-White-Front-1721283320.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1721283322/crusader/variants/AS-000375C-PM4002/Dawson-Extended-Sofa-Brilliant-White-Front-1721283320.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2747
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "cream"
+    tone: "warm"
+    set_compatibility: []
+  - variant: "Dawson Extended Sofa / Performance Fleece (Peyton), Ivory (Cream)"
+    size_label: "321x114"
+    upholstery_code: "peyton_ivory"
+    upholstery_label: "Performance Fleece (Peyton), Ivory (Cream)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1721283310/crusader/variants/AS-000375C-PY4001/Dawson-Extended-Sofa-Ivory-Front-1721283307.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1721283310/crusader/variants/AS-000375C-PY4001/Dawson-Extended-Sofa-Ivory-Front-1721283307.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2747
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "cream"
+    tone: "warm"
+    set_compatibility: []
+  - variant: "Dawson Extended Sofa / Performance Fleece (Peyton), Medium Grey (Dove Grey)"
+    size_label: "321x114"
+    upholstery_code: "peyton_dove_grey"
+    upholstery_label: "Performance Fleece (Peyton), Medium Grey (Dove Grey)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737360943/crusader/variants/AS-000375C-PY4002/Dawson-Extended-Sofa-Dove-Grey-Front-1737360941.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1737360943/crusader/variants/AS-000375C-PY4002/Dawson-Extended-Sofa-Dove-Grey-Front-1737360941.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2747
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "grey"
+    tone: "cool"
+    set_compatibility: []
+  - variant: "Dawson Extended Sofa / Performance Textured Plain Weave (Marcel), Smoke Grey"
+    size_label: "321x114"
+    upholstery_code: "marcel_smoke_grey"
+    upholstery_label: "Performance Textured Plain Weave (Marcel), Smoke Grey"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1721283270/crusader/variants/AS-000375C-PM4001/Dawson-Extended-Sofa-Smoke-Grey-Front-1721283268.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1721283270/crusader/variants/AS-000375C-PM4001/Dawson-Extended-Sofa-Smoke-Grey-Front-1721283268.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2747
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "grey"
+    tone: "cool"
+    set_compatibility: []
+  - variant: "Dawson Extended Sofa / Performance Fleece (Peyton), Moss"
+    size_label: "321x114"
+    upholstery_code: "peyton_moss"
+    upholstery_label: "Performance Fleece (Peyton), Moss"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1721283249/crusader/variants/AS-000375C-PY4003/Dawson-Extended-Sofa-Moss-Front-1721283246.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1721283819/crusader/variants/AS-000375C-PY4003/Dawson-Sofa-Moss-Campaign-Square-Set_1-1721283816.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1721283249/crusader/variants/AS-000375C-PY4003/Dawson-Extended-Sofa-Moss-Front-1721283246.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2747
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "green"
+    tone: "warm"
+    set_compatibility: []
+  - variant: "Dawson Extended Sofa / Performance Fleece (Peyton), Caramel (Cumin)"
+    size_label: "321x114"
+    upholstery_code: "peyton_cumin"
+    upholstery_label: "Performance Fleece (Peyton), Caramel (Cumin)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1721283221/crusader/variants/AS-000375C-PY4004/Dawson-Extended-Sofa-Cumin-Front-1721283219.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1721283221/crusader/variants/AS-000375C-PY4004/Dawson-Extended-Sofa-Cumin-Front-1721283219.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2747
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "brown"
+    tone: "warm"
+    set_compatibility: []
+  - variant: "Dawson Extended Sofa / Performance Infinity Boucle, Rust (Ginger)"
+    size_label: "321x114"
+    upholstery_code: "infinity_boucle_ginger"
+    upholstery_label: "Performance Infinity Boucle, Rust (Ginger)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723540812/crusader/variants/AS-000375C-IN4003/Dawson-Extended-Sofa-Ginger-Front-1723540810.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1723540812/crusader/variants/AS-000375C-IN4003/Dawson-Extended-Sofa-Ginger-Front-1723540810.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2747
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "rust"
+    tone: "warm"
+    set_compatibility: []
+  - variant: "Dawson Extended Sofa / Performance Infinity Boucle, Light Grey (White Quartz)"
+    size_label: "321x114"
+    upholstery_code: "infinity_boucle_white_quartz"
+    upholstery_label: "Performance Infinity Boucle, Light Grey (White Quartz)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1721283192/crusader/variants/AS-000375C-IN4002/Dawson-Extended-Sofa-White-Quartz-Front-1721283190.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1721283192/crusader/variants/AS-000375C-IN4002/Dawson-Extended-Sofa-White-Quartz-Front-1721283190.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2747
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "light_grey"
+    tone: "neutral"
+    set_compatibility: []
+
+  - variant: "Dawson Extended Sofa / Performance Infinity Boucle, Cream"
+    size_label: "321x114"
+    upholstery_code: "performance_boucle_cream"
+    upholstery_label: "Performance Infinity Boucle, Cream"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773903294/crusader/variants/AS-000375C-IN4005/Dawson-Extended-Sofa-Cream-Front-1773903292.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773903294/crusader/variants/AS-000375C-IN4005/Dawson-Extended-Sofa-Cream-Front-1773903292.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2747
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "cream"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson Extended Sofa / Performance Infinity Boucle, Moss"
+    size_label: "321x114"
+    upholstery_code: "performance_infinity_boucle_moss"
+    upholstery_label: "Performance Infinity Boucle, Moss"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1774246273/crusader/variants/AS-000375C-IN4004/Dawson-Extended-Sofa-Moss-Front-1774246271.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1774246273/crusader/variants/AS-000375C-IN4004/Dawson-Extended-Sofa-Moss-Front-1774246271.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2747
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "green"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson Extended Sofa / Performance Twill, Pearl Beige"
+    size_label: "321x114"
+    upholstery_code: "performance_twill_pearl_beige"
+    upholstery_label: "Performance Twill, Pearl Beige"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773900859/crusader/variants/AS-000375C-PT4002/Dawson-Extended-Sofa-Performance-Twill-Pearl-Beige-Front-1773900857.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773900859/crusader/variants/AS-000375C-PT4002/Dawson-Extended-Sofa-Performance-Twill-Pearl-Beige-Front-1773900857.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2747
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "beige"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson Extended Sofa / Performance Twill, Slate"
+    size_label: "321x114"
+    upholstery_code: "performance_twill_slate"
+    upholstery_label: "Performance Twill, Slate"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773900883/crusader/variants/AS-000375C-PT4003/Dawson-Extended-Sofa-Performance-Twill-Slate-Front-1773900880.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773900883/crusader/variants/AS-000375C-PT4003/Dawson-Extended-Sofa-Performance-Twill-Slate-Front-1773900880.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2747
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "grey"
+    tone: "cool"
+    set_compatibility: []
+
+  - variant: "Dawson Extended Sofa / Performance Twill, Moss"
+    size_label: "321x114"
+    upholstery_code: "performance_twill_moss"
+    upholstery_label: "Performance Twill, Moss"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773900896/crusader/variants/AS-000375C-PT4004/Dawson-Extended-Sofa-Performance-Twill-Moss-Front-1773900893.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773900896/crusader/variants/AS-000375C-PT4004/Dawson-Extended-Sofa-Performance-Twill-Moss-Front-1773900893.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2747
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "green"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson Extended Sofa / Performance Twill, Medium Grey"
+    size_label: "321x114"
+    upholstery_code: "performance_twill_dove_grey"
+    upholstery_label: "Performance Twill, Medium Grey"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773900913/crusader/variants/AS-000375C-PT4005/Dawson-Extended-Sofa-Performance-Twill-Dove-Grey-Front-1773900910.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773900913/crusader/variants/AS-000375C-PT4005/Dawson-Extended-Sofa-Performance-Twill-Dove-Grey-Front-1773900910.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2747
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "grey"
+    tone: "cool"
+    set_compatibility: []
+
+  - variant: "Dawson Extended Sofa / Performance Linen Weave (Genova), Sand (Oat)"
+    size_label: "321x114"
+    upholstery_code: "performance_genova_oat"
+    upholstery_label: "Performance Linen Weave (Genova), Sand (Oat)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773911268/crusader/variants/AS-000375C-PG4002/Dawson-Extended-Sofa-Performance-Genova-Oat-Front-1773911265.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773911268/crusader/variants/AS-000375C-PG4002/Dawson-Extended-Sofa-Performance-Genova-Oat-Front-1773911265.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2747
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "sand"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson Extended Sofa / Performance Linen Weave (Genova), Cream"
+    size_label: "321x114"
+    upholstery_code: "performance_linen_weave_cream"
+    upholstery_label: "Performance Linen Weave (Genova), Cream"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773911282/crusader/variants/AS-000375C-PG4003/Dawson-Extended-Sofa-Cream-Front-1773911280.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773911282/crusader/variants/AS-000375C-PG4003/Dawson-Extended-Sofa-Cream-Front-1773911280.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2747
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "cream"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson Extended Sofa / Performance Linen Weave (Genova), Light Grey"
+    size_label: "321x114"
+    upholstery_code: "performance_linen_weave_light_grey"
+    upholstery_label: "Performance Linen Weave (Genova), Light Grey"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773911296/crusader/variants/AS-000375C-PG4004/Dawson-Extended-Sofa-Light-Grey-Front-1773911293.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773911296/crusader/variants/AS-000375C-PG4004/Dawson-Extended-Sofa-Light-Grey-Front-1773911293.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2747
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "light_grey"
+    tone: "neutral"
+    set_compatibility: []
+
+  - variant: "Dawson Extended Sofa / Washed Chenille, Cream"
+    size_label: "321x114"
+    upholstery_code: "greta_ivory"
+    upholstery_label: "Washed Chenille, Cream"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1774246327/crusader/variants/AS-000375C-GR4001/Dawson-Extended-Sofa-Cream-Front-1774246325.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1774246327/crusader/variants/AS-000375C-GR4001/Dawson-Extended-Sofa-Cream-Front-1774246325.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2747
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "cream"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson Extended Sofa / Washed Chenille, Sand"
+    size_label: "321x114"
+    upholstery_code: "washed_chenille_sand"
+    upholstery_label: "Washed Chenille, Sand"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1774246339/crusader/variants/AS-000375C-GR4002/Dawson-Extended-Sofa-Sand-Front-1774246337.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1774246339/crusader/variants/AS-000375C-GR4002/Dawson-Extended-Sofa-Sand-Front-1774246337.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2747
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "sand"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson Extended Sofa / Washed Chenille, Caramel"
+    size_label: "321x114"
+    upholstery_code: "greta_mustard_brown"
+    upholstery_label: "Washed Chenille, Caramel"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1774246365/crusader/variants/AS-000375C-GR4003/Dawson-Extended-Sofa-Caramel-Front-1774246362.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1774246365/crusader/variants/AS-000375C-GR4003/Dawson-Extended-Sofa-Caramel-Front-1774246362.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2747
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "brown"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson Extended Sofa / Washed Chenille, Moss"
+    size_label: "321x114"
+    upholstery_code: "greta_moss"
+    upholstery_label: "Washed Chenille, Moss"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1774246379/crusader/variants/AS-000375C-GR4004/Dawson-Extended-Sofa-Moss-Front-1774246377.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1774246379/crusader/variants/AS-000375C-GR4004/Dawson-Extended-Sofa-Moss-Front-1774246377.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2747
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "green"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson Extended Sofa / Cocoa (Leather)"
+    size_label: "321x114"
+    upholstery_code: "cocoa_leather"
+    upholstery_label: "Cocoa (Leather)"
+    finish_code: "cocoa_leather"
+    finish_label: "Cocoa (Leather)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1715936700/crusader/variants/AS-000529-LE4020/Dawson-Extended-3-Seater-Sofa-Cocoa-Front-1715936697.png"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1722581170/crusader/variants/AS-000529-LE4020/Dawson-Leather-Extended-Sofa-Square-Set_3-1722581164.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1715936700/crusader/variants/AS-000529-LE4020/Dawson-Extended-3-Seater-Sofa-Cocoa-Front-1715936697.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1722581167/crusader/variants/AS-000529-LE4020/Dawson-Leather-Extended-Sofa-Square-Set_1-1722581164.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1717748976/crusader/variants/AS-000529-LE4020/Sofa-Armrest-Table-Natural-Square-Set_4-1717748973.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1715936700/crusader/variants/AS-000529-LE4020/Dawson-Extended-3-Seater-Sofa-Cocoa-Angle-1715936698.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1715936700/crusader/variants/AS-000529-LE4020/Dawson-Extended-3-Seater-Sofa-Cocoa-Side-1715936697.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1715936700/crusader/variants/AS-000529-LE4020/Dawson-Extended-3-Seater-Sofa-Cocoa-Back-1715936698.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2747
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "brown"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson Extended Sofa / Caramel (Leather)"
+    size_label: "321x114"
+    upholstery_code: "caramel_leather"
+    upholstery_label: "Caramel (Leather)"
+    finish_code: "caramel_leather"
+    finish_label: "Caramel (Leather)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773800883/crusader/variants/AS-000529C-LE4016/Dawson-Extended-Sofa-Caramel-Front-1773800881.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773800883/crusader/variants/AS-000529C-LE4016/Dawson-Extended-Sofa-Caramel-Front-1773800881.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2747
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "brown"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson Extended Sofa / Warm Taupe (Leather)"
+    size_label: "321x114"
+    upholstery_code: "warm_taupe_leather"
+    upholstery_label: "Warm Taupe (Leather)"
+    finish_code: "warm_taupe_leather"
+    finish_label: "Warm Taupe (Leather)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773800903/crusader/variants/AS-000529C-LE4017/Dawson-Extended-Sofa-Warm-Taupe-Front-1773800901.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773800903/crusader/variants/AS-000529C-LE4017/Dawson-Extended-Sofa-Warm-Taupe-Front-1773800901.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2747
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "taupe"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson Extended Sofa / Marche Ivory (Leather)"
+    size_label: "321x114"
+    upholstery_code: "marche_ivory_leather"
+    upholstery_label: "Marche Ivory (Leather)"
+    finish_code: "marche_ivory_leather"
+    finish_label: "Marche Ivory (Leather)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773800921/crusader/variants/AS-000529C-LE4021/Dawson-Extended-Sofa-Marche-Ivory-Front-1773800919.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773800921/crusader/variants/AS-000529C-LE4021/Dawson-Extended-Sofa-Marche-Ivory-Front-1773800919.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2747
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "cream"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Dawson Extended Sofa / Marche Graphite (Leather)"
+    size_label: "321x114"
+    upholstery_code: "marche_graphite_leather"
+    upholstery_label: "Marche Graphite (Leather)"
+    finish_code: "marche_graphite_leather"
+    finish_label: "Marche Graphite (Leather)"
+    swatch_hex: "#2F3136"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773912087/crusader/variants/AS-000529C-LE4022/Dawson-Extended-Sofa-Marche-Graphite-Front-1773912085.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773912087/crusader/variants/AS-000529C-LE4022/Dawson-Extended-Sofa-Marche-Graphite-Front-1773912085.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2747
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "grey"
+    tone: "cool"
+    set_compatibility: []
+
+  - variant: "Dawson Extended Sofa / Marche Cocoa (Leather)"
+    size_label: "321x114"
+    upholstery_code: "marche_cocoa_leather"
+    upholstery_label: "Marche Cocoa (Leather)"
+    finish_code: "marche_cocoa_leather"
+    finish_label: "Marche Cocoa (Leather)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773912105/crusader/variants/AS-000529C-LE4023/Dawson-Extended-Sofa-Marche-Cocoa-Front-1773912103.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773912105/crusader/variants/AS-000529C-LE4023/Dawson-Extended-Sofa-Marche-Cocoa-Front-1773912103.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 2747
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "brown"
+    tone: "warm"
+    set_compatibility: []
+
+ai_flags:
+  isStarterEligible: false
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true

@@ -1,0 +1,167 @@
+brand: "Castlery"
+category: "tv_console"
+
+product_family: "Sawyer"
+product_name: "Sawyer TV Console"
+slug: "sawyer-tv-console-200cm"
+variant: "200cm / Natural"
+
+price_usd: 1199
+price_band: "mid_premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "media_anchor"
+
+dimensions:
+  width_cm: 200
+  depth_cm: 45
+  height_cm: 60
+
+size_class: "extra_large"
+shape: "rectangular"
+base_type: "four_leg"
+
+material_family: "wood"
+material_mix: "oak_veneer_engineered_wood"
+materials:
+  frame:
+    structure: "solid_wood"
+    wood_species: "oak"
+  body:
+    structure: "engineered_wood"
+    surface: "oak_veneer"
+  doors:
+    structure: "solid_wood"
+    wood_species: "oak"
+  legs:
+    structure: "solid_wood"
+    wood_species: "birch"
+finish:
+  color_finish: "natural"
+  protective_coating: "lacquer"
+  surface_finish: "matte"
+  finish_color: "natural"
+
+color_family: "brown"
+tone: "warm"
+
+style_cluster: "modern"
+style_secondary: "minimalist"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "beveled"
+  silhouette: "linear_storage_console"
+  form_language: "clean"
+  descriptors:
+    - "clean_lines"
+    - "sleek_profile"
+    - "low_media_console"
+
+spatial_attributes:
+  footprint_shape: "rectangle"
+  walkway_clearance_cm: 70
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+  - "open_plan"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: true
+  clearance_sensitive: true
+  center_room_preferred: false
+
+clearance_rules:
+  back_mm: 0
+  left_mm: 50
+  right_mm: 50
+  front_mm: 700
+
+design_pairings:
+  - "sofa"
+  - "rug"
+  - "floor_lamp"
+  - "side_table"
+
+feature_flags:
+  has_storage: true
+  has_cable_management: true
+
+storage:
+  cable_management_holes: 8
+  shelf_type: "adjustable"
+  shelves_height_cm:
+    - 16.6
+    - 19.8
+    - 23.0
+  cupboard_capacity:
+    compartments:
+      - count: 4
+        internal_cm:
+          width: 46.6
+          depth: 39
+          height_options:
+            - 16.6
+            - 19.8
+            - 23.0
+      - count: 4
+        internal_cm:
+          width: 47.6
+          depth: 39
+          height_options:
+            - 16.6
+            - 19.8
+            - 23.0
+
+assets:
+  asset_id: "tv-real-castlery-sawyer-tv-console-200"
+  model_url: "/assets/models/tv-real-castlery-sawyer-tv-console-200.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1673927310/crusader/variants/50220001/Sawyer-TV-Console-Angle-1673927308.png"
+
+variants:
+  - variant: "Sawyer TV Console / Natural"
+    finish_code: "natural"
+    finish_label: "Natural"
+    swatch_group: "finish"
+    color_family: "brown"
+    tone: "warm"
+    price_usd: 1199
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 200
+      depth_cm: 45
+      height_cm: 60
+    materials:
+      body:
+        structure: "engineered_wood"
+        surface: "oak_veneer"
+      doors:
+        structure: "solid_wood"
+        wood_species: "oak"
+      legs:
+        structure: "solid_wood"
+        wood_species: "birch"
+    finish:
+      color_finish: "natural"
+      surface_finish: "wire_brushed"
+      finish_color: "natural"
+
+purchase:
+  purchase_mode: "external_retailer"
+  retailer_name: "Castlery Singapore"
+  buy_url: "https://www.castlery.com/sg/products/sawyer-tv-console-200cm"
+
+shipping_and_warranty:
+  free_delivery_threshold_sgd: 300
+  returns_window_days: 30
+  warranty: "5-year limited warranty"
+  cancellation: "Free up to 5 working days before delivery"
+
+notes:
+  - "Imported from Castlery SG source page metadata."
+  - "No public product thumbnail was available in source folder; temporary placeholder thumbnail is used."

@@ -1,0 +1,205 @@
+brand: "Castlery"
+category: "coffee_table"
+
+product_family: "Seb"
+product_name: "Seb Coffee Table with Storage"
+slug: "castlery-seb-coffee-table-with-storage-120"
+variant: "Seb Coffee Table with Storage / 120cm / Muted Honey"
+
+price_usd: 699
+price_band: "mid_premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "secondary"
+
+dimensions:
+  width_cm: 120
+  depth_cm: 70
+  height_cm: 45
+
+size_class: "medium"
+shape: "rectangular"
+base_type: "four_leg"
+
+material_family: "wood"
+material_mix:
+  - "solid_acacia_wood"
+  - "metal"
+
+color_family: "brown"
+tone: "warm"
+
+style_cluster: "midcentury_modern"
+style_secondary: "modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "rounded_soft"
+  silhouette: "raised_storage_block"
+  form_language: "softened_rectilinear_midcentury"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  storage_integrated: true
+  raised_base: true
+  center_table_suitable: true
+  works_in_medium_room: true
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+  - "open_plan"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: true
+
+design_pairings:
+  - "sofa"
+  - "sectional_sofa"
+  - "loveseat"
+  - "side_table"
+  - "media_console"
+  - "rug"
+  - "floor_lamp"
+  - "accent_chair"
+
+compatibility:
+  related_products:
+    - product_family: "Seb"
+      product_name: "Seb Coffee Table with Storage"
+      variant: "90cm / Muted Honey"
+      relationship: "family_variant"
+      strength: "strong"
+    - product_family: "Vento"
+      product_name: "Vento Coffee Table"
+      relationship: "recommended_with"
+      strength: "medium"
+    - product_family: "Jaron"
+      product_name: "Jaron Recliner Sofa"
+      relationship: "recommended_with"
+      strength: "strong"
+    - product_family: "Madison"
+      product_name: "Madison Sofa"
+      relationship: "recommended_with"
+      strength: "strong"
+
+recommendation_metadata:
+  recommendation_role: "living_room_surface"
+  primary_use_cases:
+    - "sofa_pairing"
+    - "centerpiece_surface"
+    - "storage_coffee_table"
+    - "drawer_organization"
+
+bundle_metadata:
+  bundle_role: "accent"
+  can_bundle_with:
+    - "sofa"
+    - "sectional_sofa"
+    - "side_table"
+    - "media_console"
+    - "rug"
+    - "floor_lamp"
+    - "accent_chair"
+  recommended_with_products:
+    - product_family: "Jaron"
+      product_name: "Jaron Recliner Sofa"
+      relationship: "recommended_with"
+      strength: "strong"
+    - product_family: "Madison"
+      product_name: "Madison Sofa"
+      relationship: "recommended_with"
+      strength: "strong"
+    - product_family: "Vento"
+      product_name: "Vento Coffee Table"
+      relationship: "recommended_with"
+      strength: "medium"
+  set_behavior:
+    supports_living_room_pairing: true
+    supports_centerpiece_surface: true
+    supports_storage_surface_pairing: true
+
+authoring_notes:
+  category_confidence: "high"
+  preset_family: "table"
+  major_family_example_candidate: true
+
+assets:
+  asset_id: "coffee-real-castlery-seb-storage-120"
+  model_url: "/assets/models/coffee-real-castlery-seb-storage-120.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1768897928/crusader/variants/40550392/Seb-Coffee-Table-90cm-Front-1768897926.png"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+
+variants:
+  - variant: "Seb Coffee Table with Storage / 120cm / Muted Honey"
+    sku: null
+    size_label: "120x70"
+    finish_code: "muted_honey_wire_brushed"
+    finish_label: "Muted Honey"
+    swatch_group: "wood_finish"
+
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+
+    dimensions:
+      width_cm: 120
+      depth_cm: 70
+      height_cm: 45
+
+    size_class: "medium"
+    color_family: "brown"
+    tone: "warm"
+
+    materials:
+      tabletop:
+        structure: "solid_acacia_wood"
+        surface: "wire_brushed_acacia"
+      body:
+        structure: "solid_acacia_wood"
+        surface: "wire_brushed_acacia"
+      drawers:
+        structure: "solid_acacia_wood"
+        surface: "wire_brushed_acacia"
+      legs:
+        structure: "solid_acacia_wood"
+        surface: "wire_brushed_acacia"
+      handles:
+        structure: "metal"
+        surface: "black_powder_coat"
+
+    finish:
+      color_finish: "muted_honey"
+      finish_color: "muted_honey"
+      surface_finish: "wire_brushed_distressed"
+      protective_coating: "lacquer"
+      hardware_finish: "black_powder_coat"
+
+    storage:
+      has_storage: true
+      storage_type:
+        - "drawers"
+      drawer_count: 2
+      drawer_capacity_cm:
+        - width_cm: 53
+          depth_cm: 42
+          height_cm: 9
+        - width_cm: 53
+          depth_cm: 42
+          height_cm: 9
+
+    leg_height_cm: 24
+    set_compatibility:
+      recommended_with_products:
+        - product_family: "Seb"
+          product_name: "Seb Coffee Table with Storage"
+          variant: "90cm / Muted Honey"

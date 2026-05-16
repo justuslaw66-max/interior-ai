@@ -1,8 +1,6 @@
 'use client';
 
 import React, { ReactNode } from 'react';
-import * as Sentry from '@sentry/nextjs';
-import { captureWebGLError } from '@/lib/sentry-context';
 
 interface CanvasErrorBoundaryProps {
   children: ReactNode;
@@ -25,25 +23,52 @@ export class CanvasErrorBoundary extends React.Component<CanvasErrorBoundaryProp
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    // Log to console in development
-    console.error('Canvas Error:', error, errorInfo);
+    try {
+      console.error('Canvas Error:', error, errorInfo);
+      console.error('Canvas Error Stack:', error?.stack);
+    } catch {
+      // Never let logging throw from an error boundary callback.
+    }
 
-    // Capture WebGL specific errors
-    if (error.message.includes('WebGL') || error.message.includes('context')) {
-      captureWebGLError(error);
-    } else {
-      // Capture general R3F errors
-      Sentry.captureException(error, {
-        tags: {
-          component: 'canvas-error-boundary',
-          type: 'r3f-error',
-        },
-        contexts: {
-          react: {
-            componentStack: errorInfo.componentStack,
-          },
-        },
+    try {
+      const message = error?.message ?? '';
+
+      // Defer reporting so class commit callbacks never synchronously touch
+      // modules that might be in partial initialization state.
+      queueMicrotask(async () => {
+        try {
+          if (message.includes('WebGL') || message.includes('context')) {
+            const sentryContext = await import('@/lib/sentry-context');
+            sentryContext.captureWebGLError(error);
+            return;
+          }
+
+          const Sentry = await import('@sentry/nextjs');
+          Sentry.captureException(error, {
+            tags: {
+              component: 'canvas-error-boundary',
+              type: 'r3f-error',
+            },
+            contexts: {
+              react: {
+                componentStack: errorInfo.componentStack,
+              },
+            },
+          });
+        } catch (reportingError) {
+          try {
+            console.error('Canvas error reporting failed:', reportingError);
+          } catch {
+            // Ignore all secondary failures while reporting errors.
+          }
+        }
       });
+    } catch (reportingError) {
+      try {
+        console.error('Canvas error reporting failed:', reportingError);
+      } catch {
+        // Ignore all secondary failures while reporting errors.
+      }
     }
   }
 
@@ -64,7 +89,7 @@ export class CanvasErrorBoundary extends React.Component<CanvasErrorBoundaryProp
                 {this.state.error?.message || 'Unknown error'}
               </p>
               <p className="mb-6 text-xs text-gray-500">
-                We've logged this issue. Please try refreshing or disabling hardware acceleration.
+                We&apos;ve logged this issue. Please try refreshing or disabling hardware acceleration.
               </p>
               <div className="flex gap-2">
                 <button

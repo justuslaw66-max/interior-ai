@@ -3,7 +3,7 @@
  * Provides multiple snap modes: flush, centered, and clearance
  */
 
-import { AABB } from "./snapGuides";
+import type { AABB } from "./snap-types";
 
 export type WallSnapMode = "flush" | "centered" | "breathing-room";
 

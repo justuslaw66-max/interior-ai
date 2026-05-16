@@ -5,6 +5,8 @@ import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import { track } from "@/lib/analytics";
 import { createCommerceEvent } from "@/lib/commerce-helpers";
+import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
+import { trackVariantIssues } from "@/lib/catalog/variant-observability";
 
 type PlacedItem = {
   instanceId: string;
@@ -15,10 +17,9 @@ type PlacedItem = {
   locked?: boolean;
 };
 
-function getItemPrice(product: CatalogItemSchema, variantId: string) {
-  const v = product.variants.find((variant) => variant.id === variantId);
-  const basePrice = product.commerce.type === 'shopify' || product.commerce.type === 'affiliate' 
-    ? (product.commerce.data as any).priceHint ?? 0 
+function getItemPrice(product: CatalogItemSchema) {
+  const basePrice = product.commerce.type === "affiliate"
+    ? product.commerce.data.priceHint ?? 0
     : 0;
   // Note: priceDelta removed from ProductVariant schema
   return basePrice;
@@ -120,32 +121,40 @@ export default function CartSidebar({
         const product = CATALOG_ITEMS[it.productId];
         if (!product) return null;
 
-        const variant = product.variants.find((v) => v.id === it.variantId);
-        const unitPrice = getItemPrice(product, it.variantId);
+        const resolved = resolveCatalogVariant(product, it.variantId);
+        const unitPrice =
+          resolved.commerce.type === "affiliate" ? resolved.commerce.priceHint ?? 0 : getItemPrice(product);
         const qty = Math.max(1, Math.min(99, it.qty ?? 1));
         const linePrice = unitPrice * qty;
 
         return {
           instanceId: it.instanceId,
           productId: product.id,
+          variantId: resolved.variantId,
           name: product.title,
           category: product.category,
-          variantName: variant?.label ?? it.variantId,
+          variantName: resolved.variant.label,
           unitPrice,
           qty,
           linePrice,
           includeInCheckout: it.includeInCheckout ?? true,
           locked: Boolean(it.locked),
-          purchaseMode: product.commerce.type === 'shopify' ? 'shopify' : product.commerce.type === 'affiliate' ? 'affiliate' : 'not_buyable',
-          retailer: product.commerce.type === 'affiliate' ? product.commerce.data.retailer : product.commerce.type === 'shopify' ? 'Shopify' : 'Unknown',
-          buyUrl: product.commerce.type === 'affiliate' ? product.commerce.data.url : null,
-          shopifyVariantId:
-            product.commerce.type === 'shopify' ? product.commerce.data.variantId : null,
+          purchaseMode: resolved.commerce.type,
+          retailer:
+            resolved.commerce.type === "affiliate"
+              ? resolved.commerce.retailer ?? "Unknown"
+              : resolved.commerce.type === "shopify"
+              ? "Shopify"
+              : "Unknown",
+          buyUrl: resolved.commerce.type === "affiliate" ? resolved.commerce.url : null,
+          shopifyVariantId: resolved.commerce.type === "shopify" ? resolved.commerce.variantId : null,
+          shopifyAvailable: resolved.commerce.type === "shopify" ? resolved.commerce.available : false,
         };
       })
       .filter(Boolean) as Array<{
       instanceId: string;
       productId: string;
+      variantId: string;
       name: string;
       category: string;
       variantName: string;
@@ -154,11 +163,23 @@ export default function CartSidebar({
       linePrice: number;
       includeInCheckout: boolean;
       locked: boolean;
-      purchaseMode: "shopify" | "affiliate";
+      purchaseMode: "shopify" | "affiliate" | "not_buyable";
       retailer: string;
       buyUrl: string | null;
       shopifyVariantId: string | null;
+      shopifyAvailable: boolean;
     }>;
+  }, [items]);
+
+  useEffect(() => {
+    for (const item of items) {
+      const product = CATALOG_ITEMS[item.productId];
+      if (!product) continue;
+      trackVariantIssues(resolveCatalogVariant(product, item.variantId), {
+        surface: "cart_sidebar",
+        requestedVariantId: item.variantId,
+      });
+    }
   }, [items]);
 
   const includedLines = useMemo(
@@ -170,7 +191,11 @@ export default function CartSidebar({
   const eligibleLines = useMemo(
     () =>
       cartLines.filter((x) =>
-        x.purchaseMode === "shopify" ? Boolean(x.shopifyVariantId) : Boolean(x.buyUrl)
+        x.purchaseMode === "shopify"
+          ? Boolean(x.shopifyVariantId && x.shopifyAvailable)
+          : x.purchaseMode === "affiliate"
+          ? Boolean(x.buyUrl)
+          : false
       ),
     [cartLines]
   );
@@ -313,11 +338,25 @@ export default function CartSidebar({
   };
 
   const startShopifyCheckoutInternal = async () => {
+    const invalidShopify = shopifyItems.filter(
+      (line) => !line.shopifyVariantId || !line.shopifyAvailable
+    );
+    if (invalidShopify.length > 0) {
+      alert(
+        `Some selected variants are unavailable for checkout:\n${invalidShopify
+          .map((line) => `- ${line.name} (${line.variantName})`)
+          .join("\n")}`
+      );
+      return;
+    }
+
     const lines = shopifyItems
       .filter((x) => x.shopifyVariantId)
       .map((x) => ({
         merchandiseId: x.shopifyVariantId as string,
         quantity: x.qty ?? 1,
+        productId: x.productId,
+        variantId: x.variantId,
       }));
 
     if (lines.length === 0) {
@@ -376,8 +415,8 @@ export default function CartSidebar({
       data-testid="cart-panel"
       className={
         isDesignerTheme
-          ? "designer-panel w-[340px] max-h-[60vh] overflow-auto rounded-2xl p-4"
-          : "w-[340px] max-h-[60vh] overflow-auto rounded-2xl bg-white p-4 shadow"
+          ? "designer-panel w-85 max-h-[60vh] overflow-auto rounded-2xl p-4"
+          : "w-85 max-h-[60vh] overflow-auto rounded-2xl bg-white p-4 shadow"
       }
     >
       <div className="flex items-start justify-between gap-3">
@@ -515,7 +554,9 @@ export default function CartSidebar({
                                 )}
                               </div>
                               <div className="text-xs text-neutral-500">
+                                <span data-testid="cart-item-variant-label">
                                 {x.variantName} • {x.category}
+                                </span>
                               </div>
                               <span className="mt-1 inline-flex rounded-full bg-green-100 px-2 py-0.5 text-[11px] text-green-700">
                                 Checkout here
@@ -623,7 +664,9 @@ export default function CartSidebar({
                                   )}
                                 </div>
                                 <div className="text-xs text-neutral-500">
+                                  <span data-testid="cart-item-variant-label">
                                   {x.variantName} • {x.category}
+                                  </span>
                                 </div>
                                 <span className="mt-1 inline-flex rounded-full bg-blue-100 px-2 py-0.5 text-[11px] text-blue-700">
                                   External retailer

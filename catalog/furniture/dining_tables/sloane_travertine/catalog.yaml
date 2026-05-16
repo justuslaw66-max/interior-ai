@@ -1,0 +1,171 @@
+brand: "Castlery"
+category: "dining_table"
+
+product_family: "Sloane"
+product_name: "Sloane Travertine Dining Table"
+variant: "180 Grey Oak"
+
+price_usd: 1999
+price_band: "premium"
+brand_tier: "premium_mid"
+
+design_zone: "dining_zone"
+anchor_role: "dining_anchor"
+
+dimensions:
+  width_cm: 180
+  depth_cm: 90
+  height_cm: 76
+
+seat_capacity: 6
+size_class: "large"
+
+shape: "rectangular"
+base_type: "dual_panel"
+
+material_family: "mixed"
+material_mix: "stone_wood"
+
+color_family: "grey"
+tone: "cool"
+
+style_cluster: "contemporary_luxury"
+style_secondary: "minimalist"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "heavy"
+  edge_profile: "straight"
+  silhouette: "monolithic"
+  form_language: "linear"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  chair_pullback_cm: 60
+  walkway_clearance_cm: 90
+
+room_compatibility:
+  - "dining_room"
+  - "open_plan"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: true
+
+design_pairings:
+  - "dining_chair"
+  - "dining_bench"
+  - "pendant_light"
+  - "dining_rug"
+  - "sideboard"
+
+compatibility:
+  related_products:
+    - product_family: "Sloane"
+      product_name: "Sloane Dining Bench"
+      relationship: "matching_companion"
+      strength: "strong"
+
+bundle_metadata:
+  can_bundle_with:
+    - "Sloane Dining Bench"
+  bundle_role: "dining_anchor"
+  set_behavior:
+    supports_with_or_without_cushion: true
+
+ai_flags:
+  isStarterEligible: false
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+
+assets:
+  asset_id: "dining-real-castlery-sloane-travertine-220"
+  model_url: "/assets/models/dining-real-castlery-sloane-travertine-220.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1723776680/crusader/variants/AS-000564/Sloane-Travertine-Dining-Table-180cm-Angle-1723776679.png"
+
+variants:
+  - variant: "180 Grey Oak"
+    size_label: "180"
+    finish_code: "grey_oak"
+    finish_label: "Grey Oak"
+
+    price_usd: 1999
+    price_band: "premium"
+    brand_tier: "premium_mid"
+
+    dimensions:
+      width_cm: 180
+      depth_cm: 90
+      height_cm: 76
+
+    seat_capacity: 6
+    size_class: "large"
+
+    color_family: "grey"
+    tone: "cool"
+
+    materials:
+      tabletop:
+        structure: "stone_composite"
+        surface: "travertine"
+        core: "aluminium_honeycomb"
+      base:
+        structure: "engineered_wood"
+        surface: "oak_veneer"
+
+    finish:
+      tabletop_finish: "travertine"
+      base_finish: "grey_oak"
+      protective_coating: "none"
+      surface_finish: "matte"
+      finish_color: "travertine_grey_oak"
+
+    set_compatibility:
+      recommended_with_products:
+        - product_name: "Sloane Dining Bench"
+          recommended_bench_sizes:
+            - 150
+
+  - variant: "225 Grey Oak"
+    size_label: "225"
+    finish_code: "grey_oak"
+    finish_label: "Grey Oak"
+
+    price_usd: 2599
+    price_band: "luxury"
+    brand_tier: "premium_high"
+
+    dimensions:
+      width_cm: 225
+      depth_cm: 100
+      height_cm: 76
+
+    seat_capacity: 8
+    size_class: "extra_large"
+
+    color_family: "grey"
+    tone: "cool"
+
+    materials:
+      tabletop:
+        structure: "stone_composite"
+        surface: "travertine"
+        core: "aluminium_honeycomb"
+      base:
+        structure: "engineered_wood"
+        surface: "oak_veneer"
+
+    finish:
+      tabletop_finish: "travertine"
+      base_finish: "grey_oak"
+      protective_coating: "none"
+      surface_finish: "matte"
+      finish_color: "travertine_grey_oak"
+
+    set_compatibility:
+      recommended_with_products:
+        - product_name: "Sloane Dining Bench"
+          recommended_bench_sizes:
+            - 180

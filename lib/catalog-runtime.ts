@@ -15,10 +15,20 @@ function assetExists(assetUrl: string): boolean {
 export function validateCatalogOrThrow() {
   if (validated) return;
 
-  // During Phase 2 migration, keep validation lenient by default
-  // Set CATALOG_STRICT_VALIDATION=true to enforce strict validation
+  // APP_ENV takes priority — an explicit APP_ENV=development opt-out wins even
+  // when Next.js forces NODE_ENV=production during `next build`.
+  const explicitDev = process.env.APP_ENV === "development";
+  const isProdLike =
+    !explicitDev &&
+    (process.env.APP_ENV === "staging" ||
+      process.env.APP_ENV === "production" ||
+      process.env.VERCEL_ENV === "preview" ||
+      process.env.VERCEL_ENV === "production");
+
+  // In prod-like environments always enforce strict catalog validation.
+  // In dev, allow opt-in strict mode via CATALOG_STRICT_VALIDATION=true.
   const shouldStrictValidate =
-    process.env.CATALOG_STRICT_VALIDATION === "true";
+    isProdLike || process.env.CATALOG_STRICT_VALIDATION === "true";
 
   if (!shouldStrictValidate) {
     console.log("ℹ️ Catalog validation: lenient mode (set CATALOG_STRICT_VALIDATION=true for strict)");

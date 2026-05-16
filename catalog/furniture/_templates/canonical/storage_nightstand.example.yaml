@@ -1,0 +1,61 @@
+brand: "Example Brand"
+category: "nightstand"
+
+product_family: "Canonical Storage"
+product_name: "Canonical Nightstand"
+variant: "Standard"
+
+price_usd: 399
+price_band: "mid"
+brand_tier: "premium_low"
+
+design_zone: "sleeping_zone"
+anchor_role: "secondary"
+
+dimensions:
+  width_cm: 55
+  depth_cm: 40
+  height_cm: 55
+
+size_class: "small"
+shape: "rectangular"
+material_family: "wood"
+color_family: "brown"
+tone: "warm"
+style_cluster: "contemporary"
+
+room_compatibility:
+  - "bedroom"
+
+design_pairings:
+  - "bed"
+  - "table_lamp"
+
+assets:
+  asset_id: "example-storage-nightstand"
+  model_url: "/assets/models/example-storage-nightstand.glb"
+  thumbnail_url: "/assets/thumbs/example-storage-nightstand.png"
+
+variants:
+  - variant: "Standard"
+    finish_code: "walnut"
+    finish_label: "Walnut"
+    swatch_group: "wood_finish"
+    price_usd: 399
+    price_band: "mid"
+    brand_tier: "premium_low"
+    dimensions:
+      width_cm: 55
+      depth_cm: 40
+      height_cm: 55
+    size_class: "small"
+    color_family: "brown"
+    tone: "warm"
+    materials:
+      body:
+        structure: "engineered_wood"
+        surface: "walnut_veneer"
+    finish:
+      color_finish: "walnut"
+      surface_finish: "satin"
+      finish_color: "walnut"

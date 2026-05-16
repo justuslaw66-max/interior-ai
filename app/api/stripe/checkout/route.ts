@@ -6,6 +6,11 @@ import { config } from "@/lib/config";
 import { rateLimit } from "@/lib/rateLimit";
 import { logAppEvent } from "@/lib/app-events";
 
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  return String(error);
+}
+
 function getStripeClient() {
   const secretKey = process.env.STRIPE_SECRET_KEY;
   if (!secretKey || secretKey.includes("...")) {
@@ -93,10 +98,11 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ url: checkoutSession.url });
-  } catch (error: any) {
-    console.error("Stripe checkout error:", error?.message || error);
+  } catch (error: unknown) {
+    const message = getErrorMessage(error);
+    console.error("Stripe checkout error:", message);
     return NextResponse.json(
-      { error: error?.message || "Unable to create checkout session" },
+      { error: message || "Unable to create checkout session" },
       { status: 500 }
     );
   }

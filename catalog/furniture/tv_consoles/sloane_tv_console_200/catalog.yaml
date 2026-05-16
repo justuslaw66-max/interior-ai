@@ -1,0 +1,173 @@
+brand: "Castlery"
+category: "tv_console"
+subcategory: "media_console"
+
+product_family: "Sloane"
+product_name: "Sloane TV Console"
+slug: "sloane-tv-console-200cm"
+variant: "200cm / Grey Oak"
+
+price_usd: 1399
+price_band: "mid_premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "media_anchor"
+
+dimensions:
+  width_cm: 200
+  depth_cm: 47
+  height_cm: 58
+
+size_class: "extra_large"
+shape: "rectangular"
+base_type: "frame"
+
+material_family: "wood"
+material_mix: "engineered_wood_oak_veneer_melamine_steel"
+materials:
+  body:
+    structure: "engineered_wood"
+    surface: "oak_veneer"
+  leg:
+    structure: "engineered_wood"
+    surface: "melamine"
+  handle:
+    structure: "steel"
+finish:
+  color_finish: "grey_oak"
+  surface_finish: "pu_lacquer"
+  finish_color: "grey_oak"
+  hardware_finish: "brushed_brass"
+
+color_family: "brown"
+tone: "neutral"
+
+style_cluster: "contemporary"
+style_secondary: "modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "fluted"
+  silhouette: "linear_media_console"
+  form_language: "refined"
+
+spatial_attributes:
+  footprint_shape: "rectangle"
+  walkway_clearance_cm: 70
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: true
+  clearance_sensitive: true
+  center_room_preferred: false
+
+clearance_rules:
+  back_mm: 0
+  left_mm: 50
+  right_mm: 50
+  front_mm: 700
+
+design_pairings:
+  - "sofa"
+  - "rug"
+  - "floor_lamp"
+  - "side_table"
+
+feature_flags:
+  has_storage: true
+  has_cable_management: true
+  has_adjustable_shelves: true
+
+storage:
+  cupboard_compartments:
+    upper:
+      count: 4
+      internal_mm:
+        width: 470
+        depth: 410
+        height: 220
+    lower:
+      count: 4
+      internal_mm:
+        width: 470
+        depth: 410
+        height: 245
+  shelves:
+    adjustable: true
+    height_options_mm:
+      - 213
+      - 245
+      - 277
+  cable_management_holes: 8
+
+physical_specs:
+  product_weight_kg: 70.8
+  leg_height_mm: 60
+  max_bearing_support_kg: 100
+  packaging_boxes: 1
+
+safety_and_compliance:
+  standards:
+    - "low_formaldehyde"
+  safety_features:
+    - "anti_tip_prevention"
+
+assets:
+  asset_id: "tv-real-castlery-sloane-tv-console-200"
+  model_url: "/assets/models/tv-real-castlery-sloane-tv-console-200.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1668045976/crusader/variants/50520001/Sloane-TV-Console-Square-Set_1-1668045973.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1668045976/crusader/variants/50520001/Sloane-TV-Console-Square-Set_1-1668045973.jpg"
+    - "/assets/thumbs/tv-real-castlery-sloane-tv-console-200-hero.jpg"
+
+variants:
+  - variant: "Sloane TV Console / 200cm"
+    size_label: "200cm"
+    finish_code: "grey_oak"
+    finish_label: "Grey Oak"
+    swatch_group: "finish"
+    color_family: "brown"
+    tone: "neutral"
+    price_usd: 1399
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 200
+      depth_cm: 47
+      height_cm: 58
+    materials:
+      body:
+        structure: "engineered_wood"
+        surface: "oak_veneer"
+      leg:
+        structure: "engineered_wood"
+        surface: "melamine"
+      handle:
+        structure: "steel"
+    finish:
+      color_finish: "grey_oak"
+      surface_finish: "pu_lacquer"
+      finish_color: "grey_oak"
+      hardware_finish: "brushed_brass"
+
+purchase:
+  purchase_mode: "external_retailer"
+  retailer_name: "Castlery Singapore"
+  buy_url: "https://www.castlery.com/sg/products/sloane-tv-console?length=2_0m"
+
+shipping_and_warranty:
+  free_delivery_threshold_sgd: 300
+  returns_window_days: 30
+  cancellation: "Free up to 5 working days before delivery"
+  warranty: "5-year limited warranty"
+
+notes:
+  - "Imported from user-provided Sloane TV Console metadata and local GLB source."
+  - "Hero preview uses the 9th image from the 200cm product-page URL (raw page order), per user request."
+  - "150cm and 200cm are modeled as separate catalog entries for one-model-per-asset compatibility."

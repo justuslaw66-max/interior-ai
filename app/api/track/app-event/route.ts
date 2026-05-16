@@ -4,9 +4,24 @@ import { logAppEvent, AppEventType } from "@/lib/app-events";
 import { rateLimit } from "@/lib/rateLimit";
 
 const ALLOWED = new Set<AppEventType>([
+  "landing_viewed",
+  "design_started",
+  "first_item_added",
+  "third_item_added",
+  "export_clicked",
+  "upgrade_clicked",
   "share_link_opened",
+  "design_duplicated",
+  "share_design_duplicated",
   "export_opened",
   "export_printed",
+  "export_pdf_clicked",
+  "export_upgrade_prompt_shown",
+  "checkout_completed",
+  "upgrade_checkout_started",
+  "upgrade_checkout_completed",
+  "billing_portal_opened",
+  "subscription_canceled",
 ]);
 
 function getClientIp(req: Request) {
