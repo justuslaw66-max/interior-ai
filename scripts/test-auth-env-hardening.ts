@@ -1,7 +1,10 @@
 import { getAuthEnvOrThrow } from "../lib/auth-env";
 
 type EnvSnapshot = Partial<
-  Record<"AUTH_SECRET" | "NEXTAUTH_SECRET" | "GOOGLE_CLIENT_ID" | "GOOGLE_CLIENT_SECRET", string | undefined>
+  Record<
+    "AUTH_SECRET" | "NEXTAUTH_SECRET" | "GOOGLE_CLIENT_ID" | "GOOGLE_CLIENT_SECRET" | "CI" | "GITHUB_ACTIONS",
+    string | undefined
+  >
 >;
 
 function withEnv(overrides: EnvSnapshot, fn: () => void): void {
@@ -10,6 +13,8 @@ function withEnv(overrides: EnvSnapshot, fn: () => void): void {
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+    CI: process.env.CI,
+    GITHUB_ACTIONS: process.env.GITHUB_ACTIONS,
   };
 
   if (overrides.AUTH_SECRET === undefined) {
@@ -36,6 +41,18 @@ function withEnv(overrides: EnvSnapshot, fn: () => void): void {
     process.env.GOOGLE_CLIENT_SECRET = overrides.GOOGLE_CLIENT_SECRET;
   }
 
+  if (overrides.CI === undefined) {
+    delete process.env.CI;
+  } else {
+    process.env.CI = overrides.CI;
+  }
+
+  if (overrides.GITHUB_ACTIONS === undefined) {
+    delete process.env.GITHUB_ACTIONS;
+  } else {
+    process.env.GITHUB_ACTIONS = overrides.GITHUB_ACTIONS;
+  }
+
   try {
     fn();
   } finally {
@@ -43,6 +60,8 @@ function withEnv(overrides: EnvSnapshot, fn: () => void): void {
     process.env.NEXTAUTH_SECRET = previous.NEXTAUTH_SECRET;
     process.env.GOOGLE_CLIENT_ID = previous.GOOGLE_CLIENT_ID;
     process.env.GOOGLE_CLIENT_SECRET = previous.GOOGLE_CLIENT_SECRET;
+    process.env.CI = previous.CI;
+    process.env.GITHUB_ACTIONS = previous.GITHUB_ACTIONS;
   }
 }
 
@@ -72,6 +91,8 @@ function run(): void {
       NEXTAUTH_SECRET: undefined,
       GOOGLE_CLIENT_ID: "123456789012-testclient.apps.googleusercontent.com",
       GOOGLE_CLIENT_SECRET: "GOCSPX-test-secret-value",
+      CI: undefined,
+      GITHUB_ACTIONS: undefined,
     },
     () => {
       const valid = getAuthEnvOrThrow();
@@ -93,6 +114,8 @@ function run(): void {
       NEXTAUTH_SECRET: undefined,
       GOOGLE_CLIENT_ID: " 123456789012-testclient.apps.googleusercontent.com\n",
       GOOGLE_CLIENT_SECRET: "\nGOCSPX-test-secret-value  ",
+      CI: undefined,
+      GITHUB_ACTIONS: undefined,
     },
     () => {
       const trimmed = getAuthEnvOrThrow();
@@ -114,6 +137,8 @@ function run(): void {
       NEXTAUTH_SECRET: undefined,
       GOOGLE_CLIENT_ID: "123456789012-testclient.apps.googleusercontent.com",
       GOOGLE_CLIENT_SECRET: "GOCSPX-test-secret-value",
+      CI: undefined,
+      GITHUB_ACTIONS: undefined,
     },
     () => {
       expectThrow(() => getAuthEnvOrThrow(), "AUTH_SECRET must be at least 16 characters");
@@ -126,6 +151,8 @@ function run(): void {
       NEXTAUTH_SECRET: undefined,
       GOOGLE_CLIENT_ID: "not-a-client-id",
       GOOGLE_CLIENT_SECRET: "GOCSPX-test-secret-value",
+      CI: undefined,
+      GITHUB_ACTIONS: undefined,
     },
     () => {
       expectThrow(() => getAuthEnvOrThrow(), "GOOGLE_CLIENT_ID does not match expected");
@@ -138,6 +165,8 @@ function run(): void {
       NEXTAUTH_SECRET: undefined,
       GOOGLE_CLIENT_ID: "123456789012-testclient.apps.googleusercontent.com",
       GOOGLE_CLIENT_SECRET: "bad-secret",
+      CI: undefined,
+      GITHUB_ACTIONS: undefined,
     },
     () => {
       expectThrow(() => getAuthEnvOrThrow(), "GOOGLE_CLIENT_SECRET does not match expected");
@@ -150,6 +179,8 @@ function run(): void {
       NEXTAUTH_SECRET: "1234567890fedcba",
       GOOGLE_CLIENT_ID: "123456789012-testclient.apps.googleusercontent.com",
       GOOGLE_CLIENT_SECRET: "GOCSPX-test-secret-value",
+      CI: undefined,
+      GITHUB_ACTIONS: undefined,
     },
     () => {
       const fallback = getAuthEnvOrThrow();
@@ -163,6 +194,8 @@ function run(): void {
       NEXTAUTH_SECRET: "1234567890abcdef",
       GOOGLE_CLIENT_ID: "123456789012-testclient.apps.googleusercontent.com",
       GOOGLE_CLIENT_SECRET: "GOCSPX-test-secret-value",
+      CI: undefined,
+      GITHUB_ACTIONS: undefined,
     },
     () => {
       const fallbackFromEmpty = getAuthEnvOrThrow();
@@ -179,11 +212,36 @@ function run(): void {
       NEXTAUTH_SECRET: undefined,
       GOOGLE_CLIENT_ID: "123456789012-testclient.apps.googleusercontent.com",
       GOOGLE_CLIENT_SECRET: "GOCSPX-test-secret-value",
+      CI: undefined,
+      GITHUB_ACTIONS: undefined,
     },
     () => {
       expectThrow(
         () => getAuthEnvOrThrow(),
         "Missing required environment variable: AUTH_SECRET (or NEXTAUTH_SECRET)"
+      );
+    }
+  );
+
+  withEnv(
+    {
+      AUTH_SECRET: undefined,
+      NEXTAUTH_SECRET: undefined,
+      GOOGLE_CLIENT_ID: undefined,
+      GOOGLE_CLIENT_SECRET: undefined,
+      CI: "true",
+      GITHUB_ACTIONS: "true",
+    },
+    () => {
+      const ciFallback = getAuthEnvOrThrow();
+      assert(ciFallback.authSecret.length >= 16, "Expected CI fallback AUTH secret to be valid");
+      assert(
+        ciFallback.googleClientId.endsWith(".apps.googleusercontent.com"),
+        "Expected CI fallback Google client id format"
+      );
+      assert(
+        ciFallback.googleClientSecret.startsWith("GOCSPX"),
+        "Expected CI fallback Google secret format"
       );
     }
   );
