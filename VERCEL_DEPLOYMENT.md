@@ -102,7 +102,7 @@ ADMIN_EMAILS=your-email@domain.com
 Deploy the staging branch as a preview deployment:
 
 ```bash
-npx vercel
+pnpm dlx vercel
 ```
 
 This deploys to a preview URL (staging environment).
@@ -110,7 +110,7 @@ This deploys to a preview URL (staging environment).
 **Or specify environment explicitly:**
 
 ```bash
-npx vercel --env preview
+pnpm dlx vercel --env preview
 ```
 
 ---
@@ -158,6 +158,14 @@ After deployment, test these critical flows:
 - [ ] Visit homepage
 - [ ] Login with Google OAuth
 - [ ] Create new design
+
+### 1b. ✅ OAuth Hardening Verification (2 min)
+- [ ] Sign in with Google from the stable preview alias URL
+- [ ] Confirm app shows authenticated state (for example: Sign out button)
+- [ ] Sign out and sign in again
+- [ ] Repeat in incognito/private window
+- [ ] Confirm no `?error=Configuration` in callback URL
+- [ ] Confirm no `invalid_client` events in Vercel logs for `/api/auth/*`
 
 ### 2. ✅ Share Link (2 min)
 - [ ] Add 2 items to design
@@ -209,8 +217,17 @@ Add missing variables in Vercel dashboard.
 ### Issue: Build Failed
 **Fix:** Check build logs in Vercel dashboard or:
 ```bash
-npx vercel logs --follow
+pnpm dlx vercel logs --follow
 ```
+
+### Issue: Vercel uses npm instead of pnpm
+**Fix:** In project settings or `vercel.json`, enforce:
+- Install Command: `pnpm install --frozen-lockfile`
+- Build Command: `pnpm run build`
+- Dev Command: `pnpm run dev -- --webpack`
+
+### Issue: Google secret may have been exposed during debugging
+**Fix (required):** Rotate Google OAuth client secret in Google Cloud Console, update `GOOGLE_CLIENT_SECRET` in Vercel Preview env, redeploy, and rerun OAuth hardening verification.
 
 ---
 

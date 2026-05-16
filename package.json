@@ -2,6 +2,7 @@
   "name": "interior-ai",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@9",
   "scripts": {
     "dev": "NEXT_DISABLE_TURBOPACK=1 next dev --webpack",
     "dev:reset": "pkill -f \"next dev --webpack\" || true && rm -f .next-cache/dev/lock && NEXT_DISABLE_TURBOPACK=1 next dev --webpack",
@@ -44,7 +45,8 @@
     "test:design-duplication": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-design-duplication-fixtures.ts",
     "test:catalog-route-hardening": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-catalog-route-hardening.ts",
     "test:import-route-hardening": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-import-route-hardening.ts",
-    "test:hardening": "npm run test:import-route-hardening && npm run test:catalog-route-hardening"
+    "test:hardening": "npm run test:import-route-hardening && npm run test:catalog-route-hardening",
+    "test:auth-env-hardening": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-auth-env-hardening.ts"
   },
   "prisma": {
     "seed": "npx ts-node --transpile-only --compiler-options={\"module\":\"CommonJS\",\"moduleResolution\":\"node\"} prisma/seed.ts"
@@ -74,6 +76,7 @@
     "react-dom": "19.2.3",
     "stripe": "^20.3.1",
     "three": "^0.182.0",
+    "three-stdlib": "^2.36.1",
     "ws": "^8.19.0",
     "yaml": "^2.8.2"
   },

@@ -41,6 +41,7 @@ export type Product = {
   retailer?: string;
   buyUrl?: string;
   shopifyVariantId?: string;
+  modelUrl?: string;
 };
 
 const STYLE_TAG_MAP: Record<string, StyleTag> = {
@@ -57,10 +58,7 @@ const STYLE_TAG_MAP: Record<string, StyleTag> = {
 const DEFAULT_MATERIAL_PRESET = "default";
 
 const LEGACY_NO_MODEL_IDS = new Set<string>([
-  // These legacy catalog entries currently have no matching GLB assets.
-  // Keep modelUrl empty so 3D view falls back to dimension-correct primitive geometry.
-  "castlery-sloane-sideboard-150cm",
-  "castlery-sloane-sideboard-180cm",
+  // Keep specific legacy entries here only when we intentionally force primitive fallback.
 ]);
 
 const LEGACY_ASSET_ID_OVERRIDES: Record<string, string> = {
@@ -260,6 +258,7 @@ function buildCatalogItem(product: Product): CatalogItemSchema {
       assetId,
       modelUrl:
         modelAsset?.modelUrl ??
+        product.modelUrl ??
         (LEGACY_NO_MODEL_IDS.has(product.id) || product.category === "rug"
           ? ""
           : undefined) ??
@@ -352,6 +351,8 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["scandi", "modern"],
     defaultVariantId: "oat",
     purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://example.com/products/rug-scandi-02",
     variants: [
       { id: "oat", name: "Oat", colorHex: "#d8d2c8" },
       { id: "stone", name: "Stone", colorHex: "#c9c3ba" },
@@ -391,6 +392,8 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["japandi"],
     defaultVariantId: "natural",
     purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://example.com/products/rug-japandi-02",
     variants: [
       { id: "natural", name: "Natural", colorHex: "#d2c4ae" },
       { id: "smoke", name: "Smoke", colorHex: "#a9a39a" },
@@ -432,6 +435,8 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["modern", "minimalistic"],
     defaultVariantId: "lightgrey",
     purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://example.com/products/rug-modern-02",
     variants: [
       { id: "lightgrey", name: "Light Grey", colorHex: "#cfcfcf" },
       { id: "navy", name: "Navy", colorHex: "#2e3a56" },
@@ -446,6 +451,8 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["luxury"],
     defaultVariantId: "ivory",
     purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://example.com/products/rug-luxury-01",
     variants: [
       { id: "ivory", name: "Ivory", colorHex: "#f0ebe4" },
       { id: "espresso", name: "Espresso", colorHex: "#3a2e27" },
@@ -460,6 +467,8 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["luxury", "modern"],
     defaultVariantId: "pearl",
     purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://example.com/products/rug-luxury-02",
     variants: [
       { id: "pearl", name: "Pearl", colorHex: "#e9e4dc" },
       { id: "graphite", name: "Graphite", colorHex: "#444444" },
@@ -474,6 +483,8 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["minimalistic"],
     defaultVariantId: "offwhite",
     purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://example.com/products/rug-min-01",
     variants: [
       { id: "offwhite", name: "Off White", colorHex: "#ece7df" },
       { id: "ash", name: "Ash", colorHex: "#c8c2bb" },
@@ -488,6 +499,8 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["minimalistic", "scandi"],
     defaultVariantId: "stone",
     purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://example.com/products/rug-min-02",
     variants: [
       { id: "stone", name: "Stone", colorHex: "#c9c3ba" },
       { id: "black", name: "Black", colorHex: "#222222" },
@@ -535,6 +548,8 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["scandi", "modern"],
     defaultVariantId: "oak",
     purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://example.com/products/tv-scandi-02",
     variants: [
       { id: "oak", name: "Oak", colorHex: "#c9b18a" },
       { id: "black", name: "Black", colorHex: "#222222" },
@@ -549,6 +564,8 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["japandi", "minimalistic"],
     defaultVariantId: "walnut",
     purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://example.com/products/tv-japandi-01",
     variants: [
       { id: "walnut", name: "Walnut", colorHex: "#8a6a4a" },
       { id: "smoke", name: "Smoke", colorHex: "#6a6258" },
@@ -563,6 +580,8 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["japandi"],
     defaultVariantId: "oak",
     purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://example.com/products/tv-japandi-02",
     variants: [
       { id: "oak", name: "Oak", colorHex: "#c9b18a" },
       { id: "charcoal", name: "Charcoal", colorHex: "#595959" },
@@ -604,6 +623,8 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["modern"],
     defaultVariantId: "graphite",
     purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://example.com/products/tv-modern-02",
     variants: [
       { id: "graphite", name: "Graphite", colorHex: "#444444" },
       { id: "white", name: "White", colorHex: "#f3f3f3" },
@@ -633,6 +654,8 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["luxury", "modern"],
     defaultVariantId: "brass",
     purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://example.com/products/tv-luxury-02",
     variants: [
       { id: "brass", name: "Brass", colorHex: "#b08d57" },
       { id: "espresso", name: "Espresso", colorHex: "#3a2e27" },
@@ -647,6 +670,8 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["minimalistic"],
     defaultVariantId: "offwhite",
     purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://example.com/products/tv-min-01",
     variants: [
       { id: "offwhite", name: "Off White", colorHex: "#ece7df" },
       { id: "stone", name: "Stone", colorHex: "#c9c3ba" },
@@ -661,6 +686,8 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["minimalistic", "scandi"],
     defaultVariantId: "black",
     purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://example.com/products/tv-min-02",
     variants: [
       { id: "black", name: "Black", colorHex: "#222222" },
       { id: "lightgrey", name: "Light Grey", colorHex: "#cfcfcf" },
@@ -706,6 +733,8 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["scandi", "modern"],
     defaultVariantId: "stone",
     purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://example.com/products/chair-scandi-02",
     variants: [
       { id: "stone", name: "Stone", colorHex: "#c9c3ba" },
       { id: "navy", name: "Navy", colorHex: "#2e3a56" },
@@ -720,6 +749,8 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["japandi", "minimalistic"],
     defaultVariantId: "linen",
     purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://example.com/products/chair-japandi-01",
     variants: [
       { id: "linen", name: "Linen", colorHex: "#d7cec2" },
       { id: "taupe", name: "Taupe", colorHex: "#b9aa96" },
@@ -734,6 +765,8 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["japandi"],
     defaultVariantId: "sand",
     purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://example.com/products/chair-japandi-02",
     variants: [
       { id: "sand", name: "Sand", colorHex: "#cdbfae" },
       { id: "charcoal", name: "Charcoal", colorHex: "#595959" },
@@ -764,6 +797,8 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["modern", "luxury"],
     defaultVariantId: "cream",
     purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://example.com/products/chair-modern-02",
     variants: [
       { id: "cream", name: "Cream", colorHex: "#e6e0d6" },
       { id: "navy", name: "Navy", colorHex: "#2e3a56" },
@@ -778,6 +813,8 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["luxury"],
     defaultVariantId: "emerald",
     purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://example.com/products/chair-luxury-01",
     variants: [
       { id: "emerald", name: "Emerald", colorHex: "#1c4b3c" },
       { id: "burgundy", name: "Burgundy", colorHex: "#6b1e2e" },
@@ -792,6 +829,8 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["luxury", "modern"],
     defaultVariantId: "espresso",
     purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://example.com/products/chair-luxury-02",
     variants: [
       { id: "espresso", name: "Espresso", colorHex: "#3a2e27" },
       { id: "black", name: "Black", colorHex: "#222222" },
@@ -806,6 +845,8 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["minimalistic"],
     defaultVariantId: "offwhite",
     purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://example.com/products/chair-min-01",
     variants: [
       { id: "offwhite", name: "Off White", colorHex: "#ece7df" },
       { id: "ash", name: "Ash", colorHex: "#c8c2bb" },
@@ -820,6 +861,8 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["minimalistic", "scandi"],
     defaultVariantId: "black",
     purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://example.com/products/chair-min-02",
     variants: [
       { id: "black", name: "Black", colorHex: "#222222" },
       { id: "lightgrey", name: "Light Grey", colorHex: "#cfcfcf" },
@@ -840,6 +883,7 @@ const CATALOG: Record<string, Product> = {
     purchaseMode: "affiliate",
     retailer: "Castlery Singapore",
     buyUrl: "https://www.castlery.com/sg/products/sloane-sideboard",
+    modelUrl: "/assets/models/storage-real-castlery-sawyer-sideboard-180cm.glb",
     variants: [
       { id: "grey-oak-150", name: "Grey Oak 150cm", colorHex: "#8a7d6a" },
     ],
@@ -855,6 +899,7 @@ const CATALOG: Record<string, Product> = {
     purchaseMode: "affiliate",
     retailer: "Castlery Singapore",
     buyUrl: "https://www.castlery.com/sg/products/sloane-sideboard?length=1_8m",
+    modelUrl: "/assets/models/storage-real-castlery-sawyer-sideboard-180cm.glb",
     variants: [
       { id: "grey-oak-180", name: "Grey Oak 180cm", colorHex: "#8a7d6a" },
     ],
@@ -888,6 +933,8 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["scandi", "modern"],
     defaultVariantId: "black",
     purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://example.com/products/lamp-scandi-02",
     variants: [
       { id: "black", name: "Black", colorHex: "#222222" },
       { id: "stone", name: "Stone", colorHex: "#c9c3ba" },
@@ -902,6 +949,8 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["japandi", "minimalistic"],
     defaultVariantId: "rice",
     purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://example.com/products/lamp-japandi-01",
     variants: [
       { id: "rice", name: "Rice Paper", colorHex: "#efe9df" },
       { id: "walnut", name: "Walnut", colorHex: "#8a6a4a" },
@@ -943,6 +992,8 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["luxury", "modern"],
     defaultVariantId: "brass",
     purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://example.com/products/lamp-luxury-01",
     variants: [
       { id: "brass", name: "Brass", colorHex: "#b08d57" },
       { id: "black", name: "Black", colorHex: "#222222" },
@@ -957,6 +1008,8 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["minimalistic"],
     defaultVariantId: "offwhite",
     purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://example.com/products/lamp-min-01",
     variants: [
       { id: "offwhite", name: "Off White", colorHex: "#ece7df" },
       { id: "black", name: "Black", colorHex: "#222222" },
@@ -972,6 +1025,7 @@ const CATALOG: Record<string, Product> = {
     defaultVariantId: "harper_marble_coffee_table_rectangular_chestnut",
     purchaseMode: "affiliate",
     retailer: "Castlery",
+    buyUrl: "https://example.com/products/coffee-real-castlery-harper-marble-rectangular-120",
     variants: [
       {
         id: "harper_marble_coffee_table_rectangular_chestnut",
@@ -990,6 +1044,7 @@ const CATALOG: Record<string, Product> = {
     defaultVariantId: "harper_marble_coffee_table_round_chestnut",
     purchaseMode: "affiliate",
     retailer: "Castlery",
+    buyUrl: "https://example.com/products/coffee-real-castlery-harper-marble-round-915",
     variants: [
       {
         id: "harper_marble_coffee_table_round_chestnut",
@@ -1008,6 +1063,7 @@ const CATALOG: Record<string, Product> = {
     defaultVariantId: "standard",
     purchaseMode: "affiliate",
     retailer: "Castlery",
+    buyUrl: "https://example.com/products/coffee-real-castlery-hugg-nesting-square-performance-basalt-closed",
     variants: [{ id: "standard", name: "Standard", colorHex: "#b8b8b8" }],
   },
   "coffee-real-castlery-hugg-nesting-square-performance-basalt-opened": {
@@ -1020,6 +1076,7 @@ const CATALOG: Record<string, Product> = {
     defaultVariantId: "performance_basalt_opened",
     purchaseMode: "affiliate",
     retailer: "Castlery",
+    buyUrl: "https://example.com/products/coffee-real-castlery-hugg-nesting-square-performance-basalt-opened",
     variants: [
       {
         id: "performance_basalt_opened",
@@ -1038,6 +1095,7 @@ const CATALOG: Record<string, Product> = {
     defaultVariantId: "performance_dune_closed",
     purchaseMode: "affiliate",
     retailer: "Castlery",
+    buyUrl: "https://example.com/products/coffee-real-castlery-hugg-nesting-square-performance-dune-closed",
     variants: [
       {
         id: "performance_dune_closed",
@@ -1056,6 +1114,7 @@ const CATALOG: Record<string, Product> = {
     defaultVariantId: "performance_dune_opened",
     purchaseMode: "affiliate",
     retailer: "Castlery",
+    buyUrl: "https://example.com/products/coffee-real-castlery-hugg-nesting-square-performance-dune-opened",
     variants: [
       {
         id: "performance_dune_opened",
@@ -1074,6 +1133,7 @@ const CATALOG: Record<string, Product> = {
     defaultVariantId: "peri_coffee_table_walnut_dark_grey_steel",
     purchaseMode: "affiliate",
     retailer: "Castlery",
+    buyUrl: "https://example.com/products/coffee-real-castlery-peri-120",
     variants: [
       {
         id: "peri_coffee_table_walnut_dark_grey_steel",
@@ -1092,6 +1152,7 @@ const CATALOG: Record<string, Product> = {
     defaultVariantId: "seb_coffee_table_with_storage_120cm_muted_honey",
     purchaseMode: "affiliate",
     retailer: "Castlery",
+    buyUrl: "https://example.com/products/coffee-real-castlery-seb-storage-120",
     variants: [
       {
         id: "seb_coffee_table_with_storage_120cm_muted_honey",
@@ -1110,6 +1171,7 @@ const CATALOG: Record<string, Product> = {
     defaultVariantId: "seb_coffee_table_with_storage_90cm_muted_honey",
     purchaseMode: "affiliate",
     retailer: "Castlery",
+    buyUrl: "https://example.com/products/coffee-real-castlery-seb-storage-90",
     variants: [
       {
         id: "seb_coffee_table_with_storage_90cm_muted_honey",
@@ -1128,6 +1190,7 @@ const CATALOG: Record<string, Product> = {
     defaultVariantId: "vento_coffee_table_waterbase_natural_walnut",
     purchaseMode: "affiliate",
     retailer: "Castlery",
+    buyUrl: "https://example.com/products/coffee-real-castlery-vento-coffee-table-120",
     variants: [
       {
         id: "vento_coffee_table_waterbase_natural_walnut",
@@ -1146,6 +1209,7 @@ const CATALOG: Record<string, Product> = {
     defaultVariantId: "150_no_cushion",
     purchaseMode: "affiliate",
     retailer: "Castlery",
+    buyUrl: "https://example.com/products/dining-real-castlery-sloane-bench-150-no-cushion",
     variants: [
       { id: "150_no_cushion", name: "150 No Cushion", colorHex: "#b8b8b8" },
     ],
@@ -1160,6 +1224,7 @@ const CATALOG: Record<string, Product> = {
     defaultVariantId: "180_leather_cushion",
     purchaseMode: "affiliate",
     retailer: "Castlery",
+    buyUrl: "https://example.com/products/dining-real-castlery-sloane-bench-180-leather-cushion",
     variants: [
       {
         id: "180_leather_cushion",
@@ -1178,6 +1243,7 @@ const CATALOG: Record<string, Product> = {
     defaultVariantId: "180_no_cushion",
     purchaseMode: "affiliate",
     retailer: "Castlery",
+    buyUrl: "https://example.com/products/dining-real-castlery-sloane-bench-180-no-cushion",
     variants: [
       { id: "180_no_cushion", name: "180 No Cushion", colorHex: "#b8b8b8" },
     ],
@@ -1192,6 +1258,7 @@ const CATALOG: Record<string, Product> = {
     defaultVariantId: "oval_150",
     purchaseMode: "affiliate",
     retailer: "Castlery",
+    buyUrl: "https://example.com/products/dining-real-castlery-forma-oval-150",
     variants: [
       { id: "oval_150", name: "Oval 150", colorHex: "#b8b8b8" },
     ],
@@ -1206,6 +1273,7 @@ const CATALOG: Record<string, Product> = {
     defaultVariantId: "round_120",
     purchaseMode: "affiliate",
     retailer: "Castlery",
+    buyUrl: "https://example.com/products/dining-real-castlery-forma-round-120",
     variants: [
       { id: "round_120", name: "Round 120", colorHex: "#b8b8b8" },
     ],
@@ -1220,6 +1288,7 @@ const CATALOG: Record<string, Product> = {
     defaultVariantId: "round_90",
     purchaseMode: "affiliate",
     retailer: "Castlery",
+    buyUrl: "https://example.com/products/dining-real-castlery-forma-round-90",
     variants: [
       { id: "round_90", name: "Round 90", colorHex: "#b8b8b8" },
     ],
@@ -1234,6 +1303,7 @@ const CATALOG: Record<string, Product> = {
     defaultVariantId: "160_white_wash",
     purchaseMode: "affiliate",
     retailer: "Castlery",
+    buyUrl: "https://example.com/products/dining-real-castlery-kelsey-marble-160",
     variants: [
       {
         id: "160_white_wash",
@@ -1258,6 +1328,7 @@ const CATALOG: Record<string, Product> = {
     defaultVariantId: "standard",
     purchaseMode: "affiliate",
     retailer: "Castlery",
+    buyUrl: "https://example.com/products/sofa-real-castlery-dawson-storage-ottoman",
     variants: [
       { id: "standard", name: "Standard", colorHex: "#b8b8b8" },
     ],
@@ -1272,6 +1343,7 @@ const CATALOG: Record<string, Product> = {
     defaultVariantId: "150cm_white_wash",
     purchaseMode: "affiliate",
     retailer: "Castlery",
+    buyUrl: "https://example.com/products/tv-real-castlery-casa-tv-console-150",
     variants: [
       {
         id: "150cm_white_wash",
@@ -1290,6 +1362,7 @@ const CATALOG: Record<string, Product> = {
     defaultVariantId: "200cm_white_wash",
     purchaseMode: "affiliate",
     retailer: "Castlery",
+    buyUrl: "https://example.com/products/tv-real-castlery-casa-tv-console-200",
     variants: [
       {
         id: "200cm_white_wash",
@@ -1308,6 +1381,7 @@ const CATALOG: Record<string, Product> = {
     defaultVariantId: "200cm_natural",
     purchaseMode: "affiliate",
     retailer: "Castlery",
+    buyUrl: "https://example.com/products/tv-real-castlery-sawyer-tv-console-200",
     variants: [
       {
         id: "200cm_natural",
@@ -1326,6 +1400,7 @@ const CATALOG: Record<string, Product> = {
     defaultVariantId: "150cm_muted_honey",
     purchaseMode: "affiliate",
     retailer: "Castlery",
+    buyUrl: "https://example.com/products/tv-real-castlery-seb-tv-console-150",
     variants: [
       {
         id: "150cm_muted_honey",
@@ -1344,6 +1419,7 @@ const CATALOG: Record<string, Product> = {
     defaultVariantId: "200cm_muted_honey",
     purchaseMode: "affiliate",
     retailer: "Castlery",
+    buyUrl: "https://example.com/products/tv-real-castlery-seb-tv-console-200",
     variants: [
       {
         id: "200cm_muted_honey",
@@ -1362,6 +1438,7 @@ const CATALOG: Record<string, Product> = {
     defaultVariantId: "150cm_grey_oak",
     purchaseMode: "affiliate",
     retailer: "Castlery",
+    buyUrl: "https://example.com/products/tv-real-castlery-sloane-tv-console-150",
     variants: [
       {
         id: "150cm_grey_oak",
@@ -1380,6 +1457,7 @@ const CATALOG: Record<string, Product> = {
     defaultVariantId: "200cm_grey_oak",
     purchaseMode: "affiliate",
     retailer: "Castlery",
+    buyUrl: "https://example.com/products/tv-real-castlery-sloane-tv-console-200",
     variants: [
       {
         id: "200cm_grey_oak",

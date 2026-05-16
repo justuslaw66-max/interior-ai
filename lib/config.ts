@@ -17,7 +17,7 @@ type EnvConfig = {
 };
 
 const normalizeAppEnv = (raw: string | undefined): AppEnv => {
-  const value = (raw || "").toLowerCase();
+  const value = (raw || "").trim().toLowerCase();
   if (value === "production") return "production";
   if (value === "staging") return "staging";
   return "development";
@@ -36,7 +36,8 @@ const isProdLike = isStaging || isProd;
 
 const flagFromEnv = (value: string | undefined, defaultValue: boolean) => {
   if (value === undefined) return defaultValue;
-  return value.toLowerCase() === "true" || value === "1";
+  const normalized = value.trim().toLowerCase();
+  return normalized === "true" || normalized === "1";
 };
 
 const features: FeatureFlags = {

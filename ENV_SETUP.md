@@ -8,7 +8,7 @@ NEXT_PUBLIC_SENTRY_DSN=https://your-key@sentry.io/project-id
 SENTRY_ENVIRONMENT=development
 
 # NextAuth - Authentication (for tests)
-NEXTAUTH_SECRET=your-secret-key-here
+AUTH_SECRET=your-secret-key-here
 NEXTAUTH_URL=http://localhost:3000
 
 # Database - for E2E tests
@@ -38,7 +38,7 @@ Set these secrets in GitHub:
 |------------|-------|
 | `SENTRY_DSN` | Your Sentry project DSN |
 | `DATABASE_URL` | Test database connection string |
-| `NEXTAUTH_SECRET` | Any random string (for tests) |
+| `AUTH_SECRET` | Any random string (for tests) |
 | `STRIPE_SECRET_KEY` | Stripe test key |
 | `SHOPIFY_API_KEY` | Shopify test key |
 
@@ -50,7 +50,7 @@ Tests automatically use these variables:
 # Playwright tests read from environment
 BASE_URL=http://localhost:3000
 DATABASE_URL=postgresql://...
-NEXTAUTH_SECRET=test-secret
+AUTH_SECRET=test-secret
 ```
 
 ## Sentry Setup
@@ -91,16 +91,16 @@ Check [sentry.io Dashboard](https://sentry.io) → your project → Events to ve
 ### Locally
 ```bash
 # Install dependencies
-npm install
+pnpm install
 
 # Run tests
-npm run test:e2e
+pnpm run test:e2e
 
 # Run with UI
-npm run test:e2e:ui
+pnpm run test:e2e:ui
 
 # Run specific test
-npm run test:e2e -- 01-onboarding.spec.ts
+pnpm run test:e2e -- 01-onboarding.spec.ts
 ```
 
 ### In CI
@@ -114,7 +114,7 @@ GitHub Actions automatically:
 ## DevServer FPS Meter
 
 In development:
-1. Start: `npm run dev`
+1. Start: `pnpm run dev`
 2. Press **F** to toggle FPS meter
 3. Bottom-right shows FPS and color coding:
    - 🟢 Green: 50+ FPS (good)
@@ -125,12 +125,12 @@ In development:
 
 ### Run tests with headed browser
 ```bash
-npm run test:e2e:headed
+pnpm run test:e2e:headed
 ```
 
 ### Run with Playwright Inspector
 ```bash
-npm run test:e2e -- --debug
+pnpm run test:e2e -- --debug
 ```
 
 ### View test results
@@ -159,7 +159,7 @@ open playwright-report/index.html
 - Check credentials are correct
 
 ### FPS Meter not showing
-- Only appears in development (`npm run dev`)
+- Only appears in development (`pnpm run dev`)
 - Press **F** to toggle
 - Check browser DevTools console for errors
 
