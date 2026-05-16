@@ -1,10 +1,13 @@
 import { getAuthEnvOrThrow } from "../lib/auth-env";
 
-type EnvSnapshot = Partial<Record<"AUTH_SECRET" | "GOOGLE_CLIENT_ID" | "GOOGLE_CLIENT_SECRET", string | undefined>>;
+type EnvSnapshot = Partial<
+  Record<"AUTH_SECRET" | "NEXTAUTH_SECRET" | "GOOGLE_CLIENT_ID" | "GOOGLE_CLIENT_SECRET", string | undefined>
+>;
 
 function withEnv(overrides: EnvSnapshot, fn: () => void): void {
   const previous: EnvSnapshot = {
     AUTH_SECRET: process.env.AUTH_SECRET,
+    NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
   };
@@ -13,6 +16,12 @@ function withEnv(overrides: EnvSnapshot, fn: () => void): void {
     delete process.env.AUTH_SECRET;
   } else {
     process.env.AUTH_SECRET = overrides.AUTH_SECRET;
+  }
+
+  if (overrides.NEXTAUTH_SECRET === undefined) {
+    delete process.env.NEXTAUTH_SECRET;
+  } else {
+    process.env.NEXTAUTH_SECRET = overrides.NEXTAUTH_SECRET;
   }
 
   if (overrides.GOOGLE_CLIENT_ID === undefined) {
@@ -31,6 +40,7 @@ function withEnv(overrides: EnvSnapshot, fn: () => void): void {
     fn();
   } finally {
     process.env.AUTH_SECRET = previous.AUTH_SECRET;
+    process.env.NEXTAUTH_SECRET = previous.NEXTAUTH_SECRET;
     process.env.GOOGLE_CLIENT_ID = previous.GOOGLE_CLIENT_ID;
     process.env.GOOGLE_CLIENT_SECRET = previous.GOOGLE_CLIENT_SECRET;
   }
@@ -59,6 +69,7 @@ function run(): void {
   withEnv(
     {
       AUTH_SECRET: "1234567890abcdef",
+      NEXTAUTH_SECRET: undefined,
       GOOGLE_CLIENT_ID: "123456789012-testclient.apps.googleusercontent.com",
       GOOGLE_CLIENT_SECRET: "GOCSPX-test-secret-value",
     },
@@ -79,6 +90,7 @@ function run(): void {
   withEnv(
     {
       AUTH_SECRET: " 1234567890abcdef ",
+      NEXTAUTH_SECRET: undefined,
       GOOGLE_CLIENT_ID: " 123456789012-testclient.apps.googleusercontent.com\n",
       GOOGLE_CLIENT_SECRET: "\nGOCSPX-test-secret-value  ",
     },
@@ -99,6 +111,7 @@ function run(): void {
   withEnv(
     {
       AUTH_SECRET: "short",
+      NEXTAUTH_SECRET: undefined,
       GOOGLE_CLIENT_ID: "123456789012-testclient.apps.googleusercontent.com",
       GOOGLE_CLIENT_SECRET: "GOCSPX-test-secret-value",
     },
@@ -110,6 +123,7 @@ function run(): void {
   withEnv(
     {
       AUTH_SECRET: "1234567890abcdef",
+      NEXTAUTH_SECRET: undefined,
       GOOGLE_CLIENT_ID: "not-a-client-id",
       GOOGLE_CLIENT_SECRET: "GOCSPX-test-secret-value",
     },
@@ -121,6 +135,7 @@ function run(): void {
   withEnv(
     {
       AUTH_SECRET: "1234567890abcdef",
+      NEXTAUTH_SECRET: undefined,
       GOOGLE_CLIENT_ID: "123456789012-testclient.apps.googleusercontent.com",
       GOOGLE_CLIENT_SECRET: "bad-secret",
     },
@@ -132,11 +147,44 @@ function run(): void {
   withEnv(
     {
       AUTH_SECRET: undefined,
+      NEXTAUTH_SECRET: "1234567890fedcba",
       GOOGLE_CLIENT_ID: "123456789012-testclient.apps.googleusercontent.com",
       GOOGLE_CLIENT_SECRET: "GOCSPX-test-secret-value",
     },
     () => {
-      expectThrow(() => getAuthEnvOrThrow(), "Missing required environment variable: AUTH_SECRET");
+      const fallback = getAuthEnvOrThrow();
+      assert(fallback.authSecret === "1234567890fedcba", "Expected NEXTAUTH_SECRET fallback");
+    }
+  );
+
+  withEnv(
+    {
+      AUTH_SECRET: "   ",
+      NEXTAUTH_SECRET: "1234567890abcdef",
+      GOOGLE_CLIENT_ID: "123456789012-testclient.apps.googleusercontent.com",
+      GOOGLE_CLIENT_SECRET: "GOCSPX-test-secret-value",
+    },
+    () => {
+      const fallbackFromEmpty = getAuthEnvOrThrow();
+      assert(
+        fallbackFromEmpty.authSecret === "1234567890abcdef",
+        "Expected empty AUTH_SECRET to fall back to NEXTAUTH_SECRET"
+      );
+    }
+  );
+
+  withEnv(
+    {
+      AUTH_SECRET: undefined,
+      NEXTAUTH_SECRET: undefined,
+      GOOGLE_CLIENT_ID: "123456789012-testclient.apps.googleusercontent.com",
+      GOOGLE_CLIENT_SECRET: "GOCSPX-test-secret-value",
+    },
+    () => {
+      expectThrow(
+        () => getAuthEnvOrThrow(),
+        "Missing required environment variable: AUTH_SECRET (or NEXTAUTH_SECRET)"
+      );
     }
   );
 

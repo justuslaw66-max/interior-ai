@@ -1,4 +1,4 @@
-type RequiredAuthEnvKey = "AUTH_SECRET" | "GOOGLE_CLIENT_ID" | "GOOGLE_CLIENT_SECRET";
+type RequiredAuthEnvKey = "GOOGLE_CLIENT_ID" | "GOOGLE_CLIENT_SECRET";
 
 type AuthEnv = {
   authSecret: string;
@@ -7,10 +7,12 @@ type AuthEnv = {
 };
 
 const REQUIRED_AUTH_KEYS: RequiredAuthEnvKey[] = [
-  "AUTH_SECRET",
   "GOOGLE_CLIENT_ID",
   "GOOGLE_CLIENT_SECRET",
 ];
+
+const AUTH_SECRET_KEYS = ["AUTH_SECRET", "NEXTAUTH_SECRET"] as const;
+type AuthSecretKey = (typeof AUTH_SECRET_KEYS)[number];
 
 const GOOGLE_CLIENT_ID_PATTERN = /^[0-9]+-[a-z0-9-]+\.apps\.googleusercontent\.com$/i;
 const GOOGLE_CLIENT_SECRET_PATTERN = /^GOCSPX[-_A-Za-z0-9]+$/;
@@ -34,6 +36,39 @@ function readAndSanitizeRequiredEnv(key: RequiredAuthEnvKey): string {
   return trimmed;
 }
 
+function readAndSanitizeAuthSecretEnv(): string {
+  const emptyKeys: AuthSecretKey[] = [];
+
+  for (const key of AUTH_SECRET_KEYS) {
+    const raw = process.env[key];
+    if (raw === undefined || raw === null) {
+      continue;
+    }
+
+    const trimmed = raw.trim();
+    if (!trimmed) {
+      emptyKeys.push(key);
+      continue;
+    }
+
+    if (raw !== trimmed) {
+      console.warn(`[auth] ${key} contained surrounding whitespace and was trimmed`);
+    }
+
+    return trimmed;
+  }
+
+  if (emptyKeys.length > 0) {
+    throw new Error(
+      `[auth] Environment variable(s) ${emptyKeys.join(", ")} are empty after trimming whitespace`
+    );
+  }
+
+  throw new Error(
+    `[auth] Missing required environment variable: AUTH_SECRET (or NEXTAUTH_SECRET)`
+  );
+}
+
 function validateAuthShapeOrThrow(authEnv: AuthEnv): void {
   if (authEnv.authSecret.length < 16) {
     throw new Error("[auth] AUTH_SECRET must be at least 16 characters");
@@ -54,7 +89,7 @@ function validateAuthShapeOrThrow(authEnv: AuthEnv): void {
 
 export function getAuthEnvOrThrow(): AuthEnv {
   const env: AuthEnv = {
-    authSecret: readAndSanitizeRequiredEnv("AUTH_SECRET"),
+    authSecret: readAndSanitizeAuthSecretEnv(),
     googleClientId: readAndSanitizeRequiredEnv("GOOGLE_CLIENT_ID"),
     googleClientSecret: readAndSanitizeRequiredEnv("GOOGLE_CLIENT_SECRET"),
   };
