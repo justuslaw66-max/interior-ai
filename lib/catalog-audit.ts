@@ -7,6 +7,8 @@ import { applyPresetDefaults, getCatalogPreset, validateCatalogAgainstPreset } f
 export type CatalogVariant = Record<string, unknown>;
 
 export type CatalogEntry = Record<string, unknown> & {
+  status?: string;
+  publication_state?: string;
   category?: string;
   design_zone?: string;
   anchor_role?: string;
@@ -155,6 +157,19 @@ function pushBySeverity(audit: FileAudit, severity: "error" | "warning" | "advis
   audit.warnings.push(message);
 }
 
+function isDraftCatalogEntry(entry: CatalogEntry): boolean {
+  const status = String(entry.publication_state ?? entry.status ?? "").trim().toLowerCase();
+  return ["draft", "pending-review", "pending_review", "needs-review", "needs_review", "blocked"].includes(status);
+}
+
+function finalizeDraftAudit(audit: FileAudit, isDraft: boolean): FileAudit {
+  if (!isDraft || audit.failures.length === 0) return audit;
+
+  audit.warnings.push(...audit.failures.map((failure) => `draft blocker: ${failure}`));
+  audit.failures = [];
+  return audit;
+}
+
 function auditVariant(
   variant: CatalogVariant,
   index: number,
@@ -228,6 +243,7 @@ function auditFile(filePath: string, vocab: ControlledVocab): FileAudit {
   const raw = fs.readFileSync(filePath, "utf8");
   const parsed = parse(raw) as CatalogEntry;
   const audit: FileAudit = { filePath, failures: [], warnings: [] };
+  const isDraft = isDraftCatalogEntry(parsed);
 
   if (!isPlainObject(parsed)) {
     audit.failures.push("catalog.yaml root must be an object.");
@@ -265,7 +281,7 @@ function auditFile(filePath: string, vocab: ControlledVocab): FileAudit {
   const preset = getCatalogPreset(parsed.category ?? null);
   if (!preset) {
     audit.failures.push(`no catalog preset exists for category "${parsed.category ?? "unknown"}".`);
-    return audit;
+    return finalizeDraftAudit(audit, isDraft);
   }
 
   const pairingRule = preset.validationRules?.designPairingRules;
@@ -368,7 +384,7 @@ function auditFile(filePath: string, vocab: ControlledVocab): FileAudit {
     audit.failures.push("assets.thumbnail_url is required for publish readiness.");
   }
 
-  return audit;
+  return finalizeDraftAudit(audit, isDraft);
 }
 
 function loadControlledVocabulary(): ControlledVocab {
