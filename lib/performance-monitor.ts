@@ -1,4 +1,26 @@
-import * as Sentry from '@sentry/nextjs';
+'use client';
+
+type SentryModule = typeof import("@sentry/browser");
+
+let sentryModulePromise: Promise<SentryModule> | null = null;
+
+function getSentryModule(): Promise<SentryModule> | null {
+  if (typeof window === "undefined") return null;
+  if (!sentryModulePromise) {
+    sentryModulePromise = import("@sentry/browser");
+  }
+  return sentryModulePromise;
+}
+
+function captureMessage(message: string, options: Parameters<SentryModule["captureMessage"]>[1]) {
+  const modulePromise = getSentryModule();
+  if (!modulePromise) return;
+  void modulePromise
+    .then((Sentry) => Sentry.captureMessage(message, options))
+    .catch(() => {
+      // Never surface telemetry failures to user flows.
+    });
+}
 
 type DreiStats = {
   drawCalls?: number;
@@ -54,7 +76,7 @@ export class PerformanceMonitor {
   static trackLowPerformance(metrics: PerformanceMetrics, context: { itemCount: number; mode: string; plan: string }) {
     // Only send events for bad performance, not good performance
     if (metrics.fps < this.FPS_THRESHOLD) {
-      Sentry.captureMessage('Low FPS detected', {
+      captureMessage('Low FPS detected', {
         level: 'warning',
         tags: {
           component: 'performance',
@@ -73,7 +95,7 @@ export class PerformanceMonitor {
     }
 
     if (metrics.drawCalls && metrics.drawCalls > this.DRAW_CALL_WARNING) {
-      Sentry.captureMessage('High draw call count', {
+      captureMessage('High draw call count', {
         level: 'warning',
         tags: {
           component: 'performance',
@@ -89,7 +111,7 @@ export class PerformanceMonitor {
     }
 
     if (metrics.textureMemory && metrics.textureMemory > this.TEXTURE_WARNING) {
-      Sentry.captureMessage('High texture memory usage', {
+      captureMessage('High texture memory usage', {
         level: 'warning',
         tags: {
           component: 'performance',

@@ -62,7 +62,7 @@ test.describe("98. Dawson Variant Selector Smoke", () => {
     await expect(size114).toBeVisible({ timeout: 10000 });
     await size114.click();
 
-    await expect(dimLabel).toContainText(/1140\s*x\s*930\s*x\s*450\s*mm/i);
+    await expect(dimLabel).toContainText(/114\s*x\s*93\s*x\s*45\s*cm/i);
     expect((await dimLabel.textContent()) ?? "").not.toEqual(dimsBefore);
     if (hasPriceLabel) {
       await expect(priceLabel).toContainText(/649/);

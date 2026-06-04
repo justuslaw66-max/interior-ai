@@ -23,7 +23,14 @@ import {
   shouldShowCollectionGrouping,
 } from "@/lib/catalog/variant-normalization";
 
-type MaterialType = "Fabric" | "Leather";
+type MaterialType = "Fabric" | "Leather" | "Wood";
+
+type MaterialOption = {
+  key: string;
+  label: string;
+  variantId: string;
+  colorHex: string;
+};
 
 export type StructuredVariantEntry = {
   variant: CatalogItemSchema["variants"][number];
@@ -31,7 +38,50 @@ export type StructuredVariantEntry = {
   materialLabel: MaterialType;
   materialType: MaterialType;
   collectionType: string;
+  materialKey: string;
+  materialDisplayLabel: string;
 };
+
+function toTitleCase(value: string): string {
+  return value
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function normalizeMaterialCode(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/\(([^)]*)\)/g, "")
+    .replace(/\b\d{2,4}\s*x\s*\d{2,4}\b/g, "")
+    .replace(/\b(open|opened|closed|storage)\b/g, "")
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function buildMaterialFields(entry: CatalogItemSchema["variants"][number]): {
+  key: string;
+  label: string;
+} {
+  const finishCode = normalizeMaterialCode(String(entry.finishCode ?? ""));
+  const finishLabel = normalizeMaterialCode(String(entry.finishLabel ?? ""));
+  // Upholstery/finish code is the stable material dimension for imported Castlery variants.
+  const preferred = finishCode || finishLabel;
+  if (!preferred) {
+    return {
+      key: "default",
+      label: "Default",
+    };
+  }
+
+  return {
+    key: preferred.replace(/\s+/g, "-"),
+    label: toTitleCase(preferred),
+  };
+}
 
 type Params = {
   selectedProduct: CatalogItemSchema | null;
@@ -89,9 +139,35 @@ export function useDesignPageProductSelectorState({
     return null;
   }, [selectedProduct]);
 
-  const hasStructuredVariantLabels = Boolean(
-    selectedProduct?.variants.some((v) => Boolean(v.finishLabel?.trim()) || /\(([^)]+)\)/.test(v.label))
-  );
+  const hasStructuredVariantLabels = useMemo(() => {
+    if (!selectedProduct || selectedProduct.variants.length < 2) return false;
+
+    const hasExplicitStructuredLabel = selectedProduct.variants.some(
+      (v) => Boolean(v.finishLabel?.trim()) || /\(([^)]+)\)/.test(v.label)
+    );
+    if (hasExplicitStructuredLabel) return true;
+
+    // Treat variants as colour/finish-driven when imported/catalog metadata provides
+    // finish attributes even if human-readable labels are plain.
+    const hasFinishMetadata = selectedProduct.variants.some((v) => {
+      const finishCode = String(v.finishCode ?? "").trim();
+      const swatchGroup = String(v.swatchGroup ?? "").trim().toLowerCase();
+      const collectionType = String(v.collectionType ?? "").trim();
+      return Boolean(
+        finishCode ||
+          v.materialType ||
+          collectionType ||
+          (swatchGroup && swatchGroup !== "all_materials")
+      );
+    });
+    if (hasFinishMetadata) return true;
+
+    // Fall back to swatch cards when variants are primarily colour-differentiated.
+    const distinctHexes = new Set(
+      selectedProduct.variants.map((v) => String(v.swatchHex ?? v.colorHex ?? "").trim().toLowerCase())
+    );
+    return distinctHexes.size > 1;
+  }, [selectedProduct]);
 
   const modelSelectorProductIds = useMemo(() => {
     if (!selectedProduct) return [] as string[];
@@ -165,6 +241,8 @@ export function useDesignPageProductSelectorState({
     if (!selectedProduct) return [] as StructuredVariantEntry[];
     return selectedProduct.variants.map((variant) => {
       const parts = parseVariantLabel(variant.label);
+      const swatchGroup = String(variant.swatchGroup ?? "").trim().toLowerCase();
+      const isWoodSwatch = swatchGroup.includes("wood");
       const materialType =
         variant.materialType ??
         inferMaterialTypeFromText(
@@ -175,12 +253,22 @@ export function useDesignPageProductSelectorState({
           variant.label
         );
       const collectionType = String(variant.collectionType ?? "").trim().toLowerCase();
+      const materialFields = buildMaterialFields(variant);
+      const normalizedFinishCode = normalizeMaterialCode(String(variant.finishCode ?? ""));
+      const resolvedColourLabel = isWoodSwatch
+        ? variant.finishLabel?.trim() ||
+          (normalizedFinishCode ? toTitleCase(normalizedFinishCode) : "") ||
+          parts.colourLabel.trim() ||
+          variant.label.trim()
+        : parts.colourLabel.trim() || variant.label.trim();
       return {
         variant,
-        colourLabel: variant.label.trim() || parts.colourLabel,
+        colourLabel: resolvedColourLabel,
         materialLabel: materialType,
         materialType,
         collectionType,
+        materialKey: materialFields.key,
+        materialDisplayLabel: materialFields.label,
       } as StructuredVariantEntry;
     });
   }, [selectedProduct]);
@@ -193,11 +281,20 @@ export function useDesignPageProductSelectorState({
     );
   }, [structuredVariants, selectedItem?.variantId]);
 
-  const activeMaterialLabel = activeStructuredVariant?.materialLabel ?? null;
+  const activeMaterialLabel = activeStructuredVariant?.materialDisplayLabel ?? activeStructuredVariant?.materialLabel ?? null;
   const activeMaterialType = activeStructuredVariant?.materialType ?? null;
   const activeVariantLabel = activeStructuredVariant?.variant.label ?? null;
   const activeVariantColorHex = activeStructuredVariant?.variant.colorHex ?? null;
   const activeColourLabel = activeStructuredVariant?.colourLabel ?? null;
+
+  const isHuggProduct = Boolean(selectedProduct?.id.toLowerCase().includes("hugg"));
+
+  const hasWoodColourOptions = useMemo(() => {
+    return structuredVariants.some((entry) => {
+      const swatchGroup = String(entry.variant.swatchGroup ?? "").trim().toLowerCase();
+      return swatchGroup.includes("wood") || (isHuggProduct && entry.materialType === "Wood");
+    });
+  }, [structuredVariants, isHuggProduct]);
 
   const showFabricGroupingDebug = process.env.NODE_ENV !== "production";
   const selectedModelLabel = selectedProduct?.metadata?.modelLabel?.trim() ?? null;
@@ -269,12 +366,55 @@ export function useDesignPageProductSelectorState({
       ? selectedProduct.id
       : "dining-real-castlery-sloane-travertine-220");
 
+  const hasColourOverlapAcrossMaterials = useMemo(() => {
+    if (!hasWoodColourOptions) return false;
+    if (structuredVariants.length < 2) return false;
+    const materialToColours = new Map<string, Set<string>>();
+    for (const entry of structuredVariants) {
+      const set = materialToColours.get(entry.materialKey) ?? new Set<string>();
+      set.add(entry.colourLabel.trim().toLowerCase());
+      materialToColours.set(entry.materialKey, set);
+    }
+    if (materialToColours.size < 2) return false;
+
+    const allSets = Array.from(materialToColours.values());
+    for (let i = 0; i < allSets.length; i += 1) {
+      for (let j = i + 1; j < allSets.length; j += 1) {
+        for (const colour of allSets[i]) {
+          if (allSets[j].has(colour)) return true;
+        }
+      }
+    }
+    return false;
+  }, [structuredVariants, hasWoodColourOptions]);
+
+  const activeMaterialKey = activeStructuredVariant?.materialKey ?? null;
+
   const visibleColourVariants = useMemo(() => {
-    if (!hasStructuredVariantLabels || !activeMaterialType) {
+    if (hasWoodColourOptions) {
+      const woodOnly = structuredVariants.filter((entry) => {
+        const swatchGroup = String(entry.variant.swatchGroup ?? "").trim().toLowerCase();
+        return swatchGroup.includes("wood") || (isHuggProduct && entry.materialType === "Wood");
+      });
+      if (woodOnly.length) return woodOnly;
+    }
+    if (!hasStructuredVariantLabels) {
       return structuredVariants;
     }
+    if (hasColourOverlapAcrossMaterials && activeMaterialKey) {
+      return structuredVariants.filter((x) => x.materialKey === activeMaterialKey);
+    }
+    if (!activeMaterialType) return structuredVariants;
     return structuredVariants.filter((x) => x.materialType === activeMaterialType);
-  }, [structuredVariants, hasStructuredVariantLabels, activeMaterialType]);
+  }, [
+    structuredVariants,
+    hasStructuredVariantLabels,
+    activeMaterialKey,
+    activeMaterialType,
+    hasWoodColourOptions,
+    hasColourOverlapAcrossMaterials,
+    isHuggProduct,
+  ]);
 
   const dedupedVisibleColourVariants = useMemo(() => {
     if (!visibleColourVariants.length) return visibleColourVariants;
@@ -351,16 +491,33 @@ export function useDesignPageProductSelectorState({
 
   const materialOptions = useMemo(() => {
     if (!selectedProduct) {
-      return [] as Array<{ type: MaterialType; variantId: string; colorHex: string }>;
+      return [] as MaterialOption[];
     }
-    const orderedTypes: MaterialType[] = ["Fabric", "Leather"];
-    const byType = new Map<MaterialType, { variantId: string; colorHex: string }>();
+
+    if (hasColourOverlapAcrossMaterials) {
+      const byMaterialKey = new Map<string, MaterialOption>();
+      for (const entry of structuredVariants) {
+        if (!byMaterialKey.has(entry.materialKey)) {
+          byMaterialKey.set(entry.materialKey, {
+            key: entry.materialKey,
+            label: entry.materialDisplayLabel,
+            variantId: entry.variant.id,
+            colorHex: entry.variant.swatchHex ?? entry.variant.colorHex,
+          });
+        }
+      }
+      return Array.from(byMaterialKey.values());
+    }
+
+    const orderedTypes: MaterialType[] = ["Fabric", "Wood", "Leather"];
+    const byType = new Map<MaterialType, { variantId: string; colorHex: string; label: string }>();
 
     for (const entry of structuredVariants) {
       if (!byType.has(entry.materialType)) {
         byType.set(entry.materialType, {
           variantId: entry.variant.id,
           colorHex: entry.variant.swatchHex ?? entry.variant.colorHex,
+          label: entry.materialType,
         });
       }
     }
@@ -369,13 +526,15 @@ export function useDesignPageProductSelectorState({
       .map((type) => {
         const mapped = byType.get(type);
         if (!mapped) return null;
-        return { type, variantId: mapped.variantId, colorHex: mapped.colorHex };
+        return {
+          key: type.toLowerCase(),
+          label: mapped.label,
+          variantId: mapped.variantId,
+          colorHex: mapped.colorHex,
+        };
       })
-      .filter(
-        (entry): entry is { type: MaterialType; variantId: string; colorHex: string } =>
-          Boolean(entry)
-      );
-  }, [selectedProduct, structuredVariants]);
+      .filter((entry): entry is MaterialOption => Boolean(entry));
+  }, [selectedProduct, structuredVariants, hasColourOverlapAcrossMaterials]);
 
   const useLengthOptionsAsVariants = Boolean(
     !hasStructuredVariantLabels &&
@@ -526,5 +685,6 @@ export function useDesignPageProductSelectorState({
     showFinishSection,
     sizeOptionsForActiveSelection,
     showSizeSection,
+    hasWoodColourOptions,
   };
 }

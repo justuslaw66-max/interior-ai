@@ -253,6 +253,17 @@ export function getSloaneBenchProductId(size: 150 | 180, cushion: "no" | "leathe
 }
 
 export const CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE: Record<string, string> = {
+  "marche-cocoa": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1741163167/crusader/variants/LE-4023/Cocoa_Swatch-1741163165.jpg",
+  "marche-ivory": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728527/crusader/variants/LE-4021/Hamilton-Leather-Sofa-Ivory-Det_1-1710728524.jpg",
+  "performance-arvo-dune": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/crusader/variants/AR-4001/Arvo-Dune-Swatch.jpg",
+  "performance-dune": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1674034715/crusader/variants/AR-4001/Sloane-Cane-Chair-Dune-Grey-Oak-Det_1-1674034712.jpg",
+  "performance-basalt": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1692611722/crusader/variants/AR-4002/Auburn-Performance-Boucle-Sofa-Basalt-Square-Det_2-1692611719.jpg",
+  "natural": "https://res.cloudinary.com/castlery/image/upload/w_128,f_auto,q_auto/v1756719854/knight/cms/swatch/Mori-Side-Table-Square-Det_4.jpg",
+  "chestnut": "https://res.cloudinary.com/castlery/image/upload/w_128,f_auto,q_auto/v1697793942/knight/cms/swatch/Kinsley-TV-Console-Chestnut-Oak-Square-Det_1.jpg",
+  "black": "https://res.cloudinary.com/castlery/image/upload/w_128,f_auto,q_auto/v1716346211/knight/cms/swatch/Sofa-Armrest-Table-Black-Square-Det_1.jpg",
+  "natural-oak": "https://res.cloudinary.com/castlery/image/upload/w_128,f_auto,q_auto/v1756719854/knight/cms/swatch/Mori-Side-Table-Square-Det_4.jpg",
+  "chestnut-oak": "https://res.cloudinary.com/castlery/image/upload/w_128,f_auto,q_auto/v1697793942/knight/cms/swatch/Kinsley-TV-Console-Chestnut-Oak-Square-Det_1.jpg",
+  "black-oak": "https://res.cloudinary.com/castlery/image/upload/w_128,f_auto,q_auto/v1716346211/knight/cms/swatch/Sofa-Armrest-Table-Black-Square-Det_1.jpg",
   "ng-4001": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1665460017/crusader/variants/NG-4001/Beach-Linen_1-1665460015.jpg",
   "navagio-beach-linen": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1665460017/crusader/variants/NG-4001/Beach-Linen_1-1665460015.jpg",
   "beach-linen": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1665460017/crusader/variants/NG-4001/Beach-Linen_1-1665460015.jpg",
@@ -310,6 +321,15 @@ export const CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE: Record<string, string>
   "washed-chenille-caramel": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,c_fit/v1769054464/crusader/variants/GR-4003/GR4003-Greta-Mustard-Brown-1769054461.jpg",
   "gr-4004": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,c_fit/v1769054472/crusader/variants/GR-4004/GR4004-Greta-Moss-1769054469.jpg",
   "washed-chenille-moss": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,c_fit/v1769054472/crusader/variants/GR-4004/GR4004-Greta-Moss-1769054469.jpg",
+};
+
+export const HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE: Record<string, string> = {
+  natural:
+    "https://res.cloudinary.com/castlery/image/upload/v1756719854/knight/cms/swatch/Mori-Side-Table-Square-Det_4.jpg",
+  chestnut:
+    "https://res.cloudinary.com/castlery/image/upload/v1697793942/knight/cms/swatch/Kinsley-TV-Console-Chestnut-Oak-Square-Det_1.jpg",
+  black:
+    "https://res.cloudinary.com/castlery/image/upload/v1716346211/knight/cms/swatch/Sofa-Armrest-Table-Black-Square-Det_1.jpg",
 };
 
 export type FabricDetailProfile = {

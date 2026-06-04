@@ -15,7 +15,7 @@ function applyCors(req: NextRequest, res: NextResponse) {
   return res;
 }
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   // Keep CORS relaxation strictly in local dev.
   if (process.env.NODE_ENV !== "development") {
     return NextResponse.next();

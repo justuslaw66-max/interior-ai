@@ -134,7 +134,7 @@ export interface ProductVariant {
   available?: boolean;
   finishCode?: string;
   finishLabel?: string;
-  materialType?: "Fabric" | "Leather";
+  materialType?: "Fabric" | "Leather" | "Wood";
   swatchGroup?: string;
   swatchHex?: string;
   collectionType?: string; // "stocked" | "custom" from upholstery options

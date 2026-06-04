@@ -22,9 +22,11 @@ export type ImportedUpholsteryOptionLike = {
   collection_type?: string;
   texture_type?: string;
   swatch_group?: string;
+  swatch_hex?: string;
+  thumbnail_url?: string;
+  thumbnailUrl?: string;
   render_assets?: ImportedRenderAssetsLike;
 };
-
 export type ImportedVariantEntryLike = {
   variant?: string;
   finish_code?: string;
@@ -142,6 +144,8 @@ function mapColorFromText(textLike: unknown): string {
   if (text.includes("black")) return "#1f1f1f";
   if (text.includes("cream")) return "#e8e6df";
   if (text.includes("ivory")) return "#eeece6";
+  if (text.includes("performance_basalt") || text.includes("performance basalt")) return "#7f848a";
+  if (text.includes("basalt")) return "#8b9096";
   if (text.includes("performance_dune") || text.includes("performance dune")) return "#ede8de";
   if (text.includes("fabric") || text.includes("dune")) return "#ede8de";
   if (text.includes("cocoa") || text.includes("cooca")) return "#ba8257";
@@ -190,6 +194,13 @@ export function normalizeImportedVariants({
               upholstery_label: option.upholstery_label ?? entry.upholstery_label,
               collection_type: option.collection_type,
               swatch_group: entry.swatch_group ?? option.swatch_group,
+              swatch_hex: entry.swatch_hex ?? option.swatch_hex,
+              thumbnail_url:
+                (typeof option.thumbnail_url === "string" && option.thumbnail_url.trim().length > 0
+                  ? option.thumbnail_url
+                  : typeof option.thumbnailUrl === "string" && option.thumbnailUrl.trim().length > 0
+                    ? option.thumbnailUrl
+                    : entry.thumbnail_url),
             }))
         )
       : variantEntries;
@@ -197,6 +208,9 @@ export function normalizeImportedVariants({
   const mappedVariants = variantEntriesForMapping.map((entry, index) => {
     const entryAny = entry as Record<string, unknown>;
     const normalizedEntryUpholsteryCode = normalizeUpholsteryCode(String(entry.upholstery_code ?? ""));
+    const rawFinishCode = String(entry.finish_code ?? "").trim().toLowerCase();
+    const rawFinishLabel = String(entry.finish_label ?? "").trim().toLowerCase();
+    const rawEntrySwatchGroup = String(entry.swatch_group ?? "").trim().toLowerCase();
     const rawVariantLabel = String(
       entry.upholstery_label ?? entry.variant ?? entry.finish_label ?? `Imported ${index + 1}`
     ).trim();
@@ -239,50 +253,102 @@ export function normalizeImportedVariants({
           ? `${fabricFamilyLabel} (${fabricLabel})`
           : fabricFamilyLabel
       : "";
-    const upholsteryColourLabel = sentenceCaseLabel(String(matchingUpholsteryOption?.color_label ?? "").replace(/_/g, " "));
+    const upholsteryLabel = sentenceCaseLabel(
+      String(matchingUpholsteryOption?.upholstery_label ?? entry.upholstery_label ?? "").replace(/_/g, " ")
+    );
+    const finishColourFromStructured = sentenceCaseLabel(
+      String(((entryAny.finish as Record<string, unknown> | undefined)?.color_finish as string | undefined) ?? "").replace(/_/g, " ")
+    );
+    const finishColourFromCode = sentenceCaseLabel(String(entry.finish_code ?? "").replace(/_/g, " "));
+    const finishColourFromLabel = sentenceCaseLabel(String(entry.finish_label ?? "").replace(/_/g, " "));
     const upholsteryCodeColourLabel = sentenceCaseLabel(
       String(entry.upholstery_code ?? "")
         .replace(/^performance[\s_-]*/i, "")
         .replace(/[_-]+/g, " ")
     );
-    const finishLabel =
-      explicitFinishLabel ||
-      upholsteryColourLabel ||
-      upholsteryCodeColourLabel ||
-      fabricFromStructuredFields ||
-      structuredMaterialLabel ||
-      deriveImportedFabricType(rawVariantLabel, matchingUpholsteryOption?.texture_type) ||
-      sentenceCaseLabel(rawVariantLabel);
+    const finishLooksLikeWood = /(wood|oak|walnut|chestnut|natural|black)/i.test(
+      `${rawFinishCode} ${rawFinishLabel} ${rawEntrySwatchGroup}`
+    );
+    const hasIndependentFinishCode =
+      rawFinishCode.length > 0 &&
+      normalizeUpholsteryCode(rawFinishCode) !== normalizedEntryUpholsteryCode &&
+      !/performance|fabric|leather/i.test(rawFinishCode);
+    const inferredWoodFinish = rawEntrySwatchGroup.includes("wood") || (hasIndependentFinishCode && finishLooksLikeWood);
+    const effectiveSwatchGroup =
+      rawEntrySwatchGroup ||
+      (inferredWoodFinish
+        ? "wood_finish"
+        : String(matchingUpholsteryOption?.swatch_group ?? "").trim().toLowerCase());
+
+    const finishLabel = inferredWoodFinish
+      ? finishColourFromLabel ||
+        finishColourFromCode ||
+        finishColourFromStructured ||
+        explicitFinishLabel ||
+        sentenceCaseLabel(String(entry.color_family ?? entry.tone ?? "").replace(/_/g, " ")) ||
+        sentenceCaseLabel(rawVariantLabel)
+      : explicitFinishLabel ||
+        upholsteryLabel ||
+        upholsteryCodeColourLabel ||
+        fabricFromStructuredFields ||
+        structuredMaterialLabel ||
+        deriveImportedFabricType(rawVariantLabel, matchingUpholsteryOption?.texture_type) ||
+        sentenceCaseLabel(rawVariantLabel);
     const inferredColourLabel = deriveImportedColourLabel(rawVariantLabel, finishLabel);
     const colourLabel =
       explicitColourLabel ||
+      finishColourFromStructured ||
+      finishColourFromCode ||
+      finishColourFromLabel ||
       sentenceCaseLabel(String(matchingUpholsteryOption?.color_label ?? "").replace(/_/g, " ")) ||
-      sentenceCaseLabel(String(((entryAny.finish as Record<string, unknown> | undefined)?.color_finish as string | undefined) ?? "").replace(/_/g, " ")) ||
-      sentenceCaseLabel(String(entry.finish_label ?? "").replace(/_/g, " ")) ||
       inferredColourLabel ||
       sentenceCaseLabel(String(entry.color_family ?? entry.tone ?? "").replace(/_/g, " ")) ||
       sentenceCaseLabel(rawVariantLabel);
-    const finishCode = normalizeHyphenatedCode(String(entry.upholstery_code ?? finishLabel)) || `${index + 1}`;
+    const finishCodeSource = inferredWoodFinish
+      ? entry.finish_code ?? entry.upholstery_code ?? finishLabel
+      : entry.upholstery_code ?? entry.finish_code ?? finishLabel;
+    const finishCode = normalizeHyphenatedCode(String(finishCodeSource)) || `${index + 1}`;
     const normalizedUpholsteryCode = normalizeHyphenatedCode(String(entry.upholstery_code ?? ""));
     const normalizedFinishCode = normalizeHyphenatedCode(String(entry.finish_code ?? colourLabel));
+    const normalizedSwatchGroup = effectiveSwatchGroup;
+    const preferWoodFinishColour = normalizedSwatchGroup.includes("wood");
+    const resolvedColourLabel = preferWoodFinishColour
+      ? explicitColourLabel ||
+        finishColourFromStructured ||
+        finishColourFromCode ||
+        finishColourFromLabel ||
+        sentenceCaseLabel(String(matchingUpholsteryOption?.color_label ?? "").replace(/_/g, " ")) ||
+        inferredColourLabel ||
+        sentenceCaseLabel(String(entry.color_family ?? entry.tone ?? "").replace(/_/g, " ")) ||
+        sentenceCaseLabel(rawVariantLabel)
+      : explicitColourLabel ||
+        sentenceCaseLabel(String(matchingUpholsteryOption?.color_label ?? "").replace(/_/g, " ")) ||
+        finishColourFromStructured ||
+        finishColourFromCode ||
+        finishColourFromLabel ||
+        inferredColourLabel ||
+        sentenceCaseLabel(String(entry.color_family ?? entry.tone ?? "").replace(/_/g, " ")) ||
+        sentenceCaseLabel(rawVariantLabel);
     const variantCode =
       [normalizedUpholsteryCode, normalizedFinishCode].filter(Boolean).join("__") ||
       normalizedUpholsteryCode ||
       normalizedFinishCode ||
       `${index + 1}`;
     const variantId = `imported-${productId}-${variantCode}`;
-    const swatchHexCandidate = String((entryAny.swatch_hex as string | undefined) ?? "").trim();
+    const swatchHexCandidate = String(
+      (entryAny.swatch_hex as string | undefined) ?? matchingUpholsteryOption?.swatch_hex ?? ""
+    ).trim();
     const isValidSwatchHex = /^#([0-9a-f]{6})$/i.test(swatchHexCandidate);
     const colorSource = [
+      matchingUpholsteryOption?.color_label,
+      entry.upholstery_code,
+      entry.upholstery_label,
+      explicitColourLabel,
       entry.finish_label,
       (entryAny.finish as Record<string, unknown> | undefined)?.color_finish as string | undefined,
       entry.finish_code,
-      explicitColourLabel,
-      matchingUpholsteryOption?.color_label,
       entry.color_family,
       entry.tone,
-      entry.upholstery_label,
-      entry.upholstery_code,
       finishLabel,
     ].find((value) => typeof value === "string" && value.trim().length > 0);
     const colorHex = isValidSwatchHex ? swatchHexCandidate : mapColorFromText(colorSource);
@@ -318,7 +384,7 @@ export function normalizeImportedVariants({
 
     return {
       id: variantId,
-      label: colourLabel,
+      label: resolvedColourLabel,
       colorHex,
       dimensionsMm:
         Number(entry?.dimensions?.width_cm ?? 0) > 0 && Number(entry?.dimensions?.depth_cm ?? 0) > 0
@@ -335,7 +401,7 @@ export function normalizeImportedVariants({
       finishCode,
       finishLabel,
       materialType,
-      swatchGroup: entry.swatch_group ?? matchingUpholsteryOption?.swatch_group,
+      swatchGroup: effectiveSwatchGroup || undefined,
       swatchHex: colorHex,
       collectionType,
       renderAssets: matchingUpholsteryOption?.render_assets

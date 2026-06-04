@@ -57,7 +57,11 @@ export default function CatalogItemDrawer({
       <div className="mt-3 text-lg font-semibold text-neutral-900">{detail.title}</div>
       <div className="text-xs text-neutral-500">{detail.brand ?? "Unknown brand"} • {detail.category}</div>
       <div className="text-xs text-neutral-500" data-testid="catalog-detail-variant-label">Variant: {detail.variantLabel}</div>
-      <div className="text-xs text-neutral-500">Dimensions: {detail.dimsMm.w} x {detail.dimsMm.d} x {detail.dimsMm.h} mm</div>
+      <div className="text-xs text-neutral-500">
+        Dimensions: {(detail.dimsMm.w / 10).toFixed(1).replace(/\.0$/, "")} x {(detail.dimsMm.d / 10)
+          .toFixed(1)
+          .replace(/\.0$/, "")} x {(detail.dimsMm.h / 10).toFixed(1).replace(/\.0$/, "")} cm
+      </div>
       <div className="mt-1 text-sm font-medium text-neutral-800">{detail.priceLabel ?? "External retailer"}</div>
 
       <div className="mt-3 flex flex-wrap gap-1.5">
@@ -106,7 +110,7 @@ export default function CatalogItemDrawer({
 
       <div className="mt-3 grid grid-cols-2 gap-2">
         <button
-          onClick={() => onAdd(detail.id, activeFinishId ?? detail.variantId)}
+          onClick={() => onAdd(detail.id, detail.variantId)}
           data-testid="catalog-detail-add-to-room"
           className="rounded-md bg-neutral-900 px-3 py-2 text-xs font-semibold text-white"
         >

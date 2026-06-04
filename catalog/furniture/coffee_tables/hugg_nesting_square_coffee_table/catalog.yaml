@@ -312,7 +312,7 @@ authoring_notes:
 assets:
   asset_id: "coffee-real-castlery-hugg-nesting-square-performance-basalt-closed"
   model_url: "/assets/models/coffee-real-castlery-hugg-nesting-square-performance-basalt-closed.glb"
-  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1641292754/crusader/variants/50850023/Peri-Coffee-Table-Front.png"
+  thumbnail_url: "/assets/thumbs/coffee-real-castlery-hugg-nesting-square-performance-basalt-closed.png"
 
 ai_flags:
   isStarterEligible: true
@@ -322,8 +322,11 @@ ai_flags:
 upholstery_options:
   - upholstery_code: "performance_dune"
     upholstery_label: "Performance Dune"
+    color_label: "Dune"
     collection_type: "stocked"
     swatch_group: "upholstery_fabric"
+    swatch_hex: "#d9d1c4"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729564013/crusader/variants/AS-000635-AR4001-NA/Hugg-Square-Coffee-Table-Natural-Performance-Dune_-Front-1729564011.jpg"
     color_family: "beige"
     tone: "warm"
     material_type: "performance_fabric"
@@ -331,8 +334,11 @@ upholstery_options:
 
   - upholstery_code: "performance_basalt"
     upholstery_label: "Performance Basalt"
+    color_label: "Basalt"
     collection_type: "stocked"
     swatch_group: "upholstery_fabric"
+    swatch_hex: "#8a8f96"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729564998/crusader/variants/AS-000635-AR4002-NA/Hugg-Square-Coffee-Table-Natural-Performance-Basalt-Front-1729564995.jpg"
     color_family: "grey"
     tone: "neutral_cool"
     material_type: "performance_fabric"
@@ -343,6 +349,7 @@ variants:
     size_label: "110x110"
     finish_code: "natural"
     finish_label: "Natural"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729564998/crusader/variants/AS-000635-AR4002-NA/Hugg-Square-Coffee-Table-Natural-Performance-Basalt-Front-1729564995.jpg"
     swatch_group: "wood_finish"
     swatch_hex: "#a89070"
     price_usd: 1099
@@ -373,6 +380,7 @@ variants:
     size_label: "110x110"
     finish_code: "chestnut"
     finish_label: "Chestnut"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729502859/crusader/variants/AS-000635-AR4002-CT/Hugg-Square-Coffee-Table-Chestnut-Performance-Basalt-Front-1729502856.jpg"
     swatch_group: "wood_finish"
     swatch_hex: "#8B6F47"
     price_usd: 1099
@@ -403,6 +411,7 @@ variants:
     size_label: "110x110"
     finish_code: "black"
     finish_label: "Black"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729502719/crusader/variants/AS-000635-AR4002-BLK/Hugg-Square-Coffee-Table-Black-Performance-Basalt-Front-1729502716.jpg"
     swatch_group: "wood_finish"
     swatch_hex: "#1f1f1f"
     price_usd: 1099

@@ -20,6 +20,7 @@ export default function CatalogCard({ item, onPreview, onAdd, onToggleCompare, i
         {item.thumbUrl ? (
           <LazyImage
             src={item.thumbUrl}
+            fallbackSrc={item.fallbackThumbUrl ?? undefined}
             alt={item.title}
             className={item.imageClassName}
           />

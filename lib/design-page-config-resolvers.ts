@@ -151,6 +151,16 @@ export function resolveConfiguredModelUrl(
     .toLowerCase();
   const variantMeta = ctx.catalogItems[item.productId]?.variants.find((v) => v.id === variantId);
   const finishCode = String(variantMeta?.finishCode ?? "").trim().toLowerCase();
+  const inferredUpholsteryCode = (() => {
+    const source = `${item.productId} ${fallbackModelUrl ?? ""}`.toLowerCase();
+    if (/(?:^|[^a-z0-9])performance[-_]dune(?:[^a-z0-9]|$)/.test(source)) {
+      return "performance_dune";
+    }
+    if (/(?:^|[^a-z0-9])performance[-_]basalt(?:[^a-z0-9]|$)/.test(source)) {
+      return "performance_basalt";
+    }
+    return "";
+  })();
   const lookupKeys = [
     variantCode,
     variantCode.replace(/-/g, "_"),
@@ -158,6 +168,9 @@ export function resolveConfiguredModelUrl(
     finishCode,
     finishCode.replace(/-/g, "_"),
     finishCode.split("__")[0],
+    inferredUpholsteryCode,
+    inferredUpholsteryCode.replace(/_/g, "-"),
+    inferredUpholsteryCode.split("__")[0],
   ].filter((key) => key.length > 0);
 
   const normalizeLookupToken = (value: string | null | undefined): string =>

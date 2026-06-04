@@ -5419,7 +5419,7 @@ function PageContent() {
                     : "text-sm text-neutral-900"
                 }
               >
-                Size: {selectedProduct.dimsMm.w / 1000}m × {selectedProduct.dimsMm.d / 1000}m × {selectedProduct.dimsMm.h / 1000}m
+                Size: {Math.round(selectedProduct.dimsMm.w / 10)} x {Math.round(selectedProduct.dimsMm.d / 10)} x {Math.round(selectedProduct.dimsMm.h / 10)} cm
               </div>
             </div>
 
