@@ -157,12 +157,12 @@ function pushBySeverity(audit: FileAudit, severity: "error" | "warning" | "advis
   audit.warnings.push(message);
 }
 
-function isDraftCatalogEntry(entry: CatalogEntry): boolean {
+export function isDraftCatalogEntry(entry: CatalogEntry): boolean {
   const status = String(entry.publication_state ?? entry.status ?? "").trim().toLowerCase();
   return ["draft", "pending-review", "pending_review", "needs-review", "needs_review", "blocked"].includes(status);
 }
 
-function finalizeDraftAudit(audit: FileAudit, isDraft: boolean): FileAudit {
+export function finalizeDraftAudit(audit: FileAudit, isDraft: boolean): FileAudit {
   if (!isDraft || audit.failures.length === 0) return audit;
 
   audit.warnings.push(...audit.failures.map((failure) => `draft blocker: ${failure}`));
