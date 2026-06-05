@@ -56,11 +56,11 @@ test.describe('7. Kelsey Marble Variant Integration', () => {
   });
 
   test('API returns White Wash and Dark Walnut variants for both Kelsey sizes', async ({ request }) => {
-    // The debug route can briefly return non-200 while runtime services warm up in CI.
+    // The imported-model route can briefly return non-200 while runtime services warm up in CI.
     const endpointReady = await expect
       .poll(async () => {
         try {
-          const response = await request.get('http://localhost:3000/api/models/debug');
+          const response = await request.get('http://localhost:3000/api/models/imported');
           if (!response.ok()) return false;
           const body = (await response.json()) as { models?: unknown[] };
           return Array.isArray(body.models) && body.models.length > 0;
@@ -75,13 +75,13 @@ test.describe('7. Kelsey Marble Variant Integration', () => {
     if (!endpointReady) {
       test.info().annotations.push({
         type: 'note',
-        description: 'Skipping Kelsey debug API assertions because /api/models/debug stayed unavailable in this runtime',
+        description: 'Skipping Kelsey imported-model API assertions because /api/models/imported stayed unavailable in this runtime',
       });
       return;
     }
 
-    // Verify the live debug API exposes both Kelsey models and their variant lists.
-    const response = await request.get('http://localhost:3000/api/models/debug');
+    // Verify the live imported-model API exposes both Kelsey models and their variant lists.
+    const response = await request.get('http://localhost:3000/api/models/imported');
     expect(response.ok()).toBeTruthy();
 
     const body = await response.json();
@@ -167,4 +167,3 @@ test.describe('7. Kelsey Marble Variant Integration', () => {
     expect(beforeAttr).not.toBe(afterAttr);
   });
 });
-

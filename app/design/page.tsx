@@ -62,7 +62,7 @@ import {
   buildImportedModelOptions,
   normalizeImportedFamilyName,
   shouldRefreshImportedCatalogItem,
-  type ImportedModelDebugEntry,
+  type ImportedModelEntry,
   type ImportedModelOption,
   upsertImportedCatalogItem,
 } from "@/lib/catalog/imported-model-assembly";
@@ -3951,9 +3951,9 @@ function PageContent() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/api/models/debug", { cache: "no-store" });
+        const res = await fetch("/api/models/imported", { cache: "no-store" });
         const payload = (await res.json().catch(() => ({ models: [] }))) as {
-          models?: ImportedModelDebugEntry[];
+          models?: ImportedModelEntry[];
         };
         if (cancelled) return;
         const { options, modelUrlByAssetId } = buildImportedModelOptions({
