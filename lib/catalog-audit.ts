@@ -544,6 +544,10 @@ export async function runCatalogGovernanceAudit(
     orphanActiveCatalogIds,
     orphanDraftCatalogIds,
     catalogIds,
-    hasFailures: missingCatalog.length > 0 || duplicateIds.size > 0 || parseErrorFiles.length > 0,
+    hasFailures:
+      missingCatalog.length > 0 ||
+      duplicateIds.size > 0 ||
+      parseErrorFiles.length > 0 ||
+      orphanActiveCatalogIds.length > 0,
   };
 }

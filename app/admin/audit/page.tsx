@@ -38,7 +38,8 @@ export default async function AdminAuditPage() {
     a.localeCompare(b)
   );
 
-  const governanceWarnings = governance.missingAssetIdFiles.length + governance.orphanActiveCatalogIds.length;
+  const governanceWarnings = governance.missingAssetIdFiles.length;
+  const activeModelFailures = governance.orphanActiveCatalogIds.length;
   const draftModelBlockers = governance.orphanDraftCatalogIds.length;
   const qualityDuplicateEntries = Array.from(quality.duplicates.entries());
   const governanceDuplicateEntries = Array.from(governance.duplicateIds.entries());
@@ -67,7 +68,7 @@ export default async function AdminAuditPage() {
           <div className="text-xs uppercase tracking-wide">Governance</div>
           <div className="mt-2 text-2xl font-semibold">{governance.hasFailures ? "Needs action" : "Passing"}</div>
           <div className="mt-1 text-sm">
-            {governance.missingCatalog.length} missing mappings, {governance.duplicateIds.size} duplicates, {governance.parseErrorFiles.length} parse errors
+            {governance.missingCatalog.length} missing mappings, {governance.duplicateIds.size} duplicates, {activeModelFailures} active model failures
           </div>
         </div>
         <div className={`rounded-xl border p-4 ${toneClass(quality.hasFailures)}`}>
@@ -93,7 +94,7 @@ export default async function AdminAuditPage() {
           <div className="text-xs uppercase tracking-wide text-neutral-500">Approved assets</div>
           <div className="mt-2 text-2xl font-semibold">{governance.approvedImportedAssets.length}</div>
           <div className="mt-1 text-sm text-neutral-600">
-            Imported approved assets, with {governanceWarnings} governance warnings and {draftModelBlockers} draft blockers
+            Imported approved assets, with {activeModelFailures} active model failures, {governanceWarnings} governance warnings, and {draftModelBlockers} draft blockers
           </div>
         </div>
         <div className={`rounded-xl border p-4 ${toneClass(variantAudit.mediaParityMismatches.length > 0 || variantAudit.lowQualityMedia.length > 0)}`}>
@@ -185,7 +186,10 @@ export default async function AdminAuditPage() {
 
           {governance.orphanActiveCatalogIds.length > 0 && (
             <div>
-              <h3 className="text-sm font-medium">Active orphan asset ids</h3>
+              <h3 className="text-sm font-medium">Active model approval failures</h3>
+              <p className="mt-1 text-sm text-neutral-600">
+                Active YAML entries must have approved ModelAsset rows before they can pass governance.
+              </p>
               <ul className="mt-2 space-y-1 text-sm text-neutral-700">
                 {governance.orphanActiveCatalogIds.map((assetId) => (
                   <li key={assetId}>{assetId}</li>
