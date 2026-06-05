@@ -63,6 +63,8 @@ export async function GET(request: Request) {
         parseErrorFiles: governance.parseErrorFiles.map((filePath) => getRelativeCatalogPath(filePath)),
         missingAssetIdFiles: governance.missingAssetIdFiles.map((filePath) => getRelativeCatalogPath(filePath)),
         orphanCatalogIds: governance.orphanCatalogIds,
+        orphanActiveCatalogIds: governance.orphanActiveCatalogIds,
+        orphanDraftCatalogIds: governance.orphanDraftCatalogIds,
       },
       quality: {
         hasFailures: quality.hasFailures,

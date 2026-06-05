@@ -69,6 +69,11 @@ type ApprovedAsset = {
   modelUrl: string;
 };
 
+type CatalogAssetIdOrigin = {
+  filePaths: string[];
+  isDraftOnly: boolean;
+};
+
 export type CatalogQualityAuditResult = {
   files: string[];
   audits: FileAudit[];
@@ -89,6 +94,8 @@ export type CatalogGovernanceAuditResult = {
   parseErrorFiles: string[];
   missingAssetIdFiles: string[];
   orphanCatalogIds: string[];
+  orphanActiveCatalogIds: string[];
+  orphanDraftCatalogIds: string[];
   catalogIds: Set<string>;
   hasFailures: boolean;
 };
@@ -410,6 +417,7 @@ function collectDuplicateAssetIds(files: string[]): Map<string, string[]> {
 function loadCatalogAssetIds(rootDir: string): {
   files: string[];
   ids: Set<string>;
+  origins: Map<string, CatalogAssetIdOrigin>;
   duplicateIds: Map<string, string[]>;
   parseErrorFiles: string[];
   missingAssetIdFiles: string[];
@@ -417,6 +425,7 @@ function loadCatalogAssetIds(rootDir: string): {
   const files = findCatalogFiles(rootDir);
   const ids = new Set<string>();
   const origins = new Map<string, string[]>();
+  const publicationOrigins = new Map<string, CatalogAssetIdOrigin>();
   const parseErrorFiles: string[] = [];
   const missingAssetIdFiles: string[] = [];
 
@@ -436,6 +445,13 @@ function loadCatalogAssetIds(rootDir: string): {
       const existingOrigins = origins.get(normalizedId) ?? [];
       existingOrigins.push(filePath);
       origins.set(normalizedId, existingOrigins);
+
+      const existingPublication = publicationOrigins.get(normalizedId);
+      const isDraft = isDraftCatalogEntry(parsed);
+      publicationOrigins.set(normalizedId, {
+        filePaths: [...(existingPublication?.filePaths ?? []), filePath],
+        isDraftOnly: (existingPublication?.isDraftOnly ?? true) && isDraft,
+      });
     } catch {
       parseErrorFiles.push(filePath);
     }
@@ -448,7 +464,7 @@ function loadCatalogAssetIds(rootDir: string): {
     }
   }
 
-  return { files, ids, duplicateIds, parseErrorFiles, missingAssetIdFiles };
+  return { files, ids, origins: publicationOrigins, duplicateIds, parseErrorFiles, missingAssetIdFiles };
 }
 
 function isImportedAsset(asset: ApprovedAsset): boolean {
@@ -485,7 +501,14 @@ export function runCatalogQualityAudit(rootDir = path.join(process.cwd(), "catal
 export async function runCatalogGovernanceAudit(
   rootDir = path.join(process.cwd(), "catalog", "furniture")
 ): Promise<CatalogGovernanceAuditResult> {
-  const { files, ids: catalogIds, duplicateIds, parseErrorFiles, missingAssetIdFiles } = loadCatalogAssetIds(rootDir);
+  const {
+    files,
+    ids: catalogIds,
+    origins: catalogOrigins,
+    duplicateIds,
+    parseErrorFiles,
+    missingAssetIdFiles,
+  } = loadCatalogAssetIds(rootDir);
 
   const approvedAssets = (await prisma.modelAsset.findMany({
     where: { approved: true },
@@ -502,6 +525,12 @@ export async function runCatalogGovernanceAudit(
   const orphanCatalogIds = Array.from(catalogIds)
     .filter((assetId) => !approvedAssets.some((asset) => asset.id === assetId))
     .sort();
+  const orphanDraftCatalogIds = orphanCatalogIds
+    .filter((assetId) => catalogOrigins.get(assetId)?.isDraftOnly)
+    .sort();
+  const orphanActiveCatalogIds = orphanCatalogIds
+    .filter((assetId) => !catalogOrigins.get(assetId)?.isDraftOnly)
+    .sort();
 
   return {
     files,
@@ -512,6 +541,8 @@ export async function runCatalogGovernanceAudit(
     parseErrorFiles,
     missingAssetIdFiles,
     orphanCatalogIds,
+    orphanActiveCatalogIds,
+    orphanDraftCatalogIds,
     catalogIds,
     hasFailures: missingCatalog.length > 0 || duplicateIds.size > 0 || parseErrorFiles.length > 0,
   };

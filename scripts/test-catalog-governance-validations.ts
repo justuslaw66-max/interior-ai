@@ -13,6 +13,8 @@ async function run(): Promise<void> {
   console.log(`- parse-error catalog files: ${result.parseErrorFiles.length}`);
   console.log(`- catalog files missing assets.asset_id (warning): ${result.missingAssetIdFiles.length}`);
   console.log(`- orphan catalog asset IDs (warning): ${result.orphanCatalogIds.length}`);
+  console.log(`- active orphan catalog asset IDs (warning): ${result.orphanActiveCatalogIds.length}`);
+  console.log(`- draft orphan catalog asset IDs (draft blockers): ${result.orphanDraftCatalogIds.length}`);
 
   if (result.missingCatalog.length > 0) {
     console.log("\nMissing catalog entries for approved imported assets:");
@@ -45,9 +47,16 @@ async function run(): Promise<void> {
     }
   }
 
-  if (result.orphanCatalogIds.length > 0) {
+  if (result.orphanActiveCatalogIds.length > 0) {
     console.log("\nWarning: catalog asset_id values without approved ModelAsset rows:");
-    for (const assetId of result.orphanCatalogIds) {
+    for (const assetId of result.orphanActiveCatalogIds) {
+      console.log(`  - ${assetId}`);
+    }
+  }
+
+  if (result.orphanDraftCatalogIds.length > 0) {
+    console.log("\nDraft blocker: draft catalog asset_id values without approved ModelAsset rows:");
+    for (const assetId of result.orphanDraftCatalogIds) {
       console.log(`  - ${assetId}`);
     }
   }

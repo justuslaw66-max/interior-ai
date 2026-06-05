@@ -38,7 +38,8 @@ export default async function AdminAuditPage() {
     a.localeCompare(b)
   );
 
-  const governanceWarnings = governance.missingAssetIdFiles.length + governance.orphanCatalogIds.length;
+  const governanceWarnings = governance.missingAssetIdFiles.length + governance.orphanActiveCatalogIds.length;
+  const draftModelBlockers = governance.orphanDraftCatalogIds.length;
   const qualityDuplicateEntries = Array.from(quality.duplicates.entries());
   const governanceDuplicateEntries = Array.from(governance.duplicateIds.entries());
   const issueAudits = quality.audits.filter((audit) => audit.failures.length > 0 || audit.warnings.length > 0);
@@ -92,7 +93,7 @@ export default async function AdminAuditPage() {
           <div className="text-xs uppercase tracking-wide text-neutral-500">Approved assets</div>
           <div className="mt-2 text-2xl font-semibold">{governance.approvedImportedAssets.length}</div>
           <div className="mt-1 text-sm text-neutral-600">
-            Imported approved assets, with {governanceWarnings} non-blocking governance warnings
+            Imported approved assets, with {governanceWarnings} governance warnings and {draftModelBlockers} draft blockers
           </div>
         </div>
         <div className={`rounded-xl border p-4 ${toneClass(variantAudit.mediaParityMismatches.length > 0 || variantAudit.lowQualityMedia.length > 0)}`}>
@@ -126,8 +127,8 @@ export default async function AdminAuditPage() {
               <div className="text-lg font-semibold">{governance.missingCatalog.length}</div>
             </div>
             <div className="rounded-lg border p-3">
-              <div className="text-neutral-500">Orphan asset ids</div>
-              <div className="text-lg font-semibold">{governance.orphanCatalogIds.length}</div>
+              <div className="text-neutral-500">Active orphan asset ids</div>
+              <div className="text-lg font-semibold">{governance.orphanActiveCatalogIds.length}</div>
             </div>
           </div>
 
@@ -182,11 +183,25 @@ export default async function AdminAuditPage() {
             </div>
           )}
 
-          {governance.orphanCatalogIds.length > 0 && (
+          {governance.orphanActiveCatalogIds.length > 0 && (
             <div>
-              <h3 className="text-sm font-medium">Orphan asset ids</h3>
+              <h3 className="text-sm font-medium">Active orphan asset ids</h3>
               <ul className="mt-2 space-y-1 text-sm text-neutral-700">
-                {governance.orphanCatalogIds.map((assetId) => (
+                {governance.orphanActiveCatalogIds.map((assetId) => (
+                  <li key={assetId}>{assetId}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {governance.orphanDraftCatalogIds.length > 0 && (
+            <div>
+              <h3 className="text-sm font-medium">Draft model blockers</h3>
+              <p className="mt-1 text-sm text-neutral-600">
+                Draft YAML entries without approved ModelAsset rows. These should remain draft until model assets are approved.
+              </p>
+              <ul className="mt-2 space-y-1 text-sm text-neutral-700">
+                {governance.orphanDraftCatalogIds.map((assetId) => (
                   <li key={assetId}>{assetId}</li>
                 ))}
               </ul>
