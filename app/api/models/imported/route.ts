@@ -4,13 +4,6 @@ import { buildImportedModelsPayload } from "@/lib/catalog/imported-models-payloa
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const allowDebug =
-    process.env.NODE_ENV !== "production" || process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS === "1";
-
-  if (!allowDebug) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
-
   return NextResponse.json(await buildImportedModelsPayload(), {
     headers: { "Cache-Control": "no-store" },
   });

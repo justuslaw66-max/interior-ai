@@ -177,7 +177,7 @@ export type ImportedModelOption = {
   catalog?: ImportedModelCatalog | null;
 };
 
-export type ImportedModelDebugEntry = {
+export type ImportedModelEntry = {
   id?: string;
   modelUrl?: string;
   thumbUrl?: string;
@@ -198,7 +198,7 @@ export type ImportedProductConfig = {
 export type ImportedVariantFallback = { label: string; colorHex: string };
 
 type BuildImportedModelOptionsInput = {
-  models: ImportedModelDebugEntry[];
+  models: ImportedModelEntry[];
   importedProductConfigById: Record<string, ImportedProductConfig>;
 };
 

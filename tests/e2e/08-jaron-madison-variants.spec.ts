@@ -30,7 +30,7 @@ test.describe("8. Jaron and Madison Variant Integration", () => {
     const endpointReady = await expect
       .poll(async () => {
         try {
-          const response = await request.get("/api/models/debug");
+          const response = await request.get("/api/models/imported");
           if (!response.ok()) return false;
           const body = (await response.json()) as { models?: unknown[] };
           return Array.isArray(body.models) && body.models.length > 0;
@@ -45,12 +45,12 @@ test.describe("8. Jaron and Madison Variant Integration", () => {
     if (!endpointReady) {
       test.info().annotations.push({
         type: "note",
-        description: "Skipping Jaron/Madison API assertions because /api/models/debug stayed unavailable in this runtime",
+        description: "Skipping Jaron/Madison API assertions because /api/models/imported stayed unavailable in this runtime",
       });
       return;
     }
 
-    const response = await request.get("/api/models/debug");
+    const response = await request.get("/api/models/imported");
     expect(response.ok()).toBeTruthy();
 
     const body = await response.json();
