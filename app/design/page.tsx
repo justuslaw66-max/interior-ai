@@ -3992,9 +3992,14 @@ function PageContent() {
       imported.catalog?.configurableMetadata?.is_configurable ||
       (imported.catalog?.configurations?.length ?? 0) > 0
     );
-    if (existing && !isImportedExisting && isCuratedHuggNestingProductId(productId)) {
+    if (
+      existing &&
+      !isImportedExisting &&
+      isCuratedHuggNestingProductId(productId) &&
+      !importedSupportsConfigurableStates
+    ) {
       // Preserve curated Hugg variants (fabric x wood) and avoid replacing them
-      // with imported payloads that can be missing wood finish options.
+      // with incomplete imported payloads.
       return;
     }
     if (existing && !isImportedExisting && !importedSupportsConfigurableStates) {
@@ -4095,7 +4100,12 @@ function PageContent() {
         option.catalog?.configurableMetadata?.is_configurable ||
         (option.catalog?.configurations?.length ?? 0) > 0
       );
-      if (existing && !isImportedExisting && isCuratedHuggNestingProductId(option.id)) {
+      if (
+        existing &&
+        !isImportedExisting &&
+        isCuratedHuggNestingProductId(option.id) &&
+        !optionSupportsConfigurableStates
+      ) {
         continue;
       }
       if (existing && !isImportedExisting && !optionSupportsConfigurableStates) {
