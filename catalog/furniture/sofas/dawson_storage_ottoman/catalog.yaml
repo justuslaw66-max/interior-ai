@@ -241,19 +241,20 @@ configurable_metadata:
 assets:
   asset_id: "sofa-real-castlery-dawson-storage-ottoman"
   model_url: "/assets/models/sofa-real-castlery-dawson-storage-ottoman-closed.glb"
-  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1634715643/crusader/variants/54000045-NG4001/Dawson-Ottoman-Beach-Linen-Front.jpg"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692451017/crusader/variants/54000132-NG4001/Dawson-Square-Ottoman-Front_-1692451014.jpg"
   gallery_images:
-    - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1634715643/crusader/variants/54000045-NG4001/Dawson-Ottoman-Beach-Linen-Front.jpg"
-    - "https://res.cloudinary.com/castlery/image/private/w_840,f_auto,q_auto,c_fit/v1634715643/crusader/variants/54000045-NG4001/Dawson-Ottoman-Beach-Linen-Front.jpg"
-    - "https://res.cloudinary.com/castlery/image/private/w_1120,f_auto,q_auto,c_fit/v1634715643/crusader/variants/54000045-NG4001/Dawson-Ottoman-Beach-Linen-Front.jpg"
-    - "https://res.cloudinary.com/castlery/image/private/w_1400,f_auto,q_auto,c_fit/v1634715643/crusader/variants/54000045-NG4001/Dawson-Ottoman-Beach-Linen-Front.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692451017/crusader/variants/54000132-NG4001/Dawson-Square-Ottoman-Front_-1692451014.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692451016/crusader/variants/54000132-NG4001/Dawson-Square-Ottoman-Angle-1692451014.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692591635/crusader/variants/54000132-NG4001/Dawson-Square-Ottoman-Beach-Linen-Square-Set_2-1692591632.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692591689/crusader/variants/54000132-NG4001/Dawson-Square-Ottoman-Det_1-1692591687.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1756279639/crusader/variants/54000254-NG4001/Dawson-Small-Storage-Ottoman-_Beach-Linen-Angle-1756279637.jpg"
 
 variants:
   - variant: "Dawson Storage Ottoman / 93cm"
     size_label: "93x93"
     model_asset_id: "sofa-real-castlery-dawson-storage-ottoman"
     model_url: "/assets/models/sofa-real-castlery-dawson-storage-ottoman-closed.glb"
-    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1692451017/crusader/variants/54000132-NG4001/Dawson-Square-Ottoman-Front_-1692451014.jpg"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692451017/crusader/variants/54000132-NG4001/Dawson-Square-Ottoman-Front_-1692451014.jpg"
     swatch_group: "upholstery_option"
     collection_type: "all_materials"
     price_usd: 549
@@ -270,7 +271,7 @@ variants:
     size_label: "114x93"
     model_asset_id: "sofa-real-castlery-dawson-storage-ottoman"
     model_url: "/assets/models/sofa-real-castlery-dawson-storage-ottoman-114-closed.glb"
-    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1634715643/crusader/variants/54000045-NG4001/Dawson-Ottoman-Beach-Linen-Front.jpg"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692451017/crusader/variants/54000132-NG4001/Dawson-Square-Ottoman-Front_-1692451014.jpg"
     swatch_group: "upholstery_option"
     collection_type: "all_materials"
     price_usd: 649

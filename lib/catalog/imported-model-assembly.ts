@@ -642,7 +642,127 @@ function buildFallbackCatalogOptions(): ImportedModelOption[] {
     pickerLabel: "Castlery Dawson Storage Ottoman",
   };
 
-  return [...sideboardFallbacks, dawsonStorageOttomanFallback];
+  const ollieStorageOttomanFallback: ImportedModelOption = {
+    id: "sofa-real-castlery-ollie-storage-ottoman",
+    modelUrl: "/assets/models/sofa-real-castlery-ollie-storage-ottoman-closed.glb",
+    thumbUrl:
+      "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1768210734/crusader/variants/AS-001017-GR4001/Ollie-Storage-Ottoman-Iovry-Front-1768210732.jpg",
+    dimsWmm: 930,
+    dimsDmm: 770,
+    dimsHmm: 440,
+    catalog: {
+      brand: "Castlery",
+      category: "ottoman",
+      productName: "Ollie Storage Ottoman",
+      productFamily: "Ollie",
+      variant: "Standard",
+      priceUsd: 499,
+      priceBand: "mid",
+      featureFlags: {
+        is_configurable: true,
+        has_storage: true,
+      },
+      upholstery_options: [
+        {
+          upholstery_code: "greta_ivory",
+          color_label: "Ivory",
+          upholstery_label: "Washed Chenille, Cream (Greta Ivory)",
+          collection_type: "stocked_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "greta_caramel",
+          color_label: "Caramel",
+          upholstery_label: "Washed Chenille, Mustard Brown (Greta Caramel)",
+          collection_type: "stocked_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "greta_moss",
+          color_label: "Moss",
+          upholstery_label: "Washed Chenille, Moss (Greta Moss)",
+          collection_type: "stocked_fabric",
+          swatch_group: "upholstery_option",
+        },
+      ],
+      configurableMetadata: {
+        is_configurable: true,
+        default_configuration: "closed",
+        configuration_ui: {
+          type: "segmented_control",
+          label: "Storage state",
+          options: ["closed", "open_storage"],
+          option_labels: {
+            closed: "Closed",
+            open_storage: "Open",
+          },
+          helper_text:
+            "Open state is for visualization only. Cart and checkout still use the selected purchasable size variant.",
+        },
+        configuration_behavior: {
+          affects_visual_footprint: false,
+          affects_space_planning: false,
+          affects_collision_bounds: false,
+          affects_recommendation_logic: false,
+        },
+      },
+      variants: [
+        {
+          variant: "Ollie Storage Ottoman",
+          size_label: "93x77",
+          model_asset_id: "sofa-real-castlery-ollie-storage-ottoman",
+          model_url: "/assets/models/sofa-real-castlery-ollie-storage-ottoman-closed.glb",
+          thumbnail_url:
+            "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1768210734/crusader/variants/AS-001017-GR4001/Ollie-Storage-Ottoman-Iovry-Front-1768210732.jpg",
+          swatch_group: "upholstery_option",
+          collection_type: "all_materials",
+          dimensions: {
+            width_cm: 93,
+            depth_cm: 77,
+            height_cm: 44,
+          },
+          state_assets: {
+            closed: {
+              model_url: "/assets/models/sofa-real-castlery-ollie-storage-ottoman-closed.glb",
+            },
+            open_storage: {
+              model_url: "/assets/models/sofa-real-castlery-ollie-storage-ottoman-open.glb",
+            },
+          },
+        },
+      ],
+      configurations: [
+        {
+          configuration_code: "closed",
+          configuration_label: "Closed",
+          state_type: "storage_closed",
+          description: "Ottoman in closed position",
+          planning_bounds_cm: { width: 93, depth: 77, height: 44 },
+          visual_bounds_cm: { width: 93, depth: 77, height: 44 },
+        },
+        {
+          configuration_code: "open_storage",
+          configuration_label: "Open",
+          state_type: "storage_open",
+          description: "Ottoman in open position with lid raised",
+          planning_bounds_cm: { width: 93, depth: 77, height: 89 },
+          visual_bounds_cm: { width: 93, depth: 77, height: 89 },
+        },
+      ],
+      assets: {
+        asset_id: "sofa-real-castlery-ollie-storage-ottoman",
+        model_url: "/assets/models/sofa-real-castlery-ollie-storage-ottoman-closed.glb",
+        thumbnail_url:
+          "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1768210734/crusader/variants/AS-001017-GR4001/Ollie-Storage-Ottoman-Iovry-Front-1768210732.jpg",
+      },
+    } satisfies ImportedModelCatalog,
+    title: "Castlery Ollie Storage Ottoman",
+    familyKey: "castlery::ollie",
+    familyLabel: "Castlery Ollie Collection",
+    pickerLabel: "Castlery Ollie Storage Ottoman",
+  };
+
+  return [...sideboardFallbacks, dawsonStorageOttomanFallback, ollieStorageOttomanFallback];
 }
 
 function collectConfigurationAssetIds(options: ImportedModelOption[]): Set<string> {

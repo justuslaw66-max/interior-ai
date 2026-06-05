@@ -20,6 +20,8 @@ type CatalogAssetDoc = {
 const TARGET_FILES = [
   "catalog/furniture/sideboards/sloane_sideboard_150/catalog.yaml",
   "catalog/furniture/sideboards/sloane_sideboard_180/catalog.yaml",
+  "catalog/furniture/sofas/dawson_storage_ottoman/catalog.yaml",
+  "catalog/furniture/sofas/ollie_storage_ottoman/catalog.yaml",
   "catalog/furniture/tv_consoles/casa_tv_console_150/catalog.yaml",
   "catalog/furniture/tv_consoles/casa_tv_console_200/catalog.yaml",
   "catalog/furniture/tv_consoles/seb_tv_console_150/catalog.yaml",

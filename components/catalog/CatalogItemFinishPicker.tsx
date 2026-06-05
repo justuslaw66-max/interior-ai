@@ -4,7 +4,8 @@ type FinishOption = {
   id: string;
   label: string;
   swatchHex?: string;
-  materialType?: "Fabric" | "Leather";
+  swatchTextureUrl?: string;
+  materialType?: "Fabric" | "Leather" | "Wood";
   collectionType?: string;
   finishCode?: string;
 };
@@ -25,7 +26,7 @@ export default function CatalogItemFinishPicker({ finishOptions, activeFinishId,
 
   // Group by collectionType first, then by materialType when meaningful.
   const collectionTypes = ["stocked", "custom"];
-  const materialTypes: Array<"Fabric" | "Leather"> = ["Fabric", "Leather"];
+  const materialTypes: Array<"Fabric" | "Leather" | "Wood"> = ["Fabric", "Wood", "Leather"];
 
   const buildMaterialGroups = (items: FinishOption[]) => {
     const itemsByMaterial = materialTypes
@@ -81,7 +82,9 @@ export default function CatalogItemFinishPicker({ finishOptions, activeFinishId,
           
           {collectionGroup.materialGroups.map((materialGroup) => (
             <div key={`${collectionGroup.collectionType ?? "all"}-${materialGroup.materialType}`} className="mt-2">
-              <div className="text-[11px] font-medium text-neutral-500">{materialGroup.materialType}</div>
+              <div className="text-[11px] font-medium text-neutral-500">
+                {materialGroup.materialType === "Wood" ? "Wood colour" : materialGroup.materialType === "Fabric" ? "Fabric colour" : materialGroup.materialType}
+              </div>
               <div className="mt-1.5 grid grid-cols-5 gap-[6.6px]">
                 {materialGroup.items.map((finish) => {
                   const active = finish.id === activeFinishId;
@@ -97,7 +100,12 @@ export default function CatalogItemFinishPicker({ finishOptions, activeFinishId,
                           ? "border-[#5a2135] ring-2 ring-[#5a2135]/30"
                           : "border-neutral-200 hover:border-neutral-400"
                       }`}
-                      style={{ backgroundColor: finish.swatchHex ?? "#d1d5db" }}
+                      style={{
+                        backgroundColor: finish.swatchHex ?? "#d1d5db",
+                        backgroundImage: finish.swatchTextureUrl ? `url(${finish.swatchTextureUrl})` : undefined,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                      }}
                     >
                       <span className="sr-only">{finish.label}</span>
                       {active ? (

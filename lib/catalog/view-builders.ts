@@ -7,6 +7,41 @@ import {
   inferMaterialTypeFromText,
   normalizeVariantCode,
 } from "@/lib/catalog/variant-normalization";
+import { CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE, HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE } from "@/lib/design-page-product-data";
+import { CATALOG_ITEMS } from "@/lib/catalog";
+
+const CATEGORY_FALLBACK_THUMB_URL: Partial<Record<CatalogTopCategory, string>> = {
+  accent_chair:
+    "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1692591108/crusader/variants/54000131-NG4001/Dawson-Swivel-Armchair-Front-1692591104.jpg",
+  sofa:
+    "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1634716861/crusader/variants/T50440986-NG4001/Dawson-3-Seater-Sofa-Beach-Linen-Front.jpg",
+  tv_console:
+    "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1756188904/crusader/variants/50520029/Sloane-TV-Console-150cm_-Front-1756188902.png",
+  ottoman:
+    "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1634715643/crusader/variants/54000045-NG4001/Dawson-Ottoman-Beach-Linen-Front.jpg",
+};
+
+const FORCED_CARD_THUMB_BY_ITEM_ID: Record<string, string> = {
+  "dining-real-castlery-forma-oval-150": "/assets/thumbs/dining-real-castlery-forma-oval-150.png",
+  "dining-real-castlery-forma-round-120": "/assets/thumbs/dining-real-castlery-forma-round-120.png",
+  "dining-real-castlery-forma-round-90": "/assets/thumbs/dining-real-castlery-forma-round-90.png",
+  "dining-real-castlery-kelsey-marble-160": "/assets/thumbs/dining-real-castlery-kelsey-marble-160.png",
+  "dining-real-castlery-kelsey-marble-180": "/assets/thumbs/dining-real-castlery-kelsey-marble-180.png",
+  "dining-real-castlery-brighton-oval-180": "/assets/thumbs/dining-real-castlery-brighton-oval-180.png",
+  "dining-real-castlery-sloane-bench-150-no-cushion": "/assets/thumbs/dining-real-castlery-sloane-bench-150-no-cushion.png",
+  "dining-real-castlery-sloane-bench-150-leather-cushion": "/assets/thumbs/dining-real-castlery-sloane-bench-150-leather-cushion.png",
+  "dining-real-castlery-sloane-bench-180-no-cushion": "/assets/thumbs/dining-real-castlery-sloane-bench-180-no-cushion.png",
+  "dining-real-castlery-sloane-bench-180-leather-cushion": "/assets/thumbs/dining-real-castlery-sloane-bench-180-leather-cushion.png",
+  "tv-real-castlery-casa-tv-console-150": "/assets/thumbs/tv-real-castlery-casa-tv-console-150.png",
+  "tv-real-castlery-sawyer-tv-console-200": "/assets/thumbs/tv-real-castlery-sawyer-tv-console-200.png",
+  "tv-real-castlery-seb-tv-console-150": "/assets/thumbs/tv-real-castlery-seb-tv-console-150.png",
+  "tv-real-castlery-sloane-tv-console-150": "/assets/thumbs/tv-real-castlery-sloane-tv-console-150.png",
+  "coffee-real-castlery-hugg-nesting-square-performance-basalt-closed": "/assets/thumbs/coffee-real-castlery-hugg-nesting-square-performance-basalt-closed.png",
+  "coffee-real-castlery-hugg-nesting-square-performance-basalt-opened": "/assets/thumbs/coffee-real-castlery-hugg-nesting-square-performance-basalt-opened.png",
+  "coffee-real-castlery-hugg-nesting-square-performance-dune-closed": "/assets/thumbs/coffee-real-castlery-hugg-nesting-square-performance-dune-closed.png",
+  "coffee-real-castlery-hugg-nesting-square-performance-dune-opened": "/assets/thumbs/coffee-real-castlery-hugg-nesting-square-performance-dune-opened.png",
+  "coffee-real-castlery-vento-coffee-table-120": "/assets/thumbs/coffee-real-castlery-vento-coffee-table-120.png",
+};
 
 export type CatalogTopCategory =
   | "sofa"
@@ -47,6 +82,7 @@ export type CatalogCardView = {
   brand: string | null;
   category: string;
   thumbUrl: string | null;
+  fallbackThumbUrl: string | null;
   priceLabel?: string;
   dimsLabel: string;
   primarySwatches: { label: string; hex?: string }[];
@@ -68,7 +104,8 @@ export type CatalogDetailView = {
     id: string;
     label: string;
     swatchHex?: string;
-    materialType: "Fabric" | "Leather";
+    swatchTextureUrl?: string;
+    materialType: "Fabric" | "Leather" | "Wood";
     collectionType?: string;
     finishCode?: string;
   }[];
@@ -111,7 +148,7 @@ const CATEGORY_LABELS: Record<CatalogTopCategory, string> = {
   tv_console: "TV Console",
   sideboard: "Sideboard",
   floor_lamp: "Floor Lamp",
-  side_table: "Side Table",
+  side_table: "Benches",
   decor: "Decor",
 };
 
@@ -400,16 +437,36 @@ function getFinishChipLabel(variant: CatalogItemSchema["variants"][number]): str
 
 export function buildCatalogCardView(item: CatalogItemSchema, variantId?: string): CatalogCardView {
   const resolved = resolveCatalogVariant(item, variantId);
+  const topCategory = mapToTopCategory(item.category, item);
+  const forcedThumb = FORCED_CARD_THUMB_BY_ITEM_ID[item.id] ?? null;
+  const primaryThumb = String(forcedThumb ?? resolved.media.thumbUrl ?? "").trim();
+  const fallbackGalleryThumb = resolved.media.galleryImages.find((url) => {
+    const value = String(url ?? "").trim();
+    return value.length > 0 && value !== primaryThumb;
+  }) ?? null;
+  const preferFallbackForLegacyLocalThumb = !forcedThumb && /^\/assets\/thumbs\//i.test(primaryThumb);
+  const categoryFallbackThumb = CATEGORY_FALLBACK_THUMB_URL[topCategory] ?? null;
+  const cardThumbUrl =
+    forcedThumb ||
+    (preferFallbackForLegacyLocalThumb ? fallbackGalleryThumb : primaryThumb) ||
+    fallbackGalleryThumb ||
+    categoryFallbackThumb ||
+    primaryThumb ||
+    null;
+
   return {
     id: item.id,
     variantId: resolved.variantId,
     variantLabel: resolved.variant.label,
     title: item.title,
     brand: item.metadata?.brand ?? null,
-    category: getTopCategoryLabel(mapToTopCategory(item.category, item)),
-    thumbUrl: resolved.media.thumbUrl,
+    category: getTopCategoryLabel(topCategory),
+    thumbUrl: cardThumbUrl,
+    fallbackThumbUrl: categoryFallbackThumb,
     priceLabel: getPriceLabel(item, resolved.variantId),
-    dimsLabel: `${resolved.dimsMm.w} x ${resolved.dimsMm.d} mm`,
+    dimsLabel: `${(resolved.dimsMm.w / 10).toFixed(1).replace(/\.0$/, "")} x ${(resolved.dimsMm.d / 10)
+      .toFixed(1)
+      .replace(/\.0$/, "")} cm`,
     primarySwatches: getPrimarySwatches(item),
     badges: deriveBadges(item),
     imageClassName: getCatalogMediaImageClass("catalog_card"),
@@ -436,21 +493,35 @@ export function buildCatalogDetailView(item: CatalogItemSchema, variantId?: stri
         ]
           .map((value) => String(value ?? "").toLowerCase())
           .join(" ");
-        const materialType: "Fabric" | "Leather" =
-          variant.materialType ??
-          inferMaterialTypeFromText(
-            materialTokens,
-            variant.finishLabel,
-            variant.label,
-            variant.finishCode,
-            variant.swatchGroup
-          );
+        const isWoodGroup = normalizedGroup.includes("wood");
+        const materialType: "Fabric" | "Leather" | "Wood" = isWoodGroup
+          ? "Wood"
+          : variant.materialType ??
+            inferMaterialTypeFromText(
+              materialTokens,
+              variant.finishLabel,
+              variant.label,
+              variant.finishCode,
+              variant.swatchGroup
+            );
         const key = `${normalizedGroup}:${normalizedCode}`;
         if (!map.has(key)) {
+          const fCode = (variant.finishCode ?? "").trim().toLowerCase();
+          const fLabel = (variant.finishLabel ?? variant.label ?? "").trim().toLowerCase();
+          const swatchTextureUrl = isWoodGroup
+            ? (HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE[fCode] ??
+               HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE[fLabel] ??
+               CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[fCode] ??
+               CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[fLabel] ??
+               undefined)
+            : (CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[fCode] ??
+               CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[fLabel] ??
+               undefined);
           map.set(key, {
             id: variant.id,
             label: getFinishChipLabel(variant),
             swatchHex: variant.swatchHex ?? variant.colorHex,
+            swatchTextureUrl,
             materialType,
             collectionType: variant.collectionType,
             finishCode: variant.finishCode,
@@ -458,9 +529,52 @@ export function buildCatalogDetailView(item: CatalogItemSchema, variantId?: stri
           });
         }
         return map;
-      }, new Map<string, { id: string; label: string; swatchHex?: string; materialType: "Fabric" | "Leather"; collectionType?: string; finishCode?: string; qualifier: string }>())
+      }, new Map<string, { id: string; label: string; swatchHex?: string; swatchTextureUrl?: string; materialType: "Fabric" | "Leather" | "Wood"; collectionType?: string; finishCode?: string; qualifier: string }>())
       .values()
   ));
+
+  // For Hugg products: inject sibling fabric options (Performance Dune / Performance Basalt)
+  // from peer catalog items so the Fabric colour section appears in the detail view.
+  const HUGG_PREFIX = "coffee-real-castlery-hugg-nesting-square-performance-";
+  if (item.id.startsWith(HUGG_PREFIX)) {
+    const activeSuffix = item.id.endsWith("-opened")
+      ? "-opened"
+      : item.id.endsWith("-closed")
+        ? "-closed"
+        : "";
+    const activeVariant = item.variants.find((v) => v.id === (variantId ?? item.defaultVariantId)) ?? item.variants[0];
+    const activeWoodCode = (activeVariant?.finishCode ?? "").trim().toLowerCase();
+    const FABRIC_ENTRIES: Array<{ code: "dune" | "basalt"; label: string; hex: string }> = [
+      { code: "dune",   label: "Performance Dune",   hex: "#ede8de" },
+      { code: "basalt", label: "Performance Basalt", hex: "#8a8f96" },
+    ];
+    for (const fab of FABRIC_ENTRIES) {
+      const preferredSiblingId = `${HUGG_PREFIX}${fab.code}${activeSuffix}`;
+      const siblingId = CATALOG_ITEMS[preferredSiblingId]
+        ? preferredSiblingId
+        : Object.keys(CATALOG_ITEMS).find((id) => id.startsWith(HUGG_PREFIX) && id.includes(fab.code)) ?? preferredSiblingId;
+      const sibling = CATALOG_ITEMS[siblingId];
+      const siblingVariant = sibling?.variants.find((v) => {
+        const vc = (v.finishCode ?? "").trim().toLowerCase();
+        return activeWoodCode ? vc === activeWoodCode : true;
+      }) ?? sibling?.variants[0];
+      const alreadyPresent = finishOptions.some(
+        (o) => o.label.toLowerCase() === fab.label.toLowerCase()
+      );
+      if (!alreadyPresent) {
+        const fabricKey = `performance-${fab.code}`;
+        finishOptions.unshift({
+          id: siblingVariant?.id ?? `${siblingId}-fallback`,
+          label: fab.label,
+          swatchHex: fab.hex,
+          swatchTextureUrl: CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[fabricKey] ?? undefined,
+          materialType: "Fabric",
+          collectionType: "stocked",
+          finishCode: fabricKey,
+        });
+      }
+    }
+  }
 
   const sizeOptions = Array.from(
     item.variants.reduce(

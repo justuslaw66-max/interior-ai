@@ -104,19 +104,27 @@ export const MODEL_FAMILY_BY_PRODUCT_ID: Record<string, string[]> = {
 export const MODEL_SELECTOR_PRODUCT_IDS_BY_PRODUCT_ID: Record<string, string[]> = {
   "sofa-real-castlery-jaron-3s": [
     "sofa-real-castlery-jaron-3s",
+    "sofa-real-castlery-jaron-3s-wide-arm",
     "sofa-real-castlery-jaron-extended-3s",
+    "sofa-real-castlery-jaron-extended-3s-wide-arm",
   ],
   "sofa-real-castlery-jaron-3s-wide-arm": [
     "sofa-real-castlery-jaron-3s",
     "sofa-real-castlery-jaron-extended-3s",
+    "sofa-real-castlery-jaron-3s-wide-arm",
+    "sofa-real-castlery-jaron-extended-3s-wide-arm",
   ],
   "sofa-real-castlery-jaron-extended-3s": [
     "sofa-real-castlery-jaron-3s",
+    "sofa-real-castlery-jaron-3s-wide-arm",
     "sofa-real-castlery-jaron-extended-3s",
+    "sofa-real-castlery-jaron-extended-3s-wide-arm",
   ],
   "sofa-real-castlery-jaron-extended-3s-wide-arm": [
     "sofa-real-castlery-jaron-3s",
+    "sofa-real-castlery-jaron-3s-wide-arm",
     "sofa-real-castlery-jaron-extended-3s",
+    "sofa-real-castlery-jaron-extended-3s-wide-arm",
   ],
   "dining-real-castlery-forma-oval-150": [
     "dining-real-castlery-forma-oval-150",

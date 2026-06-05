@@ -8,6 +8,8 @@ import {
   runCatalogQualityAudit,
 } from "@/lib/catalog-audit";
 import { CATALOG_ITEMS_MAP } from "@/lib/catalog";
+import { summarizeCatalogPublication } from "@/lib/catalog-publication";
+import { getAllCatalogYamlEntries } from "@/lib/catalog-yaml";
 import { runVariantResolutionAudit } from "@/lib/catalog/variant-audit";
 import {
   CATALOG_MEDIA_FALLBACK_POLICY_MATRIX,
@@ -38,9 +40,11 @@ export async function GET(request: Request) {
       Promise.resolve(runCatalogQualityAudit()),
     ]);
     const variantAudit = runVariantResolutionAudit(CATALOG_ITEMS_MAP.values());
+    const catalogPublication = summarizeCatalogPublication(getAllCatalogYamlEntries());
 
     const payload = {
       generatedAt: new Date().toISOString(),
+      catalogPublication,
       governance: {
         hasFailures: governance.hasFailures,
         approvedAssets: governance.approvedAssets.length,
@@ -59,6 +63,8 @@ export async function GET(request: Request) {
         parseErrorFiles: governance.parseErrorFiles.map((filePath) => getRelativeCatalogPath(filePath)),
         missingAssetIdFiles: governance.missingAssetIdFiles.map((filePath) => getRelativeCatalogPath(filePath)),
         orphanCatalogIds: governance.orphanCatalogIds,
+        orphanActiveCatalogIds: governance.orphanActiveCatalogIds,
+        orphanDraftCatalogIds: governance.orphanDraftCatalogIds,
       },
       quality: {
         hasFailures: quality.hasFailures,

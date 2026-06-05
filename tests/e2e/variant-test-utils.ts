@@ -11,7 +11,7 @@ export const DEFAULT_CATEGORY_TABS: RegExp[] = [
   /^TV Console \(/,
   /^Sideboard \(/,
   /^Floor Lamp \(/,
-  /^Side Table \(/,
+  /^Benches \(/,
 ];
 
 export async function waitForCatalogReady(page: Page): Promise<boolean> {

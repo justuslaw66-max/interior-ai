@@ -28,12 +28,34 @@ import { trackVariantIssues } from "@/lib/catalog/variant-observability";
 
 const CARD_ROW_HEIGHT = 282;
 const GRID_HEIGHT = 540;
+const CATEGORY_ORDER: CatalogTopCategory[] = [
+  "sofa",
+  "accent_chair",
+  "coffee_table",
+  "dining_table",
+  "ottoman",
+  "rug",
+  "tv_console",
+  "sideboard",
+  "floor_lamp",
+  "side_table",
+  "decor",
+];
 
 type Props = {
   items: CatalogItemSchema[];
   canEdit: boolean;
   onAddToRoom: (productId: string, variantId?: string) => void;
 };
+
+function pickInitialCategory(items: CatalogItemSchema[]): CatalogTopCategory {
+  const counts: Partial<Record<CatalogTopCategory, number>> = {};
+  for (const item of items) {
+    const top = mapToTopCategory(item.category, item);
+    counts[top] = (counts[top] ?? 0) + 1;
+  }
+  return CATEGORY_ORDER.find((category) => (counts[category] ?? 0) > 0) ?? "sofa";
+}
 
 function useDebouncedValue<T>(value: T, delayMs: number): T {
   const [debounced, setDebounced] = useState(value);
@@ -46,8 +68,12 @@ function useDebouncedValue<T>(value: T, delayMs: number): T {
 
 export default function CatalogPanel({ items, canEdit, onAddToRoom }: Props) {
   const [rawSearch, setRawSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<CatalogTopCategory>("sofa");
-  const [filters, setFilters] = useState<CatalogFilterState>({ category: ["sofa"] });
+  const [selectedCategory, setSelectedCategory] = useState<CatalogTopCategory>(() =>
+    pickInitialCategory(items)
+  );
+  const [filters, setFilters] = useState<CatalogFilterState>(() => ({
+    category: [pickInitialCategory(items)],
+  }));
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedFinishId, setSelectedFinishId] = useState<string | undefined>(undefined);
@@ -324,9 +350,27 @@ export default function CatalogPanel({ items, canEdit, onAddToRoom }: Props) {
         onClose={() => setSelectedId(null)}
         onSetSize={handleSetSize}
         onSetFinish={(finishId) => {
-          setSelectedFinishId(finishId);
           if (!selectedId) return;
-          const selected = items.find((item) => item.id === selectedId);
+          // Check if this finishId belongs to a sibling product (e.g. Hugg fabric switch)
+          const currentSelected = items.find((item) => item.id === selectedId);
+          const isCurrentVariant = currentSelected?.variants.some((v) => v.id === finishId);
+          if (!isCurrentVariant) {
+            const siblingItem = items.find(
+              (item) => item.id !== selectedId && item.variants.some((v) => v.id === finishId)
+            );
+            if (siblingItem) {
+              setSelectedId(siblingItem.id);
+              setSelectedFinishId(finishId);
+              setVariantSelectionByItem((prev) => ({ ...prev, [siblingItem.id]: finishId }));
+              setDetailPrefetchMap((prev) => ({
+                ...prev,
+                [siblingItem.id]: buildCatalogDetailView(siblingItem, finishId),
+              }));
+              return;
+            }
+          }
+          setSelectedFinishId(finishId);
+          const selected = currentSelected;
           if (selected) {
             trackVariantIssues(resolveCatalogVariant(selected, finishId), {
               surface: "catalog_detail_finish_picker",

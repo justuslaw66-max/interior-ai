@@ -14,10 +14,9 @@ export function LoadingOverlay() {
           position: "absolute",
           inset: 0,
           display: "flex",
-          alignItems: "center",
+          alignItems: "flex-end",
           justifyContent: "center",
-          background: "color-mix(in oklab, var(--bg-canvas) 92%, transparent)",
-          backdropFilter: "blur(10px)",
+          paddingBottom: 24,
           color: "var(--text-primary)",
         }}
       >

@@ -37,24 +37,14 @@ export class CanvasErrorBoundary extends React.Component<CanvasErrorBoundaryProp
       // modules that might be in partial initialization state.
       queueMicrotask(async () => {
         try {
+          const sentryContext = await import('@/lib/sentry-context');
+
           if (message.includes('WebGL') || message.includes('context')) {
-            const sentryContext = await import('@/lib/sentry-context');
             sentryContext.captureWebGLError(error);
             return;
           }
 
-          const Sentry = await import('@sentry/nextjs');
-          Sentry.captureException(error, {
-            tags: {
-              component: 'canvas-error-boundary',
-              type: 'r3f-error',
-            },
-            contexts: {
-              react: {
-                componentStack: errorInfo.componentStack,
-              },
-            },
-          });
+          sentryContext.captureCanvasBoundaryError(error, errorInfo.componentStack ?? undefined);
         } catch (reportingError) {
           try {
             console.error('Canvas error reporting failed:', reportingError);

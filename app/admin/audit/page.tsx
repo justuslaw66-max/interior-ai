@@ -8,6 +8,8 @@ import {
   runCatalogQualityAudit,
 } from "@/lib/catalog-audit";
 import { CATALOG_ITEMS_MAP } from "@/lib/catalog";
+import { summarizeCatalogPublication } from "@/lib/catalog-publication";
+import { getAllCatalogYamlEntries } from "@/lib/catalog-yaml";
 import { runVariantResolutionAudit } from "@/lib/catalog/variant-audit";
 import { CATALOG_MEDIA_FALLBACK_POLICY_MATRIX } from "@/lib/catalog/media-policy";
 import AuditActions from "./AuditActions";
@@ -31,8 +33,14 @@ export default async function AdminAuditPage() {
     Promise.resolve(runCatalogQualityAudit()),
   ]);
   const variantAudit = runVariantResolutionAudit(CATALOG_ITEMS_MAP.values());
+  const catalogPublication = summarizeCatalogPublication(getAllCatalogYamlEntries());
+  const catalogStatusEntries = Object.entries(catalogPublication.statusCounts).sort(([a], [b]) =>
+    a.localeCompare(b)
+  );
 
-  const governanceWarnings = governance.missingAssetIdFiles.length + governance.orphanCatalogIds.length;
+  const governanceWarnings = governance.missingAssetIdFiles.length;
+  const activeModelFailures = governance.orphanActiveCatalogIds.length;
+  const draftModelBlockers = governance.orphanDraftCatalogIds.length;
   const qualityDuplicateEntries = Array.from(quality.duplicates.entries());
   const governanceDuplicateEntries = Array.from(governance.duplicateIds.entries());
   const issueAudits = quality.audits.filter((audit) => audit.failures.length > 0 || audit.warnings.length > 0);
@@ -55,12 +63,12 @@ export default async function AdminAuditPage() {
         </p>
       </header>
 
-      <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6">
         <div className={`rounded-xl border p-4 ${toneClass(governance.hasFailures)}`}>
           <div className="text-xs uppercase tracking-wide">Governance</div>
           <div className="mt-2 text-2xl font-semibold">{governance.hasFailures ? "Needs action" : "Passing"}</div>
           <div className="mt-1 text-sm">
-            {governance.missingCatalog.length} missing mappings, {governance.duplicateIds.size} duplicates, {governance.parseErrorFiles.length} parse errors
+            {governance.missingCatalog.length} missing mappings, {governance.duplicateIds.size} duplicates, {activeModelFailures} active model failures
           </div>
         </div>
         <div className={`rounded-xl border p-4 ${toneClass(quality.hasFailures)}`}>
@@ -76,10 +84,17 @@ export default async function AdminAuditPage() {
           <div className="mt-1 text-sm text-neutral-600">YAML files scanned under catalog/furniture</div>
         </div>
         <div className="rounded-xl border p-4">
+          <div className="text-xs uppercase tracking-wide text-neutral-500">Publication state</div>
+          <div className="mt-2 text-2xl font-semibold">{catalogPublication.liveCount}</div>
+          <div className="mt-1 text-sm text-neutral-600">
+            Live-compatible YAML entries, with {catalogPublication.draftCount} draft-blocked
+          </div>
+        </div>
+        <div className="rounded-xl border p-4">
           <div className="text-xs uppercase tracking-wide text-neutral-500">Approved assets</div>
           <div className="mt-2 text-2xl font-semibold">{governance.approvedImportedAssets.length}</div>
           <div className="mt-1 text-sm text-neutral-600">
-            Imported approved assets, with {governanceWarnings} non-blocking governance warnings
+            Imported approved assets, with {activeModelFailures} active model failures, {governanceWarnings} governance warnings, and {draftModelBlockers} draft blockers
           </div>
         </div>
         <div className={`rounded-xl border p-4 ${toneClass(variantAudit.mediaParityMismatches.length > 0 || variantAudit.lowQualityMedia.length > 0)}`}>
@@ -113,8 +128,8 @@ export default async function AdminAuditPage() {
               <div className="text-lg font-semibold">{governance.missingCatalog.length}</div>
             </div>
             <div className="rounded-lg border p-3">
-              <div className="text-neutral-500">Orphan asset ids</div>
-              <div className="text-lg font-semibold">{governance.orphanCatalogIds.length}</div>
+              <div className="text-neutral-500">Active orphan asset ids</div>
+              <div className="text-lg font-semibold">{governance.orphanActiveCatalogIds.length}</div>
             </div>
           </div>
 
@@ -169,16 +184,56 @@ export default async function AdminAuditPage() {
             </div>
           )}
 
-          {governance.orphanCatalogIds.length > 0 && (
+          {governance.orphanActiveCatalogIds.length > 0 && (
             <div>
-              <h3 className="text-sm font-medium">Orphan asset ids</h3>
+              <h3 className="text-sm font-medium">Active model approval failures</h3>
+              <p className="mt-1 text-sm text-neutral-600">
+                Active YAML entries must have approved ModelAsset rows before they can pass governance.
+              </p>
               <ul className="mt-2 space-y-1 text-sm text-neutral-700">
-                {governance.orphanCatalogIds.map((assetId) => (
+                {governance.orphanActiveCatalogIds.map((assetId) => (
                   <li key={assetId}>{assetId}</li>
                 ))}
               </ul>
             </div>
           )}
+
+          {governance.orphanDraftCatalogIds.length > 0 && (
+            <div>
+              <h3 className="text-sm font-medium">Draft model blockers</h3>
+              <p className="mt-1 text-sm text-neutral-600">
+                Draft YAML entries without approved ModelAsset rows. These should remain draft until model assets are approved.
+              </p>
+              <ul className="mt-2 space-y-1 text-sm text-neutral-700">
+                {governance.orphanDraftCatalogIds.map((assetId) => (
+                  <li key={assetId}>{assetId}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div>
+            <h3 className="text-sm font-medium">Publication states</h3>
+            <div className="mt-2 grid grid-cols-2 gap-3 text-sm">
+              <div className="rounded-lg border p-3">
+                <div className="text-neutral-500">Live-compatible</div>
+                <div className="text-lg font-semibold">{catalogPublication.liveCount}</div>
+              </div>
+              <div className="rounded-lg border p-3">
+                <div className="text-neutral-500">Draft-blocked</div>
+                <div className="text-lg font-semibold">{catalogPublication.draftCount}</div>
+              </div>
+            </div>
+            {catalogStatusEntries.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2 text-xs text-neutral-700">
+                {catalogStatusEntries.map(([status, count]) => (
+                  <span key={status} className="rounded-full border px-2 py-1">
+                    {status}: {count}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="rounded-xl border p-4 space-y-4">

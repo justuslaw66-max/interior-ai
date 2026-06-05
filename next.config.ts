@@ -28,6 +28,7 @@ function resolvePostHogIngestHost(rawHost?: string): string {
 const posthogIngestHost = resolvePostHogIngestHost(process.env.NEXT_PUBLIC_POSTHOG_HOST);
 
 const nextConfig: NextConfig = {
+  distDir: ".next-cache",
   turbopack: {
     root: path.resolve(__dirname),
   },

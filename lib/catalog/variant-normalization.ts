@@ -53,10 +53,25 @@ export function normalizeUpholsteryCode(value: string): string {
 
 export function inferMaterialTypeFromText(
   ...values: Array<string | null | undefined>
-): "Fabric" | "Leather" {
+): "Fabric" | "Leather" | "Wood" {
   const normalized = values
     .map((value) => String(value ?? "").trim().toLowerCase())
     .join(" ");
+
+  if (
+    normalized.includes("wood") ||
+    normalized.includes("timber") ||
+    normalized.includes("oak") ||
+    normalized.includes("walnut") ||
+    normalized.includes("chestnut") ||
+    normalized.includes("ash") ||
+    normalized.includes("teak") ||
+    normalized.includes("swatchgroup:wood") ||
+    normalized.includes("wood_finish")
+  ) {
+    return "Wood";
+  }
+
   if (normalized.includes("leather")) return "Leather";
   if (
     normalized.includes("fabric") ||
@@ -164,7 +179,8 @@ export function hardenDuplicateFinishOptionLabels(
     id: string;
     label: string;
     swatchHex?: string;
-    materialType: "Fabric" | "Leather";
+    swatchTextureUrl?: string;
+    materialType: "Fabric" | "Leather" | "Wood";
     collectionType?: string;
     finishCode?: string;
     qualifier: string;
@@ -173,7 +189,8 @@ export function hardenDuplicateFinishOptionLabels(
   id: string;
   label: string;
   swatchHex?: string;
-  materialType: "Fabric" | "Leather";
+  swatchTextureUrl?: string;
+  materialType: "Fabric" | "Leather" | "Wood";
   collectionType?: string;
   finishCode?: string;
 }> {
@@ -190,6 +207,7 @@ export function hardenDuplicateFinishOptionLabels(
       id: option.id,
       label: option.label,
       swatchHex: option.swatchHex,
+      swatchTextureUrl: option.swatchTextureUrl,
       materialType: option.materialType,
       collectionType: option.collectionType,
       finishCode: option.finishCode,

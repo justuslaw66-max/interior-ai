@@ -603,7 +603,6 @@ export function resolveCatalogVariant(
     supplementalVariantImage,
     ...dawsonFabricGallery,
     ...variantGallery,
-    ...metadataImages,
   ]);
 
   let galleryImages: string[] = [];
@@ -633,10 +632,12 @@ export function resolveCatalogVariant(
     fallbackSource = "item_thumb";
   }
 
-  galleryImages = uniqueNonEmpty([
-    ...galleryImages,
-    ...metadataImages,
-  ]);
+  if (fallbackSource !== "variant_specific" && metadataImages.length > 0) {
+    galleryImages = uniqueNonEmpty([
+      ...galleryImages,
+      ...metadataImages,
+    ]);
+  }
 
   if (requestedVariantId && !requested) {
     issues.push(`Requested variant ${requestedVariantId} not found for ${item.id}`);

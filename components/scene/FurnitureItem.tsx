@@ -96,6 +96,15 @@ type FurnitureProps = {
 
 type SnapType = "none" | "wall-left" | "wall-right" | "wall-front" | "wall-back";
 
+function isAabbWithinPadding(target: AABB, reference: AABB, padding: number): boolean {
+  return !(
+    target.maxX < reference.minX - padding ||
+    target.minX > reference.maxX + padding ||
+    target.maxZ < reference.minZ - padding ||
+    target.minZ > reference.maxZ + padding
+  );
+}
+
 export function Furniture({
   product,
   planningBoundsMm,
@@ -545,11 +554,12 @@ export function Furniture({
     if (dragging && enableSnap && items && items.length > 0) {
       try {
         const selectedAABB = computeAABB(nextPos, effectiveWidth, effectiveDepth);
+        const nearbyItemPadding = Math.max(1.5, snapDistance + 0.5);
 
-        // Find nearby furniture (simple bounds check on all items)
-        const neighborGuides = items
+        // Limit guides/measurements to nearby items so distant aligned furniture does not create noise.
+        const nearbyItems = items
           .filter((item) => item.instanceId !== instanceId) // exclude self
-          .map((item): SnapNeighbor | null => {
+          .map((item): { aabb: AABB; name: string } | null => {
             const itemProduct = CATALOG_ITEMS[item.productId];
             if (!itemProduct) return null;
             const itemPlanningBounds = itemPlanningBoundsByInstanceId?.[item.instanceId];
@@ -562,10 +572,16 @@ export function Furniture({
 
             return {
               aabb: computeAABB(item.position, itemWidth, itemDepth),
-              label: `${itemProduct.title}`,
+              name: itemProduct.title,
             };
           })
-          .filter((item): item is SnapNeighbor => item !== null);
+          .filter((item): item is { aabb: AABB; name: string } => item !== null)
+          .filter((item) => isAabbWithinPadding(item.aabb, selectedAABB, nearbyItemPadding));
+
+        const neighborGuides: SnapNeighbor[] = nearbyItems.map((item) => ({
+          aabb: item.aabb,
+          label: item.name,
+        }));
 
         // Wall snap points (flush to walls, no breathing room)
         const walls = [
@@ -605,29 +621,10 @@ export function Furniture({
         setSnapGuides(picked);
 
         // Compute measurements (gaps, walkways, etc)
-        const neighborMeasures = items
-          .filter((item) => item.instanceId !== instanceId)
-          .map((item): { aabb: AABB; name: string } | null => {
-            const itemProduct = CATALOG_ITEMS[item.productId];
-            if (!itemProduct) return null;
-            const itemPlanningBounds = itemPlanningBoundsByInstanceId?.[item.instanceId];
-            const itemRotation = item.rotationY ?? 0;
-            const [itemWidth, itemDepth] = getRotatedFootprint(
-              (itemPlanningBounds?.w ?? itemProduct.dimsMm.w) / 1000,
-              (itemPlanningBounds?.d ?? itemProduct.dimsMm.d) / 1000,
-              itemRotation
-            );
-            return {
-              aabb: computeAABB(item.position, itemWidth, itemDepth),
-              name: itemProduct.title,
-            };
-          })
-          .filter((item): item is { aabb: AABB; name: string } => item !== null);
-
         const measures = generateMeasurements(
           selectedAABB,
           product.title,
-          neighborMeasures,
+          nearbyItems,
           { minX: hardMinX, maxX: hardMaxX, minZ: hardMinZ, maxZ: hardMaxZ }
         );
         setMeasurements(measures);
@@ -802,7 +799,45 @@ export function Furniture({
     isKelseyTableVariant &&
     (kelseyHasDarkWalnutToken || variantColorKey === "#7a4b2d" || (!kelseyHasWhiteToken && (variantLuma ?? 1) < 0.72));
   const preferredModelUrl = modelUrl ?? null;
+
+  const normalizeModelCandidate = (value: string | null | undefined): string | null => {
+    const raw = String(value ?? "").trim();
+    if (!raw) return null;
+    if (/^https?:\/\//i.test(raw) || raw.startsWith("/")) return raw;
+    if (raw.startsWith("assets/")) return `/${raw}`;
+    return `/assets/models/${raw.replace(/^\/+/, "")}`;
+  };
+
   const effectiveModelCalibration: GLBCalibration | undefined = (() => {
+    const modelUrlKey = String(product.assets?.modelUrl ?? "").toLowerCase();
+    const productIdKey = String(product.id ?? "").toLowerCase();
+    const variantKey = String(variantName ?? "").toLowerCase();
+    const isSloaneOrSawyerSideboard =
+      product.category === "sideboard" &&
+      (/(sloane|sawyer)[-_ ]sideboard/.test(productIdKey) ||
+        /(sloane|sawyer)[-_ ]sideboard/.test(modelUrlKey) ||
+        /(sloane|sawyer)/.test(productIdKey) ||
+        /(sloane|sawyer)/.test(modelUrlKey) ||
+        /(grey\s*oak|natural)/.test(variantKey));
+
+    // Sideboards can arrive through multiple catalog paths/IDs; enforce a stable
+    // lighter wood calibration here to avoid crushed dark tones from tint stacking.
+    if (isSloaneOrSawyerSideboard) {
+      return {
+        ...(modelCalibration ?? {}),
+        useVariantColor: false,
+        brightness: 1.43,
+        saturation: 0.94,
+        roughnessOverride: 0.82,
+        metalnessOverride: 0,
+        disableAoMap: false,
+        aoMapIntensity: 0.2,
+        emissiveBoost: 0,
+        specularIntensityOverride: 0.08,
+        disableVertexColors: true,
+      };
+    }
+
     if (!modelCalibration) return modelCalibration;
 
     if (isMadisonBisqueFabricVariant) {
@@ -1024,14 +1059,14 @@ export function Furniture({
           ...modelCalibration,
           forceBaseColorHex: "#a87050",
           disableBaseColorMap: true,
-          brightness: 1.18,
+          brightness: 1.06,
           saturation: 1.04,
-          roughnessOverride: 0.48,
+          roughnessOverride: 0.7,
           metalnessOverride: 0.02,
           aoMapIntensity: 0.12,
           emissiveBoost: 0.06,
-          specularIntensityOverride: 0.38,
-          clearcoatOverride: 0.12,
+          specularIntensityOverride: 0.24,
+          clearcoatOverride: 0.08,
           clearcoatRoughnessOverride: 0.72,
         };
       }
@@ -1044,14 +1079,14 @@ export function Furniture({
           ...modelCalibration,
           forceBaseColorHex: "#cfc4ae",
           disableBaseColorMap: true,
-          brightness: 0.98,
+          brightness: 0.9,
           saturation: 1.06,
-          roughnessOverride: 0.56,
+          roughnessOverride: 0.8,
           metalnessOverride: 0,
           aoMapIntensity: 0.08,
           emissiveBoost: 0.04,
-          specularIntensityOverride: 0.22,
-          clearcoatOverride: 0.06,
+          specularIntensityOverride: 0.14,
+          clearcoatOverride: 0.04,
           clearcoatRoughnessOverride: 0.84,
         };
       }
@@ -1059,15 +1094,15 @@ export function Furniture({
       // Jaron default leather: aligns with cross-brand leather baseline.
       return {
         ...modelCalibration,
-        brightness: 1.06,
+        brightness: 0.96,
         saturation: 1.08,
-        roughnessOverride: 0.26,
+        roughnessOverride: 0.38,
         metalnessOverride: 0.04,
         normalScale: 0.5,
         aoMapIntensity: 0.26,
         emissiveBoost: 0.03,
-        specularIntensityOverride: 0.75,
-        clearcoatOverride: 0.38,
+        specularIntensityOverride: 0.48,
+        clearcoatOverride: 0.24,
         clearcoatRoughnessOverride: 0.44,
       };
     }
@@ -1097,15 +1132,15 @@ export function Furniture({
     // which scatters specular and makes leather read as matte.
     return {
       ...modelCalibration,
-      brightness: 1.06,
+      brightness: 0.96,
       saturation: 1.08,
-      roughnessOverride: 0.26,
+      roughnessOverride: 0.31,
       metalnessOverride: 0.04,
       normalScale: 0.5,
       aoMapIntensity: 0.32,
       emissiveBoost: 0.03,
-      specularIntensityOverride: 0.75,
-      clearcoatOverride: 0.38,
+      specularIntensityOverride: 0.6,
+      clearcoatOverride: 0.3,
       clearcoatRoughnessOverride: 0.44,
     };
   })();
@@ -1122,34 +1157,29 @@ export function Furniture({
       return () => window.cancelAnimationFrame(frameId);
     }
 
-    const candidates = [preferredModelUrl, modelUrl].filter(
-      (value, index, arr): value is string => Boolean(value) && arr.indexOf(value) === index
-    );
+    const candidates = [preferredModelUrl, modelUrl]
+      .map((value) => normalizeModelCandidate(value))
+      .filter((value, index, arr): value is string => Boolean(value) && arr.indexOf(value) === index);
 
     if (candidates.length === 0) {
       return;
     }
 
-    (async () => {
-      for (const candidate of candidates) {
-        try {
-          const res = await fetch(candidate, { method: "HEAD" });
-          if (cancelled) return;
-          if (res.ok) {
-            setRuntimeModelUrl(candidate);
-            setModelExists(true);
-            setModelLoadState("loading");
-            return;
-          }
-        } catch {
-          // Try next fallback candidate.
-        }
-      }
+    // Do not preflight with HEAD requests: some valid model hosts and dev servers
+    // reject HEAD while serving GET successfully, which hides models incorrectly.
+    void Promise.resolve().then(() => {
       if (cancelled) return;
+      const chosen = candidates[0] ?? null;
+      if (chosen) {
+        setRuntimeModelUrl(chosen);
+        setModelExists(true);
+        setModelLoadState("loading");
+        return;
+      }
       setRuntimeModelUrl(null);
       setModelExists(false);
       setModelLoadState("error");
-    })();
+    });
 
     return () => {
       cancelled = true;
@@ -1186,6 +1216,8 @@ export function Furniture({
         <Suspense fallback={null}>
           <GLBScaledModel
             url={runtimeModelUrl}
+            productId={product.id}
+            variantId={variantId}
             width={width}
             height={height}
             depth={depth}

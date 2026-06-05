@@ -91,6 +91,7 @@ import {
   IMPORTED_PRODUCT_CONFIG_BY_ID,
   getSloaneBenchProductId,
   CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE,
+  HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE,
   resolveFabricDetailProfile,
 } from "@/lib/design-page-product-data";
 import {
@@ -152,9 +153,13 @@ import { Room } from "@/components/scene/RoomEnvironment";
 import { Furniture, CameraCapture } from "@/components/scene/FurnitureItem";
 
 const STORAGE_KEY = "interior-ai:v1:livingroom-design";
-function PageContent() {
-  const TDZ_TRACE = true;
+const DEFAULT_EDITOR_CAMERA_VIEW: CameraView = {
+  pos: [6.2, 3.6, 7.2],
+  target: [0, 1.0, 0],
+  fov: 45,
+};
 
+function PageContent() {
   const { data: session } = useSession();
   const router = useRouter();
   const pathname = usePathname();
@@ -251,9 +256,9 @@ function PageContent() {
   const [exportStylePreset, setExportStylePreset] = useState<"consumer" | "pro">("consumer");
   const [planSettingsLoaded, setPlanSettingsLoaded] = useState(false);
   const [cameraView, setCameraView] = useState<CameraView>({
-    pos: [4.5, 3.2, 5.5],
-    target: [0, 1.1, 0],
-    fov: 45,
+    pos: [...DEFAULT_EDITOR_CAMERA_VIEW.pos],
+    target: [...DEFAULT_EDITOR_CAMERA_VIEW.target],
+    fov: DEFAULT_EDITOR_CAMERA_VIEW.fov,
   });
   const [savedViews, setSavedViews] = useState<NamedCameraView[]>([]);
   const [hoveredCartInstanceId, setHoveredCartInstanceId] = useState<string | null>(null);
@@ -1070,11 +1075,13 @@ function PageContent() {
 
         let keptCount = 0;
         const idsToRemove: string[] = [];
+        const totalCatalogCount = Object.keys(CATALOG_ITEMS).length;
         for (const id of Object.keys(CATALOG_ITEMS)) {
           const catalogItem = CATALOG_ITEMS[id];
           const assetId = catalogItem?.assets?.assetId;
           const allowed =
             allowedItemIds.has(id) ||
+            allowedAssetIds.has(id) ||
             (typeof assetId === "string" && allowedAssetIds.has(assetId));
 
           if (!allowed) {
@@ -1087,6 +1094,19 @@ function PageContent() {
         // Guard against accidental full-prune when IDs are in a different domain.
         if (keptCount === 0 && (allowedItemIds.size > 0 || allowedAssetIds.size > 0)) {
           console.warn("Live catalog IDs did not match local catalog IDs; skipping prune.", {
+            itemIds: allowedItemIds.size,
+            assetIds: allowedAssetIds.size,
+          });
+        } else if (
+          keptCount > 0 &&
+          totalCatalogCount > 0 &&
+          keptCount <= Math.max(3, Math.floor(totalCatalogCount * 0.05))
+        ) {
+          // Safety valve: avoid collapsing the editor catalog to a handful of items
+          // when the live gate returns an incomplete or stale subset.
+          console.warn("Live catalog prune kept suspiciously few items; using local catalog fallback.", {
+            keptCount,
+            totalCatalogCount,
             itemIds: allowedItemIds.size,
             assetIds: allowedAssetIds.size,
           });
@@ -2699,7 +2719,7 @@ function PageContent() {
     activeVariantLabel,
     activeVariantColorHex,
     activeColourLabel,
-    showFabricGroupingDebug,
+    showFabricGroupingDebug: _showFabricGroupingDebug,
     selectedModelLabel,
     selectedCategoryDebugLabel,
     isCasaTvConsoleSelected: _isCasaTvConsoleSelected,
@@ -2723,12 +2743,85 @@ function PageContent() {
     showFinishSection,
     sizeOptionsForActiveSelection,
     showSizeSection,
+    hasWoodColourOptions,
   } = useDesignPageProductSelectorState({
     selectedProduct,
     selectedItem,
     items,
     catalogItems: CATALOG_ITEMS,
   });
+
+  const isHuggWithWoodOptions =
+    Boolean(selectedProduct?.id.includes("hugg")) && hasWoodColourOptions;
+
+  const huggFabricSwatchOptions = useMemo(() => {
+    if (!isHuggWithWoodOptions || !selectedProduct) {
+      return [] as Array<{
+        key: string;
+        label: string;
+        colorHex: string;
+        productId: string;
+        swatchTextureUrl: string | null;
+        active: boolean;
+      }>;
+    }
+
+    const currentId = selectedProduct.id;
+    const familyIds = Object.keys(CATALOG_ITEMS).filter((id) =>
+      id.startsWith("coffee-real-castlery-hugg-nesting-square-performance-")
+    );
+    const suffix = currentId.endsWith("-opened")
+      ? "-opened"
+      : currentId.endsWith("-closed")
+        ? "-closed"
+        : "";
+
+    const resolveProductIdForFabric = (code: "dune" | "basalt") => {
+      const preferred = familyIds.find(
+        (id) =>
+          id.includes(`performance-${code}`) &&
+          (!suffix || id.endsWith(suffix))
+      );
+      return preferred ?? familyIds.find((id) => id.includes(`performance-${code}`)) ?? "";
+    };
+
+    const duneProductId = resolveProductIdForFabric("dune");
+    const basaltProductId = resolveProductIdForFabric("basalt");
+    const options: Array<{
+      key: string;
+      label: string;
+      colorHex: string;
+      productId: string;
+      swatchTextureUrl: string | null;
+      active: boolean;
+    }> = [];
+
+    if (duneProductId) {
+      options.push({
+        key: "performance-dune",
+        label: "Performance Dune",
+        colorHex: "#ede8de",
+        productId: duneProductId,
+        swatchTextureUrl:
+          CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE["performance-dune"] ?? null,
+        active: currentId === duneProductId,
+      });
+    }
+
+    if (basaltProductId) {
+      options.push({
+        key: "performance-basalt",
+        label: "Performance Basalt",
+        colorHex: "#8a8f96",
+        productId: basaltProductId,
+        swatchTextureUrl:
+          CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE["performance-basalt"] ?? null,
+        active: currentId === basaltProductId,
+      });
+    }
+
+    return options;
+  }, [isHuggWithWoodOptions, selectedProduct]);
 
   useEffect(() => {
     setPreviewVariantId(null);
@@ -2999,12 +3092,6 @@ function PageContent() {
   }, [roomDepth, roomHeight, roomWidth]);
 
   useEffect(() => {
-    if (TDZ_TRACE) {
-      console.log("[TDZTrace] viewMode-camera-effect", {
-        sceneReady,
-        viewMode,
-      });
-    }
     if (!sceneReady) return;
 
     if (viewMode === "2d") {
@@ -3020,7 +3107,7 @@ function PageContent() {
       last3DViewRef.current = null;
       transitionToCameraView(restore, 420);
     }
-  }, [TDZ_TRACE, cameraView, getPlan2DView, sceneReady, transitionToCameraView, viewMode]);
+  }, [cameraView, getPlan2DView, sceneReady, transitionToCameraView, viewMode]);
 
   useEffect(() => {
     const camera = cameraRef.current;
@@ -3053,9 +3140,9 @@ function PageContent() {
       }) ?? null;
     if (!sofa) {
       return {
-        target: [0, 1.1, 0],
-        pos: [0, 1.5, 3.2],
-        fov: 45,
+        target: [...DEFAULT_EDITOR_CAMERA_VIEW.target],
+        pos: [...DEFAULT_EDITOR_CAMERA_VIEW.pos],
+        fov: DEFAULT_EDITOR_CAMERA_VIEW.fov,
       };
     }
 
@@ -3129,12 +3216,6 @@ function PageContent() {
   }, [selectedZoneId, zones]);
 
   useEffect(() => {
-    if (TDZ_TRACE) {
-      console.log("[TDZTrace] zone-recompute-effect", {
-        itemsCount: items.length,
-        currentZones: zonesRef.current.length,
-      });
-    }
     const currentZones = zonesRef.current ?? [];
     const manualZones = _normalizeZones(
       currentZones.filter((zone) => zone.source === "manual"),
@@ -3152,7 +3233,6 @@ function PageContent() {
         zones: nextZones,
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items]);
 
   useEffect(() => {
@@ -3828,8 +3908,44 @@ function PageContent() {
   const isEmpty = items.length === 0;
   const canEdit = !isClientPreview && liveCatalogReady;
   const _isSharedLink = Boolean(shareToken) || pathname?.includes("/share/");
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const catalogItems = useMemo(() => Object.values(CATALOG_ITEMS), [importedModelOptions]);
+  const catalogItems = useMemo(() => {
+    const allItems = Object.values(CATALOG_ITEMS);
+    const importedIds = new Set(importedModelOptions.map((option) => option.id));
+    const dedupedByFamily = new Map<string, (typeof allItems)[number]>();
+
+    for (const item of allItems) {
+      const brand = String(item.metadata?.brand ?? "").trim().toLowerCase();
+      const family = String(item.metadata?.productFamily ?? "").trim().toLowerCase();
+      const productName = String(item.metadata?.productName ?? item.title ?? "")
+        .trim()
+        .toLowerCase();
+      const dedupeKey = `${brand}|${item.category}|${family}|${productName}`;
+
+      const existing = dedupedByFamily.get(dedupeKey);
+      if (!existing) {
+        dedupedByFamily.set(dedupeKey, item);
+        continue;
+      }
+
+      const itemIsImported = importedIds.has(item.id);
+      const existingIsImported = importedIds.has(existing.id);
+      if (itemIsImported && !existingIsImported) {
+        dedupedByFamily.set(dedupeKey, item);
+        continue;
+      }
+      if (!itemIsImported && existingIsImported) {
+        continue;
+      }
+
+      const currentVariants = item.variants.length;
+      const existingVariants = existing.variants.length;
+      if (currentVariants > existingVariants) {
+        dedupedByFamily.set(dedupeKey, item);
+      }
+    }
+
+    return Array.from(dedupedByFamily.values());
+  }, [importedModelOptions]);
 
   useEffect(() => {
     let cancelled = false;
@@ -3860,14 +3976,35 @@ function PageContent() {
     };
   }, []);
 
+  const isCuratedHuggNestingProductId = useCallback((productId: string) => {
+    return productId.startsWith("coffee-real-castlery-hugg-nesting-square-performance-");
+  }, []);
+
   const ensureImportedCatalogItem = useCallback((productId: string) => {
     const existing = CATALOG_ITEMS[productId];
-    if (existing && !String(existing.defaultVariantId ?? "").startsWith("imported-")) {
-      return;
-    }
-
     const imported = importedModelById.get(productId);
     if (!imported) return;
+
+    const isImportedExisting = Boolean(
+      existing && String(existing.defaultVariantId ?? "").startsWith("imported-")
+    );
+    const importedSupportsConfigurableStates = Boolean(
+      imported.catalog?.configurableMetadata?.is_configurable ||
+      (imported.catalog?.configurations?.length ?? 0) > 0
+    );
+    if (
+      existing &&
+      !isImportedExisting &&
+      isCuratedHuggNestingProductId(productId) &&
+      !importedSupportsConfigurableStates
+    ) {
+      // Preserve curated Hugg variants (fabric x wood) and avoid replacing them
+      // with incomplete imported payloads.
+      return;
+    }
+    if (existing && !isImportedExisting && !importedSupportsConfigurableStates) {
+      return;
+    }
 
     upsertImportedCatalogItem({
       productId,
@@ -3876,7 +4013,7 @@ function PageContent() {
       importedVariantByProductId: IMPORTED_VARIANT_BY_PRODUCT_ID,
       importedVariantsByProductId: IMPORTED_VARIANTS_BY_PRODUCT_ID,
     });
-  }, [importedModelById]);
+  }, [importedModelById, isCuratedHuggNestingProductId]);
 
   const importedFamilyOptions = useMemo(() => {
     const seen = new Set<string>();
@@ -3959,7 +4096,19 @@ function PageContent() {
       const isImportedExisting = Boolean(
         existing && String(existing.defaultVariantId ?? "").startsWith("imported-")
       );
-      if (existing && !isImportedExisting) {
+      const optionSupportsConfigurableStates = Boolean(
+        option.catalog?.configurableMetadata?.is_configurable ||
+        (option.catalog?.configurations?.length ?? 0) > 0
+      );
+      if (
+        existing &&
+        !isImportedExisting &&
+        isCuratedHuggNestingProductId(option.id) &&
+        !optionSupportsConfigurableStates
+      ) {
+        continue;
+      }
+      if (existing && !isImportedExisting && !optionSupportsConfigurableStates) {
         continue;
       }
       if (!shouldRefreshImportedCatalogItem(existing, option)) {
@@ -3973,7 +4122,7 @@ function PageContent() {
     if (injectedAny) {
       setImportedModelOptions((prev) => [...prev]);
     }
-  }, [ensureImportedCatalogItem, importedModelOptions]);
+  }, [ensureImportedCatalogItem, importedModelOptions, isCuratedHuggNestingProductId]);
 
   const getRelatedImportedProductIds = useCallback((productId: string) => {
     const related = new Set<string>([productId]);
@@ -4799,7 +4948,12 @@ function PageContent() {
               toneMapping: THREE.ACESFilmicToneMapping,
               toneMappingExposure: lightConfig.exposure ?? 1,
             }}
-            camera={{ position: [4.5, 3.2, 5.5], fov: 45, near: 0.1, far: 100 }}
+            camera={{
+              position: [...DEFAULT_EDITOR_CAMERA_VIEW.pos],
+              fov: DEFAULT_EDITOR_CAMERA_VIEW.fov,
+              near: 0.1,
+              far: 100,
+            }}
             onCreated={({ gl }) => {
               (gl as THREE.WebGLRenderer & { physicallyCorrectLights?: boolean }).physicallyCorrectLights = true;
             }}
@@ -5203,7 +5357,7 @@ function PageContent() {
             ) : (
               <OrbitControls
                 ref={orbitControlsRef}
-                target={[0, 1.1, 0]}
+                target={[...DEFAULT_EDITOR_CAMERA_VIEW.target]}
                 enableDamping
                 dampingFactor={0.08}
                 enablePan={!isClientPreview}
@@ -5767,7 +5921,7 @@ function PageContent() {
                   <div>ID: {selectedProduct.id}</div>
                   <div>Price: {formatMoney(getItemPrice(selectedProduct))}</div>
                   <div>
-                    Size: {selectedProduct.dimsMm.w / 1000}m × {selectedProduct.dimsMm.d / 1000}m × {selectedProduct.dimsMm.h / 1000}m
+                    Size: {Math.round(selectedProduct.dimsMm.w / 10)} x {Math.round(selectedProduct.dimsMm.d / 10)} x {Math.round(selectedProduct.dimsMm.h / 10)} cm
                   </div>
                   <div
                     className={
@@ -6834,7 +6988,7 @@ function PageContent() {
               </div>
             ) : null}
 
-            {showFinishSection ? (
+            {(showFinishSection || huggFabricSwatchOptions.length > 1) ? (
               <div className="pt-3">
               <div className="flex items-center justify-between gap-2">
                 <div
@@ -6844,31 +6998,181 @@ function PageContent() {
                       : "text-sm font-semibold text-neutral-900"
                   }
                 >
-                  Material
+                  {hasWoodColourOptions ? "Fabric colour" : "Material"}
                 </div>
               </div>
 
-              <div className="mt-2 flex gap-2">
-                {materialOptions.map((option) => {
-                  const active = option.type === activeMaterialType;
+              {hasWoodColourOptions && activeMaterialLabel ? (
+                <div
+                  className={
+                    showDesignerTheme
+                      ? "designer-text-secondary mt-2 text-xs"
+                      : "mt-2 text-xs text-neutral-600"
+                  }
+                >
+                  Selected: {huggFabricSwatchOptions.length > 0
+                    ? (huggFabricSwatchOptions.find((option) => option.active)?.label ?? huggFabricSwatchOptions[0].label)
+                    : activeMaterialLabel}
+                </div>
+              ) : null}
+
+              <div
+                className={
+                  hasWoodColourOptions
+                    ? "mt-2 flex flex-wrap gap-2"
+                    : "mt-2 grid grid-cols-2 gap-3"
+                }
+              >
+                {(huggFabricSwatchOptions.length > 0
+                  ? huggFabricSwatchOptions.map((entry) => ({
+                      key: entry.key,
+                      label: entry.label,
+                      variantId: "",
+                      colorHex: entry.colorHex,
+                      productId: entry.productId,
+                      swatchTextureUrl: entry.swatchTextureUrl,
+                      isActive: entry.active,
+                    }))
+                  : materialOptions.map((entry) => ({
+                      key: entry.key,
+                      label: entry.label,
+                      variantId: entry.variantId,
+                      colorHex: entry.colorHex,
+                      productId: "",
+                      swatchTextureUrl: null,
+                      isActive: false,
+                    }))
+                ).map((option) => {
+                  const active =
+                    option.isActive ||
+                    option.variantId === activeStructuredVariant?.variant.id ||
+                    option.label.toLowerCase() === String(activeMaterialLabel ?? "").trim().toLowerCase();
+                  if (!hasWoodColourOptions) {
+                    return (
+                      <button
+                        key={option.key}
+                        className={`w-full rounded-2xl border px-4 py-1 text-base transition ${
+                          active
+                            ? "border-[#4b1427] bg-[#4b1427] text-white"
+                            : "border-neutral-300 bg-white text-[#4b2635]"
+                        }`}
+                        onClick={() => {
+                          if (!selectedItem) return;
+                          const target =
+                            structuredVariants.find((entry) => entry.materialType === option.label) ??
+                            structuredVariants.find((entry) => entry.variant.id === option.variantId);
+                          if (!target) return;
+                          commitItems(
+                            (prev) =>
+                              prev.map((it) =>
+                                it.instanceId === selectedItem.instanceId
+                                  ? { ...it, variantId: target.variant.id }
+                                  : it
+                              ),
+                            `Change material to ${option.label}`
+                          );
+                        }}
+                        title={option.label}
+                      >
+                        {option.label}
+                      </button>
+                    );
+                  }
+
+                  const sampleEntry =
+                    structuredVariants.find(
+                      (entry) =>
+                        entry.materialDisplayLabel.trim().toLowerCase() ===
+                        option.label.trim().toLowerCase()
+                    ) ?? structuredVariants.find((entry) => entry.variant.id === option.variantId);
+                  const finishKey = String(sampleEntry?.variant.finishCode ?? option.label)
+                    .trim()
+                    .toLowerCase()
+                    .replace(/_/g, "-")
+                    .replace(/[^a-z0-9-]+/g, "-");
+                  const swatchTextureUrl =
+                    option.swatchTextureUrl ??
+                    CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[finishKey] ??
+                    CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[
+                      option.label
+                        .trim()
+                        .toLowerCase()
+                        .replace(/[^a-z0-9]+/g, "-")
+                    ] ??
+                    null;
+
                   return (
                     <button
-                      key={option.type}
-                      className={`min-w-27 rounded-xl border px-4 py-2.5 text-sm font-medium transition ${
-                        active
-                          ? "border-blue-500 bg-blue-50 text-blue-700"
-                          : showDesignerTheme
-                          ? "designer-text-primary border-neutral-200 bg-white hover:border-neutral-300"
-                          : "border-neutral-300 bg-white text-neutral-800 hover:border-neutral-400"
-                      }`}
+                      key={option.key}
+                      className="shrink-0 h-20 w-20 rounded-sm bg-cover bg-center transition-all"
+                      style={{
+                        backgroundColor: option.colorHex,
+                        backgroundImage: swatchTextureUrl ? `url(${swatchTextureUrl})` : undefined,
+                        boxShadow: active
+                          ? "0 0 0 2px #fff, 0 0 0 4px #5a2135"
+                          : "none",
+                      }}
                       onClick={() => {
                         if (!selectedItem) return;
+                        if (option.productId) {
+                          const targetProduct = CATALOG_ITEMS[option.productId];
+                          if (!targetProduct) return;
+                          commitItems(
+                            (prev) =>
+                              prev.map((it) =>
+                                it.instanceId === selectedItem.instanceId
+                                  ? (() => {
+                                      const normalizeMatchValue = (value?: string | null) =>
+                                        String(value ?? "")
+                                          .trim()
+                                          .toLowerCase()
+                                          .replace(/_/g, "-")
+                                          .replace(/[^a-z0-9-]+/g, "-");
+                                      const activeVariant = selectedProduct.variants.find(
+                                        (variant) => variant.id === it.variantId
+                                      );
+                                      const activeFinishCode = normalizeMatchValue(activeVariant?.finishCode);
+                                      const activeFinishLabel = normalizeMatchValue(
+                                        activeVariant?.finishLabel ?? activeVariant?.label
+                                      );
+                                      const preservedVariant =
+                                        targetProduct.variants.find((variant) => variant.id === it.variantId) ??
+                                        targetProduct.variants.find(
+                                          (variant) =>
+                                            activeFinishCode.length > 0 &&
+                                            normalizeMatchValue(variant.finishCode) === activeFinishCode
+                                        ) ??
+                                        targetProduct.variants.find(
+                                          (variant) =>
+                                            activeFinishLabel.length > 0 &&
+                                            normalizeMatchValue(variant.finishLabel ?? variant.label) ===
+                                              activeFinishLabel
+                                        ) ??
+                                        targetProduct.variants[0];
+                                      return {
+                                        ...it,
+                                        productId: targetProduct.id,
+                                        variantId: preservedVariant?.id ?? targetProduct.defaultVariantId,
+                                      };
+                                    })()
+                                  : it
+                              ),
+                            `Change fabric colour to ${option.label}`
+                          );
+                          return;
+                        }
+
                         const target =
                           structuredVariants.find(
                             (entry) =>
-                              entry.materialType === option.type &&
+                              entry.materialDisplayLabel.trim().toLowerCase() === option.label.trim().toLowerCase() &&
                               entry.colourLabel === activeColourLabel
-                          ) ?? structuredVariants.find((entry) => entry.materialType === option.type);
+                          ) ??
+                          structuredVariants.find(
+                            (entry) =>
+                              entry.materialDisplayLabel.trim().toLowerCase() === option.label.trim().toLowerCase()
+                          ) ??
+                          structuredVariants.find((entry) => entry.variant.id === option.variantId);
                         if (!target) return;
                         commitItems(
                           (prev) =>
@@ -6877,28 +7181,15 @@ function PageContent() {
                                 ? { ...it, variantId: target.variant.id }
                                 : it
                             ),
-                          `Change material to ${option.type}`
+                          `Change fabric colour to ${option.label}`
                         );
                       }}
-                      title={option.type}
-                    >
-                      {option.type}
-                    </button>
+                      title={option.label}
+                      aria-label={`Select fabric colour ${option.label}`}
+                    />
                   );
                 })}
               </div>
-
-              {showFabricGroupingDebug ? (
-                <div
-                  className={
-                    showDesignerTheme
-                      ? "designer-text-secondary mt-2 text-xs"
-                      : "mt-2 text-xs text-neutral-500"
-                  }
-                >
-                  Grouping debug: fabric={activeMaterialLabel ?? "(none)"}; colour={activeColourLabel ?? "(none)"}; variant={activeVariantLabel ?? "(none)"}
-                </div>
-              ) : null}
               </div>
             ) : null}
 
@@ -6947,7 +7238,12 @@ function PageContent() {
               </div>
             ) : null}
 
-            {hasStructuredVariantLabels && !hideColourSelector && (
+            {hasStructuredVariantLabels &&
+              !hideColourSelector &&
+              groupedVisibleColourVariants.reduce(
+                (count, group) => count + group.entries.length,
+                0
+              ) >= (hasWoodColourOptions ? 2 : 1) && (
               <div className="pt-3">
                 <div
                   className={
@@ -6956,7 +7252,11 @@ function PageContent() {
                       : "text-sm font-semibold text-neutral-900"
                   }
                 >
-                  Colour
+                  {hasWoodColourOptions
+                    ? "Wood colour"
+                    : activeMaterialType === "Leather"
+                    ? "Stocked Leathers:"
+                    : "Stocked Fabrics:"}
                 </div>
 
                 {activeStructuredVariant ? (
@@ -6967,7 +7267,14 @@ function PageContent() {
                         : "mt-2 text-xs text-neutral-600"
                     }
                   >
-                    Selected: {activeStructuredVariant.colourLabel}
+                    Selected: {(() => {
+                      if (!hasWoodColourOptions) return activeStructuredVariant.colourLabel;
+                      const woodEntries = groupedVisibleColourVariants.flatMap((group) => group.entries);
+                      const activeWoodEntry =
+                        woodEntries.find((entry) => entry.variant.id === selectedItem?.variantId) ??
+                        woodEntries[0];
+                      return activeWoodEntry?.colourLabel ?? activeStructuredVariant.colourLabel;
+                    })()}
                   </div>
                 ) : null}
 
@@ -6984,18 +7291,54 @@ function PageContent() {
                     .trim()
                     .toLowerCase()
                     .replace(/_/g, "-");
-                  const previewSwatchUrl =
-                    CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[previewFinishKey] ??
-                    CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[
-                      `${String(previewEntry.materialType).toLowerCase()}-${previewEntry.colourLabel
-                        .trim()
-                        .toLowerCase()
-                        .replace(/[^a-z0-9]+/g, "-")}`
-                    ] ??
-                    null;
-                  const previewTitle = previewEntry.variant.finishLabel?.trim() || previewEntry.colourLabel;
-                  const previewSubtitle = [previewEntry.materialType, previewGroup?.label].filter(Boolean).join(" • ");
-                  const previewProfile = resolveFabricDetailProfile({
+                  const previewSwatchGroup = String(previewEntry.variant.swatchGroup ?? "")
+                    .trim()
+                    .toLowerCase();
+                  const previewFinishLabelKey = String(
+                    previewEntry.variant.finishLabel ?? previewEntry.colourLabel
+                  )
+                    .trim()
+                    .toLowerCase()
+                    .replace(/[^a-z0-9]+/g, "-");
+                  const previewColourKey = String(previewEntry.colourLabel)
+                    .trim()
+                    .toLowerCase()
+                    .replace(/[^a-z0-9]+/g, "-");
+                  const isHuggWoodPreview =
+                    Boolean(selectedProduct?.id.includes("hugg")) &&
+                    (hasWoodColourOptions || previewSwatchGroup.includes("wood"));
+                  const useWoodPreviewSwatch = previewSwatchGroup.includes("wood") || isHuggWoodPreview;
+                  const previewSwatchUrl = useWoodPreviewSwatch
+                    ? (selectedProduct?.id.includes("hugg")
+                        ? HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE[previewFinishKey] ??
+                          HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE[previewFinishLabelKey] ??
+                          HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE[previewColourKey]
+                        : CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[previewFinishKey] ??
+                          CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[previewFinishLabelKey] ??
+                          CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[previewColourKey]) ??
+                      null
+                    : CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[previewFinishKey] ??
+                      CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[
+                        `${String(previewEntry.materialType).toLowerCase()}-${previewEntry.colourLabel
+                          .trim()
+                          .toLowerCase()
+                          .replace(/[^a-z0-9]+/g, "-")}`
+                      ] ??
+                      null;
+                  const previewTitle =
+                    previewEntry.variant.finishLabel?.trim() ||
+                    (previewFinishKey
+                      ? previewFinishKey
+                          .split("-")
+                          .map((part) => (part ? part[0].toUpperCase() + part.slice(1) : part))
+                          .join(" ")
+                      : previewEntry.colourLabel);
+                  const previewSubtitle = isHuggWoodPreview
+                    ? "Wood finish"
+                    : [previewEntry.materialType, previewGroup?.label].filter(Boolean).join(" • ");
+                  const previewProfile = isHuggWoodPreview
+                    ? null
+                    : resolveFabricDetailProfile({
                     finishCode: previewFinishKey,
                     finishLabel: previewEntry.variant.finishLabel?.trim() || "",
                     colourLabel: previewEntry.colourLabel,
@@ -7067,7 +7410,7 @@ function PageContent() {
                 <div className="mt-2 space-y-3">
                   {groupedVisibleColourVariants.map((group) => (
                     <div key={group.key}>
-                      {group.label ? (
+                      {!hasWoodColourOptions && group.label ? (
                         <div
                           className={
                             showDesignerTheme
@@ -7078,7 +7421,7 @@ function PageContent() {
                           {group.label === "Stocked" ? "Stocked fabrics:" : "Custom fabrics:"}
                         </div>
                       ) : null}
-                      {group.key === "custom" ? (
+                      {!hasWoodColourOptions && group.key === "custom" ? (
                         <div className="mb-2 text-[13px] text-neutral-600">
                           Create a piece made just for you in one of our custom fabrics.
                         </div>
@@ -7092,19 +7435,42 @@ function PageContent() {
                             .trim()
                             .toLowerCase()
                             .replace(/_/g, "-");
-                          const swatchTextureUrl =
-                            CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[finishKey] ??
-                            CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[
-                              `${String(entry.materialType).toLowerCase()}-${colourLabel
-                                .trim()
-                                .toLowerCase()
-                                .replace(/[^a-z0-9]+/g, "-")}`
-                            ] ??
-                            null;
+                          const swatchGroup = String(variant.swatchGroup ?? "")
+                            .trim()
+                            .toLowerCase();
+                          const finishLabelKey = String(variant.finishLabel ?? colourLabel)
+                            .trim()
+                            .toLowerCase()
+                            .replace(/[^a-z0-9]+/g, "-");
+                          const colourLabelKey = String(colourLabel)
+                            .trim()
+                            .toLowerCase()
+                            .replace(/[^a-z0-9]+/g, "-");
+                          const isHuggWoodSwatch =
+                            Boolean(selectedProduct?.id.includes("hugg")) &&
+                            (hasWoodColourOptions || swatchGroup.includes("wood"));
+                          const useWoodSwatchTexture = swatchGroup.includes("wood") || isHuggWoodSwatch;
+                          const swatchTextureUrl = useWoodSwatchTexture
+                            ? (selectedProduct?.id.includes("hugg")
+                                ? HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE[finishKey] ??
+                                  HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE[finishLabelKey] ??
+                                  HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE[colourLabelKey]
+                                : CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[finishKey] ??
+                                  CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[finishLabelKey] ??
+                                  CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[colourLabelKey]) ??
+                              null
+                            : CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[finishKey] ??
+                              CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[
+                                `${String(entry.materialType).toLowerCase()}-${colourLabel
+                                  .trim()
+                                  .toLowerCase()
+                                  .replace(/[^a-z0-9]+/g, "-")}`
+                              ] ??
+                              null;
                           return (
                             <button
                               key={variant.id}
-                              className="shrink-0 h-16.75 w-16.75 rounded-sm bg-cover bg-center transition-all"
+                              className="shrink-0 h-20 w-20 rounded-sm bg-cover bg-center transition-all"
                               style={{
                                 backgroundColor: variant.swatchHex ?? variant.colorHex,
                                 backgroundImage: swatchTextureUrl ? `url(${swatchTextureUrl})` : undefined,
@@ -7143,7 +7509,10 @@ function PageContent() {
                                   colourLabel,
                                   materialType: entry.materialType,
                                 });
-                                const estimatedCardHeight = hoverProfile ? 560 : 340;
+                                const isHuggWoodSwatch =
+                                  Boolean(selectedProduct?.id.includes("hugg")) &&
+                                  (hasWoodColourOptions || swatchGroup.includes("wood"));
+                                const estimatedCardHeight = isHuggWoodSwatch ? 200 : hoverProfile ? 560 : 340;
                                 const y = Math.max(
                                   8,
                                   Math.min(rect.top - 40, window.innerHeight - estimatedCardHeight - 8)
@@ -7179,7 +7548,7 @@ function PageContent() {
                                   current?.variantId === variant.id ? null : current
                                 );
                               }}
-                              aria-label={`Select ${colourLabel}`}
+                              aria-label={`Select ${variant.finishLabel?.trim() || colourLabel}`}
                             />
                           );
                         })}
@@ -9050,4 +9419,3 @@ export default function Page() {
     </Suspense>
   );
 }
-

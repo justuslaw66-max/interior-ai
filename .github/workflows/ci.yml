@@ -56,6 +56,11 @@ jobs:
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
 
+      - name: Sync catalog ModelAsset rows
+        run: npm run sync:catalog-model-assets
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
+
       - name: Run catalog audit
         run: npm run test:catalog-audit
         env:
@@ -207,6 +212,11 @@ jobs:
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
 
+      - name: Sync catalog ModelAsset rows
+        run: npm run sync:catalog-model-assets
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
+
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
@@ -274,6 +284,11 @@ jobs:
 
       - name: Apply database migrations
         run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
+
+      - name: Sync catalog ModelAsset rows
+        run: npm run sync:catalog-model-assets
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
 
@@ -345,6 +360,11 @@ jobs:
 
       - name: Apply database migrations
         run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
+
+      - name: Sync catalog ModelAsset rows
+        run: npm run sync:catalog-model-assets
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
 

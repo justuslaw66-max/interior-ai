@@ -99,6 +99,9 @@ export type CatalogYamlVariantEntry = {
 };
 
 export type CatalogYamlEntry = {
+  status?: string;
+  publication_state?: string;
+
   // Identity
   brand?: string;
   category?: string;

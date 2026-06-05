@@ -1,15 +1,18 @@
 import fs from "node:fs";
 import path from "node:path";
 import { parse } from "yaml";
-import { findCatalogFiles, getRelativeCatalogPath } from "../lib/catalog-audit";
+import { findCatalogFiles, getRelativeCatalogPath, isDraftCatalogEntry } from "../lib/catalog-audit";
 
 type AssetRef = {
   owner: string;
   kind: "model" | "thumb" | "variantThumb";
   url: string;
+  isDraft: boolean;
 };
 
 type CatalogEntry = {
+  status?: string;
+  publication_state?: string;
   assets?: {
     asset_id?: string;
     model_url?: string;
@@ -124,6 +127,17 @@ function isValidAssetUrl(url: string): boolean {
   }
 }
 
+function splitOwnersByPublication(owners: AssetRef[]): { active: AssetRef[]; draft: AssetRef[] } {
+  return {
+    active: owners.filter((owner) => !owner.isDraft),
+    draft: owners.filter((owner) => owner.isDraft),
+  };
+}
+
+function formatOwners(owners: AssetRef[]): string {
+  return owners.map((entry) => `${entry.owner} (${entry.kind})`).join(", ");
+}
+
 function collectAssetsFromCatalog(): { filesScanned: number; refs: AssetRef[] } {
   const refs: AssetRef[] = [];
   const files = findCatalogFiles(CATALOG_ROOT);
@@ -133,19 +147,20 @@ function collectAssetsFromCatalog(): { filesScanned: number; refs: AssetRef[] } 
     const parsed = parse(raw) as CatalogEntry;
     const rel = getRelativeCatalogPath(filePath);
     const assetId = normalizeUrl(parsed.assets?.asset_id) ?? rel;
+    const isDraft = isDraftCatalogEntry(parsed);
 
     const modelUrl = normalizeUrl(parsed.assets?.model_url);
     if (!modelUrl) {
-      refs.push({ owner: assetId, kind: "model", url: "__MISSING_MODEL_URL__" });
+      refs.push({ owner: assetId, kind: "model", url: "__MISSING_MODEL_URL__", isDraft });
     } else {
-      refs.push({ owner: assetId, kind: "model", url: modelUrl });
+      refs.push({ owner: assetId, kind: "model", url: modelUrl, isDraft });
     }
 
     const thumbUrl = normalizeUrl(parsed.assets?.thumbnail_url);
     if (!thumbUrl) {
-      refs.push({ owner: assetId, kind: "thumb", url: "__MISSING_THUMBNAIL_URL__" });
+      refs.push({ owner: assetId, kind: "thumb", url: "__MISSING_THUMBNAIL_URL__", isDraft });
     } else {
-      refs.push({ owner: assetId, kind: "thumb", url: thumbUrl });
+      refs.push({ owner: assetId, kind: "thumb", url: thumbUrl, isDraft });
     }
 
     for (const variant of parsed.variants ?? []) {
@@ -156,6 +171,7 @@ function collectAssetsFromCatalog(): { filesScanned: number; refs: AssetRef[] } 
         owner: `${assetId}/${variantLabel}`,
         kind: "variantThumb",
         url: variantThumb,
+        isDraft,
       });
     }
   }
@@ -176,18 +192,29 @@ async function main() {
   let remoteMissing = 0;
 
   const blockingLines: string[] = [];
+  const warningLines: string[] = [];
   const remoteFailureLines: string[] = [];
 
   for (const [url, owners] of unique.entries()) {
     if (url === "__MISSING_MODEL_URL__" || url === "__MISSING_THUMBNAIL_URL__") {
-      const ownerStr = owners.map((entry) => `${entry.owner} (${entry.kind})`).join(", ");
-      blockingLines.push(`- REQUIRED FIELD MISSING: ${url} <- ${ownerStr}`);
+      const { active, draft } = splitOwnersByPublication(owners);
+      if (active.length > 0) {
+        blockingLines.push(`- REQUIRED FIELD MISSING: ${url} <- ${formatOwners(active)}`);
+      }
+      if (draft.length > 0) {
+        warningLines.push(`- draft blocker: REQUIRED FIELD MISSING: ${url} <- ${formatOwners(draft)}`);
+      }
       continue;
     }
 
     if (!isValidAssetUrl(url)) {
-      const ownerStr = owners.map((entry) => `${entry.owner} (${entry.kind})`).join(", ");
-      blockingLines.push(`- INVALID URL: ${url} <- ${ownerStr}`);
+      const { active, draft } = splitOwnersByPublication(owners);
+      if (active.length > 0) {
+        blockingLines.push(`- INVALID URL: ${url} <- ${formatOwners(active)}`);
+      }
+      if (draft.length > 0) {
+        warningLines.push(`- draft blocker: INVALID URL: ${url} <- ${formatOwners(draft)}`);
+      }
       continue;
     }
 
@@ -197,8 +224,17 @@ async function main() {
       const result = await checkRemoteUrl(url);
       if (!result.ok) {
         remoteMissing += 1;
-        const ownerStr = owners.map((entry) => `${entry.owner} (${entry.kind})`).join(", ");
-        remoteFailureLines.push(`- REMOTE ${result.method ?? "N/A"} ${result.status ?? "ERR"}: ${url} <- ${ownerStr}`);
+        const { active, draft } = splitOwnersByPublication(owners);
+        if (active.length > 0) {
+          remoteFailureLines.push(
+            `- REMOTE ${result.method ?? "N/A"} ${result.status ?? "ERR"}: ${url} <- ${formatOwners(active)}`
+          );
+        }
+        if (draft.length > 0) {
+          warningLines.push(
+            `- draft blocker: REMOTE ${result.method ?? "N/A"} ${result.status ?? "ERR"}: ${url} <- ${formatOwners(draft)}`
+          );
+        }
       }
       continue;
     }
@@ -213,8 +249,13 @@ async function main() {
         continue;
       }
       localMissing += 1;
-      const ownerStr = owners.map((entry) => `${entry.owner} (${entry.kind})`).join(", ");
-      blockingLines.push(`- LOCAL MISSING: ${url} <- ${ownerStr}`);
+      const { active, draft } = splitOwnersByPublication(owners);
+      if (active.length > 0) {
+        blockingLines.push(`- LOCAL MISSING: ${url} <- ${formatOwners(active)}`);
+      }
+      if (draft.length > 0) {
+        warningLines.push(`- draft blocker: LOCAL MISSING: ${url} <- ${formatOwners(draft)}`);
+      }
     }
   }
 
@@ -238,6 +279,13 @@ async function main() {
       for (const line of remoteFailureLines) {
         console.log(line);
       }
+    }
+  }
+
+  if (warningLines.length > 0) {
+    console.log("\nDraft asset warnings:");
+    for (const line of warningLines) {
+      console.log(line);
     }
   }
 
