@@ -7658,7 +7658,7 @@ function PageContent() {
                     }
                   }}
                 >
-                  Buy now
+                  {selectedProduct.commerce.type === "affiliate" ? "View retailer" : "Buy now"}
                 </button>
               ) : (
                 <button
@@ -7820,6 +7820,27 @@ function PageContent() {
                   showDesignerTheme
                     ? "designer-text-primary text-sm font-semibold"
                     : "text-sm font-semibold text-neutral-800"
+                }
+              >
+                View
+              </div>
+              <div className="mt-2">
+                <EditorViewToggle
+                  value={viewMode}
+                  onChange={(next) => {
+                    setViewMode(next);
+                    if (next === "3d") {
+                      transitionToCameraView(DEFAULT_EDITOR_CAMERA_VIEW, 420);
+                    }
+                  }}
+                  dark={showDesignerTheme}
+                />
+              </div>
+              <div
+                className={
+                  showDesignerTheme
+                    ? "mt-4 designer-text-primary text-sm font-semibold"
+                    : "mt-4 text-sm font-semibold text-neutral-800"
                 }
               >
                 Style

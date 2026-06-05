@@ -1264,8 +1264,8 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["modern"],
     defaultVariantId: "peri_coffee_table_walnut_dark_grey_steel",
     purchaseMode: "affiliate",
-    retailer: "Castlery",
-    buyUrl: "https://example.com/products/coffee-real-castlery-peri-120",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://www.castlery.com/sg/products/peri-coffee-table?item_group_id=50850023",
     variants: [
       {
         id: "peri_coffee_table_walnut_dark_grey_steel",
@@ -1584,8 +1584,8 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["modern"],
     defaultVariantId: "150cm_grey_oak",
     purchaseMode: "affiliate",
-    retailer: "Castlery",
-    buyUrl: "https://example.com/products/tv-real-castlery-sloane-tv-console-150",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://www.castlery.com/sg/products/sloane-tv-console?length=1_5m",
     variants: [
       {
         id: "150cm_grey_oak",
@@ -1603,8 +1603,8 @@ const CATALOG: Record<string, Product> = {
     styleTags: ["modern"],
     defaultVariantId: "200cm_grey_oak",
     purchaseMode: "affiliate",
-    retailer: "Castlery",
-    buyUrl: "https://example.com/products/tv-real-castlery-sloane-tv-console-200",
+    retailer: "Castlery Singapore",
+    buyUrl: "https://www.castlery.com/sg/products/sloane-tv-console?length=2_0m",
     variants: [
       {
         id: "200cm_grey_oak",
