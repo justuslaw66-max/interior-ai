@@ -3,6 +3,9 @@ import path from "node:path";
 import { parse } from "yaml";
 import { prisma } from "./prisma";
 import { applyPresetDefaults, getCatalogPreset, validateCatalogAgainstPreset } from "./catalog-presets";
+import { isDraftCatalogEntry } from "./catalog-publication";
+
+export { isDraftCatalogEntry } from "./catalog-publication";
 
 export type CatalogVariant = Record<string, unknown>;
 
@@ -155,11 +158,6 @@ function pushBySeverity(audit: FileAudit, severity: "error" | "warning" | "advis
     return;
   }
   audit.warnings.push(message);
-}
-
-export function isDraftCatalogEntry(entry: CatalogEntry): boolean {
-  const status = String(entry.publication_state ?? entry.status ?? "").trim().toLowerCase();
-  return ["draft", "pending-review", "pending_review", "needs-review", "needs_review", "blocked"].includes(status);
 }
 
 export function finalizeDraftAudit(audit: FileAudit, isDraft: boolean): FileAudit {
