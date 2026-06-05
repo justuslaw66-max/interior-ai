@@ -20,6 +20,7 @@
     "import:model": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/import-model.ts",
     "import:bulk": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/bulk-import-models.ts",
     "backfill:finishes": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/backfill-finish-mappings.ts",
+    "sync:catalog-model-assets": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/sync-catalog-model-assets.ts",
     "db:backup": "bash scripts/backup-db.sh",
     "db:restore": "bash scripts/restore-db.sh",
     "studio": "node -r dotenv/config ./node_modules/.bin/prisma studio --port 5555",

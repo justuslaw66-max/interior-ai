@@ -56,6 +56,11 @@ jobs:
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
 
+      - name: Sync catalog ModelAsset rows
+        run: npm run sync:catalog-model-assets
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
+
       - name: Run catalog audit
         run: npm run test:catalog-audit
         env:
