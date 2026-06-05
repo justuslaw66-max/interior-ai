@@ -1639,9 +1639,31 @@ const REAL_CATALOG_ENTRIES = ALL_CATALOG_ENTRIES.filter(([, product]) =>
   isRealCatalogProduct(product)
 );
 
-const INCLUDE_PLACEHOLDER_CATALOG =
-  process.env.CATALOG_INCLUDE_PLACEHOLDER_ITEMS === "1" ||
-  process.env.CATALOG_INCLUDE_PLACEHOLDER_ITEMS === "true";
+type CatalogPlaceholderEnv = Partial<
+  Record<"APP_ENV" | "CATALOG_INCLUDE_PLACEHOLDER_ITEMS" | "NODE_ENV" | "VERCEL_ENV", string>
+>;
+
+function isTruthyCatalogEnvFlag(value: string | undefined): boolean {
+  return value === "1" || value === "true";
+}
+
+export function shouldIncludePlaceholderCatalog(env: CatalogPlaceholderEnv = process.env): boolean {
+  const requested = isTruthyCatalogEnvFlag(env.CATALOG_INCLUDE_PLACEHOLDER_ITEMS);
+  if (!requested) return false;
+
+  const explicitDev = env.APP_ENV === "development";
+  const prodLike =
+    !explicitDev &&
+    (env.NODE_ENV === "production" ||
+      env.APP_ENV === "staging" ||
+      env.APP_ENV === "production" ||
+      env.VERCEL_ENV === "preview" ||
+      env.VERCEL_ENV === "production");
+
+  return !prodLike;
+}
+
+const INCLUDE_PLACEHOLDER_CATALOG = shouldIncludePlaceholderCatalog();
 
 const PUBLIC_CATALOG_ENTRIES =
   INCLUDE_PLACEHOLDER_CATALOG ? ALL_CATALOG_ENTRIES : REAL_CATALOG_ENTRIES;
