@@ -1450,6 +1450,7 @@ const CATALOG: Record<string, Product> = {
     category: "ottoman",
     price: 649,
     dimensions: { w: 0.93, d: 0.93, h: 0.45 },
+    modelUrl: "/assets/models/sofa-real-castlery-dawson-storage-ottoman-closed.glb",
     styleTags: ["modern"],
     galleryImages: [
       "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692451017/crusader/variants/54000132-NG4001/Dawson-Square-Ottoman-Front_-1692451014.jpg",

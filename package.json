@@ -62,7 +62,8 @@
     "@prisma/client": "^7.3.0",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
-    "@sentry/nextjs": "^10.42.0",
+    "@sentry/browser": "10.42.0",
+    "@sentry/nextjs": "10.42.0",
     "@types/pdfkit": "^0.17.5",
     "jspdf": "^4.2.0",
     "meshoptimizer": "^1.0.1",
@@ -79,6 +80,7 @@
     "react-dom": "19.2.3",
     "stripe": "^20.3.1",
     "three": "^0.182.0",
+    "three-stdlib": "^2.36.1",
     "ws": "^8.19.0",
     "yaml": "^2.8.2"
   },
