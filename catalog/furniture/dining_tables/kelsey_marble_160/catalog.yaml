@@ -1,4 +1,5 @@
 brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/kelsey-marble-dining-table-white-wash"
 category: "dining_table"
 
 product_family: "Kelsey"
@@ -63,7 +64,16 @@ design_pairings:
 assets:
   asset_id: "dining-real-castlery-kelsey-marble-160"
   model_url: "/assets/models/dining-real-castlery-kelsey-marble-160.glb"
-  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1723776680/crusader/variants/AS-000564/Sloane-Travertine-Dining-Table-180cm-Angle-1723776679.png"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660199612/crusader/variants/52460092/Kelsey-Marble-Dining-Table-160-Natural-Front-1660199609.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660199612/crusader/variants/52460092/Kelsey-Marble-Dining-Table-160-Natural-Front-1660199609.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660202377/crusader/variants/52460092/Kelsey-Dining-Chair-Power-Wash-Set_3-1660202375.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1670404574/crusader/variants/52460092/Kelsey-Dining-Chair-Power-Wash-Set_2-1670404571.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1707028088/crusader/variants/52460092/Kelsey-Dining-Chair-Power-Wash-Det_15-1707028084.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660202528/crusader/variants/52460092/Kelsey-Dining-Chair-Power-Wash-Det_14-1660202526.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660199611/crusader/variants/52460092/Kelsey-Marble-Dining-Table-160-Natural-Angle-1660199609.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660199612/crusader/variants/52460092/Kelsey-Marble-Dining-Table-160-Natural-Side-1660199609.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660199660/crusader/variants/T52460092/Kelsey-Marble-Dining-Table-160-Natural-Dim-1660199658.jpg"
 
 ai_flags:
   isStarterEligible: true
@@ -76,6 +86,16 @@ variants:
     finish_code: "white_wash"
     finish_label: "White Wash"
     swatch_group: "wood_finish"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660199612/crusader/variants/52460092/Kelsey-Marble-Dining-Table-160-Natural-Front-1660199609.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660199612/crusader/variants/52460092/Kelsey-Marble-Dining-Table-160-Natural-Front-1660199609.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660202377/crusader/variants/52460092/Kelsey-Dining-Chair-Power-Wash-Set_3-1660202375.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1670404574/crusader/variants/52460092/Kelsey-Dining-Chair-Power-Wash-Set_2-1670404571.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1707028088/crusader/variants/52460092/Kelsey-Dining-Chair-Power-Wash-Det_15-1707028084.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660202528/crusader/variants/52460092/Kelsey-Dining-Chair-Power-Wash-Det_14-1660202526.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660199611/crusader/variants/52460092/Kelsey-Marble-Dining-Table-160-Natural-Angle-1660199609.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660199612/crusader/variants/52460092/Kelsey-Marble-Dining-Table-160-Natural-Side-1660199609.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660199660/crusader/variants/T52460092/Kelsey-Marble-Dining-Table-160-Natural-Dim-1660199658.jpg"
 
     price_usd: 1599
     price_band: "premium"
@@ -118,6 +138,13 @@ variants:
     finish_code: "dark_walnut"
     finish_label: "Dark Walnut"
     swatch_group: "wood_finish"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1624443066/crusader/variants/52460082/Kelsey-Marble-Dining-Table-160cm-Walnut-Stain-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1624443066/crusader/variants/52460082/Kelsey-Marble-Dining-Table-160cm-Walnut-Stain-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660208090/crusader/variants/52460089/Kelsey-Marble-Dining-Table-180cm-Walnut-Stain-Lifestyle-Crop-1660208088.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1672284071/crusader/variants/52460089/Kelsey-Dining-Table-with-6-Chairs-Caramel-Walnut-Square-Set_1-1672284068.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1673853279/crusader/variants/52460089/Kelsey_Marble_Dining_Table-Shared_1-1673853276.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1632476927/crusader/variants/52460084/Kelsey-Marble.jpg"
 
     price_usd: 1599
     price_band: "premium"

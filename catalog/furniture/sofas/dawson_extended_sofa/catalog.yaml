@@ -1,4 +1,5 @@
 brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/dawson-extended-sofa"
 category: "sofa"
 
 product_family: "Dawson"
@@ -154,6 +155,12 @@ assets:
   asset_id: "sofa-real-castlery-dawson-extended-sofa"
   model_url: "/assets/models/sofa-real-castlery-dawson-extended-sofa.glb"
   thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1634717099/crusader/variants/T50440987-NG4001/Dawson-Extended-Sofa-Beach-Linen-Front.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1634717258/crusader/variants/T50440987-NG4001/Dawson-Extended-Sofa-With-Ottoman-Beach-Linen-Square-Set_6.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1634717099/crusader/variants/T50440987-NG4001/Dawson-Extended-Sofa-Beach-Linen-Front.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1634717132/crusader/variants/T50440987-NG4001/Dawson-Extended-Sofa-Beach-Linen-Angle.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1634717099/crusader/variants/T50440987-NG4001/Dawson-Extended-Sofa-Beach-Linen-Side.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1634717099/crusader/variants/T50440987-NG4001/Dawson-Extended-Sofa-Beach-Linen-Back.jpg"
 
 variants:
   - variant: "Dawson Extended Sofa / Slub Linen Weave (Navagio), Cream (Beach Linen)"

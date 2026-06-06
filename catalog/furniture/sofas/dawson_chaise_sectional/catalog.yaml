@@ -1,4 +1,5 @@
 brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/dawson-chaise-sectional-sofa"
 category: "sectional_sofa"
 
 product_family: "Dawson"
@@ -155,6 +156,8 @@ assets:
   asset_id: "sofa-real-castlery-dawson-chaise-sectional"
   model_url: "/assets/models/sofa-real-castlery-dawson-chaise-sectional-right.glb"
   thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1634718495/crusader/variants/T50440988-NG4001/Dawson-Right_-Chaise-Sectional-sofa-Beach-Linen-Front.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1634718495/crusader/variants/T50440988-NG4001/Dawson-Right_-Chaise-Sectional-sofa-Beach-Linen-Front.jpg"
 
 variants:
   - variant: "Dawson Chaise Sectional Sofa (Right Facing) / Slub Linen Weave (Navagio), Cream (Beach Linen)"

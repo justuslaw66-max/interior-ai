@@ -43,6 +43,7 @@ export default function CatalogCard({ item, onPreview, onAdd, onToggleCompare, i
       <div className="mt-2.5 grid grid-cols-3 gap-1.5">
         <button
           onClick={onPreview}
+          data-testid={`catalog-preview-${item.id}`}
           className="rounded-md border border-neutral-200 px-2 py-1.5 text-[11px] font-medium text-neutral-700"
         >
           Preview
@@ -57,6 +58,7 @@ export default function CatalogCard({ item, onPreview, onAdd, onToggleCompare, i
         <button
           onMouseEnter={onHover}
           onClick={onAdd}
+          data-testid={`catalog-add-${item.id}`}
           className="rounded-md bg-neutral-900 px-2 py-1.5 text-[11px] font-medium text-white"
         >
           Add to room

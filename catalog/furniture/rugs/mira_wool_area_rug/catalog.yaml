@@ -91,6 +91,12 @@ variants:
     size_label: "153x244"
     finish_code: "ivory"
     finish_label: "Ivory"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1713854136/crusader/variants/44230013/Mira-Area-Rug-5__x_8_-Ivory_-1713854133.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1713854136/crusader/variants/44230013/Mira-Area-Rug-5__x_8_-Ivory_-1713854133.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1717473790/crusader/variants/44230015/Mira-Rug-Square-Set_1-1717473789.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1713854136/crusader/variants/44230013/Mira-Area-Rug-Ivory_-Det_1_-1713854133.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1713854135/crusader/variants/44230013/Mira-Area-Rug-Ivory_-Det_7-1713854132.jpg"
     swatch_group: "finish"
     price_usd: 499
     price_band: "mid"

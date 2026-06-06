@@ -1,4 +1,5 @@
 brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/harper-marble-round-coffee-table"
 category: "coffee_table"
 
 product_family: "Harper"
@@ -134,7 +135,13 @@ authoring_notes:
 assets:
   asset_id: "coffee-real-castlery-harper-marble-round-915"
   model_url: "/assets/models/coffee-real-castlery-harper-marble-round-915.glb"
-  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1741077787/crusader/variants/40550280/Harper-Marble-Round-Coffee-Table_-_Chestnut-Front-1741077785.png"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741077787/crusader/variants/40550280/Harper-Marble-Round-Coffee-Table_-_Chestnut-Front-1741077785.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741077787/crusader/variants/40550280/Harper-Marble-Round-Coffee-Table_-_Chestnut-Front-1741077785.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741596116/crusader/variants/40550280/Harper-Marble-Round-Coffee-Table-Chestnut-Square-Set_1-1741596114.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741595801/crusader/variants/40550295/Jaron-Sofa-_Harper-Coffee-Tables-Living-Room-Campaign-Set_26-1741595798.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740018905/crusader/variants/40550280/Harper-Marble-Rectangular-Coffee-Table_-_Chestnut-Det_1-1740018903.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740725550/crusader/variants/T40550280/Harper-Marble-Round-Coffee-Table_-_Chestnut-Dim-1740725549.jpg"
 
 ai_flags:
   isStarterEligible: true
@@ -155,6 +162,11 @@ variants:
     finish_label: "Chestnut"
     swatch_group: "wood_finish"
     swatch_hex: "#5c3a1e"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741077787/crusader/variants/40550280/Harper-Marble-Round-Coffee-Table_-_Chestnut-Front-1741077785.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741077787/crusader/variants/40550280/Harper-Marble-Round-Coffee-Table_-_Chestnut-Front-1741077785.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741596116/crusader/variants/40550280/Harper-Marble-Round-Coffee-Table-Chestnut-Square-Set_1-1741596114.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740018905/crusader/variants/40550280/Harper-Marble-Rectangular-Coffee-Table_-_Chestnut-Det_1-1740018903.jpg"
 
     price_usd: 1199
     price_band: "premium"
@@ -195,6 +207,10 @@ variants:
     finish_label: "Natural"
     swatch_group: "wood_finish"
     swatch_hex: "#a89070"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741077831/crusader/variants/40550295/Harper-Marble-Round-Coffee-Table_-Natural-Front-1741077829.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741077831/crusader/variants/40550295/Harper-Marble-Round-Coffee-Table_-Natural-Front-1741077829.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741595801/crusader/variants/40550295/Jaron-Sofa-_Harper-Coffee-Tables-Living-Room-Campaign-Set_26-1741595798.jpg"
 
     price_usd: 1199
     price_band: "premium"

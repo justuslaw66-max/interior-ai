@@ -176,6 +176,10 @@ variants:
     size_label: "150cm"
     finish_code: "grey_oak"
     finish_label: "Grey Oak"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1756189513/crusader/variants/50520028/Sloane-Sideboard-150cm-Front-1756189510.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1756189513/crusader/variants/50520028/Sloane-Sideboard-150cm-Front-1756189510.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1667991865/crusader/variants/50520002/Sloane-Sideboard-Square-Set_1-1667991861.jpg"
     swatch_group: "finish"
     color_family: "brown"
     tone: "warm"

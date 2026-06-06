@@ -8,6 +8,7 @@ type Props = {
   fallbackSrc?: string;
   alt: string;
   className?: string;
+  imageClassName?: string;
   onError?: () => void;
   onLoad?: () => void;
   testId?: string;
@@ -18,7 +19,16 @@ type Props = {
  * Shows a loading skeleton until the image is visible in the viewport.
  * Falls back to a neutral placeholder if the image fails to load.
  */
-export default function LazyImage({ src, fallbackSrc, alt, className = "", onError, onLoad, testId }: Props) {
+export default function LazyImage({
+  src,
+  fallbackSrc,
+  alt,
+  className = "",
+  imageClassName = "object-cover object-center",
+  onError,
+  onLoad,
+  testId,
+}: Props) {
   const normalizedSrc = String(src ?? "").trim();
   const normalizedFallbackSrc = String(fallbackSrc ?? "").trim();
   const [loadedSrc, setLoadedSrc] = useState<string | null>(null);
@@ -69,7 +79,7 @@ export default function LazyImage({ src, fallbackSrc, alt, className = "", onErr
           alt={alt}
           loading="lazy"
           data-testid={testId}
-          className={`absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-300 ${
+          className={`absolute inset-0 h-full w-full ${imageClassName} transition-opacity duration-300 ${
             isLoaded ? "opacity-100" : "opacity-0"
           }`}
           onLoad={handleLoad}
@@ -81,7 +91,7 @@ export default function LazyImage({ src, fallbackSrc, alt, className = "", onErr
           alt={alt}
           fill
           data-testid={testId}
-          className={`object-cover object-center transition-opacity duration-300 ${
+          className={`${imageClassName} transition-opacity duration-300 ${
             isLoaded ? "opacity-100" : "opacity-0"
           }`}
           onLoad={handleLoad}

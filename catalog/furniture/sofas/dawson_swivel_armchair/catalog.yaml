@@ -1,4 +1,5 @@
 brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/dawson-swivel-armchair"
 category: "armchair"
 
 product_family: "Dawson"
@@ -168,6 +169,20 @@ assets:
   asset_id: "sofa-real-castlery-dawson-swivel-armchair"
   model_url: "/assets/models/sofa-real-castlery-dawson-swivel-armchair.glb"
   thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1692591109/crusader/variants/54000131-NG4001/Dawson-Swivel-Armchair-Angle-1692591104.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692591336/crusader/variants/54000131-NG4001/Dawson-Swivel-Armchair-Beach-Linen-Square-Set_1-1692591333.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692591108/crusader/variants/54000131-NG4001/Dawson-Swivel-Armchair-Front-1692591104.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692591378/crusader/variants/54000131-NG4001/Dawson-Swivel-Armchair-With-Ottoman-Beach-Linen-Square-Set_2-1692591376.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692604180/crusader/variants/54000131-NG4001/Dawson-2-Swivel-Armchairs-Beach-Linen-Square-Set_1-1692604177.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692607683/crusader/variants/54000131-NG4001/Dawson-Swivel-Armchair-Copy-1692607681.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1724059200/crusader/variants/54000131-NG4001/Sofa-Armrest-Table-Natural-Square-Set_4-1724059198.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692591281/crusader/variants/54000131-NG4001/Dawson-Swivel-Armchair-Det_2-1692591279.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692591281/crusader/variants/54000131-NG4001/Dawson-Swivel-Armchair-Det_1-1692591278.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692607769/crusader/variants/54000131-NG4001/Beach-Linen_1-1692607767.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692591109/crusader/variants/54000131-NG4001/Dawson-Swivel-Armchair-Angle-1692591104.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692591107/crusader/variants/54000131-NG4001/Dawson-Swivel-Armchair-Angle-Cover-1692591104.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692591111/crusader/variants/54000131-NG4001/Dawson-Swivel-Armchair-Side-1692591104.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692591107/crusader/variants/54000131-NG4001/Dawson-Swivel-Armchair-Back-1692591104.jpg"
 
 variants:
   - variant: "Dawson Swivel Armchair / Slub Linen Weave (Navagio), Cream (Beach Linen)"

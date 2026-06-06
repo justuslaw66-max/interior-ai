@@ -69,6 +69,7 @@ import {
 import {
 } from "@/lib/catalog/variant-normalization";
 import { mapToTopCategory } from "@/lib/catalog/view-builders";
+import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import {
   formatMoney,
   formatTimeAgo,
@@ -2757,6 +2758,11 @@ function PageContent() {
   const isHuggWithWoodOptions =
     Boolean(selectedProduct?.id.includes("hugg")) && hasWoodColourOptions;
 
+  const selectedResolvedVariant = useMemo(() => {
+    if (!selectedProduct) return null;
+    return resolveCatalogVariant(selectedProduct, selectedItem?.variantId);
+  }, [selectedItem?.variantId, selectedProduct]);
+
   const huggFabricSwatchOptions = useMemo(() => {
     if (!isHuggWithWoodOptions || !selectedProduct) {
       return [] as Array<{
@@ -2770,9 +2776,14 @@ function PageContent() {
     }
 
     const currentId = selectedProduct.id;
-    const familyIds = Object.keys(CATALOG_ITEMS).filter((id) =>
-      id.startsWith("coffee-real-castlery-hugg-nesting-square-performance-")
+    const huggPrefixMatch = currentId.match(
+      /^(coffee-real-castlery-hugg-nesting-(?:square|rectangular|side-table)-performance-)/
     );
+    const huggPrefix = huggPrefixMatch?.[1];
+    if (!huggPrefix) {
+      return [];
+    }
+    const familyIds = Object.keys(CATALOG_ITEMS).filter((id) => id.startsWith(huggPrefix));
     const suffix = currentId.endsWith("-opened")
       ? "-opened"
       : currentId.endsWith("-closed")
@@ -3980,7 +3991,7 @@ function PageContent() {
   }, []);
 
   const isCuratedHuggNestingProductId = useCallback((productId: string) => {
-    return productId.startsWith("coffee-real-castlery-hugg-nesting-square-performance-");
+    return /^coffee-real-castlery-hugg-nesting-(square|rectangular|side-table)-performance-/.test(productId);
   }, []);
 
   const ensureImportedCatalogItem = useCallback((productId: string) => {
@@ -7625,16 +7636,21 @@ function PageContent() {
             </button>
 
             <div className="pt-2 flex gap-2">
-              {(selectedProduct.commerce.type === "affiliate" || selectedProduct.commerce.type === "shopify") ? (
+              {(selectedResolvedVariant?.commerce.type === "affiliate" || selectedResolvedVariant?.commerce.type === "shopify") ? (
                 <button
                   className="mt-3 w-full rounded-lg bg-green-600 px-3 py-2 text-sm text-white"
                   onClick={async () => {
-                    const buyUrl = selectedProduct.commerce.type === "affiliate" 
-                      ? selectedProduct.commerce.data.url 
-                      : selectedProduct.commerce.type === "shopify"
+                    if (!selectedResolvedVariant) return;
+                    const buyUrl = selectedResolvedVariant.commerce.type === "affiliate"
+                      ? selectedResolvedVariant.commerce.url ?? ""
+                      : selectedResolvedVariant.commerce.type === "shopify"
                       ? `https://yoursite.com/products/${selectedProduct.id}`
                       : "";
-                    const retailer = selectedProduct.commerce.type === "affiliate" ? selectedProduct.commerce.data.retailer : null;
+                    if (!buyUrl) return;
+                    const retailer =
+                      selectedResolvedVariant.commerce.type === "affiliate"
+                        ? selectedResolvedVariant.commerce.retailer
+                        : null;
                     try {
                       const res = await fetch("/api/track/click", {
                         method: "POST",
@@ -7661,7 +7677,7 @@ function PageContent() {
                     }
                   }}
                 >
-                  {selectedProduct.commerce.type === "affiliate" ? "View retailer" : "Buy now"}
+                  {selectedResolvedVariant?.commerce.type === "affiliate" ? "View retailer" : "Buy now"}
                 </button>
               ) : (
                 <button

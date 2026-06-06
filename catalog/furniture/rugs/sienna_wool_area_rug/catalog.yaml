@@ -91,6 +91,12 @@ variants:
     size_label: "153x244"
     finish_code: "natural"
     finish_label: "Natural"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1766047068/crusader/variants/44230122/Sienna-Area-Rug-153x244cm-Natural-Front_1-1766047065.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1766047068/crusader/variants/44230122/Sienna-Area-Rug-153x244cm-Natural-Front_1-1766047065.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770263431/crusader/variants/44230124/Sienna-Area-Rug-153x244cm-Natural-Set_1-1770263429.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1766047056/crusader/variants/44230124/Sienna-Area-Rug-153x244cm-Natural-Det_2-1766047054.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1200,f_auto,q_auto/v1774334350/knight/USP/2026/Sienna-Area-Rug-153x244cm-Natural-Det_1.jpg"
     swatch_group: "finish"
     price_usd: 499
     price_band: "mid"

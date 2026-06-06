@@ -558,7 +558,7 @@ export function GLBScaledModel({
       if (isBlackVariant) {
         material.customProgramCacheKey = () =>
           [
-            "hugg-black-clean-chestnut-parity-v68",
+            "hugg-black-preserve-fabric-v77",
             tintHex,
             tintStrength,
             huggTabletopZMax,
@@ -781,6 +781,13 @@ export function GLBScaledModel({
                 "gl_FragColor.rgb = mix(gl_FragColor.rgb, huggBFinalFabricTone, huggBFinalFabricGuard * 0.0);",
                 "float huggFinalSolidStructureMask = max(max(max(huggTopMaskF, huggTopRimMask), huggClosedTopApronMask), max(max(huggStructureBodyMask, huggClosedCornerPostMask), huggClosedSideRailMask));",
                 "gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(0.030), huggFinalSolidStructureMask);",
+                // The rectangular closed model has a narrow central wood divider
+                // between the two tucked ottomans. Clean only that strip; wider
+                // fabric-side repainting makes the whole item look unlike the GLB.
+                "float huggBCenterSupportX = 1.0 - smoothstep(huggHalfFootprintX * 0.050, huggHalfFootprintX * 0.130, abs(vHuggLocalPos.x - huggBeamCenterX));",
+                "float huggBCenterSupportSide = 1.0 - smoothstep(0.24, 0.62, abs(vHuggObjNormal.z));",
+                "float huggBCenterSupportMask = huggBCenterSupportX * huggBCenterSupportSide * (1.0 - huggTopMaskF);",
+                "gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(0.024), huggBCenterSupportMask * 0.86);",
               ].join("\n")
             );
         };
@@ -1025,7 +1032,7 @@ export function GLBScaledModel({
               // Use full ottoman-zone coverage so high-metal baked texels cannot bypass recolor.
               "float huggFabricBodyMask = huggFabricZone;",
               "vec3 huggFabricTint = mix(huggFabricTone * 0.92, huggFabricTone * 1.04, clamp(huggLuma, 0.0, 1.0));",
-              "diffuseColor.rgb = mix(diffuseColor.rgb, huggFabricTint, huggFabricBodyMask);",
+              "diffuseColor.rgb = mix(diffuseColor.rgb, huggFabricTint, huggFabricBodyMask * 0.16);",
               "metalnessFactor = mix(metalnessFactor, 0.0, huggFabricZone);",
               "roughnessFactor = mix(roughnessFactor, 0.93, huggFabricZone);",
               // Final: hard-clear metalness on the tabletop face regardless of UV
@@ -1093,22 +1100,22 @@ export function GLBScaledModel({
               "float huggSideLumaMask = smoothstep(0.01, 0.09, huggFinalLuma);",
               "float huggRescueMask = huggLowChromaMask * huggSideLumaMask * huggNonTableSurface;",
               "vec3 huggRescueTint = mix(huggFabricTone * 0.90, huggFabricTone * 1.03, clamp(huggFinalLuma * 2.0, 0.0, 1.0));",
-              "gl_FragColor.rgb = mix(gl_FragColor.rgb, huggRescueTint, huggRescueMask * 0.98);",
+              "gl_FragColor.rgb = mix(gl_FragColor.rgb, huggRescueTint, huggRescueMask * 0.18);",
               // Hard fallback: for black variant upholstery, aggressively flatten any
               // bright non-top side pixels into the expected fabric tone.
               "float huggUltraFabricMask = huggNonTableSurface * smoothstep(0.10, 0.22, huggFinalLuma);",
               "vec3 huggUltraFabricTint = mix(huggFabricTone * 0.86, huggFabricTone * 1.04, clamp(huggFinalLuma * 1.8, 0.0, 1.0));",
-              "gl_FragColor.rgb = mix(gl_FragColor.rgb, huggUltraFabricTint, huggUltraFabricMask * 0.98);",
+              "gl_FragColor.rgb = mix(gl_FragColor.rgb, huggUltraFabricTint, huggUltraFabricMask * 0.0);",
               // Absolute fallback: flatten almost all non-top regions to fabric tone,
               // then restore black frame silhouette using huggFrameMask.
               "vec3 huggFullFabricTint = mix(huggFabricTone * 0.90, huggFabricTone * 1.03, clamp(huggFinalLuma * 2.2, 0.0, 1.0));",
               "float huggFullFabricMask = huggNonTableSurface * smoothstep(0.02, 0.10, huggFinalLuma);",
-              "gl_FragColor.rgb = mix(gl_FragColor.rgb, huggFullFabricTint, huggFullFabricMask * 0.96);",
+              "gl_FragColor.rgb = mix(gl_FragColor.rgb, huggFullFabricTint, huggFullFabricMask * 0.0);",
               // Matte flatten: reduce residual side-surface highlight contrast so the
               // upholstery reads as cloth rather than coated/metallic.
               "float huggMatteFlattenMask = huggNonTableSurface * smoothstep(0.02, 0.08, huggFinalLuma);",
               "vec3 huggMatteFabric = huggFabricTone * 0.93;",
-              "gl_FragColor.rgb = mix(gl_FragColor.rgb, huggMatteFabric, huggMatteFlattenMask * 0.98);",
+              "gl_FragColor.rgb = mix(gl_FragColor.rgb, huggMatteFabric, huggMatteFlattenMask * 0.0);",
               "gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(0.024), huggFrameMask * (1.0 - huggSeatFabricProtect) * (1.0 - huggIsTopFacing) * 0.98);",
               // Restore warm connector accents after black-variant map stripping.
               // Target bright low-chroma non-top pixels in the upper (non-ottoman) zone.
@@ -1121,13 +1128,13 @@ export function GLBScaledModel({
               // of F0 at low dotNV). Directly replace with totalDiffuse (no specular contribution).
               // Scale by 0.65 to compensate for the very bright apartment irradiance — without
               // scaling, totalDiffuse for light-albedo fabrics (basalt/dune) renders near-white.
-              "gl_FragColor.rgb = mix(gl_FragColor.rgb, clamp(huggFabricTone * 1.03 + totalEmissiveRadiance * 0.05, 0.0, 1.0), huggFabricZone * 0.96);",
+              "gl_FragColor.rgb = mix(gl_FragColor.rgb, clamp(huggFabricTone * 1.03 + totalEmissiveRadiance * 0.05, 0.0, 1.0), huggFabricZone * 0.10);",
               // Final seat-side correction: ensure upper ottoman side band keeps fabric tone
               // instead of inheriting black frame darkening.
               "float huggBeamBottomXFinal = 1.0 - smoothstep(huggHalfFootprintX * 0.12, huggHalfFootprintX * 0.22, abs(vHuggLocalPos.x - huggBeamCenterX));",
               "float huggSeatSideMask = huggNonTableSurface * (1.0 - huggBeamBottomXFinal);",
               "vec3 huggSeatSideTint = huggFabricTone * 0.95;",
-              "gl_FragColor.rgb = mix(gl_FragColor.rgb, huggSeatSideTint, huggSeatSideMask);",
+              "gl_FragColor.rgb = mix(gl_FragColor.rgb, huggSeatSideTint, huggSeatSideMask * 0.08);",
               // Re-assert lower center beam in black wood tone after seat recolor.
               "float huggBeamBottomMaskFinal = huggBeamBottomXFinal * huggOttomanZone * (1.0 - huggIsTopFacing);",
               "gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(0.024), huggBeamBottomMaskFinal * 0.97);",
@@ -1138,13 +1145,13 @@ export function GLBScaledModel({
               "float huggSeatReadableMask = huggSeatPerimeterMask * (1.0 - huggTopSurfaceMask);",
               "float huggSeatFinalLuma = dot(gl_FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));",
               "vec3 huggSeatReadableTint = mix(huggFabricTone * 0.72, huggFabricTone * 0.95, clamp(huggSeatFinalLuma * 1.5, 0.0, 1.0));",
-              "gl_FragColor.rgb = mix(gl_FragColor.rgb, huggSeatReadableTint, huggSeatReadableMask * 0.98);",
+              "gl_FragColor.rgb = mix(gl_FragColor.rgb, huggSeatReadableTint, huggSeatReadableMask * 0.10);",
               // Strong global upholstery fallback for single-mesh Hugg GLBs:
               // lift all non-tabletop body surfaces toward fabric, then restore
               // only the structural frame regions as black.
               "float huggBodyFallbackMask = (1.0 - huggTopSurfaceMask) * 0.65;",
               "vec3 huggBodyFallbackTint = mix(huggFabricTone * 0.70, huggFabricTone * 0.90, clamp(huggSeatFinalLuma * 1.35, 0.0, 1.0));",
-              "gl_FragColor.rgb = mix(gl_FragColor.rgb, huggBodyFallbackTint, huggBodyFallbackMask);",
+              "gl_FragColor.rgb = mix(gl_FragColor.rgb, huggBodyFallbackTint, huggBodyFallbackMask * 0.0);",
               "float huggFrameReassertMask = huggFrameMask * (1.0 - huggSeatPerimeterMask * 0.85) * (1.0 - huggIsTopFacing);",
               "gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(0.024), huggFrameReassertMask * 0.96);",
               "gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(0.024), huggBeamBottomMaskFinal * 0.98);",
@@ -1152,7 +1159,7 @@ export function GLBScaledModel({
               // while the true tabletop remains controlled by huggTopSurfaceMask.
               "float huggSeatTopMask = huggIsTopFacing * huggSeatZone * (1.0 - huggTopSurfaceMask);",
               "vec3 huggSeatTopTint = mix(huggFabricTone * 1.00, huggFabricTone * 1.20, clamp(huggSeatFinalLuma * 1.9, 0.0, 1.0));",
-              "gl_FragColor.rgb = mix(gl_FragColor.rgb, huggSeatTopTint, huggSeatTopMask * 0.995);",
+              "gl_FragColor.rgb = mix(gl_FragColor.rgb, huggSeatTopTint, huggSeatTopMask * 0.0);",
               // Final post-lighting black-top normalization: preserve streak contrast
               // while keeping the top in the swatch luminance range under bright ambient.
               "float huggTopFinalLuma = dot(gl_FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));",
