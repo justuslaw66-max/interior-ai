@@ -7,6 +7,17 @@ const HUGG_BASALT_CLOSED_ID =
 test.describe("100. Hugg Catalog Smoke", () => {
   test("Hugg supports catalog fabric/wood selection, layout state, rotation, cart, and 2D/3D view toggles", async ({ page }) => {
     test.setTimeout(120000);
+    const duplicateFinishKeyWarnings: string[] = [];
+    page.on("console", (message) => {
+      const text = message.text();
+      if (
+        message.type() === "error" &&
+        text.includes("Encountered two children with the same key") &&
+        text.includes("natural")
+      ) {
+        duplicateFinishKeyWarnings.push(text);
+      }
+    });
 
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
@@ -15,6 +26,7 @@ test.describe("100. Hugg Catalog Smoke", () => {
 
     const opened = await openCatalogPreview(page, HUGG_BASALT_CLOSED_ID, "Hugg");
     expect(opened).toBeTruthy();
+    expect(duplicateFinishKeyWarnings).toEqual([]);
 
     await expect(page.getByText("Product details")).toBeVisible({ timeout: 10000 });
     await expect(page.getByTestId("catalog-detail-add-to-room")).toBeVisible({ timeout: 10000 });

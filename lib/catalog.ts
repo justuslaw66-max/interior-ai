@@ -357,6 +357,10 @@ const CATALOG: Record<string, Product> = {
         id: "greta_ivory",
         name: "Greta Ivory",
         colorHex: "#e6e0d6",
+        finishCode: "gr-4001",
+        finishLabel: "Washed Chenille, Cream",
+        swatchGroup: "upholstery_option",
+        swatchHex: "#e6e0d6",
         thumbnailUrl:
           "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1768210734/crusader/variants/AS-001017-GR4001/Ollie-Storage-Ottoman-Iovry-Front-1768210732.jpg",
         galleryImages: [
@@ -371,6 +375,10 @@ const CATALOG: Record<string, Product> = {
         id: "greta_caramel",
         name: "Greta Caramel",
         colorHex: "#a9744f",
+        finishCode: "gr-4003",
+        finishLabel: "Washed Chenille, Caramel",
+        swatchGroup: "upholstery_option",
+        swatchHex: "#a9744f",
         thumbnailUrl:
           "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1767599003/crusader/variants/AS-001017-GR4003/Ollie-Storage-Ottoman-Mustard-Brown-Front-1767599001.jpg",
         galleryImages: [
@@ -385,6 +393,10 @@ const CATALOG: Record<string, Product> = {
         id: "greta_moss",
         name: "Greta Moss",
         colorHex: "#7b7a60",
+        finishCode: "gr-4004",
+        finishLabel: "Washed Chenille, Moss",
+        swatchGroup: "upholstery_option",
+        swatchHex: "#7b7a60",
         thumbnailUrl:
           "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1768210767/crusader/variants/AS-001017-GR4004/Ollie-Storage-Ottoman-Moss-Front-1768210765.jpg",
         galleryImages: [
