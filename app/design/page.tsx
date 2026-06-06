@@ -1948,9 +1948,12 @@ function PageContent() {
             onBulkSwap("cheaper");
           },
           addLampNearReadingCorner: async () => {
-            // Legacy AI suggestion - lamp adding not part of new onboarding
-            // Just add the item directly instead
-            addItem("floor-lamp-arc-01", itemsRef.current.length > 0 ? [2, 0, 2] : [1.5, 0, 1.5]);
+            const lamp = Object.values(CATALOG_ITEMS).find((item) => item.category === "floor_lamp");
+            if (!lamp) {
+              showRuleToast("No floor lamp is available in the catalog yet");
+              return;
+            }
+            addItem(lamp.id, itemsRef.current.length > 0 ? [2, 0, 2] : [1.5, 0, 1.5]);
           },
           commitDesignSnapshot: (next) => {
             if (next?.items) {

@@ -1,76 +1,19 @@
-import { shouldIncludePlaceholderCatalog } from "../lib/catalog";
+import { CATALOG_ITEMS_MAP } from "../lib/catalog";
 
-type Case = {
-  name: string;
-  env: Parameters<typeof shouldIncludePlaceholderCatalog>[0];
-  expected: boolean;
-};
+function isRealPublicCatalogId(id: string): boolean {
+  return id.includes("-real-") || id.startsWith("castlery-");
+}
 
-const cases: Case[] = [
-  {
-    name: "disabled by default",
-    env: {},
-    expected: false,
-  },
-  {
-    name: "enabled in development when explicitly requested",
-    env: {
-      NODE_ENV: "development",
-      CATALOG_INCLUDE_PLACEHOLDER_ITEMS: "true",
-    },
-    expected: true,
-  },
-  {
-    name: "enabled for local builds when APP_ENV explicitly opts into development",
-    env: {
-      APP_ENV: "development",
-      NODE_ENV: "production",
-      CATALOG_INCLUDE_PLACEHOLDER_ITEMS: "1",
-    },
-    expected: true,
-  },
-  {
-    name: "blocked in production node env",
-    env: {
-      NODE_ENV: "production",
-      CATALOG_INCLUDE_PLACEHOLDER_ITEMS: "true",
-    },
-    expected: false,
-  },
-  {
-    name: "blocked in staging app env",
-    env: {
-      APP_ENV: "staging",
-      CATALOG_INCLUDE_PLACEHOLDER_ITEMS: "true",
-    },
-    expected: false,
-  },
-  {
-    name: "blocked in Vercel preview",
-    env: {
-      VERCEL_ENV: "preview",
-      CATALOG_INCLUDE_PLACEHOLDER_ITEMS: "true",
-    },
-    expected: false,
-  },
-  {
-    name: "blocked in Vercel production",
-    env: {
-      VERCEL_ENV: "production",
-      CATALOG_INCLUDE_PLACEHOLDER_ITEMS: "true",
-    },
-    expected: false,
-  },
-];
+const publicIds = Array.from(CATALOG_ITEMS_MAP.keys());
+const legacyIds = publicIds.filter((id) => !isRealPublicCatalogId(id));
 
-const failures = cases.filter(({ env, expected }) => shouldIncludePlaceholderCatalog(env) !== expected);
-
-if (failures.length > 0) {
+if (legacyIds.length > 0) {
   console.log("Public catalog placeholder gate failures:");
-  for (const failure of failures) {
-    console.log(`- ${failure.name}: expected ${failure.expected}`);
+  for (const id of legacyIds) {
+    console.log(`- ${id}: public catalog item id is not YAML-backed/imported`);
   }
   throw new Error("Public catalog placeholder gate failed");
 }
 
+console.log(`Public catalog placeholder gate scanned ${publicIds.length} public items`);
 console.log("Public catalog placeholder gate passed");
