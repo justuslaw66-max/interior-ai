@@ -62,7 +62,7 @@ test.describe("12. Variant Identity", () => {
         lines: [
           {
             merchandiseId: "gid://shopify/ProductVariant/47497687007397",
-            productId: "chair-scandi-01",
+            productId: "coffee-real-castlery-hugg-nesting-square-performance-basalt-closed",
             variantId: "not-a-real-variant",
             quantity: 1,
           },
