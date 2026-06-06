@@ -349,22 +349,42 @@ export default function CatalogPanel({ items, canEdit, onAddToRoom }: Props) {
         isCompared={selectedId ? compareIds.includes(selectedId) : false}
         onClose={() => setSelectedId(null)}
         onSetSize={handleSetSize}
-        onSetFinish={(finishId) => {
+        onSetFinish={(finishId, finish) => {
           if (!selectedId) return;
-          // Check if this finishId belongs to a sibling product (e.g. Hugg fabric switch)
+          const targetVariantId = finish.variantId ?? finishId;
+          const targetProductId = finish.productId;
+          if (targetProductId && targetProductId !== selectedId) {
+            const siblingItem = items.find((item) => item.id === targetProductId);
+            if (siblingItem) {
+              setSelectedId(siblingItem.id);
+              setSelectedFinishId(finishId);
+              setVariantSelectionByItem((prev) => ({ ...prev, [siblingItem.id]: targetVariantId }));
+              trackVariantIssues(resolveCatalogVariant(siblingItem, targetVariantId), {
+                surface: "catalog_detail_finish_picker",
+                requestedVariantId: targetVariantId,
+              });
+              setDetailPrefetchMap((prev) => ({
+                ...prev,
+                [siblingItem.id]: buildCatalogDetailView(siblingItem, targetVariantId),
+              }));
+              return;
+            }
+          }
+
+          // Check if this finish belongs to a sibling product (e.g. Hugg fabric switch)
           const currentSelected = items.find((item) => item.id === selectedId);
-          const isCurrentVariant = currentSelected?.variants.some((v) => v.id === finishId);
+          const isCurrentVariant = currentSelected?.variants.some((v) => v.id === targetVariantId);
           if (!isCurrentVariant) {
             const siblingItem = items.find(
-              (item) => item.id !== selectedId && item.variants.some((v) => v.id === finishId)
+              (item) => item.id !== selectedId && item.variants.some((v) => v.id === targetVariantId)
             );
             if (siblingItem) {
               setSelectedId(siblingItem.id);
               setSelectedFinishId(finishId);
-              setVariantSelectionByItem((prev) => ({ ...prev, [siblingItem.id]: finishId }));
+              setVariantSelectionByItem((prev) => ({ ...prev, [siblingItem.id]: targetVariantId }));
               setDetailPrefetchMap((prev) => ({
                 ...prev,
-                [siblingItem.id]: buildCatalogDetailView(siblingItem, finishId),
+                [siblingItem.id]: buildCatalogDetailView(siblingItem, targetVariantId),
               }));
               return;
             }
@@ -372,16 +392,16 @@ export default function CatalogPanel({ items, canEdit, onAddToRoom }: Props) {
           setSelectedFinishId(finishId);
           const selected = currentSelected;
           if (selected) {
-            trackVariantIssues(resolveCatalogVariant(selected, finishId), {
+            trackVariantIssues(resolveCatalogVariant(selected, targetVariantId), {
               surface: "catalog_detail_finish_picker",
-              requestedVariantId: finishId,
+              requestedVariantId: targetVariantId,
             });
           }
-          setVariantSelectionByItem((prev) => ({ ...prev, [selectedId]: finishId }));
+          setVariantSelectionByItem((prev) => ({ ...prev, [selectedId]: targetVariantId }));
           if (!selected) return;
           setDetailPrefetchMap((prev) => ({
             ...prev,
-            [selectedId]: buildCatalogDetailView(selected, finishId),
+            [selectedId]: buildCatalogDetailView(selected, targetVariantId),
           }));
         }}
         onAdd={(id, variantId) => {

@@ -2,10 +2,12 @@ import { inferCollectionType, shouldShowCollectionGrouping } from "@/lib/catalog
 
 type FinishOption = {
   id: string;
+  productId?: string;
+  variantId?: string;
   label: string;
   swatchHex?: string;
   swatchTextureUrl?: string;
-  materialType?: "Fabric" | "Leather" | "Wood";
+  materialType: "Fabric" | "Leather" | "Wood";
   collectionType?: string;
   finishCode?: string;
 };
@@ -13,7 +15,7 @@ type FinishOption = {
 type Props = {
   finishOptions: FinishOption[];
   activeFinishId?: string;
-  onSetFinish: (finishId: string) => void;
+  onSetFinish: (finishId: string, finish: FinishOption) => void;
 };
 
 export default function CatalogItemFinishPicker({ finishOptions, activeFinishId, onSetFinish }: Props) {
@@ -58,7 +60,7 @@ export default function CatalogItemFinishPicker({ finishOptions, activeFinishId,
         .filter((group) => group !== null) as Array<{
           collectionType: string;
           materialGroups: Array<{
-            materialType: "Fabric" | "Leather";
+            materialType: "Fabric" | "Leather" | "Wood";
             items: FinishOption[];
           }>;
         }>
@@ -91,7 +93,7 @@ export default function CatalogItemFinishPicker({ finishOptions, activeFinishId,
                   return (
                     <button
                       key={finish.id}
-                      onClick={() => onSetFinish(finish.id)}
+                      onClick={() => onSetFinish(finish.id, finish)}
                       data-testid={`catalog-finish-option-${finish.id}`}
                       title={finish.label}
                       aria-label={finish.label}

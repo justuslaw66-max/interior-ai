@@ -22,7 +22,7 @@ type Props = {
   onAdd: (id: string, variantId?: string) => void;
   onToggleCompare: (id: string) => void;
   onPreviewRelated: (id: string) => void;
-  onSetFinish: (finishId: string) => void;
+  onSetFinish: (finishId: string, finish: CatalogDetailView["finishOptions"][number]) => void;
   onSetSize?: (sizeId: string) => void;
 };
 

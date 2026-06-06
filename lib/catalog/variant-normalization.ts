@@ -177,6 +177,8 @@ export function hardenDuplicateImportedVariantLabels<
 export function hardenDuplicateFinishOptionLabels(
   options: Array<{
     id: string;
+    productId?: string;
+    variantId?: string;
     label: string;
     swatchHex?: string;
     swatchTextureUrl?: string;
@@ -187,6 +189,8 @@ export function hardenDuplicateFinishOptionLabels(
   }>
 ): Array<{
   id: string;
+  productId?: string;
+  variantId?: string;
   label: string;
   swatchHex?: string;
   swatchTextureUrl?: string;
@@ -205,6 +209,8 @@ export function hardenDuplicateFinishOptionLabels(
     const isDuplicate = (labelCounts.get(key) ?? 0) > 1;
     const base = {
       id: option.id,
+      productId: option.productId,
+      variantId: option.variantId,
       label: option.label,
       swatchHex: option.swatchHex,
       swatchTextureUrl: option.swatchTextureUrl,

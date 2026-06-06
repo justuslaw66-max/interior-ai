@@ -1,14 +1,14 @@
-import type { CatalogItemSchema } from "@/lib/catalog-schema";
-import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
-import { getCatalogMediaImageClass } from "@/lib/catalog/media-policy";
+import type { CatalogItemSchema } from "../catalog-schema";
+import { resolveCatalogVariant } from "./variant-resolver";
+import { getCatalogMediaImageClass } from "./media-policy";
 import {
   deriveVariantDisambiguator,
   hardenDuplicateFinishOptionLabels,
   inferMaterialTypeFromText,
   normalizeVariantCode,
-} from "@/lib/catalog/variant-normalization";
-import { CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE, HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE } from "@/lib/design-page-product-data";
-import { CATALOG_ITEMS } from "@/lib/catalog";
+} from "./variant-normalization";
+import { CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE, HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE } from "../design-page-product-data";
+import { CATALOG_ITEMS } from "../catalog";
 
 const CATEGORY_FALLBACK_THUMB_URL: Partial<Record<CatalogTopCategory, string>> = {
   accent_chair:
@@ -102,6 +102,8 @@ export type CatalogDetailView = {
   priceLabel?: string;
   finishOptions: {
     id: string;
+    productId?: string;
+    variantId?: string;
     label: string;
     swatchHex?: string;
     swatchTextureUrl?: string;
@@ -519,6 +521,8 @@ export function buildCatalogDetailView(item: CatalogItemSchema, variantId?: stri
                undefined);
           map.set(key, {
             id: variant.id,
+            productId: item.id,
+            variantId: variant.id,
             label: getFinishChipLabel(variant),
             swatchHex: variant.swatchHex ?? variant.colorHex,
             swatchTextureUrl,
@@ -529,7 +533,7 @@ export function buildCatalogDetailView(item: CatalogItemSchema, variantId?: stri
           });
         }
         return map;
-      }, new Map<string, { id: string; label: string; swatchHex?: string; swatchTextureUrl?: string; materialType: "Fabric" | "Leather" | "Wood"; collectionType?: string; finishCode?: string; qualifier: string }>())
+      }, new Map<string, { id: string; productId?: string; variantId?: string; label: string; swatchHex?: string; swatchTextureUrl?: string; materialType: "Fabric" | "Leather" | "Wood"; collectionType?: string; finishCode?: string; qualifier: string }>())
       .values()
   ));
 
@@ -563,8 +567,11 @@ export function buildCatalogDetailView(item: CatalogItemSchema, variantId?: stri
       );
       if (!alreadyPresent) {
         const fabricKey = `performance-${fab.code}`;
+        const siblingVariantId = siblingVariant?.id ?? "fallback";
         finishOptions.unshift({
-          id: siblingVariant?.id ?? `${siblingId}-fallback`,
+          id: `${siblingId}::${siblingVariantId}::fabric::${fab.code}`,
+          productId: siblingId,
+          variantId: siblingVariant?.id,
           label: fab.label,
           swatchHex: fab.hex,
           swatchTextureUrl: CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[fabricKey] ?? undefined,
