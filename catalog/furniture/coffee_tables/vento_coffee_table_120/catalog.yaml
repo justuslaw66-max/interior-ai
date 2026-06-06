@@ -1,4 +1,5 @@
 brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/vento-coffee-table"
 category: "coffee_table"
 
 product_family: "Vento"
@@ -120,7 +121,18 @@ authoring_notes:
 assets:
   asset_id: "coffee-real-castlery-vento-coffee-table-120"
   model_url: "/assets/models/coffee-real-castlery-vento-coffee-table-120.glb"
-  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1770256447/crusader/variants/44250004/Vento-Coffee-Table-120cm-Front_1-1770256444.png"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770256447/crusader/variants/44250004/Vento-Coffee-Table-120cm-Front_1-1770256444.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770256447/crusader/variants/44250004/Vento-Coffee-Table-120cm-Front_1-1770256444.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770625846/crusader/variants/44250004/Vento-Coffee-Table-120cm-Set_1-1770625844.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770625832/crusader/variants/44250004/Ollie-Storage-Chaise-Sectional-Sofa-Right-Facing-Moss-With-Vento-Coffee-Table-Set_1-1770625830.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770625923/crusader/variants/44250004/Ollie-Storage-Chaise-Sectional-Sofa-Left-Facing-Ivory-With-Vento-Coffee-Table-Set_1-1770625921.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770625846/crusader/variants/44250004/Vento-Coffee-Table-120cm-Det_3-1770625844.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770625846/crusader/variants/44250004/Vento-Coffee-Table-120cm-Det_2-1770625844.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770256447/crusader/variants/44250004/Vento-Coffee-Table-120cm-Angle-1770256444.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770256447/crusader/variants/44250004/Vento-Coffee-Table-120cm-Angle_1-1770256444.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770256446/crusader/variants/44250004/Vento-Coffee-Table-120cm-Side-1770256444.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770256500/crusader/variants/T44250004/Vento-Coffee-Table-120cm-Dim-1770256499.jpg"
 
 ai_flags:
   isStarterEligible: true
@@ -133,6 +145,13 @@ variants:
     size_label: "120x60"
     finish_code: "waterbase_natural_walnut"
     finish_label: "Waterbase Natural Walnut"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770256447/crusader/variants/44250004/Vento-Coffee-Table-120cm-Front_1-1770256444.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770256447/crusader/variants/44250004/Vento-Coffee-Table-120cm-Front_1-1770256444.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770625846/crusader/variants/44250004/Vento-Coffee-Table-120cm-Set_1-1770625844.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770625846/crusader/variants/44250004/Vento-Coffee-Table-120cm-Det_3-1770625844.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770256447/crusader/variants/44250004/Vento-Coffee-Table-120cm-Angle-1770256444.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770256446/crusader/variants/44250004/Vento-Coffee-Table-120cm-Side-1770256444.jpg"
     swatch_group: "wood_finish"
 
     price_usd: 599

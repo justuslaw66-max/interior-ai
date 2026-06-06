@@ -1,4 +1,5 @@
 brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/dawson-ottoman"
 category: "ottoman"
 
 product_family: "Dawson"
@@ -157,6 +158,15 @@ assets:
   asset_id: "sofa-real-castlery-dawson-ottoman"
   model_url: "/assets/models/sofa-real-castlery-dawson-ottoman.glb"
   thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1692451017/crusader/variants/54000132-NG4001/Dawson-Square-Ottoman-Front_-1692451014.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692591635/crusader/variants/54000132-NG4001/Dawson-Square-Ottoman-Beach-Linen-Square-Set_2-1692591632.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692451017/crusader/variants/54000132-NG4001/Dawson-Square-Ottoman-Front_-1692451014.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692591661/crusader/variants/54000132-NG4001/Dawson-Swivel-Armchair-With-Ottoman-Beach-Linen-Square-Set_1-1692591658.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692604001/crusader/variants/54000132-NG4001/Dawson-Pit-Sectional-Sofa-Square-Set_8-1692603997.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1702897291/crusader/variants/54000132-NG4001/Dawson-Extended-Sofa-With-Ottoman-Beach-Linen-Set_1-1702897291.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1702897009/crusader/variants/54000132-NG4001/Dawson-Swivel-Armchair-Copy-1702897009.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692591689/crusader/variants/54000132-NG4001/Dawson-Square-Ottoman-Det_1-1692591687.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692451016/crusader/variants/54000132-NG4001/Dawson-Square-Ottoman-Angle-1692451014.jpg"
 
 variants:
   - variant: "Dawson Ottoman / Slub Linen Weave (Navagio), Cream (Beach Linen) / 93cm"
@@ -218,6 +228,8 @@ variants:
     upholstery_code: "navagio_seagull"
     upholstery_label: "Slub Linen Weave (Navagio), Medium Grey (Seagull)"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1697602865/crusader/variants/54000132-NG4002/Dawson-Square-Ottoman-Seagull-Front-1697602863.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1697602865/crusader/variants/54000132-NG4002/Dawson-Square-Ottoman-Seagull-Front-1697602863.jpg"
     swatch_group: "upholstery_option"
     price_usd: 549
     price_band: "mid"
@@ -233,6 +245,8 @@ variants:
     upholstery_code: "performance_creamy_white"
     upholstery_label: "Performance Creamy White"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1720773769/crusader/variants/54000132C-PT4001/Dawson-Ottoman-Creamy-White-Front-1720773766.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1720773769/crusader/variants/54000132C-PT4001/Dawson-Ottoman-Creamy-White-Front-1720773766.jpg"
     swatch_group: "upholstery_option"
     price_usd: 549
     price_band: "mid"
@@ -248,6 +262,8 @@ variants:
     upholstery_code: "marcel_brilliant_white"
     upholstery_label: "Performance Textured Plain Weave (Marcel), Cream (Brilliant White)"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1721012055/crusader/variants/54000132C-PM4002/Dawson-Ottoman-Performance-Brilliant-White-Front-1721012052.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1721012055/crusader/variants/54000132C-PM4002/Dawson-Ottoman-Performance-Brilliant-White-Front-1721012052.jpg"
     swatch_group: "upholstery_option"
     price_usd: 549
     price_band: "mid"
@@ -263,6 +279,8 @@ variants:
     upholstery_code: "peyton_ivory"
     upholstery_label: "Performance Fleece (Peyton), Ivory (Cream)"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1721012023/crusader/variants/54000132C-PY4001/Dawson-Ottoman-Ivory-Front-1721012021.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1721012023/crusader/variants/54000132C-PY4001/Dawson-Ottoman-Ivory-Front-1721012021.jpg"
     swatch_group: "upholstery_option"
     price_usd: 549
     price_band: "mid"
@@ -278,6 +296,8 @@ variants:
     upholstery_code: "peyton_dove_grey"
     upholstery_label: "Performance Fleece (Peyton), Medium Grey (Dove Grey)"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1721011746/crusader/variants/54000132C-PY4002/Dawson-Ottoman-Dove-Grey-Front-1721011744.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1721011746/crusader/variants/54000132C-PY4002/Dawson-Ottoman-Dove-Grey-Front-1721011744.jpg"
     swatch_group: "upholstery_option"
     price_usd: 549
     price_band: "mid"
@@ -293,6 +313,8 @@ variants:
     upholstery_code: "marcel_smoke_grey"
     upholstery_label: "Performance Textured Plain Weave (Marcel), Smoke Grey"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1722411328/crusader/variants/54000141C-PM4001/Dawson-Ottoman-Performance-Smoke-Grey-Front-1722411326.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1722411328/crusader/variants/54000141C-PM4001/Dawson-Ottoman-Performance-Smoke-Grey-Front-1722411326.jpg"
     swatch_group: "upholstery_option"
     price_usd: 549
     price_band: "mid"
@@ -308,6 +330,8 @@ variants:
     upholstery_code: "peyton_moss"
     upholstery_label: "Performance Fleece (Peyton), Moss"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/w_1995,f_auto,q_auto,c_fit/v1776751773/pim/converting/1776751772433/Dawson-Small-Storage-Ottoman-Performance-Fleece-Moss-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/w_1995,f_auto,q_auto,c_fit/v1776751773/pim/converting/1776751772433/Dawson-Small-Storage-Ottoman-Performance-Fleece-Moss-Front.jpg"
     swatch_group: "upholstery_option"
     price_usd: 549
     price_band: "mid"
@@ -323,6 +347,8 @@ variants:
     upholstery_code: "peyton_cumin"
     upholstery_label: "Performance Fleece (Peyton), Caramel (Cumin)"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/w_1995,f_auto,q_auto,c_fit/v1776751840/pim/converting/1776751839091/Dawson-Small-Storage-Ottoman-Performance-Fleece-Caramel-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/w_1995,f_auto,q_auto,c_fit/v1776751840/pim/converting/1776751839091/Dawson-Small-Storage-Ottoman-Performance-Fleece-Caramel-Front.jpg"
     swatch_group: "upholstery_option"
     price_usd: 549
     price_band: "mid"
@@ -338,6 +364,8 @@ variants:
     upholstery_code: "infinity_boucle_ginger"
     upholstery_label: "Performance Infinity Boucle, Rust (Ginger)"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1721011575/crusader/variants/54000132C-IN4003/Dawson-Ottoman-Ginger-Front-1721011572.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1721011575/crusader/variants/54000132C-IN4003/Dawson-Ottoman-Ginger-Front-1721011572.jpg"
     swatch_group: "upholstery_option"
     price_usd: 549
     price_band: "mid"
@@ -353,6 +381,8 @@ variants:
     upholstery_code: "infinity_boucle_white_quartz"
     upholstery_label: "Performance Infinity Boucle, Light Grey (White Quartz)"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1721011556/crusader/variants/54000132C-IN4002/Dawson-Ottoman-White-Quartz-Front-1721011553.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1721011556/crusader/variants/54000132C-IN4002/Dawson-Ottoman-White-Quartz-Front-1721011553.jpg"
     swatch_group: "upholstery_option"
     price_usd: 549
     price_band: "mid"
@@ -369,6 +399,8 @@ variants:
     upholstery_code: "performance_boucle_cream"
     upholstery_label: "Performance Infinity Boucle, Cream"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773741458/crusader/variants/54000132C-IN4005/Dawson-Small-Storage-Ottoman-Cream-Front-1773741456.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773741458/crusader/variants/54000132C-IN4005/Dawson-Small-Storage-Ottoman-Cream-Front-1773741456.jpg"
     swatch_group: "upholstery_option"
     price_usd: 549
     price_band: "mid"
@@ -385,6 +417,8 @@ variants:
     upholstery_code: "performance_infinity_boucle_moss"
     upholstery_label: "Performance Infinity Boucle, Moss"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1774255348/crusader/variants/54000132C-IN4004/Dawson-Small-Storage-Ottoman-Moss-Front-1774255346.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1774255348/crusader/variants/54000132C-IN4004/Dawson-Small-Storage-Ottoman-Moss-Front-1774255346.jpg"
     swatch_group: "upholstery_option"
     price_usd: 549
     price_band: "mid"
@@ -401,6 +435,8 @@ variants:
     upholstery_code: "performance_genova_oat"
     upholstery_label: "Performance Linen Weave (Genova), Sand (Oat)"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773909178/crusader/variants/54000132C-PG4002/Dawson-Small-Storage-Ottoman-Performance-Genova-Oat-Front-1773909176.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773909178/crusader/variants/54000132C-PG4002/Dawson-Small-Storage-Ottoman-Performance-Genova-Oat-Front-1773909176.jpg"
     swatch_group: "upholstery_option"
     price_usd: 549
     price_band: "mid"
@@ -417,6 +453,8 @@ variants:
     upholstery_code: "performance_linen_weave_cream"
     upholstery_label: "Performance Linen Weave (Genova), Cream"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773909197/crusader/variants/54000132C-PG4003/Dawson-Small-Storage-Ottoman-Cream-Front-1773909195.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773909197/crusader/variants/54000132C-PG4003/Dawson-Small-Storage-Ottoman-Cream-Front-1773909195.jpg"
     swatch_group: "upholstery_option"
     price_usd: 549
     price_band: "mid"
@@ -433,6 +471,8 @@ variants:
     upholstery_code: "performance_linen_weave_light_grey"
     upholstery_label: "Performance Linen Weave (Genova), Light Grey"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773909218/crusader/variants/54000132C-PG4004/Dawson-Small-Storage-Ottoman-Light-Grey-Front-1773909216.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773909218/crusader/variants/54000132C-PG4004/Dawson-Small-Storage-Ottoman-Light-Grey-Front-1773909216.jpg"
     swatch_group: "upholstery_option"
     price_usd: 549
     price_band: "mid"
@@ -449,6 +489,8 @@ variants:
     upholstery_code: "performance_twill_pearl_beige"
     upholstery_label: "Performance Twill, Pearl Beige"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773902043/crusader/variants/54000132C-PT4002/Dawson-Small-Storage-Ottoman-Performance-Twill-Pearl-Beige-Front-1773902041.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773902043/crusader/variants/54000132C-PT4002/Dawson-Small-Storage-Ottoman-Performance-Twill-Pearl-Beige-Front-1773902041.jpg"
     swatch_group: "upholstery_option"
     price_usd: 549
     price_band: "mid"
@@ -465,6 +507,8 @@ variants:
     upholstery_code: "performance_twill_slate"
     upholstery_label: "Performance Twill, Slate"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773902060/crusader/variants/54000132C-PT4003/Dawson-Small-Storage-Ottoman-Performance-Twill-Slate-Front-1773902057.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773902060/crusader/variants/54000132C-PT4003/Dawson-Small-Storage-Ottoman-Performance-Twill-Slate-Front-1773902057.jpg"
     swatch_group: "upholstery_option"
     price_usd: 549
     price_band: "mid"
@@ -481,6 +525,8 @@ variants:
     upholstery_code: "performance_twill_moss"
     upholstery_label: "Performance Twill, Moss"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773902078/crusader/variants/54000132C-PT4004/Dawson-Small-Storage-Ottoman-Performance-Twill-Moss-Front-1773902076.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773902078/crusader/variants/54000132C-PT4004/Dawson-Small-Storage-Ottoman-Performance-Twill-Moss-Front-1773902076.jpg"
     swatch_group: "upholstery_option"
     price_usd: 549
     price_band: "mid"
@@ -497,6 +543,8 @@ variants:
     upholstery_code: "performance_twill_dove_grey"
     upholstery_label: "Performance Twill, Medium Grey"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773902094/crusader/variants/54000132C-PT4005/Dawson-Small-Storage-Ottoman-Performance-Twill-Dove-Grey-Front-1773902092.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773902094/crusader/variants/54000132C-PT4005/Dawson-Small-Storage-Ottoman-Performance-Twill-Dove-Grey-Front-1773902092.jpg"
     swatch_group: "upholstery_option"
     price_usd: 549
     price_band: "mid"
@@ -513,6 +561,8 @@ variants:
     upholstery_code: "greta_ivory"
     upholstery_label: "Washed Chenille, Cream"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1774255267/crusader/variants/54000132C-GR4001/Dawson-Small-Storage-Ottoman-Cream-Front-1774255265.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1774255267/crusader/variants/54000132C-GR4001/Dawson-Small-Storage-Ottoman-Cream-Front-1774255265.jpg"
     swatch_group: "upholstery_option"
     price_usd: 549
     price_band: "mid"
@@ -529,6 +579,8 @@ variants:
     upholstery_code: "washed_chenille_sand"
     upholstery_label: "Washed Chenille, Sand"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1774255286/crusader/variants/54000132C-GR4002/Dawson-Small-Storage-Ottoman-Sand-Front-1774255284.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1774255286/crusader/variants/54000132C-GR4002/Dawson-Small-Storage-Ottoman-Sand-Front-1774255284.jpg"
     swatch_group: "upholstery_option"
     price_usd: 549
     price_band: "mid"
@@ -545,6 +597,8 @@ variants:
     upholstery_code: "greta_mustard_brown"
     upholstery_label: "Washed Chenille, Caramel"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1774255300/crusader/variants/54000132C-GR4003/Dawson-Small-Storage-Ottoman-Caramel-Front-1774255298.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1774255300/crusader/variants/54000132C-GR4003/Dawson-Small-Storage-Ottoman-Caramel-Front-1774255298.jpg"
     swatch_group: "upholstery_option"
     price_usd: 549
     price_band: "mid"
@@ -561,6 +615,8 @@ variants:
     upholstery_code: "greta_moss"
     upholstery_label: "Washed Chenille, Moss"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1774255317/crusader/variants/54000132C-GR4004/Dawson-Small-Storage-Ottoman-Moss-Front-1774255315.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1774255317/crusader/variants/54000132C-GR4004/Dawson-Small-Storage-Ottoman-Moss-Front-1774255315.jpg"
     swatch_group: "upholstery_option"
     price_usd: 549
     price_band: "mid"

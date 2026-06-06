@@ -1,4 +1,5 @@
 brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/seb-coffee-table-with-storage"
 category: "coffee_table"
 
 product_family: "Seb"
@@ -132,7 +133,9 @@ authoring_notes:
 assets:
   asset_id: "coffee-real-castlery-seb-storage-120"
   model_url: "/assets/models/coffee-real-castlery-seb-storage-120.glb"
-  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1768897928/crusader/variants/40550392/Seb-Coffee-Table-90cm-Front-1768897926.png"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1623727578/crusader/variants/40550098/Seb-Coffee-Table-Front.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1623727578/crusader/variants/40550098/Seb-Coffee-Table-Front.jpg"
 
 ai_flags:
   isStarterEligible: true
@@ -145,6 +148,9 @@ variants:
     size_label: "120x70"
     finish_code: "muted_honey_wire_brushed"
     finish_label: "Muted Honey"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1623727578/crusader/variants/40550098/Seb-Coffee-Table-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1623727578/crusader/variants/40550098/Seb-Coffee-Table-Front.jpg"
     swatch_group: "wood_finish"
 
     price_usd: 699

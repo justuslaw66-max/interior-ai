@@ -1,4 +1,5 @@
 brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/dawson-3-seater-sofa"
 category: "sofa"
 
 product_family: "Dawson"
@@ -156,6 +157,13 @@ assets:
   asset_id: "sofa-real-castlery-dawson-3s"
   model_url: "/assets/models/sofa-real-castlery-dawson-3s.glb"
   thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1634716861/crusader/variants/T50440986-NG4001/Dawson-3-Seater-Sofa-Beach-Linen-Front.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1640249245/crusader/variants/T50440986-NG4001/Dawson-Sofa-With-Ottoman-Beach-Linen-Square-Set_5.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1634716861/crusader/variants/T50440986-NG4001/Dawson-3-Seater-Sofa-Beach-Linen-Front.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1641546342/crusader/variants/T50440986-NG4001/Dawson-Chaise-Sectional-Sofa-Beach-Linen-Det_1.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1634716861/crusader/variants/T50440986-NG4001/Dawson-3-Seater-Sofa-Beach-Linen-Angle.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1634716860/crusader/variants/T50440986-NG4001/Dawson-3-Seater-Sofa-Beach-Linen-Side.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1634716879/crusader/variants/T50440986-NG4001/Dawson-3-Seater-Sofa-Beach-Linen-Back.jpg"
 
 variants:
   - variant: "Dawson 3 Seater Sofa / Slub Linen Weave (Navagio), Cream (Beach Linen)"

@@ -6,6 +6,9 @@ type CatalogYamlRecord = Record<string, unknown>;
 function mapCatalogYaml(yaml: CatalogYamlRecord) {
   return {
     brand: yaml.brand,
+    retailer: yaml.retailer,
+    source_url: yaml.source_url,
+    authoring_notes: yaml.authoring_notes,
     category: yaml.category,
     assets: yaml.assets,
     presetLabel: yaml.preset_label,

@@ -1,4 +1,5 @@
 brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/madison-ottoman"
 category: "ottoman"
 
 product_family: "Madison"
@@ -61,6 +62,13 @@ assets:
   asset_id: "sofa-real-castlery-madison-ottoman"
   model_url: "/assets/models/sofa-real-castlery-madison-ottoman.glb"
   thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1645673995/crusader/variants/50440732-AM4001/Madison-Ottoman-Bisque-Front.png"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1645673995/crusader/variants/50440732-AM4001/Madison-Ottoman-Bisque-Front.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1645674049/crusader/variants/50440732-AM4001/Madison-Ottoman-Bisque-Set_1.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1645674166/crusader/variants/50440732-AM4001/Madison-Armchair-With-Ottoman-Bisque-Square-Set_4.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1645673995/crusader/variants/50440732-AM4001/Madison-Ottoman-Bisque-Angle.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1645673995/crusader/variants/50440732-AM4001/Madison-Ottoman-Bisque-Side.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1645674203/crusader/variants/50440732-AM4001/Madison-Ottoman-Bisque-Det_1.jpg"
 
 variants:
   - variant: "Bisque (Fabric)"

@@ -1,4 +1,5 @@
 brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/dawson-wide-chaise-sectional-sofa"
 category: "sectional_sofa"
 
 product_family: "Dawson"
@@ -155,6 +156,8 @@ assets:
   asset_id: "sofa-real-castlery-dawson-wide-chaise-sectional-left"
   model_url: "/assets/models/sofa-real-castlery-dawson-wide-chaise-sectional-left.glb"
   thumbnail_url: "/assets/thumbs/sofa-real-castlery-dawson-wide-chaise-sectional-left.png"
+  gallery_images:
+    - "/assets/thumbs/sofa-real-castlery-dawson-wide-chaise-sectional-left.png"
 
 variants:
   - variant: "Dawson Wide Chaise Sectional Sofa (Left Facing) / Slub Linen Weave (Navagio), Cream (Beach Linen)"

@@ -1,4 +1,5 @@
 brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/dawson-pit-sectional-sofa"
 category: "sectional_sofa"
 
 product_family: "Dawson"
@@ -148,6 +149,15 @@ assets:
   asset_id: "sofa-real-castlery-dawson-pit-sectional"
   model_url: "/assets/models/sofa-real-castlery-dawson-pit-sectional.glb"
   thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1709779174/crusader/variants/AS-000379-NG4001/Dawson-Pit-Sectional-Sofa-Front_1_-1709779171.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1722580875/crusader/variants/AS-000533-LE4020/Dawson-Leather-Pit-Sectional-Sofa-Square-Set_2-1722580872.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1715669133/crusader/variants/AS-000533-LE4020/Dawson-Pit-Sectional-Sofa-Cocoa-Angle-1715669132.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1722580875/crusader/variants/AS-000533-LE4020/Dawson-Leather-Pit-Sectional-Sofa-Square-Set_1-1722580872.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1722580895/crusader/variants/AS-000533-LE4020/Dawson-Leather-L-Shape-Sectional-Sofa-Square-Det_1-1722580893.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1715669132/crusader/variants/AS-000533-LE4020/Dawson-Pit-Sectional-Sofa-Cocoa-Angle_1-1715669132.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1715669132/crusader/variants/AS-000533-LE4020/Dawson-Pit-Sectional-Sofa-Cocoa-Front-1715669132.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1715669132/crusader/variants/AS-000533-LE4020/Dawson-Pit-Sectional-Sofa-Cocoa-Side-1715669132.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1715669132/crusader/variants/AS-000533-LE4020/Dawson-Pit-Sectional-Sofa-Cocoa-Back-1715669132.jpg"
 
 variants:
   - variant: "Dawson Pit-Sectional Sofa / Slub Linen Weave (Navagio), Medium Grey (Seagull)"

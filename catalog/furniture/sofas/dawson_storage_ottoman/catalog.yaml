@@ -1,4 +1,5 @@
 brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/dawson-storage-ottoman"
 category: "ottoman"
 
 product_family: "Dawson"
@@ -255,6 +256,8 @@ variants:
     model_asset_id: "sofa-real-castlery-dawson-storage-ottoman"
     model_url: "/assets/models/sofa-real-castlery-dawson-storage-ottoman-closed.glb"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692451017/crusader/variants/54000132-NG4001/Dawson-Square-Ottoman-Front_-1692451014.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692451017/crusader/variants/54000132-NG4001/Dawson-Square-Ottoman-Front_-1692451014.jpg"
     swatch_group: "upholstery_option"
     collection_type: "all_materials"
     price_usd: 549
@@ -272,6 +275,8 @@ variants:
     model_asset_id: "sofa-real-castlery-dawson-storage-ottoman"
     model_url: "/assets/models/sofa-real-castlery-dawson-storage-ottoman-114-closed.glb"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692451017/crusader/variants/54000132-NG4001/Dawson-Square-Ottoman-Front_-1692451014.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692451017/crusader/variants/54000132-NG4001/Dawson-Square-Ottoman-Front_-1692451014.jpg"
     swatch_group: "upholstery_option"
     collection_type: "all_materials"
     price_usd: 649

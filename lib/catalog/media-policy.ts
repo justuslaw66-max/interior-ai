@@ -51,9 +51,9 @@ export const CATALOG_MEDIA_PRESENTATION_PRESETS: Record<CatalogMediaSurface, Cat
     minLifestyleImages: 0,
   },
   catalog_detail_gallery: {
-    objectFitClass: "object-cover",
+    objectFitClass: "object-contain",
     objectPositionClass: "object-center",
-    imageTransformClass: "scale-125",
+    imageTransformClass: "",
     minGalleryImages: 4,
     minLifestyleImages: 1,
   },

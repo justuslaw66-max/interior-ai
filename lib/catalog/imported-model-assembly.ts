@@ -49,6 +49,9 @@ export type ImportedConfigurationEntry = {
 
 export type ImportedModelCatalog = {
   brand?: string;
+  retailer?: string;
+  source_url?: string;
+  sourceUrl?: string;
   productName?: string;
   productFamily?: string;
   variant?: string;
@@ -131,6 +134,12 @@ export type ImportedModelCatalog = {
     };
   }>;
   bundleMetadata?: unknown;
+  authoring_notes?: {
+    source_url?: string;
+  };
+  authoringNotes?: {
+    sourceUrl?: string;
+  };
   variants?: Array<{
     variant?: string;
     size_label?: string;
@@ -833,8 +842,14 @@ export function shouldRefreshImportedCatalogItem(
   const existingPriceHint =
     existing?.commerce.type === "affiliate" ? Number(existing.commerce.data.priceHint ?? 0) : 0;
   const existingVariantPipelineRevision = String(existing?.metadata?.importedVariantPipelineRevision ?? "");
+  const yamlCategory = option.catalog?.category;
+  const isKnownYamlCategory = Boolean(
+    yamlCategory && Object.prototype.hasOwnProperty.call(CATEGORY_DEFAULTS, yamlCategory)
+  );
   const inferredCategory = inferImportedCategoryFromProductId(option.id);
-  const expectedCategory = inferredCategory ?? existing?.category;
+  const expectedCategory = (isKnownYamlCategory ? (yamlCategory as ProductCategory) : undefined)
+    ?? inferredCategory
+    ?? existing?.category;
   const categoryMismatch = Boolean(existing && expectedCategory && existing.category !== expectedCategory);
 
   return (
@@ -877,6 +892,22 @@ function resolveImportedThumbUrl(imported: ImportedModelOption, productId: strin
     imported.thumbUrl ??
     `/assets/thumbs/${productId}.png`
   );
+}
+
+function resolveImportedSourceUrl(yamlCatalog: ImportedModelCatalog | null | undefined): string | null {
+  const candidates = [
+    yamlCatalog?.source_url,
+    yamlCatalog?.sourceUrl,
+    yamlCatalog?.authoring_notes?.source_url,
+    yamlCatalog?.authoringNotes?.sourceUrl,
+  ];
+
+  for (const candidate of candidates) {
+    const value = String(candidate ?? "").trim();
+    if (/^https?:\/\//i.test(value)) return value;
+  }
+
+  return null;
 }
 
 function inferImportedCategoryFromProductId(productId: string): ProductCategory | undefined {
@@ -966,6 +997,12 @@ export function buildImportedCatalogItem({
   const fallbackPriceHint = template.commerce.type === "affiliate" ? (template.commerce.data.priceHint ?? 0) : 0;
   const importedPriceHint =
     Number.isFinite(resolvedPriceUsd) && resolvedPriceUsd > 0 ? resolvedPriceUsd : fallbackPriceHint;
+  const importedSourceUrl = resolveImportedSourceUrl(yamlCatalog);
+  const importedRetailer =
+    String(yamlCatalog?.retailer ?? "").trim() ||
+    (template.commerce.type === "affiliate"
+      ? template.commerce.data.retailer
+      : "External retailer");
 
   const preferredVariants = importedVariantsByProductId[productId] ?? [];
   const sharedUpholsteryOptions = Array.isArray(yamlCatalog?.upholstery_options)
@@ -1030,11 +1067,8 @@ export function buildImportedCatalogItem({
     commerce: {
       type: "affiliate",
       data: {
-        url: template.commerce.type === "affiliate" ? template.commerce.data.url : "",
-        retailer:
-          template.commerce.type === "affiliate"
-            ? template.commerce.data.retailer
-            : "External retailer",
+        url: importedSourceUrl ?? (template.commerce.type === "affiliate" ? template.commerce.data.url : ""),
+        retailer: importedRetailer,
         priceHint: importedPriceHint,
       },
     },

@@ -1,4 +1,5 @@
 brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/peri-coffee-table"
 category: "coffee_table"
 
 product_family: "Peri"
@@ -135,7 +136,18 @@ authoring_notes:
 assets:
   asset_id: "coffee-real-castlery-peri-120"
   model_url: "/assets/models/coffee-real-castlery-peri-120.glb"
-  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1641292754/crusader/variants/50850023/Peri-Coffee-Table-Front.png"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1641292754/crusader/variants/50850023/Peri-Coffee-Table-Front.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1641292754/crusader/variants/50850023/Peri-Coffee-Table-Front.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1655220638/crusader/variants/50850023/peri-coffee-table-1655220635.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1655201521/crusader/variants/50850023/Peri-Coffee-Table-001-1655201517.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1641292796/crusader/variants/50850023/Peri-Coffee-Table-Angle.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1641292795/crusader/variants/50850023/Peri-Coffee-Table-Back.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1639132792/crusader/variants/50850023/Peri-Coffee-Table-Shared2.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1647577151/crusader/variants/50850023/Peri-coffee-table-shared3.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1636707843/crusader/variants/50850023/Peri-Coffee-Table-Shared1.jpg"
+    - "https://res.cloudinary.com/castlery/image/upload/v1762244478/knight/USP/Refresh%202025/Peri-Coffee-Table-Square-Det_2.jpg"
+    - "https://res.cloudinary.com/castlery/image/upload/v1762244553/knight/USP/Refresh%202025/Peri-Coffee-Table-Square-Det_1_2.jpg"
 
 ai_flags:
   isStarterEligible: true
@@ -167,6 +179,13 @@ variants:
     size_label: "120x70"
     finish_code: "walnut_dark_grey_steel"
     finish_label: "Walnut / Dark Grey Steel"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1641292754/crusader/variants/50850023/Peri-Coffee-Table-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1641292754/crusader/variants/50850023/Peri-Coffee-Table-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1655220638/crusader/variants/50850023/peri-coffee-table-1655220635.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1655201521/crusader/variants/50850023/Peri-Coffee-Table-001-1655201517.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1641292796/crusader/variants/50850023/Peri-Coffee-Table-Angle.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1641292795/crusader/variants/50850023/Peri-Coffee-Table-Back.jpg"
     swatch_group: "finish"
 
     price_usd: 549

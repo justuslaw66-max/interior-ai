@@ -3,6 +3,8 @@ import { expect, type Locator, type Page } from "@playwright/test";
 export const DEFAULT_CATEGORY_TABS: RegExp[] = [
   /^Sofa \(/,
   /^Accent Chair \(/,
+  /^Side Tables \(/,
+  /^Dining Bench \(/,
   /^Ottoman \(/,
   /^Decor \(/,
   /^Rug \(/,
@@ -11,7 +13,6 @@ export const DEFAULT_CATEGORY_TABS: RegExp[] = [
   /^TV Console \(/,
   /^Sideboard \(/,
   /^Floor Lamp \(/,
-  /^Benches \(/,
 ];
 
 export async function waitForCatalogReady(page: Page): Promise<boolean> {
@@ -217,13 +218,13 @@ export async function openCatalogPreview(
   const ready = await waitForCatalogReady(page);
   if (!ready) return false;
 
-  const cardToggle = page.getByTestId(`catalog-compare-toggle-${productId}`);
+  const previewButton = page.getByTestId(`catalog-preview-${productId}`);
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const searched = await fillCatalogSearch(page, searchTerm);
     if (!searched) continue;
 
-    if (await cardToggle.isVisible().catch(() => false)) {
-      await cardToggle.locator("xpath=../..").getByRole("button", { name: "Preview" }).click().catch(() => null);
+    if (await previewButton.isVisible().catch(() => false)) {
+      await previewButton.click().catch(() => null);
       return true;
     }
 
@@ -231,8 +232,8 @@ export async function openCatalogPreview(
       const tab = page.getByRole("button", { name: tabName });
       if (!(await tab.isVisible().catch(() => false))) continue;
       await tab.click().catch(() => null);
-      if (await cardToggle.isVisible().catch(() => false)) {
-        await cardToggle.locator("xpath=../..").getByRole("button", { name: "Preview" }).click().catch(() => null);
+      if (await previewButton.isVisible().catch(() => false)) {
+        await previewButton.click().catch(() => null);
         return true;
       }
     }

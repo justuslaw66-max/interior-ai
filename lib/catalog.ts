@@ -25,6 +25,7 @@ export type ProductCategory =
   | "sofa"
   | "ottoman"
   | "coffee_table"
+  | "side_table"
   | "dining_table"
   | "dining_bench"
   | "rug"
@@ -87,7 +88,7 @@ const LEGACY_THUMB_URL_OVERRIDES: Record<string, string> = {
   "sofa-real-castlery-ollie-storage-ottoman": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1768210734/crusader/variants/AS-001017-GR4001/Ollie-Storage-Ottoman-Iovry-Front-1768210732.jpg",
 
   // ========== IMPORTED CASTLERY DINING (Harvested from Castlery Website) ==========
-  "dining-real-castlery-sloane-travertine-180": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1723776680/crusader/variants/AS-000564/Sloane-Travertine-Dining-Table-180cm-Angle-1723776679.png",
+  "dining-real-castlery-sloane-travertine-180": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723776680/crusader/variants/AS-000564/Sloane-Travertine-Dining-Table-180cm-Angle-1723776679.jpg",
   "dining-real-castlery-sloane-bench-150-no-cushion": "/assets/thumbs/dining-real-castlery-sloane-bench-150-no-cushion.png",
   "dining-real-castlery-sloane-bench-150-leather-cushion": "/assets/thumbs/dining-real-castlery-sloane-bench-150-leather-cushion.png",
   "dining-real-castlery-sloane-bench-180-no-cushion": "/assets/thumbs/dining-real-castlery-sloane-bench-180-no-cushion.png",
@@ -118,30 +119,30 @@ const LEGACY_THUMB_URL_OVERRIDES: Record<string, string> = {
 
   // ========== DINING TABLES - BRIGHTON, KELSEY, FORMA ==========
   // ========== DINING TABLES - BRIGHTON, KELSEY, FORMA, CASA, SAWYER ==========
-  "dining-real-castlery-brighton-oval-180": "/assets/thumbs/dining-real-castlery-brighton-oval-180.png",
+  "dining-real-castlery-brighton-oval-180": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1638151292/crusader/variants/52460074/Brighton-Oval-Dining-Table-Front.jpg",
   "dining-real-castlery-kelsey-rectangle-200": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1693799971/crusader/variants/AS-000519/Kelsey-Rectangle-Dining-Table-Front.png",
   "dining-real-castlery-forma-round-150": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1693799971/crusader/variants/AS-000520/Forma-Round-Dining-Table-Front.png",
   "dining-real-castlery-casa-oval-180": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1693799971/crusader/variants/AS-000521/Casa-Oval-Dining-Table-Front.png",
   "dining-real-castlery-sawyer-rectangle-200": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1693799971/crusader/variants/AS-000522/Sawyer-Rectangle-Dining-Table-Front.png",
-  "dining-real-castlery-kelsey-marble-160-walnut": "/assets/thumbs/dining-real-castlery-kelsey-marble-160.png",
-  "dining-real-castlery-kelsey-marble-160-white-wash": "/assets/thumbs/dining-real-castlery-kelsey-marble-160.png",
-  "dining-real-castlery-kelsey-marble-180": "/assets/thumbs/dining-real-castlery-kelsey-marble-180.png",
-  "dining-real-castlery-forma-round-90-walnut": "/assets/thumbs/dining-real-castlery-forma-round-90.png",
-  "dining-real-castlery-forma-oval-150-walnut": "/assets/thumbs/dining-real-castlery-forma-oval-150.png",
-  "dining-real-castlery-sloane-travertine-220": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1723776680/crusader/variants/AS-000564/Sloane-Travertine-Dining-Table-180cm-Angle-1723776679.png",
+  "dining-real-castlery-kelsey-marble-160-walnut": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1624443066/crusader/variants/52460082/Kelsey-Marble-Dining-Table-160cm-Walnut-Stain-Front.jpg",
+  "dining-real-castlery-kelsey-marble-160-white-wash": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660199612/crusader/variants/52460092/Kelsey-Marble-Dining-Table-160-Natural-Front-1660199609.jpg",
+  "dining-real-castlery-kelsey-marble-180": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660199639/crusader/variants/52460093/Kelsey-Marble-Dining-Table-180-Natural-Front-1660199637.jpg",
+  "dining-real-castlery-forma-round-90-walnut": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769049964/crusader/variants/AS-001037-WA/Forma-Round-Dining-Table-90cm-Walnut-Front-1769049962.jpg",
+  "dining-real-castlery-forma-oval-150-walnut": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050317/crusader/variants/AS-001039-WA/Forma-Oval-Dining-Table-150cm-Walnut-Front-1769050315.jpg",
+  "dining-real-castlery-sloane-travertine-220": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723776680/crusader/variants/AS-000564/Sloane-Travertine-Dining-Table-180cm-Angle-1723776679.jpg",
   "dining-real-castlery-casa-dining-table-154": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1756455069/crusader/variants/40550342/Casa-Rectangular-Dining-Table-154cm-Angle_1-1756455067.png",
   "dining-real-castlery-sawyer-rectangular-coffee-table-120": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1692436666/crusader/variants/50220010/Sawyer-Rectangular-Coffee-Table-120cm_-Angle-1692436664.png",
 
   // ========== COFFEE TABLES - HARPER, SEB, PERI, VENTO, CASA ==========
-  "coffee-real-castlery-harper-marble-rectangular": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1741077857/crusader/variants/40550279/Harper-Marble-Rectangular-Coffee-Table_-_Chestnut-Front-1741077855.png",
-  "coffee-real-castlery-harper-marble-round": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1741077787/crusader/variants/40550280/Harper-Marble-Round-Coffee-Table_-_Chestnut-Front-1741077785.png",
+  "coffee-real-castlery-harper-marble-rectangular": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741077857/crusader/variants/40550279/Harper-Marble-Rectangular-Coffee-Table_-_Chestnut-Front-1741077855.jpg",
+  "coffee-real-castlery-harper-marble-round": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741077787/crusader/variants/40550280/Harper-Marble-Round-Coffee-Table_-_Chestnut-Front-1741077785.jpg",
   "coffee-real-castlery-harper-marble-side": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1740018494/crusader/variants/40550278/Harper-Marble-Side-Table_-_Chestnut-Front-1740018492.png",
   "coffee-real-castlery-harper-marble-storage-side": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1740019462/crusader/variants/40550291/Harper-Marble-Storage-Side-Table_-_Chestnut-Front-1740019460.png",
   "coffee-real-castlery-seb-rectangular-marble": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1739498139/crusader/variants/40550283/Seb-Rectangular-Marble-Coffee-Table-Front-1739498136.png",
   "coffee-real-castlery-seb-round-marble": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1739498073/crusader/variants/40550282/Seb-Round-Marble-Coffee-Table-Front-1739498071.png",
-  "coffee-real-castlery-seb-storage": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1768897928/crusader/variants/40550392/Seb-Coffee-Table-90cm-Front-1768897926.png",
-  "coffee-real-castlery-peri": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1641292754/crusader/variants/50850023/Peri-Coffee-Table-Front.png",
-  "coffee-real-castlery-vento-120": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1770256447/crusader/variants/44250004/Vento-Coffee-Table-120cm-Front_1-1770256444.png",
+  "coffee-real-castlery-seb-storage": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1768897928/crusader/variants/40550392/Seb-Coffee-Table-90cm-Front-1768897926.jpg",
+  "coffee-real-castlery-peri": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1641292754/crusader/variants/50850023/Peri-Coffee-Table-Front.jpg",
+  "coffee-real-castlery-vento-120": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770256447/crusader/variants/44250004/Vento-Coffee-Table-120cm-Front_1-1770256444.jpg",
   "coffee-real-castlery-casa-round-85": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1689234557/crusader/variants/40550226/Casa-Round-Coffee-Table-Front-1689234555.png",
 
   // ========== TV CONSOLES - SAWYER, SEB, SLOANE, CASA, VENTO ==========
@@ -161,25 +162,33 @@ const LEGACY_THUMB_URL_OVERRIDES: Record<string, string> = {
   "storage-real-castlery-sawyer-sideboard-180cm": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1673927310/crusader/variants/50220001/Sawyer-TV-Console-Angle-1673927308.png",
 
   // ========== COFFEE TABLES - HUGG NESTING ==========
-  "coffee-real-castlery-hugg-nesting-square": "/assets/thumbs/coffee-real-castlery-hugg-nesting-square-performance-basalt-closed.png",
+  "coffee-real-castlery-hugg-nesting-square": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729564998/crusader/variants/AS-000635-AR4002-NA/Hugg-Square-Coffee-Table-Natural-Performance-Basalt-Front-1729564995.jpg",
 
   // ========== COFFEE TABLES - CARD THUMB FALLBACKS (exact catalog IDs) ==========
-  "coffee-real-castlery-harper-marble-rectangular-120": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1741077857/crusader/variants/40550279/Harper-Marble-Rectangular-Coffee-Table_-_Chestnut-Front-1741077855.png",
-  "coffee-real-castlery-harper-marble-round-915": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1741077787/crusader/variants/40550280/Harper-Marble-Round-Coffee-Table_-_Chestnut-Front-1741077785.png",
-  "coffee-real-castlery-peri-120": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1641292754/crusader/variants/50850023/Peri-Coffee-Table-Front.png",
-  "coffee-real-castlery-seb-storage-120": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1768897928/crusader/variants/40550392/Seb-Coffee-Table-90cm-Front-1768897926.png",
-  "coffee-real-castlery-seb-storage-90": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1768897928/crusader/variants/40550392/Seb-Coffee-Table-90cm-Front-1768897926.png",
-  "coffee-real-castlery-vento-coffee-table-120": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1770256447/crusader/variants/44250004/Vento-Coffee-Table-120cm-Front_1-1770256444.png",
-  "coffee-real-castlery-hugg-nesting-square-performance-basalt-closed": "/assets/thumbs/coffee-real-castlery-hugg-nesting-square-performance-basalt-closed.png",
-  "coffee-real-castlery-hugg-nesting-square-performance-basalt-opened": "/assets/thumbs/coffee-real-castlery-hugg-nesting-square-performance-basalt-opened.png",
-  "coffee-real-castlery-hugg-nesting-square-performance-dune-closed": "/assets/thumbs/coffee-real-castlery-hugg-nesting-square-performance-dune-closed.png",
-  "coffee-real-castlery-hugg-nesting-square-performance-dune-opened": "/assets/thumbs/coffee-real-castlery-hugg-nesting-square-performance-dune-opened.png",
+  "coffee-real-castlery-harper-marble-rectangular-120": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741077857/crusader/variants/40550279/Harper-Marble-Rectangular-Coffee-Table_-_Chestnut-Front-1741077855.jpg",
+  "coffee-real-castlery-harper-marble-round-915": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741077787/crusader/variants/40550280/Harper-Marble-Round-Coffee-Table_-_Chestnut-Front-1741077785.jpg",
+  "coffee-real-castlery-peri-120": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1641292754/crusader/variants/50850023/Peri-Coffee-Table-Front.jpg",
+  "coffee-real-castlery-seb-storage-120": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1623727578/crusader/variants/40550098/Seb-Coffee-Table-Front.jpg",
+  "coffee-real-castlery-seb-storage-90": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1768897928/crusader/variants/40550392/Seb-Coffee-Table-90cm-Front-1768897926.jpg",
+  "coffee-real-castlery-vento-coffee-table-120": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770256447/crusader/variants/44250004/Vento-Coffee-Table-120cm-Front_1-1770256444.jpg",
+  "coffee-real-castlery-hugg-nesting-square-performance-basalt-closed": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729564998/crusader/variants/AS-000635-AR4002-NA/Hugg-Square-Coffee-Table-Natural-Performance-Basalt-Front-1729564995.jpg",
+  "coffee-real-castlery-hugg-nesting-square-performance-basalt-opened": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729564998/crusader/variants/AS-000635-AR4002-NA/Hugg-Square-Coffee-Table-Natural-Performance-Basalt-Front-1729564995.jpg",
+  "coffee-real-castlery-hugg-nesting-square-performance-dune-closed": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729564013/crusader/variants/AS-000635-AR4001-NA/Hugg-Square-Coffee-Table-Natural-Performance-Dune_-Front-1729564011.jpg",
+  "coffee-real-castlery-hugg-nesting-square-performance-dune-opened": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729564013/crusader/variants/AS-000635-AR4001-NA/Hugg-Square-Coffee-Table-Natural-Performance-Dune_-Front-1729564011.jpg",
+  "coffee-real-castlery-hugg-nesting-rectangular-performance-basalt-closed": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729496469/crusader/variants/AS-000633-AR4002-CT/Hugg-Rectangular-Coffee-Table-Chestnut-Performance-Basalt-Front-1729496467.jpg",
+  "coffee-real-castlery-hugg-nesting-rectangular-performance-basalt-opened": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729496469/crusader/variants/AS-000633-AR4002-CT/Hugg-Rectangular-Coffee-Table-Chestnut-Performance-Basalt-Front-1729496467.jpg",
+  "coffee-real-castlery-hugg-nesting-rectangular-performance-dune-closed": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729561925/crusader/variants/AS-000633-AR4001-CT/Hugg-Rectangular-Coffee-Table-Chestnut-Performance-Dune-Front-1729561922.jpg",
+  "coffee-real-castlery-hugg-nesting-rectangular-performance-dune-opened": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729561925/crusader/variants/AS-000633-AR4001-CT/Hugg-Rectangular-Coffee-Table-Chestnut-Performance-Dune-Front-1729561922.jpg",
+  "coffee-real-castlery-hugg-nesting-side-table-performance-basalt-closed": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729837267/crusader/variants/AS-000634-AR4002-CT/Hugg-Nesting-Side-Table-Chestnut-Performance-Basalt-Front-1729837264.jpg",
+  "coffee-real-castlery-hugg-nesting-side-table-performance-basalt-opened": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729837267/crusader/variants/AS-000634-AR4002-CT/Hugg-Nesting-Side-Table-Chestnut-Performance-Basalt-Front-1729837264.jpg",
+  "coffee-real-castlery-hugg-nesting-side-table-performance-dune-closed": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729837371/crusader/variants/AS-000634-AR4001-CT/Hugg-Nesting-Side-Table-Chestnut-Performance-Dune-Front-1729837369.jpg",
+  "coffee-real-castlery-hugg-nesting-side-table-performance-dune-opened": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729837371/crusader/variants/AS-000634-AR4001-CT/Hugg-Nesting-Side-Table-Chestnut-Performance-Dune-Front-1729837369.jpg",
 
   // ========== DINING TABLES - CARD THUMB FALLBACKS (exact catalog IDs) ==========
-  "dining-real-castlery-forma-oval-150": "/assets/thumbs/dining-real-castlery-forma-oval-150.png",
-  "dining-real-castlery-forma-round-120": "/assets/thumbs/dining-real-castlery-forma-round-120.png",
-  "dining-real-castlery-forma-round-90": "/assets/thumbs/dining-real-castlery-forma-round-90.png",
-  "dining-real-castlery-kelsey-marble-160": "/assets/thumbs/dining-real-castlery-kelsey-marble-160.png",
+  "dining-real-castlery-forma-oval-150": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050317/crusader/variants/AS-001039-WA/Forma-Oval-Dining-Table-150cm-Walnut-Front-1769050315.jpg",
+  "dining-real-castlery-forma-round-120": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050193/crusader/variants/AS-001038-WA/Forma-Round-Dining-Table-120cm-Walnut-Front-1769050191.jpg",
+  "dining-real-castlery-forma-round-90": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769049964/crusader/variants/AS-001037-WA/Forma-Round-Dining-Table-90cm-Walnut-Front-1769049962.jpg",
+  "dining-real-castlery-kelsey-marble-160": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660199612/crusader/variants/52460092/Kelsey-Marble-Dining-Table-160-Natural-Front-1660199609.jpg",
 };
 
 function normalizeStyleTags(tags: string[]): StyleTag[] {
@@ -330,6 +339,129 @@ function buildCatalogItem(product: Product): CatalogItemSchema {
 // ============================================================================
 // LEGACY CATALOG (Internal use only - do not export)
 // ============================================================================
+
+const HUGG_RECTANGULAR_URL = "https://www.castlery.com/sg/products/hugg-nesting-rectangular-coffee-table";
+const HUGG_SIDE_TABLE_URL = "https://www.castlery.com/sg/products/hugg-nesting-side-table";
+
+const HUGG_RECTANGULAR_VARIANT_IMAGES = {
+  performanceDune: {
+    natural:
+      "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729563480/crusader/variants/AS-000633-AR4001-NA/Hugg-Rectangular-Coffee-Table-Natural-Performance-Dune-Front-1729563478.jpg",
+    chestnut:
+      "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729561925/crusader/variants/AS-000633-AR4001-CT/Hugg-Rectangular-Coffee-Table-Chestnut-Performance-Dune-Front-1729561922.jpg",
+    black:
+      "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729563717/crusader/variants/AS-000633-AR4001-BLK/Hugg-Rectangular-Coffee-Table-Black-Performance-Dune-Front-1729563715.jpg",
+  },
+  performanceBasalt: {
+    natural:
+      "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729563860/crusader/variants/AS-000633-AR4002-NA/Hugg-Rectangular-Coffee-Table-Natural-Performance-Basalt-Front-1729563858.jpg",
+    chestnut:
+      "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729496469/crusader/variants/AS-000633-AR4002-CT/Hugg-Rectangular-Coffee-Table-Chestnut-Performance-Basalt-Front-1729496467.jpg",
+    black:
+      "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729497150/crusader/variants/AS-000633-AR4002-BLK/Hugg-Rectangular-Coffee-Table-Black-Performance-Basalt-Front-1729497148.jpg",
+  },
+} as const;
+
+const HUGG_SIDE_TABLE_VARIANT_IMAGES = {
+  performanceDune: {
+    natural:
+      "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729837567/crusader/variants/AS-000634-AR4001-NA/Hugg-Nesting-Side-Table-Natural-Performance-Dune-Front-1729837565.jpg",
+    chestnut:
+      "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729837371/crusader/variants/AS-000634-AR4001-CT/Hugg-Nesting-Side-Table-Chestnut-Performance-Dune-Front-1729837369.jpg",
+    black:
+      "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729837174/crusader/variants/AS-000634-AR4001-BLK/Hugg-Nesting-Side-Table-Black-Performance-Dune-Front-1729837172.jpg",
+  },
+  performanceBasalt: {
+    natural:
+      "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729837485/crusader/variants/AS-000634-AR4002-NA/Hugg-Nesting-Side-Table-Natural-Performance-Basalt-Front-1729837483.jpg",
+    chestnut:
+      "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729837267/crusader/variants/AS-000634-AR4002-CT/Hugg-Nesting-Side-Table-Chestnut-Performance-Basalt-Front-1729837264.jpg",
+    black:
+      "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729836921/crusader/variants/AS-000634-AR4002-BLK/Hugg-Nesting-Side-Table-Black-Performance-Basalt-Front-1729836919.jpg",
+  },
+} as const;
+
+function buildHuggRectangularVariants(
+  fabric: keyof typeof HUGG_RECTANGULAR_VARIANT_IMAGES
+): Variant[] {
+  const images = HUGG_RECTANGULAR_VARIANT_IMAGES[fabric];
+  return [
+    {
+      id: "natural",
+      name: "Natural",
+      colorHex: "#a89070",
+      finishCode: "natural",
+      finishLabel: "Natural",
+      swatchGroup: "wood_finish",
+      swatchHex: "#a89070",
+      thumbnailUrl: images.natural,
+      galleryImages: [images.natural],
+    },
+    {
+      id: "chestnut",
+      name: "Chestnut",
+      colorHex: "#8b6f47",
+      finishCode: "chestnut",
+      finishLabel: "Chestnut",
+      swatchGroup: "wood_finish",
+      swatchHex: "#8B6F47",
+      thumbnailUrl: images.chestnut,
+      galleryImages: [images.chestnut],
+    },
+    {
+      id: "black",
+      name: "Black",
+      colorHex: "#1f1f1f",
+      finishCode: "black",
+      finishLabel: "Black",
+      swatchGroup: "wood_finish",
+      swatchHex: "#1f1f1f",
+      thumbnailUrl: images.black,
+      galleryImages: [images.black],
+    },
+  ];
+}
+
+function buildHuggSideTableVariants(
+  fabric: keyof typeof HUGG_SIDE_TABLE_VARIANT_IMAGES
+): Variant[] {
+  const images = HUGG_SIDE_TABLE_VARIANT_IMAGES[fabric];
+  return [
+    {
+      id: "natural",
+      name: "Natural",
+      colorHex: "#a89070",
+      finishCode: "natural",
+      finishLabel: "Natural",
+      swatchGroup: "wood_finish",
+      swatchHex: "#a89070",
+      thumbnailUrl: images.natural,
+      galleryImages: [images.natural],
+    },
+    {
+      id: "chestnut",
+      name: "Chestnut",
+      colorHex: "#8b6f47",
+      finishCode: "chestnut",
+      finishLabel: "Chestnut",
+      swatchGroup: "wood_finish",
+      swatchHex: "#8B6F47",
+      thumbnailUrl: images.chestnut,
+      galleryImages: [images.chestnut],
+    },
+    {
+      id: "black",
+      name: "Black",
+      colorHex: "#1f1f1f",
+      finishCode: "black",
+      finishLabel: "Black",
+      swatchGroup: "wood_finish",
+      swatchHex: "#1f1f1f",
+      thumbnailUrl: images.black,
+      galleryImages: [images.black],
+    },
+  ];
+}
 
 const CATALOG: Record<string, Product> = {
   // =========================
@@ -1266,6 +1398,118 @@ const CATALOG: Record<string, Product> = {
         swatchHex: "#1f1f1f",
       },
     ],
+  },
+  "coffee-real-castlery-hugg-nesting-rectangular-performance-basalt-closed": {
+    id: "coffee-real-castlery-hugg-nesting-rectangular-performance-basalt-closed",
+    name: "Hugg Nesting Rectangular Coffee Table",
+    category: "coffee_table",
+    price: 799,
+    dimensions: { w: 1.1, d: 0.55, h: 0.43 },
+    styleTags: ["modern"],
+    galleryImages: [HUGG_RECTANGULAR_VARIANT_IMAGES.performanceBasalt.chestnut],
+    defaultVariantId: "chestnut",
+    purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: HUGG_RECTANGULAR_URL,
+    variants: buildHuggRectangularVariants("performanceBasalt"),
+  },
+  "coffee-real-castlery-hugg-nesting-rectangular-performance-basalt-opened": {
+    id: "coffee-real-castlery-hugg-nesting-rectangular-performance-basalt-opened",
+    name: "Hugg Nesting Rectangular Coffee Table",
+    category: "coffee_table",
+    price: 799,
+    dimensions: { w: 1.1, d: 0.55, h: 0.43 },
+    styleTags: ["modern"],
+    galleryImages: [HUGG_RECTANGULAR_VARIANT_IMAGES.performanceBasalt.chestnut],
+    defaultVariantId: "chestnut",
+    purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: HUGG_RECTANGULAR_URL,
+    variants: buildHuggRectangularVariants("performanceBasalt"),
+  },
+  "coffee-real-castlery-hugg-nesting-rectangular-performance-dune-closed": {
+    id: "coffee-real-castlery-hugg-nesting-rectangular-performance-dune-closed",
+    name: "Hugg Nesting Rectangular Coffee Table",
+    category: "coffee_table",
+    price: 799,
+    dimensions: { w: 1.1, d: 0.55, h: 0.43 },
+    styleTags: ["modern"],
+    galleryImages: [HUGG_RECTANGULAR_VARIANT_IMAGES.performanceDune.chestnut],
+    defaultVariantId: "chestnut",
+    purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: HUGG_RECTANGULAR_URL,
+    variants: buildHuggRectangularVariants("performanceDune"),
+  },
+  "coffee-real-castlery-hugg-nesting-rectangular-performance-dune-opened": {
+    id: "coffee-real-castlery-hugg-nesting-rectangular-performance-dune-opened",
+    name: "Hugg Nesting Rectangular Coffee Table",
+    category: "coffee_table",
+    price: 799,
+    dimensions: { w: 1.1, d: 0.55, h: 0.43 },
+    styleTags: ["modern"],
+    galleryImages: [HUGG_RECTANGULAR_VARIANT_IMAGES.performanceDune.chestnut],
+    defaultVariantId: "chestnut",
+    purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: HUGG_RECTANGULAR_URL,
+    variants: buildHuggRectangularVariants("performanceDune"),
+  },
+  "coffee-real-castlery-hugg-nesting-side-table-performance-basalt-closed": {
+    id: "coffee-real-castlery-hugg-nesting-side-table-performance-basalt-closed",
+    name: "Hugg Nesting Side Table",
+    category: "side_table",
+    price: 499,
+    dimensions: { w: 0.68, d: 0.55, h: 0.43 },
+    styleTags: ["modern"],
+    galleryImages: [HUGG_SIDE_TABLE_VARIANT_IMAGES.performanceBasalt.chestnut],
+    defaultVariantId: "chestnut",
+    purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: HUGG_SIDE_TABLE_URL,
+    variants: buildHuggSideTableVariants("performanceBasalt"),
+  },
+  "coffee-real-castlery-hugg-nesting-side-table-performance-basalt-opened": {
+    id: "coffee-real-castlery-hugg-nesting-side-table-performance-basalt-opened",
+    name: "Hugg Nesting Side Table",
+    category: "side_table",
+    price: 499,
+    dimensions: { w: 0.68, d: 0.55, h: 0.43 },
+    styleTags: ["modern"],
+    galleryImages: [HUGG_SIDE_TABLE_VARIANT_IMAGES.performanceBasalt.chestnut],
+    defaultVariantId: "chestnut",
+    purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: HUGG_SIDE_TABLE_URL,
+    variants: buildHuggSideTableVariants("performanceBasalt"),
+  },
+  "coffee-real-castlery-hugg-nesting-side-table-performance-dune-closed": {
+    id: "coffee-real-castlery-hugg-nesting-side-table-performance-dune-closed",
+    name: "Hugg Nesting Side Table",
+    category: "side_table",
+    price: 499,
+    dimensions: { w: 0.68, d: 0.55, h: 0.43 },
+    styleTags: ["modern"],
+    galleryImages: [HUGG_SIDE_TABLE_VARIANT_IMAGES.performanceDune.chestnut],
+    defaultVariantId: "chestnut",
+    purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: HUGG_SIDE_TABLE_URL,
+    variants: buildHuggSideTableVariants("performanceDune"),
+  },
+  "coffee-real-castlery-hugg-nesting-side-table-performance-dune-opened": {
+    id: "coffee-real-castlery-hugg-nesting-side-table-performance-dune-opened",
+    name: "Hugg Nesting Side Table",
+    category: "side_table",
+    price: 499,
+    dimensions: { w: 0.68, d: 0.55, h: 0.43 },
+    styleTags: ["modern"],
+    galleryImages: [HUGG_SIDE_TABLE_VARIANT_IMAGES.performanceDune.chestnut],
+    defaultVariantId: "chestnut",
+    purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl: HUGG_SIDE_TABLE_URL,
+    variants: buildHuggSideTableVariants("performanceDune"),
   },
   "coffee-real-castlery-peri-120": {
     id: "coffee-real-castlery-peri-120",

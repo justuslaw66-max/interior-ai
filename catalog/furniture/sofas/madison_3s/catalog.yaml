@@ -1,4 +1,5 @@
 brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/madison-3-seater-sofa"
 category: "sofa"
 
 product_family: "Madison"
@@ -62,6 +63,13 @@ assets:
   asset_id: "sofa-real-castlery-madison-3s"
   model_url: "/assets/models/sofa-real-castlery-madison-3s.glb"
   thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1646386187/crusader/variants/50440750-AM4001/Madison-3-Seater-Sofa-Bisque-Front-SG.png"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1646386187/crusader/variants/50440750-AM4001/Madison-3-Seater-Sofa-Bisque-Front-SG.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1645670813/crusader/variants/50440728-AM4001/Madison-3-Seater-Sofa-Bisque-Square-Set_5.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1645688196/crusader/variants/50440728-AM4001/Madison-Sofa-Collection-Bisque-Square-Set_1.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1646386187/crusader/variants/50440750-AM4001/Madison-3-Seater-Sofa-Bisque-Angle-SG.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1645670446/crusader/variants/50440728-AM4001/Madison-3-Seater-Sofa-Bisque-Side.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1743557693/crusader/variants/50440750-AM4001/Madison-3-Seater-Sofa-Bisque-Back-SG-1743557690.jpg"
 
 variants:
   - variant: "Bisque (Fabric)"

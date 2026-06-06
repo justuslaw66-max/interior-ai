@@ -32,13 +32,14 @@ const CATEGORY_ORDER: CatalogTopCategory[] = [
   "sofa",
   "accent_chair",
   "coffee_table",
+  "side_table",
   "dining_table",
+  "dining_bench",
   "ottoman",
   "rug",
   "tv_console",
   "sideboard",
   "floor_lamp",
-  "side_table",
   "decor",
 ];
 
@@ -95,9 +96,14 @@ export default function CatalogPanel({ items, canEdit, onAddToRoom }: Props) {
     return counts;
   }, [items]);
 
+  const searchScopedFilters = useMemo(() => {
+    if (!debouncedSearch.trim()) return filters;
+    return { ...filters, category: undefined };
+  }, [debouncedSearch, filters]);
+
   const filteredItems = useMemo(() => {
-    return filterCatalogItems(items, debouncedSearch, filters);
-  }, [items, debouncedSearch, filters]);
+    return filterCatalogItems(items, debouncedSearch, searchScopedFilters);
+  }, [items, debouncedSearch, searchScopedFilters]);
 
   const cardViews = useMemo<CatalogCardView[]>(() => {
     return filteredItems.map((item) => buildCatalogCardView(item, variantSelectionByItem[item.id]));

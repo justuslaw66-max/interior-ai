@@ -1,4 +1,5 @@
 brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/hugg-nesting-square-coffee-table"
 category: "coffee_table"
 
 product_family: "Hugg"
@@ -312,7 +313,13 @@ authoring_notes:
 assets:
   asset_id: "coffee-real-castlery-hugg-nesting-square-performance-basalt-opened"
   model_url: "/assets/models/coffee-real-castlery-hugg-nesting-square-performance-basalt-opened.glb"
-  thumbnail_url: "/assets/thumbs/coffee-real-castlery-hugg-nesting-square-performance-basalt-opened.png"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729564998/crusader/variants/AS-000635-AR4002-NA/Hugg-Square-Coffee-Table-Natural-Performance-Basalt-Front-1729564995.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729564998/crusader/variants/AS-000635-AR4002-NA/Hugg-Square-Coffee-Table-Natural-Performance-Basalt-Front-1729564995.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729564013/crusader/variants/AS-000635-AR4001-NA/Hugg-Square-Coffee-Table-Natural-Performance-Dune_-Front-1729564011.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729564019/crusader/variants/AS-000635-AR4001-NA/Hugg-Square-Coffee-Table-Natural-Performance-Dune_-Angle_1-1729564017.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1765850661/crusader/variants/AS-000635-AR4001-NA/Hugg-Square-Coffee-Table-In-Dune-Natural-Square-Set_2-1765850658.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729565379/crusader/variants/TAS-000635/Hugg-Square-Coffee-Table-Natural-Performance-Dune_-Dim-1729565377.jpg"
 
 ai_flags:
   isStarterEligible: true
@@ -350,6 +357,8 @@ variants:
     finish_code: "natural"
     finish_label: "Natural"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729564998/crusader/variants/AS-000635-AR4002-NA/Hugg-Square-Coffee-Table-Natural-Performance-Basalt-Front-1729564995.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729564998/crusader/variants/AS-000635-AR4002-NA/Hugg-Square-Coffee-Table-Natural-Performance-Basalt-Front-1729564995.jpg"
     swatch_group: "wood_finish"
     swatch_hex: "#a89070"
     price_usd: 1099
@@ -381,6 +390,8 @@ variants:
     finish_code: "chestnut"
     finish_label: "Chestnut"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729502859/crusader/variants/AS-000635-AR4002-CT/Hugg-Square-Coffee-Table-Chestnut-Performance-Basalt-Front-1729502856.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729502859/crusader/variants/AS-000635-AR4002-CT/Hugg-Square-Coffee-Table-Chestnut-Performance-Basalt-Front-1729502856.jpg"
     swatch_group: "wood_finish"
     swatch_hex: "#8B6F47"
     price_usd: 1099
@@ -412,6 +423,8 @@ variants:
     finish_code: "black"
     finish_label: "Black"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729502719/crusader/variants/AS-000635-AR4002-BLK/Hugg-Square-Coffee-Table-Black-Performance-Basalt-Front-1729502716.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729502719/crusader/variants/AS-000635-AR4002-BLK/Hugg-Square-Coffee-Table-Black-Performance-Basalt-Front-1729502716.jpg"
     swatch_group: "wood_finish"
     swatch_hex: "#1f1f1f"
     price_usd: 1099

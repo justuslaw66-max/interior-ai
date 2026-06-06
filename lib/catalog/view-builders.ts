@@ -22,12 +22,12 @@ const CATEGORY_FALLBACK_THUMB_URL: Partial<Record<CatalogTopCategory, string>> =
 };
 
 const FORCED_CARD_THUMB_BY_ITEM_ID: Record<string, string> = {
-  "dining-real-castlery-forma-oval-150": "/assets/thumbs/dining-real-castlery-forma-oval-150.png",
-  "dining-real-castlery-forma-round-120": "/assets/thumbs/dining-real-castlery-forma-round-120.png",
-  "dining-real-castlery-forma-round-90": "/assets/thumbs/dining-real-castlery-forma-round-90.png",
-  "dining-real-castlery-kelsey-marble-160": "/assets/thumbs/dining-real-castlery-kelsey-marble-160.png",
-  "dining-real-castlery-kelsey-marble-180": "/assets/thumbs/dining-real-castlery-kelsey-marble-180.png",
-  "dining-real-castlery-brighton-oval-180": "/assets/thumbs/dining-real-castlery-brighton-oval-180.png",
+  "dining-real-castlery-forma-oval-150": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050317/crusader/variants/AS-001039-WA/Forma-Oval-Dining-Table-150cm-Walnut-Front-1769050315.jpg",
+  "dining-real-castlery-forma-round-120": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050193/crusader/variants/AS-001038-WA/Forma-Round-Dining-Table-120cm-Walnut-Front-1769050191.jpg",
+  "dining-real-castlery-forma-round-90": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769049964/crusader/variants/AS-001037-WA/Forma-Round-Dining-Table-90cm-Walnut-Front-1769049962.jpg",
+  "dining-real-castlery-kelsey-marble-160": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660199612/crusader/variants/52460092/Kelsey-Marble-Dining-Table-160-Natural-Front-1660199609.jpg",
+  "dining-real-castlery-kelsey-marble-180": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660199639/crusader/variants/52460093/Kelsey-Marble-Dining-Table-180-Natural-Front-1660199637.jpg",
+  "dining-real-castlery-brighton-oval-180": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1638151292/crusader/variants/52460074/Brighton-Oval-Dining-Table-Front.jpg",
   "dining-real-castlery-sloane-bench-150-no-cushion": "/assets/thumbs/dining-real-castlery-sloane-bench-150-no-cushion.png",
   "dining-real-castlery-sloane-bench-150-leather-cushion": "/assets/thumbs/dining-real-castlery-sloane-bench-150-leather-cushion.png",
   "dining-real-castlery-sloane-bench-180-no-cushion": "/assets/thumbs/dining-real-castlery-sloane-bench-180-no-cushion.png",
@@ -36,11 +36,19 @@ const FORCED_CARD_THUMB_BY_ITEM_ID: Record<string, string> = {
   "tv-real-castlery-sawyer-tv-console-200": "/assets/thumbs/tv-real-castlery-sawyer-tv-console-200.png",
   "tv-real-castlery-seb-tv-console-150": "/assets/thumbs/tv-real-castlery-seb-tv-console-150.png",
   "tv-real-castlery-sloane-tv-console-150": "/assets/thumbs/tv-real-castlery-sloane-tv-console-150.png",
-  "coffee-real-castlery-hugg-nesting-square-performance-basalt-closed": "/assets/thumbs/coffee-real-castlery-hugg-nesting-square-performance-basalt-closed.png",
-  "coffee-real-castlery-hugg-nesting-square-performance-basalt-opened": "/assets/thumbs/coffee-real-castlery-hugg-nesting-square-performance-basalt-opened.png",
-  "coffee-real-castlery-hugg-nesting-square-performance-dune-closed": "/assets/thumbs/coffee-real-castlery-hugg-nesting-square-performance-dune-closed.png",
-  "coffee-real-castlery-hugg-nesting-square-performance-dune-opened": "/assets/thumbs/coffee-real-castlery-hugg-nesting-square-performance-dune-opened.png",
-  "coffee-real-castlery-vento-coffee-table-120": "/assets/thumbs/coffee-real-castlery-vento-coffee-table-120.png",
+  "coffee-real-castlery-hugg-nesting-square-performance-basalt-closed": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729564998/crusader/variants/AS-000635-AR4002-NA/Hugg-Square-Coffee-Table-Natural-Performance-Basalt-Front-1729564995.jpg",
+  "coffee-real-castlery-hugg-nesting-square-performance-basalt-opened": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729564998/crusader/variants/AS-000635-AR4002-NA/Hugg-Square-Coffee-Table-Natural-Performance-Basalt-Front-1729564995.jpg",
+  "coffee-real-castlery-hugg-nesting-square-performance-dune-closed": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729564013/crusader/variants/AS-000635-AR4001-NA/Hugg-Square-Coffee-Table-Natural-Performance-Dune_-Front-1729564011.jpg",
+  "coffee-real-castlery-hugg-nesting-square-performance-dune-opened": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729564013/crusader/variants/AS-000635-AR4001-NA/Hugg-Square-Coffee-Table-Natural-Performance-Dune_-Front-1729564011.jpg",
+  "coffee-real-castlery-hugg-nesting-rectangular-performance-basalt-closed": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729496469/crusader/variants/AS-000633-AR4002-CT/Hugg-Rectangular-Coffee-Table-Chestnut-Performance-Basalt-Front-1729496467.jpg",
+  "coffee-real-castlery-hugg-nesting-rectangular-performance-basalt-opened": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729496469/crusader/variants/AS-000633-AR4002-CT/Hugg-Rectangular-Coffee-Table-Chestnut-Performance-Basalt-Front-1729496467.jpg",
+  "coffee-real-castlery-hugg-nesting-rectangular-performance-dune-closed": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729561925/crusader/variants/AS-000633-AR4001-CT/Hugg-Rectangular-Coffee-Table-Chestnut-Performance-Dune-Front-1729561922.jpg",
+  "coffee-real-castlery-hugg-nesting-rectangular-performance-dune-opened": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729561925/crusader/variants/AS-000633-AR4001-CT/Hugg-Rectangular-Coffee-Table-Chestnut-Performance-Dune-Front-1729561922.jpg",
+  "coffee-real-castlery-hugg-nesting-side-table-performance-basalt-closed": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729837267/crusader/variants/AS-000634-AR4002-CT/Hugg-Nesting-Side-Table-Chestnut-Performance-Basalt-Front-1729837264.jpg",
+  "coffee-real-castlery-hugg-nesting-side-table-performance-basalt-opened": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729837267/crusader/variants/AS-000634-AR4002-CT/Hugg-Nesting-Side-Table-Chestnut-Performance-Basalt-Front-1729837264.jpg",
+  "coffee-real-castlery-hugg-nesting-side-table-performance-dune-closed": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729837371/crusader/variants/AS-000634-AR4001-CT/Hugg-Nesting-Side-Table-Chestnut-Performance-Dune-Front-1729837369.jpg",
+  "coffee-real-castlery-hugg-nesting-side-table-performance-dune-opened": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729837371/crusader/variants/AS-000634-AR4001-CT/Hugg-Nesting-Side-Table-Chestnut-Performance-Dune-Front-1729837369.jpg",
+  "coffee-real-castlery-vento-coffee-table-120": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770256447/crusader/variants/44250004/Vento-Coffee-Table-120cm-Front_1-1770256444.jpg",
 };
 
 export type CatalogTopCategory =
@@ -48,6 +56,7 @@ export type CatalogTopCategory =
   | "accent_chair"
   | "coffee_table"
   | "dining_table"
+  | "dining_bench"
   | "ottoman"
   | "rug"
   | "tv_console"
@@ -130,13 +139,14 @@ export const TOP_CATEGORY_ORDER: CatalogTopCategory[] = [
   "sofa",
   "accent_chair",
   "coffee_table",
+  "side_table",
   "dining_table",
+  "dining_bench",
   "ottoman",
   "rug",
   "tv_console",
   "sideboard",
   "floor_lamp",
-  "side_table",
   "decor",
 ];
 
@@ -144,13 +154,14 @@ const CATEGORY_LABELS: Record<CatalogTopCategory, string> = {
   sofa: "Sofa",
   accent_chair: "Accent Chair",
   coffee_table: "Coffee Table",
+  side_table: "Side Tables",
   dining_table: "Dining Table",
+  dining_bench: "Dining Bench",
   ottoman: "Ottoman",
   rug: "Rug",
   tv_console: "TV Console",
   sideboard: "Sideboard",
   floor_lamp: "Floor Lamp",
-  side_table: "Benches",
   decor: "Decor",
 };
 
@@ -166,7 +177,7 @@ const CATEGORY_ALIAS: Record<string, CatalogTopCategory> = {
   sideboard: "sideboard",
   floor_lamp: "floor_lamp",
   side_table: "side_table",
-  dining_bench: "side_table",
+  dining_bench: "dining_bench",
   bookshelf: "decor",
   wall_art: "decor",
   storage: "decor",
@@ -251,7 +262,11 @@ function inferTopCategoryFromItem(item: Pick<CatalogItemSchema, "title" | "metad
     return "ottoman";
   }
 
-  if (/(nightstand|bedside|side\s*table|end\s*table|nesting\s*table|c\s*table|bench)/.test(tokens)) {
+  if (/(dining\s*bench|\bbench\b)/.test(tokens)) {
+    return "dining_bench";
+  }
+
+  if (/(nightstand|bedside|side\s*table|end\s*table|nesting\s*table|c\s*table)/.test(tokens)) {
     return "side_table";
   }
 
@@ -260,6 +275,11 @@ function inferTopCategoryFromItem(item: Pick<CatalogItemSchema, "title" | "metad
   }
 
   return null;
+}
+
+function getHuggPerformancePrefix(itemId: string): string | null {
+  const match = itemId.match(/^(coffee-real-castlery-hugg-nesting-(?:square|rectangular|side-table)-performance-)/);
+  return match?.[1] ?? null;
 }
 
 export function mapToTopCategory(
@@ -539,8 +559,8 @@ export function buildCatalogDetailView(item: CatalogItemSchema, variantId?: stri
 
   // For Hugg products: inject sibling fabric options (Performance Dune / Performance Basalt)
   // from peer catalog items so the Fabric colour section appears in the detail view.
-  const HUGG_PREFIX = "coffee-real-castlery-hugg-nesting-square-performance-";
-  if (item.id.startsWith(HUGG_PREFIX)) {
+  const huggPrefix = getHuggPerformancePrefix(item.id);
+  if (huggPrefix) {
     const activeSuffix = item.id.endsWith("-opened")
       ? "-opened"
       : item.id.endsWith("-closed")
@@ -553,10 +573,10 @@ export function buildCatalogDetailView(item: CatalogItemSchema, variantId?: stri
       { code: "basalt", label: "Performance Basalt", hex: "#8a8f96" },
     ];
     for (const fab of FABRIC_ENTRIES) {
-      const preferredSiblingId = `${HUGG_PREFIX}${fab.code}${activeSuffix}`;
+      const preferredSiblingId = `${huggPrefix}${fab.code}${activeSuffix}`;
       const siblingId = CATALOG_ITEMS[preferredSiblingId]
         ? preferredSiblingId
-        : Object.keys(CATALOG_ITEMS).find((id) => id.startsWith(HUGG_PREFIX) && id.includes(fab.code)) ?? preferredSiblingId;
+        : Object.keys(CATALOG_ITEMS).find((id) => id.startsWith(huggPrefix) && id.includes(fab.code)) ?? preferredSiblingId;
       const sibling = CATALOG_ITEMS[siblingId];
       const siblingVariant = sibling?.variants.find((v) => {
         const vc = (v.finishCode ?? "").trim().toLowerCase();

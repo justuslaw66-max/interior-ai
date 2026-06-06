@@ -39,15 +39,20 @@ export default function CatalogItemGallery({ images, imageUrl, title, imageClass
   const safeActiveIndex = availableImages.length === 0 ? 0 : activeIndex % availableImages.length;
   const activeImage = availableImages[safeActiveIndex] ?? null;
   const hasMultipleImages = availableImages.length > 1;
+  const galleryImageClassName = imageClassName ?? "object-contain object-center";
 
   return (
-    <div data-testid="catalog-item-gallery" className="relative aspect-4/3 overflow-hidden rounded-lg">
+    <div
+      data-testid="catalog-item-gallery"
+      className="relative aspect-[4/3] w-full overflow-hidden rounded-lg bg-neutral-100"
+    >
       {activeImage ? (
         <>
           <LazyImage
             src={activeImage}
             alt={title}
-            className={imageClassName ?? "h-full w-full object-cover object-center"}
+            className="h-full w-full"
+            imageClassName={galleryImageClassName}
             testId="catalog-gallery-image"
             onError={() => {
               setGalleryState((prev) => {
@@ -131,7 +136,7 @@ export default function CatalogItemGallery({ images, imageUrl, title, imageClass
           )}
         </>
       ) : (
-        <PlaceholderImage title={title} className={imageClassName ?? "h-full w-full"} />
+        <PlaceholderImage title={title} className="h-full w-full" />
       )}
     </div>
   );
