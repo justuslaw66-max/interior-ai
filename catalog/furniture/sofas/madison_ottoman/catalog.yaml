@@ -53,6 +53,96 @@ placement_rules:
   clearance_sensitive: false
   center_room_preferred: false
 
+product_details_by_material_type:
+  fabric:
+    material:
+      - label: "Material"
+        value: "Laminated veneer lumber and plywood, rubber wood leg"
+      - label: "Filling"
+        value: "Foam, fibre and pocket spring filled seat"
+      - label: "Care"
+        value: "Fabric sofa, wooden legs"
+      - label: "Suspension"
+        value: "Sinuous spring"
+      - label: "Cover type"
+        value: "Non-removable"
+      - label: "Colour variance"
+        value: "Disclaimer"
+      - label: "Material & safety standards"
+        value: "Low formaldehyde"
+    dimensions:
+      - label: "Dimension"
+        value: "W86.5 x D65 x H45.5cm"
+      - label: "Seating depth"
+        value: "65cm"
+      - label: "Seatable width"
+        value: "86.5cm"
+      - label: "Seating height"
+        value: "45.5cm"
+      - label: "Leg height"
+        value: "17cm"
+      - label: "Product weight"
+        value: "14.5kg"
+      - label: "Packaging dimensions"
+        value: "1 box"
+      - label: "Max bearing support"
+        value: "150kg"
+    delivery_and_warranty:
+      - label: "Cancellation"
+        value: "Clearance—no cancellation"
+      - label: "Warranty"
+        value: "Frame 10 years; Fabric 1 year; Foam 2 years"
+      - label: "Return policy"
+        value: "Clearance—no return or exchange"
+      - label: "Assembly"
+        value: "Legs to be fitted"
+  leather:
+    material:
+      - label: "Material"
+        value: "Laminated veneer lumber with plywood frame, solid rubber wood leg"
+      - label: "Filling"
+        value: "Foam, fibre and pocket spring filled seat"
+      - label: "Finish"
+        value: "Walnut stain on wood"
+      - label: "Care"
+        value: "Leather sofa, wooden legs"
+      - label: "Suspension"
+        value: "Sinuous spring"
+      - label: "Cover type"
+        value: "Removable seat cushion, fixed seat cushion covers"
+      - label: "Colour variance"
+        value: "Leather variations"
+      - label: "Material & safety standards"
+        value: "Low formaldehyde"
+      - label: "Material details"
+        value: "Top grain leather. Crafted from American hides."
+    dimensions:
+      - label: "Dimension"
+        value: "W83 x D64 x H49cm"
+      - label: "Seating depth"
+        value: "64cm"
+      - label: "Seatable width"
+        value: "83cm"
+      - label: "Seating height"
+        value: "49cm"
+      - label: "Leg height"
+        value: "17cm"
+      - label: "Product weight"
+        value: "11.8kg"
+      - label: "Packaging dimensions"
+        value: "1 box"
+      - label: "Max bearing support"
+        value: "150kg"
+    delivery_and_warranty:
+      - label: "Cancellation"
+        value: "Free—5 working days before delivery"
+      - label: "Warranty"
+        value: "Frame 10 years; Leather 1 year; Foam 2 years"
+      - label: "Return policy"
+        value: "30-day returns"
+      - label: "Assembly"
+        value: "Legs to be fitted"
+
 design_pairings:
   - "sofa"
   - "accent_chair"
@@ -182,9 +272,9 @@ variants:
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions:
-      width_cm: 86.5
-      depth_cm: 65
-      height_cm: 45.5
+      width_cm: 83
+      depth_cm: 64
+      height_cm: 49
     seat_capacity: 1
     size_class: "small"
     color_family: "brown"
