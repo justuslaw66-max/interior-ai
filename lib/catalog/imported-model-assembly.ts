@@ -58,6 +58,20 @@ export type ImportedProductDetails = {
   delivery_and_warranty?: ImportedProductInfoRow[];
 };
 
+export type ImportedComfortAxis = {
+  label?: string;
+  value?: number;
+  min_label?: string;
+  max_label?: string;
+};
+
+export type ImportedComfortProfile = {
+  seat_comfort?: ImportedComfortAxis;
+  seat_depth?: ImportedComfortAxis;
+  seat_height?: ImportedComfortAxis;
+  seat_softness?: ImportedComfortAxis;
+};
+
 export type ImportedModelCatalog = {
   brand?: string;
   retailer?: string;
@@ -128,6 +142,7 @@ export type ImportedModelCatalog = {
   } | null;
   product_details?: ImportedProductDetails;
   product_details_by_material_type?: Record<string, ImportedProductDetails>;
+  comfort_profile?: ImportedComfortProfile;
   upholstery_options?: Array<{
     upholstery_code?: string;
     upholstery_label?: string;
@@ -1113,6 +1128,7 @@ export function buildImportedCatalogItem({
       designPairings: yamlCatalog?.designPairings,
       compatibility: yamlCatalog?.compatibility,
       bundleMetadata: yamlCatalog?.bundleMetadata,
+      comfortProfile: yamlCatalog?.comfort_profile,
       galleryImages: Array.isArray(yamlGalleryImages)
         ? yamlGalleryImages.filter(
             (value): value is string => typeof value === "string" && value.trim().length > 0,

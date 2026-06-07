@@ -128,11 +128,20 @@ export type CatalogDetailView = {
   }[];
   activeSizeId: string;
   materialSummary: string[];
+  comfortProfile: CatalogComfortAxisView[];
   badges: string[];
   roomFitHints: string[];
   relatedItemIds: string[];
   retailerUrl?: string;
   galleryImageClassName: string;
+};
+
+export type CatalogComfortAxisView = {
+  id: string;
+  label: string;
+  value: number;
+  minLabel: string;
+  maxLabel: string;
 };
 
 export const TOP_CATEGORY_ORDER: CatalogTopCategory[] = [
@@ -280,6 +289,39 @@ function inferTopCategoryFromItem(item: Pick<CatalogItemSchema, "title" | "metad
 function getHuggPerformancePrefix(itemId: string): string | null {
   const match = itemId.match(/^(coffee-real-castlery-hugg-nesting-(?:square|rectangular|side-table)-performance-)/);
   return match?.[1] ?? null;
+}
+
+const COMFORT_AXIS_ORDER: Array<{
+  id: "seat_comfort" | "seat_depth" | "seat_height" | "seat_softness";
+  label: string;
+  minLabel: string;
+  maxLabel: string;
+}> = [
+  { id: "seat_comfort", label: "Seat comfort", minLabel: "Relaxed", maxLabel: "Upright" },
+  { id: "seat_depth", label: "Seat depth", minLabel: "Shallow", maxLabel: "Deep" },
+  { id: "seat_height", label: "Seat height", minLabel: "Low", maxLabel: "High" },
+  { id: "seat_softness", label: "Seat softness", minLabel: "Soft", maxLabel: "Firm" },
+];
+
+function buildComfortProfileView(item: CatalogItemSchema): CatalogComfortAxisView[] {
+  const rawProfile = item.metadata?.comfortProfile;
+  if (!rawProfile || typeof rawProfile !== "object") return [];
+
+  return COMFORT_AXIS_ORDER.flatMap((axis) => {
+    const entry = rawProfile[axis.id];
+    if (!entry || typeof entry !== "object") return [];
+
+    const value = Math.round(Number(entry.value ?? 0));
+    if (!Number.isFinite(value) || value < 1 || value > 5) return [];
+
+    return [{
+      id: axis.id,
+      label: String(entry.label ?? axis.label).trim() || axis.label,
+      value,
+      minLabel: String(entry.min_label ?? axis.minLabel).trim() || axis.minLabel,
+      maxLabel: String(entry.max_label ?? axis.maxLabel).trim() || axis.maxLabel,
+    }];
+  });
 }
 
 export function mapToTopCategory(
@@ -668,6 +710,7 @@ export function buildCatalogDetailView(item: CatalogItemSchema, variantId?: stri
     sizeOptions,
     activeSizeId,
     materialSummary: Array.from(new Set(materials)),
+    comfortProfile: buildComfortProfileView(item),
     badges: deriveBadges(item),
     roomFitHints: deriveRoomFitHints(item),
     relatedItemIds: [],

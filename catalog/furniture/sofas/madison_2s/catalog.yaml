@@ -155,6 +155,28 @@ product_details_by_material_type:
       - label: "Assembly"
         value: "Legs to be fitted"
 
+comfort_profile:
+  seat_comfort:
+    label: "Seat comfort"
+    value: 2
+    min_label: "Relaxed"
+    max_label: "Upright"
+  seat_depth:
+    label: "Seat depth"
+    value: 4
+    min_label: "Shallow"
+    max_label: "Deep"
+  seat_height:
+    label: "Seat height"
+    value: 4
+    min_label: "Low"
+    max_label: "High"
+  seat_softness:
+    label: "Seat softness"
+    value: 3
+    min_label: "Soft"
+    max_label: "Firm"
+
 design_pairings:
   - "coffee_table"
   - "side_table"

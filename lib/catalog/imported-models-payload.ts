@@ -42,6 +42,7 @@ function mapCatalogYaml(yaml: CatalogYamlRecord) {
     bundleMetadata: yaml.bundle_metadata,
     product_details: yaml.product_details,
     product_details_by_material_type: yaml.product_details_by_material_type,
+    comfort_profile: yaml.comfort_profile,
     featureFlags: yaml.feature_flags,
     configurableMetadata: yaml.configurable_metadata,
     configurations: yaml.configurations,
