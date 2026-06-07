@@ -328,21 +328,6 @@ jobs:
     needs: stable-checks
     continue-on-error: true
 
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: test
-          POSTGRES_DB: interior_ai_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
     steps:
       - uses: actions/checkout@v5
 
@@ -351,6 +336,24 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+
+      - name: Start local PostgreSQL
+        run: |
+          sudo systemctl start postgresql.service
+          sudo -u postgres psql <<'SQL'
+          DO $$
+          BEGIN
+            IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'test') THEN
+              CREATE ROLE test LOGIN PASSWORD 'test';
+            ELSE
+              ALTER ROLE test WITH LOGIN PASSWORD 'test';
+            END IF;
+          END
+          $$;
+          DROP DATABASE IF EXISTS interior_ai_test;
+          CREATE DATABASE interior_ai_test OWNER test;
+          SQL
+          pg_isready --host localhost --port 5432 --username postgres
 
       - name: Install dependencies
         run: npm ci
