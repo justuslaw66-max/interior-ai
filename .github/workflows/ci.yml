@@ -348,7 +348,7 @@ jobs:
             END IF;
           END
           $$;
-          ALTER ROLE test WITH SUPERUSER CREATEDB;
+          ALTER ROLE test WITH LOGIN PASSWORD 'test';
           DROP DATABASE IF EXISTS interior_ai_test;
           CREATE DATABASE interior_ai_test OWNER test;
           SQL
