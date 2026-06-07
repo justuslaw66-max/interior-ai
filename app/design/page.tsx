@@ -92,7 +92,7 @@ import {
   IMPORTED_VARIANTS_BY_PRODUCT_ID,
   IMPORTED_PRODUCT_CONFIG_BY_ID,
   getSloaneBenchProductId,
-  CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE,
+  CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE,
   HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE,
   PRODUCT_DETAIL_SECTIONS_BY_PRODUCT_ID,
   resolveFabricDetailProfile,
@@ -2845,7 +2845,7 @@ function PageContent() {
         colorHex: "#ede8de",
         productId: duneProductId,
         swatchTextureUrl:
-          CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE["performance-dune"] ?? null,
+          CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE["performance-dune"] ?? null,
         active: currentId === duneProductId,
       });
     }
@@ -2857,7 +2857,7 @@ function PageContent() {
         colorHex: "#8a8f96",
         productId: basaltProductId,
         swatchTextureUrl:
-          CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE["performance-basalt"] ?? null,
+          CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE["performance-basalt"] ?? null,
         active: currentId === basaltProductId,
       });
     }
@@ -2895,7 +2895,7 @@ function PageContent() {
     const colourLabelKey = normalizeSwatchKey(activeStructuredVariant.colourLabel);
     const sourceSwatches = selectedProduct.id.toLowerCase().includes("hugg")
       ? HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE
-      : CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE;
+      : CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE;
     const swatchTextureUrl =
       sourceSwatches[finishKey] ??
       sourceSwatches[finishLabelKey] ??
@@ -7409,8 +7409,8 @@ function PageContent() {
                     .replace(/[^a-z0-9-]+/g, "-");
                   const swatchTextureUrl =
                     option.swatchTextureUrl ??
-                    CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[finishKey] ??
-                    CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[
+                    CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[finishKey] ??
+                    CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[
                       option.label
                         .trim()
                         .toLowerCase()
@@ -7669,12 +7669,12 @@ function PageContent() {
                         ? HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE[previewFinishKey] ??
                           HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE[previewFinishLabelKey] ??
                           HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE[previewColourKey]
-                        : CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[previewFinishKey] ??
-                          CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[previewFinishLabelKey] ??
-                          CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[previewColourKey]) ??
+                        : CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[previewFinishKey] ??
+                          CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[previewFinishLabelKey] ??
+                          CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[previewColourKey]) ??
                       null
-                    : CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[previewFinishKey] ??
-                      CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[
+                    : CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[previewFinishKey] ??
+                      CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[
                         `${String(previewEntry.materialType).toLowerCase()}-${previewEntry.colourLabel
                           .trim()
                           .toLowerCase()
@@ -7811,12 +7811,12 @@ function PageContent() {
                                 ? HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE[finishKey] ??
                                   HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE[finishLabelKey] ??
                                   HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE[colourLabelKey]
-                                : CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[finishKey] ??
-                                  CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[finishLabelKey] ??
-                                  CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[colourLabelKey]) ??
+                                : CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[finishKey] ??
+                                  CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[finishLabelKey] ??
+                                  CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[colourLabelKey]) ??
                               null
-                            : CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[finishKey] ??
-                              CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[
+                            : CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[finishKey] ??
+                              CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[
                                 `${String(entry.materialType).toLowerCase()}-${colourLabel
                                   .trim()
                                   .toLowerCase()
@@ -7904,7 +7904,7 @@ function PageContent() {
                                   current?.variantId === variant.id ? null : current
                                 );
                               }}
-                              aria-label={`Select ${variant.finishLabel?.trim() || colourLabel}`}
+                              aria-label={`Select ${colourLabel.trim() || variant.finishLabel?.trim() || "finish"}`}
                             />
                           );
                         })}

@@ -735,20 +735,16 @@ export function Furniture({
     const b = parseInt(variantHex.slice(4, 6), 16) / 255;
     return 0.2126 * r + 0.7152 * g + 0.0722 * b;
   }, [variantHex]);
+  const normalizedVariantMarker = variantMarker.replace(/[_-]+/g, " ");
   // variantMarker includes variantId (e.g. "cocoa_leather") so check both name and marker.
-  const isLeatherVariant = /\bleather\b/i.test(String(variantName ?? "")) || /\bleather\b/i.test(variantMarker);
-  const isMadisonStoneFabricVariant =
-    product.id.startsWith("sofa-real-castlery-madison-") &&
-    /\bstone\b/i.test(String(variantName ?? "")) &&
-    /\bfabric\b/i.test(String(variantName ?? ""));
+  const isLeatherVariant = /\bleather\b/i.test(String(variantName ?? "")) || /\bleather\b/i.test(normalizedVariantMarker);
+  const isMadisonProduct = product.id.startsWith("sofa-real-castlery-madison-");
+  const isMadisonFabricVariant = isMadisonProduct && !isLeatherVariant;
   const isMadisonBisqueFabricVariant =
-    product.id.startsWith("sofa-real-castlery-madison-") &&
-    /\bbisque\b/i.test(String(variantName ?? "")) &&
-    /\bfabric\b/i.test(String(variantName ?? ""));
+    isMadisonFabricVariant && /\bbisque\b/i.test(normalizedVariantMarker);
   const isMadisonCamilleForestFabricVariant =
-    product.id.startsWith("sofa-real-castlery-madison-") &&
-    /camille,?\s*forest/i.test(String(variantName ?? "")) &&
-    /\bfabric\b/i.test(String(variantName ?? ""));
+    isMadisonFabricVariant &&
+    (/\bcamille\b.*\bforest\b/i.test(normalizedVariantMarker) || /\bforest\b/i.test(normalizedVariantMarker));
   const isDawsonFabricVariant =
     product.id.startsWith("sofa-real-castlery-dawson-") && !isLeatherVariant;
   const isDawsonCreamyWhiteVariant =
@@ -841,45 +837,32 @@ export function Furniture({
     if (!modelCalibration) return modelCalibration;
 
     if (isMadisonBisqueFabricVariant) {
-      // Madison Bisque fabric: warm beige with a softer matte woven response.
+      // Madison Bisque fabric: light warm woven beige, matched to the Castlery SG swatch card.
       return {
         ...modelCalibration,
-        forceBaseColorHex: "#c5b49d",
-        brightness: 0.96,
-        saturation: 0.86,
+        forceBaseColorHex: "#d8d0c2",
+        disableBaseColorMap: true,
+        brightness: 1.02,
+        saturation: 0.78,
         roughnessOverride: 0.97,
         metalnessOverride: 0,
-        aoMapIntensity: 0.28,
+        aoMapIntensity: 0.2,
         emissiveBoost: 0,
         specularIntensityOverride: 0.05,
       };
     }
 
-    if (isMadisonStoneFabricVariant) {
-      // Madison Stone fabric: darker charcoal gray with visible woven contrast.
-      return {
-        ...modelCalibration,
-        forceBaseColorHex: "#6b6762",
-        brightness: 0.9,
-        saturation: 0.9,
-        roughnessOverride: 0.94,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.36,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.06,
-      };
-    }
-
     if (isMadisonCamilleForestFabricVariant) {
-      // Madison Camille, Forest fabric: deep muted green with soft matte weave.
+      // Madison Camille, Forest fabric: muted moss-green, matched to the Castlery SG swatch card.
       return {
         ...modelCalibration,
-        forceBaseColorHex: "#5a6356",
-        brightness: 0.88,
-        saturation: 0.84,
+        forceBaseColorHex: "#566448",
+        disableBaseColorMap: true,
+        brightness: 0.96,
+        saturation: 1.02,
         roughnessOverride: 0.98,
         metalnessOverride: 0,
-        aoMapIntensity: 0.36,
+        aoMapIntensity: 0.22,
         emissiveBoost: 0,
         specularIntensityOverride: 0.04,
       };
@@ -1348,4 +1331,3 @@ export function CameraCapture({
 
   return null;
 }
-

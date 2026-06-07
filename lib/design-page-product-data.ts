@@ -252,7 +252,17 @@ export function getSloaneBenchProductId(size: 150 | 180, cushion: "no" | "leathe
   return SLOANE_BENCH_PRODUCT_ID_BY_OPTION[`${size}-${cushion}`];
 }
 
-export const CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE: Record<string, string> = {
+export const CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE: Record<string, string> = {
+  bisque: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1645671206/crusader/variants/AM-4001/Madison-Armchair-Bisque-Square-Det_1.jpg",
+  "bisque_fabric": "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1645671206/crusader/variants/AM-4001/Madison-Armchair-Bisque-Square-Det_1.jpg",
+  "bisque-fabric": "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1645671206/crusader/variants/AM-4001/Madison-Armchair-Bisque-Square-Det_1.jpg",
+  "camille, forest": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1761806102/crusader/variants/CM-4001/Madison-3-Seater-Sofa-Forest-Det_5-1761806101.jpg",
+  "camille_forest": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1761806102/crusader/variants/CM-4001/Madison-3-Seater-Sofa-Forest-Det_5-1761806101.jpg",
+  "camille-forest": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1761806102/crusader/variants/CM-4001/Madison-3-Seater-Sofa-Forest-Det_5-1761806101.jpg",
+  "camille_forest_fabric": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1761806102/crusader/variants/CM-4001/Madison-3-Seater-Sofa-Forest-Det_5-1761806101.jpg",
+  "camille-forest-fabric": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1761806102/crusader/variants/CM-4001/Madison-3-Seater-Sofa-Forest-Det_5-1761806101.jpg",
+  "caramel_leather": "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1626941764/crusader/variants/LE-4016/Jonathan-Sofa-Brown_1.jpg",
+  "caramel-leather": "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1626941764/crusader/variants/LE-4016/Jonathan-Sofa-Brown_1.jpg",
   "marche-cocoa": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1741163167/crusader/variants/LE-4023/Cocoa_Swatch-1741163165.jpg",
   "marche-ivory": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728527/crusader/variants/LE-4021/Hamilton-Leather-Sofa-Ivory-Det_1-1710728524.jpg",
   "performance-arvo-dune": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/crusader/variants/AR-4001/Arvo-Dune-Swatch.jpg",

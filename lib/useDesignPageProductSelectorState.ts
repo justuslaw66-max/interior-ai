@@ -62,6 +62,15 @@ function normalizeMaterialCode(value: string): string {
     .trim();
 }
 
+const SHOPPER_COLOUR_LABEL_BY_FINISH_CODE: Record<string, string> = {
+  bisque_fabric: "Bisque",
+  bisque: "Bisque",
+  camille_forest_fabric: "Camille, Forest",
+  camille_forest: "Camille, Forest",
+  caramel_leather: "Caramel",
+  caramel: "Caramel",
+};
+
 function buildMaterialFields(entry: CatalogItemSchema["variants"][number]): {
   key: string;
   label: string;
@@ -239,6 +248,9 @@ export function useDesignPageProductSelectorState({
 
   const structuredVariants = useMemo(() => {
     if (!selectedProduct) return [] as StructuredVariantEntry[];
+    const isMadisonProduct =
+      selectedProduct.id.includes("madison") ||
+      selectedProduct.metadata?.productFamily?.trim().toLowerCase() === "madison";
     return selectedProduct.variants.map((variant) => {
       const parts = parseVariantLabel(variant.label);
       const swatchGroup = String(variant.swatchGroup ?? "").trim().toLowerCase();
@@ -255,7 +267,14 @@ export function useDesignPageProductSelectorState({
       const collectionType = String(variant.collectionType ?? "").trim().toLowerCase();
       const materialFields = buildMaterialFields(variant);
       const normalizedFinishCode = normalizeMaterialCode(String(variant.finishCode ?? ""));
-      const resolvedColourLabel = isWoodSwatch
+      const rawFinishCode = String(variant.finishCode ?? "").trim().toLowerCase();
+      const rawParsedColourLabel = parts.colourLabel.trim().toLowerCase();
+      const shopperColourLabel =
+        SHOPPER_COLOUR_LABEL_BY_FINISH_CODE[rawFinishCode] ??
+        (isMadisonProduct && rawParsedColourLabel === "forest" ? "Camille, Forest" : null);
+      const resolvedColourLabel = shopperColourLabel
+        ? shopperColourLabel
+        : isWoodSwatch
         ? variant.finishLabel?.trim() ||
           (normalizedFinishCode ? toTitleCase(normalizedFinishCode) : "") ||
           parts.colourLabel.trim() ||

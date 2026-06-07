@@ -7,7 +7,7 @@ import {
   inferMaterialTypeFromText,
   normalizeVariantCode,
 } from "./variant-normalization";
-import { CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE, HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE } from "../design-page-product-data";
+import { CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE, HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE } from "../design-page-product-data";
 import { CATALOG_ITEMS } from "../catalog";
 
 const CATEGORY_FALLBACK_THUMB_URL: Partial<Record<CatalogTopCategory, string>> = {
@@ -575,11 +575,11 @@ export function buildCatalogDetailView(item: CatalogItemSchema, variantId?: stri
           const swatchTextureUrl = isWoodGroup
             ? (HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE[fCode] ??
                HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE[fLabel] ??
-               CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[fCode] ??
-               CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[fLabel] ??
+               CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[fCode] ??
+               CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[fLabel] ??
                undefined)
-            : (CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[fCode] ??
-               CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[fLabel] ??
+            : (CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[fCode] ??
+               CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[fLabel] ??
                undefined);
           map.set(key, {
             id: variant.id,
@@ -636,7 +636,7 @@ export function buildCatalogDetailView(item: CatalogItemSchema, variantId?: stri
           variantId: siblingVariant?.id,
           label: fab.label,
           swatchHex: fab.hex,
-          swatchTextureUrl: CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[fabricKey] ?? undefined,
+          swatchTextureUrl: CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[fabricKey] ?? undefined,
           materialType: "Fabric",
           collectionType: "stocked",
           finishCode: fabricKey,

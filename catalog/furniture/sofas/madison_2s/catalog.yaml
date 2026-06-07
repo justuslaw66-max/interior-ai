@@ -228,30 +228,6 @@ variants:
       surface_finish: "matte"
       finish_color: "bisque_fabric"
 
-  - variant: "Stone (Fabric)"
-    finish_code: "stone_fabric"
-    finish_label: "Stone"
-    swatch_group: "upholstery"
-    price_usd: 1399
-    price_band: "mid_premium"
-    brand_tier: "premium_mid"
-    dimensions:
-      width_cm: 173
-      depth_cm: 97
-      height_cm: 87
-    seat_capacity: 2
-    size_class: "medium"
-    color_family: "grey"
-    tone: "neutral"
-    materials:
-      upholstery:
-        structure: "fabric"
-        surface: "woven_fabric"
-    finish:
-      color_finish: "stone"
-      surface_finish: "matte"
-      finish_color: "stone_fabric"
-
   - variant: "Camille, Forest (Fabric)"
     finish_code: "camille_forest_fabric"
     finish_label: "Camille, Forest"

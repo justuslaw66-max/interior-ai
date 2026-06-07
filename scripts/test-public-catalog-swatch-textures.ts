@@ -1,6 +1,6 @@
 import { CATALOG_ITEMS_MAP } from "../lib/catalog";
 import {
-  CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE,
+  CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE,
   HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE,
 } from "../lib/design-page-product-data";
 import { buildCatalogDetailView } from "../lib/catalog/view-builders";
@@ -24,7 +24,7 @@ function resolveTextureUrl(keys: string[]): string | undefined {
   for (const key of keys) {
     if (!key) continue;
     const url =
-      CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[key] ??
+      CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[key] ??
       HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE[key];
     if (url) return url;
   }
