@@ -1,5 +1,5 @@
 import type { CatalogItemSchema, ProductVariant } from "@/lib/catalog-schema";
-import type { ImportedModelCatalog } from "@/lib/catalog/imported-model-assembly";
+import type { ImportedModelCatalog, ImportedProductDetails } from "@/lib/catalog/imported-model-assembly";
 import type { DesignItem } from "@/lib/room-types";
 
 export type ProductInfoRow = { label: string; value: string };
@@ -191,6 +191,70 @@ function findCatalogVariant(
   );
 }
 
+function normalizeDetailRows(rows: unknown): ProductInfoRow[] {
+  if (!Array.isArray(rows)) return [];
+  return rows
+    .map((row) => {
+      if (!isRecord(row)) return null;
+      const label = formatScalar(row.label).trim();
+      const value = formatScalar(row.value).trim();
+      return label && value ? { label, value } : null;
+    })
+    .filter((row): row is ProductInfoRow => row !== null);
+}
+
+function inferMaterialDetailKey(activeVariant: ProductVariant | null): string | null {
+  const explicit = activeVariant?.materialType?.trim().toLowerCase();
+  if (explicit) return explicit;
+
+  const text = [
+    activeVariant?.finishCode,
+    activeVariant?.finishLabel,
+    activeVariant?.label,
+    activeVariant?.swatchGroup,
+    activeVariant?.collectionType,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  if (text.includes("leather")) return "leather";
+  if (text.includes("fabric") || text.includes("upholstery")) return "fabric";
+  if (text.includes("wood")) return "wood";
+  return null;
+}
+
+function resolveProductDetails(
+  catalog: ImportedModelCatalog | null,
+  activeVariant: ProductVariant | null
+): ImportedProductDetails | null {
+  if (!catalog) return null;
+  const materialKey = inferMaterialDetailKey(activeVariant);
+  const byMaterialType = isRecord(catalog.product_details_by_material_type)
+    ? catalog.product_details_by_material_type
+    : null;
+  const materialDetails =
+    materialKey && isRecord(byMaterialType?.[materialKey])
+      ? (byMaterialType[materialKey] as ImportedProductDetails)
+      : null;
+  return materialDetails ?? catalog.product_details ?? null;
+}
+
+export function buildProductDetailDimensionRows(args: {
+  selectedProduct: CatalogItemSchema | null;
+  selectedItem: DesignItem | null;
+  selectedImportedCatalog: ImportedModelCatalog | null;
+}): ProductInfoRow[] {
+  const { selectedProduct, selectedItem, selectedImportedCatalog } = args;
+  if (!selectedProduct) return [];
+  const activeVariant =
+    selectedProduct.variants.find((variant) => variant.id === selectedItem?.variantId) ??
+    selectedProduct.variants[0] ??
+    null;
+  const details = resolveProductDetails(selectedImportedCatalog, activeVariant);
+  return normalizeDetailRows(details?.dimensions);
+}
+
 function buildMaterialRows(args: {
   selectedProduct: CatalogItemSchema;
   activeVariant: ProductVariant | null;
@@ -299,9 +363,14 @@ export function buildProductInfoSections(args: {
     selectedProduct.variants[0] ??
     null;
   const catalogVariant = findCatalogVariant(selectedImportedCatalog, activeVariant);
+  const productDetails = resolveProductDetails(selectedImportedCatalog, activeVariant);
+  const productDetailMaterialRows = normalizeDetailRows(productDetails?.material);
+  const productDetailDeliveryRows = normalizeDetailRows(productDetails?.delivery_and_warranty);
 
   const material = override?.material?.length
     ? override.material
+    : productDetailMaterialRows.length
+      ? productDetailMaterialRows
     : buildMaterialRows({
         selectedProduct,
         activeVariant,
@@ -311,6 +380,8 @@ export function buildProductInfoSections(args: {
 
   const deliveryWarranty = override?.deliveryWarranty?.length
     ? override.deliveryWarranty
+    : productDetailDeliveryRows.length
+      ? productDetailDeliveryRows
     : buildDeliveryWarrantyRows(selectedImportedCatalog);
 
   return {

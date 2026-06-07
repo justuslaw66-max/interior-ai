@@ -47,6 +47,17 @@ export type ImportedConfigurationEntry = {
   node_transforms?: Record<string, unknown>;
 };
 
+export type ImportedProductInfoRow = {
+  label?: string;
+  value?: string;
+};
+
+export type ImportedProductDetails = {
+  material?: ImportedProductInfoRow[];
+  dimensions?: ImportedProductInfoRow[];
+  delivery_and_warranty?: ImportedProductInfoRow[];
+};
+
 export type ImportedModelCatalog = {
   brand?: string;
   retailer?: string;
@@ -115,6 +126,8 @@ export type ImportedModelCatalog = {
       product_name?: string;
     }>;
   } | null;
+  product_details?: ImportedProductDetails;
+  product_details_by_material_type?: Record<string, ImportedProductDetails>;
   upholstery_options?: Array<{
     upholstery_code?: string;
     upholstery_label?: string;

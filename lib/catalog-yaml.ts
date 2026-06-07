@@ -98,6 +98,17 @@ export type CatalogYamlVariantEntry = {
   set_compatibility?: Record<string, unknown>;
 };
 
+export type CatalogYamlProductInfoRow = {
+  label: string;
+  value: string;
+};
+
+export type CatalogYamlProductDetails = {
+  material?: CatalogYamlProductInfoRow[];
+  dimensions?: CatalogYamlProductInfoRow[];
+  delivery_and_warranty?: CatalogYamlProductInfoRow[];
+};
+
 export type CatalogYamlEntry = {
   status?: string;
   publication_state?: string;
@@ -153,6 +164,8 @@ export type CatalogYamlEntry = {
   compatibility?: Record<string, unknown>;
   bundle_metadata?: Record<string, unknown>;
   shipping_and_warranty?: Record<string, unknown>;
+  product_details?: CatalogYamlProductDetails;
+  product_details_by_material_type?: Record<string, CatalogYamlProductDetails>;
 
   // Configurable/open-state products
   feature_flags?: Record<string, unknown>;
