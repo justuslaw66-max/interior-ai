@@ -6081,8 +6081,11 @@ function PageContent() {
                   </div>
                   {selectedProductDetailSections?.material?.length ? (
                     <div className="space-y-2">
-                      {selectedProductDetailSections.material.map((detail) => (
-                        <div key={detail.label} className="grid grid-cols-[132px_1fr] gap-3">
+                      {selectedProductDetailSections.material.map((detail, index) => (
+                        <div
+                          key={`${detail.label}-${detail.value}-${index}`}
+                          className="grid grid-cols-[132px_1fr] gap-3"
+                        >
                           <div
                             className={
                               showDesignerTheme
@@ -6140,8 +6143,11 @@ function PageContent() {
                       />
                     </div>
                   ) : null}
-                  {fullDimensionsDetails.map((detail) => (
-                    <div key={detail.label} className="grid grid-cols-[140px_1fr] gap-2">
+                  {fullDimensionsDetails.map((detail, index) => (
+                    <div
+                      key={`${detail.label}-${detail.value}-${index}`}
+                      className="grid grid-cols-[140px_1fr] gap-2"
+                    >
                       <div
                         className={
                           showDesignerTheme
@@ -6184,8 +6190,11 @@ function PageContent() {
                     Delivery & warranty
                   </div>
                   <div className="space-y-2">
-                    {selectedProductDetailSections.deliveryWarranty.map((detail) => (
-                      <div key={detail.label} className="grid grid-cols-[132px_1fr] gap-3">
+                    {selectedProductDetailSections.deliveryWarranty.map((detail, index) => (
+                      <div
+                        key={`${detail.label}-${detail.value}-${index}`}
+                        className="grid grid-cols-[132px_1fr] gap-3"
+                      >
                         <div
                           className={
                             showDesignerTheme
