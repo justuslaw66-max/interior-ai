@@ -14,9 +14,9 @@ design_zone: "living_zone"
 anchor_role: "sofa_anchor"
 
 dimensions:
-  width_cm: 200
-  depth_cm: 90
-  height_cm: 80
+  width_cm: 173
+  depth_cm: 97
+  height_cm: 87
 
 seat_capacity: 2
 size_class: "medium"
@@ -53,6 +53,108 @@ placement_rules:
   clearance_sensitive: true
   center_room_preferred: false
 
+product_details_by_material_type:
+  fabric:
+    material:
+      - label: "Material"
+        value: "Frame: engineered wood with plywood; Leg: solid rubber wood"
+      - label: "Filling"
+        value: "Foam, fibre and pocket spring filled seat; Fibre filled back"
+      - label: "Finish"
+        value: "Walnut stain"
+      - label: "Care"
+        value: "Fabric sofa, wooden legs"
+      - label: "Suspension"
+        value: "Sinuous spring"
+      - label: "Cover type"
+        value: "Removable back cushion and bolster covers"
+      - label: "Material & safety standards"
+        value: "Low formaldehyde"
+    dimensions:
+      - label: "Dimension"
+        value: "W173 x D97 x H87cm"
+      - label: "Armrest height"
+        value: "69cm (floor to arm)"
+      - label: "Seating depth"
+        value: "61cm"
+      - label: "Seatable width"
+        value: "147cm"
+      - label: "Seating height"
+        value: "47cm"
+      - label: "Leg height"
+        value: "17cm"
+      - label: "Backrest height"
+        value: "39cm"
+      - label: "Product weight"
+        value: "49kg"
+      - label: "Packaging dimensions"
+        value: "1 box"
+      - label: "Max bearing support"
+        value: "2 x 150kg"
+      - label: "Cushion"
+        value: "2 Bolsters included (17 x D56cm)"
+    delivery_and_warranty:
+      - label: "Cancellation"
+        value: "Free—5 working days before delivery"
+      - label: "Warranty"
+        value: "Frame 10 years; Fabric 1 year; Foam 2 years"
+      - label: "Return policy"
+        value: "30-day returns"
+      - label: "Assembly"
+        value: "Legs to be fitted"
+  leather:
+    material:
+      - label: "Material"
+        value: "Frame: engineered wood with plywood; Leg: solid rubber wood"
+      - label: "Filling"
+        value: "Foam, fibre and pocket spring filled seat; Fibre filled back"
+      - label: "Finish"
+        value: "Walnut stain"
+      - label: "Care"
+        value: "Leather sofa, wooden legs"
+      - label: "Suspension"
+        value: "Sinuous spring"
+      - label: "Cover type"
+        value: "Removable back cushion and bolster covers"
+      - label: "Colour variance"
+        value: "Leather variations"
+      - label: "Material & safety standards"
+        value: "Low formaldehyde"
+      - label: "Material details"
+        value: "Top grain leather. Crafted from American hides."
+    dimensions:
+      - label: "Dimension"
+        value: "W173 x D97 x H87cm"
+      - label: "Armrest height"
+        value: "69cm (floor to arm)"
+      - label: "Seating depth"
+        value: "61cm"
+      - label: "Seatable width"
+        value: "147cm"
+      - label: "Seating height"
+        value: "49cm"
+      - label: "Leg height"
+        value: "17cm"
+      - label: "Backrest height"
+        value: "39cm"
+      - label: "Product weight"
+        value: "52kg"
+      - label: "Packaging dimensions"
+        value: "1 box"
+      - label: "Max bearing support"
+        value: "2 x 150kg"
+      - label: "Cushion"
+        value: "2 Bolsters included (17 x D56cm)"
+    delivery_and_warranty:
+      - label: "Cancellation"
+        value: "Free—5 working days before delivery"
+      - label: "Warranty"
+        value: "Frame 10 years; Leather 1 year; Foam 2 years"
+      - label: "Return policy"
+        value: "30-day returns"
+      - label: "Assembly"
+        value: "Legs to be fitted"
+
 design_pairings:
   - "coffee_table"
   - "side_table"
@@ -88,9 +190,9 @@ variants:
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions:
-      width_cm: 200
-      depth_cm: 90
-      height_cm: 80
+      width_cm: 173
+      depth_cm: 97
+      height_cm: 87
     seat_capacity: 2
     size_class: "medium"
     color_family: "beige"
@@ -112,9 +214,9 @@ variants:
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions:
-      width_cm: 200
-      depth_cm: 90
-      height_cm: 80
+      width_cm: 173
+      depth_cm: 97
+      height_cm: 87
     seat_capacity: 2
     size_class: "medium"
     color_family: "grey"
@@ -144,9 +246,9 @@ variants:
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions:
-      width_cm: 200
-      depth_cm: 90
-      height_cm: 80
+      width_cm: 173
+      depth_cm: 97
+      height_cm: 87
     seat_capacity: 2
     size_class: "medium"
     color_family: "green"
@@ -176,9 +278,9 @@ variants:
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions:
-      width_cm: 200
-      depth_cm: 90
-      height_cm: 80
+      width_cm: 173
+      depth_cm: 97
+      height_cm: 87
     seat_capacity: 2
     size_class: "medium"
     color_family: "brown"
