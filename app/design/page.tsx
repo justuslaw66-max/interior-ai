@@ -17,6 +17,7 @@ import CartSidebar from "@/components/CartSidebar";
 import QuickAddPanel from "@/components/QuickAddPanel";
 import ItemCartDrawer from "@/components/ItemCartDrawer";
 import { LightingPresetsUI } from "@/components/LightingPresetsUI";
+import LazyImage from "@/components/common/LazyImage";
 import { LIGHTING_PRESETS, type LightingPreset } from "@/lib/lightingPresets";
 import { CATALOG_ITEMS, CATALOG_ITEMS_MAP } from "@/lib/catalog";
 import { bulkSwapItems } from "@/lib/bulkSwap";
@@ -71,7 +72,6 @@ import {
 import { mapToTopCategory } from "@/lib/catalog/view-builders";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import {
-  formatMoney,
   formatTimeAgo,
   getDimensions,
   getItemPrice,
@@ -79,6 +79,7 @@ import {
   normalizeRotationDegrees,
   snapRotationRadians,
 } from "@/lib/design-page-utils";
+import { buildProductInfoSections } from "@/lib/design-page-product-info";
 import {
   MODEL_FAMILY_BY_PRODUCT_ID,
   MODEL_SELECTOR_PRODUCT_IDS_BY_PRODUCT_ID,
@@ -93,6 +94,7 @@ import {
   getSloaneBenchProductId,
   CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE,
   HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE,
+  PRODUCT_DETAIL_SECTIONS_BY_PRODUCT_ID,
   resolveFabricDetailProfile,
 } from "@/lib/design-page-product-data";
 import {
@@ -2581,6 +2583,7 @@ function PageContent() {
 
   const [showInspectorDetails, setShowInspectorDetails] = useState(false);
   const [showFullDimensions, setShowFullDimensions] = useState(false);
+  const [showDeliveryWarranty, setShowDeliveryWarranty] = useState(false);
   const [showRotationControls, setShowRotationControls] = useState(false);
   const [previewVariantId, setPreviewVariantId] = useState<string | null>(null);
   const [previewMaterialPresetId, setPreviewMaterialPresetId] = useState<string | null>(null);
@@ -2690,6 +2693,7 @@ function PageContent() {
     resolveConfiguredNodeTransforms,
     resolveConfiguredModelUrl,
     selectedProduct,
+    selectedImportedCatalog,
     selectedConfigurationCode,
     selectedConfigUi,
     selectedConfigOptions,
@@ -2724,7 +2728,7 @@ function PageContent() {
     activeVariantColorHex,
     activeColourLabel,
     showFabricGroupingDebug: _showFabricGroupingDebug,
-    selectedModelLabel,
+    selectedModelLabel: _selectedModelLabel,
     selectedCategoryDebugLabel,
     isCasaTvConsoleSelected: _isCasaTvConsoleSelected,
     isSebTvConsoleSelected: _isSebTvConsoleSelected,
@@ -2761,6 +2765,30 @@ function PageContent() {
   const selectedResolvedVariant = useMemo(() => {
     if (!selectedProduct) return null;
     return resolveCatalogVariant(selectedProduct, selectedItem?.variantId);
+  }, [selectedItem?.variantId, selectedProduct]);
+
+  const selectedProductDetailSections = useMemo(
+    () =>
+      buildProductInfoSections({
+        selectedProduct,
+        selectedItem,
+        selectedImportedCatalog,
+        override: selectedProduct
+          ? PRODUCT_DETAIL_SECTIONS_BY_PRODUCT_ID[selectedProduct.id] ?? null
+          : null,
+      }),
+    [selectedImportedCatalog, selectedItem, selectedProduct]
+  );
+  const selectedDimensionImageUrl = useMemo(() => {
+    if (!selectedProduct) return null;
+    const activeVariant =
+      selectedProduct.variants.find((variant) => variant.id === selectedItem?.variantId) ??
+      selectedProduct.variants[0];
+    const images = [
+      ...(activeVariant?.galleryImages ?? []),
+      ...(selectedProduct.metadata?.galleryImages ?? []),
+    ];
+    return images.find((url) => /(?:-|_)dim(?:-|_|\.)/i.test(url)) ?? null;
   }, [selectedItem?.variantId, selectedProduct]);
 
   const huggFabricSwatchOptions = useMemo(() => {
@@ -2837,11 +2865,104 @@ function PageContent() {
     return options;
   }, [isHuggWithWoodOptions, selectedProduct]);
 
+  const singleWoodFinishSwatch = useMemo(() => {
+    if (!selectedProduct || !activeStructuredVariant) return null;
+    if (showFinishSection || huggFabricSwatchOptions.length > 1) return null;
+
+    const visibleSwatchCount = groupedVisibleColourVariants.reduce(
+      (count, group) => count + group.entries.length,
+      0
+    );
+    if (visibleSwatchCount > 1) return null;
+
+    const { variant } = activeStructuredVariant;
+    const swatchGroup = String(variant.swatchGroup ?? "").trim().toLowerCase();
+    const isWoodFinish =
+      swatchGroup.includes("wood") || activeStructuredVariant.materialType === "Wood";
+    if (!isWoodFinish) return null;
+
+    const normalizeSwatchKey = (value?: string | null) =>
+      String(value ?? "")
+        .trim()
+        .toLowerCase()
+        .replace(/_/g, "-")
+        .replace(/[^a-z0-9-]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+    const finishKey = normalizeSwatchKey(variant.finishCode);
+    const finishLabelKey = normalizeSwatchKey(
+      variant.finishLabel ?? activeStructuredVariant.colourLabel
+    );
+    const colourLabelKey = normalizeSwatchKey(activeStructuredVariant.colourLabel);
+    const sourceSwatches = selectedProduct.id.toLowerCase().includes("hugg")
+      ? HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE
+      : CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE;
+    const swatchTextureUrl =
+      sourceSwatches[finishKey] ??
+      sourceSwatches[finishLabelKey] ??
+      sourceSwatches[colourLabelKey] ??
+      null;
+    const colorHex = variant.swatchHex ?? variant.colorHex ?? activeVariantColorHex ?? "#c8b79f";
+    if (!swatchTextureUrl && !colorHex) return null;
+
+    return {
+      label:
+        variant.finishLabel?.trim() ||
+        activeStructuredVariant.colourLabel.trim() ||
+        variant.label.trim(),
+      colorHex,
+      swatchTextureUrl,
+    };
+  }, [
+    activeStructuredVariant,
+    activeVariantColorHex,
+    groupedVisibleColourVariants,
+    huggFabricSwatchOptions.length,
+    selectedProduct,
+    showFinishSection,
+  ]);
+
+  const huggModelOptions = useMemo(() => {
+    if (!isHuggWithWoodOptions || !selectedProduct) {
+      return [] as Array<{
+        key: "square" | "rectangular" | "side-table";
+        label: string;
+        productId: string;
+        active: boolean;
+      }>;
+    }
+
+    const match = selectedProduct.id.match(
+      /^coffee-real-castlery-hugg-nesting-(square|rectangular|side-table)-performance-(dune|basalt)-(closed|opened)$/
+    );
+    if (!match) return [];
+
+    const currentModel = match[1] as "square" | "rectangular" | "side-table";
+    const fabric = match[2] as "dune" | "basalt";
+    const layoutState = match[3] as "closed" | "opened";
+    const options = [
+      { key: "square" as const, label: "Square" },
+      { key: "rectangular" as const, label: "Rectangular" },
+      { key: "side-table" as const, label: "Side table" },
+    ];
+
+    return options
+      .map((option) => {
+        const productId = `coffee-real-castlery-hugg-nesting-${option.key}-performance-${fabric}-${layoutState}`;
+        return {
+          ...option,
+          productId,
+          active: option.key === currentModel,
+        };
+      })
+      .filter((option) => Boolean(CATALOG_ITEMS[option.productId]));
+  }, [isHuggWithWoodOptions, selectedProduct]);
+
   useEffect(() => {
     setPreviewVariantId(null);
     setPreviewMaterialPresetId(null);
     setShowInspectorDetails(false);
     setShowFullDimensions(false);
+    setShowDeliveryWarranty(false);
     setShowRotationControls(false);
   }, [selectedInstanceId]);
 
@@ -5907,6 +6028,22 @@ function PageContent() {
                   >
                     {showFullDimensions ? "Hide full dimensions" : "Full dimensions"}
                   </button>
+                  <button
+                    className={
+                      showDesignerTheme
+                        ? "designer-text-secondary rounded-md border border-white/15 px-2 py-1 text-xs hover:text-white disabled:opacity-40"
+                        : "rounded-md border border-neutral-200 px-2 py-1 text-xs text-neutral-700 hover:bg-neutral-50 disabled:opacity-50"
+                    }
+                    disabled={!selectedProductDetailSections?.deliveryWarranty?.length}
+                    onClick={() => setShowDeliveryWarranty((value) => !value)}
+                    title={
+                      selectedProductDetailSections?.deliveryWarranty?.length
+                        ? "Show delivery and warranty"
+                        : "Delivery and warranty details not added for this item yet"
+                    }
+                  >
+                    {showDeliveryWarranty ? "Hide delivery" : "Delivery & warranty"}
+                  </button>
                   {selectedItem ? (
                     <button
                       className={
@@ -5928,48 +6065,58 @@ function PageContent() {
                 <div
                   className={
                     showDesignerTheme
-                      ? "designer-text-secondary mt-2 space-y-1 text-sm"
-                      : "mt-2 space-y-1 text-sm text-neutral-900"
+                      ? "mt-2 space-y-3 rounded-lg border border-white/15 bg-white/5 p-3"
+                      : "mt-2 space-y-3 rounded-lg border border-neutral-200 bg-neutral-50 p-3"
                   }
+                  data-testid="selected-product-details-panel"
                 >
-                  <div>ID: {selectedProduct.id}</div>
-                  <div>Price: {formatMoney(getItemPrice(selectedProduct))}</div>
-                  <div>
-                    Size: {Math.round(selectedProduct.dimsMm.w / 10)} x {Math.round(selectedProduct.dimsMm.d / 10)} x {Math.round(selectedProduct.dimsMm.h / 10)} cm
-                  </div>
                   <div
                     className={
                       showDesignerTheme
-                        ? "mt-3 space-y-2 rounded-lg border border-white/15 bg-white/5 p-3"
-                        : "mt-3 space-y-2 rounded-lg border border-neutral-200 bg-neutral-50 p-3"
+                        ? "designer-text-primary text-xs font-semibold uppercase tracking-[0.08em]"
+                        : "text-xs font-semibold uppercase tracking-[0.08em] text-neutral-700"
                     }
                   >
+                    Material
+                  </div>
+                  {selectedProductDetailSections?.material?.length ? (
+                    <div className="space-y-2">
+                      {selectedProductDetailSections.material.map((detail) => (
+                        <div key={detail.label} className="grid grid-cols-[132px_1fr] gap-3">
+                          <div
+                            className={
+                              showDesignerTheme
+                                ? "designer-text-secondary text-xs"
+                                : "text-xs text-neutral-600"
+                            }
+                          >
+                            {detail.label}:
+                          </div>
+                          <div
+                            className={
+                              showDesignerTheme
+                                ? "designer-text-primary text-xs"
+                                : "text-xs text-neutral-900"
+                            }
+                          >
+                            {detail.value}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
                     <div
                       className={
                         showDesignerTheme
-                          ? "designer-text-primary text-xs font-semibold uppercase tracking-[0.08em]"
-                          : "text-xs font-semibold uppercase tracking-[0.08em] text-neutral-700"
+                          ? "designer-text-secondary text-xs"
+                          : "text-xs text-neutral-700"
                       }
                     >
-                      Debug metadata
+                      {selectedBrand ? `${selectedBrand} - ` : ""}
+                      {selectedCategoryDebugLabel ?? selectedProduct.category.replace(/_/g, " ")}
+                      {activeVariantLabel ? ` - ${activeVariantLabel}` : ""}
                     </div>
-                    <div className="grid grid-cols-[92px_1fr] gap-x-2 gap-y-1 text-xs">
-                      <div>Brand</div>
-                      <div>{selectedBrand ?? "-"}</div>
-                      <div>Model</div>
-                      <div>{selectedModelLabel ?? selectedModelTitle ?? "-"}</div>
-                      <div>Category</div>
-                      <div>{selectedCategoryDebugLabel ?? "-"}</div>
-                      <div>Variant</div>
-                      <div>{activeVariantLabel ?? "-"}</div>
-                      <div>Colour</div>
-                      <div>{activeVariantColorHex ?? "-"}</div>
-                      <div>Asset ID</div>
-                      <div>{selectedProduct.assets.assetId ?? "-"}</div>
-                      <div>Model URL</div>
-                      <div className="break-all">{selectedProduct.assets.modelUrl ?? "-"}</div>
-                    </div>
-                  </div>
+                  )}
                 </div>
               )}
 
@@ -5980,7 +6127,19 @@ function PageContent() {
                       ? "mt-2 space-y-2 rounded-lg border border-white/15 bg-white/5 p-3"
                       : "mt-2 space-y-2 rounded-lg border border-neutral-200 bg-neutral-50 p-3"
                   }
+                  data-testid="selected-product-dimensions-panel"
                 >
+                  {selectedDimensionImageUrl ? (
+                    <div className="mb-3 overflow-hidden rounded-md bg-white">
+                      <LazyImage
+                        src={selectedDimensionImageUrl}
+                        alt={`${selectedModelTitle ?? selectedProduct.title} dimensions`}
+                        className="aspect-4/3 w-full"
+                        imageClassName="object-contain object-center"
+                        testId="selected-product-dimensions-image"
+                      />
+                    </div>
+                  ) : null}
                   {fullDimensionsDetails.map((detail) => (
                     <div key={detail.label} className="grid grid-cols-[140px_1fr] gap-2">
                       <div
@@ -6003,6 +6162,51 @@ function PageContent() {
                       </div>
                     </div>
                   ))}
+                </div>
+              ) : null}
+
+              {showDeliveryWarranty && selectedProductDetailSections?.deliveryWarranty?.length ? (
+                <div
+                  className={
+                    showDesignerTheme
+                      ? "mt-2 space-y-3 rounded-lg border border-white/15 bg-white/5 p-3"
+                      : "mt-2 space-y-3 rounded-lg border border-neutral-200 bg-neutral-50 p-3"
+                  }
+                  data-testid="selected-product-delivery-warranty-panel"
+                >
+                  <div
+                    className={
+                      showDesignerTheme
+                        ? "designer-text-primary text-xs font-semibold uppercase tracking-[0.08em]"
+                        : "text-xs font-semibold uppercase tracking-[0.08em] text-neutral-700"
+                    }
+                  >
+                    Delivery & warranty
+                  </div>
+                  <div className="space-y-2">
+                    {selectedProductDetailSections.deliveryWarranty.map((detail) => (
+                      <div key={detail.label} className="grid grid-cols-[132px_1fr] gap-3">
+                        <div
+                          className={
+                            showDesignerTheme
+                              ? "designer-text-secondary text-xs"
+                              : "text-xs text-neutral-600"
+                          }
+                        >
+                          {detail.label}:
+                        </div>
+                        <div
+                          className={
+                            showDesignerTheme
+                              ? "designer-text-primary text-xs"
+                              : "text-xs text-neutral-900"
+                          }
+                        >
+                          {detail.value}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ) : null}
             </div>
@@ -6735,6 +6939,96 @@ function PageContent() {
               </div>
             ) : null}
 
+            {huggModelOptions.length > 1 ? (
+              <div className="pt-3">
+                <div
+                  className={
+                    showDesignerTheme
+                      ? "designer-text-primary text-sm font-semibold"
+                      : "text-sm font-semibold text-neutral-900"
+                  }
+                >
+                  Model
+                </div>
+
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {huggModelOptions.map((option) => (
+                    <button
+                      key={option.key}
+                      className={`rounded-lg border px-3 py-2 text-sm ${
+                        showDesignerTheme
+                          ? "designer-text-primary"
+                          : "text-neutral-900"
+                      } ${option.active ? "designer-accent-border" : "border-neutral-200"}`}
+                      data-testid={`hugg-model-option-${option.key}`}
+                      disabled={!canEdit}
+                      onClick={() => {
+                        if (!selectedItem || option.active) return;
+
+                        ensureImportedCatalogItem(option.productId);
+                        const optionProduct = CATALOG_ITEMS[option.productId];
+                        if (!optionProduct) return;
+
+                        const currentVariant = selectedProduct.variants.find(
+                          (variant) => variant.id === selectedItem.variantId
+                        );
+                        const currentFinishCode = currentVariant?.finishCode
+                          ?.trim()
+                          .toLowerCase();
+                        const currentFinishLabel = (
+                          currentVariant?.finishLabel ??
+                          currentVariant?.label ??
+                          ""
+                        )
+                          .trim()
+                          .toLowerCase();
+                        const nextVariant =
+                          optionProduct.variants.find(
+                            (variant) =>
+                              currentVariant?.id && variant.id === currentVariant.id
+                          ) ??
+                          optionProduct.variants.find(
+                            (variant) =>
+                              currentFinishCode &&
+                              variant.finishCode?.trim().toLowerCase() ===
+                                currentFinishCode
+                          ) ??
+                          optionProduct.variants.find((variant) => {
+                            const label = (
+                              variant.finishLabel ??
+                              variant.label ??
+                              ""
+                            )
+                              .trim()
+                              .toLowerCase();
+                            return Boolean(currentFinishLabel && label === currentFinishLabel);
+                          }) ??
+                          optionProduct.variants[0];
+
+                        commitItems(
+                          (prev) =>
+                            prev.map((it) =>
+                              it.instanceId === selectedItem.instanceId
+                                ? {
+                                    ...it,
+                                    productId: optionProduct.id,
+                                    variantId:
+                                      nextVariant?.id ?? optionProduct.defaultVariantId,
+                                  }
+                                : it
+                            ),
+                          `Change Hugg model to ${option.label}`
+                        );
+                      }}
+                      title={option.label}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
             {selectedItem && selectedConfigOptions.length > 1 ? (
               <div className="pt-3">
                 <div
@@ -7204,6 +7498,45 @@ function PageContent() {
                   );
                 })}
               </div>
+              </div>
+            ) : null}
+
+            {singleWoodFinishSwatch ? (
+              <div className="pt-3" data-testid="selected-single-finish-section">
+                <div
+                  className={
+                    showDesignerTheme
+                      ? "designer-text-primary text-sm font-semibold"
+                      : "text-sm font-semibold text-neutral-900"
+                  }
+                >
+                  Wood colour
+                </div>
+                <div
+                  className={
+                    showDesignerTheme
+                      ? "designer-text-secondary mt-2 text-xs"
+                      : "mt-2 text-xs text-neutral-600"
+                  }
+                  data-testid="selected-single-finish-label"
+                >
+                  Selected: {singleWoodFinishSwatch.label}
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <div
+                    className="shrink-0 h-20 w-20 rounded-sm bg-cover bg-center"
+                    data-testid="selected-single-finish-swatch"
+                    role="img"
+                    aria-label={`${singleWoodFinishSwatch.label} wood swatch`}
+                    style={{
+                      backgroundColor: singleWoodFinishSwatch.colorHex,
+                      backgroundImage: singleWoodFinishSwatch.swatchTextureUrl
+                        ? `url(${singleWoodFinishSwatch.swatchTextureUrl})`
+                        : undefined,
+                      boxShadow: "0 0 0 2px #fff, 0 0 0 4px #5a2135",
+                    }}
+                  />
+                </div>
               </div>
             ) : null}
 

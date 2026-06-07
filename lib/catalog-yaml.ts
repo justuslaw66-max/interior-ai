@@ -152,6 +152,7 @@ export type CatalogYamlEntry = {
   design_pairings?: string[];
   compatibility?: Record<string, unknown>;
   bundle_metadata?: Record<string, unknown>;
+  shipping_and_warranty?: Record<string, unknown>;
 
   // Configurable/open-state products
   feature_flags?: Record<string, unknown>;

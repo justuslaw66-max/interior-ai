@@ -264,6 +264,8 @@ export const CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE: Record<string, string>
   "natural-oak": "https://res.cloudinary.com/castlery/image/upload/w_128,f_auto,q_auto/v1756719854/knight/cms/swatch/Mori-Side-Table-Square-Det_4.jpg",
   "chestnut-oak": "https://res.cloudinary.com/castlery/image/upload/w_128,f_auto,q_auto/v1697793942/knight/cms/swatch/Kinsley-TV-Console-Chestnut-Oak-Square-Det_1.jpg",
   "black-oak": "https://res.cloudinary.com/castlery/image/upload/w_128,f_auto,q_auto/v1716346211/knight/cms/swatch/Sofa-Armrest-Table-Black-Square-Det_1.jpg",
+  "caramel": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1746761565/crusader/variants/40550324/Arcadia-Coffee-Table-Caramel-Oak-Square-Det_18-1746761563.jpg",
+  "caramel-oak": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1746761565/crusader/variants/40550324/Arcadia-Coffee-Table-Caramel-Oak-Square-Det_18-1746761563.jpg",
   "ng-4001": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1665460017/crusader/variants/NG-4001/Beach-Linen_1-1665460015.jpg",
   "navagio-beach-linen": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1665460017/crusader/variants/NG-4001/Beach-Linen_1-1665460015.jpg",
   "beach-linen": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1665460017/crusader/variants/NG-4001/Beach-Linen_1-1665460015.jpg",
@@ -445,6 +447,14 @@ export function resolveFabricDetailProfile(params: {
 }
 
 export const FULL_DIMENSIONS_BY_PRODUCT_ID: Record<string, Array<{ label: string; value: string }>> = {
+  "coffee-real-castlery-arcadia-coffee-table": [
+    { label: "Dimension", value: "W120 x D60 x H38cm" },
+    { label: "Table top thickness", value: "1.9cm" },
+    { label: "Leg height", value: "2.5cm" },
+    { label: "Product weight", value: "30kg" },
+    { label: "Packaging dimensions", value: "1 box" },
+    { label: "Max bearing support", value: "50kg" },
+  ],
   "dining-real-castlery-sloane-travertine-220": [
     { label: "Dimension", value: "W225 x D100 x H76cm" },
     { label: "Table top thickness", value: "5cm" },
@@ -562,4 +572,28 @@ export const FULL_DIMENSIONS_BY_PRODUCT_ID: Record<string, Array<{ label: string
     { label: "Max bearing support", value: "50kg" },
     { label: "Product weight", value: "47.5kg" },
   ],
+};
+
+export const PRODUCT_DETAIL_SECTIONS_BY_PRODUCT_ID: Record<
+  string,
+  {
+    material?: Array<{ label: string; value: string }>;
+    deliveryWarranty?: Array<{ label: string; value: string }>;
+  }
+> = {
+  "coffee-real-castlery-arcadia-coffee-table": {
+    material: [
+      { label: "Material", value: "Engineered wood and oak veneer" },
+      { label: "Finish", value: "Waterbase wood" },
+      { label: "Care", value: "Wooden table" },
+      { label: "Colour variance", value: "Natural variations" },
+      { label: "Material & safety standards", value: "Low formaldehyde" },
+    ],
+    deliveryWarranty: [
+      { label: "Cancellation", value: "Free - 5 working days before delivery" },
+      { label: "Warranty", value: "5-year limited warranty" },
+      { label: "Return policy", value: "30-day returns" },
+      { label: "Assembly", value: "Legs to be fitted" },
+    ],
+  },
 };

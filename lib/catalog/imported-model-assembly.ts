@@ -74,6 +74,7 @@ export type ImportedModelCatalog = {
   shape?: string;
   baseType?: string;
   materialFamily?: string;
+  material_mix?: unknown;
   materials?: unknown;
   finish?: unknown;
   colorFamily?: string;
@@ -161,6 +162,8 @@ export type ImportedModelCatalog = {
       depth_cm?: number;
       height_cm?: number;
     };
+    materials?: Record<string, unknown>;
+    finish?: Record<string, unknown>;
     state_assets?: Record<
       string,
       {
@@ -169,6 +172,7 @@ export type ImportedModelCatalog = {
       }
     >;
   }>;
+  shipping_and_warranty?: Record<string, unknown>;
   aiFlags?: unknown;
 };
 

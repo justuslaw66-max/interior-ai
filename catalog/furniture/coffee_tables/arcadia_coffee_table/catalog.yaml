@@ -1,0 +1,234 @@
+status: "published"
+brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/arcadia-coffee-table?color_option=caramel_oak"
+category: "coffee_table"
+
+product_family: "Arcadia"
+product_name: "Arcadia Coffee Table"
+slug: "castlery-arcadia-coffee-table"
+variant: "Caramel Oak"
+
+price_usd: 749
+price_band: "mid_premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "secondary"
+
+dimensions:
+  width_cm: 120
+  depth_cm: 60
+  height_cm: 38
+
+size_class: "medium"
+shape: "rectangular"
+base_type: "pedestal"
+
+material_family: "wood"
+material_mix:
+  - "engineered_wood"
+  - "oak_veneer"
+
+color_family: "brown"
+tone: "warm"
+
+style_cluster: "modern"
+style_secondary: "contemporary"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "grounded"
+  edge_profile: "rounded_soft"
+  silhouette: "low_rectangular_table_with_arch_cutouts"
+  form_language: "soft_arch_storage_base"
+  descriptors:
+    - "arched_cutouts"
+    - "rounded_edges"
+    - "integrated_magazine_storage"
+    - "solid_block_base"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  storage_integrated: true
+  low_profile: true
+  center_table_suitable: true
+  works_in_medium_room: true
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+  - "open_plan"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: true
+  recommended_in_front_of:
+    - "sofa"
+    - "sectional_sofa"
+    - "loveseat"
+    - "accent_chair"
+  clearance_guidance:
+    sofa_to_table_cm_min: 30
+    sofa_to_table_cm_ideal: 40
+    circulation_cm_min: 60
+
+design_pairings:
+  - "sofa"
+  - "sectional_sofa"
+  - "loveseat"
+  - "side_table"
+  - "media_console"
+  - "rug"
+  - "floor_lamp"
+  - "accent_chair"
+
+compatibility:
+  related_products:
+    - product_family: "Arcadia"
+      product_name: "Arcadia Side Table"
+      relationship: "family_variant"
+      strength: "strong"
+    - product_family: "Madison"
+      product_name: "Madison Sofa"
+      relationship: "recommended_with"
+      strength: "medium"
+    - product_family: "Jaron"
+      product_name: "Jaron Recliner Sofa"
+      relationship: "recommended_with"
+      strength: "medium"
+
+recommendation_metadata:
+  recommendation_role: "living_room_surface"
+  primary_use_cases:
+    - "sofa_pairing"
+    - "centerpiece_surface"
+    - "magazine_storage"
+    - "coffee_table_storage"
+  suggest_when_scene_has:
+    - "sofa_without_coffee_table"
+    - "sectional_sofa_without_table"
+    - "living_room_missing_center_surface"
+    - "living_room_needing_open_storage"
+  avoid_when_scene_has:
+    - "oversized_coffee_table_already_present"
+    - "very_small_walkway_clearance"
+
+bundle_metadata:
+  bundle_role: "accent"
+  can_bundle_with:
+    - "sofa"
+    - "sectional_sofa"
+    - "side_table"
+    - "media_console"
+    - "rug"
+    - "floor_lamp"
+    - "accent_chair"
+  set_behavior:
+    supports_living_room_pairing: true
+    supports_storage_surface_pairing: true
+    supports_centerpiece_surface: true
+
+authoring_notes:
+  category_confidence: "high"
+  single_variant_expected: true
+  preset_family: "table"
+  source_checked: "Castlery Singapore product page, 2026-06-07"
+  note: "Published as a single verified Caramel Oak variant. Castlery lists model quick links for side table and coffee table, but this import covers the coffee table only."
+
+feature_flags:
+  has_storage: true
+  has_open_shelf: true
+  has_hidden_storage: false
+  has_drawers: false
+
+storage_profile:
+  storage_visibility: "open"
+  storage_access_style: "side_arch_cutout"
+  organization_type:
+    - "books_magazines"
+    - "trays"
+    - "decor_objects"
+    - "small_living_room_items"
+
+shipping_and_warranty:
+  free_delivery_threshold_sgd: 300
+  returns_window_days: 30
+  cancellation: "Free - 5 working days before delivery"
+  warranty: "5-year limited warranty"
+  return_policy: "30-day returns"
+  assembly: "Legs to be fitted"
+
+assets:
+  asset_id: "coffee-real-castlery-arcadia-coffee-table"
+  model_url: "/assets/models/coffee-real-castlery-arcadia-coffee-table.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1745228057/crusader/variants/40550324/Arcadia-Coffee-Table-Caramel-Oak-Front-1745228055.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1745228057/crusader/variants/40550324/Arcadia-Coffee-Table-Caramel-Oak-Front-1745228055.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1746583019/crusader/variants/40550324/Arcadia-Coffee-Table-Caramel-Oak-Square-Set_1-1746583016.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1746761565/crusader/variants/40550324/Arcadia-Coffee-Table-Caramel-Oak-Square-Det_18-1746761563.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1745228058/crusader/variants/40550324/Arcadia-Coffee-Table-Caramel-Oak-Square-Det_1-1745228055.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1745228057/crusader/variants/40550324/Arcadia-Coffee-Table-Caramel-Oak-Angle-1745228055.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1745228058/crusader/variants/40550324/Arcadia-Coffee-Table-Caramel-Oak-Angle_1-1745228055.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1745228057/crusader/variants/40550324/Arcadia-Coffee-Table-Caramel-Oak-Side-1745228055.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1745289854/crusader/variants/T40550324/Arcadia-Coffee-Table-Caramel-Oak-Dim-1745289852.jpg"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+
+variants:
+  - variant: "Arcadia Coffee Table / Caramel Oak"
+    sku: null
+    size_label: "120x60"
+    finish_code: "caramel_oak"
+    finish_label: "Caramel Oak"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1745228057/crusader/variants/40550324/Arcadia-Coffee-Table-Caramel-Oak-Front-1745228055.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1745228057/crusader/variants/40550324/Arcadia-Coffee-Table-Caramel-Oak-Front-1745228055.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1746583019/crusader/variants/40550324/Arcadia-Coffee-Table-Caramel-Oak-Square-Set_1-1746583016.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1746761565/crusader/variants/40550324/Arcadia-Coffee-Table-Caramel-Oak-Square-Det_18-1746761563.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1745228057/crusader/variants/40550324/Arcadia-Coffee-Table-Caramel-Oak-Angle-1745228055.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1745228057/crusader/variants/40550324/Arcadia-Coffee-Table-Caramel-Oak-Side-1745228055.jpg"
+    swatch_group: "wood_finish"
+
+    price_usd: 749
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+
+    dimensions:
+      width_cm: 120
+      depth_cm: 60
+      height_cm: 38
+
+    size_class: "medium"
+    color_family: "brown"
+    tone: "warm"
+
+    materials:
+      tabletop:
+        structure: "engineered_wood"
+        surface: "oak_veneer"
+      body:
+        structure: "engineered_wood"
+        surface: "oak_veneer"
+      base:
+        structure: "engineered_wood"
+        surface: "oak_veneer"
+
+    finish:
+      color_finish: "caramel_oak"
+      finish_color: "caramel_oak"
+      surface_finish: "matte"
+      protective_coating: "waterbase"
+      finish_system: "waterbase_wood"
+
+    storage:
+      has_storage: true
+      storage_type:
+        - "open_shelf"
+      access_style: "arched_cutout"
+
+    set_compatibility: []
