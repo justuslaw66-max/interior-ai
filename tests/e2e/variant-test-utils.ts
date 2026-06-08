@@ -76,12 +76,26 @@ export async function selectImportedFamilyByHint(page: Page, familyHint: string)
     .catch(() => false);
   if (!visible) return false;
 
-  const options = await listSelectOptions(familySelect);
-  const match = options.find((option) => option.label.toLowerCase().includes(familyHint.toLowerCase()));
-  if (!match) return false;
+  let matchValue = "";
+  const found = await expect
+    .poll(
+      async () => {
+        const options = await listSelectOptions(familySelect);
+        const match = options.find((option) =>
+          option.label.toLowerCase().includes(familyHint.toLowerCase()),
+        );
+        matchValue = match?.value ?? "";
+        return Boolean(matchValue);
+      },
+      { timeout: 30000 },
+    )
+    .toBeTruthy()
+    .then(() => true)
+    .catch(() => false);
+  if (!found || !matchValue) return false;
 
   try {
-    await familySelect.selectOption({ value: match.value });
+    await familySelect.selectOption({ value: matchValue });
     return true;
   } catch {
     return false;

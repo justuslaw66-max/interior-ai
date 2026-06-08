@@ -177,6 +177,13 @@ export function GLBScaledModel({
       sz = uniform;
     }
 
+    const rootTransform = nodeTransforms?.__root__;
+    if (rootTransform?.scale) {
+      sx *= rootTransform.scale[0];
+      sy *= rootTransform.scale[1];
+      sz *= rootTransform.scale[2];
+    }
+
     scene.scale.set(sx, sy, sz);
 
     const minYScaled = bbox.min.y * sy;
@@ -184,9 +191,23 @@ export function GLBScaledModel({
     if (calibration?.swapWidthDepthAxes) {
       scene.rotation.y = Math.PI / 2;
     }
+    if (rootTransform?.position) {
+      scene.position.x += rootTransform.position[0];
+      scene.position.y += rootTransform.position[1];
+      scene.position.z += rootTransform.position[2];
+    }
+    if (rootTransform?.rotation) {
+      scene.rotation.x += rootTransform.rotation[0];
+      scene.rotation.y += rootTransform.rotation[1];
+      scene.rotation.z += rootTransform.rotation[2];
+    }
+    if (typeof rootTransform?.visible === "boolean") {
+      scene.visible = rootTransform.visible;
+    }
 
     if (nodeTransforms) {
       Object.entries(nodeTransforms).forEach(([nodeName, transform]) => {
+        if (nodeName === "__root__") return;
         const node = scene.getObjectByName(nodeName);
         if (!node) return;
         if (transform.position) {

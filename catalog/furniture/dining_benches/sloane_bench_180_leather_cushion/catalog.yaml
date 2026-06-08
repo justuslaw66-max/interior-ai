@@ -79,6 +79,43 @@ bundle_metadata:
   set_behavior:
     supports_with_or_without_cushion: true
 
+product_details:
+  material:
+    - label: "Material"
+      value: "Cushion: top grain leather; Frame: engineered wood with oak veneer"
+    - label: "Filling"
+      value: "PU foam and polyester"
+    - label: "Finish"
+      value: "Grey oak on wood"
+    - label: "Care"
+      value: "Leather seating"
+    - label: "Colour variance"
+      value: "Disclaimer"
+    - label: "Material & safety standards"
+      value: "Low formaldehyde"
+    - label: "Material details"
+      value: "Top grain leather. Crafted from American hides."
+  dimensions:
+    - label: "Dimension"
+      value: "W180 x D41 x H51.5cm"
+    - label: "Seatable width"
+      value: "180cm"
+    - label: "Product weight"
+      value: "28.3kg"
+    - label: "Packaging dimensions"
+      value: "2 boxes"
+    - label: "Max bearing support"
+      value: "3 x 130kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Warranty"
+      value: "10-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Legs to be fitted"
+
 assets:
   asset_id: "dining-real-castlery-sloane-bench-180-leather-cushion"
   model_url: "/assets/models/dining-real-castlery-sloane-bench-180-leather-cushion.glb"

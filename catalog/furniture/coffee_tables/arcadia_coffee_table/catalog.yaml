@@ -160,6 +160,41 @@ shipping_and_warranty:
   return_policy: "30-day returns"
   assembly: "Legs to be fitted"
 
+product_details:
+  material:
+    - label: "Material"
+      value: "Engineered wood and oak veneer"
+    - label: "Finish"
+      value: "Waterbase wood"
+    - label: "Care"
+      value: "Wooden table"
+    - label: "Colour variance"
+      value: "Natural variations"
+    - label: "Material & safety standards"
+      value: "Low formaldehyde"
+  dimensions:
+    - label: "Dimension"
+      value: "W120 x D60 x H38cm"
+    - label: "Table top thickness"
+      value: "1.9cm"
+    - label: "Leg height"
+      value: "2.5cm"
+    - label: "Product weight"
+      value: "30kg"
+    - label: "Packaging dimensions"
+      value: "1 box"
+    - label: "Max bearing support"
+      value: "50kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Warranty"
+      value: "5-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Legs to be fitted"
+
 assets:
   asset_id: "coffee-real-castlery-arcadia-coffee-table"
   model_url: "/assets/models/coffee-real-castlery-arcadia-coffee-table.glb"

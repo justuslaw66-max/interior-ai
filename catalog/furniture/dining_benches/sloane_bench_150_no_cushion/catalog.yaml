@@ -79,6 +79,24 @@ bundle_metadata:
   set_behavior:
     supports_with_or_without_cushion: true
 
+product_details:
+  dimensions:
+    - label: "Dimension"
+      value: "W150 x D39.5 x H45cm"
+    - label: "Product weight"
+      value: "22.8kg"
+    - label: "Packaging dimensions"
+      value: "1 box"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Warranty"
+      value: "10-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Legs to be fitted"
+
 assets:
   asset_id: "dining-real-castlery-sloane-bench-150-no-cushion"
   model_url: "/assets/models/dining-real-castlery-sloane-bench-150-no-cushion.glb"

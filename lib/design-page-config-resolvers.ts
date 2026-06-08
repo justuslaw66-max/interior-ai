@@ -74,7 +74,11 @@ export function resolveConfiguredVisualDimsMm(
       };
     })();
 
-  const baseVisualDims = visualDims ?? { ...fallbackProduct.dimsMm };
+  if (visualDims) {
+    return visualDims;
+  }
+
+  const baseVisualDims = { ...fallbackProduct.dimsMm };
   const selectedVariant = fallbackProduct.variants.find((variant) => variant.id === item.variantId);
   const variantDims = selectedVariant?.dimensionsMm;
 
@@ -113,7 +117,11 @@ export function resolveConfiguredPlanningDimsMm(
       };
     })();
 
-  const basePlanningDims = planningDims ?? resolveConfiguredVisualDimsMm(item, fallbackProduct, ctx);
+  if (planningDims) {
+    return planningDims;
+  }
+
+  const basePlanningDims = resolveConfiguredVisualDimsMm(item, fallbackProduct, ctx);
   const selectedVariant = fallbackProduct.variants.find((variant) => variant.id === item.variantId);
   const variantDims = selectedVariant?.dimensionsMm;
 

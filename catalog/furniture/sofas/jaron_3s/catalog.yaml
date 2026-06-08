@@ -14,7 +14,7 @@ design_zone: "living_zone"
 anchor_role: "sofa_anchor"
 
 dimensions:
-  width_cm: 230
+  width_cm: 220
   depth_cm: 115
   height_cm: 77
 
@@ -53,6 +53,136 @@ placement_rules:
   clearance_sensitive: true
   center_room_preferred: false
 
+product_details_by_material_type:
+  fabric:
+    material:
+      - label: "Material"
+        value: "Frame: pine and plywood; Leg: plastic"
+      - label: "Fabric composition"
+        value: "100% Polyester"
+      - label: "Filling"
+        value: "PU foam, polyester fiber and feathers"
+      - label: "Special feature"
+        value: "Recliner"
+      - label: "Care"
+        value: "Fabric sofa"
+      - label: "Suspension"
+        value: "Sinuous spring"
+      - label: "Cover type"
+        value: "Fixed"
+      - label: "Material & safety standards"
+        value: "Low formaldehyde"
+      - label: "Configuration includes"
+        value: "2 x Power Recliner Armless; 2 x Slim Arm"
+    dimensions:
+      - label: "Dimension"
+        value: "W220 x D115 x H77cm"
+      - label: "Cable length"
+        value: "250cm"
+      - label: "Seating depth"
+        value: "64cm"
+      - label: "Seatable width"
+        value: "172cm"
+      - label: "Seating height"
+        value: "47cm"
+      - label: "Leg height"
+        value: "4cm"
+      - label: "Backrest height"
+        value: "39-57cm (adjustable headrest)"
+      - label: "Max bearing support"
+        value: "2 x 150kg"
+      - label: "Reclined product depth"
+        value: "165cm"
+      - label: "Armrest height"
+        value: "62cm"
+      - label: "Product weight"
+        value: "111.7kg"
+      - label: "Packaging dimensions"
+        value: "6 boxes"
+    delivery_and_warranty:
+      - label: "Cancellation"
+        value: "Free—5 working days before delivery"
+      - label: "Warranty"
+        value: "Frame 10 years; Fabric 1 year; Foam 2 years; Electrical components 2 years"
+      - label: "Return policy"
+        value: "30-day returns"
+      - label: "Assembly"
+        value: "Arms to be fitted"
+  leather:
+    material:
+      - label: "Material"
+        value: "Frame: pine and plywood; Leg: plastic"
+      - label: "Filling"
+        value: "PU foam, polyester fiber and feathers"
+      - label: "Special feature"
+        value: "Recliner"
+      - label: "Care"
+        value: "Leather sofa"
+      - label: "Suspension"
+        value: "Sinuous spring"
+      - label: "Cover type"
+        value: "Fixed"
+      - label: "Colour variance"
+        value: "Leather variations"
+      - label: "Material & safety standards"
+        value: "Low formaldehyde"
+      - label: "Material details"
+        value: "Top grain leather. Crafted from American hides."
+      - label: "Configuration includes"
+        value: "2 x Power Recliner Armless; 2 x Slim Arm"
+    dimensions:
+      - label: "Dimension"
+        value: "W220 x D115 x H77cm"
+      - label: "Cable length"
+        value: "250cm"
+      - label: "Seating depth"
+        value: "64cm"
+      - label: "Seatable width"
+        value: "172cm"
+      - label: "Seating height"
+        value: "47cm"
+      - label: "Leg height"
+        value: "4cm"
+      - label: "Backrest height"
+        value: "39-57cm (adjustable headrest)"
+      - label: "Max bearing support"
+        value: "2 x 150kg"
+      - label: "Reclined product depth"
+        value: "165cm"
+      - label: "Armrest height"
+        value: "62cm"
+      - label: "Product weight"
+        value: "123.7kg"
+      - label: "Packaging dimensions"
+        value: "6 boxes"
+    delivery_and_warranty:
+      - label: "Cancellation"
+        value: "Free—5 working days before delivery"
+      - label: "Warranty"
+        value: "Frame 10 years; Leather 1 year; Foam 2 years; Electrical components 2 years"
+      - label: "Return policy"
+        value: "30-day returns"
+      - label: "Assembly"
+        value: "Arms to be fitted"
+
+comfort_profile:
+  # Required for Castlery SG sofa imports when the PDP exposes seat-feel data.
+  seat_comfort:
+    label: "Seat comfort"
+    value: 2
+    min_label: "Relaxed"
+    max_label: "Upright"
+  seat_height:
+    label: "Seat height"
+    value: 4
+    min_label: "Low"
+    max_label: "High"
+  seat_softness:
+    label: "Seat softness"
+    value: 2
+    min_label: "Soft"
+    max_label: "Firm"
+
 design_pairings:
   - "coffee_table"
   - "side_table"
@@ -77,7 +207,7 @@ assets:
 
 variants:
   - variant: "Jaron 3 Seater Slim Arm / Marche Cocoa (Leather)"
-    size_label: "230x115"
+    size_label: "220x115"
     upholstery_code: "marche_cocoa"
     upholstery_label: "Marche Leather, Cocoa"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737527905/crusader/variants/AS-000658-LE4023/Jaron-Leather-3-Seater-Dual-Recliner-Slim-Arm-Sofa-Marche-Cocoa_-Front-1737527903.jpg"
@@ -93,7 +223,7 @@ variants:
     price_usd: 2599
     price_band: "premium"
     brand_tier: "premium_mid"
-    dimensions: { width_cm: 230, depth_cm: 115, height_cm: 77 }
+    dimensions: { width_cm: 220, depth_cm: 115, height_cm: 77 }
     seat_capacity: 3
     size_class: "large"
     color_family: "brown"
@@ -101,7 +231,7 @@ variants:
     set_compatibility: []
 
   - variant: "Jaron 3 Seater Slim Arm / Marche Ivory (Leather)"
-    size_label: "230x115"
+    size_label: "220x115"
     upholstery_code: "marche_ivory"
     upholstery_label: "Marche Leather, Ivory"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760151241/crusader/variants/AS-000666-LE4021/Jaron-Leather-3-Seater-Dual-Recliner-Slim-Arm-Sofa-Marche-Ivory-Front_-1760151241.jpg"
@@ -115,7 +245,7 @@ variants:
     price_usd: 2599
     price_band: "premium"
     brand_tier: "premium_mid"
-    dimensions: { width_cm: 230, depth_cm: 115, height_cm: 77 }
+    dimensions: { width_cm: 220, depth_cm: 115, height_cm: 77 }
     seat_capacity: 3
     size_class: "large"
     color_family: "white"
@@ -123,7 +253,7 @@ variants:
     set_compatibility: []
 
   - variant: "Jaron 3 Seater Slim Arm / Performance Arvo Dune (Fabric)"
-    size_label: "230x115"
+    size_label: "220x115"
     upholstery_code: "performance_arvo_dune"
     upholstery_label: "Performance Arvo Dune"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737527192/crusader/variants/AS-000658-AR4001/Jaron-3-Seater-Dual-Recliner-Slim-Arm-Sofa-Performance-Arvo-Dune-Front-1737527190.jpg"
@@ -139,7 +269,7 @@ variants:
     price_usd: 2499
     price_band: "premium"
     brand_tier: "premium_mid"
-    dimensions: { width_cm: 230, depth_cm: 115, height_cm: 77 }
+    dimensions: { width_cm: 220, depth_cm: 115, height_cm: 77 }
     seat_capacity: 3
     size_class: "large"
     color_family: "beige"

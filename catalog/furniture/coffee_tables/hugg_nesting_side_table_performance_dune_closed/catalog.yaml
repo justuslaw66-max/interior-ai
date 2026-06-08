@@ -148,6 +148,62 @@ authoring_notes:
   source_observed_at: "2026-06-06"
   note: "Open-state footprint is estimated for layout visualization."
 
+product_details:
+  material:
+    - label: "Material"
+      value: "Table: engineered wood with oak veneer and solid oak edged; Ottoman: LVL frame with upholstery base"
+    - label: "Filling"
+      value: "Foam and fibre"
+    - label: "Care"
+      value: "Wooden table, upholstered seating"
+    - label: "Cover type"
+      value: "Fixed"
+    - label: "Material & safety standards"
+      value: "Low formaldehyde"
+  dimensions:
+    - label: "Dimension"
+      value: "Table: W68 x D55 x H43.2cm; Ottoman: W55.5 x D53.5 x H39cm"
+    - label: "Table top thickness"
+      value: "3.5cm"
+    - label: "Product weight"
+      value: "Table: 20.6kg; Ottoman: 6.6kg"
+    - label: "Packaging dimensions"
+      value: "2 boxes"
+    - label: "Max bearing support"
+      value: "Table: 80kg; Ottoman: 130kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Warranty"
+      value: "5-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Legs to be fitted"
+
+comfort_profile:
+  # Required for Castlery SG sofa-family imports when the PDP exposes seat-feel data.
+  seat_comfort:
+    label: "Seat comfort"
+    value: 3
+    min_label: "Relaxed"
+    max_label: "Upright"
+  seat_depth:
+    label: "Seat depth"
+    value: 2
+    min_label: "Shallow"
+    max_label: "Deep"
+  seat_height:
+    label: "Seat height"
+    value: 2
+    min_label: "Low"
+    max_label: "High"
+  seat_softness:
+    label: "Seat softness"
+    value: 4
+    min_label: "Soft"
+    max_label: "Firm"
+
 assets:
   asset_id: "coffee-real-castlery-hugg-nesting-side-table-performance-dune-closed"
   model_url: "/assets/models/coffee-real-castlery-hugg-nesting-side-table-performance-dune-closed.glb"

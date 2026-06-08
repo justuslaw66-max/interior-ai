@@ -1,5 +1,5 @@
 brand: "Castlery"
-source_url: "https://www.castlery.com/sg/products/sawyer-sideboard"
+source_url: "https://www.castlery.com/sg/products/sawyer-sideboard-180cm"
 category: "sideboard"
 subcategory: "sideboard"
 
@@ -117,22 +117,67 @@ storage:
             - 27.8
             - 31.0
 
+product_details:
+  material:
+    - label: "Material"
+      value: "Main Material: solid oak, oak veneer over engineered wood; Door: solid oak; Leg: solid birch"
+    - label: "Finish"
+      value: "Wire brushed and natural colour"
+    - label: "Cupboard mechanism"
+      value: "Adjustable shelves"
+    - label: "Care"
+      value: "Storage furniture"
+    - label: "Colour variance"
+      value: "Disclaimer"
+    - label: "Material & safety standards"
+      value: "Low formaldehyde"
+    - label: "Safety tip"
+      value: "Anti-tip prevention"
+  dimensions:
+    - label: "Dimension"
+      value: "W180 x D45 x H76cm"
+    - label: "Shelves height"
+      value: "24.6/27.8/31cm (adjustable height)"
+    - label: "Cupboard capacity"
+      value: "4 x W41.6 x D38.6 x H24.6/27.8/31cm; 4 x W42.6 x D38.6 x H24.6/27.8/31cm"
+    - label: "Leg height"
+      value: "15cm"
+    - label: "Leg room - height clearance"
+      value: "10cm"
+    - label: "Product weight"
+      value: "67.5kg"
+    - label: "Packaging dimensions"
+      value: "1 box"
+    - label: "Max bearing support"
+      value: "100kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Clearance—no cancellation"
+    - label: "Warranty"
+      value: "5-year limited warranty"
+    - label: "Return policy"
+      value: "Clearance—no return or exchange"
+    - label: "Assembly"
+      value: "Legs to be fitted"
+
 assets:
   asset_id: "storage-real-castlery-sawyer-sideboard-180cm"
   model_url: "/assets/models/storage-real-castlery-sawyer-sideboard-180cm.glb"
-  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1673927310/crusader/variants/50220001/Sawyer-TV-Console-Angle-1673927308.png"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1681350762/crusader/variants/50220002/Sawyer-Sideboard-Angle-1681350759.png"
   gallery_images:
-    - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1673927310/crusader/variants/50220001/Sawyer-TV-Console-Angle-1673927308.png"
-    - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1673927310/crusader/variants/50220001/Sawyer-TV-Console-Angle-1673927308.png"
+    - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1681350762/crusader/variants/50220002/Sawyer-Sideboard-Angle-1681350759.png"
+    - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1681350762/crusader/variants/50220002/Sawyer-Sideboard-Front_-1681350759.png"
+    - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1676887163/crusader/variants/50220002/Sawyer-Sideboard-Dim-1676887161.png"
 
 variants:
   - variant: "Sawyer Sideboard / Natural"
     finish_code: "natural"
     finish_label: "Natural"
-    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1673927310/crusader/variants/50220001/Sawyer-TV-Console-Angle-1673927308.png"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1681350762/crusader/variants/50220002/Sawyer-Sideboard-Angle-1681350759.png"
     gallery_images:
-      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1673927310/crusader/variants/50220001/Sawyer-TV-Console-Angle-1673927308.png"
-      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1673927310/crusader/variants/50220001/Sawyer-TV-Console-Angle-1673927308.png"
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1681350762/crusader/variants/50220002/Sawyer-Sideboard-Angle-1681350759.png"
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1681350762/crusader/variants/50220002/Sawyer-Sideboard-Front_-1681350759.png"
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1676887163/crusader/variants/50220002/Sawyer-Sideboard-Dim-1676887161.png"
     swatch_group: "finish"
     color_family: "brown"
     tone: "warm"

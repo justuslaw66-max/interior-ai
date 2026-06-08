@@ -2901,10 +2901,13 @@ function PageContent() {
       sourceSwatches[finishLabelKey] ??
       sourceSwatches[colourLabelKey] ??
       null;
+    if (!swatchTextureUrl) return null;
+
     const colorHex = variant.swatchHex ?? variant.colorHex ?? activeVariantColorHex ?? "#c8b79f";
-    if (!swatchTextureUrl && !colorHex) return null;
+    const isSloaneTravertine = selectedProduct.id.toLowerCase().includes("sloane-travertine");
 
     return {
+      sectionLabel: isSloaneTravertine ? "Leg" : "Wood colour",
       label:
         variant.finishLabel?.trim() ||
         activeStructuredVariant.colourLabel.trim() ||
@@ -2956,6 +2959,54 @@ function PageContent() {
       })
       .filter((option) => Boolean(CATALOG_ITEMS[option.productId]));
   }, [isHuggWithWoodOptions, selectedProduct]);
+
+  const sebCoffeeTableModelOptions = useMemo(() => {
+    if (!selectedProduct) {
+      return [] as Array<{
+        key: "small-lift-top" | "large-lift-top" | "with-storage";
+        label: string;
+        productId: string;
+        active: boolean;
+      }>;
+    }
+
+    const currentId = selectedProduct.id;
+    const isSebCoffeeTable =
+      currentId === "coffee-real-castlery-seb-lift-top-small" ||
+      currentId === "coffee-real-castlery-seb-lift-top-large" ||
+      currentId === "coffee-real-castlery-seb-storage-90" ||
+      currentId === "coffee-real-castlery-seb-storage-120";
+    if (!isSebCoffeeTable) return [];
+
+    const storageTargetProductId =
+      currentId === "coffee-real-castlery-seb-storage-120" ||
+      currentId === "coffee-real-castlery-seb-lift-top-large"
+        ? "coffee-real-castlery-seb-storage-120"
+        : "coffee-real-castlery-seb-storage-90";
+
+    return [
+      {
+        key: "small-lift-top" as const,
+        label: "Small lift top",
+        productId: "coffee-real-castlery-seb-lift-top-small",
+        active: currentId === "coffee-real-castlery-seb-lift-top-small",
+      },
+      {
+        key: "large-lift-top" as const,
+        label: "Large lift top",
+        productId: "coffee-real-castlery-seb-lift-top-large",
+        active: currentId === "coffee-real-castlery-seb-lift-top-large",
+      },
+      {
+        key: "with-storage" as const,
+        label: "With storage",
+        productId: storageTargetProductId,
+        active:
+          currentId === "coffee-real-castlery-seb-storage-90" ||
+          currentId === "coffee-real-castlery-seb-storage-120",
+      },
+    ].filter((option) => Boolean(CATALOG_ITEMS[option.productId] ?? importedModelById.get(option.productId)));
+  }, [importedModelById, selectedProduct]);
 
   useEffect(() => {
     setPreviewVariantId(null);
@@ -5953,7 +6004,7 @@ function PageContent() {
                   >
                     {selectedBrand}
                   </div>
-                  <div
+                  <h2
                     className={
                       showDesignerTheme
                         ? "designer-text-primary text-base font-semibold"
@@ -5961,10 +6012,10 @@ function PageContent() {
                     }
                   >
                     {selectedModelTitle}
-                  </div>
+                  </h2>
                 </>
               ) : (
-                <div
+                <h2
                   className={
                     showDesignerTheme
                       ? "designer-text-primary text-base font-semibold"
@@ -5972,7 +6023,7 @@ function PageContent() {
                   }
                 >
                   {selectedProduct.title}
-                </div>
+                </h2>
               )}
               {selectedItem?.locked && (
                 <div
@@ -7038,6 +7089,75 @@ function PageContent() {
               </div>
             ) : null}
 
+            {sebCoffeeTableModelOptions.length > 1 ? (
+              <div className="pt-3">
+                <div
+                  className={
+                    showDesignerTheme
+                      ? "designer-text-primary text-sm font-semibold"
+                      : "text-sm font-semibold text-neutral-900"
+                  }
+                >
+                  Model
+                </div>
+
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {sebCoffeeTableModelOptions.map((option) => (
+                    <button
+                      key={option.key}
+                      className={`rounded-lg border px-3 py-2 text-sm ${
+                        showDesignerTheme
+                          ? "designer-text-primary"
+                          : "text-neutral-900"
+                      } ${option.active ? "designer-accent-border" : "border-neutral-200"}`}
+                      data-testid={`seb-model-option-${option.key}`}
+                      data-active={option.active ? "true" : "false"}
+                      disabled={!canEdit}
+                      onClick={() => {
+                        if (!selectedItem || option.active) return;
+
+                        ensureImportedCatalogItem(option.productId);
+                        const optionProduct = CATALOG_ITEMS[option.productId];
+                        if (!optionProduct) return;
+
+                        const currentVariant = selectedProduct.variants.find(
+                          (variant) => variant.id === selectedItem.variantId
+                        );
+                        const currentFinishCode = currentVariant?.finishCode
+                          ?.trim()
+                          .toLowerCase();
+                        const nextVariant =
+                          optionProduct.variants.find(
+                            (variant) =>
+                              currentFinishCode &&
+                              variant.finishCode?.trim().toLowerCase() ===
+                                currentFinishCode
+                          ) ?? optionProduct.variants[0];
+
+                        commitItems(
+                          (prev) =>
+                            prev.map((it) =>
+                              it.instanceId === selectedItem.instanceId
+                                ? {
+                                    ...it,
+                                    productId: optionProduct.id,
+                                    variantId:
+                                      nextVariant?.id ?? optionProduct.defaultVariantId,
+                                  }
+                                : it
+                            ),
+                          `Change Seb model to ${option.label}`
+                        );
+                      }}
+                      title={option.label}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
             {selectedItem && selectedConfigOptions.length > 1 ? (
               <div className="pt-3">
                 <div
@@ -7519,7 +7639,7 @@ function PageContent() {
                       : "text-sm font-semibold text-neutral-900"
                   }
                 >
-                  Wood colour
+                  {singleWoodFinishSwatch.sectionLabel}
                 </div>
                 <div
                   className={

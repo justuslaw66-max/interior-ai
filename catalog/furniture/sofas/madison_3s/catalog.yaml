@@ -53,6 +53,51 @@ placement_rules:
   clearance_sensitive: true
   center_room_preferred: false
 
+product_details:
+  material:
+    - label: "Material"
+      value: "Laminated veneer lumber and plywood, rubber wood leg"
+    - label: "Filling"
+      value: "Foam, fibre and pocket spring filled seat; Fibre filled back; Foam filled frame"
+    - label: "Care"
+      value: "Fabric sofa, wooden legs"
+    - label: "Suspension"
+      value: "Sinuous spring"
+    - label: "Cover type"
+      value: "Removable back cushion and bolster covers"
+    - label: "Colour variance"
+      value: "Disclaimer"
+    - label: "Material & safety standards"
+      value: "Low formaldehyde"
+  dimensions:
+    - label: "Dimension"
+      value: "W204 x D96.5 x H86.5cm"
+    - label: "Seating depth"
+      value: "61cm"
+    - label: "Seatable width"
+      value: "181cm"
+    - label: "Seating height"
+      value: "47cm"
+    - label: "Leg height"
+      value: "17cm"
+    - label: "Product weight"
+      value: "54.5kg"
+    - label: "Packaging dimensions"
+      value: "1 box"
+    - label: "Max bearing support"
+      value: "3 x 150kg"
+    - label: "Cushion"
+      value: "2 Bolsters included (17 x 56cm)"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Warranty"
+      value: "Frame 10 years; Fabric 1 year; Foam 2 years"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Legs to be fitted"
+
 product_details_by_material_type:
   fabric:
     material:

@@ -297,6 +297,14 @@ export const GLB_CALIBRATION_BY_PRODUCT_ID: Record<string, GLBCalibration> = {
     useVariantColor: true,
     swapWidthDepthAxes: false,
   },
+  "dining-real-castlery-sloane-travertine-180": {
+    useVariantColor: false,
+    swapWidthDepthAxes: false,
+  },
+  "dining-real-castlery-sloane-travertine-220": {
+    useVariantColor: false,
+    swapWidthDepthAxes: false,
+  },
   "coffee-real-castlery-harper-marble-rectangular-120": {
     brightness: 1.03,
     saturation: 0.96,

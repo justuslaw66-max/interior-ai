@@ -119,6 +119,45 @@ safety_and_compliance:
   safety_features:
     - "anti_tip_prevention"
 
+product_details:
+  material:
+    - label: "Material"
+      value: "Body: engineered wood with oak veneer; Leg: engineered wood with melamine; Handle: steel"
+    - label: "Finish"
+      value: "Wood: PU lacquer in grey oak; Metal: brushed brass"
+    - label: "Care"
+      value: "Storage furniture"
+    - label: "Cable management"
+      value: "8 holes"
+    - label: "Colour variance"
+      value: "Natural variations"
+    - label: "Material & safety standards"
+      value: "Low formaldehyde"
+  dimensions:
+    - label: "Dimension"
+      value: "W200 x D47 x H58cm"
+    - label: "Shelves height"
+      value: "21.3/24.5/27.7cm (adjustable height)"
+    - label: "Cupboard capacity"
+      value: "4 Upper Spaces: W47 x D41 x H22cm; 4 Lower Spaces: W47 x D41 x H24.5cm"
+    - label: "Leg height"
+      value: "6cm"
+    - label: "Product weight"
+      value: "70.8kg"
+    - label: "Packaging dimensions"
+      value: "1 box"
+    - label: "Max bearing support"
+      value: "100kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Warranty"
+      value: "5-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Fully assembled"
+
 assets:
   asset_id: "tv-real-castlery-sloane-tv-console-200"
   model_url: "/assets/models/tv-real-castlery-sloane-tv-console-200.glb"

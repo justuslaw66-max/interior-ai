@@ -118,6 +118,51 @@ storage:
             - 19.8
             - 23.0
 
+product_details:
+  material:
+    - label: "Material"
+      value: "Main Material: solid oak, oak veneer over engineered wood; Door: solid oak; Leg: solid birch"
+    - label: "Finish"
+      value: "Wire brushed and natural colour"
+    - label: "Cupboard mechanism"
+      value: "Adjustable shelves"
+    - label: "Care"
+      value: "Storage furniture"
+    - label: "Cable management"
+      value: "8 holes"
+    - label: "Colour variance"
+      value: "Disclaimer"
+    - label: "Material & safety standards"
+      value: "Low formaldehyde"
+    - label: "Safety tip"
+      value: "Anti-tip prevention"
+  dimensions:
+    - label: "Dimension"
+      value: "W200 x D45 x H60cm"
+    - label: "Shelves height"
+      value: "16.6/19.8/23cm (adjustable height)"
+    - label: "Cupboard capacity"
+      value: "4 x W46.6 x D39 x H16.6/19.8/23cm; 4 x W47.6 x D39 x H16.6/19.8/23cm"
+    - label: "Leg height"
+      value: "15cm"
+    - label: "Leg room - height clearance"
+      value: "10cm"
+    - label: "Product weight"
+      value: "71kg"
+    - label: "Packaging dimensions"
+      value: "1 box"
+    - label: "Max bearing support"
+      value: "100kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Clearance—no cancellation"
+    - label: "Warranty"
+      value: "5-year limited warranty"
+    - label: "Return policy"
+      value: "Clearance—no return or exchange"
+    - label: "Assembly"
+      value: "Legs to be fitted"
+
 assets:
   asset_id: "tv-real-castlery-sawyer-tv-console-200"
   model_url: "/assets/models/tv-real-castlery-sawyer-tv-console-200.glb"

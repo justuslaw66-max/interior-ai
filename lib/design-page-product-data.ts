@@ -6,12 +6,12 @@ import type { ProductCategory, RoomTag } from "@/lib/catalog-schema";
 
 export const IMPORTED_VARIANT_BY_PRODUCT_ID: Record<string, { label: string; colorHex: string }> = {
   "dining-real-castlery-sloane-travertine-180": {
-    label: "Travertine",
-    colorHex: "#c8b79f",
+    label: "Grey Oak",
+    colorHex: "#4b453b",
   },
   "dining-real-castlery-sloane-travertine-220": {
-    label: "Travertine",
-    colorHex: "#c8b79f",
+    label: "Grey Oak",
+    colorHex: "#4b453b",
   },
   "dining-real-castlery-brighton-oval-180": {
     label: "Walnut",
@@ -276,6 +276,12 @@ export const CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE: Record<string, string> = {
   "black-oak": "https://res.cloudinary.com/castlery/image/upload/w_128,f_auto,q_auto/v1716346211/knight/cms/swatch/Sofa-Armrest-Table-Black-Square-Det_1.jpg",
   "caramel": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1746761565/crusader/variants/40550324/Arcadia-Coffee-Table-Caramel-Oak-Square-Det_18-1746761563.jpg",
   "caramel-oak": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1746761565/crusader/variants/40550324/Arcadia-Coffee-Table-Caramel-Oak-Square-Det_18-1746761563.jpg",
+  "grey-oak": "https://res.cloudinary.com/castlery/image/upload/w_128,f_auto,q_auto/v1678775201/knight/cms/swatch/Sloane-Dining-Chair_Swatch_1_1.jpg",
+  "grey_oak": "https://res.cloudinary.com/castlery/image/upload/w_128,f_auto,q_auto/v1678775201/knight/cms/swatch/Sloane-Dining-Chair_Swatch_1_1.jpg",
+  "muted-honey": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1739348957/crusader/variants/40550269/Seb-Texture-1739348954.jpg",
+  "muted_honey": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1739348957/crusader/variants/40550269/Seb-Texture-1739348954.jpg",
+  "muted-honey-wire-brushed": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1739348957/crusader/variants/40550269/Seb-Texture-1739348954.jpg",
+  "muted_honey_wire_brushed": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1739348957/crusader/variants/40550269/Seb-Texture-1739348954.jpg",
   "ng-4001": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1665460017/crusader/variants/NG-4001/Beach-Linen_1-1665460015.jpg",
   "navagio-beach-linen": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1665460017/crusader/variants/NG-4001/Beach-Linen_1-1665460015.jpg",
   "beach-linen": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1665460017/crusader/variants/NG-4001/Beach-Linen_1-1665460015.jpg",

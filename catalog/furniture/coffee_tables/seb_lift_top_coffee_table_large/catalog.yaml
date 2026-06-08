@@ -1,0 +1,394 @@
+brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/seb-lift-top-coffee-table-large"
+category: "coffee_table"
+
+product_family: "Seb"
+product_name: "Seb Lift Top Coffee Table, Large"
+slug: "castlery-seb-lift-top-coffee-table-large"
+variant: "120cm / Muted Honey"
+
+price_usd: 799
+price_band: "mid_premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "secondary"
+
+dimensions:
+  width_cm: 120
+  depth_cm: 60
+  height_cm: 45
+
+size_class: "medium"
+shape: "rectangular"
+base_type: "four_leg"
+
+material_family: "wood"
+material_mix:
+  - "solid_acacia_wood"
+  - "metal_lift_hardware"
+
+color_family: "brown"
+tone: "warm"
+
+style_cluster: "midcentury_modern"
+style_secondary: "modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "rounded_soft"
+  silhouette: "lift_top_storage_table"
+  form_language: "rounded_midcentury_storage"
+  descriptors:
+    - "lift_top_surface"
+    - "open_storage_compartment"
+    - "rounded_edges"
+    - "wire_brushed_wood"
+    - "living_room_scale"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  storage_integrated: true
+  raised_base: true
+  center_table_suitable: true
+  works_in_small_space: false
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+  - "open_plan"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: true
+  recommended_in_front_of:
+    - "sofa"
+    - "sectional_sofa"
+    - "loveseat"
+    - "accent_chair"
+  clearance_guidance:
+    sofa_to_table_cm_min: 30
+    sofa_to_table_cm_ideal: 40
+    circulation_cm_min: 60
+  open_state_clearance_guidance:
+    min_clearance_around_item_cm: 20
+    recommended_clearance_around_item_cm: 30
+
+design_pairings:
+  - "sofa"
+  - "sectional_sofa"
+  - "loveseat"
+  - "side_table"
+  - "media_console"
+  - "rug"
+  - "floor_lamp"
+  - "accent_chair"
+
+compatibility:
+  related_products:
+    - product_family: "Seb"
+      product_name: "Seb Lift Top Coffee Table, Small"
+      relationship: "family_variant"
+      strength: "strong"
+      source_url: "https://www.castlery.com/sg/products/seb-lift-top-coffee-table-small"
+    - product_family: "Seb"
+      product_name: "Seb Coffee Table with Storage"
+      relationship: "family_variant"
+      strength: "strong"
+      source_url: "https://www.castlery.com/sg/products/seb-coffee-table-with-storage"
+    - product_family: "Madison"
+      product_name: "Madison Sofa"
+      relationship: "recommended_with"
+      strength: "strong"
+    - product_family: "Jaron"
+      product_name: "Jaron Recliner Sofa"
+      relationship: "recommended_with"
+      strength: "strong"
+
+recommendation_metadata:
+  recommendation_role: "living_room_surface"
+  primary_use_cases:
+    - "sofa_pairing"
+    - "centerpiece_surface"
+    - "lift_top_surface"
+    - "hidden_storage_access"
+    - "larger_living_room_multifunction"
+  recommendation_strength:
+    same_category_alternative: "strong"
+    same_style_pairing: "medium"
+    multifunction_based_pairing: "strong"
+    room_completion: "strong"
+  suggest_when_scene_has:
+    - "sofa_without_coffee_table"
+    - "living_room_needing_storage"
+    - "larger_sofa_pairing"
+    - "multifunctional_layout_needed"
+  avoid_when_scene_has:
+    - "oversized_coffee_table_already_present"
+    - "very_small_walkway_clearance"
+  substitute_for:
+    - "coffee_table"
+  complements:
+    - "sofa"
+    - "sectional_sofa"
+    - "rug"
+    - "floor_lamp"
+    - "accent_chair"
+
+bundle_metadata:
+  bundle_role: "accent"
+  can_bundle_with:
+    - "sofa"
+    - "sectional_sofa"
+    - "side_table"
+    - "media_console"
+    - "rug"
+    - "floor_lamp"
+    - "accent_chair"
+  recommended_with_products:
+    - product_family: "Madison"
+      product_name: "Madison Sofa"
+      relationship: "recommended_with"
+      strength: "strong"
+    - product_family: "Jaron"
+      product_name: "Jaron Recliner Sofa"
+      relationship: "recommended_with"
+      strength: "strong"
+  set_behavior:
+    supports_living_room_pairing: true
+    supports_centerpiece_surface: true
+    supports_storage_surface_pairing: true
+    supports_larger_room_multifunction: true
+
+feature_flags:
+  has_storage: true
+  has_lift_top: true
+  has_hidden_function: true
+  is_configurable: true
+
+configurable_metadata:
+  is_configurable: true
+  default_configuration: "closed"
+  configuration_ui:
+    type: "segmented_control"
+    label: "Lift Top State"
+    options:
+      - "closed"
+      - "open_lift"
+    option_labels:
+      closed: "Closed"
+      open_lift: "Open"
+    helper_text: "Open state is for visualization only. Cart and checkout still use the selected purchasable 120cm variant."
+  configuration_behavior:
+    affects_visual_footprint: true
+    affects_space_planning: true
+    affects_collision_bounds: true
+    affects_recommendation_logic: false
+
+configurations:
+  - configuration_code: "closed"
+    configuration_label: "Closed"
+    state_type: "closed"
+    description: "Lift top closed at standard coffee table height."
+    planning_bounds_cm:
+      width: 120
+      depth: 60
+      height: 45
+    visual_bounds_cm:
+      width: 120
+      depth: 60
+      height: 45
+    dimensions:
+      width_cm: 120
+      depth_cm: 60
+      height_cm: 45
+    collision_bounds:
+      type: "box"
+      width_cm: 120
+      depth_cm: 60
+      height_cm: 45
+  - configuration_code: "open_lift"
+    configuration_label: "Open"
+    state_type: "open_lift"
+    description: "Raised lift top showing storage access."
+    planning_bounds_cm:
+      width: 120
+      depth: 72
+      height: 67
+    visual_bounds_cm:
+      width: 120
+      depth: 72
+      height: 67
+    dimensions_estimate:
+      width_cm: 120
+      depth_cm: 72
+      height_cm: 67
+      source: "Official Castlery width with measured open-state depth and height from supplied GLB bounds"
+    dimensions_recommended_planning:
+      width_cm: 120
+      depth_cm: 72
+      height_cm: 67
+    placement_footprint:
+      planning_width_cm: 120
+      planning_depth_cm: 72
+      note: "Open-state footprint keeps the official 120cm table width and uses measured raised-lift depth/height; commerce remains tied to the 120cm purchasable variant."
+    collision_bounds:
+      type: "box"
+      width_cm: 120
+      depth_cm: 72
+      height_cm: 67
+
+authoring_notes:
+  category_confidence: "high"
+  preset_family: "table"
+  major_family_example_candidate: false
+  import_source: "Castlery Singapore product page and supplied closed/open GLB files"
+
+product_details:
+  material:
+    - label: "Material"
+      value: "Solid acacia"
+    - label: "Finish"
+      value: "Muted honey tone and wire brush distressed finish"
+    - label: "Care"
+      value: "Wooden table"
+    - label: "Colour variance"
+      value: "Natural variations"
+    - label: "Material & safety standards"
+      value: "Formaldehyde safe"
+  dimensions:
+    - label: "Dimension"
+      value: "W120 x D60 x H45cm"
+    - label: "Table top thickness"
+      value: "2.2cm"
+    - label: "Leg height"
+      value: "20cm"
+    - label: "Product weight"
+      value: "45kg"
+    - label: "Packaging dimensions"
+      value: "1 box"
+    - label: "Levellers"
+      value: "Included"
+    - label: "Max bearing support"
+      value: "Close: 40kg; Open: 20kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Warranty"
+      value: "5-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Fully assembled"
+
+assets:
+  asset_id: "coffee-real-castlery-seb-lift-top-large"
+  model_url: "/assets/models/coffee-real-castlery-seb-lift-top-large-closed.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1739263121/crusader/variants/40550270/Seb-Lift-Top-Coffee-Table-Large-Angle_1-1739263119.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1739263121/crusader/variants/40550270/Seb-Lift-Top-Coffee-Table-Large-Angle_1-1739263119.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741854457/crusader/variants/40550270/Seb-Lift-Top-Coffee-Table-Large-Square-Set_1-1741854456.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741854457/crusader/variants/40550270/Seb-Lift-Top-Coffee-Table-Large-Square-Set_2-1741854457.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1739263121/crusader/variants/40550270/Seb-Lift-Top-Coffee-Table-Large-Square-Det_1-1739263119.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1739263121/crusader/variants/40550270/Seb-Lift-Top-Coffee-Table-Large_-Square-Det_1-1739263119.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1739263121/crusader/variants/40550270/Seb-Lift-Top-Coffee-Table-Large-Front_1-1739263119.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1739263121/crusader/variants/40550270/Seb-Lift-Top-Coffee-Table-Large-Angle-1739263119.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1739263121/crusader/variants/40550270/Seb-Lift-Top-Coffee-Table-Large-Side-1739263119.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1739263121/crusader/variants/40550270/Seb-Lift-Top-Coffee-Table-Large-Back-1739263119.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1739348957/crusader/variants/40550269/Seb-Texture-1739348954.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740987194/crusader/variants/T40550270/Seb-Lift-Top-Coffee-Table-Large-Dim-1740987192.jpg"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+
+variants:
+  - variant: "120cm / Muted Honey"
+    sku: "40550270"
+    size_label: "120cm"
+    finish_code: "muted_honey_wire_brushed"
+    finish_label: "Muted Honey"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1739263121/crusader/variants/40550270/Seb-Lift-Top-Coffee-Table-Large-Angle_1-1739263119.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1739263121/crusader/variants/40550270/Seb-Lift-Top-Coffee-Table-Large-Angle_1-1739263119.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741854457/crusader/variants/40550270/Seb-Lift-Top-Coffee-Table-Large-Square-Set_1-1741854456.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741854457/crusader/variants/40550270/Seb-Lift-Top-Coffee-Table-Large-Square-Set_2-1741854457.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1739263121/crusader/variants/40550270/Seb-Lift-Top-Coffee-Table-Large-Square-Det_1-1739263119.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1739263121/crusader/variants/40550270/Seb-Lift-Top-Coffee-Table-Large-Front_1-1739263119.jpg"
+    swatch_group: "wood_finish"
+    model_asset_id: "coffee-real-castlery-seb-lift-top-large"
+    model_url: "/assets/models/coffee-real-castlery-seb-lift-top-large-closed.glb"
+    state_assets:
+      closed:
+        model_url: "/assets/models/coffee-real-castlery-seb-lift-top-large-closed.glb"
+      open_lift:
+        model_url: "/assets/models/coffee-real-castlery-seb-lift-top-large-open.glb"
+
+    price_usd: 799
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+
+    dimensions:
+      width_cm: 120
+      depth_cm: 60
+      height_cm: 45
+
+    size_class: "medium"
+    color_family: "brown"
+    tone: "warm"
+
+    materials:
+      tabletop:
+        structure: "solid_acacia_wood"
+        surface: "wire_brushed_acacia"
+      body:
+        structure: "solid_acacia_wood"
+        surface: "wire_brushed_acacia"
+      legs:
+        structure: "solid_acacia_wood"
+        surface: "wire_brushed_acacia"
+      lift_hardware:
+        structure: "metal"
+        surface: "black_powder_coat"
+
+    finish:
+      color_finish: "muted_honey"
+      finish_color: "muted_honey"
+      surface_finish: "wire_brushed_distressed"
+      protective_coating: "lacquer"
+      hardware_finish: "black_powder_coat"
+
+    storage:
+      has_storage: true
+      storage_type:
+        - "lift_top"
+        - "open_storage"
+
+    leg_height_cm: 20
+    max_bearing_support:
+      closed_kg: 40
+      open_kg: 20
+    set_compatibility:
+      recommended_with_products:
+        - product_family: "Seb"
+          product_name: "Seb Coffee Table with Storage"
+          variant: "90cm / Muted Honey"
+        - product_family: "Seb"
+          product_name: "Seb Coffee Table with Storage"
+          variant: "120cm / Muted Honey"
+
+purchase:
+  retailer: "Castlery"
+  currency: "SGD"
+  price: 799
+  buy_url: "https://www.castlery.com/sg/products/seb-lift-top-coffee-table-large?length=1_2m"
+  affiliate_ready: true
+  is_shopify_item: false
+
+badges:
+  - "Bestseller"
+  - "Lift Top"

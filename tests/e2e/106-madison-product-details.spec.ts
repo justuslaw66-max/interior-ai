@@ -11,6 +11,29 @@ const MADISON_2S_ID = "sofa-real-castlery-madison-2s";
 const MADISON_3S_ID = "sofa-real-castlery-madison-3s";
 const MADISON_OTTOMAN_ID = "sofa-real-castlery-madison-ottoman";
 
+type ProductInfoRow = {
+  label?: string;
+  value?: string;
+};
+
+type ImportedModel = {
+  id: string;
+  catalog?: {
+    product_details?: {
+      material?: ProductInfoRow[];
+      dimensions?: ProductInfoRow[];
+      delivery_and_warranty?: ProductInfoRow[];
+    };
+  } | null;
+};
+
+function expectRows(rows: ProductInfoRow[] | undefined, expected: RegExp[]) {
+  const values = (rows ?? []).map((row) => `${row.label ?? ""}: ${row.value ?? ""}`);
+  for (const pattern of expected) {
+    expect(values.some((value) => pattern.test(value)), `Expected rows to include ${pattern}`).toBeTruthy();
+  }
+}
+
 async function addMadisonProduct(page: Page, productId: string) {
   await page.goto("/design");
   await page.waitForLoadState("domcontentloaded");
@@ -25,6 +48,35 @@ async function addMadisonProduct(page: Page, productId: string) {
 }
 
 test.describe("106. Madison Product Details", () => {
+  test("API exposes canonical Castlery Singapore product details for Madison 3-seater", async ({ request }) => {
+    const response = await request.get("/api/models/imported");
+    expect(response.ok()).toBeTruthy();
+
+    const body = (await response.json()) as { models?: ImportedModel[] };
+    const model = body.models?.find((entry) => entry.id === MADISON_3S_ID);
+    expect(model).toBeDefined();
+
+    const details = model?.catalog?.product_details;
+    expectRows(details?.material, [
+      /Material: Laminated veneer lumber and plywood, rubber wood leg/i,
+      /Filling: Foam, fibre and pocket spring filled seat; Fibre filled back; Foam filled frame/i,
+      /Care: Fabric sofa, wooden legs/i,
+      /Suspension: Sinuous spring/i,
+    ]);
+    expectRows(details?.dimensions, [
+      /Dimension: W204 x D96\.5 x H86\.5cm/i,
+      /Product weight: 54\.5kg/i,
+      /Max bearing support: 3 x 150kg/i,
+      /Cushion: 2 Bolsters included \(17 x 56cm\)/i,
+    ]);
+    expectRows(details?.delivery_and_warranty, [
+      /Cancellation: Free—5 working days before delivery/i,
+      /Warranty: Frame 10 years; Fabric 1 year; Foam 2 years/i,
+      /Return policy: 30-day returns/i,
+      /Assembly: Legs to be fitted/i,
+    ]);
+  });
+
   test("renders Castlery Singapore product detail rows for 3-seater fabric and leather variants", async ({ page }) => {
     test.setTimeout(120000);
 

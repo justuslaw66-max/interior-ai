@@ -133,6 +133,39 @@ authoring_notes:
   major_family_example_candidate: true
   note: "Open shelf cavity storage; single GLB variant."
 
+product_details:
+  material:
+    - label: "Leg frame"
+      value: "Dark grey powder coated steel"
+    - label: "Table top"
+      value: "Walnut veneer with engineered wood"
+    - label: "Care"
+      value: "Wooden table"
+    - label: "Colour variance"
+      value: "Natural variations"
+  dimensions:
+    - label: "Dimension"
+      value: "W120 x D70 x H30cm"
+    - label: "Drawer capacity"
+      value: "W116 x D70 x H12cm"
+    - label: "Leg height"
+      value: "14cm"
+    - label: "Product weight"
+      value: "29kg"
+    - label: "Packaging dimensions"
+      value: "1 box"
+    - label: "Max bearing support"
+      value: "60kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Clearance—no cancellation"
+    - label: "Warranty"
+      value: "5-year limited warranty"
+    - label: "Return policy"
+      value: "Clearance—no return or exchange"
+    - label: "Assembly"
+      value: "Legs to be fitted"
+
 assets:
   asset_id: "coffee-real-castlery-peri-120"
   model_url: "/assets/models/coffee-real-castlery-peri-120.glb"

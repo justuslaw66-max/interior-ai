@@ -57,6 +57,44 @@ design_pairings:
   - pendant_light
   - dining_rug
   - sideboard
+product_details:
+  material:
+    - label: "Material"
+      value: "Engineer wood with walnut veneer table top and solid rubber wood base"
+    - label: "Finish"
+      value: "Scratch resistant lacquer on table surface; walnut stain and clear lacquer on leg"
+    - label: "Care"
+      value: "Wooden table"
+    - label: "Colour variance"
+      value: "Natural variations"
+    - label: "Material & safety standards"
+      value: "Formaldehyde safe"
+  dimensions:
+    - label: "Dimension"
+      value: "W180 x D97 x H76cm"
+    - label: "Table top thickness"
+      value: "2.5cm"
+    - label: "Leg height"
+      value: "72.5cm"
+    - label: "Capacity"
+      value: "Sits 4-6 people comfortably"
+    - label: "Product weight"
+      value: "37kg"
+    - label: "Packaging dimensions"
+      value: "1 box"
+    - label: "Levellers"
+      value: "Included (max 2cm)"
+    - label: "Max bearing support"
+      value: "100kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Warranty"
+      value: "5-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Legs to be fitted"
 assets:
   asset_id: dining-real-castlery-brighton-oval-180
   model_url: /assets/models/dining-real-castlery-brighton-oval-180.glb

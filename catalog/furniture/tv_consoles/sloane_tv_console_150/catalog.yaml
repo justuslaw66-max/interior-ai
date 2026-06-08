@@ -105,7 +105,7 @@ storage:
       - 213
       - 245
       - 277
-  cable_management_holes: 4
+  cable_management_holes: 8
 
 physical_specs:
   product_weight_kg: 52
@@ -118,6 +118,47 @@ safety_and_compliance:
     - "low_formaldehyde"
   safety_features:
     - "anti_tip_prevention"
+
+product_details:
+  material:
+    - label: "Material"
+      value: "Body: engineered wood with oak veneer; Leg: engineered wood with melamine; Handle: steel"
+    - label: "Finish"
+      value: "Wood: PU lacquer in grey oak; Metal: brushed brass"
+    - label: "Care"
+      value: "Storage furniture"
+    - label: "Cable management"
+      value: "8 holes"
+    - label: "Colour variance"
+      value: "Natural variations"
+    - label: "Material & safety standards"
+      value: "Low formaldehyde"
+    - label: "Safety tip"
+      value: "Anti-tip prevention"
+  dimensions:
+    - label: "Dimension"
+      value: "W150 x D40 x H58cm"
+    - label: "Shelves height"
+      value: "21.3/24.5/27.7cm (adjustable height)"
+    - label: "Cupboard capacity"
+      value: "4 Upper Spaces: W34 x D34 x H22cm; 4 Lower Spaces: W34 x D34 x H24.5cm"
+    - label: "Leg height"
+      value: "6cm"
+    - label: "Product weight"
+      value: "52kg"
+    - label: "Packaging dimensions"
+      value: "1 box"
+    - label: "Max bearing support"
+      value: "100kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Warranty"
+      value: "5-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Shelves and handles to be fitted"
 
 assets:
   asset_id: "tv-real-castlery-sloane-tv-console-150"

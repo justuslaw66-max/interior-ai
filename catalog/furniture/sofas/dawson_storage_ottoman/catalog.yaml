@@ -66,6 +66,78 @@ placement_rules:
     circulation_cm_min: 45
     vertical_open_clearance_cm: 65
 
+product_details:
+  material:
+    - label: "Material"
+      value: "Frame: engineered wood with plywood; Leg: black plastic"
+    - label: "Filling"
+      value: "Foam and fibre and feather"
+    - label: "Care"
+      value: "Fabric sofa"
+    - label: "Suspension"
+      value: "Sinuous spring"
+    - label: "Cover type"
+      value: "Removable cushion cover and frame cover"
+  dimensions:
+    - label: "Dimension (93cm)"
+      value: "W93 x D93 x H45cm"
+    - label: "Dimension (114cm)"
+      value: "W114 x D93 x H45cm"
+    - label: "Seating depth"
+      value: "93cm"
+    - label: "Seatable width (93cm)"
+      value: "93cm"
+    - label: "Seatable width (114cm)"
+      value: "114cm"
+    - label: "Seating height"
+      value: "45cm"
+    - label: "Leg height"
+      value: "2.5cm"
+    - label: "Product weight (93cm)"
+      value: "23.8kg"
+    - label: "Product weight (114cm)"
+      value: "28.7kg"
+    - label: "Packaging dimensions"
+      value: "1 box"
+    - label: "Storage inner dimension (93cm)"
+      value: "W75 x D75 x H23cm"
+    - label: "Storage inner dimension (114cm)"
+      value: "W97 x D75 x H23cm"
+    - label: "Max bearing support"
+      value: "150kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Warranty"
+      value: "Frame 10 years; Fabric 1 year; Foam 2 years"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Fully assembled"
+
+comfort_profile:
+  # Required for Castlery SG sofa-family imports when the PDP exposes seat-feel data.
+  seat_comfort:
+    label: "Seat comfort"
+    value: 1
+    min_label: "Relaxed"
+    max_label: "Upright"
+  seat_depth:
+    label: "Seat depth"
+    value: 4
+    min_label: "Shallow"
+    max_label: "Deep"
+  seat_height:
+    label: "Seat height"
+    value: 3
+    min_label: "Low"
+    max_label: "High"
+  seat_softness:
+    label: "Seat softness"
+    value: 1
+    min_label: "Soft"
+    max_label: "Firm"
+
 design_pairings:
   - "sofa"
   - "sectional_sofa"
