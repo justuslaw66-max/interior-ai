@@ -169,10 +169,13 @@ export async function addImportedProductIfReady(page: Page): Promise<boolean> {
     .catch(() => false);
   if (!visible) return false;
 
-  const enabled = await addButton.isEnabled().catch(() => false);
+  const enabled = await expect(addButton)
+    .toBeEnabled({ timeout: 30000 })
+    .then(() => true)
+    .catch(() => false);
   if (!enabled) return false;
 
-  await addButton.click();
+  await addButton.click({ noWaitAfter: true });
   await page.waitForTimeout(1200);
   return true;
 }

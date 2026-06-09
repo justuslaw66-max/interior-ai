@@ -301,7 +301,15 @@ export const GLB_CALIBRATION_BY_PRODUCT_ID: Record<string, GLBCalibration> = {
     useVariantColor: false,
     swapWidthDepthAxes: false,
   },
-  "dining-real-castlery-sloane-travertine-220": {
+  "dining-real-castlery-sloane-travertine-225": {
+    useVariantColor: false,
+    swapWidthDepthAxes: true,
+  },
+  "dining-real-castlery-sloane-dining-table-180": {
+    useVariantColor: false,
+    swapWidthDepthAxes: false,
+  },
+  "dining-real-castlery-sloane-dining-table-225": {
     useVariantColor: false,
     swapWidthDepthAxes: false,
   },
@@ -334,6 +342,10 @@ export const GLB_CALIBRATION_BY_PRODUCT_ID: Record<string, GLBCalibration> = {
     preserveWoodLegMaterials: true,
     preserveWoodLegDisableBaseColorMap: true,
     woodLegDetectionMode: "harper",
+  },
+  "coffee-real-castlery-bristol-coffee-table-set-walnut": {
+    useVariantColor: false,
+    swapWidthDepthAxes: false,
   },
   "dining-real-castlery-kelsey-marble-160": {
     brightness: 1.18,

@@ -9,7 +9,15 @@ export const IMPORTED_VARIANT_BY_PRODUCT_ID: Record<string, { label: string; col
     label: "Grey Oak",
     colorHex: "#4b453b",
   },
-  "dining-real-castlery-sloane-travertine-220": {
+  "dining-real-castlery-sloane-travertine-225": {
+    label: "Grey Oak",
+    colorHex: "#4b453b",
+  },
+  "dining-real-castlery-sloane-dining-table-180": {
+    label: "Grey Oak",
+    colorHex: "#4b453b",
+  },
+  "dining-real-castlery-sloane-dining-table-225": {
     label: "Grey Oak",
     colorHex: "#4b453b",
   },
@@ -139,12 +147,26 @@ export const IMPORTED_PRODUCT_CONFIG_BY_ID: Record<
     roomTags: ["dining"],
     tags: ["castlery", "sloane", "travertine", "dining-table"],
   },
-  "dining-real-castlery-sloane-travertine-220": {
-    title: "Castlery Sloane Travertine Dining Table 220cm",
+  "dining-real-castlery-sloane-travertine-225": {
+    title: "Castlery Sloane Travertine Dining Table 225cm",
     category: "dining_table",
-    modelLabel: "220CM",
+    modelLabel: "225CM",
     roomTags: ["dining"],
     tags: ["castlery", "sloane", "travertine", "dining-table"],
+  },
+  "dining-real-castlery-sloane-dining-table-180": {
+    title: "Castlery Sloane Dining Table 180cm",
+    category: "dining_table",
+    modelLabel: "180CM",
+    roomTags: ["dining"],
+    tags: ["castlery", "sloane", "grey-oak", "dining-table"],
+  },
+  "dining-real-castlery-sloane-dining-table-225": {
+    title: "Castlery Sloane Dining Table 225cm",
+    category: "dining_table",
+    modelLabel: "225CM",
+    roomTags: ["dining"],
+    tags: ["castlery", "sloane", "grey-oak", "dining-table"],
   },
   "dining-real-castlery-brighton-oval-180": {
     title: "Castlery Brighton Oval Dining Table 180cm",
@@ -218,11 +240,6 @@ export const IMPORTED_PRODUCT_CONFIG_BY_ID: Record<
   },
 };
 
-export const SLOANE_TABLE_TO_BENCH_RECOMMENDATION: Record<string, 150 | 180> = {
-  "dining-real-castlery-sloane-travertine-180": 150,
-  "dining-real-castlery-sloane-travertine-220": 180,
-};
-
 export const SLOANE_BENCH_PRODUCT_ID_BY_OPTION: Record<string, string> = {
   "150-no": "dining-real-castlery-sloane-bench-150-no-cushion",
   "180-no": "dining-real-castlery-sloane-bench-180-no-cushion",
@@ -231,8 +248,10 @@ export const SLOANE_BENCH_PRODUCT_ID_BY_OPTION: Record<string, string> = {
 };
 
 export const SLOANE_TABLE_PRODUCT_IDS = [
+  "dining-real-castlery-sloane-dining-table-180",
+  "dining-real-castlery-sloane-dining-table-225",
   "dining-real-castlery-sloane-travertine-180",
-  "dining-real-castlery-sloane-travertine-220",
+  "dining-real-castlery-sloane-travertine-225",
 ] as const;
 
 export const SLOANE_BENCH_PRODUCT_IDS = Object.values(SLOANE_BENCH_PRODUCT_ID_BY_OPTION);
@@ -263,6 +282,8 @@ export const CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE: Record<string, string> = {
   "camille-forest-fabric": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1761806102/crusader/variants/CM-4001/Madison-3-Seater-Sofa-Forest-Det_5-1761806101.jpg",
   "caramel_leather": "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1626941764/crusader/variants/LE-4016/Jonathan-Sofa-Brown_1.jpg",
   "caramel-leather": "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1626941764/crusader/variants/LE-4016/Jonathan-Sofa-Brown_1.jpg",
+  "top_grain_leather_tan": "https://res.cloudinary.com/castlery/image/upload/w_128,f_auto,q_auto/v1678775201/knight/cms/swatch/Sloane-Dining-Chair_Swatch_1_1.jpg",
+  "top-grain-leather-tan": "https://res.cloudinary.com/castlery/image/upload/w_128,f_auto,q_auto/v1678775201/knight/cms/swatch/Sloane-Dining-Chair_Swatch_1_1.jpg",
   "marche-cocoa": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1741163167/crusader/variants/LE-4023/Cocoa_Swatch-1741163165.jpg",
   "marche-ivory": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728527/crusader/variants/LE-4021/Hamilton-Leather-Sofa-Ivory-Det_1-1710728524.jpg",
   "performance-arvo-dune": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/crusader/variants/AR-4001/Arvo-Dune-Swatch.jpg",
@@ -271,6 +292,7 @@ export const CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE: Record<string, string> = {
   "natural": "https://res.cloudinary.com/castlery/image/upload/w_128,f_auto,q_auto/v1756719854/knight/cms/swatch/Mori-Side-Table-Square-Det_4.jpg",
   "chestnut": "https://res.cloudinary.com/castlery/image/upload/w_128,f_auto,q_auto/v1697793942/knight/cms/swatch/Kinsley-TV-Console-Chestnut-Oak-Square-Det_1.jpg",
   "black": "https://res.cloudinary.com/castlery/image/upload/w_128,f_auto,q_auto/v1716346211/knight/cms/swatch/Sofa-Armrest-Table-Black-Square-Det_1.jpg",
+  "walnut": "https://s3-ap-southeast-1.amazonaws.com/production-static-images/swatches/walnut-wood.png",
   "natural-oak": "https://res.cloudinary.com/castlery/image/upload/w_128,f_auto,q_auto/v1756719854/knight/cms/swatch/Mori-Side-Table-Square-Det_4.jpg",
   "chestnut-oak": "https://res.cloudinary.com/castlery/image/upload/w_128,f_auto,q_auto/v1697793942/knight/cms/swatch/Kinsley-TV-Console-Chestnut-Oak-Square-Det_1.jpg",
   "black-oak": "https://res.cloudinary.com/castlery/image/upload/w_128,f_auto,q_auto/v1716346211/knight/cms/swatch/Sofa-Armrest-Table-Black-Square-Det_1.jpg",
@@ -471,7 +493,19 @@ export const FULL_DIMENSIONS_BY_PRODUCT_ID: Record<string, Array<{ label: string
     { label: "Packaging dimensions", value: "1 box" },
     { label: "Max bearing support", value: "50kg" },
   ],
-  "dining-real-castlery-sloane-travertine-220": [
+  "dining-real-castlery-sloane-travertine-180": [
+    { label: "Dimension", value: "W180 x D90 x H76cm" },
+    { label: "Table top thickness", value: "5cm" },
+    { label: "Product weight", value: "76.9kg" },
+    { label: "Capacity", value: "Sits 6 people comfortably" },
+    { label: "Leg height", value: "71cm" },
+    { label: "Max bearing support", value: "100kg" },
+    { label: "Levellers", value: "Included (max 1cm)" },
+    { label: "Packaging dimensions", value: "3 boxes" },
+    { label: "Leg room - height clearance", value: "71cm" },
+    { label: "Leg to leg distance (at height 45cm)", value: "114cm" },
+  ],
+  "dining-real-castlery-sloane-travertine-225": [
     { label: "Dimension", value: "W225 x D100 x H76cm" },
     { label: "Table top thickness", value: "5cm" },
     { label: "Product weight", value: "97kg" },

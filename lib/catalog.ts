@@ -129,7 +129,7 @@ const LEGACY_THUMB_URL_OVERRIDES: Record<string, string> = {
   "dining-real-castlery-kelsey-marble-180": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660199639/crusader/variants/52460093/Kelsey-Marble-Dining-Table-180-Natural-Front-1660199637.jpg",
   "dining-real-castlery-forma-round-90-walnut": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769049964/crusader/variants/AS-001037-WA/Forma-Round-Dining-Table-90cm-Walnut-Front-1769049962.jpg",
   "dining-real-castlery-forma-oval-150-walnut": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050317/crusader/variants/AS-001039-WA/Forma-Oval-Dining-Table-150cm-Walnut-Front-1769050315.jpg",
-  "dining-real-castlery-sloane-travertine-220": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723776680/crusader/variants/AS-000564/Sloane-Travertine-Dining-Table-180cm-Angle-1723776679.jpg",
+  "dining-real-castlery-sloane-travertine-225": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723777218/crusader/variants/AS-000565/Sloane-Travertine-Dining-Table-225cm-Angle-1723777216.jpg",
   "dining-real-castlery-casa-dining-table-154": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1756455069/crusader/variants/40550342/Casa-Rectangular-Dining-Table-154cm-Angle_1-1756455067.png",
   "dining-real-castlery-sawyer-rectangular-coffee-table-120": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1692436666/crusader/variants/50220010/Sawyer-Rectangular-Coffee-Table-120cm_-Angle-1692436664.png",
 

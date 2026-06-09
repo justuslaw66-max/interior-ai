@@ -15,7 +15,6 @@ import {
   getSloaneBenchOptionFromProductId,
   SLOANE_BENCH_PRODUCT_IDS,
   SLOANE_TABLE_PRODUCT_IDS,
-  SLOANE_TABLE_TO_BENCH_RECOMMENDATION,
 } from "@/lib/design-page-product-data";
 import { parseVariantLabel } from "@/lib/design-page-utils";
 import {
@@ -95,14 +94,12 @@ function buildMaterialFields(entry: CatalogItemSchema["variants"][number]): {
 type Params = {
   selectedProduct: CatalogItemSchema | null;
   selectedItem: DesignItem | null;
-  items: DesignItem[];
   catalogItems: typeof CATALOG_ITEMS;
 };
 
 export function useDesignPageProductSelectorState({
   selectedProduct,
   selectedItem,
-  items,
   catalogItems,
 }: Params) {
   const selectedBrand = useMemo(() => {
@@ -216,6 +213,12 @@ export function useDesignPageProductSelectorState({
 
     return modelSelectorProductIds[0] ?? selectedProduct.id;
   }, [selectedProduct, modelSelectorProductIds, armStyleOptions]);
+
+  const useModelOptionsAsVariants = Boolean(
+    selectedProduct &&
+      modelSelectorProductIds.length > 1 &&
+      !armStyleOptions?.length
+  );
 
   const lengthOptions = useMemo(() => {
     if (!selectedProduct) return null;
@@ -348,42 +351,11 @@ export function useDesignPageProductSelectorState({
     Boolean(selectedProduct && SLOANE_BENCH_PRODUCT_IDS.includes(selectedProduct.id)) ||
     (selectedFamily === "sloane" && selectedName.includes("bench"));
 
-  const selectedSloaneCompanionBenchItem = useMemo(() => {
-    return items.find((it) => SLOANE_BENCH_PRODUCT_IDS.includes(it.productId)) ?? null;
-  }, [items]);
-  const selectedSloaneCompanionTableItem = useMemo(() => {
-    return (
-      items.find((it) =>
-        SLOANE_TABLE_PRODUCT_IDS.includes(
-          it.productId as (typeof SLOANE_TABLE_PRODUCT_IDS)[number]
-        )
-      ) ?? null
-    );
-  }, [items]);
-
   const selectedBenchOption = selectedProduct
     ? getSloaneBenchOptionFromProductId(selectedProduct.id)
     : null;
-  const companionBenchOption = selectedSloaneCompanionBenchItem
-    ? getSloaneBenchOptionFromProductId(selectedSloaneCompanionBenchItem.productId)
-    : null;
-
-  const defaultBenchSizeFromTable =
-    selectedProduct && isSloaneTableSelected
-      ? SLOANE_TABLE_TO_BENCH_RECOMMENDATION[selectedProduct.id] ?? 150
-      : 150;
-
-  const activeCompanionBenchSize: 150 | 180 =
-    companionBenchOption?.size ?? selectedBenchOption?.size ?? defaultBenchSizeFromTable;
-  const activeCompanionBenchCushion: "no" | "leather" =
-    companionBenchOption?.cushion ?? selectedBenchOption?.cushion ?? "no";
   const activeSelectedBenchSize: 150 | 180 = selectedBenchOption?.size ?? 150;
   const activeSelectedBenchCushion: "no" | "leather" = selectedBenchOption?.cushion ?? "no";
-  const activeCompanionTableProductId =
-    selectedSloaneCompanionTableItem?.productId ??
-    (selectedProduct && isSloaneTableSelected
-      ? selectedProduct.id
-      : "dining-real-castlery-sloane-travertine-220");
 
   const hasColourOverlapAcrossMaterials = useMemo(() => {
     if (!hasWoodColourOptions) return false;
@@ -557,6 +529,7 @@ export function useDesignPageProductSelectorState({
 
   const useLengthOptionsAsVariants = Boolean(
     !hasStructuredVariantLabels &&
+      !useModelOptionsAsVariants &&
       !isSloaneBenchSelected &&
       !(shapeOptions?.length && (shapeOptions?.length ?? 0) > 1) &&
       lengthOptions?.length &&
@@ -572,7 +545,7 @@ export function useDesignPageProductSelectorState({
 
   const variantOptionCount = useMemo(() => {
     if (!selectedProduct) return 0;
-    if (hasStructuredVariantLabels) return modelSelectorProductIds.length;
+    if (hasStructuredVariantLabels || useModelOptionsAsVariants) return modelSelectorProductIds.length;
     if (useShapeOptionsAsVariants) {
       return (shapeOptions ?? []).filter((option) => Boolean(option.productId)).length;
     }
@@ -584,6 +557,7 @@ export function useDesignPageProductSelectorState({
   }, [
     selectedProduct,
     hasStructuredVariantLabels,
+    useModelOptionsAsVariants,
     modelSelectorProductIds,
     useShapeOptionsAsVariants,
     shapeOptions,
@@ -688,16 +662,12 @@ export function useDesignPageProductSelectorState({
     isSloaneTvConsoleSelected,
     isSloaneTableSelected,
     isSloaneBenchSelected,
-    selectedSloaneCompanionBenchItem,
-    selectedSloaneCompanionTableItem,
-    activeCompanionBenchSize,
-    activeCompanionBenchCushion,
     activeSelectedBenchSize,
     activeSelectedBenchCushion,
-    activeCompanionTableProductId,
     groupedVisibleColourVariants,
     hideColourSelector,
     materialOptions,
+    useModelOptionsAsVariants,
     useLengthOptionsAsVariants,
     useShapeOptionsAsVariants,
     showVariantsSection,

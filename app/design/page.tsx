@@ -2733,18 +2733,13 @@ function PageContent() {
     isCasaTvConsoleSelected: _isCasaTvConsoleSelected,
     isSebTvConsoleSelected: _isSebTvConsoleSelected,
     isSloaneTvConsoleSelected: _isSloaneTvConsoleSelected,
-    isSloaneTableSelected,
     isSloaneBenchSelected,
-    selectedSloaneCompanionBenchItem,
-    selectedSloaneCompanionTableItem,
-    activeCompanionBenchSize,
-    activeCompanionBenchCushion,
     activeSelectedBenchSize,
     activeSelectedBenchCushion,
-    activeCompanionTableProductId,
     groupedVisibleColourVariants,
     hideColourSelector,
     materialOptions,
+    useModelOptionsAsVariants,
     useLengthOptionsAsVariants,
     useShapeOptionsAsVariants,
     showVariantsSection,
@@ -2755,7 +2750,6 @@ function PageContent() {
   } = useDesignPageProductSelectorState({
     selectedProduct,
     selectedItem,
-    items,
     catalogItems: CATALOG_ITEMS,
   });
 
@@ -2904,10 +2898,14 @@ function PageContent() {
     if (!swatchTextureUrl) return null;
 
     const colorHex = variant.swatchHex ?? variant.colorHex ?? activeVariantColorHex ?? "#c8b79f";
-    const isSloaneTravertine = selectedProduct.id.toLowerCase().includes("sloane-travertine");
+    const selectedProductIdLower = selectedProduct.id.toLowerCase();
+    const isSloaneLegFinish =
+      selectedProductIdLower.includes("sloane-travertine") ||
+      selectedProductIdLower.includes("sloane-dining-table") ||
+      selectedProductIdLower.includes("sloane-bench");
 
     return {
-      sectionLabel: isSloaneTravertine ? "Leg" : "Wood colour",
+      sectionLabel: isSloaneLegFinish ? "Leg" : "Wood colour",
       label:
         variant.finishLabel?.trim() ||
         activeStructuredVariant.colourLabel.trim() ||
@@ -2923,6 +2921,22 @@ function PageContent() {
     selectedProduct,
     showFinishSection,
   ]);
+
+  const sloaneBenchMaterialSwatch = useMemo(() => {
+    if (!selectedProduct || !isSloaneBenchSelected || activeSelectedBenchCushion !== "leather") {
+      return null;
+    }
+
+    return {
+      label: "Caramel",
+      colorHex: "#8a643f",
+      swatchTextureUrl:
+        CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE["top-grain-leather-tan"] ??
+        CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE["top_grain_leather_tan"] ??
+        CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE["caramel_leather"] ??
+        null,
+    };
+  }, [activeSelectedBenchCushion, isSloaneBenchSelected, selectedProduct]);
 
   const huggModelOptions = useMemo(() => {
     if (!isHuggWithWoodOptions || !selectedProduct) {
@@ -6692,13 +6706,21 @@ function PageContent() {
               </div>
 
               <div className="mt-2 flex flex-wrap gap-2">
-                {hasStructuredVariantLabels ? (
+                {hasStructuredVariantLabels || useModelOptionsAsVariants ? (
                   modelSelectorProductIds.map((productId) => {
                     const optionProduct = CATALOG_ITEMS[productId];
                     if (!optionProduct) return null;
                     const active = optionProduct.id === selectedModelProductId;
                     const casaWidthMatch = optionProduct.id.match(/(?:casa|seb|sloane)-tv-console-(\d+)/i);
+                    const optionProductIdLower = optionProduct.id.toLowerCase();
                     const optionLabel =
+                      (optionProductIdLower.includes("sloane-dining-table")
+                        ? "Dining table"
+                        : optionProductIdLower.includes("sloane-travertine")
+                          ? "Travertine dining table"
+                          : optionProductIdLower.includes("sloane-bench")
+                            ? "Bench"
+                          : null) ??
                       (casaWidthMatch ? `${casaWidthMatch[1]}CM` : null) ??
                       optionProduct.metadata?.modelLabel ??
                       optionProduct.title.match(/(\d+\s*Seater)/i)?.[1] ??
@@ -6930,6 +6952,45 @@ function PageContent() {
                   )
                 )}
               </div>
+              </div>
+            ) : null}
+
+            {sloaneBenchMaterialSwatch ? (
+              <div className="pt-3" data-testid="selected-sloane-bench-material-section">
+                <div
+                  className={
+                    showDesignerTheme
+                      ? "designer-text-primary text-sm font-semibold"
+                      : "text-sm font-semibold text-neutral-900"
+                  }
+                >
+                  Material
+                </div>
+                <div
+                  className={
+                    showDesignerTheme
+                      ? "designer-text-secondary mt-2 text-xs"
+                      : "mt-2 text-xs text-neutral-600"
+                  }
+                  data-testid="selected-sloane-bench-material-label"
+                >
+                  Selected: {sloaneBenchMaterialSwatch.label}
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <div
+                    className="shrink-0 h-20 w-20 rounded-sm bg-cover bg-center"
+                    data-testid="selected-sloane-bench-material-swatch"
+                    role="img"
+                    aria-label={`${sloaneBenchMaterialSwatch.label} leather swatch`}
+                    style={{
+                      backgroundColor: sloaneBenchMaterialSwatch.colorHex,
+                      backgroundImage: sloaneBenchMaterialSwatch.swatchTextureUrl
+                        ? `url(${sloaneBenchMaterialSwatch.swatchTextureUrl})`
+                        : undefined,
+                      boxShadow: "0 0 0 2px #fff, 0 0 0 4px #5a2135",
+                    }}
+                  />
+                </div>
               </div>
             ) : null}
 
@@ -7256,175 +7317,6 @@ function PageContent() {
               </div>
             ) : null}
 
-            {(isSloaneTableSelected || isSloaneBenchSelected) ? (
-              <div className="pt-3">
-                <div
-                  className={
-                    showDesignerTheme
-                      ? "designer-text-primary text-sm font-semibold"
-                      : "text-sm font-semibold text-neutral-900"
-                  }
-                >
-                  Complete the set
-                </div>
-
-                {isSloaneTableSelected ? (
-                  <>
-                    <div className={showDesignerTheme ? "mt-1 text-xs designer-text-secondary" : "mt-1 text-xs text-neutral-600"}>
-                      Matching companion: Sloane Dining Bench
-                    </div>
-
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {[150, 180].map((size) => {
-                        const active = activeCompanionBenchSize === size;
-                        return (
-                          <button
-                            key={`bench-size-${size}`}
-                            className={`rounded-lg border px-3 py-2 text-sm ${
-                              showDesignerTheme
-                                ? "designer-text-primary"
-                                : "text-neutral-900"
-                            } ${active ? "designer-accent-border" : "border-neutral-200"}`}
-                            disabled={!canEdit}
-                            onClick={() => {
-                              const targetProductId = getSloaneBenchProductId(size as 150 | 180, activeCompanionBenchCushion);
-                              ensureImportedCatalogItem(targetProductId);
-                              const targetProduct = CATALOG_ITEMS[targetProductId];
-                              if (!targetProduct) return;
-
-                              if (selectedSloaneCompanionBenchItem) {
-                                commitItems(
-                                  (prev) =>
-                                    prev.map((it) =>
-                                      it.instanceId === selectedSloaneCompanionBenchItem.instanceId
-                                        ? {
-                                            ...it,
-                                            productId: targetProduct.id,
-                                            variantId: targetProduct.defaultVariantId,
-                                          }
-                                        : it
-                                    ),
-                                  `Change bench size to ${size}CM`
-                                );
-                                return;
-                              }
-
-                              addCatalogItemToRoom(targetProductId);
-                            }}
-                            title={`${size}CM`}
-                          >
-                            {size}CM
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {[
-                        { key: "no" as const, label: "No Cushion" },
-                        { key: "leather" as const, label: "Leather Cushion" },
-                      ].map((option) => {
-                        const active = activeCompanionBenchCushion === option.key;
-                        return (
-                          <button
-                            key={`bench-cushion-${option.key}`}
-                            className={`rounded-lg border px-3 py-2 text-sm ${
-                              showDesignerTheme
-                                ? "designer-text-primary"
-                                : "text-neutral-900"
-                            } ${active ? "designer-accent-border" : "border-neutral-200"}`}
-                            disabled={!canEdit}
-                            onClick={() => {
-                              const targetProductId = getSloaneBenchProductId(activeCompanionBenchSize, option.key);
-                              ensureImportedCatalogItem(targetProductId);
-                              const targetProduct = CATALOG_ITEMS[targetProductId];
-                              if (!targetProduct) return;
-
-                              if (selectedSloaneCompanionBenchItem) {
-                                commitItems(
-                                  (prev) =>
-                                    prev.map((it) =>
-                                      it.instanceId === selectedSloaneCompanionBenchItem.instanceId
-                                        ? {
-                                            ...it,
-                                            productId: targetProduct.id,
-                                            variantId: targetProduct.defaultVariantId,
-                                          }
-                                        : it
-                                    ),
-                                  `Change bench option to ${option.label}`
-                                );
-                                return;
-                              }
-
-                              addCatalogItemToRoom(targetProductId);
-                            }}
-                            title={option.label}
-                          >
-                            {option.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </>
-                ) : null}
-
-                {isSloaneBenchSelected ? (
-                  <>
-                    <div className={showDesignerTheme ? "mt-1 text-xs designer-text-secondary" : "mt-1 text-xs text-neutral-600"}>
-                      Matching companion: Sloane Travertine Dining Table
-                    </div>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {[
-                        { label: "180CM", productId: "dining-real-castlery-sloane-travertine-180" },
-                        { label: "220CM", productId: "dining-real-castlery-sloane-travertine-220" },
-                      ].map((option) => {
-                        const active = option.productId === activeCompanionTableProductId;
-                        return (
-                          <button
-                            key={option.productId}
-                            className={`rounded-lg border px-3 py-2 text-sm ${
-                              showDesignerTheme
-                                ? "designer-text-primary"
-                                : "text-neutral-900"
-                            } ${active ? "designer-accent-border" : "border-neutral-200"}`}
-                            disabled={!canEdit}
-                            onClick={() => {
-                              ensureImportedCatalogItem(option.productId);
-                              const optionProduct = CATALOG_ITEMS[option.productId];
-                              if (!optionProduct) return;
-
-                              if (selectedSloaneCompanionTableItem) {
-                                commitItems(
-                                  (prev) =>
-                                    prev.map((it) =>
-                                      it.instanceId === selectedSloaneCompanionTableItem.instanceId
-                                        ? {
-                                            ...it,
-                                            productId: optionProduct.id,
-                                            variantId: optionProduct.defaultVariantId,
-                                          }
-                                        : it
-                                    ),
-                                  `Change table size to ${option.label}`
-                                );
-                                return;
-                              }
-
-                              addCatalogItemToRoom(option.productId);
-                            }}
-                            title={option.label}
-                          >
-                            {option.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </>
-                ) : null}
-              </div>
-            ) : null}
-
             {(showFinishSection || huggFabricSwatchOptions.length > 1) ? (
               <div className="pt-3">
               <div className="flex items-center justify-between gap-2">
@@ -7665,6 +7557,73 @@ function PageContent() {
                       boxShadow: "0 0 0 2px #fff, 0 0 0 4px #5a2135",
                     }}
                   />
+                </div>
+              </div>
+            ) : null}
+
+            {isSloaneBenchSelected ? (
+              <div className="pt-3" data-testid="selected-sloane-bench-variant-section">
+                <div
+                  className={
+                    showDesignerTheme
+                      ? "designer-text-primary text-sm font-semibold"
+                      : "text-sm font-semibold text-neutral-900"
+                  }
+                >
+                  Variant
+                </div>
+                <div
+                  className={
+                    showDesignerTheme
+                      ? "designer-text-secondary mt-2 text-xs"
+                      : "mt-2 text-xs text-neutral-600"
+                  }
+                >
+                  Selected: {activeSelectedBenchCushion === "leather" ? "With cushion" : "No cushion"}
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {[
+                    { key: "leather" as const, label: "With cushion" },
+                    { key: "no" as const, label: "No cushion" },
+                  ].map((option) => {
+                    const active = activeSelectedBenchCushion === option.key;
+                    return (
+                      <button
+                        key={`variant-swatch-sloane-bench-${option.key}`}
+                        data-testid={`variant-swatch-sloane-bench-${option.key}`}
+                        data-active={active ? "true" : "false"}
+                        className={`rounded-lg border px-3 py-2 text-sm ${
+                          showDesignerTheme
+                            ? "designer-text-primary"
+                            : "text-neutral-900"
+                        } ${active ? "designer-accent-border" : "border-neutral-200"}`}
+                        disabled={!canEdit}
+                        onClick={() => {
+                          if (!selectedItem) return;
+                          const targetProductId = getSloaneBenchProductId(activeSelectedBenchSize, option.key);
+                          ensureImportedCatalogItem(targetProductId);
+                          const optionProduct = CATALOG_ITEMS[targetProductId];
+                          if (!optionProduct) return;
+
+                          commitItems(
+                            (prev) =>
+                              prev.map((it) =>
+                                it.instanceId === selectedItem.instanceId
+                                  ? {
+                                      ...it,
+                                      productId: optionProduct.id,
+                                      variantId: optionProduct.defaultVariantId,
+                                    }
+                                  : it
+                              ),
+                            `Change variant to ${option.label}`
+                          );
+                        }}
+                      >
+                        {option.label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             ) : null}
