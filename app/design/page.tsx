@@ -81,11 +81,15 @@ import {
 } from "@/lib/design-page-utils";
 import { buildProductInfoSections } from "@/lib/design-page-product-info";
 import {
+  JARON_CONFIGURATION_GROUPS,
+  JARON_CONFIGURATION_PRODUCT_IDS,
   MODEL_FAMILY_BY_PRODUCT_ID,
   MODEL_SELECTOR_PRODUCT_IDS_BY_PRODUCT_ID,
   ARM_STYLE_OPTIONS_BY_PRODUCT_ID,
   LENGTH_OPTIONS_BY_PRODUCT_ID,
   ORIENTATION_OPTIONS_BY_PRODUCT_ID,
+  type JaronConfigurationArmKey,
+  type JaronConfigurationDiagramKey,
 } from "@/lib/design-page-model-maps";
 import {
   IMPORTED_VARIANT_BY_PRODUCT_ID,
@@ -161,6 +165,69 @@ const DEFAULT_EDITOR_CAMERA_VIEW: CameraView = {
   target: [0, 1.0, 0],
   fov: 45,
 };
+
+function JaronConfigurationDiagram({
+  diagram,
+  active,
+}: {
+  diagram: JaronConfigurationDiagramKey;
+  active: boolean;
+}) {
+  const iconClass = `h-14 w-20 shrink-0 ${active ? "text-white" : "text-[#5a1327]"}`;
+  const lineProps = {
+    stroke: "currentColor",
+    strokeWidth: 2,
+    vectorEffect: "non-scaling-stroke" as const,
+  };
+
+  if (diagram === "chaise-sectional") {
+    return (
+      <svg
+        aria-hidden="true"
+        className={iconClass}
+        viewBox="0 0 96 64"
+        fill="none"
+      >
+        <path d="M16 16h60v28H16z" {...lineProps} />
+        <path d="M16 16h9v40h-9zM67 16h9v28h-9z" {...lineProps} />
+        <path d="M25 30h42M46 16v28M16 44h9" {...lineProps} />
+      </svg>
+    );
+  }
+
+  if (diagram === "l-shaped-sectional") {
+    return (
+      <svg
+        aria-hidden="true"
+        className={iconClass}
+        viewBox="0 0 96 64"
+        fill="none"
+      >
+        <path d="M16 14h62v24H16z" {...lineProps} />
+        <path d="M16 14h24v42H16z" {...lineProps} />
+        <path d="M25 14v42M40 26h38M55 14v24M16 38h24" {...lineProps} />
+      </svg>
+    );
+  }
+
+  const dividers = diagram === "standard-extended-3-seater" ? [35, 50, 65] : [48];
+
+  return (
+    <svg
+      aria-hidden="true"
+      className={iconClass}
+      viewBox="0 0 96 64"
+      fill="none"
+    >
+      <path d="M16 18h64v28H16z" {...lineProps} />
+      <path d="M16 18h9v28h-9zM71 18h9v28h-9z" {...lineProps} />
+      <path d="M25 31h46" {...lineProps} />
+      {dividers.map((x) => (
+        <path key={x} d={`M${x} 18v28`} {...lineProps} />
+      ))}
+    </svg>
+  );
+}
 
 function PageContent() {
   const { data: session } = useSession();
@@ -1269,10 +1336,6 @@ function PageContent() {
   useEffect(() => {
     const validation = initializeCatalog();
     
-    console.log(`📦 Catalog Status:`);
-    console.log(`   Total: ${validation.summary.total}`);
-    console.log(`   Valid: ${validation.summary.valid}`);
-    console.log(`   Errors: ${validation.summary.total - validation.summary.valid}`);
     
     track("catalog_initialized", {
       total_items: validation.summary.total,
@@ -1633,13 +1696,11 @@ function PageContent() {
         const imageUrl = captureCanvasImage();
         if (imageUrl) {
           images.push({ name: angle.name, url: imageUrl });
-          console.log(`Captured ${angle.name} image, total: ${images.length}`);
         } else {
           console.warn(`Failed to capture ${angle.name} image`);
         }
       }
       
-      console.log(`Total images captured: ${images.length}`);
 
       // Restore original camera state
       cameraRef.current.position.copy(originalPos);
@@ -3022,6 +3083,62 @@ function PageContent() {
     ].filter((option) => Boolean(CATALOG_ITEMS[option.productId] ?? importedModelById.get(option.productId)));
   }, [importedModelById, selectedProduct]);
 
+  const isJaronConfigurationSelected = Boolean(
+    selectedProduct && JARON_CONFIGURATION_PRODUCT_IDS.includes(selectedProduct.id)
+  );
+
+  const activeJaronArmKey = useMemo<JaronConfigurationArmKey>(() => {
+    if (!selectedProduct) return "slim";
+    return selectedProduct.id.endsWith("-wide-arm") ? "wide" : "slim";
+  }, [selectedProduct]);
+
+  const jaronConfigurationGroups = useMemo(
+    () =>
+      JARON_CONFIGURATION_GROUPS.map((group) => ({
+        ...group,
+        options: group.options.filter(
+          (option) =>
+            Boolean(CATALOG_ITEMS[option.slimProductId] ?? importedModelById.get(option.slimProductId)) ||
+            Boolean(CATALOG_ITEMS[option.wideProductId] ?? importedModelById.get(option.wideProductId))
+        ),
+      })).filter((group) => group.options.length > 0),
+    [importedModelById]
+  );
+
+  const activeJaronConfigurationGroup = useMemo(() => {
+    if (!selectedProduct || !isJaronConfigurationSelected) return null;
+    return (
+      jaronConfigurationGroups.find((group) =>
+        group.options.some(
+          (option) =>
+            option.slimProductId === selectedProduct.id ||
+            option.wideProductId === selectedProduct.id
+        )
+      ) ?? null
+    );
+  }, [isJaronConfigurationSelected, jaronConfigurationGroups, selectedProduct]);
+
+  const activeJaronConfigurationOption = useMemo(() => {
+    if (!selectedProduct || !isJaronConfigurationSelected) return null;
+    return (
+      jaronConfigurationGroups
+        .flatMap((group) => group.options)
+        .find(
+          (option) =>
+            option.slimProductId === selectedProduct.id ||
+            option.wideProductId === selectedProduct.id
+      ) ?? null
+    );
+  }, [isJaronConfigurationSelected, jaronConfigurationGroups, selectedProduct]);
+
+  const visibleJaronConfigurationGroup =
+    activeJaronConfigurationGroup ?? jaronConfigurationGroups[0] ?? null;
+  const visibleJaronConfigurationOption =
+    activeJaronConfigurationOption ?? visibleJaronConfigurationGroup?.options[0] ?? null;
+  const showJaronConfigurationSelector = Boolean(
+    isJaronConfigurationSelected && visibleJaronConfigurationGroup
+  );
+
   useEffect(() => {
     setPreviewVariantId(null);
     setPreviewMaterialPresetId(null);
@@ -4030,7 +4147,6 @@ function PageContent() {
       });
 
       const plan = await res.json();
-      console.log("AI starter plan response:", plan);
 
       if (!res.ok) {
         applyFallbackLayout(plan?.error ?? "AI failed");
@@ -4214,6 +4330,62 @@ function PageContent() {
       importedVariantsByProductId: IMPORTED_VARIANTS_BY_PRODUCT_ID,
     });
   }, [importedModelById, isCuratedHuggNestingProductId]);
+
+  const switchSelectedProductModel = useCallback(
+    (targetProductId: string, historyLabel: string) => {
+      if (!selectedItem || !selectedProduct || targetProductId === selectedProduct.id) return;
+
+      ensureImportedCatalogItem(targetProductId);
+      const optionProduct = CATALOG_ITEMS[targetProductId];
+      if (!optionProduct) return;
+
+      commitItems(
+        (prev) => {
+          const current = prev.find((it) => it.instanceId === selectedItem.instanceId);
+          const currentVariant = selectedProduct.variants.find(
+            (variant) => variant.id === current?.variantId
+          );
+          const currentFinishCode = String(currentVariant?.finishCode ?? "")
+            .trim()
+            .toLowerCase();
+          const currentMaterialType = String(currentVariant?.materialType ?? "")
+            .trim()
+            .toLowerCase();
+          const currentLabel = String(currentVariant?.label ?? "")
+            .trim()
+            .toLowerCase();
+          const nextVariant =
+            optionProduct.variants.find((variant) =>
+              currentFinishCode
+                ? String(variant.finishCode ?? "").trim().toLowerCase() === currentFinishCode
+                : false
+            ) ??
+            optionProduct.variants.find((variant) =>
+              currentMaterialType
+                ? String(variant.materialType ?? "").trim().toLowerCase() ===
+                  currentMaterialType
+                : false
+            ) ??
+            optionProduct.variants.find(
+              (variant) => String(variant.label ?? "").trim().toLowerCase() === currentLabel
+            ) ??
+            optionProduct.variants[0];
+
+          return prev.map((it) =>
+            it.instanceId === selectedItem.instanceId
+              ? {
+                  ...it,
+                  productId: optionProduct.id,
+                  variantId: nextVariant?.id ?? optionProduct.defaultVariantId,
+                }
+              : it
+          );
+        },
+        historyLabel
+      );
+    },
+    [commitItems, ensureImportedCatalogItem, selectedItem, selectedProduct]
+  );
 
   const importedFamilyOptions = useMemo(() => {
     const seen = new Set<string>();
@@ -6622,7 +6794,164 @@ function PageContent() {
               </div>
             ) : null}
 
-            {armStyleOptions?.length ? (
+            {showJaronConfigurationSelector && visibleJaronConfigurationGroup ? (
+              <div className="pt-3" data-testid="jaron-configuration-selector">
+                <div
+                  className={
+                    showDesignerTheme
+                      ? "designer-text-primary text-sm font-semibold"
+                      : "text-sm font-semibold text-neutral-900"
+                  }
+                >
+                  Configuration
+                </div>
+
+                <div className="mt-2 overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50">
+                  <div className="grid grid-cols-2 border-b border-neutral-200">
+                    {jaronConfigurationGroups.map((group) => {
+                      const firstOption = group.options[0];
+                      const targetProductId =
+                        activeJaronArmKey === "wide"
+                          ? firstOption?.wideProductId
+                          : firstOption?.slimProductId;
+                      const active = group.key === visibleJaronConfigurationGroup.key;
+                      const disabled = !targetProductId || !canEdit;
+
+                      return (
+                        <button
+                          key={group.key}
+                          data-testid={`jaron-config-tab-${group.key}`}
+                          data-active={active ? "true" : "false"}
+                          className={`px-3 py-2 text-xs font-semibold ${
+                            active
+                              ? "bg-neutral-900 text-white"
+                              : showDesignerTheme
+                                ? "designer-text-primary bg-white"
+                                : "bg-white text-neutral-900"
+                          }`}
+                          disabled={disabled}
+                          onClick={() => {
+                            if (!targetProductId) return;
+                            switchSelectedProductModel(
+                              targetProductId,
+                              `Change Jaron configuration to ${group.label}`
+                            );
+                          }}
+                        >
+                          {group.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="space-y-2 p-2">
+                    {visibleJaronConfigurationGroup.options.map((option) => {
+                      const targetProductId =
+                        activeJaronArmKey === "wide"
+                          ? option.wideProductId
+                          : option.slimProductId;
+                      const active = option.key === visibleJaronConfigurationOption?.key;
+                      const disabled = !targetProductId || !canEdit;
+
+                      return (
+                        <button
+                          key={option.key}
+                          data-testid={`jaron-config-option-${option.key}`}
+                          data-active={active ? "true" : "false"}
+                          className={`block w-full rounded-lg border px-3 py-3 text-left ${
+                            active
+                              ? "bg-neutral-900 text-white"
+                              : showDesignerTheme
+                                ? "designer-text-primary border-neutral-200 bg-white"
+                                : "border-neutral-200 bg-white text-neutral-900"
+                          }`}
+                          disabled={disabled}
+                          onClick={() => {
+                            switchSelectedProductModel(
+                              targetProductId,
+                              `Change Jaron model to ${option.label}`
+                            );
+                          }}
+                        >
+                          <span className="flex items-center gap-3">
+                            <span className="flex h-14 w-20 shrink-0 items-center justify-center">
+                              <JaronConfigurationDiagram
+                                diagram={option.diagram}
+                                active={active}
+                              />
+                            </span>
+                            <span className="min-w-0">
+                              <span className="block text-sm font-semibold">
+                                {option.label}
+                              </span>
+                              <span
+                                className={`mt-1 block text-xs ${
+                                  active ? "text-white/80" : "text-neutral-500"
+                                }`}
+                              >
+                                {option.description}
+                              </span>
+                            </span>
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {visibleJaronConfigurationOption ? (
+                  <div className="mt-3">
+                    <div
+                      className={
+                        showDesignerTheme
+                          ? "designer-text-primary text-sm font-semibold"
+                          : "text-sm font-semibold text-neutral-900"
+                      }
+                    >
+                      Arm style
+                    </div>
+                    <div className="mt-2 grid grid-cols-2 gap-2">
+                      {[
+                        { key: "slim" as const, label: "Slim arm" },
+                        { key: "wide" as const, label: "Wide arm" },
+                      ].map((option) => {
+                        const targetProductId =
+                          option.key === "wide"
+                            ? visibleJaronConfigurationOption.wideProductId
+                            : visibleJaronConfigurationOption.slimProductId;
+                        const active = option.key === activeJaronArmKey;
+                        const disabled = !targetProductId || !canEdit;
+
+                        return (
+                          <button
+                            key={option.key}
+                            data-testid={`jaron-arm-${option.key}`}
+                            data-active={active ? "true" : "false"}
+                            className={`rounded-lg border px-3 py-2 text-sm ${
+                              showDesignerTheme
+                                ? "designer-text-primary"
+                                : "text-neutral-900"
+                            } ${active ? "designer-accent-border" : "border-neutral-200"}`}
+                            disabled={disabled}
+                            onClick={() => {
+                              switchSelectedProductModel(
+                                targetProductId,
+                                `Change Jaron arm style to ${option.label}`
+                              );
+                            }}
+                            title={option.label}
+                          >
+                            {option.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+
+            {!showJaronConfigurationSelector && armStyleOptions?.length ? (
               <div className="pt-3">
                 <div
                   className={
@@ -6693,7 +7022,7 @@ function PageContent() {
               </div>
             ) : null}
 
-            {showVariantsSection ? (
+            {!showJaronConfigurationSelector && showVariantsSection ? (
               <div className="pt-2">
               <div
                 className={

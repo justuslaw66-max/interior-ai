@@ -427,6 +427,8 @@ function getFinishChipLabel(variant: CatalogItemSchema["variants"][number]): str
     washed_chenille_sand: "Sand (Washed Chenille)",
     greta_mustard_brown: "Caramel (Washed Chenille)",
     greta_moss: "Moss (Washed Chenille)",
+    bisque_fabric: "Bisque",
+    camille_forest_fabric: "Camille, Forest",
     cocoa_leather: "Cocoa",
     caramel_leather: "Caramel",
     warm_taupe_leather: "Warm Taupe",

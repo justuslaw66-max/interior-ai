@@ -10,6 +10,34 @@ const expectedSwatches = [
 ];
 
 test.describe("109. Madison Swatch Textures", () => {
+  test("catalog preview separates fabric and leather swatches into material tabs", async ({ page }) => {
+    test.setTimeout(120000);
+
+    await page.goto("/design");
+    await page.waitForLoadState("domcontentloaded");
+
+    await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+
+    const opened = await openCatalogPreview(page, MADISON_3S_ID, "Madison");
+    expect(opened).toBeTruthy();
+
+    const drawer = page.locator("aside").filter({ hasText: "Product details" }).first();
+    await expect(drawer).toBeVisible({ timeout: 10000 });
+
+    const fabricTab = drawer.getByRole("tab", { name: "Fabric" });
+    const leatherTab = drawer.getByRole("tab", { name: "Leather" });
+    await expect(fabricTab).toHaveAttribute("aria-selected", "true");
+    await expect(leatherTab).toHaveAttribute("aria-selected", "false");
+    await expect(drawer.getByText("Fabric colour")).toBeVisible();
+    await expect(drawer.getByText("Selected: Bisque")).toBeVisible();
+    await expect(drawer.getByText("Selected: Caramel")).toHaveCount(0);
+
+    await leatherTab.click();
+    await expect(leatherTab).toHaveAttribute("aria-selected", "true");
+    await expect(drawer.getByText("Selected: Caramel")).toBeVisible();
+    await expect(drawer.getByText("Fabric colour")).toHaveCount(0);
+  });
+
   test("Madison material options use current Castlery SG texture swatches", async ({ page }) => {
     test.setTimeout(120000);
 

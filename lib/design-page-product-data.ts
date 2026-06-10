@@ -127,14 +127,14 @@ export const IMPORTED_PRODUCT_CONFIG_BY_ID: Record<
     tags: ["castlery", "jaron", "leather", "fabric", "recliner", "chaise", "sectional", "wide-arm"],
   },
   "sofa-real-castlery-jaron-l-shaped-sectional": {
-    title: "Castlery Jaron Recliner L-Shaped Sectional Sofa (Slim Arm)",
+    title: "Castlery Jaron Leather Recliner L-Shaped Sectional Sofa (Slim Arm)",
     category: "sofa",
     modelLabel: "Recliner L-Shaped Sectional (Slim Arm)",
     roomTags: ["living_room"],
     tags: ["castlery", "jaron", "leather", "recliner", "l-shaped", "sectional"],
   },
   "sofa-real-castlery-jaron-l-shaped-sectional-wide-arm": {
-    title: "Castlery Jaron Recliner L-Shaped Sectional Sofa (Wide Arm)",
+    title: "Castlery Jaron Leather Recliner L-Shaped Sectional Sofa (Wide Arm)",
     category: "sofa",
     modelLabel: "Recliner L-Shaped Sectional (Wide Arm)",
     roomTags: ["living_room"],

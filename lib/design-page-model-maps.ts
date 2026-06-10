@@ -12,6 +12,78 @@ const JARON_MODEL_FAMILY_IDS = [
   "sofa-real-castlery-jaron-l-shaped-sectional-wide-arm",
 ];
 
+export const JARON_CONFIGURATION_PRODUCT_IDS = [...JARON_MODEL_FAMILY_IDS];
+
+export type JaronConfigurationArmKey = "slim" | "wide";
+export type JaronConfigurationGroupKey = "standard" | "l-shaped";
+export type JaronConfigurationDiagramKey =
+  | "standard-3-seater"
+  | "standard-extended-3-seater"
+  | "chaise-sectional"
+  | "l-shaped-sectional";
+
+export type JaronConfigurationOption = {
+  key: string;
+  label: string;
+  description: string;
+  diagram: JaronConfigurationDiagramKey;
+  slimProductId: string;
+  wideProductId: string;
+};
+
+export type JaronConfigurationGroup = {
+  key: JaronConfigurationGroupKey;
+  label: string;
+  options: JaronConfigurationOption[];
+};
+
+export const JARON_CONFIGURATION_GROUPS: JaronConfigurationGroup[] = [
+  {
+    key: "standard",
+    label: "STANDARD",
+    options: [
+      {
+        key: "3-seater",
+        label: "3 Seater Recliner Sofa",
+        description: "Slim Arm: W230 x D115cm; Wide Arm: W244 x D115cm",
+        diagram: "standard-3-seater",
+        slimProductId: "sofa-real-castlery-jaron-3s",
+        wideProductId: "sofa-real-castlery-jaron-3s-wide-arm",
+      },
+      {
+        key: "extended-3-seater",
+        label: "Extended 3 Seater Recliner Sofa",
+        description: "Slim Arm: W316 x D115cm; Wide Arm: W330 x D115cm",
+        diagram: "standard-extended-3-seater",
+        slimProductId: "sofa-real-castlery-jaron-extended-3s",
+        wideProductId: "sofa-real-castlery-jaron-extended-3s-wide-arm",
+      },
+    ],
+  },
+  {
+    key: "l-shaped",
+    label: "L-SHAPED",
+    options: [
+      {
+        key: "chaise-sectional",
+        label: "Recliner Chaise Sectional Sofa",
+        description: "Slim Arm: W325 x D239cm; Wide Arm: W330 x D244cm",
+        diagram: "chaise-sectional",
+        slimProductId: "sofa-real-castlery-jaron-chaise-sectional",
+        wideProductId: "sofa-real-castlery-jaron-chaise-sectional-wide-arm",
+      },
+      {
+        key: "l-shaped-sectional",
+        label: "Recliner L-Shaped Sectional Sofa",
+        description: "Slim Arm: W325 x D325cm; Wide Arm: W330 x D330cm",
+        diagram: "l-shaped-sectional",
+        slimProductId: "sofa-real-castlery-jaron-l-shaped-sectional",
+        wideProductId: "sofa-real-castlery-jaron-l-shaped-sectional-wide-arm",
+      },
+    ],
+  },
+];
+
 export const MODEL_FAMILY_BY_PRODUCT_ID: Record<string, string[]> = {
   "sofa-real-castlery-madison-2s": [
     "sofa-real-castlery-madison-2s",

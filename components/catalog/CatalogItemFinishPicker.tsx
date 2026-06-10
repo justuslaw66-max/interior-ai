@@ -30,6 +30,62 @@ export default function CatalogItemFinishPicker({ finishOptions, activeFinishId,
   const collectionTypes = ["stocked", "custom"];
   const materialTypes: Array<"Fabric" | "Leather" | "Wood"> = ["Fabric", "Wood", "Leather"];
 
+  const getMaterialLabel = (materialType: "Fabric" | "Leather" | "Wood") =>
+    materialType === "Wood" ? "Wood colour" : materialType === "Fabric" ? "Fabric colour" : "Leather";
+
+  const renderSwatchGroup = (
+    collectionKey: string,
+    materialGroup: {
+      materialType: "Fabric" | "Leather" | "Wood";
+      items: FinishOption[];
+    }
+  ) => (
+    <div key={`${collectionKey}-${materialGroup.materialType}`} className="mt-2">
+      <div className="text-[11px] font-medium text-neutral-500">
+        {getMaterialLabel(materialGroup.materialType)}
+      </div>
+      <div className="mt-1.5 grid grid-cols-5 gap-[6.6px]">
+        {materialGroup.items.map((finish, index) => {
+          const active = finish.id === activeFinishId;
+          return (
+            <button
+              key={`${collectionKey}-${materialGroup.materialType}-${finish.id}-${index}`}
+              onClick={() => onSetFinish(finish.id, finish)}
+              data-testid={`catalog-finish-option-${finish.id}`}
+              title={finish.label}
+              aria-label={finish.label}
+              className={`group relative h-14.5 w-14.5 rounded-md border transition ${
+                active
+                  ? "border-[#5a2135] ring-2 ring-[#5a2135]/30"
+                  : "border-neutral-200 hover:border-neutral-400"
+              }`}
+              style={{
+                backgroundColor: finish.swatchHex ?? "#d1d5db",
+                backgroundImage: finish.swatchTextureUrl ? `url(${finish.swatchTextureUrl})` : undefined,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+            >
+              <span className="sr-only">{finish.label}</span>
+              {active ? (
+                <span className="pointer-events-none absolute inset-0 rounded-md shadow-[inset_0_0_0_1px_rgba(255,255,255,0.7)]" />
+              ) : null}
+            </button>
+          );
+        })}
+      </div>
+      {(() => {
+        const selectedInGroup = materialGroup.items.find((finish) => finish.id === activeFinishId);
+        if (!selectedInGroup) return null;
+        return (
+          <div className="mt-2 text-[11px] text-neutral-600">
+            Selected: {selectedInGroup.label}
+          </div>
+        );
+      })()}
+    </div>
+  );
+
   const buildMaterialGroups = (items: FinishOption[]) => {
     const itemsByMaterial = materialTypes
       .map((materialType) => ({
@@ -82,52 +138,56 @@ export default function CatalogItemFinishPicker({ finishOptions, activeFinishId,
             </div>
           ) : null}
           
-          {collectionGroup.materialGroups.map((materialGroup) => (
-            <div key={`${collectionGroup.collectionType ?? "all"}-${materialGroup.materialType}`} className="mt-2">
-              <div className="text-[11px] font-medium text-neutral-500">
-                {materialGroup.materialType === "Wood" ? "Wood colour" : materialGroup.materialType === "Fabric" ? "Fabric colour" : materialGroup.materialType}
-              </div>
-              <div className="mt-1.5 grid grid-cols-5 gap-[6.6px]">
-                {materialGroup.items.map((finish) => {
-                  const active = finish.id === activeFinishId;
-                  return (
-                    <button
-                      key={finish.id}
-                      onClick={() => onSetFinish(finish.id, finish)}
-                      data-testid={`catalog-finish-option-${finish.id}`}
-                      title={finish.label}
-                      aria-label={finish.label}
-                      className={`group relative h-14.5 w-14.5 rounded-md border transition ${
-                        active
-                          ? "border-[#5a2135] ring-2 ring-[#5a2135]/30"
-                          : "border-neutral-200 hover:border-neutral-400"
-                      }`}
-                      style={{
-                        backgroundColor: finish.swatchHex ?? "#d1d5db",
-                        backgroundImage: finish.swatchTextureUrl ? `url(${finish.swatchTextureUrl})` : undefined,
-                        backgroundSize: "cover",
-                        backgroundPosition: "center",
-                      }}
-                    >
-                      <span className="sr-only">{finish.label}</span>
-                      {active ? (
-                        <span className="pointer-events-none absolute inset-0 rounded-md shadow-[inset_0_0_0_1px_rgba(255,255,255,0.7)]" />
-                      ) : null}
-                    </button>
-                  );
-                })}
-              </div>
-              {(() => {
-                const selectedInGroup = materialGroup.items.find((finish) => finish.id === activeFinishId);
-                if (!selectedInGroup) return null;
-                return (
-                  <div className="mt-2 text-[11px] text-neutral-600">
-                    Selected: {selectedInGroup.label}
+          {(() => {
+            const collectionKey = collectionGroup.collectionType ?? "all";
+            const upholsteryGroups = collectionGroup.materialGroups.filter(
+              (group) => group.materialType === "Fabric" || group.materialType === "Leather"
+            );
+            const woodGroups = collectionGroup.materialGroups.filter((group) => group.materialType === "Wood");
+            const activeUpholsteryGroup =
+              upholsteryGroups.find((group) =>
+                group.items.some((finish) => finish.id === activeFinishId)
+              ) ?? upholsteryGroups[0];
+
+            return (
+              <>
+                {upholsteryGroups.length > 1 && activeUpholsteryGroup ? (
+                  <div className="mt-3">
+                    <div className="grid grid-cols-2 gap-2" role="tablist" aria-label="Material">
+                      {upholsteryGroups.map((materialGroup) => {
+                        const active = materialGroup.materialType === activeUpholsteryGroup.materialType;
+                        const firstFinish = materialGroup.items[0];
+                        return (
+                          <button
+                            key={`${collectionKey}-material-tab-${materialGroup.materialType}`}
+                            type="button"
+                            role="tab"
+                            aria-selected={active}
+                            onClick={() => {
+                              if (firstFinish) onSetFinish(firstFinish.id, firstFinish);
+                            }}
+                            className={[
+                              "rounded-full border px-3 py-2 text-xs font-semibold transition",
+                              active
+                                ? "border-[#5a2135] bg-[#5a2135] text-white"
+                                : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-400",
+                            ].join(" ")}
+                          >
+                            {materialGroup.materialType}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {renderSwatchGroup(collectionKey, activeUpholsteryGroup)}
                   </div>
-                );
-              })()}
-            </div>
-          ))}
+                ) : (
+                  upholsteryGroups.map((materialGroup) => renderSwatchGroup(collectionKey, materialGroup))
+                )}
+
+                {woodGroups.map((materialGroup) => renderSwatchGroup(collectionKey, materialGroup))}
+              </>
+            );
+          })()}
         </div>
       ))}
     </div>
