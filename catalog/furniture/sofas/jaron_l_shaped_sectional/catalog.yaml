@@ -1,0 +1,200 @@
+brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/jaron-leather-recliner-l-shaped-sectional-sofa"
+category: "sofa"
+
+product_family: "Jaron"
+product_name: "Jaron Recliner L-Shaped Sectional Sofa"
+variant: "L-Shaped Sectional Slim Arm"
+
+price_usd: 8495
+price_band: "premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "sofa_anchor"
+
+dimensions:
+  width_cm: 325
+  depth_cm: 325
+  height_cm: 77
+
+seat_capacity: 5
+size_class: "extra_large"
+shape: "rectangular"
+sectional_shape: "l_shaped"
+base_type: "frame"
+
+material_family: "upholstered"
+material_mix: "upholstered_metal"
+
+color_family: "brown"
+tone: "warm"
+
+style_cluster: "contemporary"
+style_secondary: "modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "heavy"
+  edge_profile: "rounded"
+  silhouette: "sectional"
+  form_language: "soft"
+
+spatial_attributes:
+  footprint_shape: "l_shaped"
+  walkway_clearance_cm: 90
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: true
+  clearance_sensitive: true
+  center_room_preferred: false
+
+product_details_by_material_type:
+  leather:
+    material:
+      - label: "Material"
+        value: "Frame: pine and plywood; Leg: plastic"
+      - label: "Filling"
+        value: "PU foam, polyester fiber and feathers"
+      - label: "Special feature"
+        value: "Recliner"
+      - label: "Care"
+        value: "Leather sofa"
+      - label: "Suspension"
+        value: "Sinuous spring"
+      - label: "Cover type"
+        value: "Fixed"
+      - label: "Colour variance"
+        value: "Leather variations"
+      - label: "Material & safety standards"
+        value: "Low formaldehyde"
+      - label: "Material details"
+        value: "Top grain leather. Crafted from American hides."
+      - label: "Configuration includes"
+        value: "1 x Corner Sofa; 2 x Power Recliner Armless; 2 x Slim Arm; 2 x Stationary Armless Sofa"
+    dimensions:
+      - label: "Dimension"
+        value: "W196/325 x D196/325 x H77cm"
+      - label: "Cable length"
+        value: "250cm"
+      - label: "Seating depth"
+        value: "64cm"
+      - label: "Seatable width"
+        value: "236cm"
+      - label: "Seating height"
+        value: "47cm"
+      - label: "Leg height"
+        value: "4cm"
+      - label: "Backrest height"
+        value: "39-57cm (adjustable headrest)"
+      - label: "Max bearing support"
+        value: "5 x 150kg"
+      - label: "Reclined product depth"
+        value: "165cm"
+      - label: "Armrest height"
+        value: "62cm"
+      - label: "Product weight"
+        value: "237.2kg"
+      - label: "Packaging dimensions"
+        value: "9 boxes"
+    delivery_and_warranty:
+      - label: "Cancellation"
+        value: "Free - 5 working days before delivery"
+      - label: "Warranty"
+        value: "Frame 10 years; Leather 1 year; Foam 2 years; Electrical components 2 years"
+      - label: "Return policy"
+        value: "30-day returns"
+      - label: "Assembly"
+        value: "Arms to be fitted"
+
+comfort_profile:
+  seat_comfort:
+    label: "Seat comfort"
+    value: 2
+    min_label: "Relaxed"
+    max_label: "Upright"
+  seat_depth:
+    label: "Seat depth"
+    value: 4
+    min_label: "Shallow"
+    max_label: "Deep"
+  seat_height:
+    label: "Seat height"
+    value: 4
+    min_label: "Low"
+    max_label: "High"
+  seat_softness:
+    label: "Seat softness"
+    value: 2
+    min_label: "Soft"
+    max_label: "Firm"
+
+design_pairings:
+  - "coffee_table"
+  - "side_table"
+  - "floor_lamp"
+  - "area_rug"
+
+upholstery_options:
+upholstery_library_ref: "jaron"
+
+assets:
+  asset_id: "sofa-real-castlery-jaron-l-shaped-sectional"
+  model_url: "/assets/models/sofa-real-castlery-jaron-l-shaped-sectional.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737599830/crusader/variants/AS-000681-LE4023/Jaron-Leather-L-Shape-Sectional-Slim-Arm-Sofa-Marche-Cocoa_-Angle-1737599828.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737599830/crusader/variants/AS-000681-LE4023/Jaron-Leather-L-Shape-Sectional-Slim-Arm-Sofa-Marche-Cocoa_-Angle-1737599828.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737599830/crusader/variants/AS-000681-LE4023/Jaron-Leather-L-Shape-Sectional-Slim-Arm-Sofa-Marche-Cocoa_-Front-1737599828.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737599830/crusader/variants/AS-000681-LE4023/Jaron-Leather-L-Shape-Sectional-Slim-Arm-Sofa-Marche-Cocoa_-Back-1737599828.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741936956/crusader/variants/AS-000681-LE4023/Jaron-L-Shape-Sectional-Slim-Arm-Sofa-Marche-Cocoa_Cover-1741936954.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741343948/crusader/variants/AS-000681-LE4023/Jaron-Leather-L-Shape-Sectional-Slim-Arm-Sofa-Marche-Cocoa_-Square-Set_2_2-1741343945.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741343948/crusader/variants/AS-000681-LE4023/Jaron-Leather-L-Shape-Sectional-Slim-Arm-Sofa-Marche-Cocoa_-Square-Set_4_2-1741343945.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741601463/crusader/variants/AS-000681-LE4023/Jaron-Sofa-_Harper-Coffee-Tables-Living-Room-Campaign-Set_20-1741601460.jpg"
+
+variants:
+  - variant: "Jaron L-Shaped Sectional Slim Arm / Marche Cocoa (Leather)"
+    size_label: "325x325"
+    upholstery_code: "marche_cocoa"
+    upholstery_label: "Marche Leather, Cocoa"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737599830/crusader/variants/AS-000681-LE4023/Jaron-Leather-L-Shape-Sectional-Slim-Arm-Sofa-Marche-Cocoa_-Angle-1737599828.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737599830/crusader/variants/AS-000681-LE4023/Jaron-Leather-L-Shape-Sectional-Slim-Arm-Sofa-Marche-Cocoa_-Angle-1737599828.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737599830/crusader/variants/AS-000681-LE4023/Jaron-Leather-L-Shape-Sectional-Slim-Arm-Sofa-Marche-Cocoa_-Front-1737599828.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737599830/crusader/variants/AS-000681-LE4023/Jaron-Leather-L-Shape-Sectional-Slim-Arm-Sofa-Marche-Cocoa_-Back-1737599828.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741936956/crusader/variants/AS-000681-LE4023/Jaron-L-Shape-Sectional-Slim-Arm-Sofa-Marche-Cocoa_Cover-1741936954.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741343948/crusader/variants/AS-000681-LE4023/Jaron-Leather-L-Shape-Sectional-Slim-Arm-Sofa-Marche-Cocoa_-Square-Set_2_2-1741343945.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741343948/crusader/variants/AS-000681-LE4023/Jaron-Leather-L-Shape-Sectional-Slim-Arm-Sofa-Marche-Cocoa_-Square-Set_4_2-1741343945.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741601463/crusader/variants/AS-000681-LE4023/Jaron-Sofa-_Harper-Coffee-Tables-Living-Room-Campaign-Set_20-1741601460.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 8495
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 325, depth_cm: 325, height_cm: 77 }
+    seat_capacity: 5
+    size_class: "extra_large"
+    color_family: "brown"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Jaron L-Shaped Sectional Slim Arm / Marche Ivory (Leather)"
+    size_label: "325x325"
+    upholstery_code: "marche_ivory"
+    upholstery_label: "Marche Leather, Ivory"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760150432/crusader/variants/AS-000685-LE4021/Jaron-Leather-L-shape-Sectional-Slim-Arm-Sofa_-Marche-Ivory-Angle-1760150432.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760150432/crusader/variants/AS-000685-LE4021/Jaron-Leather-L-shape-Sectional-Slim-Arm-Sofa_-Marche-Ivory-Angle-1760150432.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 8495
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 325, depth_cm: 325, height_cm: 77 }
+    seat_capacity: 5
+    size_class: "extra_large"
+    color_family: "white"
+    tone: "neutral"
+    set_compatibility: []

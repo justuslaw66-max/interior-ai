@@ -1,7 +1,7 @@
 import { expect, test } from "./fixtures";
 import { GLB_CALIBRATION_BY_PRODUCT_ID } from "../../lib/design-page-calibration";
 
-const BRISTOL_ID = "coffee-real-castlery-bristol-coffee-table-set-walnut";
+const VINCENT_ID = "coffee-real-castlery-vincent-coffee-table-set-walnut";
 
 type ProductInfoRow = {
   label?: string;
@@ -43,54 +43,51 @@ function expectRows(rows: ProductInfoRow[] | undefined, expected: RegExp[]) {
   }
 }
 
-test.describe("147. Bristol Coffee Table Product Info", () => {
+test.describe("149. Vincent Coffee Table Product Info", () => {
   test("API exposes verified Castlery SG identity, media, dimensions, and variant data", async ({ request }) => {
     const response = await request.get("/api/models/imported");
     expect(response.ok()).toBeTruthy();
 
     const body = (await response.json()) as { models?: ImportedModel[] };
-    const model = (body.models ?? []).find((entry) => entry.id === BRISTOL_ID);
+    const model = (body.models ?? []).find((entry) => entry.id === VINCENT_ID);
 
     expect(model).toBeDefined();
-    expect(model?.modelUrl).toBe("/assets/models/coffee-real-castlery-bristol-coffee-table-set-walnut.glb");
-    expect(model?.catalog?.source_url).toBe(
-      "https://www.castlery.com/sg/products/bristol-coffee-table-set-walnut?wood=walnut",
-    );
-    expect(model?.catalog?.productName).toBe("Bristol Coffee Table Set, Walnut");
-    expect(model?.catalog?.priceUsd).toBe(499);
-    expect(model?.catalog?.assets?.thumbnail_url).toContain("Bristol-Coffee-Table-Set-Front");
+    expect(model?.modelUrl).toBe("/assets/models/coffee-real-castlery-vincent-coffee-table-set-walnut.glb");
+    expect(model?.catalog?.source_url).toBe("https://www.castlery.com/sg/products/vincent-coffee-table-set-walnut");
+    expect(model?.catalog?.productName).toBe("Vincent Coffee Table Set, Walnut");
+    expect(model?.catalog?.priceUsd).toBe(549);
+    expect(model?.catalog?.assets?.thumbnail_url).toContain("Vincent-Coffee-Table-Sectional-Walnut-Set-Front");
     expect(model?.catalog?.assets?.gallery_images?.length).toBeGreaterThanOrEqual(10);
 
     const variant = model?.catalog?.variants?.[0];
-    expect(variant?.sku).toBe("41230001");
-    expect(variant?.size_label).toBe("110x60");
+    expect(variant?.sku).toBe("41960018");
+    expect(variant?.size_label).toBe("86.3x51.7");
     expect(variant?.finish_code).toBe("walnut");
     expect(variant?.finish_label).toBe("Walnut");
-    expect(variant?.model_url).toBe("/assets/models/coffee-real-castlery-bristol-coffee-table-set-walnut.glb");
+    expect(variant?.model_url).toBe("/assets/models/coffee-real-castlery-vincent-coffee-table-set-walnut.glb");
 
     expectRows(model?.catalog?.product_details?.material, [
-      /Material: Table top: solid rubber wood and walnut veneer; Leg: solid rubber wood/i,
-      /Finish: Walnut stain/i,
+      /Material: Tabletop: engineered wood with walnut veneer; Leg: solid rubber wood/i,
+      /Finish: Walnut stain and clear lacquer/i,
       /Care: Wooden table/i,
       /Colour variance: Natural variations/i,
       /Material & safety standards: Formaldehyde safe/i,
     ]);
     expectRows(model?.catalog?.product_details?.dimensions, [
-      /Dimension: High: W55 x D55 x H51cm; Low: W110 x D60 x H42\.8cm/i,
-      /Table top thickness: 2cm/i,
-      /Product weight: 15\.9kg/i,
+      /Dimension: High: W51\.7 x D49\.4 x H48cm; Low: W51 x D86\.3 x H38cm/i,
+      /Product weight: 7\.4kg/i,
       /Packaging dimensions: 1 box/i,
-      /Max bearing support: 60kg for each table/i,
+      /Max bearing support: 20kg/i,
     ]);
     expectRows(model?.catalog?.product_details?.delivery_and_warranty, [
-      /Cancellation: Free.5 working days before delivery/i,
+      /Cancellation: Free - 5 working days before delivery/i,
       /Warranty: 5-year limited warranty/i,
       /Return policy: 30-day returns/i,
-      /Assembly: Frame to be fitted/i,
+      /Assembly: Fully assembled/i,
     ]);
   });
 
   test("uses authored GLB colour for the Walnut model", async () => {
-    expect(GLB_CALIBRATION_BY_PRODUCT_ID[BRISTOL_ID]?.useVariantColor).toBe(false);
+    expect(GLB_CALIBRATION_BY_PRODUCT_ID[VINCENT_ID]?.useVariantColor).toBe(false);
   });
 });

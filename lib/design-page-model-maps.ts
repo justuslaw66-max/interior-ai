@@ -1,6 +1,17 @@
 // Extracted from app/design/page.tsx — Phase C modularization
 // Model family groupings and configuration option maps for imported products.
 
+const JARON_MODEL_FAMILY_IDS = [
+  "sofa-real-castlery-jaron-3s",
+  "sofa-real-castlery-jaron-3s-wide-arm",
+  "sofa-real-castlery-jaron-extended-3s",
+  "sofa-real-castlery-jaron-extended-3s-wide-arm",
+  "sofa-real-castlery-jaron-chaise-sectional",
+  "sofa-real-castlery-jaron-chaise-sectional-wide-arm",
+  "sofa-real-castlery-jaron-l-shaped-sectional",
+  "sofa-real-castlery-jaron-l-shaped-sectional-wide-arm",
+];
+
 export const MODEL_FAMILY_BY_PRODUCT_ID: Record<string, string[]> = {
   "sofa-real-castlery-madison-2s": [
     "sofa-real-castlery-madison-2s",
@@ -17,30 +28,14 @@ export const MODEL_FAMILY_BY_PRODUCT_ID: Record<string, string[]> = {
     "sofa-real-castlery-madison-3s",
     "sofa-real-castlery-madison-ottoman",
   ],
-  "sofa-real-castlery-jaron-3s": [
-    "sofa-real-castlery-jaron-3s",
-    "sofa-real-castlery-jaron-3s-wide-arm",
-    "sofa-real-castlery-jaron-extended-3s",
-    "sofa-real-castlery-jaron-extended-3s-wide-arm",
-  ],
-  "sofa-real-castlery-jaron-3s-wide-arm": [
-    "sofa-real-castlery-jaron-3s",
-    "sofa-real-castlery-jaron-3s-wide-arm",
-    "sofa-real-castlery-jaron-extended-3s",
-    "sofa-real-castlery-jaron-extended-3s-wide-arm",
-  ],
-  "sofa-real-castlery-jaron-extended-3s": [
-    "sofa-real-castlery-jaron-3s",
-    "sofa-real-castlery-jaron-3s-wide-arm",
-    "sofa-real-castlery-jaron-extended-3s",
-    "sofa-real-castlery-jaron-extended-3s-wide-arm",
-  ],
-  "sofa-real-castlery-jaron-extended-3s-wide-arm": [
-    "sofa-real-castlery-jaron-3s",
-    "sofa-real-castlery-jaron-3s-wide-arm",
-    "sofa-real-castlery-jaron-extended-3s",
-    "sofa-real-castlery-jaron-extended-3s-wide-arm",
-  ],
+  "sofa-real-castlery-jaron-3s": [...JARON_MODEL_FAMILY_IDS],
+  "sofa-real-castlery-jaron-3s-wide-arm": [...JARON_MODEL_FAMILY_IDS],
+  "sofa-real-castlery-jaron-extended-3s": [...JARON_MODEL_FAMILY_IDS],
+  "sofa-real-castlery-jaron-extended-3s-wide-arm": [...JARON_MODEL_FAMILY_IDS],
+  "sofa-real-castlery-jaron-chaise-sectional": [...JARON_MODEL_FAMILY_IDS],
+  "sofa-real-castlery-jaron-chaise-sectional-wide-arm": [...JARON_MODEL_FAMILY_IDS],
+  "sofa-real-castlery-jaron-l-shaped-sectional": [...JARON_MODEL_FAMILY_IDS],
+  "sofa-real-castlery-jaron-l-shaped-sectional-wide-arm": [...JARON_MODEL_FAMILY_IDS],
   "dining-real-castlery-sloane-travertine-225": [
     "dining-real-castlery-sloane-dining-table-225",
     "dining-real-castlery-sloane-dining-table-180",
@@ -122,30 +117,14 @@ export const MODEL_FAMILY_BY_PRODUCT_ID: Record<string, string[]> = {
 };
 
 export const MODEL_SELECTOR_PRODUCT_IDS_BY_PRODUCT_ID: Record<string, string[]> = {
-  "sofa-real-castlery-jaron-3s": [
-    "sofa-real-castlery-jaron-3s",
-    "sofa-real-castlery-jaron-3s-wide-arm",
-    "sofa-real-castlery-jaron-extended-3s",
-    "sofa-real-castlery-jaron-extended-3s-wide-arm",
-  ],
-  "sofa-real-castlery-jaron-3s-wide-arm": [
-    "sofa-real-castlery-jaron-3s",
-    "sofa-real-castlery-jaron-extended-3s",
-    "sofa-real-castlery-jaron-3s-wide-arm",
-    "sofa-real-castlery-jaron-extended-3s-wide-arm",
-  ],
-  "sofa-real-castlery-jaron-extended-3s": [
-    "sofa-real-castlery-jaron-3s",
-    "sofa-real-castlery-jaron-3s-wide-arm",
-    "sofa-real-castlery-jaron-extended-3s",
-    "sofa-real-castlery-jaron-extended-3s-wide-arm",
-  ],
-  "sofa-real-castlery-jaron-extended-3s-wide-arm": [
-    "sofa-real-castlery-jaron-3s",
-    "sofa-real-castlery-jaron-3s-wide-arm",
-    "sofa-real-castlery-jaron-extended-3s",
-    "sofa-real-castlery-jaron-extended-3s-wide-arm",
-  ],
+  "sofa-real-castlery-jaron-3s": [...JARON_MODEL_FAMILY_IDS],
+  "sofa-real-castlery-jaron-3s-wide-arm": [...JARON_MODEL_FAMILY_IDS],
+  "sofa-real-castlery-jaron-extended-3s": [...JARON_MODEL_FAMILY_IDS],
+  "sofa-real-castlery-jaron-extended-3s-wide-arm": [...JARON_MODEL_FAMILY_IDS],
+  "sofa-real-castlery-jaron-chaise-sectional": [...JARON_MODEL_FAMILY_IDS],
+  "sofa-real-castlery-jaron-chaise-sectional-wide-arm": [...JARON_MODEL_FAMILY_IDS],
+  "sofa-real-castlery-jaron-l-shaped-sectional": [...JARON_MODEL_FAMILY_IDS],
+  "sofa-real-castlery-jaron-l-shaped-sectional-wide-arm": [...JARON_MODEL_FAMILY_IDS],
   "dining-real-castlery-forma-oval-150": [
     "dining-real-castlery-forma-oval-150",
     "dining-real-castlery-forma-round-90",
@@ -247,6 +226,22 @@ export const ARM_STYLE_OPTIONS_BY_PRODUCT_ID: Record<
   "sofa-real-castlery-jaron-extended-3s-wide-arm": [
     { label: "Slim arm", productId: "sofa-real-castlery-jaron-extended-3s" },
     { label: "Wide arm", productId: "sofa-real-castlery-jaron-extended-3s-wide-arm" },
+  ],
+  "sofa-real-castlery-jaron-chaise-sectional": [
+    { label: "Slim arm", productId: "sofa-real-castlery-jaron-chaise-sectional" },
+    { label: "Wide arm", productId: "sofa-real-castlery-jaron-chaise-sectional-wide-arm" },
+  ],
+  "sofa-real-castlery-jaron-chaise-sectional-wide-arm": [
+    { label: "Slim arm", productId: "sofa-real-castlery-jaron-chaise-sectional" },
+    { label: "Wide arm", productId: "sofa-real-castlery-jaron-chaise-sectional-wide-arm" },
+  ],
+  "sofa-real-castlery-jaron-l-shaped-sectional": [
+    { label: "Slim arm", productId: "sofa-real-castlery-jaron-l-shaped-sectional" },
+    { label: "Wide arm", productId: "sofa-real-castlery-jaron-l-shaped-sectional-wide-arm" },
+  ],
+  "sofa-real-castlery-jaron-l-shaped-sectional-wide-arm": [
+    { label: "Slim arm", productId: "sofa-real-castlery-jaron-l-shaped-sectional" },
+    { label: "Wide arm", productId: "sofa-real-castlery-jaron-l-shaped-sectional-wide-arm" },
   ],
 };
 

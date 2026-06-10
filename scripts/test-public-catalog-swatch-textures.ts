@@ -41,6 +41,24 @@ const issues: SwatchTextureIssue[] = [];
 let texturedVariants = 0;
 let checkedVariants = 0;
 
+const REQUIRED_SWATCH_TEXTURE_URL_PARTS: Record<string, string> = {
+  "marche-cocoa": "LE-4023/Cocoa_Swatch",
+  "marche-ivory": "LE-4021/Hamilton-Leather-Sofa-Ivory-Det_1",
+  "performance-arvo-dune": "AR-4001/Sloane-Cane-Chair-Dune-Grey-Oak-Det_1",
+};
+
+for (const [finishKey, urlPart] of Object.entries(REQUIRED_SWATCH_TEXTURE_URL_PARTS)) {
+  const url = CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[finishKey];
+  if (!url || !url.includes(urlPart)) {
+    issues.push({
+      catalogItemId: "global-swatch-map",
+      variantId: finishKey,
+      label: finishKey,
+      issue: `expected swatch texture URL to include ${urlPart}`,
+    });
+  }
+}
+
 for (const [catalogItemId, item] of CATALOG_ITEMS_MAP.entries()) {
   const detail = buildCatalogDetailView(item);
   const seenFinishOptionIds = new Set<string>();

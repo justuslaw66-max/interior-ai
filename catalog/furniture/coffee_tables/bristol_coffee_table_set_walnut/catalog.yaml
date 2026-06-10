@@ -144,15 +144,35 @@ feature_flags:
 product_details:
   material:
     - label: "Material"
-      value: "Solid wood"
-    - label: "Wood"
-      value: "Walnut"
+      value: "Table top: solid rubber wood and walnut veneer; Leg: solid rubber wood"
+    - label: "Finish"
+      value: "Walnut stain"
+    - label: "Care"
+      value: "Wooden table"
+    - label: "Colour variance"
+      value: "Natural variations"
+    - label: "Material & safety standards"
+      value: "Formaldehyde safe"
   dimensions:
-    - label: "High table"
-      value: "W55 x D55 x H51cm"
-    - label: "Low table"
-      value: "W110 x D60 x H42.8cm"
-  delivery_and_warranty: []
+    - label: "Dimension"
+      value: "High: W55 x D55 x H51cm; Low: W110 x D60 x H42.8cm"
+    - label: "Table top thickness"
+      value: "2cm"
+    - label: "Product weight"
+      value: "15.9kg"
+    - label: "Packaging dimensions"
+      value: "1 box"
+    - label: "Max bearing support"
+      value: "60kg for each table"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Warranty"
+      value: "5-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Frame to be fitted"
 
 assets:
   asset_id: "coffee-real-castlery-bristol-coffee-table-set-walnut"

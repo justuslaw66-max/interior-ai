@@ -1,7 +1,7 @@
 # Jaron Family — Shared Upholstery Library
 #
 # This is the single source of truth for all upholstery options
-# available across the Jaron product family (4 products).
+# available across the imported Jaron product family.
 #
 # Referenced in each Jaron product via:
 #   upholstery_library_ref: "jaron"
@@ -37,7 +37,7 @@ upholstery_options:
       - avoid_direct_sunlight
       - do_not_use_harsh_chemicals
     display_assets:
-      swatch_image: https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1741163167/crusader/variants/LE-4023/Cocoa_Swatch-1741163165.jpg
+      swatch_image: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1741163167/crusader/variants/LE-4023/Cocoa_Swatch-1741163165.jpg
 
   - upholstery_code: marche_ivory
     upholstery_label: "Marche Leather, Ivory"
@@ -60,7 +60,7 @@ upholstery_options:
       - avoid_direct_sunlight
       - do_not_use_harsh_chemicals
     display_assets:
-      swatch_image: https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728527/crusader/variants/LE-4021/Hamilton-Leather-Sofa-Ivory-Det_1-1710728524.jpg
+      swatch_image: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728527/crusader/variants/LE-4021/Hamilton-Leather-Sofa-Ivory-Det_1-1710728524.jpg
 
   - upholstery_code: performance_arvo_dune
     upholstery_label: "Performance Arvo Dune"
@@ -85,4 +85,4 @@ upholstery_options:
       - do_not_bleach
       - do_not_tumble_dry
     display_assets:
-      swatch_image: https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/crusader/variants/AR-4001/Arvo-Dune-Swatch.jpg
+      swatch_image: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1674034715/crusader/variants/AR-4001/Sloane-Cane-Chair-Dune-Grey-Oak-Det_1-1674034712.jpg
