@@ -77,8 +77,8 @@ test.describe("9. Sloane Bench Variant UX", () => {
     await expect(leatherCushion).not.toContainText(/150|180/i);
 
     await expect(page.getByText("Length", { exact: true })).toBeVisible();
-    await expect(page.getByRole("button", { name: "150CM" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "180CM" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "150CM" }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "180CM" }).first()).toBeVisible();
     await expect(page.getByTestId("selected-single-finish-section")).toContainText(/^Leg/i);
     await expect(page.getByTestId("selected-single-finish-label")).toContainText(/Grey Oak/i);
 
