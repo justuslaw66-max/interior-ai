@@ -1,4 +1,4 @@
-import { test, expect } from './fixtures';
+import { test, expect } from '@playwright/test';
 
 test.describe('3. Save + Reload Persistence', () => {
   test('save design persists items, zones, and views after reload', async ({ page }) => {

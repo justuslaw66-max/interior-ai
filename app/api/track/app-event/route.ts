@@ -24,6 +24,8 @@ const ALLOWED = new Set<AppEventType>([
   "subscription_canceled",
 ]);
 
+const skipAppEventPersistence = process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS === "1";
+
 function getClientIp(req: Request) {
   const header = req.headers.get("x-forwarded-for") || "";
   return header.split(",")[0].trim() || "unknown";
@@ -44,6 +46,10 @@ export async function POST(req: Request) {
   const rl = rateLimit(key, 30, 60_000);
   if (!rl.ok) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
+  if (skipAppEventPersistence) {
+    return NextResponse.json({ ok: true, skipped: "qa" });
   }
 
   await logAppEvent({

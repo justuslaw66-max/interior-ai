@@ -13,6 +13,8 @@ const isProdLike =
   process.env.VERCEL_ENV === "preview" ||
   process.env.VERCEL_ENV === "production";
 
+const analyticsDisabled = process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS === "1";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -51,8 +53,8 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
-          <PostHogProvider>
-            <IdentifyGate>{children}</IdentifyGate>
+          <PostHogProvider analyticsDisabled={analyticsDisabled}>
+            <IdentifyGate analyticsDisabled={analyticsDisabled}>{children}</IdentifyGate>
           </PostHogProvider>
         </AuthProvider>
       </body>

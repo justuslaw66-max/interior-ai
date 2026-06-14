@@ -15,6 +15,7 @@ export type GuestDesign = {
     roomWidth: number;
     roomDepth: number;
     items: unknown[];
+    designSnapshot?: unknown;
     style?: string | null;
     budget?: string | null;
     mode?: string | null;

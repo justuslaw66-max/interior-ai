@@ -26,6 +26,7 @@ export async function GET(
       roomWidth: design.roomWidth,
       roomDepth: design.roomDepth,
       items: design.items,
+      snapshot: design.snapshot ?? null,
       zones: design.zones ?? [],
       savedViews: design.savedViews ?? [],
       style: design.style,
@@ -62,7 +63,19 @@ export async function PUT(
     }
 
     const body = await req.json();
-    const { title, roomWidth, roomDepth, items, zones, savedViews, style, budget, mode, notes } = body ?? {};
+    const {
+      title,
+      roomWidth,
+      roomDepth,
+      items,
+      zones,
+      savedViews,
+      snapshot,
+      style,
+      budget,
+      mode,
+      notes,
+    } = body ?? {};
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
@@ -87,6 +100,9 @@ export async function PUT(
     }
     if (Array.isArray(savedViews)) {
       updateData.savedViews = JSON.parse(JSON.stringify(savedViews));
+    }
+    if (snapshot && typeof snapshot === "object") {
+      updateData.snapshot = JSON.parse(JSON.stringify(snapshot));
     }
     if (typeof style === "string") updateData.style = style;
     if (typeof budget === "string") updateData.budget = budget;

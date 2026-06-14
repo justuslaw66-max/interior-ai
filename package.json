@@ -46,6 +46,9 @@
     "test:revenue-funnel-panel": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\",\"jsx\":\"react-jsx\"}' scripts/test-revenue-funnel-panel.ts",
     "test:paywall-performance": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-paywall-performance.ts",
     "test:design-page-paywall": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-design-page-paywall.ts",
+    "test:design-page-house-plan": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-design-page-house-plan.ts",
+    "test:ai-layout-planner": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-ai-layout-planner.ts",
+    "test:floor-plan-foundation": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-floor-plan-foundation.ts",
     "test:phase-c-modules": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-phase-c-module-fixtures.ts",
     "test:design-duplication": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-design-duplication-fixtures.ts",
     "test:catalog-route-hardening": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-catalog-route-hardening.ts",
@@ -72,6 +75,7 @@
     "next-auth": "^5.0.0-beta.30",
     "openai": "^6.22.0",
     "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^6.0.227",
     "pdfkit": "^0.17.2",
     "pg": "^8.18.0",
     "posthog-js": "^1.347.2",
@@ -97,6 +101,8 @@
     "eslint-config-next": "16.1.6",
     "playwright": "^1.59.1",
     "tailwindcss": "^4",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5"
   }
 }

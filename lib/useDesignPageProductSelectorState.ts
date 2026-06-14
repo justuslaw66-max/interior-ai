@@ -319,7 +319,25 @@ export function useDesignPageProductSelectorState({
   }, [structuredVariants, isHuggProduct]);
 
   const showFabricGroupingDebug = process.env.NODE_ENV !== "production";
-  const selectedModelLabel = selectedProduct?.metadata?.modelLabel?.trim() ?? null;
+  const selectedProductIdLower = selectedProduct?.id?.toLowerCase();
+  const selectedModelLabelByProductId =
+    selectedProductIdLower ===
+      "armchair-real-castlery-avery-performance-swivel-armchair-with-ottoman"
+      ? "Swivel Armchair with Ottoman"
+      : selectedProductIdLower ===
+          "armchair-real-castlery-avery-performance-armchair-with-ottoman"
+        ? "Armchair with Ottoman"
+        : selectedProductIdLower ===
+            "armchair-real-castlery-avery-performance-swivel-armchair"
+          ? "Swivel Armchair"
+          : selectedProductIdLower ===
+              "armchair-real-castlery-avery-performance-armchair"
+            ? "Armchair"
+            : null;
+  const selectedModelLabel =
+    selectedProduct?.metadata?.modelLabel?.trim() ??
+    selectedModelLabelByProductId ??
+    null;
   const selectedCategoryDebugLabel = selectedProduct
     ? selectedProduct.category.replace(/_/g, " ")
     : null;

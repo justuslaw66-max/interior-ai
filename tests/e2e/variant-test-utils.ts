@@ -2,7 +2,7 @@ import { expect, type Locator, type Page } from "@playwright/test";
 
 export const DEFAULT_CATEGORY_TABS: RegExp[] = [
   /^Sofa \(/,
-  /^Accent Chair \(/,
+  /^Arm Chair \(/,
   /^Side Tables \(/,
   /^Dining Bench \(/,
   /^Ottoman \(/,

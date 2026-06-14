@@ -37,9 +37,9 @@ async function setupSelectedItem(page: Page): Promise<boolean> {
   await page.keyboard.press('Escape');
   await page.waitForTimeout(300);
 
-  const quickAddCoffee = page.getByRole('button', { name: '+ Coffee Table' });
-  await expect(quickAddCoffee).toBeVisible();
-  if (!(await quickAddCoffee.isEnabled().catch(() => false))) {
+  const addImported = page.locator('[data-testid="add-imported-btn"]');
+  await expect(addImported).toBeVisible();
+  if (!(await addImported.isEnabled().catch(() => false))) {
     return false;
   }
 
@@ -48,7 +48,7 @@ async function setupSelectedItem(page: Page): Promise<boolean> {
       try {
         const existing = await page.locator('[data-testid="item-in-scene"]').count();
         if (existing > 0) return existing;
-        await quickAddCoffee.click();
+        await addImported.click();
         await page.waitForTimeout(250);
         return await page.locator('[data-testid="item-in-scene"]').count();
       } catch {

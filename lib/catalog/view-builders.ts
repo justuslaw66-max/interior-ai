@@ -161,7 +161,7 @@ export const TOP_CATEGORY_ORDER: CatalogTopCategory[] = [
 
 const CATEGORY_LABELS: Record<CatalogTopCategory, string> = {
   sofa: "Sofa",
-  accent_chair: "Accent Chair",
+  accent_chair: "Arm Chair",
   coffee_table: "Coffee Table",
   side_table: "Side Tables",
   dining_table: "Dining Table",

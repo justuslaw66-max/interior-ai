@@ -16,12 +16,14 @@ test.describe('2. Editor Correctness', () => {
     await page.keyboard.press('Escape');
     await page.waitForTimeout(500);
 
-    // Place first item - click on empty area
-    await canvas.click({ position: { x: box.width / 3, y: box.height / 2 } });
+    const placementPoint = { x: box.width * 0.72, y: box.height * 0.52 };
+
+    // Place first item in the unobstructed scene area.
+    await canvas.click({ position: placementPoint });
     await page.waitForTimeout(1000);
     
     // Try to place another item at same position
-    await canvas.click({ position: { x: box.width / 3, y: box.height / 2 } });
+    await canvas.click({ position: placementPoint });
     await page.waitForTimeout(1000);
     
     // Check for collision warning using data-testid

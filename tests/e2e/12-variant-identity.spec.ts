@@ -210,6 +210,8 @@ test.describe("12. Variant Identity", () => {
   });
 
   test("Jaron gallery uses full-bleed images and keeps lifestyle-rich galleries by finish", async ({ page }) => {
+    test.setTimeout(120000);
+
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
 

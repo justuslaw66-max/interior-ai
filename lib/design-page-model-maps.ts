@@ -12,6 +12,13 @@ const JARON_MODEL_FAMILY_IDS = [
   "sofa-real-castlery-jaron-l-shaped-sectional-wide-arm",
 ];
 
+const AVERY_MODEL_FAMILY_IDS = [
+  "armchair-real-castlery-avery-performance-armchair",
+  "armchair-real-castlery-avery-performance-armchair-with-ottoman",
+  "armchair-real-castlery-avery-performance-swivel-armchair",
+  "armchair-real-castlery-avery-performance-swivel-armchair-with-ottoman",
+];
+
 export const JARON_CONFIGURATION_PRODUCT_IDS = [...JARON_MODEL_FAMILY_IDS];
 
 export type JaronConfigurationArmKey = "slim" | "wide";
@@ -108,6 +115,10 @@ export const MODEL_FAMILY_BY_PRODUCT_ID: Record<string, string[]> = {
   "sofa-real-castlery-jaron-chaise-sectional-wide-arm": [...JARON_MODEL_FAMILY_IDS],
   "sofa-real-castlery-jaron-l-shaped-sectional": [...JARON_MODEL_FAMILY_IDS],
   "sofa-real-castlery-jaron-l-shaped-sectional-wide-arm": [...JARON_MODEL_FAMILY_IDS],
+  "armchair-real-castlery-avery-performance-armchair": [...AVERY_MODEL_FAMILY_IDS],
+  "armchair-real-castlery-avery-performance-armchair-with-ottoman": [...AVERY_MODEL_FAMILY_IDS],
+  "armchair-real-castlery-avery-performance-swivel-armchair": [...AVERY_MODEL_FAMILY_IDS],
+  "armchair-real-castlery-avery-performance-swivel-armchair-with-ottoman": [...AVERY_MODEL_FAMILY_IDS],
   "dining-real-castlery-sloane-travertine-225": [
     "dining-real-castlery-sloane-dining-table-225",
     "dining-real-castlery-sloane-dining-table-180",
@@ -197,6 +208,10 @@ export const MODEL_SELECTOR_PRODUCT_IDS_BY_PRODUCT_ID: Record<string, string[]> 
   "sofa-real-castlery-jaron-chaise-sectional-wide-arm": [...JARON_MODEL_FAMILY_IDS],
   "sofa-real-castlery-jaron-l-shaped-sectional": [...JARON_MODEL_FAMILY_IDS],
   "sofa-real-castlery-jaron-l-shaped-sectional-wide-arm": [...JARON_MODEL_FAMILY_IDS],
+  "armchair-real-castlery-avery-performance-armchair": [...AVERY_MODEL_FAMILY_IDS],
+  "armchair-real-castlery-avery-performance-armchair-with-ottoman": [...AVERY_MODEL_FAMILY_IDS],
+  "armchair-real-castlery-avery-performance-swivel-armchair": [...AVERY_MODEL_FAMILY_IDS],
+  "armchair-real-castlery-avery-performance-swivel-armchair-with-ottoman": [...AVERY_MODEL_FAMILY_IDS],
   "dining-real-castlery-forma-oval-150": [
     "dining-real-castlery-forma-oval-150",
     "dining-real-castlery-forma-round-90",

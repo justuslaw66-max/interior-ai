@@ -187,8 +187,8 @@ export async function POST(req: Request) {
 
     // Check if OpenAI key is configured
     if (!process.env.OPENAI_API_KEY) {
-      console.warn("OPENAI_API_KEY not configured, returning fallback response");
-      // Fallback stub response while waiting for API key
+      console.warn("OPENAI_API_KEY not configured, returning local fallback response");
+      // Deterministic fallback while AI is unavailable.
       return NextResponse.json({
         summary: [
           "Good furniture layout with clear zones for different activities.",
@@ -199,17 +199,17 @@ export async function POST(req: Request) {
           "The current layout provides functional flow and visual balance. Adding texture and varied lighting would enhance the space.",
         suggestions: [
           {
-            id: "rug_size_demo",
+            id: "fallback_rug_resize_to_sofa",
             label: "Resize rug to better proportion with the sofa.",
             action: { type: "RUG_RESIZE_TO_SOFA" },
           },
           {
-            id: "budget_demo",
+            id: "fallback_budget_optimize",
             label: "Optimize budget by swapping to cost-effective alternatives.",
             action: { type: "MAKE_CHEAPER", percent: 10 },
           },
           {
-            id: "lamp_demo",
+            id: "fallback_add_task_lighting",
             label: "Add task lighting near the reading corner.",
             action: { type: "ADD_LAMP_NEAR_READING" },
           },

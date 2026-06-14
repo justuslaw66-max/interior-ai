@@ -22,7 +22,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   pages: {
     signIn: "/",
-    error: "/",
+    error: "/auth/error",
   },
   callbacks: {
     async jwt({ token, account }) {

@@ -17,6 +17,19 @@ export type NamedCameraView = {
 
 export type LayoutPlan = {
   picks?: Partial<Record<"sofa" | "rug" | "coffee_table" | "tv_console" | "accent_chair" | "floor_lamp", string | null>>;
+  quality?: {
+    completeness: number;
+    fitRisk: "low" | "medium" | "high";
+    requiredMissing: Array<"sofa" | "rug" | "coffee_table" | "tv_console" | "accent_chair" | "floor_lamp">;
+    warnings: string[];
+  };
+  meta?: {
+    style?: string;
+    budget?: string;
+    seed?: number;
+    roomType?: string;
+    supportedRoomType?: boolean;
+  };
 };
 
 export type AINotesResponse = {

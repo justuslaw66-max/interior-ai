@@ -12,6 +12,7 @@ model Design {
   roomWidth    Float
   roomDepth    Float
   items        Json
+  snapshot     Json?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   userId       String?
