@@ -14,6 +14,7 @@ type RoomPanNavigatorProps = {
   onMoveTarget: (x: number, z: number) => void;
   onFocusRoom: (roomId: string) => void;
   onZoom: (direction: "in" | "out") => void;
+  onResetView: () => void;
 };
 
 type PlanBounds = {
@@ -81,6 +82,7 @@ export default function RoomPanNavigator({
   onMoveTarget,
   onFocusRoom,
   onZoom,
+  onResetView,
 }: RoomPanNavigatorProps) {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const dragModeRef = useRef<DragMode>(null);
@@ -182,7 +184,17 @@ export default function RoomPanNavigator({
           <span className={dark ? "designer-text-primary" : "text-blue-600"}>2D</span>
           <span className={dark ? "designer-text-secondary" : "text-neutral-600"}>Rooms</span>
         </div>
-        <div className="flex items-center gap-1" aria-label="Navigator zoom">
+        <div className="flex items-center gap-1" aria-label="Navigator controls">
+          <button
+            type="button"
+            data-testid="room-pan-reset-view"
+            disabled={disabled}
+            onClick={onResetView}
+            className="h-7 rounded border border-neutral-200 bg-white px-2 text-xs font-semibold text-neutral-700 shadow-sm disabled:opacity-40"
+            aria-label="Reset room view"
+          >
+            Reset
+          </button>
           <button
             type="button"
             data-testid="room-pan-zoom-out"

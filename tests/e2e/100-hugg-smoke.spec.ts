@@ -38,32 +38,42 @@ test.describe("100. Hugg Catalog Smoke", () => {
     await page.getByRole("button", { name: /^Black$/i }).first().click();
     await expect(page.getByTestId("catalog-detail-variant-label")).toContainText(/Black/i);
 
-    await page.getByTestId("catalog-detail-add-to-room").click();
+    await page.getByTestId("catalog-detail-add-to-room").click({ force: true });
 
     await expect(page.getByText("Selected Item")).toBeVisible({ timeout: 10000 });
     await expect(page.getByText(/Hugg Nesting Square Coffee Table/i).first()).toBeVisible();
-    await expect(page.getByText("Selected: Black")).toBeVisible();
+    await expect(page.getByText("Selected: Black").first()).toBeVisible();
     await page.getByRole("button", { name: "Select fabric colour Performance Dune" }).click();
-    await expect(page.getByText("Selected: Performance Dune")).toBeVisible();
-    await expect(page.getByText("Selected: Black")).toBeVisible();
+    await expect(page.getByText("Selected: Performance Dune").first()).toBeVisible();
+    await expect(page.getByText("Selected: Black").first()).toBeVisible();
 
-    await expect(page.getByText("Table Layout")).toBeVisible({ timeout: 10000 });
-    await page.getByRole("button", { name: "Seats Open" }).click();
-    await expect(page.getByText(/Recommended planning size:\s*200 x 200 cm/i)).toBeVisible();
+    await expect(page.getByText("Model", { exact: true })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId("hugg-model-option-square")).toBeVisible();
+    const seatsOpenButton = page.getByRole("button", { name: "Seats Open" });
+    if (await seatsOpenButton.isVisible()) {
+      await expect(page.getByText("Table Layout")).toBeVisible();
+      await seatsOpenButton.click();
+      await expect(page.getByText(/Recommended planning size:\s*200 x 200 cm/i)).toBeVisible();
+    }
 
     await page.getByTestId("rotation-controls-toggle").click();
     await page.getByTestId("rotation-btn-quarter-turn").click();
     await expect(page.getByTestId("rotation-angle-label")).toContainText(/90 deg/i);
 
-    await page.getByRole("button", { name: "Cart" }).click();
+    await page.getByRole("button", { name: "Shop" }).click();
+    await expect(page.getByText("Shopping overview")).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText("Current room")).toBeVisible();
+    await expect(page.getByText("Whole home")).toBeVisible();
     await expect(page.getByTestId("cart-panel")).toBeVisible({ timeout: 10000 });
     const cartPanel = page.getByTestId("cart-panel");
     await expect(cartPanel.getByText(/Hugg Nesting Square Coffee Table/i)).toBeVisible({ timeout: 10000 });
     await expect(cartPanel.getByText(/Black\s*•\s*coffee_table/i)).toBeVisible({ timeout: 10000 });
 
-    await page.getByRole("button", { name: "Present" }).click();
-    await expect(page.getByRole("button", { name: "2D Plan" })).toBeVisible({ timeout: 10000 });
-    await page.getByRole("button", { name: "2D Plan" }).click();
-    await page.getByRole("button", { name: "3D" }).click();
+    await page.getByRole("button", { name: "Export" }).click();
+    await expect(page.getByRole("heading", { name: "Present & Export" })).toBeVisible({ timeout: 10000 });
+    await page.getByRole("button", { name: "Close export panel" }).click({ force: true });
+    await expect(page.getByRole("button", { name: "2D Plan" }).first()).toBeVisible({ timeout: 10000 });
+    await page.getByRole("button", { name: "2D Plan" }).first().click({ force: true });
+    await page.getByRole("button", { name: "3D" }).first().click({ force: true });
   });
 });

@@ -121,7 +121,7 @@ test.describe("12. Variant Identity", () => {
 
     await page.getByTestId("catalog-detail-add-to-room").click();
 
-    await page.getByRole("button", { name: "Cart" }).click();
+    await page.getByRole("button", { name: "Shop" }).click();
     const autoFillButton = page.getByRole("button", { name: "Auto-fill cart from room" });
     if (await autoFillButton.isVisible().catch(() => false)) {
       await autoFillButton.click();

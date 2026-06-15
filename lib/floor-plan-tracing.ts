@@ -132,7 +132,7 @@ export function snapFloorPlanPointToRoomEdges(
   if (!rooms.length) return point;
 
   const snapDistance =
-    Number.isFinite(snapDistanceMeters) && snapDistanceMeters > 0
+    Number.isFinite(snapDistanceMeters) && snapDistanceMeters >= 0
       ? snapDistanceMeters
       : ROOM_DRAW_EDGE_SNAP_DISTANCE_METERS;
   let nextX = point.x;

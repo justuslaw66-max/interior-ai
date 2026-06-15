@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures";
+import type { Page } from "@playwright/test";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
 async function createSampleFloorPlanPdf(): Promise<Buffer> {
@@ -51,6 +52,13 @@ test.describe("18. Multi-Room Whole Home", () => {
     });
   });
 
+  async function chooseDrawFromScratch(page: Page) {
+    await expect(page.getByTestId("plan-start-draw")).toBeVisible();
+    await expect(page.getByTestId("plan-start-upload")).toBeVisible();
+    await expect(page.getByTestId("plan-start-template")).toBeVisible();
+    await page.getByTestId("plan-start-draw").click();
+  }
+
   test("drawing a room works on a blank 2D grid without uploading a plan", async ({ page }) => {
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
@@ -58,6 +66,7 @@ test.describe("18. Multi-Room Whole Home", () => {
     await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
     await expect(page.getByTestId("floor-plan-draw-mode-straight_wall")).toHaveCount(0);
     await page.getByRole("button", { name: "2D Plan" }).click();
+    await chooseDrawFromScratch(page);
     await expect(page.getByText("Draw room")).toBeVisible();
 
     await expect(page.getByTestId("floor-plan-draw-mode-straight_wall")).toBeVisible();
@@ -93,6 +102,7 @@ test.describe("18. Multi-Room Whole Home", () => {
 
     await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
     await page.getByRole("button", { name: "2D Plan" }).click();
+    await chooseDrawFromScratch(page);
     await page.getByTestId("floor-plan-draw-mode-arc_wall").click();
     await expect(page.getByText("Wall points: 0")).toBeVisible();
     await page.getByTestId("floor-plan-trace-room-type").selectOption("living");
@@ -113,13 +123,53 @@ test.describe("18. Multi-Room Whole Home", () => {
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("1 room");
   });
 
+  test("consumer workflow tabs switch panels reliably", async ({ page }) => {
+    await page.goto("/design");
+    await page.waitForLoadState("domcontentloaded");
+
+    await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+    await expect(page.getByTestId("editor-workflow-plan")).toHaveAttribute("data-active", "true");
+    await expect(page.getByText("Start your floor plan")).toBeVisible();
+
+    await page.getByTestId("editor-workflow-furnish").click();
+    await expect(page.getByTestId("editor-workflow-furnish")).toHaveAttribute("data-active", "true");
+    await expect(page.getByTestId("furnish-room-summary")).toBeVisible();
+    await expect(page.getByText("Recommended for Living Room")).toBeVisible();
+    await expect(page.getByTestId("furnish-recommended-category-coffee_table")).toBeVisible();
+    await expect(page.getByTestId("advanced-imported-models")).not.toHaveAttribute("open", "");
+
+    await page.getByTestId("editor-workflow-shop").click();
+    await expect(page.getByTestId("editor-workflow-shop")).toHaveAttribute("data-active", "true");
+    await expect(page.getByText("Shopping overview")).toBeVisible({ timeout: 10000 });
+
+    await page.getByTestId("editor-workflow-plan").click();
+    await expect(page.getByTestId("editor-workflow-plan")).toHaveAttribute("data-active", "true");
+    await expect(page.getByText("Start your floor plan")).toBeVisible();
+
+    await page.getByTestId("editor-workflow-export").click();
+    await expect(page.getByTestId("editor-workflow-export")).toHaveAttribute("data-active", "true");
+    await expect(page.getByRole("heading", { name: "Present & Export" })).toBeVisible({
+      timeout: 10000,
+    });
+    await page.getByRole("button", { name: "Close export panel" }).click({ force: true });
+
+    await page.getByTestId("editor-workflow-plan").click();
+    await expect(page.getByTestId("editor-workflow-plan")).toHaveAttribute("data-active", "true");
+  });
+
   test("adding a room keeps the plan visible as one whole-home 3D scene", async ({ page }) => {
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+    await expect(page.getByTestId("editor-workflow-plan")).toBeVisible();
+    await expect(page.getByTestId("editor-workflow-furnish")).toBeVisible();
+    await expect(page.getByTestId("editor-workflow-shop")).toBeVisible();
+    await expect(page.getByTestId("editor-workflow-export")).toBeVisible();
+    await expect(page.getByTestId("editor-workflow-ai")).toHaveCount(0);
     await expect(page.getByTestId("house-room-3d-label")).toHaveCount(0);
 
+    await page.getByTestId("plan-start-template").click();
     await page.getByTestId("add-room-template-bedroom").click();
 
     await expect(page.getByTestId("house-room-3d-label")).toHaveCount(2, {
@@ -129,6 +179,10 @@ test.describe("18. Multi-Room Whole Home", () => {
     await expect(page.getByTestId("room-plan-status-room-name")).toContainText("Bedroom");
     await expect(page.getByTestId("room-plan-status-room-size")).toContainText("4 x 3.6m");
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("2 rooms");
+    await expect(page.getByTestId("consumer-plan-next-steps")).toContainText("2 rooms ready");
+    await expect(page.getByTestId("consumer-plan-next-steps")).toContainText(
+      "Add doorway links from Connections."
+    );
 
     await expect(page.getByTestId("room-plan-status-view-toggle")).toHaveText("Plan");
     await expect(page.getByTestId("room-plan-status-fit-view")).toBeVisible();
@@ -139,6 +193,7 @@ test.describe("18. Multi-Room Whole Home", () => {
     await expect(page.getByTestId("room-pan-camera-icon")).toBeVisible();
     await expect(page.getByTestId("room-pan-zoom-in")).toBeVisible();
     await expect(page.getByTestId("room-pan-zoom-out")).toBeVisible();
+    await expect(page.getByTestId("room-pan-reset-view")).toBeVisible();
 
     const panTargetBefore = await page.getByTestId("room-pan-target").boundingBox();
     expect(panTargetBefore).not.toBeNull();
@@ -184,6 +239,21 @@ test.describe("18. Multi-Room Whole Home", () => {
     await page.mouse.up();
     await page.getByTestId("room-pan-zoom-in").click();
     await page.getByTestId("room-pan-zoom-out").click();
+    await page.getByTestId("room-pan-reset-view").click();
+    await expect(page.getByText("Home fitted")).toBeVisible();
+
+    await expect(page.getByText("AI Design Brief")).toHaveCount(0);
+    await page.getByTestId("editor-workflow-furnish").click();
+    await expect(page.getByTestId("editor-workflow-furnish")).toHaveAttribute("data-active", "true");
+    await expect(page.getByTestId("furnish-room-summary")).toBeVisible();
+    await expect(page.getByTestId("furnish-active-room-name")).toContainText("Bedroom");
+    await expect(page.getByText("Recommended for Bedroom")).toBeVisible();
+    await expect(page.getByTestId("furnish-recommended-category-accent_chair")).toBeVisible();
+    await expect(page.getByTestId("advanced-imported-models")).not.toHaveAttribute("open", "");
+    await page.getByTestId("advanced-imported-models-toggle").click();
+    await expect(page.getByTestId("add-imported-btn")).toContainText("Add to Bedroom");
+    await page.getByTestId("editor-workflow-plan").click();
+    await expect(page.getByTestId("editor-workflow-plan")).toHaveAttribute("data-active", "true");
 
     await page.getByTestId("room-plan-status-view-toggle").click();
     await expect(page.getByTestId("room-plan-status-view-toggle")).toHaveText("Room view");
@@ -205,6 +275,7 @@ test.describe("18. Multi-Room Whole Home", () => {
     await page.getByTestId("floor-plan-tool-door").click();
     await expect(page.getByText("Doorway added")).toBeVisible();
     await expect(page.getByTestId("room-connection-status")).toHaveText("Doorway ready");
+    await expect(page.getByTestId("consumer-plan-next-steps")).toContainText("openings placed");
     await expect(page.getByTestId("plan-opening-inspector")).toBeVisible();
     await expect(page.getByTestId("plan-opening-width-input")).toHaveValue("0.90");
     await page.getByTestId("plan-opening-width-input").fill("1.10");
@@ -222,6 +293,8 @@ test.describe("18. Multi-Room Whole Home", () => {
       timeout: 10000,
     });
 
+    await page.getByTestId("plan-start-upload").click();
+    await expect(page.getByTestId("floor-plan-upload-empty-state")).toBeVisible();
     await page.getByTestId("floor-plan-upload-input").setInputFiles({
       name: "sample-floor-plan.pdf",
       mimeType: "application/pdf",

@@ -29,8 +29,34 @@ export async function waitForCatalogReady(page: Page): Promise<boolean> {
     .catch(() => false);
 }
 
+async function openFurnishPanelIfNeeded(page: Page): Promise<void> {
+  const importedProductSelect = page.locator('[data-testid="imported-product-select"]');
+  if ((await importedProductSelect.count()) > 0) {
+    await openAdvancedImportedModelsIfNeeded(page);
+    return;
+  }
+
+  const furnishButton = page.locator('[data-testid="editor-workflow-furnish"]');
+  if ((await furnishButton.count()) === 0) return;
+  await furnishButton.first().click();
+  await openAdvancedImportedModelsIfNeeded(page);
+}
+
+export async function openAdvancedImportedModelsIfNeeded(page: Page): Promise<void> {
+  const advancedPicker = page.locator('[data-testid="advanced-imported-models"]');
+  if ((await advancedPicker.count()) === 0) return;
+
+  const isOpen = await advancedPicker.first().evaluate((node) =>
+    (node as HTMLDetailsElement).open
+  ).catch(() => true);
+  if (isOpen) return;
+
+  await page.locator('[data-testid="advanced-imported-models-toggle"]').first().click();
+}
+
 export async function getImportedFamilySelect(page: Page): Promise<Locator | null> {
   try {
+    await openFurnishPanelIfNeeded(page);
     const byTestId = page.locator('[data-testid="imported-family-select"]');
     if ((await byTestId.count()) > 0) return byTestId.first();
     const byRole = page.getByRole("combobox").first();
@@ -43,6 +69,7 @@ export async function getImportedFamilySelect(page: Page): Promise<Locator | nul
 
 export async function getImportedProductSelect(page: Page): Promise<Locator | null> {
   try {
+    await openFurnishPanelIfNeeded(page);
     const byTestId = page.locator('[data-testid="imported-product-select"]');
     if ((await byTestId.count()) > 0) return byTestId.first();
     const byRole = page.getByRole("combobox").nth(1);
@@ -144,6 +171,7 @@ export async function findImportedProductValue(
 
 export async function getAddImportedButton(page: Page): Promise<Locator | null> {
   try {
+    await openFurnishPanelIfNeeded(page);
     const byTestId = page.locator('[data-testid="add-imported-btn"]');
     if ((await byTestId.count()) > 0) return byTestId.first();
 
@@ -232,6 +260,7 @@ export async function openCatalogPreview(
   searchTerm: string,
   categoryTabs: RegExp[] = DEFAULT_CATEGORY_TABS,
 ): Promise<boolean> {
+  await openFurnishPanelIfNeeded(page);
   const ready = await waitForCatalogReady(page);
   if (!ready) return false;
 

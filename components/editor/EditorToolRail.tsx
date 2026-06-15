@@ -2,13 +2,15 @@
 
 import type { ReactNode } from "react";
 
-export type EditorToolRailMode = "design" | "adjust" | "buy" | "present";
+export type EditorToolRailMode = "design" | "adjust" | "ai" | "buy" | "present";
 
 type EditorToolRailProps = {
   mode: EditorToolRailMode;
   dark?: boolean;
+  aiDesignEnabled?: boolean;
   onDesign: () => void;
   onAdjust: () => void;
+  onAi: () => void;
   onCart: () => void;
   onPresent: () => void;
   onFitPlan: () => void;
@@ -86,6 +88,15 @@ function CartIcon() {
   );
 }
 
+function AiIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none">
+      <path d="M12 3.5 13.8 9l5.7 1.8-5.7 1.8L12 18l-1.8-5.4-5.7-1.8L10.2 9 12 3.5Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M18 15.5 18.8 18l2.2.8-2.2.7L18 22l-.8-2.5-2.2-.7 2.2-.8.8-2.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function PresentIcon() {
   return (
     <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none">
@@ -108,8 +119,10 @@ function FitIcon() {
 export default function EditorToolRail({
   mode,
   dark = false,
+  aiDesignEnabled = false,
   onDesign,
   onAdjust,
+  onAi,
   onCart,
   onPresent,
   onFitPlan,
@@ -127,9 +140,9 @@ export default function EditorToolRail({
       <ToolButton
         active={mode === "design"}
         dark={dark}
-        label="Design"
+        label="Planning shortcut"
         testId="editor-rail-design"
-        title="Design tools"
+        title="Draw or upload a floor plan"
         onClick={onDesign}
       >
         <DesignIcon />
@@ -137,19 +150,31 @@ export default function EditorToolRail({
       <ToolButton
         active={mode === "adjust"}
         dark={dark}
-        label="Adjust"
+        label="Furniture shortcut"
         testId="editor-rail-adjust"
-        title="Move and adjust"
+        title="Add and adjust furniture"
         onClick={onAdjust}
       >
         <AdjustIcon />
       </ToolButton>
+      {aiDesignEnabled && (
+        <ToolButton
+          active={mode === "ai"}
+          dark={dark}
+          label="AI shortcut"
+          testId="editor-rail-ai"
+          title="Generate a starter layout"
+          onClick={onAi}
+        >
+          <AiIcon />
+        </ToolButton>
+      )}
       <ToolButton
         active={mode === "buy"}
         dark={dark}
-        label="Cart"
+        label="Commerce shortcut"
         testId="editor-rail-cart"
-        title="Cart"
+        title="Shopping list and cart"
         onClick={onCart}
       >
         <CartIcon />
@@ -157,9 +182,9 @@ export default function EditorToolRail({
       <ToolButton
         active={mode === "present"}
         dark={dark}
-        label="Present"
+        label="Presentation shortcut"
         testId="editor-rail-present"
-        title={mode === "present" ? "Exit present mode" : "Present"}
+        title={mode === "present" ? "Exit export mode" : "Export and present"}
         onClick={onPresent}
       >
         <PresentIcon />
@@ -173,7 +198,7 @@ export default function EditorToolRail({
       />
       <ToolButton
         dark={dark}
-        label="Fit plan"
+        label="Fit plan shortcut"
         testId="editor-rail-fit-plan"
         title="Fit plan"
         onClick={onFitPlan}

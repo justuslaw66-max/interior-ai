@@ -32,6 +32,18 @@ export type LayoutPlan = {
   };
 };
 
+export type AiLayoutProposal = {
+  id: string;
+  itemNames: string[];
+  warnings: string[];
+  fitRisk?: "low" | "medium" | "high";
+  completeness?: number;
+  sourceLabel: string;
+  style?: string;
+  budget?: string;
+  seed?: number;
+};
+
 export type AINotesResponse = {
   summary: string[];
   rationale: string;

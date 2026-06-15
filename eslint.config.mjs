@@ -12,6 +12,7 @@ const eslintConfig = defineConfig([
     ".next-cache/**",
     "out/**",
     "build/**",
+    "public/draco/**",
     "test-results/**",
     "playwright-report/**",
     "next-env.d.ts",

@@ -19,6 +19,17 @@ async function setupSelectedItem(page: Page): Promise<boolean> {
   await page.waitForLoadState('domcontentloaded');
   await page.waitForTimeout(2000);
 
+  await page.getByTestId('editor-workflow-furnish').click().catch(() => undefined);
+  const advancedPicker = page.getByTestId('advanced-imported-models');
+  if (await advancedPicker.isVisible().catch(() => false)) {
+    const isOpen = await advancedPicker
+      .evaluate((node) => (node as HTMLDetailsElement).open)
+      .catch(() => true);
+    if (!isOpen) {
+      await page.getByTestId('advanced-imported-models-toggle').click();
+    }
+  }
+
   const importedFamilySelectById = page.locator('[data-testid="imported-family-select"]');
   const importedFamilySelect = (await importedFamilySelectById.count()) > 0
     ? importedFamilySelectById.first()

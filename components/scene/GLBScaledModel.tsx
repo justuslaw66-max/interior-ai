@@ -93,15 +93,25 @@ export function GLBScaledModel({
 
   useEffect(() => {
     let cancelled = false;
+    let dracoLoader: { dispose?: () => void } | null = null;
     setLoadedScene(null);
     onLoadStateChange?.("loading");
 
     (async () => {
       try {
-        const { GLTFLoader } = await import("three-stdlib");
+        const { GLTFLoader, DRACOLoader } = await import("three-stdlib");
         if (cancelled) return;
 
         const loader = new GLTFLoader();
+        try {
+          const nextDracoLoader = new DRACOLoader();
+          nextDracoLoader.setDecoderPath("/draco/");
+          loader.setDRACOLoader(nextDracoLoader);
+          dracoLoader = nextDracoLoader;
+        } catch (decoderError) {
+          // Existing non-Draco models should still load if Draco setup is unavailable.
+          console.warn("[GLBScaledModel] Draco decoder unavailable", { decoderError });
+        }
         try {
           const meshoptModule = (await import("meshoptimizer")) as {
             MeshoptDecoder?: { ready?: Promise<unknown> };
@@ -145,6 +155,7 @@ export function GLBScaledModel({
 
     return () => {
       cancelled = true;
+      dracoLoader?.dispose?.();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url]);

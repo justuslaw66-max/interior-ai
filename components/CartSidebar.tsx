@@ -410,35 +410,65 @@ export default function CartSidebar({
     await startShopifyCheckoutInternal();
   };
 
+  const panelClass = isDesignerTheme
+    ? "designer-panel w-85 max-h-[60vh] overflow-auto rounded-2xl p-4"
+    : "w-85 max-h-[60vh] overflow-auto rounded-2xl border border-neutral-200 bg-white p-4 shadow";
+  const textClass = isDesignerTheme ? "text-neutral-100" : "text-neutral-900";
+  const mutedTextClass = isDesignerTheme ? "text-neutral-400" : "text-neutral-500";
+  const softCardClass = isDesignerTheme
+    ? "rounded-2xl border border-white/10 bg-black/10 p-3"
+    : "rounded-2xl border border-neutral-200 bg-neutral-50 p-3";
+  const groupClass = isDesignerTheme
+    ? "overflow-hidden rounded-2xl border border-white/10 bg-[#151820]"
+    : "overflow-hidden rounded-2xl border border-neutral-200 bg-white";
+  const groupHeaderClass = isDesignerTheme
+    ? "flex items-center justify-between gap-2 border-b border-white/10 bg-white/[0.03] px-3 py-2"
+    : "flex items-center justify-between gap-2 border-b border-neutral-200 bg-neutral-50 px-3 py-2";
+  const secondaryButtonClass = isDesignerTheme
+    ? "rounded-xl border border-white/10 px-3 py-2 text-sm text-neutral-200 transition hover:bg-white/5 disabled:text-neutral-500"
+    : "rounded-xl border border-neutral-200 px-3 py-2 text-sm text-neutral-800 transition hover:bg-neutral-50 disabled:text-neutral-400";
+
   return (
     <aside
       data-testid="cart-panel"
-      className={
-        isDesignerTheme
-          ? "designer-panel w-85 max-h-[60vh] overflow-auto rounded-2xl p-4"
-          : "w-85 max-h-[60vh] overflow-auto rounded-2xl bg-white p-4 shadow"
-      }
+      className={panelClass}
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-sm font-semibold text-neutral-900">Cart</div>
-          <div className="text-xs text-neutral-500">
-            {cartLines.length} items • {" "}
-            {shopifyItems.length} buy here • {" "}
-            {affiliateItems.length} external
+          <div className={`text-sm font-semibold ${textClass}`}>Shopping list</div>
+          <div className={`text-xs ${mutedTextClass}`}>
+            {totals.totalQty} selected item{totals.totalQty === 1 ? "" : "s"} from your design
           </div>
-          <div className="mt-2">
-            <div className="text-[11px] uppercase tracking-wide text-neutral-500">
-              Total
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            <div className={softCardClass}>
+              <div className={`text-[11px] uppercase tracking-wide ${mutedTextClass}`}>
+                Total
+              </div>
+              <div className={`mt-1 text-lg font-semibold ${textClass}`}>
+                ${totals.total.toFixed(0)}
+              </div>
             </div>
-            <div className="text-xl font-semibold text-neutral-900">
-              ${totals.total.toFixed(0)}
+            <div className={softCardClass}>
+              <div className={`text-[11px] uppercase tracking-wide ${mutedTextClass}`}>
+                Checkout
+              </div>
+              <div className={`mt-1 text-lg font-semibold ${textClass}`}>
+                {shopifyItems.length}
+              </div>
+            </div>
+            <div className={softCardClass}>
+              <div className={`text-[11px] uppercase tracking-wide ${mutedTextClass}`}>
+                Retailer
+              </div>
+              <div className={`mt-1 text-lg font-semibold ${textClass}`}>
+                {affiliateItems.length}
+              </div>
             </div>
           </div>
         </div>
 
         <button
-          className="rounded-lg border px-2 py-1 text-xs text-neutral-700 hover:bg-neutral-50"
+          className={secondaryButtonClass}
           onClick={() => setIsCollapsed((v) => !v)}
           aria-expanded={!isCollapsed}
           aria-controls="cart-body"
@@ -450,31 +480,33 @@ export default function CartSidebar({
 
       {!isCollapsed && (
         <div id="cart-body">
-          <button
-            data-testid="checkout-shopify"
-            className={`mt-3 w-full rounded-xl px-3 py-2 text-sm text-white ${
-              shopifyItems.length === 0 || busy ? "bg-neutral-300" : "bg-neutral-900"
-            }`}
-            onClick={startShopifyCheckout}
-            disabled={shopifyItems.length === 0 || busy}
-          >
-            Checkout ({shopifyItems.length} buy here item{shopifyItems.length === 1 ? "" : "s"})
-          </button>
+          <div className="mt-3 grid gap-2">
+            <button
+              data-testid="checkout-shopify"
+              className={`w-full rounded-xl px-3 py-2 text-sm font-semibold text-white transition ${
+                shopifyItems.length === 0 || busy ? "bg-neutral-300" : "bg-neutral-900 hover:bg-neutral-800"
+              }`}
+              onClick={startShopifyCheckout}
+              disabled={shopifyItems.length === 0 || busy}
+            >
+              Checkout here ({shopifyItems.length})
+            </button>
 
-          <button
-            data-testid="checkout-affiliate"
-            className={`mt-2 w-full rounded-xl border px-3 py-2 text-sm ${
-              affiliateItems.length === 0 || busy ? "text-neutral-400" : "text-neutral-900"
-            }`}
-            disabled={affiliateItems.length === 0 || busy}
-            onClick={() => requestBuy("Buy external items", affiliateItems)}
-          >
-            Buy external ({affiliateItems.length} item{affiliateItems.length === 1 ? "" : "s"})
-          </button>
+            <button
+              data-testid="checkout-affiliate"
+              className={`${secondaryButtonClass} w-full ${
+                affiliateItems.length === 0 || busy ? "opacity-60" : ""
+              }`}
+              disabled={affiliateItems.length === 0 || busy}
+              onClick={() => requestBuy("Buy external items", affiliateItems)}
+            >
+              Open retailer links ({affiliateItems.length})
+            </button>
+          </div>
 
           <div className="mt-3 grid grid-cols-2 gap-2">
             <button
-              className="rounded-xl border px-3 py-2 text-sm"
+              className={secondaryButtonClass}
               disabled={busy}
               onClick={() => {
                 if (plan !== "pro") return onShowUpgrade();
@@ -485,7 +517,7 @@ export default function CartSidebar({
             </button>
 
             <button
-              className="rounded-xl border px-3 py-2 text-sm"
+              className={secondaryButtonClass}
               disabled={busy}
               onClick={() => {
                 if (plan !== "pro") return onShowUpgrade();
@@ -496,20 +528,20 @@ export default function CartSidebar({
             </button>
           </div>
 
-          <div className="mt-2 text-[11px] text-neutral-500">
-            Tip: checkout “Buy here” items first, then purchase external items.
+          <div className={`mt-2 text-[11px] ${mutedTextClass}`}>
+            Checkout items you can buy here first, then open retailer links for external items.
           </div>
 
           <div className="mt-3 max-h-[55vh] overflow-auto space-y-3">
             {showEmptyCart ? (
-              <div className="rounded-xl border p-4 text-sm text-neutral-700">
-                <div className="text-sm font-semibold">Your room can shop for you</div>
-                <div className="mt-1 text-xs text-neutral-500">
-                  We will add buyable items from your room to checkout.
+              <div className={softCardClass}>
+                <div className={`text-sm font-semibold ${textClass}`}>Your room can shop for you</div>
+                <div className={`mt-1 text-xs ${mutedTextClass}`}>
+                  Include the buyable items already placed in your rooms.
                 </div>
                 <div className="mt-3 flex flex-col gap-2">
                   <button
-                    className={`rounded-lg px-3 py-2 text-sm text-white ${
+                    className={`rounded-xl px-3 py-2 text-sm font-semibold text-white ${
                       autoFillPulse ? "pulse-once" : ""
                     } ${busy ? "bg-neutral-300" : "bg-neutral-900"}`}
                     disabled={busy}
@@ -518,7 +550,7 @@ export default function CartSidebar({
                     Auto-fill cart from room
                   </button>
                   <button
-                    className="rounded-lg border px-3 py-2 text-sm text-neutral-700"
+                    className={secondaryButtonClass}
                     onClick={addItemsIndividually}
                   >
                     Add items individually
@@ -528,11 +560,11 @@ export default function CartSidebar({
             ) : (
               <>
                 {shopifyAll.length > 0 && (
-                  <div className="rounded-xl border">
-                    <div className="flex items-center justify-between gap-2 border-b bg-neutral-50 px-3 py-2">
+                  <div className={groupClass}>
+                    <div className={groupHeaderClass}>
                       <div>
-                        <div className="text-sm font-semibold">Buy here</div>
-                        <div className="text-xs text-neutral-500">
+                        <div className={`text-sm font-semibold ${textClass}`}>Checkout here</div>
+                        <div className={`text-xs ${mutedTextClass}`}>
                           {shopifyItems.length} included • Subtotal ${shopifyItems
                             .reduce((sum, x) => sum + x.linePrice, 0)
                             .toFixed(0)}
@@ -540,28 +572,28 @@ export default function CartSidebar({
                       </div>
                     </div>
 
-                    <ul className="divide-y">
+                    <ul className={isDesignerTheme ? "divide-y divide-white/10" : "divide-y divide-neutral-100"}>
                       {shopifyAll.map((x) => (
                         <li key={x.instanceId} data-testid="cart-item" className="p-3">
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0">
-                              <div className="truncate text-sm font-semibold">
+                              <div className={`truncate text-sm font-semibold ${textClass}`}>
                                 {x.name}
                                 {x.locked && (
-                                  <span className="ml-2 text-xs text-neutral-400">
-                                    🔒
+                                  <span className={`ml-2 rounded-full px-2 py-0.5 text-[10px] ${isDesignerTheme ? "bg-white/10 text-neutral-300" : "bg-neutral-100 text-neutral-500"}`}>
+                                    Locked
                                   </span>
                                 )}
                               </div>
-                              <div className="text-xs text-neutral-500">
+                              <div className={`text-xs ${mutedTextClass}`}>
                                 <span data-testid="cart-item-variant-label">
                                 {x.variantName} • {x.category}
                                 </span>
                               </div>
-                              <span className="mt-1 inline-flex rounded-full bg-green-100 px-2 py-0.5 text-[11px] text-green-700">
+                              <span className="mt-2 inline-flex rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-medium text-green-700">
                                 Checkout here
                               </span>
-                              <label className="mt-2 flex items-center gap-2 text-xs text-neutral-600">
+                              <label className={`mt-2 flex items-center gap-2 text-xs ${isDesignerTheme ? "text-neutral-300" : "text-neutral-600"}`}>
                                 <input
                                   type="checkbox"
                                   checked={x.includeInCheckout ?? true}
@@ -582,23 +614,23 @@ export default function CartSidebar({
                             </div>
 
                             <div className="text-right">
-                              <div className="text-sm font-semibold">${x.linePrice}</div>
-                              <div className="text-[11px] text-neutral-500">${x.unitPrice} ea</div>
+                              <div className={`text-sm font-semibold ${textClass}`}>${x.linePrice}</div>
+                              <div className={`text-[11px] ${mutedTextClass}`}>${x.unitPrice} ea</div>
                             </div>
                           </div>
 
                           <div className="mt-2 flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <button
-                                className="h-7 w-7 rounded-lg border text-sm"
+                                className={isDesignerTheme ? "h-7 w-7 rounded-lg border border-white/10 text-sm text-neutral-200" : "h-7 w-7 rounded-lg border border-neutral-200 text-sm"}
                                 onClick={() => onSetQty(x.instanceId, Math.max(1, x.qty - 1))}
                                 data-testid="cart-quantity-decrease"
                               >
                                 -
                               </button>
-                              <div className="w-8 text-center text-sm" data-testid="cart-quantity">{x.qty}</div>
+                              <div className={`w-8 text-center text-sm ${textClass}`} data-testid="cart-quantity">{x.qty}</div>
                               <button
-                                className="h-7 w-7 rounded-lg border text-sm"
+                                className={isDesignerTheme ? "h-7 w-7 rounded-lg border border-white/10 text-sm text-neutral-200" : "h-7 w-7 rounded-lg border border-neutral-200 text-sm"}
                                 onClick={() => onSetQty(x.instanceId, Math.min(99, x.qty + 1))}
                                 data-testid="cart-quantity-increase"
                               >
@@ -607,7 +639,7 @@ export default function CartSidebar({
                             </div>
 
                             <button
-                              className="rounded-lg px-2 py-1 text-xs text-red-600"
+                              className="rounded-lg px-2 py-1 text-xs text-red-600 transition hover:bg-red-50"
                               onClick={() => onRemove(x.instanceId)}
                               data-testid="cart-item-remove"
                             >
@@ -621,22 +653,22 @@ export default function CartSidebar({
                 )}
 
                 {affiliateAll.length === 0 ? (
-                  <div className="rounded-xl border p-4 text-sm text-neutral-600">
+                  <div className={isDesignerTheme ? "rounded-2xl border border-white/10 p-4 text-sm text-neutral-300" : "rounded-2xl border border-neutral-200 p-4 text-sm text-neutral-600"}>
                     No external retailer items in the cart right now.
                   </div>
                 ) : (
                   groups.map((g) => (
-                    <div key={g.retailer} className="rounded-xl border">
-                      <div className="flex items-center justify-between gap-2 border-b bg-neutral-50 px-3 py-2">
+                    <div key={g.retailer} className={groupClass}>
+                      <div className={groupHeaderClass}>
                         <div>
-                          <div className="text-sm font-semibold">{g.retailer}</div>
-                          <div className="text-xs text-neutral-500">
+                          <div className={`text-sm font-semibold ${textClass}`}>{g.retailer}</div>
+                          <div className={`text-xs ${mutedTextClass}`}>
                             {g.lines.length} items • {g.buyableCount} included • Subtotal ${g.subtotal.toFixed(0)}
                           </div>
                         </div>
 
                         <button
-                          className={`rounded-lg px-3 py-1 text-xs text-white ${
+                          className={`rounded-lg px-3 py-1 text-xs font-semibold text-white ${
                             busy || g.includedLines.length === 0
                               ? "bg-neutral-400"
                               : "bg-neutral-900"
@@ -650,29 +682,29 @@ export default function CartSidebar({
                         </button>
                       </div>
 
-                      <ul className="divide-y">
+                      <ul className={isDesignerTheme ? "divide-y divide-white/10" : "divide-y divide-neutral-100"}>
                         {g.lines.map((x) => (
                           <li key={x.instanceId} className="p-3">
                             <div className="flex items-start justify-between gap-2">
                               <div className="min-w-0">
-                                <div className="truncate text-sm font-semibold">
+                                <div className={`truncate text-sm font-semibold ${textClass}`}>
                                   {x.name}
                                   {x.locked && (
-                                    <span className="ml-2 text-xs text-neutral-400">
-                                      🔒
+                                    <span className={`ml-2 rounded-full px-2 py-0.5 text-[10px] ${isDesignerTheme ? "bg-white/10 text-neutral-300" : "bg-neutral-100 text-neutral-500"}`}>
+                                      Locked
                                     </span>
                                   )}
                                 </div>
-                                <div className="text-xs text-neutral-500">
+                                <div className={`text-xs ${mutedTextClass}`}>
                                   <span data-testid="cart-item-variant-label">
                                   {x.variantName} • {x.category}
                                   </span>
                                 </div>
-                                <span className="mt-1 inline-flex rounded-full bg-blue-100 px-2 py-0.5 text-[11px] text-blue-700">
+                                <span className="mt-2 inline-flex rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-medium text-blue-700">
                                   External retailer
                                 </span>
 
-                                <label className="mt-2 flex items-center gap-2 text-xs text-neutral-600">
+                                <label className={`mt-2 flex items-center gap-2 text-xs ${isDesignerTheme ? "text-neutral-300" : "text-neutral-600"}`}>
                                   <input
                                     type="checkbox"
                                     checked={x.includeInCheckout ?? true}
@@ -692,29 +724,29 @@ export default function CartSidebar({
                                 </label>
 
                                 {!x.buyUrl && (
-                                  <div className="mt-1 text-xs text-neutral-400">
+                                  <div className={`mt-1 text-xs ${mutedTextClass}`}>
                                     Buy link coming soon
                                   </div>
                                 )}
                               </div>
 
                               <div className="text-right">
-                                <div className="text-sm font-semibold">${x.linePrice}</div>
-                                <div className="text-[11px] text-neutral-500">${x.unitPrice} ea</div>
+                                <div className={`text-sm font-semibold ${textClass}`}>${x.linePrice}</div>
+                                <div className={`text-[11px] ${mutedTextClass}`}>${x.unitPrice} ea</div>
                               </div>
                             </div>
 
                             <div className="mt-2 flex items-center justify-between">
                               <div className="flex items-center gap-2">
                                 <button
-                                  className="h-7 w-7 rounded-lg border text-sm"
+                                  className={isDesignerTheme ? "h-7 w-7 rounded-lg border border-white/10 text-sm text-neutral-200" : "h-7 w-7 rounded-lg border border-neutral-200 text-sm"}
                                   onClick={() => onSetQty(x.instanceId, Math.max(1, x.qty - 1))}
                                 >
                                   -
                                 </button>
-                                <div className="w-8 text-center text-sm">{x.qty}</div>
+                                <div className={`w-8 text-center text-sm ${textClass}`}>{x.qty}</div>
                                 <button
-                                  className="h-7 w-7 rounded-lg border text-sm"
+                                  className={isDesignerTheme ? "h-7 w-7 rounded-lg border border-white/10 text-sm text-neutral-200" : "h-7 w-7 rounded-lg border border-neutral-200 text-sm"}
                                   onClick={() => onSetQty(x.instanceId, Math.min(99, x.qty + 1))}
                                 >
                                   +
@@ -734,7 +766,7 @@ export default function CartSidebar({
                               </div>
 
                               <button
-                                className="rounded-lg px-2 py-1 text-xs text-red-600"
+                                className="rounded-lg px-2 py-1 text-xs text-red-600 transition hover:bg-red-50"
                                 onClick={() => onRemove(x.instanceId)}
                               >
                                 Remove
@@ -750,8 +782,8 @@ export default function CartSidebar({
             )}
           </div>
 
-          <div className="mt-2 text-[11px] text-neutral-500">
-            Tracking happens per opened retailer tab. Quantity opens multiple tabs (V1).
+          <div className={`mt-2 text-[11px] ${mutedTextClass}`}>
+            External retailer links open separately so customers can review each item before buying.
           </div>
         </div>
       )}

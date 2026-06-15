@@ -70,6 +70,7 @@ import FloorPlanToolStrip from "@/components/editor/FloorPlanToolStrip";
 import RoomPlanStatusBar from "@/components/editor/RoomPlanStatusBar";
 import RoomPanNavigator from "@/components/editor/RoomPanNavigator";
 import EditorToolRail from "@/components/editor/EditorToolRail";
+import ShoppingOverviewPanel from "@/components/editor/ShoppingOverviewPanel";
 import SelectedItemDetailsPanel from "@/components/editor/SelectedItemDetailsPanel";
 import SelectedItemRotationControls from "@/components/editor/SelectedItemRotationControls";
 import { CanvasErrorBoundary } from "@/components/CanvasErrorBoundary";
@@ -112,6 +113,10 @@ import {
   type RoomSizePresetId,
 } from "@/lib/design-page-house-plan";
 import { useDesignPageHousePlanState } from "@/lib/useDesignPageHousePlanState";
+import {
+  useDesignPagePanelMode,
+  type DesignPageEditorMode,
+} from "@/lib/useDesignPagePanelMode";
 import {
   buildImportedModelOptions,
   normalizeImportedFamilyName,
@@ -165,6 +170,11 @@ import {
   PLAN_LAYER_PRESETS,
   type PlanMeasurementUnit,
 } from "@/lib/design-page-types";
+import {
+  buildPendingAiLayoutProposal,
+  collectAiLayoutValidationSummary,
+  type PendingAiLayoutProposal,
+} from "@/lib/design-page-ai-layout-proposal";
 import { catalogMatchesAiLayoutRole } from "@/lib/ai/layout-planner";
 import {
   ANNUAL_PLAN_SAVINGS_LABEL,
@@ -549,10 +559,24 @@ function PageContent() {
   const [showMyDesigns, setShowMyDesigns] = useState(false);
   const [myDesigns, setMyDesigns] = useState<Array<{ id: string; title: string; createdAt: string }>>([]);
   const [loadingDesigns, setLoadingDesigns] = useState(false);
+  const aiDesignEnabled = false;
   
   // Editor Modes
-  type EditorMode = "design" | "adjust" | "buy" | "present";
-  const [editorMode, setEditorMode] = useState<EditorMode>("design");
+  const [editorMode, setEditorMode] = useState<DesignPageEditorMode>("design");
+  const {
+    designControlsPanelMode,
+    designControlsPanelVisible,
+    goPlan,
+    goFurnish,
+    goAiDesign,
+    goShop,
+  } = useDesignPagePanelMode({
+    editorMode,
+    setEditorMode,
+    designPanelOpen,
+    setDesignPanelOpen,
+    setItemCartOpen,
+  });
   const wantsDesigner = urlMode === "designer";
   const canUseDesigner = plan === "pro";
   const { isDesigner, isClientPreview } = useEditorMode(plan, clientPreview);
@@ -832,7 +856,7 @@ function PageContent() {
       isPro: plan === "pro",
       isShared: !!shareToken,
       isClientPreview,
-      mode: editorMode,
+      mode: editorMode === "ai" ? "design" : editorMode,
     });
 
     if (eligible && !onboardingState.enabled) {
@@ -1140,6 +1164,9 @@ function PageContent() {
 
   type PlacedItem = DesignItem;
 
+  const [pendingAiLayoutProposal, setPendingAiLayoutProposal] =
+    useState<PendingAiLayoutProposal | null>(null);
+
   type Zone = ZoneMin;
 
   type DesignSnapshot = MultiRoomSnapshot;
@@ -1297,27 +1324,10 @@ function PageContent() {
     }
   };
 
-  const fallbackProduct =
-    Object.values(CATALOG_ITEMS).find(
-      (item) => typeof item.assets?.modelUrl === "string" && item.assets.modelUrl.length > 0
-    ) ?? Object.values(CATALOG_ITEMS)[0];
-  const fallbackItems: PlacedItem[] = fallbackProduct
-    ? [
-        {
-          instanceId: "i-1",
-          productId: fallbackProduct.id,
-          variantId: fallbackProduct.defaultVariantId,
-          position: [0, 0, -1.4],
-          qty: 1,
-          includeInCheckout: true,
-        },
-      ]
-    : [];
-
   // State for design snapshot with ref for synchronous access
   // NEW: Initialize with v3 multi-room format using migrateToV3
   const defaultSnapshot: DesignSnapshot = migrateToV3({
-    items: fallbackItems,
+    items: [],
     zones: [],
     roomBounds: {
       width: ROOM_DIMENSION_DEFAULTS.width,
@@ -1644,6 +1654,89 @@ function PageContent() {
     hasWholeHousePlan,
     houseRoomById,
   ]);
+  const roomShoppingSummaries = useMemo(() => {
+    return designSnapshot.rooms.map((room) => {
+      let subtotal = 0;
+      let shoppableCount = 0;
+      let needsReviewCount = 0;
+      let includedCount = 0;
+      const previewNames: string[] = [];
+
+      for (const item of room.items) {
+        const product = CATALOG_ITEMS[item.productId];
+        if (!product) {
+          needsReviewCount += 1;
+          continue;
+        }
+
+        const qty = Math.max(1, Math.min(99, item.qty ?? 1));
+        const resolved = resolveCatalogVariant(product, item.variantId);
+        const unitPrice =
+          resolved.commerce.type === "affiliate"
+            ? resolved.commerce.priceHint ?? 0
+            : getItemPrice(product);
+        subtotal += unitPrice * qty;
+
+        if (item.includeInCheckout ?? true) {
+          includedCount += qty;
+        }
+
+        const isShoppable =
+          resolved.commerce.type === "affiliate"
+            ? Boolean(resolved.commerce.url)
+            : resolved.commerce.type === "shopify"
+              ? Boolean(resolved.commerce.variantId && resolved.commerce.available)
+              : false;
+
+        if (isShoppable) {
+          shoppableCount += qty;
+        } else {
+          needsReviewCount += qty;
+        }
+
+        if (previewNames.length < 3) {
+          previewNames.push(product.title);
+        }
+      }
+
+      return {
+        roomId: room.id,
+        roomName: room.name,
+        roomType: room.roomType,
+        itemCount: room.items.length,
+        includedCount,
+        shoppableCount,
+        needsReviewCount,
+        subtotal,
+        previewNames,
+        isActive: room.id === designSnapshot.activeRoomId,
+      };
+    });
+  }, [designSnapshot.activeRoomId, designSnapshot.rooms]);
+  const activeRoomShoppingSummary =
+    roomShoppingSummaries.find((room) => room.roomId === designSnapshot.activeRoomId) ??
+    roomShoppingSummaries[0] ??
+    null;
+  const wholeHomeShoppingSummary = useMemo(
+    () =>
+      roomShoppingSummaries.reduce(
+        (summary, room) => ({
+          itemCount: summary.itemCount + room.itemCount,
+          includedCount: summary.includedCount + room.includedCount,
+          shoppableCount: summary.shoppableCount + room.shoppableCount,
+          needsReviewCount: summary.needsReviewCount + room.needsReviewCount,
+          subtotal: summary.subtotal + room.subtotal,
+        }),
+        {
+          itemCount: 0,
+          includedCount: 0,
+          shoppableCount: 0,
+          needsReviewCount: 0,
+          subtotal: 0,
+        }
+      ),
+    [roomShoppingSummaries]
+  );
   const activeSceneItemsForGuides = useMemo(
     () =>
       items.map((item) => ({
@@ -5434,7 +5527,7 @@ function PageContent() {
     return { items: nextItems } as DesignSnapshot;
   };
 
-  const applyLayoutPlan = (plan: LayoutPlan) => {
+  const buildLayoutItemsFromPlan = (plan: LayoutPlan) => {
     const picks = plan?.picks ?? {};
 
     const backWallZ = -roomDepth / 2 + wallThickness + 0.2;
@@ -5523,10 +5616,6 @@ function PageContent() {
         qty: 1,
         includeInCheckout: true,
       });
-      if (appliedRugRule) {
-        showRuleToast("Rug sized to sofa width");
-        track("rule_applied", { rule: "rug_size", design_id: designId ?? null });
-      }
     }
 
     if (coffeeId && sofaP && CATALOG_ITEMS[coffeeId]) {
@@ -5702,8 +5791,69 @@ function PageContent() {
       });
     }
 
-    commitItems(next, "AI layout arrangement");
+    return { items: next, appliedRugRule };
+  };
+
+  const queueAiLayoutProposal = (plan: LayoutPlan, sourceLabel: string) => {
+    const { items: proposedItems, appliedRugRule } = buildLayoutItemsFromPlan(plan);
+    if (proposedItems.length === 0) {
+      alert("Starter layout unavailable. Please add items manually.");
+      return;
+    }
+    const validationResults = proposedItems.map((item) =>
+      evaluateConstraints({
+        design: { items: proposedItems },
+        movedItemId: item.instanceId,
+        room: { width: roomWidth, depth: roomDepth, wallThickness },
+      })
+    );
+    const { warnings: validationWarnings, validationRisk } =
+      collectAiLayoutValidationSummary(validationResults);
+    const proposal = buildPendingAiLayoutProposal({
+      plan,
+      items: proposedItems,
+      appliedRugRule,
+      sourceLabel,
+      style,
+      budget,
+      validationWarnings,
+      validationRisk,
+      itemNameByProductId: (productId) => CATALOG_ITEMS[productId]?.title,
+    });
+
+    setPendingAiLayoutProposal(proposal);
+    setEditorMode("ai");
+    setDesignPanelOpen(true);
+    showRuleToast("Review AI layout before applying");
+    track("ai_layout_proposed", {
+      source: sourceLabel,
+      seed: plan.meta?.seed ?? null,
+      style,
+      budget,
+      item_count: proposedItems.length,
+      fit_risk: proposal.fitRisk ?? null,
+    });
+  };
+
+  const applyPendingAiLayoutProposal = () => {
+    if (!pendingAiLayoutProposal) return;
+    commitItems(pendingAiLayoutProposal.items, "Apply AI layout proposal");
     clearAllSelection();
+    if (pendingAiLayoutProposal.appliedRugRule) {
+      showRuleToast("Rug sized to sofa width");
+      track("rule_applied", { rule: "rug_size", design_id: designId ?? null });
+    } else {
+      showRuleToast("AI layout applied");
+    }
+    track("ai_layout_applied", {
+      source: pendingAiLayoutProposal.sourceLabel,
+      seed: pendingAiLayoutProposal.seed ?? null,
+      style: pendingAiLayoutProposal.style ?? style,
+      budget: pendingAiLayoutProposal.budget ?? budget,
+      item_count: pendingAiLayoutProposal.items.length,
+      fit_risk: pendingAiLayoutProposal.fitRisk ?? null,
+    });
+    setPendingAiLayoutProposal(null);
   };
 
   const _getRandomSeed = () => {
@@ -5774,6 +5924,7 @@ function PageContent() {
     if (nextSeed !== undefined) {
       setAiSeed(nextSeed);
     }
+    setPendingAiLayoutProposal(null);
 
     const catalogList = Object.values(CATALOG_ITEMS).map((p) => ({
       id: p.id,
@@ -5791,8 +5942,7 @@ function PageContent() {
         alert(reason || "Starter layout unavailable. Please add items manually.");
         return;
       }
-      applyLayoutPlan(fallback);
-      showRuleToast("Starter generated locally");
+      queueAiLayoutProposal(fallback, "Local starter");
       track("ai_layout_fallback_used", { reason, seed: seedToUse, style, budget });
     };
 
@@ -5881,7 +6031,7 @@ function PageContent() {
         return;
       }
 
-      applyLayoutPlan(plan);
+      queueAiLayoutProposal(plan, "AI starter");
       if (plan?.quality?.fitRisk && plan.quality.fitRisk !== "low") {
         showRuleToast(
           plan.quality.fitRisk === "high"
@@ -5965,8 +6115,6 @@ function PageContent() {
     addItem(productId, position, undefined, variantId);
   }, [addItem]);
 
-  const isEmpty = items.length === 0;
-  const shouldShowStarterPrompt = isEmpty && viewMode !== "2d" && designSnapshot.rooms.length <= 1;
   const canEdit = !isClientPreview && liveCatalogReady;
   const _isSharedLink = Boolean(shareToken) || pathname?.includes("/share/");
   const catalogItems = useMemo(() => {
@@ -6714,7 +6862,7 @@ function PageContent() {
           hasCoffeeTable: !!coffeeItem,
           contentWarningCount: constraintResults.filter((r) => r.level === "warn" || r.level === "error").length,
           cartCount: items.filter((i) => i.includeInCheckout).length,
-          mode: editorMode as "design" | "adjust" | "buy" | "present",
+          mode: editorMode === "ai" ? "design" : editorMode,
         });
 
         if (nudgeText) {
@@ -7009,14 +7157,20 @@ function PageContent() {
         ? floorPlanTraceOpeningKind
         : "select";
   const snapBlankGridRoomDrawPoint = useCallback((point: FloorPlanPoint): FloorPlanPoint => {
-    return snapFloorPlanPointForRoomDraw(
-      {
-        x: roundPlanCoordinate(point.x),
-        z: roundPlanCoordinate(point.z),
-      },
-      { rooms: housePlan2D.rooms }
-    );
-  }, [housePlan2D.rooms]);
+    const roundedPoint = {
+      x: roundPlanCoordinate(point.x),
+      z: roundPlanCoordinate(point.z),
+    };
+
+    if (floorPlanDrawRoomMode === "straight_wall") {
+      return snapFloorPlanPointForRoomDraw(roundedPoint, { rooms: housePlan2D.rooms });
+    }
+
+    return snapFloorPlanPointForRoomDraw(roundedPoint, {
+      rooms: housePlan2D.rooms,
+      edgeSnapDistanceMeters: 0,
+    });
+  }, [floorPlanDrawRoomMode, housePlan2D.rooms]);
   const snapBlankGridWallDrawPoint = useCallback(
     (point: FloorPlanPoint, points: FloorPlanPoint[]): FloorPlanPoint => {
       return snapFloorPlanPointForWallDraw(
@@ -7049,9 +7203,7 @@ function PageContent() {
       if (nextPoints.length !== 2) return;
 
       if (floorPlanDrawRoomMode === "arc_wall") {
-        const arcRoom = resolveArcWallDrawPreview(nextPoints[0], nextPoints[1], {
-          rooms: housePlan2D.rooms,
-        }).resolvedRoom;
+        const arcRoom = resolveArcWallDrawPreview(nextPoints[0], nextPoints[1]).resolvedRoom;
         if (!arcRoom) {
           setFloorPlanTraceRoomPoints([]);
           setBlankGridRoomPreviewPoint(null);
@@ -7126,7 +7278,6 @@ function PageContent() {
     blankGridRoomDrawActive,
     floorPlanDrawRoomMode,
     floorPlanTraceRoomPoints,
-    housePlan2D.rooms,
     showRuleToast,
     snapBlankGridRoomDrawPoint,
     snapBlankGridWallDrawPoint,
@@ -7158,9 +7309,7 @@ function PageContent() {
       const snappedStart = snapBlankGridRoomDrawPoint(start);
       const snappedEnd = snapBlankGridRoomDrawPoint(end);
       if (floorPlanDrawRoomMode === "arc_wall") {
-        const arcRoom = resolveArcWallDrawPreview(snappedStart, snappedEnd, {
-          rooms: housePlan2D.rooms,
-        }).resolvedRoom;
+        const arcRoom = resolveArcWallDrawPreview(snappedStart, snappedEnd).resolvedRoom;
         if (!arcRoom) {
           setFloorPlanTraceRoomPoints([]);
           setBlankGridRoomPreviewPoint(null);
@@ -7193,7 +7342,6 @@ function PageContent() {
       applyTracedRoomRectangle,
       blankGridRoomDrawActive,
       floorPlanDrawRoomMode,
-      housePlan2D.rooms,
       showRuleToast,
       snapBlankGridRoomDrawPoint,
     ]
@@ -7742,6 +7890,7 @@ function PageContent() {
                 onMoveTarget={handleWholeHomeMoveTarget}
                 onFocusRoom={handleWholeHomeFocusRoom}
                 onZoom={handleWholeHomeNavigatorZoom}
+                onResetView={handleFitPlanView}
               />
             </div>
           )}
@@ -7900,11 +8049,28 @@ function PageContent() {
           viewMode={viewMode}
           isDesigner={isDesigner}
           isAuthed={!!session?.user}
+          aiDesignEnabled={aiDesignEnabled}
           canUndo={canUndo}
           canRedo={canRedo}
           undoName={undoName}
           redoName={redoName}
           designSnapshot={designSnapshot}
+          onPlan={goPlan}
+          onFurnish={goFurnish}
+          onAiDesign={() => {
+            if (aiDesignEnabled) {
+              goAiDesign();
+            }
+          }}
+          onShop={goShop}
+          onExport={() => {
+            if (editorMode === "present") {
+              setShowPresentModal(false);
+              setEditorMode("design");
+            } else {
+              setEditorMode("present");
+            }
+          }}
           onUndo={undoSafe}
           onRedo={redoSafe}
           onViewModeChange={handleEditorViewModeChange}
@@ -7940,15 +8106,23 @@ function PageContent() {
           onOpenPresentExport={() => setShowPresentModal(true)}
         />
 
-        {!isClientPreview && (
+        {!isClientPreview && isDesigner && (
           <EditorToolRail
             mode={editorMode}
             dark={showDesignerTheme}
+            aiDesignEnabled={aiDesignEnabled}
             onDesign={() => {
               setEditorMode("design");
               setDesignPanelOpen(true);
             }}
-            onAdjust={() => setEditorMode("adjust")}
+            onAdjust={() => {
+              setEditorMode("adjust");
+              setDesignPanelOpen(true);
+            }}
+            onAi={() => {
+              setEditorMode("ai");
+              setDesignPanelOpen(true);
+            }}
             onCart={() => setEditorMode("buy")}
             onPresent={() => {
               if (editorMode === "present") {
@@ -7991,8 +8165,16 @@ function PageContent() {
                 : "sticky top-0 z-30 rounded-lg border border-neutral-200 bg-white/95 px-3 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-neutral-700 backdrop-blur"
             }
           >
-            Cart & Buy
+            Shopping List
           </div>
+          <ShoppingOverviewPanel
+            dark={showDesignerTheme}
+            activeRoom={activeRoomShoppingSummary}
+            rooms={roomShoppingSummaries}
+            wholeHome={wholeHomeShoppingSummary}
+            onSelectRoom={handleSwitchRoom}
+            onGoFurnish={goFurnish}
+          />
           <CartSidebar
           items={items}
           designId={designId ?? null}
@@ -9947,13 +10129,15 @@ function PageContent() {
       )}
 
       {/* Layer 2A: Design Panel (visible in DESIGN mode) */}
-      {editorMode === "design" && designPanelOpen && (
+      {designControlsPanelVisible && (
         <DesignControlsPanel
           dark={showDesignerTheme}
+          panelMode={designControlsPanelMode}
           isClientPreview={isClientPreview}
           isAuthed={!!session?.user}
           isDesigner={isDesigner}
           canEdit={canEdit}
+          aiDesignEnabled={aiDesignEnabled}
           viewMode={viewMode}
           style={style}
           budget={budget}
@@ -9995,13 +10179,29 @@ function PageContent() {
           visiblePlanOpening={visiblePlanOpening}
           visiblePlanOpeningRoomName={visiblePlanOpeningRoomName}
           visiblePlanOpeningWallSpanMeters={visiblePlanOpeningWallSpanMeters}
+          planRoomCount={housePlan2D.rooms.length}
+          planItemCount={items.length}
+          planOpeningCount={planOpenings.length}
+          activeRoomName={activeRoom?.name ?? "Current room"}
+          activeRoomTypeLabel={activeRoom ? getRoomTypeLabel(activeRoom.roomType) : "Room"}
+          activeRoomShoppableCount={activeRoomShoppingSummary?.shoppableCount ?? 0}
+          activeRoomNeedsReviewCount={activeRoomShoppingSummary?.needsReviewCount ?? 0}
+          aiLayoutProposal={pendingAiLayoutProposal}
           onHide={() => setDesignPanelOpen(false)}
           onSignIn={signInWithReturn}
+          onGoFurnish={goFurnish}
+          onGoAiDesign={goAiDesign}
+          onGoShop={goShop}
           onStyleChange={setStyle}
           onBudgetChange={setBudget}
           onRunAiLayout={() => {
             void runAiLayout();
           }}
+          onApplyAiLayoutProposal={applyPendingAiLayoutProposal}
+          onTryAiLayoutAgain={() => {
+            void runAiLayout(_getRandomSeed());
+          }}
+          onClearAiLayoutProposal={() => setPendingAiLayoutProposal(null)}
           onAddDesignerRoom={() => handleAddRoom()}
           onAddRoomTemplate={handleAddRoom}
           onNewRoomTypeChange={setNewRoomType}
@@ -10046,56 +10246,6 @@ function PageContent() {
       {isClientPreview && (
         <div className="absolute bottom-5 right-6 z-30 text-xs text-white/40">
           beta preview
-        </div>
-      )}
-
-
-      {shouldShowStarterPrompt && (
-        <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/30 p-6">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow">
-            <div className="text-xl font-semibold">Start your living room</div>
-            <div className="mt-1 text-sm text-neutral-600">
-              Choose a starter to instantly generate a usable layout.
-            </div>
-
-            <div className="mt-4 grid gap-2">
-              <button
-                className="rounded-xl bg-neutral-900 px-4 py-3 text-left text-sm text-white"
-                onClick={() => {
-                  void runAiLayout();
-                }}
-              >
-                <div className="font-semibold">Start with a living room</div>
-                <div className="text-xs text-white/80">
-                  Sofa + rug + table + lighting
-                </div>
-              </button>
-
-              <button
-                className="rounded-xl border px-4 py-3 text-left text-sm"
-                onClick={() => alert("Floor plan upload is beta (coming next).")}
-              >
-                <div className="font-semibold">Upload floor plan (beta)</div>
-                <div className="text-xs text-neutral-500">
-                  Generate a room from a plan
-                </div>
-              </button>
-
-              <button
-                className="rounded-xl border px-4 py-3 text-left text-sm"
-                onClick={() => alert("Inspiration gallery coming next.")}
-              >
-                <div className="font-semibold">Browse inspiration</div>
-                <div className="text-xs text-neutral-500">
-                  Starter styles and templates
-                </div>
-              </button>
-            </div>
-
-            <div className="mt-4 text-xs text-neutral-500">
-              Tip: You can change style and budget anytime.
-            </div>
-          </div>
         </div>
       )}
 
@@ -10526,6 +10676,7 @@ function PageContent() {
                 Present & Export
               </h2>
               <button
+                aria-label="Close export panel"
                 onClick={() => {
                   setShowPresentModal(false);
                   setEditorMode("design");

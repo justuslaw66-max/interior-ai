@@ -193,6 +193,20 @@ export default function FloorPlanUploadPanel({
       />
 
       <div className="mt-3 space-y-3">
+        {!underlay && !showDrawRoomTools && (
+          <div
+            data-testid="floor-plan-upload-empty-state"
+            className={dark ? "rounded-lg bg-white/5 p-3" : "rounded-lg bg-neutral-50 p-3"}
+          >
+            <div className={dark ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-neutral-800"}>
+              Upload a floor-plan image or PDF
+            </div>
+            <div className={`${subtleClass} mt-1`}>
+              Use a drawing from your designer, contractor, or property listing, then calibrate and trace rooms over it.
+            </div>
+          </div>
+        )}
+
         {underlay && (
           <>
           <div>

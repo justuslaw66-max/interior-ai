@@ -353,7 +353,10 @@ export default function RoomRenderer2D({
       return null;
     }
 
-    return resolveRoomDrawPreview(activeDrawRoomPoints[0], activeDrawRoomPreviewPoint, { rooms });
+    return resolveRoomDrawPreview(activeDrawRoomPoints[0], activeDrawRoomPreviewPoint, {
+      rooms,
+      edgeSnapDistanceMeters: 0,
+    });
   }, [
     activeDrawRoomPoints,
     activeDrawRoomPreviewPoint,
@@ -392,7 +395,10 @@ export default function RoomRenderer2D({
       return null;
     }
 
-    return resolveArcWallDrawPreview(activeDrawRoomPoints[0], activeDrawRoomPreviewPoint, { rooms });
+    return resolveArcWallDrawPreview(activeDrawRoomPoints[0], activeDrawRoomPreviewPoint, {
+      rooms,
+      edgeSnapDistanceMeters: 0,
+    });
   }, [activeDrawRoomPoints, activeDrawRoomPreviewPoint, canDrawRoomOnGrid, isArcWallDrawMode, rooms]);
   const visibleAdjacencyGuides = useMemo(() => {
     if (rooms.length < 2) return [];
