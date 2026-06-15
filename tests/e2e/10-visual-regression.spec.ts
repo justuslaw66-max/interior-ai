@@ -4,14 +4,24 @@ import type { Page } from "@playwright/test";
 import { test, expect } from "./fixtures";
 
 async function selectAndAddImported(page: Page, productId: string): Promise<boolean> {
-  const designModeButton = page.getByRole("button", { name: "Design" });
-  if (await designModeButton.isVisible().catch(() => false)) {
-    await designModeButton.click().catch(() => undefined);
+  const furnishModeButton = page.getByTestId("editor-workflow-furnish");
+  if (await furnishModeButton.isVisible().catch(() => false)) {
+    await furnishModeButton.click().catch(() => undefined);
   }
 
   const closeCartButton = page.getByRole("button", { name: "✕" });
   if (await closeCartButton.isVisible().catch(() => false)) {
     await closeCartButton.click().catch(() => undefined);
+  }
+
+  const advancedPicker = page.getByTestId("advanced-imported-models");
+  if (await advancedPicker.isVisible().catch(() => false)) {
+    const isOpen = await advancedPicker
+      .evaluate((node) => (node as HTMLDetailsElement).open)
+      .catch(() => true);
+    if (!isOpen) {
+      await page.getByTestId("advanced-imported-models-toggle").click();
+    }
   }
 
   const familySelect = page.locator('[data-testid="imported-family-select"]');

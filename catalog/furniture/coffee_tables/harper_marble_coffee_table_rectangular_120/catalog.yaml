@@ -132,6 +132,39 @@ authoring_notes:
   modeling_decision: "Round and rectangular modeled as separate products due to significant shape change."
   note: "Natural finish variant authored from reference imagery; imported GLB is chestnut."
 
+product_details:
+  material:
+    - label: "Material"
+      value: "Table Top: carrara marble; Leg: engineered wood with oak veneer"
+    - label: "Care"
+      value: "Marble table"
+    - label: "Colour variance"
+      value: "Natural variations"
+    - label: "Material & safety standards"
+      value: "Low formaldehyde"
+    - label: "Finish"
+      value: "Water-based in chestnut finish"
+  dimensions:
+    - label: "Dimension"
+      value: "W120 x D60 x H38cm"
+    - label: "Table top thickness"
+      value: "1.8cm"
+    - label: "Max bearing support"
+      value: "50kg"
+    - label: "Product weight"
+      value: "47.5kg"
+    - label: "Packaging dimensions"
+      value: "3 boxes"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Warranty"
+      value: "5-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Legs to be fitted"
+
 assets:
   asset_id: "coffee-real-castlery-harper-marble-rectangular-120"
   model_url: "/assets/models/coffee-real-castlery-harper-marble-rectangular-120.glb"

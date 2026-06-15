@@ -47,6 +47,31 @@ export type ImportedConfigurationEntry = {
   node_transforms?: Record<string, unknown>;
 };
 
+export type ImportedProductInfoRow = {
+  label?: string;
+  value?: string;
+};
+
+export type ImportedProductDetails = {
+  material?: ImportedProductInfoRow[];
+  dimensions?: ImportedProductInfoRow[];
+  delivery_and_warranty?: ImportedProductInfoRow[];
+};
+
+export type ImportedComfortAxis = {
+  label?: string;
+  value?: number;
+  min_label?: string;
+  max_label?: string;
+};
+
+export type ImportedComfortProfile = {
+  seat_comfort?: ImportedComfortAxis;
+  seat_depth?: ImportedComfortAxis;
+  seat_height?: ImportedComfortAxis;
+  seat_softness?: ImportedComfortAxis;
+};
+
 export type ImportedModelCatalog = {
   brand?: string;
   retailer?: string;
@@ -74,6 +99,7 @@ export type ImportedModelCatalog = {
   shape?: string;
   baseType?: string;
   materialFamily?: string;
+  material_mix?: unknown;
   materials?: unknown;
   finish?: unknown;
   colorFamily?: string;
@@ -114,6 +140,9 @@ export type ImportedModelCatalog = {
       product_name?: string;
     }>;
   } | null;
+  product_details?: ImportedProductDetails;
+  product_details_by_material_type?: Record<string, ImportedProductDetails>;
+  comfort_profile?: ImportedComfortProfile;
   upholstery_options?: Array<{
     upholstery_code?: string;
     upholstery_label?: string;
@@ -161,6 +190,8 @@ export type ImportedModelCatalog = {
       depth_cm?: number;
       height_cm?: number;
     };
+    materials?: Record<string, unknown>;
+    finish?: Record<string, unknown>;
     state_assets?: Record<
       string,
       {
@@ -169,6 +200,7 @@ export type ImportedModelCatalog = {
       }
     >;
   }>;
+  shipping_and_warranty?: Record<string, unknown>;
   aiFlags?: unknown;
 };
 
@@ -1096,6 +1128,7 @@ export function buildImportedCatalogItem({
       designPairings: yamlCatalog?.designPairings,
       compatibility: yamlCatalog?.compatibility,
       bundleMetadata: yamlCatalog?.bundleMetadata,
+      comfortProfile: yamlCatalog?.comfort_profile,
       galleryImages: Array.isArray(yamlGalleryImages)
         ? yamlGalleryImages.filter(
             (value): value is string => typeof value === "string" && value.trim().length > 0,

@@ -65,6 +65,70 @@ placement_rules:
     circulation_cm_min: 30
     vertical_open_clearance_cm: 45
 
+product_details:
+  material:
+    - label: "Material"
+      value: "Frame: engineered wood with plywood; Leg: black plastic"
+    - label: "Filling"
+      value: "Seat: foam and fiber; Back: fiber"
+    - label: "Care"
+      value: "Fabric sofa"
+    - label: "Suspension"
+      value: "Webbing"
+    - label: "Cover type"
+      value: "Removable"
+  dimensions:
+    - label: "Dimension"
+      value: "W93 x D77 x H44cm"
+    - label: "Seating depth"
+      value: "77cm"
+    - label: "Seatable width"
+      value: "93cm"
+    - label: "Seating height"
+      value: "44cm"
+    - label: "Leg height"
+      value: "3cm"
+    - label: "Product weight"
+      value: "22.5kg"
+    - label: "Packaging dimensions"
+      value: "2 boxes"
+    - label: "Storage inner dimension"
+      value: "W79 x D64 x H22cm"
+    - label: "Max bearing support"
+      value: "150kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Warranty"
+      value: "Frame 10 years, Fabric 1 year, Foam 2 years"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Covers need to be fitted"
+
+comfort_profile:
+  # Required for Castlery SG sofa-family imports when the PDP exposes seat-feel data.
+  seat_comfort:
+    label: "Seat comfort"
+    value: 2
+    min_label: "Relaxed"
+    max_label: "Upright"
+  seat_depth:
+    label: "Seat depth"
+    value: 5
+    min_label: "Shallow"
+    max_label: "Deep"
+  seat_height:
+    label: "Seat height"
+    value: 3
+    min_label: "Low"
+    max_label: "High"
+  seat_softness:
+    label: "Seat softness"
+    value: 3
+    min_label: "Soft"
+    max_label: "Firm"
+
 design_pairings:
   - "sofa"
   - "sectional_sofa"

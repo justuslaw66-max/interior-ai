@@ -7,7 +7,7 @@ import {
   inferMaterialTypeFromText,
   normalizeVariantCode,
 } from "./variant-normalization";
-import { CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE, HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE } from "../design-page-product-data";
+import { CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE, HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE } from "../design-page-product-data";
 import { CATALOG_ITEMS } from "../catalog";
 
 const CATEGORY_FALLBACK_THUMB_URL: Partial<Record<CatalogTopCategory, string>> = {
@@ -128,11 +128,20 @@ export type CatalogDetailView = {
   }[];
   activeSizeId: string;
   materialSummary: string[];
+  comfortProfile: CatalogComfortAxisView[];
   badges: string[];
   roomFitHints: string[];
   relatedItemIds: string[];
   retailerUrl?: string;
   galleryImageClassName: string;
+};
+
+export type CatalogComfortAxisView = {
+  id: string;
+  label: string;
+  value: number;
+  minLabel: string;
+  maxLabel: string;
 };
 
 export const TOP_CATEGORY_ORDER: CatalogTopCategory[] = [
@@ -152,7 +161,7 @@ export const TOP_CATEGORY_ORDER: CatalogTopCategory[] = [
 
 const CATEGORY_LABELS: Record<CatalogTopCategory, string> = {
   sofa: "Sofa",
-  accent_chair: "Accent Chair",
+  accent_chair: "Arm Chair",
   coffee_table: "Coffee Table",
   side_table: "Side Tables",
   dining_table: "Dining Table",
@@ -282,6 +291,39 @@ function getHuggPerformancePrefix(itemId: string): string | null {
   return match?.[1] ?? null;
 }
 
+const COMFORT_AXIS_ORDER: Array<{
+  id: "seat_comfort" | "seat_depth" | "seat_height" | "seat_softness";
+  label: string;
+  minLabel: string;
+  maxLabel: string;
+}> = [
+  { id: "seat_comfort", label: "Seat comfort", minLabel: "Relaxed", maxLabel: "Upright" },
+  { id: "seat_depth", label: "Seat depth", minLabel: "Shallow", maxLabel: "Deep" },
+  { id: "seat_height", label: "Seat height", minLabel: "Low", maxLabel: "High" },
+  { id: "seat_softness", label: "Seat softness", minLabel: "Soft", maxLabel: "Firm" },
+];
+
+function buildComfortProfileView(item: CatalogItemSchema): CatalogComfortAxisView[] {
+  const rawProfile = item.metadata?.comfortProfile;
+  if (!rawProfile || typeof rawProfile !== "object") return [];
+
+  return COMFORT_AXIS_ORDER.flatMap((axis) => {
+    const entry = rawProfile[axis.id];
+    if (!entry || typeof entry !== "object") return [];
+
+    const value = Math.round(Number(entry.value ?? 0));
+    if (!Number.isFinite(value) || value < 1 || value > 5) return [];
+
+    return [{
+      id: axis.id,
+      label: String(entry.label ?? axis.label).trim() || axis.label,
+      value,
+      minLabel: String(entry.min_label ?? axis.minLabel).trim() || axis.minLabel,
+      maxLabel: String(entry.max_label ?? axis.maxLabel).trim() || axis.maxLabel,
+    }];
+  });
+}
+
 export function mapToTopCategory(
   category: string,
   item?: Pick<CatalogItemSchema, "title" | "metadata" | "tags">,
@@ -385,6 +427,8 @@ function getFinishChipLabel(variant: CatalogItemSchema["variants"][number]): str
     washed_chenille_sand: "Sand (Washed Chenille)",
     greta_mustard_brown: "Caramel (Washed Chenille)",
     greta_moss: "Moss (Washed Chenille)",
+    bisque_fabric: "Bisque",
+    camille_forest_fabric: "Camille, Forest",
     cocoa_leather: "Cocoa",
     caramel_leather: "Caramel",
     warm_taupe_leather: "Warm Taupe",
@@ -533,11 +577,11 @@ export function buildCatalogDetailView(item: CatalogItemSchema, variantId?: stri
           const swatchTextureUrl = isWoodGroup
             ? (HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE[fCode] ??
                HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE[fLabel] ??
-               CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[fCode] ??
-               CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[fLabel] ??
+               CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[fCode] ??
+               CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[fLabel] ??
                undefined)
-            : (CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[fCode] ??
-               CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[fLabel] ??
+            : (CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[fCode] ??
+               CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[fLabel] ??
                undefined);
           map.set(key, {
             id: variant.id,
@@ -594,7 +638,7 @@ export function buildCatalogDetailView(item: CatalogItemSchema, variantId?: stri
           variantId: siblingVariant?.id,
           label: fab.label,
           swatchHex: fab.hex,
-          swatchTextureUrl: CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE[fabricKey] ?? undefined,
+          swatchTextureUrl: CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[fabricKey] ?? undefined,
           materialType: "Fabric",
           collectionType: "stocked",
           finishCode: fabricKey,
@@ -668,6 +712,7 @@ export function buildCatalogDetailView(item: CatalogItemSchema, variantId?: stri
     sizeOptions,
     activeSizeId,
     materialSummary: Array.from(new Set(materials)),
+    comfortProfile: buildComfortProfileView(item),
     badges: deriveBadges(item),
     roomFitHints: deriveRoomFitHints(item),
     relatedItemIds: [],

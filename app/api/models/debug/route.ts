@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
+import { isQaEnabled } from "@/lib/qa";
 import { buildImportedModelsPayload } from "@/lib/catalog/imported-models-payload";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const allowDebug =
-    process.env.NODE_ENV !== "production" || process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS === "1";
+  const allowDebug = isQaEnabled();
 
   if (!allowDebug) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });

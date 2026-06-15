@@ -115,9 +115,9 @@ test.describe('5. Buy Flow (Shopify + Affiliate)', () => {
     }
     await addToRoom.click();
 
-    const cartButton = page.getByRole('button', { name: 'Cart' });
-    await expect(cartButton).toBeVisible({ timeout: 10000 });
-    await cartButton.click();
+    const shopButton = page.getByTestId('editor-workflow-shop');
+    await expect(shopButton).toBeVisible({ timeout: 10000 });
+    await shopButton.click();
 
     await expect(page.getByTestId('cart-panel')).toBeVisible({ timeout: 10000 });
 

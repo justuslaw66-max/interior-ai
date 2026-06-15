@@ -47,6 +47,10 @@ type Props = {
   items: CatalogItemSchema[];
   canEdit: boolean;
   onAddToRoom: (productId: string, variantId?: string) => void;
+  title?: string;
+  subtitle?: string;
+  selectedCategory?: CatalogTopCategory;
+  onSelectedCategoryChange?: (category: CatalogTopCategory) => void;
 };
 
 function pickInitialCategory(items: CatalogItemSchema[]): CatalogTopCategory {
@@ -67,14 +71,21 @@ function useDebouncedValue<T>(value: T, delayMs: number): T {
   return debounced;
 }
 
-export default function CatalogPanel({ items, canEdit, onAddToRoom }: Props) {
+export default function CatalogPanel({
+  items,
+  canEdit,
+  onAddToRoom,
+  title = "Catalog",
+  subtitle,
+  selectedCategory: controlledSelectedCategory,
+  onSelectedCategoryChange,
+}: Props) {
   const [rawSearch, setRawSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<CatalogTopCategory>(() =>
-    pickInitialCategory(items)
+  const [internalSelectedCategory, setInternalSelectedCategory] = useState<CatalogTopCategory>(() =>
+    controlledSelectedCategory ?? pickInitialCategory(items)
   );
-  const [filters, setFilters] = useState<CatalogFilterState>(() => ({
-    category: [pickInitialCategory(items)],
-  }));
+  const selectedCategory = controlledSelectedCategory ?? internalSelectedCategory;
+  const [filters, setFilters] = useState<CatalogFilterState>(() => ({}));
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedFinishId, setSelectedFinishId] = useState<string | undefined>(undefined);
@@ -96,10 +107,15 @@ export default function CatalogPanel({ items, canEdit, onAddToRoom }: Props) {
     return counts;
   }, [items]);
 
+  const effectiveFilters = useMemo<CatalogFilterState>(
+    () => ({ ...filters, category: [selectedCategory] }),
+    [filters, selectedCategory]
+  );
+
   const searchScopedFilters = useMemo(() => {
-    if (!debouncedSearch.trim()) return filters;
-    return { ...filters, category: undefined };
-  }, [debouncedSearch, filters]);
+    if (!debouncedSearch.trim()) return effectiveFilters;
+    return { ...effectiveFilters, category: undefined };
+  }, [debouncedSearch, effectiveFilters]);
 
   const filteredItems = useMemo(() => {
     return filterCatalogItems(items, debouncedSearch, searchScopedFilters);
@@ -218,7 +234,13 @@ export default function CatalogPanel({ items, canEdit, onAddToRoom }: Props) {
   };
 
   const clearAllFilters = () => {
-    setFilters({ category: [selectedCategory] });
+    setFilters({});
+  };
+
+  const handleSelectCategory = (nextCategory: CatalogTopCategory) => {
+    setInternalSelectedCategory(nextCategory);
+    onSelectedCategoryChange?.(nextCategory);
+    setScrollTop(0);
   };
 
   const prefetchDetail = (id: string) => {
@@ -261,7 +283,8 @@ export default function CatalogPanel({ items, canEdit, onAddToRoom }: Props) {
 
   return (
     <div className="relative rounded-xl border border-neutral-200 bg-white p-3">
-      <div className="text-sm font-semibold text-neutral-900">Catalog</div>
+      <div className="text-sm font-semibold text-neutral-900">{title}</div>
+      {subtitle && <div className="mt-1 text-xs text-neutral-500">{subtitle}</div>}
       <div className="mt-2">
         <CatalogSearchInput value={rawSearch} onChange={setRawSearch} />
       </div>
@@ -269,10 +292,7 @@ export default function CatalogPanel({ items, canEdit, onAddToRoom }: Props) {
       <div className="mt-2">
         <CatalogCategoryTabs
           selected={selectedCategory}
-          onSelect={(nextCategory) => {
-            setSelectedCategory(nextCategory);
-            setFilters((prev) => ({ ...prev, category: [nextCategory] }));
-          }}
+          onSelect={handleSelectCategory}
           counts={categoryCounts}
         />
       </div>
@@ -284,7 +304,7 @@ export default function CatalogPanel({ items, canEdit, onAddToRoom }: Props) {
       />
 
       <CatalogActiveFilterChips
-        filters={filters}
+        filters={effectiveFilters}
         onClearKey={clearFilterKey}
         onClearAll={clearAllFilters}
       />

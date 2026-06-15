@@ -123,6 +123,39 @@ authoring_notes:
   preset_family: "table"
   major_family_example_candidate: false
 
+product_details:
+  material:
+    - label: "Material"
+      value: "Solid acacia with acacia veneer drawer bottom"
+    - label: "Finish"
+      value: "Muted honey tone and wire brush distressed finish"
+    - label: "Colour variance"
+      value: "Natural variations"
+  dimensions:
+    - label: "Dimension"
+      value: "W90 x D60 x H45cm"
+    - label: "Table top thickness"
+      value: "2.3cm"
+    - label: "Drawer capacity"
+      value: "2 x W45 x D36.5 x 9cm"
+    - label: "Product weight"
+      value: "25kg"
+    - label: "Packaging dimensions"
+      value: "1 box"
+    - label: "Levellers"
+      value: "Included"
+    - label: "Max bearing support"
+      value: "100kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Warranty"
+      value: "5-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Legs and handles to be fitted"
+
 assets:
   asset_id: "coffee-real-castlery-seb-storage-90"
   model_url: "/assets/models/coffee-real-castlery-seb-storage-90.glb"

@@ -84,6 +84,131 @@ placement_rules:
   clearance_guidance:
     circulation_cm_min: 45
 
+product_details_by_material_type:
+  fabric:
+    material:
+      - label: "Fabric composition"
+        value: "93% Polyester, 7% Linen"
+      - label: "Frame"
+        value: "Laminated veneer lumber and plywood"
+      - label: "Leg frame"
+        value: "Black plastic"
+      - label: "Filling"
+        value: "Foam, fibre and feather filled seat"
+      - label: "Care"
+        value: "Dawson sofa"
+      - label: "Suspension"
+        value: "Sinuous spring"
+      - label: "Cover type"
+        value: "Fully removable covers (seat and back cushions, and frame)"
+      - label: "Colour variance"
+        value: "Disclaimer"
+    dimensions:
+      - label: "Dimension (93cm)"
+        value: "W93 x D93 x H45cm"
+      - label: "Dimension (114cm)"
+        value: "W114 x D93 x H45cm"
+      - label: "Seating depth"
+        value: "93cm"
+      - label: "Seatable width (93cm)"
+        value: "93cm"
+      - label: "Seatable width (114cm)"
+        value: "114cm"
+      - label: "Seating height"
+        value: "45cm"
+      - label: "Leg height"
+        value: "2.5cm"
+      - label: "Product weight (93cm)"
+        value: "19.9kg"
+      - label: "Product weight (114cm)"
+        value: "20kg"
+      - label: "Packaging dimensions"
+        value: "1 box"
+      - label: "Max bearing support"
+        value: "150kg"
+    delivery_and_warranty:
+      - label: "Cancellation"
+        value: "Free—5 working days before delivery"
+      - label: "Warranty"
+        value: "Frame 10 years; Fabric 1 year; Foam 2 years"
+      - label: "Return policy"
+        value: "30-day returns"
+      - label: "Assembly"
+        value: "Fully assembled"
+  leather:
+    material:
+      - label: "Frame"
+        value: "Laminated veneer lumber and plywood"
+      - label: "Leg frame"
+        value: "Black plastic"
+      - label: "Filling"
+        value: "Foam, fibre and feather filled seat; Fibre filled back"
+      - label: "Care"
+        value: "Leather sofa"
+      - label: "Suspension"
+        value: "Sinuous spring"
+      - label: "Cover type"
+        value: "Removable cover of seat cushion"
+      - label: "Colour variance"
+        value: "Disclaimer"
+      - label: "Material details"
+        value: "Top grain leather. Crafted from American hides."
+    dimensions:
+      - label: "Dimension (93cm)"
+        value: "W93 x D93 x H45cm"
+      - label: "Dimension (114cm)"
+        value: "W114 x D93 x H45cm"
+      - label: "Seating depth"
+        value: "93cm"
+      - label: "Seatable width (93cm)"
+        value: "93cm"
+      - label: "Seatable width (114cm)"
+        value: "114cm"
+      - label: "Seating height"
+        value: "45cm"
+      - label: "Leg height"
+        value: "2.5cm"
+      - label: "Product weight (93cm)"
+        value: "19.9kg"
+      - label: "Product weight (114cm)"
+        value: "23.6kg"
+      - label: "Packaging dimensions"
+        value: "1 box"
+      - label: "Max bearing support"
+        value: "150kg"
+    delivery_and_warranty:
+      - label: "Cancellation"
+        value: "Free—5 working days before delivery"
+      - label: "Warranty"
+        value: "Frame 10 years; Leather 1 year; Foam 2 years"
+      - label: "Return policy"
+        value: "30-day returns"
+      - label: "Assembly"
+        value: "Fully assembled"
+
+comfort_profile:
+  # Required for Castlery SG sofa-family imports when the PDP exposes seat-feel data.
+  seat_comfort:
+    label: "Seat comfort"
+    value: 1
+    min_label: "Relaxed"
+    max_label: "Upright"
+  seat_depth:
+    label: "Seat depth"
+    value: 4
+    min_label: "Shallow"
+    max_label: "Deep"
+  seat_height:
+    label: "Seat height"
+    value: 3
+    min_label: "Low"
+    max_label: "High"
+  seat_softness:
+    label: "Seat softness"
+    value: 1
+    min_label: "Soft"
+    max_label: "Firm"
+
 design_pairings:
   - "sofa"
   - "sectional_sofa"

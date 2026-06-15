@@ -185,6 +185,20 @@ export interface AssetReferences {
   materialsProfile: MaterialsProfile;
 }
 
+export interface ComfortAxisProfile {
+  label?: string;
+  value?: number;
+  min_label?: string;
+  max_label?: string;
+}
+
+export interface ComfortProfile {
+  seat_comfort?: ComfortAxisProfile;
+  seat_depth?: ComfortAxisProfile;
+  seat_height?: ComfortAxisProfile;
+  seat_softness?: ComfortAxisProfile;
+}
+
 // ============================================================================
 // Complete Catalog Item (Full Contract)
 // ============================================================================
@@ -241,6 +255,7 @@ export interface CatalogItemSchema {
     designPairings?: string[];
     compatibility?: unknown;
     bundleMetadata?: unknown;
+    comfortProfile?: ComfortProfile;
     galleryImages?: string[];
   };
   aiRoles?: string[]; // e.g., ["seating_anchor", "living_room_focal_point"]

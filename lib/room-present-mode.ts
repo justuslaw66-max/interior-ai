@@ -18,10 +18,16 @@ export function createPresentModeState(
   initialRoomId?: string
 ): PresentModeState {
   const migrated = migrateToV3(snapshot);
+  const roomIds = new Set(migrated.rooms.map((room) => room.id));
   const roomId = initialRoomId ?? migrated.activeRoomId;
+  const selectedRoomId = roomIds.has(roomId) ? roomId : migrated.rooms[0]?.id;
+
+  if (!selectedRoomId) {
+    throw new Error("[present-mode] Cannot initialize present mode: snapshot has no rooms");
+  }
 
   return {
-    currentRoomId: roomId,
+    currentRoomId: selectedRoomId,
     currentViewIndex: 0,
   };
 }
@@ -160,10 +166,24 @@ export function handlePresentModeKeyPress(
       onStateChange(previousPresentModeView(snapshot, state));
       return true;
 
-    // TODO: Add room switching via number keys or other shortcuts
-    // case "1":
-    //   onStateChange(switchPresentModeRoom(state, rooms[0]?.id));
-    //   return true;
+    case "1":
+    case "2":
+    case "3":
+    case "4":
+    case "5":
+    case "6":
+    case "7":
+    case "8":
+    case "9":
+      {
+        const rooms = getPresentModeRooms(snapshot);
+        const index = Number(key) - 1;
+        const targetRoomId = rooms[index]?.id;
+        if (!targetRoomId) return false;
+
+        onStateChange(switchPresentModeRoom(state, targetRoomId));
+        return true;
+      }
 
     default:
       return false;

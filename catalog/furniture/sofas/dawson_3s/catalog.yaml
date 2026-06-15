@@ -87,6 +87,83 @@ placement_rules:
     sofa_to_table_cm_ideal: 40
     circulation_cm_min: 75
 
+product_details_by_material_type:
+  fabric:
+    material:
+      - label: "Fabric composition"
+        value: "93% Polyester, 7% Linen"
+      - label: "Frame"
+        value: "Laminated veneer lumber and plywood"
+      - label: "Leg frame"
+        value: "Black plastic"
+      - label: "Filling"
+        value: "Foam, fibre and feather filled seat; Fibre and feather filled back"
+      - label: "Care"
+        value: "Dawson sofa"
+      - label: "Suspension"
+        value: "Sinuous spring"
+      - label: "Cover type"
+        value: "Fully removable covers (seat and back cushions, and frame)"
+      - label: "Colour variance"
+        value: "Disclaimer"
+      - label: "Material & safety standards"
+        value: "Low formaldehyde"
+    dimensions:
+      - label: "Dimension"
+        value: "W228 x D114 x H81cm"
+      - label: "Armrest height"
+        value: "62cm (floor to arm)"
+      - label: "Seating depth"
+        value: "62cm"
+      - label: "Seatable width"
+        value: "186cm"
+      - label: "Seating height"
+        value: "46cm"
+      - label: "Leg height"
+        value: "2.5cm"
+      - label: "Backrest height"
+        value: "49cm"
+      - label: "Product weight"
+        value: "71.8kg"
+      - label: "Packaging dimensions"
+        value: "2 boxes"
+      - label: "Max bearing support"
+        value: "2 x 150kg"
+      - label: "Cushion"
+        value: "2 Square Cushions included (W57 x D57 x H14cm)"
+    delivery_and_warranty:
+      - label: "Cancellation"
+        value: "Free—5 working days before delivery"
+      - label: "Warranty"
+        value: "Frame 10 years; Fabric 1 year; Foam 2 years"
+      - label: "Return policy"
+        value: "30-day returns"
+      - label: "Assembly"
+        value: "Fully assembled"
+
+comfort_profile:
+  # Required for Castlery SG sofa imports when the PDP exposes seat-feel data.
+  seat_comfort:
+    label: "Seat comfort"
+    value: 1
+    min_label: "Relaxed"
+    max_label: "Upright"
+  seat_depth:
+    label: "Seat depth"
+    value: 4
+    min_label: "Shallow"
+    max_label: "Deep"
+  seat_height:
+    label: "Seat height"
+    value: 4
+    min_label: "Low"
+    max_label: "High"
+  seat_softness:
+    label: "Seat softness"
+    value: 1
+    min_label: "Soft"
+    max_label: "Firm"
+
 design_pairings:
   - "coffee_table"
   - "side_table"

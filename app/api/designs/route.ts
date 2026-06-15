@@ -48,7 +48,19 @@ export async function POST(req: Request) {
       console.log("Received body:", body);
     }
 
-    const { title, roomWidth, roomDepth, items, zones, savedViews, style, budget, mode, notes } = body ?? {};
+    const {
+      title,
+      roomWidth,
+      roomDepth,
+      items,
+      zones,
+      savedViews,
+      snapshot,
+      style,
+      budget,
+      mode,
+      notes,
+    } = body ?? {};
 
     if (config.logLevel === "debug") {
       console.log("Extracted:", { title, roomWidth, roomDepth, itemsLength: items?.length });
@@ -101,6 +113,10 @@ export async function POST(req: Request) {
     const safeSavedViews = Array.isArray(savedViews)
       ? JSON.parse(JSON.stringify(savedViews))
       : [];
+    const safeSnapshot =
+      snapshot && typeof snapshot === "object"
+        ? JSON.parse(JSON.stringify(snapshot))
+        : null;
     const finalTitle = typeof title === "string" ? title : "Untitled Living Room";
     const finalRoomWidth = Number(roomWidth);
     const finalRoomDepth = Number(roomDepth);
@@ -115,6 +131,7 @@ export async function POST(req: Request) {
         roomWidth: finalRoomWidth,
         roomDepth: finalRoomDepth,
         items: itemsForStorage,
+        snapshot: safeSnapshot,
         zones: safeZones,
         savedViews: safeSavedViews,
         user: { connect: { id: session.user.id } },

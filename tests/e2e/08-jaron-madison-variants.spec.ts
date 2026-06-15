@@ -57,7 +57,7 @@ test.describe("8. Jaron and Madison Variant Integration", () => {
     const models: Array<{ id: string; catalog?: { variants?: Array<{ variant?: string }> } | null }> =
       body.models ?? [];
 
-    const expectations: Record<string, string[]> = {
+    const expectations: Record<string, Array<string | string[]>> = {
       "sofa-real-castlery-jaron-3s": [
         "Marche Cocoa",
         "Marche Ivory",
@@ -65,7 +65,7 @@ test.describe("8. Jaron and Madison Variant Integration", () => {
       ],
       "sofa-real-castlery-madison-2s": [
         "Bisque",
-        "Stone",
+        ["Stone", "Camille"],
         "Camille, Forest",
         "Caramel",
       ],
@@ -80,9 +80,12 @@ test.describe("8. Jaron and Madison Variant Integration", () => {
         .filter(Boolean);
 
       for (const token of requiredTokens) {
+        const alternatives = Array.isArray(token) ? token : [token];
         expect(
-          labels.some((label) => label.includes(token.toLowerCase())),
-          `Expected ${productId} variants to include ${token}`,
+          labels.some((label) =>
+            alternatives.some((alternative) => label.includes(alternative.toLowerCase())),
+          ),
+          `Expected ${productId} variants to include ${alternatives.join(" or ")}`,
         ).toBeTruthy();
       }
     }

@@ -82,7 +82,7 @@ test.describe("98. Dawson Variant Selector Smoke", () => {
 
     // Validate cart keeps selected variant identity.
     await page.getByTestId("catalog-detail-add-to-room").click();
-    await page.getByRole("button", { name: "Cart" }).click();
+    await page.getByRole("button", { name: "Shop" }).click();
     const autoFillButton = page.getByRole("button", { name: "Auto-fill cart from room" });
     if (await autoFillButton.isVisible().catch(() => false)) {
       await autoFillButton.click();

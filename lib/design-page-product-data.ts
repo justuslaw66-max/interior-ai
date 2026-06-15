@@ -6,12 +6,20 @@ import type { ProductCategory, RoomTag } from "@/lib/catalog-schema";
 
 export const IMPORTED_VARIANT_BY_PRODUCT_ID: Record<string, { label: string; colorHex: string }> = {
   "dining-real-castlery-sloane-travertine-180": {
-    label: "Travertine",
-    colorHex: "#c8b79f",
+    label: "Grey Oak",
+    colorHex: "#4b453b",
   },
-  "dining-real-castlery-sloane-travertine-220": {
-    label: "Travertine",
-    colorHex: "#c8b79f",
+  "dining-real-castlery-sloane-travertine-225": {
+    label: "Grey Oak",
+    colorHex: "#4b453b",
+  },
+  "dining-real-castlery-sloane-dining-table-180": {
+    label: "Grey Oak",
+    colorHex: "#4b453b",
+  },
+  "dining-real-castlery-sloane-dining-table-225": {
+    label: "Grey Oak",
+    colorHex: "#4b453b",
   },
   "dining-real-castlery-brighton-oval-180": {
     label: "Walnut",
@@ -104,6 +112,34 @@ export const IMPORTED_PRODUCT_CONFIG_BY_ID: Record<
     roomTags: ["living_room"],
     tags: ["castlery", "jaron", "leather", "recliner", "extended", "wide-arm"],
   },
+  "sofa-real-castlery-jaron-chaise-sectional": {
+    title: "Castlery Jaron Recliner Chaise Sectional Sofa (Slim Arm)",
+    category: "sofa",
+    modelLabel: "Recliner Chaise Sectional (Slim Arm)",
+    roomTags: ["living_room"],
+    tags: ["castlery", "jaron", "leather", "fabric", "recliner", "chaise", "sectional"],
+  },
+  "sofa-real-castlery-jaron-chaise-sectional-wide-arm": {
+    title: "Castlery Jaron Recliner Chaise Sectional Sofa (Wide Arm)",
+    category: "sofa",
+    modelLabel: "Recliner Chaise Sectional (Wide Arm)",
+    roomTags: ["living_room"],
+    tags: ["castlery", "jaron", "leather", "fabric", "recliner", "chaise", "sectional", "wide-arm"],
+  },
+  "sofa-real-castlery-jaron-l-shaped-sectional": {
+    title: "Castlery Jaron Leather Recliner L-Shaped Sectional Sofa (Slim Arm)",
+    category: "sofa",
+    modelLabel: "Recliner L-Shaped Sectional (Slim Arm)",
+    roomTags: ["living_room"],
+    tags: ["castlery", "jaron", "leather", "recliner", "l-shaped", "sectional"],
+  },
+  "sofa-real-castlery-jaron-l-shaped-sectional-wide-arm": {
+    title: "Castlery Jaron Leather Recliner L-Shaped Sectional Sofa (Wide Arm)",
+    category: "sofa",
+    modelLabel: "Recliner L-Shaped Sectional (Wide Arm)",
+    roomTags: ["living_room"],
+    tags: ["castlery", "jaron", "leather", "recliner", "l-shaped", "sectional", "wide-arm"],
+  },
   "sofa-real-castlery-madison-2s": {
     title: "Castlery Madison 2-Seater Sofa",
     category: "sofa",
@@ -132,6 +168,41 @@ export const IMPORTED_PRODUCT_CONFIG_BY_ID: Record<
     roomTags: ["living_room"],
     tags: ["castlery", "madison", "ottoman", "footstool"],
   },
+  "armchair-real-castlery-avery-performance-armchair": {
+    title: "Castlery Avery Performance Armchair",
+    category: "accent_chair",
+    modelLabel: "Armchair",
+    roomTags: ["living_room"],
+    tags: ["castlery", "avery", "armchair", "performance-boucle"],
+  },
+  "armchair-real-castlery-avery-performance-armchair-with-ottoman": {
+    title: "Castlery Avery Performance Armchair with Ottoman",
+    category: "accent_chair",
+    modelLabel: "Armchair with Ottoman",
+    roomTags: ["living_room"],
+    tags: ["castlery", "avery", "armchair", "ottoman", "performance-boucle"],
+  },
+  "armchair-real-castlery-avery-performance-swivel-armchair": {
+    title: "Castlery Avery Performance Swivel Armchair",
+    category: "accent_chair",
+    modelLabel: "Swivel Armchair",
+    roomTags: ["living_room"],
+    tags: ["castlery", "avery", "armchair", "swivel", "performance-boucle"],
+  },
+  "armchair-real-castlery-avery-performance-swivel-armchair-with-ottoman": {
+    title: "Castlery Avery Performance Swivel Armchair with Ottoman",
+    category: "accent_chair",
+    modelLabel: "Swivel Armchair with Ottoman",
+    roomTags: ["living_room"],
+    tags: [
+      "castlery",
+      "avery",
+      "armchair",
+      "swivel",
+      "ottoman",
+      "performance-boucle",
+    ],
+  },
   "dining-real-castlery-sloane-travertine-180": {
     title: "Castlery Sloane Travertine Dining Table 180cm",
     category: "dining_table",
@@ -139,12 +210,26 @@ export const IMPORTED_PRODUCT_CONFIG_BY_ID: Record<
     roomTags: ["dining"],
     tags: ["castlery", "sloane", "travertine", "dining-table"],
   },
-  "dining-real-castlery-sloane-travertine-220": {
-    title: "Castlery Sloane Travertine Dining Table 220cm",
+  "dining-real-castlery-sloane-travertine-225": {
+    title: "Castlery Sloane Travertine Dining Table 225cm",
     category: "dining_table",
-    modelLabel: "220CM",
+    modelLabel: "225CM",
     roomTags: ["dining"],
     tags: ["castlery", "sloane", "travertine", "dining-table"],
+  },
+  "dining-real-castlery-sloane-dining-table-180": {
+    title: "Castlery Sloane Dining Table 180cm",
+    category: "dining_table",
+    modelLabel: "180CM",
+    roomTags: ["dining"],
+    tags: ["castlery", "sloane", "grey-oak", "dining-table"],
+  },
+  "dining-real-castlery-sloane-dining-table-225": {
+    title: "Castlery Sloane Dining Table 225cm",
+    category: "dining_table",
+    modelLabel: "225CM",
+    roomTags: ["dining"],
+    tags: ["castlery", "sloane", "grey-oak", "dining-table"],
   },
   "dining-real-castlery-brighton-oval-180": {
     title: "Castlery Brighton Oval Dining Table 180cm",
@@ -218,11 +303,6 @@ export const IMPORTED_PRODUCT_CONFIG_BY_ID: Record<
   },
 };
 
-export const SLOANE_TABLE_TO_BENCH_RECOMMENDATION: Record<string, 150 | 180> = {
-  "dining-real-castlery-sloane-travertine-180": 150,
-  "dining-real-castlery-sloane-travertine-220": 180,
-};
-
 export const SLOANE_BENCH_PRODUCT_ID_BY_OPTION: Record<string, string> = {
   "150-no": "dining-real-castlery-sloane-bench-150-no-cushion",
   "180-no": "dining-real-castlery-sloane-bench-180-no-cushion",
@@ -231,8 +311,10 @@ export const SLOANE_BENCH_PRODUCT_ID_BY_OPTION: Record<string, string> = {
 };
 
 export const SLOANE_TABLE_PRODUCT_IDS = [
+  "dining-real-castlery-sloane-dining-table-180",
+  "dining-real-castlery-sloane-dining-table-225",
   "dining-real-castlery-sloane-travertine-180",
-  "dining-real-castlery-sloane-travertine-220",
+  "dining-real-castlery-sloane-travertine-225",
 ] as const;
 
 export const SLOANE_BENCH_PRODUCT_IDS = Object.values(SLOANE_BENCH_PRODUCT_ID_BY_OPTION);
@@ -252,18 +334,39 @@ export function getSloaneBenchProductId(size: 150 | 180, cushion: "no" | "leathe
   return SLOANE_BENCH_PRODUCT_ID_BY_OPTION[`${size}-${cushion}`];
 }
 
-export const CASTLERY_DAWSON_SWATCH_IMAGE_BY_FINISH_CODE: Record<string, string> = {
-  "marche-cocoa": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1741163167/crusader/variants/LE-4023/Cocoa_Swatch-1741163165.jpg",
-  "marche-ivory": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728527/crusader/variants/LE-4021/Hamilton-Leather-Sofa-Ivory-Det_1-1710728524.jpg",
-  "performance-arvo-dune": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/crusader/variants/AR-4001/Arvo-Dune-Swatch.jpg",
+export const CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE: Record<string, string> = {
+  bisque: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1645671206/crusader/variants/AM-4001/Madison-Armchair-Bisque-Square-Det_1.jpg",
+  "bisque_fabric": "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1645671206/crusader/variants/AM-4001/Madison-Armchair-Bisque-Square-Det_1.jpg",
+  "bisque-fabric": "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1645671206/crusader/variants/AM-4001/Madison-Armchair-Bisque-Square-Det_1.jpg",
+  "camille, forest": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1761806102/crusader/variants/CM-4001/Madison-3-Seater-Sofa-Forest-Det_5-1761806101.jpg",
+  "camille_forest": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1761806102/crusader/variants/CM-4001/Madison-3-Seater-Sofa-Forest-Det_5-1761806101.jpg",
+  "camille-forest": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1761806102/crusader/variants/CM-4001/Madison-3-Seater-Sofa-Forest-Det_5-1761806101.jpg",
+  "camille_forest_fabric": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1761806102/crusader/variants/CM-4001/Madison-3-Seater-Sofa-Forest-Det_5-1761806101.jpg",
+  "camille-forest-fabric": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1761806102/crusader/variants/CM-4001/Madison-3-Seater-Sofa-Forest-Det_5-1761806101.jpg",
+  "caramel_leather": "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1626941764/crusader/variants/LE-4016/Jonathan-Sofa-Brown_1.jpg",
+  "caramel-leather": "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1626941764/crusader/variants/LE-4016/Jonathan-Sofa-Brown_1.jpg",
+  "top_grain_leather_tan": "https://res.cloudinary.com/castlery/image/upload/w_128,f_auto,q_auto/v1678775201/knight/cms/swatch/Sloane-Dining-Chair_Swatch_1_1.jpg",
+  "top-grain-leather-tan": "https://res.cloudinary.com/castlery/image/upload/w_128,f_auto,q_auto/v1678775201/knight/cms/swatch/Sloane-Dining-Chair_Swatch_1_1.jpg",
+  "marche-cocoa": "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1741163167/crusader/variants/LE-4023/Cocoa_Swatch-1741163165.jpg",
+  "marche-ivory": "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728527/crusader/variants/LE-4021/Hamilton-Leather-Sofa-Ivory-Det_1-1710728524.jpg",
+  "performance-arvo-dune": "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1674034715/crusader/variants/AR-4001/Sloane-Cane-Chair-Dune-Grey-Oak-Det_1-1674034712.jpg",
   "performance-dune": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1674034715/crusader/variants/AR-4001/Sloane-Cane-Chair-Dune-Grey-Oak-Det_1-1674034712.jpg",
   "performance-basalt": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1692611722/crusader/variants/AR-4002/Auburn-Performance-Boucle-Sofa-Basalt-Square-Det_2-1692611719.jpg",
   "natural": "https://res.cloudinary.com/castlery/image/upload/w_128,f_auto,q_auto/v1756719854/knight/cms/swatch/Mori-Side-Table-Square-Det_4.jpg",
   "chestnut": "https://res.cloudinary.com/castlery/image/upload/w_128,f_auto,q_auto/v1697793942/knight/cms/swatch/Kinsley-TV-Console-Chestnut-Oak-Square-Det_1.jpg",
   "black": "https://res.cloudinary.com/castlery/image/upload/w_128,f_auto,q_auto/v1716346211/knight/cms/swatch/Sofa-Armrest-Table-Black-Square-Det_1.jpg",
+  "walnut": "https://s3-ap-southeast-1.amazonaws.com/production-static-images/swatches/walnut-wood.png",
   "natural-oak": "https://res.cloudinary.com/castlery/image/upload/w_128,f_auto,q_auto/v1756719854/knight/cms/swatch/Mori-Side-Table-Square-Det_4.jpg",
   "chestnut-oak": "https://res.cloudinary.com/castlery/image/upload/w_128,f_auto,q_auto/v1697793942/knight/cms/swatch/Kinsley-TV-Console-Chestnut-Oak-Square-Det_1.jpg",
   "black-oak": "https://res.cloudinary.com/castlery/image/upload/w_128,f_auto,q_auto/v1716346211/knight/cms/swatch/Sofa-Armrest-Table-Black-Square-Det_1.jpg",
+  "caramel": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1746761565/crusader/variants/40550324/Arcadia-Coffee-Table-Caramel-Oak-Square-Det_18-1746761563.jpg",
+  "caramel-oak": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1746761565/crusader/variants/40550324/Arcadia-Coffee-Table-Caramel-Oak-Square-Det_18-1746761563.jpg",
+  "grey-oak": "https://res.cloudinary.com/castlery/image/upload/w_128,f_auto,q_auto/v1678775201/knight/cms/swatch/Sloane-Dining-Chair_Swatch_1_1.jpg",
+  "grey_oak": "https://res.cloudinary.com/castlery/image/upload/w_128,f_auto,q_auto/v1678775201/knight/cms/swatch/Sloane-Dining-Chair_Swatch_1_1.jpg",
+  "muted-honey": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1739348957/crusader/variants/40550269/Seb-Texture-1739348954.jpg",
+  "muted_honey": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1739348957/crusader/variants/40550269/Seb-Texture-1739348954.jpg",
+  "muted-honey-wire-brushed": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1739348957/crusader/variants/40550269/Seb-Texture-1739348954.jpg",
+  "muted_honey_wire_brushed": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1739348957/crusader/variants/40550269/Seb-Texture-1739348954.jpg",
   "ng-4001": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1665460017/crusader/variants/NG-4001/Beach-Linen_1-1665460015.jpg",
   "navagio-beach-linen": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1665460017/crusader/variants/NG-4001/Beach-Linen_1-1665460015.jpg",
   "beach-linen": "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1665460017/crusader/variants/NG-4001/Beach-Linen_1-1665460015.jpg",
@@ -445,7 +548,27 @@ export function resolveFabricDetailProfile(params: {
 }
 
 export const FULL_DIMENSIONS_BY_PRODUCT_ID: Record<string, Array<{ label: string; value: string }>> = {
-  "dining-real-castlery-sloane-travertine-220": [
+  "coffee-real-castlery-arcadia-coffee-table": [
+    { label: "Dimension", value: "W120 x D60 x H38cm" },
+    { label: "Table top thickness", value: "1.9cm" },
+    { label: "Leg height", value: "2.5cm" },
+    { label: "Product weight", value: "30kg" },
+    { label: "Packaging dimensions", value: "1 box" },
+    { label: "Max bearing support", value: "50kg" },
+  ],
+  "dining-real-castlery-sloane-travertine-180": [
+    { label: "Dimension", value: "W180 x D90 x H76cm" },
+    { label: "Table top thickness", value: "5cm" },
+    { label: "Product weight", value: "76.9kg" },
+    { label: "Capacity", value: "Sits 6 people comfortably" },
+    { label: "Leg height", value: "71cm" },
+    { label: "Max bearing support", value: "100kg" },
+    { label: "Levellers", value: "Included (max 1cm)" },
+    { label: "Packaging dimensions", value: "3 boxes" },
+    { label: "Leg room - height clearance", value: "71cm" },
+    { label: "Leg to leg distance (at height 45cm)", value: "114cm" },
+  ],
+  "dining-real-castlery-sloane-travertine-225": [
     { label: "Dimension", value: "W225 x D100 x H76cm" },
     { label: "Table top thickness", value: "5cm" },
     { label: "Product weight", value: "97kg" },
@@ -556,10 +679,90 @@ export const FULL_DIMENSIONS_BY_PRODUCT_ID: Record<string, Array<{ label: string
     { label: "Product weight", value: "159.7kg" },
     { label: "Packaging dimensions", value: "7 boxes" },
   ],
+  "sofa-real-castlery-jaron-chaise-sectional": [
+    { label: "Dimension", value: "W196/325 x D115/239 x H77cm" },
+    { label: "Reclined product depth", value: "165cm" },
+    { label: "Cable length", value: "250cm" },
+    { label: "Leg height", value: "4cm" },
+    { label: "Max bearing support", value: "4 x 150kg" },
+    { label: "Seatable width", value: "236cm" },
+    { label: "Seating depth", value: "64cm" },
+    { label: "Seating height", value: "47cm" },
+    { label: "Backrest height", value: "39-57cm (adjustable headrest)" },
+    { label: "Armrest height", value: "62cm" },
+    { label: "Product weight", value: "205.2kg" },
+    { label: "Packaging dimensions", value: "8 boxes" },
+  ],
+  "sofa-real-castlery-jaron-chaise-sectional-wide-arm": [
+    { label: "Dimension", value: "W201/330 x D115/244 x H77cm" },
+    { label: "Reclined product depth", value: "165cm" },
+    { label: "Cable length", value: "250cm" },
+    { label: "Leg height", value: "4cm" },
+    { label: "Max bearing support", value: "4 x 150kg" },
+    { label: "Seatable width", value: "236cm" },
+    { label: "Seating depth", value: "64cm" },
+    { label: "Seating height", value: "47cm" },
+    { label: "Backrest height", value: "39-57cm (adjustable headrest)" },
+    { label: "Armrest height", value: "58cm" },
+    { label: "Product weight", value: "209.2kg" },
+    { label: "Packaging dimensions", value: "8 boxes" },
+  ],
+  "sofa-real-castlery-jaron-l-shaped-sectional": [
+    { label: "Dimension", value: "W196/325 x D196/325 x H77cm" },
+    { label: "Reclined product depth", value: "165cm" },
+    { label: "Cable length", value: "250cm" },
+    { label: "Leg height", value: "4cm" },
+    { label: "Max bearing support", value: "5 x 150kg" },
+    { label: "Seatable width", value: "236cm" },
+    { label: "Seating depth", value: "64cm" },
+    { label: "Seating height", value: "47cm" },
+    { label: "Backrest height", value: "39-57cm (adjustable headrest)" },
+    { label: "Armrest height", value: "62cm" },
+    { label: "Product weight", value: "237.2kg" },
+    { label: "Packaging dimensions", value: "9 boxes" },
+  ],
+  "sofa-real-castlery-jaron-l-shaped-sectional-wide-arm": [
+    { label: "Dimension", value: "W196/325 x D196/325 x H77cm" },
+    { label: "Reclined product depth", value: "165cm" },
+    { label: "Cable length", value: "250cm" },
+    { label: "Leg height", value: "4cm" },
+    { label: "Max bearing support", value: "5 x 150kg" },
+    { label: "Seatable width", value: "236cm" },
+    { label: "Seating depth", value: "64cm" },
+    { label: "Seating height", value: "47cm" },
+    { label: "Backrest height", value: "39-57cm (adjustable headrest)" },
+    { label: "Armrest height", value: "58cm" },
+    { label: "Product weight", value: "241.2kg" },
+    { label: "Packaging dimensions", value: "9 boxes" },
+  ],
   "coffee-real-castlery-harper-marble-rectangular-120": [
     { label: "Dimension", value: "W120 x D60 x H38cm" },
     { label: "Table top thickness", value: "1.8cm" },
     { label: "Max bearing support", value: "50kg" },
     { label: "Product weight", value: "47.5kg" },
   ],
+};
+
+export const PRODUCT_DETAIL_SECTIONS_BY_PRODUCT_ID: Record<
+  string,
+  {
+    material?: Array<{ label: string; value: string }>;
+    deliveryWarranty?: Array<{ label: string; value: string }>;
+  }
+> = {
+  "coffee-real-castlery-arcadia-coffee-table": {
+    material: [
+      { label: "Material", value: "Engineered wood and oak veneer" },
+      { label: "Finish", value: "Waterbase wood" },
+      { label: "Care", value: "Wooden table" },
+      { label: "Colour variance", value: "Natural variations" },
+      { label: "Material & safety standards", value: "Low formaldehyde" },
+    ],
+    deliveryWarranty: [
+      { label: "Cancellation", value: "Free - 5 working days before delivery" },
+      { label: "Warranty", value: "5-year limited warranty" },
+      { label: "Return policy", value: "30-day returns" },
+      { label: "Assembly", value: "Legs to be fitted" },
+    ],
+  },
 };

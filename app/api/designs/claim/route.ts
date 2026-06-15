@@ -8,6 +8,7 @@ type ClaimDesignSnapshot = {
   roomWidth?: number;
   roomDepth?: number;
   items?: unknown[];
+  snapshot?: unknown;
   style?: string;
   budget?: string;
   mode?: string;
@@ -32,6 +33,7 @@ export async function POST(req: Request) {
     roomWidth,
     roomDepth,
     items,
+    snapshot,
     style,
     budget,
     mode,
@@ -53,6 +55,10 @@ export async function POST(req: Request) {
       roomWidth: Number(roomWidth),
       roomDepth: Number(roomDepth),
       items: JSON.parse(JSON.stringify(items)),
+      snapshot:
+        snapshot && typeof snapshot === "object"
+          ? JSON.parse(JSON.stringify(snapshot))
+          : null,
       style: typeof style === "string" ? style : null,
       budget: typeof budget === "string" ? budget : null,
       mode: typeof mode === "string" ? mode : "homeowner",

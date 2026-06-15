@@ -93,7 +93,7 @@ const DB_CATEGORY_OPTIONS = [
   { value: "coffee_table", label: "Coffee Table" },
   { value: "rug", label: "Rug" },
   { value: "tv_console", label: "TV Console" },
-  { value: "accent_chair", label: "Accent Chair" },
+  { value: "accent_chair", label: "Arm Chair" },
   { value: "floor_lamp", label: "Floor Lamp" },
 ] as const;
 

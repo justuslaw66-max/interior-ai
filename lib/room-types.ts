@@ -5,7 +5,8 @@
  * Each design contains multiple rooms, each with its own items, zones, and saved views.
  */
 
-export type RoomType = "living" | "bedroom" | "dining" | "custom";
+export type RoomType = "living" | "bedroom" | "dining" | "kitchen" | "toilet" | "custom";
+export type RoomPlanShape = "rectangle" | "l_shape" | "custom_polygon";
 
 export interface RoomGeometry {
   width: number;
@@ -14,12 +15,65 @@ export interface RoomGeometry {
   height?: number;
 }
 
+export interface RoomPlanPosition {
+  x: number;
+  z: number;
+}
+
+export interface RoomPlanPolygonPoint {
+  x: number;
+  z: number;
+}
+
 export interface SavedView {
   id: string;
   name: string;
   cameraPosition: [number, number, number];
   cameraTarget: [number, number, number];
   timestamp?: number;
+}
+
+export interface PersistedFloorPlanCalibration {
+  pixelsPerMeter: number;
+  referenceLengthMeters: number;
+  referencePointsPx: [
+    { x: number; y: number },
+    { x: number; y: number },
+  ];
+}
+
+export interface PersistedFloorPlanUnderlay {
+  id: string;
+  floorId: string;
+  name: string;
+  assetUrl: string;
+  mimeType: string;
+  sourceMimeType?: string;
+  renderedPage?: number;
+  pageCount?: number;
+  widthPx?: number;
+  heightPx?: number;
+  position: { x: number; z: number };
+  widthMeters: number;
+  depthMeters: number;
+  opacity: number;
+  rotationDeg: number;
+  locked: boolean;
+  calibration?: PersistedFloorPlanCalibration;
+}
+
+export interface PersistedPlanOpening {
+  id: string;
+  roomId?: string;
+  wall: "north" | "south" | "east" | "west";
+  offsetMm: number;
+  widthMm: number;
+  kind: "door" | "window";
+}
+
+export interface PersistedFloorPlanState {
+  underlay?: PersistedFloorPlanUnderlay | null;
+  openings?: PersistedPlanOpening[];
 }
 
 export interface DesignItem {
@@ -55,6 +109,9 @@ export interface RoomSnapshot {
   name: string;
   roomType: RoomType;
   geometry: RoomGeometry;
+  planPosition?: RoomPlanPosition;
+  planShape?: RoomPlanShape;
+  planPolygon?: RoomPlanPolygonPoint[];
   items: DesignItem[];
   zones: ZoneMin[];
   savedViews: SavedView[];
@@ -74,6 +131,7 @@ export interface DesignSnapshot {
   budget?: "budget" | "mid" | "luxury";
   lightingPreset?: string;
   notes?: string;
+  floorPlan?: PersistedFloorPlanState;
   // Legacy fields for migration (v1/v2)
   items?: DesignItem[];
   zones?: ZoneMin[];
@@ -95,6 +153,8 @@ export function createRoom(
     name,
     roomType,
     geometry,
+    planPosition: { x: 0, z: 0 },
+    planShape: "rectangle",
     items: [],
     zones: [],
     savedViews: [],
@@ -118,6 +178,8 @@ export function migrateToV3(snapshot: DesignSnapshot): DesignSnapshot {
     name: "Living Room",
     roomType: "living",
     geometry,
+    planPosition: { x: 0, z: 0 },
+    planShape: "rectangle",
     items: snapshot.items ?? [],
     zones: snapshot.zones ?? [],
     savedViews: snapshot.savedViews ?? [],
@@ -132,6 +194,7 @@ export function migrateToV3(snapshot: DesignSnapshot): DesignSnapshot {
     budget: snapshot.budget,
     lightingPreset: snapshot.lightingPreset,
     notes: snapshot.notes,
+    floorPlan: snapshot.floorPlan,
   };
 }
 

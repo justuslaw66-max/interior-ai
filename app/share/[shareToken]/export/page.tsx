@@ -28,6 +28,7 @@ export default async function ExportPage({
       roomWidth: true,
       roomDepth: true,
       items: true,
+      snapshot: true,
       zones: true,
       savedViews: true,
       style: true,
@@ -64,6 +65,7 @@ export default async function ExportPage({
     roomWidth: design.roomWidth,
     roomDepth: design.roomDepth,
     items: design.items as unknown as DesignItem[],
+    snapshot: design.snapshot as Parameters<typeof legacyApiToSnapshot>[0]["snapshot"],
     zones: (design.zones as unknown as ZoneMin[]) || [],
     savedViews: (design.savedViews as unknown as SavedView[]) || [],
   });

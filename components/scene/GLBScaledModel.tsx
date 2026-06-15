@@ -93,15 +93,25 @@ export function GLBScaledModel({
 
   useEffect(() => {
     let cancelled = false;
+    let dracoLoader: { dispose?: () => void } | null = null;
     setLoadedScene(null);
     onLoadStateChange?.("loading");
 
     (async () => {
       try {
-        const { GLTFLoader } = await import("three-stdlib");
+        const { GLTFLoader, DRACOLoader } = await import("three-stdlib");
         if (cancelled) return;
 
         const loader = new GLTFLoader();
+        try {
+          const nextDracoLoader = new DRACOLoader();
+          nextDracoLoader.setDecoderPath("/draco/");
+          loader.setDRACOLoader(nextDracoLoader);
+          dracoLoader = nextDracoLoader;
+        } catch (decoderError) {
+          // Existing non-Draco models should still load if Draco setup is unavailable.
+          console.warn("[GLBScaledModel] Draco decoder unavailable", { decoderError });
+        }
         try {
           const meshoptModule = (await import("meshoptimizer")) as {
             MeshoptDecoder?: { ready?: Promise<unknown> };
@@ -145,6 +155,7 @@ export function GLBScaledModel({
 
     return () => {
       cancelled = true;
+      dracoLoader?.dispose?.();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url]);
@@ -177,6 +188,13 @@ export function GLBScaledModel({
       sz = uniform;
     }
 
+    const rootTransform = nodeTransforms?.__root__;
+    if (rootTransform?.scale) {
+      sx *= rootTransform.scale[0];
+      sy *= rootTransform.scale[1];
+      sz *= rootTransform.scale[2];
+    }
+
     scene.scale.set(sx, sy, sz);
 
     const minYScaled = bbox.min.y * sy;
@@ -184,9 +202,23 @@ export function GLBScaledModel({
     if (calibration?.swapWidthDepthAxes) {
       scene.rotation.y = Math.PI / 2;
     }
+    if (rootTransform?.position) {
+      scene.position.x += rootTransform.position[0];
+      scene.position.y += rootTransform.position[1];
+      scene.position.z += rootTransform.position[2];
+    }
+    if (rootTransform?.rotation) {
+      scene.rotation.x += rootTransform.rotation[0];
+      scene.rotation.y += rootTransform.rotation[1];
+      scene.rotation.z += rootTransform.rotation[2];
+    }
+    if (typeof rootTransform?.visible === "boolean") {
+      scene.visible = rootTransform.visible;
+    }
 
     if (nodeTransforms) {
       Object.entries(nodeTransforms).forEach(([nodeName, transform]) => {
+        if (nodeName === "__root__") return;
         const node = scene.getObjectByName(nodeName);
         if (!node) return;
         if (transform.position) {
@@ -381,7 +413,7 @@ export function GLBScaledModel({
       // ── CHESTNUT: gentle grain-preserving tint (non-destructive) ──────────────
       if (isChestnutVariant) {
         material.customProgramCacheKey = () =>
-          ["hugg-chestnut-grain-tint-v44", tintHex, tintStrength, natBeamZTop, natClosedTopZMax, natCenter.x, natCenter.y, natSize.x, natSize.y, isHuggClosedLayout ? 1 : 0].join(":");
+          ["hugg-chestnut-grain-tint-v47", tintHex, tintStrength, natBeamZTop, natClosedTopZMax, natCenter.x, natCenter.y, natSize.x, natSize.y, isHuggClosedLayout ? 1 : 0].join(":");
         material.onBeforeCompile = (shader) => {
           shader.uniforms.huggTintColor = { value: tintColor };
           shader.uniforms.huggFabricTone = { value: huggFabricTone };
@@ -452,12 +484,34 @@ export function GLBScaledModel({
                       "float huggClosedTopZone = huggClosedTopSlabZ * (1.0 - huggClosedLightFabricMask);",
                       "vec3 huggClosedEvenTint = clamp(huggTintColor * 1.02, 0.0, 1.0);",
                       "diffuseColor.rgb = mix(diffuseColor.rgb, huggClosedEvenTint, huggClosedTopZone);",
+                      // Some closed Hugg GLBs bake the flat shelf directly below
+                      // the tabletop as neutral fabric. Keep this very close to
+                      // the tabletop plane so the cushion top remains untouched.
+                      "float huggClosedShelfZ = smoothstep(huggClosedTopZMax + 0.004, huggClosedTopZMax + 0.030, vHuggCPos.z) * (1.0 - smoothstep(huggChestBeamZTop - 0.150, huggChestBeamZTop - 0.055, vHuggCPos.z));",
+                      "float huggClosedShelfTop = smoothstep(0.42, 0.78, -vHuggCNorm.z);",
+                      "float huggClosedShelfZone = huggClosedShelfZ * huggClosedShelfTop * huggChestSupportCore;",
+                      "diffuseColor.rgb = mix(diffuseColor.rgb, huggClosedEvenTint, huggClosedShelfZone * 0.96);",
+                      "huggChestWoodZone = max(huggChestWoodZone, max(huggClosedTopZone, huggClosedShelfZone));",
                       "float huggClosedWoodWarmZone = huggWarmMask * (1.0 - huggClosedLightFabricMask);",
                       "diffuseColor.rgb = mix(diffuseColor.rgb, clamp(huggGrainTint, 0.0, 1.0), huggClosedWoodWarmZone * huggTintStrength);",
-                      "float huggClosedFabricRestoreMask = (1.0 - huggClosedTopSlabZ) * (1.0 - smoothstep(0.045, 0.135, huggRmB));",
+                      "float huggClosedFabricRestoreMask = (1.0 - max(huggClosedTopSlabZ, huggClosedShelfZone)) * (1.0 - smoothstep(0.045, 0.135, huggRmB));",
                       "diffuseColor.rgb = mix(diffuseColor.rgb, huggOrigDiffuse, huggClosedFabricRestoreMask);",
                     ].join("\n")
-                  : "float huggClosedTopZone = 0.0;"
+                  : [
+                      // Open Hugg side/rectangular GLBs can bake the exposed table deck
+                      // as neutral upholstery. Treat only the upper, centered,
+                      // top-facing deck as wood so the pulled-out cushion remains fabric.
+                      "float huggOpenNeutralDeckMask = 1.0 - smoothstep(0.025, 0.125, abs(huggRmB));",
+                      "float huggOpenDeckZ = smoothstep(huggClosedTopZMax + 0.004, huggClosedTopZMax + 0.080, vHuggCPos.z) * (1.0 - smoothstep(huggChestBeamZTop - 0.140, huggChestBeamZTop + 0.010, vHuggCPos.z));",
+                      "float huggOpenDeckZone = huggOpenDeckZ * huggCTopFacing * huggChestSupportCore * huggOpenNeutralDeckMask;",
+                      "float huggOpenTableX = 1.0 - smoothstep(huggChestHalfFootprintX * 0.70, huggChestHalfFootprintX * 0.92, abs(vHuggCPos.x - huggChestCenterX));",
+                      "float huggOpenTableY = 1.0 - smoothstep(huggChestHalfFootprintY * 0.70, huggChestHalfFootprintY * 0.92, abs(vHuggCPos.y - huggChestCenterY));",
+                      "float huggOpenTableTopZone = huggCTopFacing * huggChestTableZ * huggOpenTableX * huggOpenTableY;",
+                      "float huggOpenWoodTopZone = max(huggOpenDeckZone, huggOpenTableTopZone);",
+                      "diffuseColor.rgb = mix(diffuseColor.rgb, huggChestTopTarget, huggOpenWoodTopZone * 0.86);",
+                      "huggChestWoodZone = max(huggChestWoodZone, huggOpenWoodTopZone);",
+                      "float huggClosedTopZone = 0.0;",
+                    ].join("\n")
               ].join("\n")
             )
             .replace(
@@ -558,7 +612,7 @@ export function GLBScaledModel({
       if (isBlackVariant) {
         material.customProgramCacheKey = () =>
           [
-            "hugg-black-preserve-fabric-v77",
+            "hugg-black-preserve-fabric-v79",
             tintHex,
             tintStrength,
             huggTabletopZMax,
@@ -610,6 +664,13 @@ export function GLBScaledModel({
                 "float huggTableY = 1.0 - smoothstep(huggHalfFootprintY * 0.62, huggHalfFootprintY * 0.78, abs(vHuggLocalPos.y - huggBeamCenterY));",
                 "float huggTableXYMask = huggTableX * huggTableY;",
                 "float huggTopSurfaceMask = huggIsTopFacing * huggIsTopArea * huggTableXYMask;",
+                isHuggClosedLayout
+                  ? "float huggBOpenShelfZone = 0.0;"
+                  : [
+                      "float huggBOpenNeutralDeckMask = 1.0 - smoothstep(0.025, 0.125, abs(huggRmB));",
+                      "float huggBOpenDeckZ = smoothstep(huggClosedTopZMax + 0.004, huggClosedTopZMax + 0.080, vHuggLocalPos.z) * (1.0 - smoothstep(huggBeamZTop - 0.140, huggBeamZTop + 0.010, vHuggLocalPos.z));",
+                      "float huggBOpenShelfZone = huggBOpenDeckZ * huggIsTopFacing * huggTableXYMask * huggBOpenNeutralDeckMask;",
+                    ].join("\n"),
                 "float huggOttomanZoneMap = smoothstep(huggBeamZTop - 0.08, huggBeamZTop + 0.14, vHuggLocalPos.z);",
                 "float huggLegCoreX = 1.0 - smoothstep(huggHalfFootprintX * 0.08, huggHalfFootprintX * 0.18, abs(vHuggLocalPos.x - huggBeamCenterX));",
                 "float huggLegCoreY = 1.0 - smoothstep(huggHalfFootprintY * 0.08, huggHalfFootprintY * 0.18, abs(vHuggLocalPos.y - huggBeamCenterY));",
@@ -629,7 +690,7 @@ export function GLBScaledModel({
                 "diffuseColor.rgb = mix(diffuseColor.rgb, huggBlackTint, huggWoodMaskFinal * huggTintStrength * 0.98);",
                 // Force true tabletop black regardless of base texture warmth.
                 "vec3 huggTopBlackTint = vec3(0.030);",
-                "diffuseColor.rgb = mix(diffuseColor.rgb, huggTopBlackTint, huggTopSurfaceMask * 0.985);",
+                "diffuseColor.rgb = mix(diffuseColor.rgb, huggTopBlackTint, max(huggTopSurfaceMask, huggBOpenShelfZone) * 0.985);",
                 isHuggClosedLayout
                   ? [
                       "float huggBClosedTopSlabZ = 1.0 - smoothstep(huggClosedTopZMax - 0.002, huggClosedTopZMax + 0.003, vHuggLocalPos.z);",
@@ -639,15 +700,20 @@ export function GLBScaledModel({
                       "vec3 huggBClosedCleanTop = vec3(0.030);",
                       "float huggBClosedTopZone = huggBClosedTopSlabZ * (1.0 - huggBClosedLightFabricMask);",
                       "diffuseColor.rgb = mix(diffuseColor.rgb, huggBClosedCleanTop, huggBClosedTopZone);",
+                      "float huggBClosedShelfZ = smoothstep(huggClosedTopZMax + 0.004, huggClosedTopZMax + 0.030, vHuggLocalPos.z) * (1.0 - smoothstep(huggBeamZTop - 0.150, huggBeamZTop - 0.055, vHuggLocalPos.z));",
+                      "float huggBClosedShelfTop = smoothstep(0.42, 0.78, -vHuggObjNormal.z);",
+                      "float huggBClosedShelfZone = huggBClosedShelfZ * huggBClosedShelfTop * huggTableXYMask;",
+                      "diffuseColor.rgb = mix(diffuseColor.rgb, huggBClosedCleanTop, huggBClosedShelfZone * 0.98);",
                       "float huggBClosedUpperWoodZ = 1.0 - smoothstep(huggBeamZTop - 0.08, huggBeamZTop + 0.02, vHuggLocalPos.z);",
                       "float huggBClosedWoodZone = huggBClosedUpperWoodZ * huggWarmMask * (1.0 - huggBClosedLightFabricMask);",
                       "diffuseColor.rgb = mix(diffuseColor.rgb, huggBClosedBlackGrain, huggBClosedWoodZone * 0.96);",
-                      "float huggBClosedFabricRestoreMask = (1.0 - huggBClosedTopSlabZ) * (1.0 - smoothstep(0.045, 0.135, huggRmB));",
+                      "float huggBClosedFabricRestoreMask = (1.0 - max(huggBClosedTopSlabZ, huggBClosedShelfZone)) * (1.0 - smoothstep(0.045, 0.135, huggRmB));",
                       "diffuseColor.rgb = mix(diffuseColor.rgb, huggOrigDiffuse, huggBClosedFabricRestoreMask);",
                     ].join("\n")
                   : [
                       "float huggBClosedTopSlabZ = 0.0;",
                       "float huggBClosedTopZone = 0.0;",
+                      "float huggBClosedShelfZone = 0.0;",
                       "float huggBClosedLightFabricMask = 0.0;",
                     ].join("\n"),
               ].join("\n")
@@ -676,7 +742,7 @@ export function GLBScaledModel({
                 "float huggLegCross2 = max(huggLegCoreX2, huggLegCoreY2);",
                 "float huggSeatPerimeterBlock2 = max(smoothstep(huggHalfFootprintX * 0.50, huggHalfFootprintX * 0.78, abs(vHuggLocalPos.x - huggBeamCenterX)), smoothstep(huggHalfFootprintY * 0.50, huggHalfFootprintY * 0.78, abs(vHuggLocalPos.y - huggBeamCenterY)));",
                 "float huggCenterLegWoodMask2 = huggLegCross2 * (1.0 - huggSeatPerimeterBlock2);",
-                "float huggWoodMask2 = max(max(huggWarmMask2 * huggCrossStructureMask2 * (1.0 - huggOttomanZone2), huggCenterLegWoodMask2), huggTopMask2);",
+                "float huggWoodMask2 = max(max(max(huggWarmMask2 * huggCrossStructureMask2 * (1.0 - huggOttomanZone2), huggCenterLegWoodMask2), huggTopMask2), huggBOpenShelfZone);",
                 "metalnessFactor = mix(metalnessFactor, 0.0, huggWoodMask2);",
                 "roughnessFactor = mix(roughnessFactor, 0.78, huggWarmMask2 * huggTintStrength);",
                 "roughnessFactor = mix(roughnessFactor, 0.86, huggTopMask2);",
@@ -712,6 +778,7 @@ export function GLBScaledModel({
                 "float huggClosedTopApronZ = 1.0 - smoothstep(huggTabletopZMax + 0.018, huggBeamZTop + 0.018, vHuggLocalPos.z);",
                 "float huggClosedTopApronSide = 1.0 - smoothstep(0.24, 0.56, abs(vHuggObjNormal.z));",
                 "float huggClosedTopApronMask = 0.0;",
+                "float huggClosedShelfMaskF = max(huggBClosedShelfZone, huggBOpenShelfZone);",
                 "float huggClosedRimWideMask = huggClosedRimWideX * huggClosedRimWideY * (1.0 - huggTopMaskF) * max(huggTopRimZ, huggClosedUpperRimZ);",
                 // Z-up local note: higher local Z moves toward ottoman bottoms; exclude that zone.
                 // Gate structure mask out at the ottoman boundary so nested seat tops never get blacked.
@@ -724,7 +791,7 @@ export function GLBScaledModel({
                 "float huggClosedVerticalSide = 1.0 - smoothstep(0.28, 0.58, abs(vHuggObjNormal.z));",
                 "float huggClosedCornerPostMask = clamp(huggClosedCornerPostX * huggClosedCornerPostY * 2.2, 0.0, 1.0) * huggClosedCornerPostZ * huggClosedVerticalSide * (1.0 - huggTopMaskF);",
                 "float huggClosedSideRailMask = 0.0;",
-                "float huggTableStructureMask = max(max(max(huggTopMaskF, huggTopRimMask), huggClosedTopApronMask), max(max(huggStructureBodyMask, huggClosedCornerPostMask), huggClosedSideRailMask));",
+                "float huggTableStructureMask = max(max(max(max(huggTopMaskF, huggTopRimMask), huggClosedTopApronMask), huggClosedShelfMaskF), max(max(huggStructureBodyMask, huggClosedCornerPostMask), huggClosedSideRailMask));",
                 "gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(0.030), huggTableStructureMask);",
                 // Hard fabric protection for ottoman zone in black finish.
                 "float huggOttomanZoneAllF = smoothstep(huggBeamZTop - 0.10, huggBeamZTop + 0.14, vHuggLocalPos.z);",
@@ -779,7 +846,7 @@ export function GLBScaledModel({
                 "float huggBFinalCurLuma = dot(gl_FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));",
                 "vec3 huggBFinalFabricTone = huggFabricTone * clamp(huggBFinalCurLuma / huggBFinalFabricLuma, 0.45, 1.25);",
                 "gl_FragColor.rgb = mix(gl_FragColor.rgb, huggBFinalFabricTone, huggBFinalFabricGuard * 0.0);",
-                "float huggFinalSolidStructureMask = max(max(max(huggTopMaskF, huggTopRimMask), huggClosedTopApronMask), max(max(huggStructureBodyMask, huggClosedCornerPostMask), huggClosedSideRailMask));",
+                "float huggFinalSolidStructureMask = max(max(max(max(huggTopMaskF, huggTopRimMask), huggClosedTopApronMask), huggClosedShelfMaskF), max(max(huggStructureBodyMask, huggClosedCornerPostMask), huggClosedSideRailMask));",
                 "gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(0.030), huggFinalSolidStructureMask);",
                 // The rectangular closed model has a narrow central wood divider
                 // between the two tucked ottomans. Clean only that strip; wider

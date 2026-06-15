@@ -4,6 +4,7 @@ import { OrthographicCamera } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
 import type { OrthographicCamera as ThreeOrthographicCamera } from "three";
+import { resolvePlanFitZoom } from "@/lib/design-page-house-plan";
 
 type EditorCamera2DProps = {
   active: boolean;
@@ -24,12 +25,12 @@ export default function EditorCamera2D({
   useEffect(() => {
     if (!active || !cameraRef.current) return;
 
-    const spanX = roomWidth + 1.2;
-    const spanZ = roomDepth + 1.2;
-    const zoomX = size.width / spanX;
-    const zoomZ = size.height / spanZ;
-
-    cameraRef.current.zoom = Math.max(24, Math.min(220, Math.min(zoomX, zoomZ)));
+    cameraRef.current.zoom = resolvePlanFitZoom({
+      viewportWidthPx: size.width,
+      viewportHeightPx: size.height,
+      planWidthMeters: roomWidth,
+      planDepthMeters: roomDepth,
+    });
     cameraRef.current.position.set(0, Math.max(roomWidth, roomDepth) + roomHeight + 6, 0);
     // Top-down plan orientation without diagonal roll.
     cameraRef.current.up.set(0, 0, -1);

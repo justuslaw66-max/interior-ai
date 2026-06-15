@@ -26,7 +26,7 @@ test.describe.skip("6. Catalog Compare", () => {
     const filtersButton = page.getByRole("button", { name: "Filters" });
     await expect(filtersButton).toBeVisible({ timeout: 20000 });
 
-    await page.getByRole("button", { name: /Accent Chair/ }).click();
+    await page.getByRole("button", { name: /Arm Chair/ }).click();
 
     const searchInput = page.getByPlaceholder("Search title, brand, style, finish, SKU...");
     await searchInput.fill("sofa");

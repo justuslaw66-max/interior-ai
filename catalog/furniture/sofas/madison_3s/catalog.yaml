@@ -53,6 +53,167 @@ placement_rules:
   clearance_sensitive: true
   center_room_preferred: false
 
+product_details:
+  material:
+    - label: "Material"
+      value: "Laminated veneer lumber and plywood, rubber wood leg"
+    - label: "Filling"
+      value: "Foam, fibre and pocket spring filled seat; Fibre filled back; Foam filled frame"
+    - label: "Care"
+      value: "Fabric sofa, wooden legs"
+    - label: "Suspension"
+      value: "Sinuous spring"
+    - label: "Cover type"
+      value: "Removable back cushion and bolster covers"
+    - label: "Colour variance"
+      value: "Disclaimer"
+    - label: "Material & safety standards"
+      value: "Low formaldehyde"
+  dimensions:
+    - label: "Dimension"
+      value: "W204 x D96.5 x H86.5cm"
+    - label: "Seating depth"
+      value: "61cm"
+    - label: "Seatable width"
+      value: "181cm"
+    - label: "Seating height"
+      value: "47cm"
+    - label: "Leg height"
+      value: "17cm"
+    - label: "Product weight"
+      value: "54.5kg"
+    - label: "Packaging dimensions"
+      value: "1 box"
+    - label: "Max bearing support"
+      value: "3 x 150kg"
+    - label: "Cushion"
+      value: "2 Bolsters included (17 x 56cm)"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Warranty"
+      value: "Frame 10 years; Fabric 1 year; Foam 2 years"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Legs to be fitted"
+
+product_details_by_material_type:
+  fabric:
+    material:
+      - label: "Material"
+        value: "Laminated veneer lumber and plywood, rubber wood leg"
+      - label: "Filling"
+        value: "Foam, fibre and pocket spring filled seat; Fibre filled back; Foam filled frame"
+      - label: "Care"
+        value: "Fabric sofa, wooden legs"
+      - label: "Suspension"
+        value: "Sinuous spring"
+      - label: "Cover type"
+        value: "Removable back cushion and bolster covers"
+      - label: "Colour variance"
+        value: "Disclaimer"
+      - label: "Material & safety standards"
+        value: "Low formaldehyde"
+    dimensions:
+      - label: "Dimension"
+        value: "W204 x D96.5 x H86.5cm"
+      - label: "Seating depth"
+        value: "61cm"
+      - label: "Seatable width"
+        value: "181cm"
+      - label: "Seating height"
+        value: "47cm"
+      - label: "Leg height"
+        value: "17cm"
+      - label: "Product weight"
+        value: "54.5kg"
+      - label: "Packaging dimensions"
+        value: "1 box"
+      - label: "Max bearing support"
+        value: "3 x 150kg"
+      - label: "Cushion"
+        value: "2 Bolsters included (17 x 56cm)"
+    delivery_and_warranty:
+      - label: "Cancellation"
+        value: "Free—5 working days before delivery"
+      - label: "Warranty"
+        value: "Frame 10 years; Fabric 1 year; Foam 2 years"
+      - label: "Return policy"
+        value: "30-day returns"
+      - label: "Assembly"
+        value: "Legs to be fitted"
+  leather:
+    material:
+      - label: "Material"
+        value: "Frame: laminated veneer lumber with plywood; Leg: solid rubber wood"
+      - label: "Filling"
+        value: "Foam, fibre and pocket spring filled seat; Fibre filled back; Foam filled frame"
+      - label: "Finish"
+        value: "Walnut stain on wood"
+      - label: "Care"
+        value: "Leather sofa, wooden legs"
+      - label: "Suspension"
+        value: "Sinuous spring"
+      - label: "Cover type"
+        value: "Removable back cushion and bolster covers; Fixed seat cushion covers"
+      - label: "Colour variance"
+        value: "Leather variations"
+      - label: "Material & safety standards"
+        value: "Low formaldehyde"
+      - label: "Material details"
+        value: "Top grain leather. Crafted from American hides."
+    dimensions:
+      - label: "Dimension"
+        value: "W204 x D97 x H87cm"
+      - label: "Armrest height"
+        value: "69cm (floor to arm)"
+      - label: "Seating depth"
+        value: "61cm"
+      - label: "Seatable width"
+        value: "178cm"
+      - label: "Seating height"
+        value: "49cm"
+      - label: "Leg height"
+        value: "17cm"
+      - label: "Backrest height"
+        value: "39cm"
+      - label: "Product weight"
+        value: "52.5kg"
+      - label: "Packaging dimensions"
+        value: "1 box"
+    delivery_and_warranty:
+      - label: "Cancellation"
+        value: "Free—5 working days before delivery"
+      - label: "Warranty"
+        value: "Frame 10 years; Leather 1 year; Foam 2 years"
+      - label: "Return policy"
+        value: "30-day returns"
+      - label: "Assembly"
+        value: "Legs to be fitted"
+
+comfort_profile:
+  seat_comfort:
+    label: "Seat comfort"
+    value: 2
+    min_label: "Relaxed"
+    max_label: "Upright"
+  seat_depth:
+    label: "Seat depth"
+    value: 4
+    min_label: "Shallow"
+    max_label: "Deep"
+  seat_height:
+    label: "Seat height"
+    value: 4
+    min_label: "Low"
+    max_label: "High"
+  seat_softness:
+    label: "Seat softness"
+    value: 3
+    min_label: "Soft"
+    max_label: "Firm"
+
 design_pairings:
   - "coffee_table"
   - "side_table"
@@ -103,38 +264,6 @@ variants:
       color_finish: "bisque"
       surface_finish: "matte"
       finish_color: "bisque_fabric"
-
-  - variant: "Stone (Fabric)"
-    finish_code: "stone_fabric"
-    finish_label: "Stone"
-    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1625218999/crusader/variants/50440750-TW4002/Madison-3-Seater-Sofa-Stone-Front.jpg"
-    gallery_images:
-      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1625218999/crusader/variants/50440750-TW4002/Madison-3-Seater-Sofa-Stone-Front.jpg"
-      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1625417380/crusader/variants/50440750-TW4002/Madison-3-Seater-Sofa-Stone-Lifestyle-Crop.jpg"
-      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1625218970/crusader/variants/50440750-TW4002/Madison-3-Seater-Sofa-Stone-Angle.jpg"
-      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1625219005/crusader/variants/50440750-TW4002/Madison-3-Seater-Sofa-Stone-Side.jpg"
-      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1625218985/crusader/variants/50440750-TW4002/Madison-3-Seater-Sofa-Stone-Back.jpg"
-      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1625417364/crusader/variants/50440750-TW4002/Madison-3-Seater-Sofa-Stone-D9.jpg"
-    swatch_group: "upholstery"
-    price_usd: 1599
-    price_band: "mid_premium"
-    brand_tier: "premium_mid"
-    dimensions:
-      width_cm: 204
-      depth_cm: 96.5
-      height_cm: 86.5
-    seat_capacity: 3
-    size_class: "large"
-    color_family: "grey"
-    tone: "neutral"
-    materials:
-      upholstery:
-        structure: "fabric"
-        surface: "woven_fabric"
-    finish:
-      color_finish: "stone"
-      surface_finish: "matte"
-      finish_color: "stone_fabric"
 
   - variant: "Camille, Forest (Fabric)"
     finish_code: "camille_forest_fabric"

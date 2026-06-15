@@ -162,6 +162,47 @@ physical_specs:
   max_bearing_support_kg: 100
   packaging_boxes: 1
 
+product_details:
+  material:
+    - label: "Material"
+      value: "Main material: engineered wood with oak veneer; Door: engineered wood with oak veneer; Leg: engineered wood with melamine"
+    - label: "Finish"
+      value: "Wood: PU lacquer in grey oak; Metal: brushed brass"
+    - label: "Cupboard mechanism"
+      value: "Adjustable shelves"
+    - label: "Care"
+      value: "Storage furniture"
+    - label: "Colour variance"
+      value: "Natural variations"
+    - label: "Material & safety standards"
+      value: "Low formaldehyde"
+    - label: "Safety tip"
+      value: "Anti-tip prevention"
+  dimensions:
+    - label: "Dimension"
+      value: "W150 x D47 x H78cm"
+    - label: "Cupboard capacity"
+      value: "4 x W34 x D41 x H31.5cm; 4 x W34 x D41 x H34.5cm"
+    - label: "Shelves height"
+      value: "31.3 / 34.5 / 37.7cm (adjustable height)"
+    - label: "Leg height"
+      value: "6cm"
+    - label: "Product weight"
+      value: "69kg"
+    - label: "Packaging dimensions"
+      value: "1 box"
+    - label: "Max bearing support"
+      value: "100kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Warranty"
+      value: "5-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Fully assembled"
+
 assets:
   asset_id: "storage-real-castlery-sloane-sideboard-150cm"
   model_url: "/assets/models/storage-real-castlery-sloane-sideboard-150cm.glb"

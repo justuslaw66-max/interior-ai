@@ -12,6 +12,7 @@ import {
   resolveConfiguredModelUrl as _resolveConfiguredModelUrl,
 } from "@/lib/design-page-config-resolvers";
 import { FULL_DIMENSIONS_BY_PRODUCT_ID } from "@/lib/design-page-product-data";
+import { buildProductDetailDimensionRows } from "@/lib/design-page-product-info";
 
 type UseDesignPageConfigStateParams = {
   importedModelOptions: ImportedModelOption[];
@@ -265,11 +266,29 @@ export function useDesignPageConfigState(params: UseDesignPageConfigStateParams)
     if (!selectedProduct) return null;
 
     const curated = FULL_DIMENSIONS_BY_PRODUCT_ID[selectedProduct.id];
+    const importedProductDetails = buildProductDetailDimensionRows({
+      selectedProduct,
+      selectedItem,
+      selectedImportedCatalog,
+    });
     const synthesized = buildDimensionsFromVariantData({
       selectedProduct,
       selectedItem,
       selectedImportedCatalog,
     });
+
+    if (importedProductDetails.length) {
+      if (!synthesized.length) return importedProductDetails;
+      const merged = [...importedProductDetails];
+      const labelSet = new Set(importedProductDetails.map((entry) => normalizeDimensionLabel(entry.label)));
+      for (const entry of synthesized) {
+        const key = normalizeDimensionLabel(entry.label);
+        if (labelSet.has(key)) continue;
+        labelSet.add(key);
+        merged.push(entry);
+      }
+      return merged;
+    }
 
     if (curated?.length) {
       if (!synthesized.length) return curated;

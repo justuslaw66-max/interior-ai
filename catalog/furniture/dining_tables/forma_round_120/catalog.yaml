@@ -78,6 +78,37 @@ design_pairings:
   - "dining_rug"
   - "sideboard"
 
+product_details:
+  material:
+    - label: "Material"
+      value: "Tabletop: solid American walnut; Base: metal"
+    - label: "Finish"
+      value: "Tabletop: PU finish in natural walnut with 5% gloss; Base: powder coating in black"
+    - label: "Care"
+      value: "Wooden table"
+    - label: "Colour variance"
+      value: "Natural variations"
+    - label: "Material & safety standards"
+      value: "Formaldehyde safe"
+  dimensions:
+    - label: "Dimension"
+      value: "W120 x D120 x H75.1cm"
+    - label: "Capacity"
+      value: "Sits 4 people comfortably"
+    - label: "Product weight"
+      value: "53kg"
+    - label: "Packaging dimensions"
+      value: "2 boxes"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Warranty"
+      value: "5-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Table top and base to be fitted"
+
 assets:
   asset_id: "dining-real-castlery-forma-round-120"
   model_url: "/assets/models/dining-real-castlery-forma-round-120.glb"

@@ -1,0 +1,192 @@
+brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/sloane-dining-table?leg_color=grey_oak&length=2_25m"
+category: "dining_table"
+
+product_family: "Sloane"
+product_name: "Sloane Dining Table"
+variant: "225 Grey Oak"
+
+price_usd: 1199
+price_band: "premium"
+brand_tier: "premium_mid"
+
+design_zone: "dining_zone"
+anchor_role: "dining_anchor"
+
+dimensions:
+  width_cm: 225
+  depth_cm: 100
+  height_cm: 76
+
+seat_capacity: 8
+size_class: "large"
+
+shape: "rectangular"
+base_type: "dual_panel"
+
+material_family: "wood"
+material_mix: "engineered_wood_oak_veneer"
+
+color_family: "grey"
+tone: "cool"
+
+style_cluster: "contemporary_luxury"
+style_secondary: "minimalist"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "heavy"
+  edge_profile: "straight"
+  silhouette: "monolithic"
+  form_language: "linear"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  chair_pullback_cm: 60
+  walkway_clearance_cm: 90
+
+room_compatibility:
+  - "dining_room"
+  - "open_plan"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: true
+
+design_pairings:
+  - "dining_chair"
+  - "dining_bench"
+  - "pendant_light"
+  - "dining_rug"
+  - "sideboard"
+
+compatibility:
+  related_products:
+    - product_family: "Sloane"
+      product_name: "Sloane Travertine Dining Table"
+      relationship: "family_variant"
+      strength: "strong"
+    - product_family: "Sloane"
+      product_name: "Sloane Dining Bench"
+      relationship: "matching_companion"
+      strength: "strong"
+
+bundle_metadata:
+  can_bundle_with:
+    - "Sloane Dining Bench"
+  bundle_role: "dining_anchor"
+  set_behavior:
+    supports_with_or_without_cushion: true
+
+product_details:
+  material:
+    - label: "Material"
+      value: "Engineered wood with oak veneer"
+    - label: "Finish"
+      value: "Grey oak on wood"
+    - label: "Care"
+      value: "Wooden table"
+    - label: "Colour variance"
+      value: "Natural variations"
+    - label: "Material & safety standards"
+      value: "Low formaldehyde"
+  dimensions:
+    - label: "Dimension"
+      value: "W225 x D100 x H76cm"
+    - label: "Table top thickness"
+      value: "5cm"
+    - label: "Leg height"
+      value: "71cm"
+    - label: "Leg to leg distance (at height 45cm)"
+      value: "159cm"
+    - label: "Leg room - height clearance"
+      value: "71cm"
+    - label: "Capacity"
+      value: "Sits 8 people comfortably"
+    - label: "Product weight"
+      value: "63.6kg"
+    - label: "Packaging dimensions"
+      value: "2 boxes"
+    - label: "Max bearing support"
+      value: "100kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free - 5 working days before delivery"
+    - label: "Warranty"
+      value: "5-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+
+assets:
+  asset_id: "dining-real-castlery-sloane-dining-table-225"
+  model_url: "/assets/models/dining-real-castlery-sloane-dining-table-225.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678429678/crusader/variants/50520004/Sloane-Dining-Table-225cm-Angle-1678429676.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678697688/crusader/variants/50520004/Sloane-Dining-Table-With-Dining-Bench-With-4-Cane-Chair-Dune-Grey-Oak-Square-Set_1-1678697686.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678429678/crusader/variants/50520004/Sloane-Dining-Table-225cm-Angle-1678429676.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1700464887/crusader/variants/50520004/Callie-4-Dining-Chair-With-2-Dining-Arm-Chair-Square-Set_3-1700464884.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1715050268/crusader/variants/50520004/Oslo-Chair-Performance-White-Quartz-Boucle-Square-Set_1-1715050265.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678697715/crusader/variants/50520004/Sloane-Dining-Table-Det_1-1678697713.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678429707/crusader/variants/50520004/Sloane-Dining-Table-Square-Det_3-1678429705.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678429707/crusader/variants/50520004/Sloane-Dining-Table-Square-Det_4-1678429705.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678429707/crusader/variants/50520004/Sloane-Dining-Table-Square-Det_5-1678429705.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678429678/crusader/variants/50520004/Sloane-Dining-Table-225cm-Front-1678429676.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678429678/crusader/variants/50520004/Sloane-Dining-Table-225cm-Side-1678429676.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1675853356/crusader/variants/T50520003/Sloane-Dining-Table-225cm-Dim-1675853355.jpg"
+
+ai_flags:
+  isStarterEligible: false
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+
+variants:
+  - variant: "225 Grey Oak"
+    size_label: "225"
+    finish_code: "grey_oak"
+    finish_label: "Grey Oak"
+    swatch_group: "wood_finish"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678429678/crusader/variants/50520004/Sloane-Dining-Table-225cm-Angle-1678429676.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678697688/crusader/variants/50520004/Sloane-Dining-Table-With-Dining-Bench-With-4-Cane-Chair-Dune-Grey-Oak-Square-Set_1-1678697686.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678429678/crusader/variants/50520004/Sloane-Dining-Table-225cm-Angle-1678429676.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1700464887/crusader/variants/50520004/Callie-4-Dining-Chair-With-2-Dining-Arm-Chair-Square-Set_3-1700464884.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1715050268/crusader/variants/50520004/Oslo-Chair-Performance-White-Quartz-Boucle-Square-Set_1-1715050265.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678697715/crusader/variants/50520004/Sloane-Dining-Table-Det_1-1678697713.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678429707/crusader/variants/50520004/Sloane-Dining-Table-Square-Det_3-1678429705.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678429707/crusader/variants/50520004/Sloane-Dining-Table-Square-Det_4-1678429705.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678429707/crusader/variants/50520004/Sloane-Dining-Table-Square-Det_5-1678429705.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678429678/crusader/variants/50520004/Sloane-Dining-Table-225cm-Front-1678429676.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678429678/crusader/variants/50520004/Sloane-Dining-Table-225cm-Side-1678429676.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1675853356/crusader/variants/T50520003/Sloane-Dining-Table-225cm-Dim-1675853355.jpg"
+
+    price_usd: 1199
+    price_band: "premium"
+    brand_tier: "premium_mid"
+
+    dimensions:
+      width_cm: 225
+      depth_cm: 100
+      height_cm: 76
+
+    seat_capacity: 8
+    size_class: "large"
+
+    color_family: "grey"
+    tone: "cool"
+
+    materials:
+      tabletop:
+        structure: "engineered_wood"
+        surface: "oak_veneer"
+      base:
+        structure: "engineered_wood"
+        surface: "oak_veneer"
+
+    finish:
+      tabletop_finish: "grey_oak"
+      base_finish: "grey_oak"
+      protective_coating: "none"
+      surface_finish: "wood"
+      finish_color: "grey_oak"

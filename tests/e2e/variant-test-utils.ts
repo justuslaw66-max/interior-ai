@@ -2,7 +2,7 @@ import { expect, type Locator, type Page } from "@playwright/test";
 
 export const DEFAULT_CATEGORY_TABS: RegExp[] = [
   /^Sofa \(/,
-  /^Accent Chair \(/,
+  /^Arm Chair \(/,
   /^Side Tables \(/,
   /^Dining Bench \(/,
   /^Ottoman \(/,
@@ -15,7 +15,25 @@ export const DEFAULT_CATEGORY_TABS: RegExp[] = [
   /^Floor Lamp \(/,
 ];
 
+async function openFurnishPanel(page: Page): Promise<void> {
+  const searchInput = page.getByPlaceholder("Search title, brand, style, finish, SKU...");
+  if (await searchInput.isVisible().catch(() => false)) return;
+
+  const furnishButton = page.locator('[data-testid="editor-workflow-furnish"]');
+  if ((await furnishButton.count()) === 0) return;
+  await furnishButton.first().click();
+}
+
+export function getSelectedItemPanel(page: Page): Locator {
+  return page
+    .locator('[data-testid="selected-item-panel"], main > div')
+    .filter({ hasText: "Selected Item" })
+    .filter({ has: page.getByRole("button", { name: "View retailer" }) })
+    .first();
+}
+
 export async function waitForCatalogReady(page: Page): Promise<boolean> {
+  await openFurnishPanel(page);
   const searchInput = page.getByPlaceholder("Search title, brand, style, finish, SKU...");
   const searchVisible = await expect(searchInput)
     .toBeVisible({ timeout: 20000 })
@@ -29,8 +47,31 @@ export async function waitForCatalogReady(page: Page): Promise<boolean> {
     .catch(() => false);
 }
 
+async function openFurnishPanelIfNeeded(page: Page): Promise<void> {
+  await openFurnishPanel(page);
+  const importedProductSelect = page.locator('[data-testid="imported-product-select"]');
+  if ((await importedProductSelect.count()) > 0) {
+    await openAdvancedImportedModelsIfNeeded(page);
+    return;
+  }
+  await openAdvancedImportedModelsIfNeeded(page);
+}
+
+export async function openAdvancedImportedModelsIfNeeded(page: Page): Promise<void> {
+  const advancedPicker = page.locator('[data-testid="advanced-imported-models"]');
+  if ((await advancedPicker.count()) === 0) return;
+
+  const isOpen = await advancedPicker.first().evaluate((node) =>
+    (node as HTMLDetailsElement).open
+  ).catch(() => true);
+  if (isOpen) return;
+
+  await page.locator('[data-testid="advanced-imported-models-toggle"]').first().click();
+}
+
 export async function getImportedFamilySelect(page: Page): Promise<Locator | null> {
   try {
+    await openFurnishPanelIfNeeded(page);
     const byTestId = page.locator('[data-testid="imported-family-select"]');
     if ((await byTestId.count()) > 0) return byTestId.first();
     const byRole = page.getByRole("combobox").first();
@@ -43,6 +84,7 @@ export async function getImportedFamilySelect(page: Page): Promise<Locator | nul
 
 export async function getImportedProductSelect(page: Page): Promise<Locator | null> {
   try {
+    await openFurnishPanelIfNeeded(page);
     const byTestId = page.locator('[data-testid="imported-product-select"]');
     if ((await byTestId.count()) > 0) return byTestId.first();
     const byRole = page.getByRole("combobox").nth(1);
@@ -76,12 +118,26 @@ export async function selectImportedFamilyByHint(page: Page, familyHint: string)
     .catch(() => false);
   if (!visible) return false;
 
-  const options = await listSelectOptions(familySelect);
-  const match = options.find((option) => option.label.toLowerCase().includes(familyHint.toLowerCase()));
-  if (!match) return false;
+  let matchValue = "";
+  const found = await expect
+    .poll(
+      async () => {
+        const options = await listSelectOptions(familySelect);
+        const match = options.find((option) =>
+          option.label.toLowerCase().includes(familyHint.toLowerCase()),
+        );
+        matchValue = match?.value ?? "";
+        return Boolean(matchValue);
+      },
+      { timeout: 30000 },
+    )
+    .toBeTruthy()
+    .then(() => true)
+    .catch(() => false);
+  if (!found || !matchValue) return false;
 
   try {
-    await familySelect.selectOption({ value: match.value });
+    await familySelect.selectOption({ value: matchValue });
     return true;
   } catch {
     return false;
@@ -130,6 +186,7 @@ export async function findImportedProductValue(
 
 export async function getAddImportedButton(page: Page): Promise<Locator | null> {
   try {
+    await openFurnishPanelIfNeeded(page);
     const byTestId = page.locator('[data-testid="add-imported-btn"]');
     if ((await byTestId.count()) > 0) return byTestId.first();
 
@@ -155,10 +212,13 @@ export async function addImportedProductIfReady(page: Page): Promise<boolean> {
     .catch(() => false);
   if (!visible) return false;
 
-  const enabled = await addButton.isEnabled().catch(() => false);
+  const enabled = await expect(addButton)
+    .toBeEnabled({ timeout: 30000 })
+    .then(() => true)
+    .catch(() => false);
   if (!enabled) return false;
 
-  await addButton.click();
+  await addButton.click({ noWaitAfter: true });
   await page.waitForTimeout(1200);
   return true;
 }
@@ -215,6 +275,7 @@ export async function openCatalogPreview(
   searchTerm: string,
   categoryTabs: RegExp[] = DEFAULT_CATEGORY_TABS,
 ): Promise<boolean> {
+  await openFurnishPanel(page);
   const ready = await waitForCatalogReady(page);
   if (!ready) return false;
 

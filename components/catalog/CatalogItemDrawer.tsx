@@ -6,6 +6,7 @@ import CatalogRoomFitBadge from "./CatalogRoomFitBadge";
 import CatalogItemGallery from "./CatalogItemGallery";
 import CatalogItemFinishPicker from "./CatalogItemFinishPicker";
 import CatalogItemRelatedList from "./CatalogItemRelatedList";
+import CatalogComfortProfile from "./CatalogComfortProfile";
 
 type RelatedSection = {
   title: string;
@@ -102,6 +103,8 @@ export default function CatalogItemDrawer({
           activeFinishId={activeFinishId}
           onSetFinish={onSetFinish}
         />
+
+        <CatalogComfortProfile axes={detail.comfortProfile} />
       </div>
 
       <div className="mt-3">

@@ -10,6 +10,7 @@ import type {
   DesignSnapshot,
   RoomSnapshot,
   SavedView,
+  PersistedFloorPlanState,
   ZoneMin,
 } from "./room-types";
 import { migrateToV3 } from "./room-types";
@@ -25,6 +26,9 @@ export interface StoredDesign {
     name: string;
     roomType: string;
     geometry: { width: number; depth: number; wallThickness?: number; height?: number };
+    planPosition?: { x: number; z: number };
+    planShape?: string;
+    planPolygon?: Array<{ x: number; z: number }>;
     items: DesignItem[];
     zones: ZoneMin[];
     savedViews: SavedView[];
@@ -36,6 +40,7 @@ export interface StoredDesign {
   budget?: string;
   lightingPreset?: string;
   notes?: string;
+  floorPlan?: PersistedFloorPlanState;
 }
 
 /**
@@ -51,6 +56,9 @@ export function snapshotToStored(snapshot: DesignSnapshot): StoredDesign {
       name: room.name,
       roomType: room.roomType,
       geometry: room.geometry,
+      planPosition: room.planPosition,
+      planShape: room.planShape,
+      planPolygon: room.planPolygon,
       items: room.items,
       zones: room.zones,
       savedViews: room.savedViews,
@@ -61,6 +69,7 @@ export function snapshotToStored(snapshot: DesignSnapshot): StoredDesign {
     budget: v3.budget,
     lightingPreset: v3.lightingPreset,
     notes: v3.notes,
+    floorPlan: v3.floorPlan,
   };
 }
 
@@ -79,6 +88,7 @@ export function storedToSnapshot(stored: StoredDesign): DesignSnapshot {
       budget: stored.budget as DesignSnapshot["budget"],
       lightingPreset: stored.lightingPreset,
       notes: stored.notes,
+      floorPlan: stored.floorPlan,
     };
   }
 
@@ -128,12 +138,14 @@ export function snapshotToLegacyApi(snapshot: DesignSnapshot): {
   items: DesignItem[];
   zones: ZoneMin[];
   savedViews: SavedView[];
+  snapshot: StoredDesign;
   style?: string;
   budget?: string;
   mode?: string;
   notes?: string;
 } {
   const v3 = migrateToV3(snapshot);
+  const stored = snapshotToStored(v3);
   // Get the active room
   const activeRoom = v3.rooms.find((r: RoomSnapshot) => r.id === v3.activeRoomId);
   
@@ -145,6 +157,7 @@ export function snapshotToLegacyApi(snapshot: DesignSnapshot): {
       items: [],
       zones: [],
       savedViews: [],
+      snapshot: stored,
     };
   }
 
@@ -155,6 +168,7 @@ export function snapshotToLegacyApi(snapshot: DesignSnapshot): {
     items: activeRoom.items,
     zones: activeRoom.zones,
     savedViews: activeRoom.savedViews,
+    snapshot: stored,
   };
 }
 
@@ -169,11 +183,16 @@ export function legacyApiToSnapshot(data: {
   items: DesignItem[];
   zones?: ZoneMin[];
   savedViews?: SavedView[];
+  snapshot?: StoredDesign | null;
   style?: string;
   budget?: string;
   mode?: string;
   notes?: string;
 }): DesignSnapshot {
+  if (data.snapshot?.version === 3 && Array.isArray(data.snapshot.rooms)) {
+    return storedToSnapshot(data.snapshot);
+  }
+
   return migrateToV3({
     items: data.items ?? [],
     zones: data.zones ?? [],
@@ -187,5 +206,6 @@ export function legacyApiToSnapshot(data: {
     style: data.style,
     budget: data.budget as DesignSnapshot["budget"],
     notes: data.notes,
+    floorPlan: (data.snapshot as StoredDesign | null | undefined)?.floorPlan,
   } as DesignSnapshot);
 }

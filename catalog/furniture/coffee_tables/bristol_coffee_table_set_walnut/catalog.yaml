@@ -1,0 +1,250 @@
+status: "published"
+brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/bristol-coffee-table-set-walnut?wood=walnut"
+category: "coffee_table"
+
+product_family: "Bristol"
+product_name: "Bristol Coffee Table Set, Walnut"
+slug: "castlery-bristol-coffee-table-set-walnut"
+variant: "Walnut"
+
+price_usd: 499
+price_band: "mid_premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "secondary"
+
+dimensions:
+  width_cm: 110
+  depth_cm: 60
+  height_cm: 51
+
+size_class: "small"
+shape: "round"
+base_type: "four_leg"
+
+material_family: "wood"
+material_mix:
+  - "solid_wood"
+
+color_family: "brown"
+tone: "warm"
+
+style_cluster: "midcentury_modern"
+style_secondary: "compact_living"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "light"
+  edge_profile: "rounded_soft"
+  silhouette: "nested_round_tables"
+  form_language: "curved_solid_wood_tables_with_geometric_legs"
+  descriptors:
+    - "nesting_tables"
+    - "rounded_edges"
+    - "solid_wood"
+    - "compact_space"
+
+spatial_attributes:
+  footprint_shape: "nested_round"
+  storage_integrated: false
+  low_profile: true
+  center_table_suitable: true
+  works_in_small_room: true
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+  - "open_plan"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: true
+  recommended_in_front_of:
+    - "sofa"
+    - "sectional_sofa"
+    - "loveseat"
+    - "accent_chair"
+  clearance_guidance:
+    sofa_to_table_cm_min: 30
+    sofa_to_table_cm_ideal: 40
+    circulation_cm_min: 60
+
+design_pairings:
+  - "sofa"
+  - "sectional_sofa"
+  - "loveseat"
+  - "side_table"
+  - "media_console"
+  - "rug"
+  - "floor_lamp"
+  - "accent_chair"
+
+compatibility:
+  related_products:
+    - product_family: "Bristol"
+      product_name: "Bristol Side Table"
+      relationship: "family_variant"
+      strength: "strong"
+    - product_family: "Madison"
+      product_name: "Madison Sofa"
+      relationship: "recommended_with"
+      strength: "medium"
+    - product_family: "Dawson"
+      product_name: "Dawson Sofa"
+      relationship: "recommended_with"
+      strength: "medium"
+
+recommendation_metadata:
+  recommendation_role: "living_room_surface"
+  primary_use_cases:
+    - "sofa_pairing"
+    - "compact_centerpiece_surface"
+    - "flexible_nested_table_set"
+  suggest_when_scene_has:
+    - "sofa_without_coffee_table"
+    - "sectional_sofa_without_table"
+    - "living_room_missing_center_surface"
+    - "small_living_room"
+  avoid_when_scene_has:
+    - "oversized_coffee_table_already_present"
+    - "very_small_walkway_clearance"
+
+bundle_metadata:
+  bundle_role: "accent"
+  can_bundle_with:
+    - "sofa"
+    - "sectional_sofa"
+    - "side_table"
+    - "media_console"
+    - "rug"
+    - "floor_lamp"
+    - "accent_chair"
+  set_behavior:
+    supports_living_room_pairing: true
+    supports_centerpiece_surface: true
+    supports_compact_space_pairing: true
+
+authoring_notes:
+  category_confidence: "high"
+  single_variant_expected: true
+  preset_family: "table"
+  source_checked: "Castlery Singapore product page, 2026-06-09"
+  note: "Castlery SG page lists this as a single Walnut finish with two nested tables. Dimensions are stored as the largest planning footprint and tallest nested table height."
+
+feature_flags:
+  has_storage: false
+  has_open_shelf: false
+  has_hidden_storage: false
+  has_drawers: false
+
+product_details:
+  material:
+    - label: "Material"
+      value: "Table top: solid rubber wood and walnut veneer; Leg: solid rubber wood"
+    - label: "Finish"
+      value: "Walnut stain"
+    - label: "Care"
+      value: "Wooden table"
+    - label: "Colour variance"
+      value: "Natural variations"
+    - label: "Material & safety standards"
+      value: "Formaldehyde safe"
+  dimensions:
+    - label: "Dimension"
+      value: "High: W55 x D55 x H51cm; Low: W110 x D60 x H42.8cm"
+    - label: "Table top thickness"
+      value: "2cm"
+    - label: "Product weight"
+      value: "15.9kg"
+    - label: "Packaging dimensions"
+      value: "1 box"
+    - label: "Max bearing support"
+      value: "60kg for each table"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Warranty"
+      value: "5-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Frame to be fitted"
+
+assets:
+  asset_id: "coffee-real-castlery-bristol-coffee-table-set-walnut"
+  model_url: "/assets/models/coffee-real-castlery-bristol-coffee-table-set-walnut.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692332700/crusader/variants/41230001/Bristol-Coffee-Table-Set-Front-1692332698.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692332700/crusader/variants/41230001/Bristol-Coffee-Table-Set-Front-1692332698.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692340494/crusader/variants/41230001/Bristol-Coffee-Table-Set-Walnut-Square-Set_3-1692340491.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692600356/crusader/variants/41230001/Bristol-Coffee-Table-Set-Walnut-Square-Set_1-1692600354.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692340836/crusader/variants/41230001/Owen-Left-Chaise-Sectional-Sofa-With-Armchair-With-Ottoman-Pearl_Beige-Walnut-Square-Set_1-1692340834.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692340588/crusader/variants/41230001/Bristol-Coffee-Table-Set-Walnut-Square-Set_4-1692340586.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692340414/crusader/variants/41230001/Bristol-Coffee-Table-Set-Walnut-Square-Det_2-1692340411.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692340414/crusader/variants/41230001/Bristol-Coffee-Table-Set-Walnut-Square-Det_1-1692340411.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692332741/crusader/variants/41230001/Bristol-Coffee-Table-Det_1-1692332737.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692332700/crusader/variants/41230001/Bristol-Coffee-Table-Set-Angle_1-1692332698.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692332700/crusader/variants/41230001/Bristol-Coffee-Table-Set-Side-1692332698.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692332706/crusader/variants/41230001/Bristol-Coffee-Table-Set-Angle_2-1692332704.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692340860/crusader/variants/T41230001/Bristol-Coffee-Table-Set-Dim-1692340858.jpg"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+
+variants:
+  - variant: "Bristol Coffee Table Set, Walnut / Walnut"
+    sku: "41230001"
+    size_label: "110x60"
+    finish_code: "walnut"
+    finish_label: "Walnut"
+    swatch_group: "wood_finish"
+    swatch_hex: "#8a643f"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692332700/crusader/variants/41230001/Bristol-Coffee-Table-Set-Front-1692332698.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692332700/crusader/variants/41230001/Bristol-Coffee-Table-Set-Front-1692332698.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692340494/crusader/variants/41230001/Bristol-Coffee-Table-Set-Walnut-Square-Set_3-1692340491.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692600356/crusader/variants/41230001/Bristol-Coffee-Table-Set-Walnut-Square-Set_1-1692600354.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692340860/crusader/variants/T41230001/Bristol-Coffee-Table-Set-Dim-1692340858.jpg"
+    model_asset_id: "coffee-real-castlery-bristol-coffee-table-set-walnut"
+    model_url: "/assets/models/coffee-real-castlery-bristol-coffee-table-set-walnut.glb"
+
+    price_usd: 499
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+
+    dimensions:
+      width_cm: 110
+      depth_cm: 60
+      height_cm: 51
+
+    size_class: "small"
+    color_family: "brown"
+    tone: "warm"
+
+    materials:
+      tabletop:
+        structure: "solid_wood"
+        surface: "walnut"
+      body:
+        structure: "solid_wood"
+        surface: "walnut"
+      legs:
+        structure: "solid_wood"
+        surface: "walnut"
+
+    finish:
+      color_finish: "walnut"
+      finish_color: "walnut"
+      surface_finish: "matte"
+
+    storage:
+      has_storage: false
+      storage_type: []
+
+    set_compatibility: []

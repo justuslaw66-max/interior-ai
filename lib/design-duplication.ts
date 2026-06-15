@@ -3,6 +3,7 @@ export type DuplicateDesignSource = {
   roomWidth: number;
   roomDepth: number;
   items: unknown;
+  snapshot?: unknown;
   zones: unknown;
   savedViews: unknown;
   style: string | null;
@@ -29,6 +30,10 @@ export function buildDuplicatedDesignData(
   const safeSavedViews = Array.isArray(source.savedViews)
     ? deepCloneJson(source.savedViews)
     : [];
+  const safeSnapshot =
+    source.snapshot && typeof source.snapshot === "object"
+      ? deepCloneJson(source.snapshot)
+      : undefined;
 
   return {
     user: { connect: { id: userId } },
@@ -36,6 +41,7 @@ export function buildDuplicatedDesignData(
     roomWidth: Number(source.roomWidth),
     roomDepth: Number(source.roomDepth),
     items: safeItems,
+    ...(safeSnapshot ? { snapshot: safeSnapshot } : {}),
     zones: safeZones,
     savedViews: safeSavedViews,
     style: source.style,

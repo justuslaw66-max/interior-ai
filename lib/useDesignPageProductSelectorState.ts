@@ -15,7 +15,6 @@ import {
   getSloaneBenchOptionFromProductId,
   SLOANE_BENCH_PRODUCT_IDS,
   SLOANE_TABLE_PRODUCT_IDS,
-  SLOANE_TABLE_TO_BENCH_RECOMMENDATION,
 } from "@/lib/design-page-product-data";
 import { parseVariantLabel } from "@/lib/design-page-utils";
 import {
@@ -62,6 +61,15 @@ function normalizeMaterialCode(value: string): string {
     .trim();
 }
 
+const SHOPPER_COLOUR_LABEL_BY_FINISH_CODE: Record<string, string> = {
+  bisque_fabric: "Bisque",
+  bisque: "Bisque",
+  camille_forest_fabric: "Camille, Forest",
+  camille_forest: "Camille, Forest",
+  caramel_leather: "Caramel",
+  caramel: "Caramel",
+};
+
 function buildMaterialFields(entry: CatalogItemSchema["variants"][number]): {
   key: string;
   label: string;
@@ -86,14 +94,12 @@ function buildMaterialFields(entry: CatalogItemSchema["variants"][number]): {
 type Params = {
   selectedProduct: CatalogItemSchema | null;
   selectedItem: DesignItem | null;
-  items: DesignItem[];
   catalogItems: typeof CATALOG_ITEMS;
 };
 
 export function useDesignPageProductSelectorState({
   selectedProduct,
   selectedItem,
-  items,
   catalogItems,
 }: Params) {
   const selectedBrand = useMemo(() => {
@@ -208,6 +214,12 @@ export function useDesignPageProductSelectorState({
     return modelSelectorProductIds[0] ?? selectedProduct.id;
   }, [selectedProduct, modelSelectorProductIds, armStyleOptions]);
 
+  const useModelOptionsAsVariants = Boolean(
+    selectedProduct &&
+      modelSelectorProductIds.length > 1 &&
+      !armStyleOptions?.length
+  );
+
   const lengthOptions = useMemo(() => {
     if (!selectedProduct) return null;
     const direct = LENGTH_OPTIONS_BY_PRODUCT_ID[selectedProduct.id];
@@ -239,6 +251,9 @@ export function useDesignPageProductSelectorState({
 
   const structuredVariants = useMemo(() => {
     if (!selectedProduct) return [] as StructuredVariantEntry[];
+    const isMadisonProduct =
+      selectedProduct.id.includes("madison") ||
+      selectedProduct.metadata?.productFamily?.trim().toLowerCase() === "madison";
     return selectedProduct.variants.map((variant) => {
       const parts = parseVariantLabel(variant.label);
       const swatchGroup = String(variant.swatchGroup ?? "").trim().toLowerCase();
@@ -255,7 +270,14 @@ export function useDesignPageProductSelectorState({
       const collectionType = String(variant.collectionType ?? "").trim().toLowerCase();
       const materialFields = buildMaterialFields(variant);
       const normalizedFinishCode = normalizeMaterialCode(String(variant.finishCode ?? ""));
-      const resolvedColourLabel = isWoodSwatch
+      const rawFinishCode = String(variant.finishCode ?? "").trim().toLowerCase();
+      const rawParsedColourLabel = parts.colourLabel.trim().toLowerCase();
+      const shopperColourLabel =
+        SHOPPER_COLOUR_LABEL_BY_FINISH_CODE[rawFinishCode] ??
+        (isMadisonProduct && rawParsedColourLabel === "forest" ? "Camille, Forest" : null);
+      const resolvedColourLabel = shopperColourLabel
+        ? shopperColourLabel
+        : isWoodSwatch
         ? variant.finishLabel?.trim() ||
           (normalizedFinishCode ? toTitleCase(normalizedFinishCode) : "") ||
           parts.colourLabel.trim() ||
@@ -297,7 +319,25 @@ export function useDesignPageProductSelectorState({
   }, [structuredVariants, isHuggProduct]);
 
   const showFabricGroupingDebug = process.env.NODE_ENV !== "production";
-  const selectedModelLabel = selectedProduct?.metadata?.modelLabel?.trim() ?? null;
+  const selectedProductIdLower = selectedProduct?.id?.toLowerCase();
+  const selectedModelLabelByProductId =
+    selectedProductIdLower ===
+      "armchair-real-castlery-avery-performance-swivel-armchair-with-ottoman"
+      ? "Swivel Armchair with Ottoman"
+      : selectedProductIdLower ===
+          "armchair-real-castlery-avery-performance-armchair-with-ottoman"
+        ? "Armchair with Ottoman"
+        : selectedProductIdLower ===
+            "armchair-real-castlery-avery-performance-swivel-armchair"
+          ? "Swivel Armchair"
+          : selectedProductIdLower ===
+              "armchair-real-castlery-avery-performance-armchair"
+            ? "Armchair"
+            : null;
+  const selectedModelLabel =
+    selectedProduct?.metadata?.modelLabel?.trim() ??
+    selectedModelLabelByProductId ??
+    null;
   const selectedCategoryDebugLabel = selectedProduct
     ? selectedProduct.category.replace(/_/g, " ")
     : null;
@@ -329,42 +369,11 @@ export function useDesignPageProductSelectorState({
     Boolean(selectedProduct && SLOANE_BENCH_PRODUCT_IDS.includes(selectedProduct.id)) ||
     (selectedFamily === "sloane" && selectedName.includes("bench"));
 
-  const selectedSloaneCompanionBenchItem = useMemo(() => {
-    return items.find((it) => SLOANE_BENCH_PRODUCT_IDS.includes(it.productId)) ?? null;
-  }, [items]);
-  const selectedSloaneCompanionTableItem = useMemo(() => {
-    return (
-      items.find((it) =>
-        SLOANE_TABLE_PRODUCT_IDS.includes(
-          it.productId as (typeof SLOANE_TABLE_PRODUCT_IDS)[number]
-        )
-      ) ?? null
-    );
-  }, [items]);
-
   const selectedBenchOption = selectedProduct
     ? getSloaneBenchOptionFromProductId(selectedProduct.id)
     : null;
-  const companionBenchOption = selectedSloaneCompanionBenchItem
-    ? getSloaneBenchOptionFromProductId(selectedSloaneCompanionBenchItem.productId)
-    : null;
-
-  const defaultBenchSizeFromTable =
-    selectedProduct && isSloaneTableSelected
-      ? SLOANE_TABLE_TO_BENCH_RECOMMENDATION[selectedProduct.id] ?? 150
-      : 150;
-
-  const activeCompanionBenchSize: 150 | 180 =
-    companionBenchOption?.size ?? selectedBenchOption?.size ?? defaultBenchSizeFromTable;
-  const activeCompanionBenchCushion: "no" | "leather" =
-    companionBenchOption?.cushion ?? selectedBenchOption?.cushion ?? "no";
   const activeSelectedBenchSize: 150 | 180 = selectedBenchOption?.size ?? 150;
   const activeSelectedBenchCushion: "no" | "leather" = selectedBenchOption?.cushion ?? "no";
-  const activeCompanionTableProductId =
-    selectedSloaneCompanionTableItem?.productId ??
-    (selectedProduct && isSloaneTableSelected
-      ? selectedProduct.id
-      : "dining-real-castlery-sloane-travertine-220");
 
   const hasColourOverlapAcrossMaterials = useMemo(() => {
     if (!hasWoodColourOptions) return false;
@@ -538,6 +547,7 @@ export function useDesignPageProductSelectorState({
 
   const useLengthOptionsAsVariants = Boolean(
     !hasStructuredVariantLabels &&
+      !useModelOptionsAsVariants &&
       !isSloaneBenchSelected &&
       !(shapeOptions?.length && (shapeOptions?.length ?? 0) > 1) &&
       lengthOptions?.length &&
@@ -553,7 +563,7 @@ export function useDesignPageProductSelectorState({
 
   const variantOptionCount = useMemo(() => {
     if (!selectedProduct) return 0;
-    if (hasStructuredVariantLabels) return modelSelectorProductIds.length;
+    if (hasStructuredVariantLabels || useModelOptionsAsVariants) return modelSelectorProductIds.length;
     if (useShapeOptionsAsVariants) {
       return (shapeOptions ?? []).filter((option) => Boolean(option.productId)).length;
     }
@@ -565,6 +575,7 @@ export function useDesignPageProductSelectorState({
   }, [
     selectedProduct,
     hasStructuredVariantLabels,
+    useModelOptionsAsVariants,
     modelSelectorProductIds,
     useShapeOptionsAsVariants,
     shapeOptions,
@@ -669,16 +680,12 @@ export function useDesignPageProductSelectorState({
     isSloaneTvConsoleSelected,
     isSloaneTableSelected,
     isSloaneBenchSelected,
-    selectedSloaneCompanionBenchItem,
-    selectedSloaneCompanionTableItem,
-    activeCompanionBenchSize,
-    activeCompanionBenchCushion,
     activeSelectedBenchSize,
     activeSelectedBenchCushion,
-    activeCompanionTableProductId,
     groupedVisibleColourVariants,
     hideColourSelector,
     materialOptions,
+    useModelOptionsAsVariants,
     useLengthOptionsAsVariants,
     useShapeOptionsAsVariants,
     showVariantsSection,

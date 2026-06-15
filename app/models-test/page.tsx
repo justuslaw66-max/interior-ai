@@ -1,3 +1,4 @@
+import { isQaEnabled } from "@/lib/qa";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import ModelDownloadCell from "./ModelDownloadCell";
@@ -5,8 +6,7 @@ import ModelDownloadCell from "./ModelDownloadCell";
 export const dynamic = "force-dynamic";
 
 export default async function ModelsDebugPage() {
-  const allowModelsTest =
-    process.env.NODE_ENV !== "production" || process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS === "1";
+  const allowModelsTest = isQaEnabled();
 
   if (!allowModelsTest) {
     notFound();

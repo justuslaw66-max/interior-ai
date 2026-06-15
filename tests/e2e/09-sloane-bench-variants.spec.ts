@@ -8,7 +8,7 @@ import {
 } from "./variant-test-utils";
 
 test.describe("9. Sloane Bench Variant UX", () => {
-  test("bench variants use cushion labels while size stays in Length", async ({ page }) => {
+  test("bench controls follow Castlery model, material, length, leg, and variant order", async ({ page }) => {
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
     const ready = await waitForCatalogReady(page);
@@ -48,14 +48,8 @@ test.describe("9. Sloane Bench Variant UX", () => {
       return;
     }
 
-    const noCushion = page
-      .locator('[data-testid="variant-swatch-sloane-bench-no"], [data-testid^="variant-swatch-"]')
-      .filter({ hasText: /No Cushion/i })
-      .first();
-    const leatherCushion = page
-      .locator('[data-testid="variant-swatch-sloane-bench-leather"], [data-testid^="variant-swatch-"]')
-      .filter({ hasText: /Leather Cushion/i })
-      .first();
+    const noCushion = page.getByTestId("variant-swatch-sloane-bench-no");
+    const leatherCushion = page.getByTestId("variant-swatch-sloane-bench-leather");
 
     await ensureItemSelectedForVariants(page);
 
@@ -71,18 +65,30 @@ test.describe("9. Sloane Bench Variant UX", () => {
       return;
     }
 
-    await expect(noCushion).toContainText("No Cushion");
-    await expect(leatherCushion).toContainText("Leather Cushion");
+    await expect(page.getByRole("button", { name: /^Dining table$/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Travertine dining table$/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Bench$/i })).toBeVisible();
+
+    await expect(noCushion).toContainText("No cushion");
+    await expect(leatherCushion).toContainText("With cushion");
 
     // The new UX should avoid mixing size prefixes into variant labels.
     await expect(noCushion).not.toContainText(/150|180/i);
     await expect(leatherCushion).not.toContainText(/150|180/i);
 
     await expect(page.getByText("Length", { exact: true })).toBeVisible();
-    await expect(page.getByRole("button", { name: "150CM" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "180CM" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "150CM" }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "180CM" }).first()).toBeVisible();
+    await expect(page.getByTestId("selected-single-finish-section")).toContainText(/^Leg/i);
+    await expect(page.getByTestId("selected-single-finish-label")).toContainText(/Grey Oak/i);
 
     await leatherCushion.click();
     await expect(leatherCushion).toHaveAttribute("data-active", "true");
+    await expect(page.getByTestId("selected-sloane-bench-material-section")).toContainText(/Material/i);
+    await expect(page.getByTestId("selected-sloane-bench-material-section")).toContainText(/Selected:\s*Caramel/i);
+    await expect(page.getByTestId("selected-sloane-bench-material-swatch")).toHaveAttribute(
+      "style",
+      /Sloane-Dining-Chair_Swatch_1_1/i,
+    );
   });
 });

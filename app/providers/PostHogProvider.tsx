@@ -3,6 +3,7 @@
 import posthog from "posthog-js";
 import { PostHogProvider as PHProvider } from "posthog-js/react";
 import { useEffect } from "react";
+import { setClientAnalyticsDisabled } from "@/lib/analytics";
 
 function resolvePostHogIngestHost(rawHost?: string): string {
   const fallback = "https://us.i.posthog.com";
@@ -27,9 +28,18 @@ function resolvePostHogIngestHost(rawHost?: string): string {
   return host.replace(/\/$/, "");
 }
 
-export function PostHogProvider({ children }: { children: React.ReactNode }) {
+export function PostHogProvider({
+  children,
+  analyticsDisabled = false,
+}: {
+  children: React.ReactNode;
+  analyticsDisabled?: boolean;
+}) {
   useEffect(() => {
+    setClientAnalyticsDisabled(analyticsDisabled);
+
     if (typeof window === "undefined") return;
+    if (analyticsDisabled) return;
     if (!process.env.NEXT_PUBLIC_POSTHOG_KEY) return;
 
     const isDevelopment = process.env.NODE_ENV === "development";
@@ -46,7 +56,11 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
       // Reduce noisy recorder traffic/errors in development.
       disable_session_recording: isDevelopment,
     });
-  }, []);
+  }, [analyticsDisabled]);
+
+  if (analyticsDisabled) {
+    return <>{children}</>;
+  }
 
   return <PHProvider client={posthog}>{children}</PHProvider>;
 }

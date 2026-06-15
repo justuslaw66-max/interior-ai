@@ -279,12 +279,61 @@ construction:
   safety:
     - "low_formaldehyde"
 
+product_details:
+  material:
+    - label: "Material"
+      value: "Table: engineered wood with oak veneer and solid oak edged; Ottoman: LVL frame with upholstery base"
+    - label: "Filling"
+      value: "Foam and fibre"
+    - label: "Care"
+      value: "Wooden table, upholstered seating"
+    - label: "Cover type"
+      value: "Fixed"
+    - label: "Material & safety standards"
+      value: "Low formaldehyde"
+  dimensions:
+    - label: "Dimension"
+      value: "Table: W110 x D55 x H43.2cm; Ottoman: W55.5 x D53.5 x H39cm"
+    - label: "Table top thickness"
+      value: "3.5cm"
+    - label: "Product weight"
+      value: "Table: 24.7kg; Per Ottoman: 6.6kg"
+    - label: "Packaging dimensions"
+      value: "3 boxes"
+    - label: "Max bearing support"
+      value: "Table: 80kg; Per Ottoman: 130kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Warranty"
+      value: "5-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Legs to be fitted"
+
 comfort_profile:
-  seat_comfort: "balanced_relaxed"
-  seat_depth_cm: 53.5
-  seat_width_cm: 55.5
-  seat_height_cm: 39
-  seat_softness: "soft"
+  # Required for Castlery SG sofa-family imports when the PDP exposes seat-feel data.
+  seat_comfort:
+    label: "Seat comfort"
+    value: 3
+    min_label: "Relaxed"
+    max_label: "Upright"
+  seat_depth:
+    label: "Seat depth"
+    value: 2
+    min_label: "Shallow"
+    max_label: "Deep"
+  seat_height:
+    label: "Seat height"
+    value: 2
+    min_label: "Low"
+    max_label: "High"
+  seat_softness:
+    label: "Seat softness"
+    value: 4
+    min_label: "Soft"
+    max_label: "Firm"
 
 authoring_notes:
   category_confidence: "high"

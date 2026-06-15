@@ -33,6 +33,7 @@ export async function POST(
         roomWidth: design.roomWidth,
         roomDepth: design.roomDepth,
         items: design.items,
+        snapshot: design.snapshot,
         zones: design.zones,
         savedViews: design.savedViews,
         style: design.style,

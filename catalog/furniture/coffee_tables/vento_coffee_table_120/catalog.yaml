@@ -118,6 +118,41 @@ authoring_notes:
   preset_family: "table"
   major_family_example_candidate: true
 
+product_details:
+  material:
+    - label: "Material"
+      value: "Engineered wood with walnut veneer and solid rubber wood"
+    - label: "Finish"
+      value: "Waterbase natural walnut"
+    - label: "Care"
+      value: "Wooden table"
+    - label: "Colour variance"
+      value: "Natural variations"
+    - label: "Material & safety standards"
+      value: "Low formaldehyde"
+  dimensions:
+    - label: "Dimension"
+      value: "W120 x D60 x H35cm"
+    - label: "Table top thickness"
+      value: "2.5cm"
+    - label: "Product weight"
+      value: "37kg"
+    - label: "Packaging dimensions"
+      value: "1 box"
+    - label: "Levellers"
+      value: "Included"
+    - label: "Max bearing support"
+      value: "100kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Warranty"
+      value: "5-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Fully assembled"
+
 assets:
   asset_id: "coffee-real-castlery-vento-coffee-table-120"
   model_url: "/assets/models/coffee-real-castlery-vento-coffee-table-120.glb"

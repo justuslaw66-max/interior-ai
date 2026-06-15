@@ -130,6 +130,39 @@ authoring_notes:
   preset_family: "table"
   major_family_example_candidate: true
 
+product_details:
+  material:
+    - label: "Material"
+      value: "Solid acacia wood and metal handle"
+    - label: "Leg frame"
+      value: "Solid acacia wood"
+    - label: "Finish"
+      value: "Muted honey tone and wire brush distressed finish; Black powdercoating handle"
+    - label: "Care"
+      value: "Wooden table"
+    - label: "Colour variance"
+      value: "Disclaimer"
+    - label: "Material & safety standards"
+      value: "Formaldehyde safe"
+  dimensions:
+    - label: "Dimension"
+      value: "W120 x D70 x H45cm"
+    - label: "Drawer capacity"
+      value: "2 x W53 x D42 x H9cm"
+    - label: "Leg height"
+      value: "24cm"
+    - label: "Packaging dimensions"
+      value: "1 box"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Warranty"
+      value: "5-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Handles to be fitted"
+
 assets:
   asset_id: "coffee-real-castlery-seb-storage-120"
   model_url: "/assets/models/coffee-real-castlery-seb-storage-120.glb"

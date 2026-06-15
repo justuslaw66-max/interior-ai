@@ -32,14 +32,13 @@ export default function ItemCartDrawer({
 
   return (
     <>
-      {/* Drawer toggle button */}
       <button
         onClick={onToggle}
-        className="fixed bottom-4 right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition-colors"
-        title="Open item cart"
+        className="fixed bottom-4 right-4 z-40 flex h-12 min-w-12 items-center justify-center rounded-full bg-blue-600 px-4 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-blue-700"
+        title="Open selection tray"
       >
-        <div className="flex flex-col items-center">
-          <span className="text-lg">🛒</span>
+        <div className="flex items-center">
+          <span>Tray</span>
           {totalItems > 0 && (
             <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
               {totalItems}
@@ -66,7 +65,7 @@ export default function ItemCartDrawer({
           {/* Header */}
           <div className="border-b border-neutral-200 p-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold">Items to Add</h2>
+              <h2 className="text-lg font-bold">Selection Tray</h2>
               <button
                 onClick={onToggle}
                 className="text-2xl font-bold text-neutral-400 hover:text-neutral-600"
@@ -84,8 +83,10 @@ export default function ItemCartDrawer({
             {items.length === 0 ? (
               <div className="flex h-full items-center justify-center text-center text-neutral-400">
                 <div>
-                  <p className="text-xl">No items yet</p>
-                  <p className="mt-1 text-sm">Use the quick-add buttons to get started</p>
+                  <p className="text-xl">No items selected</p>
+                  <p className="mt-1 text-sm">
+                    Add products from the catalog or imported furniture panel.
+                  </p>
                 </div>
               </div>
             ) : (
@@ -141,7 +142,7 @@ export default function ItemCartDrawer({
                 onClick={onAddAllToRoom}
                 className="w-full rounded-lg bg-green-600 px-4 py-3 text-white font-medium hover:bg-green-700 transition-colors"
               >
-                ✓ Add All to Room
+                Add All to Room
               </button>
               <button
                 onClick={onClear}

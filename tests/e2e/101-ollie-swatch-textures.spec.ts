@@ -1,5 +1,5 @@
 import { expect, test } from "./fixtures";
-import { openCatalogPreview } from "./variant-test-utils";
+import { getSelectedItemPanel, openCatalogPreview } from "./variant-test-utils";
 
 const OLLIE_ID = "sofa-real-castlery-ollie-storage-ottoman";
 
@@ -18,17 +18,18 @@ test.describe("101. Ollie Swatch Textures", () => {
     await expect(page.getByTestId("catalog-detail-add-to-room")).toBeVisible({ timeout: 10000 });
     await page.getByTestId("catalog-detail-add-to-room").click();
 
-    await expect(page.getByText("Selected Item")).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText(/Ollie Storage Ottoman/i).first()).toBeVisible();
+    const selectedItemPanel = getSelectedItemPanel(page);
+    await expect(selectedItemPanel.getByText("Selected Item")).toBeVisible({ timeout: 10000 });
+    await expect(selectedItemPanel.getByText(/Ollie Storage Ottoman/i).first()).toBeVisible();
 
     const expectedSwatches = [
-      { label: "Washed Chenille, Cream", urlPart: "GR4001-Greta-Ivory" },
-      { label: "Washed Chenille, Caramel", urlPart: "GR4003-Greta-Mustard-Brown" },
-      { label: "Washed Chenille, Moss", urlPart: "GR4004-Greta-Moss" },
+      { label: "Greta Ivory", urlPart: "GR4001-Greta-Ivory" },
+      { label: "Greta Caramel", urlPart: "GR4003-Greta-Mustard-Brown" },
+      { label: "Greta Moss", urlPart: "GR4004-Greta-Moss" },
     ];
 
     for (const swatch of expectedSwatches) {
-      const button = page.getByRole("button", { name: `Select ${swatch.label}` });
+      const button = selectedItemPanel.getByRole("button", { name: `Select ${swatch.label}` });
       await expect(button).toBeVisible({ timeout: 10000 });
       await expect
         .poll(async () => button.evaluate((node) => getComputedStyle(node).backgroundImage), {

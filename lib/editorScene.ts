@@ -34,6 +34,7 @@ export type EditorAnnotation2D = {
 
 export type RoomOpening2D = {
   id: string;
+  roomId?: string;
   wall: "north" | "south" | "east" | "west";
   offsetMm: number;
   widthMm: number;

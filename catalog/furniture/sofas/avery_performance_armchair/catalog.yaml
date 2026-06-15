@@ -1,0 +1,269 @@
+status: "published"
+brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/avery-performance-boucle-armchair"
+category: "armchair"
+
+product_family: "Avery"
+product_name: "Avery Performance Boucle Armchair"
+slug: "castlery-avery-performance-boucle-armchair"
+variant: "Armchair / Performance Infinity Boucle, Light Grey (White Quartz)"
+
+price_usd: 549
+price_band: "mid_premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "secondary"
+
+dimensions:
+  width_cm: 81.5
+  depth_cm: 80
+  height_cm: 75
+
+seat_capacity: 1
+size_class: "medium"
+shape: "rectangular"
+base_type: "legged"
+
+material_family: "upholstered"
+material_mix: "upholstered_wood"
+material_mix_components:
+  - "plywood"
+  - "engineered_wood"
+  - "rubber_wood"
+  - "performance_boucle"
+
+materials:
+  frame:
+    structure:
+      - "plywood"
+      - "engineered_wood"
+      - "rubber_wood"
+  leg:
+    structure: "rubber_wood"
+    finish: "wire_brushed_caramel"
+  upholstery:
+    material_type: "performance_boucle"
+    label: "Performance Infinity Boucle"
+    color: "Light Grey (White Quartz)"
+
+color_family: "grey"
+tone: "cool"
+
+style_cluster: "contemporary"
+style_secondary: "modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "rounded"
+  silhouette: "barrel_armchair"
+  form_language: "soft"
+  descriptors:
+    - "rounded_arms"
+    - "lumbar_cushion"
+    - "caramel_wood_legs"
+    - "performance_boucle"
+
+spatial_attributes:
+  footprint_shape: "rounded_rectangular"
+  walkway_clearance_cm: 60
+  descriptors:
+    - "compact_lounge_chair"
+    - "reading_corner_suitable"
+    - "small_space_friendly"
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+  - "bedroom"
+  - "open_plan"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: false
+  floating_layout_supported: true
+  recommended_in_front_of:
+    - "side_table"
+    - "floor_lamp"
+    - "rug"
+  clearance_guidance:
+    chair_to_table_cm_min: 20
+    circulation_cm_min: 60
+
+design_pairings:
+  - "side_table"
+  - "floor_lamp"
+  - "rug"
+  - "sofa"
+  - "coffee_table"
+  - "ottoman"
+
+compatibility:
+  related_products:
+    - product_family: "Avery"
+      product_name: "Avery Performance Boucle Armchair with Ottoman"
+      relationship: "family_variant"
+      strength: "strong"
+      collection_context: "same_collection"
+    - product_family: "Avery"
+      product_name: "Avery Performance Boucle Swivel Armchair"
+      relationship: "family_variant"
+      strength: "strong"
+      collection_context: "same_collection"
+    - product_family: "Avery"
+      product_name: "Avery Performance Boucle Swivel Armchair with Ottoman"
+      relationship: "family_variant"
+      strength: "strong"
+      collection_context: "same_collection"
+
+bundle_metadata:
+  bundle_role: "accent"
+  can_bundle_with:
+    - "side_table"
+    - "floor_lamp"
+    - "rug"
+    - "sofa"
+    - "ottoman"
+  set_behavior:
+    supports_reading_corner_pairing: true
+    supports_living_room_pairing: true
+
+authoring_notes:
+  category_confidence: "high"
+  source_checked: "Castlery Singapore product page, 2026-06-11"
+  note: "Castlery SG shows custom fabrics for the standalone armchair. This import publishes only the provided White Quartz GLB variant; custom fabric variants are deferred until model/media coverage is available."
+
+shipping_and_warranty:
+  free_delivery_threshold_sgd: 500
+  cancellation: "Customisation - no cancellation"
+  warranty: "Frame 10 years; Fabric 1 year; Foam 2 years"
+  return_policy: "Customisation - no refund or exchange"
+  assembly: "Legs to be fitted"
+
+product_details:
+  material:
+    - label: "Frame"
+      value: "Plywood, engineered wood and rubber wood; leg: caramel rubber wood"
+    - label: "Filling"
+      value: "Foam and fibre"
+    - label: "Finish"
+      value: "Wire-brushed caramel finish"
+    - label: "Care"
+      value: "Fabric sofa"
+    - label: "Cover type"
+      value: "Fixed seat cushion and removable lumbar cushion"
+    - label: "Material & safety standards"
+      value: "Low formaldehyde"
+  dimensions:
+    - label: "Dimension"
+      value: "W81.5 x D80 x H75cm"
+    - label: "Armrest height"
+      value: "61cm"
+    - label: "Cushion"
+      value: "1 cushion included (W50 x D25 x H10cm)"
+    - label: "Product weight"
+      value: "19.3kg"
+    - label: "Leg height"
+      value: "20.5cm"
+    - label: "Max bearing support"
+      value: "150kg"
+    - label: "Seatable width"
+      value: "69cm"
+    - label: "Seating depth"
+      value: "57cm"
+    - label: "Packaging dimensions"
+      value: "1 box"
+    - label: "Seating height"
+      value: "47cm"
+    - label: "Backrest height"
+      value: "28cm"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Customisation - no cancellation"
+    - label: "Warranty"
+      value: "Frame 10 years; Fabric 1 year; Foam 2 years"
+    - label: "Return policy"
+      value: "Customisation - no refund or exchange"
+    - label: "Assembly"
+      value: "Legs to be fitted"
+
+comfort_profile:
+  seat_comfort:
+    label: "Seat comfort"
+    value: 2
+    min_label: "Relaxed"
+    max_label: "Upright"
+  seat_depth:
+    label: "Seat depth"
+    value: 3
+    min_label: "Shallow"
+    max_label: "Deep"
+  seat_height:
+    label: "Seat height"
+    value: 3
+    min_label: "Low"
+    max_label: "High"
+  seat_softness:
+    label: "Seat softness"
+    value: 2
+    min_label: "Soft"
+    max_label: "Firm"
+
+assets:
+  asset_id: "armchair-real-castlery-avery-performance-armchair"
+  model_url: "/assets/models/armchair-real-castlery-avery-performance-armchair.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1760175670/crusader/variants/50441020-IN4002/Avery-Armchair-with-Ottoman_-White-Quartz-Square-Set_1-1760175669.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1760175669/crusader/variants/50441020-IN4002/Avery-Armchair-set-of-2-Square-Set_1_-1760175669.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1760175670/crusader/variants/50441020-IN4002/Avery-Armchair-Square-Det_1_-1760175669.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1762931261/crusader/variants/50441020-IN4002/Avery-Swivel-Armchair-Performance-Infinity-Boucle-White-Quartz-Usp-Det_1-1762931261.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175347/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Angle-1760175347.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1760175347/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Side-1760175347.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1760175347/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Back-1760175347.jpg"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+
+variants:
+  - variant: "Avery Performance Boucle Armchair / Light Grey (White Quartz)"
+    sku: "50441020-IN4002"
+    size_label: "81.5x80"
+    finish_code: "white_quartz"
+    finish_label: "Light Grey (White Quartz)"
+    upholstery_code: "performance_infinity_boucle_white_quartz"
+    upholstery_label: "Performance Infinity Boucle, Light Grey (White Quartz)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1760175670/crusader/variants/50441020-IN4002/Avery-Armchair-with-Ottoman_-White-Quartz-Square-Set_1-1760175669.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1760175669/crusader/variants/50441020-IN4002/Avery-Armchair-set-of-2-Square-Set_1_-1760175669.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1760175670/crusader/variants/50441020-IN4002/Avery-Armchair-Square-Det_1_-1760175669.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175347/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Angle-1760175347.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1760175347/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Side-1760175347.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1760175347/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Back-1760175347.jpg"
+    swatch_group: "upholstery_option"
+    color_family: "grey"
+    tone: "cool"
+    price_usd: 549
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
+    seat_capacity: 1
+    size_class: "medium"
+    materials:
+      upholstery:
+        material_type: "performance_boucle"
+        label: "Performance Infinity Boucle"
+        color: "Light Grey (White Quartz)"
+    finish:
+      color_finish: "white_quartz"
+      finish_color: "light_grey"
+      wood_finish: "wire_brushed_caramel"
+    set_compatibility: []

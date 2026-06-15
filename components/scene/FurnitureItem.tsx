@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { Edges, Html, Line, useCursor } from "@react-three/drei";
@@ -18,7 +18,6 @@ import {
 import { generateMeasurements, type Measure } from "@/lib/measurements";
 import { resolveMaterialProps } from "@/lib/design-page-material-props";
 import {
-  clamp,
   getRotatedFootprint,
   normalizeRotationDegrees,
   ROTATION_SNAP_STEP_DEGREES,
@@ -38,7 +37,8 @@ import { GLBScaledModel } from "@/components/scene/GLBScaledModel";
 import ItemRenderer2D from "@/components/editor/renderers/ItemRenderer2D";
 import { radiansToDeg } from "@/lib/editorScene";
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
-import type { DesignItem } from "@/lib/room-types";
+import { clampToRoom } from "@/lib/design-page-geometry";
+import type { DesignItem, RoomPlanPolygonPoint, RoomPlanShape } from "@/lib/room-types";
 type FurnitureProps = {
   product: CatalogItemSchema;
   planningBoundsMm?: { w: number; d: number; h: number };
@@ -51,6 +51,10 @@ type FurnitureProps = {
   initialRotationY?: number;
   roomWidth?: number;
   roomDepth?: number;
+  roomOriginX?: number;
+  roomOriginZ?: number;
+  roomPlanShape?: RoomPlanShape;
+  roomPlanPolygon?: RoomPlanPolygonPoint[];
   wallThickness?: number;
   margin?: number;
   snapDistance?: number;
@@ -117,6 +121,10 @@ export function Furniture({
   initialRotationY = 0,
   roomWidth = 5,
   roomDepth = 4,
+  roomOriginX = 0,
+  roomOriginZ = 0,
+  roomPlanShape = "rectangle",
+  roomPlanPolygon,
   wallThickness = 0.12,
   snapDistance = 0.25,
   enableSnap = true,
@@ -377,28 +385,48 @@ export function Furniture({
     return () => window.removeEventListener("keydown", handleEscape);
   }, [instanceId, onDraggingChange, rotateDragging]);
 
+  const isCustomPolygonRoom =
+    roomPlanShape === "custom_polygon" && Boolean(roomPlanPolygon?.length);
+  const clampWorldToRoomShape = useCallback(
+    (
+      worldX: number,
+      worldZ: number,
+      nextRotationY: number = rotation
+    ): [number, number] => {
+      const [localX, localZ] = clampToRoom(
+        worldX - roomOriginX,
+        worldZ - roomOriginZ,
+        planningWidth,
+        planningDepth,
+        roomWidth,
+        roomDepth,
+        wallThickness,
+        nextRotationY,
+        roomPlanShape,
+        roomPlanPolygon
+      );
+
+      return [localX + roomOriginX, localZ + roomOriginZ];
+    },
+    [
+      planningDepth,
+      planningWidth,
+      roomDepth,
+      roomOriginX,
+      roomOriginZ,
+      roomPlanPolygon,
+      roomPlanShape,
+      roomWidth,
+      rotation,
+      wallThickness,
+    ]
+  );
+
   // Update position when rotation changes to keep sofa in bounds
   useEffect(() => {
     // Only adjust position for rotation if NOT currently snapped to a wall
     if (snapType === "none") {
-      // Calculate new bounds based on current rotation
-      const [effW, effD] = getRotatedFootprint(planningWidth, planningDepth, rotation);
-      
-      const halfRoomW = roomWidth / 2;
-      const halfRoomD = roomDepth / 2;
-      const halfEffW = effW / 2;
-      const halfEffD = effD / 2;
-      
-      // Use hard bounds: items must maintain distance from walls
-      // Walls have physical thickness, so we must account for that
-      const hardMinX = -halfRoomW + wallThickness + halfEffW;
-      const hardMaxX = halfRoomW - wallThickness - halfEffW;
-      const hardMinZ = -halfRoomD + wallThickness + halfEffD;
-      const hardMaxZ = halfRoomD - wallThickness - halfEffD;
-      
-      // Clamp current position to new bounds
-      const newX = clamp(position[0], hardMinX, hardMaxX);
-      const newZ = clamp(position[2], hardMinZ, hardMaxZ);
+      const [newX, newZ] = clampWorldToRoomShape(position[0], position[2], rotation);
       
       if (newX !== position[0] || newZ !== position[2]) {
         const frameId = window.requestAnimationFrame(() => {
@@ -407,7 +435,19 @@ export function Furniture({
         return () => window.cancelAnimationFrame(frameId);
       }
     }
-  }, [planningDepth, planningWidth, position, roomDepth, roomWidth, rotation, snapType, wallThickness]);
+  }, [
+    planningDepth,
+    planningWidth,
+    clampWorldToRoomShape,
+    position,
+    roomDepth,
+    roomOriginX,
+    roomOriginZ,
+    roomWidth,
+    rotation,
+    snapType,
+    wallThickness,
+  ]);
 
   // Reuse Three.js helper objects without recreating them each render.
   const planeRef = useRef(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0));
@@ -433,10 +473,10 @@ export function Furniture({
   // Hard constraint bounds: prevent items from exiting the room
   // Walls have physical thickness, so we must account for that
   // Items must stay inside the inner room boundaries (wall edges)
-  const hardMinX = -halfRoomW + wallThickness + halfEffectiveW;
-  const hardMaxX = halfRoomW - wallThickness - halfEffectiveW;
-  const hardMinZ = -halfRoomD + wallThickness + halfEffectiveD;
-  const hardMaxZ = halfRoomD - wallThickness - halfEffectiveD;
+  const hardMinX = roomOriginX - halfRoomW + wallThickness + halfEffectiveW;
+  const hardMaxX = roomOriginX + halfRoomW - wallThickness - halfEffectiveW;
+  const hardMinZ = roomOriginZ - halfRoomD + wallThickness + halfEffectiveD;
+  const hardMaxZ = roomOriginZ + halfRoomD - wallThickness - halfEffectiveD;
 
   // Soft snap bounds: walls where items snap flush
   // Items snap directly to hard bounds (wall edges), no gap
@@ -447,10 +487,11 @@ export function Furniture({
   const wallBackZ = hardMaxZ;
 
   // Clamp position to hard bounds (prevent going outside room)
+  const [clampedX, clampedZ] = clampWorldToRoomShape(position[0], position[2]);
   const clampedPosition = [
-    clamp(position[0], hardMinX, hardMaxX),
+    clampedX,
     position[1],
-    clamp(position[2], hardMinZ, hardMaxZ),
+    clampedZ,
   ] as [number, number, number];
 
   // Snap to wall when within threshold (typically 3cm)
@@ -532,21 +573,21 @@ export function Furniture({
     raycaster.setFromCamera(e.pointer, e.camera);
     raycaster.ray.intersectPlane(plane, intersection);
 
-    // Hard-clamp to room bounds to prevent going outside
-    const x = clamp(intersection.x, hardMinX, hardMaxX);
-    const z = clamp(intersection.z, hardMinZ, hardMaxZ);
+    const [x, z] = clampWorldToRoomShape(intersection.x, intersection.z);
 
     // Try to snap to wall if enabled
     let snappedX = x;
     let snappedZ = z;
     let snap: SnapType = "none";
 
-    if (enableSnap) {
+    if (enableSnap && !isCustomPolygonRoom) {
       const [resultX, resultZ, resultSnap] = applySnap(x, z);
       snappedX = resultX;
       snappedZ = resultZ;
       snap = resultSnap;
     }
+
+    [snappedX, snappedZ] = clampWorldToRoomShape(snappedX, snappedZ);
 
     const nextPos: [number, number, number] = [snappedX, 0, snappedZ];
 
@@ -584,12 +625,14 @@ export function Furniture({
         }));
 
         // Wall snap points (flush to walls, no breathing room)
-        const walls = [
-          { axis: "x" as const, coord: wallLeftX, label: "Left Wall" },
-          { axis: "x" as const, coord: wallRightX, label: "Right Wall" },
-          { axis: "z" as const, coord: wallFrontZ, label: "Front Wall" },
-          { axis: "z" as const, coord: wallBackZ, label: "Back Wall" },
-        ];
+        const walls = isCustomPolygonRoom
+          ? []
+          : [
+              { axis: "x" as const, coord: wallLeftX, label: "Left Wall" },
+              { axis: "x" as const, coord: wallRightX, label: "Right Wall" },
+              { axis: "z" as const, coord: wallFrontZ, label: "Front Wall" },
+              { axis: "z" as const, coord: wallBackZ, label: "Back Wall" },
+            ];
 
         // Compute all snap candidates
         const snapCandidates = computeSnapCandidates(selectedAABB, neighborGuides, walls, snapDistance);
@@ -735,20 +778,16 @@ export function Furniture({
     const b = parseInt(variantHex.slice(4, 6), 16) / 255;
     return 0.2126 * r + 0.7152 * g + 0.0722 * b;
   }, [variantHex]);
+  const normalizedVariantMarker = variantMarker.replace(/[_-]+/g, " ");
   // variantMarker includes variantId (e.g. "cocoa_leather") so check both name and marker.
-  const isLeatherVariant = /\bleather\b/i.test(String(variantName ?? "")) || /\bleather\b/i.test(variantMarker);
-  const isMadisonStoneFabricVariant =
-    product.id.startsWith("sofa-real-castlery-madison-") &&
-    /\bstone\b/i.test(String(variantName ?? "")) &&
-    /\bfabric\b/i.test(String(variantName ?? ""));
+  const isLeatherVariant = /\bleather\b/i.test(String(variantName ?? "")) || /\bleather\b/i.test(normalizedVariantMarker);
+  const isMadisonProduct = product.id.startsWith("sofa-real-castlery-madison-");
+  const isMadisonFabricVariant = isMadisonProduct && !isLeatherVariant;
   const isMadisonBisqueFabricVariant =
-    product.id.startsWith("sofa-real-castlery-madison-") &&
-    /\bbisque\b/i.test(String(variantName ?? "")) &&
-    /\bfabric\b/i.test(String(variantName ?? ""));
+    isMadisonFabricVariant && /\bbisque\b/i.test(normalizedVariantMarker);
   const isMadisonCamilleForestFabricVariant =
-    product.id.startsWith("sofa-real-castlery-madison-") &&
-    /camille,?\s*forest/i.test(String(variantName ?? "")) &&
-    /\bfabric\b/i.test(String(variantName ?? ""));
+    isMadisonFabricVariant &&
+    (/\bcamille\b.*\bforest\b/i.test(normalizedVariantMarker) || /\bforest\b/i.test(normalizedVariantMarker));
   const isDawsonFabricVariant =
     product.id.startsWith("sofa-real-castlery-dawson-") && !isLeatherVariant;
   const isDawsonCreamyWhiteVariant =
@@ -841,45 +880,32 @@ export function Furniture({
     if (!modelCalibration) return modelCalibration;
 
     if (isMadisonBisqueFabricVariant) {
-      // Madison Bisque fabric: warm beige with a softer matte woven response.
+      // Madison Bisque fabric: light warm woven beige, matched to the Castlery SG swatch card.
       return {
         ...modelCalibration,
-        forceBaseColorHex: "#c5b49d",
-        brightness: 0.96,
-        saturation: 0.86,
+        forceBaseColorHex: "#d8d0c2",
+        disableBaseColorMap: true,
+        brightness: 1.02,
+        saturation: 0.78,
         roughnessOverride: 0.97,
         metalnessOverride: 0,
-        aoMapIntensity: 0.28,
+        aoMapIntensity: 0.2,
         emissiveBoost: 0,
         specularIntensityOverride: 0.05,
       };
     }
 
-    if (isMadisonStoneFabricVariant) {
-      // Madison Stone fabric: darker charcoal gray with visible woven contrast.
-      return {
-        ...modelCalibration,
-        forceBaseColorHex: "#6b6762",
-        brightness: 0.9,
-        saturation: 0.9,
-        roughnessOverride: 0.94,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.36,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.06,
-      };
-    }
-
     if (isMadisonCamilleForestFabricVariant) {
-      // Madison Camille, Forest fabric: deep muted green with soft matte weave.
+      // Madison Camille, Forest fabric: muted moss-green, matched to the Castlery SG swatch card.
       return {
         ...modelCalibration,
-        forceBaseColorHex: "#5a6356",
-        brightness: 0.88,
-        saturation: 0.84,
+        forceBaseColorHex: "#566448",
+        disableBaseColorMap: true,
+        brightness: 0.96,
+        saturation: 1.02,
         roughnessOverride: 0.98,
         metalnessOverride: 0,
-        aoMapIntensity: 0.36,
+        aoMapIntensity: 0.22,
         emissiveBoost: 0,
         specularIntensityOverride: 0.04,
       };
@@ -1348,4 +1374,3 @@ export function CameraCapture({
 
   return null;
 }
-
