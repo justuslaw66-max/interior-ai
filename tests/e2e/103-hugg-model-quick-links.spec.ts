@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures";
-import { openCatalogPreview } from "./variant-test-utils";
+import { getSelectedItemPanel, openCatalogPreview } from "./variant-test-utils";
 
 const HUGG_RECTANGULAR_BASALT_CLOSED_ID =
   "coffee-real-castlery-hugg-nesting-rectangular-performance-basalt-closed";
@@ -22,23 +22,24 @@ test.describe("103. Hugg Model Quick Links", () => {
 
     await page.getByTestId("catalog-detail-add-to-room").click();
 
-    await expect(page.getByText("Selected Item")).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText(/Hugg Nesting Rectangular Coffee Table/i).first()).toBeVisible();
+    const selectedItemPanel = getSelectedItemPanel(page);
+    await expect(selectedItemPanel.getByText("Selected Item")).toBeVisible({ timeout: 10000 });
+    await expect(selectedItemPanel.getByText(/Hugg Nesting Rectangular Coffee Table/i).first()).toBeVisible();
     await expect(page.getByTestId("hugg-model-option-square")).toBeVisible();
     await expect(page.getByTestId("hugg-model-option-rectangular")).toBeVisible();
     await expect(page.getByTestId("hugg-model-option-side-table")).toBeVisible();
-    await page.getByRole("button", { name: "Select fabric colour Performance Dune" }).click();
-    await expect(page.getByText("Selected: Performance Dune")).toBeVisible();
-    await expect(page.getByText("Selected: Black")).toBeVisible();
+    await selectedItemPanel.getByRole("button", { name: "Select fabric colour Performance Dune" }).click();
+    await expect(selectedItemPanel.getByText("Selected: Performance Dune")).toBeVisible();
+    await expect(selectedItemPanel.getByText("Selected: Black")).toBeVisible();
 
     await page.getByTestId("hugg-model-option-square").click();
-    await expect(page.getByText(/Hugg Nesting Square Coffee Table/i).first()).toBeVisible();
-    await expect(page.getByText("Selected: Performance Dune")).toBeVisible();
-    await expect(page.getByText("Selected: Black")).toBeVisible();
+    await expect(selectedItemPanel.getByText(/Hugg Nesting Square Coffee Table/i).first()).toBeVisible();
+    await expect(selectedItemPanel.getByText("Selected: Performance Dune")).toBeVisible();
+    await expect(selectedItemPanel.getByText("Selected: Black")).toBeVisible();
 
     await page.getByTestId("hugg-model-option-side-table").click();
-    await expect(page.getByText(/Hugg Nesting Side Table/i).first()).toBeVisible();
-    await expect(page.getByText("Selected: Performance Dune")).toBeVisible();
-    await expect(page.getByText("Selected: Black")).toBeVisible();
+    await expect(selectedItemPanel.getByText(/Hugg Nesting Side Table/i).first()).toBeVisible();
+    await expect(selectedItemPanel.getByText("Selected: Performance Dune")).toBeVisible();
+    await expect(selectedItemPanel.getByText("Selected: Black")).toBeVisible();
   });
 });

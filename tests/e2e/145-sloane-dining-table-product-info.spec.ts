@@ -2,6 +2,7 @@ import { expect, test } from "./fixtures";
 import { GLB_CALIBRATION_BY_PRODUCT_ID } from "../../lib/design-page-calibration";
 import {
   addImportedProductIfReady,
+  getSelectedItemPanel,
   selectImportedFamilyByHint,
   selectImportedProductById,
 } from "./variant-test-utils";
@@ -107,13 +108,14 @@ test.describe("145. Sloane Dining Table Product Info", () => {
     expect(await selectImportedProductById(page, SLOANE_DINING_TABLE_180_ID)).toBeTruthy();
     expect(await addImportedProductIfReady(page)).toBeTruthy();
 
-    await expect(page.getByText("Selected Item")).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText("Sloane Dining Table")).toBeVisible();
-    await expect(page.getByRole("button", { name: /^Dining table$/i })).toBeVisible();
-    await expect(page.getByRole("button", { name: /^Travertine dining table$/i })).toBeVisible();
-    await expect(page.getByRole("button", { name: /^Bench$/i })).toBeVisible();
-    await expect(page.getByRole("button", { name: /^180CM$/i }).first()).toBeVisible();
-    await expect(page.getByRole("button", { name: /^225CM$/i }).first()).toBeVisible();
+    const selectedItemPanel = getSelectedItemPanel(page);
+    await expect(selectedItemPanel.getByText("Selected Item")).toBeVisible({ timeout: 10000 });
+    await expect(selectedItemPanel.getByText("Sloane Dining Table")).toBeVisible();
+    await expect(selectedItemPanel.getByRole("button", { name: /^Dining table$/i })).toBeVisible();
+    await expect(selectedItemPanel.getByRole("button", { name: /^Travertine dining table$/i })).toBeVisible();
+    await expect(selectedItemPanel.getByRole("button", { name: /^Bench$/i })).toBeVisible();
+    await expect(selectedItemPanel.getByRole("button", { name: /^180CM$/i }).first()).toBeVisible();
+    await expect(selectedItemPanel.getByRole("button", { name: /^225CM$/i }).first()).toBeVisible();
 
     await expect(page.getByTestId("selected-single-finish-section")).toContainText(/^Leg/i);
     await expect(page.getByTestId("selected-single-finish-label")).toContainText(/Grey Oak/i);

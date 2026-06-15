@@ -125,6 +125,8 @@ product_details:
       value: "Body: engineered wood with oak veneer; Leg: engineered wood with melamine; Handle: steel"
     - label: "Finish"
       value: "Wood: PU lacquer in grey oak; Metal: brushed brass"
+    - label: "Surface finish"
+      value: "PU lacquer"
     - label: "Care"
       value: "Storage furniture"
     - label: "Cable management"

@@ -15,7 +15,25 @@ export const DEFAULT_CATEGORY_TABS: RegExp[] = [
   /^Floor Lamp \(/,
 ];
 
+async function openFurnishPanel(page: Page): Promise<void> {
+  const searchInput = page.getByPlaceholder("Search title, brand, style, finish, SKU...");
+  if (await searchInput.isVisible().catch(() => false)) return;
+
+  const furnishButton = page.locator('[data-testid="editor-workflow-furnish"]');
+  if ((await furnishButton.count()) === 0) return;
+  await furnishButton.first().click();
+}
+
+export function getSelectedItemPanel(page: Page): Locator {
+  return page
+    .locator('[data-testid="selected-item-panel"], main > div')
+    .filter({ hasText: "Selected Item" })
+    .filter({ has: page.getByRole("button", { name: "View retailer" }) })
+    .first();
+}
+
 export async function waitForCatalogReady(page: Page): Promise<boolean> {
+  await openFurnishPanel(page);
   const searchInput = page.getByPlaceholder("Search title, brand, style, finish, SKU...");
   const searchVisible = await expect(searchInput)
     .toBeVisible({ timeout: 20000 })
@@ -30,15 +48,12 @@ export async function waitForCatalogReady(page: Page): Promise<boolean> {
 }
 
 async function openFurnishPanelIfNeeded(page: Page): Promise<void> {
+  await openFurnishPanel(page);
   const importedProductSelect = page.locator('[data-testid="imported-product-select"]');
   if ((await importedProductSelect.count()) > 0) {
     await openAdvancedImportedModelsIfNeeded(page);
     return;
   }
-
-  const furnishButton = page.locator('[data-testid="editor-workflow-furnish"]');
-  if ((await furnishButton.count()) === 0) return;
-  await furnishButton.first().click();
   await openAdvancedImportedModelsIfNeeded(page);
 }
 
@@ -260,7 +275,7 @@ export async function openCatalogPreview(
   searchTerm: string,
   categoryTabs: RegExp[] = DEFAULT_CATEGORY_TABS,
 ): Promise<boolean> {
-  await openFurnishPanelIfNeeded(page);
+  await openFurnishPanel(page);
   const ready = await waitForCatalogReady(page);
   if (!ready) return false;
 

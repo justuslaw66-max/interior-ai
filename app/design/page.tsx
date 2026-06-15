@@ -8228,6 +8228,7 @@ function PageContent() {
         >
         {selectedProduct && (
           <div
+            data-testid="selected-item-panel"
             className={
               showDesignerTheme
                 ? "designer-panel designer-panel-strong w-85 rounded-xl p-4"
