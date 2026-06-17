@@ -4,11 +4,13 @@ import { useState } from "react";
 import type {
   HouseRoomConnectionChecklistItem,
   HouseRoomDoorwaySuggestion,
+  HousePlanTemplate,
   HouseRoomTemplateId,
   RoomSizePresetId,
 } from "@/lib/design-page-house-plan";
 import {
   HOUSE_ROOM_SHAPES,
+  HOUSE_PLAN_TEMPLATES,
   HOUSE_ROOM_TEMPLATES,
   HOUSE_ROOM_TYPES,
   ROOM_DIMENSION_DEFAULTS,
@@ -78,6 +80,7 @@ type DesignControlsPlanPanelProps = {
   onGoFurnish: () => void;
   onGoAiDesign: () => void;
   onGoShop: () => void;
+  onApplyPlanTemplate: (template: HousePlanTemplate) => void;
   onAddDesignerRoom: () => void;
   onAddRoomTemplate: (template: HouseRoomTemplate) => void;
   onNewRoomTypeChange: (roomType: RoomType) => void;
@@ -157,6 +160,7 @@ export default function DesignControlsPlanPanel({
   onGoFurnish,
   onGoAiDesign,
   onGoShop,
+  onApplyPlanTemplate,
   onAddDesignerRoom,
   onAddRoomTemplate,
   onNewRoomTypeChange,
@@ -602,9 +606,40 @@ export default function DesignControlsPlanPanel({
               : "mt-3 rounded-xl border border-neutral-200 bg-neutral-50 p-3"
           }
         >
-          <div className={titleClass}>Add rooms</div>
+          <div className={titleClass}>Starter floor plans</div>
           <div className={dark ? "mt-1 text-xs text-neutral-400" : "mt-1 text-xs text-neutral-500"}>
-            Start with a common room, then adjust dimensions on the plan.
+            Pick a full-home starting point, then resize rooms and add doors.
+          </div>
+          <div className="mt-2 grid gap-2">
+            {HOUSE_PLAN_TEMPLATES.map((template) => (
+              <button
+                key={template.id}
+                type="button"
+                data-testid={`apply-plan-template-${template.id}`}
+                onClick={() => onApplyPlanTemplate(template)}
+                disabled={!canEdit}
+                className={
+                  dark
+                    ? "rounded-lg border border-white/10 bg-[#1b2030] px-3 py-2 text-left text-sm font-medium text-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
+                    : "rounded-lg border border-neutral-200 bg-white px-3 py-2 text-left text-sm font-medium text-neutral-800 shadow-sm hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
+                }
+              >
+                <span className="flex items-center justify-between gap-2">
+                  <span>{template.label}</span>
+                  <span className={dark ? "text-xs text-neutral-400" : "text-xs text-neutral-500"}>
+                    {template.rooms.length} rooms
+                  </span>
+                </span>
+                <span className={dark ? "mt-0.5 block text-xs text-neutral-400" : "mt-0.5 block text-xs text-neutral-500"}>
+                  {template.summary}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <div className={`${titleClass} mt-4`}>Add one room</div>
+          <div className={dark ? "mt-1 text-xs text-neutral-400" : "mt-1 text-xs text-neutral-500"}>
+            Use these when you only need one extra room.
           </div>
           <div className="mt-2 grid grid-cols-2 gap-2">
             {HOUSE_ROOM_TEMPLATES.map((template) => (

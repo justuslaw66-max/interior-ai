@@ -6,6 +6,7 @@ import {
 } from "@/lib/design-page-geometry";
 import { applyFloorPlanScaleCalibration } from "@/lib/floor-plan-calibration";
 import {
+  HOUSE_PLAN_TEMPLATES,
   resolveFloorPlanOpeningCancelDecision,
 } from "@/lib/design-page-house-plan";
 import {
@@ -61,6 +62,46 @@ const living = makeRoom("living", "Living Room", 5, 4, 0, 0);
 const bedroom = makeRoom("bedroom", "Bedroom", 4, 4, 4.5, 0);
 const plan = buildFloorPlanFromRooms([living, bedroom]);
 const floor = plan.floors[0];
+
+for (const template of HOUSE_PLAN_TEMPLATES) {
+  assert.ok(template.rooms.length >= 1, `${template.id} should include at least one room`);
+  assert.equal(
+    new Set(template.rooms.map((room) => room.id)).size,
+    template.rooms.length,
+    `${template.id} should use unique room ids`
+  );
+
+  for (let firstIndex = 0; firstIndex < template.rooms.length; firstIndex += 1) {
+    const first = template.rooms[firstIndex];
+    const firstBounds = {
+      left: first.x - first.width / 2,
+      right: first.x + first.width / 2,
+      top: first.z - first.depth / 2,
+      bottom: first.z + first.depth / 2,
+    };
+
+    for (let secondIndex = firstIndex + 1; secondIndex < template.rooms.length; secondIndex += 1) {
+      const second = template.rooms[secondIndex];
+      const secondBounds = {
+        left: second.x - second.width / 2,
+        right: second.x + second.width / 2,
+        top: second.z - second.depth / 2,
+        bottom: second.z + second.depth / 2,
+      };
+      const overlapWidth =
+        Math.min(firstBounds.right, secondBounds.right) -
+        Math.max(firstBounds.left, secondBounds.left);
+      const overlapDepth =
+        Math.min(firstBounds.bottom, secondBounds.bottom) -
+        Math.max(firstBounds.top, secondBounds.top);
+
+      assert.ok(
+        overlapWidth <= 0.01 || overlapDepth <= 0.01,
+        `${template.id} rooms ${first.id} and ${second.id} should not overlap`
+      );
+    }
+  }
+}
 
 assert.equal(plan.version, 1);
 assert.equal(plan.units, "m");
