@@ -210,6 +210,8 @@ assert.equal(
 
 const snapped = snapHouseRoomMove("bedroom", 4.68, 0, plan.rooms);
 assert.deepEqual(snapped, { x: 4.5, z: 0 });
+assert.deepEqual(snapHouseRoomMove("bedroom", 4.68, 0.24, plan.rooms), { x: 4.5, z: 0 });
+assert.deepEqual(snapHouseRoomMove("bedroom", 4.68, -0.34, plan.rooms), { x: 4.5, z: -0.5 });
 const snapPreview = resolveHouseRoomSnapPreview("bedroom", 4.68, 0, plan.rooms);
 assert.equal(snapPreview?.x, 4.5);
 assert.equal(snapPreview?.z, 0);
@@ -224,6 +226,19 @@ assert.equal(snapHouseRoomMove("missing", 1, 1, plan.rooms), null);
 assert.equal(doesHouseRoomOverlap("bedroom", 4.5, 0, 4, 3, plan.rooms), false);
 assert.equal(doesHouseRoomOverlap("bedroom", 1.5, 0, 4, 3, plan.rooms), true);
 assert.deepEqual(snapHouseRoomMove("bedroom", 1.5, 0, plan.rooms), { x: 4.5, z: 0 });
+
+const stackedPlan = buildHousePlan2D(
+  [
+    living,
+    makeRoom("study", "Study", 5, 3, { x: 0, z: 3.5 }),
+  ],
+  5,
+  4
+);
+assert.deepEqual(snapHouseRoomMove("study", 0.22, 3.66, stackedPlan.rooms), {
+  x: 0,
+  z: 3.5,
+});
 assert.deepEqual(buildHouseRoomAdjacencyGuides(plan.rooms), [
   {
     id: "living-bedroom-vertical-east-west",
