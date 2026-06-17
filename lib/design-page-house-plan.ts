@@ -587,29 +587,66 @@ export function snapHouseRoomMove(
 
   let nextX = x;
   let nextZ = z;
+  const alignmentSnapDistance = Math.max(snapDistance * 2.5, 0.45);
 
   for (const other of rooms) {
     if (other.id === roomId) continue;
 
-    const movingLeft = nextX - moving.w / 2;
-    const movingRight = nextX + moving.w / 2;
-    const movingTop = nextZ - moving.d / 2;
-    const movingBottom = nextZ + moving.d / 2;
-    const otherLeft = other.x - other.w / 2;
-    const otherRight = other.x + other.w / 2;
-    const otherTop = other.z - other.d / 2;
-    const otherBottom = other.z + other.d / 2;
+    const movingBounds = getHouseRoomBounds(nextX, nextZ, moving.w, moving.d);
+    const otherBounds = getHouseRoomBounds(other.x, other.z, other.w, other.d);
 
-    if (Math.abs(movingLeft - otherRight) < snapDistance) {
-      nextX = otherRight + moving.w / 2;
-    } else if (Math.abs(movingRight - otherLeft) < snapDistance) {
-      nextX = otherLeft - moving.w / 2;
+    const alignDepth = () => {
+      const candidates = [
+        {
+          distance: Math.abs(movingBounds.top - otherBounds.top),
+          z: otherBounds.top + moving.d / 2,
+        },
+        {
+          distance: Math.abs(movingBounds.bottom - otherBounds.bottom),
+          z: otherBounds.bottom - moving.d / 2,
+        },
+        {
+          distance: Math.abs(nextZ - other.z),
+          z: other.z,
+        },
+      ].filter((candidate) => candidate.distance < alignmentSnapDistance);
+      const best = candidates.sort((first, second) => first.distance - second.distance)[0];
+      if (best) nextZ = best.z;
+    };
+
+    const alignWidth = () => {
+      const candidates = [
+        {
+          distance: Math.abs(movingBounds.left - otherBounds.left),
+          x: otherBounds.left + moving.w / 2,
+        },
+        {
+          distance: Math.abs(movingBounds.right - otherBounds.right),
+          x: otherBounds.right - moving.w / 2,
+        },
+        {
+          distance: Math.abs(nextX - other.x),
+          x: other.x,
+        },
+      ].filter((candidate) => candidate.distance < alignmentSnapDistance);
+      const best = candidates.sort((first, second) => first.distance - second.distance)[0];
+      if (best) nextX = best.x;
+    };
+
+    if (Math.abs(movingBounds.left - otherBounds.right) < snapDistance) {
+      nextX = otherBounds.right + moving.w / 2;
+      alignDepth();
+    } else if (Math.abs(movingBounds.right - otherBounds.left) < snapDistance) {
+      nextX = otherBounds.left - moving.w / 2;
+      alignDepth();
     }
 
-    if (Math.abs(movingTop - otherBottom) < snapDistance) {
-      nextZ = otherBottom + moving.d / 2;
-    } else if (Math.abs(movingBottom - otherTop) < snapDistance) {
-      nextZ = otherTop - moving.d / 2;
+    if (Math.abs(movingBounds.top - otherBounds.bottom) < snapDistance) {
+      nextZ = otherBounds.bottom + moving.d / 2;
+      alignWidth();
+    } else if (Math.abs(movingBounds.bottom - otherBounds.top) < snapDistance) {
+      nextZ = otherBounds.top - moving.d / 2;
+      alignWidth();
     }
   }
 
