@@ -238,6 +238,7 @@ const DEFAULT_EDITOR_CAMERA_VIEW: CameraView = {
   target: [0, 1.0, 0],
   fov: 45,
 };
+const EDITOR_3D_MIN_CAMERA_DISTANCE = 1.4;
 
 const SUPPORTED_FLOOR_PLAN_MIME_TYPES = new Set([
   "image/png",
@@ -8270,7 +8271,7 @@ function PageContent() {
                 enableZoom={!isClientPreview}
                 enableRotate={!isClientPreview}
                 rotateSpeed={0.8}
-                minDistance={2.5}
+                minDistance={EDITOR_3D_MIN_CAMERA_DISTANCE}
                 maxDistance={Math.max(24, Math.max(planViewWidth, planViewDepth) * 6)}
                 minPolarAngle={0.02}
                 maxPolarAngle={Math.PI - 0.02}
