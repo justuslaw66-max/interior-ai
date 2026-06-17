@@ -16,6 +16,7 @@ import type {
   FloorPlanUnderlay,
 } from "@/lib/floor-plan-types";
 import type { ImportedModelOption } from "@/lib/catalog/imported-model-assembly";
+import type { CatalogTopCategory } from "@/lib/catalog/view-builders";
 import type { RoomPlanShape, RoomType } from "@/lib/room-types";
 import type { EditorViewMode } from "./EditorViewToggle";
 import DesignControlsAiPanel from "./DesignControlsAiPanel";
@@ -93,6 +94,7 @@ type DesignControlsPanelProps = {
   activeRoomTypeLabel: string;
   activeRoomShoppableCount: number;
   activeRoomNeedsReviewCount: number;
+  activeRoomCategoryCounts: Partial<Record<CatalogTopCategory, number>>;
   aiLayoutProposal: AiLayoutProposal | null;
   onHide: () => void;
   onSignIn: () => void;
@@ -204,6 +206,7 @@ export default function DesignControlsPanel({
   activeRoomTypeLabel,
   activeRoomShoppableCount,
   activeRoomNeedsReviewCount,
+  activeRoomCategoryCounts,
   aiLayoutProposal,
   onHide,
   onSignIn,
@@ -420,6 +423,7 @@ export default function DesignControlsPanel({
             activeRoomItemCount={planItemCount}
             activeRoomShoppableCount={activeRoomShoppableCount}
             activeRoomNeedsReviewCount={activeRoomNeedsReviewCount}
+            activeRoomCategoryCounts={activeRoomCategoryCounts}
             roomCount={planRoomCount}
             catalogItems={catalogItems}
             selectedImportedFamilyKey={selectedImportedFamilyKey}

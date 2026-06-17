@@ -136,7 +136,7 @@ import {
 } from "@/lib/catalog/imported-model-assembly";
 import {
 } from "@/lib/catalog/variant-normalization";
-import { mapToTopCategory } from "@/lib/catalog/view-builders";
+import { mapToTopCategory, type CatalogTopCategory } from "@/lib/catalog/view-builders";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import {
   formatTimeAgo,
@@ -1729,6 +1729,19 @@ function PageContent() {
     roomShoppingSummaries.find((room) => room.roomId === designSnapshot.activeRoomId) ??
     roomShoppingSummaries[0] ??
     null;
+  const activeRoomCategoryCounts = useMemo(() => {
+    const counts: Partial<Record<CatalogTopCategory, number>> = {};
+    if (!activeRoom) return counts;
+
+    for (const item of activeRoom.items) {
+      const product = CATALOG_ITEMS[item.productId];
+      if (!product) continue;
+      const category = mapToTopCategory(product.category, product);
+      counts[category] = (counts[category] ?? 0) + Math.max(1, Math.min(99, item.qty ?? 1));
+    }
+
+    return counts;
+  }, [activeRoom]);
   const wholeHomeShoppingSummary = useMemo(
     () =>
       roomShoppingSummaries.reduce(
@@ -10601,6 +10614,7 @@ function PageContent() {
           activeRoomTypeLabel={activeRoom ? getRoomTypeLabel(activeRoom.roomType) : "Room"}
           activeRoomShoppableCount={activeRoomShoppingSummary?.shoppableCount ?? 0}
           activeRoomNeedsReviewCount={activeRoomShoppingSummary?.needsReviewCount ?? 0}
+          activeRoomCategoryCounts={activeRoomCategoryCounts}
           aiLayoutProposal={pendingAiLayoutProposal}
           onHide={() => setDesignPanelOpen(false)}
           onSignIn={signInWithReturn}
