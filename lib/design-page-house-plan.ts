@@ -39,6 +39,163 @@ export type HouseRoomTemplateId =
   | "bathroom"
   | "dining";
 
+export type HousePlanTemplateId =
+  | "studio"
+  | "living_dining"
+  | "compact_two_bed";
+
+export type HousePlanTemplateRoom = {
+  id: string;
+  name: string;
+  roomType: RoomType;
+  shape: RoomPlanShape;
+  width: number;
+  depth: number;
+  x: number;
+  z: number;
+};
+
+export type HousePlanTemplate = {
+  id: HousePlanTemplateId;
+  label: string;
+  summary: string;
+  rooms: HousePlanTemplateRoom[];
+};
+
+export const HOUSE_PLAN_TEMPLATES: HousePlanTemplate[] = [
+  {
+    id: "studio",
+    label: "Studio starter",
+    summary: "Living, kitchen, and bathroom",
+    rooms: [
+      {
+        id: "living",
+        name: "Living Room",
+        roomType: "living",
+        shape: "rectangle",
+        width: 5.6,
+        depth: 4,
+        x: 0,
+        z: 0,
+      },
+      {
+        id: "kitchen",
+        name: "Kitchen",
+        roomType: "kitchen",
+        shape: "rectangle",
+        width: 3,
+        depth: 4,
+        x: 4.3,
+        z: 0,
+      },
+      {
+        id: "bathroom",
+        name: "Bathroom",
+        roomType: "toilet",
+        shape: "rectangle",
+        width: 2.4,
+        depth: 2.2,
+        x: 7,
+        z: -0.9,
+      },
+    ],
+  },
+  {
+    id: "living_dining",
+    label: "Living + dining",
+    summary: "Open living, dining, and kitchen run",
+    rooms: [
+      {
+        id: "living",
+        name: "Living Room",
+        roomType: "living",
+        shape: "rectangle",
+        width: 5.6,
+        depth: 4.2,
+        x: 0,
+        z: 0,
+      },
+      {
+        id: "dining",
+        name: "Dining Room",
+        roomType: "dining",
+        shape: "rectangle",
+        width: 3.6,
+        depth: 4.2,
+        x: 4.6,
+        z: 0,
+      },
+      {
+        id: "kitchen",
+        name: "Kitchen",
+        roomType: "kitchen",
+        shape: "rectangle",
+        width: 3.2,
+        depth: 4.2,
+        x: 8,
+        z: 0,
+      },
+    ],
+  },
+  {
+    id: "compact_two_bed",
+    label: "Compact 2-bed",
+    summary: "Living, kitchen, two bedrooms, bath",
+    rooms: [
+      {
+        id: "living",
+        name: "Living Room",
+        roomType: "living",
+        shape: "rectangle",
+        width: 5.2,
+        depth: 4,
+        x: 0,
+        z: 0,
+      },
+      {
+        id: "kitchen",
+        name: "Kitchen",
+        roomType: "kitchen",
+        shape: "rectangle",
+        width: 3.2,
+        depth: 4,
+        x: 4.2,
+        z: 0,
+      },
+      {
+        id: "bedroom",
+        name: "Bedroom",
+        roomType: "bedroom",
+        shape: "rectangle",
+        width: 4,
+        depth: 3.4,
+        x: -0.6,
+        z: -3.7,
+      },
+      {
+        id: "bedroom_2",
+        name: "Bedroom 2",
+        roomType: "bedroom",
+        shape: "rectangle",
+        width: 3.2,
+        depth: 3.4,
+        x: 3,
+        z: -3.7,
+      },
+      {
+        id: "bathroom",
+        name: "Bathroom",
+        roomType: "toilet",
+        shape: "rectangle",
+        width: 2.2,
+        depth: 2.2,
+        x: 5.7,
+        z: -3.1,
+      },
+    ],
+  },
+];
+
 export const HOUSE_ROOM_TEMPLATES: Array<{
   id: HouseRoomTemplateId;
   label: string;

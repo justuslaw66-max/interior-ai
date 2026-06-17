@@ -4,6 +4,7 @@ import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import type {
   HouseRoomConnectionChecklistItem,
   HouseRoomDoorwaySuggestion,
+  HousePlanTemplate,
   HouseRoomTemplateId,
   RoomSizePresetId,
 } from "@/lib/design-page-house-plan";
@@ -104,6 +105,7 @@ type DesignControlsPanelProps = {
   onApplyAiLayoutProposal: () => void;
   onTryAiLayoutAgain: () => void;
   onClearAiLayoutProposal: () => void;
+  onApplyPlanTemplate: (template: HousePlanTemplate) => void;
   onAddDesignerRoom: () => void;
   onAddRoomTemplate: (template: HouseRoomTemplate) => void;
   onNewRoomTypeChange: (roomType: RoomType) => void;
@@ -214,6 +216,7 @@ export default function DesignControlsPanel({
   onApplyAiLayoutProposal,
   onTryAiLayoutAgain,
   onClearAiLayoutProposal,
+  onApplyPlanTemplate,
   onAddDesignerRoom,
   onAddRoomTemplate,
   onNewRoomTypeChange,
@@ -360,6 +363,7 @@ export default function DesignControlsPanel({
             onGoFurnish={onGoFurnish}
             onGoAiDesign={onGoAiDesign}
             onGoShop={onGoShop}
+            onApplyPlanTemplate={onApplyPlanTemplate}
             onAddDesignerRoom={onAddDesignerRoom}
             onAddRoomTemplate={onAddRoomTemplate}
             onNewRoomTypeChange={onNewRoomTypeChange}

@@ -235,18 +235,18 @@ test.describe("18. Multi-Room Whole Home", () => {
     }
     const pixelsPerMeter = Math.abs(rightBottom.y - rightTop.y) / 4;
     const start = {
-      x: rightTop.x,
-      y: rightTop.y,
+      x: rightTop.x + rightTop.width / 2,
+      y: rightTop.y + rightTop.height / 2,
     };
     const end = {
       x: rightTop.x + pixelsPerMeter * 2,
-      y: rightBottom.y,
+      y: rightBottom.y + rightBottom.height / 2,
     };
 
-    await page.mouse.move(start.x, start.y);
-    await page.mouse.down();
+    await page.mouse.click(start.x, start.y);
+    await expect(page.getByText("Wall points: 1")).toBeVisible();
     await page.mouse.move(end.x, end.y, { steps: 12 });
-    await page.mouse.up();
+    await page.mouse.click(end.x, end.y);
 
     await expect(page.getByText("Room drawn")).toBeVisible();
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("2 rooms");
@@ -311,6 +311,24 @@ test.describe("18. Multi-Room Whole Home", () => {
     await page.getByTestId("active-room-dimension-editor-depth").fill("3200");
     await page.getByTestId("active-room-dimension-editor-depth").press("Enter");
     await expect(page.getByTestId("active-room-dimension-depth")).toContainText("D 3200 mm");
+  });
+
+  test("starter floor-plan templates create whole-home room layouts", async ({ page }) => {
+    await page.goto("/design");
+    await page.waitForLoadState("domcontentloaded");
+
+    await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByTestId("plan-start-template").click();
+
+    await expect(page.getByTestId("apply-plan-template-studio")).toBeVisible();
+    await expect(page.getByTestId("apply-plan-template-living_dining")).toBeVisible();
+    await page.getByTestId("apply-plan-template-compact_two_bed").click();
+
+    await expect(page.getByText("Compact 2-bed added")).toBeVisible();
+    await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("5 rooms");
+    await expect(page.getByTestId("consumer-plan-next-steps")).toContainText("5 rooms ready");
+    await expect(page.getByTestId("room-connection-checklist")).toBeVisible();
   });
 
   test("adding a room keeps the plan visible as one whole-home 3D scene", async ({ page }) => {

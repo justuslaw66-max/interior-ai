@@ -53,6 +53,7 @@ import type {
 } from "@/lib/room-types";
 import {
   getActiveRoom,
+  createRoom,
   switchRoom,
   updateRoom,
   migrateToV3,
@@ -116,6 +117,7 @@ import {
   resolvePlanFitZoom,
   roundPlanCoordinate,
   shouldReplaceStarterRoomWithDrawnRoom,
+  type HousePlanTemplate,
   type HouseRoomDoorwaySuggestion,
   type RoomSizePresetId,
 } from "@/lib/design-page-house-plan";
@@ -4356,6 +4358,72 @@ function PageContent() {
       showRuleToast(kind === "door" ? "Click a wall to place a door" : "Click a wall to place a window");
     },
     [activeRoom, showRuleToast]
+  );
+
+  const handleApplyPlanTemplate = useCallback(
+    (template: HousePlanTemplate) => {
+      const timestamp = Date.now();
+      const rooms = template.rooms.map((templateRoom, index) => {
+        const room = createRoom(
+          `template_${template.id}_${templateRoom.id}_${timestamp}_${index}`,
+          templateRoom.name,
+          templateRoom.roomType,
+          {
+            width: templateRoom.width,
+            depth: templateRoom.depth,
+            wallThickness,
+            height: roomHeight,
+          }
+        );
+
+        room.planPosition = {
+          x: roundPlanCoordinate(templateRoom.x),
+          z: roundPlanCoordinate(templateRoom.z),
+        };
+        room.planShape = templateRoom.shape;
+        return room;
+      });
+      const activeTemplateRoom = rooms[0];
+      if (!activeTemplateRoom) return;
+
+      revokeFloorPlanUnderlayUrl();
+      floorPlanPdfSourceDataRef.current = null;
+      setFloorPlanPdfSourceReady(false);
+      setFloorPlanUnderlay(null);
+      setFloorPlanCalibrationMode(false);
+      setFloorPlanCalibrationPoints([]);
+      setFloorPlanCalibrationDistanceInput("");
+      setFloorPlanTraceRoomMode(false);
+      setFloorPlanTraceRoomPoints([]);
+      setBlankGridRoomPreviewPoint(null);
+      setFloorPlanTraceOpeningMode(false);
+      setFloorPlanTraceOpeningPoints([]);
+      setPlanOpenings([]);
+      setSelectedPlanOverlayId(null);
+      clearAllSelection();
+      setViewMode("2d");
+
+      setDesignSnapshot((prev) => ({
+        ...prev,
+        version: 3,
+        rooms,
+        activeRoomId: activeTemplateRoom.id,
+      }));
+
+      showRuleToast(`${template.label} added`);
+      track("floor_plan_template_applied", {
+        templateId: template.id,
+        roomCount: rooms.length,
+      });
+    },
+    [
+      clearAllSelection,
+      revokeFloorPlanUnderlayUrl,
+      roomHeight,
+      setDesignSnapshot,
+      showRuleToast,
+      wallThickness,
+    ]
   );
 
   const handleMoveFixedElement2D = useCallback((id: string, xMeters: number, zMeters: number) => {
@@ -10549,6 +10617,7 @@ function PageContent() {
             void runAiLayout(_getRandomSeed());
           }}
           onClearAiLayoutProposal={() => setPendingAiLayoutProposal(null)}
+          onApplyPlanTemplate={handleApplyPlanTemplate}
           onAddDesignerRoom={() => handleAddRoom()}
           onAddRoomTemplate={handleAddRoom}
           onNewRoomTypeChange={setNewRoomType}
