@@ -170,6 +170,12 @@ export type FloorPlanDrawCancelDecision = {
   exitRoomDrawMode: boolean;
 };
 
+export type FloorPlanOpeningCancelDecision = {
+  shouldHandle: boolean;
+  clearOpeningPoints: boolean;
+  exitOpeningMode: boolean;
+};
+
 export function resolveFloorPlanDrawCancelDecision({
   traceRoomMode,
   pointCount,
@@ -193,6 +199,29 @@ export function resolveFloorPlanDrawCancelDecision({
     clearRoomPoints: true,
     clearRoomPreview: true,
     exitRoomDrawMode: !hasActiveDraw,
+  };
+}
+
+export function resolveFloorPlanOpeningCancelDecision({
+  traceOpeningMode,
+  pointCount,
+}: {
+  traceOpeningMode: boolean;
+  pointCount: number;
+}): FloorPlanOpeningCancelDecision {
+  if (!traceOpeningMode && pointCount === 0) {
+    return {
+      shouldHandle: false,
+      clearOpeningPoints: false,
+      exitOpeningMode: false,
+    };
+  }
+
+  const hasActiveTrace = pointCount > 0;
+  return {
+    shouldHandle: true,
+    clearOpeningPoints: true,
+    exitOpeningMode: !hasActiveTrace,
   };
 }
 

@@ -456,6 +456,65 @@ export default function DesignControlsPlanPanel({
           </div>
         </div>
       )}
+      {floorPlanTraceOpeningMode && (
+        <div
+          data-testid="floor-plan-opening-active-card"
+          className={
+            dark
+              ? "mt-3 rounded-xl border border-emerald-400/20 bg-emerald-400/10 p-3"
+              : "mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3"
+          }
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className={dark ? "text-sm font-semibold text-emerald-100" : "text-sm font-semibold text-emerald-900"}>
+                {floorPlanTraceOpeningKind === "door" ? "Door tool active" : "Window tool active"}
+              </div>
+              <div className={dark ? "mt-1 text-xs text-emerald-100/75" : "mt-1 text-xs text-emerald-800"}>
+                {floorPlanUnderlay
+                  ? "Pick two points along the same wall. Green means it fits."
+                  : "Move near a wall, then click when the preview turns green."}
+              </div>
+              <div className={dark ? "mt-1 text-[11px] font-semibold text-emerald-100/70" : "mt-1 text-[11px] font-semibold text-emerald-700"}>
+                Esc {floorPlanTraceOpeningPointCount > 0 ? "clears points" : "exits tool"}
+              </div>
+            </div>
+            <button
+              type="button"
+              className={progressSecondaryActionClass}
+              onClick={() => onFloorPlanTraceOpeningModeChange(false)}
+            >
+              Done
+            </button>
+          </div>
+          <div className="mt-3 flex items-center gap-2">
+            <select
+              data-testid="floor-plan-opening-active-kind"
+              value={floorPlanTraceOpeningKind}
+              disabled={!canEdit}
+              onChange={(event) =>
+                onFloorPlanTraceOpeningKindChange(event.target.value as RoomOpening2D["kind"])
+              }
+              className={
+                dark
+                  ? "min-w-28 rounded-lg border border-white/15 bg-[#10131a] px-2 py-2 text-sm text-neutral-100"
+                  : "min-w-28 rounded-lg border border-emerald-200 bg-white px-2 py-2 text-sm text-neutral-900"
+              }
+            >
+              <option value="door">Door</option>
+              <option value="window">Window</option>
+            </select>
+            <button
+              type="button"
+              className={progressSecondaryActionClass}
+              disabled={!canEdit || floorPlanTraceOpeningPointCount === 0}
+              onClick={onResetFloorPlanTraceOpeningPoints}
+            >
+              Reset points
+            </button>
+          </div>
+        </div>
+      )}
       {showFloorPlanPanel && (
         <FloorPlanUploadPanel
           underlay={floorPlanUnderlay}

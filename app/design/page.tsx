@@ -112,6 +112,7 @@ import {
   doesHouseRoomOverlap,
   getRoomTypeLabel,
   resolveFloorPlanDrawCancelDecision,
+  resolveFloorPlanOpeningCancelDecision,
   resolvePlanFitZoom,
   roundPlanCoordinate,
   shouldReplaceStarterRoomWithDrawnRoom,
@@ -5043,6 +5044,17 @@ function PageContent() {
   );
 
   const cancelActiveFloorPlanDraw = useCallback(() => {
+    const openingDecision = resolveFloorPlanOpeningCancelDecision({
+      traceOpeningMode: floorPlanTraceOpeningMode,
+      pointCount: floorPlanTraceOpeningPoints.length,
+    });
+
+    if (openingDecision.shouldHandle) {
+      if (openingDecision.clearOpeningPoints) setFloorPlanTraceOpeningPoints([]);
+      if (openingDecision.exitOpeningMode) setFloorPlanTraceOpeningMode(false);
+      return true;
+    }
+
     const decision = resolveFloorPlanDrawCancelDecision({
       traceRoomMode: floorPlanTraceRoomMode,
       drawMode: floorPlanDrawRoomMode,
@@ -5054,7 +5066,13 @@ function PageContent() {
     if (decision.clearRoomPreview) setBlankGridRoomPreviewPoint(null);
     if (decision.exitRoomDrawMode) setFloorPlanTraceRoomMode(false);
     return true;
-  }, [floorPlanDrawRoomMode, floorPlanTraceRoomMode, floorPlanTraceRoomPoints.length]);
+  }, [
+    floorPlanDrawRoomMode,
+    floorPlanTraceOpeningMode,
+    floorPlanTraceOpeningPoints.length,
+    floorPlanTraceRoomMode,
+    floorPlanTraceRoomPoints.length,
+  ]);
 
   const handleUndoFloorPlanTraceRoomPoint = useCallback(() => {
     if (floorPlanDrawRoomMode !== "straight_wall" || floorPlanTraceRoomPoints.length === 0) return false;

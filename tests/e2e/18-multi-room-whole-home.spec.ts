@@ -441,6 +441,11 @@ test.describe("18. Multi-Room Whole Home", () => {
     await expect(page.getByTestId("plan-opening-offset-input")).toHaveValue("0.20");
     await page.getByTestId("floor-plan-tool-window").click();
     await expect(page.getByText("Click a wall to place a window")).toBeVisible();
+    await expect(page.getByTestId("floor-plan-opening-active-card")).toContainText("Window tool active");
+    await page.keyboard.press("Escape");
+    await expect(page.getByTestId("floor-plan-opening-active-card")).toHaveCount(0);
+    await page.getByTestId("floor-plan-tool-window").click();
+    await expect(page.getByTestId("floor-plan-opening-active-card")).toContainText("Window tool active");
     const openingCanvas = page.getByTestId("scene-canvas");
     const openingCanvasBox = await openingCanvas.boundingBox();
     expect(openingCanvasBox).not.toBeNull();
@@ -454,6 +459,7 @@ test.describe("18. Multi-Room Whole Home", () => {
       bedroomRightWallSnapY
     );
     await expect(page.getByTestId("blank-plan-opening-snap-preview")).toContainText("Window snaps");
+    await expect(page.getByTestId("blank-plan-opening-snap-detail")).toContainText("1200 mm");
     await page.mouse.click(bedroomRightWallSnapX, bedroomRightWallSnapY);
     await expect(page.getByText("Window placed")).toBeVisible();
     await expect(page.getByTestId("plan-opening-live-label")).toContainText("Window");
