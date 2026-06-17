@@ -895,6 +895,15 @@ function getOpeningPreviewHelpText(preview: TracedOpeningPreview): string | null
   return "Choose another point on the wall.";
 }
 
+function getOpeningPreviewDetailText(preview: TracedOpeningPreview): string | null {
+  if (!preview.opening) return null;
+
+  const widthLabel = formatMillimeters(preview.opening.widthMm / 1000);
+  const offsetLabel = formatMillimeters(Math.abs(preview.opening.offsetMm) / 1000);
+  const offsetSuffix = preview.opening.offsetMm === 0 ? "centered" : `${offsetLabel} from center`;
+  return `${widthLabel} · ${preview.opening.wall} wall · ${offsetSuffix}`;
+}
+
 export default function RoomRenderer2D({
   width,
   depth,
@@ -1224,6 +1233,9 @@ export default function RoomRenderer2D({
     );
   }, [canTraceOpeningOnGrid, localOpeningPreviewPoint, openings, rooms, traceOpeningKind]);
   const openingPreviewHelpText = openingPreview ? getOpeningPreviewHelpText(openingPreview) : null;
+  const openingPreviewDetailText = openingPreview
+    ? getOpeningPreviewDetailText(openingPreview)
+    : null;
 
   const formatDimension = (meters: number) => {
     const millimeters = meters * 1000;
@@ -3016,6 +3028,20 @@ export default function RoomRenderer2D({
             color={openingPreview.status === "valid" ? "#0f766e" : "#f97316"}
             lineWidth={3}
           />
+          {openingPreview.segment.map((point, index) => (
+            <mesh
+              key={`opening-preview-endpoint-${index}`}
+              position={[point.x, 0.008, point.z]}
+              rotation-x={-Math.PI / 2}
+            >
+              <circleGeometry args={[0.055, 20]} />
+              <meshBasicMaterial
+                color={openingPreview.status === "valid" ? "#0f766e" : "#f97316"}
+                transparent
+                opacity={0.95}
+              />
+            </mesh>
+          ))}
           <Html
             zIndexRange={[12, 0]}
             position={[
@@ -3047,6 +3073,19 @@ export default function RoomRenderer2D({
               }}
             >
               <div>{openingPreview.label}</div>
+              {openingPreviewDetailText && (
+                <div
+                  data-testid="blank-plan-opening-snap-detail"
+                  style={{
+                    color: openingPreview.status === "valid" ? "#047857" : "#9a3412",
+                    fontSize: 10,
+                    fontWeight: 700,
+                    marginTop: 2,
+                  }}
+                >
+                  {openingPreviewDetailText}
+                </div>
+              )}
               {openingPreviewHelpText && (
                 <div
                   data-testid="blank-plan-opening-error-detail"

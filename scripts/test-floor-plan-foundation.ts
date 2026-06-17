@@ -6,6 +6,9 @@ import {
 } from "@/lib/design-page-geometry";
 import { applyFloorPlanScaleCalibration } from "@/lib/floor-plan-calibration";
 import {
+  resolveFloorPlanOpeningCancelDecision,
+} from "@/lib/design-page-house-plan";
+import {
   lockFloorPlanWallDrawAngle,
   resolveOpeningPlacementFromPoint,
   resolveExactWallDrawPoint,
@@ -67,6 +70,40 @@ assert.equal(floor.rooms.length, 2);
 assert.equal(floor.walls.length, 7);
 assert.equal(floor.openings.length, 0);
 assert.equal(floor.underlays.length, 0);
+
+assert.deepEqual(
+  resolveFloorPlanOpeningCancelDecision({
+    traceOpeningMode: false,
+    pointCount: 0,
+  }),
+  {
+    shouldHandle: false,
+    clearOpeningPoints: false,
+    exitOpeningMode: false,
+  }
+);
+assert.deepEqual(
+  resolveFloorPlanOpeningCancelDecision({
+    traceOpeningMode: true,
+    pointCount: 0,
+  }),
+  {
+    shouldHandle: true,
+    clearOpeningPoints: true,
+    exitOpeningMode: true,
+  }
+);
+assert.deepEqual(
+  resolveFloorPlanOpeningCancelDecision({
+    traceOpeningMode: true,
+    pointCount: 1,
+  }),
+  {
+    shouldHandle: true,
+    clearOpeningPoints: true,
+    exitOpeningMode: false,
+  }
+);
 
 const livingPlanRoom = floor.rooms.find((room) => room.sourceRoomId === "living");
 assert.ok(livingPlanRoom);
