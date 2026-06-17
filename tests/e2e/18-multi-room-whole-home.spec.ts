@@ -264,8 +264,10 @@ test.describe("18. Multi-Room Whole Home", () => {
     await page.getByTestId("editor-workflow-furnish").click();
     await expect(page.getByTestId("editor-workflow-furnish")).toHaveAttribute("data-active", "true");
     await expect(page.getByTestId("furnish-room-summary")).toBeVisible();
+    await expect(page.getByTestId("furnish-room-checklist")).toBeVisible();
     await expect(page.getByText("Recommended for Living Room")).toBeVisible();
     await expect(page.getByTestId("furnish-recommended-category-coffee_table")).toBeVisible();
+    await expect(page.getByTestId("furnish-full-catalog")).not.toHaveAttribute("open", "");
     await expect(page.getByTestId("advanced-imported-models")).not.toHaveAttribute("open", "");
 
     await page.getByTestId("editor-workflow-shop").click();
