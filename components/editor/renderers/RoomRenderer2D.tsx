@@ -7,10 +7,14 @@ import * as THREE from "three";
 import type { FloorPlanDrawRoomMode, FloorPlanPoint } from "@/lib/floor-plan-types";
 import type { RoomType } from "@/lib/room-types";
 import {
+  isClosingWallDrawPoint,
+  resolveOpeningPlacementFromPoint,
   resolveArcWallDrawPreview,
   resolveRoomDrawPreview,
+  snapFloorPlanPointForWallDraw,
   type ArcWallDrawPreview,
   type RoomDrawPreview,
+  type TracedOpeningPreview,
 } from "@/lib/floor-plan-tracing";
 import {
   buildHouseRoomAdjacencyGuides,
@@ -73,6 +77,36 @@ type RoomResizeHandle = "n" | "e" | "s" | "w" | "nw" | "ne" | "se" | "sw";
 
 const DRAW_WORKSPACE_MIN_SIZE_METERS = 60;
 const DRAW_WORKSPACE_PADDING_METERS = 20;
+const DRAW_SNAP_VISUAL_EPSILON_METERS = 0.01;
+
+type RoomDrawGuideLine = {
+  id: string;
+  points: Array<[number, number, number]>;
+  emphasis?: "soft" | "strong";
+};
+
+type WallDrawAlignmentCue = {
+  id: string;
+  point: FloorPlanPoint;
+  label: string;
+};
+
+type RoomDrawSnapMarker = {
+  id: string;
+  point: FloorPlanPoint;
+  label: "Corner" | "Wall edge" | "Shared wall" | "Close room";
+  displayLabel?: string;
+  subtle?: boolean;
+};
+
+type RoomDrawPointSnapLabel = Exclude<RoomDrawSnapMarker["label"], "Shared wall" | "Close room">;
+
+type SharedWallPreviewSegment = {
+  id: string;
+  points: [[number, number, number], [number, number, number]];
+  labelPosition: FloorPlanPoint;
+  lengthMeters: number;
+};
 
 type RoomRenderer2DProps = {
   width: number;
@@ -102,6 +136,12 @@ type RoomRenderer2DProps = {
   onMoveFixedElement?: (id: string, x: number, z: number) => void;
   onMoveAnnotation?: (id: string, x: number, z: number) => void;
   onAddDoorwaySuggestion?: (suggestion: HouseRoomDoorwaySuggestion) => void;
+  onCommitRoomDimensionEdit?: (
+    roomId: string,
+    axis: "width" | "depth",
+    valueMeters: number
+  ) => void;
+  onCommitWallDrawSegmentLength?: (segmentIndex: number, valueMeters: number) => void;
   drawRoomMode?: boolean;
   drawRoomPoints?: FloorPlanPoint[];
   drawRoomPreviewPoint?: FloorPlanPoint | null;
@@ -109,6 +149,9 @@ type RoomRenderer2DProps = {
   onDrawRoomPreviewPoint?: (point: FloorPlanPoint | null) => void;
   onDrawRoomDrag?: (start: FloorPlanPoint, end: FloorPlanPoint) => void;
   drawRoomInteractionMode?: FloorPlanDrawRoomMode;
+  traceOpeningMode?: boolean;
+  traceOpeningKind?: Opening2D["kind"];
+  onTraceOpeningPoint?: (point: FloorPlanPoint) => void;
 };
 
 const getRoomOutlinePoints = (room: HouseRoom2D): Array<[number, number]> => {
@@ -190,43 +233,625 @@ function buildWallDrawLinePoints(
 function buildWallDrawGuideLines(
   previousPoint: FloorPlanPoint | null,
   previewPoint: FloorPlanPoint | null,
+  rooms: HouseRoom2D[],
   width: number,
   depth: number
-): Array<{ id: string; points: Array<[number, number, number]> }> {
+): RoomDrawGuideLine[] {
   if (!previousPoint || !previewPoint) return [];
   const halfWidth = width / 2;
   const halfDepth = depth / 2;
+  const guides: RoomDrawGuideLine[] = [];
 
-  return [
-    {
-      id: "wall-guide-x",
+  const addVerticalGuide = (id: string, x: number, y: number) => {
+    guides.push({
+      id,
       points: [
-        [previewPoint.x, 0.0085, -halfDepth],
-        [previewPoint.x, 0.0085, halfDepth],
+        [x, y, -halfDepth],
+        [x, y, halfDepth],
       ],
-    },
-    {
-      id: "wall-guide-z",
+    });
+  };
+  const addHorizontalGuide = (id: string, z: number, y: number) => {
+    guides.push({
+      id,
       points: [
-        [-halfWidth, 0.0085, previewPoint.z],
-        [halfWidth, 0.0085, previewPoint.z],
+        [-halfWidth, y, z],
+        [halfWidth, y, z],
       ],
-    },
-    {
-      id: "wall-guide-previous-x",
-      points: [
-        [previousPoint.x, 0.008, -halfDepth],
-        [previousPoint.x, 0.008, halfDepth],
-      ],
-    },
-    {
-      id: "wall-guide-previous-z",
-      points: [
-        [-halfWidth, 0.008, previousPoint.z],
-        [halfWidth, 0.008, previousPoint.z],
-      ],
-    },
+    });
+  };
+
+  const previewAlignment = getRoomDrawPointAlignment(previewPoint, rooms);
+  const previousAlignment = getRoomDrawPointAlignment(previousPoint, rooms);
+  if (previewAlignment.alignsX || Math.abs(previewPoint.x - previousPoint.x) <= DRAW_SNAP_VISUAL_EPSILON_METERS) {
+    addVerticalGuide("wall-guide-x", previewPoint.x, 0.0085);
+  }
+  if (previewAlignment.alignsZ || Math.abs(previewPoint.z - previousPoint.z) <= DRAW_SNAP_VISUAL_EPSILON_METERS) {
+    addHorizontalGuide("wall-guide-z", previewPoint.z, 0.0085);
+  }
+  if (previousAlignment.alignsX) {
+    addVerticalGuide("wall-guide-previous-x", previousPoint.x, 0.008);
+  }
+  if (previousAlignment.alignsZ) {
+    addHorizontalGuide("wall-guide-previous-z", previousPoint.z, 0.008);
+  }
+
+  return guides;
+}
+
+function buildWallDrawAlignmentCue(
+  previousPoint: FloorPlanPoint | null,
+  previewPoint: FloorPlanPoint | null,
+  rooms: HouseRoom2D[]
+): WallDrawAlignmentCue | null {
+  if (!previousPoint || !previewPoint) return null;
+  if (isClosingWallDrawPoint(previewPoint, previousPoint, 3)) return null;
+
+  const alignment = getRoomDrawPointAlignment(previewPoint, rooms);
+  const sameX = Math.abs(previewPoint.x - previousPoint.x) <= DRAW_SNAP_VISUAL_EPSILON_METERS;
+  const sameZ = Math.abs(previewPoint.z - previousPoint.z) <= DRAW_SNAP_VISUAL_EPSILON_METERS;
+
+  if (alignment.label === "Corner") {
+    return {
+      id: "wall-align-corner",
+      point: previewPoint,
+      label: "Corner locked",
+    };
+  }
+
+  if (alignment.label === "Wall edge") {
+    return {
+      id: "wall-align-edge",
+      point: previewPoint,
+      label: "Wall edge locked",
+    };
+  }
+
+  if (sameX) {
+    return {
+      id: "wall-align-vertical",
+      point: previewPoint,
+      label: "Vertical alignment",
+    };
+  }
+
+  if (sameZ) {
+    return {
+      id: "wall-align-horizontal",
+      point: previewPoint,
+      label: "Horizontal alignment",
+    };
+  }
+
+  return null;
+}
+
+function buildWallDrawContinuationCue(
+  point: FloorPlanPoint | null,
+  rooms: HouseRoom2D[]
+): WallDrawAlignmentCue | null {
+  if (!point) return null;
+
+  const alignment = getRoomDrawPointAlignment(point, rooms);
+  if (alignment.label === "Corner") {
+    return {
+      id: "wall-continue-corner",
+      point,
+      label: "Continue from corner",
+    };
+  }
+
+  if (alignment.label === "Wall edge") {
+    return {
+      id: "wall-continue-edge",
+      point,
+      label: "Continue on wall",
+    };
+  }
+
+  return null;
+}
+
+function buildWallDrawCloseCue(
+  points: FloorPlanPoint[],
+  previewPoint: FloorPlanPoint | null
+): WallDrawAlignmentCue | null {
+  if (points.length < 3) return null;
+  const firstPoint = points[0];
+  if (!firstPoint) return null;
+  if (previewPoint && isClosingWallDrawPoint(previewPoint, firstPoint, points.length)) {
+    return null;
+  }
+
+  return {
+    id: "wall-close-cue",
+    point: firstPoint,
+    label: "Close room here",
+  };
+}
+
+function getRoomBounds(room: HouseRoom2D) {
+  return {
+    left: room.x - room.w / 2,
+    right: room.x + room.w / 2,
+    top: room.z - room.d / 2,
+    bottom: room.z + room.d / 2,
+  };
+}
+
+function isNearPlanValue(first: number, second: number): boolean {
+  return Math.abs(first - second) <= DRAW_SNAP_VISUAL_EPSILON_METERS;
+}
+
+function getRoomDrawPointAlignment(
+  point: FloorPlanPoint,
+  rooms: HouseRoom2D[]
+): {
+  alignsX: boolean;
+  alignsZ: boolean;
+  label: RoomDrawPointSnapLabel | null;
+} {
+  let alignsX = false;
+  let alignsZ = false;
+  let touchesEdge = false;
+  let touchesCorner = false;
+
+  for (const room of rooms) {
+    const bounds = getRoomBounds(room);
+    const onLeftOrRight = isNearPlanValue(point.x, bounds.left) || isNearPlanValue(point.x, bounds.right);
+    const onTopOrBottom = isNearPlanValue(point.z, bounds.top) || isNearPlanValue(point.z, bounds.bottom);
+    const withinVerticalSpan =
+      point.z >= bounds.top - DRAW_SNAP_VISUAL_EPSILON_METERS &&
+      point.z <= bounds.bottom + DRAW_SNAP_VISUAL_EPSILON_METERS;
+    const withinHorizontalSpan =
+      point.x >= bounds.left - DRAW_SNAP_VISUAL_EPSILON_METERS &&
+      point.x <= bounds.right + DRAW_SNAP_VISUAL_EPSILON_METERS;
+
+    alignsX = alignsX || onLeftOrRight;
+    alignsZ = alignsZ || onTopOrBottom;
+    touchesCorner = touchesCorner || (onLeftOrRight && onTopOrBottom);
+    touchesEdge =
+      touchesEdge ||
+      (onLeftOrRight && withinVerticalSpan) ||
+      (onTopOrBottom && withinHorizontalSpan);
+  }
+
+  return {
+    alignsX,
+    alignsZ,
+    label: touchesCorner ? "Corner" : touchesEdge ? "Wall edge" : null,
+  };
+}
+
+function buildRoomDrawGuideLines(
+  preview: RoomDrawPreview | ArcWallDrawPreview | null,
+  rooms: HouseRoom2D[],
+  width: number,
+  depth: number
+): RoomDrawGuideLine[] {
+  if (!preview) return [];
+  const halfWidth = width / 2;
+  const halfDepth = depth / 2;
+  const guidePoints = [
+    { id: "start", point: preview.start, y: 0.008 },
+    { id: "end", point: preview.end, y: 0.0085 },
   ];
+
+  return guidePoints.flatMap(({ id, point, y }) => {
+    const alignment = getRoomDrawPointAlignment(point, rooms);
+    const guides: RoomDrawGuideLine[] = [];
+    if (alignment.alignsX) {
+      guides.push({
+        id: `room-guide-${id}-x`,
+        emphasis: alignment.label ? "strong" : "soft",
+        points: [
+          [point.x, y, -halfDepth],
+          [point.x, y, halfDepth],
+        ],
+      });
+    }
+    if (alignment.alignsZ) {
+      guides.push({
+        id: `room-guide-${id}-z`,
+        emphasis: alignment.label ? "strong" : "soft",
+        points: [
+          [-halfWidth, y, point.z],
+          [halfWidth, y, point.z],
+        ],
+      });
+    }
+    return guides;
+  });
+}
+
+function buildRectangleGhostGuideLines(
+  preview: RoomDrawPreview | null,
+  rooms: HouseRoom2D[]
+): RoomDrawGuideLine[] {
+  if (!preview?.rectangle) return [];
+  const candidate = {
+    left: preview.rectangle.x - preview.rectangle.width / 2,
+    right: preview.rectangle.x + preview.rectangle.width / 2,
+    top: preview.rectangle.z - preview.rectangle.depth / 2,
+    bottom: preview.rectangle.z + preview.rectangle.depth / 2,
+  };
+  const guides: RoomDrawGuideLine[] = [];
+
+  for (const room of rooms) {
+    const bounds = getRoomBounds(room);
+    const addVerticalGuide = (id: string, x: number, z1: number, z2: number) => {
+      guides.push({
+        id,
+        emphasis: "strong",
+        points: [
+          [x, 0.013, z1],
+          [x, 0.013, z2],
+        ],
+      });
+    };
+    const addHorizontalGuide = (id: string, z: number, x1: number, x2: number) => {
+      guides.push({
+        id,
+        emphasis: "strong",
+        points: [
+          [x1, 0.013, z],
+          [x2, 0.013, z],
+        ],
+      });
+    };
+
+    if (isNearPlanValue(candidate.left, bounds.right)) {
+      addVerticalGuide(`rect-ghost-left-${room.id}`, candidate.left, candidate.top, candidate.bottom);
+    }
+    if (isNearPlanValue(candidate.right, bounds.left)) {
+      addVerticalGuide(`rect-ghost-right-${room.id}`, candidate.right, candidate.top, candidate.bottom);
+    }
+    if (isNearPlanValue(candidate.top, bounds.bottom)) {
+      addHorizontalGuide(`rect-ghost-top-${room.id}`, candidate.top, candidate.left, candidate.right);
+    }
+    if (isNearPlanValue(candidate.bottom, bounds.top)) {
+      addHorizontalGuide(`rect-ghost-bottom-${room.id}`, candidate.bottom, candidate.left, candidate.right);
+    }
+  }
+
+  return guides;
+}
+
+function buildRoomDrawSnapMarkers(
+  preview: RoomDrawPreview | ArcWallDrawPreview | null,
+  rooms: HouseRoom2D[]
+): RoomDrawSnapMarker[] {
+  if (!preview) return [];
+  return [
+    { id: "start", point: preview.start },
+    { id: "end", point: preview.end },
+  ].flatMap(({ id, point }) => {
+    const label = getRoomDrawPointAlignment(point, rooms).label;
+    return label ? [{ id: `snap-${id}`, point, label }] : [];
+  });
+}
+
+function buildRoomDrawStartSnapMarkers(
+  rooms: HouseRoom2D[],
+  hoverPoint: FloorPlanPoint | null
+): RoomDrawSnapMarker[] {
+  if (!rooms.length) return [];
+
+  const targets = new Map<
+    string,
+    {
+      point: FloorPlanPoint;
+      label: RoomDrawSnapMarker["label"];
+      priority: number;
+    }
+  >();
+
+  for (const room of rooms) {
+    const bounds = getRoomBounds(room);
+    const corners = [
+      { x: bounds.left, z: bounds.top },
+      { x: bounds.right, z: bounds.top },
+      { x: bounds.right, z: bounds.bottom },
+      { x: bounds.left, z: bounds.bottom },
+    ];
+    const edges = [
+      { x: room.x, z: bounds.top },
+      { x: bounds.right, z: room.z },
+      { x: room.x, z: bounds.bottom },
+      { x: bounds.left, z: room.z },
+    ];
+
+    corners.forEach((point) => {
+      const key = `${point.x.toFixed(3)}:${point.z.toFixed(3)}`;
+      targets.set(key, { point, label: "Corner", priority: 0 });
+    });
+
+    edges.forEach((point) => {
+      const key = `${point.x.toFixed(3)}:${point.z.toFixed(3)}`;
+      if (!targets.has(key)) {
+        targets.set(key, { point, label: "Wall edge", priority: 1 });
+      }
+    });
+  }
+
+  let nearestKey: string | null = null;
+  let nearestScore = Infinity;
+  if (hoverPoint) {
+    for (const [key, target] of targets) {
+      const score = Math.hypot(target.point.x - hoverPoint.x, target.point.z - hoverPoint.z);
+      if (score < nearestScore) {
+        nearestScore = score;
+        nearestKey = key;
+      }
+    }
+  }
+
+  return Array.from(targets.entries())
+    .sort(([, a], [, b]) => a.priority - b.priority || a.point.z - b.point.z || a.point.x - b.point.x)
+    .map(([key, target]) => {
+      const isHovered = key === nearestKey && nearestScore <= 0.55;
+      return {
+        id: `start-snap-${key}`,
+        point: target.point,
+        label: target.label,
+        displayLabel: isHovered
+          ? target.label === "Corner"
+            ? "Start at corner"
+            : "Start on wall"
+          : undefined,
+        subtle: !isHovered,
+      };
+    });
+}
+
+function buildSharedWallPreviewMarker(
+  preview: RoomDrawPreview | null,
+  rooms: HouseRoom2D[]
+): RoomDrawSnapMarker | null {
+  const segment = buildSharedWallPreviewSegment(preview, rooms);
+  if (!segment) return null;
+
+  return {
+    id: "shared-wall-preview",
+    label: "Shared wall",
+    point: segment.labelPosition,
+  };
+}
+
+function buildSharedWallPreviewSegment(
+  preview: RoomDrawPreview | null,
+  rooms: HouseRoom2D[]
+): SharedWallPreviewSegment | null {
+  if (!preview?.rectangle) return null;
+  const candidate = {
+    left: preview.rectangle.x - preview.rectangle.width / 2,
+    right: preview.rectangle.x + preview.rectangle.width / 2,
+    top: preview.rectangle.z - preview.rectangle.depth / 2,
+    bottom: preview.rectangle.z + preview.rectangle.depth / 2,
+  };
+
+  for (const room of rooms) {
+    const bounds = getRoomBounds(room);
+    const verticalOverlap =
+      Math.min(candidate.bottom, bounds.bottom) - Math.max(candidate.top, bounds.top);
+    const horizontalOverlap =
+      Math.min(candidate.right, bounds.right) - Math.max(candidate.left, bounds.left);
+    const anchoredWallSegment = [preview.start, preview.end]
+      .map((point) => {
+        const withinHorizontalSpan =
+          point.x >= bounds.left - DRAW_SNAP_VISUAL_EPSILON_METERS &&
+          point.x <= bounds.right + DRAW_SNAP_VISUAL_EPSILON_METERS;
+        const withinVerticalSpan =
+          point.z >= bounds.top - DRAW_SNAP_VISUAL_EPSILON_METERS &&
+          point.z <= bounds.bottom + DRAW_SNAP_VISUAL_EPSILON_METERS;
+
+        if (withinHorizontalSpan && isNearPlanValue(point.z, bounds.top)) {
+          const startX = Math.max(candidate.left, bounds.left);
+          const endX = Math.min(candidate.right, bounds.right);
+          if (endX - startX > 0.3) {
+            return {
+              id: "shared-wall-preview",
+              points: [
+                [startX, 0.018, bounds.top],
+                [endX, 0.018, bounds.top],
+              ] as Array<[number, number, number]>,
+              labelPosition: {
+                x: (startX + endX) / 2,
+                z: bounds.top,
+              },
+              lengthMeters: Number(Math.abs(endX - startX).toFixed(3)),
+            };
+          }
+        }
+
+        if (withinHorizontalSpan && isNearPlanValue(point.z, bounds.bottom)) {
+          const startX = Math.max(candidate.left, bounds.left);
+          const endX = Math.min(candidate.right, bounds.right);
+          if (endX - startX > 0.3) {
+            return {
+              id: "shared-wall-preview",
+              points: [
+                [startX, 0.018, bounds.bottom],
+                [endX, 0.018, bounds.bottom],
+              ] as Array<[number, number, number]>,
+              labelPosition: {
+                x: (startX + endX) / 2,
+                z: bounds.bottom,
+              },
+              lengthMeters: Number(Math.abs(endX - startX).toFixed(3)),
+            };
+          }
+        }
+
+        if (withinVerticalSpan && isNearPlanValue(point.x, bounds.left)) {
+          const startZ = Math.max(candidate.top, bounds.top);
+          const endZ = Math.min(candidate.bottom, bounds.bottom);
+          if (endZ - startZ > 0.3) {
+            return {
+              id: "shared-wall-preview",
+              points: [
+                [bounds.left, 0.018, startZ],
+                [bounds.left, 0.018, endZ],
+              ] as Array<[number, number, number]>,
+              labelPosition: {
+                x: bounds.left,
+                z: (startZ + endZ) / 2,
+              },
+              lengthMeters: Number(Math.abs(endZ - startZ).toFixed(3)),
+            };
+          }
+        }
+
+        if (withinVerticalSpan && isNearPlanValue(point.x, bounds.right)) {
+          const startZ = Math.max(candidate.top, bounds.top);
+          const endZ = Math.min(candidate.bottom, bounds.bottom);
+          if (endZ - startZ > 0.3) {
+            return {
+              id: "shared-wall-preview",
+              points: [
+                [bounds.right, 0.018, startZ],
+                [bounds.right, 0.018, endZ],
+              ] as Array<[number, number, number]>,
+              labelPosition: {
+                x: bounds.right,
+                z: (startZ + endZ) / 2,
+              },
+              lengthMeters: Number(Math.abs(endZ - startZ).toFixed(3)),
+            };
+          }
+        }
+
+        return null;
+      })
+      .find((segment): segment is SharedWallPreviewSegment => Boolean(segment));
+
+    if (anchoredWallSegment) {
+      return anchoredWallSegment;
+    }
+
+    if (
+      verticalOverlap > 0.3 &&
+      (isNearPlanValue(candidate.left, bounds.right) || isNearPlanValue(candidate.right, bounds.left))
+    ) {
+      const x = isNearPlanValue(candidate.left, bounds.right) ? candidate.left : candidate.right;
+      const startZ = Math.max(candidate.top, bounds.top);
+      const endZ = Math.min(candidate.bottom, bounds.bottom);
+      return {
+        id: "shared-wall-preview",
+        points: [
+          [x, 0.018, startZ],
+          [x, 0.018, endZ],
+        ],
+        labelPosition: {
+          x,
+          z: (startZ + endZ) / 2,
+        },
+        lengthMeters: Number(Math.abs(endZ - startZ).toFixed(3)),
+      };
+    }
+
+    if (
+      horizontalOverlap > 0.3 &&
+      (isNearPlanValue(candidate.top, bounds.bottom) || isNearPlanValue(candidate.bottom, bounds.top))
+    ) {
+      const z = isNearPlanValue(candidate.top, bounds.bottom) ? candidate.top : candidate.bottom;
+      const startX = Math.max(candidate.left, bounds.left);
+      const endX = Math.min(candidate.right, bounds.right);
+      return {
+        id: "shared-wall-preview",
+        points: [
+          [startX, 0.018, z],
+          [endX, 0.018, z],
+        ],
+        labelPosition: {
+          x: (startX + endX) / 2,
+          z,
+        },
+        lengthMeters: Number(Math.abs(endX - startX).toFixed(3)),
+      };
+    }
+  }
+
+  return null;
+}
+
+function buildRoomDrawAnchorCue(
+  point: FloorPlanPoint | null,
+  rooms: HouseRoom2D[]
+): { point: FloorPlanPoint; label: string } | null {
+  if (!point) return null;
+  const snapLabel = getRoomDrawPointAlignment(point, rooms).label;
+  if (!snapLabel) return null;
+
+  return {
+    point,
+    label: snapLabel === "Corner" ? "Locked to corner" : "Locked to wall",
+  };
+}
+
+function buildDoorwaySuggestionUiPosition(
+  suggestion: HouseRoomDoorwaySuggestion,
+  room: HouseRoom2D | undefined,
+  isActiveRoom: boolean,
+  showDimensions: boolean
+): FloorPlanPoint {
+  if (!room) return suggestion.labelPosition;
+
+  const dimensionAware = isActiveRoom && showDimensions;
+  const inset = dimensionAware ? 0.34 : 0.2;
+  const biasRatio = dimensionAware ? 0.76 : 0.5;
+  const [start, end] = suggestion.points;
+
+  if (suggestion.wall === "west" || suggestion.wall === "east") {
+    const startZ = Math.min(start[1], end[1]);
+    const endZ = Math.max(start[1], end[1]);
+    const z = startZ + (endZ - startZ) * biasRatio;
+    return {
+      x:
+        suggestion.wall === "west"
+          ? room.x - room.w / 2 + inset
+          : room.x + room.w / 2 - inset,
+      z,
+    };
+  }
+
+  const startX = Math.min(start[0], end[0]);
+  const endX = Math.max(start[0], end[0]);
+  const x = startX + (endX - startX) * biasRatio;
+  return {
+    x,
+    z:
+      suggestion.wall === "north"
+        ? room.z - room.d / 2 + inset
+        : room.z + room.d / 2 - inset,
+  };
+}
+
+function buildWallDrawSnapMarker(
+  previewPoint: FloorPlanPoint | null,
+  points: FloorPlanPoint[],
+  rooms: HouseRoom2D[]
+): RoomDrawSnapMarker | null {
+  if (!previewPoint) return null;
+
+  if (isClosingWallDrawPoint(previewPoint, points[0], points.length)) {
+    return {
+      id: "wall-preview-close",
+      point: points[0],
+      label: "Close room",
+      displayLabel: "Click to close room",
+    };
+  }
+
+  const label = getRoomDrawPointAlignment(previewPoint, rooms).label;
+  if (!label) return null;
+
+  return {
+    id: "wall-preview-snap",
+    point: previewPoint,
+    label,
+    displayLabel: label === "Corner" ? "Snap to corner" : "Snap to wall",
+  };
 }
 
 function buildRoomDrawPreviewLabel(preview: RoomDrawPreview): string {
@@ -246,6 +871,28 @@ function buildWallDrawPreviewLabel(
 
 function formatMillimeters(meters: number): string {
   return `${Math.round(meters * 1000)} mm`;
+}
+
+function getOpeningPreviewHelpText(preview: TracedOpeningPreview): string | null {
+  if (preview.status === "valid") return null;
+
+  if (!preview.opening) {
+    return "Move the cursor onto a room edge.";
+  }
+
+  if (preview.reason === "too_close_to_corner") {
+    return "Move it farther from the nearest corner.";
+  }
+
+  if (preview.reason === "too_close_to_opening") {
+    return "Move it away from the existing door or window.";
+  }
+
+  if (preview.reason === "opening_too_wide") {
+    return "Use a wider wall or a smaller opening.";
+  }
+
+  return "Choose another point on the wall.";
 }
 
 export default function RoomRenderer2D({
@@ -276,6 +923,8 @@ export default function RoomRenderer2D({
   onMoveFixedElement,
   onMoveAnnotation,
   onAddDoorwaySuggestion,
+  onCommitRoomDimensionEdit,
+  onCommitWallDrawSegmentLength,
   drawRoomMode = false,
   drawRoomPoints = [],
   drawRoomPreviewPoint = null,
@@ -283,6 +932,9 @@ export default function RoomRenderer2D({
   onDrawRoomPreviewPoint,
   onDrawRoomDrag,
   drawRoomInteractionMode = "rectangle_wall",
+  traceOpeningMode = false,
+  traceOpeningKind = "door",
+  onTraceOpeningPoint,
 }: RoomRenderer2DProps) {
   const htmlZIndexRange: [number, number] = [5, 0];
   const { camera, gl } = useThree();
@@ -291,7 +943,7 @@ export default function RoomRenderer2D({
   const halfD = depth / 2;
   const isPro = theme === "pro";
   const hasHouseRooms = rooms.length > 1;
-  const canEditPlan = interactive && !drawRoomMode;
+  const canEditPlan = interactive && !drawRoomMode && !traceOpeningMode;
   const workspaceWidth = drawRoomMode
     ? Math.max(DRAW_WORKSPACE_MIN_SIZE_METERS, width + DRAW_WORKSPACE_PADDING_METERS)
     : width;
@@ -303,6 +955,7 @@ export default function RoomRenderer2D({
   const isStraightWallDrawMode = drawRoomMode && drawRoomInteractionMode === "straight_wall";
   const isRectangleWallDrawMode = drawRoomMode && drawRoomInteractionMode === "rectangle_wall";
   const isArcWallDrawMode = drawRoomMode && drawRoomInteractionMode === "arc_wall";
+  const canTraceOpeningOnGrid = interactive && traceOpeningMode && !drawRoomMode;
 
   const floorColor = isPro ? "#ffffff" : "#f4f2ed";
   const borderColor = isPro ? "#111111" : "#9a9a9a";
@@ -327,9 +980,25 @@ export default function RoomRenderer2D({
   const roomDrawLatestPointRef = useRef<FloorPlanPoint | null>(null);
   const roomDrawDragMovedRef = useRef(false);
   const nativeRoomDrawPointerIdsRef = useRef<Set<number>>(new Set());
+  const lastOpeningTraceCommitRef = useRef<{
+    x: number;
+    z: number;
+    time: number;
+  } | null>(null);
   const [localDrawStartPoint, setLocalDrawStartPoint] = useState<FloorPlanPoint | null>(null);
   const [localDrawPreviewPoint, setLocalDrawPreviewPoint] = useState<FloorPlanPoint | null>(null);
+  const [localOpeningPreviewPoint, setLocalOpeningPreviewPoint] =
+    useState<FloorPlanPoint | null>(null);
   const [roomSnapPreview, setRoomSnapPreview] = useState<HouseRoomSnapPreview | null>(null);
+  const [editingRoomDimension, setEditingRoomDimension] = useState<{
+    roomId: string;
+    axis: "width" | "depth";
+    value: string;
+  } | null>(null);
+  const [editingWallDrawSegment, setEditingWallDrawSegment] = useState<{
+    segmentIndex: number;
+    value: string;
+  } | null>(null);
 
   const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
   const canDrawRoomOnGrid = drawRoomMode;
@@ -355,7 +1024,6 @@ export default function RoomRenderer2D({
 
     return resolveRoomDrawPreview(activeDrawRoomPoints[0], activeDrawRoomPreviewPoint, {
       rooms,
-      edgeSnapDistanceMeters: 0,
     });
   }, [
     activeDrawRoomPoints,
@@ -381,10 +1049,22 @@ export default function RoomRenderer2D({
       ? buildWallDrawGuideLines(
         lastWallDrawPoint,
         activeDrawRoomPreviewPoint,
+        rooms,
         drawSurfaceWidth,
         drawSurfaceDepth
       )
     : [];
+  const wallDrawAlignmentCue = isStraightWallDrawMode
+    ? buildWallDrawAlignmentCue(lastWallDrawPoint, activeDrawRoomPreviewPoint, rooms)
+    : null;
+  const wallDrawContinuationCue =
+    isStraightWallDrawMode && activeDrawRoomPoints.length > 0
+      ? buildWallDrawContinuationCue(activeDrawRoomPoints[activeDrawRoomPoints.length - 1], rooms)
+      : null;
+  const wallDrawCloseCue =
+    isStraightWallDrawMode
+      ? buildWallDrawCloseCue(activeDrawRoomPoints, activeDrawRoomPreviewPoint)
+      : null;
   const arcWallDrawPreview = useMemo(() => {
     if (
       !canDrawRoomOnGrid ||
@@ -397,9 +1077,51 @@ export default function RoomRenderer2D({
 
     return resolveArcWallDrawPreview(activeDrawRoomPoints[0], activeDrawRoomPreviewPoint, {
       rooms,
-      edgeSnapDistanceMeters: 0,
     });
   }, [activeDrawRoomPoints, activeDrawRoomPreviewPoint, canDrawRoomOnGrid, isArcWallDrawMode, rooms]);
+  const roomDrawGuideLines =
+    canDrawRoomOnGrid && (isRectangleWallDrawMode || isArcWallDrawMode)
+      ? buildRoomDrawGuideLines(
+          isRectangleWallDrawMode ? roomDrawPreview : arcWallDrawPreview,
+          rooms,
+          drawSurfaceWidth,
+          drawSurfaceDepth
+        )
+      : [];
+  const rectangleGhostGuideLines =
+    canDrawRoomOnGrid && isRectangleWallDrawMode
+      ? buildRectangleGhostGuideLines(roomDrawPreview, rooms)
+      : [];
+  const drawSnapMarkers: RoomDrawSnapMarker[] =
+    canDrawRoomOnGrid && (isRectangleWallDrawMode || isArcWallDrawMode)
+      ? buildRoomDrawSnapMarkers(
+          isRectangleWallDrawMode ? roomDrawPreview : arcWallDrawPreview,
+          rooms
+        )
+      : [];
+  const wallDrawSnapMarker: RoomDrawSnapMarker | null =
+    isStraightWallDrawMode
+      ? buildWallDrawSnapMarker(activeDrawRoomPreviewPoint, activeDrawRoomPoints, rooms)
+      : null;
+  const sharedWallPreviewMarker =
+    canDrawRoomOnGrid && isRectangleWallDrawMode
+      ? buildSharedWallPreviewMarker(roomDrawPreview, rooms)
+      : null;
+  const sharedWallPreviewSegment =
+    canDrawRoomOnGrid && isRectangleWallDrawMode
+      ? buildSharedWallPreviewSegment(roomDrawPreview, rooms)
+      : null;
+  const roomDrawAnchorCue =
+    canDrawRoomOnGrid && isRectangleWallDrawMode
+      ? buildRoomDrawAnchorCue(activeDrawRoomPoints[0] ?? null, rooms)
+      : null;
+  const startSnapMarkers =
+    canDrawRoomOnGrid &&
+    activeDrawRoomPoints.length === 0 &&
+    !roomDrawPreview &&
+    !arcWallDrawPreview
+      ? buildRoomDrawStartSnapMarkers(rooms, activeDrawRoomPreviewPoint)
+      : [];
   const visibleAdjacencyGuides = useMemo(() => {
     if (rooms.length < 2) return [];
     const guides = buildHouseRoomAdjacencyGuides(rooms);
@@ -421,6 +1143,87 @@ export default function RoomRenderer2D({
         )
     );
   }, [activeRoomId, onAddDoorwaySuggestion, openings, rooms]);
+  const getDimensionEditorValue = useCallback(
+    (meters: number) => String(Math.round(meters * 1000)),
+    []
+  );
+  const startDimensionEdit = useCallback(
+    (room: HouseRoom2D, axis: "width" | "depth") => {
+      setEditingRoomDimension({
+        roomId: room.id,
+        axis,
+        value: getDimensionEditorValue(axis === "width" ? room.w : room.d),
+      });
+    },
+    [getDimensionEditorValue]
+  );
+  const cancelDimensionEdit = useCallback(() => {
+    setEditingRoomDimension(null);
+  }, []);
+  const commitDimensionEdit = useCallback(
+    (rawValue?: string) => {
+      if (!editingRoomDimension) return;
+      const finalMillimeters = Number(rawValue ?? editingRoomDimension.value);
+      if (!Number.isFinite(finalMillimeters) || finalMillimeters <= 0) {
+        setEditingRoomDimension(null);
+        return;
+      }
+      onCommitRoomDimensionEdit?.(
+        editingRoomDimension.roomId,
+        editingRoomDimension.axis,
+        finalMillimeters / 1000
+      );
+      setEditingRoomDimension(null);
+    },
+    [editingRoomDimension, onCommitRoomDimensionEdit]
+  );
+  const startWallDrawSegmentLengthEdit = useCallback(
+    (segmentIndex: number, start: FloorPlanPoint, end: FloorPlanPoint) => {
+      const lengthMm = Math.round(Math.hypot(end.x - start.x, end.z - start.z) * 1000);
+      setEditingWallDrawSegment({
+        segmentIndex,
+        value: String(lengthMm),
+      });
+    },
+    []
+  );
+  const cancelWallDrawSegmentLengthEdit = useCallback(() => {
+    setEditingWallDrawSegment(null);
+  }, []);
+  const commitWallDrawSegmentLengthEdit = useCallback(
+    (rawValue?: string) => {
+      if (!editingWallDrawSegment) return;
+      const finalMillimeters = Number(rawValue ?? editingWallDrawSegment.value);
+      if (!Number.isFinite(finalMillimeters) || finalMillimeters <= 0) {
+        setEditingWallDrawSegment(null);
+        return;
+      }
+      onCommitWallDrawSegmentLength?.(
+        editingWallDrawSegment.segmentIndex,
+        finalMillimeters / 1000
+      );
+      setEditingWallDrawSegment(null);
+    },
+    [editingWallDrawSegment, onCommitWallDrawSegmentLength]
+  );
+  const openingPreview = useMemo<TracedOpeningPreview | null>(() => {
+    if (!canTraceOpeningOnGrid || !localOpeningPreviewPoint) return null;
+
+    return resolveOpeningPlacementFromPoint(
+      localOpeningPreviewPoint,
+      rooms,
+      traceOpeningKind,
+      openings.map((opening) => ({
+        id: opening.id,
+        roomId: opening.roomId,
+        wall: opening.wall,
+        kind: opening.kind,
+        offsetMm: Math.round(opening.offset * 1000),
+        widthMm: Math.round(opening.width * 1000),
+      }))
+    );
+  }, [canTraceOpeningOnGrid, localOpeningPreviewPoint, openings, rooms, traceOpeningKind]);
+  const openingPreviewHelpText = openingPreview ? getOpeningPreviewHelpText(openingPreview) : null;
 
   const formatDimension = (meters: number) => {
     const millimeters = meters * 1000;
@@ -442,10 +1245,65 @@ export default function RoomRenderer2D({
     }
   };
 
-  const getDrawPointFromEvent = (event: ThreeEvent<PointerEvent>): FloorPlanPoint => ({
+  const getDrawPointFromEvent = (event: ThreeEvent<PointerEvent | MouseEvent>): FloorPlanPoint => ({
     x: Number(event.point.x.toFixed(3)),
     z: Number(event.point.z.toFixed(3)),
   });
+
+  const getSnappedRoomDrawPoint = useCallback(
+    (point: FloorPlanPoint, points: FloorPlanPoint[]): FloorPlanPoint => {
+      if (drawRoomInteractionMode !== "straight_wall") {
+        return point;
+      }
+
+      return snapFloorPlanPointForWallDraw(point, {
+        rooms,
+        previousPoint: points.length > 0 ? points[points.length - 1] : null,
+        firstPoint: points.length > 0 ? points[0] : null,
+        pointCount: points.length,
+      });
+    },
+    [drawRoomInteractionMode, rooms]
+  );
+
+  const handleOpeningTracePointerMove = (event: ThreeEvent<PointerEvent>) => {
+    if (!canTraceOpeningOnGrid) return;
+    event.stopPropagation();
+    setLocalOpeningPreviewPoint(getDrawPointFromEvent(event));
+  };
+
+  const commitOpeningTracePoint = useCallback(
+    (point: FloorPlanPoint) => {
+      if (!canTraceOpeningOnGrid) return;
+
+      const lastCommit = lastOpeningTraceCommitRef.current;
+      const now = Date.now();
+      if (
+        lastCommit &&
+        now - lastCommit.time < 350 &&
+        Math.abs(lastCommit.x - point.x) <= 0.01 &&
+        Math.abs(lastCommit.z - point.z) <= 0.01
+      ) {
+        return;
+      }
+      lastOpeningTraceCommitRef.current = { ...point, time: now };
+      setLocalOpeningPreviewPoint(point);
+      onTraceOpeningPoint?.(point);
+    },
+    [canTraceOpeningOnGrid, onTraceOpeningPoint]
+  );
+
+  const handleOpeningTraceCommit = (event: ThreeEvent<PointerEvent | MouseEvent>) => {
+    if (!canTraceOpeningOnGrid) return;
+    event.stopPropagation();
+    commitOpeningTracePoint(getDrawPointFromEvent(event));
+  };
+
+  const handleOpeningTracePointerOut = (event: ThreeEvent<PointerEvent>) => {
+    if (!canTraceOpeningOnGrid) return;
+    event.stopPropagation();
+    setLocalOpeningPreviewPoint(null);
+  };
 
   const getDrawPointFromClientPosition = useCallback(
     (clientX: number, clientY: number): FloorPlanPoint | null => {
@@ -471,6 +1329,24 @@ export default function RoomRenderer2D({
     [camera, gl]
   );
 
+  useEffect(() => {
+    if (!canTraceOpeningOnGrid) return;
+
+    const canvas = gl.domElement;
+    const handleNativePointerDown = (event: PointerEvent) => {
+      if (event.button !== 0) return;
+      const point = getDrawPointFromClientPosition(event.clientX, event.clientY);
+      if (!point) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      commitOpeningTracePoint(point);
+    };
+
+    canvas.addEventListener("pointerdown", handleNativePointerDown, { capture: true });
+    return () => canvas.removeEventListener("pointerdown", handleNativePointerDown, { capture: true });
+  }, [canTraceOpeningOnGrid, commitOpeningTracePoint, getDrawPointFromClientPosition, gl]);
+
   const markRoomDrawMoved = (point: FloorPlanPoint) => {
     const start = roomDrawDragStartRef.current;
     if (!start) return;
@@ -492,16 +1368,17 @@ export default function RoomRenderer2D({
       if (event.button !== 0) return;
       const point = getDrawPointFromClientPosition(event.clientX, event.clientY);
       if (!point) return;
+      const snappedPoint = getSnappedRoomDrawPoint(point, activeDrawRoomPoints);
 
       event.preventDefault();
       nativePointerIds.add(event.pointerId);
-      roomDrawDragStartRef.current = point;
-      roomDrawLatestPointRef.current = point;
+      roomDrawDragStartRef.current = snappedPoint;
+      roomDrawLatestPointRef.current = snappedPoint;
       roomDrawDragMovedRef.current = false;
-      setLocalDrawStartPoint(point);
+      setLocalDrawStartPoint(snappedPoint);
       setLocalDrawPreviewPoint(null);
       if (drawRoomInteractionMode === "straight_wall") {
-        onDrawRoomPoint?.(point);
+        onDrawRoomPoint?.(snappedPoint);
       }
 
       if ("setPointerCapture" in canvas) {
@@ -513,23 +1390,25 @@ export default function RoomRenderer2D({
       if (!nativePointerIds.has(event.pointerId)) return;
       const point = getDrawPointFromClientPosition(event.clientX, event.clientY);
       if (!point) return;
+      const snappedPoint = getSnappedRoomDrawPoint(point, activeDrawRoomPoints);
 
       event.preventDefault();
-      markRoomDrawMoved(point);
-      roomDrawLatestPointRef.current = point;
-      setLocalDrawPreviewPoint(point);
-      onDrawRoomPreviewPoint?.(point);
+      markRoomDrawMoved(snappedPoint);
+      roomDrawLatestPointRef.current = snappedPoint;
+      setLocalDrawPreviewPoint(snappedPoint);
+      onDrawRoomPreviewPoint?.(snappedPoint);
     };
 
     const handleNativeMouseMove = (event: MouseEvent) => {
       if (!roomDrawDragStartRef.current) return;
       const point = getDrawPointFromClientPosition(event.clientX, event.clientY);
       if (!point) return;
+      const snappedPoint = getSnappedRoomDrawPoint(point, activeDrawRoomPoints);
 
-      markRoomDrawMoved(point);
-      roomDrawLatestPointRef.current = point;
-      setLocalDrawPreviewPoint(point);
-      onDrawRoomPreviewPoint?.(point);
+      markRoomDrawMoved(snappedPoint);
+      roomDrawLatestPointRef.current = snappedPoint;
+      setLocalDrawPreviewPoint(snappedPoint);
+      onDrawRoomPreviewPoint?.(snappedPoint);
     };
 
     const finishNativePointer = (event: PointerEvent) => {
@@ -577,8 +1456,10 @@ export default function RoomRenderer2D({
   }, [
     canDrawRoomOnGrid,
     drawRoomInteractionMode,
+    getSnappedRoomDrawPoint,
     getDrawPointFromClientPosition,
     gl.domElement,
+    activeDrawRoomPoints,
     onDrawRoomDrag,
     onDrawRoomPoint,
     onDrawRoomPreviewPoint,
@@ -590,31 +1471,33 @@ export default function RoomRenderer2D({
       return;
     }
     const point = getDrawPointFromEvent(event);
+    const snappedPoint = getSnappedRoomDrawPoint(point, activeDrawRoomPoints);
     event.stopPropagation();
-    roomDrawDragStartRef.current = point;
-    roomDrawLatestPointRef.current = point;
+    roomDrawDragStartRef.current = snappedPoint;
+    roomDrawLatestPointRef.current = snappedPoint;
     roomDrawDragMovedRef.current = false;
-    setLocalDrawStartPoint(point);
+    setLocalDrawStartPoint(snappedPoint);
     setLocalDrawPreviewPoint(null);
     if (drawRoomInteractionMode === "straight_wall") {
-      onDrawRoomPoint?.(point);
+      onDrawRoomPoint?.(snappedPoint);
     }
     setPointerCaptureIfSupported(event);
 
-    const start = point;
+    const start = snappedPoint;
     const handleWindowPointerMove = (moveEvent: PointerEvent) => {
       const nextPoint = getDrawPointFromClientPosition(moveEvent.clientX, moveEvent.clientY);
       if (!nextPoint) return;
+      const snappedPoint = getSnappedRoomDrawPoint(nextPoint, activeDrawRoomPoints);
 
-      const deltaX = Math.abs(nextPoint.x - start.x);
-      const deltaZ = Math.abs(nextPoint.z - start.z);
+      const deltaX = Math.abs(snappedPoint.x - start.x);
+      const deltaZ = Math.abs(snappedPoint.z - start.z);
       if (deltaX > 0.12 || deltaZ > 0.12) {
         roomDrawDragMovedRef.current = true;
       }
 
-      roomDrawLatestPointRef.current = nextPoint;
-      setLocalDrawPreviewPoint(nextPoint);
-      onDrawRoomPreviewPoint?.(nextPoint);
+      roomDrawLatestPointRef.current = snappedPoint;
+      setLocalDrawPreviewPoint(snappedPoint);
+      onDrawRoomPreviewPoint?.(snappedPoint);
     };
     const handleWindowPointerUp = (upEvent: PointerEvent) => {
       const endPoint =
@@ -645,10 +1528,11 @@ export default function RoomRenderer2D({
   const handleRoomDrawPointerMove = (event: ThreeEvent<PointerEvent>) => {
     event.stopPropagation();
     const point = getDrawPointFromEvent(event);
-    markRoomDrawMoved(point);
-    roomDrawLatestPointRef.current = point;
-    setLocalDrawPreviewPoint(point);
-    onDrawRoomPreviewPoint?.(point);
+    const snappedPoint = getSnappedRoomDrawPoint(point, activeDrawRoomPoints);
+    markRoomDrawMoved(snappedPoint);
+    roomDrawLatestPointRef.current = snappedPoint;
+    setLocalDrawPreviewPoint(snappedPoint);
+    onDrawRoomPreviewPoint?.(snappedPoint);
   };
 
   const releasePointerCaptureIfSupported = (event: ThreeEvent<PointerEvent>) => {
@@ -864,6 +1748,9 @@ export default function RoomRenderer2D({
       return {
         id: o.id,
         kind: o.kind,
+        wall: o.wall,
+        offset: o.offset,
+        width: o.width,
         points: [
           [x0, 0.0022, z] as [number, number, number],
           [x1, 0.0022, z] as [number, number, number],
@@ -876,6 +1763,9 @@ export default function RoomRenderer2D({
     return {
       id: o.id,
       kind: o.kind,
+      wall: o.wall,
+      offset: o.offset,
+      width: o.width,
       points: [
         [x, 0.0022, z0] as [number, number, number],
         [x, 0.0022, z1] as [number, number, number],
@@ -910,8 +1800,34 @@ export default function RoomRenderer2D({
         </mesh>
       )}
 
+      {canTraceOpeningOnGrid && (
+        <mesh
+          rotation-x={-Math.PI / 2}
+          position={[0, 0.052, 0]}
+          onPointerDown={handleOpeningTraceCommit}
+          onPointerMove={handleOpeningTracePointerMove}
+          onPointerOut={handleOpeningTracePointerOut}
+          onClick={handleOpeningTraceCommit}
+        >
+          <planeGeometry args={[drawSurfaceWidth, drawSurfaceDepth]} />
+          <meshBasicMaterial
+            transparent
+            opacity={0.001}
+            depthWrite={false}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+      )}
+
       {!hasHouseRooms && (
-        <mesh rotation-x={-Math.PI / 2} position={[0, 0.0005, 0]}>
+        <mesh
+          rotation-x={-Math.PI / 2}
+          position={[0, 0.0005, 0]}
+          onPointerDown={handleOpeningTraceCommit}
+          onPointerMove={handleOpeningTracePointerMove}
+          onPointerOut={handleOpeningTracePointerOut}
+          onClick={handleOpeningTraceCommit}
+        >
           <planeGeometry args={[width, depth]} />
           <meshBasicMaterial color={floorColor} />
         </mesh>
@@ -926,6 +1842,10 @@ export default function RoomRenderer2D({
                 rotation-x={-Math.PI / 2}
                 position={[0, 0.0007, 0]}
                 onPointerDown={(event) => {
+                  if (canTraceOpeningOnGrid) {
+                    handleOpeningTraceCommit(event);
+                    return;
+                  }
                   if (canDrawRoomOnGrid) {
                     handleRoomDrawPointerDown(event);
                     return;
@@ -943,6 +1863,10 @@ export default function RoomRenderer2D({
                   setPointerCaptureIfSupported(event);
                 }}
                 onPointerMove={(event) => {
+                  if (canTraceOpeningOnGrid) {
+                    handleOpeningTracePointerMove(event);
+                    return;
+                  }
                   if (canDrawRoomOnGrid) {
                     handleRoomDrawPointerMove(event);
                     return;
@@ -956,6 +1880,10 @@ export default function RoomRenderer2D({
                   onMoveRoom?.(room.id, nextX, nextZ);
                 }}
                 onPointerUp={(event) => {
+                  if (canTraceOpeningOnGrid) {
+                    event.stopPropagation();
+                    return;
+                  }
                   if (canDrawRoomOnGrid) {
                     event.stopPropagation();
                     return;
@@ -967,7 +1895,12 @@ export default function RoomRenderer2D({
                   setRoomSnapPreview(null);
                   releasePointerCaptureIfSupported(event);
                 }}
+                onPointerOut={handleOpeningTracePointerOut}
                 onClick={(event) => {
+                  if (canTraceOpeningOnGrid) {
+                    handleOpeningTraceCommit(event);
+                    return;
+                  }
                   if (canDrawRoomOnGrid) {
                     event.stopPropagation();
                     return;
@@ -986,6 +1919,9 @@ export default function RoomRenderer2D({
               />
               <Html zIndexRange={htmlZIndexRange} position={[0, 0.012, 0]} center transform={false}>
                 <div
+                  data-testid="house-room-2d-label"
+                  data-room-id={room.id}
+                  data-active={isActiveRoom ? "true" : "false"}
                   style={{
                     fontSize: 11,
                     fontWeight: 700,
@@ -1006,12 +1942,72 @@ export default function RoomRenderer2D({
                 <>
                   <Html
                     zIndexRange={htmlZIndexRange}
-                    position={[0, 0.018, -room.d / 2 - 0.2]}
+                    position={[0, 0.018, -room.d / 2]}
                     center
                     transform={false}
                   >
-                    <div
+                    {editingRoomDimension?.roomId === room.id &&
+                    editingRoomDimension.axis === "width" ? (
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                          fontSize: 11,
+                          fontWeight: 700,
+                          color: "#166534",
+                          background: "rgba(255,255,255,0.98)",
+                          border: "1px solid rgba(34,197,94,0.4)",
+                          borderRadius: 8,
+                          padding: "4px 8px",
+                          pointerEvents: "auto",
+                          whiteSpace: "nowrap",
+                          boxShadow: "0 2px 10px rgba(15,23,42,0.14)",
+                          transform: "translateY(-30px)",
+                        }}
+                        onPointerDown={(event) => event.stopPropagation()}
+                      >
+                        <span>W</span>
+                        <input
+                          data-testid="active-room-dimension-editor-width"
+                          autoFocus
+                          type="number"
+                          inputMode="numeric"
+                          min={0}
+                          step={1}
+                          defaultValue={editingRoomDimension.value}
+                          onBlur={(event) => commitDimensionEdit(event.currentTarget.value)}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter") {
+                              event.preventDefault();
+                              commitDimensionEdit(event.currentTarget.value);
+                            } else if (event.key === "Escape") {
+                              event.preventDefault();
+                              cancelDimensionEdit();
+                            }
+                          }}
+                          style={{
+                            width: 72,
+                            border: "none",
+                            background: "transparent",
+                            color: "#166534",
+                            fontSize: 11,
+                            fontWeight: 700,
+                            outline: "none",
+                          }}
+                        />
+                        <span style={{ color: "#4b5563", fontWeight: 600 }}>mm</span>
+                      </div>
+                    ) : (
+                    <button
+                      type="button"
                       data-testid="active-room-dimension-width"
+                      title="Double-click to edit width"
+                      onPointerDown={(event) => event.stopPropagation()}
+                      onDoubleClick={(event) => {
+                        event.stopPropagation();
+                        startDimensionEdit(room, "width");
+                      }}
                       style={{
                         fontSize: 11,
                         fontWeight: 700,
@@ -1020,22 +2016,85 @@ export default function RoomRenderer2D({
                         border: "1px solid rgba(34,197,94,0.36)",
                         borderRadius: 6,
                         padding: "2px 7px",
-                        pointerEvents: "none",
+                        pointerEvents: canEditPlan && onCommitRoomDimensionEdit ? "auto" : "none",
                         whiteSpace: "nowrap",
                         boxShadow: "0 1px 4px rgba(15,23,42,0.12)",
+                        cursor: canEditPlan && onCommitRoomDimensionEdit ? "text" : "default",
+                        transform: "translateY(-30px)",
                       }}
                     >
                       W {formatDimension(room.w)}
-                    </div>
+                    </button>
+                    )}
                   </Html>
                   <Html
                     zIndexRange={htmlZIndexRange}
-                    position={[-room.w / 2 - 0.22, 0.018, 0]}
+                    position={[-room.w / 2, 0.018, 0]}
                     center
                     transform={false}
                   >
-                    <div
+                    {editingRoomDimension?.roomId === room.id &&
+                    editingRoomDimension.axis === "depth" ? (
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                          fontSize: 11,
+                          fontWeight: 700,
+                          color: "#166534",
+                          background: "rgba(255,255,255,0.98)",
+                          border: "1px solid rgba(34,197,94,0.4)",
+                          borderRadius: 8,
+                          padding: "4px 8px",
+                          pointerEvents: "auto",
+                          whiteSpace: "nowrap",
+                          boxShadow: "0 2px 10px rgba(15,23,42,0.14)",
+                          transform: "translate(-58px, 28px)",
+                        }}
+                        onPointerDown={(event) => event.stopPropagation()}
+                      >
+                        <span>D</span>
+                        <input
+                          data-testid="active-room-dimension-editor-depth"
+                          autoFocus
+                          type="number"
+                          inputMode="numeric"
+                          min={0}
+                          step={1}
+                          defaultValue={editingRoomDimension.value}
+                          onBlur={(event) => commitDimensionEdit(event.currentTarget.value)}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter") {
+                              event.preventDefault();
+                              commitDimensionEdit(event.currentTarget.value);
+                            } else if (event.key === "Escape") {
+                              event.preventDefault();
+                              cancelDimensionEdit();
+                            }
+                          }}
+                          style={{
+                            width: 72,
+                            border: "none",
+                            background: "transparent",
+                            color: "#166534",
+                            fontSize: 11,
+                            fontWeight: 700,
+                            outline: "none",
+                          }}
+                        />
+                        <span style={{ color: "#4b5563", fontWeight: 600 }}>mm</span>
+                      </div>
+                    ) : (
+                    <button
+                      type="button"
                       data-testid="active-room-dimension-depth"
+                      title="Double-click to edit depth"
+                      onPointerDown={(event) => event.stopPropagation()}
+                      onDoubleClick={(event) => {
+                        event.stopPropagation();
+                        startDimensionEdit(room, "depth");
+                      }}
                       style={{
                         fontSize: 11,
                         fontWeight: 700,
@@ -1044,13 +2103,16 @@ export default function RoomRenderer2D({
                         border: "1px solid rgba(34,197,94,0.36)",
                         borderRadius: 6,
                         padding: "2px 7px",
-                        pointerEvents: "none",
+                        pointerEvents: canEditPlan && onCommitRoomDimensionEdit ? "auto" : "none",
                         whiteSpace: "nowrap",
                         boxShadow: "0 1px 4px rgba(15,23,42,0.12)",
+                        cursor: canEditPlan && onCommitRoomDimensionEdit ? "text" : "default",
+                        transform: "translate(-58px, 28px)",
                       }}
                     >
                       D {formatDimension(room.d)}
-                    </div>
+                    </button>
+                    )}
                   </Html>
                 </>
               )}
@@ -1187,6 +2249,10 @@ export default function RoomRenderer2D({
                 pointerEvents: "none",
                 whiteSpace: "nowrap",
                 boxShadow: "0 1px 5px rgba(15,23,42,0.1)",
+                transform:
+                  guide.orientation === "vertical"
+                    ? "translate(48px, -18px)"
+                    : "translateY(28px)",
               }}
             >
               Shared wall
@@ -1199,7 +2265,16 @@ export default function RoomRenderer2D({
         <Html
           key={suggestion.id}
           zIndexRange={[14, 0]}
-          position={[suggestion.labelPosition.x, 0.095, suggestion.labelPosition.z]}
+          position={(() => {
+            const suggestionRoom = rooms.find((room) => room.id === suggestion.roomId);
+            const uiPosition = buildDoorwaySuggestionUiPosition(
+              suggestion,
+              suggestionRoom,
+              suggestion.roomId === activeRoomId,
+              showDimensions
+            );
+            return [uiPosition.x, 0.095, uiPosition.z] as [number, number, number];
+          })()}
           center
           transform={false}
         >
@@ -1247,6 +2322,282 @@ export default function RoomRenderer2D({
           />
         ))}
 
+      {isStraightWallDrawMode && wallDrawAlignmentCue && (
+        <Html
+          zIndexRange={[12, 0]}
+          position={[wallDrawAlignmentCue.point.x, 0.085, wallDrawAlignmentCue.point.z + 0.24]}
+          center
+          transform={false}
+          style={{ pointerEvents: "none" }}
+        >
+          <div
+            data-testid="wall-draw-alignment-cue"
+            style={{
+              border: "1px solid rgba(20,184,166,0.32)",
+              borderRadius: 999,
+              background: "rgba(240,253,250,0.96)",
+              color: "#0f766e",
+              fontSize: 10,
+              fontWeight: 800,
+              padding: "2px 8px",
+              pointerEvents: "none",
+              whiteSpace: "nowrap",
+              boxShadow: "0 1px 5px rgba(15,23,42,0.12)",
+            }}
+          >
+            {wallDrawAlignmentCue.label}
+          </div>
+        </Html>
+      )}
+
+      {isStraightWallDrawMode && wallDrawContinuationCue && (
+        <Html
+          zIndexRange={[12, 0]}
+          position={[wallDrawContinuationCue.point.x, 0.085, wallDrawContinuationCue.point.z - 0.24]}
+          center
+          transform={false}
+          style={{ pointerEvents: "none" }}
+        >
+          <div
+            data-testid="wall-draw-continuation-cue"
+            style={{
+              border: "1px solid rgba(37,99,235,0.26)",
+              borderRadius: 999,
+              background: "rgba(239,246,255,0.96)",
+              color: "#1d4ed8",
+              fontSize: 10,
+              fontWeight: 800,
+              padding: "2px 8px",
+              pointerEvents: "none",
+              whiteSpace: "nowrap",
+              boxShadow: "0 1px 5px rgba(15,23,42,0.12)",
+            }}
+          >
+            {wallDrawContinuationCue.label}
+          </div>
+        </Html>
+      )}
+
+      {isStraightWallDrawMode && wallDrawCloseCue && (
+        <Html
+          zIndexRange={[12, 0]}
+          position={[wallDrawCloseCue.point.x, 0.085, wallDrawCloseCue.point.z + 0.24]}
+          center
+          transform={false}
+          style={{ pointerEvents: "none" }}
+        >
+          <div
+            data-testid="wall-draw-close-cue"
+            style={{
+              border: "1px solid rgba(34,197,94,0.3)",
+              borderRadius: 999,
+              background: "rgba(240,253,244,0.96)",
+              color: "#166534",
+              fontSize: 10,
+              fontWeight: 800,
+              padding: "2px 8px",
+              pointerEvents: "none",
+              whiteSpace: "nowrap",
+              boxShadow: "0 1px 5px rgba(15,23,42,0.12)",
+            }}
+          >
+            {wallDrawCloseCue.label}
+          </div>
+        </Html>
+      )}
+
+      {roomDrawGuideLines.map((guide) => (
+        <Line
+          key={guide.id}
+          points={guide.points}
+          color="#14b8a6"
+          lineWidth={guide.emphasis === "strong" ? 2.1 : 1.35}
+          dashed
+          dashSize={guide.emphasis === "strong" ? 0.36 : 0.28}
+          gapSize={guide.emphasis === "strong" ? 0.1 : 0.16}
+          transparent
+          opacity={guide.emphasis === "strong" ? 0.92 : 0.7}
+        />
+      ))}
+
+      {rectangleGhostGuideLines.map((guide) => (
+        <Line
+          key={guide.id}
+          points={guide.points}
+          color="#22c55e"
+          lineWidth={2.6}
+          dashed
+          dashSize={0.2}
+          gapSize={0.08}
+          transparent
+          opacity={0.9}
+        />
+      ))}
+
+      {sharedWallPreviewSegment && (
+        <>
+          <Line
+            points={sharedWallPreviewSegment.points}
+            color="#22c55e"
+            lineWidth={6}
+            transparent
+            opacity={0.95}
+          />
+          <Line
+            points={sharedWallPreviewSegment.points}
+            color="#ffffff"
+            lineWidth={2}
+            transparent
+            opacity={0.88}
+          />
+          <Html
+            zIndexRange={[12, 0]}
+            position={[
+              sharedWallPreviewSegment.labelPosition.x,
+              0.085,
+              sharedWallPreviewSegment.labelPosition.z,
+            ]}
+            center
+            transform={false}
+            style={{ pointerEvents: "none" }}
+          >
+            <div
+              data-testid="rectangle-wall-shared-wall-preview"
+              style={{
+                border: "1px solid rgba(34,197,94,0.38)",
+                borderRadius: 999,
+                background: "rgba(240,253,244,0.96)",
+                color: "#166534",
+                fontSize: 10,
+                fontWeight: 800,
+                padding: "2px 8px",
+                pointerEvents: "none",
+                whiteSpace: "nowrap",
+                boxShadow: "0 1px 5px rgba(15,23,42,0.14)",
+              }}
+            >
+              Shared wall · {formatMillimeters(sharedWallPreviewSegment.lengthMeters)}
+            </div>
+          </Html>
+        </>
+      )}
+
+      {roomDrawAnchorCue && (
+        <Html
+          zIndexRange={[12, 0]}
+          position={[roomDrawAnchorCue.point.x, 0.085, roomDrawAnchorCue.point.z + 0.24]}
+          center
+          transform={false}
+          style={{ pointerEvents: "none" }}
+        >
+          <div
+            data-testid="rectangle-wall-anchor-cue"
+            style={{
+              border: "1px solid rgba(20,184,166,0.3)",
+              borderRadius: 999,
+              background: "rgba(240,253,250,0.96)",
+              color: "#0f766e",
+              fontSize: 10,
+              fontWeight: 800,
+              padding: "2px 8px",
+              pointerEvents: "none",
+              whiteSpace: "nowrap",
+              boxShadow: "0 1px 5px rgba(15,23,42,0.12)",
+            }}
+          >
+            {roomDrawAnchorCue.label}
+          </div>
+        </Html>
+      )}
+
+      {[
+        ...startSnapMarkers,
+        ...drawSnapMarkers,
+        ...(wallDrawSnapMarker ? [wallDrawSnapMarker] : []),
+        ...(sharedWallPreviewMarker ? [sharedWallPreviewMarker] : []),
+      ].map((marker) => (
+          <group key={marker.id} position={[marker.point.x, 0, marker.point.z]}>
+            {marker.id.startsWith("start-snap-") && (
+              <Html
+                zIndexRange={[1, 0]}
+                position={[0, 0.02, 0]}
+                center
+                transform={false}
+                style={{ pointerEvents: "none" }}
+              >
+                <div
+                  aria-hidden="true"
+                  data-testid={`floor-plan-start-snap-${marker.label
+                    .toLowerCase()
+                    .replace(/\s+/g, "-")}`}
+                  data-plan-x={marker.point.x.toFixed(3)}
+                  data-plan-z={marker.point.z.toFixed(3)}
+                  style={{
+                    width: 1,
+                    height: 1,
+                    opacity: 0,
+                    pointerEvents: "none",
+                  }}
+                />
+              </Html>
+            )}
+            <mesh rotation-x={-Math.PI / 2} position={[0, 0.012, 0]}>
+              <circleGeometry
+                args={[
+                  marker.label === "Shared wall" || marker.label === "Close room"
+                    ? 0.07
+                    : marker.subtle
+                      ? 0.038
+                      : 0.055,
+                  24,
+                ]}
+              />
+              <meshBasicMaterial
+                color={
+                  marker.label === "Shared wall" || marker.label === "Close room"
+                    ? "#22c55e"
+                    : "#14b8a6"
+                }
+                transparent={marker.subtle}
+                opacity={marker.subtle ? 0.42 : 1}
+              />
+            </mesh>
+            {(marker.displayLabel || !marker.subtle) && (
+              <Html
+                zIndexRange={[12, 0]}
+                position={[0, 0.075, marker.label === "Shared wall" ? 0 : -0.22]}
+                center
+                transform={false}
+                style={{ pointerEvents: "none" }}
+              >
+                <div
+                  data-testid="floor-plan-draw-snap-label"
+                  style={{
+                    border: "1px solid rgba(20,184,166,0.32)",
+                    borderRadius: 999,
+                    background:
+                      marker.label === "Shared wall" || marker.label === "Close room"
+                        ? "rgba(240,253,244,0.96)"
+                        : "rgba(240,253,250,0.96)",
+                    color:
+                      marker.label === "Shared wall" || marker.label === "Close room"
+                        ? "#166534"
+                        : "#0f766e",
+                    fontSize: 10,
+                    fontWeight: 800,
+                    padding: "2px 7px",
+                    pointerEvents: "none",
+                    whiteSpace: "nowrap",
+                    boxShadow: "0 1px 5px rgba(15,23,42,0.12)",
+                  }}
+                >
+                  {marker.displayLabel ?? marker.label}
+                </div>
+              </Html>
+            )}
+          </group>
+        ))}
+
       {isStraightWallDrawMode && wallDrawLinePoints.length >= 2 && (
         <Line
           points={wallDrawLinePoints}
@@ -1254,6 +2605,107 @@ export default function RoomRenderer2D({
           lineWidth={3}
         />
       )}
+
+      {isStraightWallDrawMode &&
+        onCommitWallDrawSegmentLength &&
+        activeDrawRoomPoints.slice(1).map((point, offsetIndex) => {
+          const segmentIndex = offsetIndex + 1;
+          const previousPoint = activeDrawRoomPoints[segmentIndex - 1];
+          if (!previousPoint) return null;
+          const midpoint = {
+            x: (previousPoint.x + point.x) / 2,
+            z: (previousPoint.z + point.z) / 2,
+          };
+          const isEditing = editingWallDrawSegment?.segmentIndex === segmentIndex;
+          return (
+            <Html
+              key={`wall-segment-length-${segmentIndex}`}
+              zIndexRange={[11, 0]}
+              position={[midpoint.x, 0.066, midpoint.z]}
+              center
+              transform={false}
+            >
+              {isEditing ? (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    fontSize: 11,
+                    fontWeight: 800,
+                    color: "#1d4ed8",
+                    background: "rgba(255,255,255,0.98)",
+                    border: "1px solid rgba(37,99,235,0.38)",
+                    borderRadius: 8,
+                    padding: "4px 8px",
+                    pointerEvents: "auto",
+                    whiteSpace: "nowrap",
+                    boxShadow: "0 2px 10px rgba(15,23,42,0.14)",
+                  }}
+                  onPointerDown={(event) => event.stopPropagation()}
+                >
+                  <input
+                    data-testid="wall-draw-segment-length-editor"
+                    autoFocus
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    step={1}
+                    defaultValue={editingWallDrawSegment.value}
+                    onBlur={(event) =>
+                      commitWallDrawSegmentLengthEdit(event.currentTarget.value)
+                    }
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        event.preventDefault();
+                        commitWallDrawSegmentLengthEdit(event.currentTarget.value);
+                      } else if (event.key === "Escape") {
+                        event.preventDefault();
+                        cancelWallDrawSegmentLengthEdit();
+                      }
+                    }}
+                    style={{
+                      width: 76,
+                      border: "none",
+                      background: "transparent",
+                      color: "#1d4ed8",
+                      fontSize: 11,
+                      fontWeight: 800,
+                      outline: "none",
+                    }}
+                  />
+                  <span style={{ color: "#4b5563", fontWeight: 700 }}>mm</span>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  data-testid={`wall-draw-segment-length-${segmentIndex}`}
+                  title="Double-click to edit wall length"
+                  onPointerDown={(event) => event.stopPropagation()}
+                  onDoubleClick={(event) => {
+                    event.stopPropagation();
+                    startWallDrawSegmentLengthEdit(segmentIndex, previousPoint, point);
+                  }}
+                  style={{
+                    border: "1px solid rgba(37,99,235,0.32)",
+                    borderRadius: 5,
+                    background: "rgba(255,255,255,0.94)",
+                    color: "#1d4ed8",
+                    cursor: "text",
+                    fontSize: 11,
+                    fontWeight: 800,
+                    padding: "2px 7px",
+                    pointerEvents: "auto",
+                    whiteSpace: "nowrap",
+                    boxShadow: "0 1px 5px rgba(15,23,42,0.12)",
+                  }}
+                >
+                  {buildWallDrawPreviewLabel(previousPoint, point)}
+                </button>
+              )}
+            </Html>
+          );
+        })}
 
       {isStraightWallDrawMode &&
         activeDrawRoomPoints.map((point, index) => (
@@ -1485,6 +2937,39 @@ export default function RoomRenderer2D({
               color={seg.kind === "door" ? openingDoorColor : openingWindowColor}
               lineWidth={selectedOverlayId === seg.id ? 3 : 2.2}
             />
+            {selectedOverlayId === seg.id && (
+              <Html
+                zIndexRange={[11, 0]}
+                position={[
+                  (seg.points[0][0] + seg.points[1][0]) / 2,
+                  0.07,
+                  (seg.points[0][2] + seg.points[1][2]) / 2,
+                ]}
+                center
+                transform={false}
+                style={{ pointerEvents: "none" }}
+              >
+                <div
+                  data-testid="plan-opening-live-label"
+                  style={{
+                    border: "1px solid rgba(15,118,110,0.28)",
+                    borderRadius: 6,
+                    background: "rgba(255,255,255,0.94)",
+                    color: "#0f766e",
+                    fontSize: 11,
+                    fontWeight: 800,
+                    padding: "3px 7px",
+                    pointerEvents: "none",
+                    whiteSpace: "nowrap",
+                    boxShadow: "0 1px 5px rgba(15,23,42,0.12)",
+                  }}
+                >
+                  {seg.kind === "door" ? "Door" : "Window"} {formatDimension(seg.width)}
+                  {" · "}
+                  {seg.wall} {formatDimension(seg.offset)}
+                </div>
+              </Html>
+            )}
             {interactive && (
               <mesh
                 position={[
@@ -1513,7 +2998,7 @@ export default function RoomRenderer2D({
                   releasePointerCaptureIfSupported(event);
                 }}
               >
-                <circleGeometry args={[0.05, 20]} />
+                <circleGeometry args={[selectedOverlayId === seg.id ? 0.07 : 0.05, 20]} />
                 <meshBasicMaterial
                   color={selectedOverlayId === seg.id ? "#f97316" : "#fb923c"}
                   transparent
@@ -1523,6 +3008,62 @@ export default function RoomRenderer2D({
             )}
           </group>
         ))}
+
+      {canTraceOpeningOnGrid && openingPreview && (
+        <>
+          <Line
+            points={openingPreview.segment.map((point) => [point.x, 0.006, point.z])}
+            color={openingPreview.status === "valid" ? "#0f766e" : "#f97316"}
+            lineWidth={3}
+          />
+          <Html
+            zIndexRange={[12, 0]}
+            position={[
+              openingPreview.labelPosition.x,
+              0.075,
+              openingPreview.labelPosition.z,
+            ]}
+            center
+            transform={false}
+            style={{ pointerEvents: "none" }}
+          >
+            <div
+              data-testid="blank-plan-opening-snap-preview"
+              style={{
+                border:
+                  openingPreview.status === "valid"
+                    ? "1px solid rgba(15,118,110,0.32)"
+                    : "1px solid rgba(249,115,22,0.38)",
+                borderRadius: 6,
+                background: "rgba(255,255,255,0.94)",
+                color: openingPreview.status === "valid" ? "#0f766e" : "#c2410c",
+                fontSize: 11,
+                fontWeight: 800,
+                padding: openingPreviewHelpText ? "5px 8px" : "3px 7px",
+                pointerEvents: "none",
+                textAlign: "center",
+                whiteSpace: "nowrap",
+                boxShadow: "0 1px 5px rgba(15,23,42,0.12)",
+              }}
+            >
+              <div>{openingPreview.label}</div>
+              {openingPreviewHelpText && (
+                <div
+                  data-testid="blank-plan-opening-error-detail"
+                  style={{
+                    color: "#9a3412",
+                    fontSize: 10,
+                    fontWeight: 700,
+                    marginTop: 2,
+                  }}
+                >
+                  {openingPreviewHelpText}
+                </div>
+              )}
+            </div>
+          </Html>
+        </>
+      )}
 
       {showBuiltIns &&
         fixedElements.map((fixed) => (

@@ -9,7 +9,11 @@ import type {
 } from "@/lib/design-page-house-plan";
 import { type AiLayoutProposal, type Style } from "@/lib/design-page-types";
 import type { RoomOpening2D } from "@/lib/editorScene";
-import type { FloorPlanDrawRoomMode, FloorPlanUnderlay } from "@/lib/floor-plan-types";
+import type {
+  FloorPlanDrawAngleLockMode,
+  FloorPlanDrawRoomMode,
+  FloorPlanUnderlay,
+} from "@/lib/floor-plan-types";
 import type { ImportedModelOption } from "@/lib/catalog/imported-model-assembly";
 import type { RoomPlanShape, RoomType } from "@/lib/room-types";
 import type { EditorViewMode } from "./EditorViewToggle";
@@ -67,6 +71,8 @@ type DesignControlsPanelProps = {
   floorPlanCalibrationSummary: string | null;
   floorPlanTraceRoomMode: boolean;
   floorPlanDrawRoomMode: FloorPlanDrawRoomMode;
+  floorPlanDrawAngleLockMode: FloorPlanDrawAngleLockMode;
+  floorPlanExactWallLengthInput: string;
   floorPlanTraceRoomPointCount: number;
   floorPlanTraceRoomType: RoomType;
   floorPlanTraceOpeningMode: boolean;
@@ -122,7 +128,11 @@ type DesignControlsPanelProps = {
   onResetFloorPlanCalibrationPoints: () => void;
   onFloorPlanTraceRoomModeChange: (enabled: boolean) => void;
   onFloorPlanTraceRoomDrawModeChange: (mode: FloorPlanDrawRoomMode) => void;
+  onFloorPlanDrawAngleLockModeChange: (mode: FloorPlanDrawAngleLockMode) => void;
+  onFloorPlanExactWallLengthInputChange: (value: string) => void;
+  onApplyFloorPlanExactWallLength: () => void;
   onFloorPlanTraceRoomTypeChange: (roomType: RoomType) => void;
+  onUndoFloorPlanTraceRoomPoint: () => void;
   onResetFloorPlanTraceRoomPoints: () => void;
   onFloorPlanTraceOpeningModeChange: (enabled: boolean) => void;
   onFloorPlanTraceOpeningKindChange: (kind: RoomOpening2D["kind"]) => void;
@@ -171,6 +181,8 @@ export default function DesignControlsPanel({
   floorPlanCalibrationSummary,
   floorPlanTraceRoomMode,
   floorPlanDrawRoomMode,
+  floorPlanDrawAngleLockMode,
+  floorPlanExactWallLengthInput,
   floorPlanTraceRoomPointCount,
   floorPlanTraceRoomType,
   floorPlanTraceOpeningMode,
@@ -226,7 +238,11 @@ export default function DesignControlsPanel({
   onResetFloorPlanCalibrationPoints,
   onFloorPlanTraceRoomModeChange,
   onFloorPlanTraceRoomDrawModeChange,
+  onFloorPlanDrawAngleLockModeChange,
+  onFloorPlanExactWallLengthInputChange,
+  onApplyFloorPlanExactWallLength,
   onFloorPlanTraceRoomTypeChange,
+  onUndoFloorPlanTraceRoomPoint,
   onResetFloorPlanTraceRoomPoints,
   onFloorPlanTraceOpeningModeChange,
   onFloorPlanTraceOpeningKindChange,
@@ -324,6 +340,8 @@ export default function DesignControlsPanel({
             floorPlanCalibrationSummary={floorPlanCalibrationSummary}
             floorPlanTraceRoomMode={floorPlanTraceRoomMode}
             floorPlanDrawRoomMode={floorPlanDrawRoomMode}
+            floorPlanDrawAngleLockMode={floorPlanDrawAngleLockMode}
+            floorPlanExactWallLengthInput={floorPlanExactWallLengthInput}
             floorPlanTraceRoomPointCount={floorPlanTraceRoomPointCount}
             floorPlanTraceRoomType={floorPlanTraceRoomType}
             floorPlanTraceOpeningMode={floorPlanTraceOpeningMode}
@@ -360,7 +378,11 @@ export default function DesignControlsPanel({
             onResetFloorPlanCalibrationPoints={onResetFloorPlanCalibrationPoints}
             onFloorPlanTraceRoomModeChange={onFloorPlanTraceRoomModeChange}
             onFloorPlanTraceRoomDrawModeChange={onFloorPlanTraceRoomDrawModeChange}
+            onFloorPlanDrawAngleLockModeChange={onFloorPlanDrawAngleLockModeChange}
+            onFloorPlanExactWallLengthInputChange={onFloorPlanExactWallLengthInputChange}
+            onApplyFloorPlanExactWallLength={onApplyFloorPlanExactWallLength}
             onFloorPlanTraceRoomTypeChange={onFloorPlanTraceRoomTypeChange}
+            onUndoFloorPlanTraceRoomPoint={onUndoFloorPlanTraceRoomPoint}
             onResetFloorPlanTraceRoomPoints={onResetFloorPlanTraceRoomPoints}
             onFloorPlanTraceOpeningModeChange={onFloorPlanTraceOpeningModeChange}
             onFloorPlanTraceOpeningKindChange={onFloorPlanTraceOpeningKindChange}

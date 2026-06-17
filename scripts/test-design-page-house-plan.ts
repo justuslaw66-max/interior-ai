@@ -8,10 +8,12 @@ import {
   doesHouseRoomOverlap,
   getActiveRoomPlanOffset,
   getNextRoomPlanPosition,
+  resolveFloorPlanDrawCancelDecision,
   resolvePlanFitZoom,
   resolveHouseRoomSnapPreview,
   resolveNewRoomName,
   roundPlanCoordinate,
+  shouldReplaceStarterRoomWithDrawnRoom,
   snapHouseRoomMove,
 } from "@/lib/design-page-house-plan";
 import {
@@ -74,6 +76,137 @@ assert.equal(resolveNewRoomName([living], "bedroom"), "Bedroom");
 assert.equal(resolveNewRoomName([living, bedroom], "bedroom"), "Bedroom 2");
 
 assert.deepEqual(getNextRoomPlanPosition(plan.rooms, 5, 3), { x: 8, z: 0 });
+
+assert.deepEqual(
+  resolveFloorPlanDrawCancelDecision({
+    traceRoomMode: true,
+    drawMode: "straight_wall",
+    pointCount: 2,
+  }),
+  {
+    shouldHandle: true,
+    clearRoomPoints: true,
+    clearRoomPreview: true,
+    exitRoomDrawMode: false,
+  }
+);
+assert.deepEqual(
+  resolveFloorPlanDrawCancelDecision({
+    traceRoomMode: true,
+    drawMode: "rectangle_wall",
+    pointCount: 1,
+  }),
+  {
+    shouldHandle: true,
+    clearRoomPoints: true,
+    clearRoomPreview: true,
+    exitRoomDrawMode: false,
+  }
+);
+assert.deepEqual(
+  resolveFloorPlanDrawCancelDecision({
+    traceRoomMode: true,
+    drawMode: "arc_wall",
+    pointCount: 0,
+  }),
+  {
+    shouldHandle: true,
+    clearRoomPoints: true,
+    clearRoomPreview: true,
+    exitRoomDrawMode: true,
+  }
+);
+assert.deepEqual(
+  resolveFloorPlanDrawCancelDecision({
+    traceRoomMode: false,
+    drawMode: "straight_wall",
+    pointCount: 0,
+  }),
+  {
+    shouldHandle: false,
+    clearRoomPoints: false,
+    clearRoomPreview: false,
+    exitRoomDrawMode: false,
+  }
+);
+
+const singleRoomPlan = buildHousePlan2D([living], 5, 4);
+assert.equal(
+  shouldReplaceStarterRoomWithDrawnRoom({
+    activeRoom: living,
+    rooms: singleRoomPlan.rooms,
+    x: 0,
+    z: 0,
+    w: 5,
+    d: 4,
+  }),
+  true
+);
+assert.equal(
+  shouldReplaceStarterRoomWithDrawnRoom({
+    activeRoom: living,
+    rooms: singleRoomPlan.rooms,
+    x: 5,
+    z: 0,
+    w: 5,
+    d: 4,
+  }),
+  false
+);
+assert.equal(
+  shouldReplaceStarterRoomWithDrawnRoom({
+    activeRoom: living,
+    rooms: singleRoomPlan.rooms,
+    x: 2.3,
+    z: 0,
+    w: 5,
+    d: 4,
+  }),
+  false
+);
+assert.equal(
+  shouldReplaceStarterRoomWithDrawnRoom({
+    activeRoom: living,
+    rooms: singleRoomPlan.rooms,
+    x: 2,
+    z: 0,
+    w: 5,
+    d: 4,
+  }),
+  true
+);
+assert.equal(
+  shouldReplaceStarterRoomWithDrawnRoom({
+    activeRoom: {
+      ...living,
+      items: [
+        {
+          instanceId: "item-1",
+          productId: "chair",
+          variantId: "default",
+          position: [0, 0, 0],
+        },
+      ],
+    },
+    rooms: singleRoomPlan.rooms,
+    x: 0,
+    z: 0,
+    w: 5,
+    d: 4,
+  }),
+  false
+);
+assert.equal(
+  shouldReplaceStarterRoomWithDrawnRoom({
+    activeRoom: living,
+    rooms: plan.rooms,
+    x: 0,
+    z: 0,
+    w: 5,
+    d: 4,
+  }),
+  false
+);
 
 const snapped = snapHouseRoomMove("bedroom", 4.68, 0, plan.rooms);
 assert.deepEqual(snapped, { x: 4.5, z: 0 });

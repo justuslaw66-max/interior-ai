@@ -1,3 +1,4 @@
+import type { FloorPlanDrawRoomMode } from "@/lib/floor-plan-types";
 import type { RoomPlanShape, RoomSnapshot, RoomType } from "@/lib/room-types";
 
 export const ROOM_DIMENSION_DEFAULTS = {
@@ -162,6 +163,39 @@ export type HouseRoomConnectionChecklistItem = {
   doorwaySuggestion?: HouseRoomDoorwaySuggestion;
 };
 
+export type FloorPlanDrawCancelDecision = {
+  shouldHandle: boolean;
+  clearRoomPoints: boolean;
+  clearRoomPreview: boolean;
+  exitRoomDrawMode: boolean;
+};
+
+export function resolveFloorPlanDrawCancelDecision({
+  traceRoomMode,
+  pointCount,
+}: {
+  traceRoomMode: boolean;
+  drawMode: FloorPlanDrawRoomMode;
+  pointCount: number;
+}): FloorPlanDrawCancelDecision {
+  if (!traceRoomMode) {
+    return {
+      shouldHandle: false,
+      clearRoomPoints: false,
+      clearRoomPreview: false,
+      exitRoomDrawMode: false,
+    };
+  }
+
+  const hasActiveDraw = pointCount > 0;
+  return {
+    shouldHandle: true,
+    clearRoomPoints: true,
+    clearRoomPreview: true,
+    exitRoomDrawMode: !hasActiveDraw,
+  };
+}
+
 export function clampRoomDimension(value: number): number {
   return Math.max(
     ROOM_DIMENSION_DEFAULTS.min,
@@ -275,6 +309,16 @@ function getHouseRoomBounds(
   };
 }
 
+function getHouseRoomOverlapArea(
+  first: { left: number; right: number; top: number; bottom: number },
+  second: { left: number; right: number; top: number; bottom: number }
+): number {
+  const overlapWidth = Math.min(first.right, second.right) - Math.max(first.left, second.left);
+  const overlapDepth = Math.min(first.bottom, second.bottom) - Math.max(first.top, second.top);
+  if (overlapWidth <= 0 || overlapDepth <= 0) return 0;
+  return overlapWidth * overlapDepth;
+}
+
 export function doesHouseRoomOverlap(
   roomId: string,
   x: number,
@@ -297,6 +341,52 @@ export function doesHouseRoomOverlap(
       candidate.bottom > other.top + tolerance
     );
   });
+}
+
+export function shouldReplaceStarterRoomWithDrawnRoom({
+  activeRoom,
+  rooms,
+  x,
+  z,
+  w,
+  d,
+  tolerance = 0.01,
+  minCandidateOverlapRatio = 0.55,
+}: {
+  activeRoom: RoomSnapshot | null | undefined;
+  rooms: HousePlanRoom2D[];
+  x: number;
+  z: number;
+  w: number;
+  d: number;
+  tolerance?: number;
+  minCandidateOverlapRatio?: number;
+}): boolean {
+  if (!activeRoom || rooms.length !== 1) return false;
+  if ((activeRoom.items?.length ?? 0) > 0 || (activeRoom.zones?.length ?? 0) > 0) return false;
+
+  const activePlanRoom = rooms.find((room) => room.id === activeRoom.id);
+  if (!activePlanRoom) return false;
+
+  const candidate = getHouseRoomBounds(x, z, w, d);
+  const starter = getHouseRoomBounds(
+    activePlanRoom.x,
+    activePlanRoom.z,
+    activePlanRoom.w,
+    activePlanRoom.d
+  );
+  const candidateCenterInsideStarter =
+    x > starter.left + tolerance &&
+    x < starter.right - tolerance &&
+    z > starter.top + tolerance &&
+    z < starter.bottom - tolerance;
+  if (!candidateCenterInsideStarter) return false;
+
+  const overlapArea = getHouseRoomOverlapArea(candidate, starter);
+  if (overlapArea <= 0) return false;
+
+  const candidateArea = Math.max(w * d, tolerance);
+  return overlapArea / candidateArea >= minCandidateOverlapRatio;
 }
 
 export function snapHouseRoomMove(

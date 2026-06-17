@@ -78,6 +78,8 @@ import { metersToMm, radiansToDeg, type EditorAnnotation2D, type FixedElement2D,
 import { applyFloorPlanScaleCalibration } from "@/lib/floor-plan-calibration";
 import {
   resolveArcWallDrawPreview,
+  resolveExactWallDrawPoint,
+  resolveOpeningPlacementFromPoint,
   resolveTracedOpening,
   resolveClosedWallDrawRoom,
   resolveTracedRoomRectangle,
@@ -85,10 +87,12 @@ import {
   snapFloorPlanPointForRoomDraw,
   snapFloorPlanPointForWallDraw,
   snapFloorPlanPointToGrid,
+  validateTracedOpeningPlacement,
   type ResolvedWallDrawRoom,
   type TracedRoomRectangle,
 } from "@/lib/floor-plan-tracing";
 import type {
+  FloorPlanDrawAngleLockMode,
   FloorPlanDrawRoomMode,
   FloorPlanPoint,
   FloorPlanUnderlay,
@@ -107,8 +111,10 @@ import {
   buildHouseRoomConnectionChecklist,
   doesHouseRoomOverlap,
   getRoomTypeLabel,
+  resolveFloorPlanDrawCancelDecision,
   resolvePlanFitZoom,
   roundPlanCoordinate,
+  shouldReplaceStarterRoomWithDrawnRoom,
   type HouseRoomDoorwaySuggestion,
   type RoomSizePresetId,
 } from "@/lib/design-page-house-plan";
@@ -213,10 +219,10 @@ import {
   mapPlanAnnotationsToRoomRenderer,
   mapPlanFixedElementsToRoomRenderer,
   mapPlanOpeningsToRoomRenderer,
+  clampPlanOpeningMetrics,
   getPlanOpeningWallSpanMeters,
   movePlanAnnotation,
   movePlanFixedElement,
-  movePlanOpening,
   updatePlanOpeningMetrics,
 } from "@/lib/design-page-plan-overlays";
 
@@ -527,6 +533,9 @@ function PageContent() {
   const [floorPlanTraceRoomMode, setFloorPlanTraceRoomMode] = useState(false);
   const [floorPlanDrawRoomMode, setFloorPlanDrawRoomMode] =
     useState<FloorPlanDrawRoomMode>("straight_wall");
+  const [floorPlanDrawAngleLockMode, setFloorPlanDrawAngleLockMode] =
+    useState<FloorPlanDrawAngleLockMode>("ortho");
+  const [floorPlanExactWallLengthInput, setFloorPlanExactWallLengthInput] = useState("");
   const [floorPlanTraceRoomPoints, setFloorPlanTraceRoomPoints] = useState<FloorPlanPoint[]>([]);
   const [blankGridRoomPreviewPoint, setBlankGridRoomPreviewPoint] = useState<FloorPlanPoint | null>(null);
   const [floorPlanTraceRoomType, setFloorPlanTraceRoomType] = useState<RoomType>("living");
@@ -3170,23 +3179,13 @@ function PageContent() {
     [selectedZoneId, updateSelection]
   );
 
-  // NEW: Handle room switching with proper state cleanup
+  // Keep room selection separate from camera navigation. Normal room clicks
+  // should not pull users out of their whole-home overview.
   const handleSwitchRoom = useCallback((roomId: string) => {
-    // Switch room
     setDesignSnapshot((prev) => switchRoom(prev, roomId));
-
-    // Clear selection when switching rooms (keeps UI calm)
     clearAllSelection();
-
-    // Only reset the perspective camera in room view. In 2D, forcing a 3D
-    // camera angle makes the plan render edge-on as a thin line.
-    if (viewMode !== "2d" && cameraRef.current) {
-      cameraRef.current.position.set(0, 3, 3);
-      cameraRef.current.lookAt(0, 0, 0);
-    }
-
     track("editor_room_switched", { roomId });
-  }, [clearAllSelection, viewMode]);
+  }, [clearAllSelection]);
 
   const selectedInstanceId = primaryId;
 
@@ -3440,6 +3439,74 @@ function PageContent() {
       });
     },
     [housePlan2D.rooms, resolveConfiguredPlanningDimsMm, showRuleToast]
+  );
+
+  const handleCommitRoomDimensionEdit2D = useCallback(
+    (roomId: string, axis: "width" | "depth", valueMeters: number) => {
+      const targetRoom = designSnapshot.rooms.find((room) => room.id === roomId);
+      const planRoom = housePlan2D.rooms.find((room) => room.id === roomId);
+      if (!targetRoom || !planRoom) return;
+
+      const width = clampRoomDimension(axis === "width" ? valueMeters : targetRoom.geometry.width);
+      const depth = clampRoomDimension(axis === "depth" ? valueMeters : targetRoom.geometry.depth);
+      if (!Number.isFinite(width) || !Number.isFinite(depth)) return;
+      if (doesHouseRoomOverlap(roomId, planRoom.x, planRoom.z, width, depth, housePlan2D.rooms)) {
+        showRuleToast("Rooms cannot overlap");
+        return;
+      }
+
+      const currentWall =
+        typeof targetRoom.geometry.wallThickness === "number" &&
+        Number.isFinite(targetRoom.geometry.wallThickness)
+          ? targetRoom.geometry.wallThickness
+          : ROOM_DIMENSION_DEFAULTS.wallThickness;
+
+      const normalizedItems = _normalizeItemsToRoom({
+        items: targetRoom.items,
+        width,
+        depth,
+        wall: currentWall,
+        catalogItems: CATALOG_ITEMS,
+        resolveConfiguredPlanningDimsMm,
+      });
+
+      history.begin("Edit room dimension");
+      setDesignSnapshot((prev) =>
+        updateRoom(prev, {
+          ...targetRoom,
+          geometry: {
+            ...targetRoom.geometry,
+            width,
+            depth,
+            wallThickness: currentWall,
+          },
+          items: normalizedItems,
+        })
+      );
+      history.commit();
+
+      if (designSnapshot.activeRoomId === roomId) {
+        setRoomWidthInput(width.toFixed(2));
+        setRoomDepthInput(depth.toFixed(2));
+      }
+
+      track("editor_room_dimension_edited", {
+        roomId,
+        axis,
+        width,
+        depth,
+      });
+    },
+    [
+      designSnapshot.activeRoomId,
+      designSnapshot.rooms,
+      history,
+      housePlan2D.rooms,
+      resolveConfiguredPlanningDimsMm,
+      setRoomDepthInput,
+      setRoomWidthInput,
+      showRuleToast,
+    ]
   );
 
   const applyRoomSize = useCallback(
@@ -4073,15 +4140,37 @@ function PageContent() {
 
   const handleMoveOpening2D = useCallback(
     (id: string, offsetMeters: number) => {
-      setPlanOpenings((prev) =>
-        movePlanOpening(prev, id, offsetMeters, {
+      const currentOpening = planOpenings.find((opening) => opening.id === id);
+      if (!currentOpening) return;
+
+      const nextOpening = clampPlanOpeningMetrics(
+        {
+          ...currentOpening,
+          offsetMm: metersToMm(offsetMeters),
+        },
+        {
           rooms: housePlan2D.rooms,
           planWidthMeters: planViewWidth,
           planDepthMeters: planViewDepth,
-        })
+        }
+      );
+
+      const validation = validateTracedOpeningPlacement(
+        nextOpening,
+        housePlan2D.rooms,
+        planOpenings,
+        id
+      );
+      if (!validation.valid) {
+        showRuleToast(validation.label);
+        return;
+      }
+
+      setPlanOpenings((prev) =>
+        prev.map((opening) => (opening.id === id ? nextOpening : opening))
       );
     },
-    [housePlan2D.rooms, planViewDepth, planViewWidth]
+    [housePlan2D.rooms, planOpenings, planViewDepth, planViewWidth, showRuleToast]
   );
 
   const handleUpdateOpeningMetrics2D = useCallback(
@@ -4092,6 +4181,39 @@ function PageContent() {
         offsetMeters?: number;
       }
     ) => {
+      const currentOpening = planOpenings.find((opening) => opening.id === id);
+      if (!currentOpening) return;
+
+      const nextOpening = clampPlanOpeningMetrics(
+        {
+          ...currentOpening,
+          widthMm:
+            metrics.widthMeters !== undefined
+              ? metersToMm(metrics.widthMeters)
+              : currentOpening.widthMm,
+          offsetMm:
+            metrics.offsetMeters !== undefined
+              ? metersToMm(metrics.offsetMeters)
+              : currentOpening.offsetMm,
+        },
+        {
+          rooms: housePlan2D.rooms,
+          planWidthMeters: planViewWidth,
+          planDepthMeters: planViewDepth,
+        }
+      );
+
+      const validation = validateTracedOpeningPlacement(
+        nextOpening,
+        housePlan2D.rooms,
+        planOpenings,
+        id
+      );
+      if (!validation.valid) {
+        showRuleToast(validation.label);
+        return;
+      }
+
       setPlanOpenings((prev) =>
         updatePlanOpeningMetrics(prev, id, metrics, {
           rooms: housePlan2D.rooms,
@@ -4100,7 +4222,7 @@ function PageContent() {
         })
       );
     },
-    [housePlan2D.rooms, planViewDepth, planViewWidth]
+    [housePlan2D.rooms, planOpenings, planViewDepth, planViewWidth, showRuleToast]
   );
 
   const handleAddSuggestedDoorway = useCallback(
@@ -4221,59 +4343,18 @@ function PageContent() {
       setFloorPlanTraceRoomMode(false);
       setFloorPlanTraceRoomPoints([]);
       setBlankGridRoomPreviewPoint(null);
-      setFloorPlanTraceOpeningMode(false);
+      setFloorPlanTraceOpeningMode(true);
+      setFloorPlanTraceOpeningKind(kind);
       setFloorPlanTraceOpeningPoints([]);
-
-      if (kind === "door") {
-        const suggestion =
-          roomConnectionChecklistItems.find(
-            (item) =>
-              item.status === "needs_doorway" &&
-              item.doorwaySuggestion &&
-              item.roomIds.includes(designSnapshot.activeRoomId)
-          )?.doorwaySuggestion ??
-          roomConnectionChecklistItems.find(
-            (item) => item.status === "needs_doorway" && item.doorwaySuggestion
-          )?.doorwaySuggestion;
-
-        if (suggestion) {
-          handleAddSuggestedDoorway(suggestion);
-          return;
-        }
-      }
 
       if (!activeRoom) {
         showRuleToast("Add a room first");
         return;
       }
 
-      const id = `opening-${Date.now()}-${kind}`;
-      const nextOpening: RoomOpening2D = {
-        id,
-        roomId: activeRoom.id,
-        wall: kind === "door" ? "south" : "north",
-        kind,
-        offsetMm: 0,
-        widthMm: kind === "door" ? 900 : 1200,
-      };
-
-      setPlanOpenings((prev) => [...prev, nextOpening]);
-      setSelectedPlanOverlayId(id);
-      showRuleToast(kind === "door" ? "Door added" : "Window added");
-      track("floor_plan_quick_opening_added", {
-        kind,
-        roomId: activeRoom.id,
-        wall: nextOpening.wall,
-        widthMm: nextOpening.widthMm,
-      });
+      showRuleToast(kind === "door" ? "Click a wall to place a door" : "Click a wall to place a window");
     },
-    [
-      activeRoom,
-      designSnapshot.activeRoomId,
-      handleAddSuggestedDoorway,
-      roomConnectionChecklistItems,
-      showRuleToast,
-    ]
+    [activeRoom, showRuleToast]
   );
 
   const handleMoveFixedElement2D = useCallback((id: string, xMeters: number, zMeters: number) => {
@@ -4749,13 +4830,16 @@ function PageContent() {
 
   const applyTracedRoomRectangle = useCallback(
     (bounds: TracedRoomRectangle) => {
-      const isBlankGridRoomDraw = !floorPlanUnderlay?.mimeType.startsWith("image/");
       const canReplaceStarterRoom =
-        Boolean(activeRoom) &&
         designSnapshot.rooms.length === 1 &&
-        (isBlankGridRoomDraw ||
-          ((activeRoom?.items.length ?? 0) === 0 &&
-            (activeRoom?.zones.length ?? 0) === 0));
+        shouldReplaceStarterRoomWithDrawnRoom({
+          activeRoom,
+          rooms: housePlan2D.rooms,
+          x: bounds.x,
+          z: bounds.z,
+          w: bounds.width,
+          d: bounds.depth,
+        });
       const overlapRoomId = canReplaceStarterRoom && activeRoom ? activeRoom.id : "__new_traced_room__";
 
       if (
@@ -4823,7 +4907,6 @@ function PageContent() {
     [
       activeRoom,
       designSnapshot.rooms.length,
-      floorPlanUnderlay,
       floorPlanTraceRoomType,
       handleAddRoom,
       housePlan2D.rooms,
@@ -4839,13 +4922,16 @@ function PageContent() {
       }
 
       const { bounds } = resolvedRoom;
-      const isBlankGridRoomDraw = !floorPlanUnderlay?.mimeType.startsWith("image/");
       const canReplaceStarterRoom =
-        Boolean(activeRoom) &&
         designSnapshot.rooms.length === 1 &&
-        (isBlankGridRoomDraw ||
-          ((activeRoom?.items.length ?? 0) === 0 &&
-            (activeRoom?.zones.length ?? 0) === 0));
+        shouldReplaceStarterRoomWithDrawnRoom({
+          activeRoom,
+          rooms: housePlan2D.rooms,
+          x: bounds.x,
+          z: bounds.z,
+          w: bounds.width,
+          d: bounds.depth,
+        });
       const overlapRoomId = canReplaceStarterRoom && activeRoom ? activeRoom.id : "__new_wall_room__";
 
       if (
@@ -4918,7 +5004,6 @@ function PageContent() {
       applyTracedRoomRectangle,
       designSnapshot.rooms.length,
       floorPlanTraceRoomType,
-      floorPlanUnderlay,
       handleAddRoom,
       housePlan2D.rooms,
       setDesignSnapshot,
@@ -4957,6 +5042,27 @@ function PageContent() {
     []
   );
 
+  const cancelActiveFloorPlanDraw = useCallback(() => {
+    const decision = resolveFloorPlanDrawCancelDecision({
+      traceRoomMode: floorPlanTraceRoomMode,
+      drawMode: floorPlanDrawRoomMode,
+      pointCount: floorPlanTraceRoomPoints.length,
+    });
+
+    if (!decision.shouldHandle) return false;
+    if (decision.clearRoomPoints) setFloorPlanTraceRoomPoints([]);
+    if (decision.clearRoomPreview) setBlankGridRoomPreviewPoint(null);
+    if (decision.exitRoomDrawMode) setFloorPlanTraceRoomMode(false);
+    return true;
+  }, [floorPlanDrawRoomMode, floorPlanTraceRoomMode, floorPlanTraceRoomPoints.length]);
+
+  const handleUndoFloorPlanTraceRoomPoint = useCallback(() => {
+    if (floorPlanDrawRoomMode !== "straight_wall" || floorPlanTraceRoomPoints.length === 0) return false;
+    setFloorPlanTraceRoomPoints((points) => points.slice(0, -1));
+    setBlankGridRoomPreviewPoint(null);
+    return true;
+  }, [floorPlanDrawRoomMode, floorPlanTraceRoomPoints.length]);
+
   useEffect(() => {
     if (isClientPreview || editorMode === "present" || viewMode !== "2d") return;
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -4967,6 +5073,20 @@ function PageContent() {
         target?.tagName === "SELECT" ||
         target?.isContentEditable
       ) {
+        return;
+      }
+
+      if (event.key === "Escape") {
+        if (cancelActiveFloorPlanDraw()) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        return;
+      }
+
+      if ((event.key === "Backspace" || event.key === "Delete") && handleUndoFloorPlanTraceRoomPoint()) {
+        event.preventDefault();
+        event.stopPropagation();
         return;
       }
 
@@ -4985,7 +5105,14 @@ function PageContent() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [editorMode, handleFloorPlanDrawRoomModeChange, isClientPreview, viewMode]);
+  }, [
+    cancelActiveFloorPlanDraw,
+    editorMode,
+    handleFloorPlanDrawRoomModeChange,
+    handleUndoFloorPlanTraceRoomPoint,
+    isClientPreview,
+    viewMode,
+  ]);
 
   const handleResetFloorPlanTraceRoomPoints = useCallback(() => {
     setFloorPlanTraceRoomPoints([]);
@@ -5008,6 +5135,7 @@ function PageContent() {
                 : null,
             firstPoint: floorPlanTraceRoomPoints.length > 0 ? floorPlanTraceRoomPoints[0] : null,
             pointCount: floorPlanTraceRoomPoints.length,
+            angleLockMode: isDesigner ? floorPlanDrawAngleLockMode : "free",
           }
         );
         const lastPoint = floorPlanTraceRoomPoints[floorPlanTraceRoomPoints.length - 1];
@@ -5097,9 +5225,11 @@ function PageContent() {
       applyTracedRoomRectangle,
       applyResolvedWallDrawRoom,
       floorPlanDrawRoomMode,
+      floorPlanDrawAngleLockMode,
       floorPlanTraceRoomPoints,
       floorPlanUnderlay,
       housePlan2D.rooms,
+      isDesigner,
       showRuleToast,
     ]
   );
@@ -5143,6 +5273,17 @@ function PageContent() {
         return;
       }
 
+      const validation = validateTracedOpeningPlacement(
+        opening,
+        housePlan2D.rooms,
+        planOpenings
+      );
+      if (!validation.valid) {
+        setFloorPlanTraceOpeningPoints([]);
+        showRuleToast(validation.label);
+        return;
+      }
+
       const id = `opening-${Date.now()}`;
       setPlanOpenings((prev) => [
         ...prev,
@@ -5161,7 +5302,56 @@ function PageContent() {
         widthMm: opening.widthMm,
       });
     },
-    [floorPlanTraceOpeningKind, floorPlanTraceOpeningPoints, housePlan2D.rooms, showRuleToast]
+    [
+      floorPlanTraceOpeningKind,
+      floorPlanTraceOpeningPoints,
+      housePlan2D.rooms,
+      planOpenings,
+      showRuleToast,
+    ]
+  );
+
+  const handleBlankGridTraceOpeningPoint = useCallback(
+    (point: FloorPlanPoint) => {
+      if (!floorPlanTraceOpeningMode || floorPlanUnderlay) return;
+
+      const preview = resolveOpeningPlacementFromPoint(
+        point,
+        housePlan2D.rooms,
+        floorPlanTraceOpeningKind,
+        planOpenings
+      );
+      if (preview.status !== "valid" || !preview.opening) {
+        showRuleToast(preview.label);
+        return;
+      }
+
+      const opening = preview.opening;
+      const id = `opening-${Date.now()}`;
+      setPlanOpenings((prev) => [
+        ...prev,
+        {
+          id,
+          ...opening,
+        },
+      ]);
+      setSelectedPlanOverlayId(id);
+      showRuleToast(opening.kind === "door" ? "Door placed" : "Window placed");
+      track("floor_plan_opening_placed", {
+        kind: opening.kind,
+        roomId: opening.roomId,
+        wall: opening.wall,
+        widthMm: opening.widthMm,
+      });
+    },
+    [
+      floorPlanTraceOpeningKind,
+      floorPlanTraceOpeningMode,
+      floorPlanUnderlay,
+      housePlan2D.rooms,
+      planOpenings,
+      showRuleToast,
+    ]
   );
 
   const handleClearFloorPlanUnderlay = useCallback(() => {
@@ -7156,21 +7346,33 @@ function PageContent() {
       : floorPlanTraceOpeningMode
         ? floorPlanTraceOpeningKind
         : "select";
-  const snapBlankGridRoomDrawPoint = useCallback((point: FloorPlanPoint): FloorPlanPoint => {
-    const roundedPoint = {
-      x: roundPlanCoordinate(point.x),
-      z: roundPlanCoordinate(point.z),
-    };
+  const snapBlankGridRoomDrawPoint = useCallback(
+    (point: FloorPlanPoint, activePoints: FloorPlanPoint[] = floorPlanTraceRoomPoints): FloorPlanPoint => {
+      const roundedPoint = {
+        x: roundPlanCoordinate(point.x),
+        z: roundPlanCoordinate(point.z),
+      };
 
-    if (floorPlanDrawRoomMode === "straight_wall") {
-      return snapFloorPlanPointForRoomDraw(roundedPoint, { rooms: housePlan2D.rooms });
-    }
+      const snappedPoint = snapFloorPlanPointForRoomDraw(roundedPoint, {
+        rooms: housePlan2D.rooms,
+      });
 
-    return snapFloorPlanPointForRoomDraw(roundedPoint, {
-      rooms: housePlan2D.rooms,
-      edgeSnapDistanceMeters: 0,
-    });
-  }, [floorPlanDrawRoomMode, housePlan2D.rooms]);
+      if (floorPlanDrawRoomMode === "rectangle_wall") {
+        const firstPoint = activePoints[0] ?? null;
+        const gridSnappedPoint = snapFloorPlanPointToGrid(roundedPoint);
+        if (
+          firstPoint &&
+          !resolveTracedRoomRectangle([firstPoint, snappedPoint]) &&
+          resolveTracedRoomRectangle([firstPoint, gridSnappedPoint])
+        ) {
+          return gridSnappedPoint;
+        }
+      }
+
+      return snappedPoint;
+    },
+    [floorPlanDrawRoomMode, floorPlanTraceRoomPoints, housePlan2D.rooms]
+  );
   const snapBlankGridWallDrawPoint = useCallback(
     (point: FloorPlanPoint, points: FloorPlanPoint[]): FloorPlanPoint => {
       return snapFloorPlanPointForWallDraw(
@@ -7183,16 +7385,17 @@ function PageContent() {
           previousPoint: points.length > 0 ? points[points.length - 1] : null,
           firstPoint: points.length > 0 ? points[0] : null,
           pointCount: points.length,
+          angleLockMode: isDesigner ? floorPlanDrawAngleLockMode : "free",
         }
       );
     },
-    [housePlan2D.rooms]
+    [floorPlanDrawAngleLockMode, housePlan2D.rooms, isDesigner]
   );
   const handleBlankGridRoomDrawPoint = useCallback((point: FloorPlanPoint) => {
     if (!blankGridRoomDrawActive) return;
 
     if (floorPlanDrawRoomMode !== "straight_wall") {
-      const snappedPoint = snapBlankGridRoomDrawPoint(point);
+      const snappedPoint = snapBlankGridRoomDrawPoint(point, floorPlanTraceRoomPoints);
       const nextPoints =
         floorPlanTraceRoomPoints.length >= 2
           ? [snappedPoint]
@@ -7301,13 +7504,128 @@ function PageContent() {
     snapBlankGridRoomDrawPoint,
     snapBlankGridWallDrawPoint,
   ]);
+  const handleApplyFloorPlanExactWallLength = useCallback(() => {
+    if (!floorPlanTraceRoomMode || floorPlanDrawRoomMode !== "straight_wall") return;
+
+    const previousPoint = floorPlanTraceRoomPoints[floorPlanTraceRoomPoints.length - 1];
+    if (!previousPoint) {
+      showRuleToast("Pick a wall start point first.");
+      return;
+    }
+
+    const lengthMm = Number(floorPlanExactWallLengthInput.trim());
+    if (!Number.isFinite(lengthMm) || lengthMm <= 0) {
+      showRuleToast("Enter a valid wall length.");
+      return;
+    }
+
+    const nextPoint = resolveExactWallDrawPoint({
+      previousPoint,
+      previousSegmentStart:
+        floorPlanTraceRoomPoints.length >= 2
+          ? floorPlanTraceRoomPoints[floorPlanTraceRoomPoints.length - 2]
+          : null,
+      previewPoint: blankGridRoomPreviewPoint,
+      lengthMeters: lengthMm / 1000,
+      angleLockMode: isDesigner ? floorPlanDrawAngleLockMode : "free",
+    });
+    if (!nextPoint) {
+      showRuleToast("Enter a valid wall length.");
+      return;
+    }
+
+    const closingPath = isClosingWallDrawPoint(
+      nextPoint,
+      floorPlanTraceRoomPoints[0],
+      floorPlanTraceRoomPoints.length
+    );
+    if (closingPath) {
+      const resolvedRoom = resolveClosedWallDrawRoom([
+        ...floorPlanTraceRoomPoints,
+        nextPoint,
+      ]);
+      if (!resolvedRoom) {
+        setFloorPlanTraceRoomPoints([]);
+        setBlankGridRoomPreviewPoint(null);
+        showRuleToast("Close straight wall segments into a valid room.");
+        return;
+      }
+
+      if (applyResolvedWallDrawRoom(resolvedRoom)) {
+        setFloorPlanTraceRoomPoints([]);
+        setBlankGridRoomPreviewPoint(null);
+      }
+      return;
+    }
+
+    setFloorPlanTraceRoomPoints([...floorPlanTraceRoomPoints, nextPoint]);
+    setBlankGridRoomPreviewPoint(null);
+  }, [
+    applyResolvedWallDrawRoom,
+    blankGridRoomPreviewPoint,
+    floorPlanDrawAngleLockMode,
+    floorPlanDrawRoomMode,
+    floorPlanExactWallLengthInput,
+    floorPlanTraceRoomMode,
+    floorPlanTraceRoomPoints,
+    isDesigner,
+    showRuleToast,
+  ]);
+  const handleCommitWallDrawSegmentLength2D = useCallback(
+    (segmentIndex: number, valueMeters: number) => {
+      if (!floorPlanTraceRoomMode || floorPlanDrawRoomMode !== "straight_wall") return;
+      if (
+        segmentIndex <= 0 ||
+        segmentIndex >= floorPlanTraceRoomPoints.length ||
+        !Number.isFinite(valueMeters) ||
+        valueMeters <= 0
+      ) {
+        showRuleToast("Enter a valid wall length.");
+        return;
+      }
+
+      const previousPoint = floorPlanTraceRoomPoints[segmentIndex - 1];
+      const currentPoint = floorPlanTraceRoomPoints[segmentIndex];
+      if (!previousPoint || !currentPoint) return;
+
+      const nextPoint = resolveExactWallDrawPoint({
+        previousPoint,
+        previewPoint: currentPoint,
+        lengthMeters: valueMeters,
+        angleLockMode: "free",
+      });
+      if (!nextPoint) {
+        showRuleToast("Enter a valid wall length.");
+        return;
+      }
+
+      const deltaX = roundPlanCoordinate(nextPoint.x - currentPoint.x);
+      const deltaZ = roundPlanCoordinate(nextPoint.z - currentPoint.z);
+      setFloorPlanTraceRoomPoints((points) =>
+        points.map((point, index) => {
+          if (index < segmentIndex) return point;
+          return {
+            x: roundPlanCoordinate(point.x + deltaX),
+            z: roundPlanCoordinate(point.z + deltaZ),
+          };
+        })
+      );
+      setBlankGridRoomPreviewPoint(null);
+    },
+    [
+      floorPlanDrawRoomMode,
+      floorPlanTraceRoomMode,
+      floorPlanTraceRoomPoints,
+      showRuleToast,
+    ]
+  );
   const handleBlankGridRoomDrawDrag = useCallback(
     (start: FloorPlanPoint, end: FloorPlanPoint) => {
       if (!blankGridRoomDrawActive) return;
       if (floorPlanDrawRoomMode === "straight_wall") return;
 
-      const snappedStart = snapBlankGridRoomDrawPoint(start);
-      const snappedEnd = snapBlankGridRoomDrawPoint(end);
+      const snappedStart = snapBlankGridRoomDrawPoint(start, []);
+      const snappedEnd = snapBlankGridRoomDrawPoint(end, [snappedStart]);
       if (floorPlanDrawRoomMode === "arc_wall") {
         const arcRoom = resolveArcWallDrawPreview(snappedStart, snappedEnd).resolvedRoom;
         if (!arcRoom) {
@@ -7438,6 +7756,9 @@ function PageContent() {
                     onTraceRoomPoint={handleFloorPlanTraceRoomPoint}
                     traceOpeningMode={floorPlanTraceOpeningMode}
                     traceOpeningPoints={floorPlanTraceOpeningPoints}
+                    traceOpeningKind={floorPlanTraceOpeningKind}
+                    rooms={housePlan2D.rooms}
+                    existingOpenings={editorScene2D.openings}
                     onTraceOpeningPoint={handleFloorPlanTraceOpeningPoint}
                   />
                   <RoomRenderer2D
@@ -7468,8 +7789,13 @@ function PageContent() {
                     drawRoomPreviewPoint={blankGridRoomPreviewPoint}
                     onDrawRoomPoint={handleBlankGridRoomDrawPoint}
                     onDrawRoomPreviewPoint={handleBlankGridRoomDrawPreviewPoint}
+                    onCommitRoomDimensionEdit={handleCommitRoomDimensionEdit2D}
+                    onCommitWallDrawSegmentLength={handleCommitWallDrawSegmentLength2D}
 	                    onDrawRoomDrag={handleBlankGridRoomDrawDrag}
 	                    drawRoomInteractionMode={floorPlanDrawRoomMode}
+                    traceOpeningMode={floorPlanTraceOpeningMode && !floorPlanUnderlay}
+                    traceOpeningKind={floorPlanTraceOpeningKind}
+                    onTraceOpeningPoint={handleBlankGridTraceOpeningPoint}
                     openings={mapPlanOpeningsToRoomRenderer(editorScene2D.openings)}
                     fixedElements={mapPlanFixedElementsToRoomRenderer(editorScene2D.fixedElements)}
                     annotations={mapPlanAnnotationsToRoomRenderer(editorScene2D.annotations)}
@@ -10164,6 +10490,8 @@ function PageContent() {
           floorPlanCalibrationSummary={floorPlanCalibrationSummary}
           floorPlanTraceRoomMode={floorPlanTraceRoomMode}
           floorPlanDrawRoomMode={floorPlanDrawRoomMode}
+          floorPlanDrawAngleLockMode={floorPlanDrawAngleLockMode}
+          floorPlanExactWallLengthInput={floorPlanExactWallLengthInput}
           floorPlanTraceRoomPointCount={floorPlanTraceRoomPoints.length}
           floorPlanTraceRoomType={floorPlanTraceRoomType}
           floorPlanTraceOpeningMode={floorPlanTraceOpeningMode}
@@ -10227,7 +10555,11 @@ function PageContent() {
           onResetFloorPlanCalibrationPoints={handleResetFloorPlanCalibrationPoints}
           onFloorPlanTraceRoomModeChange={handleFloorPlanTraceRoomModeChange}
           onFloorPlanTraceRoomDrawModeChange={handleFloorPlanDrawRoomModeChange}
+          onFloorPlanDrawAngleLockModeChange={setFloorPlanDrawAngleLockMode}
+          onFloorPlanExactWallLengthInputChange={setFloorPlanExactWallLengthInput}
+          onApplyFloorPlanExactWallLength={handleApplyFloorPlanExactWallLength}
           onFloorPlanTraceRoomTypeChange={setFloorPlanTraceRoomType}
+          onUndoFloorPlanTraceRoomPoint={handleUndoFloorPlanTraceRoomPoint}
           onResetFloorPlanTraceRoomPoints={handleResetFloorPlanTraceRoomPoints}
           onFloorPlanTraceOpeningModeChange={handleFloorPlanTraceOpeningModeChange}
           onFloorPlanTraceOpeningKindChange={setFloorPlanTraceOpeningKind}
