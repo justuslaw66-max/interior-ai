@@ -1,4 +1,4 @@
-import type { FloorPlanPoint } from "@/lib/floor-plan-types";
+import type { FloorPlanDrawAngleLockMode, FloorPlanPoint } from "@/lib/floor-plan-types";
 import {
   ROOM_DIMENSION_DEFAULTS,
   roundPlanCoordinate,
@@ -54,6 +54,7 @@ export type WallDrawSnapOptions = RoomDrawSnapOptions & {
   pointCount?: number;
   closeSnapDistanceMeters?: number;
   alignmentSnapDistanceMeters?: number;
+  angleLockMode?: FloorPlanDrawAngleLockMode;
 };
 
 type WallId = RoomOpening2D["wall"];
@@ -66,9 +67,33 @@ export type TracedOpening = {
   widthMm: number;
 };
 
+export type TracedOpeningPlacementValidation =
+  | { valid: true }
+  | {
+      valid: false;
+      reason: "too_close_to_corner" | "too_close_to_opening" | "opening_too_wide";
+      label: string;
+    };
+
+type TracedOpeningPlacementReason = Exclude<
+  TracedOpeningPlacementValidation,
+  { valid: true }
+>["reason"];
+
+export type TracedOpeningPreview = {
+  status: "valid" | "invalid";
+  label: string;
+  segment: [FloorPlanPoint, FloorPlanPoint];
+  labelPosition: FloorPlanPoint;
+  opening: TracedOpening | null;
+  reason?: TracedOpeningPlacementReason;
+};
+
 const MAX_OPENING_WALL_DISTANCE_METERS = 0.45;
+const MIN_OPENING_CORNER_CLEARANCE_METERS = 0.18;
+const MIN_OPENING_SPACING_METERS = 0.18;
 export const ROOM_DRAW_GRID_STEP_METERS = 0.1;
-export const ROOM_DRAW_EDGE_SNAP_DISTANCE_METERS = 0.18;
+export const ROOM_DRAW_EDGE_SNAP_DISTANCE_METERS = 0.35;
 export const ROOM_DRAW_CORNER_SNAP_DISTANCE_METERS = 0.35;
 export const WALL_DRAW_CLOSE_SNAP_DISTANCE_METERS = 0.35;
 export const WALL_DRAW_ALIGNMENT_SNAP_DISTANCE_METERS = 0.28;
@@ -304,6 +329,92 @@ function snapPointToWallAlignment(
   return point;
 }
 
+export function lockFloorPlanWallDrawAngle(
+  point: FloorPlanPoint,
+  previousPoint: FloorPlanPoint,
+  mode: FloorPlanDrawAngleLockMode = "free"
+): FloorPlanPoint {
+  if (mode === "free") return point;
+
+  const deltaX = point.x - previousPoint.x;
+  const deltaZ = point.z - previousPoint.z;
+  if (Math.abs(deltaX) <= POINT_MATCH_EPSILON_METERS && Math.abs(deltaZ) <= POINT_MATCH_EPSILON_METERS) {
+    return point;
+  }
+
+  if (mode === "ortho") {
+    return Math.abs(deltaX) >= Math.abs(deltaZ)
+      ? {
+          x: roundPlanCoordinate(point.x),
+          z: roundPlanCoordinate(previousPoint.z),
+        }
+      : {
+          x: roundPlanCoordinate(previousPoint.x),
+          z: roundPlanCoordinate(point.z),
+        };
+  }
+
+  const length = Math.hypot(deltaX, deltaZ);
+  const angle = Math.atan2(deltaZ, deltaX);
+  const snappedAngle = Math.round(angle / (Math.PI / 4)) * (Math.PI / 4);
+  return {
+    x: roundPlanCoordinate(previousPoint.x + Math.cos(snappedAngle) * length),
+    z: roundPlanCoordinate(previousPoint.z + Math.sin(snappedAngle) * length),
+  };
+}
+
+export function resolveExactWallDrawPoint({
+  previousPoint,
+  previewPoint = null,
+  previousSegmentStart = null,
+  lengthMeters,
+  angleLockMode = "free",
+}: {
+  previousPoint: FloorPlanPoint;
+  previewPoint?: FloorPlanPoint | null;
+  previousSegmentStart?: FloorPlanPoint | null;
+  lengthMeters: number;
+  angleLockMode?: FloorPlanDrawAngleLockMode;
+}): FloorPlanPoint | null {
+  if (!Number.isFinite(lengthMeters) || lengthMeters <= 0) return null;
+
+  let directionPoint: FloorPlanPoint | null = null;
+  if (
+    previewPoint &&
+    getPointDistance(previousPoint, previewPoint) > POINT_MATCH_EPSILON_METERS
+  ) {
+    directionPoint = previewPoint;
+  } else if (
+    previousSegmentStart &&
+    getPointDistance(previousPoint, previousSegmentStart) > POINT_MATCH_EPSILON_METERS
+  ) {
+    directionPoint = {
+      x: previousPoint.x + (previousPoint.x - previousSegmentStart.x),
+      z: previousPoint.z + (previousPoint.z - previousSegmentStart.z),
+    };
+  } else {
+    directionPoint = {
+      x: previousPoint.x + 1,
+      z: previousPoint.z,
+    };
+  }
+
+  const lockedDirectionPoint = lockFloorPlanWallDrawAngle(
+    directionPoint,
+    previousPoint,
+    angleLockMode
+  );
+  const deltaX = lockedDirectionPoint.x - previousPoint.x;
+  const deltaZ = lockedDirectionPoint.z - previousPoint.z;
+  const directionLength = Math.hypot(deltaX, deltaZ);
+  if (directionLength <= POINT_MATCH_EPSILON_METERS) return null;
+
+  return {
+    x: roundPlanCoordinate(previousPoint.x + (deltaX / directionLength) * lengthMeters),
+    z: roundPlanCoordinate(previousPoint.z + (deltaZ / directionLength) * lengthMeters),
+  };
+}
+
 export function snapFloorPlanPointForWallDraw(
   point: FloorPlanPoint,
   options: WallDrawSnapOptions = {}
@@ -331,10 +442,15 @@ export function snapFloorPlanPointForWallDraw(
 
   if (!options.previousPoint) return basePoint;
 
-  return snapPointToWallAlignment(
+  const alignedPoint = snapPointToWallAlignment(
     basePoint,
     options.previousPoint,
     options.alignmentSnapDistanceMeters
+  );
+  return lockFloorPlanWallDrawAngle(
+    alignedPoint,
+    options.previousPoint,
+    options.angleLockMode
   );
 }
 
@@ -629,5 +745,328 @@ export function resolveTracedOpening(
     kind,
     offsetMm: metersToMm(best.offset),
     widthMm: metersToMm(best.width),
+  };
+}
+
+function getOpeningRoom(opening: Pick<RoomOpening2D, "roomId">, rooms: HousePlanRoom2D[]) {
+  return opening.roomId
+    ? rooms.find((room) => room.id === opening.roomId) ?? null
+    : null;
+}
+
+function getOpeningWallSpanMeters(
+  opening: Pick<RoomOpening2D, "roomId" | "wall">,
+  rooms: HousePlanRoom2D[]
+): number | null {
+  const room = getOpeningRoom(opening, rooms);
+  if (!room) return null;
+  return opening.wall === "north" || opening.wall === "south" ? room.w : room.d;
+}
+
+export function buildTracedOpeningSegment(
+  opening: Pick<RoomOpening2D, "roomId" | "wall" | "offsetMm" | "widthMm">,
+  rooms: HousePlanRoom2D[]
+): [FloorPlanPoint, FloorPlanPoint] | null {
+  const room = getOpeningRoom(opening, rooms);
+  if (!room) return null;
+
+  const offset = opening.offsetMm / 1000;
+  const width = opening.widthMm / 1000;
+  const halfWidth = width / 2;
+  const halfRoomWidth = room.w / 2;
+  const halfRoomDepth = room.d / 2;
+
+  if (opening.wall === "north" || opening.wall === "south") {
+    const z = room.z + (opening.wall === "north" ? -halfRoomDepth : halfRoomDepth);
+    return [
+      {
+        x: roundPlanCoordinate(room.x + offset - halfWidth),
+        z: roundPlanCoordinate(z),
+      },
+      {
+        x: roundPlanCoordinate(room.x + offset + halfWidth),
+        z: roundPlanCoordinate(z),
+      },
+    ];
+  }
+
+  const x = room.x + (opening.wall === "west" ? -halfRoomWidth : halfRoomWidth);
+  return [
+    {
+      x: roundPlanCoordinate(x),
+      z: roundPlanCoordinate(room.z + offset - halfWidth),
+    },
+    {
+      x: roundPlanCoordinate(x),
+      z: roundPlanCoordinate(room.z + offset + halfWidth),
+    },
+  ];
+}
+
+export function validateTracedOpeningPlacement(
+  opening: Pick<RoomOpening2D, "roomId" | "wall" | "offsetMm" | "widthMm" | "kind">,
+  rooms: HousePlanRoom2D[],
+  existingOpenings: Array<
+    Pick<RoomOpening2D, "roomId" | "wall" | "offsetMm" | "widthMm" | "id">
+  > = [],
+  ignoreOpeningId?: string
+): TracedOpeningPlacementValidation {
+  const span = getOpeningWallSpanMeters(opening, rooms);
+  if (!span) {
+    return {
+      valid: false,
+      reason: "opening_too_wide",
+      label: "Pick a room wall",
+    };
+  }
+
+  const width = opening.widthMm / 1000;
+  const halfWidth = width / 2;
+  const maxUsableWidth = span - MIN_OPENING_CORNER_CLEARANCE_METERS * 2;
+  if (width > maxUsableWidth) {
+    return {
+      valid: false,
+      reason: "opening_too_wide",
+      label: "Opening is too wide for this wall",
+    };
+  }
+
+  const distanceToNearestCorner = span / 2 - Math.abs(opening.offsetMm / 1000) - halfWidth;
+  if (distanceToNearestCorner < MIN_OPENING_CORNER_CLEARANCE_METERS) {
+    return {
+      valid: false,
+      reason: "too_close_to_corner",
+      label: "Too close to corner",
+    };
+  }
+
+  const overlappingOpening = existingOpenings.find((existing) => {
+    if (ignoreOpeningId && existing.id === ignoreOpeningId) return false;
+    if (existing.roomId !== opening.roomId || existing.wall !== opening.wall) return false;
+    const centerDistance = Math.abs(existing.offsetMm - opening.offsetMm) / 1000;
+    const requiredDistance =
+      existing.widthMm / 2000 + opening.widthMm / 2000 + MIN_OPENING_SPACING_METERS;
+    return centerDistance < requiredDistance;
+  });
+
+  if (overlappingOpening) {
+    return {
+      valid: false,
+      reason: "too_close_to_opening",
+      label: "Too close to another opening",
+    };
+  }
+
+  return { valid: true };
+}
+
+export function resolveTracedOpeningPreview(
+  points: [FloorPlanPoint, FloorPlanPoint],
+  rooms: HousePlanRoom2D[],
+  kind: RoomOpening2D["kind"],
+  existingOpenings: RoomOpening2D[] = []
+): TracedOpeningPreview {
+  const rawSegment: [FloorPlanPoint, FloorPlanPoint] = [
+    {
+      x: roundPlanCoordinate(points[0].x),
+      z: roundPlanCoordinate(points[0].z),
+    },
+    {
+      x: roundPlanCoordinate(points[1].x),
+      z: roundPlanCoordinate(points[1].z),
+    },
+  ];
+  const rawLabelPosition = {
+    x: roundPlanCoordinate((rawSegment[0].x + rawSegment[1].x) / 2),
+    z: roundPlanCoordinate((rawSegment[0].z + rawSegment[1].z) / 2),
+  };
+  const opening = resolveTracedOpening(points, rooms, kind);
+
+  if (!opening) {
+    return {
+      status: "invalid",
+      label: "Trace along a room wall",
+      segment: rawSegment,
+      labelPosition: rawLabelPosition,
+      opening: null,
+      reason: "opening_too_wide",
+    };
+  }
+
+  const segment = buildTracedOpeningSegment(opening, rooms) ?? rawSegment;
+  const labelPosition = {
+    x: roundPlanCoordinate((segment[0].x + segment[1].x) / 2),
+    z: roundPlanCoordinate((segment[0].z + segment[1].z) / 2),
+  };
+  const validation = validateTracedOpeningPlacement(opening, rooms, existingOpenings);
+  if (!validation.valid) {
+    return {
+      status: "invalid",
+      label: validation.label,
+      segment,
+      labelPosition,
+      opening,
+      reason: validation.reason,
+    };
+  }
+
+  return {
+    status: "valid",
+    label: `${kind === "door" ? "Door" : "Window"} snaps to ${opening.wall} wall`,
+    segment,
+    labelPosition,
+    opening,
+  };
+}
+
+export function resolveOpeningPlacementFromPoint(
+  point: FloorPlanPoint,
+  rooms: HousePlanRoom2D[],
+  kind: RoomOpening2D["kind"],
+  existingOpenings: RoomOpening2D[] = []
+): TracedOpeningPreview {
+  const widthMeters = kind === "door" ? 0.9 : 1.2;
+  const fallbackSegment: [FloorPlanPoint, FloorPlanPoint] = [
+    {
+      x: roundPlanCoordinate(point.x - widthMeters / 2),
+      z: roundPlanCoordinate(point.z),
+    },
+    {
+      x: roundPlanCoordinate(point.x + widthMeters / 2),
+      z: roundPlanCoordinate(point.z),
+    },
+  ];
+  const fallbackLabelPosition = {
+    x: roundPlanCoordinate(point.x),
+    z: roundPlanCoordinate(point.z),
+  };
+
+  let best:
+    | null
+    | {
+        room: HousePlanRoom2D;
+        wall: WallId;
+        score: number;
+        along: number;
+        center: number;
+        span: number;
+      } = null;
+
+  for (const room of rooms) {
+    const left = room.x - room.w / 2;
+    const right = room.x + room.w / 2;
+    const top = room.z - room.d / 2;
+    const bottom = room.z + room.d / 2;
+    const walls: Array<{
+      wall: WallId;
+      axis: "x" | "z";
+      wallPosition: number;
+      min: number;
+      max: number;
+      center: number;
+      span: number;
+    }> = [
+      {
+        wall: "north",
+        axis: "x",
+        wallPosition: top,
+        min: left,
+        max: right,
+        center: room.x,
+        span: room.w,
+      },
+      {
+        wall: "south",
+        axis: "x",
+        wallPosition: bottom,
+        min: left,
+        max: right,
+        center: room.x,
+        span: room.w,
+      },
+      {
+        wall: "west",
+        axis: "z",
+        wallPosition: left,
+        min: top,
+        max: bottom,
+        center: room.z,
+        span: room.d,
+      },
+      {
+        wall: "east",
+        axis: "z",
+        wallPosition: right,
+        min: top,
+        max: bottom,
+        center: room.z,
+        span: room.d,
+      },
+    ];
+
+    for (const wall of walls) {
+      const along = wall.axis === "x" ? point.x : point.z;
+      const perpendicular = wall.axis === "x" ? point.z : point.x;
+      const edgeDistance =
+        along < wall.min ? wall.min - along : along > wall.max ? along - wall.max : 0;
+      const wallDistance = Math.abs(perpendicular - wall.wallPosition) + edgeDistance;
+      if (wallDistance > MAX_OPENING_WALL_DISTANCE_METERS) continue;
+
+      if (!best || wallDistance < best.score) {
+        best = {
+          room,
+          wall: wall.wall,
+          score: wallDistance,
+          along,
+          center: wall.center,
+          span: wall.span,
+        };
+      }
+    }
+  }
+
+  if (!best) {
+    return {
+      status: "invalid",
+      label: "Click closer to a wall",
+      segment: fallbackSegment,
+      labelPosition: fallbackLabelPosition,
+      opening: null,
+      reason: "opening_too_wide",
+    };
+  }
+
+  const halfOpening = widthMeters / 2;
+  const maxOffset = Math.max(0, best.span / 2 - halfOpening);
+  const opening: TracedOpening = {
+    roomId: best.room.id,
+    wall: best.wall,
+    kind,
+    offsetMm: metersToMm(clamp(best.along - best.center, -maxOffset, maxOffset)),
+    widthMm: metersToMm(widthMeters),
+  };
+  const segment = buildTracedOpeningSegment(opening, rooms) ?? fallbackSegment;
+  const labelPosition = {
+    x: roundPlanCoordinate((segment[0].x + segment[1].x) / 2),
+    z: roundPlanCoordinate((segment[0].z + segment[1].z) / 2),
+  };
+  const validation = validateTracedOpeningPlacement(opening, rooms, existingOpenings);
+  if (!validation.valid) {
+    return {
+      status: "invalid",
+      label: validation.label,
+      segment,
+      labelPosition,
+      opening,
+      reason: validation.reason,
+    };
+  }
+
+  return {
+    status: "valid",
+    label: `${kind === "door" ? "Door" : "Window"} snaps to ${best.wall} wall`,
+    segment,
+    labelPosition,
+    opening,
   };
 }

@@ -14,6 +14,7 @@ export type FloorPlanPoint = {
 };
 
 export type FloorPlanDrawRoomMode = "straight_wall" | "rectangle_wall" | "arc_wall";
+export type FloorPlanDrawAngleLockMode = "free" | "ortho" | "forty_five";
 
 export type FloorPlanWall = {
   id: string;

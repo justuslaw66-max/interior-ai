@@ -6,16 +6,21 @@ import {
 } from "@/lib/design-page-geometry";
 import { applyFloorPlanScaleCalibration } from "@/lib/floor-plan-calibration";
 import {
+  lockFloorPlanWallDrawAngle,
+  resolveOpeningPlacementFromPoint,
+  resolveExactWallDrawPoint,
   resolveArcWallDrawPreview,
   resolveClosedWallDrawRectangle,
   resolveClosedWallDrawRoom,
   resolveRoomDrawPreview,
   resolveTracedOpening,
+  resolveTracedOpeningPreview,
   resolveTracedRoomRectangle,
   snapFloorPlanPointForWallDraw,
   snapFloorPlanPointForRoomDraw,
   snapFloorPlanPointToRoomEdges,
   snapFloorPlanPointToGrid,
+  validateTracedOpeningPlacement,
 } from "@/lib/floor-plan-tracing";
 import {
   buildFloorPlanFromDesignSnapshot,
@@ -334,6 +339,29 @@ assert.deepEqual(
   }
 );
 assert.deepEqual(
+  snapFloorPlanPointForRoomDraw(
+    { x: 2.79, z: 0.74 },
+    {
+      rooms: [
+        {
+          id: "living",
+          name: "Living Room",
+          roomType: "living",
+          shape: "rectangle",
+          x: 0,
+          z: 0,
+          w: 5,
+          d: 4,
+        },
+      ],
+    }
+  ),
+  {
+    x: 2.5,
+    z: 0.7,
+  }
+);
+assert.deepEqual(
   resolveRoomDrawPreview(
     { x: -2.04, z: -1.03 },
     { x: 3.04, z: 2.06 }
@@ -432,6 +460,78 @@ assert.deepEqual(
   }
 );
 assert.deepEqual(
+  lockFloorPlanWallDrawAngle({ x: 4.2, z: 1.1 }, { x: 0, z: 0 }, "free"),
+  { x: 4.2, z: 1.1 }
+);
+assert.deepEqual(
+  lockFloorPlanWallDrawAngle({ x: 4.2, z: 1.1 }, { x: 0, z: 0 }, "ortho"),
+  { x: 4.2, z: 0 }
+);
+assert.deepEqual(
+  lockFloorPlanWallDrawAngle({ x: 1.1, z: 4.2 }, { x: 0, z: 0 }, "ortho"),
+  { x: 0, z: 4.2 }
+);
+assert.deepEqual(
+  lockFloorPlanWallDrawAngle({ x: 3, z: 2.6 }, { x: 0, z: 0 }, "forty_five"),
+  { x: 2.807, z: 2.807 }
+);
+assert.deepEqual(
+  resolveExactWallDrawPoint({
+    previousPoint: { x: 0, z: 0 },
+    previewPoint: { x: 3, z: 4 },
+    lengthMeters: 2.5,
+  }),
+  { x: 1.5, z: 2 }
+);
+assert.deepEqual(
+  resolveExactWallDrawPoint({
+    previousPoint: { x: 0, z: 0 },
+    previewPoint: { x: 3, z: 1 },
+    lengthMeters: 3.5,
+    angleLockMode: "ortho",
+  }),
+  { x: 3.5, z: 0 }
+);
+assert.deepEqual(
+  resolveExactWallDrawPoint({
+    previousPoint: { x: 0, z: 0 },
+    previewPoint: { x: 3, z: 2.6 },
+    lengthMeters: 2,
+    angleLockMode: "forty_five",
+  }),
+  { x: 1.414, z: 1.414 }
+);
+assert.deepEqual(
+  resolveExactWallDrawPoint({
+    previousPoint: { x: 2, z: 0 },
+    previousSegmentStart: { x: 0, z: 0 },
+    lengthMeters: 3,
+  }),
+  { x: 5, z: 0 }
+);
+assert.equal(
+  resolveExactWallDrawPoint({
+    previousPoint: { x: 0, z: 0 },
+    lengthMeters: 0,
+  }),
+  null
+);
+assert.deepEqual(
+  snapFloorPlanPointForWallDraw(
+    { x: 6.2, z: -0.8 },
+    {
+      previousPoint: { x: 2.5, z: -2 },
+      firstPoint: { x: 2.5, z: -2 },
+      pointCount: 1,
+      angleLockMode: "ortho",
+    }
+  ),
+  {
+    x: 6.2,
+    z: -2,
+  }
+);
+assert.deepEqual(
   resolveClosedWallDrawRectangle([
     { x: 2.5, z: -2 },
     { x: 6, z: -2 },
@@ -516,6 +616,106 @@ assert.deepEqual(
   }
 );
 assert.deepEqual(
+  resolveTracedOpeningPreview(
+    [
+      { x: -0.45, z: -2 },
+      { x: 0.45, z: -2 },
+    ],
+    [
+      {
+        id: "living",
+        name: "Living Room",
+        roomType: "living",
+        shape: "rectangle",
+        x: 0,
+        z: 0,
+        w: 5,
+        d: 4,
+      },
+    ],
+    "door"
+  ),
+  {
+    status: "valid",
+    label: "Door snaps to north wall",
+    segment: [
+      { x: -0.45, z: -2 },
+      { x: 0.45, z: -2 },
+    ],
+    labelPosition: { x: 0, z: -2 },
+    opening: {
+      roomId: "living",
+      wall: "north",
+      kind: "door",
+      offsetMm: 0,
+      widthMm: 900,
+    },
+  }
+);
+assert.deepEqual(
+  resolveOpeningPlacementFromPoint(
+    { x: 0.2, z: -1.92 },
+    [
+      {
+        id: "living",
+        name: "Living Room",
+        roomType: "living",
+        shape: "rectangle",
+        x: 0,
+        z: 0,
+        w: 5,
+        d: 4,
+      },
+    ],
+    "door"
+  ),
+  {
+    status: "valid",
+    label: "Door snaps to north wall",
+    segment: [
+      { x: -0.25, z: -2 },
+      { x: 0.65, z: -2 },
+    ],
+    labelPosition: { x: 0.2, z: -2 },
+    opening: {
+      roomId: "living",
+      wall: "north",
+      kind: "door",
+      offsetMm: 200,
+      widthMm: 900,
+    },
+  }
+);
+assert.deepEqual(
+  resolveOpeningPlacementFromPoint(
+    { x: 0, z: 0 },
+    [
+      {
+        id: "living",
+        name: "Living Room",
+        roomType: "living",
+        shape: "rectangle",
+        x: 0,
+        z: 0,
+        w: 5,
+        d: 4,
+      },
+    ],
+    "window"
+  ),
+  {
+    status: "invalid",
+    label: "Click closer to a wall",
+    segment: [
+      { x: -0.6, z: 0 },
+      { x: 0.6, z: 0 },
+    ],
+    labelPosition: { x: 0, z: 0 },
+    opening: null,
+    reason: "opening_too_wide",
+  }
+);
+assert.deepEqual(
   resolveTracedOpening(
     [
       { x: 2.5, z: -0.6 },
@@ -564,6 +764,71 @@ assert.equal(
     "door"
   ),
   null
+);
+assert.deepEqual(
+  validateTracedOpeningPlacement(
+    {
+      roomId: "living",
+      wall: "north",
+      kind: "door",
+      offsetMm: -2200,
+      widthMm: 900,
+    },
+    [
+      {
+        id: "living",
+        name: "Living Room",
+        roomType: "living",
+        shape: "rectangle",
+        x: 0,
+        z: 0,
+        w: 5,
+        d: 4,
+      },
+    ]
+  ),
+  {
+    valid: false,
+    reason: "too_close_to_corner",
+    label: "Too close to corner",
+  }
+);
+assert.deepEqual(
+  validateTracedOpeningPlacement(
+    {
+      roomId: "living",
+      wall: "north",
+      kind: "window",
+      offsetMm: 500,
+      widthMm: 1200,
+    },
+    [
+      {
+        id: "living",
+        name: "Living Room",
+        roomType: "living",
+        shape: "rectangle",
+        x: 0,
+        z: 0,
+        w: 5,
+        d: 4,
+      },
+    ],
+    [
+      {
+        id: "opening-existing",
+        roomId: "living",
+        wall: "north",
+        offsetMm: 0,
+        widthMm: 900,
+      },
+    ]
+  ),
+  {
+    valid: false,
+    reason: "too_close_to_opening",
+    label: "Too close to another opening",
+  }
 );
 
 console.log("Floor plan foundation checks passed.");

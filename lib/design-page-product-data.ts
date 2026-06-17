@@ -154,6 +154,13 @@ export const IMPORTED_PRODUCT_CONFIG_BY_ID: Record<
     roomTags: ["living_room"],
     tags: ["castlery", "madison", "fabric"],
   },
+  "armchair-real-castlery-madison-armchair": {
+    title: "Castlery Madison Armchair",
+    category: "accent_chair",
+    modelLabel: "Armchair",
+    roomTags: ["living_room"],
+    tags: ["castlery", "madison", "armchair", "fabric", "leather"],
+  },
   "sofa-real-castlery-dawson-ottoman": {
     title: "Castlery Dawson Ottoman Standard",
     category: "ottoman",
@@ -343,6 +350,9 @@ export const CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE: Record<string, string> = {
   "camille-forest": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1761806102/crusader/variants/CM-4001/Madison-3-Seater-Sofa-Forest-Det_5-1761806101.jpg",
   "camille_forest_fabric": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1761806102/crusader/variants/CM-4001/Madison-3-Seater-Sofa-Forest-Det_5-1761806101.jpg",
   "camille-forest-fabric": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1761806102/crusader/variants/CM-4001/Madison-3-Seater-Sofa-Forest-Det_5-1761806101.jpg",
+  "stone": "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1627632391/crusader/variants/TW-4002/Stone_1.jpg",
+  "stone_fabric": "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1627632391/crusader/variants/TW-4002/Stone_1.jpg",
+  "stone-fabric": "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1627632391/crusader/variants/TW-4002/Stone_1.jpg",
   "caramel_leather": "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1626941764/crusader/variants/LE-4016/Jonathan-Sofa-Brown_1.jpg",
   "caramel-leather": "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1626941764/crusader/variants/LE-4016/Jonathan-Sofa-Brown_1.jpg",
   "top_grain_leather_tan": "https://res.cloudinary.com/castlery/image/upload/w_128,f_auto,q_auto/v1678775201/knight/cms/swatch/Sloane-Dining-Chair_Swatch_1_1.jpg",

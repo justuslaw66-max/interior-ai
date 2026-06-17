@@ -15,7 +15,11 @@ import {
   ROOM_SIZE_PRESETS,
 } from "@/lib/design-page-house-plan";
 import type { RoomOpening2D } from "@/lib/editorScene";
-import type { FloorPlanDrawRoomMode, FloorPlanUnderlay } from "@/lib/floor-plan-types";
+import type {
+  FloorPlanDrawAngleLockMode,
+  FloorPlanDrawRoomMode,
+  FloorPlanUnderlay,
+} from "@/lib/floor-plan-types";
 import type { RoomPlanShape, RoomType } from "@/lib/room-types";
 import type { EditorViewMode } from "./EditorViewToggle";
 import FloorPlanUploadPanel from "./FloorPlanUploadPanel";
@@ -54,6 +58,8 @@ type DesignControlsPlanPanelProps = {
   floorPlanCalibrationSummary: string | null;
   floorPlanTraceRoomMode: boolean;
   floorPlanDrawRoomMode: FloorPlanDrawRoomMode;
+  floorPlanDrawAngleLockMode: FloorPlanDrawAngleLockMode;
+  floorPlanExactWallLengthInput: string;
   floorPlanTraceRoomPointCount: number;
   floorPlanTraceRoomType: RoomType;
   floorPlanTraceOpeningMode: boolean;
@@ -90,7 +96,11 @@ type DesignControlsPlanPanelProps = {
   onResetFloorPlanCalibrationPoints: () => void;
   onFloorPlanTraceRoomModeChange: (enabled: boolean) => void;
   onFloorPlanTraceRoomDrawModeChange: (mode: FloorPlanDrawRoomMode) => void;
+  onFloorPlanDrawAngleLockModeChange: (mode: FloorPlanDrawAngleLockMode) => void;
+  onFloorPlanExactWallLengthInputChange: (value: string) => void;
+  onApplyFloorPlanExactWallLength: () => void;
   onFloorPlanTraceRoomTypeChange: (roomType: RoomType) => void;
+  onUndoFloorPlanTraceRoomPoint: () => void;
   onResetFloorPlanTraceRoomPoints: () => void;
   onFloorPlanTraceOpeningModeChange: (enabled: boolean) => void;
   onFloorPlanTraceOpeningKindChange: (kind: RoomOpening2D["kind"]) => void;
@@ -127,6 +137,8 @@ export default function DesignControlsPlanPanel({
   floorPlanCalibrationSummary,
   floorPlanTraceRoomMode,
   floorPlanDrawRoomMode,
+  floorPlanDrawAngleLockMode,
+  floorPlanExactWallLengthInput,
   floorPlanTraceRoomPointCount,
   floorPlanTraceRoomType,
   floorPlanTraceOpeningMode,
@@ -163,7 +175,11 @@ export default function DesignControlsPlanPanel({
   onResetFloorPlanCalibrationPoints,
   onFloorPlanTraceRoomModeChange,
   onFloorPlanTraceRoomDrawModeChange,
+  onFloorPlanDrawAngleLockModeChange,
+  onFloorPlanExactWallLengthInputChange,
+  onApplyFloorPlanExactWallLength,
   onFloorPlanTraceRoomTypeChange,
+  onUndoFloorPlanTraceRoomPoint,
   onResetFloorPlanTraceRoomPoints,
   onFloorPlanTraceOpeningModeChange,
   onFloorPlanTraceOpeningKindChange,
@@ -453,8 +469,14 @@ export default function DesignControlsPlanPanel({
               (floorPlanUnderlay.mimeType.startsWith("image/") && floorPlanUnderlay.calibration)
           )}
           showDrawRoomTools={showDrawTools}
+          showDesignerDrawControls={isDesigner}
           traceRoomMode={floorPlanTraceRoomMode}
           traceRoomDrawMode={floorPlanDrawRoomMode}
+          traceRoomAngleLockMode={floorPlanDrawAngleLockMode}
+          exactWallLengthInput={floorPlanExactWallLengthInput}
+          canApplyExactWallLength={
+            floorPlanDrawRoomMode === "straight_wall" && floorPlanTraceRoomPointCount > 0
+          }
           traceRoomPointCount={floorPlanTraceRoomPointCount}
           traceRoomType={floorPlanTraceRoomType}
           traceRoomTypeOptions={HOUSE_ROOM_TYPES}
@@ -480,7 +502,11 @@ export default function DesignControlsPlanPanel({
           onResetCalibrationPoints={onResetFloorPlanCalibrationPoints}
           onTraceRoomModeChange={onFloorPlanTraceRoomModeChange}
           onTraceRoomDrawModeChange={onFloorPlanTraceRoomDrawModeChange}
+          onTraceRoomAngleLockModeChange={onFloorPlanDrawAngleLockModeChange}
+          onExactWallLengthInputChange={onFloorPlanExactWallLengthInputChange}
+          onApplyExactWallLength={onApplyFloorPlanExactWallLength}
           onTraceRoomTypeChange={onFloorPlanTraceRoomTypeChange}
+          onUndoTraceRoomPoint={onUndoFloorPlanTraceRoomPoint}
           onResetTraceRoomPoints={onResetFloorPlanTraceRoomPoints}
           onTraceOpeningModeChange={onFloorPlanTraceOpeningModeChange}
           onTraceOpeningKindChange={onFloorPlanTraceOpeningKindChange}

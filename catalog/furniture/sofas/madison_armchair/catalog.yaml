@@ -1,0 +1,453 @@
+status: "published"
+brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/madison-armchair"
+category: "armchair"
+
+product_family: "Madison"
+product_name: "Madison Armchair"
+slug: "castlery-madison-armchair"
+variant: "Armchair / Bisque Fabric"
+
+price_usd: 649
+price_band: "mid_premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "secondary"
+
+dimensions:
+  width_cm: 106.5
+  depth_cm: 96.5
+  height_cm: 86.5
+
+seat_capacity: 1
+size_class: "medium"
+shape: "rectangular"
+base_type: "legged"
+
+material_family: "upholstered"
+material_mix: "upholstered_wood"
+material_mix_components:
+  - "laminated_veneer_lumber"
+  - "plywood"
+  - "rubber_wood"
+  - "fabric"
+
+materials:
+  frame:
+    structure:
+      - "laminated_veneer_lumber"
+      - "plywood"
+  leg:
+    structure: "rubber_wood"
+    finish: "walnut_stain"
+  upholstery:
+    material_type: "fabric"
+    label: "Performance fabric"
+    color: "Bisque"
+
+color_family: "beige"
+tone: "neutral"
+
+style_cluster: "contemporary"
+style_secondary: "modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "rounded"
+  silhouette: "tufted_armchair"
+  form_language: "soft"
+  descriptors:
+    - "biscuit_tufting"
+    - "rounded_arms"
+    - "bolster_cushions"
+    - "walnut_wood_legs"
+
+spatial_attributes:
+  footprint_shape: "rounded_rectangular"
+  walkway_clearance_cm: 60
+  descriptors:
+    - "lounge_chair"
+    - "reading_corner_suitable"
+    - "living_room_accent"
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+  - "bedroom"
+  - "open_plan"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: false
+  floating_layout_supported: true
+  recommended_in_front_of:
+    - "side_table"
+    - "floor_lamp"
+    - "rug"
+  clearance_guidance:
+    chair_to_table_cm_min: 20
+    circulation_cm_min: 60
+
+design_pairings:
+  - "side_table"
+  - "floor_lamp"
+  - "rug"
+  - "sofa"
+  - "coffee_table"
+  - "ottoman"
+
+compatibility:
+  related_products:
+    - product_family: "Madison"
+      product_name: "Madison 2-Seater Sofa"
+      relationship: "family_variant"
+      strength: "strong"
+      collection_context: "same_collection"
+    - product_family: "Madison"
+      product_name: "Madison 3-Seater Sofa"
+      relationship: "family_variant"
+      strength: "strong"
+      collection_context: "same_collection"
+    - product_family: "Madison"
+      product_name: "Madison Ottoman"
+      relationship: "family_variant"
+      strength: "strong"
+      collection_context: "same_collection"
+
+bundle_metadata:
+  bundle_role: "accent"
+  can_bundle_with:
+    - "side_table"
+    - "floor_lamp"
+    - "rug"
+    - "sofa"
+    - "ottoman"
+  set_behavior:
+    supports_reading_corner_pairing: true
+    supports_living_room_pairing: true
+
+authoring_notes:
+  category_confidence: "high"
+  source_checked: "Castlery Singapore product pages, 2026-06-17"
+  source_url: "https://www.castlery.com/sg/products/madison-armchair"
+  note: "First Draco-compressed Madison Armchair GLB. Fabric variants use the Castlery SG Madison Armchair page. Leather Caramel uses Castlery SG Madison Leather Armchair product data and variant media while sharing the Madison armchair family."
+
+shipping_and_warranty:
+  free_delivery_threshold_sgd: 500
+  cancellation: "Free - 5 working days before delivery"
+  warranty: "Frame 10 years; Fabric 1 year; Foam 2 years"
+  return_policy: "30-day returns"
+  assembly: "Legs to be fitted"
+
+product_details_by_material_type:
+  fabric:
+    material:
+      - label: "Material"
+        value: "Laminated veneer lumber and plywood frame; rubber wood leg"
+      - label: "Filling"
+        value: "Foam, fibre and pocket spring filled seat; fibre filled back; foam filled frame"
+      - label: "Care"
+        value: "Fabric sofa, wooden legs"
+      - label: "Suspension"
+        value: "Sinuous spring"
+      - label: "Cover type"
+        value: "Removable back cushion and bolster covers"
+      - label: "Colour variance"
+        value: "Product colour may vary slightly due to lighting and screen settings"
+      - label: "Material & safety standards"
+        value: "Low formaldehyde"
+    dimensions:
+      - label: "Dimension"
+        value: "W106.5 x D96.5 x H86.5cm"
+      - label: "Seating depth"
+        value: "61cm"
+      - label: "Seatable width"
+        value: "84cm"
+      - label: "Seating height"
+        value: "47cm"
+      - label: "Leg height"
+        value: "17cm"
+      - label: "Product weight"
+        value: "32kg"
+      - label: "Packaging dimensions"
+        value: "1 box; Box 1: W107.5 x D98.5 x H55cm, 37kg"
+      - label: "Max bearing support"
+        value: "150kg"
+      - label: "Cushion"
+        value: "2 bolsters included (diameter 17 x D56cm)"
+    delivery_and_warranty:
+      - label: "Cancellation"
+        value: "Free - 5 working days before delivery"
+      - label: "Warranty"
+        value: "Frame 10 years; Fabric 1 year; Foam 2 years"
+      - label: "Return policy"
+        value: "30-day returns"
+      - label: "Assembly"
+        value: "Legs to be fitted"
+  leather:
+    material:
+      - label: "Material"
+        value: "Laminated veneer lumber with plywood frame; solid rubber wood leg"
+      - label: "Material details"
+        value: "Top grain leather crafted from American hides"
+      - label: "Filling"
+        value: "Foam, fibre and pocket spring filled seat; fibre filled back; foam filled frame"
+      - label: "Finish"
+        value: "Walnut stain on wood"
+      - label: "Care"
+        value: "Leather sofa, wooden legs"
+      - label: "Suspension"
+        value: "Sinuous spring"
+      - label: "Cover type"
+        value: "Removable back cushion and bolster covers; fixed seat cushion covers"
+      - label: "Colour variance"
+        value: "Leather variations"
+      - label: "Material & safety standards"
+        value: "Low formaldehyde"
+    dimensions:
+      - label: "Dimension"
+        value: "W107 x D97 x H87cm"
+      - label: "Armrest height"
+        value: "69cm (floor to arm)"
+      - label: "Seating depth"
+        value: "61cm"
+      - label: "Seatable width"
+        value: "81cm"
+      - label: "Seating height"
+        value: "49cm"
+      - label: "Leg height"
+        value: "17cm"
+      - label: "Backrest height"
+        value: "39cm"
+      - label: "Product weight"
+        value: "32kg"
+      - label: "Packaging dimensions"
+        value: "1 box; Box 1: W115 x D102 x H57cm, 37kg"
+      - label: "Max bearing support"
+        value: "150kg"
+      - label: "Cushion"
+        value: "2 bolsters included (diameter 17 x D56cm)"
+    delivery_and_warranty:
+      - label: "Cancellation"
+        value: "Free - 5 working days before delivery"
+      - label: "Warranty"
+        value: "Frame 10 years; Leather 1 year; Foam 2 years"
+      - label: "Return policy"
+        value: "30-day returns"
+      - label: "Assembly"
+        value: "Legs to be fitted"
+
+product_details:
+  material:
+    - label: "Material"
+      value: "Laminated veneer lumber and plywood frame; rubber wood leg"
+    - label: "Filling"
+      value: "Foam, fibre and pocket spring filled seat; fibre filled back; foam filled frame"
+    - label: "Care"
+      value: "Fabric sofa, wooden legs"
+    - label: "Suspension"
+      value: "Sinuous spring"
+    - label: "Cover type"
+      value: "Removable back cushion and bolster covers"
+    - label: "Material & safety standards"
+      value: "Low formaldehyde"
+  dimensions:
+    - label: "Dimension"
+      value: "W106.5 x D96.5 x H86.5cm"
+    - label: "Seating depth"
+      value: "61cm"
+    - label: "Seatable width"
+      value: "84cm"
+    - label: "Seating height"
+      value: "47cm"
+    - label: "Leg height"
+      value: "17cm"
+    - label: "Product weight"
+      value: "32kg"
+    - label: "Packaging dimensions"
+      value: "1 box; Box 1: W107.5 x D98.5 x H55cm, 37kg"
+    - label: "Max bearing support"
+      value: "150kg"
+    - label: "Cushion"
+      value: "2 bolsters included (diameter 17 x D56cm)"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free - 5 working days before delivery"
+    - label: "Warranty"
+      value: "Frame 10 years; Fabric 1 year; Foam 2 years"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Legs to be fitted"
+
+comfort_profile:
+  seat_comfort:
+    label: "Seat comfort"
+    value: 2
+    min_label: "Relaxed"
+    max_label: "Upright"
+  seat_depth:
+    label: "Seat depth"
+    value: 4
+    min_label: "Shallow"
+    max_label: "Deep"
+  seat_height:
+    label: "Seat height"
+    value: 4
+    min_label: "Low"
+    max_label: "High"
+  seat_softness:
+    label: "Seat softness"
+    value: 3
+    min_label: "Soft"
+    max_label: "Firm"
+
+assets:
+  asset_id: "armchair-real-castlery-madison-armchair"
+  model_url: "/assets/models/armchair-real-castlery-madison-armchair.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1000/v1645673258/crusader/variants/50440731-AM4001/Madison-Armchair-Bisque-Front.png"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1645673258/crusader/variants/50440731-AM4001/Madison-Armchair-Bisque-Front.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1645673955/crusader/variants/50440731-AM4001/Madison-Armchair-Bisque-Square-Set_1.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1645673842/crusader/variants/50440731-AM4001/Madison-Armchair-With-Ottoman-Bisque-Square-Set_3.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1645673874/crusader/variants/50440731-AM4001/Madison-Sofa-Collection-Bisque-Square-Set_1.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1655220690/crusader/variants/T50440731/Madison-Armchair-Bisque-Dim-1655220687.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1645673258/crusader/variants/50440731-AM4001/Madison-Armchair-Bisque-Angle.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1645673256/crusader/variants/50440731-AM4001/Madison-Armchair-Bisque-Side.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1645673258/crusader/variants/50440731-AM4001/Madison-Armchair-Bisque-Back.jpg"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+
+variants:
+  - variant: "Armchair / Bisque (Fabric)"
+    sku: "50440731-AM4001"
+    size_label: "106.5x96.5"
+    finish_code: "bisque_fabric"
+    finish_label: "Bisque"
+    upholstery_code: "performance_fabric_bisque"
+    upholstery_label: "Performance Fabric, Bisque"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1000/v1645673258/crusader/variants/50440731-AM4001/Madison-Armchair-Bisque-Front.png"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1645673258/crusader/variants/50440731-AM4001/Madison-Armchair-Bisque-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1645673955/crusader/variants/50440731-AM4001/Madison-Armchair-Bisque-Square-Set_1.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1645673842/crusader/variants/50440731-AM4001/Madison-Armchair-With-Ottoman-Bisque-Square-Set_3.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1645673874/crusader/variants/50440731-AM4001/Madison-Sofa-Collection-Bisque-Square-Set_1.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1655220690/crusader/variants/T50440731/Madison-Armchair-Bisque-Dim-1655220687.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1645673258/crusader/variants/50440731-AM4001/Madison-Armchair-Bisque-Angle.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1645673256/crusader/variants/50440731-AM4001/Madison-Armchair-Bisque-Side.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1645673258/crusader/variants/50440731-AM4001/Madison-Armchair-Bisque-Back.jpg"
+    swatch_group: "upholstery_option"
+    color_family: "beige"
+    tone: "neutral"
+    price_usd: 649
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 106.5, depth_cm: 96.5, height_cm: 86.5 }
+    seat_capacity: 1
+    size_class: "medium"
+    materials:
+      upholstery:
+        structure: "fabric"
+        surface: "woven_fabric"
+    finish:
+      color_finish: "bisque"
+      surface_finish: "matte"
+      finish_color: "bisque_fabric"
+
+  - variant: "Armchair / Stone (Fabric)"
+    sku: "50440731-TW4002"
+    size_label: "106.5x96.5"
+    finish_code: "stone_fabric"
+    finish_label: "Stone"
+    upholstery_code: "performance_fabric_stone"
+    upholstery_label: "Performance Fabric, Stone"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1624964674/crusader/variants/50440731-TW4002/Madison-Armchair-Stone-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1624964674/crusader/variants/50440731-TW4002/Madison-Armchair-Stone-Front.jpg"
+    swatch_group: "upholstery_option"
+    color_family: "grey"
+    tone: "neutral"
+    price_usd: 649
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 106.5, depth_cm: 96.5, height_cm: 86.5 }
+    seat_capacity: 1
+    size_class: "medium"
+    materials:
+      upholstery:
+        structure: "fabric"
+        surface: "woven_fabric"
+    finish:
+      color_finish: "stone"
+      surface_finish: "matte"
+      finish_color: "stone_fabric"
+
+  - variant: "Armchair / Camille, Forest (Fabric)"
+    sku: "50440731-CM4001"
+    size_label: "106.5x96.5"
+    finish_code: "camille_forest_fabric"
+    finish_label: "Camille, Forest"
+    upholstery_code: "camille_forest_fabric"
+    upholstery_label: "Camille, Forest Fabric"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1757405621/crusader/variants/50440731-CM4001/Madison-Armchair-Forest-Front-1757405621.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1757405621/crusader/variants/50440731-CM4001/Madison-Armchair-Forest-Front-1757405621.jpg"
+    swatch_group: "upholstery_option"
+    color_family: "green"
+    tone: "cool"
+    price_usd: 649
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 106.5, depth_cm: 96.5, height_cm: 86.5 }
+    seat_capacity: 1
+    size_class: "medium"
+    materials:
+      upholstery:
+        structure: "fabric"
+        surface: "woven_fabric"
+    finish:
+      color_finish: "camille_forest"
+      surface_finish: "matte"
+      finish_color: "camille_forest_fabric"
+
+  - variant: "Armchair / Caramel (Leather)"
+    sku: "50440731-LE4016"
+    size_label: "107x97"
+    finish_code: "caramel_leather"
+    finish_label: "Caramel"
+    upholstery_code: "top_grain_leather_caramel"
+    upholstery_label: "Top Grain Leather, Caramel"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1000/v1642587043/crusader/variants/50440731-LE4016/Madison-Leather-Armchai-Caramel-Front.png"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1642587043/crusader/variants/50440731-LE4016/Madison-Leather-Armchai-Caramel-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1642587196/crusader/variants/50440731-LE4016/Madison-Leather-Armchai-Caramel-Square-Set_2.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1642587218/crusader/variants/50440731-LE4016/Madison-Leather-Armchair-With-Ottoman-Caramel-Square-Set_2.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1642587253/crusader/variants/50440731-LE4016/Madison-Leather-Armchai-Caramel-Square-Set_1.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1642587042/crusader/variants/50440731-LE4016/Madison-Leather-Armchai-Caramel-Angle.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1642587043/crusader/variants/50440731-LE4016/Madison-Leather-Armchai-Caramel-Side.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1642587043/crusader/variants/50440731-LE4016/Madison-Leather-Armchai-Caramel-Back.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1642587412/crusader/variants/50440731-LE4016/Jonathan-Texture.jpg"
+    swatch_group: "upholstery_option"
+    color_family: "brown"
+    tone: "warm"
+    price_usd: 1299
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 107, depth_cm: 97, height_cm: 87 }
+    seat_capacity: 1
+    size_class: "medium"
+    materials:
+      upholstery:
+        structure: "leather"
+        surface: "top_grain_leather"
+    finish:
+      color_finish: "caramel"
+      surface_finish: "semi_aniline"
+      finish_color: "caramel_leather"

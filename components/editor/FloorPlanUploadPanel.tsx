@@ -2,7 +2,11 @@
 
 import { useRef } from "react";
 import type { RoomOpening2D } from "@/lib/editorScene";
-import type { FloorPlanDrawRoomMode, FloorPlanUnderlay } from "@/lib/floor-plan-types";
+import type {
+  FloorPlanDrawAngleLockMode,
+  FloorPlanDrawRoomMode,
+  FloorPlanUnderlay,
+} from "@/lib/floor-plan-types";
 import type { RoomType } from "@/lib/room-types";
 
 type TraceRoomTypeOption = {
@@ -19,8 +23,12 @@ type FloorPlanUploadPanelProps = {
   calibrationSummary?: string | null;
   canTraceRooms?: boolean;
   showDrawRoomTools?: boolean;
+  showDesignerDrawControls?: boolean;
   traceRoomMode?: boolean;
   traceRoomDrawMode?: FloorPlanDrawRoomMode;
+  traceRoomAngleLockMode?: FloorPlanDrawAngleLockMode;
+  exactWallLengthInput?: string;
+  canApplyExactWallLength?: boolean;
   traceRoomPointCount?: number;
   traceRoomType?: RoomType;
   traceRoomTypeOptions?: TraceRoomTypeOption[];
@@ -42,7 +50,11 @@ type FloorPlanUploadPanelProps = {
   onResetCalibrationPoints?: () => void;
   onTraceRoomModeChange?: (enabled: boolean) => void;
   onTraceRoomDrawModeChange?: (mode: FloorPlanDrawRoomMode) => void;
+  onTraceRoomAngleLockModeChange?: (mode: FloorPlanDrawAngleLockMode) => void;
+  onExactWallLengthInputChange?: (value: string) => void;
+  onApplyExactWallLength?: () => void;
   onTraceRoomTypeChange?: (roomType: RoomType) => void;
+  onUndoTraceRoomPoint?: () => void;
   onResetTraceRoomPoints?: () => void;
   onTraceOpeningModeChange?: (enabled: boolean) => void;
   onTraceOpeningKindChange?: (kind: RoomOpening2D["kind"]) => void;
@@ -72,6 +84,15 @@ const DRAW_ROOM_TOOLS: Array<{
   { id: "arc_wall", label: "Arc wall", shortcut: "H" },
 ];
 
+const ANGLE_LOCK_TOOLS: Array<{
+  id: FloorPlanDrawAngleLockMode;
+  label: string;
+}> = [
+  { id: "ortho", label: "Ortho" },
+  { id: "forty_five", label: "45°" },
+  { id: "free", label: "Free" },
+];
+
 export default function FloorPlanUploadPanel({
   underlay,
   canCalibrate = false,
@@ -81,8 +102,12 @@ export default function FloorPlanUploadPanel({
   calibrationSummary = null,
   canTraceRooms = false,
   showDrawRoomTools = true,
+  showDesignerDrawControls = false,
   traceRoomMode = false,
   traceRoomDrawMode = "straight_wall",
+  traceRoomAngleLockMode = "ortho",
+  exactWallLengthInput = "",
+  canApplyExactWallLength = false,
   traceRoomPointCount = 0,
   traceRoomType = "living",
   traceRoomTypeOptions = [],
@@ -104,7 +129,11 @@ export default function FloorPlanUploadPanel({
   onResetCalibrationPoints,
   onTraceRoomModeChange,
   onTraceRoomDrawModeChange,
+  onTraceRoomAngleLockModeChange,
+  onExactWallLengthInputChange,
+  onApplyExactWallLength,
   onTraceRoomTypeChange,
+  onUndoTraceRoomPoint,
   onResetTraceRoomPoints,
   onTraceOpeningModeChange,
   onTraceOpeningKindChange,
@@ -155,6 +184,11 @@ export default function FloorPlanUploadPanel({
         : "Drag or pick two endpoints for a rounded room.";
   const canShowPdfPagePicker =
     underlay?.sourceMimeType === "application/pdf" && (underlay.pageCount ?? 0) > 1;
+  const showAngleLockControls =
+    showDesignerDrawControls && traceRoomMode && traceRoomDrawMode === "straight_wall";
+  const showExactWallLengthControls = traceRoomMode && traceRoomDrawMode === "straight_wall";
+  const canUndoTraceRoomPoint =
+    traceRoomMode && traceRoomDrawMode === "straight_wall" && traceRoomPointCount > 0;
 
   return (
     <div className={cardClass}>
@@ -367,10 +401,32 @@ export default function FloorPlanUploadPanel({
 
             {traceRoomMode && (
               <div className="mt-3 space-y-2">
-                <div className={subtleClass}>
-                  Wall points: {traceRoomPointCount}
+                <div className="flex items-center justify-between gap-2">
+                  <div className={subtleClass}>
+                    Wall points: {traceRoomPointCount}
+                  </div>
+                  <div
+                    data-testid="floor-plan-draw-escape-hint"
+                    className={
+                      dark
+                        ? "rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-semibold text-neutral-300"
+                        : "rounded-full border border-neutral-200 bg-white px-2 py-1 text-[11px] font-semibold text-neutral-500"
+                    }
+                  >
+                    Esc {traceRoomPointCount > 0 ? "cancels line" : "exits draw"}
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    data-testid="floor-plan-undo-wall-point"
+                    className={secondaryButtonClass}
+                    disabled={disabled || !canUndoTraceRoomPoint}
+                    onClick={onUndoTraceRoomPoint}
+                    title="Remove the last wall point"
+                  >
+                    Undo point
+                  </button>
                   {traceRoomTypeOptions.length > 0 && (
                     <select
                       data-testid="floor-plan-trace-room-type"
@@ -399,6 +455,88 @@ export default function FloorPlanUploadPanel({
                     Reset
                   </button>
                 </div>
+                {showAngleLockControls && (
+                  <div className="space-y-1.5">
+                    <div className={subtleClass}>Angle lock</div>
+                    <div className="grid grid-cols-3 gap-1 rounded-lg bg-black/5 p-1 dark:bg-white/5">
+                      {ANGLE_LOCK_TOOLS.map((tool) => {
+                        const isActive = traceRoomAngleLockMode === tool.id;
+                        return (
+                          <button
+                            key={tool.id}
+                            type="button"
+                            data-testid={`floor-plan-angle-lock-${tool.id}`}
+                            className={
+                              dark
+                                ? [
+                                    "rounded-md px-2 py-1.5 text-xs font-semibold transition",
+                                    isActive
+                                      ? "bg-white text-neutral-950"
+                                      : "text-neutral-300 hover:bg-white/10",
+                                  ].join(" ")
+                                : [
+                                    "rounded-md px-2 py-1.5 text-xs font-semibold transition",
+                                    isActive
+                                      ? "bg-neutral-900 text-white"
+                                      : "text-neutral-600 hover:bg-white",
+                                  ].join(" ")
+                            }
+                            disabled={disabled}
+                            onClick={() => onTraceRoomAngleLockModeChange?.(tool.id)}
+                          >
+                            {tool.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                {showExactWallLengthControls && (
+                  <div className={dark ? "rounded-lg bg-white/5 p-2" : "rounded-lg bg-white p-2"}>
+                    <div className={subtleClass}>Exact wall length</div>
+                    <div className="mt-1 flex items-center gap-2">
+                      <input
+                        data-testid="floor-plan-exact-wall-length"
+                        type="number"
+                        min={1}
+                        step={10}
+                        inputMode="numeric"
+                        value={exactWallLengthInput}
+                        disabled={disabled}
+                        onChange={(event) =>
+                          onExactWallLengthInputChange?.(event.target.value)
+                        }
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") {
+                            event.preventDefault();
+                            onApplyExactWallLength?.();
+                          }
+                        }}
+                        className={
+                          dark
+                            ? "min-w-0 flex-1 rounded border border-white/15 bg-[#10131a] px-2 py-1.5 text-sm text-neutral-100 disabled:opacity-50"
+                            : "min-w-0 flex-1 rounded border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-900 disabled:opacity-50"
+                        }
+                        placeholder="3500"
+                      />
+                      <span className={subtleClass}>mm</span>
+                      <button
+                        type="button"
+                        data-testid="floor-plan-apply-exact-wall-length"
+                        className={secondaryButtonClass}
+                        disabled={
+                          disabled || !canApplyExactWallLength || !exactWallLengthInput
+                        }
+                        onClick={onApplyExactWallLength}
+                      >
+                        Place
+                      </button>
+                    </div>
+                    <div className={`${subtleClass} mt-1`}>
+                      Pick a start point, type a length, then press Enter or Place.
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
