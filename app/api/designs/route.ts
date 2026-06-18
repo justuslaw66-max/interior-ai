@@ -44,10 +44,6 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    if (config.logLevel === "debug") {
-      console.log("Received body:", body);
-    }
-
     const {
       title,
       roomWidth,
@@ -63,7 +59,13 @@ export async function POST(req: Request) {
     } = body ?? {};
 
     if (config.logLevel === "debug") {
-      console.log("Extracted:", { title, roomWidth, roomDepth, itemsLength: items?.length });
+      console.log("Received design payload:", {
+        titleType: typeof title,
+        roomWidth,
+        roomDepth,
+        itemsLength: Array.isArray(items) ? items.length : null,
+        hasSnapshot: Boolean(snapshot),
+      });
     }
 
     if (
