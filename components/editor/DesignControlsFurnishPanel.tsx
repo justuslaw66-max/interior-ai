@@ -436,6 +436,7 @@ export default function DesignControlsFurnishPanel({
 
       <details className={panelClass} data-testid="furnish-full-catalog">
         <summary
+          data-testid="furnish-full-catalog-toggle"
           className={
             dark
               ? "flex cursor-pointer list-none items-center justify-between gap-3 text-neutral-100 marker:hidden"
@@ -461,6 +462,7 @@ export default function DesignControlsFurnishPanel({
             items={catalogItems}
             canEdit={canEdit}
             onAddToRoom={onAddCatalogItemToRoom}
+            activeRoomName={activeRoomName}
             title="All products"
             subtitle="Search every verified product, or switch category below."
             selectedCategory={activeCatalogCategory}
