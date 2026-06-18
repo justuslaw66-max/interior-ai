@@ -41,8 +41,10 @@ export type HouseRoomTemplateId =
 
 export type HousePlanTemplateId =
   | "studio"
+  | "one_bedroom"
   | "living_dining"
-  | "compact_two_bed";
+  | "compact_two_bed"
+  | "three_room_flat";
 
 export type HousePlanTemplateRoom = {
   id: string;
@@ -97,6 +99,53 @@ export const HOUSE_PLAN_TEMPLATES: HousePlanTemplate[] = [
         depth: 2.2,
         x: 7,
         z: -0.9,
+      },
+    ],
+  },
+  {
+    id: "one_bedroom",
+    label: "1-bedroom home",
+    summary: "Living, kitchen, bedroom, bath",
+    rooms: [
+      {
+        id: "living",
+        name: "Living Room",
+        roomType: "living",
+        shape: "rectangle",
+        width: 5.2,
+        depth: 4,
+        x: 0,
+        z: 0,
+      },
+      {
+        id: "kitchen",
+        name: "Kitchen",
+        roomType: "kitchen",
+        shape: "rectangle",
+        width: 3,
+        depth: 4,
+        x: 4.1,
+        z: 0,
+      },
+      {
+        id: "bedroom",
+        name: "Bedroom",
+        roomType: "bedroom",
+        shape: "rectangle",
+        width: 4,
+        depth: 3.6,
+        x: 0,
+        z: -3.8,
+      },
+      {
+        id: "bathroom",
+        name: "Bathroom",
+        roomType: "toilet",
+        shape: "rectangle",
+        width: 2.2,
+        depth: 2.2,
+        x: 4.5,
+        z: -3.1,
       },
     ],
   },
@@ -191,6 +240,63 @@ export const HOUSE_PLAN_TEMPLATES: HousePlanTemplate[] = [
         depth: 2.2,
         x: 5.7,
         z: -3.1,
+      },
+    ],
+  },
+  {
+    id: "three_room_flat",
+    label: "3-room flat",
+    summary: "Living, kitchen, two bedrooms, bath",
+    rooms: [
+      {
+        id: "living",
+        name: "Living Room",
+        roomType: "living",
+        shape: "rectangle",
+        width: 5.6,
+        depth: 4.2,
+        x: 0,
+        z: 0,
+      },
+      {
+        id: "kitchen_dining",
+        name: "Kitchen / Dining",
+        roomType: "kitchen",
+        shape: "rectangle",
+        width: 5.6,
+        depth: 3,
+        x: 0,
+        z: 3.6,
+      },
+      {
+        id: "bedroom",
+        name: "Bedroom",
+        roomType: "bedroom",
+        shape: "rectangle",
+        width: 4,
+        depth: 3.6,
+        x: -0.8,
+        z: -3.9,
+      },
+      {
+        id: "bedroom_2",
+        name: "Bedroom 2",
+        roomType: "bedroom",
+        shape: "rectangle",
+        width: 3.4,
+        depth: 3.6,
+        x: 2.9,
+        z: -3.9,
+      },
+      {
+        id: "bathroom",
+        name: "Bathroom",
+        roomType: "toilet",
+        shape: "rectangle",
+        width: 2.2,
+        depth: 2.2,
+        x: 3.9,
+        z: -1,
       },
     ],
   },

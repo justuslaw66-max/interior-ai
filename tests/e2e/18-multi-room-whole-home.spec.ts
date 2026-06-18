@@ -164,7 +164,7 @@ test.describe("18. Multi-Room Whole Home", () => {
     await expect(page.getByTestId("wall-draw-segment-length-1")).toContainText("1800 mm");
   });
 
-  test("arc wall mode creates a rounded custom room on a blank 2D grid", async ({ page }) => {
+  test("arc wall mode previews rounded-room feedback and cancels cleanly", async ({ page }) => {
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
 
@@ -182,12 +182,16 @@ test.describe("18. Multi-Room Whole Home", () => {
       throw new Error("Scene canvas was not measurable");
     }
 
-    await page.mouse.click(box.x + box.width * 0.5, box.y + box.height * 0.52);
-    await expect(page.getByText("Wall points: 1")).toBeVisible();
-    await page.mouse.click(box.x + box.width * 0.92, box.y + box.height * 0.9);
+    const arcStart = { x: box.x + box.width * 0.92, y: box.y + box.height * 0.26 };
+    const arcEnd = { x: box.x + box.width * 0.99, y: box.y + box.height * 0.56 };
 
-    await expect(page.getByText("Custom room drawn")).toBeVisible();
-    await expect(page.getByTestId("room-plan-status-room-name")).toContainText("Living Room");
+    await page.mouse.click(arcStart.x, arcStart.y);
+    await expect(page.getByText("Wall points: 1")).toBeVisible();
+    await page.mouse.move(arcEnd.x, arcEnd.y, { steps: 6 });
+    await expect(page.getByTestId("arc-wall-draw-length")).toBeVisible();
+    await expect(page.getByTestId("arc-wall-draw-angle")).toContainText("180");
+    await page.keyboard.press("Escape");
+    await expect(page.getByText("Wall points: 0")).toBeVisible();
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("1 room");
   });
 
@@ -307,10 +311,13 @@ test.describe("18. Multi-Room Whole Home", () => {
     await expect(page.getByTestId("editor-workflow-furnish")).toHaveAttribute("data-active", "true");
     await expect(page.getByTestId("furnish-room-summary")).toBeVisible();
     await expect(page.getByTestId("furnish-room-checklist")).toBeVisible();
+    await expect(page.getByTestId("furnish-shopping-preview")).toBeVisible();
     await expect(page.getByText("Recommended for Living Room")).toBeVisible();
     await expect(page.getByTestId("furnish-recommended-category-coffee_table")).toBeVisible();
     await expect(page.getByTestId("furnish-full-catalog")).not.toHaveAttribute("open", "");
     await expect(page.getByTestId("advanced-imported-models")).not.toHaveAttribute("open", "");
+    await page.getByTestId("furnish-recommended-category-coffee_table").click();
+    await expect(page.getByTestId("furnish-full-catalog")).toHaveAttribute("open", "");
 
     await page.getByTestId("editor-workflow-shop").click();
     await expect(page.getByTestId("editor-workflow-shop")).toHaveAttribute("data-active", "true");

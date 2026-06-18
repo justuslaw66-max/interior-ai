@@ -794,6 +794,86 @@ assert.deepEqual(
   }
 );
 assert.deepEqual(
+  resolveOpeningPlacementFromPoint(
+    { x: -2.35, z: -1.95 },
+    [
+      {
+        id: "living",
+        name: "Living Room",
+        roomType: "living",
+        shape: "rectangle",
+        x: 0,
+        z: 0,
+        w: 5,
+        d: 4,
+      },
+    ],
+    "door"
+  ),
+  {
+    status: "invalid",
+    label: "Too close to corner",
+    segment: [
+      { x: -2.5, z: -2 },
+      { x: -1.6, z: -2 },
+    ],
+    labelPosition: { x: -2.05, z: -2 },
+    opening: {
+      roomId: "living",
+      wall: "north",
+      kind: "door",
+      offsetMm: -2050,
+      widthMm: 900,
+    },
+    reason: "too_close_to_corner",
+  }
+);
+assert.deepEqual(
+  resolveOpeningPlacementFromPoint(
+    { x: 0.35, z: -2.02 },
+    [
+      {
+        id: "living",
+        name: "Living Room",
+        roomType: "living",
+        shape: "rectangle",
+        x: 0,
+        z: 0,
+        w: 5,
+        d: 4,
+      },
+    ],
+    "window",
+    [
+      {
+        id: "opening-existing",
+        roomId: "living",
+        wall: "north",
+        kind: "door",
+        offsetMm: 0,
+        widthMm: 900,
+      },
+    ]
+  ),
+  {
+    status: "invalid",
+    label: "Too close to another opening",
+    segment: [
+      { x: -0.25, z: -2 },
+      { x: 0.95, z: -2 },
+    ],
+    labelPosition: { x: 0.35, z: -2 },
+    opening: {
+      roomId: "living",
+      wall: "north",
+      kind: "window",
+      offsetMm: 350,
+      widthMm: 1200,
+    },
+    reason: "too_close_to_opening",
+  }
+);
+assert.deepEqual(
   resolveTracedOpening(
     [
       { x: 2.5, z: -0.6 },

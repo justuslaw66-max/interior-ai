@@ -611,30 +611,48 @@ export default function DesignControlsPlanPanel({
             Pick a full-home starting point, then resize rooms and add doors.
           </div>
           <div className="mt-2 grid gap-2">
-            {HOUSE_PLAN_TEMPLATES.map((template) => (
-              <button
-                key={template.id}
-                type="button"
-                data-testid={`apply-plan-template-${template.id}`}
-                onClick={() => onApplyPlanTemplate(template)}
-                disabled={!canEdit}
-                className={
-                  dark
-                    ? "rounded-lg border border-white/10 bg-[#1b2030] px-3 py-2 text-left text-sm font-medium text-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
-                    : "rounded-lg border border-neutral-200 bg-white px-3 py-2 text-left text-sm font-medium text-neutral-800 shadow-sm hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
-                }
-              >
-                <span className="flex items-center justify-between gap-2">
-                  <span>{template.label}</span>
-                  <span className={dark ? "text-xs text-neutral-400" : "text-xs text-neutral-500"}>
-                    {template.rooms.length} rooms
+            {HOUSE_PLAN_TEMPLATES.map((template) => {
+              const areaSqm = template.rooms.reduce(
+                (sum, room) => sum + room.width * room.depth,
+                0
+              );
+              const roomPreview = template.rooms
+                .map((room) => room.name.replace(" / ", "/"))
+                .join(" · ");
+              return (
+                <button
+                  key={template.id}
+                  type="button"
+                  data-testid={`apply-plan-template-${template.id}`}
+                  onClick={() => onApplyPlanTemplate(template)}
+                  disabled={!canEdit}
+                  className={
+                    dark
+                      ? "rounded-lg border border-white/10 bg-[#1b2030] px-3 py-2 text-left text-sm font-medium text-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
+                      : "rounded-lg border border-neutral-200 bg-white px-3 py-2 text-left text-sm font-medium text-neutral-800 shadow-sm hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
+                  }
+                >
+                  <span className="flex items-center justify-between gap-2">
+                    <span>{template.label}</span>
+                    <span className={dark ? "text-xs text-neutral-400" : "text-xs text-neutral-500"}>
+                      {template.rooms.length} rooms · {Math.round(areaSqm)} m2
+                    </span>
                   </span>
-                </span>
-                <span className={dark ? "mt-0.5 block text-xs text-neutral-400" : "mt-0.5 block text-xs text-neutral-500"}>
-                  {template.summary}
-                </span>
-              </button>
-            ))}
+                  <span className={dark ? "mt-0.5 block text-xs text-neutral-400" : "mt-0.5 block text-xs text-neutral-500"}>
+                    {template.summary}
+                  </span>
+                  <span
+                    className={
+                      dark
+                        ? "mt-1 block truncate text-[11px] text-neutral-500"
+                        : "mt-1 block truncate text-[11px] text-neutral-500"
+                    }
+                  >
+                    {roomPreview}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
           <div className={`${titleClass} mt-4`}>Add one room</div>

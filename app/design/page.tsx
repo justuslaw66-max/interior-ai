@@ -10616,6 +10616,8 @@ function PageContent() {
           activeRoomShoppableCount={activeRoomShoppingSummary?.shoppableCount ?? 0}
           activeRoomNeedsReviewCount={activeRoomShoppingSummary?.needsReviewCount ?? 0}
           activeRoomCategoryCounts={activeRoomCategoryCounts}
+          activeRoomShoppingSubtotal={activeRoomShoppingSummary?.subtotal ?? 0}
+          activeRoomPreviewNames={activeRoomShoppingSummary?.previewNames ?? []}
           aiLayoutProposal={pendingAiLayoutProposal}
           onHide={() => setDesignPanelOpen(false)}
           onSignIn={signInWithReturn}

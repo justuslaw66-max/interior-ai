@@ -108,6 +108,12 @@ type SharedWallPreviewSegment = {
   lengthMeters: number;
 };
 
+type OpeningPreviewWallGuide = {
+  points: [[number, number, number], [number, number, number]];
+  labelPosition: FloorPlanPoint;
+  label: string;
+};
+
 type RoomRenderer2DProps = {
   width: number;
   depth: number;
@@ -904,6 +910,51 @@ function getOpeningPreviewDetailText(preview: TracedOpeningPreview): string | nu
   return `${widthLabel} · ${preview.opening.wall} wall · ${offsetSuffix}`;
 }
 
+function buildOpeningPreviewWallGuide(
+  preview: TracedOpeningPreview | null,
+  rooms: HouseRoom2D[]
+): OpeningPreviewWallGuide | null {
+  if (!preview?.opening) return null;
+  const room = rooms.find((entry) => entry.id === preview.opening?.roomId);
+  if (!room) return null;
+
+  const left = room.x - room.w / 2;
+  const right = room.x + room.w / 2;
+  const top = room.z - room.d / 2;
+  const bottom = room.z + room.d / 2;
+  const wall = preview.opening.wall;
+  const isHorizontal = wall === "north" || wall === "south";
+  const labelInset = preview.status === "valid" ? 0.28 : 0.34;
+
+  if (isHorizontal) {
+    const z = wall === "north" ? top : bottom;
+    return {
+      points: [
+        [left, 0.0055, z],
+        [right, 0.0055, z],
+      ],
+      labelPosition: {
+        x: preview.labelPosition.x,
+        z: wall === "north" ? z - labelInset : z + labelInset,
+      },
+      label: preview.status === "valid" ? "Wall edge" : "Invalid wall position",
+    };
+  }
+
+  const x = wall === "west" ? left : right;
+  return {
+    points: [
+      [x, 0.0055, top],
+      [x, 0.0055, bottom],
+    ],
+    labelPosition: {
+      x: wall === "west" ? x - labelInset : x + labelInset,
+      z: preview.labelPosition.z,
+    },
+    label: preview.status === "valid" ? "Wall edge" : "Invalid wall position",
+  };
+}
+
 export default function RoomRenderer2D({
   width,
   depth,
@@ -1232,6 +1283,7 @@ export default function RoomRenderer2D({
       }))
     );
   }, [canTraceOpeningOnGrid, localOpeningPreviewPoint, openings, rooms, traceOpeningKind]);
+  const openingPreviewWallGuide = buildOpeningPreviewWallGuide(openingPreview, rooms);
   const openingPreviewHelpText = openingPreview ? getOpeningPreviewHelpText(openingPreview) : null;
   const openingPreviewDetailText = openingPreview
     ? getOpeningPreviewDetailText(openingPreview)
@@ -3033,10 +3085,62 @@ export default function RoomRenderer2D({
 
       {canTraceOpeningOnGrid && openingPreview && (
         <>
+          {openingPreviewWallGuide && (
+            <>
+              <Line
+                points={openingPreviewWallGuide.points}
+                color={openingPreview.status === "valid" ? "#0f766e" : "#f97316"}
+                lineWidth={2}
+                transparent
+                opacity={openingPreview.status === "valid" ? 0.55 : 0.72}
+              />
+              <Html
+                zIndexRange={[11, 0]}
+                position={[
+                  openingPreviewWallGuide.labelPosition.x,
+                  0.072,
+                  openingPreviewWallGuide.labelPosition.z,
+                ]}
+                center
+                transform={false}
+                style={{ pointerEvents: "none" }}
+              >
+                <div
+                  data-testid="blank-plan-opening-wall-guide"
+                  style={{
+                    border:
+                      openingPreview.status === "valid"
+                        ? "1px solid rgba(15,118,110,0.28)"
+                        : "1px solid rgba(249,115,22,0.34)",
+                    borderRadius: 999,
+                    background: "rgba(255,255,255,0.94)",
+                    color: openingPreview.status === "valid" ? "#0f766e" : "#c2410c",
+                    fontSize: 10,
+                    fontWeight: 800,
+                    padding: "2px 8px",
+                    pointerEvents: "none",
+                    whiteSpace: "nowrap",
+                    boxShadow: "0 1px 5px rgba(15,23,42,0.12)",
+                  }}
+                >
+                  {openingPreviewWallGuide.label}
+                </div>
+              </Html>
+            </>
+          )}
           <Line
-            points={openingPreview.segment.map((point) => [point.x, 0.006, point.z])}
+            points={openingPreview.segment.map((point) => [point.x, 0.0062, point.z])}
             color={openingPreview.status === "valid" ? "#0f766e" : "#f97316"}
-            lineWidth={3}
+            lineWidth={7}
+            transparent
+            opacity={openingPreview.status === "valid" ? 0.92 : 0.82}
+          />
+          <Line
+            points={openingPreview.segment.map((point) => [point.x, 0.0067, point.z])}
+            color="#ffffff"
+            lineWidth={2.1}
+            transparent
+            opacity={openingPreview.status === "valid" ? 0.9 : 0.7}
           />
           {openingPreview.segment.map((point, index) => (
             <mesh
@@ -3044,7 +3148,7 @@ export default function RoomRenderer2D({
               position={[point.x, 0.008, point.z]}
               rotation-x={-Math.PI / 2}
             >
-              <circleGeometry args={[0.055, 20]} />
+              <circleGeometry args={[0.065, 20]} />
               <meshBasicMaterial
                 color={openingPreview.status === "valid" ? "#0f766e" : "#f97316"}
                 transparent

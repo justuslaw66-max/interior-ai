@@ -95,6 +95,8 @@ type DesignControlsPanelProps = {
   activeRoomShoppableCount: number;
   activeRoomNeedsReviewCount: number;
   activeRoomCategoryCounts: Partial<Record<CatalogTopCategory, number>>;
+  activeRoomShoppingSubtotal: number;
+  activeRoomPreviewNames: string[];
   aiLayoutProposal: AiLayoutProposal | null;
   onHide: () => void;
   onSignIn: () => void;
@@ -207,6 +209,8 @@ export default function DesignControlsPanel({
   activeRoomShoppableCount,
   activeRoomNeedsReviewCount,
   activeRoomCategoryCounts,
+  activeRoomShoppingSubtotal,
+  activeRoomPreviewNames,
   aiLayoutProposal,
   onHide,
   onSignIn,
@@ -424,6 +428,8 @@ export default function DesignControlsPanel({
             activeRoomShoppableCount={activeRoomShoppableCount}
             activeRoomNeedsReviewCount={activeRoomNeedsReviewCount}
             activeRoomCategoryCounts={activeRoomCategoryCounts}
+            activeRoomShoppingSubtotal={activeRoomShoppingSubtotal}
+            activeRoomPreviewNames={activeRoomPreviewNames}
             roomCount={planRoomCount}
             catalogItems={catalogItems}
             selectedImportedFamilyKey={selectedImportedFamilyKey}
@@ -433,6 +439,7 @@ export default function DesignControlsPanel({
             visibleImportedModelOptions={visibleImportedModelOptions}
             onAddImportedToRoom={onAddImportedToRoom}
             onAddCatalogItemToRoom={onAddCatalogItemToRoom}
+            onGoShop={onGoShop}
             onSelectedImportedFamilyChange={onSelectedImportedFamilyChange}
             onSelectedImportedProductChange={onSelectedImportedProductChange}
           />
