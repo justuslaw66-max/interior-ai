@@ -12,10 +12,13 @@ import type {
 import {
   resolveArcWallDrawPreview,
   resolveRoomDrawPreview,
+  resolveTracedOpeningPreview,
   snapFloorPlanPointToGrid,
   type ArcWallDrawPreview,
   type RoomDrawPreview,
 } from "@/lib/floor-plan-tracing";
+import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
+import type { RoomOpening2D } from "@/lib/editorScene";
 
 type PlanUnderlayRenderer2DProps = {
   underlay: FloorPlanUnderlay | null;
@@ -28,6 +31,9 @@ type PlanUnderlayRenderer2DProps = {
   onTraceRoomPoint?: (point: FloorPlanPoint) => void;
   traceOpeningMode?: boolean;
   traceOpeningPoints?: FloorPlanPoint[];
+  traceOpeningKind?: RoomOpening2D["kind"];
+  rooms?: HousePlanRoom2D[];
+  existingOpenings?: RoomOpening2D[];
   onTraceOpeningPoint?: (point: FloorPlanPoint) => void;
 };
 
@@ -89,6 +95,9 @@ function ImagePlanUnderlay({
   onTraceRoomPoint,
   traceOpeningMode = false,
   traceOpeningPoints = [],
+  traceOpeningKind = "door",
+  rooms = [],
+  existingOpenings = [],
   onTraceOpeningPoint,
 }: {
   underlay: FloorPlanUnderlay;
@@ -101,10 +110,15 @@ function ImagePlanUnderlay({
   onTraceRoomPoint?: (point: FloorPlanPoint) => void;
   traceOpeningMode?: boolean;
   traceOpeningPoints?: FloorPlanPoint[];
+  traceOpeningKind?: RoomOpening2D["kind"];
+  rooms?: HousePlanRoom2D[];
+  existingOpenings?: RoomOpening2D[];
   onTraceOpeningPoint?: (point: FloorPlanPoint) => void;
 }) {
   const texture = useLoader(THREE.TextureLoader, underlay.assetUrl);
   const [traceRoomPreviewPoint, setTraceRoomPreviewPoint] = useState<FloorPlanPoint | null>(null);
+  const [traceOpeningPreviewPoint, setTraceOpeningPreviewPoint] =
+    useState<FloorPlanPoint | null>(null);
   const isPickingPoint = calibrationMode || traceRoomMode || traceOpeningMode;
   const isStraightTraceMode = traceRoomMode && traceRoomDrawMode === "straight_wall";
   const isRectangleTraceMode = traceRoomMode && traceRoomDrawMode === "rectangle_wall";
@@ -123,6 +137,25 @@ function ImagePlanUnderlay({
 
     return resolveArcWallDrawPreview(traceRoomPoints[0], traceRoomPreviewPoint);
   }, [isArcTraceMode, traceRoomPoints, traceRoomPreviewPoint]);
+  const openingPreview = useMemo(() => {
+    if (!traceOpeningMode || traceOpeningPoints.length !== 1 || !traceOpeningPreviewPoint) {
+      return null;
+    }
+
+    return resolveTracedOpeningPreview(
+      [traceOpeningPoints[0], traceOpeningPreviewPoint],
+      rooms,
+      traceOpeningKind,
+      existingOpenings
+    );
+  }, [
+    existingOpenings,
+    rooms,
+    traceOpeningKind,
+    traceOpeningMode,
+    traceOpeningPoints,
+    traceOpeningPreviewPoint,
+  ]);
   const traceRoomLinePoints =
     traceRoomPoints.length === 2
       ? traceRoomPoints
@@ -146,12 +179,18 @@ function ImagePlanUnderlay({
       return;
     }
     if (traceOpeningMode) {
+      if (traceOpeningPoints.length !== 1) {
+        setTraceOpeningPreviewPoint(null);
+      }
       onTraceOpeningPoint?.(getPointFromEvent(point));
     }
   };
   const handlePointPreview = (point: THREE.Vector3) => {
     if (traceRoomMode && traceRoomPoints.length > 0) {
       setTraceRoomPreviewPoint(getPointFromEvent(point, true));
+    }
+    if (traceOpeningMode && traceOpeningPoints.length > 0) {
+      setTraceOpeningPreviewPoint(getPointFromEvent(point));
     }
   };
 
@@ -173,9 +212,10 @@ function ImagePlanUnderlay({
             if (!isPickingPoint) return;
             handlePointPreview(event.point);
           }}
-          onPointerOut={() => {
-            setTraceRoomPreviewPoint(null);
-          }}
+              onPointerOut={() => {
+                setTraceRoomPreviewPoint(null);
+                setTraceOpeningPreviewPoint(null);
+              }}
         >
           <planeGeometry args={[underlay.widthMeters, underlay.depthMeters]} />
           <meshBasicMaterial
@@ -200,6 +240,7 @@ function ImagePlanUnderlay({
               }}
               onPointerOut={() => {
                 setTraceRoomPreviewPoint(null);
+                setTraceOpeningPreviewPoint(null);
               }}
             >
             <planeGeometry args={[underlay.widthMeters, underlay.depthMeters]} />
@@ -397,6 +438,47 @@ function ImagePlanUnderlay({
         />
       )}
 
+      {traceOpeningMode && openingPreview && (
+        <>
+          <Line
+            points={openingPreview.segment.map((point) => [point.x, 0.023, point.z])}
+            color={openingPreview.status === "valid" ? "#0f766e" : "#f97316"}
+            lineWidth={3}
+          />
+          <Html
+            zIndexRange={[12, 0]}
+            position={[
+              openingPreview.labelPosition.x,
+              0.07,
+              openingPreview.labelPosition.z,
+            ]}
+            center
+            transform={false}
+          >
+            <div
+              data-testid="floor-plan-opening-snap-preview"
+              style={{
+                border:
+                  openingPreview.status === "valid"
+                    ? "1px solid rgba(15,118,110,0.32)"
+                    : "1px solid rgba(249,115,22,0.38)",
+                borderRadius: 6,
+                background: "rgba(255,255,255,0.94)",
+                color: openingPreview.status === "valid" ? "#0f766e" : "#c2410c",
+                fontSize: 11,
+                fontWeight: 800,
+                padding: "3px 7px",
+                pointerEvents: "none",
+                whiteSpace: "nowrap",
+                boxShadow: "0 1px 5px rgba(15,23,42,0.12)",
+              }}
+            >
+              {openingPreview.label}
+            </div>
+          </Html>
+        </>
+      )}
+
       {calibrationMode &&
         calibrationPoints.map((point, index) => (
           <mesh
@@ -447,6 +529,9 @@ export default function PlanUnderlayRenderer2D({
   onTraceRoomPoint,
   traceOpeningMode = false,
   traceOpeningPoints = [],
+  traceOpeningKind = "door",
+  rooms = [],
+  existingOpenings = [],
   onTraceOpeningPoint,
 }: PlanUnderlayRenderer2DProps) {
   if (!underlay?.mimeType.startsWith("image/")) {
@@ -465,6 +550,9 @@ export default function PlanUnderlayRenderer2D({
       onTraceRoomPoint={onTraceRoomPoint}
       traceOpeningMode={traceOpeningMode}
       traceOpeningPoints={traceOpeningPoints}
+      traceOpeningKind={traceOpeningKind}
+      rooms={rooms}
+      existingOpenings={existingOpenings}
       onTraceOpeningPoint={onTraceOpeningPoint}
     />
   );

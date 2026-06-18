@@ -781,10 +781,14 @@ export function Furniture({
   const normalizedVariantMarker = variantMarker.replace(/[_-]+/g, " ");
   // variantMarker includes variantId (e.g. "cocoa_leather") so check both name and marker.
   const isLeatherVariant = /\bleather\b/i.test(String(variantName ?? "")) || /\bleather\b/i.test(normalizedVariantMarker);
-  const isMadisonProduct = product.id.startsWith("sofa-real-castlery-madison-");
+  const isMadisonProduct =
+    product.id.startsWith("sofa-real-castlery-madison-") ||
+    product.id.startsWith("armchair-real-castlery-madison-");
   const isMadisonFabricVariant = isMadisonProduct && !isLeatherVariant;
   const isMadisonBisqueFabricVariant =
     isMadisonFabricVariant && /\bbisque\b/i.test(normalizedVariantMarker);
+  const isMadisonStoneFabricVariant =
+    isMadisonFabricVariant && /\bstone\b/i.test(normalizedVariantMarker);
   const isMadisonCamilleForestFabricVariant =
     isMadisonFabricVariant &&
     (/\bcamille\b.*\bforest\b/i.test(normalizedVariantMarker) || /\bforest\b/i.test(normalizedVariantMarker));
@@ -826,7 +830,7 @@ export function Furniture({
   const isGraphiteLeatherVariant =
     isLeatherVariant && /\bgraphite\b/i.test(String(variantName ?? ""));
   const isMadisonCaramelLeatherVariant =
-    product.id.startsWith("sofa-real-castlery-madison-") &&
+    isMadisonProduct &&
     /\bcaramel\b/i.test(String(variantName ?? "")) &&
     /\bleather\b/i.test(String(variantName ?? ""));
   const kelseyHasWhiteToken = /white[\s_-]*wash/i.test(variantMarker);
@@ -903,6 +907,21 @@ export function Furniture({
         disableBaseColorMap: true,
         brightness: 0.96,
         saturation: 1.02,
+        roughnessOverride: 0.98,
+        metalnessOverride: 0,
+        aoMapIntensity: 0.22,
+        emissiveBoost: 0,
+        specularIntensityOverride: 0.04,
+      };
+    }
+
+    if (isMadisonStoneFabricVariant) {
+      return {
+        ...modelCalibration,
+        forceBaseColorHex: "#9d9991",
+        disableBaseColorMap: true,
+        brightness: 0.98,
+        saturation: 0.72,
         roughnessOverride: 0.98,
         metalnessOverride: 0,
         aoMapIntensity: 0.22,

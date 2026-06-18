@@ -4,13 +4,19 @@ import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import type {
   HouseRoomConnectionChecklistItem,
   HouseRoomDoorwaySuggestion,
+  HousePlanTemplate,
   HouseRoomTemplateId,
   RoomSizePresetId,
 } from "@/lib/design-page-house-plan";
 import { type AiLayoutProposal, type Style } from "@/lib/design-page-types";
 import type { RoomOpening2D } from "@/lib/editorScene";
-import type { FloorPlanDrawRoomMode, FloorPlanUnderlay } from "@/lib/floor-plan-types";
+import type {
+  FloorPlanDrawAngleLockMode,
+  FloorPlanDrawRoomMode,
+  FloorPlanUnderlay,
+} from "@/lib/floor-plan-types";
 import type { ImportedModelOption } from "@/lib/catalog/imported-model-assembly";
+import type { CatalogTopCategory } from "@/lib/catalog/view-builders";
 import type { RoomPlanShape, RoomType } from "@/lib/room-types";
 import type { EditorViewMode } from "./EditorViewToggle";
 import DesignControlsAiPanel from "./DesignControlsAiPanel";
@@ -67,6 +73,8 @@ type DesignControlsPanelProps = {
   floorPlanCalibrationSummary: string | null;
   floorPlanTraceRoomMode: boolean;
   floorPlanDrawRoomMode: FloorPlanDrawRoomMode;
+  floorPlanDrawAngleLockMode: FloorPlanDrawAngleLockMode;
+  floorPlanExactWallLengthInput: string;
   floorPlanTraceRoomPointCount: number;
   floorPlanTraceRoomType: RoomType;
   floorPlanTraceOpeningMode: boolean;
@@ -86,6 +94,9 @@ type DesignControlsPanelProps = {
   activeRoomTypeLabel: string;
   activeRoomShoppableCount: number;
   activeRoomNeedsReviewCount: number;
+  activeRoomCategoryCounts: Partial<Record<CatalogTopCategory, number>>;
+  activeRoomShoppingSubtotal: number;
+  activeRoomPreviewNames: string[];
   aiLayoutProposal: AiLayoutProposal | null;
   onHide: () => void;
   onSignIn: () => void;
@@ -98,6 +109,7 @@ type DesignControlsPanelProps = {
   onApplyAiLayoutProposal: () => void;
   onTryAiLayoutAgain: () => void;
   onClearAiLayoutProposal: () => void;
+  onApplyPlanTemplate: (template: HousePlanTemplate) => void;
   onAddDesignerRoom: () => void;
   onAddRoomTemplate: (template: HouseRoomTemplate) => void;
   onNewRoomTypeChange: (roomType: RoomType) => void;
@@ -122,7 +134,11 @@ type DesignControlsPanelProps = {
   onResetFloorPlanCalibrationPoints: () => void;
   onFloorPlanTraceRoomModeChange: (enabled: boolean) => void;
   onFloorPlanTraceRoomDrawModeChange: (mode: FloorPlanDrawRoomMode) => void;
+  onFloorPlanDrawAngleLockModeChange: (mode: FloorPlanDrawAngleLockMode) => void;
+  onFloorPlanExactWallLengthInputChange: (value: string) => void;
+  onApplyFloorPlanExactWallLength: () => void;
   onFloorPlanTraceRoomTypeChange: (roomType: RoomType) => void;
+  onUndoFloorPlanTraceRoomPoint: () => void;
   onResetFloorPlanTraceRoomPoints: () => void;
   onFloorPlanTraceOpeningModeChange: (enabled: boolean) => void;
   onFloorPlanTraceOpeningKindChange: (kind: RoomOpening2D["kind"]) => void;
@@ -171,6 +187,8 @@ export default function DesignControlsPanel({
   floorPlanCalibrationSummary,
   floorPlanTraceRoomMode,
   floorPlanDrawRoomMode,
+  floorPlanDrawAngleLockMode,
+  floorPlanExactWallLengthInput,
   floorPlanTraceRoomPointCount,
   floorPlanTraceRoomType,
   floorPlanTraceOpeningMode,
@@ -190,6 +208,9 @@ export default function DesignControlsPanel({
   activeRoomTypeLabel,
   activeRoomShoppableCount,
   activeRoomNeedsReviewCount,
+  activeRoomCategoryCounts,
+  activeRoomShoppingSubtotal,
+  activeRoomPreviewNames,
   aiLayoutProposal,
   onHide,
   onSignIn,
@@ -202,6 +223,7 @@ export default function DesignControlsPanel({
   onApplyAiLayoutProposal,
   onTryAiLayoutAgain,
   onClearAiLayoutProposal,
+  onApplyPlanTemplate,
   onAddDesignerRoom,
   onAddRoomTemplate,
   onNewRoomTypeChange,
@@ -226,7 +248,11 @@ export default function DesignControlsPanel({
   onResetFloorPlanCalibrationPoints,
   onFloorPlanTraceRoomModeChange,
   onFloorPlanTraceRoomDrawModeChange,
+  onFloorPlanDrawAngleLockModeChange,
+  onFloorPlanExactWallLengthInputChange,
+  onApplyFloorPlanExactWallLength,
   onFloorPlanTraceRoomTypeChange,
+  onUndoFloorPlanTraceRoomPoint,
   onResetFloorPlanTraceRoomPoints,
   onFloorPlanTraceOpeningModeChange,
   onFloorPlanTraceOpeningKindChange,
@@ -324,6 +350,8 @@ export default function DesignControlsPanel({
             floorPlanCalibrationSummary={floorPlanCalibrationSummary}
             floorPlanTraceRoomMode={floorPlanTraceRoomMode}
             floorPlanDrawRoomMode={floorPlanDrawRoomMode}
+            floorPlanDrawAngleLockMode={floorPlanDrawAngleLockMode}
+            floorPlanExactWallLengthInput={floorPlanExactWallLengthInput}
             floorPlanTraceRoomPointCount={floorPlanTraceRoomPointCount}
             floorPlanTraceRoomType={floorPlanTraceRoomType}
             floorPlanTraceOpeningMode={floorPlanTraceOpeningMode}
@@ -342,6 +370,7 @@ export default function DesignControlsPanel({
             onGoFurnish={onGoFurnish}
             onGoAiDesign={onGoAiDesign}
             onGoShop={onGoShop}
+            onApplyPlanTemplate={onApplyPlanTemplate}
             onAddDesignerRoom={onAddDesignerRoom}
             onAddRoomTemplate={onAddRoomTemplate}
             onNewRoomTypeChange={onNewRoomTypeChange}
@@ -360,7 +389,11 @@ export default function DesignControlsPanel({
             onResetFloorPlanCalibrationPoints={onResetFloorPlanCalibrationPoints}
             onFloorPlanTraceRoomModeChange={onFloorPlanTraceRoomModeChange}
             onFloorPlanTraceRoomDrawModeChange={onFloorPlanTraceRoomDrawModeChange}
+            onFloorPlanDrawAngleLockModeChange={onFloorPlanDrawAngleLockModeChange}
+            onFloorPlanExactWallLengthInputChange={onFloorPlanExactWallLengthInputChange}
+            onApplyFloorPlanExactWallLength={onApplyFloorPlanExactWallLength}
             onFloorPlanTraceRoomTypeChange={onFloorPlanTraceRoomTypeChange}
+            onUndoFloorPlanTraceRoomPoint={onUndoFloorPlanTraceRoomPoint}
             onResetFloorPlanTraceRoomPoints={onResetFloorPlanTraceRoomPoints}
             onFloorPlanTraceOpeningModeChange={onFloorPlanTraceOpeningModeChange}
             onFloorPlanTraceOpeningKindChange={onFloorPlanTraceOpeningKindChange}
@@ -394,6 +427,9 @@ export default function DesignControlsPanel({
             activeRoomItemCount={planItemCount}
             activeRoomShoppableCount={activeRoomShoppableCount}
             activeRoomNeedsReviewCount={activeRoomNeedsReviewCount}
+            activeRoomCategoryCounts={activeRoomCategoryCounts}
+            activeRoomShoppingSubtotal={activeRoomShoppingSubtotal}
+            activeRoomPreviewNames={activeRoomPreviewNames}
             roomCount={planRoomCount}
             catalogItems={catalogItems}
             selectedImportedFamilyKey={selectedImportedFamilyKey}
@@ -403,6 +439,7 @@ export default function DesignControlsPanel({
             visibleImportedModelOptions={visibleImportedModelOptions}
             onAddImportedToRoom={onAddImportedToRoom}
             onAddCatalogItemToRoom={onAddCatalogItemToRoom}
+            onGoShop={onGoShop}
             onSelectedImportedFamilyChange={onSelectedImportedFamilyChange}
             onSelectedImportedProductChange={onSelectedImportedProductChange}
           />

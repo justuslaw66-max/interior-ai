@@ -1,6 +1,6 @@
 "use client";
 
-import { Html, Line } from "@react-three/drei";
+import { Edges, Html, Line } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useRef } from "react";
 import * as THREE from "three";
@@ -45,6 +45,15 @@ type WallPart3D = {
 };
 
 const CEILING_THICKNESS_METERS = 0.1;
+const ACTIVE_WALL_COLOR = "#fbfbf7";
+const INACTIVE_WALL_COLOR = "#ddddda";
+const ACTIVE_WALL_OPACITY = 1;
+const INACTIVE_WALL_OPACITY = 0.9;
+const INACTIVE_WALL_CUTAWAY_OPACITY = 0;
+const ACTIVE_WALL_EDGE_COLOR = "#d7d7d2";
+const INACTIVE_WALL_EDGE_COLOR = "#a4a7a3";
+const ACTIVE_ROOM_OUTLINE_COLOR = "#22c55e";
+const INACTIVE_ROOM_OUTLINE_COLOR = "#4b5563";
 
 function getRoomOutlinePoints(room: HousePlanRoom2D): Array<[number, number]> {
   if (room.shape === "custom_polygon" && room.polygon && room.polygon.length >= 3) {
@@ -409,7 +418,8 @@ function CutawayWallMesh({
   const { camera } = useThree();
   const meshRef = useRef<THREE.Mesh | null>(null);
   const materialRef = useRef<THREE.MeshStandardMaterial | null>(null);
-  const baseOpacity = isActive ? 1 : 0.42;
+  const baseOpacity = isActive ? ACTIVE_WALL_OPACITY : INACTIVE_WALL_OPACITY;
+  const isInteriorSharedWall = isWallPartSharedWithAnotherRoom(room, rooms, segment, part);
   const isDuplicateOfActiveSharedWall = Boolean(
     activeRoom &&
       !isActive &&
@@ -425,8 +435,10 @@ function CutawayWallMesh({
     const wallCenterX = room.x + part.x;
     const wallCenterZ = room.z + part.z;
     const targetRoom = activeRoom ?? room;
-    const targetOpacity = isActive
-      ? shouldCutAwayActiveWallPart(
+    let targetOpacity = baseOpacity;
+
+    if (isActive) {
+      targetOpacity = shouldCutAwayActiveWallPart(
           room,
           rooms,
           segment,
@@ -435,8 +447,9 @@ function CutawayWallMesh({
           camera.position.z
         )
         ? 0
-        : baseOpacity
-      : resolveCutawayWallOpacity({
+        : baseOpacity;
+    } else if (!isInteriorSharedWall) {
+      targetOpacity = resolveCutawayWallOpacity({
           cameraX: camera.position.x,
           cameraZ: camera.position.z,
           roomX: room.x,
@@ -445,7 +458,6 @@ function CutawayWallMesh({
           roomDepth: room.d,
           wall: segment.wall,
           baseOpacity,
-          cutawayOpacity: 0,
           cutawayEligible: true,
           targetX: targetRoom.x,
           targetZ: targetRoom.z,
@@ -455,7 +467,9 @@ function CutawayWallMesh({
           wallCenterZ,
           wallAxis: segment.axis,
           wallLength: part.length,
+          cutawayOpacity: INACTIVE_WALL_CUTAWAY_OPACITY,
         });
+    }
     const nextOpacity = material.opacity + (targetOpacity - material.opacity) * 0.28;
     const shouldRender = targetOpacity > 0.01;
 
@@ -470,7 +484,7 @@ function CutawayWallMesh({
     }
 
     material.transparent = true;
-    material.depthWrite = material.opacity > 0.26;
+    material.depthWrite = material.opacity > 0.34;
   });
 
   if (isDuplicateOfActiveSharedWall) return null;
@@ -485,12 +499,17 @@ function CutawayWallMesh({
       <boxGeometry args={[part.length, wallHeight, wallThickness]} />
       <meshStandardMaterial
         ref={materialRef}
-        color={isActive ? "#f8f8f4" : "#f1f1ee"}
-        roughness={0.9}
+        color={isActive ? ACTIVE_WALL_COLOR : INACTIVE_WALL_COLOR}
+        roughness={0.86}
         metalness={0}
         transparent
-        depthWrite={baseOpacity > 0.26}
+        depthWrite={baseOpacity > 0.34}
         opacity={baseOpacity}
+      />
+      <Edges
+        threshold={15}
+        color={isActive ? ACTIVE_WALL_EDGE_COLOR : INACTIVE_WALL_EDGE_COLOR}
+        lineWidth={isActive ? 1.05 : 0.9}
       />
     </mesh>
   );
@@ -507,8 +526,8 @@ function CeilingSlabMesh({
 }) {
   const { camera } = useThree();
   const materialRef = useRef<THREE.MeshStandardMaterial | null>(null);
-  const baseOpacity = isActive ? 0.22 : 0.38;
-  const hiddenOpacity = isActive ? 0.08 : 0.2;
+  const baseOpacity = isActive ? 0.24 : 0.38;
+  const hiddenOpacity = isActive ? 0.04 : 0.1;
 
   useFrame(() => {
     const material = materialRef.current;
@@ -632,8 +651,8 @@ export default function HousePlanRenderer3D({
                 wallHeight + CEILING_THICKNESS_METERS + 0.015,
                 z,
               ])}
-              color={isActive ? "#22c55e" : "#6b7280"}
-              lineWidth={isActive ? 2.5 : 1.5}
+              color={isActive ? ACTIVE_ROOM_OUTLINE_COLOR : INACTIVE_ROOM_OUTLINE_COLOR}
+              lineWidth={isActive ? 3 : 2.15}
             />
 
             <Html

@@ -8,10 +8,12 @@ import {
   doesHouseRoomOverlap,
   getActiveRoomPlanOffset,
   getNextRoomPlanPosition,
+  resolveFloorPlanDrawCancelDecision,
   resolvePlanFitZoom,
   resolveHouseRoomSnapPreview,
   resolveNewRoomName,
   roundPlanCoordinate,
+  shouldReplaceStarterRoomWithDrawnRoom,
   snapHouseRoomMove,
 } from "@/lib/design-page-house-plan";
 import {
@@ -75,8 +77,141 @@ assert.equal(resolveNewRoomName([living, bedroom], "bedroom"), "Bedroom 2");
 
 assert.deepEqual(getNextRoomPlanPosition(plan.rooms, 5, 3), { x: 8, z: 0 });
 
+assert.deepEqual(
+  resolveFloorPlanDrawCancelDecision({
+    traceRoomMode: true,
+    drawMode: "straight_wall",
+    pointCount: 2,
+  }),
+  {
+    shouldHandle: true,
+    clearRoomPoints: true,
+    clearRoomPreview: true,
+    exitRoomDrawMode: false,
+  }
+);
+assert.deepEqual(
+  resolveFloorPlanDrawCancelDecision({
+    traceRoomMode: true,
+    drawMode: "rectangle_wall",
+    pointCount: 1,
+  }),
+  {
+    shouldHandle: true,
+    clearRoomPoints: true,
+    clearRoomPreview: true,
+    exitRoomDrawMode: false,
+  }
+);
+assert.deepEqual(
+  resolveFloorPlanDrawCancelDecision({
+    traceRoomMode: true,
+    drawMode: "arc_wall",
+    pointCount: 0,
+  }),
+  {
+    shouldHandle: true,
+    clearRoomPoints: true,
+    clearRoomPreview: true,
+    exitRoomDrawMode: true,
+  }
+);
+assert.deepEqual(
+  resolveFloorPlanDrawCancelDecision({
+    traceRoomMode: false,
+    drawMode: "straight_wall",
+    pointCount: 0,
+  }),
+  {
+    shouldHandle: false,
+    clearRoomPoints: false,
+    clearRoomPreview: false,
+    exitRoomDrawMode: false,
+  }
+);
+
+const singleRoomPlan = buildHousePlan2D([living], 5, 4);
+assert.equal(
+  shouldReplaceStarterRoomWithDrawnRoom({
+    activeRoom: living,
+    rooms: singleRoomPlan.rooms,
+    x: 0,
+    z: 0,
+    w: 5,
+    d: 4,
+  }),
+  true
+);
+assert.equal(
+  shouldReplaceStarterRoomWithDrawnRoom({
+    activeRoom: living,
+    rooms: singleRoomPlan.rooms,
+    x: 5,
+    z: 0,
+    w: 5,
+    d: 4,
+  }),
+  false
+);
+assert.equal(
+  shouldReplaceStarterRoomWithDrawnRoom({
+    activeRoom: living,
+    rooms: singleRoomPlan.rooms,
+    x: 2.3,
+    z: 0,
+    w: 5,
+    d: 4,
+  }),
+  false
+);
+assert.equal(
+  shouldReplaceStarterRoomWithDrawnRoom({
+    activeRoom: living,
+    rooms: singleRoomPlan.rooms,
+    x: 2,
+    z: 0,
+    w: 5,
+    d: 4,
+  }),
+  true
+);
+assert.equal(
+  shouldReplaceStarterRoomWithDrawnRoom({
+    activeRoom: {
+      ...living,
+      items: [
+        {
+          instanceId: "item-1",
+          productId: "chair",
+          variantId: "default",
+          position: [0, 0, 0],
+        },
+      ],
+    },
+    rooms: singleRoomPlan.rooms,
+    x: 0,
+    z: 0,
+    w: 5,
+    d: 4,
+  }),
+  false
+);
+assert.equal(
+  shouldReplaceStarterRoomWithDrawnRoom({
+    activeRoom: living,
+    rooms: plan.rooms,
+    x: 0,
+    z: 0,
+    w: 5,
+    d: 4,
+  }),
+  false
+);
+
 const snapped = snapHouseRoomMove("bedroom", 4.68, 0, plan.rooms);
 assert.deepEqual(snapped, { x: 4.5, z: 0 });
+assert.deepEqual(snapHouseRoomMove("bedroom", 4.68, 0.24, plan.rooms), { x: 4.5, z: 0 });
+assert.deepEqual(snapHouseRoomMove("bedroom", 4.68, -0.34, plan.rooms), { x: 4.5, z: -0.5 });
 const snapPreview = resolveHouseRoomSnapPreview("bedroom", 4.68, 0, plan.rooms);
 assert.equal(snapPreview?.x, 4.5);
 assert.equal(snapPreview?.z, 0);
@@ -91,6 +226,19 @@ assert.equal(snapHouseRoomMove("missing", 1, 1, plan.rooms), null);
 assert.equal(doesHouseRoomOverlap("bedroom", 4.5, 0, 4, 3, plan.rooms), false);
 assert.equal(doesHouseRoomOverlap("bedroom", 1.5, 0, 4, 3, plan.rooms), true);
 assert.deepEqual(snapHouseRoomMove("bedroom", 1.5, 0, plan.rooms), { x: 4.5, z: 0 });
+
+const stackedPlan = buildHousePlan2D(
+  [
+    living,
+    makeRoom("study", "Study", 5, 3, { x: 0, z: 3.5 }),
+  ],
+  5,
+  4
+);
+assert.deepEqual(snapHouseRoomMove("study", 0.22, 3.66, stackedPlan.rooms), {
+  x: 0,
+  z: 3.5,
+});
 assert.deepEqual(buildHouseRoomAdjacencyGuides(plan.rooms), [
   {
     id: "living-bedroom-vertical-east-west",

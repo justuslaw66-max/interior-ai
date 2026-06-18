@@ -4,18 +4,24 @@ import { useState } from "react";
 import type {
   HouseRoomConnectionChecklistItem,
   HouseRoomDoorwaySuggestion,
+  HousePlanTemplate,
   HouseRoomTemplateId,
   RoomSizePresetId,
 } from "@/lib/design-page-house-plan";
 import {
   HOUSE_ROOM_SHAPES,
+  HOUSE_PLAN_TEMPLATES,
   HOUSE_ROOM_TEMPLATES,
   HOUSE_ROOM_TYPES,
   ROOM_DIMENSION_DEFAULTS,
   ROOM_SIZE_PRESETS,
 } from "@/lib/design-page-house-plan";
 import type { RoomOpening2D } from "@/lib/editorScene";
-import type { FloorPlanDrawRoomMode, FloorPlanUnderlay } from "@/lib/floor-plan-types";
+import type {
+  FloorPlanDrawAngleLockMode,
+  FloorPlanDrawRoomMode,
+  FloorPlanUnderlay,
+} from "@/lib/floor-plan-types";
 import type { RoomPlanShape, RoomType } from "@/lib/room-types";
 import type { EditorViewMode } from "./EditorViewToggle";
 import FloorPlanUploadPanel from "./FloorPlanUploadPanel";
@@ -54,6 +60,8 @@ type DesignControlsPlanPanelProps = {
   floorPlanCalibrationSummary: string | null;
   floorPlanTraceRoomMode: boolean;
   floorPlanDrawRoomMode: FloorPlanDrawRoomMode;
+  floorPlanDrawAngleLockMode: FloorPlanDrawAngleLockMode;
+  floorPlanExactWallLengthInput: string;
   floorPlanTraceRoomPointCount: number;
   floorPlanTraceRoomType: RoomType;
   floorPlanTraceOpeningMode: boolean;
@@ -72,6 +80,7 @@ type DesignControlsPlanPanelProps = {
   onGoFurnish: () => void;
   onGoAiDesign: () => void;
   onGoShop: () => void;
+  onApplyPlanTemplate: (template: HousePlanTemplate) => void;
   onAddDesignerRoom: () => void;
   onAddRoomTemplate: (template: HouseRoomTemplate) => void;
   onNewRoomTypeChange: (roomType: RoomType) => void;
@@ -90,7 +99,11 @@ type DesignControlsPlanPanelProps = {
   onResetFloorPlanCalibrationPoints: () => void;
   onFloorPlanTraceRoomModeChange: (enabled: boolean) => void;
   onFloorPlanTraceRoomDrawModeChange: (mode: FloorPlanDrawRoomMode) => void;
+  onFloorPlanDrawAngleLockModeChange: (mode: FloorPlanDrawAngleLockMode) => void;
+  onFloorPlanExactWallLengthInputChange: (value: string) => void;
+  onApplyFloorPlanExactWallLength: () => void;
   onFloorPlanTraceRoomTypeChange: (roomType: RoomType) => void;
+  onUndoFloorPlanTraceRoomPoint: () => void;
   onResetFloorPlanTraceRoomPoints: () => void;
   onFloorPlanTraceOpeningModeChange: (enabled: boolean) => void;
   onFloorPlanTraceOpeningKindChange: (kind: RoomOpening2D["kind"]) => void;
@@ -127,6 +140,8 @@ export default function DesignControlsPlanPanel({
   floorPlanCalibrationSummary,
   floorPlanTraceRoomMode,
   floorPlanDrawRoomMode,
+  floorPlanDrawAngleLockMode,
+  floorPlanExactWallLengthInput,
   floorPlanTraceRoomPointCount,
   floorPlanTraceRoomType,
   floorPlanTraceOpeningMode,
@@ -145,6 +160,7 @@ export default function DesignControlsPlanPanel({
   onGoFurnish,
   onGoAiDesign,
   onGoShop,
+  onApplyPlanTemplate,
   onAddDesignerRoom,
   onAddRoomTemplate,
   onNewRoomTypeChange,
@@ -163,7 +179,11 @@ export default function DesignControlsPlanPanel({
   onResetFloorPlanCalibrationPoints,
   onFloorPlanTraceRoomModeChange,
   onFloorPlanTraceRoomDrawModeChange,
+  onFloorPlanDrawAngleLockModeChange,
+  onFloorPlanExactWallLengthInputChange,
+  onApplyFloorPlanExactWallLength,
   onFloorPlanTraceRoomTypeChange,
+  onUndoFloorPlanTraceRoomPoint,
   onResetFloorPlanTraceRoomPoints,
   onFloorPlanTraceOpeningModeChange,
   onFloorPlanTraceOpeningKindChange,
@@ -440,6 +460,65 @@ export default function DesignControlsPlanPanel({
           </div>
         </div>
       )}
+      {floorPlanTraceOpeningMode && (
+        <div
+          data-testid="floor-plan-opening-active-card"
+          className={
+            dark
+              ? "mt-3 rounded-xl border border-emerald-400/20 bg-emerald-400/10 p-3"
+              : "mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3"
+          }
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className={dark ? "text-sm font-semibold text-emerald-100" : "text-sm font-semibold text-emerald-900"}>
+                {floorPlanTraceOpeningKind === "door" ? "Door tool active" : "Window tool active"}
+              </div>
+              <div className={dark ? "mt-1 text-xs text-emerald-100/75" : "mt-1 text-xs text-emerald-800"}>
+                {floorPlanUnderlay
+                  ? "Pick two points along the same wall. Green means it fits."
+                  : "Move near a wall, then click when the preview turns green."}
+              </div>
+              <div className={dark ? "mt-1 text-[11px] font-semibold text-emerald-100/70" : "mt-1 text-[11px] font-semibold text-emerald-700"}>
+                Esc {floorPlanTraceOpeningPointCount > 0 ? "clears points" : "exits tool"}
+              </div>
+            </div>
+            <button
+              type="button"
+              className={progressSecondaryActionClass}
+              onClick={() => onFloorPlanTraceOpeningModeChange(false)}
+            >
+              Done
+            </button>
+          </div>
+          <div className="mt-3 flex items-center gap-2">
+            <select
+              data-testid="floor-plan-opening-active-kind"
+              value={floorPlanTraceOpeningKind}
+              disabled={!canEdit}
+              onChange={(event) =>
+                onFloorPlanTraceOpeningKindChange(event.target.value as RoomOpening2D["kind"])
+              }
+              className={
+                dark
+                  ? "min-w-28 rounded-lg border border-white/15 bg-[#10131a] px-2 py-2 text-sm text-neutral-100"
+                  : "min-w-28 rounded-lg border border-emerald-200 bg-white px-2 py-2 text-sm text-neutral-900"
+              }
+            >
+              <option value="door">Door</option>
+              <option value="window">Window</option>
+            </select>
+            <button
+              type="button"
+              className={progressSecondaryActionClass}
+              disabled={!canEdit || floorPlanTraceOpeningPointCount === 0}
+              onClick={onResetFloorPlanTraceOpeningPoints}
+            >
+              Reset points
+            </button>
+          </div>
+        </div>
+      )}
       {showFloorPlanPanel && (
         <FloorPlanUploadPanel
           underlay={floorPlanUnderlay}
@@ -453,8 +532,14 @@ export default function DesignControlsPlanPanel({
               (floorPlanUnderlay.mimeType.startsWith("image/") && floorPlanUnderlay.calibration)
           )}
           showDrawRoomTools={showDrawTools}
+          showDesignerDrawControls={isDesigner}
           traceRoomMode={floorPlanTraceRoomMode}
           traceRoomDrawMode={floorPlanDrawRoomMode}
+          traceRoomAngleLockMode={floorPlanDrawAngleLockMode}
+          exactWallLengthInput={floorPlanExactWallLengthInput}
+          canApplyExactWallLength={
+            floorPlanDrawRoomMode === "straight_wall" && floorPlanTraceRoomPointCount > 0
+          }
           traceRoomPointCount={floorPlanTraceRoomPointCount}
           traceRoomType={floorPlanTraceRoomType}
           traceRoomTypeOptions={HOUSE_ROOM_TYPES}
@@ -480,7 +565,11 @@ export default function DesignControlsPlanPanel({
           onResetCalibrationPoints={onResetFloorPlanCalibrationPoints}
           onTraceRoomModeChange={onFloorPlanTraceRoomModeChange}
           onTraceRoomDrawModeChange={onFloorPlanTraceRoomDrawModeChange}
+          onTraceRoomAngleLockModeChange={onFloorPlanDrawAngleLockModeChange}
+          onExactWallLengthInputChange={onFloorPlanExactWallLengthInputChange}
+          onApplyExactWallLength={onApplyFloorPlanExactWallLength}
           onTraceRoomTypeChange={onFloorPlanTraceRoomTypeChange}
+          onUndoTraceRoomPoint={onUndoFloorPlanTraceRoomPoint}
           onResetTraceRoomPoints={onResetFloorPlanTraceRoomPoints}
           onTraceOpeningModeChange={onFloorPlanTraceOpeningModeChange}
           onTraceOpeningKindChange={onFloorPlanTraceOpeningKindChange}
@@ -517,9 +606,58 @@ export default function DesignControlsPlanPanel({
               : "mt-3 rounded-xl border border-neutral-200 bg-neutral-50 p-3"
           }
         >
-          <div className={titleClass}>Add rooms</div>
+          <div className={titleClass}>Starter floor plans</div>
           <div className={dark ? "mt-1 text-xs text-neutral-400" : "mt-1 text-xs text-neutral-500"}>
-            Start with a common room, then adjust dimensions on the plan.
+            Pick a full-home starting point, then resize rooms and add doors.
+          </div>
+          <div className="mt-2 grid gap-2">
+            {HOUSE_PLAN_TEMPLATES.map((template) => {
+              const areaSqm = template.rooms.reduce(
+                (sum, room) => sum + room.width * room.depth,
+                0
+              );
+              const roomPreview = template.rooms
+                .map((room) => room.name.replace(" / ", "/"))
+                .join(" · ");
+              return (
+                <button
+                  key={template.id}
+                  type="button"
+                  data-testid={`apply-plan-template-${template.id}`}
+                  onClick={() => onApplyPlanTemplate(template)}
+                  disabled={!canEdit}
+                  className={
+                    dark
+                      ? "rounded-lg border border-white/10 bg-[#1b2030] px-3 py-2 text-left text-sm font-medium text-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
+                      : "rounded-lg border border-neutral-200 bg-white px-3 py-2 text-left text-sm font-medium text-neutral-800 shadow-sm hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
+                  }
+                >
+                  <span className="flex items-center justify-between gap-2">
+                    <span>{template.label}</span>
+                    <span className={dark ? "text-xs text-neutral-400" : "text-xs text-neutral-500"}>
+                      {template.rooms.length} rooms · {Math.round(areaSqm)} m2
+                    </span>
+                  </span>
+                  <span className={dark ? "mt-0.5 block text-xs text-neutral-400" : "mt-0.5 block text-xs text-neutral-500"}>
+                    {template.summary}
+                  </span>
+                  <span
+                    className={
+                      dark
+                        ? "mt-1 block truncate text-[11px] text-neutral-500"
+                        : "mt-1 block truncate text-[11px] text-neutral-500"
+                    }
+                  >
+                    {roomPreview}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className={`${titleClass} mt-4`}>Add one room</div>
+          <div className={dark ? "mt-1 text-xs text-neutral-400" : "mt-1 text-xs text-neutral-500"}>
+            Use these when you only need one extra room.
           </div>
           <div className="mt-2 grid grid-cols-2 gap-2">
             {HOUSE_ROOM_TEMPLATES.map((template) => (

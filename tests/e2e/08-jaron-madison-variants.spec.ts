@@ -69,6 +69,12 @@ test.describe("8. Jaron and Madison Variant Integration", () => {
         "Camille, Forest",
         "Caramel",
       ],
+      "armchair-real-castlery-madison-armchair": [
+        "Bisque",
+        "Stone",
+        "Camille, Forest",
+        "Caramel",
+      ],
     };
 
     for (const [productId, requiredTokens] of Object.entries(expectations)) {

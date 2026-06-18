@@ -62,11 +62,6 @@ export async function POST(req: Request) {
       return_url: `${origin}?refresh_plan=true`,
     });
 
-    console.log("Portal session created:", {
-      customerId: dbUser.stripeCustomerId,
-      returnUrl: `${origin}?refresh_plan=true`,
-    });
-
     return NextResponse.json({ url: portalSession.url });
   } catch (error: unknown) {
     const message = getErrorMessage(error);

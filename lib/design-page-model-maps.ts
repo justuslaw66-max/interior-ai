@@ -95,16 +95,25 @@ export const MODEL_FAMILY_BY_PRODUCT_ID: Record<string, string[]> = {
   "sofa-real-castlery-madison-2s": [
     "sofa-real-castlery-madison-2s",
     "sofa-real-castlery-madison-3s",
+    "armchair-real-castlery-madison-armchair",
     "sofa-real-castlery-madison-ottoman",
   ],
   "sofa-real-castlery-madison-3s": [
     "sofa-real-castlery-madison-2s",
     "sofa-real-castlery-madison-3s",
+    "armchair-real-castlery-madison-armchair",
+    "sofa-real-castlery-madison-ottoman",
+  ],
+  "armchair-real-castlery-madison-armchair": [
+    "sofa-real-castlery-madison-2s",
+    "sofa-real-castlery-madison-3s",
+    "armchair-real-castlery-madison-armchair",
     "sofa-real-castlery-madison-ottoman",
   ],
   "sofa-real-castlery-madison-ottoman": [
     "sofa-real-castlery-madison-2s",
     "sofa-real-castlery-madison-3s",
+    "armchair-real-castlery-madison-armchair",
     "sofa-real-castlery-madison-ottoman",
   ],
   "sofa-real-castlery-jaron-3s": [...JARON_MODEL_FAMILY_IDS],

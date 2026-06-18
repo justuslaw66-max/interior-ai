@@ -55,6 +55,36 @@ export default function ShoppingOverviewPanel({
   const primaryButtonClass = dark
     ? "rounded-xl bg-white px-3 py-2 text-sm font-semibold text-neutral-950 transition hover:bg-neutral-200"
     : "rounded-xl bg-neutral-900 px-3 py-2 text-sm font-semibold text-white transition hover:bg-neutral-800";
+  const readyRooms = rooms.filter((room) => room.itemCount > 0 && room.needsReviewCount === 0);
+  const reviewRooms = rooms.filter((room) => room.needsReviewCount > 0);
+  const emptyRooms = rooms.filter((room) => room.itemCount === 0);
+  const renderRoomButton = (room: ShoppingRoomSummary) => (
+    <button
+      key={room.roomId}
+      type="button"
+      onClick={() => onSelectRoom(room.roomId)}
+      className={
+        dark
+          ? `w-full rounded-xl border px-3 py-2 text-left ${room.isActive ? "border-emerald-400/60 bg-emerald-500/10" : "border-white/10 bg-[#151820]"}`
+          : `w-full rounded-xl border px-3 py-2 text-left ${room.isActive ? "border-emerald-300 bg-emerald-50" : "border-neutral-200 bg-white"}`
+      }
+    >
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <div className={dark ? "truncate text-sm font-semibold text-neutral-100" : "truncate text-sm font-semibold text-neutral-900"}>
+            {room.roomName}
+          </div>
+          <div className={`truncate text-xs ${mutedClass}`}>
+            {room.previewNames.length ? room.previewNames.join(", ") : "No furniture yet"}
+          </div>
+        </div>
+        <div className={dark ? "shrink-0 text-right text-xs text-neutral-300" : "shrink-0 text-right text-xs text-neutral-600"}>
+          <div>{room.itemCount} item{room.itemCount === 1 ? "" : "s"}</div>
+          <div>{formatMoney(room.subtotal)}</div>
+        </div>
+      </div>
+    </button>
+  );
 
   return (
     <section className={panelClass} data-testid="shopping-overview-panel">
@@ -138,34 +168,31 @@ export default function ShoppingOverviewPanel({
             )}
           </div>
 
-          <div className="space-y-2" data-testid="shopping-room-list">
-            {rooms.map((room) => (
-              <button
-                key={room.roomId}
-                type="button"
-                onClick={() => onSelectRoom(room.roomId)}
-                className={
-                  dark
-                    ? `w-full rounded-xl border px-3 py-2 text-left ${room.isActive ? "border-emerald-400/60 bg-emerald-500/10" : "border-white/10 bg-[#151820]"}`
-                    : `w-full rounded-xl border px-3 py-2 text-left ${room.isActive ? "border-emerald-300 bg-emerald-50" : "border-neutral-200 bg-white"}`
-                }
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className={dark ? "truncate text-sm font-semibold text-neutral-100" : "truncate text-sm font-semibold text-neutral-900"}>
-                      {room.roomName}
-                    </div>
-                    <div className={`truncate text-xs ${mutedClass}`}>
-                      {room.previewNames.length ? room.previewNames.join(", ") : "No furniture yet"}
-                    </div>
-                  </div>
-                  <div className={dark ? "shrink-0 text-right text-xs text-neutral-300" : "shrink-0 text-right text-xs text-neutral-600"}>
-                    <div>{room.itemCount} item{room.itemCount === 1 ? "" : "s"}</div>
-                    <div>{formatMoney(room.subtotal)}</div>
-                  </div>
+          <div className="space-y-3" data-testid="shopping-room-list">
+            {readyRooms.length > 0 && (
+              <div data-testid="shopping-ready-rooms">
+                <div className={`mb-2 text-xs font-semibold uppercase tracking-wide ${mutedClass}`}>
+                  Ready to buy
                 </div>
-              </button>
-            ))}
+                <div className="space-y-2">{readyRooms.map(renderRoomButton)}</div>
+              </div>
+            )}
+            {reviewRooms.length > 0 && (
+              <div data-testid="shopping-review-rooms">
+                <div className={`mb-2 text-xs font-semibold uppercase tracking-wide ${mutedClass}`}>
+                  Needs review
+                </div>
+                <div className="space-y-2">{reviewRooms.map(renderRoomButton)}</div>
+              </div>
+            )}
+            {emptyRooms.length > 0 && (
+              <div data-testid="shopping-empty-rooms">
+                <div className={`mb-2 text-xs font-semibold uppercase tracking-wide ${mutedClass}`}>
+                  Not furnished yet
+                </div>
+                <div className="space-y-2">{emptyRooms.map(renderRoomButton)}</div>
+              </div>
+            )}
           </div>
         </div>
       )}

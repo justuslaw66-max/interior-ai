@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import CatalogPanel from "@/components/catalog/CatalogPanel";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import type { ImportedModelOption } from "@/lib/catalog/imported-model-assembly";
+import { formatMoney } from "@/lib/design-page-utils";
 import {
   getTopCategoryLabel,
   mapToTopCategory,
@@ -23,6 +24,9 @@ type DesignControlsFurnishPanelProps = {
   activeRoomItemCount: number;
   activeRoomShoppableCount: number;
   activeRoomNeedsReviewCount: number;
+  activeRoomCategoryCounts: Partial<Record<CatalogTopCategory, number>>;
+  activeRoomShoppingSubtotal: number;
+  activeRoomPreviewNames: string[];
   roomCount: number;
   catalogItems: CatalogItemSchema[];
   selectedImportedFamilyKey: string;
@@ -32,6 +36,7 @@ type DesignControlsFurnishPanelProps = {
   visibleImportedModelOptions: ImportedModelOption[];
   onAddImportedToRoom: () => void;
   onAddCatalogItemToRoom: (productId: string, variantId?: string) => void;
+  onGoShop: () => void;
   onSelectedImportedFamilyChange: (familyKey: string) => void;
   onSelectedImportedProductChange: (productId: string) => void;
 };
@@ -78,6 +83,9 @@ export default function DesignControlsFurnishPanel({
   activeRoomItemCount,
   activeRoomShoppableCount,
   activeRoomNeedsReviewCount,
+  activeRoomCategoryCounts,
+  activeRoomShoppingSubtotal,
+  activeRoomPreviewNames,
   roomCount,
   catalogItems,
   selectedImportedFamilyKey,
@@ -87,6 +95,7 @@ export default function DesignControlsFurnishPanel({
   visibleImportedModelOptions,
   onAddImportedToRoom,
   onAddCatalogItemToRoom,
+  onGoShop,
   onSelectedImportedFamilyChange,
   onSelectedImportedProductChange,
 }: DesignControlsFurnishPanelProps) {
@@ -94,6 +103,7 @@ export default function DesignControlsFurnishPanel({
   const [selectedCatalogCategory, setSelectedCatalogCategory] = useState<
     { roomKey: string; category: CatalogTopCategory } | undefined
   >(undefined);
+  const [fullCatalogOpen, setFullCatalogOpen] = useState(false);
   const selectedImportedOption = useMemo(
     () =>
       visibleImportedModelOptions.find((option) => option.id === selectedImportedProductId) ??
@@ -132,6 +142,11 @@ export default function DesignControlsFurnishPanel({
   const handleCatalogCategoryChange = (category: CatalogTopCategory) => {
     setSelectedCatalogCategory({ roomKey: roomRecommendationKey, category });
   };
+  const handleBrowseCatalogCategory = (category: CatalogTopCategory) => {
+    handleCatalogCategoryChange(category);
+    setFullCatalogOpen(true);
+  };
+  const checklistCategories = recommendedCategories.slice(0, Math.min(4, recommendedCategories.length));
   const titleClass = dark
     ? "designer-text-primary text-sm font-semibold"
     : "text-sm font-semibold text-neutral-800";
@@ -224,6 +239,129 @@ export default function DesignControlsFurnishPanel({
       <section className={panelClass}>
         <div className="flex items-start justify-between gap-3">
           <div>
+            <div className={titleClass}>Room checklist</div>
+            <div className={mutedClass}>Use this as a quick furnishing order for this room.</div>
+          </div>
+          <span
+            className={
+              activeRoomItemCount > 0
+                ? dark
+                  ? "rounded-full bg-emerald-500/10 px-2 py-1 text-[11px] font-semibold text-emerald-100"
+                  : "rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-700"
+                : dark
+                  ? "rounded-full bg-white/10 px-2 py-1 text-[11px] font-semibold text-neutral-300"
+                  : "rounded-full bg-neutral-100 px-2 py-1 text-[11px] font-semibold text-neutral-600"
+            }
+          >
+            {activeRoomItemCount > 0 ? "Started" : "Empty"}
+          </span>
+        </div>
+        <div className="mt-3 space-y-2" data-testid="furnish-room-checklist">
+          {checklistCategories.map((category) => {
+            const placedCount = activeRoomCategoryCounts[category] ?? 0;
+            const complete = placedCount > 0;
+            return (
+              <button
+                key={category}
+                type="button"
+                data-testid={`furnish-checklist-category-${category}`}
+                onClick={() => handleBrowseCatalogCategory(category)}
+                className={
+                  dark
+                    ? "flex w-full items-center justify-between gap-3 rounded-xl border border-white/10 bg-[#1b2030] px-3 py-2 text-left hover:bg-white/10"
+                    : "flex w-full items-center justify-between gap-3 rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2 text-left hover:bg-white"
+                }
+              >
+                <span className="min-w-0">
+                  <span
+                    className={
+                      dark
+                        ? "block truncate text-sm font-semibold text-neutral-100"
+                        : "block truncate text-sm font-semibold text-neutral-900"
+                    }
+                  >
+                    {getTopCategoryLabel(category)}
+                  </span>
+                  <span className={mutedClass}>{CATEGORY_HELP_TEXT[category]}</span>
+                </span>
+                <span
+                  className={
+                    complete
+                      ? dark
+                        ? "shrink-0 rounded-full bg-emerald-500/10 px-2 py-1 text-[11px] font-semibold text-emerald-100"
+                        : "shrink-0 rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-700"
+                      : dark
+                        ? "shrink-0 rounded-full bg-white/10 px-2 py-1 text-[11px] font-semibold text-neutral-300"
+                        : "shrink-0 rounded-full bg-white px-2 py-1 text-[11px] font-semibold text-neutral-600"
+                  }
+                >
+                  {complete ? `${placedCount} placed` : "Next"}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className={panelClass} data-testid="furnish-shopping-preview">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className={titleClass}>Room shopping preview</div>
+            <div className={mutedClass}>
+              {activeRoomItemCount > 0
+                ? activeRoomPreviewNames.length > 0
+                  ? activeRoomPreviewNames.join(", ")
+                  : `${activeRoomItemCount} item${activeRoomItemCount === 1 ? "" : "s"} placed`
+                : "Add real catalog items to build this room list."}
+            </div>
+          </div>
+          {activeRoomItemCount > 0 ? (
+            <button
+              type="button"
+              className={secondaryButtonClass}
+              onClick={onGoShop}
+            >
+              Review
+            </button>
+          ) : (
+            <span
+              className={
+                dark
+                  ? "rounded-full bg-white/10 px-2 py-1 text-[11px] font-semibold text-neutral-300"
+                  : "rounded-full bg-neutral-100 px-2 py-1 text-[11px] font-semibold text-neutral-600"
+              }
+            >
+              Empty
+            </span>
+          )}
+        </div>
+        {activeRoomItemCount > 0 && (
+          <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+            <div className={statCardClass}>
+              <div className={dark ? "text-sm font-semibold text-white" : "text-sm font-semibold text-neutral-950"}>
+                {activeRoomItemCount}
+              </div>
+              <div className={mutedClass}>Items</div>
+            </div>
+            <div className={statCardClass}>
+              <div className={dark ? "text-sm font-semibold text-white" : "text-sm font-semibold text-neutral-950"}>
+                {activeRoomShoppableCount}
+              </div>
+              <div className={mutedClass}>Ready</div>
+            </div>
+            <div className={statCardClass}>
+              <div className={dark ? "text-sm font-semibold text-white" : "text-sm font-semibold text-neutral-950"}>
+                {formatMoney(activeRoomShoppingSubtotal)}
+              </div>
+              <div className={mutedClass}>Est.</div>
+            </div>
+          </div>
+        )}
+      </section>
+
+      <section className={panelClass}>
+        <div className="flex items-start justify-between gap-3">
+          <div>
             <div className={titleClass}>Recommended for {activeRoomTypeLabel}</div>
             <div className={mutedClass}>Start with the categories most useful for this room.</div>
           </div>
@@ -247,7 +385,7 @@ export default function DesignControlsFurnishPanel({
                 key={category}
                 type="button"
                 data-testid={`furnish-recommended-category-${category}`}
-                onClick={() => handleCatalogCategoryChange(category)}
+                onClick={() => handleBrowseCatalogCategory(category)}
                 className={
                   active
                     ? dark
@@ -263,7 +401,7 @@ export default function DesignControlsFurnishPanel({
                   {CATEGORY_HELP_TEXT[category]}
                 </div>
                 <div className={active ? "mt-2 text-[11px] font-semibold opacity-80" : mutedClass}>
-                  {count} item{count === 1 ? "" : "s"}
+                  {count} item{count === 1 ? "" : "s"} · Browse
                 </div>
               </button>
             );
@@ -364,15 +502,48 @@ export default function DesignControlsFurnishPanel({
         </div>
       </details>
 
-      <CatalogPanel
-        items={catalogItems}
-        canEdit={canEdit}
-        onAddToRoom={onAddCatalogItemToRoom}
-        title="Browse all catalog"
-        subtitle="Search every verified product, or switch category below."
-        selectedCategory={activeCatalogCategory}
-        onSelectedCategoryChange={handleCatalogCategoryChange}
-      />
+      <details
+        className={panelClass}
+        data-testid="furnish-full-catalog"
+        open={fullCatalogOpen}
+        onToggle={(event) => setFullCatalogOpen(event.currentTarget.open)}
+      >
+        <summary
+          data-testid="furnish-full-catalog-toggle"
+          className={
+            dark
+              ? "flex cursor-pointer list-none items-center justify-between gap-3 text-neutral-100 marker:hidden"
+              : "flex cursor-pointer list-none items-center justify-between gap-3 text-neutral-900 marker:hidden"
+          }
+        >
+          <span>
+            <span className={titleClass}>Browse full catalog</span>
+            <span className={mutedClass}>Search every verified product when recommendations are not enough.</span>
+          </span>
+          <span
+            className={
+              dark
+                ? "rounded-full bg-white/10 px-2 py-1 text-[11px] font-semibold text-neutral-300"
+                : "rounded-full bg-neutral-100 px-2 py-1 text-[11px] font-semibold text-neutral-600"
+            }
+          >
+            {fullCatalogOpen ? "Hide" : "Open"}
+          </span>
+        </summary>
+        <div className="mt-3">
+          <CatalogPanel
+            items={catalogItems}
+            canEdit={canEdit}
+            onAddToRoom={onAddCatalogItemToRoom}
+            activeRoomName={activeRoomName}
+            recommendedCategoryIds={recommendedCategories}
+            title={`Add to ${activeRoomName}`}
+            subtitle="Start with room-aware categories, then search every verified product if needed."
+            selectedCategory={activeCatalogCategory}
+            onSelectedCategoryChange={handleCatalogCategoryChange}
+          />
+        </div>
+      </details>
     </div>
   );
 }

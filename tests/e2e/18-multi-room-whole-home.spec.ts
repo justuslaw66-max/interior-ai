@@ -72,10 +72,16 @@ test.describe("18. Multi-Room Whole Home", () => {
     await expect(page.getByTestId("floor-plan-draw-mode-straight_wall")).toBeVisible();
     await expect(page.getByTestId("floor-plan-draw-mode-rectangle_wall")).toBeVisible();
     await expect(page.getByTestId("floor-plan-draw-mode-arc_wall")).toBeVisible();
+    await page.getByTestId("floor-plan-draw-mode-straight_wall").click();
+    await expect(page.getByTestId("floor-plan-exact-wall-length")).toBeVisible();
+    await expect(page.getByTestId("floor-plan-apply-exact-wall-length")).toBeDisabled();
     await page.getByTestId("floor-plan-draw-mode-rectangle_wall").click();
     await expect(page.getByText("Wall points: 0")).toBeVisible();
+    await expect(page.getByTestId("floor-plan-exact-wall-length")).toHaveCount(0);
+    await expect(page.getByTestId("floor-plan-angle-lock-ortho")).toHaveCount(0);
     await expect(page.getByTestId("floor-plan-trace-room-type")).toHaveValue("living");
     await page.getByTestId("floor-plan-trace-room-type").selectOption("bedroom");
+    await page.getByTestId("floor-plan-draw-mode-straight_wall").click();
 
     const drawSurface = page.getByTestId("scene-canvas");
     await expect(drawSurface).toBeVisible();
@@ -87,6 +93,23 @@ test.describe("18. Multi-Room Whole Home", () => {
 
     const start = { x: box.x + box.width * 0.42, y: box.y + box.height * 0.45 };
     const end = { x: box.x + box.width * 0.9, y: box.y + box.height * 0.86 };
+    await expect(page.getByTestId("floor-plan-draw-escape-hint")).toHaveText("Esc exits draw");
+    await page.mouse.click(start.x, start.y);
+    await expect(page.getByText("Wall points: 1")).toBeVisible();
+    await page.locator('[data-testid="floor-plan-undo-wall-point"]:not([disabled])').click();
+    await expect(page.getByText("Wall points: 0")).toBeVisible();
+
+    await page.mouse.click(start.x, start.y);
+    await expect(page.getByText("Wall points: 1")).toBeVisible();
+    await expect(page.getByTestId("floor-plan-draw-escape-hint")).toHaveText("Esc cancels line");
+    await page.keyboard.press("Escape");
+    await expect(page.getByText("Wall points: 0")).toBeVisible();
+    await expect(page.getByTestId("floor-plan-draw-escape-hint")).toHaveText("Esc exits draw");
+    await page.keyboard.press("Escape");
+    await expect(page.getByText("Wall points: 0")).toHaveCount(0);
+
+    await page.getByTestId("floor-plan-draw-mode-rectangle_wall").click();
+    await expect(page.getByText("Wall points: 0")).toBeVisible();
     await page.mouse.click(start.x, start.y);
     await expect(page.getByText("Wall points: 1")).toBeVisible();
     await page.mouse.click(end.x, end.y);
@@ -94,9 +117,54 @@ test.describe("18. Multi-Room Whole Home", () => {
     await expect(page.getByText("Room drawn")).toBeVisible();
     await expect(page.getByTestId("room-plan-status-room-name")).toContainText("Bedroom");
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("1 room");
+
+    await page.getByTestId("floor-plan-draw-mode-straight_wall").click();
+    await page.mouse.move(start.x, start.y);
+    await expect(page.getByText("Snap to corner")).toBeVisible();
+    await page.mouse.click(start.x, start.y);
+    await expect(page.getByTestId("wall-draw-continuation-cue")).toContainText(
+      "Continue from corner"
+    );
+    await page.mouse.move(start.x + 220, start.y);
+    await page.mouse.click(start.x + 220, start.y);
+    await expect(page.getByText("Wall points: 2")).toBeVisible();
+    await page.mouse.move(start.x + 220, start.y + 180);
+    await page.mouse.click(start.x + 220, start.y + 180);
+    await expect(page.getByText("Wall points: 3")).toBeVisible();
+    await expect(page.getByTestId("wall-draw-close-cue")).toContainText("Close room here");
   });
 
-  test("arc wall mode creates a rounded custom room on a blank 2D grid", async ({ page }) => {
+  test("straight wall segment lengths can be edited while drawing", async ({ page }) => {
+    await page.goto("/design");
+    await page.waitForLoadState("domcontentloaded");
+
+    await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+    await page.getByRole("button", { name: "2D Plan" }).click();
+    await chooseDrawFromScratch(page);
+    await page.getByTestId("floor-plan-draw-mode-straight_wall").click();
+
+    const drawSurface = page.getByTestId("scene-canvas");
+    const box = await drawSurface.boundingBox();
+    expect(box).not.toBeNull();
+    if (!box) {
+      throw new Error("Scene canvas was not measurable");
+    }
+
+    const start = { x: box.x + box.width * 0.42, y: box.y + box.height * 0.45 };
+    await page.mouse.click(start.x, start.y);
+    await page.mouse.move(start.x + 220, start.y);
+    await page.mouse.click(start.x + 220, start.y);
+
+    await expect(page.getByText("Wall points: 2")).toBeVisible();
+    await expect(page.getByTestId("wall-draw-segment-length-1")).toBeVisible();
+    await page.getByTestId("wall-draw-segment-length-1").dblclick();
+    await expect(page.getByTestId("wall-draw-segment-length-editor")).toBeVisible();
+    await page.getByTestId("wall-draw-segment-length-editor").fill("1800");
+    await page.getByTestId("wall-draw-segment-length-editor").press("Enter");
+    await expect(page.getByTestId("wall-draw-segment-length-1")).toContainText("1800 mm");
+  });
+
+  test("arc wall mode previews rounded-room feedback and cancels cleanly", async ({ page }) => {
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
 
@@ -114,13 +182,121 @@ test.describe("18. Multi-Room Whole Home", () => {
       throw new Error("Scene canvas was not measurable");
     }
 
-    await page.mouse.click(box.x + box.width * 0.5, box.y + box.height * 0.52);
-    await expect(page.getByText("Wall points: 1")).toBeVisible();
-    await page.mouse.click(box.x + box.width * 0.92, box.y + box.height * 0.9);
+    const arcStart = { x: box.x + box.width * 0.92, y: box.y + box.height * 0.26 };
+    const arcEnd = { x: box.x + box.width * 0.99, y: box.y + box.height * 0.56 };
 
-    await expect(page.getByText("Custom room drawn")).toBeVisible();
-    await expect(page.getByTestId("room-plan-status-room-name")).toContainText("Living Room");
+    await page.mouse.click(arcStart.x, arcStart.y);
+    await expect(page.getByText("Wall points: 1")).toBeVisible();
+    await page.mouse.move(arcEnd.x, arcEnd.y, { steps: 6 });
+    await expect(page.getByTestId("arc-wall-draw-length")).toBeVisible();
+    await expect(page.getByTestId("arc-wall-draw-angle")).toContainText("180");
+    await page.keyboard.press("Escape");
+    await expect(page.getByText("Wall points: 0")).toBeVisible();
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("1 room");
+  });
+
+  test("rectangle drawing adds a second room without replacing the starter room", async ({
+    page,
+  }) => {
+    await page.goto("/design");
+    await page.waitForLoadState("domcontentloaded");
+
+    await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+    await page.getByRole("button", { name: "2D Plan" }).click();
+    await chooseDrawFromScratch(page);
+    await page.getByTestId("floor-plan-draw-mode-rectangle_wall").click();
+
+    await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("1 room");
+    await expect(page.getByText("5000 mm").first()).toBeVisible();
+    await expect(page.getByText("4000 mm").first()).toBeVisible();
+    await page.getByRole("button", { name: "Fit", exact: true }).click();
+    const snapMarkers = await page
+      .locator('[data-testid^="floor-plan-start-snap-"]')
+      .evaluateAll((elements) =>
+        elements.map((element) => {
+          const rect = element.getBoundingClientRect();
+          return {
+            id: element.getAttribute("data-testid"),
+            x: rect.x,
+            y: rect.y,
+            width: rect.width,
+            height: rect.height,
+            planX: element.getAttribute("data-plan-x"),
+            planZ: element.getAttribute("data-plan-z"),
+          };
+        })
+      );
+    const rightTop = snapMarkers.find(
+      (marker) => marker.id === "floor-plan-start-snap-corner" && marker.planX === "2.500" && marker.planZ === "-2.000"
+    );
+    const rightBottom = snapMarkers.find(
+      (marker) => marker.id === "floor-plan-start-snap-corner" && marker.planX === "2.500" && marker.planZ === "2.000"
+    );
+    expect(rightTop).toBeTruthy();
+    expect(rightBottom).toBeTruthy();
+    if (!rightTop || !rightBottom) {
+      throw new Error("Starter room right-side snap corners were not measurable");
+    }
+    const pixelsPerMeter = Math.abs(rightBottom.y - rightTop.y) / 4;
+    const start = {
+      x: rightTop.x + rightTop.width / 2,
+      y: rightTop.y + rightTop.height / 2,
+    };
+    const end = {
+      x: rightTop.x + pixelsPerMeter * 2,
+      y: rightBottom.y + rightBottom.height / 2,
+    };
+
+    await page.mouse.click(start.x, start.y);
+    await expect(page.getByText("Wall points: 1")).toBeVisible();
+    await page.mouse.move(end.x, end.y, { steps: 12 });
+    await page.mouse.click(end.x, end.y);
+
+    await expect(page.getByText("Room drawn")).toBeVisible();
+    await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("2 rooms");
+    await expect(page.getByTestId("room-connection-checklist")).toBeVisible();
+  });
+
+  test("shift-dragging a 2D room moves freely without losing selection", async ({ page }) => {
+    await page.goto("/design");
+    await page.waitForLoadState("domcontentloaded");
+
+    await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByTestId("plan-start-template").click();
+    await page.getByTestId("add-room-template-bedroom").click();
+
+    await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("2 rooms");
+    const activeRoomLabel = page.locator('[data-testid="house-room-2d-label"][data-active="true"]');
+    await expect(activeRoomLabel).toContainText("Bedroom");
+
+    const before = await activeRoomLabel.boundingBox();
+    expect(before).not.toBeNull();
+    if (!before) {
+      throw new Error("Active room label was not measurable before shift-dragging");
+    }
+
+    const dragStart = {
+      x: before.x + before.width / 2 + 100,
+      y: before.y + before.height / 2,
+    };
+
+    await page.keyboard.down("Shift");
+    await page.mouse.move(dragStart.x, dragStart.y);
+    await page.mouse.down();
+    await page.mouse.move(dragStart.x + 96, dragStart.y + 36, { steps: 10 });
+    await page.mouse.up();
+    await page.keyboard.up("Shift");
+    await page.waitForTimeout(250);
+
+    await expect(activeRoomLabel).toContainText("Bedroom");
+    await expect(page.getByTestId("room-plan-status-room-name")).toContainText("Bedroom");
+    const after = await activeRoomLabel.boundingBox();
+    expect(after).not.toBeNull();
+    if (!after) {
+      throw new Error("Active room label was not measurable after shift-dragging");
+    }
+    expect(after.x).toBeGreaterThan(before.x + 24);
   });
 
   test("consumer workflow tabs switch panels reliably", async ({ page }) => {
@@ -134,9 +310,25 @@ test.describe("18. Multi-Room Whole Home", () => {
     await page.getByTestId("editor-workflow-furnish").click();
     await expect(page.getByTestId("editor-workflow-furnish")).toHaveAttribute("data-active", "true");
     await expect(page.getByTestId("furnish-room-summary")).toBeVisible();
+    await expect(page.getByTestId("furnish-room-checklist")).toBeVisible();
+    await expect(page.getByTestId("furnish-shopping-preview")).toBeVisible();
     await expect(page.getByText("Recommended for Living Room")).toBeVisible();
     await expect(page.getByTestId("furnish-recommended-category-coffee_table")).toBeVisible();
+    await expect(page.getByTestId("furnish-full-catalog")).not.toHaveAttribute("open", "");
     await expect(page.getByTestId("advanced-imported-models")).not.toHaveAttribute("open", "");
+    await page.getByTestId("furnish-recommended-category-coffee_table").click();
+    await expect(page.getByTestId("furnish-full-catalog")).toHaveAttribute("open", "");
+    await expect(page.getByTestId("catalog-room-context")).toBeVisible();
+    await expect(page.getByTestId("catalog-active-room-pill")).toContainText("Adding to Living Room");
+    await expect(page.getByTestId("catalog-room-recommendation-coffee_table")).toHaveAttribute(
+      "data-active",
+      "true"
+    );
+    await expect(page.locator('[data-testid^="catalog-preview-"]').first()).toBeVisible();
+    await page.locator('[data-testid^="catalog-preview-"]').first().click();
+    await expect(page.getByTestId("catalog-detail-add-context")).toContainText("Adding to Living Room");
+    await expect(page.getByTestId("catalog-detail-add-to-room")).toContainText("Add to Living Room");
+    await page.getByRole("button", { name: "Close" }).click();
 
     await page.getByTestId("editor-workflow-shop").click();
     await expect(page.getByTestId("editor-workflow-shop")).toHaveAttribute("data-active", "true");
@@ -155,6 +347,50 @@ test.describe("18. Multi-Room Whole Home", () => {
 
     await page.getByTestId("editor-workflow-plan").click();
     await expect(page.getByTestId("editor-workflow-plan")).toHaveAttribute("data-active", "true");
+  });
+
+  test("active room dimensions can be edited by double-clicking the 2D labels", async ({ page }) => {
+    await page.goto("/design");
+    await page.waitForLoadState("domcontentloaded");
+
+    await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByTestId("plan-start-template").click();
+    await page.getByTestId("add-room-template-bedroom").click();
+
+    await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("2 rooms");
+    await expect(page.getByTestId("active-room-dimension-width")).toBeVisible();
+    await expect(page.getByTestId("active-room-dimension-depth")).toBeVisible();
+
+    await page.getByTestId("active-room-dimension-width").dblclick();
+    await expect(page.getByTestId("active-room-dimension-editor-width")).toBeVisible();
+    await page.getByTestId("active-room-dimension-editor-width").fill("3800");
+    await page.getByTestId("active-room-dimension-editor-width").press("Enter");
+    await expect(page.getByTestId("active-room-dimension-width")).toContainText("W 3800 mm");
+
+    await page.getByTestId("active-room-dimension-depth").dblclick();
+    await expect(page.getByTestId("active-room-dimension-editor-depth")).toBeVisible();
+    await page.getByTestId("active-room-dimension-editor-depth").fill("3200");
+    await page.getByTestId("active-room-dimension-editor-depth").press("Enter");
+    await expect(page.getByTestId("active-room-dimension-depth")).toContainText("D 3200 mm");
+  });
+
+  test("starter floor-plan templates create whole-home room layouts", async ({ page }) => {
+    await page.goto("/design");
+    await page.waitForLoadState("domcontentloaded");
+
+    await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByTestId("plan-start-template").click();
+
+    await expect(page.getByTestId("apply-plan-template-studio")).toBeVisible();
+    await expect(page.getByTestId("apply-plan-template-living_dining")).toBeVisible();
+    await page.getByTestId("apply-plan-template-compact_two_bed").click();
+
+    await expect(page.getByText("Compact 2-bed added")).toBeVisible();
+    await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("5 rooms");
+    await expect(page.getByTestId("consumer-plan-next-steps")).toContainText("5 rooms ready");
+    await expect(page.getByTestId("room-connection-checklist")).toBeVisible();
   });
 
   test("adding a room keeps the plan visible as one whole-home 3D scene", async ({ page }) => {
@@ -272,18 +508,41 @@ test.describe("18. Multi-Room Whole Home", () => {
     await expect(page.getByTestId("room-connection-checklist")).toBeVisible();
     await expect(page.getByTestId("room-connection-status")).toHaveText("Needs doorway");
     await expect(page.getByTestId("room-doorway-suggestion")).toHaveText("Add doorway");
-    await page.getByTestId("floor-plan-tool-door").click();
+    await page.getByTestId("room-doorway-suggestion").click();
     await expect(page.getByText("Doorway added")).toBeVisible();
     await expect(page.getByTestId("room-connection-status")).toHaveText("Doorway ready");
     await expect(page.getByTestId("consumer-plan-next-steps")).toContainText("openings placed");
     await expect(page.getByTestId("plan-opening-inspector")).toBeVisible();
+    await expect(page.getByTestId("plan-opening-live-label")).toContainText("Door");
     await expect(page.getByTestId("plan-opening-width-input")).toHaveValue("0.90");
     await page.getByTestId("plan-opening-width-input").fill("1.10");
     await expect(page.getByTestId("plan-opening-width-input")).toHaveValue("1.10");
     await page.getByTestId("plan-opening-offset-input").fill("0.20");
     await expect(page.getByTestId("plan-opening-offset-input")).toHaveValue("0.20");
     await page.getByTestId("floor-plan-tool-window").click();
-    await expect(page.getByText("Window added")).toBeVisible();
+    await expect(page.getByText("Click a wall to place a window")).toBeVisible();
+    await expect(page.getByTestId("floor-plan-opening-active-card")).toContainText("Window tool active");
+    await page.keyboard.press("Escape");
+    await expect(page.getByTestId("floor-plan-opening-active-card")).toHaveCount(0);
+    await page.getByTestId("floor-plan-tool-window").click();
+    await expect(page.getByTestId("floor-plan-opening-active-card")).toContainText("Window tool active");
+    const openingCanvas = page.getByTestId("scene-canvas");
+    const openingCanvasBox = await openingCanvas.boundingBox();
+    expect(openingCanvasBox).not.toBeNull();
+    if (!openingCanvasBox) {
+      throw new Error("Scene canvas was not measurable for opening placement");
+    }
+    const bedroomRightWallSnapX = openingCanvasBox.x + openingCanvasBox.width * 0.94;
+    const bedroomRightWallSnapY = openingCanvasBox.y + openingCanvasBox.height * 0.4;
+    await page.mouse.move(
+      bedroomRightWallSnapX,
+      bedroomRightWallSnapY
+    );
+    await expect(page.getByTestId("blank-plan-opening-snap-preview")).toContainText("Window snaps");
+    await expect(page.getByTestId("blank-plan-opening-snap-detail")).toContainText("1200 mm");
+    await page.mouse.click(bedroomRightWallSnapX, bedroomRightWallSnapY);
+    await expect(page.getByText("Window placed")).toBeVisible();
+    await expect(page.getByTestId("plan-opening-live-label")).toContainText("Window");
     await expect(page.getByTestId("plan-opening-width-input")).toHaveValue("1.20");
     await page.getByTestId("floor-plan-tool-select").click();
     await expect(page.getByTestId("room-doorway-suggestion")).toHaveCount(0);
@@ -332,7 +591,6 @@ test.describe("18. Multi-Room Whole Home", () => {
     await page.getByTestId("floor-plan-trace-room-toggle").click();
     await page.getByTestId("floor-plan-trace-opening-toggle").click();
     await expect(page.getByText("Opening points: 0/2")).toBeVisible();
-    await expect(page.getByTestId("floor-plan-trace-opening-kind")).toHaveValue("door");
     await page.getByTestId("floor-plan-trace-opening-kind").selectOption("window");
     await expect(page.getByTestId("floor-plan-trace-opening-kind")).toHaveValue("window");
     await page.getByTestId("floor-plan-trace-opening-toggle").click();

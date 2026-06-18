@@ -1,3 +1,4 @@
+import type { FloorPlanDrawRoomMode } from "@/lib/floor-plan-types";
 import type { RoomPlanShape, RoomSnapshot, RoomType } from "@/lib/room-types";
 
 export const ROOM_DIMENSION_DEFAULTS = {
@@ -37,6 +38,269 @@ export type HouseRoomTemplateId =
   | "kitchen"
   | "bathroom"
   | "dining";
+
+export type HousePlanTemplateId =
+  | "studio"
+  | "one_bedroom"
+  | "living_dining"
+  | "compact_two_bed"
+  | "three_room_flat";
+
+export type HousePlanTemplateRoom = {
+  id: string;
+  name: string;
+  roomType: RoomType;
+  shape: RoomPlanShape;
+  width: number;
+  depth: number;
+  x: number;
+  z: number;
+};
+
+export type HousePlanTemplate = {
+  id: HousePlanTemplateId;
+  label: string;
+  summary: string;
+  rooms: HousePlanTemplateRoom[];
+};
+
+export const HOUSE_PLAN_TEMPLATES: HousePlanTemplate[] = [
+  {
+    id: "studio",
+    label: "Studio starter",
+    summary: "Living, kitchen, and bathroom",
+    rooms: [
+      {
+        id: "living",
+        name: "Living Room",
+        roomType: "living",
+        shape: "rectangle",
+        width: 5.6,
+        depth: 4,
+        x: 0,
+        z: 0,
+      },
+      {
+        id: "kitchen",
+        name: "Kitchen",
+        roomType: "kitchen",
+        shape: "rectangle",
+        width: 3,
+        depth: 4,
+        x: 4.3,
+        z: 0,
+      },
+      {
+        id: "bathroom",
+        name: "Bathroom",
+        roomType: "toilet",
+        shape: "rectangle",
+        width: 2.4,
+        depth: 2.2,
+        x: 7,
+        z: -0.9,
+      },
+    ],
+  },
+  {
+    id: "one_bedroom",
+    label: "1-bedroom home",
+    summary: "Living, kitchen, bedroom, bath",
+    rooms: [
+      {
+        id: "living",
+        name: "Living Room",
+        roomType: "living",
+        shape: "rectangle",
+        width: 5.2,
+        depth: 4,
+        x: 0,
+        z: 0,
+      },
+      {
+        id: "kitchen",
+        name: "Kitchen",
+        roomType: "kitchen",
+        shape: "rectangle",
+        width: 3,
+        depth: 4,
+        x: 4.1,
+        z: 0,
+      },
+      {
+        id: "bedroom",
+        name: "Bedroom",
+        roomType: "bedroom",
+        shape: "rectangle",
+        width: 4,
+        depth: 3.6,
+        x: 0,
+        z: -3.8,
+      },
+      {
+        id: "bathroom",
+        name: "Bathroom",
+        roomType: "toilet",
+        shape: "rectangle",
+        width: 2.2,
+        depth: 2.2,
+        x: 4.5,
+        z: -3.1,
+      },
+    ],
+  },
+  {
+    id: "living_dining",
+    label: "Living + dining",
+    summary: "Open living, dining, and kitchen run",
+    rooms: [
+      {
+        id: "living",
+        name: "Living Room",
+        roomType: "living",
+        shape: "rectangle",
+        width: 5.6,
+        depth: 4.2,
+        x: 0,
+        z: 0,
+      },
+      {
+        id: "dining",
+        name: "Dining Room",
+        roomType: "dining",
+        shape: "rectangle",
+        width: 3.6,
+        depth: 4.2,
+        x: 4.6,
+        z: 0,
+      },
+      {
+        id: "kitchen",
+        name: "Kitchen",
+        roomType: "kitchen",
+        shape: "rectangle",
+        width: 3.2,
+        depth: 4.2,
+        x: 8,
+        z: 0,
+      },
+    ],
+  },
+  {
+    id: "compact_two_bed",
+    label: "Compact 2-bed",
+    summary: "Living, kitchen, two bedrooms, bath",
+    rooms: [
+      {
+        id: "living",
+        name: "Living Room",
+        roomType: "living",
+        shape: "rectangle",
+        width: 5.2,
+        depth: 4,
+        x: 0,
+        z: 0,
+      },
+      {
+        id: "kitchen",
+        name: "Kitchen",
+        roomType: "kitchen",
+        shape: "rectangle",
+        width: 3.2,
+        depth: 4,
+        x: 4.2,
+        z: 0,
+      },
+      {
+        id: "bedroom",
+        name: "Bedroom",
+        roomType: "bedroom",
+        shape: "rectangle",
+        width: 4,
+        depth: 3.4,
+        x: -0.6,
+        z: -3.7,
+      },
+      {
+        id: "bedroom_2",
+        name: "Bedroom 2",
+        roomType: "bedroom",
+        shape: "rectangle",
+        width: 3.2,
+        depth: 3.4,
+        x: 3,
+        z: -3.7,
+      },
+      {
+        id: "bathroom",
+        name: "Bathroom",
+        roomType: "toilet",
+        shape: "rectangle",
+        width: 2.2,
+        depth: 2.2,
+        x: 5.7,
+        z: -3.1,
+      },
+    ],
+  },
+  {
+    id: "three_room_flat",
+    label: "3-room flat",
+    summary: "Living, kitchen, two bedrooms, bath",
+    rooms: [
+      {
+        id: "living",
+        name: "Living Room",
+        roomType: "living",
+        shape: "rectangle",
+        width: 5.6,
+        depth: 4.2,
+        x: 0,
+        z: 0,
+      },
+      {
+        id: "kitchen_dining",
+        name: "Kitchen / Dining",
+        roomType: "kitchen",
+        shape: "rectangle",
+        width: 5.6,
+        depth: 3,
+        x: 0,
+        z: 3.6,
+      },
+      {
+        id: "bedroom",
+        name: "Bedroom",
+        roomType: "bedroom",
+        shape: "rectangle",
+        width: 4,
+        depth: 3.6,
+        x: -0.8,
+        z: -3.9,
+      },
+      {
+        id: "bedroom_2",
+        name: "Bedroom 2",
+        roomType: "bedroom",
+        shape: "rectangle",
+        width: 3.4,
+        depth: 3.6,
+        x: 2.9,
+        z: -3.9,
+      },
+      {
+        id: "bathroom",
+        name: "Bathroom",
+        roomType: "toilet",
+        shape: "rectangle",
+        width: 2.2,
+        depth: 2.2,
+        x: 3.9,
+        z: -1,
+      },
+    ],
+  },
+];
 
 export const HOUSE_ROOM_TEMPLATES: Array<{
   id: HouseRoomTemplateId;
@@ -162,6 +426,68 @@ export type HouseRoomConnectionChecklistItem = {
   doorwaySuggestion?: HouseRoomDoorwaySuggestion;
 };
 
+export type FloorPlanDrawCancelDecision = {
+  shouldHandle: boolean;
+  clearRoomPoints: boolean;
+  clearRoomPreview: boolean;
+  exitRoomDrawMode: boolean;
+};
+
+export type FloorPlanOpeningCancelDecision = {
+  shouldHandle: boolean;
+  clearOpeningPoints: boolean;
+  exitOpeningMode: boolean;
+};
+
+export function resolveFloorPlanDrawCancelDecision({
+  traceRoomMode,
+  pointCount,
+}: {
+  traceRoomMode: boolean;
+  drawMode: FloorPlanDrawRoomMode;
+  pointCount: number;
+}): FloorPlanDrawCancelDecision {
+  if (!traceRoomMode) {
+    return {
+      shouldHandle: false,
+      clearRoomPoints: false,
+      clearRoomPreview: false,
+      exitRoomDrawMode: false,
+    };
+  }
+
+  const hasActiveDraw = pointCount > 0;
+  return {
+    shouldHandle: true,
+    clearRoomPoints: true,
+    clearRoomPreview: true,
+    exitRoomDrawMode: !hasActiveDraw,
+  };
+}
+
+export function resolveFloorPlanOpeningCancelDecision({
+  traceOpeningMode,
+  pointCount,
+}: {
+  traceOpeningMode: boolean;
+  pointCount: number;
+}): FloorPlanOpeningCancelDecision {
+  if (!traceOpeningMode && pointCount === 0) {
+    return {
+      shouldHandle: false,
+      clearOpeningPoints: false,
+      exitOpeningMode: false,
+    };
+  }
+
+  const hasActiveTrace = pointCount > 0;
+  return {
+    shouldHandle: true,
+    clearOpeningPoints: true,
+    exitOpeningMode: !hasActiveTrace,
+  };
+}
+
 export function clampRoomDimension(value: number): number {
   return Math.max(
     ROOM_DIMENSION_DEFAULTS.min,
@@ -275,6 +601,16 @@ function getHouseRoomBounds(
   };
 }
 
+function getHouseRoomOverlapArea(
+  first: { left: number; right: number; top: number; bottom: number },
+  second: { left: number; right: number; top: number; bottom: number }
+): number {
+  const overlapWidth = Math.min(first.right, second.right) - Math.max(first.left, second.left);
+  const overlapDepth = Math.min(first.bottom, second.bottom) - Math.max(first.top, second.top);
+  if (overlapWidth <= 0 || overlapDepth <= 0) return 0;
+  return overlapWidth * overlapDepth;
+}
+
 export function doesHouseRoomOverlap(
   roomId: string,
   x: number,
@@ -299,6 +635,52 @@ export function doesHouseRoomOverlap(
   });
 }
 
+export function shouldReplaceStarterRoomWithDrawnRoom({
+  activeRoom,
+  rooms,
+  x,
+  z,
+  w,
+  d,
+  tolerance = 0.01,
+  minCandidateOverlapRatio = 0.55,
+}: {
+  activeRoom: RoomSnapshot | null | undefined;
+  rooms: HousePlanRoom2D[];
+  x: number;
+  z: number;
+  w: number;
+  d: number;
+  tolerance?: number;
+  minCandidateOverlapRatio?: number;
+}): boolean {
+  if (!activeRoom || rooms.length !== 1) return false;
+  if ((activeRoom.items?.length ?? 0) > 0 || (activeRoom.zones?.length ?? 0) > 0) return false;
+
+  const activePlanRoom = rooms.find((room) => room.id === activeRoom.id);
+  if (!activePlanRoom) return false;
+
+  const candidate = getHouseRoomBounds(x, z, w, d);
+  const starter = getHouseRoomBounds(
+    activePlanRoom.x,
+    activePlanRoom.z,
+    activePlanRoom.w,
+    activePlanRoom.d
+  );
+  const candidateCenterInsideStarter =
+    x > starter.left + tolerance &&
+    x < starter.right - tolerance &&
+    z > starter.top + tolerance &&
+    z < starter.bottom - tolerance;
+  if (!candidateCenterInsideStarter) return false;
+
+  const overlapArea = getHouseRoomOverlapArea(candidate, starter);
+  if (overlapArea <= 0) return false;
+
+  const candidateArea = Math.max(w * d, tolerance);
+  return overlapArea / candidateArea >= minCandidateOverlapRatio;
+}
+
 export function snapHouseRoomMove(
   roomId: string,
   x: number,
@@ -311,29 +693,66 @@ export function snapHouseRoomMove(
 
   let nextX = x;
   let nextZ = z;
+  const alignmentSnapDistance = Math.max(snapDistance * 2.5, 0.45);
 
   for (const other of rooms) {
     if (other.id === roomId) continue;
 
-    const movingLeft = nextX - moving.w / 2;
-    const movingRight = nextX + moving.w / 2;
-    const movingTop = nextZ - moving.d / 2;
-    const movingBottom = nextZ + moving.d / 2;
-    const otherLeft = other.x - other.w / 2;
-    const otherRight = other.x + other.w / 2;
-    const otherTop = other.z - other.d / 2;
-    const otherBottom = other.z + other.d / 2;
+    const movingBounds = getHouseRoomBounds(nextX, nextZ, moving.w, moving.d);
+    const otherBounds = getHouseRoomBounds(other.x, other.z, other.w, other.d);
 
-    if (Math.abs(movingLeft - otherRight) < snapDistance) {
-      nextX = otherRight + moving.w / 2;
-    } else if (Math.abs(movingRight - otherLeft) < snapDistance) {
-      nextX = otherLeft - moving.w / 2;
+    const alignDepth = () => {
+      const candidates = [
+        {
+          distance: Math.abs(movingBounds.top - otherBounds.top),
+          z: otherBounds.top + moving.d / 2,
+        },
+        {
+          distance: Math.abs(movingBounds.bottom - otherBounds.bottom),
+          z: otherBounds.bottom - moving.d / 2,
+        },
+        {
+          distance: Math.abs(nextZ - other.z),
+          z: other.z,
+        },
+      ].filter((candidate) => candidate.distance < alignmentSnapDistance);
+      const best = candidates.sort((first, second) => first.distance - second.distance)[0];
+      if (best) nextZ = best.z;
+    };
+
+    const alignWidth = () => {
+      const candidates = [
+        {
+          distance: Math.abs(movingBounds.left - otherBounds.left),
+          x: otherBounds.left + moving.w / 2,
+        },
+        {
+          distance: Math.abs(movingBounds.right - otherBounds.right),
+          x: otherBounds.right - moving.w / 2,
+        },
+        {
+          distance: Math.abs(nextX - other.x),
+          x: other.x,
+        },
+      ].filter((candidate) => candidate.distance < alignmentSnapDistance);
+      const best = candidates.sort((first, second) => first.distance - second.distance)[0];
+      if (best) nextX = best.x;
+    };
+
+    if (Math.abs(movingBounds.left - otherBounds.right) < snapDistance) {
+      nextX = otherBounds.right + moving.w / 2;
+      alignDepth();
+    } else if (Math.abs(movingBounds.right - otherBounds.left) < snapDistance) {
+      nextX = otherBounds.left - moving.w / 2;
+      alignDepth();
     }
 
-    if (Math.abs(movingTop - otherBottom) < snapDistance) {
-      nextZ = otherBottom + moving.d / 2;
-    } else if (Math.abs(movingBottom - otherTop) < snapDistance) {
-      nextZ = otherTop - moving.d / 2;
+    if (Math.abs(movingBounds.top - otherBounds.bottom) < snapDistance) {
+      nextZ = otherBounds.bottom + moving.d / 2;
+      alignWidth();
+    } else if (Math.abs(movingBounds.bottom - otherBounds.top) < snapDistance) {
+      nextZ = otherBounds.top - moving.d / 2;
+      alignWidth();
     }
   }
 

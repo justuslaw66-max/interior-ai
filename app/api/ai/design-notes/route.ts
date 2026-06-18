@@ -286,7 +286,6 @@ export async function POST(req: Request) {
     }
 
     const result = JSON.parse(textContent) as unknown;
-    console.log("Successfully parsed AI response");
 
     // Store in cache for future requests with same design hash
     try {
@@ -299,7 +298,9 @@ export async function POST(req: Request) {
           resultJson: toInputJson(result),
         },
       });
-      console.log("Cached AI result for design:", design.id);
+      if (config.logLevel === "debug") {
+        console.log("Cached AI design-notes result:", { designId: design.id });
+      }
     } catch (cacheErr) {
       // Log but don't fail if cache write fails
       console.warn("Failed to cache AI result:", getErrorMessage(cacheErr));
