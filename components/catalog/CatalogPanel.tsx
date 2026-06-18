@@ -49,6 +49,7 @@ type Props = {
   onAddToRoom: (productId: string, variantId?: string) => void;
   title?: string;
   subtitle?: string;
+  activeRoomName?: string;
   selectedCategory?: CatalogTopCategory;
   onSelectedCategoryChange?: (category: CatalogTopCategory) => void;
 };
@@ -77,6 +78,7 @@ export default function CatalogPanel({
   onAddToRoom,
   title = "Catalog",
   subtitle,
+  activeRoomName,
   selectedCategory: controlledSelectedCategory,
   onSelectedCategoryChange,
 }: Props) {
@@ -371,6 +373,7 @@ export default function CatalogPanel({
         open={Boolean(selectedId)}
         detail={selectedDetail}
         activeFinishId={activeFinishId}
+        activeRoomName={activeRoomName}
         relatedSections={relatedSections}
         isCompared={selectedId ? compareIds.includes(selectedId) : false}
         onClose={() => setSelectedId(null)}

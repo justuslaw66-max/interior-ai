@@ -20,8 +20,22 @@ async function openFurnishPanel(page: Page): Promise<void> {
   if (await searchInput.isVisible().catch(() => false)) return;
 
   const furnishButton = page.locator('[data-testid="editor-workflow-furnish"]');
-  if ((await furnishButton.count()) === 0) return;
-  await furnishButton.first().click();
+  if ((await furnishButton.count()) > 0) {
+    await furnishButton.first().click();
+  }
+
+  if (await searchInput.isVisible().catch(() => false)) return;
+
+  const fullCatalog = page.locator('[data-testid="furnish-full-catalog"]');
+  if ((await fullCatalog.count()) === 0) return;
+
+  const isOpen = await fullCatalog
+    .first()
+    .evaluate((node) => (node as HTMLDetailsElement).open)
+    .catch(() => true);
+  if (!isOpen) {
+    await page.locator('[data-testid="furnish-full-catalog-toggle"]').first().click();
+  }
 }
 
 export function getSelectedItemPanel(page: Page): Locator {
