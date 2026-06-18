@@ -127,7 +127,7 @@ type RoomRenderer2DProps = {
   rooms?: HouseRoom2D[];
   activeRoomId?: string | null;
   onSelectRoom?: (roomId: string) => void;
-  onMoveRoom?: (roomId: string, x: number, z: number) => void;
+  onMoveRoom?: (roomId: string, x: number, z: number, options?: { snap?: boolean }) => void;
   onResizeRoom?: (roomId: string, next: { x: number; z: number; w: number; d: number }) => void;
   interactive?: boolean;
   selectedOverlayId?: string | null;
@@ -983,7 +983,7 @@ export default function RoomRenderer2D({
     | { kind: "opening"; id: string }
     | { kind: "fixed"; id: string; width: number; depth: number }
     | { kind: "annotation"; id: string }
-    | { kind: "room"; id: string; grabOffsetX: number; grabOffsetZ: number }
+    | { kind: "room"; id: string; grabOffsetX: number; grabOffsetZ: number; snap: boolean }
   >(null);
   const roomDrawDragStartRef = useRef<FloorPlanPoint | null>(null);
   const roomDrawLatestPointRef = useRef<FloorPlanPoint | null>(null);
@@ -1554,6 +1554,12 @@ export default function RoomRenderer2D({
     }
   };
 
+  const stopNativeRoomDragEvent = (event: ThreeEvent<PointerEvent>) => {
+    event.stopPropagation();
+    event.nativeEvent.preventDefault();
+    event.nativeEvent.stopPropagation();
+  };
+
   const getOpeningRoom = (opening: Opening2D) =>
     opening.roomId ? rooms.find((room) => room.id === opening.roomId) : undefined;
 
@@ -1863,13 +1869,14 @@ export default function RoomRenderer2D({
                     return;
                   }
                   if (!canEditPlan || !onMoveRoom) return;
-                  event.stopPropagation();
+                  stopNativeRoomDragEvent(event);
                   onSelectRoom?.(room.id);
                   dragTargetRef.current = {
                     kind: "room",
                     id: room.id,
                     grabOffsetX: event.point.x - room.x,
                     grabOffsetZ: event.point.z - room.z,
+                    snap: !event.nativeEvent.shiftKey,
                   };
                   setRoomSnapPreview(null);
                   setPointerCaptureIfSupported(event);
@@ -1885,11 +1892,13 @@ export default function RoomRenderer2D({
                   }
                   const drag = dragTargetRef.current;
                   if (!drag || drag.kind !== "room" || drag.id !== room.id) return;
-                  event.stopPropagation();
+                  stopNativeRoomDragEvent(event);
                   const nextX = event.point.x - drag.grabOffsetX;
                   const nextZ = event.point.z - drag.grabOffsetZ;
-                  setRoomSnapPreview(resolveHouseRoomSnapPreview(room.id, nextX, nextZ, rooms));
-                  onMoveRoom?.(room.id, nextX, nextZ);
+                  setRoomSnapPreview(
+                    drag.snap ? resolveHouseRoomSnapPreview(room.id, nextX, nextZ, rooms) : null
+                  );
+                  onMoveRoom?.(room.id, nextX, nextZ, { snap: drag.snap });
                 }}
                 onPointerUp={(event) => {
                   if (canTraceOpeningOnGrid) {
@@ -1905,6 +1914,7 @@ export default function RoomRenderer2D({
                     dragTargetRef.current = null;
                   }
                   setRoomSnapPreview(null);
+                  stopNativeRoomDragEvent(event);
                   releasePointerCaptureIfSupported(event);
                 }}
                 onPointerOut={handleOpeningTracePointerOut}

@@ -253,6 +253,48 @@ test.describe("18. Multi-Room Whole Home", () => {
     await expect(page.getByTestId("room-connection-checklist")).toBeVisible();
   });
 
+  test("shift-dragging a 2D room moves freely without losing selection", async ({ page }) => {
+    await page.goto("/design");
+    await page.waitForLoadState("domcontentloaded");
+
+    await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByTestId("plan-start-template").click();
+    await page.getByTestId("add-room-template-bedroom").click();
+
+    await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("2 rooms");
+    const activeRoomLabel = page.locator('[data-testid="house-room-2d-label"][data-active="true"]');
+    await expect(activeRoomLabel).toContainText("Bedroom");
+
+    const before = await activeRoomLabel.boundingBox();
+    expect(before).not.toBeNull();
+    if (!before) {
+      throw new Error("Active room label was not measurable before shift-dragging");
+    }
+
+    const dragStart = {
+      x: before.x + before.width / 2 + 100,
+      y: before.y + before.height / 2,
+    };
+
+    await page.keyboard.down("Shift");
+    await page.mouse.move(dragStart.x, dragStart.y);
+    await page.mouse.down();
+    await page.mouse.move(dragStart.x + 96, dragStart.y + 36, { steps: 10 });
+    await page.mouse.up();
+    await page.keyboard.up("Shift");
+    await page.waitForTimeout(250);
+
+    await expect(activeRoomLabel).toContainText("Bedroom");
+    await expect(page.getByTestId("room-plan-status-room-name")).toContainText("Bedroom");
+    const after = await activeRoomLabel.boundingBox();
+    expect(after).not.toBeNull();
+    if (!after) {
+      throw new Error("Active room label was not measurable after shift-dragging");
+    }
+    expect(after.x).toBeGreaterThan(before.x + 24);
+  });
+
   test("consumer workflow tabs switch panels reliably", async ({ page }) => {
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");

@@ -236,16 +236,17 @@ export function useDesignPageHousePlanState({
   );
 
   const handleMoveRoom2D = useCallback(
-    (roomId: string, x: number, z: number) => {
-      const snapped = snapHouseRoomMove(roomId, x, z, housePlan2D.rooms);
-      if (!snapped) return;
+    (roomId: string, x: number, z: number, options?: { snap?: boolean }) => {
+      const nextRoomPosition =
+        options?.snap === false ? { x, z } : snapHouseRoomMove(roomId, x, z, housePlan2D.rooms);
+      if (!nextRoomPosition) return;
 
       setDesignSnapshot((prev) => {
         const target = prev.rooms.find((room) => room.id === roomId);
         if (!target) return prev;
         const nextPosition = {
-          x: roundPlanCoordinate(snapped.x),
-          z: roundPlanCoordinate(snapped.z),
+          x: roundPlanCoordinate(nextRoomPosition.x),
+          z: roundPlanCoordinate(nextRoomPosition.z),
         };
         const currentPosition = target.planPosition ?? { x: 0, z: 0 };
         if (
