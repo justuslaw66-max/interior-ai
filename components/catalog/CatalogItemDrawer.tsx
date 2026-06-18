@@ -78,6 +78,9 @@ export default function CatalogItemDrawer({
         />
 
         <div className="mt-4">
+          <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">
+            Product details
+          </div>
           <div className="line-clamp-2 text-lg font-semibold leading-snug text-neutral-950">
             {detail.title}
           </div>
@@ -200,7 +203,7 @@ export default function CatalogItemDrawer({
 
       <div className="border-t border-neutral-100 bg-white px-4 py-3">
         <div className="mb-2 rounded-xl bg-neutral-50 px-3 py-2 text-xs text-neutral-600">
-          <span className="font-semibold text-neutral-900">Selected:</span> {selectedFinishLabel} ·{" "}
+          <span className="font-semibold text-neutral-900">Ready to add:</span> {selectedFinishLabel} ·{" "}
           {dimsCmLabel} · {activeRoomLabel}
         </div>
         <button

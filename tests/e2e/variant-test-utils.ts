@@ -16,7 +16,7 @@ export const DEFAULT_CATEGORY_TABS: RegExp[] = [
 ];
 
 async function openFurnishPanel(page: Page): Promise<void> {
-  const searchInput = page.getByPlaceholder("Search title, brand, style, finish, SKU...");
+  const searchInput = getCatalogSearchInput(page);
   if (await searchInput.isVisible().catch(() => false)) return;
 
   const furnishButton = page.locator('[data-testid="editor-workflow-furnish"]');
@@ -46,9 +46,16 @@ export function getSelectedItemPanel(page: Page): Locator {
     .first();
 }
 
+function getCatalogSearchInput(page: Page): Locator {
+  return page
+    .locator('[data-testid="catalog-search-input"]')
+    .or(page.getByPlaceholder("Search title, brand, style, finish, SKU..."))
+    .first();
+}
+
 export async function waitForCatalogReady(page: Page): Promise<boolean> {
   await openFurnishPanel(page);
-  const searchInput = page.getByPlaceholder("Search title, brand, style, finish, SKU...");
+  const searchInput = getCatalogSearchInput(page);
   const searchVisible = await expect(searchInput)
     .toBeVisible({ timeout: 20000 })
     .then(() => true)
@@ -257,7 +264,7 @@ export async function ensureItemSelectedForVariants(page: Page): Promise<boolean
 }
 
 export async function fillCatalogSearch(page: Page, term: string): Promise<boolean> {
-  let searchInput = page.getByPlaceholder("Search title, brand, style, finish, SKU...");
+  let searchInput = getCatalogSearchInput(page);
   const visible = await expect(searchInput)
     .toBeVisible({ timeout: 20000 })
     .then(() => true)
@@ -270,7 +277,7 @@ export async function fillCatalogSearch(page: Page, term: string): Promise<boole
     await searchInput.press("Backspace");
     await searchInput.pressSequentially(term);
   } catch {
-    searchInput = page.getByPlaceholder("Search title, brand, style, finish, SKU...");
+    searchInput = getCatalogSearchInput(page);
     await searchInput.click().catch(() => null);
     await searchInput.press("Meta+A").catch(() => null);
     await searchInput.press("Backspace").catch(() => null);
