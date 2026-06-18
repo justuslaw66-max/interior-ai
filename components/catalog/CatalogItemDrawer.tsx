@@ -57,9 +57,9 @@ export default function CatalogItemDrawer({
       <div className="flex items-center justify-between border-b border-neutral-100 px-4 py-3">
         <div>
           <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-500">
-            Product details
+            Product preview
           </div>
-          <div className="text-sm font-semibold text-neutral-900">Choose exact variant</div>
+          <div className="text-sm font-semibold text-neutral-900">Review exact variant</div>
         </div>
         <button
           type="button"
@@ -83,6 +83,31 @@ export default function CatalogItemDrawer({
           </div>
           <div className="mt-1 text-xs text-neutral-500">
             {detail.brand ?? "Unknown brand"} • {detail.category}
+          </div>
+        </div>
+
+        <div
+          data-testid="catalog-detail-add-context"
+          className="mt-3 rounded-xl border border-emerald-100 bg-emerald-50/70 p-3"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-700">
+                Adding to {activeRoomLabel}
+              </div>
+              <div
+                data-testid="catalog-detail-selected-variant-summary"
+                className="mt-1 truncate text-sm font-semibold text-neutral-950"
+              >
+                {selectedFinishLabel}
+              </div>
+              <div className="mt-1 text-xs text-neutral-600">
+                {detail.variantLabel} · {dimsCmLabel}
+              </div>
+            </div>
+            <span className="shrink-0 rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-emerald-700 shadow-sm">
+              Variant locked
+            </span>
           </div>
         </div>
 
@@ -110,7 +135,7 @@ export default function CatalogItemDrawer({
               <div>{dimsCmLabel}</div>
             </div>
             <div className="rounded-lg bg-white px-2.5 py-2">
-              <div className="font-semibold text-neutral-900">Adds to</div>
+              <div className="font-semibold text-neutral-900">Add target</div>
               <div className="truncate">{activeRoomLabel}</div>
             </div>
           </div>
@@ -174,13 +199,17 @@ export default function CatalogItemDrawer({
       </div>
 
       <div className="border-t border-neutral-100 bg-white px-4 py-3">
+        <div className="mb-2 rounded-xl bg-neutral-50 px-3 py-2 text-xs text-neutral-600">
+          <span className="font-semibold text-neutral-900">Selected:</span> {selectedFinishLabel} ·{" "}
+          {dimsCmLabel} · {activeRoomLabel}
+        </div>
         <button
           type="button"
           onClick={() => onAdd(detail.id, detail.variantId)}
           data-testid="catalog-detail-add-to-room"
           className="w-full rounded-xl bg-neutral-900 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800"
         >
-          Add selected variant to {activeRoomLabel}
+          Add to {activeRoomLabel}
         </button>
         <div className="mt-2 text-center text-[11px] text-neutral-500">
           Uses this exact variant ID, media, dimensions, and retailer mapping.

@@ -15,6 +15,7 @@ import {
   buildCatalogDetailView,
   collectFilterFacets,
   filterCatalogItems,
+  getTopCategoryLabel,
   mapToTopCategory,
   type CatalogCardView,
   type CatalogDetailView,
@@ -50,6 +51,7 @@ type Props = {
   title?: string;
   subtitle?: string;
   activeRoomName?: string;
+  recommendedCategoryIds?: CatalogTopCategory[];
   selectedCategory?: CatalogTopCategory;
   onSelectedCategoryChange?: (category: CatalogTopCategory) => void;
 };
@@ -79,6 +81,7 @@ export default function CatalogPanel({
   title = "Catalog",
   subtitle,
   activeRoomName,
+  recommendedCategoryIds = [],
   selectedCategory: controlledSelectedCategory,
   onSelectedCategoryChange,
 }: Props) {
@@ -108,6 +111,16 @@ export default function CatalogPanel({
     }
     return counts;
   }, [items]);
+  const activeRoomLabel = activeRoomName?.trim() || "this room";
+  const selectedCategoryLabel = getTopCategoryLabel(selectedCategory);
+  const recommendedCategorySet = useMemo(
+    () => new Set(recommendedCategoryIds),
+    [recommendedCategoryIds]
+  );
+  const visibleRecommendedCategories = useMemo(
+    () => recommendedCategoryIds.filter((category) => (categoryCounts[category] ?? 0) > 0),
+    [categoryCounts, recommendedCategoryIds]
+  );
 
   const effectiveFilters = useMemo<CatalogFilterState>(
     () => ({ ...filters, category: [selectedCategory] }),
@@ -287,8 +300,71 @@ export default function CatalogPanel({
     <div className="relative rounded-xl border border-neutral-200 bg-white p-3">
       <div className="text-sm font-semibold text-neutral-900">{title}</div>
       {subtitle && <div className="mt-1 text-xs text-neutral-500">{subtitle}</div>}
+      <div
+        data-testid="catalog-room-context"
+        className="mt-3 rounded-xl border border-emerald-100 bg-emerald-50/70 p-3"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div
+              data-testid="catalog-active-room-pill"
+              className="text-xs font-semibold uppercase tracking-wide text-emerald-700"
+            >
+              Adding to {activeRoomLabel}
+            </div>
+            <div className="mt-1 text-sm font-semibold text-neutral-950">
+              {selectedCategoryLabel}
+              {recommendedCategorySet.has(selectedCategory) ? (
+                <span className="ml-2 rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+                  Recommended
+                </span>
+              ) : null}
+            </div>
+            <div className="mt-1 text-xs text-neutral-600">
+              Add uses the selected variant media, dimensions, and commerce mapping.
+            </div>
+          </div>
+          <div
+            data-testid="catalog-focused-category-pill"
+            className="shrink-0 rounded-full bg-white px-3 py-1 text-xs font-semibold text-neutral-700 shadow-sm"
+          >
+            {cardViews.length} shown
+          </div>
+        </div>
+        {visibleRecommendedCategories.length > 0 ? (
+          <div className="mt-3 flex flex-wrap gap-2" aria-label={`Recommended categories for ${activeRoomLabel}`}>
+            {visibleRecommendedCategories.map((category) => {
+              const active = category === selectedCategory;
+              return (
+                <button
+                  key={category}
+                  type="button"
+                  data-testid={`catalog-room-recommendation-${category}`}
+                  data-active={active ? "true" : "false"}
+                  onClick={() => handleSelectCategory(category)}
+                  className={[
+                    "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
+                    active
+                      ? "border-emerald-600 bg-emerald-600 text-white"
+                      : "border-emerald-100 bg-white text-neutral-700 hover:border-emerald-300",
+                  ].join(" ")}
+                >
+                  {getTopCategoryLabel(category)}
+                  <span className={active ? "ml-1 text-white/80" : "ml-1 text-neutral-400"}>
+                    {categoryCounts[category] ?? 0}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
+      </div>
       <div className="mt-2">
-        <CatalogSearchInput value={rawSearch} onChange={setRawSearch} />
+        <CatalogSearchInput
+          value={rawSearch}
+          onChange={setRawSearch}
+          placeholder={`Search products for ${activeRoomLabel}...`}
+        />
       </div>
 
       <div className="mt-2">
@@ -365,7 +441,7 @@ export default function CatalogPanel({
 
       {!cardViews.length && (
         <div className="mt-3 rounded-lg border border-dashed border-neutral-300 bg-white px-3 py-6 text-center text-xs text-neutral-500">
-          No items match your current search and filters.
+          No {selectedCategoryLabel.toLowerCase()} items match {activeRoomLabel} with the current search and filters.
         </div>
       )}
 

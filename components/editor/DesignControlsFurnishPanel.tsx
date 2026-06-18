@@ -536,8 +536,9 @@ export default function DesignControlsFurnishPanel({
             canEdit={canEdit}
             onAddToRoom={onAddCatalogItemToRoom}
             activeRoomName={activeRoomName}
-            title="All products"
-            subtitle="Search every verified product, or switch category below."
+            recommendedCategoryIds={recommendedCategories}
+            title={`Add to ${activeRoomName}`}
+            subtitle="Start with room-aware categories, then search every verified product if needed."
             selectedCategory={activeCatalogCategory}
             onSelectedCategoryChange={handleCatalogCategoryChange}
           />

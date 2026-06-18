@@ -318,6 +318,17 @@ test.describe("18. Multi-Room Whole Home", () => {
     await expect(page.getByTestId("advanced-imported-models")).not.toHaveAttribute("open", "");
     await page.getByTestId("furnish-recommended-category-coffee_table").click();
     await expect(page.getByTestId("furnish-full-catalog")).toHaveAttribute("open", "");
+    await expect(page.getByTestId("catalog-room-context")).toBeVisible();
+    await expect(page.getByTestId("catalog-active-room-pill")).toContainText("Adding to Living Room");
+    await expect(page.getByTestId("catalog-room-recommendation-coffee_table")).toHaveAttribute(
+      "data-active",
+      "true"
+    );
+    await expect(page.locator('[data-testid^="catalog-preview-"]').first()).toBeVisible();
+    await page.locator('[data-testid^="catalog-preview-"]').first().click();
+    await expect(page.getByTestId("catalog-detail-add-context")).toContainText("Adding to Living Room");
+    await expect(page.getByTestId("catalog-detail-add-to-room")).toContainText("Add to Living Room");
+    await page.getByRole("button", { name: "Close" }).click();
 
     await page.getByTestId("editor-workflow-shop").click();
     await expect(page.getByTestId("editor-workflow-shop")).toHaveAttribute("data-active", "true");
