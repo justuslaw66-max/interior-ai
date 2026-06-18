@@ -23,7 +23,7 @@ async function openDawsonPreview(page: Page, productId: string, searchTerm: stri
 }
 
 function drawer(page: Page) {
-  return page.locator("aside").first();
+  return page.getByTestId("catalog-item-drawer");
 }
 
 async function clickIfStable(locator: ReturnType<Page["locator"]>, timeout = 5000): Promise<boolean> {
@@ -51,7 +51,7 @@ test.describe("98. Dawson Variant Selector Smoke", () => {
     }
 
     const panel = drawer(page);
-    const dimLabel = panel.getByText(/^Dimensions:/i);
+    const dimLabel = panel.getByTestId("catalog-detail-dimensions");
     const dimsBefore = (await dimLabel.textContent()) ?? "";
     const priceLabel = panel.getByText(/\$\s*\d+/).first();
     const hasPriceLabel = (await priceLabel.count()) > 0;

@@ -53,7 +53,10 @@ export default function CatalogItemDrawer({
       ?.label ?? detail.variantLabel;
 
   return (
-    <aside className="fixed bottom-6 right-4 top-20 z-40 flex w-[25rem] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl">
+    <aside
+      data-testid="catalog-item-drawer"
+      className="fixed bottom-6 right-4 top-20 z-40 flex w-[25rem] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl"
+    >
       <div className="flex items-center justify-between border-b border-neutral-100 px-4 py-3">
         <div>
           <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-500">
@@ -133,7 +136,7 @@ export default function CatalogItemDrawer({
             </div>
           </div>
           <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-neutral-600">
-            <div className="rounded-lg bg-white px-2.5 py-2">
+            <div className="rounded-lg bg-white px-2.5 py-2" data-testid="catalog-detail-dimensions">
               <div className="font-semibold text-neutral-900">Dimensions</div>
               <div>{dimsCmLabel}</div>
             </div>
