@@ -53,7 +53,7 @@ export default function CatalogItemDrawer({
       ?.label ?? detail.variantLabel;
 
   return (
-    <aside className="absolute bottom-6 right-4 top-20 z-30 flex w-[25rem] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl">
+    <aside className="fixed bottom-6 right-4 top-20 z-40 flex w-[25rem] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl">
       <div className="flex items-center justify-between border-b border-neutral-100 px-4 py-3">
         <div>
           <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-500">

@@ -8647,7 +8647,7 @@ function PageContent() {
       {/* Layer 2B: Inspector Panel (visible in ADJUST mode when item selected) */}
       {editorMode === "adjust" && selectedProduct && (
         <div
-          className={`absolute right-4 top-20 z-20 w-[320px] md:w-85 max-h-[calc(100vh-6rem)] overflow-y-auto pr-1 transition-opacity duration-300 ${
+          className={`absolute right-4 top-20 z-40 w-[320px] md:w-85 max-h-[calc(100vh-6rem)] overflow-y-auto pr-1 transition-opacity duration-300 ${
             isClientPreview ? "pointer-events-none opacity-0" : "opacity-100"
           }`}
           aria-hidden={isClientPreview}
