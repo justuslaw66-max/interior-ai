@@ -6,6 +6,14 @@ export type CatalogMediaFallbackSource =
   | "none";
 
 export type CatalogMediaSurface = "catalog_card" | "catalog_detail_gallery";
+export type CatalogMediaPresentationMode = "studio" | "lifestyle" | "transparent" | "swatch";
+
+const CATALOG_MEDIA_PRESENTATION_MODES = new Set<string>([
+  "studio",
+  "lifestyle",
+  "transparent",
+  "swatch",
+]);
 
 export type CatalogMediaPresentationPreset = {
   objectFitClass: "object-cover" | "object-contain";
@@ -62,4 +70,60 @@ export const CATALOG_MEDIA_PRESENTATION_PRESETS: Record<CatalogMediaSurface, Cat
 export function getCatalogMediaImageClass(surface: CatalogMediaSurface): string {
   const preset = CATALOG_MEDIA_PRESENTATION_PRESETS[surface];
   return `h-full w-full ${preset.objectFitClass} ${preset.objectPositionClass} ${preset.imageTransformClass ?? ""}`.trim();
+}
+
+export function normalizeCatalogMediaPresentationMode(
+  value: unknown,
+): CatalogMediaPresentationMode | undefined {
+  const normalized = String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+  return CATALOG_MEDIA_PRESENTATION_MODES.has(normalized)
+    ? (normalized as CatalogMediaPresentationMode)
+    : undefined;
+}
+
+export function inferCatalogMediaPresentationMode({
+  imageUrls,
+  brand,
+  category,
+}: {
+  imageUrls: string[];
+  brand?: string | null;
+  category?: string | null;
+}): CatalogMediaPresentationMode {
+  const urls = imageUrls.map((url) => String(url ?? "").trim()).filter(Boolean);
+  const firstUrl = urls[0] ?? "";
+  const firstLower = firstUrl.toLowerCase();
+  const allLower = urls.join(" ").toLowerCase();
+  const brandLower = String(brand ?? "").toLowerCase();
+  const categoryLower = String(category ?? "").toLowerCase();
+
+  if (/(?:swatch|materials|closeup|close-up|det_\d|det-\d|detail)/i.test(firstLower)) {
+    return "swatch";
+  }
+
+  if (/\.(?:png|webp)(?:$|\?)/i.test(firstLower) || /b_rgb:fff(?:fff)?/i.test(firstLower)) {
+    return "transparent";
+  }
+
+  if (/(?:lifestyle|room|set[_-]?\d|square[_-]?set|styled|scene)/i.test(firstLower)) {
+    return "lifestyle";
+  }
+
+  if (
+    brandLower.includes("castlery") ||
+    firstLower.includes("res.cloudinary.com/castlery/") ||
+    allLower.includes("crusader/variants/")
+  ) {
+    return "studio";
+  }
+
+  if (/(?:sofa|armchair|chair|table|console|bench|ottoman|sideboard)/i.test(categoryLower)) {
+    return "studio";
+  }
+
+  return "studio";
 }

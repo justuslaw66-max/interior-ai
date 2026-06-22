@@ -6,7 +6,7 @@ product_family: "Dawson"
 product_name: "Dawson Swivel Armchair"
 variant: "Standard"
 
-price_usd: 1099
+price_usd: 1039
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -288,9 +288,11 @@ assets:
 
 variants:
   - variant: "Dawson Swivel Armchair / Slub Linen Weave (Navagio), Cream (Beach Linen)"
+    sku: "54000131-NG4001"
     size_label: "114x117"
     upholstery_code: "navagio_beach_linen"
     upholstery_label: "Slub Linen Weave (Navagio), Cream (Beach Linen)"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1665460017/crusader/variants/NG-4001/Beach-Linen_1-1665460015.jpg"
     finish_code: "navagio_beach_linen"
     finish_label: "Beach Linen"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1692591109/crusader/variants/54000131-NG4001/Dawson-Swivel-Armchair-Angle-1692591104.jpg"
@@ -309,9 +311,31 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692591111/crusader/variants/54000131-NG4001/Dawson-Swivel-Armchair-Side-1692591104.jpg"
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692591107/crusader/variants/54000131-NG4001/Dawson-Swivel-Armchair-Back-1692591104.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 1099
+    collection_type: "stocked"
+    price_usd: 1039
     price_band: "mid_premium"
     brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-swivel-armchair?quantity=single&material=beach_linen"
+    purchase_options:
+      - id: "single"
+        label: "Single"
+        quantity: 1
+        sku: "54000131-NG4001"
+        affiliate_url: "https://www.castlery.com/sg/products/dawson-swivel-armchair?quantity=single&material=beach_linen"
+        price_usd: 1039
+        compare_at_price_usd: 1099
+        savings_usd: 60
+        available: true
+      - id: "set_of_2"
+        label: "Set of 2"
+        quantity: 2
+        sku: "PB-001128-NG4001"
+        affiliate_url: "https://www.castlery.com/sg/products/dawson-swivel-armchair?quantity=set_of_2&material=beach_linen"
+        price_usd: 1979
+        compare_at_price_usd: 2198
+        savings_usd: 219
+        image_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1692591465/crusader/variants/PB-001128-NG4001/Dawson-2-Swivel-Armchairs-Beach-Linen-Square-Set_1-1692591462.jpg"
+        available: true
     dimensions: { width_cm: 114, depth_cm: 117, height_cm: 86 }
     seat_capacity: 1
     size_class: "large"
@@ -319,9 +343,11 @@ variants:
     tone: "warm"
     set_compatibility: []
   - variant: "Dawson Swivel Armchair / Slub Linen Weave (Navagio), Medium Grey (Seagull)"
+    sku: "54000131-NG4002"
     size_label: "114x117"
     upholstery_code: "navagio_seagull"
     upholstery_label: "Slub Linen Weave (Navagio), Medium Grey (Seagull)"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1697528966/crusader/variants/NG-4002/Dawson-3-Seater-Sofa-Seagull-Det_4-1697528963.jpg"
     finish_code: "navagio_seagull"
     finish_label: "Seagull"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1697620436/crusader/variants/54000131-NG4002/Dawson-Swivel-Armchair-Seagull-Angle-1697620433.jpg"
@@ -341,37 +367,36 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1697620436/crusader/variants/54000131-NG4002/Dawson-Swivel-Armchair-Seagull-Side-1697620433.jpg"
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1697620436/crusader/variants/54000131-NG4002/Dawson-Swivel-Armchair-Seagull-Back-1697620433.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 1099
+    collection_type: "stocked"
+    price_usd: 1039
     price_band: "mid_premium"
     brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-swivel-armchair?quantity=single&material=seagull"
+    purchase_options:
+      - id: "single"
+        label: "Single"
+        quantity: 1
+        sku: "54000131-NG4002"
+        affiliate_url: "https://www.castlery.com/sg/products/dawson-swivel-armchair?quantity=single&material=seagull"
+        price_usd: 1039
+        compare_at_price_usd: 1099
+        savings_usd: 60
+        available: true
+      - id: "set_of_2"
+        label: "Set of 2"
+        quantity: 2
+        sku: "PB-001128-NG4002"
+        affiliate_url: "https://www.castlery.com/sg/products/dawson-swivel-armchair?quantity=set_of_2&material=seagull"
+        price_usd: 1979
+        compare_at_price_usd: 2198
+        savings_usd: 219
+        image_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1697621458/crusader/variants/PB-001128-NG4002/Dawson-Armchair-Set-of-2-Seagull-Square-Set_2-1697621455.jpg"
+        available: true
     dimensions: { width_cm: 114, depth_cm: 117, height_cm: 86 }
     seat_capacity: 1
     size_class: "large"
     color_family: "grey"
     tone: "cool"
-    set_compatibility: []
-
-  - variant: "Dawson Swivel Armchair / Cocoa (Leather)"
-    size_label: "114x117"
-    upholstery_code: "cocoa_leather"
-    upholstery_label: "Cocoa (Leather)"
-    finish_code: "cocoa_leather"
-    finish_label: "Cocoa (Leather)"
-    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1716965158/crusader/variants/54000131-LE4020/Dawson-Leather-Swivel-Armchair-Cocoa-Angle-1716965156.jpg"
-    gallery_images:
-      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1722581255/crusader/variants/54000131-LE4020/Dawson-Leather-Swivel-Armchair-Square-Set_1-1722581252.jpg"
-      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1722581324/crusader/variants/54000131-LE4020/Dawson-Leather-Sofa-Square-Det_1-1722581321.jpg"
-      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1717749051/crusader/variants/54000131-LE4020/Sofa-Armrest-Table-Natural-Square-Set_4-1717749048.jpg"
-      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1716965158/crusader/variants/54000131-LE4020/Dawson-Leather-Swivel-Armchair-Cocoa-Angle-1716965156.jpg"
-    swatch_group: "upholstery_option"
-    price_usd: 1709
-    price_band: "mid_premium"
-    brand_tier: "premium_mid"
-    dimensions: { width_cm: 114, depth_cm: 117, height_cm: 86 }
-    seat_capacity: 1
-    size_class: "large"
-    color_family: "brown"
-    tone: "warm"
     set_compatibility: []
 
 ai_flags:

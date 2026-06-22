@@ -43,7 +43,7 @@ export default function CatalogItemFinishPicker({ finishOptions, activeFinishId,
       items: FinishOption[];
     }
   ) => (
-    <div key={`${collectionKey}-${materialGroup.materialType}`} className="mt-3 rounded-xl border border-neutral-100 bg-white p-3">
+    <div key={`${collectionKey}-${materialGroup.materialType}`} className="mt-3 rounded-2xl border border-neutral-100 bg-white p-3">
       <div className="flex items-center justify-between gap-2">
         <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-neutral-500">
           {getMaterialLabel(materialGroup.materialType)}
@@ -52,21 +52,22 @@ export default function CatalogItemFinishPicker({ finishOptions, activeFinishId,
           {materialGroup.items.length} option{materialGroup.items.length === 1 ? "" : "s"}
         </div>
       </div>
-      <div className="mt-2 grid grid-cols-5 gap-2">
+      <div className="mt-3 grid grid-cols-4 gap-2.5">
         {materialGroup.items.map((finish, index) => {
           const active = finish.id === activeFinishId;
           return (
             <button
               key={`${collectionKey}-${materialGroup.materialType}-${finish.id}-${index}`}
+              type="button"
               onClick={() => onSetFinish(finish.id, finish)}
               data-testid={`catalog-finish-option-${finish.id}`}
               title={finish.label}
               aria-label={finish.label}
               aria-pressed={active}
-              className={`group relative h-14.5 w-14.5 overflow-hidden rounded-lg border transition ${
+              className={`group relative h-16 w-full overflow-hidden rounded-xl border shadow-sm transition ${
                 active
                   ? "border-neutral-950 ring-2 ring-neutral-950/20"
-                  : "border-neutral-200 hover:border-neutral-400"
+                  : "border-neutral-200 hover:border-neutral-400 hover:shadow"
               }`}
               style={{
                 backgroundColor: finish.swatchHex ?? "#d1d5db",
@@ -78,7 +79,7 @@ export default function CatalogItemFinishPicker({ finishOptions, activeFinishId,
               <span className="sr-only">{finish.label}</span>
               {active ? (
                 <>
-                  <span className="pointer-events-none absolute inset-0 rounded-lg shadow-[inset_0_0_0_1px_rgba(255,255,255,0.75)]" />
+                  <span className="pointer-events-none absolute inset-0 rounded-xl shadow-[inset_0_0_0_1px_rgba(255,255,255,0.75)]" />
                   <span className="pointer-events-none absolute bottom-0 left-0 right-0 bg-neutral-950/85 px-1 py-0.5 text-center text-[9px] font-semibold uppercase tracking-wide text-white">
                     Selected
                   </span>

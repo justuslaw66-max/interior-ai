@@ -1,5 +1,9 @@
 import { test, expect } from "./fixtures";
-import { getSelectedItemPanel, openCatalogPreview } from "./variant-test-utils";
+import {
+  addCatalogDrawerItemToRoom,
+  getSelectedItemPanel,
+  openCatalogPreview,
+} from "./variant-test-utils";
 
 const HUGG_RECTANGULAR_BASALT_CLOSED_ID =
   "coffee-real-castlery-hugg-nesting-rectangular-performance-basalt-closed";
@@ -20,7 +24,7 @@ test.describe("103. Hugg Model Quick Links", () => {
     await page.getByRole("button", { name: /^Black$/i }).first().click();
     await expect(page.getByTestId("catalog-detail-variant-label")).toContainText(/Black/i);
 
-    await page.getByTestId("catalog-detail-add-to-room").click();
+    await addCatalogDrawerItemToRoom(page);
 
     const selectedItemPanel = getSelectedItemPanel(page);
     await expect(selectedItemPanel.getByText("Selected Item")).toBeVisible({ timeout: 10000 });

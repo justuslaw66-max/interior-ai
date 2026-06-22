@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures";
-import { openCatalogPreview } from "./variant-test-utils";
+import { addCatalogDrawerItemToRoom, openCatalogPreview } from "./variant-test-utils";
 
 const ARCADIA_COFFEE_TABLE_ID = "coffee-real-castlery-arcadia-coffee-table";
 
@@ -25,7 +25,7 @@ test.describe("104. Arcadia Coffee Table Catalog Smoke", () => {
       /castlery\.com\/sg\/products\/arcadia-coffee-table/i,
     );
 
-    await page.getByTestId("catalog-detail-add-to-room").click();
+    await addCatalogDrawerItemToRoom(page);
 
     await expect(page.getByText("Selected Item")).toBeVisible({ timeout: 10000 });
     await expect(page.getByTestId("selected-single-finish-label")).toContainText(/Caramel Oak/i);

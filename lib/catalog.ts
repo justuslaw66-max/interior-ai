@@ -5,6 +5,7 @@ import {
   type StyleTag,
   type ProductCategory as NormalizedCategory,
 } from "./catalog-schema";
+import type { CatalogMediaPresentationMode } from "./catalog/media-policy";
 import { getModelAsset } from "./model-assets";
 
 export type Variant = {
@@ -13,10 +14,14 @@ export type Variant = {
   colorHex: string;
   finishCode?: string;
   finishLabel?: string;
+  materialType?: "Fabric" | "Leather" | "Wood";
   swatchGroup?: string;
   swatchHex?: string;
+  swatchTextureUrl?: string;
+  collectionType?: string;
   thumbnailUrl?: string;
   galleryImages?: string[];
+  mediaPresentationMode?: CatalogMediaPresentationMode;
   priceDelta?: number;
   shopifyVariantId?: string;
 };
@@ -42,6 +47,7 @@ export type Product = {
   dimensions: { w: number; d: number; h: number };
   styleTags: string[];
   galleryImages?: string[];
+  mediaPresentationMode?: CatalogMediaPresentationMode;
   variants: Variant[];
   defaultVariantId: string;
   purchaseMode: "shopify" | "affiliate";
@@ -86,6 +92,8 @@ const LEGACY_THUMB_URL_OVERRIDES: Record<string, string> = {
   "sofa-real-castlery-jaron-chaise-sectional-wide-arm": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1737599336/crusader/variants/AS-000676-LE4023/Jaron-Leather-Chaise-Sectional-Wide-Arm-Sofa-Marche-Cocoa_-Angle-1737599333.jpg",
   "sofa-real-castlery-jaron-l-shaped-sectional": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1737599830/crusader/variants/AS-000681-LE4023/Jaron-Leather-L-Shape-Sectional-Slim-Arm-Sofa-Marche-Cocoa_-Angle-1737599828.jpg",
   "sofa-real-castlery-jaron-l-shaped-sectional-wide-arm": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1737599772/crusader/variants/AS-000682-LE4023/Jaron-Leather-L-Shape-Sectional-Wide-Arm-Sofa-Marche-Cocoa_-Angle-1737599770.jpg",
+  "armchair-real-castlery-jaron-recliner-armchair": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1000/v1760147965/crusader/variants/AS-000732-LE4021/Jaron-Leather-Slim-Arm-Recliner-Armchair-Marche-Ivory-Angle_-1760147964.png",
+  "armchair-real-castlery-jaron-recliner-armchair-wide-arm": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1000/v1760147910/crusader/variants/AS-000733-LE4021/Jaron-Leather-Wide-Arm-Recliner-Armchair-Marche-Ivory-Angle_-1760147910.png",
   "sofa-real-castlery-madison-2s": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1745287810/crusader/variants/50441008-AM4001/Madison-2-Seater-Sofa-Amalfi-Bisque-Front-1745287807.png",
   "sofa-real-castlery-madison-3s": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1646386187/crusader/variants/50440750-AM4001/Madison-3-Seater-Sofa-Bisque-Front-SG.png",
   "sofa-real-castlery-madison-ottoman": "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1645673995/crusader/variants/50440732-AM4001/Madison-Ottoman-Bisque-Front.png",
@@ -95,6 +103,8 @@ const LEGACY_THUMB_URL_OVERRIDES: Record<string, string> = {
   "armchair-real-castlery-avery-performance-armchair-with-ottoman": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760174592/crusader/variants/PB-001916-IN4002/Avery-Armchair-With-Ottoman-Performance-Infinity-Boucle-White-Quartz-Angle-1760174592.jpg",
   "armchair-real-castlery-avery-performance-swivel-armchair": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175397/crusader/variants/50441021-IN4002/Avery-Swivel-Armchair-Performance-Infinity-Boucle-White-Quartz-Angle-1760175397.jpg",
   "armchair-real-castlery-avery-performance-swivel-armchair-with-ottoman": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760174560/crusader/variants/PB-001917-IN4002/Avery-Swivel-Armchair-With-Ottoman-Performance-Infinity-Boucle-White-Quartz-Angle-1760174560.jpg",
+  "armchair-real-castlery-lena-leather-armchair-cocoa-brass-legs": "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg",
+  "armchair-real-castlery-lena-leather-armchair-cocoa-black-legs": "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg",
 
   // ========== IMPORTED CASTLERY DINING (Harvested from Castlery Website) ==========
   "dining-real-castlery-sloane-travertine-180": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723776680/crusader/variants/AS-000564/Sloane-Travertine-Dining-Table-180cm-Angle-1723776679.jpg",
@@ -293,8 +303,20 @@ function buildCatalogItem(product: Product): CatalogItemSchema {
   const modelLabel = LEGACY_MODEL_LABEL_OVERRIDES[product.id];
   const metadata: CatalogItemSchema["metadata"] = {
     ...(product.galleryImages ? { galleryImages: product.galleryImages } : {}),
+    ...(product.mediaPresentationMode ? { mediaPresentationMode: product.mediaPresentationMode } : {}),
     ...(modelLabel ? { modelLabel } : {}),
   };
+  const averyStockedOnly = product.id.endsWith("-with-ottoman");
+  const productVariants = product.id.startsWith("armchair-real-castlery-avery-performance-")
+    ? buildAveryUpholsteryVariants({
+        thumbnailUrl:
+          product.variants[0]?.thumbnailUrl ??
+          LEGACY_THUMB_URL_OVERRIDES[product.id] ??
+          `/assets/thumbs/${product.id}.png`,
+        galleryImages: product.variants[0]?.galleryImages ?? product.galleryImages ?? [],
+        stockedOnly: averyStockedOnly,
+      })
+    : product.variants;
 
   return {
     id: product.id,
@@ -333,19 +355,23 @@ function buildCatalogItem(product: Product): CatalogItemSchema {
         preset: DEFAULT_MATERIAL_PRESET,
       },
     },
-    variants: product.variants.map((variant) => ({
+    variants: productVariants.map((variant) => ({
       id: variant.id,
       label: variant.name,
       colorHex: variant.colorHex,
       finishCode: variant.finishCode,
       finishLabel: variant.finishLabel,
+      materialType: variant.materialType,
       swatchGroup: variant.swatchGroup,
       swatchHex: variant.swatchHex,
+      swatchTextureUrl: variant.swatchTextureUrl,
+      collectionType: variant.collectionType,
       thumbnailUrl:
         variant.thumbnailUrl ??
         LEGACY_THUMB_URL_OVERRIDES[product.id] ??
         `/assets/thumbs/${product.id}-${variant.id}.png`,
       galleryImages: variant.galleryImages,
+      mediaPresentationMode: variant.mediaPresentationMode,
     })),
     defaultVariantId: product.defaultVariantId,
     metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
@@ -363,8 +389,34 @@ function buildCatalogItem(product: Product): CatalogItemSchema {
 // LEGACY CATALOG (Internal use only - do not export)
 // ============================================================================
 
+const HUGG_SQUARE_URL = "https://www.castlery.com/sg/products/hugg-nesting-square-coffee-table";
 const HUGG_RECTANGULAR_URL = "https://www.castlery.com/sg/products/hugg-nesting-rectangular-coffee-table";
 const HUGG_SIDE_TABLE_URL = "https://www.castlery.com/sg/products/hugg-nesting-side-table";
+
+const HUGG_SQUARE_VARIANT_IMAGES = {
+  performanceDune: {
+    natural:
+      "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729564013/crusader/variants/AS-000635-AR4001-NA/Hugg-Square-Coffee-Table-Natural-Performance-Dune_-Front-1729564011.jpg",
+    chestnut:
+      "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729564332/crusader/variants/AS-000635-AR4001-CT/Hugg-Square-Coffee-Table-Chestnut-Performance-Dune_-Front-1729564330.jpg",
+    black:
+      "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729564820/crusader/variants/AS-000635-AR4001-BLK/Hugg-Square-Coffee-Table-Black-Performance-Dune-Front-1729564818.jpg",
+  },
+  performanceBasalt: {
+    natural:
+      "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729564998/crusader/variants/AS-000635-AR4002-NA/Hugg-Square-Coffee-Table-Natural-Performance-Basalt-Front-1729564995.jpg",
+    chestnut:
+      "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729502859/crusader/variants/AS-000635-AR4002-CT/Hugg-Square-Coffee-Table-Chestnut-Performance-Basalt-Front-1729502856.jpg",
+    black:
+      "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729502719/crusader/variants/AS-000635-AR4002-BLK/Hugg-Square-Coffee-Table-Black-Performance-Basalt-Front-1729502716.jpg",
+  },
+  detail:
+    "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729564019/crusader/variants/AS-000635-AR4001-NA/Hugg-Square-Coffee-Table-Natural-Performance-Dune_-Angle_1-1729564017.jpg",
+  lifestyle:
+    "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1765850661/crusader/variants/AS-000635-AR4001-NA/Hugg-Square-Coffee-Table-In-Dune-Natural-Square-Set_2-1765850658.jpg",
+} as const;
+
+const HUGG_FAMILY_LIFESTYLE_IMAGE = HUGG_SQUARE_VARIANT_IMAGES.lifestyle;
 
 const HUGG_RECTANGULAR_VARIANT_IMAGES = {
   performanceDune: {
@@ -403,6 +455,98 @@ const HUGG_SIDE_TABLE_VARIANT_IMAGES = {
       "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729836921/crusader/variants/AS-000634-AR4002-BLK/Hugg-Nesting-Side-Table-Black-Performance-Basalt-Front-1729836919.jpg",
   },
 } as const;
+
+const HUGG_SQUARE_GALLERIES = {
+  performanceDune: [
+    HUGG_SQUARE_VARIANT_IMAGES.performanceDune.natural,
+    HUGG_SQUARE_VARIANT_IMAGES.performanceDune.chestnut,
+    HUGG_SQUARE_VARIANT_IMAGES.performanceDune.black,
+    HUGG_SQUARE_VARIANT_IMAGES.detail,
+    HUGG_SQUARE_VARIANT_IMAGES.lifestyle,
+  ],
+  performanceBasalt: [
+    HUGG_SQUARE_VARIANT_IMAGES.performanceBasalt.natural,
+    HUGG_SQUARE_VARIANT_IMAGES.performanceBasalt.chestnut,
+    HUGG_SQUARE_VARIANT_IMAGES.performanceBasalt.black,
+    HUGG_SQUARE_VARIANT_IMAGES.detail,
+    HUGG_SQUARE_VARIANT_IMAGES.lifestyle,
+  ],
+} as const;
+
+const HUGG_RECTANGULAR_GALLERIES = {
+  performanceDune: [
+    HUGG_RECTANGULAR_VARIANT_IMAGES.performanceDune.natural,
+    HUGG_RECTANGULAR_VARIANT_IMAGES.performanceDune.chestnut,
+    HUGG_RECTANGULAR_VARIANT_IMAGES.performanceDune.black,
+    HUGG_RECTANGULAR_VARIANT_IMAGES.performanceBasalt.chestnut,
+    HUGG_FAMILY_LIFESTYLE_IMAGE,
+  ],
+  performanceBasalt: [
+    HUGG_RECTANGULAR_VARIANT_IMAGES.performanceBasalt.natural,
+    HUGG_RECTANGULAR_VARIANT_IMAGES.performanceBasalt.chestnut,
+    HUGG_RECTANGULAR_VARIANT_IMAGES.performanceBasalt.black,
+    HUGG_RECTANGULAR_VARIANT_IMAGES.performanceDune.chestnut,
+    HUGG_FAMILY_LIFESTYLE_IMAGE,
+  ],
+} as const;
+
+const HUGG_SIDE_TABLE_GALLERIES = {
+  performanceDune: [
+    HUGG_SIDE_TABLE_VARIANT_IMAGES.performanceDune.natural,
+    HUGG_SIDE_TABLE_VARIANT_IMAGES.performanceDune.chestnut,
+    HUGG_SIDE_TABLE_VARIANT_IMAGES.performanceDune.black,
+    HUGG_SIDE_TABLE_VARIANT_IMAGES.performanceBasalt.chestnut,
+    HUGG_FAMILY_LIFESTYLE_IMAGE,
+  ],
+  performanceBasalt: [
+    HUGG_SIDE_TABLE_VARIANT_IMAGES.performanceBasalt.natural,
+    HUGG_SIDE_TABLE_VARIANT_IMAGES.performanceBasalt.chestnut,
+    HUGG_SIDE_TABLE_VARIANT_IMAGES.performanceBasalt.black,
+    HUGG_SIDE_TABLE_VARIANT_IMAGES.performanceDune.chestnut,
+    HUGG_FAMILY_LIFESTYLE_IMAGE,
+  ],
+} as const;
+
+function buildHuggSquareVariants(
+  fabric: keyof Pick<typeof HUGG_SQUARE_VARIANT_IMAGES, "performanceDune" | "performanceBasalt">
+): Variant[] {
+  const images = HUGG_SQUARE_VARIANT_IMAGES[fabric];
+  return [
+    {
+      id: "natural",
+      name: "Natural",
+      colorHex: "#a89070",
+      finishCode: "natural",
+      finishLabel: "Natural",
+      swatchGroup: "wood_finish",
+      swatchHex: "#a89070",
+      thumbnailUrl: images.natural,
+      galleryImages: [images.natural],
+    },
+    {
+      id: "chestnut",
+      name: "Chestnut",
+      colorHex: "#8b6f47",
+      finishCode: "chestnut",
+      finishLabel: "Chestnut",
+      swatchGroup: "wood_finish",
+      swatchHex: "#8B6F47",
+      thumbnailUrl: images.chestnut,
+      galleryImages: [images.chestnut],
+    },
+    {
+      id: "black",
+      name: "Black",
+      colorHex: "#1f1f1f",
+      finishCode: "black",
+      finishLabel: "Black",
+      swatchGroup: "wood_finish",
+      swatchHex: "#1f1f1f",
+      thumbnailUrl: images.black,
+      galleryImages: [images.black],
+    },
+  ];
+}
 
 function buildHuggRectangularVariants(
   fabric: keyof typeof HUGG_RECTANGULAR_VARIANT_IMAGES
@@ -484,6 +628,239 @@ function buildHuggSideTableVariants(
       galleryImages: [images.black],
     },
   ];
+}
+
+const AVERY_UPHOLSTERY_SWATCHES = [
+  {
+    id: "white_quartz",
+    name: "Performance Infinity Boucle, Light Grey (White Quartz)",
+    finishLabel: "Light Grey (White Quartz)",
+    colorHex: "#d8d7d2",
+    finishCode: "white_quartz",
+    collectionType: "stocked",
+    swatchTextureUrl:
+      "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1640236351/crusader/variants/IN-4001/White-Quartz_1.jpg",
+  },
+  {
+    id: "performance_infinity_boucle_ginger",
+    name: "Performance Infinity Boucle, Rust (Ginger)",
+    finishLabel: "Rust (Ginger)",
+    colorHex: "#a55f37",
+    finishCode: "performance_infinity_boucle_ginger",
+    collectionType: "stocked",
+    swatchTextureUrl:
+      "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710492060/crusader/variants/IN-4003/Marlow-Armless-2-Seater-Sofa-Performance-Ginger-Caramel-Square-Det_3-1710492057.jpg",
+  },
+  {
+    id: "performance_boucle_cream",
+    name: "Performance Infinity Boucle, Cream",
+    finishLabel: "Cream",
+    colorHex: "#e6dfd3",
+    finishCode: "performance_boucle_cream",
+    collectionType: "custom",
+    swatchTextureUrl:
+      "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770191309/crusader/variants/IN-4005/IN4005-Cream-1770191306.jpg",
+  },
+  {
+    id: "performance_infinity_boucle_moss",
+    name: "Performance Infinity Boucle, Moss",
+    finishLabel: "Moss",
+    colorHex: "#65715a",
+    finishCode: "performance_infinity_boucle_moss",
+    collectionType: "custom",
+    swatchTextureUrl:
+      "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770098928/crusader/variants/IN-4004/IN4004-Moss-1770098923.jpg",
+  },
+  {
+    id: "peyton_ivory",
+    name: "Performance Fleece (Peyton), Ivory (Cream)",
+    finishLabel: "Ivory (Cream)",
+    colorHex: "#ebe5d9",
+    finishCode: "peyton_ivory",
+    collectionType: "custom",
+    swatchTextureUrl:
+      "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722322775/crusader/variants/PY-4001/Ivory-1722322773.jpg",
+  },
+  {
+    id: "peyton_dove_grey",
+    name: "Performance Fleece (Peyton), Medium Grey (Dove Grey)",
+    finishLabel: "Medium Grey (Dove Grey)",
+    colorHex: "#b7b5ae",
+    finishCode: "peyton_dove_grey",
+    collectionType: "custom",
+    swatchTextureUrl:
+      "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722322647/crusader/variants/PY-4002/Dove-Grey-1722322645.jpg",
+  },
+  {
+    id: "peyton_moss",
+    name: "Performance Fleece (Peyton), Moss",
+    finishLabel: "Moss",
+    colorHex: "#697262",
+    finishCode: "peyton_moss",
+    collectionType: "custom",
+    swatchTextureUrl:
+      "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722320266/crusader/variants/PY-4003/Moss-1722320263.jpg",
+  },
+  {
+    id: "peyton_cumin",
+    name: "Performance Fleece (Peyton), Caramel (Cumin)",
+    finishLabel: "Caramel (Cumin)",
+    colorHex: "#b8793a",
+    finishCode: "peyton_cumin",
+    collectionType: "custom",
+    swatchTextureUrl:
+      "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1721120972/crusader/variants/PY-4004/Cumin-Swathc_1-1721120969.jpg",
+  },
+  {
+    id: "performance_genova_oat",
+    name: "Performance Linen Weave (Genova), Sand (Oat)",
+    finishLabel: "Sand (Oat)",
+    colorHex: "#cfc2af",
+    finishCode: "performance_genova_oat",
+    collectionType: "custom",
+    swatchTextureUrl:
+      "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,c_fit/v1757063296/crusader/variants/PG-4002/Mori-Armchair-Oat-Walnut-Leg-Det_2-1757063296.jpg",
+  },
+  {
+    id: "performance_linen_weave_cream",
+    name: "Performance Linen Weave (Genova), Cream",
+    finishLabel: "Cream",
+    colorHex: "#e8dfd2",
+    finishCode: "performance_linen_weave_cream",
+    collectionType: "custom",
+    swatchTextureUrl:
+      "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,c_fit/v1770188184/crusader/variants/PG-4003/PG4003-Cream-1770188182.jpg",
+  },
+  {
+    id: "performance_linen_weave_light_grey",
+    name: "Performance Linen Weave (Genova), Light Grey",
+    finishLabel: "Light Grey",
+    colorHex: "#bfc1bd",
+    finishCode: "performance_linen_weave_light_grey",
+    collectionType: "custom",
+    swatchTextureUrl:
+      "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,c_fit/v1770188172/crusader/variants/PG-4004/PG4004-Light-Grey-1770188170.jpg",
+  },
+  {
+    id: "performance_twill_creamy_white",
+    name: "Performance Creamy White",
+    finishLabel: "Creamy White",
+    colorHex: "#eee8dc",
+    finishCode: "performance_twill_creamy_white",
+    collectionType: "custom",
+    swatchTextureUrl:
+      "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,c_fit/v1774943787/crusader/variants/PT-4001/PT4001-Performance-Twill-Creamy-White-1774943785.jpg",
+  },
+  {
+    id: "performance_twill_pearl_beige",
+    name: "Performance Twill, Pearl Beige",
+    finishLabel: "Pearl Beige",
+    colorHex: "#d6c8b7",
+    finishCode: "performance_twill_pearl_beige",
+    collectionType: "custom",
+    swatchTextureUrl:
+      "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1747116409/crusader/variants/PT-4002/Levi-Office-Chair-Twill-Pearl-Beige-Square-Det_4-1747116407.jpg",
+  },
+  {
+    id: "performance_twill_medium_grey",
+    name: "Performance Twill, Medium Grey",
+    finishLabel: "Medium Grey",
+    colorHex: "#9f9f99",
+    finishCode: "performance_twill_medium_grey",
+    collectionType: "custom",
+    swatchTextureUrl:
+      "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,c_fit/v1769061840/crusader/variants/PT-4005/PT4005-Performance-Twill-Dove-Grey-1769061838.jpg",
+  },
+  {
+    id: "performance_twill_slate",
+    name: "Performance Twill, Slate",
+    finishLabel: "Slate",
+    colorHex: "#4f5552",
+    finishCode: "performance_twill_slate",
+    collectionType: "custom",
+    swatchTextureUrl:
+      "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1756361613/crusader/variants/PT-4003/Performance-Twill-Slate-1756361610.jpg",
+  },
+  {
+    id: "performance_twill_moss",
+    name: "Performance Twill, Moss",
+    finishLabel: "Moss",
+    colorHex: "#69705d",
+    finishCode: "performance_twill_moss",
+    collectionType: "custom",
+    swatchTextureUrl:
+      "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1756438801/crusader/variants/PT-4004/Moss-1756438798.jpg",
+  },
+  {
+    id: "washed_chenille_cream",
+    name: "Washed Chenille, Cream",
+    finishLabel: "Cream",
+    colorHex: "#e8dfcf",
+    finishCode: "washed_chenille_cream",
+    collectionType: "custom",
+    swatchTextureUrl:
+      "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,c_fit/v1769054456/crusader/variants/GR-4001/GR4001-Greta-Ivory-1769054453.jpg",
+  },
+  {
+    id: "washed_chenille_sand",
+    name: "Washed Chenille, Sand",
+    finishLabel: "Sand",
+    colorHex: "#c8b39c",
+    finishCode: "washed_chenille_sand",
+    collectionType: "custom",
+    swatchTextureUrl:
+      "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,c_fit/v1770188296/crusader/variants/GR-4002/GR4002-Latte-1770188293.jpg",
+  },
+  {
+    id: "washed_chenille_caramel",
+    name: "Washed Chenille, Caramel",
+    finishLabel: "Caramel",
+    colorHex: "#a87542",
+    finishCode: "washed_chenille_caramel",
+    collectionType: "custom",
+    swatchTextureUrl:
+      "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,c_fit/v1769054464/crusader/variants/GR-4003/GR4003-Greta-Mustard-Brown-1769054461.jpg",
+  },
+  {
+    id: "washed_chenille_moss",
+    name: "Washed Chenille, Moss",
+    finishLabel: "Moss",
+    colorHex: "#68715e",
+    finishCode: "washed_chenille_moss",
+    collectionType: "custom",
+    swatchTextureUrl:
+      "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,c_fit/v1769054472/crusader/variants/GR-4004/GR4004-Greta-Moss-1769054469.jpg",
+  },
+] satisfies Array<
+  Pick<
+    Variant,
+    | "id"
+    | "name"
+    | "finishLabel"
+    | "colorHex"
+    | "finishCode"
+    | "collectionType"
+    | "swatchTextureUrl"
+  >
+>;
+
+function buildAveryUpholsteryVariants(params: {
+  thumbnailUrl: string;
+  galleryImages: string[];
+  stockedOnly?: boolean;
+}): Variant[] {
+  const swatches = params.stockedOnly
+    ? AVERY_UPHOLSTERY_SWATCHES.filter((swatch) => swatch.collectionType === "stocked")
+    : AVERY_UPHOLSTERY_SWATCHES;
+
+  return swatches.map((swatch) => ({
+    ...swatch,
+    materialType: "Fabric",
+    swatchGroup: "upholstery_option",
+    swatchHex: swatch.colorHex,
+    thumbnailUrl: params.thumbnailUrl,
+    galleryImages: params.galleryImages,
+  }));
 }
 
 const CATALOG: Record<string, Product> = {
@@ -727,39 +1104,12 @@ const CATALOG: Record<string, Product> = {
     price: 1099,
     dimensions: { w: 1.1, d: 1.1, h: 0.43 },
     styleTags: ["modern"],
+    galleryImages: [...HUGG_SQUARE_GALLERIES.performanceBasalt],
     defaultVariantId: "natural",
     purchaseMode: "affiliate",
     retailer: "Castlery Singapore",
-    buyUrl: "https://www.castlery.com/sg/products/hugg-nesting-square-coffee-table",
-    variants: [
-      {
-        id: "natural",
-        name: "Natural",
-        colorHex: "#a89070",
-        finishCode: "natural",
-        finishLabel: "Natural",
-        swatchGroup: "wood_finish",
-        swatchHex: "#a89070",
-      },
-      {
-        id: "chestnut",
-        name: "Chestnut",
-        colorHex: "#8b6f47",
-        finishCode: "chestnut",
-        finishLabel: "Chestnut",
-        swatchGroup: "wood_finish",
-        swatchHex: "#8B6F47",
-      },
-      {
-        id: "black",
-        name: "Black",
-        colorHex: "#1f1f1f",
-        finishCode: "black",
-        finishLabel: "Black",
-        swatchGroup: "wood_finish",
-        swatchHex: "#1f1f1f",
-      },
-    ],
+    buyUrl: HUGG_SQUARE_URL,
+    variants: buildHuggSquareVariants("performanceBasalt"),
   },
   "coffee-real-castlery-hugg-nesting-square-performance-basalt-opened": {
     id: "coffee-real-castlery-hugg-nesting-square-performance-basalt-opened",
@@ -768,39 +1118,12 @@ const CATALOG: Record<string, Product> = {
     price: 1099,
     dimensions: { w: 1.1, d: 1.1, h: 0.43 },
     styleTags: ["modern"],
+    galleryImages: [...HUGG_SQUARE_GALLERIES.performanceBasalt],
     defaultVariantId: "natural",
     purchaseMode: "affiliate",
     retailer: "Castlery Singapore",
-    buyUrl: "https://www.castlery.com/sg/products/hugg-nesting-square-coffee-table",
-    variants: [
-      {
-        id: "natural",
-        name: "Natural",
-        colorHex: "#a89070",
-        finishCode: "natural",
-        finishLabel: "Natural",
-        swatchGroup: "wood_finish",
-        swatchHex: "#a89070",
-      },
-      {
-        id: "chestnut",
-        name: "Chestnut",
-        colorHex: "#8b6f47",
-        finishCode: "chestnut",
-        finishLabel: "Chestnut",
-        swatchGroup: "wood_finish",
-        swatchHex: "#8B6F47",
-      },
-      {
-        id: "black",
-        name: "Black",
-        colorHex: "#1f1f1f",
-        finishCode: "black",
-        finishLabel: "Black",
-        swatchGroup: "wood_finish",
-        swatchHex: "#1f1f1f",
-      },
-    ],
+    buyUrl: HUGG_SQUARE_URL,
+    variants: buildHuggSquareVariants("performanceBasalt"),
   },
   "coffee-real-castlery-hugg-nesting-square-performance-dune-closed": {
     id: "coffee-real-castlery-hugg-nesting-square-performance-dune-closed",
@@ -809,39 +1132,12 @@ const CATALOG: Record<string, Product> = {
     price: 1099,
     dimensions: { w: 1.1, d: 1.1, h: 0.43 },
     styleTags: ["modern"],
+    galleryImages: [...HUGG_SQUARE_GALLERIES.performanceDune],
     defaultVariantId: "natural",
     purchaseMode: "affiliate",
     retailer: "Castlery Singapore",
-    buyUrl: "https://www.castlery.com/sg/products/hugg-nesting-square-coffee-table",
-    variants: [
-      {
-        id: "natural",
-        name: "Natural",
-        colorHex: "#a89070",
-        finishCode: "natural",
-        finishLabel: "Natural",
-        swatchGroup: "wood_finish",
-        swatchHex: "#a89070",
-      },
-      {
-        id: "chestnut",
-        name: "Chestnut",
-        colorHex: "#8b6f47",
-        finishCode: "chestnut",
-        finishLabel: "Chestnut",
-        swatchGroup: "wood_finish",
-        swatchHex: "#8B6F47",
-      },
-      {
-        id: "black",
-        name: "Black",
-        colorHex: "#1f1f1f",
-        finishCode: "black",
-        finishLabel: "Black",
-        swatchGroup: "wood_finish",
-        swatchHex: "#1f1f1f",
-      },
-    ],
+    buyUrl: HUGG_SQUARE_URL,
+    variants: buildHuggSquareVariants("performanceDune"),
   },
   "coffee-real-castlery-hugg-nesting-square-performance-dune-opened": {
     id: "coffee-real-castlery-hugg-nesting-square-performance-dune-opened",
@@ -850,39 +1146,12 @@ const CATALOG: Record<string, Product> = {
     price: 1099,
     dimensions: { w: 1.1, d: 1.1, h: 0.43 },
     styleTags: ["modern"],
+    galleryImages: [...HUGG_SQUARE_GALLERIES.performanceDune],
     defaultVariantId: "natural",
     purchaseMode: "affiliate",
     retailer: "Castlery Singapore",
-    buyUrl: "https://www.castlery.com/sg/products/hugg-nesting-square-coffee-table",
-    variants: [
-      {
-        id: "natural",
-        name: "Natural",
-        colorHex: "#a89070",
-        finishCode: "natural",
-        finishLabel: "Natural",
-        swatchGroup: "wood_finish",
-        swatchHex: "#a89070",
-      },
-      {
-        id: "chestnut",
-        name: "Chestnut",
-        colorHex: "#8b6f47",
-        finishCode: "chestnut",
-        finishLabel: "Chestnut",
-        swatchGroup: "wood_finish",
-        swatchHex: "#8B6F47",
-      },
-      {
-        id: "black",
-        name: "Black",
-        colorHex: "#1f1f1f",
-        finishCode: "black",
-        finishLabel: "Black",
-        swatchGroup: "wood_finish",
-        swatchHex: "#1f1f1f",
-      },
-    ],
+    buyUrl: HUGG_SQUARE_URL,
+    variants: buildHuggSquareVariants("performanceDune"),
   },
   "coffee-real-castlery-hugg-nesting-rectangular-performance-basalt-closed": {
     id: "coffee-real-castlery-hugg-nesting-rectangular-performance-basalt-closed",
@@ -891,7 +1160,7 @@ const CATALOG: Record<string, Product> = {
     price: 799,
     dimensions: { w: 1.1, d: 0.55, h: 0.43 },
     styleTags: ["modern"],
-    galleryImages: [HUGG_RECTANGULAR_VARIANT_IMAGES.performanceBasalt.chestnut],
+    galleryImages: [...HUGG_RECTANGULAR_GALLERIES.performanceBasalt],
     defaultVariantId: "chestnut",
     purchaseMode: "affiliate",
     retailer: "Castlery Singapore",
@@ -905,7 +1174,7 @@ const CATALOG: Record<string, Product> = {
     price: 799,
     dimensions: { w: 1.1, d: 0.55, h: 0.43 },
     styleTags: ["modern"],
-    galleryImages: [HUGG_RECTANGULAR_VARIANT_IMAGES.performanceBasalt.chestnut],
+    galleryImages: [...HUGG_RECTANGULAR_GALLERIES.performanceBasalt],
     defaultVariantId: "chestnut",
     purchaseMode: "affiliate",
     retailer: "Castlery Singapore",
@@ -919,7 +1188,7 @@ const CATALOG: Record<string, Product> = {
     price: 799,
     dimensions: { w: 1.1, d: 0.55, h: 0.43 },
     styleTags: ["modern"],
-    galleryImages: [HUGG_RECTANGULAR_VARIANT_IMAGES.performanceDune.chestnut],
+    galleryImages: [...HUGG_RECTANGULAR_GALLERIES.performanceDune],
     defaultVariantId: "chestnut",
     purchaseMode: "affiliate",
     retailer: "Castlery Singapore",
@@ -933,7 +1202,7 @@ const CATALOG: Record<string, Product> = {
     price: 799,
     dimensions: { w: 1.1, d: 0.55, h: 0.43 },
     styleTags: ["modern"],
-    galleryImages: [HUGG_RECTANGULAR_VARIANT_IMAGES.performanceDune.chestnut],
+    galleryImages: [...HUGG_RECTANGULAR_GALLERIES.performanceDune],
     defaultVariantId: "chestnut",
     purchaseMode: "affiliate",
     retailer: "Castlery Singapore",
@@ -947,7 +1216,7 @@ const CATALOG: Record<string, Product> = {
     price: 499,
     dimensions: { w: 0.68, d: 0.55, h: 0.43 },
     styleTags: ["modern"],
-    galleryImages: [HUGG_SIDE_TABLE_VARIANT_IMAGES.performanceBasalt.chestnut],
+    galleryImages: [...HUGG_SIDE_TABLE_GALLERIES.performanceBasalt],
     defaultVariantId: "chestnut",
     purchaseMode: "affiliate",
     retailer: "Castlery Singapore",
@@ -961,7 +1230,7 @@ const CATALOG: Record<string, Product> = {
     price: 499,
     dimensions: { w: 0.68, d: 0.55, h: 0.43 },
     styleTags: ["modern"],
-    galleryImages: [HUGG_SIDE_TABLE_VARIANT_IMAGES.performanceBasalt.chestnut],
+    galleryImages: [...HUGG_SIDE_TABLE_GALLERIES.performanceBasalt],
     defaultVariantId: "chestnut",
     purchaseMode: "affiliate",
     retailer: "Castlery Singapore",
@@ -975,7 +1244,7 @@ const CATALOG: Record<string, Product> = {
     price: 499,
     dimensions: { w: 0.68, d: 0.55, h: 0.43 },
     styleTags: ["modern"],
-    galleryImages: [HUGG_SIDE_TABLE_VARIANT_IMAGES.performanceDune.chestnut],
+    galleryImages: [...HUGG_SIDE_TABLE_GALLERIES.performanceDune],
     defaultVariantId: "chestnut",
     purchaseMode: "affiliate",
     retailer: "Castlery Singapore",
@@ -989,7 +1258,7 @@ const CATALOG: Record<string, Product> = {
     price: 499,
     dimensions: { w: 0.68, d: 0.55, h: 0.43 },
     styleTags: ["modern"],
-    galleryImages: [HUGG_SIDE_TABLE_VARIANT_IMAGES.performanceDune.chestnut],
+    galleryImages: [...HUGG_SIDE_TABLE_GALLERIES.performanceDune],
     defaultVariantId: "chestnut",
     purchaseMode: "affiliate",
     retailer: "Castlery Singapore",
@@ -1003,6 +1272,14 @@ const CATALOG: Record<string, Product> = {
     price: 549,
     dimensions: { w: 1.2, d: 0.7, h: 0.3 },
     styleTags: ["modern"],
+    galleryImages: [
+      "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1641292754/crusader/variants/50850023/Peri-Coffee-Table-Front.jpg",
+      "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1655220638/crusader/variants/50850023/peri-coffee-table-1655220635.jpg",
+      "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1655201521/crusader/variants/50850023/Peri-Coffee-Table-001-1655201517.jpg",
+      "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1641292796/crusader/variants/50850023/Peri-Coffee-Table-Angle.jpg",
+      "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1639132792/crusader/variants/50850023/Peri-Coffee-Table-Shared2.jpg",
+      "https://res.cloudinary.com/castlery/image/upload/v1762244478/knight/USP/Refresh%202025/Peri-Coffee-Table-Square-Det_2.jpg",
+    ],
     defaultVariantId: "peri_coffee_table_walnut_dark_grey_steel",
     purchaseMode: "affiliate",
     retailer: "Castlery Singapore",
@@ -1012,6 +1289,15 @@ const CATALOG: Record<string, Product> = {
         id: "peri_coffee_table_walnut_dark_grey_steel",
         name: "Peri Coffee Table / Walnut / Dark Grey Steel",
         colorHex: "#b8b8b8",
+        thumbnailUrl:
+          "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1641292754/crusader/variants/50850023/Peri-Coffee-Table-Front.jpg",
+        galleryImages: [
+          "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1641292754/crusader/variants/50850023/Peri-Coffee-Table-Front.jpg",
+          "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1655220638/crusader/variants/50850023/peri-coffee-table-1655220635.jpg",
+          "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1655201521/crusader/variants/50850023/Peri-Coffee-Table-001-1655201517.jpg",
+          "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1639132792/crusader/variants/50850023/Peri-Coffee-Table-Shared2.jpg",
+          "https://res.cloudinary.com/castlery/image/upload/v1762244478/knight/USP/Refresh%202025/Peri-Coffee-Table-Square-Det_2.jpg",
+        ],
       },
     ],
   },
@@ -1100,6 +1386,12 @@ const CATALOG: Record<string, Product> = {
     price: 1099,
     dimensions: { w: 1.5, d: 0.4, h: 0.58 },
     styleTags: ["modern"],
+    galleryImages: [
+      "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1756260724/crusader/variants/50520029/Sloane-TV-Console-Square-Set_1-1756260722.jpg",
+      "/assets/thumbs/tv-real-castlery-sloane-tv-console-150-hero.jpg",
+      "/assets/thumbs/tv-real-castlery-sloane-tv-console-150.jpg",
+      "/assets/thumbs/tv-real-castlery-sloane-tv-console-150.png",
+    ],
     defaultVariantId: "150cm_grey_oak",
     purchaseMode: "affiliate",
     retailer: "Castlery Singapore",
@@ -1109,6 +1401,14 @@ const CATALOG: Record<string, Product> = {
         id: "150cm_grey_oak",
         name: "150cm / Grey Oak",
         colorHex: "#b8b8b8",
+        thumbnailUrl:
+          "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1756260724/crusader/variants/50520029/Sloane-TV-Console-Square-Set_1-1756260722.jpg",
+        galleryImages: [
+          "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1756260724/crusader/variants/50520029/Sloane-TV-Console-Square-Set_1-1756260722.jpg",
+          "/assets/thumbs/tv-real-castlery-sloane-tv-console-150-hero.jpg",
+          "/assets/thumbs/tv-real-castlery-sloane-tv-console-150.jpg",
+          "/assets/thumbs/tv-real-castlery-sloane-tv-console-150.png",
+        ],
       },
     ],
   },
@@ -1119,6 +1419,12 @@ const CATALOG: Record<string, Product> = {
     price: 1399,
     dimensions: { w: 2, d: 0.47, h: 0.58 },
     styleTags: ["modern"],
+    galleryImages: [
+      "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1668045976/crusader/variants/50520001/Sloane-TV-Console-Square-Set_1-1668045973.jpg",
+      "/assets/thumbs/tv-real-castlery-sloane-tv-console-200-hero.jpg",
+      "/assets/thumbs/tv-real-castlery-sloane-tv-console-200.jpg",
+      "/assets/thumbs/tv-real-castlery-sloane-tv-console-200.png",
+    ],
     defaultVariantId: "200cm_grey_oak",
     purchaseMode: "affiliate",
     retailer: "Castlery Singapore",
@@ -1128,6 +1434,14 @@ const CATALOG: Record<string, Product> = {
         id: "200cm_grey_oak",
         name: "200cm / Grey Oak",
         colorHex: "#b8b8b8",
+        thumbnailUrl:
+          "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1668045976/crusader/variants/50520001/Sloane-TV-Console-Square-Set_1-1668045973.jpg",
+        galleryImages: [
+          "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1668045976/crusader/variants/50520001/Sloane-TV-Console-Square-Set_1-1668045973.jpg",
+          "/assets/thumbs/tv-real-castlery-sloane-tv-console-200-hero.jpg",
+          "/assets/thumbs/tv-real-castlery-sloane-tv-console-200.jpg",
+          "/assets/thumbs/tv-real-castlery-sloane-tv-console-200.png",
+        ],
       },
     ],
   },

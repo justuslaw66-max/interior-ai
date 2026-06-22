@@ -34,6 +34,7 @@
     "test:import-normalization": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-imported-variant-normalization.ts",
     "test:catalog-live-gate": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-catalog-live-gate.ts",
     "test:catalog-publication-summary": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-catalog-publication-summary.ts",
+    "test:catalog-placement": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-catalog-placement.ts",
     "test:catalog-quality": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-catalog-quality-audit.ts",
     "test:catalog-quality:strict": "CATALOG_STRICT_VALIDATION=true npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-catalog-quality-audit.ts",
     "test:catalog-asset-availability": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-catalog-asset-availability.ts",

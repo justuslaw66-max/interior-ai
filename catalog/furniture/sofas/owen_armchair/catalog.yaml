@@ -1,0 +1,589 @@
+status: "published"
+brand: "Castlery"
+retailer: "Castlery Singapore"
+source_url: "https://www.castlery.com/sg/products/owen-armchair?material=pearl_beige&wood=natural"
+category: "armchair"
+
+product_family: "Owen"
+product_name: "Owen Armchair"
+slug: "castlery-owen-armchair"
+variant: ""
+
+price_usd: 849
+price_band: "mid_premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "secondary"
+
+dimensions:
+  width_cm: 110
+  depth_cm: 100
+  height_cm: 79
+
+seat_capacity: 1
+size_class: "large"
+shape: "rectangular"
+base_type: "legged"
+
+material_family: "upholstered"
+material_mix: "upholstered_wood"
+material_mix_components:
+  - "plywood"
+  - "solid_rubber_wood"
+  - "fabric"
+  - "foam"
+  - "fiber"
+  - "pocket_spring"
+
+materials:
+  frame:
+    structure: "plywood"
+  leg:
+    structure: "solid_rubber_wood"
+    finish: "natural_wood"
+  upholstery:
+    material_type: "fabric"
+    label: "Pearl Beige"
+
+color_family: "beige"
+tone: "neutral"
+style_cluster: "contemporary"
+style_secondary: "coastal_modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "rounded"
+  silhouette: "curved_lounge_armchair"
+  form_language: "soft"
+  descriptors:
+    - "generous_curves"
+    - "deep_seat"
+    - "removable_cushion_covers"
+    - "wooden_base"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  walkway_clearance_cm: 60
+  descriptors:
+    - "large_lounge_chair"
+    - "reading_corner_suitable"
+    - "living_room_accent"
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+  - "bedroom"
+  - "open_plan"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: false
+  floating_layout_supported: true
+  recommended_in_front_of:
+    - "side_table"
+    - "floor_lamp"
+    - "rug"
+    - "coffee_table"
+  clearance_guidance:
+    chair_to_table_cm_min: 20
+    circulation_cm_min: 60
+
+design_pairings:
+  - "side_table"
+  - "floor_lamp"
+  - "rug"
+  - "sofa"
+  - "coffee_table"
+
+bundle_metadata:
+  bundle_role: "accent"
+  can_bundle_with:
+    - "side_table"
+    - "floor_lamp"
+    - "rug"
+    - "sofa"
+  set_behavior:
+    supports_reading_corner_pairing: true
+    supports_living_room_pairing: true
+
+summary:
+  short_description: "A rounded lounge armchair with removable cushion covers and selectable natural or walnut wood legs."
+  long_description: "Owen is a generous fabric armchair with curved padded arms, deep seating, and a raised solid rubber wood base suited for relaxed living rooms and reading corners."
+  key_features:
+    - "Stocked Pearl Beige, Opal Beige, and Haze fabric choices"
+    - "Natural and Walnut wood leg choices"
+    - "Foam, fiber, and pocket spring filled seat"
+    - "Removable seat and back cushion covers"
+
+feature_flags:
+  has_removable_cover: true
+  has_removable_cushion: true
+
+authoring_notes:
+  category_confidence: "high"
+  source_checked: "Castlery Singapore product page, 2026-06-20"
+  source_url: "https://www.castlery.com/sg/products/owen-armchair?material=pearl_beige&wood=natural"
+  note: "Local GLBs are Pearl Beige upholstery with separate Natural Wood and Walnut Wood bases and are not Draco-compressed. Each Owen GLB is a single mesh/material, so Opal Beige and Haze variants reuse the matching wood GLB with the renderer's Owen upper-upholstery tint mask; the lower wood/base remains on the original baked GLB material."
+
+shipping_and_warranty:
+  free_delivery_threshold_sgd: 500
+  cancellation: "Free - 5 working days before delivery"
+  warranty: "Frame 10 years; Fabric 1 year; Foam 2 years"
+  return_policy: "30-day returns"
+  assembly: "Legs to be fitted"
+
+product_details:
+  material:
+    - label: "Frame"
+      value: "Plywood"
+    - label: "Leg frame"
+      value: "Solid rubber wood"
+    - label: "Filling"
+      value: "Foam, fibre and pocket spring filled seat; fibre filled back"
+    - label: "Finish"
+      value: "Natural on wood or Walnut on wood"
+    - label: "Care"
+      value: "Fabric sofa, wooden legs"
+    - label: "Suspension"
+      value: "Sinuous spring"
+    - label: "Cover type"
+      value: "Removable seat and back cushion covers"
+    - label: "Material & safety standards"
+      value: "Low formaldehyde"
+  dimensions:
+    - label: "Dimension"
+      value: "W110 x D100 x H79cm"
+    - label: "Armrest height"
+      value: "69cm (floor to arm)"
+    - label: "Seating depth"
+      value: "60cm"
+    - label: "Seatable width"
+      value: "66cm"
+    - label: "Seating height"
+      value: "48cm"
+    - label: "Leg height"
+      value: "13cm"
+    - label: "Backrest height"
+      value: "35cm"
+    - label: "Product weight"
+      value: "36.8kg"
+    - label: "Packaging dimensions"
+      value: "2 boxes"
+    - label: "Max bearing support"
+      value: "150kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free - 5 working days before delivery"
+    - label: "Warranty"
+      value: "Frame 10 years; Fabric 1 year; Foam 2 years"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Legs to be fitted"
+
+product_details_by_material_type:
+  fabric:
+    material:
+      - label: "Frame"
+        value: "Plywood"
+      - label: "Leg frame"
+        value: "Solid rubber wood"
+      - label: "Filling"
+        value: "Foam, fibre and pocket spring filled seat; fibre filled back"
+      - label: "Suspension"
+        value: "Sinuous spring"
+      - label: "Cover type"
+        value: "Removable seat and back cushion covers"
+    dimensions:
+      - label: "Dimension"
+        value: "W110 x D100 x H79cm"
+      - label: "Seating depth"
+        value: "60cm"
+      - label: "Seating height"
+        value: "48cm"
+      - label: "Leg height"
+        value: "13cm"
+      - label: "Product weight"
+        value: "36.8kg"
+    delivery_and_warranty:
+      - label: "Cancellation"
+        value: "Free - 5 working days before delivery"
+      - label: "Warranty"
+        value: "Frame 10 years; Fabric 1 year; Foam 2 years"
+      - label: "Return policy"
+        value: "30-day returns"
+      - label: "Assembly"
+        value: "Legs to be fitted"
+
+comfort_profile:
+  seat_comfort:
+    label: "Relaxed"
+    value: 2
+    min_label: "Relaxed"
+    max_label: "Upright"
+  seat_depth:
+    label: "Deep"
+    value: 4
+    min_label: "Shallow"
+    max_label: "Deep"
+  seat_height:
+    label: "High"
+    value: 4
+    min_label: "Low"
+    max_label: "High"
+  seat_softness:
+    label: "Soft"
+    value: 2
+    min_label: "Soft"
+    max_label: "Firm"
+
+assets:
+  asset_id: "armchair-real-castlery-owen-armchair"
+  model_url: "/assets/models/armchairs/armchair-real-castlery-owen-armchair-natural-wood.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1689838593/crusader/variants/T-0001C-NA-TL4002/Owen-Armchair-Pearl-Beige-Natural-Front-1689838590.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1689838593/crusader/variants/T-0001C-NA-TL4002/Owen-Armchair-Pearl-Beige-Natural-Front-1689838590.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1689838593/crusader/variants/T-0001C-NA-TL4002/Owen-Armchair-Pearl-Beige-Natural-Angle-1689838590.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1689838593/crusader/variants/T-0001C-NA-TL4002/Owen-Armchair-Pearl-Beige-Natural-Side-1689838590.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1689838593/crusader/variants/T-0001C-NA-TL4002/Owen-Armchair-Pearl-Beige-Natural-Back-1689838590.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1689849655/crusader/variants/T-0001/Owen-Armchair-Pearl-Beige-Natural-Dim-1689849653.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692610351/crusader/variants/AS-000380-TL4002-NA/Owen-Armchair-Pearl_Beige-Natrual-Square-Set_2-1692610348.jpg"
+
+upholstery_options:
+  - upholstery_code: "pearl_beige"
+    color_label: "Pearl Beige"
+    upholstery_label: "Pearl Beige"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1627550438/crusader/variants/TL-4002/Pearl-Beige_1.jpg"
+    fabric_family: "Stocked Fabric"
+    collection_type: "stocked_fabric"
+    swatch_group: "upholstery_option"
+    material_type: "fabric"
+    texture_type: "fabric"
+    color_family: "beige"
+    tone: "neutral"
+    swatch_hex: "#d8d0c4"
+  - upholstery_code: "opal_beige"
+    color_label: "Opal Beige"
+    upholstery_label: "Opal Beige"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626942038/crusader/variants/BW-4002/Wayne-Sofa-Opal-Beige_1.jpg"
+    fabric_family: "Stocked Fabric"
+    collection_type: "stocked_fabric"
+    swatch_group: "upholstery_option"
+    material_type: "fabric"
+    texture_type: "fabric"
+    color_family: "beige"
+    tone: "warm"
+    swatch_hex: "#c8bca8"
+  - upholstery_code: "haze"
+    color_label: "Haze"
+    upholstery_label: "Haze"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1673945345/crusader/variants/CA-4001/Owen-3-Seater-Sofa-Haze-Det_5-1673945342.jpg"
+    fabric_family: "Stocked Fabric"
+    collection_type: "stocked_fabric"
+    swatch_group: "upholstery_option"
+    material_type: "fabric"
+    texture_type: "fabric"
+    color_family: "grey"
+    tone: "cool"
+    swatch_hex: "#8d8d87"
+
+finish_options:
+  - finish_code: "natural"
+    finish_label: "Natural"
+    material_structure: "solid_rubber_wood"
+    swatch_hex: "#b88655"
+  - finish_code: "walnut"
+    finish_label: "Walnut"
+    material_structure: "solid_rubber_wood"
+    swatch_hex: "#6d472e"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+
+variants:
+  - variant: "Owen Armchair / Pearl Beige / Natural Wood"
+    sku: "owen-armchair-pearl-beige-natural"
+    size_label: "110x100"
+    finish_code: "natural"
+    finish_label: "Natural Wood"
+    upholstery_code: "pearl_beige"
+    upholstery_label: "Pearl Beige"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1627550438/crusader/variants/TL-4002/Pearl-Beige_1.jpg"
+    model_asset_id: "armchair-real-castlery-owen-armchair-natural-wood"
+    model_url: "/assets/models/armchairs/armchair-real-castlery-owen-armchair-natural-wood.glb"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1689838593/crusader/variants/T-0001C-NA-TL4002/Owen-Armchair-Pearl-Beige-Natural-Front-1689838590.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1689838593/crusader/variants/T-0001C-NA-TL4002/Owen-Armchair-Pearl-Beige-Natural-Front-1689838590.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1689838593/crusader/variants/T-0001C-NA-TL4002/Owen-Armchair-Pearl-Beige-Natural-Angle-1689838590.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1689838593/crusader/variants/T-0001C-NA-TL4002/Owen-Armchair-Pearl-Beige-Natural-Side-1689838590.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1689838593/crusader/variants/T-0001C-NA-TL4002/Owen-Armchair-Pearl-Beige-Natural-Back-1689838590.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1689849655/crusader/variants/T-0001/Owen-Armchair-Pearl-Beige-Natural-Dim-1689849653.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692610351/crusader/variants/AS-000380-TL4002-NA/Owen-Armchair-Pearl_Beige-Natrual-Square-Set_2-1692610348.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#d8d0c4"
+    color_family: "beige"
+    tone: "neutral"
+    collection_type: "stocked_fabric"
+    price_usd: 849
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/owen-armchair?material=pearl_beige&wood=natural"
+    purchase_options:
+      - id: "single"
+        label: "Single"
+        quantity: 1
+        sku: "owen-armchair-pearl-beige-natural"
+        affiliate_url: "https://www.castlery.com/sg/products/owen-armchair?material=pearl_beige&wood=natural"
+        price_usd: 849
+    dimensions: { width_cm: 110, depth_cm: 100, height_cm: 79 }
+    seat_capacity: 1
+    size_class: "large"
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "stocked_fabric"
+        color: "Pearl Beige"
+      frame:
+        structure: "plywood"
+      leg:
+        structure: "solid_rubber_wood"
+        finish: "natural"
+    finish:
+      color_finish: "Pearl Beige"
+      leg_finish: "Natural Wood"
+
+  - variant: "Owen Armchair / Opal Beige / Natural Wood"
+    sku: "owen-armchair-opal-beige-natural"
+    size_label: "110x100"
+    finish_code: "natural"
+    finish_label: "Natural Wood"
+    upholstery_code: "opal_beige"
+    upholstery_label: "Opal Beige"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626942038/crusader/variants/BW-4002/Wayne-Sofa-Opal-Beige_1.jpg"
+    model_asset_id: "armchair-real-castlery-owen-armchair-natural-wood"
+    model_url: "/assets/models/armchairs/armchair-real-castlery-owen-armchair-natural-wood.glb"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1689838350/crusader/variants/T-0001C-NA-BW4002/Owen-Armchair-Opal-Beige-Natural-Front-1689838348.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1689838350/crusader/variants/T-0001C-NA-BW4002/Owen-Armchair-Opal-Beige-Natural-Front-1689838348.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#c8bca8"
+    color_family: "beige"
+    tone: "warm"
+    collection_type: "stocked_fabric"
+    price_usd: 849
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/owen-armchair?material=opal_beige&wood=natural"
+    purchase_options:
+      - id: "single"
+        label: "Single"
+        quantity: 1
+        sku: "owen-armchair-opal-beige-natural"
+        affiliate_url: "https://www.castlery.com/sg/products/owen-armchair?material=opal_beige&wood=natural"
+        price_usd: 849
+    dimensions: { width_cm: 110, depth_cm: 100, height_cm: 79 }
+    seat_capacity: 1
+    size_class: "large"
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "stocked_fabric"
+        color: "Opal Beige"
+      frame:
+        structure: "plywood"
+      leg:
+        structure: "solid_rubber_wood"
+        finish: "natural"
+    finish:
+      color_finish: "Opal Beige"
+      leg_finish: "Natural Wood"
+
+  - variant: "Owen Armchair / Haze / Natural Wood"
+    sku: "owen-armchair-haze-natural"
+    size_label: "110x100"
+    finish_code: "natural"
+    finish_label: "Natural Wood"
+    upholstery_code: "haze"
+    upholstery_label: "Haze"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1673945345/crusader/variants/CA-4001/Owen-3-Seater-Sofa-Haze-Det_5-1673945342.jpg"
+    model_asset_id: "armchair-real-castlery-owen-armchair-natural-wood"
+    model_url: "/assets/models/armchairs/armchair-real-castlery-owen-armchair-natural-wood.glb"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1689842569/crusader/variants/T-0001C-NA-CA4001/Owen-Armchair-Haze-Natural-Front-1689842567.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1689842569/crusader/variants/T-0001C-NA-CA4001/Owen-Armchair-Haze-Natural-Front-1689842567.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#8d8d87"
+    color_family: "grey"
+    tone: "cool"
+    collection_type: "stocked_fabric"
+    price_usd: 849
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/owen-armchair?material=haze&wood=natural"
+    purchase_options:
+      - id: "single"
+        label: "Single"
+        quantity: 1
+        sku: "owen-armchair-haze-natural"
+        affiliate_url: "https://www.castlery.com/sg/products/owen-armchair?material=haze&wood=natural"
+        price_usd: 849
+    dimensions: { width_cm: 110, depth_cm: 100, height_cm: 79 }
+    seat_capacity: 1
+    size_class: "large"
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "stocked_fabric"
+        color: "Haze"
+      frame:
+        structure: "plywood"
+      leg:
+        structure: "solid_rubber_wood"
+        finish: "natural"
+    finish:
+      color_finish: "Haze"
+      leg_finish: "Natural Wood"
+
+  - variant: "Owen Armchair / Pearl Beige / Walnut Wood"
+    sku: "owen-armchair-pearl-beige-walnut"
+    size_label: "110x100"
+    finish_code: "walnut"
+    finish_label: "Walnut Wood"
+    upholstery_code: "pearl_beige"
+    upholstery_label: "Pearl Beige"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1627550438/crusader/variants/TL-4002/Pearl-Beige_1.jpg"
+    model_asset_id: "armchair-real-castlery-owen-armchair-walnut-wood"
+    model_url: "/assets/models/armchairs/armchair-real-castlery-owen-armchair-walnut-wood.glb"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1689838493/crusader/variants/T-0001C-WA-TL4002/Owen-Armchair-Pearl-Beige-Wulnut-Front-1689838490.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1689838493/crusader/variants/T-0001C-WA-TL4002/Owen-Armchair-Pearl-Beige-Wulnut-Front-1689838490.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#d8d0c4"
+    color_family: "beige"
+    tone: "neutral"
+    collection_type: "stocked_fabric"
+    price_usd: 849
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/owen-armchair?material=pearl_beige&wood=walnut"
+    purchase_options:
+      - id: "single"
+        label: "Single"
+        quantity: 1
+        sku: "owen-armchair-pearl-beige-walnut"
+        affiliate_url: "https://www.castlery.com/sg/products/owen-armchair?material=pearl_beige&wood=walnut"
+        price_usd: 849
+    dimensions: { width_cm: 110, depth_cm: 100, height_cm: 79 }
+    seat_capacity: 1
+    size_class: "large"
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "stocked_fabric"
+        color: "Pearl Beige"
+      frame:
+        structure: "plywood"
+      leg:
+        structure: "solid_rubber_wood"
+        finish: "walnut"
+    finish:
+      color_finish: "Pearl Beige"
+      leg_finish: "Walnut Wood"
+
+  - variant: "Owen Armchair / Opal Beige / Walnut Wood"
+    sku: "owen-armchair-opal-beige-walnut"
+    size_label: "110x100"
+    finish_code: "walnut"
+    finish_label: "Walnut Wood"
+    upholstery_code: "opal_beige"
+    upholstery_label: "Opal Beige"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626942038/crusader/variants/BW-4002/Wayne-Sofa-Opal-Beige_1.jpg"
+    model_asset_id: "armchair-real-castlery-owen-armchair-walnut-wood"
+    model_url: "/assets/models/armchairs/armchair-real-castlery-owen-armchair-walnut-wood.glb"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1689837191/crusader/variants/T-0001C-WA-BW4002/Owen-Armchair-Opal-Beige-Wulnut-Front-1689837189.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1689837191/crusader/variants/T-0001C-WA-BW4002/Owen-Armchair-Opal-Beige-Wulnut-Front-1689837189.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#c8bca8"
+    color_family: "beige"
+    tone: "warm"
+    collection_type: "stocked_fabric"
+    price_usd: 849
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/owen-armchair?material=opal_beige&wood=walnut"
+    purchase_options:
+      - id: "single"
+        label: "Single"
+        quantity: 1
+        sku: "owen-armchair-opal-beige-walnut"
+        affiliate_url: "https://www.castlery.com/sg/products/owen-armchair?material=opal_beige&wood=walnut"
+        price_usd: 849
+    dimensions: { width_cm: 110, depth_cm: 100, height_cm: 79 }
+    seat_capacity: 1
+    size_class: "large"
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "stocked_fabric"
+        color: "Opal Beige"
+      frame:
+        structure: "plywood"
+      leg:
+        structure: "solid_rubber_wood"
+        finish: "walnut"
+    finish:
+      color_finish: "Opal Beige"
+      leg_finish: "Walnut Wood"
+
+  - variant: "Owen Armchair / Haze / Walnut Wood"
+    sku: "owen-armchair-haze-walnut"
+    size_label: "110x100"
+    finish_code: "walnut"
+    finish_label: "Walnut Wood"
+    upholstery_code: "haze"
+    upholstery_label: "Haze"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1673945345/crusader/variants/CA-4001/Owen-3-Seater-Sofa-Haze-Det_5-1673945342.jpg"
+    model_asset_id: "armchair-real-castlery-owen-armchair-walnut-wood"
+    model_url: "/assets/models/armchairs/armchair-real-castlery-owen-armchair-walnut-wood.glb"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1689838889/crusader/variants/T-0001C-WA-CA4001/Owen-Armchair-Haze-Wulnut-Front-1689838887.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1689838889/crusader/variants/T-0001C-WA-CA4001/Owen-Armchair-Haze-Wulnut-Front-1689838887.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#8d8d87"
+    color_family: "grey"
+    tone: "cool"
+    collection_type: "stocked_fabric"
+    price_usd: 849
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/owen-armchair?material=haze&wood=walnut"
+    purchase_options:
+      - id: "single"
+        label: "Single"
+        quantity: 1
+        sku: "owen-armchair-haze-walnut"
+        affiliate_url: "https://www.castlery.com/sg/products/owen-armchair?material=haze&wood=walnut"
+        price_usd: 849
+    dimensions: { width_cm: 110, depth_cm: 100, height_cm: 79 }
+    seat_capacity: 1
+    size_class: "large"
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "stocked_fabric"
+        color: "Haze"
+      frame:
+        structure: "plywood"
+      leg:
+        structure: "solid_rubber_wood"
+        finish: "walnut"
+    finish:
+      color_finish: "Haze"
+      leg_finish: "Walnut Wood"

@@ -133,8 +133,8 @@ bundle_metadata:
 
 authoring_notes:
   category_confidence: "high"
-  source_checked: "Castlery Singapore product page, 2026-06-11"
-  note: "Castlery SG shows custom fabrics for the standalone armchair. This import publishes only the provided White Quartz GLB variant; custom fabric variants are deferred until model/media coverage is available."
+  source_checked: "Castlery Singapore product page, 2026-06-21"
+  note: "Castlery SG shows two stocked fabrics and eighteen custom fabrics for the standalone armchair. Variant swatches use the Castlery PDP texture cards; custom fabric variants reuse the White Quartz product media until color-specific product renders are available."
 
 shipping_and_warranty:
   free_delivery_threshold_sgd: 500
@@ -249,6 +249,8 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1760175347/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Side-1760175347.jpg"
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1760175347/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Back-1760175347.jpg"
     swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1640236351/crusader/variants/IN-4001/White-Quartz_1.jpg"
+    collection_type: "stocked"
     color_family: "grey"
     tone: "cool"
     price_usd: 549
@@ -266,4 +268,612 @@ variants:
       color_finish: "white_quartz"
       finish_color: "light_grey"
       wood_finish: "wire_brushed_caramel"
+    set_compatibility: []
+
+  - variant: "Avery Performance Boucle Armchair / Rust (Ginger)"
+    sku: "50441020-IN4003"
+    size_label: "81.5x80"
+    finish_code: "performance_infinity_boucle_ginger"
+    finish_label: "Rust (Ginger)"
+    upholstery_code: "performance_infinity_boucle_ginger"
+    upholstery_label: "Performance Infinity Boucle, Rust (Ginger)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#a55f37"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710492060/crusader/variants/IN-4003/Marlow-Armless-2-Seater-Sofa-Performance-Ginger-Caramel-Square-Det_3-1710492057.jpg"
+    collection_type: "stocked"
+    color_family: "rust"
+    tone: "warm"
+    price_usd: 549
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
+    seat_capacity: 1
+    size_class: "medium"
+    materials:
+      upholstery:
+        material_type: "performance_fabric"
+        label: "Performance Infinity Boucle"
+        color: "Rust (Ginger)"
+    finish:
+      color_finish: "performance_infinity_boucle_ginger"
+      finish_color: "rust_ginger"
+    set_compatibility: []
+
+  - variant: "Avery Performance Boucle Armchair / Cream"
+    sku: "50441020-IN4005"
+    size_label: "81.5x80"
+    finish_code: "performance_boucle_cream"
+    finish_label: "Cream"
+    upholstery_code: "performance_boucle_cream"
+    upholstery_label: "Performance Infinity Boucle, Cream"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#e6dfd3"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,c_fit/v1770191309/crusader/variants/IN-4005/IN4005-Cream-1770191306.jpg"
+    collection_type: "custom"
+    color_family: "cream"
+    tone: "warm"
+    price_usd: 549
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
+    seat_capacity: 1
+    size_class: "medium"
+    materials:
+      upholstery:
+        material_type: "performance_fabric"
+        label: "Performance Infinity Boucle"
+        color: "Cream"
+    finish:
+      color_finish: "performance_boucle_cream"
+      finish_color: "cream"
+    set_compatibility: []
+
+  - variant: "Avery Performance Boucle Armchair / Moss"
+    sku: "50441020-IN4004"
+    size_label: "81.5x80"
+    finish_code: "performance_infinity_boucle_moss"
+    finish_label: "Moss"
+    upholstery_code: "performance_infinity_boucle_moss"
+    upholstery_label: "Performance Infinity Boucle, Moss"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#65715a"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,c_fit/v1770098928/crusader/variants/IN-4004/IN4004-Moss-1770098923.jpg"
+    collection_type: "custom"
+    color_family: "green"
+    tone: "warm"
+    price_usd: 549
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
+    seat_capacity: 1
+    size_class: "medium"
+    materials:
+      upholstery:
+        material_type: "performance_fabric"
+        label: "Performance Infinity Boucle"
+        color: "Moss"
+    finish:
+      color_finish: "performance_infinity_boucle_moss"
+      finish_color: "moss"
+    set_compatibility: []
+
+  - variant: "Avery Performance Boucle Armchair / Ivory (Cream)"
+    sku: "50441020-PY4001"
+    size_label: "81.5x80"
+    finish_code: "peyton_ivory"
+    finish_label: "Ivory (Cream)"
+    upholstery_code: "peyton_ivory"
+    upholstery_label: "Performance Fleece (Peyton), Ivory (Cream)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#ebe5d9"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722322775/crusader/variants/PY-4001/Ivory-1722322773.jpg"
+    collection_type: "custom"
+    color_family: "cream"
+    tone: "warm"
+    price_usd: 549
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
+    seat_capacity: 1
+    size_class: "medium"
+    materials:
+      upholstery:
+        material_type: "performance_fabric"
+        label: "Peyton Fleece"
+        color: "Ivory (Cream)"
+    finish:
+      color_finish: "peyton_ivory"
+      finish_color: "ivory_cream"
+    set_compatibility: []
+
+  - variant: "Avery Performance Boucle Armchair / Medium Grey (Dove Grey)"
+    sku: "50441020-PY4002"
+    size_label: "81.5x80"
+    finish_code: "peyton_dove_grey"
+    finish_label: "Medium Grey (Dove Grey)"
+    upholstery_code: "peyton_dove_grey"
+    upholstery_label: "Performance Fleece (Peyton), Medium Grey (Dove Grey)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#b7b5ae"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722322647/crusader/variants/PY-4002/Dove-Grey-1722322645.jpg"
+    collection_type: "custom"
+    color_family: "grey"
+    tone: "cool"
+    price_usd: 549
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
+    seat_capacity: 1
+    size_class: "medium"
+    materials:
+      upholstery:
+        material_type: "performance_fabric"
+        label: "Peyton Fleece"
+        color: "Medium Grey (Dove Grey)"
+    finish:
+      color_finish: "peyton_dove_grey"
+      finish_color: "medium_grey_dove_grey"
+    set_compatibility: []
+
+  - variant: "Avery Performance Boucle Armchair / Moss"
+    sku: "50441020-PY4003"
+    size_label: "81.5x80"
+    finish_code: "peyton_moss"
+    finish_label: "Moss"
+    upholstery_code: "peyton_moss"
+    upholstery_label: "Performance Fleece (Peyton), Moss"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#697262"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722320266/crusader/variants/PY-4003/Moss-1722320263.jpg"
+    collection_type: "custom"
+    color_family: "green"
+    tone: "warm"
+    price_usd: 549
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
+    seat_capacity: 1
+    size_class: "medium"
+    materials:
+      upholstery:
+        material_type: "performance_fabric"
+        label: "Peyton Fleece"
+        color: "Moss"
+    finish:
+      color_finish: "peyton_moss"
+      finish_color: "moss"
+    set_compatibility: []
+
+  - variant: "Avery Performance Boucle Armchair / Caramel (Cumin)"
+    sku: "50441020-PY4004"
+    size_label: "81.5x80"
+    finish_code: "peyton_cumin"
+    finish_label: "Caramel (Cumin)"
+    upholstery_code: "peyton_cumin"
+    upholstery_label: "Performance Fleece (Peyton), Caramel (Cumin)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#b8793a"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1721120972/crusader/variants/PY-4004/Cumin-Swathc_1-1721120969.jpg"
+    collection_type: "custom"
+    color_family: "rust"
+    tone: "warm"
+    price_usd: 549
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
+    seat_capacity: 1
+    size_class: "medium"
+    materials:
+      upholstery:
+        material_type: "performance_fabric"
+        label: "Peyton Fleece"
+        color: "Caramel (Cumin)"
+    finish:
+      color_finish: "peyton_cumin"
+      finish_color: "caramel_cumin"
+    set_compatibility: []
+
+  - variant: "Avery Performance Boucle Armchair / Sand (Oat)"
+    sku: "50441020-PG4002"
+    size_label: "81.5x80"
+    finish_code: "performance_genova_oat"
+    finish_label: "Sand (Oat)"
+    upholstery_code: "performance_genova_oat"
+    upholstery_label: "Performance Linen Weave (Genova), Sand (Oat)"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#cfc2af"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,c_fit/v1757063296/crusader/variants/PG-4002/Mori-Armchair-Oat-Walnut-Leg-Det_2-1757063296.jpg"
+    collection_type: "custom"
+    color_family: "beige"
+    tone: "warm"
+    price_usd: 549
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
+    seat_capacity: 1
+    size_class: "medium"
+    materials:
+      upholstery:
+        material_type: "performance_fabric"
+        label: "Performance Linen Weave (Genova)"
+        color: "Sand (Oat)"
+    finish:
+      color_finish: "performance_genova_oat"
+      finish_color: "sand_oat"
+    set_compatibility: []
+
+  - variant: "Avery Performance Boucle Armchair / Cream"
+    sku: "50441020-PG4003"
+    size_label: "81.5x80"
+    finish_code: "performance_linen_weave_cream"
+    finish_label: "Cream"
+    upholstery_code: "performance_linen_weave_cream"
+    upholstery_label: "Performance Linen Weave (Genova), Cream"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#ebe2d3"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,c_fit/v1770188184/crusader/variants/PG-4003/PG4003-Cream-1770188182.jpg"
+    collection_type: "custom"
+    color_family: "cream"
+    tone: "warm"
+    price_usd: 549
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
+    seat_capacity: 1
+    size_class: "medium"
+    materials:
+      upholstery:
+        material_type: "performance_fabric"
+        label: "Performance Linen Weave (Genova)"
+        color: "Cream"
+    finish:
+      color_finish: "performance_linen_weave_cream"
+      finish_color: "cream"
+    set_compatibility: []
+
+  - variant: "Avery Performance Boucle Armchair / Light Grey"
+    sku: "50441020-PG4004"
+    size_label: "81.5x80"
+    finish_code: "performance_linen_weave_light_grey"
+    finish_label: "Light Grey"
+    upholstery_code: "performance_linen_weave_light_grey"
+    upholstery_label: "Performance Linen Weave (Genova), Light Grey"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#c8c8bf"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,c_fit/v1770188172/crusader/variants/PG-4004/PG4004-Light-Grey-1770188170.jpg"
+    collection_type: "custom"
+    color_family: "grey"
+    tone: "cool"
+    price_usd: 549
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
+    seat_capacity: 1
+    size_class: "medium"
+    materials:
+      upholstery:
+        material_type: "performance_fabric"
+        label: "Performance Linen Weave (Genova)"
+        color: "Light Grey"
+    finish:
+      color_finish: "performance_linen_weave_light_grey"
+      finish_color: "light_grey"
+    set_compatibility: []
+
+  - variant: "Avery Performance Boucle Armchair / Creamy White"
+    sku: "50441020-PT4001"
+    size_label: "81.5x80"
+    finish_code: "performance_twill_creamy_white"
+    finish_label: "Creamy White"
+    upholstery_code: "performance_twill_creamy_white"
+    upholstery_label: "Performance Creamy White"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#f0eadf"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,c_fit/v1774943787/crusader/variants/PT-4001/PT4001-Performance-Twill-Creamy-White-1774943785.jpg"
+    collection_type: "custom"
+    color_family: "cream"
+    tone: "warm"
+    price_usd: 549
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
+    seat_capacity: 1
+    size_class: "medium"
+    materials:
+      upholstery:
+        material_type: "performance_fabric"
+        label: "Performance Twill"
+        color: "Creamy White"
+    finish:
+      color_finish: "performance_twill_creamy_white"
+      finish_color: "creamy_white"
+    set_compatibility: []
+
+  - variant: "Avery Performance Boucle Armchair / Pearl Beige"
+    sku: "50441020-PT4002"
+    size_label: "81.5x80"
+    finish_code: "performance_twill_pearl_beige"
+    finish_label: "Pearl Beige"
+    upholstery_code: "performance_twill_pearl_beige"
+    upholstery_label: "Performance Twill, Pearl Beige"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#d6cbbb"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1747116409/crusader/variants/PT-4002/Levi-Office-Chair-Twill-Pearl-Beige-Square-Det_4-1747116407.jpg"
+    collection_type: "custom"
+    color_family: "beige"
+    tone: "warm"
+    price_usd: 549
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
+    seat_capacity: 1
+    size_class: "medium"
+    materials:
+      upholstery:
+        material_type: "performance_fabric"
+        label: "Performance Twill"
+        color: "Pearl Beige"
+    finish:
+      color_finish: "performance_twill_pearl_beige"
+      finish_color: "pearl_beige"
+    set_compatibility: []
+
+  - variant: "Avery Performance Boucle Armchair / Medium Grey"
+    sku: "50441020-PT4005"
+    size_label: "81.5x80"
+    finish_code: "performance_twill_medium_grey"
+    finish_label: "Medium Grey"
+    upholstery_code: "performance_twill_medium_grey"
+    upholstery_label: "Performance Twill, Medium Grey"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#8f918c"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,c_fit/v1769061840/crusader/variants/PT-4005/PT4005-Performance-Twill-Dove-Grey-1769061838.jpg"
+    collection_type: "custom"
+    color_family: "grey"
+    tone: "cool"
+    price_usd: 549
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
+    seat_capacity: 1
+    size_class: "medium"
+    materials:
+      upholstery:
+        material_type: "performance_fabric"
+        label: "Performance Twill"
+        color: "Medium Grey"
+    finish:
+      color_finish: "performance_twill_medium_grey"
+      finish_color: "medium_grey"
+    set_compatibility: []
+
+  - variant: "Avery Performance Boucle Armchair / Slate"
+    sku: "50441020-PT4003"
+    size_label: "81.5x80"
+    finish_code: "performance_twill_slate"
+    finish_label: "Slate"
+    upholstery_code: "performance_twill_slate"
+    upholstery_label: "Performance Twill, Slate"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#4f5656"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1756361613/crusader/variants/PT-4003/Performance-Twill-Slate-1756361610.jpg"
+    collection_type: "custom"
+    color_family: "grey"
+    tone: "cool"
+    price_usd: 549
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
+    seat_capacity: 1
+    size_class: "medium"
+    materials:
+      upholstery:
+        material_type: "performance_fabric"
+        label: "Performance Twill"
+        color: "Slate"
+    finish:
+      color_finish: "performance_twill_slate"
+      finish_color: "slate"
+    set_compatibility: []
+
+  - variant: "Avery Performance Boucle Armchair / Moss"
+    sku: "50441020-PT4004"
+    size_label: "81.5x80"
+    finish_code: "performance_twill_moss"
+    finish_label: "Moss"
+    upholstery_code: "performance_twill_moss"
+    upholstery_label: "Performance Twill, Moss"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#6a735e"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1756438801/crusader/variants/PT-4004/Moss-1756438798.jpg"
+    collection_type: "custom"
+    color_family: "green"
+    tone: "warm"
+    price_usd: 549
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
+    seat_capacity: 1
+    size_class: "medium"
+    materials:
+      upholstery:
+        material_type: "performance_fabric"
+        label: "Performance Twill"
+        color: "Moss"
+    finish:
+      color_finish: "performance_twill_moss"
+      finish_color: "moss"
+    set_compatibility: []
+
+  - variant: "Avery Performance Boucle Armchair / Cream"
+    sku: "50441020-GR4001"
+    size_label: "81.5x80"
+    finish_code: "washed_chenille_cream"
+    finish_label: "Cream"
+    upholstery_code: "washed_chenille_cream"
+    upholstery_label: "Washed Chenille, Cream"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#eadfce"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,c_fit/v1769054456/crusader/variants/GR-4001/GR4001-Greta-Ivory-1769054453.jpg"
+    collection_type: "custom"
+    color_family: "cream"
+    tone: "warm"
+    price_usd: 549
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
+    seat_capacity: 1
+    size_class: "medium"
+    materials:
+      upholstery:
+        material_type: "performance_fabric"
+        label: "Washed Chenille"
+        color: "Cream"
+    finish:
+      color_finish: "washed_chenille_cream"
+      finish_color: "cream"
+    set_compatibility: []
+
+  - variant: "Avery Performance Boucle Armchair / Sand"
+    sku: "50441020-GR4002"
+    size_label: "81.5x80"
+    finish_code: "washed_chenille_sand"
+    finish_label: "Sand"
+    upholstery_code: "washed_chenille_sand"
+    upholstery_label: "Washed Chenille, Sand"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#c7b7a0"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,c_fit/v1770188296/crusader/variants/GR-4002/GR4002-Latte-1770188293.jpg"
+    collection_type: "custom"
+    color_family: "sand"
+    tone: "warm"
+    price_usd: 549
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
+    seat_capacity: 1
+    size_class: "medium"
+    materials:
+      upholstery:
+        material_type: "performance_fabric"
+        label: "Washed Chenille"
+        color: "Sand"
+    finish:
+      color_finish: "washed_chenille_sand"
+      finish_color: "sand"
+    set_compatibility: []
+
+  - variant: "Avery Performance Boucle Armchair / Caramel"
+    sku: "50441020-GR4003"
+    size_label: "81.5x80"
+    finish_code: "washed_chenille_caramel"
+    finish_label: "Caramel"
+    upholstery_code: "washed_chenille_caramel"
+    upholstery_label: "Washed Chenille, Caramel"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#a67243"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,c_fit/v1769054464/crusader/variants/GR-4003/GR4003-Greta-Mustard-Brown-1769054461.jpg"
+    collection_type: "custom"
+    color_family: "brown"
+    tone: "warm"
+    price_usd: 549
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
+    seat_capacity: 1
+    size_class: "medium"
+    materials:
+      upholstery:
+        material_type: "performance_fabric"
+        label: "Washed Chenille"
+        color: "Caramel"
+    finish:
+      color_finish: "washed_chenille_caramel"
+      finish_color: "caramel"
+    set_compatibility: []
+
+  - variant: "Avery Performance Boucle Armchair / Moss"
+    sku: "50441020-GR4004"
+    size_label: "81.5x80"
+    finish_code: "washed_chenille_moss"
+    finish_label: "Moss"
+    upholstery_code: "washed_chenille_moss"
+    upholstery_label: "Washed Chenille, Moss"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760175346/crusader/variants/50441020-IN4002/Avery-Armchair-Performance-Infinity-Boucle-White-Quartz-Front-1760175346.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#687260"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,c_fit/v1769054472/crusader/variants/GR-4004/GR4004-Greta-Moss-1769054469.jpg"
+    collection_type: "custom"
+    color_family: "green"
+    tone: "warm"
+    price_usd: 549
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
+    seat_capacity: 1
+    size_class: "medium"
+    materials:
+      upholstery:
+        material_type: "performance_fabric"
+        label: "Washed Chenille"
+        color: "Moss"
+    finish:
+      color_finish: "washed_chenille_moss"
+      finish_color: "moss"
     set_compatibility: []

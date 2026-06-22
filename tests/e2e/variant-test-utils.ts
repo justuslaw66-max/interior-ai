@@ -240,8 +240,37 @@ export async function addImportedProductIfReady(page: Page): Promise<boolean> {
   if (!enabled) return false;
 
   await addButton.click({ noWaitAfter: true });
+  await confirmCatalogPlacementIfVisible(page);
   await page.waitForTimeout(1200);
   return true;
+}
+
+export async function confirmCatalogPlacementIfVisible(page: Page): Promise<boolean> {
+  const confirmButton = page.getByTestId("catalog-placement-confirm");
+  const visible = await expect(confirmButton)
+    .toBeVisible({ timeout: 5000 })
+    .then(() => true)
+    .catch(() => false);
+  if (!visible) return false;
+
+  await confirmButton.click({ noWaitAfter: true });
+  await page.waitForTimeout(600);
+  return true;
+}
+
+export async function addCatalogDrawerItemToRoom(page: Page): Promise<void> {
+  await page.getByTestId("catalog-detail-add-to-room").click();
+  const confirmed = await confirmCatalogPlacementIfVisible(page);
+  expect(confirmed).toBeTruthy();
+}
+
+export async function addCatalogCardItemToRoom(
+  page: Page,
+  productId: string
+): Promise<void> {
+  await page.getByTestId(`catalog-add-${productId}`).click();
+  const confirmed = await confirmCatalogPlacementIfVisible(page);
+  expect(confirmed).toBeTruthy();
 }
 
 export async function ensureItemSelectedForVariants(page: Page): Promise<boolean> {

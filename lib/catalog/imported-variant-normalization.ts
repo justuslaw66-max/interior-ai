@@ -1,4 +1,5 @@
-import type { ProductVariant } from "../catalog-schema";
+import type { CatalogPurchaseOption, ProductVariant } from "../catalog-schema";
+import { normalizeCatalogMediaPresentationMode } from "./media-policy";
 import {
   hardenDuplicateImportedVariantLabels,
   inferCollectionType,
@@ -20,13 +21,40 @@ export type ImportedUpholsteryOptionLike = {
   fabric_label?: string;
   color_label?: string;
   collection_type?: string;
+  material_type?: string;
   texture_type?: string;
   swatch_group?: string;
   swatch_hex?: string;
+  swatch_image?: string;
+  swatch_image_url?: string;
+  swatchImageUrl?: string;
   thumbnail_url?: string;
   thumbnailUrl?: string;
+  display_assets?: {
+    swatch_image?: string;
+    closeup_image?: string;
+  };
   render_assets?: ImportedRenderAssetsLike;
 };
+
+export type ImportedPurchaseOptionLike = {
+  id?: string;
+  label?: string;
+  quantity?: number;
+  sku?: string;
+  affiliate_url?: string;
+  affiliateUrl?: string;
+  price_usd?: number;
+  priceUsd?: number;
+  compare_at_price_usd?: number;
+  compareAtPriceUsd?: number;
+  savings_usd?: number;
+  savingsUsd?: number;
+  image_url?: string;
+  imageUrl?: string;
+  available?: boolean;
+};
+
 export type ImportedVariantEntryLike = {
   variant?: string;
   finish_code?: string;
@@ -35,7 +63,17 @@ export type ImportedVariantEntryLike = {
   model_url?: string;
   upholstery_code?: string;
   upholstery_label?: string;
+  leg_finish_code?: string;
+  leg_finish_label?: string;
+  legFinishCode?: string;
+  legFinishLabel?: string;
   size_label?: string;
+  affiliate_url?: string;
+  affiliateUrl?: string;
+  price_usd?: number;
+  priceUsd?: number;
+  purchase_options?: ImportedPurchaseOptionLike[];
+  available?: boolean;
   dimensions?: {
     width_cm?: number;
     depth_cm?: number;
@@ -43,12 +81,17 @@ export type ImportedVariantEntryLike = {
   };
   swatch_group?: string;
   swatch_hex?: string;
+  swatch_image?: string;
+  swatch_image_url?: string;
+  swatchImageUrl?: string;
   color_family?: string;
   tone?: string;
   thumbnail_url?: string;
   thumbnailUrl?: string;
   gallery_images?: string[];
   galleryImages?: string[];
+  media_presentation?: string;
+  mediaPresentation?: string;
   materials?: Record<string, unknown>;
   finish?: Record<string, unknown>;
   collection_type?: string;
@@ -161,6 +204,63 @@ function mapColorFromText(textLike: unknown): string {
   return "#c4b8a7";
 }
 
+function normalizeImportedUrl(value: unknown): string | undefined {
+  const url = String(value ?? "").trim();
+  if (url.startsWith("/") && !url.startsWith("//")) return url;
+  return /^https?:\/\//i.test(url) ? url : undefined;
+}
+
+function normalizePositiveNumber(value: unknown): number | undefined {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+}
+
+function normalizePurchaseOptionId(value: unknown, fallback: string): string {
+  const normalized = String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+  return normalized || fallback;
+}
+
+function normalizeImportedPurchaseOptions(value: unknown): CatalogPurchaseOption[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+
+  const options = value
+    .map((entry): CatalogPurchaseOption | null => {
+      const option = entry as ImportedPurchaseOptionLike & Record<string, unknown>;
+      const quantity = Math.max(1, Math.round(Number(option.quantity ?? 1)));
+      if (!Number.isFinite(quantity)) return null;
+      const id = normalizePurchaseOptionId(option.id, quantity > 1 ? `set_of_${quantity}` : "single");
+      const label = String(option.label ?? (quantity > 1 ? `Set of ${quantity}` : "Single")).trim();
+      const affiliateUrl = normalizeImportedUrl(option.affiliate_url ?? option.affiliateUrl);
+      const priceHint = normalizePositiveNumber(option.price_usd ?? option.priceUsd);
+      const compareAtPriceHint = normalizePositiveNumber(
+        option.compare_at_price_usd ?? option.compareAtPriceUsd
+      );
+      const savingsHint = normalizePositiveNumber(option.savings_usd ?? option.savingsUsd);
+      const imageUrl = normalizeImportedUrl(option.image_url ?? option.imageUrl);
+      const sku = String(option.sku ?? "").trim();
+
+      return {
+        id,
+        label: label || (quantity > 1 ? `Set of ${quantity}` : "Single"),
+        quantity,
+        sku: sku || undefined,
+        affiliateUrl,
+        priceHint,
+        compareAtPriceHint,
+        savingsHint,
+        imageUrl,
+        available: typeof option.available === "boolean" ? option.available : undefined,
+      };
+    })
+    .filter((entry): entry is CatalogPurchaseOption => Boolean(entry));
+
+  return options.length ? options : undefined;
+}
+
 export function normalizeImportedVariants({
   productId,
   variantEntries,
@@ -269,11 +369,15 @@ export function normalizeImportedVariants({
     const finishLooksLikeWood = /(wood|oak|walnut|chestnut|natural|black)/i.test(
       `${rawFinishCode} ${rawFinishLabel} ${rawEntrySwatchGroup}`
     );
+    const explicitUpholsterySwatch =
+      rawEntrySwatchGroup.includes("upholstery") || rawEntrySwatchGroup.includes("fabric");
     const hasIndependentFinishCode =
       rawFinishCode.length > 0 &&
       normalizeUpholsteryCode(rawFinishCode) !== normalizedEntryUpholsteryCode &&
       !/performance|fabric|leather/i.test(rawFinishCode);
-    const inferredWoodFinish = rawEntrySwatchGroup.includes("wood") || (hasIndependentFinishCode && finishLooksLikeWood);
+    const inferredWoodFinish =
+      !explicitUpholsterySwatch &&
+      (rawEntrySwatchGroup.includes("wood") || (hasIndependentFinishCode && finishLooksLikeWood));
     const effectiveSwatchGroup =
       rawEntrySwatchGroup ||
       (inferredWoodFinish
@@ -291,6 +395,7 @@ export function normalizeImportedVariants({
         upholsteryLabel ||
         upholsteryCodeColourLabel ||
         fabricFromStructuredFields ||
+        finishColourFromLabel ||
         structuredMaterialLabel ||
         deriveImportedFabricType(rawVariantLabel, matchingUpholsteryOption?.texture_type) ||
         sentenceCaseLabel(rawVariantLabel);
@@ -338,6 +443,16 @@ export function normalizeImportedVariants({
     const swatchHexCandidate = String(
       (entryAny.swatch_hex as string | undefined) ?? matchingUpholsteryOption?.swatch_hex ?? ""
     ).trim();
+    const swatchTextureUrl = normalizeImportedUrl(
+      entry.swatch_image_url ??
+        entry.swatchImageUrl ??
+        entry.swatch_image ??
+        matchingUpholsteryOption?.swatch_image_url ??
+        matchingUpholsteryOption?.swatchImageUrl ??
+        matchingUpholsteryOption?.swatch_image ??
+        matchingUpholsteryOption?.display_assets?.swatch_image ??
+        matchingUpholsteryOption?.display_assets?.closeup_image
+    );
     const isValidSwatchHex = /^#([0-9a-f]{6})$/i.test(swatchHexCandidate);
     const colorSource = [
       matchingUpholsteryOption?.color_label,
@@ -369,7 +484,32 @@ export function normalizeImportedVariants({
         (value): value is string => typeof value === "string" && value.trim().length > 0
       )),
     ];
-    const materialType =
+    const mediaPresentationMode = normalizeCatalogMediaPresentationMode(
+      entryAny.media_presentation ?? entryAny.mediaPresentation,
+    );
+    const legFinishCode =
+      normalizeHyphenatedCode(
+        String(
+          entry.leg_finish_code ??
+            entry.legFinishCode ??
+            ((entryAny.finish as Record<string, unknown> | undefined)?.leg_finish as string | undefined) ??
+            ""
+        )
+      ) || undefined;
+    const legFinishLabel =
+      sentenceCaseLabel(
+        String(entry.leg_finish_label ?? entry.legFinishLabel ?? "")
+          .replace(/_/g, " ")
+          .trim()
+      ) ||
+      (legFinishCode
+        ? sentenceCaseLabel(legFinishCode.replace(/-/g, " "))
+        : undefined);
+    const affiliateUrl = normalizeImportedUrl(entryAny.affiliate_url ?? entryAny.affiliateUrl);
+    const priceHint = normalizePositiveNumber(entryAny.price_usd ?? entryAny.priceUsd);
+    const purchaseOptions = normalizeImportedPurchaseOptions(entryAny.purchase_options);
+    const available = typeof entryAny.available === "boolean" ? entryAny.available : undefined;
+    const inferredMaterialType =
       structuredMaterialLabel === "Leather" || structuredMaterialLabel === "Fabric"
         ? structuredMaterialLabel
         : inferMaterialTypeFromText(
@@ -378,9 +518,17 @@ export function normalizeImportedVariants({
             entry.upholstery_label,
             entry.upholstery_code,
             rawVariantLabel,
+            String(((entryAny.materials as Record<string, unknown> | undefined)?.upholstery as Record<string, unknown> | undefined)
+              ?.material_type ?? ""),
+            matchingUpholsteryOption?.material_type,
             matchingUpholsteryOption?.texture_type,
             matchingUpholsteryOption?.fabric_family
           );
+    const materialType = effectiveSwatchGroup.includes("wood")
+      ? "Wood"
+      : inferredMaterialType === "Leather"
+        ? "Leather"
+        : "Fabric";
 
     return {
       id: variantId,
@@ -403,7 +551,10 @@ export function normalizeImportedVariants({
       materialType,
       swatchGroup: effectiveSwatchGroup || undefined,
       swatchHex: colorHex,
+      swatchTextureUrl,
       collectionType,
+      legFinishCode,
+      legFinishLabel,
       renderAssets: matchingUpholsteryOption?.render_assets
         ? {
             baseColorMap: undefined,
@@ -419,6 +570,11 @@ export function normalizeImportedVariants({
         : undefined,
       thumbnailUrl: resolvedThumbnailUrl,
       galleryImages: variantGalleryImages,
+      mediaPresentationMode,
+      affiliateUrl,
+      priceHint,
+      purchaseOptions,
+      available,
     } satisfies ProductVariant;
   });
 

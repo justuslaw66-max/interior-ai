@@ -1,6 +1,7 @@
 import { expect, test } from "./fixtures";
 import {
   addImportedProductIfReady,
+  addCatalogDrawerItemToRoom,
   openCatalogPreview,
   selectImportedFamilyByHint,
   selectImportedProductById,
@@ -18,7 +19,7 @@ test.describe("110. Dawson Product Info", () => {
 
     const opened = await openCatalogPreview(page, DAWSON_3S_ID, "Dawson 3 Seater", [/^Sofa \(/]);
     if (opened) {
-      await page.getByTestId("catalog-detail-add-to-room").click();
+      await addCatalogDrawerItemToRoom(page);
     } else {
       await expect(selectImportedFamilyByHint(page, "Dawson")).resolves.toBeTruthy();
       await expect(selectImportedProductById(page, DAWSON_3S_ID)).resolves.toBeTruthy();

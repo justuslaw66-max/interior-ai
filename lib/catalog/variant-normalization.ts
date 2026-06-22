@@ -126,7 +126,15 @@ export function deriveVariantDisambiguator(
 }
 
 export function hardenDuplicateImportedVariantLabels<
-  T extends { id: string; label: string; finishLabel?: string; finishCode?: string; dimensionsMm?: { w: number; d: number } }
+  T extends {
+    id: string;
+    label: string;
+    finishLabel?: string;
+    finishCode?: string;
+    legFinishLabel?: string;
+    legFinishCode?: string;
+    dimensionsMm?: { w: number; d: number };
+  }
 >(variants: T[]): T[] {
   const labelCounts = new Map<string, number>();
   for (const variant of variants) {
@@ -139,8 +147,9 @@ export function hardenDuplicateImportedVariantLabels<
     const isDuplicateLabel = (labelCounts.get(key) ?? 0) > 1;
     if (!isDuplicateLabel) return variant;
 
-    const qualifierParts = [deriveVariantDisambiguator(variant)];
-    if (variant.dimensionsMm?.w && variant.dimensionsMm?.d) {
+    const legQualifier = normalizeVariantQualifier(variant.legFinishLabel ?? variant.legFinishCode ?? "");
+    const qualifierParts = [legQualifier || deriveVariantDisambiguator(variant)];
+    if (!qualifierParts.some(Boolean) && variant.dimensionsMm?.w && variant.dimensionsMm?.d) {
       qualifierParts.push(`${variant.dimensionsMm.w}x${variant.dimensionsMm.d}`);
     }
     const qualifier = qualifierParts.filter(Boolean).join(" ");
@@ -237,6 +246,8 @@ export function inferCollectionType(
 ): "stocked" | "custom" | undefined {
   const explicit = String(explicitCollectionType ?? "").trim().toLowerCase();
   if (explicit === "stocked" || explicit === "custom") return explicit;
+  if (explicit.startsWith("stocked_")) return "stocked";
+  if (explicit.startsWith("custom_")) return "custom";
 
   const normalizedCode = normalizeUpholsteryCode(String(upholsteryCode ?? ""));
   if (!normalizedCode) return undefined;

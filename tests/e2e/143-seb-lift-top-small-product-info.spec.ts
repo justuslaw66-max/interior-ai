@@ -4,7 +4,7 @@ import {
   resolveConfiguredPlanningDimsMm,
   resolveConfiguredVisualDimsMm,
 } from "../../lib/design-page-config-resolvers";
-import { openCatalogPreview } from "./variant-test-utils";
+import { addCatalogDrawerItemToRoom, openCatalogPreview } from "./variant-test-utils";
 
 const SEB_LIFT_TOP_SMALL_ID = "coffee-real-castlery-seb-lift-top-small";
 
@@ -50,6 +50,55 @@ function expectRows(rows: ProductInfoRow[] | undefined, expected: RegExp[]) {
 }
 
 test.describe("143. Seb Lift Top Small Product Info", () => {
+  test("imported configurable bounds accept YAML *_cm keys for Jaron open recliner states", () => {
+    const productId = "armchair-real-castlery-jaron-recliner-armchair";
+    const variantId = "imported-armchair-real-castlery-jaron-recliner-armchair-slim-arm-marche-ivory";
+    const item = {
+      instanceId: "jaron-open-state",
+      productId,
+      variantId,
+      position: [0, 0, 0],
+      rotationY: 0,
+    };
+    const fallbackProduct = {
+      id: productId,
+      dimsMm: { w: 1340, d: 1150, h: 770 },
+      variants: [{ id: variantId, dimensionsMm: { w: 1340, d: 1150, h: 770 } }],
+    };
+    const ctx = {
+      importedModelById: new Map([
+        [
+          productId,
+          {
+            id: productId,
+            catalog: {
+              configurableMetadata: { default_configuration: "closed" },
+              configurations: [
+                {
+                  configuration_code: "open_recliner",
+                  visual_bounds_cm: { width_cm: 134, depth_cm: 165, height_cm: 77 },
+                  planning_bounds_cm: { width_cm: 134, depth_cm: 165, height_cm: 77 },
+                },
+              ],
+            },
+          },
+        ],
+      ]),
+      itemConfigurationByInstanceId: { "jaron-open-state": "open_recliner" },
+    };
+
+    expect(resolveConfiguredVisualDimsMm(item as never, fallbackProduct as never, ctx as never)).toEqual({
+      w: 1340,
+      d: 1650,
+      h: 770,
+    });
+    expect(resolveConfiguredPlanningDimsMm(item as never, fallbackProduct as never, ctx as never)).toEqual({
+      w: 1340,
+      d: 1650,
+      h: 770,
+    });
+  });
+
   test("configurable bounds keep the open lift-top footprint instead of closed variant size", () => {
     const productId = SEB_LIFT_TOP_SMALL_ID;
     const variantId = "imported-coffee-real-castlery-seb-lift-top-small-90cm-muted-honey";
@@ -124,7 +173,7 @@ test.describe("143. Seb Lift Top Small Product Info", () => {
       /castlery\.com\/sg\/products\/seb-lift-top-coffee-table-small/i
     );
 
-    await page.getByTestId("catalog-detail-add-to-room").click();
+    await addCatalogDrawerItemToRoom(page);
 
     await expect(page.getByText("Selected Item")).toBeVisible({ timeout: 10000 });
     await expect(page.getByTestId("selected-single-finish-label")).toContainText(/Muted Honey/i);

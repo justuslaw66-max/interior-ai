@@ -333,6 +333,7 @@ variants:
     finish_label: "Bisque"
     upholstery_code: "performance_fabric_bisque"
     upholstery_label: "Performance Fabric, Bisque"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1645671206/crusader/variants/AM-4001/Madison-Armchair-Bisque-Square-Det_1.jpg"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1000/v1645673258/crusader/variants/50440731-AM4001/Madison-Armchair-Bisque-Front.png"
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1645673258/crusader/variants/50440731-AM4001/Madison-Armchair-Bisque-Front.jpg"
@@ -368,6 +369,7 @@ variants:
     finish_label: "Stone"
     upholstery_code: "performance_fabric_stone"
     upholstery_label: "Performance Fabric, Stone"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1627632391/crusader/variants/TW-4002/Stone_1.jpg"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1624964674/crusader/variants/50440731-TW4002/Madison-Armchair-Stone-Front.jpg"
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1624964674/crusader/variants/50440731-TW4002/Madison-Armchair-Stone-Front.jpg"
@@ -396,6 +398,7 @@ variants:
     finish_label: "Camille, Forest"
     upholstery_code: "camille_forest_fabric"
     upholstery_label: "Camille, Forest Fabric"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1761806102/crusader/variants/CM-4001/Madison-3-Seater-Sofa-Forest-Det_5-1761806101.jpg"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1757405621/crusader/variants/50440731-CM4001/Madison-Armchair-Forest-Front-1757405621.jpg"
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1757405621/crusader/variants/50440731-CM4001/Madison-Armchair-Forest-Front-1757405621.jpg"
@@ -424,6 +427,7 @@ variants:
     finish_label: "Caramel"
     upholstery_code: "top_grain_leather_caramel"
     upholstery_label: "Top Grain Leather, Caramel"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1626941764/crusader/variants/LE-4016/Jonathan-Sofa-Brown_1.jpg"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1000/v1642587043/crusader/variants/50440731-LE4016/Madison-Leather-Armchai-Caramel-Front.png"
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1642587043/crusader/variants/50440731-LE4016/Madison-Leather-Armchai-Caramel-Front.jpg"

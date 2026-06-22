@@ -1,6 +1,6 @@
 import { expect, test } from "./fixtures";
 import { GLB_CALIBRATION_BY_PRODUCT_ID } from "../../lib/design-page-calibration";
-import { openCatalogPreview } from "./variant-test-utils";
+import { addCatalogDrawerItemToRoom, openCatalogPreview } from "./variant-test-utils";
 
 const SLOANE_TRAVERTINE_180_ID = "dining-real-castlery-sloane-travertine-180";
 const SLOANE_TRAVERTINE_225_ID = "dining-real-castlery-sloane-travertine-225";
@@ -151,7 +151,7 @@ test.describe("132. Sloane Travertine Dining Table 180cm Product Info", () => {
     expect(opened).toBeTruthy();
 
     await expect(page.getByText("Product details")).toBeVisible({ timeout: 10000 });
-    await page.getByTestId("catalog-detail-add-to-room").click({ noWaitAfter: true });
+    await addCatalogDrawerItemToRoom(page);
 
     await expect(page.getByText("Selected Item")).toBeVisible({ timeout: 10000 });
 

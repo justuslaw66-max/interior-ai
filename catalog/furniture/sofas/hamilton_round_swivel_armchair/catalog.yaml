@@ -1,0 +1,387 @@
+status: "published"
+brand: "Castlery"
+retailer: "Castlery Singapore"
+source_url: "https://www.castlery.com/sg/products/hamilton-round-performance-fabric-swivel-armchair"
+category: "armchair"
+
+product_family: "Hamilton"
+product_name: "Hamilton Round Swivel Armchair"
+slug: "castlery-hamilton-round-swivel-armchair"
+variant: "Round Swivel Armchair / Performance Marcel, Brilliant White / Removable Cover"
+
+price_usd: 999
+price_band: "mid_premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "secondary"
+
+dimensions:
+  width_cm: 100
+  depth_cm: 100
+  height_cm: 82
+
+seat_capacity: 1
+size_class: "large"
+shape: "round"
+chair_shape_detail: "round_swivel_lounge"
+base_type: "swivel_base"
+
+material_family: "upholstered"
+material_mix: "upholstered_metal"
+material_mix_components:
+  - "laminated_veneer_lumber"
+  - "plywood"
+  - "metal"
+  - "performance_fabric"
+  - "foam"
+  - "fiber"
+  - "pocket_spring"
+
+materials:
+  frame:
+    structure:
+      - "laminated_veneer_lumber"
+      - "plywood"
+  leg_frame:
+    structure: "metal"
+    finish: "black_powder_coating"
+  upholstery:
+    material_type: "performance_fabric"
+    label: "Performance Textured Plain Weave (Marcel), Cream (Brilliant White)"
+    composition: "97% polyester, 3% acrylic"
+
+color_family: "white"
+tone: "neutral"
+style_cluster: "contemporary"
+style_secondary: "modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "rounded"
+  silhouette: "round_lounge_armchair"
+  form_language: "soft"
+  descriptors:
+    - "round_footprint"
+    - "swivel_function"
+    - "loose_back_cushion"
+    - "soft_curved_arms"
+
+spatial_attributes:
+  footprint_shape: "circle"
+  walkway_clearance_cm: 60
+  descriptors:
+    - "large_round_armchair"
+    - "reading_corner_suitable"
+    - "open_plan_lounge_seating"
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+  - "bedroom"
+  - "open_plan"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: false
+  swivel_clearance_required: true
+  floating_layout_supported: true
+  room_min_width_cm: 240
+  room_min_depth_cm: 240
+  recommended_in_front_of:
+    - "side_table"
+    - "floor_lamp"
+    - "rug"
+    - "sofa"
+  clearance_guidance:
+    chair_to_table_cm_min: 20
+    circulation_cm_min: 60
+
+design_pairings:
+  - "side_table"
+  - "floor_lamp"
+  - "rug"
+  - "sofa"
+  - "coffee_table"
+
+compatibility:
+  related_products:
+    - product_family: "Hamilton"
+      product_name: "Hamilton Round Swivel 1.5 Seater Armchair"
+      relationship: "family_variant"
+      strength: "strong"
+      collection_context: "Hamilton Armchair tab"
+
+bundle_metadata:
+  bundle_role: "accent"
+  can_bundle_with:
+    - "side_table"
+    - "floor_lamp"
+    - "rug"
+    - "sofa"
+  set_behavior:
+    supports_reading_corner_pairing: true
+    supports_living_room_pairing: true
+
+summary:
+  short_description: "A round performance-fabric swivel armchair with a soft circular seat and loose back cushion."
+  long_description: "Hamilton's Round Swivel Armchair brings the collection's curved, cloud-like lounge shape into a compact W100 x D100cm armchair format."
+  key_features:
+    - "Round W100 x D100cm swivel footprint"
+    - "Performance Marcel Brilliant White GLB source asset"
+    - "Foam, fibre and pocket spring filled seat"
+    - "Removable frame, seat and back cushion covers"
+
+feature_flags:
+  is_swivel: true
+  has_removable_cover: true
+  has_removable_cushion: true
+  is_configurable: true
+
+authoring_notes:
+  category_confidence: "high"
+  source_checked: "Castlery Singapore product page, 2026-06-22"
+  source_url: "https://www.castlery.com/sg/products/hamilton-round-performance-fabric-swivel-armchair"
+  local_source_model: "/Users/justus/Desktop/Webapp project/castlery/Arm chair /Hamilton Round Swivel Armchair Performance Marcel, Brilliant White draco compression.glb"
+  note: "Hamilton Armchair tab import. Castlery SG maps this model beside the Round Swivel 1.5 Seater Armchair and exposes 22 upholstery options: 2 stocked Performance Marcel fabrics plus 20 custom fabrics."
+
+shipping_and_warranty:
+  free_delivery_threshold_sgd: 500
+  cancellation: "Free - 5 working days before delivery"
+  warranty: "Frame 10 years; Fabric 1 year; Foam 2 years"
+  return_policy: "30-day returns"
+  assembly: "Fully assembled"
+
+product_details:
+  material:
+    - label: "Fabric composition"
+      value: "97% Polyester, 3% Acrylic"
+    - label: "Frame"
+      value: "Laminated veneer lumber and plywood"
+    - label: "Leg frame"
+      value: "Metal"
+    - label: "Filling"
+      value: "Foam, fibre and pocket spring filled seat; fibre filled back"
+    - label: "Finish"
+      value: "Black powder coating"
+    - label: "Care"
+      value: "Fabric sofa, metal legs"
+    - label: "Suspension"
+      value: "Sinuous spring"
+    - label: "Cover type"
+      value: "Removable frame, seat and back cushions"
+    - label: "Material & safety standards"
+      value: "Low formaldehyde"
+  dimensions:
+    - label: "Dimension"
+      value: "W100 x D100 x H82cm"
+    - label: "Armrest height"
+      value: "57cm (floor to arm)"
+    - label: "Seating depth"
+      value: "60cm"
+    - label: "Seatable width"
+      value: "100cm"
+    - label: "Seating height"
+      value: "40cm"
+    - label: "Leg height"
+      value: "4cm"
+    - label: "Backrest height"
+      value: "45cm"
+    - label: "Product weight"
+      value: "36kg"
+    - label: "Packaging dimensions"
+      value: "1 box"
+    - label: "Max bearing support"
+      value: "150kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free - 5 working days before delivery"
+    - label: "Warranty"
+      value: "Frame 10 years; Fabric 1 year; Foam 2 years"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Fully assembled"
+
+product_details_by_material_type:
+  fabric:
+    material:
+      - label: "Fabric composition"
+        value: "97% Polyester, 3% Acrylic"
+      - label: "Frame"
+        value: "Laminated veneer lumber and plywood"
+      - label: "Leg frame"
+        value: "Metal"
+      - label: "Filling"
+        value: "Foam, fibre and pocket spring filled seat; fibre filled back"
+      - label: "Finish"
+        value: "Black powder coating"
+      - label: "Cover type"
+        value: "Removable frame, seat and back cushions"
+    dimensions:
+      - label: "Dimension"
+        value: "W100 x D100 x H82cm"
+      - label: "Armrest height"
+        value: "57cm (floor to arm)"
+      - label: "Seating depth"
+        value: "60cm"
+      - label: "Seatable width"
+        value: "100cm"
+      - label: "Seating height"
+        value: "40cm"
+      - label: "Product weight"
+        value: "36kg"
+    delivery_and_warranty:
+      - label: "Cancellation"
+        value: "Free - 5 working days before delivery"
+      - label: "Warranty"
+        value: "Frame 10 years; Fabric 1 year; Foam 2 years"
+      - label: "Return policy"
+        value: "30-day returns"
+      - label: "Assembly"
+        value: "Fully assembled"
+
+comfort_profile:
+  seat_comfort:
+    label: "Relaxed"
+    value: 2
+    min_label: "Relaxed"
+    max_label: "Upright"
+  seat_depth:
+    label: "Medium-deep"
+    value: 3
+    min_label: "Shallow"
+    max_label: "Deep"
+  seat_height:
+    label: "Low"
+    value: 2
+    min_label: "Low"
+    max_label: "High"
+  seat_softness:
+    label: "Soft"
+    value: 2
+    min_label: "Soft"
+    max_label: "Firm"
+
+configurable_metadata:
+  is_configurable: true
+  default_configuration: "round_swivel_armchair"
+  configuration_ui:
+    type: "tabs"
+    label: "Configuration"
+    groups:
+      - key: "standard"
+        label: "Standard"
+        available: false
+      - key: "l_shaped"
+        label: "L-shaped"
+        available: false
+      - key: "armchair"
+        label: "Armchair"
+        available: true
+      - key: "sofa_bed"
+        label: "Sofa Bed"
+        available: false
+    options:
+      - "round_swivel_armchair"
+      - "round_swivel_1_5_seater_armchair"
+  configuration_model_assets:
+    round_swivel_armchair:
+      model_asset_id: "armchair-real-castlery-hamilton-round-swivel-armchair"
+      model_url: "/assets/models/armchairs/armchair-real-castlery-hamilton-round-swivel-armchair.glb"
+    round_swivel_1_5_seater_armchair:
+      model_asset_id: "armchair-real-castlery-hamilton-round-swivel-1-5-seater-armchair"
+      model_url: "/assets/models/armchairs/armchair-real-castlery-hamilton-round-swivel-1-5-seater-armchair.glb"
+  configuration_behavior:
+    affects_visual_footprint: true
+    affects_space_planning: true
+    affects_collision_bounds: true
+    affects_recommendation_logic: true
+
+configurations:
+  - configuration_code: "round_swivel_armchair"
+    configuration_label: "Round Swivel Armchair"
+    state_type: "armchair"
+    description: "Armchair configuration from the Hamilton Armchair tab."
+    dimensions: { width_cm: 100, depth_cm: 100, height_cm: 82 }
+    planning_bounds_cm: { width: 100, depth: 100, height: 82 }
+    model_asset_id: "armchair-real-castlery-hamilton-round-swivel-armchair"
+    model_url: "/assets/models/armchairs/armchair-real-castlery-hamilton-round-swivel-armchair.glb"
+  - configuration_code: "round_swivel_1_5_seater_armchair"
+    configuration_label: "Round Swivel 1.5 Seater Armchair"
+    state_type: "armchair"
+    description: "Larger W130 x D130cm armchair configuration from the Hamilton Armchair tab."
+    dimensions: { width_cm: 130, depth_cm: 130, height_cm: 82 }
+    planning_bounds_cm: { width: 130, depth: 130, height: 82 }
+    model_asset_id: "armchair-real-castlery-hamilton-round-swivel-1-5-seater-armchair"
+    model_url: "/assets/models/armchairs/armchair-real-castlery-hamilton-round-swivel-1-5-seater-armchair.glb"
+
+upholstery_library_ref: "hamilton"
+
+assets:
+  asset_id: "armchair-real-castlery-hamilton-round-swivel-armchair"
+  model_url: "/assets/models/armchairs/armchair-real-castlery-hamilton-round-swivel-armchair.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1690863500/crusader/variants/50440829-PM4002/Hamilton-Swivel-Armchair-Brilliant-White-Front-1690863498.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1690863500/crusader/variants/50440829-PM4002/Hamilton-Swivel-Armchair-Brilliant-White-Front-1690863498.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1692867871/crusader/variants/50440829-PM4002/Hamilton-Swivel-Armchairs-Brilliant-White-Square-Set_1-1692867870.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1690873404/crusader/variants/PB-000595-PM4002/Hamilton-2-Swivel-Armchairs-Brilliant-White-1690873402.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1690863521/crusader/variants/50440829-PM4002/Hamilton-Swivel-Armchair-Brilliant-White-Square-Det_1-1690863518.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1690863521/crusader/variants/50440829-PM4002/Hamilton-Swivel-Armchair-Brilliant-White-Square-Det_2-1690863518.jpg"
+  media_presentation: "studio"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+
+variants:
+  - variant: "Round Swivel Armchair / Performance Marcel, Brilliant White"
+    sku: "hamilton-round-swivel-armchair-marcel-brilliant-white"
+    size_label: "100x100"
+    model_asset_id: "armchair-real-castlery-hamilton-round-swivel-armchair"
+    model_url: "/assets/models/armchairs/armchair-real-castlery-hamilton-round-swivel-armchair.glb"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1690863500/crusader/variants/50440829-PM4002/Hamilton-Swivel-Armchair-Brilliant-White-Front-1690863498.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1690863500/crusader/variants/50440829-PM4002/Hamilton-Swivel-Armchair-Brilliant-White-Front-1690863498.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1692867871/crusader/variants/50440829-PM4002/Hamilton-Swivel-Armchairs-Brilliant-White-Square-Set_1-1692867870.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1690873404/crusader/variants/PB-000595-PM4002/Hamilton-2-Swivel-Armchairs-Brilliant-White-1690873402.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1690863521/crusader/variants/50440829-PM4002/Hamilton-Swivel-Armchair-Brilliant-White-Square-Det_1-1690863518.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1690863521/crusader/variants/50440829-PM4002/Hamilton-Swivel-Armchair-Brilliant-White-Square-Det_2-1690863518.jpg"
+    media_presentation: "studio"
+    swatch_group: "upholstery_option"
+    price_usd: 999
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    available: true
+    affiliate_url: "https://www.castlery.com/sg/products/hamilton-round-performance-fabric-swivel-armchair"
+    purchase_options:
+      - id: "single"
+        label: "Single"
+        quantity: 1
+        affiliate_url: "https://www.castlery.com/sg/products/hamilton-round-performance-fabric-swivel-armchair"
+        price_usd: 999
+        available: true
+      - id: "set_of_2"
+        label: "Set of 2"
+        quantity: 2
+        affiliate_url: "https://www.castlery.com/sg/products/hamilton-round-performance-fabric-swivel-armchair?quantity=set_of_2"
+        available: true
+    dimensions: { width_cm: 100, depth_cm: 100, height_cm: 82 }
+    seat_capacity: 1
+    size_class: "large"
+    materials:
+      upholstery:
+        material_type: "performance_fabric"
+        structure: "fabric"
+        fabric_family: "Performance Textured Plain Weave"
+        fabric_label: "Marcel"
+        composition: "97% polyester, 3% acrylic"
+      base:
+        structure: "metal_swivel_base"
+        finish: "black_powder_coating"
+    finish:
+      color_finish: "Performance Marcel, Brilliant White"

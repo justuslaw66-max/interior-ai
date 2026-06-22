@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures";
-import { openCatalogPreview } from "./variant-test-utils";
+import { addCatalogDrawerItemToRoom, openCatalogPreview } from "./variant-test-utils";
 
 const SLOANE_TV_CONSOLE_ID = "tv-real-castlery-sloane-tv-console-150";
 
@@ -18,7 +18,7 @@ test.describe("105. Product Info Panel Generic YAML Details", () => {
     ]);
     expect(opened).toBeTruthy();
 
-    await page.getByTestId("catalog-detail-add-to-room").click();
+    await addCatalogDrawerItemToRoom(page);
     await expect(page.getByText("Selected Item")).toBeVisible({ timeout: 10000 });
 
     await page.getByRole("button", { name: /^Show details$/i }).click();

@@ -11,6 +11,8 @@ function mapCatalogYaml(yaml: CatalogYamlRecord) {
     authoring_notes: yaml.authoring_notes,
     category: yaml.category,
     assets: yaml.assets,
+    media_presentation: yaml.media_presentation,
+    mediaPresentation: yaml.mediaPresentation,
     presetLabel: yaml.preset_label,
     productFamily: yaml.product_family,
     productName: yaml.product_name,

@@ -46,6 +46,10 @@ export type UpholsteryOption = {
   render_assets?: UpholsteryRenderAssets;
   // Legacy flat fields (kept for backward compat)
   swatch_group?: string;
+  swatch_hex?: string;
+  swatch_image?: string;
+  swatch_image_url?: string;
+  swatchImageUrl?: string;
 };
 
 type UpholsteryLibrary = {
@@ -60,6 +64,24 @@ type UpholsteryLibrary = {
 
 // ─── Variant & Entry Types ────────────────────────────────────────────────────
 
+export type CatalogYamlPurchaseOptionEntry = {
+  id?: string;
+  label?: string;
+  quantity?: number;
+  sku?: string;
+  affiliate_url?: string;
+  affiliateUrl?: string;
+  price_usd?: number;
+  priceUsd?: number;
+  compare_at_price_usd?: number;
+  compareAtPriceUsd?: number;
+  savings_usd?: number;
+  savingsUsd?: number;
+  image_url?: string;
+  imageUrl?: string;
+  available?: boolean;
+};
+
 export type CatalogYamlVariantEntry = {
   variant?: string;
   size_label?: string;
@@ -69,13 +91,25 @@ export type CatalogYamlVariantEntry = {
   model_url?: string;
   upholstery_code?: string;
   upholstery_label?: string;
+  leg_finish_code?: string;
+  leg_finish_label?: string;
+  affiliate_url?: string;
+  available?: boolean;
   thumbnail_url?: string;
   gallery_images?: string[];
   galleryImages?: string[];
+  media_presentation?: string;
+  mediaPresentation?: string;
   swatch_group?: string;
+  swatch_hex?: string;
+  swatch_image?: string;
+  swatch_image_url?: string;
+  swatchImageUrl?: string;
   color_family?: string;
   tone?: string;
+  collection_type?: string;
   price_usd?: number;
+  purchase_options?: CatalogYamlPurchaseOptionEntry[];
   price_band?: string;
   brand_tier?: string;
   materials?: Record<string, unknown>;
@@ -170,6 +204,8 @@ export type CatalogYamlEntry = {
   // Visual
   visual_attributes?: Record<string, unknown>;
   spatial_attributes?: Record<string, unknown>;
+  media_presentation?: string;
+  mediaPresentation?: string;
 
   // Room
   room_compatibility?: string[];
@@ -192,6 +228,10 @@ export type CatalogYamlEntry = {
     asset_id?: string;
     model_url?: string;
     thumbnail_url?: string;
+    gallery_images?: string[];
+    galleryImages?: string[];
+    media_presentation?: string;
+    mediaPresentation?: string;
   };
 
   // AI

@@ -7,6 +7,7 @@ import {
   type RoomTag,
 } from "@/lib/catalog-schema";
 import { normalizeImportedVariants } from "@/lib/catalog/imported-variant-normalization";
+import { normalizeCatalogMediaPresentationMode } from "@/lib/catalog/media-policy";
 import { IMPORTED_VARIANT_PIPELINE_REVISION } from "@/lib/catalog/variant-normalization";
 
 export type ImportedConfigurationEntry = {
@@ -89,7 +90,11 @@ export type ImportedModelCatalog = {
     thumbnail_url?: string;
     galleryImages?: string[];
     gallery_images?: string[];
+    mediaPresentation?: string;
+    media_presentation?: string;
   };
+  mediaPresentation?: string;
+  media_presentation?: string;
   category?: string;
   subCategory?: string;
   priceUsd?: number;
@@ -1068,6 +1073,12 @@ export function buildImportedCatalogItem({
 
   const defaultImportedVariantId = dynamicVariants[0]?.id ?? `imported-${productId}`;
   const yamlGalleryImages = yamlCatalog?.assets?.galleryImages ?? yamlCatalog?.assets?.gallery_images;
+  const mediaPresentationMode = normalizeCatalogMediaPresentationMode(
+    yamlCatalog?.assets?.media_presentation ??
+      yamlCatalog?.assets?.mediaPresentation ??
+      yamlCatalog?.media_presentation ??
+      yamlCatalog?.mediaPresentation,
+  );
 
   return {
     ...template,
@@ -1134,6 +1145,7 @@ export function buildImportedCatalogItem({
             (value): value is string => typeof value === "string" && value.trim().length > 0,
           )
         : undefined,
+      mediaPresentationMode,
     },
     assets: {
       ...template.assets,

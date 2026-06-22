@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures";
-import { openCatalogPreview } from "./variant-test-utils";
+import { addCatalogDrawerItemToRoom, openCatalogPreview } from "./variant-test-utils";
 
 const HUGG_BASALT_CLOSED_ID =
   "coffee-real-castlery-hugg-nesting-square-performance-basalt-closed";
@@ -38,7 +38,7 @@ test.describe("100. Hugg Catalog Smoke", () => {
     await page.getByRole("button", { name: /^Black$/i }).first().click();
     await expect(page.getByTestId("catalog-detail-variant-label")).toContainText(/Black/i);
 
-    await page.getByTestId("catalog-detail-add-to-room").click({ force: true });
+    await addCatalogDrawerItemToRoom(page);
 
     await expect(page.getByText("Selected Item")).toBeVisible({ timeout: 10000 });
     await expect(page.getByText(/Hugg Nesting Square Coffee Table/i).first()).toBeVisible();

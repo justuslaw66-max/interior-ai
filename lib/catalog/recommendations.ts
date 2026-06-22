@@ -1,11 +1,97 @@
 import { CATALOG_ITEMS } from "../catalog";
 import type { CatalogItemSchema } from "../catalog-schema";
-import { deriveSeatCount, getWidthBand } from "./view-builders";
+import {
+  deriveSeatCount,
+  getWidthBand,
+  mapToTopCategory,
+  type CatalogTopCategory,
+} from "./view-builders";
 
 type ScoredItem = {
   item: CatalogItemSchema;
   score: number;
 };
+
+export type CatalogRoomGuidance = {
+  labels: string[];
+  recommended: boolean;
+  fit: "fits" | "tight" | "too_large" | "unknown";
+};
+
+type CatalogRoomGuidanceParams = {
+  item: Pick<CatalogItemSchema, "category" | "dimsMm" | "metadata" | "roomTags" | "tags" | "title">;
+  dimsMm?: { w: number; d: number; h: number };
+  recommendedCategoryIds?: readonly CatalogTopCategory[];
+  activeRoomCategoryCounts?: Partial<Record<CatalogTopCategory, number>>;
+  roomWidth?: number;
+  roomDepth?: number;
+};
+
+function resolveRoomFit(
+  dimsMm: { w: number; d: number },
+  roomWidth?: number,
+  roomDepth?: number
+): CatalogRoomGuidance["fit"] {
+  if (
+    typeof roomWidth !== "number" ||
+    typeof roomDepth !== "number" ||
+    !Number.isFinite(roomWidth) ||
+    !Number.isFinite(roomDepth) ||
+    roomWidth <= 0 ||
+    roomDepth <= 0
+  ) {
+    return "unknown";
+  }
+
+  const widthM = dimsMm.w / 1000;
+  const depthM = dimsMm.d / 1000;
+  const usableWidth = Math.max(0.5, roomWidth - 0.45);
+  const usableDepth = Math.max(0.5, roomDepth - 0.45);
+  const fitsUsable =
+    (widthM <= usableWidth && depthM <= usableDepth) ||
+    (depthM <= usableWidth && widthM <= usableDepth);
+
+  if (fitsUsable) return "fits";
+
+  const fitsShell =
+    (widthM <= roomWidth && depthM <= roomDepth) ||
+    (depthM <= roomWidth && widthM <= roomDepth);
+
+  return fitsShell ? "tight" : "too_large";
+}
+
+export function buildCatalogRoomGuidance({
+  item,
+  dimsMm,
+  recommendedCategoryIds = [],
+  activeRoomCategoryCounts = {},
+  roomWidth,
+  roomDepth,
+}: CatalogRoomGuidanceParams): CatalogRoomGuidance {
+  const topCategory = mapToTopCategory(item.category, item);
+  const recommended = recommendedCategoryIds.includes(topCategory);
+  const placedCount = activeRoomCategoryCounts[topCategory] ?? 0;
+  const fit = resolveRoomFit(dimsMm ?? item.dimsMm, roomWidth, roomDepth);
+  const labels: string[] = [];
+
+  if (recommended) {
+    labels.push(placedCount > 0 ? "Recommended" : "Recommended for room");
+  }
+
+  if (fit === "fits") {
+    labels.push("Fits this space");
+  } else if (fit === "tight") {
+    labels.push("Check fit");
+  } else if (fit === "too_large") {
+    labels.push("Too large for room");
+  }
+
+  return {
+    labels: labels.slice(0, 2),
+    recommended,
+    fit,
+  };
+}
 
 function overlapScore(a: string[], b: string[]): number {
   if (!a.length || !b.length) return 0;

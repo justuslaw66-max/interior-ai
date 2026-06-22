@@ -1,6 +1,10 @@
-import type { CatalogItemSchema } from "../catalog-schema";
+import type { CatalogItemSchema, CatalogPurchaseOption } from "../catalog-schema";
 import { resolveCatalogVariant } from "./variant-resolver";
-import { getCatalogMediaImageClass } from "./media-policy";
+import {
+  getCatalogMediaImageClass,
+  inferCatalogMediaPresentationMode,
+  type CatalogMediaPresentationMode,
+} from "./media-policy";
 import {
   deriveVariantDisambiguator,
   hardenDuplicateFinishOptionLabels,
@@ -94,6 +98,7 @@ export type CatalogCardView = {
   fallbackThumbUrl: string | null;
   priceLabel?: string;
   dimsLabel: string;
+  dimsMm: { w: number; d: number; h: number };
   primarySwatches: { label: string; hex?: string }[];
   badges: string[];
   imageClassName: string;
@@ -133,7 +138,9 @@ export type CatalogDetailView = {
   roomFitHints: string[];
   relatedItemIds: string[];
   retailerUrl?: string;
+  purchaseOptions: CatalogPurchaseOption[];
   galleryImageClassName: string;
+  galleryPresentationMode: CatalogMediaPresentationMode;
 };
 
 export type CatalogComfortAxisView = {
@@ -215,6 +222,55 @@ function inferColorFamily(label: string): string {
   if (/(pink|rose)/.test(lower)) return "pink";
   if (/(yellow|gold|mustard)/.test(lower)) return "yellow";
   return "other";
+}
+
+function normalizeSwatchLookupKey(value: string | null | undefined): string {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/_/g, "-")
+    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function resolveCastlerySwatchTextureUrl(variant: CatalogItemSchema["variants"][number]): string | undefined {
+  const candidates = [
+    variant.swatchTextureUrl,
+    variant.finishCode,
+    variant.finishLabel,
+    variant.label,
+    variant.id,
+  ];
+
+  for (const candidate of candidates) {
+    const raw = String(candidate ?? "").trim();
+    if (!raw) continue;
+
+    const normalized = normalizeSwatchLookupKey(raw);
+    const underscored = normalized.replace(/-/g, "_");
+    const commaLabel = raw.toLowerCase();
+
+    const direct =
+      CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[raw] ??
+      CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[raw.toLowerCase()] ??
+      CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[normalized] ??
+      CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[underscored] ??
+      CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[commaLabel];
+    if (direct) return direct;
+
+    for (const key of [normalized, underscored]) {
+      if (key.includes("bisque")) return CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE["bisque_fabric"];
+      if (key.includes("stone")) return CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE["stone_fabric"];
+      if (key.includes("camille") && key.includes("forest")) {
+        return CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE["camille_forest_fabric"];
+      }
+      if (key.includes("caramel") && key.includes("leather")) {
+        return CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE["caramel_leather"];
+      }
+    }
+  }
+
+  return undefined;
 }
 
 export function getPriceLabel(item: CatalogItemSchema, variantId?: string): string {
@@ -431,6 +487,8 @@ function getFinishChipLabel(variant: CatalogItemSchema["variants"][number]): str
     camille_forest_fabric: "Camille, Forest",
     cocoa_leather: "Cocoa",
     caramel_leather: "Caramel",
+    top_grain_leather_caramel: "Caramel",
+    "top-grain-leather-caramel": "Caramel",
     warm_taupe_leather: "Warm Taupe",
     marche_cocoa: "Marche, Cocoa",
     marche_ivory: "Marche, Ivory",
@@ -533,6 +591,7 @@ export function buildCatalogCardView(item: CatalogItemSchema, variantId?: string
     dimsLabel: `${(resolved.dimsMm.w / 10).toFixed(1).replace(/\.0$/, "")} x ${(resolved.dimsMm.d / 10)
       .toFixed(1)
       .replace(/\.0$/, "")} cm`,
+    dimsMm: { ...resolved.dimsMm },
     primarySwatches: getPrimarySwatches(item),
     badges: deriveBadges(item),
     imageClassName: getCatalogMediaImageClass("catalog_card"),
@@ -574,13 +633,16 @@ export function buildCatalogDetailView(item: CatalogItemSchema, variantId?: stri
         if (!map.has(key)) {
           const fCode = (variant.finishCode ?? "").trim().toLowerCase();
           const fLabel = (variant.finishLabel ?? variant.label ?? "").trim().toLowerCase();
+          const variantSwatchTextureUrl = resolveCastlerySwatchTextureUrl(variant);
           const swatchTextureUrl = isWoodGroup
-            ? (HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE[fCode] ??
+            ? (variantSwatchTextureUrl ??
+               HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE[fCode] ??
                HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE[fLabel] ??
                CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[fCode] ??
                CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[fLabel] ??
                undefined)
-            : (CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[fCode] ??
+            : (variantSwatchTextureUrl ??
+               CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[fCode] ??
                CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE[fLabel] ??
                undefined);
           map.set(key, {
@@ -665,7 +727,11 @@ export function buildCatalogDetailView(item: CatalogItemSchema, variantId?: stri
               h: Math.round(heightMm > 0 ? heightMm : item.dimsMm.h),
             }
           : { ...item.dimsMm };
-        const key = `${normalizedDims.w}x${normalizedDims.d}`;
+        const label = `${Math.round(normalizedDims.w / 10)} x ${Math.round(normalizedDims.d / 10)} cm`;
+        // Merge variants whose authored dimensions differ only by tiny material/PDP
+        // rounding differences. The drawer cannot present two identical labels as
+        // separate real sizes.
+        const key = label.toLowerCase();
         const existing = map.get(key);
         if (existing) {
           existing.variantIds.push(variant.id);
@@ -674,7 +740,7 @@ export function buildCatalogDetailView(item: CatalogItemSchema, variantId?: stri
 
         map.set(key, {
           id: key,
-          label: `${Math.round(normalizedDims.w / 10)} x ${Math.round(normalizedDims.d / 10)} cm`,
+          label,
           dimsMm: normalizedDims,
           variantIds: [variant.id],
         });
@@ -692,11 +758,20 @@ export function buildCatalogDetailView(item: CatalogItemSchema, variantId?: stri
     ).values(),
   ).sort((a, b) => a.dimsMm.w * a.dimsMm.d - b.dimsMm.w * b.dimsMm.d);
 
-  const activeSizeId = `${resolved.dimsMm.w}x${resolved.dimsMm.d}`;
+  const activeSizeId =
+    `${Math.round(resolved.dimsMm.w / 10)} x ${Math.round(resolved.dimsMm.d / 10)} cm`.toLowerCase();
   const baseGalleryImageClassName = getCatalogMediaImageClass("catalog_detail_gallery");
   const galleryImageClassName = item.category.toLowerCase().includes("ottoman")
     ? `${baseGalleryImageClassName} scale-[1.45] object-[50%_56%]`
     : baseGalleryImageClassName;
+  const galleryPresentationMode =
+    resolved.variant.mediaPresentationMode ??
+    item.metadata?.mediaPresentationMode ??
+    inferCatalogMediaPresentationMode({
+      imageUrls: images,
+      brand: item.metadata?.brand,
+      category: item.category,
+    });
 
   return {
     id: item.id,
@@ -717,7 +792,9 @@ export function buildCatalogDetailView(item: CatalogItemSchema, variantId?: stri
     roomFitHints: deriveRoomFitHints(item),
     relatedItemIds: [],
     retailerUrl: resolved.commerce.type === "affiliate" ? resolved.commerce.url ?? undefined : undefined,
+    purchaseOptions: resolved.variant.purchaseOptions ?? [],
     galleryImageClassName,
+    galleryPresentationMode,
   };
 }
 

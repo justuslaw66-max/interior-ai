@@ -1,5 +1,9 @@
 import { expect, test } from "./fixtures";
-import { getSelectedItemPanel, openCatalogPreview } from "./variant-test-utils";
+import {
+  addCatalogDrawerItemToRoom,
+  getSelectedItemPanel,
+  openCatalogPreview,
+} from "./variant-test-utils";
 
 const MADISON_3S_ID = "sofa-real-castlery-madison-3s";
 
@@ -52,7 +56,7 @@ test.describe("109. Madison Swatch Textures", () => {
     await expect(page.getByTestId("catalog-detail-add-to-room")).toBeVisible({ timeout: 10000 });
     await expect(page.getByText("Stone").first()).toHaveCount(0);
 
-    await page.getByTestId("catalog-detail-add-to-room").click();
+    await addCatalogDrawerItemToRoom(page);
 
     const selectedItemPanel = getSelectedItemPanel(page);
     await expect(selectedItemPanel.getByText("Selected Item")).toBeVisible({ timeout: 10000 });

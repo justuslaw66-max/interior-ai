@@ -1,5 +1,9 @@
 import { test, expect } from "./fixtures";
-import { getSelectedItemPanel, waitForCatalogReady } from "./variant-test-utils";
+import {
+  addCatalogCardItemToRoom,
+  getSelectedItemPanel,
+  waitForCatalogReady,
+} from "./variant-test-utils";
 
 const JARON_CASES = [
   {
@@ -46,7 +50,7 @@ test.describe("17. Retailer Link Identity", () => {
     );
 
     await page.getByRole("button", { name: /^Sofa \(/ }).click();
-    await page.getByTestId("catalog-add-sofa-real-castlery-jaron-extended-3s-wide-arm").click();
+    await addCatalogCardItemToRoom(page, "sofa-real-castlery-jaron-extended-3s-wide-arm");
     await page.getByText("Jaron Recliner Sofa").first().waitFor({ timeout: 15_000 });
     const selectedItemPanel = getSelectedItemPanel(page);
 

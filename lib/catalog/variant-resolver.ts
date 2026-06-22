@@ -638,6 +638,16 @@ export function resolveCatalogVariant(
       ...metadataImages,
     ]);
   }
+  if (
+    fallbackSource === "variant_specific" &&
+    metadataImages.length > 0 &&
+    galleryImages.length < 4
+  ) {
+    galleryImages = uniqueNonEmpty([
+      ...galleryImages,
+      ...metadataImages,
+    ]);
+  }
 
   if (requestedVariantId && !requested) {
     issues.push(`Requested variant ${requestedVariantId} not found for ${item.id}`);

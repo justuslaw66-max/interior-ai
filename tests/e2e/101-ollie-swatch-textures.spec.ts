@@ -1,5 +1,9 @@
 import { expect, test } from "./fixtures";
-import { getSelectedItemPanel, openCatalogPreview } from "./variant-test-utils";
+import {
+  addCatalogDrawerItemToRoom,
+  getSelectedItemPanel,
+  openCatalogPreview,
+} from "./variant-test-utils";
 
 const OLLIE_ID = "sofa-real-castlery-ollie-storage-ottoman";
 
@@ -16,7 +20,7 @@ test.describe("101. Ollie Swatch Textures", () => {
     expect(opened).toBeTruthy();
 
     await expect(page.getByTestId("catalog-detail-add-to-room")).toBeVisible({ timeout: 10000 });
-    await page.getByTestId("catalog-detail-add-to-room").click();
+    await addCatalogDrawerItemToRoom(page);
 
     const selectedItemPanel = getSelectedItemPanel(page);
     await expect(selectedItemPanel.getByText("Selected Item")).toBeVisible({ timeout: 10000 });

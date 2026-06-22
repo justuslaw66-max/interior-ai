@@ -1,5 +1,5 @@
 import { expect, test } from "./fixtures";
-import { openCatalogPreview } from "./variant-test-utils";
+import { addCatalogDrawerItemToRoom, openCatalogPreview } from "./variant-test-utils";
 
 const DAWSON_EXTENDED_ID = "sofa-real-castlery-dawson-extended-sofa";
 
@@ -21,7 +21,7 @@ test.describe("112. Dawson Extended Sofa Product Info", () => {
     await expect(page.locator('[aria-label="Seat height: 4 of 5"]')).toBeVisible();
     await expect(page.locator('[aria-label="Seat softness: 1 of 5"]')).toBeVisible();
 
-    await page.getByTestId("catalog-detail-add-to-room").click();
+    await addCatalogDrawerItemToRoom(page);
     await expect(page.getByText("Selected Item")).toBeVisible({ timeout: 10000 });
     await expect(page.getByText(/Dawson Extended Sofa|Dawson/i).first()).toBeVisible();
 
