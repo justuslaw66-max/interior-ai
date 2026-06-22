@@ -174,6 +174,13 @@ test.describe("00. Beta Smoke Gate", () => {
       await expect(page.getByTestId("share-export-pack")).toBeVisible();
       await expect(page.getByTestId("share-copy-to-edit")).toBeVisible();
       await expectFingerprint(page.getByTestId("qa-share-snapshot-fingerprint"), cloudFingerprint);
+      await page.context().grantPermissions(["clipboard-read", "clipboard-write"], {
+        origin: BASE_URL,
+      });
+      await page.getByTestId("share-copy-link").click();
+      await expect(page.getByRole("status")).toContainText("Link copied.");
+      const copiedShareUrl = await page.evaluate(() => navigator.clipboard.readText());
+      expect(copiedShareUrl).toContain(`/share/${seed.shareToken}`);
 
       await page.getByTestId("share-export-pack").click();
       await expect(page).toHaveURL(/\/export$/);
