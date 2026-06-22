@@ -2,7 +2,9 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
-import { Html, OrbitControls, useGLTF } from "@react-three/drei";
+import { useGLTF } from "@react-three/drei/core/Gltf";
+import { OrbitControls } from "@react-three/drei/core/OrbitControls";
+import { Html } from "@react-three/drei/web/Html";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { getModelAssetStatus } from "@/lib/modelAssetStatus";

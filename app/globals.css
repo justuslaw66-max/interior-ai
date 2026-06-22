@@ -13,6 +13,8 @@
   --danger: #e5484d;
   --background: var(--bg-canvas);
   --foreground: var(--text-primary);
+  --font-geist-sans: Arial, Helvetica, sans-serif;
+  --font-geist-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
 }
 
 [data-theme="designer"] {

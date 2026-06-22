@@ -8,6 +8,10 @@ export default function AdminTestPanel() {
     "add_to_cart" | "checkout" | "purchase"
   >("purchase");
   const [value, setValue] = useState<string>("");
+  const [message, setMessage] = useState<{
+    tone: "success" | "error";
+    text: string;
+  } | null>(null);
 
   type EventType = "add_to_cart" | "checkout" | "purchase";
 
@@ -16,7 +20,11 @@ export default function AdminTestPanel() {
   };
 
   const send = async () => {
-    if (!clickKey.trim()) return alert("Paste a clickKey first");
+    setMessage(null);
+    if (!clickKey.trim()) {
+      setMessage({ tone: "error", text: "Paste a clickKey first" });
+      return;
+    }
 
     const payload: { clickKey: string; eventType: EventType; value?: number; currency?: string } = {
       clickKey: clickKey.trim(),
@@ -33,10 +41,10 @@ export default function AdminTestPanel() {
 
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      alert(data?.error ?? "Failed");
+      setMessage({ tone: "error", text: data?.error ?? "Failed" });
       return;
     }
-    alert("Event tracked ✅");
+    setMessage({ tone: "success", text: "Event tracked" });
   };
 
   return (
@@ -83,6 +91,18 @@ export default function AdminTestPanel() {
       >
         Send event
       </button>
+      {message && (
+        <div
+          className={`mt-3 rounded-lg border px-3 py-2 text-sm ${
+            message.tone === "success"
+              ? "border-green-200 bg-green-50 text-green-800"
+              : "border-red-200 bg-red-50 text-red-800"
+          }`}
+          role={message.tone === "error" ? "alert" : "status"}
+        >
+          {message.text}
+        </div>
+      )}
     </div>
   );
 }

@@ -17,6 +17,7 @@ type Props = {
   onAddAllToRoom: () => void;
   isOpen: boolean;
   onToggle: () => void;
+  triggerClassName?: string;
 };
 
 export default function ItemCartDrawer({
@@ -27,6 +28,7 @@ export default function ItemCartDrawer({
   onAddAllToRoom,
   isOpen,
   onToggle,
+  triggerClassName = "bottom-4 right-4",
 }: Props) {
   const totalItems = items.reduce((sum, item) => sum + item.qty, 0);
 
@@ -34,7 +36,7 @@ export default function ItemCartDrawer({
     <>
       <button
         onClick={onToggle}
-        className="fixed bottom-4 right-4 z-40 flex h-12 min-w-12 items-center justify-center rounded-full bg-blue-600 px-4 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-blue-700"
+        className={`fixed z-40 flex h-12 min-w-12 items-center justify-center rounded-full bg-blue-600 px-4 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-blue-700 ${triggerClassName}`}
         title="Open selection tray"
       >
         <div className="flex items-center">
