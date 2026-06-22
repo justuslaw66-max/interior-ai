@@ -44,6 +44,18 @@ async function expectFingerprint(locator: Locator, expectedFingerprint: string) 
   expect(await getFingerprint(locator)).toBe(expectedFingerprint);
 }
 
+async function expectNumericAttributeAtLeast(locator: Locator, name: string, minimum: number) {
+  await expect
+    .poll(
+      async () => {
+        const raw = await locator.getAttribute(name);
+        return raw ? Number(raw) : Number.NaN;
+      },
+      { timeout: 30000 }
+    )
+    .toBeGreaterThanOrEqual(minimum);
+}
+
 async function getApiDesignFingerprint(
   request: APIRequestContext,
   designId: string,
@@ -120,6 +132,16 @@ test.describe("00. Beta Smoke Gate", () => {
         page.getByTestId("qa-editor-snapshot-fingerprint")
       );
       expect(loadedEditorFingerprint).toMatch(/[a-f0-9]{8}/);
+      const editorPerformance = page.getByTestId("qa-scene-performance");
+      await expect(editorPerformance).toHaveAttribute("data-room-count", "3");
+      await expect(editorPerformance).toHaveAttribute("data-scene-ready", "true", {
+        timeout: 30000,
+      });
+      await expect(editorPerformance).toHaveAttribute("data-mode", "auto");
+      await expect(editorPerformance).toHaveAttribute("data-effective-mode", /^(quality|lite)$/);
+      await expectNumericAttributeAtLeast(editorPerformance, "data-scene-item-count", 9);
+      await expectNumericAttributeAtLeast(editorPerformance, "data-fps-samples", 1);
+      await expectNumericAttributeAtLeast(editorPerformance, "data-last-fps", 1);
       await page.waitForFunction(
         ({ key, designId }) => {
           const raw = window.localStorage.getItem(key);
@@ -246,9 +268,19 @@ test.describe("00. Beta Smoke Gate", () => {
 
       await page.goto("/design");
       await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30000 });
+      await page.getByTestId("load-design").click();
+      await expect(page.getByTestId("load-designs-modal")).toBeVisible();
+      await page.getByTestId(`load-design-${seed.designId}`).click();
+      await expect(page.getByTestId("load-designs-modal")).toBeHidden();
       await expect(page.getByTestId("scene-performance-control")).toBeVisible();
+      const scenePerformance = page.getByTestId("qa-scene-performance");
+      await expectNumericAttributeAtLeast(scenePerformance, "data-room-count", 3);
+      await expectNumericAttributeAtLeast(scenePerformance, "data-scene-item-count", 9);
       await page.getByTestId("scene-performance-lite").click();
       await expect(page.getByTestId("scene-performance-lite")).toHaveAttribute("data-active", "true");
+      await expect(scenePerformance).toHaveAttribute("data-mode", "lite");
+      await expect(scenePerformance).toHaveAttribute("data-effective-mode", "lite");
+      await expect(scenePerformance).toHaveAttribute("data-render-quality", "lite");
 
       let checkoutPayload: unknown = null;
       await page.route("**/api/stripe/checkout", async (route) => {

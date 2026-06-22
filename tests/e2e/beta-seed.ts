@@ -74,6 +74,22 @@ export function buildBetaDesignSnapshot(): DesignSnapshot {
       rotationY: 0,
       includeInCheckout: true,
     },
+    {
+      instanceId: "beta-avery-chair-2",
+      productId: "armchair-real-castlery-avery-performance-swivel-armchair",
+      variantId: "white_quartz",
+      position: [-1.9, 0, 1.15],
+      rotationY: 0.55,
+      includeInCheckout: true,
+    },
+    {
+      instanceId: "beta-hugg-side-table-1",
+      productId: "coffee-real-castlery-hugg-nesting-side-table-performance-basalt-closed",
+      variantId: "chestnut",
+      position: [1.9, 0, -1.05],
+      rotationY: 0,
+      includeInCheckout: true,
+    },
   ];
   const diningItems: DesignItem[] = [
     {
@@ -83,6 +99,40 @@ export function buildBetaDesignSnapshot(): DesignSnapshot {
       position: [6.1, 0, 0.1],
       rotationY: 1.57,
       includeInCheckout: false,
+    },
+    {
+      instanceId: "beta-dining-armchair-1",
+      productId: "armchair-real-castlery-avery-performance-armchair-with-ottoman",
+      variantId: "white_quartz",
+      position: [5.1, 0, -0.95],
+      rotationY: 0.2,
+      includeInCheckout: true,
+    },
+    {
+      instanceId: "beta-dining-hugg-table-1",
+      productId: "coffee-real-castlery-hugg-nesting-rectangular-performance-dune-closed",
+      variantId: "black",
+      position: [6.5, 0, 1.0],
+      rotationY: 1.57,
+      includeInCheckout: true,
+    },
+  ];
+  const bedroomItems: DesignItem[] = [
+    {
+      instanceId: "beta-bedroom-chair-1",
+      productId: "armchair-real-castlery-avery-performance-swivel-armchair-with-ottoman",
+      variantId: "white_quartz",
+      position: [-0.7, 0, -0.7],
+      rotationY: -0.35,
+      includeInCheckout: true,
+    },
+    {
+      instanceId: "beta-bedroom-hugg-table-1",
+      productId: "coffee-real-castlery-hugg-nesting-square-performance-basalt-opened",
+      variantId: "natural",
+      position: [0.8, 0, 0.8],
+      rotationY: 0.75,
+      includeInCheckout: true,
     },
   ];
 
@@ -111,6 +161,14 @@ export function buildBetaDesignSnapshot(): DesignSnapshot {
           offsetMm: 650,
           widthMm: 1400,
           kind: "window",
+        },
+        {
+          id: "opening-bedroom-door",
+          roomId: "beta-bedroom",
+          wall: "north",
+          offsetMm: 0,
+          widthMm: 850,
+          kind: "door",
         },
       ],
     },
@@ -206,6 +264,53 @@ export function buildBetaDesignSnapshot(): DesignSnapshot {
             items: diningItems,
             zones: [],
             summary: { itemCount: 1, zoneCount: 1 },
+          },
+        ],
+      },
+      {
+        id: "beta-bedroom",
+        name: "Bedroom",
+        roomType: "bedroom",
+        floorLevel: 1,
+        floorLabel: "1F",
+        geometry: { width: 4.4, depth: 3.8, wallThickness: 0.14, height: 2.65, slabThickness: 0.12 },
+        planPosition: { x: 0, z: 5.2 },
+        planShape: "rectangle",
+        surfaceFinishes: {
+          floorMaterialId: "walnut-warm",
+          floorRotationDeg: 45,
+          floorScale: 1,
+          ceilingColor: "#fbfaf7",
+        },
+        surfaceOpacity: { wall: 0.9, floor: 1, ceiling: 0.72 },
+        ceilingVisible: true,
+        items: bedroomItems,
+        zones: [
+          {
+            id: "zone-bedroom-reading",
+            type: "reading",
+            itemIds: bedroomItems.map((item) => item.instanceId),
+            anchor: [0, 0, 0],
+            source: "manual",
+          },
+        ],
+        savedViews: [
+          {
+            id: "view-bedroom-preview",
+            name: "Bedroom Preview",
+            cameraPosition: [0, 4.4, 7.2],
+            cameraTarget: [0, 0.5, 5.2],
+          },
+        ],
+        layoutVersions: [
+          {
+            id: "layout-bedroom-latest",
+            name: "Reading corner",
+            source: "manual",
+            timestamp: 3,
+            items: bedroomItems,
+            zones: [],
+            summary: { itemCount: bedroomItems.length, zoneCount: 1 },
           },
         ],
       },

@@ -327,9 +327,11 @@ const PDF_UNDERLAY_MAX_RENDER_SCALE = 2;
 
 function ScenePerformanceBridge({
   enabled,
+  onFpsSample,
   onSustainedLowFps,
 }: {
   enabled: boolean;
+  onFpsSample: (fps: number) => void;
   onSustainedLowFps: (fps: number) => void;
 }) {
   const frameCountRef = useRef(0);
@@ -360,6 +362,7 @@ function ScenePerformanceBridge({
     const fps = Math.round((frameCountRef.current * 1000) / elapsedMs);
     frameCountRef.current = 0;
     lastSampleAtRef.current = now;
+    onFpsSample(fps);
 
     if (fps >= 28) {
       lowFpsStartedAtRef.current = null;
@@ -685,6 +688,10 @@ function PageContent() {
   const [scenePerformanceMode, setScenePerformanceMode] = useState<ScenePerformanceMode>("auto");
   const [scenePerformanceModeLoaded, setScenePerformanceModeLoaded] = useState(false);
   const [autoLiteScene, setAutoLiteScene] = useState(false);
+  const [scenePerformanceSample, setScenePerformanceSample] = useState<{
+    lastFps: number | null;
+    samples: number;
+  }>({ lastFps: null, samples: 0 });
   const [placementAddMode, setPlacementAddMode] = useState<PlacementAddMode>("preview");
   const [placementPreferencesLoaded, setPlacementPreferencesLoaded] = useState(false);
   const [snapToast, setSnapToast] = useState(false);
@@ -1074,6 +1081,13 @@ function PageContent() {
     },
     [showRuleToast]
   );
+
+  const handleScenePerformanceSample = useCallback((fps: number) => {
+    setScenePerformanceSample((current) => ({
+      lastFps: fps,
+      samples: current.samples + 1,
+    }));
+  }, []);
 
   const handleSustainedLowFps = useCallback(
     (fps: number) => {
@@ -11192,6 +11206,35 @@ function PageContent() {
         : null,
     [getStoredDesignForPersistence]
   );
+  const qaScenePerformanceSnapshot = useMemo(
+    () =>
+      process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS === "1"
+        ? {
+            mode: scenePerformanceMode,
+            effectiveMode: liteSceneEnabled ? "lite" : "quality",
+            renderQuality: sceneRenderQuality,
+            autoLite: autoLiteScene,
+            sceneReady,
+            roomCount: designSnapshot.rooms.length,
+            activeRoomItemCount: items.length,
+            sceneItemCount: sceneRoomItems.length,
+            lastFps: scenePerformanceSample.lastFps,
+            fpsSamples: scenePerformanceSample.samples,
+          }
+        : null,
+    [
+      autoLiteScene,
+      designSnapshot.rooms.length,
+      items.length,
+      liteSceneEnabled,
+      scenePerformanceMode,
+      scenePerformanceSample.lastFps,
+      scenePerformanceSample.samples,
+      sceneReady,
+      sceneRenderQuality,
+      sceneRoomItems.length,
+    ]
+  );
 
   return (
     <main
@@ -11203,6 +11246,26 @@ function PageContent() {
         <div
           data-testid="qa-editor-snapshot-fingerprint"
           data-fingerprint={qaSnapshotFingerprint}
+          hidden
+        />
+      ) : null}
+      {qaScenePerformanceSnapshot ? (
+        <div
+          data-testid="qa-scene-performance"
+          data-mode={qaScenePerformanceSnapshot.mode}
+          data-effective-mode={qaScenePerformanceSnapshot.effectiveMode}
+          data-render-quality={qaScenePerformanceSnapshot.renderQuality}
+          data-auto-lite={qaScenePerformanceSnapshot.autoLite ? "true" : "false"}
+          data-scene-ready={qaScenePerformanceSnapshot.sceneReady ? "true" : "false"}
+          data-room-count={String(qaScenePerformanceSnapshot.roomCount)}
+          data-active-room-item-count={String(qaScenePerformanceSnapshot.activeRoomItemCount)}
+          data-scene-item-count={String(qaScenePerformanceSnapshot.sceneItemCount)}
+          data-last-fps={
+            qaScenePerformanceSnapshot.lastFps === null
+              ? ""
+              : String(qaScenePerformanceSnapshot.lastFps)
+          }
+          data-fps-samples={String(qaScenePerformanceSnapshot.fpsSamples)}
           hidden
         />
       ) : null}
@@ -11254,6 +11317,7 @@ function PageContent() {
             <SceneProgressBridge onReadyChange={setSceneReady} />
             <ScenePerformanceBridge
               enabled={viewMode === "3d" && scenePerformanceMode === "auto" && !liteSceneEnabled}
+              onFpsSample={handleScenePerformanceSample}
               onSustainedLowFps={handleSustainedLowFps}
             />
             <Suspense fallback={null}>
