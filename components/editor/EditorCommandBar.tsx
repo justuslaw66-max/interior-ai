@@ -135,7 +135,7 @@ export default function EditorCommandBar({
   };
 
   return (
-    <div className={`absolute left-0 right-0 top-0 z-50 flex h-14 items-center justify-between gap-2 overflow-hidden border-b border-neutral-200 bg-white/95 px-2 shadow-sm backdrop-blur transition-opacity duration-300 sm:gap-3 sm:px-4 ${
+    <div data-testid="editor-command-bar" className={`absolute left-0 right-0 top-0 z-50 flex h-14 items-center justify-between gap-2 overflow-hidden border-b border-neutral-200 bg-white/95 px-2 shadow-sm backdrop-blur transition-opacity duration-300 sm:gap-3 sm:px-4 ${
       isClientPreview ? "pointer-events-none opacity-0" : "opacity-100"
     }`}>
       <div className="flex min-w-0 flex-1 items-center gap-2">

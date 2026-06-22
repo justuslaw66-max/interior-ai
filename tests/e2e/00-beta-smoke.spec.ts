@@ -207,6 +207,28 @@ test.describe("00. Beta Smoke Gate", () => {
       expect(mobileOverflow).toBeLessThanOrEqual(4);
       await mobileContext.close();
 
+      const mobileEditorContext = await browser.newContext({
+        baseURL: BASE_URL,
+        viewport: { width: 390, height: 844 },
+        isMobile: true,
+      });
+      const mobileEditorPage = await mobileEditorContext.newPage();
+      await mobileEditorPage.goto("/design");
+      await expect(mobileEditorPage.getByTestId("scene-canvas").first()).toBeVisible({
+        timeout: 30000,
+      });
+      await expect(mobileEditorPage.getByTestId("editor-command-bar")).toBeVisible();
+      await expect(mobileEditorPage.getByTestId("save-design")).toBeVisible();
+      await expect(mobileEditorPage.getByTestId("design-controls-panel")).toBeVisible();
+      await expect(mobileEditorPage.getByTestId("design-controls-panel-handle")).toBeVisible();
+      await expect(mobileEditorPage.getByTestId("plan-measurements-panel")).toBeVisible();
+      await expect(mobileEditorPage.getByTestId("room-plan-status")).toBeVisible();
+      const mobileEditorOverflow = await mobileEditorPage.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+      );
+      expect(mobileEditorOverflow).toBeLessThanOrEqual(4);
+      await mobileEditorContext.close();
+
       const tabletContext = await browser.newContext({
         baseURL: BASE_URL,
         viewport: { width: 768, height: 1024 },

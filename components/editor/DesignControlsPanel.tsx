@@ -391,11 +391,16 @@ export default function DesignControlsPanel({
 
   return (
     <div
+      data-testid="design-controls-panel"
       className={`absolute bottom-3 left-3 right-3 top-auto z-20 max-h-[64vh] w-auto space-y-3 overflow-y-auto pb-[calc(0.75rem+env(safe-area-inset-bottom))] pr-1 md:bottom-auto md:right-auto md:top-20 md:max-h-[calc(100vh-6rem)] md:w-[22rem] md:pb-4 ${
         isDesigner ? "md:left-20" : "md:left-4"
       }`}
     >
-      <div className="mx-auto h-1.5 w-12 rounded-full bg-neutral-300/80 md:hidden" aria-hidden="true" />
+      <div
+        data-testid="design-controls-panel-handle"
+        className="mx-auto h-1.5 w-12 rounded-full bg-neutral-300/80 md:hidden"
+        aria-hidden="true"
+      />
       <div className={panelHeaderClass}>
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
