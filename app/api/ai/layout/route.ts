@@ -26,7 +26,7 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json();
-  const { roomWidth, roomDepth, roomType, style, budget, seed, catalog } = body ?? {};
+  const { roomWidth, roomDepth, roomType, style, budget, seed, catalog, requestedRoles } = body ?? {};
 
   if (
     typeof roomWidth !== "number" ||
@@ -48,6 +48,7 @@ export async function POST(req: Request) {
     budget,
     seed: seedNum,
     catalog: catalog as AiLayoutCatalogEntry[],
+    requestedRoles,
   });
 
   if ("error" in plan) {
@@ -69,6 +70,7 @@ export async function POST(req: Request) {
       quality_completeness: plan.quality.completeness,
       quality_fit_risk: plan.quality.fitRisk,
       quality_required_missing: plan.quality.requiredMissing,
+      requested_roles: plan.meta.requestedRoles,
       items_count: Object.values(plan.picks).filter(Boolean).length,
     },
   });

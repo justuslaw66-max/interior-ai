@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { getPostHogClient } from "@/lib/posthog-server";
 import { config } from "@/lib/config";
+import { parseDesignCreatePayload } from "@/lib/design-route-payload";
 
 export const runtime = "nodejs";
 
@@ -44,47 +46,33 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const {
-      title,
-      roomWidth,
-      roomDepth,
-      items,
-      zones,
-      savedViews,
-      snapshot,
-      style,
-      budget,
-      mode,
-      notes,
-    } = body ?? {};
+    const parsed = parseDesignCreatePayload(body);
+    const rawPayload = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
 
     if (config.logLevel === "debug") {
       console.log("Received design payload:", {
-        titleType: typeof title,
-        roomWidth,
-        roomDepth,
-        itemsLength: Array.isArray(items) ? items.length : null,
-        hasSnapshot: Boolean(snapshot),
+        titleType: typeof rawPayload.title,
+        roomWidth: rawPayload.roomWidth,
+        roomDepth: rawPayload.roomDepth,
+        itemsLength: Array.isArray(rawPayload.items) ? rawPayload.items.length : null,
+        hasSnapshot: Boolean(rawPayload.snapshot),
       });
     }
 
-    if (
-      typeof roomWidth !== "number" ||
-      typeof roomDepth !== "number" ||
-      !Array.isArray(items)
-    ) {
+    if (!parsed.ok) {
       if (config.logLevel === "debug") {
         console.log("Validation failed:", {
-          roomWidthType: typeof roomWidth,
-          roomDepthType: typeof roomDepth,
-          itemsIsArray: Array.isArray(items),
+          roomWidthType: typeof rawPayload.roomWidth,
+          roomDepthType: typeof rawPayload.roomDepth,
+          itemsIsArray: Array.isArray(rawPayload.items),
         });
       }
       return NextResponse.json(
-        { error: "Invalid payload: roomWidth and roomDepth must be numbers, items must be array" },
-        { status: 400 }
+        { error: parsed.error },
+        { status: parsed.status }
       );
     }
+    const payload = parsed.value;
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
@@ -107,40 +95,30 @@ export async function POST(req: Request) {
       }
     }
 
-    // Ensure items is properly serialized
-    const itemsForStorage = JSON.parse(JSON.stringify(items));
-    const safeZones = Array.isArray(zones)
-      ? JSON.parse(JSON.stringify(zones))
-      : [];
-    const safeSavedViews = Array.isArray(savedViews)
-      ? JSON.parse(JSON.stringify(savedViews))
-      : [];
-    const safeSnapshot =
-      snapshot && typeof snapshot === "object"
-        ? JSON.parse(JSON.stringify(snapshot))
-        : null;
-    const finalTitle = typeof title === "string" ? title : "Untitled Living Room";
-    const finalRoomWidth = Number(roomWidth);
-    const finalRoomDepth = Number(roomDepth);
-
     if (config.logLevel === "debug") {
-      console.log("Creating design with:", { finalTitle, finalRoomWidth, finalRoomDepth });
+      console.log("Creating design with:", {
+        finalTitle: payload.title,
+        finalRoomWidth: payload.roomWidth,
+        finalRoomDepth: payload.roomDepth,
+      });
     }
 
     const design = await prisma.design.create({
       data: {
-        title: finalTitle,
-        roomWidth: finalRoomWidth,
-        roomDepth: finalRoomDepth,
-        items: itemsForStorage,
-        snapshot: safeSnapshot,
-        zones: safeZones,
-        savedViews: safeSavedViews,
+        title: payload.title,
+        roomWidth: payload.roomWidth,
+        roomDepth: payload.roomDepth,
+        items: payload.items as Prisma.InputJsonValue,
+        ...(payload.snapshot
+          ? { snapshot: payload.snapshot as unknown as Prisma.InputJsonValue }
+          : {}),
+        zones: payload.zones as Prisma.InputJsonValue,
+        savedViews: payload.savedViews as Prisma.InputJsonValue,
         user: { connect: { id: session.user.id } },
-        style: typeof style === "string" ? style : null,
-        budget: typeof budget === "string" ? budget : null,
-        mode: typeof mode === "string" ? mode : "homeowner",
-        notes: typeof notes === "string" ? notes : null,
+        style: payload.style,
+        budget: payload.budget,
+        mode: payload.mode,
+        notes: payload.notes,
       },
     });
 
@@ -155,12 +133,12 @@ export async function POST(req: Request) {
       event: "design_created",
       properties: {
         design_id: design.id,
-        items_count: items.length,
-        style: style ?? null,
-        budget: budget ?? null,
-        mode: mode ?? "homeowner",
-        room_width: finalRoomWidth,
-        room_depth: finalRoomDepth,
+        items_count: Array.isArray(rawPayload.items) ? rawPayload.items.length : 0,
+        style: payload.style,
+        budget: payload.budget,
+        mode: payload.mode,
+        room_width: payload.roomWidth,
+        room_depth: payload.roomDepth,
         is_pro: isProUser,
       },
     });

@@ -54,9 +54,10 @@
     "test:floor-plan-foundation": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-floor-plan-foundation.ts",
     "test:phase-c-modules": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-phase-c-module-fixtures.ts",
     "test:design-duplication": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-design-duplication-fixtures.ts",
+    "test:design-route-payload": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-design-route-payload.ts",
     "test:catalog-route-hardening": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-catalog-route-hardening.ts",
     "test:import-route-hardening": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-import-route-hardening.ts",
-    "test:hardening": "npm run test:import-route-hardening && npm run test:catalog-route-hardening"
+    "test:hardening": "npm run test:design-route-payload && npm run test:import-route-hardening && npm run test:catalog-route-hardening"
   },
   "prisma": {
     "seed": "npx ts-node --transpile-only --compiler-options={\"module\":\"CommonJS\",\"moduleResolution\":\"node\"} prisma/seed.ts"

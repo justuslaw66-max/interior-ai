@@ -27,6 +27,7 @@ export type AiLayoutPlan = {
     completeness: number;
     fitRisk: "low" | "medium" | "high";
     requiredMissing: AiLayoutRole[];
+    requestedMissing: AiLayoutRole[];
     warnings: string[];
   };
   meta: {
@@ -35,6 +36,7 @@ export type AiLayoutPlan = {
     seed: number;
     roomType: AiLayoutRoomType;
     supportedRoomType: true;
+    requestedRoles: AiLayoutRole[];
   };
 };
 
@@ -50,7 +52,17 @@ export type AiLayoutUnsupportedPlan = {
   };
 };
 
-const LIVING_ROOM_REQUIRED_ROLES: AiLayoutRole[] = ["sofa", "rug", "coffee_table"];
+const LIVING_ROOM_REQUIRED_ROLES: AiLayoutRole[] = ["sofa", "coffee_table"];
+const LIVING_ROOM_OPTIONAL_ROLES: AiLayoutRole[] = [
+  "rug",
+  "tv_console",
+  "accent_chair",
+  "floor_lamp",
+];
+const LIVING_ROOM_ALL_ROLES: AiLayoutRole[] = [
+  ...LIVING_ROOM_REQUIRED_ROLES,
+  ...LIVING_ROOM_OPTIONAL_ROLES,
+];
 
 const CATEGORY_ALIASES: Record<AiLayoutRole, string[]> = {
   sofa: ["sofa", "sectional_sofa", "recliner_sofa"],
@@ -86,6 +98,15 @@ function pickSeeded<T>(arr: T[], seedNum: number, offset: number) {
   const r = seededRand(seedNum + offset);
   const idx = Math.floor(r * arr.length);
   return arr[idx];
+}
+
+function normalizeRequestedRoles(value: unknown): AiLayoutRole[] {
+  if (!Array.isArray(value)) return [...LIVING_ROOM_ALL_ROLES];
+  const requested = value.filter((role): role is AiLayoutRole =>
+    LIVING_ROOM_ALL_ROLES.includes(role as AiLayoutRole)
+  );
+  const merged = [...LIVING_ROOM_REQUIRED_ROLES, ...requested];
+  return Array.from(new Set(merged));
 }
 
 export function catalogMatchesAiLayoutRole(role: AiLayoutRole, category: string | undefined) {
@@ -167,10 +188,13 @@ export function buildDeterministicLivingRoomLayoutPlan(params: {
   budget?: unknown;
   seed: number;
   catalog: AiLayoutCatalogEntry[];
+  requestedRoles?: unknown;
 }): AiLayoutPlan {
   const styleNorm = String(params.style ?? "Modern").toLowerCase();
   const budgetNorm = String(params.budget ?? "$$");
   const seedNum = params.seed;
+  const requestedRoles = normalizeRequestedRoles(params.requestedRoles);
+  const roleRequested = (role: AiLayoutRole) => requestedRoles.includes(role);
 
   const matchesStyle = params.catalog.filter(
     (p) =>
@@ -197,11 +221,11 @@ export function buildDeterministicLivingRoomLayoutPlan(params: {
 
   const picksByRole: Partial<Record<AiLayoutRole, AiLayoutCatalogEntry | null>> = {
     sofa: pickByRole("sofa", 11),
-    rug: pickByRole("rug", 22),
+    rug: roleRequested("rug") ? pickByRole("rug", 22) : null,
     coffee_table: pickByRole("coffee_table", 33),
-    tv_console: pickByRole("tv_console", 44),
-    accent_chair: pickByRole("accent_chair", 55),
-    floor_lamp: pickByRole("floor_lamp", 66),
+    tv_console: roleRequested("tv_console") ? pickByRole("tv_console", 44) : null,
+    accent_chair: roleRequested("accent_chair") ? pickByRole("accent_chair", 55) : null,
+    floor_lamp: roleRequested("floor_lamp") ? pickByRole("floor_lamp", 66) : null,
   };
 
   const picks: AiLayoutPlan["picks"] = {
@@ -214,8 +238,9 @@ export function buildDeterministicLivingRoomLayoutPlan(params: {
   };
 
   const requiredMissing = LIVING_ROOM_REQUIRED_ROLES.filter((role) => !picks[role]);
-  const pickedCount = Object.values(picks).filter(Boolean).length;
-  const totalRoles = Object.keys(picks).length;
+  const requestedMissing = requestedRoles.filter((role) => !picks[role]);
+  const pickedCount = requestedRoles.filter((role) => Boolean(picks[role])).length;
+  const totalRoles = requestedRoles.length;
   const fitResult = buildLivingRoomFitWarnings({
     roomWidth: params.roomWidth,
     roomDepth: params.roomDepth,
@@ -240,7 +265,7 @@ export function buildDeterministicLivingRoomLayoutPlan(params: {
     picks,
     intent: {
       sofa: "back_wall_center",
-      rug: "under_sofa",
+      rug: picks.rug ? "under_sofa" : "optional_when_catalog_has_live_rugs",
       coffee_table: "in_front_of_sofa",
       tv_console: "front_wall_center",
       accent_chair: "conversation_corner",
@@ -250,6 +275,7 @@ export function buildDeterministicLivingRoomLayoutPlan(params: {
       completeness: Number((pickedCount / totalRoles).toFixed(2)),
       fitRisk,
       requiredMissing,
+      requestedMissing,
       warnings,
     },
     meta: {
@@ -258,6 +284,7 @@ export function buildDeterministicLivingRoomLayoutPlan(params: {
       seed: seedNum,
       roomType: "living",
       supportedRoomType: true,
+      requestedRoles,
     },
   };
 }
@@ -270,6 +297,7 @@ export function buildDeterministicLayoutPlan(params: {
   budget?: unknown;
   seed: number;
   catalog: AiLayoutCatalogEntry[];
+  requestedRoles?: unknown;
 }): AiLayoutPlan | AiLayoutUnsupportedPlan {
   const roomType = normalizeAiLayoutRoomType(params.roomType);
   const styleNorm = String(params.style ?? "Modern").toLowerCase();
@@ -296,5 +324,6 @@ export function buildDeterministicLayoutPlan(params: {
     budget: params.budget,
     seed: params.seed,
     catalog: params.catalog,
+    requestedRoles: params.requestedRoles,
   });
 }

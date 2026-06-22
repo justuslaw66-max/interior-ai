@@ -32,6 +32,16 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.resolve(__dirname),
   },
+  webpack(config, { dev }) {
+    if (dev) {
+      config.resolve.alias = {
+        ...(config.resolve.alias ?? {}),
+        "@sentry/browser": path.resolve(__dirname, "lib/sentry-browser-noop.ts"),
+      };
+    }
+
+    return config;
+  },
   images: {
     remotePatterns: [
       {

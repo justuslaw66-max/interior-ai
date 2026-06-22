@@ -1,68 +1,35 @@
 import { NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { parseDesignClaimPayload } from "@/lib/design-route-payload";
 
 export const runtime = "nodejs";
 
-type ClaimDesignSnapshot = {
-  title?: string;
-  roomWidth?: number;
-  roomDepth?: number;
-  items?: unknown[];
-  snapshot?: unknown;
-  style?: string;
-  budget?: string;
-  mode?: string;
-  notes?: string;
-};
-
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
-  const {
-    anonymousId,
-    designSnapshot,
-    roomType,
-    itemsCount,
-  } = body ?? {};
+  const parsed = parseDesignClaimPayload(body);
 
-  if (!anonymousId || !designSnapshot) {
-    return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+  if (!parsed.ok) {
+    return NextResponse.json({ error: parsed.error }, { status: parsed.status });
   }
-
-  const {
-    title,
-    roomWidth,
-    roomDepth,
-    items,
-    snapshot,
-    style,
-    budget,
-    mode,
-    notes,
-  } = (designSnapshot ?? {}) as ClaimDesignSnapshot;
-
-  if (
-    typeof roomWidth !== "number" ||
-    typeof roomDepth !== "number" ||
-    !Array.isArray(items)
-  ) {
-    return NextResponse.json({ error: "Invalid snapshot" }, { status: 400 });
-  }
+  const { anonymousId, roomType, itemsCount, design: payload } = parsed.value;
 
   const design = await prisma.design.create({
     data: {
       anonymousId,
-      title: typeof title === "string" ? title : "Guest Design",
-      roomWidth: Number(roomWidth),
-      roomDepth: Number(roomDepth),
-      items: JSON.parse(JSON.stringify(items)),
-      snapshot:
-        snapshot && typeof snapshot === "object"
-          ? JSON.parse(JSON.stringify(snapshot))
-          : null,
-      style: typeof style === "string" ? style : null,
-      budget: typeof budget === "string" ? budget : null,
-      mode: typeof mode === "string" ? mode : "homeowner",
-      notes: typeof notes === "string" ? notes : null,
+      title: payload.title,
+      roomWidth: payload.roomWidth,
+      roomDepth: payload.roomDepth,
+      items: payload.items as Prisma.InputJsonValue,
+      ...(payload.snapshot
+        ? { snapshot: payload.snapshot as unknown as Prisma.InputJsonValue }
+        : {}),
+      zones: payload.zones as Prisma.InputJsonValue,
+      savedViews: payload.savedViews as Prisma.InputJsonValue,
+      style: payload.style,
+      budget: payload.budget,
+      mode: payload.mode,
+      notes: payload.notes,
       shareEnabled: false,
       shareToken: null,
     },
