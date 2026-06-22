@@ -3029,6 +3029,7 @@ function PageContent() {
         roomDepth?: number;
         rooms?: StoredDesign["rooms"];
         activeRoomId?: string;
+        designId?: string | null;
         version?: number;
       };
 
@@ -3109,6 +3110,27 @@ function PageContent() {
             activeRoomId: activeRoomExists ? restored.activeRoomId : restoredRooms[0].id,
           };
           setDesignSnapshot(nextSnapshot);
+          if (typeof parsed.designId === "string" && parsed.designId.trim()) {
+            const restoredDesignId = parsed.designId;
+            setDesignId(restoredDesignId);
+            fetchShareStatus(restoredDesignId);
+            void (async () => {
+              try {
+                const legacyData = snapshotToLegacyApi(nextSnapshot);
+                const res = await fetch(`/api/designs/${restoredDesignId}`, {
+                  method: "PUT",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(legacyData),
+                });
+                if (res.ok) {
+                  setLastDbSaveAt(Date.now());
+                  setLastCloudSaveError(null);
+                }
+              } catch {
+                // The regular autosave path will surface persistent cloud errors.
+              }
+            })();
+          }
           hydratePersistedFloorPlanState(nextSnapshot);
           history.clear();
         }
@@ -6872,6 +6894,7 @@ function PageContent() {
         JSON.stringify({
           ...getStoredDesignForPersistence(designSnapshot),
           savedViews,
+          designId,
         })
       );
       setLastLocalAutosaveAt(Date.now());
@@ -6883,7 +6906,7 @@ function PageContent() {
       );
       return false;
     }
-  }, [designSnapshot, getStoredDesignForPersistence, savedViews]);
+  }, [designId, designSnapshot, getStoredDesignForPersistence, savedViews]);
 
   useEffect(() => {
     writeLocalDesignBackup();
@@ -11165,9 +11188,9 @@ function PageContent() {
   const qaSnapshotFingerprint = useMemo(
     () =>
       process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS === "1"
-        ? fingerprintDesignSnapshot(buildDesignSnapshotForPersistence())
+        ? fingerprintDesignSnapshot(storedToSnapshot(getStoredDesignForPersistence()))
         : null,
-    [buildDesignSnapshotForPersistence]
+    [getStoredDesignForPersistence]
   );
 
   return (
@@ -16340,6 +16363,7 @@ function PageContent() {
                 {myDesigns.map((design) => (
                   <button
                     key={design.id}
+                    data-testid={`load-design-${design.id}`}
                     onClick={() => handleLoadDesign(design.id)}
                     className={
                       showDesignerTheme

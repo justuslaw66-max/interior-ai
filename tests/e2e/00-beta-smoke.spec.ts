@@ -1,20 +1,56 @@
 import { expect, test } from "./fixtures";
-import type { Locator } from "@playwright/test";
+import type { APIRequestContext, Locator } from "@playwright/test";
 import { fingerprintDesignSnapshot } from "../../lib/snapshot-fingerprint";
 import { legacyApiToSnapshot } from "../../lib/room-persistence";
 import {
+  addAuthCookies,
   cleanupBetaSeed,
   createBetaSeedDesign,
   disconnectBetaPrismaClient,
 } from "./beta-seed";
 
 const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000";
+const EDITOR_STORAGE_KEY = "interior-ai:v1:livingroom-design";
 
 async function getFingerprint(locator: Locator) {
   await expect(locator).toHaveAttribute("data-fingerprint", /[a-f0-9]{8}/, { timeout: 20000 });
   const fingerprint = await locator.getAttribute("data-fingerprint");
   if (!fingerprint) throw new Error("Missing QA snapshot fingerprint");
   return fingerprint;
+}
+
+async function getStableFingerprint(locator: Locator) {
+  let previous = "";
+  let stableSamples = 0;
+
+  for (let attempt = 0; attempt < 30; attempt += 1) {
+    const current = await getFingerprint(locator);
+    if (current === previous) {
+      stableSamples += 1;
+      if (stableSamples >= 2) return current;
+    } else {
+      previous = current;
+      stableSamples = 0;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+
+  return previous;
+}
+
+async function expectFingerprint(locator: Locator, expectedFingerprint: string) {
+  await expect(locator).toHaveAttribute("data-fingerprint", expectedFingerprint, { timeout: 30000 });
+  expect(await getFingerprint(locator)).toBe(expectedFingerprint);
+}
+
+async function getApiDesignFingerprint(
+  request: APIRequestContext,
+  designId: string,
+  shareToken: string
+) {
+  const response = await request.get(`${BASE_URL}/api/designs/${designId}?shareToken=${shareToken}`);
+  expect(response.status()).toBe(200);
+  return fingerprintDesignSnapshot(legacyApiToSnapshot(await response.json()));
 }
 
 test.describe("00. Beta Smoke Gate", () => {
@@ -55,13 +91,45 @@ test.describe("00. Beta Smoke Gate", () => {
     const seed = await createBetaSeedDesign();
     try {
       const expectedFingerprint = fingerprintDesignSnapshot(seed.snapshot);
-      const apiResponse = await request.get(
-        `${BASE_URL}/api/designs/${seed.designId}?shareToken=${seed.shareToken}`
+      await addAuthCookies(page.context(), BASE_URL, seed.sessionToken);
+
+      expect(await getApiDesignFingerprint(request, seed.designId, seed.shareToken)).toBe(
+        expectedFingerprint
       );
-      expect(apiResponse.status()).toBe(200);
-      const apiBody = await apiResponse.json();
-      const apiSnapshot = legacyApiToSnapshot(apiBody);
-      expect(fingerprintDesignSnapshot(apiSnapshot)).toBe(expectedFingerprint);
+
+      await page.goto("/design");
+      await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30000 });
+      await page.getByTestId("load-design").click();
+      await expect(page.getByTestId("load-designs-modal")).toBeVisible();
+      await page.getByTestId(`load-design-${seed.designId}`).click();
+      await expect(page.getByTestId("load-designs-modal")).toBeHidden();
+      const loadedEditorFingerprint = await getStableFingerprint(
+        page.getByTestId("qa-editor-snapshot-fingerprint")
+      );
+      expect(loadedEditorFingerprint).toMatch(/[a-f0-9]{8}/);
+      await page.waitForFunction(
+        ({ key, designId }) => {
+          const raw = window.localStorage.getItem(key);
+          if (!raw) return false;
+          try {
+            return JSON.parse(raw)?.designId === designId;
+          } catch {
+            return false;
+          }
+        },
+        { key: EDITOR_STORAGE_KEY, designId: seed.designId },
+        { timeout: 10000 }
+      );
+
+      await page.reload({ waitUntil: "domcontentloaded" });
+      await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30000 });
+      const reloadedEditorFingerprint = await getStableFingerprint(
+        page.getByTestId("qa-editor-snapshot-fingerprint")
+      );
+      expect(reloadedEditorFingerprint).toMatch(/[a-f0-9]{8}/);
+
+      const cloudFingerprint = await getApiDesignFingerprint(request, seed.designId, seed.shareToken);
+      expect(cloudFingerprint).toMatch(/[a-f0-9]{8}/);
 
       await page.goto(`/share/${seed.shareToken}`);
       await expect(page.getByTestId("share-viewer")).toBeVisible({ timeout: 30000 });
@@ -70,16 +138,12 @@ test.describe("00. Beta Smoke Gate", () => {
       await expect(page.getByTestId("share-copy-link")).toBeVisible();
       await expect(page.getByTestId("share-export-pack")).toBeVisible();
       await expect(page.getByTestId("share-copy-to-edit")).toBeVisible();
-      expect(await getFingerprint(page.getByTestId("qa-share-snapshot-fingerprint"))).toBe(
-        expectedFingerprint
-      );
+      await expectFingerprint(page.getByTestId("qa-share-snapshot-fingerprint"), cloudFingerprint);
 
       await page.getByTestId("share-export-pack").click();
       await expect(page).toHaveURL(/\/export$/);
       await expect(page.getByText("Export Overview")).toBeVisible({ timeout: 30000 });
-      expect(await getFingerprint(page.getByTestId("qa-export-snapshot-fingerprint"))).toBe(
-        expectedFingerprint
-      );
+      await expectFingerprint(page.getByTestId("qa-export-snapshot-fingerprint"), cloudFingerprint);
 
       const pdfResponse = await request.get(`${BASE_URL}/share/${seed.shareToken}/export/pdf`);
       expect(pdfResponse.status()).toBe(200);
