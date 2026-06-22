@@ -1,65 +1,57 @@
 "use client";
 
-import { CATALOG_ITEMS_MAP } from "@/lib/catalog";
-import type { CatalogItemSchema, ProductVariant } from "@/lib/catalog-schema";
 import type { DesignItem } from "@/lib/room-types";
+import { resolveRoomShoppingItems } from "@/lib/room-shopping";
 import ShopLink from "./ShopLink";
-import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 
-type ShoppingItem = DesignItem & { product: CatalogItemSchema };
-
-// Helper to group items by category
-function groupByCategory(items: DesignItem[]) {
-  const grouped: Record<string, ShoppingItem[]> = {};
-  items.forEach((item) => {
-    const product = CATALOG_ITEMS_MAP.get(item.productId);
-    if (!product) return;
-    const category = product.category || "Other";
-    if (!grouped[category]) grouped[category] = [];
-    grouped[category].push({ ...item, product });
-  });
-  return grouped;
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(value);
 }
 
-// Helper to get price from item
-function getItemPrice(item: ShoppingItem): string {
-  if (!item.product) return "—";
-  const resolved = resolveCatalogVariant(item.product, item.variantId);
-  if (resolved.commerce.type === "affiliate") {
-    const price = resolved.commerce.priceHint;
-    if (price) return `$${price}`;
-  }
-  return "—";
-}
-
-// Helper to get retailer link
-function getRetailerLink(item: ShoppingItem): { url: string; retailer: string; type: "shopify" | "affiliate" } | null {
-  if (!item.product) return null;
-  const resolved = resolveCatalogVariant(item.product, item.variantId);
-
-  if (resolved.commerce.type === "affiliate") {
-    return {
-      url: resolved.commerce.url || "#",
-      retailer: resolved.commerce.retailer || "View",
-      type: "affiliate"
-    };
-  }
-  return null;
+function formatCategory(value: string) {
+  return value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 export default function ShoppingList({
   items,
+  roomName,
 }: {
   items: DesignItem[];
   roomName: string;
 }) {
   if (!items || items.length === 0) return null;
 
-  const grouped = groupByCategory(items);
+  const shoppingItems = resolveRoomShoppingItems({ items });
+  if (shoppingItems.length === 0) return null;
+
+  const grouped = shoppingItems.reduce<Record<string, typeof shoppingItems>>((acc, item) => {
+    const category = formatCategory(item.category);
+    acc[category] = acc[category] ?? [];
+    acc[category].push(item);
+    return acc;
+  }, {});
+  const roomSubtotal = shoppingItems.reduce((sum, item) => sum + item.linePrice, 0);
+  const needsReviewCount = shoppingItems.filter((item) => !item.hasValidCommerce).length;
 
   return (
     <div className="mb-6">
-      <h3 className="mb-2 text-lg font-semibold text-gray-800">Shopping List</h3>
+      <div className="mb-3 flex items-start justify-between gap-4">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-800">Shopping List</h3>
+          <div className="text-xs text-gray-500">
+            {roomName} • {shoppingItems.length} item{shoppingItems.length === 1 ? "" : "s"}
+            {needsReviewCount > 0 ? ` • ${needsReviewCount} need review` : ""}
+          </div>
+        </div>
+        <div className="text-right text-sm">
+          <div className="font-semibold text-gray-900">{formatCurrency(roomSubtotal)}</div>
+          <div className="text-xs text-gray-500">Estimated subtotal</div>
+        </div>
+      </div>
       {Object.entries(grouped).map(([category, categoryItems]) => (
         <div key={category} className="mb-4">
           <h4 className="mb-2 text-sm font-semibold text-gray-700">{category}</h4>
@@ -68,39 +60,44 @@ export default function ShoppingList({
               <tr className="border-b bg-gray-50">
                 <th className="p-2 text-left">Item</th>
                 <th className="p-2 text-center">Qty</th>
-                <th className="p-2 text-right">Price</th>
-                <th className="p-2 text-center no-print">Link</th>
+                <th className="p-2 text-right">Line total</th>
+                <th className="p-2 text-left">Status</th>
+                <th className="p-2 text-center no-print">Source</th>
               </tr>
             </thead>
             <tbody>
               {categoryItems.map((item) => {
-                const resolved = item.product
-                  ? resolveCatalogVariant(item.product, item.variantId)
-                  : null;
-                const variant = resolved?.variant ?? item.product?.variants?.find((v: ProductVariant) => v.id === item.variantId);
-                const link = getRetailerLink(item);
                 return (
                   <tr key={item.instanceId} className="border-b">
                     <td className="p-2">
-                      <div className="font-medium">{item.product?.title || "Unknown"}</div>
-                      {variant && (
-                        <div className="text-xs text-gray-500">
-                          {variant.label}
-                        </div>
-                      )}
+                      <div className="font-medium">{item.title}</div>
+                      <div className="text-xs text-gray-500">{item.variantLabel}</div>
+                      {item.purchaseOptionLabel ? (
+                        <div className="text-xs text-gray-500">{item.purchaseOptionLabel}</div>
+                      ) : null}
                     </td>
-                    <td className="p-2 text-center">{item.qty ?? 1}</td>
-                    <td className="p-2 text-right">{getItemPrice(item)}</td>
+                    <td className="p-2 text-center">{item.quantity}</td>
+                    <td className="p-2 text-right">{formatCurrency(item.linePrice)}</td>
+                    <td className="p-2 text-left">
+                      <div className={item.hasValidCommerce ? "text-green-700" : "text-amber-700"}>
+                        {item.retailerStatusLabel}
+                      </div>
+                      {item.warningLabel ? (
+                        <div className="text-xs text-amber-700">{item.warningLabel}</div>
+                      ) : null}
+                    </td>
                     <td className="p-2 text-center no-print">
-                      {link && (
+                      {item.retailerUrl ? (
                         <ShopLink
-                          url={link.url}
-                          retailer={link.retailer}
+                          url={item.retailerUrl}
+                          retailer={item.retailerLabel}
                           itemId={item.productId}
-                          type={link.type}
+                          type={item.commerceMode === "shopify" ? "shopify" : "affiliate"}
                         >
-                          {link.retailer}
+                          {item.retailerLabel}
                         </ShopLink>
+                      ) : (
+                        <span className="text-xs text-gray-400">Review</span>
                       )}
                     </td>
                   </tr>
