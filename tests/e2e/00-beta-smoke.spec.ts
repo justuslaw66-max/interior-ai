@@ -1,5 +1,6 @@
 import { expect, test } from "./fixtures";
-import type { APIRequestContext, Locator } from "@playwright/test";
+import fs from "node:fs/promises";
+import type { APIRequestContext, Download, Locator } from "@playwright/test";
 import { fingerprintDesignSnapshot } from "../../lib/snapshot-fingerprint";
 import { legacyApiToSnapshot } from "../../lib/room-persistence";
 import {
@@ -51,6 +52,18 @@ async function getApiDesignFingerprint(
   const response = await request.get(`${BASE_URL}/api/designs/${designId}?shareToken=${shareToken}`);
   expect(response.status()).toBe(200);
   return fingerprintDesignSnapshot(legacyApiToSnapshot(await response.json()));
+}
+
+async function readDownloadText(download: Download) {
+  const path = await download.path();
+  if (!path) throw new Error(`Missing download path for ${download.suggestedFilename()}`);
+  return fs.readFile(path, "utf8");
+}
+
+async function readDownloadBytes(download: Download) {
+  const path = await download.path();
+  if (!path) throw new Error(`Missing download path for ${download.suggestedFilename()}`);
+  return fs.readFile(path);
 }
 
 test.describe("00. Beta Smoke Gate", () => {
@@ -156,16 +169,29 @@ test.describe("00. Beta Smoke Gate", () => {
       await page.getByTestId("share-export-shopping-csv-download").click();
       const csvDownload = await csvDownloadPromise;
       expect(csvDownload.suggestedFilename()).toMatch(/shopping-list\.csv$/);
+      const csv = await readDownloadText(csvDownload);
+      expect(csv.split("\n")[0]).toBe(
+        "Room,Category,Item,Product ID,Variant ID,Variant,Purchase option,Qty,Status,Source,Retailer URL,Include in checkout,Unit price USD,Line total USD,Room subtotal USD,Review note"
+      );
+      expect(csv).toContain("Living Room");
+      expect(csv).toContain("armchair-real-castlery-avery-performance-armchair");
 
       const svgDownloadPromise = page.waitForEvent("download");
       await page.getByTestId("share-export-plan-svg-download").first().click();
       const svgDownload = await svgDownloadPromise;
       expect(svgDownload.suggestedFilename()).toMatch(/2d-plan\.svg$/);
+      const svg = await readDownloadText(svgDownload);
+      expect(svg.length).toBeGreaterThan(500);
+      expect(svg).toContain("<svg");
+      expect(svg).toContain("</svg>");
 
       const pngDownloadPromise = page.waitForEvent("download");
       await page.getByTestId("share-export-plan-png-download").first().click();
       const pngDownload = await pngDownloadPromise;
       expect(pngDownload.suggestedFilename()).toMatch(/2d-plan\.png$/);
+      const png = await readDownloadBytes(pngDownload);
+      expect(png.length).toBeGreaterThan(1000);
+      expect(Array.from(png.subarray(0, 8))).toEqual([137, 80, 78, 71, 13, 10, 26, 10]);
 
       const mobileContext = await browser.newContext({
         baseURL: BASE_URL,
