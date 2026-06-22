@@ -50,6 +50,8 @@ export type UpholsteryOption = {
   swatch_image?: string;
   swatch_image_url?: string;
   swatchImageUrl?: string;
+  thumbnail_url?: string;
+  thumbnailUrl?: string;
 };
 
 type UpholsteryLibrary = {
@@ -243,6 +245,7 @@ export type CatalogYamlEntry = {
   // Upholstery — either inline options or a library reference
   upholstery_options?: UpholsteryOption[];
   upholstery_library_ref?: string;
+  supported_upholstery_codes?: string[];
 
   // Derived fields added by the preset system
   auto_metadata?: Record<string, unknown>;
@@ -454,7 +457,10 @@ function enrichCatalogEntry(filePath: string, parsed: CatalogYamlEntry): Catalog
   if (withDefaults.upholstery_library_ref) {
     const libraries = getUpholsteryLibraries();
     const lib = libraries.get(withDefaults.upholstery_library_ref);
-    const supported = lib?.family_upholstery_map?.supported_upholstery_codes;
+    const productSupported = withDefaults.supported_upholstery_codes;
+    const supported = productSupported?.length
+      ? productSupported
+      : lib?.family_upholstery_map?.supported_upholstery_codes;
     if (supported?.length) {
       supportedUpholsteryCodes = new Set(supported);
     }

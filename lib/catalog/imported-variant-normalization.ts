@@ -509,6 +509,12 @@ export function normalizeImportedVariants({
     const priceHint = normalizePositiveNumber(entryAny.price_usd ?? entryAny.priceUsd);
     const purchaseOptions = normalizeImportedPurchaseOptions(entryAny.purchase_options);
     const available = typeof entryAny.available === "boolean" ? entryAny.available : undefined;
+    const inferredOptionMaterialType = inferMaterialTypeFromText(
+      matchingUpholsteryOption?.material_type,
+      matchingUpholsteryOption?.texture_type,
+      matchingUpholsteryOption?.fabric_family,
+      matchingUpholsteryOption?.upholstery_label,
+    );
     const inferredMaterialType =
       structuredMaterialLabel === "Leather" || structuredMaterialLabel === "Fabric"
         ? structuredMaterialLabel
@@ -526,7 +532,7 @@ export function normalizeImportedVariants({
           );
     const materialType = effectiveSwatchGroup.includes("wood")
       ? "Wood"
-      : inferredMaterialType === "Leather"
+      : inferredOptionMaterialType === "Leather" || inferredMaterialType === "Leather"
         ? "Leather"
         : "Fabric";
 

@@ -147,7 +147,7 @@ authoring_notes:
   source_checked: "Castlery Singapore product page, 2026-06-22"
   source_url: "https://www.castlery.com/sg/products/hamilton-round-performance-fabric-swivel-1-5-seater-armchair"
   local_source_model: "/Users/justus/Desktop/Webapp project/castlery/Arm chair /Hamilton Round Swivel 1.5 Seater Armchair  Performance Marcel, Brilliant White draco compression.glb"
-  note: "Hamilton Armchair tab import. Castlery SG maps this model beside the smaller Round Swivel Armchair and exposes the same 22 upholstery options: 2 stocked Performance Marcel fabrics plus 20 custom fabrics."
+  note: "Hamilton Armchair tab import. Castlery SG maps this model beside the smaller Round Swivel Armchair and exposes 26 upholstery options: 2 stocked Performance Marcel fabrics, 20 custom fabrics, and 4 leather options."
 
 shipping_and_warranty:
   free_delivery_threshold_sgd: 500
@@ -321,6 +321,33 @@ configurations:
     model_url: "/assets/models/armchairs/armchair-real-castlery-hamilton-round-swivel-1-5-seater-armchair.glb"
 
 upholstery_library_ref: "hamilton"
+supported_upholstery_codes:
+  - "marcel_brilliant_white"
+  - "marcel_smoke_grey"
+  - "infinity_boucle_cream"
+  - "infinity_boucle_white_quartz"
+  - "infinity_boucle_moss"
+  - "infinity_boucle_ginger"
+  - "peyton_ivory"
+  - "peyton_dove_grey"
+  - "peyton_moss"
+  - "peyton_cumin"
+  - "genova_oat"
+  - "genova_cream"
+  - "genova_light_grey"
+  - "performance_creamy_white"
+  - "performance_twill_pearl_beige"
+  - "performance_twill_medium_grey"
+  - "performance_twill_slate"
+  - "performance_twill_moss"
+  - "washed_chenille_cream"
+  - "washed_chenille_sand"
+  - "washed_chenille_caramel"
+  - "washed_chenille_moss"
+  - "marche_ivory_leather"
+  - "caramel_leather"
+  - "warm_taupe_leather"
+  - "marche_cocoa_leather"
 
 assets:
   asset_id: "armchair-real-castlery-hamilton-round-swivel-1-5-seater-armchair"
