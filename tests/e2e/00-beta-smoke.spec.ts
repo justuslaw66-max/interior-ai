@@ -181,6 +181,18 @@ test.describe("00. Beta Smoke Gate", () => {
       await expect(page.getByRole("status")).toContainText("Link copied.");
       const copiedShareUrl = await page.evaluate(() => navigator.clipboard.readText());
       expect(copiedShareUrl).toContain(`/share/${seed.shareToken}`);
+      const duplicateResponse = await page
+        .context()
+        .request.post(`${BASE_URL}/api/share/${seed.shareToken}/duplicate`);
+      expect(duplicateResponse.status()).toBe(200);
+      const duplicateBody = await duplicateResponse.json();
+      expect(typeof duplicateBody.id).toBe("string");
+      const duplicatedFingerprint = await getApiDesignFingerprint(
+        page.context().request,
+        duplicateBody.id,
+        seed.shareToken
+      );
+      expect(duplicatedFingerprint).toBe(cloudFingerprint);
 
       await page.getByTestId("share-export-pack").click();
       await expect(page).toHaveURL(/\/export$/);
