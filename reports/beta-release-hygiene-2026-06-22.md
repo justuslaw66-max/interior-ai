@@ -38,6 +38,8 @@ No armchair assets were draft-gated in this pass because the catalog audit and l
 ## Verified Gates
 
 - `npm run release:beta-worktree` passed and is included in `npm run test:beta-gate`.
+- `npm run test:beta-release-candidate` now chains the full beta gate, remote catalog asset availability, and staging checklist validation.
+- `PLAYWRIGHT_WEB_SERVER_PORT=3118 PLAYWRIGHT_BASE_URL=http://localhost:3118 npm run test:beta-release-candidate` passed end to end.
 - `npm run test:catalog-audit:strict` passed, including strict catalog quality mode where warnings are beta blockers.
 - `npm run test:catalog-asset-availability` passed with 86 catalog files, 617 asset refs, 0 missing local URLs, and remote checking disabled by default.
 - `PLAYWRIGHT_WEB_SERVER_PORT=3117 PLAYWRIGHT_BASE_URL=http://localhost:3117 npm run test:beta-gate` passed end to end after the smart placement/circulation upgrade.
@@ -85,8 +87,7 @@ It buckets dirty worktree paths into beta gate/hygiene, share/export, catalog re
 
 ## Remaining Release Follow-Up
 
-- Run the beta gate again immediately before tagging or opening the release PR.
-- Repeat `CATALOG_CHECK_REMOTE_ASSETS=true npm run test:catalog-asset-availability` immediately before beta tagging if catalog media changes.
-- Run the staging smoke checklist once staging auth/payment boundary configuration is available: sign in, start from `/design`, load template, place furniture manually, verify smart placement guidance, save, reload, share, export PDF/CSV/PNG/SVG, open retailer links, and start checkout boundary.
+- Run `npm run test:beta-release-candidate` immediately before tagging or opening the release PR.
+- Run the manual staging smoke checklist in `reports/beta-staging-smoke-checklist-2026-06-23.md` once staging auth/payment boundary configuration is available.
 - Keep checkout completion out of the local blocker until staging payment credentials are explicitly configured; local beta gate validates checkout start with a mocked response.
 - If new catalog items are added before beta, require them to pass strict catalog audit, asset availability, price/link readiness, and replacement-suggestion eligibility before publishing.
