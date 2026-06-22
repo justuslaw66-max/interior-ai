@@ -282,6 +282,32 @@ test.describe("00. Beta Smoke Gate", () => {
       await expect(scenePerformance).toHaveAttribute("data-effective-mode", "lite");
       await expect(scenePerformance).toHaveAttribute("data-render-quality", "lite");
 
+      let retailerClickPayload: Record<string, unknown> = {};
+      await page.route("**/api/track/click", async (route) => {
+        retailerClickPayload = route.request().postDataJSON() as Record<string, unknown>;
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ clickKey: "beta-smoke-click" }),
+        });
+      });
+      await page.getByTestId("editor-workflow-shop").click();
+      await expect(page.getByTestId("cart-panel")).toBeVisible();
+      await expect(page.getByTestId("cart-checkout-readiness")).toContainText(/included line/i);
+      await expect(page.getByTestId("checkout-affiliate")).toContainText(/Open retailer links/);
+      const firstRetailerOpen = page.getByRole("button", { name: /^Open$/ }).first();
+      await firstRetailerOpen.scrollIntoViewIfNeeded();
+      const retailerPopupPromise = page.waitForEvent("popup");
+      await firstRetailerOpen.click();
+      const retailerPopup = await retailerPopupPromise;
+      await retailerPopup.waitForLoadState("domcontentloaded", { timeout: 10000 }).catch(() => undefined);
+      expect(retailerClickPayload?.designId).toBe(seed.designId);
+      expect(retailerClickPayload?.productId).toBe("armchair-real-castlery-avery-performance-armchair");
+      expect(String(retailerClickPayload?.buyUrl ?? "")).toContain("castlery.com");
+      expect(retailerPopup.url()).toContain("clickKey=beta-smoke-click");
+      expect(retailerPopup.url()).toContain("utm_source=interior-ai");
+      await retailerPopup.close();
+
       let checkoutPayload: unknown = null;
       await page.route("**/api/stripe/checkout", async (route) => {
         checkoutPayload = route.request().postDataJSON();
