@@ -22,6 +22,7 @@ const ALLOWED = new Set<AppEventType>([
   "upgrade_checkout_completed",
   "billing_portal_opened",
   "subscription_canceled",
+  "beta_feedback_submitted",
 ]);
 
 const skipAppEventPersistence = process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS === "1";

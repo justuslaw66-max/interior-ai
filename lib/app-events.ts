@@ -22,6 +22,7 @@ export type AppEventType =
   | "upgrade_checkout_completed"
   | "billing_portal_opened"
   | "subscription_canceled"
+  | "beta_feedback_submitted"
   | "webhook_failed"
   | "variant_resolution_issue";
 

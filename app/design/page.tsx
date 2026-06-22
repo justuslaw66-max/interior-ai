@@ -95,6 +95,7 @@ import {
 import { getAllRoomNames } from "@/lib/room-hooks";
 import EditorCommandBar from "@/components/editor/EditorCommandBar";
 import type { EditorSaveStatus } from "@/components/editor/EditorCommandBar";
+import BetaFeedbackWidget from "@/components/BetaFeedbackWidget";
 import DesignControlsPanel from "@/components/editor/DesignControlsPanel";
 import type { PlanStartMode } from "@/components/editor/DesignControlsPlanPanel";
 import EditorHistoryFeedback from "@/components/editor/EditorHistoryFeedback";
@@ -114,7 +115,7 @@ import ShoppingOverviewPanel from "@/components/editor/ShoppingOverviewPanel";
 import SelectedItemDetailsPanel from "@/components/editor/SelectedItemDetailsPanel";
 import SelectedItemRotationControls from "@/components/editor/SelectedItemRotationControls";
 import { CanvasErrorBoundary } from "@/components/CanvasErrorBoundary";
-import { metersToMm, radiansToDeg, type EditorAnnotation2D, type RoomOpening2D } from "@/lib/editorScene";
+import { metersToMm, radiansToDeg, type RoomOpening2D } from "@/lib/editorScene";
 import { applyFloorPlanScaleCalibration } from "@/lib/floor-plan-calibration";
 import {
   resolveArcWallDrawPreview,
@@ -160,10 +161,10 @@ import {
   roundPlanCoordinate,
   shouldReplaceStarterRoomWithDrawnRoom,
   type HousePlanTemplate,
-  type HouseRoomDoorwaySuggestion,
   type RoomSizePresetId,
 } from "@/lib/design-page-house-plan";
 import { useDesignPageHousePlanState } from "@/lib/useDesignPageHousePlanState";
+import { useDesignPagePlanActions } from "@/lib/useDesignPagePlanActions";
 import { useDesignPagePlanState } from "@/lib/useDesignPagePlanState";
 import {
   useDesignPagePanelMode,
@@ -228,7 +229,6 @@ import {
   type NamedCameraView,
   type LayoutPlan,
   type AINotesResponse,
-  type PlanLayerPresetId,
   PLAN_LAYER_PRESETS,
 } from "@/lib/design-page-types";
 import {
@@ -280,16 +280,12 @@ import {
 } from "@/lib/design-page-geometry";
 import { pickBestRugForSofa } from "@/lib/design-page-rug-sizing";
 import { useDesignPageProductSelectorState } from "@/lib/useDesignPageProductSelectorState";
-import { buildEditorScene2D, createPlanAnnotation } from "@/lib/design-page-plan-scene";
+import { buildEditorScene2D } from "@/lib/design-page-plan-scene";
 import {
   mapPlanAnnotationsToRoomRenderer,
   mapPlanFixedElementsToRoomRenderer,
   mapPlanOpeningsToRoomRenderer,
-  clampPlanOpeningMetrics,
   getPlanOpeningWallSpanMeters,
-  movePlanAnnotation,
-  movePlanFixedElement,
-  updatePlanOpeningMetrics,
 } from "@/lib/design-page-plan-overlays";
 
 import { Room } from "@/components/scene/RoomEnvironment";
@@ -748,9 +744,6 @@ function PageContent() {
   const [pendingRoomRenameId, setPendingRoomRenameId] = useState<string | null>(null);
   const [pendingRoomRenameValue, setPendingRoomRenameValue] = useState("");
   const [annotationToolKind, setAnnotationToolKind] = useState<"note" | "callout" | "room_tag">("note");
-  const [pendingAnnotationKind, setPendingAnnotationKind] =
-    useState<EditorAnnotation2D["kind"] | null>(null);
-  const [pendingAnnotationText, setPendingAnnotationText] = useState("");
   const [cameraView, setCameraView] = useState<CameraView>({
     pos: [...DEFAULT_EDITOR_CAMERA_VIEW.pos],
     target: [...DEFAULT_EDITOR_CAMERA_VIEW.target],
@@ -4877,214 +4870,34 @@ function PageContent() {
     ]
   );
 
-  const applyPlanLayerPreset = useCallback(
-    (presetId: PlanLayerPresetId) => {
-      const selectedPreset = PLAN_LAYER_PRESETS[presetId];
-      setPlanLayerPreset(presetId);
-      setPlanTheme(selectedPreset.theme);
-      setPlanLayers({ ...selectedPreset.layers });
-    },
-    [setPlanLayerPreset, setPlanLayers, setPlanTheme]
-  );
-
-  const getDefaultAnnotationText = useCallback((kind: EditorAnnotation2D["kind"]) => {
-    return kind === "room_tag"
-      ? activeRoom?.name ?? "Living Room"
-      : kind === "callout"
-        ? "Keep clear"
-        : "Main circulation";
-  }, [activeRoom?.name]);
-
-  const addPlanAnnotation = useCallback(
-    (kind: EditorAnnotation2D["kind"]) => {
-      setPendingAnnotationKind(kind);
-      setPendingAnnotationText(getDefaultAnnotationText(kind));
-    },
-    [getDefaultAnnotationText]
-  );
-
-  const cancelPlanAnnotation = useCallback(() => {
-    setPendingAnnotationKind(null);
-    setPendingAnnotationText("");
-  }, []);
-
-  const commitPlanAnnotation = useCallback(() => {
-    if (!pendingAnnotationKind) return;
-    const text = pendingAnnotationText.trim();
-    if (!text) {
-      cancelPlanAnnotation();
-      return;
-    }
-
-    const id = `note-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-    const nextAnnotation = createPlanAnnotation({ id, kind: pendingAnnotationKind, text });
-    setPlanAnnotations((prev) => [...prev, nextAnnotation]);
-    handleSelectPlanOverlay(id);
-    cancelPlanAnnotation();
-  }, [
-    cancelPlanAnnotation,
-    handleSelectPlanOverlay,
+  const {
     pendingAnnotationKind,
     pendingAnnotationText,
+    setPendingAnnotationText,
+    cancelPlanAnnotation,
+    commitPlanAnnotation,
+    handleMoveOpening2D,
+    handleUpdateOpeningMetrics2D,
+    handleAddSuggestedDoorway,
+    handleMoveFixedElement2D,
+    handleMoveAnnotation2D,
+    runPlanOverlayCommand,
+  } = useDesignPagePlanActions({
+    activeRoomName: activeRoom?.name,
+    housePlanRooms: housePlan2D.rooms,
+    planOpenings,
+    planViewWidth,
+    planViewDepth,
+    setPlanTheme,
+    setPlanLayers,
+    setPlanLayerPreset,
     setPlanAnnotations,
-  ]);
-
-  const handleMoveOpening2D = useCallback(
-    (id: string, offsetMeters: number) => {
-      const currentOpening = planOpenings.find((opening) => opening.id === id);
-      if (!currentOpening) return;
-
-      const nextOpening = clampPlanOpeningMetrics(
-        {
-          ...currentOpening,
-          offsetMm: metersToMm(offsetMeters),
-        },
-        {
-          rooms: housePlan2D.rooms,
-          planWidthMeters: planViewWidth,
-          planDepthMeters: planViewDepth,
-        }
-      );
-
-      const validation = validateTracedOpeningPlacement(
-        nextOpening,
-        housePlan2D.rooms,
-        planOpenings,
-        id
-      );
-      if (!validation.valid) {
-        showRuleToast(validation.label);
-        return;
-      }
-
-      setPlanOpenings((prev) =>
-        prev.map((opening) => (opening.id === id ? nextOpening : opening))
-      );
-    },
-    [
-      housePlan2D.rooms,
-      planOpenings,
-      planViewDepth,
-      planViewWidth,
-      setPlanOpenings,
-      showRuleToast,
-    ]
-  );
-
-  const handleUpdateOpeningMetrics2D = useCallback(
-    (
-      id: string,
-      metrics: {
-        widthMeters?: number;
-        offsetMeters?: number;
-        kind?: RoomOpening2D["kind"];
-      }
-    ) => {
-      const currentOpening = planOpenings.find((opening) => opening.id === id);
-      if (!currentOpening) return;
-
-      const nextOpening = clampPlanOpeningMetrics(
-        {
-          ...currentOpening,
-          widthMm:
-            metrics.widthMeters !== undefined
-              ? metersToMm(metrics.widthMeters)
-              : currentOpening.widthMm,
-          offsetMm:
-            metrics.offsetMeters !== undefined
-              ? metersToMm(metrics.offsetMeters)
-              : currentOpening.offsetMm,
-          kind: metrics.kind ?? currentOpening.kind,
-        },
-        {
-          rooms: housePlan2D.rooms,
-          planWidthMeters: planViewWidth,
-          planDepthMeters: planViewDepth,
-        }
-      );
-
-      const validation = validateTracedOpeningPlacement(
-        nextOpening,
-        housePlan2D.rooms,
-        planOpenings,
-        id
-      );
-      if (!validation.valid) {
-        showRuleToast(validation.label);
-        return;
-      }
-
-      setPlanOpenings((prev) =>
-        updatePlanOpeningMetrics(prev, id, metrics, {
-          rooms: housePlan2D.rooms,
-          planWidthMeters: planViewWidth,
-          planDepthMeters: planViewDepth,
-        })
-      );
-    },
-    [
-      housePlan2D.rooms,
-      planOpenings,
-      planViewDepth,
-      planViewWidth,
-      setPlanOpenings,
-      showRuleToast,
-    ]
-  );
-
-  const handleAddSuggestedDoorway = useCallback(
-    (suggestion: HouseRoomDoorwaySuggestion) => {
-      const id = `opening-${Date.now()}`;
-      const offsetMm = metersToMm(suggestion.offsetMeters);
-      const widthMm = metersToMm(suggestion.widthMeters);
-      const alreadyExists = planOpenings.some(
-        (opening) =>
-          opening.kind === "door" &&
-          opening.roomId === suggestion.roomId &&
-          opening.wall === suggestion.wall &&
-          Math.abs(opening.offsetMm - offsetMm) <= Math.max(150, widthMm / 2)
-      );
-
-      if (alreadyExists) {
-        showRuleToast("Doorway already exists");
-        return;
-      }
-
-      setPlanOpenings((prev) => {
-        const existing = prev.some(
-          (opening) =>
-            opening.kind === "door" &&
-            opening.roomId === suggestion.roomId &&
-            opening.wall === suggestion.wall &&
-            Math.abs(opening.offsetMm - offsetMm) <= Math.max(150, widthMm / 2)
-        );
-
-        if (existing) return prev;
-
-        return [
-          ...prev,
-          {
-            id,
-            roomId: suggestion.roomId,
-            wall: suggestion.wall,
-            kind: "door",
-            offsetMm,
-            widthMm,
-          },
-        ];
-      });
-
-      handleSelectPlanOverlay(id);
-      showRuleToast("Doorway added");
-      track("floor_plan_suggested_doorway_added", {
-        roomId: suggestion.roomId,
-        adjacentRoomId: suggestion.adjacentRoomId,
-        wall: suggestion.wall,
-        widthMm,
-      });
-    },
-    [handleSelectPlanOverlay, planOpenings, setPlanOpenings, showRuleToast]
-  );
+    setPlanOpenings,
+    setPlanFixedElements,
+    onSelectPlanOverlay: handleSelectPlanOverlay,
+    showRuleToast,
+    track,
+  });
 
   const roomConnectionChecklistItems = useMemo(
     () =>
@@ -5413,14 +5226,6 @@ function PageContent() {
     },
     [setDesignSnapshot]
   );
-
-  const handleMoveFixedElement2D = useCallback((id: string, xMeters: number, zMeters: number) => {
-    setPlanFixedElements((prev) => movePlanFixedElement(prev, id, xMeters, zMeters));
-  }, [setPlanFixedElements]);
-
-  const handleMoveAnnotation2D = useCallback((id: string, xMeters: number, zMeters: number) => {
-    setPlanAnnotations((prev) => movePlanAnnotation(prev, id, xMeters, zMeters));
-  }, [setPlanAnnotations]);
 
   const _getTopDownView = useCallback((): CameraView => {
     const height = Math.max(roomWidth, roomDepth) + roomHeight + 0.8;
@@ -15899,7 +15704,7 @@ function PageContent() {
                                     ? "rounded-lg bg-[#151820] px-2 py-2 text-[11px] text-neutral-200"
                                     : "rounded-lg bg-gray-100 px-2 py-2 text-[11px] hover:bg-gray-200"
                               }
-                              onClick={() => applyPlanLayerPreset("presentation")}
+                              onClick={() => runPlanOverlayCommand("preset:presentation")}
                             >
                               {PLAN_LAYER_PRESETS.presentation.label}
                             </button>
@@ -15911,7 +15716,7 @@ function PageContent() {
                                     ? "rounded-lg bg-[#151820] px-2 py-2 text-[11px] text-neutral-200"
                                     : "rounded-lg bg-gray-100 px-2 py-2 text-[11px] hover:bg-gray-200"
                               }
-                              onClick={() => applyPlanLayerPreset("technical")}
+                              onClick={() => runPlanOverlayCommand("preset:technical")}
                             >
                               {PLAN_LAYER_PRESETS.technical.label}
                             </button>
@@ -15923,7 +15728,7 @@ function PageContent() {
                                     ? "rounded-lg bg-[#151820] px-2 py-2 text-[11px] text-neutral-200"
                                     : "rounded-lg bg-gray-100 px-2 py-2 text-[11px] hover:bg-gray-200"
                               }
-                              onClick={() => applyPlanLayerPreset("staging")}
+                              onClick={() => runPlanOverlayCommand("preset:staging")}
                             >
                               {PLAN_LAYER_PRESETS.staging.label}
                             </button>
@@ -16035,7 +15840,7 @@ function PageContent() {
                         }
                         onClick={() => {
                           setAnnotationToolKind("note");
-                          addPlanAnnotation("note");
+                          runPlanOverlayCommand("annotation:note");
                         }}
                       >
                         + Note
@@ -16053,7 +15858,7 @@ function PageContent() {
                           }
                           onClick={() => {
                             setAnnotationToolKind("callout");
-                            addPlanAnnotation("callout");
+                            runPlanOverlayCommand("annotation:callout");
                           }}
                         >
                           + Callout
@@ -16072,7 +15877,7 @@ function PageContent() {
                           }
                           onClick={() => {
                             setAnnotationToolKind("room_tag");
-                            addPlanAnnotation("room_tag");
+                            runPlanOverlayCommand("annotation:room_tag");
                           }}
                         >
                           + Room Tag
@@ -16279,7 +16084,7 @@ function PageContent() {
                         }
                         onClick={() => {
                           setExportStylePreset("consumer");
-                          applyPlanLayerPreset("presentation");
+                          runPlanOverlayCommand("preset:presentation");
                         }}
                       >
                         Consumer
@@ -16294,7 +16099,7 @@ function PageContent() {
                         }
                         onClick={() => {
                           setExportStylePreset("pro");
-                          applyPlanLayerPreset("technical");
+                          runPlanOverlayCommand("preset:technical");
                         }}
                       >
                         Pro
@@ -16863,6 +16668,25 @@ function PageContent() {
             </div>
           </div>
         </div>
+      )}
+
+      {!isClientPreview && (
+        <BetaFeedbackWidget
+          context={{
+            designId,
+            shareToken,
+            mode,
+            viewMode,
+            plan,
+            activeRoomName: activeRoom?.name ?? "Current room",
+            roomCount: housePlan2D.rooms.length,
+            itemCount: items.length,
+            openingCount: planOpenings.length,
+            exportReadinessScore,
+            viewportWidth: viewportSize.width,
+            viewportHeight: viewportSize.height,
+          }}
+        />
       )}
 
       {!isClientPreview && (

@@ -112,6 +112,36 @@ test.describe("00. Beta Smoke Gate", () => {
       await expect(page.getByText(/1 room/i).first()).toBeVisible();
     }
     await expect(page.getByText(/1 room/i).first()).toBeVisible();
+    const betaFeedbackPayloads: Record<string, unknown>[] = [];
+    await page.route("**/api/track/app-event", async (route) => {
+      const payload = route.request().postDataJSON() as Record<string, unknown>;
+      if (payload?.eventType === "beta_feedback_submitted") {
+        betaFeedbackPayloads.push(payload);
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ ok: true }),
+        });
+        return;
+      }
+      await route.continue();
+    });
+    await page.getByTestId("beta-feedback-open").click();
+    await expect(page.getByTestId("beta-feedback-dialog")).toBeVisible();
+    await page.getByTestId("beta-feedback-note").fill("Beta smoke feedback capture works.");
+    await page.getByTestId("beta-feedback-submit").click();
+    await expect(page.getByRole("status")).toContainText("Sent.");
+    await expect.poll(() => betaFeedbackPayloads.length).toBe(1);
+    const betaFeedbackPayload = betaFeedbackPayloads[0];
+    expect(betaFeedbackPayload?.eventType).toBe("beta_feedback_submitted");
+    const betaFeedbackMeta = betaFeedbackPayload?.meta as
+      | { note?: string; page?: string; context?: Record<string, number> }
+      | undefined;
+    expect(betaFeedbackMeta?.note).toBe("Beta smoke feedback capture works.");
+    expect(betaFeedbackMeta?.page).toBe("/design");
+    const betaFeedbackContext = betaFeedbackMeta?.context;
+    expect(betaFeedbackContext?.roomCount).toBeGreaterThanOrEqual(1);
+    expect(betaFeedbackContext?.itemCount).toBeGreaterThanOrEqual(0);
 
     const seed = await createBetaSeedDesign();
     try {
