@@ -1,5 +1,6 @@
 import type { CatalogItemSchema, DimensionsMm, ProductVariant } from "@/lib/catalog-schema";
 import { mapToTopCategory, type CatalogTopCategory } from "@/lib/catalog/view-builders";
+import { computeCirculationAnalysis } from "@/lib/circulation-analysis";
 import { getRotatedFootprint } from "@/lib/design-page-utils";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type { DesignItem, RoomSnapshot, ZoneMin } from "@/lib/room-types";
@@ -270,6 +271,35 @@ export function scoreManualPlacement({
     suggestions.push("Keep at least 70 cm between dense furniture clusters.");
   }
 
+  const circulationItems: DesignItem[] = [
+    ...existingItems.filter((existing) => existing.instanceId !== item.instanceId),
+    {
+      ...item,
+      variantId: item.variantId ?? product?.defaultVariantId ?? "",
+      position: [item.position[0], item.position[1] ?? 0, item.position[2]],
+    } as DesignItem,
+  ];
+  const circulation = computeCirculationAnalysis({
+    room,
+    items: circulationItems,
+    catalogItems,
+    openings,
+    zones: room.zones,
+  });
+  const hasRoomDoor = openings.some((opening) => opening.kind === "door" && (!opening.roomId || opening.roomId === room.id));
+  if (hasRoomDoor && !circulation.pathValid) {
+    score -= 30;
+    warnings.push("Blocks the walking path.");
+    suggestions.push("Keep a clear path from the door to the main room zones.");
+  } else if (circulation.minClearanceM > 0 && circulation.minClearanceM < 0.32) {
+    score -= 18;
+    warnings.push("Walking path is too narrow.");
+    suggestions.push("Open at least 32 cm of walking clearance through the room.");
+  } else if (circulation.minClearanceM > 0 && circulation.minClearanceM < 0.6) {
+    score -= 8;
+    warnings.push("Walking path is tight.");
+  }
+
   const styleMismatches = countStyleMismatches(product, existingItems, catalogItems);
   if (styleMismatches > 0) {
     score -= 8;
@@ -283,10 +313,12 @@ export function scoreManualPlacement({
   const uniqueActions = [...new Set(actions)];
 
   let kind: ManualPlacementScoreKind = "great";
-  if (blocker || score < 35 || uniqueWarnings.some((warning) => /door|Blocked/i.test(warning))) {
-    kind = blocker || uniqueWarnings.some((warning) => /door/i.test(warning)) ? "blocks_path" : "cramped";
+  if (blocker || uniqueWarnings.some((warning) => /door|Blocked by|Blocks the walking path|No clear walking path/i.test(warning))) {
+    kind = "blocks_path";
   } else if (uniqueWarnings.some((warning) => /Wrong zone/i.test(warning))) {
     kind = "wrong_zone";
+  } else if (score < 35) {
+    kind = "cramped";
   } else if (score < 72) {
     kind = "okay";
   }

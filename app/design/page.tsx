@@ -92,6 +92,7 @@ import {
   updatePendingCatalogPlacementDraft as resolvePendingCatalogPlacementDraft,
   type PendingCatalogPlacement,
 } from "@/lib/catalog-placement";
+import { computeCirculationAnalysis, type CirculationHeatCell } from "@/lib/circulation-analysis";
 import { getAllRoomNames } from "@/lib/room-hooks";
 import EditorCommandBar from "@/components/editor/EditorCommandBar";
 import type { EditorSaveStatus } from "@/components/editor/EditorCommandBar";
@@ -377,6 +378,39 @@ function ScenePerformanceBridge({
   });
 
   return null;
+}
+
+function CirculationHeatmapOverlay({
+  cells,
+  roomOffset,
+}: {
+  cells: CirculationHeatCell[];
+  roomOffset: { x: number; z: number };
+}) {
+  return (
+    <group data-testid="circulation-heatmap" position={[roomOffset.x, 0.075, roomOffset.z]}>
+      {cells.map((cell) => {
+        const color =
+          cell.level === "blocked"
+            ? "#ef4444"
+            : cell.level === "tight"
+              ? "#f97316"
+              : "#facc15";
+        const opacity =
+          cell.level === "blocked" ? 0.24 : cell.level === "tight" ? 0.18 : 0.12;
+        return (
+          <mesh
+            key={`${cell.x.toFixed(2)}:${cell.z.toFixed(2)}:${cell.level}`}
+            position={[cell.x, 0, cell.z]}
+            rotation={[-Math.PI / 2, 0, 0]}
+          >
+            <planeGeometry args={[0.42, 0.42]} />
+            <meshBasicMaterial color={color} transparent opacity={opacity} depthWrite={false} />
+          </mesh>
+        );
+      })}
+    </group>
+  );
 }
 
 function clampEditorOpacity(value: number): number {
@@ -1348,6 +1382,8 @@ function PageContent() {
     useState<PendingAiLayoutProposal | null>(null);
 
   const [pendingCatalogPlacement, setPendingCatalogPlacement] =
+    useState<PendingCatalogPlacement | null>(null);
+  const [lastValidCatalogPlacement, setLastValidCatalogPlacement] =
     useState<PendingCatalogPlacement | null>(null);
   const [hoverCatalogPlacement, setHoverCatalogPlacement] =
     useState<PendingCatalogPlacement | null>(null);
@@ -8033,6 +8069,21 @@ function PageContent() {
     if (!pendingCatalogPlacementBlocker) return null;
     return getItemDisplayName(pendingCatalogPlacementBlocker);
   }, [getItemDisplayName, pendingCatalogPlacementBlocker]);
+  const restorableCatalogPlacement = useMemo(() => {
+    if (!pendingCatalogPlacement || !lastValidCatalogPlacement) return null;
+    if (pendingCatalogPlacement.productId !== lastValidCatalogPlacement.productId) return null;
+    if (pendingCatalogPlacement.variantId !== lastValidCatalogPlacement.variantId) return null;
+    if (pendingCatalogPlacement.purchaseOptionId !== lastValidCatalogPlacement.purchaseOptionId) return null;
+    const distance = Math.hypot(
+      pendingCatalogPlacement.position[0] - lastValidCatalogPlacement.position[0],
+      pendingCatalogPlacement.position[2] - lastValidCatalogPlacement.position[2]
+    );
+    const rotationDelta = Math.abs(
+      pendingCatalogPlacement.rotationY - lastValidCatalogPlacement.rotationY
+    );
+    if (distance < 0.08 && rotationDelta < 0.01) return null;
+    return lastValidCatalogPlacement;
+  }, [lastValidCatalogPlacement, pendingCatalogPlacement]);
   const pendingCatalogPlacementScore = useMemo<ManualPlacementScore | null>(() => {
     if (!pendingCatalogPlacement) return null;
     const product = CATALOG_ITEMS[pendingCatalogPlacement.productId];
@@ -8065,6 +8116,41 @@ function PageContent() {
     planOpenings,
     roomSnapshotById,
   ]);
+  const isCatalogPlacementTargetAcceptable = useCallback(
+    (placement: PendingCatalogPlacement, targetRoom: RoomSnapshot): boolean => {
+      const product = CATALOG_ITEMS[placement.productId];
+      if (!product) return false;
+      const resolved = resolveCatalogVariant(product, placement.variantId);
+      if (
+        catalogPlacementCollidesInRoom(
+          targetRoom,
+          placement.productId,
+          placement.position,
+          placement.rotationY,
+          resolved.dimsMm
+        )
+      ) {
+        return false;
+      }
+      const score = scoreManualPlacement({
+        room: targetRoom,
+        item: {
+          instanceId: "catalog-placement-target-check",
+          productId: placement.productId,
+          variantId: resolved.variantId,
+          position: placement.position,
+          rotationY: placement.rotationY,
+        },
+        dimsMm: resolved.dimsMm,
+        catalogItems: CATALOG_ITEMS,
+        openings: planOpenings,
+        variant: resolved.variant,
+        existingItems: targetRoom.items,
+      });
+      return score.kind !== "blocks_path" && score.kind !== "cramped";
+    },
+    [catalogPlacementCollidesInRoom, planOpenings]
+  );
   const hoverCatalogPlacementScore = useMemo<ManualPlacementScore | null>(() => {
     if (!hoverCatalogPlacement || pendingCatalogPlacement) return null;
     const product = CATALOG_ITEMS[hoverCatalogPlacement.productId];
@@ -8114,6 +8200,53 @@ function PageContent() {
       ),
     [hoverCatalogPlacementScore, pendingCatalogPlacementScore]
   );
+  const circulationHeatmap = useMemo(() => {
+    const placement = pendingCatalogPlacement ?? hoverCatalogPlacement;
+    if (!placement) return null;
+    const targetRoom =
+      placement.roomId
+        ? roomSnapshotById.get(placement.roomId)
+        : activeRoom;
+    const planRoom = placement.roomId ? houseRoomById.get(placement.roomId) : null;
+    if (!targetRoom) return null;
+    const product = CATALOG_ITEMS[placement.productId];
+    if (!product) return null;
+    const resolved = resolveCatalogVariant(product, placement.variantId);
+    const analysis = computeCirculationAnalysis({
+      room: targetRoom,
+      items: [
+        ...targetRoom.items,
+        {
+          instanceId: "placement-circulation-preview",
+          productId: placement.productId,
+          variantId: resolved.variantId,
+          position: placement.position,
+          rotationY: placement.rotationY,
+        } as DesignItem,
+      ],
+      catalogItems: CATALOG_ITEMS,
+      openings: planOpenings,
+      zones: targetRoom.zones,
+    });
+    const shouldShow =
+      pendingCatalogPlacementScore?.kind === "blocks_path" ||
+      hoverCatalogPlacementScore?.kind === "blocks_path" ||
+      analysis.warnings.length > 0;
+    if (!shouldShow) return null;
+    return {
+      roomOffset: { x: planRoom?.x ?? 0, z: planRoom?.z ?? 0 },
+      analysis,
+    };
+  }, [
+    activeRoom,
+    hoverCatalogPlacement,
+    hoverCatalogPlacementScore?.kind,
+    houseRoomById,
+    pendingCatalogPlacement,
+    pendingCatalogPlacementScore?.kind,
+    planOpenings,
+    roomSnapshotById,
+  ]);
   const pendingCatalogPlacementQuality = useMemo(() => {
     if (!pendingCatalogPlacement) return null;
     if (pendingCatalogPlacementScore) {
@@ -8245,35 +8378,22 @@ function PageContent() {
       );
       if (nextPlacement) {
         setPendingCatalogPlacement(nextPlacement);
-        const product = CATALOG_ITEMS[nextPlacement.productId];
-        const resolved = product
-          ? resolveCatalogVariant(product, nextPlacement.variantId)
-          : null;
-        const blocked =
-          !product ||
-          !resolved ||
-          catalogPlacementCollidesInRoom(
-            targetRoom,
-            nextPlacement.productId,
-            nextPlacement.position,
-            nextPlacement.rotationY,
-            resolved.dimsMm
-          );
+        const acceptable = isCatalogPlacementTargetAcceptable(nextPlacement, targetRoom);
         setCrossRoomDragTarget({
           roomId: targetRoom.id,
           label: targetRoom.name,
-          valid: !blocked,
+          valid: acceptable,
           kind: "preview",
         });
       }
     },
     [
       activeRoom,
-      catalogPlacementCollidesInRoom,
       catalogPlacementDragging,
       designSnapshot.activeRoomId,
       findPlanRoomAtWorldPoint,
       houseRoomById,
+      isCatalogPlacementTargetAcceptable,
       nudgeWholeHomeCameraForDrag,
       pendingCatalogPlacement,
       roomSnapshotById,
@@ -8388,6 +8508,8 @@ function PageContent() {
         ? [...candidates.slice(1, 5), candidates[0], ...candidates.slice(5)]
         : candidates;
 
+      let bestPlacement: PendingCatalogPlacement | null = null;
+      let bestScore = -Infinity;
       for (const candidate of orderedCandidates) {
         const [safeX, safeZ] = clampToCatalogPlacementRoom(
           targetRoom,
@@ -8409,7 +8531,7 @@ function PageContent() {
         ) {
           continue;
         }
-        return {
+        const placement: PendingCatalogPlacement = {
           productId,
           variantId: resolved.variantId,
           purchaseOptionId,
@@ -8418,11 +8540,244 @@ function PageContent() {
           rotationY: candidate.rotationY,
           reason: candidate.reason,
         };
+        const score = scoreManualPlacement({
+          room: targetRoom,
+          item: {
+            instanceId: "smart-catalog-placement",
+            productId,
+            variantId: resolved.variantId,
+            position,
+            rotationY: candidate.rotationY,
+          },
+          dimsMm: resolved.dimsMm,
+          catalogItems: CATALOG_ITEMS,
+          openings: planOpenings,
+          variant: resolved.variant,
+          existingItems: targetRoom.items,
+        }).score;
+        if (score > bestScore) {
+          bestScore = score;
+          bestPlacement = placement;
+        }
       }
 
-      return null;
+      return bestPlacement;
     },
-    [activeRoom, catalogPlacementCollidesInRoom, clampToCatalogPlacementRoom]
+    [activeRoom, catalogPlacementCollidesInRoom, clampToCatalogPlacementRoom, planOpenings]
+  );
+
+  const pendingCatalogPlacementImprovement = useMemo(() => {
+    if (!pendingCatalogPlacement || !pendingCatalogPlacementScore) return null;
+    const targetRoom =
+      roomSnapshotById.get(pendingCatalogPlacement.roomId ?? designSnapshotRef.current.activeRoomId) ??
+      activeRoom;
+    if (!targetRoom) return null;
+    const product = CATALOG_ITEMS[pendingCatalogPlacement.productId];
+    if (!product) return null;
+    const bestPlacement = findSmartCatalogPlacement(
+      pendingCatalogPlacement.productId,
+      pendingCatalogPlacement.variantId,
+      pendingCatalogPlacement.purchaseOptionId,
+      targetRoom
+    );
+    if (!bestPlacement) return null;
+    const resolved = resolveCatalogVariant(product, bestPlacement.variantId);
+    const bestScore = scoreManualPlacement({
+      room: targetRoom,
+      item: {
+        instanceId: "pending-catalog-placement-improvement",
+        productId: bestPlacement.productId,
+        variantId: resolved.variantId,
+        position: bestPlacement.position,
+        rotationY: bestPlacement.rotationY,
+      },
+      dimsMm: resolved.dimsMm,
+      catalogItems: CATALOG_ITEMS,
+      openings: planOpenings,
+      variant: resolved.variant,
+      existingItems: targetRoom.items,
+    }).score;
+    const positionDelta = Math.hypot(
+      bestPlacement.position[0] - pendingCatalogPlacement.position[0],
+      bestPlacement.position[2] - pendingCatalogPlacement.position[2]
+    );
+    const rotationDelta = Math.abs(bestPlacement.rotationY - pendingCatalogPlacement.rotationY);
+    const scoreDelta = bestScore - pendingCatalogPlacementScore.score;
+    if (scoreDelta < 4 || (positionDelta < 0.08 && rotationDelta < 0.01)) return null;
+    return {
+      placement: {
+        ...bestPlacement,
+        reason: `Improved placement (${bestScore}/100)`,
+      },
+      score: bestScore,
+      scoreDelta,
+    };
+  }, [
+    activeRoom,
+    findSmartCatalogPlacement,
+    pendingCatalogPlacement,
+    pendingCatalogPlacementScore,
+    planOpenings,
+    roomSnapshotById,
+  ]);
+  const pendingCatalogBestRoomPlacement = useMemo(() => {
+    if (!pendingCatalogPlacement || !pendingCatalogPlacementScore || designSnapshot.rooms.length < 2) {
+      return null;
+    }
+    const product = CATALOG_ITEMS[pendingCatalogPlacement.productId];
+    if (!product) return null;
+    const currentRoomId =
+      pendingCatalogPlacement.roomId ?? activeRoom?.id ?? designSnapshot.activeRoomId;
+    let best:
+      | {
+          placement: PendingCatalogPlacement;
+          roomName: string;
+          score: number;
+          scoreDelta: number;
+        }
+      | null = null;
+
+    for (const room of designSnapshot.rooms) {
+      if (room.id === currentRoomId) continue;
+      const placement = findSmartCatalogPlacement(
+        pendingCatalogPlacement.productId,
+        pendingCatalogPlacement.variantId,
+        pendingCatalogPlacement.purchaseOptionId,
+        room
+      );
+      if (!placement) continue;
+      const resolved = resolveCatalogVariant(product, placement.variantId);
+      const score = scoreManualPlacement({
+        room,
+        item: {
+          instanceId: "pending-catalog-best-room",
+          productId: placement.productId,
+          variantId: resolved.variantId,
+          position: placement.position,
+          rotationY: placement.rotationY,
+        },
+        dimsMm: resolved.dimsMm,
+        catalogItems: CATALOG_ITEMS,
+        openings: planOpenings,
+        variant: resolved.variant,
+        existingItems: room.items,
+      });
+      if (score.kind === "blocks_path" || score.kind === "cramped") continue;
+      const scoreDelta = score.score - pendingCatalogPlacementScore.score;
+      if (!best || score.score > best.score) {
+        best = {
+          placement: {
+            ...placement,
+            reason: `Best room: ${room.name} (${score.score}/100)`,
+          },
+          roomName: room.name,
+          score: score.score,
+          scoreDelta,
+        };
+      }
+    }
+
+    if (!best || best.scoreDelta < 4) return null;
+    return best;
+  }, [
+    activeRoom?.id,
+    designSnapshot.activeRoomId,
+    designSnapshot.rooms,
+    findSmartCatalogPlacement,
+    pendingCatalogPlacement,
+    pendingCatalogPlacementScore,
+    planOpenings,
+  ]);
+  const pendingCatalogBestVariantPlacement = useMemo(() => {
+    if (!pendingCatalogPlacement || !pendingCatalogPlacementScore) return null;
+    const targetRoom =
+      roomSnapshotById.get(pendingCatalogPlacement.roomId ?? designSnapshotRef.current.activeRoomId) ??
+      activeRoom;
+    const product = CATALOG_ITEMS[pendingCatalogPlacement.productId];
+    if (!targetRoom || !product || product.variants.length < 2) return null;
+    const currentVariant = resolveCatalogVariant(product, pendingCatalogPlacement.variantId);
+    let best:
+      | {
+          placement: PendingCatalogPlacement;
+          variantLabel: string;
+          score: number;
+          scoreDelta: number;
+        }
+      | null = null;
+
+    for (const variant of product.variants) {
+      if (variant.id === currentVariant.variantId) continue;
+      const placement = findSmartCatalogPlacement(
+        pendingCatalogPlacement.productId,
+        variant.id,
+        pendingCatalogPlacement.purchaseOptionId,
+        targetRoom
+      );
+      if (!placement) continue;
+      const resolved = resolveCatalogVariant(product, variant.id);
+      const score = scoreManualPlacement({
+        room: targetRoom,
+        item: {
+          instanceId: "pending-catalog-best-option",
+          productId: placement.productId,
+          variantId: resolved.variantId,
+          position: placement.position,
+          rotationY: placement.rotationY,
+        },
+        dimsMm: resolved.dimsMm,
+        catalogItems: CATALOG_ITEMS,
+        openings: planOpenings,
+        variant: resolved.variant,
+        existingItems: targetRoom.items,
+      });
+      if (score.kind === "blocks_path" || score.kind === "cramped") continue;
+      const scoreDelta = score.score - pendingCatalogPlacementScore.score;
+      if (!best || score.score > best.score) {
+        best = {
+          placement: {
+            ...placement,
+            reason: `Best option: ${resolved.variant.label} (${score.score}/100)`,
+          },
+          variantLabel: resolved.variant.label,
+          score: score.score,
+          scoreDelta,
+        };
+      }
+    }
+
+    if (!best || best.scoreDelta < 4) return null;
+    return best;
+  }, [
+    activeRoom,
+    findSmartCatalogPlacement,
+    pendingCatalogPlacement,
+    pendingCatalogPlacementScore,
+    planOpenings,
+    roomSnapshotById,
+  ]);
+  const pendingCatalogPlacementScoreHardInvalid =
+    pendingCatalogPlacementScore?.kind === "blocks_path" ||
+    pendingCatalogPlacementScore?.kind === "cramped";
+  const pendingCatalogPlacementHardInvalid = Boolean(
+    pendingCatalogPlacement &&
+      (pendingCatalogPlacementBlocked || pendingCatalogPlacementScoreHardInvalid)
+  );
+  const pendingCatalogPlacementStatusLabel = pendingCatalogPlacementBlocked
+    ? pendingCatalogPlacementBlockerLabel
+      ? `Blocked by ${pendingCatalogPlacementBlockerLabel}`
+      : `Blocked in ${pendingCatalogPlacementRoom?.name ?? "target room"}`
+    : pendingCatalogPlacementScore?.kind === "blocks_path"
+      ? "Blocks walking path"
+      : pendingCatalogPlacementScore?.kind === "cramped"
+        ? "Cramped placement"
+        : "Valid placement";
+  const shouldConfirmImprovedCatalogPlacement = Boolean(
+    pendingCatalogPlacementImprovement && pendingCatalogPlacementHardInvalid
+  );
+  const shouldConfirmRestoredCatalogPlacement = Boolean(
+    !shouldConfirmImprovedCatalogPlacement &&
+      pendingCatalogPlacementHardInvalid &&
+      restorableCatalogPlacement
   );
 
   const targetPendingCatalogPlacementToRoom = useCallback(
@@ -8460,18 +8815,7 @@ function PageContent() {
         return true;
       }
 
-      const product = CATALOG_ITEMS[nextPlacement.productId];
-      const resolved = product ? resolveCatalogVariant(product, nextPlacement.variantId) : null;
-      const blocked =
-        !product ||
-        !resolved ||
-        catalogPlacementCollidesInRoom(
-          targetRoom,
-          nextPlacement.productId,
-          nextPlacement.position,
-          nextPlacement.rotationY,
-          resolved.dimsMm
-        );
+      const acceptable = isCatalogPlacementTargetAcceptable(nextPlacement, targetRoom);
 
       setPendingCatalogPlacement({
         ...nextPlacement,
@@ -8484,7 +8828,7 @@ function PageContent() {
       setCrossRoomDragTarget({
         roomId: targetRoom.id,
         label: targetRoom.name,
-        valid: !blocked,
+        valid: acceptable,
         kind: "preview",
       });
       showRuleToast(
@@ -8495,8 +8839,8 @@ function PageContent() {
       return true;
     },
     [
-      catalogPlacementCollidesInRoom,
       findSmartCatalogPlacement,
+      isCatalogPlacementTargetAcceptable,
       pendingCatalogPlacement,
       roomSnapshotById,
       showRuleToast,
@@ -8570,6 +8914,55 @@ function PageContent() {
       return next;
     });
   }, [activeRoom, findSmartCatalogPlacement, roomSnapshotById, showRuleToast]);
+
+  const improvePendingCatalogPlacement = useCallback(() => {
+    if (!pendingCatalogPlacementImprovement) {
+      showRuleToast("This is already the best scored spot nearby.");
+      return;
+    }
+    setPendingCatalogPlacement(pendingCatalogPlacementImprovement.placement);
+    showRuleToast(`Improved placement to ${pendingCatalogPlacementImprovement.score}/100`);
+  }, [pendingCatalogPlacementImprovement, showRuleToast]);
+
+  const restoreLastValidCatalogPlacement = useCallback(() => {
+    if (!restorableCatalogPlacement) {
+      showRuleToast("No earlier valid spot to restore.");
+      return;
+    }
+    setPendingCatalogPlacement({
+      ...restorableCatalogPlacement,
+      reason: "Restored last valid spot",
+    });
+    showRuleToast("Restored last valid placement");
+  }, [restorableCatalogPlacement, showRuleToast]);
+
+  const movePendingCatalogPlacementToBestRoom = useCallback(() => {
+    if (!pendingCatalogBestRoomPlacement) {
+      showRuleToast("No better room found for this item.");
+      return;
+    }
+    setPendingCatalogPlacement(pendingCatalogBestRoomPlacement.placement);
+    setCrossRoomDragTarget({
+      roomId: pendingCatalogBestRoomPlacement.placement.roomId ?? designSnapshotRef.current.activeRoomId,
+      label: pendingCatalogBestRoomPlacement.roomName,
+      valid: true,
+      kind: "preview",
+    });
+    showRuleToast(
+      `Moved preview to ${pendingCatalogBestRoomPlacement.roomName} (${pendingCatalogBestRoomPlacement.score}/100)`
+    );
+  }, [pendingCatalogBestRoomPlacement, showRuleToast]);
+
+  const switchPendingCatalogPlacementToBestOption = useCallback(() => {
+    if (!pendingCatalogBestVariantPlacement) {
+      showRuleToast("No better option found for this spot.");
+      return;
+    }
+    setPendingCatalogPlacement(pendingCatalogBestVariantPlacement.placement);
+    showRuleToast(
+      `Switched to ${pendingCatalogBestVariantPlacement.variantLabel} (${pendingCatalogBestVariantPlacement.score}/100)`
+    );
+  }, [pendingCatalogBestVariantPlacement, showRuleToast]);
 
   const addCatalogItemDirectlyToRoom = useCallback(
     (productId: string, variantId?: string, purchaseOptionId?: string) => {
@@ -8765,31 +9158,20 @@ function PageContent() {
       setHoverCatalogPlacement(placement);
       const targetRoom = roomSnapshotById.get(placement.roomId ?? "") ?? activeRoom;
       if (targetRoom) {
-        const product = CATALOG_ITEMS[placement.productId];
-        const resolved = product ? resolveCatalogVariant(product, placement.variantId) : null;
-        const blocked =
-          !product ||
-          !resolved ||
-          catalogPlacementCollidesInRoom(
-            targetRoom,
-            placement.productId,
-            placement.position,
-            placement.rotationY,
-            resolved.dimsMm
-          );
+        const acceptable = isCatalogPlacementTargetAcceptable(placement, targetRoom);
         setCrossRoomDragTarget({
           roomId: targetRoom.id,
           label: targetRoom.name,
-          valid: !blocked,
+          valid: acceptable,
           kind: "preview",
         });
       }
     },
     [
       activeRoom,
-      catalogPlacementCollidesInRoom,
       dragCatalogIntent,
       editorMode,
+      isCatalogPlacementTargetAcceptable,
       isClientPreview,
       resolveCatalogDragPlacement,
       roomSnapshotById,
@@ -9056,6 +9438,7 @@ function PageContent() {
 
   const cancelPendingCatalogPlacement = useCallback(() => {
     setPendingCatalogPlacement(null);
+    setLastValidCatalogPlacement(null);
     setHoverCatalogPlacement(null);
     setCatalogPlacementDragging(false);
     setCrossRoomDragTarget(null);
@@ -9064,22 +9447,39 @@ function PageContent() {
 
   const confirmPendingCatalogPlacement = useCallback(() => {
     if (!pendingCatalogPlacement) return;
-    const product = CATALOG_ITEMS[pendingCatalogPlacement.productId];
+    const placementToConfirm =
+      shouldConfirmImprovedCatalogPlacement && pendingCatalogPlacementImprovement
+        ? pendingCatalogPlacementImprovement.placement
+        : shouldConfirmRestoredCatalogPlacement && restorableCatalogPlacement
+          ? restorableCatalogPlacement
+        : pendingCatalogPlacement;
+    const product = CATALOG_ITEMS[placementToConfirm.productId];
     if (!product) {
       setPendingCatalogPlacement(null);
       return;
     }
-    if (pendingCatalogPlacementBlocked) {
+    if (
+      pendingCatalogPlacementHardInvalid &&
+      !shouldConfirmImprovedCatalogPlacement &&
+      !shouldConfirmRestoredCatalogPlacement
+    ) {
       showRuleToast(
-        pendingCatalogPlacementBlockerLabel
-          ? `Blocked by ${pendingCatalogPlacementBlockerLabel}`
-          : "Placement blocked by another item. Move it or choose a different item."
+        pendingCatalogPlacementScoreHardInvalid && pendingCatalogPlacementScore?.summary
+          ? pendingCatalogPlacementScore.summary
+          : pendingCatalogPlacementBlockerLabel
+            ? `Blocked by ${pendingCatalogPlacementBlockerLabel}`
+            : "Placement blocked by another item. Move it or choose a different item."
       );
       return;
     }
 
-    if (!addCatalogPlacementToRoom(pendingCatalogPlacement)) {
+    if (!addCatalogPlacementToRoom(placementToConfirm)) {
       return;
+    }
+    if (shouldConfirmImprovedCatalogPlacement && pendingCatalogPlacementImprovement) {
+      showRuleToast(`Added improved placement (${pendingCatalogPlacementImprovement.score}/100)`);
+    } else if (shouldConfirmRestoredCatalogPlacement) {
+      showRuleToast("Added last valid placement");
     }
     setPendingCatalogPlacement(null);
     setCatalogPlacementDragging(false);
@@ -9089,22 +9489,35 @@ function PageContent() {
     addCatalogPlacementToRoom,
     pendingCatalogPlacement,
     pendingCatalogPlacementBlockerLabel,
-    pendingCatalogPlacementBlocked,
+    pendingCatalogPlacementHardInvalid,
+    pendingCatalogPlacementImprovement,
+    pendingCatalogPlacementScore?.summary,
+    pendingCatalogPlacementScoreHardInvalid,
+    restorableCatalogPlacement,
+    shouldConfirmImprovedCatalogPlacement,
+    shouldConfirmRestoredCatalogPlacement,
     showRuleToast,
   ]);
 
   useEffect(() => {
     setPendingCatalogPlacement(null);
+    setLastValidCatalogPlacement(null);
     setHoverCatalogPlacement(null);
     setCrossRoomDragTarget(null);
   }, [designSnapshot.activeRoomId]);
 
   useEffect(() => {
-    if (pendingCatalogPlacement) return;
+    if (pendingCatalogPlacement) {
+      if (!pendingCatalogPlacementHardInvalid) {
+        setLastValidCatalogPlacement(pendingCatalogPlacement);
+      }
+      return;
+    }
+    setLastValidCatalogPlacement(null);
     setCatalogPlacementDragging(false);
     setCrossRoomDragTarget((current) => (current?.kind === "preview" ? null : current));
     setSofaDragging(false);
-  }, [pendingCatalogPlacement]);
+  }, [pendingCatalogPlacement, pendingCatalogPlacementHardInvalid]);
 
   useEffect(() => {
     if (!catalogPlacementDragging) return;
@@ -10556,6 +10969,47 @@ function PageContent() {
         return;
       }
 
+      if (pendingCatalogPlacement && canEdit) {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          confirmPendingCatalogPlacement();
+          return;
+        }
+
+        if (
+          event.key.toLowerCase() === "r" &&
+          !event.metaKey &&
+          !event.ctrlKey &&
+          !event.altKey
+        ) {
+          event.preventDefault();
+          rotatePendingCatalogPlacement(event.shiftKey ? "left" : "right");
+          return;
+        }
+
+        const placementNudgeStep = event.shiftKey ? 0.25 : 0.1;
+        if (event.key === "ArrowLeft") {
+          event.preventDefault();
+          nudgePendingCatalogPlacement(-placementNudgeStep, 0);
+          return;
+        }
+        if (event.key === "ArrowRight") {
+          event.preventDefault();
+          nudgePendingCatalogPlacement(placementNudgeStep, 0);
+          return;
+        }
+        if (event.key === "ArrowUp") {
+          event.preventDefault();
+          nudgePendingCatalogPlacement(0, -placementNudgeStep);
+          return;
+        }
+        if (event.key === "ArrowDown") {
+          event.preventDefault();
+          nudgePendingCatalogPlacement(0, placementNudgeStep);
+          return;
+        }
+      }
+
       if (!selectedItem || !canEdit) return;
 
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "d") {
@@ -10596,11 +11050,14 @@ function PageContent() {
   }, [
     canEdit,
     cancelPendingCatalogPlacement,
+    confirmPendingCatalogPlacement,
     duplicateSelectedItem,
     isClientPreview,
+    nudgePendingCatalogPlacement,
     nudgeSelectedItem,
     pendingCatalogPlacement,
     rotateSelectedByDegrees,
+    rotatePendingCatalogPlacement,
     selectedItem,
   ]);
 
@@ -10997,7 +11454,7 @@ function PageContent() {
     ]
   );
   const activePlacementTargetValid = pendingCatalogPlacement
-    ? !pendingCatalogPlacementBlocked
+    ? !pendingCatalogPlacementHardInvalid
     : crossRoomDragTarget?.valid ?? true;
   const activePlacementTargetLabel =
     pendingCatalogPlacementRoom?.name ??
@@ -11301,6 +11758,13 @@ function PageContent() {
                 visible={isDesigner && showGrid && !isClientPreview && (editorMode === "design" || editorMode === "adjust")}
                 pulse={gridPulse}
               />
+
+              {circulationHeatmap && (
+                <CirculationHeatmapOverlay
+                  cells={circulationHeatmap.analysis.heatmap}
+                  roomOffset={circulationHeatmap.roomOffset}
+                />
+              )}
 
               {!isClientPreview &&
                 editorMode !== "present" &&
@@ -11809,15 +12273,15 @@ function PageContent() {
                         ]}
                       />
                       <meshBasicMaterial
-                        color={pendingCatalogPlacementBlocked ? "#ef4444" : "#22c55e"}
+                        color={pendingCatalogPlacementHardInvalid ? "#ef4444" : "#22c55e"}
                         transparent
-                        opacity={pendingCatalogPlacementBlocked ? 0.28 : 0.24}
+                        opacity={pendingCatalogPlacementHardInvalid ? 0.28 : 0.24}
                         depthWrite={false}
                       />
                     </mesh>
                   <Line
                     points={pendingCatalogPlacementScene.outlinePoints}
-                    color={pendingCatalogPlacementBlocked ? "#dc2626" : "#16a34a"}
+                    color={pendingCatalogPlacementHardInvalid ? "#dc2626" : "#16a34a"}
                     lineWidth={4}
                   />
                 </group>
@@ -16407,7 +16871,7 @@ function PageContent() {
           aria-modal="false"
           aria-label="Preview catalog placement"
           className={`fixed inset-x-0 bottom-0 z-[95] max-h-[82vh] overflow-y-auto rounded-t-2xl border bg-white p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-2xl md:inset-x-auto md:bottom-5 md:right-5 md:max-h-[min(48vh,420px)] md:w-[min(460px,calc(100vw-2rem))] md:rounded-xl md:p-3 md:pb-3 ${
-            pendingCatalogPlacementBlocked ? "border-red-200" : "border-emerald-200"
+            pendingCatalogPlacementHardInvalid ? "border-red-200" : "border-emerald-200"
           }`}
         >
           <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-neutral-200 md:hidden" aria-hidden="true" />
@@ -16427,16 +16891,12 @@ function PageContent() {
                 <span
                   data-testid="catalog-placement-status"
                   className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-                    pendingCatalogPlacementBlocked
+                    pendingCatalogPlacementHardInvalid
                       ? "bg-red-50 text-red-700"
                       : "bg-emerald-50 text-emerald-700"
                   }`}
                 >
-                  {pendingCatalogPlacementBlocked
-                    ? pendingCatalogPlacementBlockerLabel
-                      ? `Blocked by ${pendingCatalogPlacementBlockerLabel}`
-                      : `Blocked in ${activePlacementTargetLabel ?? "target room"}`
-                    : "Valid placement"}
+                  {pendingCatalogPlacementStatusLabel}
                 </span>
                 <span className="text-xs text-neutral-500 md:hidden">
                   Drag the preview or tap a room/highlighted zone, then confirm.
@@ -16515,6 +16975,34 @@ function PageContent() {
                       {pendingCatalogPlacementScore.suggestions[0]}
                     </div>
                   )}
+                  {pendingCatalogPlacementImprovement && (
+                    <div
+                      data-testid="catalog-placement-improvement-hint"
+                      className="mt-2 rounded-md bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-800"
+                    >
+                      Better nearby spot available: +{pendingCatalogPlacementImprovement.scoreDelta} to{" "}
+                      {pendingCatalogPlacementImprovement.score}/100.
+                    </div>
+                  )}
+                  {pendingCatalogBestRoomPlacement && (
+                    <div
+                      data-testid="catalog-placement-best-room-hint"
+                      className="mt-2 rounded-md bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-800"
+                    >
+                      Best room: {pendingCatalogBestRoomPlacement.roomName} · +
+                      {pendingCatalogBestRoomPlacement.scoreDelta} to {pendingCatalogBestRoomPlacement.score}/100.
+                    </div>
+                  )}
+                  {pendingCatalogBestVariantPlacement && (
+                    <div
+                      data-testid="catalog-placement-best-option-hint"
+                      className="mt-2 rounded-md bg-violet-50 px-2.5 py-1.5 text-xs font-semibold text-violet-800"
+                    >
+                      Best option: {pendingCatalogBestVariantPlacement.variantLabel} · +
+                      {pendingCatalogBestVariantPlacement.scoreDelta} to{" "}
+                      {pendingCatalogBestVariantPlacement.score}/100.
+                    </div>
+                  )}
                   {pendingCatalogPlacementScore.compatibleZoneIds.length > 0 && (
                     <div className="mt-2 text-xs font-semibold text-emerald-700 md:hidden">
                       Compatible zones are highlighted on the canvas.
@@ -16531,6 +17019,46 @@ function PageContent() {
                 >
                   Find open spot
                 </button>
+                {pendingCatalogBestRoomPlacement ? (
+                  <button
+                    type="button"
+                    data-testid="catalog-placement-best-room"
+                    className="min-h-11 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-800 hover:bg-indigo-100 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
+                    onClick={movePendingCatalogPlacementToBestRoom}
+                  >
+                    Best room
+                  </button>
+                ) : null}
+                {pendingCatalogBestVariantPlacement ? (
+                  <button
+                    type="button"
+                    data-testid="catalog-placement-best-option"
+                    className="min-h-11 rounded-lg border border-violet-200 bg-violet-50 px-4 py-2 text-sm font-semibold text-violet-800 hover:bg-violet-100 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
+                    onClick={switchPendingCatalogPlacementToBestOption}
+                  >
+                    Best option
+                  </button>
+                ) : null}
+                {pendingCatalogPlacementImprovement ? (
+                  <button
+                    type="button"
+                    data-testid="catalog-placement-improve"
+                    className="min-h-11 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-800 hover:bg-blue-100 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
+                    onClick={improvePendingCatalogPlacement}
+                  >
+                    Improve placement
+                  </button>
+                ) : null}
+                {pendingCatalogPlacementBlocked && restorableCatalogPlacement ? (
+                  <button
+                    type="button"
+                    data-testid="catalog-placement-restore-valid"
+                    className="min-h-11 rounded-lg border border-emerald-200 bg-white px-4 py-2 text-sm font-semibold text-emerald-800 hover:bg-emerald-50 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
+                    onClick={restoreLastValidCatalogPlacement}
+                  >
+                    Back to valid spot
+                  </button>
+                ) : null}
                 {pendingCatalogPlacementBlocked ? (
                   <button
                     type="button"
@@ -16655,15 +17183,26 @@ function PageContent() {
               <button
                 type="button"
                 data-testid="catalog-placement-confirm"
-                disabled={pendingCatalogPlacementBlocked}
+                disabled={
+                  pendingCatalogPlacementHardInvalid &&
+                  !shouldConfirmImprovedCatalogPlacement &&
+                  !shouldConfirmRestoredCatalogPlacement
+                }
                 className={`min-h-11 rounded-lg px-3 py-2 text-sm font-semibold text-white md:min-h-9 md:text-xs ${
-                  pendingCatalogPlacementBlocked
+                  pendingCatalogPlacementHardInvalid &&
+                  !shouldConfirmImprovedCatalogPlacement &&
+                  !shouldConfirmRestoredCatalogPlacement
                     ? "cursor-not-allowed bg-neutral-300"
                     : "bg-neutral-950 hover:bg-neutral-800"
                 }`}
                 onClick={confirmPendingCatalogPlacement}
               >
-                Add to {pendingCatalogPlacementRoom?.name ?? activeRoom?.name ?? "room"}
+                {shouldConfirmImprovedCatalogPlacement
+                  ? "Add best spot to"
+                  : shouldConfirmRestoredCatalogPlacement
+                    ? "Add valid spot to"
+                    : "Add to"}{" "}
+                {pendingCatalogPlacementRoom?.name ?? activeRoom?.name ?? "room"}
               </button>
             </div>
           </div>
