@@ -16601,24 +16601,24 @@ function PageContent() {
           role="dialog"
           aria-modal="false"
           aria-label="Preview catalog placement"
-          className={`fixed inset-x-0 bottom-0 z-[95] max-h-[82vh] overflow-y-auto rounded-t-2xl border bg-white p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-2xl sm:bottom-8 sm:left-1/2 sm:max-h-[calc(100vh-5rem)] sm:w-[min(720px,calc(100vw-2rem))] sm:-translate-x-1/2 sm:rounded-xl sm:pb-4 ${
+          className={`fixed inset-x-0 bottom-0 z-[95] max-h-[82vh] overflow-y-auto rounded-t-2xl border bg-white p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-2xl md:inset-x-auto md:bottom-5 md:right-5 md:max-h-[min(48vh,420px)] md:w-[min(460px,calc(100vw-2rem))] md:rounded-xl md:p-3 md:pb-3 ${
             pendingCatalogPlacementBlocked ? "border-red-200" : "border-emerald-200"
           }`}
         >
-          <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-neutral-200 sm:hidden" aria-hidden="true" />
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-neutral-200 md:hidden" aria-hidden="true" />
+          <div className="flex flex-col gap-3">
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
                 Preview placement
               </p>
-              <h3 className="mt-1 text-base font-semibold text-neutral-950">
+              <h3 className="mt-1 line-clamp-2 text-base font-semibold leading-snug text-neutral-950 md:line-clamp-1 md:text-sm">
                 {pendingCatalogPlacementScene.productTitle}
               </h3>
-              <p className="mt-1 text-sm text-neutral-600">
+              <p className="mt-1 line-clamp-2 text-sm text-neutral-600 md:line-clamp-1 md:text-xs">
                 {pendingCatalogPlacementScene.variantLabel} · {pendingCatalogPlacementScene.reason}
                 {pendingCatalogPlacementRoom?.name ? ` · ${pendingCatalogPlacementRoom.name}` : ""}
               </p>
-              <div className="mt-2 flex flex-wrap items-center gap-2">
+              <div className="mt-2 flex flex-wrap items-center gap-1.5">
                 <span
                   data-testid="catalog-placement-status"
                   className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
@@ -16633,7 +16633,7 @@ function PageContent() {
                       : `Blocked in ${activePlacementTargetLabel ?? "target room"}`
                     : "Valid placement"}
                 </span>
-                <span className="text-xs text-neutral-500">
+                <span className="text-xs text-neutral-500 md:hidden">
                   Drag the preview or tap a room/highlighted zone, then confirm.
                 </span>
                 {activePlacementTargetLabel && (
@@ -16666,7 +16666,7 @@ function PageContent() {
               {pendingCatalogPlacementScore && (
                 <div
                   data-testid="catalog-placement-score-card"
-                  className="mt-3 rounded-lg border border-neutral-200 bg-neutral-50 p-3"
+                  className="mt-2 rounded-lg border border-neutral-200 bg-neutral-50 p-3 md:p-2.5"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
@@ -16699,29 +16699,29 @@ function PageContent() {
                     {pendingCatalogPlacementScore.summary}
                   </div>
                   {pendingCatalogPlacementScore.warnings.length > 0 && (
-                    <ul className="mt-2 space-y-1 text-xs text-amber-800">
+                    <ul className="mt-2 space-y-1 text-xs text-amber-800 md:mt-1">
                       {pendingCatalogPlacementScore.warnings.slice(0, 3).map((warning) => (
                         <li key={warning}>{warning}</li>
                       ))}
                     </ul>
                   )}
                   {pendingCatalogPlacementScore.suggestions.length > 0 && (
-                    <div className="mt-2 text-xs text-neutral-600">
+                    <div className="mt-2 text-xs text-neutral-600 md:hidden">
                       {pendingCatalogPlacementScore.suggestions[0]}
                     </div>
                   )}
                   {pendingCatalogPlacementScore.compatibleZoneIds.length > 0 && (
-                    <div className="mt-2 text-xs font-semibold text-emerald-700">
+                    <div className="mt-2 text-xs font-semibold text-emerald-700 md:hidden">
                       Compatible zones are highlighted on the canvas.
                     </div>
                   )}
                 </div>
               )}
-              <div className="mt-3 flex flex-wrap items-center gap-2">
+              <div className="mt-3 flex flex-wrap items-center gap-2 md:mt-2">
                 <button
                   type="button"
                   data-testid="catalog-placement-auto-place"
-                  className="min-h-11 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800 hover:bg-emerald-100 sm:min-h-9 sm:px-3 sm:py-1.5 sm:text-xs"
+                  className="min-h-11 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800 hover:bg-emerald-100 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
                   onClick={autoPlacePendingCatalogPlacement}
                 >
                   Find open spot
@@ -16730,17 +16730,17 @@ function PageContent() {
                   <button
                     type="button"
                     data-testid="catalog-placement-select-blocker"
-                    className="min-h-11 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-100 sm:min-h-9 sm:px-3 sm:py-1.5 sm:text-xs"
+                    className="min-h-11 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-100 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
                     onClick={selectPendingCatalogPlacementBlocker}
                   >
-                  Select blocker
-                </button>
-              ) : null}
+                    Select blocker
+                  </button>
+                ) : null}
                 {pendingCatalogPlacementScore?.actions.includes("swap_with_blocker") ? (
                   <button
                     type="button"
                     data-testid="catalog-placement-swap-blocker"
-                    className="min-h-11 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-800 hover:bg-amber-100 sm:min-h-9 sm:px-3 sm:py-1.5 sm:text-xs"
+                    className="min-h-11 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-800 hover:bg-amber-100 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
                     onClick={swapPendingCatalogWithBlocker}
                   >
                     Swap with blocker
@@ -16750,7 +16750,7 @@ function PageContent() {
                   <button
                     type="button"
                     data-testid="catalog-placement-move-blocker"
-                    className="min-h-11 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-800 hover:bg-amber-100 sm:min-h-9 sm:px-3 sm:py-1.5 sm:text-xs"
+                    className="min-h-11 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-800 hover:bg-amber-100 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
                     onClick={movePendingCatalogBlockerAside}
                   >
                     Move blocker aside
@@ -16760,7 +16760,7 @@ function PageContent() {
                   <button
                     type="button"
                     data-testid="catalog-placement-beside-blocker"
-                    className="min-h-11 rounded-lg border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 sm:min-h-9 sm:px-3 sm:py-1.5 sm:text-xs"
+                    className="min-h-11 rounded-lg border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
                     onClick={placePendingCatalogBesideBlocker}
                   >
                     Place beside blocker
@@ -16770,7 +16770,7 @@ function PageContent() {
                   <button
                     type="button"
                     data-testid="catalog-placement-smaller-variant"
-                    className="min-h-11 rounded-lg border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 sm:min-h-9 sm:px-3 sm:py-1.5 sm:text-xs"
+                    className="min-h-11 rounded-lg border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
                     onClick={trySmallerPendingCatalogVariant}
                   >
                     Try smaller variant
@@ -16779,7 +16779,7 @@ function PageContent() {
                 <button
                   type="button"
                   data-testid="catalog-placement-center"
-                  className="min-h-11 rounded-lg border border-neutral-200 px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 sm:min-h-9 sm:px-3 sm:py-1.5 sm:text-xs"
+                  className="min-h-11 rounded-lg border border-neutral-200 px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
                   onClick={centerPendingCatalogPlacement}
                 >
                   Center
@@ -16787,7 +16787,7 @@ function PageContent() {
                 <button
                   type="button"
                   data-testid="catalog-placement-nudge-left"
-                  className="h-11 w-11 rounded-lg border border-neutral-200 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 sm:h-8 sm:w-8 sm:text-xs"
+                  className="h-11 w-11 rounded-lg border border-neutral-200 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 md:h-8 md:w-8 md:text-xs"
                   aria-label="Nudge placement left"
                   onClick={() => nudgePendingCatalogPlacement(-0.25, 0)}
                 >
@@ -16796,7 +16796,7 @@ function PageContent() {
                 <button
                   type="button"
                   data-testid="catalog-placement-nudge-up"
-                  className="h-11 w-11 rounded-lg border border-neutral-200 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 sm:h-8 sm:w-8 sm:text-xs"
+                  className="h-11 w-11 rounded-lg border border-neutral-200 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 md:h-8 md:w-8 md:text-xs"
                   aria-label="Nudge placement back"
                   onClick={() => nudgePendingCatalogPlacement(0, -0.25)}
                 >
@@ -16805,7 +16805,7 @@ function PageContent() {
                 <button
                   type="button"
                   data-testid="catalog-placement-nudge-down"
-                  className="h-11 w-11 rounded-lg border border-neutral-200 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 sm:h-8 sm:w-8 sm:text-xs"
+                  className="h-11 w-11 rounded-lg border border-neutral-200 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 md:h-8 md:w-8 md:text-xs"
                   aria-label="Nudge placement front"
                   onClick={() => nudgePendingCatalogPlacement(0, 0.25)}
                 >
@@ -16814,7 +16814,7 @@ function PageContent() {
                 <button
                   type="button"
                   data-testid="catalog-placement-nudge-right"
-                  className="h-11 w-11 rounded-lg border border-neutral-200 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 sm:h-8 sm:w-8 sm:text-xs"
+                  className="h-11 w-11 rounded-lg border border-neutral-200 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 md:h-8 md:w-8 md:text-xs"
                   aria-label="Nudge placement right"
                   onClick={() => nudgePendingCatalogPlacement(0.25, 0)}
                 >
@@ -16822,11 +16822,11 @@ function PageContent() {
                 </button>
               </div>
             </div>
-            <div className="sticky bottom-0 -mx-4 grid shrink-0 grid-cols-2 gap-2 border-t border-neutral-200 bg-white/95 px-4 pb-1 pt-3 backdrop-blur sm:static sm:m-0 sm:flex sm:flex-wrap sm:justify-end sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none">
+            <div className="sticky bottom-0 -mx-4 grid shrink-0 grid-cols-2 gap-2 border-t border-neutral-200 bg-white/95 px-4 pb-1 pt-3 backdrop-blur md:-mx-3 md:px-3 md:pb-0 md:pt-2">
               <button
                 type="button"
                 data-testid="catalog-placement-rotate-left"
-                className="min-h-11 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
+                className="min-h-11 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 md:min-h-9 md:text-xs"
                 onClick={() => rotatePendingCatalogPlacement("left")}
               >
                 Rotate left
@@ -16834,7 +16834,7 @@ function PageContent() {
               <button
                 type="button"
                 data-testid="catalog-placement-rotate-right"
-                className="min-h-11 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
+                className="min-h-11 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 md:min-h-9 md:text-xs"
                 onClick={() => rotatePendingCatalogPlacement("right")}
               >
                 Rotate right
@@ -16842,7 +16842,7 @@ function PageContent() {
               <button
                 type="button"
                 data-testid="catalog-placement-cancel"
-                className="min-h-11 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
+                className="min-h-11 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 md:min-h-9 md:text-xs"
                 onClick={cancelPendingCatalogPlacement}
               >
                 Cancel
@@ -16851,7 +16851,7 @@ function PageContent() {
                 type="button"
                 data-testid="catalog-placement-confirm"
                 disabled={pendingCatalogPlacementBlocked}
-                className={`min-h-11 rounded-lg px-3 py-2 text-sm font-semibold text-white ${
+                className={`min-h-11 rounded-lg px-3 py-2 text-sm font-semibold text-white md:min-h-9 md:text-xs ${
                   pendingCatalogPlacementBlocked
                     ? "cursor-not-allowed bg-neutral-300"
                     : "bg-neutral-950 hover:bg-neutral-800"

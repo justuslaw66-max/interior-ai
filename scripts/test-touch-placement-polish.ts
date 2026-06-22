@@ -20,6 +20,11 @@ assert.match(
 );
 assert.match(
   designPage,
+  /md:max-h-\[min\(48vh,420px\)\][\s\S]*md:w-\[min\(460px,calc\(100vw-2rem\)\)\]/,
+  "placement confirmation should stay compact on desktop"
+);
+assert.match(
+  designPage,
   /pb-\[calc\(1rem\+env\(safe-area-inset-bottom\)\)\]/,
   "bottom sheet should respect mobile safe-area inset"
 );
