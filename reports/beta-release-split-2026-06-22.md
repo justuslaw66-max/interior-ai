@@ -2,105 +2,52 @@
 
 ## Goal
 
-Turn the current beta-ready but very dirty worktree into reviewable release commits without accidentally swallowing unrelated feature work.
+Turn the beta-ready but very dirty worktree into reviewable release commits without accidentally swallowing unrelated feature work.
 
-## Safe First Commit: Beta Gate + Hygiene Shell
+Status: completed. The worktree is clean, the release commits are split, and the blocking beta gate passed.
 
-These files are safe to include together because they are new beta-gate artifacts or direct cleanup metadata:
+## Final Commit Stack
 
-- `.gitignore`
-- `lib/snapshot-fingerprint.ts`
-- `scripts/check-beta-release-worktree.ts`
-- `tests/e2e/00-beta-smoke.spec.ts`
-- `tests/e2e/beta-seed.ts`
-- `reports/beta-release-hygiene-2026-06-22.md`
-- `reports/beta-release-split-2026-06-22.md`
-- tracked generated cleanup:
-  - `.next 2/dev/fallback-build-manifest.json`
-  - `.next 3/dev/build-manifest.json`
-  - `.next 3/dev/fallback-build-manifest.json`
-  - `.next 3/dev/node_modules/pg-587764f78a6c7a9c 2`
-  - `.next 3/dev/package.json`
-  - `.next 3/dev/prerender-manifest.json`
-  - `.next 3/dev/routes-manifest.json`
-  - `.next 3/dev/server/app-paths-manifest.json`
-  - `.next 3/dev/server/pages-manifest.json`
-  - `.next 3/dev/trace`
+- `28a3332 chore: add beta release hygiene gate`
+- `1b0893e test: add beta smoke harness foundation`
+- `fe332fa feat: polish beta share export preview`
+- `eb2b5f0 feat: stabilize beta editor workflow`
+- `6cb0151 feat: prepare beta catalog armchairs`
+- `2eba7d8 fix: harden design persistence routes`
+- `737bd12 feat: polish shared beta app shell`
+- `96b096b chore: wire beta gate scripts`
 
-Patch-stage these hunks into the same commit if splitting carefully:
+## Review Buckets Delivered
 
-- `package.json`: only `release:beta-worktree`, `test:e2e:beta`, and `test:beta-gate`.
-- `app/design/page.tsx`: only the QA fingerprint import/render hook.
-- `app/share/[shareToken]/page.tsx`: only the QA fingerprint import/render hook.
-- `app/share/[shareToken]/export/page.tsx`: only the QA fingerprint hook and PDF download test id.
+- Release hygiene and audit gate: `.gitignore`, copy-suffix/generated cleanup, hygiene reports, and `scripts/check-beta-release-worktree.ts`.
+- Beta smoke harness: deterministic seed helper, canonical snapshot fingerprinting, QA-only DOM hooks, and `tests/e2e/00-beta-smoke.spec.ts`.
+- Share/export preview: share actions, export pack downloads, PDF route, shopping CSV helpers, and share-page checkout readiness.
+- Editor workflow: beta start, editor fingerprint hook, persistence, manual placement, floor/material controls, shopping readiness, mobile/touch controls, and lite-mode hooks.
+- Catalog readiness: armchair catalog/model/thumb assets, catalog audit helpers, draft rug deletion, and placement/readiness tests.
+- API/persistence hardening: design route payload parsing, snapshot validation, share-token access, AI layout payloads, and route-level tests.
+- Shared app shell: layout/style polish, dialogs, cart/list buttons, PDF button, Sentry fallback, Draco assets, and style consistency checks.
+- Script wiring: `test:beta-gate`, focused beta/editor test aliases, and default `next dev` scripts.
 
-Do not blindly stage those mixed files; they contain large pre-existing product work.
-
-## Second Commit: Share/Export Controls
-
-Group the share/export action surface after the beta gate shell:
-
-- `components/SharePageActions.tsx`
-- `components/DuplicateDesignButton.tsx`
-- `app/share/[shareToken]/export/PlanSvgDownload.tsx`
-- `app/share/[shareToken]/export/ShoppingCsvDownload.tsx`
-- `app/share/[shareToken]/export/pdf/`
-- `app/share/[shareToken]/export/ShoppingList.tsx`
-- `app/share/[shareToken]/export/page.tsx` remaining export-pack changes
-- `app/share/[shareToken]/page.tsx` remaining share-preview changes
-
-Gate after this commit:
+## Final Gate
 
 ```bash
-PLAYWRIGHT_WEB_SERVER_PORT=3111 PLAYWRIGHT_BASE_URL=http://localhost:3111 npm run test:e2e:beta
-```
-
-## Third Commit: Catalog Readiness
-
-Group catalog assets and catalog governance together:
-
-- new armchair catalog YAML directories
-- new armchair GLBs and thumbnails
-- `catalog/furniture/_upholstery_libraries/hamilton.yaml`
-- modified upholstery/catalog YAML files
-- deleted draft rug catalog entries
-- catalog audit/test helpers touched in this release
-
-Gate after this commit:
-
-```bash
-npm run test:catalog-audit
-npm run test:catalog-asset-availability
-```
-
-## Fourth Commit: Editor Stability + Mobile/Performance
-
-Group the large editor-side behavior changes last:
-
-- `app/design/page.tsx`
-- editor panels/renderers/floor/placement/shopping components
-- room persistence/types/floor/layout/shopping helper modules
-- mobile/touch/performance tests and support scripts
-
-Gate after this commit:
-
-```bash
-npm run release:beta-worktree
 PLAYWRIGHT_WEB_SERVER_PORT=3111 PLAYWRIGHT_BASE_URL=http://localhost:3111 npm run test:beta-gate
 ```
 
-## Additional Review Buckets
+Passed end to end after the final script wiring commit.
 
-The rerunnable audit now separates these buckets so they can be reviewed after the four primary release commits:
+## Rerunnable Audit
 
-- API / persistence: design routes, layout route, duplication, payload, shopping readiness, and Next config changes.
-- Shared UI / app shell: admin/model viewer, app shell styling/layout, dialogs, cart/list buttons, PDF button, Sentry fallback, style consistency, and Draco assets.
+Use this before release review or tagging:
 
-Both buckets are currently release-code candidates, not generated cleanup. Review them with the feature commits they support.
+```bash
+npm run release:beta-worktree
+```
+
+The latest clean audit reported `Changed paths: 0` and no accidental copy-suffix artifacts.
 
 ## Notes
 
-- The full beta gate already passed with `PLAYWRIGHT_WEB_SERVER_PORT=3111 PLAYWRIGHT_BASE_URL=http://localhost:3111 npm run test:beta-gate`.
-- No remaining `* 2.*` or `* 2` copy-suffix files were found outside ignored/generated paths after cleanup.
-- The first commit can be staged safely as whole files except for the explicitly listed mixed files.
-- `.next-dev.log` and `.vscode/` are ignored as local-only development noise.
+- Review the stack commit-by-commit rather than as one giant release diff.
+- Enable `CATALOG_CHECK_REMOTE_ASSETS=true` in a network-capable release environment before final beta signoff.
+- Keep the mocked local checkout boundary in the beta gate; real payment completion belongs in staging release validation.
