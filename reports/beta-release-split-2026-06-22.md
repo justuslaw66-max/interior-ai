@@ -26,7 +26,7 @@ Status: completed. The worktree is clean, the release commits are split, and the
 - Catalog readiness: armchair catalog/model/thumb assets, catalog audit helpers, draft rug deletion, and placement/readiness tests.
 - API/persistence hardening: design route payload parsing, snapshot validation, share-token access, AI layout payloads, and route-level tests.
 - Shared app shell: layout/style polish, dialogs, cart/list buttons, PDF button, Sentry fallback, Draco assets, and style consistency checks.
-- Script wiring: `test:beta-gate`, focused beta/editor test aliases, and default `next dev` scripts.
+- Script wiring: `test:beta-gate`, strict catalog audit gating, focused beta/editor test aliases, and default `next dev` scripts.
 
 ## Final Gate
 
@@ -35,6 +35,8 @@ PLAYWRIGHT_WEB_SERVER_PORT=3111 PLAYWRIGHT_BASE_URL=http://localhost:3111 npm ru
 ```
 
 Passed end to end after the final script wiring commit.
+
+The gate now runs the production build with `CATALOG_STRICT_VALIDATION=true` and uses `npm run test:catalog-audit:strict`, where catalog warnings are beta blockers.
 
 ## Rerunnable Audit
 

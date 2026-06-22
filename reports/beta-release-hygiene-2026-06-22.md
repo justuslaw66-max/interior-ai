@@ -38,10 +38,11 @@ No armchair assets were draft-gated in this pass because the catalog audit and l
 ## Verified Gates
 
 - `npm run release:beta-worktree` passed and is included in `npm run test:beta-gate`.
-- `npm run test:catalog-audit` passed.
+- `npm run test:catalog-audit:strict` passed, including strict catalog quality mode where warnings are beta blockers.
 - `npm run test:catalog-asset-availability` passed with 86 catalog files, 617 asset refs, 0 missing local URLs, and remote checking disabled by default.
 - `PLAYWRIGHT_WEB_SERVER_PORT=3111 PLAYWRIGHT_BASE_URL=http://localhost:3111 npm run test:beta-gate` passed end to end.
 - The beta smoke path validates persisted API state, share-page fingerprint, export-page fingerprint, PDF bytes, CSV/SVG/PNG downloads, mobile/tablet overflow, lite-mode control, and mocked checkout payload.
+- The beta gate runs `CATALOG_STRICT_VALIDATION=true npm run build` so runtime catalog validation is strict during the release build.
 
 Remote media availability remains covered by enabling `CATALOG_CHECK_REMOTE_ASSETS=true` when a network-capable release environment is available.
 
@@ -75,4 +76,4 @@ It buckets dirty worktree paths into beta gate/hygiene, share/export, catalog re
 - Run the beta gate again immediately before tagging or opening the release PR.
 - In a network-capable release environment, run `CATALOG_CHECK_REMOTE_ASSETS=true npm run test:catalog-asset-availability` to cover remote media URLs.
 - Keep checkout completion out of the local blocker until staging payment credentials are explicitly configured; local beta gate validates checkout start with a mocked response.
-- If new catalog items are added before beta, require them to pass catalog audit, asset availability, price/link readiness, and replacement-suggestion eligibility before publishing.
+- If new catalog items are added before beta, require them to pass strict catalog audit, asset availability, price/link readiness, and replacement-suggestion eligibility before publishing.

@@ -1,9 +1,11 @@
 import { getRelativeCatalogPath, runCatalogQualityAudit } from "../lib/catalog-audit";
 
 function main() {
+  const strict = process.env.CATALOG_STRICT_VALIDATION === "true";
   const result = runCatalogQualityAudit();
 
   console.log("Catalog quality audit summary");
+  console.log(`- mode: ${strict ? "strict" : "standard"}`);
   console.log(`- files scanned: ${result.files.length}`);
   console.log(`- files with failures: ${result.failingFiles.length}`);
   console.log(`- files with warnings: ${result.warningFiles.length}`);
@@ -28,6 +30,10 @@ function main() {
 
   if (result.hasFailures) {
     throw new Error("Catalog quality audit failed");
+  }
+
+  if (strict && result.warningCount > 0) {
+    throw new Error("Strict catalog quality audit failed: warnings are beta blockers");
   }
 
   console.log("\nCatalog quality audit passed");

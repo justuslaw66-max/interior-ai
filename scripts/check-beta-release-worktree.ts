@@ -68,6 +68,9 @@ const CATALOG_PREFIXES = [
   "public/assets/thumbs/armchair",
   "lib/catalog",
   "components/catalog/",
+  "scripts/test-catalog-",
+  "scripts/test-public-catalog-",
+  "scripts/test-imported-variant-",
 ];
 
 const SHARE_EXPORT_PREFIXES = [
