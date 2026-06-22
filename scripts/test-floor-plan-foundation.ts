@@ -10,6 +10,10 @@ import {
   resolveFloorPlanOpeningCancelDecision,
 } from "@/lib/design-page-house-plan";
 import {
+  clampFloorPatternScale,
+  normalizeFloorRotationDeg,
+} from "@/lib/floor-materials";
+import {
   lockFloorPlanWallDrawAngle,
   resolveOpeningPlacementFromPoint,
   resolveExactWallDrawPoint,
@@ -32,8 +36,8 @@ import {
   buildFloorPlanRoomPolygon,
   calculateFloorPlanPolygonAreaSqm,
 } from "@/lib/floor-plan-types";
-import { snapshotToStored, storedToSnapshot } from "@/lib/room-persistence";
-import type { DesignSnapshot, RoomSnapshot } from "@/lib/room-types";
+import { legacyApiToSnapshot, snapshotToStored, storedToSnapshot } from "@/lib/room-persistence";
+import type { DesignItem, DesignSnapshot, RoomSnapshot } from "@/lib/room-types";
 import type { FloorPlanUnderlay } from "@/lib/floor-plan-types";
 
 function makeRoom(
@@ -62,6 +66,14 @@ const living = makeRoom("living", "Living Room", 5, 4, 0, 0);
 const bedroom = makeRoom("bedroom", "Bedroom", 4, 4, 4.5, 0);
 const plan = buildFloorPlanFromRooms([living, bedroom]);
 const floor = plan.floors[0];
+
+assert.equal(normalizeFloorRotationDeg(450), 90);
+assert.equal(normalizeFloorRotationDeg(-90), 270);
+assert.equal(normalizeFloorRotationDeg(44), 0);
+assert.equal(normalizeFloorRotationDeg(46), 90);
+assert.equal(clampFloorPatternScale(0.1), 0.5);
+assert.equal(clampFloorPatternScale(2.9), 2);
+assert.equal(clampFloorPatternScale(null), 1);
 
 for (const template of HOUSE_PLAN_TEMPLATES) {
   assert.ok(template.rooms.length >= 1, `${template.id} should include at least one room`);
@@ -274,6 +286,47 @@ assert.equal(storedSnapshot.floorPlan?.openings?.[0]?.roomId, "living");
 const restoredSnapshot = storedToSnapshot(storedSnapshot);
 assert.equal(restoredSnapshot.floorPlan?.underlay?.calibration?.pixelsPerMeter, 200);
 assert.equal(restoredSnapshot.floorPlan?.openings?.[0]?.kind, "door");
+
+const staleLegacyItems: DesignItem[] = [
+  {
+    instanceId: "stale-item",
+    productId: "stale-product",
+    variantId: "stale-variant",
+    position: [0, 0, 0],
+  },
+];
+const snapshotFromValidApi = legacyApiToSnapshot({
+  id: "design_valid_snapshot",
+  title: "Valid Snapshot",
+  roomWidth: 1,
+  roomDepth: 1,
+  items: staleLegacyItems,
+  zones: [],
+  savedViews: [],
+  snapshot: storedSnapshot,
+});
+assert.equal(snapshotFromValidApi.activeRoomId, "bedroom");
+assert.equal(snapshotFromValidApi.rooms.length, 2);
+assert.equal(snapshotFromValidApi.rooms.find((room) => room.id === "bedroom")?.geometry.width, 4);
+assert.equal(snapshotFromValidApi.rooms[0].items.length, 0);
+
+const snapshotFromInvalidApi = legacyApiToSnapshot({
+  id: "design_invalid_snapshot",
+  title: "Invalid Snapshot",
+  roomWidth: 8,
+  roomDepth: 6,
+  items: staleLegacyItems,
+  zones: [],
+  savedViews: [],
+  snapshot: {
+    ...storedSnapshot,
+    activeRoomId: "missing-room",
+  } as unknown as Parameters<typeof legacyApiToSnapshot>[0]["snapshot"],
+});
+assert.equal(snapshotFromInvalidApi.activeRoomId, "room_living");
+assert.equal(snapshotFromInvalidApi.rooms.length, 1);
+assert.equal(snapshotFromInvalidApi.rooms[0].geometry.width, 8);
+assert.equal(snapshotFromInvalidApi.rooms[0].items[0].instanceId, "stale-item");
 
 const underlay: FloorPlanUnderlay = {
   id: "underlay",

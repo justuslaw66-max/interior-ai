@@ -7,6 +7,15 @@ import type { DesignSnapshot } from "@/lib/room-types";
 
 type EditorMode = "design" | "adjust" | "ai" | "buy" | "present";
 
+export type EditorSaveStatus = {
+  kind: string;
+  source: string;
+  label: string;
+  detail: string;
+  tone: "error" | "saving" | "saved" | "pending";
+  canRetry: boolean;
+};
+
 type EditorCommandBarProps = {
   isClientPreview: boolean;
   dark?: boolean;
@@ -36,8 +45,32 @@ type EditorCommandBarProps = {
   showLoadDesign: boolean;
   onToggleLoadDesign: () => void;
   onSave: () => void | Promise<void>;
+  isSaving?: boolean;
+  saveStatus: EditorSaveStatus;
+  onRetrySaveStatus: () => void | Promise<void>;
   onOpenPresentExport: () => void;
 };
+
+function getSaveStatusClassName(tone: EditorSaveStatus["tone"], dark: boolean) {
+  if (dark) {
+    if (tone === "error") return "border-red-400/40 bg-red-500/10 text-red-100";
+    if (tone === "saving") return "border-sky-400/40 bg-sky-500/10 text-sky-100";
+    if (tone === "saved") return "border-emerald-400/40 bg-emerald-500/10 text-emerald-100";
+    return "border-white/10 bg-white/5 text-neutral-200";
+  }
+
+  if (tone === "error") return "border-red-200 bg-red-50 text-red-800";
+  if (tone === "saving") return "border-blue-200 bg-blue-50 text-blue-800";
+  if (tone === "saved") return "border-emerald-200 bg-emerald-50 text-emerald-800";
+  return "border-neutral-200 bg-white text-neutral-700";
+}
+
+function getSaveStatusDotClassName(tone: EditorSaveStatus["tone"]) {
+  if (tone === "error") return "bg-red-500";
+  if (tone === "saving") return "bg-blue-500";
+  if (tone === "saved") return "bg-emerald-500";
+  return "bg-neutral-400";
+}
 
 export default function EditorCommandBar({
   isClientPreview,
@@ -68,6 +101,9 @@ export default function EditorCommandBar({
   showLoadDesign,
   onToggleLoadDesign,
   onSave,
+  isSaving = false,
+  saveStatus,
+  onRetrySaveStatus,
   onOpenPresentExport,
 }: EditorCommandBarProps) {
   const disabled = editorMode === "present" || isClientPreview;
@@ -99,16 +135,18 @@ export default function EditorCommandBar({
   };
 
   return (
-    <div className={`absolute left-0 right-0 top-0 z-50 flex h-14 items-center justify-between gap-3 border-b border-neutral-200 bg-white/95 px-4 shadow-sm backdrop-blur transition-opacity duration-300 ${
+    <div className={`absolute left-0 right-0 top-0 z-50 flex h-14 items-center justify-between gap-2 overflow-hidden border-b border-neutral-200 bg-white/95 px-2 shadow-sm backdrop-blur transition-opacity duration-300 sm:gap-3 sm:px-4 ${
       isClientPreview ? "pointer-events-none opacity-0" : "opacity-100"
     }`}>
       <div className="flex min-w-0 flex-1 items-center gap-2">
         <button
           type="button"
+          data-testid="command-undo"
+          aria-label={undoName ? `Undo ${undoName}` : "Undo"}
           className={
             dark
-              ? "h-9 w-9 rounded-xl bg-[#151820] text-sm text-neutral-200 disabled:opacity-50"
-              : "h-9 w-9 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-900 hover:bg-neutral-50 disabled:opacity-50"
+              ? "h-10 w-10 shrink-0 rounded-xl bg-[#151820] text-base font-semibold text-neutral-200 disabled:cursor-not-allowed disabled:opacity-40"
+              : "h-10 w-10 shrink-0 rounded-xl border border-neutral-200 bg-white text-base font-semibold text-neutral-900 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40"
           }
           onClick={onUndo}
           disabled={isClientPreview || !canUndo}
@@ -118,10 +156,12 @@ export default function EditorCommandBar({
         </button>
         <button
           type="button"
+          data-testid="command-redo"
+          aria-label={redoName ? `Redo ${redoName}` : "Redo"}
           className={
             dark
-              ? "h-9 w-9 rounded-xl bg-[#151820] text-sm text-neutral-200 disabled:opacity-50"
-              : "h-9 w-9 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-900 hover:bg-neutral-50 disabled:opacity-50"
+              ? "h-10 w-10 shrink-0 rounded-xl bg-[#151820] text-base font-semibold text-neutral-200 disabled:cursor-not-allowed disabled:opacity-40"
+              : "h-10 w-10 shrink-0 rounded-xl border border-neutral-200 bg-white text-base font-semibold text-neutral-900 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40"
           }
           onClick={onRedo}
           disabled={isClientPreview || !canRedo}
@@ -154,8 +194,8 @@ export default function EditorCommandBar({
       <div
         className={
           dark
-            ? "absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-2xl border border-white/10 bg-[#151820] p-1"
-            : "absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-2xl border border-neutral-200 bg-white p-1 shadow-sm"
+            ? "absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-2xl border border-white/10 bg-[#151820] p-1 md:flex"
+            : "absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-2xl border border-neutral-200 bg-white p-1 shadow-sm md:flex"
         }
         aria-label="Design workflow"
       >
@@ -181,13 +221,13 @@ export default function EditorCommandBar({
           data-testid="designer-mode-toggle"
           className={
             isDesigner
-              ? "rounded-xl bg-neutral-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800"
-              : "rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
+              ? "hidden rounded-xl bg-neutral-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800 sm:inline-flex"
+              : "hidden rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 sm:inline-flex"
           }
           onClick={onToggleDesignerMode}
-          title={isDesigner ? "Exit Designer Mode" : "Enter Designer Mode (Pro)"}
+          title={isDesigner ? "Exit Pro tools" : "Enter Pro tools"}
         >
-          {isDesigner ? "Designer on" : "Pro tools"}
+          {isDesigner ? "Exit Pro tools" : "Pro tools"}
         </button>
 
         {isDesigner && (
@@ -210,8 +250,8 @@ export default function EditorCommandBar({
             data-testid="load-design"
             className={
               dark
-                ? "rounded-xl bg-[#2a3a4a] px-3 py-2 text-sm font-semibold text-white hover:bg-[#3a4a5a]"
-                : "rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
+                ? "hidden rounded-xl bg-[#2a3a4a] px-3 py-2 text-sm font-semibold text-white hover:bg-[#3a4a5a] sm:inline-flex"
+                : "hidden rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 sm:inline-flex"
             }
             onClick={onToggleLoadDesign}
             title="Load a saved design"
@@ -220,16 +260,62 @@ export default function EditorCommandBar({
           </button>
         )}
 
+        <div
+          data-testid="save-status"
+          data-status={saveStatus.kind}
+          data-source={saveStatus.source}
+          title={`${saveStatus.label}: ${saveStatus.detail}`}
+          className={`hidden min-w-0 max-w-[240px] items-center gap-2 rounded-full border px-3 py-1.5 text-xs shadow-sm lg:flex ${getSaveStatusClassName(
+            saveStatus.tone,
+            dark
+          )}`}
+        >
+          <span
+            className={`h-2.5 w-2.5 shrink-0 rounded-full ${getSaveStatusDotClassName(saveStatus.tone)} ${
+              saveStatus.tone === "saving" ? "animate-pulse" : ""
+            }`}
+            aria-hidden="true"
+          />
+          <span className="min-w-0 truncate font-semibold">
+            {saveStatus.label}
+            <span className="font-normal opacity-75"> · {saveStatus.detail}</span>
+          </span>
+          {saveStatus.canRetry ? (
+            <button
+              type="button"
+              data-testid="save-status-retry"
+              className={
+                dark
+                  ? "shrink-0 rounded-full border border-white/20 px-2 py-0.5 font-semibold text-white hover:bg-white/10"
+                  : "shrink-0 rounded-full border border-current/20 bg-white/70 px-2 py-0.5 font-semibold hover:bg-white"
+              }
+              onClick={onRetrySaveStatus}
+            >
+              Retry
+            </button>
+          ) : null}
+        </div>
+
         <button
           data-testid="save-design"
           className={
             dark
-              ? "rounded-xl bg-[#1b2030] px-4 py-2 text-sm font-semibold text-white"
-              : "rounded-xl bg-neutral-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800"
+              ? "shrink-0 rounded-xl bg-[#1b2030] px-3 py-2 text-sm font-semibold text-white disabled:cursor-wait disabled:opacity-70 sm:px-4"
+              : "shrink-0 rounded-xl bg-neutral-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800 disabled:cursor-wait disabled:opacity-70 sm:px-4"
           }
           onClick={onSave}
+          disabled={isSaving}
         >
-          {isAuthed ? "Save" : "Save (Sign in)"}
+          {isSaving ? (
+            "Saving..."
+          ) : isAuthed ? (
+            "Save"
+          ) : (
+            <>
+              <span className="hidden sm:inline">Save (Sign in)</span>
+              <span className="sm:hidden">Save</span>
+            </>
+          )}
         </button>
 
         {editorMode === "present" && (

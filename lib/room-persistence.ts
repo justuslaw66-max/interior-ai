@@ -8,6 +8,9 @@
 import type {
   DesignItem,
   DesignSnapshot,
+  LayoutVersion,
+  RoomSurfaceOpacity,
+  RoomSurfaceFinishes,
   RoomSnapshot,
   SavedView,
   PersistedFloorPlanState,
@@ -25,13 +28,19 @@ export interface StoredDesign {
     id: string;
     name: string;
     roomType: string;
-    geometry: { width: number; depth: number; wallThickness?: number; height?: number };
+    floorLevel?: number;
+    floorLabel?: string;
+    geometry: { width: number; depth: number; wallThickness?: number; height?: number; slabThickness?: number };
     planPosition?: { x: number; z: number };
     planShape?: string;
     planPolygon?: Array<{ x: number; z: number }>;
+    surfaceFinishes?: RoomSurfaceFinishes;
+    surfaceOpacity?: RoomSurfaceOpacity;
+    ceilingVisible?: boolean;
     items: DesignItem[];
     zones: ZoneMin[];
     savedViews: SavedView[];
+    layoutVersions?: LayoutVersion[];
   }>;
   activeRoomId: string;
   // Design-level metadata
@@ -41,6 +50,44 @@ export interface StoredDesign {
   lightingPreset?: string;
   notes?: string;
   floorPlan?: PersistedFloorPlanState;
+}
+
+export function isStoredDesign(value: unknown): value is StoredDesign {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as Partial<StoredDesign>;
+  if (candidate.version !== 3) return false;
+  if (!Array.isArray(candidate.rooms) || candidate.rooms.length === 0) return false;
+  if (typeof candidate.activeRoomId !== "string" || !candidate.activeRoomId.trim()) {
+    return false;
+  }
+  if (!candidate.rooms.some((room) => room?.id === candidate.activeRoomId)) {
+    return false;
+  }
+
+  return candidate.rooms.every((room) => {
+    if (!room || typeof room !== "object") return false;
+    const entry = room as StoredDesign["rooms"][number];
+    return (
+      typeof entry.id === "string" &&
+      typeof entry.name === "string" &&
+      typeof entry.roomType === "string" &&
+      Boolean(entry.geometry) &&
+      typeof entry.geometry.width === "number" &&
+      Number.isFinite(entry.geometry.width) &&
+      entry.geometry.width > 0 &&
+      typeof entry.geometry.depth === "number" &&
+      Number.isFinite(entry.geometry.depth) &&
+      entry.geometry.depth > 0 &&
+      Array.isArray(entry.items) &&
+      Array.isArray(entry.zones) &&
+      Array.isArray(entry.savedViews)
+    );
+  });
+}
+
+export function sanitizeStoredDesign(value: unknown): StoredDesign | null {
+  if (!isStoredDesign(value)) return null;
+  return JSON.parse(JSON.stringify(value)) as StoredDesign;
 }
 
 /**
@@ -55,13 +102,19 @@ export function snapshotToStored(snapshot: DesignSnapshot): StoredDesign {
       id: room.id,
       name: room.name,
       roomType: room.roomType,
+      floorLevel: room.floorLevel ?? 1,
+      floorLabel: room.floorLabel,
       geometry: room.geometry,
       planPosition: room.planPosition,
       planShape: room.planShape,
       planPolygon: room.planPolygon,
+      surfaceFinishes: room.surfaceFinishes ? { ...room.surfaceFinishes } : undefined,
+      surfaceOpacity: room.surfaceOpacity ? { ...room.surfaceOpacity } : undefined,
+      ceilingVisible: room.ceilingVisible,
       items: room.items,
       zones: room.zones,
       savedViews: room.savedViews,
+      layoutVersions: room.layoutVersions ?? [],
     })),
     activeRoomId: v3.activeRoomId,
     title: v3.title,
@@ -81,7 +134,10 @@ export function storedToSnapshot(stored: StoredDesign): DesignSnapshot {
   if (stored.version === 3 && stored.rooms && stored.rooms.length > 0) {
     return {
       version: 3,
-      rooms: stored.rooms as RoomSnapshot[],
+      rooms: stored.rooms.map((room) => ({
+        ...(room as RoomSnapshot),
+        layoutVersions: room.layoutVersions ?? [],
+      })),
       activeRoomId: stored.activeRoomId,
       title: stored.title,
       style: stored.style,
@@ -189,8 +245,9 @@ export function legacyApiToSnapshot(data: {
   mode?: string;
   notes?: string;
 }): DesignSnapshot {
-  if (data.snapshot?.version === 3 && Array.isArray(data.snapshot.rooms)) {
-    return storedToSnapshot(data.snapshot);
+  const safeSnapshot = sanitizeStoredDesign(data.snapshot);
+  if (safeSnapshot) {
+    return storedToSnapshot(safeSnapshot);
   }
 
   return migrateToV3({
@@ -206,6 +263,5 @@ export function legacyApiToSnapshot(data: {
     style: data.style,
     budget: data.budget as DesignSnapshot["budget"],
     notes: data.notes,
-    floorPlan: (data.snapshot as StoredDesign | null | undefined)?.floorPlan,
   } as DesignSnapshot);
 }

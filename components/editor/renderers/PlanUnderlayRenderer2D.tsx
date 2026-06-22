@@ -1,7 +1,8 @@
 "use client";
 
 import { useLoader } from "@react-three/fiber";
-import { Html, Line } from "@react-three/drei";
+import { Line } from "@react-three/drei/core/Line";
+import { Html } from "@react-three/drei/web/Html";
 import { useMemo, useState } from "react";
 import * as THREE from "three";
 import type {

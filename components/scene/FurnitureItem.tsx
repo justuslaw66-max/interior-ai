@@ -3,7 +3,10 @@
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
-import { Edges, Html, Line, useCursor } from "@react-three/drei";
+import { Edges } from "@react-three/drei/core/Edges";
+import { Line } from "@react-three/drei/core/Line";
+import { Html } from "@react-three/drei/web/Html";
+import { useCursor } from "@react-three/drei/web/useCursor";
 import { track } from "@/lib/analytics";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
@@ -59,6 +62,7 @@ type FurnitureProps = {
   margin?: number;
   snapDistance?: number;
   enableSnap?: boolean;
+  allowCrossRoomDrag?: boolean;
   onDraggingChange?: (dragging: boolean) => void;
   walls?: WallDescriptor[];
   instanceId: string;
@@ -66,6 +70,9 @@ type FurnitureProps = {
   isPrimarySelected?: boolean;
   onSelect?: (id: string, additive: boolean) => void;
   onMove?: (id: string, pos: [number, number, number]) => boolean | void;
+  onDragPointerMove?: (event: ThreeEvent<PointerEvent>) => void;
+  onDuplicate?: (id: string) => void;
+  onDelete?: (id: string) => void;
   onRotate?: (
     id: string,
     rotationY: number,
@@ -94,6 +101,7 @@ type FurnitureProps = {
   rotationSnapStepRadians?: number;
   rotationSnapStepDegrees?: number;
   rotationSnapEnabled?: boolean;
+  renderQuality?: "standard" | "lite";
   "data-testid"?: string;
 };
 
@@ -128,12 +136,16 @@ export function Furniture({
   wallThickness = 0.12,
   snapDistance = 0.25,
   enableSnap = true,
+  allowCrossRoomDrag = false,
   onDraggingChange,
   instanceId,
   isSelected,
   isPrimarySelected = false,
   onSelect,
   onMove,
+  onDragPointerMove,
+  onDuplicate,
+  onDelete,
   onRotate,
   onDragEnd,
   locked,
@@ -155,6 +167,7 @@ export function Furniture({
   rotationSnapStepRadians = ROTATION_SNAP_STEP_RADIANS,
   rotationSnapStepDegrees = ROTATION_SNAP_STEP_DEGREES,
   rotationSnapEnabled = true,
+  renderQuality = "standard",
 }: FurnitureProps) {
   const width = product.dimsMm.w / 1000;
   const depth = product.dimsMm.d / 1000;
@@ -393,6 +406,10 @@ export function Furniture({
       worldZ: number,
       nextRotationY: number = rotation
     ): [number, number] => {
+      if (allowCrossRoomDrag) {
+        return [worldX, worldZ];
+      }
+
       const [localX, localZ] = clampToRoom(
         worldX - roomOriginX,
         worldZ - roomOriginZ,
@@ -411,6 +428,7 @@ export function Furniture({
     [
       planningDepth,
       planningWidth,
+      allowCrossRoomDrag,
       roomDepth,
       roomOriginX,
       roomOriginZ,
@@ -569,6 +587,7 @@ export function Furniture({
     if (rotateDragging) return;
     if (!dragging) return;
     e.stopPropagation(); // prevent OrbitControls from responding
+    onDragPointerMove?.(e);
 
     raycaster.setFromCamera(e.pointer, e.camera);
     raycaster.ray.intersectPlane(plane, intersection);
@@ -816,16 +835,18 @@ export function Furniture({
   const isDawsonStockedLinenVariant =
     isDawsonFabricVariant &&
     /(?:\bbeach[\s_-]*linen\b|\bnavagio\b|\bseagull\b|\bng400[12]\b|\bbeach_linen\b|\bnavagio_seagull\b)/i.test(variantMarker);
+  const isJaronProduct =
+    product.id.startsWith("sofa-real-castlery-jaron-") ||
+    product.id.startsWith("armchair-real-castlery-jaron-");
   const isPerformanceDuneFabricVariant =
-    (product.id.startsWith("sofa-real-castlery-jaron-") &&
-      /(?:\bperformance[\s_-]*dune\b|\bdune\b)/.test(variantMarker)) ||
+    (isJaronProduct && /(?:\bperformance[\s_-]*dune\b|\bdune\b)/.test(variantMarker)) ||
     (/performance\s*dune/i.test(String(variantName ?? "")) &&
       /\bfabric\b/i.test(String(variantName ?? "")));
   const isIvoryLeatherVariant =
-    (product.id.startsWith("sofa-real-castlery-jaron-") && /\bivory\b/.test(variantMarker)) ||
+    (isJaronProduct && /\bivory\b/.test(variantMarker)) ||
     (isLeatherVariant && /\bivory\b/i.test(String(variantName ?? "")));
   const isCocoaLeatherVariant =
-    (product.id.startsWith("sofa-real-castlery-jaron-") && /\bcocoa\b/.test(variantMarker)) ||
+    (isJaronProduct && /\bcocoa\b/.test(variantMarker)) ||
     (isLeatherVariant && /\bcocoa\b/i.test(String(variantName ?? "")));
   const isGraphiteLeatherVariant =
     isLeatherVariant && /\bgraphite\b/i.test(String(variantName ?? ""));
@@ -1075,7 +1096,7 @@ export function Furniture({
       };
     }
 
-    if (product.id.startsWith("sofa-real-castlery-jaron-")) {
+    if (isJaronProduct) {
       if (isPerformanceDuneFabricVariant) {
         // Tweed-like fabric target: matte, soft contrast, almost no glossy rolloff.
         return {
@@ -1231,7 +1252,8 @@ export function Furniture({
     };
   }, [modelUrl, preferredModelUrl]);
 
-  const shouldLoadModel = viewMode === "3d" && Boolean(runtimeModelUrl) && modelExists;
+  const shouldLoadModel =
+    viewMode === "3d" && renderQuality !== "lite" && Boolean(runtimeModelUrl) && modelExists;
   const showModel = shouldLoadModel && modelLoadState === "ready";
 
   return (
@@ -1287,6 +1309,7 @@ export function Furniture({
           color={materialProps.color}
           category={product.category}
           selected={Boolean(showSelection && isSelected)}
+          hovered={hovered}
           dragging={dragging}
           snapped={isSnapped}
           invalidPlacement={invalidPlacement}
@@ -1344,6 +1367,84 @@ export function Furniture({
           gapSize={0.05}
         />
       ) : null}
+      {viewMode === "2d" && showSelection && isPrimarySelected && !dragging && !rotateDragging && (
+        <Html
+          zIndexRange={[18, 0]}
+          position={[0, 0.08, -planningDepth / 2 - 0.34]}
+          center
+          transform={false}
+        >
+          <div
+            data-testid="selected-furniture-action-chips"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+              padding: 4,
+              border: "1px solid rgba(37,99,235,0.24)",
+              borderRadius: 999,
+              background: "rgba(255,255,255,0.96)",
+              boxShadow: "0 8px 22px rgba(15,23,42,0.14)",
+              pointerEvents: "auto",
+              whiteSpace: "nowrap",
+            }}
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={(event) => event.stopPropagation()}
+          >
+            {[
+              {
+                id: "rotate",
+                label: "Rotate",
+                disabled: locked || !interactive || !onRotate,
+                action: () =>
+                  onRotate?.(instanceId, rotation + Math.PI / 2, {
+                    source: "canvas",
+                    snap: true,
+                  }),
+              },
+              {
+                id: "copy",
+                label: "Copy",
+                disabled: locked || !interactive || !onDuplicate,
+                action: () => onDuplicate?.(instanceId),
+              },
+              {
+                id: "delete",
+                label: "Delete",
+                disabled: locked || !interactive || !onDelete,
+                action: () => onDelete?.(instanceId),
+              },
+            ].map((chip) => (
+              <button
+                key={chip.id}
+                type="button"
+                data-testid={`selected-furniture-${chip.id}`}
+                aria-label={`${chip.label} selected furniture`}
+                title={`${chip.label} selected furniture`}
+                disabled={chip.disabled}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  chip.action();
+                }}
+                style={{
+                  border: "none",
+                  borderRadius: 999,
+                  background: chip.id === "delete" ? "#fee2e2" : "#f3f4f6",
+                  color: chip.id === "delete" ? "#991b1b" : "#111827",
+                  cursor: chip.disabled ? "not-allowed" : "pointer",
+                  fontSize: 10,
+                  fontWeight: 800,
+                  opacity: chip.disabled ? 0.45 : 1,
+                  minWidth: chip.id === "delete" ? 46 : 42,
+                  padding: "5px 8px",
+                }}
+              >
+                {chip.label}
+              </button>
+            ))}
+          </div>
+        </Html>
+      )}
       <SnapGuides guides={snapGuides} visible={showGuidesAndMeasurements && dragging} isDesigner={interactive} />
       <Measurements measures={measurements} visible={showGuidesAndMeasurements && dragging} />
       {locked && showLocks && (

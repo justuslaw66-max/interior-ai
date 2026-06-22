@@ -3,11 +3,21 @@
 import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useMemo, useEffect, useRef } from "react";
+
+export const ROOM_FLOOR_SURFACE_OFFSET = 0.006;
+
 type RoomProps = {
   width?: number;
   depth?: number;
   height?: number;
   wallThickness?: number;
+  slabThickness?: number;
+  wallOpacity?: number;
+  floorOpacity?: number;
+  ceilingOpacity?: number;
+  ceilingVisible?: boolean;
+  ceilingColor?: string;
+  renderQuality?: "standard" | "lite";
 };
 
 export function Room({
@@ -15,9 +25,18 @@ export function Room({
   depth = 4,
   height = 2.6,
   wallThickness = 0.12,
+  slabThickness = 0.1,
+  wallOpacity = 1,
+  floorOpacity = 1,
+  ceilingOpacity = 1,
+  ceilingVisible = true,
+  ceilingColor = "#f8f8f6",
+  renderQuality = "standard",
 }: RoomProps) {
   const { camera, gl } = useThree();
   const floorTexture = useMemo(() => {
+    if (renderQuality === "lite") return null;
+
     const size = 1024;
     const canvas = document.createElement("canvas");
     canvas.width = size;
@@ -69,7 +88,7 @@ export function Room({
     texture.anisotropy = Math.min(8, gl.capabilities.getMaxAnisotropy());
     texture.needsUpdate = true;
     return texture;
-  }, [depth, gl.capabilities, width]);
+  }, [depth, gl.capabilities, renderQuality, width]);
 
   const floorMat = useMemo(
     () =>
@@ -80,8 +99,14 @@ export function Room({
         metalness: 0,
         emissive: "#ffffff",
         emissiveIntensity: 0.02,
+        transparent: floorOpacity < 0.999,
+        opacity: floorOpacity,
+        depthWrite: floorOpacity > 0.34,
+        polygonOffset: true,
+        polygonOffsetFactor: -1,
+        polygonOffsetUnits: -1,
       }),
-    [floorTexture]
+    [floorOpacity, floorTexture]
   );
   const wallMat = useMemo(
     () =>
@@ -91,19 +116,25 @@ export function Room({
         metalness: 0,
         emissive: "#ffffff",
         emissiveIntensity: 0.015,
+        transparent: wallOpacity < 0.999,
+        opacity: wallOpacity,
+        depthWrite: wallOpacity > 0.34,
       }),
-    []
+    [wallOpacity]
   );
   const ceilingMat = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
-        color: "#f8f8f6",
+        color: ceilingColor,
         roughness: 0.93,
         metalness: 0,
         emissive: "#ffffff",
         emissiveIntensity: 0.01,
+        transparent: ceilingOpacity < 0.999,
+        opacity: ceilingOpacity,
+        depthWrite: ceilingOpacity > 0.34,
       }),
-    []
+    [ceilingColor, ceilingOpacity]
   );
 
   useEffect(() => {
@@ -163,15 +194,34 @@ export function Room({
 
   return (
     <group>
-      <mesh receiveShadow rotation-x={-Math.PI / 2} position={[0, 0, 0]}>
+      <mesh
+        receiveShadow
+        renderOrder={1}
+        rotation-x={-Math.PI / 2}
+        position={[0, ROOM_FLOOR_SURFACE_OFFSET, 0]}
+      >
         <planeGeometry args={[width, depth]} />
         <primitive object={floorMat} attach="material" />
       </mesh>
 
-      <mesh ref={ceilingRef} receiveShadow castShadow position={[0, height + wallThickness / 2, 0]}>
-        <boxGeometry args={[width, wallThickness, depth]} />
-        <primitive object={ceilingMat} attach="material" />
+      <mesh receiveShadow position={[0, -slabThickness / 2, 0]}>
+        <boxGeometry args={[width, slabThickness, depth]} />
+        <meshStandardMaterial
+          color="#d4d0c6"
+          roughness={0.82}
+          metalness={0}
+          transparent={floorOpacity < 0.999}
+          opacity={floorOpacity}
+          depthWrite={floorOpacity > 0.34}
+        />
       </mesh>
+
+      {ceilingVisible && (
+        <mesh ref={ceilingRef} receiveShadow castShadow position={[0, height + wallThickness / 2, 0]}>
+          <boxGeometry args={[width, wallThickness, depth]} />
+          <primitive object={ceilingMat} attach="material" />
+        </mesh>
+      )}
 
       <mesh
         ref={frontWallRef}
@@ -215,4 +265,3 @@ export function Room({
     </group>
   );
 }
-

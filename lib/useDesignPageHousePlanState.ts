@@ -82,6 +82,10 @@ export function useDesignPageHousePlanState({
       : ROOM_DIMENSION_DEFAULTS.wallThickness;
   const activeRoomPlanShape = activeRoom?.planShape ?? "rectangle";
   const activeRoomPlanPolygon = activeRoom?.planPolygon;
+  const activeFloorLevel =
+    typeof activeRoom?.floorLevel === "number" && Number.isFinite(activeRoom.floorLevel)
+      ? activeRoom.floorLevel
+      : 1;
 
   const clampToActiveRoom = useCallback(
     (
@@ -156,9 +160,17 @@ export function useDesignPageHousePlanState({
   const items = useMemo(() => activeRoom?.items ?? [], [activeRoom]);
   const zones = useMemo(() => activeRoom?.zones ?? [], [activeRoom]);
 
+  const activeFloorRooms = useMemo(
+    () =>
+      (designSnapshot.rooms ?? []).filter(
+        (room) => (room.floorLevel ?? 1) === activeFloorLevel
+      ),
+    [activeFloorLevel, designSnapshot.rooms]
+  );
+
   const housePlan2D = useMemo(
-    () => buildHousePlan2D(designSnapshot.rooms ?? [], roomWidth, roomDepth),
-    [designSnapshot.rooms, roomDepth, roomWidth]
+    () => buildHousePlan2D(activeFloorRooms, roomWidth, roomDepth),
+    [activeFloorRooms, roomDepth, roomWidth]
   );
 
   const activeRoomPlanOffset = useMemo(
@@ -180,7 +192,7 @@ export function useDesignPageHousePlanState({
       typeof options?.depth === "number"
         ? clampRoomDimension(options.depth)
         : roomDepth;
-    const roomName = resolveNewRoomName(designSnapshot.rooms, nextRoomType);
+    const roomName = resolveNewRoomName(activeFloorRooms, nextRoomType);
     const newRoom = createRoom(
       `room_${Date.now()}`,
       roomName,
@@ -189,8 +201,13 @@ export function useDesignPageHousePlanState({
         width: nextRoomWidth,
         depth: nextRoomDepth,
         wallThickness,
+        height: roomHeight,
+        slabThickness:
+          activeRoom?.geometry.slabThickness ?? ROOM_DIMENSION_DEFAULTS.slabThickness,
       }
     );
+    newRoom.floorLevel = activeFloorLevel;
+    newRoom.floorLabel = activeRoom?.floorLabel;
     newRoom.planPosition = options?.planPosition
       ? {
           x: roundPlanCoordinate(options.planPosition.x),
@@ -203,6 +220,12 @@ export function useDesignPageHousePlanState({
         );
     newRoom.planShape = nextRoomShape;
     newRoom.planPolygon = options?.planPolygon;
+    if (activeRoom?.surfaceFinishes) {
+      newRoom.surfaceFinishes = { ...activeRoom.surfaceFinishes };
+    }
+    if (activeRoom?.surfaceOpacity) {
+      newRoom.surfaceOpacity = { ...activeRoom.surfaceOpacity };
+    }
 
     setDesignSnapshot((prev) => {
       const updated = addRoom(prev, newRoom);
@@ -211,12 +234,15 @@ export function useDesignPageHousePlanState({
 
     track("editor_room_added", { roomType: newRoom.roomType, roomName: newRoom.name });
   }, [
-    designSnapshot.rooms,
+    activeRoom,
+    activeFloorLevel,
+    activeFloorRooms,
     housePlan2D.rooms,
     newRoomShape,
     newRoomType,
     roomDepth,
     roomWidth,
+    roomHeight,
     setDesignSnapshot,
     wallThickness,
   ]);

@@ -10,6 +10,7 @@ type PlanOpeningInspectorProps = {
     metrics: {
       widthMeters?: number;
       offsetMeters?: number;
+      kind?: RoomOpening2D["kind"];
     }
   ) => void;
 };
@@ -61,6 +62,51 @@ export default function PlanOpeningInspector({
           }
         >
           {roomName}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2">
+        <label
+          className={
+            dark
+              ? "text-[11px] font-medium text-neutral-300"
+              : "text-[11px] font-medium text-gray-600"
+          }
+        >
+          Type
+          <select
+            data-testid="plan-opening-kind-input"
+            className={
+              dark
+                ? "mt-1 w-full rounded-md border border-neutral-700 bg-[#151820] px-2 py-2 text-xs text-neutral-100 outline-none focus:border-teal-500"
+                : "mt-1 w-full rounded-md border border-gray-200 px-2 py-2 text-xs text-gray-900 outline-none focus:border-teal-500"
+            }
+            value={opening.kind}
+            onChange={(event) =>
+              onChange(opening.id, { kind: event.currentTarget.value as RoomOpening2D["kind"] })
+            }
+          >
+            <option value="door">Door</option>
+            <option value="window">Window</option>
+          </select>
+        </label>
+        <div
+          className={
+            dark
+              ? "text-[11px] font-medium text-neutral-300"
+              : "text-[11px] font-medium text-gray-600"
+          }
+        >
+          Wall span
+          <div
+            className={
+              dark
+                ? "mt-1 rounded-md border border-neutral-700 bg-[#151820] px-2 py-2 text-xs text-neutral-100"
+                : "mt-1 rounded-md border border-gray-200 bg-gray-50 px-2 py-2 text-xs text-gray-900"
+            }
+          >
+            {wallSpanMeters.toFixed(2)} m
+          </div>
         </div>
       </div>
 

@@ -45,6 +45,13 @@ const REQUIRED_SWATCH_TEXTURE_URL_PARTS: Record<string, string> = {
   "marche-cocoa": "LE-4023/Cocoa_Swatch",
   "marche-ivory": "LE-4021/Hamilton-Leather-Sofa-Ivory-Det_1",
   "performance-arvo-dune": "AR-4001/Sloane-Cane-Chair-Dune-Grey-Oak-Det_1",
+  "infinity-boucle-moss": "w_800",
+  "performance-infinity-boucle-moss": "w_800",
+  "infinity-boucle-cream": "w_800",
+  "infinity-boucle-white-quartz": "w_800",
+  "infinity-boucle-ginger": "w_800",
+  "natural-wood": "Mori-Side-Table-Square-Det_4",
+  "walnut-wood": "S3-20230307-LTL406-WA-Det_1",
 };
 
 for (const [finishKey, urlPart] of Object.entries(REQUIRED_SWATCH_TEXTURE_URL_PARTS)) {

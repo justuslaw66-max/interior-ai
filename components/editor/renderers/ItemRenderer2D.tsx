@@ -1,6 +1,7 @@
 "use client";
 
-import { Html, Line } from "@react-three/drei";
+import { Line } from "@react-three/drei/core/Line";
+import { Html } from "@react-three/drei/web/Html";
 import type { ThreeEvent } from "@react-three/fiber";
 
 type ItemRenderer2DProps = {
@@ -9,6 +10,7 @@ type ItemRenderer2DProps = {
   color: string;
   category: string;
   selected: boolean;
+  hovered?: boolean;
   dragging: boolean;
   snapped: boolean;
   invalidPlacement: boolean;
@@ -32,6 +34,7 @@ export default function ItemRenderer2D({
   color,
   category,
   selected,
+  hovered = false,
   dragging,
   snapped,
   invalidPlacement,
@@ -50,6 +53,8 @@ export default function ItemRenderer2D({
     ? "#d91f1f"
     : selected
       ? "#2a66ff"
+      : hovered
+        ? "#0f766e"
       : snapped && dragging
         ? "#4ea81f"
         : "#5f6770";
@@ -80,7 +85,7 @@ export default function ItemRenderer2D({
     <group>
       <mesh rotation-x={-Math.PI / 2}>
         <planeGeometry args={[width, depth]} />
-        <meshBasicMaterial color={fillColor} transparent opacity={selected ? 0.7 : 0.5} />
+        <meshBasicMaterial color={fillColor} transparent opacity={selected ? 0.7 : hovered ? 0.62 : 0.5} />
       </mesh>
 
       <Line
@@ -92,7 +97,7 @@ export default function ItemRenderer2D({
           [-width / 2, 0.002, -depth / 2],
         ]}
         color={borderColor}
-        lineWidth={selected ? 2.4 : 1.4}
+        lineWidth={selected ? 2.4 : hovered ? 2 : 1.4}
       />
 
       {category === "sofa" && (
@@ -202,7 +207,6 @@ export default function ItemRenderer2D({
           <mesh
             rotation-x={-Math.PI / 2}
             position={[0, 0.0026, -depth / 2 - 0.18]}
-            data-testid="rotation-handle-hit-area"
             onPointerDown={onRotateHandlePointerDown}
             onPointerMove={onRotateHandlePointerMove}
             onPointerUp={onRotateHandlePointerUp}
@@ -238,7 +242,7 @@ export default function ItemRenderer2D({
         </>
       )}
 
-      {showLabels && (selected || !dragging) && (
+      {showLabels && (selected || hovered || !dragging) && (
         <Html zIndexRange={htmlZIndexRange} position={[0, 0.01, 0]} center transform={false}>
           <div
             style={{

@@ -236,7 +236,7 @@ export default function FloorPlanUploadPanel({
               Upload a floor-plan image or PDF
             </div>
             <div className={`${subtleClass} mt-1`}>
-              Use a drawing from your designer, contractor, or property listing, then calibrate and trace rooms over it.
+              Use a drawing from your designer, contractor, or property listing, then set scale and draw rooms over it.
             </div>
           </div>
         )}
@@ -245,7 +245,7 @@ export default function FloorPlanUploadPanel({
           <>
           <div>
             <div className="mb-1 flex items-center justify-between">
-              <span className={subtleClass}>Opacity</span>
+              <span className={subtleClass}>Plan visibility</span>
               <span className={subtleClass}>{Math.round(underlay.opacity * 100)}%</span>
             </div>
             <input
@@ -276,14 +276,14 @@ export default function FloorPlanUploadPanel({
                 disabled={disabled || !canCalibrate}
                 onClick={() => onCalibrationModeChange?.(!calibrationMode)}
               >
-                {calibrationMode ? "Done" : "Calibrate"}
+                {calibrationMode ? "Done" : "Set scale"}
               </button>
             </div>
 
             {calibrationMode && (
               <div className="mt-3 space-y-2">
                 <div className={subtleClass}>
-                  Points selected: {calibrationPointCount}/2
+                  Scale points: {calibrationPointCount}/2
                 </div>
                 <div className="flex items-center gap-2">
                   <input
@@ -337,7 +337,7 @@ export default function FloorPlanUploadPanel({
                 <div className={subtleClass}>
                   {canTraceRooms
                     ? traceRoomHint
-                    : "Calibrate the uploaded plan before drawing from it."}
+                    : "Set the uploaded plan scale before drawing over it."}
                 </div>
               </div>
               <button

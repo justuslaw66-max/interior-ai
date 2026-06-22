@@ -2,7 +2,8 @@
 
 import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
-import { Grid, OrbitControls } from "@react-three/drei";
+import { Grid } from "@react-three/drei/core/Grid";
+import { OrbitControls } from "@react-three/drei/core/OrbitControls";
 import { useMemo } from "react";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import type { DesignItem } from "@/lib/room-types";

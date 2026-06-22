@@ -1,6 +1,6 @@
 "use client";
 
-import { OrthographicCamera } from "@react-three/drei";
+import { OrthographicCamera } from "@react-three/drei/core/OrthographicCamera";
 import { useThree } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
 import type { OrthographicCamera as ThreeOrthographicCamera } from "three";
@@ -11,6 +11,8 @@ type EditorCamera2DProps = {
   roomWidth: number;
   roomDepth: number;
   roomHeight: number;
+  safeAreaLeftPx?: number;
+  safeAreaBottomPx?: number;
 };
 
 export default function EditorCamera2D({
@@ -18,6 +20,8 @@ export default function EditorCamera2D({
   roomWidth,
   roomDepth,
   roomHeight,
+  safeAreaLeftPx = 0,
+  safeAreaBottomPx = 0,
 }: EditorCamera2DProps) {
   const cameraRef = useRef<ThreeOrthographicCamera | null>(null);
   const { size } = useThree();
@@ -25,18 +29,33 @@ export default function EditorCamera2D({
   useEffect(() => {
     if (!active || !cameraRef.current) return;
 
+    const leftInsetPx = size.width >= 768 ? Math.max(0, safeAreaLeftPx) : 0;
+    const bottomInsetPx = size.width < 768 ? Math.max(0, safeAreaBottomPx) : 0;
+    const fitWidthPx = Math.max(320, size.width - leftInsetPx);
+    const fitHeightPx = Math.max(260, size.height - bottomInsetPx);
     cameraRef.current.zoom = resolvePlanFitZoom({
-      viewportWidthPx: size.width,
-      viewportHeightPx: size.height,
+      viewportWidthPx: fitWidthPx,
+      viewportHeightPx: fitHeightPx,
       planWidthMeters: roomWidth,
       planDepthMeters: roomDepth,
     });
-    cameraRef.current.position.set(0, Math.max(roomWidth, roomDepth) + roomHeight + 6, 0);
+    const offsetX = leftInsetPx / cameraRef.current.zoom / -2;
+    const offsetZ = bottomInsetPx / cameraRef.current.zoom / -2;
+    cameraRef.current.position.set(offsetX, Math.max(roomWidth, roomDepth) + roomHeight + 6, offsetZ);
     // Top-down plan orientation without diagonal roll.
     cameraRef.current.up.set(0, 0, -1);
-    cameraRef.current.lookAt(0, 0, 0);
+    cameraRef.current.lookAt(offsetX, 0, offsetZ);
     cameraRef.current.updateProjectionMatrix();
-  }, [active, roomDepth, roomHeight, roomWidth, size.height, size.width]);
+  }, [
+    active,
+    roomDepth,
+    roomHeight,
+    roomWidth,
+    safeAreaBottomPx,
+    safeAreaLeftPx,
+    size.height,
+    size.width,
+  ]);
 
   if (!active) return null;
 

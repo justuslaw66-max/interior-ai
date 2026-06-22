@@ -3,6 +3,7 @@ import {
   buildDuplicateTitle,
   buildDuplicatedDesignData,
 } from "../lib/design-duplication";
+import type { StoredDesign } from "../lib/room-persistence";
 
 function runFixture(name: string, assertion: () => void) {
   try {
@@ -50,6 +51,88 @@ runFixture("buildDuplicatedDesignData preserves snapshot fields and resets share
 
   (source.items as Array<{ productId: string }>)[0].productId = "changed";
   assert.equal((data.items as Array<{ productId: string }>)[0].productId, "p1");
+});
+
+runFixture("buildDuplicatedDesignData derives legacy fields from valid snapshot", () => {
+  const snapshot: StoredDesign = {
+    version: 3,
+    activeRoomId: "room_snapshot",
+    rooms: [
+      {
+        id: "room_snapshot",
+        name: "Snapshot Room",
+        roomType: "living",
+        geometry: { width: 6.4, depth: 3.8 },
+        items: [
+          {
+            instanceId: "snapshot-item",
+            productId: "snapshot-product",
+            variantId: "snapshot-variant",
+            position: [0, 0, 0],
+          },
+        ],
+        zones: [{ id: "snapshot-zone", type: "seating", itemIds: ["snapshot-item"] }],
+        savedViews: [
+          {
+            id: "snapshot-view",
+            name: "Snapshot View",
+            cameraPosition: [1, 2, 3],
+            cameraTarget: [0, 0, 0],
+          },
+        ],
+      },
+    ],
+  };
+
+  const data = buildDuplicatedDesignData(
+    {
+      title: "Shared Design",
+      roomWidth: 99,
+      roomDepth: 99,
+      items: [{ instanceId: "stale-item" }],
+      zones: [{ id: "stale-zone" }],
+      savedViews: [{ id: "stale-view" }],
+      snapshot,
+      style: null,
+      budget: null,
+      mode: null,
+      notes: null,
+    },
+    "user_456"
+  );
+
+  assert.equal(data.roomWidth, 6.4);
+  assert.equal(data.roomDepth, 3.8);
+  assert.equal((data.items as Array<{ instanceId: string }>)[0].instanceId, "snapshot-item");
+  assert.equal((data.zones as Array<{ id: string }>)[0].id, "snapshot-zone");
+  assert.equal((data.savedViews as Array<{ id: string }>)[0].id, "snapshot-view");
+  assert.equal((data.snapshot as unknown as StoredDesign).activeRoomId, "room_snapshot");
+
+  snapshot.rooms[0].items[0].productId = "mutated";
+  assert.equal((data.items as Array<{ productId: string }>)[0].productId, "snapshot-product");
+});
+
+runFixture("buildDuplicatedDesignData ignores invalid snapshots", () => {
+  const data = buildDuplicatedDesignData(
+    {
+      title: "Legacy Design",
+      roomWidth: 5,
+      roomDepth: 4,
+      items: [{ instanceId: "legacy-item", productId: "legacy-product" }],
+      zones: [],
+      savedViews: [],
+      snapshot: { version: 3, activeRoomId: "missing", rooms: [] },
+      style: null,
+      budget: null,
+      mode: null,
+      notes: null,
+    },
+    "user_789"
+  );
+
+  assert.equal("snapshot" in data, false);
+  assert.equal(data.roomWidth, 5);
+  assert.equal((data.items as Array<{ instanceId: string }>)[0].instanceId, "legacy-item");
 });
 
 console.log("All design duplication fixtures passed.");

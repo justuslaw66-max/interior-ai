@@ -1,5 +1,11 @@
 import type { FloorPlanDrawRoomMode } from "@/lib/floor-plan-types";
-import type { RoomPlanShape, RoomSnapshot, RoomType } from "@/lib/room-types";
+import type {
+  RoomPlanShape,
+  RoomSnapshot,
+  RoomSurfaceOpacity,
+  RoomSurfaceFinishes,
+  RoomType,
+} from "@/lib/room-types";
 
 export const ROOM_DIMENSION_DEFAULTS = {
   width: 5,
@@ -8,6 +14,11 @@ export const ROOM_DIMENSION_DEFAULTS = {
   roomHeight: 2.6,
   min: 1.8,
   max: 20,
+  minRoomHeight: 2,
+  maxRoomHeight: 6,
+  slabThickness: 0.1,
+  minSlabThickness: 0.01,
+  maxSlabThickness: 0.6,
 } as const;
 
 export const HOUSE_ROOM_TYPES: Array<{ type: RoomType; label: string }> = [
@@ -365,8 +376,14 @@ export type HousePlanRoom2D = {
   id: string;
   name: string;
   roomType: RoomType;
+  floorLevel?: number;
+  floorLabel?: string;
   shape: RoomPlanShape;
   polygon?: Array<{ x: number; z: number }>;
+  surfaceFinishes?: RoomSurfaceFinishes;
+  surfaceOpacity?: RoomSurfaceOpacity;
+  slabThickness?: number;
+  ceilingVisible?: boolean;
   x: number;
   z: number;
   w: number;
@@ -532,8 +549,20 @@ export function buildHousePlan2D(
       id: room.id,
       name: room.name,
       roomType: room.roomType,
+      floorLevel:
+        typeof room.floorLevel === "number" && Number.isFinite(room.floorLevel)
+          ? room.floorLevel
+          : 1,
+      ...(room.floorLabel ? { floorLabel: room.floorLabel } : {}),
       shape: room.planShape ?? "rectangle",
       ...(room.planPolygon ? { polygon: room.planPolygon } : {}),
+      ...(room.surfaceFinishes ? { surfaceFinishes: room.surfaceFinishes } : {}),
+      ...(room.surfaceOpacity ? { surfaceOpacity: room.surfaceOpacity } : {}),
+      slabThickness:
+        typeof room.geometry.slabThickness === "number" && Number.isFinite(room.geometry.slabThickness)
+          ? room.geometry.slabThickness
+          : ROOM_DIMENSION_DEFAULTS.slabThickness,
+      ceilingVisible: room.ceilingVisible ?? true,
       x: typeof storedX === "number" && Number.isFinite(storedX) ? storedX : fallbackX,
       z: typeof storedZ === "number" && Number.isFinite(storedZ) ? storedZ : 0,
       w,

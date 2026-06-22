@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, type PointerEvent } from "react";
+import { useMemo, useRef, useState, type PointerEvent } from "react";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 
 type RoomPanNavigatorProps = {
@@ -8,6 +8,9 @@ type RoomPanNavigatorProps = {
   activeRoomId: string;
   cameraPosition: [number, number, number];
   cameraTarget: [number, number, number];
+  itemCountsByRoomId?: Record<string, number>;
+  targetRoomId?: string | null;
+  targetRoomValid?: boolean;
   disabled?: boolean;
   dark?: boolean;
   onMoveCamera: (x: number, z: number) => void;
@@ -28,9 +31,9 @@ type PlanBounds = {
 
 type DragMode = "camera" | "target" | null;
 
-const MAP_WIDTH = 268;
-const MAP_HEIGHT = 180;
-const MAP_PADDING = 20;
+const MAP_WIDTH = 264;
+const MAP_HEIGHT = 150;
+const MAP_PADDING = 14;
 const CAMERA_HANDLE_PADDING = 24;
 const TARGET_HANDLE_PADDING = 24;
 
@@ -76,6 +79,9 @@ export default function RoomPanNavigator({
   activeRoomId,
   cameraPosition,
   cameraTarget,
+  itemCountsByRoomId = {},
+  targetRoomId = null,
+  targetRoomValid = true,
   disabled = false,
   dark = false,
   onMoveCamera,
@@ -84,6 +90,7 @@ export default function RoomPanNavigator({
   onZoom,
   onResetView,
 }: RoomPanNavigatorProps) {
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const mapRef = useRef<HTMLDivElement | null>(null);
   const dragModeRef = useRef<DragMode>(null);
   const bounds = useMemo(() => resolvePlanBounds(rooms), [rooms]);
@@ -168,29 +175,38 @@ export default function RoomPanNavigator({
       data-testid="room-pan-navigator"
       className={
         dark
-          ? "designer-panel w-[268px] overflow-hidden rounded-lg"
-          : "w-[268px] overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-lg"
+          ? "designer-panel w-[264px] max-[520px]:w-full overflow-hidden rounded-lg"
+          : "w-[264px] max-[520px]:w-full overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-lg"
       }
       aria-label="Room view navigator"
     >
       <div
         className={
           dark
-            ? "flex items-center justify-between border-b px-3 py-2"
-            : "flex items-center justify-between border-b border-neutral-200 px-3 py-2"
+            ? "flex items-center justify-between border-b px-2 py-1"
+            : "flex items-center justify-between border-b border-neutral-200 px-2 py-1"
         }
       >
-        <div className="flex items-center gap-3 text-sm font-semibold">
+        <div className="flex items-center gap-2.5 text-xs font-semibold">
           <span className={dark ? "designer-text-primary" : "text-blue-600"}>2D</span>
           <span className={dark ? "designer-text-secondary" : "text-neutral-600"}>Rooms</span>
         </div>
         <div className="flex items-center gap-1" aria-label="Navigator controls">
           <button
             type="button"
+            onClick={() => setIsCollapsed((value) => !value)}
+            className="h-6 w-6 rounded border border-neutral-200 bg-white text-xs font-semibold text-neutral-700 shadow-sm"
+            aria-label={isCollapsed ? "Expand navigator" : "Collapse navigator"}
+            title={isCollapsed ? "Expand" : "Collapse"}
+          >
+            {isCollapsed ? "+" : "-"}
+          </button>
+          <button
+            type="button"
             data-testid="room-pan-reset-view"
             disabled={disabled}
             onClick={onResetView}
-            className="h-7 rounded border border-neutral-200 bg-white px-2 text-xs font-semibold text-neutral-700 shadow-sm disabled:opacity-40"
+            className="h-6 rounded border border-neutral-200 bg-white px-1.5 text-[10px] font-semibold text-neutral-700 shadow-sm disabled:opacity-40"
             aria-label="Reset room view"
           >
             Reset
@@ -200,7 +216,7 @@ export default function RoomPanNavigator({
             data-testid="room-pan-zoom-out"
             disabled={disabled}
             onClick={() => onZoom("out")}
-            className="h-7 w-7 rounded border border-neutral-200 bg-white text-sm font-semibold text-neutral-700 shadow-sm disabled:opacity-40"
+            className="h-6 w-6 rounded border border-neutral-200 bg-white text-xs font-semibold text-neutral-700 shadow-sm disabled:opacity-40"
             aria-label="Zoom out"
           >
             -
@@ -210,7 +226,7 @@ export default function RoomPanNavigator({
             data-testid="room-pan-zoom-in"
             disabled={disabled}
             onClick={() => onZoom("in")}
-            className="h-7 w-7 rounded border border-neutral-200 bg-white text-sm font-semibold text-neutral-700 shadow-sm disabled:opacity-40"
+            className="h-6 w-6 rounded border border-neutral-200 bg-white text-xs font-semibold text-neutral-700 shadow-sm disabled:opacity-40"
             aria-label="Zoom in"
           >
             +
@@ -218,7 +234,8 @@ export default function RoomPanNavigator({
         </div>
       </div>
 
-      <div
+      {!isCollapsed && (
+        <div
         ref={mapRef}
         data-testid="room-pan-map"
         className={
@@ -231,25 +248,33 @@ export default function RoomPanNavigator({
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
-      >
-        <svg
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
-          viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`}
         >
-          <line
-            x1={cameraX}
-            y1={cameraY}
-            x2={targetX}
-            y2={targetY}
-            stroke={dark ? "#d1d5db" : "#111827"}
-            strokeWidth="1.5"
-            strokeDasharray="5 5"
-          />
-        </svg>
+          <svg
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0"
+            viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`}
+          >
+            <line
+              x1={cameraX}
+              y1={cameraY}
+              x2={targetX}
+              y2={targetY}
+              stroke={dark ? "#d1d5db" : "#111827"}
+              strokeWidth="1.5"
+              strokeDasharray="5 5"
+            />
+          </svg>
 
         {rooms.map((room) => {
           const isActive = room.id === activeRoomId;
+          const isTarget = room.id === targetRoomId;
+          const itemCount = itemCountsByRoomId[room.id] ?? 0;
+          const roomLeft = toMapX(room.x - room.w / 2);
+          const roomTop = toMapY(room.z - room.d / 2);
+          const roomWidthPx = Math.max(10, room.w * mapScale);
+          const roomHeightPx = Math.max(10, room.d * mapScale);
+          const showFullLabel = roomWidthPx >= 30 && roomHeightPx >= 15;
+          const label = showFullLabel ? room.name : isActive ? room.name.slice(0, 2) : "";
           return (
             <button
               type="button"
@@ -257,23 +282,44 @@ export default function RoomPanNavigator({
               data-testid="room-pan-map-room"
               data-room-nav-action="room"
               disabled={disabled}
+              title={itemCount > 0 ? `${room.name} · ${itemCount} item${itemCount === 1 ? "" : "s"}` : room.name}
+              aria-label={`Focus ${room.name}`}
               onClick={(event) => {
                 event.stopPropagation();
                 onFocusRoom(room.id);
               }}
-              className={`absolute overflow-hidden border text-[9px] font-semibold ${
-                isActive
-                  ? "border-green-500 bg-green-100/80 text-green-900"
-                  : "border-neutral-500 bg-stone-200/75 text-neutral-700"
+              className={`absolute overflow-hidden border px-0.5 text-left text-[8px] font-semibold leading-[0.65rem] ${
+                isTarget
+                  ? targetRoomValid
+                    ? "border-blue-600 bg-blue-100/90 text-blue-950 ring-2 ring-blue-500"
+                    : "border-red-600 bg-red-100/90 text-red-900 ring-2 ring-red-500"
+                  : isActive
+                    ? "border-green-500 bg-green-100/80 text-green-900"
+                    : "border-neutral-500 bg-stone-200/75 text-neutral-700"
               }`}
               style={{
-                left: toMapX(room.x - room.w / 2),
-                top: toMapY(room.z - room.d / 2),
-                width: Math.max(10, room.w * mapScale),
-                height: Math.max(10, room.d * mapScale),
+                left: roomLeft,
+                top: roomTop,
+                width: roomWidthPx,
+                height: roomHeightPx,
               }}
             >
-              {room.name}
+              <span className="block truncate">{label}</span>
+              {itemCount > 0 ? (
+                <span
+                  className={`absolute bottom-0.5 right-0.5 rounded-full px-1 text-[7px] leading-3 ${
+                    isTarget
+                      ? targetRoomValid
+                        ? "bg-blue-600 text-white"
+                        : "bg-red-600 text-white"
+                      : isActive
+                        ? "bg-green-600 text-white"
+                        : "bg-neutral-700 text-white"
+                  }`}
+                >
+                  {itemCount}
+                </span>
+              ) : null}
             </button>
           );
         })}
@@ -313,7 +359,8 @@ export default function RoomPanNavigator({
           <span className="absolute left-1 top-1/2 h-0 w-0 -translate-y-1/2 border-y-[5px] border-r-[7px] border-y-transparent border-r-neutral-500" />
           <span className="absolute right-1 top-1/2 h-0 w-0 -translate-y-1/2 border-y-[5px] border-l-[7px] border-y-transparent border-l-neutral-500" />
         </button>
-      </div>
+        </div>
+      )}
     </section>
   );
 }

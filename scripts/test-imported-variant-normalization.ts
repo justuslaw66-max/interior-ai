@@ -19,7 +19,22 @@ type UpholsteryOption = {
 };
 
 type CatalogEntry = {
-  assets?: { asset_id?: string; thumbnail_url?: string };
+  brand?: string;
+  category?: string;
+  product_family?: string;
+  product_name?: string;
+  source_url?: string;
+  status?: string;
+  publication_state?: string;
+  assets?: {
+    asset_id?: string;
+    thumbnail_url?: string;
+    gallery_images?: string[];
+    media_presentation?: string;
+    mediaPresentation?: string;
+  };
+  media_presentation?: string;
+  mediaPresentation?: string;
   file_path?: string;
   variants?: Array<Record<string, unknown>>;
   upholstery_options?: UpholsteryOption[];
@@ -91,12 +106,193 @@ function loadCatalogEntries(): CatalogEntry[] {
   });
 }
 
+const LEGACY_LOCAL_RETAILER_MEDIA_ALLOWLIST = new Set([
+  "sofa-real-castlery-dawson-wide-chaise-sectional-left",
+]);
+
+function isLocalThumbUrl(value: unknown): boolean {
+  return typeof value === "string" && /^\/assets\/thumbs\/.+\.(png|jpe?g|webp)$/i.test(value.trim());
+}
+
+function isRetailerHostedCastleryUrl(value: unknown): boolean {
+  if (typeof value !== "string") return false;
+  const normalized = value.trim();
+  return /^https:\/\/res\.cloudinary\.com\/castlery\/image\//i.test(normalized);
+}
+
+function isCastlerySeatingImport(entry: CatalogEntry): boolean {
+  const source = `${entry.brand ?? ""} ${entry.source_url ?? ""}`.toLowerCase();
+  if (!source.includes("castlery")) return false;
+
+  const seatingSignal = [
+    entry.category,
+    entry.product_family,
+    entry.product_name,
+    entry.assets?.asset_id,
+    entry.file_path,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  return /\b(sofa|sectional|armchair|recliner|ottoman|accent[_ -]?chair)\b/.test(seatingSignal);
+}
+
+function collectDisplayMediaUrls(entry: CatalogEntry): Array<{ label: string; url: unknown }> {
+  const urls: Array<{ label: string; url: unknown }> = [];
+  urls.push({ label: "assets.thumbnail_url", url: entry.assets?.thumbnail_url });
+  for (const [index, url] of (entry.assets?.gallery_images ?? []).entries()) {
+    urls.push({ label: `assets.gallery_images[${index}]`, url });
+  }
+
+  for (const [variantIndex, variant] of (entry.variants ?? []).entries()) {
+    urls.push({ label: `variants[${variantIndex}].thumbnail_url`, url: variant.thumbnail_url });
+    const gallery = Array.isArray(variant.gallery_images) ? variant.gallery_images : [];
+    for (const [galleryIndex, url] of gallery.entries()) {
+      urls.push({ label: `variants[${variantIndex}].gallery_images[${galleryIndex}]`, url });
+    }
+
+    const purchaseOptions = Array.isArray(variant.purchase_options) ? variant.purchase_options : [];
+    for (const [optionIndex, option] of purchaseOptions.entries()) {
+      if (!option || typeof option !== "object") continue;
+      urls.push({
+        label: `variants[${variantIndex}].purchase_options[${optionIndex}].image_url`,
+        url: (option as { image_url?: unknown }).image_url,
+      });
+    }
+  }
+
+  return urls.filter((entry) => typeof entry.url === "string" && String(entry.url).trim().length > 0);
+}
+
+function validateRetailerMediaPolicy(entry: CatalogEntry, failures: string[]) {
+  if (!isCastlerySeatingImport(entry)) return;
+
+  const productId = entry.assets?.asset_id ?? entry.file_path ?? "unknown-castlery-seating-entry";
+  if (LEGACY_LOCAL_RETAILER_MEDIA_ALLOWLIST.has(productId)) return;
+
+  const displayUrls = collectDisplayMediaUrls(entry);
+  for (const { label, url } of displayUrls) {
+    if (isLocalThumbUrl(url)) {
+      failures.push(
+        `${productId}: ${label} uses local generated thumbnail ${url}; Castlery seating imports must use retailer-hosted product media`
+      );
+      continue;
+    }
+    if (!isRetailerHostedCastleryUrl(url)) {
+      failures.push(
+        `${productId}: ${label} must be a Castlery Cloudinary product image, got ${url}`
+      );
+    }
+  }
+}
+
+function isValidMediaPresentationMode(value: unknown): boolean {
+  if (value === undefined || value === null || value === "") return true;
+  return ["studio", "lifestyle", "transparent", "swatch"].includes(String(value).trim().toLowerCase());
+}
+
+function validateMediaPresentationModes(entry: CatalogEntry, failures: string[]) {
+  const productId = entry.assets?.asset_id ?? entry.file_path ?? "unknown-catalog-entry";
+  for (const [label, value] of [
+    ["media_presentation", entry.media_presentation ?? entry.mediaPresentation],
+    ["assets.media_presentation", entry.assets?.media_presentation ?? entry.assets?.mediaPresentation],
+  ] as const) {
+    if (!isValidMediaPresentationMode(value)) {
+      failures.push(`${productId}: ${label} has invalid media presentation mode ${String(value)}`);
+    }
+  }
+
+  for (const [variantIndex, variant] of (entry.variants ?? []).entries()) {
+    const value = variant.media_presentation ?? variant.mediaPresentation;
+    if (!isValidMediaPresentationMode(value)) {
+      failures.push(
+        `${productId}: variants[${variantIndex}].media_presentation has invalid media presentation mode ${String(value)}`
+      );
+    }
+  }
+}
+
+function assertRetailerMediaPolicyFixtures() {
+  const badFailures: string[] = [];
+  validateRetailerMediaPolicy(
+    {
+      brand: "Castlery",
+      source_url: "https://www.castlery.com/sg/products/example-armchair",
+      category: "armchair",
+      product_name: "Example Armchair",
+      assets: {
+        asset_id: "armchair-real-castlery-example-armchair",
+        thumbnail_url: "/assets/thumbs/armchair-real-castlery-example-armchair.png",
+      },
+      variants: [
+        {
+          thumbnail_url: "/assets/thumbs/armchair-real-castlery-example-armchair.png",
+          gallery_images: ["/assets/thumbs/armchair-real-castlery-example-armchair.png"],
+          purchase_options: [
+            {
+              id: "set_of_2",
+              image_url: "/assets/thumbs/armchair-real-castlery-example-armchair.png",
+            },
+          ],
+        },
+      ],
+    },
+    badFailures,
+  );
+
+  if (badFailures.length === 0) {
+    throw new Error("Retailer media policy fixture failed to reject local generated Castlery seating thumbnails");
+  }
+
+  const goodFailures: string[] = [];
+  validateRetailerMediaPolicy(
+    {
+      brand: "Castlery",
+      source_url: "https://www.castlery.com/sg/products/example-armchair",
+      category: "armchair",
+      product_name: "Example Armchair",
+      assets: {
+        asset_id: "armchair-real-castlery-example-armchair",
+        thumbnail_url:
+          "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1/crusader/variants/example/Example-Armchair-Angle.jpg",
+      },
+      variants: [
+        {
+          thumbnail_url:
+            "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1/crusader/variants/example/Example-Armchair-Angle.jpg",
+          gallery_images: [
+            "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1/crusader/variants/example/Example-Armchair-Angle.jpg",
+          ],
+          purchase_options: [
+            {
+              id: "set_of_2",
+              image_url:
+                "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1/crusader/variants/example/Example-Armchair-Set-of-2.jpg",
+            },
+          ],
+        },
+      ],
+    },
+    goodFailures,
+  );
+
+  if (goodFailures.length > 0) {
+    throw new Error(`Retailer media policy fixture rejected valid Castlery media: ${goodFailures.join("; ")}`);
+  }
+}
+
 function main() {
+  assertRetailerMediaPolicyFixtures();
+
   const entries = loadCatalogEntries();
   const failures: string[] = [];
   let scanned = 0;
 
   for (const entry of entries) {
+    validateRetailerMediaPolicy(entry, failures);
+    validateMediaPresentationModes(entry, failures);
+
     const variants = Array.isArray(entry.variants) ? entry.variants : [];
     if (variants.length === 0) continue;
 

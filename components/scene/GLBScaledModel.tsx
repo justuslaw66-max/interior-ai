@@ -99,7 +99,10 @@ export function GLBScaledModel({
 
     (async () => {
       try {
-        const { GLTFLoader, DRACOLoader } = await import("three-stdlib");
+        const [{ GLTFLoader }, { DRACOLoader }] = await Promise.all([
+          import("three/examples/jsm/loaders/GLTFLoader.js"),
+          import("three/examples/jsm/loaders/DRACOLoader.js"),
+        ]);
         if (cancelled) return;
 
         const loader = new GLTFLoader();
@@ -318,6 +321,72 @@ export function GLBScaledModel({
           .replace(
             "#include <map_fragment>",
             `#include <map_fragment>\nfloat kelseyLowerMask = 1.0 - smoothstep(kelseyLowerTintStart, kelseyLowerTintEnd, vKelseyWorldY);\nvec3 kelseyLowerTinted = diffuseColor.rgb * mix(vec3(1.0), kelseyLowerTintColor * 1.18, kelseyLowerTintStrength);\ndiffuseColor.rgb = mix(diffuseColor.rgb, kelseyLowerTinted, clamp(kelseyLowerMask, 0.0, 1.0));`
+          );
+      };
+    };
+
+    const applyUpperUpholsteryTint = (
+      mesh: THREE.Mesh,
+      material: THREE.MeshStandardMaterial,
+      tintHex: string | undefined
+    ) => {
+      if (!calibration?.upperUpholsteryTint || !tintHex) return;
+      const geometry = mesh.geometry as THREE.BufferGeometry;
+      if (!geometry.boundingBox) geometry.computeBoundingBox();
+      const bounds = geometry.boundingBox;
+      if (!bounds) return;
+
+      const localMinY = bounds.min.y;
+      const localMaxY = bounds.max.y;
+      const localHeight = Math.max(localMaxY - localMinY, 0.0001);
+      const fadeStart = localMinY + localHeight * (calibration.upperUpholsteryFadeStart ?? 0.18);
+      const fadeEnd = localMinY + localHeight * (calibration.upperUpholsteryFadeEnd ?? 0.28);
+      const tintStrength = Math.max(0, Math.min(1, calibration.upperUpholsteryTintStrength ?? 0.8));
+      const preserveWarmWood = calibration.upperUpholsteryPreserveWarmWood ? 1 : 0;
+      const tintColor = new THREE.Color(tintHex);
+      const tintLuma = Math.max(
+        0.001,
+        0.2126 * tintColor.r + 0.7152 * tintColor.g + 0.0722 * tintColor.b
+      );
+
+      material.customProgramCacheKey = () =>
+        ["upper-upholstery-tint", tintHex, tintStrength, fadeStart, fadeEnd, preserveWarmWood].join(":");
+      material.onBeforeCompile = (shader) => {
+        shader.uniforms.upperUpholsteryTintColor = { value: tintColor };
+        shader.uniforms.upperUpholsteryTintStrength = { value: tintStrength };
+        shader.uniforms.upperUpholsteryTintStart = { value: fadeStart };
+        shader.uniforms.upperUpholsteryTintEnd = { value: fadeEnd };
+        shader.uniforms.upperUpholsteryTintLuma = { value: tintLuma };
+        shader.uniforms.upperUpholsteryPreserveWarmWood = { value: preserveWarmWood };
+
+        shader.vertexShader = shader.vertexShader
+          .replace(
+            "#include <common>",
+            "#include <common>\nvarying float vUpperUpholsteryLocalY;"
+          )
+          .replace(
+            "#include <begin_vertex>",
+            "#include <begin_vertex>\nvUpperUpholsteryLocalY = position.y;"
+          );
+
+        shader.fragmentShader = shader.fragmentShader
+          .replace(
+            "#include <common>",
+            "#include <common>\nvarying float vUpperUpholsteryLocalY;\nuniform vec3 upperUpholsteryTintColor;\nuniform float upperUpholsteryTintStrength;\nuniform float upperUpholsteryTintStart;\nuniform float upperUpholsteryTintEnd;\nuniform float upperUpholsteryTintLuma;\nuniform float upperUpholsteryPreserveWarmWood;"
+          )
+          .replace(
+            "#include <map_fragment>",
+            [
+              "#include <map_fragment>",
+              "float upperUpholsteryMask = smoothstep(upperUpholsteryTintStart, upperUpholsteryTintEnd, vUpperUpholsteryLocalY);",
+              "float upperUpholsteryLuma = dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722));",
+              "float upperUpholsteryWarmDelta = diffuseColor.r - diffuseColor.b;",
+              "float upperUpholsteryWarmWoodMask = upperUpholsteryPreserveWarmWood * smoothstep(0.045, 0.13, upperUpholsteryWarmDelta) * smoothstep(0.12, 0.72, upperUpholsteryLuma);",
+              "float upperUpholsteryDarkWoodMask = upperUpholsteryPreserveWarmWood * (1.0 - smoothstep(0.055, 0.18, upperUpholsteryLuma));",
+              "upperUpholsteryMask *= 1.0 - clamp(max(upperUpholsteryWarmWoodMask, upperUpholsteryDarkWoodMask), 0.0, 1.0);",
+              "vec3 upperUpholsteryToned = upperUpholsteryTintColor * clamp(upperUpholsteryLuma / upperUpholsteryTintLuma, 0.55, 1.35);",
+              "diffuseColor.rgb = mix(diffuseColor.rgb, clamp(upperUpholsteryToned, 0.0, 1.0), upperUpholsteryMask * upperUpholsteryTintStrength);",
+            ].join("\n")
           );
       };
     };
@@ -1388,24 +1457,30 @@ export function GLBScaledModel({
           );
           applyPhysicalMaterialClamps(m);
           if (shouldPreserveWoodLegMaterial(mesh, m)) {
-            const woodColorHex =
-              calibration?.preserveWoodLegColorHex ??
-              (isHuggBlackVariant && !calibration?.preserveWoodLegDisableBaseColorMap
-                ? "#0e0e0d"
-                : resolvedVariantColorHex);
+            const shouldKeepOriginalLegColor = calibration?.preserveWoodLegOriginalColor ?? false;
+            const woodColorHex = shouldKeepOriginalLegColor
+              ? undefined
+              : calibration?.preserveWoodLegColorHex ??
+                (isHuggBlackVariant && !calibration?.preserveWoodLegDisableBaseColorMap
+                  ? "#0e0e0d"
+                  : resolvedVariantColorHex);
             if (woodColorHex) {
               m.color = new THREE.Color(woodColorHex);
             }
-            if (calibration?.preserveWoodLegDisableBaseColorMap) {
+            if (!shouldKeepOriginalLegColor && calibration?.preserveWoodLegDisableBaseColorMap) {
               m.map = null;
             }
             m.emissive = new THREE.Color(0x000000);
             m.emissiveIntensity = 0;
-            m.metalness = Math.min(m.metalness, isHuggBlackVariant ? 0.02 : 0.1);
-            m.roughness = Math.max(m.roughness, isHuggBlackVariant ? 0.78 : 0.65);
+            if (!shouldKeepOriginalLegColor) {
+              m.metalness = Math.min(m.metalness, isHuggBlackVariant ? 0.02 : 0.1);
+              m.roughness = Math.max(m.roughness, isHuggBlackVariant ? 0.78 : 0.65);
+            }
             if (m.map) m.map.colorSpace = THREE.SRGBColorSpace;
-            applyHuggBlackPreserveGrain(m);
-            applyLowerAssemblyTint(mesh, m);
+            if (!shouldKeepOriginalLegColor) {
+              applyHuggBlackPreserveGrain(m);
+              applyLowerAssemblyTint(mesh, m);
+            }
             m.needsUpdate = true;
             return;
           }
@@ -1418,6 +1493,7 @@ export function GLBScaledModel({
               (allowVariantColor && (!isHuggModel && !isHuggOttoman)
                 ? resolvedVariantColorHex
                 : undefined);
+          const shouldUseUpperUpholsteryTint = Boolean(calibration?.upperUpholsteryTint && colorHex);
           const shouldUseImportedUpholsteryOverride = Boolean(variantRenderAssets);
           if (shouldUseImportedUpholsteryOverride) {
             // Imported upholstery variants should not inherit baked GLB maps.
@@ -1446,15 +1522,19 @@ export function GLBScaledModel({
           if (upholsteryTextures.baseColorMap) {
             m.map = upholsteryTextures.baseColorMap;
             if (colorHex) {
-              m.color = new THREE.Color("#ffffff").lerp(
-                new THREE.Color(colorHex),
-                Math.max(0, Math.min(1, calibration?.variantMapTintStrength ?? 0.85))
-              );
+              m.color = shouldUseUpperUpholsteryTint
+                ? new THREE.Color("#ffffff")
+                : new THREE.Color("#ffffff").lerp(
+                    new THREE.Color(colorHex),
+                    Math.max(0, Math.min(1, calibration?.variantMapTintStrength ?? 0.85))
+                  );
             } else {
               m.color = new THREE.Color("#ffffff");
             }
           } else if (colorHex) {
-            m.color = new THREE.Color(colorHex);
+            m.color = shouldUseUpperUpholsteryTint
+              ? new THREE.Color("#ffffff")
+              : new THREE.Color(colorHex);
           }
           if (upholsteryTextures.normalMap) {
             m.normalMap = upholsteryTextures.normalMap;
@@ -1558,6 +1638,11 @@ export function GLBScaledModel({
         if (huggFinishColorHex) {
             applyHuggTopTint(mesh, physicalMat, huggFinishColorHex);
           }
+          applyUpperUpholsteryTint(
+            mesh,
+            physicalMat,
+            shouldUseUpperUpholsteryTint ? colorHex : undefined
+          );
           applyLowerAssemblyTint(mesh, physicalMat);
           physicalMat.needsUpdate = true;
         });
@@ -1567,24 +1652,30 @@ export function GLBScaledModel({
         );
         applyPhysicalMaterialClamps(mat);
         if (shouldPreserveWoodLegMaterial(mesh, mat)) {
-          const woodColorHex =
-            calibration?.preserveWoodLegColorHex ??
-            (isHuggBlackVariant && !calibration?.preserveWoodLegDisableBaseColorMap
-              ? "#0e0e0d"
-              : resolvedVariantColorHex);
+          const shouldKeepOriginalLegColor = calibration?.preserveWoodLegOriginalColor ?? false;
+          const woodColorHex = shouldKeepOriginalLegColor
+            ? undefined
+            : calibration?.preserveWoodLegColorHex ??
+              (isHuggBlackVariant && !calibration?.preserveWoodLegDisableBaseColorMap
+                ? "#0e0e0d"
+                : resolvedVariantColorHex);
           if (woodColorHex) {
             mat.color = new THREE.Color(woodColorHex);
           }
-          if (calibration?.preserveWoodLegDisableBaseColorMap) {
+          if (!shouldKeepOriginalLegColor && calibration?.preserveWoodLegDisableBaseColorMap) {
             mat.map = null;
           }
           mat.emissive = new THREE.Color(0x000000);
           mat.emissiveIntensity = 0;
-          mat.metalness = Math.min(mat.metalness, isHuggBlackVariant ? 0.02 : 0.1);
-          mat.roughness = Math.max(mat.roughness, isHuggBlackVariant ? 0.78 : 0.65);
+          if (!shouldKeepOriginalLegColor) {
+            mat.metalness = Math.min(mat.metalness, isHuggBlackVariant ? 0.02 : 0.1);
+            mat.roughness = Math.max(mat.roughness, isHuggBlackVariant ? 0.78 : 0.65);
+          }
           if (mat.map) mat.map.colorSpace = THREE.SRGBColorSpace;
-          applyHuggBlackPreserveGrain(mat);
-          applyLowerAssemblyTint(mesh, mat);
+          if (!shouldKeepOriginalLegColor) {
+            applyHuggBlackPreserveGrain(mat);
+            applyLowerAssemblyTint(mesh, mat);
+          }
           mat.needsUpdate = true;
           return;
         }
@@ -1596,6 +1687,7 @@ export function GLBScaledModel({
           (allowVariantColor && (!isHuggModel && !isHuggOttoman)
             ? resolvedVariantColorHex
             : undefined);
+        const shouldUseUpperUpholsteryTint = Boolean(calibration?.upperUpholsteryTint && colorHex);
         const shouldUseImportedUpholsteryOverride = Boolean(variantRenderAssets);
         if (shouldUseImportedUpholsteryOverride) {
           // Imported upholstery variants should not inherit baked GLB maps.
@@ -1624,15 +1716,19 @@ export function GLBScaledModel({
         if (upholsteryTextures.baseColorMap) {
           mat.map = upholsteryTextures.baseColorMap;
           if (colorHex) {
-            mat.color = new THREE.Color("#ffffff").lerp(
-              new THREE.Color(colorHex),
-              Math.max(0, Math.min(1, calibration?.variantMapTintStrength ?? 0.85))
-            );
+            mat.color = shouldUseUpperUpholsteryTint
+              ? new THREE.Color("#ffffff")
+              : new THREE.Color("#ffffff").lerp(
+                  new THREE.Color(colorHex),
+                  Math.max(0, Math.min(1, calibration?.variantMapTintStrength ?? 0.85))
+                );
           } else {
             mat.color = new THREE.Color("#ffffff");
           }
         } else if (colorHex) {
-          mat.color = new THREE.Color(colorHex);
+          mat.color = shouldUseUpperUpholsteryTint
+            ? new THREE.Color("#ffffff")
+            : new THREE.Color(colorHex);
         }
         if (upholsteryTextures.normalMap) {
           mat.normalMap = upholsteryTextures.normalMap;
@@ -1733,6 +1829,11 @@ export function GLBScaledModel({
         if (huggFinishColorHex) {
           applyHuggTopTint(mesh, physicalMat, huggFinishColorHex);
         }
+        applyUpperUpholsteryTint(
+          mesh,
+          physicalMat,
+          shouldUseUpperUpholsteryTint ? colorHex : undefined
+        );
         applyLowerAssemblyTint(mesh, physicalMat);
         physicalMat.needsUpdate = true;
       }

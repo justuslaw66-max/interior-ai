@@ -111,6 +111,7 @@ export function updatePlanOpeningMetrics(
   metrics: {
     widthMeters?: number;
     offsetMeters?: number;
+    kind?: RoomOpening2D["kind"];
   },
   params: PlanOpeningMetricsParams
 ): RoomOpening2D[] {
@@ -127,6 +128,7 @@ export function updatePlanOpeningMetrics(
         metrics.offsetMeters !== undefined
           ? metersToMm(metrics.offsetMeters)
           : opening.offsetMm,
+      kind: metrics.kind ?? opening.kind,
     };
 
     return clampPlanOpeningMetrics(nextOpening, params);

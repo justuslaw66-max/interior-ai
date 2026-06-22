@@ -10,6 +10,8 @@ const JARON_MODEL_FAMILY_IDS = [
   "sofa-real-castlery-jaron-chaise-sectional-wide-arm",
   "sofa-real-castlery-jaron-l-shaped-sectional",
   "sofa-real-castlery-jaron-l-shaped-sectional-wide-arm",
+  "armchair-real-castlery-jaron-recliner-armchair",
+  "armchair-real-castlery-jaron-recliner-armchair-wide-arm",
 ];
 
 const AVERY_MODEL_FAMILY_IDS = [
@@ -22,12 +24,13 @@ const AVERY_MODEL_FAMILY_IDS = [
 export const JARON_CONFIGURATION_PRODUCT_IDS = [...JARON_MODEL_FAMILY_IDS];
 
 export type JaronConfigurationArmKey = "slim" | "wide";
-export type JaronConfigurationGroupKey = "standard" | "l-shaped";
+export type JaronConfigurationGroupKey = "standard" | "l-shaped" | "armchair";
 export type JaronConfigurationDiagramKey =
   | "standard-3-seater"
   | "standard-extended-3-seater"
   | "chaise-sectional"
-  | "l-shaped-sectional";
+  | "l-shaped-sectional"
+  | "recliner-armchair";
 
 export type JaronConfigurationOption = {
   key: string;
@@ -89,6 +92,20 @@ export const JARON_CONFIGURATION_GROUPS: JaronConfigurationGroup[] = [
       },
     ],
   },
+  {
+    key: "armchair",
+    label: "ARMCHAIR",
+    options: [
+      {
+        key: "recliner-armchair",
+        label: "Recliner Armchair",
+        description: "Slim Arm: W134 x D115cm; Wide Arm: W144 x D115cm",
+        diagram: "recliner-armchair",
+        slimProductId: "armchair-real-castlery-jaron-recliner-armchair",
+        wideProductId: "armchair-real-castlery-jaron-recliner-armchair-wide-arm",
+      },
+    ],
+  },
 ];
 
 export const MODEL_FAMILY_BY_PRODUCT_ID: Record<string, string[]> = {
@@ -124,6 +141,8 @@ export const MODEL_FAMILY_BY_PRODUCT_ID: Record<string, string[]> = {
   "sofa-real-castlery-jaron-chaise-sectional-wide-arm": [...JARON_MODEL_FAMILY_IDS],
   "sofa-real-castlery-jaron-l-shaped-sectional": [...JARON_MODEL_FAMILY_IDS],
   "sofa-real-castlery-jaron-l-shaped-sectional-wide-arm": [...JARON_MODEL_FAMILY_IDS],
+  "armchair-real-castlery-jaron-recliner-armchair": [...JARON_MODEL_FAMILY_IDS],
+  "armchair-real-castlery-jaron-recliner-armchair-wide-arm": [...JARON_MODEL_FAMILY_IDS],
   "armchair-real-castlery-avery-performance-armchair": [...AVERY_MODEL_FAMILY_IDS],
   "armchair-real-castlery-avery-performance-armchair-with-ottoman": [...AVERY_MODEL_FAMILY_IDS],
   "armchair-real-castlery-avery-performance-swivel-armchair": [...AVERY_MODEL_FAMILY_IDS],
@@ -217,6 +236,8 @@ export const MODEL_SELECTOR_PRODUCT_IDS_BY_PRODUCT_ID: Record<string, string[]> 
   "sofa-real-castlery-jaron-chaise-sectional-wide-arm": [...JARON_MODEL_FAMILY_IDS],
   "sofa-real-castlery-jaron-l-shaped-sectional": [...JARON_MODEL_FAMILY_IDS],
   "sofa-real-castlery-jaron-l-shaped-sectional-wide-arm": [...JARON_MODEL_FAMILY_IDS],
+  "armchair-real-castlery-jaron-recliner-armchair": [...JARON_MODEL_FAMILY_IDS],
+  "armchair-real-castlery-jaron-recliner-armchair-wide-arm": [...JARON_MODEL_FAMILY_IDS],
   "armchair-real-castlery-avery-performance-armchair": [...AVERY_MODEL_FAMILY_IDS],
   "armchair-real-castlery-avery-performance-armchair-with-ottoman": [...AVERY_MODEL_FAMILY_IDS],
   "armchair-real-castlery-avery-performance-swivel-armchair": [...AVERY_MODEL_FAMILY_IDS],
@@ -338,6 +359,14 @@ export const ARM_STYLE_OPTIONS_BY_PRODUCT_ID: Record<
   "sofa-real-castlery-jaron-l-shaped-sectional-wide-arm": [
     { label: "Slim arm", productId: "sofa-real-castlery-jaron-l-shaped-sectional" },
     { label: "Wide arm", productId: "sofa-real-castlery-jaron-l-shaped-sectional-wide-arm" },
+  ],
+  "armchair-real-castlery-jaron-recliner-armchair": [
+    { label: "Slim arm", productId: "armchair-real-castlery-jaron-recliner-armchair" },
+    { label: "Wide arm", productId: "armchair-real-castlery-jaron-recliner-armchair-wide-arm" },
+  ],
+  "armchair-real-castlery-jaron-recliner-armchair-wide-arm": [
+    { label: "Slim arm", productId: "armchair-real-castlery-jaron-recliner-armchair" },
+    { label: "Wide arm", productId: "armchair-real-castlery-jaron-recliner-armchair-wide-arm" },
   ],
 };
 

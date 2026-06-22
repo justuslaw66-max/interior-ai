@@ -2,12 +2,117 @@
 
 import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
-import { Grid, OrbitControls } from "@react-three/drei";
-import { useMemo, useState } from "react";
+import { Grid } from "@react-three/drei/core/Grid";
+import { OrbitControls } from "@react-three/drei/core/OrbitControls";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import type { DesignSnapshot, RoomSnapshot, SavedView } from "@/lib/room-types";
 import { getActiveRoom, switchRoom } from "@/lib/room-types";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
+
+type ShareCameraView = {
+  id: string;
+  name: string;
+  cameraPosition: [number, number, number];
+  cameraTarget: [number, number, number];
+  fov?: number;
+};
+
+const DEFAULT_CAMERA_POSITION: [number, number, number] = [4.5, 3.2, 5.5];
+const DEFAULT_CAMERA_TARGET: [number, number, number] = [0, 1.1, 0];
+const DEFAULT_CAMERA_FOV = 45;
+
+function isVector3(value: unknown): value is [number, number, number] {
+  return (
+    Array.isArray(value) &&
+    value.length === 3 &&
+    value.every((entry) => typeof entry === "number" && Number.isFinite(entry))
+  );
+}
+
+function normalizeSavedView(view: SavedView | unknown, index: number): ShareCameraView | null {
+  if (!view || typeof view !== "object") return null;
+  const candidate = view as Partial<SavedView> & {
+    id?: unknown;
+    name?: unknown;
+    view?: {
+      pos?: unknown;
+      target?: unknown;
+      fov?: unknown;
+    };
+  };
+
+  const cameraPosition = isVector3(candidate.cameraPosition)
+    ? candidate.cameraPosition
+    : isVector3(candidate.view?.pos)
+      ? candidate.view.pos
+      : null;
+  const cameraTarget = isVector3(candidate.cameraTarget)
+    ? candidate.cameraTarget
+    : isVector3(candidate.view?.target)
+      ? candidate.view.target
+      : null;
+
+  if (!cameraPosition || !cameraTarget) return null;
+
+  return {
+    id: typeof candidate.id === "string" && candidate.id ? candidate.id : `saved-view-${index}`,
+    name: typeof candidate.name === "string" && candidate.name ? candidate.name : `View ${index + 1}`,
+    cameraPosition,
+    cameraTarget,
+    fov: typeof candidate.view?.fov === "number" && Number.isFinite(candidate.view.fov)
+      ? candidate.view.fov
+      : undefined,
+  };
+}
+
+function ShareCameraControls({
+  activeView,
+  roomId,
+}: {
+  activeView: ShareCameraView | null;
+  roomId: string;
+}) {
+  const controlsRef = useRef<OrbitControlsImpl | null>(null);
+
+  useEffect(() => {
+    const sceneCamera = controlsRef.current?.object;
+    if (!sceneCamera) return;
+
+    const nextPosition = activeView?.cameraPosition ?? DEFAULT_CAMERA_POSITION;
+    const nextTarget = activeView?.cameraTarget ?? DEFAULT_CAMERA_TARGET;
+    const nextFov = activeView?.fov ?? DEFAULT_CAMERA_FOV;
+
+    sceneCamera.position.set(nextPosition[0], nextPosition[1], nextPosition[2]);
+    if (sceneCamera instanceof THREE.PerspectiveCamera) {
+      sceneCamera.fov = nextFov;
+      sceneCamera.updateProjectionMatrix();
+    }
+
+    if (controlsRef.current) {
+      controlsRef.current.target.set(nextTarget[0], nextTarget[1], nextTarget[2]);
+      controlsRef.current.update();
+    } else {
+      sceneCamera.lookAt(nextTarget[0], nextTarget[1], nextTarget[2]);
+    }
+  }, [activeView, roomId]);
+
+  return (
+    <OrbitControls
+      ref={controlsRef}
+      target={activeView?.cameraTarget ?? DEFAULT_CAMERA_TARGET}
+      enableDamping
+      dampingFactor={0.08}
+      minDistance={2.5}
+      maxDistance={10}
+      minPolarAngle={0.35}
+      maxPolarAngle={Math.PI / 2.05}
+      maxAzimuthAngle={Infinity}
+      minAzimuthAngle={-Infinity}
+    />
+  );
+}
 
 function Room({
   width,
@@ -134,8 +239,21 @@ export default function ShareViewer({
   initialSnapshot: DesignSnapshot;
 }) {
   const [snapshot, setSnapshot] = useState(initialSnapshot);
+  const [activeSavedViewId, setActiveSavedViewId] = useState<string | null>(null);
+  const markViewerReady = useCallback((node: HTMLDivElement | null) => {
+    if (node) node.dataset.ready = "true";
+  }, []);
   const activeRoom = useMemo(() => getActiveRoom(snapshot), [snapshot]);
   const rooms = snapshot.rooms || [];
+  const savedViews = useMemo(
+    () =>
+      (activeRoom?.savedViews ?? [])
+        .map((view, index) => normalizeSavedView(view, index))
+        .filter((view): view is ShareCameraView => Boolean(view)),
+    [activeRoom?.savedViews]
+  );
+  const activeSavedView =
+    savedViews.find((view) => view.id === activeSavedViewId) ?? null;
 
   if (!activeRoom) {
     return <div>No room available</div>;
@@ -144,14 +262,22 @@ export default function ShareViewer({
   const items = activeRoom.items || [];
 
   return (
-    <div className="space-y-4">
+    <div
+      ref={markViewerReady}
+      className="space-y-4"
+      data-testid="share-viewer"
+      data-ready="false"
+    >
       {/* Room Switcher */}
       {rooms.length > 1 && (
         <div className="flex gap-2 flex-wrap">
           {rooms.map((room: RoomSnapshot) => (
             <button
               key={room.id}
-              onClick={() => setSnapshot(switchRoom(snapshot, room.id))}
+              onClick={() => {
+                setActiveSavedViewId(null);
+                setSnapshot(switchRoom(snapshot, room.id));
+              }}
               className={
                 room.id === snapshot.activeRoomId
                   ? "rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white"
@@ -173,7 +299,7 @@ export default function ShareViewer({
         <div className="h-[78vh] w-full">
           <Canvas
             shadows
-            camera={{ position: [4.5, 3.2, 5.5], fov: 45, near: 0.1, far: 100 }}
+            camera={{ position: DEFAULT_CAMERA_POSITION, fov: DEFAULT_CAMERA_FOV, near: 0.1, far: 100 }}
           >
             <ambientLight intensity={0.5} color="#fff8ef" />
             <directionalLight
@@ -211,33 +337,30 @@ export default function ShareViewer({
               );
             })}
 
-            <OrbitControls
-              target={[0, 1.1, 0]}
-              enableDamping
-              dampingFactor={0.08}
-              minDistance={2.5}
-              maxDistance={10}
-              minPolarAngle={0.35}
-              maxPolarAngle={Math.PI / 2.05}
-              maxAzimuthAngle={Infinity}
-              minAzimuthAngle={-Infinity}
-            />
+            <ShareCameraControls activeView={activeSavedView} roomId={activeRoom.id} />
           </Canvas>
         </div>
       </div>
 
       {/* Saved Views */}
-      {activeRoom.savedViews && activeRoom.savedViews.length > 0 && (
-        <div className="rounded-lg bg-white p-4 shadow">
+      {savedViews.length > 0 && (
+        <div className="bg-white p-4 shadow">
           <h3 className="mb-2 text-sm font-semibold text-gray-800">Saved Views</h3>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {activeRoom.savedViews.map((view: SavedView) => (
-              <div
+            {savedViews.map((view: ShareCameraView) => (
+              <button
+                type="button"
                 key={view.id}
-                className="rounded-lg border bg-gray-50 p-3 text-center"
+                aria-pressed={view.id === activeSavedViewId}
+                onClick={() => setActiveSavedViewId(view.id)}
+                className={
+                  view.id === activeSavedViewId
+                    ? "rounded-lg border border-neutral-900 bg-neutral-900 p-3 text-center text-white"
+                    : "rounded-lg border bg-gray-50 p-3 text-center text-gray-700 transition hover:border-neutral-400 hover:bg-white"
+                }
               >
-                <div className="text-sm font-medium text-gray-700">{view.name}</div>
-              </div>
+                <div className="text-sm font-medium">{view.name}</div>
+              </button>
             ))}
           </div>
         </div>
