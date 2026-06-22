@@ -57,7 +57,7 @@
     "test:pro-tools-toggle-copy": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-pro-tools-toggle-copy.ts",
     "test:command-bar-save-status": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-command-bar-save-status.ts",
     "test:room-floor-rendering": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-room-floor-rendering.ts",
-    "test:shopping-readiness-polish": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-shopping-readiness-polish.ts",
+    "test:shopping-readiness-polish": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-shopping-readiness-polish.ts",
     "test:revenue-funnel": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-revenue-funnel-metrics.ts",
     "test:revenue-funnel-panel": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\",\"jsx\":\"react-jsx\"}' scripts/test-revenue-funnel-panel.ts",
     "test:paywall-performance": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-paywall-performance.ts",

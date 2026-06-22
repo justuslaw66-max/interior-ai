@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { CATALOG_ITEMS } from "../lib/catalog";
+import type { CatalogItemSchema } from "../lib/catalog-schema";
+import { mapToTopCategory } from "../lib/catalog/view-builders";
+import { resolveRoomShoppingItems, type ActiveRoomShoppingItem } from "../lib/room-shopping";
+import { buildShoppingReplacementSuggestions } from "../lib/shopping-replacements";
 
 const furnishSource = readFileSync(
   join(process.cwd(), "components/editor/DesignControlsFurnishPanel.tsx"),
@@ -122,6 +127,99 @@ assert.match(
   designPageSource,
   /position|rotationY/,
   "Replacement swaps should preserve the existing design item placement fields by spreading the item."
+);
+
+const catalogItems = Object.values(CATALOG_ITEMS);
+const sourceProduct = CATALOG_ITEMS["armchair-real-castlery-avery-performance-armchair"];
+assert.ok(sourceProduct, "Shopping replacement fixture should have a public source armchair.");
+
+const [validSourceItem] = resolveRoomShoppingItems({
+  items: [
+    {
+      instanceId: "shopping-readiness-source",
+      productId: sourceProduct.id,
+      variantId: sourceProduct.defaultVariantId,
+      position: [0, 0, 0],
+      rotationY: 0,
+      includeInCheckout: true,
+    },
+  ],
+});
+assert.ok(validSourceItem, "Shopping replacement fixture should resolve a source shopping item.");
+
+const brokenSourceItem: ActiveRoomShoppingItem = {
+  ...validSourceItem,
+  linePrice: 0,
+  priceLabel: "Missing price",
+  retailerUrl: null,
+  retailerStatusLabel: "Retailer link missing",
+  commerceMode: "not_buyable",
+  cartStatusLabel: "Needs commerce",
+  hasValidCommerce: false,
+  warningLabel: "Missing validated commerce mapping",
+  category: mapToTopCategory(sourceProduct.category, sourceProduct),
+};
+
+const readyReplacementSuggestions = buildShoppingReplacementSuggestions({
+  item: brokenSourceItem,
+  catalogItems,
+  roomType: "living",
+  limit: 5,
+});
+
+assert.ok(
+  readyReplacementSuggestions.length > 0,
+  "A broken public armchair row should receive real shoppable replacement suggestions."
+);
+for (const suggestion of readyReplacementSuggestions) {
+  assert.notEqual(
+    suggestion.productId,
+    brokenSourceItem.productId,
+    "Replacement suggestions should not point back to the broken source product."
+  );
+  assert.ok(suggestion.price > 0, `Replacement ${suggestion.productId} should have a positive price.`);
+  assert.ok(
+    suggestion.retailerUrl && /^https?:\/\//.test(suggestion.retailerUrl),
+    `Replacement ${suggestion.productId} should expose a concrete commerce URL.`
+  );
+}
+
+const invalidReplacementCandidate: CatalogItemSchema = {
+  ...sourceProduct,
+  id: "qa-invalid-armchair-replacement",
+  title: "QA Invalid Armchair Replacement",
+  commerce: { type: "affiliate", data: { retailer: "QA", url: "", priceHint: 0 } },
+  metadata: { ...(sourceProduct.metadata ?? {}), priceUsd: 0 },
+  variants: sourceProduct.variants.map((variant) => ({
+    ...variant,
+    id: `${variant.id}-qa-invalid`,
+    priceHint: 0,
+    affiliateUrl: undefined,
+    purchaseOptions: variant.purchaseOptions?.map((option) => ({
+      ...option,
+      id: `${option.id}-qa-invalid`,
+      affiliateUrl: undefined,
+      priceHint: 0,
+    })),
+  })),
+};
+
+const suggestionsWithInvalidCandidate = buildShoppingReplacementSuggestions({
+  item: brokenSourceItem,
+  catalogItems: [invalidReplacementCandidate, ...catalogItems],
+  roomType: "living",
+  limit: 10,
+});
+
+assert.ok(
+  suggestionsWithInvalidCandidate.length > 0,
+  "Invalid replacement candidate fixture should not prevent valid suggestions from appearing."
+);
+assert.ok(
+  suggestionsWithInvalidCandidate.every(
+    (suggestion) => suggestion.productId !== invalidReplacementCandidate.id
+  ),
+  "Replacement suggestions must exclude products without a valid price and commerce URL."
 );
 
 console.log("Shopping readiness polish checks passed.");
