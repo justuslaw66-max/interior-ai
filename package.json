@@ -11,6 +11,7 @@
     "lint": "eslint",
     "test:e2e": "npm run build:e2e && playwright test",
     "release:beta-worktree": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/check-beta-release-worktree.ts",
+    "test:e2e:beta": "npm run build:e2e && playwright test tests/e2e/00-beta-smoke.spec.ts",
     "test:e2e:rotation": "npm run build:e2e && playwright test tests/e2e/11-rotation-shortcuts.spec.ts",
     "test:e2e:rotation:headed": "npm run build:e2e && playwright test tests/e2e/11-rotation-shortcuts.spec.ts --headed",
     "test:e2e:pro-upgrade": "npm run build:e2e && playwright test tests/e2e/pro-upgrade.spec.ts",
