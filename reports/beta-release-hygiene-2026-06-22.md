@@ -3,7 +3,7 @@
 ## Release Status
 
 - The beta stabilization worktree has been cleaned and split into reviewable release commits.
-- `npm run release:beta-worktree` reports `Changed paths: 0`.
+- `npm run release:beta-worktree` reports `Changed paths: 0` after the latest beta placement upgrade.
 - Accidental/generated artifacts were removed from repo-facing paths, including duplicate `* 2.*` docs/configs/scripts/migrations/public SVGs, `incoming/test_sofa 2.glb`, `.next 2`, and `.next 3`.
 - Local-only `.next-dev.log`, `.next*`, and `.vscode/` noise is ignored so it no longer pollutes release status.
 
@@ -40,11 +40,19 @@ No armchair assets were draft-gated in this pass because the catalog audit and l
 - `npm run release:beta-worktree` passed and is included in `npm run test:beta-gate`.
 - `npm run test:catalog-audit:strict` passed, including strict catalog quality mode where warnings are beta blockers.
 - `npm run test:catalog-asset-availability` passed with 86 catalog files, 617 asset refs, 0 missing local URLs, and remote checking disabled by default.
-- `PLAYWRIGHT_WEB_SERVER_PORT=3111 PLAYWRIGHT_BASE_URL=http://localhost:3111 npm run test:beta-gate` passed end to end.
+- `PLAYWRIGHT_WEB_SERVER_PORT=3117 PLAYWRIGHT_BASE_URL=http://localhost:3117 npm run test:beta-gate` passed end to end after the smart placement/circulation upgrade.
 - The beta smoke path validates persisted API state, share-page fingerprint, export-page fingerprint, PDF bytes, CSV/SVG/PNG downloads, mobile/tablet overflow, lite-mode control, and mocked checkout payload.
 - The beta gate runs `CATALOG_STRICT_VALIDATION=true npm run build` so runtime catalog validation is strict during the release build.
+- `CATALOG_CHECK_REMOTE_ASSETS=true npm run test:catalog-asset-availability` passed with 282 remote URLs checked and 0 failing.
 
-Remote media availability remains covered by enabling `CATALOG_CHECK_REMOTE_ASSETS=true` when a network-capable release environment is available.
+## Smart Placement / Circulation
+
+Manual placement guidance is now beta-gated:
+
+- `d397c4f feat: improve manual placement guidance`
+- Walking-path circulation analysis feeds manual placement scoring and the placement heatmap.
+- The placement panel is guarded for improved nearby spot, best room, best option, restore valid spot, smart confirm, keyboard nudge/rotate/enter, score-aware target validity, and circulation analysis.
+- `npm run test:beta-editor-polish` now includes the placement/circulation guard scripts before the beta smoke test runs.
 
 ## Release Commit Stack
 
@@ -58,6 +66,10 @@ The cleanup was split into these commits:
 - `2eba7d8 fix: harden design persistence routes`
 - `737bd12 feat: polish shared beta app shell`
 - `96b096b chore: wire beta gate scripts`
+- `f93a42a feat: add beta feedback capture`
+- `f200d5f feat: add Hamilton leather upholstery variants`
+- `462857f chore: gate beta editor polish checks`
+- `d397c4f feat: improve manual placement guidance`
 
 Review each commit independently when possible; the full stack is also covered by the blocking beta gate above.
 
@@ -74,6 +86,7 @@ It buckets dirty worktree paths into beta gate/hygiene, share/export, catalog re
 ## Remaining Release Follow-Up
 
 - Run the beta gate again immediately before tagging or opening the release PR.
-- In a network-capable release environment, run `CATALOG_CHECK_REMOTE_ASSETS=true npm run test:catalog-asset-availability` to cover remote media URLs.
+- Repeat `CATALOG_CHECK_REMOTE_ASSETS=true npm run test:catalog-asset-availability` immediately before beta tagging if catalog media changes.
+- Run the staging smoke checklist once staging auth/payment boundary configuration is available: sign in, start from `/design`, load template, place furniture manually, verify smart placement guidance, save, reload, share, export PDF/CSV/PNG/SVG, open retailer links, and start checkout boundary.
 - Keep checkout completion out of the local blocker until staging payment credentials are explicitly configured; local beta gate validates checkout start with a mocked response.
 - If new catalog items are added before beta, require them to pass strict catalog audit, asset availability, price/link readiness, and replacement-suggestion eligibility before publishing.
