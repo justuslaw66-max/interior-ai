@@ -13,13 +13,13 @@ assert.match(
 
 assert.match(
   source,
-  /designControlsPanelVisibleForLayout\s*\?\s*isDesigner\s*\?\s*"md:left-\[28rem\]"\s*:\s*"md:left-\[23\.5rem\]"/,
-  "Scene performance control should shift beside the design panel on tablet/desktop."
+  /designControlsPanelVisibleForLayout\s*\?\s*isDesigner\s*\?\s*"md:left-\[28rem\] md:top-56"\s*:\s*"md:left-\[23\.5rem\] md:top-56"/,
+  "Scene performance control should shift beside the design panel and below the top status bar on tablet/desktop."
 );
 
 assert.match(
   source,
-  /className=\{[^}]*showDesignerTheme[\s\S]*md:left-\[23\.5rem\][\s\S]*md:left-\[28rem\]/,
+  /className=\{[^}]*showDesignerTheme[\s\S]*md:left-\[23\.5rem\] md:top-56[\s\S]*md:left-\[28rem\] md:top-56/,
   "Scene performance layout should account for both homeowner and designer panel offsets."
 );
 
