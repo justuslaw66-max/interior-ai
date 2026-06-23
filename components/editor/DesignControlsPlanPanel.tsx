@@ -878,6 +878,18 @@ export default function DesignControlsPlanPanel({
                 </button>
                 <button
                   type="button"
+                  data-testid="manual-panel-templates"
+                  className={`${progressSecondaryActionClass} min-h-10`}
+                  disabled={!canEdit}
+                  onClick={() => {
+                    setRoomSetupStep("confirm");
+                    setPlanStartMode("template");
+                  }}
+                >
+                  Templates
+                </button>
+                <button
+                  type="button"
                   data-testid="manual-panel-furnish"
                   className={`${progressSecondaryActionClass} min-h-10`}
                   disabled={!canEdit || !hasRooms}
@@ -937,6 +949,21 @@ export default function DesignControlsPlanPanel({
                 >
                   {consumerPlanNextSteps}
                 </div>
+              )}
+
+              {hasRooms && (
+                <button
+                  type="button"
+                  data-testid="plan-open-templates"
+                  className={`${progressSecondaryActionClass} mt-3 min-h-10 w-full`}
+                  disabled={!canEdit}
+                  onClick={() => {
+                    setRoomSetupStep("confirm");
+                    setPlanStartMode("template");
+                  }}
+                >
+                  Templates
+                </button>
               )}
 
               {roomSetupActiveStep === "start" && (
