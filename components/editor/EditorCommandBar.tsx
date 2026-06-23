@@ -221,8 +221,8 @@ export default function EditorCommandBar({
           data-testid="designer-mode-toggle"
           className={
             isDesigner
-              ? "hidden rounded-xl bg-neutral-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800 sm:inline-flex"
-              : "hidden rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 sm:inline-flex"
+              ? "hidden h-10 w-40 shrink-0 items-center justify-center rounded-xl bg-neutral-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800 sm:inline-flex"
+              : "hidden h-10 w-40 shrink-0 items-center justify-center rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 sm:inline-flex"
           }
           onClick={onToggleDesignerMode}
           title={isDesigner ? "Exit Pro tools" : "Enter Pro tools"}
@@ -230,20 +230,24 @@ export default function EditorCommandBar({
           {isDesigner ? "Exit Pro tools" : "Pro tools"}
         </button>
 
-        {isDesigner && (
-          <button
-            data-testid="present-mode"
-            className={`rounded-xl px-3 py-2 text-sm font-semibold transition-all ${
-              isClientPreview
-                ? "bg-red-600 text-white shadow hover:bg-red-700"
-                : "border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
-            }`}
-            onClick={onToggleClientPreview}
-            title="Toggle Present Mode (P)"
-          >
-            {isClientPreview ? "Exit preview" : "Preview"}
-          </button>
-        )}
+        <div className="hidden h-10 w-28 shrink-0 sm:block">
+          {isDesigner ? (
+            <button
+              data-testid="present-mode"
+              className={`h-10 w-full rounded-xl px-3 py-2 text-sm font-semibold transition-all ${
+                isClientPreview
+                  ? "bg-red-600 text-white shadow hover:bg-red-700"
+                  : "border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
+              }`}
+              onClick={onToggleClientPreview}
+              title="Toggle Present Mode (P)"
+            >
+              {isClientPreview ? "Exit preview" : "Preview"}
+            </button>
+          ) : (
+            <span className="block h-10 w-full" aria-hidden="true" />
+          )}
+        </div>
 
         {showLoadDesign && (
           <button

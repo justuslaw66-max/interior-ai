@@ -17,6 +17,16 @@ assert.match(
   /\{isDesigner \? "Exit Pro tools" : "Pro tools"\}/,
   "Pro tools toggle should use matching active/inactive labels"
 );
+assert.match(
+  source,
+  /data-testid="designer-mode-toggle"[\s\S]*"hidden h-10 w-40 shrink-0 items-center justify-center/,
+  "Pro tools toggle should keep a fixed footprint when entering and exiting Pro tools"
+);
+assert.match(
+  source,
+  /<div className="hidden h-10 w-28 shrink-0 sm:block">[\s\S]*data-testid="present-mode"[\s\S]*<span className="block h-10 w-full" aria-hidden="true" \/>/,
+  "Preview should reserve a stable slot so Pro tools and Load do not shift"
+);
 assert.doesNotMatch(
   source,
   /Designer on|Exit Designer Mode|Enter Designer Mode/,
