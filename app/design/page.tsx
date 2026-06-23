@@ -39,6 +39,7 @@ import {
   EventDedup,
   type OnboardingState,
 } from "@/lib/onboarding";
+import { buildFirstRunActivationState } from "@/lib/first-run-activation";
 import { applyAISuggestionAction, type AISuggestionAction } from "@/lib/ai/applySuggestion";
 import {
   computeAABB,
@@ -56,7 +57,6 @@ import type {
   RoomSnapshot,
   SavedView,
   ZoneMin,
-  RoomType,
 } from "@/lib/room-types";
 import {
   getActiveRoom,
@@ -93,6 +93,7 @@ import {
   type PendingCatalogPlacement,
 } from "@/lib/catalog-placement";
 import { computeCirculationAnalysis, type CirculationHeatCell } from "@/lib/circulation-analysis";
+import { buildRoomHealthSummary } from "@/lib/room-health-summary";
 import { getAllRoomNames } from "@/lib/room-hooks";
 import EditorCommandBar from "@/components/editor/EditorCommandBar";
 import type { EditorSaveStatus } from "@/components/editor/EditorCommandBar";
@@ -119,25 +120,13 @@ import { CanvasErrorBoundary } from "@/components/CanvasErrorBoundary";
 import { metersToMm, radiansToDeg, type RoomOpening2D } from "@/lib/editorScene";
 import { applyFloorPlanScaleCalibration } from "@/lib/floor-plan-calibration";
 import {
-  resolveArcWallDrawPreview,
-  resolveExactWallDrawPoint,
   resolveOpeningPlacementFromPoint,
   resolveTracedOpening,
-  resolveClosedWallDrawRoom,
-  resolveTracedRoomRectangle,
-  isClosingWallDrawPoint,
-  snapFloorPlanPointForRoomDraw,
-  snapFloorPlanPointForWallDraw,
-  snapFloorPlanPointToGrid,
   validateTracedOpeningPlacement,
-  type ResolvedWallDrawRoom,
-  type TracedRoomRectangle,
 } from "@/lib/floor-plan-tracing";
 import type {
-  FloorPlanDrawAngleLockMode,
   FloorPlanDrawRoomMode,
   FloorPlanPoint,
-  FloorPlanUnderlay,
 } from "@/lib/floor-plan-types";
 import {
   legacyApiToSnapshot,
@@ -160,13 +149,16 @@ import {
   resolveFloorPlanOpeningCancelDecision,
   resolvePlanFitZoom,
   roundPlanCoordinate,
-  shouldReplaceStarterRoomWithDrawnRoom,
   type HousePlanTemplate,
   type RoomSizePresetId,
 } from "@/lib/design-page-house-plan";
+import { resolvePlanCanvasGuidance } from "@/lib/plan-canvas-guidance";
 import { useDesignPageHousePlanState } from "@/lib/useDesignPageHousePlanState";
+import { useDesignPageFloorPlanWorkflowState } from "@/lib/useDesignPageFloorPlanWorkflowState";
 import { useDesignPagePlanActions } from "@/lib/useDesignPagePlanActions";
 import { useDesignPagePlanState } from "@/lib/useDesignPagePlanState";
+import { useFloorPlanRoomCreation } from "@/lib/useFloorPlanRoomCreation";
+import { useFloorPlanRoomDrawing } from "@/lib/useFloorPlanRoomDrawing";
 import {
   useDesignPagePanelMode,
   type DesignPageEditorMode,
@@ -641,6 +633,64 @@ function JaronConfigurationDiagram({
   );
 }
 
+type ManualPlanActionIconName = "select" | "scale" | "draw" | "door" | "window" | "fit";
+
+function ManualPlanActionIcon({ name }: { name: ManualPlanActionIconName }) {
+  const lineProps = {
+    stroke: "currentColor",
+    strokeWidth: 2,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    vectorEffect: "non-scaling-stroke" as const,
+  };
+
+  if (name === "select") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none">
+        <path d="M6 4l10 8-5 1.5 3 5-2.5 1.5-3-5-3.5 4V4z" {...lineProps} />
+      </svg>
+    );
+  }
+
+  if (name === "scale") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none">
+        <path d="M4 16l12-12 4 4L8 20l-4-4zM8 16l-2-2M11 13l-2-2M14 10l-2-2" {...lineProps} />
+      </svg>
+    );
+  }
+
+  if (name === "draw") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none">
+        <path d="M5 19h14M7 15l8.5-8.5 2 2L9 17H7v-2z" {...lineProps} />
+      </svg>
+    );
+  }
+
+  if (name === "door") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none">
+        <path d="M7 20V5h9v15M10 12h.01M16 20H5" {...lineProps} />
+      </svg>
+    );
+  }
+
+  if (name === "window") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none">
+        <path d="M5 6h14v12H5zM12 6v12M5 12h14" {...lineProps} />
+      </svg>
+    );
+  }
+
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none">
+      <path d="M8 4H4v4M16 4h4v4M20 16v4h-4M4 16v4h4M8 4L4 8M16 4l4 4M20 16l-4 4M4 16l4 4" {...lineProps} />
+    </svg>
+  );
+}
+
 function PageContent() {
   const { data: session } = useSession();
   const router = useRouter();
@@ -732,6 +782,12 @@ function PageContent() {
   const [lightingPreset, setLightingPreset] = useState<LightingPreset>("studio");
   const [viewMode, setViewMode] = useState<EditorViewMode>("3d");
   const [designPanelOpen, setDesignPanelOpen] = useState(true);
+  const [planFocusPanelRevealed, setPlanFocusPanelRevealed] = useState(false);
+  const [dismissedPlanCanvasGuidanceKey, setDismissedPlanCanvasGuidanceKey] = useState<string | null>(null);
+  const [consumerPlanCompletionSignal, setConsumerPlanCompletionSignal] = useState<{
+    id: number;
+    kind: "room" | "opening";
+  } | null>(null);
   const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
   const {
     planTheme,
@@ -752,27 +808,55 @@ function PageContent() {
     setPlanMeasurementUnit,
     exportStylePreset,
     setExportStylePreset,
+    planGuidedActionsEnabled,
+    setPlanGuidedActionsEnabled,
+    planGuidedActionsChoiceSeen,
+    setPlanGuidedActionsChoiceSeen,
     planSettingsLoaded,
   } = useDesignPagePlanState();
-  const [floorPlanUnderlay, setFloorPlanUnderlay] = useState<FloorPlanUnderlay | null>(null);
-  const [floorPlanCalibrationMode, setFloorPlanCalibrationMode] = useState(false);
-  const [floorPlanCalibrationPoints, setFloorPlanCalibrationPoints] = useState<FloorPlanPoint[]>([]);
-  const [floorPlanCalibrationDistanceInput, setFloorPlanCalibrationDistanceInput] = useState("");
-  const [floorPlanTraceRoomMode, setFloorPlanTraceRoomMode] = useState(false);
-  const [floorPlanDrawRoomMode, setFloorPlanDrawRoomMode] =
-    useState<FloorPlanDrawRoomMode>("straight_wall");
-  const [floorPlanDrawAngleLockMode, setFloorPlanDrawAngleLockMode] =
-    useState<FloorPlanDrawAngleLockMode>("ortho");
-  const [floorPlanExactWallLengthInput, setFloorPlanExactWallLengthInput] = useState("");
-  const [floorPlanTraceRoomPoints, setFloorPlanTraceRoomPoints] = useState<FloorPlanPoint[]>([]);
-  const [blankGridRoomPreviewPoint, setBlankGridRoomPreviewPoint] = useState<FloorPlanPoint | null>(null);
-  const [floorPlanTraceRoomType, setFloorPlanTraceRoomType] = useState<RoomType>("living");
-  const [floorPlanTraceOpeningMode, setFloorPlanTraceOpeningMode] = useState(false);
-  const [floorPlanTraceOpeningPoints, setFloorPlanTraceOpeningPoints] = useState<FloorPlanPoint[]>([]);
-  const [floorPlanTraceOpeningKind, setFloorPlanTraceOpeningKind] =
-    useState<RoomOpening2D["kind"]>("door");
-  const [floorPlanPdfSourceReady, setFloorPlanPdfSourceReady] = useState(false);
-  const [floorPlanPdfRenderingPage, setFloorPlanPdfRenderingPage] = useState<number | null>(null);
+  const {
+    floorPlanUnderlay,
+    setFloorPlanUnderlay,
+    floorPlanCalibrationMode,
+    floorPlanCalibrationPoints,
+    setFloorPlanCalibrationPoints,
+    floorPlanCalibrationDistanceInput,
+    setFloorPlanCalibrationDistanceInput,
+    floorPlanTraceRoomMode,
+    setFloorPlanTraceRoomMode,
+    floorPlanDrawRoomMode,
+    floorPlanDrawAngleLockMode,
+    setFloorPlanDrawAngleLockMode,
+    floorPlanExactWallLengthInput,
+    setFloorPlanExactWallLengthInput,
+    floorPlanTraceRoomPoints,
+    setFloorPlanTraceRoomPoints,
+    blankGridRoomPreviewPoint,
+    setBlankGridRoomPreviewPoint,
+    floorPlanTraceRoomType,
+    setFloorPlanTraceRoomType,
+    floorPlanTraceOpeningMode,
+    setFloorPlanTraceOpeningMode,
+    floorPlanTraceOpeningPoints,
+    setFloorPlanTraceOpeningPoints,
+    floorPlanTraceOpeningKind,
+    setFloorPlanTraceOpeningKind,
+    floorPlanPdfSourceReady,
+    setFloorPlanPdfSourceReady,
+    floorPlanPdfRenderingPage,
+    setFloorPlanPdfRenderingPage,
+    floorPlanCalibrationSummary,
+    blankGridRoomDrawActive,
+    activeFloorPlanTool,
+    resetFloorPlanCalibration,
+    resetFloorPlanInteraction,
+    activateFloorPlanSelectTool,
+    activateFloorPlanCalibrationMode,
+    activateFloorPlanRoomTrace,
+    activateFloorPlanRoomDrawMode,
+    activateFloorPlanOpeningTrace,
+    clearFloorPlanTraceBuffers,
+  } = useDesignPageFloorPlanWorkflowState();
   const [selectedPlanOverlayId, setSelectedPlanOverlayId] = useState<string | null>(null);
   const [selectedPlanRoomId, setSelectedPlanRoomId] = useState<string | null>(null);
   const [pendingRoomRenameId, setPendingRoomRenameId] = useState<string | null>(null);
@@ -1758,16 +1842,15 @@ function PageContent() {
           : null
       );
       setPlanOpenings(Array.isArray(floorPlan.openings) ? floorPlan.openings : []);
-      setFloorPlanCalibrationMode(false);
-      setFloorPlanCalibrationPoints([]);
-      setFloorPlanCalibrationDistanceInput("");
-      setFloorPlanTraceRoomMode(false);
-      setFloorPlanTraceRoomPoints([]);
-      setBlankGridRoomPreviewPoint(null);
-      setFloorPlanTraceOpeningMode(false);
-      setFloorPlanTraceOpeningPoints([]);
+      resetFloorPlanInteraction();
     },
-    [revokeFloorPlanUnderlayUrl, setPlanOpenings]
+    [
+      resetFloorPlanInteraction,
+      revokeFloorPlanUnderlayUrl,
+      setFloorPlanPdfSourceReady,
+      setFloorPlanUnderlay,
+      setPlanOpenings,
+    ]
   );
 
   const {
@@ -1800,14 +1883,28 @@ function PageContent() {
     setDesignSnapshot,
     isPlanView2D: viewMode === "2d",
   });
+  const activePlanCanvasInteraction =
+    !isDesigner &&
+    !isClientPreview &&
+    viewMode === "2d" &&
+    editorMode === "design" &&
+    (floorPlanCalibrationMode || floorPlanTraceRoomMode || floorPlanTraceOpeningMode);
+  useEffect(() => {
+    if (!activePlanCanvasInteraction) {
+      setPlanFocusPanelRevealed(false);
+    }
+  }, [activePlanCanvasInteraction]);
+  const planCanvasFocusActive = activePlanCanvasInteraction && !planFocusPanelRevealed;
+  const designControlsPanelVisibleForLayout =
+    designControlsPanelVisible && !planCanvasFocusActive;
   const plan2DSafeAreaLeftPx =
-    designControlsPanelVisible && !isClientPreview && viewportSize.width >= 768
+    designControlsPanelVisibleForLayout && !isClientPreview && viewportSize.width >= 768
       ? isDesigner
         ? 460
         : 380
       : 0;
   const plan2DSafeAreaBottomPx =
-    designControlsPanelVisible &&
+    designControlsPanelVisibleForLayout &&
     !isClientPreview &&
     viewportSize.width > 0 &&
     viewportSize.width < 768
@@ -2061,6 +2158,47 @@ function PageContent() {
     roomShoppingSummaries.find((room) => room.roomId === designSnapshot.activeRoomId) ??
     roomShoppingSummaries[0] ??
     null;
+  const activeRoomHealthSummary = useMemo(
+    () =>
+      activeRoom
+        ? buildRoomHealthSummary({
+            room: activeRoom,
+            catalogItems: CATALOG_ITEMS,
+            openings: planOpenings,
+            shoppingNeedsReviewCount: activeRoomShoppingSummary?.needsReviewCount ?? 0,
+          })
+        : null,
+    [activeRoom, activeRoomShoppingSummary?.needsReviewCount, planOpenings]
+  );
+  const reviewActiveRoomHealth = useCallback(() => {
+    if (!activeRoomHealthSummary || activeRoomHealthSummary.level === "ready") return;
+    setDesignPanelOpen(true);
+
+    if (activeRoomHealthSummary.shoppingNeedsReviewCount > 0) {
+      goShop();
+      setShoppingReadinessFilter("all");
+      showRuleToast("Review shopping readiness for this room");
+      return;
+    }
+
+    if (activeRoomHealthSummary.exportIssueCount > 0) {
+      setEditorMode("present");
+      showRuleToast("Review export readiness for this room");
+      return;
+    }
+
+    if (
+      activeRoomHealthSummary.blockedPlacementCount > 0 ||
+      activeRoomHealthSummary.crampedPlacementCount > 0
+    ) {
+      goFurnish();
+      showRuleToast("Review placement issues in this room");
+      return;
+    }
+
+    goPlan();
+    showRuleToast("Review room anchors and plan details");
+  }, [activeRoomHealthSummary, goFurnish, goPlan, goShop, showRuleToast]);
   const activeRoomFloorMaterialId =
     activeRoom?.surfaceFinishes?.floorMaterialId ?? DEFAULT_FLOOR_MATERIAL_ID;
   const activeRoomFloorRotationDeg = normalizeFloorRotationDeg(
@@ -5029,26 +5167,13 @@ function PageContent() {
 
   const handleSelectFloorPlanTool = useCallback(() => {
     setViewMode("2d");
-    setFloorPlanCalibrationMode(false);
-    setFloorPlanCalibrationPoints([]);
-    setFloorPlanTraceRoomMode(false);
-    setFloorPlanTraceRoomPoints([]);
-    setBlankGridRoomPreviewPoint(null);
-    setFloorPlanTraceOpeningMode(false);
-    setFloorPlanTraceOpeningPoints([]);
-  }, []);
+    activateFloorPlanSelectTool();
+  }, [activateFloorPlanSelectTool]);
 
   const handleAddFloorPlanOpeningFromTool = useCallback(
     (kind: RoomOpening2D["kind"]) => {
       setViewMode("2d");
-      setFloorPlanCalibrationMode(false);
-      setFloorPlanCalibrationPoints([]);
-      setFloorPlanTraceRoomMode(false);
-      setFloorPlanTraceRoomPoints([]);
-      setBlankGridRoomPreviewPoint(null);
-      setFloorPlanTraceOpeningMode(true);
-      setFloorPlanTraceOpeningKind(kind);
-      setFloorPlanTraceOpeningPoints([]);
+      activateFloorPlanOpeningTrace(true, kind);
 
       if (!activeRoom) {
         showRuleToast("Add a room first");
@@ -5057,7 +5182,7 @@ function PageContent() {
 
       showRuleToast(kind === "door" ? "Click a wall to place a door" : "Click a wall to place a window");
     },
-    [activeRoom, showRuleToast]
+    [activateFloorPlanOpeningTrace, activeRoom, showRuleToast]
   );
 
   const handleApplyPlanTemplate = useCallback(
@@ -5096,14 +5221,7 @@ function PageContent() {
       floorPlanPdfSourceDataRef.current = null;
       setFloorPlanPdfSourceReady(false);
       setFloorPlanUnderlay(null);
-      setFloorPlanCalibrationMode(false);
-      setFloorPlanCalibrationPoints([]);
-      setFloorPlanCalibrationDistanceInput("");
-      setFloorPlanTraceRoomMode(false);
-      setFloorPlanTraceRoomPoints([]);
-      setBlankGridRoomPreviewPoint(null);
-      setFloorPlanTraceOpeningMode(false);
-      setFloorPlanTraceOpeningPoints([]);
+      resetFloorPlanInteraction();
       setPlanOpenings([]);
       setSelectedPlanOverlayId(null);
       clearAllSelection();
@@ -5124,9 +5242,12 @@ function PageContent() {
     },
     [
       clearAllSelection,
+      resetFloorPlanInteraction,
       revokeFloorPlanUnderlayUrl,
       roomHeight,
       setDesignSnapshot,
+      setFloorPlanPdfSourceReady,
+      setFloorPlanUnderlay,
       setPlanOpenings,
       showRuleToast,
       wallThickness,
@@ -5299,17 +5420,11 @@ function PageContent() {
     (next: EditorViewMode) => {
       setViewMode(next);
       if (next === "3d") {
-        setFloorPlanCalibrationMode(false);
-        setFloorPlanCalibrationPoints([]);
-        setFloorPlanTraceRoomMode(false);
-        setFloorPlanTraceRoomPoints([]);
-        setBlankGridRoomPreviewPoint(null);
-        setFloorPlanTraceOpeningMode(false);
-        setFloorPlanTraceOpeningPoints([]);
+        resetFloorPlanInteraction({ resetCalibrationDistance: false });
         transitionToCameraView(hasWholeHousePlan ? getWholeHome3DView() : DEFAULT_EDITOR_CAMERA_VIEW, 420);
       }
     },
-    [getWholeHome3DView, hasWholeHousePlan, transitionToCameraView]
+    [getWholeHome3DView, hasWholeHousePlan, resetFloorPlanInteraction, transitionToCameraView]
   );
 
   const applyPlan2DCameraView = useCallback(
@@ -5688,14 +5803,7 @@ function PageContent() {
         rotationDeg: 0,
         locked: true,
       });
-      setFloorPlanCalibrationMode(false);
-      setFloorPlanCalibrationPoints([]);
-      setFloorPlanCalibrationDistanceInput("");
-      setFloorPlanTraceRoomMode(false);
-      setFloorPlanTraceRoomPoints([]);
-      setBlankGridRoomPreviewPoint(null);
-      setFloorPlanTraceOpeningMode(false);
-      setFloorPlanTraceOpeningPoints([]);
+      resetFloorPlanInteraction();
       setViewMode("2d");
       track("floor_plan_underlay_uploaded", {
         mimeType,
@@ -5705,18 +5813,26 @@ function PageContent() {
         hasImagePreview: renderedMimeType.startsWith("image/"),
       });
     },
-    [planViewDepth, planViewWidth, revokeFloorPlanUnderlayUrl, showRuleToast]
+    [
+      planViewDepth,
+      planViewWidth,
+      resetFloorPlanInteraction,
+      revokeFloorPlanUnderlayUrl,
+      setFloorPlanPdfSourceReady,
+      setFloorPlanUnderlay,
+      showRuleToast,
+    ]
   );
 
   const handleFloorPlanUnderlayOpacityChange = useCallback((opacity: number) => {
     setFloorPlanUnderlay((prev) =>
       prev ? { ...prev, opacity: Math.max(0.15, Math.min(0.85, opacity)) } : prev
     );
-  }, []);
+  }, [setFloorPlanUnderlay]);
 
   const handleFloorPlanUnderlayLockChange = useCallback((locked: boolean) => {
     setFloorPlanUnderlay((prev) => (prev ? { ...prev, locked } : prev));
-  }, []);
+  }, [setFloorPlanUnderlay]);
 
   const handleFloorPlanPdfPageChange = useCallback(
     async (pageNumber: number) => {
@@ -5759,14 +5875,7 @@ function PageContent() {
               }
             : prev
         );
-        setFloorPlanCalibrationMode(false);
-        setFloorPlanCalibrationPoints([]);
-        setFloorPlanCalibrationDistanceInput("");
-        setFloorPlanTraceRoomMode(false);
-        setFloorPlanTraceRoomPoints([]);
-        setBlankGridRoomPreviewPoint(null);
-        setFloorPlanTraceOpeningMode(false);
-        setFloorPlanTraceOpeningPoints([]);
+        resetFloorPlanInteraction();
         showRuleToast(`PDF page ${nextPage} rendered`);
         track("floor_plan_pdf_page_rendered", {
           page: nextPage,
@@ -5778,20 +5887,20 @@ function PageContent() {
         setFloorPlanPdfRenderingPage(null);
       }
     },
-    [floorPlanUnderlay, planViewDepth, planViewWidth, showRuleToast]
+    [
+      floorPlanUnderlay,
+      planViewDepth,
+      planViewWidth,
+      resetFloorPlanInteraction,
+      setFloorPlanPdfRenderingPage,
+      setFloorPlanUnderlay,
+      showRuleToast,
+    ]
   );
 
   const handleFloorPlanCalibrationModeChange = useCallback((enabled: boolean) => {
-    setFloorPlanCalibrationMode(enabled);
-    if (enabled) {
-      setFloorPlanCalibrationPoints([]);
-      setFloorPlanTraceRoomMode(false);
-      setFloorPlanTraceRoomPoints([]);
-      setBlankGridRoomPreviewPoint(null);
-      setFloorPlanTraceOpeningMode(false);
-      setFloorPlanTraceOpeningPoints([]);
-    }
-  }, []);
+    activateFloorPlanCalibrationMode(enabled);
+  }, [activateFloorPlanCalibrationMode]);
 
   const handleFloorPlanCalibrationPoint = useCallback((point: FloorPlanPoint) => {
     setFloorPlanCalibrationPoints((prev) => {
@@ -5800,16 +5909,11 @@ function PageContent() {
       }
       return [...prev, point];
     });
-  }, []);
+  }, [setFloorPlanCalibrationPoints]);
 
   const handleResetFloorPlanCalibrationPoints = useCallback(() => {
     setFloorPlanCalibrationPoints([]);
-  }, []);
-
-  const floorPlanCalibrationSummary = useMemo(() => {
-    if (!floorPlanUnderlay?.calibration) return null;
-    return `${floorPlanUnderlay.calibration.referenceLengthMeters}m set (${floorPlanUnderlay.widthMeters} x ${floorPlanUnderlay.depthMeters}m)`;
-  }, [floorPlanUnderlay]);
+  }, [setFloorPlanCalibrationPoints]);
 
   const handleApplyFloorPlanCalibration = useCallback(() => {
     if (!floorPlanUnderlay) return;
@@ -5831,11 +5935,8 @@ function PageContent() {
     }
 
     setFloorPlanUnderlay(nextUnderlay);
-    setFloorPlanCalibrationPoints([]);
-    setFloorPlanCalibrationMode(false);
-    setFloorPlanTraceRoomPoints([]);
-    setBlankGridRoomPreviewPoint(null);
-    setFloorPlanTraceOpeningPoints([]);
+    resetFloorPlanCalibration(false);
+    clearFloorPlanTraceBuffers();
     track("floor_plan_underlay_calibrated", {
       referenceLengthMeters: nextUnderlay.calibration?.referenceLengthMeters,
       pixelsPerMeter: nextUnderlay.calibration?.pixelsPerMeter,
@@ -5844,222 +5945,118 @@ function PageContent() {
     floorPlanCalibrationDistanceInput,
     floorPlanCalibrationPoints,
     floorPlanUnderlay,
+    clearFloorPlanTraceBuffers,
+    resetFloorPlanCalibration,
+    setFloorPlanUnderlay,
     showRuleToast,
   ]);
 
-  const applyTracedRoomRectangle = useCallback(
-    (bounds: TracedRoomRectangle) => {
-      const canReplaceStarterRoom =
-        designSnapshot.rooms.length === 1 &&
-        shouldReplaceStarterRoomWithDrawnRoom({
-          activeRoom,
-          rooms: housePlan2D.rooms,
-          x: bounds.x,
-          z: bounds.z,
-          w: bounds.width,
-          d: bounds.depth,
-        });
-      const overlapRoomId = canReplaceStarterRoom && activeRoom ? activeRoom.id : "__new_traced_room__";
+  const emitConsumerPlanCompletion = useCallback((kind: "room" | "opening") => {
+    if (!planGuidedActionsEnabled) return;
+    setConsumerPlanCompletionSignal((current) => ({
+      id: (current?.id ?? 0) + 1,
+      kind,
+    }));
+  }, [planGuidedActionsEnabled]);
 
-      if (
-        doesHouseRoomOverlap(
-          overlapRoomId,
-          bounds.x,
-          bounds.z,
-          bounds.width,
-          bounds.depth,
-          housePlan2D.rooms
-        )
-      ) {
-        showRuleToast("Traced room overlaps another room");
-        return false;
-      }
+  const handleConsumerPlanCompletionHandled = useCallback((id: number) => {
+    setConsumerPlanCompletionSignal((current) =>
+      current?.id === id ? null : current
+    );
+  }, []);
 
-      if (canReplaceStarterRoom && activeRoom) {
-        setDesignSnapshot((prev) => {
-          const target = prev.rooms.find((room) => room.id === activeRoom.id);
-          if (!target) return prev;
+  useEffect(() => {
+    if (planGuidedActionsEnabled) return;
+    setConsumerPlanCompletionSignal(null);
+  }, [planGuidedActionsEnabled]);
 
-          return updateRoom(prev, {
-            ...target,
-            name: getRoomTypeLabel(floorPlanTraceRoomType),
-            roomType: floorPlanTraceRoomType,
-            geometry: {
-              ...target.geometry,
-              width: bounds.width,
-              depth: bounds.depth,
-              wallThickness:
-                typeof target.geometry.wallThickness === "number" &&
-                Number.isFinite(target.geometry.wallThickness)
-                  ? target.geometry.wallThickness
-                  : ROOM_DIMENSION_DEFAULTS.wallThickness,
-            },
-            planPosition: {
-              x: bounds.x,
-              z: bounds.z,
-            },
-            planShape: "rectangle",
-          });
-        });
-      } else {
-        handleAddRoom({
-          roomType: floorPlanTraceRoomType,
-          shape: "rectangle",
-          width: bounds.width,
-          depth: bounds.depth,
-          planPosition: {
-            x: bounds.x,
-            z: bounds.z,
-          },
-        });
-      }
-
-      showRuleToast("Room drawn");
-      track("floor_plan_room_drawn", {
-        roomType: floorPlanTraceRoomType,
-        width: bounds.width,
-        depth: bounds.depth,
-        replacedStarterRoom: canReplaceStarterRoom,
-      });
-      return true;
+  const choosePlanGuidedActionsMode = useCallback(
+    (enabled: boolean) => {
+      setPlanGuidedActionsEnabled(enabled);
+      setPlanGuidedActionsChoiceSeen(true);
     },
-    [
-      activeRoom,
-      designSnapshot.rooms.length,
-      floorPlanTraceRoomType,
-      handleAddRoom,
-      housePlan2D.rooms,
-      setDesignSnapshot,
-      showRuleToast,
-    ]
+    [setPlanGuidedActionsChoiceSeen, setPlanGuidedActionsEnabled]
   );
 
-  const applyResolvedWallDrawRoom = useCallback(
-    (resolvedRoom: ResolvedWallDrawRoom) => {
-      if (resolvedRoom.shape === "rectangle") {
-        return applyTracedRoomRectangle(resolvedRoom.bounds);
+  const {
+    applyResolvedWallDrawRoom,
+    applyTracedRoomRectangle,
+  } = useFloorPlanRoomCreation({
+    activeRoom,
+    floorPlanTraceRoomType,
+    handleAddRoom,
+    housePlanRooms: housePlan2D.rooms,
+    roomCount: designSnapshot.rooms.length,
+    setDesignSnapshot,
+    showRuleToast,
+  });
+
+  const completeConsumerRoomDraw = useCallback(
+    (applied: boolean) => {
+      if (applied && !isDesigner) {
+        setFloorPlanTraceRoomMode(false);
+        setPlanFocusPanelRevealed(false);
+        setDesignPanelOpen(true);
+        emitConsumerPlanCompletion("room");
       }
-
-      const { bounds } = resolvedRoom;
-      const canReplaceStarterRoom =
-        designSnapshot.rooms.length === 1 &&
-        shouldReplaceStarterRoomWithDrawnRoom({
-          activeRoom,
-          rooms: housePlan2D.rooms,
-          x: bounds.x,
-          z: bounds.z,
-          w: bounds.width,
-          d: bounds.depth,
-        });
-      const overlapRoomId = canReplaceStarterRoom && activeRoom ? activeRoom.id : "__new_wall_room__";
-
-      if (
-        doesHouseRoomOverlap(
-          overlapRoomId,
-          bounds.x,
-          bounds.z,
-          bounds.width,
-          bounds.depth,
-          housePlan2D.rooms
-        )
-      ) {
-        showRuleToast("Traced room overlaps another room");
-        return false;
-      }
-
-      if (canReplaceStarterRoom && activeRoom) {
-        setDesignSnapshot((prev) => {
-          const target = prev.rooms.find((room) => room.id === activeRoom.id);
-          if (!target) return prev;
-
-          return updateRoom(prev, {
-            ...target,
-            name: getRoomTypeLabel(floorPlanTraceRoomType),
-            roomType: floorPlanTraceRoomType,
-            geometry: {
-              ...target.geometry,
-              width: bounds.width,
-              depth: bounds.depth,
-              wallThickness:
-                typeof target.geometry.wallThickness === "number" &&
-                Number.isFinite(target.geometry.wallThickness)
-                  ? target.geometry.wallThickness
-                  : ROOM_DIMENSION_DEFAULTS.wallThickness,
-            },
-            planPosition: {
-              x: bounds.x,
-              z: bounds.z,
-            },
-            planShape: resolvedRoom.shape,
-            planPolygon: resolvedRoom.planPolygon,
-          });
-        });
-      } else {
-        handleAddRoom({
-          roomType: floorPlanTraceRoomType,
-          shape: resolvedRoom.shape,
-          width: bounds.width,
-          depth: bounds.depth,
-          planPosition: {
-            x: bounds.x,
-            z: bounds.z,
-          },
-          planPolygon: resolvedRoom.planPolygon,
-        });
-      }
-
-      showRuleToast("Custom room drawn");
-      track("floor_plan_room_drawn", {
-        roomType: floorPlanTraceRoomType,
-        width: bounds.width,
-        depth: bounds.depth,
-        shape: resolvedRoom.shape,
-        replacedStarterRoom: canReplaceStarterRoom,
-      });
-      return true;
+      return applied;
     },
-    [
-      activeRoom,
-      applyTracedRoomRectangle,
-      designSnapshot.rooms.length,
-      floorPlanTraceRoomType,
-      handleAddRoom,
-      housePlan2D.rooms,
-      setDesignSnapshot,
-      showRuleToast,
-    ]
+    [emitConsumerPlanCompletion, isDesigner, setFloorPlanTraceRoomMode]
+  );
+
+  const applyResolvedWallDrawRoomWithCompletion = useCallback(
+    (...args: Parameters<typeof applyResolvedWallDrawRoom>) =>
+      completeConsumerRoomDraw(applyResolvedWallDrawRoom(...args)),
+    [applyResolvedWallDrawRoom, completeConsumerRoomDraw]
+  );
+
+  const applyTracedRoomRectangleWithCompletion = useCallback(
+    (...args: Parameters<typeof applyTracedRoomRectangle>) =>
+      completeConsumerRoomDraw(applyTracedRoomRectangle(...args)),
+    [applyTracedRoomRectangle, completeConsumerRoomDraw]
   );
 
   const handleFloorPlanTraceRoomModeChange = useCallback((enabled: boolean) => {
-    setFloorPlanTraceRoomMode(enabled);
+    activateFloorPlanRoomTrace(enabled);
     if (enabled) {
-      setFloorPlanCalibrationMode(false);
-      setFloorPlanCalibrationPoints([]);
-      setFloorPlanTraceRoomPoints([]);
-      setBlankGridRoomPreviewPoint(null);
-      setFloorPlanTraceOpeningMode(false);
-      setFloorPlanTraceOpeningPoints([]);
       setViewMode("2d");
-    } else {
-      setFloorPlanTraceRoomPoints([]);
-      setBlankGridRoomPreviewPoint(null);
     }
-  }, []);
+  }, [activateFloorPlanRoomTrace]);
 
   const handleFloorPlanDrawRoomModeChange = useCallback(
     (mode: FloorPlanDrawRoomMode) => {
-      setFloorPlanDrawRoomMode(mode);
-      setFloorPlanTraceRoomMode(true);
-      setFloorPlanCalibrationMode(false);
-      setFloorPlanCalibrationPoints([]);
-      setFloorPlanTraceRoomPoints([]);
-      setBlankGridRoomPreviewPoint(null);
-      setFloorPlanTraceOpeningMode(false);
-      setFloorPlanTraceOpeningPoints([]);
+      activateFloorPlanRoomDrawMode(mode);
       setViewMode("2d");
     },
-    []
+    [activateFloorPlanRoomDrawMode]
   );
+
+  const {
+    handleApplyFloorPlanExactWallLength,
+    handleBlankGridRoomDrawDrag,
+    handleBlankGridRoomDrawPoint,
+    handleBlankGridRoomDrawPreviewPoint,
+    handleCommitWallDrawSegmentLength2D,
+    handleFloorPlanTraceRoomPoint,
+    handleResetFloorPlanTraceRoomPoints,
+    handleUndoFloorPlanTraceRoomPoint,
+  } = useFloorPlanRoomDrawing({
+    blankGridRoomDrawActive,
+    blankGridRoomPreviewPoint,
+    floorPlanDrawAngleLockMode,
+    floorPlanDrawRoomMode,
+    floorPlanExactWallLengthInput,
+    floorPlanTraceRoomMode,
+    floorPlanTraceRoomPoints,
+    floorPlanUnderlay,
+    housePlanRooms: housePlan2D.rooms,
+    isDesigner,
+    setBlankGridRoomPreviewPoint,
+    setFloorPlanTraceRoomPoints,
+    applyResolvedWallDrawRoom: applyResolvedWallDrawRoomWithCompletion,
+    applyTracedRoomRectangle: applyTracedRoomRectangleWithCompletion,
+    showRuleToast,
+  });
 
   const cancelActiveFloorPlanDraw = useCallback(() => {
     const openingDecision = resolveFloorPlanOpeningCancelDecision({
@@ -6090,14 +6087,12 @@ function PageContent() {
     floorPlanTraceOpeningPoints.length,
     floorPlanTraceRoomMode,
     floorPlanTraceRoomPoints.length,
+    setBlankGridRoomPreviewPoint,
+    setFloorPlanTraceOpeningMode,
+    setFloorPlanTraceOpeningPoints,
+    setFloorPlanTraceRoomMode,
+    setFloorPlanTraceRoomPoints,
   ]);
-
-  const handleUndoFloorPlanTraceRoomPoint = useCallback(() => {
-    if (floorPlanDrawRoomMode !== "straight_wall" || floorPlanTraceRoomPoints.length === 0) return false;
-    setFloorPlanTraceRoomPoints((points) => points.slice(0, -1));
-    setBlankGridRoomPreviewPoint(null);
-    return true;
-  }, [floorPlanDrawRoomMode, floorPlanTraceRoomPoints.length]);
 
   useEffect(() => {
     if (isClientPreview || editorMode === "present" || viewMode !== "2d") return;
@@ -6143,7 +6138,7 @@ function PageContent() {
         handleSelectFloorPlanTool();
       } else if (key === "r") {
         event.preventDefault();
-        handleFloorPlanTraceRoomModeChange(true);
+        handleFloorPlanDrawRoomModeChange("rectangle_wall");
       } else if (key === "d" && !floorPlanTraceRoomMode) {
         event.preventDefault();
         handleAddFloorPlanOpeningFromTool("door");
@@ -6181,142 +6176,30 @@ function PageContent() {
     viewMode,
   ]);
 
-  const handleResetFloorPlanTraceRoomPoints = useCallback(() => {
-    setFloorPlanTraceRoomPoints([]);
-    setBlankGridRoomPreviewPoint(null);
-  }, []);
-
-  const handleFloorPlanTraceRoomPoint = useCallback(
-    (point: FloorPlanPoint) => {
-      if (floorPlanDrawRoomMode === "straight_wall") {
-        const snappedPoint = snapFloorPlanPointForWallDraw(
-          {
-            x: roundPlanCoordinate(point.x),
-            z: roundPlanCoordinate(point.z),
-          },
-          {
-            rooms: housePlan2D.rooms,
-            previousPoint:
-              floorPlanTraceRoomPoints.length > 0
-                ? floorPlanTraceRoomPoints[floorPlanTraceRoomPoints.length - 1]
-                : null,
-            firstPoint: floorPlanTraceRoomPoints.length > 0 ? floorPlanTraceRoomPoints[0] : null,
-            pointCount: floorPlanTraceRoomPoints.length,
-            angleLockMode: isDesigner ? floorPlanDrawAngleLockMode : "free",
-          }
-        );
-        const lastPoint = floorPlanTraceRoomPoints[floorPlanTraceRoomPoints.length - 1];
-
-        if (
-          lastPoint &&
-          Math.abs(lastPoint.x - snappedPoint.x) <= 0.001 &&
-          Math.abs(lastPoint.z - snappedPoint.z) <= 0.001
-        ) {
-          setBlankGridRoomPreviewPoint(null);
-          return;
-        }
-
-        const closingPath = isClosingWallDrawPoint(
-          snappedPoint,
-          floorPlanTraceRoomPoints[0],
-          floorPlanTraceRoomPoints.length
-        );
-
-        if (closingPath) {
-          const resolvedRoom = resolveClosedWallDrawRoom([
-            ...floorPlanTraceRoomPoints,
-            snappedPoint,
-          ]);
-          if (!resolvedRoom) {
-            setFloorPlanTraceRoomPoints([]);
-            setBlankGridRoomPreviewPoint(null);
-            showRuleToast("Close straight wall segments into a valid room.");
-            return;
-          }
-
-          if (applyResolvedWallDrawRoom(resolvedRoom)) {
-            setFloorPlanTraceRoomPoints([]);
-            setBlankGridRoomPreviewPoint(null);
-          }
-          return;
-        }
-
-        setFloorPlanTraceRoomPoints([...floorPlanTraceRoomPoints, snappedPoint]);
-        setBlankGridRoomPreviewPoint(null);
-        return;
-      }
-
-      const snappedPoint = floorPlanUnderlay
-        ? snapFloorPlanPointToGrid(point)
-        : snapFloorPlanPointForRoomDraw(point, { rooms: housePlan2D.rooms });
-      const nextPoints =
-        floorPlanTraceRoomPoints.length >= 2
-          ? [snappedPoint]
-          : [...floorPlanTraceRoomPoints, snappedPoint];
-
-      setFloorPlanTraceRoomPoints(nextPoints);
-      if (nextPoints.length !== 2) return;
-
-      if (floorPlanDrawRoomMode === "arc_wall") {
-        const arcRoom = resolveArcWallDrawPreview(nextPoints[0], nextPoints[1], {
-          rooms: housePlan2D.rooms,
-        }).resolvedRoom;
-        if (!arcRoom) {
-          setFloorPlanTraceRoomPoints([]);
-          setBlankGridRoomPreviewPoint(null);
-          showRuleToast("Draw a larger arc wall");
-          return;
-        }
-
-        if (applyResolvedWallDrawRoom(arcRoom)) {
-          setFloorPlanTraceRoomPoints([]);
-          setBlankGridRoomPreviewPoint(null);
-        }
-        return;
-      }
-
-      const bounds = resolveTracedRoomRectangle([nextPoints[0], nextPoints[1]]);
-      if (!bounds) {
-        setFloorPlanTraceRoomPoints([]);
-        setBlankGridRoomPreviewPoint(null);
-        showRuleToast("Draw a larger room area");
-        return;
-      }
-
-      if (applyTracedRoomRectangle(bounds)) {
-        setFloorPlanTraceRoomPoints([]);
-        setBlankGridRoomPreviewPoint(null);
-      }
-    },
-    [
-      applyTracedRoomRectangle,
-      applyResolvedWallDrawRoom,
-      floorPlanDrawRoomMode,
-      floorPlanDrawAngleLockMode,
-      floorPlanTraceRoomPoints,
-      floorPlanUnderlay,
-      housePlan2D.rooms,
-      isDesigner,
-      showRuleToast,
-    ]
-  );
-
   const handleFloorPlanTraceOpeningModeChange = useCallback((enabled: boolean) => {
-    setFloorPlanTraceOpeningMode(enabled);
+    activateFloorPlanOpeningTrace(enabled);
     if (enabled) {
-      setFloorPlanCalibrationMode(false);
-      setFloorPlanCalibrationPoints([]);
-      setFloorPlanTraceRoomMode(false);
-      setFloorPlanTraceRoomPoints([]);
-      setBlankGridRoomPreviewPoint(null);
-      setFloorPlanTraceOpeningPoints([]);
       setViewMode("2d");
     }
-  }, []);
+  }, [activateFloorPlanOpeningTrace]);
 
   const handleResetFloorPlanTraceOpeningPoints = useCallback(() => {
     setFloorPlanTraceOpeningPoints([]);
-  }, []);
+  }, [setFloorPlanTraceOpeningPoints]);
+
+  const completeConsumerOpeningPlacement = useCallback(() => {
+    if (isDesigner) return;
+    setFloorPlanTraceOpeningMode(false);
+    setFloorPlanTraceOpeningPoints([]);
+    setPlanFocusPanelRevealed(false);
+    setDesignPanelOpen(true);
+    emitConsumerPlanCompletion("opening");
+  }, [
+    emitConsumerPlanCompletion,
+    isDesigner,
+    setFloorPlanTraceOpeningMode,
+    setFloorPlanTraceOpeningPoints,
+  ]);
 
   const handleFloorPlanTraceOpeningPoint = useCallback(
     (point: FloorPlanPoint) => {
@@ -6361,6 +6244,7 @@ function PageContent() {
       ]);
       handleSelectPlanOverlay(id);
       setFloorPlanTraceOpeningPoints([]);
+      completeConsumerOpeningPlacement();
       showRuleToast(opening.kind === "door" ? "Door traced" : "Window traced");
       track("floor_plan_opening_traced", {
         kind: opening.kind,
@@ -6372,9 +6256,11 @@ function PageContent() {
     [
       floorPlanTraceOpeningKind,
       floorPlanTraceOpeningPoints,
+      completeConsumerOpeningPlacement,
       handleSelectPlanOverlay,
       housePlan2D.rooms,
       planOpenings,
+      setFloorPlanTraceOpeningPoints,
       setPlanOpenings,
       showRuleToast,
     ]
@@ -6405,6 +6291,7 @@ function PageContent() {
         },
       ]);
       handleSelectPlanOverlay(id);
+      completeConsumerOpeningPlacement();
       showRuleToast(opening.kind === "door" ? "Door placed" : "Window placed");
       track("floor_plan_opening_placed", {
         kind: opening.kind,
@@ -6417,6 +6304,7 @@ function PageContent() {
       floorPlanTraceOpeningKind,
       floorPlanTraceOpeningMode,
       floorPlanUnderlay,
+      completeConsumerOpeningPlacement,
       handleSelectPlanOverlay,
       housePlan2D.rooms,
       planOpenings,
@@ -6430,15 +6318,13 @@ function PageContent() {
     floorPlanPdfSourceDataRef.current = null;
     setFloorPlanPdfSourceReady(false);
     setFloorPlanUnderlay(null);
-    setFloorPlanCalibrationMode(false);
-    setFloorPlanCalibrationPoints([]);
-    setFloorPlanCalibrationDistanceInput("");
-    setFloorPlanTraceRoomMode(false);
-    setFloorPlanTraceRoomPoints([]);
-    setBlankGridRoomPreviewPoint(null);
-    setFloorPlanTraceOpeningMode(false);
-    setFloorPlanTraceOpeningPoints([]);
-  }, [revokeFloorPlanUnderlayUrl]);
+    resetFloorPlanInteraction();
+  }, [
+    resetFloorPlanInteraction,
+    revokeFloorPlanUnderlayUrl,
+    setFloorPlanPdfSourceReady,
+    setFloorPlanUnderlay,
+  ]);
 
   useEffect(() => {
     if (!sceneReady) return;
@@ -10390,6 +10276,25 @@ function PageContent() {
     session?.user,
   ]);
 
+  const firstRunActivationState = useMemo(
+    () =>
+      buildFirstRunActivationState({
+        templateChosen: !showBetaStart || designSnapshot.rooms.length > 1 || items.length > 0,
+        itemCount: items.length,
+        saveState:
+          saveStatus.kind === "saved"
+            ? "saved"
+            : saveStatus.kind === "saving"
+              ? "saving"
+              : saveStatus.kind === "failed"
+                ? "failed"
+                : "idle",
+        shareToken,
+        exportOpened: editorMode === "present",
+      }),
+    [designSnapshot.rooms.length, editorMode, items.length, saveStatus.kind, shareToken, showBetaStart]
+  );
+
   const retrySaveStatus = async () => {
     if (lastCloudSaveError && session?.user) {
       const savedId = await saveDesignToCloud();
@@ -11118,13 +11023,6 @@ function PageContent() {
 
   const visibleConstraints = pickTopConstraints(constraintResults);
   const lightConfig = LIGHTING_PRESETS[lightingPreset];
-  const blankGridRoomDrawActive = floorPlanTraceRoomMode && !floorPlanUnderlay;
-  const activeFloorPlanTool =
-    floorPlanTraceRoomMode
-      ? "draw_room"
-      : floorPlanTraceOpeningMode
-        ? floorPlanTraceOpeningKind
-        : "select";
   const effectivePlanLayers = simplePlanControls ? SIMPLE_PLAN_LAYERS : planLayers;
   const effectivePlanTheme = simplePlanControls ? "consumer" : planTheme;
   const planCanvasCursor =
@@ -11135,324 +11033,199 @@ function PageContent() {
         : activeFloorPlanTool === "draw_room"
           ? "crosshair"
           : "copy";
-  const snapBlankGridRoomDrawPoint = useCallback(
-    (point: FloorPlanPoint, activePoints: FloorPlanPoint[] = floorPlanTraceRoomPoints): FloorPlanPoint => {
-      const roundedPoint = {
-        x: roundPlanCoordinate(point.x),
-        z: roundPlanCoordinate(point.z),
-      };
+  const planCanvasGuidance = useMemo(
+    () => {
+      if (!planGuidedActionsEnabled) return null;
 
-      const snappedPoint = snapFloorPlanPointForRoomDraw(roundedPoint, {
-        rooms: housePlan2D.rooms,
+      return resolvePlanCanvasGuidance({
+        viewMode,
+        editorMode,
+        isClientPreview,
+        isDesigner,
+        planStartMode: guidedPlanStartMode,
+        floorPlanUnderlay,
+        floorPlanCalibrationMode,
+        floorPlanCalibrationPointCount: floorPlanCalibrationPoints.length,
+        floorPlanTraceRoomMode,
+        floorPlanDrawRoomMode,
+        floorPlanTraceRoomPointCount: floorPlanTraceRoomPoints.length,
+        floorPlanTraceOpeningMode,
+        floorPlanTraceOpeningKind,
+        floorPlanTraceOpeningPointCount: floorPlanTraceOpeningPoints.length,
+        hasRooms: housePlan2D.rooms.length > 0,
+        hasOpenings: planOpenings.length > 0,
+        hasConnectionBlockers: roomConnectionChecklistItems.some(
+          (item) => item.status === "needs_doorway"
+        ),
+        hasFurniture: items.length > 0,
       });
-
-      if (floorPlanDrawRoomMode === "rectangle_wall") {
-        const firstPoint = activePoints[0] ?? null;
-        const gridSnappedPoint = snapFloorPlanPointToGrid(roundedPoint);
-        if (
-          firstPoint &&
-          !resolveTracedRoomRectangle([firstPoint, snappedPoint]) &&
-          resolveTracedRoomRectangle([firstPoint, gridSnappedPoint])
-        ) {
-          return gridSnappedPoint;
-        }
-      }
-
-      return snappedPoint;
-    },
-    [floorPlanDrawRoomMode, floorPlanTraceRoomPoints, housePlan2D.rooms]
-  );
-  const snapBlankGridWallDrawPoint = useCallback(
-    (point: FloorPlanPoint, points: FloorPlanPoint[]): FloorPlanPoint => {
-      return snapFloorPlanPointForWallDraw(
-        {
-          x: roundPlanCoordinate(point.x),
-          z: roundPlanCoordinate(point.z),
-        },
-        {
-          rooms: housePlan2D.rooms,
-          previousPoint: points.length > 0 ? points[points.length - 1] : null,
-          firstPoint: points.length > 0 ? points[0] : null,
-          pointCount: points.length,
-          angleLockMode: isDesigner ? floorPlanDrawAngleLockMode : "free",
-        }
-      );
-    },
-    [floorPlanDrawAngleLockMode, housePlan2D.rooms, isDesigner]
-  );
-  const handleBlankGridRoomDrawPoint = useCallback((point: FloorPlanPoint) => {
-    if (!blankGridRoomDrawActive) return;
-
-    if (floorPlanDrawRoomMode !== "straight_wall") {
-      const snappedPoint = snapBlankGridRoomDrawPoint(point, floorPlanTraceRoomPoints);
-      const nextPoints =
-        floorPlanTraceRoomPoints.length >= 2
-          ? [snappedPoint]
-          : [...floorPlanTraceRoomPoints, snappedPoint];
-
-      setFloorPlanTraceRoomPoints(nextPoints);
-      setBlankGridRoomPreviewPoint(null);
-      if (nextPoints.length !== 2) return;
-
-      if (floorPlanDrawRoomMode === "arc_wall") {
-        const arcRoom = resolveArcWallDrawPreview(nextPoints[0], nextPoints[1]).resolvedRoom;
-        if (!arcRoom) {
-          setFloorPlanTraceRoomPoints([]);
-          setBlankGridRoomPreviewPoint(null);
-          showRuleToast("Draw a larger arc wall");
-          return;
-        }
-
-        if (applyResolvedWallDrawRoom(arcRoom)) {
-          setFloorPlanTraceRoomPoints([]);
-          setBlankGridRoomPreviewPoint(null);
-        }
-        return;
-      }
-
-      const bounds = resolveTracedRoomRectangle([nextPoints[0], nextPoints[1]]);
-      if (!bounds) {
-        setFloorPlanTraceRoomPoints([]);
-        setBlankGridRoomPreviewPoint(null);
-        showRuleToast("Draw a larger room area");
-        return;
-      }
-
-      if (applyTracedRoomRectangle(bounds)) {
-        setFloorPlanTraceRoomPoints([]);
-        setBlankGridRoomPreviewPoint(null);
-      }
-      return;
-    }
-
-    const snappedPoint = snapBlankGridWallDrawPoint(point, floorPlanTraceRoomPoints);
-    const lastPoint = floorPlanTraceRoomPoints[floorPlanTraceRoomPoints.length - 1];
-
-    if (
-      lastPoint &&
-      Math.abs(lastPoint.x - snappedPoint.x) <= 0.001 &&
-      Math.abs(lastPoint.z - snappedPoint.z) <= 0.001
-    ) {
-      setBlankGridRoomPreviewPoint(null);
-      return;
-    }
-
-    const closingPath = isClosingWallDrawPoint(
-      snappedPoint,
-      floorPlanTraceRoomPoints[0],
-      floorPlanTraceRoomPoints.length
-    );
-
-    if (closingPath) {
-      const resolvedRoom = resolveClosedWallDrawRoom([
-        ...floorPlanTraceRoomPoints,
-        snappedPoint,
-      ]);
-      if (!resolvedRoom) {
-        setFloorPlanTraceRoomPoints([]);
-        setBlankGridRoomPreviewPoint(null);
-        showRuleToast("Close straight wall segments into a valid room.");
-        return;
-      }
-
-      if (applyResolvedWallDrawRoom(resolvedRoom)) {
-        setFloorPlanTraceRoomPoints([]);
-        setBlankGridRoomPreviewPoint(null);
-      }
-      return;
-    }
-
-    setFloorPlanTraceRoomPoints([...floorPlanTraceRoomPoints, snappedPoint]);
-    setBlankGridRoomPreviewPoint(null);
-  }, [
-    applyResolvedWallDrawRoom,
-    applyTracedRoomRectangle,
-    blankGridRoomDrawActive,
-    floorPlanDrawRoomMode,
-    floorPlanTraceRoomPoints,
-    showRuleToast,
-    snapBlankGridRoomDrawPoint,
-    snapBlankGridWallDrawPoint,
-  ]);
-  const handleBlankGridRoomDrawPreviewPoint = useCallback((point: FloorPlanPoint | null) => {
-    if (!blankGridRoomDrawActive || floorPlanTraceRoomPoints.length < 1 || !point) {
-      setBlankGridRoomPreviewPoint(null);
-      return;
-    }
-    if (floorPlanDrawRoomMode !== "straight_wall") {
-      setBlankGridRoomPreviewPoint(snapBlankGridRoomDrawPoint(point));
-      return;
-    }
-    setBlankGridRoomPreviewPoint(
-      snapBlankGridWallDrawPoint(point, floorPlanTraceRoomPoints)
-    );
-  }, [
-    blankGridRoomDrawActive,
-    floorPlanDrawRoomMode,
-    floorPlanTraceRoomPoints,
-    snapBlankGridRoomDrawPoint,
-    snapBlankGridWallDrawPoint,
-  ]);
-  const handleApplyFloorPlanExactWallLength = useCallback(() => {
-    if (!floorPlanTraceRoomMode || floorPlanDrawRoomMode !== "straight_wall") return;
-
-    const previousPoint = floorPlanTraceRoomPoints[floorPlanTraceRoomPoints.length - 1];
-    if (!previousPoint) {
-      showRuleToast("Pick a wall start point first.");
-      return;
-    }
-
-    const lengthMm = Number(floorPlanExactWallLengthInput.trim());
-    if (!Number.isFinite(lengthMm) || lengthMm <= 0) {
-      showRuleToast("Enter a valid wall length.");
-      return;
-    }
-
-    const nextPoint = resolveExactWallDrawPoint({
-      previousPoint,
-      previousSegmentStart:
-        floorPlanTraceRoomPoints.length >= 2
-          ? floorPlanTraceRoomPoints[floorPlanTraceRoomPoints.length - 2]
-          : null,
-      previewPoint: blankGridRoomPreviewPoint,
-      lengthMeters: lengthMm / 1000,
-      angleLockMode: isDesigner ? floorPlanDrawAngleLockMode : "free",
-    });
-    if (!nextPoint) {
-      showRuleToast("Enter a valid wall length.");
-      return;
-    }
-
-    const closingPath = isClosingWallDrawPoint(
-      nextPoint,
-      floorPlanTraceRoomPoints[0],
-      floorPlanTraceRoomPoints.length
-    );
-    if (closingPath) {
-      const resolvedRoom = resolveClosedWallDrawRoom([
-        ...floorPlanTraceRoomPoints,
-        nextPoint,
-      ]);
-      if (!resolvedRoom) {
-        setFloorPlanTraceRoomPoints([]);
-        setBlankGridRoomPreviewPoint(null);
-        showRuleToast("Close straight wall segments into a valid room.");
-        return;
-      }
-
-      if (applyResolvedWallDrawRoom(resolvedRoom)) {
-        setFloorPlanTraceRoomPoints([]);
-        setBlankGridRoomPreviewPoint(null);
-      }
-      return;
-    }
-
-    setFloorPlanTraceRoomPoints([...floorPlanTraceRoomPoints, nextPoint]);
-    setBlankGridRoomPreviewPoint(null);
-  }, [
-    applyResolvedWallDrawRoom,
-    blankGridRoomPreviewPoint,
-    floorPlanDrawAngleLockMode,
-    floorPlanDrawRoomMode,
-    floorPlanExactWallLengthInput,
-    floorPlanTraceRoomMode,
-    floorPlanTraceRoomPoints,
-    isDesigner,
-    showRuleToast,
-  ]);
-  const handleCommitWallDrawSegmentLength2D = useCallback(
-    (segmentIndex: number, valueMeters: number) => {
-      if (!floorPlanTraceRoomMode || floorPlanDrawRoomMode !== "straight_wall") return;
-      if (
-        segmentIndex <= 0 ||
-        segmentIndex >= floorPlanTraceRoomPoints.length ||
-        !Number.isFinite(valueMeters) ||
-        valueMeters <= 0
-      ) {
-        showRuleToast("Enter a valid wall length.");
-        return;
-      }
-
-      const previousPoint = floorPlanTraceRoomPoints[segmentIndex - 1];
-      const currentPoint = floorPlanTraceRoomPoints[segmentIndex];
-      if (!previousPoint || !currentPoint) return;
-
-      const nextPoint = resolveExactWallDrawPoint({
-        previousPoint,
-        previewPoint: currentPoint,
-        lengthMeters: valueMeters,
-        angleLockMode: "free",
-      });
-      if (!nextPoint) {
-        showRuleToast("Enter a valid wall length.");
-        return;
-      }
-
-      const deltaX = roundPlanCoordinate(nextPoint.x - currentPoint.x);
-      const deltaZ = roundPlanCoordinate(nextPoint.z - currentPoint.z);
-      setFloorPlanTraceRoomPoints((points) =>
-        points.map((point, index) => {
-          if (index < segmentIndex) return point;
-          return {
-            x: roundPlanCoordinate(point.x + deltaX),
-            z: roundPlanCoordinate(point.z + deltaZ),
-          };
-        })
-      );
-      setBlankGridRoomPreviewPoint(null);
     },
     [
+      editorMode,
+      floorPlanCalibrationMode,
+      floorPlanCalibrationPoints.length,
       floorPlanDrawRoomMode,
+      floorPlanTraceOpeningKind,
+      floorPlanTraceOpeningMode,
+      floorPlanTraceOpeningPoints.length,
       floorPlanTraceRoomMode,
-      floorPlanTraceRoomPoints,
-      showRuleToast,
+      floorPlanTraceRoomPoints.length,
+      floorPlanUnderlay,
+      guidedPlanStartMode,
+      housePlan2D.rooms.length,
+      isClientPreview,
+      isDesigner,
+      items.length,
+      planGuidedActionsEnabled,
+      planOpenings.length,
+      roomConnectionChecklistItems,
+      viewMode,
     ]
   );
-  const handleBlankGridRoomDrawDrag = useCallback(
-    (start: FloorPlanPoint, end: FloorPlanPoint) => {
-      if (!blankGridRoomDrawActive) return;
-      if (floorPlanDrawRoomMode === "straight_wall") return;
-
-      const snappedStart = snapBlankGridRoomDrawPoint(start, []);
-      const snappedEnd = snapBlankGridRoomDrawPoint(end, [snappedStart]);
-      if (floorPlanDrawRoomMode === "arc_wall") {
-        const arcRoom = resolveArcWallDrawPreview(snappedStart, snappedEnd).resolvedRoom;
-        if (!arcRoom) {
-          setFloorPlanTraceRoomPoints([]);
-          setBlankGridRoomPreviewPoint(null);
-          showRuleToast("Draw a larger arc wall");
-          return;
-        }
-
-        if (applyResolvedWallDrawRoom(arcRoom)) {
-          setFloorPlanTraceRoomPoints([]);
-          setBlankGridRoomPreviewPoint(null);
-        }
-        return;
-      }
-
-      const bounds = resolveTracedRoomRectangle([snappedStart, snappedEnd]);
-      if (!bounds) {
-        setFloorPlanTraceRoomPoints([]);
-        setBlankGridRoomPreviewPoint(null);
-        showRuleToast("Draw a larger room area");
-        return;
-      }
-
-      if (applyTracedRoomRectangle(bounds)) {
-        setFloorPlanTraceRoomPoints([]);
-        setBlankGridRoomPreviewPoint(null);
-      }
-    },
+  const showPlanGuidedActionsToggle =
+    !isClientPreview && !isDesigner && viewMode === "2d" && editorMode === "design";
+  const compactRoomPlanStatusBar = showPlanGuidedActionsToggle;
+  const showRoomPlanStatusHealth = !showPlanGuidedActionsToggle;
+  const showPlanManualQuickActions =
+    showPlanGuidedActionsToggle && !planGuidedActionsEnabled && !activePlanCanvasInteraction;
+  const showPlanGuidedActionsChoice =
+    showPlanGuidedActionsToggle &&
+    planSettingsLoaded &&
+    !planGuidedActionsChoiceSeen &&
+    !activePlanCanvasInteraction &&
+    !showBetaStart;
+  const showEmptyPlanCanvasPrompt =
+    !isClientPreview &&
+    viewMode === "2d" &&
+    housePlan2D.rooms.length === 0 &&
+    !floorPlanTraceRoomMode &&
+    !showBetaStart &&
+    !showPlanGuidedActionsChoice &&
+    !showPlanManualQuickActions &&
+    !designControlsPanelVisibleForLayout;
+  const hiddenDesignToolsLabel =
+    designControlsPanelMode === "ai"
+      ? "AI tools"
+      : designControlsPanelMode === "furnish"
+        ? "Furnish tools"
+        : "Plan tools";
+  const showDesignToolsRestoreButton =
+    !isClientPreview &&
+    !isDesigner &&
+    !designControlsPanelVisibleForLayout &&
+    !planCanvasFocusActive &&
+    !showBetaStart &&
+    !showEmptyPlanCanvasPrompt &&
+    (editorMode === "design" || editorMode === "adjust" || editorMode === "ai");
+  const planCanvasGuidanceKey = planCanvasGuidance
+    ? `${planCanvasGuidance.tone}:${planCanvasGuidance.title}:${planCanvasGuidance.action ?? "none"}`
+    : null;
+  const planCanvasGuidanceDismissed =
+    Boolean(planCanvasGuidanceKey) && dismissedPlanCanvasGuidanceKey === planCanvasGuidanceKey;
+  const visiblePlanCanvasGuidance =
+    showPlanGuidedActionsChoice || planCanvasGuidanceDismissed ? null : planCanvasGuidance;
+  const planCanvasGuidanceDismissible =
+    Boolean(visiblePlanCanvasGuidance) &&
+    visiblePlanCanvasGuidance?.tone === "ready" &&
+    !activePlanCanvasInteraction;
+  const canManualScalePlan = Boolean(floorPlanUnderlay?.mimeType.startsWith("image/"));
+  const planGuidedActionsToggleClass = [
+    "pointer-events-auto absolute z-30 flex items-center rounded-xl border text-xs font-semibold shadow-xl backdrop-blur transition",
+    showPlanManualQuickActions
+      ? "bottom-20 left-28 gap-1.5 px-2 py-1.5"
+      : `left-4 ${visiblePlanCanvasGuidance ? "bottom-40 sm:bottom-20" : "bottom-20"} gap-2 px-3 py-2`,
+    planGuidedActionsEnabled
+      ? "border-emerald-200 bg-white/95 text-neutral-950 hover:border-emerald-300"
+      : "border-neutral-200 bg-white/95 text-neutral-600 hover:border-neutral-300",
+  ].join(" ");
+  const manualPlanQuickActionButtonClass = (active: boolean, disabled = false) =>
     [
-      applyResolvedWallDrawRoom,
-      applyTracedRoomRectangle,
-      blankGridRoomDrawActive,
-      floorPlanDrawRoomMode,
-      showRuleToast,
-      snapBlankGridRoomDrawPoint,
-    ]
-  );
+      "group relative grid h-10 w-10 shrink-0 place-items-center rounded-lg border text-xs font-semibold transition focus:outline-none focus:ring-2 focus:ring-neutral-900/20",
+      active
+        ? "border-neutral-950 bg-neutral-950 text-white shadow-sm"
+        : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50",
+      disabled ? "cursor-not-allowed opacity-45 hover:bg-white" : "",
+    ].join(" ");
+  const manualPlanQuickActionTooltipClass =
+    "pointer-events-none absolute bottom-full left-1/2 z-40 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-neutral-950 px-2 py-1 text-[10px] font-semibold text-white shadow-lg group-hover:block group-focus:block group-focus-visible:block";
+  const planCanvasGuidanceAccentClass =
+    visiblePlanCanvasGuidance?.tone === "blocked"
+      ? "bg-amber-500"
+      : visiblePlanCanvasGuidance?.tone === "ready"
+        ? "bg-emerald-500"
+        : "bg-blue-500";
+  const planCanvasGuidanceLabelClass =
+    visiblePlanCanvasGuidance?.tone === "blocked"
+      ? "bg-amber-50 text-amber-800"
+      : visiblePlanCanvasGuidance?.tone === "ready"
+        ? "bg-emerald-50 text-emerald-800"
+        : "bg-blue-50 text-blue-800";
+  const planCanvasGuidanceAction = (() => {
+    if (!visiblePlanCanvasGuidance?.action || activePlanCanvasInteraction) return null;
+
+    if (visiblePlanCanvasGuidance.action === "scale") {
+      return {
+        label: "Set scale",
+        ariaLabel: "Start plan scale calibration",
+        onClick: () => handleFloorPlanCalibrationModeChange(true),
+      };
+    }
+
+    if (visiblePlanCanvasGuidance.action === "addOpening") {
+      return {
+        label: "Add door",
+        ariaLabel: "Add a door to the floor plan",
+        onClick: () => handleAddFloorPlanOpeningFromTool("door"),
+      };
+    }
+
+    return {
+      label: "Furnish",
+      ariaLabel: "Open furnishing tools",
+      onClick: goFurnish,
+    };
+  })();
+  const planFocusPointCount = floorPlanCalibrationMode
+    ? floorPlanCalibrationPoints.length
+    : floorPlanTraceOpeningMode
+      ? floorPlanTraceOpeningPoints.length
+      : floorPlanTraceRoomPoints.length;
+  const planFocusCanUndo =
+    floorPlanTraceRoomMode &&
+    floorPlanDrawRoomMode === "straight_wall" &&
+    floorPlanTraceRoomPoints.length > 0;
+  const planFocusCanClear = !planFocusCanUndo && planFocusPointCount > 0;
+  const planFocusProgressLabel = floorPlanCalibrationMode
+    ? `${Math.min(floorPlanCalibrationPoints.length, 2)}/2 points`
+    : floorPlanTraceOpeningMode
+      ? floorPlanUnderlay
+        ? `${Math.min(floorPlanTraceOpeningPoints.length, 2)}/2 points`
+        : "Pick wall"
+      : floorPlanDrawRoomMode === "straight_wall"
+        ? `${floorPlanTraceRoomPoints.length} corner${floorPlanTraceRoomPoints.length === 1 ? "" : "s"}`
+        : floorPlanTraceRoomPoints.length > 0
+          ? "Corner picked"
+          : "Ready";
+  const clearPlanFocusPoints = useCallback(() => {
+    if (floorPlanCalibrationMode) {
+      handleResetFloorPlanCalibrationPoints();
+      return;
+    }
+    if (floorPlanTraceOpeningMode) {
+      handleResetFloorPlanTraceOpeningPoints();
+      return;
+    }
+    if (floorPlanTraceRoomMode) {
+      handleResetFloorPlanTraceRoomPoints();
+    }
+  }, [
+    floorPlanCalibrationMode,
+    floorPlanTraceOpeningMode,
+    floorPlanTraceRoomMode,
+    handleResetFloorPlanCalibrationPoints,
+    handleResetFloorPlanTraceOpeningPoints,
+    handleResetFloorPlanTraceRoomPoints,
+  ]);
   const activePlacementTargetValid = pendingCatalogPlacement
     ? !pendingCatalogPlacementHardInvalid
     : crossRoomDragTarget?.valid ?? true;
@@ -11508,6 +11281,18 @@ function PageContent() {
         <div
           data-testid="qa-editor-snapshot-fingerprint"
           data-fingerprint={qaSnapshotFingerprint}
+          hidden
+        />
+      ) : null}
+      {process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS === "1" ? (
+        <div
+          data-testid="qa-first-run-activation"
+          data-progress={String(firstRunActivationState.progressPercent)}
+          data-complete={firstRunActivationState.complete ? "true" : "false"}
+          data-next-step={firstRunActivationState.nextStep?.id ?? "complete"}
+          data-steps={firstRunActivationState.steps
+            .map((step) => `${step.id}:${step.complete ? "done" : "todo"}`)
+            .join(",")}
           hidden
         />
       ) : null}
@@ -12364,48 +12149,432 @@ function PageContent() {
           </CanvasErrorBoundary>
 
           {activeRoom && !isClientPreview && (
-            <div className="absolute left-1/2 top-20 z-30 -translate-x-1/2">
+            <div
+              className={
+                compactRoomPlanStatusBar
+                  ? "absolute left-1/2 top-[4.5rem] z-30 -translate-x-1/2"
+                  : "absolute left-1/2 top-20 z-30 -translate-x-1/2"
+              }
+            >
               <RoomPlanStatusBar
                 roomName={activeRoom.name}
                 roomTypeLabel={getRoomTypeLabel(activeRoom.roomType)}
                 roomCount={designSnapshot.rooms.length}
                 widthMeters={roomWidth}
                 depthMeters={roomDepth}
+                healthLevel={showRoomPlanStatusHealth ? activeRoomHealthSummary?.level : undefined}
+                healthScore={showRoomPlanStatusHealth ? activeRoomHealthSummary?.placementScore : undefined}
+                healthNextAction={showRoomPlanStatusHealth ? activeRoomHealthSummary?.nextAction : undefined}
                 viewMode={viewMode}
                 disabled={editorMode === "present"}
                 dark={showDesignerTheme}
+                compact={compactRoomPlanStatusBar}
                 onViewModeChange={handleEditorViewModeChange}
+                onReviewHealth={reviewActiveRoomHealth}
                 onFitPlan={handleFitPlanView}
                 onRenameRoom={() => handleRenameSelectedPlanRoom(activeRoom.id)}
               />
             </div>
           )}
 
-          {!isClientPreview &&
-            viewMode === "2d" &&
-            housePlan2D.rooms.length === 0 &&
-            !floorPlanTraceRoomMode && (
-              <div
-                data-testid="empty-plan-canvas-prompt"
-                className="absolute left-1/2 top-1/2 z-20 w-[min(90vw,360px)] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-neutral-200 bg-white/95 p-4 text-center shadow-2xl backdrop-blur"
-              >
-                <div className="text-base font-semibold text-neutral-950">Create your first room</div>
-                <div className="mt-1 text-sm text-neutral-500">
-                  Start with a room size, then add doors, windows, and furniture.
+          {showPlanGuidedActionsChoice && (
+            <div
+              data-testid="plan-guided-actions-choice"
+              className="pointer-events-auto absolute bottom-32 left-4 z-30 w-[min(calc(100vw-2rem),360px)] rounded-xl border border-neutral-200 bg-white/95 p-3 shadow-xl backdrop-blur"
+              role="group"
+              aria-label="Choose plan action mode"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold text-neutral-950">Plan mode</div>
+                  <div className="mt-0.5 text-xs leading-5 text-neutral-600">
+                    Pick a starting style. Change it anytime.
+                  </div>
                 </div>
                 <button
                   type="button"
-                  className="mt-4 min-h-11 rounded-xl bg-neutral-950 px-4 text-sm font-semibold text-white hover:bg-neutral-800"
-                  onClick={() => {
-                    setDesignPanelOpen(true);
-                    goPlan();
-                    setGuidedPlanStartMode("start");
-                  }}
+                  data-testid="plan-guided-actions-choice-dismiss"
+                  className="shrink-0 rounded-lg border border-neutral-200 px-2 py-1 text-[11px] font-semibold text-neutral-600 hover:bg-neutral-50"
+                  onClick={() => setPlanGuidedActionsChoiceSeen(true)}
                 >
-                  Start room
+                  Close
                 </button>
               </div>
-            )}
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  data-testid="plan-guided-actions-choice-guided"
+                  className="min-h-10 rounded-lg bg-neutral-950 px-3 text-xs font-semibold text-white hover:bg-neutral-800"
+                  onClick={() => choosePlanGuidedActionsMode(true)}
+                >
+                  Guided setup
+                </button>
+                <button
+                  type="button"
+                  data-testid="plan-guided-actions-choice-manual"
+                  className="min-h-10 rounded-lg border border-neutral-200 bg-white px-3 text-xs font-semibold text-neutral-800 hover:bg-neutral-50"
+                  onClick={() => choosePlanGuidedActionsMode(false)}
+                >
+                  Manual editing
+                </button>
+              </div>
+            </div>
+          )}
+
+          {showPlanManualQuickActions && (
+            <div
+              data-testid="plan-manual-quick-actions"
+              className="pointer-events-auto absolute bottom-32 left-4 z-30 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-1 rounded-xl border border-neutral-200 bg-white/95 p-1 shadow-xl backdrop-blur"
+              role="toolbar"
+              aria-label="Manual plan actions"
+            >
+              <button
+                type="button"
+                data-testid="manual-plan-action-select"
+                className={manualPlanQuickActionButtonClass(activeFloorPlanTool === "select")}
+                aria-label="Select plan objects"
+                aria-pressed={activeFloorPlanTool === "select"}
+                title="Select"
+                onClick={handleSelectFloorPlanTool}
+              >
+                <ManualPlanActionIcon name="select" />
+                <span className="sr-only">Select</span>
+                <span
+                  data-testid="manual-plan-action-select-tooltip"
+                  className={manualPlanQuickActionTooltipClass}
+                  aria-hidden="true"
+                >
+                  Select
+                </span>
+              </button>
+              {floorPlanUnderlay && (
+                <button
+                  type="button"
+                  data-testid="manual-plan-action-scale"
+                  className={manualPlanQuickActionButtonClass(floorPlanCalibrationMode, !canManualScalePlan)}
+                  disabled={!canManualScalePlan}
+                  aria-label="Set plan scale"
+                  aria-pressed={floorPlanCalibrationMode}
+                  title={canManualScalePlan ? "Set scale" : "Scale is unavailable for this upload"}
+                  onClick={() => {
+                    setGuidedPlanStartMode("upload");
+                    handleFloorPlanCalibrationModeChange(true);
+                  }}
+                >
+                  <ManualPlanActionIcon name="scale" />
+                  <span className="sr-only">Set scale</span>
+                  <span
+                    data-testid="manual-plan-action-scale-tooltip"
+                    className={manualPlanQuickActionTooltipClass}
+                    aria-hidden="true"
+                  >
+                    {canManualScalePlan ? "Set scale" : "Scale unavailable"}
+                  </span>
+                </button>
+              )}
+              <button
+                type="button"
+                data-testid="manual-plan-action-draw"
+                className={manualPlanQuickActionButtonClass(activeFloorPlanTool === "draw_room")}
+                aria-label="Draw room"
+                aria-pressed={activeFloorPlanTool === "draw_room"}
+                title="Draw room"
+                onClick={() => {
+                  setGuidedPlanStartMode("draw");
+                  handleFloorPlanDrawRoomModeChange("rectangle_wall");
+                }}
+              >
+                <ManualPlanActionIcon name="draw" />
+                <span className="sr-only">Draw room</span>
+                <span
+                  data-testid="manual-plan-action-draw-tooltip"
+                  className={manualPlanQuickActionTooltipClass}
+                  aria-hidden="true"
+                >
+                  Draw room
+                </span>
+              </button>
+              <button
+                type="button"
+                data-testid="manual-plan-action-door"
+                className={manualPlanQuickActionButtonClass(activeFloorPlanTool === "door", housePlan2D.rooms.length === 0)}
+                disabled={housePlan2D.rooms.length === 0}
+                aria-label={housePlan2D.rooms.length === 0 ? "Draw a room first to add a door" : "Add door"}
+                aria-pressed={activeFloorPlanTool === "door"}
+                title={housePlan2D.rooms.length === 0 ? "Draw a room first" : "Add door"}
+                onClick={() => handleAddFloorPlanOpeningFromTool("door")}
+              >
+                <ManualPlanActionIcon name="door" />
+                <span className="sr-only">Add door</span>
+                <span
+                  data-testid="manual-plan-action-door-tooltip"
+                  className={manualPlanQuickActionTooltipClass}
+                  aria-hidden="true"
+                >
+                  {housePlan2D.rooms.length === 0 ? "Draw room first" : "Add door"}
+                </span>
+              </button>
+              <button
+                type="button"
+                data-testid="manual-plan-action-window"
+                className={manualPlanQuickActionButtonClass(activeFloorPlanTool === "window", housePlan2D.rooms.length === 0)}
+                disabled={housePlan2D.rooms.length === 0}
+                aria-label={housePlan2D.rooms.length === 0 ? "Draw a room first to add a window" : "Add window"}
+                aria-pressed={activeFloorPlanTool === "window"}
+                title={housePlan2D.rooms.length === 0 ? "Draw a room first" : "Add window"}
+                onClick={() => handleAddFloorPlanOpeningFromTool("window")}
+              >
+                <ManualPlanActionIcon name="window" />
+                <span className="sr-only">Add window</span>
+                <span
+                  data-testid="manual-plan-action-window-tooltip"
+                  className={manualPlanQuickActionTooltipClass}
+                  aria-hidden="true"
+                >
+                  {housePlan2D.rooms.length === 0 ? "Draw room first" : "Add window"}
+                </span>
+              </button>
+              <button
+                type="button"
+                data-testid="manual-plan-action-fit"
+                className={manualPlanQuickActionButtonClass(false)}
+                aria-label="Fit plan to screen"
+                title="Fit plan"
+                onClick={handleFitPlanView}
+              >
+                <ManualPlanActionIcon name="fit" />
+                <span className="sr-only">Fit plan</span>
+                <span
+                  data-testid="manual-plan-action-fit-tooltip"
+                  className={manualPlanQuickActionTooltipClass}
+                  aria-hidden="true"
+                >
+                  Fit plan
+                </span>
+              </button>
+            </div>
+          )}
+
+          {showPlanGuidedActionsToggle && (
+            <button
+              type="button"
+              data-testid="plan-guided-actions-toggle"
+              data-enabled={planGuidedActionsEnabled ? "true" : "false"}
+              data-compact={showPlanManualQuickActions ? "true" : "false"}
+              role="switch"
+              aria-checked={planGuidedActionsEnabled}
+              aria-label={
+                planGuidedActionsEnabled
+                  ? "Turn guided actions off"
+                  : "Turn guided actions on"
+              }
+              className={planGuidedActionsToggleClass}
+              onClick={() => {
+                setPlanGuidedActionsEnabled((enabled) => !enabled);
+              }}
+            >
+              <span>{showPlanManualQuickActions ? "Guided" : "Guided actions"}</span>
+              <span
+                className={`relative h-5 w-9 shrink-0 rounded-full transition ${
+                  planGuidedActionsEnabled ? "bg-emerald-500" : "bg-neutral-300"
+                }`}
+                aria-hidden="true"
+              >
+                <span
+                  className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition ${
+                    planGuidedActionsEnabled ? "left-4" : "left-0.5"
+                  }`}
+                />
+              </span>
+              <span className={planGuidedActionsEnabled ? "text-emerald-700" : "text-neutral-500"}>
+                {planGuidedActionsEnabled ? "On" : "Off"}
+              </span>
+            </button>
+          )}
+
+          {activePlanCanvasInteraction && (
+            <div
+              data-testid="plan-focus-control"
+              data-focused={planCanvasFocusActive ? "true" : "false"}
+              className="absolute left-4 top-20 z-30 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-xl border border-neutral-200 bg-white/95 px-2.5 py-2 shadow-xl backdrop-blur"
+              role="toolbar"
+              aria-label="Plan focus controls"
+            >
+              <span className="flex min-w-0 items-center gap-2 pr-1">
+                <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500" aria-hidden="true" />
+                <span className="truncate text-xs font-semibold text-neutral-800">
+                  {floorPlanCalibrationMode
+                    ? "Scaling plan"
+                    : floorPlanTraceOpeningMode
+                      ? floorPlanTraceOpeningKind === "window"
+                        ? "Placing window"
+                        : "Placing door"
+                      : "Drawing room"}
+                </span>
+                <span
+                  data-testid="plan-focus-progress"
+                  className="shrink-0 rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] font-semibold text-neutral-600"
+                >
+                  {planFocusProgressLabel}
+                </span>
+                {!planGuidedActionsEnabled && (
+                  <span
+                    data-testid="plan-focus-manual-mode"
+                    className="shrink-0 rounded-full bg-neutral-950 px-2 py-0.5 text-[11px] font-semibold text-white"
+                  >
+                    Manual
+                  </span>
+                )}
+              </span>
+              {planFocusCanUndo && (
+                <button
+                  type="button"
+                  data-testid="plan-focus-undo"
+                  className="shrink-0 rounded-lg border border-neutral-200 px-2.5 py-1.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
+                  onClick={() => {
+                    handleUndoFloorPlanTraceRoomPoint();
+                  }}
+                >
+                  Undo
+                </button>
+              )}
+              {planFocusCanClear && (
+                <button
+                  type="button"
+                  data-testid="plan-focus-clear"
+                  className="shrink-0 rounded-lg border border-neutral-200 px-2.5 py-1.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
+                  onClick={clearPlanFocusPoints}
+                >
+                  Clear
+                </button>
+              )}
+              <button
+                type="button"
+                data-testid="plan-focus-panel-toggle"
+                className="shrink-0 rounded-lg border border-neutral-200 px-2.5 py-1.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
+                onClick={() => {
+                  setDesignPanelOpen(true);
+                  setPlanFocusPanelRevealed((value) => !value);
+                }}
+              >
+                {planCanvasFocusActive ? "Panel" : "Focus"}
+              </button>
+              <button
+                type="button"
+                data-testid="plan-focus-done"
+                aria-label={planGuidedActionsEnabled ? "Finish plan focus mode" : "Cancel manual plan tool"}
+                className="shrink-0 rounded-lg bg-neutral-950 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-neutral-800"
+                onClick={() => {
+                  handleSelectFloorPlanTool();
+                  setPlanFocusPanelRevealed(false);
+                }}
+              >
+                {planGuidedActionsEnabled ? "Done" : "Cancel"}
+              </button>
+            </div>
+          )}
+
+          {visiblePlanCanvasGuidance && (
+            <div
+              data-testid="plan-canvas-guidance"
+              data-tone={visiblePlanCanvasGuidance.tone}
+              className="pointer-events-none absolute bottom-20 left-1/2 z-30 w-[min(92vw,390px)] -translate-x-1/2 rounded-xl border border-neutral-200 bg-white/95 px-3 py-2.5 shadow-xl backdrop-blur sm:bottom-6"
+              role={planCanvasGuidanceAction ? "group" : "status"}
+              aria-label={planCanvasGuidanceAction ? visiblePlanCanvasGuidance.title : undefined}
+              aria-live="polite"
+            >
+              <div className="flex items-start gap-3">
+                <span
+                  className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${planCanvasGuidanceAccentClass}`}
+                  aria-hidden="true"
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="truncate text-sm font-semibold text-neutral-950">
+                      {visiblePlanCanvasGuidance.title}
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      {planCanvasGuidanceAction ? (
+                        <button
+                          type="button"
+                          data-testid="plan-canvas-guidance-action"
+                          aria-label={planCanvasGuidanceAction.ariaLabel}
+                          className="pointer-events-auto rounded-lg bg-neutral-950 px-2.5 py-1.5 text-[11px] font-semibold text-white shadow-sm hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-900/20"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            planCanvasGuidanceAction.onClick();
+                          }}
+                        >
+                          {planCanvasGuidanceAction.label}
+                        </button>
+                      ) : (
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${planCanvasGuidanceLabelClass}`}
+                        >
+                          {visiblePlanCanvasGuidance.label}
+                        </span>
+                      )}
+                      {planCanvasGuidanceDismissible && planCanvasGuidanceKey && (
+                        <button
+                          type="button"
+                          data-testid="plan-canvas-guidance-dismiss"
+                          aria-label="Hide plan tip"
+                          className="pointer-events-auto rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-[11px] font-semibold text-neutral-600 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/20"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setDismissedPlanCanvasGuidanceKey(planCanvasGuidanceKey);
+                          }}
+                        >
+                          Hide
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="mt-0.5 text-xs leading-5 text-neutral-600">
+                    {visiblePlanCanvasGuidance.detail}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showEmptyPlanCanvasPrompt && (
+            <div
+              data-testid="empty-plan-canvas-prompt"
+              className="absolute left-1/2 top-1/2 z-20 w-[min(90vw,360px)] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-neutral-200 bg-white/95 p-4 text-center shadow-2xl backdrop-blur"
+            >
+              <div className="text-base font-semibold text-neutral-950">Create your first room</div>
+              <div className="mt-1 text-sm text-neutral-500">
+                Start with a room size, then add doors, windows, and furniture.
+              </div>
+              <button
+                type="button"
+                className="mt-4 min-h-11 rounded-xl bg-neutral-950 px-4 text-sm font-semibold text-white hover:bg-neutral-800"
+                onClick={() => {
+                  setDesignPanelOpen(true);
+                  goPlan();
+                  setGuidedPlanStartMode("start");
+                }}
+              >
+                Start room
+              </button>
+            </div>
+          )}
+
+          {showDesignToolsRestoreButton && (
+            <button
+              type="button"
+              data-testid="design-tools-restore"
+              className="pointer-events-auto absolute bottom-4 left-4 z-30 rounded-xl border border-neutral-200 bg-white/95 px-3 py-2 text-xs font-semibold text-neutral-800 shadow-xl backdrop-blur hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/20"
+              aria-label={`Show ${hiddenDesignToolsLabel.toLowerCase()}`}
+              onClick={() => {
+                setDesignPanelOpen(true);
+                setPlanFocusPanelRevealed(false);
+              }}
+            >
+              {hiddenDesignToolsLabel}
+            </button>
+          )}
 
           {pendingAiLayoutProposal && !isClientPreview && (
             <div
@@ -12555,7 +12724,7 @@ function PageContent() {
             </DraggableFloatingPanel>
           )}
 
-          {designControlsPanelVisible &&
+          {designControlsPanelVisibleForLayout &&
             designControlsPanelMode === "plan" &&
             !isClientPreview &&
             (isDesigner || floorOptions.length > 1 || viewMode === "3d") && (
@@ -12893,6 +13062,31 @@ function PageContent() {
               </button>
             </div>
 
+            <div
+              data-testid="beta-start-activation-progress"
+              className="mt-4 rounded-xl border border-neutral-200 bg-neutral-50 p-3"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                    First run progress
+                  </div>
+                  <div className="mt-0.5 text-sm font-semibold text-neutral-950">
+                    {firstRunActivationState.nextStep?.label ?? "Ready to share"}
+                  </div>
+                </div>
+                <div className="text-sm font-semibold text-neutral-700">
+                  {firstRunActivationState.progressPercent}%
+                </div>
+              </div>
+              <div className="mt-2 h-2 overflow-hidden rounded-full bg-white">
+                <div
+                  className="h-full rounded-full bg-emerald-500"
+                  style={{ width: `${firstRunActivationState.progressPercent}%` }}
+                />
+              </div>
+            </div>
+
             <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
               <button
                 type="button"
@@ -12918,7 +13112,7 @@ function PageContent() {
                   setGuidedPlanStartMode("draw");
                   goPlan();
                   setViewMode("2d");
-                  setFloorPlanTraceRoomMode(true);
+                  activateFloorPlanRoomTrace(true);
                   setDesignPanelOpen(true);
                   showRuleToast("Draw room walls in 2D plan mode");
                   dismissBetaStart();
@@ -15142,7 +15336,7 @@ function PageContent() {
       )}
 
       {/* Layer 2A: Design Panel (visible in DESIGN mode) */}
-      {designControlsPanelVisible && (
+      {designControlsPanelVisibleForLayout && (
         <DesignControlsPanel
           dark={showDesignerTheme}
           panelMode={designControlsPanelMode}
@@ -15230,13 +15424,20 @@ function PageContent() {
           aiLayoutProposal={pendingAiLayoutProposal}
           activeFloorPlanTool={activeFloorPlanTool}
           simplePlanControls={simplePlanControls}
+          planGuidedActionsEnabled={planGuidedActionsEnabled}
           planStartMode={guidedPlanStartMode}
+          planCompletionSignal={consumerPlanCompletionSignal}
+          onPlanCompletionHandled={handleConsumerPlanCompletionHandled}
           onPlanStartModeChange={setGuidedPlanStartMode}
           onSimplePlanControlsChange={setSimplePlanControls}
+          onPlanGuidedActionsEnabledChange={setPlanGuidedActionsEnabled}
           onSelectFloorPlanTool={handleSelectFloorPlanTool}
-          onDrawFloorPlanRoom={() => handleFloorPlanTraceRoomModeChange(true)}
+          onDrawFloorPlanRoom={() => handleFloorPlanDrawRoomModeChange("rectangle_wall")}
           onAddFloorPlanOpeningFromTool={handleAddFloorPlanOpeningFromTool}
-          onHide={() => setDesignPanelOpen(false)}
+          onHide={() => {
+            setDesignPanelOpen(false);
+            setPlanFocusPanelRevealed(false);
+          }}
           onSignIn={signInWithReturn}
           onGoFurnish={goFurnish}
           onGoAiDesign={goAiDesign}
@@ -17222,6 +17423,15 @@ function PageContent() {
             itemCount: items.length,
             openingCount: planOpenings.length,
             exportReadinessScore,
+            selectedItemId: selectedItem?.instanceId ?? null,
+            selectedItemProductId: selectedItem?.productId ?? null,
+            placementScore: pendingCatalogPlacementScore?.score ?? null,
+            placementKind: pendingCatalogPlacementScore?.kind ?? null,
+            shoppingReadyCount: wholeHomeShoppingSummary.shoppableCount,
+            shoppingNeedsReviewCount: wholeHomeShoppingSummary.needsReviewCount,
+            saveStatus: saveStatus.kind,
+            shareEnabled: Boolean(shareToken),
+            activePlacementTarget: pendingCatalogPlacementRoom?.name ?? activeRoom?.name ?? null,
             viewportWidth: viewportSize.width,
             viewportHeight: viewportSize.height,
           }}
@@ -17430,7 +17640,7 @@ function PageContent() {
         isOpen={itemCartOpen}
         onToggle={() => setItemCartOpen((v) => !v)}
         triggerClassName={
-          designControlsPanelVisible
+          designControlsPanelVisibleForLayout
             ? "bottom-[calc(64vh+1.25rem)] right-4 md:bottom-4"
             : "bottom-4 right-4"
         }

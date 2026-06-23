@@ -70,8 +70,35 @@ assert.match(
 );
 assert.match(
   checklist,
-  /Staging URL:[\s\S]*Tester:[\s\S]*Result: `PASS` \/ `FAIL`/,
-  "staging checklist should include a manual signoff record."
+  /Status \| Evidence required \| Evidence link\/artifact \| Notes/,
+  "staging checklist should include guided pass/fail evidence columns."
+);
+assert.match(
+  checklist,
+  /Every row must be marked `PASS`, `FAIL`, or `N\/A`/,
+  "staging checklist should require explicit row status."
+);
+for (const requiredEvidenceField of [
+  "Build ID or commit SHA",
+  "Saved design ID",
+  "Share token",
+  "Editor snapshot fingerprint",
+  "Share snapshot fingerprint",
+  "Export snapshot fingerprint",
+  "Checkout boundary response mode",
+  "Checkout diagnostics screenshot or redacted JSON",
+  "Catalog commerce readiness screenshot",
+  "Feedback report ID or copied payload filename",
+]) {
+  assert.ok(
+    checklist.includes(requiredEvidenceField),
+    `staging checklist should require evidence field: ${requiredEvidenceField}`
+  );
+}
+assert.match(
+  checklist,
+  /Staging URL:[\s\S]*Build ID or commit SHA:[\s\S]*Tester:[\s\S]*Result: `PASS` \/ `FAIL`[\s\S]*Required evidence complete: `YES` \/ `NO`[\s\S]*Hard stops reviewed: `YES` \/ `NO`/,
+  "staging checklist should include a manual signoff record with evidence completion."
 );
 assert.match(
   hygieneReport,

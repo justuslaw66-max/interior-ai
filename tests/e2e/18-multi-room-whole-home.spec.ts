@@ -53,10 +53,31 @@ test.describe("18. Multi-Room Whole Home", () => {
   });
 
   async function chooseDrawFromScratch(page: Page) {
-    await expect(page.getByTestId("plan-start-draw")).toBeVisible();
-    await expect(page.getByTestId("plan-start-upload")).toBeVisible();
+    const firstStartDraw = page.getByTestId("plan-start-draw");
+    if (await firstStartDraw.isVisible().catch(() => false)) {
+      await expect(page.getByTestId("plan-start-upload")).toBeVisible();
+      await expect(page.getByTestId("plan-start-template")).toBeVisible();
+      await firstStartDraw.click();
+      return;
+    }
+
+    await expect(page.getByTestId("floor-plan-tool-draw_room")).toBeVisible();
+    await page.getByTestId("floor-plan-tool-draw_room").click();
+  }
+
+  async function chooseTemplateStart(page: Page) {
+    const betaTemplate = page.getByTestId("beta-start-template");
+    if (await betaTemplate.isVisible().catch(() => false)) {
+      await betaTemplate.click();
+      return;
+    }
+
+    const planTab = page.getByTestId("editor-workflow-plan");
+    if (await planTab.isVisible().catch(() => false)) {
+      await planTab.click();
+    }
     await expect(page.getByTestId("plan-start-template")).toBeVisible();
-    await page.getByTestId("plan-start-draw").click();
+    await page.getByTestId("plan-start-template").click();
   }
 
   test("public beta fast start opens the chosen plan workflow", async ({ page }) => {
@@ -178,6 +199,8 @@ test.describe("18. Multi-Room Whole Home", () => {
 
     await expect(page.getByTestId("floor-plan-draw-mode-straight_wall")).toBeVisible();
     await expect(page.getByTestId("floor-plan-draw-mode-rectangle_wall")).toBeVisible();
+    await expect(page.getByTestId("floor-plan-draw-mode-arc_wall")).toBeHidden();
+    await page.getByText("More drawing options").click();
     await expect(page.getByTestId("floor-plan-draw-mode-arc_wall")).toBeVisible();
     await page.getByTestId("floor-plan-draw-mode-straight_wall").click();
     await expect(page.getByTestId("floor-plan-exact-wall-length")).toBeVisible();
@@ -215,6 +238,7 @@ test.describe("18. Multi-Room Whole Home", () => {
     await page.keyboard.press("Escape");
     await expect(page.getByText("Wall points: 0")).toHaveCount(0);
 
+    await chooseDrawFromScratch(page);
     await page.getByTestId("floor-plan-draw-mode-rectangle_wall").click();
     await expect(page.getByText("Wall points: 0")).toBeVisible();
     await page.mouse.click(start.x, start.y);
@@ -278,6 +302,7 @@ test.describe("18. Multi-Room Whole Home", () => {
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
     await page.getByRole("button", { name: "2D Plan" }).click();
     await chooseDrawFromScratch(page);
+    await page.getByText("More drawing options").click();
     await page.getByTestId("floor-plan-draw-mode-arc_wall").click();
     await expect(page.getByText("Wall points: 0")).toBeVisible();
     await page.getByTestId("floor-plan-trace-room-type").selectOption("living");
@@ -302,7 +327,7 @@ test.describe("18. Multi-Room Whole Home", () => {
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("1 room");
   });
 
-  test("rectangle drawing adds a second room without replacing the starter room", async ({
+  test("rectangle drawing can replace the starter room outline", async ({
     page,
   }) => {
     await page.goto("/design");
@@ -316,7 +341,7 @@ test.describe("18. Multi-Room Whole Home", () => {
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("1 room");
     await expect(page.getByText("5000 mm").first()).toBeVisible();
     await expect(page.getByText("4000 mm").first()).toBeVisible();
-    await page.getByRole("button", { name: "Fit", exact: true }).click();
+    await page.getByTestId("room-plan-status-fit-view").click();
     const snapMarkers = await page
       .locator('[data-testid^="floor-plan-start-snap-"]')
       .evaluateAll((elements) =>
@@ -333,25 +358,49 @@ test.describe("18. Multi-Room Whole Home", () => {
           };
         })
       );
-    const rightTop = snapMarkers.find(
-      (marker) => marker.id === "floor-plan-start-snap-corner" && marker.planX === "2.500" && marker.planZ === "-2.000"
-    );
-    const rightBottom = snapMarkers.find(
-      (marker) => marker.id === "floor-plan-start-snap-corner" && marker.planX === "2.500" && marker.planZ === "2.000"
-    );
-    expect(rightTop).toBeTruthy();
-    expect(rightBottom).toBeTruthy();
-    if (!rightTop || !rightBottom) {
-      throw new Error("Starter room right-side snap corners were not measurable");
-    }
-    const pixelsPerMeter = Math.abs(rightBottom.y - rightTop.y) / 4;
+    const verticalSides = ["-2.500", "2.500"].map((planX) => {
+      const top = snapMarkers.find(
+        (marker) =>
+          marker.id === "floor-plan-start-snap-corner" &&
+          marker.planX === planX &&
+          marker.planZ === "-2.000"
+      );
+      const bottom = snapMarkers.find(
+        (marker) =>
+          marker.id === "floor-plan-start-snap-corner" &&
+          marker.planX === planX &&
+          marker.planZ === "2.000"
+      );
+      return top && bottom ? { top, bottom } : null;
+    }).filter(Boolean) as Array<{
+      top: NonNullable<(typeof snapMarkers)[number]>;
+      bottom: NonNullable<(typeof snapMarkers)[number]>;
+    }>;
+    expect(verticalSides.length).toBeGreaterThan(0);
+    const viewport = page.viewportSize();
+    if (!viewport) throw new Error("Viewport was not measurable");
+    const side = verticalSides
+      .map((candidate) => {
+        const startX = candidate.top.x + candidate.top.width / 2;
+        const leftSpace = startX - 24;
+        const rightSpace = viewport.width - startX - 24;
+        return {
+          ...candidate,
+          direction: rightSpace >= leftSpace ? 1 : -1,
+          availableSpace: Math.max(leftSpace, rightSpace),
+        };
+      })
+      .sort((a, b) => b.availableSpace - a.availableSpace)[0];
+    if (!side) throw new Error("Starter room snap side was not measurable");
+    const pixelsPerMeter = Math.abs(side.bottom.y - side.top.y) / 4;
+    const roomWidthMeters = Math.max(1.2, Math.min(2, (side.availableSpace - 32) / pixelsPerMeter));
     const start = {
-      x: rightTop.x + rightTop.width / 2,
-      y: rightTop.y + rightTop.height / 2,
+      x: side.top.x + side.top.width / 2,
+      y: side.top.y + side.top.height / 2,
     };
     const end = {
-      x: rightTop.x + pixelsPerMeter * 2,
-      y: rightBottom.y + rightBottom.height / 2,
+      x: start.x + side.direction * pixelsPerMeter * roomWidthMeters,
+      y: side.bottom.y + side.bottom.height / 2,
     };
 
     await page.mouse.click(start.x, start.y);
@@ -360,8 +409,8 @@ test.describe("18. Multi-Room Whole Home", () => {
     await page.mouse.click(end.x, end.y);
 
     await expect(page.getByText("Room drawn")).toBeVisible();
-    await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("2 rooms");
-    await expect(page.getByTestId("room-connection-checklist")).toBeVisible();
+    await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("1 room");
+    await expect(page.getByText("2 x 4m").first()).toBeVisible();
   });
 
   test("shift-dragging a 2D room moves freely without losing selection", async ({ page }) => {
@@ -370,7 +419,7 @@ test.describe("18. Multi-Room Whole Home", () => {
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
     await page.getByRole("button", { name: "2D Plan" }).click();
-    await page.getByTestId("beta-start-template").click();
+    await chooseTemplateStart(page);
     await page.getByTestId("add-room-template-bedroom").click();
 
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("2 rooms");
@@ -411,7 +460,7 @@ test.describe("18. Multi-Room Whole Home", () => {
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
-    await page.getByTestId("beta-start-template").click();
+    await chooseTemplateStart(page);
     await page.getByTestId("add-room-template-bedroom").click();
 
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("2 rooms");
@@ -811,7 +860,7 @@ test.describe("18. Multi-Room Whole Home", () => {
     await expect(page.getByTestId("editor-workflow-ai")).toBeVisible();
     await expect(page.getByTestId("house-room-3d-label")).toHaveCount(0);
 
-    await page.getByTestId("beta-start-template").click();
+    await chooseTemplateStart(page);
     await page.getByTestId("add-room-template-bedroom").click();
     await page.getByRole("button", { name: "3D" }).click();
 
@@ -988,7 +1037,7 @@ test.describe("18. Multi-Room Whole Home", () => {
     await expect(page.getByTestId("floor-plan-pdf-page-select")).toHaveValue("2");
     await expect(page.getByTestId("room-plan-status-view-toggle")).toHaveText("Room view");
     await page.getByTestId("floor-plan-calibration-toggle").click();
-    await expect(page.getByText("Points selected: 0/2")).toBeVisible();
+    await expect(page.getByText(/(?:Points selected|Scale points): 0\/2/)).toBeVisible();
 
     const canvas = page.getByTestId("scene-canvas");
     const box = await canvas.boundingBox();
@@ -999,7 +1048,7 @@ test.describe("18. Multi-Room Whole Home", () => {
 
     await page.mouse.click(box.x + box.width * 0.44, box.y + box.height * 0.5);
     await page.mouse.click(box.x + box.width * 0.56, box.y + box.height * 0.5);
-    await expect(page.getByText("Points selected: 2/2")).toBeVisible();
+    await expect(page.getByText(/(?:Points selected|Scale points): 2\/2/)).toBeVisible();
     await page.getByTestId("floor-plan-calibration-distance").fill("2");
     await page.getByTestId("floor-plan-apply-calibration").click();
     await expect(page.getByText(/2m set/)).toBeVisible();

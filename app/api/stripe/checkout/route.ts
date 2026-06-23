@@ -5,6 +5,10 @@ import { auth } from "@/lib/auth";
 import { config } from "@/lib/config";
 import { rateLimit } from "@/lib/rateLimit";
 import { logAppEvent } from "@/lib/app-events";
+import {
+  buildCheckoutBoundaryResponsePayload,
+  resolveCheckoutBoundaryDiagnostics,
+} from "@/lib/beta-checkout-boundary";
 
 function getErrorMessage(error: unknown): string {
   if (error instanceof Error) return error.message;
@@ -24,6 +28,11 @@ export async function POST(req: Request) {
   try {
     if (!config.features.checkoutEnabled) {
       return NextResponse.json({ error: "Checkout is disabled" }, { status: 503 });
+    }
+
+    const boundary = resolveCheckoutBoundaryDiagnostics();
+    if (!boundary.checkoutSafe) {
+      return NextResponse.json(buildCheckoutBoundaryResponsePayload(boundary), { status: 503 });
     }
 
     const session = await auth();

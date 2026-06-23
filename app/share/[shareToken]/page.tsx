@@ -8,7 +8,9 @@ import {
   buildCheckoutReadinessRows,
   buildShoppingCsvRows,
 } from "@/lib/share-shopping-csv";
-import { fingerprintDesignSnapshot } from "@/lib/snapshot-fingerprint";
+import { CATALOG_ITEMS } from "@/lib/catalog";
+import { buildShareExportFidelitySummary } from "@/lib/share-export-fidelity";
+import { buildRoomHealthSummary } from "@/lib/room-health-summary";
 import {
   resolveRoomShoppingItems,
   summarizeShoppingRooms,
@@ -96,6 +98,21 @@ export default async function SharePage({
     designSnapshot.activeRoomId
   );
   const shoppingRoomById = new Map(shoppingRooms.map((room) => [room.roomId, room]));
+  const planOpenings = designSnapshot.floorPlan?.openings ?? [];
+  const roomHealthById = new Map(
+    designSnapshot.rooms.map((room) => {
+      const shoppingRoom = shoppingRoomById.get(room.id);
+      return [
+        room.id,
+        buildRoomHealthSummary({
+          room,
+          catalogItems: CATALOG_ITEMS,
+          openings: planOpenings,
+          shoppingNeedsReviewCount: shoppingRoom?.needsReviewCount ?? 0,
+        }),
+      ];
+    })
+  );
   const shoppingSummary = summarizeWholeHomeShopping(shoppingRooms);
   const shoppingPreviewItems: ShareShoppingPreviewItem[] = designSnapshot.rooms.flatMap((room) =>
     resolveRoomShoppingItems({ items: room.items }).map((item) => ({
@@ -127,6 +144,7 @@ export default async function SharePage({
   const remainingShoppingCount = Math.max(0, shoppingPreviewItems.length - visibleShoppingItems.length);
   const roomListItems = designSnapshot.rooms.map((room) => {
     const shoppingRoom = shoppingRoomById.get(room.id);
+    const health = roomHealthById.get(room.id);
     const areaSqm = room.geometry.width * room.geometry.depth;
     return {
       id: room.id,
@@ -138,6 +156,9 @@ export default async function SharePage({
       itemCount: shoppingRoom?.itemCount ?? room.items.length,
       shoppableCount: shoppingRoom?.shoppableCount ?? 0,
       subtotal: shoppingRoom?.subtotal ?? 0,
+      healthLabel: health?.level === "ready" ? "Ready" : health?.level === "review" ? "Review" : "Blocked",
+      healthScore: health?.placementScore ?? 0,
+      healthNextAction: health?.nextAction ?? "Review room readiness.",
     };
   });
   const presentationViewItems: SharePresentationViewItem[] = designSnapshot.rooms.flatMap((room) =>
@@ -201,17 +222,26 @@ export default async function SharePage({
       currency: "USD",
       maximumFractionDigits: 0,
     }).format(value);
-  const qaSnapshotFingerprint =
-    process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS === "1"
-      ? fingerprintDesignSnapshot(designSnapshot)
-      : null;
+  const handoffFidelitySummary = buildShareExportFidelitySummary(designSnapshot, CATALOG_ITEMS);
+  const qaFidelitySummary =
+    process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS === "1" ? handoffFidelitySummary : null;
+  const handoffReady =
+    handoffFidelitySummary.missingCommerceCount === 0 &&
+    handoffFidelitySummary.itemCount === shoppingSummary.itemCount;
 
   return (
     <main className="min-h-screen bg-neutral-100">
-      {qaSnapshotFingerprint ? (
+      {qaFidelitySummary ? (
         <div
           data-testid="qa-share-snapshot-fingerprint"
-          data-fingerprint={qaSnapshotFingerprint}
+          data-fingerprint={qaFidelitySummary.fingerprint}
+          data-room-count={String(qaFidelitySummary.roomCount)}
+          data-item-count={String(qaFidelitySummary.itemCount)}
+          data-opening-count={String(qaFidelitySummary.openingCount)}
+          data-saved-view-count={String(qaFidelitySummary.savedViewCount)}
+          data-checkout-ready-count={String(qaFidelitySummary.checkoutReadyCount)}
+          data-retailer-ready-count={String(qaFidelitySummary.retailerReadyCount)}
+          data-missing-commerce-count={String(qaFidelitySummary.missingCommerceCount)}
           hidden
         />
       ) : null}
@@ -226,6 +256,12 @@ export default async function SharePage({
             <div className="mt-2 text-xs text-neutral-500">
               Best on desktop • Orbit to look around • No editing in share view
             </div>
+            <div
+              data-testid="share-handoff-id"
+              className="mt-1 text-xs font-medium text-neutral-500"
+            >
+              Handoff ID {handoffFidelitySummary.fingerprint}
+            </div>
           </div>
 
           <SharePageActions shareToken={shareToken} title={design.title} />
@@ -233,7 +269,7 @@ export default async function SharePage({
       </header>
 
       <section className="mx-auto max-w-6xl px-6 pt-4">
-        <div className="grid gap-3 rounded-xl border bg-white p-4 shadow-sm sm:grid-cols-4">
+        <div className="grid gap-3 rounded-xl border bg-white p-4 shadow-sm sm:grid-cols-5">
           <div>
             <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">Rooms</div>
             <div className="mt-1 text-lg font-semibold text-neutral-950">{designSnapshot.rooms.length}</div>
@@ -249,6 +285,15 @@ export default async function SharePage({
           <div>
             <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">Estimated total</div>
             <div className="mt-1 text-lg font-semibold text-neutral-950">{formatCurrency(shoppingSummary.subtotal)}</div>
+          </div>
+          <div data-testid="share-handoff-integrity">
+            <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">Handoff</div>
+            <div className={handoffReady ? "mt-1 text-lg font-semibold text-emerald-700" : "mt-1 text-lg font-semibold text-amber-700"}>
+              {handoffReady ? "Ready" : "Review"}
+            </div>
+            <div className="mt-1 text-xs text-neutral-500">
+              {handoffFidelitySummary.checkoutReadyCount + handoffFidelitySummary.retailerReadyCount} ready · {handoffFidelitySummary.missingCommerceCount} review
+            </div>
           </div>
         </div>
         {shoppingRooms.length > 0 ? (
@@ -330,6 +375,7 @@ export default async function SharePage({
                   <th className="px-3 py-2">Type</th>
                   <th className="px-3 py-2">Size</th>
                   <th className="px-3 py-2">Items</th>
+                  <th className="px-3 py-2">Health</th>
                   <th className="px-3 py-2 text-right">Subtotal</th>
                 </tr>
               </thead>
@@ -349,6 +395,23 @@ export default async function SharePage({
                       {room.itemCount} item{room.itemCount === 1 ? "" : "s"}
                       <div className="text-xs text-neutral-500">
                         {room.shoppableCount} shoppable
+                      </div>
+                    </td>
+                    <td className="px-3 py-3">
+                      <div
+                        data-testid="share-room-health"
+                        className={
+                          room.healthLabel === "Ready"
+                            ? "font-semibold text-emerald-700"
+                            : room.healthLabel === "Review"
+                              ? "font-semibold text-amber-700"
+                              : "font-semibold text-red-700"
+                        }
+                      >
+                        {room.healthLabel} {room.healthScore}
+                      </div>
+                      <div className="max-w-52 truncate text-xs text-neutral-500" title={room.healthNextAction}>
+                        {room.healthNextAction}
                       </div>
                     </td>
                     <td className="px-3 py-3 text-right font-semibold text-neutral-950">

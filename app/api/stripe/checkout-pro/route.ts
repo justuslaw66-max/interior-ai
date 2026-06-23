@@ -13,6 +13,10 @@ import { config } from "@/lib/config";
 import { rateLimit } from "@/lib/rateLimit";
 import { logAppEvent } from "@/lib/app-events";
 import { trackMonetization } from "@/lib/monetization-tracking";
+import {
+  buildCheckoutBoundaryResponsePayload,
+  resolveCheckoutBoundaryDiagnostics,
+} from "@/lib/beta-checkout-boundary";
 
 function getStripeClient(secretKey: string) {
   return new Stripe(secretKey, {
@@ -24,6 +28,11 @@ export async function POST(request: Request) {
   try {
     if (!config.features.checkoutEnabled) {
       return NextResponse.json({ error: "Checkout is disabled" }, { status: 503 });
+    }
+
+    const boundary = resolveCheckoutBoundaryDiagnostics();
+    if (!boundary.checkoutSafe) {
+      return NextResponse.json(buildCheckoutBoundaryResponsePayload(boundary), { status: 503 });
     }
 
     const session = await auth();

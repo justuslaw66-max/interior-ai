@@ -128,9 +128,13 @@ type DesignControlsPanelProps = {
   aiLayoutProposal: AiLayoutProposal | null;
   activeFloorPlanTool: FloorPlanTool;
   simplePlanControls: boolean;
+  planGuidedActionsEnabled: boolean;
   planStartMode?: PlanStartMode;
+  planCompletionSignal?: { id: number; kind: "room" | "opening" } | null;
+  onPlanCompletionHandled?: (id: number) => void;
   onPlanStartModeChange?: (mode: PlanStartMode) => void;
   onSimplePlanControlsChange: (enabled: boolean) => void;
+  onPlanGuidedActionsEnabledChange: (enabled: boolean) => void;
   onSelectFloorPlanTool: () => void;
   onDrawFloorPlanRoom: () => void;
   onAddFloorPlanOpeningFromTool: (kind: RoomOpening2D["kind"]) => void;
@@ -294,9 +298,13 @@ export default function DesignControlsPanel({
   aiLayoutProposal,
   activeFloorPlanTool,
   simplePlanControls,
+  planGuidedActionsEnabled,
   planStartMode,
+  planCompletionSignal,
+  onPlanCompletionHandled,
   onPlanStartModeChange,
   onSimplePlanControlsChange,
+  onPlanGuidedActionsEnabledChange,
   onSelectFloorPlanTool,
   onDrawFloorPlanRoom,
   onAddFloorPlanOpeningFromTool,
@@ -561,9 +569,13 @@ export default function DesignControlsPanel({
             stackedFloorView={stackedFloorView}
             activeFloorPlanTool={activeFloorPlanTool}
             simplePlanControls={simplePlanControls}
+            planGuidedActionsEnabled={planGuidedActionsEnabled}
             planStartMode={planStartMode}
+            planCompletionSignal={planCompletionSignal}
+            onPlanCompletionHandled={onPlanCompletionHandled}
             onPlanStartModeChange={onPlanStartModeChange}
             onSimplePlanControlsChange={onSimplePlanControlsChange}
+            onPlanGuidedActionsEnabledChange={onPlanGuidedActionsEnabledChange}
             onSelectFloorPlanTool={onSelectFloorPlanTool}
             onDrawFloorPlanRoom={onDrawFloorPlanRoom}
             onAddFloorPlanOpeningFromTool={onAddFloorPlanOpeningFromTool}

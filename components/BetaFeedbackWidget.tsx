@@ -14,6 +14,15 @@ export type BetaFeedbackContext = {
   itemCount: number;
   openingCount: number;
   exportReadinessScore: number;
+  selectedItemId?: string | null;
+  selectedItemProductId?: string | null;
+  placementScore?: number | null;
+  placementKind?: string | null;
+  shoppingReadyCount?: number;
+  shoppingNeedsReviewCount?: number;
+  saveStatus?: string;
+  shareEnabled?: boolean;
+  activePlacementTarget?: string | null;
   viewportWidth: number;
   viewportHeight: number;
 };
@@ -51,7 +60,11 @@ export default function BetaFeedbackWidget({ context }: BetaFeedbackWidgetProps)
         `${context.itemCount} items`,
         `${context.openingCount} openings`,
         `${context.exportReadinessScore}% export`,
-      ].join(" / "),
+        context.placementScore != null ? `${context.placementScore} placement` : null,
+        context.shoppingNeedsReviewCount != null ? `${context.shoppingNeedsReviewCount} shopping review` : null,
+      ]
+        .filter(Boolean)
+        .join(" / "),
     [context]
   );
 
@@ -84,6 +97,12 @@ export default function BetaFeedbackWidget({ context }: BetaFeedbackWidgetProps)
       item_count: context.itemCount,
       opening_count: context.openingCount,
       export_readiness_score: context.exportReadinessScore,
+      placement_score: context.placementScore ?? null,
+      placement_kind: context.placementKind ?? null,
+      shopping_ready_count: context.shoppingReadyCount ?? null,
+      shopping_needs_review_count: context.shoppingNeedsReviewCount ?? null,
+      save_status: context.saveStatus ?? null,
+      share_enabled: context.shareEnabled ?? false,
     });
 
     try {

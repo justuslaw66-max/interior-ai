@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import type {
   HouseRoomConnectionChecklistItem,
   HouseRoomDoorwaySuggestion,
@@ -39,6 +39,7 @@ import PlanOpeningInspector from "./PlanOpeningInspector";
 import RoomConnectionChecklist from "./RoomConnectionChecklist";
 
 export type PlanStartMode = "start" | "draw" | "upload" | "template";
+type RoomSetupStep = "start" | "confirm" | "openings" | "furnish" | "done";
 
 type HouseRoomTemplate = {
   id: HouseRoomTemplateId;
@@ -147,9 +148,13 @@ type DesignControlsPlanPanelProps = {
   stackedFloorView: boolean;
   activeFloorPlanTool: FloorPlanTool;
   simplePlanControls: boolean;
+  planGuidedActionsEnabled: boolean;
   planStartMode?: PlanStartMode;
+  planCompletionSignal?: { id: number; kind: "room" | "opening" } | null;
+  onPlanCompletionHandled?: (id: number) => void;
   onPlanStartModeChange?: (mode: PlanStartMode) => void;
   onSimplePlanControlsChange: (enabled: boolean) => void;
+  onPlanGuidedActionsEnabledChange: (enabled: boolean) => void;
   onSelectFloorPlanTool: () => void;
   onDrawFloorPlanRoom: () => void;
   onAddFloorPlanOpeningFromTool: (kind: RoomOpening2D["kind"]) => void;
@@ -267,9 +272,13 @@ export default function DesignControlsPlanPanel({
   stackedFloorView,
   activeFloorPlanTool,
   simplePlanControls,
+  planGuidedActionsEnabled,
   planStartMode: controlledPlanStartMode,
+  planCompletionSignal,
+  onPlanCompletionHandled,
   onPlanStartModeChange,
   onSimplePlanControlsChange,
+  onPlanGuidedActionsEnabledChange,
   onSelectFloorPlanTool,
   onDrawFloorPlanRoom,
   onAddFloorPlanOpeningFromTool,
@@ -321,6 +330,7 @@ export default function DesignControlsPlanPanel({
   onUpdateOpeningMetrics,
 }: DesignControlsPlanPanelProps) {
   const [localPlanStartMode, setLocalPlanStartMode] = useState<PlanStartMode>("start");
+  const [roomSetupStep, setRoomSetupStep] = useState<RoomSetupStep>("confirm");
   const planStartMode = controlledPlanStartMode ?? localPlanStartMode;
   const setPlanStartMode = (mode: PlanStartMode) => {
     setLocalPlanStartMode(mode);
@@ -423,6 +433,19 @@ export default function DesignControlsPlanPanel({
     : hasOpenings
       ? `${planOpeningCount} placed`
       : "Optional";
+  const consumerPlanOpeningSummary = hasOpenings
+    ? `${planOpeningCount} openings placed.`
+    : "Openings optional.";
+  const consumerPlanConnectionSummary =
+    roomConnectionChecklistItems.length > 0 ? "Add doorway links from Connections." : "";
+  const consumerPlanNextSteps = [
+    `${planRoomCount} room${planRoomCount === 1 ? "" : "s"} ready.`,
+    consumerPlanOpeningSummary,
+    consumerPlanConnectionSummary,
+    hasStartedFurniture ? "Review the shop list when ready." : "Start furnishing when ready.",
+  ]
+    .filter(Boolean)
+    .join(" ");
   const furnitureStatusLabel = hasStartedFurniture
     ? `${planItemCount} item${planItemCount === 1 ? "" : "s"}`
     : "Not started";
@@ -447,7 +470,54 @@ export default function DesignControlsPlanPanel({
       active: hasRooms && hasStartedFurniture,
     },
   ];
-  const showStartPanel = !hasRooms;
+  const showRoomSetupWizard = !isDesigner && (showPlanDetails || !hasRooms);
+  const roomSetupActiveStep: RoomSetupStep = !hasRooms
+    ? "start"
+    : hasStartedFurniture
+      ? "done"
+      : hasConnectionBlockers
+        ? "openings"
+        : roomSetupStep === "start" || roomSetupStep === "done"
+          ? "confirm"
+          : roomSetupStep;
+  const showStartPanel = !hasRooms && !showRoomSetupWizard;
+  const showPlanProgressPanel = showPlanDetails && !showRoomSetupWizard;
+  const showPlanNextActionCard = showPlanDetails && !showRoomSetupWizard;
+  const showStandaloneFloorFinishPanel = hasRooms && showPlanDetails && !showRoomSetupWizard;
+  useEffect(() => {
+    if (!planCompletionSignal || isDesigner) return;
+
+    let nextStep: RoomSetupStep | null = null;
+    if (planCompletionSignal.kind === "room" && !hasStartedFurniture) {
+      nextStep = "openings";
+    } else if (
+      planCompletionSignal.kind === "opening" &&
+      hasRooms &&
+      !hasConnectionBlockers &&
+      !hasStartedFurniture
+    ) {
+      nextStep = "furnish";
+    }
+
+    if (!nextStep) {
+      onPlanCompletionHandled?.(planCompletionSignal.id);
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setRoomSetupStep(nextStep);
+      onPlanCompletionHandled?.(planCompletionSignal.id);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [
+    hasConnectionBlockers,
+    hasRooms,
+    hasStartedFurniture,
+    isDesigner,
+    onPlanCompletionHandled,
+    planCompletionSignal,
+  ]);
   const progressCardClass = dark
     ? "mt-2 rounded-lg border border-white/10 bg-[#151820] p-2.5"
     : "mt-2 rounded-lg border border-neutral-200 bg-white p-2.5";
@@ -475,6 +545,50 @@ export default function DesignControlsPlanPanel({
   const progressSecondaryActionClass = dark
     ? "rounded-lg border border-white/15 px-2.5 py-1.5 text-[11px] font-semibold text-neutral-100 disabled:opacity-50"
     : "rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-neutral-800 hover:bg-neutral-100 disabled:opacity-50";
+  const guidedActionsModeButtonClass = (active: boolean) =>
+    [
+      "min-h-8 rounded-md px-2.5 text-[11px] font-semibold transition",
+      active
+        ? dark
+          ? "bg-white text-neutral-950"
+          : "bg-neutral-950 text-white"
+        : dark
+          ? "text-neutral-300 hover:bg-white/10"
+          : "text-neutral-600 hover:bg-white",
+    ].join(" ");
+  const setupStageClass = (step: RoomSetupStep) => {
+    const isActive = roomSetupActiveStep === step;
+    const isReady =
+      step === "confirm"
+        ? hasRooms
+        : step === "openings"
+          ? hasOpenings && !hasConnectionBlockers
+          : step === "furnish"
+            ? hasStartedFurniture
+            : step === "done"
+              ? hasStartedFurniture
+              : false;
+
+    if (dark) {
+      return [
+        "rounded-lg border px-2 py-2 text-left transition",
+        isActive
+          ? "border-white/20 bg-white/10"
+          : isReady
+            ? "border-emerald-300/25 bg-emerald-400/10"
+            : "border-white/10 bg-white/5",
+      ].join(" ");
+    }
+
+    return [
+      "rounded-lg border px-2 py-2 text-left transition",
+      isActive
+        ? "border-neutral-900 bg-white"
+        : isReady
+          ? "border-emerald-200 bg-emerald-50"
+          : "border-neutral-200 bg-neutral-50",
+    ].join(" ");
+  };
   const activeFloorMaterial = getFloorMaterialById(activeRoomFloorMaterialId);
   const activeFloorRotationDeg = normalizeFloorRotationDeg(activeRoomFloorRotationDeg);
   const activeFloorScale = clampFloorPatternScale(activeRoomFloorScale);
@@ -569,9 +683,593 @@ export default function DesignControlsPlanPanel({
         : "border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50",
     ].join(" ");
   };
+  const startDrawRoomSetup = () => {
+    setRoomSetupStep("confirm");
+    setPlanStartMode("draw");
+    onFloorPlanTraceRoomDrawModeChange("rectangle_wall");
+    onFloorPlanTraceRoomModeChange(true);
+  };
 
   return (
     <div>
+      {showRoomSetupWizard && (
+        <div data-testid="room-setup-wizard" className={progressCardClass}>
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className={titleClass}>Room setup</div>
+              <div className={progressMetaClass}>
+                {!planGuidedActionsEnabled
+                  ? hasRooms
+                    ? `${activeRoomName} · ${roomWidth.toFixed(1)} x ${roomDepth.toFixed(1)}m`
+                    : "Choose, draw, or upload."
+                  : roomSetupActiveStep === "start"
+                    ? "Pick how you want to begin."
+                    : roomSetupActiveStep === "confirm"
+                      ? `${activeRoomName} · ${roomWidth.toFixed(1)} x ${roomDepth.toFixed(1)}m`
+                      : roomSetupActiveStep === "openings"
+                        ? hasOpenings
+                          ? `${planOpeningCount} opening${planOpeningCount === 1 ? "" : "s"} placed`
+                          : "Doors and windows are optional."
+                        : roomSetupActiveStep === "furnish"
+                          ? "The room outline is ready."
+                          : "Ready for review."}
+              </div>
+            </div>
+            <span className={!planGuidedActionsEnabled || hasRooms ? progressReadyClass : progressTodoClass}>
+              {!planGuidedActionsEnabled ? "Manual" : hasRooms ? "Room ready" : "Start"}
+            </span>
+          </div>
+
+          <div
+            data-testid="plan-guided-actions-panel-toggle"
+            className={
+              dark
+                ? "mt-3 grid grid-cols-[auto_1fr] items-center gap-2 rounded-lg bg-white/5 p-1.5"
+                : "mt-3 grid grid-cols-[auto_1fr] items-center gap-2 rounded-lg bg-neutral-50 p-1.5"
+            }
+            role="group"
+            aria-label="Plan action mode"
+          >
+            <span className={dark ? "px-1.5 text-[11px] font-semibold text-neutral-300" : "px-1.5 text-[11px] font-semibold text-neutral-600"}>
+              Actions
+            </span>
+            <div className="grid grid-cols-2 gap-1">
+              <button
+                type="button"
+                data-testid="plan-guided-actions-panel-guided"
+                data-active={planGuidedActionsEnabled ? "true" : "false"}
+                className={guidedActionsModeButtonClass(planGuidedActionsEnabled)}
+                onClick={() => onPlanGuidedActionsEnabledChange(true)}
+              >
+                Guided
+              </button>
+              <button
+                type="button"
+                data-testid="plan-guided-actions-panel-manual"
+                data-active={!planGuidedActionsEnabled ? "true" : "false"}
+                className={guidedActionsModeButtonClass(!planGuidedActionsEnabled)}
+                onClick={() => onPlanGuidedActionsEnabledChange(false)}
+              >
+                Manual
+              </button>
+            </div>
+          </div>
+
+          {!planGuidedActionsEnabled ? (
+            <div data-testid="manual-plan-setup" className="mt-3 grid gap-2">
+              {hasRooms ? (
+                <div data-testid="manual-plan-room-status" className={progressRowClass}>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className={progressLabelClass}>{activeRoomName}</div>
+                      <div className={progressMetaClass}>
+                        {activeRoomTypeLabel} · {roomWidth.toFixed(1)} x {roomDepth.toFixed(1)}m
+                      </div>
+                    </div>
+                    <span className={progressReadyClass}>{activeRoomArea.toFixed(0)} m2</span>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  data-testid="manual-room-start"
+                  className={
+                    dark
+                      ? "rounded-lg border border-white/10 bg-white/5 p-3"
+                      : "rounded-lg border border-neutral-200 bg-white p-3"
+                  }
+                >
+                  <div className="grid gap-2">
+                    <label className={consumerFieldLabelClass}>
+                      Room
+                      <select
+                        value={newRoomType}
+                        onChange={(event) => onNewRoomTypeChange(event.target.value as RoomType)}
+                        className={consumerInputClass}
+                        disabled={!canEdit}
+                      >
+                        {HOUSE_ROOM_TYPES.map((option) => (
+                          <option key={option.type} value={option.type}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className={consumerFieldLabelClass}>
+                      Size
+                      <select
+                        value={activeRoomPresetId}
+                        onChange={(event) => onRoomPresetChange(event.target.value as RoomSizePresetId)}
+                        className={consumerInputClass}
+                        disabled={!canEdit}
+                      >
+                        {ROOM_SIZE_PRESETS.map((preset) => (
+                          <option key={preset.id} value={preset.id}>
+                            {preset.label}
+                          </option>
+                        ))}
+                        <option value="custom">Custom size</option>
+                      </select>
+                    </label>
+                  </div>
+                  <button
+                    type="button"
+                    data-testid="manual-create-room"
+                    className={`${progressActionClass} mt-3 min-h-10 w-full`}
+                    disabled={!canEdit}
+                    onClick={() => {
+                      onNewRoomShapeChange("rectangle");
+                      onAddDesignerRoom();
+                      setRoomSetupStep("confirm");
+                    }}
+                  >
+                    Create {roomTypeLabel.toLowerCase()}
+                  </button>
+                </div>
+              )}
+
+              <div data-testid="manual-plan-panel-actions" className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  data-testid="manual-panel-select"
+                  className={`${progressSecondaryActionClass} min-h-10`}
+                  disabled={!canEdit || !hasRooms}
+                  onClick={onSelectFloorPlanTool}
+                >
+                  Select
+                </button>
+                <button
+                  type="button"
+                  data-testid="manual-panel-draw"
+                  className={`${progressActionClass} min-h-10`}
+                  disabled={!canEdit}
+                  onClick={startDrawRoomSetup}
+                >
+                  Draw
+                </button>
+                <button
+                  type="button"
+                  data-testid="manual-panel-door"
+                  className={`${progressSecondaryActionClass} min-h-10`}
+                  disabled={!canEdit || !hasRooms}
+                  onClick={() => onAddFloorPlanOpeningFromTool("door")}
+                >
+                  Door
+                </button>
+                <button
+                  type="button"
+                  data-testid="manual-panel-window"
+                  className={`${progressSecondaryActionClass} min-h-10`}
+                  disabled={!canEdit || !hasRooms}
+                  onClick={() => onAddFloorPlanOpeningFromTool("window")}
+                >
+                  Window
+                </button>
+                <button
+                  type="button"
+                  data-testid="manual-panel-upload"
+                  className={`${progressSecondaryActionClass} min-h-10`}
+                  disabled={!canEdit}
+                  onClick={() => {
+                    setRoomSetupStep("confirm");
+                    setPlanStartMode("upload");
+                  }}
+                >
+                  Upload
+                </button>
+                <button
+                  type="button"
+                  data-testid="manual-panel-furnish"
+                  className={`${progressSecondaryActionClass} min-h-10`}
+                  disabled={!canEdit || !hasRooms}
+                  onClick={onGoFurnish}
+                >
+                  Furnish
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="mt-3 grid grid-cols-3 gap-2" data-testid="room-setup-stepper">
+                {[
+                  { id: "confirm" as RoomSetupStep, label: "Room", meta: hasRooms ? "Ready" : "Choose" },
+                  { id: "openings" as RoomSetupStep, label: "Openings", meta: openingStatusLabel },
+                  { id: "furnish" as RoomSetupStep, label: "Furnish", meta: furnitureStatusLabel },
+                ].map((step, index) => (
+                  <button
+                    key={step.id}
+                    type="button"
+                    className={setupStageClass(step.id)}
+                    onClick={() => {
+                      if (!hasRooms && step.id !== "confirm") return;
+                      setRoomSetupStep(step.id);
+                    }}
+                    disabled={!hasRooms && step.id !== "confirm"}
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <span
+                        className={
+                          roomSetupActiveStep === step.id
+                            ? dark
+                              ? "flex h-4 w-4 items-center justify-center rounded-full bg-white text-[10px] font-bold text-neutral-950"
+                              : "flex h-4 w-4 items-center justify-center rounded-full bg-neutral-900 text-[10px] font-bold text-white"
+                            : dark
+                              ? "flex h-4 w-4 items-center justify-center rounded-full bg-white/10 text-[10px] font-bold text-neutral-300"
+                              : "flex h-4 w-4 items-center justify-center rounded-full bg-neutral-200 text-[10px] font-bold text-neutral-600"
+                        }
+                      >
+                        {index + 1}
+                      </span>
+                      <span className={dark ? "truncate text-[11px] font-semibold text-neutral-100" : "truncate text-[11px] font-semibold text-neutral-900"}>
+                        {step.label}
+                      </span>
+                    </span>
+                    <span className={dark ? "mt-1 block truncate text-[10px] text-neutral-400" : "mt-1 block truncate text-[10px] text-neutral-500"}>
+                      {step.meta}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              {hasRooms && (
+                <div
+                  data-testid="consumer-plan-next-steps"
+                  className={dark ? "mt-2 text-xs text-neutral-300" : "mt-2 text-xs text-neutral-600"}
+                >
+                  {consumerPlanNextSteps}
+                </div>
+              )}
+
+              {roomSetupActiveStep === "start" && (
+                <div className="mt-3 grid gap-2">
+                  <button
+                    type="button"
+                    data-testid="plan-start-template"
+                    className={planStartButtonClass("template")}
+                    disabled={!canEdit}
+                    onClick={() => {
+                      setRoomSetupStep("confirm");
+                      setPlanStartMode("template");
+                    }}
+                  >
+                    Use template
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="plan-start-draw"
+                    className={planStartButtonClass("draw")}
+                    disabled={!canEdit}
+                    onClick={startDrawRoomSetup}
+                  >
+                    Draw room
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="plan-start-upload"
+                    className={planStartButtonClass("upload")}
+                    disabled={!canEdit}
+                    onClick={() => {
+                      setRoomSetupStep("confirm");
+                      setPlanStartMode("upload");
+                    }}
+                  >
+                    Upload plan
+                  </button>
+                  {!hasRooms && (
+                    <div
+                      data-testid="guided-room-start"
+                      className={
+                        dark
+                          ? "rounded-lg border border-white/10 bg-white/5 p-3"
+                          : "rounded-lg border border-neutral-200 bg-white p-3"
+                      }
+                    >
+                      <div className="grid gap-2">
+                        <label className={consumerFieldLabelClass}>
+                          Room
+                          <select
+                            value={newRoomType}
+                            onChange={(event) => onNewRoomTypeChange(event.target.value as RoomType)}
+                            className={consumerInputClass}
+                            disabled={!canEdit}
+                          >
+                            {HOUSE_ROOM_TYPES.map((option) => (
+                              <option key={option.type} value={option.type}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <label className={consumerFieldLabelClass}>
+                          Size
+                          <select
+                            value={activeRoomPresetId}
+                            onChange={(event) => onRoomPresetChange(event.target.value as RoomSizePresetId)}
+                            className={consumerInputClass}
+                            disabled={!canEdit}
+                          >
+                            {ROOM_SIZE_PRESETS.map((preset) => (
+                              <option key={preset.id} value={preset.id}>
+                                {preset.label}
+                              </option>
+                            ))}
+                            <option value="custom">Custom size</option>
+                          </select>
+                        </label>
+                      </div>
+                      <button
+                        type="button"
+                        data-testid="guided-create-room"
+                        className={`${progressActionClass} mt-3 min-h-11 w-full text-sm`}
+                        disabled={!canEdit}
+                        onClick={() => {
+                          onNewRoomShapeChange("rectangle");
+                          onAddDesignerRoom();
+                          setRoomSetupStep("confirm");
+                        }}
+                      >
+                        Create {roomTypeLabel.toLowerCase()}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {roomSetupActiveStep === "confirm" && hasRooms && (
+                <div data-testid="room-setup-confirm-room" className="mt-3 grid gap-2">
+                  <div className={progressRowClass}>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className={progressLabelClass}>{activeRoomName}</div>
+                        <div className={progressMetaClass}>
+                          {activeRoomTypeLabel} · {roomWidth.toFixed(1)} x {roomDepth.toFixed(1)}m · {activeFloorMaterial.name}
+                        </div>
+                      </div>
+                      <span className={progressReadyClass}>{activeRoomArea.toFixed(0)} m2</span>
+                    </div>
+                  </div>
+                  <details data-testid="plan-measurements-panel">
+                    <summary
+                      className={
+                        dark
+                          ? "cursor-pointer text-xs font-semibold text-neutral-300"
+                          : "cursor-pointer text-xs font-semibold text-neutral-600"
+                      }
+                    >
+                      Size and finish
+                    </summary>
+                    <div className="mt-2 grid grid-cols-2 gap-2">
+                      <label className={consumerFieldLabelClass}>
+                        Width
+                        <span className={consumerInputShellClass}>
+                          <input
+                            type="number"
+                            inputMode="decimal"
+                            min={ROOM_DIMENSION_DEFAULTS.min}
+                            max={ROOM_DIMENSION_DEFAULTS.max}
+                            step={0.1}
+                            value={roomWidthInput}
+                            onChange={(event) => onRoomWidthInputChange(event.target.value)}
+                            className="min-w-0 flex-1 bg-transparent text-sm outline-none"
+                            disabled={!canEdit}
+                          />
+                          <span className={dark ? "text-xs text-neutral-400" : "text-xs text-neutral-500"}>m</span>
+                        </span>
+                      </label>
+                      <label className={consumerFieldLabelClass}>
+                        Depth
+                        <span className={consumerInputShellClass}>
+                          <input
+                            type="number"
+                            inputMode="decimal"
+                            min={ROOM_DIMENSION_DEFAULTS.min}
+                            max={ROOM_DIMENSION_DEFAULTS.max}
+                            step={0.1}
+                            value={roomDepthInput}
+                            onChange={(event) => onRoomDepthInputChange(event.target.value)}
+                            className="min-w-0 flex-1 bg-transparent text-sm outline-none"
+                            disabled={!canEdit}
+                          />
+                          <span className={dark ? "text-xs text-neutral-400" : "text-xs text-neutral-500"}>m</span>
+                        </span>
+                      </label>
+                    </div>
+                    <button
+                      type="button"
+                      className={`${progressSecondaryActionClass} mt-2 min-h-10 w-full`}
+                      onClick={onApplyRoomSize}
+                      disabled={!canEdit}
+                    >
+                      Apply size
+                    </button>
+                    <div className="mt-2 grid grid-cols-2 gap-2">
+                      {recommendedFloorMaterials.slice(0, 2).map((material) => (
+                        <button
+                          key={material.id}
+                          type="button"
+                          className={floorMaterialButtonClass(material.id)}
+                          disabled={!canEdit}
+                          onClick={() => onApplyFloorMaterialToRoom(material.id)}
+                        >
+                          <span
+                            className="h-8 w-8 shrink-0 rounded-md border border-black/10"
+                            style={getFloorMaterialSwatchStyle(material)}
+                          />
+                          <span className="min-w-0 text-left">
+                            <span className="block truncate">{material.name}</span>
+                            <span className={floorMaterialMetaClass}>{material.category}</span>
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </details>
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      type="button"
+                      data-testid="plan-start-template"
+                      className={planStartButtonClass("template")}
+                      disabled={!canEdit}
+                      onClick={() => {
+                        setRoomSetupStep("confirm");
+                        setPlanStartMode("template");
+                      }}
+                    >
+                      Template
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="plan-start-draw"
+                      className={planStartButtonClass("draw")}
+                      disabled={!canEdit}
+                      onClick={startDrawRoomSetup}
+                    >
+                      Draw
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="plan-start-upload"
+                      className={planStartButtonClass("upload")}
+                      disabled={!canEdit}
+                      onClick={() => {
+                        setRoomSetupStep("confirm");
+                        setPlanStartMode("upload");
+                      }}
+                    >
+                      Upload
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      className={`${progressActionClass} min-h-10`}
+                      onClick={() => setRoomSetupStep("openings")}
+                      disabled={!canEdit}
+                    >
+                      Looks good
+                    </button>
+                    <button
+                      type="button"
+                      className={`${progressSecondaryActionClass} min-h-10`}
+                      onClick={startDrawRoomSetup}
+                      disabled={!canEdit}
+                    >
+                      Redraw
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {roomSetupActiveStep === "openings" && hasRooms && (
+                <div data-testid="room-setup-openings" className="mt-3 grid gap-2">
+                  <div className={progressRowClass}>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className={progressLabelClass}>Doors and windows</div>
+                        <div className={progressMetaClass}>
+                          {hasConnectionBlockers ? "Add a doorway where rooms connect." : "Add openings now or keep furnishing simple."}
+                        </div>
+                      </div>
+                      <span className={hasConnectionBlockers ? progressTodoClass : progressReadyClass}>
+                        {openingStatusLabel}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      className={`${progressActionClass} min-h-10`}
+                      onClick={() => onAddFloorPlanOpeningFromTool("door")}
+                      disabled={!canEdit}
+                    >
+                      Add door
+                    </button>
+                    <button
+                      type="button"
+                      className={`${progressSecondaryActionClass} min-h-10`}
+                      onClick={() => onAddFloorPlanOpeningFromTool("window")}
+                      disabled={!canEdit}
+                    >
+                      Add window
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    className={`${progressSecondaryActionClass} min-h-10 w-full`}
+                    onClick={() => setRoomSetupStep("furnish")}
+                    disabled={hasConnectionBlockers}
+                  >
+                    {hasOpenings ? "Continue" : "Skip for now"}
+                  </button>
+                </div>
+              )}
+
+              {roomSetupActiveStep === "furnish" && hasRooms && (
+                <div data-testid="room-setup-furnish" className="mt-3 grid gap-2">
+                  <div className={progressRowClass}>
+                    <div className={progressLabelClass}>Ready to furnish</div>
+                    <div className={progressMetaClass}>
+                      {hasOpenings ? `${planOpeningCount} opening${planOpeningCount === 1 ? "" : "s"} placed.` : "You can add doors or windows later."}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className={`${progressActionClass} min-h-11 w-full text-sm`}
+                    onClick={onGoFurnish}
+                    disabled={!canEdit}
+                  >
+                    Start furnishing
+                  </button>
+                  {aiDesignEnabled && (
+                    <button
+                      type="button"
+                      className={`${progressSecondaryActionClass} min-h-10 w-full`}
+                      onClick={onGoAiDesign}
+                      disabled={!canEdit}
+                    >
+                      Ask AI for a starter layout
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {roomSetupActiveStep === "done" && (
+                <div data-testid="room-setup-complete" className="mt-3 grid gap-2">
+                  <div className={progressRowClass}>
+                    <div className={progressLabelClass}>Setup complete</div>
+                    <div className={progressMetaClass}>{planItemCount} item{planItemCount === 1 ? "" : "s"} placed.</div>
+                  </div>
+                  <button
+                    type="button"
+                    className={`${progressSecondaryActionClass} min-h-10 w-full`}
+                    onClick={onGoShop}
+                  >
+                    Review shop list
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
       {showStartPanel && (
         <div
           className={
@@ -724,9 +1422,10 @@ export default function DesignControlsPlanPanel({
                 type="button"
                 data-testid="plan-start-draw"
                 className={planStartButtonClass("draw")}
-                disabled={!canEdit || viewMode !== "2d"}
+                disabled={!canEdit}
                 onClick={() => {
                   setPlanStartMode("draw");
+                  onFloorPlanTraceRoomDrawModeChange("rectangle_wall");
                   onFloorPlanTraceRoomModeChange(true);
                 }}
               >
@@ -777,7 +1476,7 @@ export default function DesignControlsPlanPanel({
           )}
         </div>
       )}
-      {showPlanDetails && (
+      {showPlanProgressPanel && (
         <div data-testid="plan-measurements-panel" className={progressCardClass}>
           <div className="flex items-start justify-between gap-3">
             <div>
@@ -1031,7 +1730,7 @@ export default function DesignControlsPlanPanel({
           )}
         </div>
       )}
-      {showPlanDetails && (
+      {showPlanNextActionCard && (
         <div data-testid="plan-next-action-card" className={progressCardClass}>
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
@@ -1335,7 +2034,7 @@ export default function DesignControlsPlanPanel({
           </div>
         </div>
       )}
-      {hasRooms && showPlanDetails && (
+      {showStandaloneFloorFinishPanel && (
         <div data-testid="floor-finish-panel" className={progressCardClass}>
           <div className="flex items-start justify-between gap-3">
             <div>

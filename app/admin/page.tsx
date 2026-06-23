@@ -5,6 +5,11 @@ import { bytesToMiB, resolveImportQaLimits } from "@/lib/importQaPolicy";
 import { getRejectedLiveGateAssets, type LiveGateReasonCode } from "@/lib/live-catalog";
 import { computePaywallPerformanceSummary } from "@/lib/paywall-performance";
 import { computeRevenueFunnelMetrics } from "@/lib/revenue-funnel";
+import { CATALOG_ITEMS } from "@/lib/catalog";
+import { buildCatalogCommerceReadiness } from "@/lib/catalog-commerce-readiness";
+import { resolveCheckoutBoundaryDiagnostics } from "@/lib/beta-checkout-boundary";
+import { buildBetaFeedbackTriage } from "@/lib/beta-feedback-triage";
+import { buildBetaLaunchReadinessSummary } from "@/lib/beta-launch-readiness";
 import PaywallPerformancePanel from "@/components/admin/PaywallPerformancePanel";
 import RevenueFunnelPanel from "@/components/admin/RevenueFunnelPanel";
 import { config } from "@/lib/config";
@@ -18,6 +23,14 @@ type WebhookFailureEvent = {
   createdAt: Date;
 };
 
+type BetaFeedbackEvent = {
+  id: string;
+  designId: string | null;
+  shareToken: string | null;
+  meta: Record<string, unknown> | null;
+  createdAt: Date;
+};
+
 type PaywallEvent = {
   id: string;
   eventType: string;
@@ -27,6 +40,20 @@ type PaywallEvent = {
 
 function daysAgo(n: number) {
   return new Date(Date.now() - n * 24 * 60 * 60 * 1000);
+}
+
+function getRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function getString(value: unknown, fallback = "Unknown") {
+  return typeof value === "string" && value.trim() ? value : fallback;
+}
+
+function getNumber(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
 function buildPaywallPerformanceCsv(params: {
@@ -82,6 +109,107 @@ function buildPaywallPerformanceCsv(params: {
     .join("\n");
 }
 
+function buildBetaFeedbackCsv(params: {
+  generatedAt: Date;
+  rows: BetaFeedbackEvent[];
+}) {
+  const csvRows = [
+    ["generated_at", params.generatedAt.toISOString()],
+    [],
+    [
+      "created_at",
+      "design_id",
+      "share_token",
+      "page",
+      "note",
+      "active_room",
+      "mode",
+      "view_mode",
+      "placement_kind",
+      "placement_score",
+      "shopping_needs_review",
+      "save_status",
+      "share_enabled",
+      "viewport",
+      "severity",
+      "route",
+      "triage_label",
+    ],
+    ...params.rows.map((event) => {
+      const meta = getRecord(event.meta);
+      const context = getRecord(meta.context);
+      const triage = buildBetaFeedbackTriage(event.meta);
+      const viewportWidth = getNumber(context.viewportWidth);
+      const viewportHeight = getNumber(context.viewportHeight);
+
+      return [
+        event.createdAt.toISOString(),
+        event.designId ?? "",
+        event.shareToken ?? "",
+        getString(meta.page, ""),
+        getString(meta.note, ""),
+        getString(context.activeRoomName, ""),
+        getString(context.mode, ""),
+        getString(context.viewMode, ""),
+        getString(context.placementKind, ""),
+        String(getNumber(context.placementScore) ?? ""),
+        String(getNumber(context.shoppingNeedsReviewCount) ?? ""),
+        getString(context.saveStatus, ""),
+        String(Boolean(context.shareEnabled)),
+        viewportWidth && viewportHeight ? `${viewportWidth}x${viewportHeight}` : "",
+        triage.severity,
+        triage.route,
+        triage.label,
+      ];
+    }),
+  ];
+
+  return csvRows
+    .map((row) =>
+      row
+        .map((cell) => {
+          const escaped = cell.replace(/"/g, '""');
+          return `"${escaped}"`;
+        })
+        .join(",")
+    )
+    .join("\n");
+}
+
+function buildBetaLaunchReadinessCsv(params: {
+  generatedAt: Date;
+  summary: ReturnType<typeof buildBetaLaunchReadinessSummary>;
+}) {
+  const rows = [
+    ["generated_at", params.generatedAt.toISOString()],
+    ["status", params.summary.status],
+    ["label", params.summary.label],
+    ["checkout_safe", String(params.summary.signals.checkoutSafe)],
+    ["critical_feedback_count", String(params.summary.signals.criticalFeedbackCount)],
+    ["high_feedback_count", String(params.summary.signals.highFeedbackCount)],
+    ["catalog_commerce_issue_count", String(params.summary.signals.catalogCommerceIssueCount)],
+    ["share_created_24h", String(params.summary.signals.shareCreated24h)],
+    ["export_opened_24h", String(params.summary.signals.exportOpened24h)],
+    [],
+    ["blockers"],
+    ...params.summary.blockers.map((blocker) => [blocker]),
+    [],
+    ["warnings"],
+    ...params.summary.warnings.map((warning) => [warning]),
+  ];
+
+  return rows
+    .map((row) =>
+      row
+        .map((cell) => {
+          const escaped = cell.replace(/"/g, '""');
+          return `"${escaped}"`;
+        })
+        .join(",")
+    )
+    .join("\n");
+}
+
 const LIVE_GATE_REASON_LABELS: Record<LiveGateReasonCode, string> = {
   NOT_APPROVED: "Asset status is not approved",
   INVALID_AABB: "Invalid AABB bounds",
@@ -118,7 +246,8 @@ export default async function AdminOverviewPage({
         where: { eventType: string; createdAt: { gte: Date } };
         orderBy: { createdAt: "desc" | "asc" };
         take: number;
-      }) => Promise<WebhookFailureEvent[]>;
+        select?: Record<string, boolean>;
+      }) => Promise<WebhookFailureEvent[] | BetaFeedbackEvent[]>;
     };
   }).appEvent;
 
@@ -145,6 +274,7 @@ export default async function AdminOverviewPage({
     recentDesigns,
     recentOrders,
     recentWebhookFails,
+    recentBetaFeedback,
     paywallEvents7d,
     liveGateRejected,
   ] = await Promise.all([
@@ -212,7 +342,19 @@ export default async function AdminOverviewPage({
       where: { eventType: "webhook_failed", createdAt: { gte: since24h } },
       orderBy: { createdAt: "desc" },
       take: 10,
-    }),
+    }) as Promise<WebhookFailureEvent[]>,
+    appEventClient.findMany({
+      where: { eventType: "beta_feedback_submitted", createdAt: { gte: since7d } },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      select: {
+        id: true,
+        designId: true,
+        shareToken: true,
+        meta: true,
+        createdAt: true,
+      },
+    }) as Promise<BetaFeedbackEvent[]>,
     prisma.appEvent.findMany({
       where: {
         eventType: { in: ["upgrade_clicked", "checkout_started"] },
@@ -255,6 +397,29 @@ export default async function AdminOverviewPage({
   const importQaLimits = resolveImportQaLimits();
   const importQaReportDir = process.env.IMPORT_QA_REPORT_DIR || "reports/import-qa";
   const finishGateEnabled = process.env.LIVE_GATE_REQUIRE_FINISH_MAPPING === "true";
+  const catalogCommerceReadiness = buildCatalogCommerceReadiness(Object.values(CATALOG_ITEMS));
+  const checkoutBoundaryDiagnostics = resolveCheckoutBoundaryDiagnostics();
+  const betaFeedbackTriages = recentBetaFeedback.map((event) => buildBetaFeedbackTriage(event.meta));
+  const betaLaunchReadiness = buildBetaLaunchReadinessSummary({
+    checkout: checkoutBoundaryDiagnostics,
+    catalog: catalogCommerceReadiness,
+    feedback: betaFeedbackTriages,
+    shareCreated24h,
+    exportOpened24h,
+  });
+  const betaFeedbackCsvGeneratedAt = new Date();
+  const betaFeedbackCsvHref = `data:text/csv;charset=utf-8,${encodeURIComponent(
+    buildBetaFeedbackCsv({
+      generatedAt: betaFeedbackCsvGeneratedAt,
+      rows: recentBetaFeedback,
+    })
+  )}`;
+  const betaLaunchReadinessCsvHref = `data:text/csv;charset=utf-8,${encodeURIComponent(
+    buildBetaLaunchReadinessCsv({
+      generatedAt: betaFeedbackCsvGeneratedAt,
+      summary: betaLaunchReadiness,
+    })
+  )}`;
 
   return (
     <div className="p-6 space-y-8">
@@ -285,6 +450,81 @@ export default async function AdminOverviewPage({
           </Link>
         </div>
       </header>
+
+      <section className="rounded-xl border p-4" data-testid="beta-launch-readiness">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold">Beta Launch Readiness</h2>
+            <p className="mt-1 text-xs text-neutral-600">
+              Combined launch signal from checkout boundary, catalog commerce, feedback triage, share, and export activity.
+            </p>
+            <a
+              data-testid="beta-launch-readiness-csv"
+              href={betaLaunchReadinessCsvHref}
+              download="beta-launch-readiness.csv"
+              className="mt-2 inline-block text-xs font-semibold text-blue-600 hover:text-blue-700"
+            >
+              Download readiness CSV
+            </a>
+          </div>
+          <div
+            data-testid="beta-launch-readiness-status"
+            className={
+              betaLaunchReadiness.status === "ready"
+                ? "rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700"
+                : betaLaunchReadiness.status === "review"
+                  ? "rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700"
+                  : "rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-700"
+            }
+          >
+            {betaLaunchReadiness.label}
+          </div>
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-5">
+          <div className="rounded-lg border p-3">
+            <div className="text-xs text-neutral-500">Checkout</div>
+            <div className="text-sm font-semibold">{betaLaunchReadiness.signals.checkoutSafe ? "Safe" : "Blocked"}</div>
+          </div>
+          <div className="rounded-lg border p-3">
+            <div className="text-xs text-neutral-500">Critical feedback</div>
+            <div className="text-sm font-semibold">{betaLaunchReadiness.signals.criticalFeedbackCount}</div>
+          </div>
+          <div className="rounded-lg border p-3">
+            <div className="text-xs text-neutral-500">High feedback</div>
+            <div className="text-sm font-semibold">{betaLaunchReadiness.signals.highFeedbackCount}</div>
+          </div>
+          <div className="rounded-lg border p-3">
+            <div className="text-xs text-neutral-500">Catalog issues</div>
+            <div className="text-sm font-semibold">{betaLaunchReadiness.signals.catalogCommerceIssueCount}</div>
+          </div>
+          <div className="rounded-lg border p-3">
+            <div className="text-xs text-neutral-500">Share/export 24h</div>
+            <div className="text-sm font-semibold">
+              {betaLaunchReadiness.signals.shareCreated24h}/{betaLaunchReadiness.signals.exportOpened24h}
+            </div>
+          </div>
+        </div>
+        {betaLaunchReadiness.blockers.length > 0 ? (
+          <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800">
+            <div className="font-semibold">Blockers</div>
+            <ul className="mt-1 list-disc pl-4">
+              {betaLaunchReadiness.blockers.map((blocker) => (
+                <li key={blocker}>{blocker}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+        {betaLaunchReadiness.warnings.length > 0 ? (
+          <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+            <div className="font-semibold">Warnings</div>
+            <ul className="mt-1 list-disc pl-4">
+              {betaLaunchReadiness.warnings.map((warning) => (
+                <li key={warning}>{warning}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+      </section>
 
       <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <div className="rounded-xl border p-4">
@@ -331,6 +571,108 @@ export default async function AdminOverviewPage({
             <div className="text-xs text-neutral-500">SENTRY_ISSUES_URL not set</div>
           )}
         </div>
+        <div className="rounded-xl border p-4">
+          <div className="text-sm text-neutral-500">Beta feedback (7d)</div>
+          <div className="text-2xl font-semibold">{recentBetaFeedback.length}</div>
+          <div className="text-xs text-neutral-500">Latest triage reports</div>
+        </div>
+      </section>
+
+      <section className="rounded-xl border p-4" data-testid="beta-feedback-triage">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold">Beta Feedback Triage</h2>
+            <p className="mt-1 text-xs text-neutral-600">
+              Recent reports include editor mode, room, placement, shopping, save, share, and viewport context.
+            </p>
+          </div>
+          <div className="text-right">
+            <a
+              data-testid="beta-feedback-triage-csv"
+              href={betaFeedbackCsvHref}
+              download="beta-feedback-triage.csv"
+              className="text-xs font-semibold text-blue-600 hover:text-blue-700"
+            >
+              Download CSV
+            </a>
+            <div className="mt-1 text-xs text-neutral-500">{recentBetaFeedback.length} in 7d</div>
+          </div>
+        </div>
+        <div className="mt-3 space-y-3">
+          {recentBetaFeedback.map((event) => {
+            const meta = getRecord(event.meta);
+            const context = getRecord(meta.context);
+            const note = getString(meta.note, "No note");
+            const page = getString(meta.page, "Unknown page");
+            const activeRoomName = getString(context.activeRoomName, "Unknown room");
+            const modeLabel = `${getString(context.mode, "mode")} / ${getString(context.viewMode, "view")}`;
+            const placementScore = getNumber(context.placementScore);
+            const placementKind = getString(context.placementKind, "none");
+            const shoppingNeedsReview = getNumber(context.shoppingNeedsReviewCount);
+            const saveStatus = getString(context.saveStatus, "unknown");
+            const shareEnabled = Boolean(context.shareEnabled);
+            const triage = buildBetaFeedbackTriage(event.meta);
+            const triageClass =
+              triage.severity === "critical"
+                ? "bg-red-50 text-red-700 border-red-200"
+                : triage.severity === "high"
+                  ? "bg-amber-50 text-amber-700 border-amber-200"
+                  : triage.severity === "medium"
+                    ? "bg-blue-50 text-blue-700 border-blue-200"
+                    : "bg-neutral-50 text-neutral-600 border-neutral-200";
+
+            return (
+              <div key={event.id} className="rounded-lg border p-3 text-sm">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="font-medium text-neutral-950">{note}</div>
+                      <span
+                        data-testid="beta-feedback-triage-severity"
+                        className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold ${triageClass}`}
+                      >
+                        {triage.severity} · {triage.label}
+                      </span>
+                    </div>
+                    <div className="mt-1 text-xs text-neutral-500">
+                      {page} · {event.createdAt.toLocaleString()} · {triage.route}
+                    </div>
+                    <div className="mt-1 text-xs text-neutral-500">{triage.detail}</div>
+                  </div>
+                  <div className="text-right text-xs text-neutral-500">
+                    <div>{event.designId ?? "No design"}</div>
+                    <div>{event.shareToken ? "Share linked" : "No share"}</div>
+                  </div>
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-2 text-xs md:grid-cols-4">
+                  <div className="rounded border bg-neutral-50 p-2">
+                    <div className="text-neutral-500">Room</div>
+                    <div className="font-semibold">{activeRoomName}</div>
+                  </div>
+                  <div className="rounded border bg-neutral-50 p-2">
+                    <div className="text-neutral-500">Mode</div>
+                    <div className="font-semibold">{modeLabel}</div>
+                  </div>
+                  <div className="rounded border bg-neutral-50 p-2">
+                    <div className="text-neutral-500">Placement</div>
+                    <div className="font-semibold">
+                      {placementScore === null ? placementKind : `${placementKind} ${placementScore}`}
+                    </div>
+                  </div>
+                  <div className="rounded border bg-neutral-50 p-2">
+                    <div className="text-neutral-500">State</div>
+                    <div className="font-semibold">
+                      {saveStatus} · {shareEnabled ? "shared" : "not shared"} · {shoppingNeedsReview ?? 0} review
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          {recentBetaFeedback.length === 0 && (
+            <div className="text-xs text-neutral-500">No beta feedback submitted in the last 7 days.</div>
+          )}
+        </div>
       </section>
 
       <RevenueFunnelPanel
@@ -350,6 +692,126 @@ export default async function AdminOverviewPage({
         csvHref={paywallCsvHref}
         generatedAtLabel={paywallCsvGeneratedAt.toLocaleString()}
       />
+
+      <section className="rounded-xl border p-4" data-testid="checkout-boundary-diagnostics">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold">Checkout Boundary</h2>
+            <p className="mt-1 text-xs text-neutral-600">
+              Secret-safe diagnostics for staging and production checkout configuration.
+            </p>
+          </div>
+          <div
+            data-testid="checkout-boundary-status"
+            className={
+              checkoutBoundaryDiagnostics.checkoutSafe
+                ? "rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700"
+                : "rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700"
+            }
+          >
+            {checkoutBoundaryDiagnostics.checkoutSafe ? "Safe" : "Blocked"}
+          </div>
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-4">
+          <div className="rounded-lg border p-3">
+            <div className="text-xs text-neutral-500">App stage</div>
+            <div className="text-sm font-semibold">{checkoutBoundaryDiagnostics.appStage}</div>
+          </div>
+          <div className="rounded-lg border p-3">
+            <div className="text-xs text-neutral-500">Stripe secret</div>
+            <div className="text-sm font-semibold">{checkoutBoundaryDiagnostics.stripeSecretMode}</div>
+          </div>
+          <div className="rounded-lg border p-3">
+            <div className="text-xs text-neutral-500">Stripe publishable</div>
+            <div className="text-sm font-semibold">{checkoutBoundaryDiagnostics.stripePublishableMode}</div>
+          </div>
+          <div className="rounded-lg border p-3">
+            <div className="text-xs text-neutral-500">Database</div>
+            <div className="text-sm font-semibold">{checkoutBoundaryDiagnostics.databaseBoundary}</div>
+          </div>
+        </div>
+        {checkoutBoundaryDiagnostics.hardStops.length > 0 ? (
+          <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800">
+            <div className="font-semibold">Hard stops</div>
+            <ul className="mt-1 list-disc pl-4">
+              {checkoutBoundaryDiagnostics.hardStops.map((stop) => (
+                <li key={stop}>{stop}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+        {checkoutBoundaryDiagnostics.warnings.length > 0 ? (
+          <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+            <div className="font-semibold">Warnings</div>
+            <ul className="mt-1 list-disc pl-4">
+              {checkoutBoundaryDiagnostics.warnings.map((warning) => (
+                <li key={warning}>{warning}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+      </section>
+
+      <section className="rounded-xl border p-4" data-testid="catalog-commerce-readiness-dashboard">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold">Catalog Commerce Readiness</h2>
+            <p className="mt-1 text-xs text-neutral-600">
+              Products need valid price and commerce metadata before checkout, retailer handoff, or replacement suggestions.
+            </p>
+          </div>
+          <Link href="/admin/catalog/health" className="text-xs text-blue-600 hover:text-blue-700">
+            Open catalog health
+          </Link>
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-4">
+          <div className="rounded-lg border p-3">
+            <div className="text-xs text-neutral-500">Products</div>
+            <div className="text-xl font-semibold">{catalogCommerceReadiness.totalProducts}</div>
+          </div>
+          <div className="rounded-lg border p-3">
+            <div className="text-xs text-neutral-500">Checkout eligible</div>
+            <div className="text-xl font-semibold">{catalogCommerceReadiness.checkoutEligibleCount}</div>
+          </div>
+          <div className="rounded-lg border p-3">
+            <div className="text-xs text-neutral-500">Retailer eligible</div>
+            <div className="text-xl font-semibold">{catalogCommerceReadiness.retailerEligibleCount}</div>
+          </div>
+          <div className="rounded-lg border p-3">
+            <div className="text-xs text-neutral-500">Replacement eligible</div>
+            <div className="text-xl font-semibold">{catalogCommerceReadiness.replacementEligibleCount}</div>
+          </div>
+        </div>
+        {catalogCommerceReadiness.issues.length === 0 ? (
+          <div className="mt-3 text-xs text-green-700">All catalog products have beta-ready commerce metadata.</div>
+        ) : (
+          <div className="mt-3 overflow-x-auto">
+            <table className="w-full min-w-160 border-collapse text-xs">
+              <thead>
+                <tr className="border-b bg-neutral-50 text-left">
+                  <th className="px-2 py-2 font-medium">Product</th>
+                  <th className="px-2 py-2 font-medium">Issue</th>
+                  <th className="px-2 py-2 font-medium">Detail</th>
+                </tr>
+              </thead>
+              <tbody>
+                {catalogCommerceReadiness.issues.slice(0, 20).map((issue) => (
+                  <tr key={`${issue.productId}-${issue.kind}`} className="border-b align-top">
+                    <td className="px-2 py-2 font-medium">{issue.title}</td>
+                    <td className="px-2 py-2">{issue.kind}</td>
+                    <td className="px-2 py-2 text-neutral-600">{issue.detail}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {catalogCommerceReadiness.issues.length > 20 ? (
+              <div className="mt-2 text-xs text-neutral-500">
+                Showing first 20 of {catalogCommerceReadiness.issues.length} commerce issues.
+              </div>
+            ) : null}
+          </div>
+        )}
+      </section>
 
       <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="rounded-xl border p-4">

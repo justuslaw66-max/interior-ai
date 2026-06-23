@@ -14,7 +14,8 @@ import {
   getCheckoutStatusLabel,
   type CheckoutReadinessRow,
 } from "@/lib/share-shopping-csv";
-import { fingerprintDesignSnapshot } from "@/lib/snapshot-fingerprint";
+import { buildShareExportFidelitySummary } from "@/lib/share-export-fidelity";
+import { buildRoomHealthSummary } from "@/lib/room-health-summary";
 import type { DesignItem, DesignSnapshot, PersistedPlanOpening, RoomSnapshot, SavedView, ZoneMin } from "@/lib/room-types";
 import {
   getExportCapabilities,
@@ -1049,6 +1050,21 @@ export default async function ExportPage({
     ...getRoomMetrics(room, rooms, planOpenings),
   }));
   const roomMetricsById = new Map(roomMetrics.map((metrics) => [metrics.roomId, metrics]));
+  const roomShoppingSummaryById = new Map(roomSummaries.map((room) => [room.roomId, room]));
+  const roomHealthById = new Map(
+    rooms.map((room) => {
+      const shoppingRoom = roomShoppingSummaryById.get(room.id);
+      return [
+        room.id,
+        buildRoomHealthSummary({
+          room,
+          catalogItems: CATALOG_ITEMS,
+          openings: planOpenings,
+          shoppingNeedsReviewCount: shoppingRoom?.needsReviewCount ?? 0,
+        }),
+      ];
+    })
+  );
   const totalAreaSqm = roomMetrics.reduce((sum, metrics) => sum + metrics.areaSqm, 0);
   const totalOpenings = roomMetrics.reduce((sum, metrics) => sum + metrics.openingCount, 0);
   const compactRoomCount = roomMetrics.filter((metrics) => metrics.areaSqm > 0 && metrics.areaSqm < 10).length;
@@ -1058,10 +1074,12 @@ export default async function ExportPage({
   const checkoutReadinessRows = buildCheckoutReadinessRows(rooms);
   const presentationViewRows = buildPresentationViewRows(rooms);
   const shoppingCsvRows = buildShoppingCsvRows(checkoutReadinessRows);
-  const qaSnapshotFingerprint =
-    process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS === "1"
-      ? fingerprintDesignSnapshot(designSnapshot)
-      : null;
+  const handoffFidelitySummary = buildShareExportFidelitySummary(designSnapshot, CATALOG_ITEMS);
+  const qaFidelitySummary =
+    process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS === "1" ? handoffFidelitySummary : null;
+  const handoffReady =
+    handoffFidelitySummary.missingCommerceCount === 0 &&
+    handoffFidelitySummary.itemCount === homeSummary.itemCount;
 
   return (
     <>
@@ -1085,10 +1103,17 @@ export default async function ExportPage({
       `}</style>
 
       <main className="min-h-screen bg-white">
-        {qaSnapshotFingerprint ? (
+        {qaFidelitySummary ? (
           <div
             data-testid="qa-export-snapshot-fingerprint"
-            data-fingerprint={qaSnapshotFingerprint}
+            data-fingerprint={qaFidelitySummary.fingerprint}
+            data-room-count={String(qaFidelitySummary.roomCount)}
+            data-item-count={String(qaFidelitySummary.itemCount)}
+            data-opening-count={String(qaFidelitySummary.openingCount)}
+            data-saved-view-count={String(qaFidelitySummary.savedViewCount)}
+            data-checkout-ready-count={String(qaFidelitySummary.checkoutReadyCount)}
+            data-retailer-ready-count={String(qaFidelitySummary.retailerReadyCount)}
+            data-missing-commerce-count={String(qaFidelitySummary.missingCommerceCount)}
             hidden
           />
         ) : null}
@@ -1141,6 +1166,7 @@ export default async function ExportPage({
               <div>Prepared by: {preparedBy}</div>
               <div>Style: {design.style ?? "Not specified"}</div>
               <div>Budget: {design.budget ?? "Not specified"}</div>
+              <div data-testid="export-handoff-id">Handoff ID: {handoffFidelitySummary.fingerprint}</div>
             </div>
           </div>
 
@@ -1167,7 +1193,7 @@ export default async function ExportPage({
                 <div className="mt-1 text-2xl font-bold text-gray-900">{formatCurrency(homeSummary.subtotal)}</div>
               </div>
             </div>
-            <div className="mt-3 grid gap-3 sm:grid-cols-3">
+            <div className="mt-3 grid gap-3 sm:grid-cols-4">
               <div className="rounded-lg border bg-white p-4">
                 <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Measured Area</div>
                 <div className="mt-1 text-xl font-bold text-gray-900">{formatMeasurement(totalAreaSqm, "m2")}</div>
@@ -1184,6 +1210,15 @@ export default async function ExportPage({
                   {totalAreaSqm > 0 && totalOpenings > 0 ? "Ready" : "Review"}
                 </div>
                 <div className="mt-1 text-xs text-gray-500">Measurement and opening coverage</div>
+              </div>
+              <div className="rounded-lg border bg-white p-4" data-testid="export-handoff-integrity">
+                <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Handoff Integrity</div>
+                <div className={handoffReady ? "mt-1 text-xl font-bold text-emerald-700" : "mt-1 text-xl font-bold text-amber-700"}>
+                  {handoffReady ? "Ready" : "Review"}
+                </div>
+                <div className="mt-1 text-xs text-gray-500">
+                  {handoffFidelitySummary.checkoutReadyCount + handoffFidelitySummary.retailerReadyCount} ready · {handoffFidelitySummary.missingCommerceCount} review
+                </div>
               </div>
             </div>
             {homeSummary.needsReviewCount > 0 ? (
@@ -1216,6 +1251,7 @@ export default async function ExportPage({
                     <th className="p-2 text-right">Area</th>
                     <th className="p-2 text-center">Items</th>
                     <th className="p-2 text-center">Openings</th>
+                    <th className="p-2 text-center">Health</th>
                     <th className="p-2 text-center">Shoppable</th>
                     <th className="p-2 text-right">Subtotal</th>
                   </tr>
@@ -1223,6 +1259,7 @@ export default async function ExportPage({
                 <tbody>
                   {roomSummaries.map((room) => {
                     const metrics = roomMetricsById.get(room.roomId);
+                    const health = roomHealthById.get(room.roomId);
                     return (
                       <tr key={room.roomId} className="border-b">
                         <td className="p-2 font-medium text-gray-900">{room.roomName}</td>
@@ -1232,6 +1269,9 @@ export default async function ExportPage({
                         </td>
                         <td className="p-2 text-center">{room.itemCount}</td>
                         <td className="p-2 text-center">{metrics?.openingCount ?? 0}</td>
+                        <td className="p-2 text-center" data-testid="export-room-health">
+                          {health ? `${health.level} ${health.placementScore}` : "review"}
+                        </td>
                         <td className="p-2 text-center">{room.shoppableCount}</td>
                         <td className="p-2 text-right">{formatCurrency(room.subtotal)}</td>
                       </tr>
@@ -1247,6 +1287,7 @@ export default async function ExportPage({
             <div key={room.id} className={index > 0 ? "page-break mt-12" : "mb-12"}>
               {(() => {
                 const metrics = roomMetricsById.get(room.id) ?? getRoomMetrics(room, rooms, planOpenings);
+                const health = roomHealthById.get(room.id);
                 return (
                   <>
               <h2 className="mb-4 text-2xl font-bold text-gray-900">{room.name}</h2>
@@ -1255,6 +1296,11 @@ export default async function ExportPage({
               <div className="mb-4 text-sm text-gray-600">
                 <div>Dimensions: {room.geometry.width}m × {room.geometry.depth}m</div>
                 <div>Type: {room.roomType}</div>
+                {health ? (
+                  <div data-testid="export-room-health-detail">
+                    Health: {health.level} {health.placementScore} · {health.nextAction}
+                  </div>
+                ) : null}
               </div>
 
               <div className="avoid-break mb-6 grid gap-3 sm:grid-cols-4">

@@ -6,6 +6,10 @@ import { rateLimit } from "@/lib/rateLimit";
 import { logAppEvent } from "@/lib/app-events";
 import { CATALOG_ITEMS_MAP } from "@/lib/catalog";
 import { assertStrictVariantResolution } from "@/lib/catalog/variant-resolver";
+import {
+  buildCheckoutBoundaryResponsePayload,
+  resolveCheckoutBoundaryDiagnostics,
+} from "@/lib/beta-checkout-boundary";
 
 type CheckoutLineInput = {
   merchandiseId: string;
@@ -162,6 +166,11 @@ export async function POST(req: Request) {
 
   if (!config.features.checkoutEnabled) {
     return NextResponse.json({ error: "Checkout is disabled" }, { status: 503 });
+  }
+
+  const boundary = resolveCheckoutBoundaryDiagnostics();
+  if (!boundary.checkoutSafe) {
+    return NextResponse.json(buildCheckoutBoundaryResponsePayload(boundary), { status: 503 });
   }
 
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";

@@ -74,14 +74,23 @@ const ACCEPTED_PLAN_FILE_TYPES = [
   ".pdf",
 ].join(",");
 
-const DRAW_ROOM_TOOLS: Array<{
+const PRIMARY_DRAW_ROOM_TOOLS: Array<{
   id: FloorPlanDrawRoomMode;
   label: string;
+  detail: string;
   shortcut: string;
 }> = [
-  { id: "straight_wall", label: "Straight wall", shortcut: "B" },
-  { id: "rectangle_wall", label: "Rectangle wall", shortcut: "F" },
-  { id: "arc_wall", label: "Arc wall", shortcut: "H" },
+  { id: "rectangle_wall", label: "Outline room", detail: "Fastest start", shortcut: "F" },
+  { id: "straight_wall", label: "Custom shape", detail: "Click corners", shortcut: "B" },
+];
+
+const ADVANCED_DRAW_ROOM_TOOLS: Array<{
+  id: FloorPlanDrawRoomMode;
+  label: string;
+  detail: string;
+  shortcut: string;
+}> = [
+  { id: "arc_wall", label: "Curved wall", detail: "Rounded edge", shortcut: "H" },
 ];
 
 const ANGLE_LOCK_TOOLS: Array<{
@@ -104,7 +113,7 @@ export default function FloorPlanUploadPanel({
   showDrawRoomTools = true,
   showDesignerDrawControls = false,
   traceRoomMode = false,
-  traceRoomDrawMode = "straight_wall",
+  traceRoomDrawMode = "rectangle_wall",
   traceRoomAngleLockMode = "ortho",
   exactWallLengthInput = "",
   canApplyExactWallLength = false,
@@ -162,26 +171,32 @@ export default function FloorPlanUploadPanel({
     const isActive = traceRoomMode && traceRoomDrawMode === mode;
     if (dark) {
       return [
-        "flex min-h-28 flex-col items-center justify-center gap-2 rounded-lg border p-3 text-center text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-45",
+        "flex min-h-14 items-center gap-3 rounded-lg border px-3 py-2 text-left text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-45",
         isActive
           ? "border-blue-400/45 bg-blue-500/20 text-blue-100"
           : "border-white/10 bg-white/5 text-neutral-200 hover:bg-white/10",
       ].join(" ");
     }
     return [
-      "flex min-h-28 flex-col items-center justify-center gap-2 rounded-lg border p-3 text-center text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-45",
+      "flex min-h-14 items-center gap-3 rounded-lg border px-3 py-2 text-left text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-45",
       isActive
         ? "border-blue-200 bg-blue-50 text-neutral-900 shadow-sm"
         : "border-neutral-100 bg-white text-neutral-700 hover:border-neutral-200 hover:bg-neutral-50",
     ].join(" ");
   };
+  const drawStatusClass = dark
+    ? "rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-semibold text-neutral-300"
+    : "rounded-full border border-neutral-200 bg-white px-2 py-1 text-[11px] font-semibold text-neutral-500";
+  const drawToolMetaClass = dark
+    ? "mt-0.5 block text-[11px] font-medium text-neutral-400"
+    : "mt-0.5 block text-[11px] font-medium text-neutral-500";
   const drawToolIconClass = dark ? "border-neutral-400 bg-neutral-500" : "border-neutral-600 bg-neutral-300";
   const traceRoomHint =
     traceRoomDrawMode === "straight_wall"
-      ? "Click wall points one by one, then close the loop."
+      ? "Click corners, then close the outline."
       : traceRoomDrawMode === "rectangle_wall"
-        ? "Drag or pick two opposite corners."
-        : "Drag or pick two endpoints for a rounded room.";
+        ? "Drag across the room area."
+        : "Pick two endpoints for the curved wall.";
   const canShowPdfPagePicker =
     underlay?.sourceMimeType === "application/pdf" && (underlay.pageCount ?? 0) > 1;
   const showAngleLockControls =
@@ -189,6 +204,12 @@ export default function FloorPlanUploadPanel({
   const showExactWallLengthControls = traceRoomMode && traceRoomDrawMode === "straight_wall";
   const canUndoTraceRoomPoint =
     traceRoomMode && traceRoomDrawMode === "straight_wall" && traceRoomPointCount > 0;
+  const startRoomDraw = (mode: FloorPlanDrawRoomMode) => {
+    onTraceRoomDrawModeChange?.(mode);
+    if (!traceRoomMode) {
+      onTraceRoomModeChange?.(true);
+    }
+  };
 
   return (
     <div className={cardClass}>
@@ -345,54 +366,49 @@ export default function FloorPlanUploadPanel({
                 data-testid="floor-plan-trace-room-toggle"
                 className={secondaryButtonClass}
                 disabled={disabled || !canTraceRooms}
-                onClick={() => onTraceRoomModeChange?.(!traceRoomMode)}
+                onClick={() => {
+                  if (traceRoomMode) {
+                    onTraceRoomModeChange?.(false);
+                    return;
+                  }
+                  startRoomDraw("rectangle_wall");
+                }}
               >
                 {traceRoomMode ? "Done" : "Draw"}
               </button>
             </div>
 
-            <div className="mt-3 grid grid-cols-3 gap-2">
-              {DRAW_ROOM_TOOLS.map((tool) => (
+            <div className="mt-3 grid gap-2">
+              {PRIMARY_DRAW_ROOM_TOOLS.map((tool) => (
                 <button
                   key={tool.id}
                   type="button"
                   data-testid={`floor-plan-draw-mode-${tool.id}`}
                   className={drawToolButtonClass(tool.id)}
                   disabled={disabled || !canTraceRooms}
-                  onClick={() => onTraceRoomDrawModeChange?.(tool.id)}
+                  onClick={() => startRoomDraw(tool.id)}
                 >
-                  <span className="relative block h-12 w-12" aria-hidden="true">
+                  <span className="relative block h-9 w-10 shrink-0" aria-hidden="true">
                     {tool.id === "straight_wall" && (
                       <span
-                        className={`absolute left-2 top-5 h-5 w-8 -skew-y-12 border ${drawToolIconClass}`}
+                        className={`absolute left-1 top-4 h-4 w-8 -skew-y-12 border ${drawToolIconClass}`}
                       />
                     )}
                     {tool.id === "rectangle_wall" && (
                       <>
                         <span
-                          className={`absolute left-2 top-4 h-7 w-8 border ${drawToolIconClass}`}
+                          className={`absolute left-1 top-3 h-6 w-8 border ${drawToolIconClass}`}
                         />
                         <span
-                          className={`absolute left-4 top-2 h-3 w-7 border ${drawToolIconClass}`}
-                        />
-                      </>
-                    )}
-                    {tool.id === "arc_wall" && (
-                      <>
-                        <span
-                          className={`absolute left-2 top-4 h-7 w-8 rounded-b-full border-b-2 border-l-2 border-r-2 ${dark ? "border-neutral-400" : "border-neutral-600"}`}
-                        />
-                        <span
-                          className={`absolute right-2 top-2 h-5 w-5 rounded-tr-full border-r-2 border-t-2 ${dark ? "border-neutral-400" : "border-neutral-600"}`}
+                          className={`absolute left-3 top-1 h-3 w-7 border ${drawToolIconClass}`}
                         />
                       </>
                     )}
                   </span>
-                  <span className="leading-tight">
+                  <span className="min-w-0 leading-tight">
                     {tool.label}
-                    <span className={dark ? "text-neutral-400" : "text-neutral-500"}>
-                      {" "}
-                      ({tool.shortcut})
+                    <span className={drawToolMetaClass}>
+                      {tool.detail} · {tool.shortcut}
                     </span>
                   </span>
                 </button>
@@ -407,11 +423,7 @@ export default function FloorPlanUploadPanel({
                   </div>
                   <div
                     data-testid="floor-plan-draw-escape-hint"
-                    className={
-                      dark
-                        ? "rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-semibold text-neutral-300"
-                        : "rounded-full border border-neutral-200 bg-white px-2 py-1 text-[11px] font-semibold text-neutral-500"
-                    }
+                    className={drawStatusClass}
                   >
                     Esc {traceRoomPointCount > 0 ? "cancels line" : "exits draw"}
                   </div>
@@ -455,88 +467,124 @@ export default function FloorPlanUploadPanel({
                     Reset
                   </button>
                 </div>
-                {showAngleLockControls && (
-                  <div className="space-y-1.5">
-                    <div className={subtleClass}>Angle lock</div>
-                    <div className="grid grid-cols-3 gap-1 rounded-lg bg-black/5 p-1 dark:bg-white/5">
-                      {ANGLE_LOCK_TOOLS.map((tool) => {
-                        const isActive = traceRoomAngleLockMode === tool.id;
-                        return (
-                          <button
-                            key={tool.id}
-                            type="button"
-                            data-testid={`floor-plan-angle-lock-${tool.id}`}
+                {(showAngleLockControls || showExactWallLengthControls) && (
+                  <div className={dark ? "rounded-lg bg-white/5 p-2" : "rounded-lg bg-white p-2"}>
+                    <div className={subtleClass}>Precision</div>
+                    {showAngleLockControls && (
+                      <div className="mt-1.5 grid grid-cols-3 gap-1 rounded-lg bg-black/5 p-1 dark:bg-white/5">
+                        {ANGLE_LOCK_TOOLS.map((tool) => {
+                          const isActive = traceRoomAngleLockMode === tool.id;
+                          return (
+                            <button
+                              key={tool.id}
+                              type="button"
+                              data-testid={`floor-plan-angle-lock-${tool.id}`}
+                              className={
+                                dark
+                                  ? [
+                                      "rounded-md px-2 py-1.5 text-xs font-semibold transition",
+                                      isActive
+                                        ? "bg-white text-neutral-950"
+                                        : "text-neutral-300 hover:bg-white/10",
+                                    ].join(" ")
+                                  : [
+                                      "rounded-md px-2 py-1.5 text-xs font-semibold transition",
+                                      isActive
+                                        ? "bg-neutral-900 text-white"
+                                        : "text-neutral-600 hover:bg-white",
+                                    ].join(" ")
+                              }
+                              disabled={disabled}
+                              onClick={() => onTraceRoomAngleLockModeChange?.(tool.id)}
+                            >
+                              {tool.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {showExactWallLengthControls && (
+                      <div className="mt-2">
+                        <div className="flex items-center gap-2">
+                          <input
+                            data-testid="floor-plan-exact-wall-length"
+                            type="number"
+                            min={1}
+                            step={10}
+                            inputMode="numeric"
+                            value={exactWallLengthInput}
+                            disabled={disabled}
+                            onChange={(event) =>
+                              onExactWallLengthInputChange?.(event.target.value)
+                            }
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter") {
+                                event.preventDefault();
+                                onApplyExactWallLength?.();
+                              }
+                            }}
                             className={
                               dark
-                                ? [
-                                    "rounded-md px-2 py-1.5 text-xs font-semibold transition",
-                                    isActive
-                                      ? "bg-white text-neutral-950"
-                                      : "text-neutral-300 hover:bg-white/10",
-                                  ].join(" ")
-                                : [
-                                    "rounded-md px-2 py-1.5 text-xs font-semibold transition",
-                                    isActive
-                                      ? "bg-neutral-900 text-white"
-                                      : "text-neutral-600 hover:bg-white",
-                                  ].join(" ")
+                                ? "min-w-0 flex-1 rounded border border-white/15 bg-[#10131a] px-2 py-1.5 text-sm text-neutral-100 disabled:opacity-50"
+                                : "min-w-0 flex-1 rounded border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-900 disabled:opacity-50"
                             }
-                            disabled={disabled}
-                            onClick={() => onTraceRoomAngleLockModeChange?.(tool.id)}
+                            placeholder="3500"
+                          />
+                          <span className={subtleClass}>mm</span>
+                          <button
+                            type="button"
+                            data-testid="floor-plan-apply-exact-wall-length"
+                            className={secondaryButtonClass}
+                            disabled={
+                              disabled || !canApplyExactWallLength || !exactWallLengthInput
+                            }
+                            onClick={onApplyExactWallLength}
                           >
-                            {tool.label}
+                            Place
                           </button>
-                        );
-                      })}
-                    </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
-                {showExactWallLengthControls && (
-                  <div className={dark ? "rounded-lg bg-white/5 p-2" : "rounded-lg bg-white p-2"}>
-                    <div className={subtleClass}>Exact wall length</div>
-                    <div className="mt-1 flex items-center gap-2">
-                      <input
-                        data-testid="floor-plan-exact-wall-length"
-                        type="number"
-                        min={1}
-                        step={10}
-                        inputMode="numeric"
-                        value={exactWallLengthInput}
-                        disabled={disabled}
-                        onChange={(event) =>
-                          onExactWallLengthInputChange?.(event.target.value)
-                        }
-                        onKeyDown={(event) => {
-                          if (event.key === "Enter") {
-                            event.preventDefault();
-                            onApplyExactWallLength?.();
-                          }
-                        }}
-                        className={
-                          dark
-                            ? "min-w-0 flex-1 rounded border border-white/15 bg-[#10131a] px-2 py-1.5 text-sm text-neutral-100 disabled:opacity-50"
-                            : "min-w-0 flex-1 rounded border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-900 disabled:opacity-50"
-                        }
-                        placeholder="3500"
-                      />
-                      <span className={subtleClass}>mm</span>
+                <details className="pt-1">
+                  <summary
+                    className={
+                      dark
+                        ? "cursor-pointer text-xs font-semibold text-neutral-300"
+                        : "cursor-pointer text-xs font-semibold text-neutral-600"
+                    }
+                  >
+                    More drawing options
+                  </summary>
+                  <div className="mt-2 grid gap-2">
+                    {ADVANCED_DRAW_ROOM_TOOLS.map((tool) => (
                       <button
+                        key={tool.id}
                         type="button"
-                        data-testid="floor-plan-apply-exact-wall-length"
-                        className={secondaryButtonClass}
-                        disabled={
-                          disabled || !canApplyExactWallLength || !exactWallLengthInput
-                        }
-                        onClick={onApplyExactWallLength}
+                        data-testid={`floor-plan-draw-mode-${tool.id}`}
+                        className={drawToolButtonClass(tool.id)}
+                        disabled={disabled || !canTraceRooms}
+                        onClick={() => startRoomDraw(tool.id)}
                       >
-                        Place
+                        <span className="relative block h-9 w-10 shrink-0" aria-hidden="true">
+                          <span
+                            className={`absolute left-1 top-3 h-6 w-8 rounded-b-full border-b-2 border-l-2 border-r-2 ${dark ? "border-neutral-400" : "border-neutral-600"}`}
+                          />
+                          <span
+                            className={`absolute right-1 top-1 h-5 w-5 rounded-tr-full border-r-2 border-t-2 ${dark ? "border-neutral-400" : "border-neutral-600"}`}
+                          />
+                        </span>
+                        <span className="min-w-0 leading-tight">
+                          {tool.label}
+                          <span className={drawToolMetaClass}>
+                            {tool.detail} · {tool.shortcut}
+                          </span>
+                        </span>
                       </button>
-                    </div>
-                    <div className={`${subtleClass} mt-1`}>
-                      Pick a start point, type a length, then press Enter or Place.
-                    </div>
+                    ))}
                   </div>
-                )}
+                </details>
               </div>
             )}
           </div>

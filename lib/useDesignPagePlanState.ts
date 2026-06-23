@@ -74,6 +74,8 @@ export function useDesignPagePlanState() {
   const [planLayerPreset, setPlanLayerPreset] = useState<PlanLayerPresetId>("presentation");
   const [planMeasurementUnit, setPlanMeasurementUnit] = useState<PlanMeasurementUnit>("mm");
   const [exportStylePreset, setExportStylePreset] = useState<ExportStylePreset>("consumer");
+  const [planGuidedActionsEnabled, setPlanGuidedActionsEnabled] = useState(true);
+  const [planGuidedActionsChoiceSeen, setPlanGuidedActionsChoiceSeen] = useState(false);
   const [planSettingsLoaded, setPlanSettingsLoaded] = useState(false);
 
   useEffect(() => {
@@ -98,6 +100,17 @@ export function useDesignPagePlanState() {
       if (storedMeasurementUnit === "mm" || storedMeasurementUnit === "cm" || storedMeasurementUnit === "in") {
         setPlanMeasurementUnit(storedMeasurementUnit);
       }
+
+      const storedGuidedActions = localStorage.getItem("plan_guided_actions");
+      if (storedGuidedActions === "0") {
+        setPlanGuidedActionsEnabled(false);
+      } else if (storedGuidedActions === "1") {
+        setPlanGuidedActionsEnabled(true);
+      }
+
+      setPlanGuidedActionsChoiceSeen(
+        localStorage.getItem("plan_guided_actions_choice_seen") === "1"
+      );
 
       const storedLayers = localStorage.getItem("plan_layers");
       if (storedLayers) {
@@ -147,6 +160,16 @@ export function useDesignPagePlanState() {
 
   useEffect(() => {
     if (!planSettingsLoaded) return;
+    writeStorage("plan_guided_actions", planGuidedActionsEnabled ? "1" : "0");
+  }, [planGuidedActionsEnabled, planSettingsLoaded]);
+
+  useEffect(() => {
+    if (!planSettingsLoaded) return;
+    writeStorage("plan_guided_actions_choice_seen", planGuidedActionsChoiceSeen ? "1" : "0");
+  }, [planGuidedActionsChoiceSeen, planSettingsLoaded]);
+
+  useEffect(() => {
+    if (!planSettingsLoaded) return;
     writeStorage("plan_annotations", JSON.stringify(planAnnotations));
   }, [planAnnotations, planSettingsLoaded]);
 
@@ -179,6 +202,10 @@ export function useDesignPagePlanState() {
     setPlanMeasurementUnit,
     exportStylePreset,
     setExportStylePreset,
+    planGuidedActionsEnabled,
+    setPlanGuidedActionsEnabled,
+    planGuidedActionsChoiceSeen,
+    setPlanGuidedActionsChoiceSeen,
     planSettingsLoaded,
   };
 }
