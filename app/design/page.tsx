@@ -11471,7 +11471,7 @@ function PageContent() {
                     traceOpeningKind={floorPlanTraceOpeningKind}
                     onTraceOpeningPoint={handleBlankGridTraceOpeningPoint}
                     cameraNavigation={{
-                      enabled: !floorPlanTraceRoomMode && !floorPlanTraceOpeningMode,
+                      enabled: isDesigner && !floorPlanTraceRoomMode && !floorPlanTraceOpeningMode,
                       cameraPosition: cameraView.pos,
                       cameraTarget: cameraView.target,
                       onMoveCamera: handleWholeHomeMoveCamera,
