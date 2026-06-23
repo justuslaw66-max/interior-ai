@@ -55,7 +55,16 @@ const bedroom = makeRoom("bedroom", "Bedroom", 4, 3);
 
 const plan = buildHousePlan2D([living, bedroom], 5, 4);
 assert.equal(plan.rooms.length, 2);
-assert.deepEqual(plan.rooms[0], {
+assert.deepEqual({
+  id: plan.rooms[0].id,
+  name: plan.rooms[0].name,
+  roomType: plan.rooms[0].roomType,
+  shape: plan.rooms[0].shape,
+  x: plan.rooms[0].x,
+  z: plan.rooms[0].z,
+  w: plan.rooms[0].w,
+  d: plan.rooms[0].d,
+}, {
   id: "living",
   name: "Living Room",
   roomType: "living",

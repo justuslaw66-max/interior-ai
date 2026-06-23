@@ -109,9 +109,9 @@ test.describe("00. Beta Smoke Gate", () => {
       await expect(page.getByTestId("apply-plan-template-studio")).toBeVisible();
       await page.getByTestId("apply-plan-template-studio").click();
     } else {
-      await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("3 rooms");
+      await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("4 rooms");
     }
-    await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("3 rooms");
+    await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("4 rooms");
     const betaFeedbackPayloads: Record<string, unknown>[] = [];
     await page.route("**/api/track/app-event", async (route) => {
       const payload = route.request().postDataJSON() as Record<string, unknown>;

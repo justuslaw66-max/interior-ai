@@ -115,18 +115,16 @@ for (const template of HOUSE_PLAN_TEMPLATES) {
   }
 }
 
-const oneBedroomTemplate = HOUSE_PLAN_TEMPLATES.find((template) => template.id === "one_bedroom");
-assert.ok(oneBedroomTemplate, "1-bedroom template should exist");
-assert.deepEqual(
-  oneBedroomTemplate.rooms.map((room) => room.id),
-  ["living", "kitchen", "entry", "bedroom", "bathroom"],
-  "1-bedroom template should model a realistic entry/service/living/private room sequence"
-);
+function getTemplate(templateId: string) {
+  const template = HOUSE_PLAN_TEMPLATES.find((entry) => entry.id === templateId);
+  assert.ok(template, `${templateId} template should exist`);
+  return template;
+}
 
-const oneBedroomRoomsById = new Map(oneBedroomTemplate.rooms.map((room) => [room.id, room]));
-function getTemplateBounds(roomId: string) {
-  const room = oneBedroomRoomsById.get(roomId);
-  assert.ok(room, `1-bedroom template should include ${roomId}`);
+function getTemplateBounds(templateId: string, roomId: string) {
+  const template = getTemplate(templateId);
+  const room = template.rooms.find((entry) => entry.id === roomId);
+  assert.ok(room, `${templateId} template should include ${roomId}`);
   return {
     left: room.x - room.width / 2,
     right: room.x + room.width / 2,
@@ -135,9 +133,9 @@ function getTemplateBounds(roomId: string) {
   };
 }
 
-function assertRoomsShareWall(firstId: string, secondId: string) {
-  const first = getTemplateBounds(firstId);
-  const second = getTemplateBounds(secondId);
+function assertRoomsShareWall(templateId: string, firstId: string, secondId: string) {
+  const first = getTemplateBounds(templateId, firstId);
+  const second = getTemplateBounds(templateId, secondId);
   const verticalTouch =
     Math.abs(first.right - second.left) <= 0.01 ||
     Math.abs(second.right - first.left) <= 0.01;
@@ -151,14 +149,60 @@ function assertRoomsShareWall(firstId: string, secondId: string) {
 
   assert.ok(
     (verticalTouch && verticalOverlap > 0.5) || (horizontalTouch && horizontalOverlap > 0.5),
-    `1-bedroom template rooms ${firstId} and ${secondId} should share a useful wall`
+    `${templateId} template rooms ${firstId} and ${secondId} should share a useful wall`
   );
 }
 
-assertRoomsShareWall("living", "kitchen");
-assertRoomsShareWall("living", "entry");
-assertRoomsShareWall("living", "bedroom");
-assertRoomsShareWall("entry", "bathroom");
+assert.deepEqual(
+  getTemplate("studio").rooms.map((room) => room.id),
+  ["living", "kitchen", "entry", "bathroom"],
+  "Studio template should model an alcove living area with a compact service stack"
+);
+assertRoomsShareWall("studio", "living", "kitchen");
+assertRoomsShareWall("studio", "living", "entry");
+assertRoomsShareWall("studio", "entry", "bathroom");
+
+assert.deepEqual(
+  getTemplate("one_bedroom").rooms.map((room) => room.id),
+  ["living", "kitchen", "entry", "bedroom", "bathroom"],
+  "1-bedroom template should model a realistic entry/service/living/private room sequence"
+);
+assertRoomsShareWall("one_bedroom", "living", "kitchen");
+assertRoomsShareWall("one_bedroom", "living", "entry");
+assertRoomsShareWall("one_bedroom", "living", "bedroom");
+assertRoomsShareWall("one_bedroom", "entry", "bathroom");
+
+assert.deepEqual(
+  getTemplate("living_dining").rooms.map((room) => room.id),
+  ["living", "dining", "kitchen", "entry", "bedroom", "bathroom"],
+  "Open-plan template should include public, service, and private zones"
+);
+assertRoomsShareWall("living_dining", "living", "dining");
+assertRoomsShareWall("living_dining", "dining", "kitchen");
+assertRoomsShareWall("living_dining", "kitchen", "entry");
+assertRoomsShareWall("living_dining", "dining", "bathroom");
+assertRoomsShareWall("living_dining", "living", "bedroom");
+
+assert.deepEqual(
+  getTemplate("compact_two_bed").rooms.map((room) => room.id),
+  ["living", "kitchen", "entry", "bedroom", "bedroom_2", "bathroom"],
+  "Compact 2-bed template should include an entry/service band and two private bedrooms"
+);
+assertRoomsShareWall("compact_two_bed", "living", "kitchen");
+assertRoomsShareWall("compact_two_bed", "entry", "bathroom");
+assertRoomsShareWall("compact_two_bed", "bedroom", "bathroom");
+assertRoomsShareWall("compact_two_bed", "bedroom_2", "bathroom");
+
+assert.deepEqual(
+  getTemplate("three_room_flat").rooms.map((room) => room.id),
+  ["living", "kitchen_dining", "hall", "bedroom", "bedroom_2", "bathroom"],
+  "3-room flat template should include a public front, service side, and private rear hall"
+);
+assertRoomsShareWall("three_room_flat", "living", "kitchen_dining");
+assertRoomsShareWall("three_room_flat", "living", "hall");
+assertRoomsShareWall("three_room_flat", "hall", "bedroom");
+assertRoomsShareWall("three_room_flat", "hall", "bedroom_2");
+assertRoomsShareWall("three_room_flat", "hall", "bathroom");
 
 assert.equal(plan.version, 1);
 assert.equal(plan.units, "m");

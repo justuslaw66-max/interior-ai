@@ -834,8 +834,8 @@ test.describe("18. Multi-Room Whole Home", () => {
     await page.getByTestId("apply-plan-template-compact_two_bed").click();
 
     await expect(page.getByText("Compact 2-bed added")).toBeVisible();
-    await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("5 rooms");
-    await expect(page.getByTestId("consumer-plan-next-steps")).toContainText("5 rooms ready");
+    await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("6 rooms");
+    await expect(page.getByTestId("consumer-plan-next-steps")).toContainText("6 rooms ready");
     await expect(page.getByTestId("room-connection-checklist")).toBeVisible();
 
     const widthLabelBox = await page.getByTestId("active-room-dimension-width").boundingBox();
