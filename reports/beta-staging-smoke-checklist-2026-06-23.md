@@ -18,15 +18,15 @@ npm run test:beta-release-candidate
 ## Latest Preview Deployment
 
 - Staging deployment URL: https://interior-ai-justuslaw66-max-justuslaw66-maxs-projects.vercel.app
-- Vercel deployment ID: `dpl_4EYcRti8Qzu7csPXsJq5dAq8fdLg`
-- Inspect URL: https://vercel.com/justuslaw66-maxs-projects/interior-ai/4EYcRti8Qzu7csPXsJq5dAq8fdLg
-- Build ID or commit SHA: `48b2f09`
+- Vercel deployment ID: `dpl_3KSVwaarig4fNMXxL84VnSYuCR3q`
+- Inspect URL: https://vercel.com/justuslaw66-maxs-projects/interior-ai/3KSVwaarig4fNMXxL84VnSYuCR3q
+- Build ID or commit SHA: `53e2546`
 - Environment label: Vercel preview with `APP_ENV=staging` from `vercel.json`
 - Deployment status: `READY`
 - Access note: `/design` returned `401` in a no-login header check because Vercel Deployment Protection is enabled. Manual smoke testers need Vercel access or protection disabled for this preview.
 - Auth note: Google sign-in should be tested from the stable alias above. Preview `NEXTAUTH_URL` and `APP_ORIGIN` were reset to this alias to keep OAuth PKCE cookies and callbacks on the same host.
 - Auth secret note: Preview `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `AUTH_SECRET` were refreshed from local `.env.local` after Google returned `invalid_client` for the older Preview secret.
-- Editor note: Deployment `dpl_4EYcRti8Qzu7csPXsJq5dAq8fdLg` includes `48b2f09`, which constrains 3D orbit controls so the camera cannot rotate underneath the room/floor slab during template smoke testing.
+- Editor note: Deployment `dpl_3KSVwaarig4fNMXxL84VnSYuCR3q` includes `53e2546`, which restores underside 3D orbiting and cuts away the floor/slab when the camera moves below it.
 
 ## Smoke Path
 
@@ -34,9 +34,9 @@ Every row must be marked `PASS`, `FAIL`, or `N/A`, and every non-`N/A` row must 
 
 | Step | Expected result | Status | Evidence required | Evidence link/artifact | Notes |
 | --- | --- | --- | --- | --- | --- |
-| Open staging `/design` signed out | Beta start/editor shell renders without server errors | `PASS` | URL and screenshot | https://interior-ai-justuslaw66-max-justuslaw66-maxs-projects.vercel.app/design | User reached staging app behind Vercel protection; deployment `dpl_4EYcRti8Qzu7csPXsJq5dAq8fdLg` is ready. |
+| Open staging `/design` signed out | Beta start/editor shell renders without server errors | `PASS` | URL and screenshot | https://interior-ai-justuslaw66-max-justuslaw66-maxs-projects.vercel.app/design | User reached staging app behind Vercel protection; deployment `dpl_3KSVwaarig4fNMXxL84VnSYuCR3q` is ready. |
 | Sign in or create a staging test user | User session is established and `/design` remains usable | `PASS` | Account email and screenshot | User-confirmed Google sign-in works after Preview auth secret refresh | Fresh Vercel logs show no Google OAuth `invalid_client` or PKCE callback errors after redeploy. |
-| Start from template | Template applies and shows at least one editable room | `TODO` | Screenshot |  | Retest on `48b2f09`; previous 3D camera underside trap was fixed and redeployed. |
+| Start from template | Template applies and shows at least one editable room | `TODO` | Screenshot |  | Retest on `53e2546`; underside orbit should remain available while floor/slab cuts away below the camera. |
 | Add or edit a room in 2D | Room controls update dimensions/material/opening state | `TODO` | Screenshot |  |  |
 | Place furniture manually | Smart placement guidance appears when placement is blocked, cramped, or improvable | `TODO` | Screenshot |  |  |
 | Verify smart placement actions | Improve placement, best room/option when available, restore valid spot, and keyboard nudge/rotate/enter behave predictably | `TODO` | Notes and screenshot |  |  |
