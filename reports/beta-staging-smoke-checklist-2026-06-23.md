@@ -15,6 +15,16 @@ Validate the deployed beta boundary after the local blocker gate passes. This ch
 npm run test:beta-release-candidate
 ```
 
+## Latest Preview Deployment
+
+- Staging deployment URL: https://interior-k2c46jgqc-justuslaw66-maxs-projects.vercel.app
+- Vercel deployment ID: `dpl_C6N5cdRedWKQFpy5k8EpMoV2ghB4`
+- Inspect URL: https://vercel.com/justuslaw66-maxs-projects/interior-ai/C6N5cdRedWKQFpy5k8EpMoV2ghB4
+- Build ID or commit SHA: `3004b88`
+- Environment label: Vercel preview with `APP_ENV=staging` from `vercel.json`
+- Deployment status: `READY`
+- Access note: `/design` returned `401` in a no-login header check because Vercel Deployment Protection is enabled. Manual smoke testers need Vercel access or protection disabled for this preview.
+
 ## Smoke Path
 
 Every row must be marked `PASS`, `FAIL`, or `N/A`, and every non-`N/A` row must include an evidence link or artifact filename before beta signoff.

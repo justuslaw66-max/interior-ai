@@ -47,6 +47,8 @@ No armchair assets were draft-gated in this pass because the catalog audit and l
 - The beta smoke path validates persisted API state, share-page fingerprint, export-page fingerprint, PDF bytes, CSV/SVG/PNG downloads, mobile/tablet overflow, lite-mode control, and mocked checkout payload.
 - The beta gate runs `CATALOG_STRICT_VALIDATION=true npm run build` so runtime catalog validation is strict during the release build.
 - `CATALOG_CHECK_REMOTE_ASSETS=true npm run test:catalog-asset-availability` passed with 282 remote URLs checked and 0 failing.
+- Vercel preview deployment `dpl_C6N5cdRedWKQFpy5k8EpMoV2ghB4` is `READY` at `https://interior-k2c46jgqc-justuslaw66-maxs-projects.vercel.app` from commit `3004b88`.
+- The staging deploy required refreshing `pnpm-lock.yaml` and excluding static/model assets from serverless output tracing; Vercel inspect now reports small serverless functions instead of the prior 250 MB bundle warnings.
 
 ## Smart Placement / Circulation
 
@@ -98,6 +100,8 @@ The cleanup was split into these commits:
 - `462857f chore: gate beta editor polish checks`
 - `d397c4f feat: improve manual placement guidance`
 - `b227ecb feat: add beta launch readiness diagnostics`
+- `a66603f chore: refresh pnpm lockfile for staging deploy`
+- `3004b88 fix: slim Vercel serverless traces`
 
 Review each commit independently when possible; the full stack is also covered by the blocking beta gate above.
 
