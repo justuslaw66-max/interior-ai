@@ -955,6 +955,7 @@ function RoomFloorMesh({
   material,
   wallThickness,
   slabThickness,
+  floorWorldY,
   floorOpacity,
   interactive,
   floorTarget,
@@ -966,6 +967,7 @@ function RoomFloorMesh({
   material: FloorMaterial;
   wallThickness: number;
   slabThickness: number;
+  floorWorldY: number;
   floorOpacity: number;
   interactive: boolean;
   floorTarget: StructureTarget;
@@ -974,6 +976,7 @@ function RoomFloorMesh({
   onSelectTarget: (target: StructureTarget, event: ThreeEvent<MouseEvent>) => void;
 }) {
   const { camera, gl } = useThree();
+  const floorSurfaceRef = useRef<THREE.Mesh | null>(null);
   const floorBandRef = useRef<THREE.Mesh | null>(null);
   const maxAnisotropy = gl.capabilities.getMaxAnisotropy();
   const floorScale = clampFloorPatternScale(room.surfaceFinishes?.floorScale);
@@ -1009,13 +1012,15 @@ function RoomFloorMesh({
   }, [floorBandGeometry]);
 
   useFrame(() => {
-    if (!floorBandRef.current) return;
-    floorBandRef.current.visible = camera.position.y > -slabThickness * 0.35;
+    const floorVisible = camera.position.y > floorWorldY - slabThickness * 0.35;
+    if (floorSurfaceRef.current) floorSurfaceRef.current.visible = floorVisible;
+    if (floorBandRef.current) floorBandRef.current.visible = floorVisible;
   });
 
   return (
     <>
       <mesh
+        ref={floorSurfaceRef}
         rotation-x={-Math.PI / 2}
         position={[0, 0.001, 0]}
         raycast={interactive ? undefined : () => null}
@@ -1268,6 +1273,7 @@ export default function HousePlanRenderer3D({
               material={floorMaterial}
               wallThickness={STRUCTURE_THICKNESS_METERS}
               slabThickness={slabThickness}
+              floorWorldY={floorYOffset}
               floorOpacity={floorOpacity}
               interactive={interactive}
               floorTarget={floorTarget}

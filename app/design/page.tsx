@@ -292,8 +292,8 @@ const DEFAULT_EDITOR_CAMERA_VIEW: CameraView = {
   fov: 45,
 };
 const EDITOR_3D_MIN_CAMERA_DISTANCE = 1.4;
-const EDITOR_3D_MIN_POLAR_ANGLE = 0.08;
-const EDITOR_3D_MAX_POLAR_ANGLE = Math.PI / 2 - 0.04;
+const EDITOR_3D_MIN_POLAR_ANGLE = 0.02;
+const EDITOR_3D_MAX_POLAR_ANGLE = Math.PI - 0.02;
 type ScenePerformanceMode = "auto" | "quality" | "lite";
 type SceneRenderQuality = "standard" | "lite";
 type PlacementAddMode = "preview" | "auto";

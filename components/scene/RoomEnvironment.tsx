@@ -146,6 +146,8 @@ export function Room({
     };
   }, [ceilingMat, floorMat, floorTexture, wallMat]);
 
+  const floorSurfaceRef = useRef<THREE.Mesh>(null);
+  const slabRef = useRef<THREE.Mesh>(null);
   const ceilingRef = useRef<THREE.Mesh>(null);
   const frontWallRef = useRef<THREE.Mesh>(null);
   const backWallRef = useRef<THREE.Mesh>(null);
@@ -187,6 +189,9 @@ export function Room({
     if (backWallRef.current) backWallRef.current.visible = !hiddenWallSet.has("back");
     if (leftWallRef.current) leftWallRef.current.visible = !hiddenWallSet.has("left");
     if (rightWallRef.current) rightWallRef.current.visible = !hiddenWallSet.has("right");
+    const floorVisible = camera.position.y > -slabThickness * 0.35;
+    if (floorSurfaceRef.current) floorSurfaceRef.current.visible = floorVisible;
+    if (slabRef.current) slabRef.current.visible = floorVisible;
     if (ceilingRef.current) {
       ceilingRef.current.visible = camera.position.y <= height + wallThickness + outsideBuffer;
     }
@@ -195,6 +200,7 @@ export function Room({
   return (
     <group>
       <mesh
+        ref={floorSurfaceRef}
         receiveShadow
         renderOrder={1}
         rotation-x={-Math.PI / 2}
@@ -204,7 +210,7 @@ export function Room({
         <primitive object={floorMat} attach="material" />
       </mesh>
 
-      <mesh receiveShadow position={[0, -slabThickness / 2, 0]}>
+      <mesh ref={slabRef} receiveShadow position={[0, -slabThickness / 2, 0]}>
         <boxGeometry args={[width, slabThickness, depth]} />
         <meshStandardMaterial
           color="#d4d0c6"
