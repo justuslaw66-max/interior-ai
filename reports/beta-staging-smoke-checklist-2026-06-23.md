@@ -17,22 +17,44 @@ npm run test:beta-release-candidate
 
 ## Smoke Path
 
-| Step | Expected result | Evidence |
-| --- | --- | --- |
-| Open staging `/design` signed out | Beta start/editor shell renders without server errors | URL and screenshot |
-| Sign in or create a staging test user | User session is established and `/design` remains usable | Account email and screenshot |
-| Start from template | Template applies and shows at least one editable room | Screenshot |
-| Add or edit a room in 2D | Room controls update dimensions/material/opening state | Screenshot |
-| Place furniture manually | Smart placement guidance appears when placement is blocked, cramped, or improvable | Screenshot |
-| Verify smart placement actions | Improve placement, best room/option when available, restore valid spot, and keyboard nudge/rotate/enter behave predictably | Notes and screenshot |
-| Fix shopping readiness | Replacement suggestions only show products with valid price and retailer URL | Screenshot |
-| Save and reload | Reloaded editor snapshot matches saved state visually and functionally | Screenshot |
-| Create and open share link | Public share page renders the exact saved snapshot and shopping readiness | Share URL and screenshot |
-| Export PDF | PDF downloads/opens and is non-empty | Filename and screenshot |
-| Export shopping CSV | CSV downloads and includes expected headers plus at least one cart-ready row | Filename |
-| Export 2D PNG/SVG | Plan artifact downloads and is visually non-empty | Filenames |
-| Open retailer link | Retailer click opens with tracking parameters and reaches external retailer page | URL redacted if needed |
-| Start checkout boundary | Stripe/checkout start returns a staging/test checkout URL or expected configured boundary response | URL redacted if needed |
+Every row must be marked `PASS`, `FAIL`, or `N/A`, and every non-`N/A` row must include an evidence link or artifact filename before beta signoff.
+
+| Step | Expected result | Status | Evidence required | Evidence link/artifact | Notes |
+| --- | --- | --- | --- | --- | --- |
+| Open staging `/design` signed out | Beta start/editor shell renders without server errors | `TODO` | URL and screenshot |  |  |
+| Sign in or create a staging test user | User session is established and `/design` remains usable | `TODO` | Account email and screenshot |  |  |
+| Start from template | Template applies and shows at least one editable room | `TODO` | Screenshot |  |  |
+| Add or edit a room in 2D | Room controls update dimensions/material/opening state | `TODO` | Screenshot |  |  |
+| Place furniture manually | Smart placement guidance appears when placement is blocked, cramped, or improvable | `TODO` | Screenshot |  |  |
+| Verify smart placement actions | Improve placement, best room/option when available, restore valid spot, and keyboard nudge/rotate/enter behave predictably | `TODO` | Notes and screenshot |  |  |
+| Fix shopping readiness | Replacement suggestions only show products with valid price and retailer URL | `TODO` | Screenshot plus product IDs |  |  |
+| Save and reload | Reloaded editor snapshot matches saved state visually and functionally | `TODO` | Screenshot and saved design ID |  |  |
+| Create and open share link | Public share page renders the exact saved snapshot and shopping readiness | `TODO` | Share URL and screenshot |  |  |
+| Export PDF | PDF downloads/opens and is non-empty | `TODO` | Filename and screenshot |  |  |
+| Export shopping CSV | CSV downloads and includes expected headers plus at least one cart-ready row | `TODO` | Filename and first row hash |  |  |
+| Export 2D PNG/SVG | Plan artifact downloads and is visually non-empty | `TODO` | Filenames and screenshot |  |  |
+| Open retailer link | Retailer click opens with tracking parameters and reaches external retailer page | `TODO` | URL redacted if needed |  |  |
+| Start checkout boundary | Stripe/checkout start returns a staging/test checkout URL or expected configured boundary response | `TODO` | Redacted response diagnostics |  |  |
+
+## Required Evidence Fields
+
+- Staging deployment URL:
+- Build ID or commit SHA:
+- Staging environment label:
+- Test user email:
+- Saved design ID:
+- Share token:
+- Editor snapshot fingerprint:
+- Share snapshot fingerprint:
+- Export snapshot fingerprint:
+- PDF filename:
+- CSV filename:
+- PNG filename:
+- SVG filename:
+- Checkout boundary response mode: `test checkout URL` / `boundary blocked` / `checkout disabled`
+- Checkout diagnostics screenshot or redacted JSON:
+- Catalog commerce readiness screenshot:
+- Feedback report ID or copied payload filename:
 
 ## Hard Stops
 
@@ -44,9 +66,13 @@ npm run test:beta-release-candidate
 ## Signoff Record
 
 - Staging URL:
+- Build ID or commit SHA:
 - Tester:
 - Date/time:
 - Browser/device:
 - Result: `PASS` / `FAIL`
+- Required evidence complete: `YES` / `NO`
+- Hard stops reviewed: `YES` / `NO`
 - Blocking issues:
 - Follow-up issues:
+- Signoff owner:

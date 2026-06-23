@@ -43,6 +43,7 @@ No armchair assets were draft-gated in this pass because the catalog audit and l
 - `npm run test:catalog-audit:strict` passed, including strict catalog quality mode where warnings are beta blockers.
 - `npm run test:catalog-asset-availability` passed with 86 catalog files, 617 asset refs, 0 missing local URLs, and remote checking disabled by default.
 - `PLAYWRIGHT_WEB_SERVER_PORT=3117 PLAYWRIGHT_BASE_URL=http://localhost:3117 npm run test:beta-gate` passed end to end after the smart placement/circulation upgrade.
+- `PLAYWRIGHT_WEB_SERVER_PORT=3119 PLAYWRIGHT_BASE_URL=http://localhost:3119 npm run test:beta-gate` passed end to end after the beta readiness diagnostics cleanup.
 - The beta smoke path validates persisted API state, share-page fingerprint, export-page fingerprint, PDF bytes, CSV/SVG/PNG downloads, mobile/tablet overflow, lite-mode control, and mocked checkout payload.
 - The beta gate runs `CATALOG_STRICT_VALIDATION=true npm run build` so runtime catalog validation is strict during the release build.
 - `CATALOG_CHECK_REMOTE_ASSETS=true npm run test:catalog-asset-availability` passed with 282 remote URLs checked and 0 failing.
@@ -55,6 +56,30 @@ Manual placement guidance is now beta-gated:
 - Walking-path circulation analysis feeds manual placement scoring and the placement heatmap.
 - The placement panel is guarded for improved nearby spot, best room, best option, restore valid spot, smart confirm, keyboard nudge/rotate/enter, score-aware target validity, and circulation analysis.
 - `npm run test:beta-editor-polish` now includes the placement/circulation guard scripts before the beta smoke test runs.
+
+## Beta Readiness Upgrade Pass
+
+The next beta-readiness upgrades are now implemented and guarded:
+
+- Staging checkout hard stops run inside Stripe and Shopify checkout starts through secret-safe boundary diagnostics.
+- Admin overview shows checkout boundary diagnostics and catalog commerce readiness before staging signoff.
+- The room header shows active room health, placement score, and the next action when the room needs review.
+- Beta feedback payloads include selected item, placement score/kind, shopping readiness, save status, share state, viewport, and placement target context.
+- Admin overview includes beta feedback triage cards with note, page, room, mode, placement, shopping, save, and share context.
+- Admin beta feedback triage can be downloaded as CSV for spreadsheet review.
+- Admin beta feedback triage includes severity and routing labels for save, placement, shopping, share/export, and general feedback.
+- Admin overview includes a combined Beta Launch Readiness summary for checkout, catalog, feedback, share, and export signals.
+- Admin Beta Launch Readiness can be downloaded as CSV evidence for staging signoff.
+- Share and export QA hooks expose fidelity counts for rooms, items, openings, saved views, checkout-ready items, retailer-ready items, and missing commerce.
+- Share and export pages show visible handoff integrity status, not only hidden QA metadata.
+- Share and export pages show a visible handoff ID derived from the saved snapshot fingerprint.
+- Share and export room schedules now include room health score and next action, so handoff review catches layout/shopping/export issues.
+- The editor exposes a first-run activation QA marker for template, item, save, and share/export progress.
+- The beta start panel now shows first-run activation progress and the next activation step.
+- The room health badge is actionable and routes users into Shop, Export, Furnish, or Plan based on the highest-priority room issue.
+- Share/export fidelity, catalog commerce readiness, room health, room fix preview, first-run activation, and ranked placement recommendation helpers are covered by `npm run test:beta-readiness-upgrades`.
+- Smart placement has a dedicated release-candidate Playwright smoke at `npm run test:e2e:smart-placement`.
+- The readiness diagnostics cleanup was committed as `b227ecb feat: add beta launch readiness diagnostics`.
 
 ## Release Commit Stack
 
@@ -72,6 +97,7 @@ The cleanup was split into these commits:
 - `f200d5f feat: add Hamilton leather upholstery variants`
 - `462857f chore: gate beta editor polish checks`
 - `d397c4f feat: improve manual placement guidance`
+- `b227ecb feat: add beta launch readiness diagnostics`
 
 Review each commit independently when possible; the full stack is also covered by the blocking beta gate above.
 
