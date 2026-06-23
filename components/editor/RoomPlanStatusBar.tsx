@@ -56,7 +56,7 @@ export default function RoomPlanStatusBar({
           ? "Blocked"
           : null;
   const containerClass = [
-    "flex flex-wrap items-center justify-center rounded-full border backdrop-blur",
+    "flex flex-nowrap items-center justify-start overflow-hidden rounded-full border backdrop-blur",
     compact
       ? "max-w-[min(34rem,calc(100vw-2rem))] gap-1.5 px-1.5 py-1 shadow-md"
       : "max-w-[min(44rem,calc(100vw-2rem))] gap-2 px-2 py-1.5 shadow-lg",
@@ -144,7 +144,7 @@ export default function RoomPlanStatusBar({
       {healthNextAction && healthLevel !== "ready" && (
         <div
           data-testid="room-plan-status-next-action"
-          className={`${metaClass} hidden max-w-48 truncate xl:block`}
+        className={`${metaClass} hidden min-w-0 max-w-36 truncate 2xl:block`}
           title={healthNextAction}
         >
           {healthNextAction}
@@ -157,7 +157,7 @@ export default function RoomPlanStatusBar({
         title="Fit plan"
         onClick={onFitPlan}
         disabled={disabled || !onFitPlan}
-        className={secondaryButtonClass}
+        className={`${secondaryButtonClass} shrink-0`}
       >
         {compact ? "Fit" : "Fit plan"}
       </button>
@@ -168,8 +168,8 @@ export default function RoomPlanStatusBar({
           onClick={onRenameRoom}
           disabled={disabled}
           className={dark
-            ? "hidden rounded-full border border-white/15 px-3 py-1.5 text-xs font-semibold text-neutral-100 disabled:opacity-50 lg:block"
-            : "hidden rounded-full border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 disabled:opacity-50 lg:block"
+            ? "hidden shrink-0 rounded-full border border-white/15 px-3 py-1.5 text-xs font-semibold text-neutral-100 disabled:opacity-50 lg:block"
+            : "hidden shrink-0 rounded-full border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 disabled:opacity-50 lg:block"
           }
         >
           Rename
@@ -180,7 +180,7 @@ export default function RoomPlanStatusBar({
         data-testid="room-plan-status-view-toggle"
         onClick={() => onViewModeChange(nextViewMode)}
         disabled={disabled}
-        className={buttonClass}
+        className={`${buttonClass} shrink-0`}
       >
         {viewActionLabel}
       </button>
