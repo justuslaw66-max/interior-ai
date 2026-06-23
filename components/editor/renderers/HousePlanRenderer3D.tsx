@@ -643,7 +643,16 @@ function isWallPartSharedWithAnotherRoom(
   segment: WallSegment3D,
   part: WallPart3D
 ): boolean {
-  if (!segment.wall) return false;
+  return getSharedWallRoomIds(room, rooms, segment, part).length > 0;
+}
+
+function getSharedWallRoomIds(
+  room: HousePlanRoom2D,
+  rooms: HousePlanRoom2D[],
+  segment: WallSegment3D,
+  part: WallPart3D
+): string[] {
+  if (!segment.wall) return [];
 
   const tolerance = 0.08;
   const worldX = room.x + part.x;
@@ -659,31 +668,50 @@ function isWallPartSharedWithAnotherRoom(
   const roomNorth = room.z - room.d / 2;
   const roomSouth = room.z + room.d / 2;
 
-  return rooms.some((otherRoom) => {
-    if (otherRoom.id === room.id) return false;
-    const otherLeft = otherRoom.x - otherRoom.w / 2;
-    const otherRight = otherRoom.x + otherRoom.w / 2;
-    const otherNorth = otherRoom.z - otherRoom.d / 2;
-    const otherSouth = otherRoom.z + otherRoom.d / 2;
+  return rooms
+    .filter((otherRoom) => {
+      if (otherRoom.id === room.id) return false;
+      const otherLeft = otherRoom.x - otherRoom.w / 2;
+      const otherRight = otherRoom.x + otherRoom.w / 2;
+      const otherNorth = otherRoom.z - otherRoom.d / 2;
+      const otherSouth = otherRoom.z + otherRoom.d / 2;
 
-    if (segment.wall === "east") {
-      if (Math.abs(roomRight - otherLeft) > tolerance) return false;
-      return rangesOverlapBy(wallPartStart, wallPartEnd, otherNorth, otherSouth, 0.35);
-    }
+      if (segment.wall === "east") {
+        if (Math.abs(roomRight - otherLeft) > tolerance) return false;
+        return rangesOverlapBy(wallPartStart, wallPartEnd, otherNorth, otherSouth, 0.35);
+      }
 
-    if (segment.wall === "west") {
-      if (Math.abs(roomLeft - otherRight) > tolerance) return false;
-      return rangesOverlapBy(wallPartStart, wallPartEnd, otherNorth, otherSouth, 0.35);
-    }
+      if (segment.wall === "west") {
+        if (Math.abs(roomLeft - otherRight) > tolerance) return false;
+        return rangesOverlapBy(wallPartStart, wallPartEnd, otherNorth, otherSouth, 0.35);
+      }
 
-    if (segment.wall === "north") {
-      if (Math.abs(roomNorth - otherSouth) > tolerance) return false;
+      if (segment.wall === "north") {
+        if (Math.abs(roomNorth - otherSouth) > tolerance) return false;
+        return rangesOverlapBy(wallPartStart, wallPartEnd, otherLeft, otherRight, 0.35);
+      }
+
+      if (Math.abs(roomSouth - otherNorth) > tolerance) return false;
       return rangesOverlapBy(wallPartStart, wallPartEnd, otherLeft, otherRight, 0.35);
-    }
+    })
+    .map((otherRoom) => otherRoom.id);
+}
 
-    if (Math.abs(roomSouth - otherNorth) > tolerance) return false;
-    return rangesOverlapBy(wallPartStart, wallPartEnd, otherLeft, otherRight, 0.35);
-  });
+function getSharedWallRenderOwnerRoomId(
+  room: HousePlanRoom2D,
+  rooms: HousePlanRoom2D[],
+  segment: WallSegment3D,
+  part: WallPart3D,
+  activeRoomId?: string
+): string {
+  const sharedRoomIds = getSharedWallRoomIds(room, rooms, segment, part);
+  if (!sharedRoomIds.length) return room.id;
+
+  if (activeRoomId && (room.id === activeRoomId || sharedRoomIds.includes(activeRoomId))) {
+    return activeRoomId;
+  }
+
+  return [room.id, ...sharedRoomIds].sort()[0];
 }
 
 function CutawayWallMesh({
@@ -731,14 +759,17 @@ function CutawayWallMesh({
   const targetKey = getStructureTargetKey(target) ?? "";
   const outlineStyle = getStructureOutlineStyle(targetKey, hoveredTargetKey, selectedTargetKey);
   const isInteriorSharedWall = isWallPartSharedWithAnotherRoom(room, rooms, segment, part);
-  const isDuplicateOfActiveSharedWall = Boolean(
-    activeRoom &&
-      !isActive &&
-      isWallPartSharedWithAnotherRoom(room, [room, activeRoom], segment, part)
+  const sharedWallOwnerRoomId = getSharedWallRenderOwnerRoomId(
+    room,
+    rooms,
+    segment,
+    part,
+    activeRoom?.id
   );
+  const isDuplicateSharedWall = sharedWallOwnerRoomId !== room.id;
 
   useFrame(() => {
-    if (isDuplicateOfActiveSharedWall) return;
+    if (isDuplicateSharedWall) return;
 
     const material = materialRef.current;
     if (!material) return;
@@ -798,7 +829,7 @@ function CutawayWallMesh({
     material.depthWrite = material.opacity > 0.34;
   });
 
-  if (isDuplicateOfActiveSharedWall) return null;
+  if (isDuplicateSharedWall) return null;
 
   return (
     <mesh
