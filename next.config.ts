@@ -29,6 +29,19 @@ const posthogIngestHost = resolvePostHogIngestHost(process.env.NEXT_PUBLIC_POSTH
 
 const nextConfig: NextConfig = {
   distDir: ".next-cache",
+  outputFileTracingExcludes: {
+    "/*": [
+      "./public/assets/models/**/*",
+      "./public/assets/thumbs/**/*",
+      "./public/pbr/**/*",
+      "./public/materials/**/*",
+      "./public/swatches/**/*",
+      "./incoming/**/*",
+      "./hero.jpg",
+      "./studio.jpg",
+      "./tsconfig.tsbuildinfo",
+    ],
+  },
   turbopack: {
     root: path.resolve(__dirname),
   },
