@@ -25,6 +25,7 @@ const adminPageSource = readFileSync(join(root, "app/admin/page.tsx"), "utf8");
 const sharePageSource = readFileSync(join(root, "app/share/[shareToken]/page.tsx"), "utf8");
 const exportPageSource = readFileSync(join(root, "app/share/[shareToken]/export/page.tsx"), "utf8");
 const feedbackSource = readFileSync(join(root, "components/BetaFeedbackWidget.tsx"), "utf8");
+const catalogRuntimeSource = readFileSync(join(root, "lib/catalog-runtime.ts"), "utf8");
 const roomPlanStatusSource = readFileSync(
   join(root, "components/editor/RoomPlanStatusBar.tsx"),
   "utf8"
@@ -75,6 +76,16 @@ assert.ok(commerceReadiness.replacementEligibleCount > 0);
 assert.equal(
   commerceReadiness.issues.filter((issue) => issue.kind === "replacement-ineligible").length,
   commerceReadiness.replacementIneligibleCount
+);
+assert.match(
+  catalogRuntimeSource,
+  /CATALOG_VALIDATE_RUNTIME_ASSETS/,
+  "runtime catalog validation should keep an explicit asset-file opt-in for release diagnostics."
+);
+assert.match(
+  catalogRuntimeSource,
+  /process\.env\.VERCEL === "1"/,
+  "Vercel serverless runtime should not require static model assets in each function bundle."
 );
 assert.match(
   adminPageSource,
