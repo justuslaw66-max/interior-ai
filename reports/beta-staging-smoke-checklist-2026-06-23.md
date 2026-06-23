@@ -18,13 +18,14 @@ npm run test:beta-release-candidate
 ## Latest Preview Deployment
 
 - Staging deployment URL: https://interior-ai-justuslaw66-max-justuslaw66-maxs-projects.vercel.app
-- Vercel deployment ID: `dpl_8rdWAmBSWMzjtUJj6Yg3VVXdUGvR`
-- Inspect URL: https://vercel.com/justuslaw66-maxs-projects/interior-ai/8rdWAmBSWMzjtUJj6Yg3VVXdUGvR
+- Vercel deployment ID: `dpl_JBSJ9jQ5jGhDWvjcjd4CTiA3xAYz`
+- Inspect URL: https://vercel.com/justuslaw66-maxs-projects/interior-ai/JBSJ9jQ5jGhDWvjcjd4CTiA3xAYz
 - Build ID or commit SHA: `d98ef4e`
 - Environment label: Vercel preview with `APP_ENV=staging` from `vercel.json`
 - Deployment status: `READY`
 - Access note: `/design` returned `401` in a no-login header check because Vercel Deployment Protection is enabled. Manual smoke testers need Vercel access or protection disabled for this preview.
 - Auth note: Google sign-in should be tested from the stable alias above. Preview `NEXTAUTH_URL` and `APP_ORIGIN` were reset to this alias to keep OAuth PKCE cookies and callbacks on the same host.
+- Auth secret note: Preview `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `AUTH_SECRET` were refreshed from local `.env.local` after Google returned `invalid_client` for the older Preview secret.
 
 ## Smoke Path
 
