@@ -115,6 +115,51 @@ for (const template of HOUSE_PLAN_TEMPLATES) {
   }
 }
 
+const oneBedroomTemplate = HOUSE_PLAN_TEMPLATES.find((template) => template.id === "one_bedroom");
+assert.ok(oneBedroomTemplate, "1-bedroom template should exist");
+assert.deepEqual(
+  oneBedroomTemplate.rooms.map((room) => room.id),
+  ["living", "kitchen", "entry", "bedroom", "bathroom"],
+  "1-bedroom template should model a realistic entry/service/living/private room sequence"
+);
+
+const oneBedroomRoomsById = new Map(oneBedroomTemplate.rooms.map((room) => [room.id, room]));
+function getTemplateBounds(roomId: string) {
+  const room = oneBedroomRoomsById.get(roomId);
+  assert.ok(room, `1-bedroom template should include ${roomId}`);
+  return {
+    left: room.x - room.width / 2,
+    right: room.x + room.width / 2,
+    top: room.z - room.depth / 2,
+    bottom: room.z + room.depth / 2,
+  };
+}
+
+function assertRoomsShareWall(firstId: string, secondId: string) {
+  const first = getTemplateBounds(firstId);
+  const second = getTemplateBounds(secondId);
+  const verticalTouch =
+    Math.abs(first.right - second.left) <= 0.01 ||
+    Math.abs(second.right - first.left) <= 0.01;
+  const verticalOverlap =
+    Math.min(first.bottom, second.bottom) - Math.max(first.top, second.top);
+  const horizontalTouch =
+    Math.abs(first.bottom - second.top) <= 0.01 ||
+    Math.abs(second.bottom - first.top) <= 0.01;
+  const horizontalOverlap =
+    Math.min(first.right, second.right) - Math.max(first.left, second.left);
+
+  assert.ok(
+    (verticalTouch && verticalOverlap > 0.5) || (horizontalTouch && horizontalOverlap > 0.5),
+    `1-bedroom template rooms ${firstId} and ${secondId} should share a useful wall`
+  );
+}
+
+assertRoomsShareWall("living", "kitchen");
+assertRoomsShareWall("living", "entry");
+assertRoomsShareWall("living", "bedroom");
+assertRoomsShareWall("entry", "bathroom");
+
 assert.equal(plan.version, 1);
 assert.equal(plan.units, "m");
 assert.equal(plan.activeFloorId, "floor_1");
