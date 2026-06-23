@@ -18,9 +18,9 @@ npm run test:beta-release-candidate
 ## Latest Preview Deployment
 
 - Staging deployment URL: https://interior-ai-justuslaw66-max-justuslaw66-maxs-projects.vercel.app
-- Vercel deployment ID: `dpl_ARQgMG37Xh5fQude6S5H3DS9MyuV`
-- Inspect URL: https://vercel.com/justuslaw66-maxs-projects/interior-ai/ARQgMG37Xh5fQude6S5H3DS9MyuV
-- Build ID or commit SHA: `6e95d75`
+- Vercel deployment ID: `dpl_F4KDRvGEEezy4JwFcrxBLtcq4Amo`
+- Inspect URL: https://vercel.com/justuslaw66-maxs-projects/interior-ai/F4KDRvGEEezy4JwFcrxBLtcq4Amo
+- Build ID or commit SHA: `085ae8b`
 - Environment label: Vercel preview with `APP_ENV=staging` from `vercel.json`
 - Deployment status: `READY`
 - Access note: `/design` returned `401` in a no-login header check because Vercel Deployment Protection is enabled. Manual smoke testers need Vercel access or protection disabled for this preview.
@@ -34,6 +34,7 @@ npm run test:beta-release-candidate
 - Template realism note: Deployment `dpl_E8RKw6ayQ11yGNVAa3eYSAJEqZ9A` includes `03fe467`, which reshapes the 1-bedroom home template into a compact apartment-style layout with an entry/service band, open living/kitchen edge, bedroom, and bathroom.
 - Template access note: Deployment `dpl_68AeCRDk8DZwYzzQ7qwjpgxxmaW7` includes `f1fa58b`, which adds visible Templates actions to the Plan panel while editing so testers do not have to use Load to find starter floor plans.
 - Status bar note: Deployment `dpl_ARQgMG37Xh5fQude6S5H3DS9MyuV` includes `6e95d75`, which keeps the room plan status pill on one row and prevents the Plan/Room view toggle from wrapping into an awkward centered second row.
+- Blueprint template note: Deployment `dpl_F4KDRvGEEezy4JwFcrxBLtcq4Amo` includes `085ae8b`, which replaces the mock-looking starter plans with blueprint-style editable layouts based on common studio, 1-bedroom, open-plan, compact 2-bedroom, and 3-room flat patterns: entry/service zones, grouped kitchen/bath wet walls, connected halls, and private bedroom zones.
 
 ## Smoke Path
 
@@ -41,9 +42,9 @@ Every row must be marked `PASS`, `FAIL`, or `N/A`, and every non-`N/A` row must 
 
 | Step | Expected result | Status | Evidence required | Evidence link/artifact | Notes |
 | --- | --- | --- | --- | --- | --- |
-| Open staging `/design` signed out | Beta start/editor shell renders without server errors | `PASS` | URL and screenshot | https://interior-ai-justuslaw66-max-justuslaw66-maxs-projects.vercel.app/design | User reached staging app behind Vercel protection; deployment `dpl_ARQgMG37Xh5fQude6S5H3DS9MyuV` is ready. |
+| Open staging `/design` signed out | Beta start/editor shell renders without server errors | `PASS` | URL and screenshot | https://interior-ai-justuslaw66-max-justuslaw66-maxs-projects.vercel.app/design | User reached staging app behind Vercel protection; deployment `dpl_F4KDRvGEEezy4JwFcrxBLtcq4Amo` is ready. |
 | Sign in or create a staging test user | User session is established and `/design` remains usable | `PASS` | Account email and screenshot | User-confirmed Google sign-in works after Preview auth secret refresh | Fresh Vercel logs show no Google OAuth `invalid_client` or PKCE callback errors after redeploy. |
-| Start from template | Template applies and shows at least one editable room | `TODO` | Screenshot |  | Retest on `6e95d75`; underside orbit, floor cutaway, shared-wall rendering, top overlay layout, command bar controls, homeowner 2D plan camera handles, the revised 1-bedroom apartment template, in-editor Templates access, and the one-row room status bar should all be stable. |
+| Start from template | Template applies and shows at least one editable room | `TODO` | Screenshot |  | Retest on `085ae8b`; underside orbit, floor cutaway, shared-wall rendering, top overlay layout, command bar controls, homeowner 2D plan camera handles, in-editor Templates access, the one-row room status bar, and all blueprint-style starter templates should be stable. |
 | Add or edit a room in 2D | Room controls update dimensions/material/opening state | `TODO` | Screenshot |  |  |
 | Place furniture manually | Smart placement guidance appears when placement is blocked, cramped, or improvable | `TODO` | Screenshot |  |  |
 | Verify smart placement actions | Improve placement, best room/option when available, restore valid spot, and keyboard nudge/rotate/enter behave predictably | `TODO` | Notes and screenshot |  |  |
