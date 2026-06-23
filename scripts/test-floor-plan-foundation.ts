@@ -77,6 +77,10 @@ assert.equal(clampFloorPatternScale(null), 1);
 
 for (const template of HOUSE_PLAN_TEMPLATES) {
   assert.ok(template.rooms.length >= 1, `${template.id} should include at least one room`);
+  assert.ok(template.bestFor.length > 0, `${template.id} should describe who it is best for`);
+  assert.ok(template.tags.length >= 3, `${template.id} should include useful tags`);
+  assert.ok(template.zones.length >= 3, `${template.id} should include starter furniture zones`);
+  assert.ok(template.doorways.length >= Math.max(1, template.rooms.length - 2), `${template.id} should include automatic doorway specs`);
   assert.equal(
     new Set(template.rooms.map((room) => room.id)).size,
     template.rooms.length,
@@ -152,6 +156,19 @@ function assertRoomsShareWall(templateId: string, firstId: string, secondId: str
     `${templateId} template rooms ${firstId} and ${secondId} should share a useful wall`
   );
 }
+
+for (const template of HOUSE_PLAN_TEMPLATES) {
+  const roomIds = new Set(template.rooms.map((room) => room.id));
+  for (const doorway of template.doorways) {
+    assert.ok(roomIds.has(doorway.fromRoomId), `${template.id} doorway should start from a real room`);
+    assert.ok(roomIds.has(doorway.toRoomId), `${template.id} doorway should point to a real room`);
+    assert.notEqual(doorway.fromRoomId, doorway.toRoomId, `${template.id} doorway should connect two rooms`);
+    assert.ok((doorway.widthMeters ?? 0.9) >= 0.7, `${template.id} doorway should be at least 0.7m wide`);
+    assertRoomsShareWall(template.id, doorway.fromRoomId, doorway.toRoomId);
+  }
+}
+
+assert.ok(HOUSE_PLAN_TEMPLATES.length >= 10, "Template library should include real-life layout categories beyond the original starters");
 
 assert.deepEqual(
   getTemplate("studio").rooms.map((room) => room.id),

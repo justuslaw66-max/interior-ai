@@ -5190,6 +5190,7 @@ function PageContent() {
   const handleApplyPlanTemplate = useCallback(
     (template: HousePlanTemplate) => {
       const timestamp = Date.now();
+      const templateRoomIdMap = new Map<string, string>();
       const rooms = template.rooms.map((templateRoom, index) => {
         const room = createRoom(
           `template_${template.id}_${templateRoom.id}_${timestamp}_${index}`,
@@ -5214,17 +5215,44 @@ function PageContent() {
               ? "light_stone_tile"
               : DEFAULT_FLOOR_MATERIAL_ID,
         };
+        templateRoomIdMap.set(templateRoom.id, room.id);
         return room;
       });
       const activeTemplateRoom = rooms[0];
       if (!activeTemplateRoom) return;
+      const templateOpenings: RoomOpening2D[] = template.doorways.flatMap((doorway, index) => {
+        const roomId = templateRoomIdMap.get(doorway.fromRoomId);
+        const adjacentRoomId = templateRoomIdMap.get(doorway.toRoomId);
+        const sourceRoom = template.rooms.find((entry) => entry.id === doorway.fromRoomId);
+        if (!roomId || !adjacentRoomId || !sourceRoom) return [];
+        const spanMeters =
+          doorway.wall === "north" || doorway.wall === "south"
+            ? sourceRoom.width
+            : sourceRoom.depth;
+        const widthMeters = Math.min(doorway.widthMeters ?? 0.9, Math.max(0.7, spanMeters - 0.6));
+        const maxOffsetMeters = Math.max(0, spanMeters / 2 - widthMeters / 2 - 0.25);
+        const requestedOffsetMeters = doorway.offsetMeters ?? 0;
+        const offsetMeters = Math.max(
+          -maxOffsetMeters,
+          Math.min(maxOffsetMeters, requestedOffsetMeters)
+        );
+
+        return [{
+          id: `template-opening-${template.id}-${timestamp}-${index}`,
+          roomId,
+          wall: doorway.wall,
+          kind: "door" as const,
+          offsetMm: metersToMm(offsetMeters),
+          widthMm: metersToMm(widthMeters),
+        }];
+      });
 
       revokeFloorPlanUnderlayUrl();
       floorPlanPdfSourceDataRef.current = null;
       setFloorPlanPdfSourceReady(false);
       setFloorPlanUnderlay(null);
       resetFloorPlanInteraction();
-      setPlanOpenings([]);
+      setPlanOpenings(templateOpenings);
       setSelectedPlanOverlayId(null);
       clearAllSelection();
       setViewMode("2d");
@@ -5240,6 +5268,7 @@ function PageContent() {
       track("floor_plan_template_applied", {
         templateId: template.id,
         roomCount: rooms.length,
+        openingCount: templateOpenings.length,
       });
     },
     [

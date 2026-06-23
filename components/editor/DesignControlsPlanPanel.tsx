@@ -331,6 +331,9 @@ export default function DesignControlsPlanPanel({
 }: DesignControlsPlanPanelProps) {
   const [localPlanStartMode, setLocalPlanStartMode] = useState<PlanStartMode>("start");
   const [roomSetupStep, setRoomSetupStep] = useState<RoomSetupStep>("confirm");
+  const [templateBedroomFilter, setTemplateBedroomFilter] = useState<"all" | "studio" | "one" | "two">("all");
+  const [templateFootprintFilter, setTemplateFootprintFilter] = useState<"all" | "compact" | "narrow" | "wide">("all");
+  const [templateStyleFilter, setTemplateStyleFilter] = useState<"all" | "open" | "separated" | "adu">("all");
   const planStartMode = controlledPlanStartMode ?? localPlanStartMode;
   const setPlanStartMode = (mode: PlanStartMode) => {
     setLocalPlanStartMode(mode);
@@ -382,6 +385,30 @@ export default function DesignControlsPlanPanel({
       Boolean(floorPlanUnderlay) ||
       hasActivePlanTrace ||
       Boolean(visiblePlanOpening));
+  const filteredPlanTemplates = HOUSE_PLAN_TEMPLATES.filter((template) => {
+    const bedroomMatches =
+      templateBedroomFilter === "all" ||
+      (templateBedroomFilter === "studio" && template.bedroomCount === 0) ||
+      (templateBedroomFilter === "one" && template.bedroomCount === 1) ||
+      (templateBedroomFilter === "two" && template.bedroomCount >= 2);
+    const footprintMatches =
+      templateFootprintFilter === "all" ||
+      template.footprint === templateFootprintFilter ||
+      (templateFootprintFilter === "wide" &&
+        (template.footprint === "wide" ||
+          template.footprint === "corner" ||
+          template.footprint === "long"));
+    const styleMatches =
+      templateStyleFilter === "all" ||
+      (templateStyleFilter === "open" &&
+        (template.tags.includes("open plan") || template.layoutType === "studio")) ||
+      (templateStyleFilter === "separated" &&
+        !template.tags.includes("open plan") &&
+        template.layoutType !== "studio" &&
+        template.layoutType !== "adu") ||
+      (templateStyleFilter === "adu" && template.layoutType === "adu");
+    return bedroomMatches && footprintMatches && styleMatches;
+  });
   const showDrawTools =
     viewMode === "2d" &&
     (planStartMode === "draw" ||
@@ -2329,14 +2356,93 @@ export default function DesignControlsPlanPanel({
         >
           <div className={titleClass}>Starter floor plans</div>
           <div className={dark ? "mt-1 text-xs text-neutral-400" : "mt-1 text-xs text-neutral-500"}>
-            Pick a full-home starting point, then resize rooms and add doors.
+            Pick a real-life layout pattern. Doorways are added automatically.
+          </div>
+          <div className="mt-3 grid gap-2">
+            <div className="grid grid-cols-4 gap-1" data-testid="template-bedroom-filter">
+              {[
+                ["all", "All"],
+                ["studio", "Studio"],
+                ["one", "1 bed"],
+                ["two", "2 bed"],
+              ].map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setTemplateBedroomFilter(value as typeof templateBedroomFilter)}
+                  className={
+                    templateBedroomFilter === value
+                      ? progressActionClass
+                      : progressSecondaryActionClass
+                  }
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <div className="grid grid-cols-4 gap-1" data-testid="template-footprint-filter">
+              {[
+                ["all", "Any"],
+                ["compact", "Compact"],
+                ["narrow", "Narrow"],
+                ["wide", "Wide+"],
+              ].map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setTemplateFootprintFilter(value as typeof templateFootprintFilter)}
+                  className={
+                    templateFootprintFilter === value
+                      ? progressActionClass
+                      : progressSecondaryActionClass
+                  }
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <div className="grid grid-cols-4 gap-1" data-testid="template-style-filter">
+              {[
+                ["all", "Any"],
+                ["open", "Open"],
+                ["separated", "Rooms"],
+                ["adu", "ADU"],
+              ].map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setTemplateStyleFilter(value as typeof templateStyleFilter)}
+                  className={
+                    templateStyleFilter === value
+                      ? progressActionClass
+                      : progressSecondaryActionClass
+                  }
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
           <div className="mt-2 grid gap-2">
-            {HOUSE_PLAN_TEMPLATES.map((template) => {
+            {filteredPlanTemplates.map((template) => {
               const areaSqm = template.rooms.reduce(
                 (sum, room) => sum + room.width * room.depth,
                 0
               );
+              const bounds = template.rooms.reduce(
+                (acc, room) => ({
+                  left: Math.min(acc.left, room.x - room.width / 2),
+                  right: Math.max(acc.right, room.x + room.width / 2),
+                  top: Math.min(acc.top, room.z - room.depth / 2),
+                  bottom: Math.max(acc.bottom, room.z + room.depth / 2),
+                }),
+                { left: Infinity, right: -Infinity, top: Infinity, bottom: -Infinity }
+              );
+              const previewWidth = 112;
+              const previewHeight = 74;
+              const planWidth = Math.max(1, bounds.right - bounds.left);
+              const planDepth = Math.max(1, bounds.bottom - bounds.top);
+              const scale = Math.min((previewWidth - 12) / planWidth, (previewHeight - 12) / planDepth);
               const roomPreview = template.rooms
                 .map((room) => room.name.replace(" / ", "/"))
                 .join(" · ");
@@ -2349,31 +2455,101 @@ export default function DesignControlsPlanPanel({
                   disabled={!canEdit}
                   className={
                     dark
-                      ? "rounded-lg border border-white/10 bg-[#1b2030] px-3 py-2 text-left text-sm font-medium text-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
-                      : "rounded-lg border border-neutral-200 bg-white px-3 py-2 text-left text-sm font-medium text-neutral-800 shadow-sm hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
+                      ? "grid grid-cols-[7rem_minmax(0,1fr)] gap-3 rounded-lg border border-white/10 bg-[#1b2030] px-3 py-2 text-left text-sm font-medium text-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
+                      : "grid grid-cols-[7rem_minmax(0,1fr)] gap-3 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-left text-sm font-medium text-neutral-800 shadow-sm hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
                   }
                 >
-                  <span className="flex items-center justify-between gap-2">
-                    <span>{template.label}</span>
-                    <span className={dark ? "text-xs text-neutral-400" : "text-xs text-neutral-500"}>
-                      {template.rooms.length} rooms · {Math.round(areaSqm)} m2
-                    </span>
-                  </span>
-                  <span className={dark ? "mt-0.5 block text-xs text-neutral-400" : "mt-0.5 block text-xs text-neutral-500"}>
-                    {template.summary}
-                  </span>
                   <span
                     className={
                       dark
-                        ? "mt-1 block truncate text-[11px] text-neutral-500"
-                        : "mt-1 block truncate text-[11px] text-neutral-500"
+                        ? "block overflow-hidden rounded-md border border-white/10 bg-[#10131b]"
+                        : "block overflow-hidden rounded-md border border-neutral-200 bg-neutral-50"
                     }
+                    aria-hidden="true"
                   >
-                    {roomPreview}
+                    <svg
+                      data-testid={`plan-template-preview-${template.id}`}
+                      viewBox={`0 0 ${previewWidth} ${previewHeight}`}
+                      className="h-[74px] w-full"
+                    >
+                      {template.rooms.map((room) => {
+                        const x = 6 + (room.x - room.width / 2 - bounds.left) * scale;
+                        const y = 6 + (room.z - room.depth / 2 - bounds.top) * scale;
+                        const width = room.width * scale;
+                        const height = room.depth * scale;
+                        const fill =
+                          room.roomType === "toilet"
+                            ? "#dbeafe"
+                            : room.roomType === "kitchen"
+                              ? "#dcfce7"
+                              : room.roomType === "bedroom"
+                                ? "#ede9fe"
+                                : room.roomType === "dining"
+                                  ? "#fef3c7"
+                                  : "#e5e7eb";
+                        return (
+                          <rect
+                            key={room.id}
+                            x={x}
+                            y={y}
+                            width={width}
+                            height={height}
+                            fill={fill}
+                            stroke="#9ca3af"
+                            strokeWidth="1.4"
+                            rx="1.5"
+                          />
+                        );
+                      })}
+                    </svg>
+                  </span>
+                  <span className="min-w-0">
+                    <span className="flex items-center justify-between gap-2">
+                      <span>{template.label}</span>
+                      <span className={dark ? "shrink-0 text-xs text-neutral-400" : "shrink-0 text-xs text-neutral-500"}>
+                        {template.rooms.length} rooms · {Math.round(areaSqm)} m2
+                      </span>
+                    </span>
+                    <span className={dark ? "mt-0.5 block text-xs text-neutral-400" : "mt-0.5 block text-xs text-neutral-500"}>
+                      {template.summary}
+                    </span>
+                    <span className={dark ? "mt-1 block text-[11px] font-semibold text-emerald-200" : "mt-1 block text-[11px] font-semibold text-emerald-700"}>
+                      Best for: {template.bestFor}
+                    </span>
+                    <span
+                      className={
+                        dark
+                          ? "mt-1 block truncate text-[11px] text-neutral-500"
+                          : "mt-1 block truncate text-[11px] text-neutral-500"
+                      }
+                    >
+                      {roomPreview}
+                    </span>
+                    <span className="mt-1 flex flex-wrap gap-1">
+                      {template.tags.slice(0, 3).map((tag) => (
+                        <span
+                          key={tag}
+                          className={dark ? "rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-neutral-300" : "rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] text-neutral-600"}
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                      <span className={dark ? "rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-neutral-300" : "rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] text-neutral-600"}>
+                        {template.doorways.length} doors
+                      </span>
+                    </span>
+                    <span className={dark ? "mt-1 block truncate text-[11px] text-neutral-400" : "mt-1 block truncate text-[11px] text-neutral-500"}>
+                      Zones: {template.zones.slice(0, 3).join(" · ")}
+                    </span>
                   </span>
                 </button>
               );
             })}
+            {filteredPlanTemplates.length === 0 && (
+              <div className={dark ? "rounded-lg border border-white/10 p-3 text-xs text-neutral-400" : "rounded-lg border border-neutral-200 bg-white p-3 text-xs text-neutral-500"}>
+                No templates match those filters.
+              </div>
+            )}
           </div>
 
           <div className={`${titleClass} mt-4`}>Add one room</div>
