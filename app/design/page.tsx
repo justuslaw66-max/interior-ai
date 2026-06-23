@@ -292,6 +292,8 @@ const DEFAULT_EDITOR_CAMERA_VIEW: CameraView = {
   fov: 45,
 };
 const EDITOR_3D_MIN_CAMERA_DISTANCE = 1.4;
+const EDITOR_3D_MIN_POLAR_ANGLE = 0.08;
+const EDITOR_3D_MAX_POLAR_ANGLE = Math.PI / 2 - 0.04;
 type ScenePerformanceMode = "auto" | "quality" | "lite";
 type SceneRenderQuality = "standard" | "lite";
 type PlacementAddMode = "preview" | "auto";
@@ -12135,8 +12137,8 @@ function PageContent() {
                 rotateSpeed={0.8}
                 minDistance={EDITOR_3D_MIN_CAMERA_DISTANCE}
                 maxDistance={Math.max(24, Math.max(planViewWidth, planViewDepth) * 6)}
-                minPolarAngle={0.02}
-                maxPolarAngle={Math.PI - 0.02}
+                minPolarAngle={EDITOR_3D_MIN_POLAR_ANGLE}
+                maxPolarAngle={EDITOR_3D_MAX_POLAR_ANGLE}
                 enabled={!sofaDragging}
                 onChange={() => {
                   if (!isCameraAnimatingRef.current) {
