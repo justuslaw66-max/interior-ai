@@ -12632,8 +12632,20 @@ function PageContent() {
               data-testid="scene-performance-control"
               className={
                 showDesignerTheme
-                  ? "absolute left-4 top-20 z-30 flex items-center gap-2 rounded-lg border border-white/10 bg-[#151820]/90 p-1.5 text-xs font-semibold text-neutral-200 shadow-xl backdrop-blur"
-                  : "absolute left-4 top-20 z-30 flex items-center gap-2 rounded-lg border border-neutral-200 bg-white/90 p-1.5 text-xs font-semibold text-neutral-700 shadow-xl backdrop-blur"
+                  ? `absolute left-4 top-20 z-30 flex items-center gap-2 rounded-lg border border-white/10 bg-[#151820]/90 p-1.5 text-xs font-semibold text-neutral-200 shadow-xl backdrop-blur ${
+                      designControlsPanelVisibleForLayout
+                        ? isDesigner
+                          ? "md:left-[28rem]"
+                          : "md:left-[23.5rem]"
+                        : ""
+                    }`
+                  : `absolute left-4 top-20 z-30 flex items-center gap-2 rounded-lg border border-neutral-200 bg-white/90 p-1.5 text-xs font-semibold text-neutral-700 shadow-xl backdrop-blur ${
+                      designControlsPanelVisibleForLayout
+                        ? isDesigner
+                          ? "md:left-[28rem]"
+                          : "md:left-[23.5rem]"
+                        : ""
+                    }`
               }
               aria-label="Scene quality"
             >
