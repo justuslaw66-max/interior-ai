@@ -8,6 +8,7 @@ const ALLOWED = new Set<AppEventType>([
   "design_started",
   "first_item_added",
   "third_item_added",
+  "first_run_activation_step_completed",
   "export_clicked",
   "upgrade_clicked",
   "share_link_opened",
@@ -50,10 +51,10 @@ export async function POST(req: Request) {
   }
 
   if (skipAppEventPersistence) {
-    return NextResponse.json({ ok: true, skipped: "qa" });
+    return NextResponse.json({ ok: true, persisted: false, eventId: null, skipped: "qa" });
   }
 
-  await logAppEvent({
+  const result = await logAppEvent({
     eventType,
     userId: session?.user?.id ?? null,
     designId: typeof designId === "string" ? designId : null,
@@ -61,5 +62,9 @@ export async function POST(req: Request) {
     meta: typeof meta === "object" && meta ? meta : null,
   });
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({
+    ok: true,
+    persisted: result.persisted,
+    eventId: result.eventId,
+  });
 }

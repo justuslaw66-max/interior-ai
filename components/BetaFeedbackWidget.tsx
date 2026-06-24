@@ -49,6 +49,8 @@ function buildFeedbackPayload(note: string, context: BetaFeedbackContext) {
 export default function BetaFeedbackWidget({ context }: BetaFeedbackWidgetProps) {
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState("");
+  const [reportId, setReportId] = useState<string | null>(null);
+  const [submitted, setSubmitted] = useState(false);
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "failed" | "copied">("idle");
 
   const contextSummary = useMemo(
@@ -72,10 +74,15 @@ export default function BetaFeedbackWidget({ context }: BetaFeedbackWidgetProps)
     setOpen(false);
     setStatus("idle");
     setNote("");
+    setReportId(null);
+    setSubmitted(false);
   };
 
   const copyReport = async () => {
-    const payload = buildFeedbackPayload(note.trim(), context);
+    const payload = {
+      ...buildFeedbackPayload(note.trim(), context),
+      reportId: reportId ?? undefined,
+    };
     try {
       await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
       setStatus("copied");
@@ -90,6 +97,8 @@ export default function BetaFeedbackWidget({ context }: BetaFeedbackWidgetProps)
 
     const payload = buildFeedbackPayload(trimmed.slice(0, 1200), context);
     setStatus("sending");
+    setReportId(null);
+    setSubmitted(false);
     track("beta_feedback_submitted", {
       design_id: context.designId ?? null,
       view_mode: context.viewMode,
@@ -118,8 +127,12 @@ export default function BetaFeedbackWidget({ context }: BetaFeedbackWidgetProps)
       });
 
       if (!response.ok) throw new Error("Feedback request failed");
+      const result = (await response.json().catch(() => ({}))) as { eventId?: unknown };
+      if (typeof result.eventId === "string" && result.eventId.trim()) {
+        setReportId(result.eventId);
+      }
+      setSubmitted(true);
       setStatus("sent");
-      window.setTimeout(resetAndClose, 900);
     } catch {
       setStatus("failed");
     }
@@ -134,6 +147,8 @@ export default function BetaFeedbackWidget({ context }: BetaFeedbackWidgetProps)
         onClick={() => {
           setOpen(true);
           setStatus("idle");
+          setReportId(null);
+          setSubmitted(false);
         }}
       >
         Feedback
@@ -176,7 +191,11 @@ export default function BetaFeedbackWidget({ context }: BetaFeedbackWidgetProps)
                 autoFocus
                 onChange={(event) => {
                   setNote(event.currentTarget.value);
-                  if (status !== "idle") setStatus("idle");
+                  if (status !== "idle") {
+                    setStatus("idle");
+                    setReportId(null);
+                    setSubmitted(false);
+                  }
                 }}
                 onKeyDown={(event) => {
                   if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
@@ -188,7 +207,15 @@ export default function BetaFeedbackWidget({ context }: BetaFeedbackWidgetProps)
             </label>
 
             <div className="mt-3 min-h-5 text-xs text-neutral-500" role="status">
-              {status === "sent" && "Sent. Thank you."}
+              {status === "sent" && (
+                reportId ? (
+                  <>
+                    Sent. Ref <span data-testid="beta-feedback-report-id">{reportId}</span>.
+                  </>
+                ) : (
+                  "Sent. Thank you."
+                )
+              )}
               {status === "failed" && "Could not send. Copy the report instead."}
               {status === "copied" && "Copied."}
             </div>
@@ -212,10 +239,10 @@ export default function BetaFeedbackWidget({ context }: BetaFeedbackWidgetProps)
                 type="button"
                 data-testid="beta-feedback-submit"
                 className="rounded-lg bg-neutral-950 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-300"
-                disabled={!note.trim() || status === "sending"}
-                onClick={submitFeedback}
+                disabled={(!note.trim() && !submitted) || status === "sending"}
+                onClick={submitted ? resetAndClose : submitFeedback}
               >
-                {status === "sending" ? "Sending" : "Send"}
+                {submitted ? "Done" : status === "sending" ? "Sending" : "Send"}
               </button>
             </div>
           </div>

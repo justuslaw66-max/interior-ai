@@ -142,6 +142,10 @@ test.describe("19. Staging Signoff Evidence", () => {
         seed.shareToken
       );
       expect(savedCloudFingerprint).toMatch(/[a-f0-9]{8}/);
+      await expectFingerprint(
+        page.getByTestId("qa-editor-snapshot-fingerprint"),
+        savedCloudFingerprint
+      );
 
       await page.goto(`/share/${seed.shareToken}`);
       await expect(page.getByTestId("share-viewer")).toBeVisible({ timeout: 30000 });
@@ -200,12 +204,23 @@ test.describe("19. Staging Signoff Evidence", () => {
       await expect(page.getByTestId("staging-smoke-row-open_design_signed_out")).toContainText("TODO");
       await expect(page.getByTestId("staging-smoke-row-checkout_boundary")).toContainText("Redacted response diagnostics");
       await expect(page.getByTestId("staging-smoke-checkout-mode")).toContainText(/test checkout URL|boundary blocked/);
+      await expect(page.getByTestId("staging-smoke-progress-summary")).toContainText("0/14 rows resolved");
+      await page.getByTestId("staging-smoke-row-status-open_design_signed_out").selectOption("PASS");
+      await page.getByTestId("staging-smoke-row-evidence-open_design_signed_out").fill("signed-out-design.png");
+      await page.getByTestId("staging-smoke-row-notes-open_design_signed_out").fill("Editor shell loaded behind staging protection.");
+      await page.getByTestId("staging-smoke-evidence-field-savedDesignId").fill(seed.designId);
+      await page.getByTestId("staging-smoke-evidence-field-shareToken").fill(seed.shareToken);
+      await page.getByTestId("staging-smoke-evidence-field-editorSnapshotFingerprint").fill(editorSnapshotFingerprint);
+      await expect(page.getByTestId("staging-smoke-progress-summary")).toContainText("1/14 rows resolved");
 
       await page.getByTestId("staging-smoke-evidence-copy-json").click();
       await expect(page.getByRole("status")).toContainText("JSON evidence copied.");
       const copiedEvidence = await page.evaluate(() => navigator.clipboard.readText());
       expect(copiedEvidence).toContain("checklistRows");
       expect(copiedEvidence).toContain("hardStops");
+      expect(copiedEvidence).toContain('"status": "PASS"');
+      expect(copiedEvidence).toContain("signed-out-design.png");
+      expect(copiedEvidence).toContain(seed.designId);
 
       const jsonDownloadPromise = page.waitForEvent("download");
       await page.getByTestId("staging-smoke-evidence-json").click();

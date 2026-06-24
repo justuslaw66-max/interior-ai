@@ -112,6 +112,46 @@ function reverseWall(wall: "north" | "south" | "east" | "west") {
   return "east";
 }
 
+function roomBounds(room: (typeof HOUSE_PLAN_TEMPLATES)[number]["rooms"][number]) {
+  return {
+    left: room.x - room.width / 2,
+    right: room.x + room.width / 2,
+    top: room.z - room.depth / 2,
+    bottom: room.z + room.depth / 2,
+  };
+}
+
+function roomsShareWallOnSide(
+  room: (typeof HOUSE_PLAN_TEMPLATES)[number]["rooms"][number],
+  wall: "north" | "south" | "east" | "west",
+  other: (typeof HOUSE_PLAN_TEMPLATES)[number]["rooms"][number]
+) {
+  const first = roomBounds(room);
+  const second = roomBounds(other);
+  if (wall === "east") {
+    return (
+      Math.abs(first.right - second.left) <= 0.01 &&
+      Math.min(first.bottom, second.bottom) - Math.max(first.top, second.top) > 0.5
+    );
+  }
+  if (wall === "west") {
+    return (
+      Math.abs(first.left - second.right) <= 0.01 &&
+      Math.min(first.bottom, second.bottom) - Math.max(first.top, second.top) > 0.5
+    );
+  }
+  if (wall === "south") {
+    return (
+      Math.abs(first.bottom - second.top) <= 0.01 &&
+      Math.min(first.right, second.right) - Math.max(first.left, second.left) > 0.5
+    );
+  }
+  return (
+    Math.abs(first.top - second.bottom) <= 0.01 &&
+    Math.min(first.right, second.right) - Math.max(first.left, second.left) > 0.5
+  );
+}
+
 function distanceFromTemplateDoorwayCenter(
   template: (typeof HOUSE_PLAN_TEMPLATES)[number],
   roomId: string,
@@ -144,7 +184,9 @@ for (const template of HOUSE_PLAN_TEMPLATES) {
   assert.ok(template.bestFor.length > 0, `${template.id} should describe who it is best for`);
   assert.ok(template.tags.length >= 3, `${template.id} should include useful tags`);
   assert.ok(template.zones.length >= 3, `${template.id} should include starter furniture zones`);
+  assert.ok(template.realLifeChecks.length >= 3, `${template.id} should include real-life planning checks`);
   assert.ok(template.doorways.length >= Math.max(1, template.rooms.length - 2), `${template.id} should include automatic doorway specs`);
+  assert.ok(template.windows.length >= 2, `${template.id} should include automatic exterior window specs`);
   assert.deepEqual(
     template.furnishingPacks.map((pack) => pack.id),
     ["essentials", "styled_starter"],
@@ -156,6 +198,22 @@ for (const template of HOUSE_PLAN_TEMPLATES) {
     `${template.id} should use unique room ids`
   );
   const roomIds = new Set(template.rooms.map((room) => room.id));
+  const roomsNeedingExteriorLight = template.rooms.filter(
+    (room) =>
+      room.roomType === "living" ||
+      room.roomType === "bedroom" ||
+      room.roomType === "dining" ||
+      room.id.includes("nook") ||
+      room.id.includes("den") ||
+      room.id.includes("study")
+  );
+  const nonBathroomRoomIds = new Set(
+    template.rooms.filter((room) => room.roomType !== "toilet").map((room) => room.id)
+  );
+  const nonBathroomConnections = new Map<string, Set<string>>();
+  for (const roomId of nonBathroomRoomIds) {
+    nonBathroomConnections.set(roomId, new Set());
+  }
   const readyCategoriesInTemplate = new Set<string>();
 
   for (const pack of template.furnishingPacks) {
@@ -178,6 +236,29 @@ for (const template of HOUSE_PLAN_TEMPLATES) {
         readyCategoriesInTemplate.add(intent.category);
       }
     }
+  }
+
+  for (const windowSpec of template.windows) {
+    assert.ok(roomIds.has(windowSpec.roomId), `${template.id} window should target a real room`);
+    assert.ok((windowSpec.widthMeters ?? 1) >= 0.6, `${template.id} window should be at least 0.6m wide`);
+    const room = template.rooms.find((entry) => entry.id === windowSpec.roomId);
+    assert.ok(room, `${template.id} window room should exist`);
+    assert.equal(
+      template.rooms.some(
+        (other) =>
+          other.id !== room.id &&
+          roomsShareWallOnSide(room, windowSpec.wall, other)
+      ),
+      false,
+      `${template.id} ${windowSpec.roomId} ${windowSpec.wall} window should sit on an exterior wall`
+    );
+  }
+
+  for (const room of roomsNeedingExteriorLight) {
+    assert.ok(
+      template.windows.some((windowSpec) => windowSpec.roomId === room.id),
+      `${template.id} ${room.id} should include an exterior window`
+    );
   }
   assert.ok(
     readyCategoriesInTemplate.size >= 1,
@@ -224,6 +305,35 @@ for (const template of HOUSE_PLAN_TEMPLATES) {
       assert.ok(
         overlapWidth <= 0.01 || overlapDepth <= 0.01,
         `${template.id} rooms ${first.id} and ${second.id} should not overlap`
+      );
+    }
+  }
+
+  for (const doorway of template.doorways) {
+    if (!nonBathroomRoomIds.has(doorway.fromRoomId) || !nonBathroomRoomIds.has(doorway.toRoomId)) {
+      continue;
+    }
+    nonBathroomConnections.get(doorway.fromRoomId)?.add(doorway.toRoomId);
+    nonBathroomConnections.get(doorway.toRoomId)?.add(doorway.fromRoomId);
+  }
+
+  const [firstNonBathroomRoomId] = nonBathroomRoomIds;
+  if (firstNonBathroomRoomId) {
+    const reachable = new Set<string>();
+    const queue = [firstNonBathroomRoomId];
+    while (queue.length > 0) {
+      const roomId = queue.shift();
+      if (!roomId || reachable.has(roomId)) continue;
+      reachable.add(roomId);
+      for (const nextRoomId of nonBathroomConnections.get(roomId) ?? []) {
+        if (!reachable.has(nextRoomId)) queue.push(nextRoomId);
+      }
+    }
+
+    for (const roomId of nonBathroomRoomIds) {
+      assert.ok(
+        reachable.has(roomId),
+        `${template.id} should not make ${roomId} reachable only through a bathroom`
       );
     }
   }
@@ -317,8 +427,8 @@ assert.deepEqual(
 );
 assertRoomsShareWall("compact_two_bed", "living", "kitchen");
 assertRoomsShareWall("compact_two_bed", "entry", "bathroom");
-assertRoomsShareWall("compact_two_bed", "bedroom", "bathroom");
-assertRoomsShareWall("compact_two_bed", "bedroom_2", "bathroom");
+assertRoomsShareWall("compact_two_bed", "living", "bedroom");
+assertRoomsShareWall("compact_two_bed", "entry", "bedroom_2");
 
 assert.deepEqual(
   getTemplate("three_room_flat").rooms.map((room) => room.id),

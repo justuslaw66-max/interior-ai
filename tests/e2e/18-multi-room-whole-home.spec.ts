@@ -899,7 +899,7 @@ test.describe("18. Multi-Room Whole Home", () => {
 
     const replaceDialog = page.getByRole("dialog", { name: "Replace current plan?" });
     await expect(replaceDialog).toBeVisible();
-    await expect(replaceDialog).toContainText("Compact apartment");
+    await expect(replaceDialog).toContainText("Compact 1-bed");
     await replaceDialog.getByRole("button", { name: "Cancel" }).click();
     await expect(replaceDialog).toHaveCount(0);
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("4 rooms");
@@ -910,7 +910,7 @@ test.describe("18. Multi-Room Whole Home", () => {
     await replaceDialog.getByRole("button", { name: "Replace plan" }).click();
 
     await expect(replaceDialog).toHaveCount(0);
-    await expect(page.getByText("Compact apartment added")).toBeVisible();
+    await expect(page.getByText("Compact 1-bed added")).toBeVisible();
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("5 rooms");
     await expect(page.getByTestId("room-setup-step-furnish-meta")).toHaveText("Not started");
   });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type {
   HouseRoomConnectionChecklistItem,
   HouseRoomDoorwaySuggestion,
@@ -18,6 +18,10 @@ import {
   ROOM_SIZE_PRESETS,
 } from "@/lib/design-page-house-plan";
 import type { RoomOpening2D } from "@/lib/editorScene";
+import type {
+  FloorPlanQualityAction,
+  FloorPlanQualityReport,
+} from "@/lib/floor-plan-quality";
 import type {
   FloorPlanDrawAngleLockMode,
   FloorPlanDrawRoomMode,
@@ -152,8 +156,10 @@ type DesignControlsPlanPanelProps = {
   planGuidedActionsEnabled: boolean;
   planStartMode?: PlanStartMode;
   planCompletionSignal?: { id: number; kind: "room" | "opening" } | null;
+  floorPlanQualityReport?: FloorPlanQualityReport | null;
   onPlanCompletionHandled?: (id: number) => void;
   onPlanStartModeChange?: (mode: PlanStartMode) => void;
+  onPlanQualityAction?: (action: FloorPlanQualityAction) => void;
   onSimplePlanControlsChange: (enabled: boolean) => void;
   onPlanGuidedActionsEnabledChange: (enabled: boolean) => void;
   onSelectFloorPlanTool: () => void;
@@ -276,8 +282,10 @@ export default function DesignControlsPlanPanel({
   planGuidedActionsEnabled,
   planStartMode: controlledPlanStartMode,
   planCompletionSignal,
+  floorPlanQualityReport,
   onPlanCompletionHandled,
   onPlanStartModeChange,
+  onPlanQualityAction,
   onSimplePlanControlsChange,
   onPlanGuidedActionsEnabledChange,
   onSelectFloorPlanTool,
@@ -332,13 +340,22 @@ export default function DesignControlsPlanPanel({
 }: DesignControlsPlanPanelProps) {
   const [localPlanStartMode, setLocalPlanStartMode] = useState<PlanStartMode>("start");
   const [roomSetupStep, setRoomSetupStep] = useState<RoomSetupStep>("confirm");
+  const [roomFinishPanelOpen, setRoomFinishPanelOpen] = useState(false);
   const [templateBedroomFilter, setTemplateBedroomFilter] = useState<"all" | "studio" | "one" | "two">("all");
   const [templateFootprintFilter, setTemplateFootprintFilter] = useState<"all" | "compact" | "narrow" | "wide">("all");
   const [templateStyleFilter, setTemplateStyleFilter] = useState<"all" | "open" | "separated" | "adu">("all");
+  const templatePickerRef = useRef<HTMLDivElement | null>(null);
   const planStartMode = controlledPlanStartMode ?? localPlanStartMode;
   const setPlanStartMode = (mode: PlanStartMode) => {
     setLocalPlanStartMode(mode);
     onPlanStartModeChange?.(mode);
+  };
+  const openTemplatePicker = () => {
+    setRoomSetupStep("confirm");
+    setPlanStartMode("template");
+    window.setTimeout(() => {
+      templatePickerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 0);
   };
 
   const titleClass = dark
@@ -573,6 +590,20 @@ export default function DesignControlsPlanPanel({
   const progressSecondaryActionClass = dark
     ? "rounded-lg border border-white/15 px-2.5 py-1.5 text-[11px] font-semibold text-neutral-100 disabled:opacity-50"
     : "rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-neutral-800 hover:bg-neutral-100 disabled:opacity-50";
+  const templateBedroomButtonClass = (active: boolean) =>
+    [
+      "h-9 rounded-full px-2 text-xs font-semibold transition disabled:opacity-50",
+      active
+        ? dark
+          ? "bg-white text-neutral-950"
+          : "bg-neutral-950 text-white"
+        : dark
+          ? "border border-white/15 bg-white/5 text-neutral-200 hover:bg-white/10"
+          : "border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-100",
+    ].join(" ");
+  const templateFilterSelectClass = dark
+    ? "h-9 w-full rounded-lg border border-white/10 bg-[#10131a] px-2 text-xs font-semibold text-neutral-100 outline-none"
+    : "h-9 w-full rounded-lg border border-neutral-200 bg-white px-2 text-xs font-semibold text-neutral-800 outline-none";
   const guidedActionsModeButtonClass = (active: boolean) =>
     [
       "min-h-8 rounded-md px-2.5 text-[11px] font-semibold transition",
@@ -622,6 +653,10 @@ export default function DesignControlsPlanPanel({
   const activeFloorScale = clampFloorPatternScale(activeRoomFloorScale);
   const recommendedFloorMaterials = getRecommendedFloorMaterials(activeRoomType).slice(0, 4);
   const recommendedFloorMaterialIds = new Set(recommendedFloorMaterials.map((material) => material.id));
+  const selectableFloorMaterials = [
+    ...recommendedFloorMaterials,
+    ...FLOOR_MATERIALS.filter((material) => !recommendedFloorMaterialIds.has(material.id)),
+  ];
   const floorMaterialMetaClass = dark
     ? "block text-[10px] text-neutral-400"
     : "block text-[10px] text-neutral-500";
@@ -716,6 +751,77 @@ export default function DesignControlsPlanPanel({
     setPlanStartMode("draw");
     onFloorPlanTraceRoomDrawModeChange("rectangle_wall");
     onFloorPlanTraceRoomModeChange(true);
+  };
+  const handlePlanQualityAction = (action: FloorPlanQualityAction) => {
+    onPlanQualityAction?.(action);
+    if (action === "add_window") {
+      onAddFloorPlanOpeningFromTool("window");
+      return;
+    }
+    if (action === "add_doorway") {
+      onAddFloorPlanOpeningFromTool("door");
+      return;
+    }
+    if (action === "add_storage") {
+      onGoFurnish();
+      return;
+    }
+    onGoFurnish();
+  };
+  const renderPlanQualityCard = () => {
+    if (!floorPlanQualityReport || !hasRooms) return null;
+    const topFixes = floorPlanQualityReport.suggestedFixes.slice(0, 3);
+    return (
+      <div data-testid="plan-quality-card" className={progressCardClass}>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className={titleClass}>Plan quality</div>
+            <div className={progressMetaClass}>
+              {floorPlanQualityReport.label} · {floorPlanQualityReport.score}/100
+            </div>
+          </div>
+          <span
+            data-testid="plan-quality-label"
+            className={
+              floorPlanQualityReport.label === "Looks good"
+                ? progressReadyClass
+                : progressTodoClass
+            }
+          >
+            {floorPlanQualityReport.label}
+          </span>
+        </div>
+        {topFixes.length > 0 ? (
+          <ul data-testid="plan-quality-fixes" className="mt-3 grid gap-1.5">
+            {topFixes.map((fix) => (
+              <li
+                key={fix}
+                className={
+                  dark
+                    ? "rounded-md bg-white/5 px-2.5 py-1.5 text-[11px] text-neutral-300"
+                    : "rounded-md bg-neutral-50 px-2.5 py-1.5 text-[11px] text-neutral-600"
+                }
+              >
+                {fix}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className={progressMetaClass}>
+            The main room links, daylight, and furniture footprint look ready.
+          </div>
+        )}
+        <button
+          type="button"
+          data-testid="plan-quality-primary-action"
+          className={`${progressActionClass} mt-3 min-h-10 w-full`}
+          disabled={!canEdit}
+          onClick={() => handlePlanQualityAction(floorPlanQualityReport.primaryAction.action)}
+        >
+          {floorPlanQualityReport.primaryAction.label}
+        </button>
+      </div>
+    );
   };
 
   return (
@@ -909,10 +1015,7 @@ export default function DesignControlsPlanPanel({
                   data-testid="manual-panel-templates"
                   className={`${progressSecondaryActionClass} min-h-10`}
                   disabled={!canEdit}
-                  onClick={() => {
-                    setRoomSetupStep("confirm");
-                    setPlanStartMode("template");
-                  }}
+                  onClick={openTemplatePicker}
                 >
                   Templates
                 </button>
@@ -988,10 +1091,7 @@ export default function DesignControlsPlanPanel({
                   data-testid="plan-open-templates"
                   className={`${progressSecondaryActionClass} mt-3 min-h-10 w-full`}
                   disabled={!canEdit}
-                  onClick={() => {
-                    setRoomSetupStep("confirm");
-                    setPlanStartMode("template");
-                  }}
+                  onClick={openTemplatePicker}
                 >
                   Templates
                 </button>
@@ -1004,10 +1104,7 @@ export default function DesignControlsPlanPanel({
                     data-testid="plan-start-template"
                     className={planStartButtonClass("template")}
                     disabled={!canEdit}
-                    onClick={() => {
-                      setRoomSetupStep("confirm");
-                      setPlanStartMode("template");
-                    }}
+                    onClick={openTemplatePicker}
                   >
                     Use template
                   </button>
@@ -1105,7 +1202,28 @@ export default function DesignControlsPlanPanel({
                       <span className={progressReadyClass}>{activeRoomArea.toFixed(0)} m2</span>
                     </div>
                   </div>
-                  <details data-testid="plan-measurements-panel">
+                  <div data-testid="room-setup-floor-finish-shortcut" className={progressRowClass}>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className={progressLabelClass}>Floor finish</div>
+                        <div className={progressMetaClass}>{activeFloorMaterial.name}</div>
+                      </div>
+                      <button
+                        type="button"
+                        data-testid="room-setup-change-floor-finish"
+                        className={progressSecondaryActionClass}
+                        disabled={!canEdit}
+                        onClick={() => setRoomFinishPanelOpen(true)}
+                      >
+                        Change floor
+                      </button>
+                    </div>
+                  </div>
+                  <details
+                    data-testid="plan-measurements-panel"
+                    open={roomFinishPanelOpen}
+                    onToggle={(event) => setRoomFinishPanelOpen(event.currentTarget.open)}
+                  >
                     <summary
                       className={
                         dark
@@ -1113,7 +1231,7 @@ export default function DesignControlsPlanPanel({
                           : "cursor-pointer text-xs font-semibold text-neutral-600"
                       }
                     >
-                      Size and finish
+                      Size and floor finish
                     </summary>
                     <div className="mt-2 grid grid-cols-2 gap-2">
                       <label className={consumerFieldLabelClass}>
@@ -1186,10 +1304,7 @@ export default function DesignControlsPlanPanel({
                       data-testid="plan-start-template"
                       className={planStartButtonClass("template")}
                       disabled={!canEdit}
-                      onClick={() => {
-                        setRoomSetupStep("confirm");
-                        setPlanStartMode("template");
-                      }}
+                      onClick={openTemplatePicker}
                     >
                       Template
                     </button>
@@ -1503,7 +1618,7 @@ export default function DesignControlsPlanPanel({
                 data-testid="plan-start-template"
                 className={planStartButtonClass("template")}
                 disabled={!canEdit}
-                onClick={() => setPlanStartMode("template")}
+                onClick={openTemplatePicker}
               >
                 Use template
               </button>
@@ -1534,6 +1649,7 @@ export default function DesignControlsPlanPanel({
           )}
         </div>
       )}
+      {renderPlanQualityCard()}
       {showPlanProgressPanel && (
         <div data-testid="plan-measurements-panel" className={progressCardClass}>
           <div className="flex items-start justify-between gap-3">
@@ -1708,71 +1824,120 @@ export default function DesignControlsPlanPanel({
           </div>
 
           {!visiblePlanOpening && (
-            <details className="mt-2">
-              <summary
-                className={
-                  dark
-                    ? "cursor-pointer text-xs font-semibold text-neutral-300"
-                    : "cursor-pointer text-xs font-semibold text-neutral-600"
-                }
-              >
-                Edit room size
-              </summary>
-              <div className="mt-2 grid grid-cols-2 gap-2">
-                <label className={consumerFieldLabelClass}>
-                  Width
-                  <span className={consumerInputShellClass}>
-                    <input
-                      type="number"
-                      inputMode="decimal"
-                      min={ROOM_DIMENSION_DEFAULTS.min}
-                      max={ROOM_DIMENSION_DEFAULTS.max}
-                      step={0.1}
-                      value={roomWidthInput}
-                      onChange={(event) => onRoomWidthInputChange(event.target.value)}
-                      className="min-w-0 flex-1 bg-transparent text-sm outline-none"
-                      disabled={!canEdit}
-                    />
-                    <span className={dark ? "text-xs text-neutral-400" : "text-xs text-neutral-500"}>m</span>
-                  </span>
-                </label>
-                <label className={consumerFieldLabelClass}>
-                  Depth
-                  <span className={consumerInputShellClass}>
-                    <input
-                      type="number"
-                      inputMode="decimal"
-                      min={ROOM_DIMENSION_DEFAULTS.min}
-                      max={ROOM_DIMENSION_DEFAULTS.max}
-                      step={0.1}
-                      value={roomDepthInput}
-                      onChange={(event) => onRoomDepthInputChange(event.target.value)}
-                      className="min-w-0 flex-1 bg-transparent text-sm outline-none"
-                      disabled={!canEdit}
-                    />
-                    <span className={dark ? "text-xs text-neutral-400" : "text-xs text-neutral-500"}>m</span>
-                  </span>
-                </label>
+            <>
+              <div data-testid="selected-room-floor-finish" className={`${progressRowClass} mt-3`}>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className={progressLabelClass}>Floor finish</div>
+                    <div className={progressMetaClass}>{activeFloorMaterial.name}</div>
+                  </div>
+                  <button
+                    type="button"
+                    data-testid="plan-change-floor-finish"
+                    className={progressSecondaryActionClass}
+                    disabled={!canEdit}
+                    onClick={() => setRoomFinishPanelOpen((open) => !open)}
+                  >
+                    {roomFinishPanelOpen ? "Hide" : "Change floor"}
+                  </button>
+                </div>
               </div>
-              <div className="mt-2 grid grid-cols-2 gap-2">
+              {roomFinishPanelOpen && (
+                <div
+                  data-testid="plan-floor-finish-options"
+                  className={
+                    dark
+                      ? "mt-2 rounded-lg border border-white/10 bg-white/5 p-2"
+                      : "mt-2 rounded-lg border border-neutral-200 bg-neutral-50 p-2"
+                  }
+                >
+                  <div className="grid grid-cols-2 gap-2">
+                    {selectableFloorMaterials.map((material) => (
+                      <button
+                        key={material.id}
+                        type="button"
+                        data-testid={`plan-floor-material-${material.id}`}
+                        className={floorMaterialButtonClass(material.id)}
+                        disabled={!canEdit}
+                        onClick={() => onApplyFloorMaterialToRoom(material.id)}
+                      >
+                        <span
+                          className="h-8 w-8 shrink-0 rounded-md border border-black/10"
+                          style={getFloorMaterialSwatchStyle(material)}
+                        />
+                        <span className="min-w-0 text-left">
+                          <span className="block truncate">{material.name}</span>
+                          <span className={floorMaterialMetaClass}>{material.category}</span>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    className={`${progressSecondaryActionClass} mt-2 min-h-10 w-full`}
+                    onClick={() => onApplyFloorMaterialToAllRooms(activeFloorMaterial.id)}
+                    disabled={!canEdit}
+                  >
+                    Apply this floor to all rooms
+                  </button>
+                </div>
+              )}
+              <details className="mt-2">
+                <summary
+                  className={
+                    dark
+                      ? "cursor-pointer text-xs font-semibold text-neutral-300"
+                      : "cursor-pointer text-xs font-semibold text-neutral-600"
+                  }
+                >
+                  Edit room size
+                </summary>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  <label className={consumerFieldLabelClass}>
+                    Width
+                    <span className={consumerInputShellClass}>
+                      <input
+                        type="number"
+                        inputMode="decimal"
+                        min={ROOM_DIMENSION_DEFAULTS.min}
+                        max={ROOM_DIMENSION_DEFAULTS.max}
+                        step={0.1}
+                        value={roomWidthInput}
+                        onChange={(event) => onRoomWidthInputChange(event.target.value)}
+                        className="min-w-0 flex-1 bg-transparent text-sm outline-none"
+                        disabled={!canEdit}
+                      />
+                      <span className={dark ? "text-xs text-neutral-400" : "text-xs text-neutral-500"}>m</span>
+                    </span>
+                  </label>
+                  <label className={consumerFieldLabelClass}>
+                    Depth
+                    <span className={consumerInputShellClass}>
+                      <input
+                        type="number"
+                        inputMode="decimal"
+                        min={ROOM_DIMENSION_DEFAULTS.min}
+                        max={ROOM_DIMENSION_DEFAULTS.max}
+                        step={0.1}
+                        value={roomDepthInput}
+                        onChange={(event) => onRoomDepthInputChange(event.target.value)}
+                        className="min-w-0 flex-1 bg-transparent text-sm outline-none"
+                        disabled={!canEdit}
+                      />
+                      <span className={dark ? "text-xs text-neutral-400" : "text-xs text-neutral-500"}>m</span>
+                    </span>
+                  </label>
+                </div>
                 <button
                   type="button"
-                  className={`${progressSecondaryActionClass} min-h-10`}
+                  className={`${progressSecondaryActionClass} mt-2 min-h-10 w-full`}
                   onClick={onApplyRoomSize}
                   disabled={!canEdit}
                 >
                   Apply size
                 </button>
-                <button
-                  type="button"
-                  className={`${progressSecondaryActionClass} min-h-10`}
-                  onClick={() => onApplyFloorMaterialToAllRooms(activeFloorMaterial.id)}
-                  disabled={!canEdit}
-                >
-                  Match finish
-                </button>
-              </div>
-            </details>
+              </details>
+            </>
           )}
 
           {visiblePlanOpening && (
@@ -2352,17 +2517,24 @@ export default function DesignControlsPlanPanel({
       )}
       {!isDesigner && showTemplatePicker && (
         <div
+          ref={templatePickerRef}
+          data-testid="starter-floor-plan-picker"
           className={
             dark
               ? "mt-3 rounded-xl border border-white/10 bg-[#151820] p-3"
               : "mt-3 rounded-xl border border-neutral-200 bg-neutral-50 p-3"
           }
         >
-          <div className={titleClass}>Starter floor plans</div>
-          <div className={dark ? "mt-1 text-xs text-neutral-400" : "mt-1 text-xs text-neutral-500"}>
-            Pick a real-life layout pattern. Doorways are added automatically.
+          <div className="flex items-center justify-between gap-3">
+            <div className={titleClass}>Choose a floor plan</div>
+            <div className={dark ? "text-xs font-semibold text-neutral-400" : "text-xs font-semibold text-neutral-500"}>
+              {filteredPlanTemplates.length} options
+            </div>
           </div>
-          <div className="mt-3 grid gap-2">
+          <div
+            data-testid="template-filter-panel"
+            className="mt-3 grid gap-2"
+          >
             <div className="grid grid-cols-4 gap-1" data-testid="template-bedroom-filter">
               {[
                 ["all", "All"],
@@ -2374,57 +2546,41 @@ export default function DesignControlsPlanPanel({
                   key={value}
                   type="button"
                   onClick={() => setTemplateBedroomFilter(value as typeof templateBedroomFilter)}
-                  className={
-                    templateBedroomFilter === value
-                      ? progressActionClass
-                      : progressSecondaryActionClass
-                  }
+                  className={templateBedroomButtonClass(templateBedroomFilter === value)}
                 >
                   {label}
                 </button>
               ))}
             </div>
-            <div className="grid grid-cols-4 gap-1" data-testid="template-footprint-filter">
-              {[
-                ["all", "Any"],
-                ["compact", "Compact"],
-                ["narrow", "Narrow"],
-                ["wide", "Wide+"],
-              ].map(([value, label]) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setTemplateFootprintFilter(value as typeof templateFootprintFilter)}
-                  className={
-                    templateFootprintFilter === value
-                      ? progressActionClass
-                      : progressSecondaryActionClass
-                  }
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-            <div className="grid grid-cols-4 gap-1" data-testid="template-style-filter">
-              {[
-                ["all", "Any"],
-                ["open", "Open"],
-                ["separated", "Rooms"],
-                ["adu", "ADU"],
-              ].map(([value, label]) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setTemplateStyleFilter(value as typeof templateStyleFilter)}
-                  className={
-                    templateStyleFilter === value
-                      ? progressActionClass
-                      : progressSecondaryActionClass
-                  }
-                >
-                  {label}
-                </button>
-              ))}
+            <div className="grid grid-cols-2 gap-2">
+              <select
+                aria-label="Plan size"
+                data-testid="template-footprint-filter"
+                value={templateFootprintFilter}
+                onChange={(event) =>
+                  setTemplateFootprintFilter(event.target.value as typeof templateFootprintFilter)
+                }
+                className={templateFilterSelectClass}
+              >
+                <option value="all">Any size</option>
+                <option value="compact">Compact</option>
+                <option value="narrow">Narrow</option>
+                <option value="wide">Spacious</option>
+              </select>
+              <select
+                aria-label="Plan style"
+                data-testid="template-style-filter"
+                value={templateStyleFilter}
+                onChange={(event) =>
+                  setTemplateStyleFilter(event.target.value as typeof templateStyleFilter)
+                }
+                className={templateFilterSelectClass}
+              >
+                <option value="all">Any style</option>
+                <option value="open">Open plan</option>
+                <option value="separated">More private</option>
+                <option value="adu">Guest house</option>
+              </select>
             </div>
           </div>
           <div className="mt-2 grid gap-2">
@@ -2459,22 +2615,22 @@ export default function DesignControlsPlanPanel({
                   key={template.id}
                   className={
                     dark
-                      ? "grid grid-cols-[7rem_minmax(0,1fr)] gap-3 rounded-lg border border-white/10 bg-[#1b2030] px-3 py-2 text-left text-sm font-medium text-neutral-100"
-                      : "grid grid-cols-[7rem_minmax(0,1fr)] gap-3 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-left text-sm font-medium text-neutral-800 shadow-sm"
+                      ? "grid grid-cols-[6.5rem_minmax(0,1fr)] gap-3 rounded-lg border border-white/10 bg-[#1b2030] px-3 py-2 text-left text-sm font-medium text-neutral-100"
+                      : "grid grid-cols-[6.5rem_minmax(0,1fr)] gap-3 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-left text-sm font-medium text-neutral-800 shadow-sm"
                   }
                 >
                   <span
                     className={
                       dark
-                        ? "block overflow-hidden rounded-md border border-white/10 bg-[#10131b]"
-                        : "block overflow-hidden rounded-md border border-neutral-200 bg-neutral-50"
+                        ? "block self-start overflow-hidden rounded-md border border-white/10 bg-[#10131b]"
+                        : "block self-start overflow-hidden rounded-md border border-neutral-200 bg-neutral-50"
                     }
                     aria-hidden="true"
                   >
                     <svg
                       data-testid={`plan-template-preview-${template.id}`}
                       viewBox={`0 0 ${previewWidth} ${previewHeight}`}
-                      className="h-[74px] w-full"
+                      className="h-[86px] w-full"
                     >
                       {template.rooms.map((room) => {
                         const x = 6 + (room.x - room.width / 2 - bounds.left) * scale;
@@ -2555,35 +2711,32 @@ export default function DesignControlsPlanPanel({
                     <span className="flex items-center justify-between gap-2">
                       <span>{template.label}</span>
                       <span className={dark ? "shrink-0 text-xs text-neutral-400" : "shrink-0 text-xs text-neutral-500"}>
-                        {template.rooms.length} rooms · {Math.round(areaSqm)} m2
+                        {Math.round(areaSqm)} m2
                       </span>
                     </span>
                     <span className={dark ? "mt-0.5 block text-xs text-neutral-400" : "mt-0.5 block text-xs text-neutral-500"}>
                       {template.summary}
                     </span>
                     <span className={dark ? "mt-1 block text-[11px] font-semibold text-emerald-200" : "mt-1 block text-[11px] font-semibold text-emerald-700"}>
-                      Best for: {template.bestFor}
+                      Good for: {template.bestFor}
                     </span>
-                    <span
-                      className={
-                        dark
-                          ? "mt-1 block truncate text-[11px] text-neutral-500"
-                          : "mt-1 block truncate text-[11px] text-neutral-500"
-                      }
-                    >
-                      {roomPreview}
+                    <span className={dark ? "mt-1 block truncate text-[11px] text-neutral-400" : "mt-1 block truncate text-[11px] text-neutral-500"}>
+                      Spaces: {roomPreview}
                     </span>
                     <span className="mt-1 flex flex-wrap gap-1">
-                      {template.tags.slice(0, 3).map((tag) => (
+                      {template.realLifeChecks.slice(0, 2).map((check) => (
                         <span
-                          key={tag}
-                          className={dark ? "rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-neutral-300" : "rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] text-neutral-600"}
+                          key={check}
+                          className={dark ? "rounded-full bg-emerald-400/10 px-2 py-0.5 text-[10px] text-emerald-100" : "rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] text-emerald-700"}
                         >
-                          {tag}
+                          {check}
                         </span>
                       ))}
                       <span className={dark ? "rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-neutral-300" : "rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] text-neutral-600"}>
                         {template.doorways.length} doors
+                      </span>
+                      <span className={dark ? "rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-neutral-300" : "rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] text-neutral-600"}>
+                        {template.windows.length} windows
                       </span>
                     </span>
                     <span className={dark ? "mt-1 block truncate text-[11px] text-neutral-400" : "mt-1 block truncate text-[11px] text-neutral-500"}>
@@ -2601,7 +2754,7 @@ export default function DesignControlsPlanPanel({
                             : "rounded-md border border-neutral-200 px-2 py-1.5 text-center text-xs font-semibold text-neutral-700 hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
                         }
                       >
-                        Plan only
+                        Empty layout
                       </button>
                       <button
                         type="button"
@@ -2618,7 +2771,10 @@ export default function DesignControlsPlanPanel({
                             : "rounded-md bg-emerald-600 px-2 py-1.5 text-center text-xs font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
                         }
                       >
-                        Furnished · {furnishedItemCount} items
+                        <span className="block">Furnished starter</span>
+                        <span className={dark ? "block text-[10px] text-emerald-950/80" : "block text-[10px] text-white/90"}>
+                          {furnishedItemCount} items
+                        </span>
                       </button>
                     </span>
                   </span>

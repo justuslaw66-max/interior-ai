@@ -13,6 +13,9 @@ export type CheckoutBoundaryDiagnostics = {
   hardStops: string[];
 };
 
+const CHECKOUT_FAILURE_HARD_STOP =
+  "Checkout provider connectivity could not be verified in staging or preview.";
+
 type EnvLike = Record<string, string | undefined>;
 
 function normalizeStage(value: string | undefined): CheckoutBoundaryStage | null {
@@ -60,6 +63,14 @@ function resolveDatabaseBoundary(value: string | undefined): DatabaseBoundary {
 function isBetaBoundary(stage: CheckoutBoundaryStage, vercelEnv: string | undefined): boolean {
   const normalizedVercelEnv = vercelEnv?.trim().toLowerCase();
   return stage === "staging" || stage === "preview" || normalizedVercelEnv === "preview";
+}
+
+export function isBetaCheckoutBoundary(diagnostics: CheckoutBoundaryDiagnostics): boolean {
+  return (
+    diagnostics.appStage === "staging" ||
+    diagnostics.appStage === "preview" ||
+    diagnostics.vercelEnv?.trim().toLowerCase() === "preview"
+  );
 }
 
 export function resolveCheckoutBoundaryDiagnostics(
@@ -124,5 +135,28 @@ export function buildCheckoutBoundaryResponsePayload(diagnostics: CheckoutBounda
       warnings: diagnostics.warnings,
       hardStops: diagnostics.hardStops,
     },
+  };
+}
+
+export function buildProviderFailureBoundaryDiagnostics(
+  diagnostics: CheckoutBoundaryDiagnostics,
+  provider: "stripe" | "shopify",
+  message?: string
+): CheckoutBoundaryDiagnostics {
+  const providerLabel = provider === "stripe" ? "Stripe" : "Shopify";
+  const hardStop = CHECKOUT_FAILURE_HARD_STOP;
+  const warning = message
+    ? `${providerLabel} checkout failed before a checkout URL was created: ${message}`
+    : `${providerLabel} checkout failed before a checkout URL was created.`;
+
+  return {
+    ...diagnostics,
+    checkoutSafe: false,
+    hardStops: diagnostics.hardStops.includes(hardStop)
+      ? diagnostics.hardStops
+      : [...diagnostics.hardStops, hardStop],
+    warnings: diagnostics.warnings.includes(warning)
+      ? diagnostics.warnings
+      : [...diagnostics.warnings, warning],
   };
 }

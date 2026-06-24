@@ -136,7 +136,7 @@ test.describe("00. Beta Smoke Gate", () => {
         await route.fulfill({
           status: 200,
           contentType: "application/json",
-          body: JSON.stringify({ ok: true }),
+          body: JSON.stringify({ ok: true, persisted: true, eventId: "evt_beta_smoke" }),
         });
         return;
       }
@@ -147,6 +147,7 @@ test.describe("00. Beta Smoke Gate", () => {
     await page.getByTestId("beta-feedback-note").fill("Beta smoke feedback capture works.");
     await page.getByTestId("beta-feedback-submit").click();
     await expect(page.getByRole("status")).toContainText("Sent.");
+    await expect(page.getByTestId("beta-feedback-report-id")).toHaveText("evt_beta_smoke");
     await expect.poll(() => betaFeedbackPayloads.length).toBe(1);
     const betaFeedbackPayload = betaFeedbackPayloads[0];
     expect(betaFeedbackPayload?.eventType).toBe("beta_feedback_submitted");

@@ -11,20 +11,44 @@ const betaSmokeSource = fs.readFileSync(betaSmokePath, "utf8");
 
 assert.match(
   source,
-  /data-testid="plan-open-templates"[\s\S]*?setPlanStartMode\("template"\)/,
-  "Guided plan editing should expose a Templates button after rooms exist."
+  /const templatePickerRef = useRef<HTMLDivElement \| null>\(null\);[\s\S]*?const openTemplatePicker = \(\) => \{[\s\S]*?setPlanStartMode\("template"\);[\s\S]*?templatePickerRef\.current\?\.scrollIntoView\(\{ behavior: "smooth", block: "start" \}\);/,
+  "Opening templates should scroll the controls panel to the starter floor plan picker."
 );
 
 assert.match(
   source,
-  /data-testid="manual-panel-templates"[\s\S]*?setPlanStartMode\("template"\)/,
-  "Manual plan editing should expose a Templates button after rooms exist."
+  /data-testid="plan-open-templates"[\s\S]*?onClick=\{openTemplatePicker\}/,
+  "Guided plan editing should expose a Templates button that visibly jumps to the picker after rooms exist."
+);
+
+assert.match(
+  source,
+  /data-testid="manual-panel-templates"[\s\S]*?onClick=\{openTemplatePicker\}/,
+  "Manual plan editing should expose a Templates button that visibly jumps to the picker after rooms exist."
 );
 
 assert.match(
   source,
   /!isDesigner && showTemplatePicker/,
   "The starter floor plan picker should remain available when planStartMode is template."
+);
+
+assert.match(
+  source,
+  /ref=\{templatePickerRef\}[\s\S]*?data-testid="starter-floor-plan-picker"/,
+  "The starter floor plan picker should provide a stable scroll target."
+);
+
+assert.match(
+  source,
+  /data-testid="template-filter-panel"[\s\S]*?data-testid="template-bedroom-filter"[\s\S]*?<select[\s\S]*?data-testid="template-footprint-filter"[\s\S]*?<select[\s\S]*?data-testid="template-style-filter"/,
+  "Template filters should use one simple bedroom row plus compact select menus."
+);
+
+assert.match(
+  source,
+  /Choose a floor plan[\s\S]*?\{filteredPlanTemplates\.length\} options/,
+  "Template picker heading should be concise and show the filtered option count."
 );
 
 assert.match(
@@ -41,6 +65,24 @@ assert.match(
 
 assert.match(
   source,
+  /data-testid="selected-room-floor-finish"[\s\S]*?data-testid="plan-change-floor-finish"[\s\S]*?setRoomFinishPanelOpen/,
+  "Selected-room controls should expose a visible shortcut for changing floor finish."
+);
+
+assert.match(
+  source,
+  /data-testid="plan-floor-finish-options"[\s\S]*?data-testid=\{`plan-floor-material-\$\{material\.id\}`\}/,
+  "The floor finish shortcut should reveal selectable material swatches."
+);
+
+assert.match(
+  source,
+  /data-testid="room-setup-floor-finish-shortcut"[\s\S]*?data-testid="room-setup-change-floor-finish"[\s\S]*?setRoomFinishPanelOpen\(true\)/,
+  "Guided room setup should surface floor finish editing before the collapsed size panel."
+);
+
+assert.match(
+  source,
   /data-testid=\{`plan-template-preview-\$\{template\.id\}`\}/,
   "Template cards should include mini floor-plan previews."
 );
@@ -53,8 +95,8 @@ assert.match(
 
 assert.match(
   source,
-  /data-testid=\{`apply-plan-template-\$\{template\.id\}`\}[\s\S]*?Plan only/,
-  "Template cards should keep a plan-only action."
+  /data-testid=\{`apply-plan-template-\$\{template\.id\}`\}[\s\S]*?Empty layout/,
+  "Template cards should keep a clear empty-layout action."
 );
 
 assert.match(
@@ -65,8 +107,8 @@ assert.match(
 
 assert.match(
   source,
-  /Best for: \{template\.bestFor\}/,
-  "Template cards should explain who each layout is best for."
+  /Good for: \{template\.bestFor\}/,
+  "Template cards should explain who each layout is good for."
 );
 
 assert.match(
@@ -76,15 +118,45 @@ assert.match(
 );
 
 assert.match(
+  source,
+  /template\.realLifeChecks\.slice\(0, 2\)[\s\S]*?\{template\.windows\.length\} windows/,
+  "Template cards should surface real-life planning checks and window counts."
+);
+
+assert.match(
   designPageSource,
-  /const templateOpenings: RoomOpening2D\[\] = template\.doorways\.flatMap/,
+  /const templateDoorOpenings: RoomOpening2D\[\] = template\.doorways\.flatMap/,
   "Applying a template should convert template doorway specs into plan openings."
+);
+
+assert.match(
+  designPageSource,
+  /const templateWindowOpenings: RoomOpening2D\[\] = template\.windows\.flatMap[\s\S]*?kind: "window" as const/,
+  "Applying a template should convert exterior window specs into plan window openings."
+);
+
+assert.match(
+  designPageSource,
+  /const templateOpenings = \[\.\.\.templateDoorOpenings, \.\.\.templateWindowOpenings\]/,
+  "Applying a template should install automatic doors and windows together."
 );
 
 assert.match(
   designPageSource,
   /setPlanOpenings\(templateOpenings\)/,
   "Applying a template should install automatic doorways instead of clearing openings."
+);
+
+assert.match(
+  designPageSource,
+  /setPlanOpenings\(templateOpenings\);[\s\S]*?setPlanFixedElements\(\[\]\);/,
+  "Applying a template should clear standalone built-ins so old default rectangles do not float outside the new plan."
+);
+
+assert.doesNotMatch(
+  designPageSource,
+  /kitchen-run-top|kitchen-island/,
+  "The editor should not auto-seed default built-in rectangles on a new floor plan."
 );
 
 assert.match(

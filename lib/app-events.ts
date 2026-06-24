@@ -5,6 +5,7 @@ export type AppEventType =
   | "design_started"
   | "first_item_added"
   | "third_item_added"
+  | "first_run_activation_step_completed"
   | "export_clicked"
   | "upgrade_clicked"
   | "share_link_created"
@@ -34,13 +35,19 @@ export type AppEventPayload = {
   meta?: Record<string, unknown> | null;
 };
 
+export type AppEventLogResult = {
+  persisted: boolean;
+  eventId: string | null;
+  error?: string;
+};
+
 export async function logAppEvent(payload: AppEventPayload) {
   try {
     const metaValue = payload.meta
       ? JSON.parse(JSON.stringify(payload.meta))
       : undefined;
 
-    await prisma.appEvent.create({
+    const event = await prisma.appEvent.create({
       data: {
         eventType: payload.eventType,
         userId: payload.userId ?? null,
@@ -49,7 +56,11 @@ export async function logAppEvent(payload: AppEventPayload) {
         meta: metaValue,
       },
     });
+
+    return { persisted: true, eventId: event.id } satisfies AppEventLogResult;
   } catch (err) {
-    console.warn("[AppEvent] Failed to log event:", err instanceof Error ? err.message : err);
+    const message = err instanceof Error ? err.message : String(err);
+    console.warn("[AppEvent] Failed to log event:", message);
+    return { persisted: false, eventId: null, error: message } satisfies AppEventLogResult;
   }
 }

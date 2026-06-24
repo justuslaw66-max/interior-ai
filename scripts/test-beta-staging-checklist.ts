@@ -25,16 +25,24 @@ const hygieneReport = readFileSync(
 );
 const stagingEvidenceSource = readFileSync(join(root, "lib/beta-staging-evidence.ts"), "utf8");
 const adminPageSource = readFileSync(join(root, "app/admin/page.tsx"), "utf8");
+const designPageSource = readFileSync(join(root, "app/design/page.tsx"), "utf8");
 const stagingEvidencePanelSource = readFileSync(
   join(root, "components/admin/StagingSmokeEvidencePanel.tsx"),
   "utf8"
 );
+const appEventsSource = readFileSync(join(root, "lib/app-events.ts"), "utf8");
+const appEventRouteSource = readFileSync(join(root, "app/api/track/app-event/route.ts"), "utf8");
 const betaSmokeSource = readFileSync(join(root, "tests/e2e/00-beta-smoke.spec.ts"), "utf8");
 const stagingSignoffSource = readFileSync(join(root, "tests/e2e/19-staging-signoff.spec.ts"), "utf8");
+const mobilePlanModeSource = readFileSync(join(root, "tests/e2e/20-mobile-plan-mode.spec.ts"), "utf8");
 
 const releaseCandidateScript = packageJson.scripts?.["test:beta-release-candidate"] ?? "";
 const stagingChecklistScript = packageJson.scripts?.["test:beta-staging-checklist"] ?? "";
+const stagingEvidenceScript = packageJson.scripts?.["test:beta-staging-evidence"] ?? "";
+const releaseHandoffScript = packageJson.scripts?.["test:beta-release-handoff"] ?? "";
 const betaE2eScript = packageJson.scripts?.["test:e2e:beta"] ?? "";
+const betaEditorPolishScript = packageJson.scripts?.["test:beta-editor-polish"] ?? "";
+const mobilePlanScript = packageJson.scripts?.["test:e2e:mobile-plan"] ?? "";
 
 assert.match(
   releaseCandidateScript,
@@ -52,14 +60,44 @@ assert.match(
   "release candidate script should verify the staging smoke checklist."
 );
 assert.match(
+  releaseCandidateScript,
+  /npm run test:beta-staging-evidence/,
+  "release candidate script should verify the completed staging evidence bundle."
+);
+assert.match(
+  releaseCandidateScript,
+  /npm run test:beta-release-handoff/,
+  "release candidate script should verify the release handoff manifest."
+);
+assert.match(
   stagingChecklistScript,
   /scripts\/test-beta-staging-checklist\.ts/,
   "staging checklist script should run this guard."
 );
 assert.match(
+  stagingEvidenceScript,
+  /scripts\/test-beta-staging-evidence\.ts/,
+  "staging evidence script should run the evidence bundle guard."
+);
+assert.match(
+  releaseHandoffScript,
+  /scripts\/test-beta-release-handoff\.ts/,
+  "release handoff script should run the handoff manifest guard."
+);
+assert.match(
   betaE2eScript,
-  /00-beta-smoke\.spec\.ts[\s\S]*19-staging-signoff\.spec\.ts/,
-  "beta e2e script should run both the beta smoke and staging signoff specs."
+  /00-beta-smoke\.spec\.ts[\s\S]*19-staging-signoff\.spec\.ts[\s\S]*20-mobile-plan-mode\.spec\.ts/,
+  "beta e2e script should run beta smoke, staging signoff, and mobile Plan mode specs."
+);
+assert.match(
+  betaEditorPolishScript,
+  /test:floor-plan-quality[\s\S]*test:load-design-delete-modal[\s\S]*test:room-resize-handle-style/,
+  "beta editor polish should include floor-plan quality, saved-design delete, and resize-handle guardrails."
+);
+assert.match(
+  mobilePlanScript,
+  /20-mobile-plan-mode\.spec\.ts/,
+  "mobile Plan script should run the focused mobile/tablet Plan mode guard."
 );
 
 for (const required of [
@@ -160,6 +198,16 @@ assert.match(
   "beta release hygiene report should link the staging smoke checklist."
 );
 assert.match(
+  hygieneReport,
+  /npm run test:beta-staging-evidence/,
+  "beta release hygiene report should point to the staging evidence guard."
+);
+assert.match(
+  hygieneReport,
+  /beta-release-handoff-2026-06-24\.md/,
+  "beta release hygiene report should link the release handoff manifest."
+);
+assert.match(
   stagingEvidenceSource,
   /stagingSmokeEvidenceToCsv[\s\S]*stagingSmokeEvidenceToMarkdown[\s\S]*stagingSmokeEvidenceToJson/,
   "staging evidence helper should provide JSON, CSV, and Markdown serializers."
@@ -194,6 +242,50 @@ assert.match(
   stagingEvidencePanelSource,
   /data-testid="staging-smoke-evidence-copy-json"[\s\S]*data-testid="staging-smoke-evidence-copy-markdown"/,
   "staging evidence panel should expose copy actions."
+);
+assert.match(
+  stagingEvidencePanelSource,
+  /localStorage[\s\S]*staging-smoke-progress-summary[\s\S]*staging-smoke-row-status-\$\{row\.id\}[\s\S]*staging-smoke-row-evidence-\$\{row\.id\}[\s\S]*staging-smoke-row-notes-\$\{row\.id\}/,
+  "staging evidence panel should persist tester edits and expose editable row status, evidence, and notes."
+);
+assert.match(
+  stagingEvidencePanelSource,
+  /savedDesignId: "Saved design ID"[\s\S]*shareToken: "Share token"[\s\S]*editorSnapshotFingerprint: "Editor fingerprint"[\s\S]*staging-smoke-evidence-field-\$\{field\}/,
+  "staging evidence panel should expose editable required evidence fields."
+);
+assert.match(
+  stagingEvidencePanelSource,
+  /stagingSmokeEvidenceToJson\(draftBundle\)[\s\S]*stagingSmokeEvidenceToCsv\(draftBundle\)[\s\S]*stagingSmokeEvidenceToMarkdown\(draftBundle\)/,
+  "staging evidence exports should use the edited worksheet state."
+);
+assert.ok(
+  [
+    "firstRunActivationTrackedStepsRef",
+    "first_run_activation_step_completed",
+    "guided_plan_actions",
+    "viewport_width",
+  ].every((token) => designPageSource.includes(token)),
+  "design page should track first-run activation step completion with useful funnel context."
+);
+assert.match(
+  appEventsSource,
+  /first_run_activation_step_completed/,
+  "first-run activation step completion should be an app event type."
+);
+assert.match(
+  appEventRouteSource,
+  /first_run_activation_step_completed/,
+  "first-run activation step completion should be accepted by the app-event API."
+);
+assert.match(
+  appEventRouteSource,
+  /eventId:\s*result\.eventId/,
+  "app-event API should return persisted event ids so staging feedback evidence can be recorded."
+);
+assert.match(
+  mobilePlanModeSource,
+  /390[\s\S]*768[\s\S]*plan-guided-actions-toggle[\s\S]*plan-manual-quick-actions[\s\S]*manual-plan-action-fit[\s\S]*scrollWidth/,
+  "mobile Plan mode spec should guard phone/tablet controls, manual actions, and overflow."
 );
 assert.match(
   betaSmokeSource,

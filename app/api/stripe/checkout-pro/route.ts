@@ -14,7 +14,9 @@ import { rateLimit } from "@/lib/rateLimit";
 import { logAppEvent } from "@/lib/app-events";
 import { trackMonetization } from "@/lib/monetization-tracking";
 import {
+  buildProviderFailureBoundaryDiagnostics,
   buildCheckoutBoundaryResponsePayload,
+  isBetaCheckoutBoundary,
   resolveCheckoutBoundaryDiagnostics,
 } from "@/lib/beta-checkout-boundary";
 
@@ -22,6 +24,11 @@ function getStripeClient(secretKey: string) {
   return new Stripe(secretKey, {
     apiVersion: "2026-01-28.clover",
   });
+}
+
+function getErrorMessage(error: unknown) {
+  if (error instanceof Error) return error.message;
+  return String(error);
 }
 
 export async function POST(request: Request) {
@@ -51,6 +58,19 @@ export async function POST(request: Request) {
 
     const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
     if (!stripeSecretKey) {
+      if (isBetaCheckoutBoundary(boundary)) {
+        return NextResponse.json(
+          buildCheckoutBoundaryResponsePayload(
+            buildProviderFailureBoundaryDiagnostics(
+              boundary,
+              "stripe",
+              "STRIPE_SECRET_KEY is not configured"
+            )
+          ),
+          { status: 503 }
+        );
+      }
+
       return NextResponse.json({ error: "Stripe is not configured" }, { status: 503 });
     }
 
@@ -101,6 +121,19 @@ export async function POST(request: Request) {
     const actualPriceId = priceId || process.env.STRIPE_PRICE_PRO_MONTHLY;
 
     if (!actualPriceId) {
+      if (isBetaCheckoutBoundary(boundary)) {
+        return NextResponse.json(
+          buildCheckoutBoundaryResponsePayload(
+            buildProviderFailureBoundaryDiagnostics(
+              boundary,
+              "stripe",
+              "STRIPE_PRICE_PRO_MONTHLY is not configured"
+            )
+          ),
+          { status: 503 }
+        );
+      }
+
       return NextResponse.json(
         { error: "Price ID not configured" },
         { status: 500 }
@@ -147,7 +180,19 @@ export async function POST(request: Request) {
       url: checkoutSession.url,
     });
   } catch (error) {
-    console.error("Stripe checkout error:", error);
+    const message = getErrorMessage(error);
+    console.error("Stripe checkout error:", message);
+
+    const boundary = resolveCheckoutBoundaryDiagnostics();
+    if (isBetaCheckoutBoundary(boundary)) {
+      return NextResponse.json(
+        buildCheckoutBoundaryResponsePayload(
+          buildProviderFailureBoundaryDiagnostics(boundary, "stripe", message)
+        ),
+        { status: 503 }
+      );
+    }
+
     return NextResponse.json(
       { error: "Failed to create checkout session" },
       { status: 500 }

@@ -3,7 +3,11 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { CATALOG_ITEMS } from "../lib/catalog";
 import { buildCatalogCommerceReadiness } from "../lib/catalog-commerce-readiness";
-import { resolveCheckoutBoundaryDiagnostics } from "../lib/beta-checkout-boundary";
+import {
+  buildProviderFailureBoundaryDiagnostics,
+  isBetaCheckoutBoundary,
+  resolveCheckoutBoundaryDiagnostics,
+} from "../lib/beta-checkout-boundary";
 import { buildBetaFeedbackTriage } from "../lib/beta-feedback-triage";
 import { buildBetaLaunchReadinessSummary } from "../lib/beta-launch-readiness";
 import { buildFirstRunActivationState } from "../lib/first-run-activation";
@@ -57,6 +61,21 @@ const safeStaging = resolveCheckoutBoundaryDiagnostics({
   DATABASE_URL: "postgres://example-staging",
 });
 assert.equal(safeStaging.checkoutSafe, true);
+assert.equal(isBetaCheckoutBoundary(safeStaging), true);
+const providerFailure = buildProviderFailureBoundaryDiagnostics(
+  safeStaging,
+  "stripe",
+  "connection failed"
+);
+assert.equal(providerFailure.checkoutSafe, false);
+assert.ok(
+  providerFailure.hardStops.some((stop) => /provider connectivity/i.test(stop)),
+  "provider failures should turn safe staging checkout into a beta hard stop."
+);
+assert.ok(
+  providerFailure.warnings.some((warning) => /connection failed/.test(warning)),
+  "provider failures should retain a redacted operational warning."
+);
 
 const productionWithTestKey = resolveCheckoutBoundaryDiagnostics({
   APP_ENV: "production",
@@ -64,10 +83,18 @@ const productionWithTestKey = resolveCheckoutBoundaryDiagnostics({
   DATABASE_URL: "postgres://example-production",
 });
 assert.equal(productionWithTestKey.checkoutSafe, false);
+assert.equal(isBetaCheckoutBoundary(productionWithTestKey), false);
 
 for (const source of [stripeCheckoutSource, stripeCheckoutProSource, shopifyCheckoutSource]) {
   assert.match(source, /resolveCheckoutBoundaryDiagnostics/, "checkout routes should run boundary diagnostics.");
   assert.match(source, /buildCheckoutBoundaryResponsePayload/, "checkout routes should return safe diagnostics.");
+}
+for (const source of [stripeCheckoutSource, stripeCheckoutProSource]) {
+  assert.match(
+    source,
+    /buildProviderFailureBoundaryDiagnostics[\s\S]*isBetaCheckoutBoundary/,
+    "Stripe checkout routes should fail closed with beta boundary diagnostics after provider failures."
+  );
 }
 
 const catalogItems = Object.values(CATALOG_ITEMS);

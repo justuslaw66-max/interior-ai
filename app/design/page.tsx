@@ -40,7 +40,10 @@ import {
   EventDedup,
   type OnboardingState,
 } from "@/lib/onboarding";
-import { buildFirstRunActivationState } from "@/lib/first-run-activation";
+import {
+  buildFirstRunActivationState,
+  type FirstRunActivationStepId,
+} from "@/lib/first-run-activation";
 import { applyAISuggestionAction, type AISuggestionAction } from "@/lib/ai/applySuggestion";
 import {
   computeAABB,
@@ -95,6 +98,10 @@ import {
 } from "@/lib/catalog-placement";
 import { computeCirculationAnalysis, type CirculationHeatCell } from "@/lib/circulation-analysis";
 import { buildRoomHealthSummary } from "@/lib/room-health-summary";
+import {
+  buildFloorPlanQualityReport,
+  type FloorPlanQualityAction,
+} from "@/lib/floor-plan-quality";
 import { getAllRoomNames } from "@/lib/room-hooks";
 import EditorCommandBar from "@/components/editor/EditorCommandBar";
 import type { EditorSaveStatus } from "@/components/editor/EditorCommandBar";
@@ -788,6 +795,7 @@ function PageContent() {
   const paywallOpenParam = searchParams.get("paywall_open");
   const plansOpenParam = searchParams.get("plans_open");
   const [sofaDragging, setSofaDragging] = useState(false);
+  const [planRoomDragging, setPlanRoomDragging] = useState(false);
   const [designId, setDesignId] = useState<string | null>(null);
   const [shareToken, setShareToken] = useState<string | null>(null);
   const [shareEnabled, setShareEnabled] = useState(false);
@@ -847,6 +855,8 @@ function PageContent() {
     null
   );
   const [lastDbSaveAt, setLastDbSaveAt] = useState<number | null>(null);
+  const [lastPersistedSnapshotFingerprint, setLastPersistedSnapshotFingerprint] =
+    useState<string | null>(null);
   const [lastLocalSaveError, setLastLocalSaveError] = useState<string | null>(null);
   const [lastCloudSaveError, setLastCloudSaveError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -973,6 +983,13 @@ function PageContent() {
   const [showMyDesigns, setShowMyDesigns] = useState(false);
   const [myDesigns, setMyDesigns] = useState<Array<{ id: string; title: string; createdAt: string }>>([]);
   const [loadingDesigns, setLoadingDesigns] = useState(false);
+  const [selectedSavedDesignIds, setSelectedSavedDesignIds] = useState<Set<string>>(new Set());
+  const [deletingDesignIds, setDeletingDesignIds] = useState<Set<string>>(new Set());
+  const [pendingDeleteDesign, setPendingDeleteDesign] = useState<{
+    ids: string[];
+    title?: string;
+    mode: "single" | "selected" | "all";
+  } | null>(null);
   const [shoppingReadinessFilter, setShoppingReadinessFilter] =
     useState<ShoppingReadinessFilter>("all");
   const aiDesignEnabled = true;
@@ -1022,6 +1039,7 @@ function PageContent() {
   const designStartedTrackedRef = useRef(false);
   const firstItemFunnelTrackedRef = useRef(false);
   const thirdItemTrackedRef = useRef(false);
+  const firstRunActivationTrackedStepsRef = useRef<Map<string, Set<FirstRunActivationStepId>>>(new Map());
   const guestPromptActionRef = useRef<null | (() => void)>(null);
   const [guestPromptReason, setGuestPromptReason] = useState<string | null>(null);
   const dragCommitRef = useRef(false);
@@ -1039,6 +1057,11 @@ function PageContent() {
   const eventDedupRef = useRef(EventDedup.createSession());
   const floorPlanUnderlayUrlRef = useRef<string | null>(null);
   const floorPlanPdfSourceDataRef = useRef<ArrayBuffer | null>(null);
+  const lastTrackedPlanQualityRef = useRef<{
+    score: number;
+    label: string;
+    issueCount: number;
+  } | null>(null);
   
   // Smart Constraints + Visual Feedback state
   const [constraintResults, setConstraintResults] = useState<ConstraintResult[]>([]);
@@ -1418,7 +1441,8 @@ function PageContent() {
     setLastCloudSaveError(null);
     try {
       // NEW: Convert to legacy API format for backward compatibility
-      const legacyData = snapshotToLegacyApi(buildDesignSnapshotForPersistence());
+      const storedSnapshot = getStoredDesignForPersistence();
+      const legacyData = snapshotToLegacyApi(storedToSnapshot(storedSnapshot));
 
       const payload = {
         title: "My Living Room",
@@ -1466,6 +1490,7 @@ function PageContent() {
       if (data?.id) {
         setDesignId(data.id);
         setLastDbSaveAt(Date.now());
+        setLastPersistedSnapshotFingerprint(fingerprintStoredDesign(storedSnapshot));
         setLastCloudSaveError(null);
         fetchShareStatus(data.id);
         if (isDesigner) {
@@ -1508,6 +1533,11 @@ function PageContent() {
       }
       const data = await res.json();
       setMyDesigns(Array.isArray(data) ? data : []);
+      setSelectedSavedDesignIds((prev) => {
+        if (!Array.isArray(data) || prev.size === 0) return prev;
+        const availableIds = new Set(data.map((design: { id: string }) => design.id));
+        return new Set(Array.from(prev).filter((id) => availableIds.has(id)));
+      });
     } catch (err) {
       console.error("Error fetching designs:", err);
     } finally {
@@ -1518,6 +1548,97 @@ function PageContent() {
   const handleLoadDesign = async (id: string) => {
     await loadDesign(id);
     setShowMyDesigns(false);
+  };
+
+  const toggleSavedDesignSelection = (id: string) => {
+    setSelectedSavedDesignIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const allSavedDesignIds = myDesigns.map((design) => design.id);
+  const selectedSavedDesignCount = selectedSavedDesignIds.size;
+  const allSavedDesignsSelected =
+    myDesigns.length > 0 && myDesigns.every((design) => selectedSavedDesignIds.has(design.id));
+  const toggleAllSavedDesignSelection = () => {
+    setSelectedSavedDesignIds(allSavedDesignsSelected ? new Set() : new Set(allSavedDesignIds));
+  };
+
+  const requestDeleteSavedDesigns = (
+    ids: string[],
+    mode: "single" | "selected" | "all",
+    title?: string
+  ) => {
+    const uniqueIds = Array.from(new Set(ids)).filter(Boolean);
+    if (uniqueIds.length === 0) return;
+    setPendingDeleteDesign({ ids: uniqueIds, mode, title });
+  };
+
+  const handleDeleteSavedDesign = async () => {
+    const target = pendingDeleteDesign;
+    if (!target || deletingDesignIds.size > 0) return;
+
+    const targetIds = Array.from(new Set(target.ids)).filter(Boolean);
+    if (targetIds.length === 0) {
+      setPendingDeleteDesign(null);
+      return;
+    }
+
+    setDeletingDesignIds(new Set(targetIds));
+    const deletedIds = new Set<string>();
+    const failedIds: string[] = [];
+    try {
+      for (const targetId of targetIds) {
+        const res = await fetch(`/api/designs/${targetId}`, {
+          method: "DELETE",
+        });
+        if (!res.ok) {
+          failedIds.push(targetId);
+          continue;
+        }
+        deletedIds.add(targetId);
+      }
+
+      if (deletedIds.size > 0) {
+        setMyDesigns((prev) => prev.filter((design) => !deletedIds.has(design.id)));
+        setSelectedSavedDesignIds((prev) => {
+          const next = new Set(prev);
+          deletedIds.forEach((id) => next.delete(id));
+          return next;
+        });
+      }
+      if (designId && deletedIds.has(designId)) {
+        setDesignId(null);
+        setShareToken(null);
+        setShareEnabled(false);
+      }
+      setPendingDeleteDesign(null);
+
+      if (deletedIds.size > 0 && failedIds.length === 0) {
+        showRuleToast(deletedIds.size === 1 ? "Design deleted" : `${deletedIds.size} designs deleted`);
+      } else if (deletedIds.size > 0) {
+        showRuleToast(`${deletedIds.size} deleted, ${failedIds.length} failed`);
+      } else {
+        showRuleToast("Delete failed");
+      }
+
+      track("load_design_modal_deleted", {
+        design_ids: Array.from(deletedIds),
+        count: deletedIds.size,
+        mode: target.mode,
+      });
+    } catch (err) {
+      console.error("Delete saved design error:", err);
+      showRuleToast("Delete failed");
+    } finally {
+      setDeletingDesignIds(new Set());
+    }
   };
 
   const trackFirstInteraction = useCallback(() => {
@@ -1688,6 +1809,7 @@ function PageContent() {
       // NEW: Use migration helper to support legacy format
       // This automatically converts single-room designs to multi-room
       const snapshot = legacyApiToSnapshot(data);
+      setLastPersistedSnapshotFingerprint(fingerprintDesignSnapshot(snapshot));
       setDesignSnapshot(snapshot);
       hydratePersistedFloorPlanState(snapshot, true);
       history.clear();
@@ -1896,6 +2018,11 @@ function PageContent() {
     (snapshot: DesignSnapshot = designSnapshotRef.current) =>
       snapshotToStored(buildDesignSnapshotForPersistence(snapshot)),
     [buildDesignSnapshotForPersistence]
+  );
+
+  const fingerprintStoredDesign = useCallback(
+    (stored: StoredDesign) => fingerprintDesignSnapshot(storedToSnapshot(stored)),
+    []
   );
 
   const hydratePersistedFloorPlanState = useCallback(
@@ -2599,6 +2726,15 @@ function PageContent() {
   const orbitControlsRef = useRef<OrbitControlsImpl | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
+  const handlePlanRoomDragStateChange = useCallback(
+    (isDragging: boolean) => {
+      setPlanRoomDragging(isDragging);
+      if (orbitControlsRef.current) {
+        orbitControlsRef.current.enabled = !isDragging && !sofaDragging;
+      }
+    },
+    [sofaDragging]
+  );
   const resolveGroundPointFromClient = useCallback((clientX: number, clientY: number) => {
     const canvas = rendererRef.current?.domElement ?? canvasRef.current;
     const camera = cameraRef.current;
@@ -3387,7 +3523,8 @@ function PageContent() {
             fetchShareStatus(restoredDesignId);
             void (async () => {
               try {
-                const legacyData = snapshotToLegacyApi(nextSnapshot);
+                const storedSnapshot = getStoredDesignForPersistence(nextSnapshot);
+                const legacyData = snapshotToLegacyApi(storedToSnapshot(storedSnapshot));
                 const res = await fetch(`/api/designs/${restoredDesignId}`, {
                   method: "PUT",
                   headers: { "Content-Type": "application/json" },
@@ -3395,6 +3532,7 @@ function PageContent() {
                 });
                 if (res.ok) {
                   setLastDbSaveAt(Date.now());
+                  setLastPersistedSnapshotFingerprint(fingerprintStoredDesign(storedSnapshot));
                   setLastCloudSaveError(null);
                 }
               } catch {
@@ -3779,34 +3917,6 @@ function PageContent() {
       },
     ]);
   }, [planOpenings.length, planSettingsLoaded, setPlanOpenings]);
-
-  useEffect(() => {
-    if (!planSettingsLoaded) return;
-    if (planFixedElements.length > 0) return;
-    setPlanFixedElements([
-      {
-        id: "kitchen-run-top",
-        kind: "kitchen_counter",
-        xMm: 0,
-        zMm: -metersToMm(roomDepth / 2) + 300,
-        widthMm: 2600,
-        depthMm: 600,
-        rotationDeg: 0,
-        label: "Kitchen run",
-      },
-      {
-        id: "kitchen-island",
-        kind: "island",
-        xMm: -1050,
-        zMm: -300,
-        widthMm: 1200,
-        depthMm: 600,
-        rotationDeg: 0,
-        label: "Island",
-      },
-    ]);
-  }, [planFixedElements.length, planSettingsLoaded, roomDepth, setPlanFixedElements]);
-
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [primaryId, setPrimaryId] = useState<string | null>(null);
@@ -5174,39 +5284,61 @@ function PageContent() {
     ),
     [designSnapshot.activeRoomId, housePlan2D.rooms, planOpenings]
   );
-  const visiblePlanOpening = useMemo(() => {
-    if (selectedPlanOpening) return selectedPlanOpening;
-    if (selectedPlanOverlayId) return null;
+  const floorPlanQualityReport = useMemo(
+    () =>
+      buildFloorPlanQualityReport({
+        rooms: housePlan2D.rooms,
+        openings: planOpenings,
+        items: designSnapshot.rooms.flatMap((room) =>
+          room.items.map((item) => ({
+            ...item,
+            roomId: room.id,
+          }))
+        ),
+        activeRoomId: designSnapshot.activeRoomId,
+      }),
+    [designSnapshot.activeRoomId, designSnapshot.rooms, housePlan2D.rooms, planOpenings]
+  );
+  useEffect(() => {
+    if (housePlan2D.rooms.length === 0) return;
+    const previous = lastTrackedPlanQualityRef.current;
+    const current = {
+      score: floorPlanQualityReport.score,
+      label: floorPlanQualityReport.label,
+      issueCount: floorPlanQualityReport.issues.length,
+    };
+    if (!previous) {
+      lastTrackedPlanQualityRef.current = current;
+      return;
+    }
+    const materiallyChanged =
+      Math.abs(current.score - previous.score) >= 8 ||
+      current.label !== previous.label ||
+      Math.abs(current.issueCount - previous.issueCount) >= 2;
+    if (!materiallyChanged) return;
 
-    const connectedRoomIds = new Set(
-      roomConnectionChecklistItems.flatMap((item) =>
-        item.status === "connected" ? item.roomIds : []
-      )
-    );
-    const recentOpenings = [...planOpenings].reverse();
-
-    return (
-      recentOpenings.find(
-        (opening) =>
-          opening.kind === "door" &&
-          opening.roomId === designSnapshot.activeRoomId &&
-          connectedRoomIds.has(opening.roomId)
-      ) ??
-      recentOpenings.find(
-        (opening) =>
-          opening.kind === "door" &&
-          Boolean(opening.roomId) &&
-          connectedRoomIds.has(opening.roomId!)
-      ) ??
-      null
-    );
-  }, [
-    designSnapshot.activeRoomId,
-    planOpenings,
-    roomConnectionChecklistItems,
-    selectedPlanOpening,
-    selectedPlanOverlayId,
-  ]);
+    track("floor_plan_quality_changed", {
+      score: current.score,
+      label: current.label,
+      previous_score: previous.score,
+      previous_label: previous.label,
+      issue_count: current.issueCount,
+      top_issue: floorPlanQualityReport.issues[0]?.id ?? null,
+    });
+    lastTrackedPlanQualityRef.current = current;
+  }, [floorPlanQualityReport, housePlan2D.rooms.length]);
+  const handlePlanQualityAction = useCallback(
+    (action: FloorPlanQualityAction) => {
+      track("floor_plan_quality_fix_clicked", {
+        action,
+        score: floorPlanQualityReport.score,
+        label: floorPlanQualityReport.label,
+        top_issue: floorPlanQualityReport.issues[0]?.id ?? null,
+      });
+    },
+    [floorPlanQualityReport]
+  );
+  const visiblePlanOpening = selectedPlanOpening;
   const visiblePlanOpeningRoomName = getPlanOpeningRoomName(visiblePlanOpening);
   const visiblePlanOpeningWallSpanMeters = getPlanOpeningWallSpan(visiblePlanOpening);
   const selectedPlanRoomContext = selectedPlanRoomId
@@ -5330,7 +5462,7 @@ function PageContent() {
       });
       const activeTemplateRoom = rooms[0];
       if (!activeTemplateRoom) return;
-      const templateOpenings: RoomOpening2D[] = template.doorways.flatMap((doorway, index) => {
+      const templateDoorOpenings: RoomOpening2D[] = template.doorways.flatMap((doorway, index) => {
         const roomId = templateRoomIdMap.get(doorway.fromRoomId);
         const adjacentRoomId = templateRoomIdMap.get(doorway.toRoomId);
         const sourceRoom = template.rooms.find((entry) => entry.id === doorway.fromRoomId);
@@ -5356,6 +5488,32 @@ function PageContent() {
           widthMm: metersToMm(widthMeters),
         }];
       });
+      const templateWindowOpenings: RoomOpening2D[] = template.windows.flatMap((windowSpec, index) => {
+        const roomId = templateRoomIdMap.get(windowSpec.roomId);
+        const sourceRoom = template.rooms.find((entry) => entry.id === windowSpec.roomId);
+        if (!roomId || !sourceRoom) return [];
+        const spanMeters =
+          windowSpec.wall === "north" || windowSpec.wall === "south"
+            ? sourceRoom.width
+            : sourceRoom.depth;
+        const widthMeters = Math.min(windowSpec.widthMeters ?? 1, Math.max(0.6, spanMeters - 0.5));
+        const maxOffsetMeters = Math.max(0, spanMeters / 2 - widthMeters / 2 - 0.2);
+        const requestedOffsetMeters = windowSpec.offsetMeters ?? 0;
+        const offsetMeters = Math.max(
+          -maxOffsetMeters,
+          Math.min(maxOffsetMeters, requestedOffsetMeters)
+        );
+
+        return [{
+          id: `template-window-${template.id}-${timestamp}-${index}`,
+          roomId,
+          wall: windowSpec.wall,
+          kind: "window" as const,
+          offsetMm: metersToMm(offsetMeters),
+          widthMm: metersToMm(widthMeters),
+        }];
+      });
+      const templateOpenings = [...templateDoorOpenings, ...templateWindowOpenings];
       const selectedFurnishingPack = options?.furnishingPackId
         ? template.furnishingPacks.find((pack) => pack.id === options.furnishingPackId) ?? null
         : null;
@@ -5399,6 +5557,7 @@ function PageContent() {
       setFloorPlanUnderlay(null);
       resetFloorPlanInteraction();
       setPlanOpenings(templateOpenings);
+      setPlanFixedElements([]);
       setSelectedPlanOverlayId(null);
       clearAllSelection();
       setViewMode("2d");
@@ -5437,6 +5596,7 @@ function PageContent() {
       setDesignSnapshot,
       setFloorPlanPdfSourceReady,
       setFloorPlanUnderlay,
+      setPlanFixedElements,
       setPlanOpenings,
       showRuleToast,
       wallThickness,
@@ -6869,6 +7029,7 @@ function PageContent() {
     setIsSaving(true);
     const t = setTimeout(async () => {
       try {
+        const storedSnapshot = getStoredDesignForPersistence();
         const res = await fetch(`/api/designs/${designId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -6878,7 +7039,7 @@ function PageContent() {
             savedViews,
             roomWidth,
             roomDepth,
-            snapshot: getStoredDesignForPersistence(),
+            snapshot: storedSnapshot,
           }),
         });
         if (!res.ok) {
@@ -6887,6 +7048,7 @@ function PageContent() {
         }
         if (!cancelled) {
           setLastDbSaveAt(Date.now());
+          setLastPersistedSnapshotFingerprint(fingerprintStoredDesign(storedSnapshot));
           setLastCloudSaveError(null);
         }
       } catch (error) {
@@ -6904,7 +7066,16 @@ function PageContent() {
       cancelled = true;
       clearTimeout(t);
     };
-  }, [designId, getStoredDesignForPersistence, items, roomDepth, roomWidth, savedViews, zones]);
+  }, [
+    designId,
+    fingerprintStoredDesign,
+    getStoredDesignForPersistence,
+    items,
+    roomDepth,
+    roomWidth,
+    savedViews,
+    zones,
+  ]);
 
   useEffect(() => {
     if (designId || session?.user) return;
@@ -8953,11 +9124,9 @@ function PageContent() {
         return;
       }
 
-      if (viewMode === "2d") {
-        clearNonRoomSelection();
-        setSelectedPlanRoomId(roomId);
-        if (editorMode !== "present") setEditorMode("design");
-      }
+      clearNonRoomSelection();
+      setSelectedPlanRoomId(roomId);
+      if (editorMode !== "present") setEditorMode("design");
 
       if (designSnapshotRef.current.activeRoomId === roomId) {
         return;
@@ -8965,7 +9134,7 @@ function PageContent() {
 
       handleSwitchRoom(roomId);
     },
-    [clearNonRoomSelection, editorMode, handleSwitchRoom, targetPendingCatalogPlacementToRoom, viewMode]
+    [clearNonRoomSelection, editorMode, handleSwitchRoom, targetPendingCatalogPlacementToRoom]
   );
 
   const nudgePendingCatalogPlacement = useCallback(
@@ -10505,6 +10674,90 @@ function PageContent() {
     [designSnapshot.rooms.length, editorMode, items.length, saveStatus.kind, shareToken, showBetaStart]
   );
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const storageKey = `first_run_activation_steps:${designId ?? getAnonId()}`;
+    const storedSteps = new Set<FirstRunActivationStepId>();
+
+    try {
+      const rawStoredSteps = window.localStorage.getItem(storageKey);
+      const parsedStoredSteps = rawStoredSteps ? JSON.parse(rawStoredSteps) : [];
+      if (Array.isArray(parsedStoredSteps)) {
+        parsedStoredSteps.forEach((step) => {
+          if (
+            step === "choose_template" ||
+            step === "add_or_adjust_item" ||
+            step === "save_design" ||
+            step === "share_or_export"
+          ) {
+            storedSteps.add(step);
+          }
+        });
+      }
+    } catch {
+      // Ignore malformed local tracking state; analytics should never block editing.
+    }
+
+    const sessionTrackedSteps =
+      firstRunActivationTrackedStepsRef.current.get(storageKey) ?? new Set<FirstRunActivationStepId>();
+    sessionTrackedSteps.forEach((step) => storedSteps.add(step));
+
+    let changed = false;
+    firstRunActivationState.steps.forEach((step) => {
+      if (!step.complete || storedSteps.has(step.id)) return;
+
+      const meta = {
+        step_id: step.id,
+        step_label: step.label,
+        progress_percent: firstRunActivationState.progressPercent,
+        activation_complete: firstRunActivationState.complete,
+        mode,
+        view_mode: viewMode,
+        guided_plan_actions: planGuidedActionsEnabled,
+        room_count: housePlan2D.rooms.length,
+        item_count: items.length,
+        save_status: saveStatus.kind,
+        share_enabled: Boolean(shareToken),
+        viewport_width: viewportSize.width,
+        viewport_height: viewportSize.height,
+      };
+
+      track("first_run_activation_step_completed", {
+        design_id: designId ?? null,
+        ...meta,
+      });
+      logFunnelEvent("first_run_activation_step_completed", meta);
+      storedSteps.add(step.id);
+      sessionTrackedSteps.add(step.id);
+      changed = true;
+    });
+
+    if (changed) {
+      firstRunActivationTrackedStepsRef.current.set(storageKey, sessionTrackedSteps);
+      try {
+        window.localStorage.setItem(storageKey, JSON.stringify(Array.from(storedSteps)));
+      } catch {
+        // Ignore storage failures; the in-memory guard still prevents duplicate events for this session.
+      }
+    }
+  }, [
+    designId,
+    firstRunActivationState.complete,
+    firstRunActivationState.progressPercent,
+    firstRunActivationState.steps,
+    housePlan2D.rooms.length,
+    items.length,
+    logFunnelEvent,
+    mode,
+    planGuidedActionsEnabled,
+    saveStatus.kind,
+    shareToken,
+    viewMode,
+    viewportSize.height,
+    viewportSize.width,
+  ]);
+
   const retrySaveStatus = async () => {
     if (lastCloudSaveError && session?.user) {
       const savedId = await saveDesignToCloud();
@@ -11445,11 +11698,11 @@ function PageContent() {
     placementTargetRoom?.name ??
     null;
   const qaSnapshotFingerprint = useMemo(
-    () =>
-      process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS === "1"
-        ? fingerprintDesignSnapshot(storedToSnapshot(getStoredDesignForPersistence()))
-        : null,
-    [getStoredDesignForPersistence]
+    () => {
+      if (designId && lastPersistedSnapshotFingerprint) return lastPersistedSnapshotFingerprint;
+      return fingerprintDesignSnapshot(storedToSnapshot(getStoredDesignForPersistence()));
+    },
+    [designId, getStoredDesignForPersistence, lastPersistedSnapshotFingerprint]
   );
   const qaScenePerformanceSnapshot = useMemo(
     () =>
@@ -11649,6 +11902,7 @@ function PageContent() {
                     onFitRoom={handleFitSelectedPlanRoom}
                     onMoveRoom={handleMoveRoom2D}
                     onResizeRoom={handleResizeRoom2D}
+                    onRoomDragStateChange={handlePlanRoomDragStateChange}
                     measurementUnit={planMeasurementUnit}
                     theme={effectivePlanTheme}
                     showGrid={effectivePlanLayers.grid}
@@ -12331,7 +12585,7 @@ function PageContent() {
                 enableZoom={!isClientPreview}
                 enableRotate={false}
                 screenSpacePanning
-                enabled={!sofaDragging}
+                enabled={!sofaDragging && !planRoomDragging}
               />
             ) : (
               <OrbitControls
@@ -15649,8 +15903,10 @@ function PageContent() {
           planGuidedActionsEnabled={planGuidedActionsEnabled}
           planStartMode={guidedPlanStartMode}
           planCompletionSignal={consumerPlanCompletionSignal}
+          floorPlanQualityReport={floorPlanQualityReport}
           onPlanCompletionHandled={handleConsumerPlanCompletionHandled}
           onPlanStartModeChange={setGuidedPlanStartMode}
+          onPlanQualityAction={handlePlanQualityAction}
           onSimplePlanControlsChange={setSimplePlanControls}
           onPlanGuidedActionsEnabledChange={setPlanGuidedActionsEnabled}
           onSelectFloorPlanTool={handleSelectFloorPlanTool}
@@ -17097,6 +17353,75 @@ function PageContent() {
               </button>
             </div>
 
+            {myDesigns.length > 0 && !loadingDesigns && (
+              <div
+                data-testid="load-designs-bulk-toolbar"
+                className={
+                  showDesignerTheme
+                    ? "mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-neutral-700 bg-[#10131a] p-3"
+                    : "mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 p-3"
+                }
+              >
+                <label
+                  className={
+                    showDesignerTheme
+                      ? "flex min-h-10 items-center gap-2 rounded-md px-2 text-sm font-semibold text-neutral-200"
+                      : "flex min-h-10 items-center gap-2 rounded-md px-2 text-sm font-semibold text-gray-800"
+                  }
+                >
+                  <input
+                    type="checkbox"
+                    data-testid="select-all-saved-designs"
+                    checked={allSavedDesignsSelected}
+                    onChange={toggleAllSavedDesignSelection}
+                    className="h-4 w-4 accent-red-600"
+                  />
+                  Select all
+                </label>
+                <span
+                  data-testid="selected-saved-design-count"
+                  className={
+                    showDesignerTheme
+                      ? "mr-auto text-xs font-semibold text-neutral-400"
+                      : "mr-auto text-xs font-semibold text-gray-500"
+                  }
+                >
+                  {selectedSavedDesignCount} selected
+                </span>
+                <button
+                  type="button"
+                  data-testid="delete-selected-saved-designs"
+                  disabled={selectedSavedDesignCount === 0 || deletingDesignIds.size > 0}
+                  onClick={() =>
+                    requestDeleteSavedDesigns(
+                      Array.from(selectedSavedDesignIds),
+                      "selected"
+                    )
+                  }
+                  className={
+                    showDesignerTheme
+                      ? "min-h-10 rounded-md border border-red-500/50 px-3 text-sm font-semibold text-red-200 hover:bg-red-500/15 disabled:cursor-not-allowed disabled:opacity-50"
+                      : "min-h-10 rounded-md border border-red-200 bg-white px-3 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  }
+                >
+                  Delete selected
+                </button>
+                <button
+                  type="button"
+                  data-testid="delete-all-saved-designs"
+                  disabled={myDesigns.length === 0 || deletingDesignIds.size > 0}
+                  onClick={() => requestDeleteSavedDesigns(allSavedDesignIds, "all")}
+                  className={
+                    showDesignerTheme
+                      ? "min-h-10 rounded-md bg-red-500 px-3 text-sm font-semibold text-white hover:bg-red-400 disabled:cursor-not-allowed disabled:opacity-50"
+                      : "min-h-10 rounded-md bg-red-600 px-3 text-sm font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  }
+                >
+                  Delete all
+                </button>
+              </div>
+            )}
+
             {loadingDesigns ? (
               <div className={
                 showDesignerTheme
@@ -17117,37 +17442,100 @@ function PageContent() {
             ) : (
               <div className="space-y-2">
                 {myDesigns.map((design) => (
-                  <button
+                  <div
                     key={design.id}
-                    data-testid={`load-design-${design.id}`}
-                    onClick={() => handleLoadDesign(design.id)}
                     className={
                       showDesignerTheme
-                        ? "w-full rounded-lg border border-neutral-600 bg-[#151820] p-4 text-left hover:bg-[#1b2838] transition-colors"
-                        : "w-full rounded-lg border border-gray-200 bg-gray-50 p-4 text-left hover:bg-gray-100 transition-colors"
+                        ? "flex items-center gap-3 rounded-lg border border-neutral-600 bg-[#151820] p-3"
+                        : "flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3"
                     }
                   >
-                    <div className={
-                      showDesignerTheme
-                        ? "font-medium text-neutral-200"
-                        : "font-medium text-gray-900"
-                    }>
-                      {design.title}
-                    </div>
-                    <div className={
-                      showDesignerTheme
-                        ? "text-xs text-neutral-500"
-                        : "text-xs text-gray-500"
-                    }>
-                      {new Date(design.createdAt).toLocaleDateString()} {new Date(design.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </div>
-                  </button>
+                    <label
+                      className={
+                        showDesignerTheme
+                          ? "flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-neutral-600 bg-[#10131a]"
+                          : "flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-gray-200 bg-white"
+                      }
+                      aria-label={`Select ${design.title}`}
+                    >
+                      <input
+                        type="checkbox"
+                        data-testid={`select-saved-design-${design.id}`}
+                        checked={selectedSavedDesignIds.has(design.id)}
+                        onChange={() => toggleSavedDesignSelection(design.id)}
+                        className="h-4 w-4 accent-red-600"
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      data-testid={`load-design-${design.id}`}
+                      onClick={() => handleLoadDesign(design.id)}
+                      className={
+                        showDesignerTheme
+                          ? "min-w-0 flex-1 rounded-md p-1 text-left transition-colors hover:bg-[#1b2838]"
+                          : "min-w-0 flex-1 rounded-md p-1 text-left transition-colors hover:bg-gray-100"
+                      }
+                    >
+                      <div className={
+                        showDesignerTheme
+                          ? "truncate font-medium text-neutral-200"
+                          : "truncate font-medium text-gray-900"
+                      }>
+                        {design.title}
+                      </div>
+                      <div className={
+                        showDesignerTheme
+                          ? "text-xs text-neutral-500"
+                          : "text-xs text-gray-500"
+                      }>
+                        {new Date(design.createdAt).toLocaleDateString()} {new Date(design.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      data-testid={`delete-saved-design-${design.id}`}
+                      disabled={deletingDesignIds.has(design.id)}
+                      onClick={() => requestDeleteSavedDesigns([design.id], "single", design.title)}
+                      className={
+                        showDesignerTheme
+                          ? "shrink-0 rounded-md border border-red-500/50 px-3 py-2 text-sm font-semibold text-red-200 hover:bg-red-500/15 disabled:cursor-not-allowed disabled:opacity-60"
+                          : "shrink-0 rounded-md border border-red-200 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                      }
+                    >
+                      {deletingDesignIds.has(design.id) ? "Deleting..." : "Delete"}
+                    </button>
+                  </div>
                 ))}
               </div>
             )}
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={Boolean(pendingDeleteDesign)}
+        title={
+          pendingDeleteDesign?.mode === "all"
+            ? "Delete all saved designs?"
+            : pendingDeleteDesign?.mode === "selected"
+              ? `Delete ${pendingDeleteDesign.ids.length} selected designs?`
+              : "Delete saved design?"
+        }
+        description={
+          pendingDeleteDesign
+            ? pendingDeleteDesign.mode === "single"
+              ? `"${pendingDeleteDesign.title ?? "This design"}" will be permanently removed from My Designs.`
+              : `${pendingDeleteDesign.ids.length} design${pendingDeleteDesign.ids.length === 1 ? "" : "s"} will be permanently removed from My Designs.`
+            : "This design will be permanently removed from My Designs."
+        }
+        confirmLabel="Delete"
+        busy={deletingDesignIds.size > 0}
+        destructive
+        onCancel={() => {
+          if (deletingDesignIds.size === 0) setPendingDeleteDesign(null);
+        }}
+        onConfirm={handleDeleteSavedDesign}
+      />
 
       {pendingRoomRenameId && (
         <div

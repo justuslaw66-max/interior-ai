@@ -46,19 +46,6 @@ const STORAGE_PREFIX = "interior-ai-floating-panel:";
 
 const floatingPanelRegistry = new Map<string, HTMLElement>();
 
-function GripIcon() {
-  return (
-    <span
-      className="grid h-8 w-5 cursor-grab grid-cols-2 content-center gap-0.5 rounded-md bg-white/90 p-1 shadow-sm ring-1 ring-black/10 active:cursor-grabbing"
-      aria-hidden="true"
-    >
-      {Array.from({ length: 6 }).map((_, index) => (
-        <span key={index} className="h-1 w-1 rounded-full bg-neutral-500/80" />
-      ))}
-    </span>
-  );
-}
-
 function DockIcon() {
   return (
     <span className="relative h-3.5 w-3.5 text-current" aria-hidden="true">
@@ -474,10 +461,6 @@ export default function DraggableFloatingPanel({
       >
         {!isMobilePanel && (
           <div className="absolute -left-7 top-2 flex w-5 flex-col items-center gap-1">
-            <div className="group relative">
-              <GripIcon />
-              <RailTooltip label="Drag panel" />
-            </div>
             <button
               type="button"
               className="group relative grid h-5 w-5 place-items-center rounded-md bg-white/95 text-neutral-600 shadow-sm ring-1 ring-black/10 hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"

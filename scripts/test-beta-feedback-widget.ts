@@ -24,6 +24,16 @@ assert.match(
   "beta feedback should be accepted by the app-event route allow-list."
 );
 assert.match(
+  appEventsSource,
+  /AppEventLogResult[\s\S]*eventId/,
+  "app event logging should return a persisted report id for smoke evidence."
+);
+assert.match(
+  appEventRouteSource,
+  /eventId:\s*result\.eventId/,
+  "app-event route should return the persisted event id."
+);
+assert.match(
   widgetSource,
   /data-testid="beta-feedback-open"/,
   "beta feedback entry point should have a stable test id."
@@ -50,6 +60,11 @@ assert.match(
 );
 assert.match(
   widgetSource,
+  /data-testid="beta-feedback-report-id"/,
+  "beta feedback success state should expose a copyable report id for staging signoff."
+);
+assert.match(
+  widgetSource,
   /maxLength=\{1200\}/,
   "beta feedback notes should stay bounded before submission."
 );
@@ -62,6 +77,11 @@ assert.match(
   widgetSource,
   /fetch\("\/api\/track\/app-event"/,
   "beta feedback should post to the durable app-event endpoint."
+);
+assert.match(
+  widgetSource,
+  /response\.json\(\)[\s\S]*setReportId/,
+  "beta feedback should read the durable event id from the API response."
 );
 assert.match(
   widgetSource,

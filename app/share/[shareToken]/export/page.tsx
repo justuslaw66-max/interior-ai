@@ -1038,8 +1038,7 @@ export default async function ExportPage({
     savedViews: (design.savedViews as unknown as SavedView[]) || [],
   });
   const handoffFidelitySummary = buildShareExportFidelitySummary(designSnapshot, CATALOG_ITEMS);
-  const qaFidelitySummary =
-    process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS === "1" ? handoffFidelitySummary : null;
+  const qaFidelitySummary = handoffFidelitySummary;
 
   const rooms = designSnapshot.rooms || [];
   const userPlan: UserPlan = design.user?.plan === "pro" ? "pro" : "free";

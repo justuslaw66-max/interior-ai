@@ -53,6 +53,12 @@ type WallPart3D = {
   length: number;
 };
 
+type SharedWallRange3D = {
+  roomId: string;
+  start: number;
+  end: number;
+};
+
 type StructureTargetKind = "floor" | "wall" | "opening";
 
 type StructureTarget = {
@@ -599,6 +605,107 @@ function getOpeningThresholds(segment: WallSegment3D, openings: WallOpening3D[])
     }));
 }
 
+function getSharedWallOverlapRanges(
+  room: HousePlanRoom2D,
+  rooms: HousePlanRoom2D[],
+  segment: WallSegment3D,
+  minOverlap = 0.35
+): SharedWallRange3D[] {
+  if (!segment.wall) return [];
+
+  const tolerance = 0.08;
+  const half = segment.length / 2;
+  const segmentCenter = segment.axis === "x"
+    ? room.x + segment.x
+    : room.z + segment.z;
+  const segmentStart = segmentCenter - half;
+  const segmentEnd = segmentCenter + half;
+  const roomLeft = room.x - room.w / 2;
+  const roomRight = room.x + room.w / 2;
+  const roomNorth = room.z - room.d / 2;
+  const roomSouth = room.z + room.d / 2;
+
+  return rooms.flatMap((otherRoom): SharedWallRange3D[] => {
+    if (otherRoom.id === room.id) return [];
+
+    const otherLeft = otherRoom.x - otherRoom.w / 2;
+    const otherRight = otherRoom.x + otherRoom.w / 2;
+    const otherNorth = otherRoom.z - otherRoom.d / 2;
+    const otherSouth = otherRoom.z + otherRoom.d / 2;
+
+    let otherSpan: { start: number; end: number } | null = null;
+
+    if (segment.wall === "east") {
+      if (Math.abs(roomRight - otherLeft) > tolerance) return [];
+      otherSpan = { start: otherNorth, end: otherSouth };
+    } else if (segment.wall === "west") {
+      if (Math.abs(roomLeft - otherRight) > tolerance) return [];
+      otherSpan = { start: otherNorth, end: otherSouth };
+    } else if (segment.wall === "north") {
+      if (Math.abs(roomNorth - otherSouth) > tolerance) return [];
+      otherSpan = { start: otherLeft, end: otherRight };
+    } else {
+      if (Math.abs(roomSouth - otherNorth) > tolerance) return [];
+      otherSpan = { start: otherLeft, end: otherRight };
+    }
+
+    const overlapStart = Math.max(segmentStart, otherSpan.start);
+    const overlapEnd = Math.min(segmentEnd, otherSpan.end);
+    if (overlapEnd - overlapStart <= minOverlap) return [];
+
+    return [
+      {
+        roomId: otherRoom.id,
+        start: Math.max(-half, overlapStart - segmentCenter),
+        end: Math.min(half, overlapEnd - segmentCenter),
+      },
+    ];
+  });
+}
+
+function splitWallPartsAtSharedBoundaries(
+  room: HousePlanRoom2D,
+  rooms: HousePlanRoom2D[],
+  segment: WallSegment3D,
+  parts: WallPart3D[]
+): WallPart3D[] {
+  const sharedRanges = getSharedWallOverlapRanges(room, rooms, segment);
+  if (!sharedRanges.length) return parts;
+
+  const minPartLength = 0.08;
+
+  return parts.flatMap((part): WallPart3D[] => {
+    const centerOffset = segment.axis === "x"
+      ? part.x - segment.x
+      : part.z - segment.z;
+    const partStart = centerOffset - part.length / 2;
+    const partEnd = centerOffset + part.length / 2;
+    const splitOffsets = sharedRanges
+      .flatMap((range) => [range.start, range.end])
+      .filter((offset) => offset > partStart + minPartLength && offset < partEnd - minPartLength)
+      .sort((a, b) => a - b);
+
+    if (!splitOffsets.length) return [part];
+
+    const bounds = [partStart, ...splitOffsets, partEnd];
+    return bounds.slice(0, -1).flatMap((start, index): WallPart3D[] => {
+      const end = bounds[index + 1];
+      const length = end - start;
+      if (length <= minPartLength) return [];
+
+      const nextCenterOffset = start + length / 2;
+      return [
+        {
+          key: `${part.key}-shared-split-${index}`,
+          x: segment.axis === "x" ? segment.x + nextCenterOffset : part.x,
+          z: segment.axis === "z" ? segment.z + nextCenterOffset : part.z,
+          length,
+        },
+      ];
+    });
+  });
+}
+
 function rangesOverlapBy(
   firstStart: number,
   firstEnd: number,
@@ -654,47 +761,15 @@ function getSharedWallRoomIds(
 ): string[] {
   if (!segment.wall) return [];
 
-  const tolerance = 0.08;
-  const worldX = room.x + part.x;
-  const worldZ = room.z + part.z;
-  const wallPartStart = segment.axis === "x"
-    ? worldX - part.length / 2
-    : worldZ - part.length / 2;
-  const wallPartEnd = segment.axis === "x"
-    ? worldX + part.length / 2
-    : worldZ + part.length / 2;
-  const roomLeft = room.x - room.w / 2;
-  const roomRight = room.x + room.w / 2;
-  const roomNorth = room.z - room.d / 2;
-  const roomSouth = room.z + room.d / 2;
+  const centerOffset = segment.axis === "x"
+    ? part.x - segment.x
+    : part.z - segment.z;
+  const partStart = centerOffset - part.length / 2;
+  const partEnd = centerOffset + part.length / 2;
 
-  return rooms
-    .filter((otherRoom) => {
-      if (otherRoom.id === room.id) return false;
-      const otherLeft = otherRoom.x - otherRoom.w / 2;
-      const otherRight = otherRoom.x + otherRoom.w / 2;
-      const otherNorth = otherRoom.z - otherRoom.d / 2;
-      const otherSouth = otherRoom.z + otherRoom.d / 2;
-
-      if (segment.wall === "east") {
-        if (Math.abs(roomRight - otherLeft) > tolerance) return false;
-        return rangesOverlapBy(wallPartStart, wallPartEnd, otherNorth, otherSouth, 0.35);
-      }
-
-      if (segment.wall === "west") {
-        if (Math.abs(roomLeft - otherRight) > tolerance) return false;
-        return rangesOverlapBy(wallPartStart, wallPartEnd, otherNorth, otherSouth, 0.35);
-      }
-
-      if (segment.wall === "north") {
-        if (Math.abs(roomNorth - otherSouth) > tolerance) return false;
-        return rangesOverlapBy(wallPartStart, wallPartEnd, otherLeft, otherRight, 0.35);
-      }
-
-      if (Math.abs(roomSouth - otherNorth) > tolerance) return false;
-      return rangesOverlapBy(wallPartStart, wallPartEnd, otherLeft, otherRight, 0.35);
-    })
-    .map((otherRoom) => otherRoom.id);
+  return getSharedWallOverlapRanges(room, rooms, segment)
+    .filter((range) => rangesOverlapBy(partStart, partEnd, range.start, range.end, 0.35))
+    .map((range) => range.roomId);
 }
 
 function getSharedWallRenderOwnerRoomId(
@@ -798,7 +873,6 @@ function CutawayWallMesh({
           roomZ: room.z,
           roomWidth: room.w,
           roomDepth: room.d,
-          wall: segment.wall,
           baseOpacity,
           cutawayEligible: true,
           targetX: targetRoom.x,
@@ -1331,7 +1405,12 @@ export default function HousePlanRenderer3D({
 
             {wallSegments.flatMap((segment) => {
               const wallOpenings = getWallOpenings(room, segment, rooms, openings);
-              const parts = buildWallParts(segment, wallOpenings);
+              const parts = splitWallPartsAtSharedBoundaries(
+                room,
+                rooms,
+                segment,
+                buildWallParts(segment, wallOpenings)
+              );
               const thresholds = getOpeningThresholds(segment, wallOpenings);
 
               return [

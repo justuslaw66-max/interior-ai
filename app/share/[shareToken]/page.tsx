@@ -223,8 +223,7 @@ export default async function SharePage({
       maximumFractionDigits: 0,
     }).format(value);
   const handoffFidelitySummary = buildShareExportFidelitySummary(designSnapshot, CATALOG_ITEMS);
-  const qaFidelitySummary =
-    process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS === "1" ? handoffFidelitySummary : null;
+  const qaFidelitySummary = handoffFidelitySummary;
   const handoffReady =
     handoffFidelitySummary.missingCommerceCount === 0 &&
     handoffFidelitySummary.itemCount === shoppingSummary.itemCount;

@@ -16,6 +16,10 @@ import type {
   FloorPlanDrawRoomMode,
   FloorPlanUnderlay,
 } from "@/lib/floor-plan-types";
+import type {
+  FloorPlanQualityAction,
+  FloorPlanQualityReport,
+} from "@/lib/floor-plan-quality";
 import type { ImportedModelOption } from "@/lib/catalog/imported-model-assembly";
 import type { AiLayoutRole } from "@/lib/ai/layout-planner";
 import type { CatalogTopCategory } from "@/lib/catalog/view-builders";
@@ -132,8 +136,10 @@ type DesignControlsPanelProps = {
   planGuidedActionsEnabled: boolean;
   planStartMode?: PlanStartMode;
   planCompletionSignal?: { id: number; kind: "room" | "opening" } | null;
+  floorPlanQualityReport?: FloorPlanQualityReport | null;
   onPlanCompletionHandled?: (id: number) => void;
   onPlanStartModeChange?: (mode: PlanStartMode) => void;
+  onPlanQualityAction?: (action: FloorPlanQualityAction) => void;
   onSimplePlanControlsChange: (enabled: boolean) => void;
   onPlanGuidedActionsEnabledChange: (enabled: boolean) => void;
   onSelectFloorPlanTool: () => void;
@@ -302,8 +308,10 @@ export default function DesignControlsPanel({
   planGuidedActionsEnabled,
   planStartMode,
   planCompletionSignal,
+  floorPlanQualityReport,
   onPlanCompletionHandled,
   onPlanStartModeChange,
+  onPlanQualityAction,
   onSimplePlanControlsChange,
   onPlanGuidedActionsEnabledChange,
   onSelectFloorPlanTool,
@@ -573,8 +581,10 @@ export default function DesignControlsPanel({
             planGuidedActionsEnabled={planGuidedActionsEnabled}
             planStartMode={planStartMode}
             planCompletionSignal={planCompletionSignal}
+            floorPlanQualityReport={floorPlanQualityReport}
             onPlanCompletionHandled={onPlanCompletionHandled}
             onPlanStartModeChange={onPlanStartModeChange}
+            onPlanQualityAction={onPlanQualityAction}
             onSimplePlanControlsChange={onSimplePlanControlsChange}
             onPlanGuidedActionsEnabledChange={onPlanGuidedActionsEnabledChange}
             onSelectFloorPlanTool={onSelectFloorPlanTool}

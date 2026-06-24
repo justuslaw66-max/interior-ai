@@ -163,6 +163,7 @@ type RoomRenderer2DProps = {
   onFitRoom?: (roomId: string) => void;
   onMoveRoom?: (roomId: string, x: number, z: number, options?: { snap?: boolean }) => void;
   onResizeRoom?: (roomId: string, next: { x: number; z: number; w: number; d: number }) => void;
+  onRoomDragStateChange?: (isDragging: boolean) => void;
   interactive?: boolean;
   selectedOverlayId?: string | null;
   onSelectOverlay?: (id: string | null) => void;
@@ -1012,6 +1013,7 @@ export default function RoomRenderer2D({
   onFitRoom,
   onMoveRoom,
   onResizeRoom,
+  onRoomDragStateChange,
   interactive = false,
   selectedOverlayId = null,
   onSelectOverlay,
@@ -1068,6 +1070,7 @@ export default function RoomRenderer2D({
   const zoneFillColor = isPro ? "#0f766e" : "#0ea5a0";
   const zoneLabelColor = isPro ? "#115e59" : "#0f766e";
   const activeRoomBorderColor = "#22c55e";
+  const activeRoomHandleColor = "#16a34a";
   const openingDoorColor = isPro ? "#0b3b6f" : "#1d4ed8";
   const openingWindowColor = isPro ? "#0f766e" : "#0f766e";
   const snapThreshold = 0.12;
@@ -1106,9 +1109,12 @@ export default function RoomRenderer2D({
 
   const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
   const clearActiveDrag = useCallback(() => {
+    if (dragTargetRef.current?.kind === "room") {
+      onRoomDragStateChange?.(false);
+    }
     dragTargetRef.current = null;
     setRoomSnapPreview(null);
-  }, []);
+  }, [onRoomDragStateChange]);
   const pointerDragWasReleased = (event: ThreeEvent<PointerEvent>) =>
     event.nativeEvent.pointerType !== "touch" && event.nativeEvent.buttons === 0;
 
@@ -1754,6 +1760,7 @@ export default function RoomRenderer2D({
     event.stopPropagation();
     event.nativeEvent.preventDefault();
     event.nativeEvent.stopPropagation();
+    event.nativeEvent.stopImmediatePropagation?.();
   };
 
   const getOpeningRoom = (opening: Opening2D) =>
@@ -2224,6 +2231,7 @@ export default function RoomRenderer2D({
                     grabOffsetZ: event.point.z - room.z,
                     snap: !event.nativeEvent.shiftKey,
                   };
+                  onRoomDragStateChange?.(true);
                   setRoomSnapPreview(null);
                   setPointerCaptureIfSupported(event);
                 }}
@@ -2264,7 +2272,6 @@ export default function RoomRenderer2D({
                   if (drag?.kind === "room" && drag.id === room.id) {
                     clearActiveDrag();
                   }
-                  stopNativeRoomDragEvent(event);
                   releasePointerCaptureIfSupported(event);
                 }}
                 onPointerCancel={(event) => {
@@ -2337,12 +2344,12 @@ export default function RoomRenderer2D({
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: 3,
-                      padding: 3,
-                      border: "1px solid rgba(34,197,94,0.28)",
+                      gap: 2,
+                      padding: 2,
+                      border: "1px solid rgba(34,197,94,0.22)",
                       borderRadius: 999,
-                      background: "rgba(255,255,255,0.96)",
-                      boxShadow: "0 8px 22px rgba(15,23,42,0.14)",
+                      background: "rgba(255,255,255,0.9)",
+                      boxShadow: "0 5px 14px rgba(15,23,42,0.12)",
                       pointerEvents: "auto",
                       whiteSpace: "nowrap",
                     }}
@@ -2368,18 +2375,18 @@ export default function RoomRenderer2D({
                         }}
                         style={{
                           border: "none",
-                          borderRadius: 6,
-                          background: tool.id === "delete" ? "#fee2e2" : "#f3f4f6",
+                          borderRadius: 5,
+                          background: tool.id === "delete" ? "#fee2e2" : "rgba(243,244,246,0.9)",
                           color: tool.id === "delete" ? "#991b1b" : "#111827",
                           cursor: tool.action ? "pointer" : "not-allowed",
-                          fontSize: 10,
+                          fontSize: 9,
                           fontWeight: 800,
                           opacity: tool.action ? 1 : 0.45,
-                          minWidth: tool.id === "delete" ? 44 : 34,
-                          padding: "5px 8px",
+                          minWidth: tool.id === "delete" ? 34 : 26,
+                          padding: "3px 6px",
                         }}
                       >
-                        {tool.label}
+                        {tool.id === "rename" ? "Name" : tool.id === "duplicate" ? "Copy" : tool.label}
                       </button>
                     ))}
                   </div>
@@ -2396,29 +2403,29 @@ export default function RoomRenderer2D({
                   <div
                     data-testid="active-room-measurement-hud"
                     style={{
-                      minWidth: 180,
-                      border: "1px solid rgba(34,197,94,0.28)",
-                      borderRadius: 10,
-                      background: "rgba(255,255,255,0.96)",
-                      boxShadow: "0 8px 22px rgba(15,23,42,0.14)",
+                      minWidth: 0,
+                      border: "1px solid rgba(34,197,94,0.22)",
+                      borderRadius: 8,
+                      background: "rgba(255,255,255,0.9)",
+                      boxShadow: "0 5px 14px rgba(15,23,42,0.12)",
                       color: "#14532d",
-                      fontSize: 11,
+                      fontSize: 10,
                       fontWeight: 700,
-                      padding: "7px 9px",
+                      padding: "4px 7px",
                       pointerEvents: "none",
-                      transform: "translate(18px, -18px)",
+                      transform: "translate(14px, -16px)",
                       whiteSpace: "nowrap",
                     }}
                   >
-                    <div style={{ color: "#166534", fontSize: 12 }}>
+                    <div style={{ color: "#166534", fontSize: 11 }}>
                       {formatDimension(room.w)} x {formatDimension(room.d)}
-                    </div>
-                    <div style={{ color: "#4b5563", fontWeight: 600, marginTop: 2 }}>
-                      Area {(room.w * room.d).toFixed(1)} m2
+                      <span style={{ color: "#4b5563", fontWeight: 600, marginLeft: 6 }}>
+                        {(room.w * room.d).toFixed(1)} m2
+                      </span>
                     </div>
                     {canEditPlan && onCommitRoomDimensionEdit ? (
-                      <div style={{ color: "#6b7280", fontWeight: 600, marginTop: 2 }}>
-                        Double-click W/D labels to edit
+                      <div style={{ color: "#6b7280", fontSize: 9, fontWeight: 600, marginTop: 1 }}>
+                        Double-click W/D
                       </div>
                     ) : null}
                   </div>
@@ -2439,18 +2446,18 @@ export default function RoomRenderer2D({
                         style={{
                           display: "flex",
                           alignItems: "center",
-                          gap: 6,
-                          fontSize: 11,
+                          gap: 4,
+                          fontSize: 10,
                           fontWeight: 700,
                           color: "#166534",
                           background: "rgba(255,255,255,0.98)",
-                          border: "1px solid rgba(34,197,94,0.4)",
-                          borderRadius: 8,
-                          padding: "4px 8px",
+                          border: "1px solid rgba(34,197,94,0.32)",
+                          borderRadius: 6,
+                          padding: "3px 6px",
                           pointerEvents: "auto",
                           whiteSpace: "nowrap",
-                          boxShadow: "0 2px 10px rgba(15,23,42,0.14)",
-                          transform: "translateY(-30px)",
+                          boxShadow: "0 1px 6px rgba(15,23,42,0.12)",
+                          transform: "translateY(-24px)",
                         }}
                         onPointerDown={(event) => event.stopPropagation()}
                       >
@@ -2474,11 +2481,11 @@ export default function RoomRenderer2D({
                             }
                           }}
                           style={{
-                            width: 72,
+                            width: 58,
                             border: "none",
                             background: "transparent",
                             color: "#166534",
-                            fontSize: 11,
+                            fontSize: 10,
                             fontWeight: 700,
                             outline: "none",
                           }}
@@ -2496,18 +2503,18 @@ export default function RoomRenderer2D({
                         startDimensionEdit(room, "width");
                       }}
                       style={{
-                        fontSize: 11,
+                        fontSize: 10,
                         fontWeight: 700,
                         color: "#166534",
-                        background: "rgba(240,253,244,0.96)",
-                        border: "1px solid rgba(34,197,94,0.36)",
-                        borderRadius: 6,
-                        padding: "2px 7px",
+                        background: "rgba(240,253,244,0.88)",
+                        border: "1px solid rgba(34,197,94,0.26)",
+                        borderRadius: 5,
+                        padding: "1px 5px",
                         pointerEvents: canEditPlan && onCommitRoomDimensionEdit ? "auto" : "none",
                         whiteSpace: "nowrap",
-                        boxShadow: "0 1px 4px rgba(15,23,42,0.12)",
+                        boxShadow: "0 1px 3px rgba(15,23,42,0.1)",
                         cursor: canEditPlan && onCommitRoomDimensionEdit ? "text" : "default",
-                        transform: "translateY(-30px)",
+                        transform: "translateY(-24px)",
                       }}
                     >
                       W {formatDimension(room.w)}
@@ -2526,18 +2533,18 @@ export default function RoomRenderer2D({
                         style={{
                           display: "flex",
                           alignItems: "center",
-                          gap: 6,
-                          fontSize: 11,
+                          gap: 4,
+                          fontSize: 10,
                           fontWeight: 700,
                           color: "#166534",
                           background: "rgba(255,255,255,0.98)",
-                          border: "1px solid rgba(34,197,94,0.4)",
-                          borderRadius: 8,
-                          padding: "4px 8px",
+                          border: "1px solid rgba(34,197,94,0.32)",
+                          borderRadius: 6,
+                          padding: "3px 6px",
                           pointerEvents: "auto",
                           whiteSpace: "nowrap",
-                          boxShadow: "0 2px 10px rgba(15,23,42,0.14)",
-                          transform: "translate(-58px, 28px)",
+                          boxShadow: "0 1px 6px rgba(15,23,42,0.12)",
+                          transform: "translate(-46px, 22px)",
                         }}
                         onPointerDown={(event) => event.stopPropagation()}
                       >
@@ -2561,11 +2568,11 @@ export default function RoomRenderer2D({
                             }
                           }}
                           style={{
-                            width: 72,
+                            width: 58,
                             border: "none",
                             background: "transparent",
                             color: "#166534",
-                            fontSize: 11,
+                            fontSize: 10,
                             fontWeight: 700,
                             outline: "none",
                           }}
@@ -2583,18 +2590,18 @@ export default function RoomRenderer2D({
                         startDimensionEdit(room, "depth");
                       }}
                       style={{
-                        fontSize: 11,
+                        fontSize: 10,
                         fontWeight: 700,
                         color: "#166534",
-                        background: "rgba(240,253,244,0.96)",
-                        border: "1px solid rgba(34,197,94,0.36)",
-                        borderRadius: 6,
-                        padding: "2px 7px",
+                        background: "rgba(240,253,244,0.88)",
+                        border: "1px solid rgba(34,197,94,0.26)",
+                        borderRadius: 5,
+                        padding: "1px 5px",
                         pointerEvents: canEditPlan && onCommitRoomDimensionEdit ? "auto" : "none",
                         whiteSpace: "nowrap",
-                        boxShadow: "0 1px 4px rgba(15,23,42,0.12)",
+                        boxShadow: "0 1px 3px rgba(15,23,42,0.1)",
                         cursor: canEditPlan && onCommitRoomDimensionEdit ? "text" : "default",
-                        transform: "translate(-58px, 28px)",
+                        transform: "translate(-46px, 22px)",
                       }}
                     >
                       D {formatDimension(room.d)}
@@ -2620,16 +2627,28 @@ export default function RoomRenderer2D({
                         style={{
                           width: handle.shape === "edge-z" ? 28 : handle.shape === "edge-x" ? 64 : 44,
                           height: handle.shape === "edge-z" ? 64 : handle.shape === "edge-x" ? 28 : 44,
-                          borderRadius: handle.shape === "corner" ? 10 : 999,
-                          background: "#22c55e",
-                          border: "2px solid rgba(21,128,61,0.82)",
+                          borderRadius: handle.shape === "corner" ? 5 : 999,
+                          display: "grid",
+                          placeItems: "center",
                           cursor: handle.cursor,
                           pointerEvents: "auto",
-                          boxShadow: "0 3px 10px rgba(15,23,42,0.24)",
                           touchAction: "none",
                           userSelect: "none",
                         }}
-                      />
+                      >
+                        <span
+                          aria-hidden="true"
+                          style={{
+                            width: handle.shape === "edge-z" ? 12 : handle.shape === "edge-x" ? 36 : 20,
+                            height: handle.shape === "edge-z" ? 36 : handle.shape === "edge-x" ? 12 : 20,
+                            borderRadius: handle.shape === "corner" ? 5 : 999,
+                            background: "rgba(255,255,255,0.88)",
+                            border: `1.5px solid ${activeRoomHandleColor}`,
+                            boxShadow: "0 1px 4px rgba(15,23,42,0.14)",
+                            outline: "1px solid rgba(255,255,255,0.58)",
+                          }}
+                        />
+                      </div>
                     </Html>
                   </group>
                 ))}
@@ -2726,20 +2745,20 @@ export default function RoomRenderer2D({
             <div
               data-testid="room-adjacency-guide"
               style={{
-                border: "1px solid rgba(34,197,94,0.32)",
-                borderRadius: 6,
-                background: "rgba(240,253,244,0.94)",
+                border: "1px solid rgba(34,197,94,0.24)",
+                borderRadius: 5,
+                background: "rgba(240,253,244,0.82)",
                 color: "#166534",
-                fontSize: 10,
+                fontSize: 9,
                 fontWeight: 700,
-                padding: "2px 6px",
+                padding: "1px 5px",
                 pointerEvents: "none",
                 whiteSpace: "nowrap",
-                boxShadow: "0 1px 5px rgba(15,23,42,0.1)",
+                boxShadow: "0 1px 3px rgba(15,23,42,0.08)",
                 transform:
                   guide.orientation === "vertical"
-                    ? "translate(48px, -18px)"
-                    : "translateY(28px)",
+                    ? "translate(34px, -14px)"
+                    : "translateY(20px)",
               }}
             >
               Shared wall
@@ -2776,20 +2795,20 @@ export default function RoomRenderer2D({
               onAddDoorwaySuggestion?.(suggestion);
             }}
             style={{
-              border: "1px solid rgba(37,99,235,0.35)",
-              borderRadius: 6,
-              background: "rgba(255,255,255,0.96)",
+              border: "1px solid rgba(37,99,235,0.28)",
+              borderRadius: 5,
+              background: "rgba(255,255,255,0.9)",
               color: "#1d4ed8",
               cursor: "pointer",
-              fontSize: 10,
+              fontSize: 9,
               fontWeight: 800,
-              padding: "3px 7px",
+              padding: "2px 6px",
               pointerEvents: "auto",
               whiteSpace: "nowrap",
-              boxShadow: "0 1px 6px rgba(15,23,42,0.16)",
+              boxShadow: "0 1px 4px rgba(15,23,42,0.12)",
             }}
           >
-            {suggestion.label}
+            Doorway
           </button>
         </Html>
       ))}

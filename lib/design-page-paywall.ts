@@ -3,6 +3,7 @@ export type FunnelEventName =
   | "design_started"
   | "first_item_added"
   | "third_item_added"
+  | "first_run_activation_step_completed"
   | "export_clicked"
   | "upgrade_clicked"
   | "checkout_started";

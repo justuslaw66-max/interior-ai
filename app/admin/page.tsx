@@ -12,9 +12,6 @@ import { buildBetaFeedbackTriage } from "@/lib/beta-feedback-triage";
 import { buildBetaLaunchReadinessSummary } from "@/lib/beta-launch-readiness";
 import {
   buildStagingSmokeEvidenceBundle,
-  stagingSmokeEvidenceToCsv,
-  stagingSmokeEvidenceToJson,
-  stagingSmokeEvidenceToMarkdown,
 } from "@/lib/beta-staging-evidence";
 import PaywallPerformancePanel from "@/components/admin/PaywallPerformancePanel";
 import RevenueFunnelPanel from "@/components/admin/RevenueFunnelPanel";
@@ -470,10 +467,6 @@ export default async function AdminOverviewPage({
       feedbackReportId: recentBetaFeedback[0]?.id ?? "Needs copied feedback payload or report ID",
     },
   });
-  const stagingSmokeEvidenceJson = stagingSmokeEvidenceToJson(stagingSmokeEvidenceBundle);
-  const stagingSmokeEvidenceCsv = stagingSmokeEvidenceToCsv(stagingSmokeEvidenceBundle);
-  const stagingSmokeEvidenceMarkdown = stagingSmokeEvidenceToMarkdown(stagingSmokeEvidenceBundle);
-
   return (
     <div className="p-6 space-y-8">
       <header>
@@ -581,9 +574,6 @@ export default async function AdminOverviewPage({
 
       <StagingSmokeEvidencePanel
         bundle={stagingSmokeEvidenceBundle}
-        json={stagingSmokeEvidenceJson}
-        csv={stagingSmokeEvidenceCsv}
-        markdown={stagingSmokeEvidenceMarkdown}
       />
 
       <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
