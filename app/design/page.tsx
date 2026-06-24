@@ -1338,6 +1338,15 @@ function PageContent() {
     [isClientPreview]
   );
 
+  const openTemplatePickerFromLoad = useCallback(() => {
+    setShowMyDesigns(false);
+    setGuidedPlanStartMode("template");
+    goPlan();
+    setViewMode("2d");
+    setDesignPanelOpen(true);
+    showRuleToast("Choose an empty or furnished template");
+  }, [goPlan, showRuleToast]);
+
   const handleScenePerformanceModeChange = useCallback(
     (nextMode: ScenePerformanceMode) => {
       scenePerformanceUserChangedRef.current = true;
@@ -17507,6 +17516,48 @@ function PageContent() {
                 }
               >
                 ✕
+              </button>
+            </div>
+
+            <div
+              data-testid="load-designs-template-shortcut"
+              className={
+                showDesignerTheme
+                  ? "mb-4 grid gap-3 rounded-lg border border-emerald-400/25 bg-emerald-400/10 p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+                  : "mb-4 grid gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+              }
+            >
+              <div>
+                <div
+                  className={
+                    showDesignerTheme
+                      ? "text-sm font-semibold text-emerald-100"
+                      : "text-sm font-semibold text-emerald-900"
+                  }
+                >
+                  Want a fresh floor plan?
+                </div>
+                <p
+                  className={
+                    showDesignerTheme
+                      ? "mt-1 text-xs leading-5 text-emerald-50/80"
+                      : "mt-1 text-xs leading-5 text-emerald-800"
+                  }
+                >
+                  Saved designs are listed here. Templates open in Plan, with empty and furnished starter options.
+                </p>
+              </div>
+              <button
+                type="button"
+                data-testid="load-designs-open-templates"
+                onClick={openTemplatePickerFromLoad}
+                className={
+                  showDesignerTheme
+                    ? "min-h-10 rounded-lg bg-emerald-300 px-3 text-sm font-semibold text-emerald-950 hover:bg-emerald-200"
+                    : "min-h-10 rounded-lg bg-emerald-600 px-3 text-sm font-semibold text-white hover:bg-emerald-700"
+                }
+              >
+                Start from template
               </button>
             </div>
 

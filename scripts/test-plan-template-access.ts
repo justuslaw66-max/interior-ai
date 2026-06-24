@@ -209,6 +209,18 @@ assert.match(
 
 assert.match(
   designPageSource,
+  /const openTemplatePickerFromLoad = useCallback\(\(\) => \{[\s\S]*?setShowMyDesigns\(false\);[\s\S]*?setGuidedPlanStartMode\("template"\);[\s\S]*?goPlan\(\);[\s\S]*?setViewMode\("2d"\);[\s\S]*?showRuleToast\("Choose an empty or furnished template"\);/,
+  "The Load modal shortcut should close saved designs and open the template picker in 2D Plan mode."
+);
+
+assert.match(
+  designPageSource,
+  /data-testid="load-designs-template-shortcut"[\s\S]*?Saved designs are listed here\. Templates open in Plan[\s\S]*?data-testid="load-designs-open-templates"[\s\S]*?onClick=\{openTemplatePickerFromLoad\}/,
+  "The Load modal should explain the saved-design/template distinction and expose a direct template shortcut."
+);
+
+assert.match(
+  designPageSource,
   /<ConfirmDialog[\s\S]*?open=\{Boolean\(pendingPlanTemplateReplacement\)\}[\s\S]*?confirmLabel="Replace plan"[\s\S]*?handleConfirmPendingPlanTemplateReplacement/,
   "Template replacement confirmation should use the shared app dialog."
 );
