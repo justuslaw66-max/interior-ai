@@ -9,6 +9,7 @@
 - Repository HEAD recorded during staging signoff: `05dee18`
 - Release-candidate HEAD verified locally: `4b64b9e`
 - Latest beta-stability HEAD with full local gate: `4b64b9e`
+- Latest post-RC targeted validation HEAD: `0d29c06`
 - Staging result: `PASS`
 - Required evidence complete: `YES`
 - Hard stops reviewed: `YES`
@@ -38,6 +39,9 @@
 - `npm run test:ai-layout-preview`
 - `npm run test:beta-editor-polish`
 - `npx playwright test tests/e2e/pro-upgrade.spec.ts`
+- `npm run build:e2e`
+- `PLAYWRIGHT_WEB_SERVER_PORT=3151 PLAYWRIGHT_BASE_URL=http://localhost:3151 npx playwright test tests/e2e/00-beta-smoke.spec.ts --workers=1`
+- `npm run test:plan-template-access`
 
 ## Final Gate
 
@@ -49,7 +53,16 @@ PLAYWRIGHT_WEB_SERVER_PORT=3147 PLAYWRIGHT_BASE_URL=http://localhost:3147 npm ru
 
 That command includes the beta gate, remote catalog asset availability, smart-placement smoke, staging checklist guard, staging evidence guard, staging artifact manifest guard, and this handoff guard. Remote catalog asset availability checked 282 remote URLs with 0 failures.
 
-This documentation update records the verification result only. Rerun the release-candidate command if any app, test, catalog, or evidence artifact changes after this handoff refresh.
+## Post-RC Delta
+
+Two beta-path improvements landed after the full release-candidate gate:
+
+- `7a65d7e feat: clarify template start from load modal`
+- `0d29c06 test: cover template shortcut in beta smoke`
+
+These changes make the saved-design Load modal point testers to the starter template picker, then cover that shortcut in the blocking beta smoke path before loading a seeded saved design. Targeted validation passed on `0d29c06`: `npm run build:e2e`, `PLAYWRIGHT_WEB_SERVER_PORT=3151 PLAYWRIGHT_BASE_URL=http://localhost:3151 npx playwright test tests/e2e/00-beta-smoke.spec.ts --workers=1`, `npm run test:plan-template-access`, `npm run lint`, and `npm run release:beta-worktree`.
+
+Rerun the full release-candidate command before tagging or opening the release PR because non-documentation app/test changes landed after the `4b64b9e` full-gate pass.
 
 ## Hard Stops
 

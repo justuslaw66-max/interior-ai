@@ -46,6 +46,7 @@ No armchair assets were draft-gated in this pass because the catalog audit and l
 - `PLAYWRIGHT_WEB_SERVER_PORT=3146 PLAYWRIGHT_BASE_URL=http://localhost:3146 npm run test:beta-release-candidate` passed end to end on commit `ec920a7`.
 - Post-release-candidate beta-stability commits through `6d32fdd` passed targeted local blockers: `npx tsc --noEmit`, `npm run lint`, `npm run test:beta-editor-polish`, `npm run test:floor-plan-quality`, `npm run test:ai-layout-planner`, `npm run test:ai-layout-preview`, `npm run test:plan-template-access`, `npm run test:house-plan-wall-rendering`, and `npx playwright test tests/e2e/pro-upgrade.spec.ts`.
 - `PLAYWRIGHT_WEB_SERVER_PORT=3147 PLAYWRIGHT_BASE_URL=http://localhost:3147 npm run test:beta-release-candidate` passed end to end on app/test HEAD `4b64b9e`.
+- Post-RC Load/template access commits through `0d29c06` passed targeted blockers: `npm run build:e2e`, `PLAYWRIGHT_WEB_SERVER_PORT=3151 PLAYWRIGHT_BASE_URL=http://localhost:3151 npx playwright test tests/e2e/00-beta-smoke.spec.ts --workers=1`, `npm run test:plan-template-access`, `npm run lint`, and `npm run release:beta-worktree`.
 - `npm run test:catalog-audit:strict` passed, including strict catalog quality mode where warnings are beta blockers.
 - `npm run test:catalog-asset-availability` passed with 86 catalog files, 617 asset refs, 0 missing local URLs, and remote checking disabled by default.
 - `PLAYWRIGHT_WEB_SERVER_PORT=3117 PLAYWRIGHT_BASE_URL=http://localhost:3117 npm run test:beta-gate` passed end to end after the smart placement/circulation upgrade.
@@ -168,7 +169,7 @@ npm run test:beta-release-handoff
 
 ## Remaining Release Follow-Up
 
-- The latest full release-candidate gate passed on app/test HEAD `4b64b9e`; rerun `npm run test:beta-release-candidate` immediately before tagging or opening the release PR if any non-documentation change lands.
+- The latest full release-candidate gate passed on app/test HEAD `4b64b9e`; current post-RC targeted-validation HEAD is `0d29c06`. Rerun `npm run test:beta-release-candidate` immediately before tagging or opening the release PR because app/test changes landed after the full-gate pass.
 - Keep the handoff manifest in `reports/beta-release-handoff-2026-06-24.md` aligned with the promoted staging alias and evidence bundle.
 - Regenerate `reports/staging-smoke-evidence-2026-06-24/artifact-manifest.json` if any staging evidence artifact is intentionally replaced.
 - Keep the manual staging smoke checklist in `reports/beta-staging-smoke-checklist-2026-06-23.md` green and rerun `npm run test:beta-staging-evidence` if any staging evidence or alias target changes.
