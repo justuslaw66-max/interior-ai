@@ -2756,6 +2756,7 @@ function PageContent() {
   const last3DViewRef = useRef<CameraView | null>(null);
   const previousViewModeRef = useRef<EditorViewMode>(viewMode);
   const suppressNext3DViewSaveRef = useRef(false);
+  const pending3DViewRef = useRef<CameraView | null>(null);
   const cartHoverCameraBaselineRef = useRef<CameraView | null>(null);
   const cartHoverFocusTimerRef = useRef<number | null>(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -5563,6 +5564,7 @@ function PageContent() {
       setSelectedPlanOverlayId(null);
       clearAllSelection();
       last3DViewRef.current = null;
+      pending3DViewRef.current = null;
       floorCameraViewsRef.current = {};
       suppressNext3DViewSaveRef.current = true;
       setViewMode("2d");
@@ -5792,13 +5794,15 @@ function PageContent() {
 
   const handleEditorViewModeChange = useCallback(
     (next: EditorViewMode) => {
-      setViewMode(next);
       if (next === "3d") {
         resetFloorPlanInteraction({ resetCalibrationDistance: false });
-        transitionToCameraView(hasWholeHousePlan ? getWholeHome3DView() : DEFAULT_EDITOR_CAMERA_VIEW, 420);
+        pending3DViewRef.current = hasWholeHousePlan
+          ? getWholeHome3DView()
+          : DEFAULT_EDITOR_CAMERA_VIEW;
       }
+      setViewMode(next);
     },
-    [getWholeHome3DView, hasWholeHousePlan, resetFloorPlanInteraction, transitionToCameraView]
+    [getWholeHome3DView, hasWholeHousePlan, resetFloorPlanInteraction]
   );
 
   const applyPlan2DCameraView = useCallback(
@@ -6717,6 +6721,15 @@ function PageContent() {
     }
 
     suppressNext3DViewSaveRef.current = false;
+    if (pending3DViewRef.current) {
+      const pendingView = pending3DViewRef.current;
+      pending3DViewRef.current = null;
+      window.requestAnimationFrame(() => {
+        transitionToCameraView(pendingView, 420);
+      });
+      return;
+    }
+
     if (previousViewMode === "2d" && last3DViewRef.current) {
       const restore = last3DViewRef.current;
       last3DViewRef.current = null;

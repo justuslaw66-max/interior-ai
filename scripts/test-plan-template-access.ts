@@ -161,8 +161,20 @@ assert.match(
 
 assert.match(
   designPageSource,
-  /const previousViewModeRef = useRef<EditorViewMode>\(viewMode\);[\s\S]*?const suppressNext3DViewSaveRef = useRef\(false\);[\s\S]*?previousViewMode === "3d" && !suppressNext3DViewSaveRef\.current/,
+  /const previousViewModeRef = useRef<EditorViewMode>\(viewMode\);[\s\S]*?const suppressNext3DViewSaveRef = useRef\(false\);[\s\S]*?const pending3DViewRef = useRef<CameraView \| null>\(null\);[\s\S]*?previousViewMode === "3d" && !suppressNext3DViewSaveRef\.current/,
   "The 2D camera fit effect should only preserve a real previous 3D camera."
+);
+
+assert.match(
+  designPageSource,
+  /pending3DViewRef\.current = hasWholeHousePlan[\s\S]*?getWholeHome3DView\(\)[\s\S]*?DEFAULT_EDITOR_CAMERA_VIEW[\s\S]*?setViewMode\(next\);/,
+  "Switching to 3D should queue the fitted view instead of applying it to the still-mounted 2D camera."
+);
+
+assert.match(
+  designPageSource,
+  /if \(pending3DViewRef\.current\) \{[\s\S]*?const pendingView = pending3DViewRef\.current;[\s\S]*?pending3DViewRef\.current = null;[\s\S]*?window\.requestAnimationFrame\(\(\) => \{[\s\S]*?transitionToCameraView\(pendingView, 420\);/,
+  "Queued 3D camera fits should run after the 3D camera and controls mount."
 );
 
 assert.match(
