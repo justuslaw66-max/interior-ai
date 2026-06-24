@@ -844,7 +844,7 @@ function CheckoutReadinessSchedule({ rows }: { rows: CheckoutReadinessRow[] }) {
   const reviewCount = rows.filter((row) => !row.hasValidCommerce).length;
 
   return (
-    <section className="avoid-break mb-12">
+    <section id="shopping-list" className="avoid-break mb-12">
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Checkout Readiness</h2>
@@ -1079,6 +1079,32 @@ export default async function ExportPage({
   const handoffReady =
     handoffFidelitySummary.missingCommerceCount === 0 &&
     handoffFidelitySummary.itemCount === homeSummary.itemCount;
+  const packageReadinessLabel = handoffReady ? "Ready to send" : "Needs shopping review";
+  const packageReadinessDetail = handoffReady
+    ? "The saved design, share preview, export pack, and shopping rows are aligned."
+    : `${handoffFidelitySummary.missingCommerceCount} item${handoffFidelitySummary.missingCommerceCount === 1 ? "" : "s"} need commerce review before this package is order-ready.`;
+  const exportPackageItems = [
+    {
+      label: "PDF pack",
+      value: capabilities.watermark ? "Watermarked PDF" : "Clean PDF",
+      detail: "Cover, overview, plans, schedules, and shopping summary.",
+    },
+    {
+      label: "Shopping CSV",
+      value: `${shoppingCsvRows.length} row${shoppingCsvRows.length === 1 ? "" : "s"}`,
+      detail: "Product, variant, retailer, quantity, and price details.",
+    },
+    {
+      label: "2D plans",
+      value: `${planFloors.length} floor${planFloors.length === 1 ? "" : "s"}`,
+      detail: "Downloadable PNG and SVG files in the plan section.",
+    },
+    {
+      label: "Fidelity",
+      value: `${handoffFidelitySummary.roomCount} room${handoffFidelitySummary.roomCount === 1 ? "" : "s"} / ${handoffFidelitySummary.itemCount} item${handoffFidelitySummary.itemCount === 1 ? "" : "s"}`,
+      detail: "Matches the saved share snapshot used for client review.",
+    },
+  ];
 
   return (
     <>
@@ -1168,6 +1194,64 @@ export default async function ExportPage({
               <div data-testid="export-handoff-id">Handoff ID: {handoffFidelitySummary.fingerprint}</div>
             </div>
           </div>
+
+          <section
+            className="avoid-break mb-8 rounded-2xl border border-gray-200 bg-gray-50 p-5"
+            data-testid="export-package-summary"
+          >
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  Export Package
+                </div>
+                <h2 className="mt-2 text-2xl font-bold text-gray-900">{packageReadinessLabel}</h2>
+                <p className="mt-2 max-w-2xl text-sm text-gray-600">{packageReadinessDetail}</p>
+              </div>
+              <div
+                className={
+                  handoffReady
+                    ? "rounded-full bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-emerald-700 ring-1 ring-emerald-100"
+                    : "rounded-full bg-amber-50 px-3 py-1.5 text-sm font-semibold text-amber-700 ring-1 ring-amber-100"
+                }
+              >
+                {handoffReady ? "Ready" : "Review"}
+              </div>
+            </div>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              {exportPackageItems.map((item) => (
+                <div key={item.label} className="rounded-xl border border-gray-200 bg-white p-4">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    {item.label}
+                  </div>
+                  <div className="mt-1 text-lg font-bold text-gray-900">{item.value}</div>
+                  <div className="mt-1 text-xs text-gray-500">{item.detail}</div>
+                </div>
+              ))}
+            </div>
+            <div className="no-print mt-4 flex flex-wrap gap-2">
+              <a
+                href={`/share/${shareToken}/export/pdf`}
+                data-testid="export-package-pdf-action"
+                className="rounded-lg bg-gray-950 px-3 py-2 text-sm font-semibold text-white hover:bg-gray-800"
+              >
+                Open PDF download
+              </a>
+              <a
+                href="#shopping-list"
+                data-testid="export-package-shopping-action"
+                className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50"
+              >
+                Jump to shopping list
+              </a>
+              <a
+                href={`/share/${shareToken}`}
+                data-testid="export-package-share-action"
+                className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50"
+              >
+                Back to preview
+              </a>
+            </div>
+          </section>
 
           <ExportAccessSummary capabilities={capabilities} userPlan={userPlan} />
 

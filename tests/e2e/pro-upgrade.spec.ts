@@ -232,6 +232,17 @@ test.describe("Pro Upgrade Flow", () => {
 
       await expect(page.getByRole("heading", { name: "Playwright Export Pack" })).toBeVisible();
       await expect(page.getByRole("button", { name: /Print watermarked preview|Clean PDF \(Pro\)|Print \/ Save PDF/i }).first()).toBeVisible();
+      const exportPackage = page.getByTestId("export-package-summary");
+      await expect(exportPackage.getByText("Export Package")).toBeVisible();
+      await expect(exportPackage.getByRole("heading", { name: "Ready to send" })).toBeVisible();
+      await expect(exportPackage.getByText("The saved design, share preview, export pack, and shopping rows are aligned.")).toBeVisible();
+      await expect(exportPackage.getByText("Watermarked PDF")).toBeVisible();
+      await expect(exportPackage.getByText("1 row")).toBeVisible();
+      await expect(exportPackage.getByText("1 floor")).toBeVisible();
+      await expect(exportPackage.getByText("1 room / 1 item")).toBeVisible();
+      await expect(exportPackage.getByTestId("export-package-pdf-action")).toContainText("Open PDF download");
+      await expect(exportPackage.getByTestId("export-package-shopping-action")).toContainText("Jump to shopping list");
+      await expect(exportPackage.getByTestId("export-package-share-action")).toContainText("Back to preview");
       const exportAccess = page.locator("section").filter({
         has: page.getByRole("heading", { name: "Export Access" }),
       });
