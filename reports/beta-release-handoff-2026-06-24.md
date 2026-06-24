@@ -2,11 +2,12 @@
 
 ## Status
 
-- Release review state: ready for beta release review after one final `npm run test:beta-release-candidate` run.
+- Release review state: ready for beta release review; final `npm run test:beta-release-candidate` verification passed on commit `ec920a7`.
 - Stable staging alias: `https://interior-ai-justuslaw66-max-justuslaw66-maxs-projects.vercel.app`
 - Stable alias target: `https://interior-hr2bpyza0-justuslaw66-maxs-projects.vercel.app`
 - Vercel deployment ID: `dpl_9e2Pi2wjB3yopf5oLWKcYtuUmGdw`
 - Repository HEAD recorded during staging signoff: `05dee18`
+- Release-candidate HEAD verified locally: `ec920a7`
 - Staging result: `PASS`
 - Required evidence complete: `YES`
 - Hard stops reviewed: `YES`
@@ -29,16 +30,17 @@
 - `npm run test:beta-staging-checklist`
 - `npm run test:beta-staging-evidence`
 - `npm run test:beta-staging-artifacts`
+- `PLAYWRIGHT_WEB_SERVER_PORT=3146 PLAYWRIGHT_BASE_URL=http://localhost:3146 npm run test:beta-release-candidate`
 
 ## Final Gate
 
-Run this immediately before tagging or opening the release PR:
+The latest final gate passed locally on commit `ec920a7`:
 
 ```bash
-npm run test:beta-release-candidate
+PLAYWRIGHT_WEB_SERVER_PORT=3146 PLAYWRIGHT_BASE_URL=http://localhost:3146 npm run test:beta-release-candidate
 ```
 
-That command includes the beta gate, remote catalog asset availability, smart-placement smoke, staging checklist guard, staging evidence guard, staging artifact manifest guard, and this handoff guard.
+That command includes the beta gate, remote catalog asset availability, smart-placement smoke, staging checklist guard, staging evidence guard, staging artifact manifest guard, and this handoff guard. Remote catalog asset availability checked 282 remote URLs with 0 failures.
 
 ## Hard Stops
 
@@ -50,5 +52,4 @@ That command includes the beta gate, remote catalog asset availability, smart-pl
 ## Remaining Operations
 
 - Rotate the Vercel automation bypass secret after the smoke window closes.
-- Commit the checkout-boundary, QA-marker, feedback-reference, staging evidence, and release-handoff bundle.
-- Tag or open the release PR only after the final release-candidate command passes on the current commit.
+- Tag or open the release PR from commit `ec920a7`; rerun the final release-candidate command if HEAD changes before review.

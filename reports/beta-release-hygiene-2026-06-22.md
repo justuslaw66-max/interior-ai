@@ -43,6 +43,7 @@ No armchair assets were draft-gated in this pass because the catalog audit and l
 - `npm run test:beta-staging-artifacts` validates the staging evidence artifact manifest, file sizes, SHA-256 hashes, required screenshots/exports, file signatures, and text artifact redaction.
 - `npm run test:beta-release-handoff` validates `reports/beta-release-handoff-2026-06-24.md` against staging evidence, stable alias promotion, feedback reference, and no-secret documentation rules.
 - `PLAYWRIGHT_WEB_SERVER_PORT=3118 PLAYWRIGHT_BASE_URL=http://localhost:3118 npm run test:beta-release-candidate` passed end to end.
+- `PLAYWRIGHT_WEB_SERVER_PORT=3146 PLAYWRIGHT_BASE_URL=http://localhost:3146 npm run test:beta-release-candidate` passed end to end on commit `ec920a7`.
 - `npm run test:catalog-audit:strict` passed, including strict catalog quality mode where warnings are beta blockers.
 - `npm run test:catalog-asset-availability` passed with 86 catalog files, 617 asset refs, 0 missing local URLs, and remote checking disabled by default.
 - `PLAYWRIGHT_WEB_SERVER_PORT=3117 PLAYWRIGHT_BASE_URL=http://localhost:3117 npm run test:beta-gate` passed end to end after the smart placement/circulation upgrade.
@@ -113,6 +114,11 @@ The cleanup was split into these commits:
 - `a66603f chore: refresh pnpm lockfile for staging deploy`
 - `3004b88 fix: slim Vercel serverless traces`
 - `d98ef4e fix: avoid runtime catalog asset bundling on Vercel`
+- `7fcd109 feat: add furnished starter plan templates`
+- `05dee18 feat: add beta staging smoke evidence exports`
+- `090b90d feat: harden beta editor readiness gate`
+- `ca1a5aa docs: add beta staging evidence handoff`
+- `ec920a7 chore: clean staging artifact guard import`
 
 Review each commit independently when possible; the full stack is also covered by the blocking beta gate above.
 
@@ -146,7 +152,7 @@ npm run test:beta-release-handoff
 
 ## Remaining Release Follow-Up
 
-- Run `npm run test:beta-release-candidate` immediately before tagging or opening the release PR.
+- The latest release-candidate gate passed on commit `ec920a7`; rerun `npm run test:beta-release-candidate` immediately before tagging or opening the release PR if HEAD changes.
 - Keep the handoff manifest in `reports/beta-release-handoff-2026-06-24.md` aligned with the promoted staging alias and evidence bundle.
 - Regenerate `reports/staging-smoke-evidence-2026-06-24/artifact-manifest.json` if any staging evidence artifact is intentionally replaced.
 - Keep the manual staging smoke checklist in `reports/beta-staging-smoke-checklist-2026-06-23.md` green and rerun `npm run test:beta-staging-evidence` if any staging evidence or alias target changes.
