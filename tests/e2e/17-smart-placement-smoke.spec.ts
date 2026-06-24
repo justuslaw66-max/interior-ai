@@ -16,8 +16,11 @@ test.describe("17. Smart Placement Smoke", () => {
     test.setTimeout(120000);
 
     await page.addInitScript(() => {
+      const clearSentinel = "__e2e_smart_placement_storage_cleared";
+      if (window.localStorage.getItem(clearSentinel) === "1") return;
       window.localStorage.clear();
       window.sessionStorage.clear();
+      window.localStorage.setItem(clearSentinel, "1");
     });
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");

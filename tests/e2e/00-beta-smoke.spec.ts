@@ -91,27 +91,43 @@ test.describe("00. Beta Smoke Gate", () => {
     test.setTimeout(180000);
 
     await page.addInitScript(() => {
+      const clearSentinel = "__e2e_beta_smoke_storage_cleared";
+      if (window.localStorage.getItem(clearSentinel) === "1") return;
       window.localStorage.clear();
       window.sessionStorage.clear();
+      window.localStorage.setItem(clearSentinel, "1");
     });
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
+    const stagingSmokeEvidence = {
+      editorSnapshotFingerprint: "",
+      shareSnapshotFingerprint: "",
+      exportSnapshotFingerprint: "",
+      pdfFilename: "",
+      csvFilename: "",
+      pngFilename: "",
+      svgFilename: "",
+      checkoutBoundaryResponseMode: "" as "test checkout URL" | "boundary blocked" | "",
+    };
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30000 });
     const betaStartTemplate = page.getByTestId("beta-start-template");
     if (await betaStartTemplate.isVisible({ timeout: 5000 }).catch(() => false)) {
       await betaStartTemplate.click();
-      await expect(page.getByTestId("apply-plan-template-studio")).toBeVisible();
-      await page.getByTestId("apply-plan-template-studio").click();
+      await expect(page.getByTestId("apply-furnished-template-studio")).toBeVisible();
+      await expect(page.getByTestId(/plan-template-furnishing-marker-studio-.+/).first()).toBeVisible();
+      await page.getByTestId("apply-furnished-template-studio").click();
     } else if (
       await page.getByTestId("plan-start-template").isVisible({ timeout: 5000 }).catch(() => false)
     ) {
       await page.getByTestId("plan-start-template").click({ timeout: 5000 });
-      await expect(page.getByTestId("apply-plan-template-studio")).toBeVisible();
-      await page.getByTestId("apply-plan-template-studio").click();
+      await expect(page.getByTestId("apply-furnished-template-studio")).toBeVisible();
+      await expect(page.getByTestId(/plan-template-furnishing-marker-studio-.+/).first()).toBeVisible();
+      await page.getByTestId("apply-furnished-template-studio").click();
     } else {
       await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("4 rooms");
     }
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("4 rooms");
+    await expect(page.getByTestId("room-setup-step-furnish-meta")).toHaveText(/[1-9]\d* items?/);
     const betaFeedbackPayloads: Record<string, unknown>[] = [];
     await page.route("**/api/track/app-event", async (route) => {
       const payload = route.request().postDataJSON() as Record<string, unknown>;
@@ -141,7 +157,7 @@ test.describe("00. Beta Smoke Gate", () => {
     expect(betaFeedbackMeta?.page).toBe("/design");
     const betaFeedbackContext = betaFeedbackMeta?.context;
     expect(betaFeedbackContext?.roomCount).toBeGreaterThanOrEqual(1);
-    expect(betaFeedbackContext?.itemCount).toBeGreaterThanOrEqual(0);
+    expect(betaFeedbackContext?.itemCount).toBeGreaterThanOrEqual(1);
 
     const seed = await createBetaSeedDesign();
     try {
@@ -161,6 +177,7 @@ test.describe("00. Beta Smoke Gate", () => {
       const loadedEditorFingerprint = await getStableFingerprint(
         page.getByTestId("qa-editor-snapshot-fingerprint")
       );
+      stagingSmokeEvidence.editorSnapshotFingerprint = loadedEditorFingerprint;
       expect(loadedEditorFingerprint).toMatch(/[a-f0-9]{8}/);
       const editorPerformance = page.getByTestId("qa-scene-performance");
       await expect(editorPerformance).toHaveAttribute("data-room-count", "3");
@@ -201,9 +218,18 @@ test.describe("00. Beta Smoke Gate", () => {
       await expect(page.getByTestId("share-room-list")).toContainText("Living Room");
       await expect(page.getByTestId("share-checkout-readiness")).toContainText(/Cart-ready|Retailer link/i);
       await expect(page.getByTestId("share-copy-link")).toBeVisible();
+      await expect(page.getByTestId("share-download-pdf")).toHaveAttribute(
+        "href",
+        `/share/${seed.shareToken}/export/pdf`
+      );
+      await expect(page.getByTestId("share-shopping-list")).toHaveAttribute(
+        "href",
+        "#shopping-preview"
+      );
       await expect(page.getByTestId("share-export-pack")).toBeVisible();
       await expect(page.getByTestId("share-copy-to-edit")).toBeVisible();
       await expectFingerprint(page.getByTestId("qa-share-snapshot-fingerprint"), cloudFingerprint);
+      stagingSmokeEvidence.shareSnapshotFingerprint = cloudFingerprint;
       await page.context().grantPermissions(["clipboard-read", "clipboard-write"], {
         origin: BASE_URL,
       });
@@ -228,6 +254,7 @@ test.describe("00. Beta Smoke Gate", () => {
       await expect(page).toHaveURL(/\/export$/);
       await expect(page.getByText("Export Overview")).toBeVisible({ timeout: 30000 });
       await expectFingerprint(page.getByTestId("qa-export-snapshot-fingerprint"), cloudFingerprint);
+      stagingSmokeEvidence.exportSnapshotFingerprint = cloudFingerprint;
 
       const pdfResponse = await request.get(`${BASE_URL}/share/${seed.shareToken}/export/pdf`);
       expect(pdfResponse.status()).toBe(200);
@@ -235,11 +262,13 @@ test.describe("00. Beta Smoke Gate", () => {
       const pdfBody = await pdfResponse.body();
       expect(pdfBody.subarray(0, 4).toString()).toBe("%PDF");
       expect(pdfBody.length).toBeGreaterThan(1000);
+      stagingSmokeEvidence.pdfFilename = "share-export.pdf";
 
       const csvDownloadPromise = page.waitForEvent("download");
       await page.getByTestId("share-export-shopping-csv-download").click();
       const csvDownload = await csvDownloadPromise;
       expect(csvDownload.suggestedFilename()).toMatch(/shopping-list\.csv$/);
+      stagingSmokeEvidence.csvFilename = csvDownload.suggestedFilename();
       const csv = await readDownloadText(csvDownload);
       expect(csv.split("\n")[0]).toBe(
         "Room,Category,Item,Product ID,Variant ID,Variant,Purchase option,Qty,Status,Source,Retailer URL,Include in checkout,Unit price USD,Line total USD,Room subtotal USD,Review note"
@@ -251,6 +280,7 @@ test.describe("00. Beta Smoke Gate", () => {
       await page.getByTestId("share-export-plan-svg-download").first().click();
       const svgDownload = await svgDownloadPromise;
       expect(svgDownload.suggestedFilename()).toMatch(/2d-plan\.svg$/);
+      stagingSmokeEvidence.svgFilename = svgDownload.suggestedFilename();
       const svg = await readDownloadText(svgDownload);
       expect(svg.length).toBeGreaterThan(500);
       expect(svg).toContain("<svg");
@@ -260,6 +290,7 @@ test.describe("00. Beta Smoke Gate", () => {
       await page.getByTestId("share-export-plan-png-download").first().click();
       const pngDownload = await pngDownloadPromise;
       expect(pngDownload.suggestedFilename()).toMatch(/2d-plan\.png$/);
+      stagingSmokeEvidence.pngFilename = pngDownload.suggestedFilename();
       const png = await readDownloadBytes(pngDownload);
       expect(png.length).toBeGreaterThan(1000);
       expect(Array.from(png.subarray(0, 8))).toEqual([137, 80, 78, 71, 13, 10, 26, 10]);
@@ -376,6 +407,17 @@ test.describe("00. Beta Smoke Gate", () => {
       });
       expect(checkoutPayload).toEqual({ interval: "monthly" });
       expect(checkoutResult.url).toContain("/checkout/success");
+      stagingSmokeEvidence.checkoutBoundaryResponseMode = "test checkout URL";
+      expect(stagingSmokeEvidence).toMatchObject({
+        editorSnapshotFingerprint: expect.stringMatching(/[a-f0-9]{8}/),
+        shareSnapshotFingerprint: cloudFingerprint,
+        exportSnapshotFingerprint: cloudFingerprint,
+        pdfFilename: "share-export.pdf",
+        csvFilename: expect.stringMatching(/shopping-list\.csv$/),
+        pngFilename: expect.stringMatching(/2d-plan\.png$/),
+        svgFilename: expect.stringMatching(/2d-plan\.svg$/),
+        checkoutBoundaryResponseMode: "test checkout URL",
+      });
     } finally {
       await cleanupBetaSeed(seed.userId);
     }

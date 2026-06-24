@@ -9,6 +9,9 @@ import {
   HOUSE_PLAN_TEMPLATES,
   resolveFloorPlanOpeningCancelDecision,
 } from "@/lib/design-page-house-plan";
+import { CATALOG_ITEMS } from "@/lib/catalog";
+import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
+import { getItemPrice } from "@/lib/design-page-utils";
 import {
   clampFloorPatternScale,
   normalizeFloorRotationDeg,
@@ -66,6 +69,67 @@ const living = makeRoom("living", "Living Room", 5, 4, 0, 0);
 const bedroom = makeRoom("bedroom", "Bedroom", 4, 4, 4.5, 0);
 const plan = buildFloorPlanFromRooms([living, bedroom]);
 const floor = plan.floors[0];
+const supportedFurnishingCategories = new Set([
+  "sofa",
+  "coffee_table",
+  "rug",
+  "dining_table",
+  "dining_bench",
+  "accent_chair",
+  "floor_lamp",
+  "tv_console",
+  "sideboard",
+  "ottoman",
+  "side_table",
+]);
+const tunedFurnishedTemplateIds = new Set([
+  "studio",
+  "one_bedroom",
+  "living_dining",
+  "compact_two_bed",
+  "three_room_flat",
+]);
+
+function hasReadyCatalogProduct(category: string): boolean {
+  return Object.values(CATALOG_ITEMS).some((product) => {
+    if (product.category !== category) return false;
+    const resolved = resolveCatalogVariant(product, product.defaultVariantId);
+    const price = resolved.priceReference.amount ?? getItemPrice(product);
+    const hasCommerce =
+      resolved.commerce.type === "affiliate"
+        ? Boolean(resolved.commerce.url)
+        : resolved.commerce.type === "shopify"
+          ? Boolean(resolved.commerce.variantId && resolved.commerce.available)
+          : false;
+    return Boolean(resolved.media.thumbUrl && product.assets.modelUrl && price && price > 0 && hasCommerce);
+  });
+}
+
+function reverseWall(wall: "north" | "south" | "east" | "west") {
+  if (wall === "north") return "south";
+  if (wall === "south") return "north";
+  if (wall === "east") return "west";
+  return "east";
+}
+
+function distanceFromTemplateDoorwayCenter(
+  template: (typeof HOUSE_PLAN_TEMPLATES)[number],
+  roomId: string,
+  x: number,
+  z: number
+): number {
+  const room = template.rooms.find((entry) => entry.id === roomId);
+  assert.ok(room, `${template.id} furnishing should reference a real room`);
+
+  return template.doorways.reduce((closest, doorway) => {
+    if (doorway.fromRoomId !== roomId && doorway.toRoomId !== roomId) return closest;
+    const wall = doorway.fromRoomId === roomId ? doorway.wall : reverseWall(doorway.wall);
+    const offset = doorway.offsetMeters ?? 0;
+    const doorwayX = wall === "east" ? room.width / 2 : wall === "west" ? -room.width / 2 : offset;
+    const doorwayZ = wall === "south" ? room.depth / 2 : wall === "north" ? -room.depth / 2 : offset;
+    return Math.min(closest, Math.hypot(x - doorwayX, z - doorwayZ));
+  }, Infinity);
+}
 
 assert.equal(normalizeFloorRotationDeg(450), 90);
 assert.equal(normalizeFloorRotationDeg(-90), 270);
@@ -81,11 +145,57 @@ for (const template of HOUSE_PLAN_TEMPLATES) {
   assert.ok(template.tags.length >= 3, `${template.id} should include useful tags`);
   assert.ok(template.zones.length >= 3, `${template.id} should include starter furniture zones`);
   assert.ok(template.doorways.length >= Math.max(1, template.rooms.length - 2), `${template.id} should include automatic doorway specs`);
+  assert.deepEqual(
+    template.furnishingPacks.map((pack) => pack.id),
+    ["essentials", "styled_starter"],
+    `${template.id} should expose essentials and styled starter furnishing packs`
+  );
   assert.equal(
     new Set(template.rooms.map((room) => room.id)).size,
     template.rooms.length,
     `${template.id} should use unique room ids`
   );
+  const roomIds = new Set(template.rooms.map((room) => room.id));
+  const readyCategoriesInTemplate = new Set<string>();
+
+  for (const pack of template.furnishingPacks) {
+    assert.ok(pack.label.length > 0, `${template.id} ${pack.id} should have a label`);
+    assert.ok(pack.bestFor.length > 0, `${template.id} ${pack.id} should explain when to use it`);
+    assert.ok(pack.intents.length >= 2, `${template.id} ${pack.id} should include starter item intents`);
+
+    for (const intent of pack.intents) {
+      assert.ok(roomIds.has(intent.roomId), `${template.id} ${pack.id} ${intent.id} should target a real room`);
+      assert.ok(supportedFurnishingCategories.has(intent.category), `${template.id} ${pack.id} should use a supported category`);
+      const room = template.rooms.find((entry) => entry.id === intent.roomId);
+      assert.ok(room, `${template.id} ${pack.id} ${intent.id} room should exist`);
+      assert.ok(Math.abs(intent.x) <= room.width / 2, `${template.id} ${pack.id} ${intent.id} should stay inside room width`);
+      assert.ok(Math.abs(intent.z) <= room.depth / 2, `${template.id} ${pack.id} ${intent.id} should stay inside room depth`);
+      assert.ok(
+        distanceFromTemplateDoorwayCenter(template, intent.roomId, intent.x, intent.z) >= 0.95,
+        `${template.id} ${pack.id} ${intent.id} should avoid automatic doorway centers`
+      );
+      if (hasReadyCatalogProduct(intent.category)) {
+        readyCategoriesInTemplate.add(intent.category);
+      }
+    }
+  }
+  assert.ok(
+    readyCategoriesInTemplate.size >= 1,
+    `${template.id} should have at least one furnishing category that resolves to a beta-ready catalog item`
+  );
+  if (tunedFurnishedTemplateIds.has(template.id)) {
+    const styledStarter = template.furnishingPacks.find((pack) => pack.id === "styled_starter");
+    assert.ok(styledStarter, `${template.id} should include a styled starter pack`);
+    assert.ok(
+      styledStarter.intents.length >= 6,
+      `${template.id} styled starter pack should be hand-tuned with a lived-in starter count`
+    );
+    assert.ok(
+      styledStarter.intents.some((intent) => intent.category === "sofa") &&
+        styledStarter.intents.some((intent) => intent.category === "coffee_table"),
+      `${template.id} styled starter pack should include a seating anchor and table`
+    );
+  }
 
   for (let firstIndex = 0; firstIndex < template.rooms.length; firstIndex += 1) {
     const first = template.rooms[firstIndex];

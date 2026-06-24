@@ -5,6 +5,7 @@ import type {
   HouseRoomConnectionChecklistItem,
   HouseRoomDoorwaySuggestion,
   HousePlanTemplate,
+  HousePlanTemplateApplyOptions,
   HouseRoomTemplateId,
   RoomSizePresetId,
 } from "@/lib/design-page-house-plan";
@@ -152,7 +153,7 @@ type DesignControlsPanelProps = {
   onApplyAiLayoutProposal: () => void;
   onTryAiLayoutAgain: (requestedRoles?: AiLayoutRole[]) => void;
   onClearAiLayoutProposal: () => void;
-  onApplyPlanTemplate: (template: HousePlanTemplate) => void;
+  onApplyPlanTemplate: (template: HousePlanTemplate, options?: HousePlanTemplateApplyOptions) => void;
   onAddDesignerRoom: () => void;
   onAddRoomTemplate: (template: HouseRoomTemplate) => void;
   onApplyFloorMaterialToRoom: (materialId: string) => void;

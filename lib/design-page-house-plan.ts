@@ -6,6 +6,7 @@ import type {
   RoomSurfaceFinishes,
   RoomType,
 } from "@/lib/room-types";
+import type { ProductCategory } from "@/lib/catalog-schema";
 
 export const ROOM_DIMENSION_DEFAULTS = {
   width: 5,
@@ -98,6 +99,41 @@ export type HousePlanTemplateDoorway = {
   widthMeters?: number;
 };
 
+export type HousePlanTemplateFurnishingPackId = "essentials" | "styled_starter";
+
+export type HousePlanTemplateFurnishingIntent = {
+  id: string;
+  roomId: string;
+  category: Extract<
+    ProductCategory,
+    | "sofa"
+    | "coffee_table"
+    | "rug"
+    | "dining_table"
+    | "dining_bench"
+    | "accent_chair"
+    | "floor_lamp"
+    | "tv_console"
+    | "sideboard"
+    | "ottoman"
+    | "side_table"
+  >;
+  x: number;
+  z: number;
+  rotationDeg?: number;
+};
+
+export type HousePlanTemplateFurnishingPack = {
+  id: HousePlanTemplateFurnishingPackId;
+  label: string;
+  bestFor: string;
+  intents: HousePlanTemplateFurnishingIntent[];
+};
+
+export type HousePlanTemplateApplyOptions = {
+  furnishingPackId?: HousePlanTemplateFurnishingPackId;
+};
+
 export type HousePlanTemplate = {
   id: HousePlanTemplateId;
   label: string;
@@ -110,9 +146,10 @@ export type HousePlanTemplate = {
   zones: string[];
   rooms: HousePlanTemplateRoom[];
   doorways: HousePlanTemplateDoorway[];
+  furnishingPacks: HousePlanTemplateFurnishingPack[];
 };
 
-export const HOUSE_PLAN_TEMPLATES: HousePlanTemplate[] = [
+const HOUSE_PLAN_TEMPLATE_BASES: Array<Omit<HousePlanTemplate, "furnishingPacks">> = [
   {
     id: "studio",
     label: "Alcove studio",
@@ -1088,6 +1125,265 @@ export const HOUSE_PLAN_TEMPLATES: HousePlanTemplate[] = [
     ],
   },
 ];
+
+type HousePlanTemplateFurnishingPreset = Omit<HousePlanTemplateFurnishingIntent, "id">;
+
+const TEMPLATE_FURNISHING_OVERRIDES: Partial<
+  Record<
+    HousePlanTemplateId,
+    Record<HousePlanTemplateFurnishingPackId, HousePlanTemplateFurnishingPreset[]>
+  >
+> = {
+  studio: {
+    essentials: [
+      { roomId: "living", category: "sofa", x: -1.25, z: -1.15, rotationDeg: 0 },
+      { roomId: "living", category: "coffee_table", x: -1.25, z: -0.15, rotationDeg: 0 },
+      { roomId: "living", category: "rug", x: -1.25, z: -0.1, rotationDeg: 0 },
+    ],
+    styled_starter: [
+      { roomId: "living", category: "sofa", x: -1.25, z: -1.15, rotationDeg: 0 },
+      { roomId: "living", category: "coffee_table", x: -1.25, z: -0.15, rotationDeg: 0 },
+      { roomId: "living", category: "rug", x: -1.25, z: -0.1, rotationDeg: 0 },
+      { roomId: "living", category: "accent_chair", x: 0.65, z: 0.65, rotationDeg: -35 },
+      { roomId: "living", category: "floor_lamp", x: -2, z: -1.55, rotationDeg: 0 },
+      { roomId: "living", category: "side_table", x: 0.95, z: -1.35, rotationDeg: 0 },
+    ],
+  },
+  one_bedroom: {
+    essentials: [
+      { roomId: "living", category: "sofa", x: -0.85, z: -1.25, rotationDeg: 0 },
+      { roomId: "living", category: "coffee_table", x: -0.85, z: -0.25, rotationDeg: 0 },
+      { roomId: "living", category: "rug", x: -0.85, z: -0.2, rotationDeg: 0 },
+    ],
+    styled_starter: [
+      { roomId: "living", category: "sofa", x: -0.85, z: -1.25, rotationDeg: 0 },
+      { roomId: "living", category: "coffee_table", x: -0.85, z: -0.25, rotationDeg: 0 },
+      { roomId: "living", category: "rug", x: -0.85, z: -0.2, rotationDeg: 0 },
+      { roomId: "living", category: "accent_chair", x: 1.15, z: 0.35, rotationDeg: -35 },
+      { roomId: "living", category: "floor_lamp", x: -1.85, z: -1.45, rotationDeg: 0 },
+      { roomId: "living", category: "tv_console", x: 1.35, z: -1.25, rotationDeg: 90 },
+    ],
+  },
+  living_dining: {
+    essentials: [
+      { roomId: "living", category: "sofa", x: -0.9, z: -1.15, rotationDeg: 0 },
+      { roomId: "living", category: "coffee_table", x: -0.9, z: -0.15, rotationDeg: 0 },
+      { roomId: "living", category: "rug", x: -0.9, z: -0.1, rotationDeg: 0 },
+      { roomId: "dining", category: "dining_table", x: 0, z: -0.25, rotationDeg: 90 },
+    ],
+    styled_starter: [
+      { roomId: "living", category: "sofa", x: -0.9, z: -1.15, rotationDeg: 0 },
+      { roomId: "living", category: "coffee_table", x: -0.9, z: -0.15, rotationDeg: 0 },
+      { roomId: "living", category: "rug", x: -0.9, z: -0.1, rotationDeg: 0 },
+      { roomId: "living", category: "accent_chair", x: 1.1, z: 0.65, rotationDeg: -35 },
+      { roomId: "living", category: "tv_console", x: 1.35, z: -1.15, rotationDeg: 90 },
+      { roomId: "dining", category: "dining_table", x: 0, z: -0.25, rotationDeg: 90 },
+      { roomId: "dining", category: "dining_bench", x: -0.55, z: -1.25, rotationDeg: 90 },
+    ],
+  },
+  compact_two_bed: {
+    essentials: [
+      { roomId: "living", category: "sofa", x: -0.8, z: -1, rotationDeg: 0 },
+      { roomId: "living", category: "coffee_table", x: -0.8, z: -0.1, rotationDeg: 0 },
+      { roomId: "kitchen", category: "dining_table", x: 0, z: 0.55, rotationDeg: 0 },
+    ],
+    styled_starter: [
+      { roomId: "living", category: "sofa", x: -0.8, z: -1, rotationDeg: 0 },
+      { roomId: "living", category: "coffee_table", x: -0.8, z: -0.1, rotationDeg: 0 },
+      { roomId: "living", category: "rug", x: -0.8, z: -0.1, rotationDeg: 0 },
+      { roomId: "living", category: "floor_lamp", x: -1.75, z: -1.25, rotationDeg: 0 },
+      { roomId: "living", category: "tv_console", x: 1.35, z: -0.95, rotationDeg: 90 },
+      { roomId: "kitchen", category: "dining_table", x: 0, z: 0.55, rotationDeg: 0 },
+    ],
+  },
+  three_room_flat: {
+    essentials: [
+      { roomId: "living", category: "sofa", x: -1.1, z: -1.15, rotationDeg: 0 },
+      { roomId: "living", category: "coffee_table", x: -1.1, z: -0.15, rotationDeg: 0 },
+      { roomId: "kitchen_dining", category: "dining_table", x: 0.25, z: 0.35, rotationDeg: 90 },
+    ],
+    styled_starter: [
+      { roomId: "living", category: "sofa", x: -1.1, z: -1.15, rotationDeg: 0 },
+      { roomId: "living", category: "coffee_table", x: -1.1, z: -0.15, rotationDeg: 0 },
+      { roomId: "living", category: "rug", x: -1.1, z: -0.15, rotationDeg: 0 },
+      { roomId: "living", category: "accent_chair", x: 1.05, z: 0.55, rotationDeg: -35 },
+      { roomId: "living", category: "tv_console", x: 1.45, z: -1.2, rotationDeg: 90 },
+      { roomId: "kitchen_dining", category: "dining_table", x: 0.25, z: 0.35, rotationDeg: 90 },
+      { roomId: "kitchen_dining", category: "dining_bench", x: 1.05, z: 0.35, rotationDeg: 90 },
+    ],
+  },
+};
+
+function findTemplateFurnishingRoom(
+  template: Omit<HousePlanTemplate, "furnishingPacks">,
+  roomTypes: RoomType[]
+): HousePlanTemplateRoom | null {
+  return template.rooms.find((room) => roomTypes.includes(room.roomType)) ?? null;
+}
+
+function pushTemplateFurnishingIntent(
+  intents: HousePlanTemplateFurnishingIntent[],
+  room: HousePlanTemplateRoom | null,
+  intent: Omit<HousePlanTemplateFurnishingIntent, "id" | "roomId">
+) {
+  if (!room) return;
+
+  const marginMeters = 0.55;
+  const maxX = Math.max(0, room.width / 2 - marginMeters);
+  const maxZ = Math.max(0, room.depth / 2 - marginMeters);
+  const x = Math.max(-maxX, Math.min(maxX, intent.x));
+  const z = Math.max(-maxZ, Math.min(maxZ, intent.z));
+
+  intents.push({
+    ...intent,
+    id: `${room.id}-${intent.category}-${intents.length + 1}`,
+    roomId: room.id,
+    x: roundPlanCoordinate(x),
+    z: roundPlanCoordinate(z),
+  });
+}
+
+function buildTemplateFurnishingOverrideIntents(
+  template: Omit<HousePlanTemplate, "furnishingPacks">,
+  presets: HousePlanTemplateFurnishingPreset[]
+): HousePlanTemplateFurnishingIntent[] {
+  const intents: HousePlanTemplateFurnishingIntent[] = [];
+
+  for (const preset of presets) {
+    const room = template.rooms.find((entry) => entry.id === preset.roomId) ?? null;
+    pushTemplateFurnishingIntent(intents, room, {
+      category: preset.category,
+      x: preset.x,
+      z: preset.z,
+      rotationDeg: preset.rotationDeg,
+    });
+  }
+
+  return intents;
+}
+
+function buildTemplateFurnishingPacks(
+  template: Omit<HousePlanTemplate, "furnishingPacks">
+): HousePlanTemplateFurnishingPack[] {
+  const override = TEMPLATE_FURNISHING_OVERRIDES[template.id];
+  if (override) {
+    return [
+      {
+        id: "essentials",
+        label: "Essentials",
+        bestFor: "A sparse shoppable starting point",
+        intents: buildTemplateFurnishingOverrideIntents(template, override.essentials),
+      },
+      {
+        id: "styled_starter",
+        label: "Styled starter",
+        bestFor: "A warmer lived-in first draft",
+        intents: buildTemplateFurnishingOverrideIntents(template, override.styled_starter),
+      },
+    ];
+  }
+
+  const livingRoom = findTemplateFurnishingRoom(template, ["living"]);
+  const diningRoom = findTemplateFurnishingRoom(template, ["dining"]);
+  const kitchenDiningRoom = template.rooms.find(
+    (room) =>
+      room.roomType === "dining" ||
+      room.id.includes("dining") ||
+      room.name.toLowerCase().includes("dining")
+  ) ?? null;
+  const diningTarget = diningRoom ?? kitchenDiningRoom;
+  const hasLargeLivingRoom = Boolean(livingRoom && livingRoom.width >= 4.2 && livingRoom.depth >= 3.4);
+  const hasDiningSpace = Boolean(diningTarget && diningTarget.width >= 3 && diningTarget.depth >= 2.4);
+
+  const essentials: HousePlanTemplateFurnishingIntent[] = [];
+  pushTemplateFurnishingIntent(essentials, livingRoom, {
+    category: "sofa",
+    x: 0,
+    z: -1.15,
+    rotationDeg: 0,
+  });
+  pushTemplateFurnishingIntent(essentials, livingRoom, {
+    category: "coffee_table",
+    x: 0,
+    z: -0.15,
+    rotationDeg: 0,
+  });
+  if (hasLargeLivingRoom) {
+    pushTemplateFurnishingIntent(essentials, livingRoom, {
+      category: "rug",
+      x: 0,
+      z: -0.1,
+      rotationDeg: 0,
+    });
+  }
+  if (hasDiningSpace) {
+    pushTemplateFurnishingIntent(essentials, diningTarget, {
+      category: "dining_table",
+      x: 0,
+      z: 0,
+      rotationDeg: 0,
+    });
+  }
+
+  const styledStarter: HousePlanTemplateFurnishingIntent[] = [...essentials];
+  if (hasLargeLivingRoom) {
+    pushTemplateFurnishingIntent(styledStarter, livingRoom, {
+      category: "accent_chair",
+      x: -1.3,
+      z: 0.75,
+      rotationDeg: 35,
+    });
+    pushTemplateFurnishingIntent(styledStarter, livingRoom, {
+      category: "floor_lamp",
+      x: 1.75,
+      z: -1.45,
+      rotationDeg: 0,
+    });
+    pushTemplateFurnishingIntent(styledStarter, livingRoom, {
+      category: "tv_console",
+      x: 0,
+      z: 0.95,
+      rotationDeg: 180,
+    });
+  } else {
+    pushTemplateFurnishingIntent(styledStarter, livingRoom, {
+      category: "side_table",
+      x: -1,
+      z: -1.15,
+      rotationDeg: 0,
+    });
+  }
+  if (hasDiningSpace && diningTarget && diningTarget.width >= 3.3 && diningTarget.depth >= 3.2) {
+    pushTemplateFurnishingIntent(styledStarter, diningTarget, {
+      category: "dining_bench",
+      x: 0,
+      z: 0.85,
+      rotationDeg: 0,
+    });
+  }
+
+  return [
+    {
+      id: "essentials",
+      label: "Essentials",
+      bestFor: "A sparse shoppable starting point",
+      intents: essentials,
+    },
+    {
+      id: "styled_starter",
+      label: "Styled starter",
+      bestFor: "A warmer lived-in first draft",
+      intents: styledStarter,
+    },
+  ];
+}
+
+export const HOUSE_PLAN_TEMPLATES: HousePlanTemplate[] = HOUSE_PLAN_TEMPLATE_BASES.map(
+  (template) => ({
+    ...template,
+    furnishingPacks: buildTemplateFurnishingPacks(template),
+  })
+);
 
 export const HOUSE_ROOM_TEMPLATES: Array<{
   id: HouseRoomTemplateId;

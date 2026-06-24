@@ -47,8 +47,11 @@ test.describe("18. Multi-Room Whole Home", () => {
 
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
+      const clearSentinel = "__e2e_multi_room_storage_cleared";
+      if (window.localStorage.getItem(clearSentinel) === "1") return;
       window.localStorage.clear();
       window.sessionStorage.clear();
+      window.localStorage.setItem(clearSentinel, "1");
     });
   });
 
@@ -846,6 +849,70 @@ test.describe("18. Multi-Room Whole Home", () => {
       throw new Error("Active room dimension labels were not measurable");
     }
     expect(Math.abs(widthLabelBox.y - depthLabelBox.y)).toBeGreaterThan(80);
+  });
+
+  test("furnished templates create starter items and protect existing plans", async ({ page }) => {
+    await page.goto("/design");
+    await page.waitForLoadState("domcontentloaded");
+
+    await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByTestId("plan-start-template").click();
+
+    await expect(page.getByTestId("apply-furnished-template-studio")).toBeVisible();
+    await expect(
+      page.getByTestId(/plan-template-furnishing-marker-studio-.+/).first()
+    ).toBeVisible();
+    await page.getByTestId("apply-furnished-template-studio").click();
+
+    await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("4 rooms");
+    await expect(page.getByTestId("room-setup-step-furnish-meta")).toHaveText(/[1-9]\d* items?/);
+    await expect(page.getByTestId("consumer-plan-next-steps")).toContainText("Review the shop list");
+    const furnishedItemMeta = await page.getByTestId("room-setup-step-furnish-meta").innerText();
+    await page.waitForFunction(() => {
+      const raw = window.localStorage.getItem("interior-ai:v1:livingroom-design");
+      if (!raw) return false;
+      try {
+        const stored = JSON.parse(raw) as {
+          version?: number;
+          rooms?: Array<{ items?: unknown[] }>;
+        };
+        return (
+          stored.version === 3 &&
+          stored.rooms?.length === 4 &&
+          stored.rooms.some((room) => Array.isArray(room.items) && room.items.length > 0)
+        );
+      } catch {
+        return false;
+      }
+    });
+
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+    await page.getByRole("button", { name: "2D Plan" }).click();
+    await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("4 rooms");
+    await expect(page.getByTestId("room-setup-step-furnish-meta")).toHaveText(furnishedItemMeta);
+    await expect(page.getByTestId("consumer-plan-next-steps")).toContainText("Review the shop list");
+
+    await page.getByTestId("plan-open-templates").click();
+    await page.getByTestId("apply-plan-template-one_bedroom").click();
+
+    const replaceDialog = page.getByRole("dialog", { name: "Replace current plan?" });
+    await expect(replaceDialog).toBeVisible();
+    await expect(replaceDialog).toContainText("Compact apartment");
+    await replaceDialog.getByRole("button", { name: "Cancel" }).click();
+    await expect(replaceDialog).toHaveCount(0);
+    await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("4 rooms");
+    await expect(page.getByTestId("room-setup-step-furnish-meta")).toHaveText(/[1-9]\d* items?/);
+
+    await page.getByTestId("apply-plan-template-one_bedroom").click();
+    await expect(replaceDialog).toBeVisible();
+    await replaceDialog.getByRole("button", { name: "Replace plan" }).click();
+
+    await expect(replaceDialog).toHaveCount(0);
+    await expect(page.getByText("Compact apartment added")).toBeVisible();
+    await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("5 rooms");
+    await expect(page.getByTestId("room-setup-step-furnish-meta")).toHaveText("Not started");
   });
 
   test("adding a room keeps the plan visible as one whole-home 3D scene", async ({ page }) => {

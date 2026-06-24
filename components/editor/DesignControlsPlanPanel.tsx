@@ -5,6 +5,7 @@ import type {
   HouseRoomConnectionChecklistItem,
   HouseRoomDoorwaySuggestion,
   HousePlanTemplate,
+  HousePlanTemplateApplyOptions,
   HouseRoomTemplateId,
   RoomSizePresetId,
 } from "@/lib/design-page-house-plan";
@@ -162,7 +163,7 @@ type DesignControlsPlanPanelProps = {
   onGoAiDesign: () => void;
   onGoShop: () => void;
   onGoView3D?: () => void;
-  onApplyPlanTemplate: (template: HousePlanTemplate) => void;
+  onApplyPlanTemplate: (template: HousePlanTemplate, options?: HousePlanTemplateApplyOptions) => void;
   onAddDesignerRoom: () => void;
   onAddRoomTemplate: (template: HouseRoomTemplate) => void;
   onApplyFloorMaterialToRoom: (materialId: string) => void;
@@ -962,7 +963,10 @@ export default function DesignControlsPlanPanel({
                         {step.label}
                       </span>
                     </span>
-                    <span className={dark ? "mt-1 block truncate text-[10px] text-neutral-400" : "mt-1 block truncate text-[10px] text-neutral-500"}>
+                    <span
+                      data-testid={`room-setup-step-${step.id}-meta`}
+                      className={dark ? "mt-1 block truncate text-[10px] text-neutral-400" : "mt-1 block truncate text-[10px] text-neutral-500"}
+                    >
                       {step.meta}
                     </span>
                   </button>
@@ -2446,17 +2450,17 @@ export default function DesignControlsPlanPanel({
               const roomPreview = template.rooms
                 .map((room) => room.name.replace(" / ", "/"))
                 .join(" · ");
+              const furnishedPack =
+                template.furnishingPacks.find((pack) => pack.id === "styled_starter") ??
+                template.furnishingPacks[0];
+              const furnishedItemCount = furnishedPack?.intents.length ?? 0;
               return (
-                <button
+                <div
                   key={template.id}
-                  type="button"
-                  data-testid={`apply-plan-template-${template.id}`}
-                  onClick={() => onApplyPlanTemplate(template)}
-                  disabled={!canEdit}
                   className={
                     dark
-                      ? "grid grid-cols-[7rem_minmax(0,1fr)] gap-3 rounded-lg border border-white/10 bg-[#1b2030] px-3 py-2 text-left text-sm font-medium text-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
-                      : "grid grid-cols-[7rem_minmax(0,1fr)] gap-3 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-left text-sm font-medium text-neutral-800 shadow-sm hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
+                      ? "grid grid-cols-[7rem_minmax(0,1fr)] gap-3 rounded-lg border border-white/10 bg-[#1b2030] px-3 py-2 text-left text-sm font-medium text-neutral-100"
+                      : "grid grid-cols-[7rem_minmax(0,1fr)] gap-3 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-left text-sm font-medium text-neutral-800 shadow-sm"
                   }
                 >
                   <span
@@ -2501,6 +2505,50 @@ export default function DesignControlsPlanPanel({
                           />
                         );
                       })}
+                      {furnishedPack?.intents.slice(0, 9).map((intent) => {
+                        const room = template.rooms.find((entry) => entry.id === intent.roomId);
+                        if (!room) return null;
+                        const x = 6 + (room.x + intent.x - bounds.left) * scale;
+                        const y = 6 + (room.z + intent.z - bounds.top) * scale;
+                        const markerFill =
+                          intent.category === "sofa" || intent.category === "accent_chair"
+                            ? "#2563eb"
+                            : intent.category === "dining_table" || intent.category === "dining_bench"
+                              ? "#d97706"
+                              : intent.category === "rug"
+                                ? "#14b8a6"
+                                : "#111827";
+                        const markerSize =
+                          intent.category === "sofa"
+                            ? 5
+                            : intent.category === "rug"
+                              ? 6
+                              : 3.5;
+
+                        return intent.category === "rug" ? (
+                          <rect
+                            key={intent.id}
+                            data-testid={`plan-template-furnishing-marker-${template.id}-${intent.id}`}
+                            x={x - markerSize / 2}
+                            y={y - markerSize / 2}
+                            width={markerSize}
+                            height={markerSize}
+                            fill={markerFill}
+                            fillOpacity="0.32"
+                            rx="1"
+                          />
+                        ) : (
+                          <circle
+                            key={intent.id}
+                            data-testid={`plan-template-furnishing-marker-${template.id}-${intent.id}`}
+                            cx={x}
+                            cy={y}
+                            r={markerSize / 2}
+                            fill={markerFill}
+                            fillOpacity="0.85"
+                          />
+                        );
+                      })}
                     </svg>
                   </span>
                   <span className="min-w-0">
@@ -2541,8 +2589,40 @@ export default function DesignControlsPlanPanel({
                     <span className={dark ? "mt-1 block truncate text-[11px] text-neutral-400" : "mt-1 block truncate text-[11px] text-neutral-500"}>
                       Zones: {template.zones.slice(0, 3).join(" · ")}
                     </span>
+                    <span className="mt-2 grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        data-testid={`apply-plan-template-${template.id}`}
+                        onClick={() => onApplyPlanTemplate(template)}
+                        disabled={!canEdit}
+                        className={
+                          dark
+                            ? "rounded-md border border-white/10 px-2 py-1.5 text-center text-xs font-semibold text-neutral-100 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+                            : "rounded-md border border-neutral-200 px-2 py-1.5 text-center text-xs font-semibold text-neutral-700 hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
+                        }
+                      >
+                        Plan only
+                      </button>
+                      <button
+                        type="button"
+                        data-testid={`apply-furnished-template-${template.id}`}
+                        onClick={() =>
+                          furnishedPack
+                            ? onApplyPlanTemplate(template, { furnishingPackId: furnishedPack.id })
+                            : onApplyPlanTemplate(template)
+                        }
+                        disabled={!canEdit || !furnishedPack || furnishedItemCount === 0}
+                        className={
+                          dark
+                            ? "rounded-md bg-emerald-300 px-2 py-1.5 text-center text-xs font-semibold text-emerald-950 hover:bg-emerald-200 disabled:cursor-not-allowed disabled:opacity-50"
+                            : "rounded-md bg-emerald-600 px-2 py-1.5 text-center text-xs font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+                        }
+                      >
+                        Furnished · {furnishedItemCount} items
+                      </button>
+                    </span>
                   </span>
-                </button>
+                </div>
               );
             })}
             {filteredPlanTemplates.length === 0 && (

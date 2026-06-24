@@ -19,6 +19,7 @@ import { ZoneOutline as SceneZoneOutline } from "@/components/scene/ZoneOutline"
 import CartSidebar from "@/components/CartSidebar";
 import ItemCartDrawer from "@/components/ItemCartDrawer";
 import { LightingPresetsUI } from "@/components/LightingPresetsUI";
+import ConfirmDialog from "@/components/ConfirmDialog";
 import { LIGHTING_PRESETS, type LightingPreset } from "@/lib/lightingPresets";
 import { CATALOG_ITEMS, CATALOG_ITEMS_MAP } from "@/lib/catalog";
 import { bulkSwapItems } from "@/lib/bulkSwap";
@@ -150,8 +151,11 @@ import {
   resolvePlanFitZoom,
   roundPlanCoordinate,
   type HousePlanTemplate,
+  type HousePlanTemplateApplyOptions,
+  type HousePlanTemplateFurnishingIntent,
   type RoomSizePresetId,
 } from "@/lib/design-page-house-plan";
+import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import { resolvePlanCanvasGuidance } from "@/lib/plan-canvas-guidance";
 import { useDesignPageHousePlanState } from "@/lib/useDesignPageHousePlanState";
 import { useDesignPageFloorPlanWorkflowState } from "@/lib/useDesignPageFloorPlanWorkflowState";
@@ -315,6 +319,86 @@ const SUPPORTED_FLOOR_PLAN_MIME_TYPES = new Set([
 ]);
 const PDF_UNDERLAY_MAX_RENDERED_DIMENSION_PX = 1800;
 const PDF_UNDERLAY_MAX_RENDER_SCALE = 2;
+
+function hasTemplateFurnishingCommerce(product: CatalogItemSchema): boolean {
+  const resolved = resolveCatalogVariant(product, product.defaultVariantId);
+  const price = resolved.priceReference.amount ?? getItemPrice(product);
+  if (!resolved.media.thumbUrl || !product.assets.modelUrl || !product.assets.thumbUrl) return false;
+  if (!Number.isFinite(price) || price <= 0) return false;
+  if (resolved.commerce.type === "affiliate") return Boolean(resolved.commerce.url);
+  if (resolved.commerce.type === "shopify") {
+    return Boolean(resolved.commerce.variantId && resolved.commerce.available);
+  }
+  return false;
+}
+
+function resolveTemplateFurnishingProduct(
+  intent: HousePlanTemplateFurnishingIntent
+): CatalogItemSchema | null {
+  return (
+    Object.values(CATALOG_ITEMS)
+      .filter((product) => product.category === intent.category)
+      .filter(hasTemplateFurnishingCommerce)
+      .sort((a, b) => getItemPrice(a) - getItemPrice(b))[0] ?? null
+  );
+}
+
+function isTemplateFurnishingNearDoorway(
+  template: HousePlanTemplate,
+  intent: HousePlanTemplateFurnishingIntent
+): boolean {
+  const room = template.rooms.find((entry) => entry.id === intent.roomId);
+  if (!room) return true;
+
+  return template.doorways.some((doorway) => {
+    if (doorway.fromRoomId !== intent.roomId && doorway.toRoomId !== intent.roomId) return false;
+    const wall = doorway.fromRoomId === intent.roomId
+      ? doorway.wall
+      : doorway.wall === "north"
+        ? "south"
+        : doorway.wall === "south"
+          ? "north"
+          : doorway.wall === "east"
+            ? "west"
+            : "east";
+    const doorwayOffset = doorway.offsetMeters ?? 0;
+    const doorwayX =
+      wall === "east"
+        ? room.width / 2
+        : wall === "west"
+          ? -room.width / 2
+          : doorwayOffset;
+    const doorwayZ =
+      wall === "south"
+        ? room.depth / 2
+        : wall === "north"
+          ? -room.depth / 2
+          : doorwayOffset;
+    const dx = intent.x - doorwayX;
+    const dz = intent.z - doorwayZ;
+    return Math.hypot(dx, dz) < 0.95;
+  });
+}
+
+function shouldConfirmPlanTemplateReplacement(
+  snapshot: MultiRoomSnapshot,
+  openings: RoomOpening2D[]
+): boolean {
+  const rooms = snapshot.rooms ?? [];
+  const itemCount = rooms.reduce((count, room) => count + room.items.length, 0);
+  if (itemCount > 0) return true;
+  if (rooms.length !== 1) return rooms.length > 0;
+
+  const [room] = rooms;
+  if (!room) return false;
+
+  const isDefaultStarterLivingRoom =
+    room.roomType === "living" &&
+    Math.abs(room.geometry.width - ROOM_DIMENSION_DEFAULTS.width) < 0.001 &&
+    Math.abs(room.geometry.depth - ROOM_DIMENSION_DEFAULTS.depth) < 0.001;
+
+  return !isDefaultStarterLivingRoom || openings.length > 2;
+}
 
 function ScenePerformanceBridge({
   enabled,
@@ -1660,6 +1744,7 @@ function PageContent() {
   );
   const designSnapshotRef = useRef(designSnapshot);
   const previousSelectedPlanActiveRoomIdRef = useRef<string | null>(null);
+  const [localBackupHydrated, setLocalBackupHydrated] = useState(false);
   const [liveCatalogReady, setLiveCatalogReady] = useState(false);
 
   useEffect(() => {
@@ -3199,7 +3284,10 @@ function PageContent() {
   };
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined") {
+      setLocalBackupHydrated(true);
+      return;
+    }
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
@@ -3374,6 +3462,8 @@ function PageContent() {
       setSavedViews(hydrateSavedViews(parsed.savedViews));
     } catch {
       // ignore invalid saved data
+    } finally {
+      setLocalBackupHydrated(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -5186,9 +5276,29 @@ function PageContent() {
     },
     [activateFloorPlanOpeningTrace, activeRoom, showRuleToast]
   );
+  const skipNextTemplateReplacementConfirmRef = useRef(false);
+  const [pendingPlanTemplateReplacement, setPendingPlanTemplateReplacement] = useState<{
+    template: HousePlanTemplate;
+    options?: HousePlanTemplateApplyOptions;
+  } | null>(null);
 
   const handleApplyPlanTemplate = useCallback(
-    (template: HousePlanTemplate) => {
+    (template: HousePlanTemplate, options?: HousePlanTemplateApplyOptions) => {
+      if (
+        !skipNextTemplateReplacementConfirmRef.current &&
+        shouldConfirmPlanTemplateReplacement(designSnapshotRef.current, planOpenings)
+      ) {
+        setPendingPlanTemplateReplacement({ template, options });
+        track("floor_plan_template_replacement_prompted", {
+          templateId: template.id,
+          furnishingPackId: options?.furnishingPackId ?? null,
+          roomCount: designSnapshotRef.current.rooms.length,
+          openingCount: planOpenings.length,
+        });
+        return;
+      }
+      skipNextTemplateReplacementConfirmRef.current = false;
+
       const timestamp = Date.now();
       const templateRoomIdMap = new Map<string, string>();
       const rooms = template.rooms.map((templateRoom, index) => {
@@ -5246,6 +5356,42 @@ function PageContent() {
           widthMm: metersToMm(widthMeters),
         }];
       });
+      const selectedFurnishingPack = options?.furnishingPackId
+        ? template.furnishingPacks.find((pack) => pack.id === options.furnishingPackId) ?? null
+        : null;
+      let furnishedItemCount = 0;
+      let skippedFurnishingCount = 0;
+
+      if (selectedFurnishingPack) {
+        for (const intent of selectedFurnishingPack.intents) {
+          const roomId = templateRoomIdMap.get(intent.roomId);
+          const targetRoom = roomId ? rooms.find((room) => room.id === roomId) : null;
+          const product = resolveTemplateFurnishingProduct(intent);
+
+          if (!targetRoom || !product || isTemplateFurnishingNearDoorway(template, intent)) {
+            skippedFurnishingCount += 1;
+            continue;
+          }
+
+          const resolved = resolveCatalogVariant(product, product.defaultVariantId);
+          targetRoom.items = [
+            ...targetRoom.items,
+            {
+              instanceId: `template-furnishing-${template.id}-${intent.id}-${timestamp}-${furnishedItemCount}`,
+              productId: product.id,
+              variantId: resolved.variantId,
+              position: [intent.x, 0, intent.z],
+              rotationY:
+                intent.rotationDeg === undefined
+                  ? product.defaultRotation
+                  : (intent.rotationDeg * Math.PI) / 180,
+              qty: 1,
+              includeInCheckout: true,
+            },
+          ];
+          furnishedItemCount += 1;
+        }
+      }
 
       revokeFloorPlanUnderlayUrl();
       floorPlanPdfSourceDataRef.current = null;
@@ -5264,9 +5410,20 @@ function PageContent() {
         activeRoomId: activeTemplateRoom.id,
       }));
 
-      showRuleToast(`${template.label} added`);
+      if (selectedFurnishingPack && skippedFurnishingCount > 0) {
+        showRuleToast(`Some starter items were skipped`);
+      } else {
+        showRuleToast(
+          selectedFurnishingPack
+            ? `${template.label} furnished starter added`
+            : `${template.label} added`
+        );
+      }
       track("floor_plan_template_applied", {
         templateId: template.id,
+        furnishingPackId: selectedFurnishingPack?.id ?? null,
+        furnishedItemCount,
+        skippedFurnishingCount,
         roomCount: rooms.length,
         openingCount: templateOpenings.length,
       });
@@ -5275,6 +5432,7 @@ function PageContent() {
       clearAllSelection,
       resetFloorPlanInteraction,
       revokeFloorPlanUnderlayUrl,
+      planOpenings,
       roomHeight,
       setDesignSnapshot,
       setFloorPlanPdfSourceReady,
@@ -5284,6 +5442,26 @@ function PageContent() {
       wallThickness,
     ]
   );
+
+  const handleCancelPendingPlanTemplateReplacement = useCallback(() => {
+    const pending = pendingPlanTemplateReplacement;
+    setPendingPlanTemplateReplacement(null);
+    if (!pending) return;
+    track("floor_plan_template_apply_cancelled", {
+      templateId: pending.template.id,
+      furnishingPackId: pending.options?.furnishingPackId ?? null,
+      roomCount: designSnapshotRef.current.rooms.length,
+      openingCount: planOpenings.length,
+    });
+  }, [pendingPlanTemplateReplacement, planOpenings]);
+
+  const handleConfirmPendingPlanTemplateReplacement = useCallback(() => {
+    const pending = pendingPlanTemplateReplacement;
+    if (!pending) return;
+    setPendingPlanTemplateReplacement(null);
+    skipNextTemplateReplacementConfirmRef.current = true;
+    handleApplyPlanTemplate(pending.template, pending.options);
+  }, [handleApplyPlanTemplate, pendingPlanTemplateReplacement]);
 
   const handleApplyFloorMaterialToRoom = useCallback(
     (materialId: string) => {
@@ -6681,8 +6859,9 @@ function PageContent() {
   }, [designId, designSnapshot, getStoredDesignForPersistence, savedViews]);
 
   useEffect(() => {
+    if (!localBackupHydrated) return;
     writeLocalDesignBackup();
-  }, [writeLocalDesignBackup]);
+  }, [localBackupHydrated, writeLocalDesignBackup]);
 
   useEffect(() => {
     if (!designId) return;
@@ -17452,6 +17631,20 @@ function PageContent() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={Boolean(pendingPlanTemplateReplacement)}
+        title="Replace current plan?"
+        description={
+          pendingPlanTemplateReplacement
+            ? `Applying ${pendingPlanTemplateReplacement.template.label} will replace your current rooms, doors, and furniture.`
+            : "Applying this template will replace your current rooms, doors, and furniture."
+        }
+        confirmLabel="Replace plan"
+        destructive
+        onCancel={handleCancelPendingPlanTemplateReplacement}
+        onConfirm={handleConfirmPendingPlanTemplateReplacement}
+      />
 
       {!isClientPreview && (
         <BetaFeedbackWidget
