@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { basename, extname, join, resolve } from "node:path";
+import { extname, join, resolve } from "node:path";
 
 type ArtifactManifestEntry = {
   path: string;
