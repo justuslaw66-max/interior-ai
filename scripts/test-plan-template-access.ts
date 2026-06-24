@@ -153,6 +153,24 @@ assert.match(
   "Applying a template should clear standalone built-ins so old default rectangles do not float outside the new plan."
 );
 
+assert.match(
+  designPageSource,
+  /last3DViewRef\.current = null;[\s\S]*?floorCameraViewsRef\.current = \{\};[\s\S]*?suppressNext3DViewSaveRef\.current = true;[\s\S]*?setViewMode\("2d"\);/,
+  "Applying a template should clear stale 3D camera memory before returning to 2D."
+);
+
+assert.match(
+  designPageSource,
+  /const previousViewModeRef = useRef<EditorViewMode>\(viewMode\);[\s\S]*?const suppressNext3DViewSaveRef = useRef\(false\);[\s\S]*?previousViewMode === "3d" && !suppressNext3DViewSaveRef\.current/,
+  "The 2D camera fit effect should only preserve a real previous 3D camera."
+);
+
+assert.match(
+  designPageSource,
+  /onGoView3D=\{\(\) => handleEditorViewModeChange\("3d"\)\}/,
+  "Plan-panel 3D navigation should use the camera-aware view mode handler."
+);
+
 assert.doesNotMatch(
   designPageSource,
   /kitchen-run-top|kitchen-island/,

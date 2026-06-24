@@ -2754,6 +2754,8 @@ function PageContent() {
   }, []);
   const isCameraAnimatingRef = useRef(false);
   const last3DViewRef = useRef<CameraView | null>(null);
+  const previousViewModeRef = useRef<EditorViewMode>(viewMode);
+  const suppressNext3DViewSaveRef = useRef(false);
   const cartHoverCameraBaselineRef = useRef<CameraView | null>(null);
   const cartHoverFocusTimerRef = useRef<number | null>(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -5560,6 +5562,9 @@ function PageContent() {
       setPlanFixedElements([]);
       setSelectedPlanOverlayId(null);
       clearAllSelection();
+      last3DViewRef.current = null;
+      floorCameraViewsRef.current = {};
+      suppressNext3DViewSaveRef.current = true;
       setViewMode("2d");
 
       setDesignSnapshot((prev) => ({
@@ -6697,18 +6702,22 @@ function PageContent() {
 
   useEffect(() => {
     if (!sceneReady) return;
+    const previousViewMode = previousViewModeRef.current;
+    previousViewModeRef.current = viewMode;
 
     if (viewMode === "2d") {
-      if (!last3DViewRef.current) {
+      if (previousViewMode === "3d" && !suppressNext3DViewSaveRef.current) {
         last3DViewRef.current = cameraViewRef.current;
       }
+      suppressNext3DViewSaveRef.current = false;
       window.requestAnimationFrame(() => {
         applyPlan2DCameraView();
       });
       return;
     }
 
-    if (last3DViewRef.current) {
+    suppressNext3DViewSaveRef.current = false;
+    if (previousViewMode === "2d" && last3DViewRef.current) {
       const restore = last3DViewRef.current;
       last3DViewRef.current = null;
       transitionToCameraView(restore, 420);
@@ -15920,7 +15929,7 @@ function PageContent() {
           onGoFurnish={goFurnish}
           onGoAiDesign={goAiDesign}
           onGoShop={goShop}
-          onGoView3D={() => setViewMode("3d")}
+          onGoView3D={() => handleEditorViewModeChange("3d")}
           onSelectRoom={handleSwitchRoom}
           onPlacementAddModeChange={setPlacementAddMode}
           onStyleChange={setStyle}
