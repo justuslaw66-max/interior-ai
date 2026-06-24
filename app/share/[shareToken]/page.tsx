@@ -547,7 +547,7 @@ export default async function SharePage({
         </div>
       </section>
 
-      <section className="border-y bg-white">
+      <section id="shopping-preview" className="scroll-mt-6 border-y bg-white">
         <div className="mx-auto max-w-6xl px-6 py-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>

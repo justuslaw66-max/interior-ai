@@ -83,6 +83,20 @@ export default function SharePageActions({ shareToken, title }: SharePageActions
             Share
           </button>
           <Link
+            href={`/share/${shareToken}/export/pdf`}
+            data-testid="share-download-pdf"
+            className="rounded-lg border border-neutral-300 bg-white px-3 py-2 text-xs font-semibold text-neutral-900 shadow-sm hover:bg-neutral-50"
+          >
+            Download PDF
+          </Link>
+          <Link
+            href="#shopping-preview"
+            data-testid="share-shopping-list"
+            className="rounded-lg border border-neutral-300 bg-white px-3 py-2 text-xs font-semibold text-neutral-900 shadow-sm hover:bg-neutral-50"
+          >
+            Shopping list
+          </Link>
+          <Link
             href={`/share/${shareToken}/export`}
             data-testid="share-export-pack"
             onClick={() => track("share_page_export_clicked", { share_token: shareToken })}

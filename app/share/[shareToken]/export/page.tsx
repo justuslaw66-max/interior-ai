@@ -1037,6 +1037,9 @@ export default async function ExportPage({
     zones: (design.zones as unknown as ZoneMin[]) || [],
     savedViews: (design.savedViews as unknown as SavedView[]) || [],
   });
+  const handoffFidelitySummary = buildShareExportFidelitySummary(designSnapshot, CATALOG_ITEMS);
+  const qaFidelitySummary =
+    process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS === "1" ? handoffFidelitySummary : null;
 
   const rooms = designSnapshot.rooms || [];
   const userPlan: UserPlan = design.user?.plan === "pro" ? "pro" : "free";
@@ -1074,9 +1077,6 @@ export default async function ExportPage({
   const checkoutReadinessRows = buildCheckoutReadinessRows(rooms);
   const presentationViewRows = buildPresentationViewRows(rooms);
   const shoppingCsvRows = buildShoppingCsvRows(checkoutReadinessRows);
-  const handoffFidelitySummary = buildShareExportFidelitySummary(designSnapshot, CATALOG_ITEMS);
-  const qaFidelitySummary =
-    process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS === "1" ? handoffFidelitySummary : null;
   const handoffReady =
     handoffFidelitySummary.missingCommerceCount === 0 &&
     handoffFidelitySummary.itemCount === homeSummary.itemCount;

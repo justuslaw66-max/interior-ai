@@ -24,6 +24,7 @@ const designPageSource = readFileSync(join(root, "app/design/page.tsx"), "utf8")
 const adminPageSource = readFileSync(join(root, "app/admin/page.tsx"), "utf8");
 const sharePageSource = readFileSync(join(root, "app/share/[shareToken]/page.tsx"), "utf8");
 const exportPageSource = readFileSync(join(root, "app/share/[shareToken]/export/page.tsx"), "utf8");
+const shareActionsSource = readFileSync(join(root, "components/SharePageActions.tsx"), "utf8");
 const feedbackSource = readFileSync(join(root, "components/BetaFeedbackWidget.tsx"), "utf8");
 const catalogRuntimeSource = readFileSync(join(root, "lib/catalog-runtime.ts"), "utf8");
 const roomPlanStatusSource = readFileSync(
@@ -215,6 +216,21 @@ assert.match(
   sharePageSource,
   /data-testid="share-handoff-id"/,
   "share page should show a visible handoff ID."
+);
+assert.match(
+  shareActionsSource,
+  /data-testid="share-download-pdf"[\s\S]*Download PDF/,
+  "share page actions should expose first-viewport PDF download."
+);
+assert.match(
+  shareActionsSource,
+  /data-testid="share-shopping-list"[\s\S]*Shopping list/,
+  "share page actions should expose first-viewport shopping list access."
+);
+assert.match(
+  sharePageSource,
+  /id="shopping-preview"/,
+  "share page shopping preview should be directly linkable from first-viewport actions."
 );
 assert.match(
   sharePageSource,
