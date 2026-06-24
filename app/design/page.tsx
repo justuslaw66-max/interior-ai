@@ -2835,6 +2835,26 @@ function PageContent() {
     requestAnimationFrame(tick);
   }, [cameraView.fov, updateCameraViewFromScene, updateProjection]);
 
+  const applyQueued3DView = useCallback(
+    (nextView: CameraView, durationMs = 420, attempt = 0) => {
+      const camera = cameraRef.current;
+      const controls = orbitControlsRef.current;
+
+      if (!(camera instanceof THREE.PerspectiveCamera) || !controls) {
+        if (attempt < 8) {
+          window.requestAnimationFrame(() => {
+            applyQueued3DView(nextView, durationMs, attempt + 1);
+          });
+        }
+        return;
+      }
+
+      camera.up.set(0, 1, 0);
+      transitionToCameraView(nextView, durationMs);
+    },
+    [transitionToCameraView]
+  );
+
   useEffect(() => {
     const controls = orbitControlsRef.current;
     const camera = cameraRef.current;
@@ -6724,9 +6744,7 @@ function PageContent() {
     if (pending3DViewRef.current) {
       const pendingView = pending3DViewRef.current;
       pending3DViewRef.current = null;
-      window.requestAnimationFrame(() => {
-        transitionToCameraView(pendingView, 420);
-      });
+      applyQueued3DView(pendingView, 420);
       return;
     }
 
@@ -6735,7 +6753,7 @@ function PageContent() {
       last3DViewRef.current = null;
       transitionToCameraView(restore, 420);
     }
-  }, [applyPlan2DCameraView, sceneReady, transitionToCameraView, viewMode]);
+  }, [applyPlan2DCameraView, applyQueued3DView, sceneReady, transitionToCameraView, viewMode]);
 
   useEffect(() => {
     const camera = cameraRef.current;

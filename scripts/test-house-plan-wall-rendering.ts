@@ -77,4 +77,10 @@ assert.match(
   "Switching active rooms should suppress stale selected wall outlines."
 );
 
+assert.doesNotMatch(
+  source,
+  /data-testid="house-room-3d-label"|activeFloorBounds|from "@react-three\/drei\/web\/Html"/,
+  "Whole-home 3D should stay uncluttered without persistent floating room or floor labels."
+);
+
 console.log("House-plan wall rendering guardrails passed.");

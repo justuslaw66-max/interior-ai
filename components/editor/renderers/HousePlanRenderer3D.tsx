@@ -1,7 +1,6 @@
 "use client";
 
 import { Line } from "@react-three/drei/core/Line";
-import { Html } from "@react-three/drei/web/Html";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
@@ -96,13 +95,6 @@ function getRoomFloorLevel(room: HousePlanRoom2D): number {
   return typeof room.floorLevel === "number" && Number.isFinite(room.floorLevel)
     ? room.floorLevel
     : 1;
-}
-
-function getFloorLabel(room: HousePlanRoom2D): string {
-  const level = getRoomFloorLevel(room);
-  if (room.floorLabel) return room.floorLabel;
-  if (level <= 0) return `B${Math.abs(level) + 1}`;
-  return `${level}F`;
 }
 
 function createFloorMaterialTexture(
@@ -1277,29 +1269,6 @@ export default function HousePlanRenderer3D({
       : activeRoom
         ? getRoomFloorLevel(activeRoom)
         : 1;
-  const activeFloorBounds = useMemo(() => {
-    const activeFloorRooms = rooms.filter(
-      (room) => getRoomFloorLevel(room) === resolvedActiveFloorLevel
-    );
-    if (!activeFloorRooms.length) return null;
-
-    return activeFloorRooms.reduce(
-      (bounds, room) => ({
-        minX: Math.min(bounds.minX, room.x - room.w / 2),
-        maxX: Math.max(bounds.maxX, room.x + room.w / 2),
-        minZ: Math.min(bounds.minZ, room.z - room.d / 2),
-        maxZ: Math.max(bounds.maxZ, room.z + room.d / 2),
-        label: room.floorLabel ?? bounds.label,
-      }),
-      {
-        minX: Infinity,
-        maxX: -Infinity,
-        minZ: Infinity,
-        maxZ: -Infinity,
-        label: activeFloorRooms[0] ? getFloorLabel(activeFloorRooms[0]) : "1F",
-      }
-    );
-  }, [resolvedActiveFloorLevel, rooms]);
   const [hoveredStructureTarget, setHoveredStructureTarget] = useState<StructureTarget | null>(null);
   const [selectedStructureTarget, setSelectedStructureTarget] = useState<StructureTarget | null>(null);
   const hoveredTargetKey = getStructureTargetKey(hoveredStructureTarget);
@@ -1325,24 +1294,6 @@ export default function HousePlanRenderer3D({
 
   return (
     <group>
-      {stackedFloors && activeFloorBounds ? (
-        <Html
-          zIndexRange={[7, 0]}
-          position={[
-            activeFloorBounds.maxX + 0.45,
-            (resolvedActiveFloorLevel - 1) *
-              (wallHeight + Math.max(0.08, FLOOR_THICKNESS_METERS) + 0.28) +
-              wallHeight * 0.5,
-            activeFloorBounds.minZ,
-          ]}
-          center
-          transform={false}
-        >
-          <div className="rounded border border-blue-200 bg-white/90 px-2 py-1 text-[11px] font-semibold text-blue-700 shadow-sm">
-            {activeFloorBounds.label}
-          </div>
-        </Html>
-      ) : null}
       {rooms.map((room) => {
         const isActive = room.id === activeRoomId;
         const roomFloorLevel = getRoomFloorLevel(room);
@@ -1461,37 +1412,6 @@ export default function HousePlanRenderer3D({
               opacity={ceilingOpacity}
               color={ceilingColor}
             />
-
-            <Html
-              zIndexRange={[5, 0]}
-              position={[0, wallHeight + CEILING_THICKNESS_METERS + 0.1, 0]}
-              center
-              transform={false}
-            >
-              <button
-                type="button"
-                data-testid="house-room-3d-label"
-                onClick={(event) => {
-                  if (!interactive) return;
-                  event.stopPropagation();
-                  setSelectedStructureTarget({
-                    kind: "floor",
-                    roomId: room.id,
-                    id: "floor",
-                  });
-                  onSelectRoom?.(room.id);
-                }}
-                className={`rounded border px-2 py-1 text-[11px] font-semibold shadow-sm ${
-                  isActive
-                    ? "border-green-200 bg-white text-green-800"
-                    : isActiveFloor
-                      ? "border-blue-200 bg-white/80 text-blue-700"
-                      : "border-neutral-200 bg-white/60 text-neutral-500"
-                }`}
-              >
-                {room.name}
-              </button>
-            </Html>
           </group>
         );
       })}

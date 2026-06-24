@@ -173,8 +173,14 @@ assert.match(
 
 assert.match(
   designPageSource,
-  /if \(pending3DViewRef\.current\) \{[\s\S]*?const pendingView = pending3DViewRef\.current;[\s\S]*?pending3DViewRef\.current = null;[\s\S]*?window\.requestAnimationFrame\(\(\) => \{[\s\S]*?transitionToCameraView\(pendingView, 420\);/,
-  "Queued 3D camera fits should run after the 3D camera and controls mount."
+  /const applyQueued3DView = useCallback\([\s\S]*?!\(camera instanceof THREE\.PerspectiveCamera\)[\s\S]*?attempt < 8[\s\S]*?camera\.up\.set\(0, 1, 0\);[\s\S]*?transitionToCameraView\(nextView, durationMs\);/,
+  "Queued 3D camera fits should wait for the perspective camera and restore the normal 3D up vector."
+);
+
+assert.match(
+  designPageSource,
+  /if \(pending3DViewRef\.current\) \{[\s\S]*?const pendingView = pending3DViewRef\.current;[\s\S]*?pending3DViewRef\.current = null;[\s\S]*?applyQueued3DView\(pendingView, 420\);/,
+  "Queued 3D camera fits should run through the perspective-camera handoff helper."
 );
 
 assert.match(
