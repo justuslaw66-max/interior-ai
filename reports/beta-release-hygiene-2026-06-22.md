@@ -44,6 +44,7 @@ No armchair assets were draft-gated in this pass because the catalog audit and l
 - `npm run test:beta-release-handoff` validates `reports/beta-release-handoff-2026-06-24.md` against staging evidence, stable alias promotion, feedback reference, and no-secret documentation rules.
 - `PLAYWRIGHT_WEB_SERVER_PORT=3118 PLAYWRIGHT_BASE_URL=http://localhost:3118 npm run test:beta-release-candidate` passed end to end.
 - `PLAYWRIGHT_WEB_SERVER_PORT=3146 PLAYWRIGHT_BASE_URL=http://localhost:3146 npm run test:beta-release-candidate` passed end to end on commit `ec920a7`.
+- Post-release-candidate beta-stability commits through `6d32fdd` passed targeted local blockers: `npx tsc --noEmit`, `npm run lint`, `npm run test:beta-editor-polish`, `npm run test:floor-plan-quality`, `npm run test:ai-layout-planner`, `npm run test:ai-layout-preview`, `npm run test:plan-template-access`, `npm run test:house-plan-wall-rendering`, and `npx playwright test tests/e2e/pro-upgrade.spec.ts`.
 - `npm run test:catalog-audit:strict` passed, including strict catalog quality mode where warnings are beta blockers.
 - `npm run test:catalog-asset-availability` passed with 86 catalog files, 617 asset refs, 0 missing local URLs, and remote checking disabled by default.
 - `PLAYWRIGHT_WEB_SERVER_PORT=3117 PLAYWRIGHT_BASE_URL=http://localhost:3117 npm run test:beta-gate` passed end to end after the smart placement/circulation upgrade.
@@ -93,6 +94,10 @@ The next beta-readiness upgrades are now implemented and guarded:
 - Share/export fidelity, catalog commerce readiness, room health, room fix preview, first-run activation, and ranked placement recommendation helpers are covered by `npm run test:beta-readiness-upgrades`.
 - Smart placement has a dedicated release-candidate Playwright smoke at `npm run test:e2e:smart-placement`.
 - The readiness diagnostics cleanup was committed as `b227ecb feat: add beta launch readiness diagnostics`.
+- Share and export pages now show first-viewport client/export package summaries with guarded PDF, shopping, export-pack, and copy-to-edit actions.
+- Mobile share/export handoff coverage now checks phone/tablet overflow and finger-friendly actions in `tests/e2e/pro-upgrade.spec.ts`.
+- Whole-home 3D presentation cleanup removes persistent floating room/floor labels, stabilizes wall cutaway behavior, and queues template 3D camera restores until the 3D camera is mounted.
+- Floor-plan quality issues now carry target metadata and render lightweight 2D hints, so fix actions can jump to the relevant room, wall, opening, or furniture item.
 
 ## Release Commit Stack
 
@@ -119,6 +124,15 @@ The cleanup was split into these commits:
 - `090b90d feat: harden beta editor readiness gate`
 - `ca1a5aa docs: add beta staging evidence handoff`
 - `ec920a7 chore: clean staging artifact guard import`
+- `3729538 docs: record beta release candidate verification`
+- `5af40a6 feat: polish shared client handoff summary`
+- `8b8ba81 feat: polish export package summary`
+- `646cb03 fix: stabilize whole-home wall cutaway`
+- `7988b95 fix: reset template camera state`
+- `5541176 test: harden mobile share export handoff`
+- `13a6d32 fix: queue template 3d camera restore`
+- `b2cf2af fix: clean whole-home 3d presentation`
+- `6d32fdd feat: target floor plan quality fixes`
 
 Review each commit independently when possible; the full stack is also covered by the blocking beta gate above.
 
@@ -152,7 +166,7 @@ npm run test:beta-release-handoff
 
 ## Remaining Release Follow-Up
 
-- The latest release-candidate gate passed on commit `ec920a7`; rerun `npm run test:beta-release-candidate` immediately before tagging or opening the release PR if HEAD changes.
+- The latest full release-candidate gate passed on commit `ec920a7`; rerun `npm run test:beta-release-candidate` on current HEAD `6d32fdd` immediately before tagging or opening the release PR.
 - Keep the handoff manifest in `reports/beta-release-handoff-2026-06-24.md` aligned with the promoted staging alias and evidence bundle.
 - Regenerate `reports/staging-smoke-evidence-2026-06-24/artifact-manifest.json` if any staging evidence artifact is intentionally replaced.
 - Keep the manual staging smoke checklist in `reports/beta-staging-smoke-checklist-2026-06-23.md` green and rerun `npm run test:beta-staging-evidence` if any staging evidence or alias target changes.

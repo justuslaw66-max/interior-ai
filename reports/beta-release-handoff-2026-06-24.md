@@ -2,12 +2,13 @@
 
 ## Status
 
-- Release review state: ready for beta release review; final `npm run test:beta-release-candidate` verification passed on commit `ec920a7`.
+- Release review state: ready for beta release review after rerunning `npm run test:beta-release-candidate` on current HEAD `6d32fdd`; the last full release-candidate verification passed on commit `ec920a7`.
 - Stable staging alias: `https://interior-ai-justuslaw66-max-justuslaw66-maxs-projects.vercel.app`
 - Stable alias target: `https://interior-hr2bpyza0-justuslaw66-maxs-projects.vercel.app`
 - Vercel deployment ID: `dpl_9e2Pi2wjB3yopf5oLWKcYtuUmGdw`
 - Repository HEAD recorded during staging signoff: `05dee18`
 - Release-candidate HEAD verified locally: `ec920a7`
+- Latest beta-stability HEAD with targeted local guards: `6d32fdd`
 - Staging result: `PASS`
 - Required evidence complete: `YES`
 - Hard stops reviewed: `YES`
@@ -31,16 +32,23 @@
 - `npm run test:beta-staging-evidence`
 - `npm run test:beta-staging-artifacts`
 - `PLAYWRIGHT_WEB_SERVER_PORT=3146 PLAYWRIGHT_BASE_URL=http://localhost:3146 npm run test:beta-release-candidate`
+- `npm run test:floor-plan-quality`
+- `npm run test:ai-layout-planner`
+- `npm run test:ai-layout-preview`
+- `npm run test:beta-editor-polish`
+- `npx playwright test tests/e2e/pro-upgrade.spec.ts`
 
 ## Final Gate
 
-The latest final gate passed locally on commit `ec920a7`:
+The latest full final gate passed locally on commit `ec920a7`:
 
 ```bash
 PLAYWRIGHT_WEB_SERVER_PORT=3146 PLAYWRIGHT_BASE_URL=http://localhost:3146 npm run test:beta-release-candidate
 ```
 
 That command includes the beta gate, remote catalog asset availability, smart-placement smoke, staging checklist guard, staging evidence guard, staging artifact manifest guard, and this handoff guard. Remote catalog asset availability checked 282 remote URLs with 0 failures.
+
+Since that full gate, the branch added share/export presentation polish, mobile share/export coverage, whole-home 3D camera/cutaway cleanup, and targeted floor-plan quality fixes through commit `6d32fdd`. Those changes passed targeted local blockers, but the release-candidate command above must be rerun on current HEAD before tagging or opening the final release PR.
 
 ## Hard Stops
 
@@ -52,4 +60,4 @@ That command includes the beta gate, remote catalog asset availability, smart-pl
 ## Remaining Operations
 
 - Rotate the Vercel automation bypass secret after the smoke window closes.
-- Tag or open the release PR from commit `ec920a7`; rerun the final release-candidate command if HEAD changes before review.
+- Rerun the final release-candidate command on current HEAD `6d32fdd` before tagging or opening the release PR.
