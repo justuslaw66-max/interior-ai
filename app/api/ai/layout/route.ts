@@ -6,6 +6,7 @@ import { rateLimit } from "@/lib/rateLimit";
 import {
   buildDeterministicLayoutPlan,
   type AiLayoutCatalogEntry,
+  type AiLayoutFloorPlanQualityContext,
 } from "@/lib/ai/layout-planner";
 
 export const runtime = "nodejs";
@@ -26,7 +27,17 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json();
-  const { roomWidth, roomDepth, roomType, style, budget, seed, catalog, requestedRoles } = body ?? {};
+  const {
+    roomWidth,
+    roomDepth,
+    roomType,
+    style,
+    budget,
+    seed,
+    catalog,
+    requestedRoles,
+    floorPlanQualityContext,
+  } = body ?? {};
 
   if (
     typeof roomWidth !== "number" ||
@@ -49,6 +60,10 @@ export async function POST(req: Request) {
     seed: seedNum,
     catalog: catalog as AiLayoutCatalogEntry[],
     requestedRoles,
+    floorPlanQualityContext:
+      typeof floorPlanQualityContext === "object" && floorPlanQualityContext
+        ? (floorPlanQualityContext as AiLayoutFloorPlanQualityContext)
+        : null,
   });
 
   if ("error" in plan) {

@@ -101,6 +101,7 @@ import { buildRoomHealthSummary } from "@/lib/room-health-summary";
 import {
   buildFloorPlanQualityReport,
   type FloorPlanQualityAction,
+  type FloorPlanQualityIssue,
 } from "@/lib/floor-plan-quality";
 import { getAllRoomNames } from "@/lib/room-hooks";
 import EditorCommandBar from "@/components/editor/EditorCommandBar";
@@ -157,6 +158,7 @@ import {
   resolveFloorPlanOpeningCancelDecision,
   resolvePlanFitZoom,
   roundPlanCoordinate,
+  type HousePlanRoom2D,
   type HousePlanTemplate,
   type HousePlanTemplateApplyOptions,
   type HousePlanTemplateFurnishingIntent,
@@ -781,6 +783,63 @@ function ManualPlanActionIcon({ name }: { name: ManualPlanActionIconName }) {
     <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none">
       <path d="M8 4H4v4M16 4h4v4M20 16v4h-4M4 16v4h4M8 4L4 8M16 4l4 4M20 16l-4 4M4 16l4 4" {...lineProps} />
     </svg>
+  );
+}
+
+function PlanQualityHintOverlay({
+  rooms,
+  issues,
+}: {
+  rooms: HousePlanRoom2D[];
+  issues: FloorPlanQualityIssue[];
+}) {
+  const hintedIssues = issues
+    .filter((issue) => issue.target?.roomId || issue.roomId)
+    .slice(0, 4);
+  if (hintedIssues.length === 0) return null;
+
+  const roomById = new Map(rooms.map((room) => [room.id, room]));
+  const colorForIssue = (issue: FloorPlanQualityIssue) => {
+    if (issue.category === "naturalLight") return "#f59e0b";
+    if (issue.category === "connections") return "#2563eb";
+    if (issue.category === "furnitureFit" || issue.category === "accessibility") return "#ef4444";
+    return "#10b981";
+  };
+
+  return (
+    <group data-testid="plan-quality-hints">
+      {hintedIssues.map((issue) => {
+        const roomId = issue.target?.roomId ?? issue.roomId;
+        const room = roomId ? roomById.get(roomId) : null;
+        if (!room) return null;
+
+        const color = colorForIssue(issue);
+        return (
+          <group key={issue.id} position={[room.x, 0.082, room.z]}>
+            <mesh rotation={[-Math.PI / 2, 0, 0]}>
+              <planeGeometry args={[room.w, room.d]} />
+              <meshBasicMaterial
+                color={color}
+                transparent
+                opacity={issue.severity === "review" ? 0.12 : 0.09}
+                depthWrite={false}
+              />
+            </mesh>
+            <Line
+              points={[
+                [-room.w / 2, 0.01, -room.d / 2],
+                [room.w / 2, 0.01, -room.d / 2],
+                [room.w / 2, 0.01, room.d / 2],
+                [-room.w / 2, 0.01, room.d / 2],
+                [-room.w / 2, 0.01, -room.d / 2],
+              ]}
+              color={color}
+              lineWidth={2}
+            />
+          </group>
+        );
+      })}
+    </group>
   );
 }
 
@@ -5351,15 +5410,68 @@ function PageContent() {
     lastTrackedPlanQualityRef.current = current;
   }, [floorPlanQualityReport, housePlan2D.rooms.length]);
   const handlePlanQualityAction = useCallback(
-    (action: FloorPlanQualityAction) => {
+    (action: FloorPlanQualityAction, issue?: FloorPlanQualityIssue) => {
+      const target = issue?.target;
+      const targetRoomId = target?.roomId ?? issue?.roomId ?? designSnapshot.activeRoomId;
+
       track("floor_plan_quality_fix_clicked", {
         action,
+        issue_id: issue?.id ?? null,
         score: floorPlanQualityReport.score,
         label: floorPlanQualityReport.label,
+        target_room_id: targetRoomId ?? null,
+        target_wall: target?.wall ?? null,
+        target_item_id: target?.itemInstanceId ?? null,
         top_issue: floorPlanQualityReport.issues[0]?.id ?? null,
       });
+
+      if (targetRoomId && designSnapshot.activeRoomId !== targetRoomId) {
+        handleSwitchRoom(targetRoomId);
+      }
+
+      if (action === "add_window" || action === "add_doorway") {
+        goPlan();
+        setViewMode("2d");
+        clearNonRoomSelection();
+        if (targetRoomId) setSelectedPlanRoomId(targetRoomId);
+        setFloorPlanTraceOpeningKind(action === "add_window" ? "window" : "door");
+        showRuleToast(
+          action === "add_window"
+            ? target?.wall
+              ? `Add a window on the ${target.wall} wall`
+              : "Add a window to the highlighted room"
+            : target?.wall
+              ? `Add a doorway on the ${target.wall} wall`
+              : "Add a doorway for the highlighted rooms"
+        );
+        return;
+      }
+
+      if (action === "review_furniture_fit") {
+        goFurnish();
+        setSelectedPlanRoomId(null);
+        if (target?.itemInstanceId) {
+          updateSelection(new Set([target.itemInstanceId]), target.itemInstanceId);
+        }
+        showRuleToast("Review the highlighted furniture fit");
+        return;
+      }
+
+      goFurnish();
+      if (targetRoomId) setSelectedPlanRoomId(null);
+      showRuleToast("Add a storage piece or support space");
     },
-    [floorPlanQualityReport]
+    [
+      clearNonRoomSelection,
+      designSnapshot.activeRoomId,
+      floorPlanQualityReport,
+      goFurnish,
+      goPlan,
+      handleSwitchRoom,
+      setFloorPlanTraceOpeningKind,
+      showRuleToast,
+      updateSelection,
+    ]
   );
   const visiblePlanOpening = selectedPlanOpening;
   const visiblePlanOpeningRoomName = getPlanOpeningRoomName(visiblePlanOpening);
@@ -7759,6 +7871,7 @@ function PageContent() {
           seed: seedToUse,
           requestedRoles,
           catalog: catalogList,
+          floorPlanQualityContext: floorPlanQualityReport.aiPlanningContext,
         }),
       });
 
@@ -11983,6 +12096,10 @@ function PageContent() {
                     fixedElements={mapPlanFixedElementsToRoomRenderer(editorScene2D.fixedElements)}
                     annotations={mapPlanAnnotationsToRoomRenderer(editorScene2D.annotations)}
                     zones={planZones2D}
+                  />
+                  <PlanQualityHintOverlay
+                    rooms={housePlan2D.rooms}
+                    issues={floorPlanQualityReport.issues}
                   />
                 </>
               ) : (

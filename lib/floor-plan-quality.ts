@@ -28,6 +28,13 @@ export type FloorPlanQualityIssue = {
   category: FloorPlanQualityCategory;
   severity: "tip" | "improvement" | "review";
   roomId?: string;
+  target?: {
+    roomId?: string;
+    adjacentRoomId?: string;
+    wall?: RoomOpening2D["wall"];
+    openingKind?: RoomOpening2D["kind"];
+    itemInstanceId?: string;
+  };
   title: string;
   detail: string;
   suggestedFix: string;
@@ -68,6 +75,7 @@ export type FloorPlanAiPlanningContext = {
   blockedTightIssues: Array<{
     id: string;
     roomId?: string;
+    target?: FloorPlanQualityIssue["target"];
     label: string;
     severity: FloorPlanQualityIssue["severity"];
   }>;
@@ -169,6 +177,11 @@ function roomWindows(room: HousePlanRoom2D, openings: RoomOpening2D[], rooms: Ho
       opening.roomId === room.id &&
       wallIsExterior(room, opening.wall, rooms)
   );
+}
+
+function preferredExteriorWall(room: HousePlanRoom2D, rooms: HousePlanRoom2D[]): RoomOpening2D["wall"] | undefined {
+  const walls: Array<RoomOpening2D["wall"]> = ["south", "east", "west", "north"];
+  return walls.find((wall) => wallIsExterior(room, wall, rooms));
 }
 
 function oppositeWall(wall: RoomOpening2D["wall"]): RoomOpening2D["wall"] {
@@ -300,6 +313,11 @@ export function buildFloorPlanQualityReport({
       category: "naturalLight",
       severity: "improvement",
       roomId: room.id,
+      target: {
+        roomId: room.id,
+        wall: preferredExteriorWall(room, rooms),
+        openingKind: "window",
+      },
       title: `${room.name} needs daylight`,
       detail: "Main living, dining, bedroom, and work spaces feel better with an exterior window.",
       suggestedFix: `Add an exterior window to ${room.name}.`,
@@ -315,6 +333,12 @@ export function buildFloorPlanQualityReport({
       category: "connections",
       severity: "improvement",
       roomId: connection.doorwaySuggestion?.roomId,
+      target: {
+        roomId: connection.doorwaySuggestion?.roomId,
+        adjacentRoomId: connection.doorwaySuggestion?.adjacentRoomId,
+        wall: connection.doorwaySuggestion?.wall,
+        openingKind: "door",
+      },
       title: `${connection.roomNames[0]} and ${connection.roomNames[1]} need a doorway`,
       detail: "Adjacent rooms should have a clear opening so the plan feels walkable.",
       suggestedFix: `Add a doorway between ${connection.roomNames[0]} and ${connection.roomNames[1]}.`,
@@ -330,6 +354,7 @@ export function buildFloorPlanQualityReport({
         category: "accessibility",
         severity: "review",
         roomId: room.id,
+        target: { roomId: room.id },
         title: `${room.name} is narrow`,
         detail: "Very narrow rooms can feel hard to move through once furniture is added.",
         suggestedFix: `Give ${room.name} more breathing room or keep furniture light.`,
@@ -361,6 +386,10 @@ export function buildFloorPlanQualityReport({
           category: "furnitureFit",
           severity: "review",
           roomId: activeRoom.id,
+          target: {
+            roomId: activeRoom.id,
+            itemInstanceId: entry.item.instanceId,
+          },
           title: `${entry.footprint.label} does not fit cleanly`,
           detail: "One item crosses the room edge or sits too tight to the wall.",
           suggestedFix: "Move or resize the item so the main path stays clear.",
@@ -384,6 +413,10 @@ export function buildFloorPlanQualityReport({
       category: "furnitureFit",
       severity: overlapCount > 0 ? "review" : "improvement",
       roomId: activeRoom?.id,
+      target: {
+        roomId: activeRoom?.id,
+        itemInstanceId: itemBounds[0]?.item.instanceId,
+      },
       title: "Furniture fit needs a quick check",
       detail: overlapCount > 0
         ? "Some pieces overlap or block each other."
@@ -399,6 +432,7 @@ export function buildFloorPlanQualityReport({
       id: "missing-support-space",
       category: "storageSupport",
       severity: "tip",
+      target: { roomId: activeRoomId ?? rooms[0]?.id },
       title: "Add a storage or entry moment",
       detail: "A small drop zone, closet, pantry, or utility space helps the plan work day to day.",
       suggestedFix: "Add storage, laundry, pantry, or entry space where it naturally fits.",
@@ -423,6 +457,7 @@ export function buildFloorPlanQualityReport({
         category: "privacy",
         severity: "tip",
         roomId: toilet.id,
+        target: { roomId: toilet.id, openingKind: "door" },
         title: `${toilet.name} opens to a public room`,
         detail: "A small hall or offset entry can make bathrooms feel more private.",
         suggestedFix: `Consider a small buffer before ${toilet.name}.`,
@@ -529,6 +564,7 @@ export function buildFloorPlanQualityReport({
         .map((issue) => ({
           id: issue.id,
           roomId: issue.roomId,
+          target: issue.target,
           label: issue.title,
           severity: issue.severity,
         })),

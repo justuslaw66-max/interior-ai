@@ -103,6 +103,15 @@ assert.ok(
   missingBedroomWindowReport.issues.some((issue) => issue.action === "add_window"),
   "Missing bedroom light should create an add-window improvement."
 );
+assert.ok(
+  missingBedroomWindowReport.issues.some(
+    (issue) =>
+      issue.action === "add_window" &&
+      issue.target?.roomId === bedroomRoom.id &&
+      issue.target?.openingKind === "window"
+  ),
+  "Missing bedroom light should include a targeted window action."
+);
 
 const adjacentRooms: HousePlanRoom2D[] = [
   {
@@ -153,6 +162,16 @@ assert.ok(
   missingDoorReport.issues.some((issue) => issue.action === "add_doorway"),
   "Adjacent rooms without a doorway should create an improvement."
 );
+assert.ok(
+  missingDoorReport.issues.some(
+    (issue) =>
+      issue.action === "add_doorway" &&
+      issue.target?.roomId &&
+      issue.target.adjacentRoomId &&
+      issue.target.openingKind === "door"
+  ),
+  "Missing doorway issues should include targeted room, adjacent room, and opening metadata."
+);
 
 assert.ok(
   missingDoorReport.issues.some((issue) => issue.action === "add_storage"),
@@ -180,6 +199,14 @@ const crampedReport = buildFloorPlanQualityReport({
 assert.ok(
   crampedReport.issues.some((issue) => issue.action === "review_furniture_fit"),
   "Cramped furniture should create fit warnings."
+);
+assert.ok(
+  crampedReport.issues.some(
+    (issue) =>
+      issue.action === "review_furniture_fit" &&
+      issue.target?.itemInstanceId === "cramped-item"
+  ),
+  "Cramped furniture should target the problem item where possible."
 );
 
 assert.deepEqual(
@@ -227,8 +254,8 @@ assert.match(
 );
 assert.match(
   planPanelSource,
-  /data-testid="plan-quality-card"[\s\S]*?Plan quality[\s\S]*?data-testid="plan-quality-fixes"[\s\S]*?data-testid="plan-quality-primary-action"/,
-  "Plan sidebar should render a compact quality card with fixes and a primary CTA."
+  /data-testid="plan-quality-card"[\s\S]*?Plan quality[\s\S]*?data-testid="plan-quality-fixes"[\s\S]*?data-testid=\{`plan-quality-issue-\$\{index\}`\}[\s\S]*?data-testid=\{`plan-quality-issue-action-\$\{index\}`\}[\s\S]*?data-testid="plan-quality-primary-action"/,
+  "Plan sidebar should render a compact quality card with issue drilldowns, fix buttons, and a primary CTA."
 );
 assert.match(
   qualitySource,
@@ -237,8 +264,23 @@ assert.match(
 );
 assert.match(
   designPageSource,
-  /track\("floor_plan_quality_changed"[\s\S]*?track\("floor_plan_quality_fix_clicked"/,
-  "Quality score changes and suggested-fix clicks should be tracked."
+  /track\("floor_plan_quality_changed"[\s\S]*?track\("floor_plan_quality_fix_clicked"[\s\S]*?issue_id[\s\S]*?target_room_id[\s\S]*?target_item_id/,
+  "Quality score changes and targeted suggested-fix clicks should be tracked."
+);
+assert.match(
+  designPageSource,
+  /function PlanQualityHintOverlay\([\s\S]*?data-testid="plan-quality-hints"[\s\S]*?<PlanQualityHintOverlay[\s\S]*?issues=\{floorPlanQualityReport\.issues\}/,
+  "2D plan mode should render lightweight visual quality hints from report issues."
+);
+assert.match(
+  designPageSource,
+  /floorPlanQualityContext: floorPlanQualityReport\.aiPlanningContext/,
+  "AI layout requests should carry the quality context for future planner use."
+);
+assert.match(
+  fs.readFileSync(path.join(process.cwd(), "app", "api", "ai", "layout", "route.ts"), "utf8"),
+  /floorPlanQualityContext[\s\S]*?buildDeterministicLayoutPlan\([\s\S]*?floorPlanQualityContext/,
+  "AI layout route should accept the quality context without changing current behavior."
 );
 assert.match(
   designPageSource,

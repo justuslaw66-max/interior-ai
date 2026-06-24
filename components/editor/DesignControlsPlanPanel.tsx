@@ -20,6 +20,7 @@ import {
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type {
   FloorPlanQualityAction,
+  FloorPlanQualityIssue,
   FloorPlanQualityReport,
 } from "@/lib/floor-plan-quality";
 import type {
@@ -159,7 +160,7 @@ type DesignControlsPlanPanelProps = {
   floorPlanQualityReport?: FloorPlanQualityReport | null;
   onPlanCompletionHandled?: (id: number) => void;
   onPlanStartModeChange?: (mode: PlanStartMode) => void;
-  onPlanQualityAction?: (action: FloorPlanQualityAction) => void;
+  onPlanQualityAction?: (action: FloorPlanQualityAction, issue?: FloorPlanQualityIssue) => void;
   onSimplePlanControlsChange: (enabled: boolean) => void;
   onPlanGuidedActionsEnabledChange: (enabled: boolean) => void;
   onSelectFloorPlanTool: () => void;
@@ -752,8 +753,14 @@ export default function DesignControlsPlanPanel({
     onFloorPlanTraceRoomDrawModeChange("rectangle_wall");
     onFloorPlanTraceRoomModeChange(true);
   };
-  const handlePlanQualityAction = (action: FloorPlanQualityAction) => {
-    onPlanQualityAction?.(action);
+  const getPlanQualityActionLabel = (action: FloorPlanQualityAction) => {
+    if (action === "add_window") return "Add window";
+    if (action === "add_doorway") return "Add doorway";
+    if (action === "add_storage") return "Add storage";
+    return "Review furniture fit";
+  };
+  const handlePlanQualityAction = (action: FloorPlanQualityAction, issue?: FloorPlanQualityIssue) => {
+    onPlanQualityAction?.(action, issue);
     if (action === "add_window") {
       onAddFloorPlanOpeningFromTool("window");
       return;
@@ -770,7 +777,7 @@ export default function DesignControlsPlanPanel({
   };
   const renderPlanQualityCard = () => {
     if (!floorPlanQualityReport || !hasRooms) return null;
-    const topFixes = floorPlanQualityReport.suggestedFixes.slice(0, 3);
+    const topIssues = floorPlanQualityReport.issues.slice(0, 3);
     return (
       <div data-testid="plan-quality-card" className={progressCardClass}>
         <div className="flex items-start justify-between gap-3">
@@ -791,21 +798,36 @@ export default function DesignControlsPlanPanel({
             {floorPlanQualityReport.label}
           </span>
         </div>
-        {topFixes.length > 0 ? (
-          <ul data-testid="plan-quality-fixes" className="mt-3 grid gap-1.5">
-            {topFixes.map((fix) => (
-              <li
-                key={fix}
+        {topIssues.length > 0 ? (
+          <div data-testid="plan-quality-fixes" className="mt-3 grid gap-1.5">
+            {topIssues.map((issue, index) => (
+              <details
+                key={issue.id}
+                data-testid={`plan-quality-issue-${index}`}
                 className={
                   dark
                     ? "rounded-md bg-white/5 px-2.5 py-1.5 text-[11px] text-neutral-300"
                     : "rounded-md bg-neutral-50 px-2.5 py-1.5 text-[11px] text-neutral-600"
                 }
               >
-                {fix}
-              </li>
+                <summary className="cursor-pointer font-semibold">
+                  {issue.suggestedFix}
+                </summary>
+                <div className={dark ? "mt-1 text-neutral-400" : "mt-1 text-neutral-500"}>
+                  {issue.detail}
+                </div>
+                <button
+                  type="button"
+                  data-testid={`plan-quality-issue-action-${index}`}
+                  className={`${progressSecondaryActionClass} mt-2 min-h-8 w-full`}
+                  disabled={!canEdit}
+                  onClick={() => handlePlanQualityAction(issue.action, issue)}
+                >
+                  {getPlanQualityActionLabel(issue.action)}
+                </button>
+              </details>
             ))}
-          </ul>
+          </div>
         ) : (
           <div className={progressMetaClass}>
             The main room links, daylight, and furniture footprint look ready.
@@ -816,7 +838,14 @@ export default function DesignControlsPlanPanel({
           data-testid="plan-quality-primary-action"
           className={`${progressActionClass} mt-3 min-h-10 w-full`}
           disabled={!canEdit}
-          onClick={() => handlePlanQualityAction(floorPlanQualityReport.primaryAction.action)}
+          onClick={() =>
+            handlePlanQualityAction(
+              floorPlanQualityReport.primaryAction.action,
+              floorPlanQualityReport.issues.find(
+                (issue) => issue.action === floorPlanQualityReport.primaryAction.action
+              )
+            )
+          }
         >
           {floorPlanQualityReport.primaryAction.label}
         </button>

@@ -18,6 +18,7 @@ import type {
 } from "@/lib/floor-plan-types";
 import type {
   FloorPlanQualityAction,
+  FloorPlanQualityIssue,
   FloorPlanQualityReport,
 } from "@/lib/floor-plan-quality";
 import type { ImportedModelOption } from "@/lib/catalog/imported-model-assembly";
@@ -139,7 +140,7 @@ type DesignControlsPanelProps = {
   floorPlanQualityReport?: FloorPlanQualityReport | null;
   onPlanCompletionHandled?: (id: number) => void;
   onPlanStartModeChange?: (mode: PlanStartMode) => void;
-  onPlanQualityAction?: (action: FloorPlanQualityAction) => void;
+  onPlanQualityAction?: (action: FloorPlanQualityAction, issue?: FloorPlanQualityIssue) => void;
   onSimplePlanControlsChange: (enabled: boolean) => void;
   onPlanGuidedActionsEnabledChange: (enabled: boolean) => void;
   onSelectFloorPlanTool: () => void;

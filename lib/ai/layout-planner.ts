@@ -12,6 +12,15 @@ export type AiLayoutCatalogEntry = {
   };
 };
 
+export type AiLayoutFloorPlanQualityContext = {
+  planIntent?: unknown;
+  roomGraph?: unknown;
+  exteriorLightSummary?: unknown;
+  blockedTightIssues?: unknown;
+  missingSupportSpaces?: unknown;
+  suggestedNextActions?: unknown;
+};
+
 export type AiLayoutRole =
   | "sofa"
   | "rug"
@@ -298,6 +307,7 @@ export function buildDeterministicLayoutPlan(params: {
   seed: number;
   catalog: AiLayoutCatalogEntry[];
   requestedRoles?: unknown;
+  floorPlanQualityContext?: AiLayoutFloorPlanQualityContext | null;
 }): AiLayoutPlan | AiLayoutUnsupportedPlan {
   const roomType = normalizeAiLayoutRoomType(params.roomType);
   const styleNorm = String(params.style ?? "Modern").toLowerCase();
