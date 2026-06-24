@@ -873,6 +873,7 @@ function CutawayWallMesh({
           roomZ: room.z,
           roomWidth: room.w,
           roomDepth: room.d,
+          wall: segment.wall,
           baseOpacity,
           cutawayEligible: true,
           targetX: targetRoom.x,

@@ -61,14 +61,20 @@ assert.match(
 
 assert.match(
   source,
-  /else if \(!isInteriorSharedWall\) \{[\s\S]*?targetOpacity = resolveCutawayWallOpacity\(\{[\s\S]*?roomDepth: room\.d,[\s\S]*?baseOpacity,[\s\S]*?targetX: targetRoom\.x,/,
-  "Inactive whole-home walls should use target-aware cutaway instead of per-room camera-facing cutaway."
+  /else if \(!isInteriorSharedWall\) \{[\s\S]*?targetOpacity = resolveCutawayWallOpacity\(\{[\s\S]*?roomDepth: room\.d,[\s\S]*?wall: segment\.wall,[\s\S]*?baseOpacity,[\s\S]*?targetX: targetRoom\.x,/,
+  "Inactive whole-home walls should use wall-aware target cutaway so adjacent room fronts do not appear swapped."
 );
 
-assert.doesNotMatch(
+assert.match(
   source,
   /else if \(!isInteriorSharedWall\) \{[\s\S]*?targetOpacity = resolveCutawayWallOpacity\(\{[\s\S]*?wall: segment\.wall,[\s\S]*?targetX: targetRoom\.x,/,
-  "Inactive rooms should not hide their own camera-facing exterior walls in whole-home 3D."
+  "Inactive rooms should hide their own camera-facing exterior walls in whole-home 3D."
+);
+
+assert.match(
+  source,
+  /const selectedTargetKey = getStructureTargetKey\(\s*selectedStructureTarget\?\.roomId === activeRoomId \? selectedStructureTarget : null\s*\);/,
+  "Switching active rooms should suppress stale selected wall outlines."
 );
 
 console.log("House-plan wall rendering guardrails passed.");
