@@ -172,6 +172,10 @@ export default async function SharePage({
   const measuredRoomCount = designSnapshot.rooms.filter(
     (room) => room.geometry.width > 0 && room.geometry.depth > 0
   ).length;
+  const totalAreaSqm = designSnapshot.rooms.reduce(
+    (sum, room) => sum + room.geometry.width * room.geometry.depth,
+    0
+  );
   const totalOpenings = designSnapshot.floorPlan?.openings?.length ?? 0;
   const readyShoppingCount = checkoutReadyRows.length + retailerLinkRows.length;
   const reviewShoppingCount = needsReviewRows.length + notInCartRows.length;
@@ -227,6 +231,29 @@ export default async function SharePage({
   const handoffReady =
     handoffFidelitySummary.missingCommerceCount === 0 &&
     handoffFidelitySummary.itemCount === shoppingSummary.itemCount;
+  const clientHandoffStatus = handoffReady
+    ? "Review-ready preview"
+    : "Needs shopping review";
+  const clientHandoffDetail = handoffReady
+    ? "Saved rooms, shopping, share, and export data are aligned."
+    : `${handoffFidelitySummary.missingCommerceCount} item${handoffFidelitySummary.missingCommerceCount === 1 ? "" : "s"} need commerce review before ordering.`;
+  const clientHandoffStats = [
+    {
+      label: "Home",
+      value: `${designSnapshot.rooms.length} room${designSnapshot.rooms.length === 1 ? "" : "s"}`,
+      detail: `${formatMeters(totalAreaSqm)} sq m measured`,
+    },
+    {
+      label: "Shopping",
+      value: `${readyShoppingCount} ready`,
+      detail: `${reviewShoppingCount} item${reviewShoppingCount === 1 ? "" : "s"} to review`,
+    },
+    {
+      label: "Budget",
+      value: formatCurrency(shoppingSummary.subtotal),
+      detail: `${shoppingSummary.itemCount} planned item${shoppingSummary.itemCount === 1 ? "" : "s"}`,
+    },
+  ];
 
   return (
     <main className="min-h-screen bg-neutral-100">
@@ -266,6 +293,72 @@ export default async function SharePage({
           <SharePageActions shareToken={shareToken} title={design.title} />
         </div>
       </header>
+
+      <section className="mx-auto max-w-6xl px-6 pt-5" data-testid="share-client-handoff-summary">
+        <div className="grid gap-4 rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm lg:grid-cols-[1.25fr_1fr]">
+          <div>
+            <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
+              Client Handoff
+            </div>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <h2 className="text-2xl font-semibold text-neutral-950">{clientHandoffStatus}</h2>
+              <span
+                className={
+                  handoffReady
+                    ? "rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-100"
+                    : "rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 ring-1 ring-amber-100"
+                }
+              >
+                {handoffReady ? "Ready" : "Review"}
+              </span>
+            </div>
+            <p className="mt-2 max-w-2xl text-sm text-neutral-600">{clientHandoffDetail}</p>
+            <div className="mt-4 grid gap-2 sm:grid-cols-3">
+              {clientHandoffStats.map((stat) => (
+                <div key={stat.label} className="rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2">
+                  <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
+                    {stat.label}
+                  </div>
+                  <div className="mt-1 text-base font-semibold text-neutral-950">{stat.value}</div>
+                  <div className="mt-0.5 text-xs text-neutral-500">{stat.detail}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="grid content-start gap-2 sm:grid-cols-3 lg:grid-cols-1">
+            <a
+              href={`/share/${shareToken}/export/pdf`}
+              data-testid="share-client-pdf-action"
+              className="rounded-xl border border-neutral-200 bg-neutral-950 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800"
+            >
+              Download PDF
+              <span className="mt-1 block text-xs font-medium text-neutral-300">
+                Presentation pack
+              </span>
+            </a>
+            <a
+              href="#shopping-preview"
+              data-testid="share-client-shopping-action"
+              className="rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm font-semibold text-neutral-950 shadow-sm hover:bg-neutral-50"
+            >
+              Shopping preview
+              <span className="mt-1 block text-xs font-medium text-neutral-500">
+                {shoppingSummary.shoppableCount} shoppable item{shoppingSummary.shoppableCount === 1 ? "" : "s"}
+              </span>
+            </a>
+            <a
+              href={`/share/${shareToken}/export`}
+              data-testid="share-client-export-action"
+              className="rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm font-semibold text-neutral-950 shadow-sm hover:bg-neutral-50"
+            >
+              Open export pack
+              <span className="mt-1 block text-xs font-medium text-neutral-500">
+                Schedules and plan files
+              </span>
+            </a>
+          </div>
+        </div>
+      </section>
 
       <section className="mx-auto max-w-6xl px-6 pt-4">
         <div className="grid gap-3 rounded-xl border bg-white p-4 shadow-sm sm:grid-cols-5">

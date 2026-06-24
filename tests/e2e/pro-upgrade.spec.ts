@@ -169,6 +169,16 @@ test.describe("Pro Upgrade Flow", () => {
       await expect(page.getByRole("button", { name: "Share" })).toBeVisible();
       await expect(page.getByRole("link", { name: "Export pack", exact: true })).toBeVisible();
       await expect(page.getByRole("button", { name: "Copy to edit" })).toBeVisible();
+      const clientHandoff = page.getByTestId("share-client-handoff-summary");
+      await expect(clientHandoff.getByText("Client Handoff")).toBeVisible();
+      await expect(clientHandoff.getByRole("heading", { name: "Review-ready preview" })).toBeVisible();
+      await expect(clientHandoff.getByText("Saved rooms, shopping, share, and export data are aligned.")).toBeVisible();
+      await expect(clientHandoff.getByText("1 room")).toBeVisible();
+      await expect(clientHandoff.getByText("12 sq m measured")).toBeVisible();
+      await expect(clientHandoff.getByText("$549")).toBeVisible();
+      await expect(clientHandoff.getByTestId("share-client-pdf-action")).toContainText("Download PDF");
+      await expect(clientHandoff.getByTestId("share-client-shopping-action")).toContainText("Shopping preview");
+      await expect(clientHandoff.getByTestId("share-client-export-action")).toContainText("Open export pack");
       await expect(page.getByRole("heading", { name: "Presentation Views" })).toBeVisible();
       const sharePresentationViews = page.getByTestId("share-presentation-views");
       await expect(sharePresentationViews.getByText("Client View")).toBeVisible();
