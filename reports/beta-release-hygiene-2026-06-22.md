@@ -45,6 +45,7 @@ No armchair assets were draft-gated in this pass because the catalog audit and l
 - `PLAYWRIGHT_WEB_SERVER_PORT=3118 PLAYWRIGHT_BASE_URL=http://localhost:3118 npm run test:beta-release-candidate` passed end to end.
 - `PLAYWRIGHT_WEB_SERVER_PORT=3146 PLAYWRIGHT_BASE_URL=http://localhost:3146 npm run test:beta-release-candidate` passed end to end on commit `ec920a7`.
 - Post-release-candidate beta-stability commits through `6d32fdd` passed targeted local blockers: `npx tsc --noEmit`, `npm run lint`, `npm run test:beta-editor-polish`, `npm run test:floor-plan-quality`, `npm run test:ai-layout-planner`, `npm run test:ai-layout-preview`, `npm run test:plan-template-access`, `npm run test:house-plan-wall-rendering`, and `npx playwright test tests/e2e/pro-upgrade.spec.ts`.
+- `PLAYWRIGHT_WEB_SERVER_PORT=3147 PLAYWRIGHT_BASE_URL=http://localhost:3147 npm run test:beta-release-candidate` passed end to end on app/test HEAD `4b64b9e`.
 - `npm run test:catalog-audit:strict` passed, including strict catalog quality mode where warnings are beta blockers.
 - `npm run test:catalog-asset-availability` passed with 86 catalog files, 617 asset refs, 0 missing local URLs, and remote checking disabled by default.
 - `PLAYWRIGHT_WEB_SERVER_PORT=3117 PLAYWRIGHT_BASE_URL=http://localhost:3117 npm run test:beta-gate` passed end to end after the smart placement/circulation upgrade.
@@ -133,6 +134,7 @@ The cleanup was split into these commits:
 - `13a6d32 fix: queue template 3d camera restore`
 - `b2cf2af fix: clean whole-home 3d presentation`
 - `6d32fdd feat: target floor plan quality fixes`
+- `4b64b9e docs: refresh beta release handoff status`
 
 Review each commit independently when possible; the full stack is also covered by the blocking beta gate above.
 
@@ -166,7 +168,7 @@ npm run test:beta-release-handoff
 
 ## Remaining Release Follow-Up
 
-- The latest full release-candidate gate passed on commit `ec920a7`; rerun `npm run test:beta-release-candidate` on current HEAD `6d32fdd` immediately before tagging or opening the release PR.
+- The latest full release-candidate gate passed on app/test HEAD `4b64b9e`; rerun `npm run test:beta-release-candidate` immediately before tagging or opening the release PR if any non-documentation change lands.
 - Keep the handoff manifest in `reports/beta-release-handoff-2026-06-24.md` aligned with the promoted staging alias and evidence bundle.
 - Regenerate `reports/staging-smoke-evidence-2026-06-24/artifact-manifest.json` if any staging evidence artifact is intentionally replaced.
 - Keep the manual staging smoke checklist in `reports/beta-staging-smoke-checklist-2026-06-23.md` green and rerun `npm run test:beta-staging-evidence` if any staging evidence or alias target changes.

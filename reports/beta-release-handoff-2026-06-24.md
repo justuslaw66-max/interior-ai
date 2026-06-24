@@ -2,13 +2,13 @@
 
 ## Status
 
-- Release review state: ready for beta release review after rerunning `npm run test:beta-release-candidate` on current HEAD `6d32fdd`; the last full release-candidate verification passed on commit `ec920a7`.
+- Release review state: ready for beta release review; full `npm run test:beta-release-candidate` verification passed on app/test HEAD `4b64b9e`.
 - Stable staging alias: `https://interior-ai-justuslaw66-max-justuslaw66-maxs-projects.vercel.app`
 - Stable alias target: `https://interior-hr2bpyza0-justuslaw66-maxs-projects.vercel.app`
 - Vercel deployment ID: `dpl_9e2Pi2wjB3yopf5oLWKcYtuUmGdw`
 - Repository HEAD recorded during staging signoff: `05dee18`
-- Release-candidate HEAD verified locally: `ec920a7`
-- Latest beta-stability HEAD with targeted local guards: `6d32fdd`
+- Release-candidate HEAD verified locally: `4b64b9e`
+- Latest beta-stability HEAD with full local gate: `4b64b9e`
 - Staging result: `PASS`
 - Required evidence complete: `YES`
 - Hard stops reviewed: `YES`
@@ -32,6 +32,7 @@
 - `npm run test:beta-staging-evidence`
 - `npm run test:beta-staging-artifacts`
 - `PLAYWRIGHT_WEB_SERVER_PORT=3146 PLAYWRIGHT_BASE_URL=http://localhost:3146 npm run test:beta-release-candidate`
+- `PLAYWRIGHT_WEB_SERVER_PORT=3147 PLAYWRIGHT_BASE_URL=http://localhost:3147 npm run test:beta-release-candidate`
 - `npm run test:floor-plan-quality`
 - `npm run test:ai-layout-planner`
 - `npm run test:ai-layout-preview`
@@ -40,15 +41,15 @@
 
 ## Final Gate
 
-The latest full final gate passed locally on commit `ec920a7`:
+The latest full final gate passed locally on app/test HEAD `4b64b9e`:
 
 ```bash
-PLAYWRIGHT_WEB_SERVER_PORT=3146 PLAYWRIGHT_BASE_URL=http://localhost:3146 npm run test:beta-release-candidate
+PLAYWRIGHT_WEB_SERVER_PORT=3147 PLAYWRIGHT_BASE_URL=http://localhost:3147 npm run test:beta-release-candidate
 ```
 
 That command includes the beta gate, remote catalog asset availability, smart-placement smoke, staging checklist guard, staging evidence guard, staging artifact manifest guard, and this handoff guard. Remote catalog asset availability checked 282 remote URLs with 0 failures.
 
-Since that full gate, the branch added share/export presentation polish, mobile share/export coverage, whole-home 3D camera/cutaway cleanup, and targeted floor-plan quality fixes through commit `6d32fdd`. Those changes passed targeted local blockers, but the release-candidate command above must be rerun on current HEAD before tagging or opening the final release PR.
+This documentation update records the verification result only. Rerun the release-candidate command if any app, test, catalog, or evidence artifact changes after this handoff refresh.
 
 ## Hard Stops
 
@@ -60,4 +61,4 @@ Since that full gate, the branch added share/export presentation polish, mobile 
 ## Remaining Operations
 
 - Rotate the Vercel automation bypass secret after the smoke window closes.
-- Rerun the final release-candidate command on current HEAD `6d32fdd` before tagging or opening the release PR.
+- Tag or open the release PR from the verified release stack after this documentation-only handoff refresh; rerun the final release-candidate command if any non-documentation change lands.
