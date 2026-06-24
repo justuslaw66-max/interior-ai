@@ -173,6 +173,13 @@ test.describe("00. Beta Smoke Gate", () => {
       await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30000 });
       await page.getByTestId("load-design").click();
       await expect(page.getByTestId("load-designs-modal")).toBeVisible();
+      await expect(page.getByTestId("load-designs-template-shortcut")).toBeVisible();
+      await page.getByTestId("load-designs-open-templates").click();
+      await expect(page.getByTestId("load-designs-modal")).toBeHidden();
+      await expect(page.getByTestId("starter-floor-plan-picker")).toBeVisible();
+      await expect(page.getByTestId("apply-furnished-template-studio")).toBeVisible();
+      await page.getByTestId("load-design").click();
+      await expect(page.getByTestId("load-designs-modal")).toBeVisible();
       await page.getByTestId(`load-design-${seed.designId}`).click();
       await expect(page.getByTestId("load-designs-modal")).toBeHidden();
       const loadedEditorFingerprint = await getStableFingerprint(

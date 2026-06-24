@@ -244,6 +244,12 @@ assert.match(
 );
 
 assert.match(
+  betaSmokeSource,
+  /load-designs-template-shortcut[\s\S]*?load-designs-open-templates[\s\S]*?starter-floor-plan-picker[\s\S]*?apply-furnished-template-studio[\s\S]*?load-design-\$\{seed\.designId\}/,
+  "The blocking beta smoke should prove the Load modal shortcut opens templates before loading saved designs."
+);
+
+assert.match(
   designPageSource,
   /options\?\.furnishingPackId[\s\S]*?targetRoom\.items = \[/,
   "Furnished template application should create normal room-scoped design items only when requested."
