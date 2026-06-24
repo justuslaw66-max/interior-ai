@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import type { Locator, Page } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
@@ -33,6 +34,20 @@ async function isDatabaseReachable(prisma: PrismaClient): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+async function expectNoHorizontalOverflow(page: Page, label: string) {
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+  );
+  expect(overflow, `${label} should not create horizontal page overflow`).toBeLessThanOrEqual(4);
+}
+
+async function expectFingerFriendly(locator: Locator, label: string) {
+  const box = await locator.boundingBox();
+  expect(box, `${label} should be measurable`).not.toBeNull();
+  expect(box?.width ?? 0, `${label} should be at least 36px wide`).toBeGreaterThanOrEqual(36);
+  expect(box?.height ?? 0, `${label} should be at least 36px tall`).toBeGreaterThanOrEqual(36);
 }
 
 function resolveDatabaseUrl() {
@@ -307,6 +322,40 @@ test.describe("Pro Upgrade Flow", () => {
       await expect(page.getByRole("heading", { name: "Room Schedule" })).toBeVisible();
       await expect(page.getByRole("heading", { name: "Practical Checks" })).toBeVisible();
       await expect(page.getByText(/Measurements:/)).toBeVisible();
+
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.goto(`${baseURL}/share/${shareToken}`);
+      const mobileClientHandoff = page.getByTestId("share-client-handoff-summary");
+      await expect(mobileClientHandoff).toBeVisible();
+      await expect(mobileClientHandoff.getByRole("heading", { name: "Review-ready preview" })).toBeVisible();
+      await expect(mobileClientHandoff.getByTestId("share-client-pdf-action")).toBeVisible();
+      await expect(mobileClientHandoff.getByTestId("share-client-shopping-action")).toBeVisible();
+      await expect(mobileClientHandoff.getByTestId("share-client-export-action")).toBeVisible();
+      await expectFingerFriendly(mobileClientHandoff.getByTestId("share-client-pdf-action"), "mobile PDF action");
+      await expectFingerFriendly(mobileClientHandoff.getByTestId("share-client-shopping-action"), "mobile shopping action");
+      await expectFingerFriendly(mobileClientHandoff.getByTestId("share-client-export-action"), "mobile export action");
+      await expect(page.getByTestId("share-copy-link")).toBeVisible();
+      await expectNoHorizontalOverflow(page, "mobile share page");
+
+      await page.goto(`${baseURL}/share/${shareToken}/export`);
+      const mobileExportPackage = page.getByTestId("export-package-summary");
+      await expect(mobileExportPackage).toBeVisible();
+      await expect(mobileExportPackage.getByRole("heading", { name: "Ready to send" })).toBeVisible();
+      await expect(mobileExportPackage.getByTestId("export-package-pdf-action")).toBeVisible();
+      await expect(mobileExportPackage.getByTestId("export-package-shopping-action")).toBeVisible();
+      await expect(mobileExportPackage.getByTestId("export-package-share-action")).toBeVisible();
+      await expectFingerFriendly(mobileExportPackage.getByTestId("export-package-pdf-action"), "mobile export PDF action");
+      await expectFingerFriendly(mobileExportPackage.getByTestId("export-package-shopping-action"), "mobile export shopping action");
+      await expectFingerFriendly(mobileExportPackage.getByTestId("export-package-share-action"), "mobile back to preview action");
+      await expect(page.getByTestId("share-export-shopping-csv-download")).toBeVisible();
+      await expectNoHorizontalOverflow(page, "mobile export page");
+
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.goto(`${baseURL}/share/${shareToken}/export`);
+      await expect(page.getByTestId("export-package-summary")).toBeVisible();
+      await expect(page.getByTestId("share-export-plan-png-download").first()).toBeVisible();
+      await expect(page.getByTestId("share-export-plan-svg-download").first()).toBeVisible();
+      await expectNoHorizontalOverflow(page, "tablet export page");
     } finally {
       if (designId) {
         const cleanupId = designId;
