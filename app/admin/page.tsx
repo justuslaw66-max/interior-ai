@@ -10,8 +10,15 @@ import { buildCatalogCommerceReadiness } from "@/lib/catalog-commerce-readiness"
 import { resolveCheckoutBoundaryDiagnostics } from "@/lib/beta-checkout-boundary";
 import { buildBetaFeedbackTriage } from "@/lib/beta-feedback-triage";
 import { buildBetaLaunchReadinessSummary } from "@/lib/beta-launch-readiness";
+import {
+  buildStagingSmokeEvidenceBundle,
+  stagingSmokeEvidenceToCsv,
+  stagingSmokeEvidenceToJson,
+  stagingSmokeEvidenceToMarkdown,
+} from "@/lib/beta-staging-evidence";
 import PaywallPerformancePanel from "@/components/admin/PaywallPerformancePanel";
 import RevenueFunnelPanel from "@/components/admin/RevenueFunnelPanel";
+import StagingSmokeEvidencePanel from "@/components/admin/StagingSmokeEvidencePanel";
 import { config } from "@/lib/config";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -420,6 +427,52 @@ export default async function AdminOverviewPage({
       summary: betaLaunchReadiness,
     })
   )}`;
+  const latestSharedDesign = recentDesigns.find((design) => design.shareToken);
+  const stagingDeploymentUrl =
+    process.env.APP_ORIGIN ||
+    process.env.NEXTAUTH_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "Needs staging URL");
+  const stagingBuildId =
+    process.env.VERCEL_GIT_COMMIT_SHA ||
+    process.env.VERCEL_DEPLOYMENT_ID ||
+    process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA ||
+    "Needs build ID";
+  const stagingEnvironmentLabel = [
+    `APP_ENV=${config.appEnv}`,
+    process.env.VERCEL_ENV ? `VERCEL_ENV=${process.env.VERCEL_ENV}` : null,
+  ].filter(Boolean).join(" · ");
+  const stagingSmokeEvidenceBundle = buildStagingSmokeEvidenceBundle({
+    evidence: {
+      stagingDeploymentUrl,
+      buildIdOrCommitSha: stagingBuildId,
+      stagingEnvironmentLabel,
+      tester: session?.user?.email ?? "Admin dev bypass",
+      browserDevice: "Record during manual staging smoke",
+      savedDesignId: recentDesigns[0]?.id ?? "Needs saved design ID",
+      shareToken: latestSharedDesign?.shareToken ?? "Needs share token",
+      editorSnapshotFingerprint: "Capture from qa-editor-snapshot-fingerprint",
+      shareSnapshotFingerprint: "Capture from qa-share-snapshot-fingerprint",
+      exportSnapshotFingerprint: "Capture from qa-export-snapshot-fingerprint",
+      pdfFilename: "share-export.pdf",
+      csvFilename: "shopping-list.csv",
+      pngFilename: "2d-plan.png",
+      svgFilename: "2d-plan.svg",
+      checkoutBoundaryResponseMode: checkoutBoundaryDiagnostics.checkoutSafe
+        ? "test checkout URL"
+        : "boundary blocked",
+      checkoutDiagnostics: checkoutBoundaryDiagnostics.checkoutSafe
+        ? "Checkout boundary reports safe staging/test configuration."
+        : checkoutBoundaryDiagnostics.hardStops.join("; ") || "Checkout boundary blocked.",
+      catalogCommerceReadinessEvidence:
+        catalogCommerceReadiness.issues.length === 0
+          ? "Catalog commerce readiness has no issues."
+          : `${catalogCommerceReadiness.issues.length} catalog commerce issue(s) need evidence review.`,
+      feedbackReportId: recentBetaFeedback[0]?.id ?? "Needs copied feedback payload or report ID",
+    },
+  });
+  const stagingSmokeEvidenceJson = stagingSmokeEvidenceToJson(stagingSmokeEvidenceBundle);
+  const stagingSmokeEvidenceCsv = stagingSmokeEvidenceToCsv(stagingSmokeEvidenceBundle);
+  const stagingSmokeEvidenceMarkdown = stagingSmokeEvidenceToMarkdown(stagingSmokeEvidenceBundle);
 
   return (
     <div className="p-6 space-y-8">
@@ -525,6 +578,13 @@ export default async function AdminOverviewPage({
           </div>
         ) : null}
       </section>
+
+      <StagingSmokeEvidencePanel
+        bundle={stagingSmokeEvidenceBundle}
+        json={stagingSmokeEvidenceJson}
+        csv={stagingSmokeEvidenceCsv}
+        markdown={stagingSmokeEvidenceMarkdown}
+      />
 
       <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <div className="rounded-xl border p-4">

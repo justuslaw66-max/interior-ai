@@ -20,8 +20,10 @@ const GENERATED_COPY_DIR_PATTERN = /(^|\/)(\.next|node_modules) 2(\/|$)/;
 
 const BETA_GATE_PATHS = new Set([
   ".gitignore",
+  "lib/beta-staging-evidence.ts",
   "lib/snapshot-fingerprint.ts",
   "tests/e2e/00-beta-smoke.spec.ts",
+  "tests/e2e/19-staging-signoff.spec.ts",
   "tests/e2e/beta-seed.ts",
   "reports/beta-release-hygiene-2026-06-22.md",
   "reports/beta-release-split-2026-06-22.md",
@@ -95,6 +97,7 @@ const SHARED_UI_APP_SHELL_PREFIXES = [
   "app/icon.svg",
   "app/layout.tsx",
   "components/AdminTestPanel.tsx",
+  "components/admin/",
   "components/CartSidebar.tsx",
   "components/ConfirmDialog.tsx",
   "components/CopyFallbackDialog.tsx",
