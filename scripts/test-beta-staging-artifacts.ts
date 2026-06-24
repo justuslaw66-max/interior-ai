@@ -92,7 +92,7 @@ for (const entry of manifest.entries) {
   } else if (ext === ".pdf") {
     assert.equal(bytes.subarray(0, 4).toString("utf8"), "%PDF", `PDF artifact should have a valid header: ${entry.path}`);
   } else if (ext === ".csv") {
-    assert.match(bytes.toString("utf8"), /^Room,Item,Category,/, `CSV artifact should contain the shopping-list header: ${entry.path}`);
+    assert.match(bytes.toString("utf8"), /^Room,Category,Item,/, `CSV artifact should contain the shopping-list header: ${entry.path}`);
   } else if (ext === ".svg") {
     assert.match(bytes.toString("utf8"), /<svg[\s>]/, `SVG artifact should contain an svg root: ${entry.path}`);
   }

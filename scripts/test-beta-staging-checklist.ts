@@ -39,6 +39,7 @@ const mobilePlanModeSource = readFileSync(join(root, "tests/e2e/20-mobile-plan-m
 const releaseCandidateScript = packageJson.scripts?.["test:beta-release-candidate"] ?? "";
 const stagingChecklistScript = packageJson.scripts?.["test:beta-staging-checklist"] ?? "";
 const stagingEvidenceScript = packageJson.scripts?.["test:beta-staging-evidence"] ?? "";
+const stagingArtifactsScript = packageJson.scripts?.["test:beta-staging-artifacts"] ?? "";
 const releaseHandoffScript = packageJson.scripts?.["test:beta-release-handoff"] ?? "";
 const betaE2eScript = packageJson.scripts?.["test:e2e:beta"] ?? "";
 const betaEditorPolishScript = packageJson.scripts?.["test:beta-editor-polish"] ?? "";
@@ -66,6 +67,11 @@ assert.match(
 );
 assert.match(
   releaseCandidateScript,
+  /npm run test:beta-staging-artifacts/,
+  "release candidate script should verify staging evidence artifact integrity."
+);
+assert.match(
+  releaseCandidateScript,
   /npm run test:beta-release-handoff/,
   "release candidate script should verify the release handoff manifest."
 );
@@ -78,6 +84,11 @@ assert.match(
   stagingEvidenceScript,
   /scripts\/test-beta-staging-evidence\.ts/,
   "staging evidence script should run the evidence bundle guard."
+);
+assert.match(
+  stagingArtifactsScript,
+  /scripts\/test-beta-staging-artifacts\.ts/,
+  "staging artifact script should run the artifact manifest guard."
 );
 assert.match(
   releaseHandoffScript,
@@ -201,6 +212,11 @@ assert.match(
   hygieneReport,
   /npm run test:beta-staging-evidence/,
   "beta release hygiene report should point to the staging evidence guard."
+);
+assert.match(
+  hygieneReport,
+  /npm run test:beta-staging-artifacts/,
+  "beta release hygiene report should point to the staging artifact manifest guard."
 );
 assert.match(
   hygieneReport,

@@ -1,0 +1,18 @@
+{
+  "base": "https://interior-hr2bpyza0-justuslaw66-maxs-projects.vercel.app",
+  "deploymentId": "dpl_9e2Pi2wjB3yopf5oLWKcYtuUmGdw",
+  "generatedAt": "2026-06-24T14:59:00.000Z",
+  "request": {
+    "eventType": "beta_feedback_submitted",
+    "designId": "cmqs6rzfn0001plccy2obuoh4",
+    "shareToken": "share-1782312387100-6e33d3ec",
+    "source": "codex-staging-smoke-feedback-reference-upgrade"
+  },
+  "response": {
+    "status": 200,
+    "ok": true,
+    "persisted": true,
+    "eventId": "cmqs789xw000004johhrwar9s"
+  },
+  "notes": "Feedback event persisted and returned a durable report id for staging smoke evidence. Deployment protection bypass material is not stored in this artifact."
+}

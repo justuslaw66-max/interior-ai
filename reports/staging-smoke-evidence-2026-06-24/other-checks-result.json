@@ -1,0 +1,96 @@
+{
+  "base": "https://interior-ai-justuslaw66-max-justuslaw66-maxs-projects.vercel.app",
+  "generatedAt": "2026-06-24T14:16:43.434Z",
+  "retainedSeed": true,
+  "fields": {
+    "savedDesignId": "cmqs5pruw00010occ75d0h737",
+    "shareToken": "share-1782310604353-0630bf78",
+    "tester": "Seeded staging smoke user",
+    "editorSnapshotFingerprint": "a21f6aec",
+    "shareSnapshotFingerprint": "QA marker unavailable; see screenshot",
+    "exportSnapshotFingerprint": "QA marker unavailable; see screenshot",
+    "pdfFilename": "share-export.pdf",
+    "csvFilename": "beta-smoke-whole-home-shopping-list.csv",
+    "svgFilename": "beta-smoke-whole-home-1f-2d-plan.svg",
+    "pngFilename": "beta-smoke-whole-home-1f-2d-plan.png",
+    "checkoutBoundaryResponseMode": "boundary blocked"
+  },
+  "rows": {
+    "save_reload": {
+      "status": "PASS",
+      "evidence": "reports/staging-smoke-evidence-2026-06-24/11-signed-editor-loaded.png",
+      "notes": "Signed-in seeded design loaded from cloud with room count \"3 rooms\". Editor QA fingerprint marker was not available in the deployed editor: TimeoutError: locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('qa-editor-snapshot-fingerprint')\u001b[22m\n. Cloud fingerprint a21f6aec."
+    },
+    "share_link": {
+      "status": "PASS",
+      "evidence": "reports/staging-smoke-evidence-2026-06-24/12-share-page.png",
+      "notes": "Share page rendered seeded snapshot for token share-1782310604353-0630bf78. QA fingerprint marker qa-share-snapshot-fingerprint was not available: TimeoutError: locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('qa-share-snapshot-fingerprint')\u001b[22m\n. Readiness: CART-READY 0 $0 RETAILER LINKS 9 $7,211 NEEDS REVIEW 0 Missing commerce mapping NOT IN CART 0 Valid but excluded."
+    },
+    "export_pdf": {
+      "status": "PASS",
+      "evidence": "reports/staging-smoke-evidence-2026-06-24/12-share-export.pdf",
+      "notes": "PDF status 200; content type application/pdf; 6925 bytes."
+    },
+    "export_csv": {
+      "status": "PASS",
+      "evidence": "reports/staging-smoke-evidence-2026-06-24/14-shopping-list.csv",
+      "notes": "CSV beta-smoke-whole-home-shopping-list.csv; first data row hash 78d100aeca809c84."
+    },
+    "export_plan_artifacts": {
+      "status": "PASS",
+      "evidence": "reports/staging-smoke-evidence-2026-06-24/15-2d-plan.svg; reports/staging-smoke-evidence-2026-06-24/16-2d-plan.png",
+      "notes": "SVG 8042 bytes; PNG 98061 bytes."
+    },
+    "share_export_fidelity": {
+      "status": "TODO",
+      "evidence": "reports/staging-smoke-evidence-2026-06-24/13-share-export-page.png",
+      "notes": "Cloud/editor/share/export fingerprints: a21f6aec / a21f6aec / missing QA marker / missing QA marker. Exact public/export fidelity needs QA markers or a manual visual signoff for this preview."
+    },
+    "retailer_link": {
+      "status": "PASS",
+      "evidence": "reports/staging-smoke-evidence-2026-06-24/17-cart-retailer-ready.png",
+      "notes": "Cart readiness: Checkout readiness 4 included lines can be purchased now. Ready 0 Cart-ready 4 Retailer links 0 Needs review. Retailer URL host www.castlery.com; clickKey and UTM present: true."
+    },
+    "checkout_boundary": {
+      "status": "FAIL",
+      "evidence": "reports/staging-smoke-evidence-2026-06-24/other-checks-result.json",
+      "notes": "Checkout boundary response 500; mode HTTP 500; no checkout page opened and no payment attempted."
+    }
+  },
+  "artifacts": {
+    "exportPage": "reports/staging-smoke-evidence-2026-06-24/13-share-export-page.png",
+    "pdf": {
+      "file": "reports/staging-smoke-evidence-2026-06-24/12-share-export.pdf",
+      "status": 200,
+      "contentType": "application/pdf",
+      "size": 6925,
+      "magic": "%PDF"
+    },
+    "csv": {
+      "file": "reports/staging-smoke-evidence-2026-06-24/14-shopping-list.csv",
+      "suggestedFilename": "beta-smoke-whole-home-shopping-list.csv",
+      "size": 2911,
+      "firstDataRowHash": "78d100aeca809c84",
+      "header": "Room,Category,Item,Product ID,Variant ID,Variant,Purchase option,Qty,Status,Source,Retailer URL,Include in checkout,Unit price USD,Line total USD,Room subtotal USD,Review note"
+    },
+    "svg": {
+      "file": "reports/staging-smoke-evidence-2026-06-24/15-2d-plan.svg",
+      "suggestedFilename": "beta-smoke-whole-home-1f-2d-plan.svg",
+      "size": 8042
+    },
+    "png": {
+      "file": "reports/staging-smoke-evidence-2026-06-24/16-2d-plan.png",
+      "suggestedFilename": "beta-smoke-whole-home-1f-2d-plan.png",
+      "size": 98061
+    },
+    "checkoutBoundary": {
+      "status": 500,
+      "mode": "HTTP 500",
+      "hasUrl": false,
+      "urlHost": null,
+      "diagnostics": null,
+      "error": "An error occurred with our connection to Stripe. Request was retried 2 times."
+    }
+  },
+  "error": null
+}

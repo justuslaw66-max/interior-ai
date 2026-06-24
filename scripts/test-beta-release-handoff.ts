@@ -40,6 +40,7 @@ const handoffPath = join(root, "reports/beta-release-handoff-2026-06-24.md");
 const hygienePath = join(root, "reports/beta-release-hygiene-2026-06-22.md");
 const checklistPath = join(root, "reports/beta-staging-smoke-checklist-2026-06-23.md");
 const smokePath = join(root, "reports/staging-smoke-evidence-2026-06-24/smoke-result.json");
+const artifactManifestPath = join(root, "reports/staging-smoke-evidence-2026-06-24/artifact-manifest.json");
 const aliasPath = join(root, "reports/staging-smoke-evidence-2026-06-24/stable-alias-promotion-result.json");
 const retestPath = join(root, "reports/staging-smoke-evidence-2026-06-24/retest-checkout-fingerprint-result.json");
 const feedbackPath = join(root, "reports/staging-smoke-evidence-2026-06-24/feedback-reference-result.json");
@@ -68,11 +69,13 @@ const handoff = readFileSync(handoffPath, "utf8");
 const hygiene = readFileSync(hygienePath, "utf8");
 const checklist = readFileSync(checklistPath, "utf8");
 const smoke = readJson<SmokeResult>(smokePath);
+const artifactManifest = readJson<{ fileCount?: number; entries?: unknown[] }>(artifactManifestPath);
 const alias = readJson<StableAliasPromotionResult>(aliasPath);
 const retest = readJson<RetestResult>(retestPath);
 const feedback = readJson<FeedbackReferenceResult>(feedbackPath);
 
 assert.equal(smoke.error, null, "handoff should point at a successful smoke result.");
+assert.equal(artifactManifest.fileCount, artifactManifest.entries?.length, "handoff artifact manifest should be internally consistent.");
 assert.equal(retest.error, null, "handoff should point at a successful checkout/fingerprint retest.");
 assert.equal(alias.status, "READY", "handoff alias target should be ready.");
 assert.equal(alias.stableAlias, smoke.stableAlias, "handoff stable alias should match smoke evidence.");
@@ -99,6 +102,8 @@ for (const required of [
   "Hard stops reviewed: `YES`",
   "npm run test:beta-release-candidate",
   "npm run test:beta-staging-evidence",
+  "npm run test:beta-staging-artifacts",
+  "reports/staging-smoke-evidence-2026-06-24/artifact-manifest.json",
   "Rotate the Vercel automation bypass secret",
 ]) {
   assert.ok(handoff.includes(required), `handoff should include: ${required}`);
@@ -111,8 +116,18 @@ for (const artifact of collectReportArtifacts(handoff)) {
 const releaseCandidateScript = packageJson.scripts?.["test:beta-release-candidate"] ?? "";
 assert.match(
   releaseCandidateScript,
+  /npm run test:beta-staging-artifacts/,
+  "release candidate command should run the artifact manifest guard."
+);
+assert.match(
+  releaseCandidateScript,
   /npm run test:beta-release-handoff/,
   "release candidate command should run the handoff guard."
+);
+assert.match(
+  packageJson.scripts?.["test:beta-staging-artifacts"] ?? "",
+  /scripts\/test-beta-staging-artifacts\.ts/,
+  "package should expose the artifact manifest guard."
 );
 assert.match(
   packageJson.scripts?.["test:beta-release-handoff"] ?? "",

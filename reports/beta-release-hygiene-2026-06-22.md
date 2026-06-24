@@ -39,6 +39,9 @@ No armchair assets were draft-gated in this pass because the catalog audit and l
 
 - `npm run release:beta-worktree` passed and is included in `npm run test:beta-gate`.
 - `npm run test:beta-release-candidate` now chains the full beta gate, remote catalog asset availability, and staging checklist validation.
+- `npm run test:beta-staging-evidence` validates the completed staging evidence bundle, stable alias promotion, feedback report id, checkout/fingerprint retest, linked artifact files, and absence of raw auth/protection headers in evidence text artifacts.
+- `npm run test:beta-staging-artifacts` validates the staging evidence artifact manifest, file sizes, SHA-256 hashes, required screenshots/exports, file signatures, and text artifact redaction.
+- `npm run test:beta-release-handoff` validates `reports/beta-release-handoff-2026-06-24.md` against staging evidence, stable alias promotion, feedback reference, and no-secret documentation rules.
 - `PLAYWRIGHT_WEB_SERVER_PORT=3118 PLAYWRIGHT_BASE_URL=http://localhost:3118 npm run test:beta-release-candidate` passed end to end.
 - `npm run test:catalog-audit:strict` passed, including strict catalog quality mode where warnings are beta blockers.
 - `npm run test:catalog-asset-availability` passed with 86 catalog files, 617 asset refs, 0 missing local URLs, and remote checking disabled by default.
@@ -51,6 +54,7 @@ No armchair assets were draft-gated in this pass because the catalog audit and l
 - The staging deploy required refreshing `pnpm-lock.yaml` and excluding static/model assets from serverless output tracing; Vercel inspect now reports small serverless functions instead of the prior 250 MB bundle warnings.
 - The Google sign-in staging retry reset preview `NEXTAUTH_URL` and `APP_ORIGIN` to the stable alias, removed a malformed preview `NODE_ENV`, and stopped runtime catalog validation from requiring static model files inside serverless functions.
 - Preview `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `AUTH_SECRET` were refreshed from local `.env.local` after Google returned `invalid_client` for the older Preview secret.
+- The stable staging alias now points to preview deployment `dpl_9e2Pi2wjB3yopf5oLWKcYtuUmGdw`, which includes checkout-boundary, QA-marker, and feedback-reference upgrades. Alias evidence is captured in `reports/staging-smoke-evidence-2026-06-24/stable-alias-promotion-result.json`.
 
 ## Smart Placement / Circulation
 
@@ -69,6 +73,7 @@ The next beta-readiness upgrades are now implemented and guarded:
 - Admin overview shows checkout boundary diagnostics and catalog commerce readiness before staging signoff.
 - The room header shows active room health, placement score, and the next action when the room needs review.
 - Beta feedback payloads include selected item, placement score/kind, shopping readiness, save status, share state, viewport, and placement target context.
+- Beta feedback submissions now return a persisted report reference from the app-event API and show that reference in the feedback dialog for staging signoff.
 - Admin overview includes beta feedback triage cards with note, page, room, mode, placement, shopping, save, and share context.
 - Admin beta feedback triage can be downloaded as CSV for spreadsheet review.
 - Admin beta feedback triage includes severity and routing labels for save, placement, shopping, share/export, and general feedback.
@@ -80,6 +85,9 @@ The next beta-readiness upgrades are now implemented and guarded:
 - Share and export room schedules now include room health score and next action, so handoff review catches layout/shopping/export issues.
 - The editor exposes a first-run activation QA marker for template, item, save, and share/export progress.
 - The beta start panel now shows first-run activation progress and the next activation step.
+- The admin staging smoke evidence panel is now an editable browser-persisted worksheet with row status, evidence fields, notes, and JSON/CSV/Markdown exports based on the tester's edited state.
+- The editor emits `first_run_activation_step_completed` app events for template, item, save, and share/export activation steps with guided/manual mode, save/share state, room/item counts, and viewport context.
+- `npm run test:e2e:mobile-plan` guards phone and tablet 2D Plan mode controls, manual action tap targets, and horizontal overflow.
 - The room health badge is actionable and routes users into Shop, Export, Furnish, or Plan based on the highest-priority room issue.
 - Share/export fidelity, catalog commerce readiness, room health, room fix preview, first-run activation, and ranked placement recommendation helpers are covered by `npm run test:beta-readiness-upgrades`.
 - Smart placement has a dedicated release-candidate Playwright smoke at `npm run test:e2e:smart-placement`.
@@ -118,9 +126,29 @@ npm run release:beta-worktree
 
 It buckets dirty worktree paths into beta gate/hygiene, share/export, catalog readiness, editor stability, API/persistence, shared UI/app shell, generated cleanup, and review-needed files. It also fails on accidental copy-suffix artifacts, including tracked files that would be present in a clean checkout.
 
+Use this command after staging smoke evidence is captured and the stable alias is promoted:
+
+```bash
+npm run test:beta-staging-evidence
+```
+
+Use this command after adding, removing, or regenerating staging evidence files:
+
+```bash
+npm run test:beta-staging-artifacts
+```
+
+Use this command after updating release notes or handoff details:
+
+```bash
+npm run test:beta-release-handoff
+```
+
 ## Remaining Release Follow-Up
 
 - Run `npm run test:beta-release-candidate` immediately before tagging or opening the release PR.
-- Run the manual staging smoke checklist in `reports/beta-staging-smoke-checklist-2026-06-23.md` once staging auth/payment boundary configuration is available.
+- Keep the handoff manifest in `reports/beta-release-handoff-2026-06-24.md` aligned with the promoted staging alias and evidence bundle.
+- Regenerate `reports/staging-smoke-evidence-2026-06-24/artifact-manifest.json` if any staging evidence artifact is intentionally replaced.
+- Keep the manual staging smoke checklist in `reports/beta-staging-smoke-checklist-2026-06-23.md` green and rerun `npm run test:beta-staging-evidence` if any staging evidence or alias target changes.
 - Keep checkout completion out of the local blocker until staging payment credentials are explicitly configured; local beta gate validates checkout start with a mocked response.
 - If new catalog items are added before beta, require them to pass strict catalog audit, asset availability, price/link readiness, and replacement-suggestion eligibility before publishing.

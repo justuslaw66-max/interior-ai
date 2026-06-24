@@ -1,0 +1,167 @@
+{
+  "generatedAt": "2026-06-24T15:15:00.000Z",
+  "evidenceDir": "reports/staging-smoke-evidence-2026-06-24",
+  "fileCount": 32,
+  "entries": [
+    {
+      "path": "reports/staging-smoke-evidence-2026-06-24/01-editor-open.png",
+      "sizeBytes": 160872,
+      "sha256": "f2807eeda0fafca8e555601e4526a8960e9455cb4c31df0a7cd8b28e68552a0d"
+    },
+    {
+      "path": "reports/staging-smoke-evidence-2026-06-24/02-template-picker.png",
+      "sizeBytes": 169692,
+      "sha256": "d79f1cbf5eb49b8b441b4238b5323c6c9fdd7399984fcba5df03e54aaf800ad6"
+    },
+    {
+      "path": "reports/staging-smoke-evidence-2026-06-24/03-template-applied.png",
+      "sizeBytes": 126398,
+      "sha256": "a4f23ad1992c68f8aa4180ef740f4ddf474cb72e2227a21837220b4a2a005a5c"
+    },
+    {
+      "path": "reports/staging-smoke-evidence-2026-06-24/04-opening-edited.png",
+      "sizeBytes": 126978,
+      "sha256": "fadb9b3775be83381df60a52f1e6ac679a6f13f11daa20dae52185f53d4ecf68"
+    },
+    {
+      "path": "reports/staging-smoke-evidence-2026-06-24/04-room-edit-input.png",
+      "sizeBytes": 126975,
+      "sha256": "90cd3a520354ce1a5271904d679d030bd1248afe8ea6712cbb8777910fadee0a"
+    },
+    {
+      "path": "reports/staging-smoke-evidence-2026-06-24/04-room-edited.png",
+      "sizeBytes": 128380,
+      "sha256": "9f68ff0e9a14b89fa2f4a2e5d232ddf927391c044934b926e6c951c3121a9a1a"
+    },
+    {
+      "path": "reports/staging-smoke-evidence-2026-06-24/05-furnish-panel.png",
+      "sizeBytes": 134161,
+      "sha256": "20d767cba85e973ad62116481b44b636034e099731da013128664c2db44d068a"
+    },
+    {
+      "path": "reports/staging-smoke-evidence-2026-06-24/06-furniture-add-preview.png",
+      "sizeBytes": 159791,
+      "sha256": "86583f64ce7bd57be94aef4a7cd5949e7058a02a41d8abfc60c63f2742b7445f"
+    },
+    {
+      "path": "reports/staging-smoke-evidence-2026-06-24/06-furniture-confirmed.png",
+      "sizeBytes": 156482,
+      "sha256": "4d66f5cf3c9dfe227e29315116c41b7ece29a8ff239ca56f9ba2a2242a390610"
+    },
+    {
+      "path": "reports/staging-smoke-evidence-2026-06-24/06-furniture-placed.png",
+      "sizeBytes": 159874,
+      "sha256": "eaf15ba93bf441973bd380be6dba462a796ac76c910a01f07e496e9139ea8abe"
+    },
+    {
+      "path": "reports/staging-smoke-evidence-2026-06-24/06-placement-preview.png",
+      "sizeBytes": 161799,
+      "sha256": "392cb7cbb08f0e0837aed47d569f9f0d9aa9f2e8a68228df3a3db5cb39a7c02d"
+    },
+    {
+      "path": "reports/staging-smoke-evidence-2026-06-24/07-shop-readiness.png",
+      "sizeBytes": 127166,
+      "sha256": "a24e90c3655e953cf012a1504b3eba7d6d2cea5907c68e3e1cc49c1961441573"
+    },
+    {
+      "path": "reports/staging-smoke-evidence-2026-06-24/08-reloaded-local-design.png",
+      "sizeBytes": 234750,
+      "sha256": "0ce43e9c3e1603536d1f399759118a4d1a3c5cae9c502a958b4a7b9f12a4173a"
+    },
+    {
+      "path": "reports/staging-smoke-evidence-2026-06-24/09-export-panel.png",
+      "sizeBytes": 136386,
+      "sha256": "d9b7775c7121003719ea25170bed31f1f6a2b98912b0ef4f115cca57370a63c0"
+    },
+    {
+      "path": "reports/staging-smoke-evidence-2026-06-24/10-admin-checkout-catalog.png",
+      "sizeBytes": 102210,
+      "sha256": "c45a7086fff3e27fec38a47b07e64810520141099378699af0ee608f94cfaa5a"
+    },
+    {
+      "path": "reports/staging-smoke-evidence-2026-06-24/11-signed-editor-loaded.png",
+      "sizeBytes": 230735,
+      "sha256": "0569a0d23c1ddfa278dd809faf01e666da24b39894ec71b98802be2c56594661"
+    },
+    {
+      "path": "reports/staging-smoke-evidence-2026-06-24/12-share-export.pdf",
+      "sizeBytes": 6925,
+      "sha256": "97abcabff8e18ff997091709dcf85d19ba83a928a64be3b23afe8b2dd7d1d773"
+    },
+    {
+      "path": "reports/staging-smoke-evidence-2026-06-24/12-share-page.png",
+      "sizeBytes": 269781,
+      "sha256": "ecadd4c96a45cfaee0b130057459fc8bae54e25c1985df97c4360609a1193741"
+    },
+    {
+      "path": "reports/staging-smoke-evidence-2026-06-24/13-share-export-page.png",
+      "sizeBytes": 856554,
+      "sha256": "1d19e7d7651286d0779e8bc29a6ee604eaba74f8ac19f7217e42aeae3aedb50a"
+    },
+    {
+      "path": "reports/staging-smoke-evidence-2026-06-24/14-shopping-list.csv",
+      "sizeBytes": 2911,
+      "sha256": "b92b0ca5771676ba596df87f39f56b3e0f1d7919a992a76bf7df13e67e5794a8"
+    },
+    {
+      "path": "reports/staging-smoke-evidence-2026-06-24/15-2d-plan.svg",
+      "sizeBytes": 8042,
+      "sha256": "09ca50a5b2ecc7b1f33d119c430bbbf9eff94d5ae3d1dace9dbba53bcea77cf2"
+    },
+    {
+      "path": "reports/staging-smoke-evidence-2026-06-24/16-2d-plan.png",
+      "sizeBytes": 98061,
+      "sha256": "3b59756f7302ad26db80fe606775f00fc196bb2656bb0082aca6da04e5590b2b"
+    },
+    {
+      "path": "reports/staging-smoke-evidence-2026-06-24/17-cart-retailer-ready.png",
+      "sizeBytes": 242574,
+      "sha256": "74a9165aaedf6190c462c53820c765f9e319e4907d4c61c59b6233a566f5e828"
+    },
+    {
+      "path": "reports/staging-smoke-evidence-2026-06-24/18-retest-editor-fingerprint.png",
+      "sizeBytes": 246006,
+      "sha256": "17bb1b157e92faa363a0fd2812cfa78436d97f6cdb1e61cfede568ca5a02173c"
+    },
+    {
+      "path": "reports/staging-smoke-evidence-2026-06-24/19-retest-share-fingerprint.png",
+      "sizeBytes": 271849,
+      "sha256": "af5773c9c1674769dc756ab4ef27ec2339569de4e9197c2e9f8256f33eb08a20"
+    },
+    {
+      "path": "reports/staging-smoke-evidence-2026-06-24/20-retest-export-fingerprint.png",
+      "sizeBytes": 856554,
+      "sha256": "1d19e7d7651286d0779e8bc29a6ee604eaba74f8ac19f7217e42aeae3aedb50a"
+    },
+    {
+      "path": "reports/staging-smoke-evidence-2026-06-24/error-state.png",
+      "sizeBytes": 139780,
+      "sha256": "82198665dc9126951a0984ec35b6f00a6d0468b0f63f0bd53425410c272b4c0d"
+    },
+    {
+      "path": "reports/staging-smoke-evidence-2026-06-24/feedback-reference-result.json",
+      "sizeBytes": 693,
+      "sha256": "4125d4c81f3618808128cbd48bd16b588b042a3d4d51e9e9e760af90a8b9aa3d"
+    },
+    {
+      "path": "reports/staging-smoke-evidence-2026-06-24/other-checks-result.json",
+      "sizeBytes": 4891,
+      "sha256": "990416bc2731d0e12c5b2afb6afd752fbf9655b9a38707c5303368e1bf47044f"
+    },
+    {
+      "path": "reports/staging-smoke-evidence-2026-06-24/retest-checkout-fingerprint-result.json",
+      "sizeBytes": 2461,
+      "sha256": "1fa00469eb2f4143c0e94c7ca51e931f724c65dac89a1036603d0daf57741440"
+    },
+    {
+      "path": "reports/staging-smoke-evidence-2026-06-24/smoke-result.json",
+      "sizeBytes": 7114,
+      "sha256": "b20e53ebe30c4c4d10fa5e906ff2b31a926f9a76421957df632157439dde1a07"
+    },
+    {
+      "path": "reports/staging-smoke-evidence-2026-06-24/stable-alias-promotion-result.json",
+      "sizeBytes": 725,
+      "sha256": "d0aed8753a6cda1e19a58433f9363d6ab21b62e5ee9542af916ba8bc93edfeab"
+    }
+  ]
+}
