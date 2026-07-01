@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import { buildLiveCatalogPayload } from "@/lib/catalog-live";
 import { getAllCatalogYamlEntries } from "@/lib/catalog-yaml";
+import { getPublishedFlooringMaterials } from "@/lib/catalog-registry";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +12,7 @@ export async function GET() {
     const payload = buildLiveCatalogPayload({
       catalogItems: CATALOG_ITEMS,
       yamlEntries,
+      surfaceMaterials: getPublishedFlooringMaterials(),
     });
 
     return NextResponse.json(

@@ -1,0 +1,78 @@
+schema_version: 1
+
+surface_material:
+  supplier: ""
+  brand: null
+  collection: null
+  material_id: ""
+  product_name: ""
+  slug: ""
+  surface_category: flooring
+  material_family: luxury_vinyl_tile
+
+source:
+  supplier_region: singapore
+  source_url: ""
+  sample_request_url: null
+  currency: SGD
+  license_status: unknown
+  notes: []
+
+classification:
+  flooring_type: luxury_vinyl_tile
+  design_effect: unknown
+  color_family: unknown
+  tone:
+    - neutral
+  style_cluster:
+    - contemporary
+  room_suitability:
+    - living_room
+
+physical_specs:
+  plank_or_tile_format: unknown
+  plank_width_mm: null
+  plank_length_mm: null
+  tile_width_mm: null
+  tile_length_mm: null
+  total_thickness_mm: null
+  wear_layer_mm: null
+  installation_method:
+    - unknown
+  waterproof: null
+  slip_rating: null
+  suitable_for_wet_area: null
+  suitable_for_outdoor: null
+  commercial_grade: null
+
+texture_assets:
+  swatch_url: null
+  base_color_url: null
+  normal_url: null
+  roughness_url: null
+  ao_url: null
+  preview_room_url: null
+  tileable: needs_confirmation
+  texture_repeat_size_cm: null
+
+rendering:
+  default_rotation_deg: 0
+  roughness: 0.72
+  metalness: 0
+  normal_strength: 0.25
+  scale_mode: swatch_only
+  seam_strategy: single_swatch
+
+commerce:
+  purchase_mode: quote_or_sample
+  price_per_sqm:
+    currency: SGD
+    amount: null
+  sample_available: unknown
+  sample_request_url: null
+  direct_checkout: false
+
+import_governance:
+  publish_status: draft
+  publish_blockers: []
+  qa_flags: []
