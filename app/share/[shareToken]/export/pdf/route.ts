@@ -6,6 +6,7 @@ import { getExportCapabilities, type UserPlan } from "@/lib/export-capabilities"
 import { prisma } from "@/lib/prisma";
 import { legacyApiToSnapshot } from "@/lib/room-persistence";
 import { resolveRoomShoppingItems, summarizeShoppingRooms, summarizeWholeHomeShopping } from "@/lib/room-shopping";
+import { buildRoomSurfaceMaterialBomRows } from "@/lib/surface-material-bom";
 import type { DesignItem, DesignSnapshot, PersistedPlanOpening, RoomSnapshot, SavedView, ZoneMin } from "@/lib/room-types";
 
 export const runtime = "nodejs";
@@ -42,6 +43,15 @@ function formatCurrency(value: number) {
     style: "currency",
     currency: "USD",
     maximumFractionDigits: 0,
+  }).format(value);
+}
+
+function formatMaterialCurrency(currency: string | null, value: number | null) {
+  if (value === null) return "Quote";
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: currency ?? "USD",
+    maximumFractionDigits: 2,
   }).format(value);
 }
 
@@ -290,6 +300,7 @@ export async function GET(
         roomName: room.name,
       }))
     );
+    const surfaceMaterialBomRows = buildRoomSurfaceMaterialBomRows(rooms);
     const metricsByRoomId = new Map(
       rooms.map((room) => [room.id, getRoomMetrics(room, rooms, planOpenings)])
     );
@@ -415,6 +426,50 @@ export async function GET(
           : item.warningLabel ?? "Needs review";
         drawTextLine(page, `${status} • Qty ${item.quantity} • ${formatCurrency(item.linePrice)}`, MARGIN + 12, y, fonts.regular, 8, rgb(0.36, 0.36, 0.36));
         y -= 14;
+      }
+    }
+
+    if (surfaceMaterialBomRows.length > 0) {
+      ({ page, y } = ensureSpace(pdfDoc, page, y, 100, watermarked));
+      y = drawSectionHeading(page, "Surface Material BOM", y, fonts);
+      for (const row of surfaceMaterialBomRows) {
+        ({ page, y } = ensureSpace(pdfDoc, page, y, 58, watermarked, "Surface Material BOM", fonts));
+        y = drawWrappedText(page, `${row.roomName}: ${row.materialName}`, MARGIN, y, 340, fonts.bold, 9, 11);
+        drawTextLine(
+          page,
+          `Flooring • Supplier: ${row.supplier} • ${row.materialFamily.replace(/_/g, " ")}`,
+          MARGIN + 12,
+          y,
+          fonts.regular,
+          8,
+          rgb(0.36, 0.36, 0.36)
+        );
+        y -= 12;
+        drawTextLine(
+          page,
+          `Room area ${formatMeasurement(row.roomAreaSqm, "m2")} • Order ${formatMeasurement(row.orderAreaSqm, "m2")} incl. 10% waste • ${row.purchaseMode.replace(/_/g, " ")}`,
+          MARGIN + 12,
+          y,
+          fonts.regular,
+          8,
+          rgb(0.36, 0.36, 0.36)
+        );
+        y -= 12;
+        drawTextLine(
+          page,
+          `Price / m2: ${formatMaterialCurrency(row.pricePerSqmCurrency, row.pricePerSqmAmount)} • Total estimate: ${formatMaterialCurrency(row.pricePerSqmCurrency, row.lineTotal)}`,
+          MARGIN + 12,
+          y,
+          fonts.regular,
+          8,
+          rgb(0.36, 0.36, 0.36)
+        );
+        if (row.reviewNote) {
+          y -= 12;
+          y = drawWrappedText(page, row.reviewNote, MARGIN + 12, y, 440, fonts.regular, 7, 9, rgb(0.68, 0.38, 0.04));
+        } else {
+          y -= 14;
+        }
       }
     }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import type {
   HouseRoomConnectionChecklistItem,
   HouseRoomDoorwaySuggestion,
@@ -38,6 +38,12 @@ import {
   type FloorMaterial,
 } from "@/lib/floor-materials";
 import type { RoomPlanShape, RoomType } from "@/lib/room-types";
+import {
+  SURFACE_MATERIAL_RENDER_REGISTRY,
+  getSurfaceMaterialTextureSource,
+  getRuntimeSurfaceMaterialById,
+  type SurfaceMaterialRenderInfo,
+} from "@/lib/surface-material-runtime";
 import type { EditorViewMode } from "./EditorViewToggle";
 import FloorPlanUploadPanel from "./FloorPlanUploadPanel";
 import FloorPlanToolStrip, { type FloorPlanTool } from "./FloorPlanToolStrip";
@@ -46,6 +52,8 @@ import RoomConnectionChecklist from "./RoomConnectionChecklist";
 
 export type PlanStartMode = "start" | "draw" | "upload" | "template";
 type RoomSetupStep = "start" | "confirm" | "openings" | "furnish" | "done";
+type CollapsiblePlanSection = "roomSetup" | "planQuality" | "selectedRoom" | "connections";
+type FlooringFilterId = "wood" | "stone" | "light" | "warm" | "grey" | "waterproof" | "outdoor";
 
 type HouseRoomTemplate = {
   id: HouseRoomTemplateId;
@@ -95,6 +103,82 @@ function getFloorMaterialSwatchStyle(material: FloorMaterial): CSSProperties {
   };
 }
 
+const FLOORING_FILTERS: Array<{ id: FlooringFilterId; label: string }> = [
+  { id: "wood", label: "Wood look" },
+  { id: "stone", label: "Stone look" },
+  { id: "light", label: "Light" },
+  { id: "warm", label: "Warm" },
+  { id: "grey", label: "Grey" },
+  { id: "waterproof", label: "Waterproof" },
+  { id: "outdoor", label: "Outdoor" },
+];
+
+function formatSurfaceMaterialValue(value: string) {
+  return value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function getSurfaceMaterialSupplierLabel(material: SurfaceMaterialRenderInfo) {
+  return material.surface_material.brand ?? formatSurfaceMaterialValue(material.surface_material.supplier);
+}
+
+function getSurfaceMaterialSwatchStyle(material: SurfaceMaterialRenderInfo): CSSProperties {
+  const textureSource = getSurfaceMaterialTextureSource(material);
+  if (textureSource) {
+    return {
+      backgroundColor: "#e8e2d6",
+      backgroundImage: `url("${textureSource.url}")`,
+      backgroundPosition: "center",
+      backgroundSize: textureSource.kind === "swatch" ? "cover" : "48px 48px",
+    };
+  }
+
+  const effect = material.classification?.design_effect;
+  const colorFamily = material.classification?.color_family;
+  const base =
+    colorFamily === "grey"
+      ? "#cfd3d4"
+      : colorFamily === "charcoal"
+        ? "#5f6365"
+        : colorFamily === "brown" || colorFamily === "walnut"
+          ? "#8c6848"
+          : colorFamily === "cream" || colorFamily === "beige"
+            ? "#dfd2bd"
+            : "#d8c29a";
+  const line = effect === "stone" || effect === "marble" ? "#9ea1a3" : "#a9855e";
+
+  return {
+    backgroundColor: base,
+    backgroundImage:
+      effect === "stone" || effect === "marble" || effect === "concrete"
+        ? `linear-gradient(135deg, ${base}, #f4f0e8), radial-gradient(circle at 28% 35%, ${line}77 0 1px, transparent 2px)`
+        : `repeating-linear-gradient(0deg, transparent 0 8px, ${line}66 8px 9px), linear-gradient(135deg, ${base}, #f0e3c8)`,
+  };
+}
+
+function surfaceMaterialMatchesFilter(material: SurfaceMaterialRenderInfo, filterId: FlooringFilterId) {
+  const classification = material.classification;
+  const specs = material.physical_specs;
+  if (filterId === "wood") return classification?.design_effect === "wood";
+  if (filterId === "stone") {
+    return ["stone", "marble", "concrete", "terrazzo"].includes(classification?.design_effect ?? "");
+  }
+  if (filterId === "light") {
+    return ["light_oak", "natural_oak", "cream", "beige", "white"].includes(
+      classification?.color_family ?? ""
+    );
+  }
+  if (filterId === "warm") {
+    return (
+      ["warm_oak", "walnut", "brown", "natural_oak"].includes(classification?.color_family ?? "") ||
+      Boolean(classification?.tone.includes("warm"))
+    );
+  }
+  if (filterId === "grey") return classification?.color_family === "grey";
+  if (filterId === "waterproof") return specs?.waterproof === true;
+  if (filterId === "outdoor") return specs?.suitable_for_outdoor === true;
+  return true;
+}
+
 type DesignControlsPlanPanelProps = {
   dark: boolean;
   isClientPreview: boolean;
@@ -132,6 +216,7 @@ type DesignControlsPlanPanelProps = {
   visiblePlanOpening: RoomOpening2D | null;
   visiblePlanOpeningRoomName: string;
   visiblePlanOpeningWallSpanMeters: number;
+  visiblePlanOpeningMaxHeightMeters: number;
   planRoomCount: number;
   planItemCount: number;
   planOpeningCount: number;
@@ -216,6 +301,7 @@ type DesignControlsPlanPanelProps = {
     metrics: {
       widthMeters?: number;
       offsetMeters?: number;
+      heightMeters?: number;
       kind?: RoomOpening2D["kind"];
     }
   ) => void;
@@ -258,6 +344,7 @@ export default function DesignControlsPlanPanel({
   visiblePlanOpening,
   visiblePlanOpeningRoomName,
   visiblePlanOpeningWallSpanMeters,
+  visiblePlanOpeningMaxHeightMeters,
   planRoomCount,
   planItemCount,
   planOpeningCount,
@@ -342,9 +429,17 @@ export default function DesignControlsPlanPanel({
   const [localPlanStartMode, setLocalPlanStartMode] = useState<PlanStartMode>("start");
   const [roomSetupStep, setRoomSetupStep] = useState<RoomSetupStep>("confirm");
   const [roomFinishPanelOpen, setRoomFinishPanelOpen] = useState(false);
+  const [flooringSearch, setFlooringSearch] = useState("");
+  const [activeFlooringFilters, setActiveFlooringFilters] = useState<FlooringFilterId[]>([]);
   const [templateBedroomFilter, setTemplateBedroomFilter] = useState<"all" | "studio" | "one" | "two">("all");
   const [templateFootprintFilter, setTemplateFootprintFilter] = useState<"all" | "compact" | "narrow" | "wide">("all");
   const [templateStyleFilter, setTemplateStyleFilter] = useState<"all" | "open" | "separated" | "adu">("all");
+  const [collapsedPlanSections, setCollapsedPlanSections] = useState<Record<CollapsiblePlanSection, boolean>>({
+    roomSetup: false,
+    planQuality: false,
+    selectedRoom: false,
+    connections: false,
+  });
   const templatePickerRef = useRef<HTMLDivElement | null>(null);
   const planStartMode = controlledPlanStartMode ?? localPlanStartMode;
   const setPlanStartMode = (mode: PlanStartMode) => {
@@ -362,6 +457,10 @@ export default function DesignControlsPlanPanel({
   const titleClass = dark
     ? "designer-text-primary text-sm font-semibold"
     : "text-sm font-semibold text-neutral-800";
+  const isPlanSectionCollapsed = (section: CollapsiblePlanSection) => collapsedPlanSections[section];
+  const setPlanSectionCollapsed = (section: CollapsiblePlanSection, collapsed: boolean) => {
+    setCollapsedPlanSections((current) => ({ ...current, [section]: collapsed }));
+  };
   const planStartButtonClass = (mode: Exclude<PlanStartMode, "start">) => {
     const isActive = planStartMode === mode;
     if (dark) {
@@ -434,9 +533,10 @@ export default function DesignControlsPlanPanel({
       Boolean(floorPlanUnderlay) ||
       floorPlanTraceRoomMode ||
       floorPlanTraceRoomPointCount > 0);
-  const hasConnectionBlockers = roomConnectionChecklistItems.some(
+  const connectionBlockerCount = roomConnectionChecklistItems.filter(
     (item) => item.status === "needs_doorway"
-  );
+  ).length;
+  const hasConnectionBlockers = connectionBlockerCount > 0;
   const hasRooms = planRoomCount > 0;
   const hasStartedFurniture = planItemCount > 0;
   const hasOpenings = planOpeningCount > 0;
@@ -483,7 +583,9 @@ export default function DesignControlsPlanPanel({
     ? `${planOpeningCount} openings placed.`
     : "Openings optional.";
   const consumerPlanConnectionSummary =
-    roomConnectionChecklistItems.length > 0 ? "Add doorway links from Connections." : "";
+    connectionBlockerCount > 0
+      ? `Add ${connectionBlockerCount} doorway${connectionBlockerCount === 1 ? "" : "s"}.`
+      : "";
   const consumerPlanNextSteps = [
     `${planRoomCount} room${planRoomCount === 1 ? "" : "s"} ready.`,
     consumerPlanOpeningSummary,
@@ -591,6 +693,61 @@ export default function DesignControlsPlanPanel({
   const progressSecondaryActionClass = dark
     ? "rounded-lg border border-white/15 px-2.5 py-1.5 text-[11px] font-semibold text-neutral-100 disabled:opacity-50"
     : "rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-neutral-800 hover:bg-neutral-100 disabled:opacity-50";
+  const collapsedToggleClass = dark
+    ? "shrink-0 rounded-lg border border-white/15 px-2.5 py-1.5 text-[11px] font-semibold text-neutral-200 hover:bg-white/10"
+    : "shrink-0 rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-neutral-700 hover:bg-neutral-100";
+  const renderCollapsibleHeader = ({
+    section,
+    title,
+    subtitle,
+    accessory,
+  }: {
+    section: CollapsiblePlanSection;
+    title: string;
+    subtitle?: ReactNode;
+    accessory?: ReactNode;
+  }) => {
+    const collapsed = isPlanSectionCollapsed(section);
+
+    return (
+      <div className="flex items-start justify-between gap-3">
+        <button
+          type="button"
+          data-testid={`plan-section-toggle-${section}`}
+          aria-expanded={!collapsed}
+          className="min-w-0 flex-1 text-left focus:outline-none"
+          onClick={() => setPlanSectionCollapsed(section, !collapsed)}
+        >
+          <span className="flex min-w-0 items-center gap-2">
+            <span
+              aria-hidden="true"
+              className={
+                dark
+                  ? "flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/10 text-[11px] font-semibold text-neutral-200"
+                  : "flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-[11px] font-semibold text-neutral-700"
+              }
+            >
+              {collapsed ? "+" : "-"}
+            </span>
+            <span className={titleClass}>{title}</span>
+          </span>
+          {subtitle ? <span className={progressMetaClass}>{subtitle}</span> : null}
+        </button>
+        <div className="flex shrink-0 items-center gap-2">
+          {accessory}
+          <button
+            type="button"
+            className={collapsedToggleClass}
+            aria-label={`${collapsed ? "Expand" : "Collapse"} ${title.toLowerCase()}`}
+            aria-expanded={!collapsed}
+            onClick={() => setPlanSectionCollapsed(section, !collapsed)}
+          >
+            {collapsed ? "Expand" : "Collapse"}
+          </button>
+        </div>
+      </div>
+    );
+  };
   const templateBedroomButtonClass = (active: boolean) =>
     [
       "h-9 rounded-full px-2 text-xs font-semibold transition disabled:opacity-50",
@@ -650,6 +807,9 @@ export default function DesignControlsPlanPanel({
     ].join(" ");
   };
   const activeFloorMaterial = getFloorMaterialById(activeRoomFloorMaterialId);
+  const activeSurfaceMaterial = getRuntimeSurfaceMaterialById(activeRoomFloorMaterialId);
+  const activeFloorDisplayName =
+    activeSurfaceMaterial?.surface_material.product_name ?? activeFloorMaterial.name;
   const activeFloorRotationDeg = normalizeFloorRotationDeg(activeRoomFloorRotationDeg);
   const activeFloorScale = clampFloorPatternScale(activeRoomFloorScale);
   const recommendedFloorMaterials = getRecommendedFloorMaterials(activeRoomType).slice(0, 4);
@@ -658,6 +818,44 @@ export default function DesignControlsPlanPanel({
     ...recommendedFloorMaterials,
     ...FLOOR_MATERIALS.filter((material) => !recommendedFloorMaterialIds.has(material.id)),
   ];
+  const visibleSurfaceMaterials = useMemo(
+    () =>
+      SURFACE_MATERIAL_RENDER_REGISTRY.filter((material) =>
+        isDesigner ? true : material.import_governance.publish_status === "published"
+      ),
+    [isDesigner]
+  );
+  const filteredSurfaceMaterials = useMemo(() => {
+    const search = flooringSearch.trim().toLowerCase();
+    return visibleSurfaceMaterials.filter((material) => {
+      const searchable = [
+        material.surface_material.product_name,
+        material.surface_material.material_id,
+        getSurfaceMaterialSupplierLabel(material),
+        material.surface_material.material_family,
+        material.classification?.design_effect,
+        material.classification?.color_family,
+        ...(material.classification?.tone ?? []),
+        ...(material.classification?.style_cluster ?? []),
+        ...(material.classification?.room_suitability ?? []),
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      const matchesSearch = !search || searchable.includes(search);
+      const matchesFilters = activeFlooringFilters.every((filterId) =>
+        surfaceMaterialMatchesFilter(material, filterId)
+      );
+      return matchesSearch && matchesFilters;
+    });
+  }, [activeFlooringFilters, flooringSearch, visibleSurfaceMaterials]);
+  const toggleFlooringFilter = (filterId: FlooringFilterId) => {
+    setActiveFlooringFilters((current) =>
+      current.includes(filterId)
+        ? current.filter((entry) => entry !== filterId)
+        : [...current, filterId]
+    );
+  };
   const floorMaterialMetaClass = dark
     ? "block text-[10px] text-neutral-400"
     : "block text-[10px] text-neutral-500";
@@ -731,7 +929,7 @@ export default function DesignControlsPlanPanel({
     },
   ];
   const floorMaterialButtonClass = (materialId: string) => {
-    const isSelected = activeFloorMaterial.id === materialId;
+    const isSelected = !activeSurfaceMaterial && activeFloorMaterial.id === materialId;
     if (dark) {
       return [
         "flex min-w-0 items-center gap-2 rounded-lg border px-2 py-2 text-left text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-50",
@@ -744,9 +942,199 @@ export default function DesignControlsPlanPanel({
       "flex min-w-0 items-center gap-2 rounded-lg border px-2 py-2 text-left text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-50",
       isSelected
         ? "border-emerald-300 bg-emerald-50 text-emerald-900"
-        : "border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50",
+      : "border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50",
     ].join(" ");
   };
+  const surfaceMaterialCardClass = (materialId: string) => {
+    const isSelected = activeRoomFloorMaterialId === materialId;
+    if (dark) {
+      return [
+        "rounded-lg border p-2 text-left transition disabled:cursor-not-allowed disabled:opacity-50",
+        isSelected
+          ? "border-emerald-300/45 bg-emerald-400/15"
+          : "border-white/10 bg-white/5 hover:bg-white/10",
+      ].join(" ");
+    }
+    return [
+      "rounded-lg border p-2 text-left transition disabled:cursor-not-allowed disabled:opacity-50",
+      isSelected
+        ? "border-emerald-300 bg-emerald-50"
+        : "border-neutral-200 bg-white hover:bg-neutral-50",
+    ].join(" ");
+  };
+  const renderSurfaceMaterialBrowser = () => (
+    <div
+      data-testid="room-surfaces-floor-panel"
+      className={
+        dark
+          ? "mt-2 rounded-lg border border-white/10 bg-white/5 p-2"
+          : "mt-2 rounded-lg border border-neutral-200 bg-neutral-50 p-2"
+      }
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className={dark ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-neutral-900"}>
+            Room Surfaces
+          </div>
+          <div className={progressMetaClass}>Floor · {activeFloorDisplayName}</div>
+        </div>
+        {activeSurfaceMaterial?.import_governance.publish_status === "draft" && isDesigner ? (
+          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-800">
+            Draft
+          </span>
+        ) : null}
+      </div>
+      <label className="mt-2 block">
+        <span className={dark ? "sr-only" : "sr-only"}>Search flooring</span>
+        <input
+          type="search"
+          value={flooringSearch}
+          onChange={(event) => setFlooringSearch(event.currentTarget.value)}
+          placeholder="Search flooring"
+          className={
+            dark
+              ? "h-9 w-full rounded-lg border border-white/10 bg-[#10131a] px-2.5 text-sm text-neutral-100 outline-none placeholder:text-neutral-500"
+              : "h-9 w-full rounded-lg border border-neutral-200 bg-white px-2.5 text-sm text-neutral-900 outline-none placeholder:text-neutral-400"
+          }
+        />
+      </label>
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        {FLOORING_FILTERS.map((filter) => {
+          const selected = activeFlooringFilters.includes(filter.id);
+          return (
+            <button
+              key={filter.id}
+              type="button"
+              className={
+                selected
+                  ? "rounded-full bg-emerald-600 px-2 py-1 text-[11px] font-semibold text-white"
+                  : dark
+                    ? "rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-semibold text-neutral-300"
+                    : "rounded-full border border-neutral-200 bg-white px-2 py-1 text-[11px] font-semibold text-neutral-600"
+              }
+              onClick={() => toggleFlooringFilter(filter.id)}
+            >
+              {filter.label}
+            </button>
+          );
+        })}
+      </div>
+      <div className="mt-2 grid gap-2">
+        {filteredSurfaceMaterials.length > 0 ? (
+          filteredSurfaceMaterials.map((material) => {
+            const materialId = material.surface_material.material_id;
+            const sampleUrl =
+              material.commerce?.sample_request_url ??
+              material.source?.sample_request_url ??
+              null;
+            const blockers = material.import_governance.publish_blockers ?? [];
+            const sampleAvailable = material.commerce?.sample_available;
+            return (
+              <div
+                key={materialId}
+                data-testid={`surface-floor-material-${materialId}`}
+                className={surfaceMaterialCardClass(materialId)}
+              >
+                <div className="flex gap-2">
+                  <span
+                    className="h-12 w-12 shrink-0 rounded-md border border-black/10"
+                    style={getSurfaceMaterialSwatchStyle(material)}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className={dark ? "truncate text-xs font-semibold text-neutral-100" : "truncate text-xs font-semibold text-neutral-900"}>
+                      {material.surface_material.product_name}
+                    </div>
+                    <div className={floorMaterialMetaClass}>
+                      {getSurfaceMaterialSupplierLabel(material)} · {formatSurfaceMaterialValue(material.surface_material.material_family)}
+                    </div>
+                    <div className={floorMaterialMetaClass}>
+                      Sample {sampleAvailable === true ? "available" : sampleAvailable === "unknown" ? "unknown" : "not confirmed"}
+                    </div>
+                    {isDesigner ? (
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800">
+                          {material.import_governance.publish_status.replace(/_/g, " ")}
+                        </span>
+                        {material.physical_specs?.waterproof === true ? (
+                          <span className="rounded-full bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700">
+                            waterproof
+                          </span>
+                        ) : null}
+                        {material.physical_specs?.suitable_for_outdoor === true ? (
+                          <span className="rounded-full bg-lime-50 px-1.5 py-0.5 text-[10px] font-semibold text-lime-700">
+                            outdoor
+                          </span>
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+                {isDesigner ? (
+                  <div className={dark ? "mt-2 text-[11px] text-neutral-400" : "mt-2 text-[11px] text-neutral-500"}>
+                    <div>
+                      Specs: thickness {material.physical_specs?.total_thickness_mm ?? "TBC"}mm · wear layer {material.physical_specs?.wear_layer_mm ?? "TBC"}mm
+                    </div>
+                    {blockers.length > 0 ? (
+                      <div className="mt-1 text-amber-700">
+                        Blockers: {blockers.slice(0, 3).map((blocker) => blocker.replace(/_/g, " ")).join(", ")}
+                        {blockers.length > 3 ? ` +${blockers.length - 3}` : ""}
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    className={progressSecondaryActionClass}
+                    disabled={!canEdit}
+                    onClick={() => onApplyFloorMaterialToRoom(materialId)}
+                  >
+                    Apply room
+                  </button>
+                  <button
+                    type="button"
+                    className={progressSecondaryActionClass}
+                    disabled={!canEdit}
+                    onClick={() => onApplyFloorMaterialToAllRooms(materialId)}
+                  >
+                    Apply all
+                  </button>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {sampleUrl ? (
+                    <a
+                      href={sampleUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={dark ? "text-[11px] font-semibold text-blue-300" : "text-[11px] font-semibold text-blue-700"}
+                    >
+                      Request sample
+                    </a>
+                  ) : null}
+                  {isDesigner && material.source?.source_url ? (
+                    <a
+                      href={material.source.source_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={dark ? "text-[11px] font-semibold text-neutral-300" : "text-[11px] font-semibold text-neutral-600"}
+                    >
+                      Source
+                    </a>
+                  ) : null}
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div className={dark ? "rounded-lg border border-white/10 p-3 text-xs text-neutral-400" : "rounded-lg border border-neutral-200 bg-white p-3 text-xs text-neutral-500"}>
+            {isDesigner
+              ? "No flooring materials match the current search."
+              : "No published flooring materials are available yet."}
+          </div>
+        )}
+      </div>
+    </div>
+  );
   const startDrawRoomSetup = () => {
     setRoomSetupStep("confirm");
     setPlanStartMode("draw");
@@ -757,6 +1145,7 @@ export default function DesignControlsPlanPanel({
     if (action === "add_window") return "Add window";
     if (action === "add_doorway") return "Add doorway";
     if (action === "add_storage") return "Add storage";
+    if (action === "review_plan_layout") return "Review plan";
     return "Review furniture fit";
   };
   const handlePlanQualityAction = (action: FloorPlanQualityAction, issue?: FloorPlanQualityIssue) => {
@@ -773,6 +1162,9 @@ export default function DesignControlsPlanPanel({
       onGoFurnish();
       return;
     }
+    if (action === "review_plan_layout") {
+      return;
+    }
     onGoFurnish();
   };
   const renderPlanQualityCard = () => {
@@ -780,75 +1172,82 @@ export default function DesignControlsPlanPanel({
     const topIssues = floorPlanQualityReport.issues.slice(0, 3);
     return (
       <div data-testid="plan-quality-card" className={progressCardClass}>
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <div className={titleClass}>Plan quality</div>
-            <div className={progressMetaClass}>
+        {renderCollapsibleHeader({
+          section: "planQuality",
+          title: "Plan quality",
+          subtitle: (
+            <>
               {floorPlanQualityReport.label} · {floorPlanQualityReport.score}/100
-            </div>
-          </div>
-          <span
-            data-testid="plan-quality-label"
-            className={
-              floorPlanQualityReport.label === "Looks good"
-                ? progressReadyClass
-                : progressTodoClass
-            }
-          >
-            {floorPlanQualityReport.label}
-          </span>
-        </div>
-        {topIssues.length > 0 ? (
-          <div data-testid="plan-quality-fixes" className="mt-3 grid gap-1.5">
-            {topIssues.map((issue, index) => (
-              <details
-                key={issue.id}
-                data-testid={`plan-quality-issue-${index}`}
-                className={
-                  dark
-                    ? "rounded-md bg-white/5 px-2.5 py-1.5 text-[11px] text-neutral-300"
-                    : "rounded-md bg-neutral-50 px-2.5 py-1.5 text-[11px] text-neutral-600"
-                }
-              >
-                <summary className="cursor-pointer font-semibold">
-                  {issue.suggestedFix}
-                </summary>
-                <div className={dark ? "mt-1 text-neutral-400" : "mt-1 text-neutral-500"}>
-                  {issue.detail}
-                </div>
-                <button
-                  type="button"
-                  data-testid={`plan-quality-issue-action-${index}`}
-                  className={`${progressSecondaryActionClass} mt-2 min-h-8 w-full`}
-                  disabled={!canEdit}
-                  onClick={() => handlePlanQualityAction(issue.action, issue)}
-                >
-                  {getPlanQualityActionLabel(issue.action)}
-                </button>
-              </details>
-            ))}
-          </div>
-        ) : (
-          <div className={progressMetaClass}>
-            The main room links, daylight, and furniture footprint look ready.
-          </div>
+            </>
+          ),
+          accessory: (
+            <span
+              data-testid="plan-quality-label"
+              className={
+                floorPlanQualityReport.label === "Looks good"
+                  ? progressReadyClass
+                  : progressTodoClass
+              }
+            >
+              {floorPlanQualityReport.label}
+            </span>
+          ),
+        })}
+        {!isPlanSectionCollapsed("planQuality") && (
+          <>
+            {topIssues.length > 0 ? (
+              <div data-testid="plan-quality-fixes" className="mt-3 grid gap-1.5">
+                {topIssues.map((issue, index) => (
+                  <details
+                    key={issue.id}
+                    data-testid={`plan-quality-issue-${index}`}
+                    className={
+                      dark
+                        ? "rounded-md bg-white/5 px-2.5 py-1.5 text-[11px] text-neutral-300"
+                        : "rounded-md bg-neutral-50 px-2.5 py-1.5 text-[11px] text-neutral-600"
+                    }
+                  >
+                    <summary className="cursor-pointer font-semibold">
+                      {issue.suggestedFix}
+                    </summary>
+                    <div className={dark ? "mt-1 text-neutral-400" : "mt-1 text-neutral-500"}>
+                      {issue.detail}
+                    </div>
+                    <button
+                      type="button"
+                      data-testid={`plan-quality-issue-action-${index}`}
+                      className={`${progressSecondaryActionClass} mt-2 min-h-8 w-full`}
+                      disabled={!canEdit}
+                      onClick={() => handlePlanQualityAction(issue.action, issue)}
+                    >
+                      {getPlanQualityActionLabel(issue.action)}
+                    </button>
+                  </details>
+                ))}
+              </div>
+            ) : (
+              <div className={progressMetaClass}>
+                The main room links, daylight, and furniture footprint look ready.
+              </div>
+            )}
+            <button
+              type="button"
+              data-testid="plan-quality-primary-action"
+              className={`${progressActionClass} mt-3 min-h-10 w-full`}
+              disabled={!canEdit}
+              onClick={() =>
+                handlePlanQualityAction(
+                  floorPlanQualityReport.primaryAction.action,
+                  floorPlanQualityReport.issues.find(
+                    (issue) => issue.action === floorPlanQualityReport.primaryAction.action
+                  )
+                )
+              }
+            >
+              {floorPlanQualityReport.primaryAction.label}
+            </button>
+          </>
         )}
-        <button
-          type="button"
-          data-testid="plan-quality-primary-action"
-          className={`${progressActionClass} mt-3 min-h-10 w-full`}
-          disabled={!canEdit}
-          onClick={() =>
-            handlePlanQualityAction(
-              floorPlanQualityReport.primaryAction.action,
-              floorPlanQualityReport.issues.find(
-                (issue) => issue.action === floorPlanQualityReport.primaryAction.action
-              )
-            )
-          }
-        >
-          {floorPlanQualityReport.primaryAction.label}
-        </button>
       </div>
     );
   };
@@ -857,10 +1256,11 @@ export default function DesignControlsPlanPanel({
     <div>
       {showRoomSetupWizard && (
         <div data-testid="room-setup-wizard" className={progressCardClass}>
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <div className={titleClass}>Room setup</div>
-              <div className={progressMetaClass}>
+          {renderCollapsibleHeader({
+            section: "roomSetup",
+            title: "Room setup",
+            subtitle: (
+              <>
                 {!planGuidedActionsEnabled
                   ? hasRooms
                     ? `${activeRoomName} · ${roomWidth.toFixed(1)} x ${roomDepth.toFixed(1)}m`
@@ -876,47 +1276,51 @@ export default function DesignControlsPlanPanel({
                         : roomSetupActiveStep === "furnish"
                           ? "The room outline is ready."
                           : "Ready for review."}
-              </div>
-            </div>
-            <span className={!planGuidedActionsEnabled || hasRooms ? progressReadyClass : progressTodoClass}>
-              {!planGuidedActionsEnabled ? "Manual" : hasRooms ? "Room ready" : "Start"}
-            </span>
-          </div>
+              </>
+            ),
+            accessory: (
+              <span className={!planGuidedActionsEnabled || hasRooms ? progressReadyClass : progressTodoClass}>
+                {!planGuidedActionsEnabled ? "Manual" : hasRooms ? "Room ready" : "Start"}
+              </span>
+            ),
+          })}
 
-          <div
-            data-testid="plan-guided-actions-panel-toggle"
-            className={
-              dark
-                ? "mt-3 grid grid-cols-[auto_1fr] items-center gap-2 rounded-lg bg-white/5 p-1.5"
-                : "mt-3 grid grid-cols-[auto_1fr] items-center gap-2 rounded-lg bg-neutral-50 p-1.5"
-            }
-            role="group"
-            aria-label="Plan action mode"
-          >
-            <span className={dark ? "px-1.5 text-[11px] font-semibold text-neutral-300" : "px-1.5 text-[11px] font-semibold text-neutral-600"}>
-              Actions
-            </span>
-            <div className="grid grid-cols-2 gap-1">
-              <button
-                type="button"
-                data-testid="plan-guided-actions-panel-guided"
-                data-active={planGuidedActionsEnabled ? "true" : "false"}
-                className={guidedActionsModeButtonClass(planGuidedActionsEnabled)}
-                onClick={() => onPlanGuidedActionsEnabledChange(true)}
+          {!isPlanSectionCollapsed("roomSetup") && (
+            <>
+              <div
+                data-testid="plan-guided-actions-panel-toggle"
+                className={
+                  dark
+                    ? "mt-3 grid grid-cols-[auto_1fr] items-center gap-2 rounded-lg bg-white/5 p-1.5"
+                    : "mt-3 grid grid-cols-[auto_1fr] items-center gap-2 rounded-lg bg-neutral-50 p-1.5"
+                }
+                role="group"
+                aria-label="Plan action mode"
               >
-                Guided
-              </button>
-              <button
-                type="button"
-                data-testid="plan-guided-actions-panel-manual"
-                data-active={!planGuidedActionsEnabled ? "true" : "false"}
-                className={guidedActionsModeButtonClass(!planGuidedActionsEnabled)}
-                onClick={() => onPlanGuidedActionsEnabledChange(false)}
-              >
-                Manual
-              </button>
-            </div>
-          </div>
+                <span className={dark ? "px-1.5 text-[11px] font-semibold text-neutral-300" : "px-1.5 text-[11px] font-semibold text-neutral-600"}>
+                  Actions
+                </span>
+                <div className="grid grid-cols-2 gap-1">
+                  <button
+                    type="button"
+                    data-testid="plan-guided-actions-panel-guided"
+                    data-active={planGuidedActionsEnabled ? "true" : "false"}
+                    className={guidedActionsModeButtonClass(planGuidedActionsEnabled)}
+                    onClick={() => onPlanGuidedActionsEnabledChange(true)}
+                  >
+                    Guided
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="plan-guided-actions-panel-manual"
+                    data-active={!planGuidedActionsEnabled ? "true" : "false"}
+                    className={guidedActionsModeButtonClass(!planGuidedActionsEnabled)}
+                    onClick={() => onPlanGuidedActionsEnabledChange(false)}
+                  >
+                    Manual
+                  </button>
+                </div>
+              </div>
 
           {!planGuidedActionsEnabled ? (
             <div data-testid="manual-plan-setup" className="mt-3 grid gap-2">
@@ -1225,7 +1629,7 @@ export default function DesignControlsPlanPanel({
                       <div className="min-w-0">
                         <div className={progressLabelClass}>{activeRoomName}</div>
                         <div className={progressMetaClass}>
-                          {activeRoomTypeLabel} · {roomWidth.toFixed(1)} x {roomDepth.toFixed(1)}m · {activeFloorMaterial.name}
+                          {activeRoomTypeLabel} · {roomWidth.toFixed(1)} x {roomDepth.toFixed(1)}m · {activeFloorDisplayName}
                         </div>
                       </div>
                       <span className={progressReadyClass}>{activeRoomArea.toFixed(0)} m2</span>
@@ -1235,7 +1639,7 @@ export default function DesignControlsPlanPanel({
                     <div className="flex items-center justify-between gap-3">
                       <div className="min-w-0">
                         <div className={progressLabelClass}>Floor finish</div>
-                        <div className={progressMetaClass}>{activeFloorMaterial.name}</div>
+                        <div className={progressMetaClass}>{activeFloorDisplayName}</div>
                       </div>
                       <button
                         type="button"
@@ -1468,6 +1872,8 @@ export default function DesignControlsPlanPanel({
                   </button>
                 </div>
               )}
+            </>
+          )}
             </>
           )}
         </div>
@@ -1830,86 +2236,97 @@ export default function DesignControlsPlanPanel({
       )}
       {showPlanDetails && hasRooms && (
         <div data-testid="contextual-plan-inspector" className={progressCardClass}>
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <div className={titleClass}>
-                {visiblePlanOpening
-                  ? visiblePlanOpening.kind === "door"
-                    ? "Selected door"
-                    : "Selected window"
-                  : "Selected room"}
-              </div>
-              <div className={progressMetaClass}>
-                {visiblePlanOpening
-                  ? `${visiblePlanOpeningRoomName} · ${(visiblePlanOpening.widthMm / 1000).toFixed(2)}m wide`
-                  : `${activeRoomName} · ${activeRoomTypeLabel}`}
-              </div>
-            </div>
-            {!visiblePlanOpening && (
+          {renderCollapsibleHeader({
+            section: "selectedRoom",
+            title: visiblePlanOpening
+              ? visiblePlanOpening.kind === "door"
+                ? "Selected door"
+                : "Selected window"
+              : "Selected room",
+            subtitle: visiblePlanOpening
+              ? `${visiblePlanOpeningRoomName} · ${(visiblePlanOpening.widthMm / 1000).toFixed(2)}m wide`
+              : `${activeRoomName} · ${activeRoomTypeLabel}`,
+            accessory: !visiblePlanOpening ? (
               <span className={progressReadyClass}>
                 {roomWidth.toFixed(1)} x {roomDepth.toFixed(1)}m
               </span>
-            )}
-          </div>
+            ) : null,
+          })}
 
-          {!visiblePlanOpening && (
+          {!isPlanSectionCollapsed("selectedRoom") && (
             <>
-              <div data-testid="selected-room-floor-finish" className={`${progressRowClass} mt-3`}>
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className={progressLabelClass}>Floor finish</div>
-                    <div className={progressMetaClass}>{activeFloorMaterial.name}</div>
-                  </div>
-                  <button
-                    type="button"
-                    data-testid="plan-change-floor-finish"
-                    className={progressSecondaryActionClass}
-                    disabled={!canEdit}
-                    onClick={() => setRoomFinishPanelOpen((open) => !open)}
-                  >
-                    {roomFinishPanelOpen ? "Hide" : "Change floor"}
-                  </button>
-                </div>
-              </div>
-              {roomFinishPanelOpen && (
-                <div
-                  data-testid="plan-floor-finish-options"
-                  className={
-                    dark
-                      ? "mt-2 rounded-lg border border-white/10 bg-white/5 p-2"
-                      : "mt-2 rounded-lg border border-neutral-200 bg-neutral-50 p-2"
-                  }
-                >
-                  <div className="grid grid-cols-2 gap-2">
-                    {selectableFloorMaterials.map((material) => (
+              {!visiblePlanOpening && (
+                <>
+                  <div data-testid="selected-room-floor-finish" className={`${progressRowClass} mt-3`}>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className={progressLabelClass}>Floor finish</div>
+                        <div className={progressMetaClass}>{activeFloorDisplayName}</div>
+                      </div>
                       <button
-                        key={material.id}
                         type="button"
-                        data-testid={`plan-floor-material-${material.id}`}
-                        className={floorMaterialButtonClass(material.id)}
+                        data-testid="plan-change-floor-finish"
+                        className={progressSecondaryActionClass}
                         disabled={!canEdit}
-                        onClick={() => onApplyFloorMaterialToRoom(material.id)}
+                        onClick={() => setRoomFinishPanelOpen((open) => !open)}
                       >
-                        <span
-                          className="h-8 w-8 shrink-0 rounded-md border border-black/10"
-                          style={getFloorMaterialSwatchStyle(material)}
-                        />
-                        <span className="min-w-0 text-left">
-                          <span className="block truncate">{material.name}</span>
-                          <span className={floorMaterialMetaClass}>{material.category}</span>
-                        </span>
+                        {roomFinishPanelOpen ? "Hide" : "Change floor"}
                       </button>
-                    ))}
+                    </div>
                   </div>
-                  <button
-                    type="button"
-                    className={`${progressSecondaryActionClass} mt-2 min-h-10 w-full`}
-                    onClick={() => onApplyFloorMaterialToAllRooms(activeFloorMaterial.id)}
-                    disabled={!canEdit}
-                  >
-                    Apply this floor to all rooms
-                  </button>
-                </div>
+              {roomFinishPanelOpen && (
+                <>
+                  {renderSurfaceMaterialBrowser()}
+                  <details className="mt-2">
+                    <summary
+                      className={
+                        dark
+                          ? "cursor-pointer text-xs font-semibold text-neutral-300"
+                          : "cursor-pointer text-xs font-semibold text-neutral-600"
+                      }
+                    >
+                      Starter visual finishes
+                    </summary>
+                    <div
+                      data-testid="plan-floor-finish-options"
+                      className={
+                        dark
+                          ? "mt-2 rounded-lg border border-white/10 bg-white/5 p-2"
+                          : "mt-2 rounded-lg border border-neutral-200 bg-neutral-50 p-2"
+                      }
+                    >
+                      <div className="grid grid-cols-2 gap-2">
+                        {selectableFloorMaterials.map((material) => (
+                          <button
+                            key={material.id}
+                            type="button"
+                            data-testid={`plan-floor-material-${material.id}`}
+                            className={floorMaterialButtonClass(material.id)}
+                            disabled={!canEdit}
+                            onClick={() => onApplyFloorMaterialToRoom(material.id)}
+                          >
+                            <span
+                              className="h-8 w-8 shrink-0 rounded-md border border-black/10"
+                              style={getFloorMaterialSwatchStyle(material)}
+                            />
+                            <span className="min-w-0 text-left">
+                              <span className="block truncate">{material.name}</span>
+                              <span className={floorMaterialMetaClass}>{material.category}</span>
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        className={`${progressSecondaryActionClass} mt-2 min-h-10 w-full`}
+                        onClick={() => onApplyFloorMaterialToAllRooms(activeSurfaceMaterial?.surface_material.material_id ?? activeFloorMaterial.id)}
+                        disabled={!canEdit}
+                      >
+                        Apply this starter finish to all rooms
+                      </button>
+                    </div>
+                  </details>
+                </>
               )}
               <details className="mt-2">
                 <summary
@@ -1966,19 +2383,22 @@ export default function DesignControlsPlanPanel({
                   Apply size
                 </button>
               </details>
-            </>
-          )}
+                </>
+              )}
 
-          {visiblePlanOpening && (
-            <div className="mt-3">
-              <PlanOpeningInspector
-                opening={visiblePlanOpening}
-                roomName={visiblePlanOpeningRoomName}
-                wallSpanMeters={visiblePlanOpeningWallSpanMeters}
-                dark={dark}
-                onChange={onUpdateOpeningMetrics}
-              />
-            </div>
+              {visiblePlanOpening && (
+                <div className="mt-3">
+                  <PlanOpeningInspector
+                    opening={visiblePlanOpening}
+                    roomName={visiblePlanOpeningRoomName}
+                    wallSpanMeters={visiblePlanOpeningWallSpanMeters}
+                    maxHeightMeters={visiblePlanOpeningMaxHeightMeters}
+                    dark={dark}
+                    onChange={onUpdateOpeningMetrics}
+                  />
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
@@ -2292,18 +2712,19 @@ export default function DesignControlsPlanPanel({
             <div>
               <div className={titleClass}>Floor finish</div>
               <div className={progressMetaClass}>
-                {activeFloorMaterial.name} in {activeRoomName}.
+                {activeFloorDisplayName} in {activeRoomName}.
               </div>
             </div>
             <button
               type="button"
               className={progressSecondaryActionClass}
               disabled={!canEdit}
-              onClick={() => onApplyFloorMaterialToAllRooms(activeFloorMaterial.id)}
+              onClick={() => onApplyFloorMaterialToAllRooms(activeSurfaceMaterial?.surface_material.material_id ?? activeFloorMaterial.id)}
             >
               Apply all
             </button>
           </div>
+          {renderSurfaceMaterialBrowser()}
           <details className="mt-2">
             <summary
               className={
@@ -2312,7 +2733,7 @@ export default function DesignControlsPlanPanel({
                   : "cursor-pointer text-xs font-semibold text-neutral-600"
               }
             >
-              Choose finish
+              Starter visual finishes
             </summary>
             <div className="mt-2 grid grid-cols-2 gap-2">
               {recommendedFloorMaterials.map((material) => (
@@ -2540,6 +2961,9 @@ export default function DesignControlsPlanPanel({
             items={roomConnectionChecklistItems}
             disabled={isClientPreview}
             dark={dark}
+            variant={isDesigner ? "pro" : "consumer"}
+            collapsed={isPlanSectionCollapsed("connections")}
+            onCollapsedChange={(collapsed) => setPlanSectionCollapsed("connections", collapsed)}
             onAddDoorway={onAddSuggestedDoorway}
           />
         </div>

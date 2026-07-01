@@ -9,6 +9,7 @@ import type {
   DesignItem,
   DesignSnapshot,
   LayoutVersion,
+  RoomSurfaceAssignments,
   RoomSurfaceOpacity,
   RoomSurfaceFinishes,
   RoomSnapshot,
@@ -34,6 +35,7 @@ export interface StoredDesign {
     planPosition?: { x: number; z: number };
     planShape?: string;
     planPolygon?: Array<{ x: number; z: number }>;
+    surfaces?: RoomSurfaceAssignments;
     surfaceFinishes?: RoomSurfaceFinishes;
     surfaceOpacity?: RoomSurfaceOpacity;
     ceilingVisible?: boolean;
@@ -108,7 +110,8 @@ export function snapshotToStored(snapshot: DesignSnapshot): StoredDesign {
       planPosition: room.planPosition,
       planShape: room.planShape,
       planPolygon: room.planPolygon,
-      surfaceFinishes: room.surfaceFinishes ? { ...room.surfaceFinishes } : undefined,
+      surfaces: room.surfaces ? { ...room.surfaces } : room.surfaceFinishes ? { ...room.surfaceFinishes } : undefined,
+      surfaceFinishes: room.surfaceFinishes ? { ...room.surfaceFinishes } : room.surfaces ? { ...room.surfaces } : undefined,
       surfaceOpacity: room.surfaceOpacity ? { ...room.surfaceOpacity } : undefined,
       ceilingVisible: room.ceilingVisible,
       items: room.items,
@@ -136,6 +139,8 @@ export function storedToSnapshot(stored: StoredDesign): DesignSnapshot {
       version: 3,
       rooms: stored.rooms.map((room) => ({
         ...(room as RoomSnapshot),
+        surfaces: room.surfaces ?? room.surfaceFinishes,
+        surfaceFinishes: room.surfaceFinishes ?? room.surfaces,
         layoutVersions: room.layoutVersions ?? [],
       })),
       activeRoomId: stored.activeRoomId,

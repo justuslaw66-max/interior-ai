@@ -77,6 +77,7 @@ import {
   getFloorMaterialById,
   normalizeFloorRotationDeg,
 } from "@/lib/floor-materials";
+import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
 import {
   countRoomCategories,
   countRoomProductQuantities,
@@ -93,6 +94,7 @@ import {
   doesCatalogPlacementCollide,
   findCatalogPlacementCollision,
   findCatalogPlacementPlanRoomAtWorldPoint,
+  isCatalogPlacementFootprintInsideRoom,
   updatePendingCatalogPlacementDraft as resolvePendingCatalogPlacementDraft,
   type PendingCatalogPlacement,
 } from "@/lib/catalog-placement";
@@ -109,7 +111,6 @@ import type { EditorSaveStatus } from "@/components/editor/EditorCommandBar";
 import BetaFeedbackWidget from "@/components/BetaFeedbackWidget";
 import DesignControlsPanel from "@/components/editor/DesignControlsPanel";
 import type { PlanStartMode } from "@/components/editor/DesignControlsPlanPanel";
-import EditorHistoryFeedback from "@/components/editor/EditorHistoryFeedback";
 import ExportReadinessPreview from "@/components/editor/ExportReadinessPreview";
 import FloorPropertiesPanel from "@/components/editor/FloorPropertiesPanel";
 import EditorViewToggle, { type EditorViewMode } from "@/components/editor/EditorViewToggle";
@@ -126,7 +127,13 @@ import ShoppingOverviewPanel from "@/components/editor/ShoppingOverviewPanel";
 import SelectedItemDetailsPanel from "@/components/editor/SelectedItemDetailsPanel";
 import SelectedItemRotationControls from "@/components/editor/SelectedItemRotationControls";
 import { CanvasErrorBoundary } from "@/components/CanvasErrorBoundary";
-import { metersToMm, radiansToDeg, type RoomOpening2D } from "@/lib/editorScene";
+import {
+  metersToMm,
+  radiansToDeg,
+  type EditorAnnotation2D,
+  type FixedElement2D,
+  type RoomOpening2D,
+} from "@/lib/editorScene";
 import { applyFloorPlanScaleCalibration } from "@/lib/floor-plan-calibration";
 import {
   resolveOpeningPlacementFromPoint,
@@ -134,6 +141,7 @@ import {
   validateTracedOpeningPlacement,
 } from "@/lib/floor-plan-tracing";
 import type {
+  FloorPlanUnderlay,
   FloorPlanDrawRoomMode,
   FloorPlanPoint,
 } from "@/lib/floor-plan-types";
@@ -151,17 +159,20 @@ import {
   ROOM_SIZE_PRESETS,
   buildHousePlan2D,
   buildHouseRoomConnectionChecklist,
+  buildHouseRoomDoorwaySuggestions,
   doesHouseRoomOverlap,
   getRoomTypeLabel,
   resolveNewRoomName,
   resolveFloorPlanDrawCancelDecision,
   resolveFloorPlanOpeningCancelDecision,
+  resolveHouseRoomDimensionEditPlacement,
   resolvePlanFitZoom,
   roundPlanCoordinate,
   type HousePlanRoom2D,
   type HousePlanTemplate,
   type HousePlanTemplateApplyOptions,
   type HousePlanTemplateFurnishingIntent,
+  type HouseRoomDoorwaySuggestion,
   type RoomSizePresetId,
 } from "@/lib/design-page-house-plan";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
@@ -169,7 +180,12 @@ import { resolvePlanCanvasGuidance } from "@/lib/plan-canvas-guidance";
 import { useDesignPageHousePlanState } from "@/lib/useDesignPageHousePlanState";
 import { useDesignPageFloorPlanWorkflowState } from "@/lib/useDesignPageFloorPlanWorkflowState";
 import { useDesignPagePlanActions } from "@/lib/useDesignPagePlanActions";
-import { useDesignPagePlanState } from "@/lib/useDesignPagePlanState";
+import {
+  useDesignPagePlanState,
+  type ExportStylePreset,
+  type PlanLayers,
+  type PlanTheme,
+} from "@/lib/useDesignPagePlanState";
 import { useFloorPlanRoomCreation } from "@/lib/useFloorPlanRoomCreation";
 import { useFloorPlanRoomDrawing } from "@/lib/useFloorPlanRoomDrawing";
 import {
@@ -190,6 +206,8 @@ import {
   upsertImportedCatalogItem,
 } from "@/lib/catalog/imported-model-assembly";
 import {
+  getHighResolutionSwatchUrl,
+  getMaterialDisplayLabel,
 } from "@/lib/catalog/variant-normalization";
 import { mapToTopCategory } from "@/lib/catalog/view-builders";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
@@ -208,6 +226,8 @@ import {
 } from "@/lib/design-page-export-readiness";
 import { buildDesignSelectionContext } from "@/lib/design-page-selection-context";
 import {
+  AUBURN_CONFIGURATION_GROUPS,
+  AUBURN_CONFIGURATION_PRODUCT_IDS,
   JARON_CONFIGURATION_GROUPS,
   JARON_CONFIGURATION_PRODUCT_IDS,
   MODEL_FAMILY_BY_PRODUCT_ID,
@@ -215,6 +235,7 @@ import {
   ARM_STYLE_OPTIONS_BY_PRODUCT_ID,
   LENGTH_OPTIONS_BY_PRODUCT_ID,
   ORIENTATION_OPTIONS_BY_PRODUCT_ID,
+  type AuburnConfigurationDiagramKey,
   type JaronConfigurationArmKey,
   type JaronConfigurationDiagramKey,
 } from "@/lib/design-page-model-maps";
@@ -236,6 +257,8 @@ import {
   type LayoutPlan,
   type AINotesResponse,
   PLAN_LAYER_PRESETS,
+  type PlanLayerPresetId,
+  type PlanMeasurementUnit,
 } from "@/lib/design-page-types";
 import {
   buildPendingAiLayoutProposal,
@@ -282,12 +305,14 @@ import {
   aabbIntersects,
   clampToRoom,
   footprintRadius,
+  getFurnitureWallInset,
   separateIfOverlapping,
 } from "@/lib/design-page-geometry";
 import { pickBestRugForSofa } from "@/lib/design-page-rug-sizing";
 import { useDesignPageProductSelectorState } from "@/lib/useDesignPageProductSelectorState";
 import { buildEditorScene2D } from "@/lib/design-page-plan-scene";
 import {
+  PLAN_OPENING_DEFAULT_HEIGHT_METERS,
   mapPlanAnnotationsToRoomRenderer,
   mapPlanFixedElementsToRoomRenderer,
   mapPlanOpeningsToRoomRenderer,
@@ -475,7 +500,7 @@ function CirculationHeatmapOverlay({
   roomOffset: { x: number; z: number };
 }) {
   return (
-    <group data-testid="circulation-heatmap" position={[roomOffset.x, 0.075, roomOffset.z]}>
+    <group userData={{ testId: "circulation-heatmap" }} position={[roomOffset.x, 0.075, roomOffset.z]}>
       {cells.map((cell) => {
         const color =
           cell.level === "blocked"
@@ -650,6 +675,155 @@ function resolveUnderlayWorldSize(params: {
   };
 }
 
+function getPlan2DRoomFitBounds(
+  rooms: HousePlanRoom2D[],
+  fallbackWidthMeters: number,
+  fallbackDepthMeters: number
+): { centerX: number; centerZ: number; widthMeters: number; depthMeters: number } {
+  if (rooms.length === 0) {
+    return {
+      centerX: 0,
+      centerZ: 0,
+      widthMeters: Math.max(0.1, fallbackWidthMeters),
+      depthMeters: Math.max(0.1, fallbackDepthMeters),
+    };
+  }
+
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minZ = Infinity;
+  let maxZ = -Infinity;
+
+  for (const room of rooms) {
+    const wallPadding = Math.max(0, room.wallThickness ?? 0) / 2;
+    minX = Math.min(minX, room.x - room.w / 2 - wallPadding);
+    maxX = Math.max(maxX, room.x + room.w / 2 + wallPadding);
+    minZ = Math.min(minZ, room.z - room.d / 2 - wallPadding);
+    maxZ = Math.max(maxZ, room.z + room.d / 2 + wallPadding);
+  }
+
+  if (
+    !Number.isFinite(minX) ||
+    !Number.isFinite(maxX) ||
+    !Number.isFinite(minZ) ||
+    !Number.isFinite(maxZ)
+  ) {
+    return {
+      centerX: 0,
+      centerZ: 0,
+      widthMeters: Math.max(0.1, fallbackWidthMeters),
+      depthMeters: Math.max(0.1, fallbackDepthMeters),
+    };
+  }
+
+  return {
+    centerX: (minX + maxX) / 2,
+    centerZ: (minZ + maxZ) / 2,
+    widthMeters: Math.max(0.1, maxX - minX),
+    depthMeters: Math.max(0.1, maxZ - minZ),
+  };
+}
+
+function getDoorwaySuggestionKey(suggestion: HouseRoomDoorwaySuggestion) {
+  return [
+    suggestion.roomId,
+    suggestion.adjacentRoomId,
+    suggestion.wall,
+    Math.round((suggestion.offsetMeters * 1000) / 50),
+    Math.round((suggestion.widthMeters * 1000) / 50),
+  ].join(":");
+}
+
+function getWallOffsetCenter(
+  room: HousePlanRoom2D,
+  wall: RoomOpening2D["wall"],
+  offsetMeters: number
+) {
+  if (wall === "north" || wall === "south") {
+    return {
+      x: room.x + offsetMeters,
+      z: room.z + (wall === "north" ? -room.d / 2 : room.d / 2),
+    };
+  }
+
+  return {
+    x: room.x + (wall === "west" ? -room.w / 2 : room.w / 2),
+    z: room.z + offsetMeters,
+  };
+}
+
+function getDoorwaySuggestionCenter(
+  suggestion: HouseRoomDoorwaySuggestion,
+  rooms: HousePlanRoom2D[]
+) {
+  const room = rooms.find((entry) => entry.id === suggestion.roomId);
+  return room ? getWallOffsetCenter(room, suggestion.wall, suggestion.offsetMeters) : null;
+}
+
+function getDeletedDoorwaySuggestionKeys(
+  opening: Pick<RoomOpening2D, "kind" | "roomId" | "wall" | "offsetMm" | "widthMm">,
+  rooms: HousePlanRoom2D[]
+) {
+  if (opening.kind !== "door") return [];
+
+  const openingRoom = opening.roomId
+    ? rooms.find((entry) => entry.id === opening.roomId)
+    : null;
+  const openingCenter = openingRoom
+    ? getWallOffsetCenter(openingRoom, opening.wall, opening.offsetMm / 1000)
+    : null;
+  const openingWidthMeters = opening.widthMm / 1000;
+  const openingOffsetMeters = opening.offsetMm / 1000;
+  const centerToleranceMeters = Math.max(0.35, openingWidthMeters / 2);
+  const widthToleranceMeters = Math.max(0.45, openingWidthMeters * 0.6);
+
+  const matchingKeys = buildHouseRoomDoorwaySuggestions(rooms)
+    .filter((suggestion) => {
+      const widthMatches =
+        Math.abs(suggestion.widthMeters - openingWidthMeters) <= widthToleranceMeters;
+
+      if (openingCenter) {
+        const suggestionCenter = getDoorwaySuggestionCenter(suggestion, rooms);
+        if (!suggestionCenter) return false;
+        const distance = Math.hypot(
+          suggestionCenter.x - openingCenter.x,
+          suggestionCenter.z - openingCenter.z
+        );
+        return widthMatches && distance <= centerToleranceMeters;
+      }
+
+      return (
+        widthMatches &&
+        suggestion.wall === opening.wall &&
+        Math.abs(suggestion.offsetMeters - openingOffsetMeters) <= centerToleranceMeters
+      );
+    })
+    .map(getDoorwaySuggestionKey);
+
+  return Array.from(new Set(matchingKeys));
+}
+
+type PlanOverlayDragKind = "opening" | "opening_resize" | "fixed" | "annotation";
+
+function getPlanOverlayMoveHistoryLabel(kind?: PlanOverlayDragKind) {
+  if (kind === "opening") return "Move opening";
+  if (kind === "opening_resize") return "Resize opening";
+  if (kind === "fixed") return "Move plan fixture";
+  if (kind === "annotation") return "Move annotation";
+  return "Move plan overlay";
+}
+
+const CASTLERY_JARON_CONFIGURATION_ICON_BASE =
+  "https://res.cloudinary.com/castlery/image/upload/w_384,f_auto,q_auto";
+
+const JARON_CONFIGURATION_ICON_BY_DIAGRAM: Record<JaronConfigurationDiagramKey, string> = {
+  "standard-3-seater": `${CASTLERY_JARON_CONFIGURATION_ICON_BASE}/v1774425945/knight/cms/swatch/icon/Dawson/Sofa_XXXcm.png`,
+  "standard-extended-3-seater": `${CASTLERY_JARON_CONFIGURATION_ICON_BASE}/v1774425946/knight/cms/swatch/icon/Dawson/3-Pc_Sofa_XXXcm.png`,
+  "chaise-sectional": `${CASTLERY_JARON_CONFIGURATION_ICON_BASE}/v1777345101/knight/cms/swatch/icon/Jaron_Chaise_Sectional_Sofa_Left_Facing.png`,
+  "l-shaped-sectional": `${CASTLERY_JARON_CONFIGURATION_ICON_BASE}/v1774425934/knight/cms/swatch/icon/Dawson/5-Pc_L-Shape_Sectional_Sofa.png`,
+  "recliner-armchair": `${CASTLERY_JARON_CONFIGURATION_ICON_BASE}/v1774425934/knight/cms/swatch/icon/Dawson/Armchair.png`,
+};
+
 function JaronConfigurationDiagram({
   diagram,
   active,
@@ -657,74 +831,121 @@ function JaronConfigurationDiagram({
   diagram: JaronConfigurationDiagramKey;
   active: boolean;
 }) {
-  const iconClass = `h-14 w-20 shrink-0 ${active ? "text-white" : "text-[#5a1327]"}`;
-  const lineProps = {
-    stroke: "currentColor",
-    strokeWidth: 2,
-    vectorEffect: "non-scaling-stroke" as const,
-  };
-
-  if (diagram === "chaise-sectional") {
-    return (
-      <svg
-        aria-hidden="true"
-        className={iconClass}
-        viewBox="0 0 96 64"
-        fill="none"
-      >
-        <path d="M16 16h60v28H16z" {...lineProps} />
-        <path d="M16 16h9v40h-9zM67 16h9v28h-9z" {...lineProps} />
-        <path d="M25 30h42M46 16v28M16 44h9" {...lineProps} />
-      </svg>
-    );
-  }
-
-  if (diagram === "l-shaped-sectional") {
-    return (
-      <svg
-        aria-hidden="true"
-        className={iconClass}
-        viewBox="0 0 96 64"
-        fill="none"
-      >
-        <path d="M16 14h62v24H16z" {...lineProps} />
-        <path d="M16 14h24v42H16z" {...lineProps} />
-        <path d="M25 14v42M40 26h38M55 14v24M16 38h24" {...lineProps} />
-      </svg>
-    );
-  }
-
-  if (diagram === "recliner-armchair") {
-    return (
-      <svg
-        aria-hidden="true"
-        className={iconClass}
-        viewBox="0 0 96 64"
-        fill="none"
-      >
-        <path d="M30 20h36v28H30z" {...lineProps} />
-        <path d="M22 20h8v28h-8zM66 20h8v28h-8z" {...lineProps} />
-        <path d="M30 34h36M36 48v6M60 48v6" {...lineProps} />
-      </svg>
-    );
-  }
-
-  const dividers = diagram === "standard-extended-3-seater" ? [35, 50, 65] : [48];
-
+  const iconSrc = JARON_CONFIGURATION_ICON_BY_DIAGRAM[diagram];
   return (
-    <svg
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
       aria-hidden="true"
-      className={iconClass}
-      viewBox="0 0 96 64"
-      fill="none"
-    >
-      <path d="M16 18h64v28H16z" {...lineProps} />
-      <path d="M16 18h9v28h-9zM71 18h9v28h-9z" {...lineProps} />
-      <path d="M25 31h46" {...lineProps} />
-      {dividers.map((x) => (
-        <path key={x} d={`M${x} 18v28`} {...lineProps} />
-      ))}
-    </svg>
+      alt=""
+      className="pointer-events-none h-14 w-24 shrink-0 object-contain"
+      decoding="async"
+      draggable={false}
+      loading="lazy"
+      src={iconSrc}
+      style={{
+        filter: active ? "brightness(0) invert(1)" : undefined,
+        transform: "scale(1.85)",
+        transformOrigin: "center",
+      }}
+    />
+  );
+}
+
+const CASTLERY_AUBURN_CONFIGURATION_ICON_BASE =
+  "https://res.cloudinary.com/castlery/image/upload/w_384,f_auto,q_auto";
+
+const HOUSE_PLAN_RENDERED_WALL_THICKNESS_METERS = 0.025;
+
+const AUBURN_CONFIGURATION_ICON_BY_DIAGRAM: Record<
+  AuburnConfigurationDiagramKey,
+  { src: string; mirror?: boolean }
+> = {
+  "standard-3-seater": {
+    src: `${CASTLERY_AUBURN_CONFIGURATION_ICON_BASE}/v1774425945/knight/cms/swatch/icon/Dawson/Sofa_XXXcm.png`,
+  },
+  "standard-3-seater-with-ottoman": {
+    src: `${CASTLERY_AUBURN_CONFIGURATION_ICON_BASE}/v1774425945/knight/cms/swatch/icon/Dawson/Sofa_with_Ottoman.png`,
+  },
+  "standard-extended-3-seater": {
+    src: `${CASTLERY_AUBURN_CONFIGURATION_ICON_BASE}/v1774425946/knight/cms/swatch/icon/Dawson/3-Pc_Sofa_XXXcm.png`,
+  },
+  "standard-extended-3-seater-with-ottoman": {
+    src: `${CASTLERY_AUBURN_CONFIGURATION_ICON_BASE}/v1774425940/knight/cms/swatch/icon/Dawson/Extended_Sofa_with_Ottoman.png`,
+  },
+  "curve-3-seater": {
+    src: `${CASTLERY_AUBURN_CONFIGURATION_ICON_BASE}/v1777341767/knight/cms/swatch/icon/Auburn/3-Pc_Curve_Sofa.png`,
+  },
+  "curve-3-seater-with-ottoman": {
+    src: `${CASTLERY_AUBURN_CONFIGURATION_ICON_BASE}/v1777341353/knight/cms/swatch/icon/Auburn/Auburn_Performance_Fabric_Curve_Sofa_with_Ottoman.png`,
+  },
+  "armless-curve-3-seater": {
+    src: `${CASTLERY_AUBURN_CONFIGURATION_ICON_BASE}/v1777341758/knight/cms/swatch/icon/Auburn/3-Pc_Armless_Curve_Sofa.png`,
+  },
+  "armless-curve-3-seater-with-ottoman": {
+    src: `${CASTLERY_AUBURN_CONFIGURATION_ICON_BASE}/v1777341353/knight/cms/swatch/icon/Auburn/Auburn_Performance_Fabric_Armless_Curve_Sofa_with_Ottoman.png`,
+  },
+  "chaise-sectional-left": {
+    src: `${CASTLERY_AUBURN_CONFIGURATION_ICON_BASE}/v1774425935/knight/cms/swatch/icon/Dawson/Chaise_Sectional_Sofa_Left_Facing.png`,
+  },
+  "chaise-sectional-right": {
+    src: `${CASTLERY_AUBURN_CONFIGURATION_ICON_BASE}/v1774425935/knight/cms/swatch/icon/Dawson/Chaise_Sectional_Sofa_Left_Facing.png`,
+    mirror: true,
+  },
+  "chaise-sectional-left-with-ottoman": {
+    src: `${CASTLERY_AUBURN_CONFIGURATION_ICON_BASE}/v1774489378/knight/cms/swatch/icon/Mori/Chaise-Sectional-Sofa-Left_Facing-with-Ottoman.png`,
+  },
+  "chaise-sectional-right-with-ottoman": {
+    src: `${CASTLERY_AUBURN_CONFIGURATION_ICON_BASE}/v1774489378/knight/cms/swatch/icon/Mori/Chaise-Sectional-Sofa-Left_Facing-with-Ottoman.png`,
+    mirror: true,
+  },
+  sectional: {
+    src: `${CASTLERY_AUBURN_CONFIGURATION_ICON_BASE}/v1777341742/knight/cms/swatch/icon/Auburn/4-Piece_L-Shape_Sectional_Sofa.png`,
+  },
+  "sectional-with-ottoman": {
+    src: `${CASTLERY_AUBURN_CONFIGURATION_ICON_BASE}/v1777341742/knight/cms/swatch/icon/Auburn/4-Piece_L-Shape_Sectional_Sofa.png`,
+  },
+  "curve-l-shape-sectional": {
+    src: `${CASTLERY_AUBURN_CONFIGURATION_ICON_BASE}/v1777341742/knight/cms/swatch/icon/Auburn/4-Piece_L-Shape_Sectional_Sofa.png`,
+  },
+  "curve-l-shape-sectional-with-ottoman": {
+    src: `${CASTLERY_AUBURN_CONFIGURATION_ICON_BASE}/v1777341354/knight/cms/swatch/icon/Auburn/Auburn_Performance_Fabric_Curve_L-Shape_Sectional_Sofa_with_Ottoman.png`,
+  },
+  "l-shape-sectional": {
+    src: `${CASTLERY_AUBURN_CONFIGURATION_ICON_BASE}/v1777341353/knight/cms/swatch/icon/Auburn/Auburn_Performance_Fabric_Extended_L-Shape_Sectional_Sofa.png`,
+  },
+  "l-shape-sectional-with-ottoman": {
+    src: `${CASTLERY_AUBURN_CONFIGURATION_ICON_BASE}/v1777341354/knight/cms/swatch/icon/Auburn/Auburn_Performance_Fabric_L-Shape_Sectional_Sofa_with_Ottoman.png`,
+  },
+};
+
+function AuburnConfigurationDiagram({
+  diagram,
+  active,
+  compact = false,
+}: {
+  diagram: AuburnConfigurationDiagramKey;
+  active: boolean;
+  compact?: boolean;
+}) {
+  const iconSizeClass = compact ? "h-10 w-16" : "h-14 w-24";
+  const icon = AUBURN_CONFIGURATION_ICON_BY_DIAGRAM[diagram];
+  const iconTransform = `${icon.mirror ? "scaleX(-1) " : ""}scale(${compact ? 1.7 : 1.85})`;
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      aria-hidden="true"
+      alt=""
+      className={`${iconSizeClass} pointer-events-none shrink-0 object-contain`}
+      decoding="async"
+      draggable={false}
+      loading="lazy"
+      src={icon.src}
+      style={{
+        filter: active ? "brightness(0) invert(1)" : undefined,
+        transform: iconTransform,
+        transformOrigin: "center",
+      }}
+    />
   );
 }
 
@@ -807,7 +1028,7 @@ function PlanQualityHintOverlay({
   };
 
   return (
-    <group data-testid="plan-quality-hints">
+    <group userData={{ testId: "plan-quality-hints" }}>
       {hintedIssues.map((issue) => {
         const roomId = issue.target?.roomId ?? issue.roomId;
         const room = roomId ? roomById.get(roomId) : null;
@@ -853,8 +1074,14 @@ function PageContent() {
   const paywallVariantOverride = searchParams.get("paywall_variant");
   const paywallOpenParam = searchParams.get("paywall_open");
   const plansOpenParam = searchParams.get("plans_open");
+  const debugLayoutParam = searchParams.get("debug_layout");
   const [sofaDragging, setSofaDragging] = useState(false);
   const [planRoomDragging, setPlanRoomDragging] = useState(false);
+  const [planRoomResizing, setPlanRoomResizing] = useState(false);
+  const [planOverlayDragging, setPlanOverlayDragging] = useState(false);
+  const planRoomDragHistoryActiveRef = useRef(false);
+  const planRoomResizeHistoryActiveRef = useRef(false);
+  const planOverlayDragHistoryActiveRef = useRef(false);
   const [designId, setDesignId] = useState<string | null>(null);
   const [shareToken, setShareToken] = useState<string | null>(null);
   const [shareEnabled, setShareEnabled] = useState(false);
@@ -931,14 +1158,22 @@ function PageContent() {
   const [placementPreferencesLoaded, setPlacementPreferencesLoaded] = useState(false);
   const [snapToast, setSnapToast] = useState(false);
   const [ruleToast, setRuleToast] = useState<string | null>(null);
-  const [undoToast, setUndoToast] = useState<{ label: string } | null>(null);
-  const [historyFeedback, setHistoryFeedback] = useState<string | null>(null);
+  const [, bumpHistoryRevision] = useState(0);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [commandPaletteQuery, setCommandPaletteQuery] = useState("");
   const [showBetaStart, setShowBetaStart] = useState(false);
   const [lightingPreset, setLightingPreset] = useState<LightingPreset>("studio");
   const [viewMode, setViewMode] = useState<EditorViewMode>("3d");
   const [designPanelOpen, setDesignPanelOpen] = useState(true);
+  const [designPanelCollapsed, setDesignPanelCollapsed] = useState(false);
+  const [scenePerformanceCollapsed, setScenePerformanceCollapsed] = useState(true);
   const [planFocusPanelRevealed, setPlanFocusPanelRevealed] = useState(false);
   const [dismissedPlanCanvasGuidanceKey, setDismissedPlanCanvasGuidanceKey] = useState<string | null>(null);
+  const [planDebugMetrics, setPlanDebugMetrics] = useState({
+    zoom: 0,
+    visibleLabelCount: 0,
+  });
+  const [showLayoutDebugOverlay, setShowLayoutDebugOverlay] = useState(false);
   const [consumerPlanCompletionSignal, setConsumerPlanCompletionSignal] = useState<{
     id: number;
     kind: "room" | "opening";
@@ -946,32 +1181,156 @@ function PageContent() {
   const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
   const {
     planTheme,
-    setPlanTheme,
+    setPlanTheme: setPlanThemeState,
     planLayers,
-    setPlanLayers,
+    setPlanLayers: setPlanLayersState,
     planAnnotations,
-    setPlanAnnotations,
+    setPlanAnnotations: setPlanAnnotationsState,
     planOpenings,
-    setPlanOpenings,
+    setPlanOpenings: setPlanOpeningsState,
     planFixedElements,
-    setPlanFixedElements,
+    setPlanFixedElements: setPlanFixedElementsState,
     simplePlanControls,
     setSimplePlanControls,
     planLayerPreset,
-    setPlanLayerPreset,
+    setPlanLayerPreset: setPlanLayerPresetState,
     planMeasurementUnit,
-    setPlanMeasurementUnit,
+    setPlanMeasurementUnit: setPlanMeasurementUnitState,
     exportStylePreset,
-    setExportStylePreset,
+    setExportStylePreset: setExportStylePresetState,
     planGuidedActionsEnabled,
     setPlanGuidedActionsEnabled,
     planGuidedActionsChoiceSeen,
     setPlanGuidedActionsChoiceSeen,
+    planOpeningsStorageState,
     planSettingsLoaded,
   } = useDesignPagePlanState();
+  const planOpeningsRef = useRef(planOpenings);
+  const planAnnotationsRef = useRef(planAnnotations);
+  const planFixedElementsRef = useRef(planFixedElements);
+  const planThemeRef = useRef(planTheme);
+  const planLayersRef = useRef(planLayers);
+  const planLayerPresetRef = useRef(planLayerPreset);
+  const planMeasurementUnitRef = useRef(planMeasurementUnit);
+  const exportStylePresetRef = useRef(exportStylePreset);
+  const setPlanOpenings = useCallback(
+    (next: RoomOpening2D[] | ((prev: RoomOpening2D[]) => RoomOpening2D[])) => {
+      const resolved =
+        typeof next === "function"
+          ? (next as (prev: RoomOpening2D[]) => RoomOpening2D[])(planOpeningsRef.current)
+          : next;
+      planOpeningsRef.current = resolved;
+      setPlanOpeningsState(resolved);
+    },
+    [setPlanOpeningsState]
+  );
+  const setPlanAnnotations = useCallback(
+    (
+      next:
+        | EditorAnnotation2D[]
+        | ((prev: EditorAnnotation2D[]) => EditorAnnotation2D[])
+    ) => {
+      const resolved =
+        typeof next === "function"
+          ? (next as (prev: EditorAnnotation2D[]) => EditorAnnotation2D[])(
+              planAnnotationsRef.current
+            )
+          : next;
+      planAnnotationsRef.current = resolved;
+      setPlanAnnotationsState(resolved);
+    },
+    [setPlanAnnotationsState]
+  );
+  const setPlanFixedElements = useCallback(
+    (
+      next: FixedElement2D[] | ((prev: FixedElement2D[]) => FixedElement2D[])
+    ) => {
+      const resolved =
+        typeof next === "function"
+          ? (next as (prev: FixedElement2D[]) => FixedElement2D[])(
+              planFixedElementsRef.current
+            )
+          : next;
+      planFixedElementsRef.current = resolved;
+      setPlanFixedElementsState(resolved);
+    },
+    [setPlanFixedElementsState]
+  );
+  const setPlanTheme = useCallback(
+    (next: PlanTheme | ((prev: PlanTheme) => PlanTheme)) => {
+      const resolved =
+        typeof next === "function"
+          ? (next as (prev: PlanTheme) => PlanTheme)(planThemeRef.current)
+          : next;
+      planThemeRef.current = resolved;
+      setPlanThemeState(resolved);
+    },
+    [setPlanThemeState]
+  );
+  const setPlanLayers = useCallback(
+    (next: PlanLayers | ((prev: PlanLayers) => PlanLayers)) => {
+      const resolved =
+        typeof next === "function"
+          ? (next as (prev: PlanLayers) => PlanLayers)(planLayersRef.current)
+          : next;
+      planLayersRef.current = resolved;
+      setPlanLayersState(resolved);
+    },
+    [setPlanLayersState]
+  );
+  const setPlanLayerPreset = useCallback(
+    (
+      next:
+        | PlanLayerPresetId
+        | ((prev: PlanLayerPresetId) => PlanLayerPresetId)
+    ) => {
+      const resolved =
+        typeof next === "function"
+          ? (next as (prev: PlanLayerPresetId) => PlanLayerPresetId)(
+              planLayerPresetRef.current
+            )
+          : next;
+      planLayerPresetRef.current = resolved;
+      setPlanLayerPresetState(resolved);
+    },
+    [setPlanLayerPresetState]
+  );
+  const setPlanMeasurementUnit = useCallback(
+    (
+      next:
+        | PlanMeasurementUnit
+        | ((prev: PlanMeasurementUnit) => PlanMeasurementUnit)
+    ) => {
+      const resolved =
+        typeof next === "function"
+          ? (next as (prev: PlanMeasurementUnit) => PlanMeasurementUnit)(
+              planMeasurementUnitRef.current
+            )
+          : next;
+      planMeasurementUnitRef.current = resolved;
+      setPlanMeasurementUnitState(resolved);
+    },
+    [setPlanMeasurementUnitState]
+  );
+  const setExportStylePreset = useCallback(
+    (
+      next: ExportStylePreset | ((prev: ExportStylePreset) => ExportStylePreset)
+    ) => {
+      const resolved =
+        typeof next === "function"
+          ? (next as (prev: ExportStylePreset) => ExportStylePreset)(
+              exportStylePresetRef.current
+            )
+          : next;
+      exportStylePresetRef.current = resolved;
+      setExportStylePresetState(resolved);
+    },
+    [setExportStylePresetState]
+  );
+  const defaultPlanOpeningsSeededRef = useRef(false);
   const {
     floorPlanUnderlay,
-    setFloorPlanUnderlay,
+    setFloorPlanUnderlay: setFloorPlanUnderlayState,
     floorPlanCalibrationMode,
     floorPlanCalibrationPoints,
     setFloorPlanCalibrationPoints,
@@ -1012,7 +1371,27 @@ function PageContent() {
     activateFloorPlanOpeningTrace,
     clearFloorPlanTraceBuffers,
   } = useDesignPageFloorPlanWorkflowState();
+  const floorPlanUnderlayRef = useRef(floorPlanUnderlay);
+  const setFloorPlanUnderlay = useCallback(
+    (
+      next:
+        | FloorPlanUnderlay
+        | null
+        | ((prev: FloorPlanUnderlay | null) => FloorPlanUnderlay | null)
+    ) => {
+      const resolved =
+        typeof next === "function"
+          ? (next as (prev: FloorPlanUnderlay | null) => FloorPlanUnderlay | null)(
+              floorPlanUnderlayRef.current
+            )
+          : next;
+      floorPlanUnderlayRef.current = resolved;
+      setFloorPlanUnderlayState(resolved);
+    },
+    [setFloorPlanUnderlayState]
+  );
   const [selectedPlanOverlayId, setSelectedPlanOverlayId] = useState<string | null>(null);
+  const [suppressedDoorwaySuggestionKeys, setSuppressedDoorwaySuggestionKeys] = useState<string[]>([]);
   const [selectedPlanRoomId, setSelectedPlanRoomId] = useState<string | null>(null);
   const [pendingRoomRenameId, setPendingRoomRenameId] = useState<string | null>(null);
   const [pendingRoomRenameValue, setPendingRoomRenameValue] = useState("");
@@ -1079,6 +1458,33 @@ function PageContent() {
     window.addEventListener("resize", updateViewportSize);
     return () => window.removeEventListener("resize", updateViewportSize);
   }, []);
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production") return;
+
+    let storedPreference = false;
+    try {
+      storedPreference = window.localStorage.getItem("design_layout_debug") === "1";
+    } catch {
+      storedPreference = false;
+    }
+
+    setShowLayoutDebugOverlay(debugLayoutParam === "1" || storedPreference);
+  }, [debugLayoutParam]);
+  const handlePlanDebugMetricsChange = useCallback(
+    (next: { zoom: number; visibleLabelCount: number }) => {
+      setPlanDebugMetrics((current) =>
+        current.zoom === next.zoom && current.visibleLabelCount === next.visibleLabelCount
+          ? current
+          : next
+      );
+    },
+    []
+  );
+  useEffect(() => {
+    if (!designPanelOpen) {
+      setDesignPanelCollapsed(false);
+    }
+  }, [designPanelOpen]);
 
   const wantsDesigner = urlMode === "designer";
   const canUseDesigner = plan === "pro";
@@ -1227,18 +1633,6 @@ function PageContent() {
       setPlacementPreferencesLoaded(true);
     }
   }, []);
-
-  useEffect(() => {
-    if (!undoToast) return;
-    const timer = window.setTimeout(() => setUndoToast(null), 4800);
-    return () => window.clearTimeout(timer);
-  }, [undoToast]);
-
-  useEffect(() => {
-    if (!historyFeedback) return;
-    const timer = window.setTimeout(() => setHistoryFeedback(null), 2600);
-    return () => window.clearTimeout(timer);
-  }, [historyFeedback]);
 
   useEffect(() => {
     if (!scenePerformanceModeLoaded || typeof window === "undefined") return;
@@ -1761,6 +2155,18 @@ function PageContent() {
   type Zone = ZoneMin;
 
   type DesignSnapshot = MultiRoomSnapshot;
+  type DesignHistorySnapshot = {
+    designSnapshot: DesignSnapshot;
+    planAnnotations: EditorAnnotation2D[];
+    planFixedElements: FixedElement2D[];
+    planOpenings: RoomOpening2D[];
+    planTheme: PlanTheme;
+    planLayers: PlanLayers;
+    planLayerPreset: PlanLayerPresetId;
+    planMeasurementUnit: PlanMeasurementUnit;
+    exportStylePreset: ExportStylePreset;
+    floorPlanUnderlay: FloorPlanUnderlay | null;
+  };
 
   const fetchShareStatus = async (id?: string) => {
     const targetId = id ?? designId;
@@ -1929,10 +2335,21 @@ function PageContent() {
     },
   } as unknown as DesignSnapshot);
 
-  const [designSnapshot, setDesignSnapshot] = useState<DesignSnapshot>(
+  const [designSnapshot, setDesignSnapshotState] = useState<DesignSnapshot>(
     defaultSnapshot
   );
   const designSnapshotRef = useRef(designSnapshot);
+  const setDesignSnapshot = useCallback(
+    (next: DesignSnapshot | ((prev: DesignSnapshot) => DesignSnapshot)) => {
+      const resolved =
+        typeof next === "function"
+          ? (next as (prev: DesignSnapshot) => DesignSnapshot)(designSnapshotRef.current)
+          : next;
+      designSnapshotRef.current = resolved;
+      setDesignSnapshotState(resolved);
+    },
+    []
+  );
   const previousSelectedPlanActiveRoomIdRef = useRef<string | null>(null);
   const [localBackupHydrated, setLocalBackupHydrated] = useState(false);
   const [liveCatalogReady, setLiveCatalogReady] = useState(false);
@@ -1944,6 +2361,42 @@ function PageContent() {
   useEffect(() => {
     designSnapshotRef.current = designSnapshot;
   }, [designSnapshot]);
+
+  useEffect(() => {
+    planOpeningsRef.current = planOpenings;
+  }, [planOpenings]);
+
+  useEffect(() => {
+    planAnnotationsRef.current = planAnnotations;
+  }, [planAnnotations]);
+
+  useEffect(() => {
+    planFixedElementsRef.current = planFixedElements;
+  }, [planFixedElements]);
+
+  useEffect(() => {
+    planThemeRef.current = planTheme;
+  }, [planTheme]);
+
+  useEffect(() => {
+    planLayersRef.current = planLayers;
+  }, [planLayers]);
+
+  useEffect(() => {
+    planLayerPresetRef.current = planLayerPreset;
+  }, [planLayerPreset]);
+
+  useEffect(() => {
+    planMeasurementUnitRef.current = planMeasurementUnit;
+  }, [planMeasurementUnit]);
+
+  useEffect(() => {
+    exportStylePresetRef.current = exportStylePreset;
+  }, [exportStylePreset]);
+
+  useEffect(() => {
+    floorPlanUnderlayRef.current = floorPlanUnderlay;
+  }, [floorPlanUnderlay]);
 
   useEffect(() => {
     let cancelled = false;
@@ -2031,17 +2484,96 @@ function PageContent() {
   }, []);
 
   // Initialize HistoryManager (once)
-  const historyRef = useRef<HistoryManager<DesignSnapshot> | null>(null);
+  const historyRef = useRef<HistoryManager<DesignHistorySnapshot> | null>(null);
   if (!historyRef.current) {
     historyRef.current = new HistoryManager(
-      () => designSnapshotRef.current,
+      () => ({
+        designSnapshot: designSnapshotRef.current,
+        planAnnotations: planAnnotationsRef.current,
+        planFixedElements: planFixedElementsRef.current,
+        planOpenings: planOpeningsRef.current,
+        planTheme: planThemeRef.current,
+        planLayers: planLayersRef.current,
+        planLayerPreset: planLayerPresetRef.current,
+        planMeasurementUnit: planMeasurementUnitRef.current,
+        exportStylePreset: exportStylePresetRef.current,
+        floorPlanUnderlay: floorPlanUnderlayRef.current,
+      }),
       (snapshot) => {
-        designSnapshotRef.current = snapshot;
-        setDesignSnapshot(snapshot);
-      }
+        designSnapshotRef.current = snapshot.designSnapshot;
+        setDesignSnapshot(snapshot.designSnapshot);
+        planAnnotationsRef.current = snapshot.planAnnotations;
+        setPlanAnnotationsState(snapshot.planAnnotations);
+        planFixedElementsRef.current = snapshot.planFixedElements;
+        setPlanFixedElementsState(snapshot.planFixedElements);
+        planOpeningsRef.current = snapshot.planOpenings;
+        setPlanOpeningsState(snapshot.planOpenings);
+        planThemeRef.current = snapshot.planTheme;
+        setPlanThemeState(snapshot.planTheme);
+        planLayersRef.current = snapshot.planLayers;
+        setPlanLayersState(snapshot.planLayers);
+        planLayerPresetRef.current = snapshot.planLayerPreset;
+        setPlanLayerPresetState(snapshot.planLayerPreset);
+        planMeasurementUnitRef.current = snapshot.planMeasurementUnit;
+        setPlanMeasurementUnitState(snapshot.planMeasurementUnit);
+        exportStylePresetRef.current = snapshot.exportStylePreset;
+        setExportStylePresetState(snapshot.exportStylePreset);
+        floorPlanUnderlayRef.current = snapshot.floorPlanUnderlay;
+        setFloorPlanUnderlayState(snapshot.floorPlanUnderlay);
+      },
+      () => bumpHistoryRevision((revision) => revision + 1)
     );
   }
   const history = historyRef.current!;
+  const coalescedHistoryCommitTimerRef = useRef<number | null>(null);
+  const coalescedHistoryActiveRef = useRef(false);
+
+  const flushCoalescedHistoryTransaction = useCallback(() => {
+    if (coalescedHistoryCommitTimerRef.current !== null) {
+      window.clearTimeout(coalescedHistoryCommitTimerRef.current);
+      coalescedHistoryCommitTimerRef.current = null;
+    }
+    if (!coalescedHistoryActiveRef.current) return;
+    history.commit();
+    coalescedHistoryActiveRef.current = false;
+  }, [history]);
+
+  const runHistoryTransaction = useCallback(
+    (name: string, action: () => void) => {
+      flushCoalescedHistoryTransaction();
+      try {
+        history.begin(name);
+        action();
+        history.commit();
+      } catch (error) {
+        history.rollback();
+        throw error;
+      }
+    },
+    [flushCoalescedHistoryTransaction, history]
+  );
+
+  const runCoalescedHistoryTransaction = useCallback(
+    (name: string, action: () => void, idleMs = 420) => {
+      if (!coalescedHistoryActiveRef.current) {
+        history.begin(name);
+        coalescedHistoryActiveRef.current = true;
+      }
+      action();
+      if (coalescedHistoryCommitTimerRef.current !== null) {
+        window.clearTimeout(coalescedHistoryCommitTimerRef.current);
+      }
+      coalescedHistoryCommitTimerRef.current = window.setTimeout(() => {
+        coalescedHistoryCommitTimerRef.current = null;
+        if (!coalescedHistoryActiveRef.current) return;
+        history.commit();
+        coalescedHistoryActiveRef.current = false;
+      }, idleMs);
+    },
+    [history]
+  );
+
+  useEffect(() => flushCoalescedHistoryTransaction, [flushCoalescedHistoryTransaction]);
 
   const revokeFloorPlanUnderlayUrl = useCallback(() => {
     if (floorPlanUnderlayUrlRef.current && typeof URL !== "undefined") {
@@ -2092,6 +2624,10 @@ function PageContent() {
     (stored: StoredDesign) => fingerprintDesignSnapshot(storedToSnapshot(stored)),
     []
   );
+  const currentStoredDesignFingerprint = useMemo(
+    () => fingerprintStoredDesign(getStoredDesignForPersistence(designSnapshot)),
+    [designSnapshot, fingerprintStoredDesign, getStoredDesignForPersistence]
+  );
 
   const hydratePersistedFloorPlanState = useCallback(
     (snapshot: DesignSnapshot, clearWhenMissing = false) => {
@@ -2108,7 +2644,7 @@ function PageContent() {
         return;
       }
 
-      revokeFloorPlanUnderlayUrl();
+      history.begin("Apply plan template");
       floorPlanPdfSourceDataRef.current = null;
       setFloorPlanPdfSourceReady(false);
       setFloorPlanUnderlay(
@@ -2157,14 +2693,30 @@ function PageContent() {
     activeRoomPlanOffset,
     planViewWidth,
     planViewDepth,
-    handleAddRoom,
-    handleRenameRoom,
+    handleAddRoom: handleAddRoomFromHousePlanState,
+    handleRenameRoom: handleRenameRoomFromHousePlanState,
     handleMoveRoom2D,
   } = useDesignPageHousePlanState({
     designSnapshot,
     setDesignSnapshot,
     isPlanView2D: viewMode === "2d",
   });
+  const handleAddRoom = useCallback(
+    (...args: Parameters<typeof handleAddRoomFromHousePlanState>) => {
+      runHistoryTransaction("Add room", () => {
+        handleAddRoomFromHousePlanState(...args);
+      });
+    },
+    [handleAddRoomFromHousePlanState, runHistoryTransaction]
+  );
+  const handleRenameRoom = useCallback(
+    (...args: Parameters<typeof handleRenameRoomFromHousePlanState>) => {
+      runHistoryTransaction("Rename room", () => {
+        handleRenameRoomFromHousePlanState(...args);
+      });
+    },
+    [handleRenameRoomFromHousePlanState, runHistoryTransaction]
+  );
   const activePlanCanvasInteraction =
     !isDesigner &&
     !isClientPreview &&
@@ -2179,29 +2731,9 @@ function PageContent() {
   const planCanvasFocusActive = activePlanCanvasInteraction && !planFocusPanelRevealed;
   const designControlsPanelVisibleForLayout =
     designControlsPanelVisible && !planCanvasFocusActive;
-  const plan2DSafeAreaLeftPx =
-    designControlsPanelVisibleForLayout && !isClientPreview && viewportSize.width >= 768
-      ? isDesigner
-        ? 460
-        : 380
-      : 0;
-  const plan2DSafeAreaBottomPx =
-    designControlsPanelVisibleForLayout &&
-    !isClientPreview &&
-    viewportSize.width > 0 &&
-    viewportSize.width < 768
-      ? 360
-      : 0;
-  const plan2DFitZoom = resolvePlanFitZoom({
-    viewportWidthPx: Math.max(320, (viewportSize.width || 1440) - plan2DSafeAreaLeftPx),
-    viewportHeightPx: Math.max(260, (viewportSize.height || 900) - plan2DSafeAreaBottomPx),
-    planWidthMeters: planViewWidth,
-    planDepthMeters: planViewDepth,
-  });
-  const plan2DCameraTarget = {
-    x: plan2DSafeAreaLeftPx > 0 ? -plan2DSafeAreaLeftPx / plan2DFitZoom / 2 : 0,
-    z: plan2DSafeAreaBottomPx > 0 ? -plan2DSafeAreaBottomPx / plan2DFitZoom / 2 : 0,
-  };
+  const commercePanelVisibleForLayout = editorMode === "buy" && !isClientPreview;
+  const commercePanelDockWidthPx =
+    commercePanelVisibleForLayout && viewportSize.width >= 768 ? 372 : 0;
   const {
     activeFloorLevel,
     activeFloorRoomCount,
@@ -2334,6 +2866,12 @@ function PageContent() {
         roomPlanShape: room.planShape ?? "rectangle",
         roomPlanPolygon: room.planPolygon,
         roomWallThickness: room.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness,
+        roomWallInset:
+          viewMode === "2d"
+            ? 0
+            : usesHousePlanScene
+              ? HOUSE_PLAN_RENDERED_WALL_THICKNESS_METERS / 2
+              : room.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness,
         isActiveRoom: true,
       }));
     }
@@ -2342,8 +2880,6 @@ function PageContent() {
     return designSnapshot.rooms.filter((room) => visibleRoomIds.has(room.id)).flatMap((room) => {
       const planRoom = houseRoomById.get(room.id);
       const roomOffset = { x: planRoom?.x ?? 0, z: planRoom?.z ?? 0 };
-      const roomWallThickness =
-        room.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness;
       return room.items.map((item) => ({
         item,
         roomId: room.id,
@@ -2352,7 +2888,12 @@ function PageContent() {
         roomDepth: room.geometry.depth,
         roomPlanShape: room.planShape ?? "rectangle",
         roomPlanPolygon: room.planPolygon,
-        roomWallThickness,
+        roomWallThickness:
+          viewMode === "2d"
+            ? room.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness
+            : HOUSE_PLAN_RENDERED_WALL_THICKNESS_METERS,
+        roomWallInset:
+          viewMode === "2d" ? 0 : HOUSE_PLAN_RENDERED_WALL_THICKNESS_METERS / 2,
         isActiveRoom: room.id === designSnapshot.activeRoomId,
       }));
     });
@@ -2363,6 +2904,8 @@ function PageContent() {
     hasWholeHousePlan,
     housePlan2D.rooms,
     houseRoomById,
+    usesHousePlanScene,
+    viewMode,
   ]);
   const pendingCatalogPlacementScene = useMemo(() => {
     const planRoom = houseRoomById.get(
@@ -2481,13 +3024,14 @@ function PageContent() {
     goPlan();
     showRuleToast("Review room anchors and plan details");
   }, [activeRoomHealthSummary, goFurnish, goPlan, goShop, showRuleToast]);
+  const activeRoomSurfaces = activeRoom?.surfaces ?? activeRoom?.surfaceFinishes;
   const activeRoomFloorMaterialId =
-    activeRoom?.surfaceFinishes?.floorMaterialId ?? DEFAULT_FLOOR_MATERIAL_ID;
+    activeRoomSurfaces?.floorMaterialId ?? DEFAULT_FLOOR_MATERIAL_ID;
   const activeRoomFloorRotationDeg = normalizeFloorRotationDeg(
-    activeRoom?.surfaceFinishes?.floorRotationDeg
+    activeRoomSurfaces?.floorRotationDeg
   );
   const activeRoomFloorScale = clampFloorPatternScale(
-    activeRoom?.surfaceFinishes?.floorScale
+    activeRoomSurfaces?.floorScale
   );
   const activeRoomHeightMm = Math.round(roomHeight * 1000);
   const activeRoomWallThicknessMm = Math.round(wallThickness * 1000);
@@ -2498,7 +3042,7 @@ function PageContent() {
   const activeRoomFloorOpacity = clampEditorOpacity(activeRoom?.surfaceOpacity?.floor ?? 1);
   const activeRoomCeilingOpacity = clampEditorOpacity(activeRoom?.surfaceOpacity?.ceiling ?? 1);
   const activeRoomCeilingVisible = activeRoom?.ceilingVisible ?? true;
-  const activeRoomCeilingColor = activeRoom?.surfaceFinishes?.ceilingColor ?? "#f8f8f6";
+  const activeRoomCeilingColor = activeRoomSurfaces?.ceilingColor ?? "#f8f8f6";
   const activeRoomCategoryCounts = useMemo(
     () => countRoomCategories(activeRoom),
     [activeRoom]
@@ -2741,6 +3285,7 @@ function PageContent() {
   const canRedo = history.canRedo();
   const undoName = history.getUndoName();
   const redoName = history.getRedoName();
+  const historyDebugSnapshot = history.getHistory();
 
   // ========================================================================
   // Step 7: Validate Catalog on Startup
@@ -2758,22 +3303,41 @@ function PageContent() {
 
   const undoSafe = useCallback(() => {
     if (isClientPreview) return;
-    const label = history.getUndoName();
-    history.undo();
-    setUndoToast(null);
-    setHistoryFeedback(`Undid ${label ?? "last edit"}`);
-  }, [isClientPreview, history]);
+    flushCoalescedHistoryTransaction();
+    const label = history.undo();
+    if (!label) return;
+  }, [flushCoalescedHistoryTransaction, isClientPreview, history]);
 
   const redoSafe = useCallback(() => {
     if (isClientPreview) return;
-    const label = history.getRedoName();
-    history.redo();
-    setUndoToast(null);
-    setHistoryFeedback(`Redid ${label ?? "last edit"}`);
-  }, [isClientPreview, history]);
+    flushCoalescedHistoryTransaction();
+    const label = history.redo();
+    if (!label) return;
+  }, [flushCoalescedHistoryTransaction, isClientPreview, history]);
 
   // Hotkeys for undo/redo (Cmd/Ctrl+Z, Cmd/Ctrl+Shift+Z)
   useUndoRedoHotkeys({ undo: undoSafe, redo: redoSafe });
+
+  useEffect(() => {
+    const handleCommandPaletteHotkey = (event: KeyboardEvent) => {
+      if (isClientPreview) return;
+      if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== "k") return;
+      const target = event.target as HTMLElement | null;
+      if (
+        target?.tagName === "INPUT" ||
+        target?.tagName === "TEXTAREA" ||
+        target?.isContentEditable
+      ) {
+        return;
+      }
+      event.preventDefault();
+      setCommandPaletteOpen((open) => !open);
+      setCommandPaletteQuery("");
+    };
+
+    window.addEventListener("keydown", handleCommandPaletteHotkey);
+    return () => window.removeEventListener("keydown", handleCommandPaletteHotkey);
+  }, [isClientPreview]);
 
   // Global keyboard shortcut for Present Mode toggle (P key)
   useEffect(() => {
@@ -2796,12 +3360,60 @@ function PageContent() {
   const sceneRef = useRef<THREE.Scene | null>(null);
   const handlePlanRoomDragStateChange = useCallback(
     (isDragging: boolean) => {
+      if (isDragging && !planRoomDragHistoryActiveRef.current) {
+        history.begin("Move room");
+        planRoomDragHistoryActiveRef.current = true;
+      } else if (!isDragging && planRoomDragHistoryActiveRef.current) {
+        history.commit();
+        planRoomDragHistoryActiveRef.current = false;
+      }
       setPlanRoomDragging(isDragging);
       if (orbitControlsRef.current) {
-        orbitControlsRef.current.enabled = !isDragging && !sofaDragging;
+        orbitControlsRef.current.enabled =
+          !isDragging && !sofaDragging && !planRoomResizing && !planOverlayDragging;
       }
     },
-    [sofaDragging]
+    [history, planOverlayDragging, planRoomResizing, sofaDragging]
+  );
+  const handlePlanOverlayDragStateChange = useCallback(
+    (isDragging: boolean, kind?: PlanOverlayDragKind) => {
+      if (isDragging && !planOverlayDragHistoryActiveRef.current) {
+        history.begin(getPlanOverlayMoveHistoryLabel(kind));
+        planOverlayDragHistoryActiveRef.current = true;
+      } else if (!isDragging && planOverlayDragHistoryActiveRef.current) {
+        history.commit();
+        planOverlayDragHistoryActiveRef.current = false;
+      }
+      setPlanOverlayDragging(isDragging);
+      if (orbitControlsRef.current) {
+        orbitControlsRef.current.enabled =
+          !isDragging && !sofaDragging && !planRoomDragging && !planRoomResizing;
+      }
+    },
+    [history, planRoomDragging, planRoomResizing, sofaDragging]
+  );
+  const handlePlanOpeningDragStateChange3D = useCallback(
+    (isDragging: boolean) => {
+      handlePlanOverlayDragStateChange(isDragging, "opening");
+    },
+    [handlePlanOverlayDragStateChange]
+  );
+  const handlePlanRoomResizeStateChange = useCallback(
+    (isResizing: boolean) => {
+      if (isResizing && !planRoomResizeHistoryActiveRef.current) {
+        history.begin("Resize room");
+        planRoomResizeHistoryActiveRef.current = true;
+      } else if (!isResizing && planRoomResizeHistoryActiveRef.current) {
+        history.commit();
+        planRoomResizeHistoryActiveRef.current = false;
+      }
+      setPlanRoomResizing(isResizing);
+      if (orbitControlsRef.current) {
+        orbitControlsRef.current.enabled =
+          !isResizing && !sofaDragging && !planRoomDragging && !planOverlayDragging;
+      }
+    },
+    [history, planOverlayDragging, planRoomDragging, sofaDragging]
   );
   const resolveGroundPointFromClient = useCallback((clientX: number, clientY: number) => {
     const canvas = rendererRef.current?.domElement ?? canvasRef.current;
@@ -2821,10 +3433,13 @@ function PageContent() {
       : null;
   }, []);
   const isCameraAnimatingRef = useRef(false);
+  const cameraTransitionTokenRef = useRef(0);
+  const cameraSelectionGuardUntilRef = useRef(0);
   const last3DViewRef = useRef<CameraView | null>(null);
   const previousViewModeRef = useRef<EditorViewMode>(viewMode);
   const suppressNext3DViewSaveRef = useRef(false);
   const pending3DViewRef = useRef<CameraView | null>(null);
+  const initialWholeHome3DFitKeyRef = useRef<string | null>(null);
   const cartHoverCameraBaselineRef = useRef<CameraView | null>(null);
   const cartHoverFocusTimerRef = useRef<number | null>(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -2864,12 +3479,55 @@ function PageContent() {
     });
   }, []);
 
+  const preserveCameraAfterPlanOverlaySelection = useCallback(() => {
+    const camera = cameraRef.current;
+    const controls = orbitControlsRef.current;
+    if (!camera || !controls) return;
+
+    const preservedPosition = camera.position.clone();
+    const preservedTarget = (controls.target as THREE.Vector3).clone();
+    const preservedUp = camera.up.clone();
+    const preservedFov = camera instanceof THREE.PerspectiveCamera ? camera.fov : undefined;
+    const preservedZoom = camera instanceof THREE.OrthographicCamera ? camera.zoom : undefined;
+    cameraSelectionGuardUntilRef.current = Date.now() + 360;
+    cameraTransitionTokenRef.current += 1;
+
+    const restore = () => {
+      const currentCamera = cameraRef.current;
+      const currentControls = orbitControlsRef.current;
+      if (!currentCamera || !currentControls) return;
+
+      cameraTransitionTokenRef.current += 1;
+      isCameraAnimatingRef.current = false;
+      currentCamera.position.copy(preservedPosition);
+      currentCamera.up.copy(preservedUp);
+      (currentControls.target as THREE.Vector3).copy(preservedTarget);
+      if (currentCamera instanceof THREE.PerspectiveCamera && preservedFov !== undefined) {
+        currentCamera.fov = preservedFov;
+      }
+      if (currentCamera instanceof THREE.OrthographicCamera && preservedZoom !== undefined) {
+        currentCamera.zoom = preservedZoom;
+      }
+      updateProjection(currentCamera);
+      currentControls.update();
+      updateCameraViewFromScene();
+    };
+
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(restore);
+    });
+    window.setTimeout(restore, 90);
+    window.setTimeout(restore, 180);
+  }, [updateCameraViewFromScene, updateProjection]);
+
   const transitionToCameraView = useCallback((nextView: CameraView, durationMs = 520) => {
     const camera = cameraRef.current;
     const controls = orbitControlsRef.current;
     if (!camera || !controls) return;
 
     isCameraAnimatingRef.current = true;
+    const transitionToken = cameraTransitionTokenRef.current + 1;
+    cameraTransitionTokenRef.current = transitionToken;
     const fromPos = camera.position.clone();
     const fromTarget = (controls.target as THREE.Vector3).clone();
     const toPos = new THREE.Vector3(...nextView.pos);
@@ -2880,6 +3538,11 @@ function PageContent() {
     const start = performance.now();
 
     const tick = (ts: number) => {
+      if (cameraTransitionTokenRef.current !== transitionToken) {
+        isCameraAnimatingRef.current = false;
+        return;
+      }
+
       const t = Math.min(1, (ts - start) / durationMs);
       const eased = 1 - Math.pow(1 - t, 3);
 
@@ -3515,6 +4178,7 @@ function PageContent() {
       setLocalBackupHydrated(true);
       return;
     }
+    let deferLocalBackupHydrated = false;
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
@@ -3610,26 +4274,14 @@ function PageContent() {
           setDesignSnapshot(nextSnapshot);
           if (typeof parsed.designId === "string" && parsed.designId.trim()) {
             const restoredDesignId = parsed.designId;
+            const storedSnapshot = snapshotToStored(nextSnapshot);
+            deferLocalBackupHydrated = true;
             setDesignId(restoredDesignId);
+            setLastPersistedSnapshotFingerprint(fingerprintStoredDesign(storedSnapshot));
             fetchShareStatus(restoredDesignId);
-            void (async () => {
-              try {
-                const storedSnapshot = getStoredDesignForPersistence(nextSnapshot);
-                const legacyData = snapshotToLegacyApi(storedToSnapshot(storedSnapshot));
-                const res = await fetch(`/api/designs/${restoredDesignId}`, {
-                  method: "PUT",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(legacyData),
-                });
-                if (res.ok) {
-                  setLastDbSaveAt(Date.now());
-                  setLastPersistedSnapshotFingerprint(fingerprintStoredDesign(storedSnapshot));
-                  setLastCloudSaveError(null);
-                }
-              } catch {
-                // The regular autosave path will surface persistent cloud errors.
-              }
-            })();
+            void loadDesign(restoredDesignId).finally(() => {
+              setLocalBackupHydrated(true);
+            });
           }
           hydratePersistedFloorPlanState(nextSnapshot);
           history.clear();
@@ -3692,7 +4344,9 @@ function PageContent() {
     } catch {
       // ignore invalid saved data
     } finally {
-      setLocalBackupHydrated(true);
+      if (!deferLocalBackupHydrated) {
+        setLocalBackupHydrated(true);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -3990,7 +4644,13 @@ function PageContent() {
 
   useEffect(() => {
     if (!planSettingsLoaded) return;
-    if (planOpenings.length > 0) return;
+    if (defaultPlanOpeningsSeededRef.current) return;
+    if (planOpeningsStorageState === "pending") return;
+    if (planOpeningsStorageState !== "missing" || planOpenings.length > 0) {
+      defaultPlanOpeningsSeededRef.current = true;
+      return;
+    }
+    defaultPlanOpeningsSeededRef.current = true;
     setPlanOpenings([
       {
         id: "door-east-main",
@@ -4007,7 +4667,12 @@ function PageContent() {
         kind: "window",
       },
     ]);
-  }, [planOpenings.length, planSettingsLoaded, setPlanOpenings]);
+  }, [
+    planOpenings.length,
+    planOpeningsStorageState,
+    planSettingsLoaded,
+    setPlanOpenings,
+  ]);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [primaryId, setPrimaryId] = useState<string | null>(null);
@@ -4057,28 +4722,54 @@ function PageContent() {
     setSelectedPlanRoomId(null);
   }, [clearNonRoomSelection]);
 
+  const suppressDoorwaySuggestionKeys = useCallback((keys: string[]) => {
+    if (keys.length === 0) return;
+    setSuppressedDoorwaySuggestionKeys((current) => {
+      const next = new Set(current);
+      keys.forEach((key) => next.add(key));
+      return next.size === current.length ? current : Array.from(next);
+    });
+  }, []);
+
   const deletePlanOverlayById = useCallback((overlayId: string | null) => {
     if (!overlayId) return false;
 
-    let removed = false;
+    const deletedOpening = planOpeningsRef.current.find((entry) => entry.id === overlayId);
+    const overlayExists =
+      Boolean(deletedOpening) ||
+      planFixedElementsRef.current.some((entry) => entry.id === overlayId) ||
+      planAnnotationsRef.current.some((entry) => entry.id === overlayId);
+    if (!overlayExists) return false;
+
+    history.begin("Delete plan overlay");
     setPlanOpenings((prev) => {
       const next = prev.filter((entry) => entry.id !== overlayId);
-      if (next.length !== prev.length) removed = true;
+      if (next.length !== prev.length) {
+        if (deletedOpening) {
+          suppressDoorwaySuggestionKeys(
+            getDeletedDoorwaySuggestionKeys(deletedOpening, housePlan2D.rooms)
+          );
+        }
+      }
       return next;
     });
     setPlanFixedElements((prev) => {
-      const next = prev.filter((entry) => entry.id !== overlayId);
-      if (next.length !== prev.length) removed = true;
-      return next;
+      return prev.filter((entry) => entry.id !== overlayId);
     });
     setPlanAnnotations((prev) => {
-      const next = prev.filter((entry) => entry.id !== overlayId);
-      if (next.length !== prev.length) removed = true;
-      return next;
+      return prev.filter((entry) => entry.id !== overlayId);
     });
+    history.commit();
     setSelectedPlanOverlayId(null);
-    return removed;
-  }, [setPlanAnnotations, setPlanFixedElements, setPlanOpenings]);
+    return true;
+  }, [
+    history,
+    housePlan2D.rooms,
+    setPlanAnnotations,
+    setPlanFixedElements,
+    setPlanOpenings,
+    suppressDoorwaySuggestionKeys,
+  ]);
 
   // Global keyboard shortcut for Delete/Backspace
   useEffect(() => {
@@ -4234,13 +4925,20 @@ function PageContent() {
         },
       });
 
-      history.begin(kind === "wall" ? "Edit wall opacity" : "Edit floor opacity");
-      designSnapshotRef.current = nextSnapshot;
-      setDesignSnapshot(nextSnapshot);
-      history.commit();
+      runCoalescedHistoryTransaction(
+        kind === "wall"
+          ? "Edit wall opacity"
+          : kind === "floor"
+            ? "Edit floor opacity"
+            : "Edit ceiling opacity",
+        () => {
+          designSnapshotRef.current = nextSnapshot;
+          setDesignSnapshot(nextSnapshot);
+        }
+      );
       track("editor_surface_opacity_changed", { kind, opacity: nextOpacity });
     },
-    [history]
+    [runCoalescedHistoryTransaction]
   );
 
   const handleActiveRoomCeilingVisibleChange = useCallback((visible: boolean) => {
@@ -4263,8 +4961,14 @@ function PageContent() {
     if (!room) return;
     const nextSnapshot = updateRoom(designSnapshotRef.current, {
       ...room,
+      surfaces: {
+        ...room.surfaces,
+        ...room.surfaceFinishes,
+        ceilingColor: safeColor,
+      },
       surfaceFinishes: {
         ...room.surfaceFinishes,
+        ...room.surfaces,
         ceilingColor: safeColor,
       },
     });
@@ -4276,6 +4980,9 @@ function PageContent() {
   }, [history]);
 
   const handleSelectPlanOverlay = useCallback((id: string | null) => {
+    if (id) {
+      preserveCameraAfterPlanOverlaySelection();
+    }
     setSelectedPlanOverlayId(id);
     if (id) {
       clearSelection();
@@ -4283,7 +4990,12 @@ function PageContent() {
       setSelectedPlanRoomId(null);
       if (editorMode !== "present") setEditorMode("design");
     }
-  }, [clearSelection, clearZoneSelection, editorMode]);
+  }, [
+    clearSelection,
+    clearZoneSelection,
+    editorMode,
+    preserveCameraAfterPlanOverlaySelection,
+  ]);
 
   const handleRenameSelectedPlanRoom = useCallback(
     (roomId: string) => {
@@ -4370,13 +5082,15 @@ function PageContent() {
       newRoom.planPolygon = source.planPolygon?.map((point) => ({ ...point }));
       newRoom.surfaceFinishes = source.surfaceFinishes ? { ...source.surfaceFinishes } : undefined;
 
+      history.begin("Duplicate room");
       setDesignSnapshot((prev) => switchRoom({ ...prev, rooms: [...prev.rooms, newRoom] }, newRoom.id));
+      history.commit();
       setSelectedPlanRoomId(newRoom.id);
       clearNonRoomSelection();
       showRuleToast(`${newRoom.name} duplicated`);
       track("floor_plan_room_duplicated", { roomId, duplicatedRoomId: newRoom.id });
     },
-    [clearNonRoomSelection, housePlan2D.rooms, setDesignSnapshot, showRuleToast]
+    [clearNonRoomSelection, history, housePlan2D.rooms, setDesignSnapshot, showRuleToast]
   );
 
   const handleDeleteSelectedPlanRoom = useCallback(
@@ -4387,14 +5101,17 @@ function PageContent() {
       }
 
       const room = designSnapshotRef.current.rooms.find((entry) => entry.id === roomId);
+      if (!room) return;
+      history.begin("Delete room");
       setDesignSnapshot((prev) => deleteRoom(prev, roomId));
       setPlanOpenings((prev) => prev.filter((opening) => opening.roomId !== roomId));
+      history.commit();
       setSelectedPlanRoomId(null);
       clearNonRoomSelection();
-      showRuleToast(`${room?.name ?? "Room"} deleted`);
+      showRuleToast(`${room.name} deleted`);
       track("floor_plan_room_deleted", { roomId });
     },
-    [clearNonRoomSelection, setDesignSnapshot, setPlanOpenings, showRuleToast]
+    [clearNonRoomSelection, history, setDesignSnapshot, setPlanOpenings, showRuleToast]
   );
 
   const selectedInstanceId = primaryId;
@@ -4488,13 +5205,15 @@ function PageContent() {
     });
     if (!next) return;
 
+    history.begin("Create zone");
     setDesignSnapshot({
       ...designSnapshotRef.current,
       zones: next.zones,
     });
+    history.commit();
     setSelectedZoneId(next.zoneId);
     clearSelection();
-  }, [clearSelection, pendingZoneType]);
+  }, [clearSelection, history, pendingZoneType]);
 
   const autoCreateSeatingZone = useCallback(
     (sofaItem: PlacedItem) => {
@@ -4655,13 +5374,20 @@ function PageContent() {
   const handleCommitRoomDimensionEdit2D = useCallback(
     (roomId: string, axis: "width" | "depth", valueMeters: number) => {
       const targetRoom = designSnapshot.rooms.find((room) => room.id === roomId);
-      const planRoom = housePlan2D.rooms.find((room) => room.id === roomId);
-      if (!targetRoom || !planRoom) return;
+      if (!targetRoom) return;
 
       const width = clampRoomDimension(axis === "width" ? valueMeters : targetRoom.geometry.width);
       const depth = clampRoomDimension(axis === "depth" ? valueMeters : targetRoom.geometry.depth);
       if (!Number.isFinite(width) || !Number.isFinite(depth)) return;
-      if (doesHouseRoomOverlap(roomId, planRoom.x, planRoom.z, width, depth, housePlan2D.rooms)) {
+
+      const placement = resolveHouseRoomDimensionEditPlacement(
+        roomId,
+        axis,
+        width,
+        depth,
+        housePlan2D.rooms
+      );
+      if (!placement) {
         showRuleToast("Rooms cannot overlap");
         return;
       }
@@ -4690,6 +5416,10 @@ function PageContent() {
             width,
             depth,
             wallThickness: currentWall,
+          },
+          planPosition: {
+            x: roundPlanCoordinate(placement.x),
+            z: roundPlanCoordinate(placement.z),
           },
           items: normalizedItems,
         })
@@ -4937,10 +5667,11 @@ function PageContent() {
       ? HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE
       : CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE;
     const swatchTextureUrl =
-      sourceSwatches[finishKey] ??
-      sourceSwatches[finishLabelKey] ??
-      sourceSwatches[colourLabelKey] ??
-      null;
+      getHighResolutionSwatchUrl(
+        sourceSwatches[finishKey] ??
+          sourceSwatches[finishLabelKey] ??
+          sourceSwatches[colourLabelKey]
+      ) ?? null;
     if (!swatchTextureUrl) return null;
 
     const colorHex = variant.swatchHex ?? variant.colorHex ?? activeVariantColorHex ?? "#c8b79f";
@@ -4952,10 +5683,7 @@ function PageContent() {
 
     return {
       sectionLabel: isSloaneLegFinish ? "Leg" : "Wood colour",
-      label:
-        variant.finishLabel?.trim() ||
-        activeStructuredVariant.colourLabel.trim() ||
-        variant.label.trim(),
+      label: getMaterialDisplayLabel(variant),
       colorHex,
       swatchTextureUrl,
     };
@@ -5124,6 +5852,60 @@ function PageContent() {
     isJaronConfigurationSelected && visibleJaronConfigurationGroup
   );
 
+  const isAuburnConfigurationSelected = Boolean(
+    selectedProduct && AUBURN_CONFIGURATION_PRODUCT_IDS.includes(selectedProduct.id)
+  );
+
+  const auburnConfigurationGroups = useMemo(
+    () =>
+      AUBURN_CONFIGURATION_GROUPS.map((group) => ({
+        ...group,
+        options: group.options.filter((option) => {
+          if (option.productId) {
+            return Boolean(CATALOG_ITEMS[option.productId] ?? importedModelById.get(option.productId));
+          }
+          return option.orientations?.some((orientation) =>
+            Boolean(CATALOG_ITEMS[orientation.productId] ?? importedModelById.get(orientation.productId))
+          );
+        }),
+      })).filter((group) => group.options.length > 0),
+    [importedModelById]
+  );
+
+  const activeAuburnConfigurationGroup = useMemo(() => {
+    if (!selectedProduct || !isAuburnConfigurationSelected) return null;
+    return (
+      auburnConfigurationGroups.find((group) =>
+        group.options.some(
+          (option) =>
+            option.productId === selectedProduct.id ||
+            option.orientations?.some((orientation) => orientation.productId === selectedProduct.id)
+        )
+      ) ?? null
+    );
+  }, [auburnConfigurationGroups, isAuburnConfigurationSelected, selectedProduct]);
+
+  const activeAuburnConfigurationOption = useMemo(() => {
+    if (!selectedProduct || !isAuburnConfigurationSelected) return null;
+    return (
+      auburnConfigurationGroups
+        .flatMap((group) => group.options)
+        .find(
+          (option) =>
+            option.productId === selectedProduct.id ||
+            option.orientations?.some((orientation) => orientation.productId === selectedProduct.id)
+        ) ?? null
+    );
+  }, [auburnConfigurationGroups, isAuburnConfigurationSelected, selectedProduct]);
+
+  const visibleAuburnConfigurationGroup =
+    activeAuburnConfigurationGroup ?? auburnConfigurationGroups[0] ?? null;
+  const visibleAuburnConfigurationOption =
+    activeAuburnConfigurationOption ?? visibleAuburnConfigurationGroup?.options[0] ?? null;
+  const showAuburnConfigurationSelector = Boolean(
+    isAuburnConfigurationSelected && visibleAuburnConfigurationGroup
+  );
+
   useEffect(() => {
     setPreviewVariantId(null);
     setPreviewMaterialPresetId(null);
@@ -5289,12 +6071,14 @@ function PageContent() {
       }
     }
     const nextZones = (zonesRef.current ?? []).filter((z) => z.id !== zoneId);
+    history.begin("Ungroup zone");
     setDesignSnapshot({
       ...designSnapshotRef.current,
       zones: nextZones,
     });
+    history.commit();
     setSelectedZoneId(null);
-  }, []);
+  }, [history]);
 
   const getZoneBounds = useCallback(
     (zone: Zone) => {
@@ -5342,13 +6126,13 @@ function PageContent() {
     pendingAnnotationText,
     setPendingAnnotationText,
     cancelPlanAnnotation,
-    commitPlanAnnotation,
+    commitPlanAnnotation: commitPlanAnnotationFromPlanAction,
     handleMoveOpening2D,
-    handleUpdateOpeningMetrics2D,
-    handleAddSuggestedDoorway,
+    handleUpdateOpeningMetrics2D: handleUpdateOpeningMetrics2DFromPlanAction,
+    handleAddSuggestedDoorway: handleAddSuggestedDoorwayFromPlanAction,
     handleMoveFixedElement2D,
     handleMoveAnnotation2D,
-    runPlanOverlayCommand,
+    runPlanOverlayCommand: runPlanOverlayCommandFromPlanAction,
   } = useDesignPagePlanActions({
     activeRoomName: activeRoom?.name,
     housePlanRooms: housePlan2D.rooms,
@@ -5365,6 +6149,79 @@ function PageContent() {
     showRuleToast,
     track,
   });
+  const commitPlanAnnotation = useCallback(() => {
+    if (!pendingAnnotationKind || !pendingAnnotationText.trim()) {
+      commitPlanAnnotationFromPlanAction();
+      return;
+    }
+    runHistoryTransaction("Add annotation", commitPlanAnnotationFromPlanAction);
+  }, [
+    commitPlanAnnotationFromPlanAction,
+    pendingAnnotationKind,
+    pendingAnnotationText,
+    runHistoryTransaction,
+  ]);
+  const handleUpdateOpeningMetrics2D = useCallback(
+    (
+      id: string,
+      metrics: {
+        widthMeters?: number;
+        offsetMeters?: number;
+        heightMeters?: number;
+        kind?: RoomOpening2D["kind"];
+      }
+    ) => {
+      const normalizedMetrics =
+        metrics.heightMeters !== undefined
+          ? {
+              ...metrics,
+              heightMeters: Math.min(Math.max(0.5, metrics.heightMeters), Math.max(0.5, roomHeight)),
+            }
+          : metrics;
+      const historyLabel =
+        (normalizedMetrics.widthMeters !== undefined || normalizedMetrics.heightMeters !== undefined) &&
+        normalizedMetrics.kind === undefined
+          ? "Resize opening"
+          : "Edit opening";
+      runHistoryTransaction(historyLabel, () =>
+        handleUpdateOpeningMetrics2DFromPlanAction(id, normalizedMetrics)
+      );
+    },
+    [handleUpdateOpeningMetrics2DFromPlanAction, roomHeight, runHistoryTransaction]
+  );
+  const handleResizeOpening2D = useCallback(
+    (id: string, metrics: { widthMeters: number; offsetMeters: number }) => {
+      handleUpdateOpeningMetrics2DFromPlanAction(id, metrics);
+    },
+    [handleUpdateOpeningMetrics2DFromPlanAction]
+  );
+  const runPlanOverlayCommand = useCallback(
+    (commandId: Parameters<typeof runPlanOverlayCommandFromPlanAction>[0]) => {
+      if (commandId.startsWith("preset:")) {
+        runHistoryTransaction("Change plan preset", () =>
+          runPlanOverlayCommandFromPlanAction(commandId)
+        );
+        return;
+      }
+      runPlanOverlayCommandFromPlanAction(commandId);
+    },
+    [runHistoryTransaction, runPlanOverlayCommandFromPlanAction]
+  );
+  const handleAddSuggestedDoorway = useCallback(
+    (suggestion: HouseRoomDoorwaySuggestion) => {
+      if (suppressedDoorwaySuggestionKeys.includes(getDoorwaySuggestionKey(suggestion))) {
+        return;
+      }
+      runHistoryTransaction("Add doorway", () =>
+        handleAddSuggestedDoorwayFromPlanAction(suggestion)
+      );
+    },
+    [
+      handleAddSuggestedDoorwayFromPlanAction,
+      runHistoryTransaction,
+      suppressedDoorwaySuggestionKeys,
+    ]
+  );
 
   const roomConnectionChecklistItems = useMemo(
     () =>
@@ -5389,6 +6246,46 @@ function PageContent() {
         activeRoomId: designSnapshot.activeRoomId,
       }),
     [designSnapshot.activeRoomId, designSnapshot.rooms, housePlan2D.rooms, planOpenings]
+  );
+  const plan2DQualityReviewPanelVisible =
+    !isClientPreview &&
+    viewMode === "2d" &&
+    floorPlanQualityReport.issues.length > 0 &&
+    !activePlanCanvasInteraction;
+  const plan2DFloorPropertiesPanelVisible =
+    designControlsPanelVisibleForLayout &&
+    designControlsPanelMode === "plan" &&
+    !isClientPreview &&
+    (isDesigner || floorOptions.length > 1 || viewMode === "3d");
+  const plan2DQualityReviewPanelTopPx = plan2DFloorPropertiesPanelVisible ? 388 : 96;
+  const plan2DSafeAreaLeftPx =
+    designControlsPanelVisibleForLayout && !isClientPreview && viewportSize.width >= 768
+      ? designPanelCollapsed
+        ? isDesigner
+          ? 128
+          : 88
+        : isDesigner
+          ? 460
+          : 380
+      : 0;
+  const plan2DSafeAreaRightPx =
+    !isClientPreview && viewMode === "2d" && viewportSize.width >= 768
+      ? Math.max(
+          commercePanelDockWidthPx,
+          plan2DQualityReviewPanelVisible ? 344 : 0,
+          plan2DFloorPropertiesPanelVisible ? 284 : 0
+        )
+      : 0;
+  const plan2DSafeAreaBottomPx =
+    designControlsPanelVisibleForLayout &&
+    !isClientPreview &&
+    viewportSize.width > 0 &&
+    viewportSize.width < 768
+      ? 360
+      : 0;
+  const plan2DFitBounds = useMemo(
+    () => getPlan2DRoomFitBounds(housePlan2D.rooms, roomWidth, roomDepth),
+    [housePlan2D.rooms, roomDepth, roomWidth]
   );
   useEffect(() => {
     if (housePlan2D.rooms.length === 0) return;
@@ -5456,6 +6353,15 @@ function PageContent() {
         return;
       }
 
+      if (action === "review_plan_layout") {
+        goPlan();
+        setViewMode("2d");
+        clearNonRoomSelection();
+        if (targetRoomId) setSelectedPlanRoomId(targetRoomId);
+        showRuleToast("Review the highlighted plan issue");
+        return;
+      }
+
       if (action === "review_furniture_fit") {
         goFurnish();
         setSelectedPlanRoomId(null);
@@ -5485,9 +6391,105 @@ function PageContent() {
   const visiblePlanOpening = selectedPlanOpening;
   const visiblePlanOpeningRoomName = getPlanOpeningRoomName(visiblePlanOpening);
   const visiblePlanOpeningWallSpanMeters = getPlanOpeningWallSpan(visiblePlanOpening);
+  const visiblePlanOpeningMaxHeightMeters = Math.max(0.5, roomHeight);
   const selectedPlanRoomContext = selectedPlanRoomId
     ? houseRoomById.get(selectedPlanRoomId) ?? null
     : null;
+  const selectedPlanFixedElement = selectedPlanOverlayId
+    ? planFixedElements.find((entry) => entry.id === selectedPlanOverlayId) ?? null
+    : null;
+  const selectedPlanAnnotation = selectedPlanOverlayId
+    ? planAnnotations.find((entry) => entry.id === selectedPlanOverlayId) ?? null
+    : null;
+  const selectedObjectInspector = useMemo(() => {
+    if (selectedIds.size > 1) {
+      const selectionItems = items.filter((item) => selectedIds.has(item.instanceId));
+      return {
+        kind: "Furniture selection",
+        title: `${selectionItems.length} items selected`,
+        detail: activeRoom?.name ?? "Current room",
+        metrics: [
+          `${selectionItems.filter((item) => item.locked).length} locked`,
+          `${selectionItems.reduce((sum, item) => sum + (item.qty ?? 1), 0)} total qty`,
+        ],
+      };
+    }
+
+    if (selectedItem && selectedProduct) {
+      const dims = selectedItemPlanningDimensionsMm ?? resolveCatalogVariant(selectedProduct, selectedItem.variantId).dimsMm;
+      return {
+        kind: "Furniture",
+        title: selectedProduct.title,
+        detail: activeRoom?.name ?? "Current room",
+        metrics: [
+          `${(dims.w / 1000).toFixed(2)} x ${(dims.d / 1000).toFixed(2)}m`,
+          `${normalizeRotationDegrees(radiansToDeg(selectedItem.rotationY ?? 0))}°`,
+          `$${getItemPrice(selectedProduct)}`,
+        ],
+      };
+    }
+
+    if (visiblePlanOpening) {
+      return {
+        kind: visiblePlanOpening.kind === "door" ? "Door" : "Window",
+        title: `${visiblePlanOpening.kind === "door" ? "Door" : "Window"} on ${visiblePlanOpening.wall}`,
+        detail: visiblePlanOpeningRoomName,
+        metrics: [
+          `${(visiblePlanOpening.widthMm / 1000).toFixed(2)}m wide`,
+          `${(visiblePlanOpening.offsetMm / 1000).toFixed(2)}m from center`,
+        ],
+      };
+    }
+
+    if (selectedPlanFixedElement) {
+      return {
+        kind: "Built-in",
+        title: selectedPlanFixedElement.label ?? selectedPlanFixedElement.kind,
+        detail: "Plan fixture",
+        metrics: [
+          `${(selectedPlanFixedElement.widthMm / 1000).toFixed(2)} x ${(selectedPlanFixedElement.depthMm / 1000).toFixed(2)}m`,
+          `${selectedPlanFixedElement.rotationDeg ?? 0}°`,
+        ],
+      };
+    }
+
+    if (selectedPlanAnnotation) {
+      return {
+        kind: "Annotation",
+        title: selectedPlanAnnotation.text || "Note",
+        detail: selectedPlanAnnotation.kind,
+        metrics: [
+          `${(selectedPlanAnnotation.xMm / 1000).toFixed(2)}m x ${(selectedPlanAnnotation.zMm / 1000).toFixed(2)}m`,
+        ],
+      };
+    }
+
+    if (selectedPlanRoomContext) {
+      return {
+        kind: "Room",
+        title: selectedPlanRoomContext.name,
+        detail: `${selectedPlanRoomContext.roomType} room`,
+        metrics: [
+          `${selectedPlanRoomContext.w.toFixed(2)} x ${selectedPlanRoomContext.d.toFixed(2)}m`,
+          `${(selectedPlanRoomContext.w * selectedPlanRoomContext.d).toFixed(1)} sqm`,
+        ],
+      };
+    }
+
+    return null;
+  }, [
+    activeRoom?.name,
+    items,
+    selectedIds,
+    selectedItem,
+    selectedItemPlanningDimensionsMm,
+    selectedPlanAnnotation,
+    selectedPlanFixedElement,
+    selectedPlanRoomContext,
+    selectedProduct,
+    visiblePlanOpening,
+    visiblePlanOpeningRoomName,
+  ]);
   const selectedObjectContext = useMemo(() => {
     return buildDesignSelectionContext({
       selectedFurniture:
@@ -5595,12 +6597,13 @@ function PageContent() {
           z: roundPlanCoordinate(templateRoom.z),
         };
         room.planShape = templateRoom.shape;
-        room.surfaceFinishes = {
+        room.surfaces = {
           floorMaterialId:
             templateRoom.roomType === "kitchen" || templateRoom.roomType === "toilet"
               ? "light_stone_tile"
               : DEFAULT_FLOOR_MATERIAL_ID,
         };
+        room.surfaceFinishes = { ...room.surfaces };
         templateRoomIdMap.set(templateRoom.id, room.id);
         return room;
       });
@@ -5716,6 +6719,7 @@ function PageContent() {
         rooms,
         activeRoomId: activeTemplateRoom.id,
       }));
+      history.commit();
 
       if (selectedFurnishingPack && skippedFurnishingCount > 0) {
         showRuleToast(`Some starter items were skipped`);
@@ -5737,8 +6741,8 @@ function PageContent() {
     },
     [
       clearAllSelection,
+      history,
       resetFloorPlanInteraction,
-      revokeFloorPlanUnderlayUrl,
       planOpenings,
       roomHeight,
       setDesignSnapshot,
@@ -5773,111 +6777,145 @@ function PageContent() {
 
   const handleApplyFloorMaterialToRoom = useCallback(
     (materialId: string) => {
+      const surfaceMaterial = getRuntimeSurfaceMaterialById(materialId);
       const material = getFloorMaterialById(materialId);
+      const appliedMaterialId = surfaceMaterial?.surface_material.material_id ?? material.id;
+      const appliedMaterialName = surfaceMaterial?.surface_material.product_name ?? material.name;
       const room = getActiveRoom(designSnapshotRef.current);
       if (!room) return;
 
-      setDesignSnapshot((prev) => {
+      runHistoryTransaction("Apply floor material", () => setDesignSnapshot((prev) => {
         const target = prev.rooms.find((entry) => entry.id === room.id);
         if (!target) return prev;
 
         return updateRoom(prev, {
           ...target,
+          surfaces: {
+            ...target.surfaces,
+            ...target.surfaceFinishes,
+            floorMaterialId: appliedMaterialId,
+          },
           surfaceFinishes: {
             ...target.surfaceFinishes,
-            floorMaterialId: material.id,
+            ...target.surfaces,
+            floorMaterialId: appliedMaterialId,
           },
         });
-      });
+      }));
 
-      showRuleToast(`${material.name} applied to ${room.name}`);
+      showRuleToast(`${appliedMaterialName} applied to ${room.name}`);
       track("floor_finish_applied", {
-        materialId: material.id,
+        materialId: appliedMaterialId,
         roomId: room.id,
         scope: "room",
       });
     },
-    [setDesignSnapshot, showRuleToast]
+    [runHistoryTransaction, setDesignSnapshot, showRuleToast]
   );
 
   const handleApplyFloorMaterialToAllRooms = useCallback(
     (materialId: string) => {
+      const surfaceMaterial = getRuntimeSurfaceMaterialById(materialId);
       const material = getFloorMaterialById(materialId);
+      const appliedMaterialId = surfaceMaterial?.surface_material.material_id ?? material.id;
+      const appliedMaterialName = surfaceMaterial?.surface_material.product_name ?? material.name;
 
-      setDesignSnapshot((prev) => {
+      runHistoryTransaction("Apply floor material", () => setDesignSnapshot((prev) => {
         if (prev.rooms.length === 0) return prev;
 
         return {
           ...prev,
           rooms: prev.rooms.map((room) => ({
             ...room,
+            surfaces: {
+              ...room.surfaces,
+              ...room.surfaceFinishes,
+              floorMaterialId: appliedMaterialId,
+            },
             surfaceFinishes: {
               ...room.surfaceFinishes,
-              floorMaterialId: material.id,
+              ...room.surfaces,
+              floorMaterialId: appliedMaterialId,
             },
           })),
         };
-      });
+      }));
 
-      showRuleToast(`${material.name} applied to all rooms`);
+      showRuleToast(`${appliedMaterialName} applied to all rooms`);
       track("floor_finish_applied", {
-        materialId: material.id,
+        materialId: appliedMaterialId,
         scope: "home",
       });
     },
-    [setDesignSnapshot, showRuleToast]
+    [runHistoryTransaction, setDesignSnapshot, showRuleToast]
   );
 
   const handleRotateActiveFloorMaterial = useCallback(() => {
     const room = getActiveRoom(designSnapshotRef.current);
     if (!room) return;
 
-    setDesignSnapshot((prev) => {
+    runHistoryTransaction("Rotate floor pattern", () => setDesignSnapshot((prev) => {
       const target = prev.rooms.find((entry) => entry.id === room.id);
       if (!target) return prev;
 
+      const currentSurfaces = target.surfaces ?? target.surfaceFinishes;
       return updateRoom(prev, {
         ...target,
-        surfaceFinishes: {
+        surfaces: {
+          ...target.surfaces,
           ...target.surfaceFinishes,
           floorRotationDeg: normalizeFloorRotationDeg(
-            (target.surfaceFinishes?.floorRotationDeg ?? 0) + 90
+            (currentSurfaces?.floorRotationDeg ?? 0) + 90
+          ),
+        },
+        surfaceFinishes: {
+          ...target.surfaceFinishes,
+          ...target.surfaces,
+          floorRotationDeg: normalizeFloorRotationDeg(
+            (currentSurfaces?.floorRotationDeg ?? 0) + 90
           ),
         },
       });
-    });
+    }));
 
     showRuleToast(`Floor direction rotated in ${room.name}`);
     track("floor_finish_pattern_changed", {
       roomId: room.id,
       action: "rotate_90",
     });
-  }, [setDesignSnapshot, showRuleToast]);
+  }, [runHistoryTransaction, setDesignSnapshot, showRuleToast]);
 
   const handleResetActiveFloorMaterialPattern = useCallback(() => {
     const room = getActiveRoom(designSnapshotRef.current);
     if (!room) return;
 
-    setDesignSnapshot((prev) => {
+    runHistoryTransaction("Reset floor pattern", () => setDesignSnapshot((prev) => {
       const target = prev.rooms.find((entry) => entry.id === room.id);
       if (!target) return prev;
 
-      return updateRoom(prev, {
-        ...target,
-        surfaceFinishes: {
-          ...target.surfaceFinishes,
-          floorRotationDeg: 0,
-          floorScale: DEFAULT_FLOOR_PATTERN_SCALE,
+        return updateRoom(prev, {
+          ...target,
+          surfaces: {
+            ...target.surfaces,
+            ...target.surfaceFinishes,
+            floorRotationDeg: 0,
+            floorScale: DEFAULT_FLOOR_PATTERN_SCALE,
+          },
+          surfaceFinishes: {
+            ...target.surfaceFinishes,
+            ...target.surfaces,
+            floorRotationDeg: 0,
+            floorScale: DEFAULT_FLOOR_PATTERN_SCALE,
         },
       });
-    });
+    }));
 
     showRuleToast(`Floor pattern reset in ${room.name}`);
     track("floor_finish_pattern_changed", {
       roomId: room.id,
       action: "reset",
     });
-  }, [setDesignSnapshot, showRuleToast]);
+  }, [runHistoryTransaction, setDesignSnapshot, showRuleToast]);
 
   const handleActiveFloorMaterialScaleChange = useCallback(
     (scale: number) => {
@@ -5885,20 +6923,26 @@ function PageContent() {
       if (!room) return;
       const nextScale = clampFloorPatternScale(scale);
 
-      setDesignSnapshot((prev) => {
+      runCoalescedHistoryTransaction("Scale floor pattern", () => setDesignSnapshot((prev) => {
         const target = prev.rooms.find((entry) => entry.id === room.id);
         if (!target) return prev;
 
         return updateRoom(prev, {
           ...target,
-          surfaceFinishes: {
+          surfaces: {
+            ...target.surfaces,
             ...target.surfaceFinishes,
             floorScale: nextScale,
           },
+          surfaceFinishes: {
+            ...target.surfaceFinishes,
+            ...target.surfaces,
+            floorScale: nextScale,
+          },
         });
-      });
+      }));
     },
-    [setDesignSnapshot]
+    [runCoalescedHistoryTransaction, setDesignSnapshot]
   );
 
   const _getTopDownView = useCallback((): CameraView => {
@@ -5911,15 +6955,15 @@ function PageContent() {
   }, [roomDepth, roomHeight, roomWidth]);
 
   const getPlan2DView = useCallback((): CameraView => {
-    const span = Math.max(planViewWidth, planViewDepth);
+    const span = Math.max(plan2DFitBounds.widthMeters, plan2DFitBounds.depthMeters);
     const height = span * 2.4 + roomHeight;
     return {
-      target: [0, 0, 0],
-      pos: [0, height, 0.001],
+      target: [plan2DFitBounds.centerX, 0, plan2DFitBounds.centerZ],
+      pos: [plan2DFitBounds.centerX, height, plan2DFitBounds.centerZ + 0.001],
       // Wider FOV plus higher camera keeps the full room visible in plan mode.
       fov: 30,
     };
-  }, [planViewDepth, planViewWidth, roomHeight]);
+  }, [plan2DFitBounds.centerX, plan2DFitBounds.centerZ, plan2DFitBounds.depthMeters, plan2DFitBounds.widthMeters, roomHeight]);
 
   const getWholeHome3DView = useCallback((): CameraView => {
     const span = Math.max(planViewWidth, planViewDepth, 4);
@@ -5932,6 +6976,30 @@ function PageContent() {
       fov: 46,
     };
   }, [planViewDepth, planViewWidth, roomHeight]);
+
+  useEffect(() => {
+    if (!sceneReady || viewMode !== "3d" || !hasWholeHousePlan) return;
+
+    const fitKey = [
+      designId ?? "local",
+      housePlan2D.rooms.length,
+    ].join(":");
+    if (initialWholeHome3DFitKeyRef.current === fitKey) return;
+
+    initialWholeHome3DFitKeyRef.current = fitKey;
+    if (Date.now() < cameraSelectionGuardUntilRef.current) return;
+    last3DViewRef.current = null;
+    pending3DViewRef.current = null;
+    applyQueued3DView(getWholeHome3DView(), 260);
+  }, [
+    applyQueued3DView,
+    designId,
+    getWholeHome3DView,
+    hasWholeHousePlan,
+    housePlan2D.rooms.length,
+    sceneReady,
+    viewMode,
+  ]);
 
   const handleEditorViewModeChange = useCallback(
     (next: EditorViewMode) => {
@@ -5948,10 +7016,10 @@ function PageContent() {
 
   const applyPlan2DCameraView = useCallback(
     ({
-      centerX = 0,
-      centerZ = 0,
-      widthMeters = planViewWidth,
-      depthMeters = planViewDepth,
+      centerX = plan2DFitBounds.centerX,
+      centerZ = plan2DFitBounds.centerZ,
+      widthMeters = plan2DFitBounds.widthMeters,
+      depthMeters = plan2DFitBounds.depthMeters,
     }: {
       centerX?: number;
       centerZ?: number;
@@ -5967,15 +7035,16 @@ function PageContent() {
       const viewportWidthPx = canvas?.clientWidth ?? window.innerWidth;
       const viewportHeightPx = canvas?.clientHeight ?? window.innerHeight;
       const leftInsetPx = viewportWidthPx >= 768 ? plan2DSafeAreaLeftPx : 0;
+      const rightInsetPx = viewportWidthPx >= 768 ? plan2DSafeAreaRightPx : 0;
       const bottomInsetPx = viewportWidthPx < 768 ? plan2DSafeAreaBottomPx : 0;
 
       camera.zoom = resolvePlanFitZoom({
-        viewportWidthPx: Math.max(320, viewportWidthPx - leftInsetPx),
+        viewportWidthPx: Math.max(320, viewportWidthPx - leftInsetPx - rightInsetPx),
         viewportHeightPx: Math.max(260, viewportHeightPx - bottomInsetPx),
         planWidthMeters: widthMeters,
         planDepthMeters: depthMeters,
       });
-      const targetX = centerX + (leftInsetPx > 0 ? -leftInsetPx / camera.zoom / 2 : 0);
+      const targetX = centerX + (rightInsetPx - leftInsetPx) / camera.zoom / 2;
       const targetZ = centerZ + (bottomInsetPx > 0 ? -bottomInsetPx / camera.zoom / 2 : 0);
       camera.up.set(0, 0, -1);
       camera.position.set(targetX, span + roomHeight + 6, targetZ);
@@ -5987,10 +7056,13 @@ function PageContent() {
       return true;
     },
     [
-      planViewDepth,
-      planViewWidth,
+      plan2DFitBounds.centerX,
+      plan2DFitBounds.centerZ,
+      plan2DFitBounds.depthMeters,
+      plan2DFitBounds.widthMeters,
       plan2DSafeAreaBottomPx,
       plan2DSafeAreaLeftPx,
+      plan2DSafeAreaRightPx,
       roomHeight,
       updateCameraViewFromScene,
       updateProjection,
@@ -6294,7 +7366,6 @@ function PageContent() {
         return;
       }
 
-      revokeFloorPlanUnderlayUrl();
       floorPlanUnderlayUrlRef.current = null;
 
       const { widthMeters, depthMeters } = resolveUnderlayWorldSize({
@@ -6304,6 +7375,7 @@ function PageContent() {
         planDepthMeters: planViewDepth,
       });
 
+      history.begin("Upload floor plan");
       setFloorPlanUnderlay({
         id: `underlay_${Date.now()}`,
         floorId: "floor_1",
@@ -6322,6 +7394,7 @@ function PageContent() {
         rotationDeg: 0,
         locked: true,
       });
+      history.commit();
       resetFloorPlanInteraction();
       setViewMode("2d");
       track("floor_plan_underlay_uploaded", {
@@ -6336,7 +7409,7 @@ function PageContent() {
       planViewDepth,
       planViewWidth,
       resetFloorPlanInteraction,
-      revokeFloorPlanUnderlayUrl,
+      history,
       setFloorPlanPdfSourceReady,
       setFloorPlanUnderlay,
       showRuleToast,
@@ -6344,14 +7417,18 @@ function PageContent() {
   );
 
   const handleFloorPlanUnderlayOpacityChange = useCallback((opacity: number) => {
-    setFloorPlanUnderlay((prev) =>
-      prev ? { ...prev, opacity: Math.max(0.15, Math.min(0.85, opacity)) } : prev
+    runCoalescedHistoryTransaction("Change floor plan opacity", () =>
+      setFloorPlanUnderlay((prev) =>
+        prev ? { ...prev, opacity: Math.max(0.15, Math.min(0.85, opacity)) } : prev
+      )
     );
-  }, [setFloorPlanUnderlay]);
+  }, [runCoalescedHistoryTransaction, setFloorPlanUnderlay]);
 
   const handleFloorPlanUnderlayLockChange = useCallback((locked: boolean) => {
-    setFloorPlanUnderlay((prev) => (prev ? { ...prev, locked } : prev));
-  }, [setFloorPlanUnderlay]);
+    runHistoryTransaction(locked ? "Lock floor plan" : "Unlock floor plan", () =>
+      setFloorPlanUnderlay((prev) => (prev ? { ...prev, locked } : prev))
+    );
+  }, [runHistoryTransaction, setFloorPlanUnderlay]);
 
   const handleFloorPlanPdfPageChange = useCallback(
     async (pageNumber: number) => {
@@ -6378,6 +7455,7 @@ function PageContent() {
           planDepthMeters: planViewDepth,
         });
 
+        history.begin("Change floor plan page");
         setFloorPlanUnderlay((prev) =>
           prev
             ? {
@@ -6391,9 +7469,10 @@ function PageContent() {
                 renderedPage: nextPage,
                 pageCount: rendered.pageCount,
                 calibration: undefined,
-              }
+            }
             : prev
         );
+        history.commit();
         resetFloorPlanInteraction();
         showRuleToast(`PDF page ${nextPage} rendered`);
         track("floor_plan_pdf_page_rendered", {
@@ -6411,6 +7490,7 @@ function PageContent() {
       planViewDepth,
       planViewWidth,
       resetFloorPlanInteraction,
+      history,
       setFloorPlanPdfRenderingPage,
       setFloorPlanUnderlay,
       showRuleToast,
@@ -6453,7 +7533,7 @@ function PageContent() {
       return;
     }
 
-    setFloorPlanUnderlay(nextUnderlay);
+    runHistoryTransaction("Calibrate floor plan", () => setFloorPlanUnderlay(nextUnderlay));
     resetFloorPlanCalibration(false);
     clearFloorPlanTraceBuffers();
     track("floor_plan_underlay_calibrated", {
@@ -6466,6 +7546,7 @@ function PageContent() {
     floorPlanUnderlay,
     clearFloorPlanTraceBuffers,
     resetFloorPlanCalibration,
+    runHistoryTransaction,
     setFloorPlanUnderlay,
     showRuleToast,
   ]);
@@ -6754,6 +7835,7 @@ function PageContent() {
       }
 
       const id = `opening-${Date.now()}`;
+      history.begin(opening.kind === "door" ? "Trace door" : "Trace window");
       setPlanOpenings((prev) => [
         ...prev,
         {
@@ -6761,6 +7843,7 @@ function PageContent() {
           ...opening,
         },
       ]);
+      history.commit();
       handleSelectPlanOverlay(id);
       setFloorPlanTraceOpeningPoints([]);
       completeConsumerOpeningPlacement();
@@ -6777,6 +7860,7 @@ function PageContent() {
       floorPlanTraceOpeningPoints,
       completeConsumerOpeningPlacement,
       handleSelectPlanOverlay,
+      history,
       housePlan2D.rooms,
       planOpenings,
       setFloorPlanTraceOpeningPoints,
@@ -6802,6 +7886,7 @@ function PageContent() {
 
       const opening = preview.opening;
       const id = `opening-${Date.now()}`;
+      history.begin(opening.kind === "door" ? "Place door" : "Place window");
       setPlanOpenings((prev) => [
         ...prev,
         {
@@ -6809,6 +7894,7 @@ function PageContent() {
           ...opening,
         },
       ]);
+      history.commit();
       handleSelectPlanOverlay(id);
       completeConsumerOpeningPlacement();
       showRuleToast(opening.kind === "door" ? "Door placed" : "Window placed");
@@ -6825,6 +7911,7 @@ function PageContent() {
       floorPlanUnderlay,
       completeConsumerOpeningPlacement,
       handleSelectPlanOverlay,
+      history,
       housePlan2D.rooms,
       planOpenings,
       setPlanOpenings,
@@ -6833,14 +7920,15 @@ function PageContent() {
   );
 
   const handleClearFloorPlanUnderlay = useCallback(() => {
-    revokeFloorPlanUnderlayUrl();
     floorPlanPdfSourceDataRef.current = null;
+    history.begin("Clear floor plan");
     setFloorPlanPdfSourceReady(false);
     setFloorPlanUnderlay(null);
+    history.commit();
     resetFloorPlanInteraction();
   }, [
+    history,
     resetFloorPlanInteraction,
-    revokeFloorPlanUnderlayUrl,
     setFloorPlanPdfSourceReady,
     setFloorPlanUnderlay,
   ]);
@@ -6855,13 +7943,19 @@ function PageContent() {
         last3DViewRef.current = cameraViewRef.current;
       }
       suppressNext3DViewSaveRef.current = false;
-      window.requestAnimationFrame(() => {
-        applyPlan2DCameraView();
-      });
+      if (previousViewMode !== "2d") {
+        window.requestAnimationFrame(() => {
+          applyPlan2DCameraView();
+        });
+      }
       return;
     }
 
     suppressNext3DViewSaveRef.current = false;
+    if (Date.now() < cameraSelectionGuardUntilRef.current) {
+      pending3DViewRef.current = null;
+      return;
+    }
     if (pending3DViewRef.current) {
       const pendingView = pending3DViewRef.current;
       pending3DViewRef.current = null;
@@ -6883,8 +7977,17 @@ function PageContent() {
 
     if (viewMode === "2d") {
       // For a true plan view, avoid up-vector singularity when looking straight down.
+      const canvas = canvasRef.current;
+      const viewportWidthPx = canvas?.clientWidth ?? viewportSize.width;
+      const leftInsetPx = viewportWidthPx >= 768 ? plan2DSafeAreaLeftPx : 0;
+      const rightInsetPx = viewportWidthPx >= 768 ? plan2DSafeAreaRightPx : 0;
+      const bottomInsetPx = viewportWidthPx < 768 ? plan2DSafeAreaBottomPx : 0;
+      const zoom = camera instanceof THREE.OrthographicCamera ? Math.max(1, camera.zoom) : 1;
+      const targetX = plan2DFitBounds.centerX + (rightInsetPx - leftInsetPx) / zoom / 2;
+      const targetZ =
+        plan2DFitBounds.centerZ + (bottomInsetPx > 0 ? -bottomInsetPx / zoom / 2 : 0);
       camera.up.set(0, 0, -1);
-      (controls.target as THREE.Vector3).set(0, 0, 0);
+      (controls.target as THREE.Vector3).set(targetX, 0, targetZ);
       controls.minPolarAngle = 0;
       controls.maxPolarAngle = 0;
       controls.minAzimuthAngle = 0;
@@ -6897,7 +8000,18 @@ function PageContent() {
 
     updateProjection(camera);
     controls.update();
-  }, [updateProjection, viewMode]);
+  }, [
+    plan2DFitBounds.centerX,
+    plan2DFitBounds.centerZ,
+    plan2DFitBounds.depthMeters,
+    plan2DFitBounds.widthMeters,
+    plan2DSafeAreaBottomPx,
+    plan2DSafeAreaLeftPx,
+    plan2DSafeAreaRightPx,
+    updateProjection,
+    viewMode,
+    viewportSize.width,
+  ]);
 
   const getEyeLevelView = useCallback((): CameraView => {
     const sofa =
@@ -7186,6 +8300,15 @@ function PageContent() {
 
   useEffect(() => {
     if (!designId) return;
+    if (!localBackupHydrated) return;
+    if (
+      lastPersistedSnapshotFingerprint &&
+      currentStoredDesignFingerprint === lastPersistedSnapshotFingerprint
+    ) {
+      setIsSaving(false);
+      return;
+    }
+
     let cancelled = false;
     setIsSaving(true);
     const t = setTimeout(async () => {
@@ -7228,14 +8351,13 @@ function PageContent() {
       clearTimeout(t);
     };
   }, [
+    currentStoredDesignFingerprint,
     designId,
     fingerprintStoredDesign,
     getStoredDesignForPersistence,
-    items,
-    roomDepth,
-    roomWidth,
+    lastPersistedSnapshotFingerprint,
+    localBackupHydrated,
     savedViews,
-    zones,
   ]);
 
   useEffect(() => {
@@ -8095,6 +9217,34 @@ function PageContent() {
     [getItemAABB]
   );
 
+  const isCatalogPlacementContainedInRoom = useCallback(
+    (
+      room: RoomSnapshot,
+      position: [number, number, number],
+      rotationY: number,
+      dimsMm: { w: number; d: number }
+    ) => {
+      const planRoom = houseRoomById.get(room.id);
+      return isCatalogPlacementFootprintInsideRoom({
+        room: {
+          id: room.id,
+          name: room.name,
+          shape: room.planShape ?? planRoom?.shape ?? "rectangle",
+          polygon: room.planPolygon ?? planRoom?.polygon,
+          x: planRoom?.x ?? 0,
+          z: planRoom?.z ?? 0,
+          w: room.geometry.width,
+          d: room.geometry.depth,
+        },
+        position,
+        rotationY,
+        dimsMm,
+        wallThickness: room.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness,
+      });
+    },
+    [houseRoomById]
+  );
+
   const getItemDisplayName = useCallback((item: DesignItem | null | undefined) => {
     if (!item) return null;
     return CATALOG_ITEMS[item.productId]?.title ?? "another item";
@@ -8188,6 +9338,18 @@ function PageContent() {
         position: [safeX, localTargetPosition[1], safeZ],
       };
 
+      if (
+        !isCatalogPlacementContainedInRoom(
+          targetRoom,
+          movedItem.position,
+          movedItem.rotationY ?? 0,
+          configuredDims
+        )
+      ) {
+        showRuleToast(`Place fully inside ${targetRoom.name}`);
+        return false;
+      }
+
       const blocker = findCatalogPlacementBlockerInRoom(
         targetRoom,
         movedItem.productId,
@@ -8232,7 +9394,6 @@ function PageContent() {
       history.commit();
       updateSelection(new Set([instanceId]), instanceId);
       showRuleToast(`Moved to ${targetRoom.name}`);
-      setUndoToast({ label: `Moved to ${targetRoom.name}` });
       return true;
     },
     [
@@ -8241,6 +9402,7 @@ function PageContent() {
       getItemDisplayName,
       history,
       houseRoomById,
+      isCatalogPlacementContainedInRoom,
       resolveConfiguredPlanningDimsMm,
       showRuleToast,
       updateSelection,
@@ -8282,6 +9444,12 @@ function PageContent() {
         );
         const candidatePosition: [number, number, number] = [safeX, position[1], safeZ];
         if (
+          isCatalogPlacementContainedInRoom(
+            targetRoom,
+            candidatePosition,
+            rotationY,
+            resolved.dimsMm
+          ) &&
           !catalogPlacementCollidesAgainst(
             productId,
             candidatePosition,
@@ -8299,6 +9467,7 @@ function PageContent() {
     [
       catalogPlacementCollidesAgainst,
       clampToCatalogPlacementRoom,
+      isCatalogPlacementContainedInRoom,
     ]
   );
 
@@ -8325,11 +9494,23 @@ function PageContent() {
           resolved.dimsMm.d / 1000,
           placement.rotationY
         );
+        const safePosition: [number, number, number] = [safeX, placement.position[1], safeZ];
+        if (
+          !isCatalogPlacementContainedInRoom(
+            targetRoom,
+            safePosition,
+            placement.rotationY,
+            resolved.dimsMm
+          )
+        ) {
+          showRuleToast(`Place fully inside ${targetRoom.name}`);
+          return false;
+        }
         const nextItem: PlacedItem = {
           instanceId,
           productId: placement.productId,
           variantId: resolved.variantId,
-          position: [safeX, placement.position[1], safeZ],
+          position: safePosition,
           rotationY: placement.rotationY,
           qty: 1,
           includeInCheckout: true,
@@ -8362,6 +9543,17 @@ function PageContent() {
         bundleRole: "primary",
         bundleQuantity,
       };
+      if (
+        !isCatalogPlacementContainedInRoom(
+          targetRoom,
+          primaryItem.position,
+          primaryItem.rotationY ?? 0,
+          resolved.dimsMm
+        )
+      ) {
+        showRuleToast(`Place fully inside ${targetRoom.name}`);
+        return false;
+      }
       const companionPosition = findBundleCompanionPlacement(
         targetRoom,
         placement.productId,
@@ -8400,6 +9592,7 @@ function PageContent() {
       clampToCatalogPlacementRoom,
       commitItemsToRoom,
       findBundleCompanionPlacement,
+      isCatalogPlacementContainedInRoom,
       newInstanceId,
       showRuleToast,
       updateSelection,
@@ -8464,6 +9657,16 @@ function PageContent() {
         : activeRoom;
     if (!targetRoom) return true;
     const resolved = resolveCatalogVariant(product, pendingCatalogPlacement.variantId);
+    if (
+      !isCatalogPlacementContainedInRoom(
+        targetRoom,
+        pendingCatalogPlacement.position,
+        pendingCatalogPlacement.rotationY,
+        resolved.dimsMm
+      )
+    ) {
+      return true;
+    }
     return catalogPlacementCollidesInRoom(
       targetRoom,
       pendingCatalogPlacement.productId,
@@ -8471,7 +9674,13 @@ function PageContent() {
       pendingCatalogPlacement.rotationY,
       resolved.dimsMm
     );
-  }, [activeRoom, catalogPlacementCollidesInRoom, pendingCatalogPlacement, roomSnapshotById]);
+  }, [
+    activeRoom,
+    catalogPlacementCollidesInRoom,
+    isCatalogPlacementContainedInRoom,
+    pendingCatalogPlacement,
+    roomSnapshotById,
+  ]);
   const pendingCatalogPlacementBlocker = useMemo(() => {
     if (!pendingCatalogPlacement) return null;
     const product = CATALOG_ITEMS[pendingCatalogPlacement.productId];
@@ -8551,6 +9760,16 @@ function PageContent() {
       if (!product) return false;
       const resolved = resolveCatalogVariant(product, placement.variantId);
       if (
+        !isCatalogPlacementContainedInRoom(
+          targetRoom,
+          placement.position,
+          placement.rotationY,
+          resolved.dimsMm
+        )
+      ) {
+        return false;
+      }
+      if (
         catalogPlacementCollidesInRoom(
           targetRoom,
           placement.productId,
@@ -8578,7 +9797,7 @@ function PageContent() {
       });
       return score.kind !== "blocks_path" && score.kind !== "cramped";
     },
-    [catalogPlacementCollidesInRoom, planOpenings]
+    [catalogPlacementCollidesInRoom, isCatalogPlacementContainedInRoom, planOpenings]
   );
   const hoverCatalogPlacementScore = useMemo<ManualPlacementScore | null>(() => {
     if (!hoverCatalogPlacement || pendingCatalogPlacement) return null;
@@ -8884,9 +10103,9 @@ function PageContent() {
       const targetWallThickness =
         targetRoom.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness;
       const [effectiveWidth, effectiveDepth] = getRotatedFootprint(widthMeters, depthMeters, 0);
-      const inset = Math.max(0.2, targetWallThickness + 0.18);
-      const maxX = Math.max(0, targetWidth / 2 - effectiveWidth / 2 - inset);
-      const maxZ = Math.max(0, targetDepth / 2 - effectiveDepth / 2 - inset);
+      const wallInset = getFurnitureWallInset(targetWallThickness);
+      const maxX = Math.max(0, targetWidth / 2 - effectiveWidth / 2 - wallInset);
+      const maxZ = Math.max(0, targetDepth / 2 - effectiveDepth / 2 - wallInset);
       const topCategory = mapToTopCategory(product.category, product);
       const wallFirst = new Set(["sofa", "tv_console", "sideboard", "floor_lamp", "dining_bench"]);
       const preferredZoneTypes: Zone["type"][] =
@@ -8950,6 +10169,16 @@ function PageContent() {
         );
         const position: [number, number, number] = [safeX, 0, safeZ];
         if (
+          !isCatalogPlacementContainedInRoom(
+            targetRoom,
+            position,
+            candidate.rotationY,
+            resolved.dimsMm
+          )
+        ) {
+          continue;
+        }
+        if (
           catalogPlacementCollidesInRoom(
             targetRoom,
             productId,
@@ -8992,7 +10221,13 @@ function PageContent() {
 
       return bestPlacement;
     },
-    [activeRoom, catalogPlacementCollidesInRoom, clampToCatalogPlacementRoom, planOpenings]
+    [
+      activeRoom,
+      catalogPlacementCollidesInRoom,
+      clampToCatalogPlacementRoom,
+      isCatalogPlacementContainedInRoom,
+      planOpenings,
+    ]
   );
 
   const pendingCatalogPlacementImprovement = useMemo(() => {
@@ -9279,6 +10514,8 @@ function PageContent() {
 
   const handlePlacementAwareRoomSelect = useCallback(
     (roomId: string) => {
+      preserveCameraAfterPlanOverlaySelection();
+
       if (targetPendingCatalogPlacementToRoom(roomId, { source: "room" })) {
         clearNonRoomSelection();
         setSelectedPlanRoomId(roomId);
@@ -9296,7 +10533,13 @@ function PageContent() {
 
       handleSwitchRoom(roomId);
     },
-    [clearNonRoomSelection, editorMode, handleSwitchRoom, targetPendingCatalogPlacementToRoom]
+    [
+      clearNonRoomSelection,
+      editorMode,
+      handleSwitchRoom,
+      preserveCameraAfterPlanOverlaySelection,
+      targetPendingCatalogPlacementToRoom,
+    ]
   );
 
   const nudgePendingCatalogPlacement = useCallback(
@@ -10741,6 +11984,12 @@ function PageContent() {
     };
   }, [onboardingState.enabled, editorMode, isClientPreview, items, constraintResults, designId]);
 
+  const hasPendingCloudSnapshotChanges = Boolean(
+    designId &&
+      lastPersistedSnapshotFingerprint &&
+      currentStoredDesignFingerprint !== lastPersistedSnapshotFingerprint
+  );
+
   const saveStatus = useMemo<EditorSaveStatus>(() => {
     if (isSaving) {
       return {
@@ -10777,7 +12026,7 @@ function PageContent() {
       };
     }
 
-    if (designId && lastDbSaveAt) {
+    if (designId && lastDbSaveAt && !hasPendingCloudSnapshotChanges) {
       return {
         kind: "saved",
         source: "cloud",
@@ -10809,6 +12058,7 @@ function PageContent() {
     };
   }, [
     designId,
+    hasPendingCloudSnapshotChanges,
     isSaving,
     lastCloudSaveError,
     lastDbSaveAt,
@@ -10956,12 +12206,31 @@ function PageContent() {
         const isGroupRotate = selectedSet.size > 1 && selectedSet.has(id);
         const source = options?.source ?? "canvas";
         if (!isGroupRotate) {
-          const previous = itemsRef.current.find((x) => x.instanceId === id)?.rotationY ?? 0;
+          const currentItem = itemsRef.current.find((x) => x.instanceId === id);
+          const previous = currentItem?.rotationY ?? 0;
           commitItems(
             (prev: PlacedItem[]) =>
-              prev.map((x) =>
-                x.instanceId === id ? { ...x, rotationY: resolvedRotationY } : x
-              ),
+              prev.map((x) => {
+                if (x.instanceId !== id) return x;
+                const product = CATALOG_ITEMS[x.productId];
+                if (!product) return { ...x, rotationY: resolvedRotationY };
+                const dims = resolveConfiguredPlanningDimsMm(x, product);
+                const [safeX, safeZ] = clampToActiveRoom(
+                  x.position[0],
+                  x.position[2],
+                  dims.w / 1000,
+                  dims.d / 1000,
+                  roomWidth,
+                  roomDepth,
+                  wallThickness,
+                  resolvedRotationY
+                );
+                return {
+                  ...x,
+                  position: [safeX, x.position[1] ?? 0, safeZ],
+                  rotationY: resolvedRotationY,
+                };
+              }),
             options?.actionLabel ?? "Rotate item"
           );
           track("editor_item_rotated", {
@@ -11063,7 +12332,7 @@ function PageContent() {
         showConstraintsForMoment(results);
         showConfidenceSummary(results);
         return true;
-      } catch (error) {
+    } catch (error) {
         console.error("[Editor] applyItemRotation failed", {
           id,
           targetRotationY,
@@ -11079,6 +12348,7 @@ function PageContent() {
       getItemAABB,
       getSelectionBounds,
       isDesigner,
+      resolveConfiguredPlanningDimsMm,
       rotationSnapEnabled,
       rotationSnapStepRadians,
       roomDepth,
@@ -11231,8 +12501,9 @@ function PageContent() {
       resolved.dimsMm.d / 1000,
       selectedItem.rotationY ?? 0
     );
-    const wallX = Math.max(0, roomWidth / 2 - wallThickness - effectiveWidth / 2);
-    const wallZ = Math.max(0, roomDepth / 2 - wallThickness - effectiveDepth / 2);
+    const wallInset = getFurnitureWallInset(wallThickness);
+    const wallX = Math.max(0, roomWidth / 2 - wallInset - effectiveWidth / 2);
+    const wallZ = Math.max(0, roomDepth / 2 - wallInset - effectiveDepth / 2);
     const candidates: Array<[number, number]> = [
       [-wallX, selectedItem.position[2]],
       [wallX, selectedItem.position[2]],
@@ -11320,6 +12591,17 @@ function PageContent() {
             ...item,
             position: [safeX, item.position[1] ?? 0, safeZ],
           };
+          if (
+            !isCatalogPlacementContainedInRoom(
+              targetRoom,
+              nextItem.position,
+              nextItem.rotationY ?? 0,
+              dims
+            )
+          ) {
+            showRuleToast(`Place fully inside ${targetRoom.name}`);
+            return;
+          }
           const blocker = findCatalogPlacementBlockerInRoom(
             targetRoom,
             nextItem.productId,
@@ -11376,7 +12658,6 @@ function PageContent() {
         history.commit();
         updateSelection(movedIds, movedItems[0]?.instanceId ?? null);
         showRuleToast(`Moved ${movedItems.length} items to ${targetRoom.name}`);
-        setUndoToast({ label: `Moved ${movedItems.length} items to ${targetRoom.name}` });
         return;
       }
       transferItemToRoom(selectedItem.instanceId, activeRoom.id, targetRoom, [
@@ -11395,6 +12676,7 @@ function PageContent() {
       getItemAABB,
       getItemDisplayName,
       history,
+      isCatalogPlacementContainedInRoom,
       isDesigner,
       resolveConfiguredPlanningDimsMm,
       roomSnapshotById,
@@ -11425,6 +12707,17 @@ function PageContent() {
         selectedItem.position[1] ?? 0,
         safeZ,
       ];
+      if (
+        !isCatalogPlacementContainedInRoom(
+          activeRoom,
+          nextPosition,
+          selectedItem.rotationY ?? 0,
+          dims
+        )
+      ) {
+        showRuleToast(`Place fully inside ${activeRoom.name}`);
+        return;
+      }
       const blocker = getItemDisplayName(
         findCatalogPlacementBlockerInRoom(
           activeRoom,
@@ -11456,6 +12749,7 @@ function PageContent() {
       commitItems,
       findCatalogPlacementBlockerInRoom,
       getItemDisplayName,
+      isCatalogPlacementContainedInRoom,
       isDesigner,
       roomDepth,
       roomWidth,
@@ -11477,6 +12771,39 @@ function PageContent() {
       );
     },
     [moveSelectedItemToPosition, selectedItem]
+  );
+
+  const nudgeSelectedPlanRoom = useCallback(
+    (deltaX: number, deltaZ: number) => {
+      if (!selectedPlanRoomContext || viewMode !== "2d" || !canEdit) return;
+      const nextX = roundPlanCoordinate(selectedPlanRoomContext.x + deltaX);
+      const nextZ = roundPlanCoordinate(selectedPlanRoomContext.z + deltaZ);
+      if (
+        doesHouseRoomOverlap(
+          selectedPlanRoomContext.id,
+          nextX,
+          nextZ,
+          selectedPlanRoomContext.w,
+          selectedPlanRoomContext.d,
+          housePlan2D.rooms
+        )
+      ) {
+        showRuleToast("Rooms cannot overlap");
+        return;
+      }
+      runHistoryTransaction("Nudge room", () => {
+        handleMoveRoom2D(selectedPlanRoomContext.id, nextX, nextZ, { snap: false });
+      });
+    },
+    [
+      canEdit,
+      handleMoveRoom2D,
+      housePlan2D.rooms,
+      runHistoryTransaction,
+      selectedPlanRoomContext,
+      showRuleToast,
+      viewMode,
+    ]
   );
 
   useEffect(() => {
@@ -11589,6 +12916,80 @@ function PageContent() {
     rotateSelectedByDegrees,
     rotatePendingCatalogPlacement,
     selectedItem,
+  ]);
+
+  useEffect(() => {
+    if (isClientPreview || editorMode === "present") return;
+    const handleSelectedPlanObjectShortcut = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const tagName = target?.tagName;
+      if (
+        tagName === "INPUT" ||
+        tagName === "TEXTAREA" ||
+        tagName === "SELECT" ||
+        target?.isContentEditable
+      ) {
+        return;
+      }
+
+      if (event.key === "Escape") {
+        const hasSelection =
+          Boolean(selectedPlanRoomContext) ||
+          Boolean(selectedPlanOverlayId) ||
+          selectedIdsRef.current.size > 0 ||
+          Boolean(selectedZoneId);
+        if (!hasSelection) return;
+        event.preventDefault();
+        clearAllSelection();
+        return;
+      }
+
+      if (!selectedPlanRoomContext || selectedPlanOverlayId || selectedItem) return;
+
+      if ((event.key === "Backspace" || event.key === "Delete") && canEdit) {
+        event.preventDefault();
+        handleDeleteSelectedPlanRoom(selectedPlanRoomContext.id);
+        return;
+      }
+
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "d" && canEdit) {
+        event.preventDefault();
+        handleDuplicateSelectedPlanRoom(selectedPlanRoomContext.id);
+        return;
+      }
+
+      if (viewMode !== "2d") return;
+      const nudgeStep = event.shiftKey ? 0.25 : 0.05;
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        nudgeSelectedPlanRoom(-nudgeStep, 0);
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault();
+        nudgeSelectedPlanRoom(nudgeStep, 0);
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+        nudgeSelectedPlanRoom(0, -nudgeStep);
+      } else if (event.key === "ArrowDown") {
+        event.preventDefault();
+        nudgeSelectedPlanRoom(0, nudgeStep);
+      }
+    };
+
+    window.addEventListener("keydown", handleSelectedPlanObjectShortcut);
+    return () => window.removeEventListener("keydown", handleSelectedPlanObjectShortcut);
+  }, [
+    canEdit,
+    clearAllSelection,
+    editorMode,
+    handleDeleteSelectedPlanRoom,
+    handleDuplicateSelectedPlanRoom,
+    isClientPreview,
+    nudgeSelectedPlanRoom,
+    selectedItem,
+    selectedPlanOverlayId,
+    selectedPlanRoomContext,
+    selectedZoneId,
+    viewMode,
   ]);
 
   const setSelectedRotationDegrees = useCallback(
@@ -11709,7 +13110,7 @@ function PageContent() {
   );
   const showPlanGuidedActionsToggle =
     !isClientPreview && !isDesigner && viewMode === "2d" && editorMode === "design";
-  const compactRoomPlanStatusBar = showPlanGuidedActionsToggle;
+  const compactRoomPlanStatusBar = showPlanGuidedActionsToggle || commercePanelVisibleForLayout;
   const showRoomPlanStatusHealth = !showPlanGuidedActionsToggle;
   const showPlanManualQuickActions =
     showPlanGuidedActionsToggle && !planGuidedActionsEnabled && !activePlanCanvasInteraction;
@@ -11895,6 +13296,199 @@ function PageContent() {
       sceneRoomItems.length,
     ]
   );
+  const qaDesignLayoutSnapshot = useMemo(
+    () =>
+      process.env.NODE_ENV !== "production"
+        ? {
+            viewMode,
+            editorMode,
+            activeRoomId: designSnapshot.activeRoomId,
+            activeRoomName: activeRoom?.name ?? "",
+            roomCount: designSnapshot.rooms.length,
+            roomItemCounts: designSnapshot.rooms
+              .map((room) => `${room.id}:${room.items.length}`)
+              .join(","),
+            planZoom: planDebugMetrics.zoom,
+            visibleLabelCount: planDebugMetrics.visibleLabelCount,
+            selectedPlanRoomId: selectedPlanRoomId ?? "",
+          }
+        : null,
+    [
+      activeRoom?.name,
+      designSnapshot.activeRoomId,
+      designSnapshot.rooms,
+      editorMode,
+      planDebugMetrics.visibleLabelCount,
+      planDebugMetrics.zoom,
+      selectedPlanRoomId,
+      viewMode,
+    ]
+  );
+  const commandPaletteActions = useMemo(
+    () => {
+      const actions: Array<{
+        id: string;
+        label: string;
+        hint: string;
+        enabled: boolean;
+        run: () => void;
+      }> = [
+        {
+          id: "undo",
+          label: undoName ? `Undo ${undoName}` : "Undo",
+          hint: "Revert the last edit",
+          enabled: canUndo,
+          run: undoSafe,
+        },
+        {
+          id: "redo",
+          label: redoName ? `Redo ${redoName}` : "Redo",
+          hint: "Restore the last undone edit",
+          enabled: canRedo,
+          run: redoSafe,
+        },
+        {
+          id: "fit-plan",
+          label: viewMode === "2d" ? "Fit plan" : "Fit view",
+          hint: "Reset the current camera framing",
+          enabled: true,
+          run: handleFitPlanView,
+        },
+        {
+          id: "toggle-view",
+          label: viewMode === "2d" ? "Switch to 3D" : "Switch to 2D plan",
+          hint: "Toggle the main editor view",
+          enabled: true,
+          run: () => handleEditorViewModeChange(viewMode === "2d" ? "3d" : "2d"),
+        },
+        {
+          id: "add-door",
+          label: "Add door",
+          hint: "Place a doorway on a wall",
+          enabled: housePlan2D.rooms.length > 0,
+          run: () => handleAddFloorPlanOpeningFromTool("door"),
+        },
+        {
+          id: "insert-default-door",
+          label: "Insert default door",
+          hint: "Add a centered south-wall door immediately",
+          enabled: true,
+          run: () => {
+            const id = `opening-${Date.now()}`;
+            runHistoryTransaction("Add door", () =>
+              setPlanOpenings((prev) => [
+                ...prev,
+                {
+                  id,
+                  wall: "south",
+                  kind: "door",
+                  offsetMm: 0,
+                  widthMm: 900,
+                },
+              ])
+            );
+            handleSelectPlanOverlay(id);
+          },
+        },
+        {
+          id: "add-window",
+          label: "Add window",
+          hint: "Place a window on a wall",
+          enabled: housePlan2D.rooms.length > 0,
+          run: () => handleAddFloorPlanOpeningFromTool("window"),
+        },
+        {
+          id: "delete-overlay",
+          label: "Delete selected plan item",
+          hint: "Remove the selected door, window, note, or fixture",
+          enabled: Boolean(selectedPlanOverlayId),
+          run: () => {
+            if (selectedPlanOverlayId) deletePlanOverlayById(selectedPlanOverlayId);
+          },
+        },
+        {
+          id: "duplicate-room",
+          label: "Duplicate selected room",
+          hint: "Copy the selected room beside the plan",
+          enabled: Boolean(selectedPlanRoomContext),
+          run: () => {
+            if (selectedPlanRoomContext) handleDuplicateSelectedPlanRoom(selectedPlanRoomContext.id);
+          },
+        },
+        {
+          id: "delete-room",
+          label: "Delete selected room",
+          hint: "Remove the selected room",
+          enabled: Boolean(selectedPlanRoomContext) && designSnapshot.rooms.length > 1,
+          run: () => {
+            if (selectedPlanRoomContext) handleDeleteSelectedPlanRoom(selectedPlanRoomContext.id);
+          },
+        },
+        {
+          id: "duplicate-item",
+          label: "Duplicate selected furniture",
+          hint: "Copy the currently selected item",
+          enabled: Boolean(selectedItem),
+          run: duplicateSelectedItem,
+        },
+        {
+          id: "delete-item",
+          label: "Delete selected furniture",
+          hint: "Remove the currently selected item",
+          enabled: Boolean(selectedItem),
+          run: deleteSelectedItem,
+        },
+        {
+          id: "preset-presentation",
+          label: "Use presentation preset",
+          hint: "Switch plan layers to presentation",
+          enabled: planLayerPreset !== "presentation",
+          run: () => runPlanOverlayCommand("preset:presentation"),
+        },
+        {
+          id: "preset-technical",
+          label: "Use technical preset",
+          hint: "Switch plan layers to technical",
+          enabled: planLayerPreset !== "technical",
+          run: () => runPlanOverlayCommand("preset:technical"),
+        },
+      ];
+      const query = commandPaletteQuery.trim().toLowerCase();
+      return query
+        ? actions.filter((action) =>
+            `${action.label} ${action.hint}`.toLowerCase().includes(query)
+          )
+        : actions;
+    },
+    [
+      canRedo,
+      canUndo,
+      commandPaletteQuery,
+      deletePlanOverlayById,
+      deleteSelectedItem,
+      designSnapshot.rooms.length,
+      duplicateSelectedItem,
+      handleAddFloorPlanOpeningFromTool,
+      handleDeleteSelectedPlanRoom,
+      handleDuplicateSelectedPlanRoom,
+      handleEditorViewModeChange,
+      handleFitPlanView,
+      housePlan2D.rooms.length,
+      handleSelectPlanOverlay,
+      planLayerPreset,
+      redoName,
+      redoSafe,
+      runHistoryTransaction,
+      runPlanOverlayCommand,
+      selectedItem,
+      selectedPlanOverlayId,
+      selectedPlanRoomContext,
+      setPlanOpenings,
+      undoName,
+      undoSafe,
+      viewMode,
+    ]
+  );
 
   return (
     <main
@@ -11941,7 +13535,127 @@ function PageContent() {
           hidden
         />
       ) : null}
-      <div className="absolute inset-0">
+      {qaDesignLayoutSnapshot ? (
+        <div
+          data-testid="qa-design-layout-debug"
+          data-view-mode={qaDesignLayoutSnapshot.viewMode}
+          data-editor-mode={qaDesignLayoutSnapshot.editorMode}
+          data-active-room-id={qaDesignLayoutSnapshot.activeRoomId}
+          data-active-room-name={qaDesignLayoutSnapshot.activeRoomName}
+          data-room-count={String(qaDesignLayoutSnapshot.roomCount)}
+          data-room-item-counts={qaDesignLayoutSnapshot.roomItemCounts}
+          data-plan-zoom={String(qaDesignLayoutSnapshot.planZoom)}
+          data-visible-label-count={String(qaDesignLayoutSnapshot.visibleLabelCount)}
+          data-selected-plan-room-id={qaDesignLayoutSnapshot.selectedPlanRoomId}
+          hidden
+        />
+      ) : null}
+      {qaDesignLayoutSnapshot && showLayoutDebugOverlay ? (
+        <div
+          data-testid="qa-design-layout-debug-overlay"
+          className="pointer-events-none fixed bottom-4 left-4 z-[80] rounded-lg border border-neutral-200 bg-white/95 px-3 py-2 text-[11px] font-semibold text-neutral-700 shadow-xl backdrop-blur"
+        >
+          <div>Room: {qaDesignLayoutSnapshot.activeRoomName || qaDesignLayoutSnapshot.activeRoomId}</div>
+          <div>Zoom: {qaDesignLayoutSnapshot.planZoom}</div>
+          <div>Labels: {qaDesignLayoutSnapshot.visibleLabelCount}</div>
+          <div>Items: {qaDesignLayoutSnapshot.roomItemCounts}</div>
+          <div>Undo: {historyDebugSnapshot.past.length} · Redo: {historyDebugSnapshot.future.length}</div>
+          <div>Txn: {historyDebugSnapshot.txn?.name ?? "none"}</div>
+        </div>
+      ) : null}
+      {!isClientPreview && commandPaletteOpen ? (
+        <div
+          data-testid="editor-command-palette"
+          className="fixed inset-0 z-[95] bg-black/30 px-4 pt-20 backdrop-blur-sm"
+          role="dialog"
+          aria-label="Command palette"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setCommandPaletteOpen(false);
+          }}
+        >
+          <div
+            className={
+              showDesignerTheme
+                ? "mx-auto w-[min(560px,100%)] overflow-hidden rounded-xl border border-white/15 bg-[#12151d] text-neutral-100 shadow-2xl"
+                : "mx-auto w-[min(560px,100%)] overflow-hidden rounded-xl border border-neutral-200 bg-white text-neutral-950 shadow-2xl"
+            }
+          >
+            <input
+              data-testid="editor-command-palette-input"
+              autoFocus
+              value={commandPaletteQuery}
+              onChange={(event) => setCommandPaletteQuery(event.currentTarget.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") {
+                  event.preventDefault();
+                  setCommandPaletteOpen(false);
+                  return;
+                }
+                if (event.key === "Enter") {
+                  const action = commandPaletteActions.find((entry) => entry.enabled);
+                  if (!action) return;
+                  event.preventDefault();
+                  action.run();
+                  setCommandPaletteOpen(false);
+                  setCommandPaletteQuery("");
+                }
+              }}
+              placeholder="Search commands"
+              className={
+                showDesignerTheme
+                  ? "h-12 w-full border-b border-white/10 bg-transparent px-4 text-sm font-semibold outline-none placeholder:text-neutral-500"
+                  : "h-12 w-full border-b border-neutral-200 bg-transparent px-4 text-sm font-semibold outline-none placeholder:text-neutral-400"
+              }
+            />
+            <div className="max-h-[min(460px,60vh)] overflow-y-auto p-2">
+              {commandPaletteActions.length === 0 ? (
+                <div className={showDesignerTheme ? "px-3 py-8 text-center text-sm text-neutral-500" : "px-3 py-8 text-center text-sm text-neutral-500"}>
+                  No commands found
+                </div>
+              ) : (
+                commandPaletteActions.map((action) => (
+                  <button
+                    key={action.id}
+                    type="button"
+                    data-testid={`editor-command-palette-action-${action.id}`}
+                    disabled={!action.enabled}
+                    className={
+                      showDesignerTheme
+                        ? "flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                        : "flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-40"
+                    }
+                    onClick={() => {
+                      action.run();
+                      setCommandPaletteOpen(false);
+                      setCommandPaletteQuery("");
+                    }}
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate font-semibold">{action.label}</span>
+                      <span className={showDesignerTheme ? "block truncate text-xs text-neutral-500" : "block truncate text-xs text-neutral-500"}>
+                        {action.hint}
+                      </span>
+                    </span>
+                    {!action.enabled ? (
+                      <span className={showDesignerTheme ? "shrink-0 text-[11px] font-semibold text-neutral-600" : "shrink-0 text-[11px] font-semibold text-neutral-400"}>
+                        Unavailable
+                      </span>
+                    ) : null}
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      ) : null}
+      <div
+        className="absolute inset-0"
+        style={
+          commercePanelDockWidthPx > 0
+            ? { right: `${commercePanelDockWidthPx}px` }
+            : undefined
+        }
+      >
         <div
           className="relative h-full w-full"
           onDragOver={handleCatalogCanvasDragOver}
@@ -11978,10 +13692,13 @@ function PageContent() {
           >
             <EditorCamera2D
               active={viewMode === "2d"}
-              roomWidth={planViewWidth}
-              roomDepth={planViewDepth}
+              roomWidth={plan2DFitBounds.widthMeters}
+              roomDepth={plan2DFitBounds.depthMeters}
               roomHeight={roomHeight}
+              centerX={plan2DFitBounds.centerX}
+              centerZ={plan2DFitBounds.centerZ}
               safeAreaLeftPx={plan2DSafeAreaLeftPx}
+              safeAreaRightPx={plan2DSafeAreaRightPx}
               safeAreaBottomPx={plan2DSafeAreaBottomPx}
             />
             <color attach="background" args={["#ffffff"]} />
@@ -12065,6 +13782,7 @@ function PageContent() {
                     onMoveRoom={handleMoveRoom2D}
                     onResizeRoom={handleResizeRoom2D}
                     onRoomDragStateChange={handlePlanRoomDragStateChange}
+                    onRoomResizeStateChange={handlePlanRoomResizeStateChange}
                     measurementUnit={planMeasurementUnit}
                     theme={effectivePlanTheme}
                     showGrid={effectivePlanLayers.grid}
@@ -12079,9 +13797,12 @@ function PageContent() {
                     onSelectOverlay={handleSelectPlanOverlay}
                     onDeleteOverlay={deletePlanOverlayById}
                     onMoveOpening={handleMoveOpening2D}
+                    onResizeOpening={handleResizeOpening2D}
                     onAddDoorwaySuggestion={handleAddSuggestedDoorway}
+                    suppressedDoorwaySuggestionKeys={suppressedDoorwaySuggestionKeys}
                     onMoveFixedElement={handleMoveFixedElement2D}
                     onMoveAnnotation={handleMoveAnnotation2D}
+                    onOverlayDragStateChange={handlePlanOverlayDragStateChange}
                     drawRoomMode={blankGridRoomDrawActive}
                     drawRoomPoints={floorPlanTraceRoomPoints}
                     drawRoomPreviewPoint={blankGridRoomPreviewPoint}
@@ -12094,17 +13815,11 @@ function PageContent() {
                     traceOpeningMode={floorPlanTraceOpeningMode && !floorPlanUnderlay}
                     traceOpeningKind={floorPlanTraceOpeningKind}
                     onTraceOpeningPoint={handleBlankGridTraceOpeningPoint}
-                    cameraNavigation={{
-                      enabled: isDesigner && !floorPlanTraceRoomMode && !floorPlanTraceOpeningMode,
-                      cameraPosition: cameraView.pos,
-                      cameraTarget: cameraView.target,
-                      onMoveCamera: handleWholeHomeMoveCamera,
-                      onMoveTarget: handleWholeHomeMoveTarget,
-                    }}
                     openings={mapPlanOpeningsToRoomRenderer(editorScene2D.openings)}
                     fixedElements={mapPlanFixedElementsToRoomRenderer(editorScene2D.fixedElements)}
                     annotations={mapPlanAnnotationsToRoomRenderer(editorScene2D.annotations)}
                     zones={planZones2D}
+                    onPlanDebugMetricsChange={handlePlanDebugMetricsChange}
                   />
                   <PlanQualityHintOverlay
                     rooms={housePlan2D.rooms}
@@ -12119,10 +13834,14 @@ function PageContent() {
                     activeRoomId={designSnapshot.activeRoomId}
                     activeFloorLevel={activeFloorLevel}
                     wallHeight={Math.min(roomHeight, 1.55)}
+                    physicalWallHeight={roomHeight}
                     stackedFloors={stackedFloorView}
                     fadeInactiveFloors
                     interactive={editorMode !== "present" && !isClientPreview}
                     onSelectRoom={handlePlacementAwareRoomSelect}
+                    onSelectOpening={handleSelectPlanOverlay}
+                    onMoveOpening={handleMoveOpening2D}
+                    onOpeningDragStateChange={handlePlanOpeningDragStateChange3D}
                   />
                 ) : (
                   <Room
@@ -12181,43 +13900,45 @@ function PageContent() {
                 />
               )}
 
-              {!isClientPreview &&
-                editorMode !== "present" &&
-                zones.map((zone) => {
-                  const bounds = getZoneBounds(zone);
-                  if (!bounds) return null;
-                  const compatible = activePlacementCompatibleZoneIds.has(zone.id);
-                  const showingPlacementZones =
-                    pendingCatalogPlacement !== null || hoverCatalogPlacement !== null;
-                  return (
-                    <SceneZoneOutline
-                      key={zone.id}
-                      data-testid={zone.type === "seating" ? "seating-zone" : `${zone.type}-zone`}
-                      bounds={bounds}
-                      label={getZoneLabel(zone.type)}
-                      selected={zone.id === selectedZoneId}
-                      highlighted={compatible}
-                      dimmed={showingPlacementZones && !compatible}
-                      helperLabel={compatible ? `Tap to place in ${getZoneLabel(zone.type)}` : undefined}
-                      onSelect={() => {
-                        if (pendingCatalogPlacement) {
-                          if (!compatible || !activeRoom) {
-                            showRuleToast(`${getZoneLabel(zone.type)} is not a recommended zone for this item`);
+              {!isClientPreview && editorMode !== "present" && (
+                <group position={[activeRoomPlanOffset.x, 0, activeRoomPlanOffset.z]}>
+                  {zones.map((zone) => {
+                    const bounds = getZoneBounds(zone);
+                    if (!bounds) return null;
+                    const compatible = activePlacementCompatibleZoneIds.has(zone.id);
+                    const showingPlacementZones =
+                      pendingCatalogPlacement !== null || hoverCatalogPlacement !== null;
+                    return (
+                      <SceneZoneOutline
+                        key={zone.id}
+                        data-testid={zone.type === "seating" ? "seating-zone" : `${zone.type}-zone`}
+                        bounds={bounds}
+                        label={getZoneLabel(zone.type)}
+                        selected={zone.id === selectedZoneId}
+                        highlighted={compatible}
+                        dimmed={showingPlacementZones && !compatible}
+                        helperLabel={compatible ? `Tap to place in ${getZoneLabel(zone.type)}` : undefined}
+                        onSelect={() => {
+                          if (pendingCatalogPlacement) {
+                            if (!compatible || !activeRoom) {
+                              showRuleToast(`${getZoneLabel(zone.type)} is not a recommended zone for this item`);
+                              return;
+                            }
+                            targetPendingCatalogPlacementToRoom(activeRoom.id, {
+                              source: "zone",
+                              localPosition: [bounds.centerX, 0, bounds.centerZ],
+                              zoneLabel: getZoneLabel(zone.type),
+                            });
                             return;
                           }
-                          targetPendingCatalogPlacementToRoom(activeRoom.id, {
-                            source: "zone",
-                            localPosition: [bounds.centerX, 0, bounds.centerZ],
-                            zoneLabel: getZoneLabel(zone.type),
-                          });
-                          return;
-                        }
-                        setSelectedZoneId(zone.id);
-                        clearSelection();
-                      }}
-                    />
-                  );
-                })}
+                          setSelectedZoneId(zone.id);
+                          clearSelection();
+                        }}
+                      />
+                    );
+                  })}
+                </group>
+              )}
 
               {sceneRoomItems.map((sceneEntry) => {
                 const it = sceneEntry.item;
@@ -12316,6 +14037,7 @@ function PageContent() {
                     roomPlanShape={sceneEntry.roomPlanShape}
                     roomPlanPolygon={sceneEntry.roomPlanPolygon}
                     wallThickness={sceneEntry.roomWallThickness}
+                    wallContactInset={sceneEntry.roomWallInset}
                     onDraggingChange={handleDraggingChange}
                     walls={isActiveSceneRoom ? walls : []}
                     instanceId={it.instanceId}
@@ -12362,6 +14084,15 @@ function PageContent() {
                         const pointerRoom = hasWholeHousePlan
                           ? findPlanRoomAtWorldPoint(pos[0], pos[2])
                           : null;
+                        if (hasWholeHousePlan && !pointerRoom) {
+                          setCrossRoomDragTarget({
+                            roomId: sceneEntry.roomId,
+                            label: "Place inside a room",
+                            valid: false,
+                            kind: "item",
+                          });
+                          return false;
+                        }
                         const localPos: [number, number, number] = [
                           pos[0] - roomOffset.x,
                           pos[1] ?? 0,
@@ -12403,19 +14134,32 @@ function PageContent() {
                               configuredPlanningDims.d / 1000,
                               mover.rotationY ?? 0
                             );
+                            const targetPosition: [number, number, number] = [
+                              safeX,
+                              targetLocalPos[1],
+                              safeZ,
+                            ];
                             const blocker = findCatalogPlacementBlockerInRoom(
                               targetRoom,
                               mover.productId,
-                              [safeX, targetLocalPos[1], safeZ],
+                              targetPosition,
+                              mover.rotationY ?? 0,
+                              configuredPlanningDims
+                            );
+                            const targetContained = isCatalogPlacementContainedInRoom(
+                              targetRoom,
+                              targetPosition,
                               mover.rotationY ?? 0,
                               configuredPlanningDims
                             );
                             setCrossRoomDragTarget({
                               roomId: targetRoom.id,
-                              label: blocker
+                              label: !targetContained
+                                ? `Place fully inside ${targetRoom.name}`
+                                : blocker
                                 ? getItemDisplayName(blocker) ?? targetRoom.name
                                 : targetRoom.name,
-                              valid: !blocker,
+                              valid: targetContained && !blocker,
                               kind: "item",
                             });
                             return true;
@@ -12606,6 +14350,11 @@ function PageContent() {
                         showConfidenceSummary(results);
                       } catch (error) {
                         console.error("[Editor] onDragEnd handler failed", { id, pos, error });
+                      } finally {
+                        if (dragCommitRef.current) {
+                          history.commit();
+                          dragCommitRef.current = false;
+                        }
                       }
                     }}
                   />
@@ -12704,7 +14453,7 @@ function PageContent() {
             )}
               {!pendingCatalogPlacementScene && hoverCatalogPlacementScene && (
                 <group
-                  data-testid="catalog-placement-hover-ghost"
+                  userData={{ testId: "catalog-placement-hover-ghost" }}
                   position={hoverCatalogPlacementScene.position}
                   rotation={[0, hoverCatalogPlacementScene.rotationY, 0]}
                 >
@@ -12744,19 +14493,17 @@ function PageContent() {
             {viewMode === "2d" ? (
               <MapControls
                 ref={orbitControlsRef}
-                target={[plan2DCameraTarget.x, 0, plan2DCameraTarget.z]}
                 enableDamping
                 dampingFactor={0.08}
                 enablePan={!isClientPreview}
                 enableZoom={!isClientPreview}
                 enableRotate={false}
                 screenSpacePanning
-                enabled={!sofaDragging && !planRoomDragging}
+                enabled={!sofaDragging && !planRoomDragging && !planRoomResizing && !planOverlayDragging}
               />
             ) : (
               <OrbitControls
                 ref={orbitControlsRef}
-                target={[...DEFAULT_EDITOR_CAMERA_VIEW.target]}
                 enableDamping
                 dampingFactor={0.08}
                 enablePan={!isClientPreview}
@@ -12767,7 +14514,7 @@ function PageContent() {
                 maxDistance={Math.max(24, Math.max(planViewWidth, planViewDepth) * 6)}
                 minPolarAngle={EDITOR_3D_MIN_POLAR_ANGLE}
                 maxPolarAngle={EDITOR_3D_MAX_POLAR_ANGLE}
-                enabled={!sofaDragging}
+                enabled={!sofaDragging && !planRoomDragging && !planRoomResizing && !planOverlayDragging}
                 onChange={() => {
                   if (!isCameraAnimatingRef.current) {
                     updateCameraViewFromScene();
@@ -12778,32 +14525,487 @@ function PageContent() {
           </Canvas>
           </CanvasErrorBoundary>
 
-          {activeRoom && !isClientPreview && (
+          {!isClientPreview && (activeRoom || viewMode === "3d") && (
             <div
+              data-testid="editor-top-shelf"
+              className="absolute left-1/2 top-[60px] z-30 flex -translate-x-1/2 flex-wrap items-center justify-center gap-2 md:left-[calc(50%+1rem)]"
+              style={{ width: "min(56rem, calc(100% - 2rem))" }}
+            >
+              {activeRoom && (
+                <div className="pointer-events-auto min-w-0 max-w-full">
+                  <RoomPlanStatusBar
+                    roomName={activeRoom.name}
+                    roomTypeLabel={getRoomTypeLabel(activeRoom.roomType)}
+                    roomCount={designSnapshot.rooms.length}
+                    widthMeters={roomWidth}
+                    depthMeters={roomDepth}
+                    healthLevel={showRoomPlanStatusHealth ? activeRoomHealthSummary?.level : undefined}
+                    healthScore={showRoomPlanStatusHealth ? activeRoomHealthSummary?.placementScore : undefined}
+                    healthNextAction={showRoomPlanStatusHealth ? activeRoomHealthSummary?.nextAction : undefined}
+                    viewMode={viewMode}
+                    disabled={editorMode === "present"}
+                    dark={showDesignerTheme}
+                    compact={compactRoomPlanStatusBar}
+                    onViewModeChange={handleEditorViewModeChange}
+                    onReviewHealth={reviewActiveRoomHealth}
+                    onFitPlan={handleFitPlanView}
+                    onRenameRoom={() => handleRenameSelectedPlanRoom(activeRoom.id)}
+                  />
+                </div>
+              )}
+
+              {viewMode === "3d" && (
+                <div
+                  data-testid="scene-performance-control"
+                  data-collapsed={scenePerformanceCollapsed ? "true" : "false"}
+                  className={
+                    showDesignerTheme
+                      ? "pointer-events-auto flex shrink-0 max-w-full items-center gap-1 rounded-full border border-white/10 bg-[#151820]/90 p-1 text-[11px] font-semibold text-neutral-200 shadow-md backdrop-blur"
+                      : "pointer-events-auto flex shrink-0 max-w-full items-center gap-1 rounded-full border border-neutral-200 bg-white/90 p-1 text-[11px] font-semibold text-neutral-700 shadow-md backdrop-blur"
+                  }
+                  aria-label="Scene quality"
+                >
+                  {scenePerformanceCollapsed ? (
+                    <button
+                      type="button"
+                      data-testid="scene-performance-expand"
+                      aria-label="Expand scene quality controls"
+                      aria-expanded="false"
+                      className={
+                        showDesignerTheme
+                          ? "rounded-full px-3 py-1.5 text-neutral-200 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-blue-400/50"
+                          : "rounded-full px-3 py-1.5 text-neutral-700 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-neutral-900/20"
+                      }
+                      onClick={() => setScenePerformanceCollapsed(false)}
+                    >
+                      {scenePerformanceMode === "auto"
+                        ? liteSceneEnabled
+                          ? "Auto Lite"
+                          : "Auto"
+                        : scenePerformanceMode === "quality"
+                          ? "Quality"
+                          : "Lite"}
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        data-testid="scene-performance-collapse"
+                        aria-label="Collapse scene quality controls"
+                        aria-expanded="true"
+                        className={
+                          showDesignerTheme
+                            ? "h-7 w-7 rounded-full text-neutral-400 hover:bg-white/10 hover:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-400/50"
+                            : "h-7 w-7 rounded-full text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/20"
+                        }
+                        onClick={() => setScenePerformanceCollapsed(true)}
+                      >
+                        -
+                      </button>
+                      <span
+                        className={
+                          showDesignerTheme
+                            ? "hidden px-1 text-neutral-400 sm:inline"
+                            : "hidden px-1 text-neutral-500 sm:inline"
+                        }
+                      >
+                        Scene
+                      </span>
+                      {(["auto", "quality", "lite"] as const).map((option) => {
+                        const active = scenePerformanceMode === option;
+                        const label =
+                          option === "auto"
+                            ? liteSceneEnabled
+                              ? "Auto Lite"
+                              : "Auto"
+                            : option === "quality"
+                              ? "Quality"
+                              : "Lite";
+                        return (
+                          <button
+                            key={option}
+                            type="button"
+                            data-testid={`scene-performance-${option}`}
+                            data-active={active ? "true" : "false"}
+                            className={
+                              active
+                                ? showDesignerTheme
+                                  ? "rounded-full bg-blue-500 px-2.5 py-1.5 text-white"
+                                  : "rounded-full bg-neutral-950 px-2.5 py-1.5 text-white"
+                                : showDesignerTheme
+                                  ? "rounded-full px-2.5 py-1.5 text-neutral-300 hover:bg-white/10"
+                                  : "rounded-full px-2.5 py-1.5 text-neutral-600 hover:bg-neutral-100"
+                            }
+                            onClick={() => handleScenePerformanceModeChange(option)}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {!isClientPreview && selectedPlanRoomContext && !visiblePlanOpening && (
+            <div
+              data-testid="selected-plan-room-actions"
               className={
-                compactRoomPlanStatusBar
-                  ? "absolute left-1/2 top-[4.5rem] z-30 -translate-x-1/2"
-                  : "absolute left-1/2 top-20 z-30 -translate-x-1/2"
+                showDesignerTheme
+                  ? "absolute left-1/2 top-[112px] z-30 flex -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl border border-white/15 bg-[#12151dcc] px-3 py-2 text-xs text-neutral-100 shadow-xl backdrop-blur"
+                  : "absolute left-1/2 top-[112px] z-30 flex -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white/95 px-3 py-2 text-xs text-neutral-800 shadow-xl backdrop-blur"
+              }
+              style={{ maxWidth: "calc(100% - 2rem)" }}
+            >
+              <span className="font-semibold">{selectedPlanRoomContext.name}</span>
+              <span className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>
+                {selectedPlanRoomContext.w.toFixed(1)}m x {selectedPlanRoomContext.d.toFixed(1)}m
+              </span>
+              <button
+                type="button"
+                data-testid="selected-plan-room-fit"
+                className={
+                  showDesignerTheme
+                    ? "rounded-lg bg-white px-2.5 py-1.5 font-semibold text-neutral-950 hover:bg-neutral-200"
+                    : "rounded-lg bg-neutral-950 px-2.5 py-1.5 font-semibold text-white hover:bg-neutral-800"
+                }
+                onClick={() => handleFitSelectedPlanRoom(selectedPlanRoomContext.id)}
+              >
+                Fit
+              </button>
+              <button
+                type="button"
+                data-testid="selected-plan-room-rename"
+                className={
+                  showDesignerTheme
+                    ? "rounded-lg border border-white/15 px-2.5 py-1.5 font-semibold text-neutral-100 hover:bg-white/10"
+                    : "rounded-lg border border-neutral-200 px-2.5 py-1.5 font-semibold text-neutral-700 hover:bg-neutral-50"
+                }
+                onClick={() => handleRenameSelectedPlanRoom(selectedPlanRoomContext.id)}
+              >
+                Rename
+              </button>
+              <button
+                type="button"
+                data-testid="selected-plan-room-duplicate"
+                className={
+                  showDesignerTheme
+                    ? "rounded-lg border border-white/15 px-2.5 py-1.5 font-semibold text-neutral-100 hover:bg-white/10"
+                    : "rounded-lg border border-neutral-200 px-2.5 py-1.5 font-semibold text-neutral-700 hover:bg-neutral-50"
+                }
+                onClick={() => handleDuplicateSelectedPlanRoom(selectedPlanRoomContext.id)}
+              >
+                Duplicate
+              </button>
+              <button
+                type="button"
+                data-testid="selected-plan-room-delete"
+                className={
+                  showDesignerTheme
+                    ? "rounded-lg border border-red-400/30 px-2.5 py-1.5 font-semibold text-red-100 hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-40"
+                    : "rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 font-semibold text-red-700 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-40"
+                }
+                disabled={designSnapshot.rooms.length <= 1}
+                onClick={() => handleDeleteSelectedPlanRoom(selectedPlanRoomContext.id)}
+              >
+                Delete
+              </button>
+            </div>
+          )}
+
+          {!isClientPreview && visiblePlanOpening && selectedPlanOverlayId && (
+            <div
+              data-testid="selected-plan-opening-actions"
+              className={
+                showDesignerTheme
+                  ? "absolute left-1/2 top-[112px] z-30 flex -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl border border-white/15 bg-[#12151dcc] px-3 py-2 text-xs text-neutral-100 shadow-xl backdrop-blur"
+                  : "absolute left-1/2 top-[112px] z-30 flex -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white/95 px-3 py-2 text-xs text-neutral-800 shadow-xl backdrop-blur"
+              }
+              style={{ maxWidth: "calc(100% - 2rem)" }}
+            >
+              <span className="font-semibold">
+                {visiblePlanOpening.kind === "door" ? "Door" : "Window"} selected
+              </span>
+              <span className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>
+                {visiblePlanOpening.wall}
+              </span>
+              <label
+                className={
+                  showDesignerTheme
+                    ? "flex items-center gap-1 rounded-lg border border-white/10 bg-white/10 px-2 py-1 text-[11px] font-semibold text-neutral-200"
+                    : "flex items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2 py-1 text-[11px] font-semibold text-neutral-700"
+                }
+              >
+                <span>W</span>
+                <input
+                  data-testid="selected-plan-opening-width-input"
+                  type="number"
+                  min={0.4}
+                  max={Math.max(0.4, visiblePlanOpeningWallSpanMeters - 0.06)}
+                  step={0.05}
+                  value={(visiblePlanOpening.widthMm / 1000).toFixed(2)}
+                  onChange={(event) => {
+                    const widthMeters = Number.parseFloat(event.currentTarget.value);
+                    if (!Number.isFinite(widthMeters)) return;
+                    handleUpdateOpeningMetrics2D(visiblePlanOpening.id, { widthMeters });
+                  }}
+                  className={
+                    showDesignerTheme
+                      ? "w-16 bg-transparent text-right text-xs text-neutral-50 outline-none"
+                      : "w-16 bg-transparent text-right text-xs text-neutral-900 outline-none"
+                  }
+                />
+                <span className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>m</span>
+              </label>
+              <label
+                className={
+                  showDesignerTheme
+                    ? "flex items-center gap-1 rounded-lg border border-white/10 bg-white/10 px-2 py-1 text-[11px] font-semibold text-neutral-200"
+                    : "flex items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2 py-1 text-[11px] font-semibold text-neutral-700"
+                }
+              >
+                <span>H</span>
+                <input
+                  data-testid="selected-plan-opening-height-input"
+                  type="number"
+                  min={0.5}
+                  max={visiblePlanOpeningMaxHeightMeters}
+                  step={0.05}
+                  value={(
+                    Math.min(
+                      visiblePlanOpeningMaxHeightMeters,
+                      (visiblePlanOpening.heightMm ??
+                        PLAN_OPENING_DEFAULT_HEIGHT_METERS * 1000) / 1000
+                    )
+                  ).toFixed(2)}
+                  onChange={(event) => {
+                    const requestedHeightMeters = Number.parseFloat(event.currentTarget.value);
+                    if (!Number.isFinite(requestedHeightMeters)) return;
+                    const heightMeters = Math.min(
+                      Math.max(0.5, requestedHeightMeters),
+                      visiblePlanOpeningMaxHeightMeters
+                    );
+                    handleUpdateOpeningMetrics2D(visiblePlanOpening.id, { heightMeters });
+                  }}
+                  className={
+                    showDesignerTheme
+                      ? "w-16 bg-transparent text-right text-xs text-neutral-50 outline-none"
+                      : "w-16 bg-transparent text-right text-xs text-neutral-900 outline-none"
+                  }
+                />
+                <span className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>m</span>
+              </label>
+              <label
+                className={
+                  showDesignerTheme
+                    ? "flex items-center gap-1 rounded-lg border border-white/10 bg-white/10 px-2 py-1 text-[11px] font-semibold text-neutral-200"
+                    : "flex items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2 py-1 text-[11px] font-semibold text-neutral-700"
+                }
+              >
+                <span>Pos</span>
+                <input
+                  data-testid="selected-plan-opening-offset-input"
+                  type="number"
+                  step={0.05}
+                  value={(visiblePlanOpening.offsetMm / 1000).toFixed(2)}
+                  onChange={(event) => {
+                    const offsetMeters = Number.parseFloat(event.currentTarget.value);
+                    if (!Number.isFinite(offsetMeters)) return;
+                    handleUpdateOpeningMetrics2D(visiblePlanOpening.id, { offsetMeters });
+                  }}
+                  className={
+                    showDesignerTheme
+                      ? "w-16 bg-transparent text-right text-xs text-neutral-50 outline-none"
+                      : "w-16 bg-transparent text-right text-xs text-neutral-900 outline-none"
+                  }
+                />
+                <span className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>m</span>
+              </label>
+              <button
+                type="button"
+                data-testid="selected-plan-opening-delete"
+                className={
+                  showDesignerTheme
+                    ? "rounded-lg border border-red-400/30 px-2.5 py-1.5 font-semibold text-red-100 hover:bg-red-500/10"
+                    : "rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 font-semibold text-red-700 hover:bg-red-100"
+                }
+                onClick={() => {
+                  deletePlanOverlayById(selectedPlanOverlayId);
+                  showRuleToast("Opening deleted");
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          )}
+
+          {!isClientPreview && selectedObjectInspector && !(editorMode === "adjust" && selectedProduct) && (
+            <div
+              data-testid="selection-inspector"
+              className={
+                showDesignerTheme
+                  ? "pointer-events-auto absolute right-4 top-[160px] z-30 hidden w-72 rounded-xl border border-white/15 bg-[#12151dcc] p-3 text-xs text-neutral-100 shadow-xl backdrop-blur md:block"
+                  : "pointer-events-auto absolute right-4 top-[160px] z-30 hidden w-72 rounded-xl border border-neutral-200 bg-white/95 p-3 text-xs text-neutral-800 shadow-xl backdrop-blur md:block"
               }
             >
-              <RoomPlanStatusBar
-                roomName={activeRoom.name}
-                roomTypeLabel={getRoomTypeLabel(activeRoom.roomType)}
-                roomCount={designSnapshot.rooms.length}
-                widthMeters={roomWidth}
-                depthMeters={roomDepth}
-                healthLevel={showRoomPlanStatusHealth ? activeRoomHealthSummary?.level : undefined}
-                healthScore={showRoomPlanStatusHealth ? activeRoomHealthSummary?.placementScore : undefined}
-                healthNextAction={showRoomPlanStatusHealth ? activeRoomHealthSummary?.nextAction : undefined}
-                viewMode={viewMode}
-                disabled={editorMode === "present"}
-                dark={showDesignerTheme}
-                compact={compactRoomPlanStatusBar}
-                onViewModeChange={handleEditorViewModeChange}
-                onReviewHealth={reviewActiveRoomHealth}
-                onFitPlan={handleFitPlanView}
-                onRenameRoom={() => handleRenameSelectedPlanRoom(activeRoom.id)}
-              />
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className={showDesignerTheme ? "text-[11px] font-semibold uppercase text-neutral-400" : "text-[11px] font-semibold uppercase text-neutral-500"}>
+                    {selectedObjectInspector.kind}
+                  </div>
+                  <div className="mt-1 truncate text-sm font-semibold">{selectedObjectInspector.title}</div>
+                  <div className={showDesignerTheme ? "mt-0.5 truncate text-neutral-400" : "mt-0.5 truncate text-neutral-500"}>
+                    {selectedObjectInspector.detail}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  data-testid="selection-inspector-clear"
+                  className={
+                    showDesignerTheme
+                      ? "rounded-lg border border-white/15 px-2 py-1 font-semibold text-neutral-200 hover:bg-white/10"
+                      : "rounded-lg border border-neutral-200 px-2 py-1 font-semibold text-neutral-600 hover:bg-neutral-50"
+                  }
+                  onClick={clearAllSelection}
+                >
+                  Clear
+                </button>
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                {selectedObjectInspector.metrics.map((metric) => (
+                  <div
+                    key={metric}
+                    className={
+                      showDesignerTheme
+                        ? "rounded-lg border border-white/10 bg-white/5 px-2.5 py-2 font-semibold text-neutral-100"
+                        : "rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-2 font-semibold text-neutral-800"
+                    }
+                  >
+                    {metric}
+                  </div>
+                ))}
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {selectedItem ? (
+                  <>
+                    <button
+                      type="button"
+                      data-testid="selection-inspector-center-item"
+                      className={showDesignerTheme ? "rounded-lg bg-white px-2.5 py-1.5 font-semibold text-neutral-950 hover:bg-neutral-200" : "rounded-lg bg-neutral-950 px-2.5 py-1.5 font-semibold text-white hover:bg-neutral-800"}
+                      onClick={centerSelectedItemInRoom}
+                    >
+                      Center
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="selection-inspector-snap-item"
+                      className={showDesignerTheme ? "rounded-lg border border-white/15 px-2.5 py-1.5 font-semibold text-neutral-100 hover:bg-white/10" : "rounded-lg border border-neutral-200 px-2.5 py-1.5 font-semibold text-neutral-700 hover:bg-neutral-50"}
+                      onClick={snapSelectedItemToNearestWall}
+                    >
+                      Snap wall
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="selection-inspector-duplicate-item"
+                      className={showDesignerTheme ? "rounded-lg border border-white/15 px-2.5 py-1.5 font-semibold text-neutral-100 hover:bg-white/10" : "rounded-lg border border-neutral-200 px-2.5 py-1.5 font-semibold text-neutral-700 hover:bg-neutral-50"}
+                      onClick={duplicateSelectedItem}
+                    >
+                      Duplicate
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="selection-inspector-delete-item"
+                      className={showDesignerTheme ? "rounded-lg border border-red-400/30 px-2.5 py-1.5 font-semibold text-red-100 hover:bg-red-500/10" : "rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 font-semibold text-red-700 hover:bg-red-100"}
+                      onClick={deleteSelectedItem}
+                    >
+                      Delete
+                    </button>
+                  </>
+                ) : selectedPlanRoomContext && !visiblePlanOpening && !selectedPlanFixedElement && !selectedPlanAnnotation ? (
+                  <>
+                    <button
+                      type="button"
+                      data-testid="selection-inspector-fit-room"
+                      className={showDesignerTheme ? "rounded-lg bg-white px-2.5 py-1.5 font-semibold text-neutral-950 hover:bg-neutral-200" : "rounded-lg bg-neutral-950 px-2.5 py-1.5 font-semibold text-white hover:bg-neutral-800"}
+                      onClick={() => handleFitSelectedPlanRoom(selectedPlanRoomContext.id)}
+                    >
+                      Fit
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="selection-inspector-duplicate-room"
+                      className={showDesignerTheme ? "rounded-lg border border-white/15 px-2.5 py-1.5 font-semibold text-neutral-100 hover:bg-white/10" : "rounded-lg border border-neutral-200 px-2.5 py-1.5 font-semibold text-neutral-700 hover:bg-neutral-50"}
+                      onClick={() => handleDuplicateSelectedPlanRoom(selectedPlanRoomContext.id)}
+                    >
+                      Duplicate
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="selection-inspector-delete-room"
+                      className={showDesignerTheme ? "rounded-lg border border-red-400/30 px-2.5 py-1.5 font-semibold text-red-100 hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-40" : "rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 font-semibold text-red-700 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-40"}
+                      disabled={designSnapshot.rooms.length <= 1}
+                      onClick={() => handleDeleteSelectedPlanRoom(selectedPlanRoomContext.id)}
+                    >
+                      Delete
+                    </button>
+                  </>
+                ) : selectedPlanOverlayId ? (
+                  <button
+                    type="button"
+                    data-testid="selection-inspector-delete-overlay"
+                    className={showDesignerTheme ? "rounded-lg border border-red-400/30 px-2.5 py-1.5 font-semibold text-red-100 hover:bg-red-500/10" : "rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 font-semibold text-red-700 hover:bg-red-100"}
+                    onClick={() => deletePlanOverlayById(selectedPlanOverlayId)}
+                  >
+                    Delete
+                  </button>
+                ) : null}
+              </div>
+            </div>
+          )}
+
+          {plan2DQualityReviewPanelVisible && (
+            <div
+              data-testid="plan-quality-review-panel"
+              className={
+                showDesignerTheme
+                  ? "pointer-events-auto absolute right-4 z-30 hidden w-80 rounded-xl border border-white/15 bg-[#12151dcc] p-3 text-xs text-neutral-100 shadow-xl backdrop-blur md:block"
+                  : "pointer-events-auto absolute right-4 z-30 hidden w-80 rounded-xl border border-neutral-200 bg-white/95 p-3 text-xs text-neutral-800 shadow-xl backdrop-blur md:block"
+              }
+              style={{ top: plan2DQualityReviewPanelTopPx }}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="text-sm font-semibold">Plan review</div>
+                  <div className={showDesignerTheme ? "mt-0.5 text-neutral-400" : "mt-0.5 text-neutral-500"}>
+                    {floorPlanQualityReport.label} · {floorPlanQualityReport.score}/100
+                  </div>
+                </div>
+                <span className={showDesignerTheme ? "rounded-full bg-white/10 px-2 py-1 font-semibold text-neutral-200" : "rounded-full bg-neutral-100 px-2 py-1 font-semibold text-neutral-700"}>
+                  {floorPlanQualityReport.issues.length}
+                </span>
+              </div>
+              <div className="mt-3 space-y-2">
+                {floorPlanQualityReport.issues.slice(0, 3).map((issue) => (
+                  <button
+                    key={issue.id}
+                    type="button"
+                    data-testid={`plan-quality-review-issue-${issue.id}`}
+                    className={
+                      showDesignerTheme
+                        ? "w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-left hover:bg-white/10"
+                        : "w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-left hover:bg-white"
+                    }
+                    onClick={() => handlePlanQualityAction(issue.action, issue)}
+                  >
+                    <span className="block font-semibold">{issue.title}</span>
+                    <span className={showDesignerTheme ? "mt-0.5 block text-neutral-400" : "mt-0.5 block text-neutral-500"}>
+                      {issue.suggestedFix}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
@@ -13252,71 +15454,6 @@ function PageContent() {
                   Dismiss
                 </button>
               </div>
-            </div>
-          )}
-
-          {viewMode === "3d" && !isClientPreview && (
-            <div
-              data-testid="scene-performance-control"
-              className={
-                showDesignerTheme
-                  ? `absolute left-4 top-20 z-30 flex items-center gap-2 rounded-lg border border-white/10 bg-[#151820]/90 p-1.5 text-xs font-semibold text-neutral-200 shadow-xl backdrop-blur ${
-                      designControlsPanelVisibleForLayout
-                        ? isDesigner
-                          ? "md:left-[28rem] md:top-56"
-                          : "md:left-[23.5rem] md:top-56"
-                        : ""
-                    }`
-                  : `absolute left-4 top-20 z-30 flex items-center gap-2 rounded-lg border border-neutral-200 bg-white/90 p-1.5 text-xs font-semibold text-neutral-700 shadow-xl backdrop-blur ${
-                      designControlsPanelVisibleForLayout
-                        ? isDesigner
-                          ? "md:left-[28rem] md:top-56"
-                          : "md:left-[23.5rem] md:top-56"
-                        : ""
-                    }`
-              }
-              aria-label="Scene quality"
-            >
-              <span
-                className={
-                  showDesignerTheme
-                    ? "hidden px-1 text-neutral-400 sm:inline"
-                    : "hidden px-1 text-neutral-500 sm:inline"
-                }
-              >
-                Scene
-              </span>
-              {(["auto", "quality", "lite"] as const).map((option) => {
-                const active = scenePerformanceMode === option;
-                const label =
-                  option === "auto"
-                    ? liteSceneEnabled
-                      ? "Auto Lite"
-                      : "Auto"
-                    : option === "quality"
-                      ? "Quality"
-                      : "Lite";
-                return (
-                  <button
-                    key={option}
-                    type="button"
-                    data-testid={`scene-performance-${option}`}
-                    data-active={active ? "true" : "false"}
-                    className={
-                      active
-                        ? showDesignerTheme
-                          ? "rounded-md bg-blue-500 px-2.5 py-1.5 text-white"
-                          : "rounded-md bg-neutral-950 px-2.5 py-1.5 text-white"
-                        : showDesignerTheme
-                          ? "rounded-md px-2.5 py-1.5 text-neutral-300 hover:bg-white/10"
-                          : "rounded-md px-2.5 py-1.5 text-neutral-600 hover:bg-neutral-100"
-                    }
-                    onClick={() => handleScenePerformanceModeChange(option)}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
             </div>
           )}
 
@@ -13847,9 +15984,11 @@ function PageContent() {
       {/* Layer 2C: Commerce Panel (visible in BUY mode) */}
       {editorMode === "buy" && (
         <div
-          className={`absolute right-4 top-20 z-20 w-85 max-h-[calc(100vh-6rem)] overflow-y-auto pr-1 space-y-4 transition-opacity duration-300 ${
+          data-testid="shopping-dock"
+          className={`absolute right-4 top-20 z-20 max-h-[calc(100vh-6rem)] space-y-4 overflow-y-auto pr-1 transition-opacity duration-300 ${
             isClientPreview ? "pointer-events-none opacity-0" : "opacity-100"
           }`}
+          style={{ width: "min(calc(100vw - 2rem), 21.25rem)" }}
           aria-hidden={isClientPreview}
         >
           <div
@@ -13916,7 +16055,7 @@ function PageContent() {
       {/* Layer 2B: Inspector Panel (visible in ADJUST mode when item selected) */}
       {editorMode === "adjust" && selectedProduct && (
         <div
-          className={`absolute right-4 top-20 z-40 w-[320px] md:w-85 max-h-[calc(100vh-6rem)] overflow-y-auto pr-1 transition-opacity duration-300 ${
+          className={`absolute right-4 top-20 z-40 w-[320px] max-h-[calc(100vh-6rem)] overflow-y-auto pr-1 transition-opacity duration-300 md:w-[21.25rem] ${
             isClientPreview ? "pointer-events-none opacity-0" : "opacity-100"
           }`}
           aria-hidden={isClientPreview}
@@ -13926,8 +16065,8 @@ function PageContent() {
             data-testid="selected-item-panel"
             className={
               showDesignerTheme
-                ? "designer-panel designer-panel-strong w-85 rounded-xl p-4"
-                : "w-85 rounded-xl bg-white p-4 shadow"
+                ? "designer-panel designer-panel-strong w-full rounded-xl p-4"
+                : "w-full rounded-xl bg-white p-4 shadow"
             }
           >
             <div
@@ -14183,7 +16322,7 @@ function PageContent() {
                           }}
                         >
                           <span className="flex items-center gap-3">
-                            <span className="flex h-14 w-20 shrink-0 items-center justify-center">
+                            <span className="flex h-14 w-24 shrink-0 items-center justify-center">
                               <JaronConfigurationDiagram
                                 diagram={option.diagram}
                                 active={active}
@@ -14260,7 +16399,174 @@ function PageContent() {
               </div>
             ) : null}
 
-            {!showJaronConfigurationSelector && armStyleOptions?.length ? (
+            {showAuburnConfigurationSelector && visibleAuburnConfigurationGroup ? (
+              <div className="pt-3" data-testid="auburn-configuration-selector">
+                <div className="flex items-baseline justify-between gap-3">
+                  <div
+                    className={
+                      showDesignerTheme
+                        ? "designer-text-primary text-sm font-semibold"
+                        : "text-sm font-semibold text-neutral-900"
+                    }
+                  >
+                    Configuration
+                  </div>
+                  <div className={showDesignerTheme ? "designer-text-secondary text-xs" : "text-xs text-neutral-500"}>
+                    {auburnConfigurationGroups.reduce(
+                      (count, group) =>
+                        count +
+                        group.options.reduce(
+                          (groupCount, option) => groupCount + (option.orientations?.length ?? 1),
+                          0
+                        ),
+                      0
+                    )} configurations
+                  </div>
+                </div>
+
+                <div className="mt-2 overflow-hidden rounded-lg border border-[#e8ded0] bg-[#fbfaf2]">
+                  <div
+                    className="grid border-b border-[#ece4d8] bg-[#f5f1e7]"
+                    style={{
+                      gridTemplateColumns: `repeat(${auburnConfigurationGroups.length}, minmax(0, 1fr))`,
+                    }}
+                  >
+                    {auburnConfigurationGroups.map((group) => {
+                      const firstOption = group.options[0];
+                      const firstOrientationTarget = firstOption?.orientations?.find((orientation) =>
+                        Boolean(CATALOG_ITEMS[orientation.productId] ?? importedModelById.get(orientation.productId))
+                      )?.productId;
+                      const targetProductId = firstOption?.productId ?? firstOrientationTarget;
+                      const active = group.key === visibleAuburnConfigurationGroup.key;
+                      const disabled = !targetProductId || !canEdit;
+
+                      return (
+                        <button
+                          key={group.key}
+                          data-testid={`auburn-config-tab-${group.key}`}
+                          data-active={active ? "true" : "false"}
+                          className={`min-h-12 px-3 py-2 text-left text-xs font-semibold tracking-[0.24em] ${
+                            active
+                              ? "border-b-2 border-[#93452a] text-[#93452a]"
+                              : "text-[#4b1225]"
+                          }`}
+                          disabled={disabled}
+                          onClick={() => {
+                            if (!targetProductId) return;
+                            switchSelectedProductModel(
+                              targetProductId,
+                              `Change Auburn configuration to ${group.label}`
+                            );
+                          }}
+                        >
+                          {group.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="max-h-[30rem] overflow-y-auto p-2">
+                    {visibleAuburnConfigurationGroup.options.map((option) => {
+                      const active = option.key === visibleAuburnConfigurationOption?.key;
+                      const activeOrientation = option.orientations?.find(
+                        (orientation) => orientation.productId === selectedProduct?.id
+                      );
+                      const orientationTarget =
+                        activeOrientation?.productId ??
+                        option.orientations?.find((orientation) =>
+                          Boolean(CATALOG_ITEMS[orientation.productId] ?? importedModelById.get(orientation.productId))
+                        )?.productId;
+                      const targetProductId = option.productId ?? orientationTarget;
+                      const disabled = !targetProductId || !canEdit;
+
+                      return (
+                        <div key={option.key} className="mb-1 last:mb-0">
+                          <button
+                            data-testid={`auburn-config-option-${option.key}`}
+                            data-active={active ? "true" : "false"}
+                            className={`block w-full rounded-lg px-3 py-3 text-left transition ${
+                              active
+                                ? "bg-[#4b0f22] text-white"
+                                : "text-[#4b1225] hover:bg-white"
+                            }`}
+                            disabled={disabled}
+                            onClick={() => {
+                              if (!targetProductId) return;
+                              switchSelectedProductModel(
+                                targetProductId,
+                                `Change Auburn model to ${option.label}`
+                              );
+                            }}
+                          >
+                            <span className="flex items-center gap-3">
+                              <span className="flex h-14 w-24 shrink-0 items-center justify-center">
+                                <AuburnConfigurationDiagram
+                                  diagram={activeOrientation?.diagram ?? option.diagram}
+                                  active={active}
+                                />
+                              </span>
+                              <span className="min-w-0">
+                                <span className="block text-sm font-semibold leading-snug">
+                                  {option.label}
+                                </span>
+                                <span className={`mt-1 block text-xs ${active ? "text-white/80" : "text-[#6f5a61]"}`}>
+                                  {option.description}
+                                </span>
+                              </span>
+                            </span>
+                          </button>
+
+                          {active && option.orientations?.length ? (
+                            <div className="rounded-b-lg bg-white px-3 pb-3 pt-2 text-[#4b1225]">
+                              <div className="mb-2 text-center text-sm font-semibold">
+                                Which orientation would you like?
+                              </div>
+                              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                {option.orientations.map((orientation) => {
+                                  const orientationActive = orientation.productId === selectedProduct?.id;
+                                  const orientationAvailable = Boolean(
+                                    CATALOG_ITEMS[orientation.productId] ?? importedModelById.get(orientation.productId)
+                                  );
+
+                                  return (
+                                    <button
+                                      key={orientation.key}
+                                      data-testid={`auburn-orientation-${orientation.key}`}
+                                      data-active={orientationActive ? "true" : "false"}
+                                      className={`flex min-h-16 items-center justify-center gap-2 overflow-hidden rounded-lg px-2 py-2 text-xs font-semibold sm:text-sm ${
+                                        orientationActive
+                                          ? "bg-[#4b0f22] text-white"
+                                          : "bg-white text-[#4b1225] hover:bg-[#f5f1e7]"
+                                      }`}
+                                      disabled={!canEdit || !orientationAvailable}
+                                      onClick={() => {
+                                        switchSelectedProductModel(
+                                          orientation.productId,
+                                          `Change Auburn orientation to ${orientation.label}`
+                                        );
+                                      }}
+                                    >
+                                      <AuburnConfigurationDiagram
+                                        diagram={orientation.diagram}
+                                        active={orientationActive}
+                                        compact
+                                      />
+                                      <span className="min-w-0 whitespace-nowrap leading-tight">{orientation.label}</span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
+            {!showJaronConfigurationSelector && !showAuburnConfigurationSelector && armStyleOptions?.length ? (
               <div className="pt-3">
                 <div
                   className={
@@ -14300,8 +16606,30 @@ function PageContent() {
                                 (it) => it.instanceId === selectedItem.instanceId
                               );
                               const currentVariantId = current?.variantId;
+                              const currentVariant = selectedProduct.variants.find(
+                                (variant) => variant.id === currentVariantId
+                              );
+                              const currentFinishCode = String(currentVariant?.finishCode ?? "")
+                                .trim()
+                                .toLowerCase();
+                              const currentFinishLabel = String(
+                                currentVariant?.finishLabel ?? currentVariant?.label ?? ""
+                              )
+                                .trim()
+                                .toLowerCase();
                               const nextVariant =
                                 optionProduct.variants.find((v) => v.id === currentVariantId) ??
+                                optionProduct.variants.find(
+                                  (v) =>
+                                    currentFinishCode.length > 0 &&
+                                    String(v.finishCode ?? "").trim().toLowerCase() === currentFinishCode
+                                ) ??
+                                optionProduct.variants.find(
+                                  (v) =>
+                                    currentFinishLabel.length > 0 &&
+                                    String(v.finishLabel ?? v.label ?? "").trim().toLowerCase() ===
+                                      currentFinishLabel
+                                ) ??
                                 optionProduct.variants[0];
 
                               return prev.map((it) =>
@@ -14331,7 +16659,7 @@ function PageContent() {
               </div>
             ) : null}
 
-            {!showJaronConfigurationSelector && showVariantsSection ? (
+            {!showJaronConfigurationSelector && !showAuburnConfigurationSelector && showVariantsSection ? (
               <div className="pt-2">
               <div
                 className={
@@ -14400,8 +16728,30 @@ function PageContent() {
                                 (it) => it.instanceId === selectedItem.instanceId
                               );
                               const currentVariantId = current?.variantId;
+                              const currentVariant = selectedProduct.variants.find(
+                                (variant) => variant.id === currentVariantId
+                              );
+                              const currentFinishCode = String(currentVariant?.finishCode ?? "")
+                                .trim()
+                                .toLowerCase();
+                              const currentFinishLabel = String(
+                                currentVariant?.finishLabel ?? currentVariant?.label ?? ""
+                              )
+                                .trim()
+                                .toLowerCase();
                               const nextVariant =
                                 optionProduct.variants.find((v) => v.id === currentVariantId) ??
+                                optionProduct.variants.find(
+                                  (v) =>
+                                    currentFinishCode.length > 0 &&
+                                    String(v.finishCode ?? "").trim().toLowerCase() === currentFinishCode
+                                ) ??
+                                optionProduct.variants.find(
+                                  (v) =>
+                                    currentFinishLabel.length > 0 &&
+                                    String(v.finishLabel ?? v.label ?? "").trim().toLowerCase() ===
+                                      currentFinishLabel
+                                ) ??
                                 optionProduct.variants[0];
 
                               return prev.map((it) =>
@@ -14450,8 +16800,30 @@ function PageContent() {
                                 (it) => it.instanceId === selectedItem.instanceId
                               );
                               const currentVariantId = current?.variantId;
+                              const currentVariant = selectedProduct.variants.find(
+                                (variant) => variant.id === currentVariantId
+                              );
+                              const currentFinishCode = String(currentVariant?.finishCode ?? "")
+                                .trim()
+                                .toLowerCase();
+                              const currentFinishLabel = String(
+                                currentVariant?.finishLabel ?? currentVariant?.label ?? ""
+                              )
+                                .trim()
+                                .toLowerCase();
                               const nextVariant =
                                 optionProduct.variants.find((v) => v.id === currentVariantId) ??
+                                optionProduct.variants.find(
+                                  (v) =>
+                                    currentFinishCode.length > 0 &&
+                                    String(v.finishCode ?? "").trim().toLowerCase() === currentFinishCode
+                                ) ??
+                                optionProduct.variants.find(
+                                  (v) =>
+                                    currentFinishLabel.length > 0 &&
+                                    String(v.finishLabel ?? v.label ?? "").trim().toLowerCase() ===
+                                      currentFinishLabel
+                                ) ??
                                 optionProduct.variants[0];
 
                               return prev.map((it) =>
@@ -14500,8 +16872,30 @@ function PageContent() {
                                 (it) => it.instanceId === selectedItem.instanceId
                               );
                               const currentVariantId = current?.variantId;
+                              const currentVariant = selectedProduct.variants.find(
+                                (variant) => variant.id === currentVariantId
+                              );
+                              const currentFinishCode = String(currentVariant?.finishCode ?? "")
+                                .trim()
+                                .toLowerCase();
+                              const currentFinishLabel = String(
+                                currentVariant?.finishLabel ?? currentVariant?.label ?? ""
+                              )
+                                .trim()
+                                .toLowerCase();
                               const nextVariant =
                                 optionProduct.variants.find((v) => v.id === currentVariantId) ??
+                                optionProduct.variants.find(
+                                  (v) =>
+                                    currentFinishCode.length > 0 &&
+                                    String(v.finishCode ?? "").trim().toLowerCase() === currentFinishCode
+                                ) ??
+                                optionProduct.variants.find(
+                                  (v) =>
+                                    currentFinishLabel.length > 0 &&
+                                    String(v.finishLabel ?? v.label ?? "").trim().toLowerCase() ===
+                                      currentFinishLabel
+                                ) ??
                                 optionProduct.variants[0];
 
                               return prev.map((it) =>
@@ -14686,8 +17080,30 @@ function PageContent() {
                                 (it) => it.instanceId === selectedItem.instanceId
                               );
                               const currentVariantId = current?.variantId;
+                              const currentVariant = selectedProduct.variants.find(
+                                (variant) => variant.id === currentVariantId
+                              );
+                              const currentFinishCode = String(currentVariant?.finishCode ?? "")
+                                .trim()
+                                .toLowerCase();
+                              const currentFinishLabel = String(
+                                currentVariant?.finishLabel ?? currentVariant?.label ?? ""
+                              )
+                                .trim()
+                                .toLowerCase();
                               const nextVariant =
                                 optionProduct.variants.find((v) => v.id === currentVariantId) ??
+                                optionProduct.variants.find(
+                                  (v) =>
+                                    currentFinishCode.length > 0 &&
+                                    String(v.finishCode ?? "").trim().toLowerCase() === currentFinishCode
+                                ) ??
+                                optionProduct.variants.find(
+                                  (v) =>
+                                    currentFinishLabel.length > 0 &&
+                                    String(v.finishLabel ?? v.label ?? "").trim().toLowerCase() ===
+                                      currentFinishLabel
+                                ) ??
                                 optionProduct.variants[0];
 
                               return prev.map((it) =>
@@ -15449,12 +17865,14 @@ function PageContent() {
                     }
                   >
                     Selected: {(() => {
-                      if (!hasWoodColourOptions) return activeStructuredVariant.colourLabel;
+                      if (!hasWoodColourOptions) return getMaterialDisplayLabel(activeStructuredVariant.variant);
                       const woodEntries = groupedVisibleColourVariants.flatMap((group) => group.entries);
                       const activeWoodEntry =
                         woodEntries.find((entry) => entry.variant.id === selectedItem?.variantId) ??
                         woodEntries[0];
-                      return activeWoodEntry?.colourLabel ?? activeStructuredVariant.colourLabel;
+                      return activeWoodEntry
+                        ? getMaterialDisplayLabel(activeWoodEntry.variant)
+                        : getMaterialDisplayLabel(activeStructuredVariant.variant);
                     })()}
                   </div>
                 ) : null}
@@ -15489,7 +17907,7 @@ function PageContent() {
                     Boolean(selectedProduct?.id.includes("hugg")) &&
                     (hasWoodColourOptions || previewSwatchGroup.includes("wood"));
                   const useWoodPreviewSwatch = previewSwatchGroup.includes("wood") || isHuggWoodPreview;
-                  const previewSwatchUrl = useWoodPreviewSwatch
+                  const previewSwatchUrl = getHighResolutionSwatchUrl(useWoodPreviewSwatch
                     ? (selectedProduct?.id.includes("hugg")
                         ? HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE[previewFinishKey] ??
                           HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE[previewFinishLabelKey] ??
@@ -15505,15 +17923,8 @@ function PageContent() {
                           .toLowerCase()
                           .replace(/[^a-z0-9]+/g, "-")}`
                       ] ??
-                      null;
-                  const previewTitle =
-                    previewEntry.variant.finishLabel?.trim() ||
-                    (previewFinishKey
-                      ? previewFinishKey
-                          .split("-")
-                          .map((part) => (part ? part[0].toUpperCase() + part.slice(1) : part))
-                          .join(" ")
-                      : previewEntry.colourLabel);
+                      null) ?? null;
+                  const previewTitle = getMaterialDisplayLabel(previewEntry.variant);
                   const previewSubtitle = isHuggWoodPreview
                     ? "Wood finish"
                     : [previewEntry.materialType, previewGroup?.label].filter(Boolean).join(" • ");
@@ -15632,7 +18043,7 @@ function PageContent() {
                             (hasWoodColourOptions || swatchGroup.includes("wood"));
                           const useWoodSwatchTexture = swatchGroup.includes("wood") || isHuggWoodSwatch;
                           const importedSwatchTextureUrl = variant.swatchTextureUrl?.trim() || null;
-                          const swatchTextureUrl = importedSwatchTextureUrl ??
+                          const swatchTextureUrl = getHighResolutionSwatchUrl(importedSwatchTextureUrl ??
                             (useWoodSwatchTexture
                             ? (selectedProduct?.id.includes("hugg")
                                 ? HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE[finishKey] ??
@@ -15649,7 +18060,8 @@ function PageContent() {
                                   .toLowerCase()
                                   .replace(/[^a-z0-9]+/g, "-")}`
                               ] ??
-                              null);
+                              null)) ?? null;
+                          const materialDisplayLabel = getMaterialDisplayLabel(variant);
                           return (
                             <button
                               key={variant.id}
@@ -15698,7 +18110,7 @@ function PageContent() {
                                       ? { ...it, variantId: targetVariant.id }
                                       : it
                                   ),
-                                  `Change colour to ${colourLabel}`
+                                  `Change colour to ${materialDisplayLabel}`
                                 );
                               }}
                               onMouseEnter={(event) => {
@@ -15758,7 +18170,7 @@ function PageContent() {
                                   current?.variantId === variant.id ? null : current
                                 );
                               }}
-                              aria-label={`Select ${colourLabel.trim() || variant.finishLabel?.trim() || "finish"}`}
+                              aria-label={`Select ${materialDisplayLabel || "finish"}`}
                             />
                           );
                         })}
@@ -15987,6 +18399,13 @@ function PageContent() {
           isAuthed={!!session?.user}
           isDesigner={isDesigner}
           canEdit={canEdit}
+          collapsed={designPanelCollapsed}
+          onCollapsedChange={(collapsed) => {
+            setDesignPanelCollapsed(collapsed);
+            if (!collapsed) {
+              setDesignPanelOpen(true);
+            }
+          }}
           aiDesignEnabled={aiDesignEnabled}
           viewMode={viewMode}
           style={style}
@@ -16031,6 +18450,7 @@ function PageContent() {
           visiblePlanOpening={visiblePlanOpening}
           visiblePlanOpeningRoomName={visiblePlanOpeningRoomName}
           visiblePlanOpeningWallSpanMeters={visiblePlanOpeningWallSpanMeters}
+          visiblePlanOpeningMaxHeightMeters={visiblePlanOpeningMaxHeightMeters}
           planRoomCount={housePlan2D.rooms.length}
           planItemCount={items.length}
           planOpeningCount={planOpenings.length}
@@ -16078,10 +18498,6 @@ function PageContent() {
           onSelectFloorPlanTool={handleSelectFloorPlanTool}
           onDrawFloorPlanRoom={() => handleFloorPlanDrawRoomModeChange("rectangle_wall")}
           onAddFloorPlanOpeningFromTool={handleAddFloorPlanOpeningFromTool}
-          onHide={() => {
-            setDesignPanelOpen(false);
-            setPlanFocusPanelRevealed(false);
-          }}
           onSignIn={signInWithReturn}
           onGoFurnish={goFurnish}
           onGoAiDesign={goAiDesign}
@@ -17053,7 +19469,11 @@ function PageContent() {
                                   ? "rounded-lg bg-[#151820] px-3 py-2 text-xs text-neutral-200"
                                   : "rounded-lg bg-gray-100 px-3 py-2 text-xs hover:bg-gray-200"
                             }
-                            onClick={() => setPlanTheme("consumer")}
+                            onClick={() =>
+                              runHistoryTransaction("Change plan theme", () =>
+                                setPlanTheme("consumer")
+                              )
+                            }
                           >
                             Consumer Theme
                           </button>
@@ -17065,7 +19485,11 @@ function PageContent() {
                                   ? "rounded-lg bg-[#151820] px-3 py-2 text-xs text-neutral-200"
                                   : "rounded-lg bg-gray-100 px-3 py-2 text-xs hover:bg-gray-200"
                             }
-                            onClick={() => setPlanTheme("pro")}
+                            onClick={() =>
+                              runHistoryTransaction("Change plan theme", () =>
+                                setPlanTheme("pro")
+                              )
+                            }
                           >
                             Pro Theme
                           </button>
@@ -17096,10 +19520,12 @@ function PageContent() {
                                     : "rounded-lg bg-gray-100 px-3 py-2 text-xs hover:bg-gray-200"
                               }
                               onClick={() =>
-                                setPlanLayers((prev) => ({
-                                  ...prev,
-                                  [key]: !prev[key],
-                                }))
+                                runHistoryTransaction("Toggle plan layer", () =>
+                                  setPlanLayers((prev) => ({
+                                    ...prev,
+                                    [key]: !prev[key],
+                                  }))
+                                )
                               }
                             >
                               {label}
@@ -17127,7 +19553,11 @@ function PageContent() {
                                   ? "rounded-lg bg-[#151820] px-2 py-2 text-[11px] text-neutral-200"
                                   : "rounded-lg bg-gray-100 px-2 py-2 text-[11px] hover:bg-gray-200"
                             }
-                            onClick={() => setPlanMeasurementUnit(unit)}
+                            onClick={() =>
+                              runHistoryTransaction("Change measurement unit", () =>
+                                setPlanMeasurementUnit(unit)
+                              )
+                            }
                             title={label}
                           >
                             {unit.toUpperCase()}
@@ -17204,16 +19634,18 @@ function PageContent() {
                           }
                           onClick={() => {
                             const id = `opening-${Date.now()}`;
-                            setPlanOpenings((prev) => [
-                              ...prev,
-                              {
-                                id,
-                                wall: "south",
-                                kind: "door",
-                                offsetMm: 0,
-                                widthMm: 900,
-                              },
-                            ]);
+                            runHistoryTransaction("Add door", () =>
+                              setPlanOpenings((prev) => [
+                                ...prev,
+                                {
+                                  id,
+                                  wall: "south",
+                                  kind: "door",
+                                  offsetMm: 0,
+                                  widthMm: 900,
+                                },
+                              ])
+                            );
                             handleSelectPlanOverlay(id);
                           }}
                         >
@@ -17227,16 +19659,18 @@ function PageContent() {
                           }
                           onClick={() => {
                             const id = `opening-${Date.now()}`;
-                            setPlanOpenings((prev) => [
-                              ...prev,
-                              {
-                                id,
-                                wall: "north",
-                                kind: "window",
-                                offsetMm: 0,
-                                widthMm: 1200,
-                              },
-                            ]);
+                            runHistoryTransaction("Add window", () =>
+                              setPlanOpenings((prev) => [
+                                ...prev,
+                                {
+                                  id,
+                                  wall: "north",
+                                  kind: "window",
+                                  offsetMm: 0,
+                                  widthMm: 1200,
+                                },
+                              ])
+                            );
                             handleSelectPlanOverlay(id);
                           }}
                         >
@@ -17255,19 +19689,21 @@ function PageContent() {
                           }
                           onClick={() => {
                             const id = `fixed-${Date.now()}`;
-                            setPlanFixedElements((prev) => [
-                              ...prev,
-                              {
-                                id,
-                                kind: "wardrobe",
-                                xMm: 0,
-                                zMm: 0,
-                                widthMm: 1200,
-                                depthMm: 600,
-                                rotationDeg: 0,
-                                label: "Wardrobe",
-                              },
-                            ]);
+                            runHistoryTransaction("Add plan fixture", () =>
+                              setPlanFixedElements((prev) => [
+                                ...prev,
+                                {
+                                  id,
+                                  kind: "wardrobe",
+                                  xMm: 0,
+                                  zMm: 0,
+                                  widthMm: 1200,
+                                  depthMm: 600,
+                                  rotationDeg: 0,
+                                  label: "Wardrobe",
+                                },
+                              ])
+                            );
                             handleSelectPlanOverlay(id);
                           }}
                         >
@@ -17304,6 +19740,7 @@ function PageContent() {
                         opening={visiblePlanOpening}
                         roomName={visiblePlanOpeningRoomName}
                         wallSpanMeters={visiblePlanOpeningWallSpanMeters}
+                        maxHeightMeters={visiblePlanOpeningMaxHeightMeters}
                         dark={showDesignerTheme}
                         onChange={handleUpdateOpeningMetrics2D}
                       />
@@ -17392,8 +19829,10 @@ function PageContent() {
                               : "rounded-lg bg-gray-100 px-3 py-2 text-xs hover:bg-gray-200"
                         }
                         onClick={() => {
-                          setExportStylePreset("consumer");
-                          runPlanOverlayCommand("preset:presentation");
+                          runHistoryTransaction("Change export style", () => {
+                            setExportStylePreset("consumer");
+                            runPlanOverlayCommandFromPlanAction("preset:presentation");
+                          });
                         }}
                       >
                         Consumer
@@ -17407,8 +19846,10 @@ function PageContent() {
                               : "rounded-lg bg-gray-100 px-3 py-2 text-xs hover:bg-gray-200"
                         }
                         onClick={() => {
-                          setExportStylePreset("pro");
-                          runPlanOverlayCommand("preset:technical");
+                          runHistoryTransaction("Change export style", () => {
+                            setExportStylePreset("pro");
+                            runPlanOverlayCommandFromPlanAction("preset:technical");
+                          });
                         }}
                       >
                         Pro
@@ -18268,34 +20709,6 @@ function PageContent() {
             viewportHeight: viewportSize.height,
           }}
         />
-      )}
-
-      {!isClientPreview && (
-        <EditorHistoryFeedback
-          canUndo={canUndo}
-          canRedo={canRedo}
-          undoName={undoName}
-          redoName={redoName}
-          feedback={historyFeedback}
-          onUndo={undoSafe}
-          onRedo={redoSafe}
-        />
-      )}
-
-      {undoToast && (
-        <div
-          data-testid="undo-action-toast"
-          className="fixed bottom-8 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm font-semibold text-neutral-900 shadow-2xl"
-        >
-          <span>{undoToast.label}</span>
-          <button
-            type="button"
-            className="rounded-md bg-neutral-950 px-3 py-1.5 text-xs font-semibold text-white hover:bg-neutral-800"
-            onClick={undoSafe}
-          >
-            Undo
-          </button>
-        </div>
       )}
 
       {/* Snap to Wall Toast */}

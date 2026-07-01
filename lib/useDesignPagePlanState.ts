@@ -53,6 +53,13 @@ function readJsonArray<T>(value: string | null): T[] | null {
   return Array.isArray(parsed) ? parsed : null;
 }
 
+function sanitizePlanFixedElements(fixedElements: FixedElement2D[]) {
+  return fixedElements.filter((fixed) => {
+    const label = fixed.label?.trim().toLowerCase() ?? "";
+    return fixed.kind !== "kitchen_counter" && fixed.kind !== "island" && label !== "kitchen run";
+  });
+}
+
 function writeStorage(key: string, value: string) {
   if (typeof window === "undefined") return;
   try {
@@ -77,9 +84,12 @@ export function useDesignPagePlanState() {
   const [planGuidedActionsEnabled, setPlanGuidedActionsEnabled] = useState(true);
   const [planGuidedActionsChoiceSeen, setPlanGuidedActionsChoiceSeen] = useState(false);
   const [planSettingsLoaded, setPlanSettingsLoaded] = useState(false);
+  const [planOpeningsStorageState, setPlanOpeningsStorageState] =
+    useState<"pending" | "missing" | "present">("pending");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    let openingsStorageState: "missing" | "present" = "missing";
     try {
       const storedTheme = localStorage.getItem("plan_theme");
       if (storedTheme === "consumer" || storedTheme === "pro") {
@@ -121,14 +131,17 @@ export function useDesignPagePlanState() {
       const annotations = readPlanAnnotations(localStorage.getItem("plan_annotations"));
       if (annotations) setPlanAnnotations(annotations);
 
-      const openings = readJsonArray<RoomOpening2D>(localStorage.getItem("plan_openings"));
+      const storedOpenings = localStorage.getItem("plan_openings");
+      openingsStorageState = storedOpenings === null ? "missing" : "present";
+      const openings = readJsonArray<RoomOpening2D>(storedOpenings);
       if (openings) setPlanOpenings(openings);
 
       const fixedElements = readJsonArray<FixedElement2D>(localStorage.getItem("plan_fixed_elements"));
-      if (fixedElements) setPlanFixedElements(fixedElements);
+      if (fixedElements) setPlanFixedElements(sanitizePlanFixedElements(fixedElements));
     } catch {
       // ignore malformed storage payloads
     } finally {
+      setPlanOpeningsStorageState(openingsStorageState);
       setPlanSettingsLoaded(true);
     }
   }, []);
@@ -180,7 +193,12 @@ export function useDesignPagePlanState() {
 
   useEffect(() => {
     if (!planSettingsLoaded) return;
-    writeStorage("plan_fixed_elements", JSON.stringify(planFixedElements));
+    const sanitized = sanitizePlanFixedElements(planFixedElements);
+    if (sanitized.length !== planFixedElements.length) {
+      setPlanFixedElements(sanitized);
+      return;
+    }
+    writeStorage("plan_fixed_elements", JSON.stringify(sanitized));
   }, [planFixedElements, planSettingsLoaded]);
 
   return {
@@ -206,6 +224,7 @@ export function useDesignPagePlanState() {
     setPlanGuidedActionsEnabled,
     planGuidedActionsChoiceSeen,
     setPlanGuidedActionsChoiceSeen,
+    planOpeningsStorageState,
     planSettingsLoaded,
   };
 }

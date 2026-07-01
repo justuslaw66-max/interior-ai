@@ -26,12 +26,17 @@ export interface RoomPlanPolygonPoint {
   z: number;
 }
 
-export interface RoomSurfaceFinishes {
-  floorMaterialId?: string;
+export type RoomFloorPattern = "straight" | "herringbone" | "grid" | "checker";
+
+export interface RoomSurfaceAssignments {
+  floorMaterialId?: string | null;
   floorRotationDeg?: number;
+  floorPattern?: RoomFloorPattern;
   floorScale?: number;
   ceilingColor?: string;
 }
+
+export type RoomSurfaceFinishes = RoomSurfaceAssignments;
 
 export interface RoomSurfaceOpacity {
   wall?: number;
@@ -99,6 +104,7 @@ export interface PersistedPlanOpening {
   wall: "north" | "south" | "east" | "west";
   offsetMm: number;
   widthMm: number;
+  heightMm?: number;
   kind: "door" | "window";
 }
 
@@ -149,6 +155,7 @@ export interface RoomSnapshot {
   planPosition?: RoomPlanPosition;
   planShape?: RoomPlanShape;
   planPolygon?: RoomPlanPolygonPoint[];
+  surfaces?: RoomSurfaceAssignments;
   surfaceFinishes?: RoomSurfaceFinishes;
   surfaceOpacity?: RoomSurfaceOpacity;
   ceilingVisible?: boolean;
@@ -198,6 +205,7 @@ export function createRoom(
     geometry,
     planPosition: { x: 0, z: 0 },
     planShape: "rectangle",
+    surfaces: {},
     surfaceOpacity: { wall: 1, floor: 1, ceiling: 1 },
     ceilingVisible: true,
     items: [],
@@ -218,6 +226,8 @@ export function migrateToV3(snapshot: DesignSnapshot): DesignSnapshot {
       ...snapshot,
       rooms: snapshot.rooms.map((room) => ({
         ...room,
+        surfaces: room.surfaces ?? room.surfaceFinishes,
+        surfaceFinishes: room.surfaceFinishes ?? room.surfaces,
         items: room.items ?? [],
         zones: room.zones ?? [],
         savedViews: room.savedViews ?? [],
@@ -243,6 +253,7 @@ export function migrateToV3(snapshot: DesignSnapshot): DesignSnapshot {
     geometry,
     planPosition: { x: 0, z: 0 },
     planShape: "rectangle",
+    surfaces: {},
     surfaceOpacity: { wall: 1, floor: 1, ceiling: 1 },
     ceilingVisible: true,
     items: snapshot.items ?? [],

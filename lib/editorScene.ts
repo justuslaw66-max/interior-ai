@@ -38,6 +38,7 @@ export type RoomOpening2D = {
   wall: "north" | "south" | "east" | "west";
   offsetMm: number;
   widthMm: number;
+  heightMm?: number;
   kind: "door" | "window";
 };
 
