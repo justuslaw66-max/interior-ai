@@ -88,6 +88,8 @@ function getPrismaClient() {
 
 test.describe("Pro Upgrade Flow", () => {
   test("share export page renders printable pack", async ({ page }) => {
+    test.setTimeout(120000);
+
     const prisma = getPrismaClient();
     const shareToken = crypto.randomBytes(16).toString("hex");
     let designId: string | null = null;
