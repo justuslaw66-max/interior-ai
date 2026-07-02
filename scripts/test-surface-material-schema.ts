@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import {
   auditSurfaceMaterialEntry,
   buildSurfaceMaterialAdminAuditSummaries,
@@ -19,6 +20,10 @@ import {
 } from "../lib/share-shopping-csv";
 import { buildRoomSurfaceMaterialBomRows } from "../lib/surface-material-bom";
 import { getRuntimeSurfaceMaterialById } from "../lib/surface-material-runtime";
+import {
+  PRODUCTION_SURFACE_MATERIAL_RENDER_REGISTRY,
+  TEST_FIXTURE_SURFACE_MATERIAL_RENDER_REGISTRY,
+} from "../lib/generated/surface-material-runtime.generated";
 import type { RoomSnapshot } from "../lib/room-types";
 
 const result = runSurfaceMaterialAudit();
@@ -114,10 +119,57 @@ assert.equal(result.hasFailures, false, [
 ].join("\n"));
 
 const goodrichEntries = entries.filter((entry) => entry.surface_material.supplier === "goodrich_global");
+const productionRuntimeIds = PRODUCTION_SURFACE_MATERIAL_RENDER_REGISTRY.map(
+  (entry) => entry.surface_material.material_id
+);
+const testFixtureRuntimeIds = TEST_FIXTURE_SURFACE_MATERIAL_RENDER_REGISTRY.map(
+  (entry) => entry.surface_material.material_id
+);
 assert.ok(goodrichEntries.length >= 4, "expected at least four draft Goodrich surface material fixtures");
 assert.equal(result.duplicateMaterialIds.size, 0, "surface material material_id values must be unique");
 assert.equal(result.duplicateSlugs.size, 0, "surface material slug values must be unique");
 assert.equal(getPublishedFlooringMaterials().length, 0, "draft Goodrich fixtures must not publish to consumer flooring registry");
+assert.ok(
+  goodrichEntries.every((entry) => productionRuntimeIds.includes(entry.surface_material.material_id)),
+  "production runtime registry must be generated from Goodrich YAML entries"
+);
+assert.ok(
+  !productionRuntimeIds.includes("test-only-published-flooring"),
+  "test-only published flooring fixture must not be in production runtime data"
+);
+assert.ok(
+  testFixtureRuntimeIds.includes("test-only-published-flooring"),
+  "test runtime fixture registry must include the test-only published flooring"
+);
+assert.equal(
+  getRuntimeSurfaceMaterialById("test-only-published-flooring"),
+  null,
+  "default runtime must exclude test-only published flooring unless fixture gate is enabled"
+);
+execFileSync(
+  process.execPath,
+  [
+    "-r",
+    "ts-node/register/transpile-only",
+    "-r",
+    "tsconfig-paths/register",
+    "-e",
+    [
+      "process.env.NODE_ENV='test';",
+      "const { getRuntimeSurfaceMaterialById } = require('./lib/surface-material-runtime');",
+      "const fixture = getRuntimeSurfaceMaterialById('test-only-published-flooring');",
+      "if (!fixture || fixture.import_governance.publish_status !== 'published') process.exit(1);",
+    ].join(" "),
+  ],
+  {
+    cwd: process.cwd(),
+    env: {
+      ...process.env,
+      TS_NODE_COMPILER_OPTIONS: '{"module":"CommonJS","moduleResolution":"node"}',
+    },
+    stdio: "pipe",
+  }
+);
 assert.ok(
   getDraftFlooringMaterialsForAdmin().length >= goodrichEntries.length,
   "admin flooring registry must expose draft surface materials"

@@ -30,7 +30,7 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: `APP_ENV=development NEXT_PUBLIC_ENABLE_QA_HOOKS=1 npx next start -p ${PLAYWRIGHT_SERVER_PORT}`,
+    command: `APP_ENV=development NEXT_PUBLIC_ENABLE_QA_HOOKS=1 NEXT_PUBLIC_ENABLE_TEST_FIXTURES=true npx next start -p ${PLAYWRIGHT_SERVER_PORT}`,
     url: PLAYWRIGHT_BASE_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
