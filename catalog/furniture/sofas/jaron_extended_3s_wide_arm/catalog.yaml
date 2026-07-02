@@ -1,0 +1,280 @@
+brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/jaron-leather-recliner-extended-3-seater-sofa"
+category: "sofa"
+
+product_family: "Jaron"
+product_name: "Jaron Recliner Sofa"
+variant: "Extended 3-Seater Wide Arm"
+
+price_usd: 3399
+price_band: "premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "sofa_anchor"
+
+dimensions:
+  width_cm: 316
+  depth_cm: 115
+  height_cm: 77
+
+seat_capacity: 4
+size_class: "extra_large"
+shape: "rectangular"
+base_type: "frame"
+
+material_family: "upholstered"
+material_mix: "upholstered_metal"
+
+color_family: "brown"
+tone: "warm"
+
+style_cluster: "contemporary"
+style_secondary: "modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "heavy"
+  edge_profile: "rounded"
+  silhouette: "linear"
+  form_language: "soft"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  walkway_clearance_cm: 100
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: true
+  clearance_sensitive: true
+  center_room_preferred: false
+
+product_details_by_material_type:
+  fabric:
+    material:
+      - label: "Material"
+        value: "Frame: pine and plywood; Leg: plastic"
+      - label: "Fabric composition"
+        value: "100% Polyester"
+      - label: "Filling"
+        value: "PU foam, polyester fiber and feathers"
+      - label: "Special feature"
+        value: "Recliner"
+      - label: "Care"
+        value: "Fabric sofa"
+      - label: "Suspension"
+        value: "Sinuous spring"
+      - label: "Cover type"
+        value: "Fixed"
+      - label: "Material & safety standards"
+        value: "Low formaldehyde"
+      - label: "Configuration includes"
+        value: "2 x Wide Arm; 2 x Power Recliner Armless; 1 x Stationary Armless Sofa"
+    dimensions:
+      - label: "Dimension"
+        value: "W316 x D115 x H77cm"
+      - label: "Cable length"
+        value: "250cm"
+      - label: "Seating depth"
+        value: "64cm"
+      - label: "Seatable width"
+        value: "258cm"
+      - label: "Seating height"
+        value: "47cm"
+      - label: "Leg height"
+        value: "4cm"
+      - label: "Backrest height"
+        value: "39-57cm (adjustable headrest)"
+      - label: "Max bearing support"
+        value: "3 x 150kg"
+      - label: "Reclined product depth"
+        value: "165cm"
+      - label: "Armrest height"
+        value: "58cm"
+      - label: "Product weight"
+        value: "144.7kg"
+      - label: "Packaging dimensions"
+        value: "7 boxes"
+    delivery_and_warranty:
+      - label: "Cancellation"
+        value: "Free—5 working days before delivery"
+      - label: "Warranty"
+        value: "Frame 10 years; Fabric 1 year; Foam 2 years; Electrical components 2 years"
+      - label: "Return policy"
+        value: "30-day returns"
+      - label: "Assembly"
+        value: "Arms to be fitted"
+  leather:
+    material:
+      - label: "Material"
+        value: "Frame: pine and plywood; Leg: plastic"
+      - label: "Filling"
+        value: "PU foam, polyester fiber and feathers"
+      - label: "Special feature"
+        value: "Recliner"
+      - label: "Care"
+        value: "Leather sofa"
+      - label: "Suspension"
+        value: "Sinuous spring"
+      - label: "Cover type"
+        value: "Fixed"
+      - label: "Colour variance"
+        value: "Leather variations"
+      - label: "Material & safety standards"
+        value: "Low formaldehyde"
+      - label: "Material details"
+        value: "Top grain leather. Crafted from American hides."
+      - label: "Configuration includes"
+        value: "2 x Wide Arm; 2 x Power Recliner Armless; 1 x Stationary Armless Sofa"
+    dimensions:
+      - label: "Dimension"
+        value: "W316 x D115 x H77cm"
+      - label: "Cable length"
+        value: "250cm"
+      - label: "Seating depth"
+        value: "64cm"
+      - label: "Seatable width"
+        value: "258cm"
+      - label: "Seating height"
+        value: "47cm"
+      - label: "Leg height"
+        value: "4cm"
+      - label: "Backrest height"
+        value: "39-57cm (adjustable headrest)"
+      - label: "Max bearing support"
+        value: "3 x 150kg"
+      - label: "Reclined product depth"
+        value: "165cm"
+      - label: "Armrest height"
+        value: "58cm"
+      - label: "Product weight"
+        value: "159.7kg"
+      - label: "Packaging dimensions"
+        value: "7 boxes"
+    delivery_and_warranty:
+      - label: "Cancellation"
+        value: "Free—5 working days before delivery"
+      - label: "Warranty"
+        value: "Frame 10 years; Leather 1 year; Foam 2 years; Electrical components 2 years"
+      - label: "Return policy"
+        value: "30-day returns"
+      - label: "Assembly"
+        value: "Arms to be fitted"
+
+comfort_profile:
+  # Required for Castlery SG sofa imports when the PDP exposes seat-feel data.
+  seat_comfort:
+    label: "Seat comfort"
+    value: 2
+    min_label: "Relaxed"
+    max_label: "Upright"
+  seat_height:
+    label: "Seat height"
+    value: 4
+    min_label: "Low"
+    max_label: "High"
+  seat_softness:
+    label: "Seat softness"
+    value: 2
+    min_label: "Soft"
+    max_label: "Firm"
+
+design_pairings:
+  - "large_coffee_table"
+  - "side_table"
+  - "floor_lamp"
+  - "large_area_rug"
+
+upholstery_options:
+upholstery_library_ref: "jaron"
+
+assets:
+  asset_id: "sofa-real-castlery-jaron-extended-3s-wide-arm"
+  model_url: "/assets/models/sofa-real-castlery-jaron-extended-3s-wide-arm.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737534745/crusader/variants/AS-000670-LE4023/Jaron-Leather-Extended-3-Seater-Recliner-Wide-Arm-Sofa-Marche-Cocoa_-Front-1737534742.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737534745/crusader/variants/AS-000670-LE4023/Jaron-Leather-Extended-3-Seater-Recliner-Wide-Arm-Sofa-Marche-Cocoa_-Front-1737534742.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737534745/crusader/variants/AS-000670-LE4023/Jaron-Leather-Extended-3-Seater-Recliner-Wide-Arm-Sofa-Marche-Cocoa_-Angle-1737534742.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737534744/crusader/variants/AS-000670-LE4023/Jaron-Leather-Extended-3-Seater-Recliner-Wide-Arm-Sofa-Marche-Cocoa_-Side-1737534742.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737534744/crusader/variants/AS-000670-LE4023/Jaron-Leather-Extended-3-Seater-Recliner-Wide-Arm-Sofa-Marche-Cocoa_-Back-1737534742.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1741673509/crusader/variants/AS-000670-LE4023/Jaron-Leather-Extended-3-Seater-Recliner-Wide-Arm-Sofa-With-Wide-Arm-Recliner-Armchair-Marche-Cocoa_-Square-Set_2_3-1741673506.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1741936740/crusader/variants/AS-000670-LE4023/Jaron-Extended-3-Seater-Recliner-Wide-Arm-Sofa-Marche-Cocoa_Cover-1741936738.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1741343696/crusader/variants/AS-000670-LE4023/Jaron-Leather-Extended-3-Seater-Recliner-Wide-Arm-Sofa-With-Wide-Arm-Recliner-Armchair-Marche-Cocoa_-Square-Set_4_2-1741343694.jpg"
+
+variants:
+  - variant: "Jaron Extended 3 Seater Wide Arm / Marche Cocoa (Leather)"
+    size_label: "316x115"
+    upholstery_code: "marche_cocoa"
+    upholstery_label: "Marche Leather, Cocoa"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737534745/crusader/variants/AS-000670-LE4023/Jaron-Leather-Extended-3-Seater-Recliner-Wide-Arm-Sofa-Marche-Cocoa_-Front-1737534742.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737534745/crusader/variants/AS-000670-LE4023/Jaron-Leather-Extended-3-Seater-Recliner-Wide-Arm-Sofa-Marche-Cocoa_-Front-1737534742.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737534745/crusader/variants/AS-000670-LE4023/Jaron-Leather-Extended-3-Seater-Recliner-Wide-Arm-Sofa-Marche-Cocoa_-Angle-1737534742.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737534744/crusader/variants/AS-000670-LE4023/Jaron-Leather-Extended-3-Seater-Recliner-Wide-Arm-Sofa-Marche-Cocoa_-Side-1737534742.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737534744/crusader/variants/AS-000670-LE4023/Jaron-Leather-Extended-3-Seater-Recliner-Wide-Arm-Sofa-Marche-Cocoa_-Back-1737534742.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1741673509/crusader/variants/AS-000670-LE4023/Jaron-Leather-Extended-3-Seater-Recliner-Wide-Arm-Sofa-With-Wide-Arm-Recliner-Armchair-Marche-Cocoa_-Square-Set_2_3-1741673506.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1741936740/crusader/variants/AS-000670-LE4023/Jaron-Extended-3-Seater-Recliner-Wide-Arm-Sofa-Marche-Cocoa_Cover-1741936738.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1741343696/crusader/variants/AS-000670-LE4023/Jaron-Leather-Extended-3-Seater-Recliner-Wide-Arm-Sofa-With-Wide-Arm-Recliner-Armchair-Marche-Cocoa_-Square-Set_4_2-1741343694.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 3399
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 316, depth_cm: 115, height_cm: 77 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "brown"
+    tone: "warm"
+    set_compatibility: []
+
+  - variant: "Jaron Extended 3 Seater Wide Arm / Marche Ivory (Leather)"
+    size_label: "316x115"
+    upholstery_code: "marche_ivory"
+    upholstery_label: "Marche Leather, Ivory"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760151125/crusader/variants/AS-000674-LE4021/Jaron-Leather-Extended-3-Seater-Recliner-Wide-Arm-Sofa_-Marche-Ivory-Front_-1760151124.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760151125/crusader/variants/AS-000674-LE4021/Jaron-Leather-Extended-3-Seater-Recliner-Wide-Arm-Sofa_-Marche-Ivory-Front_-1760151124.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760151125/crusader/variants/AS-000674-LE4021/Jaron-Leather-Extended-3-Seater-Recliner-Wide-Arm-Sofa_-Marche-Ivory-Angle_-1760151125.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760151125/crusader/variants/AS-000674-LE4021/Jaron-Leather-Extended-3-Seater-Recliner-Wide-Arm-Sofa-Marche-Ivory-Side_-1760151124.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 3399
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 316, depth_cm: 115, height_cm: 77 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "white"
+    tone: "neutral"
+    set_compatibility: []
+
+  - variant: "Jaron Extended 3 Seater Wide Arm / Performance Arvo Dune (Fabric)"
+    size_label: "316x115"
+    upholstery_code: "performance_arvo_dune"
+    upholstery_label: "Performance Arvo Dune"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737533954/crusader/variants/AS-000670-AR4001/Jaron-Extended-3-Seater-Recliner-Wide-Arm-Sofa-Performance-Arvo-Dune-Front-1737533952.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737533954/crusader/variants/AS-000670-AR4001/Jaron-Extended-3-Seater-Recliner-Wide-Arm-Sofa-Performance-Arvo-Dune-Front-1737533952.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737533954/crusader/variants/AS-000670-AR4001/Jaron-Extended-3-Seater-Recliner-Wide-Arm-Sofa-Performance-Arvo-Dune-Angle_1-1737533951.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737533953/crusader/variants/AS-000670-AR4001/Jaron-Extended-3-Seater-Recliner-Wide-Arm-Sofa-Performance-Arvo-Dune-Side-1737533951.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737533954/crusader/variants/AS-000670-AR4001/Jaron-Extended-3-Seater-Recliner-Wide-Arm-Sofa-Performance-Arvo-Dune-Back-1737533952.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1741935975/crusader/variants/AS-000670-AR4001/Jaron-Extended-3-Seater-Recliner-Wide-Arm-Sofa-Performance-Arvo-Dune_Cover-1741935973.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1741850743/crusader/variants/AS-000670-AR4001/Jaron-Extended-3-Seater-Recliner-Wide-Arm-Sofa-Living-Room-Campaign-Square-Set_2-1741850740.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1741850742/crusader/variants/AS-000670-AR4001/Jaron-Extended-3-Seater-Recliner-Wide-Arm-Sofa-Living-Room-Campaign-Square-Set_1-1741850740.jpg"
+    swatch_group: "upholstery_option"
+    price_usd: 3299
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 316, depth_cm: 115, height_cm: 77 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    color_family: "beige"
+    tone: "neutral"
+    set_compatibility: []
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true

@@ -1,0 +1,249 @@
+status: "published"
+brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/vincent-coffee-table-set-walnut"
+category: "coffee_table"
+
+product_family: "Vincent"
+product_name: "Vincent Coffee Table Set, Walnut"
+slug: "castlery-vincent-coffee-table-set-walnut"
+variant: "Walnut"
+
+price_usd: 549
+price_band: "mid_premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "secondary"
+
+dimensions:
+  width_cm: 86.3
+  depth_cm: 51.7
+  height_cm: 48
+
+size_class: "small"
+shape: "round"
+base_type: "four_leg"
+
+material_family: "wood"
+material_mix:
+  - "engineered_wood"
+  - "wood_veneer"
+  - "solid_wood"
+
+color_family: "brown"
+tone: "warm"
+
+style_cluster: "midcentury_modern"
+style_secondary: "compact_living"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "light"
+  edge_profile: "rounded_soft"
+  silhouette: "nested_organic_tables"
+  form_language: "curved_nesting_tables_with_slim_tapered_legs"
+  descriptors:
+    - "nesting_tables"
+    - "rounded_edges"
+    - "walnut_finish"
+    - "compact_space"
+
+spatial_attributes:
+  footprint_shape: "nested_organic"
+  storage_integrated: false
+  low_profile: true
+  center_table_suitable: true
+  works_in_small_room: true
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+  - "open_plan"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: true
+  recommended_in_front_of:
+    - "sofa"
+    - "sectional_sofa"
+    - "loveseat"
+    - "accent_chair"
+  clearance_guidance:
+    sofa_to_table_cm_min: 30
+    sofa_to_table_cm_ideal: 40
+    circulation_cm_min: 60
+
+design_pairings:
+  - "sofa"
+  - "sectional_sofa"
+  - "loveseat"
+  - "side_table"
+  - "media_console"
+  - "rug"
+  - "floor_lamp"
+  - "accent_chair"
+
+compatibility:
+  related_products:
+    - product_family: "Vincent"
+      product_name: "Vincent Collection"
+      relationship: "family_variant"
+      strength: "strong"
+    - product_family: "Madison"
+      product_name: "Madison Sofa"
+      relationship: "recommended_with"
+      strength: "medium"
+    - product_family: "Dawson"
+      product_name: "Dawson Sofa"
+      relationship: "recommended_with"
+      strength: "medium"
+
+recommendation_metadata:
+  recommendation_role: "living_room_surface"
+  primary_use_cases:
+    - "sofa_pairing"
+    - "compact_centerpiece_surface"
+    - "flexible_nested_table_set"
+  suggest_when_scene_has:
+    - "sofa_without_coffee_table"
+    - "sectional_sofa_without_table"
+    - "living_room_missing_center_surface"
+    - "small_living_room"
+  avoid_when_scene_has:
+    - "oversized_coffee_table_already_present"
+    - "very_small_walkway_clearance"
+
+bundle_metadata:
+  bundle_role: "accent"
+  can_bundle_with:
+    - "sofa"
+    - "sectional_sofa"
+    - "side_table"
+    - "media_console"
+    - "rug"
+    - "floor_lamp"
+    - "accent_chair"
+  set_behavior:
+    supports_living_room_pairing: true
+    supports_centerpiece_surface: true
+    supports_compact_space_pairing: true
+
+authoring_notes:
+  category_confidence: "high"
+  single_variant_expected: true
+  preset_family: "table"
+  source_checked: "Castlery Singapore product page, 2026-06-09"
+  note: "Castlery SG page lists this as the Walnut nested coffee table set. Top-level dimensions use the largest safe planning footprint across the low and high nesting tables."
+
+feature_flags:
+  has_storage: false
+  has_open_shelf: false
+  has_hidden_storage: false
+  has_drawers: false
+
+product_details:
+  material:
+    - label: "Material"
+      value: "Tabletop: engineered wood with walnut veneer; Leg: solid rubber wood"
+    - label: "Finish"
+      value: "Walnut stain and clear lacquer"
+    - label: "Care"
+      value: "Wooden table"
+    - label: "Colour variance"
+      value: "Natural variations"
+    - label: "Material & safety standards"
+      value: "Formaldehyde safe"
+  dimensions:
+    - label: "Dimension"
+      value: "High: W51.7 x D49.4 x H48cm; Low: W51 x D86.3 x H38cm"
+    - label: "Product weight"
+      value: "7.4kg"
+    - label: "Packaging dimensions"
+      value: "1 box"
+    - label: "Max bearing support"
+      value: "20kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free - 5 working days before delivery"
+    - label: "Warranty"
+      value: "5-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Fully assembled"
+
+assets:
+  asset_id: "coffee-real-castlery-vincent-coffee-table-set-walnut"
+  model_url: "/assets/models/coffee-real-castlery-vincent-coffee-table-set-walnut.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1624962418/crusader/variants/41960018/Vincent-Coffee-Table-Sectional-Walnut-Set-Front.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1624962418/crusader/variants/41960018/Vincent-Coffee-Table-Sectional-Walnut-Set-Front.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1699848547/crusader/variants/41960018/Vincent-Coffee-Table-Christmas-Holiday-Campaign-Square-Set_1-1699848544.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1694403343/crusader/variants/41960018/Vincent-Coffee-Table-Sectional-Walnut-Set1-1694403340.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1636710599/crusader/variants/41960018/Vincent-Coffee-Table-Set-Walnut-Lifestyle-Shared1.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1624962422/crusader/variants/41960018/Vincent-Coffee-Tablel-Walnut-D3.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1624962420/crusader/variants/41960018/Vincent-Coffee-Tablel-Walnut-D2.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1630313052/crusader/variants/41960018/Vincent-Walnut-texture.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1624962432/crusader/variants/41960018/Vincent-Coffee-Table-Sectional-Walnut-Set-Angle.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1624962436/crusader/variants/41960018/Vincent-Coffee-Table-Sectional-Walnut-Set-Angle1.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1624962439/crusader/variants/41960018/Vincent-Coffee-Table-Sectional-Walnut-Set-Top.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1655220616/crusader/variants/41960018/Vincent-Coffee-Table-Sectional-Walnut-Set-Dim-1655220613.jpg"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+
+variants:
+  - variant: "Vincent Coffee Table Set, Walnut / Walnut"
+    sku: "41960018"
+    size_label: "86.3x51.7"
+    finish_code: "walnut"
+    finish_label: "Walnut"
+    swatch_group: "wood_finish"
+    swatch_hex: "#6f4a2e"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1624962418/crusader/variants/41960018/Vincent-Coffee-Table-Sectional-Walnut-Set-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1624962418/crusader/variants/41960018/Vincent-Coffee-Table-Sectional-Walnut-Set-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1699848547/crusader/variants/41960018/Vincent-Coffee-Table-Christmas-Holiday-Campaign-Square-Set_1-1699848544.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1694403343/crusader/variants/41960018/Vincent-Coffee-Table-Sectional-Walnut-Set1-1694403340.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1655220616/crusader/variants/41960018/Vincent-Coffee-Table-Sectional-Walnut-Set-Dim-1655220613.jpg"
+    model_asset_id: "coffee-real-castlery-vincent-coffee-table-set-walnut"
+    model_url: "/assets/models/coffee-real-castlery-vincent-coffee-table-set-walnut.glb"
+
+    price_usd: 549
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+
+    dimensions:
+      width_cm: 86.3
+      depth_cm: 51.7
+      height_cm: 48
+
+    size_class: "small"
+    color_family: "brown"
+    tone: "warm"
+
+    materials:
+      tabletop:
+        structure: "engineered_wood"
+        surface: "walnut_veneer"
+      body:
+        structure: "engineered_wood"
+        surface: "walnut_veneer"
+      legs:
+        structure: "solid_wood"
+        surface: "walnut"
+
+    finish:
+      color_finish: "walnut"
+      finish_color: "walnut"
+      surface_finish: "clear_lacquer"
+
+    storage:
+      has_storage: false
+      storage_type: []
+
+    set_compatibility: []

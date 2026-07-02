@@ -3,7 +3,7 @@ import { test, expect } from './fixtures';
 test.describe('1. Onboarding Activation Flow', () => {
   test('sofa placement triggers seating zone auto-creation and completes onboarding', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(2000);
 
     // Wait for canvas to be loaded
@@ -35,7 +35,7 @@ test.describe('1. Onboarding Activation Flow', () => {
 
   test('onboarding does not reappear after completion', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(2000);
     
     // Wait for canvas
@@ -55,7 +55,7 @@ test.describe('1. Onboarding Activation Flow', () => {
     
     // Reload page
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(2000);
     
     // Onboarding nudge should not be visible

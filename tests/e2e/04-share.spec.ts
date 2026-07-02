@@ -4,7 +4,7 @@ test.describe('4. Share Link Read-Only', () => {
   test('shared design is read-only - cannot edit or move items', async ({ page }) => {
     // First, create and save a design
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(2000);
     
     // Wait for canvas
@@ -60,7 +60,7 @@ test.describe('4. Share Link Read-Only', () => {
 
   test('shared design - saved views work', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(2000);
     
     // Wait for canvas and save button

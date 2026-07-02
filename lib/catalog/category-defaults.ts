@@ -42,6 +42,14 @@ export const CATEGORY_PLACEMENT_DEFAULTS: Record<CatalogCategory, PlacementRules
     snapMarginMm: 10,
     allowRugOverlap: true,
   },
+  sideboard: {
+    floorOnly: true,
+    wallSnappable: true,
+    wallMountable: false,
+    minWallGapMm: 20,
+    snapMarginMm: 10,
+    allowRugOverlap: true,
+  },
   floor_lamp: {
     floorOnly: true,
     wallSnappable: false,
@@ -58,5 +66,6 @@ export const CATEGORY_CLEARANCE_DEFAULTS: Record<CatalogCategory, ClearanceRules
   coffee_table: { walkwayMinMm: 800, coffeeGapMinMm: 350, coffeeGapMaxMm: 550 },
   rug: { walkwayMinMm: 800, coffeeGapMinMm: 0, coffeeGapMaxMm: 9999 },
   tv_console: { walkwayMinMm: 800, coffeeGapMinMm: 0, coffeeGapMaxMm: 9999 },
+  sideboard: { walkwayMinMm: 800, coffeeGapMinMm: 0, coffeeGapMaxMm: 9999 },
   floor_lamp: { walkwayMinMm: 800, coffeeGapMinMm: 0, coffeeGapMaxMm: 9999 },
 };

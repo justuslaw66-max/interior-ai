@@ -1,0 +1,226 @@
+brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/seb-tv-console"
+category: "tv_console"
+subcategory: "media_console"
+
+product_family: "Seb"
+product_name: "Seb TV Console"
+slug: "seb-tv-console-200cm"
+variant: "200cm / Muted Honey"
+
+price_usd: 1099
+price_band: "mid_premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "media_anchor"
+
+dimensions:
+  width_cm: 200
+  depth_cm: 45
+  height_cm: 60
+
+size_class: "extra_large"
+shape: "rectangular"
+base_type: "frame"
+
+material_family: "wood"
+material_mix: "solid_acacia_engineered_wood_metal"
+materials:
+  body:
+    structure: "solid_wood"
+    wood_species: "acacia"
+  back_panel:
+    structure: "engineered_wood"
+  hardware:
+    structure: "metal"
+  leg_frame:
+    structure: "solid_wood"
+    wood_species: "acacia"
+finish:
+  color_finish: "muted_honey"
+  surface_finish: "wire_brush_distressed"
+  finish_color: "muted_honey"
+  hardware_finish: "black_powdercoating"
+
+color_family: "brown"
+tone: "warm"
+
+style_cluster: "midcentury_modern"
+style_secondary: "rustic"
+design_era: "mid_century_modern"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "clean_straight"
+  silhouette: "linear_media_console"
+  form_language: "clean"
+
+spatial_attributes:
+  footprint_shape: "rectangle"
+  walkway_clearance_cm: 70
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: true
+  clearance_sensitive: true
+  center_room_preferred: false
+
+clearance_rules:
+  back_mm: 0
+  left_mm: 50
+  right_mm: 50
+  front_mm: 700
+
+design_pairings:
+  - "sofa"
+  - "rug"
+  - "floor_lamp"
+  - "side_table"
+
+feature_flags:
+  has_storage: true
+  has_cable_management: true
+  has_adjustable_shelves: true
+
+storage:
+  cupboard_compartments:
+    count: 4
+    internal_mm:
+      width: 470
+      depth: 400
+      height: 150
+    adjustable_shelf_range_mm: 30
+  drawers:
+    count: 2
+    internal_mm:
+      width: 400
+      depth: 320
+      height: 100
+  niches:
+    count: 2
+    internal_mm:
+      width: 480
+      depth: 410
+      height: 150
+    adjustable_shelf_range_mm: 30
+
+physical_specs:
+  leg_height_mm: 230
+  max_bearing_support_kg: 80
+  packaging_boxes: 1
+
+safety_and_compliance:
+  standards:
+    - "low_formaldehyde"
+  safety_features:
+    - "anti_tip_prevention"
+
+product_details:
+  material:
+    - label: "Material"
+      value: "Solid acacia wood with engineered wood back and metal handle"
+    - label: "Leg frame"
+      value: "Solid acacia wood"
+    - label: "Finish"
+      value: "Muted honey tone and wire brush distressed finish; Black powdercoating handle"
+    - label: "Care"
+      value: "Storage furniture"
+    - label: "Door mechanism"
+      value: "Side rails"
+    - label: "Cable management"
+      value: "Yes"
+    - label: "Colour variance"
+      value: "Natural variations"
+    - label: "Material & safety standards"
+      value: "Low formaldehyde"
+    - label: "Safety tip"
+      value: "Anti-tip prevention"
+  dimensions:
+    - label: "Dimension"
+      value: "W200 x D45 x H60cm"
+    - label: "Cupboard capacity"
+      value: "4 x W47 x D40 x H15cm ( ±3cm adjustable shelves )"
+    - label: "Leg height"
+      value: "23cm"
+    - label: "Packaging dimensions"
+      value: "1 box"
+    - label: "Max bearing support"
+      value: "80kg"
+    - label: "Niche capacity"
+      value: "2 x W48 x D41 x H15cm ( ±3cm adjustable shelves )"
+    - label: "Drawer capacity"
+      value: "2 x W40 x D32 x H10cm"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Warranty"
+      value: "5-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Legs to be fitted"
+
+assets:
+  asset_id: "tv-real-castlery-seb-tv-console-200"
+  model_url: "/assets/models/tv-real-castlery-seb-tv-console-200.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1000/v1623399456/crusader/variants/40550097/Seb-TV-Console-Front.png"
+  gallery_images:
+    - "/assets/thumbs/tv-real-castlery-seb-tv-console-200.jpg"
+    - "/assets/thumbs/tv-real-castlery-seb-tv-console-200-hero.jpg"
+
+variants:
+  - variant: "Seb TV Console / 200cm"
+    size_label: "200cm"
+    finish_code: "muted_honey"
+    finish_label: "Muted Honey"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1000/v1623399456/crusader/variants/40550097/Seb-TV-Console-Front.png"
+    gallery_images:
+      - "/assets/thumbs/tv-real-castlery-seb-tv-console-200.jpg"
+      - "/assets/thumbs/tv-real-castlery-seb-tv-console-200-hero.jpg"
+    swatch_group: "finish"
+    color_family: "brown"
+    tone: "warm"
+    price_usd: 1099
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 200
+      depth_cm: 45
+      height_cm: 60
+    materials:
+      body:
+        structure: "solid_wood"
+        wood_species: "acacia"
+      back_panel:
+        structure: "engineered_wood"
+      hardware:
+        structure: "metal"
+      leg_frame:
+        structure: "solid_wood"
+        wood_species: "acacia"
+    finish:
+      color_finish: "muted_honey"
+      surface_finish: "wire_brush_distressed"
+      finish_color: "muted_honey"
+      hardware_finish: "black_powdercoating"
+
+purchase:
+  purchase_mode: "external_retailer"
+  retailer_name: "Castlery Singapore"
+  buy_url: "https://www.castlery.com/sg/products/seb-tv-console?length=2_0m"
+
+shipping_and_warranty:
+  free_delivery_threshold_sgd: 300
+  returns_window_days: 30
+  cancellation: "Free up to 5 working days before delivery"
+  warranty: "5-year limited warranty"
+
+notes:
+  - "Imported from user-provided Seb TV Console metadata and local GLB source."
+  - "Preview thumbnail uses the 12th image from the 200cm product page, per user request."
+  - "150cm and 200cm are modeled as separate catalog entries for one-model-per-asset compatibility."

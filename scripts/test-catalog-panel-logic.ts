@@ -7,6 +7,7 @@ import {
 } from "../lib/catalog/view-builders";
 import {
   buildCatalogRecommendationSet,
+  buildCatalogRoomGuidance,
   getSimilarItems,
 } from "../lib/catalog/recommendations";
 
@@ -74,6 +75,36 @@ function run(): void {
   for (const bucket of allBuckets) {
     assert(!bucket.includes(target.id), "Recommendation bucket should never include the target item");
   }
+
+  const guidance = buildCatalogRoomGuidance({
+    item: target,
+    recommendedCategoryIds: [topCategory],
+    activeRoomCategoryCounts: {},
+    roomWidth: Math.max(3, target.dimsMm.w / 1000 + 1),
+    roomDepth: Math.max(3, target.dimsMm.d / 1000 + 1),
+  });
+  assert.equal(guidance.recommended, true, "Room guidance should flag recommended categories");
+  assert(
+    guidance.labels.includes("Recommended for room"),
+    "Room guidance should explain missing recommended categories",
+  );
+  assert(
+    guidance.labels.some((label) => label === "Fits this space" || label === "Check fit"),
+    "Room guidance should include a room-fit label when dimensions are known",
+  );
+
+  const tooLargeGuidance = buildCatalogRoomGuidance({
+    item: target,
+    recommendedCategoryIds: [topCategory],
+    activeRoomCategoryCounts: {},
+    roomWidth: Math.max(0.8, target.dimsMm.w / 1000 - 0.5),
+    roomDepth: Math.max(0.8, target.dimsMm.d / 1000 - 0.5),
+  });
+  assert.equal(tooLargeGuidance.fit, "too_large", "Oversized room guidance should flag too-large products");
+  assert(
+    tooLargeGuidance.labels.includes("Too large for room"),
+    "Oversized room guidance should explain that the item is too large",
+  );
 
   console.log("Catalog panel logic checks passed");
 }

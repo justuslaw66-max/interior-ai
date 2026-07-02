@@ -1,0 +1,313 @@
+brand: "Castlery"
+category: "coffee_table"
+
+product_family: "Hugg"
+product_name: "Hugg Nesting Rectangular Coffee Table"
+slug: "castlery-hugg-nesting-rectangular-coffee-table-performance-dune-opened"
+variant: "Performance Dune / Seats Open"
+
+price_usd: 799
+price_band: "premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "secondary"
+
+dimensions:
+  width_cm: 110
+  depth_cm: 55
+  height_cm: 43.2
+
+size_class: "medium"
+shape: "rectangular"
+base_type: "frame"
+material_family: "mixed"
+color_family: "beige"
+tone: "warm"
+style_cluster: "modern"
+style_secondary: "contemporary"
+design_era: "contemporary"
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+  - "open_plan"
+
+design_pairings:
+  - "sofa"
+  - "sectional_sofa"
+  - "loveseat"
+  - "rug"
+  - "floor_lamp"
+  - "media_console"
+  - "accent_chair"
+
+compatibility:
+  design_pairing_rules:
+    required_mode: "token_match"
+    expected_tokens:
+      - "sofa"
+      - "sectional_sofa"
+      - "rug"
+      - "floor_lamp"
+      - "media_console"
+    min_matches: 3
+    severity: "error"
+
+bundle_metadata:
+  bundle_role: "accent"
+
+feature_flags:
+  has_storage: false
+  has_nested_seating: true
+  has_hidden_function: true
+  has_upholstered_component: true
+  is_configurable: true
+
+configurable_metadata:
+  is_configurable: true
+  default_configuration: "seats_opened"
+  configuration_ui:
+    type: "segmented_control"
+    label: "Table Layout"
+    options:
+      - "nested_closed"
+      - "seats_opened"
+    option_labels:
+      nested_closed: "Nested"
+      seats_opened: "Seats Open"
+    helper_text: "Toggle to visualize the table with stools tucked in or fully pulled out."
+  configuration_behavior:
+    affects_visual_footprint: true
+    affects_space_planning: true
+    affects_collision_bounds: true
+    affects_recommendation_logic: false
+  configuration_model_assets:
+    nested_closed:
+      default: "coffee-real-castlery-hugg-nesting-rectangular-performance-basalt-closed"
+      performance_basalt: "coffee-real-castlery-hugg-nesting-rectangular-performance-basalt-closed"
+      performance_dune: "coffee-real-castlery-hugg-nesting-rectangular-performance-dune-closed"
+    seats_opened:
+      default: "coffee-real-castlery-hugg-nesting-rectangular-performance-basalt-opened"
+      performance_basalt: "coffee-real-castlery-hugg-nesting-rectangular-performance-basalt-opened"
+      performance_dune: "coffee-real-castlery-hugg-nesting-rectangular-performance-dune-opened"
+
+configurations:
+  - configuration_code: "nested_closed"
+    configuration_label: "Nested"
+    state_type: "closed"
+    planning_bounds_cm:
+      width: 110
+      depth: 55
+      height: 43.2
+    visual_bounds_cm:
+      width: 110
+      depth: 55
+      height: 43.2
+    placement_footprint:
+      planning_width_cm: 110
+      planning_depth_cm: 55
+  - configuration_code: "seats_opened"
+    configuration_label: "Seats Open"
+    state_type: "open"
+    planning_bounds_cm:
+      width: 130
+      depth: 180
+      height: 43.2
+    visual_bounds_cm:
+      width: 110
+      depth: 162
+      height: 43.2
+    dimensions_recommended_planning:
+      width_cm: 130
+      depth_cm: 180
+      height_cm: 43.2
+    estimation_note: "Open-state footprint estimated from Castlery-listed 110 x 55cm table dimensions plus two 55.5 x 53.5cm ottomans pulled out along the long sides."
+    placement_footprint:
+      planning_width_cm: 130
+      planning_depth_cm: 180
+
+construction:
+  table:
+    structure:
+      - "engineered_wood"
+    surface:
+      - "oak_veneer"
+    edge_detail:
+      - "solid_oak_edged"
+  ottoman:
+    frame:
+      - "lvl"
+    filling:
+      - "foam"
+      - "fibre"
+
+authoring_notes:
+  category_confidence: "high"
+  model_selected: "rectangular"
+  source_url: "https://www.castlery.com/sg/products/hugg-nesting-rectangular-coffee-table"
+  source_observed_at: "2026-06-06"
+  note: "Open-state footprint is estimated for layout visualization."
+
+product_details:
+  material:
+    - label: "Material"
+      value: "Table: engineered wood with oak veneer and solid oak edged; Ottoman: LVL frame with upholstery base"
+    - label: "Filling"
+      value: "Foam and fibre"
+    - label: "Care"
+      value: "Wooden table, upholstered seating"
+    - label: "Cover type"
+      value: "Fixed"
+    - label: "Material & safety standards"
+      value: "Low formaldehyde"
+  dimensions:
+    - label: "Dimension"
+      value: "Table: W110 x D55 x H43.2cm; Ottoman: W55.5 x D53.5 x H39cm"
+    - label: "Table top thickness"
+      value: "3.5cm"
+    - label: "Product weight"
+      value: "Table: 24.7kg; Per Ottoman: 6.6kg"
+    - label: "Packaging dimensions"
+      value: "3 boxes"
+    - label: "Max bearing support"
+      value: "Table: 80kg; Per Ottoman: 130kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Warranty"
+      value: "5-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Legs to be fitted"
+
+comfort_profile:
+  # Required for Castlery SG sofa-family imports when the PDP exposes seat-feel data.
+  seat_comfort:
+    label: "Seat comfort"
+    value: 3
+    min_label: "Relaxed"
+    max_label: "Upright"
+  seat_depth:
+    label: "Seat depth"
+    value: 2
+    min_label: "Shallow"
+    max_label: "Deep"
+  seat_height:
+    label: "Seat height"
+    value: 2
+    min_label: "Low"
+    max_label: "High"
+  seat_softness:
+    label: "Seat softness"
+    value: 4
+    min_label: "Soft"
+    max_label: "Firm"
+
+assets:
+  asset_id: "coffee-real-castlery-hugg-nesting-rectangular-performance-dune-opened"
+  model_url: "/assets/models/coffee-real-castlery-hugg-nesting-rectangular-performance-dune-opened.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729561925/crusader/variants/AS-000633-AR4001-CT/Hugg-Rectangular-Coffee-Table-Chestnut-Performance-Dune-Front-1729561922.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729561925/crusader/variants/AS-000633-AR4001-CT/Hugg-Rectangular-Coffee-Table-Chestnut-Performance-Dune-Front-1729561922.jpg"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+
+upholstery_options:
+  - upholstery_code: "performance_dune"
+    upholstery_label: "Performance Dune"
+    color_label: "Dune"
+    collection_type: "stocked"
+    swatch_group: "upholstery"
+    swatch_hex: "#d9d1c4"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729561925/crusader/variants/AS-000633-AR4001-CT/Hugg-Rectangular-Coffee-Table-Chestnut-Performance-Dune-Front-1729561922.jpg"
+
+variants:
+  - variant: "Hugg Nesting Rectangular Coffee Table / Natural"
+    sku: "AS-000633-AR4001-NA"
+    size_label: "110x55"
+    finish_code: "natural"
+    finish_label: "Natural"
+    upholstery_code: "performance_dune"
+    upholstery_label: "Performance Dune"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729563480/crusader/variants/AS-000633-AR4001-NA/Hugg-Rectangular-Coffee-Table-Natural-Performance-Dune-Front-1729563478.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729563480/crusader/variants/AS-000633-AR4001-NA/Hugg-Rectangular-Coffee-Table-Natural-Performance-Dune-Front-1729563478.jpg"
+    swatch_group: "wood_finish"
+    swatch_hex: "#a89070"
+    price_usd: 799
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 110
+      depth_cm: 55
+      height_cm: 43.2
+    color_family: "brown"
+    tone: "warm"
+    materials:
+      table:
+        structure: "engineered_wood"
+        surface: "oak_veneer"
+    finish:
+      color_finish: "natural"
+      finish_color: "natural"
+  - variant: "Hugg Nesting Rectangular Coffee Table / Chestnut"
+    sku: "AS-000633-AR4001-CT"
+    size_label: "110x55"
+    finish_code: "chestnut"
+    finish_label: "Chestnut"
+    upholstery_code: "performance_dune"
+    upholstery_label: "Performance Dune"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729561925/crusader/variants/AS-000633-AR4001-CT/Hugg-Rectangular-Coffee-Table-Chestnut-Performance-Dune-Front-1729561922.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729561925/crusader/variants/AS-000633-AR4001-CT/Hugg-Rectangular-Coffee-Table-Chestnut-Performance-Dune-Front-1729561922.jpg"
+    swatch_group: "wood_finish"
+    swatch_hex: "#8B6F47"
+    price_usd: 799
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 110
+      depth_cm: 55
+      height_cm: 43.2
+    color_family: "brown"
+    tone: "warm"
+    materials:
+      table:
+        structure: "engineered_wood"
+        surface: "oak_veneer"
+    finish:
+      color_finish: "chestnut"
+      finish_color: "chestnut"
+  - variant: "Hugg Nesting Rectangular Coffee Table / Black"
+    sku: "AS-000633-AR4001-BLK"
+    size_label: "110x55"
+    finish_code: "black"
+    finish_label: "Black"
+    upholstery_code: "performance_dune"
+    upholstery_label: "Performance Dune"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729563717/crusader/variants/AS-000633-AR4001-BLK/Hugg-Rectangular-Coffee-Table-Black-Performance-Dune-Front-1729563715.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729563717/crusader/variants/AS-000633-AR4001-BLK/Hugg-Rectangular-Coffee-Table-Black-Performance-Dune-Front-1729563715.jpg"
+    swatch_group: "wood_finish"
+    swatch_hex: "#1f1f1f"
+    price_usd: 799
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 110
+      depth_cm: 55
+      height_cm: 43.2
+    color_family: "black"
+    tone: "neutral"
+    materials:
+      table:
+        structure: "engineered_wood"
+        surface: "oak_veneer"
+    finish:
+      color_finish: "black"
+      finish_color: "black"

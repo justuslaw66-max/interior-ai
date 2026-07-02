@@ -3,14 +3,6 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isAdminEmail } from "@/lib/admin";
 
-function inList(list: string | undefined, email: string) {
-  return (list ?? "")
-    .split(",")
-    .map((s) => s.trim().toLowerCase())
-    .filter(Boolean)
-    .includes(email.trim().toLowerCase());
-}
-
 export async function GET() {
   const session = await auth();
   const email = session?.user?.email ?? null;

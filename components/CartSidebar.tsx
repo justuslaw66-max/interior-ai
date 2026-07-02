@@ -5,6 +5,8 @@ import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import { track } from "@/lib/analytics";
 import { createCommerceEvent } from "@/lib/commerce-helpers";
+import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
+import { trackVariantIssues } from "@/lib/catalog/variant-observability";
 
 type PlacedItem = {
   instanceId: string;
@@ -12,13 +14,21 @@ type PlacedItem = {
   variantId: string;
   qty?: number;
   includeInCheckout?: boolean;
+  purchaseOptionId?: string;
+  bundleGroupId?: string;
+  bundleRole?: "primary" | "component";
+  bundleQuantity?: number;
   locked?: boolean;
 };
 
-function getItemPrice(product: CatalogItemSchema, variantId: string) {
-  const v = product.variants.find((variant) => variant.id === variantId);
-  const basePrice = product.commerce.type === 'shopify' || product.commerce.type === 'affiliate' 
-    ? (product.commerce.data as any).priceHint ?? 0 
+type CartNotice = {
+  message: string;
+  tone: "info" | "warning" | "error";
+};
+
+function getItemPrice(product: CatalogItemSchema) {
+  const basePrice = product.commerce.type === "affiliate"
+    ? product.commerce.data.priceHint ?? 0
     : 0;
   // Note: priceDelta removed from ProductVariant schema
   return basePrice;
@@ -107,45 +117,85 @@ export default function CartSidebar({
   const [isCollapsed, setIsCollapsed] = useState(false);
   const cartOpenedRef = useRef(false);
   const autoFillPulseRef = useRef(false);
+  const noticeTimerRef = useRef<number | null>(null);
   const [autoFillPulse, setAutoFillPulse] = useState(false);
+  const [notice, setNotice] = useState<CartNotice | null>(null);
   const [confirmOpen, setConfirmOpen] = useState<null | {
     title: string;
     tabs: number;
     lines: typeof cartLines;
   }>(null);
 
+  const showCartNotice = (message: string, tone: CartNotice["tone"] = "info") => {
+    setNotice({ message, tone });
+    if (noticeTimerRef.current) {
+      window.clearTimeout(noticeTimerRef.current);
+    }
+    noticeTimerRef.current = window.setTimeout(() => {
+      setNotice(null);
+      noticeTimerRef.current = null;
+    }, tone === "error" ? 5000 : 3200);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (noticeTimerRef.current) {
+        window.clearTimeout(noticeTimerRef.current);
+      }
+    };
+  }, []);
+
   const cartLines = useMemo(() => {
     return items
       .map((it) => {
+        if (it.bundleRole === "component") return null;
         const product = CATALOG_ITEMS[it.productId];
         if (!product) return null;
 
-        const variant = product.variants.find((v) => v.id === it.variantId);
-        const unitPrice = getItemPrice(product, it.variantId);
-        const qty = Math.max(1, Math.min(99, it.qty ?? 1));
-        const linePrice = unitPrice * qty;
+        const resolved = resolveCatalogVariant(product, it.variantId);
+        const purchaseOption = it.purchaseOptionId
+          ? resolved.variant.purchaseOptions?.find((option) => option.id === it.purchaseOptionId) ?? null
+          : null;
+        const optionQuantity = purchaseOption?.quantity ?? it.bundleQuantity ?? null;
+        const isBundleLine = Boolean(optionQuantity && optionQuantity > 1);
+        const unitPrice =
+          resolved.commerce.type === "affiliate" ? resolved.commerce.priceHint ?? 0 : getItemPrice(product);
+        const qty = Math.max(1, Math.min(99, optionQuantity ?? it.qty ?? 1));
+        const linePrice = purchaseOption?.priceHint ?? unitPrice * qty;
 
         return {
           instanceId: it.instanceId,
           productId: product.id,
+          variantId: resolved.variantId,
           name: product.title,
           category: product.category,
-          variantName: variant?.label ?? it.variantId,
-          unitPrice,
+          variantName: purchaseOption ? `${resolved.variant.label} · ${purchaseOption.label}` : resolved.variant.label,
+          purchaseOptionLabel: purchaseOption?.label ?? null,
+          isBundleLine,
+          unitPrice: purchaseOption?.priceHint ?? unitPrice,
           qty,
           linePrice,
+          linkOpenCount: isBundleLine ? 1 : qty,
+          compareAtPrice: purchaseOption?.compareAtPriceHint ?? null,
+          savings: purchaseOption?.savingsHint ?? null,
           includeInCheckout: it.includeInCheckout ?? true,
           locked: Boolean(it.locked),
-          purchaseMode: product.commerce.type === 'shopify' ? 'shopify' : product.commerce.type === 'affiliate' ? 'affiliate' : 'not_buyable',
-          retailer: product.commerce.type === 'affiliate' ? product.commerce.data.retailer : product.commerce.type === 'shopify' ? 'Shopify' : 'Unknown',
-          buyUrl: product.commerce.type === 'affiliate' ? product.commerce.data.url : null,
-          shopifyVariantId:
-            product.commerce.type === 'shopify' ? product.commerce.data.variantId : null,
+          purchaseMode: resolved.commerce.type,
+          retailer:
+            resolved.commerce.type === "affiliate"
+              ? resolved.commerce.retailer ?? "Unknown"
+              : resolved.commerce.type === "shopify"
+              ? "Shopify"
+              : "Unknown",
+          buyUrl: purchaseOption?.affiliateUrl ?? (resolved.commerce.type === "affiliate" ? resolved.commerce.url : null),
+          shopifyVariantId: resolved.commerce.type === "shopify" ? resolved.commerce.variantId : null,
+          shopifyAvailable: resolved.commerce.type === "shopify" ? resolved.commerce.available : false,
         };
       })
       .filter(Boolean) as Array<{
       instanceId: string;
       productId: string;
+      variantId: string;
       name: string;
       category: string;
       variantName: string;
@@ -154,11 +204,28 @@ export default function CartSidebar({
       linePrice: number;
       includeInCheckout: boolean;
       locked: boolean;
-      purchaseMode: "shopify" | "affiliate";
+      purchaseMode: "shopify" | "affiliate" | "not_buyable";
+      purchaseOptionLabel: string | null;
+      isBundleLine: boolean;
+      linkOpenCount: number;
+      compareAtPrice: number | null;
+      savings: number | null;
       retailer: string;
       buyUrl: string | null;
       shopifyVariantId: string | null;
+      shopifyAvailable: boolean;
     }>;
+  }, [items]);
+
+  useEffect(() => {
+    for (const item of items) {
+      const product = CATALOG_ITEMS[item.productId];
+      if (!product) continue;
+      trackVariantIssues(resolveCatalogVariant(product, item.variantId), {
+        surface: "cart_sidebar",
+        requestedVariantId: item.variantId,
+      });
+    }
   }, [items]);
 
   const includedLines = useMemo(
@@ -170,7 +237,11 @@ export default function CartSidebar({
   const eligibleLines = useMemo(
     () =>
       cartLines.filter((x) =>
-        x.purchaseMode === "shopify" ? Boolean(x.shopifyVariantId) : Boolean(x.buyUrl)
+        x.purchaseMode === "shopify"
+          ? Boolean(x.shopifyVariantId && x.shopifyAvailable)
+          : x.purchaseMode === "affiliate"
+          ? Boolean(x.buyUrl)
+          : false
       ),
     [cartLines]
   );
@@ -192,6 +263,25 @@ export default function CartSidebar({
     () => includedLines.filter((x) => x.purchaseMode === "affiliate"),
     [includedLines]
   );
+  const readyShopifyItems = useMemo(
+    () => shopifyItems.filter((x) => Boolean(x.shopifyVariantId && x.shopifyAvailable)),
+    [shopifyItems]
+  );
+  const unavailableShopifyItems = useMemo(
+    () => shopifyItems.filter((x) => !x.shopifyVariantId || !x.shopifyAvailable),
+    [shopifyItems]
+  );
+  const readyAffiliateItems = useMemo(
+    () => affiliateItems.filter((x) => Boolean(x.buyUrl)),
+    [affiliateItems]
+  );
+  const missingAffiliateItems = useMemo(
+    () => affiliateItems.filter((x) => !x.buyUrl),
+    [affiliateItems]
+  );
+  const excludedLineCount = cartLines.filter((x) => !(x.includeInCheckout ?? true)).length;
+  const checkoutReadyCount = readyShopifyItems.length + readyAffiliateItems.length;
+  const needsReviewCount = unavailableShopifyItems.length + missingAffiliateItems.length;
 
   const totals = useMemo(() => {
     const total = includedLines.reduce((sum, x) => sum + x.linePrice, 0);
@@ -224,10 +314,11 @@ export default function CartSidebar({
     track("cart_empty_autofill_clicked", { design_id: designId ?? null });
     const targets = eligibleLines.length ? eligibleLines : cartLines;
     if (targets.length === 0) {
-      alert("No shoppable items found yet.");
+      showCartNotice("No shoppable items found yet.", "warning");
       return;
     }
     targets.forEach((x) => onSetInclude(x.instanceId, true));
+    showCartNotice(`${targets.length} item${targets.length === 1 ? "" : "s"} included in checkout.`);
   };
 
   const addItemsIndividually = () => {
@@ -261,7 +352,7 @@ export default function CartSidebar({
   const countTabs = (lines: typeof cartLines) =>
     lines
       .filter((x) => x.buyUrl)
-      .reduce((sum, x) => sum + (x.qty ?? 1), 0);
+      .reduce((sum, x) => sum + (x.linkOpenCount ?? x.qty ?? 1), 0);
 
   const openUrl = async (url: string) => {
     if (openInSameTab) {
@@ -274,18 +365,23 @@ export default function CartSidebar({
   const doBuyLines = async (lines: typeof cartLines) => {
     const purchasable = lines.filter((x) => x.buyUrl);
     if (purchasable.length === 0) {
-      alert("No items in this group have buy links yet.");
+      showCartNotice("No items in this group have buy links yet.", "warning");
       return;
     }
 
     setBusy(true);
+    showCartNotice(
+      openInSameTab
+        ? "Opening the first retailer link in this tab."
+        : `Opening ${countTabs(purchasable)} retailer tab${countTabs(purchasable) === 1 ? "" : "s"}.`
+    );
     try {
       for (const line of purchasable) {
-        for (let i = 0; i < (line.qty ?? 1); i++) {
+        for (let i = 0; i < (line.linkOpenCount ?? line.qty ?? 1); i++) {
           const urlToOpen = await trackAndOpen({
             designId,
             productId: line.productId,
-            price: line.unitPrice,
+            price: line.linePrice,
             retailer: line.retailer,
             buyUrl: line.buyUrl!,
           });
@@ -313,15 +409,30 @@ export default function CartSidebar({
   };
 
   const startShopifyCheckoutInternal = async () => {
+    const invalidShopify = shopifyItems.filter(
+      (line) => !line.shopifyVariantId || !line.shopifyAvailable
+    );
+    if (invalidShopify.length > 0) {
+      showCartNotice(
+        `Some selected variants are unavailable for checkout:\n${invalidShopify
+          .map((line) => `- ${line.name} (${line.variantName})`)
+          .join("\n")}`,
+        "error"
+      );
+      return;
+    }
+
     const lines = shopifyItems
       .filter((x) => x.shopifyVariantId)
       .map((x) => ({
         merchandiseId: x.shopifyVariantId as string,
         quantity: x.qty ?? 1,
+        productId: x.productId,
+        variantId: x.variantId,
       }));
 
     if (lines.length === 0) {
-      alert("No Shopify items have variant IDs yet.");
+      showCartNotice("No Shopify items have variant IDs yet.", "warning");
       return;
     }
 
@@ -349,7 +460,7 @@ export default function CartSidebar({
                 )
                 .join("\n")}`
             : data?.error ?? "Checkout failed";
-        alert(msg);
+        showCartNotice(msg, "error");
         return;
       }
 
@@ -371,35 +482,77 @@ export default function CartSidebar({
     await startShopifyCheckoutInternal();
   };
 
+  const panelClass = isDesignerTheme
+    ? "designer-panel w-85 max-h-[60vh] overflow-auto rounded-2xl p-4"
+    : "w-85 max-h-[60vh] overflow-auto rounded-2xl border border-neutral-200 bg-white p-4 shadow";
+  const textClass = isDesignerTheme ? "text-neutral-100" : "text-neutral-900";
+  const mutedTextClass = isDesignerTheme ? "text-neutral-400" : "text-neutral-500";
+  const softCardClass = isDesignerTheme
+    ? "rounded-2xl border border-white/10 bg-black/10 p-3"
+    : "rounded-2xl border border-neutral-200 bg-neutral-50 p-3";
+  const groupClass = isDesignerTheme
+    ? "overflow-hidden rounded-2xl border border-white/10 bg-[#151820]"
+    : "overflow-hidden rounded-2xl border border-neutral-200 bg-white";
+  const groupHeaderClass = isDesignerTheme
+    ? "flex items-center justify-between gap-2 border-b border-white/10 bg-white/[0.03] px-3 py-2"
+    : "flex items-center justify-between gap-2 border-b border-neutral-200 bg-neutral-50 px-3 py-2";
+  const secondaryButtonClass = isDesignerTheme
+    ? "rounded-xl border border-white/10 px-3 py-2 text-sm text-neutral-200 transition hover:bg-white/5 disabled:text-neutral-500"
+    : "rounded-xl border border-neutral-200 px-3 py-2 text-sm text-neutral-800 transition hover:bg-neutral-50 disabled:text-neutral-400";
+  const noticeClass =
+    notice?.tone === "error"
+      ? isDesignerTheme
+        ? "border-red-400/30 bg-red-500/10 text-red-100"
+        : "border-red-200 bg-red-50 text-red-800"
+      : notice?.tone === "warning"
+        ? isDesignerTheme
+          ? "border-amber-400/30 bg-amber-500/10 text-amber-100"
+          : "border-amber-200 bg-amber-50 text-amber-800"
+        : isDesignerTheme
+          ? "border-sky-400/30 bg-sky-500/10 text-sky-100"
+          : "border-sky-200 bg-sky-50 text-sky-800";
+
   return (
     <aside
       data-testid="cart-panel"
-      className={
-        isDesignerTheme
-          ? "designer-panel w-[340px] max-h-[60vh] overflow-auto rounded-2xl p-4"
-          : "w-[340px] max-h-[60vh] overflow-auto rounded-2xl bg-white p-4 shadow"
-      }
+      className={panelClass}
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-sm font-semibold text-neutral-900">Cart</div>
-          <div className="text-xs text-neutral-500">
-            {cartLines.length} items • {" "}
-            {shopifyItems.length} buy here • {" "}
-            {affiliateItems.length} external
+          <div className={`text-sm font-semibold ${textClass}`}>Shopping list</div>
+          <div className={`text-xs ${mutedTextClass}`}>
+            {totals.totalQty} selected item{totals.totalQty === 1 ? "" : "s"} from your design
           </div>
-          <div className="mt-2">
-            <div className="text-[11px] uppercase tracking-wide text-neutral-500">
-              Total
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            <div className={softCardClass}>
+              <div className={`text-[11px] uppercase tracking-wide ${mutedTextClass}`}>
+                Total
+              </div>
+              <div className={`mt-1 text-lg font-semibold ${textClass}`}>
+                ${totals.total.toFixed(0)}
+              </div>
             </div>
-            <div className="text-xl font-semibold text-neutral-900">
-              ${totals.total.toFixed(0)}
+            <div className={softCardClass}>
+              <div className={`text-[11px] uppercase tracking-wide ${mutedTextClass}`}>
+                Checkout
+              </div>
+              <div className={`mt-1 text-lg font-semibold ${textClass}`}>
+                {shopifyItems.length}
+              </div>
+            </div>
+            <div className={softCardClass}>
+              <div className={`text-[11px] uppercase tracking-wide ${mutedTextClass}`}>
+                Retailer
+              </div>
+              <div className={`mt-1 text-lg font-semibold ${textClass}`}>
+                {affiliateItems.length}
+              </div>
             </div>
           </div>
         </div>
 
         <button
-          className="rounded-lg border px-2 py-1 text-xs text-neutral-700 hover:bg-neutral-50"
+          className={secondaryButtonClass}
           onClick={() => setIsCollapsed((v) => !v)}
           aria-expanded={!isCollapsed}
           aria-controls="cart-body"
@@ -411,31 +564,95 @@ export default function CartSidebar({
 
       {!isCollapsed && (
         <div id="cart-body">
-          <button
-            data-testid="checkout-shopify"
-            className={`mt-3 w-full rounded-xl px-3 py-2 text-sm text-white ${
-              shopifyItems.length === 0 || busy ? "bg-neutral-300" : "bg-neutral-900"
-            }`}
-            onClick={startShopifyCheckout}
-            disabled={shopifyItems.length === 0 || busy}
+          <div
+            className={
+              isDesignerTheme
+                ? "mt-3 rounded-2xl border border-white/10 bg-black/10 p-3"
+                : "mt-3 rounded-2xl border border-neutral-200 bg-neutral-50 p-3"
+            }
+            data-testid="cart-checkout-readiness"
           >
-            Checkout ({shopifyItems.length} buy here item{shopifyItems.length === 1 ? "" : "s"})
-          </button>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className={`text-sm font-semibold ${textClass}`}>Checkout readiness</div>
+                <div className={`mt-1 text-xs ${mutedTextClass}`}>
+                  {checkoutReadyCount > 0
+                    ? `${checkoutReadyCount} included line${checkoutReadyCount === 1 ? "" : "s"} can be purchased now.`
+                    : "No checkout-ready items are included yet."}
+                </div>
+              </div>
+              <span
+                className={
+                  needsReviewCount > 0
+                    ? isDesignerTheme
+                      ? "rounded-full bg-amber-500/10 px-2 py-1 text-[10px] font-semibold text-amber-100"
+                      : "rounded-full bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-800"
+                    : isDesignerTheme
+                      ? "rounded-full bg-emerald-500/10 px-2 py-1 text-[10px] font-semibold text-emerald-100"
+                      : "rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-emerald-700"
+                }
+              >
+                {needsReviewCount > 0 ? "Review needed" : "Ready"}
+              </span>
+            </div>
+            <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+              <div className={isDesignerTheme ? "rounded-xl bg-white/5 p-2" : "rounded-xl bg-white p-2"}>
+                <div className={`text-sm font-semibold ${textClass}`}>{readyShopifyItems.length}</div>
+                <div className={`text-[10px] ${mutedTextClass}`}>Cart-ready</div>
+              </div>
+              <div className={isDesignerTheme ? "rounded-xl bg-white/5 p-2" : "rounded-xl bg-white p-2"}>
+                <div className={`text-sm font-semibold ${textClass}`}>{readyAffiliateItems.length}</div>
+                <div className={`text-[10px] ${mutedTextClass}`}>Retailer links</div>
+              </div>
+              <div className={isDesignerTheme ? "rounded-xl bg-white/5 p-2" : "rounded-xl bg-white p-2"}>
+                <div className={`text-sm font-semibold ${textClass}`}>{needsReviewCount}</div>
+                <div className={`text-[10px] ${mutedTextClass}`}>Needs review</div>
+              </div>
+            </div>
+            {excludedLineCount > 0 ? (
+              <div className={`mt-2 text-[11px] ${mutedTextClass}`}>
+                {excludedLineCount} line{excludedLineCount === 1 ? "" : "s"} excluded from checkout.
+              </div>
+            ) : null}
+          </div>
 
-          <button
-            data-testid="checkout-affiliate"
-            className={`mt-2 w-full rounded-xl border px-3 py-2 text-sm ${
-              affiliateItems.length === 0 || busy ? "text-neutral-400" : "text-neutral-900"
-            }`}
-            disabled={affiliateItems.length === 0 || busy}
-            onClick={() => requestBuy("Buy external items", affiliateItems)}
-          >
-            Buy external ({affiliateItems.length} item{affiliateItems.length === 1 ? "" : "s"})
-          </button>
+          <div className="mt-3 grid gap-2">
+            <button
+              data-testid="checkout-shopify"
+              className={`w-full rounded-xl px-3 py-2 text-sm font-semibold text-white transition ${
+                shopifyItems.length === 0 || busy ? "bg-neutral-300" : "bg-neutral-900 hover:bg-neutral-800"
+              }`}
+              onClick={startShopifyCheckout}
+              disabled={shopifyItems.length === 0 || busy}
+            >
+              Checkout here ({shopifyItems.length})
+            </button>
+
+            <button
+              data-testid="checkout-affiliate"
+              className={`${secondaryButtonClass} w-full ${
+                affiliateItems.length === 0 || busy ? "opacity-60" : ""
+              }`}
+              disabled={affiliateItems.length === 0 || busy}
+              onClick={() => requestBuy("Buy external items", affiliateItems)}
+            >
+              Open retailer links ({affiliateItems.length})
+            </button>
+          </div>
+
+          {notice && (
+            <div
+              data-testid="cart-notice"
+              role={notice.tone === "error" ? "alert" : "status"}
+              className={`mt-3 whitespace-pre-line rounded-xl border px-3 py-2 text-sm ${noticeClass}`}
+            >
+              {notice.message}
+            </div>
+          )}
 
           <div className="mt-3 grid grid-cols-2 gap-2">
             <button
-              className="rounded-xl border px-3 py-2 text-sm"
+              className={secondaryButtonClass}
               disabled={busy}
               onClick={() => {
                 if (plan !== "pro") return onShowUpgrade();
@@ -446,7 +663,7 @@ export default function CartSidebar({
             </button>
 
             <button
-              className="rounded-xl border px-3 py-2 text-sm"
+              className={secondaryButtonClass}
               disabled={busy}
               onClick={() => {
                 if (plan !== "pro") return onShowUpgrade();
@@ -457,20 +674,20 @@ export default function CartSidebar({
             </button>
           </div>
 
-          <div className="mt-2 text-[11px] text-neutral-500">
-            Tip: checkout “Buy here” items first, then purchase external items.
+          <div className={`mt-2 text-[11px] ${mutedTextClass}`}>
+            Checkout items you can buy here first, then open retailer links for external items.
           </div>
 
           <div className="mt-3 max-h-[55vh] overflow-auto space-y-3">
             {showEmptyCart ? (
-              <div className="rounded-xl border p-4 text-sm text-neutral-700">
-                <div className="text-sm font-semibold">Your room can shop for you</div>
-                <div className="mt-1 text-xs text-neutral-500">
-                  We will add buyable items from your room to checkout.
+              <div className={softCardClass}>
+                <div className={`text-sm font-semibold ${textClass}`}>Your room can shop for you</div>
+                <div className={`mt-1 text-xs ${mutedTextClass}`}>
+                  Include the buyable items already placed in your rooms.
                 </div>
                 <div className="mt-3 flex flex-col gap-2">
                   <button
-                    className={`rounded-lg px-3 py-2 text-sm text-white ${
+                    className={`rounded-xl px-3 py-2 text-sm font-semibold text-white ${
                       autoFillPulse ? "pulse-once" : ""
                     } ${busy ? "bg-neutral-300" : "bg-neutral-900"}`}
                     disabled={busy}
@@ -479,7 +696,7 @@ export default function CartSidebar({
                     Auto-fill cart from room
                   </button>
                   <button
-                    className="rounded-lg border px-3 py-2 text-sm text-neutral-700"
+                    className={secondaryButtonClass}
                     onClick={addItemsIndividually}
                   >
                     Add items individually
@@ -489,11 +706,11 @@ export default function CartSidebar({
             ) : (
               <>
                 {shopifyAll.length > 0 && (
-                  <div className="rounded-xl border">
-                    <div className="flex items-center justify-between gap-2 border-b bg-neutral-50 px-3 py-2">
+                  <div className={groupClass}>
+                    <div className={groupHeaderClass}>
                       <div>
-                        <div className="text-sm font-semibold">Buy here</div>
-                        <div className="text-xs text-neutral-500">
+                        <div className={`text-sm font-semibold ${textClass}`}>Checkout here</div>
+                        <div className={`text-xs ${mutedTextClass}`}>
                           {shopifyItems.length} included • Subtotal ${shopifyItems
                             .reduce((sum, x) => sum + x.linePrice, 0)
                             .toFixed(0)}
@@ -501,26 +718,34 @@ export default function CartSidebar({
                       </div>
                     </div>
 
-                    <ul className="divide-y">
+                    <ul className={isDesignerTheme ? "divide-y divide-white/10" : "divide-y divide-neutral-100"}>
                       {shopifyAll.map((x) => (
                         <li key={x.instanceId} data-testid="cart-item" className="p-3">
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0">
-                              <div className="truncate text-sm font-semibold">
+                              <div className={`truncate text-sm font-semibold ${textClass}`}>
                                 {x.name}
                                 {x.locked && (
-                                  <span className="ml-2 text-xs text-neutral-400">
-                                    🔒
+                                  <span className={`ml-2 rounded-full px-2 py-0.5 text-[10px] ${isDesignerTheme ? "bg-white/10 text-neutral-300" : "bg-neutral-100 text-neutral-500"}`}>
+                                    Locked
                                   </span>
                                 )}
                               </div>
-                              <div className="text-xs text-neutral-500">
+                              <div className={`text-xs ${mutedTextClass}`}>
+                                <span data-testid="cart-item-variant-label">
                                 {x.variantName} • {x.category}
+                                </span>
                               </div>
-                              <span className="mt-1 inline-flex rounded-full bg-green-100 px-2 py-0.5 text-[11px] text-green-700">
-                                Checkout here
+                              <span
+                                className={
+                                  x.shopifyVariantId && x.shopifyAvailable
+                                    ? "mt-2 inline-flex rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-medium text-green-700"
+                                    : "mt-2 inline-flex rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800"
+                                }
+                              >
+                                {x.shopifyVariantId && x.shopifyAvailable ? "Checkout here" : "Needs Shopify review"}
                               </span>
-                              <label className="mt-2 flex items-center gap-2 text-xs text-neutral-600">
+                              <label className={`mt-2 flex items-center gap-2 text-xs ${isDesignerTheme ? "text-neutral-300" : "text-neutral-600"}`}>
                                 <input
                                   type="checkbox"
                                   checked={x.includeInCheckout ?? true}
@@ -541,32 +766,49 @@ export default function CartSidebar({
                             </div>
 
                             <div className="text-right">
-                              <div className="text-sm font-semibold">${x.linePrice}</div>
-                              <div className="text-[11px] text-neutral-500">${x.unitPrice} ea</div>
+                              <div className={`text-sm font-semibold ${textClass}`}>${x.linePrice}</div>
+                              <div className={`text-[11px] ${mutedTextClass}`}>
+                                {x.isBundleLine ? (
+                                  <>
+                                    Set price
+                                    {x.compareAtPrice ? (
+                                      <span className="ml-1 line-through">${x.compareAtPrice}</span>
+                                    ) : null}
+                                  </>
+                                ) : (
+                                  <>${x.unitPrice} ea</>
+                                )}
+                              </div>
                             </div>
                           </div>
 
                           <div className="mt-2 flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <button
-                                className="h-7 w-7 rounded-lg border text-sm"
-                                onClick={() => onSetQty(x.instanceId, Math.max(1, x.qty - 1))}
-                                data-testid="cart-quantity-decrease"
-                              >
-                                -
-                              </button>
-                              <div className="w-8 text-center text-sm" data-testid="cart-quantity">{x.qty}</div>
-                              <button
-                                className="h-7 w-7 rounded-lg border text-sm"
-                                onClick={() => onSetQty(x.instanceId, Math.min(99, x.qty + 1))}
-                                data-testid="cart-quantity-increase"
-                              >
-                                +
-                              </button>
-                            </div>
+                            {x.isBundleLine ? (
+                              <div className={`rounded-full px-2.5 py-1 text-xs font-semibold ${isDesignerTheme ? "bg-white/10 text-neutral-200" : "bg-emerald-50 text-emerald-700"}`}>
+                                Set includes {x.qty}
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <button
+                                  className={isDesignerTheme ? "h-7 w-7 rounded-lg border border-white/10 text-sm text-neutral-200" : "h-7 w-7 rounded-lg border border-neutral-200 text-sm"}
+                                  onClick={() => onSetQty(x.instanceId, Math.max(1, x.qty - 1))}
+                                  data-testid="cart-quantity-decrease"
+                                >
+                                  -
+                                </button>
+                                <div className={`w-8 text-center text-sm ${textClass}`} data-testid="cart-quantity">{x.qty}</div>
+                                <button
+                                  className={isDesignerTheme ? "h-7 w-7 rounded-lg border border-white/10 text-sm text-neutral-200" : "h-7 w-7 rounded-lg border border-neutral-200 text-sm"}
+                                  onClick={() => onSetQty(x.instanceId, Math.min(99, x.qty + 1))}
+                                  data-testid="cart-quantity-increase"
+                                >
+                                  +
+                                </button>
+                              </div>
+                            )}
 
                             <button
-                              className="rounded-lg px-2 py-1 text-xs text-red-600"
+                              className="rounded-lg px-2 py-1 text-xs text-red-600 transition hover:bg-red-50"
                               onClick={() => onRemove(x.instanceId)}
                               data-testid="cart-item-remove"
                             >
@@ -580,22 +822,22 @@ export default function CartSidebar({
                 )}
 
                 {affiliateAll.length === 0 ? (
-                  <div className="rounded-xl border p-4 text-sm text-neutral-600">
+                  <div className={isDesignerTheme ? "rounded-2xl border border-white/10 p-4 text-sm text-neutral-300" : "rounded-2xl border border-neutral-200 p-4 text-sm text-neutral-600"}>
                     No external retailer items in the cart right now.
                   </div>
                 ) : (
                   groups.map((g) => (
-                    <div key={g.retailer} className="rounded-xl border">
-                      <div className="flex items-center justify-between gap-2 border-b bg-neutral-50 px-3 py-2">
+                    <div key={g.retailer} className={groupClass}>
+                      <div className={groupHeaderClass}>
                         <div>
-                          <div className="text-sm font-semibold">{g.retailer}</div>
-                          <div className="text-xs text-neutral-500">
+                          <div className={`text-sm font-semibold ${textClass}`}>{g.retailer}</div>
+                          <div className={`text-xs ${mutedTextClass}`}>
                             {g.lines.length} items • {g.buyableCount} included • Subtotal ${g.subtotal.toFixed(0)}
                           </div>
                         </div>
 
                         <button
-                          className={`rounded-lg px-3 py-1 text-xs text-white ${
+                          className={`rounded-lg px-3 py-1 text-xs font-semibold text-white ${
                             busy || g.includedLines.length === 0
                               ? "bg-neutral-400"
                               : "bg-neutral-900"
@@ -609,27 +851,35 @@ export default function CartSidebar({
                         </button>
                       </div>
 
-                      <ul className="divide-y">
+                      <ul className={isDesignerTheme ? "divide-y divide-white/10" : "divide-y divide-neutral-100"}>
                         {g.lines.map((x) => (
                           <li key={x.instanceId} className="p-3">
                             <div className="flex items-start justify-between gap-2">
                               <div className="min-w-0">
-                                <div className="truncate text-sm font-semibold">
+                                <div className={`truncate text-sm font-semibold ${textClass}`}>
                                   {x.name}
                                   {x.locked && (
-                                    <span className="ml-2 text-xs text-neutral-400">
-                                      🔒
+                                    <span className={`ml-2 rounded-full px-2 py-0.5 text-[10px] ${isDesignerTheme ? "bg-white/10 text-neutral-300" : "bg-neutral-100 text-neutral-500"}`}>
+                                      Locked
                                     </span>
                                   )}
                                 </div>
-                                <div className="text-xs text-neutral-500">
+                                <div className={`text-xs ${mutedTextClass}`}>
+                                  <span data-testid="cart-item-variant-label">
                                   {x.variantName} • {x.category}
+                                  </span>
                                 </div>
-                                <span className="mt-1 inline-flex rounded-full bg-blue-100 px-2 py-0.5 text-[11px] text-blue-700">
-                                  External retailer
+                                <span
+                                  className={
+                                    x.buyUrl
+                                      ? "mt-2 inline-flex rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-medium text-blue-700"
+                                      : "mt-2 inline-flex rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800"
+                                  }
+                                >
+                                  {x.buyUrl ? "Retailer link ready" : "Needs retailer link"}
                                 </span>
 
-                                <label className="mt-2 flex items-center gap-2 text-xs text-neutral-600">
+                                <label className={`mt-2 flex items-center gap-2 text-xs ${isDesignerTheme ? "text-neutral-300" : "text-neutral-600"}`}>
                                   <input
                                     type="checkbox"
                                     checked={x.includeInCheckout ?? true}
@@ -649,33 +899,52 @@ export default function CartSidebar({
                                 </label>
 
                                 {!x.buyUrl && (
-                                  <div className="mt-1 text-xs text-neutral-400">
-                                    Buy link coming soon
+                                  <div className={isDesignerTheme ? "mt-1 text-xs text-amber-100" : "mt-1 text-xs text-amber-700"}>
+                                    Add a retailer URL before sharing this as checkout-ready.
                                   </div>
                                 )}
                               </div>
 
                               <div className="text-right">
-                                <div className="text-sm font-semibold">${x.linePrice}</div>
-                                <div className="text-[11px] text-neutral-500">${x.unitPrice} ea</div>
+                                <div className={`text-sm font-semibold ${textClass}`}>${x.linePrice}</div>
+                                <div className={`text-[11px] ${mutedTextClass}`}>
+                                  {x.isBundleLine ? (
+                                    <>
+                                      Set price
+                                      {x.compareAtPrice ? (
+                                        <span className="ml-1 line-through">${x.compareAtPrice}</span>
+                                      ) : null}
+                                    </>
+                                  ) : (
+                                    <>${x.unitPrice} ea</>
+                                  )}
+                                </div>
                               </div>
                             </div>
 
                             <div className="mt-2 flex items-center justify-between">
                               <div className="flex items-center gap-2">
-                                <button
-                                  className="h-7 w-7 rounded-lg border text-sm"
-                                  onClick={() => onSetQty(x.instanceId, Math.max(1, x.qty - 1))}
-                                >
-                                  -
-                                </button>
-                                <div className="w-8 text-center text-sm">{x.qty}</div>
-                                <button
-                                  className="h-7 w-7 rounded-lg border text-sm"
-                                  onClick={() => onSetQty(x.instanceId, Math.min(99, x.qty + 1))}
-                                >
-                                  +
-                                </button>
+                                {x.isBundleLine ? (
+                                  <div className={`rounded-full px-2.5 py-1 text-xs font-semibold ${isDesignerTheme ? "bg-white/10 text-neutral-200" : "bg-emerald-50 text-emerald-700"}`}>
+                                    Set includes {x.qty}
+                                  </div>
+                                ) : (
+                                  <>
+                                    <button
+                                      className={isDesignerTheme ? "h-7 w-7 rounded-lg border border-white/10 text-sm text-neutral-200" : "h-7 w-7 rounded-lg border border-neutral-200 text-sm"}
+                                      onClick={() => onSetQty(x.instanceId, Math.max(1, x.qty - 1))}
+                                    >
+                                      -
+                                    </button>
+                                    <div className={`w-8 text-center text-sm ${textClass}`}>{x.qty}</div>
+                                    <button
+                                      className={isDesignerTheme ? "h-7 w-7 rounded-lg border border-white/10 text-sm text-neutral-200" : "h-7 w-7 rounded-lg border border-neutral-200 text-sm"}
+                                      onClick={() => onSetQty(x.instanceId, Math.min(99, x.qty + 1))}
+                                    >
+                                      +
+                                    </button>
+                                  </>
+                                )}
 
                                 <button
                                   className={`ml-2 rounded-lg px-3 py-1 text-xs ${
@@ -686,12 +955,12 @@ export default function CartSidebar({
                                   disabled={!x.buyUrl || busy}
                                   onClick={() => doBuyLines([x])}
                                 >
-                                  Buy
+                                  {x.buyUrl ? "Open" : "Review"}
                                 </button>
                               </div>
 
                               <button
-                                className="rounded-lg px-2 py-1 text-xs text-red-600"
+                                className="rounded-lg px-2 py-1 text-xs text-red-600 transition hover:bg-red-50"
                                 onClick={() => onRemove(x.instanceId)}
                               >
                                 Remove
@@ -707,8 +976,8 @@ export default function CartSidebar({
             )}
           </div>
 
-          <div className="mt-2 text-[11px] text-neutral-500">
-            Tracking happens per opened retailer tab. Quantity opens multiple tabs (V1).
+          <div className={`mt-2 text-[11px] ${mutedTextClass}`}>
+            External retailer links open separately so customers can review each item before buying.
           </div>
         </div>
       )}
@@ -747,11 +1016,11 @@ export default function CartSidebar({
                         <div className="min-w-0">
                           <div className="truncate font-semibold">{x.name}</div>
                           <div className="text-xs text-neutral-500">
-                            {x.retailer} • qty {x.qty}
+                            {x.retailer} • {x.isBundleLine ? `set of ${x.qty}` : `qty ${x.qty}`}
                           </div>
                         </div>
                         <div className="text-xs text-neutral-500">
-                          {x.qty} tab{x.qty === 1 ? "" : "s"}
+                          {x.linkOpenCount} tab{x.linkOpenCount === 1 ? "" : "s"}
                         </div>
                       </div>
                     </li>

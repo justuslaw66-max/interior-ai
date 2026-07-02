@@ -1,0 +1,278 @@
+brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/harper-marble-round-coffee-table"
+category: "coffee_table"
+
+product_family: "Harper"
+product_name: "Harper Marble Coffee Table Round"
+slug: "castlery-harper-marble-coffee-table-round"
+variant: "Harper Marble Coffee Table Round / Chestnut"
+
+price_usd: 1199
+price_band: "premium"
+brand_tier: "premium_high"
+
+design_zone: "living_zone"
+anchor_role: "secondary"
+
+dimensions:
+  width_cm: 91.5
+  depth_cm: 91.5
+  height_cm: 38
+
+size_class: "medium"
+shape: "round"
+base_type: "pedestal"
+
+material_family: "mixed"
+material_mix:
+  - "carrara_marble"
+  - "engineered_wood"
+  - "oak_veneer"
+
+color_family: "white"
+tone: "warm"
+
+style_cluster: "contemporary_luxury"
+style_secondary: "modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "heavy"
+  edge_profile: "rounded_soft"
+  silhouette: "round_marble_top_double_pedestal"
+  form_language: "softened_luxury_fluted_base"
+  leg_expression: "fluted_pedestal_base"
+
+spatial_attributes:
+  footprint_shape: "round"
+  low_profile: true
+  center_table_suitable: true
+  works_in_medium_room: true
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+  - "open_plan"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: true
+
+design_pairings:
+  - "sofa"
+  - "sectional_sofa"
+  - "loveseat"
+  - "rug"
+  - "side_table"
+  - "floor_lamp"
+  - "accent_chair"
+  - "media_console"
+
+compatibility:
+  related_products:
+    - product_family: "Harper"
+      product_name: "Harper Marble Coffee Table Rectangular"
+      relationship: "family_variant"
+      strength: "strong"
+    - product_family: "Peri"
+      product_name: "Peri Coffee Table"
+      relationship: "same_room_alternative"
+      strength: "medium"
+      reason: "modern_open_shelf_alternative"
+    - product_family: "Seb"
+      product_name: "Seb Coffee Table with Storage"
+      relationship: "same_room_alternative"
+      strength: "medium"
+      reason: "warmer_storage_alternative"
+    - product_family: "Vento"
+      product_name: "Vento Coffee Table"
+      relationship: "same_room_alternative"
+      strength: "medium"
+      reason: "japandi_storage_alternative"
+
+recommendation_metadata:
+  recommendation_role: "living_room_surface"
+  primary_use_cases:
+    - "sofa_pairing"
+    - "centerpiece_surface"
+    - "soft_circulation_layout"
+    - "premium_material_statement"
+
+bundle_metadata:
+  bundle_role: "accent"
+  can_bundle_with:
+    - "sofa"
+    - "sectional_sofa"
+    - "side_table"
+    - "rug"
+    - "floor_lamp"
+    - "accent_chair"
+    - "media_console"
+  recommended_with_products:
+    - product_family: "Jaron"
+      product_name: "Jaron Recliner Sofa"
+      relationship: "recommended_with"
+      strength: "strong"
+    - product_family: "Madison"
+      product_name: "Madison Sofa"
+      relationship: "recommended_with"
+      strength: "strong"
+  set_behavior:
+    supports_living_room_pairing: true
+    supports_centerpiece_surface: true
+    supports_soft_circulation_layouts: true
+
+authoring_notes:
+  category_confidence: "high"
+  multi_variant_expected: true
+  preset_family: "table"
+  major_family_example_candidate: true
+  modeling_decision: "Round and rectangular modeled as separate products due to significant shape change."
+  note: "Natural finish variant authored from reference imagery; imported GLB is chestnut."
+
+product_details:
+  material:
+    - label: "Material"
+      value: "Table Top: carrara marble; Leg: engineered wood with oak veneer"
+    - label: "Care"
+      value: "Marble table"
+    - label: "Colour variance"
+      value: "Natural variations"
+    - label: "Material & safety standards"
+      value: "Low formaldehyde"
+    - label: "Finish"
+      value: "Water-based in chestnut finish"
+  dimensions:
+    - label: "Dimension"
+      value: "W91.5 x D91.5 x H38cm"
+    - label: "Table top thickness"
+      value: "1.8cm"
+    - label: "Max bearing support"
+      value: "50kg"
+    - label: "Product weight"
+      value: "63kg"
+    - label: "Packaging dimensions"
+      value: "2 boxes"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Warranty"
+      value: "5-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Legs to be fitted"
+
+assets:
+  asset_id: "coffee-real-castlery-harper-marble-round-915"
+  model_url: "/assets/models/coffee-real-castlery-harper-marble-round-915.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741077787/crusader/variants/40550280/Harper-Marble-Round-Coffee-Table_-_Chestnut-Front-1741077785.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741077787/crusader/variants/40550280/Harper-Marble-Round-Coffee-Table_-_Chestnut-Front-1741077785.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741596116/crusader/variants/40550280/Harper-Marble-Round-Coffee-Table-Chestnut-Square-Set_1-1741596114.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741595801/crusader/variants/40550295/Jaron-Sofa-_Harper-Coffee-Tables-Living-Room-Campaign-Set_26-1741595798.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740018905/crusader/variants/40550280/Harper-Marble-Rectangular-Coffee-Table_-_Chestnut-Det_1-1740018903.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740725550/crusader/variants/T40550280/Harper-Marble-Round-Coffee-Table_-_Chestnut-Dim-1740725549.jpg"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+
+feature_flags:
+  has_storage: false
+  has_open_shelf: false
+  has_hidden_storage: false
+  has_drawers: false
+
+variants:
+  - variant: "Harper Marble Coffee Table Round / Chestnut"
+    sku: null
+    size_label: "91.5_round"
+    finish_code: "chestnut"
+    finish_label: "Chestnut"
+    swatch_group: "wood_finish"
+    swatch_hex: "#5c3a1e"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741077787/crusader/variants/40550280/Harper-Marble-Round-Coffee-Table_-_Chestnut-Front-1741077785.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741077787/crusader/variants/40550280/Harper-Marble-Round-Coffee-Table_-_Chestnut-Front-1741077785.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741596116/crusader/variants/40550280/Harper-Marble-Round-Coffee-Table-Chestnut-Square-Set_1-1741596114.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740018905/crusader/variants/40550280/Harper-Marble-Rectangular-Coffee-Table_-_Chestnut-Det_1-1740018903.jpg"
+
+    price_usd: 1199
+    price_band: "premium"
+    brand_tier: "premium_high"
+
+    dimensions:
+      width_cm: 91.5
+      depth_cm: 91.5
+      height_cm: 38
+      tabletop_thickness_cm: 1.8
+
+    size_class: "medium"
+    color_family: "white"
+    tone: "warm"
+
+    materials:
+      tabletop:
+        structure: "carrara_marble"
+        surface: "polished_marble"
+      pedestal_base:
+        structure: "engineered_wood"
+        surface: "oak_veneer"
+      fluted_base:
+        structure: "engineered_wood"
+        surface: "oak_veneer"
+
+    finish:
+      color_finish: "chestnut"
+      finish_color: "chestnut"
+      surface_finish: "matte"
+      protective_coating: "waterbase"
+      finish_system: "waterbase_finish"
+
+  - variant: "Harper Marble Coffee Table Round / Natural"
+    sku: null
+    size_label: "91.5_round"
+    finish_code: "natural"
+    finish_label: "Natural"
+    swatch_group: "wood_finish"
+    swatch_hex: "#a89070"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741077831/crusader/variants/40550295/Harper-Marble-Round-Coffee-Table_-Natural-Front-1741077829.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741077831/crusader/variants/40550295/Harper-Marble-Round-Coffee-Table_-Natural-Front-1741077829.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741595801/crusader/variants/40550295/Jaron-Sofa-_Harper-Coffee-Tables-Living-Room-Campaign-Set_26-1741595798.jpg"
+
+    price_usd: 1199
+    price_band: "premium"
+    brand_tier: "premium_high"
+
+    dimensions:
+      width_cm: 91.5
+      depth_cm: 91.5
+      height_cm: 38
+      tabletop_thickness_cm: 1.8
+
+    size_class: "medium"
+    color_family: "white"
+    tone: "neutral"
+
+    materials:
+      tabletop:
+        structure: "carrara_marble"
+        surface: "polished_marble"
+      pedestal_base:
+        structure: "engineered_wood"
+        surface: "oak_veneer"
+      fluted_base:
+        structure: "engineered_wood"
+        surface: "oak_veneer"
+
+    finish:
+      color_finish: "natural"
+      finish_color: "natural"
+      surface_finish: "matte"
+      protective_coating: "waterbase"
+      finish_system: "waterbase_finish"

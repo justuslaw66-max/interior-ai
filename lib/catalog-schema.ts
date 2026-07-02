@@ -5,19 +5,24 @@
  * This is the source of truth for how items behave in the editor and in commerce.
  */
 
+import type { CatalogMediaPresentationMode } from "./catalog/media-policy";
+
 // ============================================================================
 // Identity & Categorization
 // ============================================================================
 
 export type ProductCategory =
   | "sofa"
+  | "ottoman"
   | "accessory"
   | "rug"
   | "coffee_table"
   | "dining_table"
+  | "dining_bench"
   | "accent_chair"
   | "floor_lamp"
   | "tv_console"
+  | "sideboard"
   | "bookshelf"
   | "side_table"
   | "wall_art"
@@ -118,11 +123,47 @@ export type RoomTag =
 // Variants (Style/Color Options)
 // ============================================================================
 
+export interface CatalogPurchaseOption {
+  id: string; // e.g. "single" | "set_of_2"
+  label: string; // customer-facing label
+  quantity: number; // number of physical pieces included
+  sku?: string;
+  affiliateUrl?: string;
+  priceHint?: number;
+  compareAtPriceHint?: number;
+  savingsHint?: number;
+  imageUrl?: string;
+  available?: boolean;
+}
+
 export interface ProductVariant {
-  id: string; // e.g., "sofa-scandi-01-gray"
+  id: string; // e.g., "sofa-real-castlery-dawson-3s-navagio_seagull"
   label: string; // e.g., "Gray"
   colorHex: string; // e.g., "#808080"
   thumbnailUrl: string; // variant-specific thumb
+  galleryImages?: string[];
+  mediaPresentationMode?: CatalogMediaPresentationMode;
+  dimensionsMm?: DimensionsMm;
+  shopifyVariantId?: string;
+  affiliateUrl?: string;
+  priceHint?: number;
+  purchaseOptions?: CatalogPurchaseOption[];
+  available?: boolean;
+  finishCode?: string;
+  finishLabel?: string;
+  materialType?: "Fabric" | "Leather" | "Wood";
+  swatchGroup?: string;
+  swatchHex?: string;
+  swatchTextureUrl?: string;
+  collectionType?: string; // "stocked" | "custom" from upholstery options
+  legFinishCode?: string;
+  legFinishLabel?: string;
+  renderAssets?: {
+    baseColorMap?: string;
+    normalMap?: string;
+    roughnessMap?: string;
+    tileScale?: { x?: number; y?: number };
+  };
 }
 
 // ============================================================================
@@ -162,6 +203,20 @@ export interface AssetReferences {
   modelUrl: string; // GLB file
   thumbUrl: string;
   materialsProfile: MaterialsProfile;
+}
+
+export interface ComfortAxisProfile {
+  label?: string;
+  value?: number;
+  min_label?: string;
+  max_label?: string;
+}
+
+export interface ComfortProfile {
+  seat_comfort?: ComfortAxisProfile;
+  seat_depth?: ComfortAxisProfile;
+  seat_height?: ComfortAxisProfile;
+  seat_softness?: ComfortAxisProfile;
 }
 
 // ============================================================================
@@ -204,6 +259,25 @@ export interface CatalogItemSchema {
   metadata?: {
     brand?: string;
     modelLabel?: string;
+    productFamily?: string;
+    productName?: string;
+    importedVariantPipelineRevision?: string;
+    // Catalog YAML enrichment fields
+    styleCluster?: string;
+    styleSecondary?: string;
+    designEra?: string;
+    colorFamily?: string;
+    tone?: string;
+    priceUsd?: number;
+    priceBand?: string;
+    seatCapacity?: number;
+    materialFamily?: string;
+    designPairings?: string[];
+    compatibility?: unknown;
+    bundleMetadata?: unknown;
+    comfortProfile?: ComfortProfile;
+    galleryImages?: string[];
+    mediaPresentationMode?: CatalogMediaPresentationMode;
   };
   aiRoles?: string[]; // e.g., ["seating_anchor", "living_room_focal_point"]
   tags?: string[];
@@ -242,6 +316,25 @@ export const CATEGORY_DEFAULTS: Record<ProductCategory, CategoryDefaults> = {
       wallClearanceMm: 0,
     },
     aiRoles: ["seating_anchor", "living_room_focal"],
+  },
+  ottoman: {
+    dimsMm: { w: 900, d: 650, h: 450 },
+    placement: {
+      floorOnly: true,
+      wallSnappable: false,
+      wallMountable: false,
+      minWallGapMm: 100,
+      allowRugOverlap: true,
+      snapMarginMm: 0,
+    },
+    clearance: {
+      walkwayMinMm: 500,
+      coffeeGapMinMm: 0,
+      coffeeGapMaxMm: 0,
+      sofaClearanceMm: 250,
+      wallClearanceMm: 100,
+    },
+    aiRoles: ["seating_accessory", "seating_secondary"],
   },
   accessory: {
     dimsMm: { w: 900, d: 650, h: 450 },
@@ -319,6 +412,25 @@ export const CATEGORY_DEFAULTS: Record<ProductCategory, CategoryDefaults> = {
     },
     aiRoles: ["dining_anchor"],
   },
+  dining_bench: {
+    dimsMm: { w: 1500, d: 410, h: 515 },
+    placement: {
+      floorOnly: true,
+      wallSnappable: false,
+      wallMountable: false,
+      minWallGapMm: 200,
+      allowRugOverlap: true,
+      snapMarginMm: 0,
+    },
+    clearance: {
+      walkwayMinMm: 900,
+      coffeeGapMinMm: 0,
+      coffeeGapMaxMm: 0,
+      sofaClearanceMm: 0,
+      wallClearanceMm: 200,
+    },
+    aiRoles: ["dining_seating"],
+  },
   accent_chair: {
     dimsMm: { w: 820, d: 820, h: 900 },
     placement: {
@@ -375,6 +487,25 @@ export const CATEGORY_DEFAULTS: Record<ProductCategory, CategoryDefaults> = {
       wallClearanceMm: 0,
     },
     aiRoles: ["focal_point", "media_center"],
+  },
+  sideboard: {
+    dimsMm: { w: 1800, d: 450, h: 760 },
+    placement: {
+      floorOnly: true,
+      wallSnappable: true,
+      wallMountable: false,
+      minWallGapMm: 0,
+      allowRugOverlap: false,
+      snapMarginMm: 50,
+    },
+    clearance: {
+      walkwayMinMm: 800,
+      coffeeGapMinMm: 0,
+      coffeeGapMaxMm: 0,
+      sofaClearanceMm: 0,
+      wallClearanceMm: 0,
+    },
+    aiRoles: ["functional_storage", "living_storage"],
   },
   bookshelf: {
     dimsMm: { w: 1000, d: 350, h: 2000 },

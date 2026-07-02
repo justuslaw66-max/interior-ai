@@ -1,0 +1,322 @@
+status: "published"
+brand: "Castlery"
+retailer: "Castlery Singapore"
+source_url: "https://www.castlery.com/sg/products/sacha-performance-boucle-armchair?quantity=single&material=white_quartz"
+category: "armchair"
+
+product_family: "Sacha"
+product_name: "Sacha Performance Boucle Armchair"
+slug: "castlery-sacha-performance-boucle-armchair"
+variant: ""
+
+price_usd: 999
+price_band: "mid_premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "secondary"
+
+dimensions:
+  width_cm: 94
+  depth_cm: 78
+  height_cm: 73
+
+seat_capacity: 1
+size_class: "medium"
+shape: "rectangular"
+base_type: "legged"
+
+material_family: "upholstered"
+material_mix: "upholstered"
+material_mix_components:
+  - "plywood"
+  - "performance_boucle"
+  - "foam"
+  - "fiber"
+
+materials:
+  frame:
+    structure: "plywood"
+  upholstery:
+    material_type: "performance_boucle"
+    label: "Performance White Quartz Boucle"
+    composition: "100% polyester"
+
+color_family: "grey"
+tone: "neutral"
+style_cluster: "contemporary"
+style_secondary: "sculptural_modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "rounded"
+  silhouette: "low_slung_sculptural_armchair"
+  form_language: "soft"
+  descriptors:
+    - "low_slung"
+    - "sculptural_silhouette"
+    - "performance_boucle"
+    - "removable_seat_cushion_cover"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  walkway_clearance_cm: 60
+  descriptors:
+    - "accent_lounge_chair"
+    - "reading_corner_suitable"
+    - "living_room_accent"
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+  - "bedroom"
+  - "open_plan"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: false
+  floating_layout_supported: true
+  recommended_in_front_of:
+    - "side_table"
+    - "floor_lamp"
+    - "rug"
+    - "coffee_table"
+  clearance_guidance:
+    chair_to_table_cm_min: 20
+    circulation_cm_min: 60
+
+design_pairings:
+  - "side_table"
+  - "floor_lamp"
+  - "rug"
+  - "sofa"
+  - "coffee_table"
+
+bundle_metadata:
+  bundle_role: "accent"
+  can_bundle_with:
+    - "side_table"
+    - "floor_lamp"
+    - "rug"
+    - "sofa"
+  set_behavior:
+    supports_reading_corner_pairing: true
+    supports_living_room_pairing: true
+    supports_pair_chair_layout: true
+
+summary:
+  short_description: "A low-slung sculptural armchair in spill-resistant White Quartz performance boucle."
+  long_description: "Sacha pairs a soft, sculptural lounge silhouette with spill-resistant performance boucle, making it a relaxed accent chair for living rooms, bedrooms, and reading corners."
+  key_features:
+    - "Performance White Quartz boucle upholstery"
+    - "Single and set-of-2 purchase options"
+    - "Foam and fiber filled seat and back"
+    - "Removable seat cushion cover"
+
+feature_flags:
+  has_removable_cover: true
+  has_removable_cushion: false
+
+authoring_notes:
+  category_confidence: "high"
+  source_checked: "Castlery Singapore product page, 2026-06-21"
+  source_url: "https://www.castlery.com/sg/products/sacha-performance-boucle-armchair?quantity=single&material=white_quartz"
+  note: "Sacha Performance Boucle Armchair import. The local GLB is the White Quartz performance boucle variant and is not Draco-compressed. Castlery SG exposes quantity choices for single and set of 2; the set-of-2 option is represented as a purchase option while the model remains a single physical chair for room planning."
+
+shipping_and_warranty:
+  free_delivery_threshold_sgd: 300
+  cancellation: "Free - 5 working days before delivery"
+  warranty: "Frame 10 years; Fabric 1 year; Foam 2 years"
+  return_policy: "30-day returns"
+
+product_details:
+  material:
+    - label: "Fabric composition"
+      value: "100% Polyester, spill-resistant boucle fabric"
+    - label: "Frame"
+      value: "Plywood"
+    - label: "Cover type"
+      value: "Removable seat cushion covers"
+    - label: "Filling"
+      value: "Foam and fibre filled seat and back"
+    - label: "Suspension"
+      value: "Webbing"
+    - label: "Material & safety standards"
+      value: "Low formaldehyde"
+  dimensions:
+    - label: "Dimension"
+      value: "W94 x D78 x H73cm"
+    - label: "Armrest height"
+      value: "45cm (arm front to floor)"
+    - label: "Product weight"
+      value: "21kg"
+    - label: "Leg height"
+      value: "36cm"
+    - label: "Max bearing support"
+      value: "130kg"
+    - label: "Seatable width"
+      value: "53cm"
+    - label: "Seating depth"
+      value: "55cm"
+    - label: "Packaging dimensions"
+      value: "1 box"
+    - label: "Seating height"
+      value: "44cm"
+    - label: "Backrest height"
+      value: "36cm"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free - 5 working days before delivery"
+    - label: "Warranty"
+      value: "Frame 10 years; Fabric 1 year; Foam 2 years"
+    - label: "Return policy"
+      value: "30-day returns"
+
+product_details_by_material_type:
+  fabric:
+    material:
+      - label: "Fabric composition"
+        value: "100% Polyester, spill-resistant boucle fabric"
+      - label: "Frame"
+        value: "Plywood"
+      - label: "Cover type"
+        value: "Removable seat cushion covers"
+      - label: "Filling"
+        value: "Foam and fibre filled seat and back"
+      - label: "Suspension"
+        value: "Webbing"
+      - label: "Material & safety standards"
+        value: "Low formaldehyde"
+    dimensions:
+      - label: "Dimension"
+        value: "W94 x D78 x H73cm"
+      - label: "Seating depth"
+        value: "55cm"
+      - label: "Seating height"
+        value: "44cm"
+      - label: "Product weight"
+        value: "21kg"
+      - label: "Packaging dimensions"
+        value: "1 box"
+    delivery_and_warranty:
+      - label: "Cancellation"
+        value: "Free - 5 working days before delivery"
+      - label: "Warranty"
+        value: "Frame 10 years; Fabric 1 year; Foam 2 years"
+      - label: "Return policy"
+        value: "30-day returns"
+
+comfort_profile:
+  seat_comfort:
+    label: "Relaxed"
+    value: 2
+    min_label: "Relaxed"
+    max_label: "Upright"
+  seat_depth:
+    label: "Medium"
+    value: 3
+    min_label: "Shallow"
+    max_label: "Deep"
+  seat_height:
+    label: "Standard"
+    value: 3
+    min_label: "Low"
+    max_label: "High"
+  seat_softness:
+    label: "Soft"
+    value: 2
+    min_label: "Soft"
+    max_label: "Firm"
+
+assets:
+  asset_id: "armchair-real-castlery-sacha-performance-boucle-armchair"
+  model_url: "/assets/models/armchair-real-castlery-sacha-performance-boucle-armchair.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1687918816/crusader/variants/54000061-IN4002/Sacha-Armchair-White-Quartz-Angle-1687918814.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1687918816/crusader/variants/54000061-IN4002/Sacha-Armchair-White-Quartz-Angle-1687918814.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1686303152/crusader/variants/54000061-IN4001/Sacha-Performance-Boucle-Armchair-White-Quartz-Square-Set_1-1686303149.jpg"
+
+upholstery_options:
+  - upholstery_code: "white_quartz"
+    color_label: "White Quartz"
+    upholstery_label: "Performance White Quartz Boucle"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1640236351/crusader/variants/IN-4001/White-Quartz_1.jpg"
+    fabric_family: "Performance Boucle"
+    collection_type: "stocked_fabric"
+    swatch_group: "upholstery_option"
+    material_type: "performance_boucle"
+    texture_type: "boucle"
+    color_family: "grey"
+    tone: "neutral"
+    swatch_hex: "#e3e0d8"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+  room_anchor_weight: 0.5
+  requires_sofa_pairing: false
+  good_for_small_spaces: true
+  avoid_blocking_paths: true
+
+variants:
+  - variant: "Sacha Performance Boucle Armchair / White Quartz"
+    sku: "sacha-performance-boucle-armchair-white-quartz"
+    size_label: "94x78"
+    finish_code: "white_quartz"
+    finish_label: "White Quartz"
+    upholstery_code: "white_quartz"
+    upholstery_label: "Performance White Quartz Boucle"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1640236351/crusader/variants/IN-4001/White-Quartz_1.jpg"
+    model_asset_id: "armchair-real-castlery-sacha-performance-boucle-armchair"
+    model_url: "/assets/models/armchair-real-castlery-sacha-performance-boucle-armchair.glb"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1687918816/crusader/variants/54000061-IN4002/Sacha-Armchair-White-Quartz-Angle-1687918814.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1687918816/crusader/variants/54000061-IN4002/Sacha-Armchair-White-Quartz-Angle-1687918814.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1686303152/crusader/variants/54000061-IN4001/Sacha-Performance-Boucle-Armchair-White-Quartz-Square-Set_1-1686303149.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#e3e0d8"
+    color_family: "grey"
+    tone: "neutral"
+    collection_type: "stocked_fabric"
+    price_usd: 999
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/sacha-performance-boucle-armchair?quantity=single&material=white_quartz"
+    purchase_options:
+      - id: "single"
+        label: "Single"
+        quantity: 1
+        sku: "sacha-performance-boucle-armchair-white-quartz"
+        affiliate_url: "https://www.castlery.com/sg/products/sacha-performance-boucle-armchair?quantity=single&material=white_quartz"
+        price_usd: 999
+        available: true
+      - id: "set_of_2"
+        label: "Set of 2"
+        quantity: 2
+        sku: "sacha-performance-boucle-armchair-white-quartz-set-of-2"
+        affiliate_url: "https://www.castlery.com/sg/products/sacha-performance-boucle-armchair?quantity=set_of_2&material=white_quartz"
+        price_usd: 1899
+        compare_at_price_usd: 1998
+        savings_usd: 99
+        image_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1687918816/crusader/variants/54000061-IN4002/Sacha-Armchair-White-Quartz-Angle-1687918814.jpg"
+        available: true
+    dimensions: { width_cm: 94, depth_cm: 78, height_cm: 73 }
+    seat_capacity: 1
+    size_class: "medium"
+    materials:
+      upholstery:
+        material_type: "performance_boucle"
+        structure: "boucle"
+        fabric_family: "Performance Boucle"
+        color: "White Quartz"
+        composition: "100% polyester"
+      frame:
+        structure: "plywood"
+    finish:
+      color_finish: "White Quartz"
+      surface_finish: "boucle"
+      finish_color: "white_quartz"

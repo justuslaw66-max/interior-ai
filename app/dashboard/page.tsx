@@ -18,7 +18,7 @@ export default async function DashboardPage() {
     orderBy: { updatedAt: "desc" },
   });
 
-  const designItems = designs.map((design) => ({
+  const designItems = designs.map((design: (typeof designs)[number]) => ({
     id: design.id,
     title: design.title,
     updatedAt: design.updatedAt.toISOString(),

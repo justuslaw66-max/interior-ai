@@ -1,7 +1,8 @@
 import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import { PDFDocument, StandardFonts, degrees, rgb } from "pdf-lib";
 import { rateLimit } from "@/lib/rateLimit";
+import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -11,15 +12,46 @@ type PdfItem = {
   price: number;
   qty?: number;
   retailer?: string | null;
+  buyUrl?: string | null;
 };
 
 type PdfPayload = {
   title?: string;
   items?: PdfItem[];
   images?: string[];
+  requestedTier?: "free" | "pro" | "team";
 };
 
+type ExportTier = "free" | "pro" | "team";
+
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+
+const PAGE_SIZE: [number, number] = [612, 792];
+
+const normalizeTierFromPlan = (plan: string | null | undefined): ExportTier => {
+  if (!plan) return "free";
+  if (plan === "pro") return "pro";
+  if (plan === "team" || plan === "business" || plan === "enterprise") return "team";
+  return "free";
+};
+
+const maxImagesByTier: Record<ExportTier, number> = {
+  free: 1,
+  pro: 4,
+  team: 6,
+};
+
+const applyFreeWatermark = (page: import("pdf-lib").PDFPage) => {
+  const { width, height } = page.getSize();
+  page.drawText("FREE EXPORT • INTERIOR AI", {
+    x: width * 0.18,
+    y: height * 0.5,
+    size: 34,
+    color: rgb(0.85, 0.85, 0.85),
+    rotate: degrees(-24),
+    opacity: 0.45,
+  });
+};
 
 const withTimeout = async <T,>(promise: Promise<T>, ms: number, label: string) => {
   let timeoutId: NodeJS.Timeout | null = null;
@@ -55,21 +87,109 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Too many export requests" }, { status: 429 });
     }
 
+    const dbUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { plan: true },
+    });
+    const exportTier = normalizeTierFromPlan(dbUser?.plan);
+
     const body = (await req.json().catch(() => ({}))) as PdfPayload;
     const title = typeof body.title === "string" && body.title.trim()
       ? body.title.trim()
-      : "Interior AI Room Design";
-    const items = Array.isArray(body.items) ? body.items : [];
-    const images = Array.isArray(body.images) ? body.images.slice(0, 3) : [];
+      : exportTier === "free"
+        ? "Interior AI Room Design - Free Preview"
+        : "Interior AI Room Design";
+
+    const itemsRaw = Array.isArray(body.items) ? body.items : [];
+    const items = itemsRaw
+      .filter((item): item is PdfItem => Boolean(item) && typeof item.name === "string" && typeof item.price === "number")
+      .map((item) => ({
+        name: item.name,
+        price: item.price,
+        qty: typeof item.qty === "number" && item.qty > 0 ? Math.min(99, Math.floor(item.qty)) : 1,
+        retailer: typeof item.retailer === "string" ? item.retailer : null,
+        buyUrl: typeof item.buyUrl === "string" ? item.buyUrl : null,
+      }));
+
+    const images = Array.isArray(body.images) ? body.images.slice(0, maxImagesByTier[exportTier]) : [];
+    const total = items.reduce((sum, item) => sum + item.price * (item.qty || 1), 0);
 
     const pdfDoc = await PDFDocument.create();
-    let page = pdfDoc.addPage([612, 792]);
-    const { width, height } = page.getSize();
     const margin = 40;
-    let y = height - margin;
-
     const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const dateText = new Date().toLocaleDateString();
+
+    if (exportTier !== "free") {
+      const coverPage = pdfDoc.addPage(PAGE_SIZE);
+      const { width: coverWidth, height: coverHeight } = coverPage.getSize();
+      let coverY = coverHeight - margin;
+
+      coverPage.drawText(title, {
+        x: margin,
+        y: coverY - 8,
+        size: 24,
+        font: fontBold,
+        color: rgb(0.05, 0.05, 0.05),
+      });
+
+      coverY -= 40;
+      coverPage.drawText(
+        exportTier === "team" ? "Team proposal pack" : "Pro presentation pack",
+        {
+          x: margin,
+          y: coverY,
+          size: 12,
+          font: fontRegular,
+          color: rgb(0.25, 0.25, 0.25),
+        }
+      );
+
+      coverY -= 18;
+      coverPage.drawText(`Generated on ${dateText}`, {
+        x: margin,
+        y: coverY,
+        size: 10,
+        font: fontRegular,
+        color: rgb(0.4, 0.4, 0.4),
+      });
+
+      coverY -= 24;
+      coverPage.drawText(`Items: ${items.length} • Budget: $${total.toFixed(2)}`, {
+        x: margin,
+        y: coverY,
+        size: 10,
+        font: fontRegular,
+        color: rgb(0.35, 0.35, 0.35),
+      });
+
+      if (images.length) {
+        const decoded = decodeBase64Image(images[0]);
+        if (decoded) {
+          const embedPromise =
+            decoded.type === "jpeg"
+              ? pdfDoc.embedJpg(decoded.buffer)
+              : pdfDoc.embedPng(decoded.buffer);
+          const embedded = await withTimeout(embedPromise, 5000, "Cover image embed");
+          const imageWidth = coverWidth - margin * 2;
+          const imageHeight = 300;
+          coverPage.drawImage(embedded, {
+            x: margin,
+            y: Math.max(margin + 30, coverY - imageHeight - 12),
+            width: imageWidth,
+            height: imageHeight,
+          });
+        }
+      }
+    }
+
+    let page = pdfDoc.addPage(PAGE_SIZE);
+    const { width, height } = page.getSize();
+    let y = height - margin;
+
+    if (exportTier === "free") {
+      applyFreeWatermark(page);
+    }
 
     page.drawText(title, {
       x: margin,
@@ -80,7 +200,7 @@ export async function POST(req: NextRequest) {
     });
 
     y -= 32;
-    page.drawText(`Generated by Interior AI • ${new Date().toLocaleDateString()}`, {
+    page.drawText(`Generated by Interior AI • ${dateText} • Tier: ${exportTier.toUpperCase()}`, {
       x: margin,
       y,
       size: 10,
@@ -92,7 +212,7 @@ export async function POST(req: NextRequest) {
 
     if (images.length) {
       const imageWidth = width - margin * 2;
-      const imageHeight = 120;
+      const imageHeight = exportTier === "free" ? 96 : 120;
       for (const dataUrl of images) {
         const decoded = decodeBase64Image(dataUrl);
         if (!decoded) continue;
@@ -112,7 +232,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    page.drawText("Room Items", {
+    page.drawText(exportTier === "team" ? "Bill of Materials" : "Room Items", {
       x: margin,
       y,
       size: 12,
@@ -121,20 +241,16 @@ export async function POST(req: NextRequest) {
     });
     y -= 16;
 
-    let total = 0;
     for (const item of items) {
-      if (!item || typeof item.name !== "string" || typeof item.price !== "number") {
-        continue;
-      }
-
       const qty = item.qty || 1;
-      const itemTotal = item.price * qty;
-      total += itemTotal;
 
-      if (y < margin + 60) {
-        page = pdfDoc.addPage([612, 792]);
+      if (y < margin + 90) {
+        page = pdfDoc.addPage(PAGE_SIZE);
         y = page.getSize().height - margin;
-        page.drawText("Room Items (cont.)", {
+        if (exportTier === "free") {
+          applyFreeWatermark(page);
+        }
+        page.drawText(exportTier === "team" ? "Bill of Materials (cont.)" : "Room Items (cont.)", {
           x: margin,
           y,
           size: 12,
@@ -171,19 +287,42 @@ export async function POST(req: NextRequest) {
         font: fontRegular,
         color: rgb(0.35, 0.35, 0.35),
       });
-      y -= 16;
+      y -= 12;
+
+      if (exportTier === "team" && item.buyUrl) {
+        page.drawText(`Link: ${item.buyUrl}`, {
+          x: margin,
+          y,
+          size: 8,
+          font: fontRegular,
+          color: rgb(0.1, 0.25, 0.7),
+        });
+        y -= 12;
+      }
+
+      y -= 4;
     }
 
     page.drawText(`Total Budget: $${total.toFixed(2)}`, {
       x: margin,
-      y: Math.max(y, margin),
+      y: Math.max(y, margin + 24),
       size: 11,
       font: fontBold,
       color: rgb(0.1, 0.1, 0.1),
     });
 
+    if (exportTier === "free") {
+      page.drawText("Upgrade to Pro for clean exports, multi-room packs, and branded presentation pages.", {
+        x: margin,
+        y: margin,
+        size: 9,
+        font: fontRegular,
+        color: rgb(0.35, 0.35, 0.35),
+      });
+    }
+
     const pdfBytes = await pdfDoc.save();
-    const filename = `room-design-${Date.now()}.pdf`;
+    const filename = `room-design-${exportTier}-${Date.now()}.pdf`;
 
     return new NextResponse(Buffer.from(pdfBytes), {
       status: 200,
@@ -191,6 +330,8 @@ export async function POST(req: NextRequest) {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="${filename}"`,
         "Cache-Control": "no-cache, no-store, must-revalidate",
+        "x-export-tier": exportTier,
+        "x-export-watermark": exportTier === "free" ? "true" : "false",
       },
     });
   } catch (err) {

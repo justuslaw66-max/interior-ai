@@ -1,0 +1,62 @@
+brand: "Example Brand"
+category: "pendant_light"
+
+product_family: "Canonical Lighting"
+product_name: "Canonical Pendant"
+variant: "Medium"
+
+price_usd: 499
+price_band: "mid_premium"
+brand_tier: "premium_low"
+
+design_zone: "dining_zone"
+anchor_role: "decor"
+
+dimensions:
+  width_cm: 48
+  depth_cm: 48
+  height_cm: 34
+
+size_class: "medium"
+shape: "round"
+material_family: "metal"
+color_family: "black"
+tone: "neutral"
+style_cluster: "modern"
+
+room_compatibility:
+  - "dining_room"
+  - "living_room"
+
+design_pairings:
+  - "dining_table"
+  - "sideboard"
+
+assets:
+  asset_id: "example-lighting-pendant"
+  model_url: "/assets/models/example-lighting-pendant.glb"
+  thumbnail_url: "/assets/thumbs/example-lighting-pendant.png"
+
+variants:
+  - variant: "Matte Black"
+    finish_code: "matte_black"
+    finish_label: "Matte Black"
+    swatch_group: "finish"
+    price_usd: 499
+    price_band: "mid_premium"
+    brand_tier: "premium_low"
+    dimensions:
+      width_cm: 48
+      depth_cm: 48
+      height_cm: 34
+    size_class: "medium"
+    color_family: "black"
+    tone: "neutral"
+    materials:
+      body:
+        structure: "metal"
+        surface: "powder_coated_metal"
+    finish:
+      color_finish: "black"
+      surface_finish: "matte"
+      finish_color: "matte_black"

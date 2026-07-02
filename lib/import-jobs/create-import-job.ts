@@ -1,10 +1,18 @@
 import { prisma } from "../prisma";
-import type { ImportJobStatus } from "./types";
+import type { CatalogWorkflowStage, ImportJobStatus } from "./types";
 
 export type CreateImportJobInput = {
   sourceFileName: string;
   sourceFileUrl: string;
   sourceBrand?: string;
+  sourceSku?: string;
+  sourceProductUrl?: string;
+  brandId?: string;
+  supplierSourceId?: string;
+  assetLicenseId?: string;
+  workflowStage?: CatalogWorkflowStage;
+  workflowBlockers?: string[];
+  metadataTags?: string[];
   notes?: string;
   uploadedByUserId?: string;
   status?: ImportJobStatus;
@@ -31,6 +39,14 @@ export async function createImportJob(input: CreateImportJobInput): Promise<Impo
         data: {
           status: ImportJobStatus;
           sourceBrand?: string;
+          sourceSku?: string;
+          sourceProductUrl?: string;
+          brandId?: string;
+          supplierSourceId?: string;
+          assetLicenseId?: string;
+          workflowStage?: CatalogWorkflowStage;
+          workflowBlockers?: string[];
+          metadataTags?: string[];
           sourceFileName: string;
           sourceFileUrl: string;
           uploadedByUserId?: string;
@@ -46,6 +62,14 @@ export async function createImportJob(input: CreateImportJobInput): Promise<Impo
     data: {
       status: input.status ?? "received",
       sourceBrand: input.sourceBrand,
+      sourceSku: input.sourceSku,
+      sourceProductUrl: input.sourceProductUrl,
+      brandId: input.brandId,
+      supplierSourceId: input.supplierSourceId,
+      assetLicenseId: input.assetLicenseId,
+      workflowStage: input.workflowStage,
+      workflowBlockers: input.workflowBlockers,
+      metadataTags: input.metadataTags,
       sourceFileName: input.sourceFileName,
       sourceFileUrl: input.sourceFileUrl,
       uploadedByUserId: input.uploadedByUserId,

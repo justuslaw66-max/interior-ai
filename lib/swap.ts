@@ -1,5 +1,20 @@
 import { CATALOG_ITEMS } from "@/lib/catalog";
 
+function getPriceHint(productId: string): number {
+  const item = CATALOG_ITEMS[productId];
+  if (!item) return 0;
+
+  if (item.commerce.type === "affiliate") {
+    return item.commerce.data.priceHint ?? 0;
+  }
+
+  if (item.commerce.type === "shopify") {
+    return 0;
+  }
+
+  return 0;
+}
+
 export function findSwapOptions(params: {
   productId: string;
   style: string;
@@ -18,14 +33,7 @@ export function findSwapOptions(params: {
   );
 
   const pool = stylePool.length ? stylePool : sameCat;
-  // For price sorting, we need to extract price from commerce mapping
-  const sorted = [...pool].sort((a, b) => {
-    const priceA = a.commerce.type === 'shopify' || a.commerce.type === 'affiliate' 
-      ? (a.commerce.data as any).priceHint ?? 0 : 0;
-    const priceB = b.commerce.type === 'shopify' || b.commerce.type === 'affiliate'
-      ? (b.commerce.data as any).priceHint ?? 0 : 0;
-    return priceA - priceB;
-  });
+  const sorted = [...pool].sort((a, b) => getPriceHint(a.id) - getPriceHint(b.id));
 
   const idx = sorted.findIndex((p) => p.id === current.id);
   if (idx === -1) return sorted;

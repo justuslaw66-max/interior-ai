@@ -5,13 +5,43 @@
  * Each design contains multiple rooms, each with its own items, zones, and saved views.
  */
 
-export type RoomType = "living" | "bedroom" | "dining" | "custom";
+export type RoomType = "living" | "bedroom" | "dining" | "kitchen" | "toilet" | "custom";
+export type RoomPlanShape = "rectangle" | "l_shape" | "custom_polygon";
 
 export interface RoomGeometry {
   width: number;
   depth: number;
   wallThickness?: number;
   height?: number;
+  slabThickness?: number;
+}
+
+export interface RoomPlanPosition {
+  x: number;
+  z: number;
+}
+
+export interface RoomPlanPolygonPoint {
+  x: number;
+  z: number;
+}
+
+export type RoomFloorPattern = "straight" | "herringbone" | "grid" | "checker";
+
+export interface RoomSurfaceAssignments {
+  floorMaterialId?: string | null;
+  floorRotationDeg?: number;
+  floorPattern?: RoomFloorPattern;
+  floorScale?: number;
+  ceilingColor?: string;
+}
+
+export type RoomSurfaceFinishes = RoomSurfaceAssignments;
+
+export interface RoomSurfaceOpacity {
+  wall?: number;
+  floor?: number;
+  ceiling?: number;
 }
 
 export interface SavedView {
@@ -22,14 +52,80 @@ export interface SavedView {
   timestamp?: number;
 }
 
+export type LayoutVersionSource = "manual" | "auto_place" | "ai" | "make_space";
+
+export interface LayoutVersionSummary {
+  itemCount: number;
+  zoneCount: number;
+}
+
+export interface LayoutVersion {
+  id: string;
+  name: string;
+  source: LayoutVersionSource;
+  timestamp: number;
+  items: DesignItem[];
+  zones: ZoneMin[];
+  summary: LayoutVersionSummary;
+}
+
+export interface PersistedFloorPlanCalibration {
+  pixelsPerMeter: number;
+  referenceLengthMeters: number;
+  referencePointsPx: [
+    { x: number; y: number },
+    { x: number; y: number },
+  ];
+}
+
+export interface PersistedFloorPlanUnderlay {
+  id: string;
+  floorId: string;
+  name: string;
+  assetUrl: string;
+  mimeType: string;
+  sourceMimeType?: string;
+  renderedPage?: number;
+  pageCount?: number;
+  widthPx?: number;
+  heightPx?: number;
+  position: { x: number; z: number };
+  widthMeters: number;
+  depthMeters: number;
+  opacity: number;
+  rotationDeg: number;
+  locked: boolean;
+  calibration?: PersistedFloorPlanCalibration;
+}
+
+export interface PersistedPlanOpening {
+  id: string;
+  roomId?: string;
+  wall: "north" | "south" | "east" | "west";
+  offsetMm: number;
+  widthMm: number;
+  heightMm?: number;
+  kind: "door" | "window";
+}
+
+export interface PersistedFloorPlanState {
+  underlay?: PersistedFloorPlanUnderlay | null;
+  openings?: PersistedPlanOpening[];
+}
+
 export interface DesignItem {
   instanceId: string;
   productId: string;
   variantId: string;
+  configurationCode?: string;
   position: [number, number, number];
   rotationY?: number;
   qty?: number;
   includeInCheckout?: boolean;
+  purchaseOptionId?: string;
+  bundleGroupId?: string;
+  bundleRole?: "primary" | "component";
+  bundleQuantity?: number;
   locked?: boolean;
   materialPreset?: string;
   materialOverrides?: {
@@ -53,10 +149,20 @@ export interface RoomSnapshot {
   id: string;
   name: string;
   roomType: RoomType;
+  floorLevel?: number;
+  floorLabel?: string;
   geometry: RoomGeometry;
+  planPosition?: RoomPlanPosition;
+  planShape?: RoomPlanShape;
+  planPolygon?: RoomPlanPolygonPoint[];
+  surfaces?: RoomSurfaceAssignments;
+  surfaceFinishes?: RoomSurfaceFinishes;
+  surfaceOpacity?: RoomSurfaceOpacity;
+  ceilingVisible?: boolean;
   items: DesignItem[];
   zones: ZoneMin[];
   savedViews: SavedView[];
+  layoutVersions?: LayoutVersion[];
 }
 
 /**
@@ -73,6 +179,7 @@ export interface DesignSnapshot {
   budget?: "budget" | "mid" | "luxury";
   lightingPreset?: string;
   notes?: string;
+  floorPlan?: PersistedFloorPlanState;
   // Legacy fields for migration (v1/v2)
   items?: DesignItem[];
   zones?: ZoneMin[];
@@ -87,16 +194,24 @@ export function createRoom(
   id: string,
   name: string,
   roomType: RoomType = "living",
-  geometry: RoomGeometry = { width: 4, depth: 5, wallThickness: 0.2 }
+  geometry: RoomGeometry = { width: 4, depth: 5, wallThickness: 0.2, height: 2.6, slabThickness: 0.1 }
 ): RoomSnapshot {
   return {
     id,
     name,
     roomType,
+    floorLevel: 1,
+    floorLabel: "1F",
     geometry,
+    planPosition: { x: 0, z: 0 },
+    planShape: "rectangle",
+    surfaces: {},
+    surfaceOpacity: { wall: 1, floor: 1, ceiling: 1 },
+    ceilingVisible: true,
     items: [],
     zones: [],
     savedViews: [],
+    layoutVersions: [],
   };
 }
 
@@ -107,19 +222,44 @@ export function createRoom(
 export function migrateToV3(snapshot: DesignSnapshot): DesignSnapshot {
   // If already v3, return as-is
   if (snapshot.version === 3 && snapshot.rooms && snapshot.rooms.length > 0) {
-    return snapshot;
+    return {
+      ...snapshot,
+      rooms: snapshot.rooms.map((room) => ({
+        ...room,
+        surfaces: room.surfaces ?? room.surfaceFinishes,
+        surfaceFinishes: room.surfaceFinishes ?? room.surfaces,
+        items: room.items ?? [],
+        zones: room.zones ?? [],
+        savedViews: room.savedViews ?? [],
+        layoutVersions: room.layoutVersions ?? [],
+      })),
+    };
   }
 
   // Create a single room from legacy data
-  const geometry: RoomGeometry = snapshot.roomBounds ?? { width: 5, depth: 4, wallThickness: 0.12 };
+  const geometry: RoomGeometry = {
+    width: snapshot.roomBounds?.width ?? 5,
+    depth: snapshot.roomBounds?.depth ?? 4,
+    wallThickness: snapshot.roomBounds?.wallThickness ?? 0.12,
+    height: snapshot.roomBounds?.height ?? 2.6,
+    slabThickness: snapshot.roomBounds?.slabThickness ?? 0.1,
+  };
   const room: RoomSnapshot = {
     id: "room_living",
     name: "Living Room",
     roomType: "living",
+    floorLevel: 1,
+    floorLabel: "1F",
     geometry,
+    planPosition: { x: 0, z: 0 },
+    planShape: "rectangle",
+    surfaces: {},
+    surfaceOpacity: { wall: 1, floor: 1, ceiling: 1 },
+    ceilingVisible: true,
     items: snapshot.items ?? [],
     zones: snapshot.zones ?? [],
     savedViews: snapshot.savedViews ?? [],
+    layoutVersions: [],
   };
 
   return {
@@ -131,6 +271,7 @@ export function migrateToV3(snapshot: DesignSnapshot): DesignSnapshot {
     budget: snapshot.budget,
     lightingPreset: snapshot.lightingPreset,
     notes: snapshot.notes,
+    floorPlan: snapshot.floorPlan,
   };
 }
 

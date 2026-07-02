@@ -3,24 +3,25 @@
  * Supports safe bulk operations with automatic rollback on failure.
  */
 
-export type Snapshot = any;
+export type Snapshot = unknown;
 
-export interface HistoryEntry {
+export interface HistoryEntry<TSnapshot = Snapshot> {
   name: string;
-  before: Snapshot;
-  after: Snapshot;
+  before: TSnapshot;
+  after: TSnapshot;
   ts: number;
 }
 
-export class HistoryManager {
-  private past: HistoryEntry[] = [];
-  private future: HistoryEntry[] = [];
-  private txn: { name: string; before: Snapshot } | null = null;
+export class HistoryManager<TSnapshot = Snapshot> {
+  private past: HistoryEntry<TSnapshot>[] = [];
+  private future: HistoryEntry<TSnapshot>[] = [];
+  private txn: { name: string; before: TSnapshot } | null = null;
   private maxEntries = 100;
 
   constructor(
-    private get: () => Snapshot,
-    private set: (s: Snapshot) => void
+    private get: () => TSnapshot,
+    private set: (s: TSnapshot) => void,
+    private onChange?: () => void
   ) {}
 
   /**
@@ -65,6 +66,7 @@ export class HistoryManager {
     if (this.past.length > this.maxEntries) {
       this.past = this.past.slice(-this.maxEntries);
     }
+    this.onChange?.();
   }
 
   /**
@@ -80,6 +82,7 @@ export class HistoryManager {
     const before = this.txn.before;
     this.txn = null;
     this.set(before);
+    this.onChange?.();
   }
 
   /**
@@ -96,6 +99,7 @@ export class HistoryManager {
 
     this.future.push(entry);
     this.set(entry.before);
+    this.onChange?.();
     return entry.name;
   }
 
@@ -113,6 +117,7 @@ export class HistoryManager {
 
     this.past.push(entry);
     this.set(entry.after);
+    this.onChange?.();
     return entry.name;
   }
 
@@ -147,7 +152,11 @@ export class HistoryManager {
   /**
    * Get full history for debugging or UI display.
    */
-  getHistory(): { past: HistoryEntry[]; future: HistoryEntry[]; txn: any } {
+  getHistory(): {
+    past: HistoryEntry<TSnapshot>[];
+    future: HistoryEntry<TSnapshot>[];
+    txn: { name: string; before: TSnapshot } | null;
+  } {
     return {
       past: this.past,
       future: this.future,
@@ -167,7 +176,7 @@ export class HistoryManager {
   /**
    * Deep clone helper using structuredClone (modern browsers) or fallback to JSON
    */
-  private structuredClone(obj: any): any {
+  private structuredClone(obj: TSnapshot): TSnapshot {
     if (typeof globalThis !== "undefined" && "structuredClone" in globalThis) {
       return structuredClone(obj);
     }

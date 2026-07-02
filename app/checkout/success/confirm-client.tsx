@@ -27,6 +27,17 @@ export default function ConfirmOrderClient({
       order_id: orderRef,
       design_id: designId ?? null,
     });
+
+    fetch("/api/track/app-event", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        eventType: "checkout_completed",
+        designId,
+        meta: { orderRef },
+      }),
+    }).catch(() => undefined);
+
     trackedRef.current = true;
   }, [orderRef, designId]);
 

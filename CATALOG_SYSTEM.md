@@ -241,19 +241,19 @@ export function validateCatalogOnStartup() {
 
 ```bash
 # Import a GLB and compute metadata
-node scripts/import-model.ts --file path/to/model.glb --slug sofa-scandi-01 --output public/assets
+node scripts/import-model.ts --file path/to/model.glb --slug sofa-real-castlery-dawson-3s --output public/assets
 ```
 
 ### Output
 
 ```
-✓ Import complete for: sofa-scandi-01
+✓ Import complete for: sofa-real-castlery-dawson-3s
 
 Metadata:
 {
-  "slug": "sofa-scandi-01",
-  "modelUrl": "/assets/models/sofa-scandi-01.glb",
-  "thumbUrl": "/assets/thumbs/sofa-scandi-01.png",
+  "slug": "sofa-real-castlery-dawson-3s",
+  "modelUrl": "/assets/models/sofa-real-castlery-dawson-3s.glb",
+  "thumbUrl": "/assets/thumbs/sofa-real-castlery-dawson-3s.png",
   "dimensionsMm": { "w": 2400, "d": 900, "h": 800 },
   "bounds": {
     "type": "aabb",

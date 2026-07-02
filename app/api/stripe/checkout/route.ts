@@ -5,6 +5,17 @@ import { auth } from "@/lib/auth";
 import { config } from "@/lib/config";
 import { rateLimit } from "@/lib/rateLimit";
 import { logAppEvent } from "@/lib/app-events";
+import {
+  buildProviderFailureBoundaryDiagnostics,
+  buildCheckoutBoundaryResponsePayload,
+  isBetaCheckoutBoundary,
+  resolveCheckoutBoundaryDiagnostics,
+} from "@/lib/beta-checkout-boundary";
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  return String(error);
+}
 
 function getStripeClient() {
   const secretKey = process.env.STRIPE_SECRET_KEY;
@@ -19,6 +30,11 @@ export async function POST(req: Request) {
   try {
     if (!config.features.checkoutEnabled) {
       return NextResponse.json({ error: "Checkout is disabled" }, { status: 503 });
+    }
+
+    const boundary = resolveCheckoutBoundaryDiagnostics();
+    if (!boundary.checkoutSafe) {
+      return NextResponse.json(buildCheckoutBoundaryResponsePayload(boundary), { status: 503 });
     }
 
     const session = await auth();
@@ -42,6 +58,21 @@ export async function POST(req: Request) {
       typeof priceId === "string" && priceId.trim().length > 0 ? priceId : fallbackPriceId;
 
     if (!resolvedPriceId || resolvedPriceId.includes("...")) {
+      if (isBetaCheckoutBoundary(boundary)) {
+        return NextResponse.json(
+          buildCheckoutBoundaryResponsePayload(
+            buildProviderFailureBoundaryDiagnostics(
+              boundary,
+              "stripe",
+              interval === "yearly"
+                ? "STRIPE_PRICE_PRO_YEARLY is not configured"
+                : "STRIPE_PRICE_PRO_MONTHLY is not configured"
+            )
+          ),
+          { status: 503 }
+        );
+      }
+
       return NextResponse.json(
         {
           error:
@@ -93,10 +124,22 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ url: checkoutSession.url });
-  } catch (error: any) {
-    console.error("Stripe checkout error:", error?.message || error);
+  } catch (error: unknown) {
+    const message = getErrorMessage(error);
+    console.error("Stripe checkout error:", message);
+
+    const boundary = resolveCheckoutBoundaryDiagnostics();
+    if (isBetaCheckoutBoundary(boundary)) {
+      return NextResponse.json(
+        buildCheckoutBoundaryResponsePayload(
+          buildProviderFailureBoundaryDiagnostics(boundary, "stripe", message)
+        ),
+        { status: 503 }
+      );
+    }
+
     return NextResponse.json(
-      { error: error?.message || "Unable to create checkout session" },
+      { error: message || "Unable to create checkout session" },
       { status: 500 }
     );
   }

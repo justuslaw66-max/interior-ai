@@ -5,6 +5,7 @@ export type CatalogCategory =
   | "coffee_table"
   | "rug"
   | "tv_console"
+  | "sideboard"
   | "accent_chair"
   | "floor_lamp";
 
@@ -54,6 +55,12 @@ export type CatalogVariant = {
   title: string;
   // optional: finish/material mappings, price deltas, etc.
   materials?: Record<string, unknown>;
+  renderAssets?: {
+    baseColorMap?: string;
+    normalMap?: string;
+    roughnessMap?: string;
+    tileScale?: { x?: number; y?: number };
+  };
 };
 
 export type CatalogItemSchema = {

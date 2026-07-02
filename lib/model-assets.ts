@@ -10,7 +10,7 @@
 // ============================================================================
 
 export interface ModelAsset {
-  id: string; // unique asset ID (e.g., "sofa-scandi-01")
+  id: string; // unique asset ID (e.g., "sofa-real-castlery-dawson-3s")
   modelUrl: string; // GLB file path
   thumbUrl: string; // thumbnail path
   
@@ -55,10 +55,10 @@ export const MODEL_ASSETS: Record<string, ModelAsset> = {
   // Placeholder entries - real assets will be added via import script
   // Example structure:
   /*
-  "sofa-scandi-01": {
-    id: "sofa-scandi-01",
-    modelUrl: "/assets/models/sofa-scandi-01.glb",
-    thumbUrl: "/assets/thumbs/sofa-scandi-01.png",
+  "sofa-real-castlery-dawson-3s": {
+    id: "sofa-real-castlery-dawson-3s",
+    modelUrl: "/assets/models/sofa-real-castlery-dawson-3s.glb",
+    thumbUrl: "/assets/thumbs/sofa-real-castlery-dawson-3s.png",
     bounds: {
       type: "aabb",
       size: { x: 2.1, y: 0.8, z: 0.85 },

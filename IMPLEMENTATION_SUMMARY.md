@@ -136,12 +136,12 @@ const sofa: CatalogItemSchema = {
 
 ### GLB Bounds Extraction (Deterministic)
 ```bash
-node scripts/import-model.ts --file sofa.glb --slug sofa-scandi-01
+node scripts/import-model.ts --file sofa.glb --slug sofa-real-castlery-dawson-3s
 
 # Output:
 # ✓ Import complete
 # {
-#   "slug": "sofa-scandi-01",
+#   "slug": "sofa-real-castlery-dawson-3s",
 #   "bounds": { "size": { "w": 2.4, "d": 0.9, "h": 0.8 }, "center": [0, 0.4, 0] }
 # }
 ```
@@ -219,7 +219,7 @@ Import first model:
 ```bash
 node scripts/import-model.ts \
   --file /path/to/sofa.glb \
-  --slug sofa-scandi-01
+  --slug sofa-real-castlery-dawson-3s
 ```
 
 ### 3. Test Admin Page (5 min)

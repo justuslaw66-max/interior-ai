@@ -1,0 +1,97 @@
+schema_version: 1
+
+surface_material:
+  supplier: goodrich_global
+  brand: Goodrich Global
+  collection: goodrich_flooring_draft
+  material_id: goodrich-lvt-wood-look-draft
+  product_name: Goodrich LVT Wood Look - Draft Import
+  slug: goodrich-lvt-wood-look-draft
+  surface_category: flooring
+  material_family: luxury_vinyl_tile
+
+source:
+  supplier_region: singapore
+  source_url: https://www.goodrichglobal.com/singapore/product-category/flooring/
+  sample_request_url: https://www.goodrichglobal.com/singapore/contact-us/request-samples/
+  currency: SGD
+  license_status: needs_permission
+  notes:
+    - "Draft material created from Goodrich flooring category/e-catalogue research."
+    - "Do not publish until exact product code, texture rights, and physical specs are confirmed."
+
+classification:
+  flooring_type: luxury_vinyl_tile
+  design_effect: wood
+  color_family: light_oak
+  tone:
+    - warm
+    - natural
+    - airy
+  style_cluster:
+    - japandi
+    - contemporary
+    - soft_minimal
+  room_suitability:
+    - living_room
+    - bedroom
+    - dining_room
+    - study
+
+physical_specs:
+  plank_or_tile_format: plank
+  plank_width_mm: null
+  plank_length_mm: null
+  total_thickness_mm: null
+  wear_layer_mm: null
+  installation_method:
+    - unknown
+  waterproof: null
+  slip_rating: null
+  suitable_for_wet_area: null
+  suitable_for_outdoor: false
+  commercial_grade: null
+
+texture_assets:
+  swatch_url: null
+  base_color_url: null
+  normal_url: null
+  roughness_url: null
+  ao_url: null
+  preview_room_url: null
+  tileable: needs_confirmation
+  texture_repeat_size_cm: null
+
+rendering:
+  default_rotation_deg: 0
+  roughness: 0.72
+  metalness: 0
+  normal_strength: 0.25
+  scale_mode: swatch_only
+  seam_strategy: single_swatch
+
+commerce:
+  purchase_mode: quote_or_sample
+  price_per_sqm:
+    currency: SGD
+    amount: null
+  sample_available: true
+  sample_request_url: https://www.goodrichglobal.com/singapore/contact-us/request-samples/
+  direct_checkout: false
+
+import_governance:
+  publish_status: draft
+  publish_blockers:
+    - confirm_exact_goodrich_product_code
+    - confirm_supplier_image_usage_rights
+    - add_swatch_asset
+    - add_tileable_base_color_texture
+    - confirm_texture_tileability
+    - confirm_physical_dimensions
+    - confirm_price_per_sqm_or_quote_mode
+  qa_flags:
+    - surface_material_defined
+    - flooring_material_defined
+    - singapore_supplier
+    - quote_or_sample_purchase_mode
+    - draft_until_assets_confirmed

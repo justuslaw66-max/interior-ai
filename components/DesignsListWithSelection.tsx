@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import ConfirmDialog from "@/components/ConfirmDialog";
 import DeleteDesignButton from "@/components/DeleteDesignButton";
+import DuplicateDesignButton from "@/components/DuplicateDesignButton";
 
 type DesignListItem = {
   id: string;
@@ -17,6 +19,8 @@ export default function DesignsListWithSelection({
 }) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [confirmDeleteSelectedOpen, setConfirmDeleteSelectedOpen] = useState(false);
 
   const allSelected = designs.length > 0 && selectedIds.length === designs.length;
 
@@ -32,13 +36,8 @@ export default function DesignsListWithSelection({
 
   const handleDeleteSelected = async () => {
     if (busy || selectedIds.length === 0) return;
-    const ok = window.confirm(
-      `Delete ${selectedIds.length} design${
-        selectedIds.length === 1 ? "" : "s"
-      }? This cannot be undone.`
-    );
-    if (!ok) return;
     setBusy(true);
+    setMessage(null);
     try {
       const res = await fetch("/api/designs/bulk-delete", {
         method: "POST",
@@ -47,7 +46,8 @@ export default function DesignsListWithSelection({
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        alert(data?.error ?? "Delete failed");
+        setMessage(data?.error ?? "Delete failed");
+        setConfirmDeleteSelectedOpen(false);
         return;
       }
       window.location.reload();
@@ -74,11 +74,19 @@ export default function DesignsListWithSelection({
           <button
             className="rounded-lg border px-3 py-2 text-sm text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
             disabled={busy || selectedIds.length === 0}
-            onClick={handleDeleteSelected}
+            onClick={() => {
+              setMessage(null);
+              setConfirmDeleteSelectedOpen(true);
+            }}
           >
             {busy ? "Deleting..." : "Delete Selected"}
           </button>
         </div>
+        {message && (
+          <div className="basis-full text-sm text-red-600" role="alert">
+            {message}
+          </div>
+        )}
       </div>
 
       {designs.map((design) => {
@@ -109,11 +117,27 @@ export default function DesignsListWithSelection({
               >
                 Open
               </Link>
+              <DuplicateDesignButton
+                sourceDesignId={design.id}
+                className="rounded-lg border px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50"
+              >
+                Duplicate
+              </DuplicateDesignButton>
               <DeleteDesignButton designId={design.id} />
             </div>
           </div>
         );
       })}
+      <ConfirmDialog
+        open={confirmDeleteSelectedOpen}
+        title={`Delete ${selectedIds.length} selected design${selectedIds.length === 1 ? "" : "s"}?`}
+        description="Selected designs will be permanently removed from your dashboard."
+        confirmLabel="Delete selected"
+        busy={busy}
+        destructive
+        onCancel={() => setConfirmDeleteSelectedOpen(false)}
+        onConfirm={handleDeleteSelected}
+      />
     </div>
   );
 }

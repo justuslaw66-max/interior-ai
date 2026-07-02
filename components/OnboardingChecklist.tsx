@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { track } from "@/lib/analytics";
 import { getOnboardingProgress, type OnboardingStep } from "@/lib/onboarding";
 
@@ -17,13 +17,9 @@ export function OnboardingChecklist({
   onDismiss: () => void;
   onComplete: () => void;
 }) {
-  if (isClientPreview) return null;
-
   const { has, next, done } = getOnboardingProgress(items);
   const shownRef = useRef(false);
   const prevHasRef = useRef(has);
-  const [pulseStep, setPulseStep] = useState<OnboardingStep | null>(null);
-  const pulseShownRef = useRef(false);
 
   useEffect(() => {
     if (shownRef.current) return;
@@ -41,13 +37,7 @@ export function OnboardingChecklist({
     prevHasRef.current = has;
   }, [has]);
 
-  useEffect(() => {
-    if (!next || pulseShownRef.current) return;
-    setPulseStep(next);
-    pulseShownRef.current = true;
-    const t = window.setTimeout(() => setPulseStep(null), 900);
-    return () => window.clearTimeout(t);
-  }, [next]);
+  if (isClientPreview) return null;
 
   if (done) {
     return (
@@ -104,9 +94,8 @@ export function OnboardingChecklist({
         label="Place a sofa"
         done={has.sofa}
         active={next === "sofa"}
-        pulse={pulseStep === "sofa"}
+        pulse={false}
         onAuto={() => {
-          setPulseStep(null);
           onAutoStep("sofa");
         }}
       />
@@ -114,9 +103,8 @@ export function OnboardingChecklist({
         label="Add a rug (auto-sized)"
         done={has.rug}
         active={next === "rug"}
-        pulse={pulseStep === "rug"}
+        pulse={false}
         onAuto={() => {
-          setPulseStep(null);
           onAutoStep("rug");
         }}
       />
@@ -124,9 +112,8 @@ export function OnboardingChecklist({
         label="Add a coffee table"
         done={has.coffee_table}
         active={next === "coffee_table"}
-        pulse={pulseStep === "coffee_table"}
+        pulse={false}
         onAuto={() => {
-          setPulseStep(null);
           onAutoStep("coffee_table");
         }}
       />
@@ -134,9 +121,8 @@ export function OnboardingChecklist({
         label="Create a reading corner"
         done={has.reading_corner}
         active={next === "reading_corner"}
-        pulse={pulseStep === "reading_corner"}
+        pulse={false}
         onAuto={() => {
-          setPulseStep(null);
           onAutoStep("reading_corner");
         }}
       />

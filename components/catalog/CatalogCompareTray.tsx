@@ -1,5 +1,7 @@
 type CompareItem = {
   id: string;
+  variantId: string;
+  variantLabel: string;
   title: string;
   brand: string | null;
   priceLabel?: string;
@@ -12,7 +14,7 @@ type Props = {
   onRemove: (id: string) => void;
   onClear: () => void;
   onPreview: (id: string) => void;
-  onAdd: (id: string) => void;
+  onAdd: (id: string, variantId?: string) => void;
 };
 
 export default function CatalogCompareTray({ items, onRemove, onClear, onPreview, onAdd }: Props) {
@@ -36,6 +38,7 @@ export default function CatalogCompareTray({ items, onRemove, onClear, onPreview
           <div key={item.id} className="rounded-md border border-neutral-200 bg-white p-2">
             <div className="line-clamp-1 text-xs font-semibold text-neutral-900">{item.title}</div>
             <div className="line-clamp-1 text-[11px] text-neutral-500">{item.brand ?? "Unknown brand"}</div>
+            <div className="line-clamp-1 text-[11px] text-neutral-500" data-testid="catalog-compare-variant-label">{item.variantLabel}</div>
             <div className="mt-1 text-[11px] text-neutral-700">{item.priceLabel ?? "External retailer"}</div>
             <div className="text-[11px] text-neutral-500">{item.dimsLabel}</div>
             <div className="mt-1 line-clamp-1 text-[10px] text-neutral-500">{item.badges.join(" • ")}</div>
@@ -48,7 +51,7 @@ export default function CatalogCompareTray({ items, onRemove, onClear, onPreview
                 Open
               </button>
               <button
-                onClick={() => onAdd(item.id)}
+                onClick={() => onAdd(item.id, item.variantId)}
                 className="rounded bg-neutral-900 px-1.5 py-1 text-[10px] text-white"
               >
                 Add

@@ -24,6 +24,7 @@ model Design {
   anonymousId  String?  @db.VarChar(64)
   savedViews   Json?
   zones        Json?
+  snapshot     Json?
   user         User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])

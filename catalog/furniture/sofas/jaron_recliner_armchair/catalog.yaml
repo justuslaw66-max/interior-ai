@@ -1,0 +1,497 @@
+status: "published"
+brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/jaron-leather-recliner-armchair?variant=slim_arm&material=marche_Ivory"
+category: "armchair"
+
+product_family: "Jaron"
+product_name: "Jaron Recliner Armchair"
+slug: "castlery-jaron-recliner-armchair-slim-arm"
+variant: "Slim Arm / Marche Ivory Leather"
+
+price_usd: 2499
+price_band: "premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "secondary"
+
+dimensions:
+  width_cm: 134
+  depth_cm: 115
+  height_cm: 77
+
+seat_capacity: 1
+size_class: "large"
+shape: "rectangular"
+base_type: "hidden_recliner_base"
+
+material_family: "upholstered"
+material_mix: "upholstered_metal"
+material_mix_components:
+  - "pine"
+  - "plywood"
+  - "metal_recliner_mechanism"
+  - "leather"
+
+materials:
+  frame:
+    structure:
+      - "pine"
+      - "plywood"
+  base:
+    structure: "metal_recliner_mechanism"
+  upholstery:
+    material_type: "leather"
+    label: "Marche Leather"
+    color: "Ivory"
+
+color_family: "white"
+tone: "neutral"
+
+style_cluster: "contemporary"
+style_secondary: "modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "heavy"
+  edge_profile: "rounded"
+  silhouette: "power_recliner_armchair"
+  form_language: "soft_modern"
+  descriptors:
+    - "power_recliner"
+    - "adjustable_headrest"
+    - "slim_arm"
+    - "low_profile"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  walkway_clearance_cm: 75
+  descriptors:
+    - "recliner_clearance_required"
+    - "living_room_lounge"
+    - "media_room_suitable"
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+  - "bedroom"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: false
+  floating_layout_supported: true
+  recommended_in_front_of:
+    - "tv_console"
+    - "coffee_table"
+    - "side_table"
+  clearance_guidance:
+    front_recline_clearance_cm_min: 50
+    rear_recline_clearance_cm_min: 10
+    circulation_cm_min: 75
+
+design_pairings:
+  - "side_table"
+  - "floor_lamp"
+  - "area_rug"
+  - "tv_console"
+  - "sofa"
+  - "coffee_table"
+
+compatibility:
+  related_products:
+    - product_family: "Jaron"
+      product_name: "Jaron Recliner 3-Seater Sofa"
+      relationship: "family_variant"
+      strength: "strong"
+      collection_context: "same_collection"
+    - product_family: "Jaron"
+      product_name: "Jaron Recliner Extended 3-Seater Sofa"
+      relationship: "family_variant"
+      strength: "strong"
+      collection_context: "same_collection"
+    - product_family: "Jaron"
+      product_name: "Jaron Recliner Chaise Sectional Sofa"
+      relationship: "family_variant"
+      strength: "strong"
+      collection_context: "same_collection"
+    - product_family: "Jaron"
+      product_name: "Jaron Recliner L-Shaped Sectional Sofa"
+      relationship: "family_variant"
+      strength: "strong"
+      collection_context: "same_collection"
+
+bundle_metadata:
+  bundle_role: "accent"
+  can_bundle_with:
+    - "side_table"
+    - "floor_lamp"
+    - "area_rug"
+    - "tv_console"
+    - "sofa"
+  set_behavior:
+    supports_pair_seating: true
+    supports_media_room_pairing: true
+
+authoring_notes:
+  category_confidence: "high"
+  source_checked: "Castlery Singapore Jaron leather and fabric recliner armchair pages, 2026-06-20"
+  source_url: "https://www.castlery.com/sg/products/jaron-leather-recliner-armchair?variant=slim_arm&material=marche_Ivory"
+  note: "Slim-arm Jaron recliner armchair. Open and closed GLBs are visualization states only; purchasable identity remains material/arm-style variant."
+
+shipping_and_warranty:
+  free_delivery_threshold_sgd: 500
+  cancellation: "Free - 5 working days before delivery"
+  warranty: "Frame 10 years; Leather/Fabric 1 year; Foam 2 years; Electrical components 2 years"
+  return_policy: "30-day returns"
+  assembly: "Arms to be fitted"
+
+product_details_by_material_type:
+  leather:
+    material:
+      - label: "Material"
+        value: "Pine and plywood frame with power recliner mechanism"
+      - label: "Material details"
+        value: "Marche leather upholstery"
+      - label: "Filling"
+        value: "Foam and fibre filled seat and back"
+      - label: "Special feature"
+        value: "Power recliner with adjustable headrest"
+      - label: "Care"
+        value: "Leather sofa"
+      - label: "Suspension"
+        value: "Sinuous spring"
+      - label: "Cover type"
+        value: "Fixed"
+      - label: "Material & safety standards"
+        value: "Low formaldehyde"
+    dimensions:
+      - label: "Dimension"
+        value: "W134 x D115 x H77cm"
+      - label: "Reclined product depth"
+        value: "165cm"
+      - label: "Cable length"
+        value: "250cm"
+      - label: "Seating depth"
+        value: "64cm"
+      - label: "Seatable width"
+        value: "86cm"
+      - label: "Seating height"
+        value: "47cm"
+      - label: "Backrest height"
+        value: "39-57cm (adjustable headrest)"
+      - label: "Armrest height"
+        value: "62cm"
+      - label: "Leg height"
+        value: "4cm"
+      - label: "Max bearing support"
+        value: "150kg"
+    delivery_and_warranty:
+      - label: "Cancellation"
+        value: "Free - 5 working days before delivery"
+      - label: "Warranty"
+        value: "Frame 10 years; Leather 1 year; Foam 2 years; Electrical components 2 years"
+      - label: "Return policy"
+        value: "30-day returns"
+      - label: "Assembly"
+        value: "Arms to be fitted"
+  fabric:
+    material:
+      - label: "Material"
+        value: "Pine and plywood frame with power recliner mechanism"
+      - label: "Material details"
+        value: "Performance Arvo fabric upholstery"
+      - label: "Filling"
+        value: "Foam and fibre filled seat and back"
+      - label: "Special feature"
+        value: "Power recliner with adjustable headrest"
+      - label: "Care"
+        value: "Fabric sofa"
+      - label: "Suspension"
+        value: "Sinuous spring"
+      - label: "Cover type"
+        value: "Fixed"
+      - label: "Material & safety standards"
+        value: "Low formaldehyde"
+    dimensions:
+      - label: "Dimension"
+        value: "W134 x D115 x H77cm"
+      - label: "Reclined product depth"
+        value: "165cm"
+      - label: "Cable length"
+        value: "250cm"
+      - label: "Seating depth"
+        value: "64cm"
+      - label: "Seatable width"
+        value: "86cm"
+      - label: "Seating height"
+        value: "47cm"
+      - label: "Backrest height"
+        value: "39-57cm (adjustable headrest)"
+      - label: "Armrest height"
+        value: "62cm"
+      - label: "Leg height"
+        value: "4cm"
+      - label: "Max bearing support"
+        value: "150kg"
+    delivery_and_warranty:
+      - label: "Cancellation"
+        value: "Free - 5 working days before delivery"
+      - label: "Warranty"
+        value: "Frame 10 years; Fabric 1 year; Foam 2 years; Electrical components 2 years"
+      - label: "Return policy"
+        value: "30-day returns"
+      - label: "Assembly"
+        value: "Arms to be fitted"
+
+product_details:
+  material:
+    - label: "Material"
+      value: "Pine and plywood frame with power recliner mechanism"
+    - label: "Special feature"
+      value: "Power recliner with adjustable headrest"
+    - label: "Care"
+      value: "Leather sofa"
+    - label: "Suspension"
+      value: "Sinuous spring"
+    - label: "Cover type"
+      value: "Fixed"
+  dimensions:
+    - label: "Dimension"
+      value: "W134 x D115 x H77cm"
+    - label: "Reclined product depth"
+      value: "165cm"
+    - label: "Cable length"
+      value: "250cm"
+    - label: "Seating depth"
+      value: "64cm"
+    - label: "Seatable width"
+      value: "86cm"
+    - label: "Seating height"
+      value: "47cm"
+    - label: "Backrest height"
+      value: "39-57cm (adjustable headrest)"
+    - label: "Armrest height"
+      value: "62cm"
+    - label: "Leg height"
+      value: "4cm"
+    - label: "Max bearing support"
+      value: "150kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free - 5 working days before delivery"
+    - label: "Warranty"
+      value: "Frame 10 years; Leather/Fabric 1 year; Foam 2 years; Electrical components 2 years"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Arms to be fitted"
+
+comfort_profile:
+  seat_comfort:
+    label: "Seat comfort"
+    value: 1
+    min_label: "Relaxed"
+    max_label: "Upright"
+  seat_depth:
+    label: "Seat depth"
+    value: 4
+    min_label: "Shallow"
+    max_label: "Deep"
+  seat_height:
+    label: "Seat height"
+    value: 4
+    min_label: "Low"
+    max_label: "High"
+  seat_softness:
+    label: "Seat softness"
+    value: 2
+    min_label: "Soft"
+    max_label: "Firm"
+
+upholstery_library_ref: "jaron"
+
+feature_flags:
+  has_recliner: true
+  has_power_recliner: true
+  has_adjustable_headrest: true
+  is_configurable: true
+
+configurable_metadata:
+  is_configurable: true
+  default_configuration: "closed"
+  configuration_ui:
+    type: "segmented_control"
+    label: "Recliner State"
+    options:
+      - "closed"
+      - "open_recliner"
+    option_labels:
+      closed: "Closed"
+      open_recliner: "Open"
+    helper_text: "Open state is for visualization only. Cart and checkout still use the selected purchasable arm and upholstery variant."
+  configuration_behavior:
+    affects_visual_footprint: true
+    affects_space_planning: true
+    affects_collision_bounds: true
+    affects_recommendation_logic: false
+
+configurations:
+  - configuration_code: "closed"
+    label: "Closed"
+    model_url: "/assets/models/armchair-real-castlery-jaron-recliner-armchair-slim-arm-closed.glb"
+    visual_bounds_cm:
+      width_cm: 134
+      depth_cm: 115
+      height_cm: 77
+    planning_bounds_cm:
+      width_cm: 134
+      depth_cm: 115
+      height_cm: 77
+    collision_bounds_cm:
+      width_cm: 134
+      depth_cm: 115
+      height_cm: 77
+  - configuration_code: "open_recliner"
+    label: "Open"
+    model_url: "/assets/models/armchair-real-castlery-jaron-recliner-armchair-slim-arm-open.glb"
+    visual_bounds_cm:
+      width_cm: 134
+      depth_cm: 165
+      height_cm: 77
+    planning_bounds_cm:
+      width_cm: 134
+      depth_cm: 165
+      height_cm: 77
+    collision_bounds_cm:
+      width_cm: 134
+      depth_cm: 165
+      height_cm: 77
+
+assets:
+  asset_id: "armchair-real-castlery-jaron-recliner-armchair"
+  model_url: "/assets/models/armchair-real-castlery-jaron-recliner-armchair-slim-arm-closed.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1000/v1760147965/crusader/variants/AS-000732-LE4021/Jaron-Leather-Slim-Arm-Recliner-Armchair-Marche-Ivory-Angle_-1760147964.png"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760147965/crusader/variants/AS-000732-LE4021/Jaron-Leather-Slim-Arm-Recliner-Armchair-Marche-Ivory-Angle_-1760147964.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1760147826/crusader/variants/AS-000732-LE4021/Jaron-Leather-Slim-Arm-Recliner-Armchair-Marche-Ivory-Square-Set_2-1760147826.jpg"
+    - "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1780280269/pim/converting/1780280266262/Jaron-Leather-Slim-Arm-Recliner-Armchair-Marche-Cocoa-Dim.jpg"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+
+variants:
+  - variant: "Slim Arm / Marche Ivory (Leather)"
+    sku: "AS-000728-LE4021"
+    size_label: "134x115"
+    finish_code: "marche_ivory_leather_slim_arm"
+    finish_label: "Marche Ivory"
+    upholstery_code: "marche_ivory"
+    upholstery_label: "Marche Leather, Ivory"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728527/crusader/variants/LE-4021/Hamilton-Leather-Sofa-Ivory-Det_1-1710728524.jpg"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1000/v1760147965/crusader/variants/AS-000732-LE4021/Jaron-Leather-Slim-Arm-Recliner-Armchair-Marche-Ivory-Angle_-1760147964.png"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760147965/crusader/variants/AS-000732-LE4021/Jaron-Leather-Slim-Arm-Recliner-Armchair-Marche-Ivory-Angle_-1760147964.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1760147826/crusader/variants/AS-000732-LE4021/Jaron-Leather-Slim-Arm-Recliner-Armchair-Marche-Ivory-Square-Set_2-1760147826.jpg"
+    swatch_group: "upholstery_option"
+    color_family: "white"
+    tone: "neutral"
+    price_usd: 2499
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 134, depth_cm: 115, height_cm: 77 }
+    seat_capacity: 1
+    size_class: "large"
+    model_asset_id: "armchair-real-castlery-jaron-recliner-armchair"
+    model_url: "/assets/models/armchair-real-castlery-jaron-recliner-armchair-slim-arm-closed.glb"
+    state_assets:
+      closed:
+        model_url: "/assets/models/armchair-real-castlery-jaron-recliner-armchair-slim-arm-closed.glb"
+      open_recliner:
+        model_url: "/assets/models/armchair-real-castlery-jaron-recliner-armchair-slim-arm-open.glb"
+    materials:
+      upholstery:
+        structure: "leather"
+        surface: "marche_leather"
+    finish:
+      color_finish: "marche_ivory"
+      surface_finish: "leather"
+      finish_color: "marche_ivory_leather"
+
+  - variant: "Slim Arm / Marche Cocoa (Leather)"
+    sku: "AS-000728-LE4023"
+    size_label: "134x115"
+    finish_code: "marche_cocoa_leather_slim_arm"
+    finish_label: "Marche Cocoa"
+    upholstery_code: "marche_cocoa"
+    upholstery_label: "Marche Leather, Cocoa"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1741163167/crusader/variants/LE-4023/Cocoa_Swatch-1741163165.jpg"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1000/v1741571181/crusader/variants/AS-000728-LE4023/Jaron-Leathe-Wider-Arm-Recliner-Armchair-Marche-Cocoa-Angle_1-1741571179.png"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741571181/crusader/variants/AS-000728-LE4023/Jaron-Leathe-Wider-Arm-Recliner-Armchair-Marche-Cocoa-Angle_1-1741571179.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1780280269/pim/converting/1780280266262/Jaron-Leather-Slim-Arm-Recliner-Armchair-Marche-Cocoa-Dim.jpg"
+    swatch_group: "upholstery_option"
+    color_family: "brown"
+    tone: "warm"
+    price_usd: 2499
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 134, depth_cm: 115, height_cm: 77 }
+    seat_capacity: 1
+    size_class: "large"
+    model_asset_id: "armchair-real-castlery-jaron-recliner-armchair"
+    model_url: "/assets/models/armchair-real-castlery-jaron-recliner-armchair-slim-arm-closed.glb"
+    state_assets:
+      closed:
+        model_url: "/assets/models/armchair-real-castlery-jaron-recliner-armchair-slim-arm-closed.glb"
+      open_recliner:
+        model_url: "/assets/models/armchair-real-castlery-jaron-recliner-armchair-slim-arm-open.glb"
+    materials:
+      upholstery:
+        structure: "leather"
+        surface: "marche_leather"
+    finish:
+      color_finish: "marche_cocoa"
+      surface_finish: "leather"
+      finish_color: "marche_cocoa_leather"
+
+  - variant: "Slim Arm / Performance Arvo Dune (Fabric)"
+    sku: "AS-000728-AR4001"
+    size_label: "134x115"
+    finish_code: "performance_arvo_dune_fabric_slim_arm"
+    finish_label: "Performance Arvo Dune"
+    upholstery_code: "performance_arvo_dune"
+    upholstery_label: "Performance Arvo Fabric, Dune"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1674034715/crusader/variants/AR-4001/Sloane-Cane-Chair-Dune-Grey-Oak-Det_1-1674034712.jpg"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1000/v1741341345/crusader/variants/AS-000728-AR4001/Jaron-Slim-Arm-Recliner-Armchair-Performance-Arvo-Dune-Angle-1741341343.png"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741341345/crusader/variants/AS-000728-AR4001/Jaron-Slim-Arm-Recliner-Armchair-Performance-Arvo-Dune-Angle-1741341343.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741341346/crusader/variants/AS-000728-AR4001/Jaron-Slim-Arm-Recliner-Armchair-Performance-Arvo-Dune-Angle_1-1741341343.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1780280287/pim/converting/1780280286426/Jaron-Slim-Arm-Recliner-Armchair-Performance-Arvo-Dune-Dim.jpg"
+    swatch_group: "upholstery_option"
+    color_family: "beige"
+    tone: "neutral"
+    price_usd: 1799
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 134, depth_cm: 115, height_cm: 77 }
+    seat_capacity: 1
+    size_class: "large"
+    model_asset_id: "armchair-real-castlery-jaron-recliner-armchair"
+    model_url: "/assets/models/armchair-real-castlery-jaron-recliner-armchair-slim-arm-closed.glb"
+    state_assets:
+      closed:
+        model_url: "/assets/models/armchair-real-castlery-jaron-recliner-armchair-slim-arm-closed.glb"
+      open_recliner:
+        model_url: "/assets/models/armchair-real-castlery-jaron-recliner-armchair-slim-arm-open.glb"
+    materials:
+      upholstery:
+        structure: "fabric"
+        surface: "performance_arvo"
+    finish:
+      color_finish: "performance_arvo_dune"
+      surface_finish: "woven_fabric"
+      finish_color: "performance_arvo_dune_fabric"

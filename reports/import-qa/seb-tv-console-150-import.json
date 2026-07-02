@@ -1,0 +1,10 @@
+{
+  "assetId": "tv-real-castlery-seb-tv-console-150",
+  "srcGlbPath": "public/assets/models/tv-real-castlery-seb-tv-console-150.glb",
+  "dimsMm": { "w": 1500, "d": 450, "h": 600 },
+  "brandName": "Castlery",
+  "approved": false,
+  "generateThumbnail": true,
+  "generateHeroThumbnail": true,
+  "optimizeModel": true
+}

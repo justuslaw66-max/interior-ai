@@ -1,0 +1,72 @@
+brand: "Castlery"
+status: "draft"
+source_url: "https://www.castlery.com/sg/products/auburn-performance-boucle-armless-curve-3-seater-sofa?material=chalk_boucle"
+category: "sofa"
+
+product_family: "Auburn"
+product_name: "Auburn Performance Fabric Armless Curve 3 Seater Sofa"
+variant: "Chalk Boucle draft import"
+
+price_usd: 2697
+price_band: "premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "sofa_anchor"
+
+dimensions:
+  width_cm: 320
+  depth_cm: 139.5
+  height_cm: 76.5
+
+seat_capacity: 3
+size_class: "extra_large"
+shape: "organic"
+material_family: "upholstered"
+color_family: "beige"
+tone: "neutral"
+style_cluster: "contemporary"
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+design_pairings:
+  - "coffee_table"
+  - "rug"
+  - "side_table"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: true
+  clearance_sensitive: true
+  center_room_preferred: false
+
+assets:
+  asset_id: "sofa-real-castlery-auburn-performance-fabric-armless-curve-3-seater-sofa"
+  model_url: "/assets/models/sofa-real-castlery-auburn-performance-fabric-armless-curve-3-seater-sofa.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683795490/crusader/variants/T50441136-CB4001/Auburn-Performance-Boucle-Armless-Curve-3-Seater-Sofa-Chalk-Front-1683795488.jpg"
+
+variants:
+  - variant: "Chalk Boucle draft import"
+    upholstery_code: "chalk_boucle"
+    upholstery_label: "Chalk Boucle"
+    price_usd: 2697
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 320
+      depth_cm: 139.5
+      height_cm: 76.5
+    color_family: "beige"
+    tone: "neutral"
+
+publish_blockers:
+  - "confirm_exact_product_source_url"
+  - "confirm_price_and_variant_metadata"
+  - "confirm_catalog_dimensions_against_supplier_specs"
+  - "confirm_local_model_asset_availability"
+  - "complete_product_details"
+
+notes:
+  - "Draft mapping for an approved imported ModelAsset so governance can track publication readiness."
+  - "Do not publish until product metadata, pricing, dimensions, and local model availability are confirmed."

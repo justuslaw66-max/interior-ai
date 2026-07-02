@@ -7,8 +7,6 @@
 
 "use client";
 
-import { useState } from "react";
-
 interface UpgradeModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -25,9 +23,9 @@ export function UpgradeModal({
   if (!isOpen) return null;
 
   const triggerMessages = {
-    pdf: "Download as PDF is a Pro feature",
-    watermark: "Remove watermark is a Pro feature",
-    branding: "Custom branding is a Pro feature",
+    pdf: "Free includes a watermarked preview. Pro unlocks clean downloadable PDFs.",
+    watermark: "Upgrade to remove the free export watermark.",
+    branding: "Upgrade to add branding and client-ready presentation polish.",
   };
 
   const message = trigger ? triggerMessages[trigger] : "Unlock professional export features";
@@ -43,6 +41,10 @@ export function UpgradeModal({
             {message}
           </p>
         )}
+
+        <div className="mt-4 rounded-lg border border-blue-100 bg-blue-50 p-3 text-sm text-blue-900">
+          Best for designers sending polished proposals and room exports to clients.
+        </div>
 
         <div className="mt-5 rounded-lg border border-gray-200 overflow-hidden">
           <div className="grid grid-cols-3 bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
@@ -74,10 +76,10 @@ export function UpgradeModal({
             onClick={onUpgrade}
             className="w-full bg-blue-600 text-white px-4 py-2.5 rounded-md font-medium hover:bg-blue-700 transition"
           >
-            Upgrade to Pro — {priceLabel}
+            Unlock Pro exports — {priceLabel}
           </button>
           <p className="text-xs text-gray-500">
-            Client-ready presentations for designers and agents.
+            Clean exports, branded presentation pages, and stronger client delivery.
           </p>
           <button
             onClick={onClose}

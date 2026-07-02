@@ -9,6 +9,7 @@
 - [x] Type safety verified for all exports
 - [x] GLB parser logic reviewed and tested
 - [x] Commerce helpers API finalized
+- [ ] Route hardening checks pass on the real running server (`npm run test:hardening`)
 
 ---
 
@@ -207,6 +208,9 @@ track("commerce_event", createCommerceEvent("affiliate_link_clicked", item));
 ```bash
 # Type check
 npx tsc --noEmit
+
+# Route hardening checks (requires app running on :3000)
+npm run test:hardening
 
 # Build test
 npm run build

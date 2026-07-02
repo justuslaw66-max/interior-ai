@@ -1,15 +1,18 @@
 import { NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { getPostHogClient } from "@/lib/posthog-server";
+import { buildDesignUpdatePayload } from "@/lib/design-route-payload";
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
     const session = await auth();
+    const requestedShareToken = new URL(req.url).searchParams.get("shareToken");
     const design = await prisma.design.findUnique({
       where: { id },
     });
@@ -18,7 +21,17 @@ export async function GET(
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    const isOwner = session?.user?.id && design.userId === session.user.id;
+    const isOwner = Boolean(session?.user?.id && design.userId === session.user.id);
+    const hasValidShareToken = Boolean(
+      requestedShareToken &&
+        design.shareEnabled &&
+        design.shareToken &&
+        requestedShareToken === design.shareToken
+    );
+
+    if (!isOwner && !hasValidShareToken) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     return NextResponse.json({
       id: design.id,
@@ -26,6 +39,7 @@ export async function GET(
       roomWidth: design.roomWidth,
       roomDepth: design.roomDepth,
       items: design.items,
+      snapshot: design.snapshot ?? null,
       zones: design.zones ?? [],
       savedViews: design.savedViews ?? [],
       style: design.style,
@@ -34,7 +48,7 @@ export async function GET(
       notes: design.notes,
       updatedAt: design.updatedAt,
       shareToken: isOwner ? design.shareToken : null,
-      shareEnabled: isOwner ? design.shareEnabled : false,
+      shareEnabled: isOwner ? design.shareEnabled : hasValidShareToken,
     });
   } catch (err) {
     console.error("GET error:", err);
@@ -62,7 +76,8 @@ export async function PUT(
     }
 
     const body = await req.json();
-    const { title, roomWidth, roomDepth, items, zones, savedViews, style, budget, mode, notes } = body ?? {};
+    const payload = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
+    const items = payload.items;
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
@@ -77,21 +92,18 @@ export async function PUT(
       );
     }
 
-    const updateData: any = {};
-    if (typeof title === "string") updateData.title = title;
-    if (typeof roomWidth === "number") updateData.roomWidth = Number(roomWidth);
-    if (typeof roomDepth === "number") updateData.roomDepth = Number(roomDepth);
-    if (Array.isArray(items)) updateData.items = JSON.parse(JSON.stringify(items));
-    if (Array.isArray(zones)) {
-      updateData.zones = JSON.parse(JSON.stringify(zones));
+    const updatePayload = buildDesignUpdatePayload(payload);
+    if (!updatePayload.ok) {
+      return NextResponse.json(
+        { error: updatePayload.error },
+        { status: updatePayload.status }
+      );
     }
-    if (Array.isArray(savedViews)) {
-      updateData.savedViews = JSON.parse(JSON.stringify(savedViews));
-    }
-    if (typeof style === "string") updateData.style = style;
-    if (typeof budget === "string") updateData.budget = budget;
-    if (typeof mode === "string") updateData.mode = mode;
-    if (typeof notes === "string") updateData.notes = notes;
+    const updateData = updatePayload.value;
+    if (updateData.items) updateData.items = updateData.items as Prisma.InputJsonValue;
+    if (updateData.zones) updateData.zones = updateData.zones as Prisma.InputJsonValue;
+    if (updateData.savedViews) updateData.savedViews = updateData.savedViews as Prisma.InputJsonValue;
+    if (updateData.snapshot) updateData.snapshot = updateData.snapshot as Prisma.InputJsonValue;
 
     const updated = await prisma.design.update({
       where: { id },

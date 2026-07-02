@@ -2,12 +2,14 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
-import { Html, OrbitControls, useGLTF } from "@react-three/drei";
+import { useGLTF } from "@react-three/drei/core/Gltf";
+import { OrbitControls } from "@react-three/drei/core/OrbitControls";
+import { Html } from "@react-three/drei/web/Html";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { getModelAssetStatus } from "@/lib/modelAssetStatus";
 
-// Accept any object with the required properties (matches Prisma ModelAsset)
+// Accept objects with the required properties (matches Prisma ModelAsset)
 type Asset = {
   id: string;
   modelUrl: string;
@@ -26,7 +28,7 @@ type Asset = {
   aabbCenterX: number;
   aabbCenterY: number;
   aabbCenterZ: number;
-  [key: string]: any; // Allow additional fields from Prisma
+  [key: string]: unknown; // Allow additional fields from Prisma
 };
 
 type LightingMode = "studio" | "day" | "warm";
@@ -142,7 +144,7 @@ function qaStatsFromScene(scene: THREE.Object3D): QAStats {
       }
 
       MATERIAL_TEXTURE_KEYS.forEach((key) => {
-        const tex = (mat as any)[key] as THREE.Texture | null | undefined;
+        const tex = mat[key as keyof THREE.MeshStandardMaterial] as THREE.Texture | null | undefined;
         if (!tex || !tex.image) return;
         const image = tex.image as { width?: number; height?: number };
         const sourceData = tex.source?.data as { width?: number; height?: number } | undefined;
@@ -202,11 +204,13 @@ function Model({
   }, [scene]);
 
   useEffect(() => {
+    const originalMaterialsMap = originalMaterialsRef.current;
+
     scene.traverse((obj) => {
       const mesh = obj as THREE.Mesh;
       if (!mesh.isMesh) return;
 
-      const originals = originalMaterialsRef.current.get(mesh) ?? [];
+      const originals = originalMaterialsMap.get(mesh) ?? [];
       const mappedMaterials = originals.map((originalMat) => {
         if (!originalMat) return originalMat;
 
@@ -255,7 +259,7 @@ function Model({
       scene.traverse((obj) => {
         const mesh = obj as THREE.Mesh;
         if (!mesh.isMesh) return;
-        const originals = originalMaterialsRef.current.get(mesh) ?? [];
+        const originals = originalMaterialsMap.get(mesh) ?? [];
         const originalSet = new Set(originals);
         const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
         mats.forEach((mat) => {
@@ -281,6 +285,8 @@ export default function ModelViewer({ asset }: { asset: Asset }) {
   const [neutralLighting, setNeutralLighting] = useState(false);
   const [fileSizeBytes, setFileSizeBytes] = useState<number | null>(null);
   const [stats, setStats] = useState<QAStats | null>(null);
+  const [modelExists, setModelExists] = useState<boolean | null>(null);
+  const [modelLoadError, setModelLoadError] = useState<string | null>(null);
 
   const approvalStatus = getModelAssetStatus(asset);
 
@@ -289,6 +295,17 @@ export default function ModelViewer({ asset }: { asset: Asset }) {
     (async () => {
       try {
         const headRes = await fetch(asset.modelUrl, { method: "HEAD" });
+        if (!cancelled) {
+          if (!headRes.ok) {
+            setModelExists(false);
+            setModelLoadError(`Model file returned ${headRes.status} for ${asset.modelUrl}`);
+            setFileSizeBytes(null);
+            return;
+          }
+          setModelExists(true);
+          setModelLoadError(null);
+        }
+
         const headSize = Number(headRes.headers.get("content-length"));
         if (!cancelled && Number.isFinite(headSize) && headSize > 0) {
           setFileSizeBytes(headSize);
@@ -299,7 +316,11 @@ export default function ModelViewer({ asset }: { asset: Asset }) {
         const blob = await getRes.blob();
         if (!cancelled) setFileSizeBytes(blob.size);
       } catch {
-        if (!cancelled) setFileSizeBytes(null);
+        if (!cancelled) {
+          setModelExists(false);
+          setModelLoadError(`Unable to fetch model file at ${asset.modelUrl}`);
+          setFileSizeBytes(null);
+        }
       }
     })();
 
@@ -451,7 +472,7 @@ export default function ModelViewer({ asset }: { asset: Asset }) {
         </button>
       </div>
 
-      <div className="absolute bottom-3 right-3 z-20 w-[340px] max-h-[70%] overflow-auto rounded-xl border bg-white/90 p-3 text-xs backdrop-blur">
+      <div className="absolute bottom-3 right-3 z-20 w-85 max-h-[70%] overflow-auto rounded-xl border bg-white/90 p-3 text-xs backdrop-blur">
         <div className="mb-2 flex items-center justify-between">
           <div className="font-semibold">Asset QA</div>
           <span className={`rounded-full border px-2 py-0.5 text-[11px] ${statusBadgeClass}`}>
@@ -460,6 +481,14 @@ export default function ModelViewer({ asset }: { asset: Asset }) {
         </div>
 
         <div><b>File size</b>: {formatFileSize(fileSizeBytes)}</div>
+        <div>
+          <b>Model file</b>: {modelExists === null ? "checking..." : modelExists ? "found" : "missing"}
+        </div>
+        {modelLoadError && (
+          <div className="mt-1 rounded border border-red-300 bg-red-50 p-2 text-[11px] text-red-800">
+            {modelLoadError}
+          </div>
+        )}
         <div><b>Dimensions (mm)</b>: {asset.dimsWmm ?? "-"} x {asset.dimsDmm ?? "-"} x {asset.dimsHmm ?? "-"}</div>
         <div>
           <b>Computed bounds size (m)</b>: {stats ? `${stats.computedSize.x.toFixed(3)}, ${stats.computedSize.y.toFixed(3)}, ${stats.computedSize.z.toFixed(3)}` : "loading..."}
@@ -509,24 +538,36 @@ export default function ModelViewer({ asset }: { asset: Asset }) {
         </div>
       </div>
 
-      <Canvas shadows={castShadow} camera={{ position: [2, 1.5, 2], fov: 45 }}>
-        <ambientLight intensity={lighting.ambient} />
-        <hemisphereLight args={[lighting.hemiSky, lighting.hemiGround, lighting.hemi]} />
-        <directionalLight
-          castShadow={castShadow}
-          color={lighting.directionalColor}
-          position={[4, 6, 2]}
-          intensity={lighting.directional}
-        />
-        {showGrid && <gridHelper args={[10, 20]} />}
-        <axesHelper args={[1]} />
-        <Suspense fallback={null}>
-          <Model url={asset.modelUrl} onStats={setStats} renderMode={renderMode} />
-        </Suspense>
-        {showBounds && <BoundsBox asset={asset} />}
-        {showPivot && <PivotMarker asset={asset} />}
-        <OrbitControls makeDefault />
-      </Canvas>
+      {modelExists === false ? (
+        <div className="flex h-full items-center justify-center bg-neutral-100 p-6">
+          <div className="max-w-md rounded-xl border border-red-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
+            <div className="font-semibold text-red-700">Model file not found</div>
+            <p className="mt-2 break-all text-xs text-neutral-700">{asset.modelUrl}</p>
+            <p className="mt-2 text-xs text-neutral-600">
+              Add this file under <code>public/assets/models</code> or update this model asset&apos;s URL.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <Canvas shadows={castShadow} camera={{ position: [2, 1.5, 2], fov: 45 }}>
+          <ambientLight intensity={lighting.ambient} />
+          <hemisphereLight args={[lighting.hemiSky, lighting.hemiGround, lighting.hemi]} />
+          <directionalLight
+            castShadow={castShadow}
+            color={lighting.directionalColor}
+            position={[4, 6, 2]}
+            intensity={lighting.directional}
+          />
+          {showGrid && <gridHelper args={[10, 20]} />}
+          <axesHelper args={[1]} />
+          <Suspense fallback={null}>
+            <Model url={asset.modelUrl} onStats={setStats} renderMode={renderMode} />
+          </Suspense>
+          {showBounds && <BoundsBox asset={asset} />}
+          {showPivot && <PivotMarker asset={asset} />}
+          <OrbitControls makeDefault />
+        </Canvas>
+      )}
     </div>
   );
 }

@@ -1,0 +1,246 @@
+schema_version: 1
+
+product:
+  brand: castlery
+  collection: Dawson
+  product_family: dawson_storage_ottoman
+  product_name: Dawson Storage Ottoman
+  slug: castlery-dawson-storage-ottoman
+  category: ottoman
+  subcategory: storage_ottoman
+  room_compatibility:
+    - living_room
+    - lounge
+    - bedroom
+  design_zone:
+    - seating_zone
+    - storage_zone
+  anchor_role: secondary_seating
+  shape: rectangular
+  style_cluster:
+    - contemporary
+    - relaxed_modern
+    - soft_minimal
+  tone:
+    - airy
+    - cozy
+    - casual
+  price_band: mid_premium
+  description: >
+    Upholstered Dawson ottoman with removable covers and an openable storage
+    compartment, allowing customers to visualize both closed and open states.
+
+source:
+  retailer: castlery
+  base_product_url: https://www.castlery.com/sg/products/dawson-ottoman
+  currency: SGD
+  notes:
+    - "Closed and open-state screenshots supplied manually."
+    - "Open state is a visual/planning state, not a separate purchasable variant."
+
+identity:
+  canonical_product_key: castlery:dawson_storage_ottoman
+  variant_identity_rule: product_family + normalized_finish_code + material_structure + optional_qualifier
+
+materials:
+  material_family: upholstered_fabric
+  upholstery:
+    material_type: fabric
+    composition:
+      polyester_pct: 93
+      linen_pct: 7
+    cover_type:
+      frame_cover: removable
+      cushion_cover: removable
+  frame:
+    material_family: engineered_wood
+    material_detail:
+      - plywood
+      - laminated_veneer_lumber
+  legs:
+    material_family: plastic
+    finish: black
+  filling:
+    seat:
+      - foam
+      - fibre
+      - feather
+  storage:
+    interior_material_family: engineered_wood
+    interior_color_family: black
+
+finish_normalization:
+  finish_code: navagio_beach_linen
+  shopper_label: Beach Linen
+  normalized_finish_label: Cream (Beach Linen)
+  vendor_material_name: "Slub Linen Weave (Navagio)"
+  vendor_color_name: "Cream (Beach Linen)"
+  material_family_normalized: fabric
+  material_structure: slub_linen_weave
+  swatch_group: cream
+  color_family: cream
+  stocked_status: stocked
+
+options:
+  length:
+    type: enum
+    values:
+      - 93cm
+      - 114cm
+  finish:
+    type: enum
+    values:
+      - navagio_beach_linen
+  frame_cover:
+    type: enum
+    values:
+      - removable
+
+variants:
+  - variant_id: dawson-storage-ottoman-93cm-navagio-beach-linen-removable
+    title: Dawson Storage Ottoman - 93cm - Beach Linen - Removable Cover
+    option_values:
+      length: 93cm
+      finish_code: navagio_beach_linen
+      frame_cover: removable
+    identity_tuple:
+      product_family: dawson_storage_ottoman
+      normalized_finish_code: navagio_beach_linen
+      material_structure: slub_linen_weave
+      optional_qualifier: 93cm_removable
+    price:
+      currency: SGD
+      amount: 549
+    dimensions_cm:
+      width: 93
+      depth: 93
+      height_closed: 45
+      height_open: 105
+    media:
+      thumb_url: null
+      gallery_urls: []
+      model_url: /assets/models/sofa-real-castlery-dawson-ottoman.glb
+    state_assets:
+      closed:
+        model_url: /assets/models/sofa-real-castlery-dawson-ottoman.glb
+      open_storage:
+        model_url: /assets/models/sofa-real-castlery-dawson-storage-ottoman-open.glb
+    purchase_mode: shopify
+
+  - variant_id: dawson-storage-ottoman-114cm-navagio-beach-linen-removable
+    title: Dawson Storage Ottoman - 114cm - Beach Linen - Removable Cover
+    option_values:
+      length: 114cm
+      finish_code: navagio_beach_linen
+      frame_cover: removable
+    identity_tuple:
+      product_family: dawson_storage_ottoman
+      normalized_finish_code: navagio_beach_linen
+      material_structure: slub_linen_weave
+      optional_qualifier: 114cm_removable
+    price:
+      currency: SGD
+      amount: 649
+    dimensions_cm:
+      width: 114
+      depth: 93
+      height_closed: 45
+      height_open: 105
+    media:
+      thumb_url: null
+      gallery_urls: []
+      model_url: /assets/models/sofa-real-castlery-dawson-ottoman-114.glb
+    state_assets:
+      closed:
+        model_url: /assets/models/sofa-real-castlery-dawson-ottoman-114.glb
+      open_storage:
+        model_url: /assets/models/sofa-real-castlery-dawson-storage-ottoman-open.glb
+    purchase_mode: shopify
+
+states:
+  configurable_states:
+    - state_id: closed
+      label: Closed
+      default: true
+      affects_purchase: false
+      affects_visual_model: true
+      affects_planning_bounds: true
+      visual_footprint_behavior: normal
+      planning_bounds_cm:
+        height: 45
+      ui:
+        icon: box
+        action_label: Show closed
+
+    - state_id: open_storage
+      label: Open
+      default: false
+      affects_purchase: false
+      affects_visual_model: true
+      affects_planning_bounds: true
+      visual_footprint_behavior: lid_open
+      planning_bounds_cm:
+        height: 105
+      clearance_required_cm:
+        above: 65
+        front: 15
+      ui:
+        icon: open-box
+        action_label: Show storage open
+
+placement:
+  placement_type: floor
+  floor_only: true
+  wall_snappable: false
+  clearance_rules:
+    front_clearance_cm: 30
+    side_clearance_cm: 10
+    rear_clearance_cm: 5
+    vertical_open_clearance_cm: 65
+
+bounds:
+  variant_bounds:
+    dawson-storage-ottoman-93cm-navagio-beach-linen-removable:
+      closed:
+        planning_footprint_cm:
+          width: 93
+          depth: 93
+          height: 45
+      open_storage:
+        planning_footprint_cm:
+          width: 93
+          depth: 93
+          height: 105
+
+    dawson-storage-ottoman-114cm-navagio-beach-linen-removable:
+      closed:
+        planning_footprint_cm:
+          width: 114
+          depth: 93
+          height: 45
+      open_storage:
+        planning_footprint_cm:
+          width: 114
+          depth: 93
+          height: 105
+
+  notes:
+    - "Open state should not create a new cart variant."
+    - "Selected size controls footprint width."
+    - "Selected state controls visual model and vertical clearance."
+    - "Cart, checkout, BOM, and product links should ignore state and use selected purchasable variant only."
+
+import_governance:
+  publish_status: draft
+  publish_blockers:
+    - confirm_exact_open_height
+    - confirm_storage_interior_dimensions
+    - missing_thumbnail_url
+    - missing_gallery_urls
+    - confirm_glb_paths
+  qa_flags:
+    - variant_identity_defined
+    - size_variants_resolved
+    - configurable_states_defined
+    - open_closed_state_assets_required
+    - media_incomplete

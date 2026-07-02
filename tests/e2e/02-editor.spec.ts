@@ -3,7 +3,7 @@ import { test, expect } from './fixtures';
 test.describe('2. Editor Correctness', () => {
   test('collision detection prevents overlapping items', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(2000);
     
     await page.locator('[data-testid="scene-canvas"]').waitFor({ state: 'visible', timeout: 10000 });
@@ -16,12 +16,14 @@ test.describe('2. Editor Correctness', () => {
     await page.keyboard.press('Escape');
     await page.waitForTimeout(500);
 
-    // Place first item - click on empty area
-    await canvas.click({ position: { x: box.width / 3, y: box.height / 2 } });
+    const placementPoint = { x: box.width * 0.72, y: box.height * 0.52 };
+
+    // Place first item in the unobstructed scene area.
+    await canvas.click({ position: placementPoint });
     await page.waitForTimeout(1000);
     
     // Try to place another item at same position
-    await canvas.click({ position: { x: box.width / 3, y: box.height / 2 } });
+    await canvas.click({ position: placementPoint });
     await page.waitForTimeout(1000);
     
     // Check for collision warning using data-testid
@@ -38,7 +40,7 @@ test.describe('2. Editor Correctness', () => {
 
   test('wall snap aligns items to walls', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(2000);
     
     await page.locator('[data-testid="scene-canvas"]').waitFor({ state: 'visible', timeout: 10000 });
@@ -69,7 +71,7 @@ test.describe('2. Editor Correctness', () => {
 
   test('undo/redo restores state correctly (one drag = one undo)', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(2000);
     
     await page.locator('[data-testid="scene-canvas"]').waitFor({ state: 'visible', timeout: 10000 });

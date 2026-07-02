@@ -1,11 +1,11 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
+import fs from "node:fs";
+import path from "node:path";
 
 // Resolve DATABASE_URL synchronously BEFORE Prisma initializes
 const resolvedDatabaseUrl = (() => {
-  const fs = require("fs");
-  const path = require("path");
   const appEnv = (process.env.APP_ENV || process.env.NODE_ENV || "development").toLowerCase();
 
   if (process.env.DATABASE_URL) {

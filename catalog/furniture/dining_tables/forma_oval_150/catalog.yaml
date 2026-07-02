@@ -1,0 +1,187 @@
+brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/forma-oval-dining-table"
+category: "dining_table"
+
+product_family: "Forma"
+product_name: "Forma Oval Dining Table"
+variant: "Oval 150"
+
+price_usd: 1199
+price_band: "premium"
+brand_tier: "premium_mid"
+
+design_zone: "dining_zone"
+anchor_role: "dining_anchor"
+
+dimensions:
+  width_cm: 150
+  depth_cm: 95
+  height_cm: 75.1
+
+seat_capacity: 6
+size_class: "medium"
+
+shape: "oval"
+base_type: "pedestal"
+
+material_family: "mixed"
+materials:
+  tabletop:
+    structure: "solid_wood"
+    wood_species: "american_walnut"
+    surface: "solid_walnut"
+  base:
+    structure: "metal"
+    surface: "powder_coated_metal"
+
+finish:
+  tabletop_finish: "natural_walnut"
+  base_finish: "black"
+  protective_coating: "pu"
+  surface_finish: "low_gloss"
+  finish_color: "walnut_black"
+
+color_family: "brown"
+tone: "warm"
+
+style_cluster: "contemporary"
+style_secondary: "midcentury_modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "rounded"
+  silhouette: "sculptural"
+  form_language: "soft"
+
+spatial_attributes:
+  footprint_shape: "oval"
+  chair_pullback_cm: 60
+  walkway_clearance_cm: 90
+
+room_compatibility:
+  - "dining_room"
+  - "open_plan"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: true
+
+design_pairings:
+  - "dining_chair"
+  - "pendant_light"
+  - "dining_rug"
+  - "sideboard"
+
+product_details:
+  material:
+    - label: "Material"
+      value: "Tabletop: solid American walnut; Base: metal"
+    - label: "Finish"
+      value: "Tabletop: PU finish in natural walnut with 5% gloss ; Base: powder coating in black"
+    - label: "Care"
+      value: "Wooden table"
+    - label: "Colour variance"
+      value: "Natural variations"
+    - label: "Material & safety standards"
+      value: "Formaldehyde safe"
+  dimensions:
+    - label: "Dimension"
+      value: "W150 x D95 x H75.1cm"
+    - label: "Table top thickness"
+      value: "2.1cm"
+    - label: "Leg height"
+      value: "73cm"
+    - label: "Leg room - height clearance"
+      value: "73cm"
+    - label: "Capacity"
+      value: "Sits 4-6 people comfortably"
+    - label: "Product weight"
+      value: "51.3kg"
+    - label: "Packaging dimensions"
+      value: "2 boxes"
+    - label: "Levellers"
+      value: "Included"
+    - label: "Max bearing support"
+      value: "91kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Warranty"
+      value: "5-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Table top and base to be fitted"
+
+assets:
+  asset_id: "dining-real-castlery-forma-oval-150"
+  model_url: "/assets/models/dining-real-castlery-forma-oval-150.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050317/crusader/variants/AS-001039-WA/Forma-Oval-Dining-Table-150cm-Walnut-Front-1769050315.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050317/crusader/variants/AS-001039-WA/Forma-Oval-Dining-Table-150cm-Walnut-Front-1769050315.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050317/crusader/variants/AS-001039-WA/Forma-Oval-Dining-Table-150cm-Walnut-With-6-Tavi-Wood-Back-Dining-Chair-Greige-Walnut-Set_1-1769050315.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050461/crusader/variants/AS-001039-WA/Forma-Oval-Dining-Table-150cm-Walnut-With-4-Tavi-Wood-Back-Dining-Chair-Greige-Walnut-Dining-Room-Campaingn-Det_3-1769050459.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050399/crusader/variants/AS-001039-WA/Forma-Round-Dining-Table-120cm-Walnut-Det_1-1769050397.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1772767705/crusader/variants/AS-001039-WA/Forma-Oval-Dining-Table-150cm-Walnut-With-6-Tavi-Wood-Back-Dining-Chair-Greige-Walnut-Dining-Room-Campaingn-Set_6-1772767703.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1772762315/crusader/variants/AS-001039-WA/Forma-Oval-Dining-Table-150cm-Walnut-With-6-Tavi-Wood-Back-Dining-Chair-Greige-Walnut-Dining-Room-Campaingn-Set_4-1772762313.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050317/crusader/variants/AS-001039-WA/Forma-Oval-Dining-Table-150cm-Walnut-Angle-1769050315.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050317/crusader/variants/AS-001039-WA/Forma-Oval-Dining-Table-150cm-Walnut-Side-1769050315.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050318/crusader/variants/AS-001039-WA/Forma-Oval-Dining-Table-150cm-Walnut-Top-1769050315.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770690299/crusader/variants/TAS-001039/Forma-Oval-Dining-Table-150cm-Walnut-Dim-1770690297.jpg"
+    - "https://res.cloudinary.com/castlery/image/upload/w_1200,f_auto,q_auto/v1774003043/knight/USP/2026/Forma-Oval-Dining-Table-Oak-With-4-Elliot-Performance-Fabric-Dining-Chairs-Blonde-Oak-Set_1.jpg"
+    - "https://res.cloudinary.com/castlery/image/upload/w_1200,f_auto,q_auto/v1774003084/knight/USP/2026/Forma-Round-Dining-Table-120cm-Oak-Det_2.jpg"
+    - "https://res.cloudinary.com/castlery/image/upload/w_1200,f_auto,q_auto/v1774003151/knight/USP/2026/Forma-Oval-Dining-Table-150cm-Walnut-With-4-Tavi-Wood-Back-Dining-Chair-Greige-Walnut-Dining-Room-Campaingn-Det_3.jpg"
+
+variants:
+  - variant: "Oval 150"
+    size_label: "150"
+    finish_code: "natural_walnut"
+    finish_label: "Natural Walnut"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050317/crusader/variants/AS-001039-WA/Forma-Oval-Dining-Table-150cm-Walnut-Front-1769050315.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050317/crusader/variants/AS-001039-WA/Forma-Oval-Dining-Table-150cm-Walnut-Front-1769050315.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050317/crusader/variants/AS-001039-WA/Forma-Oval-Dining-Table-150cm-Walnut-With-6-Tavi-Wood-Back-Dining-Chair-Greige-Walnut-Set_1-1769050315.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050461/crusader/variants/AS-001039-WA/Forma-Oval-Dining-Table-150cm-Walnut-With-4-Tavi-Wood-Back-Dining-Chair-Greige-Walnut-Dining-Room-Campaingn-Det_3-1769050459.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050399/crusader/variants/AS-001039-WA/Forma-Round-Dining-Table-120cm-Walnut-Det_1-1769050397.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1772767705/crusader/variants/AS-001039-WA/Forma-Oval-Dining-Table-150cm-Walnut-With-6-Tavi-Wood-Back-Dining-Chair-Greige-Walnut-Dining-Room-Campaingn-Set_6-1772767703.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1772762315/crusader/variants/AS-001039-WA/Forma-Oval-Dining-Table-150cm-Walnut-With-6-Tavi-Wood-Back-Dining-Chair-Greige-Walnut-Dining-Room-Campaingn-Set_4-1772762313.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050317/crusader/variants/AS-001039-WA/Forma-Oval-Dining-Table-150cm-Walnut-Angle-1769050315.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050317/crusader/variants/AS-001039-WA/Forma-Oval-Dining-Table-150cm-Walnut-Side-1769050315.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050318/crusader/variants/AS-001039-WA/Forma-Oval-Dining-Table-150cm-Walnut-Top-1769050315.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770690299/crusader/variants/TAS-001039/Forma-Oval-Dining-Table-150cm-Walnut-Dim-1770690297.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1200,f_auto,q_auto/v1774003043/knight/USP/2026/Forma-Oval-Dining-Table-Oak-With-4-Elliot-Performance-Fabric-Dining-Chairs-Blonde-Oak-Set_1.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1200,f_auto,q_auto/v1774003084/knight/USP/2026/Forma-Round-Dining-Table-120cm-Oak-Det_2.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1200,f_auto,q_auto/v1774003151/knight/USP/2026/Forma-Oval-Dining-Table-150cm-Walnut-With-4-Tavi-Wood-Back-Dining-Chair-Greige-Walnut-Dining-Room-Campaingn-Det_3.jpg"
+    price_usd: 1199
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 150
+      depth_cm: 95
+      height_cm: 75.1
+    seat_capacity: 6
+    size_class: "medium"
+    color_family: "brown"
+    tone: "warm"
+    materials:
+      tabletop:
+        structure: "solid_wood"
+        wood_species: "american_walnut"
+        surface: "solid_walnut"
+      base:
+        structure: "metal"
+        surface: "powder_coated_metal"
+    finish:
+      tabletop_finish: "natural_walnut"
+      base_finish: "black"
+      protective_coating: "pu"
+      surface_finish: "low_gloss"
+      finish_color: "walnut_black"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true

@@ -4,11 +4,17 @@
 
 import { AABB } from "@/lib/snapGuides";
 
+type WalkwayDirection = "front" | "back" | "left" | "right";
+
 export interface Measure {
   label: string;
   valueCm: number;
   severity?: "warn" | "ok" | "good";
   at: [number, number, number]; // HTML overlay position
+}
+
+function rangesOverlap(minA: number, maxA: number, minB: number, maxB: number): boolean {
+  return !(maxA < minB || minA > maxB);
 }
 
 /**
@@ -63,38 +69,75 @@ export function computeWalkwayClearance(
   selected: AABB,
   neighbors: AABB[],
   wallBounds: { minX: number; maxX: number; minZ: number; maxZ: number },
-  direction: "front" | "back" | "left" | "right" = "front"
+  direction: WalkwayDirection = "front"
 ): number {
   // Find minimum distance to obstacle in the given direction
   let minDist = Infinity;
 
   // Check walls
   if (direction === "front") {
-    minDist = Math.min(minDist, Math.abs(wallBounds.maxZ - selected.maxZ));
+    minDist = Math.min(minDist, wallBounds.maxZ - selected.maxZ);
   } else if (direction === "back") {
-    minDist = Math.min(minDist, Math.abs(wallBounds.minZ - selected.minZ));
+    minDist = Math.min(minDist, selected.minZ - wallBounds.minZ);
   } else if (direction === "left") {
-    minDist = Math.min(minDist, Math.abs(wallBounds.minX - selected.minX));
+    minDist = Math.min(minDist, selected.minX - wallBounds.minX);
   } else if (direction === "right") {
-    minDist = Math.min(minDist, Math.abs(wallBounds.maxX - selected.maxX));
+    minDist = Math.min(minDist, wallBounds.maxX - selected.maxX);
   }
 
   // Check neighbors
   for (const neighbor of neighbors) {
     let dist = Infinity;
     if (direction === "front") {
-      dist = Math.abs(neighbor.minZ - selected.maxZ);
+      if (!rangesOverlap(selected.minX, selected.maxX, neighbor.minX, neighbor.maxX)) {
+        continue;
+      }
+      if (neighbor.minZ < selected.maxZ) {
+        continue;
+      }
+      dist = neighbor.minZ - selected.maxZ;
     } else if (direction === "back") {
-      dist = Math.abs(neighbor.maxZ - selected.minZ);
+      if (!rangesOverlap(selected.minX, selected.maxX, neighbor.minX, neighbor.maxX)) {
+        continue;
+      }
+      if (neighbor.maxZ > selected.minZ) {
+        continue;
+      }
+      dist = selected.minZ - neighbor.maxZ;
     } else if (direction === "left") {
-      dist = Math.abs(neighbor.maxX - selected.minX);
+      if (!rangesOverlap(selected.minZ, selected.maxZ, neighbor.minZ, neighbor.maxZ)) {
+        continue;
+      }
+      if (neighbor.maxX > selected.minX) {
+        continue;
+      }
+      dist = selected.minX - neighbor.maxX;
     } else if (direction === "right") {
-      dist = Math.abs(neighbor.minX - selected.maxX);
+      if (!rangesOverlap(selected.minZ, selected.maxZ, neighbor.minZ, neighbor.maxZ)) {
+        continue;
+      }
+      if (neighbor.minX < selected.maxX) {
+        continue;
+      }
+      dist = neighbor.minX - selected.maxX;
     }
     minDist = Math.min(minDist, dist);
   }
 
   return minDist === Infinity ? 0 : minDist;
+}
+
+function getWalkwayLabelPosition(selected: AABB, direction: WalkwayDirection): [number, number, number] {
+  if (direction === "front") {
+    return [selected.centerX, 0.15, selected.maxZ + 0.2];
+  }
+  if (direction === "back") {
+    return [selected.centerX, 0.15, selected.minZ - 0.2];
+  }
+  if (direction === "left") {
+    return [selected.minX - 0.2, 0.15, selected.centerZ];
+  }
+  return [selected.maxX + 0.2, 0.15, selected.centerZ];
 }
 
 /**
@@ -169,11 +212,24 @@ export function generateMeasurements(
     });
   }
 
-  // 2. Walkway clearance (check front direction as primary)
-  const walkwayClear = computeWalkwayClearance(selected, neighbors.map((n) => n.aabb), wallBounds, "front");
-  const walkwayCm = Math.round(walkwayClear * 100);
+  // 2. Walkway clearance (pick the nearest meaningful direction)
+  const walkwayDirections: WalkwayDirection[] = ["front", "back", "left", "right"];
+  const bestWalkway = walkwayDirections
+    .map((direction) => ({
+      direction,
+      distance: computeWalkwayClearance(
+        selected,
+        neighbors.map((neighbor) => neighbor.aabb),
+        wallBounds,
+        direction
+      ),
+    }))
+    .filter((entry) => entry.distance > 0)
+    .sort((left, right) => left.distance - right.distance)[0];
 
-  if (walkwayCm < 150) {
+  const walkwayCm = bestWalkway ? Math.round(bestWalkway.distance * 100) : 0;
+
+  if (bestWalkway && walkwayCm < 150) {
     // Show if less than 1.5m
     let severity: "warn" | "ok" | "good" = "ok";
     if (walkwayCm < 70) {
@@ -183,10 +239,10 @@ export function generateMeasurements(
     }
 
     measures.push({
-      label: `Walkway: ${walkwayCm}cm`,
+      label: `${bestWalkway.direction[0].toUpperCase()}${bestWalkway.direction.slice(1)} clearance: ${walkwayCm}cm`,
       valueCm: walkwayCm,
       severity,
-      at: [selected.centerX, 0.15, selected.maxZ + 0.2],
+      at: getWalkwayLabelPosition(selected, bestWalkway.direction),
     });
   }
 

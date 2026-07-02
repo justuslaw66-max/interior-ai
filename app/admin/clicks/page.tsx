@@ -7,8 +7,38 @@ import { redirect } from "next/navigation";
 import { isAdminEmail } from "@/lib/admin";
 
 const COMMISSION: Record<string, number> = {
-  MockStore: 0.08,
+  "Castlery Singapore": 0.08,
   Unknown: 0.05,
+};
+
+type ProductCountRow = {
+  productId: string;
+  _count: { productId: number };
+};
+
+type RetailerCountRow = {
+  retailer: string | null;
+  _count: { retailer: number };
+};
+
+type DesignClickCountRow = {
+  designId: string | null;
+  _count: { designId: number };
+};
+
+type RecentClickRow = {
+  id: string;
+  createdAt: Date;
+  clickKey: string;
+  productId: string;
+  retailer: string | null;
+  designId: string | null;
+};
+
+type RetailerRevenueRow = {
+  retailer: string | null;
+  _count: { retailer: number };
+  _sum: { price: number | null };
 };
 
 export default async function AdminClicksPage() {
@@ -57,8 +87,8 @@ export default async function AdminClicksPage() {
   const designIds = Array.from(
     new Set(
       [
-        ...clicksByDesign.map((d) => d.designId).filter(Boolean),
-        ...clicksRaw.map((c) => c.designId).filter(Boolean),
+        ...clicksByDesign.map((d: { designId: string | null }) => d.designId).filter(Boolean),
+        ...clicksRaw.map((c: { designId: string | null }) => c.designId).filter(Boolean),
       ].filter(Boolean)
     )
   ) as string[];
@@ -67,7 +97,15 @@ export default async function AdminClicksPage() {
     where: { id: { in: designIds } },
     select: { id: true, title: true, style: true, budget: true },
   });
-  const designMap = new Map(designs.map((d) => [d.id, d]));
+  type DesignSummary = {
+    id: string;
+    title: string | null;
+    style: string | null;
+    budget: string | null;
+  };
+  const designMap = new Map<string, DesignSummary>(
+    designs.map((d: DesignSummary) => [d.id, d] as const)
+  );
 
   const clicksByStyle: Record<string, number> = {};
   for (const c of clicksRaw) {
@@ -92,7 +130,7 @@ export default async function AdminClicksPage() {
     orderBy: { _count: { retailer: "desc" } },
     take: 10,
   });
-  const retailerRevenue = retailerRows.map((r) => {
+  const retailerRevenue = (retailerRows as RetailerRevenueRow[]).map((r) => {
     const retailer = r.retailer ?? "Unknown";
     const rate = COMMISSION[retailer] ?? COMMISSION["Unknown"] ?? 0.05;
     const sumPrice = r._sum.price ?? 0;
@@ -161,7 +199,7 @@ export default async function AdminClicksPage() {
           {topRetailers.length === 0 ? (
             <div className="text-sm text-neutral-600">No clicks yet.</div>
           ) : (
-            topRetailers.map((r) => (
+            (topRetailers as RetailerCountRow[]).map((r) => (
               <div
                 key={r.retailer ?? "unknown"}
                 className="flex items-center justify-between rounded-lg border px-3 py-2"
@@ -182,7 +220,7 @@ export default async function AdminClicksPage() {
             {topProducts.length === 0 ? (
               <div className="text-sm text-neutral-800">No clicks yet.</div>
             ) : (
-              topProducts.map((row) => {
+              (topProducts as ProductCountRow[]).map((row) => {
                 const product = CATALOG_ITEMS[row.productId];
                 return (
                   <div
@@ -212,7 +250,7 @@ export default async function AdminClicksPage() {
         <section className="rounded-xl bg-white p-4 shadow">
           <h2 className="text-lg font-semibold text-neutral-900">Recent clicks</h2>
           <RecentClicksTable
-            rows={recent.map((r) => ({
+            rows={(recent as RecentClickRow[]).map((r) => ({
               ...r,
               createdAtLabel: r.createdAt.toLocaleString("en-SG", {
                 timeZone: "Asia/Singapore",
@@ -228,7 +266,7 @@ export default async function AdminClicksPage() {
           {clicksByDesign.length === 0 ? (
             <div className="text-sm text-neutral-600">No design clicks yet.</div>
           ) : (
-            clicksByDesign.map((row) => {
+            (clicksByDesign as DesignClickCountRow[]).map((row) => {
               const design = row.designId ? designMap.get(row.designId) : null;
               return (
                 <div
@@ -260,7 +298,7 @@ export default async function AdminClicksPage() {
           {clicksByStyleList.length === 0 ? (
             <div className="text-sm text-neutral-600">No style data yet.</div>
           ) : (
-            clicksByStyleList.map(([styleName, count]) => (
+            clicksByStyleList.map(([styleName, count]: [string, number]) => (
               <div
                 key={styleName}
                 className="flex items-center justify-between rounded-lg border px-3 py-2"

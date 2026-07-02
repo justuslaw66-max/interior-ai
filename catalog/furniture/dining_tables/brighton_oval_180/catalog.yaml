@@ -1,0 +1,162 @@
+brand: Castlery
+source_url: "https://www.castlery.com/sg/products/brighton-oval-dining-table"
+category: dining_table
+product_family: Brighton
+product_name: Brighton Oval Dining Table
+variant: Oval 180
+price_usd: 899
+price_band: mid_premium
+brand_tier: premium_mid
+design_zone: dining_zone
+anchor_role: dining_anchor
+dimensions:
+  width_cm: 180
+  depth_cm: 97
+  height_cm: 76
+seat_capacity: 6
+size_class: large
+shape: oval
+base_type: pedestal
+material_family: wood
+materials:
+  tabletop:
+    structure: engineered_wood
+    surface: walnut_veneer
+  base:
+    structure: solid_wood
+    wood_species: rubberwood
+finish:
+  color_finish: walnut
+  protective_coating: lacquer
+  surface_finish: satin
+  finish_color: walnut
+color_family: brown
+tone: warm
+style_cluster: midcentury_modern
+style_secondary: scandinavian_modern
+design_era: midcentury_inspired
+visual_attributes:
+  visual_weight: medium
+  edge_profile: rounded
+  silhouette: sculptural
+  form_language: soft
+spatial_attributes:
+  footprint_shape: oval
+  chair_pullback_cm: 60
+  walkway_clearance_cm: 90
+room_compatibility:
+  - dining_room
+  - open_plan
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: true
+design_pairings:
+  - dining_chair
+  - pendant_light
+  - dining_rug
+  - sideboard
+product_details:
+  material:
+    - label: "Material"
+      value: "Engineer wood with walnut veneer table top and solid rubber wood base"
+    - label: "Finish"
+      value: "Scratch resistant lacquer on table surface; walnut stain and clear lacquer on leg"
+    - label: "Care"
+      value: "Wooden table"
+    - label: "Colour variance"
+      value: "Natural variations"
+    - label: "Material & safety standards"
+      value: "Formaldehyde safe"
+  dimensions:
+    - label: "Dimension"
+      value: "W180 x D97 x H76cm"
+    - label: "Table top thickness"
+      value: "2.5cm"
+    - label: "Leg height"
+      value: "72.5cm"
+    - label: "Capacity"
+      value: "Sits 4-6 people comfortably"
+    - label: "Product weight"
+      value: "37kg"
+    - label: "Packaging dimensions"
+      value: "1 box"
+    - label: "Levellers"
+      value: "Included (max 2cm)"
+    - label: "Max bearing support"
+      value: "100kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Warranty"
+      value: "5-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Legs to be fitted"
+assets:
+  asset_id: dining-real-castlery-brighton-oval-180
+  model_url: /assets/models/dining-real-castlery-brighton-oval-180.glb
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1638151292/crusader/variants/52460074/Brighton-Oval-Dining-Table-Front.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1638151292/crusader/variants/52460074/Brighton-Oval-Dining-Table-Front.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1638152429/crusader/variants/52460074/Austen-Chair-Walnut-Square-Set_4.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1651825632/crusader/variants/52460074/Brighton-Oval-Dining-Table-Lifestyle-Crop.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1663575271/crusader/variants/52460074/Austen-Chair-Walnut-Square-Set_12-1663575263.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1626922153/crusader/variants/52460074/Brighton-Oval-Dining-Table-_Det_5.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1626922153/crusader/variants/52460074/Brighton-Oval-Dining-Table-_Det_6.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1638151292/crusader/variants/52460074/Brighton-Oval-Dining-Table-Angle.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1638151291/crusader/variants/52460074/Brighton-Oval-Dining-Table-Side.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1655220930/crusader/variants/52460074/Brighton-Oval-Dining-Table-Dim-1655220927.jpg"
+    - "https://res.cloudinary.com/castlery/image/upload/w_1200,f_auto,q_auto/v1755481211/knight/USP/Refresh%202025/Brighton-Dining-Table-Usp-Square-Det_2.jpg"
+    - "https://res.cloudinary.com/castlery/image/upload/w_1200,f_auto,q_auto/v1755481211/knight/USP/Refresh%202025/Brighton-Dining-Table-Square-Set_1.jpg"
+    - "https://res.cloudinary.com/castlery/image/upload/w_1200,f_auto,q_auto/v1755481277/knight/USP/Refresh%202025/Brighton-Dining-Table-Usp-Square-Det_3.jpg"
+    - "https://res.cloudinary.com/castlery/image/upload/w_1200,f_auto,q_auto/v1755481212/knight/USP/Refresh%202025/Brighton-Dining-Table-Usp-Square-Det_1.jpg"
+variants:
+  - variant: Oval 180
+    size_label: "180"
+    finish_code: walnut
+    finish_label: Walnut
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1638151292/crusader/variants/52460074/Brighton-Oval-Dining-Table-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1638151292/crusader/variants/52460074/Brighton-Oval-Dining-Table-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1638152429/crusader/variants/52460074/Austen-Chair-Walnut-Square-Set_4.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1651825632/crusader/variants/52460074/Brighton-Oval-Dining-Table-Lifestyle-Crop.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1663575271/crusader/variants/52460074/Austen-Chair-Walnut-Square-Set_12-1663575263.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1626922153/crusader/variants/52460074/Brighton-Oval-Dining-Table-_Det_5.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1626922153/crusader/variants/52460074/Brighton-Oval-Dining-Table-_Det_6.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1638151292/crusader/variants/52460074/Brighton-Oval-Dining-Table-Angle.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1638151291/crusader/variants/52460074/Brighton-Oval-Dining-Table-Side.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1655220930/crusader/variants/52460074/Brighton-Oval-Dining-Table-Dim-1655220927.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1200,f_auto,q_auto/v1755481211/knight/USP/Refresh%202025/Brighton-Dining-Table-Usp-Square-Det_2.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1200,f_auto,q_auto/v1755481211/knight/USP/Refresh%202025/Brighton-Dining-Table-Square-Set_1.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1200,f_auto,q_auto/v1755481277/knight/USP/Refresh%202025/Brighton-Dining-Table-Usp-Square-Det_3.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1200,f_auto,q_auto/v1755481212/knight/USP/Refresh%202025/Brighton-Dining-Table-Usp-Square-Det_1.jpg"
+    price_usd: 899
+    price_band: mid_premium
+    brand_tier: premium_mid
+    dimensions:
+      width_cm: 180
+      depth_cm: 97
+      height_cm: 76
+    seat_capacity: 6
+    size_class: large
+    color_family: brown
+    tone: warm
+    materials:
+      tabletop:
+        structure: engineered_wood
+        surface: walnut_veneer
+      base:
+        structure: solid_wood
+        wood_species: rubberwood
+    finish:
+      color_finish: walnut
+      protective_coating: lacquer
+      surface_finish: satin
+      finish_color: walnut
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true

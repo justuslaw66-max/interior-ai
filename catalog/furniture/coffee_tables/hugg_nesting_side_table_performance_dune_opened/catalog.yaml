@@ -1,0 +1,330 @@
+brand: "Castlery"
+category: "side_table"
+
+product_family: "Hugg"
+product_name: "Hugg Nesting Side Table"
+slug: "castlery-hugg-nesting-side-table-performance-dune-opened"
+variant: "Performance Dune / Seats Open"
+
+price_usd: 499
+price_band: "mid_premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "secondary"
+
+dimensions:
+  width_cm: 68
+  depth_cm: 55
+  height_cm: 43.2
+
+size_class: "small"
+shape: "rectangular"
+base_type: "frame"
+material_family: "mixed"
+color_family: "beige"
+tone: "warm"
+style_cluster: "modern"
+style_secondary: "contemporary"
+design_era: "contemporary"
+
+room_compatibility:
+  - "living_room"
+  - "bedroom"
+  - "family_room"
+  - "open_plan"
+
+design_pairings:
+  - "sofa"
+  - "accent_chair"
+  - "bed"
+  - "floor_lamp"
+  - "coffee_table"
+
+compatibility:
+  design_pairing_rules:
+    required_mode: "token_match"
+    expected_tokens:
+      - "sofa"
+      - "accent_chair"
+      - "bed"
+      - "floor_lamp"
+      - "coffee_table"
+    min_matches: 2
+    severity: "error"
+
+bundle_metadata:
+  bundle_role: "accent"
+
+feature_flags:
+  has_storage: false
+  has_nested_seating: true
+  has_hidden_function: true
+  has_upholstered_component: true
+  is_configurable: true
+
+configurable_metadata:
+  is_configurable: true
+  default_configuration: "seats_opened"
+  configuration_ui:
+    type: "segmented_control"
+    label: "Table Layout"
+    options:
+      - "nested_closed"
+      - "seats_opened"
+    option_labels:
+      nested_closed: "Nested"
+      seats_opened: "Seats Open"
+    helper_text: "Toggle to visualize the side table with the ottoman tucked in or pulled out."
+  configuration_behavior:
+    affects_visual_footprint: true
+    affects_space_planning: true
+    affects_collision_bounds: true
+    affects_recommendation_logic: false
+  configuration_model_assets:
+    nested_closed:
+      default: "coffee-real-castlery-hugg-nesting-side-table-performance-basalt-closed"
+      performance_basalt: "coffee-real-castlery-hugg-nesting-side-table-performance-basalt-closed"
+      performance_dune: "coffee-real-castlery-hugg-nesting-side-table-performance-dune-closed"
+    seats_opened:
+      default: "coffee-real-castlery-hugg-nesting-side-table-performance-basalt-opened"
+      performance_basalt: "coffee-real-castlery-hugg-nesting-side-table-performance-basalt-opened"
+      performance_dune: "coffee-real-castlery-hugg-nesting-side-table-performance-dune-opened"
+
+configurations:
+  - configuration_code: "nested_closed"
+    configuration_label: "Nested"
+    state_type: "closed"
+    planning_bounds_cm:
+      width: 68
+      depth: 55
+      height: 43.2
+    visual_bounds_cm:
+      width: 68
+      depth: 55
+      height: 43.2
+    placement_footprint:
+      planning_width_cm: 68
+      planning_depth_cm: 55
+  - configuration_code: "seats_opened"
+    configuration_label: "Seats Open"
+    state_type: "open"
+    planning_bounds_cm:
+      width: 130
+      depth: 90
+      height: 43.2
+    visual_bounds_cm:
+      width: 123.5
+      depth: 55
+      height: 43.2
+    dimensions_recommended_planning:
+      width_cm: 130
+      depth_cm: 90
+      height_cm: 43.2
+    estimation_note: "Open-state footprint estimated from Castlery-listed 68 x 55cm table dimensions plus one 55.5 x 53.5cm ottoman pulled out beside the table."
+    placement_footprint:
+      planning_width_cm: 130
+      planning_depth_cm: 90
+
+construction:
+  table:
+    structure:
+      - "engineered_wood"
+    surface:
+      - "oak_veneer"
+    edge_detail:
+      - "solid_oak_edged"
+  ottoman:
+    frame:
+      - "lvl"
+    filling:
+      - "foam"
+      - "fibre"
+
+authoring_notes:
+  category_confidence: "high"
+  model_selected: "side_table"
+  source_url: "https://www.castlery.com/sg/products/hugg-nesting-side-table"
+  source_observed_at: "2026-06-06"
+  note: "Open-state footprint is estimated for layout visualization."
+
+product_details:
+  material:
+    - label: "Material"
+      value: "Table: engineered wood with oak veneer and solid oak edged; Ottoman: LVL frame with upholstery base"
+    - label: "Filling"
+      value: "Foam and fibre"
+    - label: "Care"
+      value: "Wooden table, upholstered seating"
+    - label: "Cover type"
+      value: "Fixed"
+    - label: "Material & safety standards"
+      value: "Low formaldehyde"
+  dimensions:
+    - label: "Dimension"
+      value: "Table: W68 x D55 x H43.2cm; Ottoman: W55.5 x D53.5 x H39cm"
+    - label: "Table top thickness"
+      value: "3.5cm"
+    - label: "Product weight"
+      value: "Table: 20.6kg; Ottoman: 6.6kg"
+    - label: "Packaging dimensions"
+      value: "2 boxes"
+    - label: "Max bearing support"
+      value: "Table: 80kg; Ottoman: 130kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Warranty"
+      value: "5-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Legs to be fitted"
+
+comfort_profile:
+  # Required for Castlery SG sofa-family imports when the PDP exposes seat-feel data.
+  seat_comfort:
+    label: "Seat comfort"
+    value: 3
+    min_label: "Relaxed"
+    max_label: "Upright"
+  seat_depth:
+    label: "Seat depth"
+    value: 2
+    min_label: "Shallow"
+    max_label: "Deep"
+  seat_height:
+    label: "Seat height"
+    value: 2
+    min_label: "Low"
+    max_label: "High"
+  seat_softness:
+    label: "Seat softness"
+    value: 4
+    min_label: "Soft"
+    max_label: "Firm"
+
+assets:
+  asset_id: "coffee-real-castlery-hugg-nesting-side-table-performance-dune-opened"
+  model_url: "/assets/models/coffee-real-castlery-hugg-nesting-side-table-performance-dune-opened.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729837371/crusader/variants/AS-000634-AR4001-CT/Hugg-Nesting-Side-Table-Chestnut-Performance-Dune-Front-1729837369.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729837371/crusader/variants/AS-000634-AR4001-CT/Hugg-Nesting-Side-Table-Chestnut-Performance-Dune-Front-1729837369.jpg"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+
+upholstery_options:
+  - upholstery_code: "performance_dune"
+    upholstery_label: "Performance Dune"
+    color_label: "Dune"
+    collection_type: "stocked"
+    swatch_group: "upholstery"
+    swatch_hex: "#ede8de"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729837371/crusader/variants/AS-000634-AR4001-CT/Hugg-Nesting-Side-Table-Chestnut-Performance-Dune-Front-1729837369.jpg"
+
+variants:
+  - variant: "Hugg Nesting Side Table / Natural"
+    sku: "AS-000634-AR4001-NA"
+    size_label: "68x55"
+    finish_code: "natural"
+    finish_label: "Natural"
+    upholstery_code: "performance_dune"
+    upholstery_label: "Performance Dune"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729837567/crusader/variants/AS-000634-AR4001-NA/Hugg-Nesting-Side-Table-Natural-Performance-Dune-Front-1729837565.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729837567/crusader/variants/AS-000634-AR4001-NA/Hugg-Nesting-Side-Table-Natural-Performance-Dune-Front-1729837565.jpg"
+    swatch_group: "wood_finish"
+    swatch_hex: "#a89070"
+    price_usd: 499
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 68
+      depth_cm: 55
+      height_cm: 43.2
+    color_family: "brown"
+    tone: "warm"
+    materials:
+      table:
+        structure: "engineered_wood"
+        surface: "oak_veneer"
+        edge_detail: "solid_oak"
+      ottoman_frame:
+        structure: "lvl"
+      ottoman_fill:
+        seat: "foam_fibre"
+    finish:
+      color_finish: "natural"
+      finish_color: "natural"
+      protective_coating: "waterbase_lacquer"
+  - variant: "Hugg Nesting Side Table / Chestnut"
+    sku: "AS-000634-AR4001-CT"
+    size_label: "68x55"
+    finish_code: "chestnut"
+    finish_label: "Chestnut"
+    upholstery_code: "performance_dune"
+    upholstery_label: "Performance Dune"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729837371/crusader/variants/AS-000634-AR4001-CT/Hugg-Nesting-Side-Table-Chestnut-Performance-Dune-Front-1729837369.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729837371/crusader/variants/AS-000634-AR4001-CT/Hugg-Nesting-Side-Table-Chestnut-Performance-Dune-Front-1729837369.jpg"
+    swatch_group: "wood_finish"
+    swatch_hex: "#8B6F47"
+    price_usd: 499
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 68
+      depth_cm: 55
+      height_cm: 43.2
+    color_family: "brown"
+    tone: "warm"
+    materials:
+      table:
+        structure: "engineered_wood"
+        surface: "oak_veneer"
+        edge_detail: "solid_oak"
+      ottoman_frame:
+        structure: "lvl"
+      ottoman_fill:
+        seat: "foam_fibre"
+    finish:
+      color_finish: "chestnut"
+      finish_color: "chestnut"
+      protective_coating: "waterbase_lacquer"
+  - variant: "Hugg Nesting Side Table / Black"
+    sku: "AS-000634-AR4001-BLK"
+    size_label: "68x55"
+    finish_code: "black"
+    finish_label: "Black"
+    upholstery_code: "performance_dune"
+    upholstery_label: "Performance Dune"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729837174/crusader/variants/AS-000634-AR4001-BLK/Hugg-Nesting-Side-Table-Black-Performance-Dune-Front-1729837172.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729837174/crusader/variants/AS-000634-AR4001-BLK/Hugg-Nesting-Side-Table-Black-Performance-Dune-Front-1729837172.jpg"
+    swatch_group: "wood_finish"
+    swatch_hex: "#1f1f1f"
+    price_usd: 499
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 68
+      depth_cm: 55
+      height_cm: 43.2
+    color_family: "black"
+    tone: "neutral"
+    materials:
+      table:
+        structure: "engineered_wood"
+        surface: "oak_veneer"
+        edge_detail: "solid_oak"
+      ottoman_frame:
+        structure: "lvl"
+      ottoman_fill:
+        seat: "foam_fibre"
+    finish:
+      color_finish: "black"
+      finish_color: "black"
+      protective_coating: "waterbase_lacquer"

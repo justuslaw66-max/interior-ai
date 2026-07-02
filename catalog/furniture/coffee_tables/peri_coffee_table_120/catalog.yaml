@@ -1,0 +1,265 @@
+brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/peri-coffee-table"
+category: "coffee_table"
+
+product_family: "Peri"
+product_name: "Peri Coffee Table"
+slug: "castlery-peri-coffee-table"
+variant: "Peri Coffee Table / Walnut / Dark Grey Steel"
+
+price_usd: 549
+price_band: "mid_premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "secondary"
+
+dimensions:
+  width_cm: 120
+  depth_cm: 70
+  height_cm: 30
+
+size_class: "medium"
+shape: "rectangular"
+base_type: "frame"
+
+material_family: "mixed"
+material_mix:
+  - "engineered_wood"
+  - "walnut_veneer"
+  - "steel"
+
+color_family: "brown"
+tone: "warm"
+
+style_cluster: "modern"
+style_secondary: "industrial"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "rounded_soft"
+  silhouette: "low_profile_open_shelf_block"
+  form_language: "soft_rectilinear_wrapped_top"
+  leg_expression: "exposed_metal_frame"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  storage_integrated: true
+  low_profile: true
+  center_table_suitable: true
+  works_in_medium_room: true
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+  - "open_plan"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: true
+
+design_pairings:
+  - "sofa"
+  - "sectional_sofa"
+  - "loveseat"
+  - "side_table"
+  - "media_console"
+  - "rug"
+  - "floor_lamp"
+  - "accent_chair"
+
+compatibility:
+  related_products:
+    - product_family: "Jaron"
+      product_name: "Jaron Recliner Sofa"
+      relationship: "recommended_with"
+      strength: "strong"
+    - product_family: "Madison"
+      product_name: "Madison Sofa"
+      relationship: "recommended_with"
+      strength: "strong"
+    - product_family: "Seb"
+      product_name: "Seb Coffee Table with Storage"
+      variant: "120cm / Muted Honey"
+      relationship: "recommended_with"
+      strength: "medium"
+
+recommendation_metadata:
+  recommendation_role: "living_room_surface"
+  primary_use_cases:
+    - "sofa_pairing"
+    - "centerpiece_surface"
+    - "open_storage_coffee_table"
+  suggest_when_scene_has:
+    - "sofa_without_coffee_table"
+    - "sectional_sofa_without_table"
+    - "living_room_missing_center_surface"
+    - "living_room_needing_open_storage"
+  avoid_when_scene_has:
+    - "oversized_coffee_table_already_present"
+    - "very_small_walkway_clearance"
+
+bundle_metadata:
+  bundle_role: "accent"
+  can_bundle_with:
+    - "sofa"
+    - "sectional_sofa"
+    - "side_table"
+    - "media_console"
+    - "rug"
+    - "floor_lamp"
+    - "accent_chair"
+  recommended_with_products:
+    - product_family: "Jaron"
+      product_name: "Jaron Recliner Sofa"
+      relationship: "recommended_with"
+      strength: "strong"
+    - product_family: "Madison"
+      product_name: "Madison Sofa"
+      relationship: "recommended_with"
+      strength: "strong"
+  set_behavior:
+    supports_living_room_pairing: true
+    supports_centerpiece_surface: true
+    supports_open_storage_surface_pairing: true
+
+authoring_notes:
+  category_confidence: "high"
+  single_variant_expected: true
+  preset_family: "table"
+  major_family_example_candidate: true
+  note: "Open shelf cavity storage; single GLB variant."
+
+product_details:
+  material:
+    - label: "Leg frame"
+      value: "Dark grey powder coated steel"
+    - label: "Table top"
+      value: "Walnut veneer with engineered wood"
+    - label: "Care"
+      value: "Wooden table"
+    - label: "Colour variance"
+      value: "Natural variations"
+  dimensions:
+    - label: "Dimension"
+      value: "W120 x D70 x H30cm"
+    - label: "Drawer capacity"
+      value: "W116 x D70 x H12cm"
+    - label: "Leg height"
+      value: "14cm"
+    - label: "Product weight"
+      value: "29kg"
+    - label: "Packaging dimensions"
+      value: "1 box"
+    - label: "Max bearing support"
+      value: "60kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Clearance—no cancellation"
+    - label: "Warranty"
+      value: "5-year limited warranty"
+    - label: "Return policy"
+      value: "Clearance—no return or exchange"
+    - label: "Assembly"
+      value: "Legs to be fitted"
+
+assets:
+  asset_id: "coffee-real-castlery-peri-120"
+  model_url: "/assets/models/coffee-real-castlery-peri-120.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1641292754/crusader/variants/50850023/Peri-Coffee-Table-Front.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1641292754/crusader/variants/50850023/Peri-Coffee-Table-Front.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1655220638/crusader/variants/50850023/peri-coffee-table-1655220635.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1655201521/crusader/variants/50850023/Peri-Coffee-Table-001-1655201517.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1641292796/crusader/variants/50850023/Peri-Coffee-Table-Angle.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1641292795/crusader/variants/50850023/Peri-Coffee-Table-Back.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1639132792/crusader/variants/50850023/Peri-Coffee-Table-Shared2.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1647577151/crusader/variants/50850023/Peri-coffee-table-shared3.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1636707843/crusader/variants/50850023/Peri-Coffee-Table-Shared1.jpg"
+    - "https://res.cloudinary.com/castlery/image/upload/v1762244478/knight/USP/Refresh%202025/Peri-Coffee-Table-Square-Det_2.jpg"
+    - "https://res.cloudinary.com/castlery/image/upload/v1762244553/knight/USP/Refresh%202025/Peri-Coffee-Table-Square-Det_1_2.jpg"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+
+feature_flags:
+  has_storage: true
+  has_open_shelf: true
+  has_hidden_storage: false
+  has_drawers: false
+
+storage_profile:
+  storage_visibility: "open"
+  storage_access_style: "front_access"
+  open_storage_capacity_cm:
+    width_cm: 116
+    depth_cm: 70
+    height_cm: 12
+  organization_type:
+    - "books_magazines"
+    - "trays"
+    - "decor_objects"
+    - "small_living_room_items"
+
+variants:
+  - variant: "Peri Coffee Table / Walnut / Dark Grey Steel"
+    sku: null
+    size_label: "120x70"
+    finish_code: "walnut_dark_grey_steel"
+    finish_label: "Walnut / Dark Grey Steel"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1641292754/crusader/variants/50850023/Peri-Coffee-Table-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1641292754/crusader/variants/50850023/Peri-Coffee-Table-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1655220638/crusader/variants/50850023/peri-coffee-table-1655220635.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1655201521/crusader/variants/50850023/Peri-Coffee-Table-001-1655201517.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1641292796/crusader/variants/50850023/Peri-Coffee-Table-Angle.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1641292795/crusader/variants/50850023/Peri-Coffee-Table-Back.jpg"
+    swatch_group: "finish"
+
+    price_usd: 549
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+
+    dimensions:
+      width_cm: 120
+      depth_cm: 70
+      height_cm: 30
+
+    size_class: "medium"
+    color_family: "brown"
+    tone: "warm"
+
+    materials:
+      tabletop:
+        structure: "engineered_wood"
+        surface: "walnut_veneer"
+      body:
+        structure: "engineered_wood"
+        surface: "walnut_veneer"
+      support_panel:
+        structure: "engineered_wood"
+        surface: "walnut_veneer"
+      leg_frame:
+        structure: "steel"
+        surface: "dark_grey_powder_coat"
+
+    finish:
+      color_finish: "walnut"
+      finish_color: "walnut"
+      surface_finish: "matte"
+      protective_coating: "lacquer"
+      hardware_finish: "dark_grey_powder_coat"
+
+    storage:
+      has_storage: true
+      storage_type:
+        - "open_shelf"
+      open_storage_capacity_cm:
+        width_cm: 116
+        depth_cm: 70
+        height_cm: 12

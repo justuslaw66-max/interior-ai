@@ -9,7 +9,6 @@ import {
   CatalogItemSchema,
   validateCatalogItem,
   getCategoryDefaults,
-  CATEGORY_DEFAULTS,
   PlacementRules,
   ClearanceRules,
   type ProductCategory,
@@ -162,7 +161,7 @@ export interface ResolvedCommerce {
   type: "shopify" | "affiliate" | "not_buyable";
   buyable: boolean;
   url?: string;
-  details?: any;
+  details?: Record<string, unknown>;
 }
 
 export function resolveCommerceMapping(

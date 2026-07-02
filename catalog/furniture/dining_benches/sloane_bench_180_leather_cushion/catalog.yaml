@@ -1,0 +1,178 @@
+brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/sloane-dining-bench"
+category: "dining_bench"
+
+product_family: "Sloane"
+product_name: "Sloane Dining Bench"
+variant: "180 Leather Cushion"
+
+price_usd: 749
+price_band: "mid_premium"
+brand_tier: "premium_mid"
+
+design_zone: "dining_zone"
+anchor_role: "secondary"
+
+dimensions:
+  width_cm: 180
+  depth_cm: 41
+  height_cm: 51.5
+
+seat_capacity: 3
+size_class: "large"
+
+shape: "rectangular"
+base_type: "dual_panel"
+
+material_family: "mixed"
+material_mix: "wood_leather"
+
+color_family: "brown"
+tone: "warm"
+
+style_cluster: "contemporary_luxury"
+style_secondary: "minimalist"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "straight"
+  silhouette: "monolithic"
+  form_language: "linear"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  walkway_clearance_cm: 90
+
+room_compatibility:
+  - "dining_room"
+  - "open_plan"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: false
+
+design_pairings:
+  - "dining_table"
+  - "dining_rug"
+  - "pendant_light"
+  - "sideboard"
+
+ai_flags:
+  isStarterEligible: false
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+
+compatibility:
+  related_products:
+    - product_family: "Sloane"
+      product_name: "Sloane Travertine Dining Table"
+      relationship: "matching_companion"
+      strength: "strong"
+
+bundle_metadata:
+  can_bundle_with:
+    - "Sloane Travertine Dining Table"
+  bundle_role: "dining_seating"
+  set_behavior:
+    supports_with_or_without_cushion: true
+
+product_details:
+  material:
+    - label: "Material"
+      value: "Cushion: top grain leather; Frame: engineered wood with oak veneer"
+    - label: "Filling"
+      value: "PU foam and polyester"
+    - label: "Finish"
+      value: "Grey oak on wood"
+    - label: "Care"
+      value: "Leather seating"
+    - label: "Colour variance"
+      value: "Disclaimer"
+    - label: "Material & safety standards"
+      value: "Low formaldehyde"
+    - label: "Material details"
+      value: "Top grain leather. Crafted from American hides."
+  dimensions:
+    - label: "Dimension"
+      value: "W180 x D41 x H51.5cm"
+    - label: "Seatable width"
+      value: "180cm"
+    - label: "Product weight"
+      value: "28.3kg"
+    - label: "Packaging dimensions"
+      value: "2 boxes"
+    - label: "Max bearing support"
+      value: "3 x 130kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Warranty"
+      value: "10-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Legs to be fitted"
+
+assets:
+  asset_id: "dining-real-castlery-sloane-bench-180-leather-cushion"
+  model_url: "/assets/models/dining-real-castlery-sloane-bench-180-leather-cushion.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1679562782/crusader/variants/T504411010-LE4016/Sloane-Dining-Bench-180cm-Grey-Oak-With-Leather-Cushion-Angle-1679562780.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1679562782/crusader/variants/T504411010-LE4016/Sloane-Dining-Bench-180cm-Grey-Oak-With-Leather-Cushion-Angle-1679562780.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678699742/crusader/variants/T50441109-LE4016/Sloane-Dining-Bench-Square-Set_1-1678699740.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678699006/crusader/variants/50520005/Sloane-Dining-Table-With-Dining-Bench-With-4-Cane-and-Leather-Chair-with-Armrest-Caramel-Black-Square-Set_3-1678699004.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678699345/crusader/variants/T50441109-LE4016/Sloane-Dining-Bench-Grey-Oak-Det_5-1678699343.jpg"
+
+variants:
+  - variant: "180 Leather Cushion"
+    size_label: "180"
+    finish_code: "grey_oak"
+    finish_label: "Grey Oak"
+    upholstery_code: "top_grain_leather_tan"
+    upholstery_label: "Leather Cushion"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1679562782/crusader/variants/T504411010-LE4016/Sloane-Dining-Bench-180cm-Grey-Oak-With-Leather-Cushion-Angle-1679562780.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1679562782/crusader/variants/T504411010-LE4016/Sloane-Dining-Bench-180cm-Grey-Oak-With-Leather-Cushion-Angle-1679562780.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678699742/crusader/variants/T50441109-LE4016/Sloane-Dining-Bench-Square-Set_1-1678699740.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678699345/crusader/variants/T50441109-LE4016/Sloane-Dining-Bench-Grey-Oak-Det_5-1678699343.jpg"
+    swatch_group: "upholstery_option"
+
+    price_usd: 749
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+
+    dimensions:
+      width_cm: 180
+      depth_cm: 41
+      height_cm: 51.5
+
+    seating_depth_cm: 41
+    seat_capacity: 3
+    size_class: "large"
+
+    color_family: "brown"
+    tone: "warm"
+
+    materials:
+      frame:
+        structure: "engineered_wood"
+        surface: "oak_veneer"
+      cushion:
+        structure: "upholstered"
+        surface: "top_grain_leather"
+        leather_origin: "american_hides"
+
+    finish:
+      frame_finish: "grey_oak"
+      cushion_finish: "tan_leather"
+      surface_finish: "matte"
+      finish_color: "grey_oak_tan_leather"
+
+    set_compatibility:
+      recommended_with_products:
+        - product_name: "Sloane Travertine Dining Table"
+          recommended_table_sizes:
+            - 225

@@ -5,7 +5,18 @@
  * Handles migration from single-room (v1/v2) to multi-room (v3) format.
  */
 
-import type { DesignSnapshot, RoomSnapshot } from "./room-types";
+import type {
+  DesignItem,
+  DesignSnapshot,
+  LayoutVersion,
+  RoomSurfaceAssignments,
+  RoomSurfaceOpacity,
+  RoomSurfaceFinishes,
+  RoomSnapshot,
+  SavedView,
+  PersistedFloorPlanState,
+  ZoneMin,
+} from "./room-types";
 import { migrateToV3 } from "./room-types";
 
 /**
@@ -18,10 +29,20 @@ export interface StoredDesign {
     id: string;
     name: string;
     roomType: string;
-    geometry: { width: number; depth: number; wallThickness?: number; height?: number };
-    items: any[];
-    zones: any[];
-    savedViews: any[];
+    floorLevel?: number;
+    floorLabel?: string;
+    geometry: { width: number; depth: number; wallThickness?: number; height?: number; slabThickness?: number };
+    planPosition?: { x: number; z: number };
+    planShape?: string;
+    planPolygon?: Array<{ x: number; z: number }>;
+    surfaces?: RoomSurfaceAssignments;
+    surfaceFinishes?: RoomSurfaceFinishes;
+    surfaceOpacity?: RoomSurfaceOpacity;
+    ceilingVisible?: boolean;
+    items: DesignItem[];
+    zones: ZoneMin[];
+    savedViews: SavedView[];
+    layoutVersions?: LayoutVersion[];
   }>;
   activeRoomId: string;
   // Design-level metadata
@@ -30,6 +51,45 @@ export interface StoredDesign {
   budget?: string;
   lightingPreset?: string;
   notes?: string;
+  floorPlan?: PersistedFloorPlanState;
+}
+
+export function isStoredDesign(value: unknown): value is StoredDesign {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as Partial<StoredDesign>;
+  if (candidate.version !== 3) return false;
+  if (!Array.isArray(candidate.rooms) || candidate.rooms.length === 0) return false;
+  if (typeof candidate.activeRoomId !== "string" || !candidate.activeRoomId.trim()) {
+    return false;
+  }
+  if (!candidate.rooms.some((room) => room?.id === candidate.activeRoomId)) {
+    return false;
+  }
+
+  return candidate.rooms.every((room) => {
+    if (!room || typeof room !== "object") return false;
+    const entry = room as StoredDesign["rooms"][number];
+    return (
+      typeof entry.id === "string" &&
+      typeof entry.name === "string" &&
+      typeof entry.roomType === "string" &&
+      Boolean(entry.geometry) &&
+      typeof entry.geometry.width === "number" &&
+      Number.isFinite(entry.geometry.width) &&
+      entry.geometry.width > 0 &&
+      typeof entry.geometry.depth === "number" &&
+      Number.isFinite(entry.geometry.depth) &&
+      entry.geometry.depth > 0 &&
+      Array.isArray(entry.items) &&
+      Array.isArray(entry.zones) &&
+      Array.isArray(entry.savedViews)
+    );
+  });
+}
+
+export function sanitizeStoredDesign(value: unknown): StoredDesign | null {
+  if (!isStoredDesign(value)) return null;
+  return JSON.parse(JSON.stringify(value)) as StoredDesign;
 }
 
 /**
@@ -44,10 +104,20 @@ export function snapshotToStored(snapshot: DesignSnapshot): StoredDesign {
       id: room.id,
       name: room.name,
       roomType: room.roomType,
+      floorLevel: room.floorLevel ?? 1,
+      floorLabel: room.floorLabel,
       geometry: room.geometry,
+      planPosition: room.planPosition,
+      planShape: room.planShape,
+      planPolygon: room.planPolygon,
+      surfaces: room.surfaces ? { ...room.surfaces } : room.surfaceFinishes ? { ...room.surfaceFinishes } : undefined,
+      surfaceFinishes: room.surfaceFinishes ? { ...room.surfaceFinishes } : room.surfaces ? { ...room.surfaces } : undefined,
+      surfaceOpacity: room.surfaceOpacity ? { ...room.surfaceOpacity } : undefined,
+      ceilingVisible: room.ceilingVisible,
       items: room.items,
       zones: room.zones,
       savedViews: room.savedViews,
+      layoutVersions: room.layoutVersions ?? [],
     })),
     activeRoomId: v3.activeRoomId,
     title: v3.title,
@@ -55,6 +125,7 @@ export function snapshotToStored(snapshot: DesignSnapshot): StoredDesign {
     budget: v3.budget,
     lightingPreset: v3.lightingPreset,
     notes: v3.notes,
+    floorPlan: v3.floorPlan,
   };
 }
 
@@ -66,19 +137,25 @@ export function storedToSnapshot(stored: StoredDesign): DesignSnapshot {
   if (stored.version === 3 && stored.rooms && stored.rooms.length > 0) {
     return {
       version: 3,
-      rooms: stored.rooms as RoomSnapshot[],
+      rooms: stored.rooms.map((room) => ({
+        ...(room as RoomSnapshot),
+        surfaces: room.surfaces ?? room.surfaceFinishes,
+        surfaceFinishes: room.surfaceFinishes ?? room.surfaces,
+        layoutVersions: room.layoutVersions ?? [],
+      })),
       activeRoomId: stored.activeRoomId,
       title: stored.title,
       style: stored.style,
-      budget: stored.budget as any,
+      budget: stored.budget as DesignSnapshot["budget"],
       lightingPreset: stored.lightingPreset,
       notes: stored.notes,
+      floorPlan: stored.floorPlan,
     };
   }
 
   // Otherwise migrate from legacy format
   // Otherwise migrate from legacy format
-  return migrateToV3(stored as any);
+  return migrateToV3(stored as unknown as DesignSnapshot);
 }
 
 /**
@@ -119,15 +196,17 @@ export function snapshotToLegacyApi(snapshot: DesignSnapshot): {
   title?: string;
   roomWidth: number;
   roomDepth: number;
-  items: any[];
-  zones: any[];
-  savedViews: any[];
+  items: DesignItem[];
+  zones: ZoneMin[];
+  savedViews: SavedView[];
+  snapshot: StoredDesign;
   style?: string;
   budget?: string;
   mode?: string;
   notes?: string;
 } {
   const v3 = migrateToV3(snapshot);
+  const stored = snapshotToStored(v3);
   // Get the active room
   const activeRoom = v3.rooms.find((r: RoomSnapshot) => r.id === v3.activeRoomId);
   
@@ -139,6 +218,7 @@ export function snapshotToLegacyApi(snapshot: DesignSnapshot): {
       items: [],
       zones: [],
       savedViews: [],
+      snapshot: stored,
     };
   }
 
@@ -149,6 +229,7 @@ export function snapshotToLegacyApi(snapshot: DesignSnapshot): {
     items: activeRoom.items,
     zones: activeRoom.zones,
     savedViews: activeRoom.savedViews,
+    snapshot: stored,
   };
 }
 
@@ -160,14 +241,20 @@ export function legacyApiToSnapshot(data: {
   title?: string;
   roomWidth: number;
   roomDepth: number;
-  items: any[];
-  zones?: any[];
-  savedViews?: any[];
+  items: DesignItem[];
+  zones?: ZoneMin[];
+  savedViews?: SavedView[];
+  snapshot?: StoredDesign | null;
   style?: string;
   budget?: string;
   mode?: string;
   notes?: string;
 }): DesignSnapshot {
+  const safeSnapshot = sanitizeStoredDesign(data.snapshot);
+  if (safeSnapshot) {
+    return storedToSnapshot(safeSnapshot);
+  }
+
   return migrateToV3({
     items: data.items ?? [],
     zones: data.zones ?? [],
@@ -179,7 +266,7 @@ export function legacyApiToSnapshot(data: {
     },
     title: data.title,
     style: data.style,
-    budget: data.budget as any,
+    budget: data.budget as DesignSnapshot["budget"],
     notes: data.notes,
   } as DesignSnapshot);
 }
