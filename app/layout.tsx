@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import { PostHogProvider } from "@/app/providers/PostHogProvider";
@@ -10,9 +11,18 @@ const isProdLike =
   process.env.APP_ENV === "staging" ||
   process.env.APP_ENV === "production" ||
   process.env.VERCEL_ENV === "preview" ||
-  process.env.VERCEL_ENV === "production";
+  process.env.VERCEL_ENV === "production" ||
+  process.env.NODE_ENV === "production";
 
-const analyticsDisabled = process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS === "1";
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
 export const metadata: Metadata = {
   title: "Interior AI",
@@ -37,11 +47,13 @@ export default function RootLayout({
   }
 
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className="antialiased">
+    <html lang="en">
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
         <AuthProvider>
-          <PostHogProvider analyticsDisabled={analyticsDisabled}>
-            <IdentifyGate analyticsDisabled={analyticsDisabled}>{children}</IdentifyGate>
+          <PostHogProvider>
+            <IdentifyGate>{children}</IdentifyGate>
           </PostHogProvider>
         </AuthProvider>
       </body>

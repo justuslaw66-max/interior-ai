@@ -9,8 +9,8 @@ export default function PrintButton({
   capabilities,
 }: {
   shareToken: string;
-  designId?: string | null;
+  designId: string;
   capabilities: ExportCapabilities;
 }) {
-  return <PDFDownloadButton capabilities={capabilities} shareToken={shareToken} designId={designId ?? null} />;
+  return <PDFDownloadButton capabilities={capabilities} shareToken={shareToken} designId={designId} />;
 }

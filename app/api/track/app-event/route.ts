@@ -4,29 +4,16 @@ import { logAppEvent, AppEventType } from "@/lib/app-events";
 import { rateLimit } from "@/lib/rateLimit";
 
 const ALLOWED = new Set<AppEventType>([
-  "landing_viewed",
-  "design_started",
-  "first_item_added",
-  "third_item_added",
-  "first_run_activation_step_completed",
-  "export_clicked",
-  "upgrade_clicked",
   "share_link_opened",
-  "design_duplicated",
-  "share_design_duplicated",
   "export_opened",
   "export_printed",
   "export_pdf_clicked",
   "export_upgrade_prompt_shown",
-  "checkout_completed",
   "upgrade_checkout_started",
   "upgrade_checkout_completed",
   "billing_portal_opened",
   "subscription_canceled",
-  "beta_feedback_submitted",
 ]);
-
-const skipAppEventPersistence = process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS === "1";
 
 function getClientIp(req: Request) {
   const header = req.headers.get("x-forwarded-for") || "";
@@ -50,11 +37,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
 
-  if (skipAppEventPersistence) {
-    return NextResponse.json({ ok: true, persisted: false, eventId: null, skipped: "qa" });
-  }
-
-  const result = await logAppEvent({
+  await logAppEvent({
     eventType,
     userId: session?.user?.id ?? null,
     designId: typeof designId === "string" ? designId : null,
@@ -62,9 +45,5 @@ export async function POST(req: Request) {
     meta: typeof meta === "object" && meta ? meta : null,
   });
 
-  return NextResponse.json({
-    ok: true,
-    persisted: result.persisted,
-    eventId: result.eventId,
-  });
+  return NextResponse.json({ ok: true });
 }

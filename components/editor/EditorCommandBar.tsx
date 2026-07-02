@@ -1,10 +1,8 @@
 "use client";
 
-import { AuthButtons } from "@/components/AuthButtons";
-import { RoomSwitcher } from "@/components/RoomSwitcher";
 import EditorViewToggle, { type EditorViewMode } from "@/components/editor/EditorViewToggle";
-import type { DesignSnapshot } from "@/lib/room-types";
-import type { ReactNode } from "react";
+import { signIn, signOut } from "next-auth/react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 type EditorMode = "design" | "adjust" | "ai" | "buy" | "present";
 
@@ -29,7 +27,6 @@ type EditorCommandBarProps = {
   canRedo: boolean;
   undoName: string | null;
   redoName: string | null;
-  designSnapshot: DesignSnapshot;
   onPlan: () => void;
   onFurnish: () => void;
   onAiDesign: () => void;
@@ -38,9 +35,6 @@ type EditorCommandBarProps = {
   onUndo: () => void;
   onRedo: () => void;
   onViewModeChange: (next: EditorViewMode) => void;
-  onSwitchRoom: (roomId: string) => void;
-  onAddDesignerRoom: () => void;
-  onRenameRoom: (roomId: string, nextName: string) => void;
   onToggleDesignerMode: () => void;
   onToggleClientPreview: () => void;
   showLoadDesign: boolean;
@@ -51,6 +45,7 @@ type EditorCommandBarProps = {
   onRetrySaveStatus: () => void | Promise<void>;
   onOpenPresentExport: () => void;
   contextSlot?: ReactNode;
+  overflowSlot?: ReactNode;
 };
 
 function getSaveStatusClassName(tone: EditorSaveStatus["tone"], dark: boolean) {
@@ -86,7 +81,6 @@ export default function EditorCommandBar({
   canRedo,
   undoName,
   redoName,
-  designSnapshot,
   onPlan,
   onFurnish,
   onAiDesign,
@@ -95,9 +89,6 @@ export default function EditorCommandBar({
   onUndo,
   onRedo,
   onViewModeChange,
-  onSwitchRoom,
-  onAddDesignerRoom,
-  onRenameRoom,
   onToggleDesignerMode,
   onToggleClientPreview,
   showLoadDesign,
@@ -108,8 +99,41 @@ export default function EditorCommandBar({
   onRetrySaveStatus,
   onOpenPresentExport,
   contextSlot,
+  overflowSlot,
 }: EditorCommandBarProps) {
-  const disabled = editorMode === "present" || isClientPreview;
+  const [overflowOpen, setOverflowOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const overflowRef = useRef<HTMLDivElement | null>(null);
+  const accountRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!overflowOpen && !accountOpen) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+      const insideOverflow = overflowRef.current?.contains(target) ?? false;
+      const insideAccount = accountRef.current?.contains(target) ?? false;
+      if (!insideOverflow && !insideAccount) {
+        setOverflowOpen(false);
+        setAccountOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOverflowOpen(false);
+        setAccountOpen(false);
+      }
+    };
+
+    window.addEventListener("pointerdown", handlePointerDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("pointerdown", handlePointerDown);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [accountOpen, overflowOpen]);
+
   const workflowSteps: Array<{
     mode: EditorMode;
     label: string;
@@ -136,20 +160,33 @@ export default function EditorCommandBar({
       active ? "bg-neutral-900 text-white shadow-sm" : "text-neutral-700 hover:bg-neutral-100",
     ].join(" ");
   };
+  const menuButtonClass = dark
+    ? "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-semibold text-neutral-100 hover:bg-white/10"
+    : "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-semibold text-neutral-800 hover:bg-neutral-100";
+  const menuPanelClass = dark
+    ? "absolute right-0 top-[calc(100%+0.5rem)] z-[80] w-64 rounded-2xl border border-white/10 bg-[#12151d] p-2 text-neutral-100 shadow-2xl"
+    : "absolute right-0 top-[calc(100%+0.5rem)] z-[80] w-64 rounded-2xl border border-neutral-200 bg-white p-2 text-neutral-900 shadow-2xl";
+  const signInWithReturn = () => {
+    const callbackUrl = typeof window !== "undefined" ? window.location.href : "/";
+    signIn("google", { callbackUrl });
+  };
 
   return (
-    <div data-testid="editor-command-bar" className={`absolute left-0 right-0 top-0 z-50 flex h-14 items-center justify-between gap-2 overflow-hidden border-b border-neutral-200 bg-white/95 px-2 shadow-sm backdrop-blur transition-opacity duration-300 sm:gap-3 sm:px-4 ${
-      isClientPreview ? "pointer-events-none opacity-0" : "opacity-100"
-    }`}>
-      <div className="flex min-w-0 flex-1 items-center gap-2">
+    <div
+      data-testid="editor-command-bar"
+      className={`absolute left-0 right-0 top-0 z-50 flex h-14 items-center gap-2 overflow-visible border-b px-2 shadow-sm backdrop-blur transition-opacity duration-300 sm:px-4 ${
+        dark ? "border-white/10 bg-[#080a0f]/95 text-neutral-100" : "border-neutral-200 bg-white/95 text-neutral-950"
+      } ${isClientPreview ? "pointer-events-none opacity-0" : "opacity-100"}`}
+    >
+      <div className="flex min-w-0 flex-[1.25] items-center gap-1.5">
         <button
           type="button"
           data-testid="command-undo"
           aria-label={undoName ? `Undo ${undoName}` : "Undo"}
           className={
             dark
-              ? "h-10 w-10 shrink-0 rounded-xl bg-[#151820] text-base font-semibold text-neutral-200 disabled:cursor-not-allowed disabled:opacity-40"
-              : "h-10 w-10 shrink-0 rounded-xl border border-neutral-200 bg-white text-base font-semibold text-neutral-900 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40"
+              ? "h-9 w-9 shrink-0 rounded-xl bg-white/5 text-sm font-semibold text-neutral-200 disabled:cursor-not-allowed disabled:opacity-40"
+              : "h-9 w-9 shrink-0 rounded-xl border border-neutral-200 bg-white text-sm font-semibold text-neutral-900 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40"
           }
           onClick={onUndo}
           disabled={isClientPreview || !canUndo}
@@ -163,8 +200,8 @@ export default function EditorCommandBar({
           aria-label={redoName ? `Redo ${redoName}` : "Redo"}
           className={
             dark
-              ? "h-10 w-10 shrink-0 rounded-xl bg-[#151820] text-base font-semibold text-neutral-200 disabled:cursor-not-allowed disabled:opacity-40"
-              : "h-10 w-10 shrink-0 rounded-xl border border-neutral-200 bg-white text-base font-semibold text-neutral-900 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40"
+              ? "h-9 w-9 shrink-0 rounded-xl bg-white/5 text-sm font-semibold text-neutral-200 disabled:cursor-not-allowed disabled:opacity-40"
+              : "h-9 w-9 shrink-0 rounded-xl border border-neutral-200 bg-white text-sm font-semibold text-neutral-900 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40"
           }
           onClick={onRedo}
           disabled={isClientPreview || !canRedo}
@@ -174,18 +211,14 @@ export default function EditorCommandBar({
         </button>
 
         <div className="shrink-0">
-          <EditorViewToggle
-            value={viewMode}
-            onChange={onViewModeChange}
-            dark={dark}
-          />
+          <EditorViewToggle value={viewMode} onChange={onViewModeChange} dark={dark} />
         </div>
 
         <div
           className={
             dark
-              ? "hidden shrink-0 items-center gap-1 rounded-2xl border border-white/10 bg-[#151820] p-1 2xl:flex"
-              : "hidden shrink-0 items-center gap-1 rounded-2xl border border-neutral-200 bg-white p-1 shadow-sm 2xl:flex"
+              ? "hidden shrink-0 items-center gap-1 rounded-2xl border border-white/10 bg-white/5 p-1 xl:flex"
+              : "hidden shrink-0 items-center gap-1 rounded-2xl border border-neutral-200 bg-white p-1 shadow-sm xl:flex"
           }
           aria-label="Design workflow"
         >
@@ -203,87 +236,26 @@ export default function EditorCommandBar({
             </button>
           ))}
         </div>
-
-        {isDesigner && (
-          <div className="hidden min-w-0 2xl:block">
-            <RoomSwitcher
-              snapshot={designSnapshot}
-              onSwitchRoom={onSwitchRoom}
-              onAddRoom={onAddDesignerRoom}
-              onRenameRoom={onRenameRoom}
-              disabled={disabled}
-            />
-          </div>
-        )}
       </div>
 
-      <div className="hidden min-w-0 flex-[1.15] items-center justify-center lg:flex">
+      <div className="pointer-events-none hidden min-w-0 flex-[0.8] items-center justify-center lg:flex xl:flex-[0.95]">
         {contextSlot ? (
           <div
             data-testid="editor-command-context"
-            className="flex min-w-0 max-w-full items-center justify-center gap-1.5 overflow-hidden"
+            className="pointer-events-auto flex min-w-0 max-w-full items-center justify-center overflow-hidden"
           >
             {contextSlot}
           </div>
         ) : null}
       </div>
 
-      <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
-        <AuthButtons isAuthed={isAuthed} />
-
-        <button
-          data-testid="designer-mode-toggle"
-          className={
-            isDesigner
-              ? "hidden h-10 w-40 shrink-0 items-center justify-center rounded-xl bg-neutral-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800 sm:inline-flex"
-              : "hidden h-10 w-40 shrink-0 items-center justify-center rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 sm:inline-flex"
-          }
-          onClick={onToggleDesignerMode}
-          title={isDesigner ? "Exit Pro tools" : "Enter Pro tools"}
-        >
-          {isDesigner ? "Exit Pro tools" : "Pro tools"}
-        </button>
-
-        <div className="hidden h-10 w-28 shrink-0 sm:block">
-          {isDesigner ? (
-            <button
-              data-testid="present-mode"
-              className={`h-10 w-full rounded-xl px-3 py-2 text-sm font-semibold transition-all ${
-                isClientPreview
-                  ? "bg-red-600 text-white shadow hover:bg-red-700"
-                  : "border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
-              }`}
-              onClick={onToggleClientPreview}
-              title="Toggle Present Mode (P)"
-            >
-              {isClientPreview ? "Exit preview" : "Preview"}
-            </button>
-          ) : (
-            <span className="block h-10 w-full" aria-hidden="true" />
-          )}
-        </div>
-
-        {showLoadDesign && (
-          <button
-            data-testid="load-design"
-            className={
-              dark
-                ? "hidden rounded-xl bg-[#2a3a4a] px-3 py-2 text-sm font-semibold text-white hover:bg-[#3a4a5a] sm:inline-flex"
-                : "hidden rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 sm:inline-flex"
-            }
-            onClick={onToggleLoadDesign}
-            title="Load a saved design"
-          >
-            Load
-          </button>
-        )}
-
+      <div className="flex min-w-0 flex-[0.9] items-center justify-end gap-1.5">
         <div
           data-testid="save-status"
           data-status={saveStatus.kind}
           data-source={saveStatus.source}
           title={`${saveStatus.label}: ${saveStatus.detail}`}
-          className={`hidden min-w-0 max-w-[240px] items-center gap-2 rounded-full border px-3 py-1.5 text-xs shadow-sm lg:flex ${getSaveStatusClassName(
+          className={`hidden h-9 min-w-0 items-center gap-1.5 rounded-full border px-2 text-xs md:flex ${getSaveStatusClassName(
             saveStatus.tone,
             dark
           )}`}
@@ -294,9 +266,8 @@ export default function EditorCommandBar({
             }`}
             aria-hidden="true"
           />
-          <span className="min-w-0 truncate font-semibold">
+          <span className="hidden min-w-0 max-w-24 truncate font-semibold xl:inline">
             {saveStatus.label}
-            <span className="font-normal opacity-75"> · {saveStatus.detail}</span>
           </span>
           {saveStatus.canRetry ? (
             <button
@@ -304,8 +275,8 @@ export default function EditorCommandBar({
               data-testid="save-status-retry"
               className={
                 dark
-                  ? "shrink-0 rounded-full border border-white/20 px-2 py-0.5 font-semibold text-white hover:bg-white/10"
-                  : "shrink-0 rounded-full border border-current/20 bg-white/70 px-2 py-0.5 font-semibold hover:bg-white"
+                  ? "hidden shrink-0 rounded-full border border-white/20 px-2 py-0.5 font-semibold text-white hover:bg-white/10 xl:inline-flex"
+                  : "hidden shrink-0 rounded-full border border-current/20 bg-white/70 px-2 py-0.5 font-semibold hover:bg-white xl:inline-flex"
               }
               onClick={onRetrySaveStatus}
             >
@@ -315,39 +286,154 @@ export default function EditorCommandBar({
         </div>
 
         <button
+          type="button"
           data-testid="save-design"
           className={
             dark
-              ? "shrink-0 rounded-xl bg-[#1b2030] px-3 py-2 text-sm font-semibold text-white disabled:cursor-wait disabled:opacity-70 sm:px-4"
-              : "shrink-0 rounded-xl bg-neutral-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800 disabled:cursor-wait disabled:opacity-70 sm:px-4"
+              ? "h-9 shrink-0 rounded-xl bg-white px-3 text-sm font-semibold text-neutral-950 disabled:cursor-wait disabled:opacity-70 sm:px-4"
+              : "h-9 shrink-0 rounded-xl bg-neutral-900 px-3 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800 disabled:cursor-wait disabled:opacity-70 sm:px-4"
           }
           onClick={onSave}
           disabled={isSaving}
         >
-          {isSaving ? (
-            "Saving..."
-          ) : isAuthed ? (
-            "Save"
-          ) : (
-            <>
-              <span className="hidden sm:inline">Save (Sign in)</span>
-              <span className="sm:hidden">Save</span>
-            </>
-          )}
+          {isSaving ? "Saving..." : "Save"}
         </button>
 
-        {editorMode === "present" && (
+        <div ref={overflowRef} className="relative shrink-0">
           <button
+            type="button"
+            data-testid="editor-command-overflow"
+            aria-haspopup="menu"
+            aria-expanded={overflowOpen}
             className={
               dark
-                ? "rounded-xl bg-[#151820] px-3 py-2 text-sm text-neutral-200"
-                : "rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-800 hover:bg-neutral-50"
+                ? "h-9 rounded-xl border border-white/10 px-3 text-sm font-semibold text-neutral-100 hover:bg-white/10"
+                : "h-9 rounded-xl border border-neutral-200 bg-white px-3 text-sm font-semibold text-neutral-800 hover:bg-neutral-50"
             }
-            onClick={onOpenPresentExport}
+            onClick={() => {
+              setOverflowOpen((value) => !value);
+              setAccountOpen(false);
+            }}
           >
-            Export & Camera
+            More
           </button>
-        )}
+          {overflowOpen && (
+            <div
+              data-testid="editor-command-overflow-menu"
+              role="menu"
+              className={menuPanelClass}
+            >
+              {showLoadDesign && (
+                <button
+                  type="button"
+                  data-testid="editor-command-overflow-load"
+                  className={menuButtonClass}
+                  onClick={() => {
+                    setOverflowOpen(false);
+                    onToggleLoadDesign();
+                  }}
+                >
+                  Load
+                </button>
+              )}
+              <button
+                type="button"
+                data-testid="editor-command-overflow-pro-tools"
+                className={menuButtonClass}
+                onClick={() => {
+                  setOverflowOpen(false);
+                  onToggleDesignerMode();
+                }}
+              >
+                {isDesigner ? "Exit Pro tools" : "Pro tools"}
+              </button>
+              {isDesigner && (
+                <button
+                  type="button"
+                  data-testid="editor-command-overflow-preview"
+                  className={menuButtonClass}
+                  onClick={() => {
+                    setOverflowOpen(false);
+                    onToggleClientPreview();
+                  }}
+                >
+                  {isClientPreview ? "Exit preview" : "Preview"}
+                </button>
+              )}
+              {editorMode === "present" && (
+                <button
+                  type="button"
+                  data-testid="editor-command-overflow-present-export"
+                  className={menuButtonClass}
+                  onClick={() => {
+                    setOverflowOpen(false);
+                    onOpenPresentExport();
+                  }}
+                >
+                  Export & Camera
+                </button>
+              )}
+              {overflowSlot ? (
+                <div className={dark ? "mt-1 border-t border-white/10 pt-1" : "mt-1 border-t border-neutral-200 pt-1"}>
+                  {overflowSlot}
+                </div>
+              ) : null}
+            </div>
+          )}
+        </div>
+
+        <div ref={accountRef} className="relative shrink-0">
+          <button
+            type="button"
+            data-testid="editor-command-account"
+            aria-haspopup="menu"
+            aria-expanded={accountOpen}
+            className={
+              dark
+                ? "h-9 rounded-xl border border-white/10 px-3 text-sm font-semibold text-neutral-100 hover:bg-white/10"
+                : "h-9 rounded-xl border border-neutral-200 bg-white px-3 text-sm font-semibold text-neutral-800 hover:bg-neutral-50"
+            }
+            onClick={() => {
+              setAccountOpen((value) => !value);
+              setOverflowOpen(false);
+            }}
+          >
+            Account
+          </button>
+          {accountOpen && (
+            <div
+              data-testid="editor-command-account-menu"
+              role="menu"
+              className={dark ? menuPanelClass : `${menuPanelClass} w-56`}
+            >
+              {isAuthed ? (
+                <button
+                  type="button"
+                  data-testid="editor-command-sign-out"
+                  className={menuButtonClass}
+                  onClick={() => {
+                    setAccountOpen(false);
+                    signOut();
+                  }}
+                >
+                  Sign out
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  data-testid="editor-command-sign-in"
+                  className={menuButtonClass}
+                  onClick={() => {
+                    setAccountOpen(false);
+                    signInWithReturn();
+                  }}
+                >
+                  Sign in
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

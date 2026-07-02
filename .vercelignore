@@ -1,14 +1,8 @@
 # Vercel ignore file
 .git
 .next
-.next-cache
 node_modules
 .env.local
 .env*.local
-coverage
 test-results
 playwright-report
-incoming
-hero.jpg
-studio.jpg
-tsconfig.tsbuildinfo

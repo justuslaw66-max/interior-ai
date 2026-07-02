@@ -1166,7 +1166,6 @@ function PageContent() {
   const [viewMode, setViewMode] = useState<EditorViewMode>("3d");
   const [designPanelOpen, setDesignPanelOpen] = useState(true);
   const [designPanelCollapsed, setDesignPanelCollapsed] = useState(false);
-  const [scenePerformanceCollapsed, setScenePerformanceCollapsed] = useState(true);
   const [planFocusPanelRevealed, setPlanFocusPanelRevealed] = useState(false);
   const [dismissedPlanCanvasGuidanceKey, setDismissedPlanCanvasGuidanceKey] = useState<string | null>(null);
   const [planDebugMetrics, setPlanDebugMetrics] = useState({
@@ -13133,103 +13132,81 @@ function PageContent() {
             onViewModeChange={handleEditorViewModeChange}
             onReviewHealth={reviewActiveRoomHealth}
             onFitPlan={handleFitPlanView}
-            onRenameRoom={() => handleRenameSelectedPlanRoom(activeRoom.id)}
           />
         )}
-
-        {viewMode === "3d" && (
-          <div
-            data-testid="scene-performance-control"
-            data-collapsed={scenePerformanceCollapsed ? "true" : "false"}
+      </>
+    ) : null;
+  const editorCommandOverflowSlot =
+    !isClientPreview && (activeRoom || viewMode === "3d") ? (
+      <div className="flex flex-col gap-1">
+        {activeRoom && (
+          <button
+            type="button"
+            data-testid="editor-command-overflow-rename-room"
             className={
               showDesignerTheme
-                ? "flex h-9 shrink-0 max-w-full items-center gap-1 rounded-full border border-white/10 bg-white/5 p-1 text-[11px] font-semibold text-neutral-200"
-                : "flex h-9 shrink-0 max-w-full items-center gap-1 rounded-full border border-neutral-200 bg-white/70 p-1 text-[11px] font-semibold text-neutral-700"
+                ? "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-semibold text-neutral-100 hover:bg-white/10"
+                : "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-semibold text-neutral-800 hover:bg-neutral-100"
             }
-            aria-label="Scene quality"
+            onClick={() => handleRenameSelectedPlanRoom(activeRoom.id)}
           >
-            {scenePerformanceCollapsed ? (
-              <button
-                type="button"
-                data-testid="scene-performance-expand"
-                aria-label="Expand scene quality controls"
-                aria-expanded="false"
-                className={
-                  showDesignerTheme
-                    ? "rounded-full px-3 py-1.5 text-neutral-200 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-blue-400/50"
-                    : "rounded-full px-3 py-1.5 text-neutral-700 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-neutral-900/20"
-                }
-                onClick={() => setScenePerformanceCollapsed(false)}
-              >
-                {scenePerformanceMode === "auto"
-                  ? liteSceneEnabled
-                    ? "Auto Lite"
-                    : "Auto"
-                  : scenePerformanceMode === "quality"
-                    ? "Quality"
-                    : "Lite"}
-              </button>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  data-testid="scene-performance-collapse"
-                  aria-label="Collapse scene quality controls"
-                  aria-expanded="true"
-                  className={
-                    showDesignerTheme
-                      ? "h-7 w-7 rounded-full text-neutral-400 hover:bg-white/10 hover:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-400/50"
-                      : "h-7 w-7 rounded-full text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/20"
-                  }
-                  onClick={() => setScenePerformanceCollapsed(true)}
-                >
-                  -
-                </button>
-                <span
-                  className={
-                    showDesignerTheme
-                      ? "hidden px-1 text-neutral-400 2xl:inline"
-                      : "hidden px-1 text-neutral-500 2xl:inline"
-                  }
-                >
-                  Scene
-                </span>
-                {(["auto", "quality", "lite"] as const).map((option) => {
-                  const active = scenePerformanceMode === option;
-                  const label =
-                    option === "auto"
-                      ? liteSceneEnabled
-                        ? "Auto Lite"
-                        : "Auto"
-                      : option === "quality"
-                        ? "Quality"
-                        : "Lite";
-                  return (
-                    <button
-                      key={option}
-                      type="button"
-                      data-testid={`scene-performance-${option}`}
-                      data-active={active ? "true" : "false"}
-                      className={
-                        active
-                          ? showDesignerTheme
-                            ? "rounded-full bg-blue-500 px-2.5 py-1.5 text-white"
-                            : "rounded-full bg-neutral-950 px-2.5 py-1.5 text-white"
-                          : showDesignerTheme
-                            ? "rounded-full px-2.5 py-1.5 text-neutral-300 hover:bg-white/10"
-                            : "rounded-full px-2.5 py-1.5 text-neutral-600 hover:bg-neutral-100"
-                      }
-                      onClick={() => handleScenePerformanceModeChange(option)}
-                    >
-                      {label}
-                    </button>
-                  );
-                })}
-              </>
-            )}
+            Rename room
+          </button>
+        )}
+        {viewMode === "3d" && (
+          <div
+            data-testid="editor-overflow-scene-quality"
+            className={
+              showDesignerTheme
+                ? "rounded-xl border border-white/10 p-2"
+                : "rounded-xl border border-neutral-200 bg-neutral-50/80 p-2"
+            }
+          >
+            <div
+              className={
+                showDesignerTheme
+                  ? "mb-2 px-1 text-xs font-semibold text-neutral-300"
+                  : "mb-2 px-1 text-xs font-semibold text-neutral-600"
+              }
+            >
+              Scene quality
+            </div>
+            <div className="grid grid-cols-3 gap-1">
+              {(["auto", "quality", "lite"] as const).map((option) => {
+                const active = scenePerformanceMode === option;
+                const label =
+                  option === "auto"
+                    ? liteSceneEnabled
+                      ? "Auto Lite"
+                      : "Auto"
+                    : option === "quality"
+                      ? "Quality"
+                      : "Lite";
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    data-testid={`scene-performance-${option}`}
+                    data-active={active ? "true" : "false"}
+                    className={
+                      active
+                        ? showDesignerTheme
+                          ? "rounded-lg bg-blue-500 px-2 py-1.5 text-xs font-semibold text-white"
+                          : "rounded-lg bg-neutral-950 px-2 py-1.5 text-xs font-semibold text-white"
+                        : showDesignerTheme
+                          ? "rounded-lg px-2 py-1.5 text-xs font-semibold text-neutral-300 hover:bg-white/10"
+                          : "rounded-lg px-2 py-1.5 text-xs font-semibold text-neutral-700 hover:bg-white"
+                    }
+                    onClick={() => handleScenePerformanceModeChange(option)}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
-      </>
+      </div>
     ) : null;
   const showPlanManualQuickActions =
     showPlanGuidedActionsToggle && !planGuidedActionsEnabled && !activePlanCanvasInteraction;
@@ -14644,72 +14621,6 @@ function PageContent() {
           </Canvas>
           </CanvasErrorBoundary>
 
-          {!isClientPreview && selectedPlanRoomContext && !visiblePlanOpening && (
-            <div
-              data-testid="selected-plan-room-actions"
-              className={
-                showDesignerTheme
-                  ? "absolute left-1/2 top-[112px] z-30 flex -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl border border-white/15 bg-[#12151dcc] px-3 py-2 text-xs text-neutral-100 shadow-xl backdrop-blur"
-                  : "absolute left-1/2 top-[112px] z-30 flex -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white/95 px-3 py-2 text-xs text-neutral-800 shadow-xl backdrop-blur"
-              }
-              style={{ maxWidth: "calc(100% - 2rem)" }}
-            >
-              <span className="font-semibold">{selectedPlanRoomContext.name}</span>
-              <span className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>
-                {selectedPlanRoomContext.w.toFixed(1)}m x {selectedPlanRoomContext.d.toFixed(1)}m
-              </span>
-              <button
-                type="button"
-                data-testid="selected-plan-room-fit"
-                className={
-                  showDesignerTheme
-                    ? "rounded-lg bg-white px-2.5 py-1.5 font-semibold text-neutral-950 hover:bg-neutral-200"
-                    : "rounded-lg bg-neutral-950 px-2.5 py-1.5 font-semibold text-white hover:bg-neutral-800"
-                }
-                onClick={() => handleFitSelectedPlanRoom(selectedPlanRoomContext.id)}
-              >
-                Fit
-              </button>
-              <button
-                type="button"
-                data-testid="selected-plan-room-rename"
-                className={
-                  showDesignerTheme
-                    ? "rounded-lg border border-white/15 px-2.5 py-1.5 font-semibold text-neutral-100 hover:bg-white/10"
-                    : "rounded-lg border border-neutral-200 px-2.5 py-1.5 font-semibold text-neutral-700 hover:bg-neutral-50"
-                }
-                onClick={() => handleRenameSelectedPlanRoom(selectedPlanRoomContext.id)}
-              >
-                Rename
-              </button>
-              <button
-                type="button"
-                data-testid="selected-plan-room-duplicate"
-                className={
-                  showDesignerTheme
-                    ? "rounded-lg border border-white/15 px-2.5 py-1.5 font-semibold text-neutral-100 hover:bg-white/10"
-                    : "rounded-lg border border-neutral-200 px-2.5 py-1.5 font-semibold text-neutral-700 hover:bg-neutral-50"
-                }
-                onClick={() => handleDuplicateSelectedPlanRoom(selectedPlanRoomContext.id)}
-              >
-                Duplicate
-              </button>
-              <button
-                type="button"
-                data-testid="selected-plan-room-delete"
-                className={
-                  showDesignerTheme
-                    ? "rounded-lg border border-red-400/30 px-2.5 py-1.5 font-semibold text-red-100 hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-40"
-                    : "rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 font-semibold text-red-700 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-40"
-                }
-                disabled={designSnapshot.rooms.length <= 1}
-                onClick={() => handleDeleteSelectedPlanRoom(selectedPlanRoomContext.id)}
-              >
-                Delete
-              </button>
-            </div>
-          )}
-
           {!isClientPreview && visiblePlanOpening && selectedPlanOverlayId && (
             <div
               data-testid="selected-plan-opening-actions"
@@ -15751,7 +15662,6 @@ function PageContent() {
           canRedo={canRedo}
           undoName={undoName}
           redoName={redoName}
-          designSnapshot={designSnapshot}
           onPlan={goPlan}
           onFurnish={goFurnish}
           onAiDesign={() => {
@@ -15771,9 +15681,6 @@ function PageContent() {
           onUndo={undoSafe}
           onRedo={redoSafe}
           onViewModeChange={handleEditorViewModeChange}
-          onSwitchRoom={handleSwitchRoom}
-          onAddDesignerRoom={() => handleAddRoom()}
-          onRenameRoom={handleRenameRoom}
           onToggleDesignerMode={() => {
             if (!canUseDesigner && !isDesigner) {
               setUpgradeReason("designer");
@@ -15794,6 +15701,7 @@ function PageContent() {
           saveStatus={saveStatus}
           onRetrySaveStatus={retrySaveStatus}
           contextSlot={editorCommandContextSlot}
+          overflowSlot={editorCommandOverflowSlot}
           onSave={async () => {
             if (!session?.user) {
               openGuestPrompt("save", () => {});

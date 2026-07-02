@@ -15,7 +15,7 @@ import { track } from "@/lib/analytics";
 interface PDFDownloadButtonProps {
   capabilities: ExportCapabilities;
   shareToken: string;
-  designId?: string | null;
+  designId: string;
 }
 
 export function PDFDownloadButton({ 
@@ -25,57 +25,61 @@ export function PDFDownloadButton({
 }: PDFDownloadButtonProps) {
   const [showUpgrade, setShowUpgrade] = useState(false);
 
-  const trackAppEvent = (eventType: string, meta?: Record<string, unknown>) => {
-    fetch("/api/track/app-event", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        eventType,
-        designId: designId ?? null,
-        shareToken,
-        ...(meta ? { meta } : {}),
-      }),
-    }).catch(() => undefined);
-  };
-
-  const handlePrintPreview = () => {
-    track("export_printed", {
-      design_id: designId ?? null,
-      share_token: shareToken,
-      watermarked: capabilities.watermark,
-    });
-    trackAppEvent("export_printed", { watermarked: capabilities.watermark });
-    window.print();
-  };
-
   const handleDownload = async () => {
     if (!capabilities.pdfDownload) {
       track("export_upgrade_prompt_shown", {
         trigger: "pdf",
-        design_id: designId ?? null,
+        design_id: designId,
         share_token: shareToken,
       });
 
-      trackAppEvent("export_upgrade_prompt_shown", { trigger: "pdf" });
+      fetch("/api/track/app-event", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          eventType: "export_upgrade_prompt_shown",
+          designId,
+          shareToken,
+          meta: { trigger: "pdf" },
+        }),
+      }).catch(() => undefined);
       
       setShowUpgrade(true);
       return;
     }
 
     track("export_pdf_clicked", {
-      design_id: designId ?? null,
+      design_id: designId,
       share_token: shareToken,
     });
 
-    trackAppEvent("export_pdf_clicked");
+    fetch("/api/track/app-event", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        eventType: "export_pdf_clicked",
+        designId,
+        shareToken,
+      }),
+    }).catch(() => undefined);
 
-    handlePrintPreview();
+    // Trigger browser PDF save
+    window.print();
   };
 
   const handleUpgrade = async () => {
     track("upgrade_checkout_started", { trigger: "pdf" });
 
-    trackAppEvent("upgrade_checkout_started", { trigger: "pdf" });
+    fetch("/api/track/app-event", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        eventType: "upgrade_checkout_started",
+        designId,
+        shareToken,
+        meta: { trigger: "pdf" },
+      }),
+    }).catch(() => undefined);
 
     try {
       // Call Stripe checkout API
@@ -101,24 +105,12 @@ export function PDFDownloadButton({
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-end gap-2">
-        {!capabilities.pdfDownload ? (
-          <button
-            type="button"
-            onClick={handlePrintPreview}
-            className="rounded-md border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-800 transition hover:bg-neutral-50"
-          >
-            Print watermarked preview
-          </button>
-        ) : null}
-        <button
-          type="button"
-          onClick={handleDownload}
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
-        >
-          {capabilities.pdfDownload ? "Print / Save PDF" : "Clean PDF (Pro)"}
-        </button>
-      </div>
+      <button
+        onClick={handleDownload}
+        className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition"
+      >
+        {capabilities.pdfDownload ? "Download PDF" : "Download PDF (Pro)"}
+      </button>
 
       <UpgradeModal
         isOpen={showUpgrade}

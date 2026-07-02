@@ -20,13 +20,9 @@ async function openFurnishPanel(page: Page): Promise<void> {
   const searchInput = getCatalogSearchInput(page);
   if (await searchInput.isVisible().catch(() => false)) return;
 
-  const furnishButton = page.locator('[data-testid="editor-workflow-furnish"]');
-  const furnishButtonCount = await furnishButton.count();
-  for (let index = 0; index < furnishButtonCount; index += 1) {
-    const candidate = furnishButton.nth(index);
-    if (!(await candidate.isVisible().catch(() => false))) continue;
-    await candidate.click();
-    break;
+  const visibleFurnishButton = page.locator('[data-testid="editor-workflow-furnish"]:visible').first();
+  if (await visibleFurnishButton.isVisible().catch(() => false)) {
+    await clickButtonWithDomFallback(visibleFurnishButton);
   }
 
   if (await searchInput.isVisible().catch(() => false)) return;
@@ -73,10 +69,18 @@ async function dismissBlockingDialogs(page: Page): Promise<void> {
   }
 }
 
+async function clickButtonWithDomFallback(locator: Locator): Promise<void> {
+  await locator.click({ timeout: 5000 }).catch(async () => {
+    await locator.evaluate((button) => {
+      (button as HTMLButtonElement).click();
+    });
+  });
+}
+
 export async function openShopPanel(page: Page): Promise<void> {
   const visibleShopButton = page.locator('[data-testid="editor-workflow-shop"]:visible').first();
   if (await visibleShopButton.isVisible().catch(() => false)) {
-    await visibleShopButton.click();
+    await clickButtonWithDomFallback(visibleShopButton);
     return;
   }
 
