@@ -10,7 +10,6 @@ import {
 } from "react";
 import { track } from "@/lib/analytics";
 import type { CameraView } from "@/lib/design-page-types";
-import type { HistoryManager } from "@/lib/historyManager";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import { switchRoom, type DesignSnapshot, type RoomSnapshot } from "@/lib/room-types";
 import {
@@ -49,7 +48,10 @@ type UseFloorManagerParams = {
   roomDepth: number;
   roomHeight: number;
   wallThickness: number;
-  history: HistoryManager<DesignSnapshot>;
+  history: {
+    begin: (name: string) => void;
+    commit: () => void;
+  };
   setPlanOpenings: Dispatch<SetStateAction<RoomOpening2D[]>>;
   setSelectedPlanRoomId: Dispatch<SetStateAction<string | null>>;
   cameraViewRef: MutableRefObject<CameraView>;

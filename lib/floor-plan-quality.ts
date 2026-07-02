@@ -20,6 +20,7 @@ export type FloorPlanQualityCategory =
 export type FloorPlanQualityAction =
   | "add_window"
   | "add_doorway"
+  | "review_plan_layout"
   | "review_furniture_fit"
   | "add_storage";
 
@@ -91,7 +92,7 @@ export type FloorPlanQualityReport = {
   issues: FloorPlanQualityIssue[];
   suggestedFixes: string[];
   primaryAction: {
-    label: "Add window" | "Add doorway" | "Review furniture fit" | "Add storage";
+    label: "Add window" | "Add doorway" | "Review plan" | "Review furniture fit" | "Add storage";
     action: FloorPlanQualityAction;
   };
   aiPlanningContext: FloorPlanAiPlanningContext;
@@ -269,6 +270,7 @@ function primaryActionForIssues(issues: FloorPlanQualityIssue[]): FloorPlanQuali
   const labels: Record<FloorPlanQualityAction, FloorPlanQualityReport["primaryAction"]["label"]> = {
     add_window: "Add window",
     add_doorway: "Add doorway",
+    review_plan_layout: "Review plan",
     review_furniture_fit: "Review furniture fit",
     add_storage: "Add storage",
   };

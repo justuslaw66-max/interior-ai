@@ -20,7 +20,8 @@ export class HistoryManager<TSnapshot = Snapshot> {
 
   constructor(
     private get: () => TSnapshot,
-    private set: (s: TSnapshot) => void
+    private set: (s: TSnapshot) => void,
+    private onChange?: () => void
   ) {}
 
   /**
@@ -65,6 +66,7 @@ export class HistoryManager<TSnapshot = Snapshot> {
     if (this.past.length > this.maxEntries) {
       this.past = this.past.slice(-this.maxEntries);
     }
+    this.onChange?.();
   }
 
   /**
@@ -80,6 +82,7 @@ export class HistoryManager<TSnapshot = Snapshot> {
     const before = this.txn.before;
     this.txn = null;
     this.set(before);
+    this.onChange?.();
   }
 
   /**
@@ -96,6 +99,7 @@ export class HistoryManager<TSnapshot = Snapshot> {
 
     this.future.push(entry);
     this.set(entry.before);
+    this.onChange?.();
     return entry.name;
   }
 
@@ -113,6 +117,7 @@ export class HistoryManager<TSnapshot = Snapshot> {
 
     this.past.push(entry);
     this.set(entry.after);
+    this.onChange?.();
     return entry.name;
   }
 

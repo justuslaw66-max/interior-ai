@@ -57,6 +57,8 @@ type DesignControlsPanelProps = {
   isAuthed: boolean;
   isDesigner: boolean;
   canEdit: boolean;
+  collapsed?: boolean;
+  onCollapsedChange?: (collapsed: boolean) => void;
   aiDesignEnabled?: boolean;
   panelMode?: ConsumerPanelMode;
   selectionContext?: DesignSelectionContext | null;
@@ -99,6 +101,7 @@ type DesignControlsPanelProps = {
   visiblePlanOpening: RoomOpening2D | null;
   visiblePlanOpeningRoomName: string;
   visiblePlanOpeningWallSpanMeters: number;
+  visiblePlanOpeningMaxHeightMeters: number;
   planRoomCount: number;
   planItemCount: number;
   planOpeningCount: number;
@@ -146,7 +149,7 @@ type DesignControlsPanelProps = {
   onSelectFloorPlanTool: () => void;
   onDrawFloorPlanRoom: () => void;
   onAddFloorPlanOpeningFromTool: (kind: RoomOpening2D["kind"]) => void;
-  onHide: () => void;
+  onHide?: () => void;
   onSignIn: () => void;
   onGoFurnish: () => void;
   onGoAiDesign: () => void;
@@ -229,6 +232,8 @@ export default function DesignControlsPanel({
   isAuthed,
   isDesigner,
   canEdit,
+  collapsed = false,
+  onCollapsedChange,
   aiDesignEnabled = false,
   panelMode = "plan",
   selectionContext = null,
@@ -271,6 +276,7 @@ export default function DesignControlsPanel({
   visiblePlanOpening,
   visiblePlanOpeningRoomName,
   visiblePlanOpeningWallSpanMeters,
+  visiblePlanOpeningMaxHeightMeters,
   planRoomCount,
   planItemCount,
   planOpeningCount,
@@ -406,13 +412,40 @@ export default function DesignControlsPanel({
     : "rounded-xl border border-neutral-200 bg-white/95 p-3 text-neutral-900 shadow-lg backdrop-blur";
   const panelSubtitleClass = dark ? "mt-1 text-xs text-neutral-400" : "mt-1 text-xs text-neutral-500";
   const selectedButtonClass = dark ? "bg-[#1b2030] text-white" : "bg-neutral-900 text-white";
+  const panelShellClass = `absolute bottom-3 left-3 right-3 top-auto z-20 w-auto space-y-3 pr-1 md:bottom-auto md:right-auto md:top-20 md:w-[22rem] ${
+    isDesigner ? "md:left-20" : "md:left-4"
+  }`;
+
+  if (collapsed) {
+    return (
+      <div data-testid="design-controls-panel" className={panelShellClass}>
+        <div className={panelHeaderClass}>
+          <div className="flex items-center justify-between gap-3">
+            <div className={dark ? "text-sm font-semibold text-white" : "text-sm font-semibold text-neutral-950"}>
+              {panelTitle}
+            </div>
+            <button
+              type="button"
+              aria-label="Expand design tools"
+              className={
+                dark
+                  ? "shrink-0 rounded-lg border border-white/15 px-2.5 py-1.5 text-xs font-semibold text-neutral-300 hover:bg-white/10"
+                  : "shrink-0 rounded-lg border border-neutral-200 px-2.5 py-1.5 text-xs font-semibold text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"
+              }
+              onClick={() => onCollapsedChange?.(false)}
+            >
+              Expand
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
       data-testid="design-controls-panel"
-      className={`absolute bottom-3 left-3 right-3 top-auto z-20 max-h-[64vh] w-auto space-y-3 overflow-y-auto pb-[calc(0.75rem+env(safe-area-inset-bottom))] pr-1 md:bottom-auto md:right-auto md:top-20 md:max-h-[calc(100vh-6rem)] md:w-[22rem] md:pb-4 ${
-        isDesigner ? "md:left-20" : "md:left-4"
-      }`}
+      className={`${panelShellClass} max-h-[64vh] overflow-y-auto pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:max-h-[calc(100vh-6rem)] md:pb-4`}
     >
       <div
         data-testid="design-controls-panel-handle"
@@ -429,15 +462,21 @@ export default function DesignControlsPanel({
           </div>
           <button
             type="button"
-            aria-label="Hide design tools"
+            aria-label={onCollapsedChange ? "Collapse design tools" : "Hide design tools"}
             className={
               dark
                 ? "shrink-0 rounded-lg border border-white/15 px-2.5 py-1.5 text-xs font-semibold text-neutral-300 hover:bg-white/10"
                 : "shrink-0 rounded-lg border border-neutral-200 px-2.5 py-1.5 text-xs font-semibold text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"
             }
-            onClick={onHide}
+            onClick={() => {
+              if (onCollapsedChange) {
+                onCollapsedChange(true);
+                return;
+              }
+              onHide?.();
+            }}
           >
-            Hide
+            {onCollapsedChange ? "Collapse" : "Hide"}
           </button>
         </div>
       </div>
@@ -557,6 +596,7 @@ export default function DesignControlsPanel({
             visiblePlanOpening={visiblePlanOpening}
             visiblePlanOpeningRoomName={visiblePlanOpeningRoomName}
             visiblePlanOpeningWallSpanMeters={visiblePlanOpeningWallSpanMeters}
+            visiblePlanOpeningMaxHeightMeters={visiblePlanOpeningMaxHeightMeters}
             planRoomCount={planRoomCount}
             planItemCount={planItemCount}
             planOpeningCount={planOpeningCount}

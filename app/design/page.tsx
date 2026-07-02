@@ -13112,6 +13112,125 @@ function PageContent() {
     !isClientPreview && !isDesigner && viewMode === "2d" && editorMode === "design";
   const compactRoomPlanStatusBar = showPlanGuidedActionsToggle || commercePanelVisibleForLayout;
   const showRoomPlanStatusHealth = !showPlanGuidedActionsToggle;
+  const editorCommandContextSlot =
+    !isClientPreview && (activeRoom || viewMode === "3d") ? (
+      <>
+        {activeRoom && (
+          <RoomPlanStatusBar
+            roomName={activeRoom.name}
+            roomTypeLabel={getRoomTypeLabel(activeRoom.roomType)}
+            roomCount={designSnapshot.rooms.length}
+            widthMeters={roomWidth}
+            depthMeters={roomDepth}
+            healthLevel={showRoomPlanStatusHealth ? activeRoomHealthSummary?.level : undefined}
+            healthScore={showRoomPlanStatusHealth ? activeRoomHealthSummary?.placementScore : undefined}
+            healthNextAction={showRoomPlanStatusHealth ? activeRoomHealthSummary?.nextAction : undefined}
+            viewMode={viewMode}
+            disabled={editorMode === "present"}
+            dark={showDesignerTheme}
+            compact={compactRoomPlanStatusBar}
+            variant="command"
+            onViewModeChange={handleEditorViewModeChange}
+            onReviewHealth={reviewActiveRoomHealth}
+            onFitPlan={handleFitPlanView}
+            onRenameRoom={() => handleRenameSelectedPlanRoom(activeRoom.id)}
+          />
+        )}
+
+        {viewMode === "3d" && (
+          <div
+            data-testid="scene-performance-control"
+            data-collapsed={scenePerformanceCollapsed ? "true" : "false"}
+            className={
+              showDesignerTheme
+                ? "flex h-9 shrink-0 max-w-full items-center gap-1 rounded-full border border-white/10 bg-white/5 p-1 text-[11px] font-semibold text-neutral-200"
+                : "flex h-9 shrink-0 max-w-full items-center gap-1 rounded-full border border-neutral-200 bg-white/70 p-1 text-[11px] font-semibold text-neutral-700"
+            }
+            aria-label="Scene quality"
+          >
+            {scenePerformanceCollapsed ? (
+              <button
+                type="button"
+                data-testid="scene-performance-expand"
+                aria-label="Expand scene quality controls"
+                aria-expanded="false"
+                className={
+                  showDesignerTheme
+                    ? "rounded-full px-3 py-1.5 text-neutral-200 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-blue-400/50"
+                    : "rounded-full px-3 py-1.5 text-neutral-700 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-neutral-900/20"
+                }
+                onClick={() => setScenePerformanceCollapsed(false)}
+              >
+                {scenePerformanceMode === "auto"
+                  ? liteSceneEnabled
+                    ? "Auto Lite"
+                    : "Auto"
+                  : scenePerformanceMode === "quality"
+                    ? "Quality"
+                    : "Lite"}
+              </button>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  data-testid="scene-performance-collapse"
+                  aria-label="Collapse scene quality controls"
+                  aria-expanded="true"
+                  className={
+                    showDesignerTheme
+                      ? "h-7 w-7 rounded-full text-neutral-400 hover:bg-white/10 hover:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-400/50"
+                      : "h-7 w-7 rounded-full text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/20"
+                  }
+                  onClick={() => setScenePerformanceCollapsed(true)}
+                >
+                  -
+                </button>
+                <span
+                  className={
+                    showDesignerTheme
+                      ? "hidden px-1 text-neutral-400 2xl:inline"
+                      : "hidden px-1 text-neutral-500 2xl:inline"
+                  }
+                >
+                  Scene
+                </span>
+                {(["auto", "quality", "lite"] as const).map((option) => {
+                  const active = scenePerformanceMode === option;
+                  const label =
+                    option === "auto"
+                      ? liteSceneEnabled
+                        ? "Auto Lite"
+                        : "Auto"
+                      : option === "quality"
+                        ? "Quality"
+                        : "Lite";
+                  return (
+                    <button
+                      key={option}
+                      type="button"
+                      data-testid={`scene-performance-${option}`}
+                      data-active={active ? "true" : "false"}
+                      className={
+                        active
+                          ? showDesignerTheme
+                            ? "rounded-full bg-blue-500 px-2.5 py-1.5 text-white"
+                            : "rounded-full bg-neutral-950 px-2.5 py-1.5 text-white"
+                          : showDesignerTheme
+                            ? "rounded-full px-2.5 py-1.5 text-neutral-300 hover:bg-white/10"
+                            : "rounded-full px-2.5 py-1.5 text-neutral-600 hover:bg-neutral-100"
+                      }
+                      onClick={() => handleScenePerformanceModeChange(option)}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </>
+            )}
+          </div>
+        )}
+      </>
+    ) : null;
   const showPlanManualQuickActions =
     showPlanGuidedActionsToggle && !planGuidedActionsEnabled && !activePlanCanvasInteraction;
   const showPlanGuidedActionsChoice =
@@ -14525,130 +14644,6 @@ function PageContent() {
           </Canvas>
           </CanvasErrorBoundary>
 
-          {!isClientPreview && (activeRoom || viewMode === "3d") && (
-            <div
-              data-testid="editor-top-shelf"
-              className="absolute left-1/2 top-[60px] z-30 flex -translate-x-1/2 flex-wrap items-center justify-center gap-2 md:left-[calc(50%+1rem)]"
-              style={{ width: "min(56rem, calc(100% - 2rem))" }}
-            >
-              {activeRoom && (
-                <div className="pointer-events-auto min-w-0 max-w-full">
-                  <RoomPlanStatusBar
-                    roomName={activeRoom.name}
-                    roomTypeLabel={getRoomTypeLabel(activeRoom.roomType)}
-                    roomCount={designSnapshot.rooms.length}
-                    widthMeters={roomWidth}
-                    depthMeters={roomDepth}
-                    healthLevel={showRoomPlanStatusHealth ? activeRoomHealthSummary?.level : undefined}
-                    healthScore={showRoomPlanStatusHealth ? activeRoomHealthSummary?.placementScore : undefined}
-                    healthNextAction={showRoomPlanStatusHealth ? activeRoomHealthSummary?.nextAction : undefined}
-                    viewMode={viewMode}
-                    disabled={editorMode === "present"}
-                    dark={showDesignerTheme}
-                    compact={compactRoomPlanStatusBar}
-                    onViewModeChange={handleEditorViewModeChange}
-                    onReviewHealth={reviewActiveRoomHealth}
-                    onFitPlan={handleFitPlanView}
-                    onRenameRoom={() => handleRenameSelectedPlanRoom(activeRoom.id)}
-                  />
-                </div>
-              )}
-
-              {viewMode === "3d" && (
-                <div
-                  data-testid="scene-performance-control"
-                  data-collapsed={scenePerformanceCollapsed ? "true" : "false"}
-                  className={
-                    showDesignerTheme
-                      ? "pointer-events-auto flex shrink-0 max-w-full items-center gap-1 rounded-full border border-white/10 bg-[#151820]/90 p-1 text-[11px] font-semibold text-neutral-200 shadow-md backdrop-blur"
-                      : "pointer-events-auto flex shrink-0 max-w-full items-center gap-1 rounded-full border border-neutral-200 bg-white/90 p-1 text-[11px] font-semibold text-neutral-700 shadow-md backdrop-blur"
-                  }
-                  aria-label="Scene quality"
-                >
-                  {scenePerformanceCollapsed ? (
-                    <button
-                      type="button"
-                      data-testid="scene-performance-expand"
-                      aria-label="Expand scene quality controls"
-                      aria-expanded="false"
-                      className={
-                        showDesignerTheme
-                          ? "rounded-full px-3 py-1.5 text-neutral-200 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-blue-400/50"
-                          : "rounded-full px-3 py-1.5 text-neutral-700 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-neutral-900/20"
-                      }
-                      onClick={() => setScenePerformanceCollapsed(false)}
-                    >
-                      {scenePerformanceMode === "auto"
-                        ? liteSceneEnabled
-                          ? "Auto Lite"
-                          : "Auto"
-                        : scenePerformanceMode === "quality"
-                          ? "Quality"
-                          : "Lite"}
-                    </button>
-                  ) : (
-                    <>
-                      <button
-                        type="button"
-                        data-testid="scene-performance-collapse"
-                        aria-label="Collapse scene quality controls"
-                        aria-expanded="true"
-                        className={
-                          showDesignerTheme
-                            ? "h-7 w-7 rounded-full text-neutral-400 hover:bg-white/10 hover:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-400/50"
-                            : "h-7 w-7 rounded-full text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/20"
-                        }
-                        onClick={() => setScenePerformanceCollapsed(true)}
-                      >
-                        -
-                      </button>
-                      <span
-                        className={
-                          showDesignerTheme
-                            ? "hidden px-1 text-neutral-400 sm:inline"
-                            : "hidden px-1 text-neutral-500 sm:inline"
-                        }
-                      >
-                        Scene
-                      </span>
-                      {(["auto", "quality", "lite"] as const).map((option) => {
-                        const active = scenePerformanceMode === option;
-                        const label =
-                          option === "auto"
-                            ? liteSceneEnabled
-                              ? "Auto Lite"
-                              : "Auto"
-                            : option === "quality"
-                              ? "Quality"
-                              : "Lite";
-                        return (
-                          <button
-                            key={option}
-                            type="button"
-                            data-testid={`scene-performance-${option}`}
-                            data-active={active ? "true" : "false"}
-                            className={
-                              active
-                                ? showDesignerTheme
-                                  ? "rounded-full bg-blue-500 px-2.5 py-1.5 text-white"
-                                  : "rounded-full bg-neutral-950 px-2.5 py-1.5 text-white"
-                                : showDesignerTheme
-                                  ? "rounded-full px-2.5 py-1.5 text-neutral-300 hover:bg-white/10"
-                                  : "rounded-full px-2.5 py-1.5 text-neutral-600 hover:bg-neutral-100"
-                            }
-                            onClick={() => handleScenePerformanceModeChange(option)}
-                          >
-                            {label}
-                          </button>
-                        );
-                      })}
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
           {!isClientPreview && selectedPlanRoomContext && !visiblePlanOpening && (
             <div
               data-testid="selected-plan-room-actions"
@@ -15798,6 +15793,7 @@ function PageContent() {
           isSaving={isSaving}
           saveStatus={saveStatus}
           onRetrySaveStatus={retrySaveStatus}
+          contextSlot={editorCommandContextSlot}
           onSave={async () => {
             if (!session?.user) {
               openGuestPrompt("save", () => {});

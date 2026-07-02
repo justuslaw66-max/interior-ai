@@ -4,6 +4,7 @@ import { AuthButtons } from "@/components/AuthButtons";
 import { RoomSwitcher } from "@/components/RoomSwitcher";
 import EditorViewToggle, { type EditorViewMode } from "@/components/editor/EditorViewToggle";
 import type { DesignSnapshot } from "@/lib/room-types";
+import type { ReactNode } from "react";
 
 type EditorMode = "design" | "adjust" | "ai" | "buy" | "present";
 
@@ -49,6 +50,7 @@ type EditorCommandBarProps = {
   saveStatus: EditorSaveStatus;
   onRetrySaveStatus: () => void | Promise<void>;
   onOpenPresentExport: () => void;
+  contextSlot?: ReactNode;
 };
 
 function getSaveStatusClassName(tone: EditorSaveStatus["tone"], dark: boolean) {
@@ -105,6 +107,7 @@ export default function EditorCommandBar({
   saveStatus,
   onRetrySaveStatus,
   onOpenPresentExport,
+  contextSlot,
 }: EditorCommandBarProps) {
   const disabled = editorMode === "present" || isClientPreview;
   const workflowSteps: Array<{
@@ -124,12 +127,12 @@ export default function EditorCommandBar({
   const workflowButtonClass = (active: boolean) => {
     if (dark) {
       return [
-        "rounded-xl px-3 py-2 text-sm font-semibold transition-colors",
+        "inline-flex h-9 items-center rounded-xl px-3 text-sm font-semibold transition-colors",
         active ? "bg-white text-neutral-950 shadow-sm" : "text-neutral-200 hover:bg-white/10",
       ].join(" ");
     }
     return [
-      "rounded-xl px-3 py-2 text-sm font-semibold transition-colors",
+      "inline-flex h-9 items-center rounded-xl px-3 text-sm font-semibold transition-colors",
       active ? "bg-neutral-900 text-white shadow-sm" : "text-neutral-700 hover:bg-neutral-100",
     ].join(" ");
   };
@@ -178,6 +181,29 @@ export default function EditorCommandBar({
           />
         </div>
 
+        <div
+          className={
+            dark
+              ? "hidden shrink-0 items-center gap-1 rounded-2xl border border-white/10 bg-[#151820] p-1 2xl:flex"
+              : "hidden shrink-0 items-center gap-1 rounded-2xl border border-neutral-200 bg-white p-1 shadow-sm 2xl:flex"
+          }
+          aria-label="Design workflow"
+        >
+          {workflowSteps.map((step) => (
+            <button
+              key={step.mode}
+              type="button"
+              data-testid={step.testId}
+              data-active={editorMode === step.mode ? "true" : "false"}
+              aria-pressed={editorMode === step.mode}
+              className={workflowButtonClass(editorMode === step.mode)}
+              onClick={step.onClick}
+            >
+              {step.label}
+            </button>
+          ))}
+        </div>
+
         {isDesigner && (
           <div className="hidden min-w-0 2xl:block">
             <RoomSwitcher
@@ -191,27 +217,15 @@ export default function EditorCommandBar({
         )}
       </div>
 
-      <div
-        className={
-          dark
-            ? "absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-2xl border border-white/10 bg-[#151820] p-1 md:flex"
-            : "absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-2xl border border-neutral-200 bg-white p-1 shadow-sm md:flex"
-        }
-        aria-label="Design workflow"
-      >
-        {workflowSteps.map((step) => (
-          <button
-            key={step.mode}
-            type="button"
-            data-testid={step.testId}
-            data-active={editorMode === step.mode ? "true" : "false"}
-            aria-pressed={editorMode === step.mode}
-            className={workflowButtonClass(editorMode === step.mode)}
-            onClick={step.onClick}
+      <div className="hidden min-w-0 flex-[1.15] items-center justify-center lg:flex">
+        {contextSlot ? (
+          <div
+            data-testid="editor-command-context"
+            className="flex min-w-0 max-w-full items-center justify-center gap-1.5 overflow-hidden"
           >
-            {step.label}
-          </button>
-        ))}
+            {contextSlot}
+          </div>
+        ) : null}
       </div>
 
       <div className="flex min-w-0 flex-1 items-center justify-end gap-2">

@@ -22,6 +22,8 @@ export const ROOM_DIMENSION_DEFAULTS = {
   maxSlabThickness: 0.6,
 } as const;
 
+export const HOUSE_ROOM_WALL_SNAP_DISTANCE_METERS = 0.18;
+
 export const HOUSE_ROOM_TYPES: Array<{ type: RoomType; label: string }> = [
   { type: "living", label: "Living Room" },
   { type: "bedroom", label: "Bedroom" },
@@ -1548,9 +1550,11 @@ export type HousePlanRoom2D = {
   floorLabel?: string;
   shape: RoomPlanShape;
   polygon?: Array<{ x: number; z: number }>;
+  surfaces?: RoomSurfaceFinishes;
   surfaceFinishes?: RoomSurfaceFinishes;
   surfaceOpacity?: RoomSurfaceOpacity;
   slabThickness?: number;
+  wallThickness?: number;
   ceilingVisible?: boolean;
   x: number;
   z: number;
@@ -1724,12 +1728,17 @@ export function buildHousePlan2D(
       ...(room.floorLabel ? { floorLabel: room.floorLabel } : {}),
       shape: room.planShape ?? "rectangle",
       ...(room.planPolygon ? { polygon: room.planPolygon } : {}),
+      ...(room.surfaceFinishes ? { surfaces: room.surfaceFinishes } : {}),
       ...(room.surfaceFinishes ? { surfaceFinishes: room.surfaceFinishes } : {}),
       ...(room.surfaceOpacity ? { surfaceOpacity: room.surfaceOpacity } : {}),
       slabThickness:
         typeof room.geometry.slabThickness === "number" && Number.isFinite(room.geometry.slabThickness)
           ? room.geometry.slabThickness
           : ROOM_DIMENSION_DEFAULTS.slabThickness,
+      wallThickness:
+        typeof room.geometry.wallThickness === "number" && Number.isFinite(room.geometry.wallThickness)
+          ? room.geometry.wallThickness
+          : ROOM_DIMENSION_DEFAULTS.wallThickness,
       ceilingVisible: room.ceilingVisible ?? true,
       x: typeof storedX === "number" && Number.isFinite(storedX) ? storedX : fallbackX,
       z: typeof storedZ === "number" && Number.isFinite(storedZ) ? storedZ : 0,
@@ -1832,6 +1841,44 @@ export function doesHouseRoomOverlap(
   });
 }
 
+export function resolveHouseRoomDimensionEditPlacement(
+  roomId: string,
+  axis: "width" | "depth",
+  width: number,
+  depth: number,
+  rooms: HousePlanRoom2D[]
+): { x: number; z: number } | null {
+  const room = rooms.find((entry) => entry.id === roomId);
+  if (!room) return null;
+
+  const widthDelta = width - room.w;
+  const depthDelta = depth - room.d;
+  const candidates =
+    axis === "width"
+      ? [
+          { x: room.x, z: room.z },
+          { x: room.x + widthDelta / 2, z: room.z },
+          { x: room.x - widthDelta / 2, z: room.z },
+        ]
+      : [
+          { x: room.x, z: room.z },
+          { x: room.x, z: room.z + depthDelta / 2 },
+          { x: room.x, z: room.z - depthDelta / 2 },
+        ];
+
+  const placement = candidates.find(
+    (candidate) =>
+      !doesHouseRoomOverlap(roomId, candidate.x, candidate.z, width, depth, rooms)
+  );
+
+  if (!placement) return null;
+
+  return {
+    x: roundPlanCoordinate(placement.x),
+    z: roundPlanCoordinate(placement.z),
+  };
+}
+
 export function shouldReplaceStarterRoomWithDrawnRoom({
   activeRoom,
   rooms,
@@ -1883,7 +1930,7 @@ export function snapHouseRoomMove(
   x: number,
   z: number,
   rooms: HousePlanRoom2D[],
-  snapDistance = 0.18
+  snapDistance = HOUSE_ROOM_WALL_SNAP_DISTANCE_METERS
 ): { x: number; z: number } | null {
   const moving = rooms.find((room) => room.id === roomId);
   if (!moving) return null;
@@ -2067,7 +2114,7 @@ export function resolveHouseRoomSnapPreview(
   x: number,
   z: number,
   rooms: HousePlanRoom2D[],
-  snapDistance = 0.18
+  snapDistance = HOUSE_ROOM_WALL_SNAP_DISTANCE_METERS
 ): HouseRoomSnapPreview | null {
   const moving = rooms.find((room) => room.id === roomId);
   if (!moving) return null;

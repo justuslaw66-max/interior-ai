@@ -21,7 +21,29 @@ const AVERY_MODEL_FAMILY_IDS = [
   "armchair-real-castlery-avery-performance-swivel-armchair-with-ottoman",
 ];
 
+const AUBURN_MODEL_FAMILY_IDS = [
+  "sofa-real-castlery-auburn-performance-fabric-sofa",
+  "sofa-real-castlery-auburn-performance-fabric-sofa-with-ottoman",
+  "sofa-real-castlery-auburn-performance-fabric-extended-sofa",
+  "sofa-real-castlery-auburn-performance-fabric-extended-sofa-with-ottoman",
+  "sofa-real-castlery-auburn-performance-fabric-curve-sofa",
+  "sofa-real-castlery-auburn-performance-fabric-curve-sofa-with-ottoman",
+  "sofa-real-castlery-auburn-performance-fabric-armless-curve-sofa",
+  "sofa-real-castlery-auburn-performance-fabric-armless-curve-sofa-with-ottoman",
+  "sofa-real-castlery-auburn-performance-fabric-chaise-sectional-left",
+  "sofa-real-castlery-auburn-performance-fabric-chaise-sectional-right",
+  "sofa-real-castlery-auburn-performance-fabric-chaise-sectional-left-with-ottoman",
+  "sofa-real-castlery-auburn-performance-fabric-chaise-sectional-right-with-ottoman",
+  "sofa-real-castlery-auburn-performance-fabric-sectional",
+  "sofa-real-castlery-auburn-performance-fabric-sectional-with-ottoman",
+  "sofa-real-castlery-auburn-performance-fabric-curve-l-shape-sectional",
+  "sofa-real-castlery-auburn-performance-fabric-curve-l-shape-sectional-with-ottoman",
+  "sofa-real-castlery-auburn-performance-fabric-l-shape-sectional",
+  "sofa-real-castlery-auburn-performance-fabric-l-shape-sectional-with-ottoman",
+];
+
 export const JARON_CONFIGURATION_PRODUCT_IDS = [...JARON_MODEL_FAMILY_IDS];
+export const AUBURN_CONFIGURATION_PRODUCT_IDS = [...AUBURN_MODEL_FAMILY_IDS];
 
 export type JaronConfigurationArmKey = "slim" | "wide";
 export type JaronConfigurationGroupKey = "standard" | "l-shaped" | "armchair";
@@ -108,7 +130,210 @@ export const JARON_CONFIGURATION_GROUPS: JaronConfigurationGroup[] = [
   },
 ];
 
+export type AuburnConfigurationGroupKey = "standard" | "curve" | "sectional";
+export type AuburnConfigurationDiagramKey =
+  | "standard-3-seater"
+  | "standard-3-seater-with-ottoman"
+  | "standard-extended-3-seater"
+  | "standard-extended-3-seater-with-ottoman"
+  | "curve-3-seater"
+  | "curve-3-seater-with-ottoman"
+  | "armless-curve-3-seater"
+  | "armless-curve-3-seater-with-ottoman"
+  | "chaise-sectional-left"
+  | "chaise-sectional-right"
+  | "chaise-sectional-left-with-ottoman"
+  | "chaise-sectional-right-with-ottoman"
+  | "sectional"
+  | "sectional-with-ottoman"
+  | "curve-l-shape-sectional"
+  | "curve-l-shape-sectional-with-ottoman"
+  | "l-shape-sectional"
+  | "l-shape-sectional-with-ottoman";
+
+export type AuburnConfigurationOrientation = {
+  key: string;
+  label: string;
+  productId: string;
+  diagram: AuburnConfigurationDiagramKey;
+};
+
+export type AuburnConfigurationOption = {
+  key: string;
+  label: string;
+  description: string;
+  diagram: AuburnConfigurationDiagramKey;
+  productId?: string;
+  orientations?: AuburnConfigurationOrientation[];
+};
+
+export type AuburnConfigurationGroup = {
+  key: AuburnConfigurationGroupKey;
+  label: string;
+  options: AuburnConfigurationOption[];
+};
+
+export const AUBURN_CONFIGURATION_GROUPS: AuburnConfigurationGroup[] = [
+  {
+    key: "standard",
+    label: "STANDARD",
+    options: [
+      {
+        key: "3-seater",
+        label: "3 Seater Sofa",
+        description: "Performance fabric sofa configuration",
+        diagram: "standard-3-seater",
+        productId: "sofa-real-castlery-auburn-performance-fabric-sofa",
+      },
+      {
+        key: "3-seater-with-ottoman",
+        label: "3 Seater Sofa with Ottoman",
+        description: "Straight sofa with matching ottoman",
+        diagram: "standard-3-seater-with-ottoman",
+        productId: "sofa-real-castlery-auburn-performance-fabric-sofa-with-ottoman",
+      },
+      {
+        key: "extended-3-seater",
+        label: "Extended 3 Seater Sofa",
+        description: "Longer straight sofa configuration",
+        diagram: "standard-extended-3-seater",
+        productId: "sofa-real-castlery-auburn-performance-fabric-extended-sofa",
+      },
+      {
+        key: "extended-3-seater-with-ottoman",
+        label: "Extended 3 Seater Sofa with Ottoman",
+        description: "Extended sofa with matching ottoman",
+        diagram: "standard-extended-3-seater-with-ottoman",
+        productId: "sofa-real-castlery-auburn-performance-fabric-extended-sofa-with-ottoman",
+      },
+    ],
+  },
+  {
+    key: "curve",
+    label: "CURVE",
+    options: [
+      {
+        key: "curve-3-seater",
+        label: "Curve Sofa",
+        description: "Curved 3-piece sofa configuration",
+        diagram: "curve-3-seater",
+        productId: "sofa-real-castlery-auburn-performance-fabric-curve-sofa",
+      },
+      {
+        key: "curve-3-seater-with-ottoman",
+        label: "Curve Sofa with Ottoman",
+        description: "Curved sofa with matching ottoman",
+        diagram: "curve-3-seater-with-ottoman",
+        productId: "sofa-real-castlery-auburn-performance-fabric-curve-sofa-with-ottoman",
+      },
+      {
+        key: "armless-curve-3-seater",
+        label: "Armless Curve Sofa",
+        description: "Armless curved 3-piece sofa",
+        diagram: "armless-curve-3-seater",
+        productId: "sofa-real-castlery-auburn-performance-fabric-armless-curve-sofa",
+      },
+      {
+        key: "armless-curve-3-seater-with-ottoman",
+        label: "Armless Curve Sofa with Ottoman",
+        description: "Armless curved sofa with matching ottoman",
+        diagram: "armless-curve-3-seater-with-ottoman",
+        productId: "sofa-real-castlery-auburn-performance-fabric-armless-curve-sofa-with-ottoman",
+      },
+    ],
+  },
+  {
+    key: "sectional",
+    label: "SECTIONAL",
+    options: [
+      {
+        key: "chaise-sectional",
+        label: "Chaise Sectional Sofa",
+        description: "Choose left or right facing chaise orientation",
+        diagram: "chaise-sectional-left",
+        orientations: [
+          {
+            key: "left",
+            label: "Left facing",
+            productId: "sofa-real-castlery-auburn-performance-fabric-chaise-sectional-left",
+            diagram: "chaise-sectional-left",
+          },
+          {
+            key: "right",
+            label: "Right facing",
+            productId: "sofa-real-castlery-auburn-performance-fabric-chaise-sectional-right",
+            diagram: "chaise-sectional-right",
+          },
+        ],
+      },
+      {
+        key: "chaise-sectional-with-ottoman",
+        label: "Chaise Sectional with Ottoman",
+        description: "Choose left or right facing chaise orientation",
+        diagram: "chaise-sectional-left-with-ottoman",
+        orientations: [
+          {
+            key: "left",
+            label: "Left facing",
+            productId: "sofa-real-castlery-auburn-performance-fabric-chaise-sectional-left-with-ottoman",
+            diagram: "chaise-sectional-left-with-ottoman",
+          },
+          {
+            key: "right",
+            label: "Right facing",
+            productId: "sofa-real-castlery-auburn-performance-fabric-chaise-sectional-right-with-ottoman",
+            diagram: "chaise-sectional-right-with-ottoman",
+          },
+        ],
+      },
+      {
+        key: "sectional",
+        label: "L-Shape Sectional Sofa",
+        description: "Sectional sofa configuration",
+        diagram: "sectional",
+        productId: "sofa-real-castlery-auburn-performance-fabric-sectional",
+      },
+      {
+        key: "sectional-with-ottoman",
+        label: "L-Shape Sectional with Ottoman",
+        description: "Sectional sofa with matching ottoman",
+        diagram: "sectional-with-ottoman",
+        productId: "sofa-real-castlery-auburn-performance-fabric-sectional-with-ottoman",
+      },
+      {
+        key: "curve-l-shape-sectional",
+        label: "Curve L-Shape Sectional",
+        description: "Curved sectional sofa configuration",
+        diagram: "curve-l-shape-sectional",
+        productId: "sofa-real-castlery-auburn-performance-fabric-curve-l-shape-sectional",
+      },
+      {
+        key: "curve-l-shape-sectional-with-ottoman",
+        label: "Curve L-Shape Sectional with Ottoman",
+        description: "Curved sectional sofa with matching ottoman",
+        diagram: "curve-l-shape-sectional-with-ottoman",
+        productId: "sofa-real-castlery-auburn-performance-fabric-curve-l-shape-sectional-with-ottoman",
+      },
+      {
+        key: "l-shape-sectional",
+        label: "Extended L-Shape Sectional",
+        description: "Extended L-shape sectional sofa",
+        diagram: "l-shape-sectional",
+        productId: "sofa-real-castlery-auburn-performance-fabric-l-shape-sectional",
+      },
+      {
+        key: "l-shape-sectional-with-ottoman",
+        label: "Extended L-Shape Sectional with Ottoman",
+        description: "Extended L-shape sectional with matching ottoman",
+        diagram: "l-shape-sectional-with-ottoman",
+        productId: "sofa-real-castlery-auburn-performance-fabric-l-shape-sectional-with-ottoman",
+      },
+    ],
+  },
+];
+
 export const MODEL_FAMILY_BY_PRODUCT_ID: Record<string, string[]> = {
+  ...Object.fromEntries(AUBURN_MODEL_FAMILY_IDS.map((id) => [id, [...AUBURN_MODEL_FAMILY_IDS]])),
   "sofa-real-castlery-madison-2s": [
     "sofa-real-castlery-madison-2s",
     "sofa-real-castlery-madison-3s",
@@ -228,6 +453,7 @@ export const MODEL_FAMILY_BY_PRODUCT_ID: Record<string, string[]> = {
 };
 
 export const MODEL_SELECTOR_PRODUCT_IDS_BY_PRODUCT_ID: Record<string, string[]> = {
+  ...Object.fromEntries(AUBURN_MODEL_FAMILY_IDS.map((id) => [id, [...AUBURN_MODEL_FAMILY_IDS]])),
   "sofa-real-castlery-jaron-3s": [...JARON_MODEL_FAMILY_IDS],
   "sofa-real-castlery-jaron-3s-wide-arm": [...JARON_MODEL_FAMILY_IDS],
   "sofa-real-castlery-jaron-extended-3s": [...JARON_MODEL_FAMILY_IDS],

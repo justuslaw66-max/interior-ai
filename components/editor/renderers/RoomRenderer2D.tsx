@@ -92,7 +92,7 @@ type HouseRoom2D = {
   z: number;
   w: number;
   d: number;
-  wallThickness: number;
+  wallThickness?: number;
 };
 
 type RoomResizeHandle = "n" | "e" | "s" | "w" | "nw" | "ne" | "se" | "sw";
@@ -3003,7 +3003,7 @@ export default function RoomRenderer2D({
                       </span>
                     </div>
                     <div style={{ color: "#6b7280", fontSize: 9, fontWeight: 650, marginTop: 1 }}>
-                      Wall {formatDimension(room.wallThickness)}
+                      Wall {formatDimension(room.wallThickness ?? 0.12)}
                     </div>
                     {canEditPlan && onCommitRoomDimensionEdit ? (
                       <div style={{ color: "#6b7280", fontSize: 9, fontWeight: 600, marginTop: 1 }}>

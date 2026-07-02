@@ -13,6 +13,7 @@ export type RoomRendererOpening = {
   kind: "door" | "window";
   offset: number;
   width: number;
+  height?: number;
 };
 
 export type RoomRendererFixedElement = {
@@ -46,8 +47,11 @@ type PlanOpeningMetricsParams = {
   planDepthMeters: number;
 };
 
+export const PLAN_OPENING_DEFAULT_HEIGHT_METERS = 2.1;
+export const PLAN_OPENING_MIN_HEIGHT_METERS = 0.4;
+export const PLAN_OPENING_MAX_HEIGHT_METERS = 3.2;
 const PLAN_OPENING_MIN_WIDTH_METERS = 0.4;
-const PLAN_OPENING_EDGE_PADDING_METERS = 0.03;
+export const PLAN_OPENING_EDGE_PADDING_METERS = 0.03;
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
@@ -143,6 +147,7 @@ export function mapPlanOpeningsToRoomRenderer(openings: RoomOpening2D[]): RoomRe
     kind: opening.kind,
     offset: mmToMeters(opening.offsetMm),
     width: mmToMeters(opening.widthMm),
+    height: opening.heightMm !== undefined ? mmToMeters(opening.heightMm) : undefined,
   }));
 }
 

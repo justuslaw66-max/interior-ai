@@ -120,6 +120,59 @@ export function findCatalogPlacementPlanRoomAtWorldPoint(
   return rooms.find((room) => isWorldPointInsideCatalogPlacementRoom(room, x, z)) ?? null;
 }
 
+export function isCatalogPlacementFootprintInsideRoom({
+  room,
+  position,
+  rotationY,
+  dimsMm,
+  wallThickness = 0,
+}: {
+  room: CatalogPlacementPlanRoom;
+  position: [number, number, number];
+  rotationY: number;
+  dimsMm: Pick<DimensionsMm, "w" | "d">;
+  wallThickness?: number;
+}): boolean {
+  const [widthMeters, depthMeters] = getRotatedFootprint(
+    dimsMm.w / 1000,
+    dimsMm.d / 1000,
+    rotationY
+  );
+  const halfWidth = widthMeters / 2;
+  const halfDepth = depthMeters / 2;
+  const wall = Number.isFinite(wallThickness) ? Math.max(0, wallThickness) : 0;
+  const samplePoints = [
+    [position[0] - halfWidth, position[2] - halfDepth],
+    [position[0] + halfWidth, position[2] - halfDepth],
+    [position[0] + halfWidth, position[2] + halfDepth],
+    [position[0] - halfWidth, position[2] + halfDepth],
+    [position[0], position[2]],
+  ] as const;
+
+  return samplePoints.every(([x, z]) => {
+    const localX = x - room.x;
+    const localZ = z - room.z;
+    const insideBounds =
+      localX >= -room.w / 2 + wall &&
+      localX <= room.w / 2 - wall &&
+      localZ >= -room.d / 2 + wall &&
+      localZ <= room.d / 2 - wall;
+    if (!insideBounds) return false;
+
+    if (room.shape === "custom_polygon" && room.polygon?.length) {
+      return isPointInsideCatalogPlacementPolygon(localX, localZ, room.polygon);
+    }
+
+    if (room.shape === "l_shape") {
+      const notchW = room.w * 0.42;
+      const notchD = room.d * 0.42;
+      return !(localX > room.w / 2 - notchW - wall && localZ > room.d / 2 - notchD - wall);
+    }
+
+    return true;
+  });
+}
+
 export function doesCatalogPlacementCollide({
   productId,
   position,

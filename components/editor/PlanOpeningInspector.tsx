@@ -4,12 +4,14 @@ type PlanOpeningInspectorProps = {
   opening: RoomOpening2D | null;
   roomName: string;
   wallSpanMeters: number;
+  maxHeightMeters?: number;
   dark?: boolean;
   onChange: (
     id: string,
     metrics: {
       widthMeters?: number;
       offsetMeters?: number;
+      heightMeters?: number;
       kind?: RoomOpening2D["kind"];
     }
   ) => void;
@@ -19,6 +21,7 @@ export default function PlanOpeningInspector({
   opening,
   roomName,
   wallSpanMeters,
+  maxHeightMeters = 3.2,
   dark = false,
   onChange,
 }: PlanOpeningInspectorProps) {
@@ -135,6 +138,33 @@ export default function PlanOpeningInspector({
               const widthMeters = Number.parseFloat(event.target.value);
               if (!Number.isFinite(widthMeters)) return;
               onChange(opening.id, { widthMeters });
+            }}
+          />
+        </label>
+        <label
+          className={
+            dark
+              ? "text-[11px] font-medium text-neutral-300"
+              : "text-[11px] font-medium text-gray-600"
+          }
+        >
+          Height (m)
+          <input
+            data-testid="plan-opening-height-input"
+            className={
+              dark
+                ? "mt-1 w-full rounded-md border border-neutral-700 bg-[#151820] px-2 py-2 text-xs text-neutral-100 outline-none focus:border-teal-500"
+                : "mt-1 w-full rounded-md border border-gray-200 px-2 py-2 text-xs text-gray-900 outline-none focus:border-teal-500"
+            }
+            type="number"
+            min={0.4}
+            max={maxHeightMeters}
+            step={0.05}
+            value={((opening.heightMm ?? 2100) / 1000).toFixed(2)}
+            onChange={(event) => {
+              const heightMeters = Number.parseFloat(event.target.value);
+              if (!Number.isFinite(heightMeters)) return;
+              onChange(opening.id, { heightMeters });
             }}
           />
         </label>

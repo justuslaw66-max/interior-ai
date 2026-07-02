@@ -18,6 +18,31 @@ export function sentenceCaseLabel(value: string): string {
   return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
 }
 
+export function getHighResolutionSwatchUrl(url?: string | null): string | undefined {
+  const raw = String(url ?? "").trim();
+  if (!raw) return undefined;
+
+  if (!raw.includes("res.cloudinary.com")) return raw;
+
+  return raw
+    .replace(/\/w_\d+(?=,|\/)/, "/w_512")
+    .replace(/,w_\d+(?=,|\/)/, ",w_512")
+    .replace(/\/q_auto(?=,|\/)/, "/q_auto:best")
+    .replace(/,q_auto(?=,|\/)/, ",q_auto:best");
+}
+
+export function getMaterialDisplayLabel(
+  variant: Pick<ProductVariant, "label" | "finishLabel" | "finishCode" | "materialType">
+): string {
+  const label = String(variant.finishLabel ?? variant.label ?? "").trim();
+  if (label) return label;
+
+  const finishCode = String(variant.finishCode ?? "").trim();
+  if (finishCode) return sentenceCaseLabel(finishCode.replace(/[_-]+/g, " "));
+
+  return variant.materialType ?? "Finish";
+}
+
 export function normalizeLabelToken(value: string): string {
   return value
     .toLowerCase()

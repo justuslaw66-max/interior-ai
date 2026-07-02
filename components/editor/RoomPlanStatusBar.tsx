@@ -15,6 +15,7 @@ type RoomPlanStatusBarProps = {
   disabled?: boolean;
   dark?: boolean;
   compact?: boolean;
+  variant?: "floating" | "command";
   onViewModeChange: (next: EditorViewMode) => void;
   onReviewHealth?: () => void;
   onFitPlan?: () => void;
@@ -37,11 +38,13 @@ export default function RoomPlanStatusBar({
   disabled = false,
   dark = false,
   compact = false,
+  variant = "floating",
   onViewModeChange,
   onReviewHealth,
   onFitPlan,
   onRenameRoom,
 }: RoomPlanStatusBarProps) {
+  const isCommand = variant === "command";
   const nextViewMode: EditorViewMode = viewMode === "2d" ? "3d" : "2d";
   const viewActionLabel = viewMode === "2d" ? "Room view" : "Plan";
   const sizeLabel = `${formatMeters(widthMeters)} x ${formatMeters(depthMeters)}m`;
@@ -56,62 +59,71 @@ export default function RoomPlanStatusBar({
           ? "Blocked"
           : null;
   const containerClass = [
-    "flex flex-nowrap items-center justify-start overflow-hidden rounded-full border backdrop-blur",
-    compact
+    "flex min-w-0 flex-nowrap items-center justify-start overflow-hidden rounded-full border backdrop-blur",
+    isCommand
+      ? "h-9 max-w-full gap-1 px-1 py-0 shadow-none"
+      : compact
       ? "max-w-[min(34rem,calc(100vw-2rem))] gap-1.5 px-1.5 py-1 shadow-md"
       : "max-w-[min(44rem,calc(100vw-2rem))] gap-2 px-2 py-1.5 shadow-lg",
     dark
-      ? "border-white/15 bg-[#12151dcc] text-neutral-100"
-      : "border-neutral-200 bg-white/95 text-neutral-900",
+      ? isCommand
+        ? "border-white/10 bg-white/5 text-neutral-100"
+        : "border-white/15 bg-[#12151dcc] text-neutral-100"
+      : isCommand
+        ? "border-neutral-200 bg-white/70 text-neutral-900"
+        : "border-neutral-200 bg-white/95 text-neutral-900",
   ].join(" ");
   const pillClass = dark
-    ? `rounded-full bg-white/10 px-2 py-1 ${compact ? "text-[11px]" : "text-xs"} text-neutral-200`
-    : `rounded-full bg-neutral-100 px-2 py-1 ${compact ? "text-[11px]" : "text-xs"} text-neutral-700`;
+    ? `rounded-full bg-white/10 px-2 py-1 ${compact || isCommand ? "text-[11px]" : "text-xs"} text-neutral-200`
+    : `rounded-full bg-neutral-100 px-2 py-1 ${compact || isCommand ? "text-[11px]" : "text-xs"} text-neutral-700`;
   const metaClass = dark
-    ? `${compact ? "text-[11px]" : "text-xs"} font-medium text-neutral-300`
-    : `${compact ? "text-[11px]" : "text-xs"} font-medium text-neutral-600`;
+    ? `${compact || isCommand ? "text-[11px]" : "text-xs"} font-medium text-neutral-300`
+    : `${compact || isCommand ? "text-[11px]" : "text-xs"} font-medium text-neutral-600`;
   const roomCountClass = [
     metaClass,
-    "hidden sm:block",
+    isCommand ? "hidden 2xl:block" : "hidden sm:block",
     compact && roomCount === 1 ? "opacity-60" : "",
   ].join(" ");
   const healthClass =
     healthLevel === "ready"
       ? dark
-        ? `rounded-full bg-emerald-400/15 px-2 py-1 ${compact ? "text-[11px]" : "text-xs"} font-semibold text-emerald-200`
-        : `rounded-full bg-emerald-50 px-2 py-1 ${compact ? "text-[11px]" : "text-xs"} font-semibold text-emerald-700`
+        ? `rounded-full bg-emerald-400/15 px-2 py-1 ${compact || isCommand ? "text-[11px]" : "text-xs"} font-semibold text-emerald-200`
+        : `rounded-full bg-emerald-50 px-2 py-1 ${compact || isCommand ? "text-[11px]" : "text-xs"} font-semibold text-emerald-700`
       : healthLevel === "review"
         ? dark
-          ? `rounded-full bg-amber-400/15 px-2 py-1 ${compact ? "text-[11px]" : "text-xs"} font-semibold text-amber-200`
-          : `rounded-full bg-amber-50 px-2 py-1 ${compact ? "text-[11px]" : "text-xs"} font-semibold text-amber-700`
+          ? `rounded-full bg-amber-400/15 px-2 py-1 ${compact || isCommand ? "text-[11px]" : "text-xs"} font-semibold text-amber-200`
+          : `rounded-full bg-amber-50 px-2 py-1 ${compact || isCommand ? "text-[11px]" : "text-xs"} font-semibold text-amber-700`
           : dark
-            ? `rounded-full bg-red-400/15 px-2 py-1 ${compact ? "text-[11px]" : "text-xs"} font-semibold text-red-200`
-            : `rounded-full bg-red-50 px-2 py-1 ${compact ? "text-[11px]" : "text-xs"} font-semibold text-red-700`;
+            ? `rounded-full bg-red-400/15 px-2 py-1 ${compact || isCommand ? "text-[11px]" : "text-xs"} font-semibold text-red-200`
+            : `rounded-full bg-red-50 px-2 py-1 ${compact || isCommand ? "text-[11px]" : "text-xs"} font-semibold text-red-700`;
   const healthActionClass = `${healthClass} disabled:cursor-default`;
   const buttonClass = dark
-    ? `rounded-full bg-white ${compact ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs"} font-semibold text-neutral-950 disabled:opacity-50`
-    : `rounded-full bg-neutral-900 ${compact ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs"} font-semibold text-white hover:bg-neutral-700 disabled:opacity-50`;
+    ? `rounded-full bg-white ${compact || isCommand ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs"} font-semibold text-neutral-950 disabled:opacity-50`
+    : `rounded-full bg-neutral-900 ${compact || isCommand ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs"} font-semibold text-white hover:bg-neutral-700 disabled:opacity-50`;
   const secondaryButtonClass = dark
-    ? `ml-auto rounded-full border border-white/15 ${compact ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs"} font-semibold text-neutral-100 disabled:opacity-50`
-    : `ml-auto rounded-full border border-neutral-200 ${compact ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs"} font-semibold text-neutral-700 hover:bg-neutral-50 disabled:opacity-50`;
+    ? `${isCommand ? "" : "ml-auto"} rounded-full border border-white/15 ${compact || isCommand ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs"} font-semibold text-neutral-100 disabled:opacity-50`
+    : `${isCommand ? "" : "ml-auto"} rounded-full border border-neutral-200 ${compact || isCommand ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs"} font-semibold text-neutral-700 hover:bg-neutral-50 disabled:opacity-50`;
 
   return (
     <div
       data-testid="room-plan-status"
       data-compact={compact ? "true" : "false"}
+      data-variant={variant}
       className={containerClass}
     >
       <div className="min-w-0 px-2">
         <div
           data-testid="room-plan-status-room-name"
-          className={`truncate font-semibold leading-5 ${compact ? "text-[13px]" : "text-sm"}`}
+          className={`truncate font-semibold leading-5 ${compact || isCommand ? "text-[13px]" : "text-sm"} ${
+            isCommand ? "max-w-[7.5rem] xl:max-w-[10rem] 2xl:max-w-[12rem]" : ""
+          }`}
         >
           {roomName}
         </div>
       </div>
       <div
         data-testid="room-plan-status-room-type"
-        className={`${pillClass} ${showRoomType ? "hidden sm:block" : "hidden"}`}
+        className={`${pillClass} ${showRoomType ? (isCommand ? "hidden 2xl:block" : "hidden sm:block") : "hidden"}`}
       >
         {roomTypeLabel}
       </div>
@@ -144,7 +156,7 @@ export default function RoomPlanStatusBar({
       {healthNextAction && healthLevel !== "ready" && (
         <div
           data-testid="room-plan-status-next-action"
-        className={`${metaClass} hidden min-w-0 max-w-36 truncate 2xl:block`}
+          className={`${metaClass} hidden min-w-0 max-w-36 truncate ${isCommand ? "" : "2xl:block"}`}
           title={healthNextAction}
         >
           {healthNextAction}
@@ -159,7 +171,7 @@ export default function RoomPlanStatusBar({
         disabled={disabled || !onFitPlan}
         className={`${secondaryButtonClass} shrink-0`}
       >
-        {compact ? "Fit" : "Fit plan"}
+        {compact || isCommand ? "Fit" : "Fit plan"}
       </button>
       {onRenameRoom && (
         <button
@@ -168,8 +180,8 @@ export default function RoomPlanStatusBar({
           onClick={onRenameRoom}
           disabled={disabled}
           className={dark
-            ? "hidden shrink-0 rounded-full border border-white/15 px-3 py-1.5 text-xs font-semibold text-neutral-100 disabled:opacity-50 lg:block"
-            : "hidden shrink-0 rounded-full border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 disabled:opacity-50 lg:block"
+            ? `${isCommand ? "hidden 2xl:block" : "hidden lg:block"} shrink-0 rounded-full border border-white/15 px-2.5 py-1 text-xs font-semibold text-neutral-100 disabled:opacity-50`
+            : `${isCommand ? "hidden 2xl:block" : "hidden lg:block"} shrink-0 rounded-full border border-neutral-200 px-2.5 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 disabled:opacity-50`
           }
         >
           Rename

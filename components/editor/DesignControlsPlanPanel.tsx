@@ -965,6 +965,7 @@ export default function DesignControlsPlanPanel({
   const renderSurfaceMaterialBrowser = () => (
     <div
       data-testid="room-surfaces-floor-panel"
+      data-floor-material-id={activeRoomFloorMaterialId}
       className={
         dark
           ? "mt-2 rounded-lg border border-white/10 bg-white/5 p-2"

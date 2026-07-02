@@ -9,6 +9,9 @@ type RoomConnectionChecklistProps = {
   items: HouseRoomConnectionChecklistItem[];
   disabled?: boolean;
   dark?: boolean;
+  variant?: "pro" | "consumer";
+  collapsed?: boolean;
+  onCollapsedChange?: (collapsed: boolean) => void;
   onAddDoorway: (suggestion: HouseRoomDoorwaySuggestion) => void;
 };
 
@@ -18,6 +21,9 @@ export default function RoomConnectionChecklist({
   items,
   disabled = false,
   dark = false,
+  variant = "consumer",
+  collapsed = false,
+  onCollapsedChange,
   onAddDoorway,
 }: RoomConnectionChecklistProps) {
   if (items.length === 0) return null;
@@ -44,10 +50,26 @@ export default function RoomConnectionChecklist({
   const buttonClass = dark
     ? "rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-semibold text-neutral-950 disabled:opacity-50"
     : "rounded-lg bg-neutral-900 px-2.5 py-1.5 text-[11px] font-semibold text-white hover:bg-neutral-700 disabled:opacity-50";
+  const toggleClass = dark
+    ? "rounded-lg border border-white/10 px-2 py-1 text-[11px] font-semibold text-neutral-300"
+    : "rounded-lg border border-neutral-200 px-2 py-1 text-[11px] font-semibold text-neutral-600";
 
   return (
-    <div data-testid="room-connection-checklist" className={shellClass}>
-      <div className={titleClass}>Connections</div>
+    <div data-testid="room-connection-checklist" data-variant={variant} className={shellClass}>
+      <div className="flex items-center justify-between gap-2">
+        <div className={titleClass}>Connections</div>
+        {onCollapsedChange ? (
+          <button
+            type="button"
+            className={toggleClass}
+            aria-expanded={!collapsed}
+            onClick={() => onCollapsedChange(!collapsed)}
+          >
+            {collapsed ? "Expand" : "Collapse"}
+          </button>
+        ) : null}
+      </div>
+      {collapsed ? null : (
       <div className="mt-2 space-y-2">
         {items.map((item) => (
           <div key={item.id} data-testid="room-connection-row" className={rowClass}>
@@ -81,6 +103,7 @@ export default function RoomConnectionChecklist({
           </div>
         ))}
       </div>
+      )}
     </div>
   );
 }

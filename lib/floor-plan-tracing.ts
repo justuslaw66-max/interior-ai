@@ -71,7 +71,7 @@ export type TracedOpeningPlacementValidation =
   | { valid: true }
   | {
       valid: false;
-      reason: "too_close_to_corner" | "too_close_to_opening" | "opening_too_wide";
+      reason: "too_close_to_corner" | "too_close_to_opening" | "opening_too_wide" | "blocked_by_wall";
       label: string;
     };
 
@@ -858,6 +858,64 @@ export function validateTracedOpeningPlacement(
   }
 
   return { valid: true };
+}
+
+export function clampOpeningToNearestClearInterval(
+  opening: RoomOpening2D,
+  rooms: HousePlanRoom2D[],
+  existingOpenings: RoomOpening2D[] | RoomOpening2D = []
+): RoomOpening2D {
+  const span = getOpeningWallSpanMeters(opening, rooms);
+  if (!span) return opening;
+  const existingOpeningList = Array.isArray(existingOpenings)
+    ? existingOpenings
+    : [existingOpenings];
+
+  const widthMeters = opening.widthMm / 1000;
+  const halfWidth = widthMeters / 2;
+  const maxOffset = Math.max(
+    0,
+    span / 2 - halfWidth - MIN_OPENING_CORNER_CLEARANCE_METERS
+  );
+  const requestedOffsetMeters = clamp(opening.offsetMm / 1000, -maxOffset, maxOffset);
+  const blockers = existingOpeningList.filter(
+    (existing) =>
+      existing.id !== opening.id &&
+      existing.roomId === opening.roomId &&
+      existing.wall === opening.wall
+  );
+  const candidates = new Set<number>([requestedOffsetMeters, 0, -maxOffset, maxOffset]);
+
+  for (const blocker of blockers) {
+    const blockerOffsetMeters = blocker.offsetMm / 1000;
+    const requiredDistance =
+      blocker.widthMm / 2000 + halfWidth + MIN_OPENING_SPACING_METERS;
+    candidates.add(clamp(blockerOffsetMeters - requiredDistance, -maxOffset, maxOffset));
+    candidates.add(clamp(blockerOffsetMeters + requiredDistance, -maxOffset, maxOffset));
+  }
+
+  const best = Array.from(candidates)
+    .map((offsetMeters) => {
+      const candidate = { ...opening, offsetMm: metersToMm(offsetMeters) };
+      const validation = validateTracedOpeningPlacement(
+        candidate,
+        rooms,
+        existingOpeningList,
+        opening.id
+      );
+      return {
+        offsetMeters,
+        valid: validation.valid,
+        distance: Math.abs(offsetMeters - requestedOffsetMeters),
+      };
+    })
+    .filter((candidate) => candidate.valid)
+    .sort((first, second) => first.distance - second.distance)[0];
+
+  return {
+    ...opening,
+    offsetMm: metersToMm(best?.offsetMeters ?? requestedOffsetMeters),
+  };
 }
 
 export function resolveTracedOpeningPreview(

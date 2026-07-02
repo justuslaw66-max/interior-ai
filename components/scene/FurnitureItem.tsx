@@ -59,6 +59,7 @@ type FurnitureProps = {
   roomPlanShape?: RoomPlanShape;
   roomPlanPolygon?: RoomPlanPolygonPoint[];
   wallThickness?: number;
+  wallContactInset?: number;
   margin?: number;
   snapDistance?: number;
   enableSnap?: boolean;
@@ -134,6 +135,7 @@ export function Furniture({
   roomPlanShape = "rectangle",
   roomPlanPolygon,
   wallThickness = 0.12,
+  wallContactInset,
   snapDistance = 0.25,
   enableSnap = true,
   allowCrossRoomDrag = false,
@@ -491,10 +493,14 @@ export function Furniture({
   // Hard constraint bounds: prevent items from exiting the room
   // Walls have physical thickness, so we must account for that
   // Items must stay inside the inner room boundaries (wall edges)
-  const hardMinX = roomOriginX - halfRoomW + wallThickness + halfEffectiveW;
-  const hardMaxX = roomOriginX + halfRoomW - wallThickness - halfEffectiveW;
-  const hardMinZ = roomOriginZ - halfRoomD + wallThickness + halfEffectiveD;
-  const hardMaxZ = roomOriginZ + halfRoomD - wallThickness - halfEffectiveD;
+  const roomWallInset =
+    typeof wallContactInset === "number" && Number.isFinite(wallContactInset)
+      ? wallContactInset
+      : wallThickness;
+  const hardMinX = roomOriginX - halfRoomW + roomWallInset + halfEffectiveW;
+  const hardMaxX = roomOriginX + halfRoomW - roomWallInset - halfEffectiveW;
+  const hardMinZ = roomOriginZ - halfRoomD + roomWallInset + halfEffectiveD;
+  const hardMaxZ = roomOriginZ + halfRoomD - roomWallInset - halfEffectiveD;
 
   // Soft snap bounds: walls where items snap flush
   // Items snap directly to hard bounds (wall edges), no gap
