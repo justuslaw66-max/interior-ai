@@ -3,6 +3,7 @@ import { test, expect } from "./fixtures";
 import {
   addCatalogDrawerItemToRoom,
   openCatalogPreview as openCatalogPreviewShared,
+  openShopPanel,
 } from "./variant-test-utils";
 
 async function openCatalogPreview(page: Page, searchTerm: string, productId: string) {
@@ -124,7 +125,7 @@ test.describe("12. Variant Identity", () => {
 
     await addCatalogDrawerItemToRoom(page);
 
-    await page.getByRole("button", { name: "Shop" }).click();
+    await openShopPanel(page);
     const autoFillButton = page.getByRole("button", { name: "Auto-fill cart from room" });
     if (await autoFillButton.isVisible().catch(() => false)) {
       await autoFillButton.click();

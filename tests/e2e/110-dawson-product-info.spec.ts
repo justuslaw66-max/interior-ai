@@ -15,7 +15,7 @@ test.describe("110. Dawson Product Info", () => {
 
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
-    await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
 
     const opened = await openCatalogPreview(page, DAWSON_3S_ID, "Dawson 3 Seater", [/^Sofa \(/]);
     if (opened) {

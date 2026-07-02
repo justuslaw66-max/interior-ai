@@ -145,7 +145,7 @@ test.describe("132. Sloane Travertine Dining Table 180cm Product Info", () => {
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
 
-    await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
 
     const opened = await openCatalogPreview(page, SLOANE_TRAVERTINE_180_ID, "Sloane Travertine");
     expect(opened).toBeTruthy();

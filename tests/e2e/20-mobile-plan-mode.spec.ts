@@ -33,7 +33,7 @@ async function openTemplatePlan(page: import("@playwright/test").Page) {
   }
 
   await page.getByTestId("apply-plan-template-studio").click();
-  await expect(page.getByTestId("room-plan-status")).toBeVisible({ timeout: 20000 });
+  await expect(page.getByTestId("room-plan-status")).toHaveCount(1, { timeout: 20000 });
 }
 
 test.describe("20. Mobile Plan Mode", () => {
@@ -45,6 +45,7 @@ test.describe("20. Mobile Plan Mode", () => {
 
       await expect(page.getByTestId("room-plan-status")).toHaveAttribute("data-compact", "true");
       await expect(page.getByTestId("room-plan-status-fit-view")).toHaveText("Fit");
+      await expect(page.getByRole("button", { name: "Fit room" })).toBeVisible();
       await expect(page.getByTestId("plan-guided-actions-toggle")).toBeVisible();
       await expect(page.getByTestId("plan-guided-actions-toggle")).toHaveAttribute("role", "switch");
 

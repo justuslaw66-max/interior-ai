@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 import { test, expect } from "./fixtures";
-import { addCatalogDrawerItemToRoom, openCatalogPreview } from "./variant-test-utils";
+import { addCatalogDrawerItemToRoom, openCatalogPreview, openShopPanel } from "./variant-test-utils";
 
 async function readHeroSrc(page: Page, panelRoot = drawer(page)): Promise<string | null> {
   const heroImage = panelRoot.locator("img").first();
@@ -82,7 +82,7 @@ test.describe("98. Dawson Variant Selector Smoke", () => {
 
     // Validate cart keeps selected variant identity.
     await addCatalogDrawerItemToRoom(page);
-    await page.getByRole("button", { name: "Shop" }).click();
+    await openShopPanel(page);
     const autoFillButton = page.getByRole("button", { name: "Auto-fill cart from room" });
     if (await autoFillButton.isVisible().catch(() => false)) {
       await autoFillButton.click();

@@ -1,5 +1,9 @@
 import { test, expect } from './fixtures';
-import { openCatalogPreview as openCatalogPreviewShared } from './variant-test-utils';
+import {
+  addCatalogDrawerItemToRoom,
+  openCatalogPreview as openCatalogPreviewShared,
+  openShopPanel,
+} from './variant-test-utils';
 
 test.describe('5. Buy Flow (Shopify + Affiliate)', () => {
   test('add Shopify-mapped item to cart and checkout link works', async ({ page }) => {
@@ -113,11 +117,9 @@ test.describe('5. Buy Flow (Shopify + Affiliate)', () => {
       });
       return;
     }
-    await addToRoom.click();
+    await addCatalogDrawerItemToRoom(page);
 
-    const shopButton = page.getByTestId('editor-workflow-shop');
-    await expect(shopButton).toBeVisible({ timeout: 10000 });
-    await shopButton.click();
+    await openShopPanel(page);
 
     await expect(page.getByTestId('cart-panel')).toBeVisible({ timeout: 10000 });
 

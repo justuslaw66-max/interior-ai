@@ -9,7 +9,7 @@ test.describe("115. Dawson Pit Product Info", () => {
 
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
-    await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
 
     const opened = await openCatalogPreview(page, DAWSON_PIT_ID, "Dawson Pit", [/^Sofa \(/]);
     expect(opened).toBeTruthy();

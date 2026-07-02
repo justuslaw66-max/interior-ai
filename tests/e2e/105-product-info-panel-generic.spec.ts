@@ -9,7 +9,7 @@ test.describe("105. Product Info Panel Generic YAML Details", () => {
 
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
-    await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
 
     const opened = await openCatalogPreview(page, SLOANE_TV_CONSOLE_ID, "Sloane TV Console", [
       /TV Console/i,

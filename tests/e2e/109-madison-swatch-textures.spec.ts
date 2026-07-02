@@ -9,7 +9,7 @@ const MADISON_3S_ID = "sofa-real-castlery-madison-3s";
 
 const expectedSwatches = [
   { label: "Bisque", urlPart: "AM-4001/Madison-Armchair-Bisque-Square-Det_1" },
-  { label: "Camille, Forest", urlPart: "CM-4001/Madison-3-Seater-Sofa-Forest-Det_5" },
+  { label: "Camille", urlPart: "CM-4001/Madison-3-Seater-Sofa-Forest-Det_5" },
   { label: "Caramel", urlPart: "LE-4016/Jonathan-Sofa-Brown_1" },
 ];
 
@@ -20,7 +20,7 @@ test.describe("109. Madison Swatch Textures", () => {
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
 
-    await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
 
     const opened = await openCatalogPreview(page, MADISON_3S_ID, "Madison");
     expect(opened).toBeTruthy();
@@ -48,7 +48,7 @@ test.describe("109. Madison Swatch Textures", () => {
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
 
-    await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
 
     const opened = await openCatalogPreview(page, MADISON_3S_ID, "Madison");
     expect(opened).toBeTruthy();

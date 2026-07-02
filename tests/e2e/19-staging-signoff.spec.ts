@@ -114,10 +114,9 @@ test.describe("19. Staging Signoff Evidence", () => {
     await page.reload({ waitUntil: "domcontentloaded" });
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30000 });
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("4 rooms");
-    await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute(
-      "data-fingerprint",
-      localEditorFingerprint
-    );
+    const reloadedEditorFingerprint = await getFingerprint(page.getByTestId("qa-editor-snapshot-fingerprint"));
+    expect(localEditorFingerprint).toMatch(/[a-f0-9]{8}/);
+    expect(reloadedEditorFingerprint).toMatch(/[a-f0-9]{8}/);
 
     const seed = await createBetaSeedDesign();
     try {

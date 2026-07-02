@@ -12,7 +12,7 @@ const DAWSON_SWIVEL_ID = "sofa-real-castlery-dawson-swivel-armchair";
 async function addDawsonProduct(page: Page, productId: string) {
   await page.goto("/design");
   await page.waitForLoadState("domcontentloaded");
-  await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+  await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
 
   await expect.poll(() => waitForCatalogReady(page), { timeout: 30000 }).toBeTruthy();
   await expect.poll(() => selectImportedFamilyByHint(page, "dawson"), { timeout: 20000 }).toBeTruthy();

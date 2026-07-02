@@ -158,7 +158,7 @@ test.describe("143. Seb Lift Top Small Product Info", () => {
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
 
-    await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
 
     const opened = await openCatalogPreview(page, SEB_LIFT_TOP_SMALL_ID, "Seb Lift Top Coffee");
     expect(opened).toBeTruthy();

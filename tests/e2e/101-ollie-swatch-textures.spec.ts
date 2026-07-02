@@ -14,7 +14,7 @@ test.describe("101. Ollie Swatch Textures", () => {
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
 
-    await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
 
     const opened = await openCatalogPreview(page, OLLIE_ID, "Ollie");
     expect(opened).toBeTruthy();
@@ -27,9 +27,9 @@ test.describe("101. Ollie Swatch Textures", () => {
     await expect(selectedItemPanel.getByText(/Ollie Storage Ottoman/i).first()).toBeVisible();
 
     const expectedSwatches = [
-      { label: "Greta Ivory", urlPart: "GR4001-Greta-Ivory" },
-      { label: "Greta Caramel", urlPart: "GR4003-Greta-Mustard-Brown" },
-      { label: "Greta Moss", urlPart: "GR4004-Greta-Moss" },
+      { label: "Washed Chenille, Cream", urlPart: "GR4001-Greta-Ivory" },
+      { label: "Washed Chenille, Caramel", urlPart: "GR4003-Greta-Mustard-Brown" },
+      { label: "Washed Chenille, Moss", urlPart: "GR4004-Greta-Moss" },
     ];
 
     for (const swatch of expectedSwatches) {

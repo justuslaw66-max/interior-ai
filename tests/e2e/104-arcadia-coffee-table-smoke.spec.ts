@@ -10,7 +10,7 @@ test.describe("104. Arcadia Coffee Table Catalog Smoke", () => {
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
 
-    await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
 
     const opened = await openCatalogPreview(page, ARCADIA_COFFEE_TABLE_ID, "Arcadia");
     expect(opened).toBeTruthy();

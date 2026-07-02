@@ -37,7 +37,7 @@ function expectRows(rows: ProductInfoRow[] | undefined, expected: RegExp[]) {
 async function addMadisonProduct(page: Page, productId: string) {
   await page.goto("/design");
   await page.waitForLoadState("domcontentloaded");
-  await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+  await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
 
   await expect.poll(() => waitForCatalogReady(page), { timeout: 30000 }).toBeTruthy();
   await expect.poll(() => selectImportedFamilyByHint(page, "madison"), { timeout: 20000 }).toBeTruthy();

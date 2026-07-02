@@ -102,7 +102,7 @@ test.describe("145. Sloane Dining Table Product Info", () => {
 
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
-    await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
 
     expect(await selectImportedFamilyByHint(page, "Sloane")).toBeTruthy();
     expect(await selectImportedProductById(page, SLOANE_DINING_TABLE_180_ID)).toBeTruthy();

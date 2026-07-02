@@ -9,7 +9,7 @@ test.describe("113. Dawson Chaise Product Info", () => {
 
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
-    await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
 
     const opened = await openCatalogPreview(page, DAWSON_CHAISE_ID, "Dawson Chaise", [/^Sofa \(/]);
     expect(opened).toBeTruthy();

@@ -16,12 +16,32 @@ export const DEFAULT_CATEGORY_TABS: RegExp[] = [
 ];
 
 async function openFurnishPanel(page: Page): Promise<void> {
+  await dismissBlockingDialogs(page);
   const searchInput = getCatalogSearchInput(page);
   if (await searchInput.isVisible().catch(() => false)) return;
 
   const furnishButton = page.locator('[data-testid="editor-workflow-furnish"]');
-  if ((await furnishButton.count()) > 0) {
-    await furnishButton.first().click();
+  const furnishButtonCount = await furnishButton.count();
+  for (let index = 0; index < furnishButtonCount; index += 1) {
+    const candidate = furnishButton.nth(index);
+    if (!(await candidate.isVisible().catch(() => false))) continue;
+    await candidate.click();
+    break;
+  }
+
+  if (await searchInput.isVisible().catch(() => false)) return;
+
+  await dismissBlockingDialogs(page);
+  const guidedFurnishButton = page.getByRole("button", { name: /\b3\s+Furnish\b/i });
+  if (await guidedFurnishButton.isVisible().catch(() => false)) {
+    await guidedFurnishButton.click();
+  }
+
+  if (await searchInput.isVisible().catch(() => false)) return;
+
+  const startFurnishingButton = page.getByRole("button", { name: /^Start furnishing$/i });
+  if (await startFurnishingButton.isVisible().catch(() => false)) {
+    await startFurnishingButton.click();
   }
 
   if (await searchInput.isVisible().catch(() => false)) return;
@@ -44,6 +64,31 @@ export function getSelectedItemPanel(page: Page): Locator {
     .filter({ hasText: "Selected Item" })
     .filter({ has: page.getByRole("button", { name: "View retailer" }) })
     .first();
+}
+
+async function dismissBlockingDialogs(page: Page): Promise<void> {
+  const maybeLater = page.getByRole("button", { name: /^Maybe later$/i });
+  if (await maybeLater.isVisible().catch(() => false)) {
+    await maybeLater.click({ force: true }).catch(() => undefined);
+  }
+}
+
+export async function openShopPanel(page: Page): Promise<void> {
+  const visibleShopButton = page.locator('[data-testid="editor-workflow-shop"]:visible').first();
+  if (await visibleShopButton.isVisible().catch(() => false)) {
+    await visibleShopButton.click();
+    return;
+  }
+
+  const visibleCartRailButton = page.locator('[data-testid="editor-rail-cart"]:visible').first();
+  if (await visibleCartRailButton.isVisible().catch(() => false)) {
+    await visibleCartRailButton.click();
+    return;
+  }
+
+  await page.getByTestId("editor-workflow-shop").first().evaluate((button) => {
+    (button as HTMLButtonElement).click();
+  });
 }
 
 function getCatalogSearchInput(page: Page): Locator {

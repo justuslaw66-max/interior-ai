@@ -11,7 +11,7 @@ test.describe("102. Hugg Side Table Catalog Smoke", () => {
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
 
-    await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
 
     const opened = await openCatalogPreview(page, HUGG_SIDE_TABLE_BASALT_CLOSED_ID, "Hugg");
     expect(opened).toBeTruthy();
