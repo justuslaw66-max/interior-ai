@@ -7,7 +7,7 @@ import { MapControls } from "@react-three/drei/core/MapControls";
 import { Environment } from "@react-three/drei/core/Environment";
 import { Lightformer } from "@react-three/drei/core/Lightformer";
 import { Line } from "@react-three/drei/core/Line";
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from "react";
+import { Fragment, Suspense, useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from "react";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { signIn, useSession } from "next-auth/react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -321,6 +321,369 @@ import {
 
 import { Room } from "@/components/scene/RoomEnvironment";
 import { Furniture, CameraCapture } from "@/components/scene/FurnitureItem";
+import CabinetryStudio from "@/features/cabinetry/components/CabinetryStudio";
+import { CabinetMeasurementUnitProvider } from "@/features/cabinetry/components/CabinetMeasurementUnitContext";
+import { CabinetSceneItem } from "@/features/cabinetry/components/CabinetSceneItem";
+import { exportCabinetAsGlb } from "@/features/cabinetry/exportCabinetGlb";
+import { generateCabinetBOM } from "@/features/cabinetry/generateCabinetBOM";
+import { generateCabinetParts } from "@/features/cabinetry/generateCabinetParts";
+import {
+  createCabinetPolygonWallSpaces,
+  createCabinetRoomWallSpaces,
+  getCabinetFitPlacement,
+  mapCabinetCardinalOpeningsToPolygonWalls,
+} from "@/features/cabinetry/fitToSpace";
+import {
+  buildCabinetProjectHandoffPackage,
+  buildCabinetProjectSchedulePackage,
+  downloadCabinetProjectApprovalPackageJson,
+  downloadCabinetProjectCncBatchPackageJson,
+  downloadCabinetProjectCutListPackageJson,
+  downloadCabinetProjectDrawingSetPackageJson,
+  downloadCabinetProjectFieldVerificationPackageJson,
+  downloadCabinetProjectFabricationReleasePackageJson,
+  downloadCabinetProjectFinishSchedulePackageJson,
+  downloadCabinetProjectFabricationQuoteRequestJson,
+  downloadCabinetProjectHandoffPackageJson,
+  downloadCabinetProjectInstallationPlanPackageJson,
+  downloadCabinetProjectProcurementPackageJson,
+  downloadCabinetProjectPurchaseReadinessPackageJson,
+  downloadCabinetProjectQuotePackageJson,
+  downloadCabinetProjectRevisionPackageJson,
+  downloadCabinetProjectScheduleCsv,
+  downloadCabinetProjectSchedulePackageJson,
+  downloadCabinetProjectScopePackageJson,
+  downloadCabinetPlacedAssetInstallerWorkOrderJson,
+  downloadCabinetPlacedAssetPackageJson,
+  generateCabinetDocumentation,
+} from "@/features/cabinetry/generateCabinetDocumentation";
+import { LocalCabinetAssetStorage } from "@/features/cabinetry/storage/LocalCabinetAssetStorage";
+import type {
+  CabinetBOMItem,
+  CabinetDefinition,
+  CabinetHostSpace,
+  PlacedCabinetAsset,
+} from "@/features/cabinetry/types";
+import {
+  createCabinetMillworkDefinition,
+  getCabinetMillworkAssemblyType,
+} from "@/features/millwork/createCabinetMillworkDefinition";
+import { buildMillworkAssetManifest } from "@/features/millwork/buildMillworkAssetManifest";
+
+const flagFromPublicEnv = (value: string | undefined, defaultValue: boolean) => {
+  if (value === undefined) return defaultValue;
+  const normalized = value.trim().toLowerCase();
+  return normalized === "true" || normalized === "1";
+};
+
+const normalizePublicAppEnv = (raw: string | undefined) => {
+  const value = (raw || "").trim().toLowerCase();
+  if (value === "production") return "production";
+  if (value === "staging") return "staging";
+  return "development";
+};
+
+const publicAppEnv = normalizePublicAppEnv(
+  process.env.NEXT_PUBLIC_APP_ENV || process.env.VERCEL_ENV
+);
+
+const CABINETRY_STUDIO_FEATURE_ENABLED = flagFromPublicEnv(
+  process.env.NEXT_PUBLIC_FEATURE_CUSTOM_MILLWORK_STUDIO ||
+    process.env.NEXT_PUBLIC_FEATURE_CABINETRY_STUDIO,
+  publicAppEnv !== "production"
+);
+
+function isParametricCabinetItem(
+  item: Pick<DesignItem, "assetType" | "cabinetDefinition"> | null | undefined
+): item is DesignItem & { cabinetDefinition: CabinetDefinition } {
+  return item?.assetType === "parametric_cabinet" && Boolean(item.cabinetDefinition);
+}
+
+function getCabinetPlanningDimsMm(item: DesignItem): { w: number; d: number; h: number } | null {
+  if (!isParametricCabinetItem(item)) return null;
+  return {
+    w: item.cabinetDefinition.totalWidth,
+    d: item.cabinetDefinition.depth,
+    h: item.cabinetDefinition.height,
+  };
+}
+
+function getCabinetRotationY(item: Pick<DesignItem, "rotationY" | "transform">): number {
+  if (typeof item.rotationY === "number" && Number.isFinite(item.rotationY)) {
+    return item.rotationY;
+  }
+  if (typeof item.transform?.rotationY === "number" && Number.isFinite(item.transform.rotationY)) {
+    return item.transform.rotationY;
+  }
+  const transformRotationY = item.transform?.rotation?.[1];
+  return typeof transformRotationY === "number" && Number.isFinite(transformRotationY)
+    ? transformRotationY
+    : 0;
+}
+
+function buildCabinetTransformMetadata(
+  position: [number, number, number],
+  rotationY: number,
+  scale: [number, number, number] = [1, 1, 1]
+): NonNullable<DesignItem["transform"]> {
+  return {
+    position,
+    rotationY,
+    rotation: [0, rotationY, 0],
+    scale,
+  };
+}
+
+function buildCabinetAssetManifest({
+  definition,
+  instanceId,
+  roomId,
+  position,
+  rotationY,
+  scale = [1, 1, 1],
+  glbAssetUrl,
+  createdAt,
+  updatedAt,
+}: {
+  definition: CabinetDefinition;
+  instanceId: string;
+  roomId?: string;
+  position: [number, number, number];
+  rotationY: number;
+  scale?: [number, number, number];
+  glbAssetUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+}): NonNullable<DesignItem["millworkAssetManifest"]> {
+  return buildMillworkAssetManifest({
+    assetId: instanceId,
+    assetType: "parametric_cabinet",
+    millworkDefinition: createCabinetMillworkDefinition(definition),
+    sourceDefinition: definition,
+    roomId,
+    transform: {
+      position,
+      rotation: [0, rotationY, 0],
+      scale,
+    },
+    glbAssetUrl,
+    createdAt,
+    updatedAt,
+  });
+}
+
+function buildCabinetMillworkMetadata(
+  definition: CabinetDefinition,
+  roomId?: string
+): Pick<
+  DesignItem,
+  | "assemblyType"
+  | "millworkDefinition"
+  | "millworkDefinitionVersion"
+  | "millworkMaterials"
+  | "millworkHardware"
+  | "roomId"
+> {
+  const millworkDefinition = createCabinetMillworkDefinition(definition);
+  return {
+    assemblyType: millworkDefinition.assemblyType,
+    millworkDefinition,
+    millworkDefinitionVersion: millworkDefinition.version,
+    millworkMaterials: millworkDefinition.materials,
+    millworkHardware: millworkDefinition.hardware,
+    roomId,
+  };
+}
+
+function normalizeCabinetDesignItem(
+  item: DesignItem,
+  options: { dropTemporaryGlbUrls?: boolean; roomId?: string } = {}
+): DesignItem {
+  if (!isParametricCabinetItem(item)) return item;
+
+  const now = new Date().toISOString();
+  const position = item.position ?? item.transform?.position ?? [0, 0, 0];
+  const rotationY = getCabinetRotationY(item);
+  const scale = item.transform?.scale ?? [1, 1, 1];
+  const roomId = options.roomId ?? item.roomId;
+  const documentationSnapshot = generateCabinetDocumentation(item.cabinetDefinition);
+  const glbAssetUrl =
+    options.dropTemporaryGlbUrls && item.glbAssetUrl?.startsWith("blob:")
+      ? undefined
+      : item.glbAssetUrl;
+  const createdAt = item.createdAt ?? item.cabinetDefinition.createdAt ?? now;
+  const updatedAt =
+    item.updatedAt ?? item.cabinetUpdatedAt ?? item.cabinetDefinition.updatedAt ?? now;
+  const cabinetUpdatedAt =
+    item.cabinetUpdatedAt ?? item.updatedAt ?? item.cabinetDefinition.updatedAt ?? now;
+
+  return {
+    ...item,
+    id: item.id ?? item.instanceId,
+    ...buildCabinetMillworkMetadata(item.cabinetDefinition, roomId),
+    productId: "parametric-cabinet",
+    variantId: item.variantId || item.cabinetDefinition.id,
+    name: item.name ?? item.cabinetDefinition.name,
+    glbAssetUrl,
+    millworkAssetManifest: buildCabinetAssetManifest({
+      definition: item.cabinetDefinition,
+      instanceId: item.instanceId,
+      roomId,
+      position,
+      rotationY,
+      scale,
+      glbAssetUrl,
+      createdAt,
+      updatedAt,
+    }),
+    bomSnapshot: item.bomSnapshot ?? generateCabinetBOM(item.cabinetDefinition),
+    materialScheduleSnapshot:
+      item.materialScheduleSnapshot ?? documentationSnapshot.materialSchedule,
+    hardwareScheduleSnapshot:
+      item.hardwareScheduleSnapshot ?? documentationSnapshot.hardwareSchedule,
+    edgeBandingScheduleSnapshot:
+      item.edgeBandingScheduleSnapshot ?? documentationSnapshot.edgeBandingSchedule,
+    cutListSnapshot: item.cutListSnapshot ?? documentationSnapshot.cutList,
+    dimensionScheduleSnapshot:
+      item.dimensionScheduleSnapshot ?? documentationSnapshot.dimensionSchedule,
+    drawingViewScheduleSnapshot:
+      item.drawingViewScheduleSnapshot ?? documentationSnapshot.drawingViewSchedule,
+    installerNotesSnapshot:
+      item.installerNotesSnapshot ?? documentationSnapshot.installerNotes,
+    releaseChecklistSnapshot:
+      item.releaseChecklistSnapshot ?? documentationSnapshot.releaseChecklist,
+    quoteSummarySnapshot:
+      item.quoteSummarySnapshot ?? documentationSnapshot.quoteSummary,
+    supplierSkuMappingsSnapshot:
+      item.supplierSkuMappingsSnapshot ?? documentationSnapshot.supplierSkuMappings,
+    supplierReadinessSnapshot:
+      item.supplierReadinessSnapshot ?? documentationSnapshot.supplierReadiness,
+    fabricationReleaseReadinessSnapshot:
+      item.fabricationReleaseReadinessSnapshot ??
+      documentationSnapshot.fabricationReleaseReadiness,
+    createdAt,
+    updatedAt,
+    cabinetUpdatedAt,
+    position,
+    rotationY,
+    transform: buildCabinetTransformMetadata(position, rotationY, scale),
+    qty: typeof item.qty === "number" && item.qty > 0 ? item.qty : 1,
+    includeInCheckout: false,
+    locked: Boolean(item.locked),
+  };
+}
+
+function updateCabinetPlacementMetadata(
+  item: DesignItem,
+  position: [number, number, number],
+  rotationY: number,
+  roomId?: string
+): DesignItem {
+  if (!isParametricCabinetItem(item)) {
+    return {
+      ...item,
+      position,
+      rotationY,
+    };
+  }
+
+  const now = new Date().toISOString();
+  const scale = item.transform?.scale ?? [1, 1, 1];
+  const createdAt = item.createdAt ?? item.cabinetDefinition.createdAt ?? now;
+
+  return {
+    ...item,
+    position,
+    rotationY,
+    transform: buildCabinetTransformMetadata(position, rotationY, scale),
+    millworkAssetManifest: buildCabinetAssetManifest({
+      definition: item.cabinetDefinition,
+      instanceId: item.instanceId,
+      roomId: roomId ?? item.roomId,
+      position,
+      rotationY,
+      scale,
+      glbAssetUrl: item.glbAssetUrl,
+      createdAt,
+      updatedAt: now,
+    }),
+    cabinetUpdatedAt: now,
+    createdAt,
+    updatedAt: now,
+  };
+}
+
+function buildPlacedCabinetAssetPackageInput(
+  item: DesignItem & { cabinetDefinition: CabinetDefinition },
+  roomId?: string
+): PlacedCabinetAsset {
+  const documentationSnapshot = generateCabinetDocumentation(item.cabinetDefinition);
+  const rotationY = getCabinetRotationY(item);
+  const position = item.position ?? item.transform?.position ?? [0, 0, 0];
+  const scale = item.transform?.scale ?? [1, 1, 1];
+  const millworkDefinition = createCabinetMillworkDefinition(item.cabinetDefinition);
+  const now = new Date().toISOString();
+  const createdAt = item.createdAt ?? item.cabinetDefinition.createdAt ?? now;
+  const updatedAt =
+    item.updatedAt ?? item.cabinetUpdatedAt ?? item.cabinetDefinition.updatedAt ?? now;
+
+  return {
+    id: item.instanceId,
+    assetType: "parametric_cabinet",
+    assetManifest: buildCabinetAssetManifest({
+      definition: item.cabinetDefinition,
+      instanceId: item.instanceId,
+      roomId: roomId ?? item.roomId,
+      position,
+      rotationY,
+      scale,
+      glbAssetUrl: item.glbAssetUrl,
+      createdAt,
+      updatedAt,
+    }),
+    assemblyType: item.assemblyType ?? millworkDefinition.assemblyType,
+    cabinetDefinitionId: item.cabinetDefinition.id,
+    cabinetDefinition: item.cabinetDefinition,
+    millworkDefinition,
+    millworkDefinitionVersion: item.millworkDefinitionVersion ?? millworkDefinition.version,
+    glbAssetUrl: item.glbAssetUrl,
+    transform: {
+      position,
+      rotation: item.transform?.rotation ?? [0, rotationY, 0],
+      scale,
+    },
+    roomId: roomId ?? item.roomId,
+    materials: item.cabinetDefinition.materials,
+    hardware: item.cabinetDefinition.hardware,
+    bomSnapshot: item.bomSnapshot ?? generateCabinetBOM(item.cabinetDefinition),
+    materialScheduleSnapshot:
+      item.materialScheduleSnapshot ?? documentationSnapshot.materialSchedule,
+    hardwareScheduleSnapshot:
+      item.hardwareScheduleSnapshot ?? documentationSnapshot.hardwareSchedule,
+    edgeBandingScheduleSnapshot:
+      item.edgeBandingScheduleSnapshot ?? documentationSnapshot.edgeBandingSchedule,
+    cutListSnapshot: item.cutListSnapshot ?? documentationSnapshot.cutList,
+    dimensionScheduleSnapshot:
+      item.dimensionScheduleSnapshot ?? documentationSnapshot.dimensionSchedule,
+    drawingViewScheduleSnapshot:
+      item.drawingViewScheduleSnapshot ?? documentationSnapshot.drawingViewSchedule,
+    installerNotesSnapshot:
+      item.installerNotesSnapshot ?? documentationSnapshot.installerNotes,
+    releaseChecklistSnapshot:
+      item.releaseChecklistSnapshot ?? documentationSnapshot.releaseChecklist,
+    quoteSummarySnapshot:
+      item.quoteSummarySnapshot ?? documentationSnapshot.quoteSummary,
+    supplierSkuMappingsSnapshot:
+      item.supplierSkuMappingsSnapshot ?? documentationSnapshot.supplierSkuMappings,
+    supplierReadinessSnapshot:
+      item.supplierReadinessSnapshot ?? documentationSnapshot.supplierReadiness,
+    fabricationReleaseReadinessSnapshot:
+      item.fabricationReleaseReadinessSnapshot ??
+      documentationSnapshot.fabricationReleaseReadiness,
+    createdAt,
+    updatedAt,
+  };
+}
 
 const STORAGE_KEY = "interior-ai:v1:livingroom-design";
 const BETA_START_DISMISSED_KEY = "interior-ai:beta-start-dismissed";
@@ -1114,6 +1477,21 @@ function PageContent() {
   const [selectedImportedProductId, setSelectedImportedProductId] = useState<string>("");
   const [importedModelOptions, setImportedModelOptions] = useState<ImportedModelOption[]>([]);
   const [importedModelUrlByAssetId, setImportedModelUrlByAssetId] = useState<Record<string, string>>({});
+  const [cabinetryStudioState, setCabinetryStudioState] = useState<{
+    mode: "create" | "edit";
+    instanceId?: string;
+    initialDefinition?: CabinetDefinition;
+  } | null>(null);
+  const cabinetryStudioOpenedAtRef = useRef<number | null>(null);
+  const cabinetAssetStorageRef = useRef<LocalCabinetAssetStorage | null>(null);
+  if (!cabinetAssetStorageRef.current) {
+    cabinetAssetStorageRef.current = new LocalCabinetAssetStorage();
+  }
+
+  useEffect(() => {
+    const storage = cabinetAssetStorageRef.current;
+    return () => storage?.dispose();
+  }, []);
   
   // Onboarding state model (new system)
   const [onboardingState, setOnboardingState] = useState<OnboardingState>({
@@ -1489,6 +1867,9 @@ function PageContent() {
   const canUseDesigner = plan === "pro";
   const { isDesigner, isClientPreview } = useEditorMode(plan, clientPreview);
   const showDesignerTheme = isDesigner && !isClientPreview;
+  const canUseCabinetryStudio =
+    CABINETRY_STUDIO_FEATURE_ENABLED && !isClientPreview;
+  const cabinetryAccessLevel = isDesigner ? "pro" : "consumer";
   const liteSceneEnabled =
     scenePerformanceMode === "lite" || (scenePerformanceMode === "auto" && autoLiteScene);
   const sceneRenderQuality: SceneRenderQuality = liteSceneEnabled ? "lite" : "standard";
@@ -3037,11 +3418,100 @@ function PageContent() {
   const activeRoomSlabThicknessMm = Math.round(
     (activeRoom?.geometry.slabThickness ?? ROOM_DIMENSION_DEFAULTS.slabThickness) * 1000
   );
+  const activeRoomBaseboardDepthMm = Math.max(
+    0,
+    Math.round((activeRoom?.geometry.baseboardDepth ?? 0) * 1000)
+  );
   const activeRoomWallOpacity = clampEditorOpacity(activeRoom?.surfaceOpacity?.wall ?? 1);
   const activeRoomFloorOpacity = clampEditorOpacity(activeRoom?.surfaceOpacity?.floor ?? 1);
   const activeRoomCeilingOpacity = clampEditorOpacity(activeRoom?.surfaceOpacity?.ceiling ?? 1);
   const activeRoomCeilingVisible = activeRoom?.ceilingVisible ?? true;
   const activeRoomCeilingColor = activeRoomSurfaces?.ceilingColor ?? "#f8f8f6";
+  const cabinetryAvailableSpaces = useMemo<CabinetHostSpace[]>(() => {
+    if (!activeRoom) return [];
+    const activePlanRoom = houseRoomById.get(activeRoom.id);
+    const wallInsetMm = Math.round(
+      (activeRoom.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness) * 1000
+    );
+    const widthMm = Math.max(
+      1,
+      Math.round((activePlanRoom?.w ?? activeRoom.geometry.width) * 1000) - wallInsetMm * 2
+    );
+    const depthMm = Math.max(
+      1,
+      Math.round((activePlanRoom?.d ?? activeRoom.geometry.depth) * 1000) - wallInsetMm * 2
+    );
+    const heightMm = Math.round(
+      (activeRoom.geometry.height ?? ROOM_DIMENSION_DEFAULTS.roomHeight) * 1000
+    );
+    const includeRoomlessOpenings = housePlan2D.rooms.length <= 1;
+    const sharedSpaceInput = {
+      roomId: activeRoom.id,
+      roomName: activeRoom.name,
+      roomType: activeRoom.roomType,
+      heightMm,
+      baseboardOffsetMm: Math.max(
+        0,
+        Math.round((activeRoom.geometry.baseboardDepth ?? 0) * 1000)
+      ),
+    };
+    const roomOpenings = planOpenings
+      .filter(
+        (opening) =>
+          opening.roomId === activeRoom.id ||
+          (includeRoomlessOpenings && !opening.roomId)
+      )
+      .map((opening) => ({
+        id: opening.id,
+        wall: opening.wall,
+        kind: opening.kind,
+        offsetMm: opening.offsetMm,
+        widthMm: opening.widthMm,
+        heightMm:
+          opening.heightMm ?? Math.round(PLAN_OPENING_DEFAULT_HEIGHT_METERS * 1000),
+        bottomMm: opening.kind === "window" ? opening.bottomMm ?? 900 : 0,
+        label: opening.kind === "door" ? "Door" : "Window",
+      }));
+    const planShape = activeRoom.planShape ?? "rectangle";
+    if (planShape !== "rectangle") {
+      const polygon =
+        planShape === "custom_polygon" && activeRoom.planPolygon?.length
+          ? activeRoom.planPolygon
+          : [
+              { x: -activeRoom.geometry.width / 2, z: -activeRoom.geometry.depth / 2 },
+              { x: activeRoom.geometry.width / 2, z: -activeRoom.geometry.depth / 2 },
+              {
+                x: activeRoom.geometry.width / 2,
+                z: activeRoom.geometry.depth / 2 - activeRoom.geometry.depth * 0.42,
+              },
+              {
+                x: activeRoom.geometry.width / 2 - activeRoom.geometry.width * 0.42,
+                z: activeRoom.geometry.depth / 2 - activeRoom.geometry.depth * 0.42,
+              },
+              {
+                x: activeRoom.geometry.width / 2 - activeRoom.geometry.width * 0.42,
+                z: activeRoom.geometry.depth / 2,
+              },
+              { x: -activeRoom.geometry.width / 2, z: activeRoom.geometry.depth / 2 },
+            ];
+      return createCabinetPolygonWallSpaces({
+        ...sharedSpaceInput,
+        polygon,
+        openings: mapCabinetCardinalOpeningsToPolygonWalls({
+          polygon,
+          openings: roomOpenings,
+        }),
+        installationClearanceSideMm: wallInsetMm + 10,
+      });
+    }
+    return createCabinetRoomWallSpaces({
+      ...sharedSpaceInput,
+      widthMm,
+      depthMm,
+      openings: roomOpenings,
+    });
+  }, [activeRoom, housePlan2D.rooms.length, houseRoomById, planOpenings]);
+  const cabinetryPreferredSpaceId: string | null = null;
   const activeRoomCategoryCounts = useMemo(
     () => countRoomCategories(activeRoom),
     [activeRoom]
@@ -3104,6 +3574,96 @@ function PageContent() {
     zonesRef.current = zones;
   }, [zones]);
 
+  useEffect(() => {
+    const storage = cabinetAssetStorageRef.current;
+    if (!storage) return;
+
+    const staleCabinets = designSnapshot.rooms.flatMap((room) =>
+      room.items
+        .filter(isParametricCabinetItem)
+        .filter(
+          (item) =>
+            !item.glbAssetUrl ||
+            (item.glbAssetUrl.startsWith("blob:") && !storage.ownsGeneratedGlb(item.glbAssetUrl))
+        )
+        .map((item) => ({ roomId: room.id, item }))
+    );
+
+    if (staleCabinets.length === 0) return;
+
+    let cancelled = false;
+    void Promise.all(
+      staleCabinets.map(async ({ roomId, item }) => {
+        const blob = await exportCabinetAsGlb(item.cabinetDefinition);
+        const { glbAssetUrl } = await storage.saveGeneratedGlb({
+          cabinetId: item.instanceId,
+          blob,
+        });
+        return { roomId, instanceId: item.instanceId, glbAssetUrl };
+      })
+    )
+      .then((updates) => {
+        if (cancelled || updates.length === 0) return;
+        const urlByInstanceId = new Map(
+          updates.map((update) => [update.instanceId, update.glbAssetUrl])
+        );
+
+        setDesignSnapshot((prev) => {
+          let changed = false;
+          const rooms = prev.rooms.map((room) => {
+            const nextRoomItems = room.items.map((item) => {
+              if (!isParametricCabinetItem(item)) return item;
+              const glbAssetUrl = urlByInstanceId.get(item.instanceId);
+              if (!glbAssetUrl || item.glbAssetUrl === glbAssetUrl) return item;
+              changed = true;
+              return {
+                ...item,
+                glbAssetUrl,
+                updatedAt: item.updatedAt ?? item.cabinetUpdatedAt,
+              };
+            });
+            return changed ? { ...room, items: nextRoomItems } : room;
+          });
+
+          if (!changed) return prev;
+          const next = { ...prev, rooms };
+          const nextActiveRoom = getActiveRoom(next);
+          if (nextActiveRoom) itemsRef.current = nextActiveRoom.items;
+          return next;
+        });
+      })
+      .catch((error) => {
+        console.warn("Unable to regenerate cabinet GLB asset URL", error);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [designSnapshot.rooms, setDesignSnapshot]);
+
+  const reconcileDesignItems = useCallback((nextItems: PlacedItem[], roomId?: string) => {
+    const catalogItems = nextItems.filter((item) => !isParametricCabinetItem(item));
+    const { valid: validCatalogItems, invalid } = reconcileCart(catalogItems, CATALOG_ITEMS_MAP);
+    const validCatalogIds = new Set(validCatalogItems.map((item) => item.instanceId));
+    const validItems = nextItems
+      .filter((item) => isParametricCabinetItem(item) || validCatalogIds.has(item.instanceId))
+      .map((item) =>
+        isParametricCabinetItem(item)
+          ? (normalizeCabinetDesignItem(item, { roomId }) as PlacedItem)
+          : item
+      );
+
+    if (invalid.length > 0) {
+      console.warn(`Removed ${invalid.length} invalid items from cart`);
+      track("commerce_invalid_items_removed", {
+        count: invalid.length,
+        items: invalid,
+      });
+    }
+
+    return { validItems, invalid };
+  }, []);
+
   // Action: Commit items with transaction tracking
   // Used for user-initiated actions that should be undoable
   // Step 8: Reconcile cart to remove invalid items
@@ -3113,25 +3673,14 @@ function PageContent() {
       const nextItems =
         typeof updater === "function" ? updater(itemsRef.current) : updater;
 
-      // Reconcile cart: removes items that can't be purchased
-      const { valid: validItems, invalid } = reconcileCart(
-        nextItems,
-        CATALOG_ITEMS_MAP
-      );
-      if (invalid.length > 0) {
-        console.warn(`Removed ${invalid.length} invalid items from cart`);
-        track("commerce_invalid_items_removed", {
-          count: invalid.length,
-          items: invalid,
-        });
-      }
-
       // NEW: Update only the active room (items stored in room.items[])
       const room = getActiveRoom(designSnapshotRef.current);
       if (!room) {
         history.commit();
         return;
       }
+
+      const { validItems } = reconcileDesignItems(nextItems, room.id);
 
       const updatedRoom = { ...room, items: validItems };
       const nextSnapshot = {
@@ -3145,7 +3694,7 @@ function PageContent() {
       setDesignSnapshot(nextSnapshot);
       history.commit();
     },
-    [history]
+    [history, reconcileDesignItems]
   );
 
   const addActiveRoomCartReadyItems = useCallback(() => {
@@ -3247,6 +3796,7 @@ function PageContent() {
         typeof updater === "function" ? updater(itemsRef.current) : updater;
       // Validate items can be added to cart
       const validItems = nextItems.filter(item => {
+        if (isParametricCabinetItem(item)) return true;
         const catalogItem = CATALOG_ITEMS[item.productId];
         if (!catalogItem) {
           console.warn(`Item ${item.productId} not found in catalog`);
@@ -4225,8 +4775,14 @@ function PageContent() {
               ? room.geometry.wallThickness
               : ROOM_DIMENSION_DEFAULTS.wallThickness;
           const cleanedRoomItems = (room.items || [])
-            .filter((it) => CATALOG_ITEMS[it.productId])
+            .filter((it) => isParametricCabinetItem(it) || CATALOG_ITEMS[it.productId])
             .map((it) => {
+              if (isParametricCabinetItem(it)) {
+                return normalizeCabinetDesignItem(it, {
+                  dropTemporaryGlbUrls: true,
+                  roomId: room.id,
+                }) as PlacedItem;
+              }
               const product = CATALOG_ITEMS[it.productId];
               const validVariant = product.variants.some((v) => v.id === it.variantId)
                 ? it.variantId
@@ -4291,8 +4847,14 @@ function PageContent() {
       }
 
       const cleaned = (parsed.items || [])
-        .filter((it) => CATALOG_ITEMS[it.productId])
+        .filter((it) => isParametricCabinetItem(it) || CATALOG_ITEMS[it.productId])
         .map((it) => {
+          if (isParametricCabinetItem(it)) {
+            return normalizeCabinetDesignItem(it, {
+              dropTemporaryGlbUrls: true,
+              roomId: designSnapshotRef.current.activeRoomId,
+            }) as PlacedItem;
+          }
           const product = CATALOG_ITEMS[it.productId];
           const validVariant = product.variants.some((v) => v.id === it.variantId)
             ? it.variantId
@@ -4897,6 +5459,21 @@ function PageContent() {
     [updateActiveRoomGeometry]
   );
 
+  const handleActiveRoomBaseboardDepthMmChange = useCallback(
+    (valueMm: number) => {
+      const baseboardDepth = Math.max(
+        0,
+        Math.min(0.2, Number.isFinite(valueMm) ? valueMm / 1000 : 0)
+      );
+      updateActiveRoomGeometry("Edit baseboard projection", (geometry) => ({
+        ...geometry,
+        baseboardDepth,
+      }));
+      track("editor_baseboard_depth_changed", { baseboardDepth });
+    },
+    [updateActiveRoomGeometry]
+  );
+
   const handleActiveRoomWallThicknessMmChange = useCallback(
     (valueMm: number) => {
       const wallThickness = clampWallThicknessMeters(valueMm / 1000);
@@ -5118,6 +5695,8 @@ function PageContent() {
   const selectedItem = selectedInstanceId
     ? items.find((i) => i.instanceId === selectedInstanceId) ?? null
     : null;
+  const selectedCabinetItem =
+    selectedItem && isParametricCabinetItem(selectedItem) ? selectedItem : null;
 
   useEffect(() => {
     setItemConfigurationByInstanceId((prev) => {
@@ -5527,6 +6106,142 @@ function PageContent() {
     if (!selectedItem || !selectedProduct) return null;
     return resolveConfiguredPlanningDimsMm(selectedItem, selectedProduct);
   }, [resolveConfiguredPlanningDimsMm, selectedItem, selectedProduct]);
+  const selectedCabinetPlanningDimensionsMm = useMemo(() => {
+    return selectedCabinetItem ? getCabinetPlanningDimsMm(selectedCabinetItem) : null;
+  }, [selectedCabinetItem]);
+  const selectedCabinetDocumentationSnapshot = useMemo(() => {
+    if (!selectedCabinetItem) return null;
+    let generatedParts: ReturnType<typeof generateCabinetParts> | undefined;
+    const getGeneratedParts = () =>
+      (generatedParts ??= generateCabinetParts(selectedCabinetItem.cabinetDefinition));
+    let generatedDocumentation:
+      | ReturnType<typeof generateCabinetDocumentation>
+      | undefined;
+    const getGeneratedDocumentation = () =>
+      (generatedDocumentation ??= generateCabinetDocumentation(
+        selectedCabinetItem.cabinetDefinition,
+        { parts: getGeneratedParts() }
+      ));
+    let generatedBom: ReturnType<typeof generateCabinetBOM> | undefined;
+    const getGeneratedBom = () =>
+      (generatedBom ??= generateCabinetBOM(
+        selectedCabinetItem.cabinetDefinition,
+        getGeneratedParts()
+      ));
+    return {
+      assemblyProfile:
+        selectedCabinetItem.millworkDefinition?.assemblyProfile ??
+        createCabinetMillworkDefinition(selectedCabinetItem.cabinetDefinition)
+          .assemblyProfile,
+      bom: selectedCabinetItem.bomSnapshot ?? getGeneratedBom(),
+      materialSchedule:
+        selectedCabinetItem.materialScheduleSnapshot ??
+        getGeneratedDocumentation().materialSchedule,
+      hardwareSchedule:
+        selectedCabinetItem.hardwareScheduleSnapshot ??
+        getGeneratedDocumentation().hardwareSchedule,
+      edgeBandingSchedule:
+        selectedCabinetItem.edgeBandingScheduleSnapshot ??
+        getGeneratedDocumentation().edgeBandingSchedule,
+      cutList:
+        selectedCabinetItem.cutListSnapshot ?? getGeneratedDocumentation().cutList,
+      dimensionSchedule:
+        selectedCabinetItem.dimensionScheduleSnapshot ??
+        getGeneratedDocumentation().dimensionSchedule,
+      drawingViewSchedule:
+        selectedCabinetItem.drawingViewScheduleSnapshot ??
+        getGeneratedDocumentation().drawingViewSchedule,
+      installerNotes:
+        selectedCabinetItem.installerNotesSnapshot ??
+        getGeneratedDocumentation().installerNotes,
+      releaseChecklist:
+        selectedCabinetItem.releaseChecklistSnapshot ??
+        getGeneratedDocumentation().releaseChecklist,
+      quoteSummary:
+        selectedCabinetItem.quoteSummarySnapshot ??
+        getGeneratedDocumentation().quoteSummary,
+      supplierSkuMappings:
+        selectedCabinetItem.supplierSkuMappingsSnapshot ??
+        getGeneratedDocumentation().supplierSkuMappings,
+      supplierReadiness:
+        selectedCabinetItem.supplierReadinessSnapshot ??
+        getGeneratedDocumentation().supplierReadiness,
+      fabricationReleaseReadiness:
+        selectedCabinetItem.fabricationReleaseReadinessSnapshot ??
+        getGeneratedDocumentation().fabricationReleaseReadiness,
+    };
+  }, [selectedCabinetItem]);
+  const selectedCabinetAssetManifest = useMemo(() => {
+    if (!selectedCabinetItem) return null;
+    const position =
+      selectedCabinetItem.position ?? selectedCabinetItem.transform?.position ?? [0, 0, 0];
+    const rotationY = getCabinetRotationY(selectedCabinetItem);
+    const scale = selectedCabinetItem.transform?.scale ?? [1, 1, 1];
+    return (
+      selectedCabinetItem.millworkAssetManifest ??
+      buildCabinetAssetManifest({
+        definition: selectedCabinetItem.cabinetDefinition,
+        instanceId: selectedCabinetItem.instanceId,
+        roomId: selectedCabinetItem.roomId ?? activeRoom?.id,
+        position,
+        rotationY,
+        scale,
+        glbAssetUrl: selectedCabinetItem.glbAssetUrl,
+        createdAt:
+          selectedCabinetItem.createdAt ??
+          selectedCabinetItem.cabinetDefinition.createdAt,
+        updatedAt:
+          selectedCabinetItem.updatedAt ??
+          selectedCabinetItem.cabinetUpdatedAt ??
+          selectedCabinetItem.cabinetDefinition.updatedAt,
+      })
+    );
+  }, [activeRoom?.id, selectedCabinetItem]);
+  const projectCabinetRoomNamesById = useMemo(
+    () => Object.fromEntries(designSnapshot.rooms.map((room) => [room.id, room.name])),
+    [designSnapshot.rooms]
+  );
+  const projectCabinetAssets = useMemo(
+    () =>
+      designSnapshot.rooms.flatMap((room) =>
+        room.items
+          .filter(isParametricCabinetItem)
+          .map((item) => buildPlacedCabinetAssetPackageInput(item, room.id))
+      ),
+    [designSnapshot.rooms]
+  );
+  const projectCabinetSchedulePackage = useMemo(
+    () =>
+      buildCabinetProjectSchedulePackage({
+        assets: projectCabinetAssets,
+        projectId: designId ?? undefined,
+        projectName: designSnapshot.title ?? "Custom Millwork Project",
+        roomNamesById: projectCabinetRoomNamesById,
+      }),
+    [
+      designId,
+      designSnapshot.title,
+      projectCabinetAssets,
+      projectCabinetRoomNamesById,
+    ]
+  );
+  const projectCabinetHandoffPackage = useMemo(
+    () =>
+      projectCabinetAssets.length
+        ? buildCabinetProjectHandoffPackage({
+            assets: projectCabinetAssets,
+            projectId: designId ?? undefined,
+            projectName: designSnapshot.title ?? "Custom Millwork Project",
+            roomNamesById: projectCabinetRoomNamesById,
+          })
+        : null,
+    [
+      designId,
+      designSnapshot.title,
+      projectCabinetAssets,
+      projectCabinetRoomNamesById,
+    ]
+  );
   const selectedStyleConsistencyReport = useMemo(() => {
     if (!selectedItem || !activeRoom) return null;
     return evaluateStyleConsistency({
@@ -5926,6 +6641,17 @@ function PageContent() {
       positionOverride?: [number, number, number],
       rotationOverride?: number
     ) => {
+      const cabinetDims = getCabinetPlanningDimsMm(item);
+      if (cabinetDims) {
+        const rotationY = rotationOverride ?? item.rotationY ?? 0;
+        const [w, d] = getRotatedFootprint(
+          cabinetDims.w / 1000,
+          cabinetDims.d / 1000,
+          rotationY
+        );
+        const pos = positionOverride ?? item.position;
+        return computeAABB(pos, w, d);
+      }
       const product = CATALOG_ITEMS[item.productId];
       if (!product) return null;
       const configuredDims = resolveConfiguredPlanningDimsMm(item, product);
@@ -9246,6 +9972,7 @@ function PageContent() {
 
   const getItemDisplayName = useCallback((item: DesignItem | null | undefined) => {
     if (!item) return null;
+    if (isParametricCabinetItem(item)) return item.name ?? item.cabinetDefinition.name;
     return CATALOG_ITEMS[item.productId]?.title ?? "another item";
   }, []);
 
@@ -9262,15 +9989,7 @@ function PageContent() {
 
       history.begin(actionName);
       const nextItems = typeof updater === "function" ? updater(room.items) : updater;
-      const { valid: validItems, invalid } = reconcileCart(nextItems, CATALOG_ITEMS_MAP);
-
-      if (invalid.length > 0) {
-        console.warn(`Removed ${invalid.length} invalid items from cart`);
-        track("commerce_invalid_items_removed", {
-          count: invalid.length,
-          items: invalid,
-        });
-      }
+      const { validItems } = reconcileDesignItems(nextItems, room.id);
 
       const nextSnapshot = {
         ...snapshot,
@@ -9295,7 +10014,309 @@ function PageContent() {
       history.commit();
       return validItems;
     },
-    [history]
+    [history, reconcileDesignItems]
+  );
+
+  const updateCabinetItemDefinition = useCallback(
+    (
+      instanceId: string,
+      definition: CabinetDefinition,
+      options: { glbAssetUrl?: string; bom?: CabinetBOMItem[]; closeStudio?: boolean } = {}
+    ): boolean => {
+      if (!canUseCabinetryStudio) return false;
+      const snapshot = designSnapshotRef.current;
+      const targetRoom = snapshot.rooms.find((room) =>
+        room.items.some((item) => item.instanceId === instanceId)
+      );
+      if (!targetRoom) return false;
+
+      const now = new Date().toISOString();
+      const bomSnapshot = options.bom ?? generateCabinetBOM(definition);
+      const documentationSnapshot = generateCabinetDocumentation(definition);
+      let previousGlbAssetUrl: string | undefined;
+      const nextItems = commitItemsToRoom(
+        targetRoom.id,
+        (prev) =>
+          prev.map((item) => {
+            if (item.instanceId !== instanceId) return item;
+            previousGlbAssetUrl = item.glbAssetUrl;
+            const previousFitState = item.cabinetDefinition?.fitState;
+            const fitWasExplicitlyChanged = Boolean(
+              definition.fitState &&
+                definition.fitState.appliedAt !== previousFitState?.appliedAt
+            );
+            const fitPlacement =
+              fitWasExplicitlyChanged && definition.fitState?.host.roomId === targetRoom.id
+                ? getCabinetFitPlacement(
+                    definition,
+                    targetRoom.geometry.width,
+                    targetRoom.geometry.depth
+                  )
+                : null;
+            const rotationY = fitPlacement?.rotationY ?? getCabinetRotationY(item);
+            const [safeX, safeZ] = fitPlacement
+              ? clampToCatalogPlacementRoom(
+                  targetRoom,
+                  fitPlacement.position[0],
+                  fitPlacement.position[2],
+                  definition.totalWidth / 1000,
+                  definition.depth / 1000,
+                  rotationY
+                )
+              : [item.position?.[0] ?? 0, item.position?.[2] ?? 0];
+            const position: [number, number, number] = fitPlacement
+              ? [safeX, fitPlacement.position[1], safeZ]
+              : item.position ?? [0, 0, 0];
+            const scale = item.transform?.scale ?? [1, 1, 1];
+            const glbAssetUrl = options.glbAssetUrl ?? item.glbAssetUrl;
+            const createdAt = item.createdAt ?? definition.createdAt ?? now;
+
+            return {
+              ...item,
+              id: item.id ?? item.instanceId,
+              ...buildCabinetMillworkMetadata(definition, targetRoom.id),
+              productId: "parametric-cabinet",
+              variantId: definition.id,
+              assetType: "parametric_cabinet",
+              name: definition.name,
+              cabinetDefinition: definition,
+              glbAssetUrl,
+              millworkAssetManifest: buildCabinetAssetManifest({
+                definition,
+                instanceId,
+                roomId: targetRoom.id,
+                position,
+                rotationY,
+                scale,
+                glbAssetUrl,
+                createdAt,
+                updatedAt: now,
+              }),
+              bomSnapshot,
+              materialScheduleSnapshot: documentationSnapshot.materialSchedule,
+              hardwareScheduleSnapshot: documentationSnapshot.hardwareSchedule,
+              edgeBandingScheduleSnapshot: documentationSnapshot.edgeBandingSchedule,
+              cutListSnapshot: documentationSnapshot.cutList,
+              dimensionScheduleSnapshot: documentationSnapshot.dimensionSchedule,
+              drawingViewScheduleSnapshot: documentationSnapshot.drawingViewSchedule,
+              installerNotesSnapshot: documentationSnapshot.installerNotes,
+              releaseChecklistSnapshot: documentationSnapshot.releaseChecklist,
+              quoteSummarySnapshot: documentationSnapshot.quoteSummary,
+              supplierSkuMappingsSnapshot: documentationSnapshot.supplierSkuMappings,
+              supplierReadinessSnapshot: documentationSnapshot.supplierReadiness,
+              fabricationReleaseReadinessSnapshot:
+                documentationSnapshot.fabricationReleaseReadiness,
+              cabinetUpdatedAt: now,
+              createdAt,
+              updatedAt: now,
+              position,
+              rotationY,
+              transform: buildCabinetTransformMetadata(position, rotationY, scale),
+              qty: typeof item.qty === "number" && item.qty > 0 ? item.qty : 1,
+              includeInCheckout: false,
+            };
+          }),
+        "Update cabinet"
+      );
+
+      if (!nextItems) return false;
+      if (
+        options.glbAssetUrl &&
+        previousGlbAssetUrl &&
+        previousGlbAssetUrl !== options.glbAssetUrl
+      ) {
+        cabinetAssetStorageRef.current?.deleteGeneratedGlb({ glbAssetUrl: previousGlbAssetUrl });
+      }
+      updateSelection(new Set([instanceId]), instanceId);
+      if (options.closeStudio) setCabinetryStudioState(null);
+      showRuleToast("Millwork updated");
+      return true;
+    },
+    [
+      canUseCabinetryStudio,
+      clampToCatalogPlacementRoom,
+      commitItemsToRoom,
+      showRuleToast,
+      updateSelection,
+    ]
+  );
+
+  const handleSaveCabinetDefinition = useCallback(
+    async (definition: CabinetDefinition) => {
+      if (!canUseCabinetryStudio) return false;
+      if (cabinetryStudioState?.mode === "edit" && cabinetryStudioState.instanceId) {
+        return updateCabinetItemDefinition(cabinetryStudioState.instanceId, definition);
+      }
+
+      showRuleToast("Millwork definition ready");
+      return false;
+    },
+    [cabinetryStudioState, canUseCabinetryStudio, showRuleToast, updateCabinetItemDefinition]
+  );
+
+  const handlePlaceCabinetInPlan = useCallback(
+    async (payload: {
+      definition: CabinetDefinition;
+      glbBlob: Blob;
+      bom: CabinetBOMItem[];
+      placeAsCopy?: boolean;
+    }) => {
+      if (!canUseCabinetryStudio) return false;
+      const storage = cabinetAssetStorageRef.current;
+      if (!storage) return false;
+
+      if (
+        cabinetryStudioState?.mode === "edit" &&
+        cabinetryStudioState.instanceId &&
+        !payload.placeAsCopy
+      ) {
+        const { glbAssetUrl } = await storage.saveGeneratedGlb({
+          cabinetId: cabinetryStudioState.instanceId,
+          blob: payload.glbBlob,
+        });
+        const updated = updateCabinetItemDefinition(cabinetryStudioState.instanceId, payload.definition, {
+          glbAssetUrl,
+          bom: payload.bom,
+          closeStudio: true,
+        });
+        if (!updated) {
+          storage.deleteGeneratedGlb({ glbAssetUrl });
+        } else {
+          track("millwork_assembly_updated", {
+            access_level: cabinetryAccessLevel,
+            assembly_type: getCabinetMillworkAssemblyType(payload.definition),
+            module_count: payload.definition.modules.length,
+            fitted_to_space: Boolean(payload.definition.fitState),
+            reopen_edit_success: cabinetryStudioState.mode === "edit",
+            elapsed_ms:
+              cabinetryStudioOpenedAtRef.current === null
+                ? null
+                : Math.max(0, Math.round(performance.now() - cabinetryStudioOpenedAtRef.current)),
+          });
+          cabinetryStudioOpenedAtRef.current = null;
+        }
+        return updated;
+      }
+
+      const fittedRoomId = payload.definition.fitState?.host.roomId;
+      const room = fittedRoomId
+        ? designSnapshotRef.current.rooms.find((entry) => entry.id === fittedRoomId) ?? null
+        : getActiveRoom(designSnapshotRef.current);
+      if (!room) return false;
+
+      const instanceId = newInstanceId();
+      const { glbAssetUrl } = await storage.saveGeneratedGlb({
+        cabinetId: instanceId,
+        blob: payload.glbBlob,
+      });
+      const fitPlacement = getCabinetFitPlacement(
+        payload.definition,
+        room.geometry.width,
+        room.geometry.depth
+      );
+      const placementRotationY = fitPlacement?.rotationY ?? 0;
+      const fitWall = payload.definition.fitState?.host.wall;
+      const copyOffsetX =
+        payload.placeAsCopy && (!fitWall || fitWall === "north" || fitWall === "south")
+          ? 0.15
+          : 0;
+      const copyOffsetZ =
+        payload.placeAsCopy && (fitWall === "east" || fitWall === "west" || !fitWall)
+          ? 0.15
+          : 0;
+      const [safeX, safeZ] = clampToCatalogPlacementRoom(
+        room,
+        (fitPlacement?.position[0] ?? 0) + copyOffsetX,
+        (fitPlacement?.position[2] ?? 0) + copyOffsetZ,
+        payload.definition.totalWidth / 1000,
+        payload.definition.depth / 1000,
+        placementRotationY
+      );
+      const now = new Date().toISOString();
+      const documentationSnapshot = generateCabinetDocumentation(payload.definition);
+      const position: [number, number, number] = [safeX, fitPlacement?.position[1] ?? 0, safeZ];
+      const item: PlacedItem = {
+        id: instanceId,
+        instanceId,
+        productId: "parametric-cabinet",
+        variantId: payload.definition.id,
+        assetType: "parametric_cabinet",
+        ...buildCabinetMillworkMetadata(payload.definition, room.id),
+        name: payload.definition.name,
+        cabinetDefinition: payload.definition,
+        glbAssetUrl,
+        millworkAssetManifest: buildCabinetAssetManifest({
+          definition: payload.definition,
+          instanceId,
+          roomId: room.id,
+          position,
+          rotationY: placementRotationY,
+          glbAssetUrl,
+          createdAt: now,
+          updatedAt: now,
+        }),
+        bomSnapshot: payload.bom,
+        materialScheduleSnapshot: documentationSnapshot.materialSchedule,
+        hardwareScheduleSnapshot: documentationSnapshot.hardwareSchedule,
+        edgeBandingScheduleSnapshot: documentationSnapshot.edgeBandingSchedule,
+        cutListSnapshot: documentationSnapshot.cutList,
+        dimensionScheduleSnapshot: documentationSnapshot.dimensionSchedule,
+        drawingViewScheduleSnapshot: documentationSnapshot.drawingViewSchedule,
+        installerNotesSnapshot: documentationSnapshot.installerNotes,
+        releaseChecklistSnapshot: documentationSnapshot.releaseChecklist,
+        quoteSummarySnapshot: documentationSnapshot.quoteSummary,
+        supplierSkuMappingsSnapshot: documentationSnapshot.supplierSkuMappings,
+        supplierReadinessSnapshot: documentationSnapshot.supplierReadiness,
+        fabricationReleaseReadinessSnapshot:
+          documentationSnapshot.fabricationReleaseReadiness,
+        cabinetUpdatedAt: now,
+        createdAt: now,
+        updatedAt: now,
+        position,
+        rotationY: placementRotationY,
+        transform: buildCabinetTransformMetadata(position, placementRotationY),
+        qty: 1,
+        includeInCheckout: false,
+      };
+
+      const nextItems = commitItemsToRoom(
+        room.id,
+        (prev) => [...prev, item],
+        "Place cabinet",
+        { activateRoom: true }
+      );
+      if (!nextItems) {
+        storage.deleteGeneratedGlb({ glbAssetUrl });
+        return false;
+      }
+      updateSelection(new Set([instanceId]), instanceId);
+      track("millwork_assembly_placed", {
+        access_level: cabinetryAccessLevel,
+        assembly_type: getCabinetMillworkAssemblyType(payload.definition),
+        module_count: payload.definition.modules.length,
+        fitted_to_space: Boolean(payload.definition.fitState),
+        placed_as_copy: Boolean(payload.placeAsCopy),
+        elapsed_ms:
+          cabinetryStudioOpenedAtRef.current === null
+            ? null
+            : Math.max(0, Math.round(performance.now() - cabinetryStudioOpenedAtRef.current)),
+      });
+      cabinetryStudioOpenedAtRef.current = null;
+      setCabinetryStudioState(null);
+      showRuleToast("Millwork placed");
+      return true;
+    },
+    [
+      cabinetryStudioState,
+      cabinetryAccessLevel,
+      canUseCabinetryStudio,
+      clampToCatalogPlacementRoom,
+      commitItemsToRoom,
+      newInstanceId,
+      showRuleToast,
+      updateCabinetItemDefinition,
+      updateSelection,
+    ]
   );
 
   const transferItemToRoom = useCallback(
@@ -12398,6 +13419,252 @@ function PageContent() {
     });
   }, [applyItemRotation, selectedItem]);
 
+  const findCabinetPlacementBlocker = useCallback(
+    (
+      cabinet: PlacedItem,
+      position: [number, number, number],
+      rotationY: number
+    ): PlacedItem | null => {
+      if (!activeRoom) return null;
+      const candidateAABB = getItemAABB(cabinet, position, rotationY);
+      if (!candidateAABB) return null;
+
+      for (const blocker of activeRoom.items) {
+        if (blocker.instanceId === cabinet.instanceId) continue;
+        const blockerProduct = CATALOG_ITEMS[blocker.productId];
+        if (blockerProduct?.category === "rug") continue;
+        const blockerAABB = getItemAABB(blocker);
+        if (blockerAABB && aabbIntersects(candidateAABB, blockerAABB)) {
+          return blocker;
+        }
+      }
+
+      return null;
+    },
+    [activeRoom, getItemAABB]
+  );
+
+  const moveSelectedCabinetToPosition = useCallback(
+    (targetX: number, targetZ: number, actionLabel = "Move millwork") => {
+      if (!selectedCabinetItem || !selectedCabinetPlanningDimensionsMm || !activeRoom || !canEdit) return;
+      if (isDesigner && selectedCabinetItem.locked) return;
+      const rotationY = getCabinetRotationY(selectedCabinetItem);
+      const [safeX, safeZ] = clampToActiveRoom(
+        targetX,
+        targetZ,
+        selectedCabinetPlanningDimensionsMm.w / 1000,
+        selectedCabinetPlanningDimensionsMm.d / 1000,
+        roomWidth,
+        roomDepth,
+        wallThickness,
+        rotationY
+      );
+      const nextPosition: [number, number, number] = [
+        safeX,
+        selectedCabinetItem.position[1] ?? 0,
+        safeZ,
+      ];
+
+      if (
+        !isCatalogPlacementContainedInRoom(
+          activeRoom,
+          nextPosition,
+          rotationY,
+          selectedCabinetPlanningDimensionsMm
+        )
+      ) {
+        showRuleToast(`Place fully inside ${activeRoom.name}`);
+        return;
+      }
+
+      const blocker = findCabinetPlacementBlocker(selectedCabinetItem, nextPosition, rotationY);
+      if (blocker) {
+        showRuleToast(`Blocked by ${getItemDisplayName(blocker) ?? "another item"}`);
+        return;
+      }
+
+      commitItems(
+        (prev) =>
+          prev.map((item) =>
+            item.instanceId === selectedCabinetItem.instanceId
+              ? updateCabinetPlacementMetadata(item, nextPosition, rotationY, activeRoom.id)
+              : item
+          ),
+        actionLabel
+      );
+    },
+    [
+      activeRoom,
+      canEdit,
+      clampToActiveRoom,
+      commitItems,
+      findCabinetPlacementBlocker,
+      getItemDisplayName,
+      isCatalogPlacementContainedInRoom,
+      isDesigner,
+      roomDepth,
+      roomWidth,
+      selectedCabinetItem,
+      selectedCabinetPlanningDimensionsMm,
+      showRuleToast,
+      wallThickness,
+    ]
+  );
+
+  const centerSelectedCabinetInRoom = useCallback(() => {
+    moveSelectedCabinetToPosition(0, 0, "Center millwork");
+  }, [moveSelectedCabinetToPosition]);
+
+  const nudgeSelectedCabinet = useCallback(
+    (deltaX: number, deltaZ: number) => {
+      if (!selectedCabinetItem) return;
+      moveSelectedCabinetToPosition(
+        selectedCabinetItem.position[0] + deltaX,
+        selectedCabinetItem.position[2] + deltaZ,
+        "Nudge millwork"
+      );
+    },
+    [moveSelectedCabinetToPosition, selectedCabinetItem]
+  );
+
+  const snapSelectedCabinetToNearestWall = useCallback(() => {
+    if (!selectedCabinetItem || !selectedCabinetPlanningDimensionsMm || !canEdit) return;
+    if (isDesigner && selectedCabinetItem.locked) return;
+    const rotationY = getCabinetRotationY(selectedCabinetItem);
+    const [effectiveWidth, effectiveDepth] = getRotatedFootprint(
+      selectedCabinetPlanningDimensionsMm.w / 1000,
+      selectedCabinetPlanningDimensionsMm.d / 1000,
+      rotationY
+    );
+    const wallInset = getFurnitureWallInset(wallThickness);
+    const wallX = Math.max(0, roomWidth / 2 - wallInset - effectiveWidth / 2);
+    const wallZ = Math.max(0, roomDepth / 2 - wallInset - effectiveDepth / 2);
+    const candidates: Array<[number, number]> = [
+      [-wallX, selectedCabinetItem.position[2]],
+      [wallX, selectedCabinetItem.position[2]],
+      [selectedCabinetItem.position[0], -wallZ],
+      [selectedCabinetItem.position[0], wallZ],
+    ];
+    const [targetX, targetZ] = candidates.reduce((best, candidate) => {
+      const bestDistance = Math.hypot(
+        best[0] - selectedCabinetItem.position[0],
+        best[1] - selectedCabinetItem.position[2]
+      );
+      const candidateDistance = Math.hypot(
+        candidate[0] - selectedCabinetItem.position[0],
+        candidate[1] - selectedCabinetItem.position[2]
+      );
+      return candidateDistance < bestDistance ? candidate : best;
+    }, candidates[0]);
+    moveSelectedCabinetToPosition(targetX, targetZ, "Snap millwork to wall");
+  }, [
+    canEdit,
+    isDesigner,
+    moveSelectedCabinetToPosition,
+    roomDepth,
+    roomWidth,
+    selectedCabinetItem,
+    selectedCabinetPlanningDimensionsMm,
+    wallThickness,
+  ]);
+
+  const setSelectedCabinetRotation = useCallback(
+    (targetRotationY: number, actionLabel = "Rotate millwork") => {
+      if (!selectedCabinetItem || !selectedCabinetPlanningDimensionsMm || !activeRoom || !canEdit) return;
+      if (isDesigner && selectedCabinetItem.locked) return;
+      const resolvedRotationY = rotationSnapEnabled
+        ? snapRotationRadians(targetRotationY, rotationSnapStepRadians)
+        : targetRotationY;
+      const [safeX, safeZ] = clampToActiveRoom(
+        selectedCabinetItem.position[0],
+        selectedCabinetItem.position[2],
+        selectedCabinetPlanningDimensionsMm.w / 1000,
+        selectedCabinetPlanningDimensionsMm.d / 1000,
+        roomWidth,
+        roomDepth,
+        wallThickness,
+        resolvedRotationY
+      );
+      const nextPosition: [number, number, number] = [
+        safeX,
+        selectedCabinetItem.position[1] ?? 0,
+        safeZ,
+      ];
+
+      if (
+        !isCatalogPlacementContainedInRoom(
+          activeRoom,
+          nextPosition,
+          resolvedRotationY,
+          selectedCabinetPlanningDimensionsMm
+        )
+      ) {
+        showRuleToast(`Place fully inside ${activeRoom.name}`);
+        return;
+      }
+
+      const blocker = findCabinetPlacementBlocker(
+        selectedCabinetItem,
+        nextPosition,
+        resolvedRotationY
+      );
+      if (blocker) {
+        showRuleToast(`Blocked by ${getItemDisplayName(blocker) ?? "another item"}`);
+        return;
+      }
+
+      commitItems(
+        (prev) =>
+          prev.map((item) =>
+            item.instanceId === selectedCabinetItem.instanceId
+              ? updateCabinetPlacementMetadata(
+                  item,
+                  nextPosition,
+                  resolvedRotationY,
+                  activeRoom.id
+                )
+              : item
+          ),
+        actionLabel
+      );
+    },
+    [
+      activeRoom,
+      canEdit,
+      clampToActiveRoom,
+      commitItems,
+      findCabinetPlacementBlocker,
+      getItemDisplayName,
+      isCatalogPlacementContainedInRoom,
+      isDesigner,
+      roomDepth,
+      roomWidth,
+      rotationSnapEnabled,
+      rotationSnapStepRadians,
+      selectedCabinetItem,
+      selectedCabinetPlanningDimensionsMm,
+      showRuleToast,
+      wallThickness,
+    ]
+  );
+
+  const rotateSelectedCabinetByDegrees = useCallback(
+    (deltaDegrees: number) => {
+      if (!selectedCabinetItem) return;
+      const deltaRadians = (deltaDegrees * Math.PI) / 180;
+      setSelectedCabinetRotation(
+        getCabinetRotationY(selectedCabinetItem) + deltaRadians,
+        `Rotate millwork ${deltaDegrees > 0 ? "+" : ""}${deltaDegrees} deg`
+      );
+    },
+    [selectedCabinetItem, setSelectedCabinetRotation]
+  );
+
+  const resetSelectedCabinetRotation = useCallback(() => {
+    setSelectedCabinetRotation(0, "Reset millwork rotation");
+  }, [setSelectedCabinetRotation]);
+
+
   const duplicateSelectedItem = useCallback(() => {
     if (!selectedItem || !selectedProduct || !canEdit) return;
     if (isDesigner && selectedItem.locked) return;
@@ -13599,6 +14866,171 @@ function PageContent() {
           hidden
         />
       ) : null}
+      {projectCabinetSchedulePackage.totals.assetCount > 0 ? (
+        <div
+          data-testid="project-millwork-schedule"
+          data-schema={projectCabinetSchedulePackage.schema}
+          data-source-type={projectCabinetSchedulePackage.sourceType}
+          data-room-count={String(projectCabinetSchedulePackage.totals.roomCount)}
+          data-asset-count={String(projectCabinetSchedulePackage.totals.assetCount)}
+          data-module-count={String(projectCabinetSchedulePackage.totals.moduleCount)}
+          data-bom-line-count={String(projectCabinetSchedulePackage.totals.bomLineCount)}
+          data-edge-banding-schedule-count={String(projectCabinetSchedulePackage.totals.edgeBandingScheduleCount)}
+          data-edge-banding-total-m={String(projectCabinetSchedulePackage.totals.edgeBandingTotalM)}
+          data-cut-list-count={String(projectCabinetSchedulePackage.totals.cutListCount)}
+          data-estimated-total={String(projectCabinetSchedulePackage.totals.estimatedTotal)}
+          data-release-blocker-count={String(projectCabinetSchedulePackage.totals.releaseBlockerCount)}
+          data-custom-quote-required-count={String(projectCabinetSchedulePackage.totals.customQuoteRequiredCount)}
+          hidden
+        />
+      ) : null}
+      {projectCabinetHandoffPackage ? (
+        <div
+          data-testid="project-millwork-readiness"
+          data-schema={projectCabinetHandoffPackage.schema}
+          data-handoff-status={projectCabinetHandoffPackage.handoffStatus}
+          data-asset-count={String(projectCabinetHandoffPackage.totals.assetCount)}
+          data-package-count={String(projectCabinetHandoffPackage.totals.packageCount)}
+          data-scope-schema={projectCabinetHandoffPackage.packages.scopePackage.schema}
+          data-scope-family-count={String(projectCabinetHandoffPackage.packages.scopePackage.totals.familyCount)}
+          data-scope-assembly-type-count={String(
+            projectCabinetHandoffPackage.packages.scopePackage.totals.assemblyTypeCount
+          )}
+          data-scope-phase-represented-count={String(
+            projectCabinetHandoffPackage.packages.scopePackage.totals.phaseRepresentedCount
+          )}
+          data-quote-status={projectCabinetHandoffPackage.packages.quotePackage.quoteStatus}
+          data-purchase-readiness={
+            projectCabinetHandoffPackage.packages.purchaseReadinessPackage.purchaseReadiness
+          }
+          data-fabrication-release-status={projectCabinetHandoffPackage.packages.fabricationReleasePackage.status}
+          data-field-verification-status={
+            projectCabinetHandoffPackage.packages.fieldVerificationPackage.verificationStatus
+          }
+          data-installation-readiness={
+            projectCabinetHandoffPackage.packages.installationPlanPackage.installationReadiness
+          }
+          data-approval-status={projectCabinetHandoffPackage.packages.approvalPackage.approvalStatus}
+          data-release-blocker-count={String(projectCabinetHandoffPackage.totals.releaseBlockerCount)}
+          data-required-approval-count={String(projectCabinetHandoffPackage.totals.requiredApprovalCount)}
+          data-field-verification-required-count={String(
+            projectCabinetHandoffPackage.totals.fieldVerificationRequiredCount
+          )}
+          data-custom-quote-required-count={String(
+            projectCabinetHandoffPackage.packages.procurementPackage.totals.customQuoteRequiredCount
+          )}
+          data-can-issue-client={projectCabinetHandoffPackage.canIssueToClient ? "true" : "false"}
+          data-can-issue-fabricator={projectCabinetHandoffPackage.canIssueToFabricator ? "true" : "false"}
+          data-can-issue-installer={projectCabinetHandoffPackage.canIssueToInstaller ? "true" : "false"}
+          data-can-issue-purchase-review={
+            projectCabinetHandoffPackage.canIssueForPurchaseReview ? "true" : "false"
+          }
+          hidden
+        />
+      ) : null}
+      <div data-testid="placed-cabinet-assets" hidden>
+        {designSnapshot.rooms.flatMap((room) =>
+          room.items.filter(isParametricCabinetItem).map((item) => {
+            const rotationY = getCabinetRotationY(item);
+            const position = item.position ?? item.transform?.position ?? [0, 0, 0];
+            const scale = item.transform?.scale ?? [1, 1, 1];
+            const assetManifest =
+              item.millworkAssetManifest ??
+              buildCabinetAssetManifest({
+                definition: item.cabinetDefinition,
+                instanceId: item.instanceId,
+                roomId: item.roomId ?? room.id,
+                position,
+                rotationY,
+                scale,
+                glbAssetUrl: item.glbAssetUrl,
+                createdAt: item.createdAt ?? item.cabinetDefinition.createdAt,
+                updatedAt:
+                  item.updatedAt ?? item.cabinetUpdatedAt ?? item.cabinetDefinition.updatedAt,
+              });
+            const documentation = generateCabinetDocumentation(item.cabinetDefinition);
+            const bom = item.bomSnapshot ?? generateCabinetBOM(item.cabinetDefinition);
+            const materialSchedule = item.materialScheduleSnapshot ?? documentation.materialSchedule;
+            const hardwareSchedule = item.hardwareScheduleSnapshot ?? documentation.hardwareSchedule;
+            const edgeBandingSchedule = item.edgeBandingScheduleSnapshot ?? documentation.edgeBandingSchedule;
+            const cutList = item.cutListSnapshot ?? documentation.cutList;
+            const dimensionSchedule = item.dimensionScheduleSnapshot ?? documentation.dimensionSchedule;
+            const drawingViewSchedule = item.drawingViewScheduleSnapshot ?? documentation.drawingViewSchedule;
+            const installerNotes = item.installerNotesSnapshot ?? documentation.installerNotes;
+            const releaseChecklist = item.releaseChecklistSnapshot ?? documentation.releaseChecklist;
+            const quoteSummary = item.quoteSummarySnapshot ?? documentation.quoteSummary;
+            const supplierSkuMappings = item.supplierSkuMappingsSnapshot ?? documentation.supplierSkuMappings;
+            const supplierReadiness = item.supplierReadinessSnapshot ?? documentation.supplierReadiness;
+            const fabricationReleaseReadiness =
+              item.fabricationReleaseReadinessSnapshot ?? documentation.fabricationReleaseReadiness;
+            const assemblyProfile =
+              item.millworkDefinition?.assemblyProfile ??
+              createCabinetMillworkDefinition(item.cabinetDefinition).assemblyProfile;
+            const markerProps = {
+              "data-instance-id": item.instanceId,
+              "data-room-id": item.roomId ?? room.id,
+              "data-family": item.millworkDefinition?.family ?? "cabinetry",
+              "data-assembly-type": item.assemblyType ?? getCabinetMillworkAssemblyType(item.cabinetDefinition),
+              "data-definition-schema": item.millworkDefinition?.schema ?? "",
+              "data-source-type": item.millworkDefinition?.sourceType ?? "cabinet_definition",
+              "data-source-definition-id": item.millworkDefinition?.sourceDefinition?.id ?? item.cabinetDefinition.id,
+              "data-definition-version": String(item.millworkDefinitionVersion ?? item.cabinetDefinition.version),
+              "data-asset-manifest-schema": assetManifest.schema,
+              "data-asset-manifest-version": String(assetManifest.version),
+              "data-asset-manifest-source-definition-version": String(assetManifest.sourceDefinitionVersion),
+              "data-generated-output-kind": assetManifest.generatedOutput.kind,
+              "data-generated-output-durable": assetManifest.generatedOutput.durable ? "true" : "false",
+              "data-asset-manifest-transform-position": assetManifest.transform.position.join(","),
+              "data-asset-manifest-transform-rotation-y": String(assetManifest.transform.rotation[1]),
+              "data-assembly-profile-schema": assemblyProfile.schema,
+              "data-assembly-profile-label": assemblyProfile.label,
+              "data-assembly-profile-phase": assemblyProfile.projectPhase,
+              "data-assembly-profile-placement-kind": assemblyProfile.placementKind,
+              "data-assembly-profile-complexity": assemblyProfile.fabricationComplexity,
+              "data-material-count": String(item.millworkMaterials?.length ?? item.cabinetDefinition.materials.length),
+              "data-hardware-count": String(item.millworkHardware?.length ?? item.cabinetDefinition.hardware.length),
+              "data-name": item.name ?? item.cabinetDefinition.name,
+              "data-module-count": String(item.cabinetDefinition.modules.length),
+              "data-width-mm": String(item.cabinetDefinition.totalWidth),
+              "data-height-mm": String(item.cabinetDefinition.height),
+              "data-depth-mm": String(item.cabinetDefinition.depth),
+              "data-position": position.join(","),
+              "data-rotation-y": String(rotationY),
+              "data-transform-position": item.transform?.position?.join(",") ?? "",
+              "data-transform-rotation-y": String(item.transform?.rotationY ?? item.transform?.rotation?.[1] ?? ""),
+              "data-bom-count": String(bom.length),
+              "data-material-schedule-count": String(materialSchedule.length),
+              "data-hardware-schedule-count": String(hardwareSchedule.length),
+              "data-edge-banding-schedule-count": String(edgeBandingSchedule.length),
+              "data-edge-banding-total-m": String(
+                Math.round(edgeBandingSchedule.reduce((sum, entry) => sum + entry.totalLengthM, 0) * 100) / 100
+              ),
+              "data-cut-list-count": String(cutList.length),
+              "data-dimension-schedule-count": String(dimensionSchedule.length),
+              "data-drawing-view-schedule-count": String(drawingViewSchedule.length),
+              "data-installer-note-count": String(installerNotes.length),
+              "data-release-checklist-count": String(releaseChecklist.length),
+              "data-release-blocker-count": String(releaseChecklist.filter((entry) => entry.status === "blocked").length),
+              "data-quote-total": String(quoteSummary.estimatedTotal),
+              "data-quote-line-count": String(quoteSummary.lineItems.length),
+              "data-supplier-sku-mapping-count": String(supplierSkuMappings.length),
+              "data-supplier-readiness-status": supplierReadiness.status,
+              "data-mapped-sku-count": String(supplierReadiness.mappedSkuCount),
+              "data-missing-sku-count": String(supplierReadiness.missingSkuCount),
+              "data-custom-quote-required-count": String(supplierReadiness.customQuoteRequiredCount),
+              "data-fabrication-release-status": fabricationReleaseReadiness.status,
+              "data-fabrication-release-required-count": String(fabricationReleaseReadiness.requiredGateCount),
+              "data-fabrication-release-blocker-count": String(fabricationReleaseReadiness.blockerCount),
+            };
+            return (
+              <Fragment key={`${room.id}:${item.instanceId}`}>
+                <div data-testid="placed-millwork-asset" {...markerProps} />
+                <div data-testid="placed-cabinet-asset" {...markerProps} />
+              </Fragment>
+            );
+          })
+        )}
+      </div>
       {process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS === "1" ? (
         <div
           data-testid="qa-first-run-activation"
@@ -13766,6 +15198,7 @@ function PageContent() {
           <CanvasErrorBoundary>
           <Canvas
             data-testid="scene-canvas"
+            frameloop={cabinetryStudioState ? "demand" : "always"}
             style={{ cursor: planCanvasCursor }}
             shadows={false}
             dpr={liteSceneEnabled ? [1, 1] : [1, 2]}
@@ -14040,6 +15473,35 @@ function PageContent() {
                 const it = sceneEntry.item;
                 const isActiveSceneRoom = sceneEntry.isActiveRoom;
                 const roomOffset = sceneEntry.roomOffset;
+                if (isParametricCabinetItem(it)) {
+                  const scenePosition: [number, number, number] = [
+                    it.position[0] + roomOffset.x,
+                    it.position[1] ?? 0,
+                    it.position[2] + roomOffset.z,
+                  ];
+                  return (
+                    <CabinetSceneItem
+                      key={`${sceneEntry.roomId}:${it.instanceId}`}
+                      definition={it.cabinetDefinition}
+                      position={scenePosition}
+                      rotationY={it.rotationY ?? 0}
+                      selected={
+                        isActiveSceneRoom &&
+                        editorMode !== "present" &&
+                        selectedIds.has(it.instanceId)
+                      }
+                      interactive={isActiveSceneRoom && editorMode !== "present" && !isClientPreview}
+                      instanceId={it.instanceId}
+                      viewMode={viewMode}
+                      onSelect={(id, additive) => {
+                        if (!isActiveSceneRoom) return;
+                        if (editorMode === "buy" || editorMode === "present") return;
+                        trackFirstInteraction();
+                        handleSelect(id, additive);
+                      }}
+                    />
+                  );
+                }
                 const product = CATALOG_ITEMS[it.productId];
                 if (!product) return null;
                 const effectiveVariantId =
@@ -15440,6 +16902,7 @@ function PageContent() {
                 activeRoomHeightMm={activeRoomHeightMm}
                 activeRoomWallThicknessMm={activeRoomWallThicknessMm}
                 activeRoomSlabThicknessMm={activeRoomSlabThicknessMm}
+                activeRoomBaseboardDepthMm={activeRoomBaseboardDepthMm}
                 activeRoomWallOpacity={activeRoomWallOpacity}
                 activeRoomFloorOpacity={activeRoomFloorOpacity}
                 activeRoomCeilingOpacity={activeRoomCeilingOpacity}
@@ -15459,6 +16922,7 @@ function PageContent() {
                 onActiveRoomHeightMmChange={handleActiveRoomHeightMmChange}
                 onActiveRoomWallThicknessMmChange={handleActiveRoomWallThicknessMmChange}
                 onActiveRoomSlabThicknessMmChange={handleActiveRoomSlabThicknessMmChange}
+                onActiveRoomBaseboardDepthMmChange={handleActiveRoomBaseboardDepthMmChange}
                 onActiveRoomSurfaceOpacityChange={handleActiveRoomSurfaceOpacityChange}
                 onActiveRoomCeilingVisibleChange={handleActiveRoomCeilingVisibleChange}
                 onActiveRoomCeilingColorChange={handleActiveRoomCeilingColorChange}
@@ -15953,6 +17417,971 @@ function PageContent() {
           onShowUpgrade={() => setShowUpgrade(true)}
           theme={showDesignerTheme ? "designer" : "default"}
         />
+        </div>
+      )}
+
+      {editorMode === "adjust" && selectedCabinetItem && (
+        <div
+          className={`absolute right-4 top-20 z-40 w-[320px] max-h-[calc(100vh-6rem)] overflow-y-auto pr-1 transition-opacity duration-300 md:w-[21.25rem] ${
+            isClientPreview ? "pointer-events-none opacity-0" : "opacity-100"
+          }`}
+          aria-hidden={isClientPreview}
+        >
+          <div
+            data-testid="selected-cabinet-panel"
+            className={
+              showDesignerTheme
+                ? "designer-panel designer-panel-strong w-full rounded-xl p-4"
+                : "w-full rounded-xl bg-white p-4 shadow"
+            }
+          >
+            <div
+              className={
+                showDesignerTheme
+                  ? "sticky top-0 z-20 -mx-4 mb-3 border-b border-white/15 bg-[#12151dcc] px-4 py-2 text-sm font-semibold backdrop-blur"
+                  : "sticky top-0 z-20 -mx-4 mb-3 border-b border-neutral-200 bg-white/95 px-4 py-2 text-sm font-semibold text-neutral-900 backdrop-blur"
+              }
+            >
+              Selected Millwork
+            </div>
+            <div className={showDesignerTheme ? "text-neutral-100" : "text-neutral-900"}>
+              <div className="text-sm font-semibold">
+                {selectedCabinetItem.name ?? selectedCabinetItem.cabinetDefinition.name}
+              </div>
+              <div className={showDesignerTheme ? "mt-1 text-xs text-neutral-400" : "mt-1 text-xs text-neutral-500"}>
+                {selectedCabinetItem.cabinetDefinition.totalWidth}w x {selectedCabinetItem.cabinetDefinition.height}h x {selectedCabinetItem.cabinetDefinition.depth}d mm
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                <div className={showDesignerTheme ? "rounded-lg bg-white/5 p-2" : "rounded-lg bg-neutral-50 p-2"}>
+                  <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Modules</div>
+                  <div className="mt-1 font-semibold">
+                    {selectedCabinetItem.cabinetDefinition.modules.length}
+                  </div>
+                </div>
+                {isDesigner ? (
+                  <div className={showDesignerTheme ? "rounded-lg bg-white/5 p-2" : "rounded-lg bg-neutral-50 p-2"}>
+                    <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>BOM lines</div>
+                    <div className="mt-1 font-semibold">
+                      {selectedCabinetItem.bomSnapshot?.length ?? generateCabinetBOM(selectedCabinetItem.cabinetDefinition).length}
+                    </div>
+                  </div>
+                ) : selectedCabinetDocumentationSnapshot ? (
+                  <div
+                    data-testid="selected-cabinet-consumer-estimate"
+                    data-currency={selectedCabinetDocumentationSnapshot.quoteSummary.currency}
+                    data-estimated-total={String(selectedCabinetDocumentationSnapshot.quoteSummary.estimatedTotal)}
+                    className="rounded-lg bg-blue-50 p-2"
+                  >
+                    <div className="text-blue-700">Preliminary estimate</div>
+                    <div className="mt-1 font-semibold text-blue-950">
+                      {selectedCabinetDocumentationSnapshot.quoteSummary.estimatedTotal.toLocaleString("en-US", {
+                        style: "currency",
+                        currency: selectedCabinetDocumentationSnapshot.quoteSummary.currency,
+                        maximumFractionDigits: 0,
+                      })}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+              <div
+                data-testid="selected-cabinet-placement-controls"
+                data-position={selectedCabinetItem.position.join(",")}
+                data-rotation-y={String(getCabinetRotationY(selectedCabinetItem))}
+                className={showDesignerTheme ? "mt-3 rounded-lg bg-white/5 p-3" : "mt-3 rounded-lg bg-neutral-50 p-3"}
+              >
+                <div className={showDesignerTheme ? "text-xs font-semibold text-neutral-200" : "text-xs font-semibold text-neutral-800"}>
+                  Placement
+                </div>
+                <div className={showDesignerTheme ? "mt-1 text-xs text-neutral-400" : "mt-1 text-xs text-neutral-500"}>
+                  {selectedCabinetPlanningDimensionsMm
+                    ? `${(selectedCabinetPlanningDimensionsMm.w / 1000).toFixed(2)} x ${(selectedCabinetPlanningDimensionsMm.d / 1000).toFixed(2)} m footprint`
+                    : "Footprint unavailable"}
+                </div>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    data-testid="selected-cabinet-center"
+                    className={
+                      showDesignerTheme
+                        ? "min-h-9 rounded-md border border-white/15 px-2 text-xs text-neutral-100 disabled:opacity-40"
+                        : "min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
+                    }
+                    disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
+                    onClick={centerSelectedCabinetInRoom}
+                  >
+                    Center
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="selected-cabinet-snap-wall"
+                    className={
+                      showDesignerTheme
+                        ? "min-h-9 rounded-md border border-white/15 px-2 text-xs text-neutral-100 disabled:opacity-40"
+                        : "min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
+                    }
+                    disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
+                    onClick={snapSelectedCabinetToNearestWall}
+                  >
+                    Snap wall
+                  </button>
+                </div>
+                <div className="mt-2 grid grid-cols-4 gap-2">
+                  <button
+                    type="button"
+                    data-testid="selected-cabinet-nudge-left"
+                    className={
+                      showDesignerTheme
+                        ? "min-h-9 rounded-md border border-white/15 px-2 text-xs text-neutral-100 disabled:opacity-40"
+                        : "min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
+                    }
+                    disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
+                    onClick={() => nudgeSelectedCabinet(-0.05, 0)}
+                  >
+                    Left
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="selected-cabinet-nudge-back"
+                    className={
+                      showDesignerTheme
+                        ? "min-h-9 rounded-md border border-white/15 px-2 text-xs text-neutral-100 disabled:opacity-40"
+                        : "min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
+                    }
+                    disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
+                    onClick={() => nudgeSelectedCabinet(0, -0.05)}
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="selected-cabinet-nudge-front"
+                    className={
+                      showDesignerTheme
+                        ? "min-h-9 rounded-md border border-white/15 px-2 text-xs text-neutral-100 disabled:opacity-40"
+                        : "min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
+                    }
+                    disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
+                    onClick={() => nudgeSelectedCabinet(0, 0.05)}
+                  >
+                    Front
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="selected-cabinet-nudge-right"
+                    className={
+                      showDesignerTheme
+                        ? "min-h-9 rounded-md border border-white/15 px-2 text-xs text-neutral-100 disabled:opacity-40"
+                        : "min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
+                    }
+                    disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
+                    onClick={() => nudgeSelectedCabinet(0.05, 0)}
+                  >
+                    Right
+                  </button>
+                </div>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    data-testid="selected-cabinet-rotate-quarter"
+                    className={
+                      showDesignerTheme
+                        ? "min-h-9 rounded-md border border-white/15 px-2 text-xs text-neutral-100 disabled:opacity-40"
+                        : "min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
+                    }
+                    disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
+                    onClick={() => rotateSelectedCabinetByDegrees(90)}
+                  >
+                    +90 deg
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="selected-cabinet-reset-rotation"
+                    className={
+                      showDesignerTheme
+                        ? "min-h-9 rounded-md border border-white/15 px-2 text-xs text-neutral-100 disabled:opacity-40"
+                        : "min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
+                    }
+                    disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
+                    onClick={resetSelectedCabinetRotation}
+                  >
+                    Reset rotation
+                  </button>
+                </div>
+              </div>
+              {isDesigner ? (
+                <>
+              {selectedCabinetDocumentationSnapshot ? (
+                <div
+                  data-testid="selected-cabinet-documentation-summary"
+                  data-bom-count={String(selectedCabinetDocumentationSnapshot.bom.length)}
+                  data-material-schedule-count={String(selectedCabinetDocumentationSnapshot.materialSchedule.length)}
+                  data-hardware-schedule-count={String(selectedCabinetDocumentationSnapshot.hardwareSchedule.length)}
+                  data-edge-banding-schedule-count={String(selectedCabinetDocumentationSnapshot.edgeBandingSchedule.length)}
+                  data-edge-banding-total-m={String(
+                    Math.round(
+                      selectedCabinetDocumentationSnapshot.edgeBandingSchedule.reduce(
+                        (sum, item) => sum + item.totalLengthM,
+                        0
+                      ) * 100
+                    ) / 100
+                  )}
+                  data-cut-list-count={String(selectedCabinetDocumentationSnapshot.cutList.length)}
+                  data-dimension-schedule-count={String(selectedCabinetDocumentationSnapshot.dimensionSchedule.length)}
+                  data-drawing-view-schedule-count={String(selectedCabinetDocumentationSnapshot.drawingViewSchedule.length)}
+                  data-release-checklist-count={String(selectedCabinetDocumentationSnapshot.releaseChecklist.length)}
+                  data-release-blocker-count={String(
+                    selectedCabinetDocumentationSnapshot.releaseChecklist.filter((item) => item.status === "blocked").length
+                  )}
+                  data-quote-total={String(selectedCabinetDocumentationSnapshot.quoteSummary.estimatedTotal)}
+                  data-supplier-readiness-status={selectedCabinetDocumentationSnapshot.supplierReadiness.status}
+                  data-supplier-sku-mapping-count={String(selectedCabinetDocumentationSnapshot.supplierSkuMappings.length)}
+                  data-fabrication-release-status={selectedCabinetDocumentationSnapshot.fabricationReleaseReadiness.status}
+                  data-fabrication-release-required-count={String(selectedCabinetDocumentationSnapshot.fabricationReleaseReadiness.requiredGateCount)}
+                  data-fabrication-release-blocker-count={String(selectedCabinetDocumentationSnapshot.fabricationReleaseReadiness.blockerCount)}
+                  data-assembly-profile-schema={selectedCabinetDocumentationSnapshot.assemblyProfile.schema}
+                  data-assembly-profile-label={selectedCabinetDocumentationSnapshot.assemblyProfile.label}
+                  data-assembly-profile-phase={selectedCabinetDocumentationSnapshot.assemblyProfile.projectPhase}
+                  data-assembly-profile-placement-kind={selectedCabinetDocumentationSnapshot.assemblyProfile.placementKind}
+                  data-assembly-profile-complexity={selectedCabinetDocumentationSnapshot.assemblyProfile.fabricationComplexity}
+                  data-asset-manifest-schema={selectedCabinetAssetManifest?.schema ?? ""}
+                  data-asset-manifest-version={String(selectedCabinetAssetManifest?.version ?? "")}
+                  data-asset-manifest-source-definition-version={String(
+                    selectedCabinetAssetManifest?.sourceDefinitionVersion ?? ""
+                  )}
+                  data-generated-output-kind={selectedCabinetAssetManifest?.generatedOutput.kind ?? ""}
+                  data-generated-output-durable={
+                    selectedCabinetAssetManifest?.generatedOutput.durable ? "true" : "false"
+                  }
+                  className={showDesignerTheme ? "mt-3 rounded-lg bg-white/5 p-3" : "mt-3 rounded-lg bg-neutral-50 p-3"}
+                >
+                  <div className={showDesignerTheme ? "text-xs font-semibold text-neutral-200" : "text-xs font-semibold text-neutral-800"}>
+                    Design-to-build data
+                  </div>
+                  <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
+                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Quote total</div>
+                      <div className="mt-1 font-semibold">
+                        {selectedCabinetDocumentationSnapshot.quoteSummary.currency}{" "}
+                        {selectedCabinetDocumentationSnapshot.quoteSummary.estimatedTotal.toLocaleString()}
+                      </div>
+                    </div>
+                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
+                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>RFQ status</div>
+                      <div className="mt-1 font-semibold">
+                        {selectedCabinetDocumentationSnapshot.supplierReadiness.status.replace(/_/g, " ")}
+                      </div>
+                    </div>
+                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
+                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Cut list</div>
+                      <div className="mt-1 font-semibold">
+                        {selectedCabinetDocumentationSnapshot.cutList.length} parts
+                      </div>
+                    </div>
+                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
+                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Edge banding</div>
+                      <div className="mt-1 font-semibold">
+                        {selectedCabinetDocumentationSnapshot.edgeBandingSchedule.reduce(
+                          (sum, item) => sum + item.totalLengthM,
+                          0
+                        ).toFixed(2)} m
+                      </div>
+                    </div>
+                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
+                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Release gates</div>
+                      <div className="mt-1 font-semibold">
+                        {selectedCabinetDocumentationSnapshot.releaseChecklist.length}
+                      </div>
+                    </div>
+                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
+                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Release status</div>
+                      <div className="mt-1 font-semibold">
+                        {selectedCabinetDocumentationSnapshot.fabricationReleaseReadiness.status.replace(/_/g, " ")}
+                      </div>
+                    </div>
+                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
+                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Built-in type</div>
+                      <div className="mt-1 font-semibold">
+                        {selectedCabinetDocumentationSnapshot.assemblyProfile.label}
+                      </div>
+                    </div>
+                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
+                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Complexity</div>
+                      <div className="mt-1 font-semibold">
+                        {selectedCabinetDocumentationSnapshot.assemblyProfile.fabricationComplexity}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-3 grid gap-2">
+                    <div className={showDesignerTheme ? "text-xs font-semibold text-neutral-300" : "text-xs font-semibold text-neutral-700"}>
+                      Materials
+                    </div>
+                    <div className="grid max-h-28 gap-1 overflow-auto">
+                      {selectedCabinetDocumentationSnapshot.materialSchedule.slice(0, 4).map((item) => (
+                        <div
+                          key={item.id}
+                          data-testid="selected-cabinet-material-row"
+                          className={showDesignerTheme ? "flex justify-between gap-2 rounded-md bg-black/10 px-2 py-1 text-xs" : "flex justify-between gap-2 rounded-md bg-white px-2 py-1 text-xs"}
+                        >
+                          <span className="truncate">{item.materialName}</span>
+                          <span className={showDesignerTheme ? "shrink-0 text-neutral-400" : "shrink-0 text-neutral-500"}>
+                            {item.partCount} parts
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className={showDesignerTheme ? "text-xs font-semibold text-neutral-300" : "text-xs font-semibold text-neutral-700"}>
+                      Hardware
+                    </div>
+                    <div className="grid max-h-24 gap-1 overflow-auto">
+                      {selectedCabinetDocumentationSnapshot.hardwareSchedule.length ? (
+                        selectedCabinetDocumentationSnapshot.hardwareSchedule.slice(0, 4).map((item) => (
+                          <div
+                            key={item.id}
+                            data-testid="selected-cabinet-hardware-row"
+                            className={showDesignerTheme ? "flex justify-between gap-2 rounded-md bg-black/10 px-2 py-1 text-xs" : "flex justify-between gap-2 rounded-md bg-white px-2 py-1 text-xs"}
+                          >
+                            <span className="truncate">{item.hardwareName}</span>
+                            <span className={showDesignerTheme ? "shrink-0 text-neutral-400" : "shrink-0 text-neutral-500"}>
+                              {item.quantity} ea
+                            </span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className={showDesignerTheme ? "text-xs text-neutral-400" : "text-xs text-neutral-500"}>
+                          No hardware scheduled.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+              {projectCabinetHandoffPackage ? (
+                <div
+                  data-testid="selected-cabinet-project-readiness"
+                  data-schema={projectCabinetHandoffPackage.schema}
+                  data-handoff-status={projectCabinetHandoffPackage.handoffStatus}
+                  data-asset-count={String(projectCabinetHandoffPackage.totals.assetCount)}
+                  data-package-count={String(projectCabinetHandoffPackage.totals.packageCount)}
+                  data-scope-schema={projectCabinetHandoffPackage.packages.scopePackage.schema}
+                  data-scope-family-count={String(projectCabinetHandoffPackage.packages.scopePackage.totals.familyCount)}
+                  data-scope-assembly-type-count={String(
+                    projectCabinetHandoffPackage.packages.scopePackage.totals.assemblyTypeCount
+                  )}
+                  data-scope-phase-represented-count={String(
+                    projectCabinetHandoffPackage.packages.scopePackage.totals.phaseRepresentedCount
+                  )}
+                  data-quote-status={projectCabinetHandoffPackage.packages.quotePackage.quoteStatus}
+                  data-purchase-readiness={
+                    projectCabinetHandoffPackage.packages.purchaseReadinessPackage.purchaseReadiness
+                  }
+                  data-fabrication-release-status={projectCabinetHandoffPackage.packages.fabricationReleasePackage.status}
+                  data-field-verification-status={
+                    projectCabinetHandoffPackage.packages.fieldVerificationPackage.verificationStatus
+                  }
+                  data-installation-readiness={
+                    projectCabinetHandoffPackage.packages.installationPlanPackage.installationReadiness
+                  }
+                  data-approval-status={projectCabinetHandoffPackage.packages.approvalPackage.approvalStatus}
+                  data-release-blocker-count={String(projectCabinetHandoffPackage.totals.releaseBlockerCount)}
+                  data-required-approval-count={String(projectCabinetHandoffPackage.totals.requiredApprovalCount)}
+                  data-field-verification-required-count={String(
+                    projectCabinetHandoffPackage.totals.fieldVerificationRequiredCount
+                  )}
+                  data-custom-quote-required-count={String(
+                    projectCabinetHandoffPackage.packages.procurementPackage.totals.customQuoteRequiredCount
+                  )}
+                  data-can-issue-client={projectCabinetHandoffPackage.canIssueToClient ? "true" : "false"}
+                  data-can-issue-fabricator={projectCabinetHandoffPackage.canIssueToFabricator ? "true" : "false"}
+                  data-can-issue-installer={projectCabinetHandoffPackage.canIssueToInstaller ? "true" : "false"}
+                  data-can-issue-purchase-review={
+                    projectCabinetHandoffPackage.canIssueForPurchaseReview ? "true" : "false"
+                  }
+                  className={showDesignerTheme ? "mt-3 rounded-lg bg-white/5 p-3" : "mt-3 rounded-lg bg-neutral-50 p-3"}
+                >
+                  <div className={showDesignerTheme ? "text-xs font-semibold text-neutral-200" : "text-xs font-semibold text-neutral-800"}>
+                    Project readiness
+                  </div>
+                  <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
+                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Handoff</div>
+                      <div className="mt-1 font-semibold">
+                        {projectCabinetHandoffPackage.handoffStatus.replace(/_/g, " ")}
+                      </div>
+                    </div>
+                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
+                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Scope</div>
+                      <div className="mt-1 font-semibold">
+                        {projectCabinetHandoffPackage.packages.scopePackage.totals.familyCount} family /{" "}
+                        {projectCabinetHandoffPackage.packages.scopePackage.totals.assemblyTypeCount} type
+                      </div>
+                    </div>
+                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
+                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Quote</div>
+                      <div className="mt-1 font-semibold">
+                        {projectCabinetHandoffPackage.packages.quotePackage.quoteStatus.replace(/_/g, " ")}
+                      </div>
+                    </div>
+                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
+                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Purchase</div>
+                      <div className="mt-1 font-semibold">
+                        {projectCabinetHandoffPackage.packages.purchaseReadinessPackage.purchaseReadiness.replace(/_/g, " ")}
+                      </div>
+                    </div>
+                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
+                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Fabrication</div>
+                      <div className="mt-1 font-semibold">
+                        {projectCabinetHandoffPackage.packages.fabricationReleasePackage.status.replace(/_/g, " ")}
+                      </div>
+                    </div>
+                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
+                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Install</div>
+                      <div className="mt-1 font-semibold">
+                        {projectCabinetHandoffPackage.packages.installationPlanPackage.installationReadiness.replace(/_/g, " ")}
+                      </div>
+                    </div>
+                  </div>
+                  <div className={showDesignerTheme ? "mt-2 text-xs text-neutral-400" : "mt-2 text-xs text-neutral-500"}>
+                    {projectCabinetHandoffPackage.totals.requiredApprovalCount} approvals ·{" "}
+                    {projectCabinetHandoffPackage.totals.fieldVerificationRequiredCount} field checks ·{" "}
+                    {projectCabinetHandoffPackage.packages.procurementPackage.totals.customQuoteRequiredCount} quote rows
+                  </div>
+                </div>
+              ) : null}
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-placed-package"
+                className={
+                  showDesignerTheme
+                    ? "mt-3 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-3 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio}
+                onClick={() => {
+                  try {
+                    downloadCabinetPlacedAssetPackageJson(
+                      buildPlacedCabinetAssetPackageInput(
+                        selectedCabinetItem,
+                        selectedCabinetItem.roomId ?? activeRoom?.id
+                      )
+                    );
+                    showRuleToast("Placed millwork package exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export placed millwork package", error);
+                    showRuleToast("Placed millwork package export failed");
+                  }
+                }}
+              >
+                Download Placed Package
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-installer-work-order"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio}
+                onClick={() => {
+                  try {
+                    const placedAsset = buildPlacedCabinetAssetPackageInput(
+                      selectedCabinetItem,
+                      selectedCabinetItem.roomId ?? activeRoom?.id
+                    );
+                    downloadCabinetPlacedAssetInstallerWorkOrderJson(placedAsset, {
+                      roomName:
+                        (placedAsset.roomId ? projectCabinetRoomNamesById[placedAsset.roomId] : undefined) ??
+                        activeRoom?.name,
+                    });
+                    showRuleToast("Installer work order exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export installer work order", error);
+                    showRuleToast("Installer work order export failed");
+                  }
+                }}
+              >
+                Download Install Work Order
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-field-verification"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectFieldVerificationPackageJson({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("Field verification package exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export field verification package", error);
+                    showRuleToast("Field verification package export failed");
+                  }
+                }}
+              >
+                Download Field Verification
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-finish-schedule"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectFinishSchedulePackageJson({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("Finish schedule exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export finish schedule", error);
+                    showRuleToast("Finish schedule export failed");
+                  }
+                }}
+              >
+                Download Finish Schedule
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-schedule"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectSchedulePackageJson({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("Project millwork schedule exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export project millwork schedule", error);
+                    showRuleToast("Project millwork schedule export failed");
+                  }
+                }}
+              >
+                Download Project Schedule
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-schedule-csv"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectScheduleCsv({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("Project millwork schedule CSV exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export project millwork schedule CSV", error);
+                    showRuleToast("Project millwork schedule CSV export failed");
+                  }
+                }}
+              >
+                Download Project CSV
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-scope"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectScopePackageJson({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("Project scope package exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export project scope package", error);
+                    showRuleToast("Project scope package export failed");
+                  }
+                }}
+              >
+                Download Scope Package
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-procurement"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectProcurementPackageJson({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("Project procurement package exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export project procurement package", error);
+                    showRuleToast("Project procurement package export failed");
+                  }
+                }}
+              >
+                Download Procurement
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-quote"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectQuotePackageJson({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("Project quote package exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export project quote package", error);
+                    showRuleToast("Project quote package export failed");
+                  }
+                }}
+              >
+                Download Project Quote
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-purchase-readiness"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectPurchaseReadinessPackageJson({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("Purchase readiness package exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export purchase readiness package", error);
+                    showRuleToast("Purchase readiness package export failed");
+                  }
+                }}
+              >
+                Download Purchase Readiness
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-fabrication-release"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectFabricationReleasePackageJson({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("Fabrication release package exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export fabrication release package", error);
+                    showRuleToast("Fabrication release package export failed");
+                  }
+                }}
+              >
+                Download Fab Release
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-approval-package"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectApprovalPackageJson({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("Approval package exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export approval package", error);
+                    showRuleToast("Approval package export failed");
+                  }
+                }}
+              >
+                Download Approval
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-revision-package"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectRevisionPackageJson({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("Revision package exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export revision package", error);
+                    showRuleToast("Revision package export failed");
+                  }
+                }}
+              >
+                Download Revision Package
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-drawing-set"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectDrawingSetPackageJson({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("Drawing set package exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export drawing set package", error);
+                    showRuleToast("Drawing set package export failed");
+                  }
+                }}
+              >
+                Download Drawing Set
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-cut-list"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectCutListPackageJson({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("Cut-list package exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export cut-list package", error);
+                    showRuleToast("Cut-list package export failed");
+                  }
+                }}
+              >
+                Download Cut List
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-cnc-batch"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectCncBatchPackageJson({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("CNC batch manifest exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export CNC batch manifest", error);
+                    showRuleToast("CNC batch manifest export failed");
+                  }
+                }}
+              >
+                Download CNC Batch
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-installation-plan"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectInstallationPlanPackageJson({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("Installation plan exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export installation plan", error);
+                    showRuleToast("Installation plan export failed");
+                  }
+                }}
+              >
+                Download Install Plan
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-rfq"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectFabricationQuoteRequestJson({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("Project millwork RFQ exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export project millwork RFQ", error);
+                    showRuleToast("Project millwork RFQ export failed");
+                  }
+                }}
+              >
+                Download Project RFQ
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-handoff"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectHandoffPackageJson({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("Project handoff bundle exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export project handoff bundle", error);
+                    showRuleToast("Project handoff bundle export failed");
+                  }
+                }}
+              >
+                Download Handoff Bundle
+              </button>
+                </>
+              ) : null}
+              <button
+                type="button"
+                data-testid="edit-placed-millwork"
+                className="mt-4 min-h-10 w-full rounded-lg bg-blue-600 px-3 text-sm font-semibold text-white disabled:opacity-40"
+                disabled={!canEdit || !canUseCabinetryStudio}
+                onClick={() => {
+                  if (!canUseCabinetryStudio) return;
+                  cabinetryStudioOpenedAtRef.current = performance.now();
+                  track("millwork_studio_opened", {
+                    access_level: cabinetryAccessLevel,
+                    entry_point: "placed_asset",
+                    studio_mode: "edit",
+                  });
+                  setCabinetryStudioState({
+                    mode: "edit",
+                    instanceId: selectedCabinetItem.instanceId,
+                    initialDefinition: selectedCabinetItem.cabinetDefinition,
+                  });
+                }}
+              >
+                <span data-testid="edit-placed-cabinet">Edit Millwork</span>
+              </button>
+              <button
+                type="button"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg bg-white/10 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg bg-neutral-100 px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canEdit}
+                onClick={deleteSelectedItem}
+              >
+                Delete Millwork
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -18436,6 +20865,19 @@ function PageContent() {
           onActiveRoomHeightMmChange={handleActiveRoomHeightMmChange}
           onActiveRoomWallThicknessMmChange={handleActiveRoomWallThicknessMmChange}
           onActiveRoomSlabThicknessMmChange={handleActiveRoomSlabThicknessMmChange}
+          onOpenCabinetryStudio={
+            canUseCabinetryStudio
+              ? () => {
+                  cabinetryStudioOpenedAtRef.current = performance.now();
+                  track("millwork_studio_opened", {
+                    access_level: cabinetryAccessLevel,
+                    studio_mode: "create",
+                    entry_point: "design_controls",
+                  });
+                  setCabinetryStudioState({ mode: "create" });
+                }
+              : undefined
+          }
           onActiveRoomSurfaceOpacityChange={handleActiveRoomSurfaceOpacityChange}
           onActiveRoomCeilingVisibleChange={handleActiveRoomCeilingVisibleChange}
           onActiveRoomCeilingColorChange={handleActiveRoomCeilingColorChange}
@@ -20780,6 +23222,40 @@ function PageContent() {
       )}
 
       {/* Item Cart Drawer */}
+      {cabinetryStudioState && canUseCabinetryStudio && (
+        <div className="fixed inset-0 z-[100] bg-black/50 p-2 backdrop-blur-sm md:p-4">
+          <div className="mx-auto h-full max-w-[1600px] overflow-hidden rounded-2xl bg-neutral-100 shadow-2xl">
+            <CabinetMeasurementUnitProvider unit={planMeasurementUnit}>
+              <CabinetryStudio
+                mode={cabinetryStudioState.mode}
+                accessLevel={cabinetryAccessLevel}
+                initialDefinition={cabinetryStudioState.initialDefinition}
+                availableSpaces={cabinetryAvailableSpaces}
+                preferredSpaceId={cabinetryPreferredSpaceId}
+                onSave={handleSaveCabinetDefinition}
+                onPlaceInPlan={handlePlaceCabinetInPlan}
+                onCancel={() => {
+                  track("millwork_studio_closed", {
+                    access_level: cabinetryAccessLevel,
+                    studio_mode: cabinetryStudioState.mode,
+                    completed: false,
+                    elapsed_ms:
+                      cabinetryStudioOpenedAtRef.current === null
+                        ? null
+                        : Math.max(
+                            0,
+                            Math.round(performance.now() - cabinetryStudioOpenedAtRef.current)
+                          ),
+                  });
+                  cabinetryStudioOpenedAtRef.current = null;
+                  setCabinetryStudioState(null);
+                }}
+              />
+            </CabinetMeasurementUnitProvider>
+          </div>
+        </div>
+      )}
+
       <ItemCartDrawer
         items={itemCart}
         onRemove={removeFromCart}

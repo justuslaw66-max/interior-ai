@@ -1,3 +1,27 @@
+import type {
+  CabinetBOMItem,
+  CabinetCutListItem,
+  CabinetDefinition,
+  CabinetDimensionScheduleItem,
+  CabinetDrawingViewScheduleItem,
+  CabinetEdgeBandingScheduleItem,
+  CabinetFabricationReleaseReadinessSnapshot,
+  CabinetHardwareScheduleItem,
+  CabinetInstallerNote,
+  CabinetMaterialScheduleItem,
+  CabinetQuoteSummary,
+  CabinetReleaseChecklistItem,
+  CabinetSupplierReadinessSnapshot,
+  CabinetSupplierSkuMappingItem,
+} from "@/features/cabinetry/types";
+import type {
+  MillworkAssemblyType,
+  MillworkAssetManifest,
+  MillworkDefinition,
+  MillworkHardwareRef,
+  MillworkMaterialRef,
+} from "@/features/millwork/types";
+
 /**
  * Multi-Room Foundation Types v3
  * 
@@ -14,6 +38,8 @@ export interface RoomGeometry {
   wallThickness?: number;
   height?: number;
   slabThickness?: number;
+  /** Baseboard/skirting projection from the finished wall, in metres. */
+  baseboardDepth?: number;
 }
 
 export interface RoomPlanPosition {
@@ -105,6 +131,7 @@ export interface PersistedPlanOpening {
   offsetMm: number;
   widthMm: number;
   heightMm?: number;
+  bottomMm?: number;
   kind: "door" | "window";
 }
 
@@ -114,9 +141,43 @@ export interface PersistedFloorPlanState {
 }
 
 export interface DesignItem {
+  id?: string;
   instanceId: string;
   productId: string;
   variantId: string;
+  assetType?: "catalog_item" | "parametric_cabinet";
+  roomId?: string;
+  assemblyType?: MillworkAssemblyType;
+  millworkAssetManifest?: MillworkAssetManifest;
+  millworkDefinition?: MillworkDefinition;
+  millworkDefinitionVersion?: number;
+  millworkMaterials?: MillworkMaterialRef[];
+  millworkHardware?: MillworkHardwareRef[];
+  name?: string;
+  cabinetDefinition?: CabinetDefinition;
+  glbAssetUrl?: string;
+  bomSnapshot?: CabinetBOMItem[];
+  materialScheduleSnapshot?: CabinetMaterialScheduleItem[];
+  hardwareScheduleSnapshot?: CabinetHardwareScheduleItem[];
+  edgeBandingScheduleSnapshot?: CabinetEdgeBandingScheduleItem[];
+  cutListSnapshot?: CabinetCutListItem[];
+  dimensionScheduleSnapshot?: CabinetDimensionScheduleItem[];
+  drawingViewScheduleSnapshot?: CabinetDrawingViewScheduleItem[];
+  installerNotesSnapshot?: CabinetInstallerNote[];
+  releaseChecklistSnapshot?: CabinetReleaseChecklistItem[];
+  quoteSummarySnapshot?: CabinetQuoteSummary;
+  supplierSkuMappingsSnapshot?: CabinetSupplierSkuMappingItem[];
+  supplierReadinessSnapshot?: CabinetSupplierReadinessSnapshot;
+  fabricationReleaseReadinessSnapshot?: CabinetFabricationReleaseReadinessSnapshot;
+  cabinetUpdatedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  transform?: {
+    position: [number, number, number];
+    rotationY?: number;
+    rotation?: [number, number, number];
+    scale?: [number, number, number];
+  };
   configurationCode?: string;
   position: [number, number, number];
   rotationY?: number;

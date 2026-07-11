@@ -183,6 +183,7 @@ type DesignControlsPanelProps = {
   onActiveRoomSurfaceOpacityChange: (kind: "wall" | "floor" | "ceiling", opacity: number) => void;
   onActiveRoomCeilingVisibleChange: (visible: boolean) => void;
   onActiveRoomCeilingColorChange: (color: string) => void;
+  onOpenCabinetryStudio?: () => void;
   onAddImportedToRoom: () => void;
   onAddCatalogItemToRoom: (productId: string, variantId?: string, purchaseOptionId?: string) => void;
   onAutoPlaceCatalogItemInRoom?: (productId: string, variantId?: string, purchaseOptionId?: string) => void;
@@ -358,6 +359,7 @@ export default function DesignControlsPanel({
   onActiveRoomSurfaceOpacityChange,
   onActiveRoomCeilingVisibleChange,
   onActiveRoomCeilingColorChange,
+  onOpenCabinetryStudio,
   onAddImportedToRoom,
   onAddCatalogItemToRoom,
   onAutoPlaceCatalogItemInRoom,
@@ -745,24 +747,40 @@ export default function DesignControlsPanel({
           />
         )}
 
-        {isDesigner && effectivePanelMode !== "ai" && (
-          <div className="mt-3 flex gap-2">
-            <button
-              className={`text-xs px-3 py-2 rounded-lg ${
-                showGrid ? selectedButtonClass : dark ? "bg-[#151820] text-neutral-200" : "bg-neutral-100"
-              }`}
-              onClick={onGridToggle}
-            >
-              Grid
-            </button>
-            <button
-              className={`text-xs px-3 py-2 rounded-lg ${
-                snapEnabled ? selectedButtonClass : dark ? "bg-[#151820] text-neutral-200" : "bg-neutral-100"
-              }`}
-              onClick={onSnapToggle}
-            >
-              Snap
-            </button>
+        {effectivePanelMode !== "ai" && (onOpenCabinetryStudio || isDesigner) && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {onOpenCabinetryStudio ? (
+              <button
+                type="button"
+                data-testid="open-custom-millwork-studio"
+                className={`text-xs px-3 py-2 rounded-lg ${
+                  dark ? "bg-[#151820] text-neutral-200" : "bg-neutral-100"
+                }`}
+                onClick={onOpenCabinetryStudio}
+              >
+                <span data-testid="open-cabinetry-studio">Custom Millwork Studio</span>
+              </button>
+            ) : null}
+            {isDesigner ? (
+              <>
+                <button
+                  className={`text-xs px-3 py-2 rounded-lg ${
+                    showGrid ? selectedButtonClass : dark ? "bg-[#151820] text-neutral-200" : "bg-neutral-100"
+                  }`}
+                  onClick={onGridToggle}
+                >
+                  Grid
+                </button>
+                <button
+                  className={`text-xs px-3 py-2 rounded-lg ${
+                    snapEnabled ? selectedButtonClass : dark ? "bg-[#151820] text-neutral-200" : "bg-neutral-100"
+                  }`}
+                  onClick={onSnapToggle}
+                >
+                  Snap
+                </button>
+              </>
+            ) : null}
           </div>
         )}
       </div>

@@ -16,6 +16,7 @@ export type FloorPropertiesPanelProps = {
   activeRoomHeightMm: number;
   activeRoomWallThicknessMm: number;
   activeRoomSlabThicknessMm: number;
+  activeRoomBaseboardDepthMm: number;
   activeRoomWallOpacity: number;
   activeRoomFloorOpacity: number;
   activeRoomCeilingOpacity: number;
@@ -35,6 +36,7 @@ export type FloorPropertiesPanelProps = {
   onActiveRoomHeightMmChange: (valueMm: number) => void;
   onActiveRoomWallThicknessMmChange: (valueMm: number) => void;
   onActiveRoomSlabThicknessMmChange: (valueMm: number) => void;
+  onActiveRoomBaseboardDepthMmChange: (valueMm: number) => void;
   onActiveRoomSurfaceOpacityChange: (kind: "wall" | "floor" | "ceiling", opacity: number) => void;
   onActiveRoomCeilingVisibleChange: (visible: boolean) => void;
   onActiveRoomCeilingColorChange: (color: string) => void;
@@ -52,6 +54,7 @@ export default function FloorPropertiesPanel({
   activeRoomHeightMm,
   activeRoomWallThicknessMm,
   activeRoomSlabThicknessMm,
+  activeRoomBaseboardDepthMm,
   activeRoomWallOpacity,
   activeRoomFloorOpacity,
   activeRoomCeilingOpacity,
@@ -71,6 +74,7 @@ export default function FloorPropertiesPanel({
   onActiveRoomHeightMmChange,
   onActiveRoomWallThicknessMmChange,
   onActiveRoomSlabThicknessMmChange,
+  onActiveRoomBaseboardDepthMmChange,
   onActiveRoomSurfaceOpacityChange,
   onActiveRoomCeilingVisibleChange,
   onActiveRoomCeilingColorChange,
@@ -393,6 +397,25 @@ export default function FloorPropertiesPanel({
                 disabled={!canEdit}
                 className={`${inputClass} pr-9`}
                 onChange={(event) => onActiveRoomSlabThicknessMmChange(Number(event.currentTarget.value))}
+              />
+              <span className={dark ? "pointer-events-none absolute right-2 top-2 text-xs text-neutral-400" : "pointer-events-none absolute right-2 top-2 text-xs text-neutral-500"}>
+                mm
+              </span>
+            </span>
+          </label>
+          <label className="grid grid-cols-[1fr_7rem] items-center gap-3">
+            <span className={fieldLabelClass}>Baseboard projection</span>
+            <span className="relative">
+              <input
+                data-testid="floor-properties-baseboard-depth-input"
+                type="number"
+                min="0"
+                max="200"
+                step="1"
+                value={activeRoomBaseboardDepthMm}
+                disabled={!canEdit}
+                className={`${inputClass} pr-9`}
+                onChange={(event) => onActiveRoomBaseboardDepthMmChange(Number(event.currentTarget.value))}
               />
               <span className={dark ? "pointer-events-none absolute right-2 top-2 text-xs text-neutral-400" : "pointer-events-none absolute right-2 top-2 text-xs text-neutral-500"}>
                 mm

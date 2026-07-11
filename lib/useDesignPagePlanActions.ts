@@ -26,6 +26,7 @@ type OpeningMetricsPatch = {
   widthMeters?: number;
   offsetMeters?: number;
   heightMeters?: number;
+  bottomMeters?: number;
   kind?: RoomOpening2D["kind"];
 };
 
@@ -243,6 +244,12 @@ export function useDesignPagePlanActions({
             metrics.heightMeters !== undefined
               ? metersToMm(clampOpeningHeightMeters(metrics.heightMeters))
               : currentOpening.heightMm,
+          bottomMm:
+            metrics.kind === "door"
+              ? 0
+              : metrics.bottomMeters !== undefined
+                ? metersToMm(Math.max(0, metrics.bottomMeters))
+                : currentOpening.bottomMm,
           kind: metrics.kind ?? currentOpening.kind,
         },
         {

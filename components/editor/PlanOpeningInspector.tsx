@@ -12,6 +12,7 @@ type PlanOpeningInspectorProps = {
       widthMeters?: number;
       offsetMeters?: number;
       heightMeters?: number;
+      bottomMeters?: number;
       kind?: RoomOpening2D["kind"];
     }
   ) => void;
@@ -158,7 +159,10 @@ export default function PlanOpeningInspector({
             }
             type="number"
             min={0.4}
-            max={maxHeightMeters}
+            max={Math.max(
+              0.4,
+              maxHeightMeters - (opening.kind === "window" ? (opening.bottomMm ?? 900) / 1000 : 0)
+            )}
             step={0.05}
             value={((opening.heightMm ?? 2100) / 1000).toFixed(2)}
             onChange={(event) => {
@@ -168,6 +172,35 @@ export default function PlanOpeningInspector({
             }}
           />
         </label>
+        {opening.kind === "window" ? (
+          <label
+            className={
+              dark
+                ? "text-[11px] font-medium text-neutral-300"
+                : "text-[11px] font-medium text-gray-600"
+            }
+          >
+            Sill height (m)
+            <input
+              data-testid="plan-opening-bottom-input"
+              className={
+                dark
+                  ? "mt-1 w-full rounded-md border border-neutral-700 bg-[#151820] px-2 py-2 text-xs text-neutral-100 outline-none focus:border-teal-500"
+                  : "mt-1 w-full rounded-md border border-gray-200 px-2 py-2 text-xs text-gray-900 outline-none focus:border-teal-500"
+              }
+              type="number"
+              min={0}
+              max={Math.max(0, maxHeightMeters - 0.4)}
+              step={0.05}
+              value={((opening.bottomMm ?? 900) / 1000).toFixed(2)}
+              onChange={(event) => {
+                const bottomMeters = Number.parseFloat(event.target.value);
+                if (!Number.isFinite(bottomMeters)) return;
+                onChange(opening.id, { bottomMeters });
+              }}
+            />
+          </label>
+        ) : null}
         <label
           className={
             dark
