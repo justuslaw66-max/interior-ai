@@ -93,6 +93,8 @@ import {
   type CabinetStudioExperience,
 } from "../studioOnboarding";
 import { getCabinetVisiblePreviewParts } from "../previewParts";
+import { CABINET_PREVIEW_CAMERA_FOV_DEGREES } from "../previewCamera";
+import { CABINET_PREVIEW_RENDERING_POLICY } from "../previewRenderingPolicy";
 import { useDelayedCabinetPreviewRegenerationIndicator } from "../previewRegenerationIndicator";
 import { applyCabinetSemanticPreviewToParts } from "../semanticPreviewParts";
 import {
@@ -1551,11 +1553,18 @@ function CabinetPreview3D({
 
   return (
     <Canvas
-      shadows
+      data-testid="cabinet-preview-canvas"
+      data-shadow-maps-enabled={String(CABINET_PREVIEW_RENDERING_POLICY.shadowMapsEnabled)}
+      data-front-axis="negative-z"
+      shadows={CABINET_PREVIEW_RENDERING_POLICY.shadowMapsEnabled}
       frameloop="demand"
       camera={{
-        position: [cameraDistance, Math.max(1.4, definition.height / 900), cameraDistance * 1.25],
-        fov: 42,
+        position: [
+          cameraDistance,
+          Math.max(1.4, definition.height / 900),
+          -cameraDistance * 1.25,
+        ],
+        fov: CABINET_PREVIEW_CAMERA_FOV_DEGREES,
         near: 0.01,
         far: 50,
       }}
@@ -1568,7 +1577,11 @@ function CabinetPreview3D({
         fitKey={definition.id}
       />
       <ambientLight intensity={0.48} />
-      <directionalLight position={[3, 5, 4]} intensity={1.15} castShadow />
+      <directionalLight
+        position={[3, 5, -4]}
+        intensity={1.15}
+        castShadow={CABINET_PREVIEW_RENDERING_POLICY.directionalLightCastsShadow}
+      />
       <group
         position={[0, 0, 0]}
         scale={[
@@ -1598,6 +1611,7 @@ function CabinetPreview3D({
       />
       <OrbitControls
         target={[0, definition.height / 2000, 0]}
+        enabled={view === "perspective"}
         enableRotate={view === "perspective"}
         enableDamping
         dampingFactor={0.08}

@@ -315,14 +315,20 @@ export function CabinetSceneItem({
       {viewMode === "3d" && highlightBounds ? (
         <mesh position={highlightBounds.position} raycast={() => undefined}>
           <boxGeometry args={highlightBounds.size} />
-          <meshBasicMaterial color="#2563eb" transparent opacity={0.06} depthWrite={false} />
+          <meshBasicMaterial
+            color="#2563eb"
+            transparent
+            opacity={0}
+            depthWrite={false}
+            colorWrite={false}
+          />
           <Edges scale={1.006} color="#2563eb" />
         </mesh>
       ) : null}
       {selected ? (
         <mesh position={[0, height / 2, 0]} raycast={() => undefined}>
           <boxGeometry args={[width, height, depth]} />
-          <meshBasicMaterial transparent opacity={0} />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} colorWrite={false} />
           <Edges scale={1.012} color="#2563eb" />
         </mesh>
       ) : null}

@@ -457,6 +457,10 @@ test.describe("Custom Millwork Studio MVP", () => {
     await dismissBlockingPrompt(page);
     await page.getByTestId("open-custom-millwork-studio").click();
 
+    const previewCanvas = page.locator('[data-testid="cabinet-preview-canvas"]:visible');
+    await expect(previewCanvas).toHaveAttribute("data-shadow-maps-enabled", "false");
+    await expect(previewCanvas).toHaveAttribute("data-front-axis", "negative-z");
+
     const clearanceToggle = page.locator(
       '[data-testid="cabinet-preview-clearance-toggle"]:visible'
     );

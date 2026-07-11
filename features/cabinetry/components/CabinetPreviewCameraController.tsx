@@ -7,8 +7,12 @@ import {
   useRef,
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
+import {
+  resolveCabinetPreviewCameraPose,
+  type CabinetPreviewView,
+} from "../previewCamera";
 
-export type CabinetPreviewView = "perspective" | "front" | "side" | "top";
+export type { CabinetPreviewView } from "../previewCamera";
 
 export type CabinetPreviewCameraControllerProps = {
   view: CabinetPreviewView;
@@ -27,7 +31,7 @@ export function CabinetPreviewCameraController({
   depthMm,
   fitKey,
 }: CabinetPreviewCameraControllerProps) {
-  const { camera, invalidate } = useThree();
+  const { camera, invalidate, size } = useThree();
   const dimensionsRef = useRef({ widthMm, heightMm, depthMm });
 
   useEffect(() => {
@@ -40,27 +44,19 @@ export function CabinetPreviewCameraController({
       heightMm: currentHeightMm,
       depthMm: currentDepthMm,
     } = dimensionsRef.current;
-    const widthM = Math.max(0.1, currentWidthMm / 1000);
-    const heightM = Math.max(0.1, currentHeightMm / 1000);
-    const depthM = Math.max(0.1, currentDepthMm / 1000);
-    const targetY = heightM / 2;
-    const distance = Math.max(2.4, widthM * 1.25, heightM * 1.25, depthM * 2.5);
-
-    camera.up.set(0, 1, 0);
-    if (view === "front") {
-      camera.position.set(0, targetY, distance);
-    } else if (view === "side") {
-      camera.position.set(distance, targetY, 0);
-    } else if (view === "top") {
-      camera.up.set(0, 0, -1);
-      camera.position.set(0, distance, 0.001);
-    } else {
-      camera.position.set(distance * 0.72, Math.max(1.4, heightM * 0.9), distance * 0.9);
-    }
-    camera.lookAt(0, targetY, 0);
+    const pose = resolveCabinetPreviewCameraPose(
+      view,
+      currentWidthMm,
+      currentHeightMm,
+      currentDepthMm,
+      size.width / Math.max(1, size.height),
+    );
+    camera.up.set(...pose.up);
+    camera.position.set(...pose.position);
+    camera.lookAt(...pose.target);
     camera.updateProjectionMatrix();
     invalidate();
-  }, [camera, fitKey, invalidate, view]);
+  }, [camera, fitKey, invalidate, size.height, size.width, view]);
 
   return null;
 }

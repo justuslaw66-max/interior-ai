@@ -16,6 +16,15 @@ const CABINET_CLEARANCE_PREVIEW_PART_TYPES = new Set<CabinetPart["type"]>([
   "media_vent_slot_template",
 ]);
 
+// These components remain in generated parts, the BOM, documentation, and
+// fabrication semantics. They sit behind closed fronts in the finished cabinet,
+// so drawing their simplified marker boxes in the consumer preview only creates
+// exterior z-fighting or exposes hardware that should be concealed.
+const CABINET_CONCEALED_HARDWARE_PREVIEW_PART_TYPES = new Set<CabinetPart["type"]>([
+  "door_hinge_pair",
+  "drawer_slide_pair",
+]);
+
 export function getCabinetVisiblePreviewParts(
   definition: CabinetDefinition,
   generatedParts: readonly CabinetPart[] = generateCabinetParts(definition),
@@ -25,6 +34,9 @@ export function getCabinetVisiblePreviewParts(
     definition.modules.map((module) => [module.id, module])
   );
   return generatedParts.filter((part) => {
+    if (CABINET_CONCEALED_HARDWARE_PREVIEW_PART_TYPES.has(part.type)) {
+      return false;
+    }
     if (options.showClearances === false && CABINET_CLEARANCE_PREVIEW_PART_TYPES.has(part.type)) {
       return false;
     }
