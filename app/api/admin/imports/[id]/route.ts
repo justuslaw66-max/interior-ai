@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { isAdminEmail } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
-import { updateImportJobStatus } from "@/lib/import-jobs/update-import-job-status";
+import {
+  ImportJobUpdateValidationError,
+  updateImportJobStatus,
+} from "@/lib/import-jobs/update-import-job-status";
 import type { ImportJobStatus } from "@/lib/import-jobs/types";
 
 type ImportJobDetailRow = {
@@ -44,6 +47,10 @@ const STATUSES: ImportJobStatus[] = [
 function asImportJobStatus(value: unknown): ImportJobStatus | null {
   if (typeof value !== "string") return null;
   return (STATUSES as string[]).includes(value) ? (value as ImportJobStatus) : null;
+}
+
+function isNullableString(value: unknown): value is string | null {
+  return value === null || typeof value === "string";
 }
 
 export async function GET(
@@ -106,7 +113,18 @@ export async function PATCH(
   }
 
   const { id } = await params;
-  const body = (await request.json()) as {
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return NextResponse.json({ error: "Invalid PATCH body" }, { status: 400 });
+  }
+
+  const patch = body as {
     status?: string;
     notes?: string | null;
     errorMessage?: string | null;
@@ -114,19 +132,51 @@ export async function PATCH(
     catalogItemId?: string | null;
   };
 
-  const status = asImportJobStatus(body.status);
-  if (!status) {
-    return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+  const knownFields = [
+    "status",
+    "notes",
+    "errorMessage",
+    "normalizedAssetId",
+    "catalogItemId",
+  ] as const;
+  if (!knownFields.some((field) => Object.hasOwn(patch, field))) {
+    return NextResponse.json({ error: "No valid fields" }, { status: 400 });
   }
 
-  await updateImportJobStatus({
-    id,
-    to: status,
-    notes: body.notes,
-    errorMessage: body.errorMessage,
-    normalizedAssetId: body.normalizedAssetId,
-    catalogItemId: body.catalogItemId,
-  });
+  let status: ImportJobStatus | undefined;
+  if (patch.status !== undefined) {
+    const parsedStatus = asImportJobStatus(patch.status);
+    if (!parsedStatus) {
+      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+    }
+    status = parsedStatus;
+  }
+
+  if (
+    (patch.notes !== undefined && !isNullableString(patch.notes)) ||
+    (patch.errorMessage !== undefined && !isNullableString(patch.errorMessage)) ||
+    (patch.normalizedAssetId !== undefined &&
+      !isNullableString(patch.normalizedAssetId)) ||
+    (patch.catalogItemId !== undefined && !isNullableString(patch.catalogItemId))
+  ) {
+    return NextResponse.json({ error: "Invalid field value" }, { status: 400 });
+  }
+
+  try {
+    await updateImportJobStatus({
+      id,
+      to: status,
+      notes: patch.notes,
+      errorMessage: patch.errorMessage,
+      normalizedAssetId: patch.normalizedAssetId,
+      catalogItemId: patch.catalogItemId,
+    });
+  } catch (error) {
+    if (error instanceof ImportJobUpdateValidationError) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+    throw error;
+  }
 
   return NextResponse.json({ ok: true });
 }
