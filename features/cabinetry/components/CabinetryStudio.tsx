@@ -306,6 +306,7 @@ import {
   isCabinetWallBedPanel,
 } from "../convertibleLayout";
 import {
+  CABINET_PLANNING_ESTIMATE_DISCLAIMER,
   downloadCabinetFabricationQuoteRequestJson,
   downloadCabinetDocumentationCsv,
   downloadCabinetDocumentationPackageJson,
@@ -4829,8 +4830,8 @@ export default function CabinetryStudio({
                                 </span>
                                 <span className={`text-[11px] ${isSelected ? "text-white/65" : "text-neutral-500"}`}>
                                   {space.openings.length
-                                    ? `${space.openings.length} ${space.openings.length === 1 ? "opening" : "openings"} considered`
-                                    : "Clear wall · no recorded openings"}
+                                    ? `${space.openings.length} recorded ${space.openings.length === 1 ? "opening" : "openings"} considered`
+                                    : "No recorded openings · field verification required"}
                                 </span>
                                 {hostCompatibility ? (
                                   <span
@@ -5000,8 +5001,11 @@ export default function CabinetryStudio({
                           >
                             Use this measured area
                           </button>
-                          <p className="text-[11px] leading-5 text-blue-700 sm:col-span-2">
-                            Custom areas coordinate dimensions and clearances. Without a modeled wall face, final plan position remains manual.
+                          <p
+                            data-testid="cabinet-custom-space-limitations"
+                            className="text-[11px] leading-5 text-blue-700 sm:col-span-2"
+                          >
+                            Custom measured hosts stay on this browser and device; they are not synchronized to the project or server. They coordinate dimensions and clearances, but without a modeled wall face, final plan position remains manual.
                           </p>
                         </div>
                       ) : null}
@@ -5095,8 +5099,11 @@ export default function CabinetryStudio({
                           <MapPin className="h-4 w-4" /> Fit to {selectedSpace.label}
                         </button>
 
-                        <p className="mt-3 text-xs leading-5 text-neutral-500">
-                          The current plan provides wall, ceiling, door, and window measurements. Outlet and baseboard locations are only considered when recorded.
+                        <p
+                          data-testid="cabinet-fit-limitations"
+                          className="mt-3 text-xs leading-5 text-neutral-500"
+                        >
+                          Fit uses recorded walls, doors, windows, and baseboards. The current plan does not capture electrical outlets or generic wall obstructions, and openings on sloped or ambiguous notch edges may not map automatically. Field-verify all services and site conditions before fabrication.
                         </p>
                       </div>
                     ) : null}
@@ -5906,7 +5913,7 @@ export default function CabinetryStudio({
                         <div className="flex flex-wrap items-start justify-between gap-4">
                           <div>
                             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-blue-700">
-                              Preliminary estimate
+                              Planning estimate
                             </p>
                             <p
                               data-testid="cabinet-consumer-estimate-total"
@@ -5932,8 +5939,11 @@ export default function CabinetryStudio({
                             </div>
                           ))}
                         </div>
-                        <p className="mt-4 text-xs leading-5 text-blue-800">
-                          {consumerEstimate.assumptions[0]} Final materials, site conditions, delivery, and local services can change the price.
+                        <p
+                          data-testid="cabinet-consumer-estimate-disclaimer"
+                          className="mt-4 text-xs leading-5 text-blue-800"
+                        >
+                          {CABINET_PLANNING_ESTIMATE_DISCLAIMER} Final materials, site conditions, delivery, and local services can change the price.
                         </p>
                       </div>
                     ) : null}
@@ -9770,7 +9780,7 @@ export default function CabinetryStudio({
               data-quote-line-count={String(documentation.quoteSummary.lineItems.length)}
               className="grid gap-2"
             >
-              {sectionTitle("Preliminary Quote")}
+              {sectionTitle("Planning Estimate")}
               <div className="rounded-md border border-neutral-200 bg-neutral-50 p-3 text-xs text-neutral-700">
                 <div className="flex items-center justify-between text-sm font-semibold text-neutral-900">
                   <span>Estimated total</span>
@@ -9790,8 +9800,11 @@ export default function CabinetryStudio({
                   <span>Contingency</span>
                   <span className="text-right">{documentation.quoteSummary.contingency.toLocaleString()}</span>
                 </div>
-                <p className="mt-2 text-[11px] leading-4 text-neutral-500">
-                  Preliminary only; supplier pricing and fabrication quotes are not connected yet.
+                <p
+                  data-testid="cabinet-planning-estimate-disclaimer"
+                  className="mt-2 text-[11px] leading-4 text-neutral-500"
+                >
+                  {CABINET_PLANNING_ESTIMATE_DISCLAIMER} Supplier pricing and fabrication quotes are not connected yet.
                 </p>
               </div>
             </div>
@@ -10186,6 +10199,12 @@ export default function CabinetryStudio({
                 onChange={handleImportSourceDefinition}
               />
               <div hidden={outputTab !== "outputs"} className="grid gap-2">
+                <p
+                  data-testid="cabinet-output-disclaimer"
+                  className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] leading-4 text-amber-900"
+                >
+                  Generated files are planning and RFQ artifacts, not checkout, purchase-order, final-quote, fabrication, CNC, or installation authorization. Field verification and human review remain required.
+                </p>
               <button
                 type="button"
                 data-testid="cabinet-download-glb"

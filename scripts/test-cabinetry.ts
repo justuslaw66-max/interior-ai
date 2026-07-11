@@ -10,6 +10,7 @@ import {
 import { exportCabinetAsGlb } from "@/features/cabinetry/exportCabinetGlb";
 import { generateCabinetBOM } from "@/features/cabinetry/generateCabinetBOM";
 import {
+  CABINET_PLANNING_ESTIMATE_DISCLAIMER,
   buildCabinetFabricationQuoteRequest,
   buildCabinetFabricationQuoteRequestJson,
   buildCabinetSupplierSkuMappings,
@@ -7942,8 +7943,8 @@ async function main() {
     "project quote package should include room display names"
   );
   assert(
-    projectQuotePackage.disclaimer.includes("not a purchase order"),
-    "project quote package should include a preliminary pricing disclaimer"
+    projectQuotePackage.disclaimer.includes(CABINET_PLANNING_ESTIMATE_DISCLAIMER),
+    "project quote package should include the canonical planning-estimate disclaimer"
   );
   assert(
     projectQuotePackage.artifacts.some((item) => item.type === "project_quote_package_json"),

@@ -14,12 +14,14 @@
 Before freezing a release candidate, the product owner must either accept these
 documented limits for the MVP or require the affected behavior to be changed:
 
-- Fit-to-Space does not model electrical outlets or generic wall obstructions.
+- Fit-to-Space uses recorded door and window geometry, but the current plan does not
+  capture electrical outlets or generic wall obstructions.
 - Manually measured custom hosts are stored locally rather than synchronized through
   the project/server data model.
-- The Studio does not guess sloped-wall geometry or ambiguous interior notch edges.
-- Supplier rates and supplier SKU mappings are preliminary.
-- Estimates are not checkout totals, purchase orders, or final fabricator quotes.
+- The Studio models polygon wall geometry, but does not guess how cardinal openings map
+  onto sloped walls or ambiguous interior notch edges.
+- Supplier rates and internal SKU mappings are preliminary and not supplier-verified.
+- Planning estimates are not checkout totals, purchase orders, or final fabricator quotes.
 - Generated GLB object URLs are session-local outputs rather than durable source data;
   the editable parametric definition remains the source of truth.
 
@@ -154,8 +156,8 @@ does not replace the observed usability scenarios or the manual release signoff 
 1. Open `/design` as a signed-out or Free user with the Custom Millwork Studio feature flag enabled.
 2. Confirm `Custom Millwork Studio` is available from the normal design controls and opens in Guided setup.
 3. Confirm Detailed editor, construction locks, manual bay sizing, custom shelf/door/drawer modes, clearance overlays, BOM, schedules, fabrication data, and export controls are not shown.
-4. Complete Type, Space, Size, Layout, Style, and Review. Confirm the preliminary estimate updates from the same definition and clearly says that final pricing can change.
-5. Place the design, select it, and confirm the inspector shows a simple preliminary estimate plus placement, Edit, and Delete controls without fabrication-level summaries or downloads.
+4. Complete Type, Space, Size, Layout, Style, and Review. Confirm the planning estimate updates from the same definition and clearly says it is not a supplier quote, checkout total, purchase order, or fabrication authorization and that final pricing can change.
+5. Place the design, select it, and confirm the inspector shows a simple planning estimate with the same disclaimer plus placement, Edit, and Delete controls without fabrication-level summaries or downloads.
 6. Reopen the placed design and confirm it remains in Guided setup with the same dimensions, modules, finish, hardware, position, and rotation.
 
 ### Pro
@@ -165,7 +167,7 @@ does not replace the observed usability scenarios or the manual release signoff 
 3. Open a design first created in Consumer mode and confirm revealing Pro controls does not change its visible result or underlying definition.
 4. Choose Detailed editor, close the Studio, and start another Pro creation. Confirm it enters Detailed directly; choose Guided setup and repeat to confirm the preference changes without changing the definition. Edit mode should still open Detailed for Pro, while Consumer remains Guided.
 
-Consumer estimates use the existing preliminary quote model. They are planning allowances, not live supplier quotes, purchase orders, or checkout totals. Custom millwork must remain excluded from normal cart and checkout flows.
+Consumer estimates use the existing preliminary quote model. They are planning allowances, not live supplier quotes, purchase orders, checkout totals, or fabrication authorizations. Custom millwork must remain excluded from normal cart and checkout flows.
 
 ## Guided Quick Start Smoke
 
@@ -173,8 +175,8 @@ Consumer estimates use the existing preliminary quote model. They are planning a
 2. Confirm Recommended templates show recognizable visual diagrams, descriptions, placement type, difficulty, estimated setup time, safety classification, and applicable room types. Confirm specialty wall-bed, under-stair, paneling, ceiling, fireplace, and trim cards do not use a generic cabinet thumbnail.
 3. Search for `wardrobe`, clear the search, then filter by `Wardrobes & closets`; confirm the results update without losing the current design.
 4. Select Wardrobe and move through Type, Space, Size, Layout, Style, and Review in both directions; confirm selections survive step changes.
-5. In Space, select a measured cardinal wall and exercise width-only, height-only, width-and-height, and between-boundaries fitting. Confirm openings split usable segments, automatic changes are explained, and a successful fit remains valid in Review.
-6. Add a manually measured niche, opening, or rectangular area. Confirm incomplete numeric drafts never enter the saved model and that a valid custom host can size the assembly without claiming an automatic plan position.
+5. In Space, confirm the Fit limitation notice says electrical outlets and generic wall obstructions are not captured, sloped or ambiguous notch openings may not map automatically, and field verification is required. Select a measured cardinal wall and exercise width-only, height-only, width-and-height, and between-boundaries fitting. Confirm recorded openings split usable segments, automatic changes are explained, and a successful fit remains valid in Review.
+6. Add a manually measured niche, opening, or rectangular area. Confirm the UI says measured hosts remain on this browser/device rather than project/server synchronized, incomplete numeric drafts never enter the saved model, and a valid custom host can size the assembly without claiming an automatic plan position.
 7. Set a valid overall width, height, and depth. Confirm the preview remains on the last valid value while a number field is temporarily blank, and commits only on blur or Enter.
 8. Drag the constrained width, height, and depth preview handles. Confirm values snap by 10 mm, show a live lightweight preview, commit once on release, and remain editable numerically.
 9. For a multi-bay template, change the overall width and confirm bay widths redistribute proportionally. Add, duplicate, delete, and reorder a bay in Automatic mode; confirm the fitted/overall target stays exact and only unlocked bays redistribute. Switch to Manual and confirm entered bay widths remain exact while the overall width is derived. Return to Automatic and confirm the UI explains that unlocked manual overrides can be replaced. Lock the overall width, an individual bay, equal sizing, shelf layout, and a material assignment; confirm automation preserves every lock or explains why fitting cannot continue.
@@ -265,7 +267,7 @@ freeze a new release candidate and rerun the whole gate before product-owner sig
 13. Download the package JSON and confirm it includes `custom_millwork.package.v1`, `sourceType: cabinet_definition`, the editable `CabinetDefinition`, the `custom_millwork.definition.v1` wrapper, `custom_millwork.assembly_profile.v1` metadata, matching `sourceDefinitionFingerprint`, BOM, drawing view schedule, supplier readiness, fabrication release readiness, supplier SKU mappings, edge-banding schedule, documentation schedules, release checklist, quote summary, and embedded RFQ request.
 14. Download GLB and confirm the file is non-empty and opens as a binary glTF asset.
 15. Place the cabinet in the plan; confirm it appears in 2D and 3D and is selected.
-16. In the selected millwork inspector, confirm the design-to-build summary shows quote total, RFQ status, fabrication release status, cut-list count, edge-banding total, release gates, assembly profile type/complexity, material schedule rows, and hardware rows, and confirm the project readiness panel shows handoff, scope, quote, purchase, fabrication, field verification, installation, approval, and issue flags.
+16. In the selected millwork inspector, confirm the design-to-build summary shows a planning estimate with the non-order/non-fabrication disclaimer, RFQ status, fabrication release status, cut-list count, edge-banding total, release gates, assembly profile type/complexity, material schedule rows, and hardware rows, and confirm the project readiness panel shows handoff, scope, quote, purchase, fabrication, field verification, installation, approval, and issue flags.
 17. Download the placed package JSON and confirm it includes `custom_millwork.placed_asset_package.v1`, `custom_millwork.asset_manifest.v1`, placed instance ID, room ID, transform, GLB reference if present, editable source definition, assembly profile metadata, matching `sourceDefinitionFingerprint`, BOM, edge-banding schedule, documentation snapshots, supplier readiness, fabrication release readiness, embedded RFQ data, and embedded installer work order data.
 18. Download the installer work order JSON and confirm it includes `custom_millwork.installer_work_order.v1`, placed instance ID, room name, room ID, position/rotation/scale transform, source dimensions, install scope, release status, installer notes, release checklist, and artifact references.
 19. Download the project field verification JSON and confirm it includes `custom_millwork.project_field_verification.v1`, verification status, `canReleaseWithoutFieldVerification: false`, embedded release and installation-plan context, room summaries, placed asset transforms, measurement/placement/access checks, installer work order references, artifact references, and human-verification policy.
@@ -273,7 +275,7 @@ freeze a new release candidate and rerun the whole gate before product-owner sig
 21. Download the project millwork schedule JSON and CSV; confirm JSON includes `custom_millwork.project_schedule.v1`, room summaries, placed asset summaries, source definition fingerprints, project totals, asset manifests, editable source definitions, edge-banding totals, release blockers, and preliminary quote totals across rooms, and CSV includes Project Totals, Rooms, and Placed Millwork Assets sections.
 22. Download the project scope JSON and confirm it includes `custom_millwork.project_scope.v1`, embedded project schedule, family summaries, assembly summaries, source definition fingerprints, MVP/phase coverage status, `sourceOfTruth: cabinet_definition`, scope assumptions, and artifact references for the schedule, handoff package, and placed packages.
 23. Download the project procurement JSON and confirm it includes `custom_millwork.project_procurement.v1`, embedded project schedule, project finish schedule artifact, aggregated mapped material/hardware SKU rows, fabrication/installation custom quote rows, asset and room references, preliminary procurement totals, artifact references, and `includeInCheckout: false`.
-24. Download the project quote JSON and confirm it includes `custom_millwork.project_quote.v1`, quote status, embedded schedule/procurement/release/approval context, project finish schedule artifact, preliminary category totals, room totals, placed asset totals, supplier/custom quote readiness counts, quote artifacts, assumptions, and a non-purchase-order disclaimer.
+24. Use Download Planning Estimate to export the project quote JSON and confirm it includes `custom_millwork.project_quote.v1`, quote status, embedded schedule/procurement/release/approval context, project finish schedule artifact, preliminary category totals, room totals, placed asset totals, supplier/custom quote readiness counts, quote artifacts, assumptions, and the supplier-quote/checkout/purchase-order/fabrication-authorization disclaimer.
 25. Download the project purchase readiness JSON and confirm it includes `custom_millwork.project_purchase_readiness.v1`, purchase readiness status, `canCreateCheckout: false`, `canIssuePurchaseOrder`, embedded procurement/quote/approval/release context, project finish schedule artifact, mapped SKU candidate rows, custom quote rows, next actions, artifact references, and checkout exclusion policy.
 26. Download the project fabrication release JSON and confirm it includes `custom_millwork.project_fabrication_release.v1`, release status, `canReleaseToFabrication`, `canIssuePurchaseOrder`, embedded schedule/procurement/RFQ packages, project finish schedule artifact, project cut-list artifact, per-asset release summaries, cut-list and edge-banding totals, shop drawing/DXF/package/installer artifacts, next actions, and human-approval notes.
 27. Download the project approval package JSON and confirm it includes `custom_millwork.project_approval_package.v1`, approval status, client/fabricator submittal flags, release-after-signoff flag, embedded release/procurement context, project finish schedule artifact, approval items by owner/phase/due-before, signoff policy, and approval artifacts.
@@ -365,5 +367,5 @@ freeze a new release candidate and rerun the whole gate before product-owner sig
 - Fabrication release readiness separates RFQ readiness from final release gates such as field verification, client approval, shop drawing review, cut-list/DXF review, quote approval, and install coordination.
 - The RFQ JSON is an early supplier/fabricator request package with SKU mapping readiness, service quote rows, requested deliverables, and artifact references.
 - The release checklist is a generated pre-release workflow covering field verification, client approval, supplier SKU confirmation, shop drawing review, cut-list/DXF review, final quote approval, and installation coordination.
-- Quote totals use placeholder rates until supplier SKU mapping and fabricator quoting are connected.
+- Planning-estimate totals use placeholder rates until supplier SKU mapping and fabricator quoting are connected.
 - Custom millwork assets are smart design assets and should not appear in cart or checkout summaries.

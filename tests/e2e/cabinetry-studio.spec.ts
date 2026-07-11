@@ -18,6 +18,7 @@ async function dismissBlockingPrompt(page: import("@playwright/test").Page) {
     .locator(".fixed.inset-0.z-50")
     .filter({ hasText: /Upgrade to Pro|Save and sync this design/i })
     .last();
+  await overlay.waitFor({ state: "visible", timeout: 2000 }).catch(() => undefined);
   if (!(await overlay.isVisible().catch(() => false))) return;
 
   const closeButton = overlay
@@ -244,9 +245,27 @@ test.describe("Custom Millwork Studio MVP", () => {
     await page.getByTestId("open-custom-millwork-studio").click();
 
     await page.getByTestId("cabinet-guided-step-space").click();
+    await page.getByTestId("cabinet-custom-space-toggle").click();
+    await expect(page.getByTestId("cabinet-custom-space-limitations")).toContainText(
+      /stay on this browser and device/i
+    );
+    await expect(page.getByTestId("cabinet-custom-space-limitations")).toContainText(
+      /not synchronized to the project or server/i
+    );
+    await page.getByTestId("cabinet-custom-space-toggle").click();
     const firstMeasuredWall = page.locator('[data-testid^="cabinet-space-"]').first();
     await expect(firstMeasuredWall).toBeVisible();
+    await expect(firstMeasuredWall).not.toContainText("Clear wall");
     await firstMeasuredWall.click();
+    await expect(page.getByTestId("cabinet-fit-limitations")).toContainText(
+      /does not capture electrical outlets or generic wall obstructions/i
+    );
+    await expect(page.getByTestId("cabinet-fit-limitations")).toContainText(
+      /sloped or ambiguous notch edges may not map automatically/i
+    );
+    await expect(page.getByTestId("cabinet-fit-limitations")).toContainText(
+      /field-verify all services and site conditions before fabrication/i
+    );
     await expect(page.getByTestId("cabinet-fit-mode-fit_height")).toBeVisible();
     await expect(page.getByTestId("cabinet-fit-mode-between_boundaries")).toBeVisible();
     await page.getByTestId("cabinet-fit-mode-fit_width").click();
@@ -1135,6 +1154,10 @@ test.describe("Custom Millwork Studio MVP", () => {
     await expect(page.getByTestId("cabinet-assembly-profile")).toHaveAttribute("data-assembly-profile-complexity", "moderate");
     await expect(page.getByTestId("cabinet-quote-summary")).toHaveAttribute("data-quote-total", /\d+/);
     await expect(page.getByTestId("cabinet-quote-summary")).toHaveAttribute("data-quote-line-count", /\d+/);
+    await expect(page.getByTestId("cabinet-quote-summary")).toContainText("Planning Estimate");
+    await expect(page.getByTestId("cabinet-planning-estimate-disclaimer")).toContainText(
+      /not a supplier quote, checkout total, purchase order, or fabrication authorization/i
+    );
     await expect(page.getByTestId("cabinet-supplier-readiness")).toHaveAttribute("data-supplier-readiness-status", "ready_for_fabricator_review");
     await expect(page.getByTestId("cabinet-supplier-readiness")).toHaveAttribute("data-supplier-sku-mapping-count", "10");
     await expect(page.getByTestId("cabinet-supplier-readiness")).toHaveAttribute("data-mapped-sku-count", "7");
@@ -1159,6 +1182,9 @@ test.describe("Custom Millwork Studio MVP", () => {
     await expect(page.getByTestId("cabinet-release-checklist")).toHaveAttribute("data-release-blocker-count", "0");
 
     await page.getByTestId("cabinet-output-tab-outputs").click();
+    await expect(page.getByTestId("cabinet-output-disclaimer")).toContainText(
+      /not checkout, purchase-order, final-quote, fabrication, CNC, or installation authorization/i
+    );
     const sourceDownloadPromise = page.waitForEvent("download");
     await page.getByTestId("cabinet-download-source-definition").click();
     const sourceDownload = await sourceDownloadPromise;
@@ -1390,6 +1416,12 @@ test.describe("Custom Millwork Studio MVP", () => {
 
     await dismissBlockingPrompt(page);
     await expect(page.getByTestId("selected-cabinet-documentation-summary")).toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId("selected-cabinet-documentation-summary")).toContainText(
+      "Planning estimate"
+    );
+    await expect(page.getByTestId("selected-cabinet-pricing-disclaimer")).toContainText(
+      /not a supplier quote, checkout total, purchase order, or fabrication authorization/i
+    );
     await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-bom-count", /\d+/);
     await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-material-schedule-count", "4");
     await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-hardware-schedule-count", "3");
@@ -1616,6 +1648,12 @@ test.describe("Custom Millwork Studio MVP", () => {
     expect(projectProcurementJson.artifacts.some((item: { type: string }) => item.type === "project_procurement_json")).toBe(true);
     expect(projectProcurementJson.artifacts.some((item: { type: string }) => item.type === "project_finish_schedule_json")).toBe(true);
     const projectQuoteDownloadPromise = page.waitForEvent("download");
+    await expect(page.getByTestId("selected-cabinet-download-project-quote")).toHaveText(
+      "Download Planning Estimate"
+    );
+    await expect(page.getByTestId("selected-cabinet-project-estimate-disclaimer")).toContainText(
+      /not a supplier quote, checkout total, purchase order, or fabrication authorization/i
+    );
     await page.getByTestId("selected-cabinet-download-project-quote").click();
     const projectQuoteDownload = await projectQuoteDownloadPromise;
     const projectQuotePath = await projectQuoteDownload.path();
@@ -1631,6 +1669,9 @@ test.describe("Custom Millwork Studio MVP", () => {
     expect(projectQuoteJson.totals.assetCount).toBe(1);
     expect(projectQuoteJson.totals.estimatedTotal).toBeGreaterThan(0);
     expect(projectQuoteJson.totals.customQuoteRequiredCount).toBe(3);
+    expect(projectQuoteJson.disclaimer).toContain(
+      "Planning estimate only—not a supplier quote, checkout total, purchase order, or fabrication authorization."
+    );
     expect(projectQuoteJson.categoryTotals.some((item: { category: string }) => item.category === "materials")).toBe(true);
     expect(projectQuoteJson.categoryTotals.some((item: { category: string }) => item.category === "fabrication")).toBe(true);
     expect(projectQuoteJson.categoryTotals.some((item: { category: string }) => item.category === "contingency")).toBe(true);
@@ -2238,6 +2279,10 @@ test.describe("Custom Millwork Studio MVP", () => {
     const estimatedTotal = Number(await estimate.getAttribute("data-estimated-total"));
     expect(estimatedTotal).toBeGreaterThan(0);
     await expect(page.getByTestId("cabinet-consumer-estimate-total")).toContainText("$");
+    await expect(estimate).toContainText("Planning estimate");
+    await expect(page.getByTestId("cabinet-consumer-estimate-disclaimer")).toContainText(
+      /not a supplier quote, checkout total, purchase order, or fabrication authorization/i
+    );
     await expect(page.getByTestId("cabinet-open-outputs")).toHaveCount(0);
     await expect(page.getByTestId("cabinet-bom")).toHaveCount(0);
     await expect(page.getByTestId("cabinet-place-in-plan")).toBeEnabled();

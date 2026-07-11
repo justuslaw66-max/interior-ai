@@ -334,6 +334,7 @@ import {
   mapCabinetCardinalOpeningsToPolygonWalls,
 } from "@/features/cabinetry/fitToSpace";
 import {
+  CABINET_PLANNING_ESTIMATE_DISCLAIMER,
   buildCabinetProjectHandoffPackage,
   buildCabinetProjectSchedulePackage,
   downloadCabinetProjectApprovalPackageJson,
@@ -17472,13 +17473,19 @@ function PageContent() {
                     data-estimated-total={String(selectedCabinetDocumentationSnapshot.quoteSummary.estimatedTotal)}
                     className="rounded-lg bg-blue-50 p-2"
                   >
-                    <div className="text-blue-700">Preliminary estimate</div>
+                    <div className="text-blue-700">Planning estimate</div>
                     <div className="mt-1 font-semibold text-blue-950">
                       {selectedCabinetDocumentationSnapshot.quoteSummary.estimatedTotal.toLocaleString("en-US", {
                         style: "currency",
                         currency: selectedCabinetDocumentationSnapshot.quoteSummary.currency,
                         maximumFractionDigits: 0,
                       })}
+                    </div>
+                    <div
+                      data-testid="selected-cabinet-pricing-disclaimer"
+                      className="mt-1 text-[10px] leading-4 text-blue-700"
+                    >
+                      {CABINET_PLANNING_ESTIMATE_DISCLAIMER}
                     </div>
                   </div>
                 ) : null}
@@ -17659,10 +17666,16 @@ function PageContent() {
                   </div>
                   <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
                     <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
-                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Quote total</div>
+                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Planning estimate</div>
                       <div className="mt-1 font-semibold">
                         {selectedCabinetDocumentationSnapshot.quoteSummary.currency}{" "}
                         {selectedCabinetDocumentationSnapshot.quoteSummary.estimatedTotal.toLocaleString()}
+                      </div>
+                      <div
+                        data-testid="selected-cabinet-pricing-disclaimer"
+                        className={showDesignerTheme ? "mt-1 text-[10px] leading-4 text-neutral-400" : "mt-1 text-[10px] leading-4 text-neutral-500"}
+                      >
+                        {CABINET_PLANNING_ESTIMATE_DISCLAIMER}
                       </div>
                     </div>
                     <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
@@ -18075,15 +18088,25 @@ function PageContent() {
                       projectName: designSnapshot.title ?? "Custom Millwork Project",
                       roomNamesById: projectCabinetRoomNamesById,
                     });
-                    showRuleToast("Project quote package exported");
+                    showRuleToast("Planning estimate package exported");
                   } catch (error) {
                     console.error("[Cabinetry] Unable to export project quote package", error);
-                    showRuleToast("Project quote package export failed");
+                    showRuleToast("Planning estimate package export failed");
                   }
                 }}
               >
-                Download Project Quote
+                Download Planning Estimate
               </button>
+              <p
+                data-testid="selected-cabinet-project-estimate-disclaimer"
+                className={
+                  showDesignerTheme
+                    ? "mt-1 text-[10px] leading-4 text-neutral-400"
+                    : "mt-1 text-[10px] leading-4 text-neutral-500"
+                }
+              >
+                {CABINET_PLANNING_ESTIMATE_DISCLAIMER}
+              </p>
               <button
                 type="button"
                 data-testid="selected-cabinet-download-project-purchase-readiness"

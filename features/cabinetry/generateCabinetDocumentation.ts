@@ -381,6 +381,9 @@ import type {
  * or documentation schedules during the same update. Any omitted value is
  * derived with the same public generator used by the one-argument APIs.
  */
+export const CABINET_PLANNING_ESTIMATE_DISCLAIMER =
+  "Planning estimate only—not a supplier quote, checkout total, purchase order, or fabrication authorization.";
+
 export interface CabinetDocumentationGenerationInputs {
   readonly parts?: readonly CabinetPart[];
   readonly cutList?: readonly CabinetCutListItem[];
@@ -2208,7 +2211,7 @@ export function generateCabinetQuoteSummary(
     estimatedTotal: roundMoney(subtotal + contingency),
     lineItems: quoteLines,
     assumptions: [
-      "Preliminary estimate only; not a supplier quote or fabrication contract.",
+      CABINET_PLANNING_ESTIMATE_DISCLAIMER,
       "Pricing uses placeholder rates until supplier SKU mapping and fabricator quoting are connected.",
       `${assemblyProfile.label} profile quote drivers: ${assemblyProfile.quoteDrivers.join("; ")}.`,
       "Taxes, delivery, demolition, countertop, appliances, plumbing, electrical, and permitting are excluded unless modeled separately.",
@@ -6016,8 +6019,7 @@ export function buildCabinetProjectQuotePackage(input: {
       "Fabrication, finishing, delivery, installation, field verification, and site-condition pricing require fabricator or installer quote approval.",
       "Regenerate this quote package after any design, room, transform, material, hardware, supplier, or approval change.",
     ],
-    disclaimer:
-      "This generated project quote package is not a purchase order, invoice, construction contract, or fabrication release. Final pricing requires supplier, fabricator, installer, designer, and client approval.",
+    disclaimer: `${CABINET_PLANNING_ESTIMATE_DISCLAIMER} This generated project quote package is not an invoice or construction contract. Final pricing requires supplier, fabricator, installer, designer, and client approval.`,
   };
 }
 
