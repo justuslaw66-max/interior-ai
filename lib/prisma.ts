@@ -13,22 +13,45 @@ const resolvedDatabaseUrl = (() => {
   }
 
   const possiblePaths = [
-    path.resolve(process.cwd(), `.env.${appEnv}`),
-    path.resolve(process.cwd(), ".env.local"),
-    path.resolve(process.cwd(), ".env"),
-    path.resolve(process.cwd(), "interior-ai", ".env.local"),
-    path.resolve(process.cwd(), "interior-ai", `.env.${appEnv}`),
-    path.join(__dirname, "..", ".env.local"),
-    path.join(__dirname, "..", `.env.${appEnv}`),
-    path.join(__dirname, "..", ".env"),
-    path.join(__dirname, "..", "..", "interior-ai", ".env.local"),
-    path.join(__dirname, "..", "..", "interior-ai", `.env.${appEnv}`),
+    path.resolve(/*turbopackIgnore: true*/ process.cwd(), `.env.${appEnv}`),
+    path.resolve(/*turbopackIgnore: true*/ process.cwd(), ".env.local"),
+    path.resolve(/*turbopackIgnore: true*/ process.cwd(), ".env"),
+    path.resolve(
+      /*turbopackIgnore: true*/ process.cwd(),
+      "interior-ai",
+      ".env.local"
+    ),
+    path.resolve(
+      /*turbopackIgnore: true*/ process.cwd(),
+      "interior-ai",
+      `.env.${appEnv}`
+    ),
+    path.join(/*turbopackIgnore: true*/ __dirname, "..", ".env.local"),
+    path.join(/*turbopackIgnore: true*/ __dirname, "..", `.env.${appEnv}`),
+    path.join(/*turbopackIgnore: true*/ __dirname, "..", ".env"),
+    path.join(
+      /*turbopackIgnore: true*/ __dirname,
+      "..",
+      "..",
+      "interior-ai",
+      ".env.local"
+    ),
+    path.join(
+      /*turbopackIgnore: true*/ __dirname,
+      "..",
+      "..",
+      "interior-ai",
+      `.env.${appEnv}`
+    ),
   ];
 
   for (const envPath of possiblePaths) {
     try {
-      if (!fs.existsSync(envPath)) continue;
-      const content = fs.readFileSync(envPath, "utf-8");
+      if (!fs.existsSync(/*turbopackIgnore: true*/ envPath)) continue;
+      const content = fs.readFileSync(
+        /*turbopackIgnore: true*/ envPath,
+        "utf-8"
+      );
       const lines = content.split("\n");
       for (const line of lines) {
         if (!line.trim() || line.trim().startsWith("#")) continue;
