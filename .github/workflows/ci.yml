@@ -2,9 +2,9 @@ name: CI - Test & Build
 
 on:
   push:
-    branches: [main, develop, staging]
+    branches: [main, develop, staging, 'release/**']
   pull_request:
-    branches: [main, develop, staging]
+    branches: [main, develop, staging, 'release/**']
 
 jobs:
   stable-checks:
@@ -47,6 +47,14 @@ jobs:
 
       - name: Run typecheck
         run: npx tsc --noEmit
+
+      - name: Run cabinetry release contract checks
+        run: |
+          npm run test:cabinetry
+          npm run test:cabinetry-performance
+          npm run test:cabinetry-accessibility
+          npm run test:playwright-release-config
+          npm run test:cabinetry-release-evidence
 
       # Temporarily skip lint/build in stable checks while staging is stabilized.
       # Full E2E still runs in a separate non-blocking job for visibility.

@@ -7,21 +7,25 @@ const widgetSource = readFileSync(
   "utf8"
 );
 const designPageSource = readFileSync(join(process.cwd(), "app/design/page.tsx"), "utf8");
-const appEventRouteSource = readFileSync(
-  join(process.cwd(), "app/api/track/app-event/route.ts"),
+const appEventContractSource = readFileSync(
+  join(process.cwd(), "lib/app-event-contract.ts"),
+  "utf8"
+);
+const appEventHandlerSource = readFileSync(
+  join(process.cwd(), "lib/client-app-event-handler.ts"),
   "utf8"
 );
 const appEventsSource = readFileSync(join(process.cwd(), "lib/app-events.ts"), "utf8");
 
 assert.match(
-  appEventsSource,
+  appEventContractSource,
   /"beta_feedback_submitted"/,
   "beta feedback should be included in the typed app-event union."
 );
 assert.match(
-  appEventRouteSource,
+  appEventContractSource,
   /"beta_feedback_submitted"/,
-  "beta feedback should be accepted by the app-event route allow-list."
+  "beta feedback should be accepted by the browser-postable app-event contract."
 );
 assert.match(
   appEventsSource,
@@ -29,7 +33,7 @@ assert.match(
   "app event logging should return a persisted report id for smoke evidence."
 );
 assert.match(
-  appEventRouteSource,
+  appEventHandlerSource,
   /eventId:\s*result\.eventId/,
   "app-event route should return the persisted event id."
 );
@@ -75,8 +79,8 @@ assert.match(
 );
 assert.match(
   widgetSource,
-  /fetch\("\/api\/track\/app-event"/,
-  "beta feedback should post to the durable app-event endpoint."
+  /postClientAppEvent\(/,
+  "beta feedback should use the typed durable app-event client."
 );
 assert.match(
   widgetSource,

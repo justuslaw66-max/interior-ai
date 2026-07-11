@@ -6,6 +6,14 @@ import { config } from "@/lib/config";
 import { rateLimit } from "@/lib/rateLimit";
 import { logAppEvent } from "@/lib/app-events";
 import {
+  buildCheckoutStartedEventMeta,
+  normalizeCheckoutTrackingContext,
+} from "@/lib/checkout-app-event";
+import {
+  buildProEntitlementMetadata,
+  resolveConfiguredProPriceId,
+} from "@/lib/stripe-pro-entitlement";
+import {
   buildProviderFailureBoundaryDiagnostics,
   buildCheckoutBoundaryResponsePayload,
   isBetaCheckoutBoundary,
@@ -47,15 +55,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Too many checkout requests" }, { status: 429 });
     }
 
-    const { priceId, interval } = await req.json().catch(() => ({}));
-
-    const fallbackPriceId =
-      interval === "yearly"
-        ? process.env.STRIPE_PRICE_PRO_YEARLY
-        : process.env.STRIPE_PRICE_PRO_MONTHLY;
-
-    const resolvedPriceId =
-      typeof priceId === "string" && priceId.trim().length > 0 ? priceId : fallbackPriceId;
+    const requestBody = await req.json().catch(() => ({}));
+    const body =
+      requestBody && typeof requestBody === "object" && !Array.isArray(requestBody)
+        ? (requestBody as Record<string, unknown>)
+        : {};
+    const checkoutTracking = normalizeCheckoutTrackingContext(body);
+    const resolvedPriceId = resolveConfiguredProPriceId(checkoutTracking.interval);
 
     if (!resolvedPriceId || resolvedPriceId.includes("...")) {
       if (isBetaCheckoutBoundary(boundary)) {
@@ -64,7 +70,7 @@ export async function POST(req: Request) {
             buildProviderFailureBoundaryDiagnostics(
               boundary,
               "stripe",
-              interval === "yearly"
+              checkoutTracking.interval === "yearly"
                 ? "STRIPE_PRICE_PRO_YEARLY is not configured"
                 : "STRIPE_PRICE_PRO_MONTHLY is not configured"
             )
@@ -76,7 +82,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           error:
-            interval === "yearly"
+            checkoutTracking.interval === "yearly"
               ? "STRIPE_PRICE_PRO_YEARLY is not configured"
               : "STRIPE_PRICE_PRO_MONTHLY is not configured",
         },
@@ -89,6 +95,9 @@ export async function POST(req: Request) {
     const dbUser = await prisma.user.findUnique({ where: { id: session.user.id } });
     if (!dbUser) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+    if (dbUser.plan === "pro") {
+      return NextResponse.json({ error: "Already subscribed to Pro" }, { status: 400 });
     }
 
     let customerId = dbUser.stripeCustomerId;
@@ -106,22 +115,38 @@ export async function POST(req: Request) {
       });
     }
 
-    const origin = req.headers.get("origin") || process.env.APP_ORIGIN || "http://localhost:3000";
+    const appOrigin = process.env.APP_ORIGIN || "http://localhost:3000";
+    const entitlementMetadata = buildProEntitlementMetadata(session.user.id);
 
     const checkoutSession = await stripe.checkout.sessions.create({
       mode: "subscription",
       customer: customerId,
+      payment_method_types: ["card"],
       line_items: [{ price: resolvedPriceId, quantity: 1 }],
-      success_url: `${origin}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/billing/cancel`,
+      success_url: `${appOrigin}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${appOrigin}/billing/cancel`,
       allow_promotion_codes: true,
+      metadata: entitlementMetadata,
+      subscription_data: {
+        metadata: entitlementMetadata,
+      },
     });
 
-    await logAppEvent({
+    const checkoutStartedEvent = await logAppEvent({
       eventType: "checkout_started",
       userId: session.user.id,
-      meta: { provider: "stripe", priceId: resolvedPriceId },
+      idempotencyKey: `stripe-checkout-started:${checkoutSession.id}`,
+      designId: checkoutTracking.designId,
+      meta: buildCheckoutStartedEventMeta({
+        tracking: checkoutTracking,
+        priceId: resolvedPriceId,
+        sessionId: checkoutSession.id,
+      }),
     });
+    if (!checkoutStartedEvent.persisted && !checkoutStartedEvent.duplicate) {
+      await stripe.checkout.sessions.expire(checkoutSession.id).catch(() => undefined);
+      throw new Error("Unable to persist checkout-start event");
+    }
 
     return NextResponse.json({ url: checkoutSession.url });
   } catch (error: unknown) {

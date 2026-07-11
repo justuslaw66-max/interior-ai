@@ -2,6 +2,9 @@ import fs from "node:fs";
 import { test, expect } from "./fixtures";
 
 const EDITOR_STORAGE_KEY = "interior-ai:v1:livingroom-design";
+const HOSTED_RELEASE_RUN = Boolean(process.env.PLAYWRIGHT_RELEASE_BASE_URL?.trim());
+const EXPECTED_RELEASE_COMMIT = process.env.PLAYWRIGHT_RELEASE_COMMIT?.trim().toLowerCase();
+const EXPECTED_RELEASE_ENVIRONMENT = process.env.PLAYWRIGHT_RELEASE_ENVIRONMENT?.trim();
 
 async function mockPlan(page: import("@playwright/test").Page, plan: "free" | "pro") {
   await page.route("**/api/me", async (route) => {
@@ -92,8 +95,151 @@ async function placeCabinetRun(page: import("@playwright/test").Page) {
   };
 }
 
+type ObservedAppEventResponse = {
+  eventType: string | null;
+  status: number;
+  body: Record<string, unknown> | null;
+};
+
+function observeAppEventRuntime(page: import("@playwright/test").Page) {
+  const responses: ObservedAppEventResponse[] = [];
+  const consoleErrors: string[] = [];
+  const pageErrors: string[] = [];
+  const httpErrors: string[] = [];
+  const requestFailures: string[] = [];
+  const pendingRequests = new Set<import("@playwright/test").Request>();
+  const pendingResponseParsers = new Set<Promise<void>>();
+  let requestCount = 0;
+
+  const isAppEventRequest = (request: import("@playwright/test").Request) =>
+    new URL(request.url()).pathname === "/api/track/app-event";
+
+  page.on("request", (request) => {
+    if (isAppEventRequest(request)) {
+      requestCount += 1;
+      pendingRequests.add(request);
+    }
+  });
+  page.on("requestfinished", (request) => {
+    pendingRequests.delete(request);
+  });
+  page.on("requestfailed", (request) => {
+    if (isAppEventRequest(request)) {
+      requestFailures.push(request.failure()?.errorText ?? "unknown request failure");
+    }
+    pendingRequests.delete(request);
+  });
+  page.on("response", (response) => {
+    const responseUrl = new URL(response.url());
+    if (response.status() >= 400) {
+      httpErrors.push(`${response.status()} ${responseUrl.pathname}`);
+    }
+    if (responseUrl.pathname !== "/api/track/app-event") return;
+    const parser = (async () => {
+      let eventType: string | null = null;
+      try {
+        const requestBody = response.request().postDataJSON() as { eventType?: unknown } | null;
+        eventType = typeof requestBody?.eventType === "string" ? requestBody.eventType : null;
+      } catch {
+        eventType = null;
+      }
+
+      const body = await response
+        .json()
+        .then((value) =>
+          value && typeof value === "object" ? (value as Record<string, unknown>) : null
+        )
+        .catch(() => null);
+      responses.push({ eventType, status: response.status(), body });
+    })();
+    pendingResponseParsers.add(parser);
+    void parser.finally(() => pendingResponseParsers.delete(parser));
+  });
+  page.on("console", (message) => {
+    if (message.type() === "error") {
+      const location = message.location();
+      consoleErrors.push(
+        `${message.text()}${location.url ? ` (${location.url}:${location.lineNumber})` : ""}`,
+      );
+    }
+  });
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+
+  return {
+    responses,
+    consoleErrors,
+    pageErrors,
+    httpErrors,
+    requestFailures,
+    pendingRequests,
+    pendingResponseParsers,
+    get requestCount() {
+      return requestCount;
+    },
+  };
+}
+
 test.describe("Custom Millwork Studio MVP", () => {
   test.setTimeout(600000);
+
+  test("app events persist without HTTP errors during first-run studio activity", async ({
+    page,
+  }) => {
+    const runtime = observeAppEventRuntime(page);
+    if (HOSTED_RELEASE_RUN) {
+      const identityResponse = await page.request.get("/api/release/identity");
+      expect(identityResponse.status()).toBe(200);
+      const identity = (await identityResponse.json()) as {
+        buildCommit?: unknown;
+        environment?: unknown;
+      };
+      expect(identity.buildCommit).toBe(EXPECTED_RELEASE_COMMIT);
+      expect(identity.environment).toBe(EXPECTED_RELEASE_ENVIRONMENT);
+    }
+    await mockPlan(page, "pro");
+    await page.goto("/design?mode=designer");
+
+    const openStudio = page.getByTestId("open-custom-millwork-studio");
+    await expect(openStudio).toBeVisible({ timeout: 30000 });
+    await dismissBlockingPrompt(page);
+    await openStudio.click();
+    await expect(page.getByTestId("custom-millwork-studio")).toBeVisible({ timeout: 15000 });
+    await page.getByTestId("cabinet-preset-base").click();
+
+    for (const expectedEvent of [
+      "landing_viewed",
+      "first_run_activation_step_completed",
+    ]) {
+      await expect
+        .poll(
+          () => runtime.responses.filter(({ eventType }) => eventType === expectedEvent),
+          { timeout: 15000 },
+        )
+        .not.toHaveLength(0);
+    }
+
+    await page.waitForTimeout(250);
+    await expect.poll(() => runtime.pendingRequests.size).toBe(0);
+    await expect.poll(() => runtime.pendingResponseParsers.size).toBe(0);
+    expect(runtime.responses).toHaveLength(runtime.requestCount);
+    expect(runtime.responses.filter(({ status }) => status >= 400)).toEqual([]);
+    for (const response of runtime.responses) {
+      expect(response.status).toBe(200);
+      expect(response.body?.ok).toBe(true);
+      if (response.body?.skipped === "qa") {
+        expect(HOSTED_RELEASE_RUN).toBe(false);
+        expect(response.body).toMatchObject({ persisted: false, eventId: null });
+      } else {
+        expect(response.body?.persisted).toBe(true);
+        expect(typeof response.body?.eventId).toBe("string");
+        expect(String(response.body?.eventId).length).toBeGreaterThan(0);
+      }
+    }
+    expect(runtime.requestFailures).toEqual([]);
+    expect(runtime.httpErrors).toEqual([]);
+    expect(runtime.consoleErrors).toEqual([]);
+    expect(runtime.pageErrors).toEqual([]);
+  });
 
   test("new designer can configure a valid drawer cabinet in Guided setup", async ({ page }) => {
     await mockPlan(page, "pro");

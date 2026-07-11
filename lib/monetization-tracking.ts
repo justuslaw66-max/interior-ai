@@ -6,6 +6,7 @@
  */
 
 import { getPostHogClient } from "@/lib/posthog-server";
+import { createHash } from "node:crypto";
 
 export type MonetizationEvent =
   | "export_opened"
@@ -22,6 +23,16 @@ interface EventProperties {
   shareToken?: string;
   trigger?: "pdf" | "watermark" | "branding";
   plan?: "free" | "pro";
+  insertId?: string;
+  occurredAt?: Date;
+}
+
+export function monetizationUuidForInsertId(insertId: string) {
+  const bytes = createHash("sha256").update(insertId).digest().subarray(0, 16);
+  bytes[6] = (bytes[6] & 0x0f) | 0x50;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = bytes.toString("hex");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
 /**
@@ -33,13 +44,18 @@ export async function trackMonetization(
   properties?: EventProperties
 ) {
   const posthog = getPostHogClient();
+  const { insertId, occurredAt, ...eventProperties } = properties ?? {};
+  const eventTimestamp = occurredAt ?? new Date();
 
   posthog.capture({
     distinctId: userId,
     event,
+    timestamp: eventTimestamp,
+    uuid: insertId ? monetizationUuidForInsertId(insertId) : undefined,
     properties: {
-      ...properties,
-      timestamp: new Date().toISOString(),
+      ...eventProperties,
+      ...(insertId ? { $insert_id: insertId } : {}),
+      timestamp: eventTimestamp.toISOString(),
     },
   });
 

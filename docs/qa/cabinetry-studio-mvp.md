@@ -40,7 +40,7 @@ record.
 - Run `npm run check:cabinetry-release-evidence` for the release gate. It exits nonzero
   until all five A–E sessions, all 33 first-time template sessions, Consumer and Pro
   access smokes, the 18-step Guided smoke, the 41-step full manual smoke, the final UX
-  release gate, the complete browser suite, real keyboard/screen-reader smoke, Consumer
+  release gate, the complete 19-test browser suite, real keyboard/screen-reader smoke, Consumer
   analytics, Pro analytics, and the GLB/project-export fabricator review contain valid
   passing evidence and the complete canonical payload has trusted product-owner approval.
 - Run `npm run test:cabinetry-release-evidence` after changing the schema or validator.
@@ -52,7 +52,7 @@ be a readable local file, and its non-null SHA-256 must match the file bytes; HT
 and issue links are not source artifacts. Issue URLs may appear only as finding references. A human
 observer must sign usability, accessibility, live-analytics, and fabricator evidence.
 The browser row may record automated Playwright execution, but it must contain a full
-run of at least 18 current cabinetry tests with no failures/skips and a hashed local
+run of exactly 19 current cabinetry tests—including the app-event persistence check—with no failures/skips and a hashed local
 Playwright JSON report; discovery or self-reported counts alone are rejected. Live
 analytics needs a hashed normalized JSON capture whose event payloads match the emitted
 snake_case contract, with QA hooks off in an environment whose name is not QA, test,
@@ -71,8 +71,22 @@ The formal hosted release row must target the frozen HTTPS release URL. If Verce
 Deployment Protection is enabled, load its automation-bypass secret from the approved
 secure environment; never place it in the repository or command history:
 
+The deployed `/api/release/identity` response must expose the exact
+`VERCEL_GIT_COMMIT_SHA` and `APP_ENV` values. The hosted browser test compares those
+server-reported values with `PLAYWRIGHT_RELEASE_COMMIT` and
+`PLAYWRIGHT_RELEASE_ENVIRONMENT`; missing or mismatched identity blocks the run. A
+non-Vercel host must provide an equivalently trusted deployment commit source in that
+endpoint before it can be used for formal evidence.
+
+Keep Stripe Billing Portal plan changes restricted to approved Pro prices. Before
+rotating a monthly or yearly price ID, add every prior price that still has an active
+subscriber to the comma-separated `STRIPE_PRICE_PRO_LEGACY` environment value; remove a
+legacy ID only after those subscriptions are migrated or ended.
+
 ```bash
 export PLAYWRIGHT_RELEASE_BASE_URL=https://release-candidate.example.com
+export PLAYWRIGHT_RELEASE_COMMIT=0123456789abcdef0123456789abcdef01234567
+export PLAYWRIGHT_RELEASE_ENVIRONMENT=staging
 export VERCEL_AUTOMATION_BYPASS_SECRET=secure-environment-value
 PLAYWRIGHT_JSON_OUTPUT_NAME=reports/cabinetry-playwright-release.json \
   npx playwright test tests/e2e/cabinetry-studio.spec.ts --reporter=json
@@ -171,7 +185,7 @@ Consumer estimates use the existing preliminary quote model. They are planning a
 
 ## Guided Quick Start Smoke
 
-1. Open the Studio in create mode and confirm it starts in `Guided setup` with a valid Base cabinet preview already visible.
+1. Open the Studio in create mode and confirm it starts in `Guided setup` with a valid Base cabinet preview already visible. Confirm `landing_viewed` and `first_run_activation_step_completed` return HTTP 200 with `persisted: true` and a non-empty `eventId`, with no failed app-event requests or browser console/page errors.
 2. Confirm Recommended templates show recognizable visual diagrams, descriptions, placement type, difficulty, estimated setup time, safety classification, and applicable room types. Select all six Recommended templates in Chrome and Safari; confirm the Front, Side, and Top views—and the 3D view while orbiting—show the intended cabinet surfaces, continuous materials, and no repeated triangular surface artifacts. Confirm specialty wall-bed, under-stair, paneling, ceiling, fireplace, and trim cards do not use a generic cabinet thumbnail.
 3. Search for `wardrobe`, clear the search, then filter by `Wardrobes & closets`; confirm the results update without losing the current design.
 4. Select Wardrobe and move through Type, Space, Size, Layout, Style, and Review in both directions; confirm selections survive step changes.

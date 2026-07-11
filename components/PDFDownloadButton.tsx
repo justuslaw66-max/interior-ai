@@ -11,6 +11,7 @@ import { useState } from "react";
 import { UpgradeModal } from "./UpgradeModal";
 import type { ExportCapabilities } from "@/lib/export-capabilities";
 import { track } from "@/lib/analytics";
+import { postClientAppEvent } from "@/lib/client-app-event";
 
 interface PDFDownloadButtonProps {
   capabilities: ExportCapabilities;
@@ -33,15 +34,11 @@ export function PDFDownloadButton({
         share_token: shareToken,
       });
 
-      fetch("/api/track/app-event", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          eventType: "export_upgrade_prompt_shown",
-          designId,
-          shareToken,
-          meta: { trigger: "pdf" },
-        }),
+      postClientAppEvent({
+        eventType: "export_upgrade_prompt_shown",
+        designId,
+        shareToken,
+        meta: { trigger: "pdf" },
       }).catch(() => undefined);
       
       setShowUpgrade(true);
@@ -53,14 +50,10 @@ export function PDFDownloadButton({
       share_token: shareToken,
     });
 
-    fetch("/api/track/app-event", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        eventType: "export_pdf_clicked",
-        designId,
-        shareToken,
-      }),
+    postClientAppEvent({
+      eventType: "export_pdf_clicked",
+      designId,
+      shareToken,
     }).catch(() => undefined);
 
     // Trigger browser PDF save
@@ -69,17 +62,6 @@ export function PDFDownloadButton({
 
   const handleUpgrade = async () => {
     track("upgrade_checkout_started", { trigger: "pdf" });
-
-    fetch("/api/track/app-event", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        eventType: "upgrade_checkout_started",
-        designId,
-        shareToken,
-        meta: { trigger: "pdf" },
-      }),
-    }).catch(() => undefined);
 
     try {
       // Call Stripe checkout API

@@ -28,6 +28,7 @@ import { useEditorMode } from "@/hooks/useEditorMode";
 import { useUndoRedoHotkeys } from "@/hooks/useUndoRedoHotkeys";
 import { HistoryManager } from "@/lib/historyManager";
 import { track } from "@/lib/analytics";
+import { postClientAppEvent } from "@/lib/client-app-event";
 import { getAnonId } from "@/lib/anon";
 import { preloadCoreAssets } from "@/lib/preloadAssets";
 import { canAddToCart, reconcileCart, getNonBuyableReason } from "@/lib/commerce-helpers";
@@ -1966,15 +1967,11 @@ function PageContent() {
 
   const logFunnelEvent = useCallback(
     (eventType: FunnelEventName, meta?: Record<string, unknown>) => {
-      fetch("/api/track/app-event", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          eventType,
-          designId,
-          shareToken,
-          meta,
-        }),
+      postClientAppEvent({
+        eventType,
+        designId,
+        shareToken,
+        meta,
       }).catch(() => undefined);
     },
     [designId, shareToken]
@@ -4971,15 +4968,9 @@ function PageContent() {
     setStartingCheckout(true);
     try {
       track("checkout_started", {
-        source: "upgrade_modal",
+        source: "plans_sheet",
         interval,
         design_id: designId ?? null,
-        reason: upgradeReason ?? "unknown",
-        ...paywallContextMeta,
-      });
-      logFunnelEvent("checkout_started", {
-        source: "upgrade_modal",
-        interval,
         reason: upgradeReason ?? "unknown",
         ...paywallContextMeta,
       });
@@ -4987,7 +4978,16 @@ function PageContent() {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ interval }),
+        body: JSON.stringify({
+          interval,
+          source: "plans_sheet",
+          designId,
+          reason: upgradeReason ?? "unknown",
+          ctaVariant: upgradeCtaVariant,
+          pricingLayout: pricingLayoutVariant,
+          experimentSlot: paywallExperimentSlot,
+          forceFallback: paywallForceFallback,
+        }),
       });
       const data = await res.json().catch(() => ({}));
 

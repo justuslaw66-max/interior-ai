@@ -35,11 +35,14 @@ export function PostHogProvider({
   children: React.ReactNode;
   analyticsDisabled?: boolean;
 }) {
+  const qaHooksEnabled = process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS === "1";
+  const clientAnalyticsDisabled = analyticsDisabled || qaHooksEnabled;
+
   useEffect(() => {
-    setClientAnalyticsDisabled(analyticsDisabled);
+    setClientAnalyticsDisabled(clientAnalyticsDisabled);
 
     if (typeof window === "undefined") return;
-    if (analyticsDisabled) return;
+    if (clientAnalyticsDisabled) return;
     if (!process.env.NEXT_PUBLIC_POSTHOG_KEY) return;
 
     const isDevelopment = process.env.NODE_ENV === "development";
@@ -56,9 +59,9 @@ export function PostHogProvider({
       // Reduce noisy recorder traffic/errors in development.
       disable_session_recording: isDevelopment,
     });
-  }, [analyticsDisabled]);
+  }, [clientAnalyticsDisabled]);
 
-  if (analyticsDisabled) {
+  if (clientAnalyticsDisabled) {
     return <>{children}</>;
   }
 

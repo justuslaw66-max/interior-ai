@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { track } from "@/lib/analytics";
+import { postClientAppEvent } from "@/lib/client-app-event";
 
 export default function ConfirmOrderClient({
   orderRef,
@@ -28,14 +29,15 @@ export default function ConfirmOrderClient({
       design_id: designId ?? null,
     });
 
-    fetch("/api/track/app-event", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        eventType: "checkout_completed",
-        designId,
-        meta: { orderRef },
-      }),
+    // This is client-reported funnel telemetry, not authoritative order confirmation.
+    postClientAppEvent({
+      eventType: "checkout_completed",
+      designId,
+      meta: {
+        orderRef,
+        source: "checkout_success_page",
+        trust: "client_reported",
+      },
     }).catch(() => undefined);
 
     trackedRef.current = true;

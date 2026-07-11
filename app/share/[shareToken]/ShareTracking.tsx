@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { track } from "@/lib/analytics";
+import { postClientAppEvent } from "@/lib/client-app-event";
 
 export default function ShareTracking({
   shareToken,
@@ -16,14 +17,10 @@ export default function ShareTracking({
       design_id: designId ?? null,
     });
 
-    fetch("/api/track/app-event", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        eventType: "share_link_opened",
-        shareToken,
-        designId: designId ?? null,
-      }),
+    postClientAppEvent({
+      eventType: "share_link_opened",
+      shareToken,
+      designId: designId ?? null,
     }).catch(() => undefined);
   }, [shareToken, designId]);
 

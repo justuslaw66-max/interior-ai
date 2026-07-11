@@ -1,12 +1,14 @@
-export type FunnelEventName =
-  | "landing_viewed"
-  | "design_started"
-  | "first_item_added"
-  | "third_item_added"
-  | "first_run_activation_step_completed"
-  | "export_clicked"
-  | "upgrade_clicked"
-  | "checkout_started";
+export const FUNNEL_EVENT_TYPES = [
+  "landing_viewed",
+  "design_started",
+  "first_item_added",
+  "third_item_added",
+  "first_run_activation_step_completed",
+  "export_clicked",
+  "upgrade_clicked",
+] as const;
+
+export type FunnelEventName = (typeof FUNNEL_EVENT_TYPES)[number];
 
 export type UpgradeCtaVariant = "unlock_pro_exports" | "see_pricing";
 

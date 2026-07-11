@@ -29,6 +29,8 @@ import {
   PRO_ACCESS_SMOKE_CRITERIA,
   REQUIRED_ANALYTICS_EVENTS,
   REQUIRED_CABINETRY_BROWSER_TEST_COUNT,
+  REQUIRED_CABINETRY_APP_EVENT_BROWSER_TEST_TITLE,
+  REQUIRED_CABINETRY_BROWSER_TEST_TITLES,
   REQUIRED_FABRICATOR_ARTIFACT_KINDS,
   REQUIRED_RELEASE_GATES,
   REQUIRED_SCENARIO_CRITERIA,
@@ -290,6 +292,7 @@ function makePlaywrightReport() {
       metadata: {
         buildCommit: BUILD.commit,
         releaseEnvironment: BUILD.environment,
+        releaseBaseURL: BUILD.baseUrl,
       },
     },
     errors: [],
@@ -298,7 +301,7 @@ function makePlaywrightReport() {
         title: "cabinetry studio",
         file: "cabinetry-studio.spec.ts",
         specs: Array.from({ length: REQUIRED_CABINETRY_BROWSER_TEST_COUNT }, (_, index) => ({
-          title: `cabinetry acceptance ${index + 1}`,
+          title: REQUIRED_CABINETRY_BROWSER_TEST_TITLES[index],
           ok: true,
           tests: [{ status: "expected", results: [{ status: "passed", duration: 25 }] }],
         })),
@@ -460,7 +463,7 @@ function makeCompleteEvidence(): CabinetryReleaseEvidence {
       );
       evidence.artifacts = [report];
       evidence.details.browserSuite = {
-        command: "npx playwright test tests/e2e/cabinetry-studio.spec.ts --reporter=json",
+        command: `PLAYWRIGHT_RELEASE_BASE_URL=${BUILD.baseUrl} PLAYWRIGHT_RELEASE_COMMIT=${BUILD.commit} PLAYWRIGHT_RELEASE_ENVIRONMENT=${BUILD.environment} npx playwright test tests/e2e/cabinetry-studio.spec.ts --reporter=json`,
         discovered: REQUIRED_CABINETRY_BROWSER_TEST_COUNT,
         executed: REQUIRED_CABINETRY_BROWSER_TEST_COUNT,
         passed: REQUIRED_CABINETRY_BROWSER_TEST_COUNT,
@@ -554,6 +557,20 @@ function signEvidence(
 }
 
 try {
+  const cabinetrySpecSource = readFileSync(
+    join(root, "tests/e2e/cabinetry-studio.spec.ts"),
+    "utf8"
+  );
+  const currentCabinetryTitles = Array.from(
+    cabinetrySpecSource.matchAll(/^\s*test\("([^"]+)"/gm),
+    (match) => match[1]
+  );
+  assert.deepEqual(
+    currentCabinetryTitles,
+    [...REQUIRED_CABINETRY_BROWSER_TEST_TITLES],
+    "browser evidence title manifest must exactly match the current cabinetry spec"
+  );
+
   const seed = JSON.parse(readFileSync(seedPath, "utf8")) as unknown;
   const seedResult = validateCabinetryReleaseEvidence(seed, { repositoryRoot: root });
   assert.equal(seedResult.structurallyValid, true, "seed should be structurally valid");
@@ -740,7 +757,7 @@ try {
   )!;
   const skippedReport = makePlaywrightReport();
   skippedReport.suites[0].specs[0] = {
-    title: "cabinetry acceptance 1",
+    title: REQUIRED_CABINETRY_APP_EVENT_BROWSER_TEST_TITLE,
     ok: false,
     tests: [{ status: "skipped", results: [{ status: "skipped", duration: 0 }] }],
   };
@@ -769,6 +786,32 @@ try {
     validateCabinetryReleaseEvidence(mixedBrowserRun).evidenceComplete,
     false,
     "reports containing another spec must not satisfy the cabinetry browser gate"
+  );
+
+  const staleTitleBrowserRun = makeCompleteEvidence();
+  const staleTitleBrowser = staleTitleBrowserRun.releaseGates.find(
+    (record) => record.id === "full-browser-suite"
+  )!;
+  const staleTitleReport = makePlaywrightReport();
+  staleTitleReport.suites[0].specs[0].title = "obsolete cabinetry acceptance";
+  replaceArtifactContent(staleTitleBrowser.evidence!, "playwright_report", staleTitleReport);
+  assert.equal(
+    validateCabinetryReleaseEvidence(staleTitleBrowserRun).evidenceComplete,
+    false,
+    "a stale 19-title report must not satisfy the current cabinetry browser gate"
+  );
+
+  const wrongBuildBrowserRun = makeCompleteEvidence();
+  const wrongBuildBrowser = wrongBuildBrowserRun.releaseGates.find(
+    (record) => record.id === "full-browser-suite"
+  )!;
+  const wrongBuildReport = makePlaywrightReport();
+  wrongBuildReport.config.metadata.buildCommit = "ffffffffffffffffffffffffffffffffffffffff";
+  replaceArtifactContent(wrongBuildBrowser.evidence!, "playwright_report", wrongBuildReport);
+  assert.equal(
+    validateCabinetryReleaseEvidence(wrongBuildBrowserRun).evidenceComplete,
+    false,
+    "a report labelled for another commit must not satisfy the browser gate"
   );
 
   const qaAnalytics = makeCompleteEvidence();

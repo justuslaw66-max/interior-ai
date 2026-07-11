@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { track } from "@/lib/analytics";
+import { postClientAppEvent } from "@/lib/client-app-event";
 
 export type BetaFeedbackContext = {
   designId?: string | null;
@@ -115,15 +116,11 @@ export default function BetaFeedbackWidget({ context }: BetaFeedbackWidgetProps)
     });
 
     try {
-      const response = await fetch("/api/track/app-event", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          eventType: "beta_feedback_submitted",
-          designId: context.designId ?? null,
-          shareToken: context.shareToken ?? null,
-          meta: payload,
-        }),
+      const response = await postClientAppEvent({
+        eventType: "beta_feedback_submitted",
+        designId: context.designId ?? null,
+        shareToken: context.shareToken ?? null,
+        meta: payload,
       });
 
       if (!response.ok) throw new Error("Feedback request failed");

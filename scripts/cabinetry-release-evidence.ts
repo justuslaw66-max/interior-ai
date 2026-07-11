@@ -263,7 +263,31 @@ export const EXPECTED_RELEASE_EVIDENCE_RECORD_COUNT =
   REQUIRED_TEMPLATE_CHECKS.length +
   REQUIRED_RELEASE_GATES.length;
 
-export const REQUIRED_CABINETRY_BROWSER_TEST_COUNT = 18;
+export const REQUIRED_CABINETRY_BROWSER_TEST_TITLES = [
+  "app events persist without HTTP errors during first-run studio activity",
+  "new designer can configure a valid drawer cabinet in Guided setup",
+  "returning Pro users keep their chosen entry workspace and dismissed help",
+  "guided Fit, locks, and validation recovery stay reversible",
+  "detailed numeric drafts keep the last valid model and preview until committed",
+  "Guided wardrobe arrangements and illustrated choices expose semantic state",
+  "preview controls remain keyboard-operable across responsive layouts",
+  "Pro designer can enter Detailed mode and validate the template catalog",
+  "Pro designer can configure core and architectural construction controls",
+  "Pro designer can configure built-in storage and room-system controls",
+  "Pro designer can configure lifestyle, hospitality, and seating controls",
+  "Pro designer can configure detailed base-cabinet construction options",
+  "Pro designer can export a cabinet-run fabrication package",
+  "Pro designer can place a cabinet run with complete project metadata",
+  "Pro designer can export placed, installer, and field-finish packages",
+  "Pro designer can export project commercial and release-readiness packages",
+  "Pro designer can export project approval, production, and handoff packages",
+  "Pro designer can transform, edit, persist, and restore a placed cabinet run",
+  "homeowner/free mode gets Guided millwork, an estimate, and no Pro controls",
+] as const;
+export const REQUIRED_CABINETRY_BROWSER_TEST_COUNT =
+  REQUIRED_CABINETRY_BROWSER_TEST_TITLES.length;
+export const REQUIRED_CABINETRY_APP_EVENT_BROWSER_TEST_TITLE =
+  REQUIRED_CABINETRY_BROWSER_TEST_TITLES[0];
 
 export const REQUIRED_ANALYTICS_EVENTS = {
   consumer: [
@@ -1164,6 +1188,7 @@ function validateBrowserGate(
     return;
   }
   const reportObject = report as {
+    config?: unknown;
     suites?: unknown;
     errors?: unknown;
   };
@@ -1189,14 +1214,48 @@ function validateBrowserGate(
   const passed = currentSpecs.filter((spec) => spec.ok).length;
   const failed = currentSpecs.filter((spec) => spec.executed && !spec.ok).length;
   if (
-    discovered < REQUIRED_CABINETRY_BROWSER_TEST_COUNT ||
+    discovered !== REQUIRED_CABINETRY_BROWSER_TEST_COUNT ||
     discovered !== currentSpecs.length
   ) {
     addIssue(
       issues,
       "blocker",
       `${path}.playwrightReport.suites`,
-      `requires at least ${REQUIRED_CABINETRY_BROWSER_TEST_COUNT} unique current cabinetry tests`
+      `requires exactly ${REQUIRED_CABINETRY_BROWSER_TEST_COUNT} unique current cabinetry tests`
+    );
+  }
+  const missingTitles = REQUIRED_CABINETRY_BROWSER_TEST_TITLES.filter(
+    (title) => !uniqueTitles.has(title)
+  );
+  const expectedTitles = new Set<string>(REQUIRED_CABINETRY_BROWSER_TEST_TITLES);
+  const unexpectedTitles = [...uniqueTitles].filter((title) => !expectedTitles.has(title));
+  if (missingTitles.length > 0 || unexpectedTitles.length > 0) {
+    addIssue(
+      issues,
+      "blocker",
+      `${path}.playwrightReport.suites`,
+      `report title manifest does not match the current cabinetry spec (missing: ${missingTitles.join(", ") || "none"}; unexpected: ${unexpectedTitles.join(", ") || "none"})`
+    );
+  }
+  const reportConfig =
+    reportObject.config && typeof reportObject.config === "object"
+      ? (reportObject.config as { metadata?: unknown })
+      : null;
+  const reportMetadata =
+    reportConfig?.metadata && typeof reportConfig.metadata === "object"
+      ? (reportConfig.metadata as Record<string, unknown>)
+      : null;
+  const normalizedEvidenceBaseUrl = evidence.build.baseUrl.replace(/\/+$/, "");
+  if (
+    reportMetadata?.buildCommit !== evidence.build.commit ||
+    reportMetadata?.releaseEnvironment !== evidence.build.environment ||
+    reportMetadata?.releaseBaseURL !== normalizedEvidenceBaseUrl
+  ) {
+    addIssue(
+      issues,
+      "blocker",
+      `${path}.playwrightReport.config.metadata`,
+      "Playwright report metadata does not match the attested release commit, environment, and base URL"
     );
   }
   if (executed !== discovered || passed !== discovered || failed !== 0 || skipped !== 0) {

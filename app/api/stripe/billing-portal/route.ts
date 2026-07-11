@@ -13,11 +13,27 @@ import { config } from "@/lib/config";
 import { rateLimit } from "@/lib/rateLimit";
 import { logAppEvent } from "@/lib/app-events";
 import { trackMonetization } from "@/lib/monetization-tracking";
+import {
+  buildCheckoutBoundaryResponsePayload,
+  buildProviderFailureBoundaryDiagnostics,
+  isBetaCheckoutBoundary,
+  resolveCheckoutBoundaryDiagnostics,
+} from "@/lib/beta-checkout-boundary";
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  return String(error);
+}
 
 export async function POST() {
   try {
     if (!config.features.checkoutEnabled) {
       return NextResponse.json({ error: "Checkout is disabled" }, { status: 503 });
+    }
+
+    const boundary = resolveCheckoutBoundaryDiagnostics();
+    if (!boundary.checkoutSafe) {
+      return NextResponse.json(buildCheckoutBoundaryResponsePayload(boundary), { status: 503 });
     }
 
     const session = await auth();
@@ -72,6 +88,19 @@ export async function POST() {
     return NextResponse.json({ url: portalSession.url });
   } catch (error) {
     console.error("Billing portal error:", error);
+    const boundary = resolveCheckoutBoundaryDiagnostics();
+    if (isBetaCheckoutBoundary(boundary)) {
+      return NextResponse.json(
+        buildCheckoutBoundaryResponsePayload(
+          buildProviderFailureBoundaryDiagnostics(
+            boundary,
+            "stripe",
+            getErrorMessage(error),
+          ),
+        ),
+        { status: 503 },
+      );
+    }
     return NextResponse.json(
       { error: "Failed to create billing portal session" },
       { status: 500 }
