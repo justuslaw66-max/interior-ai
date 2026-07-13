@@ -48,7 +48,7 @@ export default function CatalogGrid({
   return (
     <div>
       <div style={{ height: virtual.topPad }} />
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-1">
         {visible.map((item) => (
           <CatalogCard
             key={item.id}

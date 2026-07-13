@@ -7,6 +7,7 @@ import type {
   FloorPlanDrawRoomMode,
   FloorPlanUnderlay,
 } from "@/lib/floor-plan-types";
+import { ROOM_DIMENSION_DEFAULTS } from "@/lib/design-page-house-plan";
 import type { RoomType } from "@/lib/room-types";
 
 type TraceRoomTypeOption = {
@@ -151,21 +152,21 @@ export default function FloorPlanUploadPanel({
 }: FloorPlanUploadPanelProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const cardClass = dark
-    ? "rounded-xl border border-white/10 bg-[#151820] p-3"
+    ? "designer-raised rounded-xl p-3"
     : "rounded-xl border border-neutral-200 bg-white p-3";
   const titleClass = dark
     ? "text-sm font-semibold text-neutral-100"
     : "text-sm font-semibold text-neutral-900";
   const subtleClass = dark ? "text-xs text-neutral-400" : "text-xs text-neutral-500";
   const buttonClass = dark
-    ? "rounded-lg bg-white px-3 py-2 text-sm font-semibold text-neutral-950 disabled:opacity-50"
+    ? "designer-control-active rounded-lg border px-3 py-2 text-sm font-semibold disabled:opacity-50"
     : "rounded-lg bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-700 disabled:opacity-50";
   const secondaryButtonClass = dark
-    ? "rounded-lg border border-white/15 px-3 py-2 text-xs font-medium text-neutral-200 disabled:opacity-50"
+    ? "designer-control rounded-lg border px-3 py-2 text-xs font-medium disabled:opacity-50"
     : "rounded-lg border border-neutral-200 px-3 py-2 text-xs font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50";
   const rangeClass = "h-2 w-full accent-neutral-900";
   const selectClass = dark
-    ? "rounded border border-white/15 bg-[#10131a] px-2 py-1.5 text-sm text-neutral-100 disabled:opacity-50"
+    ? "designer-control rounded border px-2 py-1.5 text-sm text-neutral-100 disabled:opacity-50"
     : "rounded border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-900 disabled:opacity-50";
   const drawToolButtonClass = (mode: FloorPlanDrawRoomMode) => {
     const isActive = traceRoomMode && traceRoomDrawMode === mode;
@@ -174,7 +175,7 @@ export default function FloorPlanUploadPanel({
         "flex min-h-14 items-center gap-3 rounded-lg border px-3 py-2 text-left text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-45",
         isActive
           ? "border-blue-400/45 bg-blue-500/20 text-blue-100"
-          : "border-white/10 bg-white/5 text-neutral-200 hover:bg-white/10",
+          : "designer-control border text-neutral-200",
       ].join(" ");
     }
     return [
@@ -185,7 +186,7 @@ export default function FloorPlanUploadPanel({
     ].join(" ");
   };
   const drawStatusClass = dark
-    ? "rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-semibold text-neutral-300"
+    ? "designer-status-pending rounded-full px-2 py-1 text-[11px] font-semibold"
     : "rounded-full border border-neutral-200 bg-white px-2 py-1 text-[11px] font-semibold text-neutral-500";
   const drawToolMetaClass = dark
     ? "mt-0.5 block text-[11px] font-medium text-neutral-400"
@@ -251,7 +252,7 @@ export default function FloorPlanUploadPanel({
         {!underlay && !showDrawRoomTools && (
           <div
             data-testid="floor-plan-upload-empty-state"
-            className={dark ? "rounded-lg bg-white/5 p-3" : "rounded-lg bg-neutral-50 p-3"}
+            className={dark ? "designer-recessed rounded-lg p-3" : "rounded-lg bg-neutral-50 p-3"}
           >
             <div className={dark ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-neutral-800"}>
               Upload a floor-plan image or PDF
@@ -280,7 +281,7 @@ export default function FloorPlanUploadPanel({
               onChange={(event) => onOpacityChange(Number(event.target.value))}
             />
           </div>
-          <div className={dark ? "rounded-lg bg-white/5 p-3" : "rounded-lg bg-neutral-50 p-3"}>
+          <div className={dark ? "designer-recessed rounded-lg p-3" : "rounded-lg bg-neutral-50 p-3"}>
             <div className="flex items-center justify-between gap-2">
               <div>
                 <div className={dark ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-neutral-800"}>
@@ -318,7 +319,7 @@ export default function FloorPlanUploadPanel({
                     onChange={(event) => onCalibrationDistanceChange?.(event.target.value)}
                     className={
                       dark
-                        ? "w-24 rounded border border-white/15 bg-[#10131a] px-2 py-1.5 text-sm text-neutral-100"
+                        ? "designer-control w-24 rounded border px-2 py-1.5 text-sm text-neutral-100"
                         : "w-24 rounded border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-900"
                     }
                     placeholder="m"
@@ -349,7 +350,7 @@ export default function FloorPlanUploadPanel({
         )}
 
         {showDrawRoomTools && (
-          <div className={dark ? "rounded-lg bg-white/5 p-3" : "rounded-lg bg-neutral-50 p-3"}>
+          <div className={dark ? "designer-recessed rounded-lg p-3" : "rounded-lg bg-neutral-50 p-3"}>
             <div className="flex items-center justify-between gap-2">
               <div>
                 <div className={dark ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-neutral-800"}>
@@ -447,7 +448,7 @@ export default function FloorPlanUploadPanel({
                       onChange={(event) => onTraceRoomTypeChange?.(event.target.value as RoomType)}
                       className={
                         dark
-                          ? "min-w-32 rounded border border-white/15 bg-[#10131a] px-2 py-1.5 text-sm text-neutral-100"
+                          ? "designer-control min-w-32 rounded border px-2 py-1.5 text-sm text-neutral-100"
                           : "min-w-32 rounded border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-900"
                       }
                     >
@@ -468,10 +469,10 @@ export default function FloorPlanUploadPanel({
                   </button>
                 </div>
                 {(showAngleLockControls || showExactWallLengthControls) && (
-                  <div className={dark ? "rounded-lg bg-white/5 p-2" : "rounded-lg bg-white p-2"}>
+                  <div className={dark ? "designer-recessed rounded-lg p-2" : "rounded-lg bg-white p-2"}>
                     <div className={subtleClass}>Precision</div>
                     {showAngleLockControls && (
-                      <div className="mt-1.5 grid grid-cols-3 gap-1 rounded-lg bg-black/5 p-1 dark:bg-white/5">
+                      <div className={dark ? "designer-raised mt-1.5 grid grid-cols-3 gap-1 rounded-lg p-1" : "mt-1.5 grid grid-cols-3 gap-1 rounded-lg bg-black/5 p-1"}>
                         {ANGLE_LOCK_TOOLS.map((tool) => {
                           const isActive = traceRoomAngleLockMode === tool.id;
                           return (
@@ -510,6 +511,7 @@ export default function FloorPlanUploadPanel({
                             data-testid="floor-plan-exact-wall-length"
                             type="number"
                             min={1}
+                            max={ROOM_DIMENSION_DEFAULTS.max * 1000}
                             step={10}
                             inputMode="numeric"
                             value={exactWallLengthInput}
@@ -525,7 +527,7 @@ export default function FloorPlanUploadPanel({
                             }}
                             className={
                               dark
-                                ? "min-w-0 flex-1 rounded border border-white/15 bg-[#10131a] px-2 py-1.5 text-sm text-neutral-100 disabled:opacity-50"
+                                ? "designer-control min-w-0 flex-1 rounded border px-2 py-1.5 text-sm text-neutral-100 disabled:opacity-50"
                                 : "min-w-0 flex-1 rounded border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-900 disabled:opacity-50"
                             }
                             placeholder="3500"
@@ -592,7 +594,7 @@ export default function FloorPlanUploadPanel({
 
         {underlay && (
           <>
-          <div className={dark ? "rounded-lg bg-white/5 p-3" : "rounded-lg bg-neutral-50 p-3"}>
+          <div className={dark ? "designer-recessed rounded-lg p-3" : "rounded-lg bg-neutral-50 p-3"}>
             <div className="flex items-center justify-between gap-2">
               <div>
                 <div className={dark ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-neutral-800"}>
@@ -630,7 +632,7 @@ export default function FloorPlanUploadPanel({
                     }
                     className={
                       dark
-                        ? "min-w-28 rounded border border-white/15 bg-[#10131a] px-2 py-1.5 text-sm text-neutral-100"
+                        ? "designer-control min-w-28 rounded border px-2 py-1.5 text-sm text-neutral-100"
                         : "min-w-28 rounded border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-900"
                     }
                   >

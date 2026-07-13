@@ -43,19 +43,19 @@ export default function FloorPlanToolStrip({
           ? "Click a wall for the window."
           : "Move or adjust what you select.";
   const shellClass = dark
-    ? "mt-2 rounded-lg border border-white/10 bg-[#151820] p-2.5 text-neutral-100"
+    ? "designer-work-section mt-2 border-t p-2.5"
     : "mt-2 rounded-lg border border-neutral-200 bg-white p-2.5 text-neutral-900";
   const headerClass = dark
-    ? "text-sm font-semibold text-neutral-100"
+    ? "text-sm font-semibold"
     : "text-sm font-semibold text-neutral-800";
   const toolsClass = "mt-2 grid grid-cols-2 gap-1.5";
   const buttonBaseClass =
     "min-h-10 rounded-lg px-2.5 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-45";
   const activeClass = dark
-    ? "bg-white text-neutral-950"
+    ? "designer-work-control-active"
     : "bg-neutral-900 text-white";
   const idleClass = dark
-    ? "border border-white/10 bg-white/5 text-neutral-200 hover:bg-white/10"
+    ? "designer-work-control border"
     : "border border-neutral-200 bg-neutral-50 text-neutral-700 hover:bg-neutral-100";
   const getButtonClass = (tool: FloorPlanTool) =>
     `${buttonBaseClass} ${activeTool === tool ? activeClass : idleClass}`;
@@ -91,7 +91,7 @@ export default function FloorPlanToolStrip({
           );
         })}
       </div>
-      <div className={dark ? "mt-2 text-[11px] text-neutral-400" : "mt-2 text-[11px] text-neutral-500"}>
+      <div className={dark ? "designer-work-muted mt-2 text-[11px]" : "mt-2 text-[11px] text-neutral-500"}>
         {helperText}
       </div>
     </div>

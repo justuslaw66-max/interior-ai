@@ -10,18 +10,18 @@ type EditorViewToggleProps = {
 
 export default function EditorViewToggle({ value, onChange, dark = false }: EditorViewToggleProps) {
   const inactive = dark
-    ? "rounded-full px-4 py-1.5 text-sm font-semibold text-neutral-200 hover:bg-white/10"
+    ? "designer-work-control rounded-full px-4 py-1.5 text-sm font-semibold"
     : "rounded-full px-4 py-1.5 text-sm font-semibold text-neutral-600 hover:bg-white";
 
   const active = dark
-    ? "rounded-full bg-white px-4 py-1.5 text-sm font-semibold text-neutral-950 shadow-sm"
+    ? "designer-work-control-active rounded-full px-4 py-1.5 text-sm font-semibold"
     : "rounded-full bg-emerald-500 px-4 py-1.5 text-sm font-semibold text-white shadow-sm";
 
   return (
     <div
       className={
         dark
-          ? "grid grid-cols-2 gap-1 rounded-full bg-white/10 p-1"
+          ? "designer-work-surface grid grid-cols-2 gap-1 rounded-full p-1"
           : "grid grid-cols-2 gap-1 rounded-full bg-neutral-100 p-1"
       }
     >

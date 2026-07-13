@@ -16,6 +16,7 @@ import { buildProductDetailDimensionRows } from "@/lib/design-page-product-info"
 
 type UseDesignPageConfigStateParams = {
   importedModelOptions: ImportedModelOption[];
+  importedCatalogByProductId?: Record<string, NonNullable<ImportedModelOption["catalog"]>>;
   itemConfigurationByInstanceId: Record<string, string>;
   importedModelUrlByAssetId: Record<string, string>;
   selectedItem: DesignItem | null;
@@ -202,6 +203,7 @@ export function buildItemPlanningBoundsByInstanceId({
 export function useDesignPageConfigState(params: UseDesignPageConfigStateParams) {
   const {
     importedModelOptions,
+    importedCatalogByProductId = {},
     itemConfigurationByInstanceId,
     importedModelUrlByAssetId,
     selectedItem,
@@ -254,8 +256,12 @@ export function useDesignPageConfigState(params: UseDesignPageConfigStateParams)
   }, [importedModelById, itemConfigurationByInstanceId, importedModelUrlByAssetId, catalogItems]);
 
   const selectedProduct = selectedItem ? catalogItems[selectedItem.productId] : null;
+  const selectedProductAssetId = String(selectedProduct?.assets?.assetId ?? "").trim();
   const selectedImportedCatalog = selectedProduct
-    ? importedModelById.get(selectedProduct.id)?.catalog ?? null
+    ? importedModelById.get(selectedProduct.id)?.catalog ??
+      importedCatalogByProductId[selectedProduct.id] ??
+      (selectedProductAssetId ? importedCatalogByProductId[selectedProductAssetId] : undefined) ??
+      null
     : null;
   const selectedConfigurationCode = resolveItemConfigurationCode(selectedItem);
   const selectedConfigUi = selectedImportedCatalog?.configurableMetadata?.configuration_ui;

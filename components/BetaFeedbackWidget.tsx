@@ -29,6 +29,9 @@ export type BetaFeedbackContext = {
 
 type BetaFeedbackWidgetProps = {
   context: BetaFeedbackContext;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  showTrigger?: boolean;
 };
 
 function buildFeedbackPayload(note: string, context: BetaFeedbackContext) {
@@ -46,12 +49,25 @@ function buildFeedbackPayload(note: string, context: BetaFeedbackContext) {
   };
 }
 
-export default function BetaFeedbackWidget({ context }: BetaFeedbackWidgetProps) {
-  const [open, setOpen] = useState(false);
+export default function BetaFeedbackWidget({
+  context,
+  open: controlledOpen,
+  onOpenChange,
+  showTrigger = true,
+}: BetaFeedbackWidgetProps) {
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const [note, setNote] = useState("");
   const [reportId, setReportId] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "failed" | "copied">("idle");
+  const open = controlledOpen ?? uncontrolledOpen;
+
+  const setOpen = (nextOpen: boolean) => {
+    if (controlledOpen === undefined) {
+      setUncontrolledOpen(nextOpen);
+    }
+    onOpenChange?.(nextOpen);
+  };
 
   const contextSummary = useMemo(
     () =>
@@ -140,19 +156,21 @@ export default function BetaFeedbackWidget({ context }: BetaFeedbackWidgetProps)
 
   return (
     <>
-      <button
-        type="button"
-        data-testid="beta-feedback-open"
-        className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] left-4 z-40 rounded-full border border-neutral-200 bg-white/95 px-3 py-2 text-xs font-semibold text-neutral-800 shadow-xl backdrop-blur hover:bg-neutral-50 md:bottom-24"
-        onClick={() => {
-          setOpen(true);
-          setStatus("idle");
-          setReportId(null);
-          setSubmitted(false);
-        }}
-      >
-        Feedback
-      </button>
+      {showTrigger && (
+        <button
+          type="button"
+          data-testid="beta-feedback-open"
+          className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] left-4 z-40 rounded-full border border-neutral-200 bg-white/95 px-3 py-2 text-xs font-semibold text-neutral-800 shadow-xl backdrop-blur hover:bg-neutral-50 md:bottom-24"
+          onClick={() => {
+            setOpen(true);
+            setStatus("idle");
+            setReportId(null);
+            setSubmitted(false);
+          }}
+        >
+          Feedback
+        </button>
+      )}
 
       {open && (
         <div

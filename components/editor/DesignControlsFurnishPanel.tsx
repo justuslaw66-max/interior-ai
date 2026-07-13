@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import CatalogPanel from "@/components/catalog/CatalogPanel";
 import LazyImage from "@/components/common/LazyImage";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
@@ -67,15 +67,16 @@ type DesignControlsFurnishPanelProps = {
 };
 
 const ROOM_RECOMMENDED_CATEGORIES: Record<string, CatalogTopCategory[]> = {
-  living: ["sofa", "accent_chair", "coffee_table", "side_table", "rug", "tv_console", "floor_lamp"],
-  bedroom: ["accent_chair", "side_table", "ottoman", "rug", "floor_lamp", "decor"],
-  dining: ["dining_table", "dining_bench", "sideboard", "rug", "floor_lamp"],
-  kitchen: ["dining_table", "dining_bench", "sideboard", "decor"],
+  living: ["sofa", "accent_chair", "coffee_table", "side_table", "rug", "tv_console", "floor_lamp", "table_lamp", "ceiling_light"],
+  bedroom: ["bed", "side_table", "rug", "table_lamp", "floor_lamp", "ceiling_light", "accent_chair", "ottoman", "decor"],
+  dining: ["dining_table", "dining_bench", "sideboard", "rug", "ceiling_light", "floor_lamp", "table_lamp"],
+  kitchen: ["dining_table", "dining_bench", "sideboard", "ceiling_light", "decor"],
   toilet: ["decor"],
-  custom: ["sofa", "coffee_table", "accent_chair", "rug"],
+  custom: ["sofa", "coffee_table", "accent_chair", "rug", "ceiling_light"],
 };
 
 const CATEGORY_HELP_TEXT: Record<CatalogTopCategory, string> = {
+  bed: "Anchor the bedroom",
   sofa: "Anchor the seating zone",
   accent_chair: "Add flexible seating",
   coffee_table: "Complete the lounge setup",
@@ -87,6 +88,8 @@ const CATEGORY_HELP_TEXT: Record<CatalogTopCategory, string> = {
   tv_console: "Set up the media wall",
   sideboard: "Add dining or entry storage",
   floor_lamp: "Layer soft lighting",
+  table_lamp: "Add tabletop lighting",
+  ceiling_light: "Hang lighting from the ceiling",
   decor: "Finish with useful accents",
 };
 
@@ -96,6 +99,8 @@ type FurnishingCompletenessCheck = {
   complete: boolean;
   detail?: string;
 };
+
+type FurnishExperienceMode = "catalog" | "guided";
 
 function normalizeRoomRecommendationKey(label: string): keyof typeof ROOM_RECOMMENDED_CATEGORIES {
   const normalized = label.trim().toLowerCase();
@@ -150,10 +155,12 @@ export default function DesignControlsFurnishPanel({
   onSelectedImportedProductChange,
 }: DesignControlsFurnishPanelProps) {
   const roomRecommendationKey = `${activeRoomName}:${activeRoomTypeLabel}`;
-  const [selectedCatalogCategory, setSelectedCatalogCategory] = useState<
-    { roomKey: string; category: CatalogTopCategory } | undefined
-  >(undefined);
-  const [fullCatalogOpen, setFullCatalogOpen] = useState(false);
+  const [selectedCatalogCategoryByRoom, setSelectedCatalogCategoryByRoom] = useState<
+    Record<string, CatalogTopCategory>
+  >({});
+  const [experienceMode, setExperienceMode] = useState<FurnishExperienceMode>("catalog");
+  const catalogPanelRef = useRef<HTMLElement>(null);
+  const focusCatalogAfterModeChangeRef = useRef(false);
   const selectedImportedOption = useMemo(
     () =>
       visibleImportedModelOptions.find((option) => option.id === selectedImportedProductId) ??
@@ -190,15 +197,39 @@ export default function DesignControlsFurnishPanel({
   }, [activeRoomTypeLabel, catalogCategoryCounts]);
   const defaultCatalogCategory = recommendedCategories[0];
   const activeCatalogCategory =
-    selectedCatalogCategory?.roomKey === roomRecommendationKey
-      ? selectedCatalogCategory.category
-      : defaultCatalogCategory;
+    selectedCatalogCategoryByRoom[roomRecommendationKey] ?? defaultCatalogCategory;
   const handleCatalogCategoryChange = (category: CatalogTopCategory) => {
-    setSelectedCatalogCategory({ roomKey: roomRecommendationKey, category });
+    setSelectedCatalogCategoryByRoom((prev) => ({
+      ...prev,
+      [roomRecommendationKey]: category,
+    }));
   };
   const handleBrowseCatalogCategory = (category: CatalogTopCategory) => {
     handleCatalogCategoryChange(category);
-    setFullCatalogOpen(true);
+    focusCatalogAfterModeChangeRef.current = true;
+    setExperienceMode("catalog");
+  };
+  useEffect(() => {
+    if (experienceMode !== "catalog" || !focusCatalogAfterModeChangeRef.current) return;
+    focusCatalogAfterModeChangeRef.current = false;
+    const frame = window.requestAnimationFrame(() => {
+      catalogPanelRef.current
+        ?.querySelector<HTMLInputElement>('[data-testid="catalog-search-input"]')
+        ?.focus();
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [activeCatalogCategory, experienceMode]);
+  const handleExperienceModeChange = (mode: FurnishExperienceMode) => {
+    if (mode === "catalog") {
+      if (experienceMode === "catalog") {
+        catalogPanelRef.current
+          ?.querySelector<HTMLInputElement>('[data-testid="catalog-search-input"]')
+          ?.focus();
+      } else {
+        focusCatalogAfterModeChangeRef.current = true;
+      }
+    }
+    setExperienceMode(mode);
   };
   const canChooseRoom = rooms.length > 1 && canEdit;
   const checklistCategories = recommendedCategories.slice(0, Math.min(4, recommendedCategories.length));
@@ -225,6 +256,10 @@ export default function DesignControlsFurnishPanel({
   const nextActionSuggestions = useMemo(() => {
     const suggestions: Array<{ label: string; category: CatalogTopCategory }> = [];
     const has = (category: CatalogTopCategory) => (activeRoomCategoryCounts[category] ?? 0) > 0;
+    const roomKey = normalizeRoomRecommendationKey(activeRoomTypeLabel);
+    if (roomKey === "bedroom" && !has("bed") && catalogCategoryCounts.bed) {
+      suggestions.push({ label: "Anchor the bedroom with a bed", category: "bed" });
+    }
     if (!has("sofa") && catalogCategoryCounts.sofa) {
       suggestions.push({ label: "Anchor the room with a sofa", category: "sofa" });
     }
@@ -234,21 +269,28 @@ export default function DesignControlsFurnishPanel({
     if ((has("sofa") || has("accent_chair")) && !has("rug") && catalogCategoryCounts.rug) {
       suggestions.push({ label: "Define the seating zone with a rug", category: "rug" });
     }
-    if (!has("floor_lamp") && catalogCategoryCounts.floor_lamp) {
+    if (!has("ceiling_light") && catalogCategoryCounts.ceiling_light) {
+      suggestions.push({ label: "Add a ceiling light", category: "ceiling_light" });
+    } else if (!has("floor_lamp") && catalogCategoryCounts.floor_lamp) {
       suggestions.push({ label: "Add lighting for the room", category: "floor_lamp" });
+    } else if (!has("table_lamp") && catalogCategoryCounts.table_lamp) {
+      suggestions.push({ label: "Add a table lamp", category: "table_lamp" });
     }
     if (!has("side_table") && (has("sofa") || has("accent_chair")) && catalogCategoryCounts.side_table) {
       suggestions.push({ label: "Place a side table beside seating", category: "side_table" });
     }
     return suggestions.slice(0, 3);
-  }, [activeRoomCategoryCounts, catalogCategoryCounts]);
+  }, [activeRoomCategoryCounts, activeRoomTypeLabel, catalogCategoryCounts]);
   const furnishingCompleteness = useMemo(() => {
     const has = (categories: CatalogTopCategory[]) =>
       categories.some((category) => (activeRoomCategoryCounts[category] ?? 0) > 0);
+    const roomKey = normalizeRoomRecommendationKey(activeRoomTypeLabel);
     const checks: FurnishingCompletenessCheck[] = [
-      { id: "seating", label: "Seating", complete: has(["sofa", "accent_chair", "ottoman"]) },
+      roomKey === "bedroom"
+        ? { id: "bed", label: "Bed", complete: has(["bed"]) }
+        : { id: "seating", label: "Seating", complete: has(["sofa", "accent_chair", "ottoman"]) },
       { id: "surfaces", label: "Surfaces", complete: has(["coffee_table", "side_table", "dining_table"]) },
-      { id: "lighting", label: "Lighting", complete: has(["floor_lamp"]) },
+      { id: "lighting", label: "Lighting", complete: has(["floor_lamp", "table_lamp", "ceiling_light"]) },
       { id: "rug", label: "Rug", complete: has(["rug"]) },
       { id: "storage", label: "Storage", complete: has(["tv_console", "sideboard", "decor"]) },
       {
@@ -265,7 +307,7 @@ export default function DesignControlsFurnishPanel({
       percent: Math.round((completeCount / checks.length) * 100),
       next: checks.find((check) => !check.complete) ?? null,
     };
-  }, [activeRoomCategoryCounts, shoppingReadiness]);
+  }, [activeRoomCategoryCounts, activeRoomTypeLabel, shoppingReadiness]);
   const completionAllowance = budget === "$" ? 800 : budget === "$$$" ? 2200 : 1200;
   const budgetTarget = Math.max(
     1000,
@@ -308,14 +350,14 @@ export default function DesignControlsFurnishPanel({
     ? "designer-text-primary text-sm font-semibold"
     : "text-sm font-semibold text-neutral-800";
   const panelClass = dark
-    ? "rounded-2xl border border-white/10 bg-[#151820] p-4"
+    ? "designer-dock rounded-2xl p-4"
     : "rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm";
   const mutedClass = dark ? "text-xs text-neutral-400" : "text-xs text-neutral-500";
   const statCardClass = dark
-    ? "rounded-xl border border-white/10 bg-[#1b2030] p-3"
+    ? "designer-raised rounded-xl p-3"
     : "rounded-xl border border-neutral-200 bg-neutral-50 p-3";
   const inputClass = dark
-    ? "w-full rounded-xl border border-white/10 bg-[#111827] px-3 py-2 text-sm text-neutral-100"
+    ? "designer-control w-full rounded-xl border px-3 py-2 text-sm text-neutral-100"
     : "w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900";
   const secondaryButtonClass = dark
     ? "rounded-xl border border-white/10 px-3 py-2 text-sm font-semibold text-neutral-100 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
@@ -391,10 +433,56 @@ export default function DesignControlsFurnishPanel({
             <div className={mutedClass}>Review</div>
           </div>
         </div>
+        <div className="mt-4" data-testid="furnish-experience-picker">
+          <div className={titleClass}>How do you want to furnish?</div>
+          <div className="mt-2 grid grid-cols-2 gap-2" role="group" aria-label="Furnishing experience">
+            {(
+              [
+                {
+                  id: "catalog",
+                  title: "Full catalog",
+                },
+                {
+                  id: "guided",
+                  title: "Guided",
+                },
+              ] as const
+            ).map((option) => {
+              const active = experienceMode === option.id;
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  data-testid={`furnish-mode-${option.id}`}
+                  data-active={active ? "true" : "false"}
+                  aria-pressed={active}
+                  onClick={() => handleExperienceModeChange(option.id)}
+                  className={
+                    active
+                      ? dark
+                        ? "min-h-11 rounded-xl border border-white bg-white px-3 py-2 text-sm font-semibold text-neutral-950 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300"
+                        : "min-h-11 rounded-xl border border-neutral-900 bg-neutral-900 px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500"
+                      : dark
+                        ? "designer-control min-h-11 rounded-xl border px-3 py-2 text-sm font-semibold text-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300"
+                        : "min-h-11 rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400"
+                  }
+                >
+                  {option.title}
+                </button>
+              );
+            })}
+          </div>
+          <div className={`${mutedClass} mt-2`} data-testid="furnish-mode-description">
+            {experienceMode === "catalog"
+              ? "Search and filter every verified product."
+              : `Room-aware steps and recommendations for ${activeRoomTypeLabel}.`}
+          </div>
+        </div>
         <div
+          hidden={experienceMode !== "guided"}
           className={
             dark
-              ? "mt-4 rounded-xl border border-white/10 bg-black/10 p-3"
+              ? "designer-recessed mt-4 rounded-xl p-3"
               : "mt-4 rounded-xl border border-neutral-200 bg-neutral-50 p-3"
           }
           data-testid="room-furnishing-completeness"
@@ -507,7 +595,7 @@ export default function DesignControlsFurnishPanel({
               data-testid="budget-aware-room-completion"
               className={
                 dark
-                  ? "mt-3 flex w-full items-center justify-between gap-3 rounded-xl border border-white/10 bg-[#1b2030] px-3 py-2 text-left hover:bg-white/10"
+                  ? "designer-control mt-3 flex w-full items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left"
                   : "mt-3 flex w-full items-center justify-between gap-3 rounded-xl border border-neutral-200 bg-white px-3 py-2 text-left hover:bg-neutral-50"
               }
               onClick={() => handleBrowseCatalogCategory(budgetNextCategory)}
@@ -538,7 +626,7 @@ export default function DesignControlsFurnishPanel({
                     key={recommendation.productId}
                     className={
                       dark
-                        ? "flex gap-3 rounded-xl border border-white/10 bg-[#1b2030] p-2"
+                        ? "designer-raised flex gap-3 rounded-xl p-2"
                         : "flex gap-3 rounded-xl border border-neutral-200 bg-white p-2"
                     }
                   >
@@ -625,7 +713,7 @@ export default function DesignControlsFurnishPanel({
           <label
             className={
               dark
-                ? "mt-4 block rounded-xl border border-white/10 bg-white/5 p-3"
+                ? "designer-raised mt-4 block rounded-xl p-3"
                 : "mt-4 block rounded-xl border border-neutral-200 bg-neutral-50 p-3"
             }
           >
@@ -680,7 +768,40 @@ export default function DesignControlsFurnishPanel({
         </div>
       </section>
 
-      <section className={panelClass}>
+      <section
+        ref={catalogPanelRef}
+        hidden={experienceMode !== "catalog"}
+        className={panelClass}
+        data-testid="furnish-full-catalog"
+        data-mode-content="catalog"
+      >
+        <CatalogPanel
+            items={catalogItems}
+            canEdit={canEdit}
+            onAddToRoom={onAddCatalogItemToRoom}
+            onAutoPlaceInRoom={onAutoPlaceCatalogItemInRoom}
+            onPreviewPlacementIntent={onPreviewCatalogPlacementIntent}
+            onCatalogDragStart={onCatalogDragStart}
+            onCatalogDragEnd={onCatalogDragEnd}
+            activeRoomName={activeRoomName}
+            recommendedCategoryIds={recommendedCategories}
+            title="Browse catalog"
+            selectedCategory={activeCatalogCategory}
+            onSelectedCategoryChange={handleCatalogCategoryChange}
+            activeRoomProductQuantities={activeRoomProductQuantities}
+            activeRoomVariantQuantities={activeRoomVariantQuantities}
+            activeRoomCategoryCounts={activeRoomCategoryCounts}
+            activeRoomWidth={roomWidth}
+            activeRoomDepth={roomDepth}
+        />
+      </section>
+
+      <section
+        hidden={experienceMode !== "guided"}
+        className={panelClass}
+        data-testid="furnish-guided-checklist"
+        data-mode-content="guided"
+      >
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className={titleClass}>Room checklist</div>
@@ -735,7 +856,7 @@ export default function DesignControlsFurnishPanel({
                 onClick={() => handleBrowseCatalogCategory(category)}
                 className={
                   dark
-                    ? "flex w-full items-center justify-between gap-3 rounded-xl border border-white/10 bg-[#1b2030] px-3 py-2 text-left hover:bg-white/10"
+                    ? "designer-control flex w-full items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left"
                     : "flex w-full items-center justify-between gap-3 rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2 text-left hover:bg-white"
                 }
               >
@@ -828,7 +949,7 @@ export default function DesignControlsFurnishPanel({
             <div
               className={
                 dark
-                  ? "mt-3 rounded-xl border border-white/10 bg-black/10 p-3"
+                  ? "designer-recessed mt-3 rounded-xl p-3"
                   : "mt-3 rounded-xl border border-neutral-200 bg-neutral-50 p-3"
               }
             >
@@ -874,7 +995,7 @@ export default function DesignControlsFurnishPanel({
                     data-testid="furnish-room-bom-item"
                     className={
                       dark
-                        ? "flex gap-3 rounded-xl border border-white/10 bg-[#1b2030] p-2"
+                        ? "designer-raised flex gap-3 rounded-xl p-2"
                         : "flex gap-3 rounded-xl border border-neutral-200 bg-white p-2"
                     }
                   >
@@ -964,7 +1085,12 @@ export default function DesignControlsFurnishPanel({
         )}
       </section>
 
-      <section className={panelClass}>
+      <section
+        hidden={experienceMode !== "guided"}
+        className={panelClass}
+        data-testid="furnish-guided-recommendations"
+        data-mode-content="guided"
+      >
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className={titleClass}>Recommended for {activeRoomTypeLabel}</div>
@@ -994,10 +1120,10 @@ export default function DesignControlsFurnishPanel({
                 className={
                   active
                     ? dark
-                      ? "rounded-xl border border-white/20 bg-white/10 p-3 text-left text-neutral-100"
+                      ? "designer-control-active rounded-xl border p-3 text-left"
                       : "rounded-xl border border-neutral-900 bg-neutral-900 p-3 text-left text-white shadow-sm"
                     : dark
-                      ? "rounded-xl border border-white/10 bg-[#1b2030] p-3 text-left text-neutral-200 hover:bg-white/10"
+                      ? "designer-control rounded-xl border p-3 text-left text-neutral-200"
                       : "rounded-xl border border-neutral-200 bg-white p-3 text-left text-neutral-800 hover:bg-neutral-50"
                 }
               >
@@ -1080,7 +1206,7 @@ export default function DesignControlsFurnishPanel({
           <div
             className={
               dark
-                ? "mt-3 rounded-xl border border-white/10 bg-black/10 p-3"
+                ? "designer-recessed mt-3 rounded-xl p-3"
                 : "mt-3 rounded-xl border border-neutral-200 bg-neutral-50 p-3"
             }
           >
@@ -1107,57 +1233,6 @@ export default function DesignControlsFurnishPanel({
         </div>
       </details>
 
-      <details
-        className={panelClass}
-        data-testid="furnish-full-catalog"
-        open={fullCatalogOpen}
-        onToggle={(event) => setFullCatalogOpen(event.currentTarget.open)}
-      >
-        <summary
-          data-testid="furnish-full-catalog-toggle"
-          className={
-            dark
-              ? "flex cursor-pointer list-none items-center justify-between gap-3 text-neutral-100 marker:hidden"
-              : "flex cursor-pointer list-none items-center justify-between gap-3 text-neutral-900 marker:hidden"
-          }
-        >
-          <span>
-            <span className={titleClass}>Browse full catalog</span>
-            <span className={mutedClass}>Search every verified product when recommendations are not enough.</span>
-          </span>
-          <span
-            className={
-              dark
-                ? "rounded-full bg-white/10 px-2 py-1 text-[11px] font-semibold text-neutral-300"
-                : "rounded-full bg-neutral-100 px-2 py-1 text-[11px] font-semibold text-neutral-600"
-            }
-          >
-            {fullCatalogOpen ? "Hide" : "Open"}
-          </span>
-        </summary>
-        <div className="mt-3">
-          <CatalogPanel
-            items={catalogItems}
-            canEdit={canEdit}
-            onAddToRoom={onAddCatalogItemToRoom}
-            onAutoPlaceInRoom={onAutoPlaceCatalogItemInRoom}
-            onPreviewPlacementIntent={onPreviewCatalogPlacementIntent}
-            onCatalogDragStart={onCatalogDragStart}
-            onCatalogDragEnd={onCatalogDragEnd}
-            activeRoomName={activeRoomName}
-            recommendedCategoryIds={recommendedCategories}
-            title={`Add to ${activeRoomName}`}
-            subtitle="Start with room-aware categories, then search every verified product if needed."
-            selectedCategory={activeCatalogCategory}
-            onSelectedCategoryChange={handleCatalogCategoryChange}
-            activeRoomProductQuantities={activeRoomProductQuantities}
-            activeRoomVariantQuantities={activeRoomVariantQuantities}
-            activeRoomCategoryCounts={activeRoomCategoryCounts}
-            activeRoomWidth={roomWidth}
-            activeRoomDepth={roomDepth}
-          />
-        </div>
-      </details>
     </div>
   );
 }

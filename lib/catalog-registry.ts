@@ -22,8 +22,18 @@ function allowDraftSurfaceMaterials(options: SurfaceMaterialVisibilityOptions = 
   return options.includeDrafts === true || process.env.NODE_ENV !== "production";
 }
 
+let invalidSurfaceMaterialWarningShown = false;
+
 function getAllSurfaceMaterials(): SurfaceMaterial[] {
-  return getAllSurfaceMaterialYamlEntries().map((entry) => {
+  const entries = getAllSurfaceMaterialYamlEntries();
+  const validEntries = entries.filter((entry) =>
+    Boolean(entry.surface_material && entry.import_governance)
+  );
+  if (validEntries.length !== entries.length && !invalidSurfaceMaterialWarningShown) {
+    invalidSurfaceMaterialWarningShown = true;
+    console.warn(`Skipped ${entries.length - validEntries.length} invalid or empty surface material files.`);
+  }
+  return validEntries.map((entry) => {
     const { file_path: _filePath, ...material } = entry;
     return material;
   });

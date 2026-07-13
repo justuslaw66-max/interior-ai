@@ -14,6 +14,7 @@ export type RoomRendererOpening = {
   offset: number;
   width: number;
   height?: number;
+  bottom?: number;
 };
 
 export type RoomRendererFixedElement = {
@@ -115,6 +116,8 @@ export function updatePlanOpeningMetrics(
   metrics: {
     widthMeters?: number;
     offsetMeters?: number;
+    heightMeters?: number;
+    bottomMeters?: number;
     kind?: RoomOpening2D["kind"];
   },
   params: PlanOpeningMetricsParams
@@ -132,6 +135,14 @@ export function updatePlanOpeningMetrics(
         metrics.offsetMeters !== undefined
           ? metersToMm(metrics.offsetMeters)
           : opening.offsetMm,
+      ...(metrics.heightMeters !== undefined
+        ? { heightMm: metersToMm(metrics.heightMeters) }
+        : {}),
+      ...(metrics.kind === "door"
+        ? { bottomMm: 0 }
+        : metrics.bottomMeters !== undefined
+          ? { bottomMm: metersToMm(Math.max(0, metrics.bottomMeters)) }
+          : {}),
       kind: metrics.kind ?? opening.kind,
     };
 
@@ -148,6 +159,7 @@ export function mapPlanOpeningsToRoomRenderer(openings: RoomOpening2D[]): RoomRe
     offset: mmToMeters(opening.offsetMm),
     width: mmToMeters(opening.widthMm),
     height: opening.heightMm !== undefined ? mmToMeters(opening.heightMm) : undefined,
+    bottom: opening.bottomMm !== undefined ? mmToMeters(opening.bottomMm) : undefined,
   }));
 }
 

@@ -13,8 +13,6 @@
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
-    "ignoreDeprecations": "5.0",
-    "baseUrl": ".",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
@@ -32,24 +30,19 @@
   },
   "include": [
     "next-env.d.ts",
-    "app/**/*.ts",
-    "app/**/*.tsx",
-    "components/**/*.ts",
-    "components/**/*.tsx",
-    "lib/**/*.ts",
-    "lib/**/*.tsx",
-    "prisma/**/*.ts",
-    "next.config.ts",
-    "middleware.ts",
-    "instrumentation.ts",
+    "**/*.ts",
+    "**/*.tsx",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
-    ".next-cache/types/**/*.ts",
-    ".next-cache/dev/types/**/*.ts"
+    ".next/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",
-    "scripts",
-    "tests"
+    "**/node_modules",
+    "tests/e2e",
+    "playwright-report*",
+    "test-results*",
+    "release-evidence",
+    "release-evidence-private",
+    "backups"
   ]
 }

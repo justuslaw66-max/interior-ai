@@ -20,6 +20,7 @@ import {
 } from "@/lib/snapGuides";
 import { generateMeasurements, type Measure } from "@/lib/measurements";
 import { resolveMaterialProps } from "@/lib/design-page-material-props";
+import { shouldApplyVariantColorTint } from "@/lib/catalog-variant-color";
 import {
   getRotatedFootprint,
   normalizeRotationDegrees,
@@ -42,6 +43,16 @@ import { radiansToDeg } from "@/lib/editorScene";
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
 import { clampToRoom } from "@/lib/design-page-geometry";
 import type { DesignItem, RoomPlanPolygonPoint, RoomPlanShape } from "@/lib/room-types";
+import { getAdjustablePendantHeight } from "@/lib/pendant-light-adjustment";
+
+const normalizeModelCandidate = (value: string | null | undefined): string | null => {
+  const raw = String(value ?? "").trim();
+  if (!raw) return null;
+  if (/^https?:\/\//i.test(raw) || raw.startsWith("/")) return raw;
+  if (raw.startsWith("assets/")) return `/${raw}`;
+  return `/assets/models/${raw.replace(/^\/+/, "")}`;
+};
+
 type FurnitureProps = {
   product: CatalogItemSchema;
   planningBoundsMm?: { w: number; d: number; h: number };
@@ -50,6 +61,7 @@ type FurnitureProps = {
   variantName?: string;
   variantId: string;
   variantRenderAssets?: CatalogItemSchema["variants"][number]["renderAssets"];
+  hangingHeightCm?: number;
   initialPosition?: [number, number, number];
   initialRotationY?: number;
   roomWidth?: number;
@@ -103,6 +115,8 @@ type FurnitureProps = {
   rotationSnapStepDegrees?: number;
   rotationSnapEnabled?: boolean;
   renderQuality?: "standard" | "lite";
+  renderReadyKey?: string;
+  onRenderReadyChange?: (key: string, ready: boolean) => void;
   "data-testid"?: string;
 };
 
@@ -126,6 +140,7 @@ export function Furniture({
   variantName,
   variantId,
   variantRenderAssets,
+  hangingHeightCm,
   initialPosition = [0, 0, -1.4] as [number, number, number],
   initialRotationY = 0,
   roomWidth = 5,
@@ -170,12 +185,18 @@ export function Furniture({
   rotationSnapStepDegrees = ROTATION_SNAP_STEP_DEGREES,
   rotationSnapEnabled = true,
   renderQuality = "standard",
+  renderReadyKey,
+  onRenderReadyChange,
 }: FurnitureProps) {
   const width = product.dimsMm.w / 1000;
   const depth = product.dimsMm.d / 1000;
   const height = product.dimsMm.h / 1000;
   const planningWidth = (planningBoundsMm?.w ?? product.dimsMm.w) / 1000;
   const planningDepth = (planningBoundsMm?.d ?? product.dimsMm.d) / 1000;
+  const pendantCableAdjustment = useMemo(
+    () => getAdjustablePendantHeight(product, { hangingHeightCm }),
+    [hangingHeightCm, product]
+  );
   const [dragging, setDragging] = useState(false);
   const [position, setPosition] = useState<[number, number, number]>(
     initialPosition
@@ -400,8 +421,6 @@ export function Furniture({
     return () => window.removeEventListener("keydown", handleEscape);
   }, [instanceId, onDraggingChange, rotateDragging]);
 
-  const isCustomPolygonRoom =
-    roomPlanShape === "custom_polygon" && Boolean(roomPlanPolygon?.length);
   const clampWorldToRoomShape = useCallback(
     (
       worldX: number,
@@ -450,7 +469,7 @@ export function Furniture({
       
       if (newX !== position[0] || newZ !== position[2]) {
         const frameId = window.requestAnimationFrame(() => {
-          setPosition([newX, 0, newZ]);
+          setPosition([newX, position[1] ?? 0, newZ]);
         });
         return () => window.cancelAnimationFrame(frameId);
       }
@@ -605,7 +624,7 @@ export function Furniture({
     let snappedZ = z;
     let snap: SnapType = "none";
 
-    if (enableSnap && !isCustomPolygonRoom) {
+    if (enableSnap) {
       const [resultX, resultZ, resultSnap] = applySnap(x, z);
       snappedX = resultX;
       snappedZ = resultZ;
@@ -614,7 +633,7 @@ export function Furniture({
 
     [snappedX, snappedZ] = clampWorldToRoomShape(snappedX, snappedZ);
 
-    const nextPos: [number, number, number] = [snappedX, 0, snappedZ];
+    const nextPos: [number, number, number] = [snappedX, position[1] ?? 0, snappedZ];
 
     // Compute snap guides for visualization
     if (dragging && enableSnap && items && items.length > 0) {
@@ -650,14 +669,12 @@ export function Furniture({
         }));
 
         // Wall snap points (flush to walls, no breathing room)
-        const walls = isCustomPolygonRoom
-          ? []
-          : [
-              { axis: "x" as const, coord: wallLeftX, label: "Left Wall" },
-              { axis: "x" as const, coord: wallRightX, label: "Right Wall" },
-              { axis: "z" as const, coord: wallFrontZ, label: "Front Wall" },
-              { axis: "z" as const, coord: wallBackZ, label: "Back Wall" },
-            ];
+        const walls = [
+          { axis: "x" as const, coord: wallLeftX, label: "Left Wall" },
+          { axis: "x" as const, coord: wallRightX, label: "Right Wall" },
+          { axis: "z" as const, coord: wallFrontZ, label: "Front Wall" },
+          { axis: "z" as const, coord: wallBackZ, label: "Back Wall" },
+        ];
 
         // Compute all snap candidates
         const snapCandidates = computeSnapCandidates(selectedAABB, neighborGuides, walls, snapDistance);
@@ -741,7 +758,7 @@ export function Furniture({
     const now = performance.now();
     const baseX = clampedPosition[0];
     const baseZ = clampedPosition[2];
-    const baseY = height / 2;
+    const baseY = (clampedPosition[1] ?? 0) + height / 2;
     const bumpRemaining = snapBumpUntilRef.current - now;
     const bump =
       bumpRemaining > 0
@@ -790,7 +807,12 @@ export function Furniture({
     viewMode === "2d" && rotateDragging
       ? `${normalizeRotationDegrees(radiansToDeg(rotation))}°`
       : null;
-  const modelUrl = product?.assets?.modelUrl as string | undefined;
+  const activeVariant = product?.variants.find((variant) => variant.id === variantId);
+  const modelUrl = activeVariant?.modelUrl ?? (product?.assets?.modelUrl as string | undefined);
+  const shouldTintVariantColor = useMemo(
+    () => shouldApplyVariantColorTint(product, activeVariant),
+    [product, activeVariant],
+  );
   const modelCalibration = getModelCalibration(product);
   const variantMarker = `${String(variantName ?? "")} ${String(variantId ?? "")}`.toLowerCase();
   const variantColorKey = String(variantColor ?? "").trim().toLowerCase();
@@ -869,14 +891,13 @@ export function Furniture({
     isKelseyTableVariant &&
     (kelseyHasDarkWalnutToken || variantColorKey === "#7a4b2d" || (!kelseyHasWhiteToken && (variantLuma ?? 1) < 0.72));
   const preferredModelUrl = modelUrl ?? null;
-
-  const normalizeModelCandidate = (value: string | null | undefined): string | null => {
-    const raw = String(value ?? "").trim();
-    if (!raw) return null;
-    if (/^https?:\/\//i.test(raw) || raw.startsWith("/")) return raw;
-    if (raw.startsWith("assets/")) return `/${raw}`;
-    return `/assets/models/${raw.replace(/^\/+/, "")}`;
-  };
+  const expectedModelUrl = useMemo(
+    () =>
+      [preferredModelUrl, modelUrl]
+        .map((value) => normalizeModelCandidate(value))
+        .filter((value, index, arr): value is string => Boolean(value) && arr.indexOf(value) === index)[0] ?? null,
+    [modelUrl, preferredModelUrl]
+  );
 
   const effectiveModelCalibration: GLBCalibration | undefined = (() => {
     const modelUrlKey = String(product.assets?.modelUrl ?? "").toLowerCase();
@@ -1220,7 +1241,7 @@ export function Furniture({
   useEffect(() => {
     let cancelled = false;
 
-    if (!modelUrl) {
+    if (!modelUrl || !expectedModelUrl) {
       const frameId = window.requestAnimationFrame(() => {
         setModelExists(false);
         setRuntimeModelUrl(null);
@@ -1229,43 +1250,43 @@ export function Furniture({
       return () => window.cancelAnimationFrame(frameId);
     }
 
-    const candidates = [preferredModelUrl, modelUrl]
-      .map((value) => normalizeModelCandidate(value))
-      .filter((value, index, arr): value is string => Boolean(value) && arr.indexOf(value) === index);
-
-    if (candidates.length === 0) {
-      return;
-    }
-
     // Do not preflight with HEAD requests: some valid model hosts and dev servers
     // reject HEAD while serving GET successfully, which hides models incorrectly.
     void Promise.resolve().then(() => {
       if (cancelled) return;
-      const chosen = candidates[0] ?? null;
-      if (chosen) {
-        setRuntimeModelUrl(chosen);
-        setModelExists(true);
-        setModelLoadState("loading");
-        return;
-      }
-      setRuntimeModelUrl(null);
-      setModelExists(false);
-      setModelLoadState("error");
+      setRuntimeModelUrl(expectedModelUrl);
+      setModelExists(true);
+      setModelLoadState("loading");
     });
 
     return () => {
       cancelled = true;
     };
-  }, [modelUrl, preferredModelUrl]);
+  }, [expectedModelUrl, modelUrl]);
 
   const shouldLoadModel =
     viewMode === "3d" && renderQuality !== "lite" && Boolean(runtimeModelUrl) && modelExists;
   const showModel = shouldLoadModel && modelLoadState === "ready";
+  const shouldWaitForModel =
+    viewMode === "3d" && renderQuality !== "lite" && Boolean(expectedModelUrl);
+  const renderReady =
+    !shouldWaitForModel ||
+    (runtimeModelUrl === expectedModelUrl &&
+      (modelLoadState === "ready" || modelLoadState === "error"));
+
+  useEffect(() => {
+    if (!renderReadyKey) return;
+    onRenderReadyChange?.(renderReadyKey, renderReady);
+  }, [onRenderReadyChange, renderReady, renderReadyKey]);
 
   return (
     <group
       ref={groupRef}
-      position={[clampedPosition[0], viewMode === "2d" ? 0.01 : height / 2, clampedPosition[2]]}
+      position={[
+        clampedPosition[0],
+        viewMode === "2d" ? 0.01 : (clampedPosition[1] ?? 0) + height / 2,
+        clampedPosition[2],
+      ]}
       rotation-y={finalRotation}
       onClick={(e) => {
         if (!interactive) return;
@@ -1296,9 +1317,10 @@ export function Furniture({
             depth={depth}
             nodeTransforms={nodeTransforms}
             calibration={effectiveModelCalibration}
-            variantColorHex={variantColor}
+            variantColorHex={shouldTintVariantColor ? variantColor : undefined}
             variantName={variantName}
             variantRenderAssets={variantRenderAssets}
+            pendantCableAdjustment={pendantCableAdjustment}
             onLoadStateChange={(state) => {
               if (state === "loading") setModelLoadState("loading");
               else if (state === "ready") setModelLoadState("ready");

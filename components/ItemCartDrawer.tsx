@@ -35,6 +35,7 @@ export default function ItemCartDrawer({
   return (
     <>
       <button
+        data-testid="selection-tray-trigger"
         onClick={onToggle}
         className={`fixed z-40 flex h-12 min-w-12 items-center justify-center rounded-full bg-blue-600 px-4 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-blue-700 ${triggerClassName}`}
         title="Open selection tray"

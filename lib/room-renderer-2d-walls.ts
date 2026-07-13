@@ -35,6 +35,13 @@ export type WallBandPart2D = RoomWallSegment2D & {
   key: string;
 };
 
+export type WallBandCornerCap2D = {
+  key: string;
+  size: number;
+  x: number;
+  z: number;
+};
+
 const WALL_THICKNESS_FALLBACK_METERS = 0.12;
 const WALL_SEGMENT_EPSILON = 0.001;
 
@@ -204,6 +211,36 @@ export function mergeSharedWallSegments2D(
   }
 
   return Array.from(merged.values());
+}
+
+export function buildWallBandCornerCaps2D(
+  segments: RoomWallSegment2D[]
+): WallBandCornerCap2D[] {
+  const caps = new Map<string, WallBandCornerCap2D>();
+
+  for (const segment of segments) {
+    const endpoints: Array<[number, number]> = [
+      [segment.x1, segment.z1],
+      [segment.x2, segment.z2],
+    ];
+
+    for (const [x, z] of endpoints) {
+      const roundedX = roundWallCoordinate(x);
+      const roundedZ = roundWallCoordinate(z);
+      const key = `wall-cap-${roundedX}:${roundedZ}`;
+      const existing = caps.get(key);
+      const size = Math.max(0.025, segment.thickness);
+
+      caps.set(key, {
+        key,
+        size: Math.max(existing?.size ?? 0, size),
+        x: roundedX,
+        z: roundedZ,
+      });
+    }
+  }
+
+  return Array.from(caps.values());
 }
 
 function getOpeningRangeOnSegment(

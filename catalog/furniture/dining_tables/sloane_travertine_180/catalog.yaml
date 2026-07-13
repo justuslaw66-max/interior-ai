@@ -122,7 +122,7 @@ product_details:
 assets:
   asset_id: "dining-real-castlery-sloane-travertine-180"
   model_url: "/assets/models/dining-real-castlery-sloane-travertine-180.glb"
-  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723776680/crusader/variants/AS-000564/Sloane-Travertine-Dining-Table-180cm-Angle-1723776679.jpg"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723776681/crusader/variants/AS-000564/Sloane-Travertine-Dining-Table-180cm-Front-1723776679.jpg"
   gallery_images:
     - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723776978/crusader/variants/AS-000564/Dining-Room-2-Bradley-Sideboard-With-Sloane-Travertine-Dining-Table_-With-Sonia-Square-Set_1-1723776975.jpg"
     - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723776680/crusader/variants/AS-000564/Sloane-Travertine-Dining-Table-180cm-Angle-1723776679.jpg"
@@ -140,7 +140,7 @@ variants:
     size_label: "180"
     finish_code: "grey_oak"
     finish_label: "Grey Oak"
-    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723776680/crusader/variants/AS-000564/Sloane-Travertine-Dining-Table-180cm-Angle-1723776679.jpg"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723776681/crusader/variants/AS-000564/Sloane-Travertine-Dining-Table-180cm-Front-1723776679.jpg"
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723776978/crusader/variants/AS-000564/Dining-Room-2-Bradley-Sideboard-With-Sloane-Travertine-Dining-Table_-With-Sonia-Square-Set_1-1723776975.jpg"
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723776680/crusader/variants/AS-000564/Sloane-Travertine-Dining-Table-180cm-Angle-1723776679.jpg"

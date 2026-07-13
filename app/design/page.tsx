@@ -1,13 +1,14 @@
 "use client";
 
 import * as THREE from "three";
-import { Canvas, useFrame, type ThreeEvent } from "@react-three/fiber";
+import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei/core/OrbitControls";
 import { MapControls } from "@react-three/drei/core/MapControls";
 import { Environment } from "@react-three/drei/core/Environment";
 import { Lightformer } from "@react-three/drei/core/Lightformer";
 import { Line } from "@react-three/drei/core/Line";
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from "react";
+import { Fragment, Suspense, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type DragEvent, type RefObject } from "react";
+import { createPortal } from "react-dom";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { signIn, useSession } from "next-auth/react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -58,6 +59,9 @@ import type {
   DesignSnapshot as MultiRoomSnapshot,
   DesignItem,
   LayoutVersion,
+  RoomSurfaceAssignments,
+  RoomFloorPattern,
+  SurfaceSettings,
   RoomSnapshot,
   SavedView,
   ZoneMin,
@@ -77,7 +81,39 @@ import {
   getFloorMaterialById,
   normalizeFloorRotationDeg,
 } from "@/lib/floor-materials";
-import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
+import {
+  SURFACE_MATERIAL_RENDER_REGISTRY,
+  getRuntimeSurfaceMaterialById,
+  getSurfaceMaterialTextureSource,
+  type SurfaceMaterialRenderInfo,
+} from "@/lib/surface-material-runtime";
+import {
+  DEFAULT_FLOOR_PATTERN,
+  DEFAULT_FLOOR_JOINT_COLOR,
+  DEFAULT_FLOOR_JOINT_SIZE_MM,
+  DEFAULT_FLOOR_PATTERN_OFFSET,
+  FLOOR_PATTERN_OPTIONS,
+  FLOOR_ROTATION_PRESETS_DEG,
+  GARDENIA_DEFAULT_TILE_PATTERN_OPTIONS,
+  getFloorPatternOptionsForIds,
+  normalizeFloorJointColor,
+  normalizeFloorJointSizeMm,
+  normalizeFloorPattern,
+  normalizeFloorPatternOffset,
+  normalizeFloorSurfaceSettings,
+  createSurfaceSettingsPatch,
+  getCeilingSurfaceSettings,
+  getDefaultWallSurfaceSettings,
+  getWallFaceLabel,
+  getWallFaceSurfaceSettings,
+  type FloorPatternOption,
+  type FloorSurfacePatch,
+  type SurfaceSettingsPatch,
+} from "@/lib/surface-settings";
+import {
+  getWallPaintDisplayName,
+  normalizeWallPaintColorHex,
+} from "@/lib/wall-paint";
 import {
   countRoomCategories,
   countRoomProductQuantities,
@@ -91,14 +127,23 @@ import {
   buildCatalogFallbackPlacement,
   buildCatalogPlacementPreview as resolveCatalogPlacementPreview,
   buildPendingCatalogPlacementScene,
+  buildCatalogSupportSurfaceHighlight,
   doesCatalogPlacementCollide,
   findCatalogPlacementCollision,
   findCatalogPlacementPlanRoomAtWorldPoint,
-  isCatalogPlacementFootprintInsideRoom,
+  findCatalogSurfacePlacement,
+  getCeilingMountedItemBaseY,
+  isCeilingOnlyCatalogItem,
+  isCatalogPlacementLocalFootprintInsideRoom,
+  isSurfaceOnlyCatalogItem,
   updatePendingCatalogPlacementDraft as resolvePendingCatalogPlacementDraft,
   type PendingCatalogPlacement,
 } from "@/lib/catalog-placement";
 import { computeCirculationAnalysis, type CirculationHeatCell } from "@/lib/circulation-analysis";
+import {
+  clampPendantHeightCm,
+  getAdjustablePendantHeight,
+} from "@/lib/pendant-light-adjustment";
 import { buildRoomHealthSummary } from "@/lib/room-health-summary";
 import {
   buildFloorPlanQualityReport,
@@ -114,14 +159,25 @@ import type { PlanStartMode } from "@/components/editor/DesignControlsPlanPanel"
 import ExportReadinessPreview from "@/components/editor/ExportReadinessPreview";
 import FloorPropertiesPanel from "@/components/editor/FloorPropertiesPanel";
 import EditorViewToggle, { type EditorViewMode } from "@/components/editor/EditorViewToggle";
-import EditorCamera2D from "@/components/editor/camera/EditorCamera2D";
+import EditorCamera2D, {
+  resolvePlan2DViewFit,
+  WHOLE_HOME_FIT_ZOOM_SCALE,
+  type Plan2DViewFitOrientation,
+} from "@/components/editor/camera/EditorCamera2D";
+import {
+  applyPlan2DCameraInvariant,
+  getPlan2DCameraInvariantStatus,
+  recoverPlan2DCameraIfNeeded,
+  type Plan2DCameraControls,
+  type Plan2DCameraInvariantFit,
+} from "@/lib/plan-camera-2d";
 import HousePlanRenderer3D from "@/components/editor/renderers/HousePlanRenderer3D";
 import PlanUnderlayRenderer2D from "@/components/editor/renderers/PlanUnderlayRenderer2D";
 import RoomRenderer2D from "@/components/editor/renderers/RoomRenderer2D";
 import PlanOpeningInspector from "@/components/editor/PlanOpeningInspector";
+import MeasurementField from "@/components/editor/MeasurementField";
 import RoomPlanStatusBar from "@/components/editor/RoomPlanStatusBar";
 import RoomPanNavigator from "@/components/editor/RoomPanNavigator";
-import DraggableFloatingPanel from "@/components/editor/DraggableFloatingPanel";
 import EditorToolRail from "@/components/editor/EditorToolRail";
 import ShoppingOverviewPanel from "@/components/editor/ShoppingOverviewPanel";
 import SelectedItemDetailsPanel from "@/components/editor/SelectedItemDetailsPanel";
@@ -165,8 +221,10 @@ import {
   resolveNewRoomName,
   resolveFloorPlanDrawCancelDecision,
   resolveFloorPlanOpeningCancelDecision,
+  resolveHouseRoomMove,
   resolveHouseRoomDimensionEditPlacement,
-  resolvePlanFitZoom,
+  resolveHouseRoomResizePlacement,
+  resolveHouseRoomDimension,
   roundPlanCoordinate,
   type HousePlanRoom2D,
   type HousePlanTemplate,
@@ -202,6 +260,7 @@ import {
   normalizeImportedFamilyName,
   shouldRefreshImportedCatalogItem,
   type ImportedModelEntry,
+  type ImportedModelCatalog,
   type ImportedModelOption,
   upsertImportedCatalogItem,
 } from "@/lib/catalog/imported-model-assembly";
@@ -287,6 +346,7 @@ import {
   type UpgradeCtaVariant,
   type PricingLayoutVariant,
 } from "@/lib/design-page-paywall";
+import { PRO_PLAN_PRICING } from "@/lib/pro-plan-catalog";
 import {
   buildAlignedSelectionItems as _buildAlignedSelectionItems,
   buildAutoLayoutZoneItems as _buildAutoLayoutZoneItems,
@@ -321,6 +381,666 @@ import {
 
 import { Room } from "@/components/scene/RoomEnvironment";
 import { Furniture, CameraCapture } from "@/components/scene/FurnitureItem";
+import CabinetryStudio from "@/features/cabinetry/components/CabinetryStudio";
+import { CabinetMeasurementUnitProvider } from "@/features/cabinetry/components/CabinetMeasurementUnitContext";
+import { formatCabinetMeasurement } from "@/features/cabinetry/measurementUnits";
+import { CabinetSceneItem } from "@/features/cabinetry/components/CabinetSceneItem";
+import { exportCabinetAsGlb } from "@/features/cabinetry/exportCabinetGlb";
+import { generateCabinetBOM } from "@/features/cabinetry/generateCabinetBOM";
+import { generateCabinetParts } from "@/features/cabinetry/generateCabinetParts";
+import {
+  createCabinetPolygonWallSpaces,
+  createCabinetRoomWallSpaces,
+  getCabinetFitPlacement,
+  mapCabinetCardinalOpeningsToPolygonWalls,
+} from "@/features/cabinetry/fitToSpace";
+import {
+  buildCabinetProjectHandoffPackage,
+  buildCabinetProjectSchedulePackage,
+  downloadCabinetProjectApprovalPackageJson,
+  downloadCabinetProjectCncBatchPackageJson,
+  downloadCabinetProjectCutListPackageJson,
+  downloadCabinetProjectDrawingSetPackageJson,
+  downloadCabinetProjectFieldVerificationPackageJson,
+  downloadCabinetProjectFabricationReleasePackageJson,
+  downloadCabinetProjectFinishSchedulePackageJson,
+  downloadCabinetProjectFabricationQuoteRequestJson,
+  downloadCabinetProjectHandoffPackageJson,
+  downloadCabinetProjectInstallationPlanPackageJson,
+  downloadCabinetProjectProcurementPackageJson,
+  downloadCabinetProjectPurchaseReadinessPackageJson,
+  downloadCabinetProjectQuotePackageJson,
+  downloadCabinetProjectRevisionPackageJson,
+  downloadCabinetProjectScheduleCsv,
+  downloadCabinetProjectSchedulePackageJson,
+  downloadCabinetProjectScopePackageJson,
+  downloadCabinetPlacedAssetInstallerWorkOrderJson,
+  downloadCabinetPlacedAssetPackageJson,
+  generateCabinetDocumentation,
+} from "@/features/cabinetry/generateCabinetDocumentation";
+import { LocalCabinetAssetStorage } from "@/features/cabinetry/storage/LocalCabinetAssetStorage";
+import type {
+  CabinetBOMItem,
+  CabinetDefinition,
+  CabinetHostSpace,
+  PlacedCabinetAsset,
+} from "@/features/cabinetry/types";
+import {
+  createCabinetMillworkDefinition,
+  getCabinetMillworkAssemblyType,
+} from "@/features/millwork/createCabinetMillworkDefinition";
+import { buildMillworkAssetManifest } from "@/features/millwork/buildMillworkAssetManifest";
+
+const flagFromPublicEnv = (value: string | undefined, defaultValue: boolean) => {
+  if (value === undefined) return defaultValue;
+  const normalized = value.trim().toLowerCase();
+  return normalized === "true" || normalized === "1";
+};
+
+const normalizePublicAppEnv = (raw: string | undefined) => {
+  const value = (raw || "").trim().toLowerCase();
+  if (value === "production") return "production";
+  if (value === "staging") return "staging";
+  return "development";
+};
+
+const publicAppEnv = normalizePublicAppEnv(
+  process.env.NEXT_PUBLIC_APP_ENV || process.env.VERCEL_ENV
+);
+
+const CABINETRY_STUDIO_FEATURE_ENABLED = flagFromPublicEnv(
+  process.env.NEXT_PUBLIC_FEATURE_CUSTOM_MILLWORK_STUDIO ||
+    process.env.NEXT_PUBLIC_FEATURE_CABINETRY_STUDIO,
+  publicAppEnv !== "production"
+);
+
+function isParametricCabinetItem(
+  item: Pick<DesignItem, "assetType" | "cabinetDefinition"> | null | undefined
+): item is DesignItem & { cabinetDefinition: CabinetDefinition } {
+  return item?.assetType === "parametric_cabinet" && Boolean(item.cabinetDefinition);
+}
+
+function getCabinetPlanningDimsMm(item: DesignItem): { w: number; d: number; h: number } | null {
+  if (!isParametricCabinetItem(item)) return null;
+  return {
+    w: item.cabinetDefinition.totalWidth,
+    d: item.cabinetDefinition.depth,
+    h: item.cabinetDefinition.height,
+  };
+}
+
+function getCabinetRotationY(item: Pick<DesignItem, "rotationY" | "transform">): number {
+  if (typeof item.rotationY === "number" && Number.isFinite(item.rotationY)) {
+    return item.rotationY;
+  }
+  if (typeof item.transform?.rotationY === "number" && Number.isFinite(item.transform.rotationY)) {
+    return item.transform.rotationY;
+  }
+  const transformRotationY = item.transform?.rotation?.[1];
+  return typeof transformRotationY === "number" && Number.isFinite(transformRotationY)
+    ? transformRotationY
+    : 0;
+}
+
+function buildCabinetTransformMetadata(
+  position: [number, number, number],
+  rotationY: number,
+  scale: [number, number, number] = [1, 1, 1]
+): NonNullable<DesignItem["transform"]> {
+  return {
+    position,
+    rotationY,
+    rotation: [0, rotationY, 0],
+    scale,
+  };
+}
+
+function buildCabinetAssetManifest({
+  definition,
+  instanceId,
+  roomId,
+  position,
+  rotationY,
+  scale = [1, 1, 1],
+  glbAssetUrl,
+  createdAt,
+  updatedAt,
+}: {
+  definition: CabinetDefinition;
+  instanceId: string;
+  roomId?: string;
+  position: [number, number, number];
+  rotationY: number;
+  scale?: [number, number, number];
+  glbAssetUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+}): NonNullable<DesignItem["millworkAssetManifest"]> {
+  return buildMillworkAssetManifest({
+    assetId: instanceId,
+    assetType: "parametric_cabinet",
+    millworkDefinition: createCabinetMillworkDefinition(definition),
+    sourceDefinition: definition,
+    roomId,
+    transform: {
+      position,
+      rotation: [0, rotationY, 0],
+      scale,
+    },
+    glbAssetUrl,
+    createdAt,
+    updatedAt,
+  });
+}
+
+function buildCabinetMillworkMetadata(
+  definition: CabinetDefinition,
+  roomId?: string
+): Pick<
+  DesignItem,
+  | "assemblyType"
+  | "millworkDefinition"
+  | "millworkDefinitionVersion"
+  | "millworkMaterials"
+  | "millworkHardware"
+  | "roomId"
+> {
+  const millworkDefinition = createCabinetMillworkDefinition(definition);
+  return {
+    assemblyType: millworkDefinition.assemblyType,
+    millworkDefinition,
+    millworkDefinitionVersion: millworkDefinition.version,
+    millworkMaterials: millworkDefinition.materials,
+    millworkHardware: millworkDefinition.hardware,
+    roomId,
+  };
+}
+
+function normalizeCabinetDesignItem(
+  item: DesignItem,
+  options: { dropTemporaryGlbUrls?: boolean; roomId?: string } = {}
+): DesignItem {
+  if (!isParametricCabinetItem(item)) return item;
+
+  const now = new Date().toISOString();
+  const position = item.position ?? item.transform?.position ?? [0, 0, 0];
+  const rotationY = getCabinetRotationY(item);
+  const scale = item.transform?.scale ?? [1, 1, 1];
+  const roomId = options.roomId ?? item.roomId;
+  const documentationSnapshot = generateCabinetDocumentation(item.cabinetDefinition);
+  const glbAssetUrl =
+    options.dropTemporaryGlbUrls && item.glbAssetUrl?.startsWith("blob:")
+      ? undefined
+      : item.glbAssetUrl;
+  const createdAt = item.createdAt ?? item.cabinetDefinition.createdAt ?? now;
+  const updatedAt =
+    item.updatedAt ?? item.cabinetUpdatedAt ?? item.cabinetDefinition.updatedAt ?? now;
+  const cabinetUpdatedAt =
+    item.cabinetUpdatedAt ?? item.updatedAt ?? item.cabinetDefinition.updatedAt ?? now;
+
+  return {
+    ...item,
+    id: item.id ?? item.instanceId,
+    ...buildCabinetMillworkMetadata(item.cabinetDefinition, roomId),
+    productId: "parametric-cabinet",
+    variantId: item.variantId || item.cabinetDefinition.id,
+    name: item.name ?? item.cabinetDefinition.name,
+    glbAssetUrl,
+    millworkAssetManifest: buildCabinetAssetManifest({
+      definition: item.cabinetDefinition,
+      instanceId: item.instanceId,
+      roomId,
+      position,
+      rotationY,
+      scale,
+      glbAssetUrl,
+      createdAt,
+      updatedAt,
+    }),
+    bomSnapshot: item.bomSnapshot ?? generateCabinetBOM(item.cabinetDefinition),
+    materialScheduleSnapshot:
+      item.materialScheduleSnapshot ?? documentationSnapshot.materialSchedule,
+    hardwareScheduleSnapshot:
+      item.hardwareScheduleSnapshot ?? documentationSnapshot.hardwareSchedule,
+    edgeBandingScheduleSnapshot:
+      item.edgeBandingScheduleSnapshot ?? documentationSnapshot.edgeBandingSchedule,
+    cutListSnapshot: item.cutListSnapshot ?? documentationSnapshot.cutList,
+    dimensionScheduleSnapshot:
+      item.dimensionScheduleSnapshot ?? documentationSnapshot.dimensionSchedule,
+    drawingViewScheduleSnapshot:
+      item.drawingViewScheduleSnapshot ?? documentationSnapshot.drawingViewSchedule,
+    installerNotesSnapshot:
+      item.installerNotesSnapshot ?? documentationSnapshot.installerNotes,
+    releaseChecklistSnapshot:
+      item.releaseChecklistSnapshot ?? documentationSnapshot.releaseChecklist,
+    quoteSummarySnapshot:
+      item.quoteSummarySnapshot ?? documentationSnapshot.quoteSummary,
+    supplierSkuMappingsSnapshot:
+      item.supplierSkuMappingsSnapshot ?? documentationSnapshot.supplierSkuMappings,
+    supplierReadinessSnapshot:
+      item.supplierReadinessSnapshot ?? documentationSnapshot.supplierReadiness,
+    fabricationReleaseReadinessSnapshot:
+      item.fabricationReleaseReadinessSnapshot ??
+      documentationSnapshot.fabricationReleaseReadiness,
+    createdAt,
+    updatedAt,
+    cabinetUpdatedAt,
+    position,
+    rotationY,
+    transform: buildCabinetTransformMetadata(position, rotationY, scale),
+    qty: typeof item.qty === "number" && item.qty > 0 ? item.qty : 1,
+    includeInCheckout: false,
+    locked: Boolean(item.locked),
+  };
+}
+
+function updateCabinetPlacementMetadata(
+  item: DesignItem,
+  position: [number, number, number],
+  rotationY: number,
+  roomId?: string
+): DesignItem {
+  if (!isParametricCabinetItem(item)) {
+    return {
+      ...item,
+      position,
+      rotationY,
+    };
+  }
+
+  const now = new Date().toISOString();
+  const scale = item.transform?.scale ?? [1, 1, 1];
+  const createdAt = item.createdAt ?? item.cabinetDefinition.createdAt ?? now;
+
+  return {
+    ...item,
+    position,
+    rotationY,
+    transform: buildCabinetTransformMetadata(position, rotationY, scale),
+    millworkAssetManifest: buildCabinetAssetManifest({
+      definition: item.cabinetDefinition,
+      instanceId: item.instanceId,
+      roomId: roomId ?? item.roomId,
+      position,
+      rotationY,
+      scale,
+      glbAssetUrl: item.glbAssetUrl,
+      createdAt,
+      updatedAt: now,
+    }),
+    cabinetUpdatedAt: now,
+    createdAt,
+    updatedAt: now,
+  };
+}
+
+function buildPlacedCabinetAssetPackageInput(
+  item: DesignItem & { cabinetDefinition: CabinetDefinition },
+  roomId?: string
+): PlacedCabinetAsset {
+  const documentationSnapshot = generateCabinetDocumentation(item.cabinetDefinition);
+  const rotationY = getCabinetRotationY(item);
+  const position = item.position ?? item.transform?.position ?? [0, 0, 0];
+  const scale = item.transform?.scale ?? [1, 1, 1];
+  const millworkDefinition = createCabinetMillworkDefinition(item.cabinetDefinition);
+  const now = new Date().toISOString();
+  const createdAt = item.createdAt ?? item.cabinetDefinition.createdAt ?? now;
+  const updatedAt =
+    item.updatedAt ?? item.cabinetUpdatedAt ?? item.cabinetDefinition.updatedAt ?? now;
+
+  return {
+    id: item.instanceId,
+    assetType: "parametric_cabinet",
+    assetManifest: buildCabinetAssetManifest({
+      definition: item.cabinetDefinition,
+      instanceId: item.instanceId,
+      roomId: roomId ?? item.roomId,
+      position,
+      rotationY,
+      scale,
+      glbAssetUrl: item.glbAssetUrl,
+      createdAt,
+      updatedAt,
+    }),
+    assemblyType: item.assemblyType ?? millworkDefinition.assemblyType,
+    cabinetDefinitionId: item.cabinetDefinition.id,
+    cabinetDefinition: item.cabinetDefinition,
+    millworkDefinition,
+    millworkDefinitionVersion: item.millworkDefinitionVersion ?? millworkDefinition.version,
+    glbAssetUrl: item.glbAssetUrl,
+    transform: {
+      position,
+      rotation: item.transform?.rotation ?? [0, rotationY, 0],
+      scale,
+    },
+    roomId: roomId ?? item.roomId,
+    materials: item.cabinetDefinition.materials,
+    hardware: item.cabinetDefinition.hardware,
+    bomSnapshot: item.bomSnapshot ?? generateCabinetBOM(item.cabinetDefinition),
+    materialScheduleSnapshot:
+      item.materialScheduleSnapshot ?? documentationSnapshot.materialSchedule,
+    hardwareScheduleSnapshot:
+      item.hardwareScheduleSnapshot ?? documentationSnapshot.hardwareSchedule,
+    edgeBandingScheduleSnapshot:
+      item.edgeBandingScheduleSnapshot ?? documentationSnapshot.edgeBandingSchedule,
+    cutListSnapshot: item.cutListSnapshot ?? documentationSnapshot.cutList,
+    dimensionScheduleSnapshot:
+      item.dimensionScheduleSnapshot ?? documentationSnapshot.dimensionSchedule,
+    drawingViewScheduleSnapshot:
+      item.drawingViewScheduleSnapshot ?? documentationSnapshot.drawingViewSchedule,
+    installerNotesSnapshot:
+      item.installerNotesSnapshot ?? documentationSnapshot.installerNotes,
+    releaseChecklistSnapshot:
+      item.releaseChecklistSnapshot ?? documentationSnapshot.releaseChecklist,
+    quoteSummarySnapshot:
+      item.quoteSummarySnapshot ?? documentationSnapshot.quoteSummary,
+    supplierSkuMappingsSnapshot:
+      item.supplierSkuMappingsSnapshot ?? documentationSnapshot.supplierSkuMappings,
+    supplierReadinessSnapshot:
+      item.supplierReadinessSnapshot ?? documentationSnapshot.supplierReadiness,
+    fabricationReleaseReadinessSnapshot:
+      item.fabricationReleaseReadinessSnapshot ??
+      documentationSnapshot.fabricationReleaseReadiness,
+    createdAt,
+    updatedAt,
+  };
+}
+
+function formatFlooringInspectorValue(value?: string | null): string {
+  if (!value) return "Unknown";
+  return value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function getFlooringInspectorSurfaceSwatchStyle(
+  material: SurfaceMaterialRenderInfo
+): CSSProperties {
+  const textureSource = getSurfaceMaterialTextureSource(material);
+  if (textureSource) {
+    return {
+      backgroundColor: "#e8e2d6",
+      backgroundImage: `url("${textureSource.url}")`,
+      backgroundPosition: "center",
+      backgroundSize: textureSource.kind === "swatch" ? "cover" : "48px 48px",
+    };
+  }
+
+  const colorFamily = material.classification?.color_family;
+  const designEffect = material.classification?.design_effect;
+  const base =
+    colorFamily === "grey"
+      ? "#cfd3d4"
+      : colorFamily === "charcoal"
+        ? "#5f6365"
+        : colorFamily === "brown" || colorFamily === "walnut"
+          ? "#8c6848"
+          : colorFamily === "cream" || colorFamily === "beige"
+            ? "#dfd2bd"
+            : "#d8c29a";
+  const line = designEffect === "stone" || designEffect === "marble" ? "#9ea1a3" : "#a9855e";
+
+  return {
+    backgroundColor: base,
+    backgroundImage:
+      designEffect === "stone" || designEffect === "marble" || designEffect === "concrete"
+        ? `linear-gradient(135deg, ${base}, #f4f0e8), radial-gradient(circle at 28% 35%, ${line}77 0 1px, transparent 2px)`
+        : `repeating-linear-gradient(0deg, transparent 0 8px, ${line}66 8px 9px), linear-gradient(135deg, ${base}, #f0e3c8)`,
+  };
+}
+
+type FlooringInspectorMaterialGroup = {
+  primary: SurfaceMaterialRenderInfo;
+  variants: SurfaceMaterialRenderInfo[];
+};
+
+function getFlooringInspectorDisplayName(material: SurfaceMaterialRenderInfo) {
+  const productName = material.surface_material.product_name.trim();
+  const prefixes = [
+    material.surface_material.brand,
+    "Gardenia Orchidea",
+    "Gardenia",
+  ].filter(Boolean) as string[];
+
+  for (const prefix of prefixes) {
+    const trimmedPrefix = prefix.trim();
+    if (productName.toLowerCase().startsWith(`${trimmedPrefix} `.toLowerCase())) {
+      return productName.slice(trimmedPrefix.length).trim();
+    }
+  }
+
+  return productName;
+}
+
+function getFlooringInspectorProductName(material: SurfaceMaterialRenderInfo) {
+  const displayName = getFlooringInspectorDisplayName(material);
+  const withoutSize = displayName
+    .replace(
+      /\s+\d+(?:[.,]\d+)?x\d+(?:[.,]\d+)?(?:\s+(?:nat|natural|soft|lux|rett|ret|rect|lappato|lapp|mat|matt|polished|grip|out|outdoor|antique|3d|decor|dec|mix|r\d+))*$/i,
+      ""
+    )
+    .trim();
+  return withoutSize || displayName;
+}
+
+function getFlooringInspectorSizeLabel(material: SurfaceMaterialRenderInfo) {
+  const displayName = getFlooringInspectorDisplayName(material);
+  const match = displayName.match(
+    /(\d+(?:[.,]\d+)?x\d+(?:[.,]\d+)?(?:\s+(?:nat|natural|soft|lux|rett|ret|rect|lappato|lapp|mat|matt|polished|grip|out|outdoor|antique|3d|decor|dec|mix|r\d+))*)$/i
+  );
+  if (match?.[1]) return match[1].replace(/\s+/g, " ").trim();
+
+  const specs = material.physical_specs;
+  if (specs?.tile_width_mm && specs.tile_length_mm) {
+    return `${Math.round(specs.tile_width_mm / 10)}x${Math.round(specs.tile_length_mm / 10)}`;
+  }
+  if (specs?.plank_width_mm && specs.plank_length_mm) {
+    return `${Math.round(specs.plank_width_mm)}x${Math.round(specs.plank_length_mm)} mm`;
+  }
+  return "Size TBC";
+}
+
+function getFlooringInspectorGroupKey(material: SurfaceMaterialRenderInfo) {
+  return [
+    material.surface_material.supplier,
+    material.surface_material.brand,
+    material.surface_material.collection,
+    material.surface_material.surface_category,
+    material.surface_material.material_family,
+    material.classification?.design_effect,
+    material.classification?.color_family,
+    getFlooringInspectorProductName(material),
+  ]
+    .map((part) => String(part ?? "").trim().toLowerCase())
+    .join("|");
+}
+
+function getFlooringInspectorVariantAreaMm(material: SurfaceMaterialRenderInfo) {
+  const specs = material.physical_specs;
+  const width = specs?.tile_width_mm ?? specs?.plank_width_mm ?? 0;
+  const length = specs?.tile_length_mm ?? specs?.plank_length_mm ?? 0;
+  return width * length;
+}
+
+function compareFlooringInspectorVariants(
+  a: SurfaceMaterialRenderInfo,
+  b: SurfaceMaterialRenderInfo
+) {
+  const areaDelta = getFlooringInspectorVariantAreaMm(b) - getFlooringInspectorVariantAreaMm(a);
+  if (areaDelta !== 0) return areaDelta;
+  return getFlooringInspectorSizeLabel(a).localeCompare(getFlooringInspectorSizeLabel(b));
+}
+
+function getFlooringInspectorMaterialGroup(
+  materials: SurfaceMaterialRenderInfo[],
+  material: SurfaceMaterialRenderInfo | null
+): FlooringInspectorMaterialGroup | null {
+  if (!material) return null;
+  const groupKey = getFlooringInspectorGroupKey(material);
+  const variants = materials
+    .filter((entry) => getFlooringInspectorGroupKey(entry) === groupKey)
+    .sort(compareFlooringInspectorVariants);
+  if (variants.length === 0) return null;
+  return { primary: material, variants };
+}
+
+function isGardeniaTileSurfaceMaterial(material: SurfaceMaterialRenderInfo | null) {
+  if (!material) return false;
+  const supplier = material.surface_material.supplier.toLowerCase();
+  const brand = material.surface_material.brand?.toLowerCase() ?? "";
+  return (
+    material.surface_material.material_family === "tile" &&
+    (supplier === "gardenia_orchidea" || brand.includes("gardenia"))
+  );
+}
+
+function getFlooringInspectorPatternOptions(
+  material: SurfaceMaterialRenderInfo | null
+): FloorPatternOption[] {
+  const materialOptions = getFloorPatternOptionsForIds(
+    material?.rendering.available_pattern_layouts
+  );
+  if (materialOptions.length > 0) return materialOptions;
+
+  return isGardeniaTileSurfaceMaterial(material)
+    ? GARDENIA_DEFAULT_TILE_PATTERN_OPTIONS
+    : FLOOR_PATTERN_OPTIONS;
+}
+
+function getDefaultFloorPatternForMaterial(
+  material: SurfaceMaterialRenderInfo | null
+): RoomFloorPattern {
+  return getFlooringInspectorPatternOptions(material)[0]?.id ?? DEFAULT_FLOOR_PATTERN;
+}
+
+function getCompatibleFloorPatternForMaterial(
+  material: SurfaceMaterialRenderInfo | null,
+  pattern: RoomFloorPattern | null | undefined
+): RoomFloorPattern {
+  const normalizedPattern = normalizeFloorPattern(pattern);
+  const options = getFlooringInspectorPatternOptions(material);
+  return options.some((option) => option.id === normalizedPattern)
+    ? normalizedPattern
+    : options[0]?.id ?? DEFAULT_FLOOR_PATTERN;
+}
+
+type SurfacePatternPreviewTile = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  shade?: boolean;
+};
+
+function getSurfacePatternPreviewTiles(pattern: RoomFloorPattern): SurfacePatternPreviewTile[] {
+  if (pattern === "random_stagger") {
+    return [
+      { x: 4, y: 5, width: 19, height: 11 },
+      { x: 23, y: 5, width: 19, height: 11, shade: true },
+      { x: 42, y: 5, width: 14, height: 11 },
+      { x: -14, y: 16, width: 19, height: 11, shade: true },
+      { x: 5, y: 16, width: 19, height: 11 },
+      { x: 24, y: 16, width: 19, height: 11, shade: true },
+      { x: 43, y: 16, width: 19, height: 11 },
+      { x: -2, y: 27, width: 19, height: 11 },
+      { x: 17, y: 27, width: 19, height: 11, shade: true },
+      { x: 36, y: 27, width: 19, height: 11 },
+    ];
+  }
+
+  if (pattern === "brick") {
+    return [
+      { x: 4, y: 5, width: 19, height: 11 },
+      { x: 23, y: 5, width: 19, height: 11, shade: true },
+      { x: 42, y: 5, width: 14, height: 11 },
+      { x: -6, y: 16, width: 19, height: 11, shade: true },
+      { x: 13, y: 16, width: 19, height: 11 },
+      { x: 32, y: 16, width: 19, height: 11, shade: true },
+      { x: 51, y: 16, width: 12, height: 11 },
+      { x: 4, y: 27, width: 19, height: 11 },
+      { x: 23, y: 27, width: 19, height: 11, shade: true },
+      { x: 42, y: 27, width: 14, height: 11 },
+    ];
+  }
+
+  if (pattern === "vertical_brick") {
+    return [
+      { x: 5, y: 4, width: 11, height: 19 },
+      { x: 5, y: 23, width: 11, height: 15, shade: true },
+      { x: 16, y: -6, width: 11, height: 19, shade: true },
+      { x: 16, y: 13, width: 11, height: 19 },
+      { x: 16, y: 32, width: 11, height: 12, shade: true },
+      { x: 27, y: 4, width: 11, height: 19 },
+      { x: 27, y: 23, width: 11, height: 15, shade: true },
+      { x: 38, y: -6, width: 11, height: 19, shade: true },
+      { x: 38, y: 13, width: 11, height: 19 },
+      { x: 38, y: 32, width: 11, height: 12, shade: true },
+    ];
+  }
+
+  if (pattern === "herringbone") {
+    return [
+      { x: 6, y: 3, width: 9, height: 25 },
+      { x: 15, y: 19, width: 25, height: 9, shade: true },
+      { x: 31, y: 3, width: 9, height: 25 },
+      { x: 40, y: 19, width: 18, height: 9, shade: true },
+      { x: -2, y: 28, width: 25, height: 9, shade: true },
+      { x: 23, y: 28, width: 9, height: 25 },
+      { x: 32, y: 44, width: 25, height: 9, shade: true },
+    ];
+  }
+
+  const tiles: SurfacePatternPreviewTile[] = [];
+  for (let row = 0; row < 3; row += 1) {
+    for (let column = 0; column < 4; column += 1) {
+      tiles.push({
+        x: 5 + column * 13,
+        y: 4 + row * 11,
+        width: 13,
+        height: 11,
+        shade: pattern === "checker" && (row + column) % 2 === 1,
+      });
+    }
+  }
+  return tiles;
+}
+
+function SurfacePatternPreview({
+  pattern,
+  dark,
+}: {
+  pattern: RoomFloorPattern;
+  dark: boolean;
+}) {
+  const background = dark ? "#252826" : "#f8fafc";
+  const stroke = dark ? "#7c8798" : "#b8bec7";
+  const fill = dark ? "#f3f4f6" : "#ffffff";
+  const shadedFill = dark ? "#d6d9df" : "#eef0f3";
+  const centerFill = dark ? "#8d96a6" : "#9ca3af";
+
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 60 42"
+      className="h-full w-full"
+      preserveAspectRatio="none"
+    >
+      <rect x="0" y="0" width="60" height="42" rx="2" fill={background} />
+      {getSurfacePatternPreviewTiles(pattern).map((tile, index) => (
+        <rect
+          key={`${pattern}-${index}`}
+          x={tile.x}
+          y={tile.y}
+          width={tile.width}
+          height={tile.height}
+          fill={tile.shade ? shadedFill : fill}
+          stroke={stroke}
+          strokeWidth="1"
+        />
+      ))}
+      <rect x="25" y="17" width="10" height="8" rx="1" fill={centerFill} />
+      <circle cx="30" cy="21" r="1.1" fill={dark ? "#d1d5db" : "#ffffff"} opacity="0.9" />
+    </svg>
+  );
+}
 
 const STORAGE_KEY = "interior-ai:v1:livingroom-design";
 const BETA_START_DISMISSED_KEY = "interior-ai:beta-start-dismissed";
@@ -332,6 +1052,14 @@ const DEFAULT_EDITOR_CAMERA_VIEW: CameraView = {
 const EDITOR_3D_MIN_CAMERA_DISTANCE = 1.4;
 const EDITOR_3D_MIN_POLAR_ANGLE = 0.02;
 const EDITOR_3D_MAX_POLAR_ANGLE = Math.PI - 0.02;
+const PLAN_FLOATING_OVERLAY_DESKTOP_MIN_WIDTH = 1024;
+const PLAN_FLOATING_OVERLAY_STACK_RIGHT_PX = 4;
+const PLAN_FLOATING_OVERLAY_INSPECTOR_STACK_TOP_PX = 324;
+const PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX = 264;
+const PLAN_FLOATING_OVERLAY_STACK_GAP_PX = 8;
+const PLAN_2D_WHOLE_HOME_FIT_PADDING_MIN_METERS = 3.2;
+const PLAN_2D_WHOLE_HOME_FIT_PADDING_RATIO = 0.24;
+const PLAN_3D_WHOLE_HOME_FIT_DISTANCE_SCALE = 0.95;
 type ScenePerformanceMode = "auto" | "quality" | "lite";
 type SceneRenderQuality = "standard" | "lite";
 type PlacementAddMode = "preview" | "auto";
@@ -351,6 +1079,170 @@ const SUPPORTED_FLOOR_PLAN_MIME_TYPES = new Set([
   "image/webp",
   "application/pdf",
 ]);
+const FLOOR_GROUT_COLOR_PALETTE = [
+  "#888888",
+  "#ffffff",
+  "#e9e8e1",
+  "#b2b1ae",
+  "#444442",
+  "#1c1d1f",
+  "#fbf8f1",
+  "#eee6d4",
+  "#e6d5a4",
+  "#d9b66e",
+  "#8a6b45",
+  "#c6bdaf",
+  "#b2a39d",
+  "#95877f",
+  "#66564f",
+  "#442b16",
+  "#c7aea4",
+  "#967a76",
+  "#52484d",
+  "#897481",
+  "#b8b7c4",
+  "#9ea8b6",
+  "#84939b",
+  "#537084",
+  "#687fae",
+  "#33266b",
+  "#d7dad5",
+  "#ccd4b9",
+  "#a6afa5",
+  "#0e3416",
+  "#f3ee9e",
+  "#cc8a10",
+  "#a9665f",
+  "#a72f31",
+  "#920000",
+] as const;
+const FLOOR_GROUT_SIZE_PRESETS_MM = [1, 1.5, 2, 3, 4, 5] as const;
+
+type Plan2DCameraDiagnostics = {
+  valid: boolean;
+  recoveries: number;
+  targetX: number;
+  targetZ: number;
+  projectedRoomMinWidthPx: number;
+  projectedRoomMinHeightPx: number;
+  projectedRoomMinAreaPx: number;
+};
+
+function getProjectedRoomMetrics(
+  camera: THREE.Camera,
+  viewport: { width: number; height: number },
+  rooms: HousePlanRoom2D[]
+) {
+  if (viewport.width <= 0 || viewport.height <= 0 || rooms.length === 0) {
+    return {
+      projectedRoomMinWidthPx: 0,
+      projectedRoomMinHeightPx: 0,
+      projectedRoomMinAreaPx: 0,
+    };
+  }
+
+  let minWidth = Number.POSITIVE_INFINITY;
+  let minHeight = Number.POSITIVE_INFINITY;
+  let minArea = Number.POSITIVE_INFINITY;
+
+  for (const room of rooms) {
+    const points = [
+      new THREE.Vector3(room.x - room.w / 2, 0, room.z - room.d / 2),
+      new THREE.Vector3(room.x + room.w / 2, 0, room.z - room.d / 2),
+      new THREE.Vector3(room.x + room.w / 2, 0, room.z + room.d / 2),
+      new THREE.Vector3(room.x - room.w / 2, 0, room.z + room.d / 2),
+    ].map((point) => point.project(camera));
+
+    const xs = points.map((point) => ((point.x + 1) / 2) * viewport.width);
+    const ys = points.map((point) => ((1 - point.y) / 2) * viewport.height);
+    const widthPx = Math.max(...xs) - Math.min(...xs);
+    const heightPx = Math.max(...ys) - Math.min(...ys);
+    const areaPx = widthPx * heightPx;
+
+    if (Number.isFinite(widthPx)) minWidth = Math.min(minWidth, widthPx);
+    if (Number.isFinite(heightPx)) minHeight = Math.min(minHeight, heightPx);
+    if (Number.isFinite(areaPx)) minArea = Math.min(minArea, areaPx);
+  }
+
+  return {
+    projectedRoomMinWidthPx: Number.isFinite(minWidth) ? Math.round(minWidth) : 0,
+    projectedRoomMinHeightPx: Number.isFinite(minHeight) ? Math.round(minHeight) : 0,
+    projectedRoomMinAreaPx: Number.isFinite(minArea) ? Math.round(minArea) : 0,
+  };
+}
+
+function Plan2DCameraInvariantGuard({
+  active,
+  cameraHeightMeters,
+  controlsRef,
+  fit,
+  onDiagnosticsChange,
+  rooms,
+  updateProjection,
+}: {
+  active: boolean;
+  cameraHeightMeters: number;
+  controlsRef: RefObject<OrbitControlsImpl | null>;
+  fit: Plan2DCameraInvariantFit;
+  onDiagnosticsChange: (diagnostics: Plan2DCameraDiagnostics) => void;
+  rooms: HousePlanRoom2D[];
+  updateProjection: (camera: THREE.Camera | null) => void;
+}) {
+  const { camera, size } = useThree();
+  const recoveryCountRef = useRef(0);
+  const lastDiagnosticsRef = useRef<Plan2DCameraDiagnostics | null>(null);
+  const lastWarningAtRef = useRef(0);
+
+  useFrame(() => {
+    if (!active) return;
+
+    const controls = controlsRef.current as Plan2DCameraControls | null;
+    const recovery = recoverPlan2DCameraIfNeeded({
+      camera,
+      controls,
+      fit,
+      cameraHeightMeters,
+      updateProjection,
+    });
+
+    if (recovery.recovered) {
+      recoveryCountRef.current += 1;
+      const now = Date.now();
+      if (process.env.NODE_ENV !== "production" && now - lastWarningAtRef.current > 1500) {
+        lastWarningAtRef.current = now;
+        console.warn("[Plan2D] recovered non-degenerate top-down camera", recovery.previousStatus);
+      }
+    }
+
+    const status = getPlan2DCameraInvariantStatus(camera, controls);
+    const projectionMetrics = getProjectedRoomMetrics(camera, size, rooms);
+    const diagnostics = {
+      valid: status.valid,
+      recoveries: recoveryCountRef.current,
+      targetX: Number((controls?.target.x ?? 0).toFixed(3)),
+      targetZ: Number((controls?.target.z ?? 0).toFixed(3)),
+      ...projectionMetrics,
+    };
+    const last = lastDiagnosticsRef.current;
+    if (
+      last &&
+      last.valid === diagnostics.valid &&
+      last.recoveries === diagnostics.recoveries &&
+      last.targetX === diagnostics.targetX &&
+      last.targetZ === diagnostics.targetZ &&
+      last.projectedRoomMinWidthPx === diagnostics.projectedRoomMinWidthPx &&
+      last.projectedRoomMinHeightPx === diagnostics.projectedRoomMinHeightPx &&
+      last.projectedRoomMinAreaPx === diagnostics.projectedRoomMinAreaPx
+    ) {
+      return;
+    }
+
+    lastDiagnosticsRef.current = diagnostics;
+    onDiagnosticsChange(diagnostics);
+  });
+
+  return null;
+}
 const PDF_UNDERLAY_MAX_RENDERED_DIMENSION_PX = 1800;
 const PDF_UNDERLAY_MAX_RENDER_SCALE = 2;
 
@@ -1064,6 +1956,19 @@ function PlanQualityHintOverlay({
   );
 }
 
+type SurfaceTargetMode = "floor" | "walls" | "selected_wall" | "ceiling";
+
+type SelectedWallSurfaceTarget = {
+  roomId: string;
+  faceId: string;
+};
+
+type RendererSurfaceTarget = {
+  kind: "floor" | "wall" | "ceiling";
+  roomId: string;
+  id: string;
+};
+
 function PageContent() {
   const { data: session } = useSession();
   const router = useRouter();
@@ -1096,7 +2001,9 @@ function PageContent() {
   const [plan, setPlan] = useState<Plan>("free");
   const [, setRefreshingPlan] = useState(false);
   const [startingCheckout, setStartingCheckout] = useState(false);
+  const [openingBillingPortal, setOpeningBillingPortal] = useState(false);
   const [showPlans, setShowPlans] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [upgradeReason, setUpgradeReason] = useState<"designer" | "export_images" | "export_pdf" | null>(null);
   const [upgradeCtaVariant, setUpgradeCtaVariant] = useState<UpgradeCtaVariant>("unlock_pro_exports");
@@ -1113,7 +2020,23 @@ function PageContent() {
   const [selectedImportedFamilyKey, setSelectedImportedFamilyKey] = useState<string>("");
   const [selectedImportedProductId, setSelectedImportedProductId] = useState<string>("");
   const [importedModelOptions, setImportedModelOptions] = useState<ImportedModelOption[]>([]);
+  const [importedCatalogByProductId, setImportedCatalogByProductId] = useState<Record<string, ImportedModelCatalog>>({});
   const [importedModelUrlByAssetId, setImportedModelUrlByAssetId] = useState<Record<string, string>>({});
+  const [cabinetryStudioState, setCabinetryStudioState] = useState<{
+    mode: "create" | "edit";
+    instanceId?: string;
+    initialDefinition?: CabinetDefinition;
+  } | null>(null);
+  const cabinetryStudioOpenedAtRef = useRef<number | null>(null);
+  const cabinetAssetStorageRef = useRef<LocalCabinetAssetStorage | null>(null);
+  if (!cabinetAssetStorageRef.current) {
+    cabinetAssetStorageRef.current = new LocalCabinetAssetStorage();
+  }
+
+  useEffect(() => {
+    const storage = cabinetAssetStorageRef.current;
+    return () => storage?.dispose();
+  }, []);
   
   // Onboarding state model (new system)
   const [onboardingState, setOnboardingState] = useState<OnboardingState>({
@@ -1146,7 +2069,10 @@ function PageContent() {
   const [lastLocalSaveError, setLastLocalSaveError] = useState<string | null>(null);
   const [lastCloudSaveError, setLastCloudSaveError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [sceneReady, setSceneReady] = useState(false);
+  const [sceneProgressReady, setSceneProgressReady] = useState(false);
+  const [sceneRenderItemReadyByKey, setSceneRenderItemReadyByKey] = useState<
+    Record<string, boolean>
+  >({});
   const [scenePerformanceMode, setScenePerformanceMode] = useState<ScenePerformanceMode>("auto");
   const [scenePerformanceModeLoaded, setScenePerformanceModeLoaded] = useState(false);
   const [autoLiteScene, setAutoLiteScene] = useState(false);
@@ -1171,7 +2097,21 @@ function PageContent() {
   const [planDebugMetrics, setPlanDebugMetrics] = useState({
     zoom: 0,
     visibleLabelCount: 0,
+    projectedRoomMinWidthPx: 0,
+    projectedRoomMinHeightPx: 0,
+    projectedRoomMinAreaPx: 0,
+    cameraValid: true,
+    cameraRecoveries: 0,
+    cameraTargetX: 0,
+    cameraTargetZ: 0,
   });
+  const [planQualityReviewCollapsed, setPlanQualityReviewCollapsed] = useState(false);
+  const [planQualityReviewPanelHeightPx, setPlanQualityReviewPanelHeightPx] = useState(0);
+  const planQualityReviewPanelRef = useRef<HTMLDivElement | null>(null);
+  const [planNavigatorRailElement, setPlanNavigatorRailElement] = useState<HTMLDivElement | null>(null);
+  const [planFloorRailElement, setPlanFloorRailElement] = useState<HTMLDivElement | null>(null);
+  const [planReviewRailElement, setPlanReviewRailElement] = useState<HTMLDivElement | null>(null);
+  const [planSelectionRailElement, setPlanSelectionRailElement] = useState<HTMLDivElement | null>(null);
   const [showLayoutDebugOverlay, setShowLayoutDebugOverlay] = useState(false);
   const [consumerPlanCompletionSignal, setConsumerPlanCompletionSignal] = useState<{
     id: number;
@@ -1429,6 +2369,20 @@ function PageContent() {
   } | null>(null);
   const [shoppingReadinessFilter, setShoppingReadinessFilter] =
     useState<ShoppingReadinessFilter>("all");
+  const [floorFinishPanelOpenSignal, setFloorFinishPanelOpenSignal] = useState(0);
+  const [floorInspectorPickerOpen, setFloorInspectorPickerOpen] = useState(false);
+  const [floorInspectorGroutPaletteOpen, setFloorInspectorGroutPaletteOpen] = useState(false);
+  const [activeSurfaceTarget, setActiveSurfaceTarget] = useState<SurfaceTargetMode>("floor");
+  const [selectedWallSurfaceTarget, setSelectedWallSurfaceTarget] =
+    useState<SelectedWallSurfaceTarget | null>(null);
+  const [selectedRendererSurfaceTarget, setSelectedRendererSurfaceTarget] =
+    useState<RendererSurfaceTarget | null>(null);
+  const [surfaceBrushActive, setSurfaceBrushActive] = useState(false);
+  const [surfaceBrushMaterialId, setSurfaceBrushMaterialId] = useState<string | null>(null);
+  const [surfaceBrushPaint, setSurfaceBrushPaint] = useState<{
+    colorHex: string;
+    name: string;
+  } | null>(null);
   const aiDesignEnabled = true;
   
   // Editor Modes
@@ -1474,11 +2428,33 @@ function PageContent() {
       setPlanDebugMetrics((current) =>
         current.zoom === next.zoom && current.visibleLabelCount === next.visibleLabelCount
           ? current
-          : next
+          : { ...current, ...next }
       );
     },
     []
   );
+  const handlePlan2DCameraDiagnosticsChange = useCallback((next: Plan2DCameraDiagnostics) => {
+    setPlanDebugMetrics((current) =>
+      current.projectedRoomMinWidthPx === next.projectedRoomMinWidthPx &&
+      current.projectedRoomMinHeightPx === next.projectedRoomMinHeightPx &&
+      current.projectedRoomMinAreaPx === next.projectedRoomMinAreaPx &&
+      current.cameraValid === next.valid &&
+      current.cameraRecoveries === next.recoveries &&
+      current.cameraTargetX === next.targetX &&
+      current.cameraTargetZ === next.targetZ
+        ? current
+        : {
+            ...current,
+            projectedRoomMinWidthPx: next.projectedRoomMinWidthPx,
+            projectedRoomMinHeightPx: next.projectedRoomMinHeightPx,
+            projectedRoomMinAreaPx: next.projectedRoomMinAreaPx,
+            cameraValid: next.valid,
+            cameraRecoveries: next.recoveries,
+            cameraTargetX: next.targetX,
+            cameraTargetZ: next.targetZ,
+          }
+    );
+  }, []);
   useEffect(() => {
     if (!designPanelOpen) {
       setDesignPanelCollapsed(false);
@@ -1489,6 +2465,14 @@ function PageContent() {
   const canUseDesigner = plan === "pro";
   const { isDesigner, isClientPreview } = useEditorMode(plan, clientPreview);
   const showDesignerTheme = isDesigner && !isClientPreview;
+  useEffect(() => {
+    if (!canUseDesigner && !simplePlanControls) {
+      setSimplePlanControls(true);
+    }
+  }, [canUseDesigner, setSimplePlanControls, simplePlanControls]);
+  const canUseCabinetryStudio =
+    CABINETRY_STUDIO_FEATURE_ENABLED && !isClientPreview;
+  const cabinetryAccessLevel = isDesigner ? "pro" : "consumer";
   const liteSceneEnabled =
     scenePerformanceMode === "lite" || (scenePerformanceMode === "auto" && autoLiteScene);
   const sceneRenderQuality: SceneRenderQuality = liteSceneEnabled ? "lite" : "standard";
@@ -2145,6 +3129,11 @@ function PageContent() {
     purchaseOptionId?: string;
   } | null>(null);
   const [catalogPlacementDragging, setCatalogPlacementDragging] = useState(false);
+  const pendingCatalogPlacementRef = useRef<PendingCatalogPlacement | null>(null);
+  const catalogPlacementDragOffsetRef = useRef<{ x: number; z: number } | null>(null);
+  const catalogPlacementDragMoveFrameRef = useRef<number | null>(null);
+  const catalogPlacementDragLatestClientRef = useRef<{ clientX: number; clientY: number } | null>(null);
+  const catalogPlacementDragLastWorldRef = useRef<{ x: number; z: number; roomId: string } | null>(null);
   const [crossRoomDragTarget, setCrossRoomDragTarget] = useState<{
     roomId: string;
     label: string;
@@ -2269,12 +3258,19 @@ function PageContent() {
 
 
 
-  const loadDesign = async (id: string) => {
+  const loadDesign = async (
+    id: string,
+    options?: { notFoundMessage?: string }
+  ): Promise<boolean> => {
     try {
       const res = await fetch(`/api/designs/${id}`);
       if (!res.ok) {
-        showRuleToast(res.status === 403 ? "You do not have access to that design" : "Design not found");
-        return;
+        showRuleToast(
+          res.status === 403
+            ? "You do not have access to that design"
+            : options?.notFoundMessage ?? "Design not found"
+        );
+        return false;
       }
 
       const data = await res.json();
@@ -2315,9 +3311,11 @@ function PageContent() {
         void enableShare(data.id);
       }
       showRuleToast(`Loaded ${data.title}`);
+      return true;
     } catch (err) {
       console.error("Load error:", err);
       showRuleToast("Failed to load design");
+      return false;
     }
   };
 
@@ -2662,6 +3660,7 @@ function PageContent() {
       resetFloorPlanInteraction();
     },
     [
+      history,
       resetFloorPlanInteraction,
       revokeFloorPlanUnderlayUrl,
       setFloorPlanPdfSourceReady,
@@ -2731,8 +3730,8 @@ function PageContent() {
   const designControlsPanelVisibleForLayout =
     designControlsPanelVisible && !planCanvasFocusActive;
   const commercePanelVisibleForLayout = editorMode === "buy" && !isClientPreview;
-  const commercePanelDockWidthPx =
-    commercePanelVisibleForLayout && viewportSize.width >= 768 ? 372 : 0;
+  const shoppingPanelVisibleForLayout = commercePanelVisibleForLayout;
+  const commercePanelDockWidthPx = 0;
   const {
     activeFloorLevel,
     activeFloorRoomCount,
@@ -2765,8 +3764,24 @@ function PageContent() {
     wallThickness,
   });
   const hasWholeHousePlan = housePlan2D.rooms.length > 1;
+  const hasWallSurfaceFinishes = designSnapshot.rooms.some((room) => {
+    const surfaces = room.surfaces ?? room.surfaceFinishes;
+    const defaultWall = surfaces?.walls?.default;
+    const faceSettings = Object.values(surfaces?.walls?.faces ?? {});
+    return Boolean(
+      surfaces?.wallMaterialId ||
+        defaultWall?.materialId ||
+        defaultWall?.paintColorHex ||
+        faceSettings.some((settings) => settings.materialId || settings.paintColorHex)
+    );
+  });
   const usesHousePlanScene =
-    stackedFloorView || hasWholeHousePlan || housePlan2D.rooms.some((room) => room.shape !== "rectangle");
+    stackedFloorView ||
+    hasWholeHousePlan ||
+    activeSurfaceTarget !== "floor" ||
+    surfaceBrushActive ||
+    hasWallSurfaceFinishes ||
+    housePlan2D.rooms.some((room) => room.shape !== "rectangle");
   const sceneHousePlanRooms3D = useMemo(
     () =>
       stackedFloorView
@@ -2862,6 +3877,7 @@ function PageContent() {
         roomOffset: { x: planRoom?.x ?? 0, z: planRoom?.z ?? 0 },
         roomWidth: room.geometry.width,
         roomDepth: room.geometry.depth,
+        roomHeight: room.geometry.height ?? ROOM_DIMENSION_DEFAULTS.roomHeight,
         roomPlanShape: room.planShape ?? "rectangle",
         roomPlanPolygon: room.planPolygon,
         roomWallThickness: room.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness,
@@ -2885,6 +3901,7 @@ function PageContent() {
         roomOffset,
         roomWidth: room.geometry.width,
         roomDepth: room.geometry.depth,
+        roomHeight: room.geometry.height ?? ROOM_DIMENSION_DEFAULTS.roomHeight,
         roomPlanShape: room.planShape ?? "rectangle",
         roomPlanPolygon: room.planPolygon,
         roomWallThickness:
@@ -2906,6 +3923,54 @@ function PageContent() {
     usesHousePlanScene,
     viewMode,
   ]);
+  const sceneRenderItemKeys = useMemo(
+    () =>
+      viewMode === "3d"
+        ? sceneRoomItems.map(
+            (entry) =>
+              `${entry.roomId}:${entry.item.instanceId}:${entry.item.productId}:${
+                entry.item.variantId ?? ""
+              }:${sceneRenderQuality}`
+          )
+        : [],
+    [sceneRenderQuality, sceneRoomItems, viewMode]
+  );
+  useEffect(() => {
+    setSceneRenderItemReadyByKey((current) => {
+      const activeKeys = new Set(sceneRenderItemKeys);
+      const next: Record<string, boolean> = {};
+      let changed = Object.keys(current).length !== sceneRenderItemKeys.length;
+
+      for (const key of sceneRenderItemKeys) {
+        if (current[key] !== undefined) {
+          next[key] = current[key];
+        } else {
+          changed = true;
+        }
+      }
+
+      for (const key of Object.keys(current)) {
+        if (!activeKeys.has(key)) {
+          changed = true;
+          break;
+        }
+      }
+
+      return changed ? next : current;
+    });
+  }, [sceneRenderItemKeys]);
+  const handleSceneRenderItemReadyChange = useCallback((key: string, ready: boolean) => {
+    setSceneRenderItemReadyByKey((current) =>
+      current[key] === ready ? current : { ...current, [key]: ready }
+    );
+  }, []);
+  const sceneRenderItemsReady =
+    viewMode !== "3d" ||
+    sceneRenderItemKeys.length === 0 ||
+    sceneRenderItemKeys.every((key) => sceneRenderItemReadyByKey[key] === true);
+  const sceneReady =
+    viewMode === "3d" ? sceneProgressReady && sceneRenderItemsReady : sceneProgressReady;
+  const showSceneLoadingVeil = viewMode === "3d" && !sceneReady;
   const pendingCatalogPlacementScene = useMemo(() => {
     const planRoom = houseRoomById.get(
       pendingCatalogPlacement?.roomId ?? designSnapshot.activeRoomId
@@ -2925,6 +3990,26 @@ function PageContent() {
       roomOffset: { x: planRoom?.x ?? 0, z: planRoom?.z ?? 0 },
     });
   }, [designSnapshot.activeRoomId, hoverCatalogPlacement, houseRoomById, pendingCatalogPlacement]);
+  const activeCatalogPlacementSurfaceHighlight = useMemo(() => {
+    const placement = pendingCatalogPlacement ?? hoverCatalogPlacement;
+    if (!placement) return null;
+    const roomId = placement.roomId ?? designSnapshot.activeRoomId;
+    const placementRoom = roomSnapshotById.get(roomId) ?? activeRoom;
+    if (!placementRoom) return null;
+    const planRoom = houseRoomById.get(roomId);
+    return buildCatalogSupportSurfaceHighlight({
+      placement,
+      items: placementRoom.items,
+      roomOffset: { x: planRoom?.x ?? 0, z: planRoom?.z ?? 0 },
+    });
+  }, [
+    activeRoom,
+    designSnapshot.activeRoomId,
+    houseRoomById,
+    hoverCatalogPlacement,
+    pendingCatalogPlacement,
+    roomSnapshotById,
+  ]);
   const aiLayoutPreviewFootprints = useMemo(
     () =>
       pendingAiLayoutProposal
@@ -3032,16 +4117,407 @@ function PageContent() {
   const activeRoomFloorScale = clampFloorPatternScale(
     activeRoomSurfaces?.floorScale
   );
+  const activeRoomFloorSettings = normalizeFloorSurfaceSettings(
+    activeRoomSurfaces,
+    normalizeFloorRotationDeg,
+    clampFloorPatternScale
+  );
+  const activeRoomCeilingSettings = getCeilingSurfaceSettings(
+    activeRoomSurfaces,
+    normalizeFloorRotationDeg,
+    clampFloorPatternScale
+  );
+  const activeSelectedWallFaceId =
+    selectedWallSurfaceTarget && selectedWallSurfaceTarget.roomId === activeRoom?.id
+      ? selectedWallSurfaceTarget.faceId
+      : null;
+  const activeRoomWallSettings = getDefaultWallSurfaceSettings(
+    activeRoomSurfaces,
+    normalizeFloorRotationDeg,
+    clampFloorPatternScale
+  );
+  const activeRoomSelectedWallSettings = getWallFaceSurfaceSettings(
+    activeRoomSurfaces,
+    activeSelectedWallFaceId,
+    normalizeFloorRotationDeg,
+    clampFloorPatternScale
+  );
+  const surfaceRoomSummaries = useMemo(
+    () =>
+      designSnapshot.rooms.map((room) => ({
+        id: room.id,
+        name: room.name,
+        floorLabel: room.floorLabel,
+        roomType: room.roomType,
+        width: room.geometry.width,
+        depth: room.geometry.depth,
+        height: room.geometry.height,
+        surfaces: room.surfaces,
+        surfaceFinishes: room.surfaceFinishes,
+      })),
+    [designSnapshot.rooms]
+  );
+  const floorInspectorRoom = selectedPlanRoomId
+    ? roomSnapshotById.get(selectedPlanRoomId) ?? activeRoom
+    : activeRoom;
+  const floorInspectorSurfaces =
+    floorInspectorRoom?.surfaces ?? floorInspectorRoom?.surfaceFinishes;
+  const floorInspectorMaterialId =
+    floorInspectorSurfaces?.floorMaterialId ?? DEFAULT_FLOOR_MATERIAL_ID;
+  const floorInspectorSettings = normalizeFloorSurfaceSettings(
+    floorInspectorSurfaces,
+    normalizeFloorRotationDeg,
+    clampFloorPatternScale
+  );
+  const floorInspectorRotationDeg = floorInspectorSettings.floorRotationDeg;
+  const floorInspectorScale = floorInspectorSettings.floorScale;
+  const floorInspectorSurfaceMaterial = getRuntimeSurfaceMaterialById(floorInspectorMaterialId);
+  const floorInspectorStarterMaterial = getFloorMaterialById(floorInspectorMaterialId);
+  const floorInspectorDisplayName =
+    (floorInspectorSurfaceMaterial
+      ? getFlooringInspectorProductName(floorInspectorSurfaceMaterial)
+      : null) ??
+    floorInspectorStarterMaterial.name;
+  const floorInspectorTextureSource = getSurfaceMaterialTextureSource(floorInspectorSurfaceMaterial);
+  const floorInspectorMaterialFamily = floorInspectorSurfaceMaterial
+    ? formatFlooringInspectorValue(floorInspectorSurfaceMaterial.surface_material.material_family)
+    : formatFlooringInspectorValue(floorInspectorStarterMaterial.category);
+  const floorInspectorSupplier = floorInspectorSurfaceMaterial
+    ? floorInspectorSurfaceMaterial.surface_material.brand ??
+      formatFlooringInspectorValue(floorInspectorSurfaceMaterial.surface_material.supplier)
+    : "Starter finish";
+  const floorInspectorPublishStatus =
+    floorInspectorSurfaceMaterial?.import_governance.publish_status ?? "starter";
+  const floorInspectorBlockers =
+    floorInspectorSurfaceMaterial?.import_governance.publish_blockers ?? [];
+  const surfaceMaterialDraftsVisible =
+    !isClientPreview && (isDesigner || process.env.NODE_ENV !== "production");
+  const floorInspectorPatternOptions = useMemo(
+    () => getFlooringInspectorPatternOptions(floorInspectorSurfaceMaterial),
+    [floorInspectorSurfaceMaterial]
+  );
+  const floorInspectorPatternOptionIds = useMemo(
+    () => new Set(floorInspectorPatternOptions.map((option) => option.id)),
+    [floorInspectorPatternOptions]
+  );
+  const floorInspectorPatternValue = floorInspectorPatternOptionIds.has(
+    floorInspectorSettings.floorPattern
+  )
+    ? floorInspectorSettings.floorPattern
+    : floorInspectorPatternOptions[0]?.id ?? "straight";
+  const floorInspectorSwatchStyle = useMemo<CSSProperties>(() => {
+    if (floorInspectorTextureSource) {
+      return {
+        backgroundColor: "#e8e2d6",
+        backgroundImage: `url("${floorInspectorTextureSource.url}")`,
+        backgroundPosition: "center",
+        backgroundSize:
+          floorInspectorTextureSource.kind === "swatch" ? "cover" : "48px 48px",
+      };
+    }
+
+    if (floorInspectorStarterMaterial.pattern === "tile_grid") {
+      return {
+        backgroundColor: floorInspectorStarterMaterial.swatchColor,
+        backgroundImage: [
+          `repeating-linear-gradient(0deg, transparent 0 10px, ${floorInspectorStarterMaterial.lineColor}66 10px 11px)`,
+          `repeating-linear-gradient(90deg, transparent 0 10px, ${floorInspectorStarterMaterial.lineColor}66 10px 11px)`,
+          `linear-gradient(135deg, ${floorInspectorStarterMaterial.swatchColor}, ${floorInspectorStarterMaterial.accentColor})`,
+        ].join(", "),
+      };
+    }
+
+    if (floorInspectorStarterMaterial.pattern === "soft_fleck") {
+      return {
+        backgroundColor: floorInspectorStarterMaterial.swatchColor,
+        backgroundImage: [
+          `radial-gradient(circle at 24% 28%, ${floorInspectorStarterMaterial.lineColor}80 0 1px, transparent 2px)`,
+          `radial-gradient(circle at 68% 58%, ${floorInspectorStarterMaterial.accentColor}70 0 1px, transparent 2px)`,
+          `linear-gradient(135deg, ${floorInspectorStarterMaterial.swatchColor}, ${floorInspectorStarterMaterial.accentColor})`,
+        ].join(", "),
+      };
+    }
+
+    return {
+      backgroundColor: floorInspectorStarterMaterial.swatchColor,
+      backgroundImage: [
+        `repeating-linear-gradient(0deg, transparent 0 8px, ${floorInspectorStarterMaterial.lineColor}66 8px 9px)`,
+        `linear-gradient(135deg, ${floorInspectorStarterMaterial.swatchColor}, ${floorInspectorStarterMaterial.accentColor})`,
+      ].join(", "),
+    };
+  }, [floorInspectorTextureSource, floorInspectorStarterMaterial]);
+  const wallInspectorFaceId =
+    activeSurfaceTarget === "selected_wall" &&
+    selectedWallSurfaceTarget &&
+    selectedWallSurfaceTarget.roomId === floorInspectorRoom?.id
+      ? selectedWallSurfaceTarget.faceId
+      : null;
+  const surfaceInspectorIsWall = Boolean(wallInspectorFaceId);
+  const surfaceInspectorIsCeiling = activeSurfaceTarget === "ceiling";
+  const ceilingInspectorSettings = getCeilingSurfaceSettings(
+    floorInspectorSurfaces,
+    normalizeFloorRotationDeg,
+    clampFloorPatternScale
+  );
+  const ceilingInspectorColor =
+    ceilingInspectorSettings.paintColorHex ??
+    floorInspectorSurfaces?.ceilingColor ??
+    "#f8f8f6";
+  const wallInspectorDefaultHeight =
+    floorInspectorRoom?.geometry.height ?? ROOM_DIMENSION_DEFAULTS.roomHeight;
+  const wallInspectorHeight = wallInspectorFaceId
+    ? floorInspectorRoom?.geometry.wallHeights?.[wallInspectorFaceId] ?? wallInspectorDefaultHeight
+    : wallInspectorDefaultHeight;
+  const wallInspectorHasHeightOverride = Boolean(
+    wallInspectorFaceId &&
+      floorInspectorRoom?.geometry.wallHeights &&
+      Object.prototype.hasOwnProperty.call(
+        floorInspectorRoom.geometry.wallHeights,
+        wallInspectorFaceId
+      )
+  );
+  const wallInspectorSettings = getWallFaceSurfaceSettings(
+    floorInspectorSurfaces,
+    wallInspectorFaceId,
+    normalizeFloorRotationDeg,
+    clampFloorPatternScale
+  );
+  const wallInspectorMaterialId = wallInspectorSettings.materialId ?? null;
+  const wallInspectorSurfaceMaterial = wallInspectorMaterialId
+    ? getRuntimeSurfaceMaterialById(wallInspectorMaterialId)
+    : null;
+  const wallInspectorStarterMaterial = wallInspectorMaterialId
+    ? getFloorMaterialById(wallInspectorMaterialId)
+    : null;
+  const surfaceInspectorMaterialId = surfaceInspectorIsWall
+    ? wallInspectorMaterialId ?? ""
+    : surfaceInspectorIsCeiling
+      ? ceilingInspectorSettings.materialId ?? ""
+      : floorInspectorMaterialId;
+  const surfaceInspectorSurfaceMaterial = surfaceInspectorIsWall
+    ? wallInspectorSurfaceMaterial
+    : surfaceInspectorIsCeiling
+      ? getRuntimeSurfaceMaterialById(ceilingInspectorSettings.materialId)
+      : floorInspectorSurfaceMaterial;
+  const surfaceInspectorDisplayName = surfaceInspectorIsWall
+    ? wallInspectorSurfaceMaterial
+      ? getFlooringInspectorProductName(wallInspectorSurfaceMaterial)
+      : wallInspectorSettings.paintColorHex
+        ? getWallPaintDisplayName(wallInspectorSettings.paintColorHex, wallInspectorSettings.paintName)
+        : wallInspectorStarterMaterial?.name ?? "No wall material"
+    : surfaceInspectorIsCeiling
+      ? surfaceInspectorSurfaceMaterial
+        ? getFlooringInspectorProductName(surfaceInspectorSurfaceMaterial)
+        : ceilingInspectorSettings.paintColorHex
+          ? getWallPaintDisplayName(
+              ceilingInspectorSettings.paintColorHex,
+              ceilingInspectorSettings.paintName
+            )
+          : "No ceiling paint"
+      : floorInspectorDisplayName;
+  const surfaceInspectorTextureSource = surfaceInspectorSurfaceMaterial
+    ? getSurfaceMaterialTextureSource(surfaceInspectorSurfaceMaterial)
+    : null;
+  const surfaceInspectorMaterialFamily = surfaceInspectorSurfaceMaterial
+    ? formatFlooringInspectorValue(surfaceInspectorSurfaceMaterial.surface_material.material_family)
+    : surfaceInspectorIsWall
+      ? wallInspectorSettings.paintColorHex
+        ? "Paint"
+        : "Wall finish"
+      : surfaceInspectorIsCeiling
+        ? "Ceiling paint"
+        : floorInspectorMaterialFamily;
+  const surfaceInspectorSupplier = surfaceInspectorSurfaceMaterial
+    ? surfaceInspectorSurfaceMaterial.surface_material.brand ??
+      formatFlooringInspectorValue(surfaceInspectorSurfaceMaterial.surface_material.supplier)
+    : surfaceInspectorIsWall
+      ? wallInspectorSettings.paintName
+        ? "Paint colour"
+        : "No catalog material"
+      : surfaceInspectorIsCeiling
+        ? ceilingInspectorSettings.paintName
+          ? "Paint colour"
+          : "No catalog material"
+        : floorInspectorSupplier;
+  const surfaceInspectorPublishStatus =
+    surfaceInspectorSurfaceMaterial?.import_governance.publish_status ??
+    (surfaceInspectorIsWall || surfaceInspectorIsCeiling ? "custom" : floorInspectorPublishStatus);
+  const surfaceInspectorBlockers =
+    surfaceInspectorSurfaceMaterial?.import_governance.publish_blockers ??
+    (surfaceInspectorIsWall || surfaceInspectorIsCeiling ? [] : floorInspectorBlockers);
+  const surfaceInspectorSurfaceMaterials = useMemo(
+    () =>
+      SURFACE_MATERIAL_RENDER_REGISTRY.filter((material) => {
+        const category = material.surface_material.surface_category;
+        const matchesTarget = surfaceInspectorIsWall
+          ? category === "wall_tile" || category === "wallpaper" || category === "wall_panel"
+          : surfaceInspectorIsCeiling
+            ? category === "paint"
+            : category === "flooring";
+        const matchesVisibility =
+          surfaceMaterialDraftsVisible ||
+          material.import_governance.publish_status === "published";
+        return matchesTarget && matchesVisibility;
+      }).sort((a, b) =>
+        a.surface_material.product_name.localeCompare(b.surface_material.product_name)
+      ),
+    [surfaceInspectorIsCeiling, surfaceInspectorIsWall, surfaceMaterialDraftsVisible]
+  );
+  const surfaceInspectorMaterialGroup = useMemo(
+    () =>
+      getFlooringInspectorMaterialGroup(
+        surfaceInspectorSurfaceMaterials,
+        surfaceInspectorSurfaceMaterial
+      ),
+    [surfaceInspectorSurfaceMaterial, surfaceInspectorSurfaceMaterials]
+  );
+  const surfaceInspectorSizeLabel = surfaceInspectorSurfaceMaterial
+    ? getFlooringInspectorSizeLabel(surfaceInspectorSurfaceMaterial)
+    : null;
+  const surfaceInspectorSwatchStyle = useMemo<CSSProperties>(() => {
+    if (surfaceInspectorTextureSource) {
+      return {
+        backgroundColor: "#e8e2d6",
+        backgroundImage: `url("${surfaceInspectorTextureSource.url}")`,
+        backgroundPosition: "center",
+        backgroundSize:
+          surfaceInspectorTextureSource.kind === "swatch" ? "cover" : "48px 48px",
+      };
+    }
+
+    if (surfaceInspectorIsWall) {
+      return {
+        backgroundColor: wallInspectorSettings.paintColorHex ?? "#d8d8d4",
+        backgroundImage: wallInspectorSettings.paintColorHex
+          ? "none"
+          : "linear-gradient(135deg, #f3f2ee, #c9cac5)",
+      };
+    }
+
+    if (surfaceInspectorIsCeiling) {
+      return {
+        backgroundColor: ceilingInspectorColor,
+        backgroundImage: "none",
+      };
+    }
+
+    return floorInspectorSwatchStyle;
+  }, [
+    floorInspectorSwatchStyle,
+    ceilingInspectorColor,
+    surfaceInspectorIsCeiling,
+    surfaceInspectorIsWall,
+    surfaceInspectorTextureSource,
+    wallInspectorSettings.paintColorHex,
+  ]);
   const activeRoomHeightMm = Math.round(roomHeight * 1000);
   const activeRoomWallThicknessMm = Math.round(wallThickness * 1000);
   const activeRoomSlabThicknessMm = Math.round(
     (activeRoom?.geometry.slabThickness ?? ROOM_DIMENSION_DEFAULTS.slabThickness) * 1000
   );
+  const activeRoomBaseboardDepthMm = Math.max(
+    0,
+    Math.round((activeRoom?.geometry.baseboardDepth ?? 0) * 1000)
+  );
   const activeRoomWallOpacity = clampEditorOpacity(activeRoom?.surfaceOpacity?.wall ?? 1);
   const activeRoomFloorOpacity = clampEditorOpacity(activeRoom?.surfaceOpacity?.floor ?? 1);
   const activeRoomCeilingOpacity = clampEditorOpacity(activeRoom?.surfaceOpacity?.ceiling ?? 1);
   const activeRoomCeilingVisible = activeRoom?.ceilingVisible ?? true;
-  const activeRoomCeilingColor = activeRoomSurfaces?.ceilingColor ?? "#f8f8f6";
+  const activeRoomCeilingColor =
+    activeRoomCeilingSettings.paintColorHex ?? activeRoomSurfaces?.ceilingColor ?? "#f8f8f6";
+  const cabinetryAvailableSpaces = useMemo<CabinetHostSpace[]>(() => {
+    if (!activeRoom) return [];
+    const activePlanRoom = houseRoomById.get(activeRoom.id);
+    const wallInsetMm = Math.round(
+      (activeRoom.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness) * 1000
+    );
+    const widthMm = Math.max(
+      1,
+      Math.round((activePlanRoom?.w ?? activeRoom.geometry.width) * 1000) - wallInsetMm * 2
+    );
+    const depthMm = Math.max(
+      1,
+      Math.round((activePlanRoom?.d ?? activeRoom.geometry.depth) * 1000) - wallInsetMm * 2
+    );
+    const heightMm = Math.round(
+      (activeRoom.geometry.height ?? ROOM_DIMENSION_DEFAULTS.roomHeight) * 1000
+    );
+    const includeRoomlessOpenings = housePlan2D.rooms.length <= 1;
+    const sharedSpaceInput = {
+      roomId: activeRoom.id,
+      roomName: activeRoom.name,
+      roomType: activeRoom.roomType,
+      heightMm,
+      baseboardOffsetMm: Math.max(
+        0,
+        Math.round((activeRoom.geometry.baseboardDepth ?? 0) * 1000)
+      ),
+    };
+    const roomOpenings = planOpenings
+      .filter(
+        (opening) =>
+          opening.roomId === activeRoom.id ||
+          (includeRoomlessOpenings && !opening.roomId)
+      )
+      .map((opening) => ({
+        id: opening.id,
+        wall: opening.wall,
+        kind: opening.kind,
+        offsetMm: opening.offsetMm,
+        widthMm: opening.widthMm,
+        heightMm:
+          opening.heightMm ?? Math.round(PLAN_OPENING_DEFAULT_HEIGHT_METERS * 1000),
+        bottomMm: opening.kind === "window" ? opening.bottomMm ?? 900 : 0,
+        label: opening.kind === "door" ? "Door" : "Window",
+      }));
+    const planShape = activeRoom.planShape ?? "rectangle";
+    if (planShape !== "rectangle") {
+      const polygon =
+        planShape === "custom_polygon" && activeRoom.planPolygon?.length
+          ? activeRoom.planPolygon
+          : [
+              { x: -activeRoom.geometry.width / 2, z: -activeRoom.geometry.depth / 2 },
+              { x: activeRoom.geometry.width / 2, z: -activeRoom.geometry.depth / 2 },
+              {
+                x: activeRoom.geometry.width / 2,
+                z: activeRoom.geometry.depth / 2 - activeRoom.geometry.depth * 0.42,
+              },
+              {
+                x: activeRoom.geometry.width / 2 - activeRoom.geometry.width * 0.42,
+                z: activeRoom.geometry.depth / 2 - activeRoom.geometry.depth * 0.42,
+              },
+              {
+                x: activeRoom.geometry.width / 2 - activeRoom.geometry.width * 0.42,
+                z: activeRoom.geometry.depth / 2,
+              },
+              { x: -activeRoom.geometry.width / 2, z: activeRoom.geometry.depth / 2 },
+            ];
+      return createCabinetPolygonWallSpaces({
+        ...sharedSpaceInput,
+        polygon,
+        openings: mapCabinetCardinalOpeningsToPolygonWalls({
+          polygon,
+          openings: roomOpenings,
+        }),
+        // Match the rectangular adapter's adjacent-wall deduction plus the
+        // default installation allowance without changing polygon geometry.
+        installationClearanceSideMm: wallInsetMm + 10,
+      });
+    }
+    return createCabinetRoomWallSpaces({
+      ...sharedSpaceInput,
+      widthMm,
+      depthMm,
+      openings: roomOpenings,
+    });
+  }, [activeRoom, housePlan2D.rooms.length, houseRoomById, planOpenings]);
+  const cabinetryPreferredSpaceId =
+    activeRoom &&
+    activeSurfaceTarget === "selected_wall" &&
+    activeSelectedWallFaceId &&
+    cabinetryAvailableSpaces.some((space) => space.wallId === activeSelectedWallFaceId)
+      ? `${activeRoom.id}:${activeSelectedWallFaceId}`
+      : null;
   const activeRoomCategoryCounts = useMemo(
     () => countRoomCategories(activeRoom),
     [activeRoom]
@@ -3104,6 +4580,99 @@ function PageContent() {
     zonesRef.current = zones;
   }, [zones]);
 
+  useEffect(() => {
+    const storage = cabinetAssetStorageRef.current;
+    if (!storage) return;
+
+    const staleCabinets = designSnapshot.rooms.flatMap((room) =>
+      room.items
+        .filter(isParametricCabinetItem)
+        .filter(
+          (item) =>
+            !item.glbAssetUrl ||
+            (item.glbAssetUrl.startsWith("blob:") && !storage.ownsGeneratedGlb(item.glbAssetUrl))
+        )
+        .map((item) => ({ roomId: room.id, item }))
+    );
+
+    if (staleCabinets.length === 0) return;
+
+    let cancelled = false;
+    void Promise.all(
+      staleCabinets.map(async ({ roomId, item }) => {
+        const blob = await exportCabinetAsGlb(item.cabinetDefinition);
+        const { glbAssetUrl } = await storage.saveGeneratedGlb({
+          cabinetId: item.instanceId,
+          blob,
+        });
+        return { roomId, instanceId: item.instanceId, glbAssetUrl };
+      })
+    )
+      .then((updates) => {
+        if (cancelled || updates.length === 0) return;
+        const urlByInstanceId = new Map(
+          updates.map((update) => [update.instanceId, update.glbAssetUrl])
+        );
+
+        setDesignSnapshot((prev) => {
+          let changed = false;
+          const rooms = prev.rooms.map((room) => {
+            const items = room.items.map((item) => {
+              if (!isParametricCabinetItem(item)) return item;
+              const glbAssetUrl = urlByInstanceId.get(item.instanceId);
+              if (!glbAssetUrl || item.glbAssetUrl === glbAssetUrl) return item;
+              changed = true;
+              return {
+                ...item,
+                glbAssetUrl,
+                updatedAt: item.updatedAt ?? item.cabinetUpdatedAt,
+              };
+            });
+
+            return items === room.items ? room : { ...room, items };
+          });
+
+          if (!changed) return prev;
+          const next = { ...prev, rooms };
+          const activeRoom = getActiveRoom(next);
+          if (activeRoom) {
+            itemsRef.current = activeRoom.items;
+          }
+          return next;
+        });
+      })
+      .catch((error) => {
+        console.warn("Unable to regenerate cabinet GLB asset URL", error);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [designSnapshot.rooms, setDesignSnapshot]);
+
+  const reconcileDesignItems = useCallback((nextItems: PlacedItem[], roomId?: string) => {
+    const catalogItems = nextItems.filter((item) => !isParametricCabinetItem(item));
+    const { valid: validCatalogItems, invalid } = reconcileCart(catalogItems, CATALOG_ITEMS_MAP);
+    const validCatalogIds = new Set(validCatalogItems.map((item) => item.instanceId));
+    const validItems = nextItems
+      .filter((item) => isParametricCabinetItem(item) || validCatalogIds.has(item.instanceId))
+      .map((item) =>
+        isParametricCabinetItem(item)
+          ? (normalizeCabinetDesignItem(item, { roomId }) as PlacedItem)
+          : item
+      );
+
+    if (invalid.length > 0) {
+      console.warn(`Removed ${invalid.length} invalid items from cart`);
+      track("commerce_invalid_items_removed", {
+        count: invalid.length,
+        items: invalid,
+      });
+    }
+
+    return { validItems, invalid };
+  }, []);
+
   // Action: Commit items with transaction tracking
   // Used for user-initiated actions that should be undoable
   // Step 8: Reconcile cart to remove invalid items
@@ -3113,25 +4682,13 @@ function PageContent() {
       const nextItems =
         typeof updater === "function" ? updater(itemsRef.current) : updater;
 
-      // Reconcile cart: removes items that can't be purchased
-      const { valid: validItems, invalid } = reconcileCart(
-        nextItems,
-        CATALOG_ITEMS_MAP
-      );
-      if (invalid.length > 0) {
-        console.warn(`Removed ${invalid.length} invalid items from cart`);
-        track("commerce_invalid_items_removed", {
-          count: invalid.length,
-          items: invalid,
-        });
-      }
-
       // NEW: Update only the active room (items stored in room.items[])
       const room = getActiveRoom(designSnapshotRef.current);
       if (!room) {
         history.commit();
         return;
       }
+      const { validItems } = reconcileDesignItems(nextItems, room.id);
 
       const updatedRoom = { ...room, items: validItems };
       const nextSnapshot = {
@@ -3145,7 +4702,7 @@ function PageContent() {
       setDesignSnapshot(nextSnapshot);
       history.commit();
     },
-    [history]
+    [history, reconcileDesignItems, setDesignSnapshot]
   );
 
   const addActiveRoomCartReadyItems = useCallback(() => {
@@ -3247,6 +4804,7 @@ function PageContent() {
         typeof updater === "function" ? updater(itemsRef.current) : updater;
       // Validate items can be added to cart
       const validItems = nextItems.filter(item => {
+        if (isParametricCabinetItem(item)) return true;
         const catalogItem = CATALOG_ITEMS[item.productId];
         if (!catalogItem) {
           console.warn(`Item ${item.productId} not found in catalog`);
@@ -3276,7 +4834,7 @@ function PageContent() {
       itemsRef.current = validItems;
       setDesignSnapshot(nextSnapshot);
     },
-    []
+    [setDesignSnapshot]
   );
 
   // Getters for undo/redo state
@@ -3758,6 +5316,19 @@ function PageContent() {
     return offscreenCanvas.toDataURL("image/jpeg", 0.8);
   };
 
+  const getSurfaceMaterialExportCount = () =>
+    designSnapshotRef.current.rooms.reduce((count, room) => {
+      const surfaces = room.surfaces ?? room.surfaceFinishes;
+      const floorCount = getRuntimeSurfaceMaterialById(surfaces?.floorMaterialId) ? 1 : 0;
+      const defaultWallCount = getRuntimeSurfaceMaterialById(surfaces?.walls?.default?.materialId ?? surfaces?.wallMaterialId)
+        ? 1
+        : 0;
+      const faceCount = Object.values(surfaces?.walls?.faces ?? {}).filter((settings) =>
+        Boolean(getRuntimeSurfaceMaterialById(settings?.materialId))
+      ).length;
+      return count + floorCount + defaultWallCount + faceCount;
+    }, 0);
+
   const exportImages = async () => {
     track("export_clicked", {
       design_id: designId,
@@ -3792,7 +5363,9 @@ function PageContent() {
       await waitForFrames(2);
 
       const angles =
-        exportStylePreset === "pro"
+        !isPro(plan)
+          ? [{ name: "hero", yaw: 0 }]
+          : exportStylePreset === "pro"
           ? [
               { name: "hero", yaw: 0 },
               { name: "left", yaw: Math.PI / 9 },
@@ -3859,6 +5432,8 @@ function PageContent() {
         count: images.length,
         is_pro: isPro(plan),
         export_style: exportStylePreset,
+        surface_material_floor_count: getSurfaceMaterialExportCount(),
+        surface_material_count: getSurfaceMaterialExportCount(),
       });
 
       if (!isPro(plan)) {
@@ -4020,6 +5595,8 @@ function PageContent() {
         is_pro: isProPlan,
         tier: isProPlan ? "pro" : "free",
         export_style: exportStylePreset,
+        surface_material_floor_count: getSurfaceMaterialExportCount(),
+        surface_material_count: getSurfaceMaterialExportCount(),
       });
 
       if (!isProPlan) {
@@ -4212,21 +5789,27 @@ function PageContent() {
       if (parsed.version === 3 && Array.isArray(parsed.rooms)) {
         const restored = storedToSnapshot(parsed as StoredDesign);
         const restoredRooms = restored.rooms.map((room) => {
-          const nextWidth =
-            typeof room.geometry.width === "number" && Number.isFinite(room.geometry.width)
-              ? room.geometry.width
-              : ROOM_DIMENSION_DEFAULTS.width;
-          const nextDepth =
-            typeof room.geometry.depth === "number" && Number.isFinite(room.geometry.depth)
-              ? room.geometry.depth
-              : ROOM_DIMENSION_DEFAULTS.depth;
+          const nextWidth = resolveHouseRoomDimension(
+            room.geometry.width,
+            ROOM_DIMENSION_DEFAULTS.width
+          );
+          const nextDepth = resolveHouseRoomDimension(
+            room.geometry.depth,
+            ROOM_DIMENSION_DEFAULTS.depth
+          );
           const nextWall =
             typeof room.geometry.wallThickness === "number" && Number.isFinite(room.geometry.wallThickness)
               ? room.geometry.wallThickness
               : ROOM_DIMENSION_DEFAULTS.wallThickness;
           const cleanedRoomItems = (room.items || [])
-            .filter((it) => CATALOG_ITEMS[it.productId])
+            .filter((it) => isParametricCabinetItem(it) || CATALOG_ITEMS[it.productId])
             .map((it) => {
+              if (isParametricCabinetItem(it)) {
+                return normalizeCabinetDesignItem(it, {
+                  dropTemporaryGlbUrls: true,
+                  roomId: room.id,
+                }) as PlacedItem;
+              }
               const product = CATALOG_ITEMS[it.productId];
               const validVariant = product.variants.some((v) => v.id === it.variantId)
                 ? it.variantId
@@ -4273,14 +5856,21 @@ function PageContent() {
           setDesignSnapshot(nextSnapshot);
           if (typeof parsed.designId === "string" && parsed.designId.trim()) {
             const restoredDesignId = parsed.designId;
-            const storedSnapshot = snapshotToStored(nextSnapshot);
             deferLocalBackupHydrated = true;
-            setDesignId(restoredDesignId);
-            setLastPersistedSnapshotFingerprint(fingerprintStoredDesign(storedSnapshot));
-            fetchShareStatus(restoredDesignId);
-            void loadDesign(restoredDesignId).finally(() => {
-              setLocalBackupHydrated(true);
-            });
+            void loadDesign(restoredDesignId, {
+              notFoundMessage: "Cloud design not found; restored local backup",
+            })
+              .then((loaded) => {
+                if (!loaded) {
+                  setDesignId(null);
+                  setShareToken(null);
+                  setShareEnabled(false);
+                  setLastPersistedSnapshotFingerprint(null);
+                }
+              })
+              .finally(() => {
+                setLocalBackupHydrated(true);
+              });
           }
           hydratePersistedFloorPlanState(nextSnapshot);
           history.clear();
@@ -4291,8 +5881,14 @@ function PageContent() {
       }
 
       const cleaned = (parsed.items || [])
-        .filter((it) => CATALOG_ITEMS[it.productId])
+        .filter((it) => isParametricCabinetItem(it) || CATALOG_ITEMS[it.productId])
         .map((it) => {
+          if (isParametricCabinetItem(it)) {
+            return normalizeCabinetDesignItem(it, {
+              dropTemporaryGlbUrls: true,
+              roomId: designSnapshotRef.current.activeRoomId,
+            }) as PlacedItem;
+          }
           const product = CATALOG_ITEMS[it.productId];
           const validVariant = product.variants.some((v) => v.id === it.variantId)
             ? it.variantId
@@ -4308,14 +5904,8 @@ function PageContent() {
           } as PlacedItem;
         });
 
-      const persistedRoomWidth =
-        typeof parsed.roomWidth === "number" && Number.isFinite(parsed.roomWidth)
-          ? parsed.roomWidth
-          : roomWidth;
-      const persistedRoomDepth =
-        typeof parsed.roomDepth === "number" && Number.isFinite(parsed.roomDepth)
-          ? parsed.roomDepth
-          : roomDepth;
+      const persistedRoomWidth = resolveHouseRoomDimension(parsed.roomWidth, roomWidth);
+      const persistedRoomDepth = resolveHouseRoomDimension(parsed.roomDepth, roomDepth);
 
       if (cleaned.length) {
         const normalized = _normalizeItemsToRoom({
@@ -4362,6 +5952,10 @@ function PageContent() {
       const data = await res.json().catch(() => ({}));
       const newPlan = data?.plan === "pro" ? "pro" : "free";
       setPlan(newPlan);
+      if (newPlan === "pro") {
+        setShowUpgrade(false);
+        setUpgradeReason(null);
+      }
       showRuleToast(`Plan status: ${newPlan === "pro" ? "Pro" : "Free"}`);
       track("plan_refreshed", { plan: newPlan });
     } catch {
@@ -4372,12 +5966,14 @@ function PageContent() {
     }
   };
 
-  const _openBillingPortal = async () => {
+  const openBillingPortal = async () => {
     if (!session?.user) {
       signInWithReturn();
       return;
     }
 
+    if (openingBillingPortal) return;
+    setOpeningBillingPortal(true);
     try {
       showRuleToast("Opening billing portal...");
       const res = await fetch("/api/stripe/portal", { method: "POST" });
@@ -4386,7 +5982,7 @@ function PageContent() {
       if (!res.ok || !data?.url) {
         const errorMsg = data?.error || "Unable to open billing portal. Please try again.";
         showRuleToast(errorMsg);
-        console.error("Portal error:", errorMsg);
+        console.warn("Portal request failed:", errorMsg);
         return;
       }
       
@@ -4395,7 +5991,9 @@ function PageContent() {
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Unable to open billing portal";
       showRuleToast(msg);
-      console.error("Billing portal error:", err);
+      console.warn("Billing portal request failed:", err);
+    } finally {
+      setOpeningBillingPortal(false);
     }
   };
 
@@ -4431,7 +6029,7 @@ function PageContent() {
       if (!res.ok) {
         const msg = data?.error || "Unable to start checkout right now.";
         showRuleToast(msg);
-        console.error("Checkout error:", msg);
+        console.warn("Checkout request failed:", msg);
         return;
       }
 
@@ -4443,7 +6041,7 @@ function PageContent() {
       showRuleToast("No checkout URL returned. Please try again.");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Unable to start checkout right now.";
-      console.error("Failed to start checkout:", err);
+      console.warn("Failed to start checkout:", err);
       showRuleToast(msg);
     } finally {
       setStartingCheckout(false);
@@ -4714,6 +6312,7 @@ function PageContent() {
     clearSelection();
     clearZoneSelection();
     setSelectedPlanOverlayId(null);
+    setSelectedRendererSurfaceTarget(null);
   }, [clearSelection, clearZoneSelection]);
 
   const clearAllSelection = useCallback(() => {
@@ -4846,7 +6445,7 @@ function PageContent() {
     setDesignSnapshot((prev) => switchRoom(prev, roomId));
     clearNonRoomSelection();
     track("editor_room_switched", { roomId });
-  }, [clearNonRoomSelection]);
+  }, [clearNonRoomSelection, setDesignSnapshot]);
 
   useEffect(() => {
     floorActionAdaptersRef.current = {
@@ -4873,16 +6472,106 @@ function PageContent() {
       setDesignSnapshot(nextSnapshot);
       history.commit();
     },
-    [history]
+    [history, setDesignSnapshot]
   );
 
   const handleActiveRoomHeightMmChange = useCallback(
     (valueMm: number) => {
       const height = clampRoomHeightMeters(valueMm / 1000);
-      updateActiveRoomGeometry("Edit room height", (geometry) => ({ ...geometry, height }));
-      track("editor_room_height_changed", { height });
+      const currentSnapshot = designSnapshotRef.current;
+      const roomsOnFloor = currentSnapshot.rooms.filter(
+        (room) => (room.floorLevel ?? 1) === activeFloorLevel
+      );
+      if (
+        roomsOnFloor.length === 0 ||
+        roomsOnFloor.every(
+          (room) => (room.geometry.height ?? ROOM_DIMENSION_DEFAULTS.roomHeight) === height
+        )
+      ) {
+        return;
+      }
+
+      const nextSnapshot = {
+        ...currentSnapshot,
+        rooms: currentSnapshot.rooms.map((room) =>
+          (room.floorLevel ?? 1) === activeFloorLevel
+            ? { ...room, geometry: { ...room.geometry, height } }
+            : room
+        ),
+      };
+
+      runHistoryTransaction("Edit floor wall height", () => {
+        designSnapshotRef.current = nextSnapshot;
+        setDesignSnapshot(nextSnapshot);
+      });
+      track("editor_floor_wall_height_changed", {
+        floorLevel: activeFloorLevel,
+        height,
+        roomCount: roomsOnFloor.length,
+      });
     },
-    [updateActiveRoomGeometry]
+    [activeFloorLevel, runHistoryTransaction, setDesignSnapshot]
+  );
+
+  const handleSelectedWallHeightChange = useCallback(
+    (roomId: string, faceId: string, heightMeters: number) => {
+      const height = clampRoomHeightMeters(heightMeters);
+      const currentSnapshot = designSnapshotRef.current;
+      const room = currentSnapshot.rooms.find((entry) => entry.id === roomId);
+      if (!room) return;
+
+      const defaultHeight = room.geometry.height ?? ROOM_DIMENSION_DEFAULTS.roomHeight;
+      const currentOverrides = room.geometry.wallHeights ?? {};
+      const nextOverrides = { ...currentOverrides };
+      if (Math.abs(height - defaultHeight) < 0.001) {
+        delete nextOverrides[faceId];
+      } else {
+        nextOverrides[faceId] = height;
+      }
+
+      const currentHeight = currentOverrides[faceId] ?? defaultHeight;
+      if (Math.abs(currentHeight - height) < 0.001) return;
+
+      const nextRoom = {
+        ...room,
+        geometry: {
+          ...room.geometry,
+          wallHeights: Object.keys(nextOverrides).length > 0 ? nextOverrides : undefined,
+        },
+      };
+      const nextSnapshot = updateRoom(currentSnapshot, nextRoom);
+      runHistoryTransaction("Edit wall height", () => {
+        designSnapshotRef.current = nextSnapshot;
+        setDesignSnapshot(nextSnapshot);
+      });
+      track("editor_wall_height_changed", { roomId, faceId, height });
+    },
+    [runHistoryTransaction, setDesignSnapshot]
+  );
+
+  const handleResetSelectedWallHeight = useCallback(
+    (roomId: string, faceId: string) => {
+      const currentSnapshot = designSnapshotRef.current;
+      const room = currentSnapshot.rooms.find((entry) => entry.id === roomId);
+      if (!room?.geometry.wallHeights?.[faceId]) return;
+
+      const nextOverrides = { ...room.geometry.wallHeights };
+      delete nextOverrides[faceId];
+      const nextSnapshot = updateRoom(currentSnapshot, {
+        ...room,
+        geometry: {
+          ...room.geometry,
+          wallHeights: Object.keys(nextOverrides).length > 0 ? nextOverrides : undefined,
+        },
+      });
+      runHistoryTransaction("Reset wall height", () => {
+        designSnapshotRef.current = nextSnapshot;
+        setDesignSnapshot(nextSnapshot);
+      });
+      showRuleToast(`${getWallFaceLabel(faceId)} now uses the floor wall height`);
+      track("editor_wall_height_reset", { roomId, faceId });
+    },
+    [runHistoryTransaction, setDesignSnapshot, showRuleToast]
   );
 
   const handleActiveRoomSlabThicknessMmChange = useCallback(
@@ -4893,6 +6582,21 @@ function PageContent() {
         slabThickness,
       }));
       track("editor_slab_thickness_changed", { slabThickness });
+    },
+    [updateActiveRoomGeometry]
+  );
+
+  const handleActiveRoomBaseboardDepthMmChange = useCallback(
+    (valueMm: number) => {
+      const baseboardDepth = Math.max(
+        0,
+        Math.min(0.2, Number.isFinite(valueMm) ? valueMm / 1000 : 0)
+      );
+      updateActiveRoomGeometry("Edit baseboard projection", (geometry) => ({
+        ...geometry,
+        baseboardDepth,
+      }));
+      track("editor_baseboard_depth_changed", { baseboardDepth });
     },
     [updateActiveRoomGeometry]
   );
@@ -4937,7 +6641,7 @@ function PageContent() {
       );
       track("editor_surface_opacity_changed", { kind, opacity: nextOpacity });
     },
-    [runCoalescedHistoryTransaction]
+    [runCoalescedHistoryTransaction, setDesignSnapshot]
   );
 
   const handleActiveRoomCeilingVisibleChange = useCallback((visible: boolean) => {
@@ -4952,7 +6656,7 @@ function PageContent() {
     setDesignSnapshot(nextSnapshot);
     history.commit();
     track("editor_ceiling_visibility_changed", { visible });
-  }, [history]);
+  }, [history, setDesignSnapshot]);
 
   const handleActiveRoomCeilingColorChange = useCallback((color: string) => {
     const safeColor = /^#[0-9a-fA-F]{6}$/.test(color) ? color : "#f8f8f6";
@@ -4976,7 +6680,7 @@ function PageContent() {
     setDesignSnapshot(nextSnapshot);
     history.commit();
     track("editor_ceiling_color_changed");
-  }, [history]);
+  }, [history, setDesignSnapshot]);
 
   const handleSelectPlanOverlay = useCallback((id: string | null) => {
     if (id) {
@@ -4987,6 +6691,7 @@ function PageContent() {
       clearSelection();
       clearZoneSelection();
       setSelectedPlanRoomId(null);
+      setSelectedRendererSurfaceTarget(null);
       if (editorMode !== "present") setEditorMode("design");
     }
   }, [
@@ -5118,6 +6823,8 @@ function PageContent() {
   const selectedItem = selectedInstanceId
     ? items.find((i) => i.instanceId === selectedInstanceId) ?? null
     : null;
+  const selectedCabinetItem =
+    selectedItem && isParametricCabinetItem(selectedItem) ? selectedItem : null;
 
   useEffect(() => {
     setItemConfigurationByInstanceId((prev) => {
@@ -5212,7 +6919,7 @@ function PageContent() {
     history.commit();
     setSelectedZoneId(next.zoneId);
     clearSelection();
-  }, [clearSelection, history, pendingZoneType]);
+  }, [clearSelection, history, pendingZoneType, setDesignSnapshot]);
 
   const autoCreateSeatingZone = useCallback(
     (sofaItem: PlacedItem) => {
@@ -5244,7 +6951,7 @@ function PageContent() {
       setSelectedZoneId(next.zoneId);
       track("seating_zone_auto_created", { zoneId: next.zoneId, trigger: "first_sofa" });
     },
-    [editorMode, history, isClientPreview]
+    [editorMode, history, isClientPreview, setDesignSnapshot]
   );
 
   useEffect(() => {
@@ -5271,6 +6978,7 @@ function PageContent() {
     itemPlanningBoundsByInstanceId,
   } = useDesignPageConfigState({
     importedModelOptions,
+    importedCatalogByProductId,
     itemConfigurationByInstanceId,
     importedModelUrlByAssetId,
     selectedItem,
@@ -5306,13 +7014,15 @@ function PageContent() {
     activeSelectedBenchCushion,
     groupedVisibleColourVariants,
     legFinishOptions,
-    hideColourSelector,
     materialOptions,
     useModelOptionsAsVariants,
     useLengthOptionsAsVariants,
     useShapeOptionsAsVariants,
     showVariantsSection,
     showFinishSection,
+    showStructuredColourSelector,
+    variantSelectorLabel,
+    colourSelectorLabel,
     sizeOptionsForActiveSelection,
     showSizeSection,
     hasWoodColourOptions,
@@ -5367,13 +7077,21 @@ function PageContent() {
         });
       });
     },
-    [housePlan2D.rooms, resolveConfiguredPlanningDimsMm, showRuleToast]
+    [housePlan2D.rooms, resolveConfiguredPlanningDimsMm, setDesignSnapshot, showRuleToast]
   );
 
   const handleCommitRoomDimensionEdit2D = useCallback(
     (roomId: string, axis: "width" | "depth", valueMeters: number) => {
       const targetRoom = designSnapshot.rooms.find((room) => room.id === roomId);
       if (!targetRoom) return;
+      if (
+        !Number.isFinite(valueMeters) ||
+        valueMeters < ROOM_DIMENSION_DEFAULTS.min ||
+        valueMeters > ROOM_DIMENSION_DEFAULTS.max
+      ) {
+        showRuleToast("Enter a valid room dimension.");
+        return;
+      }
 
       const width = clampRoomDimension(axis === "width" ? valueMeters : targetRoom.geometry.width);
       const depth = clampRoomDimension(axis === "depth" ? valueMeters : targetRoom.geometry.depth);
@@ -5405,6 +7123,17 @@ function PageContent() {
         catalogItems: CATALOG_ITEMS,
         resolveConfiguredPlanningDimsMm,
       });
+      const repositionedItemCount = normalizedItems.filter((item, index) => {
+        const previous = targetRoom.items[index];
+        return Boolean(
+          previous &&
+            (previous.position[0] !== item.position[0] || previous.position[2] !== item.position[2])
+        );
+      }).length;
+      const currentPosition = targetRoom.planPosition ?? { x: 0, z: 0 };
+      const roomShifted =
+        roundPlanCoordinate(currentPosition.x) !== placement.x ||
+        roundPlanCoordinate(currentPosition.z) !== placement.z;
 
       history.begin("Edit room dimension");
       setDesignSnapshot((prev) =>
@@ -5436,6 +7165,15 @@ function PageContent() {
         width,
         depth,
       });
+      if (repositionedItemCount > 0 || roomShifted) {
+        const details = [
+          roomShifted ? "an edge was anchored to avoid overlap" : null,
+          repositionedItemCount > 0
+            ? `${repositionedItemCount} item${repositionedItemCount === 1 ? "" : "s"} moved inside the room`
+            : null,
+        ].filter(Boolean);
+        showRuleToast(`Dimension updated; ${details.join(" and ")}.`);
+      }
     },
     [
       designSnapshot.activeRoomId,
@@ -5443,10 +7181,20 @@ function PageContent() {
       history,
       housePlan2D.rooms,
       resolveConfiguredPlanningDimsMm,
+      setDesignSnapshot,
       setRoomDepthInput,
       setRoomWidthInput,
       showRuleToast,
     ]
+  );
+
+  const handleCommitActiveRoomDimension = useCallback(
+    (axis: "width" | "depth", valueMm: number) => {
+      const roomId = selectedPlanRoomId ?? designSnapshot.activeRoomId;
+      if (!roomId) return;
+      handleCommitRoomDimensionEdit2D(roomId, axis, valueMm / 1000);
+    },
+    [designSnapshot.activeRoomId, handleCommitRoomDimensionEdit2D, selectedPlanRoomId]
   );
 
   const applyRoomSize = useCallback(
@@ -5458,6 +7206,16 @@ function PageContent() {
       const depth = clampRoomDimension(nextDepth);
 
       if (!Number.isFinite(width) || !Number.isFinite(depth)) return;
+      const placement = resolveHouseRoomResizePlacement(
+        room.id,
+        width,
+        depth,
+        housePlan2D.rooms
+      );
+      if (!placement) {
+        showRuleToast("That size would overlap another room.");
+        return;
+      }
 
       const currentWall =
         typeof room.geometry.wallThickness === "number" && Number.isFinite(room.geometry.wallThickness)
@@ -5472,6 +7230,17 @@ function PageContent() {
         catalogItems: CATALOG_ITEMS,
         resolveConfiguredPlanningDimsMm,
       });
+      const repositionedItemCount = normalizedItems.filter((item, index) => {
+        const previous = room.items[index];
+        return Boolean(
+          previous &&
+            (previous.position[0] !== item.position[0] || previous.position[2] !== item.position[2])
+        );
+      }).length;
+      const currentPosition = room.planPosition ?? { x: 0, z: 0 };
+      const roomShifted =
+        roundPlanCoordinate(currentPosition.x) !== placement.x ||
+        roundPlanCoordinate(currentPosition.z) !== placement.z;
 
       const nextRoom = {
         ...room,
@@ -5481,6 +7250,7 @@ function PageContent() {
           depth,
           wallThickness: currentWall,
         },
+        planPosition: placement,
         items: normalizedItems,
       };
 
@@ -5497,15 +7267,27 @@ function PageContent() {
 
       setRoomWidthInput(width.toFixed(2));
       setRoomDepthInput(depth.toFixed(2));
+      if (repositionedItemCount > 0 || roomShifted) {
+        const details = [
+          roomShifted ? "the room edge was anchored to avoid overlap" : null,
+          repositionedItemCount > 0
+            ? `${repositionedItemCount} item${repositionedItemCount === 1 ? "" : "s"} moved inside the new boundary`
+            : null,
+        ].filter(Boolean);
+        showRuleToast(`Room resized; ${details.join(" and ")}.`);
+      }
     },
-    [activeRoom, history, resolveConfiguredPlanningDimsMm, setRoomDepthInput, setRoomWidthInput]
+    [
+      activeRoom,
+      history,
+      housePlan2D.rooms,
+      resolveConfiguredPlanningDimsMm,
+      setDesignSnapshot,
+      setRoomDepthInput,
+      setRoomWidthInput,
+      showRuleToast,
+    ]
   );
-
-  const handleApplyRoomSize = useCallback(() => {
-    const width = Number(roomWidthInput);
-    const depth = Number(roomDepthInput);
-    applyRoomSize(width, depth);
-  }, [applyRoomSize, roomWidthInput, roomDepthInput]);
 
   const handleRoomPresetChange = useCallback(
     (presetId: RoomSizePresetId) => {
@@ -5527,6 +7309,170 @@ function PageContent() {
     if (!selectedItem || !selectedProduct) return null;
     return resolveConfiguredPlanningDimsMm(selectedItem, selectedProduct);
   }, [resolveConfiguredPlanningDimsMm, selectedItem, selectedProduct]);
+  const selectedAdjustablePendantHeight = useMemo(
+    () => getAdjustablePendantHeight(selectedProduct, selectedItem),
+    [selectedItem, selectedProduct]
+  );
+  const adjustSelectedPendantHeight = useCallback(
+    (heightCm: number) => {
+      if (!selectedItem || !selectedAdjustablePendantHeight || isClientPreview || !liveCatalogReady) return;
+      const nextHeightCm = clampPendantHeightCm(heightCm, selectedAdjustablePendantHeight);
+      if (Math.abs(nextHeightCm - selectedAdjustablePendantHeight.currentCm) < 0.05) return;
+      commitItems(
+        (prev) =>
+          prev.map((item) =>
+            item.instanceId === selectedItem.instanceId
+              ? { ...item, hangingHeightCm: nextHeightCm }
+              : item
+          ),
+        "Adjust pendant hanging height"
+      );
+      track("pendant_hanging_height_changed", {
+        productId: selectedProduct?.id,
+        heightCm: nextHeightCm,
+      });
+    },
+    [commitItems, isClientPreview, liveCatalogReady, selectedAdjustablePendantHeight, selectedItem, selectedProduct?.id]
+  );
+  const selectedCabinetPlanningDimensionsMm = useMemo(() => {
+    return selectedCabinetItem ? getCabinetPlanningDimsMm(selectedCabinetItem) : null;
+  }, [selectedCabinetItem]);
+  const selectedCabinetDocumentationSnapshot = useMemo(() => {
+    if (!selectedCabinetItem) return null;
+    let generatedParts: ReturnType<typeof generateCabinetParts> | undefined;
+    const getGeneratedParts = () =>
+      (generatedParts ??= generateCabinetParts(selectedCabinetItem.cabinetDefinition));
+    let generatedDocumentation:
+      | ReturnType<typeof generateCabinetDocumentation>
+      | undefined;
+    const getGeneratedDocumentation = () =>
+      (generatedDocumentation ??= generateCabinetDocumentation(
+        selectedCabinetItem.cabinetDefinition,
+        { parts: getGeneratedParts() }
+      ));
+    let generatedBom: ReturnType<typeof generateCabinetBOM> | undefined;
+    const getGeneratedBom = () =>
+      (generatedBom ??= generateCabinetBOM(
+        selectedCabinetItem.cabinetDefinition,
+        getGeneratedParts()
+      ));
+    return {
+      assemblyProfile:
+        selectedCabinetItem.millworkDefinition?.assemblyProfile ??
+        createCabinetMillworkDefinition(selectedCabinetItem.cabinetDefinition)
+          .assemblyProfile,
+      bom: selectedCabinetItem.bomSnapshot ?? getGeneratedBom(),
+      materialSchedule:
+        selectedCabinetItem.materialScheduleSnapshot ??
+        getGeneratedDocumentation().materialSchedule,
+      hardwareSchedule:
+        selectedCabinetItem.hardwareScheduleSnapshot ??
+        getGeneratedDocumentation().hardwareSchedule,
+      edgeBandingSchedule:
+        selectedCabinetItem.edgeBandingScheduleSnapshot ??
+        getGeneratedDocumentation().edgeBandingSchedule,
+      cutList:
+        selectedCabinetItem.cutListSnapshot ?? getGeneratedDocumentation().cutList,
+      dimensionSchedule:
+        selectedCabinetItem.dimensionScheduleSnapshot ??
+        getGeneratedDocumentation().dimensionSchedule,
+      drawingViewSchedule:
+        selectedCabinetItem.drawingViewScheduleSnapshot ??
+        getGeneratedDocumentation().drawingViewSchedule,
+      installerNotes:
+        selectedCabinetItem.installerNotesSnapshot ??
+        getGeneratedDocumentation().installerNotes,
+      releaseChecklist:
+        selectedCabinetItem.releaseChecklistSnapshot ??
+        getGeneratedDocumentation().releaseChecklist,
+      quoteSummary:
+        selectedCabinetItem.quoteSummarySnapshot ??
+        getGeneratedDocumentation().quoteSummary,
+      supplierSkuMappings:
+        selectedCabinetItem.supplierSkuMappingsSnapshot ??
+        getGeneratedDocumentation().supplierSkuMappings,
+      supplierReadiness:
+        selectedCabinetItem.supplierReadinessSnapshot ??
+        getGeneratedDocumentation().supplierReadiness,
+      fabricationReleaseReadiness:
+        selectedCabinetItem.fabricationReleaseReadinessSnapshot ??
+        getGeneratedDocumentation().fabricationReleaseReadiness,
+    };
+  }, [selectedCabinetItem]);
+  const selectedCabinetAssetManifest = useMemo(() => {
+    if (!selectedCabinetItem) return null;
+    const position =
+      selectedCabinetItem.position ?? selectedCabinetItem.transform?.position ?? [0, 0, 0];
+    const rotationY = getCabinetRotationY(selectedCabinetItem);
+    const scale = selectedCabinetItem.transform?.scale ?? [1, 1, 1];
+    return (
+      selectedCabinetItem.millworkAssetManifest ??
+      buildCabinetAssetManifest({
+        definition: selectedCabinetItem.cabinetDefinition,
+        instanceId: selectedCabinetItem.instanceId,
+        roomId: selectedCabinetItem.roomId ?? activeRoom?.id,
+        position,
+        rotationY,
+        scale,
+        glbAssetUrl: selectedCabinetItem.glbAssetUrl,
+        createdAt:
+          selectedCabinetItem.createdAt ??
+          selectedCabinetItem.cabinetDefinition.createdAt,
+        updatedAt:
+          selectedCabinetItem.updatedAt ??
+          selectedCabinetItem.cabinetUpdatedAt ??
+          selectedCabinetItem.cabinetDefinition.updatedAt,
+      })
+    );
+  }, [activeRoom?.id, selectedCabinetItem]);
+  const projectCabinetRoomNamesById = useMemo(
+    () =>
+      Object.fromEntries(
+        designSnapshot.rooms.map((room) => [room.id, room.name])
+      ),
+    [designSnapshot.rooms]
+  );
+  const projectCabinetAssets = useMemo(
+    () =>
+      designSnapshot.rooms.flatMap((room) =>
+        room.items
+          .filter(isParametricCabinetItem)
+          .map((item) => buildPlacedCabinetAssetPackageInput(item, room.id))
+      ),
+    [designSnapshot.rooms]
+  );
+  const projectCabinetSchedulePackage = useMemo(
+    () =>
+      buildCabinetProjectSchedulePackage({
+        assets: projectCabinetAssets,
+        projectId: designId ?? undefined,
+        projectName: designSnapshot.title ?? "Custom Millwork Project",
+        roomNamesById: projectCabinetRoomNamesById,
+      }),
+    [
+      designId,
+      designSnapshot.title,
+      projectCabinetAssets,
+      projectCabinetRoomNamesById,
+    ]
+  );
+  const projectCabinetHandoffPackage = useMemo(
+    () =>
+      projectCabinetAssets.length
+        ? buildCabinetProjectHandoffPackage({
+            assets: projectCabinetAssets,
+            projectId: designId ?? undefined,
+            projectName: designSnapshot.title ?? "Custom Millwork Project",
+            roomNamesById: projectCabinetRoomNamesById,
+          })
+        : null,
+    [
+      designId,
+      designSnapshot.title,
+      projectCabinetAssets,
+      projectCabinetRoomNamesById,
+    ]
+  );
   const selectedStyleConsistencyReport = useMemo(() => {
     if (!selectedItem || !activeRoom) return null;
     return evaluateStyleConsistency({
@@ -5926,6 +7872,17 @@ function PageContent() {
       positionOverride?: [number, number, number],
       rotationOverride?: number
     ) => {
+      const cabinetDims = getCabinetPlanningDimsMm(item);
+      if (cabinetDims) {
+        const rotationY = rotationOverride ?? item.rotationY ?? 0;
+        const [w, d] = getRotatedFootprint(
+          cabinetDims.w / 1000,
+          cabinetDims.d / 1000,
+          rotationY
+        );
+        const pos = positionOverride ?? item.position;
+        return computeAABB(pos, w, d);
+      }
       const product = CATALOG_ITEMS[item.productId];
       if (!product) return null;
       const configuredDims = resolveConfiguredPlanningDimsMm(item, product);
@@ -6077,7 +8034,7 @@ function PageContent() {
     });
     history.commit();
     setSelectedZoneId(null);
-  }, [history]);
+  }, [history, setDesignSnapshot]);
 
   const getZoneBounds = useCallback(
     (zone: Zone) => {
@@ -6167,18 +8124,35 @@ function PageContent() {
         widthMeters?: number;
         offsetMeters?: number;
         heightMeters?: number;
+        bottomMeters?: number;
         kind?: RoomOpening2D["kind"];
       }
     ) => {
-      const normalizedMetrics =
-        metrics.heightMeters !== undefined
-          ? {
-              ...metrics,
-              heightMeters: Math.min(Math.max(0.5, metrics.heightMeters), Math.max(0.5, roomHeight)),
-            }
-          : metrics;
+      const currentOpening = planOpeningsRef.current.find((opening) => opening.id === id);
+      const nextKind = metrics.kind ?? currentOpening?.kind ?? "window";
+      const currentBottomMeters =
+        nextKind === "door" ? 0 : (currentOpening?.bottomMm ?? 900) / 1000;
+      const bottomMeters =
+        nextKind === "door"
+          ? 0
+          : Math.min(
+              Math.max(0, metrics.bottomMeters ?? currentBottomMeters),
+              Math.max(0, roomHeight - 0.4)
+            );
+      const currentHeightMeters =
+        (currentOpening?.heightMm ?? PLAN_OPENING_DEFAULT_HEIGHT_METERS * 1000) / 1000;
+      const heightMeters = Math.min(
+        Math.max(0.4, metrics.heightMeters ?? currentHeightMeters),
+        Math.max(0.4, roomHeight - bottomMeters)
+      );
+      const normalizedMetrics = {
+        ...metrics,
+        ...(metrics.heightMeters !== undefined || metrics.bottomMeters !== undefined || metrics.kind !== undefined
+          ? { heightMeters, bottomMeters }
+          : {}),
+      };
       const historyLabel =
-        (normalizedMetrics.widthMeters !== undefined || normalizedMetrics.heightMeters !== undefined) &&
+        (normalizedMetrics.widthMeters !== undefined || normalizedMetrics.heightMeters !== undefined || normalizedMetrics.bottomMeters !== undefined) &&
         normalizedMetrics.kind === undefined
           ? "Resize opening"
           : "Edit opening";
@@ -6251,28 +8225,81 @@ function PageContent() {
     viewMode === "2d" &&
     floorPlanQualityReport.issues.length > 0 &&
     !activePlanCanvasInteraction;
-  const plan2DFloorPropertiesPanelVisible =
+  useEffect(() => {
+    if (!plan2DQualityReviewPanelVisible) {
+      setPlanQualityReviewPanelHeightPx(0);
+      return;
+    }
+
+    const panel = planQualityReviewPanelRef.current;
+    if (!panel) return;
+
+    const updatePanelHeight = () => {
+      setPlanQualityReviewPanelHeightPx(Math.ceil(panel.getBoundingClientRect().height));
+    };
+
+    updatePanelHeight();
+    const resizeObserver =
+      typeof ResizeObserver === "undefined" ? null : new ResizeObserver(updatePanelHeight);
+    resizeObserver?.observe(panel);
+    window.addEventListener("resize", updatePanelHeight);
+
+    return () => {
+      resizeObserver?.disconnect();
+      window.removeEventListener("resize", updatePanelHeight);
+    };
+  }, [floorPlanQualityReport.issues.length, plan2DQualityReviewPanelVisible, planQualityReviewCollapsed]);
+  const floorPropertiesPanelEligible =
     designControlsPanelVisibleForLayout &&
     designControlsPanelMode === "plan" &&
     !isClientPreview &&
     (isDesigner || floorOptions.length > 1 || viewMode === "3d");
-  const plan2DQualityReviewPanelTopPx = plan2DFloorPropertiesPanelVisible ? 388 : 96;
+  const floatingPlanOverlayStackVisible =
+    !isClientPreview &&
+    viewportSize.width >= PLAN_FLOATING_OVERLAY_DESKTOP_MIN_WIDTH;
+  const floatingFloorPropertiesPanelVisible =
+    floorPropertiesPanelEligible && floatingPlanOverlayStackVisible;
+  const inlineFloorPropertiesPanelVisible =
+    floorPropertiesPanelEligible && !floatingFloorPropertiesPanelVisible;
+  const plan2DQualityReviewPanelTopPx = 76;
+  const plan2DQualityReviewFallbackHeightPx = planQualityReviewCollapsed ? 56 : 252;
+  const plan2DQualityReviewPanelReservedBottomPx =
+    plan2DQualityReviewPanelTopPx +
+    (planQualityReviewPanelHeightPx || plan2DQualityReviewFallbackHeightPx);
+  const primaryLeftPanelVisibleForLayout =
+    designControlsPanelVisibleForLayout || shoppingPanelVisibleForLayout;
   const plan2DSafeAreaLeftPx =
-    designControlsPanelVisibleForLayout && !isClientPreview && viewportSize.width >= 768
-      ? designPanelCollapsed
+    primaryLeftPanelVisibleForLayout && !isClientPreview && viewportSize.width >= 768
+      ? shoppingPanelVisibleForLayout
         ? isDesigner
-          ? 128
-          : 88
-        : isDesigner
-          ? 460
-          : 380
+          ? 398
+          : 318
+        : designPanelCollapsed
+          ? isDesigner
+            ? 128
+            : 88
+          : isDesigner
+            ? 398
+            : 318
       : 0;
+  const selectionInspectorDockedWithPlanStack =
+    floatingPlanOverlayStackVisible && viewMode === "3d" && hasWholeHousePlan;
+  const selectionInspectorDockedWithRightRail = floatingPlanOverlayStackVisible;
+  const selectionInspectorRightPx = PLAN_FLOATING_OVERLAY_STACK_RIGHT_PX;
+  const selectionInspectorTopPx = selectionInspectorDockedWithPlanStack
+    ? PLAN_FLOATING_OVERLAY_INSPECTOR_STACK_TOP_PX
+    : plan2DQualityReviewPanelVisible
+      ? plan2DQualityReviewPanelReservedBottomPx + PLAN_FLOATING_OVERLAY_STACK_GAP_PX
+    : 160;
+  const selectionInspectorWidthPx = selectionInspectorDockedWithRightRail
+    ? PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX
+    : 288;
   const plan2DSafeAreaRightPx =
     !isClientPreview && viewMode === "2d" && viewportSize.width >= 768
       ? Math.max(
           commercePanelDockWidthPx,
           plan2DQualityReviewPanelVisible ? 344 : 0,
-          plan2DFloorPropertiesPanelVisible ? 284 : 0
+          floatingFloorPropertiesPanelVisible ? 284 : 0
         )
       : 0;
   const plan2DSafeAreaBottomPx =
@@ -6286,6 +8313,44 @@ function PageContent() {
     () => getPlan2DRoomFitBounds(housePlan2D.rooms, roomWidth, roomDepth),
     [housePlan2D.rooms, roomDepth, roomWidth]
   );
+  const plan2DWholeHomeFitPaddingMeters = Math.max(
+    PLAN_2D_WHOLE_HOME_FIT_PADDING_MIN_METERS,
+    Math.max(plan2DFitBounds.widthMeters, plan2DFitBounds.depthMeters) *
+      PLAN_2D_WHOLE_HOME_FIT_PADDING_RATIO
+  );
+  const plan2DWholeHomeViewFit = useMemo(() => {
+    const viewportWidthPx = viewportSize.width;
+    const viewportHeightPx = viewportSize.height;
+    const leftInsetPx = viewportWidthPx >= 768 ? plan2DSafeAreaLeftPx : 0;
+    const rightInsetPx = viewportWidthPx >= 768 ? plan2DSafeAreaRightPx : 0;
+    const bottomInsetPx = viewportWidthPx < 768 ? plan2DSafeAreaBottomPx : 0;
+
+    return resolvePlan2DViewFit({
+      centerX: plan2DFitBounds.centerX,
+      centerZ: plan2DFitBounds.centerZ,
+      fitOrientation: "auto",
+      paddingMeters: plan2DWholeHomeFitPaddingMeters,
+      planDepthMeters: plan2DFitBounds.depthMeters,
+      planWidthMeters: plan2DFitBounds.widthMeters,
+      safeAreaBottomPx: bottomInsetPx,
+      safeAreaLeftPx: leftInsetPx,
+      safeAreaRightPx: rightInsetPx,
+      viewportHeightPx,
+      viewportWidthPx,
+      zoomScale: WHOLE_HOME_FIT_ZOOM_SCALE,
+    });
+  }, [
+    plan2DFitBounds.centerX,
+    plan2DFitBounds.centerZ,
+    plan2DFitBounds.depthMeters,
+    plan2DFitBounds.widthMeters,
+    plan2DSafeAreaBottomPx,
+    plan2DSafeAreaLeftPx,
+    plan2DSafeAreaRightPx,
+    plan2DWholeHomeFitPaddingMeters,
+    viewportSize.height,
+    viewportSize.width,
+  ]);
   useEffect(() => {
     if (housePlan2D.rooms.length === 0) return;
     const previous = lastTrackedPlanQualityRef.current;
@@ -6387,6 +8452,97 @@ function PageContent() {
       updateSelection,
     ]
   );
+  const handleOpenFloorEditorForRoom = useCallback(
+    (roomId?: string | null) => {
+      const targetRoomId = roomId ?? selectedPlanRoomId ?? designSnapshot.activeRoomId;
+      if (!targetRoomId) return;
+
+      if (designSnapshot.activeRoomId !== targetRoomId) {
+        handleSwitchRoom(targetRoomId);
+      }
+
+      clearNonRoomSelection();
+      setSelectedPlanRoomId(targetRoomId);
+      setActiveSurfaceTarget("floor");
+      goPlan();
+      setDesignPanelOpen(true);
+      setDesignPanelCollapsed(false);
+      setFloorInspectorPickerOpen(false);
+      setFloorFinishPanelOpenSignal((signal) => signal + 1);
+      showRuleToast("Choose a floor material from Surfaces");
+      track("floor_finish_editor_opened", {
+        roomId: targetRoomId,
+        source: "selected_room",
+      });
+    },
+    [
+      clearNonRoomSelection,
+      designSnapshot.activeRoomId,
+      goPlan,
+      handleSwitchRoom,
+      selectedPlanRoomId,
+      showRuleToast,
+    ]
+  );
+  const handleOpenWallMaterialEditorForRoom = useCallback(
+    (roomId: string, faceId: string) => {
+      if (designSnapshot.activeRoomId !== roomId) {
+        handleSwitchRoom(roomId);
+      }
+
+      clearNonRoomSelection();
+      setSelectedPlanRoomId(roomId);
+      setSelectedWallSurfaceTarget({ roomId, faceId });
+      setActiveSurfaceTarget("selected_wall");
+      goPlan();
+      setDesignPanelOpen(true);
+      setDesignPanelCollapsed(false);
+      setFloorInspectorPickerOpen(false);
+      setFloorFinishPanelOpenSignal((signal) => signal + 1);
+      showRuleToast("Choose a wall finish from Surfaces");
+      track("wall_finish_editor_opened", {
+        roomId,
+        faceId,
+        source: "selected_room",
+      });
+    },
+    [
+      clearNonRoomSelection,
+      designSnapshot.activeRoomId,
+      goPlan,
+      handleSwitchRoom,
+      showRuleToast,
+    ]
+  );
+  const handleOpenCeilingEditorForRoom = useCallback(
+    (roomId: string) => {
+      if (designSnapshot.activeRoomId !== roomId) {
+        handleSwitchRoom(roomId);
+      }
+
+      clearNonRoomSelection();
+      setSelectedPlanRoomId(roomId);
+      setSelectedWallSurfaceTarget(null);
+      setActiveSurfaceTarget("ceiling");
+      goPlan();
+      setDesignPanelOpen(true);
+      setDesignPanelCollapsed(false);
+      setFloorInspectorPickerOpen(false);
+      setFloorFinishPanelOpenSignal((signal) => signal + 1);
+      showRuleToast("Choose a ceiling paint from Surfaces");
+      track("ceiling_finish_editor_opened", {
+        roomId,
+        source: "selected_ceiling",
+      });
+    },
+    [
+      clearNonRoomSelection,
+      designSnapshot.activeRoomId,
+      goPlan,
+      handleSwitchRoom,
+      showRuleToast,
+    ]
+  );
   const visiblePlanOpening = selectedPlanOpening;
   const visiblePlanOpeningRoomName = getPlanOpeningRoomName(visiblePlanOpening);
   const visiblePlanOpeningWallSpanMeters = getPlanOpeningWallSpan(visiblePlanOpening);
@@ -6421,7 +8577,7 @@ function PageContent() {
         title: selectedProduct.title,
         detail: activeRoom?.name ?? "Current room",
         metrics: [
-          `${(dims.w / 1000).toFixed(2)} x ${(dims.d / 1000).toFixed(2)}m`,
+          `${formatCabinetMeasurement(dims.w, planMeasurementUnit)} x ${formatCabinetMeasurement(dims.d, planMeasurementUnit)}`,
           `${normalizeRotationDegrees(radiansToDeg(selectedItem.rotationY ?? 0))}°`,
           `$${getItemPrice(selectedProduct)}`,
         ],
@@ -6434,8 +8590,8 @@ function PageContent() {
         title: `${visiblePlanOpening.kind === "door" ? "Door" : "Window"} on ${visiblePlanOpening.wall}`,
         detail: visiblePlanOpeningRoomName,
         metrics: [
-          `${(visiblePlanOpening.widthMm / 1000).toFixed(2)}m wide`,
-          `${(visiblePlanOpening.offsetMm / 1000).toFixed(2)}m from center`,
+          `${formatCabinetMeasurement(visiblePlanOpening.widthMm, planMeasurementUnit)} wide`,
+          `${formatCabinetMeasurement(visiblePlanOpening.offsetMm, planMeasurementUnit)} from center`,
         ],
       };
     }
@@ -6446,7 +8602,7 @@ function PageContent() {
         title: selectedPlanFixedElement.label ?? selectedPlanFixedElement.kind,
         detail: "Plan fixture",
         metrics: [
-          `${(selectedPlanFixedElement.widthMm / 1000).toFixed(2)} x ${(selectedPlanFixedElement.depthMm / 1000).toFixed(2)}m`,
+          `${formatCabinetMeasurement(selectedPlanFixedElement.widthMm, planMeasurementUnit)} x ${formatCabinetMeasurement(selectedPlanFixedElement.depthMm, planMeasurementUnit)}`,
           `${selectedPlanFixedElement.rotationDeg ?? 0}°`,
         ],
       };
@@ -6458,20 +8614,40 @@ function PageContent() {
         title: selectedPlanAnnotation.text || "Note",
         detail: selectedPlanAnnotation.kind,
         metrics: [
-          `${(selectedPlanAnnotation.xMm / 1000).toFixed(2)}m x ${(selectedPlanAnnotation.zMm / 1000).toFixed(2)}m`,
+          `${formatCabinetMeasurement(selectedPlanAnnotation.xMm, planMeasurementUnit)} x ${formatCabinetMeasurement(selectedPlanAnnotation.zMm, planMeasurementUnit)}`,
+        ],
+      };
+    }
+
+    if (selectedPlanRoomContext && surfaceInspectorIsWall && wallInspectorFaceId) {
+      return {
+        kind: "Wall",
+        title: `${getWallFaceLabel(wallInspectorFaceId)} wall`,
+        detail: `${selectedPlanRoomContext.name} · ${surfaceInspectorDisplayName}`,
+        metrics: [
+          `${formatCabinetMeasurement(wallInspectorHeight * 1000, planMeasurementUnit)} high`,
+        ],
+      };
+    }
+
+    if (selectedPlanRoomContext && surfaceInspectorIsCeiling) {
+      return {
+        kind: "Ceiling",
+        title: `${selectedPlanRoomContext.name} ceiling`,
+        detail: surfaceInspectorDisplayName,
+        metrics: [
+          `${formatCabinetMeasurement(wallInspectorDefaultHeight * 1000, planMeasurementUnit)} high`,
         ],
       };
     }
 
     if (selectedPlanRoomContext) {
+      const roomArea = selectedPlanRoomContext.w * selectedPlanRoomContext.d;
       return {
         kind: "Room",
         title: selectedPlanRoomContext.name,
-        detail: `${selectedPlanRoomContext.roomType} room`,
-        metrics: [
-          `${selectedPlanRoomContext.w.toFixed(2)} x ${selectedPlanRoomContext.d.toFixed(2)}m`,
-          `${(selectedPlanRoomContext.w * selectedPlanRoomContext.d).toFixed(1)} sqm`,
-        ],
+        detail: `${selectedPlanRoomContext.roomType} room · ${roomArea.toFixed(1)} sqm`,
+        metrics: [],
       };
     }
 
@@ -6479,6 +8655,7 @@ function PageContent() {
   }, [
     activeRoom?.name,
     items,
+    planMeasurementUnit,
     selectedIds,
     selectedItem,
     selectedItemPlanningDimensionsMm,
@@ -6486,9 +8663,19 @@ function PageContent() {
     selectedPlanFixedElement,
     selectedPlanRoomContext,
     selectedProduct,
+    surfaceInspectorDisplayName,
+    surfaceInspectorIsCeiling,
+    surfaceInspectorIsWall,
     visiblePlanOpening,
     visiblePlanOpeningRoomName,
+    wallInspectorDefaultHeight,
+    wallInspectorFaceId,
+    wallInspectorHeight,
   ]);
+  const floatingSelectionInspectorVisible =
+    !isClientPreview &&
+    Boolean(selectedObjectInspector) &&
+    !(editorMode === "adjust" && selectedProduct);
   const selectedObjectContext = useMemo(() => {
     return buildDesignSelectionContext({
       selectedFurniture:
@@ -6515,7 +8702,7 @@ function PageContent() {
       itemCount: items.length,
       shoppableCount: wholeHomeShoppingSummary.shoppableCount,
       hasRoomConnectionBlockers: roomConnectionChecklistItems.some(
-        (item) => item.status === "needs_doorway"
+        (item) => item.status !== "connected"
       ),
       sceneReady,
       exportStylePreset,
@@ -6743,6 +8930,7 @@ function PageContent() {
       history,
       resetFloorPlanInteraction,
       planOpenings,
+      revokeFloorPlanUnderlayUrl,
       roomHeight,
       setDesignSnapshot,
       setFloorPlanPdfSourceReady,
@@ -6775,12 +8963,16 @@ function PageContent() {
   }, [handleApplyPlanTemplate, pendingPlanTemplateReplacement]);
 
   const handleApplyFloorMaterialToRoom = useCallback(
-    (materialId: string) => {
+    (materialId: string, roomId?: string | null) => {
       const surfaceMaterial = getRuntimeSurfaceMaterialById(materialId);
       const material = getFloorMaterialById(materialId);
       const appliedMaterialId = surfaceMaterial?.surface_material.material_id ?? material.id;
       const appliedMaterialName = surfaceMaterial?.surface_material.product_name ?? material.name;
-      const room = getActiveRoom(designSnapshotRef.current);
+      const appliedFloorPattern = getDefaultFloorPatternForMaterial(surfaceMaterial);
+      const room =
+        (roomId
+          ? designSnapshotRef.current.rooms.find((entry) => entry.id === roomId) ?? null
+          : null) ?? getActiveRoom(designSnapshotRef.current);
       if (!room) return;
 
       runHistoryTransaction("Apply floor material", () => setDesignSnapshot((prev) => {
@@ -6793,11 +8985,29 @@ function PageContent() {
             ...target.surfaces,
             ...target.surfaceFinishes,
             floorMaterialId: appliedMaterialId,
+            ...(surfaceMaterial
+              ? {
+                  floorPattern: appliedFloorPattern,
+                  floorScale: DEFAULT_FLOOR_PATTERN_SCALE,
+                  floorPatternOffset: DEFAULT_FLOOR_PATTERN_OFFSET,
+                  floorJointSizeMm: DEFAULT_FLOOR_JOINT_SIZE_MM,
+                  floorJointColor: DEFAULT_FLOOR_JOINT_COLOR,
+                }
+              : {}),
           },
           surfaceFinishes: {
             ...target.surfaceFinishes,
             ...target.surfaces,
             floorMaterialId: appliedMaterialId,
+            ...(surfaceMaterial
+              ? {
+                  floorPattern: appliedFloorPattern,
+                  floorScale: DEFAULT_FLOOR_PATTERN_SCALE,
+                  floorPatternOffset: DEFAULT_FLOOR_PATTERN_OFFSET,
+                  floorJointSizeMm: DEFAULT_FLOOR_JOINT_SIZE_MM,
+                  floorJointColor: DEFAULT_FLOOR_JOINT_COLOR,
+                }
+              : {}),
           },
         });
       }));
@@ -6812,12 +9022,65 @@ function PageContent() {
     [runHistoryTransaction, setDesignSnapshot, showRuleToast]
   );
 
+  const handleApplyFloorSizeVariantToRoom = useCallback(
+    (materialId: string, roomId?: string | null) => {
+      const surfaceMaterial = getRuntimeSurfaceMaterialById(materialId);
+      if (!surfaceMaterial) {
+        handleApplyFloorMaterialToRoom(materialId, roomId);
+        return;
+      }
+
+      const room =
+        (roomId
+          ? designSnapshotRef.current.rooms.find((entry) => entry.id === roomId) ?? null
+          : null) ?? getActiveRoom(designSnapshotRef.current);
+      if (!room) return;
+
+      runHistoryTransaction("Change floor tile size", () => setDesignSnapshot((prev) => {
+        const target = prev.rooms.find((entry) => entry.id === room.id);
+        if (!target) return prev;
+        const currentSurfaces = {
+          ...target.surfaces,
+          ...target.surfaceFinishes,
+        };
+        const nextFloorPattern = getCompatibleFloorPatternForMaterial(
+          surfaceMaterial,
+          currentSurfaces.floorPattern ?? currentSurfaces.floor?.pattern
+        );
+
+        return updateRoom(prev, {
+          ...target,
+          surfaces: {
+            ...target.surfaces,
+            ...target.surfaceFinishes,
+            floorMaterialId: surfaceMaterial.surface_material.material_id,
+            floorPattern: nextFloorPattern,
+          },
+          surfaceFinishes: {
+            ...target.surfaceFinishes,
+            ...target.surfaces,
+            floorMaterialId: surfaceMaterial.surface_material.material_id,
+            floorPattern: nextFloorPattern,
+          },
+        });
+      }));
+
+      showRuleToast(`${surfaceMaterial.surface_material.product_name} applied to ${room.name}`);
+      track("floor_finish_size_variant_applied", {
+        materialId: surfaceMaterial.surface_material.material_id,
+        roomId: room.id,
+      });
+    },
+    [handleApplyFloorMaterialToRoom, runHistoryTransaction, setDesignSnapshot, showRuleToast]
+  );
+
   const handleApplyFloorMaterialToAllRooms = useCallback(
     (materialId: string) => {
       const surfaceMaterial = getRuntimeSurfaceMaterialById(materialId);
       const material = getFloorMaterialById(materialId);
       const appliedMaterialId = surfaceMaterial?.surface_material.material_id ?? material.id;
       const appliedMaterialName = surfaceMaterial?.surface_material.product_name ?? material.name;
+      const appliedFloorPattern = getDefaultFloorPatternForMaterial(surfaceMaterial);
 
       runHistoryTransaction("Apply floor material", () => setDesignSnapshot((prev) => {
         if (prev.rooms.length === 0) return prev;
@@ -6830,11 +9093,29 @@ function PageContent() {
               ...room.surfaces,
               ...room.surfaceFinishes,
               floorMaterialId: appliedMaterialId,
+              ...(surfaceMaterial
+                ? {
+                    floorPattern: appliedFloorPattern,
+                    floorScale: DEFAULT_FLOOR_PATTERN_SCALE,
+                    floorPatternOffset: DEFAULT_FLOOR_PATTERN_OFFSET,
+                    floorJointSizeMm: DEFAULT_FLOOR_JOINT_SIZE_MM,
+                    floorJointColor: DEFAULT_FLOOR_JOINT_COLOR,
+                  }
+                : {}),
             },
             surfaceFinishes: {
               ...room.surfaceFinishes,
               ...room.surfaces,
               floorMaterialId: appliedMaterialId,
+              ...(surfaceMaterial
+                ? {
+                    floorPattern: appliedFloorPattern,
+                    floorScale: DEFAULT_FLOOR_PATTERN_SCALE,
+                    floorPatternOffset: DEFAULT_FLOOR_PATTERN_OFFSET,
+                    floorJointSizeMm: DEFAULT_FLOOR_JOINT_SIZE_MM,
+                    floorJointColor: DEFAULT_FLOOR_JOINT_COLOR,
+                  }
+                : {}),
             },
           })),
         };
@@ -6849,8 +9130,603 @@ function PageContent() {
     [runHistoryTransaction, setDesignSnapshot, showRuleToast]
   );
 
-  const handleRotateActiveFloorMaterial = useCallback(() => {
-    const room = getActiveRoom(designSnapshotRef.current);
+  const buildWallSurfaceSettings = useCallback(
+    (materialId: string, current?: SurfaceSettings): SurfaceSettings =>
+      createSurfaceSettingsPatch(
+        materialId,
+        normalizeFloorRotationDeg,
+        clampFloorPatternScale,
+        {
+          materialId,
+          pattern: "straight",
+          rotationDeg: 0,
+          scale: DEFAULT_FLOOR_PATTERN_SCALE,
+          offset: DEFAULT_FLOOR_PATTERN_OFFSET,
+          jointSizeMm: DEFAULT_FLOOR_JOINT_SIZE_MM,
+          jointColor: DEFAULT_FLOOR_JOINT_COLOR,
+        },
+        current
+      ),
+    []
+  );
+
+  const handleApplyWallMaterialToRoom = useCallback(
+    (materialId: string, roomId?: string | null, faceId?: string | null) => {
+      const surfaceMaterial = getRuntimeSurfaceMaterialById(materialId);
+      const material = getFloorMaterialById(materialId);
+      const appliedMaterialId = surfaceMaterial?.surface_material.material_id ?? material.id;
+      const appliedMaterialName = surfaceMaterial?.surface_material.product_name ?? material.name;
+      const room =
+        (roomId
+          ? designSnapshotRef.current.rooms.find((entry) => entry.id === roomId) ?? null
+          : null) ?? getActiveRoom(designSnapshotRef.current);
+      if (!room) return;
+
+      const normalizedFaceId = faceId?.trim() || null;
+      runHistoryTransaction(
+        normalizedFaceId ? "Apply selected wall material" : "Apply wall material",
+        () => setDesignSnapshot((prev) => {
+          const target = prev.rooms.find((entry) => entry.id === room.id);
+          if (!target) return prev;
+
+          const currentSurfaces: RoomSurfaceAssignments = {
+            ...target.surfaces,
+            ...target.surfaceFinishes,
+          };
+          const currentWalls = currentSurfaces.walls ?? {};
+          const currentFaces = currentWalls.faces ?? {};
+          const nextWallSettings = buildWallSurfaceSettings(
+            appliedMaterialId,
+            normalizedFaceId ? currentFaces[normalizedFaceId] ?? currentWalls.default : currentWalls.default
+          );
+          const nextWalls = normalizedFaceId
+            ? {
+                ...currentWalls,
+                faces: {
+                  ...currentFaces,
+                  [normalizedFaceId]: nextWallSettings,
+                },
+              }
+            : {
+                ...currentWalls,
+                default: nextWallSettings,
+              };
+          const nextSurfaces: RoomSurfaceAssignments = {
+            ...currentSurfaces,
+            ...(normalizedFaceId ? {} : { wallMaterialId: appliedMaterialId }),
+            walls: nextWalls,
+          };
+
+          return updateRoom(prev, {
+            ...target,
+            surfaces: nextSurfaces,
+            surfaceFinishes: nextSurfaces,
+          });
+        })
+      );
+
+      showRuleToast(
+        normalizedFaceId
+          ? `${appliedMaterialName} applied to ${getWallFaceLabel(normalizedFaceId)}`
+          : `${appliedMaterialName} applied to ${room.name} walls`
+      );
+      track("wall_finish_applied", {
+        materialId: appliedMaterialId,
+        roomId: room.id,
+        scope: normalizedFaceId ? "selected_wall" : "room_walls",
+        faceId: normalizedFaceId,
+      });
+    },
+    [buildWallSurfaceSettings, runHistoryTransaction, setDesignSnapshot, showRuleToast]
+  );
+
+  const handleApplyWallMaterialToAllRooms = useCallback(
+    (materialId: string) => {
+      const surfaceMaterial = getRuntimeSurfaceMaterialById(materialId);
+      const material = getFloorMaterialById(materialId);
+      const appliedMaterialId = surfaceMaterial?.surface_material.material_id ?? material.id;
+      const appliedMaterialName = surfaceMaterial?.surface_material.product_name ?? material.name;
+
+      runHistoryTransaction("Apply wall material", () => setDesignSnapshot((prev) => {
+        if (prev.rooms.length === 0) return prev;
+
+        return {
+          ...prev,
+          rooms: prev.rooms.map((room) => {
+            const currentSurfaces: RoomSurfaceAssignments = {
+              ...room.surfaces,
+              ...room.surfaceFinishes,
+            };
+            const currentWalls = currentSurfaces.walls ?? {};
+            const nextSurfaces: RoomSurfaceAssignments = {
+              ...currentSurfaces,
+              wallMaterialId: appliedMaterialId,
+              walls: {
+                ...currentWalls,
+                default: buildWallSurfaceSettings(appliedMaterialId, currentWalls.default),
+              },
+            };
+            return {
+              ...room,
+              surfaces: nextSurfaces,
+              surfaceFinishes: nextSurfaces,
+            };
+          }),
+        };
+      }));
+
+      showRuleToast(`${appliedMaterialName} applied to all room walls`);
+      track("wall_finish_applied", {
+        materialId: appliedMaterialId,
+        scope: "home_walls",
+      });
+    },
+    [buildWallSurfaceSettings, runHistoryTransaction, setDesignSnapshot, showRuleToast]
+  );
+
+  const buildWallPaintSettings = useCallback(
+    (colorHex: string, name?: string | null, current?: SurfaceSettings): SurfaceSettings | null => {
+      const normalizedColor = normalizeWallPaintColorHex(colorHex);
+      if (!normalizedColor) return null;
+      return createSurfaceSettingsPatch(
+        null,
+        normalizeFloorRotationDeg,
+        clampFloorPatternScale,
+        {
+          materialId: null,
+          paintColorHex: normalizedColor,
+          paintName: getWallPaintDisplayName(normalizedColor, name),
+          pattern: "straight",
+          rotationDeg: 0,
+          scale: DEFAULT_FLOOR_PATTERN_SCALE,
+          offset: DEFAULT_FLOOR_PATTERN_OFFSET,
+          jointSizeMm: DEFAULT_FLOOR_JOINT_SIZE_MM,
+          jointColor: DEFAULT_FLOOR_JOINT_COLOR,
+        },
+        current
+      );
+    },
+    []
+  );
+
+  const handleApplyWallPaintToRoom = useCallback(
+    (colorHex: string, name?: string | null, roomId?: string | null, faceId?: string | null) => {
+      const normalizedColor = normalizeWallPaintColorHex(colorHex);
+      if (!normalizedColor) {
+        showRuleToast("Choose a valid wall colour");
+        return;
+      }
+      const paintName = getWallPaintDisplayName(normalizedColor, name);
+      const room =
+        (roomId
+          ? designSnapshotRef.current.rooms.find((entry) => entry.id === roomId) ?? null
+          : null) ?? getActiveRoom(designSnapshotRef.current);
+      if (!room) return;
+
+      const normalizedFaceId = faceId?.trim() || null;
+      runHistoryTransaction(
+        normalizedFaceId ? "Paint selected wall" : "Paint walls",
+        () => setDesignSnapshot((prev) => {
+          const target = prev.rooms.find((entry) => entry.id === room.id);
+          if (!target) return prev;
+
+          const currentSurfaces: RoomSurfaceAssignments = {
+            ...target.surfaces,
+            ...target.surfaceFinishes,
+          };
+          const currentWalls = currentSurfaces.walls ?? {};
+          const currentFaces = currentWalls.faces ?? {};
+          const nextWallSettings = buildWallPaintSettings(
+            normalizedColor,
+            paintName,
+            normalizedFaceId ? currentFaces[normalizedFaceId] ?? currentWalls.default : currentWalls.default
+          );
+          if (!nextWallSettings) return prev;
+
+          const nextWalls = normalizedFaceId
+            ? {
+                ...currentWalls,
+                faces: {
+                  ...currentFaces,
+                  [normalizedFaceId]: nextWallSettings,
+                },
+              }
+            : {
+                ...currentWalls,
+                default: nextWallSettings,
+              };
+          const nextSurfaces: RoomSurfaceAssignments = {
+            ...currentSurfaces,
+            ...(normalizedFaceId ? {} : { wallMaterialId: null }),
+            walls: nextWalls,
+          };
+
+          return updateRoom(prev, {
+            ...target,
+            surfaces: nextSurfaces,
+            surfaceFinishes: nextSurfaces,
+          });
+        })
+      );
+
+      showRuleToast(
+        normalizedFaceId
+          ? `${paintName} applied to ${getWallFaceLabel(normalizedFaceId)}`
+          : `${paintName} applied to ${room.name} walls`
+      );
+      track("wall_paint_applied", {
+        colorHex: normalizedColor,
+        name: paintName,
+        roomId: room.id,
+        scope: normalizedFaceId ? "selected_wall" : "room_walls",
+        faceId: normalizedFaceId,
+      });
+    },
+    [buildWallPaintSettings, runHistoryTransaction, setDesignSnapshot, showRuleToast]
+  );
+
+  const handleApplyWallPaintToAllRooms = useCallback(
+    (colorHex: string, name?: string | null) => {
+      const normalizedColor = normalizeWallPaintColorHex(colorHex);
+      if (!normalizedColor) {
+        showRuleToast("Choose a valid wall colour");
+        return;
+      }
+      const paintName = getWallPaintDisplayName(normalizedColor, name);
+
+      runHistoryTransaction("Paint all room walls", () => setDesignSnapshot((prev) => {
+        if (prev.rooms.length === 0) return prev;
+
+        return {
+          ...prev,
+          rooms: prev.rooms.map((room) => {
+            const currentSurfaces: RoomSurfaceAssignments = {
+              ...room.surfaces,
+              ...room.surfaceFinishes,
+            };
+            const currentWalls = currentSurfaces.walls ?? {};
+            const nextWallSettings = buildWallPaintSettings(
+              normalizedColor,
+              paintName,
+              currentWalls.default
+            );
+            if (!nextWallSettings) return room;
+            const nextSurfaces: RoomSurfaceAssignments = {
+              ...currentSurfaces,
+              wallMaterialId: null,
+              walls: {
+                ...currentWalls,
+                default: nextWallSettings,
+              },
+            };
+            return {
+              ...room,
+              surfaces: nextSurfaces,
+              surfaceFinishes: nextSurfaces,
+            };
+          }),
+        };
+      }));
+
+      showRuleToast(`${paintName} applied to all room walls`);
+      track("wall_paint_applied", {
+        colorHex: normalizedColor,
+        name: paintName,
+        scope: "home_walls",
+      });
+    },
+    [buildWallPaintSettings, runHistoryTransaction, setDesignSnapshot, showRuleToast]
+  );
+
+  const handleApplyCeilingPaintToRoom = useCallback(
+    (colorHex: string, name?: string | null, roomId?: string | null) => {
+      const normalizedColor = normalizeWallPaintColorHex(colorHex);
+      if (!normalizedColor) {
+        showRuleToast("Choose a valid ceiling colour");
+        return;
+      }
+      const paintName = getWallPaintDisplayName(normalizedColor, name);
+      const room =
+        (roomId
+          ? designSnapshotRef.current.rooms.find((entry) => entry.id === roomId) ?? null
+          : null) ?? getActiveRoom(designSnapshotRef.current);
+      if (!room) return;
+
+      runHistoryTransaction("Paint ceiling", () => setDesignSnapshot((prev) => {
+        const target = prev.rooms.find((entry) => entry.id === room.id);
+        if (!target) return prev;
+
+        const currentSurfaces: RoomSurfaceAssignments = {
+          ...target.surfaceFinishes,
+          ...target.surfaces,
+        };
+        const nextCeilingSettings = buildWallPaintSettings(
+          normalizedColor,
+          paintName,
+          currentSurfaces.ceiling
+        );
+        if (!nextCeilingSettings) return prev;
+        const nextSurfaces: RoomSurfaceAssignments = {
+          ...currentSurfaces,
+          ceiling: nextCeilingSettings,
+          ceilingColor: normalizedColor,
+        };
+
+        return updateRoom(prev, {
+          ...target,
+          surfaces: nextSurfaces,
+          surfaceFinishes: nextSurfaces,
+        });
+      }));
+
+      showRuleToast(`${paintName} applied to ${room.name} ceiling`);
+      track("ceiling_paint_applied", {
+        colorHex: normalizedColor,
+        name: paintName,
+        roomId: room.id,
+        scope: "room_ceiling",
+      });
+    },
+    [buildWallPaintSettings, runHistoryTransaction, setDesignSnapshot, showRuleToast]
+  );
+
+  const handleApplyCeilingPaintToAllRooms = useCallback(
+    (colorHex: string, name?: string | null) => {
+      const normalizedColor = normalizeWallPaintColorHex(colorHex);
+      if (!normalizedColor) {
+        showRuleToast("Choose a valid ceiling colour");
+        return;
+      }
+      const paintName = getWallPaintDisplayName(normalizedColor, name);
+
+      runHistoryTransaction("Paint all ceilings", () => setDesignSnapshot((prev) => {
+        if (prev.rooms.length === 0) return prev;
+
+        return {
+          ...prev,
+          rooms: prev.rooms.map((room) => {
+            const currentSurfaces: RoomSurfaceAssignments = {
+              ...room.surfaceFinishes,
+              ...room.surfaces,
+            };
+            const nextCeilingSettings = buildWallPaintSettings(
+              normalizedColor,
+              paintName,
+              currentSurfaces.ceiling
+            );
+            if (!nextCeilingSettings) return room;
+            const nextSurfaces: RoomSurfaceAssignments = {
+              ...currentSurfaces,
+              ceiling: nextCeilingSettings,
+              ceilingColor: normalizedColor,
+            };
+            return {
+              ...room,
+              surfaces: nextSurfaces,
+              surfaceFinishes: nextSurfaces,
+            };
+          }),
+        };
+      }));
+
+      showRuleToast(`${paintName} applied to all ceilings`);
+      track("ceiling_paint_applied", {
+        colorHex: normalizedColor,
+        name: paintName,
+        scope: "home_ceilings",
+      });
+    },
+    [buildWallPaintSettings, runHistoryTransaction, setDesignSnapshot, showRuleToast]
+  );
+
+  const handleResetActiveCeilingSurface = useCallback((roomId?: string | null) => {
+    const room =
+      (roomId
+        ? designSnapshotRef.current.rooms.find((entry) => entry.id === roomId) ?? null
+        : null) ?? getActiveRoom(designSnapshotRef.current);
+    if (!room) return;
+
+    runHistoryTransaction("Reset ceiling surface", () => setDesignSnapshot((prev) => {
+      const target = prev.rooms.find((entry) => entry.id === room.id);
+      if (!target) return prev;
+
+      const currentSurfaces: RoomSurfaceAssignments = {
+        ...target.surfaceFinishes,
+        ...target.surfaces,
+      };
+      const nextSurfaces = { ...currentSurfaces };
+      delete nextSurfaces.ceiling;
+      delete nextSurfaces.ceilingColor;
+
+      return updateRoom(prev, {
+        ...target,
+        surfaces: nextSurfaces,
+        surfaceFinishes: nextSurfaces,
+      });
+    }));
+
+    showRuleToast(`${room.name} ceiling reset`);
+    track("ceiling_finish_reset", {
+      roomId: room.id,
+    });
+  }, [runHistoryTransaction, setDesignSnapshot, showRuleToast]);
+
+  const handleActiveWallSurfaceSettingsChange = useCallback(
+    (patch: SurfaceSettingsPatch, roomId?: string | null, faceId?: string | null) => {
+      const room =
+        (roomId
+          ? designSnapshotRef.current.rooms.find((entry) => entry.id === roomId) ?? null
+          : null) ?? getActiveRoom(designSnapshotRef.current);
+      if (!room) return;
+
+      const normalizedFaceId = faceId?.trim() || null;
+      runHistoryTransaction("Update wall surface", () => setDesignSnapshot((prev) => {
+        const target = prev.rooms.find((entry) => entry.id === room.id);
+        if (!target) return prev;
+
+        const currentSurfaces: RoomSurfaceAssignments = {
+          ...target.surfaces,
+          ...target.surfaceFinishes,
+        };
+        const currentWalls = currentSurfaces.walls ?? {};
+        const currentFaces = currentWalls.faces ?? {};
+        const baseSettings =
+          normalizedFaceId
+            ? currentFaces[normalizedFaceId] ?? currentWalls.default
+            : currentWalls.default;
+        const normalizedSettings = createSurfaceSettingsPatch(
+          patch.materialId ?? baseSettings?.materialId ?? currentSurfaces.wallMaterialId ?? null,
+          normalizeFloorRotationDeg,
+          clampFloorPatternScale,
+          patch,
+          baseSettings
+        );
+        const nextWalls = normalizedFaceId
+          ? {
+              ...currentWalls,
+              faces: {
+                ...currentFaces,
+                [normalizedFaceId]: normalizedSettings,
+              },
+            }
+          : {
+              ...currentWalls,
+              default: normalizedSettings,
+            };
+        const nextSurfaces: RoomSurfaceAssignments = {
+          ...currentSurfaces,
+          ...(normalizedFaceId ? {} : { wallMaterialId: normalizedSettings.materialId }),
+          walls: nextWalls,
+        };
+
+        return updateRoom(prev, {
+          ...target,
+          surfaces: nextSurfaces,
+          surfaceFinishes: nextSurfaces,
+        });
+      }));
+
+      track("wall_finish_pattern_changed", {
+        roomId: room.id,
+        faceId: normalizedFaceId,
+        fields: Object.keys(patch).join(","),
+      });
+    },
+    [runHistoryTransaction, setDesignSnapshot]
+  );
+
+  const handleResetActiveWallSurface = useCallback(
+    (roomId?: string | null, faceId?: string | null) => {
+      const room =
+        (roomId
+          ? designSnapshotRef.current.rooms.find((entry) => entry.id === roomId) ?? null
+          : null) ?? getActiveRoom(designSnapshotRef.current);
+      if (!room) return;
+
+      const normalizedFaceId = faceId?.trim() || null;
+      runHistoryTransaction("Reset wall surface", () => setDesignSnapshot((prev) => {
+        const target = prev.rooms.find((entry) => entry.id === room.id);
+        if (!target) return prev;
+
+        const currentSurfaces: RoomSurfaceAssignments = {
+          ...target.surfaces,
+          ...target.surfaceFinishes,
+        };
+        const currentWalls = currentSurfaces.walls ?? {};
+        const currentFaces = { ...(currentWalls.faces ?? {}) };
+        let nextWalls = currentWalls;
+        let nextSurfaces: RoomSurfaceAssignments = { ...currentSurfaces };
+
+        if (normalizedFaceId) {
+          delete currentFaces[normalizedFaceId];
+          nextWalls = {
+            ...currentWalls,
+            faces: currentFaces,
+          };
+        } else {
+          nextWalls = {
+            ...currentWalls,
+            default: undefined,
+            faces: {},
+          };
+          nextSurfaces = {
+            ...nextSurfaces,
+            wallMaterialId: null,
+          };
+        }
+
+        nextSurfaces = {
+          ...nextSurfaces,
+          walls: nextWalls,
+        };
+
+        return updateRoom(prev, {
+          ...target,
+          surfaces: nextSurfaces,
+          surfaceFinishes: nextSurfaces,
+        });
+      }));
+
+      showRuleToast(normalizedFaceId ? `${getWallFaceLabel(normalizedFaceId)} reset` : `${room.name} walls reset`);
+      track("wall_finish_reset", {
+        roomId: room.id,
+        faceId: normalizedFaceId,
+      });
+    },
+    [runHistoryTransaction, setDesignSnapshot, showRuleToast]
+  );
+
+  const handleSurfaceTargetModeChange = useCallback(
+    (mode: SurfaceTargetMode) => {
+      setActiveSurfaceTarget(mode);
+      setSelectedRendererSurfaceTarget(null);
+      if (mode !== "selected_wall") {
+        setSelectedWallSurfaceTarget(null);
+      }
+      if (mode === "selected_wall" && !selectedWallSurfaceTarget) {
+        showRuleToast("Click a wall in 3D to target one wall");
+      }
+      track("surface_workspace_target_changed", {
+        target: mode,
+        roomId: designSnapshotRef.current.activeRoomId,
+        faceId: selectedWallSurfaceTarget?.faceId ?? null,
+      });
+    },
+    [selectedWallSurfaceTarget, showRuleToast]
+  );
+
+  const handleSurfaceBrushActiveChange = useCallback((active: boolean) => {
+    setSurfaceBrushActive(active);
+    track("surface_material_brush_toggled", {
+      active,
+    });
+  }, []);
+
+  const handleSurfaceMaterialSelectedForBrush = useCallback((materialId: string | null) => {
+    setSurfaceBrushMaterialId(materialId);
+    if (materialId) setSurfaceBrushPaint(null);
+  }, []);
+
+  const handleSurfacePaintSelectedForBrush = useCallback((colorHex: string | null, name?: string | null) => {
+    const normalizedColor = normalizeWallPaintColorHex(colorHex);
+    if (!normalizedColor) {
+      setSurfaceBrushPaint(null);
+      return;
+    }
+    setSurfaceBrushMaterialId(null);
+    setSurfaceBrushPaint({
+      colorHex: normalizedColor,
+      name: getWallPaintDisplayName(normalizedColor, name),
+    });
+  }, []);
+
+  const canApplySurfaceBrush = !isClientPreview && (liveCatalogReady || Boolean(surfaceBrushPaint));
+
+  const handleRotateActiveFloorMaterial = useCallback((roomId?: string | null) => {
+    const room =
+      (roomId
+        ? designSnapshotRef.current.rooms.find((entry) => entry.id === roomId) ?? null
+        : null) ?? getActiveRoom(designSnapshotRef.current);
     if (!room) return;
 
     runHistoryTransaction("Rotate floor pattern", () => setDesignSnapshot((prev) => {
@@ -6884,9 +9760,20 @@ function PageContent() {
     });
   }, [runHistoryTransaction, setDesignSnapshot, showRuleToast]);
 
-  const handleResetActiveFloorMaterialPattern = useCallback(() => {
-    const room = getActiveRoom(designSnapshotRef.current);
+  const handleResetActiveFloorMaterialPattern = useCallback((roomId?: string | null) => {
+    const room =
+      (roomId
+        ? designSnapshotRef.current.rooms.find((entry) => entry.id === roomId) ?? null
+        : null) ?? getActiveRoom(designSnapshotRef.current);
     if (!room) return;
+    const currentSurfaces = {
+      ...room.surfaces,
+      ...room.surfaceFinishes,
+    };
+    const currentSurfaceMaterial = getRuntimeSurfaceMaterialById(
+      currentSurfaces.floorMaterialId ?? currentSurfaces.floor?.materialId
+    );
+    const resetFloorPattern = getDefaultFloorPatternForMaterial(currentSurfaceMaterial);
 
     runHistoryTransaction("Reset floor pattern", () => setDesignSnapshot((prev) => {
       const target = prev.rooms.find((entry) => entry.id === room.id);
@@ -6899,12 +9786,20 @@ function PageContent() {
             ...target.surfaceFinishes,
             floorRotationDeg: 0,
             floorScale: DEFAULT_FLOOR_PATTERN_SCALE,
+            floorPattern: resetFloorPattern,
+            floorPatternOffset: DEFAULT_FLOOR_PATTERN_OFFSET,
+            floorJointSizeMm: DEFAULT_FLOOR_JOINT_SIZE_MM,
+            floorJointColor: DEFAULT_FLOOR_JOINT_COLOR,
           },
           surfaceFinishes: {
             ...target.surfaceFinishes,
             ...target.surfaces,
             floorRotationDeg: 0,
             floorScale: DEFAULT_FLOOR_PATTERN_SCALE,
+            floorPattern: resetFloorPattern,
+            floorPatternOffset: DEFAULT_FLOOR_PATTERN_OFFSET,
+            floorJointSizeMm: DEFAULT_FLOOR_JOINT_SIZE_MM,
+            floorJointColor: DEFAULT_FLOOR_JOINT_COLOR,
         },
       });
     }));
@@ -6917,8 +9812,11 @@ function PageContent() {
   }, [runHistoryTransaction, setDesignSnapshot, showRuleToast]);
 
   const handleActiveFloorMaterialScaleChange = useCallback(
-    (scale: number) => {
-      const room = getActiveRoom(designSnapshotRef.current);
+    (scale: number, roomId?: string | null) => {
+      const room =
+        (roomId
+          ? designSnapshotRef.current.rooms.find((entry) => entry.id === roomId) ?? null
+          : null) ?? getActiveRoom(designSnapshotRef.current);
       if (!room) return;
       const nextScale = clampFloorPatternScale(scale);
 
@@ -6944,6 +9842,72 @@ function PageContent() {
     [runCoalescedHistoryTransaction, setDesignSnapshot]
   );
 
+  const handleActiveFloorSurfaceSettingsChange = useCallback(
+    (patch: FloorSurfacePatch, roomId?: string | null) => {
+      const room =
+        (roomId
+          ? designSnapshotRef.current.rooms.find((entry) => entry.id === roomId) ?? null
+          : null) ?? getActiveRoom(designSnapshotRef.current);
+      if (!room) return;
+
+      const normalizedPatch: RoomSurfaceAssignments = {};
+      if ("floorPattern" in patch) {
+        const currentSurfaces = {
+          ...room.surfaces,
+          ...room.surfaceFinishes,
+        };
+        const currentSurfaceMaterial = getRuntimeSurfaceMaterialById(
+          currentSurfaces.floorMaterialId ?? currentSurfaces.floor?.materialId
+        );
+        normalizedPatch.floorPattern = getCompatibleFloorPatternForMaterial(
+          currentSurfaceMaterial,
+          normalizeFloorPattern(patch.floorPattern)
+        );
+      }
+      if ("floorRotationDeg" in patch) {
+        normalizedPatch.floorRotationDeg = normalizeFloorRotationDeg(patch.floorRotationDeg);
+      }
+      if ("floorScale" in patch) {
+        normalizedPatch.floorScale = clampFloorPatternScale(patch.floorScale);
+      }
+      if ("floorPatternOffset" in patch) {
+        normalizedPatch.floorPatternOffset = normalizeFloorPatternOffset(patch.floorPatternOffset);
+      }
+      if ("floorJointSizeMm" in patch) {
+        normalizedPatch.floorJointSizeMm = normalizeFloorJointSizeMm(patch.floorJointSizeMm);
+      }
+      if ("floorJointColor" in patch) {
+        normalizedPatch.floorJointColor = normalizeFloorJointColor(patch.floorJointColor);
+      }
+
+      runHistoryTransaction("Update floor surface", () => setDesignSnapshot((prev) => {
+        const target = prev.rooms.find((entry) => entry.id === room.id);
+        if (!target) return prev;
+
+        return updateRoom(prev, {
+          ...target,
+          surfaces: {
+            ...target.surfaces,
+            ...target.surfaceFinishes,
+            ...normalizedPatch,
+          },
+          surfaceFinishes: {
+            ...target.surfaceFinishes,
+            ...target.surfaces,
+            ...normalizedPatch,
+          },
+        });
+      }));
+
+      track("floor_finish_pattern_changed", {
+        roomId: room.id,
+        action: "surface_settings",
+        fields: Object.keys(normalizedPatch).join(","),
+      });
+    },
+    [runHistoryTransaction, setDesignSnapshot]
+  );
+
   const _getTopDownView = useCallback((): CameraView => {
     const height = Math.max(roomWidth, roomDepth) + roomHeight + 0.8;
     return {
@@ -6953,35 +9917,141 @@ function PageContent() {
     };
   }, [roomDepth, roomHeight, roomWidth]);
 
-  const getPlan2DView = useCallback((): CameraView => {
-    const span = Math.max(plan2DFitBounds.widthMeters, plan2DFitBounds.depthMeters);
-    const height = span * 2.4 + roomHeight;
-    return {
-      target: [plan2DFitBounds.centerX, 0, plan2DFitBounds.centerZ],
-      pos: [plan2DFitBounds.centerX, height, plan2DFitBounds.centerZ + 0.001],
-      // Wider FOV plus higher camera keeps the full room visible in plan mode.
-      fov: 30,
-    };
-  }, [plan2DFitBounds.centerX, plan2DFitBounds.centerZ, plan2DFitBounds.depthMeters, plan2DFitBounds.widthMeters, roomHeight]);
-
   const getWholeHome3DView = useCallback((): CameraView => {
-    const span = Math.max(planViewWidth, planViewDepth, 4);
-    const height = Math.max(5.2, span * 0.78 + roomHeight);
-    const distance = Math.max(8, span * 1.18);
+    const fov = 46;
+    const canvas = canvasRef.current;
+    const viewportWidthPx = canvas?.clientWidth ?? viewportSize.width;
+    const viewportHeightPx = canvas?.clientHeight ?? viewportSize.height;
+    const leftInsetPx = viewportWidthPx >= 768 ? plan2DSafeAreaLeftPx : 0;
+    const rightInsetPx =
+      viewportWidthPx >= 768 && floatingPlanOverlayStackVisible
+        ? PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX + 32
+        : 0;
+    const topInsetPx = viewportWidthPx >= 768 ? 96 : 72;
+    const bottomInsetPx = viewportWidthPx < 768 ? 96 : 48;
+    const effectiveWidthPx = Math.max(320, viewportWidthPx - leftInsetPx - rightInsetPx);
+    const effectiveHeightPx = Math.max(260, viewportHeightPx - topInsetPx - bottomInsetPx);
+    const aspect = Math.max(0.65, effectiveWidthPx / effectiveHeightPx);
+    const verticalFovRad = THREE.MathUtils.degToRad(fov);
+    const horizontalFovRad =
+      2 * Math.atan(Math.tan(verticalFovRad / 2) * aspect);
+    const limitingFovRad = Math.max(
+      THREE.MathUtils.degToRad(24),
+      Math.min(verticalFovRad, horizontalFovRad)
+    );
+    const planWidth = Math.max(plan2DFitBounds.widthMeters, 3);
+    const planDepth = Math.max(plan2DFitBounds.depthMeters, 3);
+    const planRadius =
+      Math.sqrt(planWidth * planWidth + planDepth * planDepth) / 2 +
+      Math.max(1.2, roomHeight * 0.35);
+    const cameraDistance = Math.max(
+      9,
+      (planRadius / Math.sin(limitingFovRad / 2)) * 0.74
+    ) * PLAN_3D_WHOLE_HOME_FIT_DISTANCE_SCALE;
+    const direction = new THREE.Vector3(0.62, 0.58, 0.9).normalize();
+    const targetY = Math.min(1.1, roomHeight * 0.42);
+    const target = new THREE.Vector3(
+      plan2DFitBounds.centerX,
+      targetY,
+      plan2DFitBounds.centerZ
+    );
+    const position = target.clone().addScaledVector(direction, cameraDistance);
+
+    const visibleLeftPx = Math.min(viewportWidthPx, Math.max(0, leftInsetPx));
+    const visibleRightPx = Math.max(
+      visibleLeftPx,
+      viewportWidthPx - Math.max(0, rightInsetPx)
+    );
+    const desiredCenterXPx = (visibleLeftPx + visibleRightPx) / 2;
+    const actualAspect = Math.max(
+      0.1,
+      viewportWidthPx / Math.max(1, viewportHeightPx)
+    );
+    const fitCamera = new THREE.PerspectiveCamera(
+      fov,
+      actualAspect,
+      0.1,
+      300
+    );
+    fitCamera.position.copy(position);
+    fitCamera.lookAt(target);
+    fitCamera.updateMatrixWorld();
+    fitCamera.updateProjectionMatrix();
+
+    const halfWidth = planWidth / 2;
+    const halfDepth = planDepth / 2;
+    let projectedMinX = Infinity;
+    let projectedMaxX = -Infinity;
+    for (const x of [-halfWidth, halfWidth]) {
+      for (const y of [0, roomHeight]) {
+        for (const z of [-halfDepth, halfDepth]) {
+          const projected = new THREE.Vector3(
+            plan2DFitBounds.centerX + x,
+            y,
+            plan2DFitBounds.centerZ + z
+          ).project(fitCamera);
+          if (!Number.isFinite(projected.x)) continue;
+          const screenX = (projected.x * 0.5 + 0.5) * viewportWidthPx;
+          projectedMinX = Math.min(projectedMinX, screenX);
+          projectedMaxX = Math.max(projectedMaxX, screenX);
+        }
+      }
+    }
+
+    if (Number.isFinite(projectedMinX) && Number.isFinite(projectedMaxX)) {
+      const projectedCenterXPx = (projectedMinX + projectedMaxX) / 2;
+      const centerDeltaPx = projectedCenterXPx - desiredCenterXPx;
+      const horizontalFovActualRad =
+        2 * Math.atan(Math.tan(verticalFovRad / 2) * actualAspect);
+      const worldMetersPerPx =
+        (2 * cameraDistance * Math.tan(horizontalFovActualRad / 2)) /
+        Math.max(1, viewportWidthPx);
+      const cameraRight = new THREE.Vector3();
+      fitCamera.matrixWorld.extractBasis(
+        cameraRight,
+        new THREE.Vector3(),
+        new THREE.Vector3()
+      );
+      const centerCorrectionMeters = THREE.MathUtils.clamp(
+        centerDeltaPx * worldMetersPerPx,
+        -planRadius * 0.4,
+        planRadius * 0.4
+      );
+      target.addScaledVector(cameraRight, centerCorrectionMeters);
+      position.addScaledVector(cameraRight, centerCorrectionMeters);
+    }
 
     return {
-      target: [0, Math.min(1.1, roomHeight * 0.42), 0],
-      pos: [distance * 0.72, height, distance],
-      fov: 46,
+      target: [target.x, target.y, target.z],
+      pos: [position.x, position.y, position.z],
+      fov,
     };
-  }, [planViewDepth, planViewWidth, roomHeight]);
+  }, [
+    floatingPlanOverlayStackVisible,
+    plan2DFitBounds.centerX,
+    plan2DFitBounds.centerZ,
+    plan2DFitBounds.depthMeters,
+    plan2DFitBounds.widthMeters,
+    plan2DSafeAreaLeftPx,
+    roomHeight,
+    viewportSize.height,
+    viewportSize.width,
+  ]);
 
   useEffect(() => {
     if (!sceneReady || viewMode !== "3d" || !hasWholeHousePlan) return;
+    if (viewportSize.width <= 0 || viewportSize.height <= 0) return;
 
     const fitKey = [
       designId ?? "local",
       housePlan2D.rooms.length,
+      plan2DFitBounds.widthMeters.toFixed(2),
+      plan2DFitBounds.depthMeters.toFixed(2),
+      plan2DFitBounds.centerX.toFixed(2),
+      plan2DFitBounds.centerZ.toFixed(2),
+      Math.round(viewportSize.width / 24),
+      Math.round(viewportSize.height / 24),
+      Math.round(plan2DSafeAreaLeftPx / 24),
     ].join(":");
     if (initialWholeHome3DFitKeyRef.current === fitKey) return;
 
@@ -6996,8 +10066,15 @@ function PageContent() {
     getWholeHome3DView,
     hasWholeHousePlan,
     housePlan2D.rooms.length,
+    plan2DFitBounds.centerX,
+    plan2DFitBounds.centerZ,
+    plan2DFitBounds.depthMeters,
+    plan2DFitBounds.widthMeters,
+    plan2DSafeAreaLeftPx,
     sceneReady,
     viewMode,
+    viewportSize.height,
+    viewportSize.width,
   ]);
 
   const handleEditorViewModeChange = useCallback(
@@ -7019,11 +10096,15 @@ function PageContent() {
       centerZ = plan2DFitBounds.centerZ,
       widthMeters = plan2DFitBounds.widthMeters,
       depthMeters = plan2DFitBounds.depthMeters,
+      fitOrientation = "auto",
+      paddingMeters,
     }: {
       centerX?: number;
       centerZ?: number;
+      fitOrientation?: Plan2DViewFitOrientation;
       widthMeters?: number;
       depthMeters?: number;
+      paddingMeters?: number;
     } = {}) => {
       const camera = cameraRef.current;
       const controls = orbitControlsRef.current;
@@ -7036,21 +10117,32 @@ function PageContent() {
       const leftInsetPx = viewportWidthPx >= 768 ? plan2DSafeAreaLeftPx : 0;
       const rightInsetPx = viewportWidthPx >= 768 ? plan2DSafeAreaRightPx : 0;
       const bottomInsetPx = viewportWidthPx < 768 ? plan2DSafeAreaBottomPx : 0;
-
-      camera.zoom = resolvePlanFitZoom({
-        viewportWidthPx: Math.max(320, viewportWidthPx - leftInsetPx - rightInsetPx),
-        viewportHeightPx: Math.max(260, viewportHeightPx - bottomInsetPx),
-        planWidthMeters: widthMeters,
+      const fitPaddingMeters =
+        paddingMeters ??
+        plan2DWholeHomeFitPaddingMeters;
+      const fitZoomScale = paddingMeters == null ? WHOLE_HOME_FIT_ZOOM_SCALE : 1;
+      const fit = resolvePlan2DViewFit({
+        centerX,
+        centerZ,
+        fitOrientation,
+        paddingMeters: fitPaddingMeters,
         planDepthMeters: depthMeters,
+        planWidthMeters: widthMeters,
+        safeAreaBottomPx: bottomInsetPx,
+        safeAreaLeftPx: leftInsetPx,
+        safeAreaRightPx: rightInsetPx,
+        viewportHeightPx,
+        viewportWidthPx,
+        zoomScale: fitZoomScale,
       });
-      const targetX = centerX + (rightInsetPx - leftInsetPx) / camera.zoom / 2;
-      const targetZ = centerZ + (bottomInsetPx > 0 ? -bottomInsetPx / camera.zoom / 2 : 0);
-      camera.up.set(0, 0, -1);
-      camera.position.set(targetX, span + roomHeight + 6, targetZ);
-      (controls.target as THREE.Vector3).set(targetX, 0, targetZ);
-      camera.lookAt(targetX, 0, targetZ);
-      updateProjection(camera);
-      controls.update();
+
+      applyPlan2DCameraInvariant({
+        camera,
+        controls: controls as Plan2DCameraControls,
+        fit,
+        cameraHeightMeters: span + roomHeight + 6,
+        updateProjection,
+      });
       updateCameraViewFromScene();
       return true;
     },
@@ -7062,17 +10154,24 @@ function PageContent() {
       plan2DSafeAreaBottomPx,
       plan2DSafeAreaLeftPx,
       plan2DSafeAreaRightPx,
+      plan2DWholeHomeFitPaddingMeters,
       roomHeight,
       updateCameraViewFromScene,
       updateProjection,
     ]
   );
 
+  const applyQueued2DPlanView = useCallback((attempt = 0) => {
+    if (applyPlan2DCameraView()) return;
+    if (attempt >= 10) return;
+    window.requestAnimationFrame(() => {
+      applyQueued2DPlanView(attempt + 1);
+    });
+  }, [applyPlan2DCameraView]);
+
   const handleFitPlanView = useCallback(() => {
     if (viewMode === "2d") {
-      if (!applyPlan2DCameraView()) {
-        transitionToCameraView(getPlan2DView(), 260);
-      }
+      applyQueued2DPlanView();
       showRuleToast("Plan fitted");
     } else {
       transitionToCameraView(hasWholeHousePlan ? getWholeHome3DView() : DEFAULT_EDITOR_CAMERA_VIEW, 420);
@@ -7087,8 +10186,7 @@ function PageContent() {
     });
   }, [
     designSnapshot.rooms.length,
-    applyPlan2DCameraView,
-    getPlan2DView,
+    applyQueued2DPlanView,
     getWholeHome3DView,
     hasWholeHousePlan,
     planViewDepth,
@@ -7110,8 +10208,10 @@ function PageContent() {
         !applyPlan2DCameraView({
           centerX: room.x,
           centerZ: room.z,
+          fitOrientation: "normal",
           widthMeters: paddedWidth,
           depthMeters: paddedDepth,
+          paddingMeters: 1.2,
         })
       ) {
         transitionToCameraView(
@@ -7157,6 +10257,24 @@ function PageContent() {
         ? camera.fov
         : cameraView.fov ?? DEFAULT_EDITOR_CAMERA_VIEW.fov;
 
+      if (viewMode === "2d" && camera instanceof THREE.OrthographicCamera) {
+        applyPlan2DCameraInvariant({
+          camera,
+          controls: controls as Plan2DCameraControls,
+          fit: {
+            offsetX: nextX,
+            offsetZ: nextZ,
+            up: plan2DWholeHomeViewFit.up,
+            zoom: camera.zoom,
+          },
+          cameraHeightMeters:
+            Math.max(plan2DFitBounds.widthMeters, plan2DFitBounds.depthMeters) + roomHeight + 6,
+          updateProjection,
+        });
+        updateCameraViewFromScene();
+        return;
+      }
+
       transitionToCameraView(
         {
           pos: [
@@ -7170,7 +10288,18 @@ function PageContent() {
         durationMs
       );
     },
-    [cameraView.fov, transitionToCameraView, wholeHomeNavigationBounds]
+    [
+      cameraView.fov,
+      plan2DFitBounds.depthMeters,
+      plan2DFitBounds.widthMeters,
+      plan2DWholeHomeViewFit.up,
+      roomHeight,
+      transitionToCameraView,
+      updateCameraViewFromScene,
+      updateProjection,
+      viewMode,
+      wholeHomeNavigationBounds,
+    ]
   );
 
   const clampWholeHomeNavigatorPoint = useCallback(
@@ -7199,13 +10328,39 @@ function PageContent() {
       const next = clampWholeHomeNavigatorPoint(x, z);
       const deltaX = next.x - target.x;
       const deltaZ = next.z - target.z;
+      if (viewMode === "2d" && camera instanceof THREE.OrthographicCamera) {
+        applyPlan2DCameraInvariant({
+          camera,
+          controls: controls as Plan2DCameraControls,
+          fit: {
+            offsetX: next.x,
+            offsetZ: next.z,
+            up: plan2DWholeHomeViewFit.up,
+            zoom: camera.zoom,
+          },
+          cameraHeightMeters:
+            Math.max(plan2DFitBounds.widthMeters, plan2DFitBounds.depthMeters) + roomHeight + 6,
+          updateProjection,
+        });
+        updateCameraViewFromScene();
+        return;
+      }
       target.set(next.x, target.y, next.z);
       camera.position.set(camera.position.x + deltaX, camera.position.y, camera.position.z + deltaZ);
       updateProjection(camera);
       controls.update();
       updateCameraViewFromScene();
     },
-    [clampWholeHomeNavigatorPoint, updateCameraViewFromScene, updateProjection]
+    [
+      clampWholeHomeNavigatorPoint,
+      plan2DFitBounds.depthMeters,
+      plan2DFitBounds.widthMeters,
+      plan2DWholeHomeViewFit.up,
+      roomHeight,
+      updateCameraViewFromScene,
+      updateProjection,
+      viewMode,
+    ]
   );
 
   const handleWholeHomeMoveCamera = useCallback(
@@ -7215,12 +10370,38 @@ function PageContent() {
       if (!camera || !controls) return;
 
       const next = clampWholeHomeNavigatorPoint(x, z);
+      if (viewMode === "2d" && camera instanceof THREE.OrthographicCamera) {
+        applyPlan2DCameraInvariant({
+          camera,
+          controls: controls as Plan2DCameraControls,
+          fit: {
+            offsetX: next.x,
+            offsetZ: next.z,
+            up: plan2DWholeHomeViewFit.up,
+            zoom: camera.zoom,
+          },
+          cameraHeightMeters:
+            Math.max(plan2DFitBounds.widthMeters, plan2DFitBounds.depthMeters) + roomHeight + 6,
+          updateProjection,
+        });
+        updateCameraViewFromScene();
+        return;
+      }
       camera.position.set(next.x, camera.position.y, next.z);
       updateProjection(camera);
       controls.update();
       updateCameraViewFromScene();
     },
-    [clampWholeHomeNavigatorPoint, updateCameraViewFromScene, updateProjection]
+    [
+      clampWholeHomeNavigatorPoint,
+      plan2DFitBounds.depthMeters,
+      plan2DFitBounds.widthMeters,
+      plan2DWholeHomeViewFit.up,
+      roomHeight,
+      updateCameraViewFromScene,
+      updateProjection,
+      viewMode,
+    ]
   );
 
   const nudgeWholeHomeCameraForDrag = useCallback(
@@ -7256,6 +10437,24 @@ function PageContent() {
       const deltaZ = next.z - target.z;
       if (Math.abs(deltaX) < 0.001 && Math.abs(deltaZ) < 0.001) return;
 
+      if (viewMode === "2d" && camera instanceof THREE.OrthographicCamera) {
+        applyPlan2DCameraInvariant({
+          camera,
+          controls: controls as Plan2DCameraControls,
+          fit: {
+            offsetX: next.x,
+            offsetZ: next.z,
+            up: plan2DWholeHomeViewFit.up,
+            zoom: camera.zoom,
+          },
+          cameraHeightMeters:
+            Math.max(plan2DFitBounds.widthMeters, plan2DFitBounds.depthMeters) + roomHeight + 6,
+          updateProjection,
+        });
+        updateCameraViewFromScene();
+        return;
+      }
+
       target.set(next.x, target.y, next.z);
       camera.position.set(
         camera.position.x + deltaX,
@@ -7269,8 +10468,13 @@ function PageContent() {
     [
       clampWholeHomeNavigatorPoint,
       hasWholeHousePlan,
+      plan2DFitBounds.depthMeters,
+      plan2DFitBounds.widthMeters,
+      plan2DWholeHomeViewFit.up,
+      roomHeight,
       updateCameraViewFromScene,
       updateProjection,
+      viewMode,
     ]
   );
 
@@ -7281,6 +10485,32 @@ function PageContent() {
       if (!camera || !controls) return;
 
       const target = controls.target as THREE.Vector3;
+      if (viewMode === "2d" && camera instanceof THREE.OrthographicCamera) {
+        const nextZoom = Math.max(
+          8,
+          Math.min(420, camera.zoom * (direction === "in" ? 1.18 : 0.82))
+        );
+        applyPlan2DCameraInvariant({
+          camera,
+          controls: controls as Plan2DCameraControls,
+          fit: {
+            offsetX: target.x,
+            offsetZ: target.z,
+            up: plan2DWholeHomeViewFit.up,
+            zoom: nextZoom,
+          },
+          cameraHeightMeters:
+            Math.max(plan2DFitBounds.widthMeters, plan2DFitBounds.depthMeters) + roomHeight + 6,
+          updateProjection,
+        });
+        updateCameraViewFromScene();
+        track("floor_plan_navigator_zoom_clicked", {
+          direction,
+          roomCount: housePlan2D.rooms.length,
+        });
+        return;
+      }
+
       const offset = camera.position.clone().sub(target);
       const currentDistance = Math.max(0.001, offset.length());
       const nextDistance = Math.max(
@@ -7297,7 +10527,16 @@ function PageContent() {
         roomCount: housePlan2D.rooms.length,
       });
     },
-    [housePlan2D.rooms.length, updateCameraViewFromScene, updateProjection]
+    [
+      housePlan2D.rooms.length,
+      plan2DFitBounds.depthMeters,
+      plan2DFitBounds.widthMeters,
+      plan2DWholeHomeViewFit.up,
+      roomHeight,
+      updateCameraViewFromScene,
+      updateProjection,
+      viewMode,
+    ]
   );
 
   const handleWholeHomeFocusRoom = useCallback(
@@ -7943,9 +11182,7 @@ function PageContent() {
       }
       suppressNext3DViewSaveRef.current = false;
       if (previousViewMode !== "2d") {
-        window.requestAnimationFrame(() => {
-          applyPlan2DCameraView();
-        });
+        applyQueued2DPlanView();
       }
       return;
     }
@@ -7967,7 +11204,23 @@ function PageContent() {
       last3DViewRef.current = null;
       transitionToCameraView(restore, 420);
     }
-  }, [applyPlan2DCameraView, applyQueued3DView, sceneReady, transitionToCameraView, viewMode]);
+  }, [applyQueued2DPlanView, applyQueued3DView, sceneReady, transitionToCameraView, viewMode]);
+
+  useEffect(() => {
+    if (!sceneReady || viewMode !== "2d") return;
+    applyQueued2DPlanView();
+  }, [
+    applyQueued2DPlanView,
+    plan2DFitBounds.centerX,
+    plan2DFitBounds.centerZ,
+    plan2DFitBounds.depthMeters,
+    plan2DFitBounds.widthMeters,
+    plan2DWholeHomeViewFit.orientation,
+    sceneReady,
+    viewMode,
+    viewportSize.height,
+    viewportSize.width,
+  ]);
 
   useEffect(() => {
     const camera = cameraRef.current;
@@ -7975,41 +11228,44 @@ function PageContent() {
     if (!camera || !controls) return;
 
     if (viewMode === "2d") {
-      // For a true plan view, avoid up-vector singularity when looking straight down.
-      const canvas = canvasRef.current;
-      const viewportWidthPx = canvas?.clientWidth ?? viewportSize.width;
-      const leftInsetPx = viewportWidthPx >= 768 ? plan2DSafeAreaLeftPx : 0;
-      const rightInsetPx = viewportWidthPx >= 768 ? plan2DSafeAreaRightPx : 0;
-      const bottomInsetPx = viewportWidthPx < 768 ? plan2DSafeAreaBottomPx : 0;
-      const zoom = camera instanceof THREE.OrthographicCamera ? Math.max(1, camera.zoom) : 1;
-      const targetX = plan2DFitBounds.centerX + (rightInsetPx - leftInsetPx) / zoom / 2;
-      const targetZ =
-        plan2DFitBounds.centerZ + (bottomInsetPx > 0 ? -bottomInsetPx / zoom / 2 : 0);
-      camera.up.set(0, 0, -1);
-      (controls.target as THREE.Vector3).set(targetX, 0, targetZ);
-      controls.minPolarAngle = 0;
-      controls.maxPolarAngle = 0;
-      controls.minAzimuthAngle = 0;
-      controls.maxAzimuthAngle = 0;
+      if (camera instanceof THREE.OrthographicCamera) {
+        applyPlan2DCameraInvariant({
+          camera,
+          controls: controls as Plan2DCameraControls,
+          fit: {
+            offsetX: plan2DWholeHomeViewFit.offsetX,
+            offsetZ: plan2DWholeHomeViewFit.offsetZ,
+            up: plan2DWholeHomeViewFit.up,
+            zoom: camera.zoom,
+          },
+          cameraHeightMeters:
+            Math.max(plan2DFitBounds.widthMeters, plan2DFitBounds.depthMeters) + roomHeight + 6,
+          updateProjection,
+        });
+      }
     } else {
       camera.up.set(0, 1, 0);
+      controls.minPolarAngle = EDITOR_3D_MIN_POLAR_ANGLE;
+      controls.maxPolarAngle = EDITOR_3D_MAX_POLAR_ANGLE;
       controls.minAzimuthAngle = -Infinity;
       controls.maxAzimuthAngle = Infinity;
     }
 
-    updateProjection(camera);
-    controls.update();
+    if (viewMode !== "2d") {
+      updateProjection(camera);
+      controls.update();
+    }
   }, [
     plan2DFitBounds.centerX,
     plan2DFitBounds.centerZ,
     plan2DFitBounds.depthMeters,
     plan2DFitBounds.widthMeters,
-    plan2DSafeAreaBottomPx,
-    plan2DSafeAreaLeftPx,
-    plan2DSafeAreaRightPx,
+    plan2DWholeHomeViewFit.offsetX,
+    plan2DWholeHomeViewFit.offsetZ,
+    plan2DWholeHomeViewFit.up,
+    roomHeight,
     updateProjection,
     viewMode,
-    viewportSize.width,
   ]);
 
   const getEyeLevelView = useCallback((): CameraView => {
@@ -8097,7 +11353,7 @@ function PageContent() {
       if (options.showToast !== false) showRuleToast(`${version.name} saved`);
       return version;
     },
-    [showRuleToast]
+    [setDesignSnapshot, showRuleToast]
   );
 
   const saveCurrentLayoutVersion = useCallback(() => {
@@ -8133,7 +11389,7 @@ function PageContent() {
       history.commit();
       showRuleToast(`${version.name} restored`);
     },
-    [history, showRuleToast, updateSelection]
+    [history, setDesignSnapshot, showRuleToast, updateSelection]
   );
 
   const deleteRoomLayoutVersion = useCallback(
@@ -8148,7 +11404,7 @@ function PageContent() {
       });
       showRuleToast("Layout version removed");
     },
-    [showRuleToast]
+    [setDesignSnapshot, showRuleToast]
   );
 
   const saveCurrentNamedView = useCallback(() => {
@@ -8188,7 +11444,7 @@ function PageContent() {
     setSavedViews(nextLegacyViews);
     setCameraViewNameInput("");
     showRuleToast(`${name} saved`);
-  }, [cameraView.fov, cameraView.pos, cameraView.target, cameraViewNameInput, showRuleToast]);
+  }, [cameraView.fov, cameraView.pos, cameraView.target, cameraViewNameInput, setDesignSnapshot, showRuleToast]);
 
   const deleteSavedCameraView = useCallback(
     (viewId: string) => {
@@ -8215,7 +11471,7 @@ function PageContent() {
       setSavedViews(nextLegacyViews);
       showRuleToast("Camera view removed");
     },
-    [cameraView.fov, showRuleToast]
+    [cameraView.fov, setDesignSnapshot, showRuleToast]
   );
 
   useEffect(() => {
@@ -8261,7 +11517,7 @@ function PageContent() {
         });
       });
     }
-  }, [items]);
+  }, [items, setDesignSnapshot]);
 
   useEffect(() => {
     if (!sceneReady) return;
@@ -8354,9 +11610,13 @@ function PageContent() {
     designId,
     fingerprintStoredDesign,
     getStoredDesignForPersistence,
+    items,
     lastPersistedSnapshotFingerprint,
     localBackupHydrated,
+    roomDepth,
+    roomWidth,
     savedViews,
+    zones,
   ]);
 
   useEffect(() => {
@@ -9118,7 +12378,8 @@ function PageContent() {
       productId: string,
       position: [number, number, number],
       rotationY: number,
-      dimsMm: { w: number; d: number }
+      dimsMm: { w: number; d: number },
+      excludedInstanceId?: string | string[]
     ) => {
       return doesCatalogPlacementCollide({
         productId,
@@ -9127,6 +12388,8 @@ function PageContent() {
         dimsMm,
         items: itemsRef.current,
         getItemAABB,
+        excludedInstanceId: typeof excludedInstanceId === "string" ? excludedInstanceId : undefined,
+        excludedInstanceIds: Array.isArray(excludedInstanceId) ? excludedInstanceId : undefined,
       });
     },
     [getItemAABB]
@@ -9182,7 +12445,8 @@ function PageContent() {
       productId: string,
       position: [number, number, number],
       rotationY: number,
-      dimsMm: { w: number; d: number }
+      dimsMm: { w: number; d: number },
+      excludedInstanceId?: string | string[]
     ) =>
       doesCatalogPlacementCollide({
         productId,
@@ -9191,6 +12455,8 @@ function PageContent() {
         dimsMm,
         items: room.items,
         getItemAABB,
+        excludedInstanceId: typeof excludedInstanceId === "string" ? excludedInstanceId : undefined,
+        excludedInstanceIds: Array.isArray(excludedInstanceId) ? excludedInstanceId : undefined,
       }),
     [getItemAABB]
   );
@@ -9202,7 +12468,7 @@ function PageContent() {
       position: [number, number, number],
       rotationY: number,
       dimsMm: { w: number; d: number },
-      excludedInstanceId?: string
+      excludedInstanceId?: string | string[]
     ) =>
       findCatalogPlacementCollision({
         productId,
@@ -9211,7 +12477,8 @@ function PageContent() {
         dimsMm,
         items: room.items,
         getItemAABB,
-        excludedInstanceId,
+        excludedInstanceId: typeof excludedInstanceId === "string" ? excludedInstanceId : undefined,
+        excludedInstanceIds: Array.isArray(excludedInstanceId) ? excludedInstanceId : undefined,
       }),
     [getItemAABB]
   );
@@ -9224,14 +12491,14 @@ function PageContent() {
       dimsMm: { w: number; d: number }
     ) => {
       const planRoom = houseRoomById.get(room.id);
-      return isCatalogPlacementFootprintInsideRoom({
+      return isCatalogPlacementLocalFootprintInsideRoom({
         room: {
           id: room.id,
           name: room.name,
           shape: room.planShape ?? planRoom?.shape ?? "rectangle",
           polygon: room.planPolygon ?? planRoom?.polygon,
-          x: planRoom?.x ?? 0,
-          z: planRoom?.z ?? 0,
+          x: 0,
+          z: 0,
           w: room.geometry.width,
           d: room.geometry.depth,
         },
@@ -9246,6 +12513,7 @@ function PageContent() {
 
   const getItemDisplayName = useCallback((item: DesignItem | null | undefined) => {
     if (!item) return null;
+    if (isParametricCabinetItem(item)) return item.name ?? item.cabinetDefinition.name;
     return CATALOG_ITEMS[item.productId]?.title ?? "another item";
   }, []);
 
@@ -9262,15 +12530,7 @@ function PageContent() {
 
       history.begin(actionName);
       const nextItems = typeof updater === "function" ? updater(room.items) : updater;
-      const { valid: validItems, invalid } = reconcileCart(nextItems, CATALOG_ITEMS_MAP);
-
-      if (invalid.length > 0) {
-        console.warn(`Removed ${invalid.length} invalid items from cart`);
-        track("commerce_invalid_items_removed", {
-          count: invalid.length,
-          items: invalid,
-        });
-      }
+      const { validItems } = reconcileDesignItems(nextItems, room.id);
 
       const nextSnapshot = {
         ...snapshot,
@@ -9295,7 +12555,309 @@ function PageContent() {
       history.commit();
       return validItems;
     },
-    [history]
+    [history, reconcileDesignItems, setDesignSnapshot]
+  );
+
+  const updateCabinetItemDefinition = useCallback(
+    (
+      instanceId: string,
+      definition: CabinetDefinition,
+      options: { glbAssetUrl?: string; bom?: CabinetBOMItem[]; closeStudio?: boolean } = {}
+    ): boolean => {
+      if (!canUseCabinetryStudio) return false;
+      const snapshot = designSnapshotRef.current;
+      const targetRoom = snapshot.rooms.find((room) =>
+        room.items.some((item) => item.instanceId === instanceId)
+      );
+      if (!targetRoom) return false;
+
+      const now = new Date().toISOString();
+      const bomSnapshot = options.bom ?? generateCabinetBOM(definition);
+      const documentationSnapshot = generateCabinetDocumentation(definition);
+      let previousGlbAssetUrl: string | undefined;
+      const nextItems = commitItemsToRoom(
+        targetRoom.id,
+        (prev) =>
+          prev.map((item) => {
+            if (item.instanceId !== instanceId) return item;
+            previousGlbAssetUrl = item.glbAssetUrl;
+            const previousFitState = item.cabinetDefinition?.fitState;
+            const fitWasExplicitlyChanged = Boolean(
+              definition.fitState &&
+                definition.fitState.appliedAt !== previousFitState?.appliedAt
+            );
+            const fitPlacement =
+              fitWasExplicitlyChanged && definition.fitState?.host.roomId === targetRoom.id
+                ? getCabinetFitPlacement(
+                    definition,
+                    targetRoom.geometry.width,
+                    targetRoom.geometry.depth
+                  )
+                : null;
+            const rotationY = fitPlacement?.rotationY ?? getCabinetRotationY(item);
+            const [safeX, safeZ] = fitPlacement
+              ? clampToCatalogPlacementRoom(
+                  targetRoom,
+                  fitPlacement.position[0],
+                  fitPlacement.position[2],
+                  definition.totalWidth / 1000,
+                  definition.depth / 1000,
+                  rotationY
+                )
+              : [item.position?.[0] ?? 0, item.position?.[2] ?? 0];
+            const position: [number, number, number] = fitPlacement
+              ? [safeX, fitPlacement.position[1], safeZ]
+              : item.position ?? [0, 0, 0];
+            const scale = item.transform?.scale ?? [1, 1, 1];
+            const glbAssetUrl = options.glbAssetUrl ?? item.glbAssetUrl;
+            const createdAt = item.createdAt ?? definition.createdAt ?? now;
+
+            return {
+              ...item,
+              id: item.id ?? item.instanceId,
+              ...buildCabinetMillworkMetadata(definition, targetRoom.id),
+              productId: "parametric-cabinet",
+              variantId: definition.id,
+              assetType: "parametric_cabinet",
+              name: definition.name,
+              cabinetDefinition: definition,
+              glbAssetUrl,
+              millworkAssetManifest: buildCabinetAssetManifest({
+                definition,
+                instanceId,
+                roomId: targetRoom.id,
+                position,
+                rotationY,
+                scale,
+                glbAssetUrl,
+                createdAt,
+                updatedAt: now,
+              }),
+              bomSnapshot,
+              materialScheduleSnapshot: documentationSnapshot.materialSchedule,
+              hardwareScheduleSnapshot: documentationSnapshot.hardwareSchedule,
+              edgeBandingScheduleSnapshot: documentationSnapshot.edgeBandingSchedule,
+              cutListSnapshot: documentationSnapshot.cutList,
+              dimensionScheduleSnapshot: documentationSnapshot.dimensionSchedule,
+              drawingViewScheduleSnapshot: documentationSnapshot.drawingViewSchedule,
+              installerNotesSnapshot: documentationSnapshot.installerNotes,
+              releaseChecklistSnapshot: documentationSnapshot.releaseChecklist,
+              quoteSummarySnapshot: documentationSnapshot.quoteSummary,
+              supplierSkuMappingsSnapshot: documentationSnapshot.supplierSkuMappings,
+              supplierReadinessSnapshot: documentationSnapshot.supplierReadiness,
+              fabricationReleaseReadinessSnapshot:
+                documentationSnapshot.fabricationReleaseReadiness,
+              cabinetUpdatedAt: now,
+              createdAt,
+              updatedAt: now,
+              position,
+              rotationY,
+              transform: buildCabinetTransformMetadata(position, rotationY, scale),
+              qty: typeof item.qty === "number" && item.qty > 0 ? item.qty : 1,
+              includeInCheckout: false,
+            };
+          }),
+        "Update cabinet"
+      );
+
+      if (!nextItems) return false;
+      if (
+        options.glbAssetUrl &&
+        previousGlbAssetUrl &&
+        previousGlbAssetUrl !== options.glbAssetUrl
+      ) {
+        cabinetAssetStorageRef.current?.deleteGeneratedGlb({ glbAssetUrl: previousGlbAssetUrl });
+      }
+      updateSelection(new Set([instanceId]), instanceId);
+      if (options.closeStudio) setCabinetryStudioState(null);
+      showRuleToast("Millwork updated");
+      return true;
+    },
+    [
+      canUseCabinetryStudio,
+      clampToCatalogPlacementRoom,
+      commitItemsToRoom,
+      showRuleToast,
+      updateSelection,
+    ]
+  );
+
+  const handleSaveCabinetDefinition = useCallback(
+    async (definition: CabinetDefinition) => {
+      if (!canUseCabinetryStudio) return false;
+      if (cabinetryStudioState?.mode === "edit" && cabinetryStudioState.instanceId) {
+        return updateCabinetItemDefinition(cabinetryStudioState.instanceId, definition);
+      }
+
+      showRuleToast("Millwork definition ready");
+      return false;
+    },
+    [cabinetryStudioState, canUseCabinetryStudio, showRuleToast, updateCabinetItemDefinition]
+  );
+
+  const handlePlaceCabinetInPlan = useCallback(
+    async (payload: {
+      definition: CabinetDefinition;
+      glbBlob: Blob;
+      bom: CabinetBOMItem[];
+      placeAsCopy?: boolean;
+    }) => {
+      if (!canUseCabinetryStudio) return false;
+      const storage = cabinetAssetStorageRef.current;
+      if (!storage) return false;
+
+      if (
+        cabinetryStudioState?.mode === "edit" &&
+        cabinetryStudioState.instanceId &&
+        !payload.placeAsCopy
+      ) {
+        const { glbAssetUrl } = await storage.saveGeneratedGlb({
+          cabinetId: cabinetryStudioState.instanceId,
+          blob: payload.glbBlob,
+        });
+        const updated = updateCabinetItemDefinition(cabinetryStudioState.instanceId, payload.definition, {
+          glbAssetUrl,
+          bom: payload.bom,
+          closeStudio: true,
+        });
+        if (!updated) {
+          storage.deleteGeneratedGlb({ glbAssetUrl });
+        } else {
+          track("millwork_assembly_updated", {
+            access_level: cabinetryAccessLevel,
+            assembly_type: getCabinetMillworkAssemblyType(payload.definition),
+            module_count: payload.definition.modules.length,
+            fitted_to_space: Boolean(payload.definition.fitState),
+            reopen_edit_success: cabinetryStudioState?.mode === "edit",
+            elapsed_ms:
+              cabinetryStudioOpenedAtRef.current === null
+                ? null
+                : Math.max(0, Math.round(performance.now() - cabinetryStudioOpenedAtRef.current)),
+          });
+          cabinetryStudioOpenedAtRef.current = null;
+        }
+        return updated;
+      }
+
+      const fittedRoomId = payload.definition.fitState?.host.roomId;
+      const room = fittedRoomId
+        ? designSnapshotRef.current.rooms.find((entry) => entry.id === fittedRoomId) ?? null
+        : getActiveRoom(designSnapshotRef.current);
+      if (!room) return false;
+
+      const instanceId = newInstanceId();
+      const { glbAssetUrl } = await storage.saveGeneratedGlb({
+        cabinetId: instanceId,
+        blob: payload.glbBlob,
+      });
+      const fitPlacement = getCabinetFitPlacement(
+        payload.definition,
+        room.geometry.width,
+        room.geometry.depth
+      );
+      const placementRotationY = fitPlacement?.rotationY ?? 0;
+      const fitWall = payload.definition.fitState?.host.wall;
+      const copyOffsetX =
+        payload.placeAsCopy && (!fitWall || fitWall === "north" || fitWall === "south")
+          ? 0.15
+          : 0;
+      const copyOffsetZ =
+        payload.placeAsCopy && (fitWall === "east" || fitWall === "west" || !fitWall)
+          ? 0.15
+          : 0;
+      const [safeX, safeZ] = clampToCatalogPlacementRoom(
+        room,
+        (fitPlacement?.position[0] ?? 0) + copyOffsetX,
+        (fitPlacement?.position[2] ?? 0) + copyOffsetZ,
+        payload.definition.totalWidth / 1000,
+        payload.definition.depth / 1000,
+        placementRotationY
+      );
+      const now = new Date().toISOString();
+      const documentationSnapshot = generateCabinetDocumentation(payload.definition);
+      const position: [number, number, number] = [safeX, fitPlacement?.position[1] ?? 0, safeZ];
+      const item: PlacedItem = {
+        id: instanceId,
+        instanceId,
+        productId: "parametric-cabinet",
+        variantId: payload.definition.id,
+        assetType: "parametric_cabinet",
+        ...buildCabinetMillworkMetadata(payload.definition, room.id),
+        name: payload.definition.name,
+        cabinetDefinition: payload.definition,
+        glbAssetUrl,
+        millworkAssetManifest: buildCabinetAssetManifest({
+          definition: payload.definition,
+          instanceId,
+          roomId: room.id,
+          position,
+          rotationY: placementRotationY,
+          glbAssetUrl,
+          createdAt: now,
+          updatedAt: now,
+        }),
+        bomSnapshot: payload.bom,
+        materialScheduleSnapshot: documentationSnapshot.materialSchedule,
+        hardwareScheduleSnapshot: documentationSnapshot.hardwareSchedule,
+        edgeBandingScheduleSnapshot: documentationSnapshot.edgeBandingSchedule,
+        cutListSnapshot: documentationSnapshot.cutList,
+        dimensionScheduleSnapshot: documentationSnapshot.dimensionSchedule,
+        drawingViewScheduleSnapshot: documentationSnapshot.drawingViewSchedule,
+        installerNotesSnapshot: documentationSnapshot.installerNotes,
+        releaseChecklistSnapshot: documentationSnapshot.releaseChecklist,
+        quoteSummarySnapshot: documentationSnapshot.quoteSummary,
+        supplierSkuMappingsSnapshot: documentationSnapshot.supplierSkuMappings,
+        supplierReadinessSnapshot: documentationSnapshot.supplierReadiness,
+        fabricationReleaseReadinessSnapshot:
+          documentationSnapshot.fabricationReleaseReadiness,
+        cabinetUpdatedAt: now,
+        createdAt: now,
+        updatedAt: now,
+        position,
+        rotationY: placementRotationY,
+        transform: buildCabinetTransformMetadata(position, placementRotationY),
+        qty: 1,
+        includeInCheckout: false,
+      };
+
+      const nextItems = commitItemsToRoom(
+        room.id,
+        (prev) => [...prev, item],
+        "Place cabinet",
+        { activateRoom: true }
+      );
+      if (!nextItems) {
+        storage.deleteGeneratedGlb({ glbAssetUrl });
+        return false;
+      }
+      updateSelection(new Set([instanceId]), instanceId);
+      track("millwork_assembly_placed", {
+        access_level: cabinetryAccessLevel,
+        assembly_type: getCabinetMillworkAssemblyType(payload.definition),
+        module_count: payload.definition.modules.length,
+        fitted_to_space: Boolean(payload.definition.fitState),
+        placed_as_copy: Boolean(payload.placeAsCopy),
+        elapsed_ms:
+          cabinetryStudioOpenedAtRef.current === null
+            ? null
+            : Math.max(0, Math.round(performance.now() - cabinetryStudioOpenedAtRef.current)),
+      });
+      cabinetryStudioOpenedAtRef.current = null;
+      setCabinetryStudioState(null);
+      showRuleToast("Millwork placed");
+      return true;
+    },
+    [
+      cabinetryStudioState,
+      cabinetryAccessLevel,
+      canUseCabinetryStudio,
+      clampToCatalogPlacementRoom,
+      commitItemsToRoom,
+      newInstanceId,
+      showRuleToast,
+      updateCabinetItemDefinition,
+      updateSelection,
+    ]
   );
 
   const transferItemToRoom = useCallback(
@@ -9324,17 +12886,48 @@ function PageContent() {
         worldPosition[1] ?? 0,
         worldPosition[2] - targetPlanRoom.z,
       ];
-      const [safeX, safeZ] = clampToCatalogPlacementRoom(
-        targetRoom,
-        localTargetPosition[0],
-        localTargetPosition[2],
-        configuredDims.w / 1000,
-        configuredDims.d / 1000,
-        item.rotationY ?? 0
-      );
+      const surfacePlacement = isSurfaceOnlyCatalogItem(product)
+        ? findCatalogSurfacePlacement({
+            productId: item.productId,
+            variantId: item.variantId,
+            purchaseOptionId: item.purchaseOptionId,
+            roomId: targetRoom.id,
+            items: targetRoom.items,
+            nearPosition: localTargetPosition,
+          })
+        : null;
+      if (isSurfaceOnlyCatalogItem(product) && !surfacePlacement) {
+        showRuleToast(`Add a table in ${targetRoom.name} first, then place this lamp on its surface.`);
+        return false;
+      }
+      const [safeX, safeZ] = surfacePlacement
+        ? [surfacePlacement.position[0], surfacePlacement.position[2]]
+        : clampToCatalogPlacementRoom(
+            targetRoom,
+            localTargetPosition[0],
+            localTargetPosition[2],
+            configuredDims.w / 1000,
+            configuredDims.d / 1000,
+            item.rotationY ?? 0
+          );
       const movedItem: PlacedItem = {
         ...item,
-        position: [safeX, localTargetPosition[1], safeZ],
+        position: surfacePlacement
+          ? surfacePlacement.position
+          : [
+              safeX,
+              isCeilingOnlyCatalogItem(product)
+                ? getCeilingMountedItemBaseY({
+                    product,
+                    dimsMm: configuredDims,
+                    roomHeight:
+                      targetRoom.geometry.height ?? ROOM_DIMENSION_DEFAULTS.roomHeight,
+                  })
+                : localTargetPosition[1],
+              safeZ,
+            ],
+        rotationY: surfacePlacement?.rotationY ?? item.rotationY,
+        supportInstanceId: surfacePlacement?.supportInstanceId ?? item.supportInstanceId,
       };
 
       if (
@@ -9354,7 +12947,8 @@ function PageContent() {
         movedItem.productId,
         movedItem.position,
         movedItem.rotationY ?? 0,
-        configuredDims
+        configuredDims,
+        [movedItem.instanceId, movedItem.supportInstanceId ?? ""].filter(Boolean)
       );
       if (blocker) {
         showRuleToast(`Blocked by ${getItemDisplayName(blocker) ?? "another item"}`);
@@ -9403,6 +12997,7 @@ function PageContent() {
       houseRoomById,
       isCatalogPlacementContainedInRoom,
       resolveConfiguredPlanningDimsMm,
+      setDesignSnapshot,
       showRuleToast,
       updateSelection,
     ]
@@ -9484,6 +13079,15 @@ function PageContent() {
       const bundleQuantity = purchaseOption?.quantity ?? 1;
 
       if (bundleQuantity <= 1) {
+        if (isSurfaceOnlyCatalogItem(product)) {
+          const support = placement.supportInstanceId
+            ? targetRoom.items.find((item) => item.instanceId === placement.supportInstanceId)
+            : null;
+          if (!support) {
+            showRuleToast("Add a table first, then place this lamp on its surface.");
+            return false;
+          }
+        }
         const instanceId = newInstanceId();
         const [safeX, safeZ] = clampToCatalogPlacementRoom(
           targetRoom,
@@ -9493,7 +13097,17 @@ function PageContent() {
           resolved.dimsMm.d / 1000,
           placement.rotationY
         );
-        const safePosition: [number, number, number] = [safeX, placement.position[1], safeZ];
+        const safePosition: [number, number, number] = [
+          safeX,
+          isCeilingOnlyCatalogItem(product)
+            ? getCeilingMountedItemBaseY({
+                product,
+                dimsMm: resolved.dimsMm,
+                roomHeight: targetRoom.geometry.height ?? ROOM_DIMENSION_DEFAULTS.roomHeight,
+              })
+            : placement.position[1],
+          safeZ,
+        ];
         if (
           !isCatalogPlacementContainedInRoom(
             targetRoom,
@@ -9514,6 +13128,7 @@ function PageContent() {
           qty: 1,
           includeInCheckout: true,
           purchaseOptionId: purchaseOption?.id,
+          supportInstanceId: placement.supportInstanceId,
         };
         const nextItems = commitItemsToRoom(
           targetRoom.id,
@@ -9612,6 +13227,18 @@ function PageContent() {
         activeRoom;
       if (!placementRoom) return null;
 
+      const product = CATALOG_ITEMS[placement.productId];
+      if (isSurfaceOnlyCatalogItem(product)) {
+        return findCatalogSurfacePlacement({
+          productId: placement.productId,
+          variantId: placement.variantId,
+          purchaseOptionId: placement.purchaseOptionId,
+          roomId: placementRoom.id,
+          items: placementRoom.items,
+          nearPosition: rawPosition,
+        });
+      }
+
       return resolvePendingCatalogPlacementDraft({
         placement: {
           ...placement,
@@ -9622,6 +13249,7 @@ function PageContent() {
         fallbackReason,
         roomWidth: placementRoom.geometry.width,
         roomDepth: placementRoom.geometry.depth,
+        roomHeight: placementRoom.geometry.height ?? ROOM_DIMENSION_DEFAULTS.roomHeight,
         wallThickness: placementRoom.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness,
         clampToActiveRoom: (
           x,
@@ -9671,7 +13299,8 @@ function PageContent() {
       pendingCatalogPlacement.productId,
       pendingCatalogPlacement.position,
       pendingCatalogPlacement.rotationY,
-      resolved.dimsMm
+      resolved.dimsMm,
+      pendingCatalogPlacement.supportInstanceId
     );
   }, [
     activeRoom,
@@ -9694,7 +13323,8 @@ function PageContent() {
       pendingCatalogPlacement.productId,
       pendingCatalogPlacement.position,
       pendingCatalogPlacement.rotationY,
-      resolved.dimsMm
+      resolved.dimsMm,
+      pendingCatalogPlacement.supportInstanceId
     );
   }, [
     activeRoom,
@@ -9723,6 +13353,7 @@ function PageContent() {
   }, [lastValidCatalogPlacement, pendingCatalogPlacement]);
   const pendingCatalogPlacementScore = useMemo<ManualPlacementScore | null>(() => {
     if (!pendingCatalogPlacement) return null;
+    if (catalogPlacementDragging) return null;
     const product = CATALOG_ITEMS[pendingCatalogPlacement.productId];
     const targetRoom =
       pendingCatalogPlacement.roomId
@@ -9748,6 +13379,7 @@ function PageContent() {
     });
   }, [
     activeRoom,
+    catalogPlacementDragging,
     pendingCatalogPlacement,
     pendingCatalogPlacementBlocker,
     planOpenings,
@@ -9774,7 +13406,8 @@ function PageContent() {
           placement.productId,
           placement.position,
           placement.rotationY,
-          resolved.dimsMm
+          resolved.dimsMm,
+          placement.supportInstanceId
         )
       ) {
         return false;
@@ -9990,61 +13623,145 @@ function PageContent() {
       if (!pendingCatalogPlacement) return;
       event.stopPropagation();
       (event.target as unknown as HTMLElement).setPointerCapture?.(event.pointerId);
+      pendingCatalogPlacementRef.current = pendingCatalogPlacement;
+      const nativeEvent = event.nativeEvent as PointerEvent | undefined;
+      const targetRoomId = pendingCatalogPlacement.roomId ?? designSnapshotRef.current.activeRoomId;
+      const planRoom = houseRoomById.get(targetRoomId);
+      const previewWorldX = pendingCatalogPlacement.position[0] + (planRoom?.x ?? 0);
+      const previewWorldZ = pendingCatalogPlacement.position[2] + (planRoom?.z ?? 0);
+      const pointerWorld =
+        nativeEvent ? resolveGroundPointFromClient(nativeEvent.clientX, nativeEvent.clientY) : null;
+      catalogPlacementDragOffsetRef.current = pointerWorld
+        ? {
+            x: previewWorldX - pointerWorld[0],
+            z: previewWorldZ - pointerWorld[2],
+          }
+        : { x: 0, z: 0 };
+      catalogPlacementDragLastWorldRef.current = {
+        x: previewWorldX,
+        z: previewWorldZ,
+        roomId: targetRoomId,
+      };
       setCatalogPlacementDragging(true);
       setSofaDragging(true);
     },
-    [pendingCatalogPlacement]
+    [houseRoomById, pendingCatalogPlacement, resolveGroundPointFromClient]
   );
 
-  const handleCatalogPlacementPointerMove = useCallback(
-    (event: ThreeEvent<PointerEvent>) => {
-      if (!catalogPlacementDragging || !pendingCatalogPlacement) return;
-      event.stopPropagation();
-      nudgeWholeHomeCameraForDrag(event);
-      const pointerRoom = findPlanRoomAtWorldPoint(event.point.x, event.point.z);
+  const movePendingCatalogPlacementToClientPoint = useCallback(
+    (clientX: number, clientY: number): boolean => {
+      const placement = pendingCatalogPlacementRef.current;
+      if (!placement) return false;
+      const worldPoint = resolveGroundPointFromClient(clientX, clientY);
+      if (!worldPoint) return false;
+      const dragOffset = catalogPlacementDragOffsetRef.current ?? { x: 0, z: 0 };
+      const draggedWorldX = worldPoint[0] + dragOffset.x;
+      const draggedWorldZ = worldPoint[2] + dragOffset.z;
+      const pointerRoom = hasWholeHousePlan
+        ? findPlanRoomAtWorldPoint(draggedWorldX, draggedWorldZ)
+        : null;
+      if (hasWholeHousePlan && !pointerRoom) return false;
       const targetRoomId =
-        pointerRoom?.id ?? pendingCatalogPlacement.roomId ?? designSnapshot.activeRoomId;
+        pointerRoom?.id ?? placement.roomId ?? designSnapshotRef.current.activeRoomId;
+      const lastWorld = catalogPlacementDragLastWorldRef.current;
+      if (
+        lastWorld &&
+        lastWorld.roomId === targetRoomId &&
+        Math.hypot(lastWorld.x - draggedWorldX, lastWorld.z - draggedWorldZ) < 0.015
+      ) {
+        return true;
+      }
       const planRoom = houseRoomById.get(targetRoomId);
       const targetRoom = roomSnapshotById.get(targetRoomId) ?? activeRoom;
-      if (!targetRoom) return;
+      if (!targetRoom) return false;
       const nextPlacement = updatePendingCatalogPlacementDraft(
         {
-          ...pendingCatalogPlacement,
+          ...placement,
           roomId: targetRoom.id,
         },
         [
-          event.point.x - (planRoom?.x ?? 0),
+          draggedWorldX - (planRoom?.x ?? 0),
           0,
-          event.point.z - (planRoom?.z ?? 0),
+          draggedWorldZ - (planRoom?.z ?? 0),
         ],
-        pendingCatalogPlacement.rotationY,
-        pointerRoom && pointerRoom.id !== pendingCatalogPlacement.roomId
+        placement.rotationY,
+        pointerRoom && pointerRoom.id !== placement.roomId
           ? `Moved to ${targetRoom.name}`
           : "Custom placement",
         targetRoom
       );
-      if (nextPlacement) {
-        setPendingCatalogPlacement(nextPlacement);
-        const acceptable = isCatalogPlacementTargetAcceptable(nextPlacement, targetRoom);
-        setCrossRoomDragTarget({
-          roomId: targetRoom.id,
-          label: targetRoom.name,
-          valid: acceptable,
-          kind: "preview",
-        });
-      }
+      if (!nextPlacement) return false;
+
+      pendingCatalogPlacementRef.current = nextPlacement;
+      catalogPlacementDragLastWorldRef.current = {
+        x: nextPlacement.position[0] + (planRoom?.x ?? 0),
+        z: nextPlacement.position[2] + (planRoom?.z ?? 0),
+        roomId: targetRoom.id,
+      };
+      setPendingCatalogPlacement(nextPlacement);
+      const product = CATALOG_ITEMS[nextPlacement.productId];
+      const resolved = product ? resolveCatalogVariant(product, nextPlacement.variantId) : null;
+      const acceptable = Boolean(
+        resolved &&
+          isCatalogPlacementContainedInRoom(
+            targetRoom,
+            nextPlacement.position,
+            nextPlacement.rotationY,
+            resolved.dimsMm
+          ) &&
+          !catalogPlacementCollidesInRoom(
+            targetRoom,
+            nextPlacement.productId,
+            nextPlacement.position,
+            nextPlacement.rotationY,
+            resolved.dimsMm,
+            nextPlacement.supportInstanceId
+          )
+      );
+      setCrossRoomDragTarget({
+        roomId: targetRoom.id,
+        label: targetRoom.name,
+        valid: acceptable,
+        kind: "preview",
+      });
+      return true;
     },
     [
       activeRoom,
-      catalogPlacementDragging,
-      designSnapshot.activeRoomId,
+      catalogPlacementCollidesInRoom,
       findPlanRoomAtWorldPoint,
+      hasWholeHousePlan,
       houseRoomById,
-      isCatalogPlacementTargetAcceptable,
-      nudgeWholeHomeCameraForDrag,
-      pendingCatalogPlacement,
+      isCatalogPlacementContainedInRoom,
+      resolveGroundPointFromClient,
       roomSnapshotById,
       updatePendingCatalogPlacementDraft,
+    ]
+  );
+
+  const schedulePendingCatalogPlacementMove = useCallback(
+    (clientX: number, clientY: number) => {
+      catalogPlacementDragLatestClientRef.current = { clientX, clientY };
+      if (catalogPlacementDragMoveFrameRef.current !== null) return;
+      catalogPlacementDragMoveFrameRef.current = window.requestAnimationFrame(() => {
+        catalogPlacementDragMoveFrameRef.current = null;
+        const latest = catalogPlacementDragLatestClientRef.current;
+        if (!latest) return;
+        movePendingCatalogPlacementToClientPoint(latest.clientX, latest.clientY);
+      });
+    },
+    [movePendingCatalogPlacementToClientPoint]
+  );
+
+  const handleCatalogPlacementPointerMove = useCallback(
+    (event: ThreeEvent<PointerEvent>) => {
+      if (!catalogPlacementDragging || !pendingCatalogPlacementRef.current) return;
+      event.stopPropagation();
+      nudgeWholeHomeCameraForDrag(event);
+    },
+    [
+      catalogPlacementDragging,
+      nudgeWholeHomeCameraForDrag,
     ]
   );
 
@@ -10055,6 +13772,13 @@ function PageContent() {
     }
     setCatalogPlacementDragging(false);
     setSofaDragging(false);
+    catalogPlacementDragOffsetRef.current = null;
+    catalogPlacementDragLatestClientRef.current = null;
+    catalogPlacementDragLastWorldRef.current = null;
+    if (catalogPlacementDragMoveFrameRef.current !== null) {
+      window.cancelAnimationFrame(catalogPlacementDragMoveFrameRef.current);
+      catalogPlacementDragMoveFrameRef.current = null;
+    }
   }, []);
 
   const buildCatalogPlacementPreview = useCallback(
@@ -10068,8 +13792,11 @@ function PageContent() {
         variantId,
         purchaseOptionId,
         canPlace: Boolean(activeRoom),
+        surfaceItems: activeRoom?.items,
+        roomId: activeRoom?.id ?? designSnapshotRef.current.activeRoomId,
         roomWidth,
         roomDepth,
+        roomHeight: activeRoom?.geometry.height ?? ROOM_DIMENSION_DEFAULTS.roomHeight,
         wallThickness,
         clampToActiveRoom,
         collides: catalogPlacementCollides,
@@ -10094,6 +13821,15 @@ function PageContent() {
     ): PendingCatalogPlacement | null => {
       const product = CATALOG_ITEMS[productId];
       if (!product || !targetRoom) return null;
+      if (isSurfaceOnlyCatalogItem(product)) {
+        return findCatalogSurfacePlacement({
+          productId,
+          variantId,
+          purchaseOptionId,
+          roomId: targetRoom.id,
+          items: targetRoom.items,
+        });
+      }
       const resolved = resolveCatalogVariant(product, variantId ?? product.defaultVariantId);
       const widthMeters = resolved.dimsMm.w / 1000;
       const depthMeters = resolved.dimsMm.d / 1000;
@@ -10108,7 +13844,10 @@ function PageContent() {
       const topCategory = mapToTopCategory(product.category, product);
       const wallFirst = new Set(["sofa", "tv_console", "sideboard", "floor_lamp", "dining_bench"]);
       const preferredZoneTypes: Zone["type"][] =
-        topCategory === "dining_table" || topCategory === "dining_bench" || topCategory === "sideboard"
+        topCategory === "dining_table" ||
+        topCategory === "dining_bench" ||
+        topCategory === "sideboard" ||
+        topCategory === "ceiling_light"
           ? ["dining"]
           : topCategory === "tv_console"
             ? ["tv"]
@@ -10166,7 +13905,15 @@ function PageContent() {
           depthMeters,
           candidate.rotationY
         );
-        const position: [number, number, number] = [safeX, 0, safeZ];
+        const position: [number, number, number] = [
+          safeX,
+          getCeilingMountedItemBaseY({
+            product,
+            dimsMm: resolved.dimsMm,
+            roomHeight: targetRoom.geometry.height ?? ROOM_DIMENSION_DEFAULTS.roomHeight,
+          }),
+          safeZ,
+        ];
         if (
           !isCatalogPlacementContainedInRoom(
             targetRoom,
@@ -10514,6 +14261,7 @@ function PageContent() {
   const handlePlacementAwareRoomSelect = useCallback(
     (roomId: string) => {
       preserveCameraAfterPlanOverlaySelection();
+      handleResetFloorPlanTraceRoomPoints();
 
       if (targetPendingCatalogPlacementToRoom(roomId, { source: "room" })) {
         clearNonRoomSelection();
@@ -10535,8 +14283,98 @@ function PageContent() {
     [
       clearNonRoomSelection,
       editorMode,
+      handleResetFloorPlanTraceRoomPoints,
       handleSwitchRoom,
       preserveCameraAfterPlanOverlaySelection,
+      targetPendingCatalogPlacementToRoom,
+    ]
+  );
+
+  const handleRendererSurfaceTargetSelect = useCallback(
+    (target: RendererSurfaceTarget) => {
+      preserveCameraAfterPlanOverlaySelection();
+      handleResetFloorPlanTraceRoomPoints();
+
+      if (targetPendingCatalogPlacementToRoom(target.roomId, { source: "room" })) {
+        clearNonRoomSelection();
+        setSelectedPlanRoomId(target.roomId);
+        if (editorMode !== "present") setEditorMode("design");
+        return;
+      }
+
+      clearNonRoomSelection();
+      setSelectedPlanRoomId(target.roomId);
+      setSelectedRendererSurfaceTarget(target);
+      if (editorMode !== "present") setEditorMode("design");
+      if (designSnapshotRef.current.activeRoomId !== target.roomId) {
+        handleSwitchRoom(target.roomId);
+      }
+
+      if (target.kind === "floor") {
+        setActiveSurfaceTarget("floor");
+        setSelectedWallSurfaceTarget(null);
+        if (surfaceBrushActive && surfaceBrushMaterialId && canApplySurfaceBrush) {
+          handleApplyFloorMaterialToRoom(surfaceBrushMaterialId, target.roomId);
+        }
+        track("surface_scene_target_selected", {
+          target: "floor",
+          roomId: target.roomId,
+          brush: surfaceBrushActive,
+        });
+        return;
+      }
+
+      if (target.kind === "ceiling") {
+        setActiveSurfaceTarget("ceiling");
+        setSelectedWallSurfaceTarget(null);
+        if (surfaceBrushActive && surfaceBrushPaint && canApplySurfaceBrush) {
+          handleApplyCeilingPaintToRoom(
+            surfaceBrushPaint.colorHex,
+            surfaceBrushPaint.name,
+            target.roomId
+          );
+        }
+        track("surface_scene_target_selected", {
+          target: "ceiling",
+          roomId: target.roomId,
+          brush: surfaceBrushActive,
+        });
+        return;
+      }
+
+      setSelectedWallSurfaceTarget({ roomId: target.roomId, faceId: target.id });
+      setActiveSurfaceTarget("selected_wall");
+      if (surfaceBrushActive && surfaceBrushPaint && canApplySurfaceBrush) {
+        handleApplyWallPaintToRoom(
+          surfaceBrushPaint.colorHex,
+          surfaceBrushPaint.name,
+          target.roomId,
+          target.id
+        );
+      } else if (surfaceBrushActive && surfaceBrushMaterialId && canApplySurfaceBrush) {
+        handleApplyWallMaterialToRoom(surfaceBrushMaterialId, target.roomId, target.id);
+      }
+      track("surface_scene_target_selected", {
+        target: "selected_wall",
+        roomId: target.roomId,
+        faceId: target.id,
+        brush: surfaceBrushActive,
+      });
+    },
+    [
+      canApplySurfaceBrush,
+      clearNonRoomSelection,
+      editorMode,
+      handleApplyCeilingPaintToRoom,
+      handleApplyFloorMaterialToRoom,
+      handleApplyWallMaterialToRoom,
+      handleApplyWallPaintToRoom,
+      handleResetFloorPlanTraceRoomPoints,
+      handleSwitchRoom,
+      preserveCameraAfterPlanOverlaySelection,
+      surfaceBrushActive,
+      surfaceBrushMaterialId,
+      surfaceBrushPaint,
       targetPendingCatalogPlacementToRoom,
     ]
   );
@@ -10648,8 +14486,11 @@ function PageContent() {
         variantId,
         purchaseOptionId,
         itemCount: itemsRef.current.length,
+        surfaceItems: activeRoom?.items,
+        roomId: activeRoom?.id ?? designSnapshotRef.current.activeRoomId,
         roomWidth,
         roomDepth,
+        roomHeight: activeRoom?.geometry.height ?? ROOM_DIMENSION_DEFAULTS.roomHeight,
         wallThickness,
         clampToActiveRoom,
         collides: catalogPlacementCollides,
@@ -10664,7 +14505,9 @@ function PageContent() {
     },
     [
       addCatalogPlacementToRoom,
+      activeRoom?.geometry.height,
       activeRoom?.id,
+      activeRoom?.items,
       buildCatalogPlacementPreview,
       catalogPlacementCollides,
       clampToActiveRoom,
@@ -10907,7 +14750,8 @@ function PageContent() {
       pendingCatalogPlacement.productId,
       pendingCatalogPlacement.position,
       pendingCatalogPlacement.rotationY,
-      resolved.dimsMm
+      resolved.dimsMm,
+      pendingCatalogPlacement.supportInstanceId
     );
     if (!blocker) return;
     setDesignSnapshot((prev) =>
@@ -10921,6 +14765,7 @@ function PageContent() {
     getItemDisplayName,
     pendingCatalogPlacement,
     roomSnapshotById,
+    setDesignSnapshot,
     showRuleToast,
     updateSelection,
   ]);
@@ -11176,6 +15021,7 @@ function PageContent() {
   }, [designSnapshot.activeRoomId]);
 
   useEffect(() => {
+    pendingCatalogPlacementRef.current = pendingCatalogPlacement;
     if (pendingCatalogPlacement) {
       if (!pendingCatalogPlacementHardInvalid) {
         setLastValidCatalogPlacement(pendingCatalogPlacement);
@@ -11186,23 +15032,43 @@ function PageContent() {
     setCatalogPlacementDragging(false);
     setCrossRoomDragTarget((current) => (current?.kind === "preview" ? null : current));
     setSofaDragging(false);
+    catalogPlacementDragOffsetRef.current = null;
+    catalogPlacementDragLatestClientRef.current = null;
+    catalogPlacementDragLastWorldRef.current = null;
+    if (catalogPlacementDragMoveFrameRef.current !== null) {
+      window.cancelAnimationFrame(catalogPlacementDragMoveFrameRef.current);
+      catalogPlacementDragMoveFrameRef.current = null;
+    }
   }, [pendingCatalogPlacement, pendingCatalogPlacementHardInvalid]);
 
   useEffect(() => {
     if (!catalogPlacementDragging) return;
+    const moveDragging = (event: PointerEvent) => {
+      schedulePendingCatalogPlacementMove(event.clientX, event.clientY);
+    };
     const stopDragging = () => {
       setCatalogPlacementDragging(false);
       setSofaDragging(false);
+      catalogPlacementDragOffsetRef.current = null;
+      catalogPlacementDragLatestClientRef.current = null;
+      catalogPlacementDragLastWorldRef.current = null;
+      if (catalogPlacementDragMoveFrameRef.current !== null) {
+        window.cancelAnimationFrame(catalogPlacementDragMoveFrameRef.current);
+        catalogPlacementDragMoveFrameRef.current = null;
+      }
     };
+    window.addEventListener("pointermove", moveDragging);
     window.addEventListener("pointerup", stopDragging);
     window.addEventListener("pointercancel", stopDragging);
     return () => {
+      window.removeEventListener("pointermove", moveDragging);
       window.removeEventListener("pointerup", stopDragging);
       window.removeEventListener("pointercancel", stopDragging);
     };
-  }, [catalogPlacementDragging]);
+  }, [catalogPlacementDragging, schedulePendingCatalogPlacementMove]);
 
   const canEdit = !isClientPreview && liveCatalogReady;
+  const canEditPlanGeometry = !isClientPreview;
   const _isSharedLink = Boolean(shareToken) || pathname?.includes("/share/");
   const catalogItems = useMemo(() => {
     const allItems = Object.values(CATALOG_ITEMS);
@@ -11215,12 +15081,29 @@ function PageContent() {
       const productName = String(item.metadata?.productName ?? item.title ?? "")
         .trim()
         .toLowerCase();
-      const dedupeKey = `${brand}|${item.category}|${family}|${productName}`;
+      const modelSelectorIds = MODEL_SELECTOR_PRODUCT_IDS_BY_PRODUCT_ID[item.id] ?? [];
+      const modelFamilyRepresentativeId = modelSelectorIds.length > 1 ? modelSelectorIds[0] : null;
+      const dedupeProductName = modelFamilyRepresentativeId
+        ? `model-family:${modelFamilyRepresentativeId}`
+        : productName;
+      const dedupeKey = `${brand}|${item.category}|${family}|${dedupeProductName}`;
 
       const existing = dedupedByFamily.get(dedupeKey);
       if (!existing) {
         dedupedByFamily.set(dedupeKey, item);
         continue;
+      }
+
+      if (modelFamilyRepresentativeId) {
+        const itemIsRepresentative = item.id === modelFamilyRepresentativeId;
+        const existingIsRepresentative = existing.id === modelFamilyRepresentativeId;
+        if (itemIsRepresentative && !existingIsRepresentative) {
+          dedupedByFamily.set(dedupeKey, item);
+          continue;
+        }
+        if (!itemIsRepresentative && existingIsRepresentative) {
+          continue;
+        }
       }
 
       const itemIsImported = importedIds.has(item.id);
@@ -11245,7 +15128,8 @@ function PageContent() {
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+
+    const hydrateImportedCatalog = async () => {
       try {
         const res = await fetch("/api/models/imported", { cache: "no-store" });
         const payload = (await res.json().catch(() => ({ models: [] }))) as {
@@ -11256,19 +15140,39 @@ function PageContent() {
           models: payload.models ?? [],
           importedProductConfigById: IMPORTED_PRODUCT_CONFIG_BY_ID,
         });
+        const catalogByProductId: Record<string, ImportedModelCatalog> = {};
+        for (const model of payload.models ?? []) {
+          const id = String(model.id ?? "").trim();
+          if (!id || !model.catalog) continue;
+          catalogByProductId[id] = model.catalog;
 
+          const assetId = String(
+            model.catalog.assets?.assetId ?? model.catalog.assets?.asset_id ?? ""
+          ).trim();
+          if (assetId) {
+            catalogByProductId[assetId] = model.catalog;
+          }
+        }
+
+        setImportedCatalogByProductId(catalogByProductId);
         setImportedModelUrlByAssetId(modelUrlByAssetId);
         setImportedModelOptions(options);
       } catch {
         if (!cancelled) {
+          setImportedCatalogByProductId({});
           setImportedModelUrlByAssetId({});
           setImportedModelOptions([]);
         }
       }
-    })();
+    };
+
+    void hydrateImportedCatalog();
+    const refreshOnFocus = () => void hydrateImportedCatalog();
+    window.addEventListener("focus", refreshOnFocus);
 
     return () => {
       cancelled = true;
+      window.removeEventListener("focus", refreshOnFocus);
     };
   }, []);
 
@@ -12398,6 +16302,251 @@ function PageContent() {
     });
   }, [applyItemRotation, selectedItem]);
 
+  const findCabinetPlacementBlocker = useCallback(
+    (
+      cabinet: PlacedItem,
+      position: [number, number, number],
+      rotationY: number
+    ): PlacedItem | null => {
+      if (!activeRoom) return null;
+      const candidateAABB = getItemAABB(cabinet, position, rotationY);
+      if (!candidateAABB) return null;
+
+      for (const blocker of activeRoom.items) {
+        if (blocker.instanceId === cabinet.instanceId) continue;
+        const blockerProduct = CATALOG_ITEMS[blocker.productId];
+        if (blockerProduct?.category === "rug") continue;
+        const blockerAABB = getItemAABB(blocker);
+        if (blockerAABB && aabbIntersects(candidateAABB, blockerAABB)) {
+          return blocker;
+        }
+      }
+
+      return null;
+    },
+    [activeRoom, getItemAABB]
+  );
+
+  const moveSelectedCabinetToPosition = useCallback(
+    (targetX: number, targetZ: number, actionLabel = "Move millwork") => {
+      if (!selectedCabinetItem || !selectedCabinetPlanningDimensionsMm || !activeRoom || !canEdit) return;
+      if (isDesigner && selectedCabinetItem.locked) return;
+      const rotationY = getCabinetRotationY(selectedCabinetItem);
+      const [safeX, safeZ] = clampToActiveRoom(
+        targetX,
+        targetZ,
+        selectedCabinetPlanningDimensionsMm.w / 1000,
+        selectedCabinetPlanningDimensionsMm.d / 1000,
+        roomWidth,
+        roomDepth,
+        wallThickness,
+        rotationY
+      );
+      const nextPosition: [number, number, number] = [
+        safeX,
+        selectedCabinetItem.position[1] ?? 0,
+        safeZ,
+      ];
+
+      if (
+        !isCatalogPlacementContainedInRoom(
+          activeRoom,
+          nextPosition,
+          rotationY,
+          selectedCabinetPlanningDimensionsMm
+        )
+      ) {
+        showRuleToast(`Place fully inside ${activeRoom.name}`);
+        return;
+      }
+
+      const blocker = findCabinetPlacementBlocker(selectedCabinetItem, nextPosition, rotationY);
+      if (blocker) {
+        showRuleToast(`Blocked by ${getItemDisplayName(blocker) ?? "another item"}`);
+        return;
+      }
+
+      commitItems(
+        (prev) =>
+          prev.map((item) =>
+            item.instanceId === selectedCabinetItem.instanceId
+              ? updateCabinetPlacementMetadata(item, nextPosition, rotationY, activeRoom.id)
+              : item
+          ),
+        actionLabel
+      );
+    },
+    [
+      activeRoom,
+      canEdit,
+      clampToActiveRoom,
+      commitItems,
+      findCabinetPlacementBlocker,
+      getItemDisplayName,
+      isCatalogPlacementContainedInRoom,
+      isDesigner,
+      roomDepth,
+      roomWidth,
+      selectedCabinetItem,
+      selectedCabinetPlanningDimensionsMm,
+      showRuleToast,
+      wallThickness,
+    ]
+  );
+
+  const centerSelectedCabinetInRoom = useCallback(() => {
+    moveSelectedCabinetToPosition(0, 0, "Center millwork");
+  }, [moveSelectedCabinetToPosition]);
+
+  const nudgeSelectedCabinet = useCallback(
+    (deltaX: number, deltaZ: number) => {
+      if (!selectedCabinetItem) return;
+      moveSelectedCabinetToPosition(
+        selectedCabinetItem.position[0] + deltaX,
+        selectedCabinetItem.position[2] + deltaZ,
+        "Nudge millwork"
+      );
+    },
+    [moveSelectedCabinetToPosition, selectedCabinetItem]
+  );
+
+  const snapSelectedCabinetToNearestWall = useCallback(() => {
+    if (!selectedCabinetItem || !selectedCabinetPlanningDimensionsMm || !canEdit) return;
+    if (isDesigner && selectedCabinetItem.locked) return;
+    const rotationY = getCabinetRotationY(selectedCabinetItem);
+    const [effectiveWidth, effectiveDepth] = getRotatedFootprint(
+      selectedCabinetPlanningDimensionsMm.w / 1000,
+      selectedCabinetPlanningDimensionsMm.d / 1000,
+      rotationY
+    );
+    const wallInset = getFurnitureWallInset(wallThickness);
+    const wallX = Math.max(0, roomWidth / 2 - wallInset - effectiveWidth / 2);
+    const wallZ = Math.max(0, roomDepth / 2 - wallInset - effectiveDepth / 2);
+    const candidates: Array<[number, number]> = [
+      [-wallX, selectedCabinetItem.position[2]],
+      [wallX, selectedCabinetItem.position[2]],
+      [selectedCabinetItem.position[0], -wallZ],
+      [selectedCabinetItem.position[0], wallZ],
+    ];
+    const [targetX, targetZ] = candidates.reduce((best, candidate) => {
+      const bestDistance = Math.hypot(
+        best[0] - selectedCabinetItem.position[0],
+        best[1] - selectedCabinetItem.position[2]
+      );
+      const candidateDistance = Math.hypot(
+        candidate[0] - selectedCabinetItem.position[0],
+        candidate[1] - selectedCabinetItem.position[2]
+      );
+      return candidateDistance < bestDistance ? candidate : best;
+    }, candidates[0]);
+    moveSelectedCabinetToPosition(targetX, targetZ, "Snap millwork to wall");
+  }, [
+    canEdit,
+    isDesigner,
+    moveSelectedCabinetToPosition,
+    roomDepth,
+    roomWidth,
+    selectedCabinetItem,
+    selectedCabinetPlanningDimensionsMm,
+    wallThickness,
+  ]);
+
+  const setSelectedCabinetRotation = useCallback(
+    (targetRotationY: number, actionLabel = "Rotate millwork") => {
+      if (!selectedCabinetItem || !selectedCabinetPlanningDimensionsMm || !activeRoom || !canEdit) return;
+      if (isDesigner && selectedCabinetItem.locked) return;
+      const resolvedRotationY = rotationSnapEnabled
+        ? snapRotationRadians(targetRotationY, rotationSnapStepRadians)
+        : targetRotationY;
+      const [safeX, safeZ] = clampToActiveRoom(
+        selectedCabinetItem.position[0],
+        selectedCabinetItem.position[2],
+        selectedCabinetPlanningDimensionsMm.w / 1000,
+        selectedCabinetPlanningDimensionsMm.d / 1000,
+        roomWidth,
+        roomDepth,
+        wallThickness,
+        resolvedRotationY
+      );
+      const nextPosition: [number, number, number] = [
+        safeX,
+        selectedCabinetItem.position[1] ?? 0,
+        safeZ,
+      ];
+
+      if (
+        !isCatalogPlacementContainedInRoom(
+          activeRoom,
+          nextPosition,
+          resolvedRotationY,
+          selectedCabinetPlanningDimensionsMm
+        )
+      ) {
+        showRuleToast(`Place fully inside ${activeRoom.name}`);
+        return;
+      }
+
+      const blocker = findCabinetPlacementBlocker(
+        selectedCabinetItem,
+        nextPosition,
+        resolvedRotationY
+      );
+      if (blocker) {
+        showRuleToast(`Blocked by ${getItemDisplayName(blocker) ?? "another item"}`);
+        return;
+      }
+
+      commitItems(
+        (prev) =>
+          prev.map((item) =>
+            item.instanceId === selectedCabinetItem.instanceId
+              ? updateCabinetPlacementMetadata(
+                  item,
+                  nextPosition,
+                  resolvedRotationY,
+                  activeRoom.id
+                )
+              : item
+          ),
+        actionLabel
+      );
+    },
+    [
+      activeRoom,
+      canEdit,
+      clampToActiveRoom,
+      commitItems,
+      findCabinetPlacementBlocker,
+      getItemDisplayName,
+      isCatalogPlacementContainedInRoom,
+      isDesigner,
+      roomDepth,
+      roomWidth,
+      rotationSnapEnabled,
+      rotationSnapStepRadians,
+      selectedCabinetItem,
+      selectedCabinetPlanningDimensionsMm,
+      showRuleToast,
+      wallThickness,
+    ]
+  );
+
+  const rotateSelectedCabinetByDegrees = useCallback(
+    (deltaDegrees: number) => {
+      if (!selectedCabinetItem) return;
+      const deltaRadians = (deltaDegrees * Math.PI) / 180;
+      setSelectedCabinetRotation(
+        getCabinetRotationY(selectedCabinetItem) + deltaRadians,
+        `Rotate millwork ${deltaDegrees > 0 ? "+" : ""}${deltaDegrees} deg`
+      );
+    },
+    [selectedCabinetItem, setSelectedCabinetRotation]
+  );
+
+  const resetSelectedCabinetRotation = useCallback(() => {
+    setSelectedCabinetRotation(0, "Reset millwork rotation");
+  }, [setSelectedCabinetRotation]);
+
   const duplicateSelectedItem = useCallback(() => {
     if (!selectedItem || !selectedProduct || !canEdit) return;
     if (isDesigner && selectedItem.locked) return;
@@ -12438,7 +16587,8 @@ function PageContent() {
   const deleteSelectedItem = useCallback(() => {
     if (!selectedItem || !canEdit) return;
     if (isDesigner && selectedItem.locked) return;
-    const productName = selectedProduct?.title ?? "Item";
+    const productName =
+      selectedCabinetItem?.name ?? selectedCabinetItem?.cabinetDefinition.name ?? selectedProduct?.title ?? "Item";
     commitItems(
       (prev) => prev.filter((item) => item.instanceId !== selectedItem.instanceId),
       `Delete ${productName}`
@@ -12454,7 +16604,7 @@ function PageContent() {
           : primaryIdRef.current;
       updateSelection(next, nextPrimary);
     }
-  }, [canEdit, commitItems, isDesigner, selectedItem, selectedProduct?.title, updateSelection]);
+  }, [canEdit, commitItems, isDesigner, selectedCabinetItem, selectedItem, selectedProduct?.title, updateSelection]);
 
   const centerSelectedItemInRoom = useCallback(() => {
     if (!selectedItem || !selectedProduct || !canEdit) return;
@@ -12606,7 +16756,8 @@ function PageContent() {
             nextItem.productId,
             nextItem.position,
             nextItem.rotationY ?? 0,
-            dims
+            dims,
+            nextItem.supportInstanceId
           );
           if (blocker) {
             showRuleToast(`Blocked by ${getItemDisplayName(blocker) ?? "another item"}`);
@@ -12680,6 +16831,7 @@ function PageContent() {
       resolveConfiguredPlanningDimsMm,
       roomSnapshotById,
       selectedItem,
+      setDesignSnapshot,
       showRuleToast,
       transferItemToRoom,
       updateSelection,
@@ -12773,25 +16925,25 @@ function PageContent() {
   );
 
   const nudgeSelectedPlanRoom = useCallback(
-    (deltaX: number, deltaZ: number) => {
+    (deltaX: number, deltaZ: number, options?: { snap?: boolean }) => {
       if (!selectedPlanRoomContext || viewMode !== "2d" || !canEdit) return;
       const nextX = roundPlanCoordinate(selectedPlanRoomContext.x + deltaX);
       const nextZ = roundPlanCoordinate(selectedPlanRoomContext.z + deltaZ);
-      if (
-        doesHouseRoomOverlap(
-          selectedPlanRoomContext.id,
-          nextX,
-          nextZ,
-          selectedPlanRoomContext.w,
-          selectedPlanRoomContext.d,
-          housePlan2D.rooms
-        )
-      ) {
+      const move = resolveHouseRoomMove({
+        roomId: selectedPlanRoomContext.id,
+        x: nextX,
+        z: nextZ,
+        rooms: housePlan2D.rooms,
+        snap: options?.snap !== false,
+      });
+      if (!move || move.movementStatus === "blocked") {
         showRuleToast("Rooms cannot overlap");
         return;
       }
       runHistoryTransaction("Nudge room", () => {
-        handleMoveRoom2D(selectedPlanRoomContext.id, nextX, nextZ, { snap: false });
+        handleMoveRoom2D(selectedPlanRoomContext.id, move.x, move.z, {
+          snap: options?.snap !== false,
+        });
       });
     },
     [
@@ -12961,16 +17113,16 @@ function PageContent() {
       const nudgeStep = event.shiftKey ? 0.25 : 0.05;
       if (event.key === "ArrowLeft") {
         event.preventDefault();
-        nudgeSelectedPlanRoom(-nudgeStep, 0);
+        nudgeSelectedPlanRoom(-nudgeStep, 0, { snap: !event.shiftKey });
       } else if (event.key === "ArrowRight") {
         event.preventDefault();
-        nudgeSelectedPlanRoom(nudgeStep, 0);
+        nudgeSelectedPlanRoom(nudgeStep, 0, { snap: !event.shiftKey });
       } else if (event.key === "ArrowUp") {
         event.preventDefault();
-        nudgeSelectedPlanRoom(0, -nudgeStep);
+        nudgeSelectedPlanRoom(0, -nudgeStep, { snap: !event.shiftKey });
       } else if (event.key === "ArrowDown") {
         event.preventDefault();
-        nudgeSelectedPlanRoom(0, nudgeStep);
+        nudgeSelectedPlanRoom(0, nudgeStep, { snap: !event.shiftKey });
       }
     };
 
@@ -13048,6 +17200,8 @@ function PageContent() {
 
   const visibleConstraints = pickTopConstraints(constraintResults);
   const lightConfig = LIGHTING_PRESETS[lightingPreset];
+  const sceneBackgroundColor =
+    showDesignerTheme && viewMode === "3d" ? "#dedfdf" : "#ffffff";
   const effectivePlanLayers = simplePlanControls ? SIMPLE_PLAN_LAYERS : planLayers;
   const effectivePlanTheme = simplePlanControls ? "consumer" : planTheme;
   const planCanvasCursor =
@@ -13080,7 +17234,7 @@ function PageContent() {
         hasRooms: housePlan2D.rooms.length > 0,
         hasOpenings: planOpenings.length > 0,
         hasConnectionBlockers: roomConnectionChecklistItems.some(
-          (item) => item.status === "needs_doorway"
+          (item) => item.status !== "connected"
         ),
         hasFurniture: items.length > 0,
       });
@@ -13254,8 +17408,8 @@ function PageContent() {
   const planGuidedActionsToggleClass = [
     "pointer-events-auto absolute z-30 flex items-center rounded-xl border text-xs font-semibold shadow-xl backdrop-blur transition",
     showPlanManualQuickActions
-      ? "bottom-20 left-28 gap-1.5 px-2 py-1.5"
-      : `left-4 ${visiblePlanCanvasGuidance ? "bottom-40 sm:bottom-20" : "bottom-20"} gap-2 px-3 py-2`,
+      ? "left-1/2 top-[8.75rem] translate-x-4 gap-1.5 px-2 py-1.5"
+      : "left-1/2 top-20 -translate-x-1/2 gap-2 px-3 py-2",
     planGuidedActionsEnabled
       ? "border-emerald-200 bg-white/95 text-neutral-950 hover:border-emerald-300"
       : "border-neutral-200 bg-white/95 text-neutral-600 hover:border-neutral-300",
@@ -13406,6 +17560,13 @@ function PageContent() {
               .join(","),
             planZoom: planDebugMetrics.zoom,
             visibleLabelCount: planDebugMetrics.visibleLabelCount,
+            plan2DCameraValid: planDebugMetrics.cameraValid,
+            plan2DCameraRecoveries: planDebugMetrics.cameraRecoveries,
+            plan2DCameraTargetX: planDebugMetrics.cameraTargetX,
+            plan2DCameraTargetZ: planDebugMetrics.cameraTargetZ,
+            projectedRoomMinWidthPx: planDebugMetrics.projectedRoomMinWidthPx,
+            projectedRoomMinHeightPx: planDebugMetrics.projectedRoomMinHeightPx,
+            projectedRoomMinAreaPx: planDebugMetrics.projectedRoomMinAreaPx,
             selectedPlanRoomId: selectedPlanRoomId ?? "",
           }
         : null,
@@ -13416,6 +17577,13 @@ function PageContent() {
       editorMode,
       planDebugMetrics.visibleLabelCount,
       planDebugMetrics.zoom,
+      planDebugMetrics.cameraRecoveries,
+      planDebugMetrics.cameraValid,
+      planDebugMetrics.cameraTargetX,
+      planDebugMetrics.cameraTargetZ,
+      planDebugMetrics.projectedRoomMinAreaPx,
+      planDebugMetrics.projectedRoomMinHeightPx,
+      planDebugMetrics.projectedRoomMinWidthPx,
       selectedPlanRoomId,
       viewMode,
     ]
@@ -13599,6 +17767,251 @@ function PageContent() {
           hidden
         />
       ) : null}
+      {projectCabinetSchedulePackage.totals.assetCount > 0 ? (
+        <div
+          data-testid="project-millwork-schedule"
+          data-schema={projectCabinetSchedulePackage.schema}
+          data-source-type={projectCabinetSchedulePackage.sourceType}
+          data-room-count={String(projectCabinetSchedulePackage.totals.roomCount)}
+          data-asset-count={String(projectCabinetSchedulePackage.totals.assetCount)}
+          data-module-count={String(projectCabinetSchedulePackage.totals.moduleCount)}
+          data-bom-line-count={String(projectCabinetSchedulePackage.totals.bomLineCount)}
+          data-edge-banding-schedule-count={String(projectCabinetSchedulePackage.totals.edgeBandingScheduleCount)}
+          data-edge-banding-total-m={String(projectCabinetSchedulePackage.totals.edgeBandingTotalM)}
+          data-cut-list-count={String(projectCabinetSchedulePackage.totals.cutListCount)}
+          data-estimated-total={String(projectCabinetSchedulePackage.totals.estimatedTotal)}
+          data-release-blocker-count={String(projectCabinetSchedulePackage.totals.releaseBlockerCount)}
+          data-custom-quote-required-count={String(projectCabinetSchedulePackage.totals.customQuoteRequiredCount)}
+          hidden
+        />
+      ) : null}
+      {projectCabinetHandoffPackage ? (
+        <div
+          data-testid="project-millwork-readiness"
+          data-schema={projectCabinetHandoffPackage.schema}
+          data-handoff-status={projectCabinetHandoffPackage.handoffStatus}
+          data-asset-count={String(projectCabinetHandoffPackage.totals.assetCount)}
+          data-package-count={String(projectCabinetHandoffPackage.totals.packageCount)}
+          data-scope-schema={projectCabinetHandoffPackage.packages.scopePackage.schema}
+          data-scope-family-count={String(projectCabinetHandoffPackage.packages.scopePackage.totals.familyCount)}
+          data-scope-assembly-type-count={String(
+            projectCabinetHandoffPackage.packages.scopePackage.totals.assemblyTypeCount
+          )}
+          data-scope-phase-represented-count={String(
+            projectCabinetHandoffPackage.packages.scopePackage.totals.phaseRepresentedCount
+          )}
+          data-quote-status={projectCabinetHandoffPackage.packages.quotePackage.quoteStatus}
+          data-purchase-readiness={
+            projectCabinetHandoffPackage.packages.purchaseReadinessPackage.purchaseReadiness
+          }
+          data-fabrication-release-status={projectCabinetHandoffPackage.packages.fabricationReleasePackage.status}
+          data-field-verification-status={
+            projectCabinetHandoffPackage.packages.fieldVerificationPackage.verificationStatus
+          }
+          data-installation-readiness={
+            projectCabinetHandoffPackage.packages.installationPlanPackage.installationReadiness
+          }
+          data-approval-status={projectCabinetHandoffPackage.packages.approvalPackage.approvalStatus}
+          data-release-blocker-count={String(projectCabinetHandoffPackage.totals.releaseBlockerCount)}
+          data-required-approval-count={String(projectCabinetHandoffPackage.totals.requiredApprovalCount)}
+          data-field-verification-required-count={String(
+            projectCabinetHandoffPackage.totals.fieldVerificationRequiredCount
+          )}
+          data-custom-quote-required-count={String(
+            projectCabinetHandoffPackage.packages.procurementPackage.totals.customQuoteRequiredCount
+          )}
+          data-can-issue-client={projectCabinetHandoffPackage.canIssueToClient ? "true" : "false"}
+          data-can-issue-fabricator={projectCabinetHandoffPackage.canIssueToFabricator ? "true" : "false"}
+          data-can-issue-installer={projectCabinetHandoffPackage.canIssueToInstaller ? "true" : "false"}
+          data-can-issue-purchase-review={
+            projectCabinetHandoffPackage.canIssueForPurchaseReview ? "true" : "false"
+          }
+          hidden
+        />
+      ) : null}
+      <div data-testid="placed-cabinet-assets" hidden>
+        {designSnapshot.rooms.flatMap((room) =>
+          room.items.filter(isParametricCabinetItem).map((item) => {
+            const rotationY = getCabinetRotationY(item);
+            const position = item.position ?? item.transform?.position ?? [0, 0, 0];
+            const scale = item.transform?.scale ?? [1, 1, 1];
+            const assetManifest =
+              item.millworkAssetManifest ??
+              buildCabinetAssetManifest({
+                definition: item.cabinetDefinition,
+                instanceId: item.instanceId,
+                roomId: item.roomId ?? room.id,
+                position,
+                rotationY,
+                scale,
+                glbAssetUrl: item.glbAssetUrl,
+                createdAt: item.createdAt ?? item.cabinetDefinition.createdAt,
+                updatedAt:
+                  item.updatedAt ??
+                  item.cabinetUpdatedAt ??
+                  item.cabinetDefinition.updatedAt,
+              });
+            let generatedParts: ReturnType<typeof generateCabinetParts> | undefined;
+            const getGeneratedParts = () =>
+              (generatedParts ??= generateCabinetParts(item.cabinetDefinition));
+            let generatedDocumentation:
+              | ReturnType<typeof generateCabinetDocumentation>
+              | undefined;
+            const getGeneratedDocumentation = () =>
+              (generatedDocumentation ??= generateCabinetDocumentation(
+                item.cabinetDefinition,
+                { parts: getGeneratedParts() }
+              ));
+            let generatedBom: ReturnType<typeof generateCabinetBOM> | undefined;
+            const getGeneratedBom = () =>
+              (generatedBom ??= generateCabinetBOM(
+                item.cabinetDefinition,
+                getGeneratedParts()
+              ));
+            const assemblyProfile =
+              item.millworkDefinition?.assemblyProfile ??
+              createCabinetMillworkDefinition(item.cabinetDefinition).assemblyProfile;
+            const markerProps = {
+              "data-instance-id": item.instanceId,
+              "data-room-id": item.roomId ?? room.id,
+              "data-family": item.millworkDefinition?.family ?? "cabinetry",
+              "data-assembly-type": item.assemblyType ?? getCabinetMillworkAssemblyType(item.cabinetDefinition),
+              "data-definition-schema": item.millworkDefinition?.schema ?? "",
+              "data-source-type": item.millworkDefinition?.sourceType ?? "cabinet_definition",
+              "data-source-definition-id":
+                item.millworkDefinition?.sourceDefinition?.id ?? item.cabinetDefinition.id,
+              "data-definition-version": String(
+                item.millworkDefinitionVersion ?? item.cabinetDefinition.version
+              ),
+              "data-asset-manifest-schema": assetManifest.schema,
+              "data-asset-manifest-version": String(assetManifest.version),
+              "data-asset-manifest-source-definition-version": String(
+                assetManifest.sourceDefinitionVersion
+              ),
+              "data-generated-output-kind": assetManifest.generatedOutput.kind,
+              "data-generated-output-durable": assetManifest.generatedOutput.durable
+                ? "true"
+                : "false",
+              "data-asset-manifest-transform-position": assetManifest.transform.position.join(","),
+              "data-asset-manifest-transform-rotation-y": String(assetManifest.transform.rotation[1]),
+              "data-assembly-profile-schema": assemblyProfile.schema,
+              "data-assembly-profile-label": assemblyProfile.label,
+              "data-assembly-profile-phase": assemblyProfile.projectPhase,
+              "data-assembly-profile-placement-kind": assemblyProfile.placementKind,
+              "data-assembly-profile-complexity": assemblyProfile.fabricationComplexity,
+              "data-material-count": String(
+                item.millworkMaterials?.length ?? item.cabinetDefinition.materials.length
+              ),
+              "data-hardware-count": String(
+                item.millworkHardware?.length ?? item.cabinetDefinition.hardware.length
+              ),
+              "data-name": item.name ?? item.cabinetDefinition.name,
+              "data-module-count": String(item.cabinetDefinition.modules.length),
+              "data-width-mm": String(item.cabinetDefinition.totalWidth),
+              "data-height-mm": String(item.cabinetDefinition.height),
+              "data-depth-mm": String(item.cabinetDefinition.depth),
+              "data-position": position.join(","),
+              "data-rotation-y": String(rotationY),
+              "data-transform-position": item.transform?.position?.join(",") ?? "",
+              "data-transform-rotation-y": String(
+                item.transform?.rotationY ?? item.transform?.rotation?.[1] ?? ""
+              ),
+              "data-bom-count": String(
+                item.bomSnapshot?.length ?? getGeneratedBom().length
+              ),
+              "data-material-schedule-count": String(
+                item.materialScheduleSnapshot?.length ??
+                  getGeneratedDocumentation().materialSchedule.length
+              ),
+              "data-hardware-schedule-count": String(
+                item.hardwareScheduleSnapshot?.length ??
+                  getGeneratedDocumentation().hardwareSchedule.length
+              ),
+              "data-edge-banding-schedule-count": String(
+                item.edgeBandingScheduleSnapshot?.length ??
+                  getGeneratedDocumentation().edgeBandingSchedule.length
+              ),
+              "data-edge-banding-total-m": String(
+                Math.round(
+                  (
+                    item.edgeBandingScheduleSnapshot ??
+                    getGeneratedDocumentation().edgeBandingSchedule
+                  ).reduce((sum, entry) => sum + entry.totalLengthM, 0) * 100
+                ) / 100
+              ),
+              "data-cut-list-count": String(
+                item.cutListSnapshot?.length ?? getGeneratedDocumentation().cutList.length
+              ),
+              "data-dimension-schedule-count": String(
+                item.dimensionScheduleSnapshot?.length ??
+                  getGeneratedDocumentation().dimensionSchedule.length
+              ),
+              "data-drawing-view-schedule-count": String(
+                item.drawingViewScheduleSnapshot?.length ??
+                  getGeneratedDocumentation().drawingViewSchedule.length
+              ),
+              "data-installer-note-count": String(
+                item.installerNotesSnapshot?.length ??
+                  getGeneratedDocumentation().installerNotes.length
+              ),
+              "data-release-checklist-count": String(
+                item.releaseChecklistSnapshot?.length ??
+                  getGeneratedDocumentation().releaseChecklist.length
+              ),
+              "data-release-blocker-count": String(
+                (
+                  item.releaseChecklistSnapshot ??
+                  getGeneratedDocumentation().releaseChecklist
+                ).filter((entry) => entry.status === "blocked").length
+              ),
+              "data-quote-total": String(
+                item.quoteSummarySnapshot?.estimatedTotal ??
+                  getGeneratedDocumentation().quoteSummary.estimatedTotal
+              ),
+              "data-quote-line-count": String(
+                item.quoteSummarySnapshot?.lineItems.length ??
+                  getGeneratedDocumentation().quoteSummary.lineItems.length
+              ),
+              "data-supplier-sku-mapping-count": String(
+                item.supplierSkuMappingsSnapshot?.length ??
+                  getGeneratedDocumentation().supplierSkuMappings.length
+              ),
+              "data-supplier-readiness-status":
+                item.supplierReadinessSnapshot?.status ??
+                getGeneratedDocumentation().supplierReadiness.status,
+              "data-mapped-sku-count": String(
+                item.supplierReadinessSnapshot?.mappedSkuCount ??
+                  getGeneratedDocumentation().supplierReadiness.mappedSkuCount
+              ),
+              "data-missing-sku-count": String(
+                item.supplierReadinessSnapshot?.missingSkuCount ??
+                  getGeneratedDocumentation().supplierReadiness.missingSkuCount
+              ),
+              "data-custom-quote-required-count": String(
+                item.supplierReadinessSnapshot?.customQuoteRequiredCount ??
+                  getGeneratedDocumentation().supplierReadiness.customQuoteRequiredCount
+              ),
+              "data-fabrication-release-status":
+                item.fabricationReleaseReadinessSnapshot?.status ??
+                getGeneratedDocumentation().fabricationReleaseReadiness.status,
+              "data-fabrication-release-required-count": String(
+                item.fabricationReleaseReadinessSnapshot?.requiredGateCount ??
+                  getGeneratedDocumentation().fabricationReleaseReadiness.requiredGateCount
+              ),
+              "data-fabrication-release-blocker-count": String(
+                item.fabricationReleaseReadinessSnapshot?.blockerCount ??
+                  getGeneratedDocumentation().fabricationReleaseReadiness.blockerCount
+              ),
+            };
+            return (
+              <Fragment key={`${room.id}:${item.instanceId}`}>
+                <div data-testid="placed-millwork-asset" {...markerProps} />
+                <div data-testid="placed-cabinet-asset" {...markerProps} />
+              </Fragment>
+            );
+          })
+        )}
+      </div>
       {process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS === "1" ? (
         <div
           data-testid="qa-first-run-activation"
@@ -13642,6 +18055,13 @@ function PageContent() {
           data-room-item-counts={qaDesignLayoutSnapshot.roomItemCounts}
           data-plan-zoom={String(qaDesignLayoutSnapshot.planZoom)}
           data-visible-label-count={String(qaDesignLayoutSnapshot.visibleLabelCount)}
+          data-plan-2d-camera-valid={qaDesignLayoutSnapshot.plan2DCameraValid ? "true" : "false"}
+          data-plan-2d-camera-recoveries={String(qaDesignLayoutSnapshot.plan2DCameraRecoveries)}
+          data-plan-2d-camera-target-x={String(qaDesignLayoutSnapshot.plan2DCameraTargetX)}
+          data-plan-2d-camera-target-z={String(qaDesignLayoutSnapshot.plan2DCameraTargetZ)}
+          data-plan-2d-projected-room-min-width-px={String(qaDesignLayoutSnapshot.projectedRoomMinWidthPx)}
+          data-plan-2d-projected-room-min-height-px={String(qaDesignLayoutSnapshot.projectedRoomMinHeightPx)}
+          data-plan-2d-projected-room-min-area-px={String(qaDesignLayoutSnapshot.projectedRoomMinAreaPx)}
           data-selected-plan-room-id={qaDesignLayoutSnapshot.selectedPlanRoomId}
           hidden
         />
@@ -13654,6 +18074,7 @@ function PageContent() {
           <div>Room: {qaDesignLayoutSnapshot.activeRoomName || qaDesignLayoutSnapshot.activeRoomId}</div>
           <div>Zoom: {qaDesignLayoutSnapshot.planZoom}</div>
           <div>Labels: {qaDesignLayoutSnapshot.visibleLabelCount}</div>
+          <div>2D Camera: {qaDesignLayoutSnapshot.plan2DCameraValid ? "valid" : "invalid"}</div>
           <div>Items: {qaDesignLayoutSnapshot.roomItemCounts}</div>
           <div>Undo: {historyDebugSnapshot.past.length} · Redo: {historyDebugSnapshot.future.length}</div>
           <div>Txn: {historyDebugSnapshot.txn?.name ?? "none"}</div>
@@ -13672,7 +18093,7 @@ function PageContent() {
           <div
             className={
               showDesignerTheme
-                ? "mx-auto w-[min(560px,100%)] overflow-hidden rounded-xl border border-white/15 bg-[#12151d] text-neutral-100 shadow-2xl"
+                ? "designer-dock mx-auto w-[min(560px,100%)] overflow-hidden rounded-xl text-neutral-100"
                 : "mx-auto w-[min(560px,100%)] overflow-hidden rounded-xl border border-neutral-200 bg-white text-neutral-950 shadow-2xl"
             }
           >
@@ -13766,7 +18187,34 @@ function PageContent() {
           <CanvasErrorBoundary>
           <Canvas
             data-testid="scene-canvas"
-            style={{ cursor: planCanvasCursor }}
+            data-shadow-maps-enabled="false"
+            data-tone-mapping="aces"
+            data-lighting-model="ambient-hemi-key-fill-ibl"
+            data-camera-y={viewMode === "3d" ? String(cameraView.pos[1]) : undefined}
+            data-plan-2d-orientation={
+              viewMode === "2d" ? plan2DWholeHomeViewFit.orientation : undefined
+            }
+            data-plan-2d-camera-valid={
+              viewMode === "2d" ? String(planDebugMetrics.cameraValid) : undefined
+            }
+            data-plan-2d-camera-recoveries={
+              viewMode === "2d" ? String(planDebugMetrics.cameraRecoveries) : undefined
+            }
+            data-plan-2d-projected-room-min-width-px={
+              viewMode === "2d" ? String(planDebugMetrics.projectedRoomMinWidthPx) : undefined
+            }
+            data-plan-2d-projected-room-min-height-px={
+              viewMode === "2d" ? String(planDebugMetrics.projectedRoomMinHeightPx) : undefined
+            }
+            data-plan-2d-projected-room-min-area-px={
+              viewMode === "2d" ? String(planDebugMetrics.projectedRoomMinAreaPx) : undefined
+            }
+            style={{
+              cursor: planCanvasCursor,
+              backgroundColor: sceneBackgroundColor,
+              opacity: showSceneLoadingVeil ? 0 : 1,
+              transition: "opacity 160ms ease",
+            }}
             shadows={false}
             dpr={liteSceneEnabled ? [1, 1] : [1, 2]}
             gl={{
@@ -13788,6 +18236,7 @@ function PageContent() {
           >
             <EditorCamera2D
               active={viewMode === "2d"}
+              fitOrientation={plan2DWholeHomeViewFit.orientation}
               roomWidth={plan2DFitBounds.widthMeters}
               roomDepth={plan2DFitBounds.depthMeters}
               roomHeight={roomHeight}
@@ -13796,10 +18245,24 @@ function PageContent() {
               safeAreaLeftPx={plan2DSafeAreaLeftPx}
               safeAreaRightPx={plan2DSafeAreaRightPx}
               safeAreaBottomPx={plan2DSafeAreaBottomPx}
+              zoomScale={WHOLE_HOME_FIT_ZOOM_SCALE}
             />
-            <color attach="background" args={["#ffffff"]} />
+            <Plan2DCameraInvariantGuard
+              active={viewMode === "2d"}
+              cameraHeightMeters={
+                Math.max(plan2DFitBounds.widthMeters, plan2DFitBounds.depthMeters) +
+                roomHeight +
+                6
+              }
+              controlsRef={orbitControlsRef}
+              fit={plan2DWholeHomeViewFit}
+              onDiagnosticsChange={handlePlan2DCameraDiagnosticsChange}
+              rooms={housePlan2D.rooms}
+              updateProjection={updateProjection}
+            />
+            <color attach="background" args={[sceneBackgroundColor]} />
             <LoadingOverlay />
-            <SceneProgressBridge onReadyChange={setSceneReady} />
+            <SceneProgressBridge onReadyChange={setSceneProgressReady} />
             <ScenePerformanceBridge
               enabled={viewMode === "3d" && scenePerformanceMode === "auto" && !liteSceneEnabled}
               onFpsSample={handleScenePerformanceSample}
@@ -13828,9 +18291,10 @@ function PageContent() {
               color={lightConfig.ambientColor ?? "#f6f6f4"}
               intensity={lightConfig.ambientIntensity}
             />
-            <ambientLight
-              color="#ffffff"
-              intensity={0.24}
+            <hemisphereLight
+              color={lightConfig.skyColor ?? "#f5f6fa"}
+              groundColor={lightConfig.groundColor ?? "#d9d7d1"}
+              intensity={lightConfig.hemiIntensity ?? 0.3}
             />
             <directionalLight
               position={[5, 7, 4]}
@@ -13868,12 +18332,14 @@ function PageContent() {
                     rooms={housePlan2D.rooms}
                     activeRoomId={selectedPlanRoomId}
                     onSelectRoom={handlePlacementAwareRoomSelect}
+                    onSelectSurfaceTarget={handleRendererSurfaceTargetSelect}
                     onClearRoomSelection={
                       floorPlanCalibrationMode ? undefined : clearAllSelection
                     }
                     onRenameRoom={handleRenameSelectedPlanRoom}
                     onDuplicateRoom={handleDuplicateSelectedPlanRoom}
                     onDeleteRoom={handleDeleteSelectedPlanRoom}
+                    onEditFloor={handleOpenFloorEditorForRoom}
                     onFitRoom={handleFitSelectedPlanRoom}
                     onMoveRoom={handleMoveRoom2D}
                     onResizeRoom={handleResizeRoom2D}
@@ -13888,6 +18354,7 @@ function PageContent() {
                     showBuiltIns={effectivePlanLayers.builtIns}
                     showAnnotations={effectivePlanLayers.annotations}
                     showZones={effectivePlanLayers.zones}
+                    planViewOrientation={plan2DWholeHomeViewFit.orientation}
                     interactive={editorMode !== "present"}
                     selectedOverlayId={selectedPlanOverlayId}
                     onSelectOverlay={handleSelectPlanOverlay}
@@ -13929,12 +18396,14 @@ function PageContent() {
                     openings={mapPlanOpeningsToRoomRenderer(editorScene2D.openings)}
                     activeRoomId={designSnapshot.activeRoomId}
                     activeFloorLevel={activeFloorLevel}
-                    wallHeight={Math.min(roomHeight, 1.55)}
-                    physicalWallHeight={roomHeight}
+                    wallHeight={roomHeight}
                     stackedFloors={stackedFloorView}
                     fadeInactiveFloors
                     interactive={editorMode !== "present" && !isClientPreview}
                     onSelectRoom={handlePlacementAwareRoomSelect}
+                    selectedOpeningId={selectedPlanOverlayId}
+                    selectedSurfaceTarget={selectedRendererSurfaceTarget}
+                    onSelectSurfaceTarget={handleRendererSurfaceTargetSelect}
                     onSelectOpening={handleSelectPlanOverlay}
                     onMoveOpening={handleMoveOpening2D}
                     onOpeningDragStateChange={handlePlanOpeningDragStateChange3D}
@@ -13956,7 +18425,9 @@ function PageContent() {
                 )
               )}
 
-              {placementTargetPlanRoom && (pendingCatalogPlacement || crossRoomDragTarget) && (
+              {placementTargetPlanRoom &&
+                (pendingCatalogPlacement || crossRoomDragTarget) &&
+                !activeCatalogPlacementSurfaceHighlight && (
                 <group
                   position={[placementTargetPlanRoom.x, 0.062, placementTargetPlanRoom.z]}
                   rotation={[-Math.PI / 2, 0, 0]}
@@ -13984,6 +18455,43 @@ function PageContent() {
                 </group>
               )}
 
+              {activeCatalogPlacementSurfaceHighlight && (
+                <group
+                  name="catalog-placement-support-surface-highlight"
+                  userData={{
+                    testId: "catalog-placement-support-surface-highlight",
+                    supportInstanceId: activeCatalogPlacementSurfaceHighlight.supportInstanceId,
+                  }}
+                  position={activeCatalogPlacementSurfaceHighlight.position}
+                  rotation={[0, activeCatalogPlacementSurfaceHighlight.rotationY, 0]}
+                >
+                  <mesh rotation={[-Math.PI / 2, 0, 0]} raycast={() => null}>
+                    <planeGeometry
+                      args={[
+                        activeCatalogPlacementSurfaceHighlight.width,
+                        activeCatalogPlacementSurfaceHighlight.depth,
+                      ]}
+                    />
+                    <meshBasicMaterial
+                      color="#34d399"
+                      transparent
+                      opacity={0.3}
+                      depthWrite={false}
+                      polygonOffset
+                      polygonOffsetFactor={-2}
+                    />
+                  </mesh>
+                  <Line
+                    points={activeCatalogPlacementSurfaceHighlight.outlinePoints}
+                    color="#047857"
+                    lineWidth={5}
+                    transparent
+                    opacity={0.98}
+                    raycast={() => null}
+                  />
+                </group>
+              )}
+
               <DesignerGrid
                 visible={isDesigner && showGrid && !isClientPreview && (editorMode === "design" || editorMode === "adjust")}
                 pulse={gridPulse}
@@ -14001,9 +18509,12 @@ function PageContent() {
                   {zones.map((zone) => {
                     const bounds = getZoneBounds(zone);
                     if (!bounds) return null;
-                    const compatible = activePlacementCompatibleZoneIds.has(zone.id);
+                    const compatible =
+                      !activeCatalogPlacementSurfaceHighlight &&
+                      activePlacementCompatibleZoneIds.has(zone.id);
                     const showingPlacementZones =
-                      pendingCatalogPlacement !== null || hoverCatalogPlacement !== null;
+                      !activeCatalogPlacementSurfaceHighlight &&
+                      (pendingCatalogPlacement !== null || hoverCatalogPlacement !== null);
                     return (
                       <SceneZoneOutline
                         key={zone.id}
@@ -14040,6 +18551,41 @@ function PageContent() {
                 const it = sceneEntry.item;
                 const isActiveSceneRoom = sceneEntry.isActiveRoom;
                 const roomOffset = sceneEntry.roomOffset;
+                if (isParametricCabinetItem(it)) {
+                  const scenePosition: [number, number, number] = [
+                    it.position[0] + roomOffset.x,
+                    it.position[1] ?? 0,
+                    it.position[2] + roomOffset.z,
+                  ];
+                  const sceneRenderItemKey = `${sceneEntry.roomId}:${it.instanceId}:${it.productId}:${
+                    it.variantId ?? ""
+                  }:${sceneRenderQuality}`;
+
+                  return (
+                    <CabinetSceneItem
+                      key={`${sceneEntry.roomId}:${it.instanceId}`}
+                      definition={it.cabinetDefinition}
+                      position={scenePosition}
+                      rotationY={it.rotationY ?? 0}
+                      selected={
+                        isActiveSceneRoom &&
+                        editorMode !== "present" &&
+                        selectedIds.has(it.instanceId)
+                      }
+                      interactive={isActiveSceneRoom && editorMode !== "present" && !isClientPreview}
+                      instanceId={it.instanceId}
+                      viewMode={viewMode}
+                      renderReadyKey={sceneRenderItemKey}
+                      onRenderReadyChange={handleSceneRenderItemReadyChange}
+                      onSelect={(id, additive) => {
+                        if (!isActiveSceneRoom) return;
+                        if (editorMode === "buy" || editorMode === "present") return;
+                        trackFirstInteraction();
+                        handleSelect(id, additive);
+                      }}
+                    />
+                  );
+                }
                 const product = CATALOG_ITEMS[it.productId];
                 if (!product) return null;
                 const effectiveVariantId =
@@ -14107,11 +18653,37 @@ function PageContent() {
                   isActiveSceneRoom && it.instanceId === selectedInstanceId && previewMaterialPresetId
                     ? previewMaterialPresetId
                     : it.materialPreset;
+                const recoveredSurfacePlacement =
+                  isSurfaceOnlyCatalogItem(effectiveProduct) && (it.position[1] ?? 0) <= 0.001
+                    ? findCatalogSurfacePlacement({
+                        productId: it.productId,
+                        variantId: effectiveVariantId,
+                        purchaseOptionId: it.purchaseOptionId,
+                        roomId: sceneEntry.roomId,
+                        items: roomSnapshotById.get(sceneEntry.roomId)?.items ?? [],
+                        nearPosition: it.position,
+                      })
+                    : null;
+                const renderLocalPosition: [number, number, number] = recoveredSurfacePlacement?.position ??
+                  (isCeilingOnlyCatalogItem(effectiveProduct)
+                    ? [
+                        it.position[0],
+                        getCeilingMountedItemBaseY({
+                          product: effectiveProduct,
+                          dimsMm: configuredVisualDims,
+                          roomHeight: sceneEntry.roomHeight,
+                        }),
+                        it.position[2],
+                      ]
+                    : it.position);
                 const scenePosition: [number, number, number] = [
-                  it.position[0] + roomOffset.x,
-                  it.position[1] ?? 0,
-                  it.position[2] + roomOffset.z,
+                  renderLocalPosition[0] + roomOffset.x,
+                  renderLocalPosition[1] ?? 0,
+                  renderLocalPosition[2] + roomOffset.z,
                 ];
+                const sceneRenderItemKey = `${sceneEntry.roomId}:${it.instanceId}:${it.productId}:${
+                  effectiveVariantId ?? ""
+                }:${sceneRenderQuality}`;
 
                 return (
                   <Furniture
@@ -14122,6 +18694,7 @@ function PageContent() {
                     variantName={variant.label}
                     variantId={variant.id}
                     variantRenderAssets={variant.renderAssets}
+                    hangingHeightCm={it.hangingHeightCm}
                     planningBoundsMm={configuredPlanningDims}
                     nodeTransforms={configuredNodeTransforms ?? undefined}
                     initialPosition={scenePosition}
@@ -14167,6 +18740,8 @@ function PageContent() {
                     planShowDimensions={effectivePlanLayers.dimensions}
                     planMeasurementUnit={planMeasurementUnit}
                     renderQuality={sceneRenderQuality}
+                    renderReadyKey={sceneRenderItemKey}
+                    onRenderReadyChange={handleSceneRenderItemReadyChange}
                     onSelect={(id: string, additive: boolean) => {
                       if (!isActiveSceneRoom) return;
                       if (editorMode === "buy" || editorMode === "present") return;
@@ -14205,6 +18780,69 @@ function PageContent() {
                           if (moverProduct?.category === "rug") {
                             return true;
                           }
+                          if (
+                            isSurfaceOnlyCatalogItem(moverProduct) &&
+                            !(pointerRoom && pointerRoom.id !== sceneEntry.roomId && hasWholeHousePlan)
+                          ) {
+                            const surfacePlacement = findCatalogSurfacePlacement({
+                              productId: mover.productId,
+                              variantId: mover.variantId,
+                              purchaseOptionId: mover.purchaseOptionId,
+                              roomId: sceneEntry.roomId,
+                              items: currentItems,
+                              nearPosition: localPos,
+                            });
+                            if (!surfacePlacement) {
+                              return false;
+                            }
+                            const moverRoom = roomSnapshotById.get(sceneEntry.roomId) ?? activeRoom;
+                            if (!moverRoom) return false;
+                            const candidate = {
+                              ...mover,
+                              position: surfacePlacement.position,
+                              rotationY: surfacePlacement.rotationY,
+                              supportInstanceId: surfacePlacement.supportInstanceId,
+                            };
+                            if (
+                              !isCatalogPlacementContainedInRoom(
+                                moverRoom,
+                                candidate.position,
+                                candidate.rotationY ?? 0,
+                                configuredPlanningDims
+                              )
+                            ) {
+                              return false;
+                            }
+                            const blocker = findCatalogPlacementBlockerInRoom(
+                              moverRoom,
+                              mover.productId,
+                              candidate.position,
+                              candidate.rotationY ?? 0,
+                              configuredPlanningDims,
+                              [mover.instanceId, surfacePlacement.supportInstanceId ?? ""].filter(Boolean)
+                            );
+                            if (blocker) return false;
+                            const updater = (prev: PlacedItem[]) =>
+                              prev.map((x) =>
+                                x.instanceId === id
+                                  ? {
+                                      ...x,
+                                      position: surfacePlacement.position,
+                                      rotationY: surfacePlacement.rotationY,
+                                      supportInstanceId: surfacePlacement.supportInstanceId,
+                                    }
+                                  : x
+                              );
+                            if (!dragCommitRef.current) {
+                              history.begin("Move item");
+                              const nextItems = updater(itemsRef.current);
+                              setItemsPresent(nextItems);
+                              dragCommitRef.current = true;
+                            } else {
+                              setItemsPresent(updater);
+                            }
+                            return true;
+                          }
 
                           if (
                             pointerRoom &&
@@ -14222,40 +18860,68 @@ function PageContent() {
                               pos[1] ?? 0,
                               pos[2] - targetPlanRoom.z,
                             ];
-                            const [safeX, safeZ] = clampToCatalogPlacementRoom(
-                              targetRoom,
-                              targetLocalPos[0],
-                              targetLocalPos[2],
-                              configuredPlanningDims.w / 1000,
-                              configuredPlanningDims.d / 1000,
-                              mover.rotationY ?? 0
-                            );
-                            const targetPosition: [number, number, number] = [
-                              safeX,
-                              targetLocalPos[1],
-                              safeZ,
-                            ];
+                            const targetSurfacePlacement = isSurfaceOnlyCatalogItem(moverProduct)
+                              ? findCatalogSurfacePlacement({
+                                  productId: mover.productId,
+                                  variantId: mover.variantId,
+                                  purchaseOptionId: mover.purchaseOptionId,
+                                  roomId: targetRoom.id,
+                                  items: targetRoom.items,
+                                  nearPosition: targetLocalPos,
+                                })
+                              : null;
+                            const [safeX, safeZ] = targetSurfacePlacement
+                              ? [targetSurfacePlacement.position[0], targetSurfacePlacement.position[2]]
+                              : clampToCatalogPlacementRoom(
+                                  targetRoom,
+                                  targetLocalPos[0],
+                                  targetLocalPos[2],
+                                  configuredPlanningDims.w / 1000,
+                                  configuredPlanningDims.d / 1000,
+                                  mover.rotationY ?? 0
+                                );
+                            const targetPosition: [number, number, number] = targetSurfacePlacement
+                              ? targetSurfacePlacement.position
+                              : [
+                                  safeX,
+                                  isCeilingOnlyCatalogItem(moverProduct)
+                                    ? getCeilingMountedItemBaseY({
+                                        product: moverProduct,
+                                        dimsMm: configuredPlanningDims,
+                                        roomHeight:
+                                          targetRoom.geometry.height ?? ROOM_DIMENSION_DEFAULTS.roomHeight,
+                                      })
+                                    : targetLocalPos[1],
+                                  safeZ,
+                                ];
                             const blocker = findCatalogPlacementBlockerInRoom(
                               targetRoom,
                               mover.productId,
                               targetPosition,
-                              mover.rotationY ?? 0,
-                              configuredPlanningDims
+                              targetSurfacePlacement?.rotationY ?? mover.rotationY ?? 0,
+                              configuredPlanningDims,
+                              [mover.instanceId, targetSurfacePlacement?.supportInstanceId ?? ""].filter(Boolean)
                             );
                             const targetContained = isCatalogPlacementContainedInRoom(
                               targetRoom,
                               targetPosition,
-                              mover.rotationY ?? 0,
+                              targetSurfacePlacement?.rotationY ?? mover.rotationY ?? 0,
                               configuredPlanningDims
                             );
                             setCrossRoomDragTarget({
                               roomId: targetRoom.id,
-                              label: !targetContained
+                              label: isSurfaceOnlyCatalogItem(moverProduct) && !targetSurfacePlacement
+                                ? `Add a table in ${targetRoom.name}`
+                                : !targetContained
                                 ? `Place fully inside ${targetRoom.name}`
                                 : blocker
                                 ? getItemDisplayName(blocker) ?? targetRoom.name
                                 : targetRoom.name,
-                              valid: targetContained && !blocker,
+                              valid: Boolean(
+                                (!isSurfaceOnlyCatalogItem(moverProduct) || targetSurfacePlacement) &&
+                                  targetContained &&
+                                  !blocker
+                              ),
                               kind: "item",
                             });
                             return true;
@@ -14277,6 +18943,12 @@ function PageContent() {
                               if (blocker.instanceId === id) continue;
                               const blockerProduct = CATALOG_ITEMS[blocker.productId];
                               if (blockerProduct?.category === "rug") continue;
+                              if (
+                                isCeilingOnlyCatalogItem(moverProduct) !==
+                                isCeilingOnlyCatalogItem(blockerProduct)
+                              ) {
+                                continue;
+                              }
                               const blockerAABB = getItemAABB(blocker);
                               if (!blockerAABB) continue;
                               if (aabbIntersects(moverAABB, blockerAABB)) {
@@ -14365,6 +19037,12 @@ function PageContent() {
                           for (const blocker of blockers) {
                             const blockerProduct = CATALOG_ITEMS[blocker.productId];
                             if (blockerProduct?.category === "rug") continue;
+                            if (
+                              isCeilingOnlyCatalogItem(movedProduct) !==
+                              isCeilingOnlyCatalogItem(blockerProduct)
+                            ) {
+                              continue;
+                            }
                             const blockerAABB = getItemAABB(blocker);
                             if (!blockerAABB) continue;
                             if (aabbIntersects(movedAABB, blockerAABB)) {
@@ -14403,7 +19081,7 @@ function PageContent() {
                     showLocks={isDesigner && !isClientPreview && isActiveSceneRoom}
                     onSnapPulse={triggerGridPulse}
                     enableSnap={
-                      snapEnabled && !isClientPreview && isActiveSceneRoom && !hasWholeHousePlan
+                      snapEnabled && !isClientPreview && isActiveSceneRoom
                     }
                     items={isActiveSceneRoom ? activeSceneItemsForGuides : []}
                     itemPlanningBoundsByInstanceId={itemPlanningBoundsByInstanceId}
@@ -14621,12 +19299,62 @@ function PageContent() {
           </Canvas>
           </CanvasErrorBoundary>
 
+          {floatingPlanOverlayStackVisible && (
+            <aside
+              data-testid="plan-right-rail"
+              aria-label="Plan information and controls"
+              className="pointer-events-auto absolute bottom-24 right-1 top-16 z-30 hidden w-[268px] flex-col gap-2 overflow-y-auto overflow-x-hidden pr-1 lg:flex"
+              style={{ overscrollBehavior: "contain" }}
+            >
+              {viewMode === "3d" && hasWholeHousePlan ? (
+                <div ref={setPlanNavigatorRailElement} className="w-[264px] shrink-0" />
+              ) : null}
+              {floatingFloorPropertiesPanelVisible ? (
+                <div ref={setPlanFloorRailElement} className="w-[264px] shrink-0" />
+              ) : null}
+              {plan2DQualityReviewPanelVisible ? (
+                <div ref={setPlanReviewRailElement} className="w-[264px] shrink-0" />
+              ) : null}
+              {floatingSelectionInspectorVisible && selectedObjectInspector ? (
+                <div ref={setPlanSelectionRailElement} className="w-[264px] shrink-0" />
+              ) : null}
+            </aside>
+          )}
+
+          {showSceneLoadingVeil ? (
+            <div
+              data-testid="scene-ready-veil"
+              className={
+                showDesignerTheme
+                  ? "absolute inset-0 z-20 flex items-end justify-center px-4 pb-8 text-neutral-950"
+                  : "absolute inset-0 z-20 flex items-end justify-center bg-white px-4 pb-8 text-neutral-950"
+              }
+              style={showDesignerTheme ? { backgroundColor: sceneBackgroundColor } : undefined}
+            >
+              <div
+                className={
+                  showDesignerTheme
+                    ? "w-[min(340px,calc(100vw-2rem))] rounded-lg border border-neutral-200 bg-white/95 px-4 py-3 text-sm font-semibold shadow-lg"
+                    : "w-[min(340px,calc(100vw-2rem))] rounded-lg border border-neutral-200 bg-white/95 px-4 py-3 text-sm font-semibold shadow-lg"
+                }
+              >
+                <div className="flex items-center justify-between gap-4">
+                  <span>Preparing room</span>
+                  <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500 animate-pulse" />
+                </div>
+                <div className="mt-2 h-1 overflow-hidden rounded-full bg-neutral-100">
+                  <div className="h-full w-2/3 rounded-full bg-neutral-950/80 animate-pulse" />
+                </div>
+              </div>
+            </div>
+          ) : null}
+
           {!isClientPreview && visiblePlanOpening && selectedPlanOverlayId && (
             <div
               data-testid="selected-plan-opening-actions"
               className={
                 showDesignerTheme
-                  ? "absolute left-1/2 top-[112px] z-30 flex -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl border border-white/15 bg-[#12151dcc] px-3 py-2 text-xs text-neutral-100 shadow-xl backdrop-blur"
+                  ? "designer-work-surface absolute left-1/2 top-[112px] z-30 flex -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs"
                   : "absolute left-1/2 top-[112px] z-30 flex -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white/95 px-3 py-2 text-xs text-neutral-800 shadow-xl backdrop-blur"
               }
               style={{ maxWidth: "calc(100% - 2rem)" }}
@@ -14637,104 +19365,15 @@ function PageContent() {
               <span className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>
                 {visiblePlanOpening.wall}
               </span>
-              <label
-                className={
-                  showDesignerTheme
-                    ? "flex items-center gap-1 rounded-lg border border-white/10 bg-white/10 px-2 py-1 text-[11px] font-semibold text-neutral-200"
-                    : "flex items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2 py-1 text-[11px] font-semibold text-neutral-700"
-                }
-              >
-                <span>W</span>
-                <input
-                  data-testid="selected-plan-opening-width-input"
-                  type="number"
-                  min={0.4}
-                  max={Math.max(0.4, visiblePlanOpeningWallSpanMeters - 0.06)}
-                  step={0.05}
-                  value={(visiblePlanOpening.widthMm / 1000).toFixed(2)}
-                  onChange={(event) => {
-                    const widthMeters = Number.parseFloat(event.currentTarget.value);
-                    if (!Number.isFinite(widthMeters)) return;
-                    handleUpdateOpeningMetrics2D(visiblePlanOpening.id, { widthMeters });
-                  }}
-                  className={
-                    showDesignerTheme
-                      ? "w-16 bg-transparent text-right text-xs text-neutral-50 outline-none"
-                      : "w-16 bg-transparent text-right text-xs text-neutral-900 outline-none"
-                  }
-                />
-                <span className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>m</span>
-              </label>
-              <label
-                className={
-                  showDesignerTheme
-                    ? "flex items-center gap-1 rounded-lg border border-white/10 bg-white/10 px-2 py-1 text-[11px] font-semibold text-neutral-200"
-                    : "flex items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2 py-1 text-[11px] font-semibold text-neutral-700"
-                }
-              >
-                <span>H</span>
-                <input
-                  data-testid="selected-plan-opening-height-input"
-                  type="number"
-                  min={0.5}
-                  max={visiblePlanOpeningMaxHeightMeters}
-                  step={0.05}
-                  value={(
-                    Math.min(
-                      visiblePlanOpeningMaxHeightMeters,
-                      (visiblePlanOpening.heightMm ??
-                        PLAN_OPENING_DEFAULT_HEIGHT_METERS * 1000) / 1000
-                    )
-                  ).toFixed(2)}
-                  onChange={(event) => {
-                    const requestedHeightMeters = Number.parseFloat(event.currentTarget.value);
-                    if (!Number.isFinite(requestedHeightMeters)) return;
-                    const heightMeters = Math.min(
-                      Math.max(0.5, requestedHeightMeters),
-                      visiblePlanOpeningMaxHeightMeters
-                    );
-                    handleUpdateOpeningMetrics2D(visiblePlanOpening.id, { heightMeters });
-                  }}
-                  className={
-                    showDesignerTheme
-                      ? "w-16 bg-transparent text-right text-xs text-neutral-50 outline-none"
-                      : "w-16 bg-transparent text-right text-xs text-neutral-900 outline-none"
-                  }
-                />
-                <span className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>m</span>
-              </label>
-              <label
-                className={
-                  showDesignerTheme
-                    ? "flex items-center gap-1 rounded-lg border border-white/10 bg-white/10 px-2 py-1 text-[11px] font-semibold text-neutral-200"
-                    : "flex items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2 py-1 text-[11px] font-semibold text-neutral-700"
-                }
-              >
-                <span>Pos</span>
-                <input
-                  data-testid="selected-plan-opening-offset-input"
-                  type="number"
-                  step={0.05}
-                  value={(visiblePlanOpening.offsetMm / 1000).toFixed(2)}
-                  onChange={(event) => {
-                    const offsetMeters = Number.parseFloat(event.currentTarget.value);
-                    if (!Number.isFinite(offsetMeters)) return;
-                    handleUpdateOpeningMetrics2D(visiblePlanOpening.id, { offsetMeters });
-                  }}
-                  className={
-                    showDesignerTheme
-                      ? "w-16 bg-transparent text-right text-xs text-neutral-50 outline-none"
-                      : "w-16 bg-transparent text-right text-xs text-neutral-900 outline-none"
-                  }
-                />
-                <span className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>m</span>
-              </label>
+              <span className={showDesignerTheme ? "designer-recessed rounded-md px-2 py-1 text-[11px]" : "rounded-md bg-neutral-100 px-2 py-1 text-[11px] text-neutral-600"}>
+                {formatCabinetMeasurement(visiblePlanOpening.widthMm, planMeasurementUnit)} wide
+              </span>
               <button
                 type="button"
                 data-testid="selected-plan-opening-delete"
                 className={
                   showDesignerTheme
-                    ? "rounded-lg border border-red-400/30 px-2.5 py-1.5 font-semibold text-red-100 hover:bg-red-500/10"
+                    ? "designer-status-blocked rounded-lg px-2.5 py-1.5 font-semibold"
                     : "rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 font-semibold text-red-700 hover:bg-red-100"
                 }
                 onClick={() => {
@@ -14747,13 +19386,27 @@ function PageContent() {
             </div>
           )}
 
-          {!isClientPreview && selectedObjectInspector && !(editorMode === "adjust" && selectedProduct) && (
+          {floatingSelectionInspectorVisible && selectedObjectInspector && (() => {
+            const inspector = (
             <div
               data-testid="selection-inspector"
               className={
                 showDesignerTheme
-                  ? "pointer-events-auto absolute right-4 top-[160px] z-30 hidden w-72 rounded-xl border border-white/15 bg-[#12151dcc] p-3 text-xs text-neutral-100 shadow-xl backdrop-blur md:block"
-                  : "pointer-events-auto absolute right-4 top-[160px] z-30 hidden w-72 rounded-xl border border-neutral-200 bg-white/95 p-3 text-xs text-neutral-800 shadow-xl backdrop-blur md:block"
+                  ? "designer-work-surface pointer-events-auto z-30 hidden shrink-0 rounded-lg p-3 text-xs md:block"
+                  : "pointer-events-auto z-30 hidden shrink-0 rounded-lg border border-neutral-200 bg-white/95 p-3 text-xs text-neutral-800 shadow-xl backdrop-blur md:block"
+              }
+              style={
+                selectionInspectorDockedWithRightRail && planSelectionRailElement
+                  ? { position: "relative", width: "264px" }
+                  : {
+                      position: "absolute",
+                      right: selectionInspectorRightPx,
+                      top: selectionInspectorTopPx,
+                      width: selectionInspectorWidthPx,
+                      maxHeight: `calc(100vh - ${selectionInspectorTopPx + 16}px)`,
+                      overflowY: "auto",
+                      overscrollBehavior: "contain",
+                    }
               }
             >
               <div className="flex items-start justify-between gap-3">
@@ -14771,7 +19424,7 @@ function PageContent() {
                   data-testid="selection-inspector-clear"
                   className={
                     showDesignerTheme
-                      ? "rounded-lg border border-white/15 px-2 py-1 font-semibold text-neutral-200 hover:bg-white/10"
+                      ? "designer-work-control rounded-lg px-2 py-1 font-semibold"
                       : "rounded-lg border border-neutral-200 px-2 py-1 font-semibold text-neutral-600 hover:bg-neutral-50"
                   }
                   onClick={clearAllSelection}
@@ -14779,27 +19432,144 @@ function PageContent() {
                   Clear
                 </button>
               </div>
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                {selectedObjectInspector.metrics.map((metric) => (
-                  <div
-                    key={metric}
-                    className={
-                      showDesignerTheme
-                        ? "rounded-lg border border-white/10 bg-white/5 px-2.5 py-2 font-semibold text-neutral-100"
-                        : "rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-2 font-semibold text-neutral-800"
-                    }
-                  >
-                    {metric}
+              {selectedObjectInspector.metrics.length > 0 ? (
+                <div className={`mt-3 grid gap-2 ${selectedObjectInspector.metrics.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}>
+                  {selectedObjectInspector.metrics.map((metric) => (
+                    <div
+                      key={metric}
+                      className={
+                        showDesignerTheme
+                          ? "designer-raised rounded-lg border px-2.5 py-2 font-semibold"
+                          : "rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-2 font-semibold text-neutral-800"
+                      }
+                    >
+                      {metric}
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+              {selectedPlanRoomContext &&
+              !selectedItem &&
+              !visiblePlanOpening &&
+              !selectedPlanFixedElement &&
+              !selectedPlanAnnotation &&
+              !surfaceInspectorIsWall &&
+              !surfaceInspectorIsCeiling ? (
+                <div
+                  data-testid="selection-inspector-room-dimensions"
+                  className={
+                    showDesignerTheme
+                      ? "designer-divider mt-3 border-t pt-3"
+                      : "mt-3 border-t border-neutral-200 pt-3"
+                  }
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="text-[11px] font-semibold uppercase text-neutral-500">
+                      Dimensions
+                    </div>
+                    <div
+                      data-testid="selection-inspector-measurement-units"
+                      className={showDesignerTheme ? "designer-raised grid grid-cols-3 rounded-md border p-0.5" : "grid grid-cols-3 rounded-md border border-neutral-200 bg-neutral-50 p-0.5"}
+                      aria-label="Measurement units"
+                    >
+                      {(["mm", "cm", "in"] as const).map((unit) => (
+                        <button
+                          key={unit}
+                          type="button"
+                          className={
+                            planMeasurementUnit === unit
+                              ? showDesignerTheme
+                                ? "designer-work-control-active rounded px-1.5 py-1 text-[10px] font-semibold"
+                                : "rounded bg-neutral-950 px-1.5 py-1 text-[10px] font-semibold text-white"
+                              : showDesignerTheme
+                                ? "designer-work-control rounded px-1.5 py-1 text-[10px]"
+                                : "rounded px-1.5 py-1 text-[10px] text-neutral-500 hover:bg-white"
+                          }
+                          onClick={() => setPlanMeasurementUnit(unit)}
+                        >
+                          {unit.toUpperCase()}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                ))}
-              </div>
-              <div className="mt-3 flex flex-wrap gap-2">
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    <MeasurementField
+                      label="Width"
+                      valueMm={selectedPlanRoomContext.w * 1000}
+                      unit={planMeasurementUnit}
+                      minMm={ROOM_DIMENSION_DEFAULTS.min * 1000}
+                      maxMm={ROOM_DIMENSION_DEFAULTS.max * 1000}
+                      stepMm={10}
+                      keyboardStepMm={50}
+                      disabled={!canEditPlanGeometry}
+                      dark={showDesignerTheme}
+                      compact
+                      testId="selection-inspector-room-width"
+                      onCommit={(valueMm) =>
+                        handleCommitRoomDimensionEdit2D(
+                          selectedPlanRoomContext.id,
+                          "width",
+                          valueMm / 1000
+                        )
+                      }
+                    />
+                    <MeasurementField
+                      label="Depth"
+                      valueMm={selectedPlanRoomContext.d * 1000}
+                      unit={planMeasurementUnit}
+                      minMm={ROOM_DIMENSION_DEFAULTS.min * 1000}
+                      maxMm={ROOM_DIMENSION_DEFAULTS.max * 1000}
+                      stepMm={10}
+                      keyboardStepMm={50}
+                      disabled={!canEditPlanGeometry}
+                      dark={showDesignerTheme}
+                      compact
+                      testId="selection-inspector-room-depth"
+                      onCommit={(valueMm) =>
+                        handleCommitRoomDimensionEdit2D(
+                          selectedPlanRoomContext.id,
+                          "depth",
+                          valueMm / 1000
+                        )
+                      }
+                    />
+                  </div>
+                  <div className={showDesignerTheme ? "mt-1.5 text-[10px] text-neutral-400" : "mt-1.5 text-[10px] text-neutral-500"}>
+                    Resize keeps the room centre when space allows. Enter applies; Esc cancels.
+                  </div>
+
+                  <div className={showDesignerTheme ? "designer-divider mt-3 border-t pt-3" : "mt-3 border-t border-neutral-200 pt-3"}>
+                    <MeasurementField
+                      label="Floor wall height"
+                      valueMm={activeRoomHeightMm}
+                      unit={planMeasurementUnit}
+                      minMm={ROOM_DIMENSION_DEFAULTS.minRoomHeight * 1000}
+                      maxMm={ROOM_DIMENSION_DEFAULTS.maxRoomHeight * 1000}
+                      stepMm={10}
+                      keyboardStepMm={50}
+                      disabled={!canEditPlanGeometry}
+                      dark={showDesignerTheme}
+                      compact
+                      testId="selection-inspector-floor-wall-height"
+                      hint={`Applies to ${activeFloorRoomCount} room${activeFloorRoomCount === 1 ? "" : "s"} on this floor.`}
+                      onCommit={handleActiveRoomHeightMmChange}
+                    />
+                  </div>
+                </div>
+              ) : null}
+              <div
+                className={
+                  selectedPlanRoomContext && !selectedItem && !visiblePlanOpening && !selectedPlanFixedElement && !selectedPlanAnnotation && !surfaceInspectorIsWall && !surfaceInspectorIsCeiling
+                    ? "mt-3 grid grid-cols-2 gap-2"
+                    : "mt-3 flex flex-wrap gap-2"
+                }
+              >
                 {selectedItem ? (
                   <>
                     <button
                       type="button"
                       data-testid="selection-inspector-center-item"
-                      className={showDesignerTheme ? "rounded-lg bg-white px-2.5 py-1.5 font-semibold text-neutral-950 hover:bg-neutral-200" : "rounded-lg bg-neutral-950 px-2.5 py-1.5 font-semibold text-white hover:bg-neutral-800"}
+                      className={showDesignerTheme ? "designer-work-control-active rounded-lg px-2.5 py-1.5 font-semibold" : "rounded-lg bg-neutral-950 px-2.5 py-1.5 font-semibold text-white hover:bg-neutral-800"}
                       onClick={centerSelectedItemInRoom}
                     >
                       Center
@@ -14807,7 +19577,7 @@ function PageContent() {
                     <button
                       type="button"
                       data-testid="selection-inspector-snap-item"
-                      className={showDesignerTheme ? "rounded-lg border border-white/15 px-2.5 py-1.5 font-semibold text-neutral-100 hover:bg-white/10" : "rounded-lg border border-neutral-200 px-2.5 py-1.5 font-semibold text-neutral-700 hover:bg-neutral-50"}
+                      className={showDesignerTheme ? "designer-work-control rounded-lg px-2.5 py-1.5 font-semibold" : "rounded-lg border border-neutral-200 px-2.5 py-1.5 font-semibold text-neutral-700 hover:bg-neutral-50"}
                       onClick={snapSelectedItemToNearestWall}
                     >
                       Snap wall
@@ -14815,7 +19585,7 @@ function PageContent() {
                     <button
                       type="button"
                       data-testid="selection-inspector-duplicate-item"
-                      className={showDesignerTheme ? "rounded-lg border border-white/15 px-2.5 py-1.5 font-semibold text-neutral-100 hover:bg-white/10" : "rounded-lg border border-neutral-200 px-2.5 py-1.5 font-semibold text-neutral-700 hover:bg-neutral-50"}
+                      className={showDesignerTheme ? "designer-work-control rounded-lg px-2.5 py-1.5 font-semibold" : "rounded-lg border border-neutral-200 px-2.5 py-1.5 font-semibold text-neutral-700 hover:bg-neutral-50"}
                       onClick={duplicateSelectedItem}
                     >
                       Duplicate
@@ -14823,18 +19593,26 @@ function PageContent() {
                     <button
                       type="button"
                       data-testid="selection-inspector-delete-item"
-                      className={showDesignerTheme ? "rounded-lg border border-red-400/30 px-2.5 py-1.5 font-semibold text-red-100 hover:bg-red-500/10" : "rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 font-semibold text-red-700 hover:bg-red-100"}
+                      className={showDesignerTheme ? "designer-status-blocked rounded-lg px-2.5 py-1.5 font-semibold" : "rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 font-semibold text-red-700 hover:bg-red-100"}
                       onClick={deleteSelectedItem}
                     >
                       Delete
                     </button>
                   </>
-                ) : selectedPlanRoomContext && !visiblePlanOpening && !selectedPlanFixedElement && !selectedPlanAnnotation ? (
+                ) : selectedPlanRoomContext && !visiblePlanOpening && !selectedPlanFixedElement && !selectedPlanAnnotation && !surfaceInspectorIsWall && !surfaceInspectorIsCeiling ? (
                   <>
                     <button
                       type="button"
+                      data-testid="selection-inspector-edit-floor"
+                      className={showDesignerTheme ? "designer-work-control-active rounded-lg px-2.5 py-1.5 font-semibold" : "rounded-lg bg-neutral-950 px-2.5 py-1.5 font-semibold text-white hover:bg-neutral-800"}
+                      onClick={() => handleOpenFloorEditorForRoom(selectedPlanRoomContext.id)}
+                    >
+                      Floor
+                    </button>
+                    <button
+                      type="button"
                       data-testid="selection-inspector-fit-room"
-                      className={showDesignerTheme ? "rounded-lg bg-white px-2.5 py-1.5 font-semibold text-neutral-950 hover:bg-neutral-200" : "rounded-lg bg-neutral-950 px-2.5 py-1.5 font-semibold text-white hover:bg-neutral-800"}
+                      className={showDesignerTheme ? "designer-work-control rounded-lg px-2.5 py-1.5 font-semibold" : "rounded-lg border border-neutral-200 px-2.5 py-1.5 font-semibold text-neutral-700 hover:bg-neutral-50"}
                       onClick={() => handleFitSelectedPlanRoom(selectedPlanRoomContext.id)}
                     >
                       Fit
@@ -14842,7 +19620,7 @@ function PageContent() {
                     <button
                       type="button"
                       data-testid="selection-inspector-duplicate-room"
-                      className={showDesignerTheme ? "rounded-lg border border-white/15 px-2.5 py-1.5 font-semibold text-neutral-100 hover:bg-white/10" : "rounded-lg border border-neutral-200 px-2.5 py-1.5 font-semibold text-neutral-700 hover:bg-neutral-50"}
+                      className={showDesignerTheme ? "designer-work-control rounded-lg px-2.5 py-1.5 font-semibold" : "rounded-lg border border-neutral-200 px-2.5 py-1.5 font-semibold text-neutral-700 hover:bg-neutral-50"}
                       onClick={() => handleDuplicateSelectedPlanRoom(selectedPlanRoomContext.id)}
                     >
                       Duplicate
@@ -14850,7 +19628,7 @@ function PageContent() {
                     <button
                       type="button"
                       data-testid="selection-inspector-delete-room"
-                      className={showDesignerTheme ? "rounded-lg border border-red-400/30 px-2.5 py-1.5 font-semibold text-red-100 hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-40" : "rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 font-semibold text-red-700 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-40"}
+                      className={showDesignerTheme ? "designer-status-blocked rounded-lg px-2.5 py-1.5 font-semibold disabled:cursor-not-allowed disabled:opacity-40" : "rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 font-semibold text-red-700 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-40"}
                       disabled={designSnapshot.rooms.length <= 1}
                       onClick={() => handleDeleteSelectedPlanRoom(selectedPlanRoomContext.id)}
                     >
@@ -14861,59 +19639,827 @@ function PageContent() {
                   <button
                     type="button"
                     data-testid="selection-inspector-delete-overlay"
-                    className={showDesignerTheme ? "rounded-lg border border-red-400/30 px-2.5 py-1.5 font-semibold text-red-100 hover:bg-red-500/10" : "rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 font-semibold text-red-700 hover:bg-red-100"}
+                    className={showDesignerTheme ? "designer-status-blocked rounded-lg px-2.5 py-1.5 font-semibold" : "rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 font-semibold text-red-700 hover:bg-red-100"}
                     onClick={() => deletePlanOverlayById(selectedPlanOverlayId)}
                   >
                     Delete
                   </button>
                 ) : null}
               </div>
-            </div>
-          )}
+              {selectedPlanRoomContext && !selectedItem && !visiblePlanOpening && !selectedPlanFixedElement && !selectedPlanAnnotation ? (
+                <div
+                  data-testid="selection-inspector-floor-settings"
+                  data-floor-material-id={floorInspectorMaterialId}
+                  data-surface-target={
+                    surfaceInspectorIsWall
+                      ? "selected_wall"
+                      : surfaceInspectorIsCeiling
+                        ? "ceiling"
+                        : "floor"
+                  }
+                  data-surface-material-id={surfaceInspectorMaterialId}
+                  className={
+                    showDesignerTheme
+                      ? "mt-2 px-0.5"
+                      : "mt-2 px-0.5"
+                  }
+                >
+                  {surfaceInspectorIsWall && wallInspectorFaceId ? (
+                    <div
+                      data-testid="selection-inspector-wall-height"
+                      className={
+                        showDesignerTheme
+                          ? "mb-3 border-b border-white/10 pb-3"
+                          : "mb-3 border-b border-neutral-200 pb-3"
+                      }
+                    >
+                      <div className="flex items-end gap-2">
+                        <MeasurementField
+                          className="min-w-0 flex-1"
+                          label={`${getWallFaceLabel(wallInspectorFaceId)} height`}
+                          valueMm={wallInspectorHeight * 1000}
+                          unit={planMeasurementUnit}
+                          minMm={ROOM_DIMENSION_DEFAULTS.minRoomHeight * 1000}
+                          maxMm={ROOM_DIMENSION_DEFAULTS.maxRoomHeight * 1000}
+                          stepMm={10}
+                          keyboardStepMm={50}
+                          disabled={!canEditPlanGeometry}
+                          dark={showDesignerTheme}
+                          compact
+                          testId="selection-inspector-wall-height-input"
+                          hint={
+                            wallInspectorHasHeightOverride
+                              ? `Override; floor default is ${formatCabinetMeasurement(wallInspectorDefaultHeight * 1000, planMeasurementUnit)}.`
+                              : "Inherited from the floor wall height."
+                          }
+                          onCommit={(valueMm) =>
+                            handleSelectedWallHeightChange(
+                              selectedPlanRoomContext.id,
+                              wallInspectorFaceId,
+                              valueMm / 1000
+                            )
+                          }
+                        />
+                        <button
+                          type="button"
+                          data-testid="selection-inspector-reset-wall-height"
+                          className={
+                            showDesignerTheme
+                              ? "h-9 rounded-md border border-white/15 px-2 font-semibold text-neutral-100 hover:bg-white/10 disabled:opacity-40"
+                              : "h-9 rounded-md border border-neutral-200 bg-white px-2 font-semibold text-neutral-700 hover:bg-neutral-50 disabled:opacity-40"
+                          }
+                          disabled={!canEditPlanGeometry || !wallInspectorHasHeightOverride}
+                          onClick={() =>
+                            handleResetSelectedWallHeight(
+                              selectedPlanRoomContext.id,
+                              wallInspectorFaceId
+                            )
+                          }
+                        >
+                          Use floor
+                        </button>
+                      </div>
+                    </div>
+                  ) : null}
+                  <div className="flex items-start gap-2">
+                    <span
+                      aria-hidden="true"
+                      className="h-10 w-10 shrink-0 rounded-md border border-black/10"
+                      style={surfaceInspectorSwatchStyle}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className={showDesignerTheme ? "text-[11px] font-semibold uppercase text-neutral-400" : "text-[11px] font-semibold uppercase text-neutral-500"}>
+                        {surfaceInspectorIsWall
+                          ? `${getWallFaceLabel(wallInspectorFaceId)} settings`
+                          : surfaceInspectorIsCeiling
+                            ? "Ceiling settings"
+                            : "Floor settings"}
+                      </div>
+                      <div className="mt-0.5 truncate text-sm font-semibold">
+                        {surfaceInspectorDisplayName}
+                      </div>
+                      <div className={showDesignerTheme ? "mt-0.5 truncate text-neutral-400" : "mt-0.5 truncate text-neutral-500"}>
+                        {surfaceInspectorSupplier} · {surfaceInspectorMaterialFamily}
+                        {surfaceInspectorSizeLabel ? ` · Size ${surfaceInspectorSizeLabel}` : ""}
+                      </div>
+                    </div>
+                    <span
+                      className={
+                        surfaceInspectorPublishStatus === "draft"
+                          ? showDesignerTheme
+                            ? "designer-status-warning rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                            : "rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-800"
+                          : showDesignerTheme
+                            ? "designer-status-ready rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                            : "rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold text-neutral-600"
+                      }
+                    >
+                      {formatFlooringInspectorValue(surfaceInspectorPublishStatus)}
+                    </span>
+                  </div>
+                  {!surfaceInspectorIsCeiling && surfaceInspectorMaterialGroup && surfaceInspectorMaterialGroup.variants.length > 1 ? (
+                    <div
+                      data-testid="selection-inspector-floor-size-options"
+                      className={
+                        showDesignerTheme
+                          ? "mt-2 border-t border-white/10 pt-2"
+                          : "mt-2 border-t border-neutral-100 pt-2"
+                      }
+                    >
+                      <div className={showDesignerTheme ? "text-[11px] font-semibold text-neutral-300" : "text-[11px] font-semibold text-neutral-600"}>
+                        Size
+                      </div>
+                      <div className="mt-1.5 grid grid-cols-2 gap-1.5">
+                        {surfaceInspectorMaterialGroup.variants.map((variant) => {
+                          const variantId = variant.surface_material.material_id;
+                          const isSelected = variantId === surfaceInspectorMaterialId;
+                          return (
+                            <button
+                              key={variantId}
+                              type="button"
+                              data-testid={`surface-size-option-${variantId}`}
+                              className={
+                                isSelected
+                                  ? showDesignerTheme
+                                    ? "min-h-8 rounded-lg border border-emerald-300/50 bg-emerald-400/15 px-2 py-1 text-xs font-semibold text-emerald-100"
+                                    : "min-h-8 rounded-lg border border-emerald-400 bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-900"
+                                  : showDesignerTheme
+                                    ? "min-h-8 rounded-lg border border-white/15 px-2 py-1 text-xs font-semibold text-neutral-100 hover:bg-white/10"
+                                    : "min-h-8 rounded-lg border border-neutral-200 bg-neutral-50 px-2 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-100"
+                              }
+                              title={variant.surface_material.product_name}
+                              disabled={!canEdit}
+                              onClick={() => {
+                                if (surfaceInspectorIsWall) {
+                                  handleApplyWallMaterialToRoom(
+                                    variantId,
+                                    selectedPlanRoomContext.id,
+                                    wallInspectorFaceId
+                                  );
+                                  return;
+                                }
+                                handleApplyFloorSizeVariantToRoom(
+                                  variantId,
+                                  selectedPlanRoomContext.id
+                                );
+                              }}
+                            >
+                              {getFlooringInspectorSizeLabel(variant)}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : null}
+                  {surfaceInspectorIsCeiling ? (
+                    <div className="mt-2 grid grid-cols-2 gap-1.5">
+                      <button
+                        type="button"
+                        data-testid="plan-change-ceiling-finish"
+                        className={showDesignerTheme ? "min-h-8 rounded-lg bg-white px-2 py-1 text-xs font-semibold text-neutral-950 hover:bg-neutral-200" : "min-h-8 rounded-lg bg-neutral-950 px-2 py-1 text-xs font-semibold text-white hover:bg-neutral-800"}
+                        disabled={!canEdit}
+                        onClick={() => handleOpenCeilingEditorForRoom(selectedPlanRoomContext.id)}
+                      >
+                        Change paint
+                      </button>
+                      <button
+                        type="button"
+                        data-testid="selection-inspector-ceiling-reset"
+                        className={showDesignerTheme ? "min-h-8 rounded-lg border border-white/15 px-2 py-1 text-xs font-semibold text-neutral-100 hover:bg-white/10" : "min-h-8 rounded-lg border border-neutral-200 bg-white px-2 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"}
+                        disabled={!canEdit}
+                        onClick={() => handleResetActiveCeilingSurface(selectedPlanRoomContext.id)}
+                      >
+                        Reset
+                      </button>
+                      <button
+                        type="button"
+                        data-testid="selection-inspector-ceiling-apply-all"
+                        className={showDesignerTheme ? "col-span-2 min-h-8 rounded-lg border border-white/15 px-2 py-1 text-xs font-semibold text-neutral-100 hover:bg-white/10" : "col-span-2 min-h-8 rounded-lg border border-neutral-200 bg-white px-2 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"}
+                        disabled={!canEdit || !ceilingInspectorSettings.paintColorHex}
+                        onClick={() => {
+                          if (!ceilingInspectorSettings.paintColorHex) return;
+                          handleApplyCeilingPaintToAllRooms(
+                            ceilingInspectorSettings.paintColorHex,
+                            ceilingInspectorSettings.paintName
+                          );
+                        }}
+                      >
+                        Apply to all ceilings
+                      </button>
+                    </div>
+                  ) : (
+                  <div className="mt-2 grid grid-cols-2 gap-1.5">
+                    <button
+                      type="button"
+                      data-testid="plan-change-floor-finish"
+                      className={showDesignerTheme ? "min-h-8 rounded-lg bg-white px-2 py-1 text-xs font-semibold text-neutral-950 hover:bg-neutral-200" : "min-h-8 rounded-lg bg-neutral-950 px-2 py-1 text-xs font-semibold text-white hover:bg-neutral-800"}
+                      disabled={!canEdit}
+                      onClick={() => {
+                        if (surfaceInspectorIsWall && wallInspectorFaceId) {
+                          handleOpenWallMaterialEditorForRoom(
+                            selectedPlanRoomContext.id,
+                            wallInspectorFaceId
+                          );
+                          return;
+                        }
+                        handleOpenFloorEditorForRoom(selectedPlanRoomContext.id);
+                      }}
+                    >
+                      Change material
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="selection-inspector-floor-rotate"
+                      className={showDesignerTheme ? "min-h-8 rounded-lg border border-white/15 px-2 py-1 text-xs font-semibold text-neutral-100 hover:bg-white/10" : "min-h-8 rounded-lg border border-neutral-200 bg-white px-2 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"}
+                      disabled={!canEdit || (surfaceInspectorIsWall && !surfaceInspectorMaterialId)}
+                      onClick={() => {
+                        if (surfaceInspectorIsWall) {
+                          handleActiveWallSurfaceSettingsChange(
+                            { rotationDeg: normalizeFloorRotationDeg(wallInspectorSettings.rotationDeg + 90) },
+                            selectedPlanRoomContext.id,
+                            wallInspectorFaceId
+                          );
+                          return;
+                        }
+                        handleRotateActiveFloorMaterial(selectedPlanRoomContext.id);
+                      }}
+                    >
+                      Rotate 90°
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="selection-inspector-floor-reset"
+                      className={showDesignerTheme ? "min-h-8 rounded-lg border border-white/15 px-2 py-1 text-xs font-semibold text-neutral-100 hover:bg-white/10" : "min-h-8 rounded-lg border border-neutral-200 bg-white px-2 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"}
+                      disabled={!canEdit}
+                      onClick={() => {
+                        if (surfaceInspectorIsWall) {
+                          handleResetActiveWallSurface(selectedPlanRoomContext.id, wallInspectorFaceId);
+                          return;
+                        }
+                        handleResetActiveFloorMaterialPattern(selectedPlanRoomContext.id);
+                      }}
+                    >
+                      Reset
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="selection-inspector-floor-apply-all"
+                      className={showDesignerTheme ? "min-h-8 rounded-lg border border-white/15 px-2 py-1 text-xs font-semibold text-neutral-100 hover:bg-white/10" : "min-h-8 rounded-lg border border-neutral-200 bg-white px-2 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"}
+                      disabled={!canEdit || (surfaceInspectorIsWall && !surfaceInspectorMaterialId)}
+                      onClick={() => {
+                        if (surfaceInspectorIsWall) {
+                          if (!surfaceInspectorMaterialId) return;
+                          handleApplyWallMaterialToAllRooms(surfaceInspectorMaterialId);
+                          return;
+                        }
+                        handleApplyFloorMaterialToAllRooms(floorInspectorMaterialId);
+                      }}
+                    >
+                      Apply all
+                    </button>
+                  </div>
+                  )}
+                  {floorInspectorPickerOpen && !surfaceInspectorIsCeiling ? (
+                    <div
+                      data-testid="selection-inspector-floor-picker"
+                      className={
+                        showDesignerTheme
+                          ? "designer-recessed mt-3 max-h-80 overflow-y-auto rounded-lg p-2"
+                          : "mt-3 max-h-80 overflow-y-auto rounded-lg border border-neutral-200 bg-white p-2"
+                      }
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className={showDesignerTheme ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-neutral-900"}>
+                          {surfaceInspectorIsWall ? "Wall materials" : "Flooring materials"}
+                        </div>
+                        <button
+                          type="button"
+                          data-testid="selection-inspector-floor-picker-close"
+                          className={showDesignerTheme ? "rounded-md border border-white/15 px-2 py-1 text-[11px] font-semibold text-neutral-200" : "rounded-md border border-neutral-200 px-2 py-1 text-[11px] font-semibold text-neutral-600"}
+                          onClick={() => setFloorInspectorPickerOpen(false)}
+                        >
+                          Close
+                        </button>
+                      </div>
+                      {surfaceInspectorSurfaceMaterials.length > 0 ? (
+                        <div className="mt-2 grid gap-2">
+                          {surfaceInspectorSurfaceMaterials.map((material) => {
+                            const materialId = material.surface_material.material_id;
+                            const isSelected = materialId === surfaceInspectorMaterialId;
+                            const isDraft =
+                              material.import_governance.publish_status === "draft";
+                            return (
+                              <button
+                                key={materialId}
+                                type="button"
+                                data-testid={`selection-inspector-floor-material-${materialId}`}
+                                className={
+                                  isSelected
+                                    ? showDesignerTheme
+                                      ? "grid grid-cols-[2.5rem_1fr] gap-2 rounded-lg border border-emerald-300/50 bg-emerald-400/15 p-2 text-left"
+                                      : "grid grid-cols-[2.5rem_1fr] gap-2 rounded-lg border border-emerald-300 bg-emerald-50 p-2 text-left"
+                                    : showDesignerTheme
+                                      ? "grid grid-cols-[2.5rem_1fr] gap-2 rounded-lg border border-white/10 bg-white/5 p-2 text-left hover:bg-white/10"
+                                      : "grid grid-cols-[2.5rem_1fr] gap-2 rounded-lg border border-neutral-200 bg-white p-2 text-left hover:bg-neutral-50"
+                                }
+                                disabled={!canEdit}
+                                onClick={() => {
+                                  if (surfaceInspectorIsWall) {
+                                    handleApplyWallMaterialToRoom(
+                                      materialId,
+                                      selectedPlanRoomContext.id,
+                                      wallInspectorFaceId
+                                    );
+                                  } else {
+                                    handleApplyFloorMaterialToRoom(materialId, selectedPlanRoomContext.id);
+                                  }
+                                  setFloorInspectorPickerOpen(false);
+                                }}
+                              >
+                                <span
+                                  aria-hidden="true"
+                                  className="h-10 w-10 rounded-md border border-black/10"
+                                  style={getFlooringInspectorSurfaceSwatchStyle(material)}
+                                />
+                                <span className="min-w-0">
+                                  <span className={showDesignerTheme ? "block truncate text-xs font-semibold text-neutral-100" : "block truncate text-xs font-semibold text-neutral-900"}>
+                                    {material.surface_material.product_name}
+                                  </span>
+                                  <span className={showDesignerTheme ? "block truncate text-[11px] text-neutral-400" : "block truncate text-[11px] text-neutral-500"}>
+                                    {(material.surface_material.brand ?? formatFlooringInspectorValue(material.surface_material.supplier))} · {formatFlooringInspectorValue(material.surface_material.material_family)}
+                                  </span>
+                                  {isDesigner ? (
+                                    <span className="mt-1 flex flex-wrap gap-1">
+                                      <span className={showDesignerTheme ? (isDraft ? "designer-status-warning rounded-full px-1.5 py-0.5 text-[10px] font-semibold" : "designer-status-ready rounded-full px-1.5 py-0.5 text-[10px] font-semibold") : (isDraft ? "rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800" : "rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700")}>
+                                        {formatFlooringInspectorValue(material.import_governance.publish_status)}
+                                      </span>
+                                      {material.import_governance.publish_blockers.length > 0 ? (
+                                        <span className={showDesignerTheme ? "designer-status-blocked rounded-full px-1.5 py-0.5 text-[10px] font-semibold" : "rounded-full bg-orange-50 px-1.5 py-0.5 text-[10px] font-semibold text-orange-700"}>
+                                          {material.import_governance.publish_blockers.length} blockers
+                                        </span>
+                                      ) : null}
+                                    </span>
+                                  ) : null}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className={showDesignerTheme ? "mt-2 rounded-lg border border-white/10 p-2 text-[11px] text-neutral-400" : "mt-2 rounded-lg border border-neutral-200 p-2 text-[11px] text-neutral-500"}>
+                          No published {surfaceInspectorIsWall ? "wall" : "flooring"} catalog materials are available in this mode.
+                        </div>
+                      )}
+                    </div>
+                  ) : null}
+                  {!surfaceInspectorIsWall && !surfaceInspectorIsCeiling ? (
+                    <div
+                      className={
+                        showDesignerTheme
+                          ? "mt-2 border-t border-white/10 pt-2"
+                          : "mt-2 border-t border-neutral-100 pt-2"
+                      }
+                    >
+                    <div>
+                      <div className={showDesignerTheme ? "text-[11px] font-semibold text-neutral-300" : "text-[11px] font-semibold text-neutral-600"}>
+                        Pattern
+                      </div>
+                      <select
+                        data-testid="surface-pattern-select"
+                        aria-label="Floor pattern"
+                        value={floorInspectorPatternValue}
+                        disabled={!canEdit}
+                        className="sr-only"
+                        onChange={(event) =>
+                          handleActiveFloorSurfaceSettingsChange(
+                            { floorPattern: normalizeFloorPattern(event.currentTarget.value) },
+                            selectedPlanRoomContext.id
+                          )
+                        }
+                      >
+                        {floorInspectorPatternOptions.map((option) => (
+                          <option key={option.id} value={option.id}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                      <div
+                        data-testid="surface-pattern-options"
+                        className="mt-1.5 grid grid-cols-3 gap-1.5"
+                      >
+                        {floorInspectorPatternOptions.map((option) => {
+                          const selected = option.id === floorInspectorPatternValue;
 
-          {plan2DQualityReviewPanelVisible && (
+                          return (
+                            <button
+                              key={option.id}
+                              type="button"
+                              data-testid={`surface-pattern-option-${option.id}`}
+                              aria-label={`Set ${option.label} pattern`}
+                              aria-pressed={selected}
+                              title={option.label}
+                              disabled={!canEdit}
+                              className={
+                                selected
+                                  ? showDesignerTheme
+                                    ? "grid h-12 place-items-center rounded-lg border border-emerald-300/60 bg-emerald-400/15 p-1 shadow-sm shadow-emerald-950/20"
+                                    : "grid h-12 place-items-center rounded-lg border border-emerald-400 bg-emerald-50 p-1 shadow-sm"
+                                  : showDesignerTheme
+                                    ? "designer-control grid h-12 place-items-center rounded-lg border p-1"
+                                    : "grid h-12 place-items-center rounded-lg border border-neutral-200 bg-white p-1 hover:border-neutral-300 hover:bg-neutral-50"
+                              }
+                              onClick={() =>
+                                handleActiveFloorSurfaceSettingsChange(
+                                  { floorPattern: option.id },
+                                  selectedPlanRoomContext.id
+                                )
+                              }
+                            >
+                              <SurfacePatternPreview
+                                pattern={option.id}
+                                dark={showDesignerTheme}
+                              />
+                              <span className="sr-only">{option.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="mt-2">
+                      <div className={showDesignerTheme ? "text-[11px] font-semibold text-neutral-300" : "text-[11px] font-semibold text-neutral-600"}>
+                        Rotation
+                      </div>
+                      <div className="mt-1 grid grid-cols-4 gap-1">
+                        {FLOOR_ROTATION_PRESETS_DEG.map((rotation) => (
+                          <button
+                            key={rotation}
+                            type="button"
+                            data-testid={`surface-rotation-${rotation}`}
+                            className={
+                              floorInspectorRotationDeg === rotation
+                                ? "min-h-8 rounded-lg bg-emerald-600 px-2 py-1 text-xs font-semibold text-white"
+                                : showDesignerTheme
+                                  ? "min-h-8 rounded-lg border border-white/15 px-2 py-1 text-xs font-semibold text-neutral-100 hover:bg-white/10"
+                                  : "min-h-8 rounded-lg border border-neutral-200 bg-neutral-50 px-2 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-100"
+                            }
+                            disabled={!canEdit}
+                            onClick={() =>
+                              handleActiveFloorSurfaceSettingsChange(
+                                { floorRotationDeg: rotation },
+                                selectedPlanRoomContext.id
+                              )
+                            }
+                          >
+                            {rotation}°
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <label className={showDesignerTheme ? "mt-2 block text-[11px] font-semibold text-neutral-300" : "mt-2 block text-[11px] font-semibold text-neutral-600"}>
+                      Pattern size · {floorInspectorScale.toFixed(2)}x
+                      <input
+                        type="range"
+                        data-testid="surface-pattern-scale"
+                        min={0.5}
+                        max={2}
+                        step={0.05}
+                        value={floorInspectorScale}
+                        disabled={!canEdit}
+                        onChange={(event) =>
+                          handleActiveFloorMaterialScaleChange(
+                            clampFloorPatternScale(
+                              Number(event.currentTarget.value) || DEFAULT_FLOOR_PATTERN_SCALE
+                            ),
+                            selectedPlanRoomContext.id
+                          )
+                        }
+                        className="mt-2 w-full accent-emerald-600 disabled:opacity-50"
+                      />
+                    </label>
+
+                    <div className="mt-2">
+                      <div className={showDesignerTheme ? "text-[11px] font-semibold text-neutral-300" : "text-[11px] font-semibold text-neutral-600"}>
+                        Grout
+                      </div>
+                      <div className="mt-1 grid grid-cols-[1fr_auto] gap-2">
+                      <div className={showDesignerTheme ? "block text-[11px] font-semibold text-neutral-300" : "block text-[11px] font-semibold text-neutral-600"}>
+                        Grout size
+                        <div className="mt-1 grid grid-cols-3 gap-1">
+                          {FLOOR_GROUT_SIZE_PRESETS_MM.map((sizeMm) => {
+                            const selected = floorInspectorSettings.floorJointSizeMm === sizeMm;
+
+                            return (
+                              <button
+                                key={sizeMm}
+                                type="button"
+                                data-testid={selected ? "surface-joint-size" : `surface-joint-size-${String(sizeMm).replace(".", "-")}`}
+                                disabled={!canEdit}
+                                className={
+                                  selected
+                                    ? "min-h-8 rounded-lg bg-emerald-600 px-2 py-1 text-xs font-semibold text-white"
+                                    : showDesignerTheme
+                                      ? "min-h-8 rounded-lg border border-white/15 px-2 py-1 text-xs font-semibold text-neutral-100 hover:bg-white/10"
+                                      : "min-h-8 rounded-lg border border-neutral-200 bg-neutral-50 px-2 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-100"
+                                }
+                                onClick={() =>
+                                  handleActiveFloorSurfaceSettingsChange(
+                                    { floorJointSizeMm: normalizeFloorJointSizeMm(sizeMm) },
+                                    selectedPlanRoomContext.id
+                                  )
+                                }
+                              >
+                                {sizeMm} mm
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      <div className={showDesignerTheme ? "block text-[11px] font-semibold text-neutral-300" : "block text-[11px] font-semibold text-neutral-600"}>
+                        Color
+                        <button
+                          type="button"
+                          data-testid="surface-joint-color"
+                          disabled={!canEdit}
+                          className={
+                            showDesignerTheme
+                              ? "designer-control mt-1 grid h-8 w-12 place-items-center rounded-lg border p-1 disabled:opacity-50"
+                              : "mt-1 grid h-8 w-12 place-items-center rounded-lg border border-neutral-200 bg-white p-1 disabled:opacity-50"
+                          }
+                          aria-label="Choose grout color"
+                          title="Choose grout color"
+                          onClick={() => setFloorInspectorGroutPaletteOpen((open) => !open)}
+                        >
+                          <span
+                            aria-hidden="true"
+                            className="block h-full w-full rounded border border-black/15"
+                            style={{ backgroundColor: floorInspectorSettings.floorJointColor }}
+                          />
+                        </button>
+                      </div>
+                      </div>
+                      {floorInspectorGroutPaletteOpen ? (
+                        <div
+                          data-testid="surface-grout-color-palette"
+                          className={
+                            showDesignerTheme
+                              ? "designer-recessed mt-2 grid grid-cols-5 gap-1.5 rounded-lg p-1.5"
+                              : "mt-2 grid grid-cols-5 gap-1.5 rounded-lg border border-neutral-200 bg-neutral-50 p-1.5"
+                          }
+                        >
+                          {FLOOR_GROUT_COLOR_PALETTE.map((color) => {
+                            const normalizedColor = normalizeFloorJointColor(color);
+                            const selected =
+                              normalizedColor.toLowerCase() === floorInspectorSettings.floorJointColor.toLowerCase();
+
+                            return (
+                              <button
+                                key={color}
+                                type="button"
+                                data-testid={`surface-grout-color-${color.replace("#", "")}`}
+                                disabled={!canEdit}
+                                className={
+                                  selected
+                                    ? showDesignerTheme
+                                      ? "grid aspect-square min-h-8 place-items-center rounded-md border border-white/25 bg-white/10 p-0"
+                                      : "grid aspect-square min-h-8 place-items-center rounded-md border border-neutral-200 bg-white p-0 shadow-sm"
+                                    : showDesignerTheme
+                                      ? "grid aspect-square min-h-8 place-items-center rounded-md border border-transparent bg-white/5 p-0 hover:bg-white/10"
+                                      : "grid aspect-square min-h-8 place-items-center rounded-md border border-transparent bg-white p-0 hover:border-neutral-200"
+                                }
+                                aria-label={`Set grout color ${normalizedColor}`}
+                                title={normalizedColor}
+                                onClick={() => {
+                                  handleActiveFloorSurfaceSettingsChange(
+                                    { floorJointColor: normalizedColor },
+                                    selectedPlanRoomContext.id
+                                  );
+                                  setFloorInspectorGroutPaletteOpen(false);
+                                }}
+                              >
+                                <span
+                                  aria-hidden="true"
+                                  className="block h-[calc(100%-2px)] w-[calc(100%-2px)] rounded-md border border-black/5"
+                                  style={{ backgroundColor: normalizedColor }}
+                                />
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ) : null}
+                    </div>
+
+                    <div
+                      data-testid="surface-offset-controls"
+                      role="group"
+                      tabIndex={0}
+                      aria-label="Move floor pattern"
+                      className="mt-2"
+                      onKeyDown={(event) => {
+                        const currentOffset = floorInspectorSettings.floorPatternOffset;
+                        const patchOffset =
+                          event.key === "ArrowLeft"
+                            ? { x: currentOffset.x - 0.05, y: currentOffset.y }
+                            : event.key === "ArrowRight"
+                              ? { x: currentOffset.x + 0.05, y: currentOffset.y }
+                              : event.key === "ArrowUp"
+                                ? { x: currentOffset.x, y: currentOffset.y + 0.05 }
+                                : event.key === "ArrowDown"
+                                  ? { x: currentOffset.x, y: currentOffset.y - 0.05 }
+                                  : null;
+                        if (!patchOffset) return;
+                        event.preventDefault();
+                        handleActiveFloorSurfaceSettingsChange(
+                          { floorPatternOffset: patchOffset },
+                          selectedPlanRoomContext.id
+                        );
+                      }}
+                    >
+                      <div className={showDesignerTheme ? "text-[11px] font-semibold text-neutral-300" : "text-[11px] font-semibold text-neutral-600"}>
+                        Move pattern
+                      </div>
+                      <div className="mt-1 grid grid-cols-4 gap-1">
+                        {[
+                          { label: "Left", patch: { x: -0.05, y: 0 } },
+                          { label: "Right", patch: { x: 0.05, y: 0 } },
+                          { label: "Up", patch: { x: 0, y: 0.05 } },
+                          { label: "Down", patch: { x: 0, y: -0.05 } },
+                        ].map((action) => (
+                          <button
+                            key={action.label}
+                            type="button"
+                            data-testid={`surface-offset-${action.label.toLowerCase()}`}
+                            className={
+                              showDesignerTheme
+                                ? "min-h-8 rounded-lg border border-white/15 px-2 py-1 text-xs font-semibold text-neutral-100 hover:bg-white/10"
+                                : "min-h-8 rounded-lg border border-neutral-200 bg-neutral-50 px-2 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-100"
+                            }
+                            disabled={!canEdit}
+                            onClick={() =>
+                              handleActiveFloorSurfaceSettingsChange(
+                                {
+                                  floorPatternOffset: {
+                                    x: floorInspectorSettings.floorPatternOffset.x + action.patch.x,
+                                    y: floorInspectorSettings.floorPatternOffset.y + action.patch.y,
+                                  },
+                                },
+                                selectedPlanRoomContext.id
+                              )
+                            }
+                          >
+                            {action.label}
+                          </button>
+                        ))}
+                      </div>
+                      <div className={showDesignerTheme ? "mt-1 text-[11px] text-neutral-400" : "mt-1 text-[11px] text-neutral-500"}>
+                        Offset {floorInspectorSettings.floorPatternOffset.x.toFixed(2)}, {floorInspectorSettings.floorPatternOffset.y.toFixed(2)}
+                      </div>
+                    </div>
+
+                    <div className="mt-2 grid grid-cols-2 gap-1.5">
+                      <button
+                        type="button"
+                        className={
+                          showDesignerTheme
+                            ? "min-h-8 rounded-lg border border-white/15 px-2 py-1 text-xs font-semibold text-neutral-100 hover:bg-white/10"
+                            : "min-h-8 rounded-lg border border-neutral-200 bg-neutral-50 px-2 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-100"
+                        }
+                        disabled={!canEdit}
+                        onClick={() =>
+                          handleActiveFloorSurfaceSettingsChange(
+                            {
+                              floorPatternOffset: DEFAULT_FLOOR_PATTERN_OFFSET,
+                              floorJointSizeMm: DEFAULT_FLOOR_JOINT_SIZE_MM,
+                              floorJointColor: DEFAULT_FLOOR_JOINT_COLOR,
+                              floorRotationDeg: 0,
+                              floorScale: DEFAULT_FLOOR_PATTERN_SCALE,
+                            },
+                            selectedPlanRoomContext.id
+                          )
+                        }
+                      >
+                        Reset pattern
+                      </button>
+                      <button
+                        type="button"
+                        className={
+                          showDesignerTheme
+                            ? "min-h-8 rounded-lg border border-white/15 px-2 py-1 text-xs font-semibold text-neutral-100 hover:bg-white/10"
+                            : "min-h-8 rounded-lg border border-neutral-200 bg-neutral-50 px-2 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-100"
+                        }
+                        disabled={!canEdit}
+                        onClick={() => handleResetActiveFloorMaterialPattern(selectedPlanRoomContext.id)}
+                      >
+                        Reset surface
+                      </button>
+                    </div>
+                    </div>
+                  ) : null}
+                  <div className={showDesignerTheme ? "mt-1 text-[11px] text-neutral-400" : "mt-1 text-[11px] text-neutral-500"}>
+                    {surfaceInspectorIsWall
+                      ? `Wall rotation ${wallInspectorSettings.rotationDeg}°`
+                      : surfaceInspectorIsCeiling
+                        ? `Ceiling paint · Height ${Math.round(wallInspectorDefaultHeight * 1000)} mm`
+                        : `Rotation ${floorInspectorRotationDeg}° · Room area ${(selectedPlanRoomContext.w * selectedPlanRoomContext.d).toFixed(2)} sqm`}
+                  </div>
+                  {isDesigner && surfaceInspectorBlockers.length > 0 ? (
+                    <div className="mt-2 rounded-md bg-amber-50 px-2 py-1.5 text-[11px] font-semibold text-amber-800">
+                      Blockers: {surfaceInspectorBlockers.slice(0, 2).map(formatFlooringInspectorValue).join(", ")}
+                      {surfaceInspectorBlockers.length > 2 ? ` +${surfaceInspectorBlockers.length - 2}` : ""}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+            );
+
+            return selectionInspectorDockedWithRightRail && planSelectionRailElement
+              ? createPortal(inspector, planSelectionRailElement)
+              : inspector;
+          })()}
+
+          {plan2DQualityReviewPanelVisible && (() => {
+            const reviewPanel = (
             <div
+              ref={planQualityReviewPanelRef}
               data-testid="plan-quality-review-panel"
+              data-collapsed={planQualityReviewCollapsed ? "true" : "false"}
               className={
                 showDesignerTheme
-                  ? "pointer-events-auto absolute right-4 z-30 hidden w-80 rounded-xl border border-white/15 bg-[#12151dcc] p-3 text-xs text-neutral-100 shadow-xl backdrop-blur md:block"
-                  : "pointer-events-auto absolute right-4 z-30 hidden w-80 rounded-xl border border-neutral-200 bg-white/95 p-3 text-xs text-neutral-800 shadow-xl backdrop-blur md:block"
+                  ? "designer-dock pointer-events-auto z-30 hidden shrink-0 rounded-lg p-3 text-xs text-neutral-100 md:block"
+                  : "pointer-events-auto z-30 hidden shrink-0 rounded-lg border border-neutral-200 bg-white/95 p-3 text-xs text-neutral-800 shadow-xl backdrop-blur md:block"
               }
-              style={{ top: plan2DQualityReviewPanelTopPx }}
+              style={
+                planReviewRailElement
+                  ? { position: "relative", width: "264px" }
+                  : {
+                      position: "absolute",
+                      right: selectionInspectorRightPx,
+                      top: plan2DQualityReviewPanelTopPx,
+                      width: selectionInspectorWidthPx,
+                    }
+              }
             >
               <div className="flex items-start justify-between gap-3">
-                <div>
+                <div className="min-w-0">
                   <div className="text-sm font-semibold">Plan review</div>
-                  <div className={showDesignerTheme ? "mt-0.5 text-neutral-400" : "mt-0.5 text-neutral-500"}>
-                    {floorPlanQualityReport.label} · {floorPlanQualityReport.score}/100
-                  </div>
+                  {!planQualityReviewCollapsed ? (
+                    <div className={showDesignerTheme ? "mt-0.5 text-neutral-400" : "mt-0.5 text-neutral-500"}>
+                      {floorPlanQualityReport.label} · {floorPlanQualityReport.score}/100
+                    </div>
+                  ) : null}
                 </div>
-                <span className={showDesignerTheme ? "rounded-full bg-white/10 px-2 py-1 font-semibold text-neutral-200" : "rounded-full bg-neutral-100 px-2 py-1 font-semibold text-neutral-700"}>
-                  {floorPlanQualityReport.issues.length}
-                </span>
-              </div>
-              <div className="mt-3 space-y-2">
-                {floorPlanQualityReport.issues.slice(0, 3).map((issue) => (
+                <div className="flex shrink-0 items-center gap-1">
+                  <span className={showDesignerTheme ? "rounded-full bg-white/10 px-2 py-1 font-semibold text-neutral-200" : "rounded-full bg-neutral-100 px-2 py-1 font-semibold text-neutral-700"}>
+                    {floorPlanQualityReport.issues.length}
+                  </span>
                   <button
-                    key={issue.id}
                     type="button"
-                    data-testid={`plan-quality-review-issue-${issue.id}`}
+                    data-testid="plan-quality-review-collapse"
+                    aria-expanded={!planQualityReviewCollapsed}
+                    aria-label={planQualityReviewCollapsed ? "Expand plan review" : "Collapse plan review"}
+                    title={planQualityReviewCollapsed ? "Expand" : "Collapse"}
                     className={
                       showDesignerTheme
-                        ? "w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-left hover:bg-white/10"
-                        : "w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-left hover:bg-white"
+                        ? "grid h-7 w-7 place-items-center rounded-full border border-white/10 bg-white/5 text-[13px] font-semibold text-neutral-200 hover:bg-white/10"
+                        : "grid h-7 w-7 place-items-center rounded-full border border-neutral-200 bg-white text-[13px] font-semibold text-neutral-600 hover:bg-neutral-50"
                     }
-                    onClick={() => handlePlanQualityAction(issue.action, issue)}
+                    onClick={() => setPlanQualityReviewCollapsed((collapsed) => !collapsed)}
                   >
-                    <span className="block font-semibold">{issue.title}</span>
-                    <span className={showDesignerTheme ? "mt-0.5 block text-neutral-400" : "mt-0.5 block text-neutral-500"}>
-                      {issue.suggestedFix}
-                    </span>
+                    {planQualityReviewCollapsed ? "+" : "-"}
                   </button>
-                ))}
+                </div>
               </div>
+              {!planQualityReviewCollapsed ? (
+                <div className="mt-3 space-y-2">
+                  {floorPlanQualityReport.issues.slice(0, 3).map((issue) => (
+                    <button
+                      key={issue.id}
+                      type="button"
+                      data-testid={`plan-quality-review-issue-${issue.id}`}
+                      className={
+                        showDesignerTheme
+                          ? "w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-left hover:bg-white/10"
+                          : "w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-left hover:bg-white"
+                      }
+                      onClick={() => handlePlanQualityAction(issue.action, issue)}
+                    >
+                      <span className="block font-semibold">{issue.title}</span>
+                      <span className={showDesignerTheme ? "mt-0.5 block text-neutral-400" : "mt-0.5 block text-neutral-500"}>
+                        {issue.suggestedFix}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
             </div>
-          )}
+            );
+
+            return planReviewRailElement
+              ? createPortal(reviewPanel, planReviewRailElement)
+              : reviewPanel;
+          })()}
 
           {showPlanGuidedActionsChoice && (
             <div
@@ -14962,7 +20508,7 @@ function PageContent() {
           {showPlanManualQuickActions && (
             <div
               data-testid="plan-manual-quick-actions"
-              className="pointer-events-auto absolute bottom-32 left-4 z-30 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-1 rounded-xl border border-neutral-200 bg-white/95 p-1 shadow-xl backdrop-blur"
+              className="pointer-events-auto absolute left-1/2 top-20 z-30 flex max-w-[calc(100vw-2rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-1 rounded-xl border border-neutral-200 bg-white/95 p-1 shadow-xl backdrop-blur"
               role="toolbar"
               aria-label="Manual plan actions"
             >
@@ -15319,7 +20865,7 @@ function PageContent() {
               data-testid="ai-layout-preview-banner"
               className={
                 showDesignerTheme
-                  ? "absolute left-1/2 top-36 z-30 flex w-[min(92vw,620px)] -translate-x-1/2 flex-wrap items-center justify-between gap-3 rounded-lg border border-emerald-300/25 bg-[#151820]/95 px-4 py-3 text-sm text-neutral-100 shadow-xl backdrop-blur"
+                  ? "designer-dock absolute left-1/2 top-36 z-30 flex w-[min(92vw,620px)] -translate-x-1/2 flex-wrap items-center justify-between gap-3 rounded-lg px-4 py-3 text-sm text-neutral-100"
                   : "absolute left-1/2 top-36 z-30 flex w-[min(92vw,620px)] -translate-x-1/2 flex-wrap items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-white/95 px-4 py-3 text-sm text-neutral-800 shadow-xl backdrop-blur"
               }
             >
@@ -15378,18 +20924,11 @@ function PageContent() {
             </div>
           )}
 
-          {viewMode === "3d" && hasWholeHousePlan && !isClientPreview && (
-            <DraggableFloatingPanel
-              defaultPosition={{ right: 4, y: 64, width: 264 }}
-              positionPresets={[
-                { label: "Coohom stack", right: 4, y: 64 },
-                { label: "Dock top", right: 4, y: 64 },
-                { label: "Above floor", right: 4, y: 64 },
-              ]}
-              ariaLabel="Movable room navigator"
-              storageKey="design-room-navigator"
-              mobilePlacement="top"
-            >
+          {viewMode === "3d" &&
+            hasWholeHousePlan &&
+            floatingPlanOverlayStackVisible &&
+            planNavigatorRailElement &&
+            createPortal(
               <RoomPanNavigator
                 rooms={housePlan2D.rooms}
                 activeRoomId={designSnapshot.activeRoomId}
@@ -15405,41 +20944,27 @@ function PageContent() {
                 onFocusRoom={handleWholeHomeFocusRoom}
                 onZoom={handleWholeHomeNavigatorZoom}
                 onResetView={handleFitPlanView}
-              />
-            </DraggableFloatingPanel>
-          )}
+              />,
+              planNavigatorRailElement
+            )}
 
-          {designControlsPanelVisibleForLayout &&
-            designControlsPanelMode === "plan" &&
-            !isClientPreview &&
-            (isDesigner || floorOptions.length > 1 || viewMode === "3d") && (
-            <DraggableFloatingPanel
-              defaultPosition={{ right: 4, y: viewMode === "3d" && hasWholeHousePlan ? 246 : 88, width: 264 }}
-              positionPresets={[
-                {
-                  label: "Coohom stack",
-                  right: 4,
-                  y: viewMode === "3d" && hasWholeHousePlan ? 246 : 88,
-                },
-                { label: "Dock top", right: 4, y: 64 },
-                { label: "Below map", right: 4, y: viewMode === "3d" && hasWholeHousePlan ? 246 : 320 },
-              ]}
-              ariaLabel="Movable floor properties"
-              storageKey="design-floor-properties"
-              mobilePlacement="bottom"
-            >
+          {floatingFloorPropertiesPanelVisible &&
+            planFloorRailElement &&
+            createPortal(
               <FloorPropertiesPanel
                 dark={showDesignerTheme}
-                canEdit={canEdit}
+                canEdit={canEditPlanGeometry}
                 roomWidth={roomWidth}
                 roomDepth={roomDepth}
                 floorOptions={floorOptions}
                 hiddenFloorLevels={hiddenFloorLevels}
                 activeFloorLevel={activeFloorLevel}
                 activeFloorRoomCount={activeFloorRoomCount}
+                measurementUnit={planMeasurementUnit}
                 activeRoomHeightMm={activeRoomHeightMm}
                 activeRoomWallThicknessMm={activeRoomWallThicknessMm}
                 activeRoomSlabThicknessMm={activeRoomSlabThicknessMm}
+                activeRoomBaseboardDepthMm={activeRoomBaseboardDepthMm}
                 activeRoomWallOpacity={activeRoomWallOpacity}
                 activeRoomFloorOpacity={activeRoomFloorOpacity}
                 activeRoomCeilingOpacity={activeRoomCeilingOpacity}
@@ -15459,18 +20984,19 @@ function PageContent() {
                 onActiveRoomHeightMmChange={handleActiveRoomHeightMmChange}
                 onActiveRoomWallThicknessMmChange={handleActiveRoomWallThicknessMmChange}
                 onActiveRoomSlabThicknessMmChange={handleActiveRoomSlabThicknessMmChange}
+                onActiveRoomBaseboardDepthMmChange={handleActiveRoomBaseboardDepthMmChange}
                 onActiveRoomSurfaceOpacityChange={handleActiveRoomSurfaceOpacityChange}
                 onActiveRoomCeilingVisibleChange={handleActiveRoomCeilingVisibleChange}
                 onActiveRoomCeilingColorChange={handleActiveRoomCeilingColorChange}
-              />
-            </DraggableFloatingPanel>
-          )}
+              />,
+              planFloorRailElement
+            )}
 
           {viewMode === "3d" && stackedFloorView && floorOptions.length > 1 && !isClientPreview && (
             <div
               className={
                 showDesignerTheme
-                  ? "absolute right-[17.5rem] top-24 z-30 hidden flex-col gap-1 rounded-lg border border-white/10 bg-[#151820]/90 p-1 shadow-xl backdrop-blur md:flex"
+                  ? "designer-dock absolute right-[17.5rem] top-24 z-30 hidden flex-col gap-1 rounded-lg p-1 md:flex"
                   : "absolute right-[17.5rem] top-24 z-30 hidden flex-col gap-1 rounded-lg border border-neutral-200 bg-white/90 p-1 shadow-xl backdrop-blur md:flex"
               }
               data-testid="floor-stack-control"
@@ -15657,6 +21183,8 @@ function PageContent() {
           viewMode={viewMode}
           isDesigner={isDesigner}
           isAuthed={!!session?.user}
+          isPro={plan === "pro"}
+          isOpeningBillingPortal={openingBillingPortal}
           aiDesignEnabled={aiDesignEnabled}
           canUndo={canUndo}
           canRedo={canRedo}
@@ -15690,6 +21218,11 @@ function PageContent() {
             setUrlMode(isDesigner ? "homeowner" : "designer");
           }}
           onToggleClientPreview={() => setClientPreview((value) => !value)}
+          onViewPlans={() => setShowPlans(true)}
+          onManageBilling={() => {
+            void openBillingPortal();
+          }}
+          onFeedback={() => setFeedbackOpen(true)}
           showLoadDesign={!!session?.user}
           onToggleLoadDesign={() => {
             if (!showMyDesigns) {
@@ -15885,24 +21418,30 @@ function PageContent() {
         </div>
       )}
 
-      {/* Layer 2C: Commerce Panel (visible in BUY mode) */}
-      {editorMode === "buy" && (
+      {/* Layer 2C: Shopping Panel (visible in BUY mode) */}
+      {shoppingPanelVisibleForLayout && (
         <div
           data-testid="shopping-dock"
-          className={`absolute right-4 top-20 z-20 max-h-[calc(100vh-6rem)] space-y-4 overflow-y-auto pr-1 transition-opacity duration-300 ${
+          className={`absolute bottom-3 left-3 right-3 top-auto z-20 w-auto max-h-[64vh] space-y-3 overflow-y-auto pb-[calc(0.75rem+env(safe-area-inset-bottom))] pr-1 transition-opacity duration-300 md:bottom-auto md:right-auto md:top-20 md:w-[18.15rem] md:max-h-[calc(100vh-6rem)] md:pb-4 ${
+            isDesigner ? "md:left-20" : "md:left-4"
+          } ${
             isClientPreview ? "pointer-events-none opacity-0" : "opacity-100"
           }`}
-          style={{ width: "min(calc(100vw - 2rem), 21.25rem)" }}
           aria-hidden={isClientPreview}
         >
           <div
             className={
               showDesignerTheme
-                ? "sticky top-0 z-30 rounded-lg border border-white/15 bg-[#12151dcc] px-3 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-neutral-200 backdrop-blur"
-                : "sticky top-0 z-30 rounded-lg border border-neutral-200 bg-white/95 px-3 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-neutral-700 backdrop-blur"
+                ? "designer-dock rounded-xl p-3 text-neutral-100"
+                : "rounded-xl border border-neutral-200 bg-white/95 p-3 text-neutral-900 shadow-lg backdrop-blur"
             }
           >
-            Shopping List
+            <div className={showDesignerTheme ? "text-lg font-semibold text-white" : "text-lg font-semibold text-neutral-950"}>
+              Shop
+            </div>
+            <div className={showDesignerTheme ? "mt-1 text-xs text-neutral-400" : "mt-1 text-xs text-neutral-500"}>
+              Review shopping list and checkout readiness.
+            </div>
           </div>
           <ShoppingOverviewPanel
             dark={showDesignerTheme}
@@ -15921,38 +21460,1003 @@ function PageContent() {
             onFilterChange={setShoppingReadinessFilter}
           />
           <CartSidebar
-          items={items}
-          designId={designId ?? null}
-          plan={plan}
-          isGuest={!session?.user}
-          onGuestCapture={(reason, onContinue) => openGuestPrompt(reason, onContinue)}
-          onRemove={(instanceId) => {
-            const removedItem = items.find(x => x.instanceId === instanceId);
-            const productName = removedItem ? CATALOG_ITEMS[removedItem.productId]?.title || "Item" : "Item";
-            commitItems((prev) => prev.filter((x) => x.instanceId !== instanceId), `Delete ${productName}`);
-            if (selectedIdsRef.current.has(instanceId)) {
-              const next = new Set(selectedIdsRef.current);
-              next.delete(instanceId);
-              const nextPrimary =
-                primaryIdRef.current === instanceId
-                  ? next.size
-                    ? Array.from(next)[next.size - 1]
-                    : null
-                  : primaryIdRef.current;
-              updateSelection(next, nextPrimary);
+            items={items}
+            designId={designId ?? null}
+            plan={plan}
+            isGuest={!session?.user}
+            onGuestCapture={(reason, onContinue) => openGuestPrompt(reason, onContinue)}
+            onRemove={(instanceId) => {
+              const removedItem = items.find(x => x.instanceId === instanceId);
+              const productName = removedItem ? CATALOG_ITEMS[removedItem.productId]?.title || "Item" : "Item";
+              commitItems((prev) => prev.filter((x) => x.instanceId !== instanceId), `Delete ${productName}`);
+              if (selectedIdsRef.current.has(instanceId)) {
+                const next = new Set(selectedIdsRef.current);
+                next.delete(instanceId);
+                const nextPrimary =
+                  primaryIdRef.current === instanceId
+                    ? next.size
+                      ? Array.from(next)[next.size - 1]
+                      : null
+                    : primaryIdRef.current;
+                updateSelection(next, nextPrimary);
+              }
+            }}
+            onSetQty={(instanceId, qty) => {
+              commitItems((prev) =>
+                prev.map((x) => (x.instanceId === instanceId ? { ...x, qty } : x)),
+                "Change quantity"
+              );
+            }}
+            onSetInclude={setShoppingItemInclude}
+            onBulkSwap={onBulkSwap}
+            onShowUpgrade={() => setShowUpgrade(true)}
+            theme={showDesignerTheme ? "designer" : "default"}
+          />
+        </div>
+      )}
+
+      {editorMode === "adjust" && selectedCabinetItem && (
+        <div
+          className={`absolute right-4 top-20 z-40 w-[320px] max-h-[calc(100vh-6rem)] overflow-y-auto pr-1 transition-opacity duration-300 md:w-[21.25rem] ${
+            isClientPreview ? "pointer-events-none opacity-0" : "opacity-100"
+          }`}
+          aria-hidden={isClientPreview}
+        >
+          <div
+            data-testid="selected-cabinet-panel"
+            className={
+              showDesignerTheme
+                ? "designer-panel designer-panel-strong w-full rounded-xl p-4"
+                : "w-full rounded-xl bg-white p-4 shadow"
             }
-          }}
-          onSetQty={(instanceId, qty) => {
-            commitItems((prev) =>
-              prev.map((x) => (x.instanceId === instanceId ? { ...x, qty } : x)),
-              "Change quantity"
-            );
-          }}
-          onSetInclude={setShoppingItemInclude}
-          onBulkSwap={onBulkSwap}
-          onShowUpgrade={() => setShowUpgrade(true)}
-          theme={showDesignerTheme ? "designer" : "default"}
-        />
+          >
+            <div
+              className={
+                showDesignerTheme
+                  ? "designer-raised designer-divider sticky top-0 z-20 -mx-4 mb-3 border-b px-4 py-2 text-sm font-semibold"
+                  : "sticky top-0 z-20 -mx-4 mb-3 border-b border-neutral-200 bg-white/95 px-4 py-2 text-sm font-semibold text-neutral-900 backdrop-blur"
+              }
+            >
+              Selected Millwork
+            </div>
+            <div className={showDesignerTheme ? "text-neutral-100" : "text-neutral-900"}>
+              <div className="text-sm font-semibold">
+                {selectedCabinetItem.name ?? selectedCabinetItem.cabinetDefinition.name}
+              </div>
+              <div className={showDesignerTheme ? "mt-1 text-xs text-neutral-400" : "mt-1 text-xs text-neutral-500"}>
+                {selectedCabinetItem.cabinetDefinition.totalWidth}w x {selectedCabinetItem.cabinetDefinition.height}h x {selectedCabinetItem.cabinetDefinition.depth}d mm
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                <div className={showDesignerTheme ? "rounded-lg bg-white/5 p-2" : "rounded-lg bg-neutral-50 p-2"}>
+                  <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Modules</div>
+                  <div className="mt-1 font-semibold">
+                    {selectedCabinetItem.cabinetDefinition.modules.length}
+                  </div>
+                </div>
+                {isDesigner ? (
+                  <div className={showDesignerTheme ? "rounded-lg bg-white/5 p-2" : "rounded-lg bg-neutral-50 p-2"}>
+                    <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>BOM lines</div>
+                    <div className="mt-1 font-semibold">
+                      {selectedCabinetItem.bomSnapshot?.length ?? generateCabinetBOM(selectedCabinetItem.cabinetDefinition).length}
+                    </div>
+                  </div>
+                ) : selectedCabinetDocumentationSnapshot ? (
+                  <div
+                    data-testid="selected-cabinet-consumer-estimate"
+                    data-currency={selectedCabinetDocumentationSnapshot.quoteSummary.currency}
+                    data-estimated-total={String(selectedCabinetDocumentationSnapshot.quoteSummary.estimatedTotal)}
+                    className="rounded-lg bg-blue-50 p-2"
+                  >
+                    <div className="text-blue-700">Preliminary estimate</div>
+                    <div className="mt-1 font-semibold text-blue-950">
+                      {selectedCabinetDocumentationSnapshot.quoteSummary.estimatedTotal.toLocaleString("en-US", {
+                        style: "currency",
+                        currency: selectedCabinetDocumentationSnapshot.quoteSummary.currency,
+                        maximumFractionDigits: 0,
+                      })}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+              <div
+                data-testid="selected-cabinet-placement-controls"
+                data-position={selectedCabinetItem.position.join(",")}
+                data-rotation-y={String(getCabinetRotationY(selectedCabinetItem))}
+                className={showDesignerTheme ? "mt-3 rounded-lg bg-white/5 p-3" : "mt-3 rounded-lg bg-neutral-50 p-3"}
+              >
+                <div className={showDesignerTheme ? "text-xs font-semibold text-neutral-200" : "text-xs font-semibold text-neutral-800"}>
+                  Placement
+                </div>
+                <div className={showDesignerTheme ? "mt-1 text-xs text-neutral-400" : "mt-1 text-xs text-neutral-500"}>
+                  {selectedCabinetPlanningDimensionsMm
+                    ? `${(selectedCabinetPlanningDimensionsMm.w / 1000).toFixed(2)} x ${(selectedCabinetPlanningDimensionsMm.d / 1000).toFixed(2)} m footprint`
+                    : "Footprint unavailable"}
+                </div>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    data-testid="selected-cabinet-center"
+                    className={
+                      showDesignerTheme
+                        ? "min-h-9 rounded-md border border-white/15 px-2 text-xs text-neutral-100 disabled:opacity-40"
+                        : "min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
+                    }
+                    disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
+                    onClick={centerSelectedCabinetInRoom}
+                  >
+                    Center
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="selected-cabinet-snap-wall"
+                    className={
+                      showDesignerTheme
+                        ? "min-h-9 rounded-md border border-white/15 px-2 text-xs text-neutral-100 disabled:opacity-40"
+                        : "min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
+                    }
+                    disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
+                    onClick={snapSelectedCabinetToNearestWall}
+                  >
+                    Snap wall
+                  </button>
+                </div>
+                <div className="mt-2 grid grid-cols-4 gap-2">
+                  <button
+                    type="button"
+                    data-testid="selected-cabinet-nudge-left"
+                    className={
+                      showDesignerTheme
+                        ? "min-h-9 rounded-md border border-white/15 px-2 text-xs text-neutral-100 disabled:opacity-40"
+                        : "min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
+                    }
+                    disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
+                    onClick={() => nudgeSelectedCabinet(-0.05, 0)}
+                  >
+                    Left
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="selected-cabinet-nudge-back"
+                    className={
+                      showDesignerTheme
+                        ? "min-h-9 rounded-md border border-white/15 px-2 text-xs text-neutral-100 disabled:opacity-40"
+                        : "min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
+                    }
+                    disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
+                    onClick={() => nudgeSelectedCabinet(0, -0.05)}
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="selected-cabinet-nudge-front"
+                    className={
+                      showDesignerTheme
+                        ? "min-h-9 rounded-md border border-white/15 px-2 text-xs text-neutral-100 disabled:opacity-40"
+                        : "min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
+                    }
+                    disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
+                    onClick={() => nudgeSelectedCabinet(0, 0.05)}
+                  >
+                    Front
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="selected-cabinet-nudge-right"
+                    className={
+                      showDesignerTheme
+                        ? "min-h-9 rounded-md border border-white/15 px-2 text-xs text-neutral-100 disabled:opacity-40"
+                        : "min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
+                    }
+                    disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
+                    onClick={() => nudgeSelectedCabinet(0.05, 0)}
+                  >
+                    Right
+                  </button>
+                </div>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    data-testid="selected-cabinet-rotate-quarter"
+                    className={
+                      showDesignerTheme
+                        ? "min-h-9 rounded-md border border-white/15 px-2 text-xs text-neutral-100 disabled:opacity-40"
+                        : "min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
+                    }
+                    disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
+                    onClick={() => rotateSelectedCabinetByDegrees(90)}
+                  >
+                    +90 deg
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="selected-cabinet-reset-rotation"
+                    className={
+                      showDesignerTheme
+                        ? "min-h-9 rounded-md border border-white/15 px-2 text-xs text-neutral-100 disabled:opacity-40"
+                        : "min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
+                    }
+                    disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
+                    onClick={resetSelectedCabinetRotation}
+                  >
+                    Reset rotation
+                  </button>
+                </div>
+              </div>
+              {isDesigner ? (
+                <>
+              {selectedCabinetDocumentationSnapshot ? (
+                <div
+                  data-testid="selected-cabinet-documentation-summary"
+                  data-bom-count={String(selectedCabinetDocumentationSnapshot.bom.length)}
+                  data-material-schedule-count={String(selectedCabinetDocumentationSnapshot.materialSchedule.length)}
+                  data-hardware-schedule-count={String(selectedCabinetDocumentationSnapshot.hardwareSchedule.length)}
+                  data-edge-banding-schedule-count={String(selectedCabinetDocumentationSnapshot.edgeBandingSchedule.length)}
+                  data-edge-banding-total-m={String(
+                    Math.round(
+                      selectedCabinetDocumentationSnapshot.edgeBandingSchedule.reduce(
+                        (sum, item) => sum + item.totalLengthM,
+                        0
+                      ) * 100
+                    ) / 100
+                  )}
+                  data-cut-list-count={String(selectedCabinetDocumentationSnapshot.cutList.length)}
+                  data-dimension-schedule-count={String(selectedCabinetDocumentationSnapshot.dimensionSchedule.length)}
+                  data-drawing-view-schedule-count={String(selectedCabinetDocumentationSnapshot.drawingViewSchedule.length)}
+                  data-release-checklist-count={String(selectedCabinetDocumentationSnapshot.releaseChecklist.length)}
+                  data-release-blocker-count={String(
+                    selectedCabinetDocumentationSnapshot.releaseChecklist.filter((item) => item.status === "blocked").length
+                  )}
+                  data-quote-total={String(selectedCabinetDocumentationSnapshot.quoteSummary.estimatedTotal)}
+                  data-supplier-readiness-status={selectedCabinetDocumentationSnapshot.supplierReadiness.status}
+                  data-supplier-sku-mapping-count={String(selectedCabinetDocumentationSnapshot.supplierSkuMappings.length)}
+                  data-fabrication-release-status={selectedCabinetDocumentationSnapshot.fabricationReleaseReadiness.status}
+                  data-fabrication-release-required-count={String(selectedCabinetDocumentationSnapshot.fabricationReleaseReadiness.requiredGateCount)}
+                  data-fabrication-release-blocker-count={String(selectedCabinetDocumentationSnapshot.fabricationReleaseReadiness.blockerCount)}
+                  data-assembly-profile-schema={selectedCabinetDocumentationSnapshot.assemblyProfile.schema}
+                  data-assembly-profile-label={selectedCabinetDocumentationSnapshot.assemblyProfile.label}
+                  data-assembly-profile-phase={selectedCabinetDocumentationSnapshot.assemblyProfile.projectPhase}
+                  data-assembly-profile-placement-kind={selectedCabinetDocumentationSnapshot.assemblyProfile.placementKind}
+                  data-assembly-profile-complexity={selectedCabinetDocumentationSnapshot.assemblyProfile.fabricationComplexity}
+                  data-asset-manifest-schema={selectedCabinetAssetManifest?.schema ?? ""}
+                  data-asset-manifest-version={String(selectedCabinetAssetManifest?.version ?? "")}
+                  data-asset-manifest-source-definition-version={String(
+                    selectedCabinetAssetManifest?.sourceDefinitionVersion ?? ""
+                  )}
+                  data-generated-output-kind={selectedCabinetAssetManifest?.generatedOutput.kind ?? ""}
+                  data-generated-output-durable={
+                    selectedCabinetAssetManifest?.generatedOutput.durable ? "true" : "false"
+                  }
+                  className={showDesignerTheme ? "mt-3 rounded-lg bg-white/5 p-3" : "mt-3 rounded-lg bg-neutral-50 p-3"}
+                >
+                  <div className={showDesignerTheme ? "text-xs font-semibold text-neutral-200" : "text-xs font-semibold text-neutral-800"}>
+                    Design-to-build data
+                  </div>
+                  <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
+                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Quote total</div>
+                      <div className="mt-1 font-semibold">
+                        {selectedCabinetDocumentationSnapshot.quoteSummary.currency}{" "}
+                        {selectedCabinetDocumentationSnapshot.quoteSummary.estimatedTotal.toLocaleString()}
+                      </div>
+                    </div>
+                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
+                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>RFQ status</div>
+                      <div className="mt-1 font-semibold">
+                        {selectedCabinetDocumentationSnapshot.supplierReadiness.status.replace(/_/g, " ")}
+                      </div>
+                    </div>
+                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
+                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Cut list</div>
+                      <div className="mt-1 font-semibold">
+                        {selectedCabinetDocumentationSnapshot.cutList.length} parts
+                      </div>
+                    </div>
+                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
+                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Edge banding</div>
+                      <div className="mt-1 font-semibold">
+                        {selectedCabinetDocumentationSnapshot.edgeBandingSchedule.reduce(
+                          (sum, item) => sum + item.totalLengthM,
+                          0
+                        ).toFixed(2)} m
+                      </div>
+                    </div>
+                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
+                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Release gates</div>
+                      <div className="mt-1 font-semibold">
+                        {selectedCabinetDocumentationSnapshot.releaseChecklist.length}
+                      </div>
+                    </div>
+                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
+                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Release status</div>
+                      <div className="mt-1 font-semibold">
+                        {selectedCabinetDocumentationSnapshot.fabricationReleaseReadiness.status.replace(/_/g, " ")}
+                      </div>
+                    </div>
+                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
+                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Built-in type</div>
+                      <div className="mt-1 font-semibold">
+                        {selectedCabinetDocumentationSnapshot.assemblyProfile.label}
+                      </div>
+                    </div>
+                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
+                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Complexity</div>
+                      <div className="mt-1 font-semibold">
+                        {selectedCabinetDocumentationSnapshot.assemblyProfile.fabricationComplexity}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-3 grid gap-2">
+                    <div className={showDesignerTheme ? "text-xs font-semibold text-neutral-300" : "text-xs font-semibold text-neutral-700"}>
+                      Materials
+                    </div>
+                    <div className="grid max-h-28 gap-1 overflow-auto">
+                      {selectedCabinetDocumentationSnapshot.materialSchedule.slice(0, 4).map((item) => (
+                        <div
+                          key={item.id}
+                          data-testid="selected-cabinet-material-row"
+                          className={showDesignerTheme ? "flex justify-between gap-2 rounded-md bg-black/10 px-2 py-1 text-xs" : "flex justify-between gap-2 rounded-md bg-white px-2 py-1 text-xs"}
+                        >
+                          <span className="truncate">{item.materialName}</span>
+                          <span className={showDesignerTheme ? "shrink-0 text-neutral-400" : "shrink-0 text-neutral-500"}>
+                            {item.partCount} parts
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className={showDesignerTheme ? "text-xs font-semibold text-neutral-300" : "text-xs font-semibold text-neutral-700"}>
+                      Hardware
+                    </div>
+                    <div className="grid max-h-24 gap-1 overflow-auto">
+                      {selectedCabinetDocumentationSnapshot.hardwareSchedule.length ? (
+                        selectedCabinetDocumentationSnapshot.hardwareSchedule.slice(0, 4).map((item) => (
+                          <div
+                            key={item.id}
+                            data-testid="selected-cabinet-hardware-row"
+                            className={showDesignerTheme ? "flex justify-between gap-2 rounded-md bg-black/10 px-2 py-1 text-xs" : "flex justify-between gap-2 rounded-md bg-white px-2 py-1 text-xs"}
+                          >
+                            <span className="truncate">{item.hardwareName}</span>
+                            <span className={showDesignerTheme ? "shrink-0 text-neutral-400" : "shrink-0 text-neutral-500"}>
+                              {item.quantity} ea
+                            </span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className={showDesignerTheme ? "text-xs text-neutral-400" : "text-xs text-neutral-500"}>
+                          No hardware scheduled.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+              {projectCabinetHandoffPackage ? (
+                <div
+                  data-testid="selected-cabinet-project-readiness"
+                  data-schema={projectCabinetHandoffPackage.schema}
+                  data-handoff-status={projectCabinetHandoffPackage.handoffStatus}
+                  data-asset-count={String(projectCabinetHandoffPackage.totals.assetCount)}
+                  data-package-count={String(projectCabinetHandoffPackage.totals.packageCount)}
+                  data-scope-schema={projectCabinetHandoffPackage.packages.scopePackage.schema}
+                  data-scope-family-count={String(projectCabinetHandoffPackage.packages.scopePackage.totals.familyCount)}
+                  data-scope-assembly-type-count={String(
+                    projectCabinetHandoffPackage.packages.scopePackage.totals.assemblyTypeCount
+                  )}
+                  data-scope-phase-represented-count={String(
+                    projectCabinetHandoffPackage.packages.scopePackage.totals.phaseRepresentedCount
+                  )}
+                  data-quote-status={projectCabinetHandoffPackage.packages.quotePackage.quoteStatus}
+                  data-purchase-readiness={
+                    projectCabinetHandoffPackage.packages.purchaseReadinessPackage.purchaseReadiness
+                  }
+                  data-fabrication-release-status={projectCabinetHandoffPackage.packages.fabricationReleasePackage.status}
+                  data-field-verification-status={
+                    projectCabinetHandoffPackage.packages.fieldVerificationPackage.verificationStatus
+                  }
+                  data-installation-readiness={
+                    projectCabinetHandoffPackage.packages.installationPlanPackage.installationReadiness
+                  }
+                  data-approval-status={projectCabinetHandoffPackage.packages.approvalPackage.approvalStatus}
+                  data-release-blocker-count={String(projectCabinetHandoffPackage.totals.releaseBlockerCount)}
+                  data-required-approval-count={String(projectCabinetHandoffPackage.totals.requiredApprovalCount)}
+                  data-field-verification-required-count={String(
+                    projectCabinetHandoffPackage.totals.fieldVerificationRequiredCount
+                  )}
+                  data-custom-quote-required-count={String(
+                    projectCabinetHandoffPackage.packages.procurementPackage.totals.customQuoteRequiredCount
+                  )}
+                  data-can-issue-client={projectCabinetHandoffPackage.canIssueToClient ? "true" : "false"}
+                  data-can-issue-fabricator={projectCabinetHandoffPackage.canIssueToFabricator ? "true" : "false"}
+                  data-can-issue-installer={projectCabinetHandoffPackage.canIssueToInstaller ? "true" : "false"}
+                  data-can-issue-purchase-review={
+                    projectCabinetHandoffPackage.canIssueForPurchaseReview ? "true" : "false"
+                  }
+                  className={showDesignerTheme ? "mt-3 rounded-lg bg-white/5 p-3" : "mt-3 rounded-lg bg-neutral-50 p-3"}
+                >
+                  <div className={showDesignerTheme ? "text-xs font-semibold text-neutral-200" : "text-xs font-semibold text-neutral-800"}>
+                    Project readiness
+                  </div>
+                  <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
+                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Handoff</div>
+                      <div className="mt-1 font-semibold">
+                        {projectCabinetHandoffPackage.handoffStatus.replace(/_/g, " ")}
+                      </div>
+                    </div>
+                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
+                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Scope</div>
+                      <div className="mt-1 font-semibold">
+                        {projectCabinetHandoffPackage.packages.scopePackage.totals.familyCount} family /{" "}
+                        {projectCabinetHandoffPackage.packages.scopePackage.totals.assemblyTypeCount} type
+                      </div>
+                    </div>
+                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
+                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Quote</div>
+                      <div className="mt-1 font-semibold">
+                        {projectCabinetHandoffPackage.packages.quotePackage.quoteStatus.replace(/_/g, " ")}
+                      </div>
+                    </div>
+                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
+                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Purchase</div>
+                      <div className="mt-1 font-semibold">
+                        {projectCabinetHandoffPackage.packages.purchaseReadinessPackage.purchaseReadiness.replace(/_/g, " ")}
+                      </div>
+                    </div>
+                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
+                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Fabrication</div>
+                      <div className="mt-1 font-semibold">
+                        {projectCabinetHandoffPackage.packages.fabricationReleasePackage.status.replace(/_/g, " ")}
+                      </div>
+                    </div>
+                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
+                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Install</div>
+                      <div className="mt-1 font-semibold">
+                        {projectCabinetHandoffPackage.packages.installationPlanPackage.installationReadiness.replace(/_/g, " ")}
+                      </div>
+                    </div>
+                  </div>
+                  <div className={showDesignerTheme ? "mt-2 text-xs text-neutral-400" : "mt-2 text-xs text-neutral-500"}>
+                    {projectCabinetHandoffPackage.totals.requiredApprovalCount} approvals ·{" "}
+                    {projectCabinetHandoffPackage.totals.fieldVerificationRequiredCount} field checks ·{" "}
+                    {projectCabinetHandoffPackage.packages.procurementPackage.totals.customQuoteRequiredCount} quote rows
+                  </div>
+                </div>
+              ) : null}
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-placed-package"
+                className={
+                  showDesignerTheme
+                    ? "mt-3 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-3 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio}
+                onClick={() => {
+                  try {
+                    downloadCabinetPlacedAssetPackageJson(
+                      buildPlacedCabinetAssetPackageInput(
+                        selectedCabinetItem,
+                        selectedCabinetItem.roomId ?? activeRoom?.id
+                      )
+                    );
+                    showRuleToast("Placed millwork package exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export placed millwork package", error);
+                    showRuleToast("Placed millwork package export failed");
+                  }
+                }}
+              >
+                Download Placed Package
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-installer-work-order"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio}
+                onClick={() => {
+                  try {
+                    const placedAsset = buildPlacedCabinetAssetPackageInput(
+                      selectedCabinetItem,
+                      selectedCabinetItem.roomId ?? activeRoom?.id
+                    );
+                    downloadCabinetPlacedAssetInstallerWorkOrderJson(placedAsset, {
+                      roomName:
+                        (placedAsset.roomId ? projectCabinetRoomNamesById[placedAsset.roomId] : undefined) ??
+                        activeRoom?.name,
+                    });
+                    showRuleToast("Installer work order exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export installer work order", error);
+                    showRuleToast("Installer work order export failed");
+                  }
+                }}
+              >
+                Download Install Work Order
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-field-verification"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectFieldVerificationPackageJson({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("Field verification package exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export field verification package", error);
+                    showRuleToast("Field verification package export failed");
+                  }
+                }}
+              >
+                Download Field Verification
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-finish-schedule"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectFinishSchedulePackageJson({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("Finish schedule exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export finish schedule", error);
+                    showRuleToast("Finish schedule export failed");
+                  }
+                }}
+              >
+                Download Finish Schedule
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-schedule"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectSchedulePackageJson({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("Project millwork schedule exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export project millwork schedule", error);
+                    showRuleToast("Project millwork schedule export failed");
+                  }
+                }}
+              >
+                Download Project Schedule
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-schedule-csv"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectScheduleCsv({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("Project millwork schedule CSV exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export project millwork schedule CSV", error);
+                    showRuleToast("Project millwork schedule CSV export failed");
+                  }
+                }}
+              >
+                Download Project CSV
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-scope"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectScopePackageJson({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("Project scope package exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export project scope package", error);
+                    showRuleToast("Project scope package export failed");
+                  }
+                }}
+              >
+                Download Scope Package
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-procurement"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectProcurementPackageJson({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("Project procurement package exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export project procurement package", error);
+                    showRuleToast("Project procurement package export failed");
+                  }
+                }}
+              >
+                Download Procurement
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-quote"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectQuotePackageJson({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("Project quote package exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export project quote package", error);
+                    showRuleToast("Project quote package export failed");
+                  }
+                }}
+              >
+                Download Project Quote
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-purchase-readiness"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectPurchaseReadinessPackageJson({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("Purchase readiness package exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export purchase readiness package", error);
+                    showRuleToast("Purchase readiness package export failed");
+                  }
+                }}
+              >
+                Download Purchase Readiness
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-fabrication-release"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectFabricationReleasePackageJson({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("Fabrication release package exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export fabrication release package", error);
+                    showRuleToast("Fabrication release package export failed");
+                  }
+                }}
+              >
+                Download Fab Release
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-approval-package"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectApprovalPackageJson({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("Approval package exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export approval package", error);
+                    showRuleToast("Approval package export failed");
+                  }
+                }}
+              >
+                Download Approval
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-revision-package"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectRevisionPackageJson({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("Revision package exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export revision package", error);
+                    showRuleToast("Revision package export failed");
+                  }
+                }}
+              >
+                Download Revision Package
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-drawing-set"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectDrawingSetPackageJson({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("Drawing set package exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export drawing set package", error);
+                    showRuleToast("Drawing set package export failed");
+                  }
+                }}
+              >
+                Download Drawing Set
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-cut-list"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectCutListPackageJson({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("Cut-list package exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export cut-list package", error);
+                    showRuleToast("Cut-list package export failed");
+                  }
+                }}
+              >
+                Download Cut List
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-cnc-batch"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectCncBatchPackageJson({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("CNC batch manifest exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export CNC batch manifest", error);
+                    showRuleToast("CNC batch manifest export failed");
+                  }
+                }}
+              >
+                Download CNC Batch
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-installation-plan"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectInstallationPlanPackageJson({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("Installation plan exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export installation plan", error);
+                    showRuleToast("Installation plan export failed");
+                  }
+                }}
+              >
+                Download Install Plan
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-rfq"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectFabricationQuoteRequestJson({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("Project millwork RFQ exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export project millwork RFQ", error);
+                    showRuleToast("Project millwork RFQ export failed");
+                  }
+                }}
+              >
+                Download Project RFQ
+              </button>
+              <button
+                type="button"
+                data-testid="selected-cabinet-download-project-handoff"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canUseCabinetryStudio || projectCabinetAssets.length === 0}
+                onClick={() => {
+                  try {
+                    downloadCabinetProjectHandoffPackageJson({
+                      assets: projectCabinetAssets,
+                      projectId: designId ?? undefined,
+                      projectName: designSnapshot.title ?? "Custom Millwork Project",
+                      roomNamesById: projectCabinetRoomNamesById,
+                    });
+                    showRuleToast("Project handoff bundle exported");
+                  } catch (error) {
+                    console.error("[Cabinetry] Unable to export project handoff bundle", error);
+                    showRuleToast("Project handoff bundle export failed");
+                  }
+                }}
+              >
+                Download Handoff Bundle
+              </button>
+                </>
+              ) : null}
+              <button
+                type="button"
+                data-testid="edit-placed-millwork"
+                className="mt-4 min-h-10 w-full rounded-lg bg-blue-600 px-3 text-sm font-semibold text-white disabled:opacity-40"
+                disabled={!canEdit || !canUseCabinetryStudio}
+                onClick={() => {
+                  if (!canUseCabinetryStudio) return;
+                  cabinetryStudioOpenedAtRef.current = performance.now();
+                  track("millwork_studio_opened", {
+                    access_level: cabinetryAccessLevel,
+                    entry_point: "placed_asset",
+                    studio_mode: "edit",
+                  });
+                  setCabinetryStudioState({
+                    mode: "edit",
+                    instanceId: selectedCabinetItem.instanceId,
+                    initialDefinition: selectedCabinetItem.cabinetDefinition,
+                  });
+                }}
+              >
+                <span data-testid="edit-placed-cabinet">Edit Millwork</span>
+              </button>
+              <button
+                type="button"
+                className={
+                  showDesignerTheme
+                    ? "mt-2 min-h-10 w-full rounded-lg bg-white/10 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
+                    : "mt-2 min-h-10 w-full rounded-lg bg-neutral-100 px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                }
+                disabled={!canEdit}
+                onClick={deleteSelectedItem}
+              >
+                Delete Millwork
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -15983,7 +22487,7 @@ function PageContent() {
               <div
                 className={
                   showDesignerTheme
-                    ? "sticky top-0 z-20 -mx-4 mb-2 border-b border-white/15 bg-[#12151dcc] px-4 py-2 backdrop-blur"
+                    ? "designer-raised designer-divider sticky top-0 z-20 -mx-4 mb-2 border-b px-4 py-2"
                     : "sticky top-0 z-20 -mx-4 mb-2 border-b border-neutral-200 bg-white/95 px-4 py-2 backdrop-blur"
                 }
               >
@@ -15999,6 +22503,7 @@ function PageContent() {
               canEdit={canEdit}
               rooms={designSnapshot.rooms.map((room) => ({ id: room.id, name: room.name }))}
               activeRoomId={designSnapshot.activeRoomId}
+              measurementUnit={planMeasurementUnit}
               planningDimensionsMm={selectedItemPlanningDimensionsMm}
               selectedBrand={selectedBrand}
               selectedModelTitle={selectedModelTitle}
@@ -16023,6 +22528,17 @@ function PageContent() {
               onSnapToWall={snapSelectedItemToNearestWall}
               onNudge={nudgeSelectedItem}
               onSetPosition={(x, z) => moveSelectedItemToPosition(x, z, "Set item position")}
+              adjustableHangingHeight={
+                selectedAdjustablePendantHeight
+                  ? {
+                      valueCm: selectedAdjustablePendantHeight.currentCm,
+                      minCm: selectedAdjustablePendantHeight.minCm,
+                      maxCm: selectedAdjustablePendantHeight.maxCm,
+                      stepCm: 1,
+                    }
+                  : null
+              }
+              onAdjustHangingHeight={adjustSelectedPendantHeight}
               onApplyStyleAlternative={(productId) => {
                 const alternative = CATALOG_ITEMS[productId];
                 switchSelectedProductModel(
@@ -16099,10 +22615,24 @@ function PageContent() {
                               )
                                 .trim()
                                 .toLowerCase();
+                              const currentLegFinishCode = String(
+                                currentVariant?.legFinishCode ?? ""
+                              )
+                                .trim()
+                                .toLowerCase();
                               const currentLabel = String(currentVariant?.label ?? "")
                                 .trim()
                                 .toLowerCase();
                               const nextVariant =
+                                optionProduct.variants.find(
+                                  (variant) =>
+                                    currentFinishCode.length > 0 &&
+                                    currentLegFinishCode.length > 0 &&
+                                    String(variant.finishCode ?? "").trim().toLowerCase() ===
+                                      currentFinishCode &&
+                                    String(variant.legFinishCode ?? "").trim().toLowerCase() ===
+                                      currentLegFinishCode
+                                ) ??
                                 optionProduct.variants.find((variant) =>
                                   currentFinishCode
                                     ? String(variant.finishCode ?? "")
@@ -16516,6 +23046,11 @@ function PageContent() {
                               const currentFinishCode = String(currentVariant?.finishCode ?? "")
                                 .trim()
                                 .toLowerCase();
+                              const currentLegFinishCode = String(
+                                currentVariant?.legFinishCode ?? ""
+                              )
+                                .trim()
+                                .toLowerCase();
                               const currentFinishLabel = String(
                                 currentVariant?.finishLabel ?? currentVariant?.label ?? ""
                               )
@@ -16523,6 +23058,15 @@ function PageContent() {
                                 .toLowerCase();
                               const nextVariant =
                                 optionProduct.variants.find((v) => v.id === currentVariantId) ??
+                                optionProduct.variants.find(
+                                  (v) =>
+                                    currentFinishCode.length > 0 &&
+                                    currentLegFinishCode.length > 0 &&
+                                    String(v.finishCode ?? "").trim().toLowerCase() ===
+                                      currentFinishCode &&
+                                    String(v.legFinishCode ?? "").trim().toLowerCase() ===
+                                      currentLegFinishCode
+                                ) ??
                                 optionProduct.variants.find(
                                   (v) =>
                                     currentFinishCode.length > 0 &&
@@ -16643,8 +23187,22 @@ function PageContent() {
                               )
                                 .trim()
                                 .toLowerCase();
+                              const currentLegFinishCode = String(
+                                currentVariant?.legFinishCode ?? ""
+                              )
+                                .trim()
+                                .toLowerCase();
                               const nextVariant =
                                 optionProduct.variants.find((v) => v.id === currentVariantId) ??
+                                optionProduct.variants.find(
+                                  (v) =>
+                                    currentFinishCode.length > 0 &&
+                                    currentLegFinishCode.length > 0 &&
+                                    String(v.finishCode ?? "").trim().toLowerCase() ===
+                                      currentFinishCode &&
+                                    String(v.legFinishCode ?? "").trim().toLowerCase() ===
+                                      currentLegFinishCode
+                                ) ??
                                 optionProduct.variants.find(
                                   (v) =>
                                     currentFinishCode.length > 0 &&
@@ -17300,7 +23858,7 @@ function PageContent() {
                       : "text-sm font-semibold text-neutral-900"
                   }
                 >
-                  {hasWoodColourOptions ? "Fabric colour" : "Material"}
+                  {variantSelectorLabel}
                 </div>
               </div>
 
@@ -17322,7 +23880,13 @@ function PageContent() {
                 className={
                   hasWoodColourOptions
                     ? "mt-2 flex flex-wrap gap-2"
-                    : "mt-2 grid grid-cols-2 gap-3"
+                      : selectedProduct?.id === "bed-real-castlery-joseph" ||
+                          selectedProduct?.id === "bed-real-castlery-rochelle-boucle" ||
+                          selectedProduct?.id === "bed-real-castlery-seb" ||
+                          selectedProduct?.id === "bed-real-castlery-dalton" ||
+                          selectedProduct?.id === "bed-real-castlery-claude"
+                        ? "mt-2 grid grid-cols-3 gap-2"
+                      : "mt-2 grid grid-cols-2 gap-3"
                 }
               >
                 {(huggFabricSwatchOptions.length > 0
@@ -17348,13 +23912,24 @@ function PageContent() {
                   const active =
                     option.isActive ||
                     option.variantId === activeStructuredVariant?.variant.id ||
+                    option.key === activeStructuredVariant?.materialKey ||
                     option.label.toLowerCase() === String(activeMaterialType ?? "").trim().toLowerCase() ||
                     option.label.toLowerCase() === String(activeMaterialLabel ?? "").trim().toLowerCase();
                   if (!hasWoodColourOptions) {
+                    const compactJosephModelButton =
+                      selectedProduct?.id === "bed-real-castlery-joseph" ||
+                      selectedProduct?.id === "bed-real-castlery-rochelle-boucle" ||
+                      selectedProduct?.id === "bed-real-castlery-seb" ||
+                      selectedProduct?.id === "bed-real-castlery-dalton" ||
+                      selectedProduct?.id === "bed-real-castlery-claude";
                     return (
                       <button
                         key={option.key}
-                        className={`w-full rounded-2xl border px-4 py-1 text-base transition ${
+                        className={`w-full border transition ${
+                          compactJosephModelButton
+                            ? "min-h-12 rounded-lg px-2 py-2 text-sm leading-tight"
+                            : "rounded-2xl px-4 py-1 text-base"
+                        } ${
                           active
                             ? "border-[#4b1427] bg-[#4b1427] text-white"
                             : "border-neutral-300 bg-white text-[#4b2635]"
@@ -17368,8 +23943,27 @@ function PageContent() {
                               .replace(/_/g, "-")
                               .replace(/[^a-z0-9-]+/g, "-")
                               .replace(/^-+|-+$/g, "");
+                          const getVariantSizeKey = (variant?: CatalogItemSchema["variants"][number] | null) => {
+                            const sizeLabel = normalizeLegVariantKey(variant?.sizeLabel);
+                            if (sizeLabel) return sizeLabel;
+                            const variantId = String(variant?.id ?? "").trim().toLowerCase();
+                            if (variantId.startsWith("queen_") || variantId.includes("_queen_")) return "queen";
+                            if (variantId.startsWith("king_") || variantId.includes("_king_")) return "king";
+                            const widthMm = Number(variant?.dimensionsMm?.w ?? 0);
+                            if (widthMm > 0 && widthMm < 1800) return "queen";
+                            if (widthMm >= 1800) return "king";
+                            return "";
+                          };
                           const activeLegFinishKey = normalizeLegVariantKey(activeStructuredVariant?.variant.legFinishCode);
+                          const activeSizeKey = getVariantSizeKey(activeStructuredVariant?.variant);
                           const target =
+                            structuredVariants.find(
+                              (entry) =>
+                                entry.materialKey === option.key &&
+                                activeSizeKey &&
+                                getVariantSizeKey(entry.variant) === activeSizeKey
+                            ) ??
+                            structuredVariants.find((entry) => entry.materialKey === option.key) ??
                             structuredVariants.find(
                               (entry) =>
                                 entry.materialType === option.label &&
@@ -17386,9 +23980,9 @@ function PageContent() {
                                   ? { ...it, variantId: target.variant.id }
                                   : it
                               ),
-                            `Change material to ${option.label}`
-                          );
-                        }}
+                          `Change ${variantSelectorLabel.toLowerCase()} to ${option.label}`
+                        );
+                      }}
                         title={option.label}
                       >
                         {option.label}
@@ -17482,6 +24076,12 @@ function PageContent() {
                         const target =
                           structuredVariants.find(
                             (entry) =>
+                              entry.materialKey === option.key &&
+                              entry.colourLabel === activeColourLabel
+                          ) ??
+                          structuredVariants.find((entry) => entry.materialKey === option.key) ??
+                          structuredVariants.find(
+                            (entry) =>
                               entry.materialDisplayLabel.trim().toLowerCase() === option.label.trim().toLowerCase() &&
                               entry.colourLabel === activeColourLabel
                           ) ??
@@ -17498,7 +24098,7 @@ function PageContent() {
                                 ? { ...it, variantId: target.variant.id }
                                 : it
                             ),
-                          `Change fabric colour to ${option.label}`
+                          `Change ${variantSelectorLabel.toLowerCase()} to ${option.label}`
                         );
                       }}
                       title={option.label}
@@ -17709,6 +24309,24 @@ function PageContent() {
                 <div className="mt-2 flex flex-wrap gap-2">
                   {sizeOptionsForActiveSelection.map((option) => {
                     const active = option.variantId === selectedItem?.variantId;
+                    const josephSizeLabel = (() => {
+                      if (selectedProduct?.id !== "bed-real-castlery-joseph") return null;
+
+                      const marker = `${option.variantId} ${option.key} ${option.label}`.toLowerCase();
+                      if (marker.includes("queen")) return "Queen";
+                      if (marker.includes("king")) return "King";
+
+                      const widthMatch = marker.match(/(\d+)\s*x\s*\d+\s*cm/) ??
+                        marker.match(/(\d{3,4})x\d{3,4}/);
+                      const width = widthMatch?.[1] ? Number(widthMatch[1]) : 0;
+                      if (width > 0 && width < 180) return "Queen";
+                      if (width >= 180 && width < 1000) return "King";
+                      if (width >= 1000 && width < 1800) return "Queen";
+                      if (width >= 1800) return "King";
+
+                      return null;
+                    })();
+                    const sizeLabel = josephSizeLabel ?? option.label;
                     return (
                       <button
                         key={option.key}
@@ -17726,12 +24344,12 @@ function PageContent() {
                                   ? { ...it, variantId: option.variantId }
                                   : it
                               ),
-                            `Change size to ${option.label}`
+                            `Change size to ${sizeLabel}`
                           );
                         }}
-                        title={option.label}
+                        title={sizeLabel}
                       >
-                        {option.label}
+                        {sizeLabel}
                       </button>
                     );
                   })}
@@ -17739,12 +24357,7 @@ function PageContent() {
               </div>
             ) : null}
 
-            {hasStructuredVariantLabels &&
-              !hideColourSelector &&
-              groupedVisibleColourVariants.reduce(
-                (count, group) => count + group.entries.length,
-                0
-              ) >= (hasWoodColourOptions ? 2 : 1) && (
+            {showStructuredColourSelector && (
               <div className="pt-3">
                 <div
                   className={
@@ -17753,11 +24366,12 @@ function PageContent() {
                       : "text-sm font-semibold text-neutral-900"
                   }
                 >
-                  {hasWoodColourOptions
+                  {colourSelectorLabel ??
+                    (hasWoodColourOptions
                     ? "Wood colour"
                     : activeMaterialType === "Leather"
                     ? "Stocked Leathers:"
-                    : "Stocked Fabrics:"}
+                    : "Stocked Fabrics:")}
                 </div>
 
                 {activeStructuredVariant ? (
@@ -17811,7 +24425,9 @@ function PageContent() {
                     Boolean(selectedProduct?.id.includes("hugg")) &&
                     (hasWoodColourOptions || previewSwatchGroup.includes("wood"));
                   const useWoodPreviewSwatch = previewSwatchGroup.includes("wood") || isHuggWoodPreview;
-                  const previewSwatchUrl = getHighResolutionSwatchUrl(useWoodPreviewSwatch
+                  const previewImportedSwatchTextureUrl = previewEntry.variant.swatchTextureUrl?.trim() || null;
+                  const previewSwatchUrl = getHighResolutionSwatchUrl(previewImportedSwatchTextureUrl ??
+                    (useWoodPreviewSwatch
                     ? (selectedProduct?.id.includes("hugg")
                         ? HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE[previewFinishKey] ??
                           HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE[previewFinishLabelKey] ??
@@ -17827,7 +24443,7 @@ function PageContent() {
                           .toLowerCase()
                           .replace(/[^a-z0-9]+/g, "-")}`
                       ] ??
-                      null) ?? null;
+                      null)) ?? null;
                   const previewTitle = getMaterialDisplayLabel(previewEntry.variant);
                   const previewSubtitle = isHuggWoodPreview
                     ? "Wood finish"
@@ -17835,15 +24451,21 @@ function PageContent() {
                   const previewProfile = isHuggWoodPreview
                     ? null
                     : resolveFabricDetailProfile({
-                    finishCode: previewFinishKey,
-                    finishLabel: previewEntry.variant.finishLabel?.trim() || "",
-                    colourLabel: previewEntry.colourLabel,
-                    materialType: previewEntry.materialType,
-                  });
+                        finishCode: previewFinishKey,
+                        finishLabel: previewEntry.variant.finishLabel?.trim() || "",
+                        colourLabel: previewEntry.colourLabel,
+                        materialType: previewEntry.materialType,
+                        productId: selectedProduct?.id,
+                      });
 
-                  return (
+                  if (typeof document === "undefined") return null;
+
+                  return createPortal(
                     <div
-                      className="pointer-events-none fixed z-90 overflow-hidden rounded-sm shadow-2xl transition-opacity duration-150 ease-out"
+                      id="material-swatch-preview"
+                      role="tooltip"
+                      data-testid="material-swatch-preview"
+                      className="pointer-events-none fixed z-[90] overflow-hidden rounded-sm shadow-2xl transition-opacity duration-150 ease-out"
                       style={{
                         left: hoveredColourPreview.x,
                         top: hoveredColourPreview.y,
@@ -17899,7 +24521,8 @@ function PageContent() {
                           </>
                         ) : null}
                       </div>
-                    </div>
+                    </div>,
+                    document.body
                   );
                 })()}
 
@@ -17966,9 +24589,40 @@ function PageContent() {
                               ] ??
                               null)) ?? null;
                           const materialDisplayLabel = getMaterialDisplayLabel(variant);
+                          const showMaterialPreview = (target: HTMLButtonElement) => {
+                            if (hoveredColourPreviewHideTimerRef.current) {
+                              window.clearTimeout(hoveredColourPreviewHideTimerRef.current);
+                              hoveredColourPreviewHideTimerRef.current = null;
+                            }
+                            const rect = target.getBoundingClientRect();
+                            const cardWidth = 320;
+                            const offset = 12;
+                            let x = rect.right + offset;
+                            if (x + cardWidth > window.innerWidth - 8) {
+                              x = Math.max(8, rect.left - cardWidth - offset);
+                            }
+                            const hoverProfile = resolveFabricDetailProfile({
+                              finishCode: finishKey,
+                              finishLabel: variant.finishLabel?.trim() || "",
+                              colourLabel,
+                              materialType: entry.materialType,
+                              productId: selectedProduct?.id,
+                            });
+                            const estimatedCardHeight = isHuggWoodSwatch ? 200 : hoverProfile ? 560 : 340;
+                            const y = Math.max(
+                              8,
+                              Math.min(rect.top - 40, window.innerHeight - estimatedCardHeight - 8)
+                            );
+                            setHoveredColourVariantId(variant.id);
+                            setHoveredColourPreview({ variantId: variant.id, x, y });
+                            window.requestAnimationFrame(() => {
+                              setHoveredColourPreviewVisible(true);
+                            });
+                          };
                           return (
                             <button
                               key={variant.id}
+                              type="button"
                               className="shrink-0 h-20 w-20 rounded-sm bg-cover bg-center transition-all"
                               style={{
                                 backgroundColor: variant.swatchHex ?? variant.colorHex,
@@ -18017,38 +24671,7 @@ function PageContent() {
                                   `Change colour to ${materialDisplayLabel}`
                                 );
                               }}
-                              onMouseEnter={(event) => {
-                                if (hoveredColourPreviewHideTimerRef.current) {
-                                  window.clearTimeout(hoveredColourPreviewHideTimerRef.current);
-                                  hoveredColourPreviewHideTimerRef.current = null;
-                                }
-                                const rect = event.currentTarget.getBoundingClientRect();
-                                const cardWidth = 320;
-                                const offset = 12;
-                                let x = rect.right + offset;
-                                if (x + cardWidth > window.innerWidth - 8) {
-                                  x = Math.max(8, rect.left - cardWidth - offset);
-                                }
-                                const hoverProfile = resolveFabricDetailProfile({
-                                  finishCode: finishKey,
-                                  finishLabel: variant.finishLabel?.trim() || "",
-                                  colourLabel,
-                                  materialType: entry.materialType,
-                                });
-                                const isHuggWoodSwatch =
-                                  Boolean(selectedProduct?.id.includes("hugg")) &&
-                                  (hasWoodColourOptions || swatchGroup.includes("wood"));
-                                const estimatedCardHeight = isHuggWoodSwatch ? 200 : hoverProfile ? 560 : 340;
-                                const y = Math.max(
-                                  8,
-                                  Math.min(rect.top - 40, window.innerHeight - estimatedCardHeight - 8)
-                                );
-                                setHoveredColourVariantId(variant.id);
-                                setHoveredColourPreview({ variantId: variant.id, x, y });
-                                window.requestAnimationFrame(() => {
-                                  setHoveredColourPreviewVisible(true);
-                                });
-                              }}
+                              onMouseEnter={(event) => showMaterialPreview(event.currentTarget)}
                               onMouseLeave={() => {
                                 setHoveredColourVariantId((current) => (current === variant.id ? null : current));
                                 setHoveredColourPreviewVisible(false);
@@ -18062,11 +24685,7 @@ function PageContent() {
                                   hoveredColourPreviewHideTimerRef.current = null;
                                 }, 140);
                               }}
-                              onFocus={() => {
-                                setHoveredColourVariantId(variant.id);
-                                setHoveredColourPreviewVisible(false);
-                                setHoveredColourPreview(null);
-                              }}
+                              onFocus={(event) => showMaterialPreview(event.currentTarget)}
                               onBlur={() => {
                                 setHoveredColourVariantId((current) => (current === variant.id ? null : current));
                                 setHoveredColourPreviewVisible(false);
@@ -18074,6 +24693,7 @@ function PageContent() {
                                   current?.variantId === variant.id ? null : current
                                 );
                               }}
+                              aria-describedby={isHovered ? "material-swatch-preview" : undefined}
                               aria-label={`Select ${materialDisplayLabel || "finish"}`}
                             />
                           );
@@ -18088,7 +24708,7 @@ function PageContent() {
             <button
               className={
                 showDesignerTheme
-                  ? "mt-2 w-full rounded-lg bg-[#1b2030] px-3 py-2 text-sm text-white"
+                  ? "designer-control mt-2 w-full rounded-lg border px-3 py-2 text-sm text-neutral-100"
                   : "mt-2 w-full rounded-lg bg-neutral-900 px-3 py-2 text-sm text-white"
               }
               disabled={!canEdit}
@@ -18262,7 +24882,7 @@ function PageContent() {
               <button
                 className={
                   showDesignerTheme
-                    ? "rounded-lg bg-[#1b2030] px-3 py-2 text-sm text-white hover:bg-[#232b3f]"
+                    ? "designer-control rounded-lg border px-3 py-2 text-sm text-neutral-100"
                     : "rounded-lg bg-neutral-100 px-3 py-2 text-sm text-neutral-900 hover:bg-neutral-200"
                 }
                 disabled={!canEdit}
@@ -18303,6 +24923,7 @@ function PageContent() {
           isAuthed={!!session?.user}
           isDesigner={isDesigner}
           canEdit={canEdit}
+          canEditPlanGeometry={canEditPlanGeometry}
           collapsed={designPanelCollapsed}
           onCollapsedChange={(collapsed) => {
             setDesignPanelCollapsed(collapsed);
@@ -18323,6 +24944,7 @@ function PageContent() {
           roomDepthInput={roomDepthInput}
           roomWidth={roomWidth}
           roomDepth={roomDepth}
+          measurementUnit={planMeasurementUnit}
           catalogItems={catalogItems}
           selectedImportedFamilyKey={selectedImportedFamilyKey}
           selectedImportedProductId={selectedImportedProductId}
@@ -18366,12 +24988,30 @@ function PageContent() {
           activeRoomFloorMaterialId={activeRoomFloorMaterialId}
           activeRoomFloorRotationDeg={activeRoomFloorRotationDeg}
           activeRoomFloorScale={activeRoomFloorScale}
+          activeRoomFloorPattern={activeRoomFloorSettings.floorPattern}
+          activeRoomFloorPatternOffset={activeRoomFloorSettings.floorPatternOffset}
+          activeRoomFloorJointSizeMm={activeRoomFloorSettings.floorJointSizeMm}
+          activeRoomFloorJointColor={activeRoomFloorSettings.floorJointColor}
+          activeSurfaceTarget={activeSurfaceTarget}
+          selectedWallFaceId={activeSelectedWallFaceId}
+          selectedWallLabel={getWallFaceLabel(activeSelectedWallFaceId)}
+          activeRoomWallSettings={activeRoomWallSettings}
+          activeRoomSelectedWallSettings={activeRoomSelectedWallSettings}
+          activeRoomCeilingSettings={activeRoomCeilingSettings}
+          surfaceBrushActive={surfaceBrushActive}
+          surfaceBrushMaterialId={surfaceBrushMaterialId}
+          surfaceBrushPaintColorHex={surfaceBrushPaint?.colorHex ?? null}
+          surfaceBrushPaintName={surfaceBrushPaint?.name ?? null}
+          surfaceRooms={surfaceRoomSummaries}
+          floorFinishPanelOpenSignal={floorFinishPanelOpenSignal}
           floorOptions={floorOptions}
+          showFloorPropertiesPanel={inlineFloorPropertiesPanelVisible}
           activeFloorLevel={activeFloorLevel}
           activeFloorRoomCount={activeFloorRoomCount}
           activeRoomHeightMm={activeRoomHeightMm}
           activeRoomWallThicknessMm={activeRoomWallThicknessMm}
           activeRoomSlabThicknessMm={activeRoomSlabThicknessMm}
+          activeRoomBaseboardDepthMm={activeRoomBaseboardDepthMm}
           activeRoomWallOpacity={activeRoomWallOpacity}
           activeRoomFloorOpacity={activeRoomFloorOpacity}
           activeRoomCeilingOpacity={activeRoomCeilingOpacity}
@@ -18425,6 +25065,31 @@ function PageContent() {
           onRotateActiveFloorMaterial={handleRotateActiveFloorMaterial}
           onResetActiveFloorMaterialPattern={handleResetActiveFloorMaterialPattern}
           onActiveFloorMaterialScaleChange={handleActiveFloorMaterialScaleChange}
+          onActiveFloorSurfaceSettingsChange={handleActiveFloorSurfaceSettingsChange}
+          onSurfaceTargetChange={handleSurfaceTargetModeChange}
+          onSurfaceBrushActiveChange={handleSurfaceBrushActiveChange}
+          onSurfaceMaterialSelected={handleSurfaceMaterialSelectedForBrush}
+          onSurfacePaintSelected={handleSurfacePaintSelectedForBrush}
+          onApplyWallMaterialToRoom={handleApplyWallMaterialToRoom}
+          onApplyWallMaterialToAllRooms={handleApplyWallMaterialToAllRooms}
+          onApplyWallPaintToRoom={handleApplyWallPaintToRoom}
+          onApplyWallPaintToAllRooms={handleApplyWallPaintToAllRooms}
+          onApplyCeilingPaintToRoom={handleApplyCeilingPaintToRoom}
+          onApplyCeilingPaintToAllRooms={handleApplyCeilingPaintToAllRooms}
+          onActiveWallSurfaceSettingsChange={(patch) =>
+            handleActiveWallSurfaceSettingsChange(
+              patch,
+              activeRoom?.id ?? null,
+              activeSurfaceTarget === "selected_wall" ? activeSelectedWallFaceId : null
+            )
+          }
+          onResetActiveWallSurface={() =>
+            handleResetActiveWallSurface(
+              activeRoom?.id ?? null,
+              activeSurfaceTarget === "selected_wall" ? activeSelectedWallFaceId : null
+            )
+          }
+          onResetActiveCeilingSurface={() => handleResetActiveCeilingSurface(activeRoom?.id ?? null)}
           onAddDesignerRoom={() => handleAddRoom()}
           onAddRoomTemplate={handleAddRoom}
           onNewRoomTypeChange={setNewRoomType}
@@ -18432,13 +25097,29 @@ function PageContent() {
           onRoomPresetChange={handleRoomPresetChange}
           onRoomWidthInputChange={setRoomWidthInput}
           onRoomDepthInputChange={setRoomDepthInput}
-          onApplyRoomSize={handleApplyRoomSize}
+          onCommitRoomDimension={handleCommitActiveRoomDimension}
           onActiveRoomHeightMmChange={handleActiveRoomHeightMmChange}
           onActiveRoomWallThicknessMmChange={handleActiveRoomWallThicknessMmChange}
           onActiveRoomSlabThicknessMmChange={handleActiveRoomSlabThicknessMmChange}
+          onActiveRoomBaseboardDepthMmChange={handleActiveRoomBaseboardDepthMmChange}
           onActiveRoomSurfaceOpacityChange={handleActiveRoomSurfaceOpacityChange}
           onActiveRoomCeilingVisibleChange={handleActiveRoomCeilingVisibleChange}
           onActiveRoomCeilingColorChange={handleActiveRoomCeilingColorChange}
+          onOpenCabinetryStudio={
+            canUseCabinetryStudio
+              ? () => {
+                  cabinetryStudioOpenedAtRef.current = performance.now();
+                  track("millwork_studio_opened", {
+                    access_level: cabinetryAccessLevel,
+                    entry_point: "design_controls",
+                    studio_mode: "create",
+                  });
+                  setCabinetryStudioState({
+                    mode: "create",
+                  });
+                }
+              : undefined
+          }
           onAddImportedToRoom={addSelectedImportedToRoom}
           onAddCatalogItemToRoom={addCatalogItemToRoom}
           onAutoPlaceCatalogItemInRoom={autoPlaceCatalogItemInRoom}
@@ -18499,7 +25180,7 @@ function PageContent() {
               {upgradeReason === "export_images" &&
                 "Free gives you a preview. Pro unlocks clean HD room images, multiple camera angles, and presentation-ready exports."}
               {upgradeReason === "export_pdf" &&
-                "Free includes a watermarked one-page preview. Pro unlocks clean PDFs, branded covers, room summaries, and client-ready boards."}
+                "Free includes a watermarked one-page preview. Pro unlocks clean PDFs, room summaries, and client-ready export packs."}
               {upgradeReason === "designer" &&
                 "Designer mode, presentation tools, and polished export workflows are available on the Pro plan."}
               {!upgradeReason &&
@@ -18511,7 +25192,7 @@ function PageContent() {
                   <div className="font-medium text-neutral-900">Best for active projects</div>
                   <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-neutral-600">
                     <li>Clean PDF exports without watermark</li>
-                    <li>Multi-angle image exports and branded presentation packs</li>
+                    <li>Up to four image angles and clean presentation packs</li>
                     <li>
                       {paywallExperimentSlot === "value_stack_v2"
                         ? "Client-ready exports in minutes with less manual formatting"
@@ -18533,8 +25214,8 @@ function PageContent() {
                     </div>
                     <div className="rounded-lg border border-neutral-200 bg-white px-3 py-2">
                       <div className="font-semibold text-neutral-900">Pro</div>
-                      <div className="mt-1">Clean branded exports</div>
-                      <div>Presentation-ready workflow</div>
+                      <div className="mt-1">Clean PDF and image exports</div>
+                      <div>Pro planning controls</div>
                     </div>
                   </div>
                   <div className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800">
@@ -18669,24 +25350,44 @@ function PageContent() {
             <div style={{ marginTop: 12, fontSize: 13, opacity: 0.85 }}>
               {pricingLayoutVariant === "annual_highlight" ? (
                 <>
-                  <div data-testid="plans-layout-annual-highlight" style={{ marginBottom: 8 }}><b>Pro Yearly</b> — best for ongoing client work, cleaner exports, and the lowest effective monthly cost</div>
-                  <div style={{ marginBottom: 8 }}><b>Pro Monthly</b> — flexible access for short project bursts</div>
+                  <div data-testid="plans-layout-annual-highlight" style={{ marginBottom: 8 }}><b>Pro Yearly — {PRO_PLAN_PRICING.yearly.label}</b> · {PRO_PLAN_PRICING.yearly.effectiveMonthlyLabel}</div>
+                  <div style={{ marginBottom: 8 }}><b>Pro Monthly — {PRO_PLAN_PRICING.monthly.label}</b> · flexible access for short project bursts</div>
                   <div style={{ marginBottom: 12, color: "#047857", fontWeight: 600 }}>{annualPlanSavingsLabel}</div>
                 </>
               ) : (
                 <>
                   <div data-testid="plans-layout-default" style={{ marginBottom: 8 }}><b>Free</b> — design, save, share, and export a watermarked preview</div>
-                  <div style={{ marginBottom: 12 }}><b>Pro</b> — clean exports, multi-angle images, branded PDF cover pages, and client workflow</div>
+                  <div style={{ marginBottom: 8 }}><b>Pro Monthly — {PRO_PLAN_PRICING.monthly.label}</b></div>
+                  <div style={{ marginBottom: 8 }}><b>Pro Yearly — {PRO_PLAN_PRICING.yearly.label}</b></div>
+                  <div style={{ marginBottom: 12 }}>Clean PDFs, up to four image angles, and Pro planning controls</div>
                   <div style={{ marginBottom: 12, color: "#047857", fontWeight: 600 }}>{annualPlanSavingsLabel}</div>
                 </>
               )}
             </div>
 
             <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
-              {pricingLayoutVariant === "annual_highlight" ? (
+              {plan === "pro" ? (
+                <>
+                  <div data-testid="plans-pro-active" style={{ flex: 1, padding: "10px 12px", borderRadius: 12, background: "#ecfdf5", color: "#047857", fontWeight: 600 }}>
+                    Pro is active
+                  </div>
+                  <button
+                    data-testid="plans-manage-billing"
+                    disabled={openingBillingPortal}
+                    style={{ flex: 1, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border-subtle)" }}
+                    onClick={() => {
+                      setShowPlans(false);
+                      void openBillingPortal();
+                    }}
+                  >
+                    {openingBillingPortal ? "Opening billing…" : "Manage billing"}
+                  </button>
+                </>
+              ) : pricingLayoutVariant === "annual_highlight" ? (
                 <>
                   <button
                     data-testid="checkout-yearly"
+                    disabled={startingCheckout}
                     style={{ flex: 1, padding: "10px 12px", borderRadius: 12, border: "1px solid #059669", background: "#ecfdf5", fontWeight: 600 }}
                     onClick={() => {
                       setShowPlans(false);
@@ -18707,11 +25408,12 @@ function PageContent() {
                       void startCheckout("yearly");
                     }}
                   >
-                    Start yearly and save
+                    Start yearly — {PRO_PLAN_PRICING.yearly.label}
                   </button>
 
                   <button
                     data-testid="checkout-monthly"
+                    disabled={startingCheckout}
                     style={{ flex: 1, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border-subtle)" }}
                     onClick={() => {
                       setShowPlans(false);
@@ -18732,13 +25434,14 @@ function PageContent() {
                       void startCheckout("monthly");
                     }}
                   >
-                    Or start monthly
+                    Start monthly — {PRO_PLAN_PRICING.monthly.label}
                   </button>
                 </>
               ) : (
                 <>
                   <button
                     data-testid="checkout-monthly"
+                    disabled={startingCheckout}
                     style={{ flex: 1, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border-subtle)" }}
                     onClick={() => {
                       setShowPlans(false);
@@ -18759,11 +25462,12 @@ function PageContent() {
                       void startCheckout("monthly");
                     }}
                   >
-                    Start Pro monthly
+                    Start monthly — {PRO_PLAN_PRICING.monthly.label}
                   </button>
 
                   <button
                     data-testid="checkout-yearly"
+                    disabled={startingCheckout}
                     style={{ flex: 1, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border-subtle)" }}
                     onClick={() => {
                       setShowPlans(false);
@@ -18784,7 +25488,7 @@ function PageContent() {
                       void startCheckout("yearly");
                     }}
                   >
-                    Save with yearly
+                    Start yearly — {PRO_PLAN_PRICING.yearly.label}
                   </button>
                 </>
               )}
@@ -18963,7 +25667,7 @@ function PageContent() {
                                   ? "rounded-lg bg-purple-600 px-3 py-2 text-sm font-medium text-white"
                                   : "rounded-lg bg-purple-600 px-3 py-2 text-sm font-medium text-white"
                                 : showDesignerTheme
-                                  ? "rounded-lg bg-[#151820] px-3 py-2 text-sm text-neutral-200 hover:bg-[#1b2030]"
+                                  ? "designer-control rounded-lg border px-3 py-2 text-sm text-neutral-200"
                                   : "rounded-lg bg-gray-100 px-3 py-2 text-sm hover:bg-gray-200"
                             }
                             onClick={() => {
@@ -19006,7 +25710,7 @@ function PageContent() {
                   <button
                     className={
                       showDesignerTheme
-                        ? "rounded-lg bg-[#151820] px-3 py-2 text-sm text-neutral-200"
+                        ? "designer-control rounded-lg border px-3 py-2 text-sm text-neutral-200"
                         : "rounded-lg bg-gray-100 px-3 py-2 text-sm hover:bg-gray-200"
                     }
                     onClick={() => {
@@ -19020,7 +25724,7 @@ function PageContent() {
                   <div
                     className={
                       showDesignerTheme
-                        ? "mt-3 rounded-lg border border-neutral-700 bg-[#151820] p-3"
+                        ? "designer-raised mt-3 rounded-lg p-3"
                         : "mt-3 rounded-lg border border-gray-200 bg-gray-50 p-3"
                     }
                   >
@@ -19094,7 +25798,7 @@ function PageContent() {
                               data-testid={`saved-camera-view-delete-${view.id}`}
                               className={
                                 showDesignerTheme
-                                  ? "rounded px-2 py-1 text-[11px] font-semibold text-neutral-400 hover:bg-[#151820] hover:text-white"
+                                  ? "designer-control rounded border px-2 py-1 text-[11px] font-semibold"
                                   : "rounded px-2 py-1 text-[11px] font-semibold text-gray-500 hover:bg-gray-100 hover:text-gray-900"
                               }
                               onClick={() => deleteSavedCameraView(view.id)}
@@ -19113,7 +25817,7 @@ function PageContent() {
                   <div
                     className={
                       showDesignerTheme
-                        ? "mt-3 rounded-lg border border-neutral-700 bg-[#151820] p-3"
+                        ? "designer-raised mt-3 rounded-lg p-3"
                         : "mt-3 rounded-lg border border-gray-200 bg-gray-50 p-3"
                     }
                     data-testid="layout-versions-panel"
@@ -19213,7 +25917,7 @@ function PageContent() {
                                     {sourceLabel} · {formatTimeAgo(version.timestamp)}
                                   </div>
                                   <div data-testid="layout-version-comparison" className="mt-2 grid grid-cols-2 gap-1.5">
-                                    <div className={showDesignerTheme ? "rounded-md bg-[#151820] px-2 py-1.5" : "rounded-md bg-gray-50 px-2 py-1.5"}>
+                                    <div className={showDesignerTheme ? "designer-recessed rounded-md px-2 py-1.5" : "rounded-md bg-gray-50 px-2 py-1.5"}>
                                       <div className={showDesignerTheme ? "text-[10px] font-semibold uppercase text-neutral-500" : "text-[10px] font-semibold uppercase text-gray-400"}>
                                         Saved
                                       </div>
@@ -19221,7 +25925,7 @@ function PageContent() {
                                         {comparison.savedItemCount} item{comparison.savedItemCount === 1 ? "" : "s"}
                                       </div>
                                     </div>
-                                    <div className={showDesignerTheme ? "rounded-md bg-[#151820] px-2 py-1.5" : "rounded-md bg-gray-50 px-2 py-1.5"}>
+                                    <div className={showDesignerTheme ? "designer-recessed rounded-md px-2 py-1.5" : "rounded-md bg-gray-50 px-2 py-1.5"}>
                                       <div className={showDesignerTheme ? "text-[10px] font-semibold uppercase text-neutral-500" : "text-[10px] font-semibold uppercase text-gray-400"}>
                                         Current
                                       </div>
@@ -19243,7 +25947,7 @@ function PageContent() {
                                     data-testid={`layout-version-restore-${version.id}`}
                                     className={
                                       showDesignerTheme
-                                        ? "rounded px-2 py-1 text-[11px] font-semibold text-teal-200 hover:bg-[#151820] hover:text-white"
+                                        ? "designer-control rounded border px-2 py-1 text-[11px] font-semibold text-teal-200"
                                         : "rounded px-2 py-1 text-[11px] font-semibold text-teal-700 hover:bg-teal-50"
                                     }
                                     onClick={() => restoreRoomLayoutVersion(version.id)}
@@ -19255,7 +25959,7 @@ function PageContent() {
                                     data-testid={`layout-version-delete-${version.id}`}
                                     className={
                                       showDesignerTheme
-                                        ? "rounded px-2 py-1 text-[11px] font-semibold text-neutral-400 hover:bg-[#151820] hover:text-white"
+                                        ? "designer-control rounded border px-2 py-1 text-[11px] font-semibold"
                                         : "rounded px-2 py-1 text-[11px] font-semibold text-gray-500 hover:bg-gray-100 hover:text-gray-900"
                                     }
                                     onClick={() => deleteRoomLayoutVersion(version.id)}
@@ -19287,7 +25991,7 @@ function PageContent() {
                           simplePlanControls
                             ? "rounded-lg bg-teal-600 px-3 py-2 text-xs font-medium text-white"
                             : showDesignerTheme
-                              ? "rounded-lg bg-[#151820] px-3 py-2 text-xs text-neutral-200"
+                              ? "designer-control rounded-lg border px-3 py-2 text-xs text-neutral-200"
                               : "rounded-lg bg-gray-100 px-3 py-2 text-xs hover:bg-gray-200"
                         }
                         onClick={() => setSimplePlanControls(true)}
@@ -19295,14 +25999,23 @@ function PageContent() {
                         Simple controls
                       </button>
                       <button
+                        aria-disabled={!canUseDesigner}
+                        title={!canUseDesigner ? "Upgrade to Pro to use Pro controls" : undefined}
                         className={
                           !simplePlanControls
                             ? "rounded-lg bg-teal-600 px-3 py-2 text-xs font-medium text-white"
                             : showDesignerTheme
-                              ? "rounded-lg bg-[#151820] px-3 py-2 text-xs text-neutral-200"
+                              ? "designer-control rounded-lg border px-3 py-2 text-xs text-neutral-200"
                               : "rounded-lg bg-gray-100 px-3 py-2 text-xs hover:bg-gray-200"
                         }
-                        onClick={() => setSimplePlanControls(false)}
+                        onClick={() => {
+                          if (!canUseDesigner) {
+                            setUpgradeReason("designer");
+                            setShowUpgrade(true);
+                            return;
+                          }
+                          setSimplePlanControls(false);
+                        }}
                       >
                         Pro controls
                       </button>
@@ -19312,7 +26025,7 @@ function PageContent() {
                       <div
                         className={
                           showDesignerTheme
-                            ? "rounded-lg bg-[#151820] p-3 text-xs text-neutral-300"
+                            ? "designer-recessed rounded-lg p-3 text-xs text-neutral-300"
                             : "rounded-lg bg-gray-100 p-3 text-xs text-gray-600"
                         }
                       >
@@ -19330,7 +26043,7 @@ function PageContent() {
                                 planLayerPreset === "presentation"
                                   ? "rounded-lg bg-teal-600 px-2 py-2 text-[11px] font-medium text-white"
                                   : showDesignerTheme
-                                    ? "rounded-lg bg-[#151820] px-2 py-2 text-[11px] text-neutral-200"
+                                    ? "designer-control rounded-lg border px-2 py-2 text-[11px] text-neutral-200"
                                     : "rounded-lg bg-gray-100 px-2 py-2 text-[11px] hover:bg-gray-200"
                               }
                               onClick={() => runPlanOverlayCommand("preset:presentation")}
@@ -19342,7 +26055,7 @@ function PageContent() {
                                 planLayerPreset === "technical"
                                   ? "rounded-lg bg-teal-600 px-2 py-2 text-[11px] font-medium text-white"
                                   : showDesignerTheme
-                                    ? "rounded-lg bg-[#151820] px-2 py-2 text-[11px] text-neutral-200"
+                                    ? "designer-control rounded-lg border px-2 py-2 text-[11px] text-neutral-200"
                                     : "rounded-lg bg-gray-100 px-2 py-2 text-[11px] hover:bg-gray-200"
                               }
                               onClick={() => runPlanOverlayCommand("preset:technical")}
@@ -19354,7 +26067,7 @@ function PageContent() {
                                 planLayerPreset === "staging"
                                   ? "rounded-lg bg-teal-600 px-2 py-2 text-[11px] font-medium text-white"
                                   : showDesignerTheme
-                                    ? "rounded-lg bg-[#151820] px-2 py-2 text-[11px] text-neutral-200"
+                                    ? "designer-control rounded-lg border px-2 py-2 text-[11px] text-neutral-200"
                                     : "rounded-lg bg-gray-100 px-2 py-2 text-[11px] hover:bg-gray-200"
                               }
                               onClick={() => runPlanOverlayCommand("preset:staging")}
@@ -19370,7 +26083,7 @@ function PageContent() {
                               planTheme === "consumer"
                                 ? "rounded-lg bg-teal-600 px-3 py-2 text-xs font-medium text-white"
                                 : showDesignerTheme
-                                  ? "rounded-lg bg-[#151820] px-3 py-2 text-xs text-neutral-200"
+                                  ? "designer-control rounded-lg border px-3 py-2 text-xs text-neutral-200"
                                   : "rounded-lg bg-gray-100 px-3 py-2 text-xs hover:bg-gray-200"
                             }
                             onClick={() =>
@@ -19386,7 +26099,7 @@ function PageContent() {
                               planTheme === "pro"
                                 ? "rounded-lg bg-teal-600 px-3 py-2 text-xs font-medium text-white"
                                 : showDesignerTheme
-                                  ? "rounded-lg bg-[#151820] px-3 py-2 text-xs text-neutral-200"
+                                  ? "designer-control rounded-lg border px-3 py-2 text-xs text-neutral-200"
                                   : "rounded-lg bg-gray-100 px-3 py-2 text-xs hover:bg-gray-200"
                             }
                             onClick={() =>
@@ -19420,7 +26133,7 @@ function PageContent() {
                                 planLayers[key]
                                   ? "rounded-lg bg-teal-600 px-3 py-2 text-xs font-medium text-white"
                                   : showDesignerTheme
-                                    ? "rounded-lg bg-[#151820] px-3 py-2 text-xs text-neutral-200"
+                                    ? "designer-control rounded-lg border px-3 py-2 text-xs text-neutral-200"
                                     : "rounded-lg bg-gray-100 px-3 py-2 text-xs hover:bg-gray-200"
                               }
                               onClick={() =>
@@ -19454,7 +26167,7 @@ function PageContent() {
                               planMeasurementUnit === unit
                                 ? "rounded-lg bg-teal-600 px-2 py-2 text-[11px] font-medium text-white"
                                 : showDesignerTheme
-                                  ? "rounded-lg bg-[#151820] px-2 py-2 text-[11px] text-neutral-200"
+                                  ? "designer-control rounded-lg border px-2 py-2 text-[11px] text-neutral-200"
                                   : "rounded-lg bg-gray-100 px-2 py-2 text-[11px] hover:bg-gray-200"
                             }
                             onClick={() =>
@@ -19478,7 +26191,7 @@ function PageContent() {
                           annotationToolKind === "note"
                             ? "rounded-lg bg-teal-600 px-2 py-2 text-[11px] font-medium text-white"
                             : showDesignerTheme
-                              ? "rounded-lg bg-[#151820] px-2 py-2 text-[11px] text-neutral-200"
+                              ? "designer-control rounded-lg border px-2 py-2 text-[11px] text-neutral-200"
                               : "rounded-lg bg-gray-100 px-2 py-2 text-[11px] hover:bg-gray-200"
                         }
                         onClick={() => {
@@ -19496,7 +26209,7 @@ function PageContent() {
                             annotationToolKind === "callout"
                               ? "rounded-lg bg-teal-600 px-2 py-2 text-[11px] font-medium text-white"
                               : showDesignerTheme
-                                ? "rounded-lg bg-[#151820] px-2 py-2 text-[11px] text-neutral-200"
+                                ? "designer-control rounded-lg border px-2 py-2 text-[11px] text-neutral-200"
                                 : "rounded-lg bg-gray-100 px-2 py-2 text-[11px] hover:bg-gray-200"
                           }
                           onClick={() => {
@@ -19515,7 +26228,7 @@ function PageContent() {
                             annotationToolKind === "room_tag"
                               ? "rounded-lg bg-teal-600 px-2 py-2 text-[11px] font-medium text-white"
                               : showDesignerTheme
-                                ? "rounded-lg bg-[#151820] px-2 py-2 text-[11px] text-neutral-200"
+                                ? "designer-control rounded-lg border px-2 py-2 text-[11px] text-neutral-200"
                                 : "rounded-lg bg-gray-100 px-2 py-2 text-[11px] hover:bg-gray-200"
                           }
                           onClick={() => {
@@ -19533,7 +26246,7 @@ function PageContent() {
                         <button
                           className={
                             showDesignerTheme
-                              ? "rounded-lg bg-[#151820] px-3 py-2 text-xs text-neutral-200"
+                              ? "designer-control rounded-lg border px-3 py-2 text-xs text-neutral-200"
                               : "rounded-lg bg-gray-100 px-3 py-2 text-xs hover:bg-gray-200"
                           }
                           onClick={() => {
@@ -19558,7 +26271,7 @@ function PageContent() {
                         <button
                           className={
                             showDesignerTheme
-                              ? "rounded-lg bg-[#151820] px-3 py-2 text-xs text-neutral-200"
+                              ? "designer-control rounded-lg border px-3 py-2 text-xs text-neutral-200"
                               : "rounded-lg bg-gray-100 px-3 py-2 text-xs hover:bg-gray-200"
                           }
                           onClick={() => {
@@ -19588,7 +26301,7 @@ function PageContent() {
                         <button
                           className={
                             showDesignerTheme
-                              ? "rounded-lg bg-[#151820] px-3 py-2 text-xs text-neutral-200"
+                              ? "designer-control rounded-lg border px-3 py-2 text-xs text-neutral-200"
                               : "rounded-lg bg-gray-100 px-3 py-2 text-xs hover:bg-gray-200"
                           }
                           onClick={() => {
@@ -19617,7 +26330,7 @@ function PageContent() {
                         <div
                           className={
                             showDesignerTheme
-                              ? "rounded-lg bg-[#151820] px-3 py-2 text-center text-xs text-neutral-400"
+                              ? "designer-recessed rounded-lg px-3 py-2 text-center text-xs text-neutral-400"
                               : "rounded-lg bg-gray-100 px-3 py-2 text-center text-xs text-gray-500"
                           }
                         >
@@ -19645,6 +26358,7 @@ function PageContent() {
                         roomName={visiblePlanOpeningRoomName}
                         wallSpanMeters={visiblePlanOpeningWallSpanMeters}
                         maxHeightMeters={visiblePlanOpeningMaxHeightMeters}
+                        measurementUnit={planMeasurementUnit}
                         dark={showDesignerTheme}
                         onChange={handleUpdateOpeningMetrics2D}
                       />
@@ -19707,7 +26421,7 @@ function PageContent() {
                     rel="noopener noreferrer"
                     className={
                       showDesignerTheme
-                        ? "block w-full rounded-lg bg-[#1b2030] px-4 py-3 text-center text-sm font-medium text-white hover:bg-[#232938]"
+                        ? "designer-control-active block w-full rounded-lg border px-4 py-3 text-center text-sm font-medium"
                         : "block w-full rounded-lg bg-blue-600 px-4 py-3 text-center text-sm font-medium text-white hover:bg-blue-700"
                     }
                   >
@@ -19729,7 +26443,7 @@ function PageContent() {
                           exportStylePreset === "consumer"
                             ? "rounded-lg bg-teal-600 px-3 py-2 text-xs font-medium text-white"
                             : showDesignerTheme
-                              ? "rounded-lg bg-[#151820] px-3 py-2 text-xs text-neutral-200"
+                              ? "designer-control rounded-lg border px-3 py-2 text-xs text-neutral-200"
                               : "rounded-lg bg-gray-100 px-3 py-2 text-xs hover:bg-gray-200"
                         }
                         onClick={() => {
@@ -19742,14 +26456,21 @@ function PageContent() {
                         Consumer
                       </button>
                       <button
+                        aria-disabled={!canUseDesigner}
+                        title={!canUseDesigner ? "Upgrade to Pro to use the Pro export preset" : undefined}
                         className={
                           exportStylePreset === "pro"
                             ? "rounded-lg bg-teal-600 px-3 py-2 text-xs font-medium text-white"
                             : showDesignerTheme
-                              ? "rounded-lg bg-[#151820] px-3 py-2 text-xs text-neutral-200"
+                              ? "designer-control rounded-lg border px-3 py-2 text-xs text-neutral-200"
                               : "rounded-lg bg-gray-100 px-3 py-2 text-xs hover:bg-gray-200"
                         }
                         onClick={() => {
+                          if (!canUseDesigner) {
+                            setUpgradeReason("export_images");
+                            setShowUpgrade(true);
+                            return;
+                          }
                           runHistoryTransaction("Change export style", () => {
                             setExportStylePreset("pro");
                             runPlanOverlayCommandFromPlanAction("preset:technical");
@@ -19764,7 +26485,7 @@ function PageContent() {
                 <button
                   className={
                     showDesignerTheme
-                      ? "w-full rounded-lg bg-[#1b2030] px-4 py-3 text-sm font-medium text-white disabled:opacity-50"
+                      ? "designer-control-active w-full rounded-lg border px-4 py-3 text-sm font-medium disabled:opacity-50"
                       : "w-full rounded-lg bg-purple-600 px-4 py-3 text-sm font-medium text-white hover:bg-purple-700 disabled:opacity-50"
                   }
                   disabled={isExporting || !sceneReady}
@@ -19779,7 +26500,7 @@ function PageContent() {
                 <button
                   className={
                     showDesignerTheme
-                      ? "w-full rounded-lg bg-[#1b2030] px-4 py-3 text-sm font-medium text-white disabled:opacity-50"
+                      ? "designer-control-active w-full rounded-lg border px-4 py-3 text-sm font-medium disabled:opacity-50"
                       : "w-full rounded-lg bg-orange-600 px-4 py-3 text-sm font-medium text-white hover:bg-orange-700 disabled:opacity-50"
                   }
                   disabled={isPdfExporting || !sceneReady}
@@ -19794,7 +26515,7 @@ function PageContent() {
                 <button
                   className={
                     showDesignerTheme
-                      ? "w-full rounded-lg bg-[#1b2030] px-4 py-3 text-sm font-medium text-white disabled:opacity-50"
+                      ? "designer-control-active w-full rounded-lg border px-4 py-3 text-sm font-medium disabled:opacity-50"
                       : "w-full rounded-lg bg-blue-600 px-4 py-3 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
                   }
                   disabled={aiNotesLoading || !items.length}
@@ -19813,7 +26534,7 @@ function PageContent() {
                 <button
                   className={
                     showDesignerTheme
-                      ? "w-full rounded-lg border border-neutral-600 px-4 py-3 text-sm font-medium text-neutral-200 hover:bg-[#151820]"
+                      ? "designer-control w-full rounded-lg border px-4 py-3 text-sm font-medium"
                       : "w-full rounded-lg border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
                   }
                   onClick={() => {
@@ -19911,7 +26632,7 @@ function PageContent() {
                 data-testid="load-designs-bulk-toolbar"
                 className={
                   showDesignerTheme
-                    ? "mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-neutral-700 bg-[#10131a] p-3"
+                    ? "designer-recessed mb-4 flex flex-wrap items-center gap-2 rounded-lg p-3"
                     : "mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 p-3"
                 }
               >
@@ -19999,14 +26720,14 @@ function PageContent() {
                     key={design.id}
                     className={
                       showDesignerTheme
-                        ? "flex items-center gap-3 rounded-lg border border-neutral-600 bg-[#151820] p-3"
+                        ? "designer-raised flex items-center gap-3 rounded-lg p-3"
                         : "flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3"
                     }
                   >
                     <label
                       className={
                         showDesignerTheme
-                          ? "flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-neutral-600 bg-[#10131a]"
+                          ? "designer-control flex h-10 w-10 shrink-0 items-center justify-center rounded-md border"
                           : "flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-gray-200 bg-white"
                       }
                       aria-label={`Select ${design.title}`}
@@ -20589,6 +27310,9 @@ function PageContent() {
 
       {!isClientPreview && (
         <BetaFeedbackWidget
+          open={feedbackOpen}
+          onOpenChange={setFeedbackOpen}
+          showTrigger={false}
           context={{
             designId,
             shareToken,
@@ -20705,7 +27429,7 @@ function PageContent() {
                 value={shareLinkFallback}
                 className={
                   showDesignerTheme
-                    ? "flex-1 rounded-lg border border-neutral-600 bg-[#1b2030] px-3 py-2 text-sm text-neutral-200 font-mono"
+                    ? "designer-control flex-1 rounded-lg border px-3 py-2 text-sm text-neutral-200 font-mono"
                     : "flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm font-mono text-gray-700"
                 }
               />
@@ -20746,7 +27470,7 @@ function PageContent() {
                 onClick={() => setShareLinkFallback(null)}
                 className={
                   showDesignerTheme
-                    ? "flex-1 rounded-lg border border-neutral-600 px-4 py-2 text-sm font-medium text-neutral-200 hover:bg-[#151820]"
+                    ? "designer-control flex-1 rounded-lg border px-4 py-2 text-sm font-medium"
                     : "flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                 }
               >
@@ -20775,6 +27499,40 @@ function PageContent() {
                 {item.message}
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {cabinetryStudioState && canUseCabinetryStudio && (
+        <div className="fixed inset-0 z-[80] bg-black/45 p-4 backdrop-blur-sm">
+          <div className="h-full overflow-hidden rounded-xl bg-white shadow-2xl">
+            <CabinetMeasurementUnitProvider unit={planMeasurementUnit}>
+              <CabinetryStudio
+                mode={cabinetryStudioState.mode}
+                accessLevel={cabinetryAccessLevel}
+                initialDefinition={cabinetryStudioState.initialDefinition}
+                availableSpaces={cabinetryAvailableSpaces}
+                preferredSpaceId={cabinetryPreferredSpaceId}
+                onSave={handleSaveCabinetDefinition}
+                onPlaceInPlan={handlePlaceCabinetInPlan}
+                onCancel={() => {
+                  track("millwork_studio_closed", {
+                    access_level: cabinetryAccessLevel,
+                    studio_mode: cabinetryStudioState.mode,
+                    completed: false,
+                    elapsed_ms:
+                      cabinetryStudioOpenedAtRef.current === null
+                        ? null
+                        : Math.max(
+                            0,
+                            Math.round(performance.now() - cabinetryStudioOpenedAtRef.current)
+                          ),
+                  });
+                  cabinetryStudioOpenedAtRef.current = null;
+                  setCabinetryStudioState(null);
+                }}
+              />
+            </CabinetMeasurementUnitProvider>
           </div>
         </div>
       )}

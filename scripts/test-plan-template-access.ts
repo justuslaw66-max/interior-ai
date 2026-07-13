@@ -17,14 +17,108 @@ assert.match(
 
 assert.match(
   source,
-  /data-testid="plan-open-templates"[\s\S]*?onClick=\{openTemplatePicker\}/,
-  "Guided plan editing should expose a Templates button that visibly jumps to the picker after rooms exist."
+  /data-testid=\{`plan-tool-section-\$\{section\}`\}/,
+  "Plan tool sections should expose stable test ids."
 );
 
 assert.match(
   source,
-  /data-testid="manual-panel-templates"[\s\S]*?onClick=\{openTemplatePicker\}/,
-  "Manual plan editing should expose a Templates button that visibly jumps to the picker after rooms exist."
+  /data-testid="plan-tool-palette"[\s\S]*?overflow-hidden rounded-sm border[\s\S]*?Floor plan[\s\S]*?Import floor plan[\s\S]*?Draw room[\s\S]*?Place doors and windows[\s\S]*?Templates/,
+  "Plan editing should use one compact Floor plan umbrella with grouped subcategories."
+);
+
+assert.match(
+  source,
+  /const planToolSectionClass =[\s\S]*border-b[\s\S]*last:border-b-0[\s\S]*const planToolSectionHeaderClass =[\s\S]*px-3 py-2\.5/,
+  "Plan subcategory rows should be compact dividers inside the Floor plan umbrella, not large separate cards."
+);
+
+assert.match(
+  source,
+  /testId: "plan-start-template"[\s\S]*?label: "Starter layouts"[\s\S]*?onClick: openTemplatePicker/,
+  "The template tile should visibly jump to the starter floor plan picker."
+);
+
+assert.match(
+  source,
+  /testId: "plan-start-upload"[\s\S]*?label: "Import 2D drawing"[\s\S]*?setPlanStartMode\("upload"\)/,
+  "The import tile should keep the existing upload flow."
+);
+
+assert.match(
+  source,
+  /testId: "plan-start-draw"[\s\S]*?label: "Rectangle wall"[\s\S]*?startDrawRoomMode\("rectangle_wall"\)/,
+  "The rectangle wall tile should keep the existing draw-from-scratch flow."
+);
+
+assert.match(
+  source,
+  /const planToolGridClass =[\s\S]*?grid grid-cols-3 gap-2/,
+  "Plan tools should use the compact three-column layout."
+);
+
+assert.match(
+  source,
+  /const planToolTileClass =[\s\S]*?rounded-\[2px\][\s\S]*?bg-\[#f6f6f7\][\s\S]*?hover:bg-\[#f1f2f3\]/,
+  "Plan tool cards should keep the flat, compact architectural-tool treatment."
+);
+
+assert.doesNotMatch(
+  source,
+  /min-h-\[6\.5rem\]|block min-h-8 text-\[12px\]/,
+  "Plan tool cards and labels should stay content-driven so one-line tools remain shorter."
+);
+
+assert.doesNotMatch(
+  source,
+  /<ellipse|\[opacity:\.58\]|hover:-translate-y-0\.5/,
+  "Plan tool artwork should not regain fake floor shadows, blanket disabled fading, or floating-card motion."
+);
+
+assert.match(
+  source,
+  /data-testid="plan-wall-tool-grid"[\s\S]*?role="group"[\s\S]*?aria-label="Wall drawing tools"/,
+  "Wall choices should be exposed as a named control group."
+);
+
+assert.match(
+  source,
+  /aria-pressed=\{typeof active === "boolean" \? active : undefined\}[\s\S]*?aria-keyshortcuts=\{shortcut\}/,
+  "Selectable plan tools should expose pressed state and keyboard shortcuts."
+);
+
+const wallToolMappings = [
+  ["plan-tool-straight-wall", "Straight wall", "B", "straight_wall"],
+  ["plan-start-draw", "Rectangle wall", "F", "rectangle_wall"],
+  ["plan-tool-arc-wall", "Arc wall", "H", "arc_wall"],
+] as const;
+
+for (const [testId, label, shortcut, mode] of wallToolMappings) {
+  assert.match(
+    source,
+    new RegExp(
+      `testId: "${testId}"[\\s\\S]*?label: "${label}"[\\s\\S]*?shortcut: "${shortcut}"[\\s\\S]*?active: floorPlanTraceRoomMode && floorPlanDrawRoomMode === "${mode}"[\\s\\S]*?startDrawRoomMode\\("${mode}"\\)`
+    ),
+    `${label} should keep its shortcut, action, and real drawing-state highlight in sync.`
+  );
+}
+
+assert.match(
+  source,
+  /testId: "plan-tool-external-area"[\s\S]*?label: "External area"[\s\S]*?disabled: true[\s\S]*?title: "External area drawing is coming soon\."/,
+  "External area should remain intentionally disabled with an accessible explanation."
+);
+
+assert.doesNotMatch(
+  source,
+  /data-testid="manual-plan-panel-actions"/,
+  "The old catch-all manual action grid should not remain in the default Plan panel."
+);
+
+assert.doesNotMatch(
+  source,
+  /data-testid="plan-guided-actions-panel-toggle"/,
+  "The Guided/Manual switch should be hidden from the primary Plan panel."
 );
 
 assert.match(
@@ -71,14 +165,14 @@ assert.match(
 
 assert.match(
   source,
-  /data-testid="plan-floor-finish-options"[\s\S]*?data-testid=\{`plan-floor-material-\$\{material\.id\}`\}/,
-  "The floor finish shortcut should reveal selectable material swatches."
+  /data-testid="room-surfaces-floor-panel"[\s\S]*?data-testid=\{`surface-floor-material-\$\{materialId\}`\}/,
+  "The floor finish shortcut should reveal selectable catalog surface materials."
 );
 
-assert.match(
+assert.doesNotMatch(
   source,
-  /data-testid="room-setup-floor-finish-shortcut"[\s\S]*?data-testid="room-setup-change-floor-finish"[\s\S]*?setRoomFinishPanelOpen\(true\)/,
-  "Guided room setup should surface floor finish editing before the collapsed size panel."
+  /plan-floor-material-/,
+  "Starter finish swatches should not be exposed in the floor material picker."
 );
 
 assert.match(

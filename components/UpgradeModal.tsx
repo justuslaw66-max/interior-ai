@@ -7,11 +7,15 @@
 
 "use client";
 
+import { PRO_PLAN_PRICING } from "@/lib/pro-plan-catalog";
+
 interface UpgradeModalProps {
   isOpen: boolean;
   onClose: () => void;
   onUpgrade: () => void;
   trigger?: "pdf" | "watermark" | "branding";
+  isUpgrading?: boolean;
+  error?: string | null;
 }
 
 export function UpgradeModal({
@@ -19,17 +23,19 @@ export function UpgradeModal({
   onClose,
   onUpgrade,
   trigger,
+  isUpgrading = false,
+  error = null,
 }: UpgradeModalProps) {
   if (!isOpen) return null;
 
   const triggerMessages = {
     pdf: "Free includes a watermarked preview. Pro unlocks clean downloadable PDFs.",
     watermark: "Upgrade to remove the free export watermark.",
-    branding: "Upgrade to add branding and client-ready presentation polish.",
+    branding: "Upgrade for clean exports and client-ready presentation polish.",
   };
 
   const message = trigger ? triggerMessages[trigger] : "Unlock professional export features";
-  const priceLabel = "$29/month";
+  const priceLabel = PRO_PLAN_PRICING.monthly.label;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -61,28 +67,35 @@ export function UpgradeModal({
             <div className="px-3 py-2 text-center border-t">Print only</div>
             <div className="px-3 py-2 text-center border-t">Download PDF</div>
 
-            <div className="px-3 py-2 border-t">Branding</div>
-            <div className="px-3 py-2 text-center border-t">Basic</div>
-            <div className="px-3 py-2 text-center border-t">Custom</div>
+            <div className="px-3 py-2 border-t">Image angles</div>
+            <div className="px-3 py-2 text-center border-t">1</div>
+            <div className="px-3 py-2 text-center border-t">Up to 4</div>
 
-            <div className="px-3 py-2 border-t">AI tools</div>
-            <div className="px-3 py-2 text-center border-t">Limited</div>
-            <div className="px-3 py-2 text-center border-t">Extended</div>
+            <div className="px-3 py-2 border-t">Plan tools</div>
+            <div className="px-3 py-2 text-center border-t">Guided</div>
+            <div className="px-3 py-2 text-center border-t">Pro</div>
           </div>
         </div>
 
         <div className="mt-6 flex flex-col gap-3">
+          {error && (
+            <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
+              {error}
+            </p>
+          )}
           <button
             onClick={onUpgrade}
-            className="w-full bg-blue-600 text-white px-4 py-2.5 rounded-md font-medium hover:bg-blue-700 transition"
+            disabled={isUpgrading}
+            className="w-full bg-blue-600 text-white px-4 py-2.5 rounded-md font-medium hover:bg-blue-700 transition disabled:cursor-wait disabled:opacity-60"
           >
-            Unlock Pro exports — {priceLabel}
+            {isUpgrading ? "Opening secure checkout…" : `Start Pro monthly — ${priceLabel}`}
           </button>
           <p className="text-xs text-gray-500">
-            Clean exports, branded presentation pages, and stronger client delivery.
+            Clean PDFs, multi-angle images, and Pro planning controls.
           </p>
           <button
             onClick={onClose}
+            disabled={isUpgrading}
             className="self-start text-sm text-gray-600 hover:text-gray-800 transition"
           >
             Not now

@@ -1,11 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { Info, RotateCw, Ruler, SlidersHorizontal, Truck } from "lucide-react";
 import LazyImage from "@/components/common/LazyImage";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import type { ProductInfoRow, ProductInfoSections } from "@/lib/design-page-product-info";
 import type { DesignItem } from "@/lib/room-types";
 import type { StyleConsistencyReport } from "@/lib/style-consistency";
+import type { PlanMeasurementUnit } from "@/lib/design-page-types";
+import { formatCabinetMeasurement } from "@/features/cabinetry/measurementUnits";
+import MeasurementField from "./MeasurementField";
 
 type SelectedItemDetailsPanelProps = {
   dark: boolean;
@@ -15,6 +19,7 @@ type SelectedItemDetailsPanelProps = {
   canEdit: boolean;
   rooms: Array<{ id: string; name: string }>;
   activeRoomId: string;
+  measurementUnit: PlanMeasurementUnit;
   planningDimensionsMm?: { w: number; d: number; h: number } | null;
   selectedBrand?: string | null;
   selectedModelTitle?: string | null;
@@ -39,6 +44,13 @@ type SelectedItemDetailsPanelProps = {
   onSnapToWall: () => void;
   onNudge: (deltaX: number, deltaZ: number) => void;
   onSetPosition: (x: number, z: number) => void;
+  adjustableHangingHeight?: {
+    valueCm: number;
+    minCm: number;
+    maxCm: number;
+    stepCm: number;
+  } | null;
+  onAdjustHangingHeight?: (heightCm: number) => void;
   onApplyStyleAlternative?: (productId: string) => void;
 };
 
@@ -50,6 +62,7 @@ export default function SelectedItemDetailsPanel({
   canEdit,
   rooms,
   activeRoomId,
+  measurementUnit,
   planningDimensionsMm,
   selectedBrand,
   selectedModelTitle,
@@ -74,13 +87,11 @@ export default function SelectedItemDetailsPanel({
   onSnapToWall,
   onNudge,
   onSetPosition,
+  adjustableHangingHeight,
+  onAdjustHangingHeight,
   onApplyStyleAlternative,
 }: SelectedItemDetailsPanelProps) {
-  const [positionDraft, setPositionDraft] = useState<{
-    itemId: string;
-    x: string;
-    z: string;
-  } | null>(null);
+  const [showAdvancedControls, setShowAdvancedControls] = useState(false);
   const titleClass = dark
     ? "designer-text-primary text-base font-semibold"
     : "text-base font-semibold text-neutral-900";
@@ -88,16 +99,34 @@ export default function SelectedItemDetailsPanel({
     ? "designer-text-secondary text-xs font-semibold uppercase tracking-[0.08em]"
     : "text-xs font-semibold uppercase tracking-[0.08em] text-neutral-500";
   const buttonClass = dark
-    ? "designer-text-secondary rounded-md border border-white/15 px-2 py-1 text-xs hover:text-white"
+    ? "designer-control rounded-md border px-2 py-1 text-xs"
     : "rounded-md border border-neutral-200 px-2 py-1 text-xs text-neutral-700 hover:bg-neutral-50";
   const disabledButtonClass = dark
-    ? "designer-text-secondary rounded-md border border-white/15 px-2 py-1 text-xs hover:text-white disabled:opacity-40"
+    ? "designer-control rounded-md border px-2 py-1 text-xs disabled:opacity-40"
     : "rounded-md border border-neutral-200 px-2 py-1 text-xs text-neutral-700 hover:bg-neutral-50 disabled:opacity-50";
+  const actionToggleClass = (active: boolean, disabled = false) => {
+    const base =
+      "inline-flex min-h-10 items-center justify-start gap-2 rounded-lg border px-3 text-xs font-semibold transition-colors";
+    if (disabled) {
+      return dark
+        ? `${base} cursor-not-allowed border-white/10 bg-white/[0.03] text-neutral-500 opacity-60`
+        : `${base} cursor-not-allowed border-neutral-200 bg-neutral-50 text-neutral-400 opacity-80`;
+    }
+    if (active) {
+      return dark
+        ? `${base} border-emerald-300/35 bg-emerald-400/15 text-emerald-100 shadow-sm`
+        : `${base} border-neutral-900 bg-neutral-900 text-white shadow-sm`;
+    }
+    return dark
+      ? `${base} border-white/10 bg-white/[0.04] text-neutral-300 hover:border-white/20 hover:bg-white/[0.08] hover:text-white`
+      : `${base} border-neutral-200 bg-white text-neutral-700 shadow-sm hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-950`;
+  };
+  const actionIconClass = "h-3.5 w-3.5 shrink-0";
   const panelClass = dark
-    ? "mt-2 space-y-3 rounded-lg border border-white/15 bg-white/5 p-3"
+    ? "designer-raised mt-2 space-y-3 rounded-lg p-3"
     : "mt-2 space-y-3 rounded-lg border border-neutral-200 bg-neutral-50 p-3";
   const compactPanelClass = dark
-    ? "mt-2 space-y-2 rounded-lg border border-white/15 bg-white/5 p-3"
+    ? "designer-raised mt-2 space-y-2 rounded-lg p-3"
     : "mt-2 space-y-2 rounded-lg border border-neutral-200 bg-neutral-50 p-3";
   const sectionTitleClass = dark
     ? "designer-text-primary text-xs font-semibold uppercase tracking-[0.08em]"
@@ -109,13 +138,8 @@ export default function SelectedItemDetailsPanel({
   const itemActionsDisabled = !item || !canEdit || (isDesigner && Boolean(item.locked));
   const positionX = item?.position?.[0] ?? 0;
   const positionZ = item?.position?.[2] ?? 0;
-  const activePositionDraft =
-    item && positionDraft?.itemId === item.instanceId ? positionDraft : null;
-  const positionXInput = activePositionDraft?.x ?? positionX.toFixed(2);
-  const positionZInput = activePositionDraft?.z ?? positionZ.toFixed(2);
-  const dimensionLabel = planningDimensionsMm
-    ? `${(planningDimensionsMm.w / 1000).toFixed(2)} x ${(planningDimensionsMm.d / 1000).toFixed(2)} x ${(planningDimensionsMm.h / 1000).toFixed(2)} m`
-    : `${(product.dimsMm.w / 1000).toFixed(2)} x ${(product.dimsMm.d / 1000).toFixed(2)} x ${(product.dimsMm.h / 1000).toFixed(2)} m`;
+  const resolvedDimensionsMm = planningDimensionsMm ?? product.dimsMm;
+  const dimensionLabel = `${formatCabinetMeasurement(resolvedDimensionsMm.w, measurementUnit)} x ${formatCabinetMeasurement(resolvedDimensionsMm.d, measurementUnit)} x ${formatCabinetMeasurement(resolvedDimensionsMm.h, measurementUnit)}`;
   const styleStatusClass =
     styleConsistencyReport?.status === "cohesive"
       ? dark
@@ -129,24 +153,6 @@ export default function SelectedItemDetailsPanel({
           ? "border-amber-400/30 bg-amber-400/10 text-amber-100"
           : "border-amber-200 bg-amber-50 text-amber-800";
 
-  const applyPositionInputs = () => {
-    const nextX = Number(positionXInput);
-    const nextZ = Number(positionZInput);
-    if (!Number.isFinite(nextX) || !Number.isFinite(nextZ)) {
-      setPositionDraft(null);
-      return;
-    }
-    setPositionDraft(null);
-    onSetPosition(nextX, nextZ);
-  };
-  const setPositionXInput = (x: string) => {
-    if (!item) return;
-    setPositionDraft({ itemId: item.instanceId, x, z: positionZInput });
-  };
-  const setPositionZInput = (z: string) => {
-    if (!item) return;
-    setPositionDraft({ itemId: item.instanceId, x: positionXInput, z });
-  };
 
   return (
     <div className="mt-2 space-y-1.5">
@@ -181,14 +187,23 @@ export default function SelectedItemDetailsPanel({
         </span>
       )}
 
-      <div className={dark ? "designer-text-secondary text-sm" : "text-sm text-neutral-900"}>
-        <div className="flex flex-wrap gap-2">
-          <button className={buttonClass} onClick={onToggleInspectorDetails}>
-            {showInspectorDetails ? "Hide details" : "Show details"}
+      <div className="pt-1">
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            className={actionToggleClass(showInspectorDetails)}
+            aria-pressed={showInspectorDetails}
+            onClick={onToggleInspectorDetails}
+            title={showInspectorDetails ? "Hide details" : "Show details"}
+          >
+            <Info className={actionIconClass} aria-hidden="true" />
+            <span>Details</span>
           </button>
           <button
-            className={disabledButtonClass}
+            type="button"
+            className={actionToggleClass(showFullDimensions, !hasFullDimensions)}
             disabled={!hasFullDimensions}
+            aria-pressed={showFullDimensions}
             onClick={onToggleFullDimensions}
             title={
               hasFullDimensions
@@ -196,11 +211,14 @@ export default function SelectedItemDetailsPanel({
                 : "Full dimensions dataset not added for this item yet"
             }
           >
-            {showFullDimensions ? "Hide full dimensions" : "Full dimensions"}
+            <Ruler className={actionIconClass} aria-hidden="true" />
+            <span>Dimensions</span>
           </button>
           <button
-            className={disabledButtonClass}
+            type="button"
+            className={actionToggleClass(showDeliveryWarranty, !hasDeliveryWarranty)}
             disabled={!hasDeliveryWarranty}
+            aria-pressed={showDeliveryWarranty}
             onClick={onToggleDeliveryWarranty}
             title={
               hasDeliveryWarranty
@@ -208,22 +226,88 @@ export default function SelectedItemDetailsPanel({
                 : "Delivery and warranty details not added for this item yet"
             }
           >
-            {showDeliveryWarranty ? "Hide delivery" : "Delivery & warranty"}
+            <Truck className={actionIconClass} aria-hidden="true" />
+            <span>Delivery</span>
           </button>
           {item ? (
             <button
-              className={buttonClass}
+              type="button"
+              className={actionToggleClass(showRotationControls)}
               aria-expanded={showRotationControls}
+              aria-pressed={showRotationControls}
               data-testid="rotation-controls-toggle"
               onClick={onToggleRotationControls}
+              title={showRotationControls ? "Hide rotation" : "Show rotation"}
             >
-              {showRotationControls ? "Hide rotation" : "Rotation"}
+              <RotateCw className={actionIconClass} aria-hidden="true" />
+              <span>Rotation</span>
+            </button>
+          ) : null}
+          {item ? (
+            <button
+              type="button"
+              className={`${actionToggleClass(showAdvancedControls)} col-span-2`}
+              aria-expanded={showAdvancedControls}
+              aria-pressed={showAdvancedControls}
+              data-testid="selected-item-advanced-controls-toggle"
+              onClick={() => setShowAdvancedControls((value) => !value)}
+              title={showAdvancedControls ? "Hide controls" : "Show controls"}
+            >
+              <SlidersHorizontal className={actionIconClass} aria-hidden="true" />
+              <span>Controls</span>
             </button>
           ) : null}
         </div>
       </div>
 
-      {item ? (
+      {item && adjustableHangingHeight && onAdjustHangingHeight ? (
+        <div className={compactPanelClass} data-testid="selected-item-hanging-height-control">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <div className={sectionTitleClass}>Hanging height</div>
+              <div className={dark ? "mt-0.5 text-[11px] text-neutral-400" : "mt-0.5 text-[11px] text-neutral-500"}>
+                Adjusts only the central cable
+              </div>
+            </div>
+            <MeasurementField
+              className="w-28"
+              label="Pendant hanging height"
+              hideLabel
+              testId="selected-item-hanging-height-number"
+              valueMm={adjustableHangingHeight.valueCm * 10}
+              unit={measurementUnit}
+              minMm={adjustableHangingHeight.minCm * 10}
+              maxMm={adjustableHangingHeight.maxCm * 10}
+              stepMm={adjustableHangingHeight.stepCm * 10}
+              keyboardStepMm={adjustableHangingHeight.stepCm * 10}
+              disabled={itemActionsDisabled}
+              dark={dark}
+              compact
+              onCommit={(valueMm) => onAdjustHangingHeight(valueMm / 10)}
+            />
+          </div>
+          <input
+            data-testid="selected-item-hanging-height-slider"
+            className="w-full accent-blue-600"
+            type="range"
+            min={adjustableHangingHeight.minCm}
+            max={adjustableHangingHeight.maxCm}
+            step={adjustableHangingHeight.stepCm}
+            value={adjustableHangingHeight.valueCm}
+            disabled={itemActionsDisabled}
+            onChange={(event) => {
+              onAdjustHangingHeight(Number(event.currentTarget.value));
+            }}
+            aria-label="Adjust pendant hanging height"
+          />
+          <div className={`flex justify-between text-[11px] ${dark ? "text-neutral-400" : "text-neutral-500"}`}>
+            <span>{formatCabinetMeasurement(adjustableHangingHeight.minCm * 10, measurementUnit)}</span>
+            <span>{formatCabinetMeasurement(adjustableHangingHeight.maxCm * 10, measurementUnit)}</span>
+          </div>
+        </div>
+      ) : null}
+
+      {item && showAdvancedControls ? (
         <div className={compactPanelClass} data-testid="selected-item-actions">
           <div className={sectionTitleClass}>Placement</div>
           <div className="grid grid-cols-2 gap-2">
@@ -283,62 +367,31 @@ export default function SelectedItemDetailsPanel({
                 {dimensionLabel}
               </span>
             </div>
-            <div className="mt-2 grid grid-cols-[1fr_1fr_auto] gap-2">
-              <label>
-                <span className={labelClass}>X m</span>
-                <input
-                  data-testid="selected-item-position-x"
-                  className={
-                    dark
-                      ? "mt-1 h-9 w-full rounded-md border border-white/15 bg-[#111827] px-2 text-xs text-neutral-100"
-                      : "mt-1 h-9 w-full rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-900"
-                  }
-                  type="number"
-                  step="0.05"
-                  value={positionXInput}
-                  disabled={itemActionsDisabled}
-                  onChange={(event) => setPositionXInput(event.currentTarget.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter") {
-                      event.preventDefault();
-                      applyPositionInputs();
-                    }
-                  }}
-                  onBlur={applyPositionInputs}
-                />
-              </label>
-              <label>
-                <span className={labelClass}>Z m</span>
-                <input
-                  data-testid="selected-item-position-z"
-                  className={
-                    dark
-                      ? "mt-1 h-9 w-full rounded-md border border-white/15 bg-[#111827] px-2 text-xs text-neutral-100"
-                      : "mt-1 h-9 w-full rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-900"
-                  }
-                  type="number"
-                  step="0.05"
-                  value={positionZInput}
-                  disabled={itemActionsDisabled}
-                  onChange={(event) => setPositionZInput(event.currentTarget.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter") {
-                      event.preventDefault();
-                      applyPositionInputs();
-                    }
-                  }}
-                  onBlur={applyPositionInputs}
-                />
-              </label>
-              <button
-                type="button"
-                data-testid="selected-item-position-apply"
-                className={`${disabledButtonClass} min-h-10`}
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <MeasurementField
+                label="Position X"
+                testId="selected-item-position-x"
+                valueMm={positionX * 1000}
+                unit={measurementUnit}
+                stepMm={10}
+                keyboardStepMm={50}
                 disabled={itemActionsDisabled}
-                onClick={applyPositionInputs}
-              >
-                Apply
-              </button>
+                dark={dark}
+                compact
+                onCommit={(valueMm) => onSetPosition(valueMm / 1000, positionZ)}
+              />
+              <MeasurementField
+                label="Position Z"
+                testId="selected-item-position-z"
+                valueMm={positionZ * 1000}
+                unit={measurementUnit}
+                stepMm={10}
+                keyboardStepMm={50}
+                disabled={itemActionsDisabled}
+                dark={dark}
+                compact
+                onCommit={(valueMm) => onSetPosition(positionX, valueMm / 1000)}
+              />
             </div>
             <div className="mt-2 grid grid-cols-4 gap-2">
               <button

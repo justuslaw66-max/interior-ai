@@ -1,38 +1,52 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from "@playwright/test";
 
-const PLAYWRIGHT_SERVER_PORT = Number(process.env.PLAYWRIGHT_WEB_SERVER_PORT ?? 3000);
-const PLAYWRIGHT_BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${PLAYWRIGHT_SERVER_PORT}`;
+const localBaseURL = "http://127.0.0.1:3000";
+const releaseBaseURL = process.env.PLAYWRIGHT_RELEASE_BASE_URL?.trim().replace(
+  /\/+$/,
+  ""
+);
+const useProductionServer = process.env.PLAYWRIGHT_USE_PRODUCTION_SERVER === "1";
+
+if (releaseBaseURL) {
+  const parsedURL = new URL(releaseBaseURL);
+
+  if (parsedURL.protocol !== "https:") {
+    throw new Error(
+      "PLAYWRIGHT_RELEASE_BASE_URL must use HTTPS for release-candidate testing."
+    );
+  }
+}
+
+const baseURL = releaseBaseURL ?? localBaseURL;
 
 export default defineConfig({
-  testDir: './tests/e2e',
-  timeout: process.env.CI ? 90_000 : 30_000,
-  fullyParallel: true,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
+  testDir: "./tests/e2e",
+  fullyParallel: false,
+  retries: 0,
   workers: 1,
-  reporter: [
-    ['html', { outputFolder: 'playwright-report' }],
-    ['json', { outputFile: 'test-results/results.json' }],
-    ['junit', { outputFile: 'test-results/junit.xml' }],
-  ],
+  reporter: [["list"]],
   use: {
-    baseURL: PLAYWRIGHT_BASE_URL,
-    trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+    baseURL,
+    actionTimeout: 30000,
+    navigationTimeout: 60000,
+    trace: "retain-on-failure",
+    screenshot: "only-on-failure",
+    video: "retain-on-failure",
   },
-
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
     },
   ],
-
-  webServer: {
-    command: `APP_ENV=development NEXT_PUBLIC_ENABLE_QA_HOOKS=1 NEXT_PUBLIC_ENABLE_TEST_FIXTURES=true npx next start -p ${PLAYWRIGHT_SERVER_PORT}`,
-    url: PLAYWRIGHT_BASE_URL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
-  },
+  ...(releaseBaseURL
+    ? {}
+    : {
+        webServer: {
+          command: useProductionServer ? "npm run start" : "npm run dev",
+          url: localBaseURL,
+          reuseExistingServer: !process.env.CI,
+          timeout: 120000,
+        },
+      }),
 });

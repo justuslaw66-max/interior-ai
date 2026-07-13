@@ -29,6 +29,14 @@ export const IMPORTED_VARIANT_BY_PRODUCT_ID: Record<string, { label: string; col
     label: "Walnut",
     colorHex: "#8a643f",
   },
+  "dining-real-castlery-seb-dining-table-150": {
+    label: "Muted Honey",
+    colorHex: "#9a6a3a",
+  },
+  "dining-real-castlery-seb-dining-table-180": {
+    label: "Muted Honey",
+    colorHex: "#9a6a3a",
+  },
   "dining-real-castlery-forma-round-90": {
     label: "Walnut",
     colorHex: "#8a643f",
@@ -316,6 +324,20 @@ export const IMPORTED_PRODUCT_CONFIG_BY_ID: Record<
     roomTags: ["dining"],
     tags: ["castlery", "forma", "walnut", "dining-table"],
   },
+  "dining-real-castlery-seb-dining-table-150": {
+    title: "Castlery Seb Dining Table 150cm",
+    category: "dining_table",
+    modelLabel: "150CM",
+    roomTags: ["dining"],
+    tags: ["castlery", "seb", "acacia", "muted-honey", "dining-table"],
+  },
+  "dining-real-castlery-seb-dining-table-180": {
+    title: "Castlery Seb Dining Table 180cm",
+    category: "dining_table",
+    modelLabel: "180CM",
+    roomTags: ["dining"],
+    tags: ["castlery", "seb", "acacia", "muted-honey", "dining-table"],
+  },
   "dining-real-castlery-forma-round-90": {
     title: "Castlery Forma Round Dining Table 90cm",
     category: "dining_table",
@@ -571,6 +593,11 @@ export const CASTLERY_FABRIC_DETAIL_PROFILE_BY_KEY: Record<string, FabricDetailP
     composition: "100% Polyester washed chenille fabric. (PFAS free)",
     care: "Use a damp cloth with mild detergent for spot cleaning; avoid harsh chemicals; line dry.",
   },
+  "lexi-velvet": {
+    tags: ["Velvet"],
+    composition: "100% Polyester",
+    care: "Do not machine wash; Do not bleach; Do not tumble dry; Do not iron; Dry clean.",
+  },
   "generic-performance-fabric": {
     tags: ["Performance Fabric", "Easy Care"],
     composition: "100% Polyester upholstery fabric. (PFAS free)",
@@ -598,10 +625,16 @@ export function resolveFabricDetailProfile(params: {
   finishLabel: string;
   colourLabel: string;
   materialType: string;
+  productId?: string | null;
 }): FabricDetailProfile | null {
   const finishCode = params.finishCode.trim().toLowerCase();
   const finishLabel = `${params.finishLabel} ${params.colourLabel}`.trim().toLowerCase();
   const materialType = params.materialType.trim().toLowerCase();
+  const productId = String(params.productId ?? "").trim().toLowerCase();
+
+  if (productId.includes("lexi-tufted")) {
+    return CASTLERY_FABRIC_DETAIL_PROFILE_BY_KEY["lexi-velvet"];
+  }
 
   if (/(^ng-40\d\d$|navagio|slub\s*linen)/.test(finishCode) || /(navagio|slub\s*linen)/.test(finishLabel)) {
     return CASTLERY_FABRIC_DETAIL_PROFILE_BY_KEY["navagio"];
@@ -689,6 +722,20 @@ export const FULL_DIMENSIONS_BY_PRODUCT_ID: Record<string, Array<{ label: string
     { label: "Levellers", value: "Included" },
     { label: "Packaging dimensions", value: "2 boxes" },
     { label: "Leg room - height clearance", value: "73cm" },
+  ],
+  "dining-real-castlery-seb-dining-table-150": [
+    { label: "Dimension", value: "W150 x D80 x H75cm" },
+    { label: "Leg to leg distance (at height 45cm)", value: "123cm" },
+    { label: "Capacity", value: "Sits 4 people comfortably" },
+    { label: "Packaging dimensions", value: "1 box" },
+    { label: "Levellers", value: "Included (max 2cm)" },
+  ],
+  "dining-real-castlery-seb-dining-table-180": [
+    { label: "Dimension", value: "W180 x D90 x H75cm" },
+    { label: "Leg to leg distance (at height 45cm)", value: "153cm" },
+    { label: "Capacity", value: "Sits 6 people comfortably" },
+    { label: "Packaging dimensions", value: "1 box" },
+    { label: "Levellers", value: "Included (max 2cm)" },
   ],
   "dining-real-castlery-forma-round-90": [
     { label: "Dimension", value: "W90 x D90 x H75.1cm" },

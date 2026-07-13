@@ -2,12 +2,17 @@ import { CATALOG_ITEMS, CATALOG_ITEMS_MAP } from "@/lib/catalog";
 import {
   CATEGORY_DEFAULTS,
   getCategoryDefaults,
+  type AdjustablePendantHeightMetadata,
+  type PlacementRules,
   type CatalogItemSchema,
   type ProductCategory,
   type RoomTag,
 } from "@/lib/catalog-schema";
 import { normalizeImportedVariants } from "@/lib/catalog/imported-variant-normalization";
-import { normalizeCatalogMediaPresentationMode } from "@/lib/catalog/media-policy";
+import {
+  normalizeCatalogMediaPresentationMode,
+  selectPreferredCatalogThumbnail,
+} from "@/lib/catalog/media-policy";
 import { IMPORTED_VARIANT_PIPELINE_REVISION } from "@/lib/catalog/variant-normalization";
 
 export type ImportedConfigurationEntry = {
@@ -264,9 +269,32 @@ export function normalizeImportedFamilyName(value: string): string {
     .trim();
 }
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function normalizeOfficialImportedProductName(
+  catalog: ImportedModelCatalog | null | undefined,
+): string | null {
+  const rawName = String(catalog?.productName ?? "").trim();
+  if (!rawName) return null;
+
+  const brand = String(catalog?.brand ?? "").trim();
+  const withoutBrand = brand
+    ? rawName.replace(new RegExp(`^${escapeRegExp(brand)}\\s+`, "i"), "")
+    : rawName;
+
+  return withoutBrand
+    .replace(/\s*\((?:Left|Right) Facing\)\s*/gi, " ")
+    .replace(/\bPerformance Boucle\b/g, "Performance Bouclé")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function buildImportedModelTitle(id: string, catalog: ImportedModelCatalog | null | undefined): string {
-  if (catalog?.productName) {
-    return `${catalog.brand ?? "Castlery"} ${catalog.productName}${catalog.variant ? ` ${catalog.variant}` : ""}`;
+  const officialProductName = normalizeOfficialImportedProductName(catalog);
+  if (officialProductName) {
+    return officialProductName;
   }
 
   return id
@@ -888,10 +916,15 @@ export function shouldRefreshImportedCatalogItem(
     ?? inferredCategory
     ?? existing?.category;
   const categoryMismatch = Boolean(existing && expectedCategory && existing.category !== expectedCategory);
+  const expectedPendantHeight = resolveAdjustablePendantHeightMetadata(option.catalog);
+  const currentPendantHeight = existing?.metadata?.adjustablePendantHeight;
+  const pendantHeightMismatch =
+    JSON.stringify(currentPendantHeight ?? null) !== JSON.stringify(expectedPendantHeight ?? null);
 
   return (
     !existing ||
     categoryMismatch ||
+    pendantHeightMismatch ||
     (isInjectedImportedCatalogItem(existing) &&
       (existingVariantPipelineRevision !== IMPORTED_VARIANT_PIPELINE_REVISION ||
         (expectedPriceHint > 0 && existingPriceHint !== expectedPriceHint)))
@@ -923,12 +956,12 @@ function resolveImportedThumbUrl(imported: ImportedModelOption, productId: strin
     return "/assets/thumbs/sofa-real-castlery-dawson-wide-chaise-sectional-left.png";
   }
 
-  return (
-    imported.catalog?.assets?.thumbnailUrl ??
-    imported.catalog?.assets?.thumbnail_url ??
-    imported.thumbUrl ??
-    `/assets/thumbs/${productId}.png`
-  );
+  const assets = imported.catalog?.assets;
+  const galleryImages = assets?.galleryImages ?? assets?.gallery_images ?? [];
+  return selectPreferredCatalogThumbnail({
+    thumbnailUrl: assets?.thumbnailUrl ?? assets?.thumbnail_url ?? imported.thumbUrl,
+    galleryImages,
+  }) ?? `/assets/thumbs/${productId}.png`;
 }
 
 function resolveImportedSourceUrl(yamlCatalog: ImportedModelCatalog | null | undefined): string | null {
@@ -947,6 +980,37 @@ function resolveImportedSourceUrl(yamlCatalog: ImportedModelCatalog | null | und
   return null;
 }
 
+function resolveAdjustablePendantHeightMetadata(
+  yamlCatalog: ImportedModelCatalog | null | undefined
+): AdjustablePendantHeightMetadata | undefined {
+  const flags = yamlCatalog?.featureFlags;
+  if (!flags || flags.is_height_adjustable !== true) return undefined;
+
+  const minCm = Number(flags.adjustable_height_min_cm);
+  const maxCm = Number(flags.adjustable_height_max_cm);
+  const defaultCm = Number(flags.adjustable_height_default_cm);
+  const cableStartRatio = Number(flags.cable_start_ratio);
+  const cableEndRatio = Number(flags.cable_end_ratio);
+  if (
+    !Number.isFinite(minCm) ||
+    !Number.isFinite(maxCm) ||
+    !Number.isFinite(defaultCm) ||
+    !Number.isFinite(cableStartRatio) ||
+    !Number.isFinite(cableEndRatio) ||
+    minCm <= 0 ||
+    maxCm <= minCm ||
+    defaultCm < minCm ||
+    defaultCm > maxCm ||
+    cableStartRatio < 0 ||
+    cableEndRatio <= cableStartRatio ||
+    cableEndRatio > 1
+  ) {
+    return undefined;
+  }
+
+  return { minCm, maxCm, defaultCm, cableStartRatio, cableEndRatio };
+}
+
 function inferImportedCategoryFromProductId(productId: string): ProductCategory | undefined {
   const lower = productId.toLowerCase();
 
@@ -960,9 +1024,65 @@ function inferImportedCategoryFromProductId(productId: string): ProductCategory 
   if (lower.startsWith("coffee-")) return "coffee_table";
   if (lower.includes("console")) return "tv_console";
   if (lower.includes("sideboard")) return "sideboard";
+  if (lower.includes("pendant") || lower.includes("ceiling-light") || lower.includes("ceiling_light")) {
+    return "pendant_light";
+  }
+  if (lower.includes("table-lamp") || lower.includes("table_lamp")) return "table_lamp";
   if (lower.includes("lamp")) return "floor_lamp";
 
   return undefined;
+}
+
+function normalizeImportedSurfacePlacementRules(
+  placementRules: unknown,
+  defaults: PlacementRules
+): PlacementRules {
+  if (!placementRules || typeof placementRules !== "object") return defaults;
+  const raw = placementRules as Record<string, unknown>;
+  const ceilingOnly = raw.ceiling_only === true || raw.ceilingOnly === true;
+  if (ceilingOnly) {
+    return {
+      ...defaults,
+      floorOnly: false,
+      wallSnappable: false,
+      wallMountable: false,
+      minWallGapMm: 0,
+      allowRugOverlap: false,
+      snapMarginMm: 0,
+      surfaceOnly: false,
+      ceilingOnly: true,
+    };
+  }
+  const surfaceOnly = raw.surface_only === true || raw.surfaceOnly === true;
+  if (!surfaceOnly) return defaults;
+
+  const rawCategories = Array.isArray(raw.required_surface_categories)
+    ? raw.required_surface_categories
+    : Array.isArray(raw.requiredSurfaceCategories)
+      ? raw.requiredSurfaceCategories
+      : [];
+  const requiredSurfaceCategories = rawCategories
+    .map((value) => String(value ?? "").trim())
+    .filter((value): value is ProductCategory =>
+      Boolean(value) && Object.prototype.hasOwnProperty.call(CATEGORY_DEFAULTS, value)
+    );
+  const surfaceInsetMm = Number(raw.surface_inset_mm ?? raw.surfaceInsetMm ?? 80);
+
+  return {
+    ...defaults,
+    floorOnly: false,
+    wallSnappable: false,
+    wallMountable: false,
+    minWallGapMm: 0,
+    allowRugOverlap: false,
+    snapMarginMm: 0,
+    surfaceOnly: true,
+    requiredSurfaceCategories:
+      requiredSurfaceCategories.length > 0
+        ? requiredSurfaceCategories
+        : ["side_table", "coffee_table", "dining_table", "tv_console"],
+    surfaceInsetMm: Number.isFinite(surfaceInsetMm) && surfaceInsetMm >= 0 ? surfaceInsetMm : 80,
+  };
 }
 
 export function buildImportedCatalogItem({
@@ -988,8 +1108,14 @@ export function buildImportedCatalogItem({
     ?? inferredCategory
     ?? template.category;
   const categoryDefaults = getCategoryDefaults(category);
+  const placementRules = normalizeImportedSurfacePlacementRules(
+    yamlCatalog?.placementRules,
+    categoryDefaults.placement,
+  );
 
+  const officialProductTitle = normalizeOfficialImportedProductName(yamlCatalog);
   const title =
+    officialProductTitle ??
     importedConfig?.title ??
     buildImportedModelTitle(productId, yamlCatalog) ??
     productId
@@ -999,9 +1125,9 @@ export function buildImportedCatalogItem({
       .replace(/\b\w/g, (char) => char.toUpperCase());
   const normalizedTitle =
     productId === "sofa-real-castlery-dawson-wide-chaise-sectional-left"
-      ? `${title.replace(/\s*\(Left Facing\)\s*/i, "").trim()} · Left Facing`
+      ? title.replace(/\s*\(Left Facing\)\s*/i, "").trim()
       : productId === "sofa-real-castlery-dawson-wide-chaise-sectional"
-        ? `${title.replace(/\s*\(Right Facing\)\s*/i, "").trim()} · Right Facing`
+        ? title.replace(/\s*\(Right Facing\)\s*/i, "").trim()
         : title;
 
   const fallbackVariant = importedVariantByProductId[productId] ?? {
@@ -1045,12 +1171,14 @@ export function buildImportedCatalogItem({
   const sharedUpholsteryOptions = Array.isArray(yamlCatalog?.upholstery_options)
     ? yamlCatalog.upholstery_options
     : [];
+  const yamlGalleryImages = yamlCatalog?.assets?.galleryImages ?? yamlCatalog?.assets?.gallery_images;
   const fallbackThumbnailUrl = resolveImportedThumbUrl(imported, productId);
   const normalizedImportedVariants = normalizeImportedVariants({
     productId,
     variantEntries: yamlPreferredVariants,
     sharedUpholsteryOptions,
     fallbackThumbnailUrl,
+    fallbackGalleryImages: Array.isArray(yamlGalleryImages) ? yamlGalleryImages : [],
   });
 
   const dynamicVariants = normalizedImportedVariants.length > 0
@@ -1072,7 +1200,6 @@ export function buildImportedCatalogItem({
         ];
 
   const defaultImportedVariantId = dynamicVariants[0]?.id ?? `imported-${productId}`;
-  const yamlGalleryImages = yamlCatalog?.assets?.galleryImages ?? yamlCatalog?.assets?.gallery_images;
   const mediaPresentationMode = normalizeCatalogMediaPresentationMode(
     yamlCatalog?.assets?.media_presentation ??
       yamlCatalog?.assets?.mediaPresentation ??
@@ -1115,7 +1242,7 @@ export function buildImportedCatalogItem({
         priceHint: importedPriceHint,
       },
     },
-    placementRules: categoryDefaults.placement,
+    placementRules,
     clearanceRules: categoryDefaults.clearance,
     aiRoles: categoryDefaults.aiRoles,
     roomTags: importedConfig?.roomTags ?? template.roomTags,
@@ -1140,6 +1267,7 @@ export function buildImportedCatalogItem({
       compatibility: yamlCatalog?.compatibility,
       bundleMetadata: yamlCatalog?.bundleMetadata,
       comfortProfile: yamlCatalog?.comfort_profile,
+      adjustablePendantHeight: resolveAdjustablePendantHeightMetadata(yamlCatalog),
       galleryImages: Array.isArray(yamlGalleryImages)
         ? yamlGalleryImages.filter(
             (value): value is string => typeof value === "string" && value.trim().length > 0,

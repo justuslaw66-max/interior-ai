@@ -2,7 +2,7 @@
 
 import { Line } from "@react-three/drei/core/Line";
 import { Html } from "@react-three/drei/web/Html";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
 import {
@@ -25,22 +25,24 @@ import {
 import {
   buildHouseRoomAdjacencyGuides,
   buildHouseRoomDoorwaySuggestions,
-  doesHouseRoomOverlap,
   HOUSE_ROOM_WALL_SNAP_DISTANCE_METERS,
-  resolveHouseRoomSnapPreview,
-  snapHouseRoomMove,
+  ROOM_DIMENSION_DEFAULTS,
+  resolveHouseRoomMove,
   type HouseRoomDoorwaySuggestion,
   type HouseRoomSnapPreview,
 } from "@/lib/design-page-house-plan";
 import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
+import { getWallFaceSurfaceSettings, normalizeFloorSurfaceSettings } from "@/lib/surface-settings";
 import { useSurfaceMaterialTexture } from "./useSurfaceMaterialTexture";
 import {
   buildInnerFloorGeometry2D,
+  buildWallBandCornerCaps2D,
   buildRoomWallSegments2D,
   buildWallBandGeometry2D,
   mergeSharedWallSegments2D,
   splitWallBandByOpenings2D,
 } from "@/lib/room-renderer-2d-walls";
+import type { Plan2DViewOrientation } from "@/components/editor/camera/EditorCamera2D";
 
 type RectZone = {
   id: string;
@@ -119,38 +121,92 @@ function getHouseRoomFloorPlanColor(
   return isActiveRoom ? material.planColor : material.planMutedColor;
 }
 
+function getSurfaceMaterialPlanColor(materialId: string | null | undefined, fallback: string): string {
+  const material = getRuntimeSurfaceMaterialById(materialId);
+  if (!material) return fallback;
+  const colorFamily = material.classification?.color_family ?? "";
+  if (colorFamily.includes("grey") || colorFamily.includes("gray")) return "#b9b8b3";
+  if (colorFamily.includes("walnut") || colorFamily.includes("brown")) return "#9b7659";
+  if (colorFamily.includes("oak") || colorFamily.includes("maple") || colorFamily.includes("wood")) return "#c6a77b";
+  if (colorFamily.includes("white") || colorFamily.includes("ivory")) return "#eeeae0";
+  if (colorFamily.includes("beige") || colorFamily.includes("cream")) return "#d8ccb8";
+  if (colorFamily.includes("black") || colorFamily.includes("anthracite")) return "#6f6f70";
+  return "#c5beb0";
+}
+
+function getHouseRoomWallPlanColor(room: HouseRoom2D, wall: Opening2D["wall"], isPro: boolean): string {
+  const fallback = isPro ? "#d4d4d8" : "#c9c2b4";
+  const surfaces = room.surfaces ?? room.surfaceFinishes;
+  const settings = getWallFaceSurfaceSettings(
+    surfaces,
+    wall,
+    normalizeFloorRotationDeg,
+    clampFloorPatternScale
+  );
+  if (settings.paintColorHex) return settings.paintColorHex;
+  return getSurfaceMaterialPlanColor(settings.materialId, fallback);
+}
+
 function HouseRoomFloorFill2D({
   room,
   fillColor,
   dragStatus,
   isDraggingRoom,
   fillOpacity,
+  interactive,
+  onSelectRoom,
+  onSelectSurfaceTarget,
 }: {
   room: HouseRoom2D;
   fillColor: string;
   dragStatus: "blocked" | "snapped" | "free" | null;
   isDraggingRoom: boolean;
   fillOpacity: number;
+  interactive: boolean;
+  onSelectRoom?: (roomId: string) => void;
+  onSelectSurfaceTarget?: (target: { kind: "floor" | "wall"; roomId: string; id: string }) => void;
 }) {
   const { gl } = useThree();
   const surfaces = room.surfaces ?? room.surfaceFinishes;
   const surfaceMaterial = getRuntimeSurfaceMaterialById(surfaces?.floorMaterialId);
-  const floorScale = clampFloorPatternScale(surfaces?.floorScale);
-  const floorRotation = THREE.MathUtils.degToRad(
-    normalizeFloorRotationDeg(surfaces?.floorRotationDeg)
+  const floorSettings = normalizeFloorSurfaceSettings(
+    surfaces,
+    normalizeFloorRotationDeg,
+    clampFloorPatternScale
   );
+  const floorRotation = THREE.MathUtils.degToRad(floorSettings.floorRotationDeg);
   const surfaceTexture = useSurfaceMaterialTexture({
     material: surfaceMaterial,
     roomWidthMeters: room.w,
     roomDepthMeters: room.d,
-    floorScale,
+    floorScale: floorSettings.floorScale,
     rotationRad: floorRotation,
+    floorPattern: floorSettings.floorPattern,
+    patternOffset: floorSettings.floorPatternOffset,
+    jointSizeMm: floorSettings.floorJointSizeMm,
+    jointColor: floorSettings.floorJointColor,
     maxAnisotropy: gl.capabilities.getMaxAnisotropy(),
   });
   const canShowTexture = Boolean(surfaceTexture && dragStatus !== "blocked");
 
   return (
-    <mesh rotation-x={-Math.PI / 2} position={[0, 0.0007, 0]} raycast={() => null}>
+    <mesh
+      rotation-x={-Math.PI / 2}
+      position={[0, 0.0007, 0]}
+      raycast={interactive ? undefined : () => null}
+      onClick={
+        interactive
+          ? (event) => {
+              event.stopPropagation();
+              if (onSelectSurfaceTarget) {
+                onSelectSurfaceTarget({ kind: "floor", roomId: room.id, id: "floor" });
+              } else {
+                onSelectRoom?.(room.id);
+              }
+            }
+          : undefined
+      }
+    >
       <shapeGeometry args={[buildInnerFloorShapeGeometry(room)]} />
       <meshBasicMaterial
         color={canShowTexture ? "#ffffff" : dragStatus === "blocked" ? "#fed7aa" : fillColor}
@@ -213,6 +269,7 @@ type RoomRenderer2DProps = {
   showAnnotations?: boolean;
   showZones?: boolean;
   theme?: "consumer" | "pro";
+  planViewOrientation?: Plan2DViewOrientation;
   gridStep?: number;
   openings?: Opening2D[];
   fixedElements?: FixedElement2D[];
@@ -221,10 +278,12 @@ type RoomRenderer2DProps = {
   rooms?: HouseRoom2D[];
   activeRoomId?: string | null;
   onSelectRoom?: (roomId: string) => void;
+  onSelectSurfaceTarget?: (target: { kind: "floor" | "wall"; roomId: string; id: string }) => void;
   onClearRoomSelection?: () => void;
   onRenameRoom?: (roomId: string) => void;
   onDuplicateRoom?: (roomId: string) => void;
   onDeleteRoom?: (roomId: string) => void;
+  onEditFloor?: (roomId: string) => void;
   onFitRoom?: (roomId: string) => void;
   onMoveRoom?: (roomId: string, x: number, z: number, options?: { snap?: boolean }) => void;
   onResizeRoom?: (roomId: string, next: { x: number; z: number; w: number; d: number }) => void;
@@ -494,6 +553,28 @@ function getRoomBounds(room: HouseRoom2D) {
     top: room.z - room.d / 2,
     bottom: room.z + room.d / 2,
   };
+}
+
+function getRoomsBounds(rooms: HouseRoom2D[]) {
+  if (rooms.length === 0) return null;
+
+  return rooms.reduce(
+    (bounds, room) => {
+      const roomBounds = getRoomBounds(room);
+      return {
+        left: Math.min(bounds.left, roomBounds.left),
+        right: Math.max(bounds.right, roomBounds.right),
+        top: Math.min(bounds.top, roomBounds.top),
+        bottom: Math.max(bounds.bottom, roomBounds.bottom),
+      };
+    },
+    {
+      left: Number.POSITIVE_INFINITY,
+      right: Number.NEGATIVE_INFINITY,
+      top: Number.POSITIVE_INFINITY,
+      bottom: Number.NEGATIVE_INFINITY,
+    }
+  );
 }
 
 function isNearPlanValue(first: number, second: number): boolean {
@@ -986,6 +1067,28 @@ function buildWallDrawPreviewLabel(
   return `${lengthMm} mm`;
 }
 
+const MAX_WALL_DRAW_SEGMENT_LENGTH_METERS = ROOM_DIMENSION_DEFAULTS.max;
+const ROOM_DIMENSION_EDITOR_MIN_MILLIMETERS = ROOM_DIMENSION_DEFAULTS.min * 1000;
+const ROOM_DIMENSION_EDITOR_MAX_MILLIMETERS = ROOM_DIMENSION_DEFAULTS.max * 1000;
+
+function getWallDrawSegmentLengthMeters(start: FloorPlanPoint, end: FloorPlanPoint): number {
+  return Math.hypot(end.x - start.x, end.z - start.z);
+}
+
+function isWallDrawSegmentLengthRenderable(start: FloorPlanPoint, end: FloorPlanPoint): boolean {
+  const length = getWallDrawSegmentLengthMeters(start, end);
+  return Number.isFinite(length) && length > 0 && length <= MAX_WALL_DRAW_SEGMENT_LENGTH_METERS;
+}
+
+function areWallDrawSegmentsRenderable(points: FloorPlanPoint[]): boolean {
+  for (let index = 1; index < points.length; index += 1) {
+    if (!isWallDrawSegmentLengthRenderable(points[index - 1], points[index])) {
+      return false;
+    }
+  }
+  return true;
+}
+
 function formatMillimeters(meters: number): string {
   return `${Math.round(meters * 1000)} mm`;
 }
@@ -1088,6 +1191,7 @@ export default function RoomRenderer2D({
   showAnnotations = true,
   showZones = true,
   theme = "consumer",
+  planViewOrientation = "normal",
   gridStep = 0.5,
   openings = [],
   fixedElements = [],
@@ -1096,10 +1200,12 @@ export default function RoomRenderer2D({
   rooms = [],
   activeRoomId = null,
   onSelectRoom,
+  onSelectSurfaceTarget,
   onClearRoomSelection,
   onRenameRoom,
   onDuplicateRoom,
   onDeleteRoom,
+  onEditFloor,
   onFitRoom,
   onMoveRoom,
   onResizeRoom,
@@ -1205,6 +1311,11 @@ export default function RoomRenderer2D({
     x: number;
     z: number;
     status: RoomDragStatus;
+  } | null>(null);
+  const roomBodyPointerRef = useRef<{
+    roomId: string;
+    clientX: number;
+    clientY: number;
   } | null>(null);
   const [hoveredRoomId, setHoveredRoomId] = useState<string | null>(null);
   const [roomDragGestureLocked, setRoomDragGestureLocked] = useState(false);
@@ -1313,6 +1424,7 @@ export default function RoomRenderer2D({
   }, [onMoveRoom, onOverlayDragStateChange, onRoomDragStateChange]);
   const pointerDragWasReleased = (event: ThreeEvent<PointerEvent>) =>
     event.nativeEvent.pointerType !== "touch" && event.nativeEvent.buttons === 0;
+  const roomBodyClickThresholdPx = 6;
 
   useEffect(() => {
     if (!interactive) return;
@@ -1369,6 +1481,14 @@ export default function RoomRenderer2D({
           : [],
     [drawRoomPoints, localDrawStartPoint]
   );
+  const wallDrawInProgress = isStraightWallDrawMode && activeDrawRoomPoints.length > 0;
+  const wallDrawSegmentsRenderable = useMemo(
+    () => areWallDrawSegmentsRenderable(activeDrawRoomPoints),
+    [activeDrawRoomPoints]
+  );
+  const canRenderWallDrawTrace = isStraightWallDrawMode && wallDrawSegmentsRenderable;
+  const canRenderWallDrawSegmentMeasurements =
+    canRenderWallDrawTrace && activeDrawRoomPoints.length >= 2;
   const activeDrawRoomPreviewPoint = drawRoomPreviewPoint ?? localDrawPreviewPoint;
   const roomDrawPreview = useMemo(() => {
     if (
@@ -1397,13 +1517,13 @@ export default function RoomRenderer2D({
         ? [roomDrawPreview.start, roomDrawPreview.end]
         : [];
   const lastWallDrawPoint =
-    isStraightWallDrawMode && activeDrawRoomPoints.length > 0
+    canRenderWallDrawTrace && activeDrawRoomPoints.length > 0
       ? activeDrawRoomPoints[activeDrawRoomPoints.length - 1]
       : null;
-  const wallDrawLinePoints = isStraightWallDrawMode
+  const wallDrawLinePoints = canRenderWallDrawTrace
     ? buildWallDrawLinePoints(activeDrawRoomPoints, activeDrawRoomPreviewPoint)
     : [];
-  const wallDrawGuideLines = isStraightWallDrawMode
+  const wallDrawGuideLines = canRenderWallDrawTrace
       ? buildWallDrawGuideLines(
         lastWallDrawPoint,
         activeDrawRoomPreviewPoint,
@@ -1412,15 +1532,15 @@ export default function RoomRenderer2D({
         drawSurfaceDepth
       )
     : [];
-  const wallDrawAlignmentCue = isStraightWallDrawMode
+  const wallDrawAlignmentCue = canRenderWallDrawTrace
     ? buildWallDrawAlignmentCue(lastWallDrawPoint, activeDrawRoomPreviewPoint, rooms)
     : null;
   const wallDrawContinuationCue =
-    isStraightWallDrawMode && activeDrawRoomPoints.length > 0
+    canRenderWallDrawTrace && activeDrawRoomPoints.length > 0
       ? buildWallDrawContinuationCue(activeDrawRoomPoints[activeDrawRoomPoints.length - 1], rooms)
       : null;
   const wallDrawCloseCue =
-    isStraightWallDrawMode
+    canRenderWallDrawTrace
       ? buildWallDrawCloseCue(activeDrawRoomPoints, activeDrawRoomPreviewPoint)
       : null;
   const arcWallDrawPreview = useMemo(() => {
@@ -1480,6 +1600,24 @@ export default function RoomRenderer2D({
     !arcWallDrawPreview
       ? buildRoomDrawStartSnapMarkers(rooms, activeDrawRoomPreviewPoint)
       : [];
+  const overallPlanBounds = useMemo(() => getRoomsBounds(rooms), [rooms]);
+  const overallPlanDimension =
+    overallPlanBounds && rooms.length > 1
+      ? {
+          width: overallPlanBounds.right - overallPlanBounds.left,
+          depth: overallPlanBounds.bottom - overallPlanBounds.top,
+          centerX: (overallPlanBounds.left + overallPlanBounds.right) / 2,
+          centerZ: (overallPlanBounds.top + overallPlanBounds.bottom) / 2,
+          widthGuideZ: overallPlanBounds.top - 0.78,
+          depthGuideX: overallPlanBounds.left - 0.78,
+          tick: 0.13,
+          y: 0.017,
+        }
+      : null;
+  const overallWidthLabel =
+    planViewOrientation === "rotated" ? "Overall vertical" : "Overall horizontal";
+  const overallDepthLabel =
+    planViewOrientation === "rotated" ? "Overall horizontal" : "Overall vertical";
   const visibleAdjacencyGuides = useMemo(() => {
     if (rooms.length < 2) return [];
     const guides = buildHouseRoomAdjacencyGuides(rooms);
@@ -1531,6 +1669,7 @@ export default function RoomRenderer2D({
   const visiblePlanLabelCount =
     (showAdjacencyLabels ? visibleAdjacencyGuides.length : 0) +
     (showDoorwaySuggestionLabels ? visibleDoorwaySuggestions.length : 0) +
+    (showDimensions && overallPlanDimension ? 2 : 0) +
     (showDimensions && rooms.some((room) => room.id === activeRoomId) ? 2 : 0);
 
   useEffect(() => {
@@ -1573,6 +1712,32 @@ export default function RoomRenderer2D({
     },
     [editingRoomDimension, onCommitRoomDimensionEdit]
   );
+  const updateDimensionEditorValue = useCallback(
+    (value: string) => {
+      setEditingRoomDimension((current) => (current ? { ...current, value } : current));
+      const finalMillimeters = Number(value);
+      if (
+        Number.isFinite(finalMillimeters) &&
+        finalMillimeters > ROOM_DIMENSION_EDITOR_MAX_MILLIMETERS
+      ) {
+        commitDimensionEdit(value);
+      }
+    },
+    [commitDimensionEdit]
+  );
+
+  useEffect(() => {
+    if (!editingRoomDimension) return;
+    const finalMillimeters = Number(editingRoomDimension.value);
+    if (
+      !rooms.some((room) => room.id === editingRoomDimension.roomId) ||
+      (Number.isFinite(finalMillimeters) &&
+        finalMillimeters > ROOM_DIMENSION_EDITOR_MAX_MILLIMETERS)
+    ) {
+      setEditingRoomDimension(null);
+    }
+  }, [editingRoomDimension, rooms]);
+
   const startWallDrawSegmentLengthEdit = useCallback(
     (segmentIndex: number, start: FloorPlanPoint, end: FloorPlanPoint) => {
       const lengthMm = Math.round(Math.hypot(end.x - start.x, end.z - start.z) * 1000);
@@ -1602,6 +1767,38 @@ export default function RoomRenderer2D({
     },
     [editingWallDrawSegment, onCommitWallDrawSegmentLength]
   );
+  const updateWallDrawSegmentEditorValue = useCallback(
+    (value: string) => {
+      setEditingWallDrawSegment((current) => (current ? { ...current, value } : current));
+      const finalMillimeters = Number(value);
+      if (
+        Number.isFinite(finalMillimeters) &&
+        finalMillimeters > MAX_WALL_DRAW_SEGMENT_LENGTH_METERS * 1000
+      ) {
+        commitWallDrawSegmentLengthEdit(value);
+      }
+    },
+    [commitWallDrawSegmentLengthEdit]
+  );
+
+  useEffect(() => {
+    if (!editingWallDrawSegment) return;
+    const finalMillimeters = Number(editingWallDrawSegment.value);
+    if (
+      !canRenderWallDrawSegmentMeasurements ||
+      editingWallDrawSegment.segmentIndex <= 0 ||
+      editingWallDrawSegment.segmentIndex >= activeDrawRoomPoints.length ||
+      (Number.isFinite(finalMillimeters) &&
+        finalMillimeters > MAX_WALL_DRAW_SEGMENT_LENGTH_METERS * 1000)
+    ) {
+      setEditingWallDrawSegment(null);
+    }
+  }, [
+    activeDrawRoomPoints.length,
+    canRenderWallDrawSegmentMeasurements,
+    editingWallDrawSegment,
+  ]);
+
   const openingPreview = useMemo<TracedOpeningPreview | null>(() => {
     if (!canTraceOpeningOnGrid || !localOpeningPreviewPoint) return null;
 
@@ -1755,6 +1952,110 @@ export default function RoomRenderer2D({
 
   const lockRoomDragGesture = () => {
     setRoomDragGestureLocked(true);
+  };
+
+  const stopDomRoomMoveEvent = (event: PointerEvent | ReactPointerEvent<HTMLElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if ("nativeEvent" in event) {
+      event.nativeEvent.stopImmediatePropagation?.();
+    } else {
+      event.stopImmediatePropagation?.();
+    }
+  };
+
+  const moveRoomDragToClientPoint = (room: HouseRoom2D, clientX: number, clientY: number) => {
+    const drag = dragTargetRef.current;
+    if (!drag || drag.kind !== "room" || drag.id !== room.id) return;
+    const planPoint = getDrawPointFromClientPosition(clientX, clientY);
+    if (!planPoint) return;
+
+    const nextX = planPoint.x - drag.grabOffsetX;
+    const nextZ = planPoint.z - drag.grabOffsetZ;
+    const move = resolveHouseRoomMove({
+      roomId: room.id,
+      x: nextX,
+      z: nextZ,
+      rooms,
+      snap: drag.snap,
+    });
+    if (!move) return;
+
+    const blocked = move.movementStatus === "blocked";
+    const nextStatus: RoomDragStatus = move.movementStatus;
+    if (blocked) {
+      drag.latestX = drag.lastValidX;
+      drag.latestZ = drag.lastValidZ;
+    } else {
+      drag.latestX = move.x;
+      drag.latestZ = move.z;
+      drag.lastValidX = move.x;
+      drag.lastValidZ = move.z;
+    }
+    scheduleRoomDragPreview({
+      id: room.id,
+      x: blocked ? move.attemptedX : move.x,
+      z: blocked ? move.attemptedZ : move.z,
+      status: nextStatus,
+    });
+    setRoomSnapPreview(move.snapPreview);
+  };
+
+  const startExplicitRoomMove = (
+    room: HouseRoom2D,
+    event: ReactPointerEvent<HTMLElement>
+  ) => {
+    if (!canEditPlan || !onMoveRoom) return;
+    stopDomRoomMoveEvent(event);
+    const planPoint = getDrawPointFromClientPosition(event.clientX, event.clientY);
+    if (!planPoint) return;
+
+    onSelectRoom?.(room.id);
+    dragTargetRef.current = {
+      kind: "room",
+      id: room.id,
+      grabOffsetX: planPoint.x - room.x,
+      grabOffsetZ: planPoint.z - room.z,
+      snap: !event.shiftKey,
+      latestX: room.x,
+      latestZ: room.z,
+      lastValidX: room.x,
+      lastValidZ: room.z,
+    };
+    setRoomDragPreview({ id: room.id, x: room.x, z: room.z, status: "free" });
+    onRoomDragStateChange?.(true);
+    lockRoomDragGesture();
+    setRoomSnapPreview(null);
+    document.body.style.cursor = "grabbing";
+
+    const moveTarget = event.currentTarget;
+    const pointerId = event.pointerId;
+    try {
+      moveTarget.setPointerCapture(pointerId);
+    } catch {}
+
+    const onPointerMove = (moveEvent: PointerEvent) => {
+      const drag = dragTargetRef.current;
+      if (!drag || drag.kind !== "room" || drag.id !== room.id) return;
+      stopDomRoomMoveEvent(moveEvent);
+      drag.snap = !moveEvent.shiftKey;
+      moveRoomDragToClientPoint(room, moveEvent.clientX, moveEvent.clientY);
+    };
+
+    const onPointerUp = (upEvent: PointerEvent) => {
+      stopDomRoomMoveEvent(upEvent);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerUp);
+      try {
+        moveTarget.releasePointerCapture(pointerId);
+      } catch {}
+      clearActiveDrag();
+    };
+
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp, { once: true });
+    window.addEventListener("pointercancel", onPointerUp, { once: true });
   };
 
   const moveCameraNavigationHandle = (
@@ -2419,7 +2720,7 @@ export default function RoomRenderer2D({
     };
   });
   const wallBandLayout = useMemo(() => {
-    if (!hasHouseRooms) return { parts: [], windowMarkers: [] };
+    if (!hasHouseRooms) return { parts: [], windowMarkers: [], cornerCaps: [] };
     const mergedSegments = mergeSharedWallSegments2D(buildRoomWallSegments2D(wallBandRooms));
     return mergedSegments.reduce(
       (layout, segment) => {
@@ -2431,6 +2732,7 @@ export default function RoomRenderer2D({
       {
         parts: [] as ReturnType<typeof splitWallBandByOpenings2D>["parts"],
         windowMarkers: [] as ReturnType<typeof splitWallBandByOpenings2D>["windowMarkers"],
+        cornerCaps: buildWallBandCornerCaps2D(mergedSegments),
       }
     );
   }, [hasHouseRooms, openings, wallBandRooms]);
@@ -2672,6 +2974,13 @@ export default function RoomRenderer2D({
               : dragStatus === "snapped"
                 ? "Snapped to wall"
                 : "Free move";
+          const dimensionGuideColor = "#16a34a";
+          const dimensionGuideY = 0.018;
+          const widthDimensionGuideOffset = 0.3;
+          const depthDimensionGuideOffset = 0.46;
+          const dimensionGuideTick = 0.09;
+          const widthDimensionZ = -room.d / 2 - widthDimensionGuideOffset;
+          const depthDimensionX = -room.w / 2 - depthDimensionGuideOffset;
           return (
             <group key={room.id} position={[renderX, isDraggingRoom ? 0.01 : 0, renderZ]}>
               <HouseRoomFloorFill2D
@@ -2680,6 +2989,9 @@ export default function RoomRenderer2D({
                 dragStatus={dragStatus}
                 isDraggingRoom={isDraggingRoom}
                 fillOpacity={effectiveFillOpacity}
+                interactive={interactive}
+                onSelectRoom={onSelectRoom}
+                onSelectSurfaceTarget={onSelectSurfaceTarget}
               />
               <mesh
                 userData={{
@@ -2697,27 +3009,12 @@ export default function RoomRenderer2D({
                     handleRoomDrawPointerDown(event);
                     return;
                   }
-                  if (!canEditPlan || !onMoveRoom) return;
-                  stopNativeRoomDragEvent(event);
-                  const planPoint = getPlanPointFromPointerEvent(event);
-                  onSelectRoom?.(room.id);
-                  dragTargetRef.current = {
-                    kind: "room",
-                    id: room.id,
-                    grabOffsetX: planPoint.x - room.x,
-                    grabOffsetZ: planPoint.z - room.z,
-                    snap: !event.nativeEvent.shiftKey,
-                    latestX: room.x,
-                    latestZ: room.z,
-                    lastValidX: room.x,
-                    lastValidZ: room.z,
+                  if (!canEditPlan) return;
+                  roomBodyPointerRef.current = {
+                    roomId: room.id,
+                    clientX: event.nativeEvent.clientX,
+                    clientY: event.nativeEvent.clientY,
                   };
-                  setRoomDragPreview({ id: room.id, x: room.x, z: room.z, status: "free" });
-                  onRoomDragStateChange?.(true);
-                  lockRoomDragGesture();
-                  setRoomSnapPreview(null);
-                  document.body.style.cursor = "grabbing";
-                  setPointerCaptureIfSupported(event);
                 }}
                 onPointerMove={(event) => {
                   if (canTraceOpeningOnGrid) {
@@ -2741,42 +3038,32 @@ export default function RoomRenderer2D({
                   const nextZ = planPoint.z - drag.grabOffsetZ;
                   const snapEnabled = !event.nativeEvent.shiftKey;
                   drag.snap = snapEnabled;
-                  const rawOverlaps = doesHouseRoomOverlap(room.id, nextX, nextZ, room.w, room.d, rooms);
-                  const nextPreviewPosition =
-                    snapEnabled ? snapHouseRoomMove(room.id, nextX, nextZ, rooms) : { x: nextX, z: nextZ };
-                  if (!nextPreviewPosition) return;
-                  const snappedToCurrent =
-                    Math.abs(nextPreviewPosition.x - room.x) < 0.001 &&
-                    Math.abs(nextPreviewPosition.z - room.z) < 0.001;
-                  const pointerMovedFromOrigin =
-                    Math.abs(nextX - room.x) > 0.001 || Math.abs(nextZ - room.z) > 0.001;
-                  const blocked = snapEnabled
-                    ? rawOverlaps && snappedToCurrent && pointerMovedFromOrigin
-                    : rawOverlaps;
-                  const snapped =
-                    snapEnabled &&
-                    !blocked &&
-                    (Math.abs(nextPreviewPosition.x - nextX) > 0.001 ||
-                      Math.abs(nextPreviewPosition.z - nextZ) > 0.001);
-                  const nextStatus: RoomDragStatus = blocked ? "blocked" : snapped ? "snapped" : "free";
+                  const move = resolveHouseRoomMove({
+                    roomId: room.id,
+                    x: nextX,
+                    z: nextZ,
+                    rooms,
+                    snap: snapEnabled,
+                  });
+                  if (!move) return;
+                  const blocked = move.movementStatus === "blocked";
+                  const nextStatus: RoomDragStatus = move.movementStatus;
                   if (blocked) {
                     drag.latestX = drag.lastValidX;
                     drag.latestZ = drag.lastValidZ;
                   } else {
-                    drag.latestX = nextPreviewPosition.x;
-                    drag.latestZ = nextPreviewPosition.z;
-                    drag.lastValidX = nextPreviewPosition.x;
-                    drag.lastValidZ = nextPreviewPosition.z;
+                    drag.latestX = move.x;
+                    drag.latestZ = move.z;
+                    drag.lastValidX = move.x;
+                    drag.lastValidZ = move.z;
                   }
                   scheduleRoomDragPreview({
                     id: room.id,
-                    x: blocked ? nextX : nextPreviewPosition.x,
-                    z: blocked ? nextZ : nextPreviewPosition.z,
+                    x: blocked ? move.attemptedX : move.x,
+                    z: blocked ? move.attemptedZ : move.z,
                     status: nextStatus,
                   });
-                  setRoomSnapPreview(
-                    snapEnabled && !blocked ? resolveHouseRoomSnapPreview(room.id, nextX, nextZ, rooms) : null
-                  );
+                  setRoomSnapPreview(move.snapPreview);
                 }}
                 onPointerUp={(event) => {
                   if (canTraceOpeningOnGrid) {
@@ -2790,10 +3077,21 @@ export default function RoomRenderer2D({
                   const drag = dragTargetRef.current;
                   if (drag?.kind === "room" && drag.id === room.id) {
                     clearActiveDrag();
+                    releasePointerCaptureIfSupported(event);
+                    return;
                   }
-                  releasePointerCaptureIfSupported(event);
+                  const pointerStart = roomBodyPointerRef.current;
+                  if (pointerStart?.roomId === room.id) {
+                    const deltaX = event.nativeEvent.clientX - pointerStart.clientX;
+                    const deltaY = event.nativeEvent.clientY - pointerStart.clientY;
+                    roomBodyPointerRef.current = null;
+                    if (Math.hypot(deltaX, deltaY) <= roomBodyClickThresholdPx) {
+                      onSelectRoom?.(room.id);
+                    }
+                  }
                 }}
                 onPointerCancel={(event) => {
+                  roomBodyPointerRef.current = null;
                   clearActiveDrag();
                   releasePointerCaptureIfSupported(event);
                 }}
@@ -2817,8 +3115,6 @@ export default function RoomRenderer2D({
                     event.stopPropagation();
                     return;
                   }
-                  event.stopPropagation();
-                  onSelectRoom?.(room.id);
                 }}
               >
                 <shapeGeometry args={[buildRoomShapeGeometry(room)]} />
@@ -2893,6 +3189,8 @@ export default function RoomRenderer2D({
                     data-testid="house-room-2d-label"
                     data-room-id={room.id}
                     data-active={isActiveRoom ? "true" : "false"}
+                    data-room-x={renderX.toFixed(3)}
+                    data-room-z={renderZ.toFixed(3)}
                     style={{
                       fontSize: 11,
                       fontWeight: 700,
@@ -2909,6 +3207,22 @@ export default function RoomRenderer2D({
                   </div>
                 </Html>
               )}
+              {isActiveRoom && (
+                <Html zIndexRange={[1, 0]} position={[0, 0.012, 0]} center transform={false}>
+                  <div
+                    data-testid="house-room-2d-hit-probe"
+                    data-room-id={room.id}
+                    data-room-x={renderX.toFixed(3)}
+                    data-room-z={renderZ.toFixed(3)}
+                    style={{
+                      width: 1,
+                      height: 1,
+                      overflow: "hidden",
+                      pointerEvents: "none",
+                    }}
+                  />
+                </Html>
+              )}
 
               {isActiveRoom && canEditPlan && (
                 <Html
@@ -2920,6 +3234,8 @@ export default function RoomRenderer2D({
                   <div
                     data-testid="selected-room-toolbar"
                     data-room-id={room.id}
+                    data-room-x={renderX.toFixed(3)}
+                    data-room-z={renderZ.toFixed(3)}
                     style={{
                       display: "flex",
                       alignItems: "center",
@@ -2935,7 +3251,33 @@ export default function RoomRenderer2D({
                     onPointerDown={(event) => event.stopPropagation()}
                     onClick={(event) => event.stopPropagation()}
                   >
+                    <button
+                      type="button"
+                      aria-label="Move room"
+                      title="Move room"
+                      data-testid="selected-room-move"
+                      disabled={!onMoveRoom}
+                      onPointerDown={(event) => startExplicitRoomMove(room, event)}
+                      onClick={(event) => event.stopPropagation()}
+                      style={{
+                        border: "none",
+                        borderRadius: 5,
+                        background: "rgba(220,252,231,0.95)",
+                        color: "#166534",
+                        cursor: onMoveRoom ? "grab" : "not-allowed",
+                        fontSize: 9,
+                        fontWeight: 800,
+                        opacity: onMoveRoom ? 1 : 0.45,
+                        minWidth: 32,
+                        padding: "3px 6px",
+                        touchAction: "none",
+                        userSelect: "none",
+                      }}
+                    >
+                      Move
+                    </button>
                     {[
+                      { id: "floor", label: "Floor", action: onEditFloor },
                       { id: "fit", label: "Fit", action: onFitRoom },
                       { id: "rename", label: "Name", action: onRenameRoom },
                       { id: "duplicate", label: "Copy", action: onDuplicateRoom },
@@ -2972,7 +3314,7 @@ export default function RoomRenderer2D({
                 </Html>
               )}
 
-              {isActiveRoom && showDimensions && (
+              {isActiveRoom && showDimensions && !wallDrawInProgress && (
                 <Html
                   zIndexRange={[15, 0]}
                   position={[room.w / 2, 0.035, -room.d / 2]}
@@ -3007,18 +3349,86 @@ export default function RoomRenderer2D({
                     </div>
                     {canEditPlan && onCommitRoomDimensionEdit ? (
                       <div style={{ color: "#6b7280", fontSize: 9, fontWeight: 600, marginTop: 1 }}>
-                        Double-click W/D
+                        Click Width or Depth to edit
                       </div>
                     ) : null}
                   </div>
                 </Html>
               )}
 
-              {isActiveRoom && showDimensions && (
+              {isActiveRoom && showDimensions && !wallDrawInProgress && (
                 <>
+                  <Line
+                    points={[
+                      [-room.w / 2, dimensionGuideY, widthDimensionZ],
+                      [room.w / 2, dimensionGuideY, widthDimensionZ],
+                    ]}
+                    color={dimensionGuideColor}
+                    lineWidth={1.8}
+                    transparent
+                    opacity={0.92}
+                    raycast={() => null}
+                    userData={{ testId: "active-room-dimension-guide-width" }}
+                  />
+                  <Line
+                    points={[
+                      [-room.w / 2, dimensionGuideY, widthDimensionZ - dimensionGuideTick],
+                      [-room.w / 2, dimensionGuideY, widthDimensionZ + dimensionGuideTick],
+                    ]}
+                    color={dimensionGuideColor}
+                    lineWidth={1.8}
+                    transparent
+                    opacity={0.92}
+                    raycast={() => null}
+                  />
+                  <Line
+                    points={[
+                      [room.w / 2, dimensionGuideY, widthDimensionZ - dimensionGuideTick],
+                      [room.w / 2, dimensionGuideY, widthDimensionZ + dimensionGuideTick],
+                    ]}
+                    color={dimensionGuideColor}
+                    lineWidth={1.8}
+                    transparent
+                    opacity={0.92}
+                    raycast={() => null}
+                  />
+                  <Line
+                    points={[
+                      [depthDimensionX, dimensionGuideY, -room.d / 2],
+                      [depthDimensionX, dimensionGuideY, room.d / 2],
+                    ]}
+                    color={dimensionGuideColor}
+                    lineWidth={1.8}
+                    transparent
+                    opacity={0.92}
+                    raycast={() => null}
+                    userData={{ testId: "active-room-dimension-guide-depth" }}
+                  />
+                  <Line
+                    points={[
+                      [depthDimensionX - dimensionGuideTick, dimensionGuideY, -room.d / 2],
+                      [depthDimensionX + dimensionGuideTick, dimensionGuideY, -room.d / 2],
+                    ]}
+                    color={dimensionGuideColor}
+                    lineWidth={1.8}
+                    transparent
+                    opacity={0.92}
+                    raycast={() => null}
+                  />
+                  <Line
+                    points={[
+                      [depthDimensionX - dimensionGuideTick, dimensionGuideY, room.d / 2],
+                      [depthDimensionX + dimensionGuideTick, dimensionGuideY, room.d / 2],
+                    ]}
+                    color={dimensionGuideColor}
+                    lineWidth={1.8}
+                    transparent
+                    opacity={0.92}
+                    raycast={() => null}
+                  />
                   <Html
-                    zIndexRange={htmlZIndexRange}
-                    position={[0, 0.018, -room.d / 2]}
+                    zIndexRange={[20, 0]}
+                    position={[0, 0.022, widthDimensionZ]}
                     center
                     transform={false}
                   >
@@ -3039,19 +3449,20 @@ export default function RoomRenderer2D({
                           pointerEvents: "auto",
                           whiteSpace: "nowrap",
                           boxShadow: "0 1px 6px rgba(15,23,42,0.12)",
-                          transform: "translateY(-24px)",
                         }}
                         onPointerDown={(event) => event.stopPropagation()}
                       >
-                        <span>W</span>
+                        <span>Width</span>
                         <input
                           data-testid="active-room-dimension-editor-width"
                           autoFocus
                           type="number"
                           inputMode="numeric"
-                          min={0}
+                          min={ROOM_DIMENSION_EDITOR_MIN_MILLIMETERS}
+                          max={ROOM_DIMENSION_EDITOR_MAX_MILLIMETERS}
                           step={1}
-                          defaultValue={editingRoomDimension.value}
+                          value={editingRoomDimension.value}
+                          onChange={(event) => updateDimensionEditorValue(event.currentTarget.value)}
                           onBlur={(event) => commitDimensionEdit(event.currentTarget.value)}
                           onKeyDown={(event) => {
                             if (event.key === "Enter") {
@@ -3078,9 +3489,9 @@ export default function RoomRenderer2D({
                     <button
                       type="button"
                       data-testid="active-room-dimension-width"
-                      title="Double-click to edit width"
+                      title="Click to edit width"
                       onPointerDown={(event) => event.stopPropagation()}
-                      onDoubleClick={(event) => {
+                      onClick={(event) => {
                         event.stopPropagation();
                         startDimensionEdit(room, "width");
                       }}
@@ -3096,16 +3507,15 @@ export default function RoomRenderer2D({
                         whiteSpace: "nowrap",
                         boxShadow: "0 1px 3px rgba(15,23,42,0.1)",
                         cursor: canEditPlan && onCommitRoomDimensionEdit ? "text" : "default",
-                        transform: "translateY(-24px)",
                       }}
                     >
-                      W {formatDimension(room.w)}
+                      Width {formatDimension(room.w)}
                     </button>
                     )}
                   </Html>
                   <Html
-                    zIndexRange={htmlZIndexRange}
-                    position={[-room.w / 2, 0.018, 0]}
+                    zIndexRange={[20, 0]}
+                    position={[depthDimensionX, 0.022, 0]}
                     center
                     transform={false}
                   >
@@ -3126,19 +3536,20 @@ export default function RoomRenderer2D({
                           pointerEvents: "auto",
                           whiteSpace: "nowrap",
                           boxShadow: "0 1px 6px rgba(15,23,42,0.12)",
-                          transform: "translate(-46px, 22px)",
                         }}
                         onPointerDown={(event) => event.stopPropagation()}
                       >
-                        <span>D</span>
+                        <span>Depth</span>
                         <input
                           data-testid="active-room-dimension-editor-depth"
                           autoFocus
                           type="number"
                           inputMode="numeric"
-                          min={0}
+                          min={ROOM_DIMENSION_EDITOR_MIN_MILLIMETERS}
+                          max={ROOM_DIMENSION_EDITOR_MAX_MILLIMETERS}
                           step={1}
-                          defaultValue={editingRoomDimension.value}
+                          value={editingRoomDimension.value}
+                          onChange={(event) => updateDimensionEditorValue(event.currentTarget.value)}
                           onBlur={(event) => commitDimensionEdit(event.currentTarget.value)}
                           onKeyDown={(event) => {
                             if (event.key === "Enter") {
@@ -3165,9 +3576,9 @@ export default function RoomRenderer2D({
                     <button
                       type="button"
                       data-testid="active-room-dimension-depth"
-                      title="Double-click to edit depth"
+                      title="Click to edit depth"
                       onPointerDown={(event) => event.stopPropagation()}
-                      onDoubleClick={(event) => {
+                      onClick={(event) => {
                         event.stopPropagation();
                         startDimensionEdit(room, "depth");
                       }}
@@ -3183,10 +3594,9 @@ export default function RoomRenderer2D({
                         whiteSpace: "nowrap",
                         boxShadow: "0 1px 3px rgba(15,23,42,0.1)",
                         cursor: canEditPlan && onCommitRoomDimensionEdit ? "text" : "default",
-                        transform: "translate(-46px, 22px)",
                       }}
                     >
-                      D {formatDimension(room.d)}
+                      Depth {formatDimension(room.d)}
                     </button>
                     )}
                   </Html>
@@ -3238,9 +3648,136 @@ export default function RoomRenderer2D({
           );
         })}
 
+      {showDimensions && overallPlanBounds && overallPlanDimension && !wallDrawInProgress && (
+        <group>
+          <Line
+            points={[
+              [overallPlanBounds.left, overallPlanDimension.y, overallPlanDimension.widthGuideZ],
+              [overallPlanBounds.right, overallPlanDimension.y, overallPlanDimension.widthGuideZ],
+            ]}
+            color="#52525b"
+            lineWidth={1.6}
+            transparent
+            opacity={0.72}
+            raycast={() => null}
+            userData={{ testId: "overall-plan-dimension-guide-width" }}
+          />
+          <Line
+            points={[
+              [overallPlanBounds.left, overallPlanDimension.y, overallPlanDimension.widthGuideZ - overallPlanDimension.tick],
+              [overallPlanBounds.left, overallPlanDimension.y, overallPlanDimension.widthGuideZ + overallPlanDimension.tick],
+            ]}
+            color="#52525b"
+            lineWidth={1.6}
+            transparent
+            opacity={0.72}
+            raycast={() => null}
+          />
+          <Line
+            points={[
+              [overallPlanBounds.right, overallPlanDimension.y, overallPlanDimension.widthGuideZ - overallPlanDimension.tick],
+              [overallPlanBounds.right, overallPlanDimension.y, overallPlanDimension.widthGuideZ + overallPlanDimension.tick],
+            ]}
+            color="#52525b"
+            lineWidth={1.6}
+            transparent
+            opacity={0.72}
+            raycast={() => null}
+          />
+          <Html
+            zIndexRange={[13, 0]}
+            position={[overallPlanDimension.centerX, 0.021, overallPlanDimension.widthGuideZ]}
+            center
+            transform={false}
+          >
+            <div
+              data-testid="overall-plan-dimension-width"
+              style={{
+                background: "rgba(255,255,255,0.92)",
+                border: "1px solid rgba(82,82,91,0.28)",
+                borderRadius: 6,
+                boxShadow: "0 1px 4px rgba(15,23,42,0.1)",
+                color: "#3f3f46",
+                fontSize: 10,
+                fontWeight: 750,
+                padding: "2px 6px",
+                pointerEvents: "none",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {overallWidthLabel} {formatDimension(overallPlanDimension.width)}
+            </div>
+          </Html>
+          <Line
+            points={[
+              [overallPlanDimension.depthGuideX, overallPlanDimension.y, overallPlanBounds.top],
+              [overallPlanDimension.depthGuideX, overallPlanDimension.y, overallPlanBounds.bottom],
+            ]}
+            color="#52525b"
+            lineWidth={1.6}
+            transparent
+            opacity={0.72}
+            raycast={() => null}
+            userData={{ testId: "overall-plan-dimension-guide-depth" }}
+          />
+          <Line
+            points={[
+              [overallPlanDimension.depthGuideX - overallPlanDimension.tick, overallPlanDimension.y, overallPlanBounds.top],
+              [overallPlanDimension.depthGuideX + overallPlanDimension.tick, overallPlanDimension.y, overallPlanBounds.top],
+            ]}
+            color="#52525b"
+            lineWidth={1.6}
+            transparent
+            opacity={0.72}
+            raycast={() => null}
+          />
+          <Line
+            points={[
+              [overallPlanDimension.depthGuideX - overallPlanDimension.tick, overallPlanDimension.y, overallPlanBounds.bottom],
+              [overallPlanDimension.depthGuideX + overallPlanDimension.tick, overallPlanDimension.y, overallPlanBounds.bottom],
+            ]}
+            color="#52525b"
+            lineWidth={1.6}
+            transparent
+            opacity={0.72}
+            raycast={() => null}
+          />
+          <Html
+            zIndexRange={[13, 0]}
+            position={[overallPlanDimension.depthGuideX, 0.021, overallPlanDimension.centerZ]}
+            center
+            transform={false}
+          >
+            <div
+              data-testid="overall-plan-dimension-depth"
+              style={{
+                background: "rgba(255,255,255,0.92)",
+                border: "1px solid rgba(82,82,91,0.28)",
+                borderRadius: 6,
+                boxShadow: "0 1px 4px rgba(15,23,42,0.1)",
+                color: "#3f3f46",
+                fontSize: 10,
+                fontWeight: 750,
+                padding: "2px 6px",
+                pointerEvents: "none",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {overallDepthLabel} {formatDimension(overallPlanDimension.depth)}
+            </div>
+          </Html>
+        </group>
+      )}
+
       {hasHouseRooms &&
         wallBandLayout.parts.map((part) => {
           const geometry = buildWallBandGeometry2D(part);
+          const bandRoom = wallBandRooms.find((room) => part.roomIds.includes(room.id)) ?? null;
+          const bandColor = bandRoom
+            ? getHouseRoomWallPlanColor(bandRoom, part.wall, isPro)
+            : isPro
+              ? "#d4d4d8"
+              : "#c9c2b4";
           return (
             <group
               key={part.key}
@@ -3249,12 +3786,28 @@ export default function RoomRenderer2D({
             >
               <mesh
                 rotation-x={-Math.PI / 2}
-                raycast={() => null}
+                raycast={interactive ? undefined : () => null}
                 userData={{ testId: "room-wall-band-2d" }}
+                onClick={
+                  interactive && bandRoom
+                    ? (event) => {
+                        event.stopPropagation();
+                        if (onSelectSurfaceTarget) {
+                          onSelectSurfaceTarget({
+                            kind: "wall",
+                            roomId: bandRoom.id,
+                            id: part.wall,
+                          });
+                        } else {
+                          onSelectRoom?.(bandRoom.id);
+                        }
+                      }
+                    : undefined
+                }
               >
                 <planeGeometry args={geometry.size} />
                 <meshBasicMaterial
-                  color={isPro ? "#d4d4d8" : "#c9c2b4"}
+                  color={bandColor}
                   transparent
                   opacity={0.96}
                   depthWrite={false}
@@ -3263,6 +3816,25 @@ export default function RoomRenderer2D({
             </group>
           );
         })}
+
+      {hasHouseRooms &&
+        wallBandLayout.cornerCaps.map((cap) => (
+          <mesh
+            key={cap.key}
+            position={[cap.x, 0.0016, cap.z]}
+            rotation-x={-Math.PI / 2}
+            raycast={() => null}
+            userData={{ testId: "room-wall-corner-cap-2d" }}
+          >
+            <planeGeometry args={[cap.size, cap.size]} />
+            <meshBasicMaterial
+              color={isPro ? "#d4d4d8" : "#c9c2b4"}
+              transparent
+              opacity={0.96}
+              depthWrite={false}
+            />
+          </mesh>
+        ))}
 
       {hasHouseRooms &&
         wallBandLayout.windowMarkers.map((marker) => {
@@ -3732,7 +4304,7 @@ export default function RoomRenderer2D({
           </group>
         ))}
 
-      {isStraightWallDrawMode && wallDrawLinePoints.length >= 2 && (
+      {canRenderWallDrawTrace && wallDrawLinePoints.length >= 2 && (
         <Line
           points={wallDrawLinePoints}
           color="#2563eb"
@@ -3740,12 +4312,13 @@ export default function RoomRenderer2D({
         />
       )}
 
-      {isStraightWallDrawMode &&
+      {canRenderWallDrawSegmentMeasurements &&
         onCommitWallDrawSegmentLength &&
         activeDrawRoomPoints.slice(1).map((point, offsetIndex) => {
           const segmentIndex = offsetIndex + 1;
           const previousPoint = activeDrawRoomPoints[segmentIndex - 1];
           if (!previousPoint) return null;
+          if (!isWallDrawSegmentLengthRenderable(previousPoint, point)) return null;
           const midpoint = {
             x: (previousPoint.x + point.x) / 2,
             z: (previousPoint.z + point.z) / 2,
@@ -3784,8 +4357,12 @@ export default function RoomRenderer2D({
                     type="number"
                     inputMode="numeric"
                     min={0}
+                    max={MAX_WALL_DRAW_SEGMENT_LENGTH_METERS * 1000}
                     step={1}
-                    defaultValue={editingWallDrawSegment.value}
+                    value={editingWallDrawSegment.value}
+                    onChange={(event) =>
+                      updateWallDrawSegmentEditorValue(event.currentTarget.value)
+                    }
                     onBlur={(event) =>
                       commitWallDrawSegmentLengthEdit(event.currentTarget.value)
                     }
@@ -3814,9 +4391,9 @@ export default function RoomRenderer2D({
                 <button
                   type="button"
                   data-testid={`wall-draw-segment-length-${segmentIndex}`}
-                  title="Double-click to edit wall length"
+                  title="Click to edit wall length"
                   onPointerDown={(event) => event.stopPropagation()}
-                  onDoubleClick={(event) => {
+                  onClick={(event) => {
                     event.stopPropagation();
                     startWallDrawSegmentLengthEdit(segmentIndex, previousPoint, point);
                   }}
@@ -3841,7 +4418,7 @@ export default function RoomRenderer2D({
           );
         })}
 
-      {isStraightWallDrawMode &&
+      {canRenderWallDrawTrace &&
         activeDrawRoomPoints.map((point, index) => (
           <mesh
             key={`${point.x}-${point.z}-${index}`}
@@ -3853,7 +4430,7 @@ export default function RoomRenderer2D({
           </mesh>
         ))}
 
-      {isStraightWallDrawMode && lastWallDrawPoint && activeDrawRoomPreviewPoint && (
+      {canRenderWallDrawTrace && lastWallDrawPoint && activeDrawRoomPreviewPoint && (
         <Html
           zIndexRange={[10, 0]}
           position={[
@@ -4538,41 +5115,6 @@ export default function RoomRenderer2D({
             )}
           </group>
         ))}
-
-      {showDimensions && (
-        <>
-          <Html zIndexRange={htmlZIndexRange} position={[0, 0.01, -halfD - 0.18]} center transform={false}>
-            <div
-              style={{
-                fontSize: 12,
-                fontWeight: 600,
-                background: "rgba(255,255,255,0.9)",
-                border: "1px solid rgba(120,120,120,0.35)",
-                borderRadius: 6,
-                padding: "2px 7px",
-                pointerEvents: "none",
-              }}
-            >
-              {formatDimension(width)}
-            </div>
-          </Html>
-          <Html zIndexRange={htmlZIndexRange} position={[-halfW - 0.16, 0.01, 0]} center transform={false}>
-            <div
-              style={{
-                fontSize: 12,
-                fontWeight: 600,
-                background: "rgba(255,255,255,0.9)",
-                border: "1px solid rgba(120,120,120,0.35)",
-                borderRadius: 6,
-                padding: "2px 7px",
-                pointerEvents: "none",
-              }}
-            >
-              {formatDimension(depth)}
-            </div>
-          </Html>
-        </>
-      )}
 
       {showAnnotations &&
         annotations.map((note) => (

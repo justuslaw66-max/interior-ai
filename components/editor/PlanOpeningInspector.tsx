@@ -1,10 +1,14 @@
 import type { RoomOpening2D } from "@/lib/editorScene";
+import type { PlanMeasurementUnit } from "@/lib/design-page-types";
+import MeasurementField from "./MeasurementField";
+import { formatCabinetMeasurement } from "@/features/cabinetry/measurementUnits";
 
 type PlanOpeningInspectorProps = {
   opening: RoomOpening2D | null;
   roomName: string;
   wallSpanMeters: number;
   maxHeightMeters?: number;
+  measurementUnit: PlanMeasurementUnit;
   dark?: boolean;
   onChange: (
     id: string,
@@ -12,6 +16,7 @@ type PlanOpeningInspectorProps = {
       widthMeters?: number;
       offsetMeters?: number;
       heightMeters?: number;
+      bottomMeters?: number;
       kind?: RoomOpening2D["kind"];
     }
   ) => void;
@@ -22,17 +27,19 @@ export default function PlanOpeningInspector({
   roomName,
   wallSpanMeters,
   maxHeightMeters = 3.2,
+  measurementUnit,
   dark = false,
   onChange,
 }: PlanOpeningInspectorProps) {
   if (!opening) return null;
+  const maxOffsetMm = Math.max(0, (wallSpanMeters * 1000 - opening.widthMm) / 2);
 
   return (
     <div
       data-testid="plan-opening-inspector"
       className={
         dark
-          ? "space-y-3 rounded-lg border border-neutral-800 bg-[#0f1218] p-3"
+          ? "designer-raised space-y-3 rounded-lg p-3"
           : "space-y-3 rounded-lg border border-gray-200 bg-white p-3"
       }
     >
@@ -81,7 +88,7 @@ export default function PlanOpeningInspector({
             data-testid="plan-opening-kind-input"
             className={
               dark
-                ? "mt-1 w-full rounded-md border border-neutral-700 bg-[#151820] px-2 py-2 text-xs text-neutral-100 outline-none focus:border-teal-500"
+                ? "designer-control mt-1 w-full rounded-md border px-2 py-2 text-xs text-neutral-100 outline-none focus:border-blue-300"
                 : "mt-1 w-full rounded-md border border-gray-200 px-2 py-2 text-xs text-gray-900 outline-none focus:border-teal-500"
             }
             value={opening.kind}
@@ -104,95 +111,75 @@ export default function PlanOpeningInspector({
           <div
             className={
               dark
-                ? "mt-1 rounded-md border border-neutral-700 bg-[#151820] px-2 py-2 text-xs text-neutral-100"
+                ? "designer-control mt-1 rounded-md border px-2 py-2 text-xs text-neutral-100"
                 : "mt-1 rounded-md border border-gray-200 bg-gray-50 px-2 py-2 text-xs text-gray-900"
             }
           >
-            {wallSpanMeters.toFixed(2)} m
+            {formatCabinetMeasurement(wallSpanMeters * 1000, measurementUnit)}
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-2">
-        <label
-          className={
-            dark
-              ? "text-[11px] font-medium text-neutral-300"
-              : "text-[11px] font-medium text-gray-600"
+        <MeasurementField
+          label="Width"
+          testId="plan-opening-width-input"
+          valueMm={opening.widthMm}
+          unit={measurementUnit}
+          minMm={400}
+          maxMm={Math.max(400, (wallSpanMeters - 0.06) * 1000)}
+          stepMm={50}
+          keyboardStepMm={50}
+          dark={dark}
+          compact
+          onCommit={(valueMm) => onChange(opening.id, { widthMeters: valueMm / 1000 })}
+        />
+        <MeasurementField
+          label="Height"
+          testId="plan-opening-height-input"
+          valueMm={opening.heightMm ?? 2100}
+          unit={measurementUnit}
+          minMm={400}
+          maxMm={
+            Math.max(
+              0.4,
+              maxHeightMeters - (opening.kind === "window" ? (opening.bottomMm ?? 900) / 1000 : 0)
+            ) * 1000
           }
-        >
-          Width (m)
-          <input
-            data-testid="plan-opening-width-input"
-            className={
-              dark
-                ? "mt-1 w-full rounded-md border border-neutral-700 bg-[#151820] px-2 py-2 text-xs text-neutral-100 outline-none focus:border-teal-500"
-                : "mt-1 w-full rounded-md border border-gray-200 px-2 py-2 text-xs text-gray-900 outline-none focus:border-teal-500"
-            }
-            type="number"
-            min={0.4}
-            max={Math.max(0.4, wallSpanMeters - 0.06)}
-            step={0.05}
-            value={(opening.widthMm / 1000).toFixed(2)}
-            onChange={(event) => {
-              const widthMeters = Number.parseFloat(event.target.value);
-              if (!Number.isFinite(widthMeters)) return;
-              onChange(opening.id, { widthMeters });
-            }}
+          stepMm={50}
+          keyboardStepMm={50}
+          dark={dark}
+          compact
+          onCommit={(valueMm) => onChange(opening.id, { heightMeters: valueMm / 1000 })}
+        />
+        {opening.kind === "window" ? (
+          <MeasurementField
+            label="Sill height"
+            testId="plan-opening-bottom-input"
+            valueMm={opening.bottomMm ?? 900}
+            unit={measurementUnit}
+            minMm={0}
+            maxMm={Math.max(0, maxHeightMeters - 0.4) * 1000}
+            stepMm={50}
+            keyboardStepMm={50}
+            dark={dark}
+            compact
+            onCommit={(valueMm) => onChange(opening.id, { bottomMeters: valueMm / 1000 })}
           />
-        </label>
-        <label
-          className={
-            dark
-              ? "text-[11px] font-medium text-neutral-300"
-              : "text-[11px] font-medium text-gray-600"
-          }
-        >
-          Height (m)
-          <input
-            data-testid="plan-opening-height-input"
-            className={
-              dark
-                ? "mt-1 w-full rounded-md border border-neutral-700 bg-[#151820] px-2 py-2 text-xs text-neutral-100 outline-none focus:border-teal-500"
-                : "mt-1 w-full rounded-md border border-gray-200 px-2 py-2 text-xs text-gray-900 outline-none focus:border-teal-500"
-            }
-            type="number"
-            min={0.4}
-            max={maxHeightMeters}
-            step={0.05}
-            value={((opening.heightMm ?? 2100) / 1000).toFixed(2)}
-            onChange={(event) => {
-              const heightMeters = Number.parseFloat(event.target.value);
-              if (!Number.isFinite(heightMeters)) return;
-              onChange(opening.id, { heightMeters });
-            }}
-          />
-        </label>
-        <label
-          className={
-            dark
-              ? "text-[11px] font-medium text-neutral-300"
-              : "text-[11px] font-medium text-gray-600"
-          }
-        >
-          Position (m)
-          <input
-            data-testid="plan-opening-offset-input"
-            className={
-              dark
-                ? "mt-1 w-full rounded-md border border-neutral-700 bg-[#151820] px-2 py-2 text-xs text-neutral-100 outline-none focus:border-teal-500"
-                : "mt-1 w-full rounded-md border border-gray-200 px-2 py-2 text-xs text-gray-900 outline-none focus:border-teal-500"
-            }
-            type="number"
-            step={0.05}
-            value={(opening.offsetMm / 1000).toFixed(2)}
-            onChange={(event) => {
-              const offsetMeters = Number.parseFloat(event.target.value);
-              if (!Number.isFinite(offsetMeters)) return;
-              onChange(opening.id, { offsetMeters });
-            }}
-          />
-        </label>
+        ) : null}
+        <MeasurementField
+          label="Position from wall centre"
+          testId="plan-opening-offset-input"
+          valueMm={opening.offsetMm}
+          unit={measurementUnit}
+          minMm={-maxOffsetMm}
+          maxMm={maxOffsetMm}
+          stepMm={50}
+          keyboardStepMm={50}
+          dark={dark}
+          compact
+          onCommit={(valueMm) => onChange(opening.id, { offsetMeters: valueMm / 1000 })}
+        />
       </div>
     </div>
   );

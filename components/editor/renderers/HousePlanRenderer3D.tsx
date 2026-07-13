@@ -2,7 +2,7 @@
 
 import { Line } from "@react-three/drei/core/Line";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import {
@@ -16,7 +16,18 @@ import {
   type FloorMaterial,
 } from "@/lib/floor-materials";
 import { resolveCutawayWallOpacity } from "@/lib/design-page-wall-cutaway";
-import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
+import {
+  getRuntimeSurfaceMaterialById,
+  getSurfaceMaterialTextureSource,
+  type SurfaceMaterialRenderInfo,
+} from "@/lib/surface-material-runtime";
+import {
+  getCeilingSurfaceSettings,
+  getDeterministicWallFaceId,
+  getWallFaceSurfaceSettings,
+  normalizeFloorSurfaceSettings,
+} from "@/lib/surface-settings";
+import type { RoomFloorPattern } from "@/lib/room-types";
 import { useSurfaceMaterialTexture } from "./useSurfaceMaterialTexture";
 
 type HousePlanRenderer3DProps = {
@@ -25,11 +36,13 @@ type HousePlanRenderer3DProps = {
   activeRoomId: string;
   activeFloorLevel?: number;
   wallHeight: number;
-  physicalWallHeight?: number;
   stackedFloors?: boolean;
   fadeInactiveFloors?: boolean;
   interactive?: boolean;
   onSelectRoom?: (roomId: string) => void;
+  selectedOpeningId?: string | null;
+  selectedSurfaceTarget?: { kind: "floor" | "wall" | "ceiling"; roomId: string; id: string } | null;
+  onSelectSurfaceTarget?: (target: { kind: "floor" | "wall" | "ceiling"; roomId: string; id: string }) => void;
   onSelectOpening?: (openingId: string | null) => void;
   onMoveOpening?: (openingId: string, offsetMeters: number) => void;
   onOpeningDragStateChange?: (isDragging: boolean) => void;
@@ -76,7 +89,7 @@ type SharedWallRange3D = {
   end: number;
 };
 
-type StructureTargetKind = "floor" | "wall" | "opening";
+type StructureTargetKind = "floor" | "wall" | "ceiling" | "opening";
 
 type StructureTarget = {
   kind: StructureTargetKind;
@@ -92,12 +105,17 @@ const CEILING_EDGE_COLOR = "#f1f1ed";
 const ACTIVE_WALL_COLOR = "#fbfbf7";
 const INACTIVE_WALL_COLOR = "#ddddda";
 const ACTIVE_WALL_OPACITY = 1;
-const INACTIVE_WALL_OPACITY = 0.9;
+const INACTIVE_WALL_OPACITY = 1;
 const CAMERA_FACING_WALL_CUTAWAY_OPACITY = 0;
 const STRUCTURE_HOVER_OUTLINE_COLOR = "#00d5e8";
 const STRUCTURE_SELECTED_OUTLINE_COLOR = "#2563eb";
 const ACTIVE_FLOOR_OUTLINE_COLOR = "#1d4ed8";
 const INACTIVE_FLOOR_OPACITY_MULTIPLIER = 0.32;
+const WALL_SURFACE_TEXTURE_RESOLUTION = {
+  maxSize: 4096,
+  minSize: 768,
+  pixelsPerMeter: 560,
+} as const;
 
 function clampStructureOpacity(value: number | undefined): number {
   return Math.max(0.05, Math.min(1, typeof value === "number" && Number.isFinite(value) ? value : 1));
@@ -117,7 +135,10 @@ function getRoomFloorLevel(room: HousePlanRoom2D): number {
 
 function createFloorMaterialTexture(
   material: FloorMaterial,
-  maxAnisotropy: number
+  maxAnisotropy: number,
+  floorPattern: RoomFloorPattern = "straight",
+  jointSizeMm = 2,
+  jointColor = material.lineColor
 ): THREE.CanvasTexture | null {
   if (typeof document === "undefined") return null;
 
@@ -168,11 +189,11 @@ function createFloorMaterialTexture(
     context.restore();
   }
 
-  if (material.pattern === "tile_grid") {
+  if (material.pattern === "tile_grid" || floorPattern === "grid" || floorPattern === "checker") {
     context.save();
     context.globalAlpha = 0.24;
-    context.strokeStyle = material.lineColor;
-    context.lineWidth = 1.2;
+    context.strokeStyle = jointColor;
+    context.lineWidth = Math.max(1, Math.min(6, jointSizeMm * 0.8));
 
     for (let position = 0; position <= size; position += 64) {
       context.beginPath();
@@ -209,6 +230,131 @@ function createFloorMaterialTexture(
     context.restore();
   }
 
+  if (floorPattern === "brick") {
+    context.save();
+    context.globalAlpha = 0.24;
+    context.strokeStyle = jointColor;
+    context.lineWidth = Math.max(1, Math.min(6, jointSizeMm * 0.8));
+    for (let y = 0; y <= size; y += 42) {
+      context.beginPath();
+      context.moveTo(0, y);
+      context.lineTo(size, y);
+      context.stroke();
+      const offset = Math.floor(y / 42) % 2 === 0 ? 0 : 48;
+      for (let x = offset; x <= size; x += 96) {
+        context.beginPath();
+        context.moveTo(x, y);
+        context.lineTo(x, y + 42);
+        context.stroke();
+      }
+    }
+    context.restore();
+  }
+
+  if (floorPattern === "random_stagger") {
+    context.save();
+    context.globalAlpha = 0.24;
+    context.strokeStyle = jointColor;
+    context.lineWidth = Math.max(1, Math.min(6, jointSizeMm * 0.8));
+    const rowHeight = 42;
+    const tileWidth = 96;
+    const rowOffsets = [0, 40, 17, 65];
+    for (let y = 0; y <= size; y += rowHeight) {
+      context.beginPath();
+      context.moveTo(0, y);
+      context.lineTo(size, y);
+      context.stroke();
+      const rowIndex = Math.floor(y / rowHeight);
+      const offset = rowOffsets[rowIndex % rowOffsets.length];
+      for (let x = -tileWidth + offset; x <= size; x += tileWidth) {
+        context.beginPath();
+        context.moveTo(x, y);
+        context.lineTo(x, y + rowHeight);
+        context.stroke();
+      }
+    }
+    context.restore();
+  }
+
+  if (floorPattern === "vertical_brick") {
+    context.save();
+    context.globalAlpha = 0.24;
+    context.strokeStyle = jointColor;
+    context.lineWidth = Math.max(1, Math.min(6, jointSizeMm * 0.8));
+    for (let x = 0; x <= size; x += 42) {
+      context.beginPath();
+      context.moveTo(x, 0);
+      context.lineTo(x, size);
+      context.stroke();
+      const offset = Math.floor(x / 42) % 2 === 0 ? 0 : 48;
+      for (let y = offset; y <= size; y += 96) {
+        context.beginPath();
+        context.moveTo(x, y);
+        context.lineTo(x + 42, y);
+        context.stroke();
+      }
+    }
+    context.restore();
+  }
+
+  if (floorPattern === "herringbone") {
+    context.save();
+    const materialRgb = /^#([0-9a-f]{6})$/i.test(material.renderColor)
+      ? [
+          Number.parseInt(material.renderColor.slice(1, 3), 16),
+          Number.parseInt(material.renderColor.slice(3, 5), 16),
+          Number.parseInt(material.renderColor.slice(5, 7), 16),
+        ]
+      : [185, 174, 154];
+    const jointRgb = /^#([0-9a-f]{6})$/i.test(jointColor)
+      ? [
+          Number.parseInt(jointColor.slice(1, 3), 16),
+          Number.parseInt(jointColor.slice(3, 5), 16),
+          Number.parseInt(jointColor.slice(5, 7), 16),
+        ]
+      : [142, 142, 142];
+    const plankLength = 96;
+    const plankWidth = 16;
+    const aspectRatio = plankLength / plankWidth;
+    const jointInset = Math.max(0.7, Math.min(2.5, jointSizeMm * 0.45));
+    const imageData = context.createImageData(size, size);
+    const data = imageData.data;
+    for (let pixelY = 0; pixelY < size; pixelY += 1) {
+      const unitY = pixelY / plankWidth;
+      const rowIndex = Math.floor(unitY);
+      const baseLocalY = ((unitY % 1) + 1) % 1;
+
+      for (let pixelX = 0; pixelX < size; pixelX += 1) {
+        const unitX = pixelX / plankWidth;
+        let localXUnit = ((unitX - rowIndex) % (aspectRatio * 2) + aspectRatio * 2) % (aspectRatio * 2);
+        let localYUnit = baseLocalY;
+
+        if (localXUnit >= aspectRatio) {
+          const wrappedX = localXUnit;
+          const wrappedY = localYUnit;
+          localYUnit = ((wrappedX % 1) + 1) % 1;
+          localXUnit = 2 * aspectRatio - Math.ceil(wrappedX) + wrappedY;
+        }
+
+        const localX = localXUnit * plankWidth;
+        const localY = localYUnit * plankWidth;
+        const inJoint =
+          localX < jointInset ||
+          localX > plankLength - jointInset ||
+          localY < jointInset ||
+          localY > plankWidth - jointInset;
+        const outputIndex = (pixelY * size + pixelX) * 4;
+        const color = inJoint ? jointRgb : materialRgb;
+        data[outputIndex] = color[0];
+        data[outputIndex + 1] = color[1];
+        data[outputIndex + 2] = color[2];
+        data[outputIndex + 3] = 255;
+      }
+    }
+    context.putImageData(imageData, 0, 0);
+    context.restore();
+  }
+
   const texture = new THREE.CanvasTexture(canvas);
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
@@ -216,6 +362,123 @@ function createFloorMaterialTexture(
   texture.anisotropy = Math.min(8, Math.max(1, maxAnisotropy));
   texture.needsUpdate = true;
   return texture;
+}
+
+function getSurfaceMaterialRepeatSizeMeters(material: SurfaceMaterialRenderInfo | null) {
+  const specs = material?.physical_specs;
+  const repeat = material?.texture_assets.texture_repeat_size_cm;
+  const widthMm = specs?.tile_width_mm ?? specs?.plank_width_mm ?? null;
+  const heightMm = specs?.tile_length_mm ?? specs?.plank_length_mm ?? null;
+  if (widthMm && heightMm) {
+    return {
+      width: Math.max(0.05, widthMm / 1000),
+      height: Math.max(0.05, heightMm / 1000),
+    };
+  }
+  if (repeat?.width && repeat?.height) {
+    return {
+      width: Math.max(0.05, repeat.width / 100),
+      height: Math.max(0.05, repeat.height / 100),
+    };
+  }
+  return { width: 1, height: 1 };
+}
+
+function getSurfaceMaterialFallbackColor(material: SurfaceMaterialRenderInfo | null): string | null {
+  const colorFamily = material?.classification?.color_family;
+  if (colorFamily === "grey") return "#b7b7b2";
+  if (colorFamily === "charcoal") return "#5b5d5a";
+  if (colorFamily === "brown" || colorFamily === "walnut") return "#8b755c";
+  if (colorFamily === "cream" || colorFamily === "beige") return "#d8ccbb";
+  if (colorFamily === "white") return "#ece9e1";
+  return material ? "#c9c2b4" : null;
+}
+
+function useSurfaceMaterialSourceTexture({
+  material,
+  surfaceWidthMeters,
+  surfaceHeightMeters,
+  scale,
+  rotationRad,
+  maxAnisotropy,
+}: {
+  material: SurfaceMaterialRenderInfo | null;
+  surfaceWidthMeters: number;
+  surfaceHeightMeters: number;
+  scale: number;
+  rotationRad: number;
+  maxAnisotropy: number;
+}) {
+  const source = useMemo(() => getSurfaceMaterialTextureSource(material), [material]);
+  const textureKey = source
+    ? [
+        material?.surface_material.material_id,
+        source.url,
+        surfaceWidthMeters,
+        surfaceHeightMeters,
+        scale,
+        rotationRad,
+        maxAnisotropy,
+      ].join(":")
+    : null;
+  const [textureState, setTextureState] = useState<{ key: string; texture: THREE.Texture } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    let loadedTexture: THREE.Texture | null = null;
+    if (!material || !source || !textureKey) {
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const loader = new THREE.TextureLoader();
+    loader.setCrossOrigin("anonymous");
+    loader.load(
+      source.url,
+      (texture) => {
+        if (cancelled) {
+          texture.dispose();
+          return;
+        }
+        const repeatSize = getSurfaceMaterialRepeatSizeMeters(material);
+        const safeScale = Math.max(0.1, Math.min(5, Number.isFinite(scale) ? scale : 1));
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.anisotropy = Math.min(8, Math.max(1, maxAnisotropy));
+        texture.center.set(0.5, 0.5);
+        texture.rotation = rotationRad;
+        texture.repeat.set(
+          Math.max(1, surfaceWidthMeters / Math.max(0.05, repeatSize.width * safeScale)),
+          Math.max(1, surfaceHeightMeters / Math.max(0.05, repeatSize.height * safeScale))
+        );
+        texture.needsUpdate = true;
+        loadedTexture = texture;
+        setTextureState({ key: textureKey, texture });
+      },
+      undefined,
+      () => {
+        if (!cancelled) setTextureState((current) => (current?.key === textureKey ? null : current));
+      }
+    );
+
+    return () => {
+      cancelled = true;
+      loadedTexture?.dispose();
+    };
+  }, [
+    material,
+    maxAnisotropy,
+    rotationRad,
+    scale,
+    source,
+    surfaceHeightMeters,
+    surfaceWidthMeters,
+    textureKey,
+  ]);
+
+  return textureState?.key === textureKey ? textureState.texture : null;
 }
 
 function getStructureTargetKey(target: StructureTarget | null): string | null {
@@ -492,6 +755,48 @@ function getWallSegments(room: HousePlanRoom2D): WallSegment3D[] {
       rotationY: -Math.atan2(dz, dx),
       axis: Math.abs(dx) >= Math.abs(dz) ? "x" : "z",
     };
+  });
+}
+
+function getWallSurfaceFaceId(room: HousePlanRoom2D, segment: WallSegment3D): string {
+  if (segment.wall) return segment.wall;
+  const suffix = segment.key.startsWith(`${room.id}-`)
+    ? segment.key.slice(room.id.length + 1)
+    : segment.key;
+  return getDeterministicWallFaceId(suffix);
+}
+
+function getWallInteriorSurfaceSide(room: HousePlanRoom2D, segment: WallSegment3D): 1 | -1 {
+  if (segment.wall === "north" || segment.wall === "east") return 1;
+  if (segment.wall === "south" || segment.wall === "west") return -1;
+
+  const localPlusZNormal = {
+    x: Math.sin(segment.rotationY),
+    z: Math.cos(segment.rotationY),
+  };
+  const vectorToRoomCenter = {
+    x: -segment.x,
+    z: -segment.z,
+  };
+  return localPlusZNormal.x * vectorToRoomCenter.x + localPlusZNormal.z * vectorToRoomCenter.z >= 0
+    ? 1
+    : -1;
+}
+
+export function getWallInteriorSurfaceSideForTest(
+  room: HousePlanRoom2D,
+  segment: {
+    wall?: "north" | "east" | "south" | "west";
+    x: number;
+    z: number;
+    rotationY: number;
+  }
+): 1 | -1 {
+  return getWallInteriorSurfaceSide(room, {
+    key: "test-wall-segment",
+    length: 1,
+    axis: "x",
+    ...segment,
   });
 }
 
@@ -847,6 +1152,186 @@ function getSharedWallRenderOwnerRoomId(
   return [room.id, ...sharedRoomIds].sort()[0];
 }
 
+function WallSurfaceSideMesh({
+  materialKey,
+  target,
+  settings,
+  partLength,
+  partHeight,
+  side,
+  wallThickness,
+  active,
+  baseOpacity,
+  outlineStyle,
+  interactive,
+  pickEnabledRef,
+  onMaterialReady,
+  onHoverTarget,
+  onClearHoverTarget,
+  onSelectTarget,
+}: {
+  materialKey: string;
+  target: StructureTarget;
+  settings: ReturnType<typeof getWallFaceSurfaceSettings>;
+  partLength: number;
+  partHeight: number;
+  side: 1 | -1;
+  wallThickness: number;
+  active: boolean;
+  baseOpacity: number;
+  outlineStyle: ReturnType<typeof getStructureOutlineStyle>;
+  interactive: boolean;
+  pickEnabledRef: { current: boolean };
+  onMaterialReady: (targetKey: string, material: THREE.MeshStandardMaterial | null) => void;
+  onHoverTarget: (target: StructureTarget) => void;
+  onClearHoverTarget: (target: StructureTarget) => void;
+  onSelectTarget: (target: StructureTarget, event: ThreeEvent<MouseEvent | PointerEvent>) => void;
+}) {
+  const { gl, invalidate } = useThree();
+  const surfaceMeshRef = useRef<THREE.Mesh | null>(null);
+  const hitMeshRef = useRef<THREE.Mesh | null>(null);
+  const materialRef = useRef<THREE.MeshStandardMaterial | null>(null);
+  const wallSurfaceMaterial = getRuntimeSurfaceMaterialById(settings.materialId);
+  const patternedWallTexture = useSurfaceMaterialTexture({
+    material: wallSurfaceMaterial,
+    roomWidthMeters: partLength,
+    roomDepthMeters: partHeight,
+    floorScale: settings.scale,
+    rotationRad: THREE.MathUtils.degToRad(settings.rotationDeg),
+    floorPattern: settings.pattern,
+    patternOffset: settings.offset,
+    jointSizeMm: settings.jointSizeMm,
+    jointColor: settings.jointColor,
+    maxAnisotropy: gl.capabilities.getMaxAnisotropy(),
+    uvMode: "normalized",
+    textureResolution: WALL_SURFACE_TEXTURE_RESOLUTION,
+  });
+  const sourceWallTexture = useSurfaceMaterialSourceTexture({
+    material: wallSurfaceMaterial,
+    surfaceWidthMeters: partLength,
+    surfaceHeightMeters: partHeight,
+    scale: settings.scale,
+    rotationRad: THREE.MathUtils.degToRad(settings.rotationDeg),
+    maxAnisotropy: gl.capabilities.getMaxAnisotropy(),
+  });
+  const wallTexture = patternedWallTexture ?? sourceWallTexture;
+  const wallColor =
+    wallTexture
+      ? "#ffffff"
+      : settings.paintColorHex ??
+        getSurfaceMaterialFallbackColor(wallSurfaceMaterial) ??
+        (active ? ACTIVE_WALL_COLOR : INACTIVE_WALL_COLOR);
+  const surfaceOffsetZ = side * (wallThickness / 2 + 0.0015);
+  const surfaceRotationY = side === 1 ? 0 : Math.PI;
+  const raycastWhenPickable = useCallback(
+    (raycaster: THREE.Raycaster, intersects: THREE.Intersection[]) => {
+      const mesh = surfaceMeshRef.current;
+      if (!interactive || !pickEnabledRef.current || !mesh) return;
+      THREE.Mesh.prototype.raycast.call(mesh, raycaster, intersects);
+    },
+    [interactive, pickEnabledRef]
+  );
+  const raycastHitWhenPickable = useCallback(
+    (raycaster: THREE.Raycaster, intersects: THREE.Intersection[]) => {
+      const mesh = hitMeshRef.current;
+      if (!interactive || !pickEnabledRef.current || !mesh) return;
+      THREE.Mesh.prototype.raycast.call(mesh, raycaster, intersects);
+    },
+    [interactive, pickEnabledRef]
+  );
+  const handlePointerOver = interactive
+    ? (event: ThreeEvent<PointerEvent>) => {
+        event.stopPropagation();
+        onHoverTarget(target);
+      }
+    : undefined;
+  const handlePointerOut = interactive
+    ? (event: ThreeEvent<PointerEvent>) => {
+        event.stopPropagation();
+        onClearHoverTarget(target);
+      }
+    : undefined;
+  const handleClick = interactive
+    ? (event: ThreeEvent<MouseEvent>) => {
+        onSelectTarget(target, event);
+      }
+    : undefined;
+
+  useEffect(() => {
+    onMaterialReady(materialKey, materialRef.current);
+    return () => onMaterialReady(materialKey, null);
+  }, [materialKey, onMaterialReady]);
+
+  useEffect(() => {
+    if (!materialRef.current) return;
+    materialRef.current.map = wallTexture;
+    materialRef.current.color.set(wallColor);
+    materialRef.current.needsUpdate = true;
+    invalidate();
+  }, [invalidate, wallColor, wallTexture]);
+
+  return (
+    <group position={[0, 0, surfaceOffsetZ]} rotation-y={surfaceRotationY}>
+      <mesh
+        ref={surfaceMeshRef}
+        renderOrder={12}
+        raycast={raycastWhenPickable}
+        onPointerOver={handlePointerOver}
+        onPointerOut={handlePointerOut}
+        onClick={handleClick}
+      >
+        <planeGeometry args={[partLength, partHeight]} />
+        <meshStandardMaterial
+          ref={materialRef}
+          color={wallColor}
+          map={wallTexture ?? undefined}
+          roughness={wallSurfaceMaterial ? wallSurfaceMaterial.rendering.roughness : 0.86}
+          metalness={wallSurfaceMaterial ? wallSurfaceMaterial.rendering.metalness : 0}
+          side={THREE.DoubleSide}
+          transparent={baseOpacity < 0.999}
+          depthWrite={baseOpacity > 0.34}
+          opacity={baseOpacity}
+          polygonOffset
+          polygonOffsetFactor={-1}
+          polygonOffsetUnits={-1}
+        />
+        {outlineStyle ? (
+          <Line
+            points={[
+              [-partLength / 2, -partHeight / 2 + 0.025, 0.003],
+              [partLength / 2, -partHeight / 2 + 0.025, 0.003],
+              [partLength / 2, partHeight / 2 - 0.025, 0.003],
+              [-partLength / 2, partHeight / 2 - 0.025, 0.003],
+              [-partLength / 2, -partHeight / 2 + 0.025, 0.003],
+            ]}
+            color={outlineStyle.color}
+            lineWidth={outlineStyle.lineWidth}
+            raycast={() => null}
+          />
+        ) : null}
+      </mesh>
+      <mesh
+        ref={hitMeshRef}
+        position={[0, 0, 0.001]}
+        raycast={raycastHitWhenPickable}
+        onPointerOver={handlePointerOver}
+        onPointerOut={handlePointerOut}
+        onClick={handleClick}
+      >
+        <planeGeometry args={[partLength + 0.02, partHeight + 0.04]} />
+        <meshBasicMaterial
+          transparent
+          opacity={0}
+          depthWrite={false}
+          colorWrite={false}
+          side={THREE.DoubleSide}
+          toneMapped={false}
+        />
+      </mesh>
+    </group>
+  );
+}
+
 function CutawayWallMesh({
   room,
   rooms,
@@ -855,6 +1340,7 @@ function CutawayWallMesh({
   wallHeight,
   wallThickness,
   wallOpacity,
+  activeRoomId,
   isActive,
   interactive,
   hoveredTargetKey,
@@ -870,6 +1356,7 @@ function CutawayWallMesh({
   wallHeight: number;
   wallThickness: number;
   wallOpacity: number;
+  activeRoomId: string;
   isActive: boolean;
   interactive: boolean;
   hoveredTargetKey: string | null;
@@ -879,19 +1366,90 @@ function CutawayWallMesh({
   onSelectTarget: (target: StructureTarget, event: ThreeEvent<MouseEvent | PointerEvent>) => void;
 }) {
   const { camera } = useThree();
-  const meshRef = useRef<THREE.Mesh | null>(null);
-  const materialRef = useRef<THREE.MeshStandardMaterial | null>(null);
+  const groupRef = useRef<THREE.Group | null>(null);
+  const baseMaterialRef = useRef<THREE.MeshStandardMaterial | null>(null);
+  const surfaceMaterialRefs = useRef<Map<string, THREE.MeshStandardMaterial>>(new Map());
   const baseOpacity = (isActive ? ACTIVE_WALL_OPACITY : INACTIVE_WALL_OPACITY) * wallOpacity;
   const partHeight = part.height ?? wallHeight;
   const partCenterY = part.centerY ?? wallHeight / 2;
-  const target: StructureTarget = {
+  const faceId = getWallSurfaceFaceId(room, segment);
+  const currentRoomTarget: StructureTarget = {
     kind: "wall",
     roomId: room.id,
-    id: part.key,
+    id: faceId,
   };
-  const targetKey = getStructureTargetKey(target) ?? "";
-  const outlineStyle = getStructureOutlineStyle(targetKey, hoveredTargetKey, selectedTargetKey);
+  const surfaces = room.surfaces ?? room.surfaceFinishes;
+  const wallSettings = getWallFaceSurfaceSettings(
+    surfaces,
+    faceId,
+    normalizeFloorRotationDeg,
+    clampFloorPatternScale
+  );
+  const interiorSurfaceSide = getWallInteriorSurfaceSide(room, segment);
   const isInteriorSharedWall = isWallPartSharedWithAnotherRoom(room, rooms, segment, part);
+  const sharedRoomIds = getSharedWallRoomIds(room, rooms, segment, part);
+  const sharedWall = segment.wall;
+  const targetKey = getStructureTargetKey(currentRoomTarget) ?? `${room.id}:${faceId}`;
+  const surfaceSides = [
+    {
+      key: `${part.key}:${targetKey}:interior`,
+      targetKey,
+      target: currentRoomTarget,
+      settings: wallSettings,
+      side: interiorSurfaceSide,
+      active: room.id === activeRoomId,
+    },
+    ...(sharedWall
+      ? sharedRoomIds.flatMap((sharedRoomId) => {
+          const sharedRoom = rooms.find((entry) => entry.id === sharedRoomId);
+          if (!sharedRoom) return [];
+          const sharedFaceId = oppositeWall(sharedWall);
+          const sharedTarget: StructureTarget = {
+            kind: "wall",
+            roomId: sharedRoom.id,
+            id: sharedFaceId,
+          };
+          const sharedSettings = getWallFaceSurfaceSettings(
+            sharedRoom.surfaces ?? sharedRoom.surfaceFinishes,
+            sharedFaceId,
+            normalizeFloorRotationDeg,
+            clampFloorPatternScale
+          );
+          return [
+            {
+              key: `${part.key}:${getStructureTargetKey(sharedTarget) ?? `${sharedRoom.id}:${sharedFaceId}`}`,
+              targetKey: getStructureTargetKey(sharedTarget) ?? `${sharedRoom.id}:${sharedFaceId}`,
+              target: sharedTarget,
+              settings: sharedSettings,
+              side: -interiorSurfaceSide as 1 | -1,
+              active: sharedRoom.id === activeRoomId,
+            },
+          ];
+        })
+      : []),
+    ...(sharedRoomIds.length === 0
+      ? [
+          {
+            key: `${part.key}:${targetKey}:exterior`,
+            targetKey,
+            target: currentRoomTarget,
+            settings: wallSettings,
+            side: -interiorSurfaceSide as 1 | -1,
+            active: room.id === activeRoomId,
+          },
+        ]
+      : []),
+  ];
+  const handleSurfaceMaterialReady = useCallback(
+    (targetKey: string, material: THREE.MeshStandardMaterial | null) => {
+      if (material) {
+        surfaceMaterialRefs.current.set(targetKey, material);
+        return;
+      }
+      surfaceMaterialRefs.current.delete(targetKey);
+    },
+    []
+  );
   const sharedWallOwnerRoomId = getSharedWallRenderOwnerRoomId(
     room,
     rooms,
@@ -899,115 +1457,102 @@ function CutawayWallMesh({
     part
   );
   const isDuplicateSharedWall = sharedWallOwnerRoomId !== room.id;
+  const pickEnabledRef = useRef(!isDuplicateSharedWall && baseOpacity > 0.01);
 
   useFrame(() => {
-    if (isDuplicateSharedWall) return;
-
-    const material = materialRef.current;
-    if (!material) return;
+    if (isDuplicateSharedWall) {
+      pickEnabledRef.current = false;
+      return;
+    }
 
     let targetOpacity = baseOpacity;
 
     if (!isInteriorSharedWall) {
       targetOpacity = resolveCutawayWallOpacity({
-          cameraX: camera.position.x,
-          cameraZ: camera.position.z,
-          roomX: room.x,
-          roomZ: room.z,
-          roomWidth: room.w,
-          roomDepth: room.d,
-          wall: segment.wall,
-          baseOpacity,
-          cutawayEligible: true,
-          cutawayOpacity: CAMERA_FACING_WALL_CUTAWAY_OPACITY,
-        });
+        cameraX: camera.position.x,
+        cameraZ: camera.position.z,
+        roomX: room.x,
+        roomZ: room.z,
+        roomWidth: room.w,
+        roomDepth: room.d,
+        wall: segment.wall,
+        baseOpacity,
+        cutawayEligible: true,
+        cutawayOpacity: CAMERA_FACING_WALL_CUTAWAY_OPACITY,
+      });
     }
-    const nextOpacity = material.opacity + (targetOpacity - material.opacity) * 0.28;
+
     const shouldRender = targetOpacity > 0.01;
 
-    if (meshRef.current) {
-      meshRef.current.visible = shouldRender;
+    if (groupRef.current) {
+      groupRef.current.visible = shouldRender;
     }
+    pickEnabledRef.current = shouldRender;
 
-    if (Math.abs(material.opacity - nextOpacity) < 0.002) {
-      material.opacity = targetOpacity;
-    } else {
-      material.opacity = nextOpacity;
-    }
+    const materials = [baseMaterialRef.current, ...Array.from(surfaceMaterialRefs.current.values())].filter(
+      (material): material is THREE.MeshStandardMaterial => Boolean(material)
+    );
+    if (materials.length === 0) return;
 
-    material.transparent = true;
-    material.depthWrite = material.opacity > 0.34;
+    const referenceOpacity = baseMaterialRef.current?.opacity ?? targetOpacity;
+    const nextOpacity = referenceOpacity + (targetOpacity - referenceOpacity) * 0.28;
+
+    materials.forEach((material) => {
+      if (Math.abs(material.opacity - nextOpacity) < 0.002) {
+        material.opacity = targetOpacity;
+      } else {
+        material.opacity = nextOpacity;
+      }
+
+      const nextTransparent = targetOpacity < 0.999 || material.opacity < 0.999;
+      if (material.transparent !== nextTransparent) {
+        material.transparent = nextTransparent;
+        material.needsUpdate = true;
+      }
+      material.depthWrite = material.opacity > 0.34;
+    });
   });
 
   if (isDuplicateSharedWall) return null;
 
   return (
-    <mesh
-      ref={meshRef}
+    <group
+      ref={groupRef}
       position={[part.x, partCenterY, part.z]}
       rotation-y={segment.rotationY}
-      raycast={interactive ? undefined : () => null}
-      onPointerOver={
-        interactive
-          ? (event) => {
-              event.stopPropagation();
-              onHoverTarget(target);
-            }
-          : undefined
-      }
-      onPointerOut={
-        interactive
-          ? (event) => {
-              event.stopPropagation();
-              onClearHoverTarget(target);
-            }
-          : undefined
-      }
-      onClick={
-        interactive
-          ? (event) => {
-              onSelectTarget(target, event);
-            }
-          : undefined
-      }
     >
-      <boxGeometry args={[part.length, partHeight, wallThickness]} />
-      <meshStandardMaterial
-        ref={materialRef}
-        color={isActive ? ACTIVE_WALL_COLOR : INACTIVE_WALL_COLOR}
-        roughness={0.86}
-        metalness={0}
-        transparent
-        depthWrite={baseOpacity > 0.34}
-        opacity={baseOpacity}
-      />
-      {outlineStyle ? (
-        <>
-          <Line
-            points={[
-              [-part.length / 2, -partHeight / 2 + 0.025, wallThickness / 2 + 0.012],
-              [part.length / 2, -partHeight / 2 + 0.025, wallThickness / 2 + 0.012],
-              [part.length / 2, partHeight / 2 - 0.025, wallThickness / 2 + 0.012],
-              [-part.length / 2, partHeight / 2 - 0.025, wallThickness / 2 + 0.012],
-              [-part.length / 2, -partHeight / 2 + 0.025, wallThickness / 2 + 0.012],
-            ]}
-            color={outlineStyle.color}
-            lineWidth={outlineStyle.lineWidth}
-          />
-          <Line
-            points={[
-              [-part.length / 2, -partHeight / 2 + 0.025, -wallThickness / 2 - 0.012],
-              [part.length / 2, -partHeight / 2 + 0.025, -wallThickness / 2 - 0.012],
-              [part.length / 2, partHeight / 2 - 0.025, -wallThickness / 2 - 0.012],
-              [-part.length / 2, partHeight / 2 - 0.025, -wallThickness / 2 - 0.012],
-              [-part.length / 2, -partHeight / 2 + 0.025, -wallThickness / 2 - 0.012],
-            ]}
-            color={outlineStyle.color}
-            lineWidth={outlineStyle.lineWidth}
-          />
-        </>
-      ) : null}
-    </mesh>
+      <mesh raycast={() => null}>
+        <boxGeometry args={[part.length, partHeight, wallThickness]} />
+        <meshStandardMaterial
+          ref={baseMaterialRef}
+          color={isActive ? ACTIVE_WALL_COLOR : INACTIVE_WALL_COLOR}
+          transparent={baseOpacity < 0.999}
+          depthWrite={baseOpacity > 0.34}
+          opacity={baseOpacity}
+        />
+      </mesh>
+      {surfaceSides.map((surface) => (
+        <WallSurfaceSideMesh
+          key={surface.key}
+          materialKey={surface.key}
+          target={surface.target}
+          settings={surface.settings}
+          partLength={part.length}
+          partHeight={partHeight}
+          side={surface.side}
+          wallThickness={wallThickness}
+          active={surface.active}
+          baseOpacity={baseOpacity}
+          outlineStyle={getStructureOutlineStyle(surface.targetKey, hoveredTargetKey, selectedTargetKey)}
+          interactive={interactive}
+          pickEnabledRef={pickEnabledRef}
+          onMaterialReady={handleSurfaceMaterialReady}
+          onHoverTarget={onHoverTarget}
+          onClearHoverTarget={onClearHoverTarget}
+          onSelectTarget={onSelectTarget}
+        />
+      ))}
+    </group>
   );
 }
 
@@ -1044,8 +1589,12 @@ function OpeningThresholdMesh({
   onMoveOpening?: (openingId: string, offsetMeters: number) => void;
   onOpeningDragStateChange?: (isDragging: boolean) => void;
 }) {
+  const { camera } = useThree();
+  const openingMeshRef = useRef<THREE.Mesh | null>(null);
+  const openingHitMeshRef = useRef<THREE.Mesh | null>(null);
   const dragStateRef = useRef<{ pointerId: number; grabDelta: number } | null>(null);
   const dragPointRef = useRef(new THREE.Vector3());
+  const openingPickEnabledRef = useRef(true);
   const target: StructureTarget = {
     kind: "opening",
     roomId,
@@ -1062,6 +1611,26 @@ function OpeningThresholdMesh({
   const jambHeight = jambTopY - jambBaseY;
   const hitHeight = Math.max(0.75, jambTopY + 0.18);
   const canDragOpening = interactive && Boolean(sourceOpening && sourceRoom && onMoveOpening);
+  const raycastOpeningWhenPickable = useCallback(
+    (raycaster: THREE.Raycaster, intersects: THREE.Intersection[]) => {
+      const mesh = openingMeshRef.current;
+      if (!interactive || !openingPickEnabledRef.current || !mesh) return;
+      THREE.Mesh.prototype.raycast.call(mesh, raycaster, intersects);
+    },
+    [interactive]
+  );
+  const raycastOpeningHitWhenPickable = useCallback(
+    (raycaster: THREE.Raycaster, intersects: THREE.Intersection[]) => {
+      const mesh = openingHitMeshRef.current;
+      if (!interactive || !openingPickEnabledRef.current || !mesh) return;
+      THREE.Mesh.prototype.raycast.call(mesh, raycaster, intersects);
+    },
+    [interactive]
+  );
+
+  useFrame(() => {
+    openingPickEnabledRef.current = camera.position.y >= floorWorldY - 0.02;
+  });
 
   const getPointerOffset = (event: ThreeEvent<PointerEvent>) => {
     if (!sourceOpening || !sourceRoom) return null;
@@ -1113,9 +1682,10 @@ function OpeningThresholdMesh({
 
   return (
     <mesh
+      ref={openingMeshRef}
       position={[threshold.x, 0.015, threshold.z]}
       rotation-y={segment.rotationY}
-      raycast={interactive ? undefined : () => null}
+      raycast={raycastOpeningWhenPickable}
       onPointerDown={
         interactive
           ? (event) => {
@@ -1184,8 +1754,10 @@ function OpeningThresholdMesh({
       <boxGeometry args={[threshold.length, 0.03, thresholdDepth]} />
       <meshStandardMaterial color="#d6b88a" roughness={0.78} metalness={0} />
       <mesh
+        ref={openingHitMeshRef}
         position={[0, hitHeight / 2, 0]}
         renderOrder={21}
+        raycast={raycastOpeningHitWhenPickable}
       >
         <boxGeometry args={[threshold.length + 0.22, hitHeight, thresholdDepth + 0.22]} />
         <meshBasicMaterial
@@ -1276,12 +1848,15 @@ function RoomFloorMesh({
   const { camera, gl } = useThree();
   const floorSurfaceRef = useRef<THREE.Mesh | null>(null);
   const floorBandRef = useRef<THREE.Mesh | null>(null);
+  const floorPickEnabledRef = useRef(true);
   const maxAnisotropy = gl.capabilities.getMaxAnisotropy();
   const surfaces = room.surfaces ?? room.surfaceFinishes;
-  const floorScale = clampFloorPatternScale(surfaces?.floorScale);
-  const floorRotation = THREE.MathUtils.degToRad(
-    normalizeFloorRotationDeg(surfaces?.floorRotationDeg)
+  const floorSettings = normalizeFloorSurfaceSettings(
+    surfaces,
+    normalizeFloorRotationDeg,
+    clampFloorPatternScale
   );
+  const floorRotation = THREE.MathUtils.degToRad(floorSettings.floorRotationDeg);
   const surfaceMaterial = getRuntimeSurfaceMaterialById(surfaces?.floorMaterialId);
   const slabEdgeOffset = wallThickness / 2;
   const floorBandGeometry = useMemo(
@@ -1292,20 +1867,41 @@ function RoomFloorMesh({
     material: surfaceMaterial,
     roomWidthMeters: room.w,
     roomDepthMeters: room.d,
-    floorScale,
+    floorScale: floorSettings.floorScale,
     rotationRad: floorRotation,
+    floorPattern: floorSettings.floorPattern,
+    patternOffset: floorSettings.floorPatternOffset,
+    jointSizeMm: floorSettings.floorJointSizeMm,
+    jointColor: floorSettings.floorJointColor,
     maxAnisotropy,
   });
   const defaultTexture = useMemo(() => {
-    const nextTexture = createFloorMaterialTexture(material, maxAnisotropy);
+    const nextTexture = createFloorMaterialTexture(
+      material,
+      maxAnisotropy,
+      floorSettings.floorPattern,
+      floorSettings.floorJointSizeMm,
+      floorSettings.floorJointColor
+    );
     if (!nextTexture) return null;
 
-    nextTexture.repeat.set(1 / floorScale, 1 / floorScale);
+    nextTexture.repeat.set(1 / floorSettings.floorScale, 1 / floorSettings.floorScale);
     nextTexture.center.set(0.5, 0.5);
+    nextTexture.offset.set(floorSettings.floorPatternOffset.x, floorSettings.floorPatternOffset.y);
     nextTexture.rotation = floorRotation;
     nextTexture.needsUpdate = true;
     return nextTexture;
-  }, [material, maxAnisotropy, floorScale, floorRotation]);
+  }, [
+    material,
+    maxAnisotropy,
+    floorSettings.floorPattern,
+    floorSettings.floorJointColor,
+    floorSettings.floorJointSizeMm,
+    floorSettings.floorPatternOffset.x,
+    floorSettings.floorPatternOffset.y,
+    floorSettings.floorScale,
+    floorRotation,
+  ]);
 
   useEffect(() => {
     return () => {
@@ -1319,10 +1915,20 @@ function RoomFloorMesh({
     };
   }, [floorBandGeometry]);
 
+  const raycastFloorSurface = useCallback(
+    (raycaster: THREE.Raycaster, intersects: THREE.Intersection[]) => {
+      const mesh = floorSurfaceRef.current;
+      if (!interactive || !floorPickEnabledRef.current || !mesh) return;
+      THREE.Mesh.prototype.raycast.call(mesh, raycaster, intersects);
+    },
+    [interactive]
+  );
+
   useFrame(() => {
     const floorVisible = camera.position.y > floorWorldY - slabThickness * 0.35;
     if (floorSurfaceRef.current) floorSurfaceRef.current.visible = floorVisible;
     if (floorBandRef.current) floorBandRef.current.visible = floorVisible;
+    floorPickEnabledRef.current = floorVisible;
   });
 
   return (
@@ -1331,7 +1937,7 @@ function RoomFloorMesh({
         ref={floorSurfaceRef}
         rotation-x={-Math.PI / 2}
         position={[0, 0.001, 0]}
-        raycast={interactive ? undefined : () => null}
+        raycast={raycastFloorSurface}
         onPointerOver={
           interactive
             ? (event) => {
@@ -1383,22 +1989,37 @@ function RoomFloorMesh({
 
 function RoomCeilingCapMesh({
   room,
+  floorWorldY,
   wallHeight,
   wallThickness,
   visible,
   opacity,
   color,
+  interactive,
+  ceilingTarget,
+  outlineStyle,
+  onHoverTarget,
+  onClearHoverTarget,
+  onSelectTarget,
 }: {
   room: HousePlanRoom2D;
+  floorWorldY: number;
   wallHeight: number;
   wallThickness: number;
   visible: boolean;
   opacity: number;
   color: string;
+  interactive: boolean;
+  ceilingTarget: StructureTarget;
+  outlineStyle: ReturnType<typeof getStructureOutlineStyle>;
+  onHoverTarget: (target: StructureTarget) => void;
+  onClearHoverTarget: (target: StructureTarget) => void;
+  onSelectTarget: (target: StructureTarget, event: ThreeEvent<MouseEvent | PointerEvent>) => void;
 }) {
   const { camera } = useThree();
   const groupRef = useRef<THREE.Group | null>(null);
-  const cameraDirectionRef = useRef(new THREE.Vector3());
+  const ceilingCapMeshRef = useRef<THREE.Mesh | null>(null);
+  const ceilingCapPickEnabledRef = useRef(false);
   const slabEdgeOffset = wallThickness / 2;
   const ceilingCapGeometry = useMemo(
     () => buildHorizontalRoomGeometry(room, slabEdgeOffset),
@@ -1408,20 +2029,30 @@ function RoomCeilingCapMesh({
     () => buildRoomEdgeBandGeometry(room, CEILING_THICKNESS_METERS, slabEdgeOffset),
     [room, slabEdgeOffset]
   );
+  const raycastCeilingCap = useCallback(
+    (raycaster: THREE.Raycaster, intersects: THREE.Intersection[]) => {
+      const mesh = ceilingCapMeshRef.current;
+      if (!interactive || !ceilingCapPickEnabledRef.current) return;
+      if (raycaster.ray.direction.y <= 0.001) return;
+      if (!mesh) return;
+      THREE.Mesh.prototype.raycast.call(mesh, raycaster, intersects);
+    },
+    [interactive]
+  );
 
   useFrame(() => {
     const group = groupRef.current;
     if (!group) return;
     if (!visible) {
       group.visible = false;
+      ceilingCapPickEnabledRef.current = false;
       return;
     }
 
-    camera.getWorldDirection(cameraDirectionRef.current);
-    const isLowEnoughForUnderside =
-      camera.position.y < wallHeight + CEILING_THICKNESS_METERS + 0.35;
-    const isLookingIntoRoom = cameraDirectionRef.current.y > -0.02;
-    group.visible = isLowEnoughForUnderside && isLookingIntoRoom;
+    const ceilingWorldY = floorWorldY + wallHeight;
+    const canPickCeilingCap = camera.position.y < ceilingWorldY - 0.005;
+    group.visible = canPickCeilingCap;
+    ceilingCapPickEnabledRef.current = canPickCeilingCap;
   });
 
   useEffect(() => {
@@ -1434,9 +2065,33 @@ function RoomCeilingCapMesh({
   return (
     <group ref={groupRef} position={[0, wallHeight, 0]} visible={false}>
       <mesh
+        ref={ceilingCapMeshRef}
         geometry={ceilingCapGeometry}
-        raycast={() => null}
+        raycast={raycastCeilingCap}
         renderOrder={1}
+        onPointerOver={
+          interactive
+            ? (event) => {
+                event.stopPropagation();
+                onHoverTarget(ceilingTarget);
+              }
+            : undefined
+        }
+        onPointerOut={
+          interactive
+            ? (event) => {
+                event.stopPropagation();
+                onClearHoverTarget(ceilingTarget);
+              }
+            : undefined
+        }
+        onClick={
+          interactive
+            ? (event) => {
+                onSelectTarget(ceilingTarget, event);
+              }
+            : undefined
+        }
       >
         <meshBasicMaterial
           color={color}
@@ -1445,6 +2100,15 @@ function RoomCeilingCapMesh({
           side={THREE.DoubleSide}
         />
       </mesh>
+      {outlineStyle ? (
+        <Line
+          points={getRoomOutlinePoints(room).map(([x, z]) => [x, -0.012, z])}
+          color={outlineStyle.color}
+          lineWidth={outlineStyle.lineWidth}
+          depthTest={false}
+          raycast={() => null}
+        />
+      ) : null}
       <mesh
         geometry={ceilingBandGeometry}
         raycast={() => null}
@@ -1467,11 +2131,13 @@ export default function HousePlanRenderer3D({
   activeRoomId,
   activeFloorLevel,
   wallHeight,
-  physicalWallHeight = wallHeight,
   stackedFloors = false,
   fadeInactiveFloors = false,
   interactive = false,
   onSelectRoom,
+  selectedOpeningId = null,
+  selectedSurfaceTarget = null,
+  onSelectSurfaceTarget,
   onSelectOpening,
   onMoveOpening,
   onOpeningDragStateChange,
@@ -1484,13 +2150,16 @@ export default function HousePlanRenderer3D({
         ? getRoomFloorLevel(activeRoom)
         : 1;
   const [hoveredStructureTarget, setHoveredStructureTarget] = useState<StructureTarget | null>(null);
-  const [selectedStructureTarget, setSelectedStructureTarget] = useState<StructureTarget | null>(null);
   const hoveredTargetKey = getStructureTargetKey(hoveredStructureTarget);
+  const selectedOpening = selectedOpeningId
+    ? openings.find((opening) => opening.id === selectedOpeningId) ?? null
+    : null;
   const selectedTargetKey = getStructureTargetKey(
-    selectedStructureTarget &&
-      (selectedStructureTarget.kind === "opening" || selectedStructureTarget.roomId === activeRoomId)
-      ? selectedStructureTarget
-      : null
+    selectedSurfaceTarget?.roomId === activeRoomId
+      ? selectedSurfaceTarget
+      : selectedOpening
+        ? { kind: "opening", roomId: selectedOpening.roomId ?? activeRoomId, id: selectedOpening.id }
+        : null
   );
 
   const clearHoveredTarget = (target: StructureTarget) => {
@@ -1505,12 +2174,19 @@ export default function HousePlanRenderer3D({
   ) => {
     if (!interactive) return;
     event.stopPropagation();
-    setSelectedStructureTarget(target);
     if (target.kind === "opening") {
       onSelectOpening?.(target.id);
       return;
     }
-    onSelectRoom?.(target.roomId);
+    if (onSelectSurfaceTarget) {
+      onSelectSurfaceTarget({
+        kind: target.kind,
+        roomId: target.roomId,
+        id: target.id,
+      });
+    } else {
+      onSelectRoom?.(target.roomId);
+    }
     onSelectOpening?.(null);
   };
 
@@ -1531,17 +2207,34 @@ export default function HousePlanRenderer3D({
         const wallOpacity = clampStructureOpacity(room.surfaceOpacity?.wall) * inactiveFloorMultiplier;
         const floorOpacity = clampStructureOpacity(room.surfaceOpacity?.floor) * inactiveFloorMultiplier;
         const ceilingOpacity = clampStructureOpacity(room.surfaceOpacity?.ceiling) * inactiveFloorMultiplier;
-        const ceilingColor = surfaces?.ceilingColor ?? CEILING_CAP_COLOR;
+        const ceilingSettings = getCeilingSurfaceSettings(
+          surfaces,
+          normalizeFloorRotationDeg,
+          clampFloorPatternScale
+        );
+        const ceilingColor = ceilingSettings.paintColorHex ?? surfaces?.ceilingColor ?? CEILING_CAP_COLOR;
         const slabThickness = Math.max(0.01, room.slabThickness ?? FLOOR_THICKNESS_METERS);
-        const floorYOffset = getFloorYOffset(room, wallHeight, stackedFloors);
+        const roomWallHeight = Math.max(0.2, room.height ?? wallHeight);
+        const floorYOffset = getFloorYOffset(room, roomWallHeight, stackedFloors);
         const floorTarget: StructureTarget = {
           kind: "floor",
           roomId: room.id,
           id: "floor",
         };
+        const ceilingTarget: StructureTarget = {
+          kind: "ceiling",
+          roomId: room.id,
+          id: "ceiling",
+        };
         const floorTargetKey = getStructureTargetKey(floorTarget) ?? "";
+        const ceilingTargetKey = getStructureTargetKey(ceilingTarget) ?? "";
         const floorOutlineStyle = getStructureOutlineStyle(
           floorTargetKey,
+          hoveredTargetKey,
+          selectedTargetKey
+        );
+        const ceilingOutlineStyle = getStructureOutlineStyle(
+          ceilingTargetKey,
           hoveredTargetKey,
           selectedTargetKey
         );
@@ -1567,6 +2260,7 @@ export default function HousePlanRenderer3D({
                 points={outlinePoints.map(([x, z]) => [x, 0.035, z])}
                 color={floorOutlineStyle.color}
                 lineWidth={floorOutlineStyle.lineWidth}
+                raycast={() => null}
               />
             ) : null}
 
@@ -1575,10 +2269,16 @@ export default function HousePlanRenderer3D({
                 points={outlinePoints.map(([x, z]) => [x, 0.055, z])}
                 color={ACTIVE_FLOOR_OUTLINE_COLOR}
                 lineWidth={2.2}
+                raycast={() => null}
               />
             ) : null}
 
             {wallSegments.flatMap((segment) => {
+              const wallFaceId = getWallSurfaceFaceId(room, segment);
+              const segmentWallHeight = Math.max(
+                0.2,
+                room.wallHeights?.[wallFaceId] ?? roomWallHeight
+              );
               const wallOpenings = getWallOpenings(room, segment, rooms, openings);
               const parts = splitWallPartsAtSharedBoundaries(
                 room,
@@ -1589,14 +2289,14 @@ export default function HousePlanRenderer3D({
               const lintelParts = buildOpeningLintelParts(
                 segment,
                 wallOpenings,
-                wallHeight,
-                physicalWallHeight
+                segmentWallHeight,
+                segmentWallHeight
               );
               const thresholds = getOpeningThresholds(
                 segment,
                 wallOpenings,
-                wallHeight,
-                physicalWallHeight
+                segmentWallHeight,
+                segmentWallHeight
               );
 
               return [
@@ -1607,9 +2307,10 @@ export default function HousePlanRenderer3D({
                     rooms={rooms}
                     segment={segment}
                     part={part}
-                    wallHeight={wallHeight}
+                    wallHeight={segmentWallHeight}
                     wallThickness={STRUCTURE_THICKNESS_METERS}
                     wallOpacity={wallOpacity}
+                    activeRoomId={activeRoomId}
                     isActive={isActive}
                     interactive={interactive}
                     hoveredTargetKey={hoveredTargetKey}
@@ -1653,11 +2354,18 @@ export default function HousePlanRenderer3D({
 
             <RoomCeilingCapMesh
               room={room}
-              wallHeight={wallHeight}
+              floorWorldY={floorYOffset}
+              wallHeight={roomWallHeight}
               wallThickness={STRUCTURE_THICKNESS_METERS}
               visible={room.ceilingVisible ?? true}
               opacity={ceilingOpacity}
               color={ceilingColor}
+              interactive={interactive}
+              ceilingTarget={ceilingTarget}
+              outlineStyle={ceilingOutlineStyle}
+              onHoverTarget={setHoveredStructureTarget}
+              onClearHoverTarget={clearHoveredTarget}
+              onSelectTarget={selectStructureTarget}
             />
           </group>
         );

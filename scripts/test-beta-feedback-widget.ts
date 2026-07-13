@@ -6,6 +6,10 @@ const widgetSource = readFileSync(
   join(process.cwd(), "components/BetaFeedbackWidget.tsx"),
   "utf8"
 );
+const commandBarSource = readFileSync(
+  join(process.cwd(), "components/editor/EditorCommandBar.tsx"),
+  "utf8"
+);
 const designPageSource = readFileSync(join(process.cwd(), "app/design/page.tsx"), "utf8");
 const appEventRouteSource = readFileSync(
   join(process.cwd(), "app/api/track/app-event/route.ts"),
@@ -20,8 +24,8 @@ assert.match(
 );
 assert.match(
   appEventRouteSource,
-  /"beta_feedback_submitted"/,
-  "beta feedback should be accepted by the app-event route allow-list."
+  /new Set<AppEventType>\(APP_EVENT_TYPES\)/,
+  "beta feedback should be accepted through the shared typed app-event allow-list."
 );
 assert.match(
   appEventsSource,
@@ -34,9 +38,14 @@ assert.match(
   "app-event route should return the persisted event id."
 );
 assert.match(
-  widgetSource,
+  commandBarSource,
   /data-testid="beta-feedback-open"/,
-  "beta feedback entry point should have a stable test id."
+  "beta feedback entry point in the More menu should have a stable test id."
+);
+assert.match(
+  commandBarSource,
+  /data-testid="beta-feedback-open"[\s\S]*setOverflowOpen\(false\);[\s\S]*onFeedback\(\);/,
+  "opening feedback should close the More menu first."
 );
 assert.match(
   widgetSource,
@@ -102,6 +111,11 @@ assert.match(
   designPageSource,
   /!\s*isClientPreview\s*&&\s*\([\s\S]*<BetaFeedbackWidget/,
   "beta feedback should mount in the editor but not in client preview mode."
+);
+assert.match(
+  designPageSource,
+  /<BetaFeedbackWidget[\s\S]*open=\{feedbackOpen\}[\s\S]*onOpenChange=\{setFeedbackOpen\}[\s\S]*showTrigger=\{false\}/,
+  "the feedback dialog should remain mounted outside the More menu with its floating trigger hidden."
 );
 assert.match(
   designPageSource,

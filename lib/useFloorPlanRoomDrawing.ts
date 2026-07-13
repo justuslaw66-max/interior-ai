@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, type Dispatch, type SetStateAction } from "react";
+import { useCallback, useEffect, type Dispatch, type SetStateAction } from "react";
 import type {
   ResolvedWallDrawRoom,
   TracedRoomRectangle,
@@ -21,7 +21,11 @@ import type {
   FloorPlanPoint,
   FloorPlanUnderlay,
 } from "@/lib/floor-plan-types";
-import { roundPlanCoordinate, type HousePlan2D } from "@/lib/design-page-house-plan";
+import {
+  ROOM_DIMENSION_DEFAULTS,
+  roundPlanCoordinate,
+  type HousePlan2D,
+} from "@/lib/design-page-house-plan";
 
 type UseFloorPlanRoomDrawingParams = {
   blankGridRoomDrawActive: boolean;
@@ -40,6 +44,26 @@ type UseFloorPlanRoomDrawingParams = {
   applyTracedRoomRectangle: (bounds: TracedRoomRectangle) => boolean;
   showRuleToast: (label: string) => void;
 };
+
+function hasOversizedWallDrawSegment(points: FloorPlanPoint[]): boolean {
+  for (let index = 1; index < points.length; index += 1) {
+    const previousPoint = points[index - 1];
+    const point = points[index];
+    const length = Math.hypot(point.x - previousPoint.x, point.z - previousPoint.z);
+    if (!Number.isFinite(length) || length <= 0 || length > ROOM_DIMENSION_DEFAULTS.max) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function isWallDrawSegmentWithinRoomLimit(
+  start: FloorPlanPoint,
+  end: FloorPlanPoint
+): boolean {
+  const length = Math.hypot(end.x - start.x, end.z - start.z);
+  return Number.isFinite(length) && length > 0 && length <= ROOM_DIMENSION_DEFAULTS.max;
+}
 
 export function useFloorPlanRoomDrawing({
   blankGridRoomDrawActive,
@@ -62,6 +86,22 @@ export function useFloorPlanRoomDrawing({
     setFloorPlanTraceRoomPoints([]);
     setBlankGridRoomPreviewPoint(null);
   }, [setBlankGridRoomPreviewPoint, setFloorPlanTraceRoomPoints]);
+
+  useEffect(() => {
+    if (!floorPlanTraceRoomMode || floorPlanDrawRoomMode !== "straight_wall") return;
+    if (!hasOversizedWallDrawSegment(floorPlanTraceRoomPoints)) return;
+
+    setFloorPlanTraceRoomPoints([]);
+    setBlankGridRoomPreviewPoint(null);
+    showRuleToast("Enter a valid wall length.");
+  }, [
+    floorPlanDrawRoomMode,
+    floorPlanTraceRoomMode,
+    floorPlanTraceRoomPoints,
+    setBlankGridRoomPreviewPoint,
+    setFloorPlanTraceRoomPoints,
+    showRuleToast,
+  ]);
 
   const undoFloorPlanTraceRoomPoint = useCallback(() => {
     if (floorPlanDrawRoomMode !== "straight_wall" || floorPlanTraceRoomPoints.length === 0) {
@@ -155,6 +195,12 @@ export function useFloorPlanRoomDrawing({
           Math.abs(lastPoint.z - snappedPoint.z) <= 0.001
         ) {
           setBlankGridRoomPreviewPoint(null);
+          return;
+        }
+
+        if (lastPoint && !isWallDrawSegmentWithinRoomLimit(lastPoint, snappedPoint)) {
+          resetFloorPlanTraceRoomPoints();
+          showRuleToast("Enter a valid wall length.");
           return;
         }
 
@@ -294,6 +340,12 @@ export function useFloorPlanRoomDrawing({
         return;
       }
 
+      if (lastPoint && !isWallDrawSegmentWithinRoomLimit(lastPoint, snappedPoint)) {
+        resetFloorPlanTraceRoomPoints();
+        showRuleToast("Enter a valid wall length.");
+        return;
+      }
+
       const closingPath = isClosingWallDrawPoint(
         snappedPoint,
         floorPlanTraceRoomPoints[0],
@@ -345,9 +397,13 @@ export function useFloorPlanRoomDrawing({
         setBlankGridRoomPreviewPoint(snapBlankGridRoomDrawPoint(point));
         return;
       }
-      setBlankGridRoomPreviewPoint(
-        snapBlankGridWallDrawPoint(point, floorPlanTraceRoomPoints)
-      );
+      const snappedPoint = snapBlankGridWallDrawPoint(point, floorPlanTraceRoomPoints);
+      const lastPoint = floorPlanTraceRoomPoints[floorPlanTraceRoomPoints.length - 1];
+      if (lastPoint && !isWallDrawSegmentWithinRoomLimit(lastPoint, snappedPoint)) {
+        setBlankGridRoomPreviewPoint(null);
+        return;
+      }
+      setBlankGridRoomPreviewPoint(snappedPoint);
     },
     [
       blankGridRoomDrawActive,
@@ -369,7 +425,11 @@ export function useFloorPlanRoomDrawing({
     }
 
     const lengthMm = Number(floorPlanExactWallLengthInput.trim());
-    if (!Number.isFinite(lengthMm) || lengthMm <= 0) {
+    if (
+      !Number.isFinite(lengthMm) ||
+      lengthMm <= 0 ||
+      lengthMm > ROOM_DIMENSION_DEFAULTS.max * 1000
+    ) {
       showRuleToast("Enter a valid wall length.");
       return;
     }
@@ -435,8 +495,13 @@ export function useFloorPlanRoomDrawing({
         segmentIndex <= 0 ||
         segmentIndex >= floorPlanTraceRoomPoints.length ||
         !Number.isFinite(valueMeters) ||
-        valueMeters <= 0
+        valueMeters <= 0 ||
+        valueMeters > ROOM_DIMENSION_DEFAULTS.max
       ) {
+        if (Number.isFinite(valueMeters) && valueMeters > ROOM_DIMENSION_DEFAULTS.max) {
+          setFloorPlanTraceRoomPoints([]);
+          setBlankGridRoomPreviewPoint(null);
+        }
         showRuleToast("Enter a valid wall length.");
         return;
       }

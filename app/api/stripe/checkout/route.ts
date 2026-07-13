@@ -6,6 +6,13 @@ import { config } from "@/lib/config";
 import { rateLimit } from "@/lib/rateLimit";
 import { logAppEvent } from "@/lib/app-events";
 import {
+  isActiveProSubscription,
+  listBlockingManagedProSubscriptions,
+  ProBillingConfigurationError,
+  resolveProCheckoutSelection,
+  resolveProPriceCatalog,
+} from "@/lib/stripe-pro-billing";
+import {
   buildProviderFailureBoundaryDiagnostics,
   buildCheckoutBoundaryResponsePayload,
   isBetaCheckoutBoundary,
@@ -47,56 +54,100 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Too many checkout requests" }, { status: 429 });
     }
 
-    const { priceId, interval } = await req.json().catch(() => ({}));
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return NextResponse.json(
+        { error: "Request body must include a billing interval", code: "invalid_request" },
+        { status: 400 }
+      );
+    }
+    const bodyKeys = Object.keys(body);
+    if (bodyKeys.some((key) => key !== "interval")) {
+      return NextResponse.json(
+        { error: "Only the billing interval may be selected", code: "invalid_request" },
+        { status: 400 }
+      );
+    }
+    const requestedInterval =
+      body && typeof body === "object" ? (body as { interval?: unknown }).interval : undefined;
 
-    const fallbackPriceId =
-      interval === "yearly"
-        ? process.env.STRIPE_PRICE_PRO_YEARLY
-        : process.env.STRIPE_PRICE_PRO_MONTHLY;
-
-    const resolvedPriceId =
-      typeof priceId === "string" && priceId.trim().length > 0 ? priceId : fallbackPriceId;
-
-    if (!resolvedPriceId || resolvedPriceId.includes("...")) {
+    let selection: ReturnType<typeof resolveProCheckoutSelection>;
+    try {
+      selection = resolveProCheckoutSelection(requestedInterval);
+    } catch (error) {
+      if (!(error instanceof ProBillingConfigurationError)) throw error;
       if (isBetaCheckoutBoundary(boundary)) {
         return NextResponse.json(
           buildCheckoutBoundaryResponsePayload(
             buildProviderFailureBoundaryDiagnostics(
               boundary,
               "stripe",
-              interval === "yearly"
-                ? "STRIPE_PRICE_PRO_YEARLY is not configured"
-                : "STRIPE_PRICE_PRO_MONTHLY is not configured"
+              error.message
             )
           ),
           { status: 503 }
         );
       }
 
+      return NextResponse.json({ error: error.message }, { status: 503 });
+    }
+
+    if (!selection) {
       return NextResponse.json(
-        {
-          error:
-            interval === "yearly"
-              ? "STRIPE_PRICE_PRO_YEARLY is not configured"
-              : "STRIPE_PRICE_PRO_MONTHLY is not configured",
-        },
+        { error: "interval must be monthly or yearly", code: "invalid_interval" },
         { status: 400 }
       );
     }
 
     const stripe = getStripeClient();
+    const priceCatalog = resolveProPriceCatalog();
 
     const dbUser = await prisma.user.findUnique({ where: { id: session.user.id } });
     if (!dbUser) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    if (dbUser.plan === "pro") {
+      return NextResponse.json(
+        { error: "Already subscribed to Pro", code: "already_pro" },
+        { status: 409 }
+      );
+    }
+
     let customerId = dbUser.stripeCustomerId;
+
+    if (customerId) {
+      const blockingSubscriptions = await listBlockingManagedProSubscriptions(
+        stripe,
+        customerId,
+        priceCatalog
+      );
+      const activeSubscription = blockingSubscriptions.find(isActiveProSubscription);
+      if (activeSubscription) {
+        await prisma.user.update({
+          where: { id: dbUser.id },
+          data: { plan: "pro", stripeSubscriptionId: activeSubscription.id },
+        });
+      }
+      if (blockingSubscriptions.length > 0) {
+        return NextResponse.json(
+          {
+            error: activeSubscription
+              ? "Already subscribed to Pro"
+              : "A Pro subscription is already being processed",
+            code: "subscription_exists",
+          },
+          { status: 409 }
+        );
+      }
+    }
 
     if (!customerId) {
       const customer = await stripe.customers.create({
         email: dbUser.email ?? undefined,
         metadata: { userId: dbUser.id },
+      }, {
+        idempotencyKey: `interior-ai:pro-customer:${dbUser.id}`,
       });
       customerId = customer.id;
 
@@ -106,24 +157,44 @@ export async function POST(req: Request) {
       });
     }
 
-    const origin = req.headers.get("origin") || process.env.APP_ORIGIN || "http://localhost:3000";
+    const origin = process.env.APP_ORIGIN || new URL(req.url).origin;
 
     const checkoutSession = await stripe.checkout.sessions.create({
       mode: "subscription",
       customer: customerId,
-      line_items: [{ price: resolvedPriceId, quantity: 1 }],
+      client_reference_id: dbUser.id,
+      line_items: [{ price: selection.priceId, quantity: 1 }],
       success_url: `${origin}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/billing/cancel`,
       allow_promotion_codes: true,
+      metadata: {
+        userId: dbUser.id,
+        plan: "pro",
+        interval: selection.interval,
+        priceId: selection.priceId,
+      },
+      subscription_data: {
+        metadata: {
+          userId: dbUser.id,
+          plan: "pro",
+          interval: selection.interval,
+          priceId: selection.priceId,
+        },
+      },
     });
 
     await logAppEvent({
       eventType: "checkout_started",
       userId: session.user.id,
-      meta: { provider: "stripe", priceId: resolvedPriceId },
+      meta: {
+        provider: "stripe",
+        interval: selection.interval,
+        priceId: selection.priceId,
+        sessionId: checkoutSession.id,
+      },
     });
 
-    return NextResponse.json({ url: checkoutSession.url });
+    return NextResponse.json({ sessionId: checkoutSession.id, url: checkoutSession.url });
   } catch (error: unknown) {
     const message = getErrorMessage(error);
     console.error("Stripe checkout error:", message);

@@ -60,6 +60,7 @@ type ShoppingRoom = Pick<RoomSnapshot, "id" | "name" | "roomType" | "items">;
 type RoomWithItems = Pick<RoomSnapshot, "items"> | null | undefined;
 
 function shouldCountItem(item: DesignItem): boolean {
+  if (item.assetType === "parametric_cabinet") return false;
   return item.bundleRole !== "component";
 }
 

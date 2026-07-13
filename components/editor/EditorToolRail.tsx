@@ -29,7 +29,7 @@ type ToolButtonProps = {
 function toolButtonClass(active: boolean, dark: boolean): string {
   if (active) {
     return dark
-      ? "bg-white text-neutral-950"
+      ? "designer-command-selection"
       : "bg-neutral-900 text-white";
   }
 
@@ -132,7 +132,7 @@ export default function EditorToolRail({
       data-testid="editor-tool-rail"
       className={
         dark
-          ? "absolute left-4 top-20 z-40 flex w-12 flex-col items-center gap-2 rounded-2xl border border-white/15 bg-[#12151dcc] p-2 shadow-xl backdrop-blur"
+          ? "designer-tool-rail absolute left-4 top-20 z-40 flex w-12 flex-col items-center gap-2 rounded-2xl p-2"
           : "absolute left-4 top-20 z-40 flex w-12 flex-col items-center gap-2 rounded-2xl border border-neutral-200 bg-white/95 p-2 shadow-xl backdrop-blur"
       }
       aria-label="Editor tools"
@@ -192,7 +192,7 @@ export default function EditorToolRail({
       <div
         className={
           dark
-            ? "my-1 h-px w-7 bg-white/15"
+            ? "designer-divider my-1 h-px w-7 border-t"
             : "my-1 h-px w-7 bg-neutral-200"
         }
       />

@@ -122,10 +122,11 @@ product_details:
 assets:
   asset_id: "dining-real-castlery-sloane-dining-table-180"
   model_url: "/assets/models/dining-real-castlery-sloane-dining-table-180.glb"
-  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678429516/crusader/variants/50520003/Sloane-Dining-Table-180cm-Angle-1678429514.jpg"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678429516/crusader/variants/50520003/Sloane-Dining-Table-180cm-Front-1678429514.jpg"
   gallery_images:
     - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678697606/crusader/variants/50520003/Sloane-Dining-Table-With-Dining-Bench-With-4-Cane-Chair-Dune-Grey-Oak-Square-Set_1-1678697604.jpg"
     - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678429516/crusader/variants/50520003/Sloane-Dining-Table-180cm-Angle-1678429514.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1700464887/crusader/variants/50520004/Callie-4-Dining-Chair-With-2-Dining-Arm-Chair-Square-Set_3-1700464884.jpg"
     - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1715050191/crusader/variants/50520003/Oslo-Chair-Performance-White-Quartz-Boucle-Square-Set_1-1715050188.jpg"
     - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678697647/crusader/variants/50520003/Sloane-Dining-Table-Det_1-1678697645.jpg"
     - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678429548/crusader/variants/50520003/Sloane-Dining-Table-Square-Det_5-1678429546.jpg"
@@ -146,10 +147,11 @@ variants:
     finish_code: "grey_oak"
     finish_label: "Grey Oak"
     swatch_group: "wood_finish"
-    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678429516/crusader/variants/50520003/Sloane-Dining-Table-180cm-Angle-1678429514.jpg"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678429516/crusader/variants/50520003/Sloane-Dining-Table-180cm-Front-1678429514.jpg"
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678697606/crusader/variants/50520003/Sloane-Dining-Table-With-Dining-Bench-With-4-Cane-Chair-Dune-Grey-Oak-Square-Set_1-1678697604.jpg"
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678429516/crusader/variants/50520003/Sloane-Dining-Table-180cm-Angle-1678429514.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1700464887/crusader/variants/50520004/Callie-4-Dining-Chair-With-2-Dining-Arm-Chair-Square-Set_3-1700464884.jpg"
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1715050191/crusader/variants/50520003/Oslo-Chair-Performance-White-Quartz-Boucle-Square-Set_1-1715050188.jpg"
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678697647/crusader/variants/50520003/Sloane-Dining-Table-Det_1-1678697645.jpg"
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678429548/crusader/variants/50520003/Sloane-Dining-Table-Square-Det_5-1678429546.jpg"

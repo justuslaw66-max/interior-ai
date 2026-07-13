@@ -85,6 +85,53 @@ export function normalizeCatalogMediaPresentationMode(
     : undefined;
 }
 
+function normalizedMediaUrl(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+/**
+ * Detects an explicitly authored front-facing product image from its URL.
+ * Retailer CDNs commonly encode the view in the filename, while some importers
+ * supply it as a query parameter.
+ */
+export function isLikelyFrontShotImage(value: unknown): boolean {
+  const raw = normalizedMediaUrl(value);
+  if (!raw) return false;
+
+  let decoded = raw;
+  try {
+    decoded = decodeURIComponent(raw);
+  } catch {
+    // Keep the original URL when malformed percent encoding is encountered.
+  }
+
+  if (/[?&](?:view|shot|angle|orientation)=front(?:[&#]|$)/i.test(decoded)) {
+    return true;
+  }
+
+  const pathname = decoded.split(/[?#]/, 1)[0] ?? decoded;
+  const filename = pathname.slice(pathname.lastIndexOf("/") + 1);
+  return /(?:^|[\s._-])front(?:[\s._-]+(?:view|shot|facing))?(?:[\s._-]|$)/i.test(filename);
+}
+
+/**
+ * Selects a front shot when one is available, otherwise preserves the authored
+ * thumbnail and finally falls back to the first usable gallery image.
+ */
+export function selectPreferredCatalogThumbnail({
+  thumbnailUrl,
+  galleryImages = [],
+}: {
+  thumbnailUrl?: unknown;
+  galleryImages?: unknown[];
+}): string | undefined {
+  const authoredThumbnail = normalizedMediaUrl(thumbnailUrl);
+  const candidates = [authoredThumbnail, ...galleryImages.map(normalizedMediaUrl)].filter(Boolean);
+  const uniqueCandidates = Array.from(new Set(candidates));
+
+  return uniqueCandidates.find(isLikelyFrontShotImage) ?? (authoredThumbnail || uniqueCandidates[0] || undefined);
+}
+
 export function inferCatalogMediaPresentationMode({
   imageUrls,
   brand,

@@ -177,6 +177,81 @@ assert.ok(
   missingDoorReport.issues.some((issue) => issue.action === "add_storage"),
   "Plans without entry, storage, laundry, or utility signals should get a friendly storage tip."
 );
+const detachedReport = buildFloorPlanQualityReport({
+  rooms: [
+    adjacentRooms[0],
+    {
+      ...adjacentRooms[1],
+      x: 12,
+      z: 0,
+    },
+  ],
+  openings: [
+    {
+      id: "living-window",
+      roomId: "living",
+      wall: "west",
+      offsetMm: 0,
+      widthMm: 1200,
+      kind: "window",
+    },
+    {
+      id: "bedroom-window",
+      roomId: "bedroom",
+      wall: "east",
+      offsetMm: 0,
+      widthMm: 1200,
+      kind: "window",
+    },
+  ],
+  items: [],
+  activeRoomId: "living",
+});
+assert.ok(
+  detachedReport.issues.some(
+    (issue) => issue.action === "review_plan_layout" && /detached/.test(issue.title)
+  ),
+  "Detached rooms should create review-plan connection issues."
+);
+assert.ok(
+  detachedReport.categoryScores.connections < missingDoorReport.categoryScores.connections,
+  "Detached rooms should reduce the connections score more than a missing doorway."
+);
+const disconnectedReport = buildFloorPlanQualityReport({
+  rooms: [
+    adjacentRooms[0],
+    adjacentRooms[1],
+    {
+      id: "dining",
+      name: "Dining",
+      roomType: "dining",
+      shape: "rectangle",
+      x: 12,
+      z: 0,
+      w: 3,
+      d: 3,
+    },
+    {
+      id: "kitchen",
+      name: "Kitchen",
+      roomType: "kitchen",
+      shape: "rectangle",
+      x: 15,
+      z: 0,
+      w: 3,
+      d: 3,
+    },
+  ],
+  openings: [],
+  items: [],
+  activeRoomId: "living",
+});
+assert.ok(
+  disconnectedReport.issues.some(
+    (issue) => issue.action === "review_plan_layout" && /disconnected/.test(issue.title)
+  ),
+  "Disconnected room groups should create review-plan connection issues."
+);
 
 const crampedProduct = Object.values(CATALOG_ITEMS).find((product) => product.dimsMm.w > 0 && product.dimsMm.d > 0);
 assert.ok(crampedProduct, "Catalog should include at least one measurable product.");
@@ -269,7 +344,7 @@ assert.match(
 );
 assert.match(
   designPageSource,
-  /function PlanQualityHintOverlay\([\s\S]*?data-testid="plan-quality-hints"[\s\S]*?<PlanQualityHintOverlay[\s\S]*?issues=\{floorPlanQualityReport\.issues\}/,
+  /function PlanQualityHintOverlay\([\s\S]*?testId: "plan-quality-hints"[\s\S]*?<PlanQualityHintOverlay[\s\S]*?rooms=\{housePlan2D\.rooms\}[\s\S]*?issues=\{floorPlanQualityReport\.issues\}/,
   "2D plan mode should render lightweight visual quality hints from report issues."
 );
 assert.match(

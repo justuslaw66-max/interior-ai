@@ -312,7 +312,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (exportTier === "free") {
-      page.drawText("Upgrade to Pro for clean exports, multi-room packs, and branded presentation pages.", {
+      page.drawText("Upgrade to Pro for clean exports, multi-room packs, and client-ready presentation pages.", {
         x: margin,
         y: margin,
         size: 9,

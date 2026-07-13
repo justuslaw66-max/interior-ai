@@ -15,12 +15,15 @@ export type ProductCategory =
   | "sofa"
   | "ottoman"
   | "accessory"
+  | "bed"
   | "rug"
   | "coffee_table"
   | "dining_table"
   | "dining_bench"
   | "accent_chair"
   | "floor_lamp"
+  | "table_lamp"
+  | "pendant_light"
   | "tv_console"
   | "sideboard"
   | "bookshelf"
@@ -71,6 +74,10 @@ export interface PlacementRules {
   minWallGapMm: number; // minimum distance from wall in mm
   allowRugOverlap: boolean; // can overlap with rugs
   snapMarginMm: number; // snap detection margin
+  surfaceOnly?: boolean; // must sit on top of another furniture surface
+  requiredSurfaceCategories?: ProductCategory[]; // valid supporting furniture categories
+  surfaceInsetMm?: number; // minimum inset from supporting surface edge
+  ceilingOnly?: boolean; // top of the item stays anchored to the room ceiling
 }
 
 // ============================================================================
@@ -144,6 +151,8 @@ export interface ProductVariant {
   galleryImages?: string[];
   mediaPresentationMode?: CatalogMediaPresentationMode;
   dimensionsMm?: DimensionsMm;
+  sizeLabel?: string;
+  modelUrl?: string;
   shopifyVariantId?: string;
   affiliateUrl?: string;
   priceHint?: number;
@@ -219,6 +228,14 @@ export interface ComfortProfile {
   seat_softness?: ComfortAxisProfile;
 }
 
+export interface AdjustablePendantHeightMetadata {
+  minCm: number;
+  maxCm: number;
+  defaultCm: number;
+  cableStartRatio: number;
+  cableEndRatio: number;
+}
+
 // ============================================================================
 // Complete Catalog Item (Full Contract)
 // ============================================================================
@@ -276,6 +293,7 @@ export interface CatalogItemSchema {
     compatibility?: unknown;
     bundleMetadata?: unknown;
     comfortProfile?: ComfortProfile;
+    adjustablePendantHeight?: AdjustablePendantHeightMetadata;
     galleryImages?: string[];
     mediaPresentationMode?: CatalogMediaPresentationMode;
   };
@@ -335,6 +353,25 @@ export const CATEGORY_DEFAULTS: Record<ProductCategory, CategoryDefaults> = {
       wallClearanceMm: 100,
     },
     aiRoles: ["seating_accessory", "seating_secondary"],
+  },
+  bed: {
+    dimsMm: { w: 1630, d: 2280, h: 1140 },
+    placement: {
+      floorOnly: true,
+      wallSnappable: true,
+      wallMountable: false,
+      minWallGapMm: 0,
+      allowRugOverlap: true,
+      snapMarginMm: 50,
+    },
+    clearance: {
+      walkwayMinMm: 800,
+      coffeeGapMinMm: 0,
+      coffeeGapMaxMm: 0,
+      sofaClearanceMm: 0,
+      wallClearanceMm: 0,
+    },
+    aiRoles: ["sleeping_anchor", "bedroom_focal"],
   },
   accessory: {
     dimsMm: { w: 900, d: 650, h: 450 },
@@ -468,6 +505,48 @@ export const CATEGORY_DEFAULTS: Record<ProductCategory, CategoryDefaults> = {
       wallClearanceMm: 100,
     },
     aiRoles: ["ambient_lighting"],
+  },
+  table_lamp: {
+    dimsMm: { w: 300, d: 300, h: 520 },
+    placement: {
+      floorOnly: false,
+      wallSnappable: false,
+      wallMountable: false,
+      minWallGapMm: 0,
+      allowRugOverlap: false,
+      snapMarginMm: 0,
+      surfaceOnly: true,
+      requiredSurfaceCategories: ["side_table", "coffee_table", "dining_table", "tv_console"],
+      surfaceInsetMm: 50,
+    },
+    clearance: {
+      walkwayMinMm: 0,
+      coffeeGapMinMm: 0,
+      coffeeGapMaxMm: 0,
+      sofaClearanceMm: 0,
+      wallClearanceMm: 0,
+    },
+    aiRoles: ["tabletop_lighting", "ambient_lighting"],
+  },
+  pendant_light: {
+    dimsMm: { w: 300, d: 300, h: 1200 },
+    placement: {
+      floorOnly: false,
+      wallSnappable: false,
+      wallMountable: false,
+      minWallGapMm: 0,
+      allowRugOverlap: false,
+      snapMarginMm: 0,
+      ceilingOnly: true,
+    },
+    clearance: {
+      walkwayMinMm: 0,
+      coffeeGapMinMm: 0,
+      coffeeGapMaxMm: 0,
+      sofaClearanceMm: 0,
+      wallClearanceMm: 0,
+    },
+    aiRoles: ["ceiling_lighting", "ambient_lighting"],
   },
   tv_console: {
     dimsMm: { w: 2000, d: 420, h: 500 },

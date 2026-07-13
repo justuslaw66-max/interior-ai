@@ -1555,6 +1555,8 @@ export type HousePlanRoom2D = {
   surfaceOpacity?: RoomSurfaceOpacity;
   slabThickness?: number;
   wallThickness?: number;
+  height?: number;
+  wallHeights?: Record<string, number>;
   ceilingVisible?: boolean;
   x: number;
   z: number;
@@ -1585,6 +1587,19 @@ export type HouseRoomSnapPreview = HouseRoomAdjacencyGuide & {
   label: string;
 };
 
+export type HouseRoomMoveStatus = "free" | "snapped" | "blocked";
+export type HouseRoomStructuralStatus = "attached" | "detached" | "disconnected_group";
+
+export type HouseRoomMoveResult = {
+  x: number;
+  z: number;
+  attemptedX: number;
+  attemptedZ: number;
+  movementStatus: HouseRoomMoveStatus;
+  structuralStatus: HouseRoomStructuralStatus;
+  snapPreview: HouseRoomSnapPreview | null;
+};
+
 export type HouseRoomDoorwaySuggestion = {
   id: string;
   roomId: string;
@@ -1608,10 +1623,10 @@ export type HouseRoomConnectionOpening = {
 
 export type HouseRoomConnectionChecklistItem = {
   id: string;
-  roomIds: [string, string];
-  roomNames: [string, string];
+  roomIds: string[];
+  roomNames: string[];
   sharedWallLengthMeters: number;
-  status: "connected" | "needs_doorway";
+  status: "connected" | "needs_doorway" | "detached" | "disconnected_group";
   doorwaySuggestion?: HouseRoomDoorwaySuggestion;
 };
 
@@ -1684,6 +1699,31 @@ export function clampRoomDimension(value: number): number {
   );
 }
 
+export function resolveHouseRoomDimension(
+  value: unknown,
+  fallback: number
+): number {
+  const numericValue = Number(value);
+  if (
+    Number.isFinite(numericValue) &&
+    numericValue >= ROOM_DIMENSION_DEFAULTS.min &&
+    numericValue <= ROOM_DIMENSION_DEFAULTS.max
+  ) {
+    return numericValue;
+  }
+
+  const numericFallback = Number(fallback);
+  if (
+    Number.isFinite(numericFallback) &&
+    numericFallback >= ROOM_DIMENSION_DEFAULTS.min &&
+    numericFallback <= ROOM_DIMENSION_DEFAULTS.max
+  ) {
+    return numericFallback;
+  }
+
+  return ROOM_DIMENSION_DEFAULTS.width;
+}
+
 export function getRoomTypeLabel(roomType: RoomType): string {
   return ROOM_TYPE_LABELS[roomType] ?? "Room";
 }
@@ -1692,6 +1732,55 @@ export function resolveNewRoomName(rooms: RoomSnapshot[], roomType: RoomType): s
   const roomTypeCount = rooms.filter((room) => room.roomType === roomType).length;
   const baseName = getRoomTypeLabel(roomType);
   return roomTypeCount > 0 ? `${baseName} ${roomTypeCount + 1}` : baseName;
+}
+
+function mergeRoomSurfaceFinishes(
+  surfaces: RoomSurfaceFinishes | undefined,
+  surfaceFinishes: RoomSurfaceFinishes | undefined
+): RoomSurfaceFinishes | undefined {
+  if (!surfaces && !surfaceFinishes) return undefined;
+
+  const base = surfaceFinishes ?? {};
+  const next = surfaces ?? {};
+  const baseWalls = base.walls;
+  const nextWalls = next.walls;
+  const mergedWalls =
+    baseWalls || nextWalls
+      ? {
+          ...baseWalls,
+          ...nextWalls,
+          default:
+            baseWalls?.default || nextWalls?.default
+              ? {
+                  ...baseWalls?.default,
+                  ...nextWalls?.default,
+                }
+              : undefined,
+          faces:
+            baseWalls?.faces || nextWalls?.faces
+              ? Object.fromEntries(
+                  Array.from(
+                    new Set([
+                      ...Object.keys(baseWalls?.faces ?? {}),
+                      ...Object.keys(nextWalls?.faces ?? {}),
+                    ])
+                  ).map((faceId) => [
+                    faceId,
+                    {
+                      ...baseWalls?.faces?.[faceId],
+                      ...nextWalls?.faces?.[faceId],
+                    },
+                  ])
+                )
+              : undefined,
+        }
+      : undefined;
+
+  return {
+    ...base,
+    ...next,
+    ...(mergedWalls ? { walls: mergedWalls } : {}),
+  };
 }
 
 export function buildHousePlan2D(
@@ -1705,8 +1794,9 @@ export function buildHousePlan2D(
 
   let rightEdge = 0;
   const placedRooms = rooms.map((room, index) => {
-    const w = room.geometry.width || ROOM_DIMENSION_DEFAULTS.width;
-    const d = room.geometry.depth || ROOM_DIMENSION_DEFAULTS.depth;
+    const roomSurfaces = mergeRoomSurfaceFinishes(room.surfaces, room.surfaceFinishes);
+    const w = resolveHouseRoomDimension(room.geometry.width, ROOM_DIMENSION_DEFAULTS.width);
+    const d = resolveHouseRoomDimension(room.geometry.depth, ROOM_DIMENSION_DEFAULTS.depth);
     const storedX = room.planPosition?.x;
     const storedZ = room.planPosition?.z;
     const fallbackX = index === 0 ? 0 : rightEdge + w / 2;
@@ -1728,8 +1818,8 @@ export function buildHousePlan2D(
       ...(room.floorLabel ? { floorLabel: room.floorLabel } : {}),
       shape: room.planShape ?? "rectangle",
       ...(room.planPolygon ? { polygon: room.planPolygon } : {}),
-      ...(room.surfaceFinishes ? { surfaces: room.surfaceFinishes } : {}),
-      ...(room.surfaceFinishes ? { surfaceFinishes: room.surfaceFinishes } : {}),
+      ...(roomSurfaces ? { surfaces: roomSurfaces } : {}),
+      ...(roomSurfaces ? { surfaceFinishes: roomSurfaces } : {}),
       ...(room.surfaceOpacity ? { surfaceOpacity: room.surfaceOpacity } : {}),
       slabThickness:
         typeof room.geometry.slabThickness === "number" && Number.isFinite(room.geometry.slabThickness)
@@ -1739,6 +1829,11 @@ export function buildHousePlan2D(
         typeof room.geometry.wallThickness === "number" && Number.isFinite(room.geometry.wallThickness)
           ? room.geometry.wallThickness
           : ROOM_DIMENSION_DEFAULTS.wallThickness,
+      height:
+        typeof room.geometry.height === "number" && Number.isFinite(room.geometry.height)
+          ? room.geometry.height
+          : ROOM_DIMENSION_DEFAULTS.roomHeight,
+      ...(room.geometry.wallHeights ? { wallHeights: room.geometry.wallHeights } : {}),
       ceilingVisible: room.ceilingVisible ?? true,
       x: typeof storedX === "number" && Number.isFinite(storedX) ? storedX : fallbackX,
       z: typeof storedZ === "number" && Number.isFinite(storedZ) ? storedZ : 0,
@@ -1817,6 +1912,19 @@ function getHouseRoomOverlapArea(
   return overlapWidth * overlapDepth;
 }
 
+function getHouseRoomFloorLevel(room: Pick<HousePlanRoom2D, "floorLevel">): number {
+  return typeof room.floorLevel === "number" && Number.isFinite(room.floorLevel)
+    ? room.floorLevel
+    : 1;
+}
+
+function areHouseRoomsOnSameFloor(
+  first: Pick<HousePlanRoom2D, "floorLevel">,
+  second: Pick<HousePlanRoom2D, "floorLevel">
+): boolean {
+  return getHouseRoomFloorLevel(first) === getHouseRoomFloorLevel(second);
+}
+
 export function doesHouseRoomOverlap(
   roomId: string,
   x: number,
@@ -1830,6 +1938,8 @@ export function doesHouseRoomOverlap(
 
   return rooms.some((room) => {
     if (room.id === roomId) return false;
+    const moving = rooms.find((entry) => entry.id === roomId);
+    if (moving && !areHouseRoomsOnSameFloor(moving, room)) return false;
 
     const other = getHouseRoomBounds(room.x, room.z, room.w, room.d);
     return (
@@ -1877,6 +1987,30 @@ export function resolveHouseRoomDimensionEditPlacement(
     x: roundPlanCoordinate(placement.x),
     z: roundPlanCoordinate(placement.z),
   };
+}
+
+export function resolveHouseRoomResizePlacement(
+  roomId: string,
+  width: number,
+  depth: number,
+  rooms: HousePlanRoom2D[]
+): { x: number; z: number } | null {
+  const room = rooms.find((entry) => entry.id === roomId);
+  if (!room) return null;
+
+  const xShifts = [0, (width - room.w) / 2, (room.w - width) / 2];
+  const zShifts = [0, (depth - room.d) / 2, (room.d - depth) / 2];
+  const candidates = xShifts.flatMap((xShift) =>
+    zShifts.map((zShift) => ({ x: room.x + xShift, z: room.z + zShift }))
+  );
+  const placement = candidates.find(
+    (candidate) =>
+      !doesHouseRoomOverlap(roomId, candidate.x, candidate.z, width, depth, rooms)
+  );
+
+  return placement
+    ? { x: roundPlanCoordinate(placement.x), z: roundPlanCoordinate(placement.z) }
+    : null;
 }
 
 export function shouldReplaceStarterRoomWithDrawnRoom({
@@ -1941,6 +2075,7 @@ export function snapHouseRoomMove(
 
   for (const other of rooms) {
     if (other.id === roomId) continue;
+    if (!areHouseRoomsOnSameFloor(moving, other)) continue;
 
     const movingBounds = getHouseRoomBounds(nextX, nextZ, moving.w, moving.d);
     const otherBounds = getHouseRoomBounds(other.x, other.z, other.w, other.d);
@@ -2007,6 +2142,151 @@ export function snapHouseRoomMove(
   return { x: nextX, z: nextZ };
 }
 
+export type HouseRoomConnectivityReport = {
+  roomCount: number;
+  components: string[][];
+  detachedRoomIds: string[];
+  disconnectedGroups: string[][];
+};
+
+export function buildHouseRoomConnectivityReport(
+  rooms: HousePlanRoom2D[]
+): HouseRoomConnectivityReport {
+  const adjacency = new Map<string, Set<string>>();
+  for (const room of rooms) {
+    adjacency.set(room.id, new Set());
+  }
+
+  for (const guide of buildHouseRoomAdjacencyGuides(rooms)) {
+    const [first, second] = guide.roomIds;
+    adjacency.get(first)?.add(second);
+    adjacency.get(second)?.add(first);
+  }
+
+  const visited = new Set<string>();
+  const components: string[][] = [];
+  for (const room of rooms) {
+    if (visited.has(room.id)) continue;
+    const stack = [room.id];
+    const component: string[] = [];
+    visited.add(room.id);
+
+    while (stack.length > 0) {
+      const id = stack.pop()!;
+      component.push(id);
+      for (const next of adjacency.get(id) ?? []) {
+        if (visited.has(next)) continue;
+        visited.add(next);
+        stack.push(next);
+      }
+    }
+
+    components.push(component);
+  }
+
+  const detachedRoomIds = rooms.length > 1
+    ? components.filter((component) => component.length === 1).flat()
+    : [];
+  const disconnectedGroups = components.length > 1
+    ? components.filter((component) => component.length > 1)
+    : [];
+
+  return {
+    roomCount: rooms.length,
+    components,
+    detachedRoomIds,
+    disconnectedGroups,
+  };
+}
+
+function resolveHouseRoomStructuralStatus(
+  roomId: string,
+  x: number,
+  z: number,
+  rooms: HousePlanRoom2D[]
+): HouseRoomStructuralStatus {
+  const moving = rooms.find((room) => room.id === roomId);
+  if (!moving) return "attached";
+  const sameFloorRooms = rooms
+    .filter((room) => room.id === roomId || areHouseRoomsOnSameFloor(room, moving))
+    .map((room) => (room.id === roomId ? { ...room, x, z } : room));
+  if (sameFloorRooms.length <= 1) return "attached";
+
+  const connectivity = buildHouseRoomConnectivityReport(sameFloorRooms);
+  const movingComponent = connectivity.components.find((component) => component.includes(roomId));
+  if (!movingComponent || movingComponent.length <= 1) return "detached";
+  return connectivity.components.length > 1 ? "disconnected_group" : "attached";
+}
+
+export function resolveHouseRoomMove({
+  roomId,
+  x,
+  z,
+  rooms,
+  snap = true,
+  snapDistance = HOUSE_ROOM_WALL_SNAP_DISTANCE_METERS,
+}: {
+  roomId: string;
+  x: number;
+  z: number;
+  rooms: HousePlanRoom2D[];
+  snap?: boolean;
+  snapDistance?: number;
+}): HouseRoomMoveResult | null {
+  const moving = rooms.find((room) => room.id === roomId);
+  if (!moving || !Number.isFinite(x) || !Number.isFinite(z)) return null;
+
+  const rawOverlaps = doesHouseRoomOverlap(roomId, x, z, moving.w, moving.d, rooms);
+  const nextPosition = snap
+    ? snapHouseRoomMove(roomId, x, z, rooms, snapDistance)
+    : { x, z };
+  if (!nextPosition) return null;
+
+  const nextOverlaps = doesHouseRoomOverlap(
+    roomId,
+    nextPosition.x,
+    nextPosition.z,
+    moving.w,
+    moving.d,
+    rooms
+  );
+  const snappedToCurrent =
+    Math.abs(nextPosition.x - moving.x) < 0.001 &&
+    Math.abs(nextPosition.z - moving.z) < 0.001;
+  const pointerMovedFromOrigin =
+    Math.abs(x - moving.x) > 0.001 || Math.abs(z - moving.z) > 0.001;
+  const blocked =
+    nextOverlaps ||
+    (!snap && rawOverlaps) ||
+    (snap && rawOverlaps && snappedToCurrent && pointerMovedFromOrigin);
+
+  if (blocked) {
+    return {
+      x: moving.x,
+      z: moving.z,
+      attemptedX: x,
+      attemptedZ: z,
+      movementStatus: "blocked",
+      structuralStatus: resolveHouseRoomStructuralStatus(roomId, moving.x, moving.z, rooms),
+      snapPreview: null,
+    };
+  }
+
+  const snapped =
+    snap &&
+    (Math.abs(nextPosition.x - x) > 0.001 || Math.abs(nextPosition.z - z) > 0.001);
+
+  return {
+    x: nextPosition.x,
+    z: nextPosition.z,
+    attemptedX: x,
+    attemptedZ: z,
+    movementStatus: snapped ? "snapped" : "free",
+    structuralStatus: resolveHouseRoomStructuralStatus(roomId, nextPosition.x, nextPosition.z, rooms),
+    snapPreview: snap ? resolveHouseRoomSnapPreview(roomId, x, z, rooms, snapDistance) : null,
+  };
+}
+
 export function roundPlanCoordinate(value: number): number {
   return Number(value.toFixed(3));
 }
@@ -2024,6 +2304,7 @@ export function buildHouseRoomAdjacencyGuides(
 
     for (let j = i + 1; j < rooms.length; j += 1) {
       const second = rooms[j];
+      if (!areHouseRoomsOnSameFloor(first, second)) continue;
       const secondBounds = getHouseRoomBounds(second.x, second.z, second.w, second.d);
       const verticalOverlapTop = Math.max(firstBounds.top, secondBounds.top);
       const verticalOverlapBottom = Math.min(firstBounds.bottom, secondBounds.bottom);
@@ -2243,7 +2524,7 @@ export function buildHouseRoomConnectionChecklist(
 ): HouseRoomConnectionChecklistItem[] {
   const suggestions = buildHouseRoomDoorwaySuggestions(rooms);
 
-  return buildHouseRoomAdjacencyGuides(rooms).map((guide) => {
+  const adjacencyItems: HouseRoomConnectionChecklistItem[] = buildHouseRoomAdjacencyGuides(rooms).map((guide) => {
     const [firstRoomId, secondRoomId] = guide.roomIds;
     const firstRoom = rooms.find((room) => room.id === firstRoomId);
     const secondRoom = rooms.find((room) => room.id === secondRoomId);
@@ -2275,6 +2556,44 @@ export function buildHouseRoomConnectionChecklist(
       doorwaySuggestion,
     };
   });
+
+  const warningItems: HouseRoomConnectionChecklistItem[] = [];
+  const roomsByFloor = new Map<number, HousePlanRoom2D[]>();
+  for (const room of rooms) {
+    const floorLevel = getHouseRoomFloorLevel(room);
+    roomsByFloor.set(floorLevel, [...(roomsByFloor.get(floorLevel) ?? []), room]);
+  }
+
+  for (const [floorLevel, floorRooms] of roomsByFloor) {
+    const connectivity = buildHouseRoomConnectivityReport(floorRooms);
+    for (const roomId of connectivity.detachedRoomIds) {
+      const room = floorRooms.find((entry) => entry.id === roomId);
+      if (!room) continue;
+      warningItems.push({
+        id: `floor-${floorLevel}-${roomId}-detached`,
+        roomIds: [roomId],
+        roomNames: [room.name],
+        sharedWallLengthMeters: 0,
+        status: "detached",
+      });
+    }
+
+    for (const group of connectivity.disconnectedGroups) {
+      const groupRooms = group
+        .map((roomId) => floorRooms.find((entry) => entry.id === roomId))
+        .filter((room): room is HousePlanRoom2D => Boolean(room));
+      if (groupRooms.length <= 1) continue;
+      warningItems.push({
+        id: `floor-${floorLevel}-${group.join("-")}-disconnected`,
+        roomIds: groupRooms.map((room) => room.id),
+        roomNames: groupRooms.map((room) => room.name),
+        sharedWallLengthMeters: 0,
+        status: "disconnected_group",
+      });
+    }
+  }
+
+  return [...adjacencyItems, ...warningItems];
 }
 
 export function resolvePlanFitZoom(params: {

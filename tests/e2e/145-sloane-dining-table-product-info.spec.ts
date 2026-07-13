@@ -26,7 +26,13 @@ type ImportedModel = {
   modelUrl?: string | null;
   catalog?: {
     source_url?: string;
-    variants?: Array<{ size_label?: string; finish_code?: string }>;
+    assets?: { thumbnail_url?: string; gallery_images?: string[] };
+    variants?: Array<{
+      size_label?: string;
+      finish_code?: string;
+      thumbnail_url?: string;
+      gallery_images?: string[];
+    }>;
     product_details?: ProductInfoSection;
   } | null;
 };
@@ -59,6 +65,17 @@ test.describe("145. Sloane Dining Table Product Info", () => {
     expect(table225?.catalog?.variants?.[0]?.size_label).toBe("225");
     expect(table180?.catalog?.variants?.[0]?.finish_code).toBe("grey_oak");
     expect(table225?.catalog?.variants?.[0]?.finish_code).toBe("grey_oak");
+    expect(table180?.catalog?.assets?.thumbnail_url).toContain("Sloane-Dining-Table-180cm-Front");
+    expect(table225?.catalog?.assets?.thumbnail_url).toContain("Sloane-Dining-Table-225cm-Front");
+    expect(table180?.catalog?.variants?.[0]?.thumbnail_url).toContain("Sloane-Dining-Table-180cm-Front");
+    expect(table225?.catalog?.variants?.[0]?.thumbnail_url).toContain("Sloane-Dining-Table-225cm-Front");
+    expect(table180?.catalog?.assets?.gallery_images).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("Dining-Bench-With-4-Cane-Chair"),
+        expect.stringContaining("Callie-4-Dining-Chair"),
+        expect.stringContaining("Oslo-Chair-Performance-White-Quartz-Boucle"),
+      ]),
+    );
 
     expectRows(table180?.catalog?.product_details?.material, [
       /Material: Engineered wood with oak veneer/i,

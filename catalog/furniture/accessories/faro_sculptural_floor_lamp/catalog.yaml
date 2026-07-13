@@ -1,0 +1,176 @@
+status: "live"
+brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/faro-sculptural-floor-lamp"
+category: "floor_lamp"
+
+product_family: "Faro"
+product_name: "Faro Sculptural Floor Lamp"
+variant: "Single"
+
+price_usd: 269
+price_band: "mid_premium"
+brand_tier: "premium_mid"
+
+design_zone: "lighting_zone"
+anchor_role: "lighting_anchor"
+
+dimensions:
+  width_cm: 48.5
+  depth_cm: 48.5
+  height_cm: 169
+
+size_class: "large"
+shape: "round"
+base_type: "sculptural_resin_pillar"
+
+material_family: "mixed"
+material_mix:
+  - "resin"
+  - "fabric"
+
+color_family: "beige"
+tone: "warm"
+
+style_cluster: "modern"
+style_secondary: "scandinavian"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "rounded"
+  silhouette: "sculptural_floor_lamp_with_fabric_shade"
+  form_language: "organic_sculptural"
+  descriptors:
+    - "stacked_sculptural_pillar"
+    - "sand_glazed_resin_base"
+    - "fabric_shade"
+    - "warm_ambient_glow"
+
+spatial_attributes:
+  footprint_shape: "round"
+  descriptors:
+    - "floor_standing"
+    - "corner_accent_lighting"
+    - "sofa_side_ambient_lamp"
+
+room_compatibility:
+  - "living_room"
+  - "bedroom"
+  - "home_office"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  wall_mountable: false
+  min_wall_gap_mm: 100
+  allow_rug_overlap: false
+  snap_margin_mm: 0
+  clearance_sensitive: false
+  center_room_preferred: false
+  placement_note: "Floor lamp should stand on the floor near seating, reading, or bedroom zones."
+
+design_pairings:
+  - "sofa"
+  - "accent_chair"
+  - "bed"
+  - "side_table"
+  - "coffee_table"
+  - "table_lamp"
+
+recommendation_metadata:
+  recommendation_role: "floor_lamp"
+  primary_use_cases:
+    - "ambient_floor_light"
+    - "reading_corner_accent"
+    - "living_room_statement_lighting"
+  suggest_when_scene_has:
+    - "sofa_without_floor_lamp"
+    - "reading_corner_without_lighting"
+    - "bedroom_without_ambient_lighting"
+  avoid_when_scene_has:
+    - "tight_walkway"
+
+feature_flags:
+  is_floor_lamp: true
+  has_light: true
+  has_inline_switch: true
+
+product_details:
+  material:
+    - label: "Material"
+      value: "Resin base, fabric shade"
+    - label: "Eco-friendly packaging"
+      value: "Free of styrofoam"
+    - label: "Bulb recommendation"
+      value: "<=60W"
+    - label: "Certification"
+      value: "Safety Mark"
+    - label: "Lightbulb"
+      value: "Not included"
+    - label: "Switch"
+      value: "Inline switch"
+    - label: "Bulb type"
+      value: "E27"
+  dimensions:
+    - label: "Dimension"
+      value: "W48.5 x D48.5 x H169cm"
+    - label: "Cable length"
+      value: "183cm"
+    - label: "Product weight"
+      value: "10.82kg"
+    - label: "Packaging dimensions"
+      value: "1 box"
+    - label: "Max bulb"
+      value: "Max Bulb Dia. 7cm; Height 12cm"
+  delivery_and_warranty:
+    - label: "Warranty"
+      value: "2-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Body to be assembled and shade to be fitted"
+
+assets:
+  asset_id: "accessory-real-castlery-faro-sculptural-floor-lamp"
+  model_url: "/assets/models/accessory-real-castlery-faro-sculptural-floor-lamp.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1697702564/crusader/variants/50230008/Faro-Sculptural-Floor-Lamp_1-1697702562.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1697702564/crusader/variants/50230008/Faro-Sculptural-Floor-Lamp_1-1697702562.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1699871090/crusader/variants/50230008/Faro-Sculptural-Floor-Lamp-Square-Set_2-1699871087.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1698222153/crusader/variants/50230008/Faro-Sculptural-Floor-Lamp_2-1698222150.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1697773627/crusader/variants/50230008/Faro-Sculptural-Floor-Lamp-Square-Set_1-1697773624.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1697702577/crusader/variants/50230008/Faro-Sculptural-Floor-Lamp-Square-Det_2-1697702575.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1698647265/crusader/variants/T50230008/Faro-Sculptural-Floor-Lamp-Dim-1698647263.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1698133589/crusader/variants/50230008/Faro-Sculptural-Floor-Lamp-Square-Det_4-1698133587.jpg"
+
+variants:
+  - variant: "Single"
+    finish_code: "single_sand_glazed_resin_fabric"
+    finish_label: "Sand-glazed resin and fabric shade"
+    swatch_group: "material"
+    swatch_hex: "#d8cec0"
+    color_family: "beige"
+    tone: "warm"
+    materials:
+      primary: "resin"
+      secondary: "fabric shade"
+    finish:
+      code: "single_sand_glazed_resin_fabric"
+      label: "Sand-glazed resin and fabric shade"
+    model_url: "/assets/models/accessory-real-castlery-faro-sculptural-floor-lamp.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/faro-sculptural-floor-lamp"
+    available: true
+    price_usd: 269
+    dimensions:
+      width_cm: 48.5
+      depth_cm: 48.5
+      height_cm: 169
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1697702564/crusader/variants/50230008/Faro-Sculptural-Floor-Lamp_1-1697702562.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1697702564/crusader/variants/50230008/Faro-Sculptural-Floor-Lamp_1-1697702562.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1699871090/crusader/variants/50230008/Faro-Sculptural-Floor-Lamp-Square-Set_2-1699871087.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1698222153/crusader/variants/50230008/Faro-Sculptural-Floor-Lamp_2-1698222150.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1697773627/crusader/variants/50230008/Faro-Sculptural-Floor-Lamp-Square-Set_1-1697773624.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1697702577/crusader/variants/50230008/Faro-Sculptural-Floor-Lamp-Square-Det_2-1697702575.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1698647265/crusader/variants/T50230008/Faro-Sculptural-Floor-Lamp-Dim-1698647263.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1698133589/crusader/variants/50230008/Faro-Sculptural-Floor-Lamp-Square-Det_4-1698133587.jpg"

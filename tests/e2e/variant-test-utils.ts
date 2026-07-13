@@ -42,15 +42,16 @@ async function openFurnishPanel(page: Page): Promise<void> {
 
   if (await searchInput.isVisible().catch(() => false)) return;
 
-  const fullCatalog = page.locator('[data-testid="furnish-full-catalog"]');
-  if ((await fullCatalog.count()) === 0) return;
+  const catalogMode = page.locator('[data-testid="furnish-mode-catalog"]:visible').first();
+  if (await catalogMode.isVisible().catch(() => false)) {
+    await clickButtonWithDomFallback(catalogMode);
+  }
 
-  const isOpen = await fullCatalog
-    .first()
-    .evaluate((node) => (node as HTMLDetailsElement).open)
-    .catch(() => true);
-  if (!isOpen) {
-    await page.locator('[data-testid="furnish-full-catalog-toggle"]').first().click();
+  if (await searchInput.isVisible().catch(() => false)) return;
+
+  const legacyCatalogToggle = page.locator('[data-testid="furnish-full-catalog-toggle"]:visible').first();
+  if (await legacyCatalogToggle.isVisible().catch(() => false)) {
+    await legacyCatalogToggle.click();
   }
 }
 

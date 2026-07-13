@@ -1,0 +1,338 @@
+brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/dalton-bed"
+category: "bed"
+
+product_family: "Dalton"
+product_name: "Dalton Bed"
+variant: "Standard Queen - Beach Linen"
+
+price_usd: 1099
+compare_at_price_usd: 1099
+price_band: "premium"
+brand_tier: "premium_mid"
+
+design_zone: "sleeping_zone"
+anchor_role: "bed_anchor"
+
+dimensions:
+  width_cm: 168
+  depth_cm: 215
+  height_cm: 120
+
+size_class: "large"
+shape: "rectangular"
+material_family: "upholstered"
+material_mix: "fabric_upholstery_wood_frame"
+
+color_family: "beige"
+tone: "warm"
+
+style_cluster: "contemporary"
+style_secondary: "modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "soft_rounded"
+  silhouette: "panel_headboard"
+  form_language: "upholstered_platform"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  walkway_clearance_cm: 90
+  wall_clearance_cm: 0
+
+room_compatibility:
+  - "bedroom"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: true
+  clearance_sensitive: true
+  center_room_preferred: false
+
+design_pairings:
+  - "nightstand"
+  - "table_lamp"
+  - "rug"
+  - "dresser"
+
+product_details:
+  material:
+    - label: "Upholstery"
+      value: "Slub linen weave (Navagio), cream (Beach Linen)"
+    - label: "Frame"
+      value: "Plywood, solid wood, and foam"
+    - label: "Storage"
+      value: "Storage bedframe variants include under-bed drawers"
+  dimensions:
+    - label: "Standard Queen dimension"
+      value: "W168 x D215 x H120cm"
+    - label: "Standard King dimension"
+      value: "W198 x D215 x H120cm"
+    - label: "Storage Single dimension"
+      value: "W107 x D216 x H120cm"
+    - label: "Storage Super Single dimension"
+      value: "W123 x D216 x H120cm"
+    - label: "Storage Queen dimension"
+      value: "Bed: W168 x D215 x H120cm; Small Drawer: W72 x D66 x H18cm; Large Drawer: W140 x D66 x H18cm"
+    - label: "Storage King dimension"
+      value: "Bed: W198 x D215 x H120cm; Small Drawer: W72 x D66 x H18cm; Large Drawer: W170 x D66 x H18cm"
+    - label: "Bed slat height"
+      value: "31cm"
+  delivery_and_warranty:
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Warranty"
+      value: "10-year limited warranty"
+    - label: "Assembly"
+      value: "Bedframe needs assembly, 2 people required"
+
+assets:
+  asset_id: "bed-real-castlery-dalton"
+  model_url: "/assets/models/bed-real-castlery-dalton-standard-queen-beach-linen.glb"
+  thumbnail_url: &dalton_standard_queen_thumbnail "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1676888284/crusader/variants/50440789-NG4001/Dalton-Queen-Size-Bed-Front-1676888282.jpg"
+  gallery_images: &dalton_standard_queen_gallery
+    - *dalton_standard_queen_thumbnail
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1677134088/crusader/variants/50440789-NG4001/Dalton-Queen-Size-Bed-Angle-1677134086.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1663663058/crusader/variants/50440789-NG4001/Dalton-Bed-Beach-Linen-Square-Set_4-1663663056.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1663663058/crusader/variants/50440789-NG4001/Dalton-Bed-Beach-Linen-Square-Set_1-1663663056.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1663663115/crusader/variants/50440789-NG4001/Dalton-Bed-Beach-Linen-Square-Set_5-1663663112.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1663663114/crusader/variants/50440789-NG4001/Dalton-Bed-Beach-Linen-Square-Det_3-1663663112.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1663731733/crusader/variants/50440790-NG4001/Dalton-Bed-Beach-Linen-Square-Det_7-1663731731.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1663731757/crusader/variants/50440789-NG4001/Dalton-Bed-Beach-Linen-Square-Det_5-1663731755.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1663731734/crusader/variants/50440790-NG4001/Dalton-Bed-Beach-Linen-Square-Det_4-1663731731.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1676888285/crusader/variants/50440789-NG4001/Dalton-Queen-Size-Bed-Side_1-1676888282.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1676888284/crusader/variants/50440789-NG4001/Dalton-Queen-Size-Bed-Front_1-1676888282.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1676888647/crusader/variants/50440789-NG4001/Dalton-Bed-Quenn-Beach-Linen-Back-1676888644.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1676951017/crusader/variants/T50440789/Dalton-Queen-Size-Bed-Dim-1676951015.jpg"
+
+variants:
+  - variant: "Standard Queen - Beach Linen"
+    size_label: "Queen"
+    source_sku: "50441001-NG4001"
+    finish_code: "standard_bedframe_beach_linen"
+    finish_label: "Standard bedframe - Beach Linen"
+    swatch_group: "upholstery"
+    swatch_hex: "#d7d0c4"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1665460017/crusader/variants/NG-4001/Beach-Linen_1-1665460015.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-dalton-standard-queen-beach-linen.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/dalton-bed?bed_frame_size=queen&material=beach_linen"
+    available: true
+    price_usd: 1099
+    compare_at_price_usd: 1099
+    dimensions: &standard_queen_dims
+      width_cm: 168
+      depth_cm: 215
+      height_cm: 120
+    size_class: "large"
+    color_family: "beige"
+    tone: "warm"
+    thumbnail_url: *dalton_standard_queen_thumbnail
+    gallery_images: *dalton_standard_queen_gallery
+    materials: &dalton_beach_linen_materials
+      upholstery:
+        structure: "fabric"
+        surface: "slub_linen_weave"
+      frame:
+        structure: "plywood_solid_wood"
+        surface: "foam_padded_upholstery"
+      headboard:
+        structure: "foam"
+        surface: "upholstered"
+    finish: &dalton_beach_linen_finish
+      color_finish: "beach_linen"
+      surface_finish: "slub_linen_weave"
+      finish_color: "cream"
+
+  - variant: "Standard King - Beach Linen"
+    size_label: "King"
+    source_sku: "50441002-NG4001"
+    finish_code: "standard_bedframe_beach_linen"
+    finish_label: "Standard bedframe - Beach Linen"
+    swatch_group: "upholstery"
+    swatch_hex: "#d7d0c4"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1665460017/crusader/variants/NG-4001/Beach-Linen_1-1665460015.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-dalton-standard-king-beach-linen.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/dalton-bed?bed_frame_size=king&material=beach_linen"
+    available: true
+    price_usd: 1299
+    compare_at_price_usd: 1299
+    dimensions: &standard_king_dims
+      width_cm: 198
+      depth_cm: 215
+      height_cm: 120
+    size_class: "large"
+    color_family: "beige"
+    tone: "warm"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1676888370/crusader/variants/50440790-NG4001/Dalton-King-Size-Bed-Front-1676888367.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1676888370/crusader/variants/50440790-NG4001/Dalton-King-Size-Bed-Front-1676888367.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1677134193/crusader/variants/50440790-NG4001/Dalton-King-Size-Bed-Angle-1677134191.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1663664687/crusader/variants/50440790-NG4001/Dalton-Bed-Beach-Linen-Square-Set_4-1663664684.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1663664900/crusader/variants/50440790-NG4001/Dalton-Bed-Beach-Linen-Square-Set_1-1663664897.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1663664900/crusader/variants/50440790-NG4001/Dalton-Bed-Beach-Linen-Square-Set_5-1663664897.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1663664900/crusader/variants/50440790-NG4001/Dalton-Bed-Beach-Linen-Square-Det_3-1663664897.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1663731733/crusader/variants/50440790-NG4001/Dalton-Bed-Beach-Linen-Square-Det_7-1663731731.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1663731733/crusader/variants/50440790-NG4001/Dalton-Bed-Beach-Linen-Square-Det_5-1663731731.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1663731734/crusader/variants/50440790-NG4001/Dalton-Bed-Beach-Linen-Square-Det_4-1663731731.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1676888370/crusader/variants/50440790-NG4001/Dalton-King-Size-Bed-Side_1-1676888367.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1676888370/crusader/variants/50440790-NG4001/Dalton-King-Size-Bed-Front_1-1676888367.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1665459460/crusader/variants/50440790-NG4001/Dalton-Bed-King-Beach-Linen-Back-1665459458.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1676951017/crusader/variants/T50440789/Dalton-King-Size-Bed-Dim-1676951015.jpg"
+    materials: *dalton_beach_linen_materials
+    finish: *dalton_beach_linen_finish
+
+  - variant: "Storage Single - Beach Linen"
+    size_label: "Single"
+    source_sku: "50440980-NG4001"
+    finish_code: "storage_bedframe_beach_linen"
+    finish_label: "Storage bedframe - Beach Linen"
+    swatch_group: "upholstery"
+    swatch_hex: "#d7d0c4"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1665460017/crusader/variants/NG-4001/Beach-Linen_1-1665460015.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-dalton-storage-single-beach-linen.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/dalton-storage-bed?bed_frame_size=single&material=beach_linen&frame_cover=fixed"
+    available: true
+    price_usd: 999
+    compare_at_price_usd: 999
+    dimensions: &storage_single_dims
+      width_cm: 107
+      depth_cm: 216
+      height_cm: 120
+    size_class: "medium"
+    color_family: "beige"
+    tone: "warm"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740452433/crusader/variants/50440980-NG4001/Dalton-Single-Storage-Bed-Front-1740452431.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740452433/crusader/variants/50440980-NG4001/Dalton-Single-Storage-Bed-Front-1740452431.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740452434/crusader/variants/50440980-NG4001/Dalton-Single-Storage-Bed-Angle_1-1740452432.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740452434/crusader/variants/50440980-NG4001/Dalton-Single-Storage-Bed-Angle_2-1740452432.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741076777/crusader/variants/50440980-NG4001/Dalton-Super-Single-Storage-Bed-Beach-Linen-Square-Set_2-1741076775.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741076777/crusader/variants/50440980-NG4001/Dalton-Super-Single-Storage-Bed-Beach-Linen-Square-Set_3-1741076775.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741076777/crusader/variants/50440980-NG4001/Dalton-Super-Single-Storage-Bed-Beach-Linen-Square-Det_6-1741076775.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740475495/crusader/variants/50440980-NG4001/Dalton-Storage-Bed-Square-Det_4-1740475493.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741593900/crusader/variants/50440980-NG4001/Dalton-Super-Single-Storage-Bed-Set-1741593898.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740475496/crusader/variants/50440980-NG4001/Dalton-Storage-Bed-Square-Det_1-1740475493.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740452435/crusader/variants/50440980-NG4001/Dalton-Single-Storage-Bed-Side_1-1740452432.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740452435/crusader/variants/50440980-NG4001/Dalton-Single-Storage-Bed-Side_2-1740452432.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740452434/crusader/variants/50440980-NG4001/Dalton-Single-Storage-Bed-Back-1740452431.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740994986/crusader/variants/TAS-000299/Dalton-Single-Storage-Bed-Dim-SG-1740994984.jpg"
+    materials: *dalton_beach_linen_materials
+    finish: *dalton_beach_linen_finish
+
+  - variant: "Storage Super Single - Beach Linen"
+    size_label: "Super Single"
+    source_sku: "50440982-NG4001"
+    finish_code: "storage_bedframe_beach_linen"
+    finish_label: "Storage bedframe - Beach Linen"
+    swatch_group: "upholstery"
+    swatch_hex: "#d7d0c4"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1665460017/crusader/variants/NG-4001/Beach-Linen_1-1665460015.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-dalton-storage-super-single-beach-linen.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/dalton-storage-bed?bed_frame_size=super_single&material=beach_linen&frame_cover=fixed"
+    available: true
+    price_usd: 1199
+    compare_at_price_usd: 1199
+    dimensions: &storage_super_single_dims
+      width_cm: 123
+      depth_cm: 216
+      height_cm: 120
+    size_class: "medium"
+    color_family: "beige"
+    tone: "warm"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740452711/crusader/variants/50440982-NG4001/Dalton-Super-Single-Storage-Bed-Front-1740452709.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740452711/crusader/variants/50440982-NG4001/Dalton-Super-Single-Storage-Bed-Front-1740452709.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740452715/crusader/variants/50440982-NG4001/Dalton-Super-Single-Storage-Bed-Angle-1740452713.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740452715/crusader/variants/50440982-NG4001/Dalton-Super-Single-Storage-Bed-Angle_1-1740452712.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741076972/crusader/variants/50440982-NG4001/Dalton-Super-Single-Storage-Bed-Beach-Linen-Square-Set_2-1741076970.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741076972/crusader/variants/50440982-NG4001/Dalton-Super-Single-Storage-Bed-Beach-Linen-Square-Set_3-1741076970.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741076972/crusader/variants/50440982-NG4001/Dalton-Super-Single-Storage-Bed-Beach-Linen-Square-Det_6-1741076970.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740476620/crusader/variants/50440982-NG4001/Dalton-Storage-Bed-Square-Det_4-1740476617.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740476620/crusader/variants/50440982-NG4001/Dalton-Storage-Bed-Square-Det_1-1740476617.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740452711/crusader/variants/50440982-NG4001/Dalton-Super-Single-Storage-Bed-Set-1740452709.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740452717/crusader/variants/50440982-NG4001/Dalton-Super-Single-Storage-Bed-Side-1740452715.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740452717/crusader/variants/50440982-NG4001/Dalton-Super-Single-Storage-Bed-Side_1-1740452715.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740452711/crusader/variants/50440982-NG4001/Dalton-Super-Single-Storage-Bed-Back-1740452709.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740994986/crusader/variants/TAS-000299/Dalton-Super-Single-Storage-Bed-Dim-SG-1740994984.jpg"
+    materials: *dalton_beach_linen_materials
+    finish: *dalton_beach_linen_finish
+
+  - variant: "Storage Queen - Beach Linen"
+    size_label: "Queen"
+    source_sku: "AS-000301-NG4001"
+    finish_code: "storage_bedframe_beach_linen"
+    finish_label: "Storage bedframe - Beach Linen"
+    swatch_group: "upholstery"
+    swatch_hex: "#d7d0c4"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1665460017/crusader/variants/NG-4001/Beach-Linen_1-1665460015.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-dalton-storage-queen-beach-linen.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/dalton-storage-bed?bed_frame_size=queen&material=beach_linen&frame_cover=fixed"
+    available: true
+    price_usd: 1499
+    compare_at_price_usd: 1499
+    dimensions: *standard_queen_dims
+    size_class: "large"
+    color_family: "beige"
+    tone: "warm"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678414459/crusader/variants/T50441115-NG4001/Dalton-Storage-Queen-Size-Bed-Front_1-1678414456.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678414459/crusader/variants/T50441115-NG4001/Dalton-Storage-Queen-Size-Bed-Front_1-1678414456.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678414459/crusader/variants/T50441115-NG4001/Dalton-Storage-Queen-Size-Bed-Angle_1-1678414456.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1679039737/crusader/variants/T50441115-NG4001/Dalton-Storage-Queen-Size-Bed-Angle_4-1679039734.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1677061359/crusader/variants/T50441116-NG4001/Dalton-Storage-Bed-Square-Set_3-1677061356.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1677061401/crusader/variants/T50441116-NG4001/Dalton-Storage-Bed-Square-Set_5-1677061399.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1677061502/crusader/variants/T50441116-NG4001/Dalton-Storage-Bed-Square-Det_2-1677061500.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1677061502/crusader/variants/T50441116-NG4001/Dalton-Storage-Bed-Square-Det_3-1677061500.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1677061750/crusader/variants/T50441116-NG4001/Dalton-Storage-Bed-Square-Det_4-1677061747.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1677061750/crusader/variants/T50441116-NG4001/Dalton-Storage-Bed-Square-Det_3-1677061747.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1677061750/crusader/variants/T50441116-NG4001/Dalton-Storage-Bed-Square-Det_1-1677061747.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1677062072/crusader/variants/T50441116-NG4001/Dalton-Bed-Beach-Linen-Square-Det_4-1677062070.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678414835/crusader/variants/T50441115-NG4001/Dalton-Storage-Queen-Size-Bed-Side-1678414832.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678414700/crusader/variants/T50441115-NG4001/Dalton-Storage-Queen-Size-Bed-Back-1678414698.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1679566140/crusader/variants/T50441114/Dalton-Storage-Queen-Size-Bed-Dim-1679566139.jpg"
+    materials: *dalton_beach_linen_materials
+    finish: *dalton_beach_linen_finish
+
+  - variant: "Storage King - Beach Linen"
+    size_label: "King"
+    source_sku: "50440834-NG4001"
+    finish_code: "storage_bedframe_beach_linen"
+    finish_label: "Storage bedframe - Beach Linen"
+    swatch_group: "upholstery"
+    swatch_hex: "#d7d0c4"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1665460017/crusader/variants/NG-4001/Beach-Linen_1-1665460015.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-dalton-storage-king-beach-linen.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/dalton-storage-bed?bed_frame_size=king&material=beach_linen&frame_cover=fixed"
+    available: true
+    price_usd: 1699
+    compare_at_price_usd: 1699
+    dimensions: *standard_king_dims
+    size_class: "large"
+    color_family: "beige"
+    tone: "warm"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678414766/crusader/variants/T50441116-NG4001/Dalton-Storage-King-Size-Bed-Front_1-1678414764.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678414766/crusader/variants/T50441116-NG4001/Dalton-Storage-King-Size-Bed-Front_1-1678414764.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678414766/crusader/variants/T50441116-NG4001/Dalton-Storage-King-Size-Bed-Angle_1-1678414764.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1679044456/crusader/variants/T50441116-NG4001/Dalton-Storage-King-Size-Bed-Angle_4-1679044454.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1677061359/crusader/variants/T50441116-NG4001/Dalton-Storage-Bed-Square-Set_3-1677061356.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1677061401/crusader/variants/T50441116-NG4001/Dalton-Storage-Bed-Square-Set_5-1677061399.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1677061502/crusader/variants/T50441116-NG4001/Dalton-Storage-Bed-Square-Det_2-1677061500.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1677061502/crusader/variants/T50441116-NG4001/Dalton-Storage-Bed-Square-Det_3-1677061500.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1677061750/crusader/variants/T50441116-NG4001/Dalton-Storage-Bed-Square-Det_4-1677061747.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1677061750/crusader/variants/T50441116-NG4001/Dalton-Storage-Bed-Square-Det_3-1677061747.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1677061750/crusader/variants/T50441116-NG4001/Dalton-Storage-Bed-Square-Det_1-1677061747.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1677062072/crusader/variants/T50441116-NG4001/Dalton-Bed-Beach-Linen-Square-Det_4-1677062070.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678414791/crusader/variants/T50441116-NG4001/Dalton-Storage-King-Size-Bed-Side-1678414788.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678414765/crusader/variants/T50441116-NG4001/Dalton-Storage-King-Size-Bed-Back-1678414763.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1679566140/crusader/variants/T50441114/Dalton-Storage-King-Size-Bed-Dim-1679566139.jpg"
+    materials: *dalton_beach_linen_materials
+    finish: *dalton_beach_linen_finish

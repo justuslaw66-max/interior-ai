@@ -69,15 +69,15 @@ export default function ShoppingOverviewPanel({
   onFilterChange,
 }: ShoppingOverviewPanelProps) {
   const panelClass = dark
-    ? "rounded-2xl border border-white/10 bg-[#151820] p-4"
+    ? "designer-dock rounded-2xl p-4"
     : "rounded-2xl border border-neutral-200 bg-white p-4 shadow";
   const mutedClass = dark ? "text-neutral-400" : "text-neutral-500";
   const cardClass = dark
-    ? "rounded-xl border border-white/10 bg-black/10 p-3"
+    ? "designer-recessed rounded-xl p-3"
     : "rounded-xl border border-neutral-200 bg-neutral-50 p-3";
-  const metricClass = dark ? "rounded-lg bg-[#1b2030] p-2" : "rounded-lg bg-white p-2";
+  const metricClass = dark ? "designer-raised rounded-lg p-2" : "rounded-lg bg-white p-2";
   const primaryButtonClass = dark
-    ? "rounded-xl bg-white px-3 py-2 text-sm font-semibold text-neutral-950 transition hover:bg-neutral-200"
+    ? "designer-control-active rounded-xl border px-3 py-2 text-sm font-semibold transition"
     : "rounded-xl bg-neutral-900 px-3 py-2 text-sm font-semibold text-white transition hover:bg-neutral-800";
   const readyRooms = rooms.filter((room) => room.itemCount > 0 && room.needsReviewCount === 0);
   const reviewRooms = rooms.filter((room) => room.needsReviewCount > 0);
@@ -177,7 +177,7 @@ export default function ShoppingOverviewPanel({
       onClick={() => onSelectRoom(room.roomId)}
       className={
         dark
-          ? `w-full rounded-xl border px-3 py-2 text-left ${room.isActive ? "border-emerald-400/60 bg-emerald-500/10" : "border-white/10 bg-[#151820]"}`
+          ? `w-full rounded-xl border px-3 py-2 text-left ${room.isActive ? "designer-status-ready" : "designer-control"}`
           : `w-full rounded-xl border px-3 py-2 text-left ${room.isActive ? "border-emerald-300 bg-emerald-50" : "border-neutral-200 bg-white"}`
       }
     >
@@ -199,7 +199,7 @@ export default function ShoppingOverviewPanel({
   );
   const checkoutReadinessCard = (
     <div
-      className={dark ? "mt-3 rounded-xl border border-white/10 bg-[#151820] p-3" : "mt-3 rounded-xl border border-neutral-200 bg-neutral-50 p-3"}
+      className={dark ? "designer-raised mt-3 rounded-xl p-3" : "mt-3 rounded-xl border border-neutral-200 bg-neutral-50 p-3"}
       data-testid="shopping-checkout-readiness"
     >
       <div className="flex items-start justify-between gap-3">
@@ -226,19 +226,19 @@ export default function ShoppingOverviewPanel({
         </span>
       </div>
       <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-        <div className={dark ? "rounded-lg bg-black/10 p-2" : "rounded-lg bg-white p-2"}>
+        <div className={dark ? "designer-recessed rounded-lg p-2" : "rounded-lg bg-white p-2"}>
           <div className={dark ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-neutral-900"}>
             {formatMoney(checkoutReadySpend)}
           </div>
           <div className={`text-[10px] ${mutedClass}`}>Cart-ready spend</div>
         </div>
-        <div className={dark ? "rounded-lg bg-black/10 p-2" : "rounded-lg bg-white p-2"}>
+        <div className={dark ? "designer-recessed rounded-lg p-2" : "rounded-lg bg-white p-2"}>
           <div className={dark ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-neutral-900"}>
             {formatMoney(retailerLinkSpend)}
           </div>
           <div className={`text-[10px] ${mutedClass}`}>Retailer-link spend</div>
         </div>
-        <div className={dark ? "rounded-lg bg-black/10 p-2" : "rounded-lg bg-white p-2"}>
+        <div className={dark ? "designer-recessed rounded-lg p-2" : "rounded-lg bg-white p-2"}>
           <div className={dark ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-neutral-900"}>
             {formatMoney(needsReviewSpend)}
           </div>
@@ -308,7 +308,7 @@ export default function ShoppingOverviewPanel({
                 <div className={`text-[11px] ${mutedClass}`}>Room total</div>
               </div>
             </div>
-            <div className={dark ? "mt-3 rounded-xl border border-white/10 bg-black/10 p-3" : "mt-3 rounded-xl border border-neutral-200 bg-white p-3"}>
+            <div className={dark ? "designer-recessed mt-3 rounded-xl p-3" : "mt-3 rounded-xl border border-neutral-200 bg-white p-3"}>
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className={dark ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-neutral-900"}>
@@ -367,7 +367,7 @@ export default function ShoppingOverviewPanel({
                         <div
                           key={item.instanceId}
                           data-testid="shopping-room-bom-item"
-                          className={dark ? "rounded-xl border border-white/10 bg-[#151820] p-2.5" : "rounded-xl border border-neutral-200 bg-neutral-50 p-2.5"}
+                          className={dark ? "designer-raised rounded-xl p-2.5" : "rounded-xl border border-neutral-200 bg-neutral-50 p-2.5"}
                         >
                           <div className="flex gap-2.5">
                             <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-neutral-200 bg-white">
@@ -453,7 +453,7 @@ export default function ShoppingOverviewPanel({
                               {replacementSuggestions.length > 0 ? (
                                 <div
                                   data-testid="shopping-item-replacements"
-                                  className={dark ? "mt-2 rounded-lg border border-white/10 bg-black/10 p-2" : "mt-2 rounded-lg border border-neutral-200 bg-white p-2"}
+                                  className={dark ? "designer-recessed mt-2 rounded-lg p-2" : "mt-2 rounded-lg border border-neutral-200 bg-white p-2"}
                                 >
                                   <div className={dark ? "text-[11px] font-semibold text-neutral-200" : "text-[11px] font-semibold text-neutral-800"}>
                                     Shoppable replacements
@@ -463,7 +463,7 @@ export default function ShoppingOverviewPanel({
                                       <div
                                         key={`${replacement.productId}:${replacement.variantId}:${replacement.purchaseOptionId ?? "default"}`}
                                         data-testid="shopping-item-replacement"
-                                        className={dark ? "rounded-lg bg-[#151820] p-2" : "rounded-lg bg-neutral-50 p-2"}
+                                        className={dark ? "designer-raised rounded-lg p-2" : "rounded-lg bg-neutral-50 p-2"}
                                       >
                                         <div className="flex items-start gap-2">
                                           <div className="h-10 w-10 shrink-0 overflow-hidden rounded-md border border-neutral-200 bg-white">
@@ -536,7 +536,7 @@ export default function ShoppingOverviewPanel({
                                   </div>
                                 </div>
                               ) : flags.missingLink || flags.missingPrice ? (
-                                <div className={dark ? "mt-2 rounded-lg border border-white/10 bg-black/10 px-2 py-1.5 text-[11px] text-neutral-400" : "mt-2 rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-[11px] text-neutral-500"}>
+                                <div className={dark ? "designer-recessed mt-2 rounded-lg px-2 py-1.5 text-[11px] text-neutral-400" : "mt-2 rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-[11px] text-neutral-500"}>
                                   No same-category shoppable replacements found yet.
                                 </div>
                               ) : null}
@@ -576,13 +576,13 @@ export default function ShoppingOverviewPanel({
                       );
                     })
                   ) : (
-                    <div className={`rounded-lg px-3 py-2 text-xs ${dark ? "bg-white/5 text-neutral-400" : "bg-neutral-50 text-neutral-500"}`}>
+                    <div className={`rounded-lg px-3 py-2 text-xs ${dark ? "designer-recessed text-neutral-400" : "bg-neutral-50 text-neutral-500"}`}>
                       No items match this shopping-readiness filter.
                     </div>
                   )}
                 </div>
               ) : (
-                <div className={`mt-3 rounded-lg px-3 py-2 text-xs ${dark ? "bg-white/5 text-neutral-400" : "bg-neutral-50 text-neutral-500"}`}>
+                <div className={`mt-3 rounded-lg px-3 py-2 text-xs ${dark ? "designer-recessed text-neutral-400" : "bg-neutral-50 text-neutral-500"}`}>
                   Add furniture to this room to build its shopping list.
                 </div>
               )}

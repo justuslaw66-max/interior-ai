@@ -100,10 +100,10 @@ export default function DesignControlsAiPanel({
   const titleClass = dark
     ? "designer-text-primary text-sm font-semibold"
     : "text-sm font-semibold text-neutral-800";
-  const selectedButtonClass = dark ? "bg-[#1b2030] text-white" : "bg-neutral-900 text-white";
-  const idleButtonClass = dark ? "bg-[#151820] text-neutral-200" : "bg-neutral-100 text-neutral-900";
+  const selectedButtonClass = dark ? "designer-control-active border" : "bg-neutral-900 text-white";
+  const idleButtonClass = dark ? "designer-control border" : "bg-neutral-100 text-neutral-900";
   const cardClass = dark
-    ? "rounded-xl border border-white/10 bg-black/10 p-3"
+    ? "designer-recessed rounded-xl p-3"
     : "rounded-xl border border-neutral-200 bg-white p-3";
   const mutedClass = dark ? "text-neutral-400" : "text-neutral-500";
   const roomArea = Math.max(0, roomWidth * roomDepth);
@@ -162,7 +162,7 @@ export default function DesignControlsAiPanel({
       <div
         className={
           dark
-            ? "rounded-xl border border-white/10 bg-[#151820] p-4"
+            ? "designer-dock rounded-xl p-4"
             : "rounded-xl border border-neutral-200 bg-neutral-50 p-4"
         }
       >
@@ -241,7 +241,7 @@ export default function DesignControlsAiPanel({
                       ? "border-emerald-300 bg-emerald-500/20 text-emerald-50"
                       : "border-emerald-500 bg-emerald-50 text-emerald-950"
                     : dark
-                      ? "border-white/10 bg-[#151820] text-neutral-200"
+                      ? "designer-control border text-neutral-200"
                       : "border-neutral-200 bg-white text-neutral-800",
                 ].join(" ")}
                 onClick={() => applyAiLayoutGoal(goal)}
@@ -319,7 +319,7 @@ export default function DesignControlsAiPanel({
         </div>
 
         <div
-          className={dark ? "mt-4 rounded-xl border border-white/10 bg-black/10 p-3" : "mt-4 rounded-xl border border-neutral-200 bg-white p-3"}
+          className={dark ? "designer-recessed mt-4 rounded-xl p-3" : "mt-4 rounded-xl border border-neutral-200 bg-white p-3"}
           data-testid="ai-layout-readiness"
         >
           <div className={dark ? "text-xs font-semibold uppercase tracking-wide text-neutral-400" : "text-xs font-semibold uppercase tracking-wide text-neutral-500"}>
@@ -350,7 +350,7 @@ export default function DesignControlsAiPanel({
         <button
           className={
             dark
-              ? "mt-4 w-full rounded-lg bg-[#1b2030] px-4 py-3 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+              ? "designer-control-active mt-4 w-full rounded-lg border px-4 py-3 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
               : "mt-4 w-full rounded-lg bg-neutral-900 px-4 py-3 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
           }
           disabled={!briefReady}

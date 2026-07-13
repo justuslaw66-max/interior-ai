@@ -16,8 +16,18 @@ export function isAdminEmail(email?: string | null) {
   return list.includes(email.toLowerCase());
 }
 
+export function canAccessAdmin(email?: string | null) {
+  if (isAdminEmail(email)) return true;
+
+  return (
+    config.isDev &&
+    process.env.NODE_ENV === "development" &&
+    process.env.ADMIN_REQUIRE_AUTH !== "true"
+  );
+}
+
 export function requireAdmin({ email }: AdminCheck) {
-  if (!isAdminEmail(email)) {
+  if (!canAccessAdmin(email)) {
     throw new Error("Admin access required");
   }
 }

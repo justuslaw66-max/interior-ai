@@ -12,9 +12,26 @@ const rendererPath = path.join(
 const source = fs.readFileSync(rendererPath, "utf8");
 const designPagePath = path.join(process.cwd(), "app", "design", "page.tsx");
 const designPageSource = fs.readFileSync(designPagePath, "utf8");
+const roomDrawingPath = path.join(process.cwd(), "lib", "useFloorPlanRoomDrawing.ts");
+const roomDrawingSource = fs.readFileSync(roomDrawingPath, "utf8");
+const floorPlanUploadPanelPath = path.join(
+  process.cwd(),
+  "components",
+  "editor",
+  "FloorPlanUploadPanel.tsx"
+);
+const floorPlanUploadPanelSource = fs.readFileSync(floorPlanUploadPanelPath, "utf8");
 const roomSelectCallbackSource =
   designPageSource.match(
     /const handlePlacementAwareRoomSelect = useCallback\([\s\S]*?\n  \);\n\n  const nudgePendingCatalogPlacement/
+  )?.[0] ?? "";
+const roomPointerUpSource =
+  source.match(
+    /onPointerUp=\{\(event\) => \{[\s\S]*?const drag = dragTargetRef\.current;[\s\S]*?releasePointerCaptureIfSupported\(event\);\n\s*\}\}/
+  )?.[0] ?? "";
+const roomBodyPointerDownSource =
+  source.match(
+    /position=\{\[0, 0\.0009, 0\]\}[\s\S]*?onPointerDown=\{\(event\) => \{[\s\S]*?roomBodyPointerRef\.current = \{[\s\S]*?clientY: event\.nativeEvent\.clientY,[\s\S]*?\};[\s\S]*?\}\}/
   )?.[0] ?? "";
 
 assert.match(
@@ -43,14 +60,20 @@ assert.match(
 
 assert.match(
   source,
-  /data-testid="active-room-measurement-hud"[\s\S]*?Double-click W\/D/,
-  "The active room measurement HUD should use short helper copy."
+  /data-testid="active-room-measurement-hud"[\s\S]*?Click Width or Depth to edit/,
+  "The active room measurement HUD should explain the single-click edit interaction."
 );
 
 assert.doesNotMatch(
   source,
-  /Double-click W\/D labels to edit/,
-  "The active room measurement HUD should not use the bulky long helper copy."
+  /Double-click (?:W\/D|Width or Depth)/,
+  "Room dimension labels should not require an undiscoverable double-click interaction."
+);
+
+assert.match(
+  source,
+  /data-testid="active-room-dimension-width"[\s\S]*?onClick=\{\(event\) =>/,
+  "The width label should open its editor with one click."
 );
 
 assert.doesNotMatch(
@@ -61,19 +84,169 @@ assert.doesNotMatch(
 
 assert.match(
   source,
+  /MAX_WALL_DRAW_SEGMENT_LENGTH_METERS = ROOM_DIMENSION_DEFAULTS\.max/,
+  "Wall draw measurement labels should share the room dimension maximum."
+);
+
+assert.match(
+  source,
+  /function isWallDrawSegmentLengthRenderable[\s\S]*?length <= MAX_WALL_DRAW_SEGMENT_LENGTH_METERS/,
+  "Wall draw measurement labels should not render for invalid or oversized segments."
+);
+
+assert.match(
+  source,
+  /function areWallDrawSegmentsRenderable[\s\S]*?isWallDrawSegmentLengthRenderable\(points\[index - 1\], points\[index\]\)/,
+  "Wall draw traces should be hidden when any persisted segment is invalid or oversized."
+);
+
+assert.match(
+  source,
+  /if \(!isWallDrawSegmentLengthRenderable\(previousPoint, point\)\) return null;/,
+  "Oversized wall draw segments should be hidden before they can show rogue labels."
+);
+
+assert.match(
+  source,
+  /const canRenderWallDrawTrace = isStraightWallDrawMode && wallDrawSegmentsRenderable;/,
+  "Straight-wall trace rendering should be disabled for stale oversized geometry."
+);
+
+assert.match(
+  source,
+  /max=\{MAX_WALL_DRAW_SEGMENT_LENGTH_METERS \* 1000\}/,
+  "Wall segment length editors should expose the same maximum used by validation."
+);
+
+assert.match(
+  source,
+  /const wallDrawInProgress = isStraightWallDrawMode && activeDrawRoomPoints\.length > 0;/,
+  "Renderer should track when wall drawing is in progress."
+);
+
+assert.match(
+  source,
+  /isActiveRoom && showDimensions && !wallDrawInProgress/,
+  "Active room dimension badges should be suppressed while wall drawing is in progress."
+);
+
+assert.match(
+  source,
+  /ROOM_DIMENSION_EDITOR_MAX_MILLIMETERS = ROOM_DIMENSION_DEFAULTS\.max \* 1000/,
+  "Room dimension editors should share the room dimension maximum."
+);
+
+assert.match(
+  source,
+  /value=\{editingRoomDimension\.value\}[\s\S]*?onChange=\{\(event\) => updateDimensionEditorValue\(event\.currentTarget\.value\)\}/,
+  "Room dimension editors should be controlled so oversized typed values cannot linger visually."
+);
+
+assert.match(
+  source,
+  /finalMillimeters > ROOM_DIMENSION_EDITOR_MAX_MILLIMETERS[\s\S]*?commitDimensionEdit\(value\);/,
+  "Oversized room dimension editor values should auto-commit into validation and close."
+);
+
+assert.match(
+  roomDrawingSource,
+  /valueMeters > ROOM_DIMENSION_DEFAULTS\.max/,
+  "Oversized wall segment edits should be rejected before changing draw geometry."
+);
+
+assert.match(
+  roomDrawingSource,
+  /function hasOversizedWallDrawSegment[\s\S]*?length > ROOM_DIMENSION_DEFAULTS\.max/,
+  "Room drawing state should detect stale oversized wall segments."
+);
+
+assert.match(
+  roomDrawingSource,
+  /function isWallDrawSegmentWithinRoomLimit[\s\S]*?length <= ROOM_DIMENSION_DEFAULTS\.max/,
+  "Straight-wall point commits should share the room dimension maximum."
+);
+
+assert.match(
+  roomDrawingSource,
+  /if \(lastPoint && !isWallDrawSegmentWithinRoomLimit\(lastPoint, snappedPoint\)\) \{[\s\S]*?resetFloorPlanTraceRoomPoints\(\);[\s\S]*?showRuleToast\("Enter a valid wall length\."\);/,
+  "Oversized straight-wall clicks should be rejected before they can render as rogue line rooms."
+);
+
+assert.match(
+  roomDrawingSource,
+  /if \(lastPoint && !isWallDrawSegmentWithinRoomLimit\(lastPoint, snappedPoint\)\) \{[\s\S]*?setBlankGridRoomPreviewPoint\(null\);[\s\S]*?return;/,
+  "Oversized straight-wall previews should be hidden before they can stretch across the plan."
+);
+
+assert.match(
+  roomDrawingSource,
+  /hasOversizedWallDrawSegment\(floorPlanTraceRoomPoints\)[\s\S]*?setFloorPlanTraceRoomPoints\(\[\]\);/,
+  "Stale oversized wall draw geometry should be self-healed instead of staying visible."
+);
+
+assert.match(
+  roomDrawingSource,
+  /lengthMm > ROOM_DIMENSION_DEFAULTS\.max \* 1000/,
+  "Exact wall length placement should reject oversized wall lengths."
+);
+
+assert.match(
+  floorPlanUploadPanelSource,
+  /data-testid="floor-plan-exact-wall-length"[\s\S]*?max=\{ROOM_DIMENSION_DEFAULTS\.max \* 1000\}/,
+  "Exact wall length input should expose the same maximum as room dimensions."
+);
+
+assert.match(
+  designPageSource,
+  /valueMeters > ROOM_DIMENSION_DEFAULTS\.max[\s\S]*?showRuleToast\("Enter a valid room dimension\."\);/,
+  "2D room dimension commits should reject oversized values instead of silently clamping them."
+);
+
+assert.match(
+  designPageSource,
+  /const handlePlacementAwareRoomSelect = useCallback\([\s\S]*?handleResetFloorPlanTraceRoomPoints\(\);/,
+  "Selecting a committed room should clear stale wall-draw points before selected-room controls render."
+);
+
+assert.match(
+  source,
   /const stopNativeRoomDragEvent = \(event: ThreeEvent<PointerEvent>\) => \{[\s\S]*?event\.nativeEvent\.stopImmediatePropagation\?\.\(\);[\s\S]*?\};/,
   "Room drag start and move should stop immediate native propagation so 2D pan controls never start during room drags."
 );
 
 assert.match(
   source,
-  /onPointerUp=\{\(event\) => \{[\s\S]*?drag\?\.kind === "room"[\s\S]*?clearActiveDrag\(\);[\s\S]*?releasePointerCaptureIfSupported\(event\);[\s\S]*?\}\}/,
+  /data-testid="selected-room-move"[\s\S]*?onPointerDown=\{\(event\) => startExplicitRoomMove\(room, event\)\}/,
+  "Room movement should be available only through the selected-room move handle."
+);
+
+assert.match(
+  source,
+  /const roomBodyClickThresholdPx = 6;/,
+  "Room body clicks should use a small pixel threshold so drag gestures can pan the plan."
+);
+
+assert.match(
+  roomBodyPointerDownSource,
+  /roomBodyPointerRef\.current = \{[\s\S]*?roomId: room\.id,[\s\S]*?clientX: event\.nativeEvent\.clientX,[\s\S]*?clientY: event\.nativeEvent\.clientY/,
+  "Room body pointerdown should only remember click-start data in normal select mode."
+);
+
+assert.doesNotMatch(
+  roomBodyPointerDownSource,
+  /stopNativeRoomDragEvent|stopPropagation|setPointerCaptureIfSupported|onRoomDragStateChange|setRoomDragPreview|dragTargetRef\.current/,
+  "Room body pointerdown must not start room dragging or block MapControls pan gestures."
+);
+
+assert.match(
+  roomPointerUpSource,
+  /drag\?\.kind === "room"[\s\S]*?clearActiveDrag\(\);[\s\S]*?releasePointerCaptureIfSupported\(event\);/,
   "Room drag release should clear the room drag without blocking the native pointerup used by 2D pan controls."
 );
 
 assert.doesNotMatch(
-  source,
-  /onPointerUp=\{\(event\) => \{[\s\S]*?drag\?\.kind === "room"[\s\S]*?stopNativeRoomDragEvent\(event\);[\s\S]*?releasePointerCaptureIfSupported\(event\);[\s\S]*?\}\}/,
+  roomPointerUpSource,
+  /stopNativeRoomDragEvent\(event\);/,
   "Room drag release should not stop the native pointerup event, or MapControls can remain stuck panning."
 );
 
@@ -85,13 +258,13 @@ assert.match(
 
 assert.match(
   source,
-  /onRoomDragStateChange\?\.\(true\);[\s\S]*?setRoomSnapPreview\(null\);/,
-  "Room drag start should report active dragging before movement begins."
+  /const startExplicitRoomMove = \([\s\S]*?onRoomDragStateChange\?\.\(true\);[\s\S]*?setRoomSnapPreview\(null\);/,
+  "Only explicit room move should report active dragging before movement begins."
 );
 
 assert.match(
   source,
-  /if \(dragTargetRef\.current\?\.kind === "room"\) \{[\s\S]*?onRoomDragStateChange\?\.\(false\);[\s\S]*?\}/,
+  /const dragKind = dragTargetRef\.current\?\.kind;[\s\S]*?if \(dragKind === "room"\) \{[\s\S]*?onRoomDragStateChange\?\.\(false\);[\s\S]*?\}/,
   "Room drag cleanup should always unlock 2D pan controls."
 );
 
@@ -109,7 +282,7 @@ assert.match(
 
 assert.match(
   designPageSource,
-  /enabled=\{!sofaDragging && !planRoomDragging\}/,
+  /enabled=\{!sofaDragging && !planRoomDragging && !planRoomResizing && !planOverlayDragging\}/,
   "MapControls should be disabled while a 2D room drag is active."
 );
 

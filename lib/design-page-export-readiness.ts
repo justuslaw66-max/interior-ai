@@ -34,7 +34,7 @@ export function buildExportReadinessItems({
     {
       label: "Doors/windows",
       value: hasRoomConnectionBlockers
-        ? "Needs doorway"
+        ? "Review links"
         : openingCount > 0
           ? `${openingCount} placed`
           : "Optional",

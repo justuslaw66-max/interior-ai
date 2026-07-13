@@ -54,15 +54,15 @@ export default function SceneAdjustmentToolbar({
   onFitView,
 }: SceneAdjustmentToolbarProps) {
   const shellClass = dark
-    ? "flex items-center overflow-hidden rounded-xl border border-white/15 bg-[#12151dcc] text-neutral-200 shadow-xl backdrop-blur"
+    ? "designer-work-surface flex items-center overflow-hidden rounded-xl"
     : "flex items-center overflow-hidden rounded-xl border border-neutral-200 bg-white/95 text-neutral-600 shadow-xl backdrop-blur";
-  const dividerClass = dark ? "h-10 w-px bg-white/10" : "h-10 w-px bg-neutral-200";
+  const dividerClass = dark ? "designer-work-divider h-10 border-l" : "h-10 w-px bg-neutral-200";
   const baseButtonClass =
     "flex h-10 items-center justify-center px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-45";
-  const activeTextClass = dark ? "bg-white text-neutral-950" : "bg-white text-blue-600";
-  const idleTextClass = dark ? "hover:bg-white/10 hover:text-white" : "hover:bg-neutral-50 hover:text-neutral-950";
+  const activeTextClass = dark ? "designer-work-control-active" : "bg-white text-blue-600";
+  const idleTextClass = dark ? "designer-work-control" : "hover:bg-neutral-50 hover:text-neutral-950";
   const iconButtonClass = dark
-    ? "flex h-10 w-10 items-center justify-center text-neutral-300 transition hover:bg-white/10 hover:text-white disabled:opacity-45"
+    ? "designer-work-control flex h-10 w-10 items-center justify-center transition disabled:opacity-45"
     : "flex h-10 w-10 items-center justify-center text-neutral-500 transition hover:bg-neutral-50 hover:text-neutral-950 disabled:opacity-45";
 
   return (

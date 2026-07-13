@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getFreshCatalogYamlMap } from "@/lib/catalog-yaml";
+import { isLiveCatalogEntry } from "@/lib/catalog-publication";
 
 type CatalogYamlRecord = Record<string, unknown>;
 
@@ -57,43 +58,73 @@ function mapCatalogYaml(yaml: CatalogYamlRecord) {
   };
 }
 
+function readString(value: unknown): string | null {
+  const normalized = String(value ?? "").trim();
+  return normalized.length > 0 ? normalized : null;
+}
+
+function readPositiveMm(value: unknown): number {
+  const cm = Number(value ?? 0);
+  return Number.isFinite(cm) && cm > 0 ? Math.round(cm * 10) : 0;
+}
+
+function buildYamlOnlyModel(id: string, yaml: CatalogYamlRecord) {
+  const assets = (yaml.assets && typeof yaml.assets === "object" ? yaml.assets : {}) as Record<string, unknown>;
+  const dimensions = (yaml.dimensions && typeof yaml.dimensions === "object" ? yaml.dimensions : {}) as Record<string, unknown>;
+
+  return {
+    id,
+    modelUrl: readString(assets.model_url) ?? readString(assets.modelUrl) ?? undefined,
+    thumbUrl: readString(assets.thumbnail_url) ?? readString(assets.thumbnailUrl) ?? undefined,
+    status: "approved",
+    dimsWmm: readPositiveMm(dimensions.width_cm),
+    dimsDmm: readPositiveMm(dimensions.depth_cm),
+    dimsHmm: readPositiveMm(dimensions.height_cm),
+    dims: `${readPositiveMm(dimensions.width_cm)}×${readPositiveMm(dimensions.depth_cm)}×${readPositiveMm(dimensions.height_cm)}mm`,
+    catalog: mapCatalogYaml(yaml),
+  };
+}
+
 export async function buildImportedModelsPayload() {
-  const catalogMap = getFreshCatalogYamlMap();
+  const catalogMap = new Map(
+    Array.from(getFreshCatalogYamlMap().entries()).filter(([, yaml]) =>
+      isLiveCatalogEntry(yaml)
+    )
+  );
 
   try {
     const assets = await prisma.modelAsset.findMany({
       orderBy: { updatedAt: "desc" },
     });
 
+    const liveAssets = assets.filter((asset: (typeof assets)[number]) => catalogMap.has(asset.id));
+    const assetIds = new Set(liveAssets.map((asset: (typeof liveAssets)[number]) => asset.id));
+    const assetModels = liveAssets.map((asset: (typeof liveAssets)[number]) => {
+      const yaml = catalogMap.get(asset.id) as CatalogYamlRecord;
+      return {
+        id: asset.id,
+        modelUrl: asset.modelUrl,
+        thumbUrl: asset.thumbUrl,
+        status: asset.approved ? "approved" : "pending",
+        dimsWmm: asset.dimsWmm,
+        dimsDmm: asset.dimsDmm,
+        dimsHmm: asset.dimsHmm,
+        dims: `${asset.dimsWmm}×${asset.dimsDmm}×${asset.dimsHmm}mm`,
+        catalog: mapCatalogYaml(yaml),
+      };
+    });
+    const yamlOnlyModels = Array.from(catalogMap.entries())
+      .filter(([id]) => !assetIds.has(id))
+      .map(([id, yaml]) => buildYamlOnlyModel(id, yaml as CatalogYamlRecord));
+
     return {
-      total: assets.length,
-      models: assets.map((asset: (typeof assets)[number]) => {
-        const yaml = (catalogMap.get(asset.id) as CatalogYamlRecord | undefined) ?? null;
-        return {
-          id: asset.id,
-          modelUrl: asset.modelUrl,
-          thumbUrl: asset.thumbUrl,
-          status: asset.approved ? "approved" : "pending",
-          dimsWmm: asset.dimsWmm,
-          dimsDmm: asset.dimsDmm,
-          dimsHmm: asset.dimsHmm,
-          dims: `${asset.dimsWmm}×${asset.dimsDmm}×${asset.dimsHmm}mm`,
-          catalog: yaml ? mapCatalogYaml(yaml) : null,
-        };
-      }),
+      total: assetModels.length + yamlOnlyModels.length,
+      models: [...assetModels, ...yamlOnlyModels],
     };
   } catch (error) {
-    const models = Array.from(catalogMap.entries()).map(([id, yaml]) => ({
-      id,
-      modelUrl: null,
-      thumbUrl: null,
-      status: "approved",
-      dimsWmm: 0,
-      dimsDmm: 0,
-      dimsHmm: 0,
-      dims: "0×0×0mm",
-      catalog: mapCatalogYaml(yaml as CatalogYamlRecord),
-    }));
+    const models = Array.from(catalogMap.entries()).map(([id, yaml]) =>
+      buildYamlOnlyModel(id, yaml as CatalogYamlRecord)
+    );
 
     return {
       total: models.length,

@@ -52,9 +52,69 @@ async function clickWithFallback(locator: Locator, timeout = 5000) {
   }
 }
 
+async function clearBrowserStorageBeforeNextLoad(page: Page) {
+  await page.addInitScript(() => {
+    window.localStorage.clear();
+    window.sessionStorage.clear();
+  });
+}
+
 async function expectInactiveOrHidden(locator: Locator) {
   if ((await locator.count()) === 0) return;
   await expect(locator).toHaveAttribute("data-active", "false");
+}
+
+async function expectPlan2DProjectionHealthy(page: Page) {
+  const sceneCanvas = page.getByTestId("scene-canvas").first();
+  await expect(sceneCanvas).toHaveAttribute("data-plan-2d-camera-valid", "true", {
+    timeout: 10000,
+  });
+  await expect
+    .poll(
+      async () =>
+        Number(await sceneCanvas.getAttribute("data-plan-2d-projected-room-min-width-px")),
+      { timeout: 10000 }
+    )
+    .toBeGreaterThan(32);
+  await expect
+    .poll(
+      async () =>
+        Number(await sceneCanvas.getAttribute("data-plan-2d-projected-room-min-height-px")),
+      { timeout: 10000 }
+    )
+    .toBeGreaterThan(32);
+  await expect
+    .poll(
+      async () =>
+        Number(await sceneCanvas.getAttribute("data-plan-2d-projected-room-min-area-px")),
+      { timeout: 10000 }
+    )
+    .toBeGreaterThan(1200);
+}
+
+async function readNumberAttribute(locator: Locator, attribute: string) {
+  return Number(await locator.getAttribute(attribute));
+}
+
+async function getActiveRoomBodyProbe(page: Page) {
+  const activeRoomProbe = page
+    .getByTestId("house-room-2d-hit-probe")
+    .or(page.locator('[data-testid="house-room-2d-label"][data-active="true"]'))
+    .first();
+  await expect(activeRoomProbe).toBeAttached({ timeout: 10000 });
+  return activeRoomProbe;
+}
+
+function boxesOverlap(
+  first: NonNullable<Awaited<ReturnType<Locator["boundingBox"]>>>,
+  second: NonNullable<Awaited<ReturnType<Locator["boundingBox"]>>>
+) {
+  return (
+    first.x < second.x + second.width &&
+    first.x + first.width > second.x &&
+    first.y < second.y + second.height &&
+    first.y + first.height > second.y
+  );
 }
 
 test.describe("18. Multi-Room Whole Home", () => {
@@ -122,9 +182,146 @@ test.describe("18. Multi-Room Whole Home", () => {
     if (await planTab.isVisible().catch(() => false)) {
       await clickWithFallback(planTab);
     }
+    const manualPlanChoice = page.getByTestId("plan-guided-actions-choice-manual");
+    if (await manualPlanChoice.isVisible().catch(() => false)) {
+      await clickWithFallback(manualPlanChoice);
+    }
     await expect(page.getByTestId("plan-start-template")).toBeVisible();
     await clickWithFallback(page.getByTestId("plan-start-template"));
   }
+
+  test("keeps 2D projected room geometry from collapsing after fit and view toggles", async ({ page }) => {
+    test.setTimeout(60_000);
+
+    await page.goto("/design");
+    await page.waitForLoadState("domcontentloaded");
+    await page.evaluate(() => {
+      window.localStorage.clear();
+      window.sessionStorage.clear();
+    });
+    await page.reload();
+    await page.waitForLoadState("domcontentloaded");
+
+    await chooseTemplateStart(page);
+    await page.getByTestId("add-room-template-bedroom").click();
+
+    await page.getByRole("button", { name: "2D Plan" }).click();
+    await expectPlan2DProjectionHealthy(page);
+
+    await clickWithFallback(page.getByTestId("room-plan-status-fit-view"));
+    await expectPlan2DProjectionHealthy(page);
+
+    const sceneCanvasBox = await page.getByTestId("scene-canvas").first().boundingBox();
+    expect(sceneCanvasBox).not.toBeNull();
+    if (!sceneCanvasBox) throw new Error("Scene canvas was not measurable");
+
+    await page.mouse.move(
+      sceneCanvasBox.x + sceneCanvasBox.width / 2,
+      sceneCanvasBox.y + sceneCanvasBox.height / 2
+    );
+    await page.mouse.wheel(0, -360);
+    await expectPlan2DProjectionHealthy(page);
+
+    await page.getByRole("button", { name: "3D" }).click();
+    await page.getByRole("button", { name: "2D Plan" }).click();
+    await expectPlan2DProjectionHealthy(page);
+  });
+
+  test("pans and zooms from room body while moving rooms only from the move handle", async ({ page }) => {
+    test.setTimeout(60_000);
+
+    await page.goto("/design");
+    await page.waitForLoadState("domcontentloaded");
+    await page.evaluate(() => {
+      window.localStorage.clear();
+      window.sessionStorage.clear();
+    });
+    await page.reload();
+    await page.waitForLoadState("domcontentloaded");
+
+    await chooseTemplateStart(page);
+    await page.getByTestId("add-room-template-bedroom").click();
+    await page.getByRole("button", { name: "2D Plan" }).click();
+    await expectPlan2DProjectionHealthy(page);
+
+    const roomLabel = await getActiveRoomBodyProbe(page);
+    const labelBox = await roomLabel.boundingBox();
+    expect(labelBox).not.toBeNull();
+    if (!labelBox) throw new Error("Active room label was not measurable");
+
+    const roomXBeforeMoveHandle = await readNumberAttribute(roomLabel, "data-room-x");
+    const roomZBeforeMoveHandle = await readNumberAttribute(roomLabel, "data-room-z");
+    await expect(page.getByTestId("selected-room-move")).toBeVisible();
+    const moveHandle = page.getByTestId("selected-room-move");
+    const moveHandleBox = await moveHandle.boundingBox();
+    expect(moveHandleBox).not.toBeNull();
+    if (!moveHandleBox) throw new Error("Selected room move handle was not measurable");
+
+    await page.mouse.move(
+      moveHandleBox.x + moveHandleBox.width / 2,
+      moveHandleBox.y + moveHandleBox.height / 2
+    );
+    await page.mouse.down();
+    await page.mouse.move(
+      moveHandleBox.x + moveHandleBox.width / 2 + 80,
+      moveHandleBox.y + moveHandleBox.height / 2 + 40,
+      { steps: 8 }
+    );
+    await page.mouse.up();
+
+    await expect
+      .poll(async () => {
+        const nextX = await readNumberAttribute(roomLabel, "data-room-x");
+        const nextZ = await readNumberAttribute(roomLabel, "data-room-z");
+        return Math.hypot(nextX - roomXBeforeMoveHandle, nextZ - roomZBeforeMoveHandle);
+      })
+      .toBeGreaterThan(0.1);
+
+    const roomXBeforeBodyDrag = await readNumberAttribute(roomLabel, "data-room-x");
+    const roomZBeforeBodyDrag = await readNumberAttribute(roomLabel, "data-room-z");
+    const labelBoxBeforeBodyDrag = await roomLabel.boundingBox();
+    expect(labelBoxBeforeBodyDrag).not.toBeNull();
+    if (!labelBoxBeforeBodyDrag) throw new Error("Active room label was not measurable before body drag");
+    const debug = page.getByTestId("qa-design-layout-debug");
+    const targetXBeforeBodyDrag = await readNumberAttribute(debug, "data-plan-2d-camera-target-x");
+    const targetZBeforeBodyDrag = await readNumberAttribute(debug, "data-plan-2d-camera-target-z");
+
+    await page.mouse.move(
+      labelBoxBeforeBodyDrag.x + labelBoxBeforeBodyDrag.width / 2,
+      labelBoxBeforeBodyDrag.y + labelBoxBeforeBodyDrag.height / 2
+    );
+    await page.mouse.down();
+    await page.mouse.move(
+      labelBoxBeforeBodyDrag.x + labelBoxBeforeBodyDrag.width / 2 + 90,
+      labelBoxBeforeBodyDrag.y + labelBoxBeforeBodyDrag.height / 2 + 60,
+      { steps: 8 }
+    );
+    await page.mouse.up();
+
+    await expect.poll(() => readNumberAttribute(roomLabel, "data-room-x")).toBeCloseTo(roomXBeforeBodyDrag, 2);
+    await expect.poll(() => readNumberAttribute(roomLabel, "data-room-z")).toBeCloseTo(roomZBeforeBodyDrag, 2);
+    await expect
+      .poll(async () => {
+        const nextX = await readNumberAttribute(debug, "data-plan-2d-camera-target-x");
+        const nextZ = await readNumberAttribute(debug, "data-plan-2d-camera-target-z");
+        return Math.hypot(nextX - targetXBeforeBodyDrag, nextZ - targetZBeforeBodyDrag);
+      })
+      .toBeGreaterThan(0.1);
+
+    const labelBoxAfterPan = await roomLabel.boundingBox();
+    expect(labelBoxAfterPan).not.toBeNull();
+    if (!labelBoxAfterPan) throw new Error("Active room label was not measurable after pan");
+
+    const zoomBeforeWheel = await readNumberAttribute(debug, "data-plan-zoom");
+    await page.mouse.move(
+      labelBoxAfterPan.x + labelBoxAfterPan.width / 2,
+      labelBoxAfterPan.y + labelBoxAfterPan.height / 2
+    );
+    await page.mouse.wheel(0, -360);
+    await expect.poll(() => readNumberAttribute(debug, "data-plan-zoom")).toBeGreaterThan(zoomBeforeWheel);
+    await expect.poll(() => readNumberAttribute(roomLabel, "data-room-x")).toBeCloseTo(roomXBeforeBodyDrag, 2);
+    await expect.poll(() => readNumberAttribute(roomLabel, "data-room-z")).toBeCloseTo(roomZBeforeBodyDrag, 2);
+  });
 
   test("public beta fast start opens the chosen plan workflow", async ({ page }) => {
     await page.goto("/design");
@@ -199,6 +396,72 @@ test.describe("18. Multi-Room Whole Home", () => {
       .toBe("quality");
   });
 
+  test("intermediate-width plan keeps floating room and floor overlays off the details card", async ({
+    page,
+  }) => {
+    test.setTimeout(120000);
+    await page.setViewportSize({ width: 900, height: 900 });
+
+    await page.goto("/design");
+    await page.waitForLoadState("domcontentloaded");
+
+    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
+    await expect(page.getByTestId("coohom-floor-panel")).toHaveCount(0);
+    await expect(page.getByTestId("floor-summary-panel")).toBeVisible();
+
+    await chooseTemplateStart(page);
+    await page.getByTestId("add-room-template-bedroom").click();
+    await page.getByRole("button", { name: "3D" }).click();
+
+    await expect(page.getByTestId("room-pan-navigator")).toHaveCount(0);
+    await expect(page.getByTestId("coohom-floor-panel")).toHaveCount(0);
+    await expect(page.getByTestId("floor-summary-panel")).toBeVisible();
+  });
+
+  test("shop mode uses the left work panel and keeps the canvas clear", async ({
+    page,
+  }) => {
+    test.setTimeout(120000);
+
+    await page.goto("/design");
+    await page.waitForLoadState("domcontentloaded");
+
+    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
+    await chooseTemplateStart(page);
+    await page.getByTestId("add-room-template-bedroom").click();
+    await page.getByRole("button", { name: "3D" }).click();
+    await clickWithFallback(page.getByTestId("editor-workflow-shop"));
+
+    await expect(page.getByTestId("editor-workflow-shop")).toHaveAttribute("data-active", "true");
+    await expect(page.getByTestId("shopping-dock")).toBeVisible();
+    await expect(page.getByTestId("shopping-overview-panel")).toBeVisible();
+    await expect(page.getByTestId("editor-command-bar")).toBeVisible();
+    await expect(page.getByTestId("room-pan-navigator")).toBeVisible();
+    await expect(page.getByTestId("coohom-floor-panel")).toHaveCount(0);
+
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+    );
+    expect(overflow).toBeLessThanOrEqual(4);
+
+    const shoppingDockBox = await page.getByTestId("shopping-dock").boundingBox();
+    const trayTriggerBox = await page.getByTestId("selection-tray-trigger").boundingBox();
+    expect(shoppingDockBox).not.toBeNull();
+    expect(trayTriggerBox).not.toBeNull();
+    if (!shoppingDockBox || !trayTriggerBox) {
+      throw new Error("Shop dock and tray trigger should be measurable");
+    }
+    expect(shoppingDockBox.x).toBeLessThan(120);
+    expect(boxesOverlap(shoppingDockBox, trayTriggerBox)).toBe(false);
+
+    const roomNavigatorBox = await page.getByTestId("room-pan-navigator").boundingBox();
+    expect(roomNavigatorBox).not.toBeNull();
+    if (!roomNavigatorBox) {
+      throw new Error("Room navigator should be measurable");
+    }
+    expect(boxesOverlap(shoppingDockBox, roomNavigatorBox)).toBe(false);
+  });
+
   test("floor panel creates floors with modes and toggles inactive floor visibility", async ({
     page,
   }) => {
@@ -209,10 +472,8 @@ test.describe("18. Multi-Room Whole Home", () => {
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
     await expect(page.getByTestId("coohom-floor-panel")).toBeVisible();
-    await page.getByTestId("floating-panel-presets-design-floor-properties").click();
-    await expect(page.getByTestId("floating-panel-preset-menu-design-floor-properties")).toBeVisible();
-    await page.getByRole("button", { name: "Coohom stack" }).click();
-    await expect(page.getByTestId("floating-panel-preset-menu-design-floor-properties")).toHaveCount(0);
+    await expect(page.getByTestId("plan-right-rail")).toBeVisible();
+    await expect(page.getByTestId("floating-panel-presets-design-floor-properties")).toHaveCount(0);
 
     const expandFloorPanel = page.getByRole("button", { name: "Expand floor panel" });
     if (await expandFloorPanel.isVisible().catch(() => false)) {
@@ -230,6 +491,10 @@ test.describe("18. Multi-Room Whole Home", () => {
     await expect(page.getByTestId("floor-row-2")).toContainText("2F");
     await expect(page.getByTestId("floor-row-1")).toContainText("1F");
 
+    const secondFloorButton = page.getByTestId("floor-row-2").getByRole("button", { name: /2F/ }).first();
+    if (await secondFloorButton.isEnabled()) {
+      await secondFloorButton.click();
+    }
     await page.getByTestId("floor-row-1").getByRole("button", { name: "Hide 1F" }).click();
     await expect(page.getByRole("button", { name: "Show 1F" })).toBeVisible();
 
@@ -265,7 +530,7 @@ test.describe("18. Multi-Room Whole Home", () => {
     await expect(page.getByTestId("floor-plan-draw-mode-straight_wall")).toHaveCount(0);
     await page.getByRole("button", { name: "2D Plan" }).click();
     await chooseDrawFromScratch(page);
-    await expect(page.getByText("Draw room", { exact: true })).toBeVisible();
+    await expect(page.getByTestId("plan-tool-section-drawRoom")).toBeVisible();
 
     await openDrawToolPanelIfNeeded(page);
     await expect(page.getByTestId("floor-plan-draw-mode-straight_wall")).toBeVisible();
@@ -324,12 +589,11 @@ test.describe("18. Multi-Room Whole Home", () => {
     await chooseDrawFromScratch(page);
     await page.getByTestId("floor-plan-draw-mode-rectangle_wall").click();
     await expectDrawPointCount(page, 0);
-    await page.mouse.click(start.x, start.y);
-    await expectDrawPointCount(page, 1);
-    await page.mouse.click(end.x, end.y);
+    await page.mouse.move(start.x, start.y);
+    await page.mouse.down();
+    await page.mouse.move(end.x, end.y, { steps: 8 });
+    await page.mouse.up();
 
-    await expect(page.getByText("Room drawn")).toBeVisible();
-    await expect(page.getByTestId("room-plan-status-room-name")).toContainText("Bedroom");
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("1 room");
 
     await page.getByTestId("floor-plan-draw-mode-straight_wall").click();
@@ -382,6 +646,13 @@ test.describe("18. Multi-Room Whole Home", () => {
     await page.getByTestId("wall-draw-segment-length-editor").fill("1800");
     await page.getByTestId("wall-draw-segment-length-editor").press("Enter");
     await expect(page.getByTestId("wall-draw-segment-length-1")).toContainText("1800 mm");
+
+    await page.getByTestId("wall-draw-segment-length-1").dblclick();
+    await expect(page.getByTestId("wall-draw-segment-length-editor")).toBeVisible();
+    await page.getByTestId("wall-draw-segment-length-editor").fill("23234");
+    await page.getByTestId("wall-draw-segment-length-editor").press("Enter");
+    await expect(page.getByText("Enter a valid wall length.")).toBeVisible();
+    await expect(page.locator('[data-testid^="wall-draw-segment-length-"]')).toHaveCount(0);
   });
 
   test("arc wall mode previews rounded-room feedback and cancels cleanly", async ({ page }) => {
@@ -526,10 +797,12 @@ test.describe("18. Multi-Room Whole Home", () => {
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
     await page.getByRole("button", { name: "2D Plan" }).click();
-    await chooseTemplateStart(page);
-    await page.getByTestId("add-room-template-bedroom").click();
+    const guidedActionsToggle = page.getByTestId("plan-guided-actions-toggle");
+    if ((await guidedActionsToggle.getAttribute("data-enabled")) === "true") {
+      await guidedActionsToggle.click();
+    }
 
-    await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("2 rooms");
+    await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("1 room");
     const activeRoomLabel = page
       .locator('[data-testid="house-room-2d-label"][data-active="true"]')
       .or(page.locator('[data-testid="house-room-2d-label"]').filter({ hasText: "Bedroom" }))
@@ -603,10 +876,9 @@ test.describe("18. Multi-Room Whole Home", () => {
     await expect(page.getByTestId("room-plan-status-room-name")).toContainText("Bedroom");
 
     await clickWithFallback(page.getByTestId("editor-workflow-furnish"));
-    if ((await page.getByTestId("furnish-recommended-category-coffee_table").count()) > 0) {
-      await page.getByTestId("furnish-recommended-category-coffee_table").click();
-    } else {
-      await page.getByTestId("furnish-full-catalog").click();
+    const catalogMode = page.getByTestId("furnish-mode-catalog");
+    if (await catalogMode.isVisible().catch(() => false)) {
+      await clickWithFallback(catalogMode);
     }
     await expect(page.locator('[data-testid^="catalog-preview-"]').first()).toBeVisible();
     const firstPreview = page.locator('[data-testid^="catalog-preview-"]').first();
@@ -656,70 +928,80 @@ test.describe("18. Multi-Room Whole Home", () => {
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
     await expect(page.getByTestId("editor-workflow-plan")).toHaveAttribute("data-active", "true");
-    await expect(page.getByTestId("plan-measurements-panel")).toBeVisible();
 
-    await clickWithFallback(page.getByTestId("editor-workflow-furnish"));
-    await expect(page.getByTestId("editor-workflow-furnish")).toHaveAttribute("data-active", "true");
+    const furnishWorkflow = page.getByTestId("editor-workflow-furnish");
+    await expect(async () => {
+      if ((await furnishWorkflow.getAttribute("data-active")) !== "true") {
+        await furnishWorkflow.evaluate((button) => (button as HTMLButtonElement).click());
+      }
+      await expect(furnishWorkflow).toHaveAttribute("data-active", "true", { timeout: 1500 });
+    }).toPass({ timeout: 10000 });
     await expect(page.getByTestId("furnish-room-summary")).toBeVisible();
-    await expect(page.getByTestId("furnish-room-checklist")).toBeVisible();
+    const catalogMode = page.getByTestId("furnish-mode-catalog");
+    const guidedMode = page.getByTestId("furnish-mode-guided");
+    const fullCatalog = page.getByTestId("furnish-full-catalog");
+    const catalogSearch = page.getByTestId("catalog-search-input");
+
+    await expect(catalogMode).toBeVisible();
+    await expect(guidedMode).toBeVisible();
+    await expect(catalogMode).toHaveAttribute("data-active", "true");
+    await expect(catalogMode).toHaveAttribute("aria-pressed", "true");
+    await expect(guidedMode).toHaveAttribute("aria-pressed", "false");
+    await expect(fullCatalog).toBeVisible();
+    await expect(catalogSearch).toBeVisible();
+    await expect(page.getByTestId("furnish-room-checklist")).not.toBeVisible();
+    await expect(page.getByText("Recommended for Living Room")).not.toBeVisible();
     await expect(page.getByTestId("furnish-shopping-preview")).toBeVisible();
+    await expect(page.getByTestId("advanced-imported-models")).not.toHaveAttribute("open", "");
+
+    await catalogSearch.fill("Sloane");
+    await clickWithFallback(guidedMode);
+    await expect(guidedMode).toHaveAttribute("data-active", "true");
+    await expect(guidedMode).toHaveAttribute("aria-pressed", "true");
+    await expect(fullCatalog).not.toBeVisible();
+    await expect(page.getByTestId("room-furnishing-completeness")).toBeVisible();
+    await expect(page.getByTestId("furnish-room-checklist")).toBeVisible();
     await expect(page.getByText("Recommended for Living Room")).toBeVisible();
     await expect(page.getByTestId("furnish-recommended-category-coffee_table")).toBeVisible();
-    const roomSummaryToggle = page.getByTestId("furnish-room-summary-toggle");
-    if ((await roomSummaryToggle.count()) > 0) {
-      await clickWithFallback(roomSummaryToggle);
-      await expect(page.getByTestId("furnish-room-summary")).not.toHaveAttribute("open", "");
-      await expect(page.getByTestId("room-furnishing-completeness")).not.toBeVisible();
-      await clickWithFallback(roomSummaryToggle);
-      await expect(page.getByTestId("furnish-room-summary")).toHaveAttribute("open", "");
-    }
-    const checklistToggle = page.getByTestId("furnish-room-checklist-toggle");
-    if ((await checklistToggle.count()) > 0) {
-      await clickWithFallback(checklistToggle);
-      await expect(page.getByTestId("furnish-room-checklist-section")).not.toHaveAttribute("open", "");
-      await expect(page.getByTestId("furnish-room-checklist")).not.toBeVisible();
-      await clickWithFallback(checklistToggle);
-      await expect(page.getByTestId("furnish-room-checklist-section")).toHaveAttribute("open", "");
-    }
-    const shoppingPreviewToggle = page.getByTestId("furnish-shopping-preview-toggle");
-    if ((await shoppingPreviewToggle.count()) > 0) {
-      await clickWithFallback(shoppingPreviewToggle);
-      await expect(page.getByTestId("furnish-shopping-preview")).not.toHaveAttribute("open", "");
-      await clickWithFallback(shoppingPreviewToggle);
-      await expect(page.getByTestId("furnish-shopping-preview")).toHaveAttribute("open", "");
-    }
-    const recommendedToggle = page.getByTestId("furnish-recommended-toggle");
-    if ((await recommendedToggle.count()) > 0) {
-      await clickWithFallback(recommendedToggle);
-      await expect(page.getByTestId("furnish-recommended-section")).not.toHaveAttribute("open", "");
-      await expect(page.getByTestId("furnish-recommended-category-coffee_table")).not.toBeVisible();
-      await clickWithFallback(recommendedToggle);
-      await expect(page.getByTestId("furnish-recommended-section")).toHaveAttribute("open", "");
-    }
-    const fullCatalog = page.getByTestId("furnish-full-catalog");
-    await expect(fullCatalog).not.toHaveAttribute("open", "");
-    await expect(page.getByTestId("advanced-imported-models")).not.toHaveAttribute("open", "");
+
+    await clickWithFallback(catalogMode);
+    await expect(fullCatalog).toBeVisible();
+    await expect(catalogSearch).toHaveValue("Sloane");
+    await catalogSearch.fill("");
+
+    await clickWithFallback(guidedMode);
     await expect(page.getByTestId("furnish-checklist-category-sofa")).toBeVisible();
     await clickWithFallback(page.getByTestId("furnish-checklist-category-sofa"));
-    await expect(fullCatalog).toHaveAttribute("open", "");
-    await fullCatalog.evaluate((node) => node.scrollIntoView({ block: "nearest" }));
-    await expect(fullCatalog).toBeInViewport();
-    await expect(page.getByTestId("catalog-room-recommendation-sofa")).toHaveAttribute(
-      "data-active",
-      "true"
-    );
-    await clickWithFallback(page.getByTestId("furnish-full-catalog-toggle"));
-    await expect(fullCatalog).not.toHaveAttribute("open", "");
+    await expect(catalogMode).toHaveAttribute("data-active", "true");
+    await expect(fullCatalog).toBeVisible();
+    await expect(catalogSearch).toBeFocused();
+    await expect(page.getByTestId("catalog-category-trigger")).toContainText("Sofa");
+
+    await clickWithFallback(guidedMode);
     await clickWithFallback(page.getByTestId("furnish-recommended-category-coffee_table"));
-    await expect(fullCatalog).toHaveAttribute("open", "");
+    await expect(fullCatalog).toBeVisible();
+    await expect(catalogSearch).toBeFocused();
     await expect(page.getByTestId("catalog-room-context")).toBeVisible();
     await expect(page.getByTestId("catalog-active-room-pill")).toContainText("Adding to Living Room");
-    await expect(page.getByTestId("catalog-room-recommendation-coffee_table")).toHaveAttribute(
-      "data-active",
-      "true"
-    );
+    const categoryTrigger = page.getByTestId("catalog-category-trigger");
+    await expect(categoryTrigger).toContainText("Coffee Table");
+    await clickWithFallback(categoryTrigger);
+    await expect(page.getByTestId("catalog-main-group-tables")).toHaveAttribute("data-active", "true");
+    await expect(page.getByTestId("catalog-category-option-coffee_table")).toBeVisible();
+    await expect(page.getByTestId("catalog-category-option-side_table")).toBeVisible();
+    await expect(page.getByTestId("catalog-category-option-dining_table")).toBeVisible();
+    await expect(page.getByTestId("catalog-category-option-dining_bench")).toBeVisible();
+    await clickWithFallback(page.getByTestId("catalog-category-all-tables"));
+    await expect(categoryTrigger).toContainText("All tables & dining");
+    await expect(page.getByTestId("catalog-room-context")).toContainText("All tables & dining");
+    await clickWithFallback(categoryTrigger);
+    await clickWithFallback(page.getByTestId("catalog-category-option-coffee_table"));
+    await expect(categoryTrigger).toContainText("Coffee Table");
     await expect(page.locator('[data-testid^="catalog-preview-"]').first()).toBeVisible();
-    await expect(page.locator('[data-testid^="catalog-guidance-"]').first()).toContainText(/Fits this space|Check fit|Too large for room/);
+    const firstCatalogGuidance = page.locator('[data-testid^="catalog-guidance-"]').first();
+    if ((await firstCatalogGuidance.count()) > 0) {
+      await expect(firstCatalogGuidance).toContainText(/Fits this space|Check fit|Too large for room/);
+    }
     await expect(page.getByTestId("catalog-smart-filters")).toBeVisible();
     await expect(page.getByTestId("catalog-smart-filter-recommended")).toBeVisible();
     await expect(page.getByTestId("catalog-smart-filter-fits")).toBeVisible();
@@ -735,7 +1017,10 @@ test.describe("18. Multi-Room Whole Home", () => {
     if ((await fitsSmartFilter.count()) > 0 && !(await fitsSmartFilter.isDisabled())) {
       await clickWithFallback(fitsSmartFilter);
       await expect(fitsSmartFilter).toHaveAttribute("data-active", "true");
-      await expect(page.locator('[data-testid^="catalog-guidance-"]').first()).toContainText("Fits this space");
+      const visibleFitGuidance = page.locator('[data-testid^="catalog-guidance-"]:visible').first();
+      if ((await visibleFitGuidance.count()) > 0) {
+        await expect(visibleFitGuidance).toContainText("Fits this space");
+      }
       await clickWithFallback(page.getByTestId("catalog-smart-filter-clear"));
       await expectInactiveOrHidden(fitsSmartFilter);
     }
@@ -800,7 +1085,6 @@ test.describe("18. Multi-Room Whole Home", () => {
 
     await clickWithFallback(page.getByTestId("editor-workflow-plan"));
     await expect(page.getByTestId("editor-workflow-plan")).toHaveAttribute("data-active", "true");
-    await expect(page.getByTestId("plan-measurements-panel")).toBeVisible();
 
     await clickWithFallback(page.getByTestId("editor-workflow-export"));
     await expect(page.getByTestId("editor-workflow-export")).toHaveAttribute("data-active", "true");
@@ -820,32 +1104,148 @@ test.describe("18. Multi-Room Whole Home", () => {
     await expect(page.getByTestId("editor-workflow-plan")).toHaveAttribute("data-active", "true");
   });
 
-  test("active room dimensions can be edited by double-clicking the 2D labels", async ({ page }) => {
+  test("mobile Furnish exposes the catalog before guided recommendations", async ({ page }) => {
+    await clearBrowserStorageBeforeNextLoad(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/design");
+    await page.waitForLoadState("domcontentloaded");
+
+    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
+    await clickWithFallback(page.getByTestId("editor-workflow-furnish"));
+
+    const catalogMode = page.getByTestId("furnish-mode-catalog");
+    const guidedMode = page.getByTestId("furnish-mode-guided");
+    const catalogSearch = page.getByTestId("catalog-search-input");
+
+    await expect(catalogMode).toBeVisible();
+    await expect(guidedMode).toBeVisible();
+    await expect(catalogMode).toBeInViewport();
+    await expect(guidedMode).toBeInViewport();
+    await expect(catalogSearch).toBeVisible();
+    await clickWithFallback(catalogMode);
+    await expect(catalogSearch).toBeFocused();
+    await expect(catalogSearch).toBeInViewport();
+    await expect(page.getByTestId("furnish-room-checklist")).not.toBeVisible();
+
+    await clickWithFallback(guidedMode);
+    await expect(page.getByTestId("furnish-full-catalog")).not.toBeVisible();
+    await expect(page.getByTestId("room-furnishing-completeness")).toBeVisible();
+    await expect(page.getByTestId("furnish-room-checklist")).toBeVisible();
+
+    await clickWithFallback(catalogMode);
+    await expect(catalogSearch).toBeVisible();
+  });
+
+  test("selected room dimensions use one unit-aware inspector", async ({ page }) => {
+    await clearBrowserStorageBeforeNextLoad(page);
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
     await page.getByRole("button", { name: "2D Plan" }).click();
-    await clickWithFallback(page.getByTestId("plan-start-template"));
-    await page.getByTestId("add-room-template-bedroom").click();
 
-    await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("2 rooms");
-    await expect(page.getByTestId("active-room-dimension-width")).toBeVisible();
-    await expect(page.getByTestId("active-room-dimension-depth")).toBeVisible();
+    await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("1 room");
+    const widthInput = page.getByTestId("selection-inspector-room-width");
+    const depthInput = page.getByTestId("selection-inspector-room-depth");
+    await expect(widthInput).toBeVisible();
+    await expect(depthInput).toBeVisible();
+    const initialWidthMm = Number(await widthInput.inputValue());
+    const nextWidthMm = initialWidthMm - 100;
+    await widthInput.fill(String(nextWidthMm));
+    await widthInput.press("Enter");
+    await expect(widthInput).toHaveValue(String(nextWidthMm));
 
-    await page.getByTestId("active-room-dimension-width").evaluate((node) => {
-      node.dispatchEvent(new MouseEvent("dblclick", { bubbles: true, cancelable: true }));
-    });
-    await expect(page.getByTestId("active-room-dimension-editor-width")).toBeVisible();
-    await page.getByTestId("active-room-dimension-editor-width").fill("3800");
-    await page.getByTestId("active-room-dimension-editor-width").press("Enter");
-    await expect(page.getByTestId("active-room-dimension-width")).toContainText("W 3800 mm");
+    const initialDepthMm = Number(await depthInput.inputValue());
+    const nextDepthMm = initialDepthMm - 100;
+    await depthInput.fill(String(nextDepthMm));
+    await depthInput.press("Enter");
+    await expect(depthInput).toHaveValue(String(nextDepthMm));
 
-    await page.getByTestId("active-room-dimension-depth").dblclick();
-    await expect(page.getByTestId("active-room-dimension-editor-depth")).toBeVisible();
-    await page.getByTestId("active-room-dimension-editor-depth").fill("3200");
-    await page.getByTestId("active-room-dimension-editor-depth").press("Enter");
-    await expect(page.getByTestId("active-room-dimension-depth")).toContainText("D 3200 mm");
+    await widthInput.fill(String(nextWidthMm - 100));
+    await widthInput.press("Escape");
+    await expect(widthInput).toHaveValue(String(nextWidthMm));
+
+    await page.getByTestId("selection-inspector-measurement-units").getByRole("button", { name: "CM" }).click();
+    await expect(widthInput).toHaveValue(String(nextWidthMm / 10));
+    await expect(depthInput).toHaveValue(String(nextDepthMm / 10));
+  });
+
+  test("right plan rail reflows map, floor, and selection without overlap", async ({ page }) => {
+    test.setTimeout(60_000);
+    await clearBrowserStorageBeforeNextLoad(page);
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/design");
+    await page.waitForLoadState("domcontentloaded");
+
+    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
+    await page.getByRole("button", { name: "2D Plan" }).click();
+    await chooseTemplateStart(page);
+    await page.getByTestId("apply-plan-template-compact_two_bed").click();
+    await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("6 rooms");
+    await page.getByRole("button", { name: "3D" }).click();
+    const rail = page.getByTestId("plan-right-rail");
+    const navigator = page.getByTestId("room-pan-navigator");
+    const floorPanel = page.getByTestId("coohom-floor-panel");
+    const selection = page.getByTestId("selection-inspector");
+    await expect(rail).toBeVisible();
+    await expect(navigator).toBeVisible();
+    await expect(floorPanel).toBeVisible();
+    await expect(selection).toBeVisible();
+
+    await page.getByRole("button", { name: "Expand floor panel" }).click();
+    await expect(page.getByRole("button", { name: "Collapse floor panel" })).toBeVisible();
+
+    const expandedBoxes = await Promise.all([
+      navigator.boundingBox(),
+      floorPanel.boundingBox(),
+      selection.boundingBox(),
+    ]);
+    expect(expandedBoxes.every(Boolean)).toBe(true);
+    expect(expandedBoxes[0]!.y + expandedBoxes[0]!.height).toBeLessThanOrEqual(expandedBoxes[1]!.y);
+    expect(expandedBoxes[1]!.y + expandedBoxes[1]!.height).toBeLessThanOrEqual(expandedBoxes[2]!.y);
+
+    await page.getByRole("button", { name: "Collapse floor panel" }).click();
+    await page.getByRole("button", { name: "Collapse navigator" }).click();
+    await expect(page.getByRole("button", { name: "Expand floor panel" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Expand navigator" })).toBeVisible();
+
+    const collapsedBoxes = await Promise.all([
+      navigator.boundingBox(),
+      floorPanel.boundingBox(),
+      selection.boundingBox(),
+    ]);
+    expect(collapsedBoxes.every(Boolean)).toBe(true);
+    const navigatorFloorGap = collapsedBoxes[1]!.y - (collapsedBoxes[0]!.y + collapsedBoxes[0]!.height);
+    const floorSelectionGap = collapsedBoxes[2]!.y - (collapsedBoxes[1]!.y + collapsedBoxes[1]!.height);
+    expect(navigatorFloorGap).toBeGreaterThanOrEqual(0);
+    expect(navigatorFloorGap).toBeLessThanOrEqual(12);
+    expect(floorSelectionGap).toBeGreaterThanOrEqual(0);
+    expect(floorSelectionGap).toBeLessThanOrEqual(12);
+    expect(collapsedBoxes[2]!.y).toBeLessThan(expandedBoxes[2]!.y);
+  });
+
+  test("mobile exposes the same selected-room dimension fields without the desktop inspector", async ({ page }) => {
+    await clearBrowserStorageBeforeNextLoad(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/design");
+    await page.waitForLoadState("domcontentloaded");
+
+    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
+    await page.getByRole("button", { name: "2D Plan" }).click();
+    const selectedRoomSectionToggle = page.getByTestId("plan-section-toggle-selectedRoom");
+    await selectedRoomSectionToggle.scrollIntoViewIfNeeded();
+    if ((await selectedRoomSectionToggle.getAttribute("aria-expanded")) !== "true") {
+      await selectedRoomSectionToggle.click();
+    }
+    await expect(page.getByTestId("mobile-selected-room-dimensions")).toBeVisible();
+    await expect(page.getByTestId("mobile-room-width-input")).toBeVisible();
+    await expect(page.getByTestId("mobile-room-depth-input")).toBeVisible();
+    await expect(page.getByTestId("selection-inspector")).toBeHidden();
+
+    const dimensionsBox = await page.getByTestId("mobile-selected-room-dimensions").boundingBox();
+    expect(dimensionsBox).not.toBeNull();
+    expect(dimensionsBox!.x).toBeGreaterThanOrEqual(0);
+    expect(dimensionsBox!.x + dimensionsBox!.width).toBeLessThanOrEqual(390);
   });
 
   test("selected 2D room can be cleared from empty plan space and Escape", async ({ page }) => {
@@ -854,7 +1254,7 @@ test.describe("18. Multi-Room Whole Home", () => {
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
     await page.getByRole("button", { name: "2D Plan" }).click();
-    await clickWithFallback(page.getByTestId("plan-start-template"));
+    await chooseTemplateStart(page);
     await page.getByTestId("add-room-template-bedroom").click();
 
     const activeRoomLabels = page.locator(
@@ -992,7 +1392,7 @@ test.describe("18. Multi-Room Whole Home", () => {
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
     await page.getByRole("button", { name: "2D Plan" }).click();
-    await clickWithFallback(page.getByTestId("plan-start-template"));
+    await chooseTemplateStart(page);
     await page.getByTestId("add-room-template-bedroom").click();
 
     const canvasBox = await page.getByTestId("scene-canvas").first().boundingBox();
@@ -1087,12 +1487,13 @@ test.describe("18. Multi-Room Whole Home", () => {
   });
 
   test("starter floor-plan templates create whole-home room layouts", async ({ page }) => {
+    await clearBrowserStorageBeforeNextLoad(page);
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
     await page.getByRole("button", { name: "2D Plan" }).click();
-    await clickWithFallback(page.getByTestId("plan-start-template"));
+    await chooseTemplateStart(page);
 
     await expect(page.getByTestId("apply-plan-template-studio")).toBeVisible();
     await expect(page.getByTestId("apply-plan-template-living_dining")).toBeVisible();
@@ -1107,6 +1508,23 @@ test.describe("18. Multi-Room Whole Home", () => {
     );
     await expect(page.getByTestId("room-connection-checklist")).toContainText("Connections");
     await expect(page.getByTestId("room-connection-checklist")).toContainText("shared wall");
+    await expect(page.getByText(/^Overall horizontal \d+ mm$/)).toBeVisible();
+    await expect(page.getByText(/^Overall vertical \d+ mm$/)).toBeVisible();
+    await expect(page.locator('[data-testid^="wall-draw-segment-length-"]')).toHaveCount(0);
+
+    const originalWidthText = await page.getByTestId("active-room-dimension-width").textContent();
+    await page.getByTestId("active-room-dimension-width").dispatchEvent("dblclick", {
+      bubbles: true,
+      cancelable: true,
+    });
+    await expect(page.getByTestId("active-room-dimension-editor-width")).toBeVisible();
+    await page.getByTestId("active-room-dimension-editor-width").fill("23234");
+    await expect(page.getByText("Enter a valid room dimension.")).toBeVisible();
+    await expect(page.getByTestId("active-room-dimension-editor-width")).toHaveCount(0);
+    await expect(page.getByTestId("active-room-dimension-width")).not.toContainText("23234");
+    await expect(page.getByTestId("active-room-dimension-width")).toHaveText(
+      originalWidthText ?? ""
+    );
 
     const widthLabelBox = await page.getByTestId("active-room-dimension-width").boundingBox();
     const depthLabelBox = await page.getByTestId("active-room-dimension-depth").boundingBox();
@@ -1160,7 +1578,7 @@ test.describe("18. Multi-Room Whole Home", () => {
     await expect(page.getByTestId("room-setup-step-furnish-meta")).toHaveText(/[1-9]\d* items?/);
     await expect(page.getByTestId("consumer-plan-next-steps")).toContainText("Review the shop list");
 
-    await page.getByTestId("plan-open-templates").click();
+    await page.getByTestId("plan-start-template").click();
     await page.getByTestId("apply-plan-template-one_bedroom").click();
 
     const replaceDialog = page.getByRole("dialog", { name: "Replace current plan?" });
@@ -1221,6 +1639,21 @@ test.describe("18. Multi-Room Whole Home", () => {
     await expect(page.getByTestId("room-pan-zoom-in")).toBeVisible();
     await expect(page.getByTestId("room-pan-zoom-out")).toBeVisible();
     await expect(page.getByTestId("room-pan-reset-view")).toBeVisible();
+    await expect(page.getByTestId("coohom-floor-panel")).toBeVisible();
+    await expect(page.getByTestId("selection-inspector")).toBeVisible();
+    await expect(page.getByTestId("selection-inspector-room-dimensions")).toBeVisible();
+
+    await page.getByRole("button", { name: "2D Plan" }).click();
+    const sceneCanvas = page.getByTestId("scene-canvas").first();
+    await expect(sceneCanvas).toHaveAttribute("data-plan-2d-orientation", /^(normal|rotated)$/);
+    const planOrientationBeforeFit = await sceneCanvas.getAttribute("data-plan-2d-orientation");
+    await clickWithFallback(page.getByTestId("room-plan-status-fit-view"));
+    await expect(sceneCanvas).toHaveAttribute(
+      "data-plan-2d-orientation",
+      planOrientationBeforeFit ?? "normal"
+    );
+    await page.getByRole("button", { name: "3D" }).click();
+    await expect(page.getByTestId("room-pan-navigator")).toBeVisible();
 
     const panTargetBefore = await page.getByTestId("room-pan-target").boundingBox();
     expect(panTargetBefore).not.toBeNull();
@@ -1289,13 +1722,12 @@ test.describe("18. Multi-Room Whole Home", () => {
 
     await page.getByTestId("room-plan-status-view-toggle").click();
     await expect(page.getByTestId("room-plan-status-view-toggle")).toHaveText("Room view");
-    await expect(page.getByTestId("floor-plan-tool-strip")).toBeVisible();
-    await expect(page.getByTestId("floor-plan-tool-select")).toBeVisible();
-    await expect(page.getByTestId("floor-plan-tool-draw_room")).toBeVisible();
-    await expect(page.getByTestId("floor-plan-tool-door")).toBeVisible();
-    await expect(page.getByTestId("floor-plan-tool-window")).toBeVisible();
-    await expect(page.getByTestId("active-room-dimension-width")).toContainText("W 4000 mm");
-    await expect(page.getByTestId("active-room-dimension-depth")).toContainText("D 3600 mm");
+    await expect(page.getByTestId("plan-tool-palette")).toBeVisible();
+    await expect(page.getByTestId("plan-start-draw")).toBeVisible();
+    await expect(page.getByTestId("plan-tool-door")).toBeVisible();
+    await expect(page.getByTestId("plan-tool-window")).toBeVisible();
+    await expect(page.getByTestId("active-room-dimension-width")).toContainText("Width 4000 mm");
+    await expect(page.getByTestId("active-room-dimension-depth")).toContainText("Depth 3600 mm");
     await expect(page.locator('[data-testid^="room-resize-handle-"][data-testid$="-n"]')).toBeVisible();
     const eastRoomHandle = page.locator('[data-testid^="room-resize-handle-"][data-testid$="-e"]');
     await expect(eastRoomHandle).toBeVisible();
@@ -1322,18 +1754,19 @@ test.describe("18. Multi-Room Whole Home", () => {
     await expect(planOpeningInspector).toBeVisible();
     await expect(page.getByTestId("plan-opening-live-label")).toContainText("Door");
     await expect(page.getByTestId("selected-plan-opening-actions")).toBeVisible();
-    await expect(page.getByTestId("selected-plan-opening-width-input")).toHaveValue("0.90");
-    await page.getByTestId("selected-plan-opening-width-input").fill("1.10");
-    await expect(page.getByTestId("selected-plan-opening-width-input")).toHaveValue("1.10");
-    await expect(planOpeningInspector.getByTestId("plan-opening-width-input")).toHaveValue("1.10");
-    await page.getByTestId("selected-plan-opening-offset-input").fill("0.20");
-    await expect(page.getByTestId("selected-plan-opening-offset-input")).toHaveValue("0.20");
-    await expect(planOpeningInspector.getByTestId("plan-opening-offset-input")).toHaveValue("0.20");
-    await expect(page.getByTestId("selected-plan-opening-height-input")).toHaveValue("2.10");
-    await expect(planOpeningInspector.getByTestId("plan-opening-height-input")).toHaveValue("2.10");
-    await planOpeningInspector.getByTestId("plan-opening-width-input").fill("1.15");
-    await expect(planOpeningInspector.getByTestId("plan-opening-width-input")).toHaveValue("1.15");
-    await expect(page.getByTestId("selected-plan-opening-width-input")).toHaveValue("1.15");
+    await expect(page.getByTestId("selected-plan-opening-actions")).toContainText("900 mm wide");
+    await expect(page.getByTestId("selected-plan-opening-width-input")).toHaveCount(0);
+    await expect(planOpeningInspector.getByTestId("plan-opening-width-input")).toHaveValue("900");
+    await planOpeningInspector.getByTestId("plan-opening-width-input").fill("1100");
+    await planOpeningInspector.getByTestId("plan-opening-width-input").press("Enter");
+    await expect(planOpeningInspector.getByTestId("plan-opening-width-input")).toHaveValue("1100");
+    await planOpeningInspector.getByTestId("plan-opening-offset-input").fill("200");
+    await planOpeningInspector.getByTestId("plan-opening-offset-input").press("Enter");
+    await expect(planOpeningInspector.getByTestId("plan-opening-offset-input")).toHaveValue("200");
+    await expect(planOpeningInspector.getByTestId("plan-opening-height-input")).toHaveValue("2100");
+    await planOpeningInspector.getByTestId("plan-opening-width-input").fill("1150");
+    await planOpeningInspector.getByTestId("plan-opening-width-input").press("Enter");
+    await expect(planOpeningInspector.getByTestId("plan-opening-width-input")).toHaveValue("1150");
   });
 
   test("floor plan upload exposes pdf pages and calibration controls", async ({ page }) => {

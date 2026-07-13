@@ -91,11 +91,11 @@ export function buildSurfaceMaterialCsvRows(rooms: RoomSnapshot[]): ShoppingCsvR
 
     return {
       roomName: row.roomName,
-      category: "Flooring Material",
+      category: row.surface === "floor" ? "Flooring Material" : "Wall Surface Material",
       itemTitle: row.materialName,
       productId: row.materialId,
       variantId: row.surface,
-      variantLabel: `${row.orderAreaSqm.toFixed(2)} m2 incl. 10% waste`,
+      variantLabel: `${row.surfaceLabel} · ${row.orderAreaSqm.toFixed(2)} m2 incl. 10% waste`,
       purchaseOptionLabel: row.purchaseMode,
       quantity: Number(row.orderAreaSqm.toFixed(2)),
       status,
@@ -105,7 +105,8 @@ export function buildSurfaceMaterialCsvRows(rooms: RoomSnapshot[]): ShoppingCsvR
       unitPriceUsd: row.pricePerSqmAmount ?? 0,
       lineTotalUsd: row.lineTotal ?? 0,
       reviewNote: [
-        `Room area ${row.roomAreaSqm.toFixed(2)} m2; suggested order ${row.orderAreaSqm.toFixed(2)} m2 with 10% waste.`,
+        `Surface ${row.surfaceLabel}; measured area ${row.surfaceAreaSqm.toFixed(2)} m2; suggested order ${row.orderAreaSqm.toFixed(2)} m2 with 10% waste.`,
+        `Pattern ${row.pattern}; rotation ${row.rotationDeg} deg; scale ${row.scale}; joint ${row.jointSizeMm} mm ${row.jointColor}.`,
         row.reviewNote,
       ].filter(Boolean).join(" "),
     };

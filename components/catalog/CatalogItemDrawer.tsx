@@ -9,10 +9,18 @@ import CatalogItemGallery from "./CatalogItemGallery";
 import CatalogItemFinishPicker from "./CatalogItemFinishPicker";
 import CatalogItemRelatedList from "./CatalogItemRelatedList";
 import CatalogComfortProfile from "./CatalogComfortProfile";
+import LazyImage from "@/components/common/LazyImage";
 
 type RelatedSection = {
   title: string;
   ids: string[];
+};
+
+export type CatalogConfigurationOption = {
+  productId: string;
+  label: string;
+  thumbUrl?: string;
+  dimsLabel: string;
 };
 
 type Props = {
@@ -30,6 +38,8 @@ type Props = {
   onPreviewRelated: (id: string) => void;
   onSetFinish: (finishId: string, finish: CatalogDetailView["finishOptions"][number]) => void;
   onSetSize?: (sizeId: string) => void;
+  configurationOptions?: CatalogConfigurationOption[];
+  onSetConfiguration?: (productId: string) => void;
 };
 
 export default function CatalogItemDrawer({
@@ -47,6 +57,8 @@ export default function CatalogItemDrawer({
   onPreviewRelated,
   onSetFinish,
   onSetSize,
+  configurationOptions = [],
+  onSetConfiguration,
 }: Props) {
   const [selectedPurchaseOptionId, setSelectedPurchaseOptionId] = useState<string | null>(null);
 
@@ -322,6 +334,55 @@ export default function CatalogItemDrawer({
         </div>
 
         <div className="mt-4 space-y-4">
+          {configurationOptions.length > 1 && (
+            <section className="space-y-2" aria-label="Configuration" data-testid="catalog-configuration-picker">
+              <div className="flex items-center justify-between gap-3">
+                <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">
+                  Configuration
+                </h4>
+                <span className="text-[11px] text-neutral-500">
+                  {configurationOptions.length} choices
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {configurationOptions.map((option) => {
+                  const isSelected = option.productId === detail.id;
+                  return (
+                    <button
+                      key={option.productId}
+                      type="button"
+                      onClick={() => onSetConfiguration?.(option.productId)}
+                      aria-pressed={isSelected}
+                      data-testid={`catalog-configuration-${option.productId}`}
+                      className={[
+                        "overflow-hidden rounded-xl border text-left transition-colors",
+                        isSelected
+                          ? "border-neutral-900 bg-neutral-900 text-white"
+                          : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300",
+                      ].join(" ")}
+                    >
+                      {option.thumbUrl ? (
+                        <div className={isSelected ? "bg-white" : "bg-neutral-50"}>
+                          <LazyImage
+                            src={option.thumbUrl}
+                            alt=""
+                            className="aspect-[3/2] w-full object-contain"
+                          />
+                        </div>
+                      ) : null}
+                      <div className="px-3 py-2">
+                        <div className="text-sm font-semibold">{option.label}</div>
+                        <div className={isSelected ? "mt-0.5 text-[11px] text-white/70" : "mt-0.5 text-[11px] text-neutral-500"}>
+                          {option.dimsLabel}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
           {detail.sizeOptions.length > 1 && (
             <section className="space-y-2" aria-label="Size">
               <div className="flex items-center justify-between gap-3">

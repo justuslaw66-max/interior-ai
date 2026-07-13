@@ -165,9 +165,9 @@ product_details:
 assets:
   asset_id: "tv-real-castlery-sloane-tv-console-150"
   model_url: "/assets/models/tv-real-castlery-sloane-tv-console-150.glb"
-  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1756260724/crusader/variants/50520029/Sloane-TV-Console-Square-Set_1-1756260722.jpg"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1756188904/crusader/variants/50520029/Sloane-TV-Console-150cm_-Front-1756188902.jpg"
   gallery_images:
-    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1756260724/crusader/variants/50520029/Sloane-TV-Console-Square-Set_1-1756260722.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1756188904/crusader/variants/50520029/Sloane-TV-Console-150cm_-Front-1756188902.jpg"
     - "/assets/thumbs/tv-real-castlery-sloane-tv-console-150-hero.jpg"
 
 variants:
@@ -175,9 +175,9 @@ variants:
     size_label: "150cm"
     finish_code: "grey_oak"
     finish_label: "Grey Oak"
-    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1756260724/crusader/variants/50520029/Sloane-TV-Console-Square-Set_1-1756260722.jpg"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1756188904/crusader/variants/50520029/Sloane-TV-Console-150cm_-Front-1756188902.jpg"
     gallery_images:
-      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1756260724/crusader/variants/50520029/Sloane-TV-Console-Square-Set_1-1756260722.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1756188904/crusader/variants/50520029/Sloane-TV-Console-150cm_-Front-1756188902.jpg"
       - "/assets/thumbs/tv-real-castlery-sloane-tv-console-150-hero.jpg"
     swatch_group: "finish"
     color_family: "brown"

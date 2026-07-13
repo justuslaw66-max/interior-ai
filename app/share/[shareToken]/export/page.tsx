@@ -1470,17 +1470,17 @@ export default async function ExportPage({
             <div className="mb-12">
               <h2 className="mb-4 text-2xl font-bold text-gray-900">Surface Material BOM</h2>
               <p className="mb-3 text-sm text-gray-600">
-                Area-based flooring with a suggested 10% waste allowance. Quote/sample materials are not furniture cart lines.
+                Area-based floor and wall finishes with a suggested 10% waste allowance. Quote/sample materials are not furniture cart lines.
               </p>
               <div className="overflow-x-auto rounded-lg border">
                 <table className="w-full border-collapse text-sm">
                   <thead>
                     <tr className="border-b bg-gray-50 text-left">
                       <th className="p-2">Room</th>
-                      <th className="p-2">Material</th>
+                      <th className="p-2">Surface / Material</th>
                       <th className="p-2">Supplier</th>
                       <th className="p-2">Family</th>
-                      <th className="p-2 text-right">Room area</th>
+                      <th className="p-2 text-right">Surface area</th>
                       <th className="p-2 text-right">Order area</th>
                       <th className="p-2 text-right">Price / m2</th>
                       <th className="p-2 text-right">Estimate</th>
@@ -1493,7 +1493,12 @@ export default async function ExportPage({
                         <td className="p-2">{row.roomName}</td>
                         <td className="p-2">
                           <div className="font-medium">{row.materialName}</div>
-                          <div className="text-xs text-gray-500">Flooring · {row.materialId}</div>
+                          <div className="text-xs text-gray-500">
+                            {row.surfaceLabel} · {row.materialId}
+                          </div>
+                          <div className="mt-1 text-xs text-gray-500">
+                            Pattern {row.pattern.replace(/_/g, " ")} · Rotation {row.rotationDeg}° · Scale {row.scale.toFixed(2)}x · Joint {row.jointSizeMm} mm
+                          </div>
                           {row.sampleRequestUrl ? (
                             <a
                               href={row.sampleRequestUrl}
@@ -1507,7 +1512,7 @@ export default async function ExportPage({
                         </td>
                         <td className="p-2">{row.supplier}</td>
                         <td className="p-2">{formatRoomType(row.materialFamily)}</td>
-                        <td className="p-2 text-right">{formatMeasurement(row.roomAreaSqm, "m2")}</td>
+                        <td className="p-2 text-right">{formatMeasurement(row.surfaceAreaSqm, "m2")}</td>
                         <td className="p-2 text-right">
                           <div>{formatMeasurement(row.orderAreaSqm, "m2")}</div>
                           <div className="text-xs text-gray-500">incl. {(row.wasteFactor * 100).toFixed(0)}% waste</div>

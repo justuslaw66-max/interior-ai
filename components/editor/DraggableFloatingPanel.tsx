@@ -32,6 +32,7 @@ type DraggableFloatingPanelProps = {
   ariaLabel: string;
   storageKey?: string;
   mobilePlacement?: "top" | "bottom";
+  minX?: number;
 };
 
 const EDGE_MARGIN = 4;
@@ -126,6 +127,7 @@ export default function DraggableFloatingPanel({
   ariaLabel,
   storageKey,
   mobilePlacement = "bottom",
+  minX,
 }: DraggableFloatingPanelProps) {
   const panelId = useId();
   const [position, setPosition] = useState<FloatingPanelPosition>({
@@ -157,8 +159,8 @@ export default function DraggableFloatingPanel({
   const resolveRightDockX = useCallback(() => {
     const width = getPanelWidth();
     const right = defaultPosition.right ?? 16;
-    return Math.max(EDGE_MARGIN, window.innerWidth - width - right);
-  }, [defaultPosition.right, getPanelWidth]);
+    return Math.max(minX ?? EDGE_MARGIN, window.innerWidth - width - right);
+  }, [defaultPosition.right, getPanelWidth, minX]);
 
   const resolveTopDockY = useCallback(() => {
     const presetYValues = positionPresets.map((preset) => preset.y);
@@ -171,13 +173,14 @@ export default function DraggableFloatingPanel({
   const clampPosition = useCallback((nextX: number, nextY: number) => {
     const width = getPanelWidth();
     const height = getPanelHeight();
-    const maxX = Math.max(EDGE_MARGIN, window.innerWidth - width - EDGE_MARGIN);
+    const minClampedX = minX ?? EDGE_MARGIN;
+    const maxX = Math.max(minClampedX, window.innerWidth - width - EDGE_MARGIN);
     const maxY = Math.max(EDGE_MARGIN, window.innerHeight - height - EDGE_MARGIN);
     return {
-      x: Math.max(EDGE_MARGIN, Math.min(maxX, nextX)),
+      x: Math.max(minClampedX, Math.min(maxX, nextX)),
       y: Math.max(EDGE_MARGIN, Math.min(maxY, nextY)),
     };
-  }, [getPanelHeight, getPanelWidth]);
+  }, [getPanelHeight, getPanelWidth, minX]);
 
   const resolveTopSnap = (nextY: number): { y: number; guideY?: number } => {
     const dockY = resolveTopDockY();
@@ -291,7 +294,7 @@ export default function DraggableFloatingPanel({
       typeof preset.x === "number"
         ? preset.x
         : Math.max(
-            EDGE_MARGIN,
+            minX ?? EDGE_MARGIN,
             window.innerWidth - getPanelWidth() - (preset.right ?? defaultPosition.right ?? 16)
           );
     const next = clampPosition(nextX, preset.y);
@@ -420,7 +423,7 @@ export default function DraggableFloatingPanel({
 
   const defaultPresets = [
     { label: "Coohom stack", y: defaultPosition.y, right: defaultPosition.right },
-    { label: "Dock top", y: 64, right: defaultPosition.right },
+    { label: "Dock top", y: DEFAULT_TOP_DOCK_Y, right: defaultPosition.right },
     { label: "Dock lower", y: Math.max(88, defaultPosition.y + 182), right: defaultPosition.right },
   ];
   const resolvedPositionPresets = positionPresets.length > 0 ? positionPresets : defaultPresets;
@@ -460,7 +463,7 @@ export default function DraggableFloatingPanel({
         onPointerCancel={handlePointerUp}
       >
         {!isMobilePanel && (
-          <div className="absolute -left-7 top-2 flex w-5 flex-col items-center gap-1">
+          <div className="absolute -left-7 top-0 flex w-5 flex-col items-center gap-1">
             <button
               type="button"
               className="group relative grid h-5 w-5 place-items-center rounded-md bg-white/95 text-neutral-600 shadow-sm ring-1 ring-black/10 hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"

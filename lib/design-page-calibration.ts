@@ -35,6 +35,7 @@ export type GLBCalibration = {
   lowerAssemblyFadeEnd?: number;
   upperUpholsteryTint?: boolean;
   upperUpholsteryTintStrength?: number;
+  upperUpholsteryPreserveSourceLuma?: boolean;
   upperUpholsteryFadeStart?: number;
   upperUpholsteryFadeEnd?: number;
   upperUpholsteryPreserveWarmWood?: boolean;
@@ -57,7 +58,43 @@ export const STANDARD_IMPORTED_CASTLERY_SOFA_CALIBRATION: GLBCalibration = {
   useVariantColor: true,
 };
 
+const HAMILTON_SOFA_PRODUCT_IDS = [
+  "sofa-real-castlery-hamilton-2-seater",
+  "sofa-real-castlery-hamilton-2-seater-with-storage-ottoman",
+  "sofa-real-castlery-hamilton-3-seater",
+  "sofa-real-castlery-hamilton-3-seater-with-storage-ottoman",
+  "sofa-real-castlery-hamilton-chaise-sectional-left",
+  "sofa-real-castlery-hamilton-chaise-sectional-right",
+  "sofa-real-castlery-hamilton-chaise-sectional-with-storage-ottoman-left",
+  "sofa-real-castlery-hamilton-chaise-sectional-with-storage-ottoman-right",
+  "sofa-real-castlery-hamilton-round-chaise-sectional-left",
+  "sofa-real-castlery-hamilton-round-chaise-sectional-right",
+  "armchair-real-castlery-hamilton-round-swivel-armchair",
+  "armchair-real-castlery-hamilton-round-swivel-1-5-seater-armchair",
+];
+
+const HAMILTON_SOFA_CALIBRATION: GLBCalibration = {
+  brightness: 1,
+  saturation: 1,
+  roughnessOverride: 0.86,
+  metalnessOverride: 0,
+  aoMapIntensity: 0.24,
+  emissiveBoost: 0,
+  specularIntensityOverride: 0.08,
+  disableAoMap: false,
+  disableVertexColors: true,
+  useVariantColor: true,
+  upperUpholsteryTint: true,
+  upperUpholsteryTintStrength: 1,
+  upperUpholsteryPreserveSourceLuma: false,
+  upperUpholsteryFadeStart: 0.06,
+  upperUpholsteryFadeEnd: 0.14,
+};
+
 export const GLB_CALIBRATION_BY_PRODUCT_ID: Record<string, GLBCalibration> = {
+  ...Object.fromEntries(
+    HAMILTON_SOFA_PRODUCT_IDS.map((productId) => [productId, HAMILTON_SOFA_CALIBRATION]),
+  ),
   "sofa-real-castlery-dawson-3s": {
     brightness: 0.74,
     saturation: 1.32,
@@ -357,6 +394,57 @@ export const GLB_CALIBRATION_BY_PRODUCT_ID: Record<string, GLBCalibration> = {
     upperUpholsteryFadeStart: 0.16,
     upperUpholsteryFadeEnd: 0.26,
   },
+  "sofa-real-castlery-owen-3-seater": {
+    brightness: 1.03,
+    saturation: 1,
+    roughnessOverride: 0.84,
+    metalnessOverride: 0,
+    aoMapIntensity: 0.24,
+    emissiveBoost: 0.04,
+    specularIntensityOverride: 0.14,
+    disableAoMap: false,
+    disableVertexColors: true,
+    useVariantColor: true,
+    upperUpholsteryTint: true,
+    upperUpholsteryTintStrength: 0.82,
+    upperUpholsteryFadeStart: 0.16,
+    upperUpholsteryFadeEnd: 0.26,
+    upperUpholsteryPreserveWarmWood: true,
+  },
+  "sofa-real-castlery-owen-chaise-sectional-left": {
+    brightness: 1.03,
+    saturation: 1,
+    roughnessOverride: 0.84,
+    metalnessOverride: 0,
+    aoMapIntensity: 0.24,
+    emissiveBoost: 0.04,
+    specularIntensityOverride: 0.14,
+    disableAoMap: false,
+    disableVertexColors: true,
+    useVariantColor: true,
+    upperUpholsteryTint: true,
+    upperUpholsteryTintStrength: 0.82,
+    upperUpholsteryFadeStart: 0.16,
+    upperUpholsteryFadeEnd: 0.26,
+    upperUpholsteryPreserveWarmWood: true,
+  },
+  "sofa-real-castlery-owen-chaise-sectional-right": {
+    brightness: 1.03,
+    saturation: 1,
+    roughnessOverride: 0.84,
+    metalnessOverride: 0,
+    aoMapIntensity: 0.24,
+    emissiveBoost: 0.04,
+    specularIntensityOverride: 0.14,
+    disableAoMap: false,
+    disableVertexColors: true,
+    useVariantColor: true,
+    upperUpholsteryTint: true,
+    upperUpholsteryTintStrength: 0.82,
+    upperUpholsteryFadeStart: 0.16,
+    upperUpholsteryFadeEnd: 0.26,
+    upperUpholsteryPreserveWarmWood: true,
+  },
   "armchair-real-castlery-winora-armchair": {
     brightness: 1.03,
     saturation: 1,
@@ -579,6 +667,14 @@ export const GLB_CALIBRATION_BY_PRODUCT_ID: Record<string, GLBCalibration> = {
     swapWidthDepthAxes: false,
   },
   "dining-real-castlery-sloane-dining-table-225": {
+    useVariantColor: false,
+    swapWidthDepthAxes: false,
+  },
+  "dining-real-castlery-seb-dining-table-150": {
+    useVariantColor: false,
+    swapWidthDepthAxes: false,
+  },
+  "dining-real-castlery-seb-dining-table-180": {
     useVariantColor: false,
     swapWidthDepthAxes: false,
   },

@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { config } from "@/lib/config";
 import { rateLimit } from "@/lib/rateLimit";
+import { logAppEvent } from "@/lib/app-events";
+import { trackMonetization } from "@/lib/monetization-tracking";
 
 function getErrorMessage(error: unknown): string {
   if (error instanceof Error) return error.message;
@@ -55,12 +57,22 @@ export async function POST(req: Request) {
     }
 
     const stripe = getStripeClient();
-    const origin = req.headers.get("origin") || process.env.APP_ORIGIN || "http://localhost:3000";
+    const origin = process.env.APP_ORIGIN || new URL(req.url).origin;
 
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: dbUser.stripeCustomerId,
-      return_url: `${origin}?refresh_plan=true`,
+      return_url: `${origin}/design?refresh_plan=true`,
     });
+
+    await Promise.allSettled([
+      logAppEvent({
+        eventType: "billing_portal_opened",
+        userId: dbUser.id,
+      }),
+      trackMonetization("billing_portal_opened", dbUser.id, {
+        plan: dbUser.plan === "pro" ? "pro" : "free",
+      }),
+    ]);
 
     return NextResponse.json({ url: portalSession.url });
   } catch (error: unknown) {

@@ -4,6 +4,7 @@ swatch_group: "upholstery_option"
 
 upholstery_options:
   - upholstery_code: "marcel_brilliant_white"
+    swatch_hex: "#cdc8c1"
     upholstery_label: "Performance Textured Plain Weave (Marcel), Cream (Brilliant White)"
     fabric_family: "Performance Textured Plain Weave"
     fabric_label: "Marcel"
@@ -24,6 +25,7 @@ upholstery_options:
       roughness_map: "/pbr/fabrics/textured-plain-weave/roughness.jpg"
       tile_scale: { x: 2.1, y: 2.1 }
   - upholstery_code: "marcel_smoke_grey"
+    swatch_hex: "#b1b2ad"
     upholstery_label: "Performance Textured Plain Weave (Marcel), Smoke Grey"
     fabric_family: "Performance Textured Plain Weave"
     fabric_label: "Marcel"
@@ -44,6 +46,7 @@ upholstery_options:
       roughness_map: "/pbr/fabrics/textured-plain-weave/roughness.jpg"
       tile_scale: { x: 2.1, y: 2.1 }
   - upholstery_code: "infinity_boucle_cream"
+    swatch_hex: "#d1cac2"
     upholstery_label: "Performance Infinity Boucle, Cream"
     fabric_family: "Performance Infinity Boucle"
     fabric_label: "Infinity Boucle"
@@ -57,6 +60,7 @@ upholstery_options:
     swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770191309/crusader/variants/IN-4005/IN4005-Cream-1770191306.jpg"
     render_assets: { material_family_key: "infinity_boucle", normal_map: "/pbr/fabrics/infinity-boucle/normal.jpg", roughness_map: "/pbr/fabrics/infinity-boucle/roughness.jpg", tile_scale: { x: 1.0, y: 1.0 } }
   - upholstery_code: "infinity_boucle_white_quartz"
+    swatch_hex: "#bcbab2"
     upholstery_label: "Performance Infinity Boucle, Light Grey (White Quartz)"
     fabric_family: "Performance Infinity Boucle"
     fabric_label: "Infinity Boucle"
@@ -70,6 +74,7 @@ upholstery_options:
     swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1640236351/crusader/variants/IN-4001/White-Quartz_1.jpg"
     render_assets: { material_family_key: "infinity_boucle", normal_map: "/pbr/fabrics/infinity-boucle/normal.jpg", roughness_map: "/pbr/fabrics/infinity-boucle/roughness.jpg", tile_scale: { x: 1.0, y: 1.0 } }
   - upholstery_code: "infinity_boucle_moss"
+    swatch_hex: "#6b6146"
     upholstery_label: "Performance Infinity Boucle, Moss"
     fabric_family: "Performance Infinity Boucle"
     fabric_label: "Infinity Boucle"
@@ -83,6 +88,7 @@ upholstery_options:
     swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770098928/crusader/variants/IN-4004/IN4004-Moss-1770098923.jpg"
     render_assets: { material_family_key: "infinity_boucle", normal_map: "/pbr/fabrics/infinity-boucle/normal.jpg", roughness_map: "/pbr/fabrics/infinity-boucle/roughness.jpg", tile_scale: { x: 1.0, y: 1.0 } }
   - upholstery_code: "infinity_boucle_ginger"
+    swatch_hex: "#a06339"
     upholstery_label: "Performance Infinity Boucle, Rust (Ginger)"
     fabric_family: "Performance Infinity Boucle"
     fabric_label: "Infinity Boucle"
@@ -96,6 +102,7 @@ upholstery_options:
     swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710492060/crusader/variants/IN-4003/Marlow-Armless-2-Seater-Sofa-Performance-Ginger-Caramel-Square-Det_3-1710492057.jpg"
     render_assets: { material_family_key: "infinity_boucle", normal_map: "/pbr/fabrics/infinity-boucle/normal.jpg", roughness_map: "/pbr/fabrics/infinity-boucle/roughness.jpg", tile_scale: { x: 1.0, y: 1.0 } }
   - upholstery_code: "peyton_ivory"
+    swatch_hex: "#e3dfdc"
     upholstery_label: "Performance Fleece (Peyton), Ivory (Cream)"
     fabric_family: "Performance Fleece"
     fabric_label: "Peyton"
@@ -109,6 +116,7 @@ upholstery_options:
     swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722322775/crusader/variants/PY-4001/Ivory-1722322773.jpg"
     render_assets: { material_family_key: "performance_fleece", normal_map: "/pbr/fabrics/performance-fleece/normal.jpg", roughness_map: "/pbr/fabrics/performance-fleece/roughness.jpg", tile_scale: { x: 1.2, y: 1.2 } }
   - upholstery_code: "peyton_dove_grey"
+    swatch_hex: "#aca9a6"
     upholstery_label: "Performance Fleece (Peyton), Medium Grey (Dove Grey)"
     fabric_family: "Performance Fleece"
     fabric_label: "Peyton"
@@ -122,6 +130,7 @@ upholstery_options:
     swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722322647/crusader/variants/PY-4002/Dove-Grey-1722322645.jpg"
     render_assets: { material_family_key: "performance_fleece", normal_map: "/pbr/fabrics/performance-fleece/normal.jpg", roughness_map: "/pbr/fabrics/performance-fleece/roughness.jpg", tile_scale: { x: 1.2, y: 1.2 } }
   - upholstery_code: "peyton_moss"
+    swatch_hex: "#606255"
     upholstery_label: "Performance Fleece (Peyton), Moss"
     fabric_family: "Performance Fleece"
     fabric_label: "Peyton"
@@ -135,6 +144,7 @@ upholstery_options:
     swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722320266/crusader/variants/PY-4003/Moss-1722320263.jpg"
     render_assets: { material_family_key: "performance_fleece", normal_map: "/pbr/fabrics/performance-fleece/normal.jpg", roughness_map: "/pbr/fabrics/performance-fleece/roughness.jpg", tile_scale: { x: 1.2, y: 1.2 } }
   - upholstery_code: "peyton_cumin"
+    swatch_hex: "#8e6f4a"
     upholstery_label: "Performance Fleece (Peyton), Caramel (Cumin)"
     fabric_family: "Performance Fleece"
     fabric_label: "Peyton"
@@ -148,6 +158,7 @@ upholstery_options:
     swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1721120972/crusader/variants/PY-4004/Cumin-Swathc_1-1721120969.jpg"
     render_assets: { material_family_key: "performance_fleece", normal_map: "/pbr/fabrics/performance-fleece/normal.jpg", roughness_map: "/pbr/fabrics/performance-fleece/roughness.jpg", tile_scale: { x: 1.2, y: 1.2 } }
   - upholstery_code: "genova_oat"
+    swatch_hex: "#ccc9c4"
     upholstery_label: "Performance Linen Weave (Genova), Sand (Oat)"
     fabric_family: "Performance Linen Weave"
     fabric_label: "Genova"
@@ -161,6 +172,7 @@ upholstery_options:
     swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,c_fit/v1757063296/crusader/variants/PG-4002/Mori-Armchair-Oat-Walnut-Leg-Det_2-1757063296.jpg"
     render_assets: { material_family_key: "linen_slub_weave", normal_map: "/pbr/fabrics/linen-slub-weave/normal.jpg", roughness_map: "/pbr/fabrics/linen-slub-weave/roughness.jpg", tile_scale: { x: 2.2, y: 2.2 } }
   - upholstery_code: "genova_cream"
+    swatch_hex: "#e5ddd1"
     upholstery_label: "Performance Linen Weave (Genova), Cream"
     fabric_family: "Performance Linen Weave"
     fabric_label: "Genova"
@@ -174,6 +186,7 @@ upholstery_options:
     swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,c_fit/v1770188184/crusader/variants/PG-4003/PG4003-Cream-1770188182.jpg"
     render_assets: { material_family_key: "linen_slub_weave", normal_map: "/pbr/fabrics/linen-slub-weave/normal.jpg", roughness_map: "/pbr/fabrics/linen-slub-weave/roughness.jpg", tile_scale: { x: 2.2, y: 2.2 } }
   - upholstery_code: "genova_light_grey"
+    swatch_hex: "#dad5d1"
     upholstery_label: "Performance Linen Weave (Genova), Light Grey"
     fabric_family: "Performance Linen Weave"
     fabric_label: "Genova"
@@ -187,6 +200,7 @@ upholstery_options:
     swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,c_fit/v1770188172/crusader/variants/PG-4004/PG4004-Light-Grey-1770188170.jpg"
     render_assets: { material_family_key: "linen_slub_weave", normal_map: "/pbr/fabrics/linen-slub-weave/normal.jpg", roughness_map: "/pbr/fabrics/linen-slub-weave/roughness.jpg", tile_scale: { x: 2.2, y: 2.2 } }
   - upholstery_code: "performance_creamy_white"
+    swatch_hex: "#e3dfd8"
     upholstery_label: "Performance Creamy White"
     fabric_family: "Performance Twill"
     fabric_label: "Performance Twill"
@@ -200,6 +214,7 @@ upholstery_options:
     swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,c_fit/v1774943787/crusader/variants/PT-4001/PT4001-Performance-Twill-Creamy-White-1774943785.jpg"
     render_assets: { material_family_key: "twill", normal_map: "/pbr/fabrics/twill/normal.jpg", roughness_map: "/pbr/fabrics/twill/roughness.jpg", tile_scale: { x: 2.3, y: 2.3 } }
   - upholstery_code: "performance_twill_pearl_beige"
+    swatch_hex: "#aea59e"
     upholstery_label: "Performance Twill, Pearl Beige"
     fabric_family: "Performance Twill"
     fabric_label: "Performance Twill"
@@ -213,6 +228,7 @@ upholstery_options:
     swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1747116409/crusader/variants/PT-4002/Levi-Office-Chair-Twill-Pearl-Beige-Square-Det_4-1747116407.jpg"
     render_assets: { material_family_key: "twill", normal_map: "/pbr/fabrics/twill/normal.jpg", roughness_map: "/pbr/fabrics/twill/roughness.jpg", tile_scale: { x: 2.3, y: 2.3 } }
   - upholstery_code: "performance_twill_medium_grey"
+    swatch_hex: "#b9bab4"
     upholstery_label: "Performance Twill, Medium Grey"
     fabric_family: "Performance Twill"
     fabric_label: "Performance Twill"
@@ -226,6 +242,7 @@ upholstery_options:
     swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,c_fit/v1769061840/crusader/variants/PT-4005/PT4005-Performance-Twill-Dove-Grey-1769061838.jpg"
     render_assets: { material_family_key: "twill", normal_map: "/pbr/fabrics/twill/normal.jpg", roughness_map: "/pbr/fabrics/twill/roughness.jpg", tile_scale: { x: 2.3, y: 2.3 } }
   - upholstery_code: "performance_twill_slate"
+    swatch_hex: "#5e5e5e"
     upholstery_label: "Performance Twill, Slate"
     fabric_family: "Performance Twill"
     fabric_label: "Performance Twill"
@@ -239,6 +256,7 @@ upholstery_options:
     swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1756361613/crusader/variants/PT-4003/Performance-Twill-Slate-1756361610.jpg"
     render_assets: { material_family_key: "twill", normal_map: "/pbr/fabrics/twill/normal.jpg", roughness_map: "/pbr/fabrics/twill/roughness.jpg", tile_scale: { x: 2.3, y: 2.3 } }
   - upholstery_code: "performance_twill_moss"
+    swatch_hex: "#7e7a6c"
     upholstery_label: "Performance Twill, Moss"
     fabric_family: "Performance Twill"
     fabric_label: "Performance Twill"
@@ -252,6 +270,7 @@ upholstery_options:
     swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1756438801/crusader/variants/PT-4004/Moss-1756438798.jpg"
     render_assets: { material_family_key: "twill", normal_map: "/pbr/fabrics/twill/normal.jpg", roughness_map: "/pbr/fabrics/twill/roughness.jpg", tile_scale: { x: 2.3, y: 2.3 } }
   - upholstery_code: "washed_chenille_cream"
+    swatch_hex: "#d2cabb"
     upholstery_label: "Washed Chenille, Cream"
     fabric_family: "Washed Chenille"
     fabric_label: "Greta"
@@ -264,6 +283,7 @@ upholstery_options:
     swatch_group: "upholstery_option"
     swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,c_fit/v1769054456/crusader/variants/GR-4001/GR4001-Greta-Ivory-1769054453.jpg"
   - upholstery_code: "washed_chenille_sand"
+    swatch_hex: "#b3a38d"
     upholstery_label: "Washed Chenille, Sand"
     fabric_family: "Washed Chenille"
     fabric_label: "Greta"
@@ -276,6 +296,7 @@ upholstery_options:
     swatch_group: "upholstery_option"
     swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,c_fit/v1770188296/crusader/variants/GR-4002/GR4002-Latte-1770188293.jpg"
   - upholstery_code: "washed_chenille_caramel"
+    swatch_hex: "#b58d59"
     upholstery_label: "Washed Chenille, Caramel"
     fabric_family: "Washed Chenille"
     fabric_label: "Greta"
@@ -288,6 +309,7 @@ upholstery_options:
     swatch_group: "upholstery_option"
     swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,c_fit/v1769054464/crusader/variants/GR-4003/GR4003-Greta-Mustard-Brown-1769054461.jpg"
   - upholstery_code: "washed_chenille_moss"
+    swatch_hex: "#a2a077"
     upholstery_label: "Washed Chenille, Moss"
     fabric_family: "Washed Chenille"
     fabric_label: "Greta"

@@ -1,0 +1,116 @@
+schema_version: 1
+surface_material:
+  supplier: gardenia_orchidea
+  brand: Gardenia Orchidea
+  collection: Dorica
+  material_id: gardenia-wall-tile-dorica-crema-0010519-20x120-nat-196278-0
+  product_name: Gardenia Dorica Crema 20x120 Nat
+  slug: gardenia-wall-tile-dorica-crema-0010519-20x120-nat-196278-0
+  surface_category: wall_tile
+  material_family: tile
+source:
+  supplier_region: international
+  source_url: https://www.gardenia.it/en/collection/dorica
+  sample_request_url: null
+  currency: EUR
+  license_status: confirmed
+  notes:
+    - Imported from Gardenia RealityRemod configurator with user-confirmed permission on 2026-07-04.
+    - Gardenia tile item GARDENIA/0010519/0/196278 for wall use.
+    - "Configurator format: 20x120 Nat; surface destination: ENTRAMBE."
+    - "Configurator pattern IDs: Spina_01, Sfals_random_1, pieno_01, pieno_02, pieno_05."
+    - "Collection page technology: Full body porcelain."
+    - "Collection page description: travertine marble effect porcelain tiles."
+    - "Collection page thicknesses: 6, 8.5, 20 mm."
+    - "Collection page sizes: 20x120, 120x280, 120x120, 80x80, 60x120."
+    - "Collection page color availability for Crema: Crema 6 mm NAT: 120x280 (48”x112”) | 8,5 mm NAT: 120x120 (48”x48”), 20x120 (8”x48”) | 8,5 mm NAT, R11, Antique 3D: 60x120 (24”x48”)| 20 mm R11: 60x120 (24”x48”)."
+    - "Available configurator formats: 0010006 120x120 Nat ENTRAMBE patterns pieno_01,pieno_02,pieno_05; 0010519 20x120 Nat ENTRAMBE patterns Spina_01,Sfals_random_1,pieno_01,pieno_02,pieno_05; 0010009 60x120 Nat ENTRAMBE patterns pieno_01,pieno_02,pieno_05; 0010148 60x120 PAVIMENTO patterns pieno_01,pieno_02,pieno_05; 0010589 60x120 PAVIMENTO patterns pieno_01,pieno_02,pieno_05; 0010819 60x120 Nat ENTRAMBE patterns pieno_01,pieno_02,pieno_05; 0010000 120x280 Nat ENTRAMBE patterns pieno_01,pieno_02,pieno_05."
+    - The configurator API did not expose slip rating, package quantity, price, or seamless texture QA data.
+classification:
+  flooring_type: tile
+  design_effect: marble
+  color_family: cream
+  tone:
+    - neutral
+    - durable
+    - clean
+    - natural
+    - warm
+    - textured
+  style_cluster:
+    - contemporary
+    - modern
+    - hospitality
+    - commercial
+  room_suitability:
+    - kitchen
+    - bathroom
+    - living_room
+    - commercial
+    - hospitality
+physical_specs:
+  plank_or_tile_format: tile
+  plank_width_mm: null
+  plank_length_mm: null
+  tile_width_mm: 1200
+  tile_length_mm: 200
+  total_thickness_mm: null
+  wear_layer_mm: null
+  installation_method:
+    - direct_stick
+  waterproof: null
+  slip_rating: null
+  suitable_for_wet_area: null
+  suitable_for_outdoor: null
+  commercial_grade: null
+texture_assets:
+  swatch_url: /assets/catalog/surface-materials/gardenia/dorica/0010006.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/dorica/0010006.webp
+  normal_url: null
+  roughness_url: null
+  ao_url: null
+  preview_room_url: null
+  tileable: needs_confirmation
+  texture_repeat_size_cm:
+    width: 120
+    height: 20
+rendering:
+  default_rotation_deg: 0
+  roughness: 0.48
+  metalness: 0
+  normal_strength: 0.15
+  scale_mode: physical_repeat
+  seam_strategy: repeat_texture
+  source_pattern_ids:
+    - Spina_01
+    - Sfals_random_1
+    - pieno_01
+    - pieno_02
+    - pieno_05
+  available_pattern_layouts:
+    - herringbone
+    - random_stagger
+    - straight
+    - brick
+    - vertical_brick
+commerce:
+  purchase_mode: unknown
+  price_per_sqm:
+    currency: EUR
+    amount: null
+  sample_available: unknown
+  sample_request_url: null
+  direct_checkout: false
+import_governance:
+  publish_status: draft
+  publish_blockers:
+    - confirm_physical_dimensions
+    - confirm_texture_tileability
+    - confirm_price_per_sqm_or_quote_mode
+  qa_flags:
+    - gardenia_realityremod_import
+    - gardenia_tile_item_variant
+    - user_confirmed_permission
+    - configurator_preview_asset
+    - gardenia_collection_page_enriched
+    - surface_target_specific_entry

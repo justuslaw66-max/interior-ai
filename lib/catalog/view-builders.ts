@@ -1,6 +1,7 @@
 import type { CatalogItemSchema, CatalogPurchaseOption } from "../catalog-schema";
 import { resolveCatalogVariant } from "./variant-resolver";
 import {
+  CATALOG_MEDIA_PRESENTATION_PRESETS,
   getCatalogMediaImageClass,
   inferCatalogMediaPresentationMode,
   type CatalogMediaPresentationMode,
@@ -15,6 +16,8 @@ import { CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE, HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_
 import { CATALOG_ITEMS } from "../catalog";
 
 const CATEGORY_FALLBACK_THUMB_URL: Partial<Record<CatalogTopCategory, string>> = {
+  bed:
+    "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1634541304/crusader/variants/54000038-CY4002/Lexi-Queen-Size-Bed-Nickel-Grey-Front_1-SG.jpg",
   accent_chair:
     "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1692591108/crusader/variants/54000131-NG4001/Dawson-Swivel-Armchair-Front-1692591104.jpg",
   sofa:
@@ -32,14 +35,26 @@ const FORCED_CARD_THUMB_BY_ITEM_ID: Record<string, string> = {
   "dining-real-castlery-kelsey-marble-160": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660199612/crusader/variants/52460092/Kelsey-Marble-Dining-Table-160-Natural-Front-1660199609.jpg",
   "dining-real-castlery-kelsey-marble-180": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660199639/crusader/variants/52460093/Kelsey-Marble-Dining-Table-180-Natural-Front-1660199637.jpg",
   "dining-real-castlery-brighton-oval-180": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1638151292/crusader/variants/52460074/Brighton-Oval-Dining-Table-Front.jpg",
-  "dining-real-castlery-sloane-bench-150-no-cushion": "/assets/thumbs/dining-real-castlery-sloane-bench-150-no-cushion.png",
-  "dining-real-castlery-sloane-bench-150-leather-cushion": "/assets/thumbs/dining-real-castlery-sloane-bench-150-leather-cushion.png",
-  "dining-real-castlery-sloane-bench-180-no-cushion": "/assets/thumbs/dining-real-castlery-sloane-bench-180-no-cushion.png",
-  "dining-real-castlery-sloane-bench-180-leather-cushion": "/assets/thumbs/dining-real-castlery-sloane-bench-180-leather-cushion.png",
-  "tv-real-castlery-casa-tv-console-150": "/assets/thumbs/tv-real-castlery-casa-tv-console-150.png",
+  "dining-real-castlery-sloane-bench-150-no-cushion": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678698647/crusader/variants/50520005/Sloane-Dining-Bench-150cm-Grey-Oak-Angle-1678698645.jpg",
+  "dining-real-castlery-sloane-bench-150-leather-cushion": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678698648/crusader/variants/50520005/Sloane-Dining-Bench-150cm-Grey-Oak-With-Leather-Cushion-Angle-1678698646.jpg",
+  "dining-real-castlery-sloane-bench-180-no-cushion": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1679562782/crusader/variants/T504411010-LE4016/Sloane-Dining-Bench-180cm-Grey-Oak-Angle-1679562780.jpg",
+  "dining-real-castlery-sloane-bench-180-leather-cushion": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1679562782/crusader/variants/T504411010-LE4016/Sloane-Dining-Bench-180cm-Grey-Oak-With-Leather-Cushion-Angle-1679562780.jpg",
+  "tv-real-castlery-casa-tv-console-150": "/assets/thumbs/tv-real-castlery-casa-tv-console-150.jpg",
+  "tv-real-castlery-casa-tv-console-200": "/assets/thumbs/tv-real-castlery-casa-tv-console-200.jpg",
   "tv-real-castlery-sawyer-tv-console-200": "/assets/thumbs/tv-real-castlery-sawyer-tv-console-200.png",
-  "tv-real-castlery-seb-tv-console-150": "/assets/thumbs/tv-real-castlery-seb-tv-console-150.png",
-  "tv-real-castlery-sloane-tv-console-150": "/assets/thumbs/tv-real-castlery-sloane-tv-console-150.png",
+  "tv-real-castlery-seb-tv-console-150": "/assets/thumbs/tv-real-castlery-seb-tv-console-150.jpg",
+  "tv-real-castlery-seb-tv-console-200": "/assets/thumbs/tv-real-castlery-seb-tv-console-200.jpg",
+  "tv-real-castlery-sloane-tv-console-150": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1756188904/crusader/variants/50520029/Sloane-TV-Console-150cm_-Front-1756188902.jpg",
+  "tv-real-castlery-sloane-tv-console-200": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1667991824/crusader/variants/50520001/Sloane-TV-Console-Fornt-1667991822.jpg",
+  "storage-real-castlery-sawyer-sideboard-180cm": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1681350762/crusader/variants/50220002/Sawyer-Sideboard-Front_-1681350759.jpg",
+  "accessory-real-castlery-blanc-arched-table-lamp": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1697702180/crusader/variants/50230005/Blanc-Arched-Table-Lamp_1-1697702178.jpg",
+  "accessory-real-castlery-edgar-duo-bulb-table-lamp": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1710497549/crusader/variants/PB-001135/Edgar-Duo-Bulb-Table-Lamp_1-1710497546.jpg",
+  "accessory-real-castlery-faro-sculptural-floor-lamp": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1697702564/crusader/variants/50230008/Faro-Sculptural-Floor-Lamp_1-1697702562.jpg",
+  "accessory-real-castlery-faro-table-lamp": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1756370395/crusader/variants/52240024/Faro-Table-Lamp-Front_1-1756370393.jpg",
+  "accessory-real-castlery-cedric-floor-lamp": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1756370174/crusader/variants/52240027/Cedric-Floor-Lamp-Front_1-1756370170.jpg",
+  "accessory-real-castlery-cedric-floor-lamp-with-table": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1756370230/crusader/variants/52240025/Cedric-Floor-Lamp-With-Table-Front_1-1756370228.jpg",
+  "accessory-real-castlery-cedric-table-lamp-28-8cm-curved": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769048978/crusader/variants/52240032/Cedric-Small-Table-Lamp-Front-1769048976.jpg",
+  "accessory-real-castlery-cedric-table-lamp-53cm-curved": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769049026/crusader/variants/52240034/Cedric-Large-Table-Lamp-Front-1769049024.jpg",
   "coffee-real-castlery-hugg-nesting-square-performance-basalt-closed": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729564998/crusader/variants/AS-000635-AR4002-NA/Hugg-Square-Coffee-Table-Natural-Performance-Basalt-Front-1729564995.jpg",
   "coffee-real-castlery-hugg-nesting-square-performance-basalt-opened": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729564998/crusader/variants/AS-000635-AR4002-NA/Hugg-Square-Coffee-Table-Natural-Performance-Basalt-Front-1729564995.jpg",
   "coffee-real-castlery-hugg-nesting-square-performance-dune-closed": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729564013/crusader/variants/AS-000635-AR4001-NA/Hugg-Square-Coffee-Table-Natural-Performance-Dune_-Front-1729564011.jpg",
@@ -55,7 +70,22 @@ const FORCED_CARD_THUMB_BY_ITEM_ID: Record<string, string> = {
   "coffee-real-castlery-vento-coffee-table-120": "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770256447/crusader/variants/44250004/Vento-Coffee-Table-120cm-Front_1-1770256444.jpg",
 };
 
+function uniqueNonEmptyImageUrls(values: Array<string | null | undefined>): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+
+  for (const value of values) {
+    const url = String(value ?? "").trim();
+    if (!url || seen.has(url)) continue;
+    seen.add(url);
+    result.push(url);
+  }
+
+  return result;
+}
+
 export type CatalogTopCategory =
+  | "bed"
   | "sofa"
   | "accent_chair"
   | "coffee_table"
@@ -66,6 +96,8 @@ export type CatalogTopCategory =
   | "tv_console"
   | "sideboard"
   | "floor_lamp"
+  | "table_lamp"
+  | "ceiling_light"
   | "side_table"
   | "decor";
 
@@ -102,6 +134,7 @@ export type CatalogCardView = {
   primarySwatches: { label: string; hex?: string }[];
   badges: string[];
   imageClassName: string;
+  configurationCount?: number;
 };
 
 export type CatalogDetailView = {
@@ -152,6 +185,7 @@ export type CatalogComfortAxisView = {
 };
 
 export const TOP_CATEGORY_ORDER: CatalogTopCategory[] = [
+  "bed",
   "sofa",
   "accent_chair",
   "coffee_table",
@@ -163,10 +197,13 @@ export const TOP_CATEGORY_ORDER: CatalogTopCategory[] = [
   "tv_console",
   "sideboard",
   "floor_lamp",
+  "table_lamp",
+  "ceiling_light",
   "decor",
 ];
 
 const CATEGORY_LABELS: Record<CatalogTopCategory, string> = {
+  bed: "Bed",
   sofa: "Sofa",
   accent_chair: "Arm Chair",
   coffee_table: "Coffee Table",
@@ -178,10 +215,14 @@ const CATEGORY_LABELS: Record<CatalogTopCategory, string> = {
   tv_console: "TV Console",
   sideboard: "Sideboard",
   floor_lamp: "Floor Lamp",
+  table_lamp: "Table Lamp",
+  ceiling_light: "Ceiling Lights",
   decor: "Decor",
 };
 
 const CATEGORY_ALIAS: Record<string, CatalogTopCategory> = {
+  bed: "bed",
+  storage_bed: "bed",
   sofa: "sofa",
   sectional_sofa: "sofa",
   ottoman: "ottoman",
@@ -192,6 +233,9 @@ const CATEGORY_ALIAS: Record<string, CatalogTopCategory> = {
   tv_console: "tv_console",
   sideboard: "sideboard",
   floor_lamp: "floor_lamp",
+  table_lamp: "table_lamp",
+  pendant_light: "ceiling_light",
+  ceiling_light: "ceiling_light",
   side_table: "side_table",
   dining_bench: "dining_bench",
   bookshelf: "decor",
@@ -323,12 +367,24 @@ function inferTopCategoryFromItem(item: Pick<CatalogItemSchema, "title" | "metad
     .toLowerCase();
 
   // Keep secondary furniture out of Decor when catalog source category is generic.
+  if (/\b(bed|bedframe|headboard)\b|tufted\s*bed|storage\s*bed/.test(tokens)) {
+    return "bed";
+  }
+
   if (/(ottoman|footstool)/.test(tokens)) {
     return "ottoman";
   }
 
   if (/(dining\s*bench|\bbench\b)/.test(tokens)) {
     return "dining_bench";
+  }
+
+  if (/(table\s*lamp|desk\s*lamp|bedside\s*lamp)/.test(tokens)) {
+    return "table_lamp";
+  }
+
+  if (/(pendant\s*light|ceiling\s*light|chandelier)/.test(tokens)) {
+    return "ceiling_light";
   }
 
   if (/(nightstand|bedside|side\s*table|end\s*table|nesting\s*table|c\s*table)/.test(tokens)) {
@@ -600,7 +656,22 @@ export function buildCatalogCardView(item: CatalogItemSchema, variantId?: string
 
 export function buildCatalogDetailView(item: CatalogItemSchema, variantId?: string): CatalogDetailView {
   const resolved = resolveCatalogVariant(item, variantId);
-  const images = resolved.media.galleryImages;
+  const forcedThumb = FORCED_CARD_THUMB_BY_ITEM_ID[item.id] ?? null;
+  const itemGalleryImages = Array.isArray(item.metadata?.galleryImages)
+    ? item.metadata.galleryImages
+    : [];
+  const hasCompleteVariantGallery =
+    resolved.media.fallbackSource === "variant_specific" &&
+    resolved.media.galleryImages.length >=
+      CATALOG_MEDIA_PRESENTATION_PRESETS.catalog_detail_gallery.minGalleryImages;
+  const images = uniqueNonEmptyImageUrls([
+    forcedThumb,
+    ...resolved.media.galleryImages,
+    resolved.media.thumbUrl,
+    ...(hasCompleteVariantGallery ? [] : itemGalleryImages),
+    ...(hasCompleteVariantGallery ? [] : [item.assets.thumbUrl]),
+  ]);
+  const activeDimsKey = `${Math.round(resolved.dimsMm.w)}x${Math.round(resolved.dimsMm.d)}x${Math.round(resolved.dimsMm.h)}`;
   const materials = [
     titleCase(item.assets.materialsProfile?.preset ?? "standard finish"),
     ...item.styleTags.map(titleCase),
@@ -628,9 +699,12 @@ export function buildCatalogDetailView(item: CatalogItemSchema, variantId?: stri
               variant.label,
               variant.finishCode,
               variant.swatchGroup
-            );
+        );
         const key = `${normalizedGroup}:${normalizedCode}`;
-        if (!map.has(key)) {
+        const variantDims = variant.dimensionsMm ?? item.dimsMm;
+        const variantDimsKey = `${Math.round(variantDims.w)}x${Math.round(variantDims.d)}x${Math.round(variantDims.h)}`;
+        const shouldUseVariantForFinish = !map.has(key) || variantDimsKey === activeDimsKey;
+        if (shouldUseVariantForFinish) {
           const fCode = (variant.finishCode ?? "").trim().toLowerCase();
           const fLabel = (variant.finishLabel ?? variant.label ?? "").trim().toLowerCase();
           const variantSwatchTextureUrl = resolveCastlerySwatchTextureUrl(variant);
@@ -727,11 +801,12 @@ export function buildCatalogDetailView(item: CatalogItemSchema, variantId?: stri
               h: Math.round(heightMm > 0 ? heightMm : item.dimsMm.h),
             }
           : { ...item.dimsMm };
-        const label = `${Math.round(normalizedDims.w / 10)} x ${Math.round(normalizedDims.d / 10)} cm`;
+        const authoredSizeLabel = String(variant.sizeLabel ?? "").trim();
+        const label = authoredSizeLabel || `${Math.round(normalizedDims.w / 10)} x ${Math.round(normalizedDims.d / 10)} cm`;
         // Merge variants whose authored dimensions differ only by tiny material/PDP
         // rounding differences. The drawer cannot present two identical labels as
         // separate real sizes.
-        const key = label.toLowerCase();
+        const key = authoredSizeLabel ? authoredSizeLabel.toLowerCase() : label.toLowerCase();
         const existing = map.get(key);
         if (existing) {
           existing.variantIds.push(variant.id);
@@ -759,6 +834,7 @@ export function buildCatalogDetailView(item: CatalogItemSchema, variantId?: stri
   ).sort((a, b) => a.dimsMm.w * a.dimsMm.d - b.dimsMm.w * b.dimsMm.d);
 
   const activeSizeId =
+    String(resolved.variant.sizeLabel ?? "").trim().toLowerCase() ||
     `${Math.round(resolved.dimsMm.w / 10)} x ${Math.round(resolved.dimsMm.d / 10)} cm`.toLowerCase();
   const baseGalleryImageClassName = getCatalogMediaImageClass("catalog_detail_gallery");
   const galleryImageClassName = item.category.toLowerCase().includes("ottoman")

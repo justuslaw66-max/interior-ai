@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { isAdminEmail } from "@/lib/admin";
+import { canAccessAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 
 type ImportJobListItem = {
@@ -12,6 +12,11 @@ type ImportJobListItem = {
   errorMessage: string | null;
   createdAt: Date;
   updatedAt: Date;
+};
+
+type ImportJobListResult = {
+  jobs: ImportJobListItem[];
+  errorMessage: string | null;
 };
 
 const STATUS_TONE: Record<string, string> = {
@@ -25,12 +30,7 @@ function statusTone(status: string): string {
   return STATUS_TONE[status] ?? "bg-neutral-50 text-neutral-700 border-neutral-200";
 }
 
-export default async function AdminImportsPage() {
-  const session = await auth();
-  if (!session?.user?.email || !isAdminEmail(session.user.email)) {
-    redirect("/");
-  }
-
+async function loadImportJobs(): Promise<ImportJobListResult> {
   const prismaCompat = prisma as unknown as {
     importJob: {
       findMany: (args: {
@@ -49,19 +49,40 @@ export default async function AdminImportsPage() {
     };
   };
 
-  const jobs = await prismaCompat.importJob.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 200,
-    select: {
-      id: true,
-      status: true,
-      sourceBrand: true,
-      sourceFileName: true,
-      errorMessage: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  });
+  try {
+    const jobs = await prismaCompat.importJob.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 200,
+      select: {
+        id: true,
+        status: true,
+        sourceBrand: true,
+        sourceFileName: true,
+        errorMessage: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    return { jobs, errorMessage: null };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unable to load import jobs.";
+    return {
+      jobs: [],
+      errorMessage: message.includes("User was denied access")
+        ? "Database access was denied for the configured DATABASE_URL user."
+        : message,
+    };
+  }
+}
+
+export default async function AdminImportsPage() {
+  const session = await auth();
+  if (!canAccessAdmin(session?.user?.email)) {
+    redirect("/");
+  }
+
+  const { jobs, errorMessage } = await loadImportJobs();
 
   const summary = {
     received: jobs.filter((job) => job.status === "received").length,
@@ -78,6 +99,13 @@ export default async function AdminImportsPage() {
         <h1 className="text-2xl font-semibold">Import Jobs</h1>
         <p className="text-sm text-neutral-600">Intake-to-handoff job tracking for asset pipeline.</p>
       </header>
+
+      {errorMessage && (
+        <section className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+          <div className="font-medium">Import jobs are temporarily unavailable.</div>
+          <div className="mt-1">{errorMessage}</div>
+        </section>
+      )}
 
       <section className="grid grid-cols-2 gap-3 md:grid-cols-6">
         <div className="rounded-lg border p-3">

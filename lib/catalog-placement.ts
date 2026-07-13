@@ -1,9 +1,9 @@
 import { CATALOG_ITEMS } from "@/lib/catalog";
-import type { DimensionsMm } from "@/lib/catalog-schema";
+import type { CatalogItemSchema, DimensionsMm, ProductCategory } from "@/lib/catalog-schema";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import { mapToTopCategory, type CatalogTopCategory } from "@/lib/catalog/view-builders";
 import { aabbIntersects, type AABB } from "@/lib/design-page-geometry";
-import { getRotatedFootprint } from "@/lib/design-page-utils";
+import { clamp, getRotatedFootprint } from "@/lib/design-page-utils";
 import type { DesignItem } from "@/lib/room-types";
 import { computeAABB } from "@/lib/snapGuides";
 
@@ -23,6 +23,7 @@ export type PendingCatalogPlacement = {
   variantId: string;
   roomId?: string;
   purchaseOptionId?: string;
+  supportInstanceId?: string;
   position: [number, number, number];
   rotationY: number;
   reason: string;
@@ -33,6 +34,16 @@ export type PendingCatalogPlacementScene = {
   variantLabel: string;
   reason: string;
   roomOffset: { x: number; z: number };
+  position: [number, number, number];
+  rotationY: number;
+  width: number;
+  depth: number;
+  outlinePoints: [number, number, number][];
+};
+
+export type CatalogSupportSurfaceHighlight = {
+  supportInstanceId: string;
+  supportTitle: string;
   position: [number, number, number];
   rotationY: number;
   width: number;
@@ -59,14 +70,233 @@ type CatalogPlacementCollisionArgs = {
   items: DesignItem[];
   getItemAABB: (item: DesignItem) => AABB | null;
   excludedInstanceId?: string;
+  excludedInstanceIds?: string[];
 };
 
 type CatalogPlacementRoomArgs = {
   roomWidth: number;
   roomDepth: number;
+  roomHeight?: number;
   wallThickness: number;
   clampToActiveRoom: CatalogPlacementRoomClamp;
 };
+
+type CatalogSurfacePlacementArgs = {
+  productId: string;
+  variantId?: string;
+  purchaseOptionId?: string;
+  roomId?: string;
+  items: DesignItem[];
+  nearPosition?: [number, number, number];
+};
+
+const DEFAULT_SURFACE_SUPPORT_CATEGORIES: ProductCategory[] = [
+  "side_table",
+  "coffee_table",
+  "dining_table",
+  "tv_console",
+];
+
+export function isSurfaceOnlyCatalogItem(product: Pick<CatalogItemSchema, "placementRules"> | null | undefined) {
+  return product?.placementRules.surfaceOnly === true;
+}
+
+export function isCeilingOnlyCatalogItem(product: Pick<CatalogItemSchema, "placementRules"> | null | undefined) {
+  return product?.placementRules.ceilingOnly === true;
+}
+
+export function getCeilingMountedItemBaseY({
+  product,
+  dimsMm,
+  roomHeight,
+}: {
+  product: Pick<CatalogItemSchema, "placementRules"> | null | undefined;
+  dimsMm: Pick<DimensionsMm, "h">;
+  roomHeight: number;
+}): number {
+  if (!isCeilingOnlyCatalogItem(product)) return 0;
+  return Math.max(0, roomHeight - dimsMm.h / 1000);
+}
+
+function getRequiredSurfaceCategories(product: CatalogItemSchema): ProductCategory[] {
+  const categories = product.placementRules.requiredSurfaceCategories;
+  return categories?.length ? categories : DEFAULT_SURFACE_SUPPORT_CATEGORIES;
+}
+
+function getPlanningDimsMm(item: DesignItem, product: CatalogItemSchema): DimensionsMm {
+  const variant = product.variants.find((entry) => entry.id === item.variantId);
+  return variant?.dimensionsMm ?? product.dimsMm;
+}
+
+function canSupportSurfacePlacement({
+  product,
+  support,
+  supportItem,
+  supportedItemDims,
+}: {
+  product: CatalogItemSchema;
+  support: CatalogItemSchema;
+  supportItem: DesignItem;
+  supportedItemDims: DimensionsMm;
+}): boolean {
+  const allowedCategories = getRequiredSurfaceCategories(product);
+  if (!allowedCategories.includes(support.category)) return false;
+
+  const supportDims = getPlanningDimsMm(supportItem, support);
+  const insetMm = product.placementRules.surfaceInsetMm ?? 80;
+  const availableW = Math.max(0, supportDims.w - insetMm * 2);
+  const availableD = Math.max(0, supportDims.d - insetMm * 2);
+  const fitsNormal = supportedItemDims.w <= availableW && supportedItemDims.d <= availableD;
+  const fitsRotated = supportedItemDims.d <= availableW && supportedItemDims.w <= availableD;
+  return fitsNormal || fitsRotated;
+}
+
+function clampToSupportSurface({
+  supportItem,
+  supportDims,
+  supportedItemDims,
+  surfaceInsetMm,
+  nearPosition,
+}: {
+  supportItem: DesignItem;
+  supportDims: DimensionsMm;
+  supportedItemDims: DimensionsMm;
+  surfaceInsetMm: number;
+  nearPosition?: [number, number, number];
+}): [number, number, number] {
+  const supportX = supportItem.position[0];
+  const supportZ = supportItem.position[2];
+  const supportTopY = (supportItem.position[1] ?? 0) + supportDims.h / 1000;
+  if (!nearPosition) return [supportX, supportTopY, supportZ];
+
+  const rotationY = supportItem.rotationY ?? 0;
+  const cos = Math.cos(rotationY);
+  const sin = Math.sin(rotationY);
+  const dx = nearPosition[0] - supportX;
+  const dz = nearPosition[2] - supportZ;
+  const localX = dx * cos - dz * sin;
+  const localZ = dx * sin + dz * cos;
+  const insetMeters = surfaceInsetMm / 1000;
+  const maxLocalX = Math.max(
+    0,
+    supportDims.w / 2000 - insetMeters - supportedItemDims.w / 2000
+  );
+  const maxLocalZ = Math.max(
+    0,
+    supportDims.d / 2000 - insetMeters - supportedItemDims.d / 2000
+  );
+  const clampedLocalX = clamp(localX, -maxLocalX, maxLocalX);
+  const clampedLocalZ = clamp(localZ, -maxLocalZ, maxLocalZ);
+
+  return [
+    supportX + clampedLocalX * cos + clampedLocalZ * sin,
+    supportTopY,
+    supportZ - clampedLocalX * sin + clampedLocalZ * cos,
+  ];
+}
+
+export function findCatalogSurfacePlacement({
+  productId,
+  variantId,
+  purchaseOptionId,
+  roomId,
+  items,
+  nearPosition,
+}: CatalogSurfacePlacementArgs): PendingCatalogPlacement | null {
+  const product = CATALOG_ITEMS[productId];
+  if (!product || !isSurfaceOnlyCatalogItem(product)) return null;
+
+  const resolved = resolveCatalogVariant(product, variantId ?? product.defaultVariantId);
+  const supports = items
+    .map((item) => {
+      const support = CATALOG_ITEMS[item.productId];
+      if (!support) return null;
+      if (
+        !canSupportSurfacePlacement({
+          product,
+          support,
+          supportItem: item,
+          supportedItemDims: resolved.dimsMm,
+        })
+      ) {
+        return null;
+      }
+      const supportDims = getPlanningDimsMm(item, support);
+      const position = clampToSupportSurface({
+        supportItem: item,
+        supportDims,
+        supportedItemDims: resolved.dimsMm,
+        surfaceInsetMm: product.placementRules.surfaceInsetMm ?? 80,
+        nearPosition,
+      });
+      const distance = nearPosition
+        ? Math.hypot(position[0] - nearPosition[0], position[2] - nearPosition[2])
+        : 0;
+      return { item, support, position, distance };
+    })
+    .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))
+    .sort((a, b) => a.distance - b.distance);
+
+  const best = supports[0];
+  if (!best) return null;
+
+  return {
+    productId,
+    variantId: resolved.variantId,
+    purchaseOptionId,
+    roomId,
+    supportInstanceId: best.item.instanceId,
+    position: best.position,
+    rotationY: best.item.rotationY ?? 0,
+    reason: `On ${best.support.title} surface`,
+  };
+}
+
+export function buildCatalogSupportSurfaceHighlight({
+  placement,
+  items,
+  roomOffset = { x: 0, z: 0 },
+}: {
+  placement: PendingCatalogPlacement | null;
+  items: DesignItem[];
+  roomOffset?: { x: number; z: number };
+}): CatalogSupportSurfaceHighlight | null {
+  if (!placement?.supportInstanceId) return null;
+  const product = CATALOG_ITEMS[placement.productId];
+  if (!product || !isSurfaceOnlyCatalogItem(product)) return null;
+
+  const supportItem = items.find(
+    (item) => item.instanceId === placement.supportInstanceId
+  );
+  if (!supportItem) return null;
+  const supportProduct = CATALOG_ITEMS[supportItem.productId];
+  if (!supportProduct) return null;
+
+  const supportDims = getPlanningDimsMm(supportItem, supportProduct);
+  const width = supportDims.w / 1000;
+  const depth = supportDims.d / 1000;
+  const surfaceY = (supportItem.position[1] ?? 0) + supportDims.h / 1000;
+
+  return {
+    supportInstanceId: supportItem.instanceId,
+    supportTitle: supportProduct.title,
+    position: [
+      supportItem.position[0] + roomOffset.x,
+      surfaceY + 0.015,
+      supportItem.position[2] + roomOffset.z,
+    ],
+    rotationY: supportItem.rotationY ?? 0,
+    width,
+    depth,
+    outlinePoints: [
+      [-width / 2, 0.008, -depth / 2],
+      [width / 2, 0.008, -depth / 2],
+      [width / 2, 0.008, depth / 2],
+      [-width / 2, 0.008, depth / 2],
+      [-width / 2, 0.008, -depth / 2],
+    ],
+  };
+}
 
 export function isPointInsideCatalogPlacementPolygon(
   x: number,
@@ -173,6 +403,28 @@ export function isCatalogPlacementFootprintInsideRoom({
   });
 }
 
+export function isCatalogPlacementLocalFootprintInsideRoom({
+  room,
+  position,
+  rotationY,
+  dimsMm,
+  wallThickness = 0,
+}: {
+  room: CatalogPlacementPlanRoom;
+  position: [number, number, number];
+  rotationY: number;
+  dimsMm: Pick<DimensionsMm, "w" | "d">;
+  wallThickness?: number;
+}): boolean {
+  return isCatalogPlacementFootprintInsideRoom({
+    room: { ...room, x: 0, z: 0 },
+    position,
+    rotationY,
+    dimsMm,
+    wallThickness,
+  });
+}
+
 export function doesCatalogPlacementCollide({
   productId,
   position,
@@ -181,9 +433,15 @@ export function doesCatalogPlacementCollide({
   items,
   getItemAABB,
   excludedInstanceId,
+  excludedInstanceIds,
 }: CatalogPlacementCollisionArgs): boolean {
   const product = CATALOG_ITEMS[productId];
   if (!product || product.category === "rug") return false;
+  const ceilingOnly = isCeilingOnlyCatalogItem(product);
+  const excluded = new Set([
+    ...(excludedInstanceId ? [excludedInstanceId] : []),
+    ...(excludedInstanceIds ?? []),
+  ]);
 
   const [widthMeters, depthMeters] = getRotatedFootprint(
     dimsMm.w / 1000,
@@ -193,9 +451,10 @@ export function doesCatalogPlacementCollide({
   const candidateAABB = computeAABB(position, widthMeters, depthMeters);
 
   for (const blocker of items) {
-    if (blocker.instanceId === excludedInstanceId) continue;
+    if (excluded.has(blocker.instanceId)) continue;
     const blockerProduct = CATALOG_ITEMS[blocker.productId];
     if (!blockerProduct || blockerProduct.category === "rug") continue;
+    if (ceilingOnly !== isCeilingOnlyCatalogItem(blockerProduct)) continue;
 
     const blockerAABB = getItemAABB(blocker);
     if (!blockerAABB) continue;
@@ -215,9 +474,15 @@ export function findCatalogPlacementCollision({
   items,
   getItemAABB,
   excludedInstanceId,
+  excludedInstanceIds,
 }: CatalogPlacementCollisionArgs): DesignItem | null {
   const product = CATALOG_ITEMS[productId];
   if (!product || product.category === "rug") return null;
+  const ceilingOnly = isCeilingOnlyCatalogItem(product);
+  const excluded = new Set([
+    ...(excludedInstanceId ? [excludedInstanceId] : []),
+    ...(excludedInstanceIds ?? []),
+  ]);
 
   const [widthMeters, depthMeters] = getRotatedFootprint(
     dimsMm.w / 1000,
@@ -227,9 +492,10 @@ export function findCatalogPlacementCollision({
   const candidateAABB = computeAABB(position, widthMeters, depthMeters);
 
   for (const blocker of items) {
-    if (blocker.instanceId === excludedInstanceId) continue;
+    if (excluded.has(blocker.instanceId)) continue;
     const blockerProduct = CATALOG_ITEMS[blocker.productId];
     if (!blockerProduct || blockerProduct.category === "rug") continue;
+    if (ceilingOnly !== isCeilingOnlyCatalogItem(blockerProduct)) continue;
 
     const blockerAABB = getItemAABB(blocker);
     if (!blockerAABB) continue;
@@ -248,6 +514,7 @@ export function updatePendingCatalogPlacementDraft({
   fallbackReason,
   roomWidth,
   roomDepth,
+  roomHeight = 2.7,
   wallThickness,
   clampToActiveRoom,
 }: CatalogPlacementRoomArgs & {
@@ -342,7 +609,11 @@ export function updatePendingCatalogPlacementDraft({
 
   return {
     ...placement,
-    position: [clampedX, 0, clampedZ],
+    position: [
+      clampedX,
+      getCeilingMountedItemBaseY({ product, dimsMm: resolved.dimsMm, roomHeight }),
+      clampedZ,
+    ],
     rotationY,
     reason,
   };
@@ -353,8 +624,11 @@ export function buildCatalogPlacementPreview({
   variantId,
   purchaseOptionId,
   canPlace,
+  surfaceItems,
+  roomId,
   roomWidth,
   roomDepth,
+  roomHeight = 2.7,
   wallThickness,
   clampToActiveRoom,
   collides,
@@ -363,15 +637,28 @@ export function buildCatalogPlacementPreview({
   variantId?: string;
   purchaseOptionId?: string;
   canPlace: boolean;
+  surfaceItems?: DesignItem[];
+  roomId?: string;
   collides: (
     productId: string,
     position: [number, number, number],
     rotationY: number,
-    dimsMm: DimensionsMm
+    dimsMm: DimensionsMm,
+    excludedInstanceId?: string
   ) => boolean;
 }): PendingCatalogPlacement | null {
   const product = CATALOG_ITEMS[productId];
   if (!product || !canPlace) return null;
+
+  if (isSurfaceOnlyCatalogItem(product)) {
+    return findCatalogSurfacePlacement({
+      productId,
+      variantId,
+      purchaseOptionId,
+      roomId,
+      items: surfaceItems ?? [],
+    });
+  }
 
   const resolved = resolveCatalogVariant(product, variantId ?? product.defaultVariantId);
   const widthMeters = resolved.dimsMm.w / 1000;
@@ -418,7 +705,11 @@ export function buildCatalogPlacementPreview({
       wallThickness,
       candidate.rotationY
     );
-    const position: [number, number, number] = [safeX, 0, safeZ];
+    const position: [number, number, number] = [
+      safeX,
+      getCeilingMountedItemBaseY({ product, dimsMm: resolved.dimsMm, roomHeight }),
+      safeZ,
+    ];
     if (collides(productId, position, candidate.rotationY, resolved.dimsMm)) {
       continue;
     }
@@ -440,8 +731,11 @@ export function buildCatalogFallbackPlacement({
   variantId,
   purchaseOptionId,
   itemCount,
+  surfaceItems,
+  roomId,
   roomWidth,
   roomDepth,
+  roomHeight = 2.7,
   wallThickness,
   clampToActiveRoom,
   collides,
@@ -450,15 +744,28 @@ export function buildCatalogFallbackPlacement({
   variantId?: string;
   purchaseOptionId?: string;
   itemCount: number;
+  surfaceItems?: DesignItem[];
+  roomId?: string;
   collides: (
     productId: string,
     position: [number, number, number],
     rotationY: number,
-    dimsMm: DimensionsMm
+    dimsMm: DimensionsMm,
+    excludedInstanceId?: string
   ) => boolean;
 }): PendingCatalogPlacement | null {
   const product = CATALOG_ITEMS[productId];
   if (!product) return null;
+
+  if (isSurfaceOnlyCatalogItem(product)) {
+    return findCatalogSurfacePlacement({
+      productId,
+      variantId,
+      purchaseOptionId,
+      roomId,
+      items: surfaceItems ?? [],
+    });
+  }
 
   const resolved = resolveCatalogVariant(product, variantId ?? product.defaultVariantId);
   const column = itemCount % 3;
@@ -477,7 +784,11 @@ export function buildCatalogFallbackPlacement({
     wallThickness,
     0
   );
-  const safeFallback: [number, number, number] = [safeX, fallbackPosition[1], safeZ];
+  const safeFallback: [number, number, number] = [
+    safeX,
+    getCeilingMountedItemBaseY({ product, dimsMm: resolved.dimsMm, roomHeight }),
+    safeZ,
+  ];
   if (collides(productId, safeFallback, 0, resolved.dimsMm)) {
     return null;
   }
@@ -508,7 +819,7 @@ export function buildPendingCatalogPlacementScene({
   const depth = resolved.dimsMm.d / 1000;
   const position: [number, number, number] = [
     placement.position[0] + roomOffset.x,
-    0.07,
+    (placement.position[1] ?? 0) + 0.03,
     placement.position[2] + roomOffset.z,
   ];
 
@@ -522,11 +833,11 @@ export function buildPendingCatalogPlacementScene({
     width,
     depth,
     outlinePoints: [
-      [-width / 2, 0.09, -depth / 2],
-      [width / 2, 0.09, -depth / 2],
-      [width / 2, 0.09, depth / 2],
-      [-width / 2, 0.09, depth / 2],
-      [-width / 2, 0.09, -depth / 2],
+      [-width / 2, 0.01, -depth / 2],
+      [width / 2, 0.01, -depth / 2],
+      [width / 2, 0.01, depth / 2],
+      [-width / 2, 0.01, depth / 2],
+      [-width / 2, 0.01, -depth / 2],
     ],
   };
 }

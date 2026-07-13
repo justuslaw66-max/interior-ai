@@ -47,10 +47,12 @@ type ManualPlacementParams = {
 
 const RELATIONSHIP_TARGETS: Partial<Record<CatalogTopCategory, CatalogTopCategory[]>> = {
   coffee_table: ["sofa"],
-  side_table: ["sofa", "accent_chair"],
-  rug: ["sofa", "accent_chair", "coffee_table"],
+  side_table: ["sofa", "accent_chair", "bed"],
+  rug: ["sofa", "accent_chair", "coffee_table", "bed"],
   tv_console: ["sofa"],
-  floor_lamp: ["sofa", "accent_chair"],
+  floor_lamp: ["sofa", "accent_chair", "bed"],
+  table_lamp: ["side_table", "coffee_table", "dining_table", "tv_console", "bed"],
+  ceiling_light: ["dining_table"],
   ottoman: ["sofa", "accent_chair"],
   dining_bench: ["dining_table"],
 };
@@ -63,6 +65,8 @@ const ZONE_COMPATIBILITY: Partial<Record<CatalogTopCategory, ZoneMin["type"][]>>
   rug: ["seating", "reading", "dining"],
   tv_console: ["tv"],
   floor_lamp: ["seating", "reading"],
+  table_lamp: ["seating", "reading", "dining"],
+  ceiling_light: ["dining"],
   dining_table: ["dining"],
   dining_bench: ["dining"],
   sideboard: ["dining"],
@@ -199,7 +203,7 @@ export function scoreManualPlacement({
       const goodDistance =
         category === "coffee_table"
           ? nearestDistance >= 0.35 && nearestDistance <= 1.05
-          : category === "side_table" || category === "floor_lamp"
+          : category === "side_table" || category === "floor_lamp" || category === "table_lamp"
             ? nearestDistance <= 1.15
             : category === "tv_console"
               ? nearestDistance >= 1.8 && nearestDistance <= 4.6

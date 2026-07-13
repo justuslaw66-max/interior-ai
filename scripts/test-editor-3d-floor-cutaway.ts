@@ -69,4 +69,64 @@ assert.match(
   "Whole-home slab edge visibility should follow the underside cutaway."
 );
 
+assert.match(
+  housePlanRendererSource,
+  /floorPickEnabledRef\.current = floorVisible;/,
+  "Hidden whole-home floors should also stop receiving pointer raycasts."
+);
+
+assert.match(
+  housePlanRendererSource,
+  /raycast=\{raycastFloorSurface\}/,
+  "Whole-home floor selection should use the visibility-aware raycast."
+);
+
+assert.match(
+  housePlanRendererSource,
+  /pickEnabledRef\.current = shouldRender;/,
+  "Cutaway wall visibility should also control wall pointer raycasts."
+);
+
+assert.match(
+  housePlanRendererSource,
+  /raycast=\{raycastWhenPickable\}/,
+  "Wall surfaces should use the cutaway-aware raycast."
+);
+
+assert.match(
+  housePlanRendererSource,
+  /openingPickEnabledRef\.current = camera\.position\.y >= floorWorldY - 0\.02;/,
+  "Opening hit proxies should not intercept pointer rays from below their floor."
+);
+
+assert.match(
+  housePlanRendererSource,
+  /const ceilingWorldY = floorWorldY \+ wallHeight;/,
+  "Ceiling selection should account for the stacked-floor world offset."
+);
+
+assert.match(
+  housePlanRendererSource,
+  /if \(raycaster\.ray\.direction\.y <= 0\.001\) return;/,
+  "Ceiling caps should accept only upward pointer rays from the underside."
+);
+
+assert.match(
+  housePlanRendererSource,
+  /const canPickCeilingCap = camera\.position\.y < ceilingWorldY - 0\.005;/,
+  "Ceiling caps should stop rendering and receiving hits above the ceiling plane."
+);
+
+assert.match(
+  housePlanRendererSource,
+  /<RoomCeilingCapMesh[\s\S]*?floorWorldY=\{floorYOffset\}/,
+  "Each room ceiling should receive its floor world offset."
+);
+
+assert.match(
+  housePlanRendererSource,
+  /if \(onSelectSurfaceTarget\) \{[\s\S]*?onSelectSurfaceTarget\(\{[\s\S]*?\}\);[\s\S]*?\} else \{\s*onSelectRoom\?\.\(target\.roomId\);\s*\}/,
+  "A structure click should select either its surface target or its room, never both."
+);
+
 console.log("Editor 3D floor cutaway guardrails passed.");

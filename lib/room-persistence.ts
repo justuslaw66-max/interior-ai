@@ -31,7 +31,15 @@ export interface StoredDesign {
     roomType: string;
     floorLevel?: number;
     floorLabel?: string;
-    geometry: { width: number; depth: number; wallThickness?: number; height?: number; slabThickness?: number };
+    geometry: {
+      width: number;
+      depth: number;
+      wallThickness?: number;
+      height?: number;
+      slabThickness?: number;
+      /** Baseboard/skirting projection from the finished wall, in metres. */
+      baseboardDepth?: number;
+    };
     planPosition?: { x: number; z: number };
     planShape?: string;
     planPolygon?: Array<{ x: number; z: number }>;
@@ -92,6 +100,33 @@ export function sanitizeStoredDesign(value: unknown): StoredDesign | null {
   return JSON.parse(JSON.stringify(value)) as StoredDesign;
 }
 
+function stripTemporaryCabinetOutput(item: DesignItem): DesignItem {
+  if (item.assetType !== "parametric_cabinet") return item;
+
+  const nextItem: DesignItem = { ...item };
+  if (nextItem.glbAssetUrl?.startsWith("blob:")) {
+    delete nextItem.glbAssetUrl;
+  }
+
+  const manifest = nextItem.millworkAssetManifest;
+  if (!manifest) return nextItem;
+
+  const generatedOutput = manifest.generatedOutput;
+  if (generatedOutput?.url?.startsWith("blob:")) {
+    const durableGeneratedOutput = { ...generatedOutput };
+    delete durableGeneratedOutput.url;
+    nextItem.millworkAssetManifest = {
+      ...manifest,
+      generatedOutput: {
+        ...durableGeneratedOutput,
+        durable: false,
+      },
+    };
+  }
+
+  return nextItem;
+}
+
 /**
  * Convert DesignSnapshot to StoredDesign format
  */
@@ -114,7 +149,7 @@ export function snapshotToStored(snapshot: DesignSnapshot): StoredDesign {
       surfaceFinishes: room.surfaceFinishes ? { ...room.surfaceFinishes } : room.surfaces ? { ...room.surfaces } : undefined,
       surfaceOpacity: room.surfaceOpacity ? { ...room.surfaceOpacity } : undefined,
       ceilingVisible: room.ceilingVisible,
-      items: room.items,
+      items: room.items.map(stripTemporaryCabinetOutput),
       zones: room.zones,
       savedViews: room.savedViews,
       layoutVersions: room.layoutVersions ?? [],

@@ -143,7 +143,10 @@ test.describe("00. Beta Smoke Gate", () => {
       }
       await route.continue();
     });
+    await page.getByTestId("editor-command-overflow").click();
+    await expect(page.getByTestId("editor-command-overflow-menu")).toBeVisible();
     await page.getByTestId("beta-feedback-open").click();
+    await expect(page.getByTestId("editor-command-overflow-menu")).toBeHidden();
     await expect(page.getByTestId("beta-feedback-dialog")).toBeVisible();
     await page.getByTestId("beta-feedback-note").fill("Beta smoke feedback capture works.");
     await page.getByTestId("beta-feedback-submit").click();

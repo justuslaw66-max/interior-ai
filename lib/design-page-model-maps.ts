@@ -21,6 +21,44 @@ const AVERY_MODEL_FAMILY_IDS = [
   "armchair-real-castlery-avery-performance-swivel-armchair-with-ottoman",
 ];
 
+const OWEN_MODEL_FAMILY_IDS = [
+  "sofa-real-castlery-owen-3-seater",
+  "sofa-real-castlery-owen-chaise-sectional-left",
+  "sofa-real-castlery-owen-chaise-sectional-right",
+];
+
+const OWEN_MODEL_SELECTOR_IDS = [
+  "sofa-real-castlery-owen-3-seater",
+  "sofa-real-castlery-owen-chaise-sectional-left",
+];
+
+const HAMILTON_MODEL_FAMILY_IDS = [
+  "sofa-real-castlery-hamilton-2-seater",
+  "sofa-real-castlery-hamilton-2-seater-with-storage-ottoman",
+  "sofa-real-castlery-hamilton-3-seater",
+  "sofa-real-castlery-hamilton-3-seater-with-storage-ottoman",
+  "sofa-real-castlery-hamilton-chaise-sectional-left",
+  "sofa-real-castlery-hamilton-chaise-sectional-right",
+  "sofa-real-castlery-hamilton-chaise-sectional-with-storage-ottoman-left",
+  "sofa-real-castlery-hamilton-chaise-sectional-with-storage-ottoman-right",
+  "sofa-real-castlery-hamilton-round-chaise-sectional-left",
+  "sofa-real-castlery-hamilton-round-chaise-sectional-right",
+  "armchair-real-castlery-hamilton-round-swivel-armchair",
+  "armchair-real-castlery-hamilton-round-swivel-1-5-seater-armchair",
+];
+
+const HAMILTON_MODEL_SELECTOR_IDS = [
+  "sofa-real-castlery-hamilton-3-seater",
+  "sofa-real-castlery-hamilton-3-seater-with-storage-ottoman",
+  "sofa-real-castlery-hamilton-2-seater",
+  "sofa-real-castlery-hamilton-2-seater-with-storage-ottoman",
+  "sofa-real-castlery-hamilton-chaise-sectional-left",
+  "sofa-real-castlery-hamilton-chaise-sectional-with-storage-ottoman-left",
+  "sofa-real-castlery-hamilton-round-chaise-sectional-left",
+  "armchair-real-castlery-hamilton-round-swivel-armchair",
+  "armchair-real-castlery-hamilton-round-swivel-1-5-seater-armchair",
+];
+
 const AUBURN_MODEL_FAMILY_IDS = [
   "sofa-real-castlery-auburn-performance-fabric-sofa",
   "sofa-real-castlery-auburn-performance-fabric-sofa-with-ottoman",
@@ -334,6 +372,8 @@ export const AUBURN_CONFIGURATION_GROUPS: AuburnConfigurationGroup[] = [
 
 export const MODEL_FAMILY_BY_PRODUCT_ID: Record<string, string[]> = {
   ...Object.fromEntries(AUBURN_MODEL_FAMILY_IDS.map((id) => [id, [...AUBURN_MODEL_FAMILY_IDS]])),
+  ...Object.fromEntries(OWEN_MODEL_FAMILY_IDS.map((id) => [id, [...OWEN_MODEL_FAMILY_IDS]])),
+  ...Object.fromEntries(HAMILTON_MODEL_FAMILY_IDS.map((id) => [id, [...HAMILTON_MODEL_FAMILY_IDS]])),
   "sofa-real-castlery-madison-2s": [
     "sofa-real-castlery-madison-2s",
     "sofa-real-castlery-madison-3s",
@@ -415,6 +455,14 @@ export const MODEL_FAMILY_BY_PRODUCT_ID: Record<string, string[]> = {
     "dining-real-castlery-forma-round-90",
     "dining-real-castlery-forma-round-120",
   ],
+  "dining-real-castlery-seb-dining-table-150": [
+    "dining-real-castlery-seb-dining-table-150",
+    "dining-real-castlery-seb-dining-table-180",
+  ],
+  "dining-real-castlery-seb-dining-table-180": [
+    "dining-real-castlery-seb-dining-table-150",
+    "dining-real-castlery-seb-dining-table-180",
+  ],
   "dining-real-castlery-brighton-oval-180": [
     "dining-real-castlery-brighton-oval-180",
   ],
@@ -454,6 +502,8 @@ export const MODEL_FAMILY_BY_PRODUCT_ID: Record<string, string[]> = {
 
 export const MODEL_SELECTOR_PRODUCT_IDS_BY_PRODUCT_ID: Record<string, string[]> = {
   ...Object.fromEntries(AUBURN_MODEL_FAMILY_IDS.map((id) => [id, [...AUBURN_MODEL_FAMILY_IDS]])),
+  ...Object.fromEntries(OWEN_MODEL_FAMILY_IDS.map((id) => [id, [...OWEN_MODEL_SELECTOR_IDS]])),
+  ...Object.fromEntries(HAMILTON_MODEL_FAMILY_IDS.map((id) => [id, [...HAMILTON_MODEL_SELECTOR_IDS]])),
   "sofa-real-castlery-jaron-3s": [...JARON_MODEL_FAMILY_IDS],
   "sofa-real-castlery-jaron-3s-wide-arm": [...JARON_MODEL_FAMILY_IDS],
   "sofa-real-castlery-jaron-extended-3s": [...JARON_MODEL_FAMILY_IDS],
@@ -479,6 +529,12 @@ export const MODEL_SELECTOR_PRODUCT_IDS_BY_PRODUCT_ID: Record<string, string[]> 
   "dining-real-castlery-forma-round-120": [
     "dining-real-castlery-forma-oval-150",
     "dining-real-castlery-forma-round-90",
+  ],
+  "dining-real-castlery-seb-dining-table-150": [
+    "dining-real-castlery-seb-dining-table-150",
+  ],
+  "dining-real-castlery-seb-dining-table-180": [
+    "dining-real-castlery-seb-dining-table-180",
   ],
   "dining-real-castlery-sloane-dining-table-180": [
     "dining-real-castlery-sloane-dining-table-180",
@@ -548,6 +604,10 @@ export const MODEL_SELECTOR_PRODUCT_IDS_BY_PRODUCT_ID: Record<string, string[]> 
 
 export const MODEL_SELECTOR_REPRESENTATIVE_BY_PRODUCT_ID: Record<string, string> = {
   "dining-real-castlery-forma-round-120": "dining-real-castlery-forma-round-90",
+  "sofa-real-castlery-owen-chaise-sectional-right": "sofa-real-castlery-owen-chaise-sectional-left",
+  "sofa-real-castlery-hamilton-chaise-sectional-right": "sofa-real-castlery-hamilton-chaise-sectional-left",
+  "sofa-real-castlery-hamilton-chaise-sectional-with-storage-ottoman-right": "sofa-real-castlery-hamilton-chaise-sectional-with-storage-ottoman-left",
+  "sofa-real-castlery-hamilton-round-chaise-sectional-right": "sofa-real-castlery-hamilton-round-chaise-sectional-left",
 };
 
 export const ARM_STYLE_OPTIONS_BY_PRODUCT_ID: Record<
@@ -624,6 +684,14 @@ export const LENGTH_OPTIONS_BY_PRODUCT_ID: Record<
     { label: "160CM", productId: "dining-real-castlery-kelsey-marble-160" },
     { label: "180CM", productId: "dining-real-castlery-kelsey-marble-180" },
   ],
+  "dining-real-castlery-seb-dining-table-150": [
+    { label: "150CM", productId: "dining-real-castlery-seb-dining-table-150" },
+    { label: "180CM", productId: "dining-real-castlery-seb-dining-table-180" },
+  ],
+  "dining-real-castlery-seb-dining-table-180": [
+    { label: "150CM", productId: "dining-real-castlery-seb-dining-table-150" },
+    { label: "180CM", productId: "dining-real-castlery-seb-dining-table-180" },
+  ],
   "dining-real-castlery-sloane-dining-table-180": [
     { label: "180CM", productId: "dining-real-castlery-sloane-dining-table-180" },
     { label: "225CM", productId: "dining-real-castlery-sloane-dining-table-225" },
@@ -688,6 +756,37 @@ export const ORIENTATION_OPTIONS_BY_PRODUCT_ID: Record<
   string,
   Array<{ label: string; productId: string | null }>
 > = {
+  ...Object.fromEntries([
+    ["sofa-real-castlery-hamilton-chaise-sectional-left", "sofa-real-castlery-hamilton-chaise-sectional-right"],
+    ["sofa-real-castlery-hamilton-chaise-sectional-with-storage-ottoman-left", "sofa-real-castlery-hamilton-chaise-sectional-with-storage-ottoman-right"],
+    ["sofa-real-castlery-hamilton-round-chaise-sectional-left", "sofa-real-castlery-hamilton-round-chaise-sectional-right"],
+  ].flatMap(([leftId, rightId]) => {
+    const options = [
+      { label: "Left facing", productId: leftId },
+      { label: "Right facing", productId: rightId },
+    ];
+    return [[leftId, options], [rightId, options]];
+  })),
+  "sofa-real-castlery-owen-chaise-sectional-left": [
+    {
+      label: "Left facing",
+      productId: "sofa-real-castlery-owen-chaise-sectional-left",
+    },
+    {
+      label: "Right facing",
+      productId: "sofa-real-castlery-owen-chaise-sectional-right",
+    },
+  ],
+  "sofa-real-castlery-owen-chaise-sectional-right": [
+    {
+      label: "Left facing",
+      productId: "sofa-real-castlery-owen-chaise-sectional-left",
+    },
+    {
+      label: "Right facing",
+      productId: "sofa-real-castlery-owen-chaise-sectional-right",
+    },
+  ],
   "sofa-real-castlery-dawson-wide-chaise-sectional": [
     {
       label: "Left facing",

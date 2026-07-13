@@ -9,7 +9,7 @@ import type {
   HouseRoomTemplateId,
   RoomSizePresetId,
 } from "@/lib/design-page-house-plan";
-import { type AiLayoutProposal, type Style } from "@/lib/design-page-types";
+import { type AiLayoutProposal, type PlanMeasurementUnit, type Style } from "@/lib/design-page-types";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type {
   FloorPlanDrawAngleLockMode,
@@ -27,7 +27,8 @@ import type { CatalogTopCategory } from "@/lib/catalog/view-builders";
 import type { ActiveRoomShoppingItem } from "@/lib/room-shopping";
 import type { ShoppingReadinessFilter } from "@/lib/shopping-readiness";
 import type { DesignSelectionContext } from "@/lib/design-page-selection-context";
-import type { RoomPlanShape, RoomType } from "@/lib/room-types";
+import type { RoomFloorPattern, RoomPlanShape, RoomSurfaceAssignments, RoomType } from "@/lib/room-types";
+import type { FloorSurfacePatch, NormalizedSurfaceSettings, SurfaceSettingsPatch } from "@/lib/surface-settings";
 import type { EditorViewMode } from "./EditorViewToggle";
 import DesignControlsAiPanel from "./DesignControlsAiPanel";
 import DesignControlsFurnishPanel from "./DesignControlsFurnishPanel";
@@ -36,6 +37,7 @@ import type { FloorPlanTool } from "./FloorPlanToolStrip";
 
 type Budget = "$" | "$$" | "$$$";
 type ConsumerPanelMode = "plan" | "furnish" | "ai";
+type SurfaceTargetMode = "floor" | "walls" | "selected_wall" | "ceiling";
 
 type ImportedFamilyOption = {
   familyKey: string;
@@ -51,12 +53,25 @@ type HouseRoomTemplate = {
   depth: number;
 };
 
+type SurfaceRoomSummary = {
+  id: string;
+  name: string;
+  floorLabel?: string;
+  roomType: RoomType;
+  width: number;
+  depth: number;
+  height?: number;
+  surfaces?: RoomSurfaceAssignments;
+  surfaceFinishes?: RoomSurfaceAssignments;
+};
+
 type DesignControlsPanelProps = {
   dark: boolean;
   isClientPreview: boolean;
   isAuthed: boolean;
   isDesigner: boolean;
   canEdit: boolean;
+  canEditPlanGeometry: boolean;
   collapsed?: boolean;
   onCollapsedChange?: (collapsed: boolean) => void;
   aiDesignEnabled?: boolean;
@@ -74,6 +89,7 @@ type DesignControlsPanelProps = {
   roomDepthInput: string;
   roomWidth: number;
   roomDepth: number;
+  measurementUnit: PlanMeasurementUnit;
   catalogItems: CatalogItemSchema[];
   selectedImportedFamilyKey: string;
   selectedImportedProductId: string;
@@ -113,12 +129,30 @@ type DesignControlsPanelProps = {
   activeRoomFloorMaterialId?: string;
   activeRoomFloorRotationDeg?: number;
   activeRoomFloorScale?: number;
+  activeRoomFloorPattern?: RoomFloorPattern;
+  activeRoomFloorPatternOffset?: { x: number; y: number };
+  activeRoomFloorJointSizeMm?: number;
+  activeRoomFloorJointColor?: string;
+  activeSurfaceTarget: SurfaceTargetMode;
+  selectedWallFaceId?: string | null;
+  selectedWallLabel?: string | null;
+  activeRoomWallSettings?: NormalizedSurfaceSettings;
+  activeRoomSelectedWallSettings?: NormalizedSurfaceSettings;
+  activeRoomCeilingSettings?: NormalizedSurfaceSettings;
+  surfaceBrushActive: boolean;
+  surfaceBrushMaterialId?: string | null;
+  surfaceBrushPaintColorHex?: string | null;
+  surfaceBrushPaintName?: string | null;
+  surfaceRooms: SurfaceRoomSummary[];
+  showFloorPropertiesPanel?: boolean;
+  floorFinishPanelOpenSignal?: number;
   floorOptions: Array<{ level: number; label: string; roomCount: number }>;
   activeFloorLevel: number;
   activeFloorRoomCount: number;
   activeRoomHeightMm: number;
   activeRoomWallThicknessMm: number;
   activeRoomSlabThicknessMm: number;
+  activeRoomBaseboardDepthMm: number;
   activeRoomWallOpacity: number;
   activeRoomFloorOpacity: number;
   activeRoomCeilingOpacity: number;
@@ -166,23 +200,39 @@ type DesignControlsPanelProps = {
   onApplyPlanTemplate: (template: HousePlanTemplate, options?: HousePlanTemplateApplyOptions) => void;
   onAddDesignerRoom: () => void;
   onAddRoomTemplate: (template: HouseRoomTemplate) => void;
-  onApplyFloorMaterialToRoom: (materialId: string) => void;
+  onApplyFloorMaterialToRoom: (materialId: string, roomId?: string) => void;
   onApplyFloorMaterialToAllRooms: (materialId: string) => void;
   onRotateActiveFloorMaterial: () => void;
   onResetActiveFloorMaterialPattern: () => void;
   onActiveFloorMaterialScaleChange: (scale: number) => void;
+  onActiveFloorSurfaceSettingsChange: (patch: FloorSurfacePatch) => void;
+  onSurfaceTargetChange: (target: SurfaceTargetMode) => void;
+  onSurfaceBrushActiveChange: (active: boolean) => void;
+  onSurfaceMaterialSelected: (materialId: string | null) => void;
+  onSurfacePaintSelected: (colorHex: string | null, name?: string | null) => void;
+  onApplyWallMaterialToRoom: (materialId: string, roomId?: string, faceId?: string | null) => void;
+  onApplyWallMaterialToAllRooms: (materialId: string) => void;
+  onApplyWallPaintToRoom: (colorHex: string, name?: string | null, roomId?: string, faceId?: string | null) => void;
+  onApplyWallPaintToAllRooms: (colorHex: string, name?: string | null) => void;
+  onApplyCeilingPaintToRoom: (colorHex: string, name?: string | null, roomId?: string | null) => void;
+  onApplyCeilingPaintToAllRooms: (colorHex: string, name?: string | null) => void;
+  onActiveWallSurfaceSettingsChange: (patch: SurfaceSettingsPatch) => void;
+  onResetActiveWallSurface: () => void;
+  onResetActiveCeilingSurface: () => void;
   onNewRoomTypeChange: (roomType: RoomType) => void;
   onNewRoomShapeChange: (shape: RoomPlanShape) => void;
   onRoomPresetChange: (presetId: RoomSizePresetId) => void;
   onRoomWidthInputChange: (value: string) => void;
   onRoomDepthInputChange: (value: string) => void;
-  onApplyRoomSize: () => void;
+  onCommitRoomDimension: (axis: "width" | "depth", valueMm: number) => void;
   onActiveRoomHeightMmChange: (valueMm: number) => void;
   onActiveRoomWallThicknessMmChange: (valueMm: number) => void;
   onActiveRoomSlabThicknessMmChange: (valueMm: number) => void;
+  onActiveRoomBaseboardDepthMmChange: (valueMm: number) => void;
   onActiveRoomSurfaceOpacityChange: (kind: "wall" | "floor" | "ceiling", opacity: number) => void;
   onActiveRoomCeilingVisibleChange: (visible: boolean) => void;
   onActiveRoomCeilingColorChange: (color: string) => void;
+  onOpenCabinetryStudio?: () => void;
   onAddImportedToRoom: () => void;
   onAddCatalogItemToRoom: (productId: string, variantId?: string, purchaseOptionId?: string) => void;
   onAutoPlaceCatalogItemInRoom?: (productId: string, variantId?: string, purchaseOptionId?: string) => void;
@@ -232,6 +282,7 @@ export default function DesignControlsPanel({
   isAuthed,
   isDesigner,
   canEdit,
+  canEditPlanGeometry,
   collapsed = false,
   onCollapsedChange,
   aiDesignEnabled = false,
@@ -249,6 +300,7 @@ export default function DesignControlsPanel({
   roomDepthInput,
   roomWidth,
   roomDepth,
+  measurementUnit,
   catalogItems,
   selectedImportedFamilyKey,
   selectedImportedProductId,
@@ -288,12 +340,30 @@ export default function DesignControlsPanel({
   activeRoomFloorMaterialId,
   activeRoomFloorRotationDeg,
   activeRoomFloorScale,
+  activeRoomFloorPattern,
+  activeRoomFloorPatternOffset,
+  activeRoomFloorJointSizeMm,
+  activeRoomFloorJointColor,
+  activeSurfaceTarget,
+  selectedWallFaceId,
+  selectedWallLabel,
+  activeRoomWallSettings,
+  activeRoomSelectedWallSettings,
+  activeRoomCeilingSettings,
+  surfaceBrushActive,
+  surfaceBrushMaterialId,
+  surfaceBrushPaintColorHex,
+  surfaceBrushPaintName,
+  surfaceRooms,
+  showFloorPropertiesPanel = false,
+  floorFinishPanelOpenSignal,
   floorOptions,
   activeFloorLevel,
   activeFloorRoomCount,
   activeRoomHeightMm,
   activeRoomWallThicknessMm,
   activeRoomSlabThicknessMm,
+  activeRoomBaseboardDepthMm,
   activeRoomWallOpacity,
   activeRoomFloorOpacity,
   activeRoomCeilingOpacity,
@@ -346,18 +416,34 @@ export default function DesignControlsPanel({
   onRotateActiveFloorMaterial,
   onResetActiveFloorMaterialPattern,
   onActiveFloorMaterialScaleChange,
+  onActiveFloorSurfaceSettingsChange,
+  onSurfaceTargetChange,
+  onSurfaceBrushActiveChange,
+  onSurfaceMaterialSelected,
+  onSurfacePaintSelected,
+  onApplyWallMaterialToRoom,
+  onApplyWallMaterialToAllRooms,
+  onApplyWallPaintToRoom,
+  onApplyWallPaintToAllRooms,
+  onApplyCeilingPaintToRoom,
+  onApplyCeilingPaintToAllRooms,
+  onActiveWallSurfaceSettingsChange,
+  onResetActiveWallSurface,
+  onResetActiveCeilingSurface,
   onNewRoomTypeChange,
   onNewRoomShapeChange,
   onRoomPresetChange,
   onRoomWidthInputChange,
   onRoomDepthInputChange,
-  onApplyRoomSize,
+  onCommitRoomDimension,
   onActiveRoomHeightMmChange,
   onActiveRoomWallThicknessMmChange,
   onActiveRoomSlabThicknessMmChange,
+  onActiveRoomBaseboardDepthMmChange,
   onActiveRoomSurfaceOpacityChange,
   onActiveRoomCeilingVisibleChange,
   onActiveRoomCeilingColorChange,
+  onOpenCabinetryStudio,
   onAddImportedToRoom,
   onAddCatalogItemToRoom,
   onAutoPlaceCatalogItemInRoom,
@@ -406,14 +492,15 @@ export default function DesignControlsPanel({
         : "Generate a starter layout, review it, then apply when it looks right.";
   if (isClientPreview) return null;
 
+  const planPanelSurfaceTarget = activeSurfaceTarget;
   const panelClass = "space-y-3";
   const panelHeaderClass = dark
-    ? "rounded-xl border border-white/15 bg-[#12151dcc] p-3 text-neutral-100 shadow-xl backdrop-blur"
+    ? "designer-divider border-b p-3"
     : "rounded-xl border border-neutral-200 bg-white/95 p-3 text-neutral-900 shadow-lg backdrop-blur";
-  const panelSubtitleClass = dark ? "mt-1 text-xs text-neutral-400" : "mt-1 text-xs text-neutral-500";
-  const selectedButtonClass = dark ? "bg-[#1b2030] text-white" : "bg-neutral-900 text-white";
-  const panelShellClass = `absolute bottom-3 left-3 right-3 top-auto z-20 w-auto space-y-3 pr-1 md:bottom-auto md:right-auto md:top-20 md:w-[22rem] ${
-    isDesigner ? "md:left-20" : "md:left-4"
+  const panelSubtitleClass = dark ? "designer-text-secondary mt-1 text-xs" : "mt-1 text-xs text-neutral-500";
+  const selectedButtonClass = dark ? "designer-control-active border" : "bg-neutral-900 text-white";
+  const panelShellClass = `${dark ? "designer-dock overflow-hidden rounded-xl p-2" : ""} absolute bottom-1 left-1 right-1 top-auto z-20 w-auto space-y-3 pr-1 md:bottom-auto md:right-auto md:top-16 md:w-[18.15rem] ${
+    isDesigner ? "md:left-20" : "md:left-1"
   }`;
 
   if (collapsed) {
@@ -421,7 +508,7 @@ export default function DesignControlsPanel({
       <div data-testid="design-controls-panel" className={panelShellClass}>
         <div className={panelHeaderClass}>
           <div className="flex items-center justify-between gap-3">
-            <div className={dark ? "text-sm font-semibold text-white" : "text-sm font-semibold text-neutral-950"}>
+            <div className={dark ? "designer-text-primary text-sm font-semibold" : "text-sm font-semibold text-neutral-950"}>
               {panelTitle}
             </div>
             <button
@@ -429,7 +516,7 @@ export default function DesignControlsPanel({
               aria-label="Expand design tools"
               className={
                 dark
-                  ? "shrink-0 rounded-lg border border-white/15 px-2.5 py-1.5 text-xs font-semibold text-neutral-300 hover:bg-white/10"
+                  ? "designer-work-control shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-semibold"
                   : "shrink-0 rounded-lg border border-neutral-200 px-2.5 py-1.5 text-xs font-semibold text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"
               }
               onClick={() => onCollapsedChange?.(false)}
@@ -455,7 +542,7 @@ export default function DesignControlsPanel({
       <div className={panelHeaderClass}>
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <div className={dark ? "text-lg font-semibold text-white" : "text-lg font-semibold text-neutral-950"}>
+            <div className={dark ? "designer-text-primary text-lg font-semibold" : "text-lg font-semibold text-neutral-950"}>
               {panelTitle}
             </div>
             <div className={panelSubtitleClass}>{panelSubtitle}</div>
@@ -465,7 +552,7 @@ export default function DesignControlsPanel({
             aria-label={onCollapsedChange ? "Collapse design tools" : "Hide design tools"}
             className={
               dark
-                ? "shrink-0 rounded-lg border border-white/15 px-2.5 py-1.5 text-xs font-semibold text-neutral-300 hover:bg-white/10"
+                ? "designer-work-control shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-semibold"
                 : "shrink-0 rounded-lg border border-neutral-200 px-2.5 py-1.5 text-xs font-semibold text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"
             }
             onClick={() => {
@@ -481,41 +568,12 @@ export default function DesignControlsPanel({
         </div>
       </div>
 
-      {!isAuthed && (
-        <div
-          className={
-            dark
-              ? "flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-[#151820] px-3 py-2"
-              : "flex items-center justify-between gap-2 rounded-xl border border-neutral-200 bg-white px-3 py-2 shadow-sm"
-          }
-        >
-          <div className="min-w-0">
-            <div className={dark ? "designer-text-primary text-xs font-semibold" : "text-xs font-semibold text-neutral-900"}>
-              Guest mode
-            </div>
-            <div className={dark ? "designer-text-muted text-[11px]" : "text-[11px] text-neutral-500"}>
-              Sign in to save and share.
-            </div>
-          </div>
-          <button
-            className={
-              dark
-                ? "shrink-0 rounded-lg bg-white px-3 py-2 text-xs font-semibold text-neutral-950"
-                : "shrink-0 rounded-lg bg-neutral-900 px-3 py-2 text-xs font-semibold text-white"
-            }
-            onClick={onSignIn}
-          >
-            Sign in
-          </button>
-        </div>
-      )}
-
       {selectionContext && effectivePanelMode !== "plan" && (
         <div
           data-testid="selected-object-context"
           className={
             dark
-              ? "rounded-xl border border-white/10 bg-[#151820] px-3 py-2"
+              ? "designer-raised rounded-xl border px-3 py-2"
               : "rounded-xl border border-neutral-200 bg-white px-3 py-2 shadow-sm"
           }
         >
@@ -525,19 +583,19 @@ export default function DesignControlsPanel({
                 className={
                   selectionContext.tone === "furnish"
                     ? dark
-                      ? "text-[11px] font-semibold uppercase tracking-wide text-blue-200"
+                      ? "designer-accent text-[11px] font-semibold uppercase tracking-wide"
                       : "text-[11px] font-semibold uppercase tracking-wide text-blue-700"
                     : dark
-                      ? "text-[11px] font-semibold uppercase tracking-wide text-emerald-200"
+                      ? "designer-text-secondary text-[11px] font-semibold uppercase tracking-wide"
                       : "text-[11px] font-semibold uppercase tracking-wide text-emerald-700"
                 }
               >
                 {selectionContext.label}
               </div>
-              <div className={dark ? "mt-0.5 truncate text-sm font-semibold text-white" : "mt-0.5 truncate text-sm font-semibold text-neutral-950"}>
+              <div className={dark ? "designer-text-primary mt-0.5 truncate text-sm font-semibold" : "mt-0.5 truncate text-sm font-semibold text-neutral-950"}>
                 {selectionContext.title}
               </div>
-              <div className={dark ? "mt-0.5 text-[11px] text-neutral-400" : "mt-0.5 text-[11px] text-neutral-500"}>
+              <div className={dark ? "designer-text-muted mt-0.5 text-[11px]" : "mt-0.5 text-[11px] text-neutral-500"}>
                 {selectionContext.detail}
               </div>
             </div>
@@ -545,10 +603,10 @@ export default function DesignControlsPanel({
               className={
                 selectionContext.tone === "furnish"
                   ? dark
-                    ? "shrink-0 rounded-full bg-blue-400/15 px-2 py-1 text-[10px] font-semibold text-blue-100"
+                    ? "designer-status-info shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold"
                     : "shrink-0 rounded-full bg-blue-50 px-2 py-1 text-[10px] font-semibold text-blue-700"
                   : dark
-                    ? "shrink-0 rounded-full bg-emerald-400/15 px-2 py-1 text-[10px] font-semibold text-emerald-100"
+                    ? "designer-status-ready shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold"
                     : "shrink-0 rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-emerald-700"
               }
             >
@@ -565,6 +623,7 @@ export default function DesignControlsPanel({
             isClientPreview={isClientPreview}
             isDesigner={isDesigner}
             canEdit={canEdit}
+            canEditPlanGeometry={canEditPlanGeometry}
             aiDesignEnabled={aiDesignEnabled}
             viewMode={viewMode}
             snapEnabled={snapEnabled}
@@ -575,6 +634,7 @@ export default function DesignControlsPanel({
             roomDepthInput={roomDepthInput}
             roomWidth={roomWidth}
             roomDepth={roomDepth}
+            measurementUnit={measurementUnit}
             floorPlanUnderlay={floorPlanUnderlay}
             floorPlanCalibrationMode={floorPlanCalibrationMode}
             floorPlanCalibrationPointCount={floorPlanCalibrationPointCount}
@@ -601,16 +661,35 @@ export default function DesignControlsPanel({
             planItemCount={planItemCount}
             planOpeningCount={planOpeningCount}
             activeRoomName={activeRoomName}
+            activeRoomId={activeRoomId}
             activeRoomType={activeRoomType}
             activeRoomFloorMaterialId={activeRoomFloorMaterialId}
             activeRoomFloorRotationDeg={activeRoomFloorRotationDeg}
             activeRoomFloorScale={activeRoomFloorScale}
+            activeRoomFloorPattern={activeRoomFloorPattern}
+            activeRoomFloorPatternOffset={activeRoomFloorPatternOffset}
+            activeRoomFloorJointSizeMm={activeRoomFloorJointSizeMm}
+            activeRoomFloorJointColor={activeRoomFloorJointColor}
+            activeSurfaceTarget={planPanelSurfaceTarget}
+            selectedWallFaceId={selectedWallFaceId}
+            selectedWallLabel={selectedWallLabel}
+            activeRoomWallSettings={activeRoomWallSettings}
+            activeRoomSelectedWallSettings={activeRoomSelectedWallSettings}
+            activeRoomCeilingSettings={activeRoomCeilingSettings}
+            surfaceBrushActive={surfaceBrushActive}
+            surfaceBrushMaterialId={surfaceBrushMaterialId}
+            surfaceBrushPaintColorHex={surfaceBrushPaintColorHex}
+            surfaceBrushPaintName={surfaceBrushPaintName}
+            surfaceRooms={surfaceRooms}
+            showFloorPropertiesPanel={showFloorPropertiesPanel}
+            floorFinishPanelOpenSignal={floorFinishPanelOpenSignal}
             floorOptions={floorOptions}
             activeFloorLevel={activeFloorLevel}
             activeFloorRoomCount={activeFloorRoomCount}
             activeRoomHeightMm={activeRoomHeightMm}
             activeRoomWallThicknessMm={activeRoomWallThicknessMm}
             activeRoomSlabThicknessMm={activeRoomSlabThicknessMm}
+            activeRoomBaseboardDepthMm={activeRoomBaseboardDepthMm}
             activeRoomWallOpacity={activeRoomWallOpacity}
             activeRoomFloorOpacity={activeRoomFloorOpacity}
             activeRoomCeilingOpacity={activeRoomCeilingOpacity}
@@ -638,20 +717,36 @@ export default function DesignControlsPanel({
             onApplyPlanTemplate={onApplyPlanTemplate}
             onAddDesignerRoom={onAddDesignerRoom}
             onAddRoomTemplate={onAddRoomTemplate}
+            onSelectRoom={onSelectRoom}
             onApplyFloorMaterialToRoom={onApplyFloorMaterialToRoom}
             onApplyFloorMaterialToAllRooms={onApplyFloorMaterialToAllRooms}
             onRotateActiveFloorMaterial={onRotateActiveFloorMaterial}
             onResetActiveFloorMaterialPattern={onResetActiveFloorMaterialPattern}
             onActiveFloorMaterialScaleChange={onActiveFloorMaterialScaleChange}
+            onActiveFloorSurfaceSettingsChange={onActiveFloorSurfaceSettingsChange}
+            onSurfaceTargetChange={onSurfaceTargetChange}
+            onSurfaceBrushActiveChange={onSurfaceBrushActiveChange}
+            onSurfaceMaterialSelected={onSurfaceMaterialSelected}
+            onSurfacePaintSelected={onSurfacePaintSelected}
+            onApplyWallMaterialToRoom={onApplyWallMaterialToRoom}
+            onApplyWallMaterialToAllRooms={onApplyWallMaterialToAllRooms}
+            onApplyWallPaintToRoom={onApplyWallPaintToRoom}
+            onApplyWallPaintToAllRooms={onApplyWallPaintToAllRooms}
+            onApplyCeilingPaintToRoom={onApplyCeilingPaintToRoom}
+            onApplyCeilingPaintToAllRooms={onApplyCeilingPaintToAllRooms}
+            onActiveWallSurfaceSettingsChange={onActiveWallSurfaceSettingsChange}
+            onResetActiveWallSurface={onResetActiveWallSurface}
+            onResetActiveCeilingSurface={onResetActiveCeilingSurface}
             onNewRoomTypeChange={onNewRoomTypeChange}
             onNewRoomShapeChange={onNewRoomShapeChange}
             onRoomPresetChange={onRoomPresetChange}
             onRoomWidthInputChange={onRoomWidthInputChange}
             onRoomDepthInputChange={onRoomDepthInputChange}
-            onApplyRoomSize={onApplyRoomSize}
+            onCommitRoomDimension={onCommitRoomDimension}
             onActiveRoomHeightMmChange={onActiveRoomHeightMmChange}
             onActiveRoomWallThicknessMmChange={onActiveRoomWallThicknessMmChange}
             onActiveRoomSlabThicknessMmChange={onActiveRoomSlabThicknessMmChange}
+            onActiveRoomBaseboardDepthMmChange={onActiveRoomBaseboardDepthMmChange}
             onActiveRoomSurfaceOpacityChange={onActiveRoomSurfaceOpacityChange}
             onActiveRoomCeilingVisibleChange={onActiveRoomCeilingVisibleChange}
             onActiveRoomCeilingColorChange={onActiveRoomCeilingColorChange}
@@ -745,24 +840,40 @@ export default function DesignControlsPanel({
           />
         )}
 
-        {isDesigner && effectivePanelMode !== "ai" && (
-          <div className="mt-3 flex gap-2">
-            <button
-              className={`text-xs px-3 py-2 rounded-lg ${
-                showGrid ? selectedButtonClass : dark ? "bg-[#151820] text-neutral-200" : "bg-neutral-100"
-              }`}
-              onClick={onGridToggle}
-            >
-              Grid
-            </button>
-            <button
-              className={`text-xs px-3 py-2 rounded-lg ${
-                snapEnabled ? selectedButtonClass : dark ? "bg-[#151820] text-neutral-200" : "bg-neutral-100"
-              }`}
-              onClick={onSnapToggle}
-            >
-              Snap
-            </button>
+        {effectivePanelMode !== "ai" && (onOpenCabinetryStudio || isDesigner) && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {onOpenCabinetryStudio ? (
+              <button
+                type="button"
+                data-testid="open-custom-millwork-studio"
+                className={`text-xs px-3 py-2 rounded-lg ${
+                  dark ? "designer-raised text-neutral-200" : "bg-neutral-100"
+                }`}
+                onClick={onOpenCabinetryStudio}
+              >
+                <span data-testid="open-cabinetry-studio">Custom Millwork Studio</span>
+              </button>
+            ) : null}
+            {isDesigner ? (
+              <>
+                <button
+                  className={`text-xs px-3 py-2 rounded-lg ${
+                    showGrid ? selectedButtonClass : dark ? "designer-raised text-neutral-200" : "bg-neutral-100"
+                  }`}
+                  onClick={onGridToggle}
+                >
+                  Grid
+                </button>
+                <button
+                  className={`text-xs px-3 py-2 rounded-lg ${
+                    snapEnabled ? selectedButtonClass : dark ? "designer-raised text-neutral-200" : "bg-neutral-100"
+                  }`}
+                  onClick={onSnapToggle}
+                >
+                  Snap
+                </button>
+              </>
+            ) : null}
           </div>
         )}
       </div>

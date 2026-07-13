@@ -1,19 +1,9 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { logAppEvent, AppEventType } from "@/lib/app-events";
+import { APP_EVENT_TYPES, logAppEvent, type AppEventType } from "@/lib/app-events";
 import { rateLimit } from "@/lib/rateLimit";
 
-const ALLOWED = new Set<AppEventType>([
-  "share_link_opened",
-  "export_opened",
-  "export_printed",
-  "export_pdf_clicked",
-  "export_upgrade_prompt_shown",
-  "upgrade_checkout_started",
-  "upgrade_checkout_completed",
-  "billing_portal_opened",
-  "subscription_canceled",
-]);
+const ALLOWED = new Set<AppEventType>(APP_EVENT_TYPES);
 
 function getClientIp(req: Request) {
   const header = req.headers.get("x-forwarded-for") || "";
@@ -25,7 +15,7 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
   const { eventType, designId, shareToken, meta } = body ?? {};
 
-  if (!ALLOWED.has(eventType)) {
+  if (typeof eventType !== "string" || !ALLOWED.has(eventType as AppEventType)) {
     return NextResponse.json({ error: "Invalid eventType" }, { status: 400 });
   }
 
@@ -37,13 +27,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
 
-  await logAppEvent({
-    eventType,
+  const result = await logAppEvent({
+    eventType: eventType as AppEventType,
     userId: session?.user?.id ?? null,
     designId: typeof designId === "string" ? designId : null,
     shareToken: typeof shareToken === "string" ? shareToken : null,
     meta: typeof meta === "object" && meta ? meta : null,
   });
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({
+    ok: true,
+    persisted: result.persisted,
+    eventId: result.eventId,
+  });
 }

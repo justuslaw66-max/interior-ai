@@ -1,6 +1,6 @@
 import type { ProductVariant } from "../catalog-schema";
 
-export const IMPORTED_VARIANT_PIPELINE_REVISION = "2026-04-26-shared-imported-variant-normalizer-v3";
+export const IMPORTED_VARIANT_PIPELINE_REVISION = "2026-07-11-prioritize-front-shot-thumbnails-v5";
 
 const KNOWN_STOCKED_CODES = [
   "beach_linen",

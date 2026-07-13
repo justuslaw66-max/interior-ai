@@ -1,10 +1,14 @@
 "use client";
 
 import * as THREE from "three";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import type { GLBCalibration } from "@/lib/design-page-calibration";
 import type { ConfigurableNodeTransform } from "@/lib/design-page-types";
+import {
+  calculatePendantCableDeformation,
+  type PendantCableAdjustment,
+} from "@/lib/pendant-light-adjustment";
 
 export function GLBScaledModel({
   url,
@@ -18,6 +22,7 @@ export function GLBScaledModel({
   variantColorHex,
   variantName,
   variantRenderAssets,
+  pendantCableAdjustment,
   onLoadStateChange,
 }: {
   url: string;
@@ -31,17 +36,26 @@ export function GLBScaledModel({
   variantColorHex?: string;
   variantName?: string;
   variantRenderAssets?: CatalogItemSchema["variants"][number]["renderAssets"];
+  pendantCableAdjustment?: PendantCableAdjustment | null;
   onLoadStateChange?: (state: "loading" | "ready" | "error") => void;
 }) {
   const [loadedScene, setLoadedScene] = useState<THREE.Object3D | null>(null);
+  const [upholsteryTexturesLoaded, setUpholsteryTexturesLoaded] = useState(false);
   const [upholsteryTextures, setUpholsteryTextures] = useState<{
     baseColorMap?: THREE.Texture;
     normalMap?: THREE.Texture;
     roughnessMap?: THREE.Texture;
   }>({});
+  const onLoadStateChangeRef = useRef(onLoadStateChange);
+
+  useEffect(() => {
+    onLoadStateChangeRef.current = onLoadStateChange;
+  }, [onLoadStateChange]);
 
   useEffect(() => {
     let cancelled = false;
+    setUpholsteryTexturesLoaded(false);
+    onLoadStateChangeRef.current?.("loading");
     const loader = new THREE.TextureLoader();
     const tileX = variantRenderAssets?.tileScale?.x ?? 1;
     const tileY = variantRenderAssets?.tileScale?.y ?? 1;
@@ -78,6 +92,7 @@ export function GLBScaledModel({
     ]).then(([baseColorMap, normalMap, roughnessMap]) => {
       if (cancelled) return;
       setUpholsteryTextures({ baseColorMap, normalMap, roughnessMap });
+      setUpholsteryTexturesLoaded(true);
     });
 
     return () => {
@@ -95,7 +110,7 @@ export function GLBScaledModel({
     let cancelled = false;
     let dracoLoader: { dispose?: () => void } | null = null;
     setLoadedScene(null);
-    onLoadStateChange?.("loading");
+    onLoadStateChangeRef.current?.("loading");
 
     (async () => {
       try {
@@ -138,21 +153,20 @@ export function GLBScaledModel({
           (gltf) => {
             if (cancelled) return;
             setLoadedScene(gltf.scene.clone(true));
-            onLoadStateChange?.("ready");
           },
           undefined,
           (error) => {
             if (cancelled) return;
             console.warn("[GLBScaledModel] Failed to load", { url, error });
             setLoadedScene(null);
-            onLoadStateChange?.("error");
+            onLoadStateChangeRef.current?.("error");
           }
         );
       } catch (error) {
         if (cancelled) return;
         console.warn("[GLBScaledModel] Failed to import GLTFLoader", { error });
         setLoadedScene(null);
-        onLoadStateChange?.("error");
+        onLoadStateChangeRef.current?.("error");
       }
     })();
 
@@ -160,7 +174,6 @@ export function GLBScaledModel({
       cancelled = true;
       dracoLoader?.dispose?.();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url]);
 
   const normalizedModel = useMemo(() => {
@@ -180,7 +193,11 @@ export function GLBScaledModel({
     let sy = size.y > 0 ? height / size.y : 1;
     let sz = size.z > 0 ? targetDepth / size.z : 1;
 
-    if (calibration?.lockVerticalScaleToFootprint) {
+    if (pendantCableAdjustment) {
+      // Preserve the canopy and globe proportions. Overall height is changed
+      // by deforming only the straight central cable below.
+      sy = (sx + sz) / 2;
+    } else if (calibration?.lockVerticalScaleToFootprint) {
       sy = (sx + sz) / 2;
     }
 
@@ -201,7 +218,12 @@ export function GLBScaledModel({
     scene.scale.set(sx, sy, sz);
 
     const minYScaled = bbox.min.y * sy;
-    scene.position.set(-center.x * sx, -height / 2 - minYScaled, -center.z * sz);
+    const maxYScaled = bbox.max.y * sy;
+    scene.position.set(
+      -center.x * sx,
+      pendantCableAdjustment ? height / 2 - maxYScaled : -height / 2 - minYScaled,
+      -center.z * sz
+    );
     if (calibration?.swapWidthDepthAxes) {
       scene.rotation.y = Math.PI / 2;
     }
@@ -217,6 +239,58 @@ export function GLBScaledModel({
     }
     if (typeof rootTransform?.visible === "boolean") {
       scene.visible = rootTransform.visible;
+    }
+
+    if (pendantCableAdjustment && size.y > 0) {
+      const naturalHeightMeters = size.y * sy;
+      scene.traverse((object) => {
+        if (!(object instanceof THREE.Mesh)) return;
+        const geometry = object.geometry.clone();
+        const sourcePosition = geometry.getAttribute("position");
+        if (
+          !(sourcePosition instanceof THREE.BufferAttribute) &&
+          !(sourcePosition instanceof THREE.InterleavedBufferAttribute)
+        ) {
+          return;
+        }
+        const expandedPositions = new Float32Array(sourcePosition.count * 3);
+        for (let index = 0; index < sourcePosition.count; index += 1) {
+          expandedPositions[index * 3] = sourcePosition.getX(index);
+          expandedPositions[index * 3 + 1] = sourcePosition.getY(index);
+          expandedPositions[index * 3 + 2] = sourcePosition.getZ(index);
+        }
+        const positionAttribute = new THREE.BufferAttribute(expandedPositions, 3);
+        geometry.setAttribute("position", positionAttribute);
+
+        geometry.computeBoundingBox();
+        const geometryBounds = geometry.boundingBox;
+        if (!geometryBounds) return;
+        const axisLength = geometryBounds.max.z - geometryBounds.min.z;
+        if (!(axisLength > 0)) return;
+
+        const deformation = calculatePendantCableDeformation({
+          adjustment: pendantCableAdjustment,
+          naturalHeightMeters,
+          axisMin: geometryBounds.min.z,
+          axisLength,
+        });
+        if (!deformation) return;
+        const { cableStart, cableEnd, cableDelta, cableScale } = deformation;
+
+        for (let index = 0; index < positionAttribute.count; index += 1) {
+          const z = positionAttribute.getZ(index);
+          if (z >= cableEnd) {
+            positionAttribute.setZ(index, z + cableDelta);
+          } else if (z > cableStart) {
+            positionAttribute.setZ(index, cableStart + (z - cableStart) * cableScale);
+          }
+        }
+
+        positionAttribute.needsUpdate = true;
+        geometry.computeBoundingBox();
+        geometry.computeBoundingSphere();
+        object.geometry = geometry;
+      });
     }
 
     if (nodeTransforms) {
@@ -332,17 +406,25 @@ export function GLBScaledModel({
     ) => {
       if (!calibration?.upperUpholsteryTint || !tintHex) return;
       const geometry = mesh.geometry as THREE.BufferGeometry;
-      if (!geometry.boundingBox) geometry.computeBoundingBox();
-      const bounds = geometry.boundingBox;
-      if (!bounds) return;
-
-      const localMinY = bounds.min.y;
-      const localMaxY = bounds.max.y;
-      const localHeight = Math.max(localMaxY - localMinY, 0.0001);
-      const fadeStart = localMinY + localHeight * (calibration.upperUpholsteryFadeStart ?? 0.18);
-      const fadeEnd = localMinY + localHeight * (calibration.upperUpholsteryFadeEnd ?? 0.28);
+      if (!geometry.attributes.position) return;
+      mesh.updateWorldMatrix(true, false);
+      const bounds = new THREE.Box3().setFromObject(mesh);
+      const worldHeight = Math.max(bounds.max.y - bounds.min.y, 0.0001);
+      // The imported Owen meshes are authored Z-up and rotated at the node.
+      // Use final vertical world position instead of raw local Y, then include
+      // the containing Furniture group's height/2 offset used at render time.
+      const furnitureGroupYOffset = height * 0.5;
+      const fadeStart =
+        bounds.min.y +
+        worldHeight * (calibration.upperUpholsteryFadeStart ?? 0.18) +
+        furnitureGroupYOffset;
+      const fadeEnd =
+        bounds.min.y +
+        worldHeight * (calibration.upperUpholsteryFadeEnd ?? 0.28) +
+        furnitureGroupYOffset;
       const tintStrength = Math.max(0, Math.min(1, calibration.upperUpholsteryTintStrength ?? 0.8));
       const preserveWarmWood = calibration.upperUpholsteryPreserveWarmWood ? 1 : 0;
+      const preserveSourceLuma = (calibration.upperUpholsteryPreserveSourceLuma ?? true) ? 1 : 0;
       const tintColor = new THREE.Color(tintHex);
       const tintLuma = Math.max(
         0.001,
@@ -350,7 +432,7 @@ export function GLBScaledModel({
       );
 
       material.customProgramCacheKey = () =>
-        ["upper-upholstery-tint", tintHex, tintStrength, fadeStart, fadeEnd, preserveWarmWood].join(":");
+        ["upper-upholstery-tint", tintHex, tintStrength, fadeStart, fadeEnd, preserveWarmWood, preserveSourceLuma].join(":");
       material.onBeforeCompile = (shader) => {
         shader.uniforms.upperUpholsteryTintColor = { value: tintColor };
         shader.uniforms.upperUpholsteryTintStrength = { value: tintStrength };
@@ -358,33 +440,35 @@ export function GLBScaledModel({
         shader.uniforms.upperUpholsteryTintEnd = { value: fadeEnd };
         shader.uniforms.upperUpholsteryTintLuma = { value: tintLuma };
         shader.uniforms.upperUpholsteryPreserveWarmWood = { value: preserveWarmWood };
+        shader.uniforms.upperUpholsteryPreserveSourceLuma = { value: preserveSourceLuma };
 
         shader.vertexShader = shader.vertexShader
           .replace(
             "#include <common>",
-            "#include <common>\nvarying float vUpperUpholsteryLocalY;"
+            "#include <common>\nvarying float vUpperUpholsteryWorldY;"
           )
           .replace(
             "#include <begin_vertex>",
-            "#include <begin_vertex>\nvUpperUpholsteryLocalY = position.y;"
+            "#include <begin_vertex>\nvUpperUpholsteryWorldY = (modelMatrix * vec4(position, 1.0)).y;"
           );
 
         shader.fragmentShader = shader.fragmentShader
           .replace(
             "#include <common>",
-            "#include <common>\nvarying float vUpperUpholsteryLocalY;\nuniform vec3 upperUpholsteryTintColor;\nuniform float upperUpholsteryTintStrength;\nuniform float upperUpholsteryTintStart;\nuniform float upperUpholsteryTintEnd;\nuniform float upperUpholsteryTintLuma;\nuniform float upperUpholsteryPreserveWarmWood;"
+            "#include <common>\nvarying float vUpperUpholsteryWorldY;\nuniform vec3 upperUpholsteryTintColor;\nuniform float upperUpholsteryTintStrength;\nuniform float upperUpholsteryTintStart;\nuniform float upperUpholsteryTintEnd;\nuniform float upperUpholsteryTintLuma;\nuniform float upperUpholsteryPreserveWarmWood;\nuniform float upperUpholsteryPreserveSourceLuma;"
           )
           .replace(
             "#include <map_fragment>",
             [
               "#include <map_fragment>",
-              "float upperUpholsteryMask = smoothstep(upperUpholsteryTintStart, upperUpholsteryTintEnd, vUpperUpholsteryLocalY);",
+              "float upperUpholsteryMask = smoothstep(upperUpholsteryTintStart, upperUpholsteryTintEnd, vUpperUpholsteryWorldY);",
               "float upperUpholsteryLuma = dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722));",
               "float upperUpholsteryWarmDelta = diffuseColor.r - diffuseColor.b;",
               "float upperUpholsteryWarmWoodMask = upperUpholsteryPreserveWarmWood * smoothstep(0.045, 0.13, upperUpholsteryWarmDelta) * smoothstep(0.12, 0.72, upperUpholsteryLuma);",
               "float upperUpholsteryDarkWoodMask = upperUpholsteryPreserveWarmWood * (1.0 - smoothstep(0.055, 0.18, upperUpholsteryLuma));",
               "upperUpholsteryMask *= 1.0 - clamp(max(upperUpholsteryWarmWoodMask, upperUpholsteryDarkWoodMask), 0.0, 1.0);",
-              "vec3 upperUpholsteryToned = upperUpholsteryTintColor * clamp(upperUpholsteryLuma / upperUpholsteryTintLuma, 0.55, 1.35);",
+              "float upperUpholsteryLumaScale = mix(1.0, clamp(upperUpholsteryLuma / upperUpholsteryTintLuma, 0.55, 1.35), upperUpholsteryPreserveSourceLuma);",
+              "vec3 upperUpholsteryToned = upperUpholsteryTintColor * upperUpholsteryLumaScale;",
               "diffuseColor.rgb = mix(diffuseColor.rgb, clamp(upperUpholsteryToned, 0.0, 1.0), upperUpholsteryMask * upperUpholsteryTintStrength);",
             ].join("\n")
           );
@@ -1329,6 +1413,21 @@ export function GLBScaledModel({
     const meshLegLikeCache = new Map<string, boolean>();
     const huggOttomanLikeCache = new Map<string, boolean>();
     const isHuggModel = /\bhugg\b/i.test(url) || /\bhugg\b/i.test(String(productId ?? ""));
+    const preserveImportedModelMaterials =
+      productId === "bed-real-castlery-joseph" ||
+      productId === "bed-real-castlery-rochelle-boucle" ||
+      productId === "bed-real-castlery-seb" ||
+      productId === "bed-real-castlery-dalton" ||
+      productId === "bed-real-castlery-claude" ||
+      productId === "bed-real-castlery-dawson" ||
+      /^accessory-real-castlery-.*lamp/i.test(String(productId ?? "")) ||
+      /bed-real-castlery-joseph/i.test(url) ||
+      /bed-real-castlery-rochelle/i.test(url) ||
+      /bed-real-castlery-seb/i.test(url) ||
+      /bed-real-castlery-dalton/i.test(url) ||
+      /bed-real-castlery-claude/i.test(url) ||
+      /bed-real-castlery-dawson/i.test(url) ||
+      /accessory-real-castlery-.*lamp/i.test(url);
     const huggVariantMarker = `${String(variantName ?? "")} ${String(variantId ?? "")}`.toLowerCase();
     const normalizedVariantHex = String(variantColorHex ?? "").trim().toLowerCase();
     const isBlackVariantHex = ["#1f1f1f", "#090909", "#000000", "#111111"].includes(normalizedVariantHex);
@@ -1437,6 +1536,7 @@ export function GLBScaledModel({
       if (!mesh.isMesh) return;
       mesh.castShadow = false;
       mesh.receiveShadow = false;
+      if (preserveImportedModelMaterials) return;
 
       // Madison GLBs can reuse one material across body + legs.
       // Clone per mesh so upholstery overrides do not bleed into leg parts.
@@ -1840,9 +1940,14 @@ export function GLBScaledModel({
     });
 
     return scene;
-  }, [loadedScene, width, height, depth, nodeTransforms, calibration, variantColorHex, upholsteryTextures, variantRenderAssets, url, variantName, productId, variantId]);
+  }, [loadedScene, width, height, depth, nodeTransforms, calibration, variantColorHex, upholsteryTextures, variantRenderAssets, url, variantName, productId, variantId, pendantCableAdjustment]);
 
-  if (!normalizedModel) return null;
+  useEffect(() => {
+    if (!normalizedModel || !upholsteryTexturesLoaded) return;
+    onLoadStateChangeRef.current?.("ready");
+  }, [normalizedModel, upholsteryTexturesLoaded]);
+
+  if (!normalizedModel || !upholsteryTexturesLoaded) return null;
 
   return <primitive object={normalizedModel} />;
 }

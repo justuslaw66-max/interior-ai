@@ -116,7 +116,7 @@ export function getRecommendedFloorMaterials(roomType?: RoomType): FloorMaterial
 
 export function normalizeFloorRotationDeg(rotationDeg?: number | null): number {
   if (typeof rotationDeg !== "number" || !Number.isFinite(rotationDeg)) return 0;
-  return (((Math.round(Number(rotationDeg) / 90) * 90) % 360) + 360) % 360;
+  return (((Math.round(Number(rotationDeg) / 45) * 45) % 360) + 360) % 360;
 }
 
 export function clampFloorPatternScale(scale?: number | null): number {

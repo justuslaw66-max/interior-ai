@@ -1,0 +1,106 @@
+schema_version: 1
+surface_material:
+  supplier: gardenia_orchidea
+  brand: Gardenia Orchidea
+  collection: Make
+  material_id: gardenia-flooring-make-bianco-g0073040-100x100-90779-0
+  product_name: Gardenia Make Bianco 100x100
+  slug: gardenia-flooring-make-bianco-g0073040-100x100-90779-0
+  surface_category: flooring
+  material_family: tile
+source:
+  supplier_region: international
+  source_url: https://www.gardenia.it/en/collection/make
+  sample_request_url: null
+  currency: EUR
+  license_status: confirmed
+  notes:
+    - Imported from Gardenia RealityRemod configurator with user-confirmed permission on 2026-07-04.
+    - Gardenia tile item GARDENIA/G0073040/0/90779 for floor use.
+    - "Configurator format: 100x100; surface destination: ENTRAMBE."
+    - "Configurator pattern IDs: pieno_01, pieno_05."
+    - "Collection page technology: Porcelain slabs."
+    - "Collection page thicknesses: 8.5, 20 mm."
+    - "Collection page sizes: 100x100, 80x80, 60x120, 60x60."
+    - "Collection page color availability for BIANCO: BIANCO 8,5 mm: 100x100 (40\"x40\"), 80x80 (32\"x32\"), 60x120 (24\"x48\"), 60x60 (24\"x24\")."
+    - "Available configurator formats: G0073040 100x100 ENTRAMBE patterns pieno_01,pieno_05; G0073220 60x120 ENTRAMBE patterns pieno_01,pieno_05; G0073210 60x60 ENTRAMBE patterns pieno_01,pieno_05; G0073020 80x80 ENTRAMBE patterns pieno_01,pieno_05."
+    - The configurator API did not expose slip rating, package quantity, price, or seamless texture QA data.
+classification:
+  flooring_type: tile
+  design_effect: plain
+  color_family: white
+  tone:
+    - neutral
+    - durable
+    - clean
+  style_cluster:
+    - contemporary
+    - modern
+    - hospitality
+  room_suitability:
+    - living_room
+    - dining_room
+    - kitchen
+    - bathroom
+    - hallway
+    - commercial
+    - hospitality
+physical_specs:
+  plank_or_tile_format: tile
+  plank_width_mm: null
+  plank_length_mm: null
+  tile_width_mm: 1000
+  tile_length_mm: 1000
+  total_thickness_mm: 8.5
+  wear_layer_mm: null
+  installation_method:
+    - direct_stick
+  waterproof: null
+  slip_rating: null
+  suitable_for_wet_area: null
+  suitable_for_outdoor: null
+  commercial_grade: null
+texture_assets:
+  swatch_url: /assets/catalog/surface-materials/gardenia/make/g0073040.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/make/g0073040.webp
+  normal_url: null
+  roughness_url: null
+  ao_url: null
+  preview_room_url: null
+  tileable: needs_confirmation
+  texture_repeat_size_cm:
+    width: 100
+    height: 100
+rendering:
+  default_rotation_deg: 0
+  roughness: 0.62
+  metalness: 0
+  normal_strength: 0.15
+  scale_mode: physical_repeat
+  seam_strategy: repeat_texture
+  source_pattern_ids:
+    - pieno_01
+    - pieno_05
+  available_pattern_layouts:
+    - straight
+    - vertical_brick
+commerce:
+  purchase_mode: unknown
+  price_per_sqm:
+    currency: EUR
+    amount: null
+  sample_available: unknown
+  sample_request_url: null
+  direct_checkout: false
+import_governance:
+  publish_status: draft
+  publish_blockers:
+    - confirm_texture_tileability
+    - confirm_price_per_sqm_or_quote_mode
+  qa_flags:
+    - gardenia_realityremod_import
+    - gardenia_tile_item_variant
+    - user_confirmed_permission
+    - configurator_preview_asset
+    - gardenia_collection_page_enriched
+    - surface_target_specific_entry

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { isAdminEmail } from "@/lib/admin";
+import { canAccessAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { getFreshCatalogYamlMap } from "@/lib/catalog-yaml";
 
@@ -20,7 +20,7 @@ function mapCategoryToDb(yamlCategory: string | undefined, assetId: string): DbC
   if (yamlCategory === "accent_chair" || yamlCategory === "armchair" || yamlCategory === "dining_chair") {
     return "accent_chair";
   }
-  if (yamlCategory === "floor_lamp" || yamlCategory === "pendant_light") return "floor_lamp";
+  if (yamlCategory === "floor_lamp" || yamlCategory === "table_lamp" || yamlCategory === "pendant_light") return "floor_lamp";
   if (yamlCategory === "dining_table" || yamlCategory === "side_table") return "coffee_table";
 
   if (assetId.startsWith("sofa-")) return "sofa";
@@ -44,7 +44,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  if (!session?.user?.email || !isAdminEmail(session.user.email)) {
+  if (!canAccessAdmin(session?.user?.email)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

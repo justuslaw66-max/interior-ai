@@ -1,4 +1,4 @@
-export type SurfaceCategory = "flooring";
+export type SurfaceCategory = "flooring" | "wall_tile" | "paint" | "wallpaper" | "wall_panel";
 
 export type FlooringMaterialFamily =
   | "luxury_vinyl_tile"
@@ -10,6 +10,12 @@ export type FlooringMaterialFamily =
   | "tile"
   | "stone"
   | "laminate";
+
+export type SurfaceMaterialFamily =
+  | FlooringMaterialFamily
+  | "paint"
+  | "wallpaper"
+  | "wall_panel";
 
 export type SurfaceDesignEffect =
   | "wood"
@@ -57,6 +63,14 @@ export type SurfaceScaleMode = "physical_repeat" | "visual_repeat" | "swatch_onl
 export type SurfaceSeamStrategy = "repeat_texture" | "single_swatch" | "non_tileable_preview";
 export type SurfacePurchaseMode = "quote_or_sample" | "direct_checkout" | "affiliate" | "unknown";
 export type SurfacePublishStatus = "draft" | "published" | "blocked" | "needs_review";
+export type SurfacePatternLayout =
+  | "straight"
+  | "brick"
+  | "vertical_brick"
+  | "random_stagger"
+  | "herringbone"
+  | "grid"
+  | "checker";
 
 export type SurfaceMaterial = {
   schema_version: number;
@@ -68,7 +82,7 @@ export type SurfaceMaterial = {
     product_name: string;
     slug: string;
     surface_category: SurfaceCategory;
-    material_family: FlooringMaterialFamily;
+    material_family: SurfaceMaterialFamily;
   };
   source: {
     supplier_region: SurfaceSupplierRegion;
@@ -118,6 +132,8 @@ export type SurfaceMaterial = {
     normal_strength?: number;
     scale_mode: SurfaceScaleMode;
     seam_strategy: SurfaceSeamStrategy;
+    source_pattern_ids?: string[];
+    available_pattern_layouts?: SurfacePatternLayout[];
   };
   commerce: {
     purchase_mode: SurfacePurchaseMode;
@@ -137,7 +153,7 @@ export type SurfaceMaterial = {
 };
 
 export const SURFACE_MATERIAL_VOCABULARY = {
-  surface_category: ["flooring"],
+  surface_category: ["flooring", "wall_tile", "paint", "wallpaper", "wall_panel"],
   material_family: [
     "luxury_vinyl_tile",
     "spc",
@@ -148,6 +164,9 @@ export const SURFACE_MATERIAL_VOCABULARY = {
     "tile",
     "stone",
     "laminate",
+    "paint",
+    "wallpaper",
+    "wall_panel",
   ],
   flooring_type: [
     "luxury_vinyl_tile",

@@ -1,0 +1,360 @@
+status: "published"
+brand: "Castlery"
+retailer: "Castlery Singapore"
+source_url: "https://www.castlery.com/sg/products/owen-3-seater-sofa"
+category: "sofa"
+
+product_family: "Owen"
+product_name: "Owen 3 Seater Sofa"
+slug: "castlery-owen-3-seater-sofa"
+variant: "3 Seater"
+
+price_usd: 1399
+price_band: "mid_premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "sofa_anchor"
+
+dimensions:
+  width_cm: 203
+  depth_cm: 99
+  height_cm: 81
+
+seat_capacity: 3
+size_class: "large"
+shape: "rectangular"
+base_type: "legged"
+
+material_family: "upholstered"
+material_mix: "upholstered_wood"
+materials:
+  frame:
+    structure: "plywood"
+  leg:
+    structure: "solid_rubber_wood"
+    finish: "natural_wood"
+  upholstery:
+    material_type: "fabric"
+    label: "Pearl Beige"
+
+color_family: "beige"
+tone: "neutral"
+style_cluster: "contemporary"
+style_secondary: "coastal_modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "rounded"
+  silhouette: "curved_three_seater"
+  form_language: "soft"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  walkway_clearance_cm: 75
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+  - "open_plan"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  floating_layout_supported: true
+
+design_pairings:
+  - "coffee_table"
+  - "side_table"
+  - "floor_lamp"
+  - "rug"
+  - "accent_chair"
+
+summary:
+  short_description: "A softly curved three-seater sofa with removable cushion covers and natural or walnut wood legs."
+  long_description: "Owen combines deep seating, padded curved arms, removable cushion covers, and a raised solid rubber wood base in an apartment-friendly three-seater footprint."
+  key_features:
+    - "Pearl Beige, Opal Beige, and Haze stocked fabrics"
+    - "Natural and Walnut wood leg choices"
+    - "Foam, fibre, and pocket spring filled seat"
+    - "Removable seat and back cushion covers"
+
+feature_flags:
+  has_removable_cover: true
+  has_removable_cushion: true
+
+authoring_notes:
+  category_confidence: "high"
+  source_checked: "Castlery Singapore product page, 2026-07-11"
+  source_url: "https://www.castlery.com/sg/products/owen-3-seater-sofa"
+  note: "The supplied GLBs contain Pearl Beige upholstery with separate Natural and Walnut wood bases. The Opal Beige and Haze files preserve the corresponding supplied geometry and wood finish; the renderer applies Owen's height-masked upholstery tint so the fabric changes without recolouring the baked wooden base."
+
+shipping_and_warranty:
+  free_delivery_threshold_sgd: 500
+  cancellation: "Free - 5 working days before delivery"
+  warranty: "Frame 10 years; Fabric 1 year; Foam 2 years"
+  return_policy: "30-day returns"
+  assembly: "Legs to be fitted"
+
+product_details:
+  material:
+    - label: "Frame"
+      value: "Plywood"
+    - label: "Leg"
+      value: "Solid rubber wood"
+    - label: "Filling"
+      value: "Foam, fibre and pocket spring filled seat; fibre filled back"
+    - label: "Finish"
+      value: "Natural on wood or walnut stain on wood"
+    - label: "Cover type"
+      value: "Removable seat and back cushion covers"
+  dimensions:
+    - label: "Dimension"
+      value: "W203 x D99 x H81cm"
+    - label: "Seating depth"
+      value: "60cm"
+    - label: "Seatable width"
+      value: "141cm"
+    - label: "Seating height"
+      value: "48cm"
+    - label: "Leg height"
+      value: "13cm"
+    - label: "Product weight"
+      value: "61.3kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free - 5 working days before delivery"
+    - label: "Warranty"
+      value: "Frame 10 years; Fabric 1 year; Foam 2 years"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Legs to be fitted"
+
+comfort_profile:
+  seat_comfort:
+    label: "Relaxed"
+    value: 2
+    min_label: "Relaxed"
+    max_label: "Upright"
+  seat_depth:
+    label: "Deep"
+    value: 4
+    min_label: "Shallow"
+    max_label: "Deep"
+  seat_height:
+    label: "High"
+    value: 4
+    min_label: "Low"
+    max_label: "High"
+  seat_softness:
+    label: "Soft"
+    value: 2
+    min_label: "Soft"
+    max_label: "Firm"
+
+assets:
+  asset_id: "sofa-real-castlery-owen-3-seater"
+  model_url: "/assets/models/sofas/sofa-real-castlery-owen-3-seater-pearl-beige-natural.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:F3F3F3,c_fit,f_auto,q_auto,w_1000/v1673944872/crusader/variants/T50441095-TL4002-NA/Owen-3-Seater-Sofa-Pearl_Beige-Natrual-Front-1673944869.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1677754613/crusader/variants/T50441095-CA4001-WA/Owen-3-Seater-Sofa-Haze-Walnut-Square-Set_1-1677754611.jpg"
+
+upholstery_options:
+  - upholstery_code: "pearl_beige"
+    color_label: "Pearl Beige"
+    upholstery_label: "Pearl Beige"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1627550438/crusader/variants/TL-4002/Pearl-Beige_1.jpg"
+    fabric_family: "Stocked Fabric"
+    collection_type: "stocked_fabric"
+    swatch_group: "upholstery_option"
+    material_type: "fabric"
+    color_family: "beige"
+    tone: "neutral"
+    swatch_hex: "#d8d0c4"
+  - upholstery_code: "opal_beige"
+    color_label: "Opal Beige"
+    upholstery_label: "Opal Beige"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626942038/crusader/variants/BW-4002/Wayne-Sofa-Opal-Beige_1.jpg"
+    fabric_family: "Stocked Fabric"
+    collection_type: "stocked_fabric"
+    swatch_group: "upholstery_option"
+    material_type: "fabric"
+    color_family: "beige"
+    tone: "warm"
+    swatch_hex: "#c8bca8"
+  - upholstery_code: "haze"
+    color_label: "Haze"
+    upholstery_label: "Haze"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1673945345/crusader/variants/CA-4001/Owen-3-Seater-Sofa-Haze-Det_5-1673945342.jpg"
+    fabric_family: "Stocked Fabric"
+    collection_type: "stocked_fabric"
+    swatch_group: "upholstery_option"
+    material_type: "fabric"
+    color_family: "grey"
+    tone: "cool"
+    swatch_hex: "#8d8d87"
+
+finish_options:
+  - finish_code: "natural"
+    finish_label: "Natural"
+    material_structure: "solid_rubber_wood"
+    swatch_hex: "#b88655"
+  - finish_code: "walnut"
+    finish_label: "Walnut"
+    material_structure: "solid_rubber_wood"
+    swatch_hex: "#6d472e"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+
+variants:
+  - variant: "Owen 3 Seater Sofa / Pearl Beige / Natural Wood"
+    sku: "owen-3-seater-pearl-beige-natural"
+    size_label: "203x99"
+    finish_code: "natural"
+    finish_label: "Pearl Beige"
+    leg_finish_code: "natural"
+    leg_finish_label: "Natural"
+    upholstery_code: "pearl_beige"
+    upholstery_label: "Pearl Beige"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1627550438/crusader/variants/TL-4002/Pearl-Beige_1.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#d8d0c4"
+    model_asset_id: "sofa-real-castlery-owen-3-seater-pearl-beige-natural"
+    model_url: "/assets/models/sofas/sofa-real-castlery-owen-3-seater-pearl-beige-natural.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/owen-3-seater-sofa?leg_color=natural&material=pearl_beige"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:F3F3F3,c_fit,f_auto,q_auto,w_1000/v1673944872/crusader/variants/T50441095-TL4002-NA/Owen-3-Seater-Sofa-Pearl_Beige-Natrual-Front-1673944869.jpg"
+    collection_type: "stocked_fabric"
+    color_family: "beige"
+    tone: "neutral"
+    price_usd: 1399
+    dimensions: { width_cm: 203, depth_cm: 99, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+
+  - variant: "Owen 3 Seater Sofa / Opal Beige / Natural Wood"
+    sku: "owen-3-seater-opal-beige-natural"
+    size_label: "203x99"
+    finish_code: "natural"
+    finish_label: "Opal Beige"
+    leg_finish_code: "natural"
+    leg_finish_label: "Natural"
+    upholstery_code: "opal_beige"
+    upholstery_label: "Opal Beige"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626942038/crusader/variants/BW-4002/Wayne-Sofa-Opal-Beige_1.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#c8bca8"
+    model_asset_id: "sofa-real-castlery-owen-3-seater-opal-beige-natural"
+    model_url: "/assets/models/sofas/sofa-real-castlery-owen-3-seater-opal-beige-natural.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/owen-3-seater-sofa?leg_color=natural&material=opal_beige"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:F3F3F3,c_fit,f_auto,q_auto,w_1000/v1629960610/crusader/variants/54000030-BW4002/Owen-Sofa-3-Seater-Opal-Beige-Front-SG.jpg"
+    collection_type: "stocked_fabric"
+    color_family: "beige"
+    tone: "warm"
+    price_usd: 1399
+    dimensions: { width_cm: 203, depth_cm: 99, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+
+  - variant: "Owen 3 Seater Sofa / Haze / Natural Wood"
+    sku: "owen-3-seater-haze-natural"
+    size_label: "203x99"
+    finish_code: "natural"
+    finish_label: "Haze"
+    leg_finish_code: "natural"
+    leg_finish_label: "Natural"
+    upholstery_code: "haze"
+    upholstery_label: "Haze"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1673945345/crusader/variants/CA-4001/Owen-3-Seater-Sofa-Haze-Det_5-1673945342.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#8d8d87"
+    model_asset_id: "sofa-real-castlery-owen-3-seater-haze-natural"
+    model_url: "/assets/models/sofas/sofa-real-castlery-owen-3-seater-haze-natural.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/owen-3-seater-sofa?leg_color=natural&material=haze"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:F3F3F3,c_fit,f_auto,q_auto,w_1000/v1673939740/crusader/variants/T50441095-CA4001-NA/Owen-3-Seater-Sofa-Haze-Natural-Leg-SG-Front-1673939737.jpg"
+    collection_type: "stocked_fabric"
+    color_family: "grey"
+    tone: "cool"
+    price_usd: 1399
+    dimensions: { width_cm: 203, depth_cm: 99, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+
+  - variant: "Owen 3 Seater Sofa / Pearl Beige / Walnut Wood"
+    sku: "owen-3-seater-pearl-beige-walnut"
+    size_label: "203x99"
+    finish_code: "walnut"
+    finish_label: "Pearl Beige"
+    leg_finish_code: "walnut"
+    leg_finish_label: "Walnut"
+    upholstery_code: "pearl_beige"
+    upholstery_label: "Pearl Beige"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1627550438/crusader/variants/TL-4002/Pearl-Beige_1.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#d8d0c4"
+    model_asset_id: "sofa-real-castlery-owen-3-seater-pearl-beige-walnut"
+    model_url: "/assets/models/sofas/sofa-real-castlery-owen-3-seater-pearl-beige-walnut.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/owen-3-seater-sofa?leg_color=walnut&material=pearl_beige"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:F3F3F3,c_fit,f_auto,q_auto,w_1000/v1624965240/crusader/variants/54000006-TL4002/Owen-3-Seater-Sofa-Pearl_Beige-Front.jpg"
+    collection_type: "stocked_fabric"
+    color_family: "beige"
+    tone: "neutral"
+    price_usd: 1399
+    dimensions: { width_cm: 203, depth_cm: 99, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+
+  - variant: "Owen 3 Seater Sofa / Opal Beige / Walnut Wood"
+    sku: "owen-3-seater-opal-beige-walnut"
+    size_label: "203x99"
+    finish_code: "walnut"
+    finish_label: "Opal Beige"
+    leg_finish_code: "walnut"
+    leg_finish_label: "Walnut"
+    upholstery_code: "opal_beige"
+    upholstery_label: "Opal Beige"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626942038/crusader/variants/BW-4002/Wayne-Sofa-Opal-Beige_1.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#c8bca8"
+    model_asset_id: "sofa-real-castlery-owen-3-seater-opal-beige-walnut"
+    model_url: "/assets/models/sofas/sofa-real-castlery-owen-3-seater-opal-beige-walnut.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/owen-3-seater-sofa?leg_color=walnut&material=opal_beige"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:F3F3F3,c_fit,f_auto,q_auto,w_1000/v1673943554/crusader/variants/T50441095-BW4002-WA/Owen-Sofa-3-Seater-Opal-Beige-Wulnut-Front-AU-1673943551.jpg"
+    collection_type: "stocked_fabric"
+    color_family: "beige"
+    tone: "warm"
+    price_usd: 1399
+    dimensions: { width_cm: 203, depth_cm: 99, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"
+
+  - variant: "Owen 3 Seater Sofa / Haze / Walnut Wood"
+    sku: "owen-3-seater-haze-walnut"
+    size_label: "203x99"
+    finish_code: "walnut"
+    finish_label: "Haze"
+    leg_finish_code: "walnut"
+    leg_finish_label: "Walnut"
+    upholstery_code: "haze"
+    upholstery_label: "Haze"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1673945345/crusader/variants/CA-4001/Owen-3-Seater-Sofa-Haze-Det_5-1673945342.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#8d8d87"
+    model_asset_id: "sofa-real-castlery-owen-3-seater-haze-walnut"
+    model_url: "/assets/models/sofas/sofa-real-castlery-owen-3-seater-haze-walnut.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/owen-3-seater-sofa?leg_color=walnut&material=haze"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:F3F3F3,c_fit,f_auto,q_auto,w_1000/v1673939240/crusader/variants/T50441095-CA4001-WA/Owen-3-Seater-Sofa-Haze-Walnut-Leg-SG-Front-1673939238.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1677754613/crusader/variants/T50441095-CA4001-WA/Owen-3-Seater-Sofa-Haze-Walnut-Square-Set_1-1677754611.jpg"
+    collection_type: "stocked_fabric"
+    color_family: "grey"
+    tone: "cool"
+    price_usd: 1399
+    dimensions: { width_cm: 203, depth_cm: 99, height_cm: 81 }
+    seat_capacity: 3
+    size_class: "large"

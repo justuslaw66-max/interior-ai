@@ -37,8 +37,8 @@ assert.match(
 
 assert.match(
   source,
-  /activeRoomId && \(room\.id === activeRoomId \|\| sharedRoomIds\.includes\(activeRoomId\)\)/,
-  "The active room should own shared walls so selected rooms keep crisp boundaries."
+  /return \[room\.id, \.\.\.sharedRoomIds\]\.sort\(\)\[0\];/,
+  "Shared walls should use one deterministic render owner to keep boundaries crisp."
 );
 
 assert.match(
@@ -61,20 +61,56 @@ assert.match(
 
 assert.match(
   source,
-  /else if \(!isInteriorSharedWall\) \{[\s\S]*?targetOpacity = resolveCutawayWallOpacity\(\{[\s\S]*?roomDepth: room\.d,[\s\S]*?wall: segment\.wall,[\s\S]*?baseOpacity,[\s\S]*?targetX: targetRoom\.x,/,
-  "Inactive whole-home walls should use wall-aware target cutaway so adjacent room fronts do not appear swapped."
+  /const INACTIVE_WALL_OPACITY = 1;/,
+  "Inactive whole-home walls should stay solid like active room walls."
 );
 
 assert.match(
   source,
-  /else if \(!isInteriorSharedWall\) \{[\s\S]*?targetOpacity = resolveCutawayWallOpacity\(\{[\s\S]*?wall: segment\.wall,[\s\S]*?targetX: targetRoom\.x,/,
-  "Inactive rooms should hide their own camera-facing exterior walls in whole-home 3D."
+  /const isInteriorSharedWall = isWallPartSharedWithAnotherRoom\(room, rooms, segment, part\);/,
+  "Interior shared room-to-room walls should be identified before camera cutaway is applied."
 );
 
 assert.match(
   source,
-  /const selectedTargetKey = getStructureTargetKey\(\s*selectedStructureTarget\?\.roomId === activeRoomId \? selectedStructureTarget : null\s*\);/,
-  "Switching active rooms should suppress stale selected wall outlines."
+  /if \(!isInteriorSharedWall\) \{[\s\S]*?targetOpacity = resolveCutawayWallOpacity\(\{[\s\S]*?cutawayOpacity: CAMERA_FACING_WALL_CUTAWAY_OPACITY,[\s\S]*?\}\);[\s\S]*?\}/,
+  "Only non-shared outside walls should use camera-facing cutaway."
+);
+
+assert.match(
+  source,
+  /const nextTransparent = targetOpacity < 0\.999 \|\| material\.opacity < 0\.999;[\s\S]*?material\.transparent = nextTransparent;/,
+  "Wall meshes should render in the transparent pass only during exterior cutaway or explicit opacity."
+);
+
+assert.match(
+  source,
+  /transparent=\{baseOpacity < 0\.999\}/,
+  "Wall material transparency should be conditional on actual opacity."
+);
+
+assert.match(
+  source,
+  /room\.wallHeights\?\.\[wallFaceId\] \?\? roomWallHeight/,
+  "Each wall face should use its own height override before falling back to the floor wall height."
+);
+
+assert.match(
+  source,
+  /buildOpeningLintelParts\([\s\S]*?segmentWallHeight,[\s\S]*?segmentWallHeight[\s\S]*?\)/,
+  "Door and window lintels should follow the selected wall face height."
+);
+
+assert.match(
+  source,
+  /<CutawayWallMesh[\s\S]*?wallHeight=\{segmentWallHeight\}/,
+  "Rendered wall geometry should use the selected wall face height."
+);
+
+assert.match(
+  source,
+  /const selectedTargetKey = getStructureTargetKey\(\s*selectedSurfaceTarget\?\.roomId === activeRoomId\s*\? selectedSurfaceTarget/,
+  "The page-controlled surface selection should suppress stale outlines when rooms switch or selection clears."
 );
 
 assert.doesNotMatch(

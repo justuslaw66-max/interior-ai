@@ -2,6 +2,8 @@ type AppEnv = "development" | "staging" | "production";
 
 type FeatureFlags = {
   aiEnabled: boolean;
+  cabinetryStudioEnabled: boolean;
+  customMillworkStudioEnabled: boolean;
   checkoutEnabled: boolean;
   emailEnabled: boolean;
 };
@@ -19,7 +21,7 @@ type EnvConfig = {
 const normalizeAppEnv = (raw: string | undefined): AppEnv => {
   const value = (raw || "").trim().toLowerCase();
   if (value === "production") return "production";
-  if (value === "staging") return "staging";
+  if (value === "staging" || value === "preview") return "staging";
   return "development";
 };
 
@@ -42,6 +44,20 @@ const flagFromEnv = (value: string | undefined, defaultValue: boolean) => {
 
 const features: FeatureFlags = {
   aiEnabled: flagFromEnv(process.env.FEATURE_AI, true),
+  cabinetryStudioEnabled: flagFromEnv(
+    process.env.FEATURE_CUSTOM_MILLWORK_STUDIO ||
+      process.env.NEXT_PUBLIC_FEATURE_CUSTOM_MILLWORK_STUDIO ||
+      process.env.FEATURE_CABINETRY_STUDIO ||
+      process.env.NEXT_PUBLIC_FEATURE_CABINETRY_STUDIO,
+    isDev || isStaging
+  ),
+  customMillworkStudioEnabled: flagFromEnv(
+    process.env.FEATURE_CUSTOM_MILLWORK_STUDIO ||
+      process.env.NEXT_PUBLIC_FEATURE_CUSTOM_MILLWORK_STUDIO ||
+      process.env.FEATURE_CABINETRY_STUDIO ||
+      process.env.NEXT_PUBLIC_FEATURE_CABINETRY_STUDIO,
+    isDev || isStaging
+  ),
   checkoutEnabled: flagFromEnv(process.env.FEATURE_CHECKOUT, true),
   emailEnabled: flagFromEnv(process.env.FEATURE_EMAIL, true),
 };

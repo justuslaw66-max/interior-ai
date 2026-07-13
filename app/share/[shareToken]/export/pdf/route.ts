@@ -434,10 +434,10 @@ export async function GET(
       y = drawSectionHeading(page, "Surface Material BOM", y, fonts);
       for (const row of surfaceMaterialBomRows) {
         ({ page, y } = ensureSpace(pdfDoc, page, y, 58, watermarked, "Surface Material BOM", fonts));
-        y = drawWrappedText(page, `${row.roomName}: ${row.materialName}`, MARGIN, y, 340, fonts.bold, 9, 11);
+        y = drawWrappedText(page, `${row.roomName} ${row.surfaceLabel}: ${row.materialName}`, MARGIN, y, 340, fonts.bold, 9, 11);
         drawTextLine(
           page,
-          `Flooring • Supplier: ${row.supplier} • ${row.materialFamily.replace(/_/g, " ")}`,
+          `${row.surface === "floor" ? "Flooring" : "Wall surface"} • Supplier: ${row.supplier} • ${row.materialFamily.replace(/_/g, " ")}`,
           MARGIN + 12,
           y,
           fonts.regular,
@@ -447,7 +447,17 @@ export async function GET(
         y -= 12;
         drawTextLine(
           page,
-          `Room area ${formatMeasurement(row.roomAreaSqm, "m2")} • Order ${formatMeasurement(row.orderAreaSqm, "m2")} incl. 10% waste • ${row.purchaseMode.replace(/_/g, " ")}`,
+          `Surface area ${formatMeasurement(row.surfaceAreaSqm, "m2")} • Order ${formatMeasurement(row.orderAreaSqm, "m2")} incl. 10% waste • ${row.purchaseMode.replace(/_/g, " ")}`,
+          MARGIN + 12,
+          y,
+          fonts.regular,
+          8,
+          rgb(0.36, 0.36, 0.36)
+        );
+        y -= 12;
+        drawTextLine(
+          page,
+          `Pattern ${row.pattern.replace(/_/g, " ")} • Rotation ${row.rotationDeg} deg • Scale ${row.scale.toFixed(2)}x • Joint ${row.jointSizeMm} mm ${row.jointColor}`,
           MARGIN + 12,
           y,
           fonts.regular,

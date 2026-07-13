@@ -329,6 +329,8 @@ export function buildFloorPlanQualityReport({
 
   const connectionChecklist = buildHouseRoomConnectionChecklist(rooms, openings, activeRoomId);
   const missingConnections = connectionChecklist.filter((item) => item.status === "needs_doorway");
+  const detachedConnections = connectionChecklist.filter((item) => item.status === "detached");
+  const disconnectedGroups = connectionChecklist.filter((item) => item.status === "disconnected_group");
   for (const connection of missingConnections) {
     addIssue(issues, {
       id: `missing-doorway-${connection.id}`,
@@ -345,6 +347,34 @@ export function buildFloorPlanQualityReport({
       detail: "Adjacent rooms should have a clear opening so the plan feels walkable.",
       suggestedFix: `Add a doorway between ${connection.roomNames[0]} and ${connection.roomNames[1]}.`,
       action: "add_doorway",
+    });
+  }
+  for (const connection of detachedConnections) {
+    const roomName = connection.roomNames[0] ?? "Room";
+    addIssue(issues, {
+      id: `detached-room-${connection.id}`,
+      category: "connections",
+      severity: "review",
+      roomId: connection.roomIds[0],
+      target: { roomId: connection.roomIds[0] },
+      title: `${roomName} is detached`,
+      detail: "Rooms should share a wall with the plan unless you are intentionally sketching a separate structure.",
+      suggestedFix: `Move ${roomName} next to another room or keep it marked for layout review.`,
+      action: "review_plan_layout",
+    });
+  }
+  for (const connection of disconnectedGroups) {
+    const groupName = connection.roomNames.join(", ");
+    addIssue(issues, {
+      id: `disconnected-group-${connection.id}`,
+      category: "connections",
+      severity: "review",
+      roomId: connection.roomIds[0],
+      target: { roomId: connection.roomIds[0] },
+      title: `${groupName} are disconnected from the main plan`,
+      detail: "Separate room groups can make multi-room and multi-floor rendering harder to review.",
+      suggestedFix: "Move the room group next to the main plan or split it into a separate floor plan.",
+      action: "review_plan_layout",
     });
   }
 
@@ -469,16 +499,29 @@ export function buildFloorPlanQualityReport({
   }
 
   if (roomsWithExteriorLight.length > 0) strengths.push("Key rooms have exterior light.");
-  if (missingConnections.length === 0 && rooms.length > 1) strengths.push("Adjacent rooms are linked.");
+  if (
+    missingConnections.length === 0 &&
+    detachedConnections.length === 0 &&
+    disconnectedGroups.length === 0 &&
+    rooms.length > 1
+  ) {
+    strengths.push("Adjacent rooms are linked.");
+  }
   if (!supportMissing && rooms.length > 1) strengths.push("Support space is represented.");
   if (itemBounds.length > 0 && overlapCount === 0) strengths.push("Placed furniture has a workable footprint.");
 
   const lightScore = roomsNeedingLight.length === 0
     ? 100
     : clampScore((roomsWithExteriorLight.length / roomsNeedingLight.length) * 100);
-  const connectionScore = connectionChecklist.length === 0
-    ? rooms.length > 1 ? 65 : 90
-    : clampScore(((connectionChecklist.length - missingConnections.length) / connectionChecklist.length) * 100);
+  const connectionPenalty =
+    missingConnections.length * 18 +
+    detachedConnections.length * 34 +
+    disconnectedGroups.length * 26;
+  const connectionScore = rooms.length <= 1
+    ? 90
+    : connectionChecklist.length === 0
+      ? 65
+      : clampScore(100 - connectionPenalty);
   const privacyScore = clampScore(100 - issues.filter((issue) => issue.category === "privacy").length * 18);
   const storageScore = supportMissing ? 62 : 92;
   const furnitureScore = itemBounds.length === 0
@@ -488,6 +531,8 @@ export function buildFloorPlanQualityReport({
     100 -
       issues.filter((issue) => issue.category === "accessibility").length * 24 -
       missingConnections.length * 8 -
+      detachedConnections.length * 10 -
+      disconnectedGroups.length * 8 -
       tightItemCount * 4
   );
   const readinessScore = clampScore(
@@ -549,12 +594,18 @@ export function buildFloorPlanQualityReport({
             exteriorWindowCount: exteriorWindows.length,
           };
         }),
-        edges: connectionChecklist.map((connection) => ({
-          fromRoomId: connection.roomIds[0],
-          toRoomId: connection.roomIds[1],
-          connected: connection.status === "connected",
-          sharedWallLengthMeters: connection.sharedWallLengthMeters,
-        })),
+        edges: connectionChecklist
+          .filter(
+            (connection) =>
+              (connection.status === "connected" || connection.status === "needs_doorway") &&
+              connection.roomIds.length >= 2
+          )
+          .map((connection) => ({
+            fromRoomId: connection.roomIds[0],
+            toRoomId: connection.roomIds[1],
+            connected: connection.status === "connected",
+            sharedWallLengthMeters: connection.sharedWallLengthMeters,
+          })),
       },
       exteriorLightSummary: {
         roomsNeedingLight: roomsNeedingLight.map((room) => room.id),

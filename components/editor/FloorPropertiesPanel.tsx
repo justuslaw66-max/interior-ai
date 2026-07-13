@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { ChevronDown, ChevronRight, Redo2 } from "lucide-react";
+import type { PlanMeasurementUnit } from "@/lib/design-page-types";
+import MeasurementField from "./MeasurementField";
 
 export type FloorCreationMode = "blank" | "layout" | "walls";
 
@@ -13,9 +16,11 @@ export type FloorPropertiesPanelProps = {
   hiddenFloorLevels?: number[];
   activeFloorLevel: number;
   activeFloorRoomCount: number;
+  measurementUnit: PlanMeasurementUnit;
   activeRoomHeightMm: number;
   activeRoomWallThicknessMm: number;
   activeRoomSlabThicknessMm: number;
+  activeRoomBaseboardDepthMm: number;
   activeRoomWallOpacity: number;
   activeRoomFloorOpacity: number;
   activeRoomCeilingOpacity: number;
@@ -35,6 +40,7 @@ export type FloorPropertiesPanelProps = {
   onActiveRoomHeightMmChange: (valueMm: number) => void;
   onActiveRoomWallThicknessMmChange: (valueMm: number) => void;
   onActiveRoomSlabThicknessMmChange: (valueMm: number) => void;
+  onActiveRoomBaseboardDepthMmChange: (valueMm: number) => void;
   onActiveRoomSurfaceOpacityChange: (kind: "wall" | "floor" | "ceiling", opacity: number) => void;
   onActiveRoomCeilingVisibleChange: (visible: boolean) => void;
   onActiveRoomCeilingColorChange: (color: string) => void;
@@ -49,9 +55,11 @@ export default function FloorPropertiesPanel({
   hiddenFloorLevels = [],
   activeFloorLevel,
   activeFloorRoomCount,
+  measurementUnit,
   activeRoomHeightMm,
   activeRoomWallThicknessMm,
   activeRoomSlabThicknessMm,
+  activeRoomBaseboardDepthMm,
   activeRoomWallOpacity,
   activeRoomFloorOpacity,
   activeRoomCeilingOpacity,
@@ -71,6 +79,7 @@ export default function FloorPropertiesPanel({
   onActiveRoomHeightMmChange,
   onActiveRoomWallThicknessMmChange,
   onActiveRoomSlabThicknessMmChange,
+  onActiveRoomBaseboardDepthMmChange,
   onActiveRoomSurfaceOpacityChange,
   onActiveRoomCeilingVisibleChange,
   onActiveRoomCeilingColorChange,
@@ -83,24 +92,22 @@ export default function FloorPropertiesPanel({
   const titleClass = dark
     ? "designer-text-primary text-sm font-semibold"
     : "text-sm font-semibold text-neutral-800";
-  const metaClass = dark ? "mt-0.5 text-[11px] text-neutral-400" : "mt-0.5 text-[11px] text-neutral-500";
+  const metaClass = dark ? "designer-text-muted mt-0.5 text-[11px]" : "mt-0.5 text-[11px] text-neutral-500";
   const panelClass = dark
-    ? "relative w-[16.5rem] max-[520px]:w-full rounded-lg border border-white/10 bg-[#151820]/95 p-2 text-neutral-100 shadow-xl backdrop-blur"
+    ? "designer-dock relative w-[16.5rem] max-[520px]:w-full rounded-lg p-2 backdrop-blur"
     : "relative w-[16.5rem] max-[520px]:w-full rounded-lg border border-neutral-200 bg-white/95 p-2 text-neutral-900 shadow-xl backdrop-blur";
   const secondaryButtonClass = dark
-    ? "rounded-lg border border-white/15 px-2 py-1.5 text-[11px] font-semibold text-neutral-100 disabled:opacity-50"
+    ? "designer-work-control rounded-lg px-2 py-1.5 text-[11px] font-semibold disabled:opacity-50"
     : "rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-[11px] font-semibold text-neutral-800 hover:bg-neutral-100 disabled:opacity-50";
   const floorPanelButtonClass = dark
-    ? "flex w-full items-center justify-between rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-left text-xs font-semibold text-neutral-100 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+    ? "designer-work-control flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-50"
     : "flex w-full items-center justify-between rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-1.5 text-left text-xs font-semibold text-neutral-800 transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50";
-  const fieldLabelClass = dark ? "text-xs font-semibold text-neutral-200" : "text-xs font-semibold text-neutral-700";
+  const fieldLabelClass = dark ? "designer-text-secondary text-xs font-semibold" : "text-xs font-semibold text-neutral-700";
   const floorListButtonClass = (isActive: boolean) => {
     if (dark) {
       return [
         "grid grid-cols-[1fr_auto] items-center gap-2 rounded-lg border px-2.5 py-1.5 text-left text-xs transition disabled:cursor-not-allowed disabled:opacity-50",
-        isActive
-          ? "border-blue-300/50 bg-blue-400/15 text-blue-100"
-          : "border-white/10 bg-white/5 text-neutral-200 hover:bg-white/10",
+        isActive ? "designer-work-control-active" : "designer-work-control",
       ].join(" ");
     }
 
@@ -112,7 +119,7 @@ export default function FloorPropertiesPanel({
     ].join(" ");
   };
   const inputClass = dark
-    ? "h-8 w-full rounded-lg border border-white/10 bg-[#10131a] px-2 text-right text-sm text-neutral-100"
+    ? "designer-control h-8 w-full rounded-lg border px-2 text-right text-sm text-neutral-100"
     : "h-8 w-full rounded-lg border border-neutral-200 bg-white px-2 text-right text-sm text-neutral-900";
   const activeFloorLabel =
     floorOptions.find((option) => option.level === activeFloorLevel)?.label ?? "1F";
@@ -172,21 +179,26 @@ export default function FloorPropertiesPanel({
           {!isCollapsed && (
             <button
               type="button"
-              className={secondaryButtonClass}
+              className={`${secondaryButtonClass} inline-flex items-center gap-1`}
               disabled={!canEdit || !canRedo}
               onClick={onRedo}
             >
+              <Redo2 className="h-3.5 w-3.5" aria-hidden="true" />
               Redo
             </button>
           )}
           <button
             type="button"
-            className={secondaryButtonClass}
+            className={`${secondaryButtonClass} grid h-8 w-8 place-items-center p-0`}
             aria-label={isCollapsed ? "Expand floor panel" : "Collapse floor panel"}
             title={isCollapsed ? "Expand" : "Collapse"}
             onClick={() => setIsCollapsed((value) => !value)}
           >
-            {isCollapsed ? "+" : "-"}
+            {isCollapsed ? (
+              <ChevronRight className="h-4 w-4" aria-hidden="true" />
+            ) : (
+              <ChevronDown className="h-4 w-4" aria-hidden="true" />
+            )}
           </button>
         </div>
       </div>
@@ -230,7 +242,7 @@ export default function FloorPropertiesPanel({
         <div
           className={
             dark
-              ? "absolute inset-x-2 top-16 z-20 rounded-xl border border-white/10 bg-[#10131a] p-2 shadow-2xl"
+              ? "designer-raised absolute inset-x-2 top-16 z-20 rounded-xl border border-white/10 p-2 shadow-2xl"
               : "absolute inset-x-2 top-16 z-20 rounded-xl border border-neutral-200 bg-white p-2 shadow-2xl"
           }
           data-testid="floor-add-mode-menu"
@@ -280,79 +292,83 @@ export default function FloorPropertiesPanel({
         </div>
       )}
 
-      <label className="mt-3 block">
-        <div className="mb-1 flex items-center justify-between gap-3">
-          <span className={fieldLabelClass}>Current floor</span>
-        </div>
-        <select
-          value={activeFloorLevel}
-          disabled={!canEdit}
-          onChange={(event) => onSwitchFloor(Number(event.target.value))}
-          className={inputClass}
-        >
-          {floorOptions.map((option) => (
-            <option key={option.level} value={option.level}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </label>
+      {floorOptions.length > 1 ? (
+        <>
+          <label className="mt-3 block">
+            <div className="mb-1 flex items-center justify-between gap-3">
+              <span className={fieldLabelClass}>Current floor</span>
+            </div>
+            <select
+              value={activeFloorLevel}
+              disabled={!canEdit}
+              onChange={(event) => onSwitchFloor(Number(event.target.value))}
+              className={inputClass}
+            >
+              {floorOptions.map((option) => (
+                <option key={option.level} value={option.level}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
 
-      <div className="mt-2 grid gap-1.5">
-        {floorOptions
-          .slice()
-          .sort((first, second) => second.level - first.level)
-          .map((option) => {
-            const isActive = option.level === activeFloorLevel;
-            const isHidden = hiddenFloorLevelSet.has(option.level);
-            return (
-              <div
-                key={option.level}
-                className={floorListButtonClass(isActive)}
-                data-testid={`floor-row-${option.level}`}
-              >
-                <button
-                  type="button"
-                  className="grid min-w-0 grid-cols-[auto_1fr] items-center gap-2 text-left disabled:cursor-default"
-                  disabled={!canEdit || isActive}
-                  onClick={() => onSwitchFloor(option.level)}
-                >
-                  <span
-                    className="h-3 w-3 rounded-full"
-                    style={{ backgroundColor: getFloorAccentColor(option.level) }}
-                    aria-hidden="true"
-                  />
-                  <span className="min-w-0">
-                    <span className="block truncate font-semibold">{option.label}</span>
-                    <span className={dark ? "block text-[11px] text-neutral-400" : "block text-[11px] text-neutral-500"}>
-                      {option.roomCount} room{option.roomCount === 1 ? "" : "s"}
-                    </span>
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  className={
-                    dark
-                      ? "h-7 w-7 rounded-md text-xs font-semibold text-neutral-300 hover:bg-white/10 disabled:opacity-40"
-                      : "h-7 w-7 rounded-md text-xs font-semibold text-neutral-500 hover:bg-white disabled:opacity-40"
-                  }
-                  disabled={!canEdit || isActive || !onToggleFloorVisibility}
-                  aria-label={`${isHidden ? "Show" : "Hide"} ${option.label}`}
-                  title={isActive ? "Active floor stays visible" : isHidden ? "Show floor" : "Hide floor"}
-                  onClick={() => onToggleFloorVisibility?.(option.level)}
-                >
-                  {isHidden ? "○" : "●"}
-                </button>
-              </div>
-            );
-          })}
-      </div>
+          <div className="mt-2 grid gap-1.5">
+            {floorOptions
+              .slice()
+              .sort((first, second) => second.level - first.level)
+              .map((option) => {
+                const isActive = option.level === activeFloorLevel;
+                const isHidden = hiddenFloorLevelSet.has(option.level);
+                return (
+                  <div
+                    key={option.level}
+                    className={floorListButtonClass(isActive)}
+                    data-testid={`floor-row-${option.level}`}
+                  >
+                    <button
+                      type="button"
+                      className="grid min-w-0 grid-cols-[auto_1fr] items-center gap-2 text-left disabled:cursor-default"
+                      disabled={!canEdit || isActive}
+                      onClick={() => onSwitchFloor(option.level)}
+                    >
+                      <span
+                        className="h-3 w-3 rounded-full"
+                        style={{ backgroundColor: getFloorAccentColor(option.level) }}
+                        aria-hidden="true"
+                      />
+                      <span className="min-w-0">
+                        <span className="block truncate font-semibold">{option.label}</span>
+                        <span className={dark ? "block text-[11px] text-neutral-400" : "block text-[11px] text-neutral-500"}>
+                          {option.roomCount} room{option.roomCount === 1 ? "" : "s"}
+                        </span>
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      className={
+                        dark
+                          ? "h-7 w-7 rounded-md text-xs font-semibold text-neutral-300 hover:bg-white/10 disabled:opacity-40"
+                          : "h-7 w-7 rounded-md text-xs font-semibold text-neutral-500 hover:bg-white disabled:opacity-40"
+                      }
+                      disabled={!canEdit || isActive || !onToggleFloorVisibility}
+                      aria-label={`${isHidden ? "Show" : "Hide"} ${option.label}`}
+                      title={isActive ? "Active floor stays visible" : isHidden ? "Show floor" : "Hide floor"}
+                      onClick={() => onToggleFloorVisibility?.(option.level)}
+                    >
+                      {isHidden ? "○" : "●"}
+                    </button>
+                  </div>
+                );
+              })}
+          </div>
 
-      {hiddenFloorLevels.length > 0 && (
-        <div className={dark ? "mt-1 text-[11px] text-neutral-400" : "mt-1 text-[11px] text-neutral-500"}>
-          Hidden floors stay out of stacked 3D until shown again.
-        </div>
-      )}
+          {hiddenFloorLevels.length > 0 ? (
+            <div className={dark ? "mt-1 text-[11px] text-neutral-400" : "mt-1 text-[11px] text-neutral-500"}>
+              Hidden floors stay out of stacked 3D until shown again.
+            </div>
+          ) : null}
+        </>
+      ) : null}
 
       <details className="mt-2 border-t border-neutral-200/60 pt-2 dark:border-white/10">
         <summary className={dark ? "cursor-pointer text-sm font-semibold text-neutral-100" : "cursor-pointer text-sm font-semibold text-neutral-800"}>
@@ -363,42 +379,63 @@ export default function FloorPropertiesPanel({
             <span className={fieldLabelClass}>Interior area</span>
             <div className={inputClass}>{activeRoomArea.toFixed(2)} m2</div>
           </div>
-          <label className="grid grid-cols-[1fr_7rem] items-center gap-3">
-            <span className={fieldLabelClass}>Room height</span>
-            <span className="relative">
-              <input
-                type="number"
-                min="2000"
-                max="6000"
-                step="10"
-                value={activeRoomHeightMm}
-                disabled={!canEdit}
-                className={`${inputClass} pr-9`}
-                onChange={(event) => onActiveRoomHeightMmChange(Number(event.currentTarget.value))}
-              />
-              <span className={dark ? "pointer-events-none absolute right-2 top-2 text-xs text-neutral-400" : "pointer-events-none absolute right-2 top-2 text-xs text-neutral-500"}>
-                mm
-              </span>
-            </span>
-          </label>
-          <label className="grid grid-cols-[1fr_7rem] items-center gap-3">
-            <span className={fieldLabelClass}>Slab thickness</span>
-            <span className="relative">
-              <input
-                type="number"
-                min="10"
-                max="600"
-                step="5"
-                value={activeRoomSlabThicknessMm}
-                disabled={!canEdit}
-                className={`${inputClass} pr-9`}
-                onChange={(event) => onActiveRoomSlabThicknessMmChange(Number(event.currentTarget.value))}
-              />
-              <span className={dark ? "pointer-events-none absolute right-2 top-2 text-xs text-neutral-400" : "pointer-events-none absolute right-2 top-2 text-xs text-neutral-500"}>
-                mm
-              </span>
-            </span>
-          </label>
+          <MeasurementField
+            label="Floor wall height"
+            valueMm={activeRoomHeightMm}
+            unit={measurementUnit}
+            minMm={2000}
+            maxMm={6000}
+            stepMm={10}
+            keyboardStepMm={50}
+            disabled={!canEdit}
+            dark={dark}
+            compact
+            testId="floor-properties-wall-height-input"
+            hint={`Applies to ${activeFloorRoomCount} room${activeFloorRoomCount === 1 ? "" : "s"} on ${activeFloorLabel}.`}
+            onCommit={onActiveRoomHeightMmChange}
+          />
+          <MeasurementField
+            label="Wall thickness"
+            valueMm={activeRoomWallThicknessMm}
+            unit={measurementUnit}
+            minMm={40}
+            maxMm={800}
+            stepMm={5}
+            keyboardStepMm={5}
+            disabled={!canEdit}
+            dark={dark}
+            compact
+            testId="floor-properties-wall-thickness-input"
+            onCommit={onActiveRoomWallThicknessMmChange}
+          />
+          <MeasurementField
+            label="Slab thickness"
+            valueMm={activeRoomSlabThicknessMm}
+            unit={measurementUnit}
+            minMm={10}
+            maxMm={600}
+            stepMm={5}
+            keyboardStepMm={5}
+            disabled={!canEdit}
+            dark={dark}
+            compact
+            testId="floor-properties-slab-thickness-input"
+            onCommit={onActiveRoomSlabThicknessMmChange}
+          />
+          <MeasurementField
+            label="Baseboard projection"
+            valueMm={activeRoomBaseboardDepthMm}
+            unit={measurementUnit}
+            minMm={0}
+            maxMm={200}
+            stepMm={1}
+            keyboardStepMm={1}
+            disabled={!canEdit}
+            dark={dark}
+            compact
+            testId="floor-properties-baseboard-depth-input"
+            onCommit={onActiveRoomBaseboardDepthMmChange}
+          />
         </div>
       </details>
 
@@ -467,7 +504,7 @@ export default function FloorPropertiesPanel({
           <div
             className={
               dark
-                ? "mt-2 rounded-xl border border-white/10 bg-[#10131a] p-2"
+                ? "designer-raised mt-2 rounded-xl border border-white/10 p-2"
                 : "mt-2 rounded-xl border border-neutral-200 bg-neutral-50 p-2"
             }
             data-testid="floor-rename-dialog"
@@ -499,7 +536,7 @@ export default function FloorPropertiesPanel({
                 data-testid="floor-rename-save"
                 className={
                   dark
-                    ? "rounded-lg bg-blue-500 px-2 py-1.5 text-[11px] font-semibold text-white disabled:opacity-50"
+                    ? "designer-primary-action rounded-lg px-2 py-1.5 text-[11px] font-semibold disabled:opacity-50"
                     : "rounded-lg bg-blue-600 px-2 py-1.5 text-[11px] font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
                 }
                 disabled={!renameValue.trim() || renameValue.trim() === activeFloorLabel}
@@ -514,15 +551,15 @@ export default function FloorPropertiesPanel({
           <div
             className={
               dark
-                ? "mt-2 rounded-xl border border-red-400/30 bg-red-500/10 p-2"
+                ? "designer-status-blocked mt-2 rounded-xl p-2"
                 : "mt-2 rounded-xl border border-red-200 bg-red-50 p-2"
             }
             data-testid="floor-delete-dialog"
           >
-            <div className={dark ? "text-xs font-semibold text-red-100" : "text-xs font-semibold text-red-800"}>
+            <div className={dark ? "text-xs font-semibold" : "text-xs font-semibold text-red-800"}>
               Delete {activeFloorLabel}?
             </div>
-            <div className={dark ? "mt-0.5 text-[10px] text-red-100/70" : "mt-0.5 text-[10px] text-red-700"}>
+            <div className={dark ? "mt-0.5 text-[10px]" : "mt-0.5 text-[10px] text-red-700"}>
               This removes {activeFloorRoomCount} room{activeFloorRoomCount === 1 ? "" : "s"} and linked openings.
             </div>
             <div className="mt-2 grid grid-cols-2 gap-1.5">
@@ -538,7 +575,7 @@ export default function FloorPropertiesPanel({
                 data-testid="floor-delete-confirm"
                 className={
                   dark
-                    ? "rounded-lg bg-red-500 px-2 py-1.5 text-[11px] font-semibold text-white"
+                    ? "designer-destructive-action rounded-lg px-2 py-1.5 text-[11px] font-semibold"
                     : "rounded-lg bg-red-600 px-2 py-1.5 text-[11px] font-semibold text-white hover:bg-red-700"
                 }
                 onClick={commitDelete}
@@ -566,24 +603,6 @@ export default function FloorPropertiesPanel({
             className="h-5 w-5 justify-self-center accent-blue-500"
             onChange={(event) => onStackedFloorViewChange(event.currentTarget.checked)}
           />
-        </label>
-        <label className="mt-2 grid grid-cols-[1fr_7rem] items-center gap-3">
-          <span className={fieldLabelClass}>Wall thickness</span>
-          <span className="relative">
-            <input
-              type="number"
-              min="40"
-              max="800"
-              step="5"
-              value={activeRoomWallThicknessMm}
-              disabled={!canEdit}
-              className={`${inputClass} pr-9`}
-              onChange={(event) => onActiveRoomWallThicknessMmChange(Number(event.currentTarget.value))}
-            />
-            <span className={dark ? "pointer-events-none absolute right-2 top-2 text-xs text-neutral-400" : "pointer-events-none absolute right-2 top-2 text-xs text-neutral-500"}>
-              mm
-            </span>
-          </span>
         </label>
         <label className="mt-2 grid grid-cols-[3.25rem_1fr_3.3rem] items-center gap-2">
           <span className={fieldLabelClass}>Ceiling</span>

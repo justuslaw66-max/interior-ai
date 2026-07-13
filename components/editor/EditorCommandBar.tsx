@@ -23,6 +23,8 @@ type EditorCommandBarProps = {
   viewMode: EditorViewMode;
   isDesigner: boolean;
   isAuthed: boolean;
+  isPro: boolean;
+  isOpeningBillingPortal: boolean;
   canUndo: boolean;
   canRedo: boolean;
   undoName: string | null;
@@ -37,6 +39,9 @@ type EditorCommandBarProps = {
   onViewModeChange: (next: EditorViewMode) => void;
   onToggleDesignerMode: () => void;
   onToggleClientPreview: () => void;
+  onViewPlans: () => void;
+  onManageBilling: () => void;
+  onFeedback: () => void;
   showLoadDesign: boolean;
   onToggleLoadDesign: () => void;
   onSave: () => void | Promise<void>;
@@ -50,10 +55,10 @@ type EditorCommandBarProps = {
 
 function getSaveStatusClassName(tone: EditorSaveStatus["tone"], dark: boolean) {
   if (dark) {
-    if (tone === "error") return "border-red-400/40 bg-red-500/10 text-red-100";
-    if (tone === "saving") return "border-sky-400/40 bg-sky-500/10 text-sky-100";
-    if (tone === "saved") return "border-emerald-400/40 bg-emerald-500/10 text-emerald-100";
-    return "border-white/10 bg-white/5 text-neutral-200";
+    if (tone === "error") return "designer-status-blocked";
+    if (tone === "saving") return "designer-status-info";
+    if (tone === "saved") return "designer-status-ready";
+    return "designer-status-pending";
   }
 
   if (tone === "error") return "border-red-200 bg-red-50 text-red-800";
@@ -77,6 +82,8 @@ export default function EditorCommandBar({
   viewMode,
   isDesigner,
   isAuthed,
+  isPro,
+  isOpeningBillingPortal,
   canUndo,
   canRedo,
   undoName,
@@ -91,6 +98,9 @@ export default function EditorCommandBar({
   onViewModeChange,
   onToggleDesignerMode,
   onToggleClientPreview,
+  onViewPlans,
+  onManageBilling,
+  onFeedback,
   showLoadDesign,
   onToggleLoadDesign,
   onSave,
@@ -152,7 +162,7 @@ export default function EditorCommandBar({
     if (dark) {
       return [
         "inline-flex h-9 items-center rounded-xl px-3 text-sm font-semibold transition-colors",
-        active ? "bg-white text-neutral-950 shadow-sm" : "text-neutral-200 hover:bg-white/10",
+        active ? "designer-command-selection" : "text-neutral-200 hover:bg-white/10",
       ].join(" ");
     }
     return [
@@ -161,10 +171,10 @@ export default function EditorCommandBar({
     ].join(" ");
   };
   const menuButtonClass = dark
-    ? "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-semibold text-neutral-100 hover:bg-white/10"
+    ? "designer-work-control flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-semibold"
     : "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-semibold text-neutral-800 hover:bg-neutral-100";
   const menuPanelClass = dark
-    ? "absolute right-0 top-[calc(100%+0.5rem)] z-[80] w-64 rounded-2xl border border-white/10 bg-[#12151d] p-2 text-neutral-100 shadow-2xl"
+    ? "designer-work-surface absolute right-0 top-[calc(100%+0.5rem)] z-[80] w-64 rounded-2xl p-2 shadow-2xl"
     : "absolute right-0 top-[calc(100%+0.5rem)] z-[80] w-64 rounded-2xl border border-neutral-200 bg-white p-2 text-neutral-900 shadow-2xl";
   const signInWithReturn = () => {
     const callbackUrl = typeof window !== "undefined" ? window.location.href : "/";
@@ -175,7 +185,7 @@ export default function EditorCommandBar({
     <div
       data-testid="editor-command-bar"
       className={`absolute left-0 right-0 top-0 z-50 flex h-14 items-center gap-2 overflow-visible border-b px-2 shadow-sm backdrop-blur transition-opacity duration-300 sm:px-4 ${
-        dark ? "border-white/10 bg-[#080a0f]/95 text-neutral-100" : "border-neutral-200 bg-white/95 text-neutral-950"
+        dark ? "designer-command-bar" : "border-neutral-200 bg-white/95 text-neutral-950"
       } ${isClientPreview ? "pointer-events-none opacity-0" : "opacity-100"}`}
     >
       <div className="flex min-w-0 flex-[1.25] items-center gap-1.5">
@@ -185,7 +195,7 @@ export default function EditorCommandBar({
           aria-label={undoName ? `Undo ${undoName}` : "Undo"}
           className={
             dark
-              ? "h-9 w-9 shrink-0 rounded-xl bg-white/5 text-sm font-semibold text-neutral-200 disabled:cursor-not-allowed disabled:opacity-40"
+              ? "designer-control h-9 w-9 shrink-0 rounded-xl border text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40"
               : "h-9 w-9 shrink-0 rounded-xl border border-neutral-200 bg-white text-sm font-semibold text-neutral-900 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40"
           }
           onClick={onUndo}
@@ -200,7 +210,7 @@ export default function EditorCommandBar({
           aria-label={redoName ? `Redo ${redoName}` : "Redo"}
           className={
             dark
-              ? "h-9 w-9 shrink-0 rounded-xl bg-white/5 text-sm font-semibold text-neutral-200 disabled:cursor-not-allowed disabled:opacity-40"
+              ? "designer-control h-9 w-9 shrink-0 rounded-xl border text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40"
               : "h-9 w-9 shrink-0 rounded-xl border border-neutral-200 bg-white text-sm font-semibold text-neutral-900 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40"
           }
           onClick={onRedo}
@@ -217,7 +227,7 @@ export default function EditorCommandBar({
         <div
           className={
             dark
-              ? "hidden shrink-0 items-center gap-1 rounded-2xl border border-white/10 bg-white/5 p-1 xl:flex"
+              ? "hidden shrink-0 items-center gap-1 rounded-2xl border border-white/10 bg-white/[0.04] p-1 xl:flex"
               : "hidden shrink-0 items-center gap-1 rounded-2xl border border-neutral-200 bg-white p-1 shadow-sm xl:flex"
           }
           aria-label="Design workflow"
@@ -290,7 +300,7 @@ export default function EditorCommandBar({
           data-testid="save-design"
           className={
             dark
-              ? "h-9 shrink-0 rounded-xl bg-white px-3 text-sm font-semibold text-neutral-950 disabled:cursor-wait disabled:opacity-70 sm:px-4"
+              ? "designer-primary-action h-9 shrink-0 rounded-xl px-3 text-sm font-semibold disabled:cursor-wait disabled:opacity-70 sm:px-4"
               : "h-9 shrink-0 rounded-xl bg-neutral-900 px-3 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800 disabled:cursor-wait disabled:opacity-70 sm:px-4"
           }
           onClick={onSave}
@@ -307,7 +317,7 @@ export default function EditorCommandBar({
             aria-expanded={overflowOpen}
             className={
               dark
-                ? "h-9 rounded-xl border border-white/10 px-3 text-sm font-semibold text-neutral-100 hover:bg-white/10"
+                ? "designer-control h-9 rounded-xl border px-3 text-sm font-semibold"
                 : "h-9 rounded-xl border border-neutral-200 bg-white px-3 text-sm font-semibold text-neutral-800 hover:bg-neutral-50"
             }
             onClick={() => {
@@ -374,10 +384,23 @@ export default function EditorCommandBar({
                 </button>
               )}
               {overflowSlot ? (
-                <div className={dark ? "mt-1 border-t border-white/10 pt-1" : "mt-1 border-t border-neutral-200 pt-1"}>
+                <div className="mt-1 border-t border-neutral-200 pt-1">
                   {overflowSlot}
                 </div>
               ) : null}
+              <div className="mt-1 border-t border-neutral-200 pt-1">
+                <button
+                  type="button"
+                  data-testid="beta-feedback-open"
+                  className={menuButtonClass}
+                  onClick={() => {
+                    setOverflowOpen(false);
+                    onFeedback();
+                  }}
+                >
+                  Feedback
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -390,7 +413,7 @@ export default function EditorCommandBar({
             aria-expanded={accountOpen}
             className={
               dark
-                ? "h-9 rounded-xl border border-white/10 px-3 text-sm font-semibold text-neutral-100 hover:bg-white/10"
+                ? "designer-control h-9 rounded-xl border px-3 text-sm font-semibold"
                 : "h-9 rounded-xl border border-neutral-200 bg-white px-3 text-sm font-semibold text-neutral-800 hover:bg-neutral-50"
             }
             onClick={() => {
@@ -406,6 +429,42 @@ export default function EditorCommandBar({
               role="menu"
               className={dark ? menuPanelClass : `${menuPanelClass} w-56`}
             >
+              <div
+                data-testid="editor-account-plan"
+                className={
+                  dark
+                    ? "designer-work-muted mb-1 rounded-lg px-3 py-2 text-xs font-semibold"
+                    : "mb-1 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs font-semibold text-neutral-600"
+                }
+              >
+                {isPro ? "Pro plan" : "Free plan"}
+              </div>
+              {isAuthed && (isPro ? (
+                <button
+                  type="button"
+                  data-testid="editor-command-manage-billing"
+                  className={menuButtonClass}
+                  disabled={isOpeningBillingPortal}
+                  onClick={() => {
+                    setAccountOpen(false);
+                    onManageBilling();
+                  }}
+                >
+                  {isOpeningBillingPortal ? "Opening billing…" : "Manage billing"}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  data-testid="editor-command-view-plans"
+                  className={menuButtonClass}
+                  onClick={() => {
+                    setAccountOpen(false);
+                    onViewPlans();
+                  }}
+                >
+                  View Pro plans
+                </button>
+              ))}
               {isAuthed ? (
                 <button
                   type="button"

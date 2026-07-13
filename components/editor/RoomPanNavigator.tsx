@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState, type PointerEvent } from "react";
+import { ChevronDown, ChevronRight, Minus, Plus, RotateCcw } from "lucide-react";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 
 type RoomPanNavigatorProps = {
@@ -121,6 +122,9 @@ export default function RoomPanNavigator({
   const targetX = clamp(toMapX(cameraTarget[0]), TARGET_HANDLE_PADDING, MAP_WIDTH - TARGET_HANDLE_PADDING);
   const targetY = clamp(toMapY(cameraTarget[2]), TARGET_HANDLE_PADDING, MAP_HEIGHT - TARGET_HANDLE_PADDING);
   const cameraAimDeg = Math.atan2(targetY - cameraY, targetX - cameraX) * (180 / Math.PI);
+  const navigatorButtonClass = dark
+    ? "designer-control grid h-6 w-6 place-items-center rounded border shadow-sm disabled:opacity-40"
+    : "grid h-6 w-6 place-items-center rounded border border-neutral-200 bg-white text-neutral-700 shadow-sm disabled:opacity-40";
 
   const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if (disabled || !mapRef.current) return;
@@ -175,7 +179,7 @@ export default function RoomPanNavigator({
       data-testid="room-pan-navigator"
       className={
         dark
-          ? "designer-panel w-[264px] max-[520px]:w-full overflow-hidden rounded-lg"
+          ? "designer-dock w-[264px] max-[520px]:w-full overflow-hidden rounded-lg"
           : "w-[264px] max-[520px]:w-full overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-lg"
       }
       aria-label="Room view navigator"
@@ -183,7 +187,7 @@ export default function RoomPanNavigator({
       <div
         className={
           dark
-            ? "flex items-center justify-between border-b px-2 py-1"
+            ? "designer-divider flex items-center justify-between border-b px-2 py-1"
             : "flex items-center justify-between border-b border-neutral-200 px-2 py-1"
         }
       >
@@ -192,44 +196,55 @@ export default function RoomPanNavigator({
           <span className={dark ? "designer-text-secondary" : "text-neutral-600"}>Rooms</span>
         </div>
         <div className="flex items-center gap-1" aria-label="Navigator controls">
+          {!isCollapsed ? (
+            <>
+              <button
+                type="button"
+                data-testid="room-pan-reset-view"
+                disabled={disabled}
+                onClick={onResetView}
+                className={navigatorButtonClass}
+                aria-label="Reset room view"
+                title="Reset view"
+              >
+                <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                data-testid="room-pan-zoom-out"
+                disabled={disabled}
+                onClick={() => onZoom("out")}
+                className={navigatorButtonClass}
+                aria-label="Zoom out"
+                title="Zoom out"
+              >
+                <Minus className="h-3.5 w-3.5" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                data-testid="room-pan-zoom-in"
+                disabled={disabled}
+                onClick={() => onZoom("in")}
+                className={navigatorButtonClass}
+                aria-label="Zoom in"
+                title="Zoom in"
+              >
+                <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+              </button>
+            </>
+          ) : null}
           <button
             type="button"
             onClick={() => setIsCollapsed((value) => !value)}
-            className="h-6 w-6 rounded border border-neutral-200 bg-white text-xs font-semibold text-neutral-700 shadow-sm"
+            className={navigatorButtonClass}
             aria-label={isCollapsed ? "Expand navigator" : "Collapse navigator"}
             title={isCollapsed ? "Expand" : "Collapse"}
           >
-            {isCollapsed ? "+" : "-"}
-          </button>
-          <button
-            type="button"
-            data-testid="room-pan-reset-view"
-            disabled={disabled}
-            onClick={onResetView}
-            className="h-6 rounded border border-neutral-200 bg-white px-1.5 text-[10px] font-semibold text-neutral-700 shadow-sm disabled:opacity-40"
-            aria-label="Reset room view"
-          >
-            Reset
-          </button>
-          <button
-            type="button"
-            data-testid="room-pan-zoom-out"
-            disabled={disabled}
-            onClick={() => onZoom("out")}
-            className="h-6 w-6 rounded border border-neutral-200 bg-white text-xs font-semibold text-neutral-700 shadow-sm disabled:opacity-40"
-            aria-label="Zoom out"
-          >
-            -
-          </button>
-          <button
-            type="button"
-            data-testid="room-pan-zoom-in"
-            disabled={disabled}
-            onClick={() => onZoom("in")}
-            className="h-6 w-6 rounded border border-neutral-200 bg-white text-xs font-semibold text-neutral-700 shadow-sm disabled:opacity-40"
-            aria-label="Zoom in"
-          >
-            +
+            {isCollapsed ? (
+              <ChevronRight className="h-4 w-4" aria-hidden="true" />
+            ) : (
+              <ChevronDown className="h-4 w-4" aria-hidden="true" />
+            )}
           </button>
         </div>
       </div>
@@ -240,7 +255,7 @@ export default function RoomPanNavigator({
         data-testid="room-pan-map"
         className={
           dark
-            ? "relative touch-none cursor-crosshair bg-neutral-950/30"
+            ? "designer-recessed relative touch-none cursor-crosshair"
             : "relative touch-none cursor-crosshair bg-[linear-gradient(to_right,rgba(148,163,184,0.24)_1px,transparent_1px),linear-gradient(to_bottom,rgba(148,163,184,0.24)_1px,transparent_1px)] bg-[size:8px_8px] bg-slate-50"
         }
         style={{ width: MAP_WIDTH, height: MAP_HEIGHT }}

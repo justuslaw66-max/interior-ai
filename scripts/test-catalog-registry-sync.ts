@@ -66,7 +66,9 @@ type RegistrySyncResult = {
 const VALID_CATEGORIES = new Set([
   "sofa",
   "ottoman",
+  "bed",
   "coffee_table",
+  "side_table",
   "dining_table",
   "dining_bench",
   "rug",
@@ -74,6 +76,7 @@ const VALID_CATEGORIES = new Set([
   "sideboard",
   "accent_chair",
   "floor_lamp",
+  "table_lamp",
 ]);
 
 const CATEGORY_ALIASES: Record<string, string> = {

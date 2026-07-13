@@ -1,5 +1,9 @@
 import assert from "node:assert/strict";
 import { normalizeImportedVariants } from "../lib/catalog/imported-variant-normalization";
+import {
+  isLikelyFrontShotImage,
+  selectPreferredCatalogThumbnail,
+} from "../lib/catalog/media-policy";
 import { shouldShowCollectionGrouping } from "../lib/catalog/variant-normalization";
 
 function runFixture(name: string, assertion: () => void) {
@@ -246,6 +250,40 @@ runFixture("Variant media presentation is preserved from authored YAML", () => {
 
   assert.equal(normalized.length, 1);
   assert.equal(normalized[0]?.mediaPresentationMode, "studio");
+});
+
+runFixture("Future imports prioritize front shots over authored angle thumbnails", () => {
+  const angleUrl = "https://cdn.example.com/products/Example-Table-Angle.jpg";
+  const lifestyleUrl = "https://cdn.example.com/products/Example-Table-Lifestyle.jpg";
+  const frontUrl = "https://cdn.example.com/products/Example-Table-Front-View.jpg";
+  const normalized = normalizeImportedVariants({
+    productId: "dining-example-table",
+    variantEntries: [
+      {
+        variant: "180 Oak",
+        finish_code: "oak",
+        finish_label: "Oak",
+        thumbnail_url: angleUrl,
+        gallery_images: [lifestyleUrl, frontUrl],
+      },
+    ],
+    fallbackThumbnailUrl: angleUrl,
+  });
+
+  assert.equal(normalized[0]?.thumbnailUrl, frontUrl);
+  assert.equal(isLikelyFrontShotImage(frontUrl), true);
+  assert.equal(isLikelyFrontShotImage("https://cdn.example.com/item.jpg?view=front"), true);
+});
+
+runFixture("Thumbnail selection preserves the authored image when no front shot exists", () => {
+  const angleUrl = "https://cdn.example.com/products/Example-Table-Angle.jpg";
+  assert.equal(
+    selectPreferredCatalogThumbnail({
+      thumbnailUrl: angleUrl,
+      galleryImages: ["https://cdn.example.com/products/Example-Table-Lifestyle.jpg"],
+    }),
+    angleUrl,
+  );
 });
 
 runFixture("Local public swatch textures are preserved", () => {

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { isAdminEmail } from "@/lib/admin";
+import { canAccessAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { getImportJobValidationBlockers } from "@/lib/import-jobs/admin-workflow";
 import type { AdminImportWorkflowJob } from "@/lib/import-jobs/admin-workflow-shared";
@@ -12,7 +12,7 @@ interface BulkUpdateRequest {
 
 export async function PATCH(request: Request) {
   const session = await auth();
-  if (!session?.user?.email || !isAdminEmail(session.user.email)) {
+  if (!canAccessAdmin(session?.user?.email)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

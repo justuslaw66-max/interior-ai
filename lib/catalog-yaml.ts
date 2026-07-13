@@ -13,6 +13,7 @@ import {
   getCatalogPreset,
   validateCatalogAgainstPreset,
 } from "@/lib/catalog-presets";
+import { selectPreferredCatalogThumbnail } from "@/lib/catalog/media-policy";
 
 // ─── Upholstery Library Types ────────────────────────────────────────────────
 
@@ -493,10 +494,29 @@ function enrichCatalogEntry(filePath: string, parsed: CatalogYamlEntry): Catalog
     withDefaults.assets?.asset_id,
     resolvedVariants,
   );
+  const variantsWithPreferredThumbnails = variantsWithImageOverrides?.map((variant) => {
+    const preferredThumbnail = selectPreferredCatalogThumbnail({
+      thumbnailUrl: variant.thumbnail_url,
+      galleryImages: variant.gallery_images ?? variant.galleryImages ?? [],
+    });
+    return preferredThumbnail && preferredThumbnail !== variant.thumbnail_url
+      ? { ...variant, thumbnail_url: preferredThumbnail }
+      : variant;
+  });
+  const preferredAssetThumbnail = selectPreferredCatalogThumbnail({
+    thumbnailUrl: withDefaults.assets?.thumbnail_url,
+    galleryImages: withDefaults.assets?.gallery_images ?? withDefaults.assets?.galleryImages ?? [],
+  });
 
   return {
     ...withDefaults,
-    variants: variantsWithImageOverrides,
+    assets: withDefaults.assets
+      ? {
+          ...withDefaults.assets,
+          thumbnail_url: preferredAssetThumbnail ?? withDefaults.assets.thumbnail_url,
+        }
+      : withDefaults.assets,
+    variants: variantsWithPreferredThumbnails,
     upholstery_options: resolvedUpholsteryOptions,
     file_path: filePath,
     preset_label: preset?.label ?? null,

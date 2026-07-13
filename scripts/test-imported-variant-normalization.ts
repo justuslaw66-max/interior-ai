@@ -305,6 +305,7 @@ function main() {
       fallbackThumbnailUrl:
         entry.assets?.thumbnail_url ??
         `/assets/thumbs/${String(productId).replace(/[^a-z0-9_-]+/gi, "-")}.png`,
+      fallbackGalleryImages: entry.assets?.gallery_images ?? [],
     });
 
     const ids = new Set<string>();
@@ -323,6 +324,15 @@ function main() {
       if (labels.has(variant.label)) failures.push(`${productId}: duplicate normalized shopper label ${variant.label}`);
       ids.add(variant.id);
       labels.add(variant.label);
+    }
+
+    const expectedModelUrls = variants
+      .map((variant) => String(variant.model_url ?? variant.modelUrl ?? "").trim())
+      .filter((value) => value.startsWith("/") || /^https?:\/\//i.test(value));
+    for (const expectedModelUrl of expectedModelUrls) {
+      if (!normalized.some((variant) => variant.modelUrl === expectedModelUrl)) {
+        failures.push(`${productId}: normalized variants dropped modelUrl ${expectedModelUrl}`);
+      }
     }
   }
 

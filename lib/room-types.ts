@@ -1,3 +1,27 @@
+import type {
+  CabinetBOMItem,
+  CabinetCutListItem,
+  CabinetDefinition,
+  CabinetDimensionScheduleItem,
+  CabinetDrawingViewScheduleItem,
+  CabinetEdgeBandingScheduleItem,
+  CabinetFabricationReleaseReadinessSnapshot,
+  CabinetHardwareScheduleItem,
+  CabinetInstallerNote,
+  CabinetMaterialScheduleItem,
+  CabinetQuoteSummary,
+  CabinetReleaseChecklistItem,
+  CabinetSupplierReadinessSnapshot,
+  CabinetSupplierSkuMappingItem,
+} from "@/features/cabinetry/types";
+import type {
+  MillworkAssemblyType,
+  MillworkAssetManifest,
+  MillworkDefinition,
+  MillworkHardwareRef,
+  MillworkMaterialRef,
+} from "@/features/millwork/types";
+
 /**
  * Multi-Room Foundation Types v3
  * 
@@ -13,7 +37,11 @@ export interface RoomGeometry {
   depth: number;
   wallThickness?: number;
   height?: number;
+  /** Optional per-face wall height overrides, in metres. */
+  wallHeights?: Record<string, number>;
   slabThickness?: number;
+  /** Baseboard/skirting projection from the finished wall, in metres. */
+  baseboardDepth?: number;
 }
 
 export interface RoomPlanPosition {
@@ -26,13 +54,62 @@ export interface RoomPlanPolygonPoint {
   z: number;
 }
 
-export type RoomFloorPattern = "straight" | "herringbone" | "grid" | "checker";
+export type RoomFloorPattern =
+  | "straight"
+  | "brick"
+  | "vertical_brick"
+  | "random_stagger"
+  | "herringbone"
+  | "grid"
+  | "checker";
+
+export type RoomSurfaceTargetKind = "floor" | "wall" | "ceiling";
+export type SurfacePattern = RoomFloorPattern;
+
+export interface SurfacePatternOffset {
+  x: number;
+  y: number;
+}
+
+export interface SurfaceSettings {
+  materialId?: string | null;
+  paintColorHex?: string | null;
+  paintName?: string | null;
+  pattern?: SurfacePattern;
+  rotationDeg?: number;
+  scale?: number;
+  offset?: SurfacePatternOffset;
+  jointSizeMm?: number;
+  jointColor?: string;
+}
+
+export interface RoomSurfaceZone {
+  id: string;
+  kind: RoomSurfaceTargetKind;
+  label?: string;
+  faceId?: string;
+  points?: Array<{ x: number; z: number }>;
+  settings?: SurfaceSettings;
+}
+
+export interface RoomWallSurfaceAssignments {
+  default?: SurfaceSettings;
+  faces?: Record<string, SurfaceSettings>;
+}
 
 export interface RoomSurfaceAssignments {
+  floor?: SurfaceSettings;
+  ceiling?: SurfaceSettings;
+  walls?: RoomWallSurfaceAssignments;
+  zones?: RoomSurfaceZone[];
   floorMaterialId?: string | null;
   floorRotationDeg?: number;
   floorPattern?: RoomFloorPattern;
   floorScale?: number;
+  floorPatternOffset?: { x: number; y: number };
+  floorJointSizeMm?: number;
+  floorJointColor?: string;
+  wallMaterialId?: string | null;
   ceilingColor?: string;
 }
 
@@ -105,6 +182,7 @@ export interface PersistedPlanOpening {
   offsetMm: number;
   widthMm: number;
   heightMm?: number;
+  bottomMm?: number;
   kind: "door" | "window";
 }
 
@@ -114,15 +192,52 @@ export interface PersistedFloorPlanState {
 }
 
 export interface DesignItem {
+  id?: string;
   instanceId: string;
   productId: string;
   variantId: string;
+  assetType?: "catalog_item" | "parametric_cabinet";
+  roomId?: string;
+  assemblyType?: MillworkAssemblyType;
+  millworkAssetManifest?: MillworkAssetManifest;
+  millworkDefinition?: MillworkDefinition;
+  millworkDefinitionVersion?: number;
+  millworkMaterials?: MillworkMaterialRef[];
+  millworkHardware?: MillworkHardwareRef[];
+  name?: string;
+  cabinetDefinition?: CabinetDefinition;
+  glbAssetUrl?: string;
+  bomSnapshot?: CabinetBOMItem[];
+  materialScheduleSnapshot?: CabinetMaterialScheduleItem[];
+  hardwareScheduleSnapshot?: CabinetHardwareScheduleItem[];
+  edgeBandingScheduleSnapshot?: CabinetEdgeBandingScheduleItem[];
+  cutListSnapshot?: CabinetCutListItem[];
+  dimensionScheduleSnapshot?: CabinetDimensionScheduleItem[];
+  drawingViewScheduleSnapshot?: CabinetDrawingViewScheduleItem[];
+  installerNotesSnapshot?: CabinetInstallerNote[];
+  releaseChecklistSnapshot?: CabinetReleaseChecklistItem[];
+  quoteSummarySnapshot?: CabinetQuoteSummary;
+  supplierSkuMappingsSnapshot?: CabinetSupplierSkuMappingItem[];
+  supplierReadinessSnapshot?: CabinetSupplierReadinessSnapshot;
+  fabricationReleaseReadinessSnapshot?: CabinetFabricationReleaseReadinessSnapshot;
+  cabinetUpdatedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  transform?: {
+    position: [number, number, number];
+    rotationY?: number;
+    rotation?: [number, number, number];
+    scale?: [number, number, number];
+  };
   configurationCode?: string;
+  /** Overall ceiling-to-bottom height for an adjustable pendant light, in centimetres. */
+  hangingHeightCm?: number;
   position: [number, number, number];
   rotationY?: number;
   qty?: number;
   includeInCheckout?: boolean;
   purchaseOptionId?: string;
+  supportInstanceId?: string;
   bundleGroupId?: string;
   bundleRole?: "primary" | "component";
   bundleQuantity?: number;

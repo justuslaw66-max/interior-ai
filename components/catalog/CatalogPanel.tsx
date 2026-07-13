@@ -29,15 +29,29 @@ import {
 import { track } from "@/lib/analytics";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import { trackVariantIssues } from "@/lib/catalog/variant-observability";
+import {
+  getCatalogConfigurationLabel,
+  groupCatalogItems,
+} from "@/lib/catalog/family-grouping";
+import {
+  getCatalogMainGroup,
+  getCatalogMainGroupCategories,
+  type CatalogMainGroupId,
+} from "@/lib/catalog/category-taxonomy";
 
-const CARD_ROW_HEIGHT = 282;
+const CARD_ROW_HEIGHT = 252;
 const GRID_HEIGHT = 540;
 const FAVORITES_STORAGE_KEY = "interior-ai:catalog-favorites";
 const RECENTS_STORAGE_KEY = "interior-ai:catalog-recents";
 const MAX_RECENTS = 8;
 type CatalogMemoryScope = "all" | "favorites" | "recent";
+type CatalogGroupSelection = {
+  groupId: CatalogMainGroupId;
+  anchorCategory: CatalogTopCategory;
+};
 type CatalogSmartFilter = "recommended" | "fits" | "cart_ready" | "retailer_link" | "needs_review";
 const CATEGORY_ORDER: CatalogTopCategory[] = [
+  "bed",
   "sofa",
   "accent_chair",
   "coffee_table",
@@ -49,6 +63,8 @@ const CATEGORY_ORDER: CatalogTopCategory[] = [
   "tv_console",
   "sideboard",
   "floor_lamp",
+  "table_lamp",
+  "ceiling_light",
   "decor",
 ];
 
@@ -131,6 +147,14 @@ function hasActiveCatalogFilters(filters: CatalogFilterState) {
   });
 }
 
+function countActiveCatalogFilters(filters: CatalogFilterState) {
+  return Object.values(filters).reduce<number>((count, value) => {
+    if (Array.isArray(value)) return count + (value.length > 0 ? 1 : 0);
+    if (typeof value === "number") return count + (Number.isFinite(value) ? 1 : 0);
+    return count + (value ? 1 : 0);
+  }, 0);
+}
+
 export default function CatalogPanel({
   items,
   canEdit,
@@ -169,6 +193,9 @@ export default function CatalogPanel({
     readStoredIds(RECENTS_STORAGE_KEY)
   );
   const [memoryScope, setMemoryScope] = useState<CatalogMemoryScope>("all");
+  const [groupSelectionByRoom, setGroupSelectionByRoom] = useState<
+    Record<string, CatalogGroupSelection>
+  >({});
   const [smartFilters, setSmartFilters] = useState<CatalogSmartFilter[]>([]);
   const [detailPrefetchMap, setDetailPrefetchMap] = useState<Record<string, CatalogDetailView>>({});
   const [variantSelectionByItem, setVariantSelectionByItem] = useState<Record<string, string>>({});
@@ -185,19 +212,41 @@ export default function CatalogPanel({
 
   const facets = useMemo(() => collectFilterFacets(items), [items]);
 
+  const allCatalogFamilies = useMemo(() => groupCatalogItems(items), [items]);
+
   const categoryCounts = useMemo(() => {
     const counts: Partial<Record<CatalogTopCategory, number>> = {};
-    for (const item of items) {
+    for (const { representative: item } of allCatalogFamilies) {
       const top = mapToTopCategory(item.category, item);
       counts[top] = (counts[top] ?? 0) + 1;
     }
     return counts;
-  }, [items]);
+  }, [allCatalogFamilies]);
   const activeRoomLabel = activeRoomName?.trim() || "this room";
-  const selectedCategoryLabel = getTopCategoryLabel(selectedCategory);
+  const rememberedGroupSelection = groupSelectionByRoom[activeRoomLabel];
+  const selectedMainGroupId =
+    rememberedGroupSelection?.anchorCategory === selectedCategory
+      ? rememberedGroupSelection.groupId
+      : null;
+  const selectedMainGroup = selectedMainGroupId
+    ? getCatalogMainGroup(selectedMainGroupId)
+    : undefined;
+  const selectedCategoryScope = useMemo(
+    () =>
+      selectedMainGroupId
+        ? getCatalogMainGroupCategories(selectedMainGroupId).filter(
+            (category) => (categoryCounts[category] ?? 0) > 0
+          )
+        : [selectedCategory],
+    [categoryCounts, selectedCategory, selectedMainGroupId]
+  );
+  const selectedCategoryLabel = selectedMainGroup?.allLabel ?? getTopCategoryLabel(selectedCategory);
   const recommendedCategorySet = useMemo(
     () => new Set(recommendedCategoryIds),
     [recommendedCategoryIds]
+  );
+  const selectedCategoryIsRecommended = selectedCategoryScope.some((category) =>
+    recommendedCategorySet.has(category)
   );
   const visibleRecommendedCategories = useMemo(
     () => recommendedCategoryIds.filter((category) => (categoryCounts[category] ?? 0) > 0),
@@ -205,6 +254,7 @@ export default function CatalogPanel({
   );
   const hasSearchTerm = rawSearch.trim().length > 0;
   const hasActiveFilters = useMemo(() => hasActiveCatalogFilters(filters), [filters]);
+  const activeFilterCount = useMemo(() => countActiveCatalogFilters(filters), [filters]);
   const hasActiveSmartFilters = smartFilters.length > 0;
   const showEmptyCategoryRecovery = !hasSearchTerm && !hasActiveFilters && !hasActiveSmartFilters;
   const emptyRecoveryCategories = useMemo(() => {
@@ -226,9 +276,9 @@ export default function CatalogPanel({
   }, [favoriteIds, itemById, items, memoryScope, recentIds]);
 
   const effectiveFilters = useMemo<CatalogFilterState>(() => {
-    if (memoryScope === "all") return { ...filters, category: [selectedCategory] };
+    if (memoryScope === "all") return { ...filters, category: selectedCategoryScope };
     return { ...filters, category: undefined };
-  }, [filters, memoryScope, selectedCategory]);
+  }, [filters, memoryScope, selectedCategoryScope]);
 
   const searchScopedFilters = useMemo(() => {
     if (!debouncedSearch.trim()) return effectiveFilters;
@@ -239,9 +289,26 @@ export default function CatalogPanel({
     return filterCatalogItems(scopedItems, debouncedSearch, searchScopedFilters);
   }, [scopedItems, debouncedSearch, searchScopedFilters]);
 
+  const filteredFamilies = useMemo(() => groupCatalogItems(filteredItems), [filteredItems]);
+
+  const familyByItemId = useMemo(() => {
+    const map = new Map<string, (typeof filteredFamilies)[number]>();
+    for (const family of filteredFamilies) {
+      for (const item of family.items) map.set(item.id, family);
+    }
+    return map;
+  }, [filteredFamilies]);
+
   const baseCardViews = useMemo<CatalogCardView[]>(() => {
-    return filteredItems.map((item) => buildCatalogCardView(item, variantSelectionByItem[item.id]));
-  }, [filteredItems, variantSelectionByItem]);
+    return filteredFamilies.map((family) => ({
+      ...buildCatalogCardView(
+        family.representative,
+        variantSelectionByItem[family.representative.id],
+      ),
+      title: family.displayTitle,
+      configurationCount: family.items.length,
+    }));
+  }, [filteredFamilies, variantSelectionByItem]);
 
   const guidanceByItemId = useMemo(() => {
     return Object.fromEntries(
@@ -380,8 +447,48 @@ export default function CatalogPanel({
   const selectedDetail = useMemo(() => {
     if (!selectedItem) return null;
     const prefetch = detailPrefetchMap[selectedItem.id];
-    return prefetch ?? buildCatalogDetailView(selectedItem, variantSelectionByItem[selectedItem.id]);
+    const current = buildCatalogDetailView(selectedItem, variantSelectionByItem[selectedItem.id]);
+    if (prefetch && (prefetch.images.length > 0 || current.images.length === 0)) {
+      return prefetch;
+    }
+    return current;
   }, [selectedItem, detailPrefetchMap, variantSelectionByItem]);
+
+  const selectedConfigurationOptions = useMemo(() => {
+    if (!selectedItem) return [];
+    const family = familyByItemId.get(selectedItem.id);
+    if (!family || family.items.length < 2) return [];
+    return family.items.map((item) => {
+      const card = buildCatalogCardView(item, variantSelectionByItem[item.id]);
+      return {
+        productId: item.id,
+        label: getCatalogConfigurationLabel(item),
+        thumbUrl: card.thumbUrl ?? undefined,
+        dimsLabel: card.dimsLabel,
+      };
+    });
+  }, [familyByItemId, selectedItem, variantSelectionByItem]);
+
+  const handleSetConfiguration = (productId: string) => {
+    const target = itemById.get(productId);
+    if (!target) return;
+
+    const currentVariant = selectedItem
+      ? resolveCatalogVariant(selectedItem, variantSelectionByItem[selectedItem.id]).variant
+      : null;
+    const matchingVariant = currentVariant
+      ? target.variants.find(
+          (variant) =>
+            variant.finishCode?.trim().toLowerCase() ===
+            currentVariant.finishCode?.trim().toLowerCase(),
+        )
+      : undefined;
+    const nextVariantId = matchingVariant?.id ?? target.defaultVariantId;
+    setVariantSelectionByItem((prev) => ({ ...prev, [productId]: nextVariantId }));
+    setSelectedFinishId(nextVariantId);
+    setSelectedId(productId);
+    setRecentIds((prev) => [productId, ...prev.filter((entry) => entry !== productId)].slice(0, MAX_RECENTS));
+  };
 
   const activeFinishId = useMemo(() => {
     if (!selectedDetail) return undefined;
@@ -478,9 +585,28 @@ export default function CatalogPanel({
 
   const handleSelectCategory = (nextCategory: CatalogTopCategory) => {
     setMemoryScope("all");
+    setGroupSelectionByRoom((prev) => {
+      const next = { ...prev };
+      delete next[activeRoomLabel];
+      return next;
+    });
     setInternalSelectedCategory(nextCategory);
     onSelectedCategoryChange?.(nextCategory);
     setScrollTop(0);
+  };
+
+  const handleSelectMainGroup = (groupId: CatalogMainGroupId) => {
+    setMemoryScope("all");
+    setGroupSelectionByRoom((prev) => ({
+      ...prev,
+      [activeRoomLabel]: { groupId, anchorCategory: selectedCategory },
+    }));
+    setScrollTop(0);
+    track("catalog_main_group_select", {
+      group: groupId,
+      room: activeRoomLabel,
+      categories: getCatalogMainGroupCategories(groupId),
+    });
   };
 
   const handleSetMemoryScope = (scope: CatalogMemoryScope) => {
@@ -564,68 +690,9 @@ export default function CatalogPanel({
   };
 
   return (
-    <div className="relative rounded-xl border border-neutral-200 bg-white p-3">
+    <div className="relative">
       <div className="text-sm font-semibold text-neutral-900">{title}</div>
-      {subtitle && <div className="mt-1 text-xs text-neutral-500">{subtitle}</div>}
-      <div
-        data-testid="catalog-room-context"
-        className="mt-3 rounded-xl border border-emerald-100 bg-emerald-50/70 p-3"
-      >
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <div
-              data-testid="catalog-active-room-pill"
-              className="text-xs font-semibold uppercase tracking-wide text-emerald-700"
-            >
-              Adding to {activeRoomLabel}
-            </div>
-            <div className="mt-1 text-sm font-semibold text-neutral-950">
-              {selectedCategoryLabel}
-              {recommendedCategorySet.has(selectedCategory) ? (
-                <span className="ml-2 rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
-                  Recommended
-                </span>
-              ) : null}
-            </div>
-            <div className="mt-1 text-xs text-neutral-600">
-              Choose a variant, then preview the placement before it is added.
-            </div>
-          </div>
-          <div
-            data-testid="catalog-focused-category-pill"
-            className="shrink-0 rounded-full bg-white px-3 py-1 text-xs font-semibold text-neutral-700 shadow-sm"
-          >
-            {cardViews.length} shown
-          </div>
-        </div>
-        {visibleRecommendedCategories.length > 0 ? (
-          <div className="mt-3 flex flex-wrap gap-2" aria-label={`Recommended categories for ${activeRoomLabel}`}>
-            {visibleRecommendedCategories.map((category) => {
-              const active = category === selectedCategory;
-              return (
-                <button
-                  key={category}
-                  type="button"
-                  data-testid={`catalog-room-recommendation-${category}`}
-                  data-active={active ? "true" : "false"}
-                  onClick={() => handleSelectCategory(category)}
-                  className={[
-                    "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
-                    active
-                      ? "border-emerald-600 bg-emerald-600 text-white"
-                      : "border-emerald-100 bg-white text-neutral-700 hover:border-emerald-300",
-                  ].join(" ")}
-                >
-                  {getTopCategoryLabel(category)}
-                  <span className={active ? "ml-1 text-white/80" : "ml-1 text-neutral-400"}>
-                    {categoryCounts[category] ?? 0}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        ) : null}
-      </div>
+      {subtitle && <div className="mt-0.5 line-clamp-1 text-xs text-neutral-500">{subtitle}</div>}
       <div className="mt-2">
         <CatalogSearchInput
           value={rawSearch}
@@ -637,45 +704,79 @@ export default function CatalogPanel({
       <div className="mt-2">
         <CatalogCategoryTabs
           selected={selectedCategory}
+          selectedGroupId={selectedMainGroupId}
           onSelect={handleSelectCategory}
+          onSelectGroup={handleSelectMainGroup}
           counts={categoryCounts}
+          recommended={visibleRecommendedCategories}
         />
       </div>
 
-      <CatalogFiltersBar
-        onToggleDrawer={() => setFiltersOpen((value) => !value)}
-        filteredCount={cardViews.length}
-        totalCount={items.length}
-      />
-
       <div
-        className="mt-2 rounded-xl border border-neutral-100 bg-white p-2.5"
-        data-testid="catalog-smart-filters"
+        data-testid="catalog-room-context"
+        className="mt-2 flex items-center justify-between gap-3 rounded-lg bg-emerald-50 px-3 py-2"
       >
-        <div className="flex items-center justify-between gap-2">
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
-              Smart filters
-            </div>
-            <div className="mt-0.5 text-xs text-neutral-600">
-              Narrow to products that fit, buy cleanly, or need review.
-            </div>
+        <div className="min-w-0">
+          <div
+            data-testid="catalog-active-room-pill"
+            className="truncate text-[11px] font-semibold text-emerald-800"
+          >
+            Adding to {activeRoomLabel}
           </div>
-          {hasActiveSmartFilters ? (
-            <button
-              type="button"
-              data-testid="catalog-smart-filter-clear"
-              className="rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
-              onClick={() => {
-                setSmartFilters([]);
-                setScrollTop(0);
-              }}
-            >
-              Clear
-            </button>
-          ) : null}
+          <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-xs text-neutral-700">
+            <span className="truncate font-semibold text-neutral-950">{selectedCategoryLabel}</span>
+            {selectedCategoryIsRecommended ? (
+              <span className="shrink-0 text-emerald-700">Recommended</span>
+            ) : null}
+          </div>
         </div>
-        <div className="mt-2 flex flex-wrap gap-2">
+        <div
+          data-testid="catalog-focused-category-pill"
+          className="shrink-0 text-xs font-semibold text-emerald-800"
+        >
+          {cardViews.length === allCatalogFamilies.length
+            ? `${cardViews.length} results`
+            : `${cardViews.length} of ${allCatalogFamilies.length}`}
+        </div>
+      </div>
+
+      <div className="mt-2" data-testid="catalog-smart-filters">
+        <div className="flex items-center gap-2">
+          <CatalogFiltersBar
+            onToggleDrawer={() => setFiltersOpen((value) => !value)}
+            activeFilterCount={activeFilterCount}
+          />
+          <div className="ml-auto flex shrink-0 rounded-lg bg-neutral-100 p-0.5" aria-label="Catalog view">
+            {[
+              { scope: "all" as const, label: "All", count: allCatalogFamilies.length },
+              { scope: "favorites" as const, label: "Saved", count: favoriteCards.length },
+              { scope: "recent" as const, label: "Recent", count: recentCards.length },
+            ].map((option) => {
+              const active = memoryScope === option.scope;
+              return (
+                <button
+                  key={option.scope}
+                  type="button"
+                  data-testid={`catalog-memory-${option.scope}`}
+                  data-active={active ? "true" : "false"}
+                  aria-pressed={active}
+                  title={`${option.label}: ${option.count}`}
+                  className={[
+                    "rounded-md px-2 py-1.5 text-[11px] font-semibold transition-colors",
+                    active
+                      ? "bg-white text-neutral-900 shadow-sm"
+                      : "text-neutral-500 hover:text-neutral-800",
+                  ].join(" ")}
+                  onClick={() => handleSetMemoryScope(option.scope)}
+                >
+                  {option.label}
+                  {option.count > 0 ? <span className="ml-1 opacity-60">{option.count}</span> : null}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <div className="-mx-1 mt-2 flex gap-1.5 overflow-x-auto px-1 pb-1" aria-label="Quick filters">
           {SMART_FILTERS.map((filter) => {
             const active = smartFilters.includes(filter.id);
             const count = smartFilterCounts[filter.id] ?? 0;
@@ -687,10 +788,10 @@ export default function CatalogPanel({
                 data-active={active ? "true" : "false"}
                 disabled={count === 0 && !active}
                 className={[
-                  "rounded-full border px-3 py-1.5 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-45",
+                  "shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-40",
                   active
                     ? "border-neutral-900 bg-neutral-900 text-white"
-                    : "border-neutral-200 bg-neutral-50 text-neutral-700 hover:border-neutral-300 hover:bg-white",
+                    : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300 hover:bg-neutral-50",
                 ].join(" ")}
                 onClick={() => toggleSmartFilter(filter.id)}
               >
@@ -701,6 +802,19 @@ export default function CatalogPanel({
               </button>
             );
           })}
+          {hasActiveSmartFilters ? (
+            <button
+              type="button"
+              data-testid="catalog-smart-filter-clear"
+              className="shrink-0 px-2 py-1 text-[11px] font-semibold text-neutral-500 hover:text-neutral-900"
+              onClick={() => {
+                setSmartFilters([]);
+                setScrollTop(0);
+              }}
+            >
+              Clear
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -709,104 +823,6 @@ export default function CatalogPanel({
         onClearKey={clearFilterKey}
         onClearAll={clearAllFilters}
       />
-
-      <div className="mt-3 rounded-xl border border-neutral-100 bg-neutral-50 p-2.5">
-        <div className="flex items-center justify-between gap-2">
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
-              Catalog memory
-            </div>
-            <div className="mt-0.5 text-xs text-neutral-600">
-              Jump back to saved and recently added products.
-            </div>
-          </div>
-          {memoryScope !== "all" ? (
-            <button
-              type="button"
-              className="rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
-              onClick={() => handleSetMemoryScope("all")}
-            >
-              Show all
-            </button>
-          ) : null}
-        </div>
-        <div className="mt-2 grid grid-cols-3 gap-2">
-          {[
-            { scope: "all" as const, label: "All", count: items.length },
-            { scope: "favorites" as const, label: "Favorites", count: favoriteCards.length },
-            { scope: "recent" as const, label: "Recent", count: recentCards.length },
-          ].map((option) => {
-            const active = memoryScope === option.scope;
-            return (
-              <button
-                key={option.scope}
-                type="button"
-                data-testid={`catalog-memory-${option.scope}`}
-                data-active={active ? "true" : "false"}
-                className={[
-                  "min-h-10 rounded-lg border px-2.5 py-2 text-left text-xs font-semibold transition",
-                  active
-                    ? "border-neutral-900 bg-neutral-900 text-white"
-                    : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300",
-                ].join(" ")}
-                onClick={() => handleSetMemoryScope(option.scope)}
-              >
-                <span className="block">{option.label}</span>
-                <span className={active ? "text-white/70" : "text-neutral-400"}>
-                  {option.count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {(favoriteCards.length > 0 || recentCards.length > 0) && (
-        <div className="mt-3 space-y-2 rounded-xl border border-neutral-100 bg-white p-2.5">
-          {favoriteCards.length > 0 && (
-            <div>
-              <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
-                Favorites
-              </div>
-              <div className="flex gap-2 overflow-x-auto pb-1">
-                {favoriteCards.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    data-testid={`catalog-favorite-quick-add-${item.id}`}
-                    onClick={() => addRememberedItem(item.id, item.variantId)}
-                    className="min-w-[150px] rounded-lg border border-amber-100 bg-amber-50 px-2.5 py-2 text-left text-xs text-neutral-900 transition hover:border-amber-300"
-                  >
-                    <div className="truncate font-semibold">{item.title}</div>
-                    <div className="truncate text-[11px] text-neutral-500">{item.variantLabel}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          {recentCards.length > 0 && (
-            <div>
-              <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
-                Recently used
-              </div>
-              <div className="flex gap-2 overflow-x-auto pb-1">
-                {recentCards.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    data-testid={`catalog-recent-quick-add-${item.id}`}
-                    onClick={() => addRememberedItem(item.id, item.variantId)}
-                    className="min-w-[150px] rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-2 text-left text-xs text-neutral-900 transition hover:border-neutral-300"
-                  >
-                    <div className="truncate font-semibold">{item.title}</div>
-                    <div className="truncate text-[11px] text-neutral-500">{item.variantLabel}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
 
       <CatalogFilterDrawer
         open={filtersOpen}
@@ -819,7 +835,7 @@ export default function CatalogPanel({
       />
 
       <div
-        className="mt-3 overflow-y-auto rounded-lg border border-neutral-100 bg-neutral-50/50 p-2"
+        className="mt-3 overflow-y-auto"
         style={{ maxHeight: GRID_HEIGHT, minHeight: GRID_HEIGHT }}
         onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
       >
@@ -971,6 +987,8 @@ export default function CatalogPanel({
         relatedSections={relatedSections}
         isCompared={selectedId ? compareIds.includes(selectedId) : false}
         onClose={() => setSelectedId(null)}
+        configurationOptions={selectedConfigurationOptions}
+        onSetConfiguration={handleSetConfiguration}
         onSetSize={handleSetSize}
         onSetFinish={(finishId, finish) => {
           if (!selectedId) return;

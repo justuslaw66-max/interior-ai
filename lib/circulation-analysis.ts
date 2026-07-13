@@ -55,7 +55,8 @@ function getItemObstacle(
 ): Obstacle | null {
   const product = catalogItems[item.productId];
   if (!product) return null;
-  if (mapToTopCategory(product.category, product) === "rug") return null;
+  const topCategory = mapToTopCategory(product.category, product);
+  if (topCategory === "rug" || topCategory === "ceiling_light") return null;
   const variant = item.variantId
     ? product.variants.find((entry) => entry.id === item.variantId)
     : null;

@@ -1,5 +1,8 @@
 import type { CatalogPurchaseOption, ProductVariant } from "../catalog-schema";
-import { normalizeCatalogMediaPresentationMode } from "./media-policy";
+import {
+  normalizeCatalogMediaPresentationMode,
+  selectPreferredCatalogThumbnail,
+} from "./media-policy";
 import {
   hardenDuplicateImportedVariantLabels,
   inferCollectionType,
@@ -102,6 +105,7 @@ export type NormalizeImportedVariantsInput = {
   variantEntries: ImportedVariantEntryLike[];
   sharedUpholsteryOptions?: ImportedUpholsteryOptionLike[];
   fallbackThumbnailUrl: string;
+  fallbackGalleryImages?: string[];
 };
 
 function textureTypeToFabricLabel(textureType: string | undefined): string | null {
@@ -266,6 +270,7 @@ export function normalizeImportedVariants({
   variantEntries,
   sharedUpholsteryOptions = [],
   fallbackThumbnailUrl,
+  fallbackGalleryImages = [],
 }: NormalizeImportedVariantsInput): ProductVariant[] {
   const upholsteryOptionByCode = new Map(
     sharedUpholsteryOptions
@@ -472,7 +477,7 @@ export function normalizeImportedVariants({
     ).trim();
     const variantThumbLooksLocal = variantThumbnailUrl.startsWith("/assets/thumbs/");
     const fallbackThumbLooksRemote = /^https?:\/\//i.test(fallbackThumbnailUrl);
-    const resolvedThumbnailUrl =
+    const authoredOrFallbackThumbnailUrl =
       variantThumbLooksLocal && fallbackThumbLooksRemote
         ? fallbackThumbnailUrl
         : (variantThumbnailUrl || fallbackThumbnailUrl);
@@ -484,9 +489,15 @@ export function normalizeImportedVariants({
         (value): value is string => typeof value === "string" && value.trim().length > 0
       )),
     ];
+    const resolvedThumbnailUrl =
+      selectPreferredCatalogThumbnail({
+        thumbnailUrl: authoredOrFallbackThumbnailUrl,
+        galleryImages: [...variantGalleryImages, ...fallbackGalleryImages],
+      }) ?? authoredOrFallbackThumbnailUrl;
     const mediaPresentationMode = normalizeCatalogMediaPresentationMode(
       entryAny.media_presentation ?? entryAny.mediaPresentation,
     );
+    const modelUrl = normalizeImportedUrl(entryAny.model_url ?? entryAny.modelUrl);
     const legFinishCode =
       normalizeHyphenatedCode(
         String(
@@ -574,6 +585,7 @@ export function normalizeImportedVariants({
               : undefined,
           }
         : undefined,
+      modelUrl,
       thumbnailUrl: resolvedThumbnailUrl,
       galleryImages: variantGalleryImages,
       mediaPresentationMode,

@@ -39,6 +39,8 @@ export type RoomOpening2D = {
   offsetMm: number;
   widthMm: number;
   heightMm?: number;
+  /** Finished-floor height to the bottom of the opening; doors default to zero. */
+  bottomMm?: number;
   kind: "door" | "window";
 };
 
