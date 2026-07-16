@@ -8,9 +8,7 @@ import { CATALOG_ITEMS } from "@/lib/catalog";
 import { isPro, type Plan } from "@/lib/plan";
 import { useEditorMode } from "@/hooks/useEditorMode";
 import { track } from "@/lib/analytics";
-import { initializeCatalog } from "@/lib/catalog-init";
 import type { DesignItem } from "@/lib/room-types";
-import type { ShoppingReadinessFilter } from "@/lib/shopping-readiness";
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
 import { DesignPageComposition } from "@/components/editor/design-page/DesignPageComposition";
 import { DesignPageEditorChrome } from "@/components/editor/design-page/DesignPageEditorChrome";
@@ -62,6 +60,7 @@ import { useDesignPageCrossRoomItemTransfer } from "@/lib/useDesignPageCrossRoom
 import { useDesignPageItemDocumentController } from "@/lib/useDesignPageItemDocumentController";
 import { useDesignPageItemSelectionController } from "@/lib/useDesignPageItemSelectionController";
 import { useDesignPageSceneRoomReadRegistration } from "@/lib/useDesignPageSceneRoomReadRegistration";
+import { useDesignPageShoppingCatalogRuntime } from "@/lib/useDesignPageShoppingCatalogRuntime";
 import { useDesignPageSelectionCoordinator } from "@/lib/useDesignPageSelectionCoordinator";
 import { useDesignPageProductInspectionController } from "@/lib/useDesignPageProductInspectionController";
 import { useDesignPageItemGeometry } from "@/lib/useDesignPageItemGeometry";
@@ -697,62 +696,18 @@ export function DesignPageWorkspace() {
     selectItemsInRoom: selectCatalogPlacementItems,
   } = itemDocumentController.actions;
 
-  const swapShoppingItemReplacement = useCallback(
-    (
-      instanceId: string,
-      replacement: {
-        productId: string;
-        variantId: string;
-        purchaseOptionId?: string;
-      }
-    ) => {
-      const replacementProduct = CATALOG_ITEMS[replacement.productId];
-      commitItems(
-        (prev) =>
-          prev.map((item) =>
-            item.instanceId === instanceId
-              ? {
-                  ...item,
-                  productId: replacement.productId,
-                  variantId: replacement.variantId,
-                  purchaseOptionId: replacement.purchaseOptionId,
-                  includeInCheckout: true,
-                  configurationCode: undefined,
-                  bundleGroupId: undefined,
-                  bundleRole: undefined,
-                  bundleQuantity: undefined,
-                  materialPreset: undefined,
-                  materialOverrides: undefined,
-                }
-              : item
-          ),
-        `Swap to ${replacementProduct?.title ?? "shoppable replacement"}`
-      );
-      showRuleToast("Swapped in a shoppable replacement");
+  const {
+    actions: {
+      swapItem: swapShoppingItemReplacement,
+      reviewIssue: reviewShoppingIssue,
     },
-    [commitItems, showRuleToast]
-  );
-
-  const reviewShoppingIssue = useCallback(
-    (filter: ShoppingReadinessFilter) => {
-      setShoppingReadinessFilter(filter);
-      goShop();
+  } = useDesignPageShoppingCatalogRuntime({
+    actions: {
+      document: { commitItems },
+      shopping: { setReadinessFilter: setShoppingReadinessFilter, goShop },
+      feedback: { showToast: showRuleToast },
     },
-    [goShop, setShoppingReadinessFilter]
-  );
-
-  // ========================================================================
-  // Step 7: Validate Catalog on Startup
-  // ========================================================================
-  useEffect(() => {
-    const validation = initializeCatalog();
-
-    track("catalog_initialized", {
-      total_items: validation.summary.total,
-      valid_items: validation.summary.valid,
-      has_errors: !validation.valid,
-    });
-  }, []);
+  });
 
   const {
     state: {

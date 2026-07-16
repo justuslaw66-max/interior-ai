@@ -4,7 +4,9 @@ import { join } from "node:path";
 import { CATALOG_ITEMS } from "../lib/catalog";
 import type { CatalogItemSchema } from "../lib/catalog-schema";
 import { mapToTopCategory } from "../lib/catalog/view-builders";
+import { replaceShoppingItemWithRecommendation } from "../lib/design-page-shopping-item-replacement";
 import { resolveRoomShoppingItems, type ActiveRoomShoppingItem } from "../lib/room-shopping";
+import type { DesignItem } from "../lib/room-types";
 import { buildShoppingReplacementSuggestions } from "../lib/shopping-replacements";
 
 const furnishSource = readFileSync(
@@ -25,6 +27,10 @@ const replacementSource = readFileSync(
 );
 const designPageSource = readFileSync(
   join(process.cwd(), "components/editor/design-page/DesignPageWorkspace.tsx"),
+  "utf8"
+);
+const shoppingCatalogRuntimeSource = readFileSync(
+  join(process.cwd(), "lib/useDesignPageShoppingCatalogRuntime.ts"),
   "utf8"
 );
 
@@ -120,13 +126,120 @@ assert.match(
 );
 assert.match(
   designPageSource,
+  /useDesignPageShoppingCatalogRuntime\(\{/,
+  "The workspace should register shopping actions and catalog startup through their runtime boundary."
+);
+assert.doesNotMatch(
+  designPageSource,
   /const swapShoppingItemReplacement = useCallback/,
-  "Shopping replacement swaps should be wired to live design item updates."
+  "The workspace should not retain shopping replacement behavior."
+);
+assert.doesNotMatch(
+  designPageSource,
+  /initializeCatalog\(\)|catalog_initialized/,
+  "The workspace should not retain catalog startup behavior."
+);
+assert.ok(
+  designPageSource.indexOf("useDesignPageShoppingCatalogRuntime({") <
+    designPageSource.indexOf("useDesignPageHistoryShortcuts({"),
+  "Shopping callbacks and catalog startup should remain registered before history shortcuts."
 );
 assert.match(
-  designPageSource,
-  /position|rotationY/,
-  "Replacement swaps should preserve the existing design item placement fields by spreading the item."
+  shoppingCatalogRuntimeSource,
+  /const swapItem = useCallback[\s\S]*?const reviewIssue = useCallback[\s\S]*?useEffect\(\(\) => \{[\s\S]*?initializeCatalog\(\)[\s\S]*?track\("catalog_initialized"/,
+  "The shopping runtime should preserve swap, review, and catalog-startup hook order."
+);
+
+const replacementItems: DesignItem[] = [
+  {
+    instanceId: "shopping-replacement-target",
+    productId: "old-product",
+    variantId: "old-variant",
+    position: [1.25, 0.5, -2.75],
+    rotationY: Math.PI / 3,
+    qty: 2,
+    includeInCheckout: false,
+    purchaseOptionId: "old-purchase-option",
+    configurationCode: "old-configuration",
+    bundleGroupId: "old-bundle",
+    bundleRole: "primary",
+    bundleQuantity: 3,
+    materialPreset: "old-material-preset",
+    materialOverrides: {
+      roughness: 0.4,
+      metalness: 0.2,
+      colorHex: "#123456",
+    },
+  },
+  {
+    instanceId: "shopping-replacement-untouched",
+    productId: "untouched-product",
+    variantId: "untouched-variant",
+    position: [0, 0, 0],
+  },
+];
+const replacedItems = replaceShoppingItemWithRecommendation(
+  replacementItems,
+  "shopping-replacement-target",
+  {
+    productId: "new-product",
+    variantId: "new-variant",
+    purchaseOptionId: "new-purchase-option",
+  }
+);
+const replacedItem = replacedItems[0];
+
+assert.notEqual(
+  replacedItems,
+  replacementItems,
+  "Shopping replacement should return a new item collection."
+);
+assert.equal(
+  replacedItems[1],
+  replacementItems[1],
+  "Shopping replacement should retain unrelated item identity."
+);
+assert.deepEqual(
+  {
+    instanceId: replacedItem.instanceId,
+    productId: replacedItem.productId,
+    variantId: replacedItem.variantId,
+    purchaseOptionId: replacedItem.purchaseOptionId,
+    position: replacedItem.position,
+    rotationY: replacedItem.rotationY,
+    qty: replacedItem.qty,
+    includeInCheckout: replacedItem.includeInCheckout,
+  },
+  {
+    instanceId: "shopping-replacement-target",
+    productId: "new-product",
+    variantId: "new-variant",
+    purchaseOptionId: "new-purchase-option",
+    position: [1.25, 0.5, -2.75],
+    rotationY: Math.PI / 3,
+    qty: 2,
+    includeInCheckout: true,
+  },
+  "Shopping replacement should change commerce identity while preserving placement and quantity."
+);
+assert.deepEqual(
+  {
+    configurationCode: replacedItem.configurationCode,
+    bundleGroupId: replacedItem.bundleGroupId,
+    bundleRole: replacedItem.bundleRole,
+    bundleQuantity: replacedItem.bundleQuantity,
+    materialPreset: replacedItem.materialPreset,
+    materialOverrides: replacedItem.materialOverrides,
+  },
+  {
+    configurationCode: undefined,
+    bundleGroupId: undefined,
+    bundleRole: undefined,
+    bundleQuantity: undefined,
+    materialPreset: undefined,
+    materialOverrides: undefined,
+  },
+  "Shopping replacement should clear product-specific compatibility state."
 );
 
 const catalogItems = Object.values(CATALOG_ITEMS);
