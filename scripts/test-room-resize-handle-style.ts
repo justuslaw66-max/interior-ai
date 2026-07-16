@@ -26,6 +26,14 @@ const canvasInteractionControllerSource = fs.readFileSync(
   ),
   "utf8"
 );
+const cameraWorkspaceFacadeSource = fs.readFileSync(
+  path.join(
+    process.cwd(),
+    "lib",
+    "useDesignPageCameraWorkspaceFacade.ts"
+  ),
+  "utf8"
+);
 const placementTargetControllerSource = fs.readFileSync(
   path.join(
     process.cwd(),
@@ -374,9 +382,14 @@ assert.match(
   "The canvas interaction controller should disable scene controls while a 2D room drag is active."
 );
 assert.match(
+  cameraWorkspaceFacadeSource,
+  /useDesignPageCanvasInteractionController\(\{[\s\S]*?cameraAnimating: navigationController\.refs\.isCameraAnimatingRef/,
+  "The camera workspace facade should preserve the canvas interaction controller's navigation lock boundary."
+);
+assert.match(
   designPageSource,
-  /controlsEnabled: canvasControlsEnabled,[\s\S]*?changePlanRoomDragging: handlePlanRoomDragStateChange,[\s\S]*?changePlanRoomResizing: handlePlanRoomResizeStateChange,[\s\S]*?\}\s*= useDesignPageCanvasInteractionController\(\{/,
-  "The design page should consume the controller-owned room drag locks."
+  /const cameraWorkspace = useDesignPageCameraWorkspaceFacade\(\{[\s\S]*?controlsEnabled: canvasControlsEnabled,[\s\S]*?changePlanRoomDragging: handlePlanRoomDragStateChange,[\s\S]*?changePlanRoomResizing: handlePlanRoomResizeStateChange/,
+  "The design page should consume the facade-owned room drag locks."
 );
 assert.match(
   designPageSource,

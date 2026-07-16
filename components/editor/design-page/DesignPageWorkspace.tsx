@@ -1,8 +1,6 @@
 "use client";
 
-import * as THREE from "three";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { signIn, useSession } from "next-auth/react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { LightingPreset } from "@/lib/lightingPresets";
@@ -38,10 +36,12 @@ import {
   useDesignPageCatalogPlacement,
   type CatalogPlacementPreviewTarget,
 } from "@/lib/useDesignPageCatalogPlacement";
+import { useDesignPageCameraBridgeController } from "@/lib/useDesignPageCameraBridgeController";
+import { useDesignPageCameraWorkspaceFacade } from "@/lib/useDesignPageCameraWorkspaceFacade";
 import {
-  useDesignPageCameraNavigation,
-  type DesignPageCameraNavigationActions,
-} from "@/lib/useDesignPageCameraNavigation";
+  DEFAULT_DESIGN_PAGE_CART_HOVER_CAMERA_FOCUS_CONFIGURATION,
+  useDesignPageCartHoverCameraFocus,
+} from "@/lib/useDesignPageCartHoverCameraFocus";
 import { useDesignPageExport } from "@/lib/useDesignPageExport";
 import { useDesignPageAiNotes } from "@/lib/useDesignPageAiNotes";
 import { useDesignPageSceneItemDrag } from "@/lib/useDesignPageSceneItemDrag";
@@ -55,10 +55,7 @@ import {
   type DesignPageEditorMode,
 } from "@/lib/useDesignPagePanelMode";
 import { useDesignPageOnboarding } from "@/lib/useDesignPageOnboarding";
-import {
-  type FloorActionAdapters,
-  useFloorManager,
-} from "@/lib/useFloorManager";
+import { useFloorManager } from "@/lib/useFloorManager";
 import { buildDesignPageSceneRegionAdapter } from "@/lib/design-page-scene-region-adapter";
 import { buildDesignPageViewportRegionAdapter } from "@/lib/design-page-viewport-region-adapter";
 import { composeDesignPageSceneRegionModel } from "@/lib/design-page-viewport-region-model";
@@ -72,7 +69,6 @@ import { buildDesignPageShoppingPanelModel } from "@/lib/design-page-shopping-pa
 import {
   type Style,
   type CameraView,
-  type NamedCameraView,
 } from "@/lib/design-page-types";
 import type { PendingAiLayoutProposal } from "@/lib/design-page-ai-layout-proposal";
 import type {
@@ -117,7 +113,6 @@ import {
 } from "@/lib/useDesignPageDocumentHistoryController";
 import { useDesignPagePersistenceNewPlanFacade } from "@/lib/useDesignPagePersistenceNewPlanFacade";
 import { useDesignPageBetaStartController } from "@/lib/useDesignPageBetaStartController";
-import { useDesignPageCanvasInteractionController } from "@/lib/useDesignPageCanvasInteractionController";
 import { useDesignPageEditorChromeController } from "@/lib/useDesignPageEditorChromeController";
 import { useDesignPagePlanCanvasActionsController } from "@/lib/useDesignPagePlanCanvasActionsController";
 import { useDesignPagePanelActions } from "@/lib/useDesignPagePanelActions";
@@ -340,19 +335,37 @@ export function DesignPageWorkspace() {
   const [selectedPlanOverlayId, setSelectedPlanOverlayId] = useState<string | null>(null);
   const [suppressedDoorwaySuggestionKeys, setSuppressedDoorwaySuggestionKeys] = useState<string[]>([]);
   const [selectedPlanRoomId, setSelectedPlanRoomId] = useState<string | null>(null);
-  const [cameraView, setCameraView] = useState<CameraView>({
-    pos: [...DEFAULT_EDITOR_CAMERA_VIEW.pos],
-    target: [...DEFAULT_EDITOR_CAMERA_VIEW.target],
-    fov: DEFAULT_EDITOR_CAMERA_VIEW.fov,
+  const cameraBridge = useDesignPageCameraBridgeController({
+    configuration: {
+      initialCameraView: DEFAULT_EDITOR_CAMERA_VIEW,
+      transitionDurationMs: 520,
+    },
   });
-  const cameraViewRef = useRef(cameraView);
-  const floorCameraViewsRef = useRef<Record<number, CameraView>>({});
-  const floorActionAdaptersRef = useRef<FloorActionAdapters>({
-    clearNonRoomSelection: () => undefined,
-    transitionToCameraView: () => undefined,
-    updateCameraViewFromScene: () => undefined,
-  });
-  const [savedViews, setSavedViews] = useState<NamedCameraView[]>([]);
+  const {
+    state: { cameraView, savedViews },
+    refs: {
+      canvas: canvasRef,
+      camera: cameraRef,
+      controls: orbitControlsRef,
+      renderer: rendererRef,
+      scene: sceneRef,
+      cameraView: cameraViewRef,
+      floorCameraViews: floorCameraViewsRef,
+      floorActionAdapters: floorActionAdaptersRef,
+    },
+    actions: {
+      setSavedViews,
+      navigation: {
+        updateProjection,
+        updateCameraViewFromScene,
+        preserveCameraAfterPlanOverlaySelection,
+        transitionToCameraView,
+        prepareCameraForPlanTemplate,
+      },
+      bindFloorSelectionAction,
+      resolveGroundPointFromClient,
+    },
+  } = cameraBridge;
   const [hoveredCartInstanceId, setHoveredCartInstanceId] = useState<string | null>(null);
   const [showPresentModal, setShowPresentModal] = useState(false);
   const [presentModeRoomId, setPresentModeRoomId] = useState<string | null>(null);
@@ -595,10 +608,6 @@ export function DesignPageWorkspace() {
   } = useDesignPageSnapshotDocumentState();
   const liveCatalogReady = useDesignPageLiveCatalog();
   const canEdit = !isClientPreview && liveCatalogReady;
-
-  useEffect(() => {
-    cameraViewRef.current = cameraView;
-  }, [cameraView]);
 
   const {
     adapters: { captureHistorySnapshot, restoreHistorySnapshot },
@@ -1046,122 +1055,21 @@ export function DesignPageWorkspace() {
     return () => window.removeEventListener("keydown", handlePresentModeHotkey);
   }, [isDesigner]);
 
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const cameraRef = useRef<THREE.Camera | null>(null);
-  const orbitControlsRef = useRef<OrbitControlsImpl | null>(null);
-  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
-  const sceneRef = useRef<THREE.Scene | null>(null);
-  const resolveGroundPointFromClient = useCallback((clientX: number, clientY: number) => {
-    const canvas = rendererRef.current?.domElement ?? canvasRef.current;
-    const camera = cameraRef.current;
-    if (!canvas || !camera) return null;
-    const rect = canvas.getBoundingClientRect();
-    const pointer = new THREE.Vector2(
-      ((clientX - rect.left) / rect.width) * 2 - 1,
-      -(((clientY - rect.top) / rect.height) * 2 - 1)
-    );
-    const raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(pointer, camera);
-    const point = new THREE.Vector3();
-    const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-    return raycaster.ray.intersectPlane(groundPlane, point)
-      ? ([point.x, 0, point.z] as [number, number, number])
-      : null;
-  }, []);
-  const cameraNavigationActionsRef = useRef<DesignPageCameraNavigationActions | null>(null);
-  const cartHoverCameraBaselineRef = useRef<CameraView | null>(null);
-  const cartHoverFocusTimerRef = useRef<number | null>(null);
-  const updateProjection = useCallback((camera: THREE.Camera | null) => {
-    cameraNavigationActionsRef.current?.updateProjection(camera);
-  }, []);
-  const updateCameraViewFromScene = useCallback(() => {
-    cameraNavigationActionsRef.current?.updateCameraViewFromScene();
-  }, []);
-  const preserveCameraAfterPlanOverlaySelection = useCallback(() => {
-    cameraNavigationActionsRef.current?.preserveCameraAfterPlanOverlaySelection();
-  }, []);
-  const transitionToCameraView = useCallback((nextView: CameraView, durationMs = 520) => {
-    cameraNavigationActionsRef.current?.transitionToCameraView(nextView, durationMs);
-  }, []);
-  const prepareCameraForPlanTemplate = useCallback(() => {
-    cameraNavigationActionsRef.current?.prepareForPlanTemplate();
-  }, []);
-
-  useEffect(() => {
-    const controls = orbitControlsRef.current;
-    const camera = cameraRef.current;
-    if (!controls || !camera) return;
-
-    if (cartHoverFocusTimerRef.current) {
-      window.clearTimeout(cartHoverFocusTimerRef.current);
-      cartHoverFocusTimerRef.current = null;
-    }
-
-    if (editorMode !== "buy" || viewMode === "2d") {
-      cartHoverCameraBaselineRef.current = null;
-      return;
-    }
-
-    if (!hoveredCartInstanceId) {
-      if (cartHoverCameraBaselineRef.current) {
-        transitionToCameraView(cartHoverCameraBaselineRef.current, 260);
-        cartHoverCameraBaselineRef.current = null;
-      }
-      return;
-    }
-
-    const hoveredItem = items.find((it) => it.instanceId === hoveredCartInstanceId);
-    if (!hoveredItem) return;
-    const hoveredProduct = CATALOG_ITEMS[hoveredItem.productId];
-    if (!hoveredProduct) return;
-
-    const currentTarget = (controls.target as THREE.Vector3).clone();
-    const currentPos = camera.position.clone();
-
-    const perspectiveFov = camera instanceof THREE.PerspectiveCamera ? camera.fov : cameraView.fov ?? 45;
-
-    if (!cartHoverCameraBaselineRef.current) {
-      cartHoverCameraBaselineRef.current = {
-        pos: [currentPos.x, currentPos.y, currentPos.z],
-        target: [currentTarget.x, currentTarget.y, currentTarget.z],
-        fov: perspectiveFov,
-      };
-    }
-
-    const itemX = hoveredItem.position?.[0] ?? 0;
-    const itemZ = hoveredItem.position?.[2] ?? 0;
-    const itemY = Math.max(0.45, hoveredProduct.dimsMm.h / 1000 * 0.52);
-
-    const deltaX = itemX - currentTarget.x;
-    const deltaZ = itemZ - currentTarget.z;
-
-    cartHoverFocusTimerRef.current = window.setTimeout(() => {
-      transitionToCameraView(
-        {
-          pos: [
-            currentPos.x + deltaX * 0.22,
-            currentPos.y,
-            currentPos.z + deltaZ * 0.22,
-          ],
-          target: [
-            currentTarget.x + deltaX * 0.45,
-            itemY,
-            currentTarget.z + deltaZ * 0.45,
-          ],
-          fov: perspectiveFov,
-        },
-        260
-      );
-      cartHoverFocusTimerRef.current = null;
-    }, 120);
-
-    return () => {
-      if (cartHoverFocusTimerRef.current) {
-        window.clearTimeout(cartHoverFocusTimerRef.current);
-        cartHoverFocusTimerRef.current = null;
-      }
-    };
-  }, [cameraView.fov, editorMode, hoveredCartInstanceId, items, transitionToCameraView, viewMode]);
+  useDesignPageCartHoverCameraFocus({
+    state: {
+      editorMode,
+      viewMode,
+      hoveredCartInstanceId,
+      items,
+      cameraView,
+    },
+    configuration: {
+      ...DEFAULT_DESIGN_PAGE_CART_HOVER_CAMERA_FOCUS_CONFIGURATION,
+      catalogItems: CATALOG_ITEMS,
+    },
+    refs: { camera: cameraRef, controls: orbitControlsRef },
+    actions: { transitionToCameraView },
+  });
 
   const {
     state: { isExporting, isPdfExporting },
@@ -1387,12 +1295,8 @@ export function DesignPageWorkspace() {
   });
 
   useEffect(() => {
-    floorActionAdaptersRef.current = {
-      clearNonRoomSelection,
-      transitionToCameraView,
-      updateCameraViewFromScene,
-    };
-  }, [clearNonRoomSelection, transitionToCameraView, updateCameraViewFromScene]);
+    bindFloorSelectionAction(clearNonRoomSelection);
+  }, [bindFloorSelectionAction, clearNonRoomSelection]);
 
   const {
     actions: {
@@ -1828,53 +1732,52 @@ export function DesignPageWorkspace() {
       clearUnderlay: handleClearFloorPlanUnderlay,
     },
   } = useDesignPagePlanUnderlayFacade(planWorkspaceConfiguration.underlay);
-  const cameraNavigation = useDesignPageCameraNavigation({
-    refs: {
-      canvasRef,
-      cameraRef,
-      controlsRef: orbitControlsRef,
-      cameraViewRef,
-    },
+  const cameraWorkspace = useDesignPageCameraWorkspaceFacade({
     state: {
       cameraView,
-      viewMode,
-      sceneReady,
-      hasWholeHousePlan,
-      designRoomCount: designSnapshot.rooms.length,
-      rooms: housePlan2D.rooms,
-      items,
-      selectedItem: selectedItem ?? null,
-      selectedProduct: selectedProduct ?? null,
+      navigation: {
+        viewMode,
+        sceneReady,
+        hasWholeHousePlan,
+        designRoomCount: designSnapshot.rooms.length,
+        rooms: housePlan2D.rooms,
+        items,
+        selectedItem: selectedItem ?? null,
+        selectedProduct: selectedProduct ?? null,
+      },
+      canvas: { showGrid, snapEnabled, isDesigner },
     },
     configuration: {
-      defaultCameraView: DEFAULT_EDITOR_CAMERA_VIEW,
-      designId,
-      viewportSize,
-      planFitBounds: plan2DFitBounds,
-      planSafeAreaLeftPx: plan2DSafeAreaLeftPx,
-      planSafeAreaRightPx: plan2DSafeAreaRightPx,
-      planSafeAreaBottomPx: plan2DSafeAreaBottomPx,
-      floatingPlanOverlayStackVisible,
-      floatingPlanOverlayStackWidthPx: PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX,
-      roomHeight,
-      planViewWidth,
-      planViewDepth,
-      min3DPolarAngle: EDITOR_3D_MIN_POLAR_ANGLE,
-      max3DPolarAngle: EDITOR_3D_MAX_POLAR_ANGLE,
+      navigation: {
+        defaultCameraView: DEFAULT_EDITOR_CAMERA_VIEW,
+        designId,
+        viewportSize,
+        planFitBounds: plan2DFitBounds,
+        planSafeAreaLeftPx: plan2DSafeAreaLeftPx,
+        planSafeAreaRightPx: plan2DSafeAreaRightPx,
+        planSafeAreaBottomPx: plan2DSafeAreaBottomPx,
+        floatingPlanOverlayStackVisible,
+        floatingPlanOverlayStackWidthPx: PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX,
+        roomHeight,
+        planViewWidth,
+        planViewDepth,
+        min3DPolarAngle: EDITOR_3D_MIN_POLAR_ANGLE,
+        max3DPolarAngle: EDITOR_3D_MAX_POLAR_ANGLE,
+      },
     },
+    refs: cameraBridge.refs,
     actions: {
-      setCameraView,
-      setViewMode,
-      resetFloorPlanInteraction,
-      showRuleToast,
-      switchRoom: handleSwitchRoom,
+      camera: cameraBridge.actions,
+      navigation: {
+        setViewMode,
+        resetFloorPlanInteraction,
+        showRuleToast,
+        switchRoom: handleSwitchRoom,
+      },
+      canvas: { history },
     },
   });
-  cameraNavigationActionsRef.current = cameraNavigation.actions;
-  const { plan2DWholeHomeViewFit } = cameraNavigation.state;
-  const {
-    isCameraAnimatingRef,
-  } = cameraNavigation.refs;
+  const { plan2DWholeHomeViewFit } = cameraWorkspace.state.navigation;
   const {
     handleEditorViewModeChange,
     handleFitPlanView,
