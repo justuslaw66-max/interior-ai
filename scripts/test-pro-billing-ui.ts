@@ -121,12 +121,12 @@ assert.match(
 );
 assert.match(
   designPage,
-  /useDesignPagePaywallTelemetryRegistration\(\{/,
+  /useDesignPageWorkspacePaywallRegistration\(\{/,
   "The workspace should register early paywall telemetry through its boundary."
 );
 assert.match(
   paywallRegistrationFacade,
-  /useDesignPagePaywallTelemetryController\(input\)[\s\S]*?const replaceDesignUrl = useCallback\([\s\S]*?\[navigation\][\s\S]*?useDesignPagePaywallTelemetryLifecycle\(\{/,
+  /useDesignPagePaywallTelemetryController\(input\)[\s\S]*?useDesignPageWorkspacePaywallRegistration[\s\S]*?NEXT_PUBLIC_PAYWALL_EXPERIMENT_SLOT[\s\S]*?const replaceDesignUrl = useCallback\([\s\S]*?\[navigation\][\s\S]*?useDesignPagePaywallTelemetryLifecycle\(\{/,
   "The paywall registration facade should preserve early telemetry and deferred billing ownership."
 );
 assert.doesNotMatch(

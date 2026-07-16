@@ -2,6 +2,11 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
+import {
+  mergeDesignPageCameraDiagnostics,
+  mergeDesignPagePlanMetrics,
+} from "../lib/design-page-editor-shell-metrics";
+
 const root = process.cwd();
 const readSource = (relativePath: string) =>
   readFileSync(join(root, relativePath), "utf8");
@@ -21,6 +26,161 @@ const guidanceSource = readSource(
 );
 const previewSource = readSource(
   "components/editor/design-page/DesignScenePreviewLayer.tsx"
+);
+const planRuntimeSource = readSource(
+  "lib/useDesignPagePlanViewportRuntime.ts"
+);
+const shellRuntimeSource = readSource(
+  "lib/useDesignPageEditorShellRuntime.ts"
+);
+const clientLifecycleSource = readSource(
+  "lib/useDesignPageEditorClientLifecycle.ts"
+);
+const lateBoundRefSource = readSource(
+  "lib/useDesignPageLateBoundRef.ts"
+);
+
+const assertSourceOrder = (
+  source: string,
+  markers: readonly string[],
+  message: string
+) => {
+  let previousIndex = -1;
+  for (const marker of markers) {
+    const index = source.indexOf(marker);
+    assert.ok(index > previousIndex, `${message}: ${marker}`);
+    previousIndex = index;
+  }
+};
+
+assertSourceOrder(
+  workspaceSource,
+  [
+    "useDesignPagePlanViewportRuntime({",
+    "useDesignPageEditorShellRuntime({",
+    "useEditorMode(",
+    "useDesignPageTransientFeedback({",
+    "const seatingZoneAutoDisabledRef",
+    "useDesignPageWorkspacePaywallRegistration({",
+    "useDesignPageEditorClientLifecycle({",
+    "useDesignPageSnapshotDocumentState()",
+  ],
+  "Workspace should preserve the flattened early-runtime hook order"
+);
+assertSourceOrder(
+  planRuntimeSource,
+  [
+    "planDebugMetrics, setPlanDebugMetrics",
+    "showLayoutDebugOverlay, setShowLayoutDebugOverlay",
+    "viewportSize, setViewportSize",
+    "useDesignPagePlanDocumentState()",
+    "useDesignPageFloorPlanDocumentState()",
+    "selectedPlanOverlayId, setSelectedPlanOverlayId",
+    "suppressedDoorwaySuggestionKeys, setSuppressedDoorwaySuggestionKeys",
+    "selectedPlanRoomId, setSelectedPlanRoomId",
+    "useDesignPageCameraBridgeController({",
+  ],
+  "Plan runtime should preserve plan, selection, and camera hook order"
+);
+assertSourceOrder(
+  shellRuntimeSource,
+  [
+    "hoveredCartInstanceId, setHoveredCartInstanceId",
+    "showPresentModal, setShowPresentModal",
+    "presentModeRoomId, setPresentModeRoomId",
+    "shoppingReadinessFilter, setShoppingReadinessFilter",
+    "useDesignPageSurfaceStateController()",
+    "editorMode, setEditorMode",
+    "guidedPlanStartMode, setGuidedPlanStartMode",
+    "useDesignPagePanelMode({",
+    "const updateViewportSize",
+    'window.localStorage.getItem("design_layout_debug")',
+    "const handlePlanDebugMetricsChange",
+    "const handlePlan2DCameraDiagnosticsChange",
+    "if (!state.designPanelOpen)",
+  ],
+  "Editor shell runtime should preserve cart-through-collapse hook order"
+);
+assertSourceOrder(
+  clientLifecycleSource,
+  [
+    '"seating_zone_auto_disabled"',
+    'localStorage.setItem("placement_add_mode"',
+    "preloadCoreAssets()",
+    'if (state.editorMode === "present")',
+    "const signInWithReturn",
+  ],
+  "Editor client lifecycle should preserve hydration-through-sign-in hook order"
+);
+assert.match(
+  workspaceSource,
+  /useState<number>\(\(\) => Date\.now\(\)\)/,
+  "The AI seed should use a lazy initializer instead of reading time directly during render."
+);
+assertSourceOrder(
+  workspaceSource,
+  [
+    "useDesignPageLateBoundRef(resetSelectionStateRef",
+    "localBackupPlanningResolverRef,",
+    "useDesignPageLateBoundRef(localBackupPersistenceActionsRef",
+  ],
+  "Late callback bridges should bind in dependency order"
+);
+assert.match(
+  lateBoundRefSource,
+  /useLayoutEffect\(\(\) => \{[\s\S]*?targetRef\.current = value/,
+  "Late callback bridges should bind before passive startup effects."
+);
+
+const initialMetrics = {
+  zoom: 1,
+  visibleLabelCount: 2,
+  projectedRoomMinWidthPx: 3,
+  projectedRoomMinHeightPx: 4,
+  projectedRoomMinAreaPx: 12,
+  cameraValid: true,
+  cameraRecoveries: 0,
+  cameraTargetX: 5,
+  cameraTargetZ: 6,
+};
+assert.equal(
+  mergeDesignPagePlanMetrics(initialMetrics, {
+    zoom: 1,
+    visibleLabelCount: 2,
+  }),
+  initialMetrics,
+  "Equal plan metrics should retain their object identity."
+);
+assert.deepEqual(
+  mergeDesignPagePlanMetrics(initialMetrics, {
+    zoom: 2,
+    visibleLabelCount: 3,
+  }),
+  { ...initialMetrics, zoom: 2, visibleLabelCount: 3 },
+  "Changed plan metrics should merge without dropping camera diagnostics."
+);
+const cameraDiagnostics = {
+  valid: false,
+  recoveries: 1,
+  targetX: 7,
+  targetZ: 8,
+  projectedRoomMinWidthPx: 9,
+  projectedRoomMinHeightPx: 10,
+  projectedRoomMinAreaPx: 90,
+};
+assert.deepEqual(
+  mergeDesignPageCameraDiagnostics(initialMetrics, cameraDiagnostics),
+  {
+    ...initialMetrics,
+    cameraValid: false,
+    cameraRecoveries: 1,
+    cameraTargetX: 7,
+    cameraTargetZ: 8,
+    projectedRoomMinWidthPx: 9,
+    projectedRoomMinHeightPx: 10,
+    projectedRoomMinAreaPx: 90,
+  },
+  "Camera diagnostics should update only their owned metric fields."
 );
 
 for (const [componentName, contractKey] of [

@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { canAutoCreateSeatingZoneForEditor } from "../lib/design-page-zone-orchestration";
+import { parseDesignPagePlacementAddMode } from "../lib/design-page-editor-client-preferences";
 
 const root = process.cwd();
 const readSource = (relativePath: string) =>
@@ -28,6 +29,9 @@ const viewportOverlaySource = readSource(
 const controllerSource = readSource("lib/useDesignPageZoneController.ts");
 const orchestrationSource = readSource("lib/design-page-zone-orchestration.ts");
 const onboardingSource = readSource("lib/useDesignPageOnboarding.ts");
+const clientLifecycleSource = readSource(
+  "lib/useDesignPageEditorClientLifecycle.ts"
+);
 const normalizedWorkspace = normalizeWhitespace(workspaceSource);
 const normalizedController = normalizeWhitespace(controllerSource);
 
@@ -206,10 +210,14 @@ assert.match(
 );
 
 assert.match(
-  workspaceSource,
-  /localStorage\.getItem\("seating_zone_auto_disabled"\)[\s\S]*?seatingZoneAutoDisabledRef\.current = seatingDisabled === "1"/,
-  "Workspace hydration should continue to load the seating-zone disable preference."
+  clientLifecycleSource,
+  /localStorage\.getItem\([\s\S]*?"seating_zone_auto_disabled"[\s\S]*?seatingZoneAutoDisabled\.current = seatingDisabled === "1"/,
+  "The client lifecycle should continue to hydrate the seating-zone disable preference."
 );
+assert.equal(parseDesignPagePlacementAddMode("preview"), "preview");
+assert.equal(parseDesignPagePlacementAddMode("auto"), "auto");
+assert.equal(parseDesignPagePlacementAddMode("manual"), null);
+assert.equal(parseDesignPagePlacementAddMode(null), null);
 assert.match(
   controllerSource,
   /seatingZoneAutoDisabledRef\.current = true;[\s\S]*?localStorage\.setItem\("seating_zone_auto_disabled", "1"\)/,
