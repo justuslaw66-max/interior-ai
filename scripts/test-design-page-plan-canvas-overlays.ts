@@ -60,7 +60,7 @@ assert.match(
 );
 assert.match(
   workspaceSource,
-  /useDesignPagePlanWorkspaceFacade\(\{/,
+  /useDesignPagePlanWorkspaceRegistrationFacade\(\{/,
   "The workspace should compose the grouped plan boundary."
 );
 assert.ok(

@@ -34,7 +34,11 @@ assert.match(
   "The plan-editing facade should compose the room-plan controller through grouped contracts."
 );
 assert.match(planWorkspaceFacadeSource, /useDesignPagePlanEditingFacade\(\{/);
-assert.match(workspaceSource, /useDesignPagePlanWorkspaceFacade\(\{/);
+assert.match(
+  workspaceSource,
+  /useDesignPagePlanWorkspaceRegistrationFacade\(\{/,
+  "The workspace should register the grouped plan boundary through its controller adapter."
+);
 
 for (const contract of ["state", "configuration", "refs", "actions"]) {
   assert.match(

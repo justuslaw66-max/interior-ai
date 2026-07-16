@@ -32,7 +32,11 @@ assert.match(
   "The plan-editing facade should compose plan overlays through grouped controller contracts."
 );
 assert.match(planWorkspaceFacadeSource, /useDesignPagePlanEditingFacade\(\{/);
-assert.match(workspaceSource, /useDesignPagePlanWorkspaceFacade\(\{/);
+assert.match(
+  workspaceSource,
+  /useDesignPagePlanWorkspaceRegistrationFacade\(\{/,
+  "The workspace should register the grouped plan boundary through its controller adapter."
+);
 assert.doesNotMatch(
   workspaceSource,
   /useDesignPagePlanActions/,
