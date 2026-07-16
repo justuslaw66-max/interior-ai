@@ -574,8 +574,8 @@ export function DesignPageWorkspace() {
     valid: boolean;
     kind: "preview" | "item";
   } | null>(null);
-  const {
   const snapshotDocumentController = useDesignPageSnapshotDocumentState();
+  const {
     state: { designSnapshot, localBackupHydrated },
     actions: { setDesignSnapshot, setLocalBackupHydrated },
     refs: { designSnapshotRef },
