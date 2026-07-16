@@ -67,6 +67,7 @@ import { useDesignPagePlanViewportRuntime } from "@/lib/useDesignPagePlanViewpor
 import { useDesignPageEditorShellRuntime } from "@/lib/useDesignPageEditorShellRuntime";
 import { useDesignPageEditorClientLifecycle } from "@/lib/useDesignPageEditorClientLifecycle";
 import { useDesignPageSelectionInspectionRuntime } from "@/lib/useDesignPageSelectionInspectionRuntime";
+import { buildRoomWallDescriptors } from "@/lib/design-page-wall-descriptors";
 import type { DesignPagePlacementAddMode } from "@/lib/design-page-editor-client-preferences";
 import { useDesignPageLateBoundRef } from "@/lib/useDesignPageLateBoundRef";
 import {
@@ -1446,42 +1447,11 @@ export function DesignPageWorkspace() {
     clearPersistedSnapshotFingerprint,
   });
 
-  // Precompute wall descriptors for Furniture to snap against (inner face coords)
-  const halfW = roomWidth / 2;
-  const halfD = roomDepth / 2;
-  const halfLong = 2.2 / 2; // default sofa long half (adjusts per item via product.dimensions)
-
-  const walls = [
-    // left wall (inner face X)
-    {
-      axis: "x" as const,
-      coord: -halfW + wallThickness / 2,
-      // allowed range along Z when sofa long side is parallel to wall
-      min: -halfD + wallThickness / 2 + halfLong,
-      max: halfD - wallThickness / 2 - halfLong,
-    },
-    // right wall
-    {
-      axis: "x" as const,
-      coord: halfW - wallThickness / 2,
-      min: -halfD + wallThickness / 2 + halfLong,
-      max: halfD - wallThickness / 2 - halfLong,
-    },
-    // front wall (negative Z)
-    {
-      axis: "z" as const,
-      coord: -halfD + wallThickness / 2,
-      min: -halfW + wallThickness / 2 + halfLong,
-      max: halfW - wallThickness / 2 - halfLong,
-    },
-    // back wall (positive Z)
-    {
-      axis: "z" as const,
-      coord: halfD - wallThickness / 2,
-      min: -halfW + wallThickness / 2 + halfLong,
-      max: halfW - wallThickness / 2 - halfLong,
-    },
-  ];
+  const walls = buildRoomWallDescriptors({
+    roomWidth,
+    roomDepth,
+    wallThickness,
+  });
 
   const {
     actions: {
