@@ -12,6 +12,10 @@ const documentHistoryControllerSource = readFileSync(
   join(root, "lib/useDesignPageDocumentHistoryController.ts"),
   "utf8"
 );
+const documentHistoryWorkspaceSource = readFileSync(
+  join(root, "lib/useDesignPageDocumentHistoryWorkspace.ts"),
+  "utf8"
+);
 const pageSource = readFileSync(
   join(root, "components/editor/design-page/DesignPageWorkspace.tsx"),
   "utf8"
@@ -53,9 +57,14 @@ assert.match(
   "The document-state adapter should restore refs before React state."
 );
 assert.match(
-  pageSource,
+  documentHistoryWorkspaceSource,
   /useDesignPageDocumentRefSynchronization\(\{[\s\S]*?useDesignPageDocumentHistoryController\(\{/,
-  "The workspace should compose document synchronization before document history."
+  "The document workspace should compose synchronization before history."
+);
+assert.match(
+  pageSource,
+  /useDesignPageDocumentHistoryWorkspace\(\{/,
+  "The design workspace should register the grouped document-history boundary."
 );
 
 console.log("design page history controller guardrails passed");

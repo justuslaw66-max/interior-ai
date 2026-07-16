@@ -25,7 +25,6 @@ import { DesignPageSceneRegion } from "@/components/editor/design-page/DesignPag
 import {
   getRoomTypeLabel,
 } from "@/lib/design-page-house-plan";
-import { useDesignPageHousePlanState } from "@/lib/useDesignPageHousePlanState";
 import {
   useDesignPageCatalogPlacement,
   type CatalogPlacementPreviewTarget,
@@ -49,7 +48,6 @@ import {
   type DesignPageEditorMode,
 } from "@/lib/useDesignPagePanelMode";
 import { useDesignPageOnboarding } from "@/lib/useDesignPageOnboarding";
-import { useFloorManager } from "@/lib/useFloorManager";
 import { buildDesignPageSceneRegionAdapter } from "@/lib/design-page-scene-region-adapter";
 import { buildDesignPageViewportRegionAdapter } from "@/lib/design-page-viewport-region-adapter";
 import { composeDesignPageSceneRegionModel } from "@/lib/design-page-viewport-region-model";
@@ -89,15 +87,15 @@ import {
 } from "@/lib/useDesignPagePlanWorkspaceFacade";
 import { useDesignPagePlanWorkspaceRegistrationFacade } from "@/lib/useDesignPagePlanWorkspaceRegistrationFacade";
 import { useDesignPagePlacementSelectionWorkspaceFacade } from "@/lib/useDesignPagePlacementSelectionWorkspaceFacade";
+import { useDesignPageRoomFloorWorkspace } from "@/lib/useDesignPageRoomFloorWorkspace";
 import { normalizeDesignPageLocalBackup } from "@/lib/design-page-local-backup";
 import {
-  useDesignPageDocumentRefSynchronization,
   useDesignPageFloorPlanDocumentState,
   useDesignPagePlanDocumentState,
   useDesignPageSnapshotDocumentState,
 } from "@/lib/useDesignPageDocumentStateController";
+import { useDesignPageDocumentHistoryWorkspace } from "@/lib/useDesignPageDocumentHistoryWorkspace";
 import {
-  useDesignPageDocumentHistoryController,
   useDesignPageHistoryRevision,
   useDesignPageHistoryShortcuts,
 } from "@/lib/useDesignPageDocumentHistoryController";
@@ -220,9 +218,7 @@ export function DesignPageWorkspace() {
     state: {
       planTheme,
       planLayers,
-      planAnnotations,
       planOpenings,
-      planFixedElements,
       simplePlanControls,
       planLayerPreset,
       planMeasurementUnit,
@@ -247,22 +243,7 @@ export function DesignPageWorkspace() {
       planOpeningsRef,
       planAnnotationsRef,
       planFixedElementsRef,
-      planThemeRef,
-      planLayersRef,
-      planLayerPresetRef,
-      planMeasurementUnitRef,
-      exportStylePresetRef,
       defaultPlanOpeningsSeededRef,
-    },
-    restoreActions: {
-      setPlanThemeState,
-      setPlanLayersState,
-      setPlanAnnotationsState,
-      setPlanOpeningsState,
-      setPlanFixedElementsState,
-      setPlanLayerPresetState,
-      setPlanMeasurementUnitState,
-      setExportStylePresetState,
     },
   } = planDocumentController;
   const floorPlanDocumentController = useDesignPageFloorPlanDocumentState();
@@ -289,22 +270,14 @@ export function DesignPageWorkspace() {
       activeFloorPlanTool,
     },
     actions: {
-      setFloorPlanUnderlay,
       setFloorPlanCalibrationDistanceInput,
       setFloorPlanDrawAngleLockMode,
       setFloorPlanExactWallLengthInput,
       setFloorPlanTraceRoomType,
       setFloorPlanTraceOpeningKind,
-      setFloorPlanPdfSourceReady,
       resetFloorPlanInteraction,
       activateFloorPlanRoomTrace,
-      revokeFloorPlanUnderlayUrl,
     },
-    refs: {
-      floorPlanUnderlayRef,
-      floorPlanPdfSourceDataRef,
-    },
-    restoreActions: { setFloorPlanUnderlayState },
   } = floorPlanDocumentController;
   const [selectedPlanOverlayId, setSelectedPlanOverlayId] = useState<string | null>(null);
   const [suppressedDoorwaySuggestionKeys, setSuppressedDoorwaySuggestionKeys] = useState<string[]>([]);
@@ -583,67 +556,13 @@ export function DesignPageWorkspace() {
   const liveCatalogReady = useDesignPageLiveCatalog();
   const canEdit = !isClientPreview && liveCatalogReady;
 
-  const {
-    adapters: { captureHistorySnapshot, restoreHistorySnapshot },
-  } = useDesignPageDocumentRefSynchronization({
-    state: {
-      designSnapshot,
-      planOpenings,
-      planAnnotations,
-      planFixedElements,
-      planTheme,
-      planLayers,
-      planLayerPreset,
-      planMeasurementUnit,
-      exportStylePreset,
-      floorPlanUnderlay,
+  const documentHistoryController = useDesignPageDocumentHistoryWorkspace({
+    boundaries: {
+      plan: planDocumentController,
+      floorPlan: floorPlanDocumentController,
+      snapshot: snapshotDocumentController,
     },
-    actions: {
-      setDesignSnapshot,
-      setPlanAnnotationsState,
-      setPlanFixedElementsState,
-      setPlanOpeningsState,
-      setPlanThemeState,
-      setPlanLayersState,
-      setPlanLayerPresetState,
-      setPlanMeasurementUnitState,
-      setExportStylePresetState,
-      setFloorPlanUnderlayState,
-    },
-    refs: {
-      designSnapshotRef,
-      planOpeningsRef,
-      planAnnotationsRef,
-      planFixedElementsRef,
-      planThemeRef,
-      planLayersRef,
-      planLayerPresetRef,
-      planMeasurementUnitRef,
-      exportStylePresetRef,
-      floorPlanUnderlayRef,
-    },
-  });
-  const documentHistoryController = useDesignPageDocumentHistoryController({
-    state: {
-      designSnapshot,
-      floorPlanUnderlay,
-      planOpenings,
-      planFixedElements,
-    },
-    adapters: {
-      captureSnapshot: captureHistorySnapshot,
-      restoreSnapshot: restoreHistorySnapshot,
-      onHistoryChange: () => bumpHistoryRevision((revision) => revision + 1),
-    },
-    actions: {
-      setFloorPlanUnderlay,
-      setPlanOpenings,
-      setPlanFixedElements,
-      setFloorPlanPdfSourceReady,
-      resetFloorPlanInteraction,
-      revokeFloorPlanUnderlayUrl,
-    },
-    refs: { designSnapshotRef, floorPlanPdfSourceDataRef },
+    actions: { bumpHistoryRevision },
   });
   const {
     state: { currentStoredDesignFingerprint },
@@ -660,100 +579,87 @@ export function DesignPageWorkspace() {
     },
   } = documentHistoryController;
 
-  const housePlanController = useDesignPageHousePlanState({
-    designSnapshot,
-    setDesignSnapshot,
-    isPlanView2D: viewMode === "2d",
+  const roomFloorWorkspace = useDesignPageRoomFloorWorkspace({
+    state: {
+      document: { designSnapshot },
+      editor: { viewMode, editorMode, designControlsPanelVisible },
+      plan: {
+        focusPanelRevealed: planFocusPanelRevealed,
+        floorPlanCalibrationMode,
+        floorPlanTraceRoomMode,
+        floorPlanTraceOpeningMode,
+      },
+    },
+    configuration: { isDesigner, isClientPreview },
+    refs: {
+      actionAdaptersRef: floorActionAdaptersRef,
+      cameraViewRef,
+      designSnapshotRef,
+      floorCameraViewsRef,
+      history,
+    },
+    actions: {
+      document: { setDesignSnapshot, setPlanOpenings },
+      history: { runTransaction: runHistoryTransaction },
+      plan: {
+        setFocusPanelRevealed: setPlanFocusPanelRevealed,
+        setSelectedPlanRoomId,
+      },
+      feedback: { showToast: showRuleToast },
+    },
   });
   const {
-    activeRoom,
-    roomWidth,
-    roomDepth,
-    roomHeight,
-    wallThickness,
-    clampToActiveRoom,
-    roomWidthInput,
-    setRoomWidthInput,
-    roomDepthInput,
-    setRoomDepthInput,
-    newRoomType,
-    setNewRoomType,
-    newRoomShape,
-    setNewRoomShape,
-    activeRoomPresetId,
-    items,
-    zones,
-    housePlan2D,
-    activeRoomPlanOffset,
-    planViewWidth,
-    planViewDepth,
-    handleAddRoom: handleAddRoomFromHousePlanState,
-    handleRenameRoom: handleRenameRoomFromHousePlanState,
-    handleMoveRoom2D,
-  } = housePlanController;
-  const handleAddRoom = useCallback(
-    (...args: Parameters<typeof handleAddRoomFromHousePlanState>) => {
-      runHistoryTransaction("Add room", () => {
-        handleAddRoomFromHousePlanState(...args);
-      });
+    boundaries: { house: housePlanController },
+    state: {
+      room: { roomWidthInput, roomDepthInput, newRoomType, newRoomShape },
+      floor: { hiddenFloorLevels, stackedFloorView },
     },
-    [handleAddRoomFromHousePlanState, runHistoryTransaction]
-  );
-  const handleRenameRoom = useCallback(
-    (...args: Parameters<typeof handleRenameRoomFromHousePlanState>) => {
-      runHistoryTransaction("Rename room", () => {
-        handleRenameRoomFromHousePlanState(...args);
-      });
+    derived: {
+      room: {
+        activeRoom,
+        roomWidth,
+        roomDepth,
+        roomHeight,
+        wallThickness,
+        activeRoomPresetId,
+        items,
+        zones,
+      },
+      plan: {
+        housePlan2D,
+        activeRoomPlanOffset,
+        planViewWidth,
+        planViewDepth,
+        activePlanCanvasInteraction,
+        planCanvasFocusActive,
+        designControlsPanelVisibleForLayout,
+        commercePanelVisibleForLayout,
+        shoppingPanelVisibleForLayout,
+      },
+      floor: { activeFloorLevel, activeFloorRoomCount, floorOptions },
     },
-    [handleRenameRoomFromHousePlanState, runHistoryTransaction]
-  );
-  const activePlanCanvasInteraction =
-    !isDesigner &&
-    !isClientPreview &&
-    viewMode === "2d" &&
-    editorMode === "design" &&
-    (floorPlanCalibrationMode || floorPlanTraceRoomMode || floorPlanTraceOpeningMode);
-  useEffect(() => {
-    if (!activePlanCanvasInteraction) {
-      setPlanFocusPanelRevealed(false);
-    }
-  }, [activePlanCanvasInteraction]);
-  const planCanvasFocusActive = activePlanCanvasInteraction && !planFocusPanelRevealed;
-  const designControlsPanelVisibleForLayout =
-    designControlsPanelVisible && !planCanvasFocusActive;
-  const commercePanelVisibleForLayout = editorMode === "buy" && !isClientPreview;
-  const shoppingPanelVisibleForLayout = commercePanelVisibleForLayout;
-  const {
-    activeFloorLevel,
-    activeFloorRoomCount,
-    floorOptions,
-    handleAddFloor,
-    handleDeleteFloor,
-    handleDuplicateFloor,
-    handleRenameFloor,
-    handleSwitchFloor,
-    handleToggleFloorVisibility,
-    hiddenFloorLevels,
-    setStackedFloorView,
-    stackedFloorView,
-  } = useFloorManager({
-    actionAdaptersRef: floorActionAdaptersRef,
-    activeRoom,
-    cameraViewRef,
-    designSnapshot,
-    designSnapshotRef,
-    floorCameraViewsRef,
-    history,
-    roomDepth,
-    roomHeight,
-    roomWidth,
-    setDesignSnapshot,
-    setPlanOpenings,
-    setSelectedPlanRoomId,
-    showRuleToast,
-    viewMode,
-    wallThickness,
-  });
+    actions: {
+      room: {
+        clampToActiveRoom,
+        setRoomWidthInput,
+        setRoomDepthInput,
+        setNewRoomType,
+        setNewRoomShape,
+        handleAddRoom,
+        handleRenameRoom,
+        handleMoveRoom2D,
+      },
+      floor: {
+        handleAddFloor,
+        handleDeleteFloor,
+        handleDuplicateFloor,
+        handleRenameFloor,
+        handleSwitchFloor,
+        handleToggleFloorVisibility,
+        setStackedFloorView,
+      },
+    },
+  } = roomFloorWorkspace;
   const sceneRoomReadFacade = useDesignPageSceneRoomReadFacade({
     scene: {
       state: {

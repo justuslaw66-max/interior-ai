@@ -102,6 +102,10 @@ const planPresentationSource = fs.readFileSync(
   ),
   "utf8"
 );
+const roomFloorWorkspaceSource = fs.readFileSync(
+  path.join(process.cwd(), "lib", "useDesignPageRoomFloorWorkspace.ts"),
+  "utf8"
+);
 
 assert.match(
   source,
@@ -298,7 +302,7 @@ assert.match(
 );
 
 assert.match(
-  source,
+  roomFloorWorkspaceSource,
   /const shoppingPanelVisibleForLayout = commercePanelVisibleForLayout;/,
   "Shop mode should use an editor panel layout surface."
 );
