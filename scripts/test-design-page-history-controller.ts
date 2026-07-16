@@ -16,6 +16,14 @@ const documentHistoryWorkspaceSource = readFileSync(
   join(root, "lib/useDesignPageDocumentHistoryWorkspace.ts"),
   "utf8"
 );
+const documentRoomRegistrationSource = readFileSync(
+  join(root, "lib/useDesignPageDocumentRoomRegistration.ts"),
+  "utf8"
+);
+const sceneRoomReadRegistrationSource = readFileSync(
+  join(root, "lib/useDesignPageSceneRoomReadRegistration.ts"),
+  "utf8"
+);
 const pageSource = readFileSync(
   join(root, "components/editor/design-page/DesignPageWorkspace.tsx"),
   "utf8"
@@ -62,9 +70,19 @@ assert.match(
   "The document workspace should compose synchronization before history."
 );
 assert.match(
-  pageSource,
-  /useDesignPageDocumentHistoryWorkspace\(\{/,
-  "The design workspace should register the grouped document-history boundary."
+  documentRoomRegistrationSource,
+  /useDesignPageDocumentHistoryWorkspace\(\{[\s\S]*?useDesignPageRoomFloorWorkspace\(\{/,
+  "Document-room registration should preserve history-before-room hook order."
+);
+assert.match(
+  sceneRoomReadRegistrationSource,
+  /useDesignPageSceneRoomReadFacade\(\{/,
+  "Scene-room registration should adapt the existing grouped read facade."
+);
+assert.ok(
+  pageSource.indexOf("useDesignPageDocumentRoomRegistration({") <
+    pageSource.indexOf("useDesignPageSceneRoomReadRegistration({"),
+  "The design workspace should register document and room ownership before scene read models."
 );
 
 console.log("design page history controller guardrails passed");
