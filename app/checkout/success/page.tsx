@@ -4,10 +4,16 @@ import Link from "next/link";
 export default async function CheckoutSuccessPage({
   searchParams,
 }: {
-  searchParams: { order_id?: string; orderId?: string; designId?: string };
+  searchParams: Promise<{
+    order_id?: string;
+    orderId?: string;
+    designId?: string;
+  }>;
 }) {
-  const orderRef = searchParams.order_id ?? searchParams.orderId ?? "";
-  const designId = searchParams.designId ?? null;
+  const resolvedSearchParams = await searchParams;
+  const orderRef =
+    resolvedSearchParams.order_id ?? resolvedSearchParams.orderId ?? "";
+  const designId = resolvedSearchParams.designId ?? null;
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-neutral-100 p-6">
