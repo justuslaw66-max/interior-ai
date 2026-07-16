@@ -15,12 +15,17 @@ const controllerSource = readFileSync(
   join(root, "lib/useDesignPageRoomPlanController.ts"),
   "utf8"
 );
+const planEditingFacadeSource = readFileSync(
+  join(root, "lib/useDesignPagePlanEditingFacade.ts"),
+  "utf8"
+);
 
 assert.match(
-  workspaceSource,
+  planEditingFacadeSource,
   /useDesignPageRoomPlanController\(\{[\s\S]*?state:\s*\{[\s\S]*?configuration:\s*\{[\s\S]*?refs:\s*\{[\s\S]*?actions:\s*\{/,
-  "The workspace should compose the room-plan controller through grouped contracts."
+  "The plan-editing facade should compose the room-plan controller through grouped contracts."
 );
+assert.match(workspaceSource, /useDesignPagePlanEditingFacade\(\{/);
 
 for (const contract of ["state", "configuration", "refs", "actions"]) {
   assert.match(
@@ -77,8 +82,8 @@ for (const eventName of [
 }
 
 assert.match(
-  workspaceSource,
-  /actions:\s*\{[\s\S]*?setDesignSnapshot,[\s\S]*?setPlanOpenings,[\s\S]*?renameRoom:\s*handleRenameRoom,[\s\S]*?moveRoom2D:\s*handleMoveRoom2D/,
+  planEditingFacadeSource,
+  /actions:\s*\{[\s\S]*?setDesignSnapshot:\s*actions\.document\.setDesignSnapshot,[\s\S]*?setPlanOpenings:\s*actions\.document\.setPlanOpenings,[\s\S]*?renameRoom:\s*actions\.room\.renameRoom,[\s\S]*?moveRoom2D:\s*actions\.room\.moveRoom2D/,
   "The controller must receive the synchronous snapshot/opening setters and history-aware room adapters."
 );
 assert.match(

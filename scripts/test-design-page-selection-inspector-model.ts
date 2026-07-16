@@ -29,12 +29,17 @@ const modelSource = readFileSync(
   join(root, "lib/useDesignPageSelectionInspectorModel.ts"),
   "utf8"
 );
+const planEditingFacadeSource = readFileSync(
+  join(root, "lib/useDesignPagePlanEditingFacade.ts"),
+  "utf8"
+);
 
 assert.match(
-  workspaceSource,
+  planEditingFacadeSource,
   /useDesignPageSelectionInspectorModel\(\{[\s\S]*?state:\s*\{[\s\S]*?configuration:\s*\{/,
-  "The workspace should compose the selection-inspector model through grouped contracts."
+  "The plan-editing facade should compose the selection-inspector model through grouped contracts."
 );
+assert.match(workspaceSource, /useDesignPagePlanEditingFacade\(\{/);
 assert.doesNotMatch(
   workspaceSource,
   /const selectedObjectInspector\s*=\s*useMemo/,

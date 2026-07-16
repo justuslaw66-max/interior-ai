@@ -16,21 +16,34 @@ const keyboardSource = readFileSync(
   join(root, "lib/useDesignPageSelectionKeyboard.ts"),
   "utf8"
 );
+const selectionCoordinatorSource = readFileSync(
+  join(root, "lib/useDesignPageSelectionCoordinator.ts"),
+  "utf8"
+);
+const itemInteractionFacadeSource = readFileSync(
+  join(root, "lib/useDesignPageItemInteractionFacade.ts"),
+  "utf8"
+);
 
 assert.match(
-  workspaceSource,
+  selectionCoordinatorSource,
   /useDesignPageDeleteSelectionShortcut\(\{[\s\S]*?state:\s*\{[\s\S]*?configuration:\s*\{[\s\S]*?refs:\s*\{[\s\S]*?actions:\s*\{/,
-  "The workspace should delegate Delete and Backspace selection handling through grouped contracts."
+  "The selection coordinator should delegate Delete and Backspace handling through grouped contracts."
 );
 assert.match(
-  workspaceSource,
+  itemInteractionFacadeSource,
   /useDesignPageSelectionKeyboardController\(\{[\s\S]*?state:\s*\{[\s\S]*?refs:\s*\{[\s\S]*?actions:\s*\{/,
-  "The workspace should delegate placement, item, and plan-room shortcuts through grouped contracts."
+  "The item-interaction facade should delegate placement, item, and plan-room shortcuts through grouped contracts."
+);
+assert.match(
+  itemInteractionFacadeSource,
+  /useDesignPageSelectionKeyboardController\(\{[\s\S]{0,700}?selectedItemId:\s*state\.selection\.selectedItem\?\.instanceId \?\? null,/,
+  "The keyboard controller should receive selected-item identity for rotation input synchronization."
 );
 assert.match(
   workspaceSource,
-  /useDesignPageSelectionKeyboardController\(\{[\s\S]{0,500}?selectedItemId:\s*selectedItem\?\.instanceId \?\? null,/,
-  "The keyboard controller should receive selected-item identity for rotation input synchronization."
+  /useDesignPageItemInteractionFacade\(\{/,
+  "The workspace should compose the item-interaction facade."
 );
 assert.match(
   keyboardSource,

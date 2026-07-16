@@ -18,6 +18,14 @@ const designPagePath = path.join(
   "DesignPageWorkspace.tsx"
 );
 const designPageSource = fs.readFileSync(designPagePath, "utf8");
+const placementTargetControllerSource = fs.readFileSync(
+  path.join(
+    process.cwd(),
+    "lib",
+    "useDesignPagePlacementTargetController.ts"
+  ),
+  "utf8"
+);
 const designSceneStructureSource = fs.readFileSync(
   path.join(
     process.cwd(),
@@ -56,7 +64,7 @@ const floorPlanUploadPanelPath = path.join(
 );
 const floorPlanUploadPanelSource = fs.readFileSync(floorPlanUploadPanelPath, "utf8");
 const roomSelectCallbackSource =
-  designPageSource.match(
+  placementTargetControllerSource.match(
     /const handlePlacementAwareRoomSelect = useCallback\([\s\S]*?\n  \);\n\n  const handleRendererSurfaceTargetSelect/
   )?.[0] ?? "";
 const roomPointerUpSource =
@@ -237,9 +245,21 @@ assert.match(
 );
 
 assert.match(
-  designPageSource,
+  placementTargetControllerSource,
   /const handlePlacementAwareRoomSelect = useCallback\([\s\S]*?handleResetFloorPlanTraceRoomPoints\(\);/,
   "Selecting a committed room should clear stale wall-draw points before selected-room controls render."
+);
+
+assert.match(
+  designPageSource,
+  /useDesignPagePlacementTargetController\(\{/,
+  "The workspace should compose the placement-target controller."
+);
+
+assert.match(
+  designPageSource,
+  /select: handlePlacementAwareRoomSelect,/,
+  "The workspace should wire the controller-owned room-selection action into the scene."
 );
 
 assert.match(
@@ -340,7 +360,7 @@ assert.match(
 
 assert.match(
   roomSelectCallbackSource,
-  /const handlePlacementAwareRoomSelect = useCallback\([\s\S]*?clearNonRoomSelection\(\);[\s\S]*?setSelectedPlanRoomId\(roomId\);[\s\S]*?if \(editorMode !== "present"\) setEditorMode\("design"\);[\s\S]*?if \(designSnapshotRef\.current\.activeRoomId === roomId\)/,
+  /const handlePlacementAwareRoomSelect = useCallback\([\s\S]*?clearNonRoomSelection\(\);[\s\S]*?setSelectedPlanRoomId\(roomId\);[\s\S]*?if \(decision\.shouldSetDesignMode\) setEditorMode\("design"\);[\s\S]*?if \(decision\.shouldSwitchRoom\) handleSwitchRoom\(roomId\);/,
   "Selecting a room should clear stale door/window overlay selection before the inspector decides what is selected."
 );
 

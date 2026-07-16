@@ -7,12 +7,17 @@ const pageSource = readFileSync(
   join(root, "components/editor/design-page/DesignPageWorkspace.tsx"),
   "utf8"
 );
+const facadeSource = readFileSync(
+  join(root, "lib/useDesignPageItemInteractionFacade.ts"),
+  "utf8"
+);
 const controllerSource = readFileSync(
   join(root, "lib/useDesignPageSelectionTransforms.ts"),
   "utf8"
 );
 
-assert.match(pageSource, /useDesignPageSelectionTransforms\(\{/);
+assert.match(facadeSource, /useDesignPageSelectionTransforms\(\{/);
+assert.match(pageSource, /useDesignPageItemInteractionFacade\(\{/);
 assert.doesNotMatch(pageSource, /const applyItemRotation\s*=/);
 assert.doesNotMatch(pageSource, /const duplicateSelectedItem\s*=/);
 assert.doesNotMatch(pageSource, /const moveSelectedItemToRoom\s*=/);

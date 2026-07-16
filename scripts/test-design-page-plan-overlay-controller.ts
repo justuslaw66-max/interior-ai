@@ -17,12 +17,17 @@ const controllerSource = readFileSync(
   join(root, "lib/useDesignPagePlanOverlayController.ts"),
   "utf8"
 );
+const planEditingFacadeSource = readFileSync(
+  join(root, "lib/useDesignPagePlanEditingFacade.ts"),
+  "utf8"
+);
 
 assert.match(
-  workspaceSource,
+  planEditingFacadeSource,
   /useDesignPagePlanOverlayController\(\{[\s\S]*?state:\s*\{[\s\S]*?configuration:\s*\{[\s\S]*?refs:\s*\{[\s\S]*?actions:\s*\{/,
-  "The workspace should compose plan overlays through grouped controller contracts."
+  "The plan-editing facade should compose plan overlays through grouped controller contracts."
 );
+assert.match(workspaceSource, /useDesignPagePlanEditingFacade\(\{/);
 assert.doesNotMatch(
   workspaceSource,
   /useDesignPagePlanActions/,

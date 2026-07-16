@@ -18,6 +18,9 @@ const workspaceSource = readSource(
 const controllerSource = readSource(
   "lib/useDesignPageSelectedItemPanelController.ts"
 );
+const itemInteractionFacadeSource = readSource(
+  "lib/useDesignPageItemInteractionFacade.ts"
+);
 
 function sourceBetween(
   source: string,
@@ -185,14 +188,19 @@ assert.deepEqual(
 );
 
 assert.match(
-  workspaceSource,
-  /import\s+\{\s*useDesignPageSelectedItemPanelController\s*\}\s+from\s+"@\/lib\/useDesignPageSelectedItemPanelController"/,
-  "The workspace should import the selected-item panel controller."
+  itemInteractionFacadeSource,
+  /import\s+\{[^}]*\buseDesignPageSelectedItemPanelController\b[^}]*\}\s+from\s+"@\/lib\/useDesignPageSelectedItemPanelController"/,
+  "The item-interaction facade should import the selected-item panel controller."
+);
+assert.match(
+  itemInteractionFacadeSource,
+  /useDesignPageSelectedItemPanelController\(\{[\s\S]*?state:\s*\{[\s\S]*?configuration:\s*\{[\s\S]*?refs:\s*\{[\s\S]*?actions:\s*\{/,
+  "The item-interaction facade should compose selected-item actions through grouped contracts."
 );
 assert.match(
   workspaceSource,
-  /useDesignPageSelectedItemPanelController\(\{[\s\S]*?state:\s*\{[\s\S]*?configuration:\s*\{[\s\S]*?refs:\s*\{[\s\S]*?actions:\s*\{/,
-  "The workspace should compose selected-item actions through grouped contracts."
+  /useDesignPageItemInteractionFacade\(\{/,
+  "The workspace should compose the item-interaction facade."
 );
 
 for (const callbackName of [
@@ -335,17 +343,17 @@ for (const [getterName, refRead, contractEntry] of [
   ],
 ] as const) {
   assert.match(
-    workspaceSource,
+    itemInteractionFacadeSource,
     new RegExp(
       `const ${getterName} = useCallback\\([\\s\\S]*?${refRead.replace(
         ".",
         "\\."
-      )}[\\s\\S]*?\\[\\]`
+      )}[\\s\\S]*?\\[${refRead.split(".")[0]}\\]`
     ),
     `${getterName} should preserve a stable click-time ref read.`
   );
   assertIncludes(
-    workspaceSource,
+    itemInteractionFacadeSource,
     contractEntry,
     `The controller should receive the stable ref getter ${contractEntry}.`
   );

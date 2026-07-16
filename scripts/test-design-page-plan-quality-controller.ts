@@ -22,11 +22,16 @@ const controllerSource = readFileSync(
   join(root, "lib/useDesignPagePlanQualityController.ts"),
   "utf8"
 );
+const planEditingFacadeSource = readFileSync(
+  join(root, "lib/useDesignPagePlanEditingFacade.ts"),
+  "utf8"
+);
 
-assert.match(workspaceSource, /useDesignPagePlanQualityController\(\{/);
+assert.match(planEditingFacadeSource, /useDesignPagePlanQualityController\(\{/);
+assert.match(workspaceSource, /useDesignPagePlanEditingFacade\(\{/);
 for (const contract of ["state", "configuration", "refs", "actions"]) {
   assert.match(
-    `${workspaceSource}\n${controllerSource}`,
+    `${planEditingFacadeSource}\n${controllerSource}`,
     new RegExp(`\\b${contract}\\b`),
     `The plan-quality boundary should retain its grouped ${contract} contract.`
   );
