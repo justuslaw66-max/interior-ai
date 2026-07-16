@@ -23,13 +23,18 @@ const planEditingFacadeSource = readFileSync(
   join(root, "lib/useDesignPagePlanEditingFacade.ts"),
   "utf8"
 );
+const planWorkspaceFacadeSource = readFileSync(
+  join(root, "lib/useDesignPagePlanWorkspaceFacade.ts"),
+  "utf8"
+);
 
 assert.match(
   planEditingFacadeSource,
   /useDesignPageRoomPlanController\(\{[\s\S]*?state:\s*\{[\s\S]*?configuration:\s*\{[\s\S]*?refs:\s*\{[\s\S]*?actions:\s*\{/,
   "The plan-editing facade should compose the room-plan controller through grouped contracts."
 );
-assert.match(workspaceSource, /useDesignPagePlanEditingFacade\(\{/);
+assert.match(planWorkspaceFacadeSource, /useDesignPagePlanEditingFacade\(\{/);
+assert.match(workspaceSource, /useDesignPagePlanWorkspaceFacade\(\{/);
 
 for (const contract of ["state", "configuration", "refs", "actions"]) {
   assert.match(

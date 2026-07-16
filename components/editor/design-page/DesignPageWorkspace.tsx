@@ -34,8 +34,6 @@ import {
   getRoomTypeLabel,
 } from "@/lib/design-page-house-plan";
 import { useDesignPageHousePlanState } from "@/lib/useDesignPageHousePlanState";
-import { useDesignPageFloorPlanUnderlayController } from "@/lib/useDesignPageFloorPlanUnderlayController";
-import { useDesignPageFloorPlanTracing } from "@/lib/useDesignPageFloorPlanTracing";
 import {
   useDesignPageCatalogPlacement,
   type CatalogPlacementPreviewTarget,
@@ -95,12 +93,15 @@ import { useDesignPageItemDocumentController } from "@/lib/useDesignPageItemDocu
 import { useDesignPageItemSelectionController } from "@/lib/useDesignPageItemSelectionController";
 import { useDesignPageSceneReadModel } from "@/lib/useDesignPageSceneReadModel";
 import { useDesignPageRoomReadModel } from "@/lib/useDesignPageRoomReadModel";
-import { useDesignPagePlanPresentationModel } from "@/lib/useDesignPagePlanPresentationModel";
 import { useDesignPageQaReadModel } from "@/lib/useDesignPageQaReadModel";
 import { useDesignPageSelectionCoordinator } from "@/lib/useDesignPageSelectionCoordinator";
 import { useDesignPageProductInspectionController } from "@/lib/useDesignPageProductInspectionController";
 import { useDesignPageItemGeometry } from "@/lib/useDesignPageItemGeometry";
-import { useDesignPagePlanEditingFacade } from "@/lib/useDesignPagePlanEditingFacade";
+import {
+  useDesignPagePlanTracingFacade,
+  useDesignPagePlanUnderlayFacade,
+  useDesignPagePlanWorkspaceFacade,
+} from "@/lib/useDesignPagePlanWorkspaceFacade";
 import { useDesignPageItemInteractionFacade } from "@/lib/useDesignPageItemInteractionFacade";
 import { normalizeDesignPageLocalBackup } from "@/lib/design-page-local-backup";
 import {
@@ -1515,7 +1516,6 @@ export function DesignPageWorkspace() {
         reviewPanelCollapsed: planQualityReviewCollapsed,
         reviewPanelVisible: plan2DQualityReviewPanelVisible,
         reviewPanelTopPx: plan2DQualityReviewPanelTopPx,
-        reviewPanelReservedBottomPx: plan2DQualityReviewPanelReservedBottomPx,
       },
       inspector: {
         floatingSelectionInspectorVisible,
@@ -1528,6 +1528,30 @@ export function DesignPageWorkspace() {
         visiblePlanOpeningRoomName,
         visiblePlanOpeningWallSpanMeters,
       },
+    },
+    derived: {
+      floatingPlanOverlayStackVisible,
+      floatingFloorPropertiesPanelVisible,
+      inlineFloorPropertiesPanelVisible,
+      plan2DSafeAreaLeftPx,
+      selectionInspectorDockedWithRightRail,
+      selectionInspectorRightPx,
+      selectionInspectorTopPx,
+      selectionInspectorWidthPx,
+      plan2DSafeAreaRightPx,
+      plan2DSafeAreaBottomPx,
+      plan2DFitBounds,
+      exportReadinessItems,
+      exportReadinessReadyCount,
+      exportReadinessScore,
+      lightConfig,
+      sceneBackgroundColor,
+      effectivePlanLayers,
+      effectivePlanTheme,
+      planCanvasCursor,
+      compactRoomPlanStatusBar,
+      showRoomPlanStatusHealth,
+      planCanvasOverlaysState,
     },
     refs: {
       quality: { setReviewPanelNode: setPlanQualityReviewPanelNode },
@@ -1565,8 +1589,10 @@ export function DesignPageWorkspace() {
         toggleReviewPanel: togglePlanQualityReviewPanel,
         activateIssue: handlePlanQualityAction,
       },
+      clearPlanFocusPoints,
     },
-  } = useDesignPagePlanEditingFacade({
+    configuration: planWorkspaceConfiguration,
+  } = useDesignPagePlanWorkspaceFacade({
     state: {
       document: {
         designSnapshot,
@@ -1583,6 +1609,41 @@ export function DesignPageWorkspace() {
         suppressedDoorwaySuggestionKeys,
         selectedPlanOverlayId,
         canvasInteractionActive: activePlanCanvasInteraction,
+        hasWholeHousePlan,
+        layers: planLayers,
+        theme: planTheme,
+        guidedActionsEnabled: planGuidedActionsEnabled,
+        guidedActionsChoiceSeen: planGuidedActionsChoiceSeen,
+        settingsLoaded: planSettingsLoaded,
+        canvasFocusActive: planCanvasFocusActive,
+        dismissedCanvasGuidanceKey: dismissedPlanCanvasGuidanceKey,
+        activeFloorPlanTool,
+        selectedZoneId,
+      },
+      floorPlan: {
+        floorPlanUnderlay,
+        calibrationPoints: floorPlanCalibrationPoints,
+        calibrationDistanceInput: floorPlanCalibrationDistanceInput,
+        calibrationMode: floorPlanCalibrationMode,
+        floorPlanTraceRoomType,
+        floorPlanTraceRoomMode,
+        floorPlanDrawRoomMode,
+        floorPlanDrawAngleLockMode,
+        floorPlanExactWallLengthInput,
+        floorPlanTraceRoomPoints,
+        blankGridRoomDrawActive,
+        blankGridRoomPreviewPoint,
+        floorPlanTraceOpeningMode,
+        floorPlanTraceOpeningPoints,
+        floorPlanTraceOpeningKind,
+      },
+      room: {
+        roomWidth,
+        roomDepth,
+        roomHeight,
+        wallThickness,
+        planViewWidth,
+        planViewDepth,
       },
       selection: {
         selectedIds,
@@ -1595,6 +1656,26 @@ export function DesignPageWorkspace() {
         editorMode,
         isClientPreview,
         viewMode,
+        isDesigner,
+        simplePlanControls,
+        showDesignerTheme,
+        lightingPreset,
+        guidedPlanStartMode,
+        showBetaStart,
+      },
+      layout: {
+        designControlsPanelVisible: designControlsPanelVisibleForLayout,
+        designControlsPanelMode,
+        shoppingPanelVisible: shoppingPanelVisibleForLayout,
+        commercePanelVisible: commercePanelVisibleForLayout,
+        designPanelCollapsed,
+        floorCount: floorOptions.length,
+        viewportWidth: viewportSize.width,
+      },
+      export: {
+        shoppableCount: wholeHomeShoppingSummary.shoppableCount,
+        sceneReady,
+        exportStylePreset,
       },
       surfaceInspector: {
         displayName: surfaceInspectorDisplayName,
@@ -1610,11 +1691,6 @@ export function DesignPageWorkspace() {
       canEdit,
       catalogItems: CATALOG_ITEMS,
       resolveConfiguredPlanningDimsMm,
-      roomWidth,
-      roomDepth,
-      roomHeight,
-      planViewWidth,
-      planViewDepth,
       planMeasurementUnit,
       houseRoomById,
       qualityReviewPanel: {
@@ -1622,10 +1698,22 @@ export function DesignPageWorkspace() {
         collapsedReviewPanelFallbackHeightPx: 56,
         expandedReviewPanelFallbackHeightPx: 252,
       },
+      simplePlanLayers: SIMPLE_PLAN_LAYERS,
+      floatingOverlayDesktopMinWidthPx:
+        PLAN_FLOATING_OVERLAY_DESKTOP_MIN_WIDTH,
+      floatingOverlayStackRightPx: PLAN_FLOATING_OVERLAY_STACK_RIGHT_PX,
+      floatingOverlayInspectorStackTopPx:
+        PLAN_FLOATING_OVERLAY_INSPECTOR_STACK_TOP_PX,
+      floatingOverlayStackWidthPx: PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX,
+      floatingOverlayStackGapPx: PLAN_FLOATING_OVERLAY_STACK_GAP_PX,
     },
     refs: {
       designSnapshot: designSnapshotRef,
       planOpenings: planOpeningsRef,
+      floorCameraViews: floorCameraViewsRef,
+      underlayObjectUrl: floorPlanUnderlayUrlRef,
+      pdfSourceData: floorPlanPdfSourceDataRef,
+      selectedIds: selectedIdsRef,
     },
     actions: {
       document: {
@@ -1642,6 +1730,8 @@ export function DesignPageWorkspace() {
         selectPlanOverlay: handleSelectPlanOverlay,
         selectPlanRoom: setSelectedPlanRoomId,
         updateSelection,
+        clearAllSelection,
+        setSelectedPlanOverlayId,
       },
       room: {
         setSelectedPlanRoomId,
@@ -1649,119 +1739,44 @@ export function DesignPageWorkspace() {
         setRoomDepthInput,
         renameRoom: handleRenameRoom,
         moveRoom2D: handleMoveRoom2D,
+        handleAddRoom,
       },
       navigation: {
         goPlan,
         goFurnish,
         setViewMode,
         setTraceOpeningKind: setFloorPlanTraceOpeningKind,
+        setDesignPanelOpen,
+        setPlanFocusPanelRevealed,
+        prepareCameraForPlanTemplate,
       },
-      history: { history, runHistoryTransaction },
+      history: {
+        history,
+        runHistoryTransaction,
+        runCoalescedHistoryTransaction,
+      },
       feedback: { showToast: showRuleToast, track },
-    },
-  });
-  const {
-    derived: {
-      floatingPlanOverlayStackVisible,
-      floatingFloorPropertiesPanelVisible,
-      inlineFloorPropertiesPanelVisible,
-      plan2DSafeAreaLeftPx,
-      selectionInspectorDockedWithRightRail,
-      selectionInspectorRightPx,
-      selectionInspectorTopPx,
-      selectionInspectorWidthPx,
-      plan2DSafeAreaRightPx,
-      plan2DSafeAreaBottomPx,
-      plan2DFitBounds,
-      exportReadinessItems,
-      exportReadinessReadyCount,
-      exportReadinessScore,
-      lightConfig,
-      sceneBackgroundColor,
-      effectivePlanLayers,
-      effectivePlanTheme,
-      planCanvasCursor,
-      compactRoomPlanStatusBar,
-      showRoomPlanStatusHealth,
-      planCanvasOverlaysState,
-    },
-    actions: { clearPlanFocusPoints },
-  } = useDesignPagePlanPresentationModel({
-    state: {
-      layout: {
-        designControlsPanelVisible: designControlsPanelVisibleForLayout,
-        designControlsPanelMode,
-        shoppingPanelVisible: shoppingPanelVisibleForLayout,
-        commercePanelVisible: commercePanelVisibleForLayout,
-        designPanelCollapsed,
-        isClientPreview,
-        isDesigner,
-        floorCount: floorOptions.length,
-        viewportWidth: viewportSize.width,
-        viewMode,
-        hasWholeHousePlan,
-        planQualityReviewVisible: plan2DQualityReviewPanelVisible,
-        planQualityReviewReservedBottomPx:
-          plan2DQualityReviewPanelReservedBottomPx,
-        housePlanRooms: housePlan2D.rooms,
-        roomWidth,
-        roomDepth,
-      },
-      export: {
-        openingCount: planOpenings.length,
-        itemCount: items.length,
-        shoppableCount: wholeHomeShoppingSummary.shoppableCount,
-        roomConnectionChecklistItems,
-        sceneReady,
-        exportStylePreset,
-      },
-      presentation: {
-        lightingPreset,
-        showDesignerTheme,
-        simplePlanControls,
-        planLayers,
-        planTheme,
-        planGuidedActionsEnabled,
-        editorMode,
-        guidedPlanStartMode,
-        floorPlanUnderlay,
-        floorPlanCalibrationMode,
-        floorPlanCalibrationPointCount:
-          floorPlanCalibrationPoints.length,
-        floorPlanTraceRoomMode,
-        floorPlanDrawRoomMode,
-        floorPlanTraceRoomPointCount: floorPlanTraceRoomPoints.length,
-        floorPlanTraceOpeningMode,
-        floorPlanTraceOpeningKind,
-        floorPlanTraceOpeningPointCount:
-          floorPlanTraceOpeningPoints.length,
-        activeFloorPlanTool,
-        activePlanCanvasInteraction,
-        planCanvasFocusActive,
-        planSettingsLoaded,
-        planGuidedActionsChoiceSeen,
-        showBetaStart,
-        dismissedPlanCanvasGuidanceKey,
-      },
-    },
-    configuration: {
-      simplePlanLayers: SIMPLE_PLAN_LAYERS,
-      floatingOverlayDesktopMinWidthPx:
-        PLAN_FLOATING_OVERLAY_DESKTOP_MIN_WIDTH,
-      floatingOverlayStackRightPx: PLAN_FLOATING_OVERLAY_STACK_RIGHT_PX,
-      floatingOverlayInspectorStackTopPx:
-        PLAN_FLOATING_OVERLAY_INSPECTOR_STACK_TOP_PX,
-      floatingOverlayStackWidthPx: PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX,
-      floatingOverlayStackGapPx: PLAN_FLOATING_OVERLAY_STACK_GAP_PX,
-    },
-    actions: {
-      resetFloorPlanCalibrationPoints: () =>
-        setFloorPlanCalibrationPoints([]),
-      resetFloorPlanTraceOpeningPoints: () =>
-        setFloorPlanTraceOpeningPoints([]),
-      resetFloorPlanTraceRoomPoints: () => {
-        setFloorPlanTraceRoomPoints([]);
-        setBlankGridRoomPreviewPoint(null);
+      floorPlanState: {
+        setFloorPlanUnderlay,
+        setFloorPlanPdfSourceReady,
+        setFloorPlanPdfRenderingPage,
+        setFloorPlanCalibrationPoints,
+        resetFloorPlanInteraction,
+        resetFloorPlanCalibration,
+        clearFloorPlanTraceBuffers,
+        revokeUnderlayObjectUrl: revokeFloorPlanUnderlayUrl,
+        setPlanGuidedActionsEnabled,
+        setPlanGuidedActionsChoiceSeen,
+        setBlankGridRoomPreviewPoint,
+        setFloorPlanTraceRoomMode,
+        setFloorPlanTraceRoomPoints,
+        setFloorPlanTraceOpeningMode,
+        setFloorPlanTraceOpeningPoints,
+        activateFloorPlanSelectTool,
+        activateFloorPlanCalibrationMode,
+        activateFloorPlanRoomTrace,
+        activateFloorPlanRoomDrawMode,
+        activateFloorPlanOpeningTrace,
       },
     },
   });
@@ -1812,47 +1827,7 @@ export function DesignPageWorkspace() {
       applyCalibration: handleApplyFloorPlanCalibration,
       clearUnderlay: handleClearFloorPlanUnderlay,
     },
-  } = useDesignPageFloorPlanUnderlayController({
-    state: {
-      floorPlanUnderlay,
-      calibrationPoints: floorPlanCalibrationPoints,
-      calibrationDistanceInput: floorPlanCalibrationDistanceInput,
-      planOpenings,
-    },
-    configuration: {
-      planViewWidth,
-      planViewDepth,
-      roomHeight,
-      wallThickness,
-    },
-    refs: {
-      designSnapshotRef,
-      floorCameraViewsRef,
-      underlayObjectUrlRef: floorPlanUnderlayUrlRef,
-      pdfSourceDataRef: floorPlanPdfSourceDataRef,
-    },
-    actions: {
-      history,
-      setDesignSnapshot,
-      setFloorPlanUnderlay,
-      setFloorPlanPdfSourceReady,
-      setFloorPlanPdfRenderingPage,
-      setFloorPlanCalibrationPoints,
-      setPlanOpenings,
-      setPlanFixedElements,
-      setSelectedPlanOverlayId,
-      setViewMode,
-      resetFloorPlanInteraction,
-      resetFloorPlanCalibration,
-      clearFloorPlanTraceBuffers,
-      clearAllSelection,
-      prepareCameraForPlanTemplate,
-      revokeUnderlayObjectUrl: revokeFloorPlanUnderlayUrl,
-      runHistoryTransaction,
-      runCoalescedHistoryTransaction,
-      showRuleToast,
-    },
-  });
+  } = useDesignPagePlanUnderlayFacade(planWorkspaceConfiguration.underlay);
   const cameraNavigation = useDesignPageCameraNavigation({
     refs: {
       canvasRef,
@@ -1960,61 +1935,7 @@ export function DesignPageWorkspace() {
       handleResetFloorPlanTraceRoomPoints,
       handleUndoFloorPlanTraceRoomPoint,
     },
-  } = useDesignPageFloorPlanTracing({
-    state: {
-      activeRoom,
-      housePlanRooms: housePlan2D.rooms,
-      roomCount: designSnapshot.rooms.length,
-      floorPlanUnderlay,
-      floorPlanTraceRoomType,
-      floorPlanTraceRoomMode,
-      floorPlanDrawRoomMode,
-      floorPlanDrawAngleLockMode,
-      floorPlanExactWallLengthInput,
-      floorPlanTraceRoomPoints,
-      blankGridRoomDrawActive,
-      blankGridRoomPreviewPoint,
-      floorPlanTraceOpeningMode,
-      floorPlanTraceOpeningPoints,
-      floorPlanTraceOpeningKind,
-      planOpenings,
-      planGuidedActionsEnabled,
-      isDesigner,
-      isClientPreview,
-      editorMode,
-      viewMode,
-      selectedPlanRoomId,
-      selectedPlanOverlayId,
-      selectedZoneId,
-    },
-    refs: {
-      selectedIdsRef,
-    },
-    actions: {
-      history,
-      handleAddRoom,
-      setDesignSnapshot,
-      setPlanOpenings,
-      setViewMode,
-      setDesignPanelOpen,
-      setPlanFocusPanelRevealed,
-      setPlanGuidedActionsEnabled,
-      setPlanGuidedActionsChoiceSeen,
-      setBlankGridRoomPreviewPoint,
-      setFloorPlanTraceRoomMode,
-      setFloorPlanTraceRoomPoints,
-      setFloorPlanTraceOpeningMode,
-      setFloorPlanTraceOpeningPoints,
-      activateFloorPlanSelectTool,
-      activateFloorPlanCalibrationMode,
-      activateFloorPlanRoomTrace,
-      activateFloorPlanRoomDrawMode,
-      activateFloorPlanOpeningTrace,
-      handleSelectPlanOverlay,
-      clearAllSelection,
-      showRuleToast,
-    },
-  });
+  } = useDesignPagePlanTracingFacade(planWorkspaceConfiguration.tracing);
   const {
     state: { cameraViewNameInput },
     actions: {

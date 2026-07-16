@@ -32,9 +32,14 @@ const planEditingFacadeSource = readFileSync(
   join(root, "lib/useDesignPagePlanEditingFacade.ts"),
   "utf8"
 );
+const planWorkspaceFacadeSource = readFileSync(
+  join(root, "lib/useDesignPagePlanWorkspaceFacade.ts"),
+  "utf8"
+);
 
 assert.match(planEditingFacadeSource, /useDesignPagePlanQualityController\(\{/);
-assert.match(workspaceSource, /useDesignPagePlanEditingFacade\(\{/);
+assert.match(planWorkspaceFacadeSource, /useDesignPagePlanEditingFacade\(\{/);
+assert.match(workspaceSource, /useDesignPagePlanWorkspaceFacade\(\{/);
 for (const contract of ["state", "configuration", "refs", "actions"]) {
   assert.match(
     `${planEditingFacadeSource}\n${controllerSource}`,

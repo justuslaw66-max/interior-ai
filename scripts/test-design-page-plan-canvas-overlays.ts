@@ -33,6 +33,9 @@ const modelSource = readSource("lib/design-page-plan-canvas-overlays.ts");
 const planPresentationSource = readSource(
   "lib/useDesignPagePlanPresentationModel.ts"
 );
+const planWorkspaceFacadeSource = readSource(
+  "lib/useDesignPagePlanWorkspaceFacade.ts"
+);
 const normalizedWorkspace = normalizeWhitespace(workspaceSource);
 const normalizedViewportOverlay = normalizeWhitespace(viewportOverlaySource);
 const normalizedViewportAdapter = normalizeWhitespace(viewportAdapterSource);
@@ -49,6 +52,16 @@ assert.match(
   planPresentationSource,
   /const planCanvasOverlaysState\s*=\s*resolveDesignPagePlanCanvasOverlaysState\(\{/,
   "The plan presentation model should resolve live plan-canvas policy."
+);
+assert.match(
+  planWorkspaceFacadeSource,
+  /useDesignPagePlanPresentationModel\(\{/,
+  "The plan workspace facade should retain presentation-model ownership."
+);
+assert.match(
+  workspaceSource,
+  /useDesignPagePlanWorkspaceFacade\(\{/,
+  "The workspace should compose the grouped plan boundary."
 );
 assert.ok(
   normalizedWorkspace.includes("planCanvas: planCanvasOverlaysState"),

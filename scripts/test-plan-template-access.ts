@@ -21,6 +21,10 @@ const floorPlanControllerPath = path.join(
   "useDesignPageFloorPlanUnderlayController.ts"
 );
 const floorPlanControllerSource = fs.readFileSync(floorPlanControllerPath, "utf8");
+const planWorkspaceFacadeSource = fs.readFileSync(
+  path.join(process.cwd(), "lib", "useDesignPagePlanWorkspaceFacade.ts"),
+  "utf8"
+);
 const cameraControllerPath = path.join(
   process.cwd(),
   "lib",
@@ -370,6 +374,16 @@ assert.match(
   floorPlanControllerSource,
   /prepareCameraForPlanTemplate\(\);[\s\S]*?floorCameraViewsRef\.current = \{\};[\s\S]*?setViewMode\("2d"\);/,
   "Applying a template should clear stale 3D camera memory before returning to 2D."
+);
+assert.match(
+  planWorkspaceFacadeSource,
+  /useDesignPageFloorPlanUnderlayController\(input\)/,
+  "The plan workspace underlay boundary should delegate to the established controller."
+);
+assert.match(
+  designPageSource,
+  /useDesignPagePlanUnderlayFacade\(planWorkspaceConfiguration\.underlay\)/,
+  "The workspace should keep underlay registration at its deferred plan-facade slot."
 );
 
 assert.match(
