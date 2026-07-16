@@ -34,6 +34,14 @@ const placementTargetControllerSource = fs.readFileSync(
   ),
   "utf8"
 );
+const surfaceTargetingFacadeSource = fs.readFileSync(
+  path.join(
+    process.cwd(),
+    "lib",
+    "useDesignPageSurfaceTargetingFacade.ts"
+  ),
+  "utf8"
+);
 const designSceneStructureSource = fs.readFileSync(
   path.join(
     process.cwd(),
@@ -260,8 +268,14 @@ assert.match(
 
 assert.match(
   designPageSource,
+  /useDesignPageSurfaceTargetingFacade\(\{/,
+  "The workspace should compose the surface-targeting facade."
+);
+
+assert.match(
+  surfaceTargetingFacadeSource,
   /useDesignPagePlacementTargetController\(\{/,
-  "The workspace should compose the placement-target controller."
+  "The surface-targeting facade should retain placement-aware room selection ownership."
 );
 
 assert.match(

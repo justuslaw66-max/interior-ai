@@ -49,13 +49,9 @@ import { useDesignPageAiNotes } from "@/lib/useDesignPageAiNotes";
 import { useDesignPageSceneItemDrag } from "@/lib/useDesignPageSceneItemDrag";
 import { useDesignPageRoomGeometry } from "@/lib/useDesignPageRoomGeometry";
 import { useDesignPageTransientFeedback } from "@/lib/useDesignPageTransientFeedback";
-import {
-  useDesignPageSurfaceActions,
-  type RendererSurfaceTarget,
-  type SelectedWallSurfaceTarget,
-  type SurfaceTargetMode,
-} from "@/lib/useDesignPageSurfaceActions";
-import { useDesignPageSurfaceInspector } from "@/lib/useDesignPageSurfaceInspector";
+import { useDesignPageSurfaceStateController } from "@/lib/useDesignPageSurfaceStateController";
+import { useDesignPageSurfaceWorkspaceFacade } from "@/lib/useDesignPageSurfaceWorkspaceFacade";
+import { useDesignPageSurfaceTargetingFacade } from "@/lib/useDesignPageSurfaceTargetingFacade";
 import {
   useDesignPagePanelMode,
   type DesignPageEditorMode,
@@ -94,7 +90,6 @@ import { useDesignPageAiLayout } from "@/lib/useDesignPageAiLayout";
 import { useDesignPageCommandPalette } from "@/lib/useDesignPageCommandPalette";
 import { useDesignPageZoneController } from "@/lib/useDesignPageZoneController";
 import { useDesignPagePlacementRoomQueries } from "@/lib/useDesignPagePlacementRoomQueries";
-import { useDesignPagePlacementTargetController } from "@/lib/useDesignPagePlacementTargetController";
 import { useDesignPageCrossRoomItemTransfer } from "@/lib/useDesignPageCrossRoomItemTransfer";
 import { useDesignPageItemDocumentController } from "@/lib/useDesignPageItemDocumentController";
 import { useDesignPageItemSelectionController } from "@/lib/useDesignPageItemSelectionController";
@@ -362,18 +357,23 @@ export function DesignPageWorkspace() {
   const [presentModeRoomId, setPresentModeRoomId] = useState<string | null>(null);
   const [shoppingReadinessFilter, setShoppingReadinessFilter] =
     useState<ShoppingReadinessFilter>("all");
-  const [floorFinishPanelOpenSignal, setFloorFinishPanelOpenSignal] = useState(0);
-  const [activeSurfaceTarget, setActiveSurfaceTarget] = useState<SurfaceTargetMode>("floor");
-  const [selectedWallSurfaceTarget, setSelectedWallSurfaceTarget] =
-    useState<SelectedWallSurfaceTarget | null>(null);
-  const [selectedRendererSurfaceTarget, setSelectedRendererSurfaceTarget] =
-    useState<RendererSurfaceTarget | null>(null);
-  const [surfaceBrushActive, setSurfaceBrushActive] = useState(false);
-  const [surfaceBrushMaterialId, setSurfaceBrushMaterialId] = useState<string | null>(null);
-  const [surfaceBrushPaint, setSurfaceBrushPaint] = useState<{
-    colorHex: string;
-    name: string;
-  } | null>(null);
+  const {
+    state: {
+      floorFinishPanelOpenSignal,
+      activeSurfaceTarget,
+      selectedWallSurfaceTarget,
+      selectedRendererSurfaceTarget,
+      surfaceBrushActive,
+      surfaceBrushMaterialId,
+      surfaceBrushPaint,
+    },
+    actions: surfaceStateActions,
+  } = useDesignPageSurfaceStateController();
+  const {
+    setActiveSurfaceTarget,
+    setSelectedWallSurfaceTarget,
+    setSelectedRendererSurfaceTarget,
+  } = surfaceStateActions;
   const aiDesignEnabled = true;
 
   // Editor Modes
@@ -1765,100 +1765,34 @@ export function DesignPageWorkspace() {
       },
     },
   });
-  const handleOpenFloorEditorForRoom = useCallback(
-    (roomId?: string | null) => {
-      const targetRoomId = roomId ?? selectedPlanRoomId ?? designSnapshot.activeRoomId;
-      if (!targetRoomId) return;
-
-      if (designSnapshot.activeRoomId !== targetRoomId) {
-        handleSwitchRoom(targetRoomId);
-      }
-
-      clearNonRoomSelection();
-      setSelectedPlanRoomId(targetRoomId);
-      setActiveSurfaceTarget("floor");
-      goPlan();
-      setDesignPanelOpen(true);
-      setDesignPanelCollapsed(false);
-      surfaceInspectorUiActions.closeMaterialPicker();
-      setFloorFinishPanelOpenSignal((signal) => signal + 1);
-      showRuleToast("Choose a floor material from Surfaces");
-      track("floor_finish_editor_opened", {
-        roomId: targetRoomId,
-        source: "selected_room",
-      });
+  const {
+    derived: surfaceWorkspaceDerived,
+    actions: surfaceWorkspaceActions,
+  } = useDesignPageSurfaceWorkspaceFacade({
+    state: {
+      document: { activeRoomId: designSnapshot.activeRoomId },
+      selection: { selectedPlanRoomId },
+      surface: { selectedWallSurfaceTarget, surfaceBrushPaint },
     },
-    [
-      clearNonRoomSelection,
-      designSnapshot.activeRoomId,
-      goPlan,
-      handleSwitchRoom,
-      selectedPlanRoomId,
-      showRuleToast,
-      surfaceInspectorUiActions,
-    ]
-  );
-  const handleOpenWallMaterialEditorForRoom = useCallback(
-    (roomId: string, faceId: string) => {
-      if (designSnapshot.activeRoomId !== roomId) {
-        handleSwitchRoom(roomId);
-      }
-
-      clearNonRoomSelection();
-      setSelectedPlanRoomId(roomId);
-      setSelectedWallSurfaceTarget({ roomId, faceId });
-      setActiveSurfaceTarget("selected_wall");
-      goPlan();
-      setDesignPanelOpen(true);
-      setDesignPanelCollapsed(false);
-      surfaceInspectorUiActions.closeMaterialPicker();
-      setFloorFinishPanelOpenSignal((signal) => signal + 1);
-      showRuleToast("Choose a wall finish from Surfaces");
-      track("wall_finish_editor_opened", {
-        roomId,
-        faceId,
-        source: "selected_room",
-      });
+    configuration: { isClientPreview, liveCatalogReady },
+    refs: { designSnapshot: designSnapshotRef },
+    actions: {
+      document: {
+        setDesignSnapshot,
+        runHistoryTransaction,
+        runCoalescedHistoryTransaction,
+      },
+      selection: { clearNonRoomSelection, setSelectedPlanRoomId },
+      surfaceState: surfaceStateActions,
+      navigation: { switchRoom: handleSwitchRoom, goPlan },
+      panels: {
+        setDesignPanelOpen,
+        setDesignPanelCollapsed,
+        inspectorUi: surfaceInspectorUiActions,
+      },
+      feedback: { showToast: showRuleToast, track },
     },
-    [
-      clearNonRoomSelection,
-      designSnapshot.activeRoomId,
-      goPlan,
-      handleSwitchRoom,
-      showRuleToast,
-      surfaceInspectorUiActions,
-    ]
-  );
-  const handleOpenCeilingEditorForRoom = useCallback(
-    (roomId: string) => {
-      if (designSnapshot.activeRoomId !== roomId) {
-        handleSwitchRoom(roomId);
-      }
-
-      clearNonRoomSelection();
-      setSelectedPlanRoomId(roomId);
-      setSelectedWallSurfaceTarget(null);
-      setActiveSurfaceTarget("ceiling");
-      goPlan();
-      setDesignPanelOpen(true);
-      setDesignPanelCollapsed(false);
-      surfaceInspectorUiActions.closeMaterialPicker();
-      setFloorFinishPanelOpenSignal((signal) => signal + 1);
-      showRuleToast("Choose a ceiling paint from Surfaces");
-      track("ceiling_finish_editor_opened", {
-        roomId,
-        source: "selected_ceiling",
-      });
-    },
-    [
-      clearNonRoomSelection,
-      designSnapshot.activeRoomId,
-      goPlan,
-      handleSwitchRoom,
-      showRuleToast,
-      surfaceInspectorUiActions,
-    ]
-  );
+  });
   const {
     state: {
       pendingTemplateReplacement: pendingPlanTemplateReplacement,
@@ -1917,53 +1851,6 @@ export function DesignPageWorkspace() {
       runHistoryTransaction,
       runCoalescedHistoryTransaction,
       showRuleToast,
-    },
-  });
-  const {
-    canApplySurfaceBrush,
-    actions: {
-      applyFloorMaterialToRoom: handleApplyFloorMaterialToRoom,
-      applyFloorSizeVariantToRoom: handleApplyFloorSizeVariantToRoom,
-      applyFloorMaterialToAllRooms: handleApplyFloorMaterialToAllRooms,
-      applyWallMaterialToRoom: handleApplyWallMaterialToRoom,
-      applyWallMaterialToAllRooms: handleApplyWallMaterialToAllRooms,
-      applyWallPaintToRoom: handleApplyWallPaintToRoom,
-      applyWallPaintToAllRooms: handleApplyWallPaintToAllRooms,
-      applyCeilingPaintToRoom: handleApplyCeilingPaintToRoom,
-      applyCeilingPaintToAllRooms: handleApplyCeilingPaintToAllRooms,
-      resetActiveCeilingSurface: handleResetActiveCeilingSurface,
-      changeActiveWallSurfaceSettings: handleActiveWallSurfaceSettingsChange,
-      resetActiveWallSurface: handleResetActiveWallSurface,
-      changeSurfaceTargetMode: handleSurfaceTargetModeChange,
-      changeSurfaceBrushActive: handleSurfaceBrushActiveChange,
-      selectSurfaceMaterialForBrush: handleSurfaceMaterialSelectedForBrush,
-      selectSurfacePaintForBrush: handleSurfacePaintSelectedForBrush,
-      rotateActiveFloorMaterial: handleRotateActiveFloorMaterial,
-      resetActiveFloorMaterialPattern: handleResetActiveFloorMaterialPattern,
-      changeActiveFloorMaterialScale: handleActiveFloorMaterialScaleChange,
-      changeActiveFloorSurfaceSettings: handleActiveFloorSurfaceSettingsChange,
-    },
-  } = useDesignPageSurfaceActions({
-    state: {
-      selectedWallSurfaceTarget,
-      surfaceBrushPaint,
-    },
-    configuration: {
-      isClientPreview,
-      liveCatalogReady,
-    },
-    adapters: {
-      designSnapshotRef,
-      setDesignSnapshot,
-      runHistoryTransaction,
-      runCoalescedHistoryTransaction,
-      showRuleToast,
-      setActiveSurfaceTarget,
-      setSelectedRendererSurfaceTarget,
-      setSelectedWallSurfaceTarget,
-      setSurfaceBrushActive,
-      setSurfaceBrushMaterialId,
-      setSurfaceBrushPaint,
     },
   });
   const cameraNavigation = useDesignPageCameraNavigation({
@@ -2438,9 +2325,10 @@ export function DesignPageWorkspace() {
       setShowGrid, setSnapEnabled, setItemCartOpen,
       changeViewMode: handleEditorViewModeChange,
       runAiLayout, regenerateAiLayout,
-      changeWallSurfaceSettings: handleActiveWallSurfaceSettingsChange,
-      resetWallSurface: handleResetActiveWallSurface,
-      resetCeilingSurface: handleResetActiveCeilingSurface,
+      changeWallSurfaceSettings:
+        surfaceWorkspaceActions.changeActiveWallSurfaceSettings,
+      resetWallSurface: surfaceWorkspaceActions.resetActiveWallSurface,
+      resetCeilingSurface: surfaceWorkspaceActions.resetActiveCeilingSurface,
       commitItems, updateSelection,
     },
   });
@@ -2665,49 +2553,50 @@ export function DesignPageWorkspace() {
     },
   });
 
+  const canEditPlanGeometry = !isClientPreview;
   const {
+    state: { surfaceInspector: selectedSurfaceInspectorState },
     actions: {
       targetPendingCatalogPlacementToRoom,
       handlePlacementAwareRoomSelect,
       handleRendererSurfaceTargetSelect,
+      surfaceInspector: selectedSurfaceInspectorActions,
     },
-  } = useDesignPagePlacementTargetController({
+  } = useDesignPageSurfaceTargetingFacade({
     state: {
-      editorMode,
-      surfaceBrush: {
-        active: surfaceBrushActive,
-        materialId: surfaceBrushMaterialId,
-        paint: surfaceBrushPaint,
+      targeting: { editorMode, surfaceBrush: {
+        active: surfaceBrushActive, materialId: surfaceBrushMaterialId, paint: surfaceBrushPaint,
+      } },
+      inspector: {
+        context: surfaceInspectorContext, selectedPlanRoom: selectedPlanRoomContext,
+        hasSelectedItem: Boolean(selectedItem), hasVisiblePlanOpening: Boolean(visiblePlanOpening),
+        hasSelectedPlanFixedElement: Boolean(selectedPlanFixedElement), hasSelectedPlanAnnotation: Boolean(selectedPlanAnnotation),
+        planMeasurementUnit,
       },
     },
-    configuration: { canApplySurfaceBrush },
+    configuration: { targeting: {
+      canApplySurfaceBrush: surfaceWorkspaceDerived.canApplySurfaceBrush,
+    },
+      inspector: { canEdit, canEditPlanGeometry, isDesigner },
+    },
     refs: { designSnapshot: designSnapshotRef },
     actions: {
-      placement: {
-        targetPendingCatalogPlacementToRoom:
-          targetPendingCatalogPlacementToRoomAction,
-      },
-      selection: {
-        clearNonRoomSelection,
-        setSelectedPlanRoomId,
-        setSelectedRendererSurfaceTarget,
-        setSelectedWallSurfaceTarget,
-      },
-      navigation: {
-        preserveCameraAfterPlanOverlaySelection,
-        resetFloorPlanTraceRoomPoints:
-          handleResetFloorPlanTraceRoomPoints,
-        switchRoom: handleSwitchRoom,
-        setEditorMode,
-      },
-      surface: {
-        setActiveSurfaceTarget,
-        applyFloorMaterialToRoom: handleApplyFloorMaterialToRoom,
-        applyCeilingPaintToRoom: handleApplyCeilingPaintToRoom,
-        applyWallPaintToRoom: handleApplyWallPaintToRoom,
-        applyWallMaterialToRoom: handleApplyWallMaterialToRoom,
-      },
-      telemetry: { track },
+      targetPendingCatalogPlacementToRoom:
+        targetPendingCatalogPlacementToRoomAction,
+      clearNonRoomSelection,
+      setSelectedPlanRoomId,
+      setSelectedRendererSurfaceTarget,
+      setSelectedWallSurfaceTarget,
+      preserveCameraAfterPlanOverlaySelection,
+      resetFloorPlanTraceRoomPoints: handleResetFloorPlanTraceRoomPoints,
+      switchRoom: handleSwitchRoom,
+      setEditorMode,
+      setActiveSurfaceTarget,
+      surfaceWorkspace: surfaceWorkspaceActions,
+      track,
+      inspectorUi: surfaceInspectorUiActions,
+      changeSelectedWallHeight: handleSelectedWallHeightChange,
+      resetSelectedWallHeight: handleResetSelectedWallHeight,
     },
   });
 
@@ -2724,61 +2613,6 @@ export function DesignPageWorkspace() {
     [goFurnish, previewCatalogPlacementIntent, showRuleToast]
   );
 
-  const canEditPlanGeometry = !isClientPreview;
-
-  const {
-    state: selectedSurfaceInspectorState,
-    actions: selectedSurfaceInspectorActions,
-  } = useDesignPageSurfaceInspector({
-    state: {
-      context: surfaceInspectorContext,
-      selectedPlanRoom: selectedPlanRoomContext,
-      hasSelectedItem: Boolean(selectedItem),
-      hasVisiblePlanOpening: Boolean(visiblePlanOpening),
-      hasSelectedPlanFixedElement: Boolean(selectedPlanFixedElement),
-      hasSelectedPlanAnnotation: Boolean(selectedPlanAnnotation),
-      planMeasurementUnit,
-    },
-    configuration: {
-      canEdit,
-      canEditPlanGeometry,
-      isDesigner,
-    },
-    actions: {
-      surface: {
-        applyFloorMaterialToRoom: handleApplyFloorMaterialToRoom,
-        applyFloorSizeVariantToRoom: handleApplyFloorSizeVariantToRoom,
-        applyFloorMaterialToAllRooms: handleApplyFloorMaterialToAllRooms,
-        applyWallMaterialToRoom: handleApplyWallMaterialToRoom,
-        applyWallMaterialToAllRooms: handleApplyWallMaterialToAllRooms,
-        applyWallPaintToRoom: handleApplyWallPaintToRoom,
-        applyWallPaintToAllRooms: handleApplyWallPaintToAllRooms,
-        applyCeilingPaintToRoom: handleApplyCeilingPaintToRoom,
-        applyCeilingPaintToAllRooms: handleApplyCeilingPaintToAllRooms,
-        resetActiveCeilingSurface: handleResetActiveCeilingSurface,
-        changeActiveWallSurfaceSettings:
-          handleActiveWallSurfaceSettingsChange,
-        resetActiveWallSurface: handleResetActiveWallSurface,
-        changeSurfaceTargetMode: handleSurfaceTargetModeChange,
-        changeSurfaceBrushActive: handleSurfaceBrushActiveChange,
-        selectSurfaceMaterialForBrush: handleSurfaceMaterialSelectedForBrush,
-        selectSurfacePaintForBrush: handleSurfacePaintSelectedForBrush,
-        rotateActiveFloorMaterial: handleRotateActiveFloorMaterial,
-        resetActiveFloorMaterialPattern:
-          handleResetActiveFloorMaterialPattern,
-        changeActiveFloorMaterialScale:
-          handleActiveFloorMaterialScaleChange,
-        changeActiveFloorSurfaceSettings:
-          handleActiveFloorSurfaceSettingsChange,
-      },
-      inspectorUi: surfaceInspectorUiActions,
-      changeSelectedWallHeight: handleSelectedWallHeightChange,
-      resetSelectedWallHeight: handleResetSelectedWallHeight,
-      openFloorEditorForRoom: handleOpenFloorEditorForRoom,
-      openWallMaterialEditorForRoom: handleOpenWallMaterialEditorForRoom,
-      openCeilingEditorForRoom: handleOpenCeilingEditorForRoom,
-    },
-  });
   const addSelectedImportedToRoom = useCallback(() => {
     if (!selectedImportedProductId) return;
     const related = getRelatedImportedProductIds(selectedImportedProductId);
@@ -3380,7 +3214,8 @@ export function DesignPageWorkspace() {
           selectSurfaceTarget: handleRendererSurfaceTargetSelect,
           clearSelection: clearAllSelection, rename: handleRenameSelectedPlanRoom,
           duplicate: handleDuplicateSelectedPlanRoom, delete: handleDeleteSelectedPlanRoom,
-          editFloor: handleOpenFloorEditorForRoom, fit: handleFitSelectedPlanRoom,
+          editFloor: surfaceWorkspaceActions.openFloorEditorForRoom,
+          fit: handleFitSelectedPlanRoom,
           move: handleMoveRoom2D, resize: handleResizeRoom2D,
           setDragging: handlePlanRoomDragStateChange,
           setResizing: handlePlanRoomResizeStateChange,
@@ -3505,7 +3340,8 @@ export function DesignPageWorkspace() {
           duplicate: duplicateSelectedItem, delete: deleteSelectedItem,
         },
         room: {
-          editFloor: handleOpenFloorEditorForRoom, fit: handleFitSelectedPlanRoom,
+          editFloor: surfaceWorkspaceActions.openFloorEditorForRoom,
+          fit: handleFitSelectedPlanRoom,
           duplicate: handleDuplicateSelectedPlanRoom, delete: handleDeleteSelectedPlanRoom,
         },
         surfaceInspector: selectedSurfaceInspectorActions,
@@ -3751,15 +3587,17 @@ export function DesignPageWorkspace() {
         activeRoomWallSettings, activeRoomSelectedWallSettings, activeRoomCeilingSettings, surfaceBrushActive, surfaceBrushMaterialId,
         surfaceBrushPaintColorHex: surfaceBrushPaint?.colorHex ?? null, surfaceBrushPaintName: surfaceBrushPaint?.name ?? null,
         surfaceRooms: surfaceRoomSummaries, floorFinishPanelOpenSignal, floorOptions, showFloorPropertiesPanel: inlineFloorPropertiesPanelVisible },
-      actions: { onApplyFloorMaterialToRoom: handleApplyFloorMaterialToRoom, onApplyFloorMaterialToAllRooms: handleApplyFloorMaterialToAllRooms,
-        onRotateActiveFloorMaterial: handleRotateActiveFloorMaterial, onResetActiveFloorMaterialPattern: handleResetActiveFloorMaterialPattern,
-        onActiveFloorMaterialScaleChange: handleActiveFloorMaterialScaleChange,
-        onActiveFloorSurfaceSettingsChange: handleActiveFloorSurfaceSettingsChange, onSurfaceTargetChange: handleSurfaceTargetModeChange,
-        onSurfaceBrushActiveChange: handleSurfaceBrushActiveChange, onSurfaceMaterialSelected: handleSurfaceMaterialSelectedForBrush,
-        onSurfacePaintSelected: handleSurfacePaintSelectedForBrush, onApplyWallMaterialToRoom: handleApplyWallMaterialToRoom,
-        onApplyWallMaterialToAllRooms: handleApplyWallMaterialToAllRooms, onApplyWallPaintToRoom: handleApplyWallPaintToRoom,
-        onApplyWallPaintToAllRooms: handleApplyWallPaintToAllRooms, onApplyCeilingPaintToRoom: handleApplyCeilingPaintToRoom,
-        onApplyCeilingPaintToAllRooms: handleApplyCeilingPaintToAllRooms },
+      actions: {
+        onApplyFloorMaterialToRoom: surfaceWorkspaceActions.applyFloorMaterialToRoom, onApplyFloorMaterialToAllRooms: surfaceWorkspaceActions.applyFloorMaterialToAllRooms,
+        onRotateActiveFloorMaterial: surfaceWorkspaceActions.rotateActiveFloorMaterial, onResetActiveFloorMaterialPattern: surfaceWorkspaceActions.resetActiveFloorMaterialPattern,
+        onActiveFloorMaterialScaleChange: surfaceWorkspaceActions.changeActiveFloorMaterialScale,
+        onActiveFloorSurfaceSettingsChange: surfaceWorkspaceActions.changeActiveFloorSurfaceSettings, onSurfaceTargetChange: surfaceWorkspaceActions.changeSurfaceTargetMode,
+        onSurfaceBrushActiveChange: surfaceWorkspaceActions.changeSurfaceBrushActive, onSurfaceMaterialSelected: surfaceWorkspaceActions.selectSurfaceMaterialForBrush,
+        onSurfacePaintSelected: surfaceWorkspaceActions.selectSurfacePaintForBrush, onApplyWallMaterialToRoom: surfaceWorkspaceActions.applyWallMaterialToRoom,
+        onApplyWallMaterialToAllRooms: surfaceWorkspaceActions.applyWallMaterialToAllRooms, onApplyWallPaintToRoom: surfaceWorkspaceActions.applyWallPaintToRoom,
+        onApplyWallPaintToAllRooms: surfaceWorkspaceActions.applyWallPaintToAllRooms, onApplyCeilingPaintToRoom: surfaceWorkspaceActions.applyCeilingPaintToRoom,
+        onApplyCeilingPaintToAllRooms: surfaceWorkspaceActions.applyCeilingPaintToAllRooms,
+      },
     },
     shopping: {
       state: { catalogItems, selectedImportedFamilyKey, selectedImportedProductId, importedFamilyOptions, importedModelOptions,

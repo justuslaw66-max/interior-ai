@@ -183,6 +183,10 @@ const placementTargetControllerSource = readFileSync(
   join(root, "lib/useDesignPagePlacementTargetController.ts"),
   "utf8"
 );
+const surfaceTargetingFacadeSource = readFileSync(
+  join(root, "lib/useDesignPageSurfaceTargetingFacade.ts"),
+  "utf8"
+);
 const designPageSource = readFileSync(
   join(root, "components/editor/design-page/DesignPageWorkspace.tsx"),
   "utf8"
@@ -220,6 +224,10 @@ assert.match(
 );
 assert.match(
   designPageSource,
+  /useDesignPageSurfaceTargetingFacade\(\{/
+);
+assert.match(
+  surfaceTargetingFacadeSource,
   /useDesignPagePlacementTargetController\(\{/
 );
 assert.match(designPageSource, /select: handlePlacementAwareRoomSelect,/);
