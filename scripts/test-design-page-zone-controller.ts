@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
+import { canAutoCreateSeatingZoneForEditor } from "../lib/design-page-zone-orchestration";
+
 const root = process.cwd();
 const readSource = (relativePath: string) =>
   readFileSync(join(root, relativePath), "utf8");
@@ -111,15 +113,55 @@ assert.match(
   "Manual creation should reconcile auto zones, persist active-room zones, and preserve history/select ordering."
 );
 
-for (const gate of [
-  'editorMode !== "design" || isClientPreview',
-  "seatingZoneAutoDisabledRef.current",
+for (const fixture of [
+  {
+    editorMode: "design",
+    source: "editor",
+    isClientPreview: false,
+    expected: true,
+  },
+  {
+    editorMode: "adjust",
+    source: "editor",
+    isClientPreview: false,
+    expected: false,
+  },
+  {
+    editorMode: "adjust",
+    source: "onboarding_post_placement",
+    isClientPreview: false,
+    expected: true,
+  },
+  {
+    editorMode: "ai",
+    source: "onboarding_post_placement",
+    isClientPreview: false,
+    expected: false,
+  },
+  {
+    editorMode: "adjust",
+    source: "onboarding_post_placement",
+    isClientPreview: true,
+    expected: false,
+  },
 ] as const) {
-  assert.ok(
-    normalizedController.includes(`if (${gate}) return;`),
-    `Automatic seating-zone creation should preserve the ${gate} gate.`
+  assert.equal(
+    canAutoCreateSeatingZoneForEditor(fixture),
+    fixture.expected,
+    `${fixture.source} should ${fixture.expected ? "be allowed" : "be blocked"} in ${fixture.editorMode}${fixture.isClientPreview ? " client preview" : " mode"}.`
   );
 }
+assert.match(
+  controllerSource,
+  /canAutoCreateSeatingZoneForEditor\(\{[\s\S]*?editorMode,[\s\S]*?isClientPreview,[\s\S]*?source: request\.source/,
+  "The controller should enforce the shared source-aware editor-mode policy."
+);
+assert.ok(
+  normalizedController.includes(
+    "if (seatingZoneAutoDisabledRef.current) return false;"
+  ),
+  "Automatic seating-zone creation should preserve the user opt-out gate."
+);
 assert.match(
   controllerSource,
   /const nextZones = reconcileZonesForItems\(\{[\s\S]*?zones: next\.manualZones,[\s\S]*?allItems: itemsRef\.current,[\s\S]*?catalogItems,[\s\S]*?history\.begin\("auto_create_seating_zone"\);[\s\S]*?setDesignSnapshot\(\(previous\) =>[\s\S]*?updateActiveRoomZones\(previous, nextZones\)[\s\S]*?history\.commit\(\);[\s\S]*?setSelectedZoneId\(next\.zoneId\);/,
@@ -132,8 +174,8 @@ assert.match(
 );
 assert.match(
   onboardingSource,
-  /autoCreateSeatingZone\(sofaItem\);[\s\S]*?track\("seating_zone_auto_created",\s*\{\s*design_id: state\.designId,\s*isGuest: state\.isGuest,\s*timeSinceStartMs:/,
-  "Onboarding should retain its independent first-sofa analytics producer."
+  /const seatingZoneReady = autoCreateSeatingZone\(sofaItem, \{\s*source: "onboarding_post_placement",\s*\}\);\s*if \(!seatingZoneReady\) return;\s*firstSofaHandledRef\.current = true;[\s\S]*?track\("seating_zone_auto_created",\s*\{\s*design_id: state\.designId,\s*isGuest: state\.isGuest,\s*timeSinceStartMs:/,
+  "Onboarding should use the explicit post-placement source and latch only after the controller accepts the request."
 );
 
 for (const historyLabel of [

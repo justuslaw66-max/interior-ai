@@ -1,15 +1,21 @@
-import { type Page } from '@playwright/test';
-import { test, expect } from './fixtures';
-import { addCatalogDrawerItemToRoom, openCatalogPreview } from './variant-test-utils';
+import { type Page } from "@playwright/test";
 
-const ROTATION_TEST_ITEM_ID = 'coffee-real-castlery-hugg-nesting-square-performance-basalt-closed';
+import { test, expect } from "./fixtures";
+import {
+  addCatalogDrawerItemToRoom,
+  getSelectedItemPanel,
+  openCatalogPreview,
+} from "./variant-test-utils";
+
+const ROTATION_TEST_ITEM_ID =
+  "coffee-real-castlery-hugg-nesting-square-performance-basalt-closed";
 
 function normalizeAngle(angle: number) {
   return ((angle % 360) + 360) % 360;
 }
 
 async function readAngle(page: Page) {
-  const text = await page.locator('[data-testid="rotation-angle-label"]').innerText();
+  const text = await page.getByTestId("rotation-angle-label").innerText();
   const match = text.match(/Angle\s+(-?\d+)/i);
   if (!match) {
     throw new Error(`Unable to parse angle from label: ${text}`);
@@ -18,113 +24,145 @@ async function readAngle(page: Page) {
 }
 
 async function expectAngle(page: Page, expected: number) {
-  await expect.poll(() => readAngle(page), { timeout: 5000 }).toBe(normalizeAngle(expected));
+  await expect
+    .poll(() => readAngle(page), { timeout: 5_000 })
+    .toBe(normalizeAngle(expected));
 }
 
-async function setupSelectedItem(page: Page): Promise<boolean> {
-  await page.goto('/design');
-  await page.waitForLoadState('domcontentloaded');
-  await expect(page.getByTestId('scene-canvas').first()).toBeVisible({ timeout: 20000 });
+async function setupSelectedItem(page: Page): Promise<void> {
+  await page.route("**/api/me", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ plan: "pro", source: "playwright" }),
+    });
+  });
+  await page.addInitScript(() => {
+    window.localStorage.clear();
+    window.sessionStorage.clear();
+    window.localStorage.setItem("interior-ai:beta-start-dismissed", "1");
+  });
 
-  const opened = await openCatalogPreview(page, ROTATION_TEST_ITEM_ID, 'Hugg');
-  if (!opened) return false;
+  const planReady = page.waitForResponse(
+    (candidate) =>
+      new URL(candidate.url()).pathname === "/api/me" &&
+      candidate.status() === 200,
+    { timeout: 120_000 },
+  );
+  const response = await page.goto("/design?mode=designer", {
+    waitUntil: "domcontentloaded",
+  });
+  expect(response?.status()).toBe(200);
+  await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
+    timeout: 30_000,
+  });
+  await planReady;
+  await expect(page.getByTestId("editor-tool-rail")).toBeVisible({
+    timeout: 15_000,
+  });
 
+  const opened = await openCatalogPreview(
+    page,
+    ROTATION_TEST_ITEM_ID,
+    "Hugg",
+  );
+  expect(opened, "The Hugg rotation fixture must be available").toBe(true);
+  await expect(page.getByTestId("catalog-item-drawer")).toContainText(
+    "Hugg Nesting Square Coffee Table",
+  );
   await addCatalogDrawerItemToRoom(page);
 
-  const rotationLabel = page.locator('[data-testid="rotation-angle-label"]');
-  if (!(await rotationLabel.isVisible().catch(() => false))) {
-    await page.locator('[data-testid="editor-workflow-furnish"]:visible').first().click().catch(() => undefined);
-    await page.waitForTimeout(250);
-  }
+  const selectedItemPanel = getSelectedItemPanel(page);
+  await expect(selectedItemPanel).toBeVisible({ timeout: 15_000 });
+  await expect(selectedItemPanel).toContainText(
+    "Hugg Nesting Square Coffee Table",
+  );
 
-  const rotationReady = await expect(rotationLabel)
-    .toBeVisible({ timeout: 10000 })
-    .then(() => true)
-    .catch(() => false);
-  if (!rotationReady) return false;
-
-  const rotationToggle = page.getByTestId('rotation-controls-toggle');
-  if ((await rotationToggle.getAttribute('aria-expanded').catch(() => null)) !== 'true') {
+  const rotationToggle = selectedItemPanel.getByTestId(
+    "rotation-controls-toggle",
+  );
+  await expect(rotationToggle).toBeVisible();
+  await expect(rotationToggle).toBeEnabled();
+  if ((await rotationToggle.getAttribute("aria-expanded")) !== "true") {
     await rotationToggle.click();
   }
+  await expect(rotationToggle).toHaveAttribute("aria-expanded", "true");
 
-  await page.getByTestId('rotation-btn-reset').click();
+  await expect(page.getByTestId("rotation-angle-label")).toBeVisible();
+  await expect(page.getByTestId("rotation-btn-reset")).toBeVisible();
+  await expect(page.getByTestId("rotation-btn-reset")).toBeEnabled();
+  await expect(page.getByTestId("rotation-input")).toBeVisible();
+  await expect(page.getByTestId("rotation-input")).toBeEnabled();
+  await expect(page.getByTestId("rotation-input-apply")).toBeVisible();
+  await expect(page.getByTestId("rotation-input-apply")).toBeEnabled();
+
+  await page.getByTestId("rotation-btn-reset").click();
   await expectAngle(page, 0);
-  return true;
 }
 
-test.describe('11. Rotation Shortcuts And Presets', () => {
-  test('Q/E and R and 0 rotate as expected', async ({ page }) => {
-    const ready = await setupSelectedItem(page);
-    if (!ready) {
-      test.info().annotations.push({
-        type: 'note',
-        description: 'Skipping keyboard rotation assertions because editor item selection was unavailable',
-      });
-      return;
-    }
+test.describe("11. Rotation Shortcuts And Presets", () => {
+  test("Q/E and R and 0 rotate as expected", async ({ page }) => {
+    test.setTimeout(180_000);
+    await setupSelectedItem(page);
 
     const start = await readAngle(page);
 
-    await page.keyboard.press('E');
+    await page.keyboard.press("E");
     await expectAngle(page, start + 15);
 
-    await page.keyboard.press('Q');
+    await page.keyboard.press("Q");
     await expectAngle(page, start);
 
-    await page.keyboard.press('R');
+    await page.keyboard.press("R");
     await expectAngle(page, start + 90);
 
-    await page.keyboard.press('0');
+    await page.keyboard.press("0");
     await expectAngle(page, 0);
   });
 
-  test('snap presets update keyboard step behavior', async ({ page }) => {
-    const ready = await setupSelectedItem(page);
-    if (!ready) {
-      test.info().annotations.push({
-        type: 'note',
-        description: 'Skipping snap preset assertions because editor item selection was unavailable',
-      });
-      return;
-    }
+  test("snap presets update keyboard step behavior", async ({ page }) => {
+    test.setTimeout(180_000);
+    await setupSelectedItem(page);
 
     const start = await readAngle(page);
 
-    await page.locator('[data-testid="rotation-snap-preset-5"]').click();
-    await page.keyboard.press('E');
+    const precisePreset = page.getByTestId("rotation-snap-preset-5");
+    await expect(precisePreset).toBeVisible();
+    await expect(precisePreset).toBeEnabled();
+    await precisePreset.click();
+    await page.keyboard.press("E");
     await expectAngle(page, start + 5);
 
-    await page.locator('[data-testid="rotation-snap-preset-free"]').click();
-    await page.keyboard.press('E');
+    const freePreset = page.getByTestId("rotation-snap-preset-free");
+    await expect(freePreset).toBeVisible();
+    await expect(freePreset).toBeEnabled();
+    await freePreset.click();
+    await page.keyboard.press("E");
     await expectAngle(page, start + 6);
   });
 
-  test('typing in rotation input does not trigger keyboard rotate shortcut', async ({ page }) => {
-    const ready = await setupSelectedItem(page);
-    if (!ready) {
-      test.info().annotations.push({
-        type: 'note',
-        description: 'Skipping rotation input assertions because editor item selection was unavailable',
-      });
-      return;
-    }
+  test("exact-angle input ignores rotate shortcuts and applies its value", async ({
+    page,
+  }) => {
+    test.setTimeout(180_000);
+    await setupSelectedItem(page);
 
     const start = await readAngle(page);
+    const input = page.getByTestId("rotation-input");
+    const applyButton = page.getByTestId("rotation-input-apply");
 
-    const input = page.locator('[data-testid="rotation-input"]');
-    if ((await input.count()) === 0) {
-      test.info().annotations.push({
-        type: 'note',
-        description: 'Skipping rotation input assertion because exact-angle input is not exposed in this runtime',
-      });
-      return;
-    }
-    await input.click();
-    await page.keyboard.type('33');
-    await page.keyboard.press('E');
-    await page.waitForTimeout(150);
-
+    await expect(input).toHaveAttribute(
+      "aria-label",
+      "Exact rotation angle in degrees",
+    );
+    await input.fill("33");
+    await expect(input).toHaveValue("33");
+    await page.keyboard.press("E");
     await expectAngle(page, start);
+
+    await input.fill("33");
+    await applyButton.click();
+    await expectAngle(page, 33);
+    await expect(input).toHaveValue("33");
   });
 });

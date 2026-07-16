@@ -20,6 +20,7 @@ import {
 } from "@/lib/onboarding";
 import type { Plan } from "@/lib/plan";
 import type { DesignItem, ZoneMin } from "@/lib/room-types";
+import type { AutoSeatingZoneCreationRequest } from "@/lib/design-page-zone-orchestration";
 import type { FunnelEventName } from "@/lib/design-page-paywall";
 import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
 
@@ -60,7 +61,10 @@ export type DesignPageOnboardingState = {
 };
 
 export type DesignPageOnboardingActions = {
-  autoCreateSeatingZone: (sofaItem: DesignItem) => void;
+  autoCreateSeatingZone: (
+    sofaItem: DesignItem,
+    request: AutoSeatingZoneCreationRequest
+  ) => boolean;
   clampToRoom: ClampToRoom;
   showConstraintsForMoment: (results: ConstraintResult[]) => void;
   showConfidenceSummary: (results: ConstraintResult[]) => void;
@@ -391,8 +395,11 @@ export function useDesignPageOnboarding({
     });
     if (!sofaItem || firstSofaHandledRef.current) return;
 
+    const seatingZoneReady = autoCreateSeatingZone(sofaItem, {
+      source: "onboarding_post_placement",
+    });
+    if (!seatingZoneReady) return;
     firstSofaHandledRef.current = true;
-    autoCreateSeatingZone(sofaItem);
 
     const results = evaluateConstraints({
       design: { items: state.items },

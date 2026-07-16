@@ -24,7 +24,9 @@ import {
 import {
   buildAutoSeatingZone,
   buildManualZoneFromSelection,
+  canAutoCreateSeatingZoneForEditor,
   reconcileZonesForItems,
+  type AutoSeatingZoneCreationRequest,
   updateActiveRoomZones,
 } from "@/lib/design-page-zone-orchestration";
 import {
@@ -208,15 +210,31 @@ export function useDesignPageZoneController({
   ]);
 
   const autoCreateSeatingZone = useCallback(
-    (sofaItem: DesignItem) => {
-      if (editorMode !== "design" || isClientPreview) return;
-      if (seatingZoneAutoDisabledRef.current) return;
+    (
+      sofaItem: DesignItem,
+      request: AutoSeatingZoneCreationRequest
+    ): boolean => {
+      if (
+        !canAutoCreateSeatingZoneForEditor({
+          editorMode,
+          isClientPreview,
+          source: request.source,
+        })
+      ) {
+        return false;
+      }
+
+      const existingZones = zonesRef.current ?? [];
+      if (existingZones.some((zone) => zone.type === "seating")) {
+        return true;
+      }
+      if (seatingZoneAutoDisabledRef.current) return false;
 
       const next = buildAutoSeatingZone({
         sofaItem,
-        existingZones: zonesRef.current ?? [],
+        existingZones,
       });
-      if (!next) return;
+      if (!next) return false;
       const nextZones = reconcileZonesForItems({
         zones: next.manualZones,
         allItems: itemsRef.current,
@@ -235,6 +253,7 @@ export function useDesignPageZoneController({
         zoneId: next.zoneId,
         trigger: "first_sofa",
       });
+      return true;
     },
     [
       catalogItems,
