@@ -60,6 +60,13 @@ const hookSource = readFileSync(
   join(process.cwd(), "lib/useDesignPageCatalogPlacement.ts"),
   "utf8"
 );
+const recommendationModelSource = readFileSync(
+  join(
+    process.cwd(),
+    "lib/useDesignPageCatalogPlacementRecommendationModel.ts"
+  ),
+  "utf8"
+);
 const confirmPanelSource = readFileSync(
   join(
     process.cwd(),
@@ -68,7 +75,7 @@ const confirmPanelSource = readFileSync(
   "utf8"
 );
 
-assert.match(hookSource, /findBestCatalogRoomPlacement\(\{/);
+assert.match(recommendationModelSource, /findBestCatalogRoomPlacement\(\{/);
 assert.match(hookSource, /movePendingCatalogPlacementToBestRoom/);
 assert.match(confirmPanelSource, /data-testid="catalog-placement-best-room-hint"/);
 assert.match(confirmPanelSource, /data-testid="catalog-placement-best-room"/);

@@ -41,22 +41,16 @@ import type {
   LayoutVersion,
   RoomSnapshot,
 } from "@/lib/room-types";
+import { useDesignPageCatalogPlacementRecommendationModel } from "@/lib/useDesignPageCatalogPlacementRecommendationModel";
 import {
-  findBestCatalogRoomPlacement,
-  findBestCatalogVariantPlacement,
-  findCatalogPlacementImprovement,
   findRestorableCatalogPlacement,
   findSmartCatalogPlacement as findSmartCatalogPlacementPolicy,
   isCatalogPlacementTargetAcceptable as evaluateCatalogPlacementTarget,
-  resolveCatalogPlacementAssessment,
   resolveCatalogPlacementConfirmation,
   resolveCatalogPlacementQuality,
   resolveCatalogPlacementRoomTarget,
   resolveNextLastValidCatalogPlacement,
   scoreCatalogPlacementCandidate,
-  type CatalogBestRoomPlacement,
-  type CatalogBestVariantPlacement,
-  type CatalogPlacementImprovement,
   type CatalogPlacementPreviewTarget,
   type CatalogPlacementQuality,
   type CatalogPlacementRoomClampQuery,
@@ -616,99 +610,32 @@ export function useDesignPageCatalogPlacement({
     ]
   );
 
-  const pendingCatalogPlacementImprovement = useMemo<CatalogPlacementImprovement | null>(() => {
-    const targetRoom =
-      pendingPlacement
-        ? roomSnapshotById.get(pendingPlacement.roomId ?? getActiveRoomId()) ??
-          activeRoom
-        : null;
-    return findCatalogPlacementImprovement({
+  const {
+    pendingCatalogPlacementImprovement,
+    pendingCatalogBestRoomPlacement,
+    pendingCatalogBestVariantPlacement,
+    pendingCatalogPlacementAssessment,
+  } = useDesignPageCatalogPlacementRecommendationModel({
+    state: {
       pendingPlacement,
-      currentScore: pendingCatalogPlacementScore,
-      targetRoom,
-      findPlacement: findSmartCatalogPlacement,
-      scorePlacement: scoreCatalogPlacement,
-    });
-  }, [
-    activeRoom,
-    findSmartCatalogPlacement,
-    getActiveRoomId,
-    pendingPlacement,
-    pendingCatalogPlacementScore,
-    roomSnapshotById,
-    scoreCatalogPlacement,
-  ]);
-
-  const pendingCatalogBestRoomPlacement =
-    useMemo<CatalogBestRoomPlacement | null>(
-      () =>
-        findBestCatalogRoomPlacement({
-          pendingPlacement,
-          currentScore: pendingCatalogPlacementScore,
-          rooms,
-          currentRoomId:
-            pendingPlacement?.roomId ?? activeRoom?.id ?? activeRoomId,
-          findPlacement: findSmartCatalogPlacement,
-          scorePlacement: scoreCatalogPlacement,
-        }),
-      [
-        activeRoom?.id,
-        activeRoomId,
-        findSmartCatalogPlacement,
-        pendingPlacement,
-        pendingCatalogPlacementScore,
-        rooms,
-        scoreCatalogPlacement,
-      ]
-    );
-
-  const pendingCatalogBestVariantPlacement = useMemo<CatalogBestVariantPlacement | null>(() => {
-    const targetRoom =
-      pendingPlacement
-        ? roomSnapshotById.get(pendingPlacement.roomId ?? getActiveRoomId()) ??
-          activeRoom
-        : null;
-    return findBestCatalogVariantPlacement({
-      pendingPlacement,
-      currentScore: pendingCatalogPlacementScore,
-      targetRoom,
-      product: pendingPlacement
-        ? CATALOG_ITEMS[pendingPlacement.productId] ?? null
-        : null,
-      findPlacement: findSmartCatalogPlacement,
-      scorePlacement: scoreCatalogPlacement,
-    });
-  }, [
-    activeRoom,
-    findSmartCatalogPlacement,
-    getActiveRoomId,
-    pendingPlacement,
-    pendingCatalogPlacementScore,
-    roomSnapshotById,
-    scoreCatalogPlacement,
-  ]);
-
-  const pendingCatalogPlacementAssessment = useMemo(
-    () =>
-      resolveCatalogPlacementAssessment({
-        pendingPlacement,
-        blocked: pendingCatalogPlacementBlocked,
-        blockerLabel: pendingCatalogPlacementBlockerLabel,
-        targetRoomName: pendingCatalogPlacementRoom?.name ?? null,
-        score: pendingCatalogPlacementScore,
-        improvement: pendingCatalogPlacementImprovement,
-        restorablePlacement: restorableCatalogPlacement,
-      }),
-    [
-      pendingCatalogPlacementBlocked,
-      pendingCatalogPlacementBlockerLabel,
-      pendingCatalogPlacementImprovement,
-      pendingCatalogPlacementRoom?.name,
-      pendingCatalogPlacementScore,
-      pendingPlacement,
-      restorableCatalogPlacement,
-    ]
-  );
+      pendingScore: pendingCatalogPlacementScore,
+      blocked: pendingCatalogPlacementBlocked,
+      blockerLabel: pendingCatalogPlacementBlockerLabel,
+      pendingRoom: pendingCatalogPlacementRoom,
+      restorablePlacement: restorableCatalogPlacement,
+    },
+    configuration: {
+      activeRoom,
+      activeRoomId,
+      rooms,
+      roomSnapshotById,
+    },
+    queries: {
+      getActiveRoomId,
+      findSmartCatalogPlacement,
+      scoreCatalogPlacement,
+    },
+  });
   const {
     scoreHardInvalid: pendingCatalogPlacementScoreHardInvalid,
     hardInvalid: pendingCatalogPlacementHardInvalid,

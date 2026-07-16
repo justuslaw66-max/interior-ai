@@ -91,6 +91,13 @@ const hookSource = readFileSync(
   join(process.cwd(), "lib/useDesignPageCatalogPlacement.ts"),
   "utf8"
 );
+const recommendationModelSource = readFileSync(
+  join(
+    process.cwd(),
+    "lib/useDesignPageCatalogPlacementRecommendationModel.ts"
+  ),
+  "utf8"
+);
 const scenePreviewSource = readFileSync(
   join(
     process.cwd(),
@@ -106,7 +113,7 @@ const confirmPanelSource = readFileSync(
   "utf8"
 );
 
-assert.match(hookSource, /resolveCatalogPlacementAssessment\(\{/);
+assert.match(recommendationModelSource, /resolveCatalogPlacementAssessment\(\{/);
 assert.match(hookSource, /resolveNextLastValidCatalogPlacement\(\{/);
 assert.match(
   confirmPanelSource,
