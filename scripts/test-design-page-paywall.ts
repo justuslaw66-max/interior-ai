@@ -9,6 +9,7 @@ import {
   resolvePaywallVariant,
   resolvePricingLayoutVariant,
 } from "../lib/design-page-paywall";
+import { buildDesignPageUpgradeDialogCopy } from "../lib/useDesignPagePaywallTelemetryController";
 
 function runFixture(name: string, assertion: () => void) {
   try {
@@ -119,6 +120,50 @@ runFixture("layout and context helpers map expected values", () => {
     experiment_slot: "control",
     force_fallback: false,
   });
+});
+
+runFixture("upgrade copy preserves every reason and experiment branch", () => {
+  const expectedDescriptions = {
+    export_images:
+      "Free gives you a preview. Pro unlocks clean HD room images, multiple camera angles, and presentation-ready exports.",
+    export_pdf:
+      "Free includes a watermarked one-page preview. Pro unlocks clean PDFs, room summaries, and client-ready export packs.",
+    designer:
+      "Designer mode, presentation tools, and polished export workflows are available on the Pro plan.",
+    default:
+      "Unlock clean exports, designer tools, and a faster client presentation workflow.",
+  } as const;
+
+  for (const reason of ["export_images", "export_pdf", "designer", null] as const) {
+    const control = buildDesignPageUpgradeDialogCopy({
+      reason,
+      experimentSlot: "control",
+    });
+    const valueStack = buildDesignPageUpgradeDialogCopy({
+      reason,
+      experimentSlot: "value_stack_v2",
+    });
+    const descriptionKey = reason ?? "default";
+
+    assert.equal(control.description, expectedDescriptions[descriptionKey]);
+    assert.equal(valueStack.description, expectedDescriptions[descriptionKey]);
+    assert.equal(
+      control.exportWorkflowBenefit,
+      "Room summaries and smoother designer workflow"
+    );
+    assert.equal(
+      valueStack.exportWorkflowBenefit,
+      "Client-ready exports in minutes with less manual formatting"
+    );
+    assert.equal(
+      control.pricingGuidance,
+      "Use yearly if you expect to export for more than 2 active projects this quarter."
+    );
+    assert.equal(
+      valueStack.pricingGuidance,
+      "Teams with weekly client reviews usually recover yearly pricing within the first month."
+    );
+  }
 });
 
 console.log("All paywall helper fixtures passed.");

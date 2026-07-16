@@ -56,6 +56,7 @@ assert.match(plansDialog, /Start yearly — \{state\.yearlyLabel\}/);
 const designPage = read("components/editor/design-page/DesignPageWorkspace.tsx");
 const editorChromeController = read("lib/useDesignPageEditorChromeController.ts");
 const designPageExport = read("lib/useDesignPageExport.ts");
+const paywallLifecycle = read("lib/useDesignPagePaywallTelemetryLifecycle.ts");
 const dialogLayer = read("components/editor/design-page/DesignPageDialogLayer.tsx");
 assert.match(
   dialogLayer,
@@ -109,6 +110,21 @@ assert.deepEqual(
     savings: "annual-savings",
   },
   "The pure dialog model should preserve shared Pro pricing labels."
+);
+assert.match(
+  designPage,
+  /useDesignPagePaywallTelemetryLifecycle\(\{[\s\S]*?state:\s*\{[\s\S]*?authenticated: Boolean\(session\?\.user\)[\s\S]*?actions:\s*\{[\s\S]*?logFunnelEvent/,
+  "The workspace should delegate billing and paywall lifecycle ownership through the extracted hook."
+);
+assert.doesNotMatch(
+  designPage,
+  /useDesignPageBilling\(/,
+  "The workspace should not compose billing outside the paywall lifecycle boundary."
+);
+assert.match(
+  paywallLifecycle,
+  /const billingController = useDesignPageBilling\(billing\)[\s\S]*?return billingController/,
+  "The paywall lifecycle should preserve the billing controller contract."
 );
 assert.match(
   designPage,

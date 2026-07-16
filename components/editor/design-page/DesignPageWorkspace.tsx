@@ -10,7 +10,6 @@ import { CATALOG_ITEMS } from "@/lib/catalog";
 import { isPro, type Plan } from "@/lib/plan";
 import { useEditorMode } from "@/hooks/useEditorMode";
 import { track } from "@/lib/analytics";
-import { getAnonId } from "@/lib/anon";
 import { preloadCoreAssets } from "@/lib/preloadAssets";
 import { initializeCatalog } from "@/lib/catalog-init";
 import type { DesignItem } from "@/lib/room-types";
@@ -46,7 +45,6 @@ import {
   type DesignPageCameraNavigationActions,
 } from "@/lib/useDesignPageCameraNavigation";
 import { useDesignPageExport } from "@/lib/useDesignPageExport";
-import { useDesignPageBilling } from "@/lib/useDesignPageBilling";
 import { useDesignPageAiNotes } from "@/lib/useDesignPageAiNotes";
 import { useDesignPageSceneItemDrag } from "@/lib/useDesignPageSceneItemDrag";
 import { useDesignPageRoomGeometry } from "@/lib/useDesignPageRoomGeometry";
@@ -83,16 +81,9 @@ import {
   type NamedCameraView,
 } from "@/lib/design-page-types";
 import type { PendingAiLayoutProposal } from "@/lib/design-page-ai-layout-proposal";
-import {
-  ANNUAL_PLAN_SAVINGS_LABEL,
-  buildPaywallContextMeta,
-  getPaywallExperimentEnvConfig,
-  getPrimaryUpgradeCtaLabel,
-  resolvePaywallVariant,
-  resolvePricingLayoutVariant,
-  type FunnelEventName,
-  type UpgradeCtaVariant,
-  type PricingLayoutVariant,
+import type {
+  PricingLayoutVariant,
+  UpgradeCtaVariant,
 } from "@/lib/design-page-paywall";
 import { PRO_PLAN_PRICING } from "@/lib/pro-plan-catalog";
 import { useDesignPageLiveCatalog } from "@/lib/useDesignPageLiveCatalog";
@@ -135,6 +126,11 @@ import { useDesignPageEditorChromeController } from "@/lib/useDesignPageEditorCh
 import { useDesignPagePlanCanvasActionsController } from "@/lib/useDesignPagePlanCanvasActionsController";
 import { useDesignPagePanelActions } from "@/lib/useDesignPagePanelActions";
 import { useDesignPagePresentExportController } from "@/lib/useDesignPagePresentExportController";
+import {
+  useDesignPagePaywallTelemetryController,
+  type DesignPageUpgradeReason,
+} from "@/lib/useDesignPagePaywallTelemetryController";
+import { useDesignPagePaywallTelemetryLifecycle } from "@/lib/useDesignPagePaywallTelemetryLifecycle";
 import {
   isParametricCabinetItem,
 } from "@/features/cabinetry/designItemAdapters";
@@ -191,7 +187,8 @@ export function DesignPageWorkspace() {
   const [showPlans, setShowPlans] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [showUpgrade, setShowUpgrade] = useState(false);
-  const [upgradeReason, setUpgradeReason] = useState<"designer" | "export_images" | "export_pdf" | null>(null);
+  const [upgradeReason, setUpgradeReason] =
+    useState<DesignPageUpgradeReason>(null);
   const [upgradeCtaVariant, setUpgradeCtaVariant] = useState<UpgradeCtaVariant>("unlock_pro_exports");
   const [pricingLayoutVariant, setPricingLayoutVariant] = useState<PricingLayoutVariant>("default");
   const [showGrid, setShowGrid] = useState(false);
@@ -472,100 +469,68 @@ export function DesignPageWorkspace() {
       showConfidence: showConfidenceSummary,
     },
   } = useDesignPageTransientFeedback({ isClientPreview, editorMode });
-  useEffect(() => {
-    if (!canUseDesigner && !simplePlanControls) {
-      setSimplePlanControls(true);
-    }
-  }, [canUseDesigner, setSimplePlanControls, simplePlanControls]);
-  const firstInteractionRef = useRef(false);
-  const upgradeShownRef = useRef(false);
-  const designerAttemptRef = useRef(false);
-  const editorOpenedRef = useRef(false);
-  const landingTrackedRef = useRef(false);
-  const designStartedTrackedRef = useRef(false);
   const seatingZoneAutoDisabledRef = useRef(false);
   const itemsRef = useRef<DesignItem[]>([]);
   const resetSelectionStateRef = useRef<() => void>(() => undefined);
   const {
-    qaPaywallHooksEnabled,
-    paywallWinnerDefault,
-    paywallFallbackVariant,
-    paywallForceFallback,
-    paywallExperimentSlot,
-  } = getPaywallExperimentEnvConfig({
-    nodeEnv: process.env.NODE_ENV,
-    enableQaHooks: process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS,
-    paywallWinnerDefault: process.env.NEXT_PUBLIC_PAYWALL_WINNER_DEFAULT,
-    paywallFallbackVariant: process.env.NEXT_PUBLIC_PAYWALL_FALLBACK_VARIANT,
-    paywallForceFallback: process.env.NEXT_PUBLIC_PAYWALL_FORCE_FALLBACK,
-    paywallExperimentSlot: process.env.NEXT_PUBLIC_PAYWALL_EXPERIMENT_SLOT,
-  });
-
-  const paywallVariant = useMemo(() => {
-    if (typeof window === "undefined") return "unlock_pro_exports" as UpgradeCtaVariant;
-    return resolvePaywallVariant({
+    state: {
       qaPaywallHooksEnabled,
-      paywallVariantOverride,
-      storageVariantOverride: window.localStorage.getItem("paywall_variant_override"),
-      paywallForceFallback,
-      paywallFallbackVariant,
-      paywallWinnerDefault,
-      seed: session?.user?.id ?? designId ?? getAnonId(),
-    });
-  }, [
-    designId,
-    paywallFallbackVariant,
-    paywallForceFallback,
-    paywallVariantOverride,
-    paywallWinnerDefault,
-    qaPaywallHooksEnabled,
-    session?.user?.id,
-  ]);
-
-  const resolvedPricingLayout = useMemo<PricingLayoutVariant>(() => {
-    return resolvePricingLayoutVariant(paywallVariant);
-  }, [paywallVariant]);
-
-  const primaryUpgradeCtaLabel = getPrimaryUpgradeCtaLabel(upgradeCtaVariant);
-  const annualPlanSavingsLabel = ANNUAL_PLAN_SAVINGS_LABEL;
-  const upgradeDialogDescription =
-    upgradeReason === "export_images"
-      ? "Free gives you a preview. Pro unlocks clean HD room images, multiple camera angles, and presentation-ready exports."
-      : upgradeReason === "export_pdf"
-        ? "Free includes a watermarked one-page preview. Pro unlocks clean PDFs, room summaries, and client-ready export packs."
-        : upgradeReason === "designer"
-          ? "Designer mode, presentation tools, and polished export workflows are available on the Pro plan."
-          : "Unlock clean exports, designer tools, and a faster client presentation workflow.";
-  const upgradeDialogExportWorkflowBenefit =
-    paywallExperimentSlot === "value_stack_v2"
-      ? "Client-ready exports in minutes with less manual formatting"
-      : "Room summaries and smoother designer workflow";
-  const upgradeDialogPricingGuidance =
-    paywallExperimentSlot === "value_stack_v2"
-      ? "Teams with weekly client reviews usually recover yearly pricing within the first month."
-      : "Use yearly if you expect to export for more than 2 active projects this quarter.";
-  const paywallContextMeta = buildPaywallContextMeta({
-    ctaVariant: upgradeCtaVariant,
-    pricingLayout: pricingLayoutVariant,
-    experimentSlot: paywallExperimentSlot,
-    forceFallback: paywallForceFallback,
-  });
-
-  const logFunnelEvent = useCallback(
-    (eventType: FunnelEventName, meta?: Record<string, unknown>) => {
-      fetch("/api/track/app-event", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          eventType,
-          designId,
-          shareToken,
-          meta,
-        }),
-      }).catch(() => undefined);
+      paywallVariant,
+      resolvedPricingLayout,
     },
-    [designId, shareToken]
-  );
+    derived: {
+      primaryUpgradeCtaLabel,
+      annualPlanSavingsLabel,
+      upgradeDialogDescription,
+      upgradeDialogExportWorkflowBenefit,
+      upgradeDialogPricingGuidance,
+      paywallContextMeta,
+    },
+    actions: { logFunnelEvent, trackFirstInteraction, setUrlMode },
+  } = useDesignPagePaywallTelemetryController({
+    state: {
+      identity: {
+        designId,
+        shareToken,
+        userId: session?.user?.id ?? null,
+      },
+      paywall: {
+        variantOverride: paywallVariantOverride,
+        upgradeReason,
+        ctaVariant: upgradeCtaVariant,
+        pricingLayout: pricingLayoutVariant,
+      },
+      editor: {
+        canUseDesigner,
+        simplePlanControls,
+        mode,
+        isAuthenticated: Boolean(session?.user),
+      },
+      navigation: {
+        currentSearch: searchParams.toString(),
+        pathname,
+      },
+    },
+    refs: { items: itemsRef },
+    actions: {
+      setSimplePlanControls,
+      replaceUrl: (url) => router.replace(url, { scroll: false }),
+    },
+    configuration: {
+      environment: {
+        nodeEnv: process.env.NODE_ENV,
+        enableQaHooks: process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS,
+        paywallWinnerDefault:
+          process.env.NEXT_PUBLIC_PAYWALL_WINNER_DEFAULT,
+        paywallFallbackVariant:
+          process.env.NEXT_PUBLIC_PAYWALL_FALLBACK_VARIANT,
+        paywallForceFallback:
+          process.env.NEXT_PUBLIC_PAYWALL_FORCE_FALLBACK,
+        paywallExperimentSlot:
+          process.env.NEXT_PUBLIC_PAYWALL_EXPERIMENT_SLOT,
+      },
+    },
+  });
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -607,48 +572,11 @@ export function DesignPageWorkspace() {
     }
   }, [editorMode]);
 
-  const setUrlMode = (nextMode: "designer" | "homeowner") => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (nextMode === "designer") {
-      params.set("mode", "designer");
-    } else {
-      params.delete("mode");
-    }
-    const qs = params.toString();
-    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
-  };
-
   const signInWithReturn = useCallback(() => {
     const callbackUrl =
       typeof window !== "undefined" ? window.location.href : "/design";
     signIn("google", { callbackUrl });
   }, []);
-
-  const trackFirstInteraction = useCallback(() => {
-    if (firstInteractionRef.current) return;
-    track("editor_first_interaction", {
-      design_id: designId ?? null,
-      items_count: itemsRef.current.length,
-      room_type: "living_room",
-      mode,
-      is_guest: !session?.user,
-    });
-
-    if (!designStartedTrackedRef.current) {
-      track("design_started", {
-        design_id: designId ?? null,
-        mode,
-        is_guest: !session?.user,
-      });
-      logFunnelEvent("design_started", {
-        mode,
-        is_guest: !session?.user,
-      });
-      designStartedTrackedRef.current = true;
-    }
-
-    firstInteractionRef.current = true;
-  }, [designId, logFunnelEvent, mode, session?.user]);
 
   const [pendingAiLayoutProposal, setPendingAiLayoutProposal] =
     useState<PendingAiLayoutProposal | null>(null);
@@ -1337,111 +1265,53 @@ export function DesignPageWorkspace() {
       manageBillingFromPlans,
       startCheckoutFromPlans,
     },
-  } = useDesignPageBilling({
+  } = useDesignPagePaywallTelemetryLifecycle({
+    billing: {
+      state: {
+        authenticated: Boolean(session?.user),
+        designId,
+        stripeSessionId,
+        refreshPlanRequested: searchParams.get("refresh_plan") !== null,
+        currentSearch: searchParams.toString(),
+        pathname,
+        upgradeReason,
+        pricingLayoutVariant,
+      },
+      actions: {
+        setPlan,
+        setShowUpgrade,
+        setUpgradeReason,
+        setShowPlans,
+        requestSignIn: signInWithReturn,
+        replaceUrl: replaceDesignUrl,
+        showToast: showRuleToast,
+        logFunnelEvent,
+      },
+      configuration: { paywallContextMeta },
+    },
     state: {
-      authenticated: Boolean(session?.user),
-      designId,
-      stripeSessionId,
-      refreshPlanRequested: searchParams.get("refresh_plan") !== null,
-      currentSearch: searchParams.toString(),
-      pathname,
-      upgradeReason,
-      pricingLayoutVariant,
+      telemetry: {
+        designId,
+        mode,
+        isAuthenticated: Boolean(session?.user),
+      },
+      access: { wantsDesigner, canUseDesigner, showUpgrade },
+      synchronization: {
+        paywallVariant,
+        pricingLayout: resolvedPricingLayout,
+      },
+      qa: {
+        hooksEnabled: qaPaywallHooksEnabled,
+        paywallOpenParam,
+        plansOpenParam,
+      },
     },
     actions: {
-      setPlan,
-      setShowUpgrade,
-      setUpgradeReason,
-      setShowPlans,
-      requestSignIn: signInWithReturn,
-      replaceUrl: replaceDesignUrl,
-      showToast: showRuleToast,
-      logFunnelEvent,
+      setMode,
+      setUpgradeCtaVariant,
+      setPricingLayoutVariant,
     },
-    configuration: { paywallContextMeta },
   });
-  useEffect(() => {
-    if (editorOpenedRef.current) return;
-    track("editor_opened", {
-      design_id: designId ?? null,
-      room_type: "living_room",
-      mode,
-      is_guest: !session?.user,
-    });
-    editorOpenedRef.current = true;
-  }, [designId, mode, session?.user]);
-
-  useEffect(() => {
-    if (landingTrackedRef.current) return;
-    track("landing_viewed", {
-      design_id: designId ?? null,
-      mode,
-      is_guest: !session?.user,
-    });
-    logFunnelEvent("landing_viewed", {
-      mode,
-      is_guest: !session?.user,
-    });
-    landingTrackedRef.current = true;
-  }, [designId, logFunnelEvent, mode, session?.user]);
-
-  useEffect(() => {
-    if (session?.user) return;
-    try {
-      const key = "ph_guest_started";
-      if (sessionStorage.getItem(key)) return;
-      sessionStorage.setItem(key, "1");
-      track("guest_session_start", { is_guest: true });
-    } catch {
-      // ignore sessionStorage errors
-    }
-  }, [session?.user]);
-
-
-  useEffect(() => {
-    if (!wantsDesigner) return;
-    if (!canUseDesigner) {
-      if (!designerAttemptRef.current) {
-        track("mode_designer_attempted", { is_pro: false });
-        designerAttemptRef.current = true;
-      }
-      setShowUpgrade(true);
-      setMode("homeowner");
-      return;
-    }
-    setMode("designer");
-  }, [wantsDesigner, canUseDesigner]);
-
-  useEffect(() => {
-    if (!showUpgrade) {
-      upgradeShownRef.current = false;
-      return;
-    }
-    if (upgradeShownRef.current) return;
-    track("upgrade_prompt_shown", { reason: "mode_designer" });
-    upgradeShownRef.current = true;
-  }, [showUpgrade]);
-
-  useEffect(() => {
-    setUpgradeCtaVariant(paywallVariant);
-  }, [paywallVariant]);
-
-  useEffect(() => {
-    setPricingLayoutVariant(resolvedPricingLayout);
-  }, [resolvedPricingLayout]);
-
-  useEffect(() => {
-    if (!qaPaywallHooksEnabled) return;
-    if (paywallOpenParam !== "1") return;
-    setUpgradeReason((current) => current ?? "designer");
-    setShowUpgrade(true);
-  }, [paywallOpenParam, qaPaywallHooksEnabled]);
-
-  useEffect(() => {
-    if (!qaPaywallHooksEnabled) return;
-    if (plansOpenParam !== "1") return;
-    setShowPlans(true);
-  }, [plansOpenParam, qaPaywallHooksEnabled]);
 
   useEffect(() => {
     if (!planSettingsLoaded) return;
