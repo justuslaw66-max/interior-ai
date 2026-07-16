@@ -21,11 +21,6 @@ import {
   type CatalogPlacementPreviewTarget,
 } from "@/lib/useDesignPageCatalogPlacement";
 import { useDesignPageCameraWorkspaceFacade } from "@/lib/useDesignPageCameraWorkspaceFacade";
-import {
-  DEFAULT_DESIGN_PAGE_CART_HOVER_CAMERA_FOCUS_CONFIGURATION,
-  useDesignPageCartHoverCameraFocus,
-} from "@/lib/useDesignPageCartHoverCameraFocus";
-import { useDesignPageExport } from "@/lib/useDesignPageExport";
 import { useDesignPageAiNotes } from "@/lib/useDesignPageAiNotes";
 import { useDesignPageSceneItemDrag } from "@/lib/useDesignPageSceneItemDrag";
 import { useDesignPageTransientFeedback } from "@/lib/useDesignPageTransientFeedback";
@@ -60,6 +55,7 @@ import { useDesignPageItemDocumentController } from "@/lib/useDesignPageItemDocu
 import { useDesignPageItemSelectionController } from "@/lib/useDesignPageItemSelectionController";
 import { useDesignPageSceneRoomReadRegistration } from "@/lib/useDesignPageSceneRoomReadRegistration";
 import { useDesignPageShoppingCatalogRuntime } from "@/lib/useDesignPageShoppingCatalogRuntime";
+import { useDesignPagePresentationExportRuntime } from "@/lib/useDesignPagePresentationExportRuntime";
 import {
   useDesignPagePlanTracingFacade,
   useDesignPagePlanUnderlayFacade,
@@ -712,51 +708,27 @@ export function DesignPageWorkspace() {
     refs: { history },
   });
 
-  // Global keyboard shortcut for Present Mode toggle (P key)
-  useEffect(() => {
-    const handlePresentModeHotkey = (e: KeyboardEvent) => {
-      if (!isDesigner) return;
-      if (e.key === "p" || e.key === "P") {
-        e.preventDefault();
-        setClientPreview((prev) => !prev);
-      }
-    };
-
-    window.addEventListener("keydown", handlePresentModeHotkey);
-    return () => window.removeEventListener("keydown", handlePresentModeHotkey);
-  }, [isDesigner]);
-
-  useDesignPageCartHoverCameraFocus({
-    state: {
-      editorMode,
-      viewMode,
-      hoveredCartInstanceId,
-      items,
-      cameraView,
-    },
-    configuration: {
-      ...DEFAULT_DESIGN_PAGE_CART_HOVER_CAMERA_FOCUS_CONFIGURATION,
-      catalogItems: CATALOG_ITEMS,
-    },
-    refs: { camera: cameraRef, controls: orbitControlsRef },
-    actions: { transitionToCameraView },
-  });
-
   const {
     state: { isExporting, isPdfExporting },
     actions: { exportImages, exportPdf },
-  } = useDesignPageExport({
+  } = useDesignPagePresentationExportRuntime({
     state: {
-      designId,
-      plan,
-      exportStylePreset,
-      sceneReady,
-      cameraView,
-      clientPreview,
-      items,
+      access: { isDesigner },
+      editor: { editorMode, viewMode },
+      shopping: { hoveredCartInstanceId },
+      document: { items },
+      presentation: {
+        designId,
+        plan,
+        exportStylePreset,
+        sceneReady,
+        cameraView,
+        clientPreview,
+      },
     },
     actions: {
       setClientPreview,
+      transitionToCameraView,
       setUpgradeReason,
       setShowUpgrade,
       updateProjection,
@@ -764,12 +736,12 @@ export function DesignPageWorkspace() {
       logFunnelEvent,
     },
     refs: {
-      canvasRef,
-      cameraRef,
-      controlsRef: orbitControlsRef,
-      rendererRef,
-      sceneRef,
-      designSnapshotRef,
+      canvas: canvasRef,
+      camera: cameraRef,
+      controls: orbitControlsRef,
+      renderer: rendererRef,
+      scene: sceneRef,
+      designSnapshot: designSnapshotRef,
     },
   });
   useDesignPageLocalBackupHydration({
