@@ -57,6 +57,9 @@ const designPage = read("components/editor/design-page/DesignPageWorkspace.tsx")
 const editorChromeController = read("lib/useDesignPageEditorChromeController.ts");
 const designPageExport = read("lib/useDesignPageExport.ts");
 const paywallLifecycle = read("lib/useDesignPagePaywallTelemetryLifecycle.ts");
+const paywallRegistrationFacade = read(
+  "lib/useDesignPagePaywallRegistrationFacade.ts"
+);
 const dialogLayer = read("components/editor/design-page/DesignPageDialogLayer.tsx");
 assert.match(
   dialogLayer,
@@ -113,8 +116,18 @@ assert.deepEqual(
 );
 assert.match(
   designPage,
-  /useDesignPagePaywallTelemetryLifecycle\(\{[\s\S]*?state:\s*\{[\s\S]*?authenticated: Boolean\(session\?\.user\)[\s\S]*?actions:\s*\{[\s\S]*?logFunnelEvent/,
+  /useDesignPageDeferredPaywallLifecycle\(\{[\s\S]*?navigation:\s*router,[\s\S]*?state:\s*\{[\s\S]*?authenticated: Boolean\(session\?\.user\)[\s\S]*?actions:\s*\{[\s\S]*?logFunnelEvent/,
   "The workspace should delegate billing and paywall lifecycle ownership through the extracted hook."
+);
+assert.match(
+  designPage,
+  /useDesignPagePaywallTelemetryRegistration\(\{/,
+  "The workspace should register early paywall telemetry through its boundary."
+);
+assert.match(
+  paywallRegistrationFacade,
+  /useDesignPagePaywallTelemetryController\(input\)[\s\S]*?const replaceDesignUrl = useCallback\([\s\S]*?\[navigation\][\s\S]*?useDesignPagePaywallTelemetryLifecycle\(\{/,
+  "The paywall registration facade should preserve early telemetry and deferred billing ownership."
 );
 assert.doesNotMatch(
   designPage,

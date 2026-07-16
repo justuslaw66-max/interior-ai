@@ -88,7 +88,11 @@ import {
 import { useDesignPagePlanWorkspaceRegistrationFacade } from "@/lib/useDesignPagePlanWorkspaceRegistrationFacade";
 import { useDesignPagePlacementSelectionWorkspaceFacade } from "@/lib/useDesignPagePlacementSelectionWorkspaceFacade";
 import { useDesignPageRoomFloorWorkspace } from "@/lib/useDesignPageRoomFloorWorkspace";
-import { normalizeDesignPageLocalBackup } from "@/lib/design-page-local-backup";
+import {
+  DESIGN_PAGE_LOCAL_BACKUP_STORAGE_KEY,
+  useDesignPageLocalBackupHydration,
+  type UseDesignPageLocalBackupHydrationInput,
+} from "@/lib/useDesignPageLocalBackupHydration";
 import {
   useDesignPageFloorPlanDocumentState,
   useDesignPagePlanDocumentState,
@@ -104,16 +108,17 @@ import { useDesignPageBetaStartController } from "@/lib/useDesignPageBetaStartCo
 import { useDesignPagePanelActions } from "@/lib/useDesignPagePanelActions";
 import { useDesignPagePresentationQaFacade } from "@/lib/useDesignPagePresentationQaFacade";
 import {
-  useDesignPagePaywallTelemetryController,
   type DesignPageUpgradeReason,
 } from "@/lib/useDesignPagePaywallTelemetryController";
-import { useDesignPagePaywallTelemetryLifecycle } from "@/lib/useDesignPagePaywallTelemetryLifecycle";
+import {
+  useDesignPageDeferredPaywallLifecycle,
+  useDesignPagePaywallTelemetryRegistration,
+} from "@/lib/useDesignPagePaywallRegistrationFacade";
 import {
   isParametricCabinetItem,
 } from "@/features/cabinetry/designItemAdapters";
 import { useDesignPageCabinetry } from "@/features/cabinetry/useDesignPageCabinetry";
 
-const STORAGE_KEY = "interior-ai:v1:livingroom-design";
 const DEFAULT_EDITOR_CAMERA_VIEW: CameraView = {
   pos: [6.2, 3.6, 7.2],
   target: [0, 1.0, 0],
@@ -432,6 +437,20 @@ export function DesignPageWorkspace() {
   const seatingZoneAutoDisabledRef = useRef(false);
   const itemsRef = useRef<DesignItem[]>([]);
   const resetSelectionStateRef = useRef<() => void>(() => undefined);
+  const localBackupPersistenceActionsRef = useRef<
+    Pick<
+      UseDesignPageLocalBackupHydrationInput["actions"],
+      "loadDesign" | "clearPersistedSnapshotFingerprint"
+    >
+  >({
+    loadDesign: () => Promise.resolve(false),
+    clearPersistedSnapshotFingerprint: () => undefined,
+  });
+  const localBackupPlanningResolverRef = useRef<
+    UseDesignPageLocalBackupHydrationInput["configuration"]["resolveConfiguredPlanningDimsMm"]
+  >((..._args) => {
+    throw new Error("Local backup planning resolver is not bound");
+  });
   const {
     state: {
       qaPaywallHooksEnabled,
@@ -447,7 +466,7 @@ export function DesignPageWorkspace() {
       paywallContextMeta,
     },
     actions: { logFunnelEvent, trackFirstInteraction, setUrlMode },
-  } = useDesignPagePaywallTelemetryController({
+  } = useDesignPagePaywallTelemetryRegistration({
     state: {
       identity: {
         designId,
@@ -975,68 +994,31 @@ export function DesignPageWorkspace() {
       designSnapshotRef,
     },
   });
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      setLocalBackupHydrated(true);
-      return;
-    }
-    let deferLocalBackupHydrated = false;
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-      const restored = normalizeDesignPageLocalBackup({
-        rawBackup: raw,
-        state: {
-          activeRoomId: designSnapshotRef.current.activeRoomId,
-          roomWidth,
-          roomDepth,
-          wallThickness,
-        },
-        configuration: {
-          catalogItems: CATALOG_ITEMS,
-          resolveConfiguredPlanningDimsMm,
-        },
-      });
+  useDesignPageLocalBackupHydration({
+    state: { roomWidth, roomDepth, wallThickness },
+    configuration: {
+      storageKey: DESIGN_PAGE_LOCAL_BACKUP_STORAGE_KEY,
+      catalogItems: CATALOG_ITEMS,
+      resolveConfiguredPlanningDimsMm: (...args) =>
+        localBackupPlanningResolverRef.current(...args),
+    },
+    refs: { designSnapshot: designSnapshotRef },
+    actions: {
+      setDesignSnapshot,
+      setDesignId,
+      setShareToken,
+      setShareEnabled,
+      setLocalBackupHydrated,
+      setSavedViews,
+      hydratePersistedFloorPlanState,
+      clearHistory: () => history.clear(),
+      loadDesign: (...args) =>
+        localBackupPersistenceActionsRef.current.loadDesign(...args),
+      clearPersistedSnapshotFingerprint: () =>
+        localBackupPersistenceActionsRef.current.clearPersistedSnapshotFingerprint(),
+    },
+  });
 
-      if (restored.snapshot) {
-        setDesignSnapshot(restored.snapshot);
-        if (restored.format === "v3") {
-          if (restored.cloudDesignId) {
-            deferLocalBackupHydrated = true;
-            void loadDesign(restored.cloudDesignId, {
-              notFoundMessage: "Cloud design not found; restored local backup",
-            })
-              .then((loaded) => {
-                if (!loaded) {
-                  setDesignId(null);
-                  setShareToken(null);
-                  setShareEnabled(false);
-                  clearPersistedSnapshotFingerprint();
-                }
-              })
-              .finally(() => {
-                setLocalBackupHydrated(true);
-              });
-          }
-          hydratePersistedFloorPlanState(restored.snapshot);
-        }
-        history.clear();
-      }
-      setSavedViews(restored.savedViews);
-    } catch {
-      // ignore invalid saved data
-    } finally {
-      if (!deferLocalBackupHydrated) {
-        setLocalBackupHydrated(true);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const replaceDesignUrl = useCallback(
-    (url: string) => router.replace(url, { scroll: false }),
-    [router]
-  );
   const {
     state: { startingCheckout, openingBillingPortal },
     actions: {
@@ -1048,7 +1030,8 @@ export function DesignPageWorkspace() {
       manageBillingFromPlans,
       startCheckoutFromPlans,
     },
-  } = useDesignPagePaywallTelemetryLifecycle({
+  } = useDesignPageDeferredPaywallLifecycle({
+    navigation: router,
     billing: {
       state: {
         authenticated: Boolean(session?.user),
@@ -1066,7 +1049,6 @@ export function DesignPageWorkspace() {
         setUpgradeReason,
         setShowPlans,
         requestSignIn: signInWithReturn,
-        replaceUrl: replaceDesignUrl,
         showToast: showRuleToast,
         logFunnelEvent,
       },
@@ -1257,6 +1239,7 @@ export function DesignPageWorkspace() {
     resolveConfiguredNodeTransforms,
     resolveConfiguredModelUrl,
   } = productInspectionController.resolvers;
+  localBackupPlanningResolverRef.current = resolveConfiguredPlanningDimsMm;
 
   const itemGeometryController = useDesignPageItemGeometry({
     configuration: {
@@ -1792,7 +1775,7 @@ export function DesignPageWorkspace() {
       },
     },
     configuration: {
-      storageKey: STORAGE_KEY,
+      storageKey: DESIGN_PAGE_LOCAL_BACKUP_STORAGE_KEY,
       cloudSaveDelayMs: 900,
       guestSaveDelayMs: 800,
     },
@@ -1801,6 +1784,10 @@ export function DesignPageWorkspace() {
       fingerprintStoredDesign,
     },
   });
+  localBackupPersistenceActionsRef.current = {
+    loadDesign,
+    clearPersistedSnapshotFingerprint,
+  };
 
   // Precompute wall descriptors for Furniture to snap against (inner face coords)
   const halfW = roomWidth / 2;

@@ -49,6 +49,10 @@ const localBackupSource = fs.readFileSync(
   path.join(process.cwd(), "lib", "design-page-local-backup.ts"),
   "utf8"
 );
+const localBackupHydrationSource = fs.readFileSync(
+  path.join(process.cwd(), "lib", "useDesignPageLocalBackupHydration.ts"),
+  "utf8"
+);
 const newPlanControllerPath = path.join(
   process.cwd(),
   "lib",
@@ -665,8 +669,18 @@ assert.match(
 );
 assert.match(
   designPageSource,
-  /useEffect\(\(\) => \{[\s\S]*?normalizeDesignPageLocalBackup\(\{[\s\S]*?finally \{[\s\S]*?setLocalBackupHydrated\(true\);[\s\S]*?\}, \[\]\);/,
-  "The design page should retain the one-shot restore effect and always release its hydration gate."
+  /useDesignPageLocalBackupHydration\(\{[\s\S]*?storageKey:\s*DESIGN_PAGE_LOCAL_BACKUP_STORAGE_KEY[\s\S]*?localBackupPersistenceActionsRef\.current\.loadDesign/,
+  "The design page should register mount-time hydration through the local-backup boundary."
+);
+assert.match(
+  localBackupHydrationSource,
+  /const initialInputRef = useRef\(input\);[\s\S]*?useEffect\(\(\) => \{[\s\S]*?normalizeDesignPageLocalBackup\(\{[\s\S]*?finally \{[\s\S]*?setLocalBackupHydrated\(true\);[\s\S]*?\}, \[\]\);/,
+  "The local-backup boundary should retain one-shot restore semantics and always release its hydration gate."
+);
+assert.doesNotMatch(
+  localBackupHydrationSource,
+  /eslint-disable-next-line react-hooks\/exhaustive-deps/,
+  "Mount-only hydration should use an initial-input ref instead of suppressing dependency checks."
 );
 assert.match(
   localBackupSource,
