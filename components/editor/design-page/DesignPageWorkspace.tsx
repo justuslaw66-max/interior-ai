@@ -1789,31 +1789,22 @@ export function DesignPageWorkspace() {
     handleWholeHomeFocusRoom,
     getEyeLevelView,
     getFocusView,
-  } = cameraNavigation.actions;
+  } = cameraWorkspace.actions.navigation;
   const {
-    state: {
-      controlsEnabled: canvasControlsEnabled,
-      gridPulse,
-    },
-    refs: { itemDragCommit: dragCommitRef },
-    actions: {
-      changeCatalogObjectDragging: setSofaDragging,
-      changeSceneItemDragging: handleDraggingChange,
-      changePlanRoomDragging: handlePlanRoomDragStateChange,
-      changePlanRoomResizing: handlePlanRoomResizeStateChange,
-      changePlanOverlayDragging: handlePlanOverlayDragStateChange,
-      changePlanOpeningDragging: handlePlanOpeningDragStateChange3D,
-      pulseSnapGrid: triggerGridPulse,
-      handleOrbitChange: handleOrbitControlsChange,
-    },
-  } = useDesignPageCanvasInteractionController({
-    state: { showGrid, snapEnabled, isDesigner },
-    refs: {
-      orbitControls: orbitControlsRef,
-      cameraAnimating: isCameraAnimatingRef,
-    },
-    actions: { history, updateCameraViewFromScene },
-  });
+    controlsEnabled: canvasControlsEnabled,
+    gridPulse,
+  } = cameraWorkspace.state.canvas;
+  const { itemDragCommit: dragCommitRef } = cameraWorkspace.refs.canvas;
+  const {
+    changeCatalogObjectDragging: setSofaDragging,
+    changeSceneItemDragging: handleDraggingChange,
+    changePlanRoomDragging: handlePlanRoomDragStateChange,
+    changePlanRoomResizing: handlePlanRoomResizeStateChange,
+    changePlanOverlayDragging: handlePlanOverlayDragStateChange,
+    changePlanOpeningDragging: handlePlanOpeningDragStateChange3D,
+    pulseSnapGrid: triggerGridPulse,
+    handleOrbitChange: handleOrbitControlsChange,
+  } = cameraWorkspace.actions.canvas;
 
   const {
     state: { consumerPlanCompletionSignal },
