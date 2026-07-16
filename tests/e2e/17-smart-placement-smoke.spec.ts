@@ -6,7 +6,18 @@ import {
 } from "./variant-test-utils";
 
 async function startCatalogPlacement(page: Page, productId: string) {
-  const addButton = page.getByTestId(`catalog-add-${productId}`).first();
+  const previewAddButton = page.getByTestId("catalog-detail-add-to-room");
+  if (await previewAddButton.isVisible().catch(() => false)) {
+    await previewAddButton.click({ force: true, noWaitAfter: true });
+    return;
+  }
+
+  const exactAddButton = page.getByTestId(`catalog-add-${productId}`);
+  const addButton =
+    (await exactAddButton.count()) > 0
+      ? exactAddButton.first()
+      : page.locator('[data-testid^="catalog-add-"]').first();
+  await addButton.scrollIntoViewIfNeeded();
   await expect(addButton).toBeVisible({ timeout: 15000 });
   await addButton.click({ force: true, noWaitAfter: true });
 }

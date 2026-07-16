@@ -1,6 +1,7 @@
 import { test, expect } from "./fixtures";
 import {
   addCatalogCardItemToRoom,
+  fillCatalogSearch,
   getSelectedItemPanel,
   waitForCatalogReady,
 } from "./variant-test-utils";
@@ -39,17 +40,7 @@ test.describe("17. Retailer Link Identity", () => {
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
     await expect.poll(() => waitForCatalogReady(page), { timeout: 45_000 }).toBeTruthy();
-
-    await page.waitForFunction(
-      () =>
-        Array.from(document.querySelectorAll("button")).some((button) =>
-          /^Sofa \(([1-9]\d*)\)/.test((button.textContent ?? "").trim())
-        ),
-      null,
-      { timeout: 45_000 }
-    );
-
-    await page.getByRole("button", { name: /^Sofa \(/ }).click();
+    await expect.poll(() => fillCatalogSearch(page, "Jaron"), { timeout: 45_000 }).toBeTruthy();
     await addCatalogCardItemToRoom(page, "sofa-real-castlery-jaron-extended-3s-wide-arm");
     await page.getByText("Jaron Recliner Sofa").first().waitFor({ timeout: 15_000 });
     const selectedItemPanel = getSelectedItemPanel(page);

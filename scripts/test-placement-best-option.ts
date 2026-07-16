@@ -2,45 +2,55 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-const designPage = readFileSync(join(process.cwd(), "app/design/page.tsx"), "utf8");
+const catalogPlacementHook = readFileSync(
+  join(process.cwd(), "lib/useDesignPageCatalogPlacement.ts"),
+  "utf8"
+);
+const confirmPanel = readFileSync(
+  join(
+    process.cwd(),
+    "components/editor/design-page/CatalogPlacementConfirmPanel.tsx"
+  ),
+  "utf8"
+);
 
 assert.match(
-  designPage,
+  catalogPlacementHook,
   /const pendingCatalogBestVariantPlacement = useMemo/,
   "placement preview should derive the best-scored variant recommendation"
 );
 assert.match(
-  designPage,
+  catalogPlacementHook,
   /if \(variant\.id === currentVariant\.variantId\) continue/,
   "best-option recommendation should skip the current variant"
 );
 assert.match(
-  designPage,
+  catalogPlacementHook,
   /score\.kind === "blocks_path" \|\| score\.kind === "cramped"/,
   "best-option recommendation should skip blocked or cramped variants"
 );
 assert.match(
-  designPage,
+  catalogPlacementHook,
   /best\.scoreDelta < 4/,
   "best-option recommendation should avoid noisy tiny score gains"
 );
 assert.match(
-  designPage,
+  catalogPlacementHook,
   /const switchPendingCatalogPlacementToBestOption = useCallback/,
   "placement panel should expose an action for switching to the best option"
 );
 assert.match(
-  designPage,
+  confirmPanel,
   /data-testid="catalog-placement-best-option-hint"/,
   "placement score card should explain the best-option recommendation"
 );
 assert.match(
-  designPage,
+  confirmPanel,
   /data-testid="catalog-placement-best-option"/,
   "placement action row should expose the best-option button"
 );
 assert.match(
-  designPage,
+  catalogPlacementHook,
   /Switched to \$\{pendingCatalogBestVariantPlacement\.variantLabel\}/,
   "best-option action should confirm the selected variant"
 );

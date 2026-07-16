@@ -3,7 +3,10 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const root = process.cwd();
-const designPage = readFileSync(join(root, "app/design/page.tsx"), "utf8");
+const confirmPanel = readFileSync(
+  join(root, "components/editor/design-page/CatalogPlacementConfirmPanel.tsx"),
+  "utf8"
+);
 const roomRenderer = readFileSync(
   join(root, "components/editor/renderers/RoomRenderer2D.tsx"),
   "utf8"
@@ -14,27 +17,27 @@ const selectedPanel = readFileSync(
 );
 
 assert.match(
-  designPage,
+  confirmPanel,
   /data-testid="catalog-placement-confirm-panel"[\s\S]*fixed inset-x-0 bottom-0/,
   "placement confirmation should render as a mobile bottom sheet"
 );
 assert.match(
-  designPage,
+  confirmPanel,
   /md:max-h-\[min\(48vh,420px\)\][\s\S]*md:w-\[min\(460px,calc\(100vw-2rem\)\)\]/,
   "placement confirmation should stay compact on desktop"
 );
 assert.match(
-  designPage,
+  confirmPanel,
   /pb-\[calc\(1rem\+env\(safe-area-inset-bottom\)\)\]/,
   "bottom sheet should respect mobile safe-area inset"
 );
 assert.match(
-  designPage,
+  confirmPanel,
   /sticky bottom-0[\s\S]*data-testid="catalog-placement-confirm"/,
   "placement action row should stay reachable while sheet scrolls"
 );
 assert.match(
-  designPage,
+  confirmPanel,
   /data-testid="catalog-placement-nudge-left"[\s\S]*h-11 w-11/,
   "placement nudge buttons should keep finger-sized targets"
 );

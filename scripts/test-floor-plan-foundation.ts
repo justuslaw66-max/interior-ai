@@ -173,8 +173,8 @@ function distanceFromTemplateDoorwayCenter(
 
 assert.equal(normalizeFloorRotationDeg(450), 90);
 assert.equal(normalizeFloorRotationDeg(-90), 270);
-assert.equal(normalizeFloorRotationDeg(44), 0);
-assert.equal(normalizeFloorRotationDeg(46), 90);
+assert.equal(normalizeFloorRotationDeg(44), 45);
+assert.equal(normalizeFloorRotationDeg(46), 45);
 assert.equal(clampFloorPatternScale(0.1), 0.5);
 assert.equal(clampFloorPatternScale(2.9), 2);
 assert.equal(clampFloorPatternScale(null), 1);
@@ -310,11 +310,12 @@ for (const template of HOUSE_PLAN_TEMPLATES) {
   }
 
   for (const doorway of template.doorways) {
-    if (!nonBathroomRoomIds.has(doorway.fromRoomId) || !nonBathroomRoomIds.has(doorway.toRoomId)) {
+    const toRoomId = doorway.toRoomId;
+    if (!toRoomId || !nonBathroomRoomIds.has(doorway.fromRoomId) || !nonBathroomRoomIds.has(toRoomId)) {
       continue;
     }
-    nonBathroomConnections.get(doorway.fromRoomId)?.add(doorway.toRoomId);
-    nonBathroomConnections.get(doorway.toRoomId)?.add(doorway.fromRoomId);
+    nonBathroomConnections.get(doorway.fromRoomId)?.add(toRoomId);
+    nonBathroomConnections.get(toRoomId)?.add(doorway.fromRoomId);
   }
 
   const [firstNonBathroomRoomId] = nonBathroomRoomIds;
@@ -380,11 +381,13 @@ function assertRoomsShareWall(templateId: string, firstId: string, secondId: str
 for (const template of HOUSE_PLAN_TEMPLATES) {
   const roomIds = new Set(template.rooms.map((room) => room.id));
   for (const doorway of template.doorways) {
+    const toRoomId = doorway.toRoomId;
     assert.ok(roomIds.has(doorway.fromRoomId), `${template.id} doorway should start from a real room`);
-    assert.ok(roomIds.has(doorway.toRoomId), `${template.id} doorway should point to a real room`);
-    assert.notEqual(doorway.fromRoomId, doorway.toRoomId, `${template.id} doorway should connect two rooms`);
+    assert.ok(toRoomId && roomIds.has(toRoomId), `${template.id} doorway should point to a real room`);
+    if (!toRoomId) continue;
+    assert.notEqual(doorway.fromRoomId, toRoomId, `${template.id} doorway should connect two rooms`);
     assert.ok((doorway.widthMeters ?? 0.9) >= 0.7, `${template.id} doorway should be at least 0.7m wide`);
-    assertRoomsShareWall(template.id, doorway.fromRoomId, doorway.toRoomId);
+    assertRoomsShareWall(template.id, doorway.fromRoomId, toRoomId);
   }
 }
 

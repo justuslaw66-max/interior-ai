@@ -20,6 +20,20 @@ assert.match(commandBar, /data-testid="editor-command-manage-billing"/);
 assert.match(commandBar, /data-testid="editor-command-view-plans"/);
 assert.match(commandBar, /data-testid="editor-account-plan"/);
 
+const designPageCommandBar = read(
+  "components/editor/design-page/DesignPageEditorCommandBar.tsx"
+);
+assert.match(
+  designPageCommandBar,
+  /type CommandBarActions = Pick<[\s\S]*?HandlerKeys<EditorCommandBarProps>/,
+  "The design-page command wrapper should retain every command-bar handler in its action contract."
+);
+assert.match(
+  designPageCommandBar,
+  /<EditorCommandBar[\s\S]*?\{\.\.\.actions\.commandBar\}/,
+  "The design-page command wrapper should forward billing and plan actions to the command-bar leaf."
+);
+
 const success = read("app/billing/success/RefreshPlanButton.tsx");
 assert.match(success, /data-testid="billing-activation-status"/);
 assert.match(success, /href="\/design\?mode=designer"/);
@@ -33,9 +47,24 @@ assert.match(checkout, /key !== "interval"/);
 assert.match(checkout, /code: "invalid_interval"/);
 assert.match(checkout, /subscription_exists/);
 
-const designPage = read("app/design/page.tsx");
-assert.match(designPage, /PRO_PLAN_PRICING\.monthly\.label/);
-assert.match(designPage, /PRO_PLAN_PRICING\.yearly\.label/);
-assert.match(designPage, /!isPro\(plan\)[\s\S]*\{ name: "hero", yaw: 0 \}/);
+const plansDialog = read("components/editor/design-page/PlansDialog.tsx");
+assert.match(plansDialog, /Start monthly — \{state\.monthlyLabel\}/);
+assert.match(plansDialog, /Start yearly — \{state\.yearlyLabel\}/);
+
+const designPage = read("components/editor/design-page/DesignPageWorkspace.tsx");
+const designPageExport = read("lib/useDesignPageExport.ts");
+assert.match(designPage, /monthlyLabel: PRO_PLAN_PRICING\.monthly\.label/);
+assert.match(designPage, /yearlyLabel: PRO_PLAN_PRICING\.yearly\.label/);
+assert.match(
+  designPage,
+  /<DesignPageEditorCommandBar[\s\S]*?onViewPlans:\s*\(\)\s*=>\s*setShowPlans\(true\)[\s\S]*?onManageBilling:\s*\(\)\s*=>\s*\{[\s\S]*?openBillingPortal\(\)/,
+  "The workspace should provide plan and billing actions through the typed command-wrapper boundary."
+);
+assert.doesNotMatch(
+  designPage,
+  /<EditorCommandBar\b/,
+  "The workspace should not bypass the command wrapper for billing actions."
+);
+assert.match(designPageExport, /!isPro\(plan\)[\s\S]*\{ name: "hero", yaw: 0 \}/);
 
 console.log("Pro billing UI/source checks passed.");

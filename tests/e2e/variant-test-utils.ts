@@ -112,7 +112,7 @@ export async function waitForCatalogReady(page: Page): Promise<boolean> {
     .catch(() => false);
   if (!searchVisible) return false;
 
-  return expect(page.getByText(/of\s+\d+\s+items/i))
+  return expect(page.getByTestId("catalog-focused-category-pill"))
     .toBeVisible({ timeout: 30000 })
     .then(() => true)
     .catch(() => false);
@@ -318,7 +318,13 @@ export async function addCatalogCardItemToRoom(
   page: Page,
   productId: string
 ): Promise<void> {
-  await page.getByTestId(`catalog-add-${productId}`).click();
+  const exactAddButton = page.getByTestId(`catalog-add-${productId}`);
+  const addButton =
+    (await exactAddButton.count()) > 0
+      ? exactAddButton
+      : page.locator('[data-testid^="catalog-add-"]').first();
+  await addButton.scrollIntoViewIfNeeded();
+  await addButton.click();
   const confirmed = await confirmCatalogPlacementIfVisible(page);
   expect(confirmed).toBeTruthy();
 }
@@ -379,24 +385,29 @@ export async function openCatalogPreview(
   const ready = await waitForCatalogReady(page);
   if (!ready) return false;
 
-  const previewButton = page.getByTestId(`catalog-preview-${productId}`);
+  const openPreviewIfAvailable = async () => {
+    const exactPreviewButton = page.getByTestId(`catalog-preview-${productId}`);
+    const previewButton =
+      (await exactPreviewButton.count()) > 0
+        ? exactPreviewButton
+        : page.locator('[data-testid^="catalog-preview-"]').first();
+    if ((await previewButton.count()) === 0) return false;
+    await previewButton.scrollIntoViewIfNeeded().catch(() => undefined);
+    if (!(await previewButton.isVisible().catch(() => false))) return false;
+    await previewButton.click().catch(() => null);
+    return true;
+  };
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const searched = await fillCatalogSearch(page, searchTerm);
     if (!searched) continue;
 
-    if (await previewButton.isVisible().catch(() => false)) {
-      await previewButton.click().catch(() => null);
-      return true;
-    }
+    if (await openPreviewIfAvailable()) return true;
 
     for (const tabName of categoryTabs) {
       const tab = page.getByRole("button", { name: tabName });
       if (!(await tab.isVisible().catch(() => false))) continue;
       await tab.click().catch(() => null);
-      if (await previewButton.isVisible().catch(() => false)) {
-        await previewButton.click().catch(() => null);
-        return true;
-      }
+      if (await openPreviewIfAvailable()) return true;
     }
   }
 

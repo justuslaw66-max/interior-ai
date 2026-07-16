@@ -1,6 +1,6 @@
 import { expect, test } from "./fixtures";
 import fs from "node:fs/promises";
-import type { APIRequestContext, Download, Locator } from "@playwright/test";
+import type { APIRequestContext, Download, Locator, Page } from "@playwright/test";
 import { fingerprintDesignSnapshot } from "../../lib/snapshot-fingerprint";
 import { legacyApiToSnapshot } from "../../lib/room-persistence";
 import {
@@ -10,7 +10,7 @@ import {
   disconnectBetaPrismaClient,
 } from "./beta-seed";
 
-const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000";
+const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000";
 
 async function getFingerprint(locator: Locator) {
   await expect(locator).toHaveAttribute("data-fingerprint", /[a-f0-9]{8}/, { timeout: 20000 });
@@ -36,6 +36,22 @@ async function getStableFingerprint(locator: Locator) {
   }
 
   return previous;
+}
+
+async function openMyDesigns(page: Page) {
+  const accountButton = page.getByTestId("editor-command-account");
+  const accountMenu = page.getByTestId("editor-command-account-menu");
+  await accountButton.click();
+  await expect(accountMenu).toBeVisible();
+  await expect(page.getByTestId("editor-command-sign-out")).toBeVisible({ timeout: 30000 });
+  await accountButton.click();
+  await expect(accountMenu).toBeHidden();
+
+  await page.getByTestId("editor-command-overflow").click();
+  await expect(page.getByTestId("editor-command-overflow-menu")).toBeVisible();
+  const loadDesigns = page.getByTestId("editor-command-overflow-load");
+  await expect(loadDesigns).toBeVisible();
+  await loadDesigns.click();
 }
 
 async function expectFingerprint(locator: Locator, expectedFingerprint: string) {
@@ -121,13 +137,13 @@ test.describe("19. Staging Signoff Evidence", () => {
     const seed = await createBetaSeedDesign();
     try {
       const seedFixtureFingerprint = fingerprintDesignSnapshot(seed.snapshot);
-      await addAuthCookies(page.context(), BASE_URL, seed.sessionToken);
+      await addAuthCookies(page.context(), new URL(page.url()).origin, seed.sessionToken);
       const cloudFingerprint = await getApiDesignFingerprint(request, seed.designId, seed.shareToken);
       expect(cloudFingerprint).toMatch(/[a-f0-9]{8}/);
       expect(seedFixtureFingerprint).toMatch(/[a-f0-9]{8}/);
       await page.goto("/design");
       await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30000 });
-      await page.getByTestId("load-design").click();
+      await openMyDesigns(page);
       await page.getByTestId(`load-design-${seed.designId}`).click();
       await expect(page.getByTestId("load-designs-modal")).toBeHidden();
       await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("3 rooms");

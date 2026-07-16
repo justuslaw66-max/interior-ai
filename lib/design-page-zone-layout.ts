@@ -101,12 +101,20 @@ export function zonesEqual(a: ZoneMin[], b: ZoneMin[]) {
     if (
       left.id !== right.id ||
       left.type !== right.type ||
+      left.source !== right.source ||
       left.itemIds.length !== right.itemIds.length
     ) {
       return false;
     }
     for (let j = 0; j < left.itemIds.length; j += 1) {
       if (left.itemIds[j] !== right.itemIds[j]) return false;
+    }
+    if (left.anchor === undefined || right.anchor === undefined) {
+      if (left.anchor !== right.anchor) return false;
+      continue;
+    }
+    for (let j = 0; j < left.anchor.length; j += 1) {
+      if (left.anchor[j] !== right.anchor[j]) return false;
     }
   }
   return true;

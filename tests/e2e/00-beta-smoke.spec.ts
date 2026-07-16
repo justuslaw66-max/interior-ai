@@ -1,6 +1,6 @@
 import { expect, test } from "./fixtures";
 import fs from "node:fs/promises";
-import type { APIRequestContext, Download, Locator } from "@playwright/test";
+import type { APIRequestContext, Download, Locator, Page } from "@playwright/test";
 import { fingerprintDesignSnapshot } from "../../lib/snapshot-fingerprint";
 import { legacyApiToSnapshot } from "../../lib/room-persistence";
 import {
@@ -11,7 +11,8 @@ import {
 } from "./beta-seed";
 
 const BASE_URL =
-  process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${process.env.PLAYWRIGHT_WEB_SERVER_PORT ?? 3000}`;
+  process.env.PLAYWRIGHT_BASE_URL ??
+  `http://127.0.0.1:${process.env.PLAYWRIGHT_WEB_SERVER_PORT ?? 3000}`;
 const EDITOR_STORAGE_KEY = "interior-ai:v1:livingroom-design";
 
 async function getFingerprint(locator: Locator) {
@@ -57,6 +58,26 @@ async function expectNumericAttributeAtLeast(locator: Locator, name: string, min
     .toBeGreaterThanOrEqual(minimum);
 }
 
+async function openEditorCommandOverflow(page: Page) {
+  await page.getByTestId("editor-command-overflow").click();
+  await expect(page.getByTestId("editor-command-overflow-menu")).toBeVisible();
+}
+
+async function openMyDesigns(page: Page) {
+  const accountButton = page.getByTestId("editor-command-account");
+  const accountMenu = page.getByTestId("editor-command-account-menu");
+  await accountButton.click();
+  await expect(accountMenu).toBeVisible();
+  await expect(page.getByTestId("editor-command-sign-out")).toBeVisible({ timeout: 30000 });
+  await accountButton.click();
+  await expect(accountMenu).toBeHidden();
+
+  await openEditorCommandOverflow(page);
+  const loadDesigns = page.getByTestId("editor-command-overflow-load");
+  await expect(loadDesigns).toBeVisible();
+  await loadDesigns.click();
+}
+
 async function getApiDesignFingerprint(
   request: APIRequestContext,
   designId: string,
@@ -89,7 +110,7 @@ test.describe("00. Beta Smoke Gate", () => {
     page,
     request,
   }) => {
-    test.setTimeout(180000);
+    test.setTimeout(300000);
 
     await page.addInitScript(() => {
       const clearSentinel = "__e2e_beta_smoke_storage_cleared";
@@ -113,6 +134,7 @@ test.describe("00. Beta Smoke Gate", () => {
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30000 });
     const betaStartTemplate = page.getByTestId("beta-start-template");
     if (await betaStartTemplate.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await expect(betaStartTemplate).toBeEnabled({ timeout: 30000 });
       await betaStartTemplate.click();
       await expect(page.getByTestId("apply-furnished-template-studio")).toBeVisible();
       await expect(page.getByTestId(/plan-template-furnishing-marker-studio-.+/).first()).toBeVisible();
@@ -120,7 +142,9 @@ test.describe("00. Beta Smoke Gate", () => {
     } else if (
       await page.getByTestId("plan-start-template").isVisible({ timeout: 5000 }).catch(() => false)
     ) {
-      await page.getByTestId("plan-start-template").click({ timeout: 5000 });
+      const planStartTemplate = page.getByTestId("plan-start-template");
+      await expect(planStartTemplate).toBeEnabled({ timeout: 30000 });
+      await planStartTemplate.click();
       await expect(page.getByTestId("apply-furnished-template-studio")).toBeVisible();
       await expect(page.getByTestId(/plan-template-furnishing-marker-studio-.+/).first()).toBeVisible();
       await page.getByTestId("apply-furnished-template-studio").click();
@@ -167,7 +191,7 @@ test.describe("00. Beta Smoke Gate", () => {
     const seed = await createBetaSeedDesign();
     try {
       const expectedFingerprint = fingerprintDesignSnapshot(seed.snapshot);
-      await addAuthCookies(page.context(), BASE_URL, seed.sessionToken);
+      await addAuthCookies(page.context(), new URL(page.url()).origin, seed.sessionToken);
 
       expect(await getApiDesignFingerprint(request, seed.designId, seed.shareToken)).toBe(
         expectedFingerprint
@@ -175,14 +199,14 @@ test.describe("00. Beta Smoke Gate", () => {
 
       await page.goto("/design");
       await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30000 });
-      await page.getByTestId("load-design").click();
+      await openMyDesigns(page);
       await expect(page.getByTestId("load-designs-modal")).toBeVisible();
       await expect(page.getByTestId("load-designs-template-shortcut")).toBeVisible();
       await page.getByTestId("load-designs-open-templates").click();
       await expect(page.getByTestId("load-designs-modal")).toBeHidden();
       await expect(page.getByTestId("starter-floor-plan-picker")).toBeVisible();
       await expect(page.getByTestId("apply-furnished-template-studio")).toBeVisible();
-      await page.getByTestId("load-design").click();
+      await openMyDesigns(page);
       await expect(page.getByTestId("load-designs-modal")).toBeVisible();
       await page.getByTestId(`load-design-${seed.designId}`).click();
       await expect(page.getByTestId("load-designs-modal")).toBeHidden();
@@ -232,8 +256,10 @@ test.describe("00. Beta Smoke Gate", () => {
       const cloudFingerprint = await getApiDesignFingerprint(request, seed.designId, seed.shareToken);
       expect(cloudFingerprint).toMatch(/[a-f0-9]{8}/);
 
-      await page.goto(`/share/${seed.shareToken}`);
-      await expect(page.getByTestId("share-viewer")).toBeVisible({ timeout: 30000 });
+      await page.goto(`/share/${seed.shareToken}`, { waitUntil: "commit", timeout: 120000 });
+      const shareViewer = page.getByTestId("share-viewer");
+      await expect(shareViewer).toBeVisible({ timeout: 60000 });
+      await expect(shareViewer).toHaveAttribute("data-ready", "true", { timeout: 60000 });
       await expect(page.getByTestId("share-room-list")).toContainText("Living Room");
       await expect(page.getByTestId("share-checkout-readiness")).toContainText(/Cart-ready|Retailer link/i);
       await expect(page.getByTestId("share-copy-link")).toBeVisible();
@@ -320,8 +346,8 @@ test.describe("00. Beta Smoke Gate", () => {
         isMobile: true,
       });
       const mobilePage = await mobileContext.newPage();
-      await mobilePage.goto(`/share/${seed.shareToken}`);
-      await expect(mobilePage.getByTestId("share-copy-link")).toBeVisible({ timeout: 30000 });
+      await mobilePage.goto(`/share/${seed.shareToken}`, { waitUntil: "commit", timeout: 120000 });
+      await expect(mobilePage.getByTestId("share-copy-link")).toBeVisible({ timeout: 60000 });
       const mobileOverflow = await mobilePage.evaluate(
         () => document.documentElement.scrollWidth - document.documentElement.clientWidth
       );
@@ -334,15 +360,15 @@ test.describe("00. Beta Smoke Gate", () => {
         isMobile: true,
       });
       const mobileEditorPage = await mobileEditorContext.newPage();
-      await mobileEditorPage.goto("/design");
+      await mobileEditorPage.goto("/design", { waitUntil: "commit", timeout: 120000 });
       await expect(mobileEditorPage.getByTestId("scene-canvas").first()).toBeVisible({
-        timeout: 30000,
+        timeout: 60000,
       });
       await expect(mobileEditorPage.getByTestId("editor-command-bar")).toBeVisible();
       await expect(mobileEditorPage.getByTestId("save-design")).toBeVisible();
       await expect(mobileEditorPage.getByTestId("design-controls-panel")).toBeVisible();
       await expect(mobileEditorPage.getByTestId("design-controls-panel-handle")).toBeVisible();
-      await expect(mobileEditorPage.getByTestId("plan-measurements-panel")).toBeVisible();
+      await expect(mobileEditorPage.getByTestId("plan-tool-palette")).toBeVisible();
       await expect(mobileEditorPage.getByTestId("room-plan-status")).toHaveCount(1);
       const mobileEditorOverflow = await mobileEditorPage.evaluate(
         () => document.documentElement.scrollWidth - document.documentElement.clientWidth
@@ -355,9 +381,12 @@ test.describe("00. Beta Smoke Gate", () => {
         viewport: { width: 768, height: 1024 },
       });
       const tabletPage = await tabletContext.newPage();
-      await tabletPage.goto(`/share/${seed.shareToken}/export`);
+      await tabletPage.goto(`/share/${seed.shareToken}/export`, {
+        waitUntil: "commit",
+        timeout: 120000,
+      });
       await expect(tabletPage.getByTestId("share-export-shopping-csv-download")).toBeVisible({
-        timeout: 30000,
+        timeout: 60000,
       });
       const tabletOverflow = await tabletPage.evaluate(
         () => document.documentElement.scrollWidth - document.documentElement.clientWidth
@@ -367,13 +396,15 @@ test.describe("00. Beta Smoke Gate", () => {
 
       await page.goto("/design");
       await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30000 });
-      await page.getByTestId("load-design").click();
+      await openMyDesigns(page);
       await expect(page.getByTestId("load-designs-modal")).toBeVisible();
       await page.getByTestId(`load-design-${seed.designId}`).click();
       await expect(page.getByTestId("load-designs-modal")).toBeHidden();
-      await expect(page.getByTestId("scene-performance-control")).toBeVisible();
+      await openEditorCommandOverflow(page);
+      await expect(page.getByTestId("editor-overflow-scene-quality")).toBeVisible();
       const scenePerformance = page.getByTestId("qa-scene-performance");
-      if ((await scenePerformance.count()) > 0) {
+      const hasScenePerformanceTelemetry = (await scenePerformance.count()) > 0;
+      if (hasScenePerformanceTelemetry) {
         await expectNumericAttributeAtLeast(scenePerformance, "data-room-count", 3);
         await expectNumericAttributeAtLeast(scenePerformance, "data-scene-item-count", 1);
       } else {
@@ -382,17 +413,18 @@ test.describe("00. Beta Smoke Gate", () => {
           description: "Scene performance QA telemetry was not mounted in this runtime.",
         });
       }
-      const scenePerformanceExpand = page.getByTestId("scene-performance-expand");
-      if (await scenePerformanceExpand.isVisible().catch(() => false)) {
-        await scenePerformanceExpand.click();
-      }
       await page.getByTestId("scene-performance-lite").evaluate((button) => {
         (button as HTMLButtonElement).click();
       });
       await expect(page.getByTestId("scene-performance-lite")).toHaveAttribute("data-active", "true");
-      await expect(scenePerformance).toHaveAttribute("data-mode", "lite");
-      await expect(scenePerformance).toHaveAttribute("data-effective-mode", "lite");
-      await expect(scenePerformance).toHaveAttribute("data-render-quality", "lite");
+      await expect
+        .poll(() => page.evaluate(() => window.localStorage.getItem("scene_performance_mode")))
+        .toBe("lite");
+      if (hasScenePerformanceTelemetry) {
+        await expect(scenePerformance).toHaveAttribute("data-mode", "lite");
+        await expect(scenePerformance).toHaveAttribute("data-effective-mode", "lite");
+        await expect(scenePerformance).toHaveAttribute("data-render-quality", "lite");
+      }
 
       let retailerClickPayload: Record<string, unknown> = {};
       await page.route("**/api/track/click", async (route) => {

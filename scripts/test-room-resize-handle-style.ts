@@ -10,8 +10,42 @@ const rendererPath = path.join(
   "RoomRenderer2D.tsx"
 );
 const source = fs.readFileSync(rendererPath, "utf8");
-const designPagePath = path.join(process.cwd(), "app", "design", "page.tsx");
+const designPagePath = path.join(
+  process.cwd(),
+  "components",
+  "editor",
+  "design-page",
+  "DesignPageWorkspace.tsx"
+);
 const designPageSource = fs.readFileSync(designPagePath, "utf8");
+const designSceneStructureSource = fs.readFileSync(
+  path.join(
+    process.cwd(),
+    "components",
+    "editor",
+    "design-page",
+    "DesignSceneStructureLayer.tsx"
+  ),
+  "utf8"
+);
+const roomPlanControllerSource = fs.readFileSync(
+  path.join(process.cwd(), "lib", "useDesignPageRoomPlanController.ts"),
+  "utf8"
+);
+const selectionInspectorModelSource = fs.readFileSync(
+  path.join(process.cwd(), "lib", "useDesignPageSelectionInspectorModel.ts"),
+  "utf8"
+);
+const designSceneCanvasSource = fs.readFileSync(
+  path.join(
+    process.cwd(),
+    "components",
+    "editor",
+    "design-page",
+    "DesignSceneCanvas.tsx"
+  ),
+  "utf8"
+);
 const roomDrawingPath = path.join(process.cwd(), "lib", "useFloorPlanRoomDrawing.ts");
 const roomDrawingSource = fs.readFileSync(roomDrawingPath, "utf8");
 const floorPlanUploadPanelPath = path.join(
@@ -23,7 +57,7 @@ const floorPlanUploadPanelPath = path.join(
 const floorPlanUploadPanelSource = fs.readFileSync(floorPlanUploadPanelPath, "utf8");
 const roomSelectCallbackSource =
   designPageSource.match(
-    /const handlePlacementAwareRoomSelect = useCallback\([\s\S]*?\n  \);\n\n  const nudgePendingCatalogPlacement/
+    /const handlePlacementAwareRoomSelect = useCallback\([\s\S]*?\n  \);\n\n  const handleRendererSurfaceTargetSelect/
   )?.[0] ?? "";
 const roomPointerUpSource =
   source.match(
@@ -197,8 +231,8 @@ assert.match(
 );
 
 assert.match(
-  designPageSource,
-  /valueMeters > ROOM_DIMENSION_DEFAULTS\.max[\s\S]*?showRuleToast\("Enter a valid room dimension\."\);/,
+  roomPlanControllerSource,
+  /valueMeters > ROOM_DIMENSION_DEFAULTS\.max[\s\S]*?showToast\("Enter a valid room dimension\."\);/,
   "2D room dimension commits should reject oversized values instead of silently clamping them."
 );
 
@@ -275,15 +309,33 @@ assert.match(
 );
 
 assert.match(
-  designPageSource,
-  /onRoomDragStateChange=\{handlePlanRoomDragStateChange\}/,
-  "The design page should receive room drag state from RoomRenderer2D."
+  designSceneStructureSource,
+  /<RoomRenderer2D[\s\S]*?onRoomDragStateChange=\{actions\.rooms\.setDragging\}/,
+  "The structure layer should receive room drag state from RoomRenderer2D."
+);
+
+assert.match(
+  designSceneStructureSource,
+  /<RoomRenderer2D[\s\S]*?onRoomResizeStateChange=\{actions\.rooms\.setResizing\}/,
+  "The structure layer should receive room resize state from RoomRenderer2D."
 );
 
 assert.match(
   designPageSource,
-  /enabled=\{!sofaDragging && !planRoomDragging && !planRoomResizing && !planOverlayDragging\}/,
-  "MapControls should be disabled while a 2D room drag is active."
+  /setDragging: handlePlanRoomDragStateChange,[\s\S]*?setResizing: handlePlanRoomResizeStateChange,/,
+  "The design page should wire room drag and resize state into the structure layer."
+);
+
+assert.match(
+  designPageSource,
+  /controlsEnabled:\s*!sofaDragging\s*&&\s*!planRoomDragging\s*&&\s*!planRoomResizing\s*&&\s*!planOverlayDragging/,
+  "The design page should disable scene controls while a 2D room drag is active."
+);
+
+assert.match(
+  designSceneCanvasSource,
+  /<MapControls[\s\S]*?enabled=\{state\.controlsEnabled\}/,
+  "The Canvas shell should apply the design page's interaction lock to MapControls."
 );
 
 assert.match(
@@ -299,13 +351,13 @@ assert.doesNotMatch(
 );
 
 assert.match(
-  designPageSource,
-  /const visiblePlanOpening = selectedPlanOpening;/,
+  selectionInspectorModelSource,
+  /const visiblePlanOpening = useMemo\([\s\S]*?selectedPlanOverlayId[\s\S]*?planOpenings\.find\(\(opening\) => opening\.id === selectedPlanOverlayId\)[\s\S]*?: null,/,
   "The side inspector should only show a selected door/window when an opening overlay is explicitly selected."
 );
 
 assert.doesNotMatch(
-  designPageSource,
+  selectionInspectorModelSource,
   /const visiblePlanOpening = useMemo\([\s\S]*?recentOpenings\.find/,
   "The side inspector should not auto-promote a recent connected doorway into a selected door."
 );

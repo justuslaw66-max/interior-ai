@@ -24,7 +24,7 @@ const replacementSource = readFileSync(
   "utf8"
 );
 const designPageSource = readFileSync(
-  join(process.cwd(), "app/design/page.tsx"),
+  join(process.cwd(), "components/editor/design-page/DesignPageWorkspace.tsx"),
   "utf8"
 );
 

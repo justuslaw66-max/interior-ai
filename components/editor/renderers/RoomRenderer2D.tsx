@@ -61,6 +61,7 @@ type Opening2D = {
   width: number;
   height?: number;
   kind: "door" | "window";
+  doorStyle?: "swing" | "open";
 };
 
 type FixedElement2D = {
@@ -70,6 +71,8 @@ type FixedElement2D = {
   w: number;
   d: number;
   label?: string;
+  kind?: "kitchen_counter" | "island" | "wardrobe" | "window" | "door" | "reference_zone";
+  locked?: boolean;
 };
 
 type Annotation2D = {
@@ -1726,8 +1729,7 @@ export default function RoomRenderer2D({
     [commitDimensionEdit]
   );
 
-  useEffect(() => {
-    if (!editingRoomDimension) return;
+  if (editingRoomDimension) {
     const finalMillimeters = Number(editingRoomDimension.value);
     if (
       !rooms.some((room) => room.id === editingRoomDimension.roomId) ||
@@ -1736,7 +1738,7 @@ export default function RoomRenderer2D({
     ) {
       setEditingRoomDimension(null);
     }
-  }, [editingRoomDimension, rooms]);
+  }
 
   const startWallDrawSegmentLengthEdit = useCallback(
     (segmentIndex: number, start: FloorPlanPoint, end: FloorPlanPoint) => {
@@ -1781,8 +1783,7 @@ export default function RoomRenderer2D({
     [commitWallDrawSegmentLengthEdit]
   );
 
-  useEffect(() => {
-    if (!editingWallDrawSegment) return;
+  if (editingWallDrawSegment) {
     const finalMillimeters = Number(editingWallDrawSegment.value);
     if (
       !canRenderWallDrawSegmentMeasurements ||
@@ -1793,11 +1794,7 @@ export default function RoomRenderer2D({
     ) {
       setEditingWallDrawSegment(null);
     }
-  }, [
-    activeDrawRoomPoints.length,
-    canRenderWallDrawSegmentMeasurements,
-    editingWallDrawSegment,
-  ]);
+  }
 
   const openingPreview = useMemo<TracedOpeningPreview | null>(() => {
     if (!canTraceOpeningOnGrid || !localOpeningPreviewPoint) return null;
@@ -2680,6 +2677,7 @@ export default function RoomRenderer2D({
       return {
         id: o.id,
         kind: o.kind,
+        doorStyle: o.doorStyle,
         wall: o.wall,
         offset: o.offset,
         width: o.width,
@@ -2703,6 +2701,7 @@ export default function RoomRenderer2D({
     return {
       id: o.id,
       kind: o.kind,
+      doorStyle: o.doorStyle,
       wall: o.wall,
       offset: o.offset,
       width: o.width,
@@ -4643,11 +4642,13 @@ export default function RoomRenderer2D({
       {showOpenings &&
         openingSegments.map((seg) => (
           <group key={seg.id}>
-            <Line
-              points={seg.points}
-              color={seg.kind === "door" ? openingDoorColor : openingWindowColor}
-              lineWidth={selectedOverlayId === seg.id ? 4 : 3.2}
-            />
+            {seg.doorStyle !== "open" && (
+              <Line
+                points={seg.points}
+                color={seg.kind === "door" ? openingDoorColor : openingWindowColor}
+                lineWidth={selectedOverlayId === seg.id ? 4 : 3.2}
+              />
+            )}
             {selectedOverlayId === seg.id && (
               <>
                 <Line
@@ -4757,14 +4758,18 @@ export default function RoomRenderer2D({
                   }}
                 >
                   <span>
-                    {seg.kind === "door" ? "Door" : "Window"} {formatDimension(seg.width)}
+                    {seg.kind === "door"
+                      ? seg.doorStyle === "open"
+                        ? "Opening"
+                        : "Door"
+                      : "Window"} {formatDimension(seg.width)}
                     {" · "}
                     {seg.wall} {formatDimension(seg.offset)}
                   </span>
                 </div>
               </Html>
             )}
-            {interactive && (
+            {interactive && seg.doorStyle !== "open" && (
               <>
                 <mesh
                   userData={{ testId: "selected-opening-hit-target" }}
@@ -5021,20 +5026,27 @@ export default function RoomRenderer2D({
       )}
 
       {showBuiltIns &&
-        fixedElements.map((fixed) => (
-          <group
+        fixedElements.map((fixed) => {
+          const isReferenceZone = fixed.kind === "reference_zone";
+          return (
+            <group
             key={fixed.id}
             position={[fixed.x, 0, fixed.z]}
             onClick={(event) => {
+              if (fixed.locked) return;
               event.stopPropagation();
               onSelectOverlay?.(fixed.id);
             }}
           >
             <mesh rotation-x={-Math.PI / 2} position={[0, 0.0016, 0]}>
               <planeGeometry args={[fixed.w, fixed.d]} />
-              <meshBasicMaterial color={isPro ? "#d7d7d7" : "#e2ddd3"} transparent opacity={0.85} />
+              <meshBasicMaterial
+                color={isReferenceZone ? "#e5e7eb" : isPro ? "#d7d7d7" : "#e2ddd3"}
+                transparent
+                opacity={isReferenceZone ? 0.5 : 0.85}
+              />
             </mesh>
-            {selectedOverlayId === fixed.id && (
+            {(isReferenceZone || selectedOverlayId === fixed.id) && (
               <Line
                 points={[
                   [-fixed.w / 2, 0.004, -fixed.d / 2],
@@ -5043,11 +5055,11 @@ export default function RoomRenderer2D({
                   [-fixed.w / 2, 0.004, fixed.d / 2],
                   [-fixed.w / 2, 0.004, -fixed.d / 2],
                 ]}
-                color="#f97316"
-                lineWidth={3}
+                color={selectedOverlayId === fixed.id ? "#f97316" : "#9ca3af"}
+                lineWidth={selectedOverlayId === fixed.id ? 3 : 1.5}
               />
             )}
-            {interactive && (
+            {interactive && !fixed.locked && (
               <mesh
                 rotation-x={-Math.PI / 2}
                 position={[0, 0.003, 0]}
@@ -5097,7 +5109,7 @@ export default function RoomRenderer2D({
                 <meshBasicMaterial color={selectedOverlayId === fixed.id ? "#f97316" : "#9ca3af"} />
               </mesh>
             )}
-            {fixed.label && (showLabels || selectedOverlayId === fixed.id) && (
+            {fixed.label && (isReferenceZone || showLabels || selectedOverlayId === fixed.id) && (
               <Html zIndexRange={htmlZIndexRange} position={[0, 0.01, 0]} center transform={false}>
                 <div
                   style={{
@@ -5113,8 +5125,9 @@ export default function RoomRenderer2D({
                 </div>
               </Html>
             )}
-          </group>
-        ))}
+            </group>
+          );
+        })}
 
       {showAnnotations &&
         annotations.map((note) => (

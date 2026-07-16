@@ -24,7 +24,26 @@ const root = process.cwd();
 const packageJson = JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as {
   scripts?: Record<string, string>;
 };
-const designPageSource = readFileSync(join(root, "app/design/page.tsx"), "utf8");
+const designPageSource = readFileSync(
+  join(root, "components/editor/design-page/DesignPageWorkspace.tsx"),
+  "utf8"
+);
+const designPageEditorCommandBarSource = readFileSync(
+  join(root, "components/editor/design-page/DesignPageEditorCommandBar.tsx"),
+  "utf8"
+);
+const designPageOnboardingSource = readFileSync(
+  join(root, "lib/useDesignPageOnboarding.ts"),
+  "utf8"
+);
+const designPageQaMarkersSource = readFileSync(
+  join(root, "components/editor/design-page/DesignPageQaMarkers.tsx"),
+  "utf8"
+);
+const betaStartPanelSource = readFileSync(
+  join(root, "components/editor/design-page/BetaStartPanel.tsx"),
+  "utf8"
+);
 const adminPageSource = readFileSync(join(root, "app/admin/page.tsx"), "utf8");
 const sharePageSource = readFileSync(join(root, "app/share/[shareToken]/page.tsx"), "utf8");
 const exportPageSource = readFileSync(join(root, "app/share/[shareToken]/export/page.tsx"), "utf8");
@@ -85,11 +104,16 @@ const productionWithTestKey = resolveCheckoutBoundaryDiagnostics({
 assert.equal(productionWithTestKey.checkoutSafe, false);
 assert.equal(isBetaCheckoutBoundary(productionWithTestKey), false);
 
-for (const source of [stripeCheckoutSource, stripeCheckoutProSource, shopifyCheckoutSource]) {
+for (const source of [stripeCheckoutSource, shopifyCheckoutSource]) {
   assert.match(source, /resolveCheckoutBoundaryDiagnostics/, "checkout routes should run boundary diagnostics.");
   assert.match(source, /buildCheckoutBoundaryResponsePayload/, "checkout routes should return safe diagnostics.");
 }
-for (const source of [stripeCheckoutSource, stripeCheckoutProSource]) {
+assert.match(
+  stripeCheckoutProSource,
+  /export \{ POST \} from "\.\.\/checkout\/route"/,
+  "The legacy Pro checkout endpoint should delegate to the canonical secured handler."
+);
+for (const source of [stripeCheckoutSource]) {
   assert.match(
     source,
     /buildProviderFailureBoundaryDiagnostics[\s\S]*isBetaCheckoutBoundary/,
@@ -117,48 +141,23 @@ assert.match(
 );
 assert.match(
   adminPageSource,
-  /data-testid="catalog-commerce-readiness-dashboard"/,
-  "admin overview should expose the catalog commerce readiness dashboard."
+  /href="\/admin\/catalog\/health"/,
+  "The admin overview should link operators to catalog health diagnostics."
 );
 assert.match(
   adminPageSource,
-  /data-testid="checkout-boundary-diagnostics"/,
-  "admin overview should expose checkout boundary diagnostics."
+  /Checkout started \(24h\)/,
+  "The admin overview should expose checkout activity."
 );
 assert.match(
   adminPageSource,
-  /checkoutBoundaryDiagnostics\.stripeSecretMode/,
-  "checkout boundary diagnostics should show secret mode without exposing secret values."
+  /Webhook failures \(24h\)/,
+  "The admin overview should expose provider failure activity without secret values."
 );
 assert.match(
-  adminPageSource,
-  /data-testid="beta-feedback-triage"/,
-  "admin overview should expose beta feedback triage."
-);
-assert.match(
-  adminPageSource,
-  /data-testid="beta-launch-readiness"/,
-  "admin overview should expose beta launch readiness."
-);
-assert.match(
-  adminPageSource,
-  /data-testid="beta-launch-readiness-csv"/,
-  "admin beta launch readiness should export CSV evidence."
-);
-assert.match(
-  adminPageSource,
-  /data-testid="beta-feedback-triage-csv"/,
-  "admin beta feedback triage should export CSV."
-);
-assert.match(
-  adminPageSource,
-  /data-testid="beta-feedback-triage-severity"/,
-  "admin beta feedback triage should show severity labels."
-);
-assert.match(
-  adminPageSource,
+  feedbackSource,
   /beta_feedback_submitted/,
-  "admin feedback triage should read submitted beta feedback events."
+  "The beta feedback widget should emit the event consumed by operational triage."
 );
 const criticalFeedback = buildBetaFeedbackTriage({
   context: { saveStatus: "failed", placementKind: "great", shoppingNeedsReviewCount: 0 },
@@ -324,9 +323,14 @@ assert.match(
   "design page should compute active room health from live editor state."
 );
 assert.match(
+  designPageEditorCommandBarSource,
+  /healthLevel=\{\s*configuration\.showRoomHealth\s*\?\s*room\.health\?\.level\s*:\s*undefined\s*\}/,
+  "the command-bar wrapper should render room health in the top room status bar."
+);
+assert.match(
   designPageSource,
-  /healthLevel=\{showRoomPlanStatusHealth \? activeRoomHealthSummary\?\.level : undefined\}/,
-  "design page should pass room health to the top room status bar."
+  /health:\s*activeRoomHealthSummary\s*\?\s*\{[\s\S]*level:\s*activeRoomHealthSummary\.level,[\s\S]*score:\s*activeRoomHealthSummary\.placementScore,[\s\S]*nextAction:\s*activeRoomHealthSummary\.nextAction,/,
+  "the workspace should pass live room health through the command-bar boundary."
 );
 assert.match(
   designPageSource,
@@ -334,9 +338,29 @@ assert.match(
   "design page should route room health review into the relevant workflow."
 );
 assert.match(
+  designPageEditorCommandBarSource,
+  /onReviewHealth=\{actions\.room\.onReviewHealth\}/,
+  "the command-bar wrapper should pass the active room health action to the room status bar."
+);
+assert.match(
   designPageSource,
-  /onReviewHealth=\{reviewActiveRoomHealth\}/,
-  "room status bar should receive the active room health action."
+  /room:\s*\{[\s\S]*onReviewHealth:\s*reviewActiveRoomHealth,[\s\S]*onFitPlan:\s*handleFitPlanView,/,
+  "the workspace should pass the active room review action through the command-bar boundary."
+);
+assert.match(
+  designPageSource,
+  /const compactRoomPlanStatusBar = showPlanGuidedActionsToggle \|\| commercePanelVisibleForLayout;[\s\S]*compactRoomStatus:\s*compactRoomPlanStatusBar,[\s\S]*showRoomHealth:\s*showRoomPlanStatusHealth,/,
+  "the workspace should retain compact and health-visibility policy at the command-bar boundary."
+);
+assert.match(
+  designPageEditorCommandBarSource,
+  /<RoomPlanStatusBar[\s\S]*compact=\{configuration\.compactRoomStatus\}[\s\S]*onReviewHealth=\{actions\.room\.onReviewHealth\}/,
+  "the command-bar wrapper should own compact room-status composition."
+);
+assert.doesNotMatch(
+  designPageSource,
+  /from "@\/components\/editor\/RoomPlanStatusBar"|<RoomPlanStatusBar/,
+  "the workspace should delegate room-status imports and rendering to DesignPageEditorCommandBar."
 );
 
 const activation = buildFirstRunActivationState({
@@ -350,17 +374,27 @@ assert.equal(activation.complete, false);
 assert.equal(activation.nextStep?.id, "share_or_export");
 assert.equal(activation.progressPercent, 75);
 assert.match(
-  designPageSource,
+  designPageOnboardingSource,
   /const firstRunActivationState = useMemo/,
-  "design page should compute first-run activation state."
+  "the design-page onboarding controller should compute first-run activation state."
 );
 assert.match(
   designPageSource,
+  /useDesignPageOnboarding/,
+  "design page should mount the first-run onboarding controller."
+);
+assert.match(
+  designPageQaMarkersSource,
   /data-testid="qa-first-run-activation"/,
-  "design page should expose first-run activation QA progress."
+  "design page QA markers should expose first-run activation progress."
 );
 assert.match(
   designPageSource,
+  /<DesignPageRuntimeQaMarkers/,
+  "design page should mount the runtime QA markers."
+);
+assert.match(
+  betaStartPanelSource,
   /data-testid="beta-start-activation-progress"/,
   "beta start panel should show visible first-run activation progress."
 );

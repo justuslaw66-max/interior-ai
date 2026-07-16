@@ -309,7 +309,41 @@ const controlsPanelSource = fs.readFileSync(
   "utf8"
 );
 const designPageSource = fs.readFileSync(
-  path.join(process.cwd(), "app", "design", "page.tsx"),
+  path.join(
+    process.cwd(),
+    "components",
+    "editor",
+    "design-page",
+    "DesignPageWorkspace.tsx"
+  ),
+  "utf8"
+);
+const designSceneStructureSource = fs.readFileSync(
+  path.join(
+    process.cwd(),
+    "components",
+    "editor",
+    "design-page",
+    "DesignSceneStructureLayer.tsx"
+  ),
+  "utf8"
+);
+const planQualityControllerSource = fs.readFileSync(
+  path.join(process.cwd(), "lib", "useDesignPagePlanQualityController.ts"),
+  "utf8"
+);
+const aiLayoutControllerSource = fs.readFileSync(
+  path.join(process.cwd(), "lib", "useDesignPageAiLayout.ts"),
+  "utf8"
+);
+const qualityHintOverlaySource = fs.readFileSync(
+  path.join(
+    process.cwd(),
+    "components",
+    "editor",
+    "design-page",
+    "PlanQualityHintOverlay.tsx"
+  ),
   "utf8"
 );
 const qualitySource = fs.readFileSync(
@@ -318,8 +352,8 @@ const qualitySource = fs.readFileSync(
 );
 
 assert.match(
-  designPageSource,
-  /buildFloorPlanQualityReport\(\{[\s\S]*?rooms: housePlan2D\.rooms[\s\S]*?openings: planOpenings[\s\S]*?activeRoomId: designSnapshot\.activeRoomId/,
+  planQualityControllerSource,
+  /buildFloorPlanQualityReport\(\{[\s\S]*?rooms: housePlanRooms[\s\S]*?openings: planOpenings[\s\S]*?activeRoomId: designSnapshot\.activeRoomId/,
   "Design page should compute quality from rooms, openings, items, and active room."
 );
 assert.match(
@@ -338,14 +372,29 @@ assert.match(
   "Quality report CTAs should use friendly labels."
 );
 assert.match(
-  designPageSource,
+  planQualityControllerSource,
   /track\("floor_plan_quality_changed"[\s\S]*?track\("floor_plan_quality_fix_clicked"[\s\S]*?issue_id[\s\S]*?target_room_id[\s\S]*?target_item_id/,
   "Quality score changes and targeted suggested-fix clicks should be tracked."
 );
 assert.match(
+  qualityHintOverlaySource,
+  /testId: "plan-quality-hints"/,
+  "The quality-hint overlay should retain its runtime test marker."
+);
+assert.match(
+  designSceneStructureSource,
+  /<PlanQualityHintOverlay[\s\S]*?rooms=\{plan\.rooms\}[\s\S]*?issues=\{plan\.qualityIssues\}/,
+  "The structure layer should render lightweight visual quality hints from plan state."
+);
+assert.match(
   designPageSource,
-  /function PlanQualityHintOverlay\([\s\S]*?testId: "plan-quality-hints"[\s\S]*?<PlanQualityHintOverlay[\s\S]*?rooms=\{housePlan2D\.rooms\}[\s\S]*?issues=\{floorPlanQualityReport\.issues\}/,
-  "2D plan mode should render lightweight visual quality hints from report issues."
+  /qualityIssues: floorPlanQualityReport\.issues,/,
+  "The workspace should wire report issues into the structure layer."
+);
+assert.doesNotMatch(
+  designPageSource,
+  /<PlanQualityHintOverlay/,
+  "The workspace should delegate quality-hint rendering to the structure layer."
 );
 assert.match(
   designPageSource,
@@ -353,12 +402,17 @@ assert.match(
   "AI layout requests should carry the quality context for future planner use."
 );
 assert.match(
+  aiLayoutControllerSource,
+  /body: JSON\.stringify\(\{[\s\S]*?floorPlanQualityContext/,
+  "The extracted AI layout controller should preserve quality context in its API payload."
+);
+assert.match(
   fs.readFileSync(path.join(process.cwd(), "app", "api", "ai", "layout", "route.ts"), "utf8"),
   /floorPlanQualityContext[\s\S]*?buildDeterministicLayoutPlan\([\s\S]*?floorPlanQualityContext/,
   "AI layout route should accept the quality context without changing current behavior."
 );
 assert.match(
-  designPageSource,
+  aiLayoutControllerSource,
   /\/api\/ai\/layout/,
   "Existing AI layout flow should remain in place for future quality-context consumption."
 );

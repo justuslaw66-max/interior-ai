@@ -2,35 +2,45 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-const designPage = readFileSync(join(process.cwd(), "app/design/page.tsx"), "utf8");
+const catalogPlacementHook = readFileSync(
+  join(process.cwd(), "lib/useDesignPageCatalogPlacement.ts"),
+  "utf8"
+);
+const confirmPanel = readFileSync(
+  join(
+    process.cwd(),
+    "components/editor/design-page/CatalogPlacementConfirmPanel.tsx"
+  ),
+  "utf8"
+);
 
 assert.match(
-  designPage,
+  catalogPlacementHook,
   /const pendingCatalogPlacementImprovement = useMemo/,
   "placement preview should derive a best-scored nearby improvement"
 );
 assert.match(
-  designPage,
+  catalogPlacementHook,
   /scoreDelta < 4/,
   "improvement action should avoid noisy tiny score changes"
 );
 assert.match(
-  designPage,
+  catalogPlacementHook,
   /const improvePendingCatalogPlacement = useCallback/,
   "placement preview should expose an action for applying the improvement"
 );
 assert.match(
-  designPage,
+  confirmPanel,
   /data-testid="catalog-placement-improvement-hint"/,
   "placement score card should explain the better nearby spot"
 );
 assert.match(
-  designPage,
+  confirmPanel,
   /data-testid="catalog-placement-improve"/,
   "placement action row should expose the improve placement button"
 );
 assert.match(
-  designPage,
+  catalogPlacementHook,
   /Improved placement to \$\{pendingCatalogPlacementImprovement\.score\}\/100/,
   "improvement action should confirm the new score"
 );

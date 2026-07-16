@@ -1,6 +1,7 @@
 "use client";
 
 import EditorViewToggle, { type EditorViewMode } from "@/components/editor/EditorViewToggle";
+import { Ellipsis, Plus, UserRound } from "lucide-react";
 import { signIn, signOut } from "next-auth/react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
@@ -30,6 +31,8 @@ type EditorCommandBarProps = {
   undoName: string | null;
   redoName: string | null;
   onPlan: () => void;
+  millworkActive?: boolean;
+  onMillwork?: () => void;
   onFurnish: () => void;
   onAiDesign: () => void;
   onShop: () => void;
@@ -40,6 +43,7 @@ type EditorCommandBarProps = {
   onToggleDesignerMode: () => void;
   onToggleClientPreview: () => void;
   onViewPlans: () => void;
+  onNewPlan: () => void;
   onManageBilling: () => void;
   onFeedback: () => void;
   showLoadDesign: boolean;
@@ -89,6 +93,8 @@ export default function EditorCommandBar({
   undoName,
   redoName,
   onPlan,
+  millworkActive = false,
+  onMillwork,
   onFurnish,
   onAiDesign,
   onShop,
@@ -99,6 +105,7 @@ export default function EditorCommandBar({
   onToggleDesignerMode,
   onToggleClientPreview,
   onViewPlans,
+  onNewPlan,
   onManageBilling,
   onFeedback,
   showLoadDesign,
@@ -145,18 +152,66 @@ export default function EditorCommandBar({
   }, [accountOpen, overflowOpen]);
 
   const workflowSteps: Array<{
-    mode: EditorMode;
+    id: string;
     label: string;
     testId: string;
     onClick: () => void;
+    active: boolean;
+    ariaLabel?: string;
+    title?: string;
+    legacyTestId?: string;
+    screenReaderLabel?: string;
   }> = [
-    { mode: "design", label: "Plan", testId: "editor-workflow-plan", onClick: onPlan },
-    { mode: "adjust", label: "Furnish", testId: "editor-workflow-furnish", onClick: onFurnish },
-    ...(aiDesignEnabled
-      ? [{ mode: "ai" as const, label: "AI Design", testId: "editor-workflow-ai", onClick: onAiDesign }]
+    {
+      id: "plan",
+      label: "Plan",
+      testId: "editor-workflow-plan",
+      onClick: onPlan,
+      active: !millworkActive && editorMode === "design",
+    },
+    ...(onMillwork
+      ? [{
+          id: "millwork",
+          label: "Millwork",
+          testId: "editor-workflow-millwork",
+          onClick: onMillwork,
+          active: millworkActive,
+          ariaLabel: "Custom Millwork Studio",
+          title: "Custom Millwork Studio",
+          legacyTestId: "open-custom-millwork-studio",
+          screenReaderLabel: "Custom Millwork Studio",
+        }]
       : []),
-    { mode: "buy", label: "Shop", testId: "editor-workflow-shop", onClick: onShop },
-    { mode: "present", label: "Export", testId: "editor-workflow-export", onClick: onExport },
+    {
+      id: "furnish",
+      label: "Furnish",
+      testId: "editor-workflow-furnish",
+      onClick: onFurnish,
+      active: !millworkActive && editorMode === "adjust",
+    },
+    ...(aiDesignEnabled
+      ? [{
+          id: "ai",
+          label: "AI Design",
+          testId: "editor-workflow-ai",
+          onClick: onAiDesign,
+          active: !millworkActive && editorMode === "ai",
+        }]
+      : []),
+    {
+      id: "shop",
+      label: "Shop",
+      testId: "editor-workflow-shop",
+      onClick: onShop,
+      active: !millworkActive && editorMode === "buy",
+    },
+    {
+      id: "export",
+      label: "Export",
+      testId: "editor-workflow-export",
+      onClick: onExport,
+      active: !millworkActive && editorMode === "present",
+    },
   ];
   const workflowButtonClass = (active: boolean) => {
     if (dark) {
@@ -234,15 +289,24 @@ export default function EditorCommandBar({
         >
           {workflowSteps.map((step) => (
             <button
-              key={step.mode}
+              key={step.id}
               type="button"
               data-testid={step.testId}
-              data-active={editorMode === step.mode ? "true" : "false"}
-              aria-pressed={editorMode === step.mode}
-              className={workflowButtonClass(editorMode === step.mode)}
+              data-active={step.active ? "true" : "false"}
+              aria-label={step.ariaLabel}
+              aria-pressed={step.active}
+              title={step.title}
+              className={workflowButtonClass(step.active)}
               onClick={step.onClick}
             >
-              {step.label}
+              {step.legacyTestId ? (
+                <span data-testid={step.legacyTestId}>
+                  <span data-testid="open-cabinetry-studio">{step.label}</span>
+                  {step.screenReaderLabel ? (
+                    <span className="sr-only">{step.screenReaderLabel}</span>
+                  ) : null}
+                </span>
+              ) : step.label}
             </button>
           ))}
         </div>
@@ -260,6 +324,22 @@ export default function EditorCommandBar({
       </div>
 
       <div className="flex min-w-0 flex-[0.9] items-center justify-end gap-1.5">
+        <button
+          type="button"
+          data-testid="editor-command-new-plan"
+          aria-label="Start a new floor plan"
+          title="Start a new floor plan"
+          className={
+            dark
+              ? "designer-control inline-flex h-9 w-9 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-emerald-300/30 bg-emerald-300/10 text-sm font-semibold text-emerald-100 hover:bg-emerald-300/20 sm:w-auto sm:px-3"
+              : "inline-flex h-9 w-9 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 text-sm font-semibold text-emerald-800 shadow-sm hover:bg-emerald-100 sm:w-auto sm:px-3"
+          }
+          onClick={onNewPlan}
+        >
+          <Plus className="h-4 w-4" strokeWidth={2.5} aria-hidden="true" />
+          <span className="hidden sm:inline">New plan</span>
+        </button>
+
         <div
           data-testid="save-status"
           data-status={saveStatus.kind}
@@ -313,19 +393,21 @@ export default function EditorCommandBar({
           <button
             type="button"
             data-testid="editor-command-overflow"
+            aria-label="More"
             aria-haspopup="menu"
             aria-expanded={overflowOpen}
             className={
               dark
-                ? "designer-control h-9 rounded-xl border px-3 text-sm font-semibold"
-                : "h-9 rounded-xl border border-neutral-200 bg-white px-3 text-sm font-semibold text-neutral-800 hover:bg-neutral-50"
+                ? "designer-control inline-flex h-9 w-9 items-center justify-center rounded-xl border text-sm font-semibold sm:w-auto sm:px-3"
+                : "inline-flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200 bg-white text-sm font-semibold text-neutral-800 hover:bg-neutral-50 sm:w-auto sm:px-3"
             }
             onClick={() => {
               setOverflowOpen((value) => !value);
               setAccountOpen(false);
             }}
           >
-            More
+            <Ellipsis className="h-4 w-4 sm:hidden" aria-hidden="true" />
+            <span className="hidden sm:inline">More</span>
           </button>
           {overflowOpen && (
             <div
@@ -333,6 +415,22 @@ export default function EditorCommandBar({
               role="menu"
               className={menuPanelClass}
             >
+              {onMillwork ? (
+                <button
+                  type="button"
+                  data-testid="editor-command-overflow-millwork"
+                  data-active={millworkActive ? "true" : "false"}
+                  aria-pressed={millworkActive}
+                  className={`${menuButtonClass} xl:hidden`}
+                  onClick={() => {
+                    setOverflowOpen(false);
+                    onMillwork();
+                  }}
+                >
+                  <span>Millwork</span>
+                  <span className="text-xs font-medium opacity-60">Studio</span>
+                </button>
+              ) : null}
               {showLoadDesign && (
                 <button
                   type="button"
@@ -343,7 +441,7 @@ export default function EditorCommandBar({
                     onToggleLoadDesign();
                   }}
                 >
-                  Load
+                  My designs
                 </button>
               )}
               <button
@@ -409,19 +507,21 @@ export default function EditorCommandBar({
           <button
             type="button"
             data-testid="editor-command-account"
+            aria-label="Account"
             aria-haspopup="menu"
             aria-expanded={accountOpen}
             className={
               dark
-                ? "designer-control h-9 rounded-xl border px-3 text-sm font-semibold"
-                : "h-9 rounded-xl border border-neutral-200 bg-white px-3 text-sm font-semibold text-neutral-800 hover:bg-neutral-50"
+                ? "designer-control inline-flex h-9 w-9 items-center justify-center rounded-xl border text-sm font-semibold sm:w-auto sm:px-3"
+                : "inline-flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200 bg-white text-sm font-semibold text-neutral-800 hover:bg-neutral-50 sm:w-auto sm:px-3"
             }
             onClick={() => {
               setAccountOpen((value) => !value);
               setOverflowOpen(false);
             }}
           >
-            Account
+            <UserRound className="h-4 w-4 sm:hidden" aria-hidden="true" />
+            <span className="hidden sm:inline">Account</span>
           </button>
           {accountOpen && (
             <div

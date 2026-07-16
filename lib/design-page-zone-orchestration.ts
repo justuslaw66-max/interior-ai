@@ -1,5 +1,16 @@
-import type { DesignItem, ZoneMin } from "@/lib/room-types";
-import { computeZoneAnchor } from "@/lib/design-page-zone-layout";
+import {
+  getActiveRoom,
+  updateRoom,
+  type DesignItem,
+  type DesignSnapshot,
+  type ZoneMin,
+} from "@/lib/room-types";
+import type { CATALOG_ITEMS } from "@/lib/catalog";
+import {
+  buildAutoZones,
+  computeZoneAnchor,
+  normalizeZones,
+} from "@/lib/design-page-zone-layout";
 
 type BuildManualZoneFromSelectionParams = {
   selectedSet: Set<string>;
@@ -10,7 +21,7 @@ type BuildManualZoneFromSelectionParams = {
 
 export function buildManualZoneFromSelection(
   params: BuildManualZoneFromSelectionParams
-): { zoneId: string; zones: ZoneMin[] } | null {
+): { zoneId: string; manualZones: ZoneMin[] } | null {
   const { selectedSet, selectedItems, pendingZoneType, existingZones } = params;
   if (!selectedSet.size || !selectedItems.length) return null;
 
@@ -35,7 +46,7 @@ export function buildManualZoneFromSelection(
 
   return {
     zoneId,
-    zones: [...manualZones, newZone],
+    manualZones: [...manualZones, newZone],
   };
 }
 
@@ -46,7 +57,7 @@ type BuildAutoSeatingZoneParams = {
 
 export function buildAutoSeatingZone(
   params: BuildAutoSeatingZoneParams
-): { zoneId: string; zones: ZoneMin[] } | null {
+): { zoneId: string; manualZones: ZoneMin[] } | null {
   const { sofaItem, existingZones } = params;
   if (existingZones.some((zone) => zone.type === "seating")) return null;
 
@@ -61,6 +72,46 @@ export function buildAutoSeatingZone(
 
   return {
     zoneId,
-    zones: [...existingZones.filter((zone) => zone.source === "manual"), newZone],
+    manualZones: [
+      ...existingZones.filter((zone) => zone.source === "manual"),
+      newZone,
+    ],
   };
+}
+
+type ReconcileZonesParams = {
+  zones: ZoneMin[];
+  allItems: DesignItem[];
+  catalogItems: typeof CATALOG_ITEMS;
+};
+
+export function reconcileZonesForItems({
+  zones,
+  allItems,
+  catalogItems,
+}: ReconcileZonesParams): ZoneMin[] {
+  const normalizedZones = normalizeZones(zones, allItems);
+  const manualZones = normalizedZones.filter(
+    (zone) => zone.source === "manual"
+  );
+  const autoZones = buildAutoZones({
+    allItems,
+    manualZones,
+    catalogItems,
+  });
+
+  return [...manualZones, ...autoZones];
+}
+
+export function updateActiveRoomZones(
+  snapshot: DesignSnapshot,
+  zones: ZoneMin[]
+): DesignSnapshot {
+  const activeRoom = getActiveRoom(snapshot);
+  if (!activeRoom) return snapshot;
+
+  return updateRoom(snapshot, {
+    ...activeRoom,
+    zones,
+  });
 }

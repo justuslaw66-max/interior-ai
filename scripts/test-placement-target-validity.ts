@@ -2,26 +2,33 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-const designPage = readFileSync(join(process.cwd(), "app/design/page.tsx"), "utf8");
+const designPage = readFileSync(
+  join(process.cwd(), "components/editor/design-page/DesignPageWorkspace.tsx"),
+  "utf8"
+);
+const catalogPlacementHook = readFileSync(
+  join(process.cwd(), "lib/useDesignPageCatalogPlacement.ts"),
+  "utf8"
+);
 
 assert.match(
-  designPage,
+  catalogPlacementHook,
   /const isCatalogPlacementTargetAcceptable = useCallback/,
   "placement targeting should share an acceptability helper"
 );
 assert.match(
-  designPage,
+  catalogPlacementHook,
   /score\.kind !== "blocks_path" && score\.kind !== "cramped"/,
   "target validity should reject path-blocking and cramped scored placements"
 );
 assert.match(
-  designPage,
-  /const acceptable = isCatalogPlacementTargetAcceptable\(nextPlacement, targetRoom\)[\s\S]*valid: acceptable/,
+  catalogPlacementHook,
+  /const acceptable = isCatalogPlacementTargetAcceptable\(\s*nextPlacement,\s*targetRoom\s*\)[\s\S]*valid: acceptable/,
   "preview drag and room tap should use scored target validity"
 );
 assert.match(
-  designPage,
-  /const acceptable = isCatalogPlacementTargetAcceptable\(placement, targetRoom\)[\s\S]*valid: acceptable/,
+  catalogPlacementHook,
+  /valid: isCatalogPlacementTargetAcceptable\(placement, targetRoom\)/,
   "catalog drag-over should use scored target validity"
 );
 assert.match(

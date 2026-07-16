@@ -15,6 +15,7 @@ export type RoomRendererOpening = {
   width: number;
   height?: number;
   bottom?: number;
+  doorStyle?: "swing" | "open";
 };
 
 export type RoomRendererFixedElement = {
@@ -24,6 +25,8 @@ export type RoomRendererFixedElement = {
   w: number;
   d: number;
   label?: string;
+  kind?: FixedElement2D["kind"];
+  locked?: boolean;
 };
 
 export type RoomRendererAnnotation = {
@@ -160,6 +163,7 @@ export function mapPlanOpeningsToRoomRenderer(openings: RoomOpening2D[]): RoomRe
     width: mmToMeters(opening.widthMm),
     height: opening.heightMm !== undefined ? mmToMeters(opening.heightMm) : undefined,
     bottom: opening.bottomMm !== undefined ? mmToMeters(opening.bottomMm) : undefined,
+    doorStyle: opening.doorStyle,
   }));
 }
 
@@ -173,6 +177,8 @@ export function mapPlanFixedElementsToRoomRenderer(
     w: mmToMeters(fixed.widthMm),
     d: mmToMeters(fixed.depthMm),
     label: fixed.label,
+    kind: fixed.kind,
+    locked: fixed.locked,
   }));
 }
 

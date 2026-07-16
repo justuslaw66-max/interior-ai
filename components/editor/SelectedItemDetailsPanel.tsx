@@ -98,9 +98,6 @@ export default function SelectedItemDetailsPanel({
   const metaClass = dark
     ? "designer-text-secondary text-xs font-semibold uppercase tracking-[0.08em]"
     : "text-xs font-semibold uppercase tracking-[0.08em] text-neutral-500";
-  const buttonClass = dark
-    ? "designer-control rounded-md border px-2 py-1 text-xs"
-    : "rounded-md border border-neutral-200 px-2 py-1 text-xs text-neutral-700 hover:bg-neutral-50";
   const disabledButtonClass = dark
     ? "designer-control rounded-md border px-2 py-1 text-xs disabled:opacity-40"
     : "rounded-md border border-neutral-200 px-2 py-1 text-xs text-neutral-700 hover:bg-neutral-50 disabled:opacity-50";

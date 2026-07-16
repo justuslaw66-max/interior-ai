@@ -10,7 +10,17 @@ const commandBarSource = readFileSync(
   join(process.cwd(), "components/editor/EditorCommandBar.tsx"),
   "utf8"
 );
-const designPageSource = readFileSync(join(process.cwd(), "app/design/page.tsx"), "utf8");
+const designPageCommandBarSource = readFileSync(
+  join(
+    process.cwd(),
+    "components/editor/design-page/DesignPageEditorCommandBar.tsx"
+  ),
+  "utf8"
+);
+const designPageSource = readFileSync(
+  join(process.cwd(), "components/editor/design-page/DesignPageWorkspace.tsx"),
+  "utf8"
+);
 const appEventRouteSource = readFileSync(
   join(process.cwd(), "app/api/track/app-event/route.ts"),
   "utf8"
@@ -46,6 +56,16 @@ assert.match(
   commandBarSource,
   /data-testid="beta-feedback-open"[\s\S]*setOverflowOpen\(false\);[\s\S]*onFeedback\(\);/,
   "opening feedback should close the More menu first."
+);
+assert.match(
+  designPageCommandBarSource,
+  /<EditorCommandBar[\s\S]*?\{\.\.\.actions\.commandBar\}/,
+  "the design-page command wrapper should preserve the leaf feedback action contract."
+);
+assert.match(
+  designPageSource,
+  /<DesignPageEditorCommandBar[\s\S]*?actions=\{\{[\s\S]*?commandBar:\s*\{[\s\S]*?onFeedback:\s*\(\)\s*=>\s*setFeedbackOpen\(true\)/,
+  "the workspace should open feedback through the typed command-wrapper boundary."
 );
 assert.match(
   widgetSource,

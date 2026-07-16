@@ -25,7 +25,10 @@ const hygieneReport = readFileSync(
 );
 const stagingEvidenceSource = readFileSync(join(root, "lib/beta-staging-evidence.ts"), "utf8");
 const adminPageSource = readFileSync(join(root, "app/admin/page.tsx"), "utf8");
-const designPageSource = readFileSync(join(root, "app/design/page.tsx"), "utf8");
+const designPageOnboardingSource = readFileSync(
+  join(root, "lib/useDesignPageOnboarding.ts"),
+  "utf8"
+);
 const stagingEvidencePanelSource = readFileSync(
   join(root, "components/admin/StagingSmokeEvidencePanel.tsx"),
   "utf8"
@@ -280,8 +283,8 @@ assert.ok(
     "first_run_activation_step_completed",
     "guided_plan_actions",
     "viewport_width",
-  ].every((token) => designPageSource.includes(token)),
-  "design page should track first-run activation step completion with useful funnel context."
+  ].every((token) => designPageOnboardingSource.includes(token)),
+  "the design-page onboarding controller should track first-run activation step completion with useful funnel context."
 );
 assert.match(
   appEventsSource,

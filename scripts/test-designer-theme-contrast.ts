@@ -286,28 +286,135 @@ assert.doesNotMatch(planPanelSource, /<div className=\{dark \? "designer-dock/, 
 assert.match(planPanelSource, /progressCardClass = dark[\s\S]*?designer-divider/, "Internal Plan sections should use dividers.");
 assert.doesNotMatch(planPanelSource, /progressCardClass = dark[\s\S]{0,100}?designer-dock/, "Internal Plan sections should not each become shadowed docks.");
 
-const designPageSource = fs.readFileSync(path.join(root, "app", "design", "page.tsx"), "utf8");
+const designPageSource = fs.readFileSync(
+  path.join(root, "components", "editor", "design-page", "DesignPageWorkspace.tsx"),
+  "utf8"
+);
+const designPageCommandBarSource = fs.readFileSync(
+  path.join(
+    root,
+    "components",
+    "editor",
+    "design-page",
+    "DesignPageEditorCommandBar.tsx"
+  ),
+  "utf8"
+);
+const viewportOverlaySource = fs.readFileSync(
+  path.join(
+    root,
+    "components",
+    "editor",
+    "design-page",
+    "DesignPageViewportOverlayLayer.tsx"
+  ),
+  "utf8"
+);
+const selectionInspectorSource = fs.readFileSync(
+  path.join(root, "components", "editor", "design-page", "DesignPageSelectionInspector.tsx"),
+  "utf8"
+);
+const selectedItemPanelSource = fs.readFileSync(
+  path.join(root, "components", "editor", "design-page", "SelectedItemPanel.tsx"),
+  "utf8"
+);
+const designSceneCanvasSource = fs.readFileSync(
+  path.join(root, "components", "editor", "design-page", "DesignSceneCanvas.tsx"),
+  "utf8"
+);
+const commandPaletteSource = fs.readFileSync(
+  path.join(root, "components", "editor", "design-page", "EditorCommandPalette.tsx"),
+  "utf8"
+);
+const planQualityReviewPanelSource = fs.readFileSync(
+  path.join(root, "components", "editor", "design-page", "PlanQualityReviewPanel.tsx"),
+  "utf8"
+);
+const sceneReadyVeilSource = fs.readFileSync(
+  path.join(root, "components", "editor", "design-page", "SceneReadyVeil.tsx"),
+  "utf8"
+);
+const selectedPlanOpeningActionsSource = fs.readFileSync(
+  path.join(root, "components", "editor", "design-page", "SelectedPlanOpeningActions.tsx"),
+  "utf8"
+);
+const selectedSurfaceInspectorSource = fs.readFileSync(
+  path.join(root, "components", "editor", "design-page", "SelectedSurfaceInspector.tsx"),
+  "utf8"
+);
 assert.doesNotMatch(
   designPageSource,
   legacySurfacePattern,
   "The Pro design workspace should not restore the legacy blue-black palette."
 );
+assert.doesNotMatch(
+  selectedItemPanelSource,
+  legacySurfacePattern,
+  "The Pro selected-item panel should not restore the legacy blue-black palette."
+);
+assert.match(
+  designPageCommandBarSource,
+  /<RoomPlanStatusBar[\s\S]*?dark=\{configuration\.dark\}/,
+  "The command wrapper should apply the resolved Pro theme to room context."
+);
+assert.match(
+  designPageCommandBarSource,
+  /<EditorCommandBar[\s\S]*?dark=\{configuration\.dark\}/,
+  "The command wrapper should apply the resolved Pro theme to the command-bar leaf."
+);
+assert.match(
+  designPageSource,
+  /<DesignPageEditorCommandBar[\s\S]*?configuration=\{\{[\s\S]*?dark:\s*showDesignerTheme/,
+  "The workspace should pass its resolved designer theme through the command-wrapper boundary."
+);
+assert.doesNotMatch(
+  designPageSource,
+  /<(?:EditorCommandBar|RoomPlanStatusBar)\b/,
+  "The workspace should delegate themed command and room-status composition to the wrapper."
+);
+assert.match(
+  commandPaletteSource,
+  /data-testid="editor-command-palette"[\s\S]{0,1200}?designer-(?:dock|work-surface)/,
+  "The Pro command palette should use an opaque semantic surface."
+);
+assert.match(
+  planQualityReviewPanelSource,
+  /data-testid="plan-quality-review-panel"[\s\S]{0,500}?designer-(?:dock|work-surface)/,
+  "The Pro plan review should use an opaque semantic surface."
+);
+assert.match(
+  selectedPlanOpeningActionsSource,
+  /data-testid="selected-plan-opening-actions"[\s\S]{0,500}?designer-(?:dock|work-surface)/,
+  "The Pro selected-opening toolbar should use an opaque semantic surface."
+);
 for (const [label, pattern] of [
-  ["command palette", /data-testid="editor-command-palette"[\s\S]{0,1200}?designer-(?:dock|work-surface)/],
-  ["selected-opening toolbar", /data-testid="selected-plan-opening-actions"[\s\S]{0,500}?designer-(?:dock|work-surface)/],
-  ["plan review", /data-testid="plan-quality-review-panel"[\s\S]{0,500}?designer-(?:dock|work-surface)/],
   ["shopping dock", /data-testid="shopping-dock"[\s\S]{0,1000}?designer-(?:dock|work-surface)/],
 ] as const) {
   assert.match(designPageSource, pattern, `The Pro ${label} should use an opaque semantic surface.`);
 }
 assert.match(
-  designPageSource,
-  /data-testid="scene-ready-veil"[\s\S]{0,700}?backgroundColor:\s*sceneBackgroundColor/,
+  sceneReadyVeilSource,
+  /data-testid="scene-ready-veil"[\s\S]{0,700}?backgroundColor:\s*configuration\.backgroundColor/,
   "The scene loading veil should match the resolved scene background without a white flash."
 );
 assert.match(
+  viewportOverlaySource,
+  /state\.sceneLoadingVisible \? \([\s\S]{0,250}?<SceneReadyVeil configuration=\{configuration\.sceneLoading\}/,
+  "The viewport overlay layer should own scene-loading veil composition."
+);
+assert.doesNotMatch(
   designPageSource,
-  /surfaceInspectorPublishStatus === "draft"[\s\S]{0,500}?designer-status-warning[\s\S]{0,500}?designer-status-ready/,
+  /<SceneReadyVeil/,
+  "The design workspace should delegate the loading veil to the viewport overlay layer."
+);
+assert.match(
+  designPageSource,
+  /<DesignPageViewportOverlayLayer[\s\S]*?sceneLoadingVisible: showSceneLoadingVeil,[\s\S]*?sceneLoading: \{[\s\S]*?dark: showDesignerTheme,[\s\S]*?backgroundColor: sceneBackgroundColor,/,
+  "The design workspace should pass the resolved scene-loading theme and background through the viewport-overlay boundary."
+);
+assert.match(
+  selectedSurfaceInspectorSource,
+  /state\.header\.draft[\s\S]{0,500}?designer-status-warning[\s\S]{0,500}?designer-status-ready/,
   "Pro material publication statuses should use theme-first semantic status classes."
 );
 assert.match(
@@ -316,24 +423,29 @@ assert.match(
   "Pro 3D should use a soft neutral canvas while consumer and 2D views stay white."
 );
 assert.match(
-  designPageSource,
+  designSceneCanvasSource,
   /<Canvas[\s\S]*?data-shadow-maps-enabled="false"[\s\S]*?data-tone-mapping="aces"[\s\S]*?data-lighting-model="ambient-hemi-key-fill-ibl"[\s\S]*?shadows=\{false\}[\s\S]*?outputColorSpace:\s*THREE\.SRGBColorSpace[\s\S]*?toneMapping:\s*THREE\.ACESFilmicToneMapping/,
   "The whole-home renderer should keep shadow maps disabled with sRGB output and ACES tone mapping."
 );
 assert.match(
-  designPageSource,
-  /<hemisphereLight[\s\S]*?color=\{lightConfig\.skyColor[\s\S]*?groundColor=\{lightConfig\.groundColor[\s\S]*?intensity=\{lightConfig\.hemiIntensity/,
+  designSceneCanvasSource,
+  /<hemisphereLight[\s\S]*?color=\{configuration\.lightConfig\.skyColor[\s\S]*?groundColor=\{configuration\.lightConfig\.groundColor[\s\S]*?intensity=\{configuration\.lightConfig\.hemiIntensity/,
   "The whole-home renderer should use the configured hemisphere light for directional ambient depth."
 );
 assert.doesNotMatch(
-  designPageSource,
+  designSceneCanvasSource,
   /<ambientLight\s+color="#ffffff"\s+intensity=\{0\.24\}/,
   "The whole-home renderer should not restore the unconditional white ambient wash."
 );
 assert.match(
-  designPageSource,
+  selectionInspectorSource,
   /data-testid="selection-inspector"[\s\S]*?designer-work-surface/,
   "The Pro selection inspector should use the light work-surface semantic."
+);
+assert.match(
+  selectedItemPanelSource,
+  /data-testid="selected-item-panel"[\s\S]{0,500}?designer-panel/,
+  "The Pro selected-item panel should preserve its semantic panel surface."
 );
 
 console.log("Designer theme contrast checks passed.");

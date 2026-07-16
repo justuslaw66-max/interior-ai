@@ -255,13 +255,13 @@ test.describe("12. Variant Identity", () => {
 
     const opened = await openCatalogPreview(
       page,
-      "Jaron recliner armchair",
-      "armchair-real-castlery-jaron-recliner-armchair-wide-arm"
+      "Hamilton 3 Seater",
+      "sofa-real-castlery-hamilton-3-seater"
     );
     if (!opened) {
       test.info().annotations.push({
         type: "note",
-        description: "Skipping Castlery studio canvas assertion because the Jaron armchair card was not visible",
+        description: "Skipping Castlery studio canvas assertion because the Hamilton sofa card was not visible",
       });
       return;
     }

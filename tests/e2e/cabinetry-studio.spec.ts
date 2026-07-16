@@ -505,13 +505,23 @@ test.describe("Custom Millwork Studio MVP", () => {
     await mockPlan(page, "pro");
     await page.goto("/design?mode=designer");
 
-    const openStudio = page.getByTestId("open-custom-millwork-studio");
+    const commandBar = page.getByTestId("editor-command-bar");
+    const workflow = commandBar.getByLabel("Design workflow");
+    const openStudio = commandBar.getByTestId("open-custom-millwork-studio");
     await expect(openStudio).toBeVisible({ timeout: 30000 });
-    await expect(openStudio).toContainText(/Custom Millwork Studio/i);
+    await expect(openStudio).toContainText("Millwork");
+    await expect(page.getByTestId("open-custom-millwork-studio")).toHaveCount(1);
+    await expect(page.getByTestId("design-controls-panel").getByTestId("open-custom-millwork-studio")).toHaveCount(0);
+    await expect(workflow.locator("button")).toHaveCount(6);
+    await expect(workflow.locator("button").nth(0)).toHaveAttribute("data-testid", "editor-workflow-plan");
+    await expect(workflow.locator("button").nth(1)).toHaveAttribute("data-testid", "editor-workflow-millwork");
+    await expect(workflow.locator("button").nth(2)).toHaveAttribute("data-testid", "editor-workflow-furnish");
     await dismissBlockingPrompt(page);
     await openStudio.click();
 
     await expect(page.getByTestId("custom-millwork-studio")).toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId("editor-workflow-millwork")).toHaveAttribute("data-active", "true");
+    await expect(page.getByTestId("editor-workflow-plan")).toHaveAttribute("data-active", "false");
     await expect(page.getByRole("heading", { name: "Custom Millwork Studio" })).toBeVisible();
     await expect(page.getByTestId("custom-millwork-studio")).toHaveAttribute("data-experience", "guided");
     await expect(page.getByTestId("cabinet-template-search")).toBeVisible();

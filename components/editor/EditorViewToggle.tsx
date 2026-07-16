@@ -10,12 +10,12 @@ type EditorViewToggleProps = {
 
 export default function EditorViewToggle({ value, onChange, dark = false }: EditorViewToggleProps) {
   const inactive = dark
-    ? "designer-work-control rounded-full px-4 py-1.5 text-sm font-semibold"
-    : "rounded-full px-4 py-1.5 text-sm font-semibold text-neutral-600 hover:bg-white";
+    ? "designer-work-control rounded-full px-2 py-1.5 text-sm font-semibold sm:px-4"
+    : "rounded-full px-2 py-1.5 text-sm font-semibold text-neutral-600 hover:bg-white sm:px-4";
 
   const active = dark
-    ? "designer-work-control-active rounded-full px-4 py-1.5 text-sm font-semibold"
-    : "rounded-full bg-emerald-500 px-4 py-1.5 text-sm font-semibold text-white shadow-sm";
+    ? "designer-work-control-active rounded-full px-2 py-1.5 text-sm font-semibold sm:px-4"
+    : "rounded-full bg-emerald-500 px-2 py-1.5 text-sm font-semibold text-white shadow-sm sm:px-4";
 
   return (
     <div
@@ -25,8 +25,14 @@ export default function EditorViewToggle({ value, onChange, dark = false }: Edit
           : "grid grid-cols-2 gap-1 rounded-full bg-neutral-100 p-1"
       }
     >
-      <button type="button" className={value === "2d" ? active : inactive} onClick={() => onChange("2d")}>
-        2D Plan
+      <button
+        type="button"
+        aria-label="2D Plan"
+        className={value === "2d" ? active : inactive}
+        onClick={() => onChange("2d")}
+      >
+        <span className="sm:hidden">2D</span>
+        <span className="hidden sm:inline">2D Plan</span>
       </button>
       <button type="button" className={value === "3d" ? active : inactive} onClick={() => onChange("3d")}>
         3D

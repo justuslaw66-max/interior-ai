@@ -7,10 +7,7 @@ test.describe("00. Runtime smoke", () => {
 
     page.on("pageerror", (error) => fatalErrors.push(error.message));
     page.on("console", (message) => {
-      if (
-        message.type() === "error" &&
-        /maximum update depth exceeded|too many re-renders/i.test(message.text())
-      ) {
+      if (message.type() === "error") {
         fatalErrors.push(message.text());
       }
     });
@@ -19,7 +16,8 @@ test.describe("00. Runtime smoke", () => {
       window.localStorage.clear();
       window.sessionStorage.clear();
     });
-    await page.goto("/design", { waitUntil: "domcontentloaded" });
+    const initialResponse = await page.goto("/design", { waitUntil: "domcontentloaded" });
+    expect(initialResponse?.status()).toBe(200);
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30_000 });
 
     const betaStartTemplate = page.getByTestId("beta-start-template");
@@ -43,7 +41,8 @@ test.describe("00. Runtime smoke", () => {
     await page.waitForTimeout(3_000);
     expect(fatalErrors).toEqual([]);
 
-    await page.reload({ waitUntil: "domcontentloaded" });
+    const reloadResponse = await page.reload({ waitUntil: "domcontentloaded" });
+    expect(reloadResponse?.status()).toBe(200);
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30_000 });
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(/^\d+ rooms?$/);
     await page.waitForTimeout(2_000);

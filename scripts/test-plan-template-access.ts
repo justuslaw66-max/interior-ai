@@ -4,15 +4,99 @@ import path from "node:path";
 
 const planPanelPath = path.join(process.cwd(), "components", "editor", "DesignControlsPlanPanel.tsx");
 const source = fs.readFileSync(planPanelPath, "utf8");
-const designPagePath = path.join(process.cwd(), "app", "design", "page.tsx");
+const designPagePath = path.join(
+  process.cwd(),
+  "components",
+  "editor",
+  "design-page",
+  "DesignPageWorkspace.tsx"
+);
 const designPageSource = fs.readFileSync(designPagePath, "utf8");
+const floorPlanControllerPath = path.join(
+  process.cwd(),
+  "lib",
+  "useDesignPageFloorPlanUnderlayController.ts"
+);
+const floorPlanControllerSource = fs.readFileSync(floorPlanControllerPath, "utf8");
+const cameraControllerPath = path.join(
+  process.cwd(),
+  "lib",
+  "useDesignPageCameraNavigation.ts"
+);
+const cameraControllerSource = fs.readFileSync(cameraControllerPath, "utf8");
+const persistenceControllerPath = path.join(
+  process.cwd(),
+  "lib",
+  "useDesignPagePersistence.ts"
+);
+const persistenceControllerSource = fs.readFileSync(persistenceControllerPath, "utf8");
+const newPlanControllerPath = path.join(
+  process.cwd(),
+  "lib",
+  "useDesignPageNewPlanController.ts"
+);
+const newPlanControllerSource = fs.readFileSync(newPlanControllerPath, "utf8");
+const executeNewPlanStart = newPlanControllerSource.indexOf(
+  "export async function executeSaveCurrentAndStartNewPlan"
+);
+const newPlanHookStart = newPlanControllerSource.indexOf(
+  "export function useDesignPageNewPlanController"
+);
+assert.ok(
+  executeNewPlanStart >= 0 && newPlanHookStart > executeNewPlanStart,
+  "The new-plan controller should expose its save-and-start executor before the React hook."
+);
+const executeNewPlanSource = newPlanControllerSource.slice(
+  executeNewPlanStart,
+  newPlanHookStart
+);
+const templateFurnishingsPath = path.join(
+  process.cwd(),
+  "lib",
+  "design-page-template-furnishings.ts"
+);
+const templateFurnishingsSource = fs.readFileSync(templateFurnishingsPath, "utf8");
+const myDesignsDialogPath = path.join(
+  process.cwd(),
+  "components",
+  "editor",
+  "design-page",
+  "MyDesignsDialog.tsx"
+);
+const myDesignsDialogSource = fs.readFileSync(myDesignsDialogPath, "utf8");
+const planTemplateChoiceDialogPath = path.join(
+  process.cwd(),
+  "components",
+  "editor",
+  "design-page",
+  "PlanTemplateChoiceDialog.tsx"
+);
+const planTemplateChoiceDialogSource = fs.readFileSync(planTemplateChoiceDialogPath, "utf8");
+const commandBarPath = path.join(
+  process.cwd(),
+  "components",
+  "editor",
+  "EditorCommandBar.tsx"
+);
+const commandBarSource = fs.readFileSync(commandBarPath, "utf8");
+const designPageCommandBarPath = path.join(
+  process.cwd(),
+  "components",
+  "editor",
+  "design-page",
+  "DesignPageEditorCommandBar.tsx"
+);
+const designPageCommandBarSource = fs.readFileSync(
+  designPageCommandBarPath,
+  "utf8"
+);
 const betaSmokePath = path.join(process.cwd(), "tests", "e2e", "00-beta-smoke.spec.ts");
 const betaSmokeSource = fs.readFileSync(betaSmokePath, "utf8");
 
 assert.match(
   source,
-  /const templatePickerRef = useRef<HTMLDivElement \| null>\(null\);[\s\S]*?const openTemplatePicker = \(\) => \{[\s\S]*?setPlanStartMode\("template"\);[\s\S]*?templatePickerRef\.current\?\.scrollIntoView\(\{ behavior: "smooth", block: "start" \}\);/,
-  "Opening templates should scroll the controls panel to the starter floor plan picker."
+  /const templatePickerRef = useRef<HTMLDivElement \| null>\(null\);[\s\S]*?const openTemplatePicker = \(\) => \{[\s\S]*?setPlanStartMode\("template"\);[\s\S]*?useEffect\(\(\) => \{[\s\S]*?planStartMode !== "template"[\s\S]*?requestAnimationFrame[\s\S]*?templatePickerRef\.current\?\.scrollIntoView\(\{ behavior: "smooth", block: "start" \}\);/,
+  "Opening templates from either the panel or command bar should scroll to the starter floor plan picker."
 );
 
 assert.match(
@@ -35,7 +119,7 @@ assert.match(
 
 assert.match(
   source,
-  /testId: "plan-start-template"[\s\S]*?label: "Starter layouts"[\s\S]*?onClick: openTemplatePicker/,
+  /data-testid="plan-start-template"[\s\S]*?onClick=\{openTemplatePicker\}[\s\S]*?Starter layouts/,
   "The template tile should visibly jump to the starter floor plan picker."
 );
 
@@ -123,8 +207,8 @@ assert.doesNotMatch(
 
 assert.match(
   source,
-  /!isDesigner && showTemplatePicker/,
-  "The starter floor plan picker should remain available when planStartMode is template."
+  /const showTemplatePicker = planStartMode === "template";[\s\S]*?\{showTemplatePicker && \(/,
+  "The starter floor plan picker should open explicitly in both consumer and designer modes."
 );
 
 assert.match(
@@ -141,7 +225,7 @@ assert.match(
 
 assert.match(
   source,
-  /Choose a floor plan[\s\S]*?\{filteredPlanTemplates\.length\} options/,
+  /Choose a floor plan[\s\S]*?\{filteredPlanTemplates\.length\} starter layouts/,
   "Template picker heading should be concise and show the filtered option count."
 );
 
@@ -218,61 +302,61 @@ assert.match(
 );
 
 assert.match(
-  designPageSource,
+  floorPlanControllerSource,
   /const templateDoorOpenings: RoomOpening2D\[\] = template\.doorways\.flatMap/,
   "Applying a template should convert template doorway specs into plan openings."
 );
 
 assert.match(
-  designPageSource,
+  floorPlanControllerSource,
   /const templateWindowOpenings: RoomOpening2D\[\] = template\.windows\.flatMap[\s\S]*?kind: "window" as const/,
   "Applying a template should convert exterior window specs into plan window openings."
 );
 
 assert.match(
-  designPageSource,
-  /const templateOpenings = \[\.\.\.templateDoorOpenings, \.\.\.templateWindowOpenings\]/,
+  floorPlanControllerSource,
+  /const templateOpenings = \[[\s\S]*?\.\.\.templateDoorOpenings,[\s\S]*?\.\.\.templateWindowOpenings,[\s\S]*?\]/,
   "Applying a template should install automatic doors and windows together."
 );
 
 assert.match(
-  designPageSource,
+  floorPlanControllerSource,
   /setPlanOpenings\(templateOpenings\)/,
   "Applying a template should install automatic doorways instead of clearing openings."
 );
 
 assert.match(
-  designPageSource,
+  floorPlanControllerSource,
   /setPlanOpenings\(templateOpenings\);[\s\S]*?setPlanFixedElements\(\[\]\);/,
   "Applying a template should clear standalone built-ins so old default rectangles do not float outside the new plan."
 );
 
 assert.match(
-  designPageSource,
-  /last3DViewRef\.current = null;[\s\S]*?floorCameraViewsRef\.current = \{\};[\s\S]*?suppressNext3DViewSaveRef\.current = true;[\s\S]*?setViewMode\("2d"\);/,
+  floorPlanControllerSource,
+  /prepareCameraForPlanTemplate\(\);[\s\S]*?floorCameraViewsRef\.current = \{\};[\s\S]*?setViewMode\("2d"\);/,
   "Applying a template should clear stale 3D camera memory before returning to 2D."
 );
 
 assert.match(
-  designPageSource,
+  cameraControllerSource,
   /const previousViewModeRef = useRef<EditorViewMode>\(viewMode\);[\s\S]*?const suppressNext3DViewSaveRef = useRef\(false\);[\s\S]*?const pending3DViewRef = useRef<CameraView \| null>\(null\);[\s\S]*?previousViewMode === "3d" && !suppressNext3DViewSaveRef\.current/,
   "The 2D camera fit effect should only preserve a real previous 3D camera."
 );
 
 assert.match(
-  designPageSource,
-  /pending3DViewRef\.current = hasWholeHousePlan[\s\S]*?getWholeHome3DView\(\)[\s\S]*?DEFAULT_EDITOR_CAMERA_VIEW[\s\S]*?setViewMode\(next\);/,
+  cameraControllerSource,
+  /pending3DViewRef\.current = hasWholeHousePlan[\s\S]*?getWholeHome3DView\(\)[\s\S]*?defaultCameraView;[\s\S]*?setViewMode\(next\);/,
   "Switching to 3D should queue the fitted view instead of applying it to the still-mounted 2D camera."
 );
 
 assert.match(
-  designPageSource,
+  cameraControllerSource,
   /const applyQueued3DView = useCallback\([\s\S]*?!\(camera instanceof THREE\.PerspectiveCamera\)[\s\S]*?attempt < 8[\s\S]*?camera\.up\.set\(0, 1, 0\);[\s\S]*?transitionToCameraView\(nextView, durationMs\);/,
   "Queued 3D camera fits should wait for the perspective camera and restore the normal 3D up vector."
 );
 
 assert.match(
-  designPageSource,
+  cameraControllerSource,
   /if \(pending3DViewRef\.current\) \{[\s\S]*?const pendingView = pending3DViewRef\.current;[\s\S]*?pending3DViewRef\.current = null;[\s\S]*?applyQueued3DView\(pendingView, 420\);/,
   "Queued 3D camera fits should run through the perspective-camera handoff helper."
 );
@@ -290,39 +374,182 @@ assert.doesNotMatch(
 );
 
 assert.match(
-  designPageSource,
+  templateFurnishingsSource,
   /function shouldConfirmPlanTemplateReplacement\([\s\S]*?openings: RoomOpening2D\[\][\s\S]*?if \(itemCount > 0\) return true;[\s\S]*?isDefaultStarterLivingRoom[\s\S]*?openings\.length > 2/,
   "Template replacement should protect existing work while allowing the untouched starter room shell."
 );
 
 assert.match(
-  designPageSource,
-  /setPendingPlanTemplateReplacement\(\{ template, options \}\)[\s\S]*?return;[\s\S]*?const timestamp = Date\.now\(\)/,
+  floorPlanControllerSource,
+  /setPendingTemplateReplacement\(\{ template, options \}\)[\s\S]*?return;[\s\S]*?const timestamp = Date\.now\(\)/,
   "Template apply should open an in-app confirmation before replacing meaningful existing work."
 );
 
+for (const contractName of [
+  "DesignPageNewPlanControllerState",
+  "DesignPageNewPlanControllerActions",
+  "UseDesignPageNewPlanControllerInput",
+] as const) {
+  assert.match(
+    newPlanControllerSource,
+    new RegExp(`export type ${contractName} =`),
+    `${contractName} should remain an explicit grouped contract.`
+  );
+}
+
 assert.match(
-  designPageSource,
-  /const openTemplatePickerFromLoad = useCallback\(\(\) => \{[\s\S]*?setShowMyDesigns\(false\);[\s\S]*?setGuidedPlanStartMode\("template"\);[\s\S]*?goPlan\(\);[\s\S]*?setViewMode\("2d"\);[\s\S]*?showRuleToast\("Choose an empty or furnished template"\);/,
-  "The Load modal shortcut should close saved designs and open the template picker in 2D Plan mode."
+  newPlanControllerSource,
+  /export type UseDesignPageNewPlanControllerInput = \{\s*state: DesignPageNewPlanControllerState;\s*actions: DesignPageNewPlanControllerActions;\s*\};/,
+  "The new-plan controller should expose grouped state and action inputs."
+);
+
+assert.match(
+  newPlanControllerSource,
+  /export function useDesignPageNewPlanController\(\{\s*state: \{ isAuthenticated, pendingReplacement \},\s*actions: \{[\s\S]*?closeMyDesigns,[\s\S]*?showToast,[\s\S]*?\},\s*\}: UseDesignPageNewPlanControllerInput\)/,
+  "The new-plan hook should consume its explicit grouped contract."
+);
+
+const persistenceHookIndex = designPageSource.indexOf(
+  "} = useDesignPagePersistence({"
+);
+const newPlanHookIndex = designPageSource.indexOf(
+  "} = useDesignPageNewPlanController({"
+);
+assert.ok(
+  persistenceHookIndex >= 0 && newPlanHookIndex > persistenceHookIndex,
+  "The new-plan controller should mount after persistence exposes preserve and detach actions."
 );
 
 assert.match(
   designPageSource,
-  /data-testid="load-designs-template-shortcut"[\s\S]*?Saved designs are listed here\. Templates open in Plan[\s\S]*?data-testid="load-designs-open-templates"[\s\S]*?onClick=\{openTemplatePickerFromLoad\}/,
+  /state: \{ startingNewPlan, newPlanStartError \},\s*actions: \{\s*openNewPlanPicker,\s*cancelPendingPlanChoice,\s*replaceCurrentPlanFromChoice,\s*saveCurrentAndStartNewPlan,\s*\},\s*\} = useDesignPageNewPlanController\(\{\s*state: \{\s*isAuthenticated: Boolean\(session\?\.user\),\s*pendingReplacement: pendingPlanTemplateReplacement,\s*\},\s*actions: \{[\s\S]*?preserveCurrentDesign,[\s\S]*?detachCurrentDesignForNewDraft,[\s\S]*?clearHistory: \(\) => history\.clear\(\),[\s\S]*?clearPlanAnnotations: \(\) => setPlanAnnotations\(\[\]\),[\s\S]*?requestSignIn: signInWithReturn,[\s\S]*?showToast: showRuleToast,/,
+  "Workspace should consume the controller state/actions and wire persistence, history, annotation, sign-in, and toast collaborators."
+);
+
+assert.match(
+  newPlanControllerSource,
+  /const openNewPlanPicker = useCallback\(\(\) => \{\s*closeMyDesigns\(\);\s*setGuidedPlanStartMode\("template"\);\s*goPlan\(\);\s*setViewMode\("2d"\);\s*setDesignPanelOpen\(true\);\s*setDesignPanelCollapsed\(false\);\s*showToast\("Search by address or choose a floor plan template"\);\s*\},/,
+  "The controller-owned New plan action should preserve the exact close, template, Plan, 2D, expand, and guidance sequence."
+);
+
+assert.doesNotMatch(
+  designPageSource,
+  /const openNewPlanPicker = useCallback|const startingNewPlanRef = useRef|const saveCurrentAndStartNewPlan = useCallback/,
+  "Workspace should consume new-plan behavior without retaining controller-owned implementations."
+);
+
+assert.match(
+  commandBarSource,
+  /data-testid="editor-command-new-plan"[\s\S]*?aria-label="Start a new floor plan"[\s\S]*?onClick=\{onNewPlan\}[\s\S]*?New plan/,
+  "The command bar should expose a visible one-click New plan action."
+);
+
+assert.match(
+  designPageCommandBarSource,
+  /<EditorCommandBar[\s\S]*?\{\.\.\.actions\.commandBar\}/,
+  "The design-page command-bar wrapper should forward its grouped actions to the leaf command bar."
+);
+
+assert.match(
+  designPageSource,
+  /<DesignPageEditorCommandBar[\s\S]*?actions=\{\{[\s\S]*?commandBar:\s*\{[\s\S]*?onNewPlan:\s*openNewPlanPicker/,
+  "The workspace boundary should wire New plan to the controller-owned template-picker transition."
+);
+
+assert.match(
+  myDesignsDialogSource,
+  /data-testid="load-designs-template-shortcut"[\s\S]*?Saved designs are listed here\. Templates open in Plan[\s\S]*?data-testid="load-designs-open-templates"[\s\S]*?onClick=\{onOpenTemplates\}/,
   "The Load modal should explain the saved-design/template distinction and expose a direct template shortcut."
 );
 
 assert.match(
   designPageSource,
-  /<ConfirmDialog[\s\S]*?open=\{Boolean\(pendingPlanTemplateReplacement\)\}[\s\S]*?confirmLabel="Replace plan"[\s\S]*?handleConfirmPendingPlanTemplateReplacement/,
-  "Template replacement confirmation should use the shared app dialog."
+  /<MyDesignsDialog[\s\S]*?onOpenTemplates=\{openNewPlanPicker\}/,
+  "The extracted Load modal should keep its template shortcut wired to the page-owned action."
+);
+
+assert.match(
+  executeNewPlanSource,
+  /if \(!hasPendingReplacement \|\| inFlight\.current\) return;\s*if \(!isAuthenticated\) \{\s*requestSignIn\(\);\s*return;\s*\}\s*inFlight\.current = true;\s*setStarting\(true\);\s*setError\(null\);\s*try \{\s*const result = await preserveCurrentDesign\(\);/,
+  "Starting a separate plan should synchronously reject missing, duplicate, and unauthenticated requests before preserving."
+);
+
+assert.match(
+  executeNewPlanSource,
+  /const result = await preserveCurrentDesign\(\);\s*if \(!result\.ok\) \{\s*setError\(\s*`We couldn't save your current design\. Nothing was replaced\. \$\{result\.error\}`\s*\);\s*return;\s*\}/,
+  "A preservation failure should report that nothing was replaced and stop before mutating the current design."
+);
+
+assert.match(
+  executeNewPlanSource,
+  /if \(!result\.ok\) \{[\s\S]*?return;\s*\}\s*detachCurrentDesignForNewDraft\(\);\s*confirmPendingReplacement\(\);\s*clearHistory\(\);\s*clearPlanAnnotations\(\);\s*showToast\("Current design saved\. New plan started\."\);/,
+  "Successful preservation should detach identity, apply the template, clear history and annotations, then confirm success in order."
+);
+
+assert.match(
+  executeNewPlanSource,
+  /finally \{\s*inFlight\.current = false;\s*setStarting\(false\);\s*\}/,
+  "The synchronous new-plan guard and busy state should always reset in finally."
+);
+
+assert.match(
+  persistenceControllerSource,
+  /const preserveCurrentDesign = useCallback[\s\S]*?fetch\(designId \? `\/api\/designs\/\$\{designId\}` : "\/api\/designs"[\s\S]*?method: designId \? "PUT" : "POST"[\s\S]*?return \{ ok: true, savedDesignId \};/,
+  "Preserving the current design should update an existing ID or create a saved copy without adopting it."
+);
+
+assert.match(
+  persistenceControllerSource,
+  /const detachCurrentDesignForNewDraft = useCallback\(\(\) => \{[\s\S]*?documentEpochRef\.current \+= 1;[\s\S]*?setDesignId\(null\);[\s\S]*?setShareToken\(null\);[\s\S]*?setShareEnabled\(false\);[\s\S]*?setLastPersistedSnapshotFingerprint\(null\);[\s\S]*?localStorage\.removeItem\(storageKey\);/,
+  "A separate plan should invalidate old writes and remove cloud/share identity before local autosave resumes."
+);
+
+assert.match(
+  persistenceControllerSource,
+  /const scheduledEpoch = documentEpochRef\.current;[\s\S]*?enqueueCloudWrite[\s\S]*?scheduledEpoch !== documentEpochRef\.current[\s\S]*?getStoredDesignForPersistence\(\)/,
+  "Queued autosave should reject stale document epochs before reading a newly applied template."
+);
+
+assert.match(
+  persistenceControllerSource,
+  /const loadDesign = useCallback[\s\S]*?const requestEpoch = documentEpochRef\.current;[\s\S]*?requestEpoch !== documentEpochRef\.current[\s\S]*?documentEpochRef\.current \+= 1;[\s\S]*?setDesignSnapshot\(snapshot\)/,
+  "Loading another design should invalidate stale document requests and autosaves before changing identity."
+);
+
+assert.match(
+  newPlanControllerSource,
+  /const startingNewPlanRef = useRef\(false\);[\s\S]*?executeSaveCurrentAndStartNewPlan\(\{[\s\S]*?refs: \{ inFlight: startingNewPlanRef \},/,
+  "The hook should provide its synchronous in-flight ref to the save-and-start executor."
+);
+
+assert.match(
+  planTemplateChoiceDialogSource,
+  /data-testid="new-plan-choice-dialog"[\s\S]*?data-testid="new-plan-cancel"[\s\S]*?data-testid="new-plan-replace-current"[\s\S]*?data-testid="new-plan-save-current"/,
+  "The plan choice dialog should expose Cancel, Replace current, and Save current & start new actions."
+);
+
+assert.match(
+  planTemplateChoiceDialogSource,
+  /data-testid="new-plan-choice-error"[\s\S]*?role="alert"/,
+  "A preservation failure should remain visible and accessible inside the plan choice dialog."
 );
 
 assert.match(
   designPageSource,
-  /const \[localBackupHydrated, setLocalBackupHydrated\] = useState\(false\);[\s\S]*?finally \{[\s\S]*?setLocalBackupHydrated\(true\);[\s\S]*?if \(!localBackupHydrated\) return;[\s\S]*?writeLocalDesignBackup\(\)/,
-  "Local backup writes should wait until stored furnished templates have hydrated."
+  /<PlanTemplateChoiceDialog[\s\S]*?onCancel=\{cancelPendingPlanChoice\}[\s\S]*?onReplaceCurrent=\{replaceCurrentPlanFromChoice\}[\s\S]*?onSaveCurrentAndStartNew=\{saveCurrentAndStartNewPlan\}/,
+  "The pending template should keep all three dialog branches wired explicitly."
+);
+
+assert.match(
+  designPageSource,
+  /const \[localBackupHydrated, setLocalBackupHydrated\] = useState\(false\);[\s\S]*?finally \{[\s\S]*?setLocalBackupHydrated\(true\);/,
+  "The design page should retain ownership of initial local backup hydration."
+);
+
+assert.match(
+  persistenceControllerSource,
+  /useEffect\(\(\) => \{[\s\S]*?if \(!localBackupHydrated\) return;[\s\S]*?writeLocalDesignBackup\(\);/,
+  "Local backup writes should wait until the page-owned restore has hydrated."
 );
 
 assert.doesNotMatch(
@@ -344,13 +571,13 @@ assert.match(
 );
 
 assert.match(
-  designPageSource,
+  floorPlanControllerSource,
   /options\?\.furnishingPackId[\s\S]*?targetRoom\.items = \[/,
   "Furnished template application should create normal room-scoped design items only when requested."
 );
 
 assert.match(
-  designPageSource,
+  floorPlanControllerSource,
   /resolveTemplateFurnishingProduct\(intent\)/,
   "Furnished starter items should be resolved through catalog readiness before placement."
 );

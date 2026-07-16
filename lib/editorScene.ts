@@ -42,17 +42,26 @@ export type RoomOpening2D = {
   /** Finished-floor height to the bottom of the opening; doors default to zero. */
   bottomMm?: number;
   kind: "door" | "window";
+  /** A wall-free passage behaves like a door for circulation but has no door leaf. */
+  doorStyle?: "swing" | "open";
 };
 
 export type FixedElement2D = {
   id: string;
-  kind: "kitchen_counter" | "island" | "wardrobe" | "window" | "door";
+  kind:
+    | "kitchen_counter"
+    | "island"
+    | "wardrobe"
+    | "window"
+    | "door"
+    | "reference_zone";
   xMm: number;
   zMm: number;
   widthMm: number;
   depthMm: number;
   rotationDeg: number;
   label?: string;
+  locked?: boolean;
 };
 
 export type EditorScene2D = {

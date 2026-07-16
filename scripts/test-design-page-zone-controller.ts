@@ -1,0 +1,280 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
+const root = process.cwd();
+const readSource = (relativePath: string) =>
+  readFileSync(join(root, relativePath), "utf8");
+const normalizeWhitespace = (source: string) => source.replace(/\s+/g, " ");
+
+const workspaceSource = readSource(
+  "components/editor/design-page/DesignPageWorkspace.tsx"
+);
+const structureLayerSource = readSource(
+  "components/editor/design-page/DesignSceneStructureLayer.tsx"
+);
+const viewportOverlaySource = readSource(
+  "components/editor/design-page/DesignPageViewportOverlayLayer.tsx"
+);
+const controllerSource = readSource("lib/useDesignPageZoneController.ts");
+const orchestrationSource = readSource("lib/design-page-zone-orchestration.ts");
+const onboardingSource = readSource("lib/useDesignPageOnboarding.ts");
+const normalizedWorkspace = normalizeWhitespace(workspaceSource);
+const normalizedController = normalizeWhitespace(controllerSource);
+
+assert.match(
+  workspaceSource,
+  /useDesignPageZoneController\(\{[\s\S]*?state:\s*\{[\s\S]*?configuration:\s*\{[\s\S]*?refs:\s*\{[\s\S]*?actions:\s*\{/,
+  "Workspace should compose the zone controller through grouped contracts."
+);
+
+for (const contractName of [
+  "DesignPageZoneControllerState",
+  "DesignPageZoneControllerConfiguration",
+  "DesignPageZoneControllerRefs",
+  "DesignPageZoneControllerActions",
+  "UseDesignPageZoneControllerInput",
+] as const) {
+  assert.match(
+    controllerSource,
+    new RegExp(`export type ${contractName} =`),
+    `${contractName} should remain an explicit typed contract.`
+  );
+}
+
+for (const inlineOwner of [
+  "createZoneFromSelection",
+  "autoCreateSeatingZone",
+  "autoLayoutZone",
+  "rotateZone",
+  "ungroupZone",
+  "getZoneBounds",
+] as const) {
+  assert.doesNotMatch(
+    workspaceSource,
+    new RegExp(`const ${inlineOwner}\\s*=\\s*use(?:Callback|Memo)`),
+    `${inlineOwner} should remain owned by the zone controller.`
+  );
+  assert.match(
+    controllerSource,
+    new RegExp(`const ${inlineOwner}\\s*=\\s*use(?:Callback|Memo)`),
+    `The zone controller should own ${inlineOwner}.`
+  );
+}
+
+for (const helperName of [
+  "buildManualZoneFromSelection",
+  "buildAutoSeatingZone",
+  "buildAutoLayoutZoneItems",
+  "buildRotatedZoneItems",
+  "buildPlanZones2D",
+  "resolveZoneBounds",
+  "reconcileZonesForItems",
+  "zonesEqual",
+] as const) {
+  assert.ok(
+    controllerSource.includes(helperName),
+    `The zone controller should own the ${helperName} integration.`
+  );
+}
+
+assert.doesNotMatch(
+  workspaceSource,
+  /\b(?:_normalizeZones|_buildAutoZones|_zonesEqual)\b/,
+  "Workspace should not retain zone-normalization ownership."
+);
+assert.match(
+  controllerSource,
+  /useState<ZoneMin\["type"\]>\(\s*"seating"\s*\)/,
+  "New manual zones should continue to default to the seating type."
+);
+assert.match(
+  controllerSource,
+  /const selectedSet = selectedIdsRef\.current;\s*if \(!selectedSet\.size\) return;/,
+  "Manual creation should continue to read selection at event time and no-op when empty."
+);
+assert.match(
+  controllerSource,
+  /const selectedItems = itemsRef\.current\.filter\([\s\S]*?selectedSet\.has\(item\.instanceId\)[\s\S]*?if \(!selectedItems\.length\) return;/,
+  "Manual creation should continue to resolve selected items from the event-time item ref."
+);
+assert.match(
+  controllerSource,
+  /const nextZones = reconcileZonesForItems\(\{[\s\S]*?zones: next\.manualZones,[\s\S]*?allItems: itemsRef\.current,[\s\S]*?catalogItems,[\s\S]*?history\.begin\("Create zone"\);[\s\S]*?setDesignSnapshot\(\(previous\) =>[\s\S]*?updateActiveRoomZones\(previous, nextZones\)[\s\S]*?history\.commit\(\);[\s\S]*?setSelectedZoneId\(next\.zoneId\);[\s\S]*?clearSelection\(\);/,
+  "Manual creation should reconcile auto zones, persist active-room zones, and preserve history/select ordering."
+);
+
+for (const gate of [
+  'editorMode !== "design" || isClientPreview',
+  "seatingZoneAutoDisabledRef.current",
+] as const) {
+  assert.ok(
+    normalizedController.includes(`if (${gate}) return;`),
+    `Automatic seating-zone creation should preserve the ${gate} gate.`
+  );
+}
+assert.match(
+  controllerSource,
+  /const nextZones = reconcileZonesForItems\(\{[\s\S]*?zones: next\.manualZones,[\s\S]*?allItems: itemsRef\.current,[\s\S]*?catalogItems,[\s\S]*?history\.begin\("auto_create_seating_zone"\);[\s\S]*?setDesignSnapshot\(\(previous\) =>[\s\S]*?updateActiveRoomZones\(previous, nextZones\)[\s\S]*?history\.commit\(\);[\s\S]*?setSelectedZoneId\(next\.zoneId\);/,
+  "Automatic creation should reconcile auto zones and preserve its active-room update, history, and selection behavior."
+);
+assert.match(
+  controllerSource,
+  /track\("seating_zone_auto_created",\s*\{\s*zoneId: next\.zoneId,\s*trigger: "first_sofa",\s*\}\);/,
+  "The controller should preserve the existing first-sofa zone analytics payload."
+);
+assert.match(
+  onboardingSource,
+  /autoCreateSeatingZone\(sofaItem\);[\s\S]*?track\("seating_zone_auto_created",\s*\{\s*design_id: state\.designId,\s*isGuest: state\.isGuest,\s*timeSinceStartMs:/,
+  "Onboarding should retain its independent first-sofa analytics producer."
+);
+
+for (const historyLabel of [
+  "Rotate zone",
+  "Ungroup zone",
+] as const) {
+  assert.match(
+    controllerSource,
+    new RegExp("(?:begin|commitItems)\\([^\\n]*" + historyLabel),
+    `The controller should preserve the ${historyLabel} history label.`
+  );
+}
+assert.ok(
+  normalizedController.includes(
+    "`Auto-layout ${autoLayout.zoneType} zone`"
+  ),
+  "Auto-layout should preserve its dynamic history label."
+);
+assert.match(
+  controllerSource,
+  /console\.error\("\[Zone\] Auto-layout failed", \{ zoneId, error \}\)/,
+  "Auto-layout failures should remain isolated and reported."
+);
+assert.match(
+  controllerSource,
+  /console\.error\("\[Zone\] Rotate failed", \{ zoneId, deltaRot, error \}\)/,
+  "Rotation failures should remain isolated and reported."
+);
+
+assert.match(
+  workspaceSource,
+  /localStorage\.getItem\("seating_zone_auto_disabled"\)[\s\S]*?seatingZoneAutoDisabledRef\.current = seatingDisabled === "1"/,
+  "Workspace hydration should continue to load the seating-zone disable preference."
+);
+assert.match(
+  controllerSource,
+  /seatingZoneAutoDisabledRef\.current = true;[\s\S]*?localStorage\.setItem\("seating_zone_auto_disabled", "1"\)/,
+  "Ungrouping a seating zone should continue to persist the auto-create opt-out."
+);
+assert.match(
+  controllerSource,
+  /history\.begin\("Ungroup zone"\);[\s\S]*?setDesignSnapshot\(\(previous\) =>[\s\S]*?updateActiveRoomZones\(previous, nextZones\)[\s\S]*?history\.commit\(\);[\s\S]*?setSelectedZoneId\(null\);/,
+  "Ungroup should persist active-room zones and preserve history/selection ordering."
+);
+assert.ok(
+  normalizedWorkspace.includes(
+    "seatingZoneAutoDisabled: seatingZoneAutoDisabledRef"
+  ),
+  "Workspace should pass the hydrated disable ref into the controller."
+);
+
+assert.match(
+  controllerSource,
+  /resolveZoneBounds\(zone, items, getSelectionBounds\)/,
+  "Zone bounds should continue to derive from live items and shared selection bounds."
+);
+assert.match(
+  controllerSource,
+  /buildPlanZones2D\(zones, items, getSelectionBounds\)/,
+  "The controller should continue to build 2D zone models from shared bounds."
+);
+
+const selectedZoneCleanupIndex = controllerSource.indexOf(
+  "if (!selectedZoneId) return;"
+);
+const zoneNormalizationIndex = controllerSource.indexOf(
+  "const nextZones = reconcileZonesForItems"
+);
+assert.ok(
+  selectedZoneCleanupIndex >= 0 &&
+    zoneNormalizationIndex > selectedZoneCleanupIndex,
+  "Selected-zone cleanup should remain mounted before automatic zone normalization."
+);
+assert.match(
+  controllerSource,
+  /const nextZones = reconcileZonesForItems\(\{[\s\S]*?zones: currentZones,[\s\S]*?allItems: items,[\s\S]*?catalogItems,[\s\S]*?zonesEqual\(nextZones, currentZones\)[\s\S]*?updateActiveRoomZones\(previous, nextZones\)/,
+  "Normalization should preserve automatic-zone rebuilding and active-room updates."
+);
+assert.equal(
+  controllerSource.match(/reconcileZonesForItems\(/g)?.length,
+  3,
+  "Normalization and both creation paths should share one zone reconciler."
+);
+assert.equal(
+  controllerSource.match(/updateActiveRoomZones\(/g)?.length,
+  4,
+  "Every zone write path should use the shared active-room updater."
+);
+assert.doesNotMatch(
+  controllerSource,
+  /setDesignSnapshot\(\{[\s\S]*?\.\.\.designSnapshotRef\.current,[\s\S]*?zones:/,
+  "Zone actions must not write the legacy top-level snapshot.zones field."
+);
+assert.match(
+  orchestrationSource,
+  /export function reconcileZonesForItems\([\s\S]*?normalizeZones\(zones, allItems\)[\s\S]*?zone\.source === "manual"[\s\S]*?buildAutoZones\(\{[\s\S]*?allItems,[\s\S]*?manualZones,[\s\S]*?catalogItems,[\s\S]*?return \[\.\.\.manualZones, \.\.\.autoZones\];/,
+  "The shared reconciler should normalize manual zones and deterministically rebuild automatic zones."
+);
+assert.match(
+  orchestrationSource,
+  /export function updateActiveRoomZones\([\s\S]*?getActiveRoom\(snapshot\)[\s\S]*?updateRoom\(snapshot, \{[\s\S]*?\.\.\.activeRoom,[\s\S]*?zones,/,
+  "The shared updater should replace zones only on the active room."
+);
+
+for (const { pattern, description } of [
+  {
+    pattern:
+      /useDesignPageOnboarding\(\{[\s\S]*?actions:\s*\{[\s\S]*?autoCreateSeatingZone,[\s\S]*?clampToRoom:\s*clampToActiveRoom/,
+    description: "onboarding auto-create action",
+  },
+  { pattern: /zones:\s*planZones2D/, description: "2D plan zones" },
+  {
+    pattern: /resolvers=\{\{\s*getZoneBounds\s*\}\}/,
+    description: "scene zone-bounds resolver",
+  },
+  {
+    pattern:
+      /resolveDesignPageViewportSelectionControlsState\(\{[\s\S]*?pendingZoneType,[\s\S]*?selectedZone,[\s\S]*?isClientPreview/,
+    description: "viewport zone live-policy state boundary",
+  },
+  {
+    pattern:
+      /changeZoneType:\s*setPendingZoneType,[\s\S]*?createZone:\s*createZoneFromSelection/,
+    description: "manual zone action boundary",
+  },
+  {
+    pattern:
+      /autoLayout:\s*autoLayoutZone,[\s\S]*?rotateQuarterTurn:\s*\(zoneId\)\s*=>\s*rotateZone\(zoneId, Math\.PI \/ 2\),[\s\S]*?ungroup:\s*ungroupZone/,
+    description: "selected-zone action boundary",
+  },
+] as const) {
+  assert.match(
+    workspaceSource,
+    pattern,
+    `Workspace should preserve its ${description} wiring.`
+  );
+}
+
+assert.match(
+  viewportOverlaySource,
+  /<DesignPageViewportSelectionControls\s+[\s\S]*?state=\{state\.selectionControls\}[\s\S]*?configuration=\{configuration\.selectionControls\}[\s\S]*?actions=\{actions\.selectionControls\}/,
+  "The viewport layer should own selection-control rendering while Workspace retains live zone policy and actions."
+);
+
+assert.match(
+  structureLayerSource,
+  /zones=\{plan\.zones\}/,
+  "The structure layer should pass the composed plan zones to the 2D renderer."
+);
+
+console.log("Design-page zone controller guardrails passed.");

@@ -3,7 +3,23 @@ import path from "node:path";
 import assert from "node:assert/strict";
 
 const designPageSource = fs.readFileSync(
-  path.join(process.cwd(), "app", "design", "page.tsx"),
+  path.join(
+    process.cwd(),
+    "components",
+    "editor",
+    "design-page",
+    "DesignPageWorkspace.tsx"
+  ),
+  "utf8"
+);
+const designSceneCanvasSource = fs.readFileSync(
+  path.join(
+    process.cwd(),
+    "components",
+    "editor",
+    "design-page",
+    "DesignSceneCanvas.tsx"
+  ),
   "utf8"
 );
 const roomEnvironmentSource = fs.readFileSync(
@@ -23,8 +39,14 @@ assert.match(
 
 assert.match(
   designPageSource,
-  /maxPolarAngle=\{EDITOR_3D_MAX_POLAR_ANGLE\}/,
-  "3D OrbitControls should use the named maximum polar angle guardrail."
+  /maxPolarAngle:\s*EDITOR_3D_MAX_POLAR_ANGLE/,
+  "The design page should pass the named maximum polar angle guardrail to the Canvas shell."
+);
+
+assert.match(
+  designSceneCanvasSource,
+  /<OrbitControls[\s\S]*?maxPolarAngle=\{configuration\.orbit\.maxPolarAngle\}/,
+  "The Canvas shell should apply its configured maximum polar angle to 3D OrbitControls."
 );
 
 assert.match(

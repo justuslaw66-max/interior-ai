@@ -232,7 +232,6 @@ type DesignControlsPanelProps = {
   onActiveRoomSurfaceOpacityChange: (kind: "wall" | "floor" | "ceiling", opacity: number) => void;
   onActiveRoomCeilingVisibleChange: (visible: boolean) => void;
   onActiveRoomCeilingColorChange: (color: string) => void;
-  onOpenCabinetryStudio?: () => void;
   onAddImportedToRoom: () => void;
   onAddCatalogItemToRoom: (productId: string, variantId?: string, purchaseOptionId?: string) => void;
   onAutoPlaceCatalogItemInRoom?: (productId: string, variantId?: string, purchaseOptionId?: string) => void;
@@ -279,7 +278,6 @@ type DesignControlsPanelProps = {
 export default function DesignControlsPanel({
   dark,
   isClientPreview,
-  isAuthed,
   isDesigner,
   canEdit,
   canEditPlanGeometry,
@@ -395,7 +393,6 @@ export default function DesignControlsPanel({
   onDrawFloorPlanRoom,
   onAddFloorPlanOpeningFromTool,
   onHide,
-  onSignIn,
   onGoFurnish,
   onGoAiDesign,
   onGoShop,
@@ -443,7 +440,6 @@ export default function DesignControlsPanel({
   onActiveRoomSurfaceOpacityChange,
   onActiveRoomCeilingVisibleChange,
   onActiveRoomCeilingColorChange,
-  onOpenCabinetryStudio,
   onAddImportedToRoom,
   onAddCatalogItemToRoom,
   onAutoPlaceCatalogItemInRoom,
@@ -840,40 +836,24 @@ export default function DesignControlsPanel({
           />
         )}
 
-        {effectivePanelMode !== "ai" && (onOpenCabinetryStudio || isDesigner) && (
+        {effectivePanelMode !== "ai" && isDesigner && (
           <div className="mt-3 flex flex-wrap gap-2">
-            {onOpenCabinetryStudio ? (
-              <button
-                type="button"
-                data-testid="open-custom-millwork-studio"
-                className={`text-xs px-3 py-2 rounded-lg ${
-                  dark ? "designer-raised text-neutral-200" : "bg-neutral-100"
-                }`}
-                onClick={onOpenCabinetryStudio}
-              >
-                <span data-testid="open-cabinetry-studio">Custom Millwork Studio</span>
-              </button>
-            ) : null}
-            {isDesigner ? (
-              <>
-                <button
-                  className={`text-xs px-3 py-2 rounded-lg ${
-                    showGrid ? selectedButtonClass : dark ? "designer-raised text-neutral-200" : "bg-neutral-100"
-                  }`}
-                  onClick={onGridToggle}
-                >
-                  Grid
-                </button>
-                <button
-                  className={`text-xs px-3 py-2 rounded-lg ${
-                    snapEnabled ? selectedButtonClass : dark ? "designer-raised text-neutral-200" : "bg-neutral-100"
-                  }`}
-                  onClick={onSnapToggle}
-                >
-                  Snap
-                </button>
-              </>
-            ) : null}
+            <button
+              className={`text-xs px-3 py-2 rounded-lg ${
+                showGrid ? selectedButtonClass : dark ? "designer-raised text-neutral-200" : "bg-neutral-100"
+              }`}
+              onClick={onGridToggle}
+            >
+              Grid
+            </button>
+            <button
+              className={`text-xs px-3 py-2 rounded-lg ${
+                snapEnabled ? selectedButtonClass : dark ? "designer-raised text-neutral-200" : "bg-neutral-100"
+              }`}
+              onClick={onSnapToggle}
+            >
+              Snap
+            </button>
           </div>
         )}
       </div>

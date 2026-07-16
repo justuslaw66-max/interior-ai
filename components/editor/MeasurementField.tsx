@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useMemo, useState, type KeyboardEvent } from "react";
+import { useId, useMemo, useState, type KeyboardEvent } from "react";
 
 import {
   cabinetMillimetresToDisplay,
@@ -62,11 +62,19 @@ export default function MeasurementField({
   const displayStep = getCabinetDisplayDraftStep(unit);
   const [draft, setDraft] = useState(() => draftValue(valueMm, unit));
   const [dirty, setDirty] = useState(false);
+  const [controlledMeasurement, setControlledMeasurement] = useState(() => ({
+    unit,
+    valueMm,
+  }));
 
-  useEffect(() => {
+  if (
+    controlledMeasurement.unit !== unit ||
+    !Object.is(controlledMeasurement.valueMm, valueMm)
+  ) {
+    setControlledMeasurement({ unit, valueMm });
     setDirty(false);
     setDraft(draftValue(valueMm, unit));
-  }, [unit, valueMm]);
+  }
 
   const validation = useMemo(
     () =>

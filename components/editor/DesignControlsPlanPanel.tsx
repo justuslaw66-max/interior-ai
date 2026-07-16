@@ -71,6 +71,7 @@ import {
   type WallPaintSwatch,
 } from "@/lib/wall-paint";
 import type { EditorViewMode } from "./EditorViewToggle";
+import FloorPlanAddressSearch from "./FloorPlanAddressSearch";
 import FloorPlanUploadPanel from "./FloorPlanUploadPanel";
 import FloorPlanToolStrip, { type FloorPlanTool } from "./FloorPlanToolStrip";
 import PlanOpeningInspector from "./PlanOpeningInspector";
@@ -79,7 +80,6 @@ import { formatCabinetMeasurement } from "@/features/cabinetry/measurementUnits"
 import RoomConnectionChecklist from "./RoomConnectionChecklist";
 
 export type PlanStartMode = "start" | "draw" | "upload" | "template";
-type RoomSetupStep = "start" | "confirm" | "openings" | "furnish" | "done";
 type SurfaceBrowserTab = "tiles" | "rooms";
 type WallSurfaceMode = "paint" | "materials";
 type SurfaceBrowserViewMode = "grid" | "list";
@@ -94,7 +94,6 @@ type CollapsiblePlanSection =
   | "planQuality"
   | "selectedRoom"
   | "connections";
-type FlooringFilterId = "wood" | "stone" | "light" | "warm" | "grey" | "waterproof" | "outdoor";
 type PlanToolIconName =
   | "upload"
   | "straightWall"
@@ -204,16 +203,6 @@ function getFloorMaterialSwatchStyle(material: FloorMaterial): CSSProperties {
     background: `linear-gradient(135deg, ${material.swatchColor}, ${material.accentColor})`,
   };
 }
-
-const FLOORING_FILTERS: Array<{ id: FlooringFilterId; label: string }> = [
-  { id: "wood", label: "Wood look" },
-  { id: "stone", label: "Stone look" },
-  { id: "light", label: "Light" },
-  { id: "warm", label: "Warm" },
-  { id: "grey", label: "Grey" },
-  { id: "waterproof", label: "Waterproof" },
-  { id: "outdoor", label: "Outdoor" },
-];
 
 function formatSurfaceMaterialValue(value: string) {
   return value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
@@ -437,30 +426,6 @@ function getSurfaceMaterialSwatchStyle(material: SurfaceMaterialRenderInfo): CSS
         ? `linear-gradient(135deg, ${base}, #f4f0e8), radial-gradient(circle at 28% 35%, ${line}77 0 1px, transparent 2px)`
         : `repeating-linear-gradient(0deg, transparent 0 8px, ${line}66 8px 9px), linear-gradient(135deg, ${base}, #f0e3c8)`,
   };
-}
-
-function surfaceMaterialMatchesFilter(material: SurfaceMaterialRenderInfo, filterId: FlooringFilterId) {
-  const classification = material.classification;
-  const specs = material.physical_specs;
-  if (filterId === "wood") return classification?.design_effect === "wood";
-  if (filterId === "stone") {
-    return ["stone", "marble", "concrete", "terrazzo"].includes(classification?.design_effect ?? "");
-  }
-  if (filterId === "light") {
-    return ["light_oak", "natural_oak", "cream", "beige", "white"].includes(
-      classification?.color_family ?? ""
-    );
-  }
-  if (filterId === "warm") {
-    return (
-      ["warm_oak", "walnut", "brown", "natural_oak"].includes(classification?.color_family ?? "") ||
-      Boolean(classification?.tone.includes("warm"))
-    );
-  }
-  if (filterId === "grey") return classification?.color_family === "grey";
-  if (filterId === "waterproof") return specs?.waterproof === true;
-  if (filterId === "outdoor") return specs?.suitable_for_outdoor === true;
-  return true;
 }
 
 function PlanToolSvg({ className, children }: { className: string; children: ReactNode }) {
@@ -924,7 +889,7 @@ export default function DesignControlsPlanPanel({
   stackedFloorView,
   activeFloorPlanTool,
   simplePlanControls,
-  planGuidedActionsEnabled,
+  planGuidedActionsEnabled: _planGuidedActionsEnabled,
   planStartMode: controlledPlanStartMode,
   planCompletionSignal,
   floorPlanQualityReport,
@@ -932,7 +897,7 @@ export default function DesignControlsPlanPanel({
   onPlanStartModeChange,
   onPlanQualityAction,
   onSimplePlanControlsChange,
-  onPlanGuidedActionsEnabledChange,
+  onPlanGuidedActionsEnabledChange: _onPlanGuidedActionsEnabledChange,
   onSelectFloorPlanTool,
   onDrawFloorPlanRoom,
   onAddFloorPlanOpeningFromTool,
@@ -949,7 +914,7 @@ export default function DesignControlsPlanPanel({
   onRotateActiveFloorMaterial,
   onResetActiveFloorMaterialPattern,
   onActiveFloorMaterialScaleChange,
-  onActiveFloorSurfaceSettingsChange,
+  onActiveFloorSurfaceSettingsChange: _onActiveFloorSurfaceSettingsChange,
   onSurfaceTargetChange,
   onSurfaceBrushActiveChange,
   onSurfaceMaterialSelected,
@@ -960,7 +925,7 @@ export default function DesignControlsPlanPanel({
   onApplyWallPaintToAllRooms,
   onApplyCeilingPaintToRoom,
   onApplyCeilingPaintToAllRooms,
-  onActiveWallSurfaceSettingsChange,
+  onActiveWallSurfaceSettingsChange: _onActiveWallSurfaceSettingsChange,
   onResetActiveWallSurface,
   onResetActiveCeilingSurface,
   onNewRoomTypeChange,
@@ -1000,7 +965,6 @@ export default function DesignControlsPlanPanel({
   onUpdateOpeningMetrics,
 }: DesignControlsPlanPanelProps) {
   const [localPlanStartMode, setLocalPlanStartMode] = useState<PlanStartMode>("start");
-  const [roomSetupStep, setRoomSetupStep] = useState<RoomSetupStep>("confirm");
   const [roomFinishPanelOpen, setRoomFinishPanelOpen] = useState(false);
   const [flooringSearch, setFlooringSearch] = useState("");
   const [surfaceTab, setSurfaceTab] = useState<SurfaceBrowserTab>("tiles");
@@ -1040,12 +1004,15 @@ export default function DesignControlsPlanPanel({
     onPlanStartModeChange?.(mode);
   };
   const openTemplatePicker = () => {
-    setRoomSetupStep("confirm");
     setPlanStartMode("template");
-    window.setTimeout(() => {
-      templatePickerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 0);
   };
+  useEffect(() => {
+    if (planStartMode !== "template") return;
+    const frameId = window.requestAnimationFrame(() => {
+      templatePickerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    return () => window.cancelAnimationFrame(frameId);
+  }, [planStartMode]);
 
   const titleClass = dark
     ? "designer-text-primary text-sm font-semibold"
@@ -1088,38 +1055,55 @@ export default function DesignControlsPlanPanel({
   useEffect(() => {
     const signal = floorFinishPanelOpenSignal ?? 0;
     if (signal > 0 && signal !== floorFinishPanelOpenSignalRef.current) {
-      pendingSurfaceRevealRef.current = true;
-      setRoomFinishPanelOpen(true);
-      setSurfaceTab("tiles");
-      if (activeSurfaceTarget === "walls" || activeSurfaceTarget === "selected_wall") {
-        setWallSurfaceMode("materials");
-      }
-      setCollapsedPlanSections((current) => ({ ...current, selectedRoom: false }));
-      track("floor_surface_workspace_opened", {
-        activeRoomId,
-        target: activeSurfaceTarget,
-        roomCount: surfaceRooms.length,
+      let cancelled = false;
+      queueMicrotask(() => {
+        if (cancelled) return;
+        floorFinishPanelOpenSignalRef.current = signal;
+        pendingSurfaceRevealRef.current = true;
+        setRoomFinishPanelOpen(true);
+        setSurfaceTab("tiles");
+        if (activeSurfaceTarget === "walls" || activeSurfaceTarget === "selected_wall") {
+          setWallSurfaceMode("materials");
+        }
+        setCollapsedPlanSections((current) => ({ ...current, selectedRoom: false }));
+        track("floor_surface_workspace_opened", {
+          activeRoomId,
+          target: activeSurfaceTarget,
+          roomCount: surfaceRooms.length,
+        });
       });
+      return () => {
+        cancelled = true;
+      };
     }
     floorFinishPanelOpenSignalRef.current = signal;
   }, [activeRoomId, activeSurfaceTarget, floorFinishPanelOpenSignal, surfaceRooms.length]);
   useEffect(() => {
     if (!pendingSurfaceRevealRef.current) return;
-    if (!roomFinishPanelOpen || isPlanSectionCollapsed("selectedRoom")) return;
+    if (!roomFinishPanelOpen || collapsedPlanSections.selectedRoom) return;
     pendingSurfaceRevealRef.current = false;
     revealSurfaceWorkspace();
   }, [collapsedPlanSections, revealSurfaceWorkspace, roomFinishPanelOpen]);
   useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem("interior-ai:surface-material-favorites");
-      if (!raw) return;
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        setFavoriteSurfaceMaterialIds(parsed.filter((entry): entry is string => typeof entry === "string"));
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      try {
+        const raw = window.localStorage.getItem("interior-ai:surface-material-favorites");
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          setFavoriteSurfaceMaterialIds(
+            parsed.filter((entry): entry is string => typeof entry === "string")
+          );
+        }
+      } catch {
+        setFavoriteSurfaceMaterialIds([]);
       }
-    } catch {
-      setFavoriteSurfaceMaterialIds([]);
-    }
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
   useEffect(() => {
     try {
@@ -1132,10 +1116,22 @@ export default function DesignControlsPlanPanel({
     }
   }, [favoriteSurfaceMaterialIds]);
   useEffect(() => {
-    setSurfaceVisibleLimit(SURFACE_MATERIAL_INITIAL_VISIBLE_COUNT);
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) setSurfaceVisibleLimit(SURFACE_MATERIAL_INITIAL_VISIBLE_COUNT);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [activeSurfaceTarget, flooringSearch, surfaceFilters, surfaceTab]);
   useEffect(() => {
-    setWallPaintVisibleLimit(WALL_PAINT_INITIAL_VISIBLE_COUNT);
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) setWallPaintVisibleLimit(WALL_PAINT_INITIAL_VISIBLE_COUNT);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [activeSurfaceTarget, surfaceTab, wallPaintFamilyFilter, wallPaintSearch, wallSurfaceMode]);
   useEffect(() => {
     const targetMaterialId =
@@ -1144,12 +1140,19 @@ export default function DesignControlsPlanPanel({
         : activeSurfaceTarget === "selected_wall"
           ? activeRoomSelectedWallSettings?.materialId
           : activeRoomWallSettings?.materialId;
-    if (targetMaterialId) {
-      setSelectedSurfaceMaterialId(targetMaterialId);
-      onSurfaceMaterialSelected(targetMaterialId);
-      return;
-    }
-    setSelectedSurfaceMaterialId(null);
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      if (targetMaterialId) {
+        setSelectedSurfaceMaterialId(targetMaterialId);
+        onSurfaceMaterialSelected(targetMaterialId);
+        return;
+      }
+      setSelectedSurfaceMaterialId(null);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [
     activeRoomFloorMaterialId,
     activeRoomSelectedWallSettings?.materialId,
@@ -1185,7 +1188,7 @@ export default function DesignControlsPlanPanel({
     roomConnectionChecklistItems.length > 0 ||
     Boolean(visiblePlanOpening) ||
     isDesigner;
-  const showTemplatePicker = planStartMode === "template" || isDesigner;
+  const showTemplatePicker = planStartMode === "template";
   const hasActivePlanTrace =
     floorPlanTraceRoomMode ||
     floorPlanTraceRoomPointCount > 0 ||
@@ -1322,15 +1325,6 @@ export default function DesignControlsPlanPanel({
     },
   ];
   const showRoomSetupWizard = !isDesigner && (showPlanDetails || !hasRooms);
-  const roomSetupActiveStep: RoomSetupStep = !hasRooms
-    ? "start"
-    : hasStartedFurniture
-      ? "done"
-      : hasConnectionBlockers
-        ? "openings"
-        : roomSetupStep === "start" || roomSetupStep === "done"
-          ? "confirm"
-          : roomSetupStep;
   const showStartPanel = !hasRooms && !showRoomSetupWizard;
   const showPlanProgressPanel = showPlanDetails && !showRoomSetupWizard;
   const showPlanNextActionCard = showPlanDetails && !showRoomSetupWizard;
@@ -1338,25 +1332,19 @@ export default function DesignControlsPlanPanel({
   useEffect(() => {
     if (!planCompletionSignal || isDesigner) return;
 
-    let nextStep: RoomSetupStep | null = null;
-    if (planCompletionSignal.kind === "room" && !hasStartedFurniture) {
-      nextStep = "openings";
-    } else if (
-      planCompletionSignal.kind === "opening" &&
-      hasRooms &&
-      !hasConnectionBlockers &&
-      !hasStartedFurniture
-    ) {
-      nextStep = "furnish";
-    }
+    const shouldAdvance =
+      (planCompletionSignal.kind === "room" && !hasStartedFurniture) ||
+      (planCompletionSignal.kind === "opening" &&
+        hasRooms &&
+        !hasConnectionBlockers &&
+        !hasStartedFurniture);
 
-    if (!nextStep) {
+    if (!shouldAdvance) {
       onPlanCompletionHandled?.(planCompletionSignal.id);
       return;
     }
 
     const timer = window.setTimeout(() => {
-      setRoomSetupStep(nextStep);
       onPlanCompletionHandled?.(planCompletionSignal.id);
     }, 0);
 
@@ -1559,7 +1547,6 @@ export default function DesignControlsPlanPanel({
     </button>
   );
   const startDrawRoomMode = (mode: FloorPlanDrawRoomMode) => {
-    setRoomSetupStep("confirm");
     setPlanStartMode("draw");
     onFloorPlanTraceRoomDrawModeChange(mode);
     onFloorPlanTraceRoomModeChange(true);
@@ -1578,50 +1565,6 @@ export default function DesignControlsPlanPanel({
   const templateFilterSelectClass = dark
     ? "designer-control h-9 w-full rounded-lg border px-2 text-xs font-semibold text-neutral-100 outline-none"
     : "h-9 w-full rounded-lg border border-neutral-200 bg-white px-2 text-xs font-semibold text-neutral-800 outline-none";
-  const guidedActionsModeButtonClass = (active: boolean) =>
-    [
-      "min-h-8 rounded-md px-2.5 text-[11px] font-semibold transition",
-      active
-        ? dark
-          ? "bg-white text-neutral-950"
-          : "bg-neutral-950 text-white"
-        : dark
-          ? "text-neutral-300 hover:bg-white/10"
-          : "text-neutral-600 hover:bg-white",
-    ].join(" ");
-  const setupStageClass = (step: RoomSetupStep) => {
-    const isActive = roomSetupActiveStep === step;
-    const isReady =
-      step === "confirm"
-        ? hasRooms
-        : step === "openings"
-          ? hasOpenings && !hasConnectionBlockers
-          : step === "furnish"
-            ? hasStartedFurniture
-            : step === "done"
-              ? hasStartedFurniture
-              : false;
-
-    if (dark) {
-      return [
-        "rounded-lg border px-2 py-2 text-left transition",
-        isActive
-          ? "border-white/20 bg-white/10"
-          : isReady
-            ? "border-emerald-300/25 bg-emerald-400/10"
-            : "designer-control border",
-      ].join(" ");
-    }
-
-    return [
-      "rounded-lg border px-2 py-2 text-left transition",
-      isActive
-        ? "border-neutral-900 bg-white"
-        : isReady
-          ? "border-emerald-200 bg-emerald-50"
-          : "border-neutral-200 bg-neutral-50",
-    ].join(" ");
-  };
   const activeFloorSettings = normalizeFloorSurfaceSettings(
     {
       floorPattern: activeRoomFloorPattern,
@@ -1721,15 +1664,11 @@ export default function DesignControlsPlanPanel({
     activeSurfaceMaterial ??
     null;
   const selectedSurfaceMaterialPrimaryId = getSurfaceMaterialPrimaryId(selectedSurfaceMaterial);
-  const surfaceMaterialProductGroups = useMemo(
-    () =>
-      buildSurfaceMaterialProductGroups(visibleSurfaceMaterials, [
-        activeTargetMaterialId,
-        selectedSurfaceMaterialPrimaryId,
-      ]),
-    [activeTargetMaterialId, selectedSurfaceMaterialPrimaryId, visibleSurfaceMaterials]
-  );
-  const selectedSurfaceMaterialGroup = useMemo(() => {
+  const surfaceMaterialProductGroups = buildSurfaceMaterialProductGroups(visibleSurfaceMaterials, [
+    activeTargetMaterialId,
+    selectedSurfaceMaterialPrimaryId,
+  ]);
+  const selectedSurfaceMaterialGroup = (() => {
     const materialId = selectedSurfaceMaterialPrimaryId ?? activeTargetMaterialId;
     if (!materialId) return null;
     return (
@@ -1737,7 +1676,7 @@ export default function DesignControlsPlanPanel({
         group.variants.some((variant) => variant.surface_material.material_id === materialId)
       ) ?? null
     );
-  }, [activeTargetMaterialId, selectedSurfaceMaterialPrimaryId, surfaceMaterialProductGroups]);
+  })();
   const activeBrushMaterialId = surfaceBrushMaterialId ?? selectedSurfaceMaterialPrimaryId;
   const activeBrushPaintColorHex = normalizeWallPaintColorHex(surfaceBrushPaintColorHex);
   const activeBrushPaintName = activeBrushPaintColorHex
@@ -1793,7 +1732,7 @@ export default function DesignControlsPlanPanel({
     }),
     [visibleSurfaceMaterials]
   );
-  const filteredSurfaceMaterialGroups = useMemo(() => {
+  const filteredSurfaceMaterialGroups = (() => {
     const search = flooringSearch.trim().toLowerCase();
     return surfaceMaterialProductGroups.filter((group) => {
       return group.variants.some((material) => {
@@ -1830,10 +1769,10 @@ export default function DesignControlsPlanPanel({
         return matchesSearch && matchesFilters;
       });
     });
-  }, [activeRoomType, favoriteSurfaceMaterialIdSet, flooringSearch, surfaceFilters, surfaceMaterialProductGroups]);
-  const visibleFilteredSurfaceMaterialGroups = useMemo(
-    () => filteredSurfaceMaterialGroups.slice(0, surfaceVisibleLimit),
-    [filteredSurfaceMaterialGroups, surfaceVisibleLimit]
+  })();
+  const visibleFilteredSurfaceMaterialGroups = filteredSurfaceMaterialGroups.slice(
+    0,
+    surfaceVisibleLimit
   );
   const hiddenSurfaceMaterialCount = Math.max(
     0,
@@ -2429,9 +2368,6 @@ export default function DesignControlsPlanPanel({
   const consumerInputClass = dark
     ? "designer-control min-h-10 rounded-lg border px-2.5 py-2 text-sm text-neutral-100 outline-none disabled:opacity-50"
     : "min-h-10 rounded-lg border border-neutral-200 bg-white px-2.5 py-2 text-sm text-neutral-900 outline-none disabled:opacity-50";
-  const consumerInputShellClass = dark
-    ? "designer-control flex min-h-10 items-center gap-1 rounded-lg border px-2.5 py-1"
-    : "flex min-h-10 items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2.5 py-1";
   const activeFloorLabel =
     floorOptions.find((option) => option.level === activeFloorLevel)?.label ?? "1F";
   const activeRoomArea = Math.max(0, roomWidth * roomDepth);
@@ -2486,23 +2422,6 @@ export default function DesignControlsPlanPanel({
       ready: true,
     },
   ];
-  const floorMaterialButtonClass = (materialId: string) => {
-    const isSelected = !activeSurfaceMaterial && activeFloorMaterial.id === materialId;
-    if (dark) {
-      return [
-        "flex min-w-0 items-center gap-2 rounded-lg border px-2 py-2 text-left text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-50",
-        isSelected
-          ? "border-emerald-300/45 bg-emerald-400/15 text-emerald-100"
-          : "designer-control border text-neutral-100",
-      ].join(" ");
-    }
-    return [
-      "flex min-w-0 items-center gap-2 rounded-lg border px-2 py-2 text-left text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-50",
-      isSelected
-        ? "border-emerald-300 bg-emerald-50 text-emerald-900"
-      : "border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50",
-    ].join(" ");
-  };
   const surfaceMaterialCardClass = (materialId: string, selectedOverride?: boolean) => {
     const isSelected = selectedOverride ?? activeTargetMaterialId === materialId;
     if (dark) {
@@ -3320,7 +3239,6 @@ export default function DesignControlsPlanPanel({
                       active: planStartMode === "upload",
                       disabled: !canEdit,
                       onClick: () => {
-                        setRoomSetupStep("confirm");
                         setPlanStartMode("upload");
                       },
                     })}
@@ -3421,14 +3339,32 @@ export default function DesignControlsPlanPanel({
                 title: "Templates",
                 children: (
                   <div className={planToolGridClass}>
-                    {renderPlanToolTile({
-                      testId: "plan-start-template",
-                      icon: "template",
-                      label: "Starter layouts",
-                      active: planStartMode === "template",
-                      disabled: !canEdit,
-                      onClick: openTemplatePicker,
-                    })}
+                    <button
+                      type="button"
+                      data-testid="plan-start-template"
+                      data-active={planStartMode === "template" ? "true" : "false"}
+                      data-disabled={!canEdit ? "true" : "false"}
+                      aria-pressed={planStartMode === "template"}
+                      className={planToolTileClass(planStartMode === "template", !canEdit)}
+                      disabled={!canEdit}
+                      onClick={openTemplatePicker}
+                    >
+                      <PlanToolIcon name="template" dark={dark} muted={!canEdit} />
+                      <span
+                        className={[
+                          "block text-[12px] font-normal leading-[1.25] tracking-normal",
+                          !canEdit
+                            ? dark
+                              ? "text-neutral-400"
+                              : "text-[#64686f]"
+                            : dark
+                              ? "text-neutral-100"
+                              : "text-[#30333a]",
+                        ].join(" ")}
+                      >
+                        Starter layouts
+                      </span>
+                    </button>
                   </div>
                 ),
               })}
@@ -4403,7 +4339,7 @@ export default function DesignControlsPlanPanel({
           />
         </div>
       )}
-      {!isDesigner && showTemplatePicker && (
+      {showTemplatePicker && (
         <div
           ref={templatePickerRef}
           data-testid="starter-floor-plan-picker"
@@ -4416,8 +4352,18 @@ export default function DesignControlsPlanPanel({
           <div className="flex items-center justify-between gap-3">
             <div className={titleClass}>Choose a floor plan</div>
             <div className={dark ? "text-xs font-semibold text-neutral-400" : "text-xs font-semibold text-neutral-500"}>
-              {filteredPlanTemplates.length} options
+              {filteredPlanTemplates.length} starter layouts
             </div>
+          </div>
+          <div className="mt-3">
+            <FloorPlanAddressSearch
+              dark={dark}
+              canEdit={canEdit}
+              onApplyPlanTemplate={onApplyPlanTemplate}
+            />
+          </div>
+          <div className={dark ? "mt-4 text-xs font-semibold text-neutral-300" : "mt-4 text-xs font-semibold text-neutral-600"}>
+            Or browse starter layouts
           </div>
           <div
             data-testid="template-filter-panel"

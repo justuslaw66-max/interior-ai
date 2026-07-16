@@ -82,9 +82,65 @@ assert.equal(plan.rooms[1].x, 4.5);
 assert.equal(plan.width, 13);
 assert.equal(plan.depth, 4);
 
+const sourceTracedOpenRoom: RoomSnapshot = {
+  ...makeRoom("source-open", "Living / Dining", 6, 6, { x: 0, z: 0 }),
+  planShape: "custom_polygon",
+  planPolygon: [
+    { x: -3, z: -3 },
+    { x: 3, z: -3 },
+    { x: 3, z: 0 },
+    { x: 0, z: 0 },
+    { x: 0, z: 3 },
+    { x: -3, z: 3 },
+  ],
+};
+const sourceTracedNotchRoom = makeRoom(
+  "source-notch",
+  "Kitchen",
+  3,
+  3,
+  { x: 1.5, z: 1.5 }
+);
+const sourceTracedPlan = buildHousePlan2D(
+  [sourceTracedOpenRoom, sourceTracedNotchRoom],
+  6,
+  6
+);
+assert.deepEqual(
+  sourceTracedPlan.rooms[0].polygon,
+  sourceTracedOpenRoom.planPolygon,
+  "Source-derived custom polygons should survive room-to-plan conversion."
+);
+assert.equal(
+  doesHouseRoomOverlap(
+    sourceTracedPlan.rooms[1].id,
+    sourceTracedPlan.rooms[1].x,
+    sourceTracedPlan.rooms[1].z,
+    sourceTracedPlan.rooms[1].w,
+    sourceTracedPlan.rooms[1].d,
+    sourceTracedPlan.rooms
+  ),
+  false,
+  "A room inside a concave polygon notch should not be treated as overlapping its bounding box."
+);
+assert.ok(
+  buildHouseRoomAdjacencyGuides(sourceTracedPlan.rooms).some(
+    (guide) =>
+      guide.roomIds.includes("source-open") &&
+      guide.roomIds.includes("source-notch") &&
+      guide.lengthMeters === 3
+  ),
+  "Polygon adjacency should follow shared traced wall segments."
+);
+
 assert.equal(resolveHouseRoomDimension(3.2, 5), 3.2);
 assert.equal(resolveHouseRoomDimension(23.234, 5), 5);
-assert.equal(resolveHouseRoomDimension(1.2, 5), 5);
+assert.equal(
+  resolveHouseRoomDimension(1.2, 5),
+  1.2,
+  "Stored floor-plan service spaces must keep valid sub-1.8 m dimensions."
+);
+assert.equal(resolveHouseRoomDimension(0.2, 5), 5);
 assert.equal(resolveHouseRoomDimension(Number.NaN, 5), 5);
 
 const resizeAnchorRooms = buildHousePlan2D(

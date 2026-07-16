@@ -10,7 +10,11 @@ import {
 import {
   buildAutoSeatingZone,
   buildManualZoneFromSelection,
+  reconcileZonesForItems,
+  updateActiveRoomZones,
 } from "../lib/design-page-zone-orchestration";
+import { snapshotToStored, storedToSnapshot } from "../lib/room-persistence";
+import { migrateToV3, type ZoneMin } from "../lib/room-types";
 import { buildItemPlanningBoundsByInstanceId } from "../lib/design-page-config-state";
 import {
   buildEditorScene2D,
@@ -100,13 +104,13 @@ runFixture("buildAutoZones creates reading and tv zones and respects manual assi
   assert.deepEqual(tv?.itemIds, ["tv-a"]);
 });
 
-runFixture("normalizeZones removes missing items and recomputes anchor", () => {
+runFixture("normalizeZones removes missing items and normalizes legacy source", () => {
   const allItems: any[] = [
     { instanceId: "a", position: [0, 0, 0] },
     { instanceId: "b", position: [2, 0, 2] },
   ];
   const zones: any[] = [
-    { id: "z1", type: "reading", itemIds: ["a", "missing"], source: "manual" },
+    { id: "z1", type: "reading", itemIds: ["a", "missing"] },
     { id: "z2", type: "tv", itemIds: ["missing"], source: "manual" },
   ];
 
@@ -114,15 +118,33 @@ runFixture("normalizeZones removes missing items and recomputes anchor", () => {
   assert.equal(normalized.length, 1);
   assert.deepEqual(normalized[0].itemIds, ["a"]);
   assert.deepEqual(normalized[0].anchor, [0, 0, 0]);
+  assert.equal(normalized[0].source, "manual");
+
+  const reconciled = reconcileZonesForItems({
+    zones,
+    allItems,
+    catalogItems: {} as any,
+  });
+  assert.equal(reconciled.length, 1);
+  assert.equal(reconciled[0].id, "z1");
+  assert.equal(reconciled[0].source, "manual");
 });
 
 runFixture("zonesEqual checks ids/types/order-sensitive item ids", () => {
   const left: any[] = [{ id: "z1", type: "tv", itemIds: ["a", "b"] }];
   const same: any[] = [{ id: "z1", type: "tv", itemIds: ["a", "b"] }];
   const differentOrder: any[] = [{ id: "z1", type: "tv", itemIds: ["b", "a"] }];
+  const differentSource: any[] = [
+    { id: "z1", type: "tv", itemIds: ["a", "b"], source: "auto" },
+  ];
+  const differentAnchor: any[] = [
+    { id: "z1", type: "tv", itemIds: ["a", "b"], anchor: [1, 0, 1] },
+  ];
 
   assert.equal(zonesEqual(left, same), true);
   assert.equal(zonesEqual(left, differentOrder), false);
+  assert.equal(zonesEqual(left, differentSource), false);
+  assert.equal(zonesEqual(left, differentAnchor), false);
 });
 
 runFixture("buildManualZoneFromSelection prunes selected ids from existing manual zones", () => {
@@ -156,22 +178,195 @@ runFixture("buildManualZoneFromSelection prunes selected ids from existing manua
   });
 
   assert.ok(result);
-  assert.equal(result?.zones.length, 2);
-  assert.deepEqual(result?.zones[0].itemIds, ["x1"]);
-  assert.deepEqual(result?.zones[1].itemIds.sort(), ["i1", "i2"].sort());
+  assert.equal(result?.manualZones.length, 2);
+  assert.deepEqual(result?.manualZones[0].itemIds, ["x1"]);
+  assert.deepEqual(
+    result?.manualZones[1].itemIds.sort(),
+    ["i1", "i2"].sort()
+  );
+});
+
+runFixture("reconcileZones preserves unrelated auto zones after manual creation", () => {
+  const allItems: any[] = [
+    { instanceId: "sofa-a", productId: "sofa", position: [0, 0, 0] },
+    { instanceId: "chair-a", productId: "chair", position: [2, 0, 0] },
+    { instanceId: "lamp-a", productId: "lamp", position: [2.4, 0, 0] },
+    { instanceId: "tv-a", productId: "tv", position: [4, 0, 0] },
+  ];
+  const catalogItems: any = {
+    sofa: { category: "sofa" },
+    chair: { category: "accent_chair" },
+    lamp: { category: "floor_lamp" },
+    tv: { category: "tv_console" },
+  };
+  const initialZones = reconcileZonesForItems({
+    zones: [],
+    allItems,
+    catalogItems,
+  });
+  assert.deepEqual(
+    initialZones.map((zone) => zone.id),
+    ["auto-reading-chair-a", "auto-tv-tv-a"]
+  );
+
+  const manualCandidate = buildManualZoneFromSelection({
+    selectedSet: new Set(["sofa-a"]),
+    selectedItems: [allItems[0]],
+    pendingZoneType: "seating",
+    existingZones: initialZones,
+  });
+  assert.ok(manualCandidate);
+
+  const reconciled = reconcileZonesForItems({
+    zones: manualCandidate?.manualZones ?? [],
+    allItems,
+    catalogItems,
+  });
+  assert.deepEqual(
+    reconciled.filter((zone) => zone.source === "auto").map((zone) => zone.id),
+    ["auto-reading-chair-a", "auto-tv-tv-a"]
+  );
+  assert.deepEqual(
+    reconciled.find((zone) => zone.id === manualCandidate?.zoneId)?.itemIds,
+    ["sofa-a"]
+  );
+  const memberships = reconciled.flatMap((zone) => zone.itemIds);
+  assert.equal(new Set(memberships).size, memberships.length);
+
+  const chairClaimed = reconcileZonesForItems({
+    zones: [
+      ...reconciled.filter((zone) => zone.source === "manual"),
+      {
+        id: "manual-chair",
+        type: "reading",
+        source: "manual",
+        itemIds: ["chair-a"],
+      },
+    ],
+    allItems,
+    catalogItems,
+  });
+  assert.equal(
+    chairClaimed.some((zone) => zone.id === "auto-reading-chair-a"),
+    false
+  );
+  assert.equal(
+    chairClaimed.some((zone) => zone.id === "auto-tv-tv-a"),
+    true
+  );
 });
 
 runFixture("buildAutoSeatingZone creates one zone and ignores additional requests", () => {
   const sofa: any = { instanceId: "sofa-1", position: [1, 0, 1] };
   const initial = buildAutoSeatingZone({ sofaItem: sofa, existingZones: [] });
   assert.ok(initial);
-  assert.equal(initial?.zones.length, 1);
+  assert.equal(initial?.manualZones.length, 1);
 
   const secondAttempt = buildAutoSeatingZone({
     sofaItem: sofa,
-    existingZones: initial?.zones ?? [],
+    existingZones: initial?.manualZones ?? [],
   });
   assert.equal(secondAttempt, null);
+});
+
+runFixture("automatic seating creation reconciles existing manual and auto zones", () => {
+  const allItems: any[] = [
+    { instanceId: "sofa-1", productId: "sofa", position: [0, 0, 0] },
+    { instanceId: "table-1", productId: "table", position: [1, 0, 0] },
+    { instanceId: "chair-1", productId: "chair", position: [2, 0, 0] },
+    { instanceId: "lamp-1", productId: "lamp", position: [2.4, 0, 0] },
+    { instanceId: "tv-1", productId: "tv", position: [4, 0, 0] },
+  ];
+  const catalogItems: any = {
+    sofa: { category: "sofa" },
+    table: { category: "dining_table" },
+    chair: { category: "accent_chair" },
+    lamp: { category: "floor_lamp" },
+    tv: { category: "tv_console" },
+  };
+  const existingManual: ZoneMin = {
+    id: "manual-dining",
+    type: "dining",
+    source: "manual",
+    itemIds: ["table-1"],
+  };
+  const existingZones = reconcileZonesForItems({
+    zones: [existingManual],
+    allItems,
+    catalogItems,
+  });
+  const candidate = buildAutoSeatingZone({
+    sofaItem: allItems[0],
+    existingZones,
+  });
+  assert.ok(candidate);
+
+  const reconciled = reconcileZonesForItems({
+    zones: candidate?.manualZones ?? [],
+    allItems,
+    catalogItems,
+  });
+  assert.deepEqual(
+    reconciled.map((zone) => zone.id),
+    [
+      "manual-dining",
+      candidate?.zoneId,
+      "auto-reading-chair-1",
+      "auto-tv-tv-1",
+    ]
+  );
+  assert.equal(
+    reconciled.find((zone) => zone.id === candidate?.zoneId)?.source,
+    "manual"
+  );
+
+  const ungrouped = reconciled.filter((zone) => zone.id !== candidate?.zoneId);
+  assert.deepEqual(
+    ungrouped.filter((zone) => zone.source === "auto"),
+    reconciled.filter((zone) => zone.source === "auto")
+  );
+});
+
+runFixture("active-room zone create and ungroup survive persistence", () => {
+  const baseSnapshot = migrateToV3({
+    items: [],
+    zones: [],
+    roomBounds: { width: 5, depth: 4, wallThickness: 0.12 },
+  } as any);
+  const activeRoom = baseSnapshot.rooms[0];
+  const inactiveZone: ZoneMin = {
+    id: "inactive-zone",
+    type: "reading",
+    itemIds: ["inactive-chair"],
+    source: "manual",
+  };
+  const inactiveRoom = {
+    ...activeRoom,
+    id: "room_inactive",
+    name: "Inactive room",
+    zones: [inactiveZone],
+  };
+  const multiRoomSnapshot = {
+    ...baseSnapshot,
+    rooms: [activeRoom, inactiveRoom],
+    activeRoomId: activeRoom.id,
+  };
+  const manualZone: ZoneMin = {
+    id: "manual-zone",
+    type: "seating",
+    itemIds: ["sofa-1", "table-1"],
+    source: "manual",
+  };
+
+  const created = updateActiveRoomZones(multiRoomSnapshot, [manualZone]);
+  const createdRoundTrip = storedToSnapshot(snapshotToStored(created));
+  assert.deepEqual(createdRoundTrip.rooms[0].zones, [manualZone]);
+  assert.deepEqual(createdRoundTrip.rooms[1].zones, [inactiveZone]);
+
+  const ungrouped = updateActiveRoomZones(createdRoundTrip, []);
+  const ungroupedRoundTrip = storedToSnapshot(snapshotToStored(ungrouped));
+  assert.deepEqual(ungroupedRoundTrip.rooms[0].zones, []);
+  assert.deepEqual(ungroupedRoundTrip.rooms[1].zones, [inactiveZone]);
 });
 
 runFixture("buildItemPlanningBoundsByInstanceId prefers variant dims without config override", () => {
@@ -285,10 +480,13 @@ runFixture("plan overlay mapper converts mm scene overlays to meters", () => {
   assert.deepEqual(mappedOpenings, [
     {
       id: "o1",
+      roomId: undefined,
       wall: "north",
       kind: "door",
       offset: 1.2,
       width: 0.9,
+      height: undefined,
+      bottom: undefined,
     },
   ]);
 

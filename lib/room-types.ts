@@ -184,11 +184,31 @@ export interface PersistedPlanOpening {
   heightMm?: number;
   bottomMm?: number;
   kind: "door" | "window";
+  doorStyle?: "swing" | "open";
+}
+
+export interface PersistedPlanFixedElement {
+  id: string;
+  kind:
+    | "kitchen_counter"
+    | "island"
+    | "wardrobe"
+    | "window"
+    | "door"
+    | "reference_zone";
+  xMm: number;
+  zMm: number;
+  widthMm: number;
+  depthMm: number;
+  rotationDeg: number;
+  label?: string;
+  locked?: boolean;
 }
 
 export interface PersistedFloorPlanState {
   underlay?: PersistedFloorPlanUnderlay | null;
   openings?: PersistedPlanOpening[];
+  fixedElements?: PersistedPlanFixedElement[];
 }
 
 export interface DesignItem {

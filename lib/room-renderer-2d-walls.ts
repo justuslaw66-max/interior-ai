@@ -22,6 +22,9 @@ type OpeningLike2D = {
 export type RoomWallSegment2D = {
   key: string;
   roomIds: string[];
+  roomWalls: Record<string, WallSide2D>;
+  /** Room-centre coordinate on the segment's running axis, used by opening offsets. */
+  roomAxisCenters: Record<string, number>;
   wall: WallSide2D;
   orientation: "horizontal" | "vertical";
   x1: number;
@@ -147,6 +150,12 @@ export function buildRoomWallSegments2D(rooms: RoomLike2D[]): RoomWallSegment2D[
       segments.push({
         key: `${room.id}-${index}`,
         roomIds: [room.id],
+        roomWalls: {
+          [room.id]: inferWallSide(room, x1, z1, x2, z2),
+        },
+        roomAxisCenters: {
+          [room.id]: orientation === "horizontal" ? room.x : room.z,
+        },
         wall: inferWallSide(room, x1, z1, x2, z2),
         orientation,
         x1: roundWallCoordinate(x1),
@@ -182,79 +191,127 @@ function normalizeSegment(segment: RoomWallSegment2D): RoomWallSegment2D {
 export function mergeSharedWallSegments2D(
   segments: RoomWallSegment2D[]
 ): RoomWallSegment2D[] {
-  const merged = new Map<string, RoomWallSegment2D>();
+  const collinearGroups = new Map<string, RoomWallSegment2D[]>();
 
   for (const rawSegment of segments) {
     const segment = normalizeSegment(rawSegment);
     const fixedCoordinate =
       segment.orientation === "horizontal" ? segment.z1 : segment.x1;
-    const [start, end] = getSegmentAxisValues(segment);
-    const key = [
-      segment.orientation,
-      roundWallCoordinate(fixedCoordinate),
-      roundWallCoordinate(Math.min(start, end)),
-      roundWallCoordinate(Math.max(start, end)),
-    ].join(":");
-    const existing = merged.get(key);
-
-    if (!existing) {
-      merged.set(key, segment);
-      continue;
-    }
-
-    merged.set(key, {
-      ...existing,
-      key: `${existing.key}-${segment.key}`,
-      roomIds: Array.from(new Set([...existing.roomIds, ...segment.roomIds])),
-      thickness: Math.max(existing.thickness, segment.thickness),
-    });
+    const key = `${segment.orientation}:${roundWallCoordinate(fixedCoordinate)}`;
+    collinearGroups.set(key, [...(collinearGroups.get(key) ?? []), segment]);
   }
 
-  return Array.from(merged.values());
+  return Array.from(collinearGroups.values()).flatMap((group) => {
+    const boundaries = Array.from(
+      new Set(
+        group.flatMap((segment) => {
+          const [start, end] = getSegmentAxisValues(segment);
+          return [roundWallCoordinate(Math.min(start, end)), roundWallCoordinate(Math.max(start, end))];
+        })
+      )
+    ).sort((first, second) => first - second);
+
+    return boundaries.slice(0, -1).flatMap((start, index): RoomWallSegment2D[] => {
+      const end = boundaries[index + 1];
+      if (end - start <= WALL_SEGMENT_EPSILON) return [];
+      const covering = group.filter((segment) => {
+        const [rawStart, rawEnd] = getSegmentAxisValues(segment);
+        const low = Math.min(rawStart, rawEnd);
+        const high = Math.max(rawStart, rawEnd);
+        return low <= start + WALL_SEGMENT_EPSILON && high >= end - WALL_SEGMENT_EPSILON;
+      });
+      if (!covering.length) return [];
+
+      const base = covering.slice().sort((first, second) => first.key.localeCompare(second.key))[0];
+      const roomWalls = Object.assign({}, ...covering.map((segment) => segment.roomWalls));
+      const roomAxisCenters = Object.assign(
+        {},
+        ...covering.map((segment) => segment.roomAxisCenters)
+      );
+      const roomIds = Array.from(new Set(covering.flatMap((segment) => segment.roomIds))).sort();
+      const fixedCoordinate =
+        base.orientation === "horizontal" ? base.z1 : base.x1;
+
+      return [
+        {
+          ...base,
+          key: covering.map((segment) => segment.key).sort().join("-"),
+          roomIds,
+          roomWalls,
+          roomAxisCenters,
+          ...(base.orientation === "horizontal"
+            ? { x1: start, x2: end, z1: fixedCoordinate, z2: fixedCoordinate }
+            : { x1: fixedCoordinate, x2: fixedCoordinate, z1: start, z2: end }),
+          thickness: Math.max(...covering.map((segment) => segment.thickness)),
+        },
+      ];
+    });
+  });
 }
 
 export function buildWallBandCornerCaps2D(
   segments: RoomWallSegment2D[]
 ): WallBandCornerCap2D[] {
-  const caps = new Map<string, WallBandCornerCap2D>();
+  const endpoints = new Map<
+    string,
+    { x: number; z: number; segments: RoomWallSegment2D[] }
+  >();
 
   for (const segment of segments) {
-    const endpoints: Array<[number, number]> = [
+    const segmentEndpoints: Array<[number, number]> = [
       [segment.x1, segment.z1],
       [segment.x2, segment.z2],
     ];
 
-    for (const [x, z] of endpoints) {
+    for (const [x, z] of segmentEndpoints) {
       const roundedX = roundWallCoordinate(x);
       const roundedZ = roundWallCoordinate(z);
       const key = `wall-cap-${roundedX}:${roundedZ}`;
-      const existing = caps.get(key);
-      const size = Math.max(0.025, segment.thickness);
-
-      caps.set(key, {
-        key,
-        size: Math.max(existing?.size ?? 0, size),
+      const existing = endpoints.get(key);
+      endpoints.set(key, {
         x: roundedX,
         z: roundedZ,
+        segments: [...(existing?.segments ?? []), segment],
       });
     }
   }
 
-  return Array.from(caps.values());
+  return Array.from(endpoints.entries()).flatMap(([key, endpoint]) => {
+    const orientations = new Set(endpoint.segments.map((segment) => segment.orientation));
+    if (endpoint.segments.length > 1 && orientations.size === 1) return [];
+    return [
+      {
+        key,
+        size: Math.max(
+          0.025,
+          ...endpoint.segments.map((segment) => segment.thickness)
+        ),
+        x: endpoint.x,
+        z: endpoint.z,
+      },
+    ];
+  });
 }
 
 function getOpeningRangeOnSegment(
   segment: RoomWallSegment2D,
   opening: OpeningLike2D
 ): { start: number; end: number; kind: OpeningLike2D["kind"] } | null {
-  if (opening.roomId && !segment.roomIds.includes(opening.roomId)) return null;
-  if (opening.wall !== segment.wall) return null;
+  if (opening.roomId) {
+    if (!segment.roomIds.includes(opening.roomId)) return null;
+    if (segment.roomWalls[opening.roomId] !== opening.wall) return null;
+  } else if (opening.wall !== segment.wall) {
+    return null;
+  }
 
   const [axisStart, axisEnd] = getSegmentAxisValues(segment);
   const low = Math.min(axisStart, axisEnd);
   const high = Math.max(axisStart, axisEnd);
   const segmentCenter = (low + high) / 2;
-  const center = segmentCenter + opening.offset;
+  const roomAxisCenter = opening.roomId
+    ? segment.roomAxisCenters[opening.roomId]
+    : undefined;
+  const center = (roomAxisCenter ?? segmentCenter) + opening.offset;
   const start = Math.max(low, center - opening.width / 2);
   const end = Math.min(high, center + opening.width / 2);
   if (end - start <= WALL_SEGMENT_EPSILON) return null;

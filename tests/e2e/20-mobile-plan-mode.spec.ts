@@ -15,25 +15,27 @@ async function clearEditorStorage(page: import("@playwright/test").Page) {
 async function openTemplatePlan(page: import("@playwright/test").Page) {
   await page.goto("/design", { waitUntil: "domcontentloaded" });
   await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30000 });
+  await page.waitForLoadState("networkidle");
 
-  const twoDPlan = page.getByRole("button", { name: /2D Plan/i });
-  if (await twoDPlan.count()) {
-    await twoDPlan.first().click();
+  const newPlan = page.getByTestId("editor-command-new-plan");
+  await expect(newPlan).toBeVisible();
+  await expect(newPlan).toHaveAccessibleName("Start a new floor plan");
+  const newPlanBox = await newPlan.boundingBox();
+  expect(newPlanBox, "New plan should be measurable").not.toBeNull();
+  expect(newPlanBox?.width ?? 0, "New plan should be finger-friendly").toBeGreaterThanOrEqual(36);
+  expect(newPlanBox?.height ?? 0, "New plan should be finger-friendly").toBeGreaterThanOrEqual(36);
+  expect((newPlanBox?.x ?? 0) + (newPlanBox?.width ?? 0)).toBeLessThanOrEqual(
+    page.viewportSize()?.width ?? Number.POSITIVE_INFINITY
+  );
+  await newPlan.click();
+
+  const starterPlanPicker = page.getByTestId("starter-floor-plan-picker");
+  if (await starterPlanPicker.isVisible({ timeout: 1500 }).catch(() => false)) {
+    await page.getByTestId("apply-plan-template-studio").click();
   }
-
-  const betaTemplate = page.getByTestId("beta-start-template");
-  if (await betaTemplate.isVisible().catch(() => false)) {
-    await betaTemplate.click();
-  } else {
-    const planTab = page.getByTestId("editor-workflow-plan");
-    if (await planTab.isVisible().catch(() => false)) {
-      await planTab.click();
-    }
-    await page.getByTestId("plan-start-template").click();
-  }
-
-  await page.getByTestId("apply-plan-template-studio").click();
   await expect(page.getByTestId("room-plan-status")).toHaveCount(1, { timeout: 20000 });
+  await page.getByRole("button", { name: "2D Plan", exact: true }).click();
+  await expect(page.getByTestId("plan-guided-actions-toggle")).toBeVisible();
 }
 
 test.describe("20. Mobile Plan Mode", () => {
@@ -45,7 +47,7 @@ test.describe("20. Mobile Plan Mode", () => {
 
       await expect(page.getByTestId("room-plan-status")).toHaveAttribute("data-compact", "true");
       await expect(page.getByTestId("room-plan-status-fit-view")).toHaveText("Fit");
-      await expect(page.getByRole("button", { name: "Fit room" })).toBeVisible();
+      await expect(page.getByRole("button", { name: /^Fit (room|plan)$/ }).first()).toBeVisible();
       await expect(page.getByTestId("plan-guided-actions-toggle")).toBeVisible();
       await expect(page.getByTestId("plan-guided-actions-toggle")).toHaveAttribute("role", "switch");
 

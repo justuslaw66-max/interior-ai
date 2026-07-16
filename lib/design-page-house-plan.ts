@@ -66,7 +66,8 @@ export type HousePlanTemplateId =
   | "small_condo"
   | "hdb_two_room"
   | "family_two_bed"
-  | "railroad_apartment";
+  | "railroad_apartment"
+  | `library_${string}`;
 
 export type HousePlanTemplateLayoutType =
   | "studio"
@@ -87,18 +88,21 @@ export type HousePlanTemplateRoom = {
   name: string;
   roomType: RoomType;
   shape: RoomPlanShape;
+  planPolygon?: Array<{ x: number; z: number }>;
   width: number;
   depth: number;
   x: number;
   z: number;
+  wallThickness?: number;
 };
 
 export type HousePlanTemplateDoorway = {
   fromRoomId: string;
-  toRoomId: string;
+  toRoomId?: string;
   wall: "north" | "south" | "east" | "west";
   offsetMeters?: number;
   widthMeters?: number;
+  kind?: "door" | "opening";
 };
 
 export type HousePlanTemplateWindow = {
@@ -106,6 +110,17 @@ export type HousePlanTemplateWindow = {
   wall: "north" | "south" | "east" | "west";
   offsetMeters?: number;
   widthMeters?: number;
+};
+
+export type HousePlanTemplateReferenceZone = {
+  id: string;
+  label: string;
+  kind: "exterior" | "structural";
+  width: number;
+  depth: number;
+  x: number;
+  z: number;
+  locked?: boolean;
 };
 
 export type HousePlanTemplateFurnishingPackId = "essentials" | "styled_starter";
@@ -157,6 +172,7 @@ export type HousePlanTemplate = {
   rooms: HousePlanTemplateRoom[];
   doorways: HousePlanTemplateDoorway[];
   windows: HousePlanTemplateWindow[];
+  referenceZones?: HousePlanTemplateReferenceZone[];
   furnishingPacks: HousePlanTemplateFurnishingPack[];
 };
 
@@ -1703,10 +1719,13 @@ export function resolveHouseRoomDimension(
   value: unknown,
   fallback: number
 ): number {
+  // Manual room creation keeps the friendlier 1.8 m minimum, but imported and
+  // persisted plans legitimately contain narrow baths, shelters, and passages.
+  const storedDimensionMinimumMeters = 0.45;
   const numericValue = Number(value);
   if (
     Number.isFinite(numericValue) &&
-    numericValue >= ROOM_DIMENSION_DEFAULTS.min &&
+    numericValue >= storedDimensionMinimumMeters &&
     numericValue <= ROOM_DIMENSION_DEFAULTS.max
   ) {
     return numericValue;
@@ -1715,7 +1734,7 @@ export function resolveHouseRoomDimension(
   const numericFallback = Number(fallback);
   if (
     Number.isFinite(numericFallback) &&
-    numericFallback >= ROOM_DIMENSION_DEFAULTS.min &&
+    numericFallback >= storedDimensionMinimumMeters &&
     numericFallback <= ROOM_DIMENSION_DEFAULTS.max
   ) {
     return numericFallback;
@@ -1912,6 +1931,154 @@ function getHouseRoomOverlapArea(
   return overlapWidth * overlapDepth;
 }
 
+type HouseRoomPlanPoint = { x: number; z: number };
+
+function getHouseRoomPlanPolygon(
+  room: HousePlanRoom2D,
+  x = room.x,
+  z = room.z,
+  w = room.w,
+  d = room.d
+): HouseRoomPlanPoint[] {
+  if (room.shape === "custom_polygon" && room.polygon && room.polygon.length >= 3) {
+    return room.polygon.map((point) => ({
+      x: x + point.x,
+      z: z + point.z,
+    }));
+  }
+
+  const left = x - w / 2;
+  const right = x + w / 2;
+  const top = z - d / 2;
+  const bottom = z + d / 2;
+  if (room.shape === "l_shape") {
+    const notchW = w * 0.42;
+    const notchD = d * 0.42;
+    return [
+      { x: left, z: top },
+      { x: right, z: top },
+      { x: right, z: bottom - notchD },
+      { x: right - notchW, z: bottom - notchD },
+      { x: right - notchW, z: bottom },
+      { x: left, z: bottom },
+    ];
+  }
+  return [
+    { x: left, z: top },
+    { x: right, z: top },
+    { x: right, z: bottom },
+    { x: left, z: bottom },
+  ];
+}
+
+function pointOnPlanSegment(
+  point: HouseRoomPlanPoint,
+  start: HouseRoomPlanPoint,
+  end: HouseRoomPlanPoint,
+  tolerance = 1e-7
+): boolean {
+  const cross =
+    (end.x - start.x) * (point.z - start.z) -
+    (end.z - start.z) * (point.x - start.x);
+  if (Math.abs(cross) > tolerance) return false;
+  return (
+    point.x >= Math.min(start.x, end.x) - tolerance &&
+    point.x <= Math.max(start.x, end.x) + tolerance &&
+    point.z >= Math.min(start.z, end.z) - tolerance &&
+    point.z <= Math.max(start.z, end.z) + tolerance
+  );
+}
+
+function pointInsidePlanPolygon(
+  point: HouseRoomPlanPoint,
+  polygon: HouseRoomPlanPoint[]
+): boolean {
+  for (let index = 0; index < polygon.length; index += 1) {
+    if (
+      pointOnPlanSegment(
+        point,
+        polygon[index],
+        polygon[(index + 1) % polygon.length]
+      )
+    ) {
+      return false;
+    }
+  }
+
+  let inside = false;
+  for (let index = 0, previous = polygon.length - 1; index < polygon.length; previous = index++) {
+    const currentPoint = polygon[index];
+    const previousPoint = polygon[previous];
+    if (
+      (currentPoint.z > point.z) !== (previousPoint.z > point.z) &&
+      point.x <
+        ((previousPoint.x - currentPoint.x) * (point.z - currentPoint.z)) /
+          (previousPoint.z - currentPoint.z) +
+          currentPoint.x
+    ) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+function planSegmentsCross(
+  firstStart: HouseRoomPlanPoint,
+  firstEnd: HouseRoomPlanPoint,
+  secondStart: HouseRoomPlanPoint,
+  secondEnd: HouseRoomPlanPoint
+): boolean {
+  const cross = (
+    start: HouseRoomPlanPoint,
+    end: HouseRoomPlanPoint,
+    point: HouseRoomPlanPoint
+  ) =>
+    (end.x - start.x) * (point.z - start.z) -
+    (end.z - start.z) * (point.x - start.x);
+  return (
+    cross(firstStart, firstEnd, secondStart) *
+      cross(firstStart, firstEnd, secondEnd) <
+      -1e-8 &&
+    cross(secondStart, secondEnd, firstStart) *
+      cross(secondStart, secondEnd, firstEnd) <
+      -1e-8
+  );
+}
+
+function planPolygonsOverlap(
+  first: HouseRoomPlanPoint[],
+  second: HouseRoomPlanPoint[]
+): boolean {
+  for (let firstIndex = 0; firstIndex < first.length; firstIndex += 1) {
+    const firstStart = first[firstIndex];
+    const firstEnd = first[(firstIndex + 1) % first.length];
+    for (let secondIndex = 0; secondIndex < second.length; secondIndex += 1) {
+      if (
+        planSegmentsCross(
+          firstStart,
+          firstEnd,
+          second[secondIndex],
+          second[(secondIndex + 1) % second.length]
+        )
+      ) {
+        return true;
+      }
+    }
+  }
+
+  const samplePoints = (polygon: HouseRoomPlanPoint[]) => [
+    ...polygon,
+    ...polygon.map((point, index) => {
+      const next = polygon[(index + 1) % polygon.length];
+      return { x: (point.x + next.x) / 2, z: (point.z + next.z) / 2 };
+    }),
+  ];
+  return (
+    samplePoints(first).some((point) => pointInsidePlanPolygon(point, second)) ||
+    samplePoints(second).some((point) => pointInsidePlanPolygon(point, first))
+  );
+}
+
 function getHouseRoomFloorLevel(room: Pick<HousePlanRoom2D, "floorLevel">): number {
   return typeof room.floorLevel === "number" && Number.isFinite(room.floorLevel)
     ? room.floorLevel
@@ -1935,19 +2102,35 @@ export function doesHouseRoomOverlap(
   tolerance = 0.01
 ): boolean {
   const candidate = getHouseRoomBounds(x, z, w, d);
+  const moving = rooms.find((entry) => entry.id === roomId);
 
   return rooms.some((room) => {
     if (room.id === roomId) return false;
-    const moving = rooms.find((entry) => entry.id === roomId);
     if (moving && !areHouseRoomsOnSameFloor(moving, room)) return false;
 
     const other = getHouseRoomBounds(room.x, room.z, room.w, room.d);
-    return (
+    const boundsOverlap =
       candidate.left < other.right - tolerance &&
       candidate.right > other.left + tolerance &&
       candidate.top < other.bottom - tolerance &&
-      candidate.bottom > other.top + tolerance
-    );
+      candidate.bottom > other.top + tolerance;
+    if (!boundsOverlap) return false;
+    if (
+      (!moving || moving.shape === "rectangle") &&
+      room.shape === "rectangle"
+    ) {
+      return true;
+    }
+
+    const candidatePolygon = moving
+      ? getHouseRoomPlanPolygon(moving, x, z, w, d)
+      : [
+          { x: candidate.left, z: candidate.top },
+          { x: candidate.right, z: candidate.top },
+          { x: candidate.right, z: candidate.bottom },
+          { x: candidate.left, z: candidate.bottom },
+        ];
+    return planPolygonsOverlap(candidatePolygon, getHouseRoomPlanPolygon(room));
   });
 }
 
@@ -2291,6 +2474,23 @@ export function roundPlanCoordinate(value: number): number {
   return Number(value.toFixed(3));
 }
 
+export function resolveHousePlanTemplateOpeningMetrics(
+  spanMeters: number,
+  requestedWidthMeters: number,
+  requestedOffsetMeters = 0
+): { widthMeters: number; offsetMeters: number } {
+  const safeSpan = Math.max(0, spanMeters);
+  const widthMeters = Math.min(Math.max(0, requestedWidthMeters), safeSpan);
+  const maxOffsetMeters = Math.max(0, safeSpan / 2 - widthMeters / 2);
+  return {
+    widthMeters,
+    offsetMeters: Math.max(
+      -maxOffsetMeters,
+      Math.min(maxOffsetMeters, requestedOffsetMeters)
+    ),
+  };
+}
+
 export function buildHouseRoomAdjacencyGuides(
   rooms: HousePlanRoom2D[],
   toleranceMeters = 0.04,
@@ -2298,92 +2498,111 @@ export function buildHouseRoomAdjacencyGuides(
 ): HouseRoomAdjacencyGuide[] {
   const guides: HouseRoomAdjacencyGuide[] = [];
 
+  type AxisSegment = {
+    orientation: "vertical" | "horizontal";
+    fixed: number;
+    start: number;
+    end: number;
+  };
+  const roomSegments = (room: HousePlanRoom2D): AxisSegment[] => {
+    const polygon = getHouseRoomPlanPolygon(room);
+    return polygon.flatMap<AxisSegment>((point, index) => {
+      const next = polygon[(index + 1) % polygon.length];
+      if (Math.abs(point.x - next.x) <= 0.001) {
+        return [
+          {
+            orientation: "vertical" as const,
+            fixed: (point.x + next.x) / 2,
+            start: Math.min(point.z, next.z),
+            end: Math.max(point.z, next.z),
+          },
+        ];
+      }
+      if (Math.abs(point.z - next.z) <= 0.001) {
+        return [
+          {
+            orientation: "horizontal" as const,
+            fixed: (point.z + next.z) / 2,
+            start: Math.min(point.x, next.x),
+            end: Math.max(point.x, next.x),
+          },
+        ];
+      }
+      return [];
+    });
+  };
+
   for (let i = 0; i < rooms.length; i += 1) {
     const first = rooms[i];
-    const firstBounds = getHouseRoomBounds(first.x, first.z, first.w, first.d);
+    const firstSegments = roomSegments(first);
 
     for (let j = i + 1; j < rooms.length; j += 1) {
       const second = rooms[j];
       if (!areHouseRoomsOnSameFloor(first, second)) continue;
-      const secondBounds = getHouseRoomBounds(second.x, second.z, second.w, second.d);
-      const verticalOverlapTop = Math.max(firstBounds.top, secondBounds.top);
-      const verticalOverlapBottom = Math.min(firstBounds.bottom, secondBounds.bottom);
-      const verticalOverlap = verticalOverlapBottom - verticalOverlapTop;
-      const horizontalOverlapLeft = Math.max(firstBounds.left, secondBounds.left);
-      const horizontalOverlapRight = Math.min(firstBounds.right, secondBounds.right);
-      const horizontalOverlap = horizontalOverlapRight - horizontalOverlapLeft;
-      const rightToLeftGap = Math.abs(firstBounds.right - secondBounds.left);
-      const leftToRightGap = Math.abs(firstBounds.left - secondBounds.right);
-      const bottomToTopGap = Math.abs(firstBounds.bottom - secondBounds.top);
-      const topToBottomGap = Math.abs(firstBounds.top - secondBounds.bottom);
+      const secondSegments = roomSegments(second);
+      let bestGuide: HouseRoomAdjacencyGuide | null = null;
 
-      if (verticalOverlap >= minSharedWallMeters && rightToLeftGap <= toleranceMeters) {
-        const x = roundPlanCoordinate((firstBounds.right + secondBounds.left) / 2);
-        guides.push({
-          id: `${first.id}-${second.id}-vertical-east-west`,
-          roomIds: [first.id, second.id],
-          orientation: "vertical",
-          points: [
-            [x, roundPlanCoordinate(verticalOverlapTop)],
-            [x, roundPlanCoordinate(verticalOverlapBottom)],
-          ],
-          labelPosition: {
-            x,
-            z: roundPlanCoordinate((verticalOverlapTop + verticalOverlapBottom) / 2),
-          },
-          lengthMeters: roundPlanCoordinate(verticalOverlap),
-        });
-      } else if (verticalOverlap >= minSharedWallMeters && leftToRightGap <= toleranceMeters) {
-        const x = roundPlanCoordinate((firstBounds.left + secondBounds.right) / 2);
-        guides.push({
-          id: `${first.id}-${second.id}-vertical-west-east`,
-          roomIds: [first.id, second.id],
-          orientation: "vertical",
-          points: [
-            [x, roundPlanCoordinate(verticalOverlapTop)],
-            [x, roundPlanCoordinate(verticalOverlapBottom)],
-          ],
-          labelPosition: {
-            x,
-            z: roundPlanCoordinate((verticalOverlapTop + verticalOverlapBottom) / 2),
-          },
-          lengthMeters: roundPlanCoordinate(verticalOverlap),
-        });
+      for (const firstSegment of firstSegments) {
+        for (const secondSegment of secondSegments) {
+          if (
+            firstSegment.orientation !== secondSegment.orientation ||
+            Math.abs(firstSegment.fixed - secondSegment.fixed) > toleranceMeters
+          ) {
+            continue;
+          }
+          const overlapStart = Math.max(firstSegment.start, secondSegment.start);
+          const overlapEnd = Math.min(firstSegment.end, secondSegment.end);
+          const overlap = overlapEnd - overlapStart;
+          if (overlap < minSharedWallMeters) continue;
+
+          const fixed = roundPlanCoordinate(
+            (firstSegment.fixed + secondSegment.fixed) / 2
+          );
+          const sideSuffix =
+            firstSegment.orientation === "vertical"
+              ? `${firstSegment.fixed >= first.x ? "east" : "west"}-${
+                  secondSegment.fixed >= second.x ? "east" : "west"
+                }`
+              : `${firstSegment.fixed >= first.z ? "south" : "north"}-${
+                  secondSegment.fixed >= second.z ? "south" : "north"
+                }`;
+          const candidate: HouseRoomAdjacencyGuide =
+            firstSegment.orientation === "vertical"
+              ? {
+                  id: `${first.id}-${second.id}-vertical-${sideSuffix}`,
+                  roomIds: [first.id, second.id],
+                  orientation: "vertical",
+                  points: [
+                    [fixed, roundPlanCoordinate(overlapStart)],
+                    [fixed, roundPlanCoordinate(overlapEnd)],
+                  ],
+                  labelPosition: {
+                    x: fixed,
+                    z: roundPlanCoordinate((overlapStart + overlapEnd) / 2),
+                  },
+                  lengthMeters: roundPlanCoordinate(overlap),
+                }
+              : {
+                  id: `${first.id}-${second.id}-horizontal-${sideSuffix}`,
+                  roomIds: [first.id, second.id],
+                  orientation: "horizontal",
+                  points: [
+                    [roundPlanCoordinate(overlapStart), fixed],
+                    [roundPlanCoordinate(overlapEnd), fixed],
+                  ],
+                  labelPosition: {
+                    x: roundPlanCoordinate((overlapStart + overlapEnd) / 2),
+                    z: fixed,
+                  },
+                  lengthMeters: roundPlanCoordinate(overlap),
+                };
+          if (!bestGuide || candidate.lengthMeters > bestGuide.lengthMeters) {
+            bestGuide = candidate;
+          }
+        }
       }
 
-      if (horizontalOverlap >= minSharedWallMeters && bottomToTopGap <= toleranceMeters) {
-        const z = roundPlanCoordinate((firstBounds.bottom + secondBounds.top) / 2);
-        guides.push({
-          id: `${first.id}-${second.id}-horizontal-south-north`,
-          roomIds: [first.id, second.id],
-          orientation: "horizontal",
-          points: [
-            [roundPlanCoordinate(horizontalOverlapLeft), z],
-            [roundPlanCoordinate(horizontalOverlapRight), z],
-          ],
-          labelPosition: {
-            x: roundPlanCoordinate((horizontalOverlapLeft + horizontalOverlapRight) / 2),
-            z,
-          },
-          lengthMeters: roundPlanCoordinate(horizontalOverlap),
-        });
-      } else if (horizontalOverlap >= minSharedWallMeters && topToBottomGap <= toleranceMeters) {
-        const z = roundPlanCoordinate((firstBounds.top + secondBounds.bottom) / 2);
-        guides.push({
-          id: `${first.id}-${second.id}-horizontal-north-south`,
-          roomIds: [first.id, second.id],
-          orientation: "horizontal",
-          points: [
-            [roundPlanCoordinate(horizontalOverlapLeft), z],
-            [roundPlanCoordinate(horizontalOverlapRight), z],
-          ],
-          labelPosition: {
-            x: roundPlanCoordinate((horizontalOverlapLeft + horizontalOverlapRight) / 2),
-            z,
-          },
-          lengthMeters: roundPlanCoordinate(horizontalOverlap),
-        });
-      }
+      if (bestGuide) guides.push(bestGuide);
     }
   }
 
