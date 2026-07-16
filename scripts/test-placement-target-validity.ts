@@ -2,39 +2,62 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-const designPage = readFileSync(
-  join(process.cwd(), "components/editor/design-page/DesignPageWorkspace.tsx"),
-  "utf8"
-);
-const catalogPlacementHook = readFileSync(
+import { CATALOG_ITEMS } from "@/lib/catalog";
+import { isCatalogPlacementTargetAcceptable } from "@/lib/catalog-placement-policy";
+import {
+  makePolicyPlacement,
+  makePolicyRoom,
+  makePolicyScore,
+} from "./catalog-placement-policy-test-utils";
+
+const placement = makePolicyPlacement();
+const targetRoom = makePolicyRoom("room-current");
+
+function evaluateTarget({
+  contained = true,
+  collides = false,
+  scoreKind = "great",
+}: {
+  contained?: boolean;
+  collides?: boolean;
+  scoreKind?: "great" | "okay" | "cramped" | "blocks_path";
+}): boolean {
+  return isCatalogPlacementTargetAcceptable({
+    placement,
+    targetRoom,
+    catalogItems: CATALOG_ITEMS,
+    geometry: {
+      isContainedInRoom: () => contained,
+      collidesInRoom: () => collides,
+    },
+    scorePlacement: () => makePolicyScore(80, scoreKind),
+  });
+}
+
+assert.equal(evaluateTarget({ contained: false }), false);
+assert.equal(evaluateTarget({ collides: true }), false);
+assert.equal(evaluateTarget({ scoreKind: "blocks_path" }), false);
+assert.equal(evaluateTarget({ scoreKind: "cramped" }), false);
+assert.equal(evaluateTarget({ scoreKind: "okay" }), true);
+
+const hookSource = readFileSync(
   join(process.cwd(), "lib/useDesignPageCatalogPlacement.ts"),
   "utf8"
 );
+const designPageSource = readFileSync(
+  join(process.cwd(), "components/editor/design-page/DesignPageWorkspace.tsx"),
+  "utf8"
+);
 
+assert.match(hookSource, /evaluateCatalogPlacementTarget\(\{/);
 assert.match(
-  catalogPlacementHook,
-  /const isCatalogPlacementTargetAcceptable = useCallback/,
-  "placement targeting should share an acceptability helper"
+  hookSource,
+  /resolveCatalogPlacementRoomTarget\(\{[\s\S]*isAcceptable: isCatalogPlacementTargetAcceptable/
 );
 assert.match(
-  catalogPlacementHook,
-  /score\.kind !== "blocks_path" && score\.kind !== "cramped"/,
-  "target validity should reject path-blocking and cramped scored placements"
-);
-assert.match(
-  catalogPlacementHook,
-  /const acceptable = isCatalogPlacementTargetAcceptable\(\s*nextPlacement,\s*targetRoom\s*\)[\s\S]*valid: acceptable/,
-  "preview drag and room tap should use scored target validity"
-);
-assert.match(
-  catalogPlacementHook,
-  /valid: isCatalogPlacementTargetAcceptable\(placement, targetRoom\)/,
-  "catalog drag-over should use scored target validity"
-);
-assert.match(
-  designPage,
+  designPageSource,
   /const activePlacementTargetValid = pendingCatalogPlacement[\s\S]*\? !pendingCatalogPlacementHardInvalid/,
-  "active target outline should reflect blocked-path and cramped score states"
+  "the scene target outline should remain wired to the policy assessment"
 );
 
 console.log("Placement target validity checks passed");

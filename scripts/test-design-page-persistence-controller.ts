@@ -16,6 +16,10 @@ const zoneControllerSource = fs.readFileSync(
   path.join(root, "lib", "useDesignPageZoneController.ts"),
   "utf8"
 );
+const zoneOrchestrationSource = fs.readFileSync(
+  path.join(root, "lib", "design-page-zone-orchestration.ts"),
+  "utf8"
+);
 
 assert.ok(
   pageSource.indexOf("useDesignPageZoneController({") <
@@ -24,8 +28,13 @@ assert.ok(
 );
 assert.match(
   zoneControllerSource,
-  /const manualZones = normalizeZones[\s\S]*?const autoZones = buildAutoZones[\s\S]*?zonesEqual\(nextZones, currentZones\)/,
-  "The zone controller should own normalization before persistence effects mount."
+  /const currentZones = zonesRef\.current \?\? \[\];[\s\S]*?const nextZones = reconcileZonesForItems\(\{[\s\S]*?if \(zonesEqual\(nextZones, currentZones\)\) return;/,
+  "The zone controller should run shared normalization before persistence effects mount."
+);
+assert.match(
+  zoneOrchestrationSource,
+  /export function reconcileZonesForItems\([\s\S]*?const normalizedZones = normalizeZones\(zones, allItems\);[\s\S]*?const manualZones = normalizedZones\.filter[\s\S]*?const autoZones = buildAutoZones\(\{[\s\S]*?return \[\.\.\.manualZones, \.\.\.autoZones\];/,
+  "The zone orchestration helper should own manual and automatic zone reconciliation."
 );
 
 assert.match(

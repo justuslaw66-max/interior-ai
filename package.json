@@ -17,6 +17,7 @@
     "test:e2e:smoke": "playwright test tests/e2e/00-runtime-smoke.spec.ts",
     "test:e2e:smart-placement": "playwright test tests/e2e/17-smart-placement-smoke.spec.ts",
     "test:e2e:pro-upgrade": "playwright test tests/e2e/pro-upgrade.spec.ts",
+    "test:design-page-cleanup": "node scripts/run-design-page-cleanup-tests.mjs",
     "dev:stripe": "node scripts/dev-stripe.mjs",
     "test:stripe-pro": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-stripe-pro-billing.ts && npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-pro-billing-ui.ts",
     "test:pro-billing:local": "node scripts/dev-stripe.mjs --test",

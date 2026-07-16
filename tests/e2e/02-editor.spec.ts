@@ -1,115 +1,185 @@
-import { test, expect } from './fixtures';
+import type { Locator, Page } from "@playwright/test";
+import { expect, test } from "./fixtures";
+import {
+  addCatalogDrawerItemToRoom,
+  getSelectedItemPanel,
+  openCatalogPreview,
+} from "./variant-test-utils";
 
-test.describe('2. Editor Correctness', () => {
-  test('collision detection prevents overlapping items', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
-    await page.waitForTimeout(2000);
-    
-    await page.locator('[data-testid="scene-canvas"]').waitFor({ state: 'visible', timeout: 10000 });
-    const canvas = page.locator('[data-testid="scene-canvas"]');
-    const box = await canvas.boundingBox();
-    
-    if (!box) throw new Error('Canvas not found');
+const EDITOR_ITEM_ID =
+  "coffee-real-castlery-hugg-nesting-square-performance-basalt-closed";
 
-    // Close any open UI panels by pressing Escape
-    await page.keyboard.press('Escape');
-    await page.waitForTimeout(500);
+async function readFingerprint(page: Page): Promise<string> {
+  const marker = page.getByTestId("qa-editor-snapshot-fingerprint");
+  await expect(marker).toHaveAttribute("data-fingerprint", /[a-f0-9]{8}/);
+  const fingerprint = await marker.getAttribute("data-fingerprint");
+  if (!fingerprint) throw new Error("Editor snapshot fingerprint is missing");
+  return fingerprint;
+}
 
-    const placementPoint = { x: box.width * 0.72, y: box.height * 0.52 };
+async function readModelMillimetres(input: Locator): Promise<number> {
+  const raw = await input.getAttribute("data-model-value-mm");
+  const value = Number(raw);
+  if (!Number.isFinite(value)) {
+    throw new Error(`Invalid model position: ${raw ?? "missing"}`);
+  }
+  return value;
+}
 
-    // Place first item in the unobstructed scene area.
-    await canvas.click({ position: placementPoint });
-    await page.waitForTimeout(1000);
-    
-    // Try to place another item at same position
-    await canvas.click({ position: placementPoint });
-    await page.waitForTimeout(1000);
-    
-    // Check for collision warning using data-testid
-    const collisionToastVisible = await page.locator('[data-testid="collision-toast"]').isVisible().catch(() => false);
-    
-    // If no collision toast, verify at least one item was placed (to ensure test runs)
-    if (!collisionToastVisible) {
-      const itemCount = await page.locator('[data-testid="item-in-scene"]').count();
-      expect(itemCount).toBeGreaterThanOrEqual(0);
-    } else {
-      expect(collisionToastVisible).toBeTruthy();
-    }
+async function setupSelectedItem(page: Page) {
+  await page.route("**/api/me", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ plan: "pro", source: "playwright" }),
+    });
+  });
+  await page.addInitScript(() => {
+    window.localStorage.clear();
+    window.sessionStorage.clear();
+    window.localStorage.setItem("plan_measurement_unit", "mm");
   });
 
-  test('wall snap aligns items to walls', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
-    await page.waitForTimeout(2000);
-    
-    await page.locator('[data-testid="scene-canvas"]').waitFor({ state: 'visible', timeout: 10000 });
-    const canvas = page.locator('[data-testid="scene-canvas"]');
-    const box = await canvas.boundingBox();
-    
-    if (!box) throw new Error('Canvas not found');
-    
-    // Close any open UI panels
-    await page.keyboard.press('Escape');
-    await page.waitForTimeout(500);
-    
-    // Place item very close to left wall, but in upper right area to avoid UI
-    await canvas.click({ position: { x: box.width * 0.8, y: box.height * 0.3 } });
-    await page.waitForTimeout(1500);
-    
-    // Verify snap toast appears
-    const snapToastVisible = await page.locator('[data-testid="snap-toast"]').isVisible().catch(() => false);
-    
-    // If no snap, just verify an item was placed
-    if (!snapToastVisible) {
-      const itemCount = await page.locator('[data-testid="item-in-scene"]').count();
-      expect(itemCount).toBeGreaterThanOrEqual(0);
-    } else {
-      expect(snapToastVisible).toBeTruthy();
-    }
+  const response = await page.goto("/design?mode=designer", {
+    waitUntil: "domcontentloaded",
+  });
+  expect(response?.status()).toBe(200);
+  await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
+    timeout: 30_000,
   });
 
-  test('undo/redo restores state correctly (one drag = one undo)', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
-    await page.waitForTimeout(2000);
-    
-    await page.locator('[data-testid="scene-canvas"]').waitFor({ state: 'visible', timeout: 10000 });
-    const canvas = page.locator('[data-testid="scene-canvas"]');
-    const box = await canvas.boundingBox();
-    
-    if (!box) throw new Error('Canvas not found');
-    
-    // Close UI panels
-    await page.keyboard.press('Escape');
-    await page.waitForTimeout(500);
-    
-    // Place item
-    await canvas.click({ position: { x: box.width * 0.6, y: box.height * 0.5 } });
-    await page.waitForTimeout(1000);
-    
-    // Get item count before undo
-    const itemCountBefore = await page.locator('[data-testid="item-in-scene"]').count();
-    
-    if (itemCountBefore > 0) {
-      // Undo with Cmd+Z (macOS) or Ctrl+Z (Windows/Linux)
-      await page.keyboard.press('Meta+Z');
-      await page.waitForTimeout(500);
-      
-      // Item should be removed (count should decrease by 1)
-      const itemCountAfter = await page.locator('[data-testid="item-in-scene"]').count();
-      expect(itemCountAfter).toBe(itemCountBefore - 1);
-      
-      // Redo
-      await page.keyboard.press('Meta+Shift+Z');
-      await page.waitForTimeout(500);
-      
-      // Item should be restored
-      const itemCountRedone = await page.locator('[data-testid="item-in-scene"]').count();
-      expect(itemCountRedone).toBe(itemCountBefore);
-    } else {
-      // If no items placed, that's ok - just verify count is 0
-      expect(itemCountBefore).toBe(0);
-    }
+  const newPlan = page.getByTestId("editor-command-new-plan");
+  await expect(newPlan).toBeVisible();
+  await newPlan.click();
+  const replaceCurrent = page.getByTestId("new-plan-replace-current");
+  if (await replaceCurrent.isVisible({ timeout: 3_000 }).catch(() => false)) {
+    await replaceCurrent.click();
+  }
+  await expect(page.getByTestId("starter-floor-plan-picker")).toBeVisible();
+  await expect(page.getByTestId("apply-plan-template-studio")).toBeVisible();
+  await page.getByTestId("apply-plan-template-studio").click();
+  await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
+    "4 rooms",
+  );
+
+  const opened = await openCatalogPreview(page, EDITOR_ITEM_ID, "Hugg");
+  expect(opened, "The deterministic Hugg editor fixture must be available").toBe(
+    true,
+  );
+  await expect(page.getByTestId("catalog-item-drawer")).toContainText(
+    "Hugg Nesting Square Coffee Table",
+  );
+  await addCatalogDrawerItemToRoom(page);
+
+  const selectedPanel = getSelectedItemPanel(page);
+  await expect(selectedPanel).toBeVisible({ timeout: 15_000 });
+  await expect(selectedPanel).toContainText("Hugg Nesting Square Coffee Table");
+
+  const controlsToggle = selectedPanel.getByTestId(
+    "selected-item-advanced-controls-toggle",
+  );
+  if ((await controlsToggle.getAttribute("aria-expanded")) !== "true") {
+    await controlsToggle.click();
+  }
+
+  const xInput = selectedPanel.getByTestId("selected-item-position-x");
+  const zInput = selectedPanel.getByTestId("selected-item-position-z");
+  await expect(xInput).toBeVisible();
+  await expect(zInput).toBeVisible();
+  return { selectedPanel, xInput, zInput };
+}
+
+test.describe("2. Editor Correctness", () => {
+  test("collision detection rejects an overlapping precision move", async ({
+    page,
+  }) => {
+    test.setTimeout(120_000);
+    const { selectedPanel, xInput, zInput } = await setupSelectedItem(page);
+    const occupiedX = await readModelMillimetres(xInput);
+    const occupiedZ = await readModelMillimetres(zInput);
+
+    await selectedPanel.getByTestId("selected-item-duplicate").click();
+    const duplicateFingerprint = await readFingerprint(page);
+    const duplicateX = await readModelMillimetres(xInput);
+    const duplicateZ = await readModelMillimetres(zInput);
+    expect([duplicateX, duplicateZ]).not.toEqual([occupiedX, occupiedZ]);
+
+    await xInput.fill(String(occupiedX));
+    await xInput.press("Enter");
+    await zInput.fill(String(occupiedZ));
+    await zInput.press("Enter");
+
+    await expect(page.getByTestId("collision-toast")).toContainText("Blocked by", {
+      timeout: 5_000,
+    });
+    await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute(
+      "data-fingerprint",
+      duplicateFingerprint,
+    );
+    expect(await readModelMillimetres(xInput)).toBe(duplicateX);
+    expect(await readModelMillimetres(zInput)).toBe(duplicateZ);
+  });
+
+  test("wall snap moves the selected item once and leaves it stable", async ({
+    page,
+  }) => {
+    test.setTimeout(120_000);
+    const { selectedPanel, xInput, zInput } = await setupSelectedItem(page);
+    const beforeFingerprint = await readFingerprint(page);
+    const before = [
+      await readModelMillimetres(xInput),
+      await readModelMillimetres(zInput),
+    ];
+
+    await selectedPanel.getByTestId("selected-item-snap-wall").click();
+    await expect
+      .poll(() => readFingerprint(page), { timeout: 10_000 })
+      .not.toBe(beforeFingerprint);
+    const snappedFingerprint = await readFingerprint(page);
+    const snapped = [
+      await readModelMillimetres(xInput),
+      await readModelMillimetres(zInput),
+    ];
+    expect(snapped).not.toEqual(before);
+
+    await selectedPanel.getByTestId("selected-item-snap-wall").click();
+    await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute(
+      "data-fingerprint",
+      snappedFingerprint,
+    );
+    expect([
+      await readModelMillimetres(xInput),
+      await readModelMillimetres(zInput),
+    ]).toEqual(snapped);
+  });
+
+  test("one duplicate is restored by one undo and one redo", async ({ page }) => {
+    test.setTimeout(120_000);
+    const { selectedPanel } = await setupSelectedItem(page);
+    const beforeDuplicate = await readFingerprint(page);
+
+    await selectedPanel.getByTestId("selected-item-duplicate").click();
+    await expect
+      .poll(() => readFingerprint(page), { timeout: 10_000 })
+      .not.toBe(beforeDuplicate);
+    const afterDuplicate = await readFingerprint(page);
+
+    const undo = page.getByTestId("command-undo");
+    await expect(undo).toBeEnabled();
+    await expect(undo).toHaveAccessibleName(/Undo Duplicate Hugg/i);
+    await undo.click();
+    await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute(
+      "data-fingerprint",
+      beforeDuplicate,
+    );
+
+    const redo = page.getByTestId("command-redo");
+    await expect(redo).toBeEnabled();
+    await expect(redo).toHaveAccessibleName(/Redo Duplicate Hugg/i);
+    await redo.click();
+    await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute(
+      "data-fingerprint",
+      afterDuplicate,
+    );
   });
 });

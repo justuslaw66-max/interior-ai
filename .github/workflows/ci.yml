@@ -68,6 +68,12 @@ jobs:
       - name: Apply database migrations
         run: npx prisma migrate deploy
 
+      - name: Lint (zero warnings)
+        run: npm run lint -- --max-warnings=0
+
+      - name: Verify design-page cleanup guards
+        run: npm run test:design-page-cleanup
+
       - name: Typecheck
         run: npm run typecheck
 

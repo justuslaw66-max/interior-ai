@@ -21,9 +21,13 @@ const overlaysSource = readSource(
   "components/editor/design-page/DesignPagePlanCanvasOverlays.tsx"
 );
 const modelSource = readSource("lib/design-page-plan-canvas-overlays.ts");
+const planPresentationSource = readSource(
+  "lib/useDesignPagePlanPresentationModel.ts"
+);
 const normalizedWorkspace = normalizeWhitespace(workspaceSource);
 const normalizedViewportOverlay = normalizeWhitespace(viewportOverlaySource);
 const normalizedModel = normalizeWhitespace(modelSource);
+const normalizedPlanPresentation = normalizeWhitespace(planPresentationSource);
 
 assert.match(
   workspaceSource,
@@ -31,9 +35,9 @@ assert.match(
   "Workspace should import the viewport-overlay boundary."
 );
 assert.match(
-  workspaceSource,
-  /const planCanvasOverlaysState = resolveDesignPagePlanCanvasOverlaysState\(\{/,
-  "Workspace should continue to resolve live plan-canvas policy."
+  planPresentationSource,
+  /const planCanvasOverlaysState\s*=\s*resolveDesignPagePlanCanvasOverlaysState\(\{/,
+  "The plan presentation model should resolve live plan-canvas policy."
 );
 assert.ok(
   normalizedWorkspace.includes("planCanvas: planCanvasOverlaysState"),
@@ -75,20 +79,28 @@ for (const componentName of [
 }
 
 assert.ok(
-  normalizedWorkspace.includes(
-    '!isClientPreview && !isDesigner && viewMode === "2d" && editorMode === "design"'
+  normalizedPlanPresentation.includes(
+    '!layout.isClientPreview && !layout.isDesigner && layout.viewMode === "2d" && presentation.editorMode === "design"'
   ),
   "The shared guided-actions eligibility gate should remain exact."
 );
 
 for (const expected of [
-  "guidedActionsEnabled: planGuidedActionsEnabled",
-  "activeInteraction: activePlanCanvasInteraction",
-  "designControlsPanelVisible: designControlsPanelVisibleForLayout",
-  "roomCount: housePlan2D.rooms.length",
-  "floorPlanCalibrationPointCount: floorPlanCalibrationPoints.length",
-  "floorPlanTraceRoomPointCount: floorPlanTraceRoomPoints.length",
-  "floorPlanTraceOpeningPointCount: floorPlanTraceOpeningPoints.length",
+  "guidedActionsEnabled: presentation.planGuidedActionsEnabled",
+  "activeInteraction: presentation.activePlanCanvasInteraction",
+  "designControlsPanelVisible: layout.designControlsPanelVisible",
+  "roomCount: layout.housePlanRooms.length",
+  "floorPlanCalibrationPointCount: presentation.floorPlanCalibrationPointCount",
+  "floorPlanTraceRoomPointCount: presentation.floorPlanTraceRoomPointCount",
+  "floorPlanTraceOpeningPointCount: presentation.floorPlanTraceOpeningPointCount",
+] as const) {
+  assert.ok(
+    normalizedPlanPresentation.includes(expected),
+    "The plan presentation model should preserve " + expected + "."
+  );
+}
+
+for (const expected of [
   'startScale: () => { setGuidedPlanStartMode("upload"); handleFloorPlanCalibrationModeChange(true); }',
   'startRoomDraw: () => { setGuidedPlanStartMode("draw"); handleFloorPlanDrawRoomModeChange("rectangle_wall"); }',
   "toggle: () => setPlanGuidedActionsEnabled((enabled) => !enabled)",

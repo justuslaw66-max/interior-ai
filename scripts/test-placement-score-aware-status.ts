@@ -2,15 +2,103 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-const scenePreviewLayer = readFileSync(
-  join(process.cwd(), "components/editor/design-page/DesignScenePreviewLayer.tsx"),
-  "utf8"
+import {
+  isCatalogPlacementScoreHardInvalid,
+  resolveCatalogPlacementAssessment,
+  resolveNextLastValidCatalogPlacement,
+} from "@/lib/catalog-placement-policy";
+import {
+  makePolicyPlacement,
+  makePolicyScore,
+} from "./catalog-placement-policy-test-utils";
+
+const pendingPlacement = makePolicyPlacement({ position: [1, 0, 0] });
+const lastValidPlacement = makePolicyPlacement({ position: [0, 0, 0] });
+const pathScore = makePolicyScore(25, "blocks_path", "Move away from the doorway");
+const crampedScore = makePolicyScore(40, "cramped");
+
+assert.equal(isCatalogPlacementScoreHardInvalid(pathScore), true);
+assert.equal(isCatalogPlacementScoreHardInvalid(crampedScore), true);
+assert.equal(isCatalogPlacementScoreHardInvalid(makePolicyScore(70, "okay")), false);
+
+const pathAssessment = resolveCatalogPlacementAssessment({
+  pendingPlacement,
+  blocked: false,
+  blockerLabel: null,
+  targetRoomName: "Living room",
+  score: pathScore,
+  improvement: null,
+  restorablePlacement: null,
+});
+assert.equal(pathAssessment.scoreHardInvalid, true);
+assert.equal(pathAssessment.hardInvalid, true);
+assert.equal(pathAssessment.statusLabel, "Blocks walking path");
+
+const crampedAssessment = resolveCatalogPlacementAssessment({
+  pendingPlacement,
+  blocked: false,
+  blockerLabel: null,
+  targetRoomName: "Living room",
+  score: crampedScore,
+  improvement: null,
+  restorablePlacement: null,
+});
+assert.equal(crampedAssessment.hardInvalid, true);
+assert.equal(crampedAssessment.statusLabel, "Cramped placement");
+
+const blockerAssessment = resolveCatalogPlacementAssessment({
+  pendingPlacement,
+  blocked: true,
+  blockerLabel: "Coffee table",
+  targetRoomName: "Living room",
+  score: null,
+  improvement: null,
+  restorablePlacement: null,
+});
+assert.equal(blockerAssessment.statusLabel, "Blocked by Coffee table");
+
+const validAssessment = resolveCatalogPlacementAssessment({
+  pendingPlacement,
+  blocked: false,
+  blockerLabel: null,
+  targetRoomName: "Living room",
+  score: makePolicyScore(88),
+  improvement: null,
+  restorablePlacement: null,
+});
+assert.equal(validAssessment.hardInvalid, false);
+assert.equal(validAssessment.statusLabel, "Valid placement");
+
+assert.equal(
+  resolveNextLastValidCatalogPlacement({
+    currentLastValidPlacement: lastValidPlacement,
+    pendingPlacement,
+    hardInvalid: true,
+  }),
+  lastValidPlacement,
+  "hard-invalid previews should preserve the latest valid placement"
 );
-const catalogPlacementHook = readFileSync(
+assert.equal(
+  resolveNextLastValidCatalogPlacement({
+    currentLastValidPlacement: lastValidPlacement,
+    pendingPlacement,
+    hardInvalid: false,
+  }),
+  pendingPlacement
+);
+
+const hookSource = readFileSync(
   join(process.cwd(), "lib/useDesignPageCatalogPlacement.ts"),
   "utf8"
 );
-const confirmPanel = readFileSync(
+const scenePreviewSource = readFileSync(
+  join(
+    process.cwd(),
+    "components/editor/design-page/DesignScenePreviewLayer.tsx"
+  ),
+  "utf8"
+);
+const confirmPanelSource = readFileSync(
   join(
     process.cwd(),
     "components/editor/design-page/CatalogPlacementConfirmPanel.tsx"
@@ -18,45 +106,16 @@ const confirmPanel = readFileSync(
   "utf8"
 );
 
+assert.match(hookSource, /resolveCatalogPlacementAssessment\(\{/);
+assert.match(hookSource, /resolveNextLastValidCatalogPlacement\(\{/);
 assert.match(
-  catalogPlacementHook,
-  /const pendingCatalogPlacementScoreHardInvalid =[\s\S]*pendingCatalogPlacementScore\?\.kind === "blocks_path"[\s\S]*pendingCatalogPlacementScore\?\.kind === "cramped"/,
-  "placement preview should treat blocked-path and cramped scores as hard invalid"
+  confirmPanelSource,
+  /data-testid="catalog-placement-status"/
 );
 assert.match(
-  catalogPlacementHook,
-  /const pendingCatalogPlacementHardInvalid = Boolean/,
-  "placement preview should share one hard-invalid flag"
-);
-assert.match(
-  catalogPlacementHook,
-  /const pendingCatalogPlacementStatusLabel = pendingCatalogPlacementBlocked[\s\S]*Blocks walking path[\s\S]*Cramped placement/,
-  "placement status should explain score-invalid placements"
-);
-assert.match(
-  confirmPanel,
-  /pendingCatalogPlacementHardInvalid \? "border-red-200" : "border-emerald-200"/,
-  "placement panel border should use score-aware hard-invalid state"
-);
-assert.match(
-  confirmPanel,
-  /data-testid="catalog-placement-status"[\s\S]*pendingCatalogPlacementHardInvalid[\s\S]*\{pendingCatalogPlacementStatusLabel\}/,
-  "placement status pill should use score-aware hard-invalid state and label"
-);
-assert.match(
-  confirmPanel,
-  /disabled=\{[\s\S]*pendingCatalogPlacementHardInvalid &&[\s\S]*!shouldConfirmImprovedCatalogPlacement &&[\s\S]*!shouldConfirmRestoredCatalogPlacement/,
-  "confirm should be disabled for score-invalid placements without a fallback"
-);
-assert.match(
-  scenePreviewLayer,
-  /color=\{state\.placement\.hardInvalid \? "#ef4444" : "#22c55e"\}/,
-  "placement ghost fill should use score-aware hard-invalid state"
-);
-assert.match(
-  catalogPlacementHook,
-  /if \(!pendingCatalogPlacementHardInvalid\) \{[\s\S]*setLastValidPlacement\(pendingPlacement\)/,
-  "last-valid memory should not store score-invalid placements"
+  scenePreviewSource,
+  /state\.placement\.hardInvalid/,
+  "the scene preview should remain wired to the policy hard-invalid flag"
 );
 
 console.log("Placement score-aware status checks passed");

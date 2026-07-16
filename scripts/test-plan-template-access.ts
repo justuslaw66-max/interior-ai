@@ -327,8 +327,14 @@ assert.match(
 
 assert.match(
   floorPlanControllerSource,
-  /setPlanOpenings\(templateOpenings\);[\s\S]*?setPlanFixedElements\(\[\]\);/,
-  "Applying a template should clear standalone built-ins so old default rectangles do not float outside the new plan."
+  /const templateFixedElements: FixedElement2D\[\] = \(template\.referenceZones \?\? \[\]\)\.map\([\s\S]*?kind: "reference_zone"[\s\S]*?locked: zone\.locked \?\? true/,
+  "Applying a template should convert its reference zones into locked plan elements."
+);
+
+assert.match(
+  floorPlanControllerSource,
+  /setPlanOpenings\(templateOpenings\);[\s\S]*?setPlanFixedElements\(templateFixedElements\);/,
+  "Applying a template should replace standalone built-ins with template-owned reference zones so stale rectangles cannot survive."
 );
 
 assert.match(

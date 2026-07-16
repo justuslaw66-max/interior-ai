@@ -2,11 +2,65 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-const catalogPlacementHook = readFileSync(
+import { findBestCatalogRoomPlacement } from "@/lib/catalog-placement-policy";
+import {
+  makePolicyPlacement,
+  makePolicyRoom,
+  makePolicyScore,
+} from "./catalog-placement-policy-test-utils";
+
+const currentRoom = makePolicyRoom("room-current", "Current room");
+const crampedRoom = makePolicyRoom("room-cramped", "Cramped room");
+const betterRoom = makePolicyRoom("room-better", "Better room");
+const okayRoom = makePolicyRoom("room-okay", "Okay room");
+const visitedRoomIds: string[] = [];
+
+const recommendation = findBestCatalogRoomPlacement({
+  pendingPlacement: makePolicyPlacement(),
+  currentScore: makePolicyScore(70, "okay"),
+  rooms: [currentRoom, crampedRoom, betterRoom, okayRoom],
+  currentRoomId: currentRoom.id,
+  findPlacement: (_productId, variantId, _purchaseOptionId, room) => {
+    visitedRoomIds.push(room.id);
+    return makePolicyPlacement({
+      roomId: room.id,
+      variantId,
+      position: [1, 0, 0],
+    });
+  },
+  scorePlacement: (_placement, room) =>
+    room.id === crampedRoom.id
+      ? makePolicyScore(99, "blocks_path")
+      : room.id === betterRoom.id
+        ? makePolicyScore(86)
+        : makePolicyScore(80),
+});
+
+assert.ok(recommendation);
+assert.equal(recommendation.placement.roomId, betterRoom.id);
+assert.equal(recommendation.roomName, betterRoom.name);
+assert.equal(recommendation.scoreDelta, 16);
+assert.equal(visitedRoomIds.includes(currentRoom.id), false);
+
+assert.equal(
+  findBestCatalogRoomPlacement({
+    pendingPlacement: makePolicyPlacement(),
+    currentScore: makePolicyScore(83),
+    rooms: [currentRoom, betterRoom],
+    currentRoomId: currentRoom.id,
+    findPlacement: (_productId, variantId, _purchaseOptionId, room) =>
+      makePolicyPlacement({ roomId: room.id, variantId }),
+    scorePlacement: () => makePolicyScore(86),
+  }),
+  null,
+  "tiny score gains should not produce a best-room recommendation"
+);
+
+const hookSource = readFileSync(
   join(process.cwd(), "lib/useDesignPageCatalogPlacement.ts"),
   "utf8"
 );
-const confirmPanel = readFileSync(
+const confirmPanelSource = readFileSync(
   join(
     process.cwd(),
     "components/editor/design-page/CatalogPlacementConfirmPanel.tsx"
@@ -14,45 +68,9 @@ const confirmPanel = readFileSync(
   "utf8"
 );
 
-assert.match(
-  catalogPlacementHook,
-  /const pendingCatalogBestRoomPlacement = useMemo/,
-  "placement preview should derive the best-scored room recommendation"
-);
-assert.match(
-  catalogPlacementHook,
-  /if \(room\.id === currentRoomId\) continue/,
-  "best-room recommendation should compare against other rooms"
-);
-assert.match(
-  catalogPlacementHook,
-  /score\.kind === "blocks_path" \|\| score\.kind === "cramped"/,
-  "best-room recommendation should skip blocked or cramped room placements"
-);
-assert.match(
-  catalogPlacementHook,
-  /best\.scoreDelta < 4/,
-  "best-room recommendation should avoid noisy tiny score gains"
-);
-assert.match(
-  catalogPlacementHook,
-  /const movePendingCatalogPlacementToBestRoom = useCallback/,
-  "placement panel should expose an action for moving to the best room"
-);
-assert.match(
-  confirmPanel,
-  /data-testid="catalog-placement-best-room-hint"/,
-  "placement score card should explain the best-room recommendation"
-);
-assert.match(
-  confirmPanel,
-  /data-testid="catalog-placement-best-room"/,
-  "placement action row should expose the best-room button"
-);
-assert.match(
-  catalogPlacementHook,
-  /Moved preview to \$\{pendingCatalogBestRoomPlacement\.roomName\}/,
-  "best-room action should confirm the target room"
-);
+assert.match(hookSource, /findBestCatalogRoomPlacement\(\{/);
+assert.match(hookSource, /movePendingCatalogPlacementToBestRoom/);
+assert.match(confirmPanelSource, /data-testid="catalog-placement-best-room-hint"/);
+assert.match(confirmPanelSource, /data-testid="catalog-placement-best-room"/);
 
 console.log("Placement best-room checks passed");

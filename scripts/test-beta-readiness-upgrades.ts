@@ -16,7 +16,10 @@ import {
   rankPlacementRecommendations,
 } from "../lib/placement-recommendations";
 import { buildRoomFixPreviewFromRecommendations } from "../lib/room-fix-preview";
-import { buildRoomHealthSummary } from "../lib/room-health-summary";
+import {
+  buildRoomHealthSummary,
+  resolveDesignPageRoomHealthReviewTarget,
+} from "../lib/room-health-summary";
 import { buildShareExportFidelitySummary } from "../lib/share-export-fidelity";
 import { createRoom, type DesignSnapshot } from "../lib/room-types";
 
@@ -38,6 +41,14 @@ const designPageOnboardingSource = readFileSync(
 );
 const designPageQaMarkersSource = readFileSync(
   join(root, "components/editor/design-page/DesignPageQaMarkers.tsx"),
+  "utf8"
+);
+const designPageRoomReadModelSource = readFileSync(
+  join(root, "lib/useDesignPageRoomReadModel.ts"),
+  "utf8"
+);
+const designPagePlanPresentationSource = readFileSync(
+  join(root, "lib/useDesignPagePlanPresentationModel.ts"),
   "utf8"
 );
 const betaStartPanelSource = readFileSync(
@@ -299,6 +310,51 @@ const roomHealth = buildRoomHealthSummary({
 });
 assert.equal(roomHealth.itemCount, 1);
 assert.ok(roomHealth.placementScore >= 0 && roomHealth.placementScore <= 100);
+assert.equal(
+  resolveDesignPageRoomHealthReviewTarget({
+    ...roomHealth,
+    level: "ready",
+  }),
+  null
+);
+assert.equal(
+  resolveDesignPageRoomHealthReviewTarget({
+    ...roomHealth,
+    level: "blocked",
+    shoppingNeedsReviewCount: 1,
+  }),
+  "shopping"
+);
+assert.equal(
+  resolveDesignPageRoomHealthReviewTarget({
+    ...roomHealth,
+    level: "blocked",
+    shoppingNeedsReviewCount: 0,
+    exportIssueCount: 1,
+  }),
+  "export"
+);
+assert.equal(
+  resolveDesignPageRoomHealthReviewTarget({
+    ...roomHealth,
+    level: "review",
+    shoppingNeedsReviewCount: 0,
+    exportIssueCount: 0,
+    crampedPlacementCount: 1,
+  }),
+  "placement"
+);
+assert.equal(
+  resolveDesignPageRoomHealthReviewTarget({
+    ...roomHealth,
+    level: "review",
+    shoppingNeedsReviewCount: 0,
+    exportIssueCount: 0,
+    blockedPlacementCount: 0,
+    crampedPlacementCount: 0,
+  }),
+  "plan"
+);
 const roomFixPreview = buildRoomFixPreviewFromRecommendations(roomHealth, ranked);
 assert.equal(roomFixPreview.requiresLayoutVersionRestore, true);
 assert.ok(roomFixPreview.fixes.length >= 1);
@@ -318,9 +374,9 @@ assert.match(
   "room status bar should expose the active room next action."
 );
 assert.match(
-  designPageSource,
+  designPageRoomReadModelSource,
   /const activeRoomHealthSummary = useMemo/,
-  "design page should compute active room health from live editor state."
+  "the room read model should compute active room health from live editor state."
 );
 assert.match(
   designPageEditorCommandBarSource,
@@ -333,9 +389,9 @@ assert.match(
   "the workspace should pass live room health through the command-bar boundary."
 );
 assert.match(
-  designPageSource,
+  designPageRoomReadModelSource,
   /const reviewActiveRoomHealth = useCallback/,
-  "design page should route room health review into the relevant workflow."
+  "the room read model should route room health review into the relevant workflow."
 );
 assert.match(
   designPageEditorCommandBarSource,
@@ -348,9 +404,14 @@ assert.match(
   "the workspace should pass the active room review action through the command-bar boundary."
 );
 assert.match(
+  designPagePlanPresentationSource,
+  /const compactRoomPlanStatusBar\s*=\s*[\s\S]*showPlanGuidedActionsToggle \|\| layout\.commercePanelVisible;[\s\S]*const showRoomPlanStatusHealth = !showPlanGuidedActionsToggle;/,
+  "the plan presentation model should own compact and health-visibility policy."
+);
+assert.match(
   designPageSource,
-  /const compactRoomPlanStatusBar = showPlanGuidedActionsToggle \|\| commercePanelVisibleForLayout;[\s\S]*compactRoomStatus:\s*compactRoomPlanStatusBar,[\s\S]*showRoomHealth:\s*showRoomPlanStatusHealth,/,
-  "the workspace should retain compact and health-visibility policy at the command-bar boundary."
+  /compactRoomStatus:\s*compactRoomPlanStatusBar,[\s\S]*showRoomHealth:\s*showRoomPlanStatusHealth,/,
+  "the workspace should pass compact and health-visibility policy through the command-bar boundary."
 );
 assert.match(
   designPageEditorCommandBarSource,

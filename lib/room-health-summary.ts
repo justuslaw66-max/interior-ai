@@ -21,6 +21,27 @@ export type RoomHealthSummary = {
   nextAction: string;
 };
 
+export type DesignPageRoomHealthReviewTarget =
+  | "shopping"
+  | "export"
+  | "placement"
+  | "plan";
+
+export function resolveDesignPageRoomHealthReviewTarget(
+  summary: RoomHealthSummary | null
+): DesignPageRoomHealthReviewTarget | null {
+  if (!summary || summary.level === "ready") return null;
+  if (summary.shoppingNeedsReviewCount > 0) return "shopping";
+  if (summary.exportIssueCount > 0) return "export";
+  if (
+    summary.blockedPlacementCount > 0 ||
+    summary.crampedPlacementCount > 0
+  ) {
+    return "placement";
+  }
+  return "plan";
+}
+
 type BuildRoomHealthSummaryParams = {
   room: RoomSnapshot;
   catalogItems: Record<string, CatalogItemSchema | undefined>;

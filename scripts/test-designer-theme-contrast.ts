@@ -290,6 +290,10 @@ const designPageSource = fs.readFileSync(
   path.join(root, "components", "editor", "design-page", "DesignPageWorkspace.tsx"),
   "utf8"
 );
+const planPresentationSource = fs.readFileSync(
+  path.join(root, "lib", "useDesignPagePlanPresentationModel.ts"),
+  "utf8"
+);
 const designPageCommandBarSource = fs.readFileSync(
   path.join(
     root,
@@ -418,9 +422,9 @@ assert.match(
   "Pro material publication statuses should use theme-first semantic status classes."
 );
 assert.match(
-  designPageSource,
-  /showDesignerTheme\s*&&\s*viewMode\s*===\s*"3d"\s*\?\s*"#dedfdf"\s*:\s*"#ffffff"/,
-  "Pro 3D should use a soft neutral canvas while consumer and 2D views stay white."
+  planPresentationSource,
+  /presentation\.showDesignerTheme\s*&&\s*layout\.viewMode\s*===\s*"3d"\s*\?\s*"#dedfdf"\s*:\s*"#ffffff"/,
+  "The plan presentation model should keep Pro 3D neutral while consumer and 2D views stay white."
 );
 assert.match(
   designSceneCanvasSource,

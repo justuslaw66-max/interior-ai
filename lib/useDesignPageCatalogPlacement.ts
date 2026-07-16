@@ -27,29 +27,45 @@ import {
 } from "@/lib/catalog-placement";
 import type { CatalogItemSchema, DimensionsMm } from "@/lib/catalog-schema";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
-import { mapToTopCategory } from "@/lib/catalog/view-builders";
 import { computeCirculationAnalysis } from "@/lib/circulation-analysis";
-import {
-  getFurnitureWallInset,
-  type AABB,
-} from "@/lib/design-page-geometry";
+import type { AABB } from "@/lib/design-page-geometry";
 import {
   ROOM_DIMENSION_DEFAULTS,
   type HousePlanRoom2D,
 } from "@/lib/design-page-house-plan";
-import { getRotatedFootprint } from "@/lib/design-page-utils";
 import type { RoomOpening2D } from "@/lib/editorScene";
-import {
-  scoreManualPlacement,
-  type ManualPlacementScore,
-} from "@/lib/manual-placement-scoring";
+import type { ManualPlacementScore } from "@/lib/manual-placement-scoring";
 import { createLayoutVersion } from "@/lib/layout-versions";
 import type {
   DesignItem,
   LayoutVersion,
   RoomSnapshot,
-  ZoneMin,
 } from "@/lib/room-types";
+import {
+  findBestCatalogRoomPlacement,
+  findBestCatalogVariantPlacement,
+  findCatalogPlacementImprovement,
+  findRestorableCatalogPlacement,
+  findSmartCatalogPlacement as findSmartCatalogPlacementPolicy,
+  isCatalogPlacementTargetAcceptable as evaluateCatalogPlacementTarget,
+  resolveCatalogPlacementAssessment,
+  resolveCatalogPlacementConfirmation,
+  resolveCatalogPlacementQuality,
+  resolveCatalogPlacementRoomTarget,
+  resolveNextLastValidCatalogPlacement,
+  scoreCatalogPlacementCandidate,
+  type CatalogBestRoomPlacement,
+  type CatalogBestVariantPlacement,
+  type CatalogPlacementImprovement,
+  type CatalogPlacementPreviewTarget,
+  type CatalogPlacementQuality,
+  type CatalogPlacementRoomClampQuery,
+  type CatalogPlacementRoomCollisionQuery,
+  type CatalogPlacementRoomContainmentQuery,
+  type ScoreCatalogPlacement,
+} from "@/lib/catalog-placement-policy";
+
+export type { CatalogPlacementPreviewTarget } from "@/lib/catalog-placement-policy";
 
 type CatalogPlacementDimensions = { w: number; d: number };
 type CatalogPlacementExcludedItems = string | string[] | undefined;
@@ -76,15 +92,6 @@ type CatalogPlacementCollisionAgainstQuery = (
   candidateItems: DesignItem[]
 ) => boolean;
 
-type CatalogPlacementRoomCollisionQuery = (
-  room: RoomSnapshot,
-  productId: string,
-  position: [number, number, number],
-  rotationY: number,
-  dimsMm: CatalogPlacementDimensions,
-  excludedInstanceId?: CatalogPlacementExcludedItems
-) => boolean;
-
 type CatalogPlacementRoomBlockerQuery = (
   room: RoomSnapshot,
   productId: string,
@@ -93,22 +100,6 @@ type CatalogPlacementRoomBlockerQuery = (
   dimsMm: CatalogPlacementDimensions,
   excludedInstanceId?: CatalogPlacementExcludedItems
 ) => DesignItem | null;
-
-type CatalogPlacementRoomContainmentQuery = (
-  room: RoomSnapshot,
-  position: [number, number, number],
-  rotationY: number,
-  dimsMm: CatalogPlacementDimensions
-) => boolean;
-
-type CatalogPlacementRoomClampQuery = (
-  room: RoomSnapshot,
-  x: number,
-  z: number,
-  itemWidth: number,
-  itemDepth: number,
-  rotationY?: number
-) => [number, number];
 
 export type DesignPageCatalogPlacementState = {
   pendingPlacement: PendingCatalogPlacement | null;
@@ -144,13 +135,6 @@ type CommitCatalogPlacementItems = (
   actionName?: string,
   options?: CommitItemsToRoomOptions
 ) => DesignItem[] | null;
-
-export type CatalogPlacementPreviewTarget = {
-  roomId: string;
-  label: string;
-  valid: boolean;
-  kind: "preview";
-};
 
 export type CatalogPlacementTargetResult = {
   handled: true;
@@ -196,25 +180,6 @@ export type DesignPageCatalogPlacementAdapters = {
 export type UseDesignPageCatalogPlacementOptions = {
   configuration: DesignPageCatalogPlacementConfiguration;
   adapters: DesignPageCatalogPlacementAdapters;
-};
-
-type PlacementQuality = {
-  label: string;
-  tone: "good" | "warn" | "bad";
-};
-
-type PlacementImprovement = {
-  placement: PendingCatalogPlacement;
-  score: number;
-  scoreDelta: number;
-};
-
-type BestRoomPlacement = PlacementImprovement & {
-  roomName: string;
-};
-
-type BestVariantPlacement = PlacementImprovement & {
-  variantLabel: string;
 };
 
 export function useDesignPageCatalogPlacement({
@@ -310,6 +275,19 @@ export function useDesignPageCatalogPlacement({
         }),
       [getItemAABB]
     );
+
+  const scoreCatalogPlacement = useCallback<ScoreCatalogPlacement>(
+    (placement, room, instanceId, blocker = null) =>
+      scoreCatalogPlacementCandidate({
+        placement,
+        room,
+        instanceId,
+        catalogItems: CATALOG_ITEMS,
+        openings: planOpenings,
+        blocker,
+      }),
+    [planOpenings]
+  );
 
   const pendingCatalogPlacementScene = useMemo(() => {
     const planRoom = houseRoomById.get(pendingPlacement?.roomId ?? activeRoomId);
@@ -420,140 +398,83 @@ export function useDesignPageCatalogPlacement({
     [getItemDisplayName, pendingCatalogPlacementBlocker]
   );
 
-  const restorableCatalogPlacement = useMemo(() => {
-    if (!pendingPlacement || !lastValidPlacement) return null;
-    if (pendingPlacement.productId !== lastValidPlacement.productId) return null;
-    if (pendingPlacement.variantId !== lastValidPlacement.variantId) return null;
-    if (pendingPlacement.purchaseOptionId !== lastValidPlacement.purchaseOptionId) return null;
-    const distance = Math.hypot(
-      pendingPlacement.position[0] - lastValidPlacement.position[0],
-      pendingPlacement.position[2] - lastValidPlacement.position[2]
-    );
-    const rotationDelta = Math.abs(
-      pendingPlacement.rotationY - lastValidPlacement.rotationY
-    );
-    if (distance < 0.08 && rotationDelta < 0.01) return null;
-    return lastValidPlacement;
-  }, [lastValidPlacement, pendingPlacement]);
+  const restorableCatalogPlacement = useMemo(
+    () =>
+      findRestorableCatalogPlacement(pendingPlacement, lastValidPlacement),
+    [lastValidPlacement, pendingPlacement]
+  );
 
   const pendingCatalogPlacementScore = useMemo<ManualPlacementScore | null>(() => {
     if (!pendingPlacement || dragging) return null;
-    const product = CATALOG_ITEMS[pendingPlacement.productId];
     const targetRoom = pendingPlacement.roomId
       ? roomSnapshotById.get(pendingPlacement.roomId)
       : activeRoom;
-    if (!product || !targetRoom) return null;
-    const resolved = resolveCatalogVariant(product, pendingPlacement.variantId);
-    return scoreManualPlacement({
-      room: targetRoom,
-      item: {
-        instanceId: "pending-catalog-placement",
-        productId: pendingPlacement.productId,
-        variantId: resolved.variantId,
-        position: pendingPlacement.position,
-        rotationY: pendingPlacement.rotationY,
-      },
-      dimsMm: resolved.dimsMm,
-      catalogItems: CATALOG_ITEMS,
-      openings: planOpenings,
-      blocker: pendingCatalogPlacementBlocker,
-      variant: resolved.variant,
-      existingItems: targetRoom.items,
-    });
+    if (!targetRoom) return null;
+    return scoreCatalogPlacement(
+      pendingPlacement,
+      targetRoom,
+      "pending-catalog-placement",
+      pendingCatalogPlacementBlocker
+    );
   }, [
     activeRoom,
     dragging,
     pendingPlacement,
     pendingCatalogPlacementBlocker,
-    planOpenings,
     roomSnapshotById,
+    scoreCatalogPlacement,
   ]);
 
   const isCatalogPlacementTargetAcceptable = useCallback(
     (placement: PendingCatalogPlacement, targetRoom: RoomSnapshot): boolean => {
-      const product = CATALOG_ITEMS[placement.productId];
-      if (!product) return false;
-      const resolved = resolveCatalogVariant(product, placement.variantId);
-      if (
-        !isCatalogPlacementContainedInRoom(
-          targetRoom,
-          placement.position,
-          placement.rotationY,
-          resolved.dimsMm
-        )
-      ) {
-        return false;
-      }
-      if (
-        catalogPlacementCollidesInRoom(
-          targetRoom,
-          placement.productId,
-          placement.position,
-          placement.rotationY,
-          resolved.dimsMm,
-          placement.supportInstanceId
-        )
-      ) {
-        return false;
-      }
-      const score = scoreManualPlacement({
-        room: targetRoom,
-        item: {
-          instanceId: "catalog-placement-target-check",
-          productId: placement.productId,
-          variantId: resolved.variantId,
-          position: placement.position,
-          rotationY: placement.rotationY,
-        },
-        dimsMm: resolved.dimsMm,
+      return evaluateCatalogPlacementTarget({
+        placement,
+        targetRoom,
         catalogItems: CATALOG_ITEMS,
-        openings: planOpenings,
-        variant: resolved.variant,
-        existingItems: targetRoom.items,
+        geometry: {
+          collidesInRoom: catalogPlacementCollidesInRoom,
+          isContainedInRoom: isCatalogPlacementContainedInRoom,
+        },
+        scorePlacement: scoreCatalogPlacement,
       });
-      return score.kind !== "blocks_path" && score.kind !== "cramped";
     },
-    [catalogPlacementCollidesInRoom, isCatalogPlacementContainedInRoom, planOpenings]
+    [
+      catalogPlacementCollidesInRoom,
+      isCatalogPlacementContainedInRoom,
+      scoreCatalogPlacement,
+    ]
   );
 
   const hoverCatalogPlacementScore = useMemo<ManualPlacementScore | null>(() => {
     if (!hoverPlacement || pendingPlacement) return null;
-    const product = CATALOG_ITEMS[hoverPlacement.productId];
     const targetRoom = hoverPlacement.roomId
       ? roomSnapshotById.get(hoverPlacement.roomId)
       : activeRoom;
-    if (!product || !targetRoom) return null;
-    const resolved = resolveCatalogVariant(product, hoverPlacement.variantId);
+    const product = CATALOG_ITEMS[hoverPlacement.productId];
+    if (!targetRoom || !product) return null;
     const blocker = findCatalogPlacementBlockerInRoom(
       targetRoom,
       hoverPlacement.productId,
       hoverPlacement.position,
       hoverPlacement.rotationY,
-      resolved.dimsMm
+      resolveCatalogVariant(
+        product,
+        hoverPlacement.variantId
+      ).dimsMm
     );
-    return scoreManualPlacement({
-      room: targetRoom,
-      item: {
-        instanceId: "hover-catalog-placement",
-        productId: hoverPlacement.productId,
-        variantId: resolved.variantId,
-        position: hoverPlacement.position,
-        rotationY: hoverPlacement.rotationY,
-      },
-      dimsMm: resolved.dimsMm,
-      catalogItems: CATALOG_ITEMS,
-      openings: planOpenings,
-      blocker,
-      variant: resolved.variant,
-      existingItems: targetRoom.items,
-    });
+    return scoreCatalogPlacement(
+      hoverPlacement,
+      targetRoom,
+      "hover-catalog-placement",
+      blocker
+    );
   }, [
     activeRoom,
     findCatalogPlacementBlockerInRoom,
     hoverPlacement,
     pendingPlacement,
-    planOpenings,
     roomSnapshotById,
+    scoreCatalogPlacement,
   ]);
 
   const activePlacementCompatibleZoneIds = useMemo(
@@ -613,77 +534,27 @@ export function useDesignPageCatalogPlacement({
     roomSnapshotById,
   ]);
 
-  const pendingCatalogPlacementQuality = useMemo<PlacementQuality | null>(() => {
-    if (!pendingPlacement) return null;
-    if (pendingCatalogPlacementScore) {
-      return {
-        label: `${pendingCatalogPlacementScore.label} (${pendingCatalogPlacementScore.score})`,
-        tone:
-          pendingCatalogPlacementScore.kind === "great"
-            ? "good"
-            : pendingCatalogPlacementScore.kind === "okay"
-              ? "warn"
-              : "bad",
-      };
-    }
-    if (pendingCatalogPlacementBlocked) {
-      return {
-        label: pendingCatalogPlacementBlockerLabel
-          ? `Blocked by ${pendingCatalogPlacementBlockerLabel}`
-          : "Blocked",
-        tone: "bad",
-      };
-    }
-    const targetRoom = pendingPlacement.roomId
-      ? roomSnapshotById.get(pendingPlacement.roomId)
-      : activeRoom;
-    const product = CATALOG_ITEMS[pendingPlacement.productId];
-    if (!targetRoom || !product) return null;
-    const resolved = resolveCatalogVariant(product, pendingPlacement.variantId);
-    const [effectiveWidth, effectiveDepth] = getRotatedFootprint(
-      resolved.dimsMm.w / 1000,
-      resolved.dimsMm.d / 1000,
-      pendingPlacement.rotationY
-    );
-    const targetWallThickness =
-      targetRoom.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness;
-    const clearX =
-      targetRoom.geometry.width / 2 -
-      targetWallThickness -
-      effectiveWidth / 2 -
-      Math.abs(pendingPlacement.position[0]);
-    const clearZ =
-      targetRoom.geometry.depth / 2 -
-      targetWallThickness -
-      effectiveDepth / 2 -
-      Math.abs(pendingPlacement.position[2]);
-    const nearestClearance = Math.min(clearX, clearZ);
-    const topCategory = mapToTopCategory(product.category, product);
-    const zoneFit =
-      targetRoom.zones.length === 0 ||
-      (topCategory === "dining_table" || topCategory === "dining_bench"
-        ? targetRoom.zones.some((zone) => zone.type === "dining")
-        : topCategory === "tv_console"
-          ? targetRoom.zones.some((zone) => zone.type === "tv")
-          : true);
-    if (nearestClearance < 0.12) {
-      return { label: "Tight to wall", tone: "warn" };
-    }
-    if (!zoneFit) {
-      return { label: "No matching zone", tone: "warn" };
-    }
-    return {
-      label: nearestClearance > 0.55 ? "Good spacing" : "Usable spacing",
-      tone: "good",
-    };
-  }, [
-    activeRoom,
-    pendingPlacement,
-    pendingCatalogPlacementBlocked,
-    pendingCatalogPlacementBlockerLabel,
-    pendingCatalogPlacementScore,
-    roomSnapshotById,
-  ]);
+  const pendingCatalogPlacementQuality = useMemo<CatalogPlacementQuality | null>(
+    () =>
+      resolveCatalogPlacementQuality({
+        pendingPlacement,
+        score: pendingCatalogPlacementScore,
+        blocked: pendingCatalogPlacementBlocked,
+        blockerLabel: pendingCatalogPlacementBlockerLabel,
+        targetRoom: pendingPlacement?.roomId
+          ? roomSnapshotById.get(pendingPlacement.roomId) ?? null
+          : activeRoom,
+        catalogItems: CATALOG_ITEMS,
+      }),
+    [
+      activeRoom,
+      pendingPlacement,
+      pendingCatalogPlacementBlocked,
+      pendingCatalogPlacementBlockerLabel,
+      pendingCatalogPlacementScore,
+      roomSnapshotById,
+    ]
+  );
 
   const buildCatalogPlacementPreview = useCallback(
     (
@@ -722,200 +593,20 @@ export function useDesignPageCatalogPlacement({
       variantId?: string,
       purchaseOptionId?: string,
       targetRoom: RoomSnapshot | null = activeRoom
-    ): PendingCatalogPlacement | null => {
-      const product = CATALOG_ITEMS[productId];
-      if (!product || !targetRoom) return null;
-      if (isSurfaceOnlyCatalogItem(product)) {
-        return findCatalogSurfacePlacement({
-          productId,
-          variantId,
-          purchaseOptionId,
-          roomId: targetRoom.id,
-          items: targetRoom.items,
-        });
-      }
-      const resolved = resolveCatalogVariant(
-        product,
-        variantId ?? product.defaultVariantId
-      );
-      const widthMeters = resolved.dimsMm.w / 1000;
-      const depthMeters = resolved.dimsMm.d / 1000;
-      const targetWidth = targetRoom.geometry.width;
-      const targetDepth = targetRoom.geometry.depth;
-      const targetWallThickness =
-        targetRoom.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness;
-      const [effectiveWidth, effectiveDepth] = getRotatedFootprint(
-        widthMeters,
-        depthMeters,
-        0
-      );
-      const wallInset = getFurnitureWallInset(targetWallThickness);
-      const maxX = Math.max(0, targetWidth / 2 - effectiveWidth / 2 - wallInset);
-      const maxZ = Math.max(0, targetDepth / 2 - effectiveDepth / 2 - wallInset);
-      const topCategory = mapToTopCategory(product.category, product);
-      const wallFirst = new Set([
-        "sofa",
-        "tv_console",
-        "sideboard",
-        "floor_lamp",
-        "dining_bench",
-      ]);
-      const preferredZoneTypes: ZoneMin["type"][] =
-        topCategory === "dining_table" ||
-        topCategory === "dining_bench" ||
-        topCategory === "sideboard" ||
-        topCategory === "ceiling_light"
-          ? ["dining"]
-          : topCategory === "tv_console"
-            ? ["tv"]
-            : topCategory === "floor_lamp" ||
-                topCategory === "accent_chair" ||
-                topCategory === "side_table"
-              ? ["seating", "reading"]
-              : topCategory === "sofa" ||
-                  topCategory === "coffee_table" ||
-                  topCategory === "rug"
-                ? ["seating"]
-                : [];
-      const zoneCandidates = targetRoom.zones
-        .filter((zone) => preferredZoneTypes.includes(zone.type) && zone.anchor)
-        .map((zone) => ({
-          x: zone.anchor?.[0] ?? 0,
-          z: zone.anchor?.[2] ?? 0,
-          rotationY: 0,
-          reason:
-            zone.type === "dining"
-              ? "Auto placed in dining zone"
-              : zone.type === "tv"
-                ? "Auto placed in TV zone"
-                : zone.type === "reading"
-                  ? "Auto placed in reading zone"
-                  : "Auto placed in seating zone",
-        }));
-      const candidates: Array<{
-        x: number;
-        z: number;
-        rotationY: number;
-        reason: string;
-      }> = [
-        ...zoneCandidates,
-        { x: 0, z: 0, rotationY: 0, reason: "Auto placed at room center" },
-        { x: 0, z: -maxZ, rotationY: 0, reason: "Auto placed near back wall" },
-        { x: 0, z: maxZ, rotationY: Math.PI, reason: "Auto placed near front wall" },
-        {
-          x: -maxX,
-          z: 0,
-          rotationY: Math.PI / 2,
-          reason: "Auto placed near left wall",
+    ): PendingCatalogPlacement | null =>
+      findSmartCatalogPlacementPolicy({
+        productId,
+        variantId,
+        purchaseOptionId,
+        targetRoom,
+        catalogItems: CATALOG_ITEMS,
+        openings: planOpenings,
+        geometry: {
+          clampToRoom: clampToCatalogPlacementRoom,
+          collidesInRoom: catalogPlacementCollidesInRoom,
+          isContainedInRoom: isCatalogPlacementContainedInRoom,
         },
-        {
-          x: maxX,
-          z: 0,
-          rotationY: -Math.PI / 2,
-          reason: "Auto placed near right wall",
-        },
-      ];
-
-      const gridSteps = 5;
-      for (let xIndex = 0; xIndex < gridSteps; xIndex += 1) {
-        for (let zIndex = 0; zIndex < gridSteps; zIndex += 1) {
-          const x =
-            maxX === 0 ? 0 : -maxX + (maxX * 2 * xIndex) / (gridSteps - 1);
-          const z =
-            maxZ === 0 ? 0 : -maxZ + (maxZ * 2 * zIndex) / (gridSteps - 1);
-          candidates.push({
-            x,
-            z,
-            rotationY: 0,
-            reason: "Auto found open floor space",
-          });
-          candidates.push({
-            x,
-            z,
-            rotationY: Math.PI / 2,
-            reason: "Auto found open rotated space",
-          });
-        }
-      }
-
-      const orderedCandidates = wallFirst.has(topCategory)
-        ? [...candidates.slice(1, 5), candidates[0], ...candidates.slice(5)]
-        : candidates;
-
-      let bestPlacement: PendingCatalogPlacement | null = null;
-      let bestScore = -Infinity;
-      for (const candidate of orderedCandidates) {
-        const [safeX, safeZ] = clampToCatalogPlacementRoom(
-          targetRoom,
-          candidate.x,
-          candidate.z,
-          widthMeters,
-          depthMeters,
-          candidate.rotationY
-        );
-        const position: [number, number, number] = [
-          safeX,
-          getCeilingMountedItemBaseY({
-            product,
-            dimsMm: resolved.dimsMm,
-            roomHeight:
-              targetRoom.geometry.height ?? ROOM_DIMENSION_DEFAULTS.roomHeight,
-          }),
-          safeZ,
-        ];
-        if (
-          !isCatalogPlacementContainedInRoom(
-            targetRoom,
-            position,
-            candidate.rotationY,
-            resolved.dimsMm
-          )
-        ) {
-          continue;
-        }
-        if (
-          catalogPlacementCollidesInRoom(
-            targetRoom,
-            productId,
-            position,
-            candidate.rotationY,
-            resolved.dimsMm
-          )
-        ) {
-          continue;
-        }
-        const placement: PendingCatalogPlacement = {
-          productId,
-          variantId: resolved.variantId,
-          purchaseOptionId,
-          roomId: targetRoom.id,
-          position,
-          rotationY: candidate.rotationY,
-          reason: candidate.reason,
-        };
-        const score = scoreManualPlacement({
-          room: targetRoom,
-          item: {
-            instanceId: "smart-catalog-placement",
-            productId,
-            variantId: resolved.variantId,
-            position,
-            rotationY: candidate.rotationY,
-          },
-          dimsMm: resolved.dimsMm,
-          catalogItems: CATALOG_ITEMS,
-          openings: planOpenings,
-          variant: resolved.variant,
-          existingItems: targetRoom.items,
-        }).score;
-        if (score > bestScore) {
-          bestScore = score;
-          bestPlacement = placement;
-        }
-      }
-
-      return bestPlacement;
-    },
+      }),
     [
       activeRoom,
       catalogPlacementCollidesInRoom,
@@ -925,212 +616,106 @@ export function useDesignPageCatalogPlacement({
     ]
   );
 
-  const pendingCatalogPlacementImprovement = useMemo<PlacementImprovement | null>(() => {
-    if (!pendingPlacement || !pendingCatalogPlacementScore) return null;
+  const pendingCatalogPlacementImprovement = useMemo<CatalogPlacementImprovement | null>(() => {
     const targetRoom =
-      roomSnapshotById.get(pendingPlacement.roomId ?? getActiveRoomId()) ?? activeRoom;
-    if (!targetRoom) return null;
-    const product = CATALOG_ITEMS[pendingPlacement.productId];
-    if (!product) return null;
-    const bestPlacement = findSmartCatalogPlacement(
-      pendingPlacement.productId,
-      pendingPlacement.variantId,
-      pendingPlacement.purchaseOptionId,
-      targetRoom
-    );
-    if (!bestPlacement) return null;
-    const resolved = resolveCatalogVariant(product, bestPlacement.variantId);
-    const bestScore = scoreManualPlacement({
-      room: targetRoom,
-      item: {
-        instanceId: "pending-catalog-placement-improvement",
-        productId: bestPlacement.productId,
-        variantId: resolved.variantId,
-        position: bestPlacement.position,
-        rotationY: bestPlacement.rotationY,
-      },
-      dimsMm: resolved.dimsMm,
-      catalogItems: CATALOG_ITEMS,
-      openings: planOpenings,
-      variant: resolved.variant,
-      existingItems: targetRoom.items,
-    }).score;
-    const positionDelta = Math.hypot(
-      bestPlacement.position[0] - pendingPlacement.position[0],
-      bestPlacement.position[2] - pendingPlacement.position[2]
-    );
-    const rotationDelta = Math.abs(
-      bestPlacement.rotationY - pendingPlacement.rotationY
-    );
-    const scoreDelta = bestScore - pendingCatalogPlacementScore.score;
-    if (scoreDelta < 4 || (positionDelta < 0.08 && rotationDelta < 0.01)) {
-      return null;
-    }
-    return {
-      placement: {
-        ...bestPlacement,
-        reason: `Improved placement (${bestScore}/100)`,
-      },
-      score: bestScore,
-      scoreDelta,
-    };
+      pendingPlacement
+        ? roomSnapshotById.get(pendingPlacement.roomId ?? getActiveRoomId()) ??
+          activeRoom
+        : null;
+    return findCatalogPlacementImprovement({
+      pendingPlacement,
+      currentScore: pendingCatalogPlacementScore,
+      targetRoom,
+      findPlacement: findSmartCatalogPlacement,
+      scorePlacement: scoreCatalogPlacement,
+    });
   }, [
     activeRoom,
     findSmartCatalogPlacement,
     getActiveRoomId,
     pendingPlacement,
     pendingCatalogPlacementScore,
-    planOpenings,
     roomSnapshotById,
+    scoreCatalogPlacement,
   ]);
 
-  const pendingCatalogBestRoomPlacement = useMemo<BestRoomPlacement | null>(() => {
-    if (!pendingPlacement || !pendingCatalogPlacementScore || rooms.length < 2) {
-      return null;
-    }
-    const product = CATALOG_ITEMS[pendingPlacement.productId];
-    if (!product) return null;
-    const currentRoomId = pendingPlacement.roomId ?? activeRoom?.id ?? activeRoomId;
-    let best: BestRoomPlacement | null = null;
+  const pendingCatalogBestRoomPlacement =
+    useMemo<CatalogBestRoomPlacement | null>(
+      () =>
+        findBestCatalogRoomPlacement({
+          pendingPlacement,
+          currentScore: pendingCatalogPlacementScore,
+          rooms,
+          currentRoomId:
+            pendingPlacement?.roomId ?? activeRoom?.id ?? activeRoomId,
+          findPlacement: findSmartCatalogPlacement,
+          scorePlacement: scoreCatalogPlacement,
+        }),
+      [
+        activeRoom?.id,
+        activeRoomId,
+        findSmartCatalogPlacement,
+        pendingPlacement,
+        pendingCatalogPlacementScore,
+        rooms,
+        scoreCatalogPlacement,
+      ]
+    );
 
-    for (const room of rooms) {
-      if (room.id === currentRoomId) continue;
-      const placement = findSmartCatalogPlacement(
-        pendingPlacement.productId,
-        pendingPlacement.variantId,
-        pendingPlacement.purchaseOptionId,
-        room
-      );
-      if (!placement) continue;
-      const resolved = resolveCatalogVariant(product, placement.variantId);
-      const score = scoreManualPlacement({
-        room,
-        item: {
-          instanceId: "pending-catalog-best-room",
-          productId: placement.productId,
-          variantId: resolved.variantId,
-          position: placement.position,
-          rotationY: placement.rotationY,
-        },
-        dimsMm: resolved.dimsMm,
-        catalogItems: CATALOG_ITEMS,
-        openings: planOpenings,
-        variant: resolved.variant,
-        existingItems: room.items,
-      });
-      if (score.kind === "blocks_path" || score.kind === "cramped") continue;
-      const scoreDelta = score.score - pendingCatalogPlacementScore.score;
-      if (!best || score.score > best.score) {
-        best = {
-          placement: {
-            ...placement,
-            reason: `Best room: ${room.name} (${score.score}/100)`,
-          },
-          roomName: room.name,
-          score: score.score,
-          scoreDelta,
-        };
-      }
-    }
-
-    if (!best || best.scoreDelta < 4) return null;
-    return best;
-  }, [
-    activeRoom?.id,
-    activeRoomId,
-    findSmartCatalogPlacement,
-    pendingPlacement,
-    pendingCatalogPlacementScore,
-    planOpenings,
-    rooms,
-  ]);
-
-  const pendingCatalogBestVariantPlacement = useMemo<BestVariantPlacement | null>(() => {
-    if (!pendingPlacement || !pendingCatalogPlacementScore) return null;
+  const pendingCatalogBestVariantPlacement = useMemo<CatalogBestVariantPlacement | null>(() => {
     const targetRoom =
-      roomSnapshotById.get(pendingPlacement.roomId ?? getActiveRoomId()) ??
-      activeRoom;
-    const product = CATALOG_ITEMS[pendingPlacement.productId];
-    if (!targetRoom || !product || product.variants.length < 2) return null;
-    const currentVariant = resolveCatalogVariant(product, pendingPlacement.variantId);
-    let best: BestVariantPlacement | null = null;
-
-    for (const variant of product.variants) {
-      if (variant.id === currentVariant.variantId) continue;
-      const placement = findSmartCatalogPlacement(
-        pendingPlacement.productId,
-        variant.id,
-        pendingPlacement.purchaseOptionId,
-        targetRoom
-      );
-      if (!placement) continue;
-      const resolved = resolveCatalogVariant(product, variant.id);
-      const score = scoreManualPlacement({
-        room: targetRoom,
-        item: {
-          instanceId: "pending-catalog-best-option",
-          productId: placement.productId,
-          variantId: resolved.variantId,
-          position: placement.position,
-          rotationY: placement.rotationY,
-        },
-        dimsMm: resolved.dimsMm,
-        catalogItems: CATALOG_ITEMS,
-        openings: planOpenings,
-        variant: resolved.variant,
-        existingItems: targetRoom.items,
-      });
-      if (score.kind === "blocks_path" || score.kind === "cramped") continue;
-      const scoreDelta = score.score - pendingCatalogPlacementScore.score;
-      if (!best || score.score > best.score) {
-        best = {
-          placement: {
-            ...placement,
-            reason: `Best option: ${resolved.variant.label} (${score.score}/100)`,
-          },
-          variantLabel: resolved.variant.label,
-          score: score.score,
-          scoreDelta,
-        };
-      }
-    }
-
-    if (!best || best.scoreDelta < 4) return null;
-    return best;
+      pendingPlacement
+        ? roomSnapshotById.get(pendingPlacement.roomId ?? getActiveRoomId()) ??
+          activeRoom
+        : null;
+    return findBestCatalogVariantPlacement({
+      pendingPlacement,
+      currentScore: pendingCatalogPlacementScore,
+      targetRoom,
+      product: pendingPlacement
+        ? CATALOG_ITEMS[pendingPlacement.productId] ?? null
+        : null,
+      findPlacement: findSmartCatalogPlacement,
+      scorePlacement: scoreCatalogPlacement,
+    });
   }, [
     activeRoom,
     findSmartCatalogPlacement,
     getActiveRoomId,
     pendingPlacement,
     pendingCatalogPlacementScore,
-    planOpenings,
     roomSnapshotById,
+    scoreCatalogPlacement,
   ]);
 
-  const pendingCatalogPlacementScoreHardInvalid =
-    pendingCatalogPlacementScore?.kind === "blocks_path" ||
-    pendingCatalogPlacementScore?.kind === "cramped";
-  const pendingCatalogPlacementHardInvalid = Boolean(
-    pendingPlacement &&
-      (pendingCatalogPlacementBlocked || pendingCatalogPlacementScoreHardInvalid)
+  const pendingCatalogPlacementAssessment = useMemo(
+    () =>
+      resolveCatalogPlacementAssessment({
+        pendingPlacement,
+        blocked: pendingCatalogPlacementBlocked,
+        blockerLabel: pendingCatalogPlacementBlockerLabel,
+        targetRoomName: pendingCatalogPlacementRoom?.name ?? null,
+        score: pendingCatalogPlacementScore,
+        improvement: pendingCatalogPlacementImprovement,
+        restorablePlacement: restorableCatalogPlacement,
+      }),
+    [
+      pendingCatalogPlacementBlocked,
+      pendingCatalogPlacementBlockerLabel,
+      pendingCatalogPlacementImprovement,
+      pendingCatalogPlacementRoom?.name,
+      pendingCatalogPlacementScore,
+      pendingPlacement,
+      restorableCatalogPlacement,
+    ]
   );
-  const pendingCatalogPlacementStatusLabel = pendingCatalogPlacementBlocked
-    ? pendingCatalogPlacementBlockerLabel
-      ? `Blocked by ${pendingCatalogPlacementBlockerLabel}`
-      : `Blocked in ${pendingCatalogPlacementRoom?.name ?? "target room"}`
-    : pendingCatalogPlacementScore?.kind === "blocks_path"
-      ? "Blocks walking path"
-      : pendingCatalogPlacementScore?.kind === "cramped"
-        ? "Cramped placement"
-        : "Valid placement";
-  const shouldConfirmImprovedCatalogPlacement = Boolean(
-    pendingCatalogPlacementImprovement && pendingCatalogPlacementHardInvalid
-  );
-  const shouldConfirmRestoredCatalogPlacement = Boolean(
-    !shouldConfirmImprovedCatalogPlacement &&
-      pendingCatalogPlacementHardInvalid &&
-      restorableCatalogPlacement
-  );
+  const {
+    scoreHardInvalid: pendingCatalogPlacementScoreHardInvalid,
+    hardInvalid: pendingCatalogPlacementHardInvalid,
+    statusLabel: pendingCatalogPlacementStatusLabel,
+    shouldConfirmImproved: shouldConfirmImprovedCatalogPlacement,
+    shouldConfirmRestored: shouldConfirmRestoredCatalogPlacement,
+  } = pendingCatalogPlacementAssessment;
 
   const updatePendingCatalogPlacementDraft = useCallback(
     (
@@ -1476,63 +1061,24 @@ export function useDesignPageCatalogPlacement({
       if (!pendingPlacement) return null;
       const targetRoom = roomSnapshotById.get(roomId);
       if (!targetRoom) return null;
-
-      const smartPlacement =
-        options.localPosition === undefined
-          ? findSmartCatalogPlacement(
-              pendingPlacement.productId,
-              pendingPlacement.variantId,
-              pendingPlacement.purchaseOptionId,
-              targetRoom
-            )
-          : null;
-      const nextPlacement =
-        smartPlacement ??
-        updatePendingCatalogPlacementDraft(
-          {
-            ...pendingPlacement,
-            roomId: targetRoom.id,
-          },
-          options.localPosition ?? [0, 0, 0],
-          pendingPlacement.rotationY,
-          options.source === "zone" && options.zoneLabel
-            ? `Tapped ${options.zoneLabel}`
-            : `Tapped ${targetRoom.name}`,
-          targetRoom
-        );
-
-      if (!nextPlacement) {
+      const decision = resolveCatalogPlacementRoomTarget({
+        pendingPlacement,
+        targetRoom,
+        options,
+        findPlacement: findSmartCatalogPlacement,
+        updateDraft: updatePendingCatalogPlacementDraft,
+        isAcceptable: isCatalogPlacementTargetAcceptable,
+      });
+      if (!decision) {
         showToast(`Could not place in ${targetRoom.name}`);
         return { handled: true, target: null };
       }
-
-      const acceptable = isCatalogPlacementTargetAcceptable(
-        nextPlacement,
-        targetRoom
-      );
-      setPendingPlacement({
-        ...nextPlacement,
-        roomId: targetRoom.id,
-        reason:
-          options.source === "zone" && options.zoneLabel
-            ? `Tapped ${options.zoneLabel}`
-            : nextPlacement.reason,
-      });
-      showToast(
-        options.source === "zone" && options.zoneLabel
-          ? `Moved preview to ${options.zoneLabel}`
-          : `Moved preview to ${targetRoom.name}`
-      );
-      const target: CatalogPlacementPreviewTarget = {
-        roomId: targetRoom.id,
-        label: targetRoom.name,
-        valid: acceptable,
-        kind: "preview",
-      };
-      setPreviewTarget(target);
+      setPendingPlacement(decision.placement);
+      showToast(decision.message);
+      setPreviewTarget(decision.target);
       return {
         handled: true,
-        target,
+        target: decision.target,
       };
     },
     [
@@ -2070,43 +1616,32 @@ export function useDesignPageCatalogPlacement({
 
   const confirmPendingCatalogPlacement = useCallback((): boolean => {
     if (!pendingPlacement) return false;
-    const placementToConfirm =
-      shouldConfirmImprovedCatalogPlacement &&
-      pendingCatalogPlacementImprovement
-        ? pendingCatalogPlacementImprovement.placement
-        : shouldConfirmRestoredCatalogPlacement && restorableCatalogPlacement
-          ? restorableCatalogPlacement
-          : pendingPlacement;
+    const confirmation = resolveCatalogPlacementConfirmation({
+      pendingPlacement,
+      improvement: pendingCatalogPlacementImprovement,
+      restorablePlacement: restorableCatalogPlacement,
+      assessment: pendingCatalogPlacementAssessment,
+      score: pendingCatalogPlacementScore,
+      blockerLabel: pendingCatalogPlacementBlockerLabel,
+    });
+    const placementToConfirm = confirmation.placement;
+    if (!placementToConfirm) return false;
     const product = CATALOG_ITEMS[placementToConfirm.productId];
     if (!product) {
       setPendingPlacement(null);
       return false;
     }
-    if (
-      pendingCatalogPlacementHardInvalid &&
-      !shouldConfirmImprovedCatalogPlacement &&
-      !shouldConfirmRestoredCatalogPlacement
-    ) {
-      showToast(
-        pendingCatalogPlacementScoreHardInvalid &&
-          pendingCatalogPlacementScore?.summary
-          ? pendingCatalogPlacementScore.summary
-          : pendingCatalogPlacementBlockerLabel
-            ? `Blocked by ${pendingCatalogPlacementBlockerLabel}`
-            : "Placement blocked by another item. Move it or choose a different item."
-      );
+    if (confirmation.source === "blocked") {
+      showToast(confirmation.blockedMessage ?? "Placement blocked");
       return false;
     }
 
     if (!addCatalogPlacementToRoom(placementToConfirm)) return false;
-    if (
-      shouldConfirmImprovedCatalogPlacement &&
-      pendingCatalogPlacementImprovement
-    ) {
+    if (confirmation.source === "improved" && pendingCatalogPlacementImprovement) {
       showToast(
         `Added improved placement (${pendingCatalogPlacementImprovement.score}/100)`
       );
-    } else if (shouldConfirmRestoredCatalogPlacement) {
+    } else if (confirmation.source === "restored") {
       showToast("Added last valid placement");
     }
     setPendingPlacement(null);
@@ -2115,17 +1650,14 @@ export function useDesignPageCatalogPlacement({
     return true;
   }, [
     addCatalogPlacementToRoom,
+    pendingCatalogPlacementAssessment,
     pendingCatalogPlacementBlockerLabel,
-    pendingCatalogPlacementHardInvalid,
     pendingCatalogPlacementImprovement,
     pendingCatalogPlacementScore,
-    pendingCatalogPlacementScoreHardInvalid,
     pendingPlacement,
     restorableCatalogPlacement,
     setPendingPlacement,
     setPreviewTarget,
-    shouldConfirmImprovedCatalogPlacement,
-    shouldConfirmRestoredCatalogPlacement,
     showToast,
     stopCatalogPlacementDragging,
   ]);
@@ -2512,9 +2044,13 @@ export function useDesignPageCatalogPlacement({
     queueMicrotask(() => {
       if (cancelled) return;
       if (pendingPlacement) {
-        if (!pendingCatalogPlacementHardInvalid) {
-          setLastValidPlacement(pendingPlacement);
-        }
+        setLastValidPlacement((currentLastValidPlacement) =>
+          resolveNextLastValidCatalogPlacement({
+            currentLastValidPlacement,
+            pendingPlacement,
+            hardInvalid: pendingCatalogPlacementHardInvalid,
+          })
+        );
         return;
       }
       setLastValidPlacement(null);

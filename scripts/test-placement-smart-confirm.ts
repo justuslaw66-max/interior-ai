@@ -2,11 +2,97 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-const catalogPlacementHook = readFileSync(
+import {
+  resolveCatalogPlacementAssessment,
+  resolveCatalogPlacementConfirmation,
+  type CatalogPlacementImprovement,
+} from "@/lib/catalog-placement-policy";
+import {
+  makePolicyPlacement,
+  makePolicyScore,
+} from "./catalog-placement-policy-test-utils";
+
+const pendingPlacement = makePolicyPlacement({ position: [1.5, 0, 0] });
+const improvedPlacement = makePolicyPlacement({ position: [0, 0, 0] });
+const restoredPlacement = makePolicyPlacement({ position: [-1, 0, 0] });
+const blockedScore = makePolicyScore(
+  25,
+  "blocks_path",
+  "Move away from the walking path"
+);
+const improvement: CatalogPlacementImprovement = {
+  placement: improvedPlacement,
+  score: 88,
+  scoreDelta: 63,
+};
+
+const improvedAssessment = resolveCatalogPlacementAssessment({
+  pendingPlacement,
+  blocked: false,
+  blockerLabel: null,
+  targetRoomName: "Living room",
+  score: blockedScore,
+  improvement,
+  restorablePlacement: restoredPlacement,
+});
+assert.equal(improvedAssessment.shouldConfirmImproved, true);
+assert.equal(improvedAssessment.shouldConfirmRestored, false);
+const improvedDecision = resolveCatalogPlacementConfirmation({
+  pendingPlacement,
+  improvement,
+  restorablePlacement: restoredPlacement,
+  assessment: improvedAssessment,
+  score: blockedScore,
+  blockerLabel: null,
+});
+assert.equal(improvedDecision.source, "improved");
+assert.equal(improvedDecision.placement, improvedPlacement);
+
+const restoredAssessment = resolveCatalogPlacementAssessment({
+  pendingPlacement,
+  blocked: false,
+  blockerLabel: null,
+  targetRoomName: "Living room",
+  score: blockedScore,
+  improvement: null,
+  restorablePlacement: restoredPlacement,
+});
+const restoredDecision = resolveCatalogPlacementConfirmation({
+  pendingPlacement,
+  improvement: null,
+  restorablePlacement: restoredPlacement,
+  assessment: restoredAssessment,
+  score: blockedScore,
+  blockerLabel: null,
+});
+assert.equal(restoredDecision.source, "restored");
+assert.equal(restoredDecision.placement, restoredPlacement);
+
+const blockedAssessment = resolveCatalogPlacementAssessment({
+  pendingPlacement,
+  blocked: false,
+  blockerLabel: null,
+  targetRoomName: "Living room",
+  score: blockedScore,
+  improvement: null,
+  restorablePlacement: null,
+});
+const blockedDecision = resolveCatalogPlacementConfirmation({
+  pendingPlacement,
+  improvement: null,
+  restorablePlacement: null,
+  assessment: blockedAssessment,
+  score: blockedScore,
+  blockerLabel: null,
+});
+assert.equal(blockedDecision.source, "blocked");
+assert.equal(blockedDecision.blockedMessage, blockedScore.summary);
+
+const hookSource = readFileSync(
   join(process.cwd(), "lib/useDesignPageCatalogPlacement.ts"),
   "utf8"
 );
-const confirmPanel = readFileSync(
+const confirmPanelSource = readFileSync(
   join(
     process.cwd(),
     "components/editor/design-page/CatalogPlacementConfirmPanel.tsx"
@@ -14,40 +100,8 @@ const confirmPanel = readFileSync(
   "utf8"
 );
 
-assert.match(
-  catalogPlacementHook,
-  /const shouldConfirmImprovedCatalogPlacement = Boolean/,
-  "placement preview should derive when confirm can safely use the improved spot"
-);
-assert.match(
-  catalogPlacementHook,
-  /pendingCatalogPlacementScore\?\.kind === "blocks_path"/,
-  "smart confirm should cover walking-path blocked placements"
-);
-assert.match(
-  catalogPlacementHook,
-  /pendingCatalogPlacementScore\?\.kind === "cramped"/,
-  "smart confirm should cover cramped placements"
-);
-assert.match(
-  catalogPlacementHook,
-  /const placementToConfirm =[\s\S]*shouldConfirmImprovedCatalogPlacement[\s\S]*pendingCatalogPlacementImprovement\.placement/,
-  "confirm should switch to the improved placement when appropriate"
-);
-assert.match(
-  confirmPanel,
-  /pendingCatalogPlacementHardInvalid &&[\s\S]*!shouldConfirmImprovedCatalogPlacement &&[\s\S]*!shouldConfirmRestoredCatalogPlacement/,
-  "blocked previews should remain disabled unless an improved or restored spot can be confirmed"
-);
-assert.match(
-  confirmPanel,
-  /Add best spot to/,
-  "confirm button should clearly name smart confirm when it will use the improved spot"
-);
-assert.match(
-  catalogPlacementHook,
-  /Added improved placement \(\$\{pendingCatalogPlacementImprovement\.score\}\/100\)/,
-  "smart confirm should toast the improved score"
-);
+assert.match(hookSource, /resolveCatalogPlacementConfirmation\(\{/);
+assert.match(confirmPanelSource, /shouldConfirmImprovedCatalogPlacement/);
+assert.match(confirmPanelSource, /shouldConfirmRestoredCatalogPlacement/);
 
 console.log("Placement smart confirm checks passed");

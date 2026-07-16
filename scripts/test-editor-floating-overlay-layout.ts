@@ -74,6 +74,14 @@ const planGuidedActionsToggleSource = fs.readFileSync(
   path.join(designPageComponentsPath, "PlanGuidedActionsToggle.tsx"),
   "utf8"
 );
+const planPresentationSource = fs.readFileSync(
+  path.join(
+    process.cwd(),
+    "lib",
+    "useDesignPagePlanPresentationModel.ts"
+  ),
+  "utf8"
+);
 
 assert.match(
   source,
@@ -229,9 +237,9 @@ assert.match(
 );
 
 assert.match(
-  source,
-  /const floatingPlanOverlayStackVisible\s*=\s*[\s\S]*viewportSize\.width >= PLAN_FLOATING_OVERLAY_DESKTOP_MIN_WIDTH/,
-  "Plan floating overlays should be gated by the shared desktop-width condition."
+  planPresentationSource,
+  /const floatingPlanOverlayStackVisible\s*=\s*[\s\S]*viewportWidth >= floatingOverlayDesktopMinWidthPx/,
+  "The plan presentation model should gate floating overlays by the shared desktop-width condition."
 );
 
 assert.match(
@@ -295,9 +303,9 @@ assert.match(
 );
 
 assert.match(
-  source,
+  planPresentationSource,
   /const floatingFloorPropertiesPanelVisible\s*=\s*[\s\S]*floorPropertiesPanelEligible && floatingPlanOverlayStackVisible/,
-  "Floor properties should only float when the shared overlay stack is visible."
+  "The plan presentation model should only float floor properties when the shared overlay stack is visible."
 );
 
 assert.match(
@@ -336,9 +344,9 @@ assert.match(
 );
 
 assert.match(
-  source,
+  planPresentationSource,
   /const inlineFloorPropertiesPanelVisible\s*=\s*[\s\S]*floorPropertiesPanelEligible && !floatingFloorPropertiesPanelVisible/,
-  "Narrow plan layouts should keep floor controls inline instead of using the floating panel."
+  "The plan presentation model should keep floor controls inline in narrow layouts."
 );
 
 assert.match(
@@ -389,21 +397,21 @@ assert.doesNotMatch(
 );
 
 assert.match(
-  source,
+  planPresentationSource,
   /const selectionInspectorDockedWithPlanStack\s*=[\s\S]*floatingPlanOverlayStackVisible[\s\S]*viewMode === "3d"[\s\S]*hasWholeHousePlan/,
-  "Selection inspector should only dock with the floating stack when the room navigator is present."
+  "The plan presentation model should only dock the selection inspector with the room navigator."
 );
 
 assert.match(
-  source,
-  /const selectionInspectorTopPx = selectionInspectorDockedWithPlanStack[\s\S]*\? PLAN_FLOATING_OVERLAY_INSPECTOR_STACK_TOP_PX[\s\S]*: plan2DQualityReviewPanelVisible[\s\S]*\? plan2DQualityReviewPanelReservedBottomPx \+ PLAN_FLOATING_OVERLAY_STACK_GAP_PX[\s\S]*: 160;/,
-  "Selection inspector should sit below the room navigator or below the visible 2D plan review panel."
+  planPresentationSource,
+  /const selectionInspectorTopPx = selectionInspectorDockedWithPlanStack[\s\S]*\? floatingOverlayInspectorStackTopPx[\s\S]*: planQualityReviewVisible[\s\S]*\? planQualityReviewReservedBottomPx \+ floatingOverlayStackGapPx[\s\S]*: 160;/,
+  "The plan presentation model should place the selection inspector below the navigator or plan review panel."
 );
 
 assert.match(
-  source,
-  /const selectionInspectorWidthPx = selectionInspectorDockedWithRightRail[\s\S]*\? PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX[\s\S]*: 288;/,
-  "Selection inspector should match the navigator width when docked."
+  planPresentationSource,
+  /const selectionInspectorWidthPx = selectionInspectorDockedWithRightRail[\s\S]*\? floatingOverlayStackWidthPx[\s\S]*: 288;/,
+  "The plan presentation model should match the navigator width when the selection inspector is docked."
 );
 
 assert.match(
