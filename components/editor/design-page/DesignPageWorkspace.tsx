@@ -28,7 +28,6 @@ import {
 import { useDesignPageExport } from "@/lib/useDesignPageExport";
 import { useDesignPageAiNotes } from "@/lib/useDesignPageAiNotes";
 import { useDesignPageSceneItemDrag } from "@/lib/useDesignPageSceneItemDrag";
-import { useDesignPageRoomGeometry } from "@/lib/useDesignPageRoomGeometry";
 import { useDesignPageTransientFeedback } from "@/lib/useDesignPageTransientFeedback";
 import { useDesignPageSurfaceWorkspaceFacade } from "@/lib/useDesignPageSurfaceWorkspaceFacade";
 import { useDesignPageSurfaceTargetingFacade } from "@/lib/useDesignPageSurfaceTargetingFacade";
@@ -61,9 +60,6 @@ import { useDesignPageItemDocumentController } from "@/lib/useDesignPageItemDocu
 import { useDesignPageItemSelectionController } from "@/lib/useDesignPageItemSelectionController";
 import { useDesignPageSceneRoomReadRegistration } from "@/lib/useDesignPageSceneRoomReadRegistration";
 import { useDesignPageShoppingCatalogRuntime } from "@/lib/useDesignPageShoppingCatalogRuntime";
-import { useDesignPageSelectionCoordinator } from "@/lib/useDesignPageSelectionCoordinator";
-import { useDesignPageProductInspectionController } from "@/lib/useDesignPageProductInspectionController";
-import { useDesignPageItemGeometry } from "@/lib/useDesignPageItemGeometry";
 import {
   useDesignPagePlanTracingFacade,
   useDesignPagePlanUnderlayFacade,
@@ -74,6 +70,7 @@ import { useDesignPageDocumentRoomRegistration } from "@/lib/useDesignPageDocume
 import { useDesignPagePlanViewportRuntime } from "@/lib/useDesignPagePlanViewportRuntime";
 import { useDesignPageEditorShellRuntime } from "@/lib/useDesignPageEditorShellRuntime";
 import { useDesignPageEditorClientLifecycle } from "@/lib/useDesignPageEditorClientLifecycle";
+import { useDesignPageSelectionInspectionRuntime } from "@/lib/useDesignPageSelectionInspectionRuntime";
 import type { DesignPagePlacementAddMode } from "@/lib/design-page-editor-client-preferences";
 import { useDesignPageLateBoundRef } from "@/lib/useDesignPageLateBoundRef";
 import {
@@ -164,9 +161,6 @@ export function DesignPageWorkspace() {
   const {
     state: {
       selectedProductId: selectedImportedProductId,
-      modelOptions: importedModelOptions,
-      catalogByProductId: importedCatalogByProductId,
-      modelUrlByAssetId: importedModelUrlByAssetId,
     },
     actions: {
       ensureCatalogItem: ensureImportedCatalogItem,
@@ -251,7 +245,6 @@ export function DesignPageWorkspace() {
       },
       overlaySelection: {
         setSelectedPlanOverlayId,
-        setSuppressedDoorwaySuggestionKeys,
         setSelectedPlanRoomId,
       },
       camera: {
@@ -262,15 +255,11 @@ export function DesignPageWorkspace() {
           preserveCameraAfterPlanOverlaySelection,
           transitionToCameraView,
         },
-        bindFloorSelectionAction,
         resolveGroundPointFromClient,
       },
     },
     refs: {
       plan: {
-        planOpeningsRef,
-        planAnnotationsRef,
-        planFixedElementsRef,
         defaultPlanOpeningsSeededRef,
       },
       camera: {
@@ -313,7 +302,6 @@ export function DesignPageWorkspace() {
       panel: { designControlsPanelMode, designControlsPanelVisible },
     },
     actions: {
-      cart: { setHoveredCartInstanceId },
       presentation: { setShowPresentModal, setPresentModeRoomId },
       shopping: { setShoppingReadinessFilter },
       surface: surfaceStateActions,
@@ -901,125 +889,74 @@ export function DesignPageWorkspace() {
     setPlanOpenings,
   ]);
 
-  const selectionCoordinator = useDesignPageSelectionCoordinator({
+  const selectionInspectionRuntime =
+    useDesignPageSelectionInspectionRuntime({
+      boundaries: {
+        planViewport: planViewportRuntime,
+        editorShell: editorShellRuntime,
+        snapshotDocument: snapshotDocumentController,
+        documentRoom: documentRoomRegistration,
+        itemSelection: itemSelectionController,
+        itemDocument: itemDocumentController,
+        importedModels: importedModelsWorkspace,
+      },
+      state: { isClientPreview, canEdit, liveCatalogReady },
+      configuration: { catalogItems: CATALOG_ITEMS },
+      refs: {
+        localBackupPlanningResolver: localBackupPlanningResolverRef,
+      },
+      actions: { setSelectedZoneId, showToast: showRuleToast },
+    });
+  const {
+    boundaries: {
+      coordination: selectionCoordinator,
+      inspection: productInspectionController,
+      geometry: itemGeometryController,
+    },
     state: {
-      editorMode,
-      housePlanRooms: housePlan2D.rooms,
-      isClientPreview,
-      items,
-      selectedPlanOverlayId,
+      inspection: {
+        rotationSnapEnabled,
+        rotationSnapStepDegrees,
+        rotationSnapStepRadians,
+        previewVariantId,
+        previewMaterialPresetId,
+      },
     },
-    configuration: { catalogItems: CATALOG_ITEMS },
-    refs: {
-      planAnnotations: planAnnotationsRef,
-      planFixedElements: planFixedElementsRef,
-      planOpenings: planOpeningsRef,
-      selectedIds: selectedIdsRef,
-    },
-    actions: {
-      clearSelection,
-      commitItems,
-      history,
-      preserveCameraAfterPlanOverlaySelection,
-      setEditorMode,
-      setPlanAnnotations,
-      setPlanFixedElements,
-      setPlanOpenings,
-      setSelectedPlanOverlayId,
-      setSelectedPlanRoomId,
-      setSelectedRendererSurfaceTarget,
-      setSelectedZoneId,
-      setSuppressedDoorwaySuggestionKeys,
-    },
-  });
-  const {
-    clearNonRoomSelection,
-    clearAllSelection,
-    deletePlanOverlayById,
-    handleSelectPlanOverlay,
-  } = selectionCoordinator.actions;
-
-  useEffect(() => {
-    bindFloorSelectionAction(clearNonRoomSelection);
-  }, [bindFloorSelectionAction, clearNonRoomSelection]);
-
-  const {
-    actions: {
-      changeActiveRoomHeightMm: handleActiveRoomHeightMmChange,
-      changeSelectedWallHeight: handleSelectedWallHeightChange,
-      resetSelectedWallHeight: handleResetSelectedWallHeight,
-      changeActiveRoomSlabThicknessMm: handleActiveRoomSlabThicknessMmChange,
-      changeActiveRoomBaseboardDepthMm: handleActiveRoomBaseboardDepthMmChange,
-      changeActiveRoomWallThicknessMm: handleActiveRoomWallThicknessMmChange,
-      changeActiveRoomSurfaceOpacity: handleActiveRoomSurfaceOpacityChange,
-      changeActiveRoomCeilingVisible: handleActiveRoomCeilingVisibleChange,
-      changeActiveRoomCeilingColor: handleActiveRoomCeilingColorChange,
-    },
-  } = useDesignPageRoomGeometry({
-    state: { activeFloorLevel },
-    refs: { designSnapshot: designSnapshotRef },
-    actions: {
-      setDesignSnapshot,
-      history,
-      runHistoryTransaction,
-      runCoalescedHistoryTransaction,
-      showToast: showRuleToast,
-    },
-  });
-  const productInspectionController = useDesignPageProductInspectionController({
-    state: {
-      items,
-      selectedItem,
-      selectedInstanceId,
-      activeRoom: activeRoom ?? null,
-      editorMode,
-    },
-    configuration: {
-      catalogItems: CATALOG_ITEMS,
-      importedModelOptions,
-      importedCatalogByProductId,
-      importedModelUrlByAssetId,
-      canEdit,
-      isClientPreview,
-      liveCatalogReady,
-    },
-    actions: {
-      clearAllSelection,
-      commitItems,
-      ensureImportedCatalogItem,
-      setHoveredCartInstanceId,
-    },
-  });
-  const {
-    rotationSnapEnabled,
-    rotationSnapStepDegrees,
-    rotationSnapStepRadians,
-    previewVariantId,
-    previewMaterialPresetId,
-  } = productInspectionController.state;
-  const {
-    selectedProduct,
-    itemPlanningBoundsByInstanceId,
-  } = productInspectionController.derived;
-  const {
-    resolveItemConfigurationEntry,
-    resolveConfiguredVisualDimsMm,
-    resolveConfiguredPlanningDimsMm,
-    resolveConfiguredNodeTransforms,
-    resolveConfiguredModelUrl,
-  } = productInspectionController.resolvers;
-  useDesignPageLateBoundRef(
-    localBackupPlanningResolverRef,
-    resolveConfiguredPlanningDimsMm
-  );
-
-  const itemGeometryController = useDesignPageItemGeometry({
-    configuration: {
-      catalogItems: CATALOG_ITEMS,
+    derived: { selectedProduct, itemPlanningBoundsByInstanceId },
+    resolvers: {
+      resolveItemConfigurationEntry,
+      resolveConfiguredVisualDimsMm,
       resolveConfiguredPlanningDimsMm,
+      resolveConfiguredNodeTransforms,
+      resolveConfiguredModelUrl,
     },
-  });
-  const { getItemAABB, getSelectionBounds } = itemGeometryController.actions;
+    actions: {
+      selection: {
+        clearNonRoomSelection,
+        clearAllSelection,
+        deletePlanOverlayById,
+        handleSelectPlanOverlay,
+      },
+      roomGeometry: {
+        changeActiveRoomHeightMm: handleActiveRoomHeightMmChange,
+        changeSelectedWallHeight: handleSelectedWallHeightChange,
+        resetSelectedWallHeight: handleResetSelectedWallHeight,
+        changeActiveRoomSlabThicknessMm:
+          handleActiveRoomSlabThicknessMmChange,
+        changeActiveRoomBaseboardDepthMm:
+          handleActiveRoomBaseboardDepthMmChange,
+        changeActiveRoomWallThicknessMm:
+          handleActiveRoomWallThicknessMmChange,
+        changeActiveRoomSurfaceOpacity:
+          handleActiveRoomSurfaceOpacityChange,
+        changeActiveRoomCeilingVisible:
+          handleActiveRoomCeilingVisibleChange,
+        changeActiveRoomCeilingColor:
+          handleActiveRoomCeilingColorChange,
+      },
+      geometry: { getItemAABB, getSelectionBounds },
+    },
+  } = selectionInspectionRuntime;
 
   const {
     state: {

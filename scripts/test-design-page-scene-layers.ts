@@ -36,6 +36,9 @@ const shellRuntimeSource = readSource(
 const clientLifecycleSource = readSource(
   "lib/useDesignPageEditorClientLifecycle.ts"
 );
+const selectionInspectionRuntimeSource = readSource(
+  "lib/useDesignPageSelectionInspectionRuntime.ts"
+);
 const lateBoundRefSource = readSource(
   "lib/useDesignPageLateBoundRef.ts"
 );
@@ -121,10 +124,42 @@ assertSourceOrder(
   workspaceSource,
   [
     "useDesignPageLateBoundRef(resetSelectionStateRef",
-    "localBackupPlanningResolverRef,",
+    "useDesignPageSelectionInspectionRuntime({",
     "useDesignPageLateBoundRef(localBackupPersistenceActionsRef",
   ],
   "Late callback bridges should bind in dependency order"
+);
+assertSourceOrder(
+  selectionInspectionRuntimeSource,
+  [
+    "useDesignPageSelectionCoordinator({",
+    "bindFloorSelectionAction(clearNonRoomSelection)",
+    "useDesignPageRoomGeometry({",
+    "useDesignPageProductInspectionController({",
+    "useDesignPageLateBoundRef(",
+    "useDesignPageItemGeometry({",
+  ],
+  "Selection inspection runtime should preserve its hook and effect order"
+);
+for (const movedOwner of [
+  "useDesignPageSelectionCoordinator({",
+  "useDesignPageRoomGeometry({",
+  "useDesignPageProductInspectionController({",
+  "useDesignPageItemGeometry({",
+] as const) {
+  assert.ok(
+    !workspaceSource.includes(movedOwner),
+    `Workspace should no longer own ${movedOwner}.`
+  );
+  assert.ok(
+    selectionInspectionRuntimeSource.includes(movedOwner),
+    `Selection inspection runtime should own ${movedOwner}.`
+  );
+}
+assert.match(
+  selectionInspectionRuntimeSource,
+  /boundaries:\s*\{[\s\S]*?coordination: selectionCoordinator,[\s\S]*?inspection: productInspectionController,[\s\S]*?geometry: itemGeometryController,/,
+  "Selection inspection runtime should return the raw controller boundaries."
 );
 assert.match(
   lateBoundRefSource,
