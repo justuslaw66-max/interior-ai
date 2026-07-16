@@ -10,6 +10,10 @@ const designPagePath = path.join(
   "DesignPageWorkspace.tsx"
 );
 const source = fs.readFileSync(designPagePath, "utf8");
+const panelRegistrationSource = fs.readFileSync(
+  path.join(process.cwd(), "lib", "design-page-panel-registration.ts"),
+  "utf8"
+);
 const designPageComponentsPath = path.join(
   process.cwd(),
   "components",
@@ -390,8 +394,13 @@ assert.match(
 
 assert.match(
   source,
-  /buildDesignControlsPanelModel\(\{[\s\S]*?surfaces:\s*\{[\s\S]*?showFloorPropertiesPanel:\s*inlineFloorPropertiesPanelVisible/,
-  "The workspace should inject inline floor-panel visibility at the controls-model boundary."
+  /surface:\s*\{ showFloorPropertiesPanel: inlineFloorPropertiesPanelVisible \}/,
+  "The workspace should inject inline floor-panel visibility at the panel-registration boundary."
+);
+assert.match(
+  panelRegistrationSource,
+  /buildDesignControlsPanelModel\(\{[\s\S]*?surfaces:\s*\{[\s\S]*?showFloorPropertiesPanel:\s*derived\.surface\.showFloorPropertiesPanel/,
+  "The panel registration boundary should forward inline floor-panel visibility to the controls model."
 );
 
 assert.match(

@@ -11,7 +11,6 @@ import { track } from "@/lib/analytics";
 import { preloadCoreAssets } from "@/lib/preloadAssets";
 import { initializeCatalog } from "@/lib/catalog-init";
 import type { DesignItem } from "@/lib/room-types";
-import { getWallFaceLabel } from "@/lib/surface-settings";
 import type { ShoppingReadinessFilter } from "@/lib/shopping-readiness";
 import type { PlanStartMode } from "@/components/editor/DesignControlsPlanPanel";
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
@@ -22,9 +21,6 @@ import { DesignPageDialogLayer } from "@/components/editor/design-page/DesignPag
 import { DesignPagePanelRegion } from "@/components/editor/design-page/DesignPagePanelRegion";
 import { DesignPagePresentationQaLayer } from "@/components/editor/design-page/DesignPagePresentationQaLayer";
 import { DesignPageSceneRegion } from "@/components/editor/design-page/DesignPageSceneRegion";
-import {
-  getRoomTypeLabel,
-} from "@/lib/design-page-house-plan";
 import {
   useDesignPageCatalogPlacement,
   type CatalogPlacementPreviewTarget,
@@ -52,11 +48,8 @@ import { buildDesignPageSceneRegionAdapter } from "@/lib/design-page-scene-regio
 import { buildDesignPageViewportRegionAdapter } from "@/lib/design-page-viewport-region-adapter";
 import { composeDesignPageSceneRegionModel } from "@/lib/design-page-viewport-region-model";
 import { buildDesignPageDialogLayerAdapter } from "@/lib/design-page-dialog-layer-adapter";
-import { buildDesignPagePanelRegionAdapter } from "@/lib/design-page-panel-region-adapter";
-import { buildDesignControlsPanelModel } from "@/lib/design-page-controls-panel-model";
+import { buildDesignPagePanelRegistration } from "@/lib/design-page-panel-registration";
 import { buildDesignPageDialogLayerModel } from "@/lib/design-page-dialog-layer-model";
-import { buildDesignPageSelectionPanelModels } from "@/lib/design-page-selection-panel-model";
-import { buildDesignPageShoppingPanelModel } from "@/lib/design-page-shopping-panel-model";
 import {
   type Style,
   type CameraView,
@@ -178,24 +171,19 @@ export function DesignPageWorkspace() {
   const [clientPreview, setClientPreview] = useState(false);
   const [itemCartOpen, setItemCartOpen] = useState(false);
   const [itemCart, setItemCart] = useState<Array<{ id: string; productId: string; title: string; qty: number; thumbUrl?: string }>>([]);
+  const importedModelsWorkspace = useDesignPageImportedModels();
   const {
     state: {
-      selectedFamilyKey: selectedImportedFamilyKey,
       selectedProductId: selectedImportedProductId,
       modelOptions: importedModelOptions,
       catalogByProductId: importedCatalogByProductId,
       modelUrlByAssetId: importedModelUrlByAssetId,
-      familyOptions: importedFamilyOptions,
-      visibleModelOptions: visibleImportedModelOptions,
-      catalogItems,
     },
     actions: {
-      setSelectedFamilyKey: setSelectedImportedFamilyKey,
-      setSelectedProductId: setSelectedImportedProductId,
       ensureCatalogItem: ensureImportedCatalogItem,
       getRelatedProductIds: getRelatedImportedProductIds,
     },
-  } = useDesignPageImportedModels();
+  } = importedModelsWorkspace;
   const [placementAddMode, setPlacementAddMode] = useState<PlacementAddMode>("preview");
   const [placementPreferencesLoaded, setPlacementPreferencesLoaded] = useState(false);
   const [, bumpHistoryRevision] = useDesignPageHistoryRevision();
@@ -257,28 +245,16 @@ export function DesignPageWorkspace() {
       floorPlanUnderlay,
       floorPlanCalibrationMode,
       floorPlanCalibrationPoints,
-      floorPlanCalibrationDistanceInput,
       floorPlanTraceRoomMode,
       floorPlanDrawRoomMode,
-      floorPlanDrawAngleLockMode,
-      floorPlanExactWallLengthInput,
       floorPlanTraceRoomPoints,
       blankGridRoomPreviewPoint,
-      floorPlanTraceRoomType,
       floorPlanTraceOpeningMode,
       floorPlanTraceOpeningPoints,
       floorPlanTraceOpeningKind,
-      floorPlanPdfSourceReady,
-      floorPlanPdfRenderingPage,
-      floorPlanCalibrationSummary,
       blankGridRoomDrawActive,
-      activeFloorPlanTool,
     },
     actions: {
-      setFloorPlanCalibrationDistanceInput,
-      setFloorPlanDrawAngleLockMode,
-      setFloorPlanExactWallLengthInput,
-      setFloorPlanTraceRoomType,
       setFloorPlanTraceOpeningKind,
       resetFloorPlanInteraction,
       activateFloorPlanRoomTrace,
@@ -322,9 +298,9 @@ export function DesignPageWorkspace() {
   const [presentModeRoomId, setPresentModeRoomId] = useState<string | null>(null);
   const [shoppingReadinessFilter, setShoppingReadinessFilter] =
     useState<ShoppingReadinessFilter>("all");
+  const surfaceStateController = useDesignPageSurfaceStateController();
   const {
     state: {
-      floorFinishPanelOpenSignal,
       activeSurfaceTarget,
       selectedWallSurfaceTarget,
       selectedRendererSurfaceTarget,
@@ -333,7 +309,7 @@ export function DesignPageWorkspace() {
       surfaceBrushPaint,
     },
     actions: surfaceStateActions,
-  } = useDesignPageSurfaceStateController();
+  } = surfaceStateController;
   const {
     setActiveSurfaceTarget,
     setSelectedWallSurfaceTarget,
@@ -630,7 +606,6 @@ export function DesignPageWorkspace() {
   const {
     boundaries: { house: housePlanController },
     state: {
-      room: { roomWidthInput, roomDepthInput, newRoomType, newRoomShape },
       floor: { hiddenFloorLevels, stackedFloorView },
     },
     derived: {
@@ -640,7 +615,6 @@ export function DesignPageWorkspace() {
         roomDepth,
         roomHeight,
         wallThickness,
-        activeRoomPresetId,
         items,
         zones,
       },
@@ -660,10 +634,6 @@ export function DesignPageWorkspace() {
     actions: {
       room: {
         clampToActiveRoom,
-        setRoomWidthInput,
-        setRoomDepthInput,
-        setNewRoomType,
-        setNewRoomShape,
         handleAddRoom,
         handleRenameRoom,
         handleMoveRoom2D,
@@ -762,17 +732,7 @@ export function DesignPageWorkspace() {
     },
     derived: {
       roomItemCountsById,
-      roomShoppingSummaries,
-      activeRoomShoppingSummary,
-      activeRoomFloorMaterialId,
-      activeRoomFloorRotationDeg,
-      activeRoomFloorScale,
-      activeRoomFloorSettings,
-      activeRoomCeilingSettings,
       activeSelectedWallFaceId,
-      activeRoomWallSettings,
-      activeRoomSelectedWallSettings,
-      surfaceRoomSummaries,
       surfaceInspectorIsWall,
       surfaceInspectorIsCeiling,
       activeRoomHeightMm,
@@ -784,9 +744,6 @@ export function DesignPageWorkspace() {
       activeRoomCeilingOpacity,
       activeRoomCeilingVisible,
       activeRoomCeilingColor,
-      activeRoomCategoryCounts,
-      activeRoomProductQuantities,
-      activeRoomVariantQuantities,
       activeRoomShoppingItems,
       wholeHomeShoppingSummary,
       activeSceneItemsForGuides,
@@ -1201,37 +1158,16 @@ export function DesignPageWorkspace() {
     },
   });
   const {
-    rotationInputValue,
-    rotationSnapPresetDegrees,
     rotationSnapEnabled,
     rotationSnapStepDegrees,
     rotationSnapStepRadians,
     previewVariantId,
     previewMaterialPresetId,
-    productModelVariantControlsState,
-    productFinishControlsState,
   } = productInspectionController.state;
   const {
     selectedProduct,
-    selectedBrand,
-    selectedModelTitle,
-    activeVariantLabel,
-    selectedCategoryDebugLabel,
-    selectedItemPlanningDimensionsMm,
-    selectedAdjustablePendantHeight,
-    selectedStyleConsistencyReport,
-    selectedProductDetailSections,
-    selectedDimensionImageUrl,
-    fullDimensionsDetails,
     itemPlanningBoundsByInstanceId,
   } = productInspectionController.derived;
-  const {
-    setRotationInputValue,
-    setRotationSnapPresetDegrees,
-    adjustSelectedPendantHeight,
-    modelControls: productModelControlActions,
-    finishControls: productFinishControlActions,
-  } = productInspectionController.actions;
   const {
     resolveItemConfigurationEntry,
     resolveConfiguredVisualDimsMm,
@@ -1422,10 +1358,7 @@ export function DesignPageWorkspace() {
       feedback: { showToast: showRuleToast, track },
     },
   });
-  const {
-    derived: surfaceWorkspaceDerived,
-    actions: surfaceWorkspaceActions,
-  } = useDesignPageSurfaceWorkspaceFacade({
+  const surfaceWorkspace = useDesignPageSurfaceWorkspaceFacade({
     state: {
       document: { activeRoomId: designSnapshot.activeRoomId },
       selection: { selectedPlanRoomId },
@@ -1450,6 +1383,10 @@ export function DesignPageWorkspace() {
       feedback: { showToast: showRuleToast, track },
     },
   });
+  const {
+    derived: surfaceWorkspaceDerived,
+    actions: surfaceWorkspaceActions,
+  } = surfaceWorkspace;
   const {
     state: {
       pendingTemplateReplacement: pendingPlanTemplateReplacement,
@@ -1869,7 +1806,7 @@ export function DesignPageWorkspace() {
       clampToRoom: clampToActiveRoom,
     },
   });
-  const { actions: panelActions } = useDesignPagePanelActions({
+  const panelController = useDesignPagePanelActions({
     state: {
       activeRoomId: activeRoom?.id ?? null,
       activeSurfaceTarget,
@@ -1889,6 +1826,7 @@ export function DesignPageWorkspace() {
       commitItems, updateSelection,
     },
   });
+  const { actions: panelActions } = panelController;
 
   const getAiNotesItems = useCallback(() => itemsRef.current, []);
   const {
@@ -2022,7 +1960,6 @@ export function DesignPageWorkspace() {
     switchPendingCatalogPlacementToBestOption,
     addCatalogItemDirectlyToRoom,
     addCatalogItemToRoom,
-    autoPlaceCatalogItemInRoom,
     previewCatalogPlacementIntent,
     selectPendingCatalogPlacementBlocker,
     placePendingCatalogBesideBlocker,
@@ -2034,8 +1971,6 @@ export function DesignPageWorkspace() {
     handleCatalogPlacementPointerDown,
     handleCatalogPlacementPointerMove,
     handleCatalogPlacementPointerUp,
-    handleCatalogDragStart,
-    handleCatalogDragEnd,
     handleCatalogCanvasDragOver,
     handleCatalogCanvasDrop,
     handleCatalogCanvasDragLeave,
@@ -2220,35 +2155,7 @@ export function DesignPageWorkspace() {
     },
   });
 
-  const {
-    state: {
-      studio: cabinetryStudioState,
-      canUseStudio: canUseCabinetryStudio,
-      accessLevel: cabinetryAccessLevel,
-      availableSpaces: cabinetryAvailableSpaces,
-      preferredSpaceId: cabinetryPreferredSpaceId,
-      selected: selectedCabinet,
-      project: {
-        assets: projectCabinetAssets,
-        schedulePackage: projectCabinetSchedulePackage,
-        handoffPackage: projectCabinetHandoffPackage,
-      },
-    },
-    refs: { openedAt: cabinetryStudioOpenedAtRef },
-    actions: {
-      openCreateStudio: openCabinetryStudio,
-      dismissStudio: dismissCabinetryStudio,
-      saveDefinition: handleSaveCabinetDefinition,
-      placeInPlan: handlePlaceCabinetInPlan,
-      centerSelected: centerSelectedCabinetInRoom,
-      snapSelectedToWall: snapSelectedCabinetToNearestWall,
-      nudgeSelected: nudgeSelectedCabinet,
-      rotateSelectedByDegrees: rotateSelectedCabinetByDegrees,
-      resetSelectedRotation: resetSelectedCabinetRotation,
-      exportSelected: handleSelectedCabinetExport,
-      editSelected: handleEditSelectedCabinet,
-    },
-  } = useDesignPageCabinetry({
+  const cabinetryWorkspace = useDesignPageCabinetry({
     state: {
       activeRoom: activeRoom ?? null,
       activePlanRoom: activeRoom
@@ -2294,6 +2201,27 @@ export function DesignPageWorkspace() {
       showToast: showRuleToast,
     },
   });
+  const {
+    state: {
+      studio: cabinetryStudioState,
+      canUseStudio: canUseCabinetryStudio,
+      accessLevel: cabinetryAccessLevel,
+      availableSpaces: cabinetryAvailableSpaces,
+      preferredSpaceId: cabinetryPreferredSpaceId,
+      selected: selectedCabinet,
+      project: {
+        schedulePackage: projectCabinetSchedulePackage,
+        handoffPackage: projectCabinetHandoffPackage,
+      },
+    },
+    refs: { openedAt: cabinetryStudioOpenedAtRef },
+    actions: {
+      openCreateStudio: openCabinetryStudio,
+      dismissStudio: dismissCabinetryStudio,
+      saveDefinition: handleSaveCabinetDefinition,
+      placeInPlan: handlePlaceCabinetInPlan,
+    },
+  } = cabinetryWorkspace;
   const selectedCabinetItem = selectedCabinet?.item ?? null;
 
   const placementSelectionWorkspace =
@@ -2376,28 +2304,14 @@ export function DesignPageWorkspace() {
       },
     });
   const {
-    selectedRotationDegrees,
-    rotateControlsDisabled,
-    selectedItemPanelControllerState,
-  } = placementSelectionWorkspace.state.interaction;
-  const {
     alignSelectionX,
     alignSelectionZ,
     applyItemRotation,
-    rotateSelectedByDegrees,
-    resetSelectedRotation,
-    applyRotationInputValue,
     duplicateSelectedItem,
     deleteSelectedItem,
     centerSelectedItemInRoom,
     snapSelectedItemToNearestWall,
     moveSelectedItemToRoom,
-    nudgeSelectedItem,
-    setSelectedItemQuantity,
-    setShoppingItemInclude,
-    addActiveRoomCartReadyItems,
-    selectProductVariant: handleSelectProductVariant,
-    selectedItemPanelControllerActions,
   } = placementSelectionWorkspace.actions.interaction;
   const {
     activeTargetValid: activePlacementTargetValid,
@@ -2853,155 +2767,109 @@ export function DesignPageWorkspace() {
     scene: sceneCanvasRegionModel,
     viewport: viewportRegionModel,
   });
-  const shoppingPanelModel = buildDesignPageShoppingPanelModel({
-    configuration: { designerTheme: showDesignerTheme },
+  const panelRegionModel = buildDesignPagePanelRegistration({
+    boundaries: {
+      cabinetry: cabinetryWorkspace,
+      floorPlanDocument: floorPlanDocumentController,
+      importedModels: importedModelsWorkspace,
+      panel: panelController,
+      placementSelection: placementSelectionWorkspace,
+      planDocument: planDocumentController,
+      roomFloor: roomFloorWorkspace,
+      sceneRoom: sceneRoomReadFacade,
+      surfaceState: surfaceStateController,
+      surfaceWorkspace,
+    },
     state: {
-      overview: { activeRoom: activeRoomShoppingSummary, activeRoomItems: activeRoomShoppingItems, catalogItems,
-        rooms: roomShoppingSummaries, wholeHome: wholeHomeShoppingSummary, activeFilter: shoppingReadinessFilter },
-      cart: { items, designId: designId ?? null, plan, isGuest: !session?.user },
+      document: {
+        designId,
+        plan,
+        rooms: designSnapshot.rooms,
+        activeRoomId: designSnapshot.activeRoomId,
+        authenticated: Boolean(session?.user),
+      },
+      editor: {
+        editorMode,
+        controlsMode: designControlsPanelMode,
+        controls: { collapsed: designPanelCollapsed, selectionContext: selectedObjectContext,
+          viewMode, style, budget, showGrid, snapEnabled },
+        shoppingVisible: shoppingPanelVisibleForLayout,
+        controlsVisible: designControlsPanelVisibleForLayout,
+      },
+      plan: {
+        roomConnectionChecklistItems, visiblePlanOpening, visiblePlanOpeningRoomName,
+        visiblePlanOpeningWallSpanMeters, visiblePlanOpeningMaxHeightMeters,
+        planStartMode: guidedPlanStartMode, planCompletionSignal: consumerPlanCompletionSignal,
+        floorPlanQualityReport,
+      },
+      shopping: { readinessFilter: shoppingReadinessFilter, placementAddMode },
+      ai: { aiLayoutProposal: pendingAiLayoutProposal },
+    },
+    derived: {
+      surface: { showFloorPropertiesPanel: inlineFloorPropertiesPanelVisible },
+    },
+    configuration: {
+      designerTheme: showDesignerTheme, isDesigner, isClientPreview, canEdit,
+      canUseCabinetryStudio, canEditPlanGeometry, aiDesignEnabled,
     },
     actions: {
-      overview: { onSelectRoom: handleSwitchRoom, onGoFurnish: goFurnish, onAddActiveRoomCartReadyItems: addActiveRoomCartReadyItems,
-        onSetItemInclude: setShoppingItemInclude, onSwapShoppingItem: swapShoppingItemReplacement,
-        onPreviewReplacement: previewShoppingReplacement, onFilterChange: setShoppingReadinessFilter },
-      cart: { onRemove: panelActions.removeShoppingItem, onSetQty: setSelectedItemQuantity, onSetInclude: setShoppingItemInclude,
-        onBulkSwap, onShowUpgrade: () => setShowUpgrade(true), openGuestPrompt },
-    },
-  });
-  const selectionPanelModels = buildDesignPageSelectionPanelModels({
-    cabinet: {
-      state: { cabinet: selectedCabinet!, project: { handoffPackage: projectCabinetHandoffPackage, hasAssets: projectCabinetAssets.length > 0 } },
-      configuration: { canEdit, canUseStudio: canUseCabinetryStudio, isDesigner, isClientPreview, designerTheme: showDesignerTheme },
-      actions: { center: centerSelectedCabinetInRoom, snapToWall: snapSelectedCabinetToNearestWall, nudge: nudgeSelectedCabinet,
-        rotateByDegrees: rotateSelectedCabinetByDegrees, resetRotation: resetSelectedCabinetRotation,
-        export: handleSelectedCabinetExport, edit: handleEditSelectedCabinet, delete: deleteSelectedItem },
-    },
-    item: {
-      state: {
-        document: { rooms: designSnapshot.rooms.map((room) => ({ id: room.id, name: room.name })), activeRoomId: designSnapshot.activeRoomId },
-        details: { product: selectedProduct!, item: selectedItem, measurementUnit: planMeasurementUnit,
-          planningDimensionsMm: selectedItemPlanningDimensionsMm, selectedBrand, selectedModelTitle, selectedCategoryDebugLabel,
-          activeVariantLabel, productDetailSections: selectedProductDetailSections, fullDimensionsDetails,
-          selectedDimensionImageUrl, styleConsistencyReport: selectedStyleConsistencyReport },
-        inspectionController: { state: selectedItemPanelControllerState,
-          adjustableHangingHeight: selectedAdjustablePendantHeight
-            ? { valueCm: selectedAdjustablePendantHeight.currentCm, minCm: selectedAdjustablePendantHeight.minCm,
-                maxCm: selectedAdjustablePendantHeight.maxCm, stepCm: 1 }
-            : null },
-        rotation: { enabled: Boolean(selectedItem), state: { selectedRotationDegrees, rotationSnapEnabled, rotationSnapStepDegrees,
-          rotationSnapPresetDegrees, rotationInputValue, disabled: rotateControlsDisabled } },
-        productModelVariants: productModelVariantControlsState, productFinishes: productFinishControlsState,
+      navigation: {
+        signIn: signInWithReturn, goFurnish, goAiDesign, goShop,
+        selectRoom: handleSwitchRoom, changePlacementAddMode: setPlacementAddMode,
+        changeStyle: setStyle, changeBudget: setBudget,
       },
-      configuration: { dark: showDesignerTheme, isDesigner, isClientPreview, canEdit },
-      actions: {
-        inspectionController: selectedItemPanelControllerActions,
-        placement: { onMoveToRoom: moveSelectedItemToRoom, onDuplicate: duplicateSelectedItem, onDelete: deleteSelectedItem,
-          onCenterInRoom: centerSelectedItemInRoom, onSnapToWall: snapSelectedItemToNearestWall,
-          onNudge: nudgeSelectedItem, onAdjustHangingHeight: adjustSelectedPendantHeight },
-        rotation: { onSnapPresetChange: setRotationSnapPresetDegrees, onRotateByDegrees: rotateSelectedByDegrees,
-          onResetRotation: resetSelectedRotation, onRotationInputChange: setRotationInputValue, onApplyRotationInput: applyRotationInputValue },
-        productConfiguration: { model: productModelControlActions, finish: productFinishControlActions,
-          selectVariant: handleSelectProductVariant },
+      room: {
+        changePreset: handleRoomPresetChange,
+        commitDimension: handleCommitActiveRoomDimension,
+        changeHeight: handleActiveRoomHeightMmChange,
+        changeWallThickness: handleActiveRoomWallThicknessMmChange,
+        changeSlabThickness: handleActiveRoomSlabThicknessMmChange,
+        changeBaseboardDepth: handleActiveRoomBaseboardDepthMmChange,
+        changeSurfaceOpacity: handleActiveRoomSurfaceOpacityChange,
+        changeCeilingVisible: handleActiveRoomCeilingVisibleChange,
+        changeCeilingColor: handleActiveRoomCeilingColorChange,
       },
-    },
-  });
-  const designControlsPanelModel = buildDesignControlsPanelModel({
-    access: { dark: showDesignerTheme, isClientPreview, isAuthed: Boolean(session?.user), isDesigner, canEdit, canEditPlanGeometry, aiDesignEnabled },
-    panel: { mode: designControlsPanelMode,
-      state: { collapsed: designPanelCollapsed, selectionContext: selectedObjectContext, viewMode, style, budget, showGrid, snapEnabled } },
-    room: {
-      state: { newRoomType, newRoomShape, activeRoomPresetId, roomWidthInput, roomDepthInput, roomWidth, roomDepth,
-        activeRoomName: activeRoom?.name ?? "Current room", activeRoomId: designSnapshot.activeRoomId,
-        rooms: designSnapshot.rooms.map((room) => ({ id: room.id, name: room.name })), activeRoomType: activeRoom?.roomType ?? "living",
-        activeRoomTypeLabel: activeRoom ? getRoomTypeLabel(activeRoom.roomType) : "Room", activeFloorLevel, activeFloorRoomCount,
-        activeRoomHeightMm, activeRoomWallThicknessMm, activeRoomSlabThicknessMm, activeRoomBaseboardDepthMm,
-        activeRoomWallOpacity, activeRoomFloorOpacity, activeRoomCeilingOpacity, activeRoomCeilingVisible, activeRoomCeilingColor, stackedFloorView },
-      actions: { addDesignerRoom: handleAddRoom, onAddRoomTemplate: handleAddRoom, onNewRoomTypeChange: setNewRoomType,
-        onNewRoomShapeChange: setNewRoomShape, onRoomPresetChange: handleRoomPresetChange, onRoomWidthInputChange: setRoomWidthInput,
-        onRoomDepthInputChange: setRoomDepthInput, onCommitRoomDimension: handleCommitActiveRoomDimension,
-        onActiveRoomHeightMmChange: handleActiveRoomHeightMmChange, onActiveRoomWallThicknessMmChange: handleActiveRoomWallThicknessMmChange,
-        onActiveRoomSlabThicknessMmChange: handleActiveRoomSlabThicknessMmChange,
-        onActiveRoomBaseboardDepthMmChange: handleActiveRoomBaseboardDepthMmChange,
-        onActiveRoomSurfaceOpacityChange: handleActiveRoomSurfaceOpacityChange,
-        onActiveRoomCeilingVisibleChange: handleActiveRoomCeilingVisibleChange, onActiveRoomCeilingColorChange: handleActiveRoomCeilingColorChange },
-    },
-    floorPlan: {
-      state: { measurementUnit: planMeasurementUnit, floorPlanUnderlay, floorPlanCalibrationMode,
-        floorPlanCalibrationPointCount: floorPlanCalibrationPoints.length, floorPlanCalibrationDistanceInput, floorPlanCalibrationSummary,
-        floorPlanTraceRoomMode, floorPlanDrawRoomMode, floorPlanDrawAngleLockMode, floorPlanExactWallLengthInput,
-        floorPlanTraceRoomPointCount: floorPlanTraceRoomPoints.length, floorPlanTraceRoomType, floorPlanTraceOpeningMode,
-        floorPlanTraceOpeningPointCount: floorPlanTraceOpeningPoints.length, floorPlanTraceOpeningKind, floorPlanPdfSourceReady,
-        floorPlanPdfRenderingPage, roomConnectionChecklistItems, visiblePlanOpening, visiblePlanOpeningRoomName,
-        visiblePlanOpeningWallSpanMeters, visiblePlanOpeningMaxHeightMeters, planRoomCount: housePlan2D.rooms.length,
-        planItemCount: items.length, planOpeningCount: planOpenings.length, activeFloorPlanTool, simplePlanControls,
-        planGuidedActionsEnabled, planStartMode: guidedPlanStartMode, planCompletionSignal: consumerPlanCompletionSignal, floorPlanQualityReport },
-      actions: { onPlanCompletionHandled: handleConsumerPlanCompletionHandled, onPlanStartModeChange: setGuidedPlanStartMode,
-        onPlanQualityAction: handlePlanQualityAction, onSimplePlanControlsChange: setSimplePlanControls,
-        onPlanGuidedActionsEnabledChange: setPlanGuidedActionsEnabled, onSelectFloorPlanTool: handleSelectFloorPlanTool,
-        onAddFloorPlanOpeningFromTool: handleAddFloorPlanOpeningFromTool, onApplyPlanTemplate: handleApplyPlanTemplate,
-        onFloorPlanUpload: handleFloorPlanUnderlayUpload, onFloorPlanPdfPageChange: handleFloorPlanPdfPageChange,
-        onFloorPlanOpacityChange: handleFloorPlanUnderlayOpacityChange, onFloorPlanLockChange: handleFloorPlanUnderlayLockChange,
-        onFloorPlanCalibrationModeChange: handleFloorPlanCalibrationModeChange,
-        onFloorPlanCalibrationDistanceChange: setFloorPlanCalibrationDistanceInput, onApplyFloorPlanCalibration: handleApplyFloorPlanCalibration,
-        onResetFloorPlanCalibrationPoints: handleResetFloorPlanCalibrationPoints, onFloorPlanTraceRoomModeChange: handleFloorPlanTraceRoomModeChange,
-        onFloorPlanTraceRoomDrawModeChange: handleFloorPlanDrawRoomModeChange,
-        onFloorPlanDrawAngleLockModeChange: setFloorPlanDrawAngleLockMode,
-        onFloorPlanExactWallLengthInputChange: setFloorPlanExactWallLengthInput,
-        onApplyFloorPlanExactWallLength: handleApplyFloorPlanExactWallLength, onFloorPlanTraceRoomTypeChange: setFloorPlanTraceRoomType,
-        onUndoFloorPlanTraceRoomPoint: handleUndoFloorPlanTraceRoomPoint, onResetFloorPlanTraceRoomPoints: handleResetFloorPlanTraceRoomPoints,
-        onFloorPlanTraceOpeningModeChange: handleFloorPlanTraceOpeningModeChange,
-        onFloorPlanTraceOpeningKindChange: setFloorPlanTraceOpeningKind,
-        onResetFloorPlanTraceOpeningPoints: handleResetFloorPlanTraceOpeningPoints, onClearFloorPlan: handleClearFloorPlanUnderlay,
-        onAddSuggestedDoorway: handleAddSuggestedDoorway, onUpdateOpeningMetrics: handleUpdateOpeningMetrics2D },
-    },
-    surfaces: {
-      state: { activeRoomFloorMaterialId, activeRoomFloorRotationDeg, activeRoomFloorScale,
-        activeRoomFloorPattern: activeRoomFloorSettings.floorPattern, activeRoomFloorPatternOffset: activeRoomFloorSettings.floorPatternOffset,
-        activeRoomFloorJointSizeMm: activeRoomFloorSettings.floorJointSizeMm, activeRoomFloorJointColor: activeRoomFloorSettings.floorJointColor,
-        activeSurfaceTarget, selectedWallFaceId: activeSelectedWallFaceId, selectedWallLabel: getWallFaceLabel(activeSelectedWallFaceId),
-        activeRoomWallSettings, activeRoomSelectedWallSettings, activeRoomCeilingSettings, surfaceBrushActive, surfaceBrushMaterialId,
-        surfaceBrushPaintColorHex: surfaceBrushPaint?.colorHex ?? null, surfaceBrushPaintName: surfaceBrushPaint?.name ?? null,
-        surfaceRooms: surfaceRoomSummaries, floorFinishPanelOpenSignal, floorOptions, showFloorPropertiesPanel: inlineFloorPropertiesPanelVisible },
-      actions: {
-        onApplyFloorMaterialToRoom: surfaceWorkspaceActions.applyFloorMaterialToRoom, onApplyFloorMaterialToAllRooms: surfaceWorkspaceActions.applyFloorMaterialToAllRooms,
-        onRotateActiveFloorMaterial: surfaceWorkspaceActions.rotateActiveFloorMaterial, onResetActiveFloorMaterialPattern: surfaceWorkspaceActions.resetActiveFloorMaterialPattern,
-        onActiveFloorMaterialScaleChange: surfaceWorkspaceActions.changeActiveFloorMaterialScale,
-        onActiveFloorSurfaceSettingsChange: surfaceWorkspaceActions.changeActiveFloorSurfaceSettings, onSurfaceTargetChange: surfaceWorkspaceActions.changeSurfaceTargetMode,
-        onSurfaceBrushActiveChange: surfaceWorkspaceActions.changeSurfaceBrushActive, onSurfaceMaterialSelected: surfaceWorkspaceActions.selectSurfaceMaterialForBrush,
-        onSurfacePaintSelected: surfaceWorkspaceActions.selectSurfacePaintForBrush, onApplyWallMaterialToRoom: surfaceWorkspaceActions.applyWallMaterialToRoom,
-        onApplyWallMaterialToAllRooms: surfaceWorkspaceActions.applyWallMaterialToAllRooms, onApplyWallPaintToRoom: surfaceWorkspaceActions.applyWallPaintToRoom,
-        onApplyWallPaintToAllRooms: surfaceWorkspaceActions.applyWallPaintToAllRooms, onApplyCeilingPaintToRoom: surfaceWorkspaceActions.applyCeilingPaintToRoom,
-        onApplyCeilingPaintToAllRooms: surfaceWorkspaceActions.applyCeilingPaintToAllRooms,
+      floorPlan: {
+        completionHandled: handleConsumerPlanCompletionHandled,
+        changeStartMode: setGuidedPlanStartMode,
+        activateQualityIssue: handlePlanQualityAction,
+        selectTool: handleSelectFloorPlanTool,
+        addOpeningFromTool: handleAddFloorPlanOpeningFromTool,
+        applyTemplate: handleApplyPlanTemplate,
+        upload: handleFloorPlanUnderlayUpload,
+        changePdfPage: handleFloorPlanPdfPageChange,
+        changeOpacity: handleFloorPlanUnderlayOpacityChange,
+        changeLock: handleFloorPlanUnderlayLockChange,
+        changeCalibrationMode: handleFloorPlanCalibrationModeChange,
+        applyCalibration: handleApplyFloorPlanCalibration,
+        resetCalibrationPoints: handleResetFloorPlanCalibrationPoints,
+        changeTraceRoomMode: handleFloorPlanTraceRoomModeChange,
+        changeDrawRoomMode: handleFloorPlanDrawRoomModeChange,
+        applyExactWallLength: handleApplyFloorPlanExactWallLength,
+        undoTraceRoomPoint: handleUndoFloorPlanTraceRoomPoint,
+        resetTraceRoomPoints: handleResetFloorPlanTraceRoomPoints,
+        changeTraceOpeningMode: handleFloorPlanTraceOpeningModeChange,
+        resetTraceOpeningPoints: handleResetFloorPlanTraceOpeningPoints,
+        clear: handleClearFloorPlanUnderlay,
+        addSuggestedDoorway: handleAddSuggestedDoorway,
+        updateOpeningMetrics: handleUpdateOpeningMetrics2D,
+      },
+      shopping: {
+        setReadinessFilter: setShoppingReadinessFilter,
+        swapItem: swapShoppingItemReplacement,
+        previewReplacement: previewShoppingReplacement,
+        bulkSwap: onBulkSwap,
+        showUpgrade: () => setShowUpgrade(true),
+        openGuestPrompt,
+        addImportedToRoom: addSelectedImportedToRoom,
+        reviewIssue: reviewShoppingIssue,
+      },
+      cabinetry: { deleteSelected: deleteSelectedItem },
+      ai: {
+        onApplyAiLayoutProposal: applyPendingAiLayoutProposal,
+        onClearAiLayoutProposal: dismissPendingAiLayoutProposal,
       },
     },
-    shopping: {
-      state: { catalogItems, selectedImportedFamilyKey, selectedImportedProductId, importedFamilyOptions, importedModelOptions,
-        visibleImportedModelOptions, activeRoomShoppableCount: activeRoomShoppingSummary?.shoppableCount ?? 0,
-        activeRoomNeedsReviewCount: activeRoomShoppingSummary?.needsReviewCount ?? 0, activeRoomCategoryCounts,
-        activeRoomShoppingSubtotal: activeRoomShoppingSummary?.subtotal ?? 0,
-        activeRoomPreviewNames: activeRoomShoppingSummary?.previewNames ?? [], activeRoomShoppingItems,
-        activeRoomProductQuantities, activeRoomVariantQuantities, placementAddMode },
-      actions: { onAddImportedToRoom: addSelectedImportedToRoom, onAddCatalogItemToRoom: addCatalogItemToRoom,
-        onAutoPlaceCatalogItemInRoom: autoPlaceCatalogItemInRoom, onPreviewCatalogPlacementIntent: previewCatalogPlacementIntent,
-        onCatalogDragStart: handleCatalogDragStart, onCatalogDragEnd: handleCatalogDragEnd,
-        onAddActiveRoomCartReadyItems: addActiveRoomCartReadyItems, onReviewShoppingIssue: reviewShoppingIssue,
-        onSelectedImportedFamilyChange: setSelectedImportedFamilyKey, onSelectedImportedProductChange: setSelectedImportedProductId },
-    },
-    ai: { state: { aiLayoutProposal: pendingAiLayoutProposal },
-      actions: { onApplyAiLayoutProposal: applyPendingAiLayoutProposal, onClearAiLayoutProposal: dismissPendingAiLayoutProposal } },
-    actions: {
-      navigation: { onSignIn: signInWithReturn, onGoFurnish: goFurnish, onGoAiDesign: goAiDesign, onGoShop: goShop,
-        onSelectRoom: handleSwitchRoom, onPlacementAddModeChange: setPlacementAddMode, onStyleChange: setStyle, onBudgetChange: setBudget },
-      panel: panelActions,
-    },
-  });
-  const panelRegionModel = buildDesignPagePanelRegionAdapter({
-    state: { editorMode, shoppingVisible: shoppingPanelVisibleForLayout, controlsVisible: designControlsPanelVisibleForLayout,
-      hasSelectedCabinet: Boolean(selectedCabinet), hasSelectedProduct: Boolean(selectedProduct) },
-    configuration: { designerTheme: showDesignerTheme, isDesigner, isClientPreview },
-    panels: { shopping: shoppingPanelModel, selectedCabinet: selectionPanelModels.selectedCabinet,
-      selectedItem: selectionPanelModels.selectedItem, controls: designControlsPanelModel },
-    actions: { exitClientPreview: panelActions.exitClientPreview },
   });
   const dialogLayerModel = buildDesignPageDialogLayerAdapter(buildDesignPageDialogLayerModel({
     access: { isClientPreview, isAuthenticated: Boolean(session?.user), isPro: isPro(plan), designerTheme: showDesignerTheme },

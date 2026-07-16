@@ -9,6 +9,10 @@ const workspaceSource = readFileSync(
   join(root, "components/editor/design-page/DesignPageWorkspace.tsx"),
   "utf8"
 );
+const panelRegistrationSource = readFileSync(
+  join(root, "lib/design-page-panel-registration.ts"),
+  "utf8"
+);
 const structureSource = readFileSync(
   join(root, "components/editor/design-page/DesignSceneStructureLayer.tsx"),
   "utf8"
@@ -185,8 +189,13 @@ assert.match(
 );
 assert.match(
   workspaceSource,
+  /buildDesignPagePanelRegistration\(\{/,
+  "The workspace should delegate fixed-panel registration to the pure registration boundary."
+);
+assert.match(
+  panelRegistrationSource,
   /buildDesignControlsPanelModel\(\{/,
-  "The workspace should delegate control-panel contract assembly to the pure model builder."
+  "The panel registration boundary should retain control-panel contract assembly."
 );
 
 const handlePlanQualityAction = () => undefined;
