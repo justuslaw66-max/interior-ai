@@ -27,7 +27,7 @@ export type BetaFeedbackContext = {
   viewportHeight: number;
 };
 
-type BetaFeedbackWidgetProps = {
+export type BetaFeedbackWidgetProps = {
   context: BetaFeedbackContext;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;

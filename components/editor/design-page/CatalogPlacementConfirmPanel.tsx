@@ -62,7 +62,7 @@ export type CatalogPlacementConfirmPanelActions = {
   onConfirm: () => void;
 };
 
-type CatalogPlacementConfirmPanelProps = {
+export type CatalogPlacementConfirmPanelProps = {
   state: CatalogPlacementConfirmPanelState;
   configuration: CatalogPlacementConfirmPanelConfiguration;
   actions: CatalogPlacementConfirmPanelActions;

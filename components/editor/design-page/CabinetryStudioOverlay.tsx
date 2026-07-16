@@ -16,6 +16,19 @@ export type CabinetryStudioOverlayState = {
   initialDefinition?: CabinetDefinition;
 };
 
+export type CabinetryStudioOverlayProps = {
+  state: CabinetryStudioOverlayState | null;
+  enabled: boolean;
+  accessLevel: CabinetryStudioProps["accessLevel"];
+  measurementUnit: PlanMeasurementUnit;
+  availableSpaces: NonNullable<CabinetryStudioProps["availableSpaces"]>;
+  preferredSpaceId: CabinetryStudioProps["preferredSpaceId"];
+  openedAtRef: MutableRefObject<number | null>;
+  onSave: NonNullable<CabinetryStudioProps["onSave"]>;
+  onPlaceInPlan: NonNullable<CabinetryStudioProps["onPlaceInPlan"]>;
+  onDismiss: () => void;
+};
+
 export function CabinetryStudioOverlay({
   state,
   enabled,
@@ -27,18 +40,7 @@ export function CabinetryStudioOverlay({
   onSave,
   onPlaceInPlan,
   onDismiss,
-}: {
-  state: CabinetryStudioOverlayState | null;
-  enabled: boolean;
-  accessLevel: CabinetryStudioProps["accessLevel"];
-  measurementUnit: PlanMeasurementUnit;
-  availableSpaces: NonNullable<CabinetryStudioProps["availableSpaces"]>;
-  preferredSpaceId: CabinetryStudioProps["preferredSpaceId"];
-  openedAtRef: MutableRefObject<number | null>;
-  onSave: NonNullable<CabinetryStudioProps["onSave"]>;
-  onPlaceInPlan: NonNullable<CabinetryStudioProps["onPlaceInPlan"]>;
-  onDismiss: () => void;
-}) {
+}: CabinetryStudioOverlayProps) {
   if (!state || !enabled) return null;
 
   const handleCancel = () => {

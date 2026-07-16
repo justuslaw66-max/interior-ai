@@ -2,6 +2,9 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 
+import { buildDesignControlsPanelModel } from "../lib/design-page-controls-panel-model";
+import { buildDesignPageDialogLayerModel } from "../lib/design-page-dialog-layer-model";
+
 const planPanelPath = path.join(process.cwd(), "components", "editor", "DesignControlsPlanPanel.tsx");
 const source = fs.readFileSync(planPanelPath, "utf8");
 const designPagePath = path.join(
@@ -84,6 +87,16 @@ const planTemplateChoiceDialogPath = path.join(
   "PlanTemplateChoiceDialog.tsx"
 );
 const planTemplateChoiceDialogSource = fs.readFileSync(planTemplateChoiceDialogPath, "utf8");
+const dialogLayerSource = fs.readFileSync(
+  path.join(
+    process.cwd(),
+    "components",
+    "editor",
+    "design-page",
+    "DesignPageDialogLayer.tsx"
+  ),
+  "utf8"
+);
 const commandBarPath = path.join(
   process.cwd(),
   "components",
@@ -383,10 +396,38 @@ assert.match(
   "Queued 3D camera fits should run through the perspective-camera handoff helper."
 );
 
-assert.match(
-  designPageSource,
-  /onGoView3D=\{\(\) => handleEditorViewModeChange\("3d"\)\}/,
-  "Plan-panel 3D navigation should use the camera-aware view mode handler."
+const goView3D = () => undefined;
+const noop = () => undefined;
+const controlsPanelModel = buildDesignControlsPanelModel({
+  access: {},
+  panel: { mode: "plan", state: {} },
+  room: { state: {}, actions: { addDesignerRoom: noop } },
+  floorPlan: {
+    state: { floorPlanUnderlay: null, planRoomCount: 0 },
+    actions: { onFloorPlanTraceRoomDrawModeChange: noop },
+  },
+  surfaces: { state: {}, actions: {} },
+  shopping: { state: {}, actions: {} },
+  ai: { state: {}, actions: {} },
+  actions: {
+    navigation: {},
+    panel: {
+      changeDesignPanelCollapsed: noop,
+      goView3D,
+      runAiLayout: noop,
+      regenerateAiLayout: noop,
+      changeActiveWallSurfaceSettings: noop,
+      resetActiveWallSurface: noop,
+      resetActiveCeilingSurface: noop,
+      toggleGrid: noop,
+      toggleSnap: noop,
+    },
+  },
+} as unknown as Parameters<typeof buildDesignControlsPanelModel>[0]);
+assert.strictEqual(
+  controlsPanelModel.actions.onGoView3D,
+  goView3D,
+  "The pure controls model should preserve the camera-aware 3D navigation action."
 );
 
 assert.doesNotMatch(
@@ -494,10 +535,37 @@ assert.match(
   "The Load modal should explain the saved-design/template distinction and expose a direct template shortcut."
 );
 
+const openNewPlanPickerAction = () => undefined;
+const cancelPlanChoice = () => undefined;
+const replaceCurrentPlan = () => undefined;
+const saveCurrentAndStartNew = () => undefined;
+const signInForPlan = () => undefined;
+const dialogModel = buildDesignPageDialogLayerModel({
+  access: { isClientPreview: false, isAuthenticated: true, isPro: true, designerTheme: false },
+  billing: { upgrade: {}, plans: {}, startingCheckout: false, annualSavingsLabel: "", upgradeActions: {}, plansActions: {} },
+  persistence: {
+    guestSave: { open: false, onNotNow: noop, onSaveAndContinue: noop },
+    myDesigns: { data: {}, actions: { onOpenTemplates: openNewPlanPickerAction } },
+    templateChoice: {
+      data: { open: true, templateLabel: "Studio", busy: false, errorMessage: null },
+      actions: { onCancel: cancelPlanChoice, onReplaceCurrent: replaceCurrentPlan,
+        onSaveCurrentAndStartNew: saveCurrentAndStartNew, onSignIn: signInForPlan },
+    },
+  },
+  ai: { notes: {} },
+  presentation: { presentExport: {} },
+  editing: { roomRename: {}, annotation: {} },
+  placement: { identity: {}, assessment: {}, activeRoomName: null, actions: {} },
+  feedback: { beta: {}, toasts: {}, validation: {} },
+  sharing: {},
+  cabinetry: { state: {}, access: {}, configuration: {}, refs: {}, actions: {} },
+  cart: {},
+} as unknown as Parameters<typeof buildDesignPageDialogLayerModel>[0]);
+assert.strictEqual(dialogModel.dialogs.myDesigns.onOpenTemplates, openNewPlanPickerAction);
 assert.match(
-  designPageSource,
-  /<MyDesignsDialog[\s\S]*?onOpenTemplates=\{openNewPlanPicker\}/,
-  "The extracted Load modal should keep its template shortcut wired to the page-owned action."
+  dialogLayerSource,
+  /<MyDesignsDialog\s+\{\.\.\.dialogs\.myDesigns\}\s*\/>[\s\S]*?<PlanTemplateChoiceDialog\s+\{\.\.\.dialogs\.planTemplateChoice\}\s*\/>/,
+  "The dialog layer should own My Designs before the plan-template choice dialog."
 );
 
 assert.match(
@@ -566,10 +634,14 @@ assert.match(
   "A preservation failure should remain visible and accessible inside the plan choice dialog."
 );
 
-assert.match(
+assert.strictEqual(dialogModel.dialogs.planTemplateChoice.onCancel, cancelPlanChoice);
+assert.strictEqual(dialogModel.dialogs.planTemplateChoice.onReplaceCurrent, replaceCurrentPlan);
+assert.strictEqual(dialogModel.dialogs.planTemplateChoice.onSaveCurrentAndStartNew, saveCurrentAndStartNew);
+assert.strictEqual(dialogModel.dialogs.planTemplateChoice.onSignIn, signInForPlan);
+assert.doesNotMatch(
   designPageSource,
-  /<PlanTemplateChoiceDialog[\s\S]*?onCancel=\{cancelPendingPlanChoice\}[\s\S]*?onReplaceCurrent=\{replaceCurrentPlanFromChoice\}[\s\S]*?onSaveCurrentAndStartNew=\{saveCurrentAndStartNewPlan\}/,
-  "The pending template should keep all three dialog branches wired explicitly."
+  /<(?:MyDesignsDialog|PlanTemplateChoiceDialog)\b/,
+  "The workspace should not retain template-related dialog leaf markup."
 );
 
 assert.match(

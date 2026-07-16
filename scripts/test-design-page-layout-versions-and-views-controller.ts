@@ -24,6 +24,10 @@ const namedViewsControllerSource = readFileSync(
   join(root, "lib/useDesignPageNamedCameraViewsController.ts"),
   "utf8"
 );
+const presentExportControllerSource = readFileSync(
+  join(root, "lib/useDesignPagePresentExportController.ts"),
+  "utf8"
+);
 
 assert.match(
   workspaceSource,
@@ -37,8 +41,13 @@ assert.match(
 );
 assert.match(
   workspaceSource,
-  /onOpenCameraView:\s*openSavedCameraView/,
-  "The export dialog should use the named-view controller's open action."
+  /useDesignPagePresentExportController\(\{[\s\S]*?camera:\s*\{[\s\S]*?open:\s*openSavedCameraView/,
+  "The workspace should inject the named-view controller's open action at the present/export boundary."
+);
+assert.match(
+  presentExportControllerSource,
+  /onOpenCameraView:\s*actions\.camera\.open/,
+  "The present/export controller should map the injected named-view action to the dialog contract."
 );
 assert.doesNotMatch(
   workspaceSource,

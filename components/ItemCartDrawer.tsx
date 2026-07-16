@@ -1,7 +1,7 @@
 "use client";
 
 
-type CartItem = {
+export type ItemCartDrawerItem = {
   id: string;
   productId: string;
   title: string;
@@ -9,8 +9,8 @@ type CartItem = {
   thumbUrl?: string;
 };
 
-type Props = {
-  items: CartItem[];
+export type ItemCartDrawerProps = {
+  items: ItemCartDrawerItem[];
   onRemove: (productId: string) => void;
   onUpdateQty: (productId: string, qty: number) => void;
   onClear: () => void;
@@ -29,7 +29,7 @@ export default function ItemCartDrawer({
   isOpen,
   onToggle,
   triggerClassName = "bottom-4 right-4",
-}: Props) {
+}: ItemCartDrawerProps) {
   const totalItems = items.reduce((sum, item) => sum + item.qty, 0);
 
   return (

@@ -16,6 +16,10 @@ const designPageComponentsPath = path.join(
   "editor",
   "design-page"
 );
+const panelRegionSource = fs.readFileSync(
+  path.join(designPageComponentsPath, "DesignPagePanelRegion.tsx"),
+  "utf8"
+);
 const designPageEditorCommandBarSource = fs.readFileSync(
   path.join(
     process.cwd(),
@@ -382,8 +386,8 @@ assert.match(
 
 assert.match(
   source,
-  /showFloorPropertiesPanel=\{inlineFloorPropertiesPanelVisible\}/,
-  "Design controls should receive the inline floor panel visibility flag."
+  /buildDesignControlsPanelModel\(\{[\s\S]*?surfaces:\s*\{[\s\S]*?showFloorPropertiesPanel:\s*inlineFloorPropertiesPanelVisible/,
+  "The workspace should inject inline floor-panel visibility at the controls-model boundary."
 );
 
 assert.match(
@@ -469,9 +473,9 @@ assert.match(
 );
 
 assert.match(
-  source,
+  panelRegionSource,
   /data-testid="shopping-dock"[\s\S]*md:w-\[18\.15rem\][\s\S]*md:left-20[\s\S]*md:left-4/,
-  "Shop mode should use the same left work-panel slot as Plan and Furnish."
+  "The panel region should keep Shop in the same left work-panel slot as Plan and Furnish."
 );
 
 assert.doesNotMatch(

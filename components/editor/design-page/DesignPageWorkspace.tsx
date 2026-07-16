@@ -5,8 +5,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { signIn, useSession } from "next-auth/react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import CartSidebar from "@/components/CartSidebar";
-import ItemCartDrawer from "@/components/ItemCartDrawer";
 import type { LightingPreset } from "@/lib/lightingPresets";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import { isPro, type Plan } from "@/lib/plan";
@@ -15,48 +13,24 @@ import { track } from "@/lib/analytics";
 import { getAnonId } from "@/lib/anon";
 import { preloadCoreAssets } from "@/lib/preloadAssets";
 import { initializeCatalog } from "@/lib/catalog-init";
-import type {
-  DesignItem,
-} from "@/lib/room-types";
-import {
-  switchRoom,
-} from "@/lib/room-types";
+import type { DesignItem } from "@/lib/room-types";
 import { getWallFaceLabel } from "@/lib/surface-settings";
 import type { ShoppingReadinessFilter } from "@/lib/shopping-readiness";
 import { getAllRoomNames } from "@/lib/room-hooks";
-import BetaFeedbackWidget from "@/components/BetaFeedbackWidget";
-import DesignControlsPanel from "@/components/editor/DesignControlsPanel";
 import type { PlanStartMode } from "@/components/editor/DesignControlsPlanPanel";
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
 import type { Plan2DCameraDiagnostics } from "@/components/editor/camera/Plan2DCameraInvariantGuard";
-import ShoppingOverviewPanel from "@/components/editor/ShoppingOverviewPanel";
-import { CatalogPlacementConfirmPanel } from "@/components/editor/design-page/CatalogPlacementConfirmPanel";
-import { AiNotesDialog } from "@/components/editor/design-page/AiNotesDialog";
-import { DesignPageToasts } from "@/components/editor/design-page/DesignPageToasts";
 import { DesignPageComposition } from "@/components/editor/design-page/DesignPageComposition";
 import { DesignPageEditorChrome } from "@/components/editor/design-page/DesignPageEditorChrome";
+import { DesignPageDialogLayer } from "@/components/editor/design-page/DesignPageDialogLayer";
+import { DesignPagePanelRegion } from "@/components/editor/design-page/DesignPagePanelRegion";
 import { DesignPageSceneRegion } from "@/components/editor/design-page/DesignPageSceneRegion";
-import { DesignValidationFeedback } from "@/components/editor/design-page/DesignValidationFeedback";
-import { CabinetryStudioOverlay } from "@/components/editor/design-page/CabinetryStudioOverlay";
 import {
   DesignPageProjectQaMarkers,
   DesignPageRuntimeQaMarkers,
 } from "@/components/editor/design-page/DesignPageQaMarkers";
 import { EditorCommandPalette } from "@/components/editor/design-page/EditorCommandPalette";
-import { GuestSavePromptDialog } from "@/components/editor/design-page/GuestSavePromptDialog";
 import { PlacedCabinetAssetMarkers } from "@/components/editor/design-page/PlacedCabinetAssetMarkers";
-import { PlansDialog } from "@/components/editor/design-page/PlansDialog";
-import { PlanTemplateChoiceDialog } from "@/components/editor/design-page/PlanTemplateChoiceDialog";
-import { PlanAnnotationDialog } from "@/components/editor/design-page/PlanAnnotationDialog";
-import { MyDesignsDialog } from "@/components/editor/design-page/MyDesignsDialog";
-import { PresentExportDialog } from "@/components/editor/design-page/PresentExportDialog";
-import { RoomRenameDialog } from "@/components/editor/design-page/RoomRenameDialog";
-import { ShareLinkFallbackDialog } from "@/components/editor/design-page/ShareLinkFallbackDialog";
-import {
-  SelectedCabinetPanel,
-} from "@/components/editor/design-page/SelectedCabinetPanel";
-import { SelectedItemPanel } from "@/components/editor/design-page/SelectedItemPanel";
-import { UpgradeDialog } from "@/components/editor/design-page/UpgradeDialog";
 import {
   getRoomTypeLabel,
 } from "@/lib/design-page-house-plan";
@@ -96,6 +70,13 @@ import {
 import { buildDesignPageSceneRegionAdapter } from "@/lib/design-page-scene-region-adapter";
 import { buildDesignPageViewportRegionAdapter } from "@/lib/design-page-viewport-region-adapter";
 import { composeDesignPageSceneRegionModel } from "@/lib/design-page-viewport-region-model";
+import { buildDesignPageDialogLayerAdapter } from "@/lib/design-page-dialog-layer-adapter";
+import { buildDesignPagePanelRegionAdapter } from "@/lib/design-page-panel-region-adapter";
+import { buildDesignPageBetaFeedbackContext } from "@/lib/design-page-beta-feedback";
+import { buildDesignControlsPanelModel } from "@/lib/design-page-controls-panel-model";
+import { buildDesignPageDialogLayerModel } from "@/lib/design-page-dialog-layer-model";
+import { buildDesignPageSelectionPanelModels } from "@/lib/design-page-selection-panel-model";
+import { buildDesignPageShoppingPanelModel } from "@/lib/design-page-shopping-panel-model";
 import {
   type Style,
   type CameraView,
@@ -152,6 +133,8 @@ import { useDesignPageBetaStartController } from "@/lib/useDesignPageBetaStartCo
 import { useDesignPageCanvasInteractionController } from "@/lib/useDesignPageCanvasInteractionController";
 import { useDesignPageEditorChromeController } from "@/lib/useDesignPageEditorChromeController";
 import { useDesignPagePlanCanvasActionsController } from "@/lib/useDesignPagePlanCanvasActionsController";
+import { useDesignPagePanelActions } from "@/lib/useDesignPagePanelActions";
+import { useDesignPagePresentExportController } from "@/lib/useDesignPagePresentExportController";
 import {
   isParametricCabinetItem,
 } from "@/features/cabinetry/designItemAdapters";
@@ -1603,34 +1586,8 @@ export function DesignPageWorkspace() {
       setRotationSnapPresetDegrees,
       adjustSelectedPendantHeight,
       switchSelectedProductModel,
-      modelControls: {
-        handleSelectProductOrientation,
-        handleSelectJaronConfigurationGroup,
-        handleSelectJaronConfigurationOption,
-        handleSelectJaronArm,
-        handleSelectAuburnConfigurationGroup,
-        handleSelectAuburnConfigurationOption,
-        handleSelectAuburnOrientation,
-        handleSelectArmStyleVariant,
-        handleSelectProductModelVariant,
-        handleSelectProductShapeVariant,
-        handleSelectProductLengthVariant,
-        handleSelectSloaneBenchCushion,
-        handleSelectProductLength,
-        handleSelectHuggModel,
-        handleSelectSebModel,
-        handleSelectProductConfiguration,
-      },
-      finishControls: {
-        handleSelectFinishButton,
-        handleSelectFinishSwatch,
-        handleSelectLegFinish,
-        handleSelectProductSize,
-        handleSelectStructuredColour,
-        handleShowStructuredColourPreview,
-        handleHideStructuredColourPreview,
-        handleBlurStructuredColourPreview,
-      },
+      modelControls: productModelControlActions,
+      finishControls: productFinishControlActions,
     },
     resolvers: {
       resolveItemConfigurationEntry,
@@ -2598,6 +2555,25 @@ export function DesignPageWorkspace() {
       clampToRoom: clampToActiveRoom,
     },
   });
+  const { actions: panelActions } = useDesignPagePanelActions({
+    state: {
+      activeRoomId: activeRoom?.id ?? null,
+      activeSurfaceTarget,
+      selectedWallFaceId: activeSelectedWallFaceId,
+      items,
+    },
+    refs: { selectedIds: selectedIdsRef, primaryId: primaryIdRef },
+    actions: {
+      setClientPreview, setDesignPanelCollapsed, setDesignPanelOpen,
+      setShowGrid, setSnapEnabled, setItemCartOpen,
+      changeViewMode: handleEditorViewModeChange,
+      runAiLayout, regenerateAiLayout,
+      changeWallSurfaceSettings: handleActiveWallSurfaceSettingsChange,
+      resetWallSurface: handleResetActiveWallSurface,
+      resetCeilingSurface: handleResetActiveCeilingSurface,
+      commitItems, updateSelection,
+    },
+  });
 
   const getAiNotesItems = useCallback(() => itemsRef.current, []);
   const {
@@ -2625,6 +2601,39 @@ export function DesignPageWorkspace() {
       addItem,
       commitItems: (nextItems, actionName) => commitItems(nextItems, actionName),
       showToast: showRuleToast,
+    },
+  });
+
+  const presentExportDialog = useDesignPagePresentExportController({
+    state: {
+      dialog: {
+        exportReadiness: { items: exportReadinessItems, readyCount: exportReadinessReadyCount, score: exportReadinessScore },
+        rooms: getAllRoomNames(designSnapshot), currentRoomId: presentModeRoomId ?? designSnapshot.activeRoomId ?? null,
+        viewMode, cameraViewNameInput, activeRoom: activeRoom ?? null, layoutVersionNameInput, simplePlanControls,
+        planLayerPreset, planLayers, planMeasurementUnit, planTheme, annotationToolKind, selectedPlanOverlayId,
+        visiblePlanOpening, visiblePlanOpeningRoomName, visiblePlanOpeningWallSpanMeters, visiblePlanOpeningMaxHeightMeters,
+        lightingPreset, sharingDesign, designId, shareToken, exportStylePreset, isExporting, isPdfExporting,
+        sceneReady, aiNotesLoading, hasItems: items.length > 0,
+      },
+      document: { snapshot: designSnapshot },
+    },
+    configuration: { open: editorMode === "present" && showPresentModal, designerTheme: showDesignerTheme, canUseDesigner,
+      eyeLevelTransitionDurationMs: 500, focusTransitionDurationMs: 460 },
+    actions: {
+      shell: { setPresentModalOpen: setShowPresentModal, setEditorMode, setPresentModeRoomId, setDesignSnapshot,
+        changeViewMode: handleEditorViewModeChange, setUpgradeReason, setUpgradeOpen: setShowUpgrade },
+      camera: { getEyeLevelView, getFocusView, transitionToView: transitionToCameraView, setName: setCameraViewNameInput,
+        save: saveCurrentNamedView, open: openSavedCameraView, delete: deleteSavedCameraView },
+      layoutVersions: { setName: setLayoutVersionNameInput, save: saveCurrentLayoutVersion,
+        restore: restoreRoomLayoutVersion, delete: deleteRoomLayoutVersion },
+      history: { runTransaction: runHistoryTransaction },
+      plan: { setSimpleControls: setSimplePlanControls, runOverlayCommand: runPlanOverlayCommand, setTheme: setPlanTheme,
+        setLayers: setPlanLayers, setMeasurementUnit: setPlanMeasurementUnit, setOpenings: setPlanOpenings,
+        setFixedElements: setPlanFixedElements, selectOverlay: handleSelectPlanOverlay, selectAnnotationTool,
+        deleteOverlay: deletePlanOverlayById, changeOpening: handleUpdateOpeningMetrics2D,
+        applyLayerPresetInTransaction: applyPlanLayerPresetInTransaction },
+      presentation: { changeLightingPreset: setLightingPreset, createShareLink: createShareLinkAndCopy, setExportStylePreset,
+        exportImages, exportPdf, generateAiNotes: generateAINotes },
     },
   });
 
@@ -3195,11 +3204,20 @@ export function DesignPageWorkspace() {
   const activePlacementTargetValid = pendingCatalogPlacement
     ? !pendingCatalogPlacementHardInvalid
     : crossRoomDragTarget?.valid ?? true;
-  const activePlacementTargetLabel =
-    pendingCatalogPlacementRoom?.name ??
-    crossRoomDragTarget?.label ??
-    placementTargetRoom?.name ??
-    null;
+  const activePlacementTargetLabel = pendingCatalogPlacementRoom?.name ??
+    crossRoomDragTarget?.label ?? placementTargetRoom?.name ?? null;
+  const betaFeedbackContext = buildDesignPageBetaFeedbackContext({
+    identity: { designId, shareToken },
+    editor: { mode, viewMode, plan, saveStatus: saveStatus.kind, shareEnabled: Boolean(shareToken) },
+    project: { activeRoomName: activeRoom?.name ?? "Current room", roomCount: housePlan2D.rooms.length,
+      itemCount: items.length, openingCount: planOpenings.length, exportReadinessScore },
+    selection: { itemId: selectedItem?.instanceId ?? null, productId: selectedItem?.productId ?? null },
+    placement: { score: pendingCatalogPlacementScore?.score ?? null, kind: pendingCatalogPlacementScore?.kind ?? null,
+      targetRoomName: pendingCatalogPlacementRoom?.name ?? null, fallbackRoomName: activeRoom?.name ?? null },
+    shopping: { readyCount: wholeHomeShoppingSummary.shoppableCount,
+      needsReviewCount: wholeHomeShoppingSummary.needsReviewCount },
+    viewport: { width: viewportSize.width, height: viewportSize.height },
+  });
   const {
     derived: {
       qaSnapshotFingerprint,
@@ -3754,10 +3772,228 @@ export function DesignPageWorkspace() {
       showToast: showRuleToast,
     },
   });
+  const shoppingPanelModel = buildDesignPageShoppingPanelModel({
+    configuration: { designerTheme: showDesignerTheme },
+    state: {
+      overview: { activeRoom: activeRoomShoppingSummary, activeRoomItems: activeRoomShoppingItems, catalogItems,
+        rooms: roomShoppingSummaries, wholeHome: wholeHomeShoppingSummary, activeFilter: shoppingReadinessFilter },
+      cart: { items, designId: designId ?? null, plan, isGuest: !session?.user },
+    },
+    actions: {
+      overview: { onSelectRoom: handleSwitchRoom, onGoFurnish: goFurnish, onAddActiveRoomCartReadyItems: addActiveRoomCartReadyItems,
+        onSetItemInclude: setShoppingItemInclude, onSwapShoppingItem: swapShoppingItemReplacement,
+        onPreviewReplacement: previewShoppingReplacement, onFilterChange: setShoppingReadinessFilter },
+      cart: { onRemove: panelActions.removeShoppingItem, onSetQty: setSelectedItemQuantity, onSetInclude: setShoppingItemInclude,
+        onBulkSwap, onShowUpgrade: () => setShowUpgrade(true), openGuestPrompt },
+    },
+  });
+  const selectionPanelModels = buildDesignPageSelectionPanelModels({
+    cabinet: {
+      state: { cabinet: selectedCabinet!, project: { handoffPackage: projectCabinetHandoffPackage, hasAssets: projectCabinetAssets.length > 0 } },
+      configuration: { canEdit, canUseStudio: canUseCabinetryStudio, isDesigner, isClientPreview, designerTheme: showDesignerTheme },
+      actions: { center: centerSelectedCabinetInRoom, snapToWall: snapSelectedCabinetToNearestWall, nudge: nudgeSelectedCabinet,
+        rotateByDegrees: rotateSelectedCabinetByDegrees, resetRotation: resetSelectedCabinetRotation,
+        export: handleSelectedCabinetExport, edit: handleEditSelectedCabinet, delete: deleteSelectedItem },
+    },
+    item: {
+      state: {
+        document: { rooms: designSnapshot.rooms.map((room) => ({ id: room.id, name: room.name })), activeRoomId: designSnapshot.activeRoomId },
+        details: { product: selectedProduct!, item: selectedItem, measurementUnit: planMeasurementUnit,
+          planningDimensionsMm: selectedItemPlanningDimensionsMm, selectedBrand, selectedModelTitle, selectedCategoryDebugLabel,
+          activeVariantLabel, productDetailSections: selectedProductDetailSections, fullDimensionsDetails,
+          selectedDimensionImageUrl, styleConsistencyReport: selectedStyleConsistencyReport },
+        inspectionController: { state: selectedItemPanelControllerState,
+          adjustableHangingHeight: selectedAdjustablePendantHeight
+            ? { valueCm: selectedAdjustablePendantHeight.currentCm, minCm: selectedAdjustablePendantHeight.minCm,
+                maxCm: selectedAdjustablePendantHeight.maxCm, stepCm: 1 }
+            : null },
+        rotation: { enabled: Boolean(selectedItem), state: { selectedRotationDegrees, rotationSnapEnabled, rotationSnapStepDegrees,
+          rotationSnapPresetDegrees, rotationInputValue, disabled: rotateControlsDisabled } },
+        productModelVariants: productModelVariantControlsState, productFinishes: productFinishControlsState,
+      },
+      configuration: { dark: showDesignerTheme, isDesigner, isClientPreview, canEdit },
+      actions: {
+        inspectionController: selectedItemPanelControllerActions,
+        placement: { onMoveToRoom: moveSelectedItemToRoom, onDuplicate: duplicateSelectedItem, onDelete: deleteSelectedItem,
+          onCenterInRoom: centerSelectedItemInRoom, onSnapToWall: snapSelectedItemToNearestWall,
+          onNudge: nudgeSelectedItem, onAdjustHangingHeight: adjustSelectedPendantHeight },
+        rotation: { onSnapPresetChange: setRotationSnapPresetDegrees, onRotateByDegrees: rotateSelectedByDegrees,
+          onResetRotation: resetSelectedRotation, onRotationInputChange: setRotationInputValue, onApplyRotationInput: applyRotationInputValue },
+        productConfiguration: { model: productModelControlActions, finish: productFinishControlActions,
+          selectVariant: handleSelectProductVariant },
+      },
+    },
+  });
+  const designControlsPanelModel = buildDesignControlsPanelModel({
+    access: { dark: showDesignerTheme, isClientPreview, isAuthed: Boolean(session?.user), isDesigner, canEdit, canEditPlanGeometry, aiDesignEnabled },
+    panel: { mode: designControlsPanelMode,
+      state: { collapsed: designPanelCollapsed, selectionContext: selectedObjectContext, viewMode, style, budget, showGrid, snapEnabled } },
+    room: {
+      state: { newRoomType, newRoomShape, activeRoomPresetId, roomWidthInput, roomDepthInput, roomWidth, roomDepth,
+        activeRoomName: activeRoom?.name ?? "Current room", activeRoomId: designSnapshot.activeRoomId,
+        rooms: designSnapshot.rooms.map((room) => ({ id: room.id, name: room.name })), activeRoomType: activeRoom?.roomType ?? "living",
+        activeRoomTypeLabel: activeRoom ? getRoomTypeLabel(activeRoom.roomType) : "Room", activeFloorLevel, activeFloorRoomCount,
+        activeRoomHeightMm, activeRoomWallThicknessMm, activeRoomSlabThicknessMm, activeRoomBaseboardDepthMm,
+        activeRoomWallOpacity, activeRoomFloorOpacity, activeRoomCeilingOpacity, activeRoomCeilingVisible, activeRoomCeilingColor, stackedFloorView },
+      actions: { addDesignerRoom: handleAddRoom, onAddRoomTemplate: handleAddRoom, onNewRoomTypeChange: setNewRoomType,
+        onNewRoomShapeChange: setNewRoomShape, onRoomPresetChange: handleRoomPresetChange, onRoomWidthInputChange: setRoomWidthInput,
+        onRoomDepthInputChange: setRoomDepthInput, onCommitRoomDimension: handleCommitActiveRoomDimension,
+        onActiveRoomHeightMmChange: handleActiveRoomHeightMmChange, onActiveRoomWallThicknessMmChange: handleActiveRoomWallThicknessMmChange,
+        onActiveRoomSlabThicknessMmChange: handleActiveRoomSlabThicknessMmChange,
+        onActiveRoomBaseboardDepthMmChange: handleActiveRoomBaseboardDepthMmChange,
+        onActiveRoomSurfaceOpacityChange: handleActiveRoomSurfaceOpacityChange,
+        onActiveRoomCeilingVisibleChange: handleActiveRoomCeilingVisibleChange, onActiveRoomCeilingColorChange: handleActiveRoomCeilingColorChange },
+    },
+    floorPlan: {
+      state: { measurementUnit: planMeasurementUnit, floorPlanUnderlay, floorPlanCalibrationMode,
+        floorPlanCalibrationPointCount: floorPlanCalibrationPoints.length, floorPlanCalibrationDistanceInput, floorPlanCalibrationSummary,
+        floorPlanTraceRoomMode, floorPlanDrawRoomMode, floorPlanDrawAngleLockMode, floorPlanExactWallLengthInput,
+        floorPlanTraceRoomPointCount: floorPlanTraceRoomPoints.length, floorPlanTraceRoomType, floorPlanTraceOpeningMode,
+        floorPlanTraceOpeningPointCount: floorPlanTraceOpeningPoints.length, floorPlanTraceOpeningKind, floorPlanPdfSourceReady,
+        floorPlanPdfRenderingPage, roomConnectionChecklistItems, visiblePlanOpening, visiblePlanOpeningRoomName,
+        visiblePlanOpeningWallSpanMeters, visiblePlanOpeningMaxHeightMeters, planRoomCount: housePlan2D.rooms.length,
+        planItemCount: items.length, planOpeningCount: planOpenings.length, activeFloorPlanTool, simplePlanControls,
+        planGuidedActionsEnabled, planStartMode: guidedPlanStartMode, planCompletionSignal: consumerPlanCompletionSignal, floorPlanQualityReport },
+      actions: { onPlanCompletionHandled: handleConsumerPlanCompletionHandled, onPlanStartModeChange: setGuidedPlanStartMode,
+        onPlanQualityAction: handlePlanQualityAction, onSimplePlanControlsChange: setSimplePlanControls,
+        onPlanGuidedActionsEnabledChange: setPlanGuidedActionsEnabled, onSelectFloorPlanTool: handleSelectFloorPlanTool,
+        onAddFloorPlanOpeningFromTool: handleAddFloorPlanOpeningFromTool, onApplyPlanTemplate: handleApplyPlanTemplate,
+        onFloorPlanUpload: handleFloorPlanUnderlayUpload, onFloorPlanPdfPageChange: handleFloorPlanPdfPageChange,
+        onFloorPlanOpacityChange: handleFloorPlanUnderlayOpacityChange, onFloorPlanLockChange: handleFloorPlanUnderlayLockChange,
+        onFloorPlanCalibrationModeChange: handleFloorPlanCalibrationModeChange,
+        onFloorPlanCalibrationDistanceChange: setFloorPlanCalibrationDistanceInput, onApplyFloorPlanCalibration: handleApplyFloorPlanCalibration,
+        onResetFloorPlanCalibrationPoints: handleResetFloorPlanCalibrationPoints, onFloorPlanTraceRoomModeChange: handleFloorPlanTraceRoomModeChange,
+        onFloorPlanTraceRoomDrawModeChange: handleFloorPlanDrawRoomModeChange,
+        onFloorPlanDrawAngleLockModeChange: setFloorPlanDrawAngleLockMode,
+        onFloorPlanExactWallLengthInputChange: setFloorPlanExactWallLengthInput,
+        onApplyFloorPlanExactWallLength: handleApplyFloorPlanExactWallLength, onFloorPlanTraceRoomTypeChange: setFloorPlanTraceRoomType,
+        onUndoFloorPlanTraceRoomPoint: handleUndoFloorPlanTraceRoomPoint, onResetFloorPlanTraceRoomPoints: handleResetFloorPlanTraceRoomPoints,
+        onFloorPlanTraceOpeningModeChange: handleFloorPlanTraceOpeningModeChange,
+        onFloorPlanTraceOpeningKindChange: setFloorPlanTraceOpeningKind,
+        onResetFloorPlanTraceOpeningPoints: handleResetFloorPlanTraceOpeningPoints, onClearFloorPlan: handleClearFloorPlanUnderlay,
+        onAddSuggestedDoorway: handleAddSuggestedDoorway, onUpdateOpeningMetrics: handleUpdateOpeningMetrics2D },
+    },
+    surfaces: {
+      state: { activeRoomFloorMaterialId, activeRoomFloorRotationDeg, activeRoomFloorScale,
+        activeRoomFloorPattern: activeRoomFloorSettings.floorPattern, activeRoomFloorPatternOffset: activeRoomFloorSettings.floorPatternOffset,
+        activeRoomFloorJointSizeMm: activeRoomFloorSettings.floorJointSizeMm, activeRoomFloorJointColor: activeRoomFloorSettings.floorJointColor,
+        activeSurfaceTarget, selectedWallFaceId: activeSelectedWallFaceId, selectedWallLabel: getWallFaceLabel(activeSelectedWallFaceId),
+        activeRoomWallSettings, activeRoomSelectedWallSettings, activeRoomCeilingSettings, surfaceBrushActive, surfaceBrushMaterialId,
+        surfaceBrushPaintColorHex: surfaceBrushPaint?.colorHex ?? null, surfaceBrushPaintName: surfaceBrushPaint?.name ?? null,
+        surfaceRooms: surfaceRoomSummaries, floorFinishPanelOpenSignal, floorOptions, showFloorPropertiesPanel: inlineFloorPropertiesPanelVisible },
+      actions: { onApplyFloorMaterialToRoom: handleApplyFloorMaterialToRoom, onApplyFloorMaterialToAllRooms: handleApplyFloorMaterialToAllRooms,
+        onRotateActiveFloorMaterial: handleRotateActiveFloorMaterial, onResetActiveFloorMaterialPattern: handleResetActiveFloorMaterialPattern,
+        onActiveFloorMaterialScaleChange: handleActiveFloorMaterialScaleChange,
+        onActiveFloorSurfaceSettingsChange: handleActiveFloorSurfaceSettingsChange, onSurfaceTargetChange: handleSurfaceTargetModeChange,
+        onSurfaceBrushActiveChange: handleSurfaceBrushActiveChange, onSurfaceMaterialSelected: handleSurfaceMaterialSelectedForBrush,
+        onSurfacePaintSelected: handleSurfacePaintSelectedForBrush, onApplyWallMaterialToRoom: handleApplyWallMaterialToRoom,
+        onApplyWallMaterialToAllRooms: handleApplyWallMaterialToAllRooms, onApplyWallPaintToRoom: handleApplyWallPaintToRoom,
+        onApplyWallPaintToAllRooms: handleApplyWallPaintToAllRooms, onApplyCeilingPaintToRoom: handleApplyCeilingPaintToRoom,
+        onApplyCeilingPaintToAllRooms: handleApplyCeilingPaintToAllRooms },
+    },
+    shopping: {
+      state: { catalogItems, selectedImportedFamilyKey, selectedImportedProductId, importedFamilyOptions, importedModelOptions,
+        visibleImportedModelOptions, activeRoomShoppableCount: activeRoomShoppingSummary?.shoppableCount ?? 0,
+        activeRoomNeedsReviewCount: activeRoomShoppingSummary?.needsReviewCount ?? 0, activeRoomCategoryCounts,
+        activeRoomShoppingSubtotal: activeRoomShoppingSummary?.subtotal ?? 0,
+        activeRoomPreviewNames: activeRoomShoppingSummary?.previewNames ?? [], activeRoomShoppingItems,
+        activeRoomProductQuantities, activeRoomVariantQuantities, placementAddMode },
+      actions: { onAddImportedToRoom: addSelectedImportedToRoom, onAddCatalogItemToRoom: addCatalogItemToRoom,
+        onAutoPlaceCatalogItemInRoom: autoPlaceCatalogItemInRoom, onPreviewCatalogPlacementIntent: previewCatalogPlacementIntent,
+        onCatalogDragStart: handleCatalogDragStart, onCatalogDragEnd: handleCatalogDragEnd,
+        onAddActiveRoomCartReadyItems: addActiveRoomCartReadyItems, onReviewShoppingIssue: reviewShoppingIssue,
+        onSelectedImportedFamilyChange: setSelectedImportedFamilyKey, onSelectedImportedProductChange: setSelectedImportedProductId },
+    },
+    ai: { state: { aiLayoutProposal: pendingAiLayoutProposal },
+      actions: { onApplyAiLayoutProposal: applyPendingAiLayoutProposal, onClearAiLayoutProposal: dismissPendingAiLayoutProposal } },
+    actions: {
+      navigation: { onSignIn: signInWithReturn, onGoFurnish: goFurnish, onGoAiDesign: goAiDesign, onGoShop: goShop,
+        onSelectRoom: handleSwitchRoom, onPlacementAddModeChange: setPlacementAddMode, onStyleChange: setStyle, onBudgetChange: setBudget },
+      panel: panelActions,
+    },
+  });
+  const panelRegionModel = buildDesignPagePanelRegionAdapter({
+    state: { editorMode, shoppingVisible: shoppingPanelVisibleForLayout, controlsVisible: designControlsPanelVisibleForLayout,
+      hasSelectedCabinet: Boolean(selectedCabinet), hasSelectedProduct: Boolean(selectedProduct) },
+    configuration: { designerTheme: showDesignerTheme, isDesigner, isClientPreview },
+    panels: { shopping: shoppingPanelModel, selectedCabinet: selectionPanelModels.selectedCabinet,
+      selectedItem: selectionPanelModels.selectedItem, controls: designControlsPanelModel },
+    actions: { exitClientPreview: panelActions.exitClientPreview },
+  });
+  const dialogLayerModel = buildDesignPageDialogLayerAdapter(buildDesignPageDialogLayerModel({
+    access: { isClientPreview, isAuthenticated: Boolean(session?.user), isPro: isPro(plan), designerTheme: showDesignerTheme },
+    billing: {
+      upgrade: { open: showUpgrade, variantLabel: upgradeCtaVariant, contentVariant: upgradeCtaVariant,
+        description: upgradeDialogDescription, exportWorkflowBenefit: upgradeDialogExportWorkflowBenefit,
+        pricingGuidance: upgradeDialogPricingGuidance, primaryCtaLabel: primaryUpgradeCtaLabel },
+      plans: { open: showPlans, layout: pricingLayoutVariant, openingBillingPortal, monthlyLabel: PRO_PLAN_PRICING.monthly.label,
+        yearlyLabel: PRO_PLAN_PRICING.yearly.label, yearlyEffectiveMonthlyLabel: PRO_PLAN_PRICING.yearly.effectiveMonthlyLabel },
+      startingCheckout, annualSavingsLabel: annualPlanSavingsLabel,
+      upgradeActions: { onSeePlans: openPlansFromUpgrade, onSignIn: signInFromUpgrade, onClose: closeUpgradeDialog },
+      plansActions: { onClose: closePlansDialog, onManageBilling: manageBillingFromPlans, onStartCheckout: startCheckoutFromPlans },
+    },
+    persistence: {
+      guestSave: { open: Boolean(guestPromptReason), onNotNow: handleGuestPromptNotNow, onSaveAndContinue: handleGuestSaveAndContinue },
+      myDesigns: {
+        data: { open: showMyDesigns, designs: myDesigns, loading: loadingDesigns, allDesignIds: allSavedDesignIds,
+          selectedDesignIds: selectedSavedDesignIds, selectedDesignCount: selectedSavedDesignCount,
+          allDesignsSelected: allSavedDesignsSelected, deletingDesignIds, pendingDeleteDesign },
+        actions: { onClose: closeMyDesigns, onOpenTemplates: openNewPlanPicker, onToggleAll: toggleAllSavedDesignSelection,
+          onToggleSelection: toggleSavedDesignSelection, onLoadDesign: handleLoadDesign, onRequestDelete: requestDeleteSavedDesigns,
+          onCancelDelete: cancelDeleteSavedDesigns, onConfirmDelete: handleDeleteSavedDesign },
+      },
+      templateChoice: {
+        data: { open: Boolean(pendingPlanTemplateReplacement), templateLabel: pendingPlanTemplateReplacement?.template.label ?? "this floor plan",
+          busy: startingNewPlan, errorMessage: newPlanStartError },
+        actions: { onCancel: cancelPendingPlanChoice, onReplaceCurrent: replaceCurrentPlanFromChoice,
+          onSaveCurrentAndStartNew: saveCurrentAndStartNewPlan, onSignIn: signInWithReturn },
+      },
+    },
+    ai: { notes: { open: showAINotes, data: aiNotesData, onApplySuggestion: applySuggestion, onClose: closeAiNotes } },
+    presentation: { presentExport: presentExportDialog },
+    editing: {
+      roomRename: { pendingRoomId: pendingRoomRenameId, value: pendingRoomRenameValue,
+        onValueChange: setPendingRoomRenameValue, onCancel: cancelRoomRename, onSave: commitRoomRename },
+      annotation: { kind: pendingAnnotationKind, text: pendingAnnotationText, onTextChange: setPendingAnnotationText,
+        onCancel: cancelPlanAnnotation, onAdd: commitPlanAnnotation },
+    },
+    placement: {
+      identity: { scene: pendingCatalogPlacementScene, roomName: pendingCatalogPlacementRoom?.name ?? null },
+      assessment: { hardInvalid: pendingCatalogPlacementHardInvalid, statusLabel: pendingCatalogPlacementStatusLabel,
+        targetLabel: activePlacementTargetLabel ?? null, targetValid: activePlacementTargetValid, quality: pendingCatalogPlacementQuality,
+        score: pendingCatalogPlacementScore, improvement: pendingCatalogPlacementImprovement,
+        bestRoomPlacement: pendingCatalogBestRoomPlacement, bestVariantPlacement: pendingCatalogBestVariantPlacement,
+        blocked: pendingCatalogPlacementBlocked, hasRestorablePlacement: Boolean(restorableCatalogPlacement),
+        shouldConfirmImprovedPlacement: shouldConfirmImprovedCatalogPlacement,
+        shouldConfirmRestoredPlacement: shouldConfirmRestoredCatalogPlacement },
+      activeRoomName: activeRoom?.name ?? null,
+      actions: { onAutoPlace: autoPlacePendingCatalogPlacement, onMoveToBestRoom: movePendingCatalogPlacementToBestRoom,
+        onSwitchToBestOption: switchPendingCatalogPlacementToBestOption, onImprovePlacement: improvePendingCatalogPlacement,
+        onRestoreValidPlacement: restoreLastValidCatalogPlacement, onSelectBlocker: selectPendingCatalogPlacementBlocker,
+        onSwapWithBlocker: swapPendingCatalogWithBlocker, onMoveBlockerAside: movePendingCatalogBlockerAside,
+        onPlaceBesideBlocker: placePendingCatalogBesideBlocker, onTrySmallerVariant: trySmallerPendingCatalogVariant,
+        onCenter: centerPendingCatalogPlacement, onNudge: nudgePendingCatalogPlacement, onRotate: rotatePendingCatalogPlacement,
+        onCancel: cancelPendingCatalogPlacement, onConfirm: confirmPendingCatalogPlacement },
+    },
+    feedback: {
+      beta: { open: feedbackOpen, context: betaFeedbackContext, onOpenChange: setFeedbackOpen },
+      toasts: { ruleMessage: ruleToast, nudgeMessage: nextBestActionNudge, shareCopied: shareSuccessToast, shareErrorMessage: shareErrorToast },
+      validation: { constraints: visibleConstraints, confidence: layoutConfidence },
+    },
+    sharing: { url: shareLinkFallback, onClose: closeShareLinkFallback, onCopy: copyFallbackShareLink, onOpen: openFallbackShareLink },
+    cabinetry: {
+      state: cabinetryStudioState, access: { enabled: canUseCabinetryStudio, accessLevel: cabinetryAccessLevel },
+      configuration: { measurementUnit: planMeasurementUnit, availableSpaces: cabinetryAvailableSpaces,
+        preferredSpaceId: cabinetryPreferredSpaceId },
+      refs: { openedAt: cabinetryStudioOpenedAtRef },
+      actions: { onSave: handleSaveCabinetDefinition, onPlaceInPlan: handlePlaceCabinetInPlan, onDismiss: dismissCabinetryStudio },
+    },
+    cart: { items: itemCart, isOpen: itemCartOpen, controlsPanelVisible: designControlsPanelVisibleForLayout,
+      onRemove: removeFromCart, onUpdateQty: updateCartQty, onClear: clearCart,
+      onAddAllToRoom: addAllToRoom, onToggle: panelActions.toggleItemCart },
+  }));
   return (
-    <DesignPageComposition
-      configuration={{ designerTheme: showDesignerTheme }}
-    >
+    <DesignPageComposition configuration={{ designerTheme: showDesignerTheme }}>
       <DesignPageProjectQaMarkers
         snapshotFingerprint={qaSnapshotFingerprint}
         activeRoomId={designSnapshot.activeRoomId}
@@ -3788,891 +4024,10 @@ export function DesignPageWorkspace() {
       />
       <div className="absolute inset-0">
         <DesignPageSceneRegion {...sceneRegionModel} />
-
         <DesignPageEditorChrome {...editorChromeModel} />
       </div>
-
-      {/* Exit Client Preview Button - Always Visible */}
-      {isClientPreview && (
-        <div className="fixed left-1/2 top-4 z-60 -translate-x-1/2 transform">
-          <button
-            className="rounded-lg bg-red-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:bg-red-700"
-            onClick={() => setClientPreview(false)}
-            title="Exit Presentation Mode (P)"
-          >
-            ✕ Exit Presentation
-          </button>
-        </div>
-      )}
-
-      {/* Layer 2C: Shopping Panel (visible in BUY mode) */}
-      {shoppingPanelVisibleForLayout && (
-        <div
-          data-testid="shopping-dock"
-          className={`absolute bottom-3 left-3 right-3 top-auto z-20 w-auto max-h-[64vh] space-y-3 overflow-y-auto pb-[calc(0.75rem+env(safe-area-inset-bottom))] pr-1 transition-opacity duration-300 md:bottom-auto md:right-auto md:top-20 md:w-[18.15rem] md:max-h-[calc(100vh-6rem)] md:pb-4 ${
-            isDesigner ? "md:left-20" : "md:left-4"
-          } ${
-            isClientPreview ? "pointer-events-none opacity-0" : "opacity-100"
-          }`}
-          aria-hidden={isClientPreview}
-        >
-          <div
-            className={
-              showDesignerTheme
-                ? "designer-dock rounded-xl p-3 text-neutral-100"
-                : "rounded-xl border border-neutral-200 bg-white/95 p-3 text-neutral-900 shadow-lg backdrop-blur"
-            }
-          >
-            <div className={showDesignerTheme ? "text-lg font-semibold text-white" : "text-lg font-semibold text-neutral-950"}>
-              Shop
-            </div>
-            <div className={showDesignerTheme ? "mt-1 text-xs text-neutral-400" : "mt-1 text-xs text-neutral-500"}>
-              Review shopping list and checkout readiness.
-            </div>
-          </div>
-          <ShoppingOverviewPanel
-            dark={showDesignerTheme}
-            activeRoom={activeRoomShoppingSummary}
-            activeRoomItems={activeRoomShoppingItems}
-            catalogItems={catalogItems}
-            rooms={roomShoppingSummaries}
-            wholeHome={wholeHomeShoppingSummary}
-            activeFilter={shoppingReadinessFilter}
-            onSelectRoom={handleSwitchRoom}
-            onGoFurnish={goFurnish}
-            onAddActiveRoomCartReadyItems={addActiveRoomCartReadyItems}
-            onSetItemInclude={setShoppingItemInclude}
-            onSwapShoppingItem={swapShoppingItemReplacement}
-            onPreviewReplacement={previewShoppingReplacement}
-            onFilterChange={setShoppingReadinessFilter}
-          />
-          <CartSidebar
-            items={items}
-            designId={designId ?? null}
-            plan={plan}
-            isGuest={!session?.user}
-            onGuestCapture={(reason, onContinue) => openGuestPrompt(reason, onContinue)}
-            onRemove={(instanceId) => {
-              const removedItem = items.find(x => x.instanceId === instanceId);
-              const productName = removedItem ? CATALOG_ITEMS[removedItem.productId]?.title || "Item" : "Item";
-              commitItems((prev) => prev.filter((x) => x.instanceId !== instanceId), `Delete ${productName}`);
-              if (selectedIdsRef.current.has(instanceId)) {
-                const next = new Set(selectedIdsRef.current);
-                next.delete(instanceId);
-                const nextPrimary =
-                  primaryIdRef.current === instanceId
-                    ? next.size
-                      ? Array.from(next)[next.size - 1]
-                      : null
-                    : primaryIdRef.current;
-                updateSelection(next, nextPrimary);
-              }
-            }}
-            onSetQty={setSelectedItemQuantity}
-            onSetInclude={setShoppingItemInclude}
-            onBulkSwap={onBulkSwap}
-            onShowUpgrade={() => setShowUpgrade(true)}
-            theme={showDesignerTheme ? "designer" : "default"}
-          />
-        </div>
-      )}
-
-      {editorMode === "adjust" && selectedCabinet && (
-        <SelectedCabinetPanel
-          cabinet={selectedCabinet}
-          project={{
-            handoffPackage: projectCabinetHandoffPackage,
-            hasAssets: projectCabinetAssets.length > 0,
-          }}
-          access={{
-            canEdit,
-            canUseStudio: canUseCabinetryStudio,
-            isDesigner,
-            isClientPreview,
-            designerTheme: showDesignerTheme,
-          }}
-          actions={{
-            center: centerSelectedCabinetInRoom,
-            snapToWall: snapSelectedCabinetToNearestWall,
-            nudge: nudgeSelectedCabinet,
-            rotateByDegrees: rotateSelectedCabinetByDegrees,
-            resetRotation: resetSelectedCabinetRotation,
-            export: handleSelectedCabinetExport,
-            edit: handleEditSelectedCabinet,
-            delete: deleteSelectedItem,
-          }}
-        />
-      )}
-
-      {/* Layer 2B: Inspector Panel (visible in ADJUST mode when item selected) */}
-      {editorMode === "adjust" && selectedProduct && (
-        <SelectedItemPanel
-          state={{
-            details: {
-              product: selectedProduct,
-              item: selectedItem,
-              rooms: designSnapshot.rooms.map((room) => ({
-                id: room.id,
-                name: room.name,
-              })),
-              activeRoomId: designSnapshot.activeRoomId,
-              measurementUnit: planMeasurementUnit,
-              planningDimensionsMm: selectedItemPlanningDimensionsMm,
-              selectedBrand,
-              selectedModelTitle,
-              selectedCategoryDebugLabel,
-              activeVariantLabel,
-              productDetailSections: selectedProductDetailSections,
-              fullDimensionsDetails,
-              selectedDimensionImageUrl,
-              showInspectorDetails:
-                selectedItemPanelControllerState.showInspectorDetails,
-              showFullDimensions:
-                selectedItemPanelControllerState.showFullDimensions,
-              showDeliveryWarranty:
-                selectedItemPanelControllerState.showDeliveryWarranty,
-              showRotationControls:
-                selectedItemPanelControllerState.showRotationControls,
-              styleConsistencyReport: selectedStyleConsistencyReport,
-              adjustableHangingHeight: selectedAdjustablePendantHeight
-                ? {
-                    valueCm: selectedAdjustablePendantHeight.currentCm,
-                    minCm: selectedAdjustablePendantHeight.minCm,
-                    maxCm: selectedAdjustablePendantHeight.maxCm,
-                    stepCm: 1,
-                  }
-                : null,
-            },
-            rotation: selectedItem
-              ? {
-                  expanded:
-                    selectedItemPanelControllerState.showRotationControls,
-                  selectedRotationDegrees,
-                  rotationSnapEnabled,
-                  rotationSnapStepDegrees,
-                  rotationSnapPresetDegrees,
-                  rotationInputValue,
-                  disabled: rotateControlsDisabled,
-                }
-              : null,
-            productModelVariants: productModelVariantControlsState,
-            productFinishes: productFinishControlsState,
-            commerceType:
-              selectedItemPanelControllerState.selectedItemCommerceType,
-            lockLabel: selectedItemPanelControllerState.selectedItemLockLabel,
-          }}
-          configuration={{
-            dark: showDesignerTheme,
-            isDesigner,
-            isClientPreview,
-            canEdit,
-          }}
-          actions={{
-            details: {
-              onToggleInspectorDetails:
-                selectedItemPanelControllerActions.toggleSelectedItemDetails,
-              onToggleFullDimensions:
-                selectedItemPanelControllerActions.toggleSelectedItemDimensions,
-              onToggleDeliveryWarranty:
-                selectedItemPanelControllerActions.toggleSelectedItemDeliveryWarranty,
-              onToggleRotationControls:
-                selectedItemPanelControllerActions.toggleSelectedItemRotationControls,
-              onMoveToRoom: moveSelectedItemToRoom,
-              onDuplicate: duplicateSelectedItem,
-              onDelete: deleteSelectedItem,
-              onCenterInRoom: centerSelectedItemInRoom,
-              onSnapToWall: snapSelectedItemToNearestWall,
-              onNudge: nudgeSelectedItem,
-              onSetPosition:
-                selectedItemPanelControllerActions.setSelectedItemPosition,
-              onAdjustHangingHeight: adjustSelectedPendantHeight,
-              onApplyStyleAlternative:
-                selectedItemPanelControllerActions.applySelectedItemStyleAlternative,
-            },
-            rotation: {
-              onSnapPresetChange: setRotationSnapPresetDegrees,
-              onRotateByDegrees: rotateSelectedByDegrees,
-              onResetRotation: resetSelectedRotation,
-              onRotationInputChange: setRotationInputValue,
-              onApplyRotationInput: applyRotationInputValue,
-            },
-            productModelVariants: {
-              onSelectOrientation: handleSelectProductOrientation,
-              jaron: {
-                onSelectGroup: handleSelectJaronConfigurationGroup,
-                onSelectOption: handleSelectJaronConfigurationOption,
-                onSelectArm: handleSelectJaronArm,
-              },
-              auburn: {
-                onSelectGroup: handleSelectAuburnConfigurationGroup,
-                onSelectOption: handleSelectAuburnConfigurationOption,
-                onSelectOrientation: handleSelectAuburnOrientation,
-              },
-              onSelectArmStyle: handleSelectArmStyleVariant,
-              onSelectModel: handleSelectProductModelVariant,
-              onSelectShape: handleSelectProductShapeVariant,
-              onSelectLengthVariant: handleSelectProductLengthVariant,
-              onSelectSloaneBenchCushion: handleSelectSloaneBenchCushion,
-              onSelectVariant: handleSelectProductVariant,
-              onSelectLength: handleSelectProductLength,
-              onSelectHuggModel: handleSelectHuggModel,
-              onSelectSebModel: handleSelectSebModel,
-              onSelectLayout: handleSelectProductConfiguration,
-            },
-            productFinishes: {
-              onSelectFinishButton: handleSelectFinishButton,
-              onSelectFinishSwatch: handleSelectFinishSwatch,
-              onSelectLegFinish: handleSelectLegFinish,
-              onSelectSloaneBenchCushion: handleSelectSloaneBenchCushion,
-              onSelectSize: handleSelectProductSize,
-              onSelectStructuredColour: handleSelectStructuredColour,
-              onShowStructuredColourPreview: handleShowStructuredColourPreview,
-              onHideStructuredColourPreview: handleHideStructuredColourPreview,
-              onBlurStructuredColourPreview: handleBlurStructuredColourPreview,
-            },
-            onSwapToCheaper:
-              selectedItemPanelControllerActions.swapSelectedItemToCheaper,
-            onUpgradeItem:
-              selectedItemPanelControllerActions.upgradeSelectedItem,
-            onOpenCommerce:
-              selectedItemPanelControllerActions.openSelectedItemCommerce,
-            onToggleLock:
-              selectedItemPanelControllerActions.toggleSelectedItemLock,
-            onRemove:
-              selectedItemPanelControllerActions.removeSelectedItemFromDesign,
-          }}
-        />
-      )}
-      {/* Layer 2A: Design Panel (visible in DESIGN mode) */}
-      {designControlsPanelVisibleForLayout && (
-        <DesignControlsPanel
-          dark={showDesignerTheme}
-          panelMode={designControlsPanelMode}
-          selectionContext={selectedObjectContext}
-          isClientPreview={isClientPreview}
-          isAuthed={!!session?.user}
-          isDesigner={isDesigner}
-          canEdit={canEdit}
-          canEditPlanGeometry={canEditPlanGeometry}
-          collapsed={designPanelCollapsed}
-          onCollapsedChange={(collapsed) => {
-            setDesignPanelCollapsed(collapsed);
-            if (!collapsed) {
-              setDesignPanelOpen(true);
-            }
-          }}
-          aiDesignEnabled={aiDesignEnabled}
-          viewMode={viewMode}
-          style={style}
-          budget={budget}
-          showGrid={showGrid}
-          snapEnabled={snapEnabled}
-          newRoomType={newRoomType}
-          newRoomShape={newRoomShape}
-          activeRoomPresetId={activeRoomPresetId}
-          roomWidthInput={roomWidthInput}
-          roomDepthInput={roomDepthInput}
-          roomWidth={roomWidth}
-          roomDepth={roomDepth}
-          measurementUnit={planMeasurementUnit}
-          catalogItems={catalogItems}
-          selectedImportedFamilyKey={selectedImportedFamilyKey}
-          selectedImportedProductId={selectedImportedProductId}
-          importedFamilyOptions={importedFamilyOptions}
-          importedModelOptions={importedModelOptions}
-          visibleImportedModelOptions={visibleImportedModelOptions}
-          floorPlanUnderlay={floorPlanUnderlay}
-          floorPlanCalibrationMode={floorPlanCalibrationMode}
-          floorPlanCalibrationPointCount={floorPlanCalibrationPoints.length}
-          floorPlanCalibrationDistanceInput={floorPlanCalibrationDistanceInput}
-          floorPlanCalibrationSummary={floorPlanCalibrationSummary}
-          floorPlanTraceRoomMode={floorPlanTraceRoomMode}
-          floorPlanDrawRoomMode={floorPlanDrawRoomMode}
-          floorPlanDrawAngleLockMode={floorPlanDrawAngleLockMode}
-          floorPlanExactWallLengthInput={floorPlanExactWallLengthInput}
-          floorPlanTraceRoomPointCount={floorPlanTraceRoomPoints.length}
-          floorPlanTraceRoomType={floorPlanTraceRoomType}
-          floorPlanTraceOpeningMode={floorPlanTraceOpeningMode}
-          floorPlanTraceOpeningPointCount={floorPlanTraceOpeningPoints.length}
-          floorPlanTraceOpeningKind={floorPlanTraceOpeningKind}
-          canTraceOpenings={Boolean(
-            floorPlanUnderlay?.mimeType.startsWith("image/") &&
-              floorPlanUnderlay.calibration &&
-              housePlan2D.rooms.length > 0
-          )}
-          floorPlanPdfSourceReady={floorPlanPdfSourceReady}
-          floorPlanPdfRenderingPage={floorPlanPdfRenderingPage}
-          roomConnectionChecklistItems={roomConnectionChecklistItems}
-          visiblePlanOpening={visiblePlanOpening}
-          visiblePlanOpeningRoomName={visiblePlanOpeningRoomName}
-          visiblePlanOpeningWallSpanMeters={visiblePlanOpeningWallSpanMeters}
-          visiblePlanOpeningMaxHeightMeters={visiblePlanOpeningMaxHeightMeters}
-          planRoomCount={housePlan2D.rooms.length}
-          planItemCount={items.length}
-          planOpeningCount={planOpenings.length}
-          activeRoomName={activeRoom?.name ?? "Current room"}
-          activeRoomId={designSnapshot.activeRoomId}
-          rooms={designSnapshot.rooms.map((room) => ({ id: room.id, name: room.name }))}
-          activeRoomType={activeRoom?.roomType ?? "living"}
-          activeRoomTypeLabel={activeRoom ? getRoomTypeLabel(activeRoom.roomType) : "Room"}
-          activeRoomFloorMaterialId={activeRoomFloorMaterialId}
-          activeRoomFloorRotationDeg={activeRoomFloorRotationDeg}
-          activeRoomFloorScale={activeRoomFloorScale}
-          activeRoomFloorPattern={activeRoomFloorSettings.floorPattern}
-          activeRoomFloorPatternOffset={activeRoomFloorSettings.floorPatternOffset}
-          activeRoomFloorJointSizeMm={activeRoomFloorSettings.floorJointSizeMm}
-          activeRoomFloorJointColor={activeRoomFloorSettings.floorJointColor}
-          activeSurfaceTarget={activeSurfaceTarget}
-          selectedWallFaceId={activeSelectedWallFaceId}
-          selectedWallLabel={getWallFaceLabel(activeSelectedWallFaceId)}
-          activeRoomWallSettings={activeRoomWallSettings}
-          activeRoomSelectedWallSettings={activeRoomSelectedWallSettings}
-          activeRoomCeilingSettings={activeRoomCeilingSettings}
-          surfaceBrushActive={surfaceBrushActive}
-          surfaceBrushMaterialId={surfaceBrushMaterialId}
-          surfaceBrushPaintColorHex={surfaceBrushPaint?.colorHex ?? null}
-          surfaceBrushPaintName={surfaceBrushPaint?.name ?? null}
-          surfaceRooms={surfaceRoomSummaries}
-          floorFinishPanelOpenSignal={floorFinishPanelOpenSignal}
-          floorOptions={floorOptions}
-          showFloorPropertiesPanel={inlineFloorPropertiesPanelVisible}
-          activeFloorLevel={activeFloorLevel}
-          activeFloorRoomCount={activeFloorRoomCount}
-          activeRoomHeightMm={activeRoomHeightMm}
-          activeRoomWallThicknessMm={activeRoomWallThicknessMm}
-          activeRoomSlabThicknessMm={activeRoomSlabThicknessMm}
-          activeRoomBaseboardDepthMm={activeRoomBaseboardDepthMm}
-          activeRoomWallOpacity={activeRoomWallOpacity}
-          activeRoomFloorOpacity={activeRoomFloorOpacity}
-          activeRoomCeilingOpacity={activeRoomCeilingOpacity}
-          activeRoomCeilingVisible={activeRoomCeilingVisible}
-          activeRoomCeilingColor={activeRoomCeilingColor}
-          stackedFloorView={stackedFloorView}
-          activeRoomShoppableCount={activeRoomShoppingSummary?.shoppableCount ?? 0}
-          activeRoomNeedsReviewCount={activeRoomShoppingSummary?.needsReviewCount ?? 0}
-          activeRoomCategoryCounts={activeRoomCategoryCounts}
-          activeRoomShoppingSubtotal={activeRoomShoppingSummary?.subtotal ?? 0}
-          activeRoomPreviewNames={activeRoomShoppingSummary?.previewNames ?? []}
-          activeRoomShoppingItems={activeRoomShoppingItems}
-          activeRoomProductQuantities={activeRoomProductQuantities}
-          activeRoomVariantQuantities={activeRoomVariantQuantities}
-          placementAddMode={placementAddMode}
-          aiLayoutProposal={pendingAiLayoutProposal}
-          activeFloorPlanTool={activeFloorPlanTool}
-          simplePlanControls={simplePlanControls}
-          planGuidedActionsEnabled={planGuidedActionsEnabled}
-          planStartMode={guidedPlanStartMode}
-          planCompletionSignal={consumerPlanCompletionSignal}
-          floorPlanQualityReport={floorPlanQualityReport}
-          onPlanCompletionHandled={handleConsumerPlanCompletionHandled}
-          onPlanStartModeChange={setGuidedPlanStartMode}
-          onPlanQualityAction={handlePlanQualityAction}
-          onSimplePlanControlsChange={setSimplePlanControls}
-          onPlanGuidedActionsEnabledChange={setPlanGuidedActionsEnabled}
-          onSelectFloorPlanTool={handleSelectFloorPlanTool}
-          onDrawFloorPlanRoom={() => handleFloorPlanDrawRoomModeChange("rectangle_wall")}
-          onAddFloorPlanOpeningFromTool={handleAddFloorPlanOpeningFromTool}
-          onSignIn={signInWithReturn}
-          onGoFurnish={goFurnish}
-          onGoAiDesign={goAiDesign}
-          onGoShop={goShop}
-          onGoView3D={() => handleEditorViewModeChange("3d")}
-          onSelectRoom={handleSwitchRoom}
-          onPlacementAddModeChange={setPlacementAddMode}
-          onStyleChange={setStyle}
-          onBudgetChange={setBudget}
-          onRunAiLayout={(requestedRoles) => {
-            void runAiLayout({ requestedRoles });
-          }}
-          onApplyAiLayoutProposal={applyPendingAiLayoutProposal}
-          onTryAiLayoutAgain={(requestedRoles) => {
-            void regenerateAiLayout(requestedRoles);
-          }}
-          onClearAiLayoutProposal={dismissPendingAiLayoutProposal}
-          onApplyPlanTemplate={handleApplyPlanTemplate}
-          onApplyFloorMaterialToRoom={handleApplyFloorMaterialToRoom}
-          onApplyFloorMaterialToAllRooms={handleApplyFloorMaterialToAllRooms}
-          onRotateActiveFloorMaterial={handleRotateActiveFloorMaterial}
-          onResetActiveFloorMaterialPattern={handleResetActiveFloorMaterialPattern}
-          onActiveFloorMaterialScaleChange={handleActiveFloorMaterialScaleChange}
-          onActiveFloorSurfaceSettingsChange={handleActiveFloorSurfaceSettingsChange}
-          onSurfaceTargetChange={handleSurfaceTargetModeChange}
-          onSurfaceBrushActiveChange={handleSurfaceBrushActiveChange}
-          onSurfaceMaterialSelected={handleSurfaceMaterialSelectedForBrush}
-          onSurfacePaintSelected={handleSurfacePaintSelectedForBrush}
-          onApplyWallMaterialToRoom={handleApplyWallMaterialToRoom}
-          onApplyWallMaterialToAllRooms={handleApplyWallMaterialToAllRooms}
-          onApplyWallPaintToRoom={handleApplyWallPaintToRoom}
-          onApplyWallPaintToAllRooms={handleApplyWallPaintToAllRooms}
-          onApplyCeilingPaintToRoom={handleApplyCeilingPaintToRoom}
-          onApplyCeilingPaintToAllRooms={handleApplyCeilingPaintToAllRooms}
-          onActiveWallSurfaceSettingsChange={(patch) =>
-            handleActiveWallSurfaceSettingsChange(
-              patch,
-              activeRoom?.id ?? null,
-              activeSurfaceTarget === "selected_wall" ? activeSelectedWallFaceId : null
-            )
-          }
-          onResetActiveWallSurface={() =>
-            handleResetActiveWallSurface(
-              activeRoom?.id ?? null,
-              activeSurfaceTarget === "selected_wall" ? activeSelectedWallFaceId : null
-            )
-          }
-          onResetActiveCeilingSurface={() => handleResetActiveCeilingSurface(activeRoom?.id ?? null)}
-          onAddDesignerRoom={() => handleAddRoom()}
-          onAddRoomTemplate={handleAddRoom}
-          onNewRoomTypeChange={setNewRoomType}
-          onNewRoomShapeChange={setNewRoomShape}
-          onRoomPresetChange={handleRoomPresetChange}
-          onRoomWidthInputChange={setRoomWidthInput}
-          onRoomDepthInputChange={setRoomDepthInput}
-          onCommitRoomDimension={handleCommitActiveRoomDimension}
-          onActiveRoomHeightMmChange={handleActiveRoomHeightMmChange}
-          onActiveRoomWallThicknessMmChange={handleActiveRoomWallThicknessMmChange}
-          onActiveRoomSlabThicknessMmChange={handleActiveRoomSlabThicknessMmChange}
-          onActiveRoomBaseboardDepthMmChange={handleActiveRoomBaseboardDepthMmChange}
-          onActiveRoomSurfaceOpacityChange={handleActiveRoomSurfaceOpacityChange}
-          onActiveRoomCeilingVisibleChange={handleActiveRoomCeilingVisibleChange}
-          onActiveRoomCeilingColorChange={handleActiveRoomCeilingColorChange}
-          onAddImportedToRoom={addSelectedImportedToRoom}
-          onAddCatalogItemToRoom={addCatalogItemToRoom}
-          onAutoPlaceCatalogItemInRoom={autoPlaceCatalogItemInRoom}
-          onPreviewCatalogPlacementIntent={previewCatalogPlacementIntent}
-          onCatalogDragStart={handleCatalogDragStart}
-          onCatalogDragEnd={handleCatalogDragEnd}
-          onAddActiveRoomCartReadyItems={addActiveRoomCartReadyItems}
-          onReviewShoppingIssue={reviewShoppingIssue}
-          onSelectedImportedFamilyChange={setSelectedImportedFamilyKey}
-          onSelectedImportedProductChange={setSelectedImportedProductId}
-          onGridToggle={() => setShowGrid((value) => !value)}
-          onSnapToggle={() => setSnapEnabled((value) => !value)}
-          onFloorPlanUpload={handleFloorPlanUnderlayUpload}
-          onFloorPlanPdfPageChange={handleFloorPlanPdfPageChange}
-          onFloorPlanOpacityChange={handleFloorPlanUnderlayOpacityChange}
-          onFloorPlanLockChange={handleFloorPlanUnderlayLockChange}
-          onFloorPlanCalibrationModeChange={handleFloorPlanCalibrationModeChange}
-          onFloorPlanCalibrationDistanceChange={setFloorPlanCalibrationDistanceInput}
-          onApplyFloorPlanCalibration={handleApplyFloorPlanCalibration}
-          onResetFloorPlanCalibrationPoints={handleResetFloorPlanCalibrationPoints}
-          onFloorPlanTraceRoomModeChange={handleFloorPlanTraceRoomModeChange}
-          onFloorPlanTraceRoomDrawModeChange={handleFloorPlanDrawRoomModeChange}
-          onFloorPlanDrawAngleLockModeChange={setFloorPlanDrawAngleLockMode}
-          onFloorPlanExactWallLengthInputChange={setFloorPlanExactWallLengthInput}
-          onApplyFloorPlanExactWallLength={handleApplyFloorPlanExactWallLength}
-          onFloorPlanTraceRoomTypeChange={setFloorPlanTraceRoomType}
-          onUndoFloorPlanTraceRoomPoint={handleUndoFloorPlanTraceRoomPoint}
-          onResetFloorPlanTraceRoomPoints={handleResetFloorPlanTraceRoomPoints}
-          onFloorPlanTraceOpeningModeChange={handleFloorPlanTraceOpeningModeChange}
-          onFloorPlanTraceOpeningKindChange={setFloorPlanTraceOpeningKind}
-          onResetFloorPlanTraceOpeningPoints={handleResetFloorPlanTraceOpeningPoints}
-          onClearFloorPlan={handleClearFloorPlanUnderlay}
-          onAddSuggestedDoorway={handleAddSuggestedDoorway}
-          onUpdateOpeningMetrics={handleUpdateOpeningMetrics2D}
-        />
-      )}
-
-      {isClientPreview && (
-        <div className="absolute right-6 top-6 z-30 rounded-full border border-white/10 bg-black/40 px-4 py-2 text-xs text-white">
-          Client-safe view - nothing editable
-        </div>
-      )}
-
-      {isClientPreview && (
-        <div className="absolute bottom-5 right-6 z-30 text-xs text-white/40">
-          beta preview
-        </div>
-      )}
-
-      <UpgradeDialog
-        state={{
-          open: showUpgrade && !isClientPreview,
-          variantLabel: upgradeCtaVariant,
-          contentVariant: upgradeCtaVariant,
-          description: upgradeDialogDescription,
-          exportWorkflowBenefit: upgradeDialogExportWorkflowBenefit,
-          pricingGuidance: upgradeDialogPricingGuidance,
-          annualSavingsLabel: annualPlanSavingsLabel,
-          primaryCtaLabel: primaryUpgradeCtaLabel,
-          dismissLabel: upgradeCtaVariant === "see_pricing" ? "Maybe later" : "Close",
-          startingCheckout,
-          showSignIn: !session?.user,
-        }}
-        actions={{
-          onSeePlans: openPlansFromUpgrade,
-          onSignIn: signInFromUpgrade,
-          onClose: closeUpgradeDialog,
-        }}
-      />
-
-      <GuestSavePromptDialog
-        open={Boolean(guestPromptReason) && !isClientPreview}
-        onNotNow={handleGuestPromptNotNow}
-        onSaveAndContinue={handleGuestSaveAndContinue}
-      />
-
-      <PlansDialog
-        state={{
-          open: showPlans,
-          layout: pricingLayoutVariant,
-          proActive: plan === "pro",
-          startingCheckout,
-          openingBillingPortal,
-          monthlyLabel: PRO_PLAN_PRICING.monthly.label,
-          yearlyLabel: PRO_PLAN_PRICING.yearly.label,
-          yearlyEffectiveMonthlyLabel: PRO_PLAN_PRICING.yearly.effectiveMonthlyLabel,
-          annualSavingsLabel: annualPlanSavingsLabel,
-        }}
-        actions={{
-          onClose: closePlansDialog,
-          onManageBilling: manageBillingFromPlans,
-          onStartCheckout: startCheckoutFromPlans,
-        }}
-      />
-
-      <AiNotesDialog
-        open={showAINotes}
-        data={aiNotesData}
-        canApplySuggestions={isPro(plan)}
-        onApplySuggestion={applySuggestion}
-        onClose={closeAiNotes}
-      />
-      {/* Layer 3: Present Modal (visible in PRESENT mode) */}
-      <PresentExportDialog
-        configuration={{
-          open: editorMode === "present" && showPresentModal && !isClientPreview,
-          designerTheme: showDesignerTheme,
-          canUseDesigner,
-        }}
-        state={{
-          exportReadiness: {
-            items: exportReadinessItems,
-            readyCount: exportReadinessReadyCount,
-            score: exportReadinessScore,
-          },
-          rooms: getAllRoomNames(designSnapshot),
-          currentRoomId: presentModeRoomId ?? designSnapshot.activeRoomId ?? null,
-          viewMode,
-          cameraViewNameInput,
-          activeRoom: activeRoom ?? null,
-          layoutVersionNameInput,
-          simplePlanControls,
-          planLayerPreset,
-          planLayers,
-          planMeasurementUnit,
-          planTheme,
-          annotationToolKind,
-          selectedPlanOverlayId,
-          visiblePlanOpening,
-          visiblePlanOpeningRoomName,
-          visiblePlanOpeningWallSpanMeters,
-          visiblePlanOpeningMaxHeightMeters,
-          lightingPreset,
-          sharingDesign,
-          designId,
-          shareToken,
-          exportStylePreset,
-          isExporting,
-          isPdfExporting,
-          sceneReady,
-          aiNotesLoading,
-          hasItems: items.length > 0,
-        }}
-        actions={{
-          onClose: () => {
-            setShowPresentModal(false);
-            setEditorMode("design");
-          },
-          onSelectRoom: (roomId) => {
-            setPresentModeRoomId(roomId);
-            setDesignSnapshot(switchRoom(designSnapshot, roomId));
-          },
-          onViewModeChange: (next) => {
-            handleEditorViewModeChange(next);
-            if (next === "3d") {
-              transitionToCameraView(getEyeLevelView(), 500);
-            }
-          },
-          onFocusCamera: () => {
-            handleEditorViewModeChange("3d");
-            transitionToCameraView(getFocusView(), 460);
-          },
-          onCameraViewNameChange: setCameraViewNameInput,
-          onSaveCameraView: saveCurrentNamedView,
-          onOpenCameraView: openSavedCameraView,
-          onDeleteCameraView: deleteSavedCameraView,
-          onLayoutVersionNameChange: setLayoutVersionNameInput,
-          onSaveLayoutVersion: saveCurrentLayoutVersion,
-          onRestoreLayoutVersion: restoreRoomLayoutVersion,
-          onDeleteLayoutVersion: deleteRoomLayoutVersion,
-          onEnableSimplePlanControls: () => setSimplePlanControls(true),
-          onEnableProPlanControls: () => {
-            if (!canUseDesigner) {
-              setUpgradeReason("designer");
-              setShowUpgrade(true);
-              return;
-            }
-            setSimplePlanControls(false);
-          },
-          onPlanLayerPresetChange: (preset) => runPlanOverlayCommand(`preset:${preset}`),
-          onPlanThemeChange: (theme) => {
-            runHistoryTransaction("Change plan theme", () => setPlanTheme(theme));
-          },
-          onTogglePlanLayer: (key) => {
-            runHistoryTransaction("Toggle plan layer", () =>
-              setPlanLayers((prev) => ({
-                ...prev,
-                [key]: !prev[key],
-              }))
-            );
-          },
-          onMeasurementUnitChange: (unit) => {
-            runHistoryTransaction("Change measurement unit", () => setPlanMeasurementUnit(unit));
-          },
-          onSelectAnnotationTool: selectAnnotationTool,
-          onAddOpening: (kind) => {
-            const id = `opening-${Date.now()}`;
-            runHistoryTransaction(kind === "door" ? "Add door" : "Add window", () =>
-              setPlanOpenings((prev) => [
-                ...prev,
-                {
-                  id,
-                  wall: kind === "door" ? "south" : "north",
-                  kind,
-                  offsetMm: 0,
-                  widthMm: kind === "door" ? 900 : 1200,
-                },
-              ])
-            );
-            handleSelectPlanOverlay(id);
-          },
-          onAddBuiltIn: () => {
-            const id = `fixed-${Date.now()}`;
-            runHistoryTransaction("Add plan fixture", () =>
-              setPlanFixedElements((prev) => [
-                ...prev,
-                {
-                  id,
-                  kind: "wardrobe",
-                  xMm: 0,
-                  zMm: 0,
-                  widthMm: 1200,
-                  depthMm: 600,
-                  rotationDeg: 0,
-                  label: "Wardrobe",
-                },
-              ])
-            );
-            handleSelectPlanOverlay(id);
-          },
-          onDeleteSelectedPlanOverlay: () => {
-            deletePlanOverlayById(selectedPlanOverlayId);
-          },
-          onOpeningChange: handleUpdateOpeningMetrics2D,
-          onLightingPresetChange: (preset) => setLightingPreset(preset),
-          onCreateShareLink: createShareLinkAndCopy,
-          onExportStyleChange: (preset) => {
-            if (preset === "pro" && !canUseDesigner) {
-              setUpgradeReason("export_images");
-              setShowUpgrade(true);
-              return;
-            }
-            runHistoryTransaction("Change export style", () => {
-              setExportStylePreset(preset);
-              applyPlanLayerPresetInTransaction(
-                preset === "pro" ? "technical" : "presentation"
-              );
-            });
-          },
-          onExportImages: () => {
-            exportImages();
-            setShowPresentModal(false);
-            setEditorMode("design");
-          },
-          onExportPdf: () => {
-            exportPdf();
-            setShowPresentModal(false);
-            setEditorMode("design");
-          },
-          onGenerateAiNotes: () => {
-            generateAINotes();
-            setShowPresentModal(false);
-            setEditorMode("design");
-          },
-        }}
-      />
-
-      <MyDesignsDialog
-        open={showMyDesigns}
-        designerTheme={showDesignerTheme}
-        designs={myDesigns}
-        loading={loadingDesigns}
-        allDesignIds={allSavedDesignIds}
-        selectedDesignIds={selectedSavedDesignIds}
-        selectedDesignCount={selectedSavedDesignCount}
-        allDesignsSelected={allSavedDesignsSelected}
-        deletingDesignIds={deletingDesignIds}
-        pendingDeleteDesign={pendingDeleteDesign}
-        onClose={closeMyDesigns}
-        onOpenTemplates={openNewPlanPicker}
-        onToggleAll={toggleAllSavedDesignSelection}
-        onToggleSelection={toggleSavedDesignSelection}
-        onLoadDesign={handleLoadDesign}
-        onRequestDelete={requestDeleteSavedDesigns}
-        onCancelDelete={cancelDeleteSavedDesigns}
-        onConfirmDelete={handleDeleteSavedDesign}
-      />
-
-      <RoomRenameDialog
-        open={Boolean(pendingRoomRenameId)}
-        value={pendingRoomRenameValue}
-        onValueChange={setPendingRoomRenameValue}
-        onCancel={cancelRoomRename}
-        onSave={commitRoomRename}
-      />
-
-      <PlanAnnotationDialog
-        kind={pendingAnnotationKind}
-        text={pendingAnnotationText}
-        onTextChange={setPendingAnnotationText}
-        onCancel={cancelPlanAnnotation}
-        onAdd={commitPlanAnnotation}
-      />
-
-      <CatalogPlacementConfirmPanel
-        state={{
-          scene: pendingCatalogPlacementScene,
-          roomName: pendingCatalogPlacementRoom?.name ?? null,
-          hardInvalid: pendingCatalogPlacementHardInvalid,
-          statusLabel: pendingCatalogPlacementStatusLabel,
-          targetLabel: activePlacementTargetLabel ?? null,
-          targetValid: activePlacementTargetValid,
-          quality: pendingCatalogPlacementQuality,
-          score: pendingCatalogPlacementScore,
-          improvement: pendingCatalogPlacementImprovement,
-          bestRoomPlacement: pendingCatalogBestRoomPlacement,
-          bestVariantPlacement: pendingCatalogBestVariantPlacement,
-          blocked: pendingCatalogPlacementBlocked,
-          hasRestorablePlacement: Boolean(restorableCatalogPlacement),
-          shouldConfirmImprovedPlacement: shouldConfirmImprovedCatalogPlacement,
-          shouldConfirmRestoredPlacement: shouldConfirmRestoredCatalogPlacement,
-        }}
-        configuration={{
-          activeRoomName: activeRoom?.name ?? null,
-          nudgeStepMeters: 0.25,
-        }}
-        actions={{
-          onAutoPlace: autoPlacePendingCatalogPlacement,
-          onMoveToBestRoom: movePendingCatalogPlacementToBestRoom,
-          onSwitchToBestOption: switchPendingCatalogPlacementToBestOption,
-          onImprovePlacement: improvePendingCatalogPlacement,
-          onRestoreValidPlacement: restoreLastValidCatalogPlacement,
-          onSelectBlocker: selectPendingCatalogPlacementBlocker,
-          onSwapWithBlocker: swapPendingCatalogWithBlocker,
-          onMoveBlockerAside: movePendingCatalogBlockerAside,
-          onPlaceBesideBlocker: placePendingCatalogBesideBlocker,
-          onTrySmallerVariant: trySmallerPendingCatalogVariant,
-          onCenter: centerPendingCatalogPlacement,
-          onNudge: nudgePendingCatalogPlacement,
-          onRotate: rotatePendingCatalogPlacement,
-          onCancel: cancelPendingCatalogPlacement,
-          onConfirm: confirmPendingCatalogPlacement,
-        }}
-      />
-
-      <PlanTemplateChoiceDialog
-        open={Boolean(pendingPlanTemplateReplacement)}
-        templateLabel={pendingPlanTemplateReplacement?.template.label ?? "this floor plan"}
-        busy={startingNewPlan}
-        errorMessage={newPlanStartError}
-        isAuthenticated={Boolean(session?.user)}
-        onCancel={cancelPendingPlanChoice}
-        onReplaceCurrent={replaceCurrentPlanFromChoice}
-        onSaveCurrentAndStartNew={saveCurrentAndStartNewPlan}
-        onSignIn={signInWithReturn}
-      />
-
-      {!isClientPreview && (
-        <BetaFeedbackWidget
-          open={feedbackOpen}
-          onOpenChange={setFeedbackOpen}
-          showTrigger={false}
-          context={{
-            designId,
-            shareToken,
-            mode,
-            viewMode,
-            plan,
-            activeRoomName: activeRoom?.name ?? "Current room",
-            roomCount: housePlan2D.rooms.length,
-            itemCount: items.length,
-            openingCount: planOpenings.length,
-            exportReadinessScore,
-            selectedItemId: selectedItem?.instanceId ?? null,
-            selectedItemProductId: selectedItem?.productId ?? null,
-            placementScore: pendingCatalogPlacementScore?.score ?? null,
-            placementKind: pendingCatalogPlacementScore?.kind ?? null,
-            shoppingReadyCount: wholeHomeShoppingSummary.shoppableCount,
-            shoppingNeedsReviewCount: wholeHomeShoppingSummary.needsReviewCount,
-            saveStatus: saveStatus.kind,
-            shareEnabled: Boolean(shareToken),
-            activePlacementTarget: pendingCatalogPlacementRoom?.name ?? activeRoom?.name ?? null,
-            viewportWidth: viewportSize.width,
-            viewportHeight: viewportSize.height,
-          }}
-        />
-      )}
-
-      <DesignPageToasts
-        ruleMessage={ruleToast}
-        nudgeMessage={nextBestActionNudge}
-        shareCopied={shareSuccessToast}
-        shareErrorMessage={shareErrorToast}
-      />
-
-      <ShareLinkFallbackDialog
-        url={shareLinkFallback}
-        dark={showDesignerTheme}
-        onClose={closeShareLinkFallback}
-        onCopy={copyFallbackShareLink}
-        onOpen={openFallbackShareLink}
-      />
-
-      <DesignValidationFeedback
-        hidden={isClientPreview}
-        constraints={visibleConstraints}
-        confidence={layoutConfidence}
-      />
-
-      <CabinetryStudioOverlay
-        state={cabinetryStudioState}
-        enabled={canUseCabinetryStudio}
-        accessLevel={cabinetryAccessLevel}
-        measurementUnit={planMeasurementUnit}
-        availableSpaces={cabinetryAvailableSpaces}
-        preferredSpaceId={cabinetryPreferredSpaceId}
-        openedAtRef={cabinetryStudioOpenedAtRef}
-        onSave={handleSaveCabinetDefinition}
-        onPlaceInPlan={handlePlaceCabinetInPlan}
-        onDismiss={dismissCabinetryStudio}
-      />
-
-      {/* Item Cart Drawer */}
-      <ItemCartDrawer
-        items={itemCart}
-        onRemove={removeFromCart}
-        onUpdateQty={updateCartQty}
-        onClear={clearCart}
-        onAddAllToRoom={addAllToRoom}
-        isOpen={itemCartOpen}
-        onToggle={() => setItemCartOpen((v) => !v)}
-        triggerClassName={
-          designControlsPanelVisibleForLayout
-            ? "bottom-[calc(64vh+1.25rem)] right-4 md:bottom-4"
-            : "bottom-4 right-4"
-        }
-      />
-
+      <DesignPagePanelRegion {...panelRegionModel} />
+      <DesignPageDialogLayer {...dialogLayerModel} />
     </DesignPageComposition>
   );
 }

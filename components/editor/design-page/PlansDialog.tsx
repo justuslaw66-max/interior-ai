@@ -18,7 +18,7 @@ export type PlansDialogActions = {
   onStartCheckout: (interval: "monthly" | "yearly") => void;
 };
 
-type PlansDialogProps = {
+export type PlansDialogProps = {
   state: PlansDialogState;
   actions: PlansDialogActions;
 };

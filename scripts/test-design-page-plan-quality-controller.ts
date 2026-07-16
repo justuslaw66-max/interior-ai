@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
+import { buildDesignControlsPanelModel } from "../lib/design-page-controls-panel-model";
+
 const root = process.cwd();
 const workspaceSource = readFileSync(
   join(root, "components/editor/design-page/DesignPageWorkspace.tsx"),
@@ -174,7 +176,55 @@ assert.match(
 );
 assert.match(
   workspaceSource,
-  /floorPlanQualityReport=\{floorPlanQualityReport\}[\s\S]*?onPlanQualityAction=\{handlePlanQualityAction\}/
+  /buildDesignControlsPanelModel\(\{/,
+  "The workspace should delegate control-panel contract assembly to the pure model builder."
+);
+
+const handlePlanQualityAction = () => undefined;
+const noop = () => undefined;
+const qualityReport = { score: 77 };
+const controlsModel = buildDesignControlsPanelModel({
+  access: {},
+  panel: { mode: "plan", state: {} },
+  room: { state: {}, actions: { addDesignerRoom: noop } },
+  floorPlan: {
+    state: {
+      floorPlanQualityReport: qualityReport,
+      floorPlanUnderlay: null,
+      planRoomCount: 1,
+    },
+    actions: {
+      onPlanQualityAction: handlePlanQualityAction,
+      onFloorPlanTraceRoomDrawModeChange: noop,
+    },
+  },
+  surfaces: { state: {}, actions: {} },
+  shopping: { state: {}, actions: {} },
+  ai: { state: {}, actions: {} },
+  actions: {
+    navigation: {},
+    panel: {
+      changeDesignPanelCollapsed: noop,
+      goView3D: noop,
+      runAiLayout: noop,
+      regenerateAiLayout: noop,
+      changeActiveWallSurfaceSettings: noop,
+      resetActiveWallSurface: noop,
+      resetActiveCeilingSurface: noop,
+      toggleGrid: noop,
+      toggleSnap: noop,
+    },
+  },
+} as unknown as Parameters<typeof buildDesignControlsPanelModel>[0]);
+assert.strictEqual(
+  controlsModel.state.floorPlanQualityReport,
+  qualityReport,
+  "the controls model should preserve the controller-owned quality report."
+);
+assert.strictEqual(
+  controlsModel.actions.onPlanQualityAction,
+  handlePlanQualityAction,
+  "the controls model should preserve the controller-owned quality action."
 );
 
 console.log("design page plan-quality controller guardrails passed");

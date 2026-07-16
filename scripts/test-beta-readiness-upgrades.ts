@@ -10,6 +10,7 @@ import {
 } from "../lib/beta-checkout-boundary";
 import { buildBetaFeedbackTriage } from "../lib/beta-feedback-triage";
 import { buildBetaLaunchReadinessSummary } from "../lib/beta-launch-readiness";
+import { buildDesignPageBetaFeedbackContext } from "../lib/design-page-beta-feedback";
 import { buildFirstRunActivationState } from "../lib/first-run-activation";
 import {
   getPrimaryPlacementRecommendation,
@@ -469,6 +470,33 @@ assert.match(
   "beta start panel should show visible first-run activation progress."
 );
 
+const feedbackContext = buildDesignPageBetaFeedbackContext({
+  identity: { designId: "design-beta", shareToken: "share-beta" },
+  editor: {
+    mode: "designer",
+    viewMode: "3d",
+    plan: "pro",
+    saveStatus: "saved",
+    shareEnabled: true,
+  },
+  project: {
+    activeRoomName: "Beta room",
+    roomCount: 2,
+    itemCount: 4,
+    openingCount: 3,
+    exportReadinessScore: 90,
+  },
+  selection: { itemId: "selected-item", productId: "selected-product" },
+  placement: {
+    score: 86,
+    kind: "great",
+    targetRoomName: "Placement room",
+    fallbackRoomName: "Beta room",
+  },
+  shopping: { readyCount: 3, needsReviewCount: 1 },
+  viewport: { width: 1280, height: 720 },
+});
+
 for (const required of [
   "selectedItemId",
   "selectedItemProductId",
@@ -481,8 +509,36 @@ for (const required of [
   "activePlacementTarget",
 ]) {
   assert.ok(feedbackSource.includes(required), `feedback widget should type ${required}.`);
-  assert.ok(designPageSource.includes(`${required}:`), `design page should send ${required}.`);
+  assert.ok(
+    Object.hasOwn(feedbackContext, required),
+    `the pure design-page feedback builder should send ${required}.`
+  );
 }
+assert.deepEqual(
+  {
+    selectedItemId: feedbackContext.selectedItemId,
+    selectedItemProductId: feedbackContext.selectedItemProductId,
+    placementScore: feedbackContext.placementScore,
+    placementKind: feedbackContext.placementKind,
+    shoppingReadyCount: feedbackContext.shoppingReadyCount,
+    shoppingNeedsReviewCount: feedbackContext.shoppingNeedsReviewCount,
+    saveStatus: feedbackContext.saveStatus,
+    shareEnabled: feedbackContext.shareEnabled,
+    activePlacementTarget: feedbackContext.activePlacementTarget,
+  },
+  {
+    selectedItemId: "selected-item",
+    selectedItemProductId: "selected-product",
+    placementScore: 86,
+    placementKind: "great",
+    shoppingReadyCount: 3,
+    shoppingNeedsReviewCount: 1,
+    saveStatus: "saved",
+    shareEnabled: true,
+    activePlacementTarget: "Placement room",
+  },
+  "the importable feedback-context builder should preserve the beta-triage payload."
+);
 
 assert.match(smartPlacementE2eSource, /catalog-placement-confirm-panel/);
 assert.match(smartPlacementE2eSource, /catalog-placement-target-room/);

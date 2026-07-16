@@ -2,6 +2,9 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
+import { buildDesignPagePanelRegionAdapter } from "../lib/design-page-panel-region-adapter";
+import { buildDesignPageSelectionPanelModels } from "../lib/design-page-selection-panel-model";
+
 const root = process.cwd();
 const readSource = (relativePath: string) =>
   readFileSync(join(root, relativePath), "utf8");
@@ -12,6 +15,9 @@ const workspaceSource = readSource(
 const panelSource = readSource(
   "components/editor/design-page/SelectedItemPanel.tsx",
 );
+const panelRegionSource = readSource(
+  "components/editor/design-page/DesignPagePanelRegion.tsx",
+);
 const controllerSource = readSource(
   "lib/useDesignPageSelectedItemPanelController.ts",
 );
@@ -21,38 +27,124 @@ const finishControlsSource = readSource(
 
 assert.match(
   workspaceSource,
-  /import\s+\{\s*SelectedItemPanel\s*\}\s+from\s+"@\/components\/editor\/design-page\/SelectedItemPanel"/,
-  "The workspace should import the extracted selected-item panel.",
+  /import\s+\{\s*DesignPagePanelRegion\s*\}\s+from\s+"@\/components\/editor\/design-page\/DesignPagePanelRegion"/,
+  "The workspace should import the fixed panel region.",
+);
+assert.match(
+  panelRegionSource,
+  /import\s+\{[\s\S]*?SelectedItemPanel[\s\S]*?from\s+"@\/components\/editor\/design-page\/SelectedItemPanel"/,
+  "The panel region should import the selected-item leaf it owns.",
+);
+assert.match(
+  panelRegionSource,
+  /\{state\.selectedItem\s*\?\s*<SelectedItemPanel\s+\{\.\.\.state\.selectedItem\}\s*\/>\s*:\s*null\}/,
+  "The panel region should own the selected-item leaf composition.",
 );
 assert.match(
   workspaceSource,
-  /\{editorMode\s*===\s*"adjust"\s*&&\s*selectedProduct\s*&&\s*\(\s*<SelectedItemPanel\b/,
-  "The workspace should compose the panel only for an Adjust-mode product selection.",
+  /<DesignPagePanelRegion\s+\{\.\.\.panelRegionModel\}\s*\/>/,
+  "The workspace should compose the panel region through its typed model.",
+);
+assert.doesNotMatch(
+  workspaceSource,
+  /(?:import[\s\S]*?from\s+"@\/components\/editor\/design-page\/SelectedItemPanel"|<SelectedItemPanel\b)/,
+  "The workspace should not retain selected-item leaf ownership.",
 );
 
-const compositionStart = workspaceSource.indexOf("<SelectedItemPanel");
-assert.notEqual(compositionStart, -1, "The workspace should render SelectedItemPanel.");
-const compositionEnd = workspaceSource.indexOf("/>", compositionStart);
-assert.notEqual(compositionEnd, -1, "SelectedItemPanel should be a leaf composition boundary.");
-const compositionSource = workspaceSource.slice(compositionStart, compositionEnd + 2);
+const toggleLock = () => undefined;
+const removeItem = () => undefined;
+const noop = () => undefined;
+const buildSelectionModels = (rotationEnabled: boolean) =>
+  buildDesignPageSelectionPanelModels({
+    cabinet: { state: { cabinet: {}, project: {} }, configuration: {}, actions: {} },
+    item: {
+      state: {
+        document: { rooms: [], activeRoomId: null },
+        details: { product: { id: "selected-product" }, item: { instanceId: "selected-item" } },
+        rotation: { enabled: rotationEnabled, state: { selectedRotationDegrees: 45 } },
+        productModelVariants: {},
+        productFinishes: {},
+        inspectionController: {
+          state: {
+            showInspectorDetails: false,
+            showFullDimensions: false,
+            showDeliveryWarranty: false,
+            showRotationControls: true,
+            selectedItemCommerceType: "cart_ready",
+            selectedItemLockLabel: "Lock",
+          },
+          adjustableHangingHeight: null,
+        },
+      },
+      configuration: {},
+      actions: {
+        inspectionController: {
+          toggleSelectedItemDetails: noop,
+          toggleSelectedItemDimensions: noop,
+          toggleSelectedItemDeliveryWarranty: noop,
+          toggleSelectedItemRotationControls: noop,
+          setSelectedItemPosition: noop,
+          applySelectedItemStyleAlternative: noop,
+          swapSelectedItemToCheaper: noop,
+          upgradeSelectedItem: noop,
+          openSelectedItemCommerce: noop,
+          toggleSelectedItemLock: toggleLock,
+          removeSelectedItemFromDesign: removeItem,
+        },
+        placement: {},
+        rotation: {},
+        productConfiguration: { model: {}, finish: {}, selectVariant: noop },
+      },
+    },
+  } as unknown as Parameters<typeof buildDesignPageSelectionPanelModels>[0]);
 
-assert.match(
-  compositionSource,
-  /product:\s*selectedProduct\b/,
-  "The selected product should remain the details-panel product.",
+const selectionModels = buildSelectionModels(true);
+assert.equal(selectionModels.selectedItem.state.details.product.id, "selected-product");
+assert.equal(selectionModels.selectedItem.state.rotation?.selectedRotationDegrees, 45);
+assert.strictEqual(selectionModels.selectedItem.actions.onToggleLock, toggleLock);
+assert.strictEqual(selectionModels.selectedItem.actions.onRemove, removeItem);
+assert.equal(
+  buildSelectionModels(false).selectedItem.state.rotation,
+  null,
+  "the pure selection-panel model should omit rotation without a concrete selected item.",
 );
-assert.match(
-  compositionSource,
-  /rotation:\s*selectedItem\s*\?/,
-  "The workspace should provide rotation state only for a concrete selected item.",
+
+const panelModelInput = {
+  state: {
+    editorMode: "adjust",
+    shoppingVisible: false,
+    controlsVisible: false,
+    hasSelectedCabinet: false,
+    hasSelectedProduct: true,
+  },
+  configuration: {
+    designerTheme: false,
+    isDesigner: false,
+    isClientPreview: true,
+  },
+  panels: {
+    shopping: {},
+    selectedCabinet: {},
+    selectedItem: selectionModels.selectedItem,
+    controls: {},
+  },
+  actions: { exitClientPreview: noop },
+} as unknown as Parameters<typeof buildDesignPagePanelRegionAdapter>[0];
+assert.strictEqual(
+  buildDesignPagePanelRegionAdapter(panelModelInput).state.selectedItem,
+  selectionModels.selectedItem,
+  "client preview should keep the Adjust-mode panel mounted for its leaf-level aria and opacity policy.",
+);
+assert.equal(
+  buildDesignPagePanelRegionAdapter({
+    ...panelModelInput,
+    state: { ...panelModelInput.state, editorMode: "design" },
+  }).state.selectedItem,
+  null,
+  "the pure panel adapter should gate selected-item composition to Adjust mode.",
 );
 
 for (const callbackName of ["onToggleLock", "onRemove"] as const) {
-  assert.match(
-    compositionSource,
-    new RegExp(`${callbackName}\\s*:`),
-    `The workspace should pass ${callbackName} through the panel action contract.`,
-  );
   assert.match(
     panelSource,
     new RegExp(`actions\\.${callbackName}\\b`),

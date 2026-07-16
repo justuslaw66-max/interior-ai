@@ -8,7 +8,7 @@ import { createCommerceEvent } from "@/lib/commerce-helpers";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import { trackVariantIssues } from "@/lib/catalog/variant-observability";
 
-type PlacedItem = {
+export type CartSidebarPlacedItem = {
   instanceId: string;
   productId: string;
   variantId: string;
@@ -86,6 +86,20 @@ async function trackAndOpen({
   return urlToOpen;
 }
 
+export type CartSidebarProps = {
+  items: CartSidebarPlacedItem[];
+  designId?: string | null;
+  plan: "free" | "pro";
+  onRemove: (instanceId: string) => void;
+  onSetQty: (instanceId: string, qty: number) => void;
+  onSetInclude: (instanceId: string, include: boolean) => void;
+  onBulkSwap: (direction: "cheaper" | "premium") => void;
+  onShowUpgrade: () => void;
+  isGuest?: boolean;
+  onGuestCapture?: (reason: string, onContinue: () => void) => void;
+  theme?: "default" | "designer";
+};
+
 export default function CartSidebar({
   items,
   designId,
@@ -98,19 +112,7 @@ export default function CartSidebar({
   isGuest = false,
   onGuestCapture,
   theme = "default",
-}: {
-  items: PlacedItem[];
-  designId?: string | null;
-  plan: "free" | "pro";
-  onRemove: (instanceId: string) => void;
-  onSetQty: (instanceId: string, qty: number) => void;
-  onSetInclude: (instanceId: string, include: boolean) => void;
-  onBulkSwap: (direction: "cheaper" | "premium") => void;
-  onShowUpgrade: () => void;
-  isGuest?: boolean;
-  onGuestCapture?: (reason: string, onContinue: () => void) => void;
-  theme?: "default" | "designer";
-}) {
+}: CartSidebarProps) {
   const isDesignerTheme = theme === "designer";
   const [busy, setBusy] = useState(false);
   const [openInSameTab, setOpenInSameTab] = useState(false);

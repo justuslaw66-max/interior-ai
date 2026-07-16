@@ -20,7 +20,7 @@ export type UpgradeDialogActions = {
   onClose: () => void;
 };
 
-type UpgradeDialogProps = {
+export type UpgradeDialogProps = {
   state: UpgradeDialogState;
   actions: UpgradeDialogActions;
 };

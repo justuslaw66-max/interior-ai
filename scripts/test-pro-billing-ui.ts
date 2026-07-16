@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 
+import { buildDesignPageDialogLayerModel } from "../lib/design-page-dialog-layer-model";
+
 const root = path.resolve(__dirname, "..");
 const read = (relativePath: string) =>
   fs.readFileSync(path.join(root, relativePath), "utf8");
@@ -54,8 +56,60 @@ assert.match(plansDialog, /Start yearly — \{state\.yearlyLabel\}/);
 const designPage = read("components/editor/design-page/DesignPageWorkspace.tsx");
 const editorChromeController = read("lib/useDesignPageEditorChromeController.ts");
 const designPageExport = read("lib/useDesignPageExport.ts");
-assert.match(designPage, /monthlyLabel: PRO_PLAN_PRICING\.monthly\.label/);
-assert.match(designPage, /yearlyLabel: PRO_PLAN_PRICING\.yearly\.label/);
+const dialogLayer = read("components/editor/design-page/DesignPageDialogLayer.tsx");
+assert.match(
+  dialogLayer,
+  /<PlansDialog\s+\{\.\.\.dialogs\.plans\}\s*\/>/,
+  "The fixed dialog layer should own Plans dialog composition."
+);
+
+const noop = () => undefined;
+const plansModel = buildDesignPageDialogLayerModel({
+  access: { isClientPreview: false, isAuthenticated: true, isPro: false, designerTheme: false },
+  billing: {
+    upgrade: {},
+    plans: {
+      open: true,
+      layout: "annual_highlight",
+      openingBillingPortal: false,
+      monthlyLabel: "monthly-price",
+      yearlyLabel: "yearly-price",
+      yearlyEffectiveMonthlyLabel: "effective-monthly-price",
+    },
+    startingCheckout: false,
+    annualSavingsLabel: "annual-savings",
+    upgradeActions: {},
+    plansActions: {},
+  },
+  persistence: {
+    guestSave: { open: false, onNotNow: noop, onSaveAndContinue: noop },
+    myDesigns: { data: {}, actions: {} },
+    templateChoice: { data: {}, actions: {} },
+  },
+  ai: { notes: {} },
+  presentation: { presentExport: {} },
+  editing: { roomRename: {}, annotation: {} },
+  placement: { identity: {}, assessment: {}, activeRoomName: null, actions: {} },
+  feedback: { beta: {}, toasts: {}, validation: {} },
+  sharing: {},
+  cabinetry: { state: {}, access: {}, configuration: {}, refs: {}, actions: {} },
+  cart: {},
+} as unknown as Parameters<typeof buildDesignPageDialogLayerModel>[0]);
+assert.deepEqual(
+  {
+    monthly: plansModel.dialogs.plans.state.monthlyLabel,
+    yearly: plansModel.dialogs.plans.state.yearlyLabel,
+    effectiveMonthly: plansModel.dialogs.plans.state.yearlyEffectiveMonthlyLabel,
+    savings: plansModel.dialogs.plans.state.annualSavingsLabel,
+  },
+  {
+    monthly: "monthly-price",
+    yearly: "yearly-price",
+    effectiveMonthly: "effective-monthly-price",
+    savings: "annual-savings",
+  },
+  "The pure dialog model should preserve shared Pro pricing labels."
+);
 assert.match(
   designPage,
   /useDesignPageEditorChromeController\(\{[\s\S]*?dialogs:\s*\{[\s\S]*?setPlansOpen: setShowPlans,[\s\S]*?billing:\s*\{ openPortal: openBillingPortal \}/,

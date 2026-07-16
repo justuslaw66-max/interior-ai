@@ -65,7 +65,7 @@ type SurfaceRoomSummary = {
   surfaceFinishes?: RoomSurfaceAssignments;
 };
 
-type DesignControlsPanelProps = {
+export type DesignControlsPanelProps = {
   dark: boolean;
   isClientPreview: boolean;
   isAuthed: boolean;

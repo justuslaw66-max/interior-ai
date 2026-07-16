@@ -2,6 +2,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
+import { buildDesignPageBetaFeedbackContext } from "../lib/design-page-beta-feedback";
+import { buildDesignPageDialogLayerAdapter } from "../lib/design-page-dialog-layer-adapter";
+import { buildDesignPageDialogLayerModel } from "../lib/design-page-dialog-layer-model";
+
 const widgetSource = readFileSync(
   join(process.cwd(), "components/BetaFeedbackWidget.tsx"),
   "utf8"
@@ -19,6 +23,10 @@ const designPageCommandBarSource = readFileSync(
 );
 const designPageSource = readFileSync(
   join(process.cwd(), "components/editor/design-page/DesignPageWorkspace.tsx"),
+  "utf8"
+);
+const dialogLayerSource = readFileSync(
+  join(process.cwd(), "components/editor/design-page/DesignPageDialogLayer.tsx"),
   "utf8"
 );
 const editorChromeControllerSource = readFileSync(
@@ -136,20 +144,128 @@ assert.match(
   /viewportWidth[\s\S]*viewportHeight/,
   "beta feedback context should include viewport dimensions."
 );
+
+const feedbackContext = buildDesignPageBetaFeedbackContext({
+  identity: { designId: "design-1", shareToken: "share-1" },
+  editor: {
+    mode: "designer",
+    viewMode: "2d",
+    plan: "pro",
+    saveStatus: "saved",
+    shareEnabled: true,
+  },
+  project: {
+    activeRoomName: "Living room",
+    roomCount: 3,
+    itemCount: 8,
+    openingCount: 4,
+    exportReadinessScore: 92,
+  },
+  selection: { itemId: "item-1", productId: "product-1" },
+  placement: {
+    score: 88,
+    kind: "great",
+    targetRoomName: null,
+    fallbackRoomName: "Living room",
+  },
+  shopping: { readyCount: 6, needsReviewCount: 2 },
+  viewport: { width: 1440, height: 900 },
+});
+assert.deepEqual(
+  {
+    roomCount: feedbackContext.roomCount,
+    itemCount: feedbackContext.itemCount,
+    openingCount: feedbackContext.openingCount,
+    activePlacementTarget: feedbackContext.activePlacementTarget,
+    viewportWidth: feedbackContext.viewportWidth,
+    viewportHeight: feedbackContext.viewportHeight,
+  },
+  {
+    roomCount: 3,
+    itemCount: 8,
+    openingCount: 4,
+    activePlacementTarget: "Living room",
+    viewportWidth: 1440,
+    viewportHeight: 900,
+  },
+  "the pure feedback-context builder should preserve editor counts, target fallback, and viewport dimensions."
+);
+
+const noop = () => undefined;
+const dialogModel = buildDesignPageDialogLayerModel({
+  access: {
+    isClientPreview: false,
+    isAuthenticated: true,
+    isPro: true,
+    designerTheme: false,
+  },
+  billing: {
+    upgrade: { open: false },
+    plans: {},
+    startingCheckout: false,
+    annualSavingsLabel: "",
+    upgradeActions: {},
+    plansActions: {},
+  },
+  persistence: {
+    guestSave: { open: false, onNotNow: noop, onSaveAndContinue: noop },
+    myDesigns: { data: {}, actions: {} },
+    templateChoice: { data: {}, actions: {} },
+  },
+  ai: { notes: {} },
+  presentation: {
+    presentExport: { configuration: { open: true }, state: {}, actions: {} },
+  },
+  editing: { roomRename: {}, annotation: {} },
+  placement: {
+    identity: {},
+    assessment: {},
+    activeRoomName: null,
+    actions: {},
+  },
+  feedback: {
+    beta: { open: true, context: feedbackContext, onOpenChange: noop },
+    toasts: {},
+    validation: {},
+  },
+  sharing: {},
+  cabinetry: {
+    state: {},
+    access: {},
+    configuration: {},
+    refs: {},
+    actions: {},
+  },
+  cart: {},
+} as unknown as Parameters<typeof buildDesignPageDialogLayerModel>[0]);
+assert.equal(dialogModel.overlays.betaFeedback?.showTrigger, false);
+assert.strictEqual(dialogModel.overlays.betaFeedback?.context, feedbackContext);
+
+const editorLayer = buildDesignPageDialogLayerAdapter(dialogModel);
+assert.strictEqual(editorLayer.overlays.betaFeedback, dialogModel.overlays.betaFeedback);
+const previewLayer = buildDesignPageDialogLayerAdapter({
+  ...dialogModel,
+  state: { ...dialogModel.state, isClientPreview: true },
+});
+assert.equal(
+  previewLayer.overlays.betaFeedback,
+  null,
+  "client preview should suppress beta feedback at the pure dialog-layer policy boundary."
+);
 assert.match(
+  dialogLayerSource,
+  /\{overlays\.betaFeedback\s*\?\s*\([\s\S]*?<BetaFeedbackWidget\s+\{\.\.\.overlays\.betaFeedback\}\s*\/>/,
+  "the fixed dialog layer should own beta feedback rendering."
+);
+assert.doesNotMatch(
   designPageSource,
-  /!\s*isClientPreview\s*&&\s*\([\s\S]*<BetaFeedbackWidget/,
-  "beta feedback should mount in the editor but not in client preview mode."
+  /<BetaFeedbackWidget\b/,
+  "the workspace should not retain beta-feedback leaf markup."
 );
 assert.match(
   designPageSource,
-  /<BetaFeedbackWidget[\s\S]*open=\{feedbackOpen\}[\s\S]*onOpenChange=\{setFeedbackOpen\}[\s\S]*showTrigger=\{false\}/,
-  "the feedback dialog should remain mounted outside the More menu with its floating trigger hidden."
-);
-assert.match(
-  designPageSource,
-  /roomCount:\s*housePlan2D\.rooms\.length[\s\S]*itemCount:\s*items\.length[\s\S]*openingCount:\s*planOpenings\.length/,
-  "editor feedback context should include room, item, and opening counts."
+  /<DesignPagePanelRegion\s+\{\.\.\.panelRegionModel\}\s*\/>[\s\S]*?<DesignPageDialogLayer\s+\{\.\.\.dialogLayerModel\}\s*\/>/,
+  "the workspace should compose the fixed dialog layer after the panel region."
 );
 
 console.log("Beta feedback widget checks passed.");

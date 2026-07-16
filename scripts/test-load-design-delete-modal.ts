@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 
+import { buildDesignPageDialogLayerModel } from "../lib/design-page-dialog-layer-model";
+
 const designPagePath = path.join(
   process.cwd(),
   "components",
@@ -20,6 +22,16 @@ const dialogPath = path.join(
   "MyDesignsDialog.tsx"
 );
 const dialogSource = fs.readFileSync(dialogPath, "utf8");
+const dialogLayerSource = fs.readFileSync(
+  path.join(
+    process.cwd(),
+    "components",
+    "editor",
+    "design-page",
+    "DesignPageDialogLayer.tsx"
+  ),
+  "utf8"
+);
 
 assert.match(
   controllerSource,
@@ -94,9 +106,83 @@ assert.match(
 );
 
 assert.match(
-  source,
-  /<MyDesignsDialog[\s\S]*?onToggleAll=\{toggleAllSavedDesignSelection\}[\s\S]*?onToggleSelection=\{toggleSavedDesignSelection\}[\s\S]*?onLoadDesign=\{handleLoadDesign\}[\s\S]*?onRequestDelete=\{requestDeleteSavedDesigns\}[\s\S]*?onConfirmDelete=\{handleDeleteSavedDesign\}/,
-  "The extracted dialog should remain wired to the page-owned load, selection, and delete actions."
+  dialogLayerSource,
+  /<MyDesignsDialog\s+\{\.\.\.dialogs\.myDesigns\}\s*\/>/,
+  "The fixed dialog layer should own My Designs leaf composition."
 );
+assert.match(
+  source,
+  /<DesignPageDialogLayer\s+\{\.\.\.dialogLayerModel\}\s*\/>/,
+  "The workspace should compose the fixed dialog layer."
+);
+assert.doesNotMatch(
+  source,
+  /<MyDesignsDialog\b/,
+  "The workspace should not retain My Designs leaf markup."
+);
+
+const onToggleAll = () => undefined;
+const onToggleSelection = () => undefined;
+const onLoadDesign = () => undefined;
+const onRequestDelete = () => undefined;
+const onConfirmDelete = () => undefined;
+const noop = () => undefined;
+const dialogModel = buildDesignPageDialogLayerModel({
+  access: {
+    isClientPreview: false,
+    isAuthenticated: true,
+    isPro: true,
+    designerTheme: true,
+  },
+  billing: {
+    upgrade: {},
+    plans: {},
+    startingCheckout: false,
+    annualSavingsLabel: "",
+    upgradeActions: {},
+    plansActions: {},
+  },
+  persistence: {
+    guestSave: { open: false, onNotNow: noop, onSaveAndContinue: noop },
+    myDesigns: {
+      data: {
+        open: true,
+        designs: [],
+        loading: false,
+        allDesignIds: ["design-1"],
+        selectedDesignIds: new Set(["design-1"]),
+        selectedDesignCount: 1,
+        allDesignsSelected: true,
+        deletingDesignIds: new Set<string>(),
+        pendingDeleteDesign: null,
+      },
+      actions: {
+        onClose: noop,
+        onOpenTemplates: noop,
+        onToggleAll,
+        onToggleSelection,
+        onLoadDesign,
+        onRequestDelete,
+        onCancelDelete: noop,
+        onConfirmDelete,
+      },
+    },
+    templateChoice: { data: {}, actions: {} },
+  },
+  ai: { notes: {} },
+  presentation: { presentExport: {} },
+  editing: { roomRename: {}, annotation: {} },
+  placement: { identity: {}, assessment: {}, activeRoomName: null, actions: {} },
+  feedback: { beta: {}, toasts: {}, validation: {} },
+  sharing: {},
+  cabinetry: { state: {}, access: {}, configuration: {}, refs: {}, actions: {} },
+  cart: {},
+} as unknown as Parameters<typeof buildDesignPageDialogLayerModel>[0]);
+assert.strictEqual(dialogModel.dialogs.myDesigns.onToggleAll, onToggleAll);
+assert.strictEqual(dialogModel.dialogs.myDesigns.onToggleSelection, onToggleSelection);
+assert.strictEqual(dialogModel.dialogs.myDesigns.onLoadDesign, onLoadDesign);
+assert.strictEqual(dialogModel.dialogs.myDesigns.onRequestDelete, onRequestDelete);
+assert.strictEqual(dialogModel.dialogs.myDesigns.onConfirmDelete, onConfirmDelete);
+assert.equal(dialogModel.dialogs.myDesigns.designerTheme, true);
 
 console.log("Load design delete modal guardrails passed.");

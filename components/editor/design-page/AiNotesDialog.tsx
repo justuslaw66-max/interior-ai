@@ -1,19 +1,21 @@
 import type { AISuggestionAction } from "@/lib/ai/applySuggestion";
 import type { AINotesResponse } from "@/lib/design-page-types";
 
+export type AiNotesDialogProps = {
+  open: boolean;
+  data: AINotesResponse | null;
+  canApplySuggestions: boolean;
+  onApplySuggestion: (action: AISuggestionAction) => void;
+  onClose: () => void;
+};
+
 export function AiNotesDialog({
   open,
   data,
   canApplySuggestions,
   onApplySuggestion,
   onClose,
-}: {
-  open: boolean;
-  data: AINotesResponse | null;
-  canApplySuggestions: boolean;
-  onApplySuggestion: (action: AISuggestionAction) => void;
-  onClose: () => void;
-}) {
+}: AiNotesDialogProps) {
   if (!open) return null;
 
   return (

@@ -290,6 +290,10 @@ const designPageSource = fs.readFileSync(
   path.join(root, "components", "editor", "design-page", "DesignPageWorkspace.tsx"),
   "utf8"
 );
+const designPagePanelRegionSource = fs.readFileSync(
+  path.join(root, "components", "editor", "design-page", "DesignPagePanelRegion.tsx"),
+  "utf8"
+);
 const planPresentationSource = fs.readFileSync(
   path.join(root, "lib", "useDesignPagePlanPresentationModel.ts"),
   "utf8"
@@ -422,7 +426,11 @@ assert.match(
 for (const [label, pattern] of [
   ["shopping dock", /data-testid="shopping-dock"[\s\S]{0,1000}?designer-(?:dock|work-surface)/],
 ] as const) {
-  assert.match(designPageSource, pattern, `The Pro ${label} should use an opaque semantic surface.`);
+  assert.match(
+    designPagePanelRegionSource,
+    pattern,
+    `The Pro ${label} should use an opaque semantic surface in its owning panel region.`
+  );
 }
 assert.match(
   sceneReadyVeilSource,

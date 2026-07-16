@@ -20,7 +20,7 @@ import {
   type ShoppingReadinessFilter,
 } from "@/lib/shopping-readiness";
 
-type ShoppingOverviewPanelProps = {
+export type ShoppingOverviewPanelProps = {
   dark?: boolean;
   activeRoom: ShoppingRoomSummary | null;
   activeRoomItems?: ActiveRoomShoppingItem[];

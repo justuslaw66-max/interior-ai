@@ -1,14 +1,16 @@
 import type { ConstraintResult } from "@/lib/constraints/evaluate";
 
+export type DesignValidationFeedbackProps = {
+  hidden: boolean;
+  constraints: ConstraintResult[];
+  confidence: string | null;
+};
+
 export function DesignValidationFeedback({
   hidden,
   constraints,
   confidence,
-}: {
-  hidden: boolean;
-  constraints: ConstraintResult[];
-  confidence: string | null;
-}) {
+}: DesignValidationFeedbackProps) {
   if (hidden) return null;
 
   return (
