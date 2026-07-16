@@ -534,8 +534,8 @@ assert.match(
 
 assert.match(
   designPageSource,
-  /useDesignPageEditorChromeController\(\{[\s\S]*?openNewPlan:\s*openNewPlanPicker/,
-  "The workspace should inject New plan at the editor-chrome boundary."
+  /useDesignPagePresentationQaFacade\(\{[\s\S]*?openNewPlan:\s*openNewPlanPicker/,
+  "The workspace should inject New plan at the presentation/QA boundary."
 );
 assert.match(
   editorChromeControllerSource,

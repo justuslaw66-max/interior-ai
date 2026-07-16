@@ -44,8 +44,8 @@ assert.match(
 );
 assert.match(
   workspaceSource,
-  /useDesignPageEditorChromeController\(\{[\s\S]*?isDesigner,[\s\S]*?editor:\s*\{[\s\S]*?setClientPreview,[\s\S]*?setUrlMode,/,
-  "The workspace should inject Pro-tools and client-preview state transitions into the chrome controller."
+  /useDesignPagePresentationQaFacade\(\{[\s\S]*?isDesigner,[\s\S]*?shell:\s*\{[\s\S]*?setClientPreview,[\s\S]*?setUrlMode/,
+  "The workspace should inject Pro-tools and client-preview state transitions into the presentation/QA facade."
 );
 assert.match(
   editorChromeControllerSource,

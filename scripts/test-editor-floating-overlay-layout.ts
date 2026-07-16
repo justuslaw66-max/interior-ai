@@ -415,8 +415,8 @@ assert.match(
 );
 assert.match(
   source,
-  /useDesignPageEditorChromeController\(\{[\s\S]*?setFeedbackOpen/,
-  "The workspace should inject feedback state at the editor-chrome boundary."
+  /useDesignPagePresentationQaFacade\(\{[\s\S]*?setFeedbackOpen/,
+  "The workspace should inject feedback state at the presentation/QA boundary."
 );
 assert.match(
   editorChromeControllerSource,
@@ -560,8 +560,8 @@ assert.doesNotMatch(
 
 assert.match(
   source,
-  /useDesignPageEditorChromeController\(\{[\s\S]*millworkActive:\s*cabinetryStudioState !== null[\s\S]*canUseCabinetryStudio[\s\S]*openStudio: openCabinetryStudio/,
-  "The workspace should inject Millwork state and capability at the editor-chrome boundary."
+  /useDesignPagePresentationQaFacade\(\{[\s\S]*millworkActive:\s*cabinetryStudioState !== null[\s\S]*canUseCabinetryStudio[\s\S]*openStudio: openCabinetryStudio/,
+  "The workspace should inject Millwork state and capability at the presentation/QA boundary."
 );
 assert.match(
   editorChromeControllerSource,

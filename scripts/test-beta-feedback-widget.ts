@@ -76,8 +76,8 @@ assert.match(
 );
 assert.match(
   designPageSource,
-  /useDesignPageEditorChromeController\(\{[\s\S]*?dialogs:\s*\{[\s\S]*?setFeedbackOpen,/,
-  "the workspace should inject the feedback dialog setter into the chrome controller."
+  /useDesignPagePresentationQaFacade\(\{[\s\S]*?dialogs:\s*\{[\s\S]*?setFeedbackOpen/,
+  "the workspace should inject the feedback dialog setter into the presentation/QA facade."
 );
 assert.match(
   editorChromeControllerSource,

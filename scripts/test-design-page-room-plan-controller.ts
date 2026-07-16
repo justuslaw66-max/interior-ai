@@ -117,8 +117,8 @@ assert.match(
 );
 assert.match(
   workspaceSource,
-  /useDesignPageEditorChromeController\(\{[\s\S]*?room:\s*activeRoom[\s\S]*?id:\s*activeRoom\.id[\s\S]*?roomName:\s*activeRoom\.name[\s\S]*?room:\s*\{[\s\S]*?rename:\s*handleRenameSelectedPlanRoom/,
-  "The workspace should inject room status and rename through the typed editor-chrome boundary."
+  /useDesignPagePresentationQaFacade\(\{[\s\S]*?activeRoom:\s*activeRoom \?\? null[\s\S]*?room:\s*\{[\s\S]*?rename:\s*handleRenameSelectedPlanRoom/,
+  "The workspace should inject room state and rename through the typed presentation/QA boundary."
 );
 assert.match(
   editorChromeControllerSource,

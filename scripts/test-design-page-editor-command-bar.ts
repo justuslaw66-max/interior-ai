@@ -167,8 +167,8 @@ assert.doesNotMatch(
 );
 assert.match(
   workspaceSource,
-  /useDesignPageEditorChromeController\(\{[\s\S]*?commandBar:\s*\{[\s\S]*?room:\s*activeRoom[\s\S]*?scenePerformance:\s*\{[\s\S]*?configuration:\s*\{[\s\S]*?actions:\s*\{[\s\S]*?room:\s*\{[\s\S]*?scenePerformance:\s*\{/,
-  "The workspace should inject grouped command, room, and performance state, configuration, and actions."
+  /useDesignPagePresentationQaFacade\(\{[\s\S]*?editor:\s*\{[\s\S]*?activeRoom:\s*activeRoom \?\? null[\s\S]*?scene:\s*\{[\s\S]*?configuration:\s*\{[\s\S]*?actions:\s*\{[\s\S]*?room:\s*\{[\s\S]*?scenePerformance:\s*\{/,
+  "The workspace should inject grouped command, room, and performance state, configuration, and actions through the presentation/QA facade."
 );
 assert.match(
   editorChromeControllerSource,

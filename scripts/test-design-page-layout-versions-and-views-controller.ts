@@ -41,8 +41,8 @@ assert.match(
 );
 assert.match(
   workspaceSource,
-  /useDesignPagePresentExportController\(\{[\s\S]*?camera:\s*\{[\s\S]*?open:\s*openSavedCameraView/,
-  "The workspace should inject the named-view controller's open action at the present/export boundary."
+  /useDesignPagePresentationQaFacade\(\{[\s\S]*?camera:\s*\{[\s\S]*?open:\s*openSavedCameraView/,
+  "The workspace should inject the named-view controller's open action at the presentation/QA boundary."
 );
 assert.match(
   presentExportControllerSource,

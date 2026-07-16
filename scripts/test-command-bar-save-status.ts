@@ -49,8 +49,8 @@ assert.match(
 );
 assert.match(
   designPageSource,
-  /useDesignPageEditorChromeController\(\{[\s\S]*?isSaving,[\s\S]*?saveStatus,[\s\S]*?persistence:\s*\{[\s\S]*?saveDesignToCloud,[\s\S]*?retrySaveStatus,/,
-  "The workspace should inject save state and persistence collaborators into the chrome controller."
+  /useDesignPagePresentationQaFacade\(\{[\s\S]*?isSaving,[\s\S]*?saveStatus[\s\S]*?persistence:\s*\{[\s\S]*?saveDesignToCloud,[\s\S]*?retrySaveStatus,/,
+  "The workspace should inject save state and persistence collaborators into the presentation/QA facade."
 );
 assert.match(
   editorChromeControllerSource,

@@ -390,8 +390,8 @@ assert.match(
 );
 assert.match(
   designPageSource,
-  /useDesignPageEditorChromeController\(\{[\s\S]*?configuration:\s*\{[\s\S]*?commandBar:\s*\{[\s\S]*?dark:\s*showDesignerTheme/,
-  "The workspace should inject its resolved designer theme into the chrome controller."
+  /useDesignPagePresentationQaFacade\(\{[\s\S]*?configuration:\s*\{[\s\S]*?designerTheme:\s*showDesignerTheme/,
+  "The workspace should inject its resolved designer theme into the presentation/QA facade."
 );
 assert.match(
   editorChromeControllerSource,

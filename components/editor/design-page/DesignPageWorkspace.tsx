@@ -13,7 +13,6 @@ import { initializeCatalog } from "@/lib/catalog-init";
 import type { DesignItem } from "@/lib/room-types";
 import { getWallFaceLabel } from "@/lib/surface-settings";
 import type { ShoppingReadinessFilter } from "@/lib/shopping-readiness";
-import { getAllRoomNames } from "@/lib/room-hooks";
 import type { PlanStartMode } from "@/components/editor/DesignControlsPlanPanel";
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
 import type { Plan2DCameraDiagnostics } from "@/components/editor/camera/Plan2DCameraInvariantGuard";
@@ -21,13 +20,8 @@ import { DesignPageComposition } from "@/components/editor/design-page/DesignPag
 import { DesignPageEditorChrome } from "@/components/editor/design-page/DesignPageEditorChrome";
 import { DesignPageDialogLayer } from "@/components/editor/design-page/DesignPageDialogLayer";
 import { DesignPagePanelRegion } from "@/components/editor/design-page/DesignPagePanelRegion";
+import { DesignPagePresentationQaLayer } from "@/components/editor/design-page/DesignPagePresentationQaLayer";
 import { DesignPageSceneRegion } from "@/components/editor/design-page/DesignPageSceneRegion";
-import {
-  DesignPageProjectQaMarkers,
-  DesignPageRuntimeQaMarkers,
-} from "@/components/editor/design-page/DesignPageQaMarkers";
-import { EditorCommandPalette } from "@/components/editor/design-page/EditorCommandPalette";
-import { PlacedCabinetAssetMarkers } from "@/components/editor/design-page/PlacedCabinetAssetMarkers";
 import {
   getRoomTypeLabel,
 } from "@/lib/design-page-house-plan";
@@ -61,7 +55,6 @@ import { buildDesignPageViewportRegionAdapter } from "@/lib/design-page-viewport
 import { composeDesignPageSceneRegionModel } from "@/lib/design-page-viewport-region-model";
 import { buildDesignPageDialogLayerAdapter } from "@/lib/design-page-dialog-layer-adapter";
 import { buildDesignPagePanelRegionAdapter } from "@/lib/design-page-panel-region-adapter";
-import { buildDesignPageBetaFeedbackContext } from "@/lib/design-page-beta-feedback";
 import { buildDesignControlsPanelModel } from "@/lib/design-page-controls-panel-model";
 import { buildDesignPageDialogLayerModel } from "@/lib/design-page-dialog-layer-model";
 import { buildDesignPageSelectionPanelModels } from "@/lib/design-page-selection-panel-model";
@@ -81,7 +74,6 @@ import { useDesignPageImportedModels } from "@/lib/useDesignPageImportedModels";
 import { useDesignPageLayoutVersionsController } from "@/lib/useDesignPageLayoutVersionsController";
 import { useDesignPageNamedCameraViewsController } from "@/lib/useDesignPageNamedCameraViewsController";
 import { useDesignPageAiLayout } from "@/lib/useDesignPageAiLayout";
-import { useDesignPageCommandPalette } from "@/lib/useDesignPageCommandPalette";
 import { useDesignPageZoneController } from "@/lib/useDesignPageZoneController";
 import { useDesignPagePlacementRoomQueries } from "@/lib/useDesignPagePlacementRoomQueries";
 import { useDesignPageCrossRoomItemTransfer } from "@/lib/useDesignPageCrossRoomItemTransfer";
@@ -89,7 +81,6 @@ import { useDesignPageItemDocumentController } from "@/lib/useDesignPageItemDocu
 import { useDesignPageItemSelectionController } from "@/lib/useDesignPageItemSelectionController";
 import { useDesignPageSceneReadModel } from "@/lib/useDesignPageSceneReadModel";
 import { useDesignPageRoomReadModel } from "@/lib/useDesignPageRoomReadModel";
-import { useDesignPageQaReadModel } from "@/lib/useDesignPageQaReadModel";
 import { useDesignPageSelectionCoordinator } from "@/lib/useDesignPageSelectionCoordinator";
 import { useDesignPageProductInspectionController } from "@/lib/useDesignPageProductInspectionController";
 import { useDesignPageItemGeometry } from "@/lib/useDesignPageItemGeometry";
@@ -113,10 +104,8 @@ import {
 } from "@/lib/useDesignPageDocumentHistoryController";
 import { useDesignPagePersistenceNewPlanFacade } from "@/lib/useDesignPagePersistenceNewPlanFacade";
 import { useDesignPageBetaStartController } from "@/lib/useDesignPageBetaStartController";
-import { useDesignPageEditorChromeController } from "@/lib/useDesignPageEditorChromeController";
-import { useDesignPagePlanCanvasActionsController } from "@/lib/useDesignPagePlanCanvasActionsController";
 import { useDesignPagePanelActions } from "@/lib/useDesignPagePanelActions";
-import { useDesignPagePresentExportController } from "@/lib/useDesignPagePresentExportController";
+import { useDesignPagePresentationQaFacade } from "@/lib/useDesignPagePresentationQaFacade";
 import {
   useDesignPagePaywallTelemetryController,
   type DesignPageUpgradeReason,
@@ -2157,39 +2146,6 @@ export function DesignPageWorkspace() {
     },
   });
 
-  const presentExportDialog = useDesignPagePresentExportController({
-    state: {
-      dialog: {
-        exportReadiness: { items: exportReadinessItems, readyCount: exportReadinessReadyCount, score: exportReadinessScore },
-        rooms: getAllRoomNames(designSnapshot), currentRoomId: presentModeRoomId ?? designSnapshot.activeRoomId ?? null,
-        viewMode, cameraViewNameInput, activeRoom: activeRoom ?? null, layoutVersionNameInput, simplePlanControls,
-        planLayerPreset, planLayers, planMeasurementUnit, planTheme, annotationToolKind, selectedPlanOverlayId,
-        visiblePlanOpening, visiblePlanOpeningRoomName, visiblePlanOpeningWallSpanMeters, visiblePlanOpeningMaxHeightMeters,
-        lightingPreset, sharingDesign, designId, shareToken, exportStylePreset, isExporting, isPdfExporting,
-        sceneReady, aiNotesLoading, hasItems: items.length > 0,
-      },
-      document: { snapshot: designSnapshot },
-    },
-    configuration: { open: editorMode === "present" && showPresentModal, designerTheme: showDesignerTheme, canUseDesigner,
-      eyeLevelTransitionDurationMs: 500, focusTransitionDurationMs: 460 },
-    actions: {
-      shell: { setPresentModalOpen: setShowPresentModal, setEditorMode, setPresentModeRoomId, setDesignSnapshot,
-        changeViewMode: handleEditorViewModeChange, setUpgradeReason, setUpgradeOpen: setShowUpgrade },
-      camera: { getEyeLevelView, getFocusView, transitionToView: transitionToCameraView, setName: setCameraViewNameInput,
-        save: saveCurrentNamedView, open: openSavedCameraView, delete: deleteSavedCameraView },
-      layoutVersions: { setName: setLayoutVersionNameInput, save: saveCurrentLayoutVersion,
-        restore: restoreRoomLayoutVersion, delete: deleteRoomLayoutVersion },
-      history: { runTransaction: runHistoryTransaction },
-      plan: { setSimpleControls: setSimplePlanControls, runOverlayCommand: runPlanOverlayCommand, setTheme: setPlanTheme,
-        setLayers: setPlanLayers, setMeasurementUnit: setPlanMeasurementUnit, setOpenings: setPlanOpenings,
-        setFixedElements: setPlanFixedElements, selectOverlay: handleSelectPlanOverlay, selectAnnotationTool,
-        deleteOverlay: deletePlanOverlayById, changeOpening: handleUpdateOpeningMetrics2D,
-        applyLayerPresetInTransaction: applyPlanLayerPresetInTransaction },
-      presentation: { changeLightingPreset: setLightingPreset, createShareLink: createShareLinkAndCopy, setExportStylePreset,
-        exportImages, exportPdf, generateAiNotes: generateAINotes },
-    },
-  });
-
   const placementRoomQueries = useDesignPagePlacementRoomQueries({
     configuration: { houseRoomById },
     actions: { getItemAABB },
@@ -2674,95 +2630,88 @@ export function DesignPageWorkspace() {
     activeTargetValid: activePlacementTargetValid,
     activeTargetLabel: activePlacementTargetLabel,
   } = placementSelectionWorkspace.derived.placement;
-  const betaFeedbackContext = buildDesignPageBetaFeedbackContext({
-    identity: { designId, shareToken },
-    editor: { mode, viewMode, plan, saveStatus: saveStatus.kind, shareEnabled: Boolean(shareToken) },
-    project: { activeRoomName: activeRoom?.name ?? "Current room", roomCount: housePlan2D.rooms.length,
-      itemCount: items.length, openingCount: planOpenings.length, exportReadinessScore },
-    selection: { itemId: selectedItem?.instanceId ?? null, productId: selectedItem?.productId ?? null },
-    placement: { score: pendingCatalogPlacementScore?.score ?? null, kind: pendingCatalogPlacementScore?.kind ?? null,
-      targetRoomName: pendingCatalogPlacementRoom?.name ?? null, fallbackRoomName: activeRoom?.name ?? null },
-    shopping: { readyCount: wholeHomeShoppingSummary.shoppableCount,
-      needsReviewCount: wholeHomeShoppingSummary.needsReviewCount },
-    viewport: { width: viewportSize.width, height: viewportSize.height },
+  const presentationQaWorkspace = useDesignPagePresentationQaFacade({
+    state: {
+      identity: { designId, shareToken },
+      editor: { mode, viewMode, editorMode, isClientPreview, isDesigner,
+        authenticated: Boolean(session?.user), plan, aiDesignEnabled, canUndo, canRedo, undoName, redoName },
+      document: { snapshot: designSnapshot, activeRoom: activeRoom ?? null, activeRoomItemCount: items.length,
+        roomWidth, roomDepth, zones },
+      persistence: { lastPersistedSnapshotFingerprint, isSaving, saveStatus },
+      presentation: {
+        exportReadiness: { items: exportReadinessItems, readyCount: exportReadinessReadyCount, score: exportReadinessScore },
+        presentModeRoomId, cameraViewNameInput, layoutVersionNameInput, simplePlanControls, lightingPreset,
+        sharingDesign, exportStylePreset, isExporting, isPdfExporting, aiNotesLoading,
+      },
+      plan: { planLayerPreset, planLayers, planMeasurementUnit, planTheme, annotationToolKind,
+        selectedPlanOverlayId, visiblePlanOpening, visiblePlanOpeningRoomName, visiblePlanOpeningWallSpanMeters,
+        visiblePlanOpeningMaxHeightMeters, houseRoomCount: housePlan2D.rooms.length, openingCount: planOpenings.length,
+        selectedPlanRoomId, commandSelectedPlanRoomId: selectedPlanRoomContext?.id ?? null },
+      scene: { mode: scenePerformanceMode, liteEnabled: liteSceneEnabled, renderQuality: sceneRenderQuality,
+        autoLite: autoLiteScene, sceneReady, roomCount: designSnapshot.rooms.length, activeRoomItemCount: items.length,
+        sceneItemCount: sceneRoomItems.length, lastFps: scenePerformanceSample.lastFps,
+        fpsSamples: scenePerformanceSample.samples, planDebugMetrics },
+      selection: { itemId: selectedItem?.instanceId ?? null, productId: selectedItem?.productId ?? null,
+        hasSelectedItem: Boolean(selectedItem) },
+      placement: { score: pendingCatalogPlacementScore?.score ?? null, kind: pendingCatalogPlacementScore?.kind ?? null,
+        targetRoomName: pendingCatalogPlacementRoom?.name ?? null },
+      shopping: { readyCount: wholeHomeShoppingSummary.shoppableCount,
+        needsReviewCount: wholeHomeShoppingSummary.needsReviewCount },
+      viewport: { width: viewportSize.width, height: viewportSize.height },
+      chrome: { openingBillingPortal, millworkActive: cabinetryStudioState !== null, activeRoomHealthSummary,
+        showBetaStart, firstRunActivation: firstRunActivationState, designPanelOpen },
+      qa: { showLayoutDebugOverlay,
+        history: { pastCount: historyDebugSnapshot.past.length, futureCount: historyDebugSnapshot.future.length,
+          transactionName: historyDebugSnapshot.txn?.name ?? null },
+        cabinetSchedule: projectCabinetSchedulePackage, cabinetHandoff: projectCabinetHandoffPackage },
+    },
+    configuration: { presentOpen: editorMode === "present" && showPresentModal, designerTheme: showDesignerTheme,
+      canUseDesigner, canUseCabinetryStudio, compactRoomStatus: compactRoomPlanStatusBar,
+      showRoomHealth: showRoomPlanStatusHealth, eyeLevelTransitionDurationMs: 500, focusTransitionDurationMs: 460 },
+    actions: {
+      shell: { setPresentModalOpen: setShowPresentModal, setEditorMode, setPresentModeRoomId, setDesignSnapshot,
+        changeViewMode: handleEditorViewModeChange, setUpgradeReason, setUpgradeOpen: setShowUpgrade,
+        setDesignPanelOpen, setItemCartOpen, setClientPreview, setUrlMode },
+      camera: { getEyeLevelView, getFocusView, transitionToView: transitionToCameraView,
+        setName: setCameraViewNameInput, save: saveCurrentNamedView, open: openSavedCameraView,
+        delete: deleteSavedCameraView },
+      layoutVersions: { setName: setLayoutVersionNameInput, save: saveCurrentLayoutVersion,
+        restore: restoreRoomLayoutVersion, delete: deleteRoomLayoutVersion },
+      history: { runTransaction: runHistoryTransaction, undo: undoSafe, redo: redoSafe },
+      plan: { setSimpleControls: setSimplePlanControls, runOverlayCommand: runPlanOverlayCommand,
+        setTheme: setPlanTheme, setLayers: setPlanLayers, setMeasurementUnit: setPlanMeasurementUnit,
+        setOpenings: setPlanOpenings, setFixedElements: setPlanFixedElements, selectOverlay: handleSelectPlanOverlay,
+        selectAnnotationTool, deleteOverlay: deletePlanOverlayById, changeOpening: handleUpdateOpeningMetrics2D,
+        applyLayerPresetInTransaction: applyPlanLayerPresetInTransaction,
+        addFloorPlanOpening: handleAddFloorPlanOpeningFromTool, fitPlanView: handleFitPlanView,
+        duplicateRoom: handleDuplicateSelectedPlanRoom, deleteRoom: handleDeleteSelectedPlanRoom },
+      planCanvas: { setGuidedActionsChoiceSeen: setPlanGuidedActionsChoiceSeen,
+        chooseGuidedActionsMode: choosePlanGuidedActionsMode, selectFloorPlanTool: handleSelectFloorPlanTool,
+        setGuidedPlanStartMode, changeCalibrationMode: handleFloorPlanCalibrationModeChange,
+        changeDrawRoomMode: handleFloorPlanDrawRoomModeChange, setGuidedActionsEnabled: setPlanGuidedActionsEnabled,
+        undoFloorPlanTraceRoomPoint: handleUndoFloorPlanTraceRoomPoint, clearPlanFocusPoints,
+        setPlanFocusPanelRevealed, dismissPlanCanvasGuidance: setDismissedPlanCanvasGuidanceKey },
+      selection: { duplicateItem: duplicateSelectedItem, deleteItem: deleteSelectedItem },
+      navigation: { plan: goPlan, furnish: goFurnish, aiDesign: goAiDesign, shop: goShop },
+      dialogs: { setPlansOpen: setShowPlans, openNewPlan: openNewPlanPicker, setFeedbackOpen },
+      billing: { openPortal: openBillingPortal },
+      persistence: { toggleMyDesigns, saveDesignToCloud, retrySaveStatus, openGuestPrompt,
+        getStoredDesignForPersistence },
+      cabinetry: { openStudio: openCabinetryStudio },
+      room: { reviewHealth: reviewActiveRoomHealth, rename: handleRenameSelectedPlanRoom },
+      scenePerformance: { changeMode: handleScenePerformanceModeChange },
+      betaStart: betaStartActions,
+      presentation: { changeLightingPreset: setLightingPreset, createShareLink: createShareLinkAndCopy,
+        setExportStylePreset, exportImages, exportPdf, generateAiNotes: generateAINotes },
+      feedback: { showToast: showRuleToast },
+    },
   });
   const {
-    derived: {
-      qaSnapshotFingerprint,
-      qaScenePerformanceSnapshot,
-      qaDesignLayoutSnapshot,
-    },
-  } = useDesignPageQaReadModel({
-    state: {
-      persistence: {
-        designId,
-        lastPersistedSnapshotFingerprint,
-      },
-      scene: {
-        mode: scenePerformanceMode,
-        liteEnabled: liteSceneEnabled,
-        renderQuality: sceneRenderQuality,
-        autoLite: autoLiteScene,
-        sceneReady,
-        roomCount: designSnapshot.rooms.length,
-        activeRoomItemCount: items.length,
-        sceneItemCount: sceneRoomItems.length,
-        lastFps: scenePerformanceSample.lastFps,
-        fpsSamples: scenePerformanceSample.samples,
-      },
-      layout: {
-        viewMode,
-        editorMode,
-        designSnapshot,
-        activeRoom,
-        planDebugMetrics,
-        selectedPlanRoomId,
-      },
-    },
-    actions: { getStoredDesignForPersistence },
-  });
-  const {
-    state: {
-      open: commandPaletteOpen,
-      query: commandPaletteQuery,
-      actions: commandPaletteActions,
-    },
-    actions: {
-      close: closeCommandPalette,
-      setQuery: setCommandPaletteQuery,
-    },
-  } = useDesignPageCommandPalette({
-    state: {
-      isClientPreview,
-      canUndo,
-      canRedo,
-      undoName,
-      redoName,
-      viewMode,
-      planRoomCount: housePlan2D.rooms.length,
-      designRoomCount: designSnapshot.rooms.length,
-      selectedPlanOverlayId,
-      selectedPlanRoomId: selectedPlanRoomContext?.id ?? null,
-      hasSelectedItem: Boolean(selectedItem),
-      planLayerPreset,
-    },
-    actions: {
-      undo: undoSafe,
-      redo: redoSafe,
-      fitPlanView: handleFitPlanView,
-      changeViewMode: handleEditorViewModeChange,
-      addFloorPlanOpening: handleAddFloorPlanOpeningFromTool,
-      runHistoryTransaction,
-      setPlanOpenings,
-      selectPlanOverlay: handleSelectPlanOverlay,
-      deletePlanOverlay: deletePlanOverlayById,
-      duplicateRoom: handleDuplicateSelectedPlanRoom,
-      deleteRoom: handleDeleteSelectedPlanRoom,
-      duplicateItem: duplicateSelectedItem,
-      deleteItem: deleteSelectedItem,
-      runPlanPreset: (preset) => runPlanOverlayCommand(`preset:${preset}`),
-    },
-  });
+    derived: { betaFeedbackContext },
+    actions: { planCanvas: planCanvasActions },
+    regions: { presentExport: presentExportDialog, editorChrome: editorChromeModel,
+      presentationQaLayer: presentationQaLayerModel },
+  } = presentationQaWorkspace;
 
   const {
     actions: {
@@ -2802,27 +2751,6 @@ export function DesignPageWorkspace() {
       showConfidence: showConfidenceSummary,
     },
   });
-  const { actions: planCanvasActions } =
-    useDesignPagePlanCanvasActionsController({
-      actions: {
-        setGuidedActionsChoiceSeen: setPlanGuidedActionsChoiceSeen,
-        chooseGuidedActionsMode: choosePlanGuidedActionsMode,
-        selectFloorPlanTool: handleSelectFloorPlanTool,
-        setGuidedPlanStartMode,
-        changeCalibrationMode: handleFloorPlanCalibrationModeChange,
-        changeDrawRoomMode: handleFloorPlanDrawRoomModeChange,
-        addFloorPlanOpening: handleAddFloorPlanOpeningFromTool,
-        fitPlanView: handleFitPlanView,
-        setGuidedActionsEnabled: setPlanGuidedActionsEnabled,
-        undoFloorPlanTraceRoomPoint: handleUndoFloorPlanTraceRoomPoint,
-        clearPlanFocusPoints,
-        setDesignPanelOpen,
-        setPlanFocusPanelRevealed,
-        goPlan,
-        goFurnish,
-        dismissPlanCanvasGuidance: setDismissedPlanCanvasGuidanceKey,
-      },
-    });
   const sceneCanvasRegionModel = buildDesignPageSceneRegionAdapter({
     state: {
       editor: { viewMode, editorMode, isClientPreview, isDesigner, canEdit },
@@ -3152,96 +3080,6 @@ export function DesignPageWorkspace() {
     scene: sceneCanvasRegionModel,
     viewport: viewportRegionModel,
   });
-  const editorChromeModel = useDesignPageEditorChromeController({
-    state: {
-      commandBar: {
-        commandBar: {
-          isClientPreview, editorMode, viewMode, isDesigner,
-          isAuthed: Boolean(session?.user),
-          isPro: plan === "pro",
-          isOpeningBillingPortal: openingBillingPortal,
-          aiDesignEnabled, canUndo, canRedo, undoName, redoName,
-          millworkActive: cabinetryStudioState !== null,
-          showLoadDesign: Boolean(session?.user),
-          isSaving, saveStatus,
-        },
-        room: activeRoom
-          ? {
-              id: activeRoom.id,
-              roomName: activeRoom.name,
-              roomTypeLabel: getRoomTypeLabel(activeRoom.roomType),
-              roomCount: designSnapshot.rooms.length,
-              widthMeters: roomWidth, depthMeters: roomDepth, viewMode,
-              health: activeRoomHealthSummary
-                ? {
-                    level: activeRoomHealthSummary.level,
-                    score: activeRoomHealthSummary.placementScore,
-                    nextAction: activeRoomHealthSummary.nextAction,
-                  }
-                : null,
-            }
-          : null,
-        scenePerformance: { mode: scenePerformanceMode, liteEnabled: liteSceneEnabled },
-      },
-      betaStart: {
-        visible: showBetaStart,
-        panel: {
-          nextStepLabel: firstRunActivationState.nextStep?.label ?? null,
-          progressPercent: firstRunActivationState.progressPercent,
-        },
-      },
-      designPanelOpen,
-    },
-    configuration: {
-      commandBar: {
-        dark: showDesignerTheme,
-        compactRoomStatus: compactRoomPlanStatusBar,
-        showRoomHealth: showRoomPlanStatusHealth,
-      },
-      toolRail: { dark: showDesignerTheme, aiDesignEnabled },
-      canUseDesigner, canUseCabinetryStudio,
-    },
-    actions: {
-      navigation: {
-        plan: goPlan, furnish: goFurnish, aiDesign: goAiDesign, shop: goShop,
-        changeViewMode: handleEditorViewModeChange,
-        fitPlan: handleFitPlanView,
-      },
-      history: { undo: undoSafe, redo: redoSafe },
-      editor: {
-        setMode: setEditorMode,
-        setDesignPanelOpen,
-        setItemCartOpen,
-        setClientPreview,
-        setUrlMode,
-      },
-      dialogs: {
-        setPlansOpen: setShowPlans,
-        openNewPlan: openNewPlanPicker,
-        setFeedbackOpen,
-        setPresentOpen: setShowPresentModal,
-        setUpgradeReason,
-        setUpgradeOpen: setShowUpgrade,
-      },
-      billing: { openPortal: openBillingPortal },
-      persistence: {
-        toggleMyDesigns,
-        saveDesignToCloud,
-        retrySaveStatus,
-        openGuestPrompt,
-      },
-      cabinetry: { openStudio: openCabinetryStudio },
-      room: {
-        reviewHealth: reviewActiveRoomHealth,
-        rename: handleRenameSelectedPlanRoom,
-      },
-      scenePerformance: {
-        changeMode: handleScenePerformanceModeChange,
-      },
-      betaStart: betaStartActions,
-      showToast: showRuleToast,
-    },
-  });
   const shoppingPanelModel = buildDesignPageShoppingPanelModel({
     configuration: { designerTheme: showDesignerTheme },
     state: {
@@ -3466,34 +3304,7 @@ export function DesignPageWorkspace() {
   }));
   return (
     <DesignPageComposition configuration={{ designerTheme: showDesignerTheme }}>
-      <DesignPageProjectQaMarkers
-        snapshotFingerprint={qaSnapshotFingerprint}
-        activeRoomId={designSnapshot.activeRoomId}
-        activeRoomZones={zones}
-        cabinetSchedule={projectCabinetSchedulePackage}
-        cabinetHandoff={projectCabinetHandoffPackage}
-      />
-      <PlacedCabinetAssetMarkers rooms={designSnapshot.rooms} />
-      <DesignPageRuntimeQaMarkers
-        qaHooksEnabled={process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS === "1"}
-        firstRunActivation={firstRunActivationState}
-        scenePerformance={qaScenePerformanceSnapshot}
-        layout={qaDesignLayoutSnapshot}
-        showLayoutDebugOverlay={showLayoutDebugOverlay}
-        history={{
-          pastCount: historyDebugSnapshot.past.length,
-          futureCount: historyDebugSnapshot.future.length,
-          transactionName: historyDebugSnapshot.txn?.name ?? null,
-        }}
-      />
-      <EditorCommandPalette
-        open={!isClientPreview && commandPaletteOpen}
-        query={commandPaletteQuery}
-        actions={commandPaletteActions}
-        designerTheme={showDesignerTheme}
-        onClose={closeCommandPalette}
-        onQueryChange={setCommandPaletteQuery}
-      />
+      <DesignPagePresentationQaLayer {...presentationQaLayerModel} />
       <div className="absolute inset-0">
         <DesignPageSceneRegion {...sceneRegionModel} />
         <DesignPageEditorChrome {...editorChromeModel} />

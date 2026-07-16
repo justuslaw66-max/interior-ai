@@ -128,8 +128,8 @@ assert.match(
 );
 assert.match(
   designPage,
-  /useDesignPageEditorChromeController\(\{[\s\S]*?dialogs:\s*\{[\s\S]*?setPlansOpen: setShowPlans,[\s\S]*?billing:\s*\{ openPortal: openBillingPortal \}/,
-  "The workspace should inject plan and billing collaborators into the chrome controller."
+  /useDesignPagePresentationQaFacade\(\{[\s\S]*?dialogs:\s*\{[\s\S]*?setPlansOpen: setShowPlans,[\s\S]*?billing:\s*\{ openPortal: openBillingPortal \}/,
+  "The workspace should inject plan and billing collaborators into the presentation/QA facade."
 );
 assert.match(
   editorChromeController,

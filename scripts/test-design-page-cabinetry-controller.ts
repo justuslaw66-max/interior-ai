@@ -112,8 +112,8 @@ assert.match(
 );
 assert.match(
   workspaceSource,
-  /useDesignPageEditorChromeController\(\{[\s\S]*?millworkActive:\s*cabinetryStudioState !== null[\s\S]*?canUseCabinetryStudio[\s\S]*?openStudio: openCabinetryStudio/,
-  "The workspace should inject millwork state, capability, and opening at the editor-chrome boundary."
+  /useDesignPagePresentationQaFacade\(\{[\s\S]*?millworkActive:\s*cabinetryStudioState !== null[\s\S]*?canUseCabinetryStudio[\s\S]*?openStudio: openCabinetryStudio/,
+  "The workspace should inject millwork state, capability, and opening at the presentation/QA boundary."
 );
 assert.match(
   editorChromeControllerSource,

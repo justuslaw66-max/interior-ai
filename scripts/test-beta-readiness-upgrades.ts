@@ -32,6 +32,14 @@ const designPageSource = readFileSync(
   join(root, "components/editor/design-page/DesignPageWorkspace.tsx"),
   "utf8"
 );
+const presentationQaLayerSource = readFileSync(
+  join(root, "components/editor/design-page/DesignPagePresentationQaLayer.tsx"),
+  "utf8"
+);
+const presentationQaFacadeSource = readFileSync(
+  join(root, "lib/useDesignPagePresentationQaFacade.ts"),
+  "utf8"
+);
 const designPageEditorCommandBarSource = readFileSync(
   join(root, "components/editor/design-page/DesignPageEditorCommandBar.tsx"),
   "utf8"
@@ -390,8 +398,13 @@ assert.match(
 );
 assert.match(
   designPageSource,
-  /health:\s*activeRoomHealthSummary\s*\?\s*\{[\s\S]*level:\s*activeRoomHealthSummary\.level,[\s\S]*score:\s*activeRoomHealthSummary\.placementScore,[\s\S]*nextAction:\s*activeRoomHealthSummary\.nextAction,/,
-  "the workspace should pass live room health through the command-bar boundary."
+  /chrome:\s*\{[\s\S]*activeRoomHealthSummary/,
+  "the workspace should pass live room health into the presentation/QA boundary."
+);
+assert.match(
+  presentationQaFacadeSource,
+  /health:\s*state\.chrome\.activeRoomHealthSummary[\s\S]*level:\s*state\.chrome\.activeRoomHealthSummary\.level,[\s\S]*score:\s*state\.chrome\.activeRoomHealthSummary\.placementScore,[\s\S]*nextAction:\s*state\.chrome\.activeRoomHealthSummary\.nextAction,/,
+  "the presentation/QA facade should map live room health into the command-bar contract."
 );
 assert.match(
   designPageRoomReadModelSource,
@@ -405,8 +418,8 @@ assert.match(
 );
 assert.match(
   designPageSource,
-  /navigation:\s*\{[\s\S]*fitPlan:\s*handleFitPlanView[\s\S]*room:\s*\{[\s\S]*reviewHealth:\s*reviewActiveRoomHealth/,
-  "the workspace should inject the active room review and fit actions at the editor-chrome boundary."
+  /fitPlanView:\s*handleFitPlanView[\s\S]*room:\s*\{[\s\S]*reviewHealth:\s*reviewActiveRoomHealth/,
+  "the workspace should inject the active room review and fit actions at the presentation/QA boundary."
 );
 assert.match(
   editorChromeControllerSource,
@@ -460,9 +473,14 @@ assert.match(
   "design page QA markers should expose first-run activation progress."
 );
 assert.match(
-  designPageSource,
+  presentationQaLayerSource,
   /<DesignPageRuntimeQaMarkers/,
-  "design page should mount the runtime QA markers."
+  "the presentation/QA layer should mount the runtime QA markers."
+);
+assert.match(
+  designPageSource,
+  /<DesignPagePresentationQaLayer/,
+  "design page should mount the presentation/QA layer."
 );
 assert.match(
   betaStartPanelSource,
