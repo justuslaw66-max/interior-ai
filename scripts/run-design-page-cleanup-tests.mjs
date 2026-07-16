@@ -18,6 +18,7 @@ const typescriptGuardFiles = [
   "test-design-page-ai-layout-controller.ts",
   "test-design-page-ai-layout-proposal.ts",
   "test-design-page-cabinetry-controller.ts",
+  "test-design-page-commerce-actions.ts",
   "test-design-page-editor-command-bar.ts",
   "test-design-page-equivalent-variant.ts",
   "test-design-page-history-controller.ts",

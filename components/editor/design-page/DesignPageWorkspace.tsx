@@ -55,6 +55,8 @@ import { useDesignPageItemDocumentController } from "@/lib/useDesignPageItemDocu
 import { useDesignPageItemSelectionController } from "@/lib/useDesignPageItemSelectionController";
 import { useDesignPageSceneRoomReadRegistration } from "@/lib/useDesignPageSceneRoomReadRegistration";
 import { useDesignPageShoppingCatalogRuntime } from "@/lib/useDesignPageShoppingCatalogRuntime";
+import { useDesignPageCommerceActions } from "@/lib/useDesignPageCommerceActions";
+import type { DesignPageItemCartEntry } from "@/lib/design-page-item-cart";
 import { useDesignPagePresentationExportRuntime } from "@/lib/useDesignPagePresentationExportRuntime";
 import {
   useDesignPagePlanTracingFacade,
@@ -150,7 +152,7 @@ export function DesignPageWorkspace() {
   const [snapEnabled, setSnapEnabled] = useState(true);
   const [clientPreview, setClientPreview] = useState(false);
   const [itemCartOpen, setItemCartOpen] = useState(false);
-  const [itemCart, setItemCart] = useState<Array<{ id: string; productId: string; title: string; qty: number; thumbUrl?: string }>>([]);
+  const [itemCart, setItemCart] = useState<DesignPageItemCartEntry[]>([]);
   const importedModelsWorkspace = useDesignPageImportedModels();
   const {
     state: {
@@ -1751,63 +1753,32 @@ export function DesignPageWorkspace() {
     movePendingCatalogPlacementToBestRoomAction();
   }, [movePendingCatalogPlacementToBestRoomAction]);
 
-  const previewShoppingReplacement = useCallback(
-    (productId: string, variantId: string) => {
-      goFurnish();
-      previewCatalogPlacementIntent(productId, variantId);
-      showRuleToast("Previewing replacement placement");
+  const {
+    actions: {
+      previewShoppingReplacement,
+      addSelectedImportedToRoom,
+      removeFromCart,
+      updateCartQty,
+      clearCart,
+      addAllToRoom,
     },
-    [goFurnish, previewCatalogPlacementIntent, showRuleToast]
-  );
-
-  const addSelectedImportedToRoom = useCallback(() => {
-    if (!selectedImportedProductId) return;
-    const related = getRelatedImportedProductIds(selectedImportedProductId);
-    related.forEach((id) => ensureImportedCatalogItem(id));
-    addCatalogItemToRoom(selectedImportedProductId);
-  }, [
-    addCatalogItemToRoom,
-    ensureImportedCatalogItem,
-    getRelatedImportedProductIds,
-    selectedImportedProductId,
-  ]);
-
-  const removeFromCart = useCallback((productId: string) => {
-    setItemCart((prev) => prev.filter((i) => i.productId !== productId));
-  }, []);
-
-  const updateCartQty = useCallback((productId: string, qty: number) => {
-    if (qty <= 0) {
-      removeFromCart(productId);
-    } else {
-      setItemCart((prev) =>
-        prev.map((i) =>
-          i.productId === productId ? { ...i, qty } : i
-        )
-      );
-    }
-  }, [removeFromCart]);
-
-  const clearCart = useCallback(() => {
-    setItemCart([]);
-  }, []);
-
-  const addAllToRoom = useCallback(() => {
-    // Add all items from cart to the room
-    let addedCount = 0;
-    itemCart.forEach((cartItem) => {
-      for (let i = 0; i < cartItem.qty; i++) {
-        if (addCatalogItemDirectlyToRoom(cartItem.productId)) {
-          addedCount += 1;
-        }
-      }
-    });
-    if (addedCount < itemCart.reduce((sum, item) => sum + item.qty, 0)) {
-      showRuleToast("Some cart items could not fit in this room.");
-    }
-    clearCart();
-    setItemCartOpen(false);
-  }, [addCatalogItemDirectlyToRoom, clearCart, itemCart, showRuleToast]);
+  } = useDesignPageCommerceActions({
+    state: { selectedImportedProductId, itemCart },
+    actions: {
+      catalog: {
+        previewPlacement: previewCatalogPlacementIntent,
+        addToRoom: addCatalogItemToRoom,
+        addDirectlyToRoom: addCatalogItemDirectlyToRoom,
+      },
+      importedCatalog: {
+        getRelatedProductIds: getRelatedImportedProductIds,
+        ensureCatalogItem: ensureImportedCatalogItem,
+      },
+      cart: { setItems: setItemCart, setOpen: setItemCartOpen },
+      navigation: { goFurnish },
+      feedback: { showToast: showRuleToast },
+    },
+  });
 
   const {
     state: { firstRunActivationState, nextBestActionNudge },
