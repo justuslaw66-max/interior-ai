@@ -4,6 +4,14 @@ import { join } from "node:path";
 
 const root = process.cwd();
 const hookSource = readFileSync(join(root, "lib/useDesignPageHistory.ts"), "utf8");
+const documentStateControllerSource = readFileSync(
+  join(root, "lib/useDesignPageDocumentStateController.ts"),
+  "utf8"
+);
+const documentHistoryControllerSource = readFileSync(
+  join(root, "lib/useDesignPageDocumentHistoryController.ts"),
+  "utf8"
+);
 const pageSource = readFileSync(
   join(root, "components/editor/design-page/DesignPageWorkspace.tsx"),
   "utf8"
@@ -30,14 +38,24 @@ assert.match(
   "Unmounting the controller should flush pending coalesced history."
 );
 assert.match(
-  pageSource,
-  /useDesignPageHistory\(\{[\s\S]*?captureSnapshot: \(\) => \(\{[\s\S]*?designSnapshot: designSnapshotRef\.current[\s\S]*?floorPlanUnderlay: floorPlanUnderlayRef\.current/,
-  "The page adapter should capture every document and plan field from event-time refs."
+  documentHistoryControllerSource,
+  /useDesignPageHistory\(\{ adapters \}\)/,
+  "The document-history controller should compose the generic history controller through its explicit adapter boundary."
+);
+assert.match(
+  documentStateControllerSource,
+  /const captureHistorySnapshot = \(\)(?:: DesignPageHistorySnapshot)? => \(\{[\s\S]*?designSnapshot: designSnapshotRef\.current[\s\S]*?floorPlanUnderlay: floorPlanUnderlayRef\.current/,
+  "The document-state controller should capture every document and plan field from event-time refs."
+);
+assert.match(
+  documentStateControllerSource,
+  /const restoreHistorySnapshot = \(snapshot: DesignPageHistorySnapshot\) => \{[\s\S]*?designSnapshotRef\.current = snapshot\.designSnapshot[\s\S]*?floorPlanUnderlayRef\.current = snapshot\.floorPlanUnderlay[\s\S]*?setFloorPlanUnderlayState\(snapshot\.floorPlanUnderlay\)/,
+  "The document-state adapter should restore refs before React state."
 );
 assert.match(
   pageSource,
-  /restoreSnapshot: \(snapshot: DesignPageHistorySnapshot\) => \{[\s\S]*?designSnapshotRef\.current = snapshot\.designSnapshot[\s\S]*?setFloorPlanUnderlayState\(snapshot\.floorPlanUnderlay\)/,
-  "The page adapter should restore refs and React state together."
+  /useDesignPageDocumentRefSynchronization\(\{[\s\S]*?useDesignPageDocumentHistoryController\(\{/,
+  "The workspace should compose document synchronization before document history."
 );
 
 console.log("design page history controller guardrails passed");

@@ -11,19 +11,15 @@ import type { LightingPreset } from "@/lib/lightingPresets";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import { isPro, type Plan } from "@/lib/plan";
 import { useEditorMode } from "@/hooks/useEditorMode";
-import { useUndoRedoHotkeys } from "@/hooks/useUndoRedoHotkeys";
 import { track } from "@/lib/analytics";
 import { getAnonId } from "@/lib/anon";
 import { preloadCoreAssets } from "@/lib/preloadAssets";
 import { initializeCatalog } from "@/lib/catalog-init";
 import type {
-  DesignSnapshot as MultiRoomSnapshot,
   DesignItem,
-  ZoneMin,
 } from "@/lib/room-types";
 import {
   switchRoom,
-  migrateToV3,
 } from "@/lib/room-types";
 import { getWallFaceLabel } from "@/lib/surface-settings";
 import type { ShoppingReadinessFilter } from "@/lib/shopping-readiness";
@@ -71,27 +67,9 @@ import {
 import { SelectedItemPanel } from "@/components/editor/design-page/SelectedItemPanel";
 import { UpgradeDialog } from "@/components/editor/design-page/UpgradeDialog";
 import {
-  type EditorAnnotation2D,
-  type FixedElement2D,
-  type RoomOpening2D,
-} from "@/lib/editorScene";
-import type {
-  FloorPlanUnderlay,
-} from "@/lib/floor-plan-types";
-import {
-  snapshotToStored,
-  storedToSnapshot,
-  type StoredDesign,
-} from "@/lib/room-persistence";
-import { fingerprintDesignSnapshot } from "@/lib/snapshot-fingerprint";
-import {
-  ROOM_DIMENSION_DEFAULTS,
   getRoomTypeLabel,
-  resolveHouseRoomDimension,
 } from "@/lib/design-page-house-plan";
 import { useDesignPageHousePlanState } from "@/lib/useDesignPageHousePlanState";
-import { useDesignPageFloorPlanWorkflowState } from "@/lib/useDesignPageFloorPlanWorkflowState";
-import { useDesignPageFloorPlanAssets } from "@/lib/useDesignPageFloorPlanAssets";
 import { useDesignPageFloorPlanUnderlayController } from "@/lib/useDesignPageFloorPlanUnderlayController";
 import { useDesignPageFloorPlanTracing } from "@/lib/useDesignPageFloorPlanTracing";
 import {
@@ -116,12 +94,6 @@ import {
 } from "@/lib/useDesignPageSurfaceActions";
 import { useDesignPageSurfaceInspector } from "@/lib/useDesignPageSurfaceInspector";
 import {
-  useDesignPagePlanState,
-  type ExportStylePreset,
-  type PlanLayers,
-  type PlanTheme,
-} from "@/lib/useDesignPagePlanState";
-import {
   useDesignPagePanelMode,
   type DesignPageEditorMode,
 } from "@/lib/useDesignPagePanelMode";
@@ -132,21 +104,13 @@ import {
 } from "@/lib/useFloorManager";
 import { resolveDesignPageViewportSelectionControlsState } from "@/lib/design-page-viewport-selection-controls";
 import {
-  sanitizeDesignPageSavedViews,
-  useDesignPagePersistence,
-} from "@/lib/useDesignPagePersistence";
-import { useDesignPageNewPlanController } from "@/lib/useDesignPageNewPlanController";
-import {
   getPlanOverlayMoveHistoryLabel,
-  isPersistableFloorPlanAssetUrl,
   type PlanOverlayDragKind,
 } from "@/lib/design-page-floor-plan-utils";
 import {
   type Style,
   type CameraView,
   type NamedCameraView,
-  type PlanLayerPresetId,
-  type PlanMeasurementUnit,
 } from "@/lib/design-page-types";
 import type { PendingAiLayoutProposal } from "@/lib/design-page-ai-layout-proposal";
 import {
@@ -161,15 +125,8 @@ import {
   type PricingLayoutVariant,
 } from "@/lib/design-page-paywall";
 import { PRO_PLAN_PRICING } from "@/lib/pro-plan-catalog";
-import {
-  normalizeItemsToRoom as _normalizeItemsToRoom,
-} from "@/lib/design-page-zone-layout";
 import { useDesignPageLiveCatalog } from "@/lib/useDesignPageLiveCatalog";
 import { useDesignPageImportedModels } from "@/lib/useDesignPageImportedModels";
-import {
-  useDesignPageHistory,
-  type DesignPageHistorySnapshot,
-} from "@/lib/useDesignPageHistory";
 import { useDesignPageLayoutVersionsController } from "@/lib/useDesignPageLayoutVersionsController";
 import { useDesignPageNamedCameraViewsController } from "@/lib/useDesignPageNamedCameraViewsController";
 import { useDesignPageAiLayout } from "@/lib/useDesignPageAiLayout";
@@ -189,9 +146,21 @@ import { useDesignPageProductInspectionController } from "@/lib/useDesignPagePro
 import { useDesignPageItemGeometry } from "@/lib/useDesignPageItemGeometry";
 import { useDesignPagePlanEditingFacade } from "@/lib/useDesignPagePlanEditingFacade";
 import { useDesignPageItemInteractionFacade } from "@/lib/useDesignPageItemInteractionFacade";
+import { normalizeDesignPageLocalBackup } from "@/lib/design-page-local-backup";
+import {
+  useDesignPageDocumentRefSynchronization,
+  useDesignPageFloorPlanDocumentState,
+  useDesignPagePlanDocumentState,
+  useDesignPageSnapshotDocumentState,
+} from "@/lib/useDesignPageDocumentStateController";
+import {
+  useDesignPageDocumentHistoryController,
+  useDesignPageHistoryRevision,
+  useDesignPageHistoryShortcuts,
+} from "@/lib/useDesignPageDocumentHistoryController";
+import { useDesignPagePersistenceNewPlanFacade } from "@/lib/useDesignPagePersistenceNewPlanFacade";
 import {
   isParametricCabinetItem,
-  normalizeCabinetDesignItem,
 } from "@/features/cabinetry/designItemAdapters";
 import { formatCabinetMeasurement } from "@/features/cabinetry/measurementUnits";
 import { useDesignPageCabinetry } from "@/features/cabinetry/useDesignPageCabinetry";
@@ -284,7 +253,7 @@ export function DesignPageWorkspace() {
   } = useDesignPageImportedModels();
   const [placementAddMode, setPlacementAddMode] = useState<PlacementAddMode>("preview");
   const [placementPreferencesLoaded, setPlacementPreferencesLoaded] = useState(false);
-  const [, bumpHistoryRevision] = useState(0);
+  const [, bumpHistoryRevision] = useDesignPageHistoryRevision();
   const [showBetaStart, setShowBetaStart] = useState(false);
   const [lightingPreset, setLightingPreset] = useState<LightingPreset>("studio");
   const [viewMode, setViewMode] = useState<EditorViewMode>("3d");
@@ -306,223 +275,110 @@ export function DesignPageWorkspace() {
   const [showLayoutDebugOverlay, setShowLayoutDebugOverlay] = useState(false);
   const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
   const {
-    planTheme,
-    setPlanTheme: setPlanThemeState,
-    planLayers,
-    setPlanLayers: setPlanLayersState,
-    planAnnotations,
-    setPlanAnnotations: setPlanAnnotationsState,
-    planOpenings,
-    setPlanOpenings: setPlanOpeningsState,
-    planFixedElements,
-    setPlanFixedElements: setPlanFixedElementsState,
-    simplePlanControls,
-    setSimplePlanControls,
-    planLayerPreset,
-    setPlanLayerPreset: setPlanLayerPresetState,
-    planMeasurementUnit,
-    setPlanMeasurementUnit: setPlanMeasurementUnitState,
-    exportStylePreset,
-    setExportStylePreset: setExportStylePresetState,
-    planGuidedActionsEnabled,
-    setPlanGuidedActionsEnabled,
-    planGuidedActionsChoiceSeen,
-    setPlanGuidedActionsChoiceSeen,
-    planOpeningsStorageState,
-    planSettingsLoaded,
-  } = useDesignPagePlanState();
-  const planOpeningsRef = useRef(planOpenings);
-  const planAnnotationsRef = useRef(planAnnotations);
-  const planFixedElementsRef = useRef(planFixedElements);
-  const planThemeRef = useRef(planTheme);
-  const planLayersRef = useRef(planLayers);
-  const planLayerPresetRef = useRef(planLayerPreset);
-  const planMeasurementUnitRef = useRef(planMeasurementUnit);
-  const exportStylePresetRef = useRef(exportStylePreset);
-  const setPlanOpenings = useCallback(
-    (next: RoomOpening2D[] | ((prev: RoomOpening2D[]) => RoomOpening2D[])) => {
-      const resolved =
-        typeof next === "function"
-          ? (next as (prev: RoomOpening2D[]) => RoomOpening2D[])(planOpeningsRef.current)
-          : next;
-      planOpeningsRef.current = resolved;
-      setPlanOpeningsState(resolved);
+    state: {
+      planTheme,
+      planLayers,
+      planAnnotations,
+      planOpenings,
+      planFixedElements,
+      simplePlanControls,
+      planLayerPreset,
+      planMeasurementUnit,
+      exportStylePreset,
+      planGuidedActionsEnabled,
+      planGuidedActionsChoiceSeen,
+      planOpeningsStorageState,
+      planSettingsLoaded,
     },
-    [setPlanOpeningsState]
-  );
-  const setPlanAnnotations = useCallback(
-    (
-      next:
-        | EditorAnnotation2D[]
-        | ((prev: EditorAnnotation2D[]) => EditorAnnotation2D[])
-    ) => {
-      const resolved =
-        typeof next === "function"
-          ? (next as (prev: EditorAnnotation2D[]) => EditorAnnotation2D[])(
-              planAnnotationsRef.current
-            )
-          : next;
-      planAnnotationsRef.current = resolved;
-      setPlanAnnotationsState(resolved);
+    actions: {
+      setPlanTheme,
+      setPlanLayers,
+      setPlanAnnotations,
+      setPlanOpenings,
+      setPlanFixedElements,
+      setSimplePlanControls,
+      setPlanLayerPreset,
+      setPlanMeasurementUnit,
+      setExportStylePreset,
+      setPlanGuidedActionsEnabled,
+      setPlanGuidedActionsChoiceSeen,
     },
-    [setPlanAnnotationsState]
-  );
-  const setPlanFixedElements = useCallback(
-    (
-      next: FixedElement2D[] | ((prev: FixedElement2D[]) => FixedElement2D[])
-    ) => {
-      const resolved =
-        typeof next === "function"
-          ? (next as (prev: FixedElement2D[]) => FixedElement2D[])(
-              planFixedElementsRef.current
-            )
-          : next;
-      planFixedElementsRef.current = resolved;
-      setPlanFixedElementsState(resolved);
-    },
-    [setPlanFixedElementsState]
-  );
-  const setPlanTheme = useCallback(
-    (next: PlanTheme | ((prev: PlanTheme) => PlanTheme)) => {
-      const resolved =
-        typeof next === "function"
-          ? (next as (prev: PlanTheme) => PlanTheme)(planThemeRef.current)
-          : next;
-      planThemeRef.current = resolved;
-      setPlanThemeState(resolved);
-    },
-    [setPlanThemeState]
-  );
-  const setPlanLayers = useCallback(
-    (next: PlanLayers | ((prev: PlanLayers) => PlanLayers)) => {
-      const resolved =
-        typeof next === "function"
-          ? (next as (prev: PlanLayers) => PlanLayers)(planLayersRef.current)
-          : next;
-      planLayersRef.current = resolved;
-      setPlanLayersState(resolved);
-    },
-    [setPlanLayersState]
-  );
-  const setPlanLayerPreset = useCallback(
-    (
-      next:
-        | PlanLayerPresetId
-        | ((prev: PlanLayerPresetId) => PlanLayerPresetId)
-    ) => {
-      const resolved =
-        typeof next === "function"
-          ? (next as (prev: PlanLayerPresetId) => PlanLayerPresetId)(
-              planLayerPresetRef.current
-            )
-          : next;
-      planLayerPresetRef.current = resolved;
-      setPlanLayerPresetState(resolved);
-    },
-    [setPlanLayerPresetState]
-  );
-  const setPlanMeasurementUnit = useCallback(
-    (
-      next:
-        | PlanMeasurementUnit
-        | ((prev: PlanMeasurementUnit) => PlanMeasurementUnit)
-    ) => {
-      const resolved =
-        typeof next === "function"
-          ? (next as (prev: PlanMeasurementUnit) => PlanMeasurementUnit)(
-              planMeasurementUnitRef.current
-            )
-          : next;
-      planMeasurementUnitRef.current = resolved;
-      setPlanMeasurementUnitState(resolved);
-    },
-    [setPlanMeasurementUnitState]
-  );
-  const setExportStylePreset = useCallback(
-    (
-      next: ExportStylePreset | ((prev: ExportStylePreset) => ExportStylePreset)
-    ) => {
-      const resolved =
-        typeof next === "function"
-          ? (next as (prev: ExportStylePreset) => ExportStylePreset)(
-              exportStylePresetRef.current
-            )
-          : next;
-      exportStylePresetRef.current = resolved;
-      setExportStylePresetState(resolved);
-    },
-    [setExportStylePresetState]
-  );
-  const defaultPlanOpeningsSeededRef = useRef(false);
-  const {
-    floorPlanUnderlay,
-    setFloorPlanUnderlay: setFloorPlanUnderlayState,
-    floorPlanCalibrationMode,
-    floorPlanCalibrationPoints,
-    setFloorPlanCalibrationPoints,
-    floorPlanCalibrationDistanceInput,
-    setFloorPlanCalibrationDistanceInput,
-    floorPlanTraceRoomMode,
-    setFloorPlanTraceRoomMode,
-    floorPlanDrawRoomMode,
-    floorPlanDrawAngleLockMode,
-    setFloorPlanDrawAngleLockMode,
-    floorPlanExactWallLengthInput,
-    setFloorPlanExactWallLengthInput,
-    floorPlanTraceRoomPoints,
-    setFloorPlanTraceRoomPoints,
-    blankGridRoomPreviewPoint,
-    setBlankGridRoomPreviewPoint,
-    floorPlanTraceRoomType,
-    setFloorPlanTraceRoomType,
-    floorPlanTraceOpeningMode,
-    setFloorPlanTraceOpeningMode,
-    floorPlanTraceOpeningPoints,
-    setFloorPlanTraceOpeningPoints,
-    floorPlanTraceOpeningKind,
-    setFloorPlanTraceOpeningKind,
-    floorPlanPdfSourceReady,
-    setFloorPlanPdfSourceReady,
-    floorPlanPdfRenderingPage,
-    setFloorPlanPdfRenderingPage,
-    floorPlanCalibrationSummary,
-    blankGridRoomDrawActive,
-    activeFloorPlanTool,
-    resetFloorPlanCalibration,
-    resetFloorPlanInteraction,
-    activateFloorPlanSelectTool,
-    activateFloorPlanCalibrationMode,
-    activateFloorPlanRoomTrace,
-    activateFloorPlanRoomDrawMode,
-    activateFloorPlanOpeningTrace,
-    clearFloorPlanTraceBuffers,
-  } = useDesignPageFloorPlanWorkflowState();
-  const {
     refs: {
-      underlayObjectUrlRef: floorPlanUnderlayUrlRef,
-      pdfSourceDataRef: floorPlanPdfSourceDataRef,
+      planOpeningsRef,
+      planAnnotationsRef,
+      planFixedElementsRef,
+      planThemeRef,
+      planLayersRef,
+      planLayerPresetRef,
+      planMeasurementUnitRef,
+      exportStylePresetRef,
+      defaultPlanOpeningsSeededRef,
     },
-    actions: { revokeUnderlayObjectUrl: revokeFloorPlanUnderlayUrl },
-  } = useDesignPageFloorPlanAssets();
-  const floorPlanUnderlayRef = useRef(floorPlanUnderlay);
-  const setFloorPlanUnderlay = useCallback(
-    (
-      next:
-        | FloorPlanUnderlay
-        | null
-        | ((prev: FloorPlanUnderlay | null) => FloorPlanUnderlay | null)
-    ) => {
-      const resolved =
-        typeof next === "function"
-          ? (next as (prev: FloorPlanUnderlay | null) => FloorPlanUnderlay | null)(
-              floorPlanUnderlayRef.current
-            )
-          : next;
-      floorPlanUnderlayRef.current = resolved;
-      setFloorPlanUnderlayState(resolved);
+    restoreActions: {
+      setPlanThemeState,
+      setPlanLayersState,
+      setPlanAnnotationsState,
+      setPlanOpeningsState,
+      setPlanFixedElementsState,
+      setPlanLayerPresetState,
+      setPlanMeasurementUnitState,
+      setExportStylePresetState,
     },
-    [setFloorPlanUnderlayState]
-  );
+  } = useDesignPagePlanDocumentState();
+  const {
+    state: {
+      floorPlanUnderlay,
+      floorPlanCalibrationMode,
+      floorPlanCalibrationPoints,
+      floorPlanCalibrationDistanceInput,
+      floorPlanTraceRoomMode,
+      floorPlanDrawRoomMode,
+      floorPlanDrawAngleLockMode,
+      floorPlanExactWallLengthInput,
+      floorPlanTraceRoomPoints,
+      blankGridRoomPreviewPoint,
+      floorPlanTraceRoomType,
+      floorPlanTraceOpeningMode,
+      floorPlanTraceOpeningPoints,
+      floorPlanTraceOpeningKind,
+      floorPlanPdfSourceReady,
+      floorPlanPdfRenderingPage,
+      floorPlanCalibrationSummary,
+      blankGridRoomDrawActive,
+      activeFloorPlanTool,
+    },
+    actions: {
+      setFloorPlanUnderlay,
+      setFloorPlanCalibrationPoints,
+      setFloorPlanCalibrationDistanceInput,
+      setFloorPlanTraceRoomMode,
+      setFloorPlanDrawAngleLockMode,
+      setFloorPlanExactWallLengthInput,
+      setFloorPlanTraceRoomPoints,
+      setBlankGridRoomPreviewPoint,
+      setFloorPlanTraceRoomType,
+      setFloorPlanTraceOpeningMode,
+      setFloorPlanTraceOpeningPoints,
+      setFloorPlanTraceOpeningKind,
+      setFloorPlanPdfSourceReady,
+      setFloorPlanPdfRenderingPage,
+      resetFloorPlanCalibration,
+      resetFloorPlanInteraction,
+      activateFloorPlanSelectTool,
+      activateFloorPlanCalibrationMode,
+      activateFloorPlanRoomTrace,
+      activateFloorPlanRoomDrawMode,
+      activateFloorPlanOpeningTrace,
+      clearFloorPlanTraceBuffers,
+      revokeFloorPlanUnderlayUrl,
+    },
+    refs: {
+      floorPlanUnderlayRef,
+      floorPlanUnderlayUrlRef,
+      floorPlanPdfSourceDataRef,
+    },
+    restoreActions: { setFloorPlanUnderlayState },
+  } = useDesignPageFloorPlanDocumentState();
   const [selectedPlanOverlayId, setSelectedPlanOverlayId] = useState<string | null>(null);
   const [suppressedDoorwaySuggestionKeys, setSuppressedDoorwaySuggestionKeys] = useState<string[]>([]);
   const [selectedPlanRoomId, setSelectedPlanRoomId] = useState<string | null>(null);
@@ -831,8 +687,6 @@ export function DesignPageWorkspace() {
     firstInteractionRef.current = true;
   }, [designId, logFunnelEvent, mode, session?.user]);
 
-  type PlacedItem = DesignItem;
-
   const [pendingAiLayoutProposal, setPendingAiLayoutProposal] =
     useState<PendingAiLayoutProposal | null>(null);
 
@@ -842,38 +696,11 @@ export function DesignPageWorkspace() {
     valid: boolean;
     kind: "preview" | "item";
   } | null>(null);
-  type Zone = ZoneMin;
-
-  type DesignSnapshot = MultiRoomSnapshot;
-  // State for design snapshot with ref for synchronous access
-  // NEW: Initialize with v3 multi-room format using migrateToV3
-  const defaultSnapshot: DesignSnapshot = migrateToV3({
-    items: [],
-    zones: [],
-    roomBounds: {
-      width: ROOM_DIMENSION_DEFAULTS.width,
-      depth: ROOM_DIMENSION_DEFAULTS.depth,
-      wallThickness: ROOM_DIMENSION_DEFAULTS.wallThickness,
-      height: ROOM_DIMENSION_DEFAULTS.roomHeight,
-    },
-  } as unknown as DesignSnapshot);
-
-  const [designSnapshot, setDesignSnapshotState] = useState<DesignSnapshot>(
-    defaultSnapshot
-  );
-  const designSnapshotRef = useRef(designSnapshot);
-  const setDesignSnapshot = useCallback(
-    (next: DesignSnapshot | ((prev: DesignSnapshot) => DesignSnapshot)) => {
-      const resolved =
-        typeof next === "function"
-          ? (next as (prev: DesignSnapshot) => DesignSnapshot)(designSnapshotRef.current)
-          : next;
-      designSnapshotRef.current = resolved;
-      setDesignSnapshotState(resolved);
-    },
-    []
-  );
-  const [localBackupHydrated, setLocalBackupHydrated] = useState(false);
+  const {
+    state: { designSnapshot, localBackupHydrated },
+    actions: { setDesignSnapshot, setLocalBackupHydrated },
+    refs: { designSnapshotRef },
+  } = useDesignPageSnapshotDocumentState();
   const liveCatalogReady = useDesignPageLiveCatalog();
   const canEdit = !isClientPreview && liveCatalogReady;
 
@@ -881,187 +708,81 @@ export function DesignPageWorkspace() {
     cameraViewRef.current = cameraView;
   }, [cameraView]);
 
-  useEffect(() => {
-    designSnapshotRef.current = designSnapshot;
-  }, [designSnapshot]);
-
-  useEffect(() => {
-    planOpeningsRef.current = planOpenings;
-  }, [planOpenings]);
-
-  useEffect(() => {
-    planAnnotationsRef.current = planAnnotations;
-  }, [planAnnotations]);
-
-  useEffect(() => {
-    planFixedElementsRef.current = planFixedElements;
-  }, [planFixedElements]);
-
-  useEffect(() => {
-    planThemeRef.current = planTheme;
-  }, [planTheme]);
-
-  useEffect(() => {
-    planLayersRef.current = planLayers;
-  }, [planLayers]);
-
-  useEffect(() => {
-    planLayerPresetRef.current = planLayerPreset;
-  }, [planLayerPreset]);
-
-  useEffect(() => {
-    planMeasurementUnitRef.current = planMeasurementUnit;
-  }, [planMeasurementUnit]);
-
-  useEffect(() => {
-    exportStylePresetRef.current = exportStylePreset;
-  }, [exportStylePreset]);
-
-  useEffect(() => {
-    floorPlanUnderlayRef.current = floorPlanUnderlay;
-  }, [floorPlanUnderlay]);
-
   const {
-    history,
-    flushCoalescedHistoryTransaction,
-    runHistoryTransaction,
-    runCoalescedHistoryTransaction,
-  } = useDesignPageHistory({
-    adapters: {
-      captureSnapshot: () => ({
-        designSnapshot: designSnapshotRef.current,
-        planAnnotations: planAnnotationsRef.current,
-        planFixedElements: planFixedElementsRef.current,
-        planOpenings: planOpeningsRef.current,
-        planTheme: planThemeRef.current,
-        planLayers: planLayersRef.current,
-        planLayerPreset: planLayerPresetRef.current,
-        planMeasurementUnit: planMeasurementUnitRef.current,
-        exportStylePreset: exportStylePresetRef.current,
-        floorPlanUnderlay: floorPlanUnderlayRef.current,
-      }),
-      restoreSnapshot: (snapshot: DesignPageHistorySnapshot) => {
-        designSnapshotRef.current = snapshot.designSnapshot;
-        setDesignSnapshot(snapshot.designSnapshot);
-        planAnnotationsRef.current = snapshot.planAnnotations;
-        setPlanAnnotationsState(snapshot.planAnnotations);
-        planFixedElementsRef.current = snapshot.planFixedElements;
-        setPlanFixedElementsState(snapshot.planFixedElements);
-        planOpeningsRef.current = snapshot.planOpenings;
-        setPlanOpeningsState(snapshot.planOpenings);
-        planThemeRef.current = snapshot.planTheme;
-        setPlanThemeState(snapshot.planTheme);
-        planLayersRef.current = snapshot.planLayers;
-        setPlanLayersState(snapshot.planLayers);
-        planLayerPresetRef.current = snapshot.planLayerPreset;
-        setPlanLayerPresetState(snapshot.planLayerPreset);
-        planMeasurementUnitRef.current = snapshot.planMeasurementUnit;
-        setPlanMeasurementUnitState(snapshot.planMeasurementUnit);
-        exportStylePresetRef.current = snapshot.exportStylePreset;
-        setExportStylePresetState(snapshot.exportStylePreset);
-        floorPlanUnderlayRef.current = snapshot.floorPlanUnderlay;
-        setFloorPlanUnderlayState(snapshot.floorPlanUnderlay);
-      },
-      onHistoryChange: () => bumpHistoryRevision((revision) => revision + 1),
+    adapters: { captureHistorySnapshot, restoreHistorySnapshot },
+  } = useDesignPageDocumentRefSynchronization({
+    state: {
+      designSnapshot,
+      planOpenings,
+      planAnnotations,
+      planFixedElements,
+      planTheme,
+      planLayers,
+      planLayerPreset,
+      planMeasurementUnit,
+      exportStylePreset,
+      floorPlanUnderlay,
+    },
+    actions: {
+      setDesignSnapshot,
+      setPlanAnnotationsState,
+      setPlanFixedElementsState,
+      setPlanOpeningsState,
+      setPlanThemeState,
+      setPlanLayersState,
+      setPlanLayerPresetState,
+      setPlanMeasurementUnitState,
+      setExportStylePresetState,
+      setFloorPlanUnderlayState,
+    },
+    refs: {
+      designSnapshotRef,
+      planOpeningsRef,
+      planAnnotationsRef,
+      planFixedElementsRef,
+      planThemeRef,
+      planLayersRef,
+      planLayerPresetRef,
+      planMeasurementUnitRef,
+      exportStylePresetRef,
+      floorPlanUnderlayRef,
     },
   });
-
-  const buildPersistedFloorPlanState = useCallback((): DesignSnapshot["floorPlan"] => {
-    const underlay =
-      floorPlanUnderlay && isPersistableFloorPlanAssetUrl(floorPlanUnderlay.assetUrl)
-        ? floorPlanUnderlay
-        : null;
-
-    if (!underlay && planOpenings.length === 0 && planFixedElements.length === 0) {
-      return undefined;
-    }
-
-    return {
-      underlay,
-      openings: planOpenings,
-      fixedElements: planFixedElements,
-    };
-  }, [floorPlanUnderlay, planFixedElements, planOpenings]);
-
-  const buildDesignSnapshotForPersistence = useCallback(
-    (snapshot: DesignSnapshot = designSnapshotRef.current): DesignSnapshot => {
-      const floorPlan = buildPersistedFloorPlanState();
-      const nextSnapshot: DesignSnapshot = { ...snapshot };
-
-      if (floorPlan) {
-        nextSnapshot.floorPlan = floorPlan;
-      } else {
-        delete nextSnapshot.floorPlan;
-      }
-
-      return nextSnapshot;
+  const {
+    state: { currentStoredDesignFingerprint },
+    actions: {
+      flushCoalescedHistoryTransaction,
+      runHistoryTransaction,
+      runCoalescedHistoryTransaction,
+      hydratePersistedFloorPlanState,
     },
-    [buildPersistedFloorPlanState]
-  );
-
-  const getStoredDesignForPersistence = useCallback(
-    (snapshot: DesignSnapshot = designSnapshotRef.current) =>
-      snapshotToStored(buildDesignSnapshotForPersistence(snapshot)),
-    [buildDesignSnapshotForPersistence]
-  );
-
-  const fingerprintStoredDesign = useCallback(
-    (stored: StoredDesign) => fingerprintDesignSnapshot(storedToSnapshot(stored)),
-    []
-  );
-  const currentStoredDesignFingerprint = useMemo(
-    () => fingerprintStoredDesign(getStoredDesignForPersistence(designSnapshot)),
-    [designSnapshot, fingerprintStoredDesign, getStoredDesignForPersistence]
-  );
-
-  const hydratePersistedFloorPlanState = useCallback(
-    (snapshot: DesignSnapshot, clearWhenMissing = false) => {
-      const floorPlan = snapshot.floorPlan;
-
-      if (!floorPlan) {
-        if (clearWhenMissing) {
-          revokeFloorPlanUnderlayUrl();
-          floorPlanPdfSourceDataRef.current = null;
-          setFloorPlanPdfSourceReady(false);
-          setFloorPlanUnderlay(null);
-          setPlanOpenings([]);
-          setPlanFixedElements([]);
-        }
-        return;
-      }
-
-      history.begin("Apply plan template");
-      floorPlanPdfSourceDataRef.current = null;
-      setFloorPlanPdfSourceReady(false);
-      setFloorPlanUnderlay(
-        floorPlan.underlay && isPersistableFloorPlanAssetUrl(floorPlan.underlay.assetUrl)
-          ? {
-              ...floorPlan.underlay,
-              opacity:
-                typeof floorPlan.underlay.opacity === "number"
-                  ? floorPlan.underlay.opacity
-                  : 0.45,
-              locked: floorPlan.underlay.locked ?? true,
-            }
-          : null
-      );
-      setPlanOpenings(Array.isArray(floorPlan.openings) ? floorPlan.openings : []);
-      setPlanFixedElements(
-        Array.isArray(floorPlan.fixedElements) ? floorPlan.fixedElements : []
-      );
-      resetFloorPlanInteraction();
-    },
-    [
+    refs: {
       history,
-      floorPlanPdfSourceDataRef,
+      getStoredDesignForPersistence,
+      fingerprintStoredDesign,
+    },
+  } = useDesignPageDocumentHistoryController({
+    state: {
+      designSnapshot,
+      floorPlanUnderlay,
+      planOpenings,
+      planFixedElements,
+    },
+    adapters: {
+      captureSnapshot: captureHistorySnapshot,
+      restoreSnapshot: restoreHistorySnapshot,
+      onHistoryChange: () => bumpHistoryRevision((revision) => revision + 1),
+    },
+    actions: {
+      setFloorPlanUnderlay,
+      setPlanOpenings,
+      setPlanFixedElements,
+      setFloorPlanPdfSourceReady,
       resetFloorPlanInteraction,
       revokeFloorPlanUnderlayUrl,
-      setFloorPlanPdfSourceReady,
-      setFloorPlanUnderlay,
-      setPlanFixedElements,
-      setPlanOpenings,
-    ]
-  );
+    },
+    refs: { designSnapshotRef, floorPlanPdfSourceDataRef },
+  });
 
   const {
     activeRoom,
@@ -1391,13 +1112,6 @@ export function DesignPageWorkspace() {
     [goShop]
   );
 
-  // Getters for undo/redo state
-  const canUndo = history.canUndo();
-  const canRedo = history.canRedo();
-  const undoName = history.getUndoName();
-  const redoName = history.getRedoName();
-  const historyDebugSnapshot = history.getHistory();
-
   // ========================================================================
   // Step 7: Validate Catalog on Startup
   // ========================================================================
@@ -1411,22 +1125,20 @@ export function DesignPageWorkspace() {
     });
   }, []);
 
-  const undoSafe = useCallback(() => {
-    if (isClientPreview) return;
-    flushCoalescedHistoryTransaction();
-    const label = history.undo();
-    if (!label) return;
-  }, [flushCoalescedHistoryTransaction, isClientPreview, history]);
-
-  const redoSafe = useCallback(() => {
-    if (isClientPreview) return;
-    flushCoalescedHistoryTransaction();
-    const label = history.redo();
-    if (!label) return;
-  }, [flushCoalescedHistoryTransaction, isClientPreview, history]);
-
-  // Hotkeys for undo/redo (Cmd/Ctrl+Z, Cmd/Ctrl+Shift+Z)
-  useUndoRedoHotkeys({ undo: undoSafe, redo: redoSafe });
+  const {
+    state: {
+      canUndo,
+      canRedo,
+      undoName,
+      redoName,
+      historyDebugSnapshot,
+    },
+    actions: { undoSafe, redoSafe },
+  } = useDesignPageHistoryShortcuts({
+    state: { isClientPreview },
+    actions: { flushCoalescedHistoryTransaction },
+    refs: { history },
+  });
 
   // Global keyboard shortcut for Present Mode toggle (P key)
   useEffect(() => {
@@ -1655,91 +1367,26 @@ export function DesignPageWorkspace() {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
+      const restored = normalizeDesignPageLocalBackup({
+        rawBackup: raw,
+        state: {
+          activeRoomId: designSnapshotRef.current.activeRoomId,
+          roomWidth,
+          roomDepth,
+          wallThickness,
+        },
+        configuration: {
+          catalogItems: CATALOG_ITEMS,
+          resolveConfiguredPlanningDimsMm,
+        },
+      });
 
-      const parsed = JSON.parse(raw) as {
-        items: PlacedItem[];
-        zones?: Zone[];
-        savedViews?: NamedCameraView[];
-        roomWidth?: number;
-        roomDepth?: number;
-        rooms?: StoredDesign["rooms"];
-        activeRoomId?: string;
-        designId?: string | null;
-        version?: number;
-      };
-
-      if (parsed.version === 3 && Array.isArray(parsed.rooms)) {
-        const restored = storedToSnapshot(parsed as StoredDesign);
-        const restoredRooms = restored.rooms.map((room) => {
-          const nextWidth = resolveHouseRoomDimension(
-            room.geometry.width,
-            ROOM_DIMENSION_DEFAULTS.width
-          );
-          const nextDepth = resolveHouseRoomDimension(
-            room.geometry.depth,
-            ROOM_DIMENSION_DEFAULTS.depth
-          );
-          const nextWall =
-            typeof room.geometry.wallThickness === "number" && Number.isFinite(room.geometry.wallThickness)
-              ? room.geometry.wallThickness
-              : ROOM_DIMENSION_DEFAULTS.wallThickness;
-          const cleanedRoomItems = (room.items || [])
-            .filter((it) => isParametricCabinetItem(it) || CATALOG_ITEMS[it.productId])
-            .map((it) => {
-              if (isParametricCabinetItem(it)) {
-                return normalizeCabinetDesignItem(it, {
-                  dropTemporaryGlbUrls: true,
-                  roomId: room.id,
-                }) as PlacedItem;
-              }
-              const product = CATALOG_ITEMS[it.productId];
-              const validVariant = product.variants.some((v) => v.id === it.variantId)
-                ? it.variantId
-                : product.defaultVariantId;
-
-              return {
-                ...it,
-                variantId: validVariant,
-                position: it.position ?? [0, 0, 0],
-                qty: typeof it.qty === "number" && it.qty > 0 ? it.qty : 1,
-                includeInCheckout: it.includeInCheckout ?? true,
-                locked: Boolean(it.locked),
-              } as PlacedItem;
-            });
-
-          return {
-            ...room,
-            geometry: {
-              ...room.geometry,
-              width: nextWidth,
-              depth: nextDepth,
-              wallThickness: nextWall,
-            },
-            items: _normalizeItemsToRoom({
-              items: cleanedRoomItems,
-              width: nextWidth,
-              depth: nextDepth,
-              wall: nextWall,
-              catalogItems: CATALOG_ITEMS,
-              resolveConfiguredPlanningDimsMm,
-            }),
-            zones: Array.isArray(room.zones) ? room.zones : [],
-            savedViews: Array.isArray(room.savedViews) ? room.savedViews : [],
-          };
-        });
-
-        if (restoredRooms.length) {
-          const activeRoomExists = restoredRooms.some((room) => room.id === restored.activeRoomId);
-          const nextSnapshot = {
-            ...restored,
-            rooms: restoredRooms,
-            activeRoomId: activeRoomExists ? restored.activeRoomId : restoredRooms[0].id,
-          };
-          setDesignSnapshot(nextSnapshot);
-          if (typeof parsed.designId === "string" && parsed.designId.trim()) {
-            const restoredDesignId = parsed.designId;
+      if (restored.snapshot) {
+        setDesignSnapshot(restored.snapshot);
+        if (restored.format === "v3") {
+          if (restored.cloudDesignId) {
             deferLocalBackupHydrated = true;
-            void loadDesign(restoredDesignId, {
+            void loadDesign(restored.cloudDesignId, {
               notFoundMessage: "Cloud design not found; restored local backup",
             })
               .then((loaded) => {
@@ -1754,64 +1401,11 @@ export function DesignPageWorkspace() {
                 setLocalBackupHydrated(true);
               });
           }
-          hydratePersistedFloorPlanState(nextSnapshot);
-          history.clear();
+          hydratePersistedFloorPlanState(restored.snapshot);
         }
-
-        setSavedViews(sanitizeDesignPageSavedViews(parsed.savedViews));
-        return;
-      }
-
-      const cleaned = (parsed.items || [])
-        .filter((it) => isParametricCabinetItem(it) || CATALOG_ITEMS[it.productId])
-        .map((it) => {
-          if (isParametricCabinetItem(it)) {
-            return normalizeCabinetDesignItem(it, {
-              dropTemporaryGlbUrls: true,
-              roomId: designSnapshotRef.current.activeRoomId,
-            }) as PlacedItem;
-          }
-          const product = CATALOG_ITEMS[it.productId];
-          const validVariant = product.variants.some((v) => v.id === it.variantId)
-            ? it.variantId
-            : product.defaultVariantId;
-
-          return {
-            ...it,
-            variantId: validVariant,
-            position: it.position ?? [0, 0, 0],
-            qty: typeof it.qty === "number" && it.qty > 0 ? it.qty : 1,
-            includeInCheckout: it.includeInCheckout ?? true,
-            locked: Boolean(it.locked),
-          } as PlacedItem;
-        });
-
-      const persistedRoomWidth = resolveHouseRoomDimension(parsed.roomWidth, roomWidth);
-      const persistedRoomDepth = resolveHouseRoomDimension(parsed.roomDepth, roomDepth);
-
-      if (cleaned.length) {
-        const normalized = _normalizeItemsToRoom({
-          items: cleaned,
-          width: persistedRoomWidth,
-          depth: persistedRoomDepth,
-          wall: wallThickness,
-          catalogItems: CATALOG_ITEMS,
-          resolveConfiguredPlanningDimsMm,
-        });
-        // NEW: Use migration helper for localStorage items too
-        const snapshot = migrateToV3({
-          items: normalized,
-          zones: parsed.zones ?? [],
-          roomBounds: {
-            width: persistedRoomWidth,
-            depth: persistedRoomDepth,
-            wallThickness,
-          },
-        } as unknown as DesignSnapshot);
-        setDesignSnapshot(snapshot);
         history.clear();
       }
-      setSavedViews(sanitizeDesignPageSavedViews(parsed.savedViews));
+      setSavedViews(restored.savedViews);
     } catch {
       // ignore invalid saved data
     } finally {
@@ -1977,6 +1571,7 @@ export function DesignPageWorkspace() {
       },
     ]);
   }, [
+    defaultPlanOpeningsSeededRef,
     planOpenings.length,
     planOpeningsStorageState,
     planSettingsLoaded,
@@ -2862,48 +2457,57 @@ export function DesignPageWorkspace() {
 
   const {
     state: {
-      lastPersistedSnapshotFingerprint,
-      isSaving,
-      saveStatus,
-      sharingDesign,
-      shareSuccessToast,
-      shareErrorToast,
-      shareLinkFallback,
-      showMyDesigns,
-      myDesigns,
-      loadingDesigns,
-      selectedSavedDesignIds,
-      deletingDesignIds,
-      pendingDeleteDesign,
-      allSavedDesignIds,
-      selectedSavedDesignCount,
-      allSavedDesignsSelected,
-      guestPromptReason,
+      persistence: {
+        lastPersistedSnapshotFingerprint,
+        isSaving,
+        saveStatus,
+        sharingDesign,
+        shareSuccessToast,
+        shareErrorToast,
+        shareLinkFallback,
+        showMyDesigns,
+        myDesigns,
+        loadingDesigns,
+        selectedSavedDesignIds,
+        deletingDesignIds,
+        pendingDeleteDesign,
+        allSavedDesignIds,
+        selectedSavedDesignCount,
+        allSavedDesignsSelected,
+        guestPromptReason,
+      },
+      newPlan: { startingNewPlan, newPlanStartError },
     },
     actions: {
-      saveDesignToCloud,
-      preserveCurrentDesign,
-      detachCurrentDesignForNewDraft,
-      retrySaveStatus,
-      loadDesign,
-      clearPersistedSnapshotFingerprint,
-      createShareLinkAndCopy,
-      closeShareLinkFallback,
-      copyFallbackShareLink,
-      openFallbackShareLink,
-      toggleMyDesigns,
-      closeMyDesigns,
-      handleLoadDesign,
-      toggleSavedDesignSelection,
-      toggleAllSavedDesignSelection,
-      requestDeleteSavedDesigns,
-      cancelDeleteSavedDesigns,
-      handleDeleteSavedDesign,
-      openGuestPrompt,
-      handleGuestPromptNotNow,
-      handleGuestSaveAndContinue,
+      persistence: {
+        saveDesignToCloud,
+        retrySaveStatus,
+        loadDesign,
+        clearPersistedSnapshotFingerprint,
+        createShareLinkAndCopy,
+        closeShareLinkFallback,
+        copyFallbackShareLink,
+        openFallbackShareLink,
+        toggleMyDesigns,
+        closeMyDesigns,
+        handleLoadDesign,
+        toggleSavedDesignSelection,
+        toggleAllSavedDesignSelection,
+        requestDeleteSavedDesigns,
+        cancelDeleteSavedDesigns,
+        handleDeleteSavedDesign,
+        openGuestPrompt,
+        handleGuestPromptNotNow,
+        handleGuestSaveAndContinue,
+      },
+      newPlan: {
+        openNewPlanPicker,
+        cancelPendingPlanChoice,
+        replaceCurrentPlanFromChoice,
+        saveCurrentAndStartNewPlan,
+      },
     },
-  } = useDesignPagePersistence({
+  } = useDesignPagePersistenceNewPlanFacade({
     state: {
       identity: {
         designId,
@@ -2929,22 +2533,40 @@ export function DesignPageWorkspace() {
       lifecycle: {
         localBackupHydrated,
       },
+      newPlan: {
+        pendingReplacement: pendingPlanTemplateReplacement,
+      },
     },
     actions: {
-      setDesignId,
-      setShareToken,
-      setShareEnabled,
-      setDesignSnapshot,
-      hydratePersistedFloorPlanState,
-      clearHistory: () => history.clear(),
-      setMode,
-      setNotes,
-      setSavedViews,
-      setStyle,
-      setBudget,
-      showRuleToast,
-      showMaxDesignUpgrade: () => setShowUpgrade(true),
-      requestSignIn: signInWithReturn,
+      persistence: {
+        setDesignId,
+        setShareToken,
+        setShareEnabled,
+        setDesignSnapshot,
+        hydratePersistedFloorPlanState,
+        clearHistory: () => history.clear(),
+        setMode,
+        setNotes,
+        setSavedViews,
+        setStyle,
+        setBudget,
+        showRuleToast,
+        showMaxDesignUpgrade: () => setShowUpgrade(true),
+        requestSignIn: signInWithReturn,
+      },
+      newPlan: {
+        setGuidedPlanStartMode,
+        goPlan,
+        setViewMode,
+        setDesignPanelOpen,
+        setDesignPanelCollapsed,
+        cancelPendingReplacement: handleCancelPendingPlanTemplateReplacement,
+        confirmPendingReplacement: handleConfirmPendingPlanTemplateReplacement,
+        clearHistory: () => history.clear(),
+        clearPlanAnnotations: () => setPlanAnnotations([]),
+        requestSignIn: signInWithReturn,
+        showToast: showRuleToast,
+      },
     },
     configuration: {
       storageKey: STORAGE_KEY,
@@ -2954,37 +2576,6 @@ export function DesignPageWorkspace() {
     refs: {
       getStoredDesignForPersistence,
       fingerprintStoredDesign,
-    },
-  });
-
-  const {
-    state: { startingNewPlan, newPlanStartError },
-    actions: {
-      openNewPlanPicker,
-      cancelPendingPlanChoice,
-      replaceCurrentPlanFromChoice,
-      saveCurrentAndStartNewPlan,
-    },
-  } = useDesignPageNewPlanController({
-    state: {
-      isAuthenticated: Boolean(session?.user),
-      pendingReplacement: pendingPlanTemplateReplacement,
-    },
-    actions: {
-      closeMyDesigns,
-      setGuidedPlanStartMode,
-      goPlan,
-      setViewMode,
-      setDesignPanelOpen,
-      setDesignPanelCollapsed,
-      cancelPendingReplacement: handleCancelPendingPlanTemplateReplacement,
-      confirmPendingReplacement: handleConfirmPendingPlanTemplateReplacement,
-      preserveCurrentDesign,
-      detachCurrentDesignForNewDraft,
-      clearHistory: () => history.clear(),
-      clearPlanAnnotations: () => setPlanAnnotations([]),
-      requestSignIn: signInWithReturn,
-      showToast: showRuleToast,
     },
   });
 

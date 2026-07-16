@@ -188,6 +188,10 @@ const controllerSource = readFileSync(
   join(root, "lib/useDesignPageNewPlanController.ts"),
   "utf8"
 );
+const facadeSource = readFileSync(
+  join(root, "lib/useDesignPagePersistenceNewPlanFacade.ts"),
+  "utf8"
+);
 const workspaceSource = readFileSync(
   join(root, "components/editor/design-page/DesignPageWorkspace.tsx"),
   "utf8"
@@ -213,8 +217,12 @@ assert.match(
   /const saveCurrentAndStartNewPlan = useCallback\([\s\S]*?executeSaveCurrentAndStartNewPlan\(/
 );
 assert.match(
-  workspaceSource,
+  facadeSource,
   /useDesignPageNewPlanController\(\{[\s\S]*?state:\s*\{[\s\S]*?actions:\s*\{/
+);
+assert.match(
+  workspaceSource,
+  /useDesignPagePersistenceNewPlanFacade\(\{[\s\S]*?state:\s*\{[\s\S]*?actions:\s*\{[\s\S]*?configuration:\s*\{[\s\S]*?refs:\s*\{/
 );
 assert.doesNotMatch(
   workspaceSource,

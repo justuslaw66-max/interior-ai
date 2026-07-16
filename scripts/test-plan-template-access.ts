@@ -30,6 +30,18 @@ const persistenceControllerPath = path.join(
   "useDesignPagePersistence.ts"
 );
 const persistenceControllerSource = fs.readFileSync(persistenceControllerPath, "utf8");
+const persistenceNewPlanFacadeSource = fs.readFileSync(
+  path.join(process.cwd(), "lib", "useDesignPagePersistenceNewPlanFacade.ts"),
+  "utf8"
+);
+const documentStateControllerSource = fs.readFileSync(
+  path.join(process.cwd(), "lib", "useDesignPageDocumentStateController.ts"),
+  "utf8"
+);
+const localBackupSource = fs.readFileSync(
+  path.join(process.cwd(), "lib", "design-page-local-backup.ts"),
+  "utf8"
+);
 const newPlanControllerPath = path.join(
   process.cwd(),
   "lib",
@@ -415,21 +427,26 @@ assert.match(
   "The new-plan hook should consume its explicit grouped contract."
 );
 
-const persistenceHookIndex = designPageSource.indexOf(
-  "} = useDesignPagePersistence({"
+const persistenceHookIndex = persistenceNewPlanFacadeSource.indexOf(
+  "useDesignPagePersistence({"
 );
-const newPlanHookIndex = designPageSource.indexOf(
-  "} = useDesignPageNewPlanController({"
+const newPlanHookIndex = persistenceNewPlanFacadeSource.indexOf(
+  "useDesignPageNewPlanController({"
 );
 assert.ok(
   persistenceHookIndex >= 0 && newPlanHookIndex > persistenceHookIndex,
-  "The new-plan controller should mount after persistence exposes preserve and detach actions."
+  "The facade should mount the new-plan controller after persistence exposes preserve and detach actions."
 );
 
 assert.match(
   designPageSource,
-  /state: \{ startingNewPlan, newPlanStartError \},\s*actions: \{\s*openNewPlanPicker,\s*cancelPendingPlanChoice,\s*replaceCurrentPlanFromChoice,\s*saveCurrentAndStartNewPlan,\s*\},\s*\} = useDesignPageNewPlanController\(\{\s*state: \{\s*isAuthenticated: Boolean\(session\?\.user\),\s*pendingReplacement: pendingPlanTemplateReplacement,\s*\},\s*actions: \{[\s\S]*?preserveCurrentDesign,[\s\S]*?detachCurrentDesignForNewDraft,[\s\S]*?clearHistory: \(\) => history\.clear\(\),[\s\S]*?clearPlanAnnotations: \(\) => setPlanAnnotations\(\[\]\),[\s\S]*?requestSignIn: signInWithReturn,[\s\S]*?showToast: showRuleToast,/,
-  "Workspace should consume the controller state/actions and wire persistence, history, annotation, sign-in, and toast collaborators."
+  /state: \{[\s\S]*?newPlan: \{ startingNewPlan, newPlanStartError \}[\s\S]*?actions: \{[\s\S]*?newPlan: \{[\s\S]*?openNewPlanPicker,[\s\S]*?saveCurrentAndStartNewPlan,[\s\S]*?useDesignPagePersistenceNewPlanFacade\(\{[\s\S]*?pendingReplacement: pendingPlanTemplateReplacement[\s\S]*?clearHistory: \(\) => history\.clear\(\)[\s\S]*?clearPlanAnnotations: \(\) => setPlanAnnotations\(\[\]\)[\s\S]*?requestSignIn: signInWithReturn[\s\S]*?showToast: showRuleToast/,
+  "Workspace should consume the facade state/actions and wire history, annotation, sign-in, and toast collaborators."
+);
+assert.match(
+  persistenceNewPlanFacadeSource,
+  /closeMyDesigns: persistence\.actions\.closeMyDesigns[\s\S]*?preserveCurrentDesign: persistence\.actions\.preserveCurrentDesign[\s\S]*?detachCurrentDesignForNewDraft:\s*persistence\.actions\.detachCurrentDesignForNewDraft/,
+  "The facade should wire persistence-owned close, preserve, and detach actions into the new-plan controller."
 );
 
 assert.match(
@@ -547,9 +564,19 @@ assert.match(
 );
 
 assert.match(
+  documentStateControllerSource,
+  /const \[localBackupHydrated, setLocalBackupHydrated\] = useState\(false\);/,
+  "The document-state controller should own the local-backup hydration gate."
+);
+assert.match(
   designPageSource,
-  /const \[localBackupHydrated, setLocalBackupHydrated\] = useState\(false\);[\s\S]*?finally \{[\s\S]*?setLocalBackupHydrated\(true\);/,
-  "The design page should retain ownership of initial local backup hydration."
+  /useEffect\(\(\) => \{[\s\S]*?normalizeDesignPageLocalBackup\(\{[\s\S]*?finally \{[\s\S]*?setLocalBackupHydrated\(true\);[\s\S]*?\}, \[\]\);/,
+  "The design page should retain the one-shot restore effect and always release its hydration gate."
+);
+assert.match(
+  localBackupSource,
+  /export function normalizeDesignPageLocalBackup\([\s\S]*?JSON\.parse\(rawBackup\)[\s\S]*?migrateToV3/,
+  "Local-backup parsing and legacy migration should remain pure and importable."
 );
 
 assert.match(
