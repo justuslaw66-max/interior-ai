@@ -95,3 +95,93 @@ export function useDesignPageDeferredPaywallLifecycle({
     actions,
   });
 }
+
+type WorkspaceDeferredBillingActions = Omit<
+  LifecycleBillingActions,
+  "replaceUrl" | "logFunnelEvent"
+>;
+
+export type DesignPagePaywallSearchParams = Pick<
+  URLSearchParams,
+  "get" | "toString"
+>;
+
+export type UseDesignPageWorkspaceDeferredPaywallRegistrationInput = {
+  boundaries: { paywall: DesignPagePaywallTelemetryRegistration };
+  navigation: DesignPagePaywallNavigation;
+  searchParams: DesignPagePaywallSearchParams;
+  state: {
+    identity: Pick<LifecycleBilling["state"], "authenticated" | "designId">;
+    route: Pick<LifecycleBilling["state"], "pathname">;
+    billing: Pick<
+      LifecycleBilling["state"],
+      "upgradeReason" | "pricingLayoutVariant"
+    >;
+    telemetry: Pick<
+      UseDesignPagePaywallTelemetryLifecycleInput["state"]["telemetry"],
+      "mode"
+    >;
+    access: UseDesignPagePaywallTelemetryLifecycleInput["state"]["access"];
+  };
+  actions: {
+    billing: WorkspaceDeferredBillingActions;
+    lifecycle: UseDesignPagePaywallTelemetryLifecycleInput["actions"];
+  };
+};
+
+/**
+ * Adapts workspace-owned identity and UI state to the deferred billing slot.
+ * Query keys stay here while the existing lifecycle wrapper retains router
+ * identity and the callback/effect order used by billing synchronization.
+ */
+export function useDesignPageWorkspaceDeferredPaywallRegistration({
+  boundaries: { paywall },
+  navigation,
+  searchParams,
+  state,
+  actions,
+}: UseDesignPageWorkspaceDeferredPaywallRegistrationInput) {
+  const { authenticated, designId } = state.identity;
+
+  return useDesignPageDeferredPaywallLifecycle({
+    navigation,
+    billing: {
+      state: {
+        authenticated,
+        designId,
+        stripeSessionId: searchParams.get("session_id"),
+        refreshPlanRequested:
+          searchParams.get("refresh_plan") !== null,
+        currentSearch: searchParams.toString(),
+        pathname: state.route.pathname,
+        upgradeReason: state.billing.upgradeReason,
+        pricingLayoutVariant: state.billing.pricingLayoutVariant,
+      },
+      actions: {
+        ...actions.billing,
+        logFunnelEvent: paywall.actions.logFunnelEvent,
+      },
+      configuration: {
+        paywallContextMeta: paywall.derived.paywallContextMeta,
+      },
+    },
+    state: {
+      telemetry: {
+        designId,
+        mode: state.telemetry.mode,
+        isAuthenticated: authenticated,
+      },
+      access: state.access,
+      synchronization: {
+        paywallVariant: paywall.state.paywallVariant,
+        pricingLayout: paywall.state.resolvedPricingLayout,
+      },
+      qa: {
+        hooksEnabled: paywall.state.qaPaywallHooksEnabled,
+        paywallOpenParam: searchParams.get("paywall_open"),
+        plansOpenParam: searchParams.get("plans_open"),
+      },
+    },
+    actions: actions.lifecycle,
+  });
+}

@@ -87,7 +87,7 @@ import {
   type DesignPageUpgradeReason,
 } from "@/lib/useDesignPagePaywallTelemetryController";
 import {
-  useDesignPageDeferredPaywallLifecycle,
+  useDesignPageWorkspaceDeferredPaywallRegistration,
   useDesignPageWorkspacePaywallRegistration,
 } from "@/lib/useDesignPagePaywallRegistrationFacade";
 import {
@@ -125,10 +125,7 @@ export function DesignPageWorkspace() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const urlMode = searchParams.get("mode");
-  const stripeSessionId = searchParams.get("session_id");
   const paywallVariantOverride = searchParams.get("paywall_variant");
-  const paywallOpenParam = searchParams.get("paywall_open");
-  const plansOpenParam = searchParams.get("plans_open");
   const debugLayoutParam = searchParams.get("debug_layout");
   const [designId, setDesignId] = useState<string | null>(null);
   const [shareToken, setShareToken] = useState<string | null>(null);
@@ -350,22 +347,7 @@ export function DesignPageWorkspace() {
   >((..._args) => {
     throw new Error("Local backup planning resolver is not bound");
   });
-  const {
-    state: {
-      qaPaywallHooksEnabled,
-      paywallVariant,
-      resolvedPricingLayout,
-    },
-    derived: {
-      primaryUpgradeCtaLabel,
-      annualPlanSavingsLabel,
-      upgradeDialogDescription,
-      upgradeDialogExportWorkflowBenefit,
-      upgradeDialogPricingGuidance,
-      paywallContextMeta,
-    },
-    actions: { logFunnelEvent, trackFirstInteraction, setUrlMode },
-  } = useDesignPageWorkspacePaywallRegistration({
+  const paywallRegistration = useDesignPageWorkspacePaywallRegistration({
     state: {
       identity: {
         designId,
@@ -395,6 +377,16 @@ export function DesignPageWorkspace() {
       replaceUrl: (url) => router.replace(url, { scroll: false }),
     },
   });
+  const {
+    derived: {
+      primaryUpgradeCtaLabel,
+      annualPlanSavingsLabel,
+      upgradeDialogDescription,
+      upgradeDialogExportWorkflowBenefit,
+      upgradeDialogPricingGuidance,
+    },
+    actions: { logFunnelEvent, trackFirstInteraction, setUrlMode },
+  } = paywallRegistration;
 
   const {
     actions: { signInWithReturn },
@@ -780,51 +772,34 @@ export function DesignPageWorkspace() {
       manageBillingFromPlans,
       startCheckoutFromPlans,
     },
-  } = useDesignPageDeferredPaywallLifecycle({
+  } = useDesignPageWorkspaceDeferredPaywallRegistration({
+    boundaries: { paywall: paywallRegistration },
     navigation: router,
-    billing: {
-      state: {
+    searchParams,
+    state: {
+      identity: {
         authenticated: Boolean(session?.user),
         designId,
-        stripeSessionId,
-        refreshPlanRequested: searchParams.get("refresh_plan") !== null,
-        currentSearch: searchParams.toString(),
-        pathname,
-        upgradeReason,
-        pricingLayoutVariant,
       },
-      actions: {
+      route: { pathname },
+      billing: { upgradeReason, pricingLayoutVariant },
+      telemetry: { mode },
+      access: { wantsDesigner, canUseDesigner, showUpgrade },
+    },
+    actions: {
+      billing: {
         setPlan,
         setShowUpgrade,
         setUpgradeReason,
         setShowPlans,
         requestSignIn: signInWithReturn,
         showToast: showRuleToast,
-        logFunnelEvent,
       },
-      configuration: { paywallContextMeta },
-    },
-    state: {
-      telemetry: {
-        designId,
-        mode,
-        isAuthenticated: Boolean(session?.user),
+      lifecycle: {
+        setMode,
+        setUpgradeCtaVariant,
+        setPricingLayoutVariant,
       },
-      access: { wantsDesigner, canUseDesigner, showUpgrade },
-      synchronization: {
-        paywallVariant,
-        pricingLayout: resolvedPricingLayout,
-      },
-      qa: {
-        hooksEnabled: qaPaywallHooksEnabled,
-        paywallOpenParam,
-        plansOpenParam,
-      },
-    },
-    actions: {
-      setMode,
-      setUpgradeCtaVariant,
-      setPricingLayoutVariant,
     },
   });
 

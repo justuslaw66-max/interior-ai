@@ -116,8 +116,8 @@ assert.deepEqual(
 );
 assert.match(
   designPage,
-  /useDesignPageDeferredPaywallLifecycle\(\{[\s\S]*?navigation:\s*router,[\s\S]*?state:\s*\{[\s\S]*?authenticated: Boolean\(session\?\.user\)[\s\S]*?actions:\s*\{[\s\S]*?logFunnelEvent/,
-  "The workspace should delegate billing and paywall lifecycle ownership through the extracted hook."
+  /useDesignPageWorkspaceDeferredPaywallRegistration\(\{[\s\S]*?boundaries:\s*\{ paywall: paywallRegistration \},[\s\S]*?navigation:\s*router,[\s\S]*?searchParams,[\s\S]*?authenticated: Boolean\(session\?\.user\)[\s\S]*?billing:\s*\{[\s\S]*?requestSignIn: signInWithReturn,[\s\S]*?lifecycle:\s*\{/,
+  "The workspace should delegate deferred billing wiring through its registration boundary."
 );
 assert.match(
   designPage,
@@ -126,8 +126,13 @@ assert.match(
 );
 assert.match(
   paywallRegistrationFacade,
-  /useDesignPagePaywallTelemetryController\(input\)[\s\S]*?useDesignPageWorkspacePaywallRegistration[\s\S]*?NEXT_PUBLIC_PAYWALL_EXPERIMENT_SLOT[\s\S]*?const replaceDesignUrl = useCallback\([\s\S]*?\[navigation\][\s\S]*?useDesignPagePaywallTelemetryLifecycle\(\{/,
-  "The paywall registration facade should preserve early telemetry and deferred billing ownership."
+  /useDesignPagePaywallTelemetryController\(input\)[\s\S]*?useDesignPageWorkspacePaywallRegistration[\s\S]*?NEXT_PUBLIC_PAYWALL_EXPERIMENT_SLOT[\s\S]*?const replaceDesignUrl = useCallback\([\s\S]*?\[navigation\][\s\S]*?useDesignPagePaywallTelemetryLifecycle\(\{[\s\S]*?useDesignPageWorkspaceDeferredPaywallRegistration[\s\S]*?searchParams\.get\("session_id"\)[\s\S]*?searchParams\.get\("refresh_plan"\)[\s\S]*?paywall\.actions\.logFunnelEvent[\s\S]*?paywall\.derived\.paywallContextMeta[\s\S]*?searchParams\.get\("paywall_open"\)[\s\S]*?searchParams\.get\("plans_open"\)/,
+  "The paywall registration facade should preserve early telemetry, navigation identity, query keys, and deferred billing ownership."
+);
+assert.doesNotMatch(
+  designPage,
+  /searchParams\.get\("(?:session_id|refresh_plan|paywall_open|plans_open)"\)/,
+  "Workspace should no longer own deferred paywall query-key wiring."
 );
 assert.doesNotMatch(
   designPage,

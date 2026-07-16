@@ -39,6 +39,9 @@ const clientLifecycleSource = readSource(
 const selectionInspectionRuntimeSource = readSource(
   "lib/useDesignPageSelectionInspectionRuntime.ts"
 );
+const paywallRegistrationFacadeSource = readSource(
+  "lib/useDesignPagePaywallRegistrationFacade.ts"
+);
 const lateBoundRefSource = readSource(
   "lib/useDesignPageLateBoundRef.ts"
 );
@@ -69,6 +72,25 @@ assertSourceOrder(
     "useDesignPageSnapshotDocumentState()",
   ],
   "Workspace should preserve the flattened early-runtime hook order"
+);
+assertSourceOrder(
+  workspaceSource,
+  [
+    "useDesignPageLocalBackupHydration({",
+    "useDesignPageWorkspaceDeferredPaywallRegistration({",
+    "if (!planSettingsLoaded)",
+  ],
+  "Workspace should preserve deferred paywall registration order"
+);
+assert.match(
+  paywallRegistrationFacadeSource,
+  /useDesignPageWorkspaceDeferredPaywallRegistration\(\{[\s\S]*?useDesignPageDeferredPaywallLifecycle\(\{[\s\S]*?navigation,[\s\S]*?searchParams\.get\("session_id"\)[\s\S]*?searchParams\.get\("refresh_plan"\)[\s\S]*?searchParams\.get\("paywall_open"\)[\s\S]*?searchParams\.get\("plans_open"\)/,
+  "Deferred paywall registration should own navigation and query-key adaptation."
+);
+assert.doesNotMatch(
+  workspaceSource,
+  /useDesignPageDeferredPaywallLifecycle\(\{/,
+  "Workspace should not bypass deferred paywall registration."
 );
 assertSourceOrder(
   planRuntimeSource,
