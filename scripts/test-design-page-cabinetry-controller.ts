@@ -20,6 +20,10 @@ const commandBarWrapperSource = readFileSync(
   join(root, "components/editor/design-page/DesignPageEditorCommandBar.tsx"),
   "utf8"
 );
+const editorChromeControllerSource = readFileSync(
+  join(root, "lib/useDesignPageEditorChromeController.ts"),
+  "utf8"
+);
 
 const room = createRoom("room-controller", "Controller room", "living", {
   width: 4,
@@ -108,8 +112,13 @@ assert.match(
 );
 assert.match(
   workspaceSource,
-  /<DesignPageEditorCommandBar[\s\S]*?millworkActive:\s*cabinetryStudioState !== null[\s\S]*?onMillwork:\s*canUseCabinetryStudio[\s\S]*?\? openCabinetryStudio[\s\S]*?: undefined/,
-  "The workspace should provide millwork availability and opening through the command-wrapper boundary."
+  /useDesignPageEditorChromeController\(\{[\s\S]*?millworkActive:\s*cabinetryStudioState !== null[\s\S]*?canUseCabinetryStudio[\s\S]*?openStudio: openCabinetryStudio/,
+  "The workspace should inject millwork state, capability, and opening at the editor-chrome boundary."
+);
+assert.match(
+  editorChromeControllerSource,
+  /onMillwork: configuration\.canUseCabinetryStudio[\s\S]*?\? actions\.cabinetry\.openStudio[\s\S]*?: undefined/,
+  "The editor-chrome controller should preserve the command wrapper's millwork availability policy."
 );
 assert.doesNotMatch(
   workspaceSource,

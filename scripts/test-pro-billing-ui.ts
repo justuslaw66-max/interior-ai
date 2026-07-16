@@ -52,13 +52,19 @@ assert.match(plansDialog, /Start monthly — \{state\.monthlyLabel\}/);
 assert.match(plansDialog, /Start yearly — \{state\.yearlyLabel\}/);
 
 const designPage = read("components/editor/design-page/DesignPageWorkspace.tsx");
+const editorChromeController = read("lib/useDesignPageEditorChromeController.ts");
 const designPageExport = read("lib/useDesignPageExport.ts");
 assert.match(designPage, /monthlyLabel: PRO_PLAN_PRICING\.monthly\.label/);
 assert.match(designPage, /yearlyLabel: PRO_PLAN_PRICING\.yearly\.label/);
 assert.match(
   designPage,
-  /<DesignPageEditorCommandBar[\s\S]*?onViewPlans:\s*\(\)\s*=>\s*setShowPlans\(true\)[\s\S]*?onManageBilling:\s*\(\)\s*=>\s*\{[\s\S]*?openBillingPortal\(\)/,
-  "The workspace should provide plan and billing actions through the typed command-wrapper boundary."
+  /useDesignPageEditorChromeController\(\{[\s\S]*?dialogs:\s*\{[\s\S]*?setPlansOpen: setShowPlans,[\s\S]*?billing:\s*\{ openPortal: openBillingPortal \}/,
+  "The workspace should inject plan and billing collaborators into the chrome controller."
+);
+assert.match(
+  editorChromeController,
+  /const openPlans = \(\) => \{[\s\S]*?actions\.dialogs\.setPlansOpen\(true\)[\s\S]*?const manageBilling = \(\) => \{[\s\S]*?actions\.billing\.openPortal\(\)[\s\S]*?onViewPlans: openPlans,[\s\S]*?onManageBilling: manageBilling/,
+  "The chrome controller should provide plan and billing actions through the typed command-wrapper boundary."
 );
 assert.doesNotMatch(
   designPage,

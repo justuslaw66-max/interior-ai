@@ -18,6 +18,14 @@ const designPagePath = path.join(
   "DesignPageWorkspace.tsx"
 );
 const designPageSource = fs.readFileSync(designPagePath, "utf8");
+const canvasInteractionControllerSource = fs.readFileSync(
+  path.join(
+    process.cwd(),
+    "lib",
+    "useDesignPageCanvasInteractionController.ts"
+  ),
+  "utf8"
+);
 const placementTargetControllerSource = fs.readFileSync(
   path.join(
     process.cwd(),
@@ -323,9 +331,9 @@ assert.match(
 );
 
 assert.match(
-  designPageSource,
+  canvasInteractionControllerSource,
   /const \[planRoomDragging, setPlanRoomDragging\] = useState\(false\);/,
-  "The design page should track active 2D room dragging."
+  "The canvas interaction controller should track active 2D room dragging."
 );
 
 assert.match(
@@ -347,9 +355,19 @@ assert.match(
 );
 
 assert.match(
+  canvasInteractionControllerSource,
+  /const controlsEnabled =\s*!canvasObjectDragging &&\s*!planRoomDragging &&\s*!planRoomResizing &&\s*!planOverlayDragging/,
+  "The canvas interaction controller should disable scene controls while a 2D room drag is active."
+);
+assert.match(
   designPageSource,
-  /controlsEnabled:\s*!sofaDragging\s*&&\s*!planRoomDragging\s*&&\s*!planRoomResizing\s*&&\s*!planOverlayDragging/,
-  "The design page should disable scene controls while a 2D room drag is active."
+  /controlsEnabled: canvasControlsEnabled,[\s\S]*?changePlanRoomDragging: handlePlanRoomDragStateChange,[\s\S]*?changePlanRoomResizing: handlePlanRoomResizeStateChange,[\s\S]*?\}\s*= useDesignPageCanvasInteractionController\(\{/,
+  "The design page should consume the controller-owned room drag locks."
+);
+assert.match(
+  designPageSource,
+  /buildDesignPageSceneRegionAdapter\(\{[\s\S]*?controlsEnabled: canvasControlsEnabled/,
+  "The design page should pass the controller-owned interaction lock into the scene adapter."
 );
 
 assert.match(

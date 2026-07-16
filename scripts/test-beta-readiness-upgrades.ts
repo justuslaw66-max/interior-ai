@@ -35,6 +35,10 @@ const designPageEditorCommandBarSource = readFileSync(
   join(root, "components/editor/design-page/DesignPageEditorCommandBar.tsx"),
   "utf8"
 );
+const editorChromeControllerSource = readFileSync(
+  join(root, "lib/useDesignPageEditorChromeController.ts"),
+  "utf8"
+);
 const designPageOnboardingSource = readFileSync(
   join(root, "lib/useDesignPageOnboarding.ts"),
   "utf8"
@@ -400,8 +404,13 @@ assert.match(
 );
 assert.match(
   designPageSource,
-  /room:\s*\{[\s\S]*onReviewHealth:\s*reviewActiveRoomHealth,[\s\S]*onFitPlan:\s*handleFitPlanView,/,
-  "the workspace should pass the active room review action through the command-bar boundary."
+  /navigation:\s*\{[\s\S]*fitPlan:\s*handleFitPlanView[\s\S]*room:\s*\{[\s\S]*reviewHealth:\s*reviewActiveRoomHealth/,
+  "the workspace should inject the active room review and fit actions at the editor-chrome boundary."
+);
+assert.match(
+  editorChromeControllerSource,
+  /room:\s*\{[\s\S]*onReviewHealth: actions\.room\.reviewHealth,[\s\S]*onFitPlan: actions\.navigation\.fitPlan/,
+  "the editor-chrome controller should pass active room review and fit actions through the command-bar boundary."
 );
 assert.match(
   designPagePlanPresentationSource,

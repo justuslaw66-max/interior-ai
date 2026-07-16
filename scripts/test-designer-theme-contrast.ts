@@ -304,6 +304,24 @@ const designPageCommandBarSource = fs.readFileSync(
   ),
   "utf8"
 );
+const designPageEditorChromeSource = fs.readFileSync(
+  path.join(
+    root,
+    "components",
+    "editor",
+    "design-page",
+    "DesignPageEditorChrome.tsx"
+  ),
+  "utf8"
+);
+const editorChromeControllerSource = fs.readFileSync(
+  path.join(root, "lib", "useDesignPageEditorChromeController.ts"),
+  "utf8"
+);
+const viewportAdapterSource = fs.readFileSync(
+  path.join(root, "lib", "design-page-viewport-region-adapter.ts"),
+  "utf8"
+);
 const viewportOverlaySource = fs.readFileSync(
   path.join(
     root,
@@ -368,8 +386,18 @@ assert.match(
 );
 assert.match(
   designPageSource,
-  /<DesignPageEditorCommandBar[\s\S]*?configuration=\{\{[\s\S]*?dark:\s*showDesignerTheme/,
-  "The workspace should pass its resolved designer theme through the command-wrapper boundary."
+  /useDesignPageEditorChromeController\(\{[\s\S]*?configuration:\s*\{[\s\S]*?commandBar:\s*\{[\s\S]*?dark:\s*showDesignerTheme/,
+  "The workspace should inject its resolved designer theme into the chrome controller."
+);
+assert.match(
+  editorChromeControllerSource,
+  /commandBar: configuration\.commandBar/,
+  "The chrome controller should preserve the resolved command-bar theme."
+);
+assert.match(
+  designPageEditorChromeSource,
+  /<DesignPageEditorCommandBar[\s\S]*?configuration=\{configuration\.commandBar\}/,
+  "The editor chrome should pass its resolved designer theme through the command-wrapper boundary."
 );
 assert.doesNotMatch(
   designPageSource,
@@ -413,8 +441,13 @@ assert.doesNotMatch(
 );
 assert.match(
   designPageSource,
-  /<DesignPageViewportOverlayLayer[\s\S]*?sceneLoadingVisible: showSceneLoadingVeil,[\s\S]*?sceneLoading: \{[\s\S]*?dark: showDesignerTheme,[\s\S]*?backgroundColor: sceneBackgroundColor,/,
-  "The design workspace should pass the resolved scene-loading theme and background through the viewport-overlay boundary."
+  /buildDesignPageViewportRegionAdapter\(\{[\s\S]*?sceneLoading:\s*showSceneLoadingVeil,[\s\S]*?configuration:\s*\{[\s\S]*?dark:\s*showDesignerTheme,[\s\S]*?sceneBackgroundColor,/,
+  "The design workspace should inject the resolved scene-loading theme and background into the viewport adapter."
+);
+assert.match(
+  viewportAdapterSource,
+  /sceneLoading:\s*\{[\s\S]*?dark: configuration\.dark,[\s\S]*?backgroundColor: configuration\.sceneBackgroundColor,/,
+  "The viewport adapter should pass the resolved scene-loading theme and background through the overlay boundary."
 );
 assert.match(
   selectedSurfaceInspectorSource,

@@ -29,21 +29,15 @@ import DesignControlsPanel from "@/components/editor/DesignControlsPanel";
 import type { PlanStartMode } from "@/components/editor/DesignControlsPlanPanel";
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
 import type { Plan2DCameraDiagnostics } from "@/components/editor/camera/Plan2DCameraInvariantGuard";
-import EditorToolRail from "@/components/editor/EditorToolRail";
 import ShoppingOverviewPanel from "@/components/editor/ShoppingOverviewPanel";
 import { CatalogPlacementConfirmPanel } from "@/components/editor/design-page/CatalogPlacementConfirmPanel";
 import { AiNotesDialog } from "@/components/editor/design-page/AiNotesDialog";
-import { BetaStartPanel } from "@/components/editor/design-page/BetaStartPanel";
 import { DesignPageToasts } from "@/components/editor/design-page/DesignPageToasts";
 import { DesignPageComposition } from "@/components/editor/design-page/DesignPageComposition";
-import { DesignPageEditorCommandBar } from "@/components/editor/design-page/DesignPageEditorCommandBar";
+import { DesignPageEditorChrome } from "@/components/editor/design-page/DesignPageEditorChrome";
+import { DesignPageSceneRegion } from "@/components/editor/design-page/DesignPageSceneRegion";
 import { DesignValidationFeedback } from "@/components/editor/design-page/DesignValidationFeedback";
 import { CabinetryStudioOverlay } from "@/components/editor/design-page/CabinetryStudioOverlay";
-import { DesignSceneCanvas } from "@/components/editor/design-page/DesignSceneCanvas";
-import { DesignSceneGuidanceLayer } from "@/components/editor/design-page/DesignSceneGuidanceLayer";
-import { DesignScenePreviewLayer } from "@/components/editor/design-page/DesignScenePreviewLayer";
-import { DesignSceneStructureLayer } from "@/components/editor/design-page/DesignSceneStructureLayer";
-import { DesignPageViewportOverlayLayer } from "@/components/editor/design-page/DesignPageViewportOverlayLayer";
 import {
   DesignPageProjectQaMarkers,
   DesignPageRuntimeQaMarkers,
@@ -57,9 +51,6 @@ import { PlanAnnotationDialog } from "@/components/editor/design-page/PlanAnnota
 import { MyDesignsDialog } from "@/components/editor/design-page/MyDesignsDialog";
 import { PresentExportDialog } from "@/components/editor/design-page/PresentExportDialog";
 import { RoomRenameDialog } from "@/components/editor/design-page/RoomRenameDialog";
-import {
-  SceneItemsLayer,
-} from "@/components/editor/design-page/SceneItemsLayer";
 import { ShareLinkFallbackDialog } from "@/components/editor/design-page/ShareLinkFallbackDialog";
 import {
   SelectedCabinetPanel,
@@ -102,11 +93,9 @@ import {
   type FloorActionAdapters,
   useFloorManager,
 } from "@/lib/useFloorManager";
-import { resolveDesignPageViewportSelectionControlsState } from "@/lib/design-page-viewport-selection-controls";
-import {
-  getPlanOverlayMoveHistoryLabel,
-  type PlanOverlayDragKind,
-} from "@/lib/design-page-floor-plan-utils";
+import { buildDesignPageSceneRegionAdapter } from "@/lib/design-page-scene-region-adapter";
+import { buildDesignPageViewportRegionAdapter } from "@/lib/design-page-viewport-region-adapter";
+import { composeDesignPageSceneRegionModel } from "@/lib/design-page-viewport-region-model";
 import {
   type Style,
   type CameraView,
@@ -159,14 +148,16 @@ import {
   useDesignPageHistoryShortcuts,
 } from "@/lib/useDesignPageDocumentHistoryController";
 import { useDesignPagePersistenceNewPlanFacade } from "@/lib/useDesignPagePersistenceNewPlanFacade";
+import { useDesignPageBetaStartController } from "@/lib/useDesignPageBetaStartController";
+import { useDesignPageCanvasInteractionController } from "@/lib/useDesignPageCanvasInteractionController";
+import { useDesignPageEditorChromeController } from "@/lib/useDesignPageEditorChromeController";
+import { useDesignPagePlanCanvasActionsController } from "@/lib/useDesignPagePlanCanvasActionsController";
 import {
   isParametricCabinetItem,
 } from "@/features/cabinetry/designItemAdapters";
-import { formatCabinetMeasurement } from "@/features/cabinetry/measurementUnits";
 import { useDesignPageCabinetry } from "@/features/cabinetry/useDesignPageCabinetry";
 
 const STORAGE_KEY = "interior-ai:v1:livingroom-design";
-const BETA_START_DISMISSED_KEY = "interior-ai:beta-start-dismissed";
 const DEFAULT_EDITOR_CAMERA_VIEW: CameraView = {
   pos: [6.2, 3.6, 7.2],
   target: [0, 1.0, 0],
@@ -203,13 +194,6 @@ export function DesignPageWorkspace() {
   const paywallOpenParam = searchParams.get("paywall_open");
   const plansOpenParam = searchParams.get("plans_open");
   const debugLayoutParam = searchParams.get("debug_layout");
-  const [sofaDragging, setSofaDragging] = useState(false);
-  const [planRoomDragging, setPlanRoomDragging] = useState(false);
-  const [planRoomResizing, setPlanRoomResizing] = useState(false);
-  const [planOverlayDragging, setPlanOverlayDragging] = useState(false);
-  const planRoomDragHistoryActiveRef = useRef(false);
-  const planRoomResizeHistoryActiveRef = useRef(false);
-  const planOverlayDragHistoryActiveRef = useRef(false);
   const [designId, setDesignId] = useState<string | null>(null);
   const [shareToken, setShareToken] = useState<string | null>(null);
   const [shareEnabled, setShareEnabled] = useState(false);
@@ -229,7 +213,6 @@ export function DesignPageWorkspace() {
   const [pricingLayoutVariant, setPricingLayoutVariant] = useState<PricingLayoutVariant>("default");
   const [showGrid, setShowGrid] = useState(false);
   const [snapEnabled, setSnapEnabled] = useState(true);
-  const [gridPulse, setGridPulse] = useState(false);
   const [clientPreview, setClientPreview] = useState(false);
   const [itemCartOpen, setItemCartOpen] = useState(false);
   const [itemCart, setItemCart] = useState<Array<{ id: string; productId: string; title: string; qty: number; thumbUrl?: string }>>([]);
@@ -254,7 +237,6 @@ export function DesignPageWorkspace() {
   const [placementAddMode, setPlacementAddMode] = useState<PlacementAddMode>("preview");
   const [placementPreferencesLoaded, setPlacementPreferencesLoaded] = useState(false);
   const [, bumpHistoryRevision] = useDesignPageHistoryRevision();
-  const [showBetaStart, setShowBetaStart] = useState(false);
   const [lightingPreset, setLightingPreset] = useState<LightingPreset>("studio");
   const [viewMode, setViewMode] = useState<EditorViewMode>("3d");
   const [designPanelOpen, setDesignPanelOpen] = useState(true);
@@ -512,14 +494,12 @@ export function DesignPageWorkspace() {
       setSimplePlanControls(true);
     }
   }, [canUseDesigner, setSimplePlanControls, simplePlanControls]);
-  const gridPulseTimerRef = useRef<number | null>(null);
   const firstInteractionRef = useRef(false);
   const upgradeShownRef = useRef(false);
   const designerAttemptRef = useRef(false);
   const editorOpenedRef = useRef(false);
   const landingTrackedRef = useRef(false);
   const designStartedTrackedRef = useRef(false);
-  const dragCommitRef = useRef(false);
   const seatingZoneAutoDisabledRef = useRef(false);
   const itemsRef = useRef<DesignItem[]>([]);
   const resetSelectionStateRef = useRef<() => void>(() => undefined);
@@ -993,25 +973,25 @@ export function DesignPageWorkspace() {
     },
   });
   const zonesRef = useRef(zones);
-
-  useEffect(() => {
-    if (isClientPreview) return;
-    try {
-      const dismissed = window.localStorage.getItem(BETA_START_DISMISSED_KEY) === "1";
-      setShowBetaStart(!dismissed && housePlan2D.rooms.length === 0 && items.length === 0);
-    } catch {
-      setShowBetaStart(housePlan2D.rooms.length === 0 && items.length === 0);
-    }
-  }, [housePlan2D.rooms.length, isClientPreview, items.length]);
-
-  const dismissBetaStart = useCallback(() => {
-    setShowBetaStart(false);
-    try {
-      window.localStorage.setItem(BETA_START_DISMISSED_KEY, "1");
-    } catch {
-      // Ignore preference storage failures.
-    }
-  }, []);
+  const {
+    state: { visible: showBetaStart },
+    actions: betaStartActions,
+  } = useDesignPageBetaStartController({
+    state: {
+      isClientPreview,
+      planRoomCount: housePlan2D.rooms.length,
+      itemCount: items.length,
+    },
+    actions: {
+      setGuidedPlanStartMode,
+      goPlan,
+      goAiDesign,
+      setViewMode,
+      setDesignPanelOpen,
+      activateFloorPlanRoomTrace,
+      showToast: showRuleToast,
+    },
+  });
 
   useEffect(() => {
     zonesRef.current = zones;
@@ -1159,63 +1139,6 @@ export function DesignPageWorkspace() {
   const orbitControlsRef = useRef<OrbitControlsImpl | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
-  const handlePlanRoomDragStateChange = useCallback(
-    (isDragging: boolean) => {
-      if (isDragging && !planRoomDragHistoryActiveRef.current) {
-        history.begin("Move room");
-        planRoomDragHistoryActiveRef.current = true;
-      } else if (!isDragging && planRoomDragHistoryActiveRef.current) {
-        history.commit();
-        planRoomDragHistoryActiveRef.current = false;
-      }
-      setPlanRoomDragging(isDragging);
-      if (orbitControlsRef.current) {
-        orbitControlsRef.current.enabled =
-          !isDragging && !sofaDragging && !planRoomResizing && !planOverlayDragging;
-      }
-    },
-    [history, planOverlayDragging, planRoomResizing, sofaDragging]
-  );
-  const handlePlanOverlayDragStateChange = useCallback(
-    (isDragging: boolean, kind?: PlanOverlayDragKind) => {
-      if (isDragging && !planOverlayDragHistoryActiveRef.current) {
-        history.begin(getPlanOverlayMoveHistoryLabel(kind));
-        planOverlayDragHistoryActiveRef.current = true;
-      } else if (!isDragging && planOverlayDragHistoryActiveRef.current) {
-        history.commit();
-        planOverlayDragHistoryActiveRef.current = false;
-      }
-      setPlanOverlayDragging(isDragging);
-      if (orbitControlsRef.current) {
-        orbitControlsRef.current.enabled =
-          !isDragging && !sofaDragging && !planRoomDragging && !planRoomResizing;
-      }
-    },
-    [history, planRoomDragging, planRoomResizing, sofaDragging]
-  );
-  const handlePlanOpeningDragStateChange3D = useCallback(
-    (isDragging: boolean) => {
-      handlePlanOverlayDragStateChange(isDragging, "opening");
-    },
-    [handlePlanOverlayDragStateChange]
-  );
-  const handlePlanRoomResizeStateChange = useCallback(
-    (isResizing: boolean) => {
-      if (isResizing && !planRoomResizeHistoryActiveRef.current) {
-        history.begin("Resize room");
-        planRoomResizeHistoryActiveRef.current = true;
-      } else if (!isResizing && planRoomResizeHistoryActiveRef.current) {
-        history.commit();
-        planRoomResizeHistoryActiveRef.current = false;
-      }
-      setPlanRoomResizing(isResizing);
-      if (orbitControlsRef.current) {
-        orbitControlsRef.current.enabled =
-          !isResizing && !sofaDragging && !planRoomDragging && !planOverlayDragging;
-      }
-    },
-    [history, planOverlayDragging, planRoomDragging, sofaDragging]
-  );
   const resolveGroundPointFromClient = useCallback((clientX: number, clientY: number) => {
     const canvas = rendererRef.current?.domElement ?? canvasRef.current;
     const camera = cameraRef.current;
@@ -1536,14 +1459,6 @@ export function DesignPageWorkspace() {
     if (plansOpenParam !== "1") return;
     setShowPlans(true);
   }, [plansOpenParam, qaPaywallHooksEnabled]);
-
-  useEffect(() => {
-    return () => {
-      if (gridPulseTimerRef.current) {
-        window.clearTimeout(gridPulseTimerRef.current);
-      }
-    };
-  }, []);
 
   useEffect(() => {
     if (!planSettingsLoaded) return;
@@ -2283,6 +2198,30 @@ export function DesignPageWorkspace() {
     getEyeLevelView,
     getFocusView,
   } = cameraNavigation.actions;
+  const {
+    state: {
+      controlsEnabled: canvasControlsEnabled,
+      gridPulse,
+    },
+    refs: { itemDragCommit: dragCommitRef },
+    actions: {
+      changeCatalogObjectDragging: setSofaDragging,
+      changeSceneItemDragging: handleDraggingChange,
+      changePlanRoomDragging: handlePlanRoomDragStateChange,
+      changePlanRoomResizing: handlePlanRoomResizeStateChange,
+      changePlanOverlayDragging: handlePlanOverlayDragStateChange,
+      changePlanOpeningDragging: handlePlanOpeningDragStateChange3D,
+      pulseSnapGrid: triggerGridPulse,
+      handleOrbitChange: handleOrbitControlsChange,
+    },
+  } = useDesignPageCanvasInteractionController({
+    state: { showGrid, snapEnabled, isDesigner },
+    refs: {
+      orbitControls: orbitControlsRef,
+      cameraAnimating: isCameraAnimatingRef,
+    },
+    actions: { history, updateCameraViewFromScene },
+  });
 
   const {
     state: { consumerPlanCompletionSignal },
@@ -3253,30 +3192,6 @@ export function DesignPageWorkspace() {
     },
   });
 
-  const handleDraggingChange = (isDragging: boolean) => {
-    setSofaDragging(isDragging);
-    if (isDragging) {
-      dragCommitRef.current = false;
-      return;
-    }
-    // On drag end, commit the transaction if one was started
-    if (dragCommitRef.current) {
-      history.commit();
-      dragCommitRef.current = false;
-    }
-  };
-
-  const triggerGridPulse = () => {
-    if (!showGrid || !snapEnabled || !isDesigner) return;
-    setGridPulse(true);
-    if (gridPulseTimerRef.current) {
-      window.clearTimeout(gridPulseTimerRef.current);
-    }
-    gridPulseTimerRef.current = window.setTimeout(() => {
-      setGridPulse(false);
-    }, 240);
-  };
-
   const activePlacementTargetValid = pendingCatalogPlacement
     ? !pendingCatalogPlacementHardInvalid
     : crossRoomDragTarget?.valid ?? true;
@@ -3401,12 +3316,444 @@ export function DesignPageWorkspace() {
       showConfidence: showConfidenceSummary,
     },
   });
-  const handleOrbitControlsChange = () => {
-    if (!isCameraAnimatingRef.current) {
-      updateCameraViewFromScene();
-    }
-  };
-
+  const { actions: planCanvasActions } =
+    useDesignPagePlanCanvasActionsController({
+      actions: {
+        setGuidedActionsChoiceSeen: setPlanGuidedActionsChoiceSeen,
+        chooseGuidedActionsMode: choosePlanGuidedActionsMode,
+        selectFloorPlanTool: handleSelectFloorPlanTool,
+        setGuidedPlanStartMode,
+        changeCalibrationMode: handleFloorPlanCalibrationModeChange,
+        changeDrawRoomMode: handleFloorPlanDrawRoomModeChange,
+        addFloorPlanOpening: handleAddFloorPlanOpeningFromTool,
+        fitPlanView: handleFitPlanView,
+        setGuidedActionsEnabled: setPlanGuidedActionsEnabled,
+        undoFloorPlanTraceRoomPoint: handleUndoFloorPlanTraceRoomPoint,
+        clearPlanFocusPoints,
+        setDesignPanelOpen,
+        setPlanFocusPanelRevealed,
+        goPlan,
+        goFurnish,
+        dismissPlanCanvasGuidance: setDismissedPlanCanvasGuidanceKey,
+      },
+    });
+  const sceneCanvasRegionModel = buildDesignPageSceneRegionAdapter({
+    state: {
+      editor: { viewMode, editorMode, isClientPreview, isDesigner, canEdit },
+      scene: {
+        liteEnabled: liteSceneEnabled,
+        loadingVisible: showSceneLoadingVeil,
+        performanceMode: scenePerformanceMode,
+        renderQuality: sceneRenderQuality,
+        controlsEnabled: canvasControlsEnabled,
+        cameraY: cameraView.pos[1],
+        planDiagnostics: {
+          valid: planDebugMetrics.cameraValid,
+          recoveries: planDebugMetrics.cameraRecoveries,
+          targetX: planDebugMetrics.cameraTargetX,
+          targetZ: planDebugMetrics.cameraTargetZ,
+          projectedRoomMinWidthPx: planDebugMetrics.projectedRoomMinWidthPx,
+          projectedRoomMinHeightPx: planDebugMetrics.projectedRoomMinHeightPx,
+          projectedRoomMinAreaPx: planDebugMetrics.projectedRoomMinAreaPx,
+        },
+        cursor: planCanvasCursor,
+        backgroundColor: sceneBackgroundColor,
+        lightConfig,
+        showGrid,
+        gridPulse,
+      },
+      plan: {
+        fit: plan2DWholeHomeViewFit,
+        orientation: plan2DWholeHomeViewFit.orientation,
+        fitBounds: {
+          widthMeters: plan2DFitBounds.widthMeters, depthMeters: plan2DFitBounds.depthMeters,
+          centerX: plan2DFitBounds.centerX, centerZ: plan2DFitBounds.centerZ,
+        },
+        safeArea: { leftPx: plan2DSafeAreaLeftPx, rightPx: plan2DSafeAreaRightPx, bottomPx: plan2DSafeAreaBottomPx },
+        rooms: housePlan2D.rooms,
+        underlay: floorPlanUnderlay,
+        calibration: { enabled: floorPlanCalibrationMode, points: floorPlanCalibrationPoints },
+        roomTrace: {
+          enabled: floorPlanTraceRoomMode,
+          interactionMode: floorPlanDrawRoomMode,
+          points: floorPlanTraceRoomPoints,
+          previewPoint: blankGridRoomPreviewPoint,
+          drawOnBlankGrid: blankGridRoomDrawActive,
+        },
+        openingTrace: { enabled: floorPlanTraceOpeningMode, points: floorPlanTraceOpeningPoints, kind: floorPlanTraceOpeningKind },
+        width: planViewWidth,
+        depth: planViewDepth,
+        selectedRoomId: selectedPlanRoomId,
+        selectedOverlayId: selectedPlanOverlayId,
+        suppressedDoorwaySuggestionKeys,
+        editorScene: editorScene2D,
+        zones: planZones2D,
+        qualityIssues: floorPlanQualityReport.issues,
+        measurementUnit: planMeasurementUnit,
+        theme: effectivePlanTheme,
+        layers: effectivePlanLayers,
+      },
+      room: {
+        activeId: designSnapshot.activeRoomId,
+        guidanceActiveId: activeRoom?.id ?? null,
+        activePlanOffset: activeRoomPlanOffset,
+        activeFloorLevel, stackedFloors: stackedFloorView,
+        wholeHomeEnabled: usesHousePlanScene,
+        wholeHomeRooms: sceneHousePlanRooms3D,
+        selectedSurfaceTarget: selectedRendererSurfaceTarget,
+        width: roomWidth, depth: roomDepth, height: roomHeight, wallThickness,
+        slabThickness: activeRoom?.geometry.slabThickness,
+        wallOpacity: activeRoomWallOpacity,
+        floorOpacity: activeRoomFloorOpacity,
+        ceilingOpacity: activeRoomCeilingOpacity,
+        ceilingVisible: activeRoomCeilingVisible, ceilingColor: activeRoomCeilingColor,
+        walls,
+      },
+      placement: {
+        targetRoom: placementTargetPlanRoom,
+        showTargetRoom: Boolean(
+          pendingCatalogPlacement || crossRoomDragTarget
+        ),
+        targetValid: activePlacementTargetValid,
+        supportSurface: activeCatalogPlacementSurfaceHighlight,
+        compatibleZoneIds: activePlacementCompatibleZoneIds,
+        pending: pendingCatalogPlacement !== null,
+        hover: hoverCatalogPlacement !== null,
+        pendingScene: pendingCatalogPlacementScene,
+        hoverScene: hoverCatalogPlacementScene,
+        hardInvalid: pendingCatalogPlacementHardInvalid,
+        pendingRoomSize: pendingCatalogPlacementRoom
+          ? {
+              width: pendingCatalogPlacementRoom.geometry.width,
+              depth: pendingCatalogPlacementRoom.geometry.depth,
+            }
+          : null,
+      },
+      zones: {
+        entries: zones,
+        selectedId: selectedZoneId,
+        circulationHeatmap: circulationHeatmap
+          ? {
+              cells: circulationHeatmap.analysis.heatmap,
+              roomOffset: circulationHeatmap.roomOffset,
+            }
+          : null,
+      },
+      items: {
+        entries: sceneRoomItems, selectedIds, selectedInstanceId,
+        previewVariantId, previewMaterialPresetId, hoveredCartInstanceId,
+        activeSceneItemsForGuides, itemPlanningBoundsByInstanceId,
+      },
+      aiLayout: { footprints: aiLayoutPreviewFootprints, tone: aiLayoutPreviewTone },
+    },
+    configuration: {
+      initialCameraView: DEFAULT_EDITOR_CAMERA_VIEW,
+      orbit: {
+        minDistance: EDITOR_3D_MIN_CAMERA_DISTANCE,
+        maxDistance: Math.max(
+          24,
+          Math.max(planViewWidth, planViewDepth) * 6
+        ),
+        minPolarAngle: EDITOR_3D_MIN_POLAR_ANGLE,
+        maxPolarAngle: EDITOR_3D_MAX_POLAR_ANGLE,
+      },
+      snapEnabled, rotationSnapStepRadians,
+      rotationSnapStepDegrees, rotationSnapEnabled,
+    },
+    references: {
+      canvas: { canvas: canvasRef, camera: cameraRef, controls: orbitControlsRef, renderer: rendererRef, scene: sceneRef },
+    },
+    resolvers: {
+      guidance: { getZoneBounds },
+      items: {
+        resolveItemConfigurationEntry, resolveConfiguredVisualDimsMm,
+        resolveConfiguredPlanningDimsMm, resolveConfiguredModelUrl,
+        resolveConfiguredNodeTransforms,
+        getRoomItems: (roomId) =>
+          roomSnapshotById.get(roomId)?.items ?? [],
+      },
+    },
+    actions: {
+      shell: { onDragOver: handleCatalogCanvasDragOver, onDrop: handleCatalogCanvasDrop, onDragLeave: handleCatalogCanvasDragLeave },
+      canvas: {
+        onClearSelection: clearAllSelection,
+        onPlanDiagnosticsChange: handlePlan2DCameraDiagnosticsChange,
+        updateProjection, onSceneProgressReadyChange: setSceneProgressReady,
+        onFpsSample: handleScenePerformanceSample, onSustainedLowFps: handleSustainedLowFps,
+        onOrbitChange: handleOrbitControlsChange,
+      },
+      structure: {
+        underlay: {
+          addCalibrationPoint: handleFloorPlanCalibrationPoint, addRoomTracePoint: handleFloorPlanTraceRoomPoint,
+          addOpeningTracePoint: handleFloorPlanTraceOpeningPoint,
+        },
+        rooms: {
+          select: handlePlacementAwareRoomSelect,
+          selectSurfaceTarget: handleRendererSurfaceTargetSelect,
+          clearSelection: clearAllSelection, rename: handleRenameSelectedPlanRoom,
+          duplicate: handleDuplicateSelectedPlanRoom, delete: handleDeleteSelectedPlanRoom,
+          editFloor: handleOpenFloorEditorForRoom, fit: handleFitSelectedPlanRoom,
+          move: handleMoveRoom2D, resize: handleResizeRoom2D,
+          setDragging: handlePlanRoomDragStateChange,
+          setResizing: handlePlanRoomResizeStateChange,
+        },
+        overlays: {
+          select: handleSelectPlanOverlay, delete: deletePlanOverlayById,
+          moveOpening: handleMoveOpening2D, resizeOpening: handleResizeOpening2D,
+          addDoorwaySuggestion: handleAddSuggestedDoorway,
+          moveFixedElement: handleMoveFixedElement2D, moveAnnotation: handleMoveAnnotation2D,
+          setDragging: handlePlanOverlayDragStateChange,
+        },
+        drawing: {
+          addRoomPoint: handleBlankGridRoomDrawPoint, previewRoomPoint: handleBlankGridRoomDrawPreviewPoint,
+          commitRoomDimension: handleCommitRoomDimensionEdit2D,
+          commitWallSegmentLength: handleCommitWallDrawSegmentLength2D,
+          drawRoom: handleBlankGridRoomDrawDrag, addOpeningPoint: handleBlankGridTraceOpeningPoint,
+        },
+        wholeHome: { setOpeningDragging: handlePlanOpeningDragStateChange3D },
+        reportPlanMetrics: handlePlanDebugMetricsChange,
+      },
+      guidance: {
+        showToast: showRuleToast, targetPendingPlacementToRoom: targetPendingCatalogPlacementToRoom,
+        selectZone: setSelectedZoneId,
+        clearSelection,
+      },
+      items: {
+        onDraggingChange: handleDraggingChange, onRenderReadyChange: handleSceneRenderItemReadyChange,
+        selectItem: handleSelect, trackFirstInteraction,
+        onDuplicateSelectedItem: duplicateSelectedItem, onDeleteSelectedItem: deleteSelectedItem,
+        onMove: handleSceneItemMove,
+        onDragPointerMove: hasWholeHousePlan
+          ? nudgeWholeHomeCameraForDrag
+          : undefined,
+        applyItemRotation, onSnapPulse: triggerGridPulse, onDragEnd: handleSceneItemDragEnd,
+      },
+      preview: {
+        onPlacementPointerDown: handleCatalogPlacementPointerDown, onPlacementPointerMove: handleCatalogPlacementPointerMove,
+        onPlacementPointerUp: handleCatalogPlacementPointerUp,
+      },
+    },
+  });
+  const viewportRegionModel = buildDesignPageViewportRegionAdapter({
+    state: {
+      visibility: {
+        rail: floatingPlanOverlayStackVisible, sceneLoading: showSceneLoadingVeil,
+        selectionInspector: floatingSelectionInspectorVisible, planQuality: plan2DQualityReviewPanelVisible,
+        floorProperties: floatingFloorPropertiesPanelVisible,
+        isClientPreview,
+      },
+      opening: {
+        selectedId: selectedPlanOverlayId,
+        value: visiblePlanOpening
+          ? {
+              kind: visiblePlanOpening.kind, wall: visiblePlanOpening.wall,
+              widthMm: visiblePlanOpening.widthMm,
+            }
+          : null,
+      },
+      selectionInspector: {
+        summary: selectedObjectInspector, selectedRoom: selectedPlanRoomContext,
+        hasSelectedItem: Boolean(selectedItem), hasVisiblePlanOpening: Boolean(visiblePlanOpening),
+        hasSelectedPlanFixedElement: Boolean(selectedPlanFixedElement),
+        hasSelectedPlanAnnotation: Boolean(selectedPlanAnnotation),
+        surfaceInspectorIsWall, surfaceInspectorIsCeiling,
+        surfaceInspector: selectedSurfaceInspectorState,
+        measurementUnit: planMeasurementUnit,
+        activeRoomHeightMm, activeFloorRoomCount,
+        designRoomCount: designSnapshot.rooms.length,
+      },
+      planQuality: { report: floorPlanQualityReport, collapsed: planQualityReviewCollapsed },
+      planCanvas: planCanvasOverlaysState,
+      aiLayoutPreview: { proposal: pendingAiLayoutProposal, toneText: aiLayoutPreviewTone.text },
+      crossRoomDragTarget,
+      navigator: {
+        enabled: viewMode === "3d" && hasWholeHousePlan, rooms: housePlan2D.rooms,
+        activeRoomId: designSnapshot.activeRoomId,
+        cameraPosition: cameraView.pos, cameraTarget: cameraView.target,
+        itemCountsByRoomId: roomItemCountsById,
+        targetRoomId: placementTargetRoomId, targetRoomValid: activePlacementTargetValid,
+      },
+      floorProperties: {
+        roomWidth, roomDepth, floorOptions, hiddenFloorLevels,
+        activeFloorLevel, activeFloorRoomCount,
+        measurementUnit: planMeasurementUnit,
+        activeRoomHeightMm, activeRoomWallThicknessMm,
+        activeRoomSlabThicknessMm, activeRoomBaseboardDepthMm,
+        activeRoomWallOpacity, activeRoomFloorOpacity, activeRoomCeilingOpacity,
+        activeRoomCeilingVisible,
+        activeRoomCeilingColor,
+        stackedFloorView, canRedo,
+      },
+      selectionControls: {
+        viewMode, stackedFloorView, floorOptions, activeFloorLevel, hiddenFloorLevels,
+        selectedCount: selectedIds.size,
+        pendingZoneType, selectedZone, isClientPreview,
+      },
+    },
+    configuration: {
+      dark: showDesignerTheme,
+      sceneBackgroundColor,
+      canEditPlanGeometry,
+      selectionInspectorDockedWithRightRail,
+      floatingOverlayStackWidthPx: PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX,
+      selectionInspectorRightPx,
+      selectionInspectorTopPx,
+      selectionInspectorWidthPx,
+      planQualityReviewTopPx: plan2DQualityReviewPanelTopPx,
+      editorMode,
+    },
+    references: {
+      planQuality: { setPanel: setPlanQualityReviewPanelNode },
+    },
+    actions: {
+      deletePlanOverlay: deletePlanOverlayById,
+      showToast: showRuleToast,
+      selectionInspector: {
+        clearSelection: clearAllSelection, setMeasurementUnit: setPlanMeasurementUnit,
+        commitRoomDimensionMeters: handleCommitRoomDimensionEdit2D,
+        commitActiveFloorWallHeightMm: handleActiveRoomHeightMmChange,
+        item: {
+          center: centerSelectedItemInRoom, snapToWall: snapSelectedItemToNearestWall,
+          duplicate: duplicateSelectedItem, delete: deleteSelectedItem,
+        },
+        room: {
+          editFloor: handleOpenFloorEditorForRoom, fit: handleFitSelectedPlanRoom,
+          duplicate: handleDuplicateSelectedPlanRoom, delete: handleDeleteSelectedPlanRoom,
+        },
+        surfaceInspector: selectedSurfaceInspectorActions,
+      },
+      planQuality: { toggleCollapsed: togglePlanQualityReviewPanel, activateIssue: handlePlanQualityAction },
+      planCanvas: planCanvasActions,
+      aiLayoutPreview: { apply: applyPendingAiLayoutProposal, dismiss: dismissPendingAiLayoutProposal },
+      navigator: {
+        onMoveCamera: handleWholeHomeMoveCamera, onMoveTarget: handleWholeHomeMoveTarget,
+        onFocusRoom: handleWholeHomeFocusRoom,
+        onZoom: handleWholeHomeNavigatorZoom, onResetView: handleFitPlanView,
+      },
+      floorProperties: {
+        addFloor: handleAddFloor,
+        onToggleFloorVisibility: handleToggleFloorVisibility, onRenameFloor: handleRenameFloor,
+        onDuplicateFloor: handleDuplicateFloor, onDeleteFloor: handleDeleteFloor,
+        onSwitchFloor: handleSwitchFloor,
+        onStackedFloorViewChange: setStackedFloorView,
+        onRedo: redoSafe, onActiveRoomHeightMmChange: handleActiveRoomHeightMmChange,
+        onActiveRoomWallThicknessMmChange:
+          handleActiveRoomWallThicknessMmChange,
+        onActiveRoomSlabThicknessMmChange:
+          handleActiveRoomSlabThicknessMmChange,
+        onActiveRoomBaseboardDepthMmChange:
+          handleActiveRoomBaseboardDepthMmChange,
+        onActiveRoomSurfaceOpacityChange:
+          handleActiveRoomSurfaceOpacityChange,
+        onActiveRoomCeilingVisibleChange:
+          handleActiveRoomCeilingVisibleChange,
+        onActiveRoomCeilingColorChange: handleActiveRoomCeilingColorChange,
+      },
+      selectionControls: {
+        floorStack: { switchFloor: handleSwitchFloor },
+        multiSelection: {
+          alignX: alignSelectionX, alignZ: alignSelectionZ,
+          changeZoneType: setPendingZoneType, createZone: createZoneFromSelection,
+          clear: clearAllSelection,
+        },
+        selectedZone: { autoLayout: autoLayoutZone, rotateZone, ungroup: ungroupZone },
+      },
+    },
+  });
+  const sceneRegionModel = composeDesignPageSceneRegionModel({
+    scene: sceneCanvasRegionModel,
+    viewport: viewportRegionModel,
+  });
+  const editorChromeModel = useDesignPageEditorChromeController({
+    state: {
+      commandBar: {
+        commandBar: {
+          isClientPreview, editorMode, viewMode, isDesigner,
+          isAuthed: Boolean(session?.user),
+          isPro: plan === "pro",
+          isOpeningBillingPortal: openingBillingPortal,
+          aiDesignEnabled, canUndo, canRedo, undoName, redoName,
+          millworkActive: cabinetryStudioState !== null,
+          showLoadDesign: Boolean(session?.user),
+          isSaving, saveStatus,
+        },
+        room: activeRoom
+          ? {
+              id: activeRoom.id,
+              roomName: activeRoom.name,
+              roomTypeLabel: getRoomTypeLabel(activeRoom.roomType),
+              roomCount: designSnapshot.rooms.length,
+              widthMeters: roomWidth, depthMeters: roomDepth, viewMode,
+              health: activeRoomHealthSummary
+                ? {
+                    level: activeRoomHealthSummary.level,
+                    score: activeRoomHealthSummary.placementScore,
+                    nextAction: activeRoomHealthSummary.nextAction,
+                  }
+                : null,
+            }
+          : null,
+        scenePerformance: { mode: scenePerformanceMode, liteEnabled: liteSceneEnabled },
+      },
+      betaStart: {
+        visible: showBetaStart,
+        panel: {
+          nextStepLabel: firstRunActivationState.nextStep?.label ?? null,
+          progressPercent: firstRunActivationState.progressPercent,
+        },
+      },
+      designPanelOpen,
+    },
+    configuration: {
+      commandBar: {
+        dark: showDesignerTheme,
+        compactRoomStatus: compactRoomPlanStatusBar,
+        showRoomHealth: showRoomPlanStatusHealth,
+      },
+      toolRail: { dark: showDesignerTheme, aiDesignEnabled },
+      canUseDesigner, canUseCabinetryStudio,
+    },
+    actions: {
+      navigation: {
+        plan: goPlan, furnish: goFurnish, aiDesign: goAiDesign, shop: goShop,
+        changeViewMode: handleEditorViewModeChange,
+        fitPlan: handleFitPlanView,
+      },
+      history: { undo: undoSafe, redo: redoSafe },
+      editor: {
+        setMode: setEditorMode,
+        setDesignPanelOpen,
+        setItemCartOpen,
+        setClientPreview,
+        setUrlMode,
+      },
+      dialogs: {
+        setPlansOpen: setShowPlans,
+        openNewPlan: openNewPlanPicker,
+        setFeedbackOpen,
+        setPresentOpen: setShowPresentModal,
+        setUpgradeReason,
+        setUpgradeOpen: setShowUpgrade,
+      },
+      billing: { openPortal: openBillingPortal },
+      persistence: {
+        toggleMyDesigns,
+        saveDesignToCloud,
+        retrySaveStatus,
+        openGuestPrompt,
+      },
+      cabinetry: { openStudio: openCabinetryStudio },
+      room: {
+        reviewHealth: reviewActiveRoomHealth,
+        rename: handleRenameSelectedPlanRoom,
+      },
+      scenePerformance: {
+        changeMode: handleScenePerformanceModeChange,
+      },
+      betaStart: betaStartActions,
+      showToast: showRuleToast,
+    },
+  });
   return (
     <DesignPageComposition
       configuration={{ designerTheme: showDesignerTheme }}
@@ -3440,808 +3787,9 @@ export function DesignPageWorkspace() {
         onQueryChange={setCommandPaletteQuery}
       />
       <div className="absolute inset-0">
-        <div
-          className="relative h-full w-full"
-          onDragOver={handleCatalogCanvasDragOver}
-          onDrop={handleCatalogCanvasDrop}
-          onDragLeave={handleCatalogCanvasDragLeave}
-        >
-          <DesignSceneCanvas
-            state={{
-              viewMode,
-              isClientPreview,
-              liteSceneEnabled,
-              showSceneLoadingVeil,
-              scenePerformanceMode,
-              controlsEnabled:
-                !sofaDragging &&
-                !planRoomDragging &&
-                !planRoomResizing &&
-                !planOverlayDragging,
-              cameraY: cameraView.pos[1],
-              planDiagnostics: {
-                valid: planDebugMetrics.cameraValid,
-                recoveries: planDebugMetrics.cameraRecoveries,
-                targetX: planDebugMetrics.cameraTargetX,
-                targetZ: planDebugMetrics.cameraTargetZ,
-                projectedRoomMinWidthPx: planDebugMetrics.projectedRoomMinWidthPx,
-                projectedRoomMinHeightPx: planDebugMetrics.projectedRoomMinHeightPx,
-                projectedRoomMinAreaPx: planDebugMetrics.projectedRoomMinAreaPx,
-              },
-            }}
-            configuration={{
-              cursor: planCanvasCursor,
-              backgroundColor: sceneBackgroundColor,
-              lightConfig,
-              initialCameraView: DEFAULT_EDITOR_CAMERA_VIEW,
-              planFit: plan2DWholeHomeViewFit,
-              planBounds: {
-                widthMeters: plan2DFitBounds.widthMeters,
-                depthMeters: plan2DFitBounds.depthMeters,
-                centerX: plan2DFitBounds.centerX,
-                centerZ: plan2DFitBounds.centerZ,
-                roomHeight,
-              },
-              planSafeArea: {
-                leftPx: plan2DSafeAreaLeftPx,
-                rightPx: plan2DSafeAreaRightPx,
-                bottomPx: plan2DSafeAreaBottomPx,
-              },
-              planRooms: housePlan2D.rooms,
-              orbit: {
-                minDistance: EDITOR_3D_MIN_CAMERA_DISTANCE,
-                maxDistance: Math.max(24, Math.max(planViewWidth, planViewDepth) * 6),
-                minPolarAngle: EDITOR_3D_MIN_POLAR_ANGLE,
-                maxPolarAngle: EDITOR_3D_MAX_POLAR_ANGLE,
-              },
-            }}
-            sceneRefs={{
-              canvas: canvasRef,
-              camera: cameraRef,
-              controls: orbitControlsRef,
-              renderer: rendererRef,
-              scene: sceneRef,
-            }}
-            actions={{
-              onClearSelection: clearAllSelection,
-              onPlanDiagnosticsChange: handlePlan2DCameraDiagnosticsChange,
-              updateProjection,
-              onSceneProgressReadyChange: setSceneProgressReady,
-              onFpsSample: handleScenePerformanceSample,
-              onSustainedLowFps: handleSustainedLowFps,
-              onOrbitChange: handleOrbitControlsChange,
-            }}
-          >
-              <DesignSceneStructureLayer
-                state={{
-                  viewMode,
-                  plan: {
-                    underlay: floorPlanUnderlay,
-                    calibration: {
-                      enabled: floorPlanCalibrationMode,
-                      points: floorPlanCalibrationPoints,
-                    },
-                    roomTrace: {
-                      enabled: floorPlanTraceRoomMode,
-                      interactionMode: floorPlanDrawRoomMode,
-                      points: floorPlanTraceRoomPoints,
-                      previewPoint: blankGridRoomPreviewPoint,
-                      drawOnBlankGrid: blankGridRoomDrawActive,
-                    },
-                    openingTrace: {
-                      enabled: floorPlanTraceOpeningMode,
-                      points: floorPlanTraceOpeningPoints,
-                      kind: floorPlanTraceOpeningKind,
-                    },
-                    width: planViewWidth,
-                    depth: planViewDepth,
-                    rooms: housePlan2D.rooms,
-                    activeRoomId: selectedPlanRoomId,
-                    selectedOverlayId: selectedPlanOverlayId,
-                    suppressedDoorwaySuggestionKeys,
-                    scene: editorScene2D,
-                    zones: planZones2D,
-                    qualityIssues: floorPlanQualityReport.issues,
-                  },
-                  wholeHome: {
-                    enabled: usesHousePlanScene,
-                    rooms: sceneHousePlanRooms3D,
-                    activeRoomId: designSnapshot.activeRoomId,
-                    activeFloorLevel,
-                    wallHeight: roomHeight,
-                    stackedFloors: stackedFloorView,
-                    selectedOpeningId: selectedPlanOverlayId,
-                    selectedSurfaceTarget: selectedRendererSurfaceTarget,
-                  },
-                  singleRoom: {
-                    width: roomWidth,
-                    depth: roomDepth,
-                    height: roomHeight,
-                    wallThickness,
-                    slabThickness: activeRoom?.geometry.slabThickness,
-                    wallOpacity: activeRoomWallOpacity,
-                    floorOpacity: activeRoomFloorOpacity,
-                    ceilingOpacity: activeRoomCeilingOpacity,
-                    ceilingVisible: activeRoomCeilingVisible,
-                    ceilingColor: activeRoomCeilingColor,
-                  },
-                }}
-                configuration={{
-                  editorMode,
-                  isClientPreview,
-                  plan: {
-                    measurementUnit: planMeasurementUnit,
-                    theme: effectivePlanTheme,
-                    layers: effectivePlanLayers,
-                    orientation: plan2DWholeHomeViewFit.orientation,
-                  },
-                  renderQuality: sceneRenderQuality,
-                }}
-                actions={{
-                  underlay: {
-                    addCalibrationPoint: handleFloorPlanCalibrationPoint,
-                    addRoomTracePoint: handleFloorPlanTraceRoomPoint,
-                    addOpeningTracePoint: handleFloorPlanTraceOpeningPoint,
-                  },
-                  rooms: {
-                    select: handlePlacementAwareRoomSelect,
-                    selectSurfaceTarget: handleRendererSurfaceTargetSelect,
-                    clearSelection: clearAllSelection,
-                    rename: handleRenameSelectedPlanRoom,
-                    duplicate: handleDuplicateSelectedPlanRoom,
-                    delete: handleDeleteSelectedPlanRoom,
-                    editFloor: handleOpenFloorEditorForRoom,
-                    fit: handleFitSelectedPlanRoom,
-                    move: handleMoveRoom2D,
-                    resize: handleResizeRoom2D,
-                    setDragging: handlePlanRoomDragStateChange,
-                    setResizing: handlePlanRoomResizeStateChange,
-                  },
-                  overlays: {
-                    select: handleSelectPlanOverlay,
-                    delete: deletePlanOverlayById,
-                    moveOpening: handleMoveOpening2D,
-                    resizeOpening: handleResizeOpening2D,
-                    addDoorwaySuggestion: handleAddSuggestedDoorway,
-                    moveFixedElement: handleMoveFixedElement2D,
-                    moveAnnotation: handleMoveAnnotation2D,
-                    setDragging: handlePlanOverlayDragStateChange,
-                  },
-                  drawing: {
-                    addRoomPoint: handleBlankGridRoomDrawPoint,
-                    previewRoomPoint: handleBlankGridRoomDrawPreviewPoint,
-                    commitRoomDimension: handleCommitRoomDimensionEdit2D,
-                    commitWallSegmentLength:
-                      handleCommitWallDrawSegmentLength2D,
-                    drawRoom: handleBlankGridRoomDrawDrag,
-                    addOpeningPoint: handleBlankGridTraceOpeningPoint,
-                  },
-                  wholeHome: {
-                    setOpeningDragging:
-                      handlePlanOpeningDragStateChange3D,
-                  },
-                  reportPlanMetrics: handlePlanDebugMetricsChange,
-                }}
-              />
+        <DesignPageSceneRegion {...sceneRegionModel} />
 
-              <DesignSceneGuidanceLayer
-                state={{
-                  placement: {
-                    targetRoom: placementTargetPlanRoom,
-                    showTargetRoom: Boolean(
-                      pendingCatalogPlacement || crossRoomDragTarget
-                    ),
-                    targetValid: activePlacementTargetValid,
-                    supportSurface: activeCatalogPlacementSurfaceHighlight,
-                  },
-                  circulationHeatmap: circulationHeatmap
-                    ? {
-                        cells: circulationHeatmap.analysis.heatmap,
-                        roomOffset: circulationHeatmap.roomOffset,
-                      }
-                    : null,
-                  zones: {
-                    entries: zones,
-                    selectedId: selectedZoneId,
-                    compatibleIds: activePlacementCompatibleZoneIds,
-                    pendingPlacement: pendingCatalogPlacement !== null,
-                    hoverPlacement: hoverCatalogPlacement !== null,
-                  },
-                }}
-                configuration={{
-                  grid: {
-                    visible:
-                      isDesigner &&
-                      showGrid &&
-                      !isClientPreview &&
-                      (editorMode === "design" || editorMode === "adjust"),
-                    pulse: gridPulse,
-                  },
-                  zonesVisible:
-                    !isClientPreview && editorMode !== "present",
-                  activeRoomOffset: activeRoomPlanOffset,
-                  activeRoomId: activeRoom?.id ?? null,
-                }}
-                resolvers={{ getZoneBounds }}
-                actions={{
-                  showToast: showRuleToast,
-                  targetPendingPlacementToRoom:
-                    targetPendingCatalogPlacementToRoom,
-                  selectZone: setSelectedZoneId,
-                  clearSelection,
-                }}
-              />
-
-              <SceneItemsLayer
-                state={{
-                  entries: sceneRoomItems,
-                  selectedIds,
-                  selectedInstanceId,
-                  previewVariantId,
-                  previewMaterialPresetId,
-                  hoveredCartInstanceId,
-                  activeSceneItemsForGuides,
-                  itemPlanningBoundsByInstanceId,
-                }}
-                configuration={{
-                  editorMode,
-                  viewMode,
-                  isClientPreview,
-                  canEdit,
-                  isDesigner,
-                  hasWholeHousePlan,
-                  renderQuality: sceneRenderQuality,
-                  walls,
-                  snapEnabled,
-                  rotationSnapStepRadians,
-                  rotationSnapStepDegrees,
-                  rotationSnapEnabled,
-                  planShowLabels: effectivePlanLayers.labels,
-                  planShowDimensions: effectivePlanLayers.dimensions,
-                  planMeasurementUnit,
-                }}
-                resolvers={{
-                  resolveItemConfigurationEntry,
-                  resolveConfiguredVisualDimsMm,
-                  resolveConfiguredPlanningDimsMm,
-                  resolveConfiguredModelUrl,
-                  resolveConfiguredNodeTransforms,
-                  getRoomItems: (roomId) => roomSnapshotById.get(roomId)?.items ?? [],
-                }}
-                actions={{
-                  onDraggingChange: handleDraggingChange,
-                  onRenderReadyChange: handleSceneRenderItemReadyChange,
-                  onSelect: (id, additive) => {
-                    trackFirstInteraction();
-                    handleSelect(id, additive);
-                  },
-                  onDuplicateSelectedItem: duplicateSelectedItem,
-                  onDeleteSelectedItem: deleteSelectedItem,
-                  onMove: handleSceneItemMove,
-                  onDragPointerMove: hasWholeHousePlan
-                    ? nudgeWholeHomeCameraForDrag
-                    : undefined,
-                  onRotate: (id, rotationY, meta) =>
-                    applyItemRotation(id, rotationY, {
-                      source: meta?.source ?? "canvas",
-                      snap: meta?.snap,
-                    }),
-                  onSnapPulse: triggerGridPulse,
-                  onDragEnd: handleSceneItemDragEnd,
-                }}
-              />
-              <DesignScenePreviewLayer
-                state={{
-                  aiLayout: {
-                    footprints: aiLayoutPreviewFootprints,
-                    tone: aiLayoutPreviewTone,
-                  },
-                  placement: {
-                    pending: pendingCatalogPlacementScene,
-                    hover: hoverCatalogPlacementScene,
-                    hardInvalid: pendingCatalogPlacementHardInvalid,
-                  },
-                }}
-                configuration={{
-                  hasWholeHousePlan,
-                  planWidth: planViewWidth,
-                  planDepth: planViewDepth,
-                  activeRoomWidth: roomWidth,
-                  activeRoomDepth: roomDepth,
-                  pendingRoomSize: pendingCatalogPlacementRoom
-                    ? {
-                        width: pendingCatalogPlacementRoom.geometry.width,
-                        depth: pendingCatalogPlacementRoom.geometry.depth,
-                      }
-                    : null,
-                }}
-                actions={{
-                  onPlacementPointerDown: handleCatalogPlacementPointerDown,
-                  onPlacementPointerMove: handleCatalogPlacementPointerMove,
-                  onPlacementPointerUp: handleCatalogPlacementPointerUp,
-                }}
-              />
-          </DesignSceneCanvas>
-
-          <DesignPageViewportOverlayLayer
-            state={{
-              railVisible: floatingPlanOverlayStackVisible,
-              sceneLoadingVisible: showSceneLoadingVeil,
-              selectedOpening:
-                !isClientPreview && visiblePlanOpening && selectedPlanOverlayId
-                  ? {
-                      kind: visiblePlanOpening.kind,
-                      wall: visiblePlanOpening.wall,
-                      widthLabel: formatCabinetMeasurement(
-                        visiblePlanOpening.widthMm,
-                        planMeasurementUnit
-                      ),
-                    }
-                  : null,
-              selectionInspector:
-                floatingSelectionInspectorVisible && selectedObjectInspector
-                  ? {
-                      summary: selectedObjectInspector,
-                      selectedRoom: selectedPlanRoomContext,
-                      hasSelectedItem: Boolean(selectedItem),
-                      hasVisiblePlanOpening: Boolean(visiblePlanOpening),
-                      hasSelectedPlanFixedElement: Boolean(
-                        selectedPlanFixedElement
-                      ),
-                      hasSelectedPlanAnnotation: Boolean(selectedPlanAnnotation),
-                      hasSelectedPlanOverlay: Boolean(selectedPlanOverlayId),
-                      surfaceInspectorIsWall,
-                      surfaceInspectorIsCeiling,
-                      surfaceInspector: selectedSurfaceInspectorState,
-                      measurementUnit: planMeasurementUnit,
-                      activeRoomHeightMm,
-                      activeFloorRoomCount,
-                      canDeleteSelectedRoom: designSnapshot.rooms.length > 1,
-                    }
-                  : null,
-              planQuality: plan2DQualityReviewPanelVisible
-                ? {
-                    report: floorPlanQualityReport,
-                    collapsed: planQualityReviewCollapsed,
-                  }
-                : null,
-              planCanvas: planCanvasOverlaysState,
-              aiLayoutPreview:
-                pendingAiLayoutProposal && !isClientPreview
-                  ? {
-                      itemCount: pendingAiLayoutProposal.items.length,
-                      itemNames: pendingAiLayoutProposal.itemNames,
-                      toneText: aiLayoutPreviewTone.text,
-                    }
-                  : null,
-              crossRoomDragTarget:
-                crossRoomDragTarget?.kind === "item"
-                  ? {
-                      valid: crossRoomDragTarget.valid,
-                      label: crossRoomDragTarget.label,
-                    }
-                  : null,
-              navigator:
-                viewMode === "3d" && hasWholeHousePlan
-                  ? {
-                      rooms: housePlan2D.rooms,
-                      activeRoomId: designSnapshot.activeRoomId,
-                      cameraPosition: cameraView.pos,
-                      cameraTarget: cameraView.target,
-                      itemCountsByRoomId: roomItemCountsById,
-                      targetRoomId: placementTargetRoomId,
-                      targetRoomValid: activePlacementTargetValid,
-                    }
-                  : null,
-              floorProperties: floatingFloorPropertiesPanelVisible
-                ? {
-                    roomWidth,
-                    roomDepth,
-                    floorOptions,
-                    hiddenFloorLevels,
-                    activeFloorLevel,
-                    activeFloorRoomCount,
-                    measurementUnit: planMeasurementUnit,
-                    activeRoomHeightMm,
-                    activeRoomWallThicknessMm,
-                    activeRoomSlabThicknessMm,
-                    activeRoomBaseboardDepthMm,
-                    activeRoomWallOpacity,
-                    activeRoomFloorOpacity,
-                    activeRoomCeilingOpacity,
-                    activeRoomCeilingVisible,
-                    activeRoomCeilingColor,
-                    stackedFloorView,
-                    canRedo,
-                  }
-                : null,
-              selectionControls:
-                resolveDesignPageViewportSelectionControlsState({
-                  viewMode,
-                  stackedFloorView,
-                  floorOptions,
-                  activeFloorLevel,
-                  hiddenFloorLevels,
-                  selectedCount: selectedIds.size,
-                  pendingZoneType,
-                  selectedZone,
-                  isClientPreview,
-                }),
-            }}
-            configuration={{
-              sceneLoading: {
-                dark: showDesignerTheme,
-                backgroundColor: sceneBackgroundColor,
-              },
-              selectedOpening: { dark: showDesignerTheme },
-              selectionInspector: {
-                dark: showDesignerTheme,
-                canEditPlanGeometry,
-                dockWhenPortalAvailable:
-                  selectionInspectorDockedWithRightRail,
-                dockedWidthPx: PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX,
-                floatingRightPx: selectionInspectorRightPx,
-                floatingTopPx: selectionInspectorTopPx,
-                floatingWidthPx: selectionInspectorWidthPx,
-              },
-              planQuality: {
-                dark: showDesignerTheme,
-                dockedWidthPx: PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX,
-                floatingRightPx: selectionInspectorRightPx,
-                floatingTopPx: plan2DQualityReviewPanelTopPx,
-                floatingWidthPx: selectionInspectorWidthPx,
-              },
-              aiLayoutPreview: { dark: showDesignerTheme },
-              navigator: {
-                disabled: editorMode === "present",
-                dark: showDesignerTheme,
-              },
-              floorProperties: {
-                dark: showDesignerTheme,
-                canEdit: canEditPlanGeometry,
-              },
-              selectionControls: { dark: showDesignerTheme },
-            }}
-            references={{
-              planQuality: { setPanel: setPlanQualityReviewPanelNode },
-            }}
-            actions={{
-              selectedOpening: {
-                deleteOpening: () => {
-                  deletePlanOverlayById(selectedPlanOverlayId);
-                  showRuleToast("Opening deleted");
-                },
-              },
-              selectionInspector: {
-                clearSelection: clearAllSelection,
-                setMeasurementUnit: setPlanMeasurementUnit,
-                commitRoomDimensionMm: (roomId, dimension, valueMm) =>
-                  handleCommitRoomDimensionEdit2D(
-                    roomId,
-                    dimension,
-                    valueMm / 1000
-                  ),
-                commitActiveFloorWallHeightMm:
-                  handleActiveRoomHeightMmChange,
-                item: {
-                  center: centerSelectedItemInRoom,
-                  snapToWall: snapSelectedItemToNearestWall,
-                  duplicate: duplicateSelectedItem,
-                  delete: deleteSelectedItem,
-                },
-                room: {
-                  editFloor: handleOpenFloorEditorForRoom,
-                  fit: handleFitSelectedPlanRoom,
-                  duplicate: handleDuplicateSelectedPlanRoom,
-                  delete: handleDeleteSelectedPlanRoom,
-                },
-                deleteSelectedPlanOverlay: () =>
-                  deletePlanOverlayById(selectedPlanOverlayId),
-                surfaceInspector: selectedSurfaceInspectorActions,
-              },
-              planQuality: {
-                toggleCollapsed: togglePlanQualityReviewPanel,
-                activateIssue: handlePlanQualityAction,
-              },
-              planCanvas: {
-                guidedActionsChoice: {
-                  close: () => setPlanGuidedActionsChoiceSeen(true),
-                  choose: choosePlanGuidedActionsMode,
-                },
-                manualQuickActions: {
-                  select: handleSelectFloorPlanTool,
-                  startScale: () => {
-                    setGuidedPlanStartMode("upload");
-                    handleFloorPlanCalibrationModeChange(true);
-                  },
-                  startRoomDraw: () => {
-                    setGuidedPlanStartMode("draw");
-                    handleFloorPlanDrawRoomModeChange("rectangle_wall");
-                  },
-                  addOpening: handleAddFloorPlanOpeningFromTool,
-                  fit: handleFitPlanView,
-                },
-                guidedActionsToggle: {
-                  toggle: () =>
-                    setPlanGuidedActionsEnabled((enabled) => !enabled),
-                },
-                focusControl: {
-                  undo: handleUndoFloorPlanTraceRoomPoint,
-                  clear: clearPlanFocusPoints,
-                  togglePanel: () => {
-                    setDesignPanelOpen(true);
-                    setPlanFocusPanelRevealed((value) => !value);
-                  },
-                  finish: () => {
-                    handleSelectFloorPlanTool();
-                    setPlanFocusPanelRevealed(false);
-                  },
-                },
-                guidance: {
-                  startScale: () =>
-                    handleFloorPlanCalibrationModeChange(true),
-                  addOpening: handleAddFloorPlanOpeningFromTool,
-                  furnish: goFurnish,
-                  dismiss: setDismissedPlanCanvasGuidanceKey,
-                },
-                emptyPrompt: {
-                  startRoom: () => {
-                    setDesignPanelOpen(true);
-                    goPlan();
-                    setGuidedPlanStartMode("start");
-                  },
-                },
-                restoreTools: {
-                  restore: () => {
-                    setDesignPanelOpen(true);
-                    setPlanFocusPanelRevealed(false);
-                  },
-                },
-              },
-              aiLayoutPreview: {
-                apply: applyPendingAiLayoutProposal,
-                dismiss: dismissPendingAiLayoutProposal,
-              },
-              navigator: {
-                onMoveCamera: handleWholeHomeMoveCamera,
-                onMoveTarget: handleWholeHomeMoveTarget,
-                onFocusRoom: handleWholeHomeFocusRoom,
-                onZoom: handleWholeHomeNavigatorZoom,
-                onResetView: handleFitPlanView,
-              },
-              floorProperties: {
-                onAddUpperFloor: (mode) => handleAddFloor("upper", mode),
-                onAddLowerFloor: (mode) => handleAddFloor("lower", mode),
-                onToggleFloorVisibility: handleToggleFloorVisibility,
-                onRenameFloor: handleRenameFloor,
-                onDuplicateFloor: handleDuplicateFloor,
-                onDeleteFloor: handleDeleteFloor,
-                onSwitchFloor: handleSwitchFloor,
-                onStackedFloorViewChange: setStackedFloorView,
-                onRedo: redoSafe,
-                onActiveRoomHeightMmChange:
-                  handleActiveRoomHeightMmChange,
-                onActiveRoomWallThicknessMmChange:
-                  handleActiveRoomWallThicknessMmChange,
-                onActiveRoomSlabThicknessMmChange:
-                  handleActiveRoomSlabThicknessMmChange,
-                onActiveRoomBaseboardDepthMmChange:
-                  handleActiveRoomBaseboardDepthMmChange,
-                onActiveRoomSurfaceOpacityChange:
-                  handleActiveRoomSurfaceOpacityChange,
-                onActiveRoomCeilingVisibleChange:
-                  handleActiveRoomCeilingVisibleChange,
-                onActiveRoomCeilingColorChange:
-                  handleActiveRoomCeilingColorChange,
-              },
-              selectionControls: {
-                floorStack: { switchFloor: handleSwitchFloor },
-                multiSelection: {
-                  alignX: alignSelectionX,
-                  alignZ: alignSelectionZ,
-                  changeZoneType: setPendingZoneType,
-                  createZone: createZoneFromSelection,
-                  clear: clearAllSelection,
-                },
-                selectedZone: {
-                  autoLayout: autoLayoutZone,
-                  rotateQuarterTurn: (zoneId) =>
-                    rotateZone(zoneId, Math.PI / 2),
-                  ungroup: ungroupZone,
-                },
-              },
-            }}
-          />
-        </div>
-
-        <DesignPageEditorCommandBar
-          state={{
-            commandBar: {
-              isClientPreview,
-              editorMode,
-              viewMode,
-              isDesigner,
-              isAuthed: Boolean(session?.user),
-              isPro: plan === "pro",
-              isOpeningBillingPortal: openingBillingPortal,
-              aiDesignEnabled,
-              canUndo,
-              canRedo,
-              undoName,
-              redoName,
-              millworkActive: cabinetryStudioState !== null,
-              showLoadDesign: Boolean(session?.user),
-              isSaving,
-              saveStatus,
-            },
-            room: activeRoom
-              ? {
-                  id: activeRoom.id,
-                  roomName: activeRoom.name,
-                  roomTypeLabel: getRoomTypeLabel(activeRoom.roomType),
-                  roomCount: designSnapshot.rooms.length,
-                  widthMeters: roomWidth,
-                  depthMeters: roomDepth,
-                  viewMode,
-                  health: activeRoomHealthSummary
-                    ? {
-                        level: activeRoomHealthSummary.level,
-                        score: activeRoomHealthSummary.placementScore,
-                        nextAction: activeRoomHealthSummary.nextAction,
-                      }
-                    : null,
-                }
-              : null,
-            scenePerformance: {
-              mode: scenePerformanceMode,
-              liteEnabled: liteSceneEnabled,
-            },
-          }}
-          configuration={{
-            dark: showDesignerTheme,
-            compactRoomStatus: compactRoomPlanStatusBar,
-            showRoomHealth: showRoomPlanStatusHealth,
-          }}
-          actions={{
-            commandBar: {
-              onPlan: goPlan,
-              onMillwork: canUseCabinetryStudio
-                ? openCabinetryStudio
-                : undefined,
-              onFurnish: goFurnish,
-              onAiDesign: () => {
-                if (aiDesignEnabled) {
-                  goAiDesign();
-                }
-              },
-              onShop: goShop,
-              onExport: () => {
-                if (editorMode === "present") {
-                  setShowPresentModal(false);
-                  setEditorMode("design");
-                } else {
-                  setEditorMode("present");
-                }
-              },
-              onUndo: undoSafe,
-              onRedo: redoSafe,
-              onViewModeChange: handleEditorViewModeChange,
-              onToggleDesignerMode: () => {
-                if (!canUseDesigner && !isDesigner) {
-                  setUpgradeReason("designer");
-                  setShowUpgrade(true);
-                  return;
-                }
-                setUrlMode(isDesigner ? "homeowner" : "designer");
-              },
-              onToggleClientPreview: () =>
-                setClientPreview((value) => !value),
-              onViewPlans: () => setShowPlans(true),
-              onNewPlan: openNewPlanPicker,
-              onManageBilling: () => {
-                void openBillingPortal();
-              },
-              onFeedback: () => setFeedbackOpen(true),
-              onToggleLoadDesign: toggleMyDesigns,
-              onSave: async () => {
-                if (!session?.user) {
-                  openGuestPrompt("save", () => {});
-                  return;
-                }
-                const savedId = await saveDesignToCloud();
-                if (savedId) {
-                  showRuleToast("Saved to cloud");
-                }
-              },
-              onRetrySaveStatus: retrySaveStatus,
-              onOpenPresentExport: () => setShowPresentModal(true),
-            },
-            room: {
-              onViewModeChange: handleEditorViewModeChange,
-              onReviewHealth: reviewActiveRoomHealth,
-              onFitPlan: handleFitPlanView,
-              rename: handleRenameSelectedPlanRoom,
-            },
-            scenePerformance: {
-              changeMode: handleScenePerformanceModeChange,
-            },
-          }}
-        />
-        {!isClientPreview && showBetaStart && !designPanelOpen && (
-          <BetaStartPanel
-            state={{
-              nextStepLabel: firstRunActivationState.nextStep?.label ?? null,
-              progressPercent: firstRunActivationState.progressPercent,
-            }}
-            actions={{
-              dismiss: dismissBetaStart,
-              chooseTemplate: () => {
-                setGuidedPlanStartMode("template");
-                goPlan();
-                setViewMode("2d");
-                setDesignPanelOpen(true);
-                showRuleToast("Choose a room template in the Plan panel");
-                dismissBetaStart();
-              },
-              drawRoom: () => {
-                setGuidedPlanStartMode("draw");
-                goPlan();
-                setViewMode("2d");
-                activateFloorPlanRoomTrace(true);
-                setDesignPanelOpen(true);
-                showRuleToast("Draw room walls in 2D plan mode");
-                dismissBetaStart();
-              },
-              uploadPlan: () => {
-                setGuidedPlanStartMode("upload");
-                goPlan();
-                setViewMode("2d");
-                setDesignPanelOpen(true);
-                showRuleToast("Upload a plan from the Plan panel, then calibrate and trace");
-                dismissBetaStart();
-              },
-              generateAiLayout: () => {
-                goAiDesign();
-                setDesignPanelOpen(true);
-                showRuleToast("Complete the AI brief, then generate a layout");
-                dismissBetaStart();
-              },
-            }}
-          />
-        )}
-
-        {!isClientPreview && isDesigner && (
-          <EditorToolRail
-            mode={editorMode}
-            dark={showDesignerTheme}
-            aiDesignEnabled={aiDesignEnabled}
-            onDesign={() => {
-              setEditorMode("design");
-              setDesignPanelOpen(true);
-            }}
-            onAdjust={() => {
-              setEditorMode("adjust");
-              setDesignPanelOpen(true);
-            }}
-            onAi={() => {
-              setEditorMode("ai");
-              setDesignPanelOpen(true);
-            }}
-            onCart={() => {
-              setEditorMode("buy");
-              setItemCartOpen(false);
-            }}
-            onPresent={() => {
-              if (editorMode === "present") {
-                setShowPresentModal(false);
-                setEditorMode("design");
-              } else {
-                setEditorMode("present");
-              }
-            }}
-            onFitPlan={handleFitPlanView}
-          />
-        )}
+        <DesignPageEditorChrome {...editorChromeModel} />
       </div>
 
       {/* Exit Client Preview Button - Always Visible */}

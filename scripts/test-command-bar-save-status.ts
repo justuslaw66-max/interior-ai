@@ -17,6 +17,10 @@ const designPageSource = readFileSync(
   join(process.cwd(), "components/editor/design-page/DesignPageWorkspace.tsx"),
   "utf8"
 );
+const editorChromeControllerSource = readFileSync(
+  join(process.cwd(), "lib/useDesignPageEditorChromeController.ts"),
+  "utf8"
+);
 
 assert.match(
   commandBarSource,
@@ -45,8 +49,13 @@ assert.match(
 );
 assert.match(
   designPageSource,
-  /<DesignPageEditorCommandBar[\s\S]*?commandBar:\s*\{[\s\S]*?isSaving,[\s\S]*?saveStatus,[\s\S]*?actions=\{\{[\s\S]*?onSave:\s*async\s*\(\)\s*=>[\s\S]*?onRetrySaveStatus:\s*retrySaveStatus/,
-  "The workspace should supply save state and persistence actions through the typed command-wrapper boundary."
+  /useDesignPageEditorChromeController\(\{[\s\S]*?isSaving,[\s\S]*?saveStatus,[\s\S]*?persistence:\s*\{[\s\S]*?saveDesignToCloud,[\s\S]*?retrySaveStatus,/,
+  "The workspace should inject save state and persistence collaborators into the chrome controller."
+);
+assert.match(
+  editorChromeControllerSource,
+  /const save = async \(\) => \{[\s\S]*?!commandState\.isAuthed[\s\S]*?openGuestPrompt\("save", \(\) => \{\}\)[\s\S]*?await actions\.persistence\.saveDesignToCloud\(\)[\s\S]*?actions\.showToast\("Saved to cloud"\)[\s\S]*?onSave: save,[\s\S]*?onRetrySaveStatus: actions\.persistence\.retrySaveStatus/,
+  "The chrome controller should preserve guest/cloud save and retry behavior at the typed command boundary."
 );
 assert.doesNotMatch(
   designPageSource,

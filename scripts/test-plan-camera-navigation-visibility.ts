@@ -38,6 +38,23 @@ const viewportOverlayPath = path.join(
   "design-page",
   "DesignPageViewportOverlayLayer.tsx"
 );
+const sceneRegionPath = path.join(
+  process.cwd(),
+  "components",
+  "editor",
+  "design-page",
+  "DesignPageSceneRegion.tsx"
+);
+const sceneAdapterPath = path.join(
+  process.cwd(),
+  "lib",
+  "design-page-scene-region-adapter.ts"
+);
+const viewportAdapterPath = path.join(
+  process.cwd(),
+  "lib",
+  "design-page-viewport-region-adapter.ts"
+);
 const cameraControllerPath = path.join(
   process.cwd(),
   "lib",
@@ -49,6 +66,9 @@ const camera2DSource = fs.readFileSync(camera2DPath, "utf8");
 const cameraInvariantGuardSource = fs.readFileSync(cameraInvariantGuardPath, "utf8");
 const designSceneCanvasSource = fs.readFileSync(designSceneCanvasPath, "utf8");
 const viewportOverlaySource = fs.readFileSync(viewportOverlayPath, "utf8");
+const sceneRegionSource = fs.readFileSync(sceneRegionPath, "utf8");
+const sceneAdapterSource = fs.readFileSync(sceneAdapterPath, "utf8");
+const viewportAdapterSource = fs.readFileSync(viewportAdapterPath, "utf8");
 const cameraControllerSource = fs.readFileSync(cameraControllerPath, "utf8");
 const roomNavigatorBlock =
   viewportOverlaySource.match(
@@ -56,14 +76,19 @@ const roomNavigatorBlock =
   )?.[0] ?? "";
 
 assert.match(
-  source,
+  sceneRegionSource,
   /import\s+\{\s*DesignPageViewportOverlayLayer\s*\}\s+from\s+"@\/components\/editor\/design-page\/DesignPageViewportOverlayLayer"/,
-  "The design page should import the viewport-overlay composition."
+  "The scene region should import the viewport-overlay composition."
 );
 assert.match(
   source,
-  /<DesignPageViewportOverlayLayer[\s\S]*?railVisible:\s*floatingPlanOverlayStackVisible[\s\S]*?navigator:\s*viewMode === "3d" && hasWholeHousePlan/,
-  "The design page should pass the shared rail policy and 3D whole-home navigator state into the viewport overlay."
+  /buildDesignPageViewportRegionAdapter\(\{[\s\S]*?rail:\s*floatingPlanOverlayStackVisible[\s\S]*?navigator:\s*\{[\s\S]*?enabled:\s*viewMode === "3d" && hasWholeHousePlan/,
+  "The design page should inject the shared rail policy and 3D whole-home navigator state into the viewport adapter."
+);
+assert.match(
+  viewportAdapterSource,
+  /railVisible:\s*state\.visibility\.rail[\s\S]*?navigator:\s*state\.navigator\.enabled/,
+  "The viewport adapter should map the shared rail and navigator policy into the overlay contract."
 );
 assert.doesNotMatch(
   source,
@@ -102,8 +127,18 @@ assert.match(
 
 assert.match(
   source,
-  /<DesignSceneCanvas[\s\S]*?onPlanDiagnosticsChange:\s*handlePlan2DCameraDiagnosticsChange/,
-  "The design page must wire camera diagnostics into the scene Canvas shell."
+  /buildDesignPageSceneRegionAdapter\(\{[\s\S]*?onPlanDiagnosticsChange:\s*handlePlan2DCameraDiagnosticsChange/,
+  "The design page must inject camera diagnostics into the scene adapter."
+);
+assert.match(
+  sceneAdapterSource,
+  /canvas:\s*actions\.canvas/,
+  "The scene adapter must preserve the grouped Canvas actions."
+);
+assert.match(
+  sceneRegionSource,
+  /<DesignSceneCanvas[\s\S]*?actions=\{actions\.canvas\}/,
+  "The scene region must wire camera diagnostics into the Canvas shell."
 );
 
 assert.match(
@@ -149,7 +184,7 @@ assert.match(
 );
 
 assert.doesNotMatch(
-  `${source}\n${viewportOverlaySource}\n${cameraControllerSource}\n${designSceneCanvasSource}`,
+  `${source}\n${sceneRegionSource}\n${sceneAdapterSource}\n${viewportAdapterSource}\n${viewportOverlaySource}\n${cameraControllerSource}\n${designSceneCanvasSource}`,
   /viewMode === "2d"[\s\S]*?controls\.maxPolarAngle = 0;/,
   "2D MapControls must not force polar angle 0 with a non-Y camera up vector, because that flattens rooms into lines."
 );

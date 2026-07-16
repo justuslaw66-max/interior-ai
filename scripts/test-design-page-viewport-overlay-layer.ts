@@ -13,18 +13,28 @@ const workspaceSource = readSource(
 const overlaySource = readSource(
   "components/editor/design-page/DesignPageViewportOverlayLayer.tsx"
 );
+const regionSource = readSource(
+  "components/editor/design-page/DesignPageSceneRegion.tsx"
+);
+const adapterSource = readSource("lib/design-page-viewport-region-adapter.ts");
 const normalizedWorkspace = normalizeWhitespace(workspaceSource);
 const normalizedOverlay = normalizeWhitespace(overlaySource);
+const normalizedAdapter = normalizeWhitespace(adapterSource);
 
 assert.match(
-  workspaceSource,
+  regionSource,
   /import\s+\{\s*DesignPageViewportOverlayLayer\s*\}\s+from\s+"@\/components\/editor\/design-page\/DesignPageViewportOverlayLayer"/,
-  "Workspace should import the viewport-overlay composition boundary."
+  "The scene region should import the viewport-overlay composition boundary."
+);
+assert.match(
+  regionSource,
+  /<DesignPageViewportOverlayLayer\s+[\s\S]*?state=\{state\.viewport\}[\s\S]*?configuration=\{configuration\.viewport\}[\s\S]*?references=\{references\.viewport\}[\s\S]*?actions=\{actions\.viewport\}/,
+  "The scene region should compose the viewport layer through grouped state, configuration, references, and actions."
 );
 assert.match(
   workspaceSource,
-  /<DesignPageViewportOverlayLayer\s+[\s\S]*?state=\{\{[\s\S]*?configuration=\{\{[\s\S]*?references=\{\{[\s\S]*?actions=\{\{/,
-  "Workspace should compose the viewport layer through grouped state, configuration, references, and actions."
+  /<DesignPageSceneRegion \{\.\.\.sceneRegionModel\} \/>/,
+  "Workspace should render the composed scene-region boundary."
 );
 
 for (const contractName of [
@@ -40,29 +50,52 @@ for (const contractName of [
   );
 }
 
-// Workspace owns live policy and action selection; the layer only composes it.
+// Workspace injects live values; the adapter owns viewport policy and action shaping.
 for (const expected of [
-  "railVisible: floatingPlanOverlayStackVisible",
-  "sceneLoadingVisible: showSceneLoadingVeil",
-  "!isClientPreview && visiblePlanOpening && selectedPlanOverlayId",
-  "floatingSelectionInspectorVisible && selectedObjectInspector",
+  "rail: floatingPlanOverlayStackVisible",
+  "sceneLoading: showSceneLoadingVeil",
+  "selectionInspector: floatingSelectionInspectorVisible",
   "planQuality: plan2DQualityReviewPanelVisible",
   "planCanvas: planCanvasOverlaysState",
-  "pendingAiLayoutProposal && !isClientPreview",
-  'crossRoomDragTarget?.kind === "item"',
-  'viewMode === "3d" && hasWholeHousePlan',
+  "proposal: pendingAiLayoutProposal",
+  "crossRoomDragTarget",
+  'enabled: viewMode === "3d" && hasWholeHousePlan',
   "floorProperties: floatingFloorPropertiesPanelVisible",
-  "selectionControls: resolveDesignPageViewportSelectionControlsState({",
   "planQuality: { setPanel: setPlanQualityReviewPanelNode }",
-  "deleteOpening: () => { deletePlanOverlayById(selectedPlanOverlayId); showRuleToast(\"Opening deleted\"); }",
-  "planCanvas: { guidedActionsChoice:",
+  "deletePlanOverlay: deletePlanOverlayById",
+  "showToast: showRuleToast",
+  "planCanvas: planCanvasActions",
   "navigator: { onMoveCamera: handleWholeHomeMoveCamera",
-  'onAddUpperFloor: (mode) => handleAddFloor("upper", mode)',
+  "addFloor: handleAddFloor",
   "selectionControls: { floorStack: { switchFloor: handleSwitchFloor }",
 ] as const) {
   assert.ok(
     normalizedWorkspace.includes(expected),
     `Workspace should preserve the live viewport boundary: ${expected}.`
+  );
+}
+
+for (const expected of [
+  "railVisible: state.visibility.rail",
+  "sceneLoadingVisible: state.visibility.sceneLoading",
+  "!state.visibility.isClientPreview && state.opening.value && selectedOverlayId",
+  "state.visibility.selectionInspector && selectionSummary",
+  "planQuality: state.visibility.planQuality ?",
+  "planCanvas: state.planCanvas",
+  "state.aiLayoutPreview.proposal && !state.visibility.isClientPreview",
+  'state.crossRoomDragTarget?.kind === "item"',
+  "navigator: state.navigator.enabled ?",
+  "floorProperties: state.visibility.floorProperties ?",
+  "selectionControls: resolveDesignPageViewportSelectionControlsState(",
+  "actions.showToast(\"Opening deleted\")",
+  "planCanvas: actions.planCanvas",
+  "navigator: actions.navigator",
+  'actions.floorProperties.addFloor("upper", mode)',
+  "actions.selectionControls.selectedZone.rotateZone( zoneId, Math.PI / 2 )",
+] as const) {
+  assert.ok(
+    normalizedAdapter.includes(expected),
+    `The viewport adapter should preserve live viewport policy: ${expected}.`
   );
 }
 

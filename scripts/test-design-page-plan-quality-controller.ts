@@ -18,6 +18,10 @@ const viewportOverlaySource = readFileSync(
   ),
   "utf8"
 );
+const viewportAdapterSource = readFileSync(
+  join(root, "lib/design-page-viewport-region-adapter.ts"),
+  "utf8"
+);
 const controllerSource = readFileSync(
   join(root, "lib/useDesignPagePlanQualityController.ts"),
   "utf8"
@@ -141,8 +145,28 @@ assert.doesNotMatch(
 );
 assert.match(
   workspaceSource,
-  /<DesignPageViewportOverlayLayer[\s\S]*?planQuality: plan2DQualityReviewPanelVisible[\s\S]*?report: floorPlanQualityReport,[\s\S]*?collapsed: planQualityReviewCollapsed,[\s\S]*?planQuality: \{ setPanel: setPlanQualityReviewPanelNode \},[\s\S]*?planQuality: \{[\s\S]*?toggleCollapsed: togglePlanQualityReviewPanel,[\s\S]*?activateIssue: handlePlanQualityAction/,
-  "The workspace should preserve controller-owned quality state, reference, and actions at the viewport-overlay boundary."
+  /buildDesignPageViewportRegionAdapter\(\{[\s\S]*?visibility: \{[\s\S]*?planQuality: plan2DQualityReviewPanelVisible/,
+  "The workspace should inject controller-owned quality visibility at the viewport-adapter boundary."
+);
+assert.match(
+  workspaceSource,
+  /planQuality: \{ report: floorPlanQualityReport, collapsed: planQualityReviewCollapsed \}/,
+  "The workspace should inject the controller-owned quality report state."
+);
+assert.match(
+  workspaceSource,
+  /planQuality: \{ setPanel: setPlanQualityReviewPanelNode \}/,
+  "The workspace should inject the controller-owned quality panel reference."
+);
+assert.match(
+  workspaceSource,
+  /planQuality: \{ toggleCollapsed: togglePlanQualityReviewPanel, activateIssue: handlePlanQualityAction \}/,
+  "The workspace should inject controller-owned quality state, reference, and actions at the viewport-adapter boundary."
+);
+assert.match(
+  viewportAdapterSource,
+  /planQuality: state\.visibility\.planQuality[\s\S]*?report: state\.planQuality\.report,[\s\S]*?collapsed: state\.planQuality\.collapsed,[\s\S]*?references,[\s\S]*?planQuality: actions\.planQuality/,
+  "The viewport adapter should preserve controller-owned quality state, reference, and actions."
 );
 assert.match(
   workspaceSource,

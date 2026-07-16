@@ -17,6 +17,10 @@ const workspaceSource = readFileSync(
   join(process.cwd(), "components/editor/design-page/DesignPageWorkspace.tsx"),
   "utf8"
 );
+const editorChromeControllerSource = readFileSync(
+  join(process.cwd(), "lib/useDesignPageEditorChromeController.ts"),
+  "utf8"
+);
 
 assert.match(
   source,
@@ -40,8 +44,13 @@ assert.match(
 );
 assert.match(
   workspaceSource,
-  /<DesignPageEditorCommandBar[\s\S]*?isDesigner,[\s\S]*?onToggleDesignerMode:\s*\(\)\s*=>[\s\S]*?setUrlMode\(isDesigner \? "homeowner" : "designer"\)[\s\S]*?onToggleClientPreview:\s*\(\)\s*=>[\s\S]*?setClientPreview/,
-  "The workspace should provide Pro-tools and client-preview transitions through the command-wrapper boundary."
+  /useDesignPageEditorChromeController\(\{[\s\S]*?isDesigner,[\s\S]*?editor:\s*\{[\s\S]*?setClientPreview,[\s\S]*?setUrlMode,/,
+  "The workspace should inject Pro-tools and client-preview state transitions into the chrome controller."
+);
+assert.match(
+  editorChromeControllerSource,
+  /const toggleDesignerMode = \(\) => \{[\s\S]*?actions\.editor\.setUrlMode\(\s*commandState\.isDesigner \? "homeowner" : "designer"[\s\S]*?const toggleClientPreview = \(\) => \{[\s\S]*?actions\.editor\.setClientPreview\(\(visible\) => !visible\)[\s\S]*?onToggleDesignerMode: toggleDesignerMode,[\s\S]*?onToggleClientPreview: toggleClientPreview/,
+  "The chrome controller should provide Pro-tools and client-preview transitions through the command-wrapper boundary."
 );
 assert.doesNotMatch(
   workspaceSource,

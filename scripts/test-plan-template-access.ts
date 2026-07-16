@@ -102,6 +102,10 @@ const designPageCommandBarSource = fs.readFileSync(
   designPageCommandBarPath,
   "utf8"
 );
+const editorChromeControllerSource = fs.readFileSync(
+  path.join(process.cwd(), "lib", "useDesignPageEditorChromeController.ts"),
+  "utf8"
+);
 const betaSmokePath = path.join(process.cwd(), "tests", "e2e", "00-beta-smoke.spec.ts");
 const betaSmokeSource = fs.readFileSync(betaSmokePath, "utf8");
 
@@ -475,8 +479,13 @@ assert.match(
 
 assert.match(
   designPageSource,
-  /<DesignPageEditorCommandBar[\s\S]*?actions=\{\{[\s\S]*?commandBar:\s*\{[\s\S]*?onNewPlan:\s*openNewPlanPicker/,
-  "The workspace boundary should wire New plan to the controller-owned template-picker transition."
+  /useDesignPageEditorChromeController\(\{[\s\S]*?openNewPlan:\s*openNewPlanPicker/,
+  "The workspace should inject New plan at the editor-chrome boundary."
+);
+assert.match(
+  editorChromeControllerSource,
+  /onNewPlan: actions\.dialogs\.openNewPlan/,
+  "The editor-chrome controller should wire New plan to the controller-owned template-picker transition."
 );
 
 assert.match(

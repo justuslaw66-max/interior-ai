@@ -17,6 +17,15 @@ const workspaceSource = readSource(
 const viewportOverlaySource = readSource(
   "components/editor/design-page/DesignPageViewportOverlayLayer.tsx"
 );
+const sceneRegionSource = readSource(
+  "components/editor/design-page/DesignPageSceneRegion.tsx"
+);
+const viewportAdapterSource = readSource(
+  "lib/design-page-viewport-region-adapter.ts"
+);
+const actionsControllerSource = readSource(
+  "lib/useDesignPagePlanCanvasActionsController.ts"
+);
 const overlaysSource = readSource(
   "components/editor/design-page/DesignPagePlanCanvasOverlays.tsx"
 );
@@ -26,13 +35,15 @@ const planPresentationSource = readSource(
 );
 const normalizedWorkspace = normalizeWhitespace(workspaceSource);
 const normalizedViewportOverlay = normalizeWhitespace(viewportOverlaySource);
+const normalizedViewportAdapter = normalizeWhitespace(viewportAdapterSource);
+const normalizedActionsController = normalizeWhitespace(actionsControllerSource);
 const normalizedModel = normalizeWhitespace(modelSource);
 const normalizedPlanPresentation = normalizeWhitespace(planPresentationSource);
 
 assert.match(
-  workspaceSource,
+  sceneRegionSource,
   /import\s+\{\s*DesignPageViewportOverlayLayer\s*\}\s+from\s+"@\/components\/editor\/design-page\/DesignPageViewportOverlayLayer"/,
-  "Workspace should import the viewport-overlay boundary."
+  "The scene region should import the viewport-overlay boundary."
 );
 assert.match(
   planPresentationSource,
@@ -44,8 +55,12 @@ assert.ok(
   "Workspace should pass resolved plan-canvas state through the viewport boundary."
 );
 assert.ok(
-  normalizedWorkspace.includes("planCanvas: { guidedActionsChoice:"),
-  "Workspace should pass live plan-canvas actions through the viewport boundary."
+  normalizedWorkspace.includes("planCanvas: planCanvasActions"),
+  "Workspace should pass controller-owned plan-canvas actions through the viewport adapter."
+);
+assert.ok(
+  normalizedViewportAdapter.includes("planCanvas: actions.planCanvas"),
+  "The viewport adapter should preserve grouped plan-canvas actions."
 );
 assert.match(
   viewportOverlaySource,
@@ -101,17 +116,31 @@ for (const expected of [
 }
 
 for (const expected of [
-  'startScale: () => { setGuidedPlanStartMode("upload"); handleFloorPlanCalibrationModeChange(true); }',
-  'startRoomDraw: () => { setGuidedPlanStartMode("draw"); handleFloorPlanDrawRoomModeChange("rectangle_wall"); }',
-  "toggle: () => setPlanGuidedActionsEnabled((enabled) => !enabled)",
-  "togglePanel: () => { setDesignPanelOpen(true); setPlanFocusPanelRevealed((value) => !value); }",
-  "finish: () => { handleSelectFloorPlanTool(); setPlanFocusPanelRevealed(false); }",
-  'startRoom: () => { setDesignPanelOpen(true); goPlan(); setGuidedPlanStartMode("start"); }',
-  "restore: () => { setDesignPanelOpen(true); setPlanFocusPanelRevealed(false); }",
+  'actions.setGuidedPlanStartMode("upload"); actions.changeCalibrationMode(true);',
+  'actions.setGuidedPlanStartMode("draw"); actions.changeDrawRoomMode("rectangle_wall");',
+  "actions.setGuidedActionsEnabled((enabled) => !enabled)",
+  "actions.setDesignPanelOpen(true); actions.setPlanFocusPanelRevealed((revealed) => !revealed);",
+  "actions.selectFloorPlanTool(); actions.setPlanFocusPanelRevealed(false);",
+  'actions.setDesignPanelOpen(true); actions.goPlan(); actions.setGuidedPlanStartMode("start");',
+  "actions.setDesignPanelOpen(true); actions.setPlanFocusPanelRevealed(false);",
 ] as const) {
   assert.ok(
-    normalizedWorkspace.includes(expected),
-    `Workspace should preserve ${expected}.`
+    normalizedActionsController.includes(expected),
+    `The plan-canvas actions controller should preserve ${expected}.`
+  );
+}
+for (const expected of [
+  "startScale: startScaleFromManualActions",
+  "startRoomDraw",
+  "toggle: toggleGuidedActions",
+  "togglePanel: togglePlanFocusPanel",
+  "finish: finishPlanFocus",
+  "startRoom: startEmptyPlanRoom",
+  "restore: restoreDesignTools",
+] as const) {
+  assert.ok(
+    normalizedActionsController.includes(expected),
+    `The plan-canvas actions controller should expose ${expected}.`
   );
 }
 

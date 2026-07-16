@@ -11,6 +11,10 @@ const commandBarWrapperSource = readFileSync(
   join(root, "components/editor/design-page/DesignPageEditorCommandBar.tsx"),
   "utf8"
 );
+const editorChromeControllerSource = readFileSync(
+  join(root, "lib/useDesignPageEditorChromeController.ts"),
+  "utf8"
+);
 const controllerSource = readFileSync(
   join(root, "lib/useDesignPageRoomPlanController.ts"),
   "utf8"
@@ -108,8 +112,13 @@ assert.match(
 );
 assert.match(
   workspaceSource,
-  /<DesignPageEditorCommandBar[\s\S]*?room:\s*activeRoom[\s\S]*?id:\s*activeRoom\.id[\s\S]*?roomName:\s*activeRoom\.name[\s\S]*?room:\s*\{[\s\S]*?rename:\s*handleRenameSelectedPlanRoom/,
-  "The workspace should pass room status and rename through the typed command-wrapper boundary."
+  /useDesignPageEditorChromeController\(\{[\s\S]*?room:\s*activeRoom[\s\S]*?id:\s*activeRoom\.id[\s\S]*?roomName:\s*activeRoom\.name[\s\S]*?room:\s*\{[\s\S]*?rename:\s*handleRenameSelectedPlanRoom/,
+  "The workspace should inject room status and rename through the typed editor-chrome boundary."
+);
+assert.match(
+  editorChromeControllerSource,
+  /room:\s*\{[\s\S]*?rename: actions\.room\.rename/,
+  "The editor-chrome controller should pass rename through the command-wrapper boundary."
 );
 assert.doesNotMatch(
   workspaceSource,

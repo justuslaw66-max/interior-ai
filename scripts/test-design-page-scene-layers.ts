@@ -9,6 +9,10 @@ const readSource = (relativePath: string) =>
 const workspaceSource = readSource(
   "components/editor/design-page/DesignPageWorkspace.tsx"
 );
+const regionSource = readSource(
+  "components/editor/design-page/DesignPageSceneRegion.tsx"
+);
+const adapterSource = readSource("lib/design-page-scene-region-adapter.ts");
 const structureSource = readSource(
   "components/editor/design-page/DesignSceneStructureLayer.tsx"
 );
@@ -19,49 +23,40 @@ const previewSource = readSource(
   "components/editor/design-page/DesignScenePreviewLayer.tsx"
 );
 
-for (const componentName of [
-  "DesignSceneStructureLayer",
-  "DesignSceneGuidanceLayer",
-  "DesignScenePreviewLayer",
+for (const [componentName, contractKey] of [
+  ["DesignSceneStructureLayer", "structure"],
+  ["DesignSceneGuidanceLayer", "guidance"],
+  ["DesignScenePreviewLayer", "preview"],
 ] as const) {
   assert.match(
-    workspaceSource,
+    regionSource,
     new RegExp(
       `import\\s+\\{\\s*${componentName}\\s*\\}\\s+from\\s+"@/components/editor/design-page/${componentName}"`
     ),
-    `Workspace should import ${componentName}.`
+    `The scene region should import ${componentName}.`
   );
   assert.match(
-    workspaceSource,
+    regionSource,
     new RegExp(
-      `<${componentName}\\b[\\s\\S]*?state=\\{\\{[\\s\\S]*?configuration=\\{\\{`
+      `<${componentName}\\b[\\s\\S]*?state=\\{state\\.${contractKey}\\}[\\s\\S]*?configuration=\\{configuration\\.${contractKey}\\}`
     ),
     `${componentName} should use grouped state and configuration.`
   );
 }
 
-const structureIndex = workspaceSource.indexOf("<DesignSceneStructureLayer");
-const guidanceIndex = workspaceSource.indexOf("<DesignSceneGuidanceLayer");
-const itemsIndex = workspaceSource.indexOf("<SceneItemsLayer", guidanceIndex);
-const previewIndex = workspaceSource.indexOf(
+const structureIndex = regionSource.indexOf("<DesignSceneStructureLayer");
+const guidanceIndex = regionSource.indexOf("<DesignSceneGuidanceLayer");
+const itemsIndex = regionSource.indexOf("<SceneItemsLayer", guidanceIndex);
+const previewIndex = regionSource.indexOf(
   "<DesignScenePreviewLayer",
   itemsIndex
 );
-const canvasEndIndex = workspaceSource.indexOf(
+const canvasEndIndex = regionSource.indexOf(
   "</DesignSceneCanvas>",
   previewIndex
 );
-const structureEndIndex = workspaceSource.indexOf("/>", structureIndex);
-const structureUsage = workspaceSource.slice(
-  structureIndex,
-  structureEndIndex + 2
-);
 
-assert.ok(structureIndex >= 0, "Workspace should render the structure layer.");
-assert.ok(
-  structureEndIndex > structureIndex,
-  "Workspace should close the structure-layer composition."
-);
+assert.ok(structureIndex >= 0, "The scene region should render the structure layer.");
 assert.ok(
   structureIndex < guidanceIndex &&
     guidanceIndex < itemsIndex &&
@@ -239,30 +234,30 @@ assert.match(
 );
 
 assert.match(
-  structureUsage,
-  /state=\{\{[\s\S]*viewMode,[\s\S]*underlay: floorPlanUnderlay[\s\S]*scene: editorScene2D[\s\S]*enabled: usesHousePlanScene[\s\S]*width: roomWidth/,
-  "Workspace should wire live 2D, whole-home, and single-room structure state."
+  adapterSource,
+  /structure:\s*\{[\s\S]*viewMode: editor\.viewMode,[\s\S]*underlay: plan\.underlay,[\s\S]*scene: plan\.editorScene,[\s\S]*enabled: room\.wholeHomeEnabled,[\s\S]*width: room\.width,/,
+  "The scene adapter should map live 2D, whole-home, and single-room structure state."
 );
 assert.match(
-  structureUsage,
-  /configuration=\{\{[\s\S]*editorMode,[\s\S]*isClientPreview,[\s\S]*layers: effectivePlanLayers[\s\S]*renderQuality: sceneRenderQuality/,
-  "Workspace should wire editor, plan, and render structure configuration."
+  adapterSource,
+  /structure:\s*\{[\s\S]*editorMode: editor\.editorMode,[\s\S]*isClientPreview: editor\.isClientPreview,[\s\S]*layers: plan\.layers,[\s\S]*renderQuality: scene\.renderQuality/,
+  "The scene adapter should map editor, plan, and render structure configuration."
 );
 assert.match(
-  structureUsage,
-  /actions=\{\{[\s\S]*addCalibrationPoint: handleFloorPlanCalibrationPoint[\s\S]*select: handlePlacementAwareRoomSelect[\s\S]*select: handleSelectPlanOverlay[\s\S]*addRoomPoint: handleBlankGridRoomDrawPoint[\s\S]*setOpeningDragging:[\s\S]*handlePlanOpeningDragStateChange3D[\s\S]*reportPlanMetrics: handlePlanDebugMetricsChange/,
-  "Workspace should wire grouped underlay, room, overlay, drawing, and whole-home structure actions."
+  workspaceSource,
+  /buildDesignPageSceneRegionAdapter\(\{[\s\S]*structure:\s*\{[\s\S]*addCalibrationPoint: handleFloorPlanCalibrationPoint[\s\S]*select: handlePlacementAwareRoomSelect[\s\S]*select: handleSelectPlanOverlay[\s\S]*addRoomPoint: handleBlankGridRoomDrawPoint[\s\S]*setOpeningDragging:[\s\S]*handlePlanOpeningDragStateChange3D[\s\S]*reportPlanMetrics: handlePlanDebugMetricsChange/,
+  "Workspace should inject grouped underlay, room, overlay, drawing, and whole-home actions into the scene adapter."
 );
 
 assert.match(
   workspaceSource,
-  /<DesignSceneGuidanceLayer[\s\S]*supportSurface:\s*activeCatalogPlacementSurfaceHighlight[\s\S]*compatibleIds:\s*activePlacementCompatibleZoneIds/,
-  "Workspace should wire live placement and zone guidance state."
+  /buildDesignPageSceneRegionAdapter\(\{[\s\S]*supportSurface:\s*activeCatalogPlacementSurfaceHighlight[\s\S]*compatibleZoneIds:\s*activePlacementCompatibleZoneIds/,
+  "Workspace should inject live placement and zone guidance state into the scene adapter."
 );
 assert.match(
   workspaceSource,
-  /<DesignScenePreviewLayer[\s\S]*pending:\s*pendingCatalogPlacementScene[\s\S]*hover:\s*hoverCatalogPlacementScene[\s\S]*hardInvalid:\s*pendingCatalogPlacementHardInvalid/,
-  "Workspace should wire pending, hover, and hard-invalid preview state."
+  /buildDesignPageSceneRegionAdapter\(\{[\s\S]*pendingScene:\s*pendingCatalogPlacementScene[\s\S]*hoverScene:\s*hoverCatalogPlacementScene[\s\S]*hardInvalid:\s*pendingCatalogPlacementHardInvalid/,
+  "Workspace should inject pending, hover, and hard-invalid preview state into the scene adapter."
 );
 
 console.log("Design-page scene layer ownership checks passed.");

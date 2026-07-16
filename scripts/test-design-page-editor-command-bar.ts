@@ -23,6 +23,14 @@ const commandBarSource = fs.readFileSync(
   ),
   "utf8"
 );
+const editorChromeSource = fs.readFileSync(
+  path.join(root, "components/editor/design-page/DesignPageEditorChrome.tsx"),
+  "utf8"
+);
+const editorChromeControllerSource = fs.readFileSync(
+  path.join(root, "lib/useDesignPageEditorChromeController.ts"),
+  "utf8"
+);
 
 assert.match(
   commandBarSource,
@@ -139,8 +147,13 @@ assert.match(
 
 assert.match(
   workspaceSource,
-  /import \{ DesignPageEditorCommandBar \} from "@\/components\/editor\/design-page\/DesignPageEditorCommandBar";/,
-  "The workspace should import the page-specific command-bar wrapper."
+  /import \{ DesignPageEditorChrome \} from "@\/components\/editor\/design-page\/DesignPageEditorChrome";/,
+  "The workspace should import the page-specific editor chrome."
+);
+assert.match(
+  editorChromeSource,
+  /import \{ DesignPageEditorCommandBar \}[\s\S]*?<DesignPageEditorCommandBar[\s\S]*?state=\{state\.commandBar\}[\s\S]*?configuration=\{configuration\.commandBar\}[\s\S]*?actions=\{actions\.commandBar\}/,
+  "The editor chrome should own the page-specific command-bar wrapper."
 );
 assert.doesNotMatch(
   workspaceSource,
@@ -154,32 +167,42 @@ assert.doesNotMatch(
 );
 assert.match(
   workspaceSource,
-  /<DesignPageEditorCommandBar\s+state=\{\{[\s\S]*?commandBar:\s*\{[\s\S]*?room:\s*activeRoom[\s\S]*?scenePerformance:\s*\{[\s\S]*?configuration=\{\{[\s\S]*?actions=\{\{[\s\S]*?commandBar:\s*\{[\s\S]*?room:\s*\{[\s\S]*?scenePerformance:\s*\{/,
-  "The workspace should wire grouped command, room, and performance state, configuration, and actions."
+  /useDesignPageEditorChromeController\(\{[\s\S]*?commandBar:\s*\{[\s\S]*?room:\s*activeRoom[\s\S]*?scenePerformance:\s*\{[\s\S]*?configuration:\s*\{[\s\S]*?actions:\s*\{[\s\S]*?room:\s*\{[\s\S]*?scenePerformance:\s*\{/,
+  "The workspace should inject grouped command, room, and performance state, configuration, and actions."
 );
 assert.match(
-  workspaceSource,
-  /commandBar:\s*\{[\s\S]*?onMillwork:\s*canUseCabinetryStudio\s*\? openCabinetryStudio\s*:\s*undefined/,
+  editorChromeControllerSource,
+  /onMillwork: configuration\.canUseCabinetryStudio[\s\S]*?\? actions\.cabinetry\.openStudio[\s\S]*?: undefined/,
   "Unavailable Millwork should remain undefined so the leaf hides both command entries."
 );
 assert.match(
   workspaceSource,
-  /commandBar:\s*\{[\s\S]*?onNewPlan:\s*openNewPlanPicker[\s\S]*?onSave:\s*async \(\) => \{[\s\S]*?openGuestPrompt\("save", \(\) => \{\}\)[\s\S]*?await saveDesignToCloud\(\)[\s\S]*?showRuleToast\("Saved to cloud"\)/,
-  "The workspace boundary should preserve controller-owned New plan and guest/cloud save behavior."
+  /openNewPlan: openNewPlanPicker[\s\S]*?saveDesignToCloud,[\s\S]*?openGuestPrompt/,
+  "The workspace should inject New plan and guest/cloud save collaborators."
+);
+assert.match(
+  editorChromeControllerSource,
+  /const save = async \(\) => \{[\s\S]*?openGuestPrompt\("save", \(\) => \{\}\)[\s\S]*?await actions\.persistence\.saveDesignToCloud\(\)[\s\S]*?showToast\("Saved to cloud"\)/,
+  "The editor-chrome controller should preserve guest/cloud save behavior."
+);
+assert.match(
+  editorChromeControllerSource,
+  /onNewPlan: actions\.dialogs\.openNewPlan[\s\S]*?onSave: save/,
+  "The editor-chrome controller should preserve New plan and save action wiring."
 );
 
-const viewportOverlayIndex = workspaceSource.indexOf(
-  "<DesignPageViewportOverlayLayer"
-);
-const commandCompositionIndex = workspaceSource.indexOf(
-  "<DesignPageEditorCommandBar"
-);
-const betaStartIndex = workspaceSource.indexOf("<BetaStartPanel");
+const sceneRegionIndex = workspaceSource.indexOf("<DesignPageSceneRegion");
+const chromeCompositionIndex = workspaceSource.indexOf("<DesignPageEditorChrome");
 assert.ok(
-  viewportOverlayIndex >= 0 &&
-    commandCompositionIndex > viewportOverlayIndex &&
-    betaStartIndex > commandCompositionIndex,
-  "Workspace composition should remain Viewport overlay, Command bar, then Beta start."
+  sceneRegionIndex >= 0 && chromeCompositionIndex > sceneRegionIndex,
+  "Workspace composition should keep editor chrome after the scene and viewport region."
+);
+const commandCompositionIndex = editorChromeSource.indexOf("<DesignPageEditorCommandBar");
+const betaStartIndex = editorChromeSource.indexOf("<BetaStartPanel");
+const toolRailIndex = editorChromeSource.indexOf("<EditorToolRail");
+assert.ok(
+  commandCompositionIndex >= 0 && betaStartIndex > commandCompositionIndex && toolRailIndex > betaStartIndex,
+  "Editor chrome composition should remain Command bar, Beta start, then Tool rail."
 );
 
 console.log("Design-page editor command-bar guardrails passed.");

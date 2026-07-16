@@ -21,6 +21,10 @@ const designPageSource = readFileSync(
   join(process.cwd(), "components/editor/design-page/DesignPageWorkspace.tsx"),
   "utf8"
 );
+const editorChromeControllerSource = readFileSync(
+  join(process.cwd(), "lib/useDesignPageEditorChromeController.ts"),
+  "utf8"
+);
 const appEventRouteSource = readFileSync(
   join(process.cwd(), "app/api/track/app-event/route.ts"),
   "utf8"
@@ -64,8 +68,13 @@ assert.match(
 );
 assert.match(
   designPageSource,
-  /<DesignPageEditorCommandBar[\s\S]*?actions=\{\{[\s\S]*?commandBar:\s*\{[\s\S]*?onFeedback:\s*\(\)\s*=>\s*setFeedbackOpen\(true\)/,
-  "the workspace should open feedback through the typed command-wrapper boundary."
+  /useDesignPageEditorChromeController\(\{[\s\S]*?dialogs:\s*\{[\s\S]*?setFeedbackOpen,/,
+  "the workspace should inject the feedback dialog setter into the chrome controller."
+);
+assert.match(
+  editorChromeControllerSource,
+  /const openFeedback = \(\) => \{[\s\S]*?actions\.dialogs\.setFeedbackOpen\(true\);[\s\S]*?onFeedback: openFeedback/,
+  "the chrome controller should open feedback through the typed command-wrapper boundary."
 );
 assert.match(
   widgetSource,

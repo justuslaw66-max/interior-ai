@@ -10,6 +10,12 @@ const designPagePath = path.join(
   "DesignPageWorkspace.tsx"
 );
 const source = fs.readFileSync(designPagePath, "utf8");
+const designPageComponentsPath = path.join(
+  process.cwd(),
+  "components",
+  "editor",
+  "design-page"
+);
 const designPageEditorCommandBarSource = fs.readFileSync(
   path.join(
     process.cwd(),
@@ -28,6 +34,22 @@ const viewportOverlaySource = fs.readFileSync(
     "design-page",
     "DesignPageViewportOverlayLayer.tsx"
   ),
+  "utf8"
+);
+const sceneRegionSource = fs.readFileSync(
+  path.join(designPageComponentsPath, "DesignPageSceneRegion.tsx"),
+  "utf8"
+);
+const sceneAdapterSource = fs.readFileSync(
+  path.join(process.cwd(), "lib", "design-page-scene-region-adapter.ts"),
+  "utf8"
+);
+const viewportAdapterSource = fs.readFileSync(
+  path.join(process.cwd(), "lib", "design-page-viewport-region-adapter.ts"),
+  "utf8"
+);
+const editorChromeControllerSource = fs.readFileSync(
+  path.join(process.cwd(), "lib", "useDesignPageEditorChromeController.ts"),
   "utf8"
 );
 const cameraControllerSource = fs.readFileSync(
@@ -51,12 +73,6 @@ const designSceneCanvasSource = fs.readFileSync(
     "DesignSceneCanvas.tsx"
   ),
   "utf8"
-);
-const designPageComponentsPath = path.join(
-  process.cwd(),
-  "components",
-  "editor",
-  "design-page"
 );
 const selectionInspectorSource = fs.readFileSync(
   path.join(designPageComponentsPath, "DesignPageSelectionInspector.tsx"),
@@ -85,13 +101,13 @@ const planPresentationSource = fs.readFileSync(
 
 assert.match(
   source,
-  /import\s+\{\s*DesignPageViewportOverlayLayer\s*\}\s+from\s+"@\/components\/editor\/design-page\/DesignPageViewportOverlayLayer"/,
-  "The workspace should import the viewport-overlay composition."
+  /import\s+\{\s*DesignPageSceneRegion\s*\}\s+from\s+"@\/components\/editor\/design-page\/DesignPageSceneRegion"/,
+  "The workspace should import the scene-region composition."
 );
 assert.match(
-  source,
-  /<DesignPageViewportOverlayLayer[\s\S]*?state=\{\{[\s\S]*?configuration=\{\{[\s\S]*?references=\{\{[\s\S]*?actions=\{\{/,
-  "The workspace should wire the viewport overlay through grouped contracts."
+  sceneRegionSource,
+  /import \{ DesignPageViewportOverlayLayer \}[\s\S]*?<DesignPageViewportOverlayLayer[\s\S]*?state=\{state\.viewport\}[\s\S]*?configuration=\{configuration\.viewport\}[\s\S]*?references=\{references\.viewport\}[\s\S]*?actions=\{actions\.viewport\}/,
+  "The scene region should wire the viewport overlay through grouped contracts."
 );
 for (const contractName of [
   "DesignPageViewportOverlayLayerState",
@@ -214,8 +230,13 @@ assert.match(
 
 assert.match(
   source,
-  /<DesignSceneCanvas[\s\S]*planFit:\s*plan2DWholeHomeViewFit/,
-  "The design page should pass its resolved whole-plan fit into the Canvas shell."
+  /buildDesignPageSceneRegionAdapter\(\{[\s\S]*?fit:\s*plan2DWholeHomeViewFit/,
+  "The design page should inject its resolved whole-plan fit at the scene adapter boundary."
+);
+assert.match(
+  sceneAdapterSource,
+  /planFit: plan\.fit/,
+  "The scene adapter should pass the resolved whole-plan fit into the Canvas shell."
 );
 
 assert.match(
@@ -280,8 +301,13 @@ assert.match(
 
 assert.match(
   source,
-  /railVisible:\s*floatingPlanOverlayStackVisible[\s\S]*?navigator:\s*viewMode === "3d" && hasWholeHousePlan/,
-  "The workspace should expose the shared overlay gate and the 3D whole-home navigator state."
+  /rail:\s*floatingPlanOverlayStackVisible[\s\S]*?enabled:\s*viewMode === "3d" && hasWholeHousePlan/,
+  "The workspace should inject the shared overlay gate and 3D whole-home navigator state."
+);
+assert.match(
+  viewportAdapterSource,
+  /railVisible: state\.visibility\.rail[\s\S]*?navigator: state\.navigator\.enabled/,
+  "The viewport adapter should expose the shared overlay gate and navigator state."
 );
 
 assert.match(
@@ -334,8 +360,13 @@ assert.match(
 
 assert.match(
   source,
-  /planQuality:\s*\{[\s\S]{0,300}?dockedWidthPx: PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX[\s\S]{0,1200}?planQuality:\s*\{ setPanel: setPlanQualityReviewPanelNode \}[\s\S]{0,1800}?planQuality:\s*\{[\s\S]{0,200}?toggleCollapsed: togglePlanQualityReviewPanel/,
-  "The workspace should pass the controller-owned plan-review sizing, reference, and actions through the viewport boundary."
+  /floatingOverlayStackWidthPx: PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX[\s\S]*?planQuality:\s*\{ setPanel: setPlanQualityReviewPanelNode \}[\s\S]*?planQuality:\s*\{ toggleCollapsed: togglePlanQualityReviewPanel, activateIssue: handlePlanQualityAction \}/,
+  "The workspace should inject controller-owned plan-review sizing, reference, and actions at the viewport-adapter boundary."
+);
+assert.match(
+  viewportAdapterSource,
+  /planQuality:\s*\{[\s\S]*?dockedWidthPx: configuration\.floatingOverlayStackWidthPx[\s\S]*?planQuality: actions\.planQuality/,
+  "The viewport adapter should pass plan-review sizing and actions through the viewport boundary."
 );
 assert.match(
   viewportOverlaySource,
@@ -380,7 +411,12 @@ assert.match(
 );
 assert.match(
   source,
-  /<DesignPageEditorCommandBar[\s\S]*actions=\{\{[\s\S]*commandBar:\s*\{[\s\S]*onFeedback:\s*\(\) => setFeedbackOpen\(true\)/,
+  /useDesignPageEditorChromeController\(\{[\s\S]*?setFeedbackOpen/,
+  "The workspace should inject feedback state at the editor-chrome boundary."
+);
+assert.match(
+  editorChromeControllerSource,
+  /const openFeedback = \(\) => \{[\s\S]*?setFeedbackOpen\(true\)[\s\S]*?onFeedback: openFeedback/,
   "Design-page feedback policy should pass through the command-bar boundary instead of floating over the canvas."
 );
 
@@ -452,8 +488,13 @@ assert.doesNotMatch(
 
 assert.match(
   source,
-  /<DesignPageViewportOverlayLayer[\s\S]*?selectionInspector:\s*floatingSelectionInspectorVisible && selectedObjectInspector/,
-  "The workspace should pass inspector state through the deduped visibility flag."
+  /selectionInspector: floatingSelectionInspectorVisible[\s\S]*?summary: selectedObjectInspector/,
+  "The workspace should inject inspector state and its deduped visibility flag."
+);
+assert.match(
+  viewportAdapterSource,
+  /selectionInspector:\s*state\.visibility\.selectionInspector && selectionSummary/,
+  "The viewport adapter should gate inspector state through the deduped visibility flag."
 );
 assert.match(
   viewportOverlaySource,
@@ -515,8 +556,13 @@ assert.doesNotMatch(
 
 assert.match(
   source,
-  /<DesignPageEditorCommandBar[\s\S]*millworkActive:\s*cabinetryStudioState !== null[\s\S]*onMillwork:\s*canUseCabinetryStudio\s*\?\s*openCabinetryStudio\s*:\s*undefined/,
-  "The workspace should pass Millwork state and policy through the command-bar boundary without changing the active room, wall, or editor workflow."
+  /useDesignPageEditorChromeController\(\{[\s\S]*millworkActive:\s*cabinetryStudioState !== null[\s\S]*canUseCabinetryStudio[\s\S]*openStudio: openCabinetryStudio/,
+  "The workspace should inject Millwork state and capability at the editor-chrome boundary."
+);
+assert.match(
+  editorChromeControllerSource,
+  /onMillwork: configuration\.canUseCabinetryStudio[\s\S]*?\? actions\.cabinetry\.openStudio[\s\S]*?: undefined/,
+  "The editor-chrome controller should preserve Millwork availability policy without changing the active room, wall, or editor workflow."
 );
 
 assert.doesNotMatch(

@@ -14,6 +14,12 @@ const workspaceSource = readSource(
 const viewportOverlaySource = readSource(
   "components/editor/design-page/DesignPageViewportOverlayLayer.tsx"
 );
+const sceneRegionSource = readSource(
+  "components/editor/design-page/DesignPageSceneRegion.tsx"
+);
+const viewportAdapterSource = readSource(
+  "lib/design-page-viewport-region-adapter.ts"
+);
 const controlsSource = readSource(
   "components/editor/design-page/DesignPageViewportSelectionControls.tsx"
 );
@@ -22,27 +28,31 @@ const modelSource = readSource(
 );
 const normalizedWorkspace = normalizeWhitespace(workspaceSource);
 const normalizedViewportOverlay = normalizeWhitespace(viewportOverlaySource);
+const normalizedViewportAdapter = normalizeWhitespace(viewportAdapterSource);
 const normalizedModel = normalizeWhitespace(modelSource);
 
 assert.match(
-  workspaceSource,
+  sceneRegionSource,
   /import\s+\{\s*DesignPageViewportOverlayLayer\s*\}\s+from\s+"@\/components\/editor\/design-page\/DesignPageViewportOverlayLayer"/,
-  "Workspace should import the viewport-overlay boundary."
+  "The scene region should import the viewport-overlay boundary."
 );
 assert.match(
-  workspaceSource,
-  /<DesignPageViewportOverlayLayer[\s\S]*?selectionControls:\s*resolveDesignPageViewportSelectionControlsState\(\{/,
-  "Workspace should resolve selection-control policy at the viewport boundary."
+  viewportAdapterSource,
+  /selectionControls:\s*resolveDesignPageViewportSelectionControlsState\(\s*state\.selectionControls\s*\)/,
+  "The viewport adapter should resolve selection-control policy at the viewport boundary."
 );
-for (const expectedBoundary of [
-  "selectionControls: { dark: showDesignerTheme }",
-  "selectionControls: { floorStack: { switchFloor: handleSwitchFloor }",
-] as const) {
-  assert.ok(
-    normalizedWorkspace.includes(expectedBoundary),
-    `Workspace should preserve the selection-control boundary: ${expectedBoundary}.`
-  );
-}
+assert.ok(
+  normalizedViewportAdapter.includes(
+    "selectionControls: { dark: configuration.dark }"
+  ),
+  "The viewport adapter should map the resolved theme into selection controls."
+);
+assert.ok(
+  normalizedWorkspace.includes(
+    "selectionControls: { floorStack: { switchFloor: handleSwitchFloor }"
+  ),
+  "Workspace should inject the live floor-stack action into the viewport adapter."
+);
 assert.match(
   viewportOverlaySource,
   /import\s+\{\s*DesignPageViewportSelectionControls\s*\}\s+from\s+"@\/components\/editor\/design-page\/DesignPageViewportSelectionControls"/,
@@ -106,7 +116,7 @@ for (const expected of [
   "createZone: createZoneFromSelection",
   "clear: clearAllSelection",
   "autoLayout: autoLayoutZone",
-  "rotateQuarterTurn: (zoneId) => rotateZone(zoneId, Math.PI / 2)",
+  "rotateZone",
   "ungroup: ungroupZone",
 ] as const) {
   assert.ok(
@@ -114,6 +124,12 @@ for (const expected of [
     `Workspace should preserve ${expected}.`
   );
 }
+assert.ok(
+  normalizedViewportAdapter.includes(
+    "rotateQuarterTurn: (zoneId) => actions.selectionControls.selectedZone.rotateZone( zoneId, Math.PI / 2 )"
+  ),
+  "The viewport adapter should preserve quarter-turn zone rotation policy."
+);
 
 for (const expected of [
   "active: option.level === activeFloorLevel",

@@ -10,6 +10,13 @@ const normalizeWhitespace = (source: string) => source.replace(/\s+/g, " ");
 const workspaceSource = readSource(
   "components/editor/design-page/DesignPageWorkspace.tsx"
 );
+const sceneRegionSource = readSource(
+  "components/editor/design-page/DesignPageSceneRegion.tsx"
+);
+const sceneAdapterSource = readSource("lib/design-page-scene-region-adapter.ts");
+const viewportAdapterSource = readSource(
+  "lib/design-page-viewport-region-adapter.ts"
+);
 const structureLayerSource = readSource(
   "components/editor/design-page/DesignSceneStructureLayer.tsx"
 );
@@ -239,23 +246,9 @@ for (const { pattern, description } of [
   },
   { pattern: /zones:\s*planZones2D/, description: "2D plan zones" },
   {
-    pattern: /resolvers=\{\{\s*getZoneBounds\s*\}\}/,
-    description: "scene zone-bounds resolver",
-  },
-  {
-    pattern:
-      /resolveDesignPageViewportSelectionControlsState\(\{[\s\S]*?pendingZoneType,[\s\S]*?selectedZone,[\s\S]*?isClientPreview/,
-    description: "viewport zone live-policy state boundary",
-  },
-  {
     pattern:
       /changeZoneType:\s*setPendingZoneType,[\s\S]*?createZone:\s*createZoneFromSelection/,
     description: "manual zone action boundary",
-  },
-  {
-    pattern:
-      /autoLayout:\s*autoLayoutZone,[\s\S]*?rotateQuarterTurn:\s*\(zoneId\)\s*=>\s*rotateZone\(zoneId, Math\.PI \/ 2\),[\s\S]*?ungroup:\s*ungroupZone/,
-    description: "selected-zone action boundary",
   },
 ] as const) {
   assert.match(
@@ -264,6 +257,42 @@ for (const { pattern, description } of [
     `Workspace should preserve its ${description} wiring.`
   );
 }
+
+assert.match(
+  workspaceSource,
+  /resolvers:\s*\{[\s\S]*?guidance:\s*\{ getZoneBounds \}/,
+  "Workspace should inject the scene zone-bounds resolver into the scene adapter."
+);
+assert.match(
+  sceneAdapterSource,
+  /resolvers,/,
+  "The scene adapter should preserve grouped scene resolvers."
+);
+assert.match(
+  sceneRegionSource,
+  /<DesignSceneGuidanceLayer[\s\S]*?resolvers=\{resolvers\.guidance\}/,
+  "The scene region should pass the zone-bounds resolver to the guidance layer."
+);
+assert.match(
+  workspaceSource,
+  /selectionControls:\s*\{[\s\S]*?pendingZoneType,[\s\S]*?selectedZone,[\s\S]*?isClientPreview/,
+  "Workspace should inject viewport zone live-policy inputs."
+);
+assert.match(
+  viewportAdapterSource,
+  /resolveDesignPageViewportSelectionControlsState\(\s*state\.selectionControls\s*\)/,
+  "The viewport adapter should resolve zone live-policy state."
+);
+assert.match(
+  workspaceSource,
+  /selectedZone:\s*\{[\s\S]*?autoLayout:\s*autoLayoutZone,[\s\S]*?rotateZone,[\s\S]*?ungroup:\s*ungroupZone/,
+  "Workspace should inject selected-zone actions into the viewport adapter."
+);
+assert.match(
+  viewportAdapterSource,
+  /rotateQuarterTurn:\s*\(zoneId\)\s*=>[\s\S]*?rotateZone\(\s*zoneId,\s*Math\.PI \/ 2\s*\)/,
+  "The viewport adapter should preserve quarter-turn zone rotation."
+);
 
 assert.match(
   viewportOverlaySource,
