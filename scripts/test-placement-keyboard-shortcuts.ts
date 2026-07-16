@@ -24,6 +24,10 @@ const itemInteractionFacadeSource = readFileSync(
   join(root, "lib/useDesignPageItemInteractionFacade.ts"),
   "utf8"
 );
+const placementSelectionFacadeSource = readFileSync(
+  join(root, "lib/useDesignPagePlacementSelectionWorkspaceFacade.ts"),
+  "utf8"
+);
 
 assert.match(
   selectionCoordinatorSource,
@@ -41,9 +45,14 @@ assert.match(
   "The keyboard controller should receive selected-item identity for rotation input synchronization."
 );
 assert.match(
-  workspaceSource,
+  placementSelectionFacadeSource,
   /useDesignPageItemInteractionFacade\(\{/,
-  "The workspace should compose the item-interaction facade."
+  "The placement/selection workspace facade should compose item interactions."
+);
+assert.match(
+  workspaceSource,
+  /useDesignPagePlacementSelectionWorkspaceFacade\(\{/,
+  "The workspace should compose the placement/selection facade."
 );
 assert.match(
   keyboardSource,

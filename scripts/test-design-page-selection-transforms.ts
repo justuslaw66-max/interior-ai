@@ -11,13 +11,24 @@ const facadeSource = readFileSync(
   join(root, "lib/useDesignPageItemInteractionFacade.ts"),
   "utf8"
 );
+const placementSelectionFacadeSource = readFileSync(
+  join(root, "lib/useDesignPagePlacementSelectionWorkspaceFacade.ts"),
+  "utf8"
+);
 const controllerSource = readFileSync(
   join(root, "lib/useDesignPageSelectionTransforms.ts"),
   "utf8"
 );
 
 assert.match(facadeSource, /useDesignPageSelectionTransforms\(\{/);
-assert.match(pageSource, /useDesignPageItemInteractionFacade\(\{/);
+assert.match(
+  placementSelectionFacadeSource,
+  /useDesignPageItemInteractionFacade\(\{/
+);
+assert.match(
+  pageSource,
+  /useDesignPagePlacementSelectionWorkspaceFacade\(\{/
+);
 assert.doesNotMatch(pageSource, /const applyItemRotation\s*=/);
 assert.doesNotMatch(pageSource, /const duplicateSelectedItem\s*=/);
 assert.doesNotMatch(pageSource, /const moveSelectedItemToRoom\s*=/);

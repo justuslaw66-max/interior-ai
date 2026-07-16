@@ -48,6 +48,10 @@ const designPageSource = readFileSync(
   join(process.cwd(), "components/editor/design-page/DesignPageWorkspace.tsx"),
   "utf8"
 );
+const placementSelectionFacadeSource = readFileSync(
+  join(process.cwd(), "lib/useDesignPagePlacementSelectionWorkspaceFacade.ts"),
+  "utf8"
+);
 
 assert.match(hookSource, /evaluateCatalogPlacementTarget\(\{/);
 assert.match(
@@ -55,9 +59,14 @@ assert.match(
   /resolveCatalogPlacementRoomTarget\(\{[\s\S]*isAcceptable: isCatalogPlacementTargetAcceptable/
 );
 assert.match(
+  placementSelectionFacadeSource,
+  /const activePlacementTargetValid = pendingPlacement[\s\S]*\? !catalogPlacement\.assessment\.pendingCatalogPlacementHardInvalid/,
+  "the placement facade should derive the scene target outline from the policy assessment"
+);
+assert.match(
   designPageSource,
-  /const activePlacementTargetValid = pendingCatalogPlacement[\s\S]*\? !pendingCatalogPlacementHardInvalid/,
-  "the scene target outline should remain wired to the policy assessment"
+  /activeTargetValid: activePlacementTargetValid/,
+  "the workspace should consume the facade-owned placement target validity"
 );
 
 console.log("Placement target validity checks passed");

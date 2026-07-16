@@ -21,6 +21,9 @@ const controllerSource = readSource(
 const itemInteractionFacadeSource = readSource(
   "lib/useDesignPageItemInteractionFacade.ts"
 );
+const placementSelectionFacadeSource = readSource(
+  "lib/useDesignPagePlacementSelectionWorkspaceFacade.ts"
+);
 
 function sourceBetween(
   source: string,
@@ -198,9 +201,14 @@ assert.match(
   "The item-interaction facade should compose selected-item actions through grouped contracts."
 );
 assert.match(
-  workspaceSource,
+  placementSelectionFacadeSource,
   /useDesignPageItemInteractionFacade\(\{/,
-  "The workspace should compose the item-interaction facade."
+  "The placement/selection workspace facade should compose the item-interaction facade."
+);
+assert.match(
+  workspaceSource,
+  /useDesignPagePlacementSelectionWorkspaceFacade\(\{/,
+  "The workspace should compose the placement/selection facade."
 );
 
 for (const callbackName of [
