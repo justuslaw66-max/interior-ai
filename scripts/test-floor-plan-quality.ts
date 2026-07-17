@@ -323,6 +323,14 @@ const designPageSource = fs.readFileSync(
   ),
   "utf8"
 );
+const sceneRegionWorkspaceRegistrationSource = fs.readFileSync(
+  path.join(
+    process.cwd(),
+    "lib",
+    "useDesignPageSceneRegionWorkspaceRegistration.ts"
+  ),
+  "utf8"
+);
 const designSceneStructureSource = fs.readFileSync(
   path.join(
     process.cwd(),
@@ -392,9 +400,9 @@ assert.match(
   "The structure layer should render lightweight visual quality hints from plan state."
 );
 assert.match(
-  designPageSource,
-  /qualityIssues: floorPlanQualityReport\.issues,/,
-  "The workspace should wire report issues into the structure layer."
+  sceneRegionWorkspaceRegistrationSource,
+  /qualityIssues: planWorkspace\.state\.quality\.report\.issues,/,
+  "The scene registration should wire report issues into the structure layer."
 );
 assert.doesNotMatch(
   designPageSource,

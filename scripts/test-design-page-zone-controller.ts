@@ -16,6 +16,9 @@ const workspaceSource = readSource(
 const sceneRegionSource = readSource(
   "components/editor/design-page/DesignPageSceneRegion.tsx"
 );
+const sceneRegionWorkspaceRegistrationSource = readSource(
+  "lib/useDesignPageSceneRegionWorkspaceRegistration.ts"
+);
 const sceneAdapterSource = readSource("lib/design-page-scene-region-adapter.ts");
 const viewportAdapterSource = readSource(
   "lib/design-page-viewport-region-adapter.ts"
@@ -315,8 +318,10 @@ for (const { pattern, description } of [
   assert.match(
     description === "onboarding auto-create action"
       ? commerceOnboardingSource
+      : description === "2D plan zones"
+        ? sceneRegionWorkspaceRegistrationSource
       : workspaceSource,
-    pattern,
+    description === "2D plan zones" ? /zones:\s*zone\.state\.planZones2D/ : pattern,
     `Workspace should preserve its ${description} wiring.`
   );
 }
@@ -328,9 +333,9 @@ assert.match(
 );
 
 assert.match(
-  workspaceSource,
-  /resolvers:\s*\{[\s\S]*?guidance:\s*\{ getZoneBounds \}/,
-  "Workspace should inject the scene zone-bounds resolver into the scene adapter."
+  sceneRegionWorkspaceRegistrationSource,
+  /resolvers:\s*\{[\s\S]*?guidance:\s*\{ getZoneBounds: zone\.resolvers\.getZoneBounds \}/,
+  "The scene registration should inject the zone-bounds resolver into the scene adapter."
 );
 assert.match(
   sceneAdapterSource,

@@ -30,7 +30,7 @@ assertSourceOrder(
   [
     "useDesignPageSelectionWorkspaceRegistration({",
     "useDesignPagePresentationWorkspaceRegistration({",
-    "useDesignPageSceneItemDrag({",
+    "useDesignPageSceneRegionWorkspaceRegistration({",
   ],
   "Workspace should preserve selection, presentation/QA, and drag hook order"
 );

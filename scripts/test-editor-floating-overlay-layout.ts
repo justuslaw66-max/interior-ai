@@ -10,6 +10,14 @@ const designPagePath = path.join(
   "DesignPageWorkspace.tsx"
 );
 const source = fs.readFileSync(designPagePath, "utf8");
+const sceneRegionWorkspaceSource = fs.readFileSync(
+  path.join(
+    process.cwd(),
+    "lib",
+    "useDesignPageSceneRegionWorkspaceRegistration.ts"
+  ),
+  "utf8"
+);
 const presentationWorkspaceSource = fs.readFileSync(
   path.join(
     process.cwd(),
@@ -265,8 +273,8 @@ assert.match(
 );
 
 assert.match(
-  source,
-  /buildDesignPageSceneRegionAdapter\(\{[\s\S]*?fit:\s*plan2DWholeHomeViewFit/,
+  sceneRegionWorkspaceSource,
+  /buildDesignPageSceneRegionAdapter\(\{[\s\S]*?fit:\s*planFit/,
   "The design page should inject its resolved whole-plan fit at the scene adapter boundary."
 );
 assert.match(

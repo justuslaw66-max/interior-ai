@@ -2,13 +2,11 @@ import fs from "node:fs";
 import path from "node:path";
 import assert from "node:assert/strict";
 
-const designPageSource = fs.readFileSync(
+const sceneRegionWorkspaceRegistrationSource = fs.readFileSync(
   path.join(
     process.cwd(),
-    "components",
-    "editor",
-    "design-page",
-    "DesignPageWorkspace.tsx"
+    "lib",
+    "useDesignPageSceneRegionWorkspaceRegistration.ts"
   ),
   "utf8"
 );
@@ -42,9 +40,9 @@ assert.match(
 );
 
 assert.match(
-  designPageSource,
+  sceneRegionWorkspaceRegistrationSource,
   /maxPolarAngle:\s*EDITOR_3D_MAX_POLAR_ANGLE/,
-  "The design page should pass the named maximum polar angle guardrail to the Canvas shell."
+  "The scene registration should pass the named maximum polar angle guardrail to the Canvas shell."
 );
 
 assert.match(

@@ -18,6 +18,9 @@ const regionSource = readSource(
   "components/editor/design-page/DesignPageSceneRegion.tsx"
 );
 const adapterSource = readSource("lib/design-page-scene-region-adapter.ts");
+const sceneWorkspaceSource = readSource(
+  "lib/useDesignPageSceneRegionWorkspaceRegistration.ts"
+);
 const structureSource = readSource(
   "components/editor/design-page/DesignSceneStructureLayer.tsx"
 );
@@ -516,20 +519,20 @@ assert.match(
   "The scene adapter should map editor, plan, and render structure configuration."
 );
 assert.match(
-  workspaceSource,
-  /buildDesignPageSceneRegionAdapter\(\{[\s\S]*structure:\s*\{[\s\S]*addCalibrationPoint: handleFloorPlanCalibrationPoint[\s\S]*select: handlePlacementAwareRoomSelect[\s\S]*select: handleSelectPlanOverlay[\s\S]*addRoomPoint: handleBlankGridRoomDrawPoint[\s\S]*setOpeningDragging:[\s\S]*handlePlanOpeningDragStateChange3D[\s\S]*reportPlanMetrics: handlePlanDebugMetricsChange/,
-  "Workspace should inject grouped underlay, room, overlay, drawing, and whole-home actions into the scene adapter."
+  sceneWorkspaceSource,
+  /buildDesignPageSceneRegionAdapter\(\{[\s\S]*structure:\s*\{[\s\S]*addCalibrationPoint: planAuthoring\.boundaries\.underlay\.actions\.addCalibrationPoint[\s\S]*select: placement\.actions\.targeting\.handlePlacementAwareRoomSelect[\s\S]*select:[\s\S]*selectionInspection\.actions\.selection\.handleSelectPlanOverlay[\s\S]*addRoomPoint:[\s\S]*handleBlankGridRoomDrawPoint[\s\S]*setOpeningDragging:[\s\S]*camera\.actions\.canvas\.changePlanOpeningDragging[\s\S]*reportPlanMetrics:[\s\S]*viewportShell\.actions\.diagnostics\.handlePlanDebugMetricsChange/,
+  "Scene workspace should inject grouped underlay, room, overlay, drawing, and whole-home actions into the scene adapter."
 );
 
 assert.match(
-  workspaceSource,
-  /buildDesignPageSceneRegionAdapter\(\{[\s\S]*supportSurface:\s*activeCatalogPlacementSurfaceHighlight[\s\S]*compatibleZoneIds:\s*activePlacementCompatibleZoneIds/,
-  "Workspace should inject live placement and zone guidance state into the scene adapter."
+  sceneWorkspaceSource,
+  /buildDesignPageSceneRegionAdapter\(\{[\s\S]*supportSurface:\s*placement\.derived\.activeCatalogPlacementSurfaceHighlight[\s\S]*compatibleZoneIds:\s*placement\.derived\.activePlacementCompatibleZoneIds/,
+  "Scene workspace should inject live placement and zone guidance state into the scene adapter."
 );
 assert.match(
-  workspaceSource,
-  /buildDesignPageSceneRegionAdapter\(\{[\s\S]*pendingScene:\s*pendingCatalogPlacementScene[\s\S]*hoverScene:\s*hoverCatalogPlacementScene[\s\S]*hardInvalid:\s*pendingCatalogPlacementHardInvalid/,
-  "Workspace should inject pending, hover, and hard-invalid preview state into the scene adapter."
+  sceneWorkspaceSource,
+  /buildDesignPageSceneRegionAdapter\(\{[\s\S]*pendingScene:\s*placement\.derived\.pendingCatalogPlacementScene[\s\S]*hoverScene:\s*placement\.derived\.hoverCatalogPlacementScene[\s\S]*hardInvalid:\s*placement\.derived\.pendingCatalogPlacementHardInvalid/,
+  "Scene workspace should inject pending, hover, and hard-invalid preview state into the scene adapter."
 );
 
 console.log("Design-page scene layer ownership checks passed.");

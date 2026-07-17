@@ -10,14 +10,14 @@ const rendererPath = path.join(
   "RoomRenderer2D.tsx"
 );
 const source = fs.readFileSync(rendererPath, "utf8");
-const designPagePath = path.join(
-  process.cwd(),
-  "components",
-  "editor",
-  "design-page",
-  "DesignPageWorkspace.tsx"
+const sceneRegionWorkspaceSource = fs.readFileSync(
+  path.join(
+    process.cwd(),
+    "lib",
+    "useDesignPageSceneRegionWorkspaceRegistration.ts"
+  ),
+  "utf8"
 );
-const designPageSource = fs.readFileSync(designPagePath, "utf8");
 const canvasInteractionControllerSource = fs.readFileSync(
   path.join(
     process.cwd(),
@@ -303,9 +303,9 @@ assert.match(
 );
 
 assert.match(
-  designPageSource,
-  /select: handlePlacementAwareRoomSelect,/,
-  "The workspace should wire the controller-owned room-selection action into the scene."
+  sceneRegionWorkspaceSource,
+  /select: placement\.actions\.targeting\.handlePlacementAwareRoomSelect,/,
+  "The scene registration should wire the controller-owned room-selection action."
 );
 
 assert.match(
@@ -387,9 +387,9 @@ assert.match(
 );
 
 assert.match(
-  designPageSource,
-  /setDragging: handlePlanRoomDragStateChange,[\s\S]*?setResizing: handlePlanRoomResizeStateChange,/,
-  "The design page should wire room drag and resize state into the structure layer."
+  sceneRegionWorkspaceSource,
+  /setDragging: camera\.actions\.canvas\.changePlanRoomDragging,[\s\S]*?setResizing: camera\.actions\.canvas\.changePlanRoomResizing,/,
+  "The scene registration should wire room drag and resize state into the structure layer."
 );
 
 assert.match(
@@ -408,14 +408,14 @@ assert.match(
   "Editor interaction should own the camera workspace registration."
 );
 assert.match(
-  designPageSource,
-  /camera: cameraWorkspace,[\s\S]*?controlsEnabled: canvasControlsEnabled,[\s\S]*?changePlanRoomDragging: handlePlanRoomDragStateChange,[\s\S]*?changePlanRoomResizing: handlePlanRoomResizeStateChange/,
-  "The design page should consume the registered facade-owned room drag locks."
+  sceneRegionWorkspaceSource,
+  /const \{ camera, zone \} = editorInteraction\.boundaries;[\s\S]*?controlsEnabled: camera\.state\.canvas\.controlsEnabled[\s\S]*?setDragging: camera\.actions\.canvas\.changePlanRoomDragging[\s\S]*?setResizing: camera\.actions\.canvas\.changePlanRoomResizing/,
+  "The scene workspace should consume the registered facade-owned room drag locks."
 );
 assert.match(
-  designPageSource,
-  /buildDesignPageSceneRegionAdapter\(\{[\s\S]*?controlsEnabled: canvasControlsEnabled/,
-  "The design page should pass the controller-owned interaction lock into the scene adapter."
+  sceneRegionWorkspaceSource,
+  /buildDesignPageSceneRegionAdapter\(\{[\s\S]*?controlsEnabled: camera\.state\.canvas\.controlsEnabled/,
+  "The scene workspace should pass the controller-owned interaction lock into the scene adapter."
 );
 
 assert.match(

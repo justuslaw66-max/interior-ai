@@ -52,6 +52,10 @@ const aiWorkspaceRegistrationSource = readFileSync(
   join(root, "lib/useDesignPageAiWorkspaceRegistration.ts"),
   "utf8"
 );
+const sceneRegionWorkspaceRegistrationSource = readFileSync(
+  join(root, "lib/useDesignPageSceneRegionWorkspaceRegistration.ts"),
+  "utf8"
+);
 
 assert.match(planEditingFacadeSource, /useDesignPagePlanQualityController\(\{/);
 assert.match(planWorkspaceFacadeSource, /useDesignPagePlanEditingFacade\(\{/);
@@ -152,8 +156,8 @@ assert.match(
   /<PlanQualityHintOverlay[\s\S]*?issues=\{plan\.qualityIssues\}/
 );
 assert.match(
-  workspaceSource,
-  /qualityIssues: floorPlanQualityReport\.issues,/
+  sceneRegionWorkspaceRegistrationSource,
+  /qualityIssues: planWorkspace\.state\.quality\.report\.issues,/
 );
 assert.doesNotMatch(
   workspaceSource,

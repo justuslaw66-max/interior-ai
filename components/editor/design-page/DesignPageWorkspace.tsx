@@ -10,9 +10,8 @@ import { DesignPageSceneRegion } from "@/components/editor/design-page/DesignPag
 import { useDesignPagePlacementWorkspaceRegistration } from "@/lib/useDesignPagePlacementWorkspaceRegistration";
 import { useDesignPageAiWorkspaceRegistration } from "@/lib/useDesignPageAiWorkspaceRegistration";
 import { useDesignPageCoreShellRegistration } from "@/lib/useDesignPageCoreShellRegistration";
-import { useDesignPageSceneItemDrag } from "@/lib/useDesignPageSceneItemDrag";
+import { useDesignPageSceneRegionWorkspaceRegistration } from "@/lib/useDesignPageSceneRegionWorkspaceRegistration";
 import { useDesignPageCommerceOnboardingRegistration } from "@/lib/useDesignPageCommerceOnboardingRegistration";
-import { buildDesignPageSceneRegionAdapter } from "@/lib/design-page-scene-region-adapter";
 import { buildDesignPageViewportRegionAdapter } from "@/lib/design-page-viewport-region-adapter";
 import { composeDesignPageSceneRegionModel } from "@/lib/design-page-viewport-region-model";
 import { buildDesignPageDialogLayerAdapter } from "@/lib/design-page-dialog-layer-adapter";
@@ -20,9 +19,6 @@ import { buildDesignPagePanelWorkspaceRegistration } from "@/lib/design-page-pan
 import { buildDesignPageDialogLayerModel } from "@/lib/design-page-dialog-layer-model";
 import {
   DEFAULT_EDITOR_CAMERA_VIEW,
-  EDITOR_3D_MAX_POLAR_ANGLE,
-  EDITOR_3D_MIN_CAMERA_DISTANCE,
-  EDITOR_3D_MIN_POLAR_ANGLE,
   PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX,
 } from "@/lib/design-page-editor-configuration";
 import { PRO_PLAN_PRICING } from "@/lib/pro-plan-catalog";
@@ -62,10 +58,8 @@ export function DesignPageWorkspace() {
       access: {
         wantsDesigner,
         canUseDesigner,
-        isDesigner,
         isClientPreview,
         showDesignerTheme,
-        canEdit,
       },
       paywall: {
         primaryUpgradeCtaLabel,
@@ -77,17 +71,12 @@ export function DesignPageWorkspace() {
     },
     actions: {
       paywall: {
-        trackFirstInteraction,
         signInWithReturn,
       },
       feedback: {
         showRuleToast,
-        showConstraintsForMoment,
-        showConfidenceSummary,
       },
-      placement: { setCrossRoomDragTarget },
     },
-    refs: { itemsRef },
   } = coreShellRegistration;
   const {
     state: {
@@ -100,7 +89,7 @@ export function DesignPageWorkspace() {
         upgradeCtaVariant,
         pricingLayoutVariant,
       },
-      editor: { showGrid, snapEnabled, viewMode },
+      editor: { viewMode },
       panels: {
         itemCartOpen,
         itemCart,
@@ -120,53 +109,19 @@ export function DesignPageWorkspace() {
   } = coreShellBaseRegistration;
   const {
     state: {
-      diagnostics: { planDebugMetrics },
       plan: {
         planMeasurementUnit,
       },
-      floorPlan: {
-        floorPlanUnderlay,
-        floorPlanCalibrationMode,
-        floorPlanCalibrationPoints,
-        floorPlanTraceRoomMode,
-        floorPlanDrawRoomMode,
-        floorPlanTraceRoomPoints,
-        blankGridRoomPreviewPoint,
-        floorPlanTraceOpeningMode,
-        floorPlanTraceOpeningPoints,
-        floorPlanTraceOpeningKind,
-        blankGridRoomDrawActive,
-      },
       planSelection: {
         selectedPlanOverlayId,
-        suppressedDoorwaySuggestionKeys,
-        selectedPlanRoomId,
       },
       camera: { cameraView },
-      shopping: { hoveredCartInstanceId },
-      surface: {
-        selectedRendererSurfaceTarget,
-      },
       editor: { editorMode },
     },
     actions: {
       plan: {
         setPlanMeasurementUnit,
       },
-      camera: {
-        updateProjection,
-      },
-      diagnostics: {
-        handlePlanDebugMetricsChange,
-        handlePlan2DCameraDiagnosticsChange,
-      },
-    },
-    refs: {
-      canvasRef,
-      cameraRef,
-      orbitControlsRef,
-      rendererRef,
-      sceneRef,
     },
   } = viewportShellRegistration;
   const documentSelectionRegistration =
@@ -178,16 +133,13 @@ export function DesignPageWorkspace() {
       documentRoom: documentRoomRegistration,
       sceneRoomRead: sceneRoomReadRegistration,
       itemSelection: itemSelectionController,
-      itemDocument: itemDocumentController,
     },
     state: {
-      selectedZoneId,
       history: {
         canRedo,
       },
     },
     actions: {
-      setSelectedZoneId,
       history: { redoSafe },
     },
   } = documentSelectionRegistration;
@@ -195,50 +147,28 @@ export function DesignPageWorkspace() {
   const documentRoomModel = documentRoomRegistration.derived.room;
   const documentPlanModel = documentRoomRegistration.derived.plan;
   const documentFloorModel = documentRoomRegistration.derived.floor;
-  const documentHistoryRefs = documentRoomRegistration.refs.documentHistory;
-  const documentRoomActions = documentRoomRegistration.actions.room;
   const documentFloorActions = documentRoomRegistration.actions.floor;
   const {
     activeRoom,
     roomWidth,
     roomDepth,
-    roomHeight,
-    wallThickness,
-    zones,
   } = documentRoomModel;
   const {
     housePlan2D,
-    activeRoomPlanOffset,
-    planViewWidth,
-    planViewDepth,
     designControlsPanelVisibleForLayout,
   } = documentPlanModel;
   const { activeFloorLevel, activeFloorRoomCount, floorOptions } =
     documentFloorModel;
-  const { history } = documentHistoryRefs;
-  const { clampToActiveRoom } = documentRoomActions;
 
   const sceneReadState = sceneRoomReadRegistration.state.scene;
   const sceneReadModel = sceneRoomReadRegistration.derived.scene;
   const roomReadModel = sceneRoomReadRegistration.derived.room;
-  const sceneReadActions = sceneRoomReadRegistration.actions.scene;
-  const sceneReadQueries = sceneRoomReadRegistration.queries.scene;
   const {
     hasWholeHousePlan,
     selectedPlanRoomContext,
-    roomSnapshotById,
   } = sceneReadModel;
-  const { findPlanRoomAtWorldPoint } = sceneReadQueries;
-  const { selectedIds, selectedInstanceId, selectedItem } =
+  const { selectedIds, selectedItem } =
     itemSelectionController.state;
-  const { selectedIds: selectedIdsRef } = itemSelectionController.refs;
-  const {
-    clearSelection,
-    selectItem: handleSelect,
-  } = itemSelectionController.actions;
-  const {
-    setItemsPresent,
-  } = itemDocumentController.actions;
 
   const presentationBackupRegistration =
     useDesignPagePresentationBackupRegistrationFacade({
@@ -303,28 +233,10 @@ export function DesignPageWorkspace() {
     underlay: planUnderlay,
   } = planAuthoringRegistration.boundaries;
   const {
-    state: {
-      inspection: {
-        rotationSnapEnabled,
-        rotationSnapStepDegrees,
-        rotationSnapStepRadians,
-        previewVariantId,
-        previewMaterialPresetId,
-      },
-    },
-    derived: { itemPlanningBoundsByInstanceId },
-    resolvers: {
-      resolveItemConfigurationEntry,
-      resolveConfiguredVisualDimsMm,
-      resolveConfiguredPlanningDimsMm,
-      resolveConfiguredNodeTransforms,
-      resolveConfiguredModelUrl,
-    },
     actions: {
       selection: {
         clearAllSelection,
         deletePlanOverlayById,
-        handleSelectPlanOverlay,
       },
       roomGeometry: {
         changeActiveRoomHeightMm: handleActiveRoomHeightMmChange,
@@ -341,7 +253,6 @@ export function DesignPageWorkspace() {
         changeActiveRoomCeilingColor:
           handleActiveRoomCeilingColorChange,
       },
-      geometry: { getItemAABB },
     },
   } = selectionInspectionRuntime;
 
@@ -349,7 +260,6 @@ export function DesignPageWorkspace() {
     state: {
       room: { pendingRoomRenameId, pendingRoomRenameValue },
       overlay: {
-        editorScene2D,
         pendingAnnotationKind,
         pendingAnnotationText,
       },
@@ -370,19 +280,11 @@ export function DesignPageWorkspace() {
     derived: {
       floatingPlanOverlayStackVisible,
       floatingFloorPropertiesPanelVisible,
-      plan2DSafeAreaLeftPx,
       selectionInspectorDockedWithRightRail,
       selectionInspectorRightPx,
       selectionInspectorTopPx,
       selectionInspectorWidthPx,
-      plan2DSafeAreaRightPx,
-      plan2DSafeAreaBottomPx,
-      plan2DFitBounds,
-      lightConfig,
       sceneBackgroundColor,
-      effectivePlanLayers,
-      effectivePlanTheme,
-      planCanvasCursor,
       planCanvasOverlaysState,
     },
     refs: {
@@ -390,24 +292,17 @@ export function DesignPageWorkspace() {
     },
     actions: {
       room: {
-        startRoomRename: handleRenameSelectedPlanRoom,
         setPendingRoomRenameValue,
         cancelRoomRename,
         commitRoomRename,
         duplicateRoom: handleDuplicateSelectedPlanRoom,
         deleteRoom: handleDeleteSelectedPlanRoom,
-        resizeRoom2D: handleResizeRoom2D,
         commitRoomDimensionEdit2D: handleCommitRoomDimensionEdit2D,
       },
       overlay: {
         setPendingAnnotationText,
         cancelPlanAnnotation,
         commitPlanAnnotation,
-        handleMoveOpening2D,
-        handleResizeOpening2D,
-        handleAddSuggestedDoorway,
-        handleMoveFixedElement2D,
-        handleMoveAnnotation2D,
       },
       quality: {
         toggleReviewPanel: togglePlanQualityReviewPanel,
@@ -420,9 +315,6 @@ export function DesignPageWorkspace() {
     state: {
       pendingTemplateReplacement: pendingPlanTemplateReplacement,
     },
-    actions: {
-      addCalibrationPoint: handleFloorPlanCalibrationPoint,
-    },
   } = planUnderlay;
   const editorInteractionRegistration =
     useDesignPageEditorInteractionRegistration({
@@ -434,47 +326,18 @@ export function DesignPageWorkspace() {
     });
   const {
     camera: cameraWorkspace,
-    tracing: planTracing,
     zone: zoneController,
   } = editorInteractionRegistration.boundaries;
-  const { plan2DWholeHomeViewFit } = cameraWorkspace.state.navigation;
   const {
     handleFitPlanView,
     handleFitSelectedPlanRoom,
     handleWholeHomeMoveTarget,
     handleWholeHomeMoveCamera,
-    nudgeWholeHomeCameraForDrag,
     handleWholeHomeNavigatorZoom,
     handleWholeHomeFocusRoom,
   } = cameraWorkspace.actions.navigation;
   const {
-    controlsEnabled: canvasControlsEnabled,
-    gridPulse,
-  } = cameraWorkspace.state.canvas;
-  const { itemDragCommit: dragCommitRef } = cameraWorkspace.refs.canvas;
-  const {
-    changeSceneItemDragging: handleDraggingChange,
-    changePlanRoomDragging: handlePlanRoomDragStateChange,
-    changePlanRoomResizing: handlePlanRoomResizeStateChange,
-    changePlanOverlayDragging: handlePlanOverlayDragStateChange,
-    changePlanOpeningDragging: handlePlanOpeningDragStateChange3D,
-    pulseSnapGrid: triggerGridPulse,
-    handleOrbitChange: handleOrbitControlsChange,
-  } = cameraWorkspace.actions.canvas;
-
-  const {
-    actions: {
-      traceOpeningPoint: handleFloorPlanTraceOpeningPoint,
-      traceBlankGridOpeningPoint: handleBlankGridTraceOpeningPoint,
-      handleBlankGridRoomDrawDrag,
-      handleBlankGridRoomDrawPoint,
-      handleBlankGridRoomDrawPreviewPoint,
-      handleCommitWallDrawSegmentLength2D,
-      handleFloorPlanTraceRoomPoint,
-    },
-  } = planTracing;
-  const {
-    state: { selectedZone, pendingZoneType, planZones2D },
+    state: { selectedZone, pendingZoneType },
     actions: {
       setPendingZoneType,
       createZoneFromSelection,
@@ -482,7 +345,6 @@ export function DesignPageWorkspace() {
       rotateZone,
       ungroupZone,
     },
-    resolvers: { getZoneBounds },
   } = zoneController;
 
   const persistenceWorkspaceRegistration =
@@ -547,7 +409,6 @@ export function DesignPageWorkspace() {
   });
   const { aiPanel: aiPanelRegistration } =
     aiWorkspaceRegistration.boundaries;
-  const { walls } = aiWorkspaceRegistration.derived;
   const { panel: panelController } = aiPanelRegistration.boundaries;
   const { actions: panelActions } = panelController;
   const {
@@ -579,17 +440,11 @@ export function DesignPageWorkspace() {
     });
   const {
     state: {
-      pendingCatalogPlacement,
-      hoverCatalogPlacement,
       surfaceInspector: selectedSurfaceInspectorState,
     },
     derived: {
       pendingCatalogPlacementScene,
-      hoverCatalogPlacementScene,
-      activeCatalogPlacementSurfaceHighlight,
       pendingCatalogPlacementRoom,
-      activePlacementCompatibleZoneIds,
-      circulationHeatmap,
       pendingCatalogPlacementBlocked,
       restorableCatalogPlacement,
       pendingCatalogPlacementScore,
@@ -602,14 +457,10 @@ export function DesignPageWorkspace() {
       shouldConfirmImprovedCatalogPlacement,
       shouldConfirmRestoredCatalogPlacement,
       placementTargetRoomId,
-      placementTargetPlanRoom,
       canEditPlanGeometry,
     },
     actions: {
       catalog: {
-        findCatalogPlacementBlockerInRoom,
-        isCatalogPlacementContainedInRoom,
-        getItemDisplayName,
         rotatePendingCatalogPlacement,
         nudgePendingCatalogPlacement,
         centerPendingCatalogPlacement,
@@ -625,18 +476,8 @@ export function DesignPageWorkspace() {
         swapPendingCatalogWithBlocker,
         confirmPendingCatalogPlacement,
         cancelPendingCatalogPlacement,
-        handleCatalogPlacementPointerDown,
-        handleCatalogPlacementPointerMove,
-        handleCatalogPlacementPointerUp,
-        handleCatalogCanvasDragOver,
-        handleCatalogCanvasDrop,
-        handleCatalogCanvasDragLeave,
-        transferItemToRoom,
       },
       targeting: {
-        targetPendingCatalogPlacementToRoom,
-        handlePlacementAwareRoomSelect,
-        handleRendererSurfaceTargetSelect,
         surfaceInspector: selectedSurfaceInspectorActions,
       },
     },
@@ -705,12 +546,10 @@ export function DesignPageWorkspace() {
   const {
     alignSelectionX,
     alignSelectionZ,
-    applyItemRotation,
     duplicateSelectedItem,
     deleteSelectedItem,
     centerSelectedItemInRoom,
     snapSelectedItemToNearestWall,
-    moveSelectedItemToRoom,
   } = placementSelectionWorkspace.actions.interaction;
   const {
     activeTargetValid: activePlacementTargetValid,
@@ -733,242 +572,10 @@ export function DesignPageWorkspace() {
       presentationQaLayer: presentationQaLayerModel },
   } = presentationQaWorkspace;
 
-  const {
-    actions: {
-      handleMove: handleSceneItemMove,
-      handleDragEnd: handleSceneItemDragEnd,
-    },
-  } = useDesignPageSceneItemDrag({
-    state: {
-      hasWholeHousePlan,
-      designerMode: isDesigner,
-      activeRoom,
-      roomWidth,
-      roomDepth,
-      wallThickness,
-      roomSnapshotById,
-    },
-    refs: {
-      items: itemsRef,
-      selectedIds: selectedIdsRef,
-      dragCommit: dragCommitRef,
-    },
-    actions: {
-      findPlanRoomAtWorldPoint,
-      setCrossRoomDragTarget: (target) => setCrossRoomDragTarget(target),
-      findPlacementBlocker: findCatalogPlacementBlockerInRoom,
-      isPlacementContained: isCatalogPlacementContainedInRoom,
-      clampToRoom: clampToActiveRoom,
-      getItemBounds: getItemAABB,
-      getItemDisplayName,
-      setItems: setItemsPresent,
-      history,
-      trackFirstInteraction,
-      showToast: showRuleToast,
-      moveSelectionToRoom: moveSelectedItemToRoom,
-      transferItemToRoom,
-      showConstraints: showConstraintsForMoment,
-      showConfidence: showConfidenceSummary,
-    },
-  });
-  const sceneCanvasRegionModel = buildDesignPageSceneRegionAdapter({
-    state: {
-      editor: { viewMode, editorMode, isClientPreview, isDesigner, canEdit },
-      scene: {
-        liteEnabled: sceneReadState.liteSceneEnabled,
-        loadingVisible: sceneReadState.showSceneLoadingVeil,
-        performanceMode: sceneReadState.scenePerformanceMode,
-        renderQuality: sceneReadState.sceneRenderQuality,
-        controlsEnabled: canvasControlsEnabled,
-        cameraY: cameraView.pos[1],
-        planDiagnostics: {
-          valid: planDebugMetrics.cameraValid,
-          recoveries: planDebugMetrics.cameraRecoveries,
-          targetX: planDebugMetrics.cameraTargetX,
-          targetZ: planDebugMetrics.cameraTargetZ,
-          projectedRoomMinWidthPx: planDebugMetrics.projectedRoomMinWidthPx,
-          projectedRoomMinHeightPx: planDebugMetrics.projectedRoomMinHeightPx,
-          projectedRoomMinAreaPx: planDebugMetrics.projectedRoomMinAreaPx,
-        },
-        cursor: planCanvasCursor,
-        backgroundColor: sceneBackgroundColor,
-        lightConfig,
-        showGrid,
-        gridPulse,
-      },
-      plan: {
-        fit: plan2DWholeHomeViewFit,
-        orientation: plan2DWholeHomeViewFit.orientation,
-        fitBounds: {
-          widthMeters: plan2DFitBounds.widthMeters, depthMeters: plan2DFitBounds.depthMeters,
-          centerX: plan2DFitBounds.centerX, centerZ: plan2DFitBounds.centerZ,
-        },
-        safeArea: { leftPx: plan2DSafeAreaLeftPx, rightPx: plan2DSafeAreaRightPx, bottomPx: plan2DSafeAreaBottomPx },
-        rooms: housePlan2D.rooms,
-        underlay: floorPlanUnderlay,
-        calibration: { enabled: floorPlanCalibrationMode, points: floorPlanCalibrationPoints },
-        roomTrace: {
-          enabled: floorPlanTraceRoomMode,
-          interactionMode: floorPlanDrawRoomMode,
-          points: floorPlanTraceRoomPoints,
-          previewPoint: blankGridRoomPreviewPoint,
-          drawOnBlankGrid: blankGridRoomDrawActive,
-        },
-        openingTrace: { enabled: floorPlanTraceOpeningMode, points: floorPlanTraceOpeningPoints, kind: floorPlanTraceOpeningKind },
-        width: planViewWidth,
-        depth: planViewDepth,
-        selectedRoomId: selectedPlanRoomId,
-        selectedOverlayId: selectedPlanOverlayId,
-        suppressedDoorwaySuggestionKeys,
-        editorScene: editorScene2D,
-        zones: planZones2D,
-        qualityIssues: floorPlanQualityReport.issues,
-        measurementUnit: planMeasurementUnit,
-        theme: effectivePlanTheme,
-        layers: effectivePlanLayers,
-      },
-      room: {
-        activeId: designSnapshot.activeRoomId,
-        guidanceActiveId: activeRoom?.id ?? null,
-        activePlanOffset: activeRoomPlanOffset,
-        activeFloorLevel, stackedFloors: documentFloorState.stackedFloorView,
-        wholeHomeEnabled: sceneReadModel.usesHousePlanScene,
-        wholeHomeRooms: sceneReadModel.sceneHousePlanRooms3D,
-        selectedSurfaceTarget: selectedRendererSurfaceTarget,
-        width: roomWidth, depth: roomDepth, height: roomHeight, wallThickness,
-        slabThickness: activeRoom?.geometry.slabThickness,
-        wallOpacity: roomReadModel.activeRoomWallOpacity,
-        floorOpacity: roomReadModel.activeRoomFloorOpacity,
-        ceilingOpacity: roomReadModel.activeRoomCeilingOpacity,
-        ceilingVisible: roomReadModel.activeRoomCeilingVisible, ceilingColor: roomReadModel.activeRoomCeilingColor,
-        walls,
-      },
-      placement: {
-        targetRoom: placementTargetPlanRoom,
-        showTargetRoom: Boolean(
-          pendingCatalogPlacement || crossRoomDragTarget
-        ),
-        targetValid: activePlacementTargetValid,
-        supportSurface: activeCatalogPlacementSurfaceHighlight,
-        compatibleZoneIds: activePlacementCompatibleZoneIds,
-        pending: pendingCatalogPlacement !== null,
-        hover: hoverCatalogPlacement !== null,
-        pendingScene: pendingCatalogPlacementScene,
-        hoverScene: hoverCatalogPlacementScene,
-        hardInvalid: pendingCatalogPlacementHardInvalid,
-        pendingRoomSize: pendingCatalogPlacementRoom
-          ? {
-              width: pendingCatalogPlacementRoom.geometry.width,
-              depth: pendingCatalogPlacementRoom.geometry.depth,
-            }
-          : null,
-      },
-      zones: {
-        entries: zones,
-        selectedId: selectedZoneId,
-        circulationHeatmap: circulationHeatmap
-          ? {
-              cells: circulationHeatmap.analysis.heatmap,
-              roomOffset: circulationHeatmap.roomOffset,
-            }
-          : null,
-      },
-      items: {
-        entries: sceneReadModel.sceneRoomItems, selectedIds, selectedInstanceId,
-        previewVariantId, previewMaterialPresetId, hoveredCartInstanceId,
-        activeSceneItemsForGuides: roomReadModel.activeSceneItemsForGuides, itemPlanningBoundsByInstanceId,
-      },
-      aiLayout: { footprints: sceneReadModel.aiLayoutPreviewFootprints, tone: sceneReadModel.aiLayoutPreviewTone },
-    },
-    configuration: {
-      initialCameraView: DEFAULT_EDITOR_CAMERA_VIEW,
-      orbit: {
-        minDistance: EDITOR_3D_MIN_CAMERA_DISTANCE,
-        maxDistance: Math.max(
-          24,
-          Math.max(planViewWidth, planViewDepth) * 6
-        ),
-        minPolarAngle: EDITOR_3D_MIN_POLAR_ANGLE,
-        maxPolarAngle: EDITOR_3D_MAX_POLAR_ANGLE,
-      },
-      snapEnabled, rotationSnapStepRadians,
-      rotationSnapStepDegrees, rotationSnapEnabled,
-    },
-    references: {
-      canvas: { canvas: canvasRef, camera: cameraRef, controls: orbitControlsRef, renderer: rendererRef, scene: sceneRef },
-    },
-    resolvers: {
-      guidance: { getZoneBounds },
-      items: {
-        resolveItemConfigurationEntry, resolveConfiguredVisualDimsMm,
-        resolveConfiguredPlanningDimsMm, resolveConfiguredModelUrl,
-        resolveConfiguredNodeTransforms,
-        getRoomItems: (roomId) =>
-          roomSnapshotById.get(roomId)?.items ?? [],
-      },
-    },
-    actions: {
-      shell: { onDragOver: handleCatalogCanvasDragOver, onDrop: handleCatalogCanvasDrop, onDragLeave: handleCatalogCanvasDragLeave },
-      canvas: {
-        onClearSelection: clearAllSelection,
-        onPlanDiagnosticsChange: handlePlan2DCameraDiagnosticsChange,
-        updateProjection, onSceneProgressReadyChange: sceneReadActions.setSceneProgressReady,
-        onFpsSample: sceneReadActions.handleScenePerformanceSample, onSustainedLowFps: sceneReadActions.handleSustainedLowFps,
-        onOrbitChange: handleOrbitControlsChange,
-      },
-      structure: {
-        underlay: {
-          addCalibrationPoint: handleFloorPlanCalibrationPoint, addRoomTracePoint: handleFloorPlanTraceRoomPoint,
-          addOpeningTracePoint: handleFloorPlanTraceOpeningPoint,
-        },
-        rooms: {
-          select: handlePlacementAwareRoomSelect,
-          selectSurfaceTarget: handleRendererSurfaceTargetSelect,
-          clearSelection: clearAllSelection, rename: handleRenameSelectedPlanRoom,
-          duplicate: handleDuplicateSelectedPlanRoom, delete: handleDeleteSelectedPlanRoom,
-          editFloor: surfaceWorkspaceActions.openFloorEditorForRoom,
-          fit: handleFitSelectedPlanRoom,
-          move: documentRoomActions.handleMoveRoom2D, resize: handleResizeRoom2D,
-          setDragging: handlePlanRoomDragStateChange,
-          setResizing: handlePlanRoomResizeStateChange,
-        },
-        overlays: {
-          select: handleSelectPlanOverlay, delete: deletePlanOverlayById,
-          moveOpening: handleMoveOpening2D, resizeOpening: handleResizeOpening2D,
-          addDoorwaySuggestion: handleAddSuggestedDoorway,
-          moveFixedElement: handleMoveFixedElement2D, moveAnnotation: handleMoveAnnotation2D,
-          setDragging: handlePlanOverlayDragStateChange,
-        },
-        drawing: {
-          addRoomPoint: handleBlankGridRoomDrawPoint, previewRoomPoint: handleBlankGridRoomDrawPreviewPoint,
-          commitRoomDimension: handleCommitRoomDimensionEdit2D,
-          commitWallSegmentLength: handleCommitWallDrawSegmentLength2D,
-          drawRoom: handleBlankGridRoomDrawDrag, addOpeningPoint: handleBlankGridTraceOpeningPoint,
-        },
-        wholeHome: { setOpeningDragging: handlePlanOpeningDragStateChange3D },
-        reportPlanMetrics: handlePlanDebugMetricsChange,
-      },
-      guidance: {
-        showToast: showRuleToast, targetPendingPlacementToRoom: targetPendingCatalogPlacementToRoom,
-        selectZone: setSelectedZoneId,
-        clearSelection,
-      },
-      items: {
-        onDraggingChange: handleDraggingChange, onRenderReadyChange: sceneReadActions.handleSceneRenderItemReadyChange,
-        selectItem: handleSelect, trackFirstInteraction,
-        onDuplicateSelectedItem: duplicateSelectedItem, onDeleteSelectedItem: deleteSelectedItem,
-        onMove: handleSceneItemMove,
-        onDragPointerMove: hasWholeHousePlan
-          ? nudgeWholeHomeCameraForDrag
-          : undefined,
-        applyItemRotation, onSnapPulse: triggerGridPulse, onDragEnd: handleSceneItemDragEnd,
-      },
-      preview: {
-        onPlacementPointerDown: handleCatalogPlacementPointerDown, onPlacementPointerMove: handleCatalogPlacementPointerMove,
-        onPlacementPointerUp: handleCatalogPlacementPointerUp,
-      },
-    },
-  });
+  const sceneCanvasRegionModel =
+    useDesignPageSceneRegionWorkspaceRegistration({
+      boundaries: { presentation: presentationQaWorkspace },
+    }).regions.scene;
   const viewportRegionModel = buildDesignPageViewportRegionAdapter({
     state: {
       visibility: {

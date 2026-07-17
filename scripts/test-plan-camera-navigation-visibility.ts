@@ -61,6 +61,14 @@ const cameraControllerPath = path.join(
   "useDesignPageCameraNavigation.ts"
 );
 const source = fs.readFileSync(designPagePath, "utf8");
+const sceneRegionWorkspaceSource = fs.readFileSync(
+  path.join(
+    process.cwd(),
+    "lib",
+    "useDesignPageSceneRegionWorkspaceRegistration.ts"
+  ),
+  "utf8"
+);
 const cameraHelperSource = fs.readFileSync(cameraHelperPath, "utf8");
 const camera2DSource = fs.readFileSync(camera2DPath, "utf8");
 const cameraInvariantGuardSource = fs.readFileSync(cameraInvariantGuardPath, "utf8");
@@ -126,8 +134,8 @@ assert.match(
 );
 
 assert.match(
-  source,
-  /buildDesignPageSceneRegionAdapter\(\{[\s\S]*?onPlanDiagnosticsChange:\s*handlePlan2DCameraDiagnosticsChange/,
+  sceneRegionWorkspaceSource,
+  /buildDesignPageSceneRegionAdapter\(\{[\s\S]*?onPlanDiagnosticsChange:[\s\S]*?viewportShell\.actions\.diagnostics\.handlePlan2DCameraDiagnosticsChange/,
   "The design page must inject camera diagnostics into the scene adapter."
 );
 assert.match(

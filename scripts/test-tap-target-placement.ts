@@ -187,8 +187,8 @@ const surfaceTargetingFacadeSource = readFileSync(
   join(root, "lib/useDesignPageSurfaceTargetingFacade.ts"),
   "utf8"
 );
-const designPageSource = readFileSync(
-  join(root, "components/editor/design-page/DesignPageWorkspace.tsx"),
+const sceneRegionWorkspaceRegistrationSource = readFileSync(
+  join(root, "lib/useDesignPageSceneRegionWorkspaceRegistration.ts"),
   "utf8"
 );
 const placementWorkspaceSource = readFileSync(
@@ -234,14 +234,17 @@ assert.match(
   surfaceTargetingFacadeSource,
   /useDesignPagePlacementTargetController\(\{/
 );
-assert.match(designPageSource, /select: handlePlacementAwareRoomSelect,/);
 assert.match(
-  designPageSource,
-  /selectSurfaceTarget: handleRendererSurfaceTargetSelect,/
+  sceneRegionWorkspaceRegistrationSource,
+  /select: placement\.actions\.targeting\.handlePlacementAwareRoomSelect,/
 );
 assert.match(
-  designPageSource,
-  /targetPendingPlacementToRoom:\s*targetPendingCatalogPlacementToRoom/
+  sceneRegionWorkspaceRegistrationSource,
+  /selectSurfaceTarget:[\s\S]*?placement\.actions\.targeting\.handleRendererSurfaceTargetSelect,/
+);
+assert.match(
+  sceneRegionWorkspaceRegistrationSource,
+  /targetPendingPlacementToRoom:[\s\S]*?placement\.actions\.targeting\.targetPendingCatalogPlacementToRoom/
 );
 assert.match(
   structureLayerSource,
