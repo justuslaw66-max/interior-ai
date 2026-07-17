@@ -72,7 +72,7 @@ for (const callbackName of [
 const workspaceOrder = [
   "movePendingCatalogPlacementToBestRoomAction();",
   "useDesignPageCommerceActions({",
-  "useDesignPageOnboarding({",
+  "useDesignPageOnboardingRegistrationFacade({",
 ];
 let previousWorkspaceIndex = -1;
 for (const marker of workspaceOrder) {

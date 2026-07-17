@@ -26,7 +26,7 @@ import { useDesignPageSceneItemDrag } from "@/lib/useDesignPageSceneItemDrag";
 import { useDesignPageTransientFeedback } from "@/lib/useDesignPageTransientFeedback";
 import { useDesignPageSurfaceWorkspaceFacade } from "@/lib/useDesignPageSurfaceWorkspaceFacade";
 import { useDesignPageSurfaceTargetingFacade } from "@/lib/useDesignPageSurfaceTargetingFacade";
-import { useDesignPageOnboarding } from "@/lib/useDesignPageOnboarding";
+import { useDesignPageOnboardingRegistrationFacade } from "@/lib/useDesignPageOnboardingRegistrationFacade";
 import { buildDesignPageSceneRegionAdapter } from "@/lib/design-page-scene-region-adapter";
 import { buildDesignPageViewportRegionAdapter } from "@/lib/design-page-viewport-region-adapter";
 import { composeDesignPageSceneRegionModel } from "@/lib/design-page-viewport-region-model";
@@ -94,7 +94,7 @@ import {
 import {
   isParametricCabinetItem,
 } from "@/features/cabinetry/designItemAdapters";
-import { useDesignPageCabinetry } from "@/features/cabinetry/useDesignPageCabinetry";
+import { useDesignPageCabinetryRegistrationFacade } from "@/lib/useDesignPageCabinetryRegistrationFacade";
 
 const DEFAULT_EDITOR_CAMERA_VIEW: CameraView = {
   pos: [6.2, 3.6, 7.2],
@@ -1772,7 +1772,7 @@ export function DesignPageWorkspace() {
 
   const {
     state: { firstRunActivationState, nextBestActionNudge },
-  } = useDesignPageOnboarding({
+  } = useDesignPageOnboardingRegistrationFacade({
     state: {
       designId,
       shareToken,
@@ -1806,18 +1806,35 @@ export function DesignPageWorkspace() {
     },
   });
 
-  const cabinetryWorkspace = useDesignPageCabinetry({
+  const {
+    boundaries: { cabinetry: cabinetryWorkspace },
+    state: {
+      studio: cabinetryStudioState,
+      canUseStudio: canUseCabinetryStudio,
+      accessLevel: cabinetryAccessLevel,
+      availableSpaces: cabinetryAvailableSpaces,
+      preferredSpaceId: cabinetryPreferredSpaceId,
+      selectedItem: selectedCabinetItem,
+      project: {
+        schedulePackage: projectCabinetSchedulePackage,
+        handoffPackage: projectCabinetHandoffPackage,
+      },
+    },
+    refs: { openedAt: cabinetryStudioOpenedAtRef },
+    actions: {
+      openCreateStudio: openCabinetryStudio,
+      dismissStudio: dismissCabinetryStudio,
+      saveDefinition: handleSaveCabinetDefinition,
+      placeInPlan: handlePlaceCabinetInPlan,
+    },
+  } = useDesignPageCabinetryRegistrationFacade({
     state: {
       activeRoom: activeRoom ?? null,
-      activePlanRoom: activeRoom
-        ? houseRoomById.get(activeRoom.id) ?? null
-        : null,
+      planRoomById: houseRoomById,
       planRoomCount: housePlan2D.rooms.length,
       planOpenings,
-      preferredWallFaceId:
-        activeSurfaceTarget === "selected_wall"
-          ? activeSelectedWallFaceId
-          : null,
+      activeSurfaceTarget,
+      selectedWallFaceId: activeSelectedWallFaceId,
       selectedItem: selectedItem ?? null,
       designSnapshot,
     },
@@ -1832,12 +1849,7 @@ export function DesignPageWorkspace() {
       rotationSnapEnabled,
       rotationSnapStepRadians,
     },
-    refs: {
-      getDesignSnapshot: () => designSnapshotRef.current,
-      replaceActiveItemsSnapshot: (nextItems) => {
-        itemsRef.current = nextItems;
-      },
-    },
+    refs: { designSnapshot: designSnapshotRef, activeItems: itemsRef },
     actions: {
       setDesignSnapshot,
       commitItems,
@@ -1852,28 +1864,6 @@ export function DesignPageWorkspace() {
       showToast: showRuleToast,
     },
   });
-  const {
-    state: {
-      studio: cabinetryStudioState,
-      canUseStudio: canUseCabinetryStudio,
-      accessLevel: cabinetryAccessLevel,
-      availableSpaces: cabinetryAvailableSpaces,
-      preferredSpaceId: cabinetryPreferredSpaceId,
-      selected: selectedCabinet,
-      project: {
-        schedulePackage: projectCabinetSchedulePackage,
-        handoffPackage: projectCabinetHandoffPackage,
-      },
-    },
-    refs: { openedAt: cabinetryStudioOpenedAtRef },
-    actions: {
-      openCreateStudio: openCabinetryStudio,
-      dismissStudio: dismissCabinetryStudio,
-      saveDefinition: handleSaveCabinetDefinition,
-      placeInPlan: handlePlaceCabinetInPlan,
-    },
-  } = cabinetryWorkspace;
-  const selectedCabinetItem = selectedCabinet?.item ?? null;
 
   const placementSelectionWorkspace =
     useDesignPagePlacementSelectionWorkspaceFacade({

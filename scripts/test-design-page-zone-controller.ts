@@ -29,6 +29,9 @@ const viewportOverlaySource = readSource(
 const controllerSource = readSource("lib/useDesignPageZoneController.ts");
 const orchestrationSource = readSource("lib/design-page-zone-orchestration.ts");
 const onboardingSource = readSource("lib/useDesignPageOnboarding.ts");
+const onboardingRegistrationSource = readSource(
+  "lib/useDesignPageOnboardingRegistrationFacade.ts"
+);
 const clientLifecycleSource = readSource(
   "lib/useDesignPageEditorClientLifecycle.ts"
 );
@@ -291,7 +294,7 @@ assert.match(
 for (const { pattern, description } of [
   {
     pattern:
-      /useDesignPageOnboarding\(\{[\s\S]*?actions:\s*\{[\s\S]*?autoCreateSeatingZone,[\s\S]*?clampToRoom:\s*clampToActiveRoom/,
+      /useDesignPageOnboardingRegistrationFacade\(\{[\s\S]*?actions:\s*\{[\s\S]*?autoCreateSeatingZone,[\s\S]*?clampToRoom:\s*clampToActiveRoom/,
     description: "onboarding auto-create action",
   },
   { pattern: /zones:\s*planZones2D/, description: "2D plan zones" },
@@ -307,6 +310,12 @@ for (const { pattern, description } of [
     `Workspace should preserve its ${description} wiring.`
   );
 }
+
+assert.match(
+  onboardingRegistrationSource,
+  /useDesignPageOnboarding\(\{[\s\S]*?state,[\s\S]*?actions,[\s\S]*?configuration,/,
+  "The onboarding registration facade should pass the verified zone actions to the controller."
+);
 
 assert.match(
   workspaceSource,
