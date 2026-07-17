@@ -35,7 +35,7 @@ const zoneOrchestrationSource = fs.readFileSync(
 
 assert.ok(
   pageSource.indexOf("useDesignPageEditorInteractionRegistration({") <
-    pageSource.indexOf("useDesignPagePersistenceRegistration({"),
+    pageSource.indexOf("useDesignPagePersistenceWorkspaceRegistration({"),
   "Persistence effects must remain mounted after editor interaction registration."
 );
 assert.match(

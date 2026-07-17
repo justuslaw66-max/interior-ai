@@ -11,7 +11,7 @@ import { DesignPagePanelRegion } from "@/components/editor/design-page/DesignPag
 import { DesignPagePresentationQaLayer } from "@/components/editor/design-page/DesignPagePresentationQaLayer";
 import { DesignPageSceneRegion } from "@/components/editor/design-page/DesignPageSceneRegion";
 import { useDesignPageCatalogPlacementRegistrationFacade } from "@/lib/useDesignPageCatalogPlacementRegistrationFacade";
-import { useDesignPageAiPanelRegistrationFacade } from "@/lib/useDesignPageAiPanelRegistrationFacade";
+import { useDesignPageAiWorkspaceRegistration } from "@/lib/useDesignPageAiWorkspaceRegistration";
 import { useDesignPageCoreShellRegistration } from "@/lib/useDesignPageCoreShellRegistration";
 import { useDesignPageSceneItemDrag } from "@/lib/useDesignPageSceneItemDrag";
 import { useDesignPageSurfaceTargetingFacade } from "@/lib/useDesignPageSurfaceTargetingFacade";
@@ -36,8 +36,7 @@ import { useDesignPagePlacementSelectionWorkspaceFacade } from "@/lib/useDesignP
 import { useDesignPageDocumentSelectionRegistrationFacade } from "@/lib/useDesignPageDocumentSelectionRegistrationFacade";
 import { useDesignPagePlanAuthoringRegistration } from "@/lib/useDesignPagePlanAuthoringRegistration";
 import { useDesignPageEditorInteractionRegistration } from "@/lib/useDesignPageEditorInteractionRegistration";
-import { buildRoomWallDescriptors } from "@/lib/design-page-wall-descriptors";
-import { useDesignPagePersistenceRegistration } from "@/lib/useDesignPagePersistenceRegistration";
+import { useDesignPagePersistenceWorkspaceRegistration } from "@/lib/useDesignPagePersistenceWorkspaceRegistration";
 import { useDesignPagePresentationQaFacade } from "@/lib/useDesignPagePresentationQaFacade";
 import { useDesignPageWorkspaceDeferredPaywallRegistration } from "@/lib/useDesignPagePaywallRegistrationFacade";
 import { useDesignPageCabinetryRegistrationFacade } from "@/lib/useDesignPageCabinetryRegistrationFacade";
@@ -54,7 +53,6 @@ export function DesignPageWorkspace() {
       base: coreShellBaseRegistration,
       viewportShell: viewportShellRegistration,
       paywall: paywallRegistration,
-      snapshotDocument: snapshotDocumentController,
     },
     state: {
       feedback: {
@@ -95,20 +93,16 @@ export function DesignPageWorkspace() {
         showConstraintsForMoment,
         showConfidenceSummary,
       },
-      placement: { setPendingAiLayoutProposal, setCrossRoomDragTarget },
+      placement: { setCrossRoomDragTarget },
       document: { setDesignSnapshot },
     },
-    refs: {
-      itemsRef,
-      localBackupPersistenceActionsRef,
-      designSnapshotRef,
-    },
+    refs: { itemsRef, designSnapshotRef },
   } = coreShellRegistration;
   const {
     boundaries: { importedModels: importedModelsWorkspace },
     state: {
-      identity: { session, designId, shareToken, shareEnabled },
-      brief: { style, budget, mode, notes, aiSeed },
+      identity: { session, designId, shareToken },
+      brief: { style, budget, mode },
       access: { plan },
       dialogs: { showPlans, feedbackOpen, showUpgrade },
       paywall: {
@@ -129,8 +123,7 @@ export function DesignPageWorkspace() {
       importedModels: { selectedImportedProductId },
     },
     actions: {
-      identity: { setDesignId, setShareToken, setShareEnabled },
-      brief: { setStyle, setBudget, setMode, setNotes, setAiSeed },
+      brief: { setStyle, setBudget, setMode },
       access: { setPlan, setClientPreview },
       dialogs: { setShowPlans, setFeedbackOpen, setShowUpgrade },
       paywall: {
@@ -139,17 +132,13 @@ export function DesignPageWorkspace() {
         setPricingLayoutVariant,
       },
       editor: {
-        setShowGrid,
-        setSnapEnabled,
         setPlacementAddMode,
         setLightingPreset,
-        setViewMode,
       },
       panels: {
         setItemCartOpen,
         setItemCart,
         setDesignPanelOpen,
-        setDesignPanelCollapsed,
         setPlanFocusPanelRevealed,
         setDismissedPlanCanvasGuidanceKey,
       },
@@ -195,7 +184,7 @@ export function DesignPageWorkspace() {
         suppressedDoorwaySuggestionKeys,
         selectedPlanRoomId,
       },
-      camera: { cameraView, savedViews },
+      camera: { cameraView },
       presentation: { showPresentModal, presentModeRoomId },
       shopping: { shoppingReadinessFilter, hoveredCartInstanceId },
       surface: {
@@ -213,7 +202,6 @@ export function DesignPageWorkspace() {
       plan: {
         setPlanTheme,
         setPlanLayers,
-        setPlanAnnotations,
         setPlanOpenings,
         setPlanFixedElements,
         setSimplePlanControls,
@@ -224,7 +212,6 @@ export function DesignPageWorkspace() {
         setSelectedPlanRoomId,
       },
       camera: {
-        setSavedViews,
         updateProjection,
         preserveCameraAfterPlanOverlaySelection,
         transitionToCameraView,
@@ -360,7 +347,6 @@ export function DesignPageWorkspace() {
     commitItemsToRoom,
     setItemsPresent,
     createInstanceId: newInstanceId,
-    addItem,
     selectItemsInRoom: selectCatalogPlacementItems,
   } = itemDocumentController.actions;
 
@@ -580,10 +566,6 @@ export function DesignPageWorkspace() {
     },
     actions: {
       applyPlanTemplate: handleApplyPlanTemplate,
-      cancelPendingTemplateReplacement:
-        handleCancelPendingPlanTemplateReplacement,
-      confirmPendingTemplateReplacement:
-        handleConfirmPendingPlanTemplateReplacement,
       uploadUnderlay: handleFloorPlanUnderlayUpload,
       changeUnderlayOpacity: handleFloorPlanUnderlayOpacityChange,
       changeUnderlayLock: handleFloorPlanUnderlayLockChange,
@@ -688,6 +670,14 @@ export function DesignPageWorkspace() {
     resolvers: { getZoneBounds },
   } = zoneController;
 
+  const persistenceWorkspaceRegistration =
+    useDesignPagePersistenceWorkspaceRegistration({
+      boundaries: {
+        coreShell: coreShellRegistration,
+        documentSelection: documentSelectionRegistration,
+        planAuthoring: planAuthoringRegistration,
+      },
+    });
   const {
     state: {
       persistence: {
@@ -738,132 +728,20 @@ export function DesignPageWorkspace() {
         saveCurrentAndStartNewPlan,
       },
     },
-  } = useDesignPagePersistenceRegistration({
+  } = persistenceWorkspaceRegistration;
+
+  const aiWorkspaceRegistration = useDesignPageAiWorkspaceRegistration({
     boundaries: {
-      snapshotDocument: snapshotDocumentController,
-      documentRoom: documentRoomRegistration,
-    },
-    state: {
-      identity: {
-        designId,
-        shareEnabled,
-      },
-      document: {
-        savedViews,
-        style,
-        budget,
-        mode,
-        notes,
-      },
-      session: {
-        isAuthenticated: Boolean(session?.user),
-        isDesigner,
-      },
-      newPlan: {
-        pendingReplacement: pendingPlanTemplateReplacement,
-      },
-    },
-    actions: {
-      persistence: {
-        setDesignId,
-        setShareToken,
-        setShareEnabled,
-        setMode,
-        setNotes,
-        setSavedViews,
-        setStyle,
-        setBudget,
-        showRuleToast,
-        showMaxDesignUpgrade: () => setShowUpgrade(true),
-        requestSignIn: signInWithReturn,
-      },
-      newPlan: {
-        setGuidedPlanStartMode,
-        goPlan,
-        setViewMode,
-        setDesignPanelOpen,
-        setDesignPanelCollapsed,
-        cancelPendingReplacement: handleCancelPendingPlanTemplateReplacement,
-        confirmPendingReplacement: handleConfirmPendingPlanTemplateReplacement,
-        requestSignIn: signInWithReturn,
-        showToast: showRuleToast,
-      },
-      clearPlanAnnotations: () => setPlanAnnotations([]),
-    },
-    refs: {
-      localBackupPersistenceActions: localBackupPersistenceActionsRef,
+      coreShell: coreShellRegistration,
+      documentSelection: documentSelectionRegistration,
+      planAuthoring: planAuthoringRegistration,
+      editorInteraction: editorInteractionRegistration,
+      persistence: persistenceWorkspaceRegistration,
     },
   });
-
-  const walls = buildRoomWallDescriptors({
-    roomWidth,
-    roomDepth,
-    wallThickness,
-  });
-
-  const aiPanelRegistration = useDesignPageAiPanelRegistrationFacade({
-    state: {
-      layout: {
-        seed: aiSeed,
-        pendingProposal: pendingAiLayoutProposal,
-      },
-      panel: {
-        activeRoomId: activeRoom?.id ?? null,
-        activeSurfaceTarget,
-        selectedWallFaceId: roomReadModel.activeSelectedWallFaceId,
-        items,
-      },
-      notes: { designerMode: isDesigner },
-    },
-    actions: {
-      layout: {
-        setSeed: setAiSeed,
-        setPendingProposal: setPendingAiLayoutProposal,
-        commitItems,
-        clearAllSelection,
-        setEditorMode,
-        setDesignPanelOpen,
-        openGuestPrompt,
-        showRuleToast,
-      },
-      panel: {
-        setClientPreview,
-        setDesignPanelCollapsed,
-        setDesignPanelOpen,
-        setShowGrid,
-        setSnapEnabled,
-        setItemCartOpen,
-        changeViewMode: handleEditorViewModeChange,
-        changeWallSurfaceSettings:
-          surfaceWorkspaceActions.changeActiveWallSurfaceSettings,
-        resetWallSurface: surfaceWorkspaceActions.resetActiveWallSurface,
-        resetCeilingSurface: surfaceWorkspaceActions.resetActiveCeilingSurface,
-      },
-      notes: { addItem },
-      selection: { updateSelection },
-    },
-    configuration: {
-      isAuthenticated: Boolean(session?.user),
-      designId,
-      style,
-      budget,
-      room: {
-        width: roomWidth,
-        depth: roomDepth,
-        wallThickness,
-        type: activeRoom?.roomType,
-      },
-      floorPlanQualityContext: floorPlanQualityReport.aiPlanningContext,
-    },
-    refs: {
-      items: itemsRef,
-      layout: {
-        createInstanceId: newInstanceId,
-        clampToRoom: clampToActiveRoom,
-      },
-      panel: { selectedIds: selectedIdsRef, primaryId: primaryIdRef },
-    },
-  });
+  const { aiPanel: aiPanelRegistration } =
+    aiWorkspaceRegistration.boundaries;
+  const { walls } = aiWorkspaceRegistration.derived;
   const { panel: panelController } = aiPanelRegistration.boundaries;
   const { actions: panelActions } = panelController;
   const {

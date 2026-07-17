@@ -138,8 +138,16 @@ const registrationFacadeSource = fs.readFileSync(
   ),
   "utf8"
 );
-assert.match(pageSource, /useDesignPageAiPanelRegistrationFacade\(\{/);
+const workspaceRegistrationSource = fs.readFileSync(
+  path.join(process.cwd(), "lib", "useDesignPageAiWorkspaceRegistration.ts"),
+  "utf8"
+);
+assert.match(pageSource, /useDesignPageAiWorkspaceRegistration\(\{/);
 assert.doesNotMatch(pageSource, /\buseDesignPageAiLayout\(\{/);
+assert.match(
+  workspaceRegistrationSource,
+  /useDesignPageAiPanelRegistrationFacade\(\{/
+);
 assert.match(registrationFacadeSource, /useDesignPageAiLayout\(\{/);
 assert.doesNotMatch(pageSource, /const runAiLayout\s*=/);
 assert.match(controllerSource, /fetch\("\/api\/ai\/layout"/);

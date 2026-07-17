@@ -44,6 +44,10 @@ const planAuthoringRegistrationSource = readFileSync(
   join(root, "lib/useDesignPagePlanAuthoringRegistration.ts"),
   "utf8"
 );
+const aiWorkspaceRegistrationSource = readFileSync(
+  join(root, "lib/useDesignPageAiWorkspaceRegistration.ts"),
+  "utf8"
+);
 
 assert.match(planEditingFacadeSource, /useDesignPagePlanQualityController\(\{/);
 assert.match(planWorkspaceFacadeSource, /useDesignPagePlanEditingFacade\(\{/);
@@ -188,8 +192,8 @@ assert.match(
   "The viewport adapter should preserve controller-owned quality state, reference, and actions."
 );
 assert.match(
-  workspaceSource,
-  /floorPlanQualityContext: floorPlanQualityReport\.aiPlanningContext/
+  aiWorkspaceRegistrationSource,
+  /floorPlanQualityContext:[\s\S]*?planWorkspace\.state\.quality\.report\.aiPlanningContext/
 );
 assert.match(
   workspaceSource,

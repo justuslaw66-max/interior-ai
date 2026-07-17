@@ -53,6 +53,14 @@ const persistenceRegistrationSource = fs.readFileSync(
   path.join(process.cwd(), "lib", "useDesignPagePersistenceRegistration.ts"),
   "utf8"
 );
+const persistenceWorkspaceRegistrationSource = fs.readFileSync(
+  path.join(
+    process.cwd(),
+    "lib",
+    "useDesignPagePersistenceWorkspaceRegistration.ts"
+  ),
+  "utf8"
+);
 const documentStateControllerSource = fs.readFileSync(
   path.join(process.cwd(), "lib", "useDesignPageDocumentStateController.ts"),
   "utf8"
@@ -523,13 +531,13 @@ assert.ok(
 
 assert.match(
   designPageSource,
-  /state: \{[\s\S]*?newPlan: \{ startingNewPlan, newPlanStartError \}[\s\S]*?actions: \{[\s\S]*?newPlan: \{[\s\S]*?openNewPlanPicker,[\s\S]*?saveCurrentAndStartNewPlan,[\s\S]*?useDesignPagePersistenceRegistration\(\{/,
+  /useDesignPagePersistenceWorkspaceRegistration\(\{[\s\S]*?state: \{[\s\S]*?newPlan: \{ startingNewPlan, newPlanStartError \}[\s\S]*?actions: \{[\s\S]*?newPlan: \{[\s\S]*?openNewPlanPicker,[\s\S]*?saveCurrentAndStartNewPlan,[\s\S]*?\} = persistenceWorkspaceRegistration/,
   "Workspace should consume the persistence registration's new-plan state and actions."
 );
 assert.match(
-  designPageSource,
-  /useDesignPagePersistenceRegistration\(\{[\s\S]*?pendingReplacement: pendingPlanTemplateReplacement[\s\S]*?requestSignIn: signInWithReturn,[\s\S]*?showToast: showRuleToast,[\s\S]*?clearPlanAnnotations: \(\) => setPlanAnnotations\(\[\]\)/,
-  "Workspace should wire replacement, sign-in, toast, and annotation collaborators into the registration."
+  persistenceWorkspaceRegistrationSource,
+  /useDesignPagePersistenceRegistration\(\{[\s\S]*?pendingReplacement: underlay\.state\.pendingTemplateReplacement[\s\S]*?requestSignIn: coreShell\.actions\.paywall\.signInWithReturn[\s\S]*?showToast: coreShell\.actions\.feedback\.showRuleToast[\s\S]*?clearPlanAnnotations: \(\) =>[\s\S]*?setPlanAnnotations\(\[\]\)/,
+  "The persistence workspace owner should wire replacement, sign-in, toast, and annotation collaborators into the registration."
 );
 assert.match(
   persistenceRegistrationSource,

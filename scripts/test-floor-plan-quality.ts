@@ -15,6 +15,11 @@ import {
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 
+const aiWorkspaceRegistrationSource = fs.readFileSync(
+  path.join(process.cwd(), "lib", "useDesignPageAiWorkspaceRegistration.ts"),
+  "utf8"
+);
+
 function templateRooms(template: HousePlanTemplate): HousePlanRoom2D[] {
   return template.rooms.map((room) => ({
     id: room.id,
@@ -397,8 +402,8 @@ assert.doesNotMatch(
   "The workspace should delegate quality-hint rendering to the structure layer."
 );
 assert.match(
-  designPageSource,
-  /floorPlanQualityContext: floorPlanQualityReport\.aiPlanningContext/,
+  aiWorkspaceRegistrationSource,
+  /floorPlanQualityContext:[\s\S]*?planWorkspace\.state\.quality\.report\.aiPlanningContext/,
   "AI layout requests should carry the quality context for future planner use."
 );
 assert.match(

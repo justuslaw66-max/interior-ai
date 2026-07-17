@@ -11,6 +11,9 @@ const workspaceSource = readSource(
 const facadeSource = readSource(
   "lib/useDesignPageAiPanelRegistrationFacade.ts"
 );
+const aiWorkspaceSource = readSource(
+  "lib/useDesignPageAiWorkspaceRegistration.ts"
+);
 
 const assertSourceOrder = (
   source: string,
@@ -27,8 +30,13 @@ const assertSourceOrder = (
 
 assert.match(
   workspaceSource,
+  /useDesignPageAiWorkspaceRegistration\(\{/,
+  "The workspace should register its AI and panel-action slot through the workspace registration."
+);
+assert.match(
+  aiWorkspaceSource,
   /useDesignPageAiPanelRegistrationFacade\(\{/,
-  "The workspace should register its AI and panel-action slot through the facade."
+  "The AI workspace registration should retain direct facade ownership."
 );
 for (const formerWorkspaceOwner of [
   "useDesignPageAiLayout",
@@ -53,13 +61,20 @@ assertSourceOrder(
   "AI/panel registration should preserve hook order"
 );
 assertSourceOrder(
-  workspaceSource,
+  aiWorkspaceSource,
   [
     "buildRoomWallDescriptors({",
     "useDesignPageAiPanelRegistrationFacade({",
+  ],
+  "The AI facade should remain after room-wall derivation"
+);
+assertSourceOrder(
+  workspaceSource,
+  [
+    "useDesignPageAiWorkspaceRegistration({",
     "useDesignPageCatalogPlacementRegistrationFacade({",
   ],
-  "The facade should remain in the original workspace registration slot"
+  "The AI workspace registration should remain before catalog placement"
 );
 
 assert.match(

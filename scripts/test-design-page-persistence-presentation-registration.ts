@@ -36,10 +36,10 @@ assertSourceOrder(
   workspaceSource,
   [
     "useDesignPageEditorInteractionRegistration({",
-    "useDesignPagePersistenceRegistration({",
-    "buildRoomWallDescriptors({",
+    "useDesignPagePersistenceWorkspaceRegistration({",
+    "useDesignPageAiWorkspaceRegistration({",
   ],
-  "Workspace should preserve interaction, persistence, and wall registration order"
+  "Workspace should preserve interaction, persistence, and AI registration order"
 );
 assertSourceOrder(
   editorInteractionRegistrationSource,

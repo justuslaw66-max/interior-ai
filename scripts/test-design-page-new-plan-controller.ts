@@ -200,6 +200,10 @@ const registrationSource = readFileSync(
   join(root, "lib/useDesignPagePersistenceRegistration.ts"),
   "utf8"
 );
+const workspaceRegistrationSource = readFileSync(
+  join(root, "lib/useDesignPagePersistenceWorkspaceRegistration.ts"),
+  "utf8"
+);
 
 for (const contract of [
   "DesignPageNewPlanControllerState",
@@ -229,7 +233,7 @@ assert.match(
   /useDesignPagePersistenceNewPlanFacade\(\{[\s\S]*?state:\s*\{[\s\S]*?actions:\s*\{[\s\S]*?configuration:\s*\{[\s\S]*?refs:\s*\{/
 );
 assert.match(
-  workspaceSource,
+  workspaceRegistrationSource,
   /useDesignPagePersistenceRegistration\(\{[\s\S]*?boundaries:\s*\{[\s\S]*?state:\s*\{[\s\S]*?actions:\s*\{[\s\S]*?refs:\s*\{/
 );
 assert.doesNotMatch(

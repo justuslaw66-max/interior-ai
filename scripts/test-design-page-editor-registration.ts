@@ -41,10 +41,10 @@ assertSourceOrder(
     "useDesignPageWorkspaceDeferredPaywallRegistration({",
     "useDesignPagePlanAuthoringRegistration({",
     "useDesignPageEditorInteractionRegistration({",
-    "useDesignPagePersistenceRegistration({",
-    "buildRoomWallDescriptors({",
+    "useDesignPagePersistenceWorkspaceRegistration({",
+    "useDesignPageAiWorkspaceRegistration({",
   ],
-  "Workspace should preserve core, document, presentation, paywall, authoring, interaction, persistence, and wall registration order"
+  "Workspace should preserve core, document, presentation, paywall, authoring, interaction, persistence, and AI registration order"
 );
 
 const inputContract = (source: string, typeName: string) => {

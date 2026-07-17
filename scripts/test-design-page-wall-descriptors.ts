@@ -63,16 +63,16 @@ assert.deepEqual(
   "An explicit long-side clearance must replace the 2.2 m default."
 );
 
-const workspaceSource = readFileSync(
-  resolve(process.cwd(), "components/editor/design-page/DesignPageWorkspace.tsx"),
+const aiWorkspaceSource = readFileSync(
+  resolve(process.cwd(), "lib/useDesignPageAiWorkspaceRegistration.ts"),
   "utf8"
 );
 assert.match(
-  workspaceSource,
+  aiWorkspaceSource,
   /import \{ buildRoomWallDescriptors \} from "@\/lib\/design-page-wall-descriptors";/
 );
-assert.match(workspaceSource, /const walls = buildRoomWallDescriptors\(\{/);
-assert.doesNotMatch(workspaceSource, /const halfLong\s*=/);
-assert.doesNotMatch(workspaceSource, /coord:\s*-halfW\s*\+/);
+assert.match(aiWorkspaceSource, /const walls = buildRoomWallDescriptors\(\{/);
+assert.doesNotMatch(aiWorkspaceSource, /const halfLong\s*=/);
+assert.doesNotMatch(aiWorkspaceSource, /coord:\s*-halfW\s*\+/);
 
 console.log("Design-page wall descriptor checks passed.");
