@@ -28,6 +28,10 @@ const placementSelectionFacadeSource = readFileSync(
   join(root, "lib/useDesignPagePlacementSelectionWorkspaceFacade.ts"),
   "utf8"
 );
+const selectionWorkspaceSource = readFileSync(
+  join(root, "lib/useDesignPageSelectionWorkspaceRegistration.ts"),
+  "utf8"
+);
 
 assert.match(
   selectionCoordinatorSource,
@@ -50,9 +54,9 @@ assert.match(
   "The placement/selection workspace facade should compose item interactions."
 );
 assert.match(
-  workspaceSource,
+  selectionWorkspaceSource,
   /useDesignPagePlacementSelectionWorkspaceFacade\(\{/,
-  "The workspace should compose the placement/selection facade."
+  "The selection workspace should compose the placement/selection facade."
 );
 assert.match(
   keyboardSource,

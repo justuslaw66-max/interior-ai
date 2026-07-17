@@ -24,6 +24,9 @@ const itemInteractionFacadeSource = readSource(
 const placementSelectionFacadeSource = readSource(
   "lib/useDesignPagePlacementSelectionWorkspaceFacade.ts"
 );
+const selectionWorkspaceSource = readSource(
+  "lib/useDesignPageSelectionWorkspaceRegistration.ts"
+);
 
 function sourceBetween(
   source: string,
@@ -206,9 +209,9 @@ assert.match(
   "The placement/selection workspace facade should compose the item-interaction facade."
 );
 assert.match(
-  workspaceSource,
+  selectionWorkspaceSource,
   /useDesignPagePlacementSelectionWorkspaceFacade\(\{/,
-  "The workspace should compose the placement/selection facade."
+  "The selection workspace should compose the placement/selection facade."
 );
 
 for (const callbackName of [

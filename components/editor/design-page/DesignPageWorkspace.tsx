@@ -1,6 +1,5 @@
 "use client";
 
-import { CATALOG_ITEMS } from "@/lib/catalog";
 import { isPro } from "@/lib/plan";
 import { DesignPageComposition } from "@/components/editor/design-page/DesignPageComposition";
 import { DesignPageEditorChrome } from "@/components/editor/design-page/DesignPageEditorChrome";
@@ -29,7 +28,7 @@ import {
 import { PRO_PLAN_PRICING } from "@/lib/pro-plan-catalog";
 import { useDesignPageCabinetryWorkspaceRegistration } from "@/lib/useDesignPageCabinetryWorkspaceRegistration";
 import { useDesignPagePresentationBackupRegistrationFacade } from "@/lib/useDesignPagePresentationBackupRegistrationFacade";
-import { useDesignPagePlacementSelectionWorkspaceFacade } from "@/lib/useDesignPagePlacementSelectionWorkspaceFacade";
+import { useDesignPageSelectionWorkspaceRegistration } from "@/lib/useDesignPageSelectionWorkspaceRegistration";
 import { useDesignPageDocumentSelectionRegistrationFacade } from "@/lib/useDesignPageDocumentSelectionRegistrationFacade";
 import { useDesignPagePlanAuthoringRegistration } from "@/lib/useDesignPagePlanAuthoringRegistration";
 import { useDesignPageEditorInteractionRegistration } from "@/lib/useDesignPageEditorInteractionRegistration";
@@ -90,7 +89,7 @@ export function DesignPageWorkspace() {
       placement: { setCrossRoomDragTarget },
       document: { setDesignSnapshot },
     },
-    refs: { itemsRef, designSnapshotRef },
+    refs: { itemsRef },
   } = coreShellRegistration;
   const {
     boundaries: { importedModels: importedModelsWorkspace },
@@ -298,8 +297,7 @@ export function DesignPageWorkspace() {
   const { findPlanRoomAtWorldPoint } = sceneReadQueries;
   const { selectedIds, selectedInstanceId, selectedItem } =
     itemSelectionController.state;
-  const { selectedIds: selectedIdsRef, primaryId: primaryIdRef } =
-    itemSelectionController.refs;
+  const { selectedIds: selectedIdsRef } = itemSelectionController.refs;
   const {
     clearSelection,
     selectItem: handleSelect,
@@ -373,11 +371,6 @@ export function DesignPageWorkspace() {
     underlay: planUnderlay,
   } = planAuthoringRegistration.boundaries;
   const {
-    boundaries: {
-      coordination: selectionCoordinator,
-      inspection: productInspectionController,
-      geometry: itemGeometryController,
-    },
     state: {
       inspection: {
         rotationSnapEnabled,
@@ -387,7 +380,7 @@ export function DesignPageWorkspace() {
         previewMaterialPresetId,
       },
     },
-    derived: { selectedProduct, itemPlanningBoundsByInstanceId },
+    derived: { itemPlanningBoundsByInstanceId },
     resolvers: {
       resolveItemConfigurationEntry,
       resolveConfiguredVisualDimsMm,
@@ -488,7 +481,6 @@ export function DesignPageWorkspace() {
         commitRoomDimensionEdit2D: handleCommitRoomDimensionEdit2D,
         commitActiveRoomDimension: handleCommitActiveRoomDimension,
         changeRoomPreset: handleRoomPresetChange,
-        nudgeSelectedPlanRoom,
       },
       overlay: {
         setPendingAnnotationText,
@@ -725,12 +717,6 @@ export function DesignPageWorkspace() {
       },
     });
   const {
-    boundaries: {
-      roomQueries: placementRoomQueries,
-      catalogPlacementController,
-      crossRoomTransfer: crossRoomTransferController,
-      targeting: placementTargetingController,
-    },
     state: {
       pendingCatalogPlacement,
       hoverCatalogPlacement,
@@ -756,7 +742,6 @@ export function DesignPageWorkspace() {
       shouldConfirmRestoredCatalogPlacement,
       placementTargetRoomId,
       placementTargetPlanRoom,
-      placementTargetRoom,
       canEditPlanGeometry,
     },
     actions: {
@@ -838,7 +823,6 @@ export function DesignPageWorkspace() {
       accessLevel: cabinetryAccessLevel,
       availableSpaces: cabinetryAvailableSpaces,
       preferredSpaceId: cabinetryPreferredSpaceId,
-      selectedItem: selectedCabinetItem,
       project: {
         schedulePackage: projectCabinetSchedulePackage,
         handoffPackage: projectCabinetHandoffPackage,
@@ -853,85 +837,18 @@ export function DesignPageWorkspace() {
     },
   } = cabinetryRegistration;
 
-  const placementSelectionWorkspace =
-    useDesignPagePlacementSelectionWorkspaceFacade({
+  const selectionWorkspaceRegistration =
+    useDesignPageSelectionWorkspaceRegistration({
       boundaries: {
-        selection: itemSelectionController,
-        document: itemDocumentController,
-        coordination: selectionCoordinator,
-        inspection: productInspectionController,
-        geometry: itemGeometryController,
-        roomQueries: placementRoomQueries,
-        catalogPlacement: catalogPlacementController,
-        crossRoomTransfer: crossRoomTransferController,
-        targeting: placementTargetingController,
-      },
-      state: {
-        selection: {
-          selectedItemDeleteLabel:
-            selectedCabinetItem?.name ??
-            selectedCabinetItem?.cabinetDefinition.name ??
-            selectedProduct?.title ??
-            "Item",
-        },
-        room: {
-          activeRoom: activeRoom ?? null,
-          activeRoomShoppingItems: roomReadModel.activeRoomShoppingItems,
-        },
-        editor: { editorMode, isClientPreview, viewMode },
-        plan: {
-          selectedPlanOverlayId,
-          selectedPlanRoomId: selectedPlanRoomContext?.id ?? null,
-          selectedZoneId,
-        },
-        presentation: { style, designId },
-        crossRoomDragTarget,
-        placementTargetRoomName: placementTargetRoom?.name ?? null,
-      },
-      configuration: {
-        canEdit,
-        isDesigner,
-        roomWidth,
-        roomDepth,
-        wallThickness,
-        rotationSnapEnabled,
-        rotationSnapStepRadians,
-        catalogItems: CATALOG_ITEMS,
-      },
-      derived: { activeRoomPlanOffset, roomSnapshotById },
-      refs: {
-        items: itemsRef,
-        selectedIds: selectedIdsRef,
-        primaryId: primaryIdRef,
-        designSnapshot: designSnapshotRef,
-      },
-      actions: {
-        document: {
-          setDesignSnapshot,
-          replaceActiveItemsSnapshot: (nextItems) => {
-            itemsRef.current = nextItems;
-          },
-        },
-        placement: {
-          clampToActiveRoom,
-          getItemDisplayName,
-        },
-        room: {
-          keyboard: {
-            delete: handleDeleteSelectedPlanRoom,
-            duplicate: handleDuplicateSelectedPlanRoom,
-            nudge: nudgeSelectedPlanRoom,
-          },
-        },
-        history,
-        feedback: {
-          showToast: showRuleToast,
-          showConstraintsForMoment,
-          showConfidenceSummary,
-          trackFirstInteraction,
-        },
+        coreShell: coreShellRegistration,
+        documentSelection: documentSelectionRegistration,
+        planAuthoring: planAuthoringRegistration,
+        placement: placementWorkspaceRegistration,
+        cabinetry: cabinetryRegistration,
       },
     });
+  const { selection: placementSelectionWorkspace } =
+    selectionWorkspaceRegistration.boundaries;
   const {
     alignSelectionX,
     alignSelectionZ,

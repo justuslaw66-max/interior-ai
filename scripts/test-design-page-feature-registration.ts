@@ -46,7 +46,7 @@ assert.doesNotMatch(
 const registrationOrder = [
   "useDesignPageCommerceOnboardingRegistration({",
   "useDesignPageCabinetryWorkspaceRegistration({",
-  "useDesignPagePlacementSelectionWorkspaceFacade({",
+  "useDesignPageSelectionWorkspaceRegistration({",
 ];
 let previousRegistrationIndex = -1;
 for (const marker of registrationOrder) {

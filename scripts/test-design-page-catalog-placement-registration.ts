@@ -101,6 +101,10 @@ const placementWorkspaceSource = readFileSync(
   join(root, "lib/useDesignPagePlacementWorkspaceRegistration.ts"),
   "utf8"
 );
+const selectionWorkspaceSource = readFileSync(
+  join(root, "lib/useDesignPageSelectionWorkspaceRegistration.ts"),
+  "utf8"
+);
 
 assert.match(
   workspaceSource,
@@ -124,8 +128,8 @@ assert.doesNotMatch(
 );
 assert.doesNotMatch(workspaceSource, /isParametricCabinetItem\(/);
 assert.match(
-  workspaceSource,
-  /roomQueries: placementRoomQueries,[\s\S]*catalogPlacementController,[\s\S]*crossRoomTransfer: crossRoomTransferController,/
+  selectionWorkspaceSource,
+  /roomQueries: placement\.boundaries\.roomQueries[\s\S]*catalogPlacement: placement\.boundaries\.catalogPlacementController[\s\S]*crossRoomTransfer: placement\.boundaries\.crossRoomTransfer/
 );
 
 const orderedRegistrationTokens = [

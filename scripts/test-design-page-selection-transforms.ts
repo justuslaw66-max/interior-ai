@@ -15,6 +15,10 @@ const placementSelectionFacadeSource = readFileSync(
   join(root, "lib/useDesignPagePlacementSelectionWorkspaceFacade.ts"),
   "utf8"
 );
+const selectionWorkspaceSource = readFileSync(
+  join(root, "lib/useDesignPageSelectionWorkspaceRegistration.ts"),
+  "utf8"
+);
 const controllerSource = readFileSync(
   join(root, "lib/useDesignPageSelectionTransforms.ts"),
   "utf8"
@@ -26,7 +30,7 @@ assert.match(
   /useDesignPageItemInteractionFacade\(\{/
 );
 assert.match(
-  pageSource,
+  selectionWorkspaceSource,
   /useDesignPagePlacementSelectionWorkspaceFacade\(\{/
 );
 assert.doesNotMatch(pageSource, /const applyItemRotation\s*=/);
