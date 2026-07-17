@@ -16,7 +16,7 @@ import { buildDesignPageSceneRegionAdapter } from "@/lib/design-page-scene-regio
 import { buildDesignPageViewportRegionAdapter } from "@/lib/design-page-viewport-region-adapter";
 import { composeDesignPageSceneRegionModel } from "@/lib/design-page-viewport-region-model";
 import { buildDesignPageDialogLayerAdapter } from "@/lib/design-page-dialog-layer-adapter";
-import { buildDesignPagePanelRegistration } from "@/lib/design-page-panel-registration";
+import { buildDesignPagePanelWorkspaceRegistration } from "@/lib/design-page-panel-workspace-registration";
 import { buildDesignPageDialogLayerModel } from "@/lib/design-page-dialog-layer-model";
 import {
   DEFAULT_EDITOR_CAMERA_VIEW,
@@ -90,10 +90,9 @@ export function DesignPageWorkspace() {
     refs: { itemsRef },
   } = coreShellRegistration;
   const {
-    boundaries: { importedModels: importedModelsWorkspace },
     state: {
       identity: { session, designId },
-      brief: { style, budget, mode },
+      brief: { mode },
       access: { plan },
       dialogs: { showPlans, feedbackOpen, showUpgrade },
       paywall: {
@@ -101,16 +100,15 @@ export function DesignPageWorkspace() {
         upgradeCtaVariant,
         pricingLayoutVariant,
       },
-      editor: { showGrid, snapEnabled, placementAddMode, viewMode },
+      editor: { showGrid, snapEnabled, viewMode },
       panels: {
         itemCartOpen,
         itemCart,
-        designPanelCollapsed,
       },
     },
     derived: { navigation: { router, pathname, searchParams } },
     actions: {
-      brief: { setStyle, setBudget, setMode },
+      brief: { setMode },
       access: { setPlan },
       dialogs: { setShowPlans, setFeedbackOpen, setShowUpgrade },
       paywall: {
@@ -118,17 +116,9 @@ export function DesignPageWorkspace() {
         setUpgradeCtaVariant,
         setPricingLayoutVariant,
       },
-      editor: {
-        setPlacementAddMode,
-      },
     },
   } = coreShellBaseRegistration;
   const {
-    boundaries: {
-      planDocument: planDocumentController,
-      floorPlanDocument: floorPlanDocumentController,
-      surfaceState: surfaceStateController,
-    },
     state: {
       diagnostics: { planDebugMetrics },
       plan: {
@@ -153,14 +143,12 @@ export function DesignPageWorkspace() {
         selectedPlanRoomId,
       },
       camera: { cameraView },
-      shopping: { shoppingReadinessFilter, hoveredCartInstanceId },
+      shopping: { hoveredCartInstanceId },
       surface: {
         selectedRendererSurfaceTarget,
       },
-      editor: { editorMode, guidedPlanStartMode },
-      panels: { designControlsPanelMode },
+      editor: { editorMode },
     },
-    derived: { aiDesignEnabled },
     actions: {
       plan: {
         setPlanMeasurementUnit,
@@ -168,9 +156,6 @@ export function DesignPageWorkspace() {
       camera: {
         updateProjection,
       },
-      shopping: { setShoppingReadinessFilter },
-      editor: { setGuidedPlanStartMode },
-      panels: { goFurnish, goAiDesign, goShop },
       diagnostics: {
         handlePlanDebugMetricsChange,
         handlePlan2DCameraDiagnosticsChange,
@@ -203,14 +188,9 @@ export function DesignPageWorkspace() {
     },
     actions: {
       setSelectedZoneId,
-      shopping: {
-        swapItem: swapShoppingItemReplacement,
-        reviewIssue: reviewShoppingIssue,
-      },
       history: { redoSafe },
     },
   } = documentSelectionRegistration;
-  const roomFloorWorkspace = documentRoomRegistration.boundaries.roomFloor;
   const documentFloorState = documentRoomRegistration.state.floor;
   const documentRoomModel = documentRoomRegistration.derived.room;
   const documentPlanModel = documentRoomRegistration.derived.plan;
@@ -232,15 +212,12 @@ export function DesignPageWorkspace() {
     planViewWidth,
     planViewDepth,
     designControlsPanelVisibleForLayout,
-    shoppingPanelVisibleForLayout,
   } = documentPlanModel;
   const { activeFloorLevel, activeFloorRoomCount, floorOptions } =
     documentFloorModel;
   const { history } = documentHistoryRefs;
   const { clampToActiveRoom } = documentRoomActions;
 
-  const sceneRoomReadFacade =
-    sceneRoomReadRegistration.boundaries.sceneRoom;
   const sceneReadState = sceneRoomReadRegistration.state.scene;
   const sceneReadModel = sceneRoomReadRegistration.derived.scene;
   const roomReadModel = sceneRoomReadRegistration.derived.room;
@@ -373,7 +350,6 @@ export function DesignPageWorkspace() {
       room: { pendingRoomRenameId, pendingRoomRenameValue },
       overlay: {
         editorScene2D,
-        roomConnectionChecklistItems,
         pendingAnnotationKind,
         pendingAnnotationText,
       },
@@ -385,20 +361,15 @@ export function DesignPageWorkspace() {
       },
       inspector: {
         floatingSelectionInspectorVisible,
-        selectedObjectContext,
         selectedObjectInspector,
         selectedPlanAnnotation,
         selectedPlanFixedElement,
         visiblePlanOpening,
-        visiblePlanOpeningMaxHeightMeters,
-        visiblePlanOpeningRoomName,
-        visiblePlanOpeningWallSpanMeters,
       },
     },
     derived: {
       floatingPlanOverlayStackVisible,
       floatingFloorPropertiesPanelVisible,
-      inlineFloorPropertiesPanelVisible,
       plan2DSafeAreaLeftPx,
       selectionInspectorDockedWithRightRail,
       selectionInspectorRightPx,
@@ -419,7 +390,6 @@ export function DesignPageWorkspace() {
     },
     actions: {
       room: {
-        switchRoom: handleSwitchRoom,
         startRoomRename: handleRenameSelectedPlanRoom,
         setPendingRoomRenameValue,
         cancelRoomRename,
@@ -428,8 +398,6 @@ export function DesignPageWorkspace() {
         deleteRoom: handleDeleteSelectedPlanRoom,
         resizeRoom2D: handleResizeRoom2D,
         commitRoomDimensionEdit2D: handleCommitRoomDimensionEdit2D,
-        commitActiveRoomDimension: handleCommitActiveRoomDimension,
-        changeRoomPreset: handleRoomPresetChange,
       },
       overlay: {
         setPendingAnnotationText,
@@ -437,7 +405,6 @@ export function DesignPageWorkspace() {
         commitPlanAnnotation,
         handleMoveOpening2D,
         handleResizeOpening2D,
-        handleUpdateOpeningMetrics2D,
         handleAddSuggestedDoorway,
         handleMoveFixedElement2D,
         handleMoveAnnotation2D,
@@ -454,15 +421,7 @@ export function DesignPageWorkspace() {
       pendingTemplateReplacement: pendingPlanTemplateReplacement,
     },
     actions: {
-      applyPlanTemplate: handleApplyPlanTemplate,
-      uploadUnderlay: handleFloorPlanUnderlayUpload,
-      changeUnderlayOpacity: handleFloorPlanUnderlayOpacityChange,
-      changeUnderlayLock: handleFloorPlanUnderlayLockChange,
-      changePdfPage: handleFloorPlanPdfPageChange,
       addCalibrationPoint: handleFloorPlanCalibrationPoint,
-      resetCalibrationPoints: handleResetFloorPlanCalibrationPoints,
-      applyCalibration: handleApplyFloorPlanCalibration,
-      clearUnderlay: handleClearFloorPlanUnderlay,
     },
   } = planUnderlay;
   const editorInteractionRegistration =
@@ -504,26 +463,14 @@ export function DesignPageWorkspace() {
   } = cameraWorkspace.actions.canvas;
 
   const {
-    state: { consumerPlanCompletionSignal },
     actions: {
-      handleConsumerPlanCompletionHandled,
-      selectFloorPlanTool: handleSelectFloorPlanTool,
-      changeCalibrationMode: handleFloorPlanCalibrationModeChange,
-      addFloorPlanOpeningFromTool: handleAddFloorPlanOpeningFromTool,
-      changeTraceRoomMode: handleFloorPlanTraceRoomModeChange,
-      changeDrawRoomMode: handleFloorPlanDrawRoomModeChange,
-      changeTraceOpeningMode: handleFloorPlanTraceOpeningModeChange,
-      resetTraceOpeningPoints: handleResetFloorPlanTraceOpeningPoints,
       traceOpeningPoint: handleFloorPlanTraceOpeningPoint,
       traceBlankGridOpeningPoint: handleBlankGridTraceOpeningPoint,
-      handleApplyFloorPlanExactWallLength,
       handleBlankGridRoomDrawDrag,
       handleBlankGridRoomDrawPoint,
       handleBlankGridRoomDrawPreviewPoint,
       handleCommitWallDrawSegmentLength2D,
       handleFloorPlanTraceRoomPoint,
-      handleResetFloorPlanTraceRoomPoints,
-      handleUndoFloorPlanTraceRoomPoint,
     },
   } = planTracing;
   const {
@@ -577,7 +524,6 @@ export function DesignPageWorkspace() {
         requestDeleteSavedDesigns,
         cancelDeleteSavedDesigns,
         handleDeleteSavedDesign,
-        openGuestPrompt,
         handleGuestPromptNotNow,
         handleGuestSaveAndContinue,
       },
@@ -610,7 +556,6 @@ export function DesignPageWorkspace() {
       layout: {
         applyPendingProposal: applyPendingAiLayoutProposal,
         dismissPendingProposal: dismissPendingAiLayoutProposal,
-        bulkSwap: onBulkSwap,
       },
       notes: {
         applySuggestion,
@@ -713,8 +658,6 @@ export function DesignPageWorkspace() {
     },
     actions: {
       commerce: {
-        previewShoppingReplacement,
-        addSelectedImportedToRoom,
         removeFromCart,
         updateCartQty,
         clearCart,
@@ -732,7 +675,6 @@ export function DesignPageWorkspace() {
     },
   });
   const {
-    boundaries: { cabinetry: cabinetryWorkspace },
     state: {
       studio: cabinetryStudioState,
       canUseStudio: canUseCabinetryStudio,
@@ -1169,110 +1111,9 @@ export function DesignPageWorkspace() {
     scene: sceneCanvasRegionModel,
     viewport: viewportRegionModel,
   });
-  const panelRegionModel = buildDesignPagePanelRegistration({
-    boundaries: {
-      cabinetry: cabinetryWorkspace,
-      floorPlanDocument: floorPlanDocumentController,
-      importedModels: importedModelsWorkspace,
-      panel: panelController,
-      placementSelection: placementSelectionWorkspace,
-      planDocument: planDocumentController,
-      roomFloor: roomFloorWorkspace,
-      sceneRoom: sceneRoomReadFacade,
-      surfaceState: surfaceStateController,
-      surfaceWorkspace,
-    },
-    state: {
-      document: {
-        designId,
-        plan,
-        rooms: designSnapshot.rooms,
-        activeRoomId: designSnapshot.activeRoomId,
-        authenticated: Boolean(session?.user),
-      },
-      editor: {
-        editorMode,
-        controlsMode: designControlsPanelMode,
-        controls: { collapsed: designPanelCollapsed, selectionContext: selectedObjectContext,
-          viewMode, style, budget, showGrid, snapEnabled },
-        shoppingVisible: shoppingPanelVisibleForLayout,
-        controlsVisible: designControlsPanelVisibleForLayout,
-      },
-      plan: {
-        roomConnectionChecklistItems, visiblePlanOpening, visiblePlanOpeningRoomName,
-        visiblePlanOpeningWallSpanMeters, visiblePlanOpeningMaxHeightMeters,
-        planStartMode: guidedPlanStartMode, planCompletionSignal: consumerPlanCompletionSignal,
-        floorPlanQualityReport,
-      },
-      shopping: { readinessFilter: shoppingReadinessFilter, placementAddMode },
-      ai: { aiLayoutProposal: pendingAiLayoutProposal },
-    },
-    derived: {
-      surface: { showFloorPropertiesPanel: inlineFloorPropertiesPanelVisible },
-    },
-    configuration: {
-      designerTheme: showDesignerTheme, isDesigner, isClientPreview, canEdit,
-      canUseCabinetryStudio, canEditPlanGeometry, aiDesignEnabled,
-    },
-    actions: {
-      navigation: {
-        signIn: signInWithReturn, goFurnish, goAiDesign, goShop,
-        selectRoom: handleSwitchRoom, changePlacementAddMode: setPlacementAddMode,
-        changeStyle: setStyle, changeBudget: setBudget,
-      },
-      room: {
-        changePreset: handleRoomPresetChange,
-        commitDimension: handleCommitActiveRoomDimension,
-        changeHeight: handleActiveRoomHeightMmChange,
-        changeWallThickness: handleActiveRoomWallThicknessMmChange,
-        changeSlabThickness: handleActiveRoomSlabThicknessMmChange,
-        changeBaseboardDepth: handleActiveRoomBaseboardDepthMmChange,
-        changeSurfaceOpacity: handleActiveRoomSurfaceOpacityChange,
-        changeCeilingVisible: handleActiveRoomCeilingVisibleChange,
-        changeCeilingColor: handleActiveRoomCeilingColorChange,
-      },
-      floorPlan: {
-        completionHandled: handleConsumerPlanCompletionHandled,
-        changeStartMode: setGuidedPlanStartMode,
-        activateQualityIssue: handlePlanQualityAction,
-        selectTool: handleSelectFloorPlanTool,
-        addOpeningFromTool: handleAddFloorPlanOpeningFromTool,
-        applyTemplate: handleApplyPlanTemplate,
-        upload: handleFloorPlanUnderlayUpload,
-        changePdfPage: handleFloorPlanPdfPageChange,
-        changeOpacity: handleFloorPlanUnderlayOpacityChange,
-        changeLock: handleFloorPlanUnderlayLockChange,
-        changeCalibrationMode: handleFloorPlanCalibrationModeChange,
-        applyCalibration: handleApplyFloorPlanCalibration,
-        resetCalibrationPoints: handleResetFloorPlanCalibrationPoints,
-        changeTraceRoomMode: handleFloorPlanTraceRoomModeChange,
-        changeDrawRoomMode: handleFloorPlanDrawRoomModeChange,
-        applyExactWallLength: handleApplyFloorPlanExactWallLength,
-        undoTraceRoomPoint: handleUndoFloorPlanTraceRoomPoint,
-        resetTraceRoomPoints: handleResetFloorPlanTraceRoomPoints,
-        changeTraceOpeningMode: handleFloorPlanTraceOpeningModeChange,
-        resetTraceOpeningPoints: handleResetFloorPlanTraceOpeningPoints,
-        clear: handleClearFloorPlanUnderlay,
-        addSuggestedDoorway: handleAddSuggestedDoorway,
-        updateOpeningMetrics: handleUpdateOpeningMetrics2D,
-      },
-      shopping: {
-        setReadinessFilter: setShoppingReadinessFilter,
-        swapItem: swapShoppingItemReplacement,
-        previewReplacement: previewShoppingReplacement,
-        bulkSwap: onBulkSwap,
-        showUpgrade: () => setShowUpgrade(true),
-        openGuestPrompt,
-        addImportedToRoom: addSelectedImportedToRoom,
-        reviewIssue: reviewShoppingIssue,
-      },
-      cabinetry: { deleteSelected: deleteSelectedItem },
-      ai: {
-        onApplyAiLayoutProposal: applyPendingAiLayoutProposal,
-        onClearAiLayoutProposal: dismissPendingAiLayoutProposal,
-      },
-    },
-  });
+  const panelRegionModel = buildDesignPagePanelWorkspaceRegistration({
+    boundaries: { presentation: presentationQaWorkspace },
+  }).regions.panel;
   const dialogLayerModel = buildDesignPageDialogLayerAdapter(buildDesignPageDialogLayerModel({
     access: { isClientPreview, isAuthenticated: Boolean(session?.user), isPro: isPro(plan), designerTheme: showDesignerTheme },
     billing: {

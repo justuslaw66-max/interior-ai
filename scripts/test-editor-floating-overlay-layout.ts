@@ -30,6 +30,14 @@ const panelRegistrationSource = fs.readFileSync(
   path.join(process.cwd(), "lib", "design-page-panel-registration.ts"),
   "utf8"
 );
+const panelWorkspaceRegistrationSource = fs.readFileSync(
+  path.join(
+    process.cwd(),
+    "lib",
+    "design-page-panel-workspace-registration.ts"
+  ),
+  "utf8"
+);
 const designPageComponentsPath = path.join(
   process.cwd(),
   "components",
@@ -409,9 +417,9 @@ assert.match(
 );
 
 assert.match(
-  source,
-  /surface:\s*\{ showFloorPropertiesPanel: inlineFloorPropertiesPanelVisible \}/,
-  "The workspace should inject inline floor-panel visibility at the panel-registration boundary."
+  panelWorkspaceRegistrationSource,
+  /showFloorPropertiesPanel:[\s\S]*?planWorkspace\.derived\.inlineFloorPropertiesPanelVisible/,
+  "The panel workspace should inject inline floor-panel visibility at the panel-registration boundary."
 );
 assert.match(
   panelRegistrationSource,

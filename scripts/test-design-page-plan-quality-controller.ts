@@ -13,6 +13,10 @@ const panelRegistrationSource = readFileSync(
   join(root, "lib/design-page-panel-registration.ts"),
   "utf8"
 );
+const panelWorkspaceRegistrationSource = readFileSync(
+  join(root, "lib/design-page-panel-workspace-registration.ts"),
+  "utf8"
+);
 const structureSource = readFileSync(
   join(root, "components/editor/design-page/DesignSceneStructureLayer.tsx"),
   "utf8"
@@ -196,9 +200,9 @@ assert.match(
   /floorPlanQualityContext:[\s\S]*?planWorkspace\.state\.quality\.report\.aiPlanningContext/
 );
 assert.match(
-  workspaceSource,
+  panelWorkspaceRegistrationSource,
   /buildDesignPagePanelRegistration\(\{/,
-  "The workspace should delegate fixed-panel registration to the pure registration boundary."
+  "The panel workspace should delegate fixed-panel registration to the pure registration boundary."
 );
 assert.match(
   panelRegistrationSource,

@@ -33,6 +33,7 @@ const typescriptGuardFiles = [
   "test-design-page-live-catalog.ts",
   "test-design-page-new-plan-controller.ts",
   "test-design-page-panel-mode.ts",
+  "test-design-page-panel-workspace-registration.ts",
   "test-design-page-paywall.ts",
   "test-design-page-persistence-controller.ts",
   "test-design-page-persistence-ai-workspace-registration.ts",
