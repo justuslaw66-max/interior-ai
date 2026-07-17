@@ -43,6 +43,10 @@ const controllerSource = readFileSync(
   join(root, "lib/useDesignPageCommerceActions.ts"),
   "utf8"
 );
+const placementWorkspaceSource = readFileSync(
+  join(root, "lib/useDesignPagePlacementWorkspaceRegistration.ts"),
+  "utf8"
+);
 
 assert.match(
   workspaceSource,
@@ -69,8 +73,13 @@ for (const callbackName of [
   );
 }
 
+assert.match(
+  placementWorkspaceSource,
+  /movePendingCatalogPlacementToBestRoomAction\(\);/,
+  "Placement should retain its stable best-room adapter before commerce mounts."
+);
 const workspaceOrder = [
-  "movePendingCatalogPlacementToBestRoomAction();",
+  "useDesignPagePlacementWorkspaceRegistration({",
   "useDesignPageCommerceActions({",
   "useDesignPageOnboardingRegistrationFacade({",
 ];

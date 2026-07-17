@@ -38,7 +38,7 @@ assertSourceOrder(
     "useDesignPageEditorInteractionRegistration({",
     "useDesignPagePersistenceWorkspaceRegistration({",
     "useDesignPageAiWorkspaceRegistration({",
-    "useDesignPageCatalogPlacementRegistrationFacade({",
+    "useDesignPagePlacementWorkspaceRegistration({",
   ],
   "Workspace should preserve document, editor, persistence, AI, and placement order"
 );

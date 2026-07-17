@@ -72,7 +72,7 @@ assertSourceOrder(
   workspaceSource,
   [
     "useDesignPageAiWorkspaceRegistration({",
-    "useDesignPageCatalogPlacementRegistrationFacade({",
+    "useDesignPagePlacementWorkspaceRegistration({",
   ],
   "The AI workspace registration should remain before catalog placement"
 );

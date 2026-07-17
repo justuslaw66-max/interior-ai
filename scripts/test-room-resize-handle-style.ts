@@ -58,6 +58,14 @@ const surfaceTargetingFacadeSource = fs.readFileSync(
   ),
   "utf8"
 );
+const placementWorkspaceSource = fs.readFileSync(
+  path.join(
+    process.cwd(),
+    "lib",
+    "useDesignPagePlacementWorkspaceRegistration.ts"
+  ),
+  "utf8"
+);
 const designSceneStructureSource = fs.readFileSync(
   path.join(
     process.cwd(),
@@ -283,9 +291,9 @@ assert.match(
 );
 
 assert.match(
-  designPageSource,
+  placementWorkspaceSource,
   /useDesignPageSurfaceTargetingFacade\(\{/,
-  "The workspace should compose the surface-targeting facade."
+  "The placement workspace should compose the surface-targeting facade."
 );
 
 assert.match(

@@ -1,20 +1,17 @@
 "use client";
 
-import { useCallback } from "react";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import { isPro } from "@/lib/plan";
-import { track } from "@/lib/analytics";
 import { DesignPageComposition } from "@/components/editor/design-page/DesignPageComposition";
 import { DesignPageEditorChrome } from "@/components/editor/design-page/DesignPageEditorChrome";
 import { DesignPageDialogLayer } from "@/components/editor/design-page/DesignPageDialogLayer";
 import { DesignPagePanelRegion } from "@/components/editor/design-page/DesignPagePanelRegion";
 import { DesignPagePresentationQaLayer } from "@/components/editor/design-page/DesignPagePresentationQaLayer";
 import { DesignPageSceneRegion } from "@/components/editor/design-page/DesignPageSceneRegion";
-import { useDesignPageCatalogPlacementRegistrationFacade } from "@/lib/useDesignPageCatalogPlacementRegistrationFacade";
+import { useDesignPagePlacementWorkspaceRegistration } from "@/lib/useDesignPagePlacementWorkspaceRegistration";
 import { useDesignPageAiWorkspaceRegistration } from "@/lib/useDesignPageAiWorkspaceRegistration";
 import { useDesignPageCoreShellRegistration } from "@/lib/useDesignPageCoreShellRegistration";
 import { useDesignPageSceneItemDrag } from "@/lib/useDesignPageSceneItemDrag";
-import { useDesignPageSurfaceTargetingFacade } from "@/lib/useDesignPageSurfaceTargetingFacade";
 import { useDesignPageOnboardingRegistrationFacade } from "@/lib/useDesignPageOnboardingRegistrationFacade";
 import { buildDesignPageSceneRegionAdapter } from "@/lib/design-page-scene-region-adapter";
 import { buildDesignPageViewportRegionAdapter } from "@/lib/design-page-viewport-region-adapter";
@@ -190,9 +187,6 @@ export function DesignPageWorkspace() {
       surface: {
         activeSurfaceTarget,
         selectedRendererSurfaceTarget,
-        surfaceBrushActive,
-        surfaceBrushMaterialId,
-        surfaceBrushPaint,
       },
       editor: { editorMode, guidedPlanStartMode },
       panels: { designControlsPanelMode },
@@ -209,17 +203,13 @@ export function DesignPageWorkspace() {
         setExportStylePreset,
         setPlanGuidedActionsEnabled,
         setPlanGuidedActionsChoiceSeen,
-        setSelectedPlanRoomId,
       },
       camera: {
         updateProjection,
-        preserveCameraAfterPlanOverlaySelection,
         transitionToCameraView,
-        resolveGroundPointFromClient,
       },
       presentation: { setShowPresentModal, setPresentModeRoomId },
       shopping: { setShoppingReadinessFilter },
-      surface: surfaceStateActions,
       editor: { setEditorMode, setGuidedPlanStartMode },
       panels: { goPlan, goFurnish, goAiDesign, goShop },
       diagnostics: {
@@ -235,12 +225,6 @@ export function DesignPageWorkspace() {
       sceneRef,
     },
   } = viewportShellRegistration;
-  const {
-    setActiveSurfaceTarget,
-    setSelectedWallSurfaceTarget,
-    setSelectedRendererSurfaceTarget,
-  } = surfaceStateActions;
-
   const documentSelectionRegistration =
     useDesignPageDocumentSelectionRegistrationFacade({
       boundaries: { coreShell: coreShellRegistration },
@@ -317,8 +301,6 @@ export function DesignPageWorkspace() {
   const { sceneReady } = sceneReadState;
   const {
     activeRoomHealthSummary,
-    surfaceInspectorContext,
-    surfaceInspectorUiActions,
   } = roomReadState;
   const {
     hasWholeHousePlan,
@@ -338,16 +320,10 @@ export function DesignPageWorkspace() {
     selectItem: handleSelect,
   } = itemSelectionController.actions;
   const {
-    getActiveItems: getActiveCatalogPlacementItems,
-    getActiveRoomId: getActiveCatalogPlacementRoomId,
-    getRooms: getCatalogPlacementRooms,
-  } = itemDocumentController.queries;
-  const {
     commitItems,
     commitItemsToRoom,
     setItemsPresent,
     createInstanceId: newInstanceId,
-    selectItemsInRoom: selectCatalogPlacementItems,
   } = itemDocumentController.actions;
 
   const {
@@ -439,15 +415,12 @@ export function DesignPageWorkspace() {
     },
     actions: {
       selection: {
-        clearNonRoomSelection,
         clearAllSelection,
         deletePlanOverlayById,
         handleSelectPlanOverlay,
       },
       roomGeometry: {
         changeActiveRoomHeightMm: handleActiveRoomHeightMmChange,
-        changeSelectedWallHeight: handleSelectedWallHeightChange,
-        resetSelectedWallHeight: handleResetSelectedWallHeight,
         changeActiveRoomSlabThicknessMm:
           handleActiveRoomSlabThicknessMmChange,
         changeActiveRoomBaseboardDepthMm:
@@ -556,10 +529,7 @@ export function DesignPageWorkspace() {
       clearPlanFocusPoints,
     },
   } = planWorkspace;
-  const {
-    derived: surfaceWorkspaceDerived,
-    actions: surfaceWorkspaceActions,
-  } = surfaceWorkspace;
+  const { actions: surfaceWorkspaceActions } = surfaceWorkspace;
   const {
     state: {
       pendingTemplateReplacement: pendingPlanTemplateReplacement,
@@ -609,7 +579,6 @@ export function DesignPageWorkspace() {
   } = cameraWorkspace.state.canvas;
   const { itemDragCommit: dragCommitRef } = cameraWorkspace.refs.canvas;
   const {
-    changeCatalogObjectDragging: setSofaDragging,
     changeSceneItemDragging: handleDraggingChange,
     changePlanRoomDragging: handlePlanRoomDragStateChange,
     changePlanRoomResizing: handlePlanRoomResizeStateChange,
@@ -765,57 +734,27 @@ export function DesignPageWorkspace() {
     data: aiNotesData,
   } = aiNotesState;
 
-  const catalogPlacementRegistration =
-    useDesignPageCatalogPlacementRegistrationFacade({
-      state: { crossRoomDragTarget },
-      configuration: {
-        activeRoom,
-        activeRoomId: designSnapshot.activeRoomId,
-        rooms: designSnapshot.rooms,
-        roomSnapshotById,
-        houseRoomById,
-        planOpenings,
-        roomWidth,
-        roomDepth,
-        wallThickness,
-        placementAddMode,
-        hasWholeHousePlan,
-        catalogCanvasDragDisabled:
-          isClientPreview || editorMode === "present",
-      },
-      refs: {
-        designSnapshot: designSnapshotRef,
-        activeItems: itemsRef,
-        dragCommit: dragCommitRef,
-      },
-      actions: {
-        getActiveItems: getActiveCatalogPlacementItems,
-        getActiveRoomId: getActiveCatalogPlacementRoomId,
-        getRooms: getCatalogPlacementRooms,
-        getItemAABB,
-        getPlanningDimensions: resolveConfiguredPlanningDimsMm,
-        commitItemsToRoom,
-        selectItems: selectCatalogPlacementItems,
-        createInstanceId: newInstanceId,
-        showToast: showRuleToast,
-        clampToActiveRoom,
-        resolveGroundPointFromClient,
-        findPlanRoomAtWorldPoint,
-        nudgeCameraForDrag: nudgeWholeHomeCameraForDrag,
-        setCanvasObjectDragging: setSofaDragging,
-        setCrossRoomDragTarget,
-        setDesignSnapshot,
-        updateSelection,
-        history,
+  const placementWorkspaceRegistration =
+    useDesignPagePlacementWorkspaceRegistration({
+      boundaries: {
+        coreShell: coreShellRegistration,
+        documentSelection: documentSelectionRegistration,
+        planAuthoring: planAuthoringRegistration,
+        editorInteraction: editorInteractionRegistration,
       },
     });
   const {
     boundaries: {
       roomQueries: placementRoomQueries,
-      catalogPlacement: catalogPlacementController,
+      catalogPlacementController,
       crossRoomTransfer: crossRoomTransferController,
+      targeting: placementTargetingController,
     },
-    state: { pendingCatalogPlacement, hoverCatalogPlacement },
+    state: {
+      pendingCatalogPlacement,
+      hoverCatalogPlacement,
+      surfaceInspector: selectedSurfaceInspectorState,
+    },
     derived: {
       pendingCatalogPlacementScene,
       hoverCatalogPlacementScene,
@@ -837,93 +776,48 @@ export function DesignPageWorkspace() {
       placementTargetRoomId,
       placementTargetPlanRoom,
       placementTargetRoom,
+      canEditPlanGeometry,
     },
     actions: {
-      clampToCatalogPlacementRoom,
-      findCatalogPlacementBlockerInRoom,
-      isCatalogPlacementContainedInRoom,
-      getItemDisplayName,
-      targetPendingCatalogPlacementToRoom:
-        targetPendingCatalogPlacementToRoomAction,
-      rotatePendingCatalogPlacement,
-      nudgePendingCatalogPlacement,
-      centerPendingCatalogPlacement,
-      autoPlacePendingCatalogPlacement,
-      improvePendingCatalogPlacement,
-      restoreLastValidCatalogPlacement,
-      movePendingCatalogPlacementToBestRoom:
-        movePendingCatalogPlacementToBestRoomAction,
-      switchPendingCatalogPlacementToBestOption,
-      addCatalogItemDirectlyToRoom,
-      addCatalogItemToRoom,
-      previewCatalogPlacementIntent,
-      selectPendingCatalogPlacementBlocker,
-      placePendingCatalogBesideBlocker,
-      trySmallerPendingCatalogVariant,
-      movePendingCatalogBlockerAside,
-      swapPendingCatalogWithBlocker,
-      confirmPendingCatalogPlacement,
-      cancelPendingCatalogPlacement,
-      handleCatalogPlacementPointerDown,
-      handleCatalogPlacementPointerMove,
-      handleCatalogPlacementPointerUp,
-      handleCatalogCanvasDragOver,
-      handleCatalogCanvasDrop,
-      handleCatalogCanvasDragLeave,
-      transferItemToRoom,
-    },
-  } = catalogPlacementRegistration;
-
-  const canEditPlanGeometry = !isClientPreview;
-  const placementTargetingController = useDesignPageSurfaceTargetingFacade({
-    state: {
-      targeting: { editorMode, surfaceBrush: {
-        active: surfaceBrushActive, materialId: surfaceBrushMaterialId, paint: surfaceBrushPaint,
-      } },
-      inspector: {
-        context: surfaceInspectorContext, selectedPlanRoom: selectedPlanRoomContext,
-        hasSelectedItem: Boolean(selectedItem), hasVisiblePlanOpening: Boolean(visiblePlanOpening),
-        hasSelectedPlanFixedElement: Boolean(selectedPlanFixedElement), hasSelectedPlanAnnotation: Boolean(selectedPlanAnnotation),
-        planMeasurementUnit,
+      catalog: {
+        clampToCatalogPlacementRoom,
+        findCatalogPlacementBlockerInRoom,
+        isCatalogPlacementContainedInRoom,
+        getItemDisplayName,
+        rotatePendingCatalogPlacement,
+        nudgePendingCatalogPlacement,
+        centerPendingCatalogPlacement,
+        autoPlacePendingCatalogPlacement,
+        improvePendingCatalogPlacement,
+        restoreLastValidCatalogPlacement,
+        movePendingCatalogPlacementToBestRoom,
+        switchPendingCatalogPlacementToBestOption,
+        addCatalogItemDirectlyToRoom,
+        addCatalogItemToRoom,
+        previewCatalogPlacementIntent,
+        selectPendingCatalogPlacementBlocker,
+        placePendingCatalogBesideBlocker,
+        trySmallerPendingCatalogVariant,
+        movePendingCatalogBlockerAside,
+        swapPendingCatalogWithBlocker,
+        confirmPendingCatalogPlacement,
+        cancelPendingCatalogPlacement,
+        handleCatalogPlacementPointerDown,
+        handleCatalogPlacementPointerMove,
+        handleCatalogPlacementPointerUp,
+        handleCatalogCanvasDragOver,
+        handleCatalogCanvasDrop,
+        handleCatalogCanvasDragLeave,
+        transferItemToRoom,
+      },
+      targeting: {
+        targetPendingCatalogPlacementToRoom,
+        handlePlacementAwareRoomSelect,
+        handleRendererSurfaceTargetSelect,
+        surfaceInspector: selectedSurfaceInspectorActions,
       },
     },
-    configuration: { targeting: {
-      canApplySurfaceBrush: surfaceWorkspaceDerived.canApplySurfaceBrush,
-    },
-      inspector: { canEdit, canEditPlanGeometry, isDesigner },
-    },
-    refs: { designSnapshot: designSnapshotRef },
-    actions: {
-      targetPendingCatalogPlacementToRoom:
-        targetPendingCatalogPlacementToRoomAction,
-      clearNonRoomSelection,
-      setSelectedPlanRoomId,
-      setSelectedRendererSurfaceTarget,
-      setSelectedWallSurfaceTarget,
-      preserveCameraAfterPlanOverlaySelection,
-      resetFloorPlanTraceRoomPoints: handleResetFloorPlanTraceRoomPoints,
-      switchRoom: handleSwitchRoom,
-      setEditorMode,
-      setActiveSurfaceTarget,
-      surfaceWorkspace: surfaceWorkspaceActions,
-      track,
-      inspectorUi: surfaceInspectorUiActions,
-      changeSelectedWallHeight: handleSelectedWallHeightChange,
-      resetSelectedWallHeight: handleResetSelectedWallHeight,
-    },
-  });
-  const { surfaceInspector: selectedSurfaceInspectorState } =
-    placementTargetingController.state;
-  const {
-    targetPendingCatalogPlacementToRoom,
-    handlePlacementAwareRoomSelect,
-    handleRendererSurfaceTargetSelect,
-    surfaceInspector: selectedSurfaceInspectorActions,
-  } = placementTargetingController.actions;
-
-  const movePendingCatalogPlacementToBestRoom = useCallback(() => {
-    movePendingCatalogPlacementToBestRoomAction();
-  }, [movePendingCatalogPlacementToBestRoomAction]);
+  } = placementWorkspaceRegistration;
 
   const {
     actions: {

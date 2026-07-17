@@ -97,13 +97,17 @@ const facadeSource = readFileSync(
   join(root, "lib/useDesignPageCatalogPlacementRegistrationFacade.ts"),
   "utf8"
 );
+const placementWorkspaceSource = readFileSync(
+  join(root, "lib/useDesignPagePlacementWorkspaceRegistration.ts"),
+  "utf8"
+);
 
 assert.match(
   workspaceSource,
-  /import \{ useDesignPageCatalogPlacementRegistrationFacade \} from "@\/lib\/useDesignPageCatalogPlacementRegistrationFacade";/
+  /import \{ useDesignPagePlacementWorkspaceRegistration \} from "@\/lib\/useDesignPagePlacementWorkspaceRegistration";/
 );
 assert.match(
-  workspaceSource,
+  placementWorkspaceSource,
   /useDesignPageCatalogPlacementRegistrationFacade\(\{/
 );
 assert.doesNotMatch(
@@ -121,7 +125,7 @@ assert.doesNotMatch(
 assert.doesNotMatch(workspaceSource, /isParametricCabinetItem\(/);
 assert.match(
   workspaceSource,
-  /roomQueries: placementRoomQueries,[\s\S]*catalogPlacement: catalogPlacementController,[\s\S]*crossRoomTransfer: crossRoomTransferController,/
+  /roomQueries: placementRoomQueries,[\s\S]*catalogPlacementController,[\s\S]*crossRoomTransfer: crossRoomTransferController,/
 );
 
 const orderedRegistrationTokens = [

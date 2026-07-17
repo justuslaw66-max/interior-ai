@@ -191,6 +191,10 @@ const designPageSource = readFileSync(
   join(root, "components/editor/design-page/DesignPageWorkspace.tsx"),
   "utf8"
 );
+const placementWorkspaceSource = readFileSync(
+  join(root, "lib/useDesignPagePlacementWorkspaceRegistration.ts"),
+  "utf8"
+);
 const structureLayerSource = readFileSync(
   join(root, "components/editor/design-page/DesignSceneStructureLayer.tsx"),
   "utf8"
@@ -223,7 +227,7 @@ assert.match(
   /track\("surface_scene_target_selected"/
 );
 assert.match(
-  designPageSource,
+  placementWorkspaceSource,
   /useDesignPageSurfaceTargetingFacade\(\{/
 );
 assert.match(
