@@ -22,6 +22,7 @@ const typescriptGuardFiles = [
   "test-design-page-catalog-placement-registration.ts",
   "test-design-page-commerce-actions.ts",
   "test-design-page-core-shell-registration.ts",
+  "test-design-page-document-selection-registration.ts",
   "test-design-page-editor-command-bar.ts",
   "test-design-page-equivalent-variant.ts",
   "test-design-page-feature-registration.ts",

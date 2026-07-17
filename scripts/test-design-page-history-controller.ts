@@ -24,8 +24,8 @@ const sceneRoomReadRegistrationSource = readFileSync(
   join(root, "lib/useDesignPageSceneRoomReadRegistration.ts"),
   "utf8"
 );
-const pageSource = readFileSync(
-  join(root, "components/editor/design-page/DesignPageWorkspace.tsx"),
+const documentSelectionRegistrationSource = readFileSync(
+  join(root, "lib/useDesignPageDocumentSelectionRegistrationFacade.ts"),
   "utf8"
 );
 
@@ -80,9 +80,13 @@ assert.match(
   "Scene-room registration should adapt the existing grouped read facade."
 );
 assert.ok(
-  pageSource.indexOf("useDesignPageDocumentRoomRegistration({") <
-    pageSource.indexOf("useDesignPageSceneRoomReadRegistration({"),
-  "The design workspace should register document and room ownership before scene read models."
+  documentSelectionRegistrationSource.indexOf(
+    "useDesignPageDocumentRoomRegistration({"
+  ) <
+    documentSelectionRegistrationSource.indexOf(
+      "useDesignPageSceneRoomReadRegistration({"
+    ),
+  "The document facade should register room ownership before scene read models."
 );
 
 console.log("design page history controller guardrails passed");

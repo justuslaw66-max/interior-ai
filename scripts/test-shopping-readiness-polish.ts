@@ -29,6 +29,13 @@ const designPageSource = readFileSync(
   join(process.cwd(), "components/editor/design-page/DesignPageWorkspace.tsx"),
   "utf8"
 );
+const documentSelectionRegistrationSource = readFileSync(
+  join(
+    process.cwd(),
+    "lib/useDesignPageDocumentSelectionRegistrationFacade.ts"
+  ),
+  "utf8"
+);
 const shoppingCatalogRuntimeSource = readFileSync(
   join(process.cwd(), "lib/useDesignPageShoppingCatalogRuntime.ts"),
   "utf8"
@@ -126,8 +133,13 @@ assert.match(
 );
 assert.match(
   designPageSource,
+  /useDesignPageDocumentSelectionRegistrationFacade\(\{/,
+  "The workspace should register shopping behavior through the document boundary."
+);
+assert.match(
+  documentSelectionRegistrationSource,
   /useDesignPageShoppingCatalogRuntime\(\{/,
-  "The workspace should register shopping actions and catalog startup through their runtime boundary."
+  "The document boundary should register shopping actions and catalog startup through their runtime."
 );
 assert.doesNotMatch(
   designPageSource,
@@ -140,8 +152,12 @@ assert.doesNotMatch(
   "The workspace should not retain catalog startup behavior."
 );
 assert.ok(
-  designPageSource.indexOf("useDesignPageShoppingCatalogRuntime({") <
-    designPageSource.indexOf("useDesignPageHistoryShortcuts({"),
+  documentSelectionRegistrationSource.indexOf(
+    "useDesignPageShoppingCatalogRuntime({"
+  ) <
+    documentSelectionRegistrationSource.indexOf(
+      "useDesignPageHistoryShortcuts({"
+    ),
   "Shopping callbacks and catalog startup should remain registered before history shortcuts."
 );
 assert.match(

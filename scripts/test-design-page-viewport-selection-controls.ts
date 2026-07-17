@@ -49,7 +49,7 @@ assert.ok(
 );
 assert.ok(
   normalizedWorkspace.includes(
-    "selectionControls: { floorStack: { switchFloor: handleSwitchFloor }"
+    "selectionControls: { floorStack: { switchFloor: documentFloorActions.handleSwitchFloor }"
   ),
   "Workspace should inject the live floor-stack action into the viewport adapter."
 );
@@ -109,7 +109,7 @@ for (const expected of [
   "pendingZoneType",
   "selectedZone",
   "isClientPreview",
-  "floorStack: { switchFloor: handleSwitchFloor }",
+  "floorStack: { switchFloor: documentFloorActions.handleSwitchFloor }",
   "alignX: alignSelectionX",
   "alignZ: alignSelectionZ",
   "changeZoneType: setPendingZoneType",

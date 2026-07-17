@@ -13,6 +13,9 @@ const workspaceSource = readSource(
 const runtimeSource = readSource(
   "lib/useDesignPagePresentationExportRuntime.ts"
 );
+const presentationBackupSource = readSource(
+  "lib/useDesignPagePresentationBackupRegistrationFacade.ts"
+);
 
 assert.equal(
   resolveDesignPagePresentHotkey({ isDesigner: true, key: "p" }),
@@ -37,8 +40,13 @@ assert.equal(
 
 assert.match(
   workspaceSource,
+  /useDesignPagePresentationBackupRegistrationFacade\(\{/,
+  "The workspace should register presentation, export, and backup through their grouped boundary."
+);
+assert.match(
+  presentationBackupSource,
   /useDesignPagePresentationExportRuntime\(\{/,
-  "The workspace should register presentation, camera focus, and export through their runtime."
+  "The presentation-backup boundary should retain the existing export runtime."
 );
 for (const formerWorkspaceOwner of [
   "handlePresentModeHotkey",
@@ -70,11 +78,19 @@ for (const marker of runtimeOrder) {
 }
 
 assert.ok(
-  workspaceSource.indexOf("useDesignPageHistoryShortcuts({") <
-    workspaceSource.indexOf("useDesignPagePresentationExportRuntime({") &&
-    workspaceSource.indexOf("useDesignPagePresentationExportRuntime({") <
-      workspaceSource.indexOf("useDesignPageLocalBackupHydration({"),
-  "The presentation/export runtime should remain between history shortcuts and backup hydration."
+  workspaceSource.indexOf(
+    "useDesignPageDocumentSelectionRegistrationFacade({"
+  ) <
+    workspaceSource.indexOf(
+      "useDesignPagePresentationBackupRegistrationFacade({"
+    ) &&
+    presentationBackupSource.indexOf(
+      "useDesignPagePresentationExportRuntime({"
+    ) <
+      presentationBackupSource.indexOf(
+        "useDesignPageLocalBackupHydration({"
+      ),
+  "History should precede presentation/export, which should precede backup hydration."
 );
 assert.match(
   runtimeSource,

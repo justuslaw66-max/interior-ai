@@ -57,6 +57,14 @@ const localBackupHydrationSource = fs.readFileSync(
   path.join(process.cwd(), "lib", "useDesignPageLocalBackupHydration.ts"),
   "utf8"
 );
+const presentationBackupRegistrationSource = fs.readFileSync(
+  path.join(
+    process.cwd(),
+    "lib",
+    "useDesignPagePresentationBackupRegistrationFacade.ts"
+  ),
+  "utf8"
+);
 const newPlanControllerPath = path.join(
   process.cwd(),
   "lib",
@@ -682,9 +690,14 @@ assert.match(
   "The document-state controller should own the local-backup hydration gate."
 );
 assert.match(
-  designPageSource,
+  presentationBackupRegistrationSource,
   /useDesignPageLocalBackupHydration\(\{[\s\S]*?storageKey:\s*DESIGN_PAGE_LOCAL_BACKUP_STORAGE_KEY[\s\S]*?localBackupPersistenceActionsRef\.current\.loadDesign/,
-  "The design page should register mount-time hydration through the local-backup boundary."
+  "The presentation-backup registration should retain the mount-time hydration boundary."
+);
+assert.match(
+  designPageSource,
+  /useDesignPagePresentationBackupRegistrationFacade\(\{/,
+  "The design page should consume mount-time hydration through its grouped registration."
 );
 assert.match(
   localBackupHydrationSource,

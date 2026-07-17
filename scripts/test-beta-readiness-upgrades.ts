@@ -418,7 +418,7 @@ assert.match(
 );
 assert.match(
   designPageSource,
-  /fitPlanView:\s*handleFitPlanView[\s\S]*room:\s*\{[\s\S]*reviewHealth:\s*reviewActiveRoomHealth/,
+  /fitPlanView:\s*handleFitPlanView[\s\S]*room:\s*\{[\s\S]*reviewHealth:\s*roomReadActions\.reviewActiveRoomHealth/,
   "the workspace should inject the active room review and fit actions at the presentation/QA boundary."
 );
 assert.match(

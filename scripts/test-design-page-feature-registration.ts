@@ -66,7 +66,7 @@ assert.match(
 
 assert.match(
   workspaceSource,
-  /useDesignPageCabinetryRegistrationFacade\(\{[\s\S]*?activeRoom:\s*activeRoom \?\? null[\s\S]*?planRoomById:\s*houseRoomById[\s\S]*?activeSurfaceTarget,[\s\S]*?selectedWallFaceId:\s*activeSelectedWallFaceId[\s\S]*?refs:\s*\{ designSnapshot: designSnapshotRef, activeItems: itemsRef \}[\s\S]*?commitItemsToRoom,[\s\S]*?clampToCatalogPlacementRoom,[\s\S]*?isCatalogPlacementContainedInRoom,[\s\S]*?showToast:\s*showRuleToast/,
+  /useDesignPageCabinetryRegistrationFacade\(\{[\s\S]*?activeRoom:\s*activeRoom \?\? null[\s\S]*?planRoomById:\s*houseRoomById[\s\S]*?activeSurfaceTarget,[\s\S]*?selectedWallFaceId:\s*roomReadModel\.activeSelectedWallFaceId[\s\S]*?refs:\s*\{ designSnapshot: designSnapshotRef, activeItems: itemsRef \}[\s\S]*?commitItemsToRoom,[\s\S]*?clampToCatalogPlacementRoom,[\s\S]*?isCatalogPlacementContainedInRoom,[\s\S]*?showToast:\s*showRuleToast/,
   "The cabinetry registration should retain room, surface, ref, placement, and document inputs."
 );
 assert.match(

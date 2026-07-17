@@ -57,6 +57,12 @@ const lateBoundRefSource = readSource(
 const persistenceRegistrationSource = readSource(
   "lib/useDesignPagePersistenceRegistration.ts"
 );
+const documentSelectionRegistrationSource = readSource(
+  "lib/useDesignPageDocumentSelectionRegistrationFacade.ts"
+);
+const presentationBackupRegistrationSource = readSource(
+  "lib/useDesignPagePresentationBackupRegistrationFacade.ts"
+);
 
 const assertSourceOrder = (
   source: string,
@@ -96,11 +102,16 @@ assertSourceOrder(
 assertSourceOrder(
   workspaceSource,
   [
-    "useDesignPageLocalBackupHydration({",
+    "useDesignPagePresentationBackupRegistrationFacade({",
     "useDesignPageWorkspaceDeferredPaywallRegistration({",
     "if (!planSettingsLoaded)",
   ],
   "Workspace should preserve deferred paywall registration order"
+);
+assert.match(
+  presentationBackupRegistrationSource,
+  /useDesignPagePresentationExportRuntime\(\{[\s\S]*?useDesignPageLocalBackupHydration\(\{/,
+  "Presentation registration should keep export before local-backup hydration."
 );
 assert.match(
   paywallRegistrationFacadeSource,
@@ -165,11 +176,16 @@ assert.match(
 assertSourceOrder(
   workspaceSource,
   [
-    "useDesignPageLateBoundRef(resetSelectionStateRef",
+    "useDesignPageDocumentSelectionRegistrationFacade({",
     "useDesignPageSelectionInspectionRuntime({",
     "useDesignPagePersistenceRegistration({",
   ],
   "Late callback bridges should bind in dependency order"
+);
+assert.match(
+  documentSelectionRegistrationSource,
+  /useDesignPageLateBoundRef\([\s\S]*?resetSelectionStateRef/,
+  "Document registration should bind the selection reset bridge before downstream inspection."
 );
 assertSourceOrder(
   persistenceRegistrationSource,

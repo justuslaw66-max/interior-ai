@@ -53,7 +53,7 @@ for (const contractName of [
 // Workspace injects live values; the adapter owns viewport policy and action shaping.
 for (const expected of [
   "rail: floatingPlanOverlayStackVisible",
-  "sceneLoading: showSceneLoadingVeil",
+  "sceneLoading: sceneReadState.showSceneLoadingVeil",
   "selectionInspector: floatingSelectionInspectorVisible",
   "planQuality: plan2DQualityReviewPanelVisible",
   "planCanvas: planCanvasOverlaysState",
@@ -66,8 +66,8 @@ for (const expected of [
   "showToast: showRuleToast",
   "planCanvas: planCanvasActions",
   "navigator: { onMoveCamera: handleWholeHomeMoveCamera",
-  "addFloor: handleAddFloor",
-  "selectionControls: { floorStack: { switchFloor: handleSwitchFloor }",
+  "addFloor: documentFloorActions.handleAddFloor",
+  "selectionControls: { floorStack: { switchFloor: documentFloorActions.handleSwitchFloor }",
 ] as const) {
   assert.ok(
     normalizedWorkspace.includes(expected),

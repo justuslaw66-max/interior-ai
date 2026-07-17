@@ -449,7 +449,7 @@ assert.doesNotMatch(
 );
 assert.match(
   designPageSource,
-  /buildDesignPageViewportRegionAdapter\(\{[\s\S]*?sceneLoading:\s*showSceneLoadingVeil,[\s\S]*?configuration:\s*\{[\s\S]*?dark:\s*showDesignerTheme,[\s\S]*?sceneBackgroundColor,/,
+  /buildDesignPageViewportRegionAdapter\(\{[\s\S]*?sceneLoading:\s*sceneReadState\.showSceneLoadingVeil,[\s\S]*?configuration:\s*\{[\s\S]*?dark:\s*showDesignerTheme,[\s\S]*?sceneBackgroundColor,/,
   "The design workspace should inject the resolved scene-loading theme and background into the viewport adapter."
 );
 assert.match(

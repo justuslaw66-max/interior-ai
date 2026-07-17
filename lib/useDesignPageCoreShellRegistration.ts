@@ -264,3 +264,7 @@ export function useDesignPageCoreShellRegistration({
     },
   };
 }
+
+export type DesignPageCoreShellRegistration = ReturnType<
+  typeof useDesignPageCoreShellRegistration
+>;
