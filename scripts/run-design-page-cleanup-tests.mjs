@@ -17,6 +17,7 @@ const typescriptGuardFiles = [
   "test-command-bar-save-status.ts",
   "test-design-page-ai-layout-controller.ts",
   "test-design-page-ai-layout-proposal.ts",
+  "test-design-page-ai-panel-registration.ts",
   "test-design-page-cabinetry-controller.ts",
   "test-design-page-commerce-actions.ts",
   "test-design-page-editor-command-bar.ts",

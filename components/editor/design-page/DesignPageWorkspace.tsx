@@ -21,7 +21,7 @@ import {
   type CatalogPlacementPreviewTarget,
 } from "@/lib/useDesignPageCatalogPlacement";
 import { useDesignPageCameraWorkspaceFacade } from "@/lib/useDesignPageCameraWorkspaceFacade";
-import { useDesignPageAiNotes } from "@/lib/useDesignPageAiNotes";
+import { useDesignPageAiPanelRegistrationFacade } from "@/lib/useDesignPageAiPanelRegistrationFacade";
 import { useDesignPageSceneItemDrag } from "@/lib/useDesignPageSceneItemDrag";
 import { useDesignPageTransientFeedback } from "@/lib/useDesignPageTransientFeedback";
 import { useDesignPageSurfaceWorkspaceFacade } from "@/lib/useDesignPageSurfaceWorkspaceFacade";
@@ -47,7 +47,6 @@ import { useDesignPageLiveCatalog } from "@/lib/useDesignPageLiveCatalog";
 import { useDesignPageImportedModels } from "@/lib/useDesignPageImportedModels";
 import { useDesignPageLayoutVersionsController } from "@/lib/useDesignPageLayoutVersionsController";
 import { useDesignPageNamedCameraViewsController } from "@/lib/useDesignPageNamedCameraViewsController";
-import { useDesignPageAiLayout } from "@/lib/useDesignPageAiLayout";
 import { useDesignPageZoneController } from "@/lib/useDesignPageZoneController";
 import { useDesignPagePlacementRoomQueries } from "@/lib/useDesignPagePlacementRoomQueries";
 import { useDesignPageCrossRoomItemTransfer } from "@/lib/useDesignPageCrossRoomItemTransfer";
@@ -84,7 +83,6 @@ import {
 } from "@/lib/useDesignPageDocumentHistoryController";
 import { useDesignPagePersistenceNewPlanFacade } from "@/lib/useDesignPagePersistenceNewPlanFacade";
 import { useDesignPageBetaStartController } from "@/lib/useDesignPageBetaStartController";
-import { useDesignPagePanelActions } from "@/lib/useDesignPagePanelActions";
 import { useDesignPagePresentationQaFacade } from "@/lib/useDesignPagePresentationQaFacade";
 import {
   type DesignPageUpgradeReason,
@@ -1455,29 +1453,46 @@ export function DesignPageWorkspace() {
     wallThickness,
   });
 
-  const {
-    actions: {
-      applyPendingProposal: applyPendingAiLayoutProposal,
-      dismissPendingProposal: dismissPendingAiLayoutProposal,
-      runAiLayout,
-      regenerateAiLayout,
-      bulkSwap: onBulkSwap,
-      resizeRugToSofaRule,
-    },
-  } = useDesignPageAiLayout({
+  const aiPanelRegistration = useDesignPageAiPanelRegistrationFacade({
     state: {
-      seed: aiSeed,
-      pendingProposal: pendingAiLayoutProposal,
+      layout: {
+        seed: aiSeed,
+        pendingProposal: pendingAiLayoutProposal,
+      },
+      panel: {
+        activeRoomId: activeRoom?.id ?? null,
+        activeSurfaceTarget,
+        selectedWallFaceId: activeSelectedWallFaceId,
+        items,
+      },
+      notes: { designerMode: isDesigner },
     },
     actions: {
-      setSeed: setAiSeed,
-      setPendingProposal: setPendingAiLayoutProposal,
-      commitItems,
-      clearAllSelection,
-      setEditorMode,
-      setDesignPanelOpen,
-      openGuestPrompt,
-      showRuleToast,
+      layout: {
+        setSeed: setAiSeed,
+        setPendingProposal: setPendingAiLayoutProposal,
+        commitItems,
+        clearAllSelection,
+        setEditorMode,
+        setDesignPanelOpen,
+        openGuestPrompt,
+        showRuleToast,
+      },
+      panel: {
+        setClientPreview,
+        setDesignPanelCollapsed,
+        setDesignPanelOpen,
+        setShowGrid,
+        setSnapEnabled,
+        setItemCartOpen,
+        changeViewMode: handleEditorViewModeChange,
+        changeWallSurfaceSettings:
+          surfaceWorkspaceActions.changeActiveWallSurfaceSettings,
+        resetWallSurface: surfaceWorkspaceActions.resetActiveWallSurface,
+        resetCeilingSurface: surfaceWorkspaceActions.resetActiveCeilingSurface,
+      },
+      notes: { addItem },
+      selection: { updateSelection },
     },
     configuration: {
       isAuthenticated: Boolean(session?.user),
@@ -1493,61 +1508,36 @@ export function DesignPageWorkspace() {
       floorPlanQualityContext: floorPlanQualityReport.aiPlanningContext,
     },
     refs: {
-      getItems: () => itemsRef.current,
-      createInstanceId: newInstanceId,
-      clampToRoom: clampToActiveRoom,
+      items: itemsRef,
+      layout: {
+        createInstanceId: newInstanceId,
+        clampToRoom: clampToActiveRoom,
+      },
+      panel: { selectedIds: selectedIdsRef, primaryId: primaryIdRef },
     },
   });
-  const panelController = useDesignPagePanelActions({
-    state: {
-      activeRoomId: activeRoom?.id ?? null,
-      activeSurfaceTarget,
-      selectedWallFaceId: activeSelectedWallFaceId,
-      items,
-    },
-    refs: { selectedIds: selectedIdsRef, primaryId: primaryIdRef },
-    actions: {
-      setClientPreview, setDesignPanelCollapsed, setDesignPanelOpen,
-      setShowGrid, setSnapEnabled, setItemCartOpen,
-      changeViewMode: handleEditorViewModeChange,
-      runAiLayout, regenerateAiLayout,
-      changeWallSurfaceSettings:
-        surfaceWorkspaceActions.changeActiveWallSurfaceSettings,
-      resetWallSurface: surfaceWorkspaceActions.resetActiveWallSurface,
-      resetCeilingSurface: surfaceWorkspaceActions.resetActiveCeilingSurface,
-      commitItems, updateSelection,
-    },
-  });
+  const { panel: panelController } = aiPanelRegistration.boundaries;
   const { actions: panelActions } = panelController;
-
-  const getAiNotesItems = useCallback(() => itemsRef.current, []);
   const {
-    state: {
-      open: showAINotes,
-      loading: aiNotesLoading,
-      data: aiNotesData,
-    },
+    state: { notes: aiNotesState },
     actions: {
-      generate: generateAINotes,
-      applySuggestion,
-      close: closeAiNotes,
+      layout: {
+        applyPendingProposal: applyPendingAiLayoutProposal,
+        dismissPendingProposal: dismissPendingAiLayoutProposal,
+        bulkSwap: onBulkSwap,
+      },
+      notes: {
+        generate: generateAINotes,
+        applySuggestion,
+        close: closeAiNotes,
+      },
     },
-  } = useDesignPageAiNotes({
-    state: {
-      items,
-      designId,
-      designerMode: isDesigner,
-      authenticated: Boolean(session?.user),
-    },
-    actions: {
-      getItems: getAiNotesItems,
-      resizeRugToSofa: resizeRugToSofaRule,
-      makeRoomCheaper: () => onBulkSwap("cheaper"),
-      addItem,
-      commitItems: (nextItems, actionName) => commitItems(nextItems, actionName),
-      showToast: showRuleToast,
-    },
-  });
+  } = aiPanelRegistration;
+  const {
+    open: showAINotes,
+    loading: aiNotesLoading,
+    data: aiNotesData,
+  } = aiNotesState;
 
   const placementRoomQueries = useDesignPagePlacementRoomQueries({
     configuration: { houseRoomById },
