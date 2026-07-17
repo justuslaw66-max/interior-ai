@@ -17,6 +17,10 @@ const designPageSource = readFileSync(
   join(process.cwd(), "components/editor/design-page/DesignPageWorkspace.tsx"),
   "utf8"
 );
+const presentationWorkspaceSource = readFileSync(
+  join(process.cwd(), "lib/useDesignPagePresentationWorkspaceRegistration.ts"),
+  "utf8"
+);
 const editorChromeControllerSource = readFileSync(
   join(process.cwd(), "lib/useDesignPageEditorChromeController.ts"),
   "utf8"
@@ -48,9 +52,9 @@ assert.match(
   "The design-page command wrapper should forward save state and actions to the command-bar leaf."
 );
 assert.match(
-  designPageSource,
-  /useDesignPagePresentationQaFacade\(\{[\s\S]*?isSaving,[\s\S]*?saveStatus[\s\S]*?persistence:\s*\{[\s\S]*?saveDesignToCloud,[\s\S]*?retrySaveStatus,/,
-  "The workspace should inject save state and persistence collaborators into the presentation/QA facade."
+  presentationWorkspaceSource,
+  /useDesignPagePresentationQaFacade\(\{[\s\S]*?isSaving:\s*persistence\.state\.persistence\.isSaving,[\s\S]*?saveStatus:\s*persistence\.state\.persistence\.saveStatus[\s\S]*?persistence:\s*\{[\s\S]*?saveDesignToCloud:[\s\S]*?persistence\.actions\.persistence\.saveDesignToCloud,[\s\S]*?retrySaveStatus:\s*persistence\.actions\.persistence\.retrySaveStatus/,
+  "The presentation workspace should inject save state and persistence collaborators into the presentation/QA facade."
 );
 assert.match(
   editorChromeControllerSource,

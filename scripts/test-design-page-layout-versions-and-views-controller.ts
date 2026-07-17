@@ -16,6 +16,10 @@ const workspaceSource = readFileSync(
   join(root, "components/editor/design-page/DesignPageWorkspace.tsx"),
   "utf8"
 );
+const presentationWorkspaceSource = readFileSync(
+  join(root, "lib/useDesignPagePresentationWorkspaceRegistration.ts"),
+  "utf8"
+);
 const layoutControllerSource = readFileSync(
   join(root, "lib/useDesignPageLayoutVersionsController.ts"),
   "utf8"
@@ -53,9 +57,9 @@ assert.match(
   "Editor interaction should compose room presentation state through the registration boundary."
 );
 assert.match(
-  workspaceSource,
-  /useDesignPagePresentationQaFacade\(\{[\s\S]*?camera:\s*\{[\s\S]*?open:\s*openSavedCameraView/,
-  "The workspace should inject the named-view controller's open action at the presentation/QA boundary."
+  presentationWorkspaceSource,
+  /useDesignPagePresentationQaFacade\(\{[\s\S]*?camera:\s*\{[\s\S]*?open:\s*presentationState\.actions\.openSavedCameraView/,
+  "The presentation workspace should inject the named-view controller's open action at the presentation/QA boundary."
 );
 assert.match(
   presentExportControllerSource,

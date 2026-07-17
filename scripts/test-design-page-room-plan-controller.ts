@@ -7,6 +7,10 @@ const workspaceSource = readFileSync(
   join(root, "components/editor/design-page/DesignPageWorkspace.tsx"),
   "utf8"
 );
+const presentationWorkspaceSource = readFileSync(
+  join(root, "lib/useDesignPagePresentationWorkspaceRegistration.ts"),
+  "utf8"
+);
 const commandBarWrapperSource = readFileSync(
   join(root, "components/editor/design-page/DesignPageEditorCommandBar.tsx"),
   "utf8"
@@ -124,9 +128,9 @@ assert.match(
   "The command wrapper should own overflow room rename and target the active room."
 );
 assert.match(
-  workspaceSource,
-  /useDesignPagePresentationQaFacade\(\{[\s\S]*?activeRoom:\s*activeRoom \?\? null[\s\S]*?room:\s*\{[\s\S]*?rename:\s*handleRenameSelectedPlanRoom/,
-  "The workspace should inject room state and rename through the typed presentation/QA boundary."
+  presentationWorkspaceSource,
+  /useDesignPagePresentationQaFacade\(\{[\s\S]*?activeRoom:\s*documentRoom\.derived\.room\.activeRoom \?\? null[\s\S]*?room:\s*\{[\s\S]*?rename:\s*planWorkspace\.actions\.room\.startRoomRename/,
+  "The presentation workspace should inject room state and rename through the typed presentation/QA boundary."
 );
 assert.match(
   editorChromeControllerSource,

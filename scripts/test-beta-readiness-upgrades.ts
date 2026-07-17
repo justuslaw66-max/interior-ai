@@ -40,6 +40,10 @@ const presentationQaFacadeSource = readFileSync(
   join(root, "lib/useDesignPagePresentationQaFacade.ts"),
   "utf8"
 );
+const presentationWorkspaceSource = readFileSync(
+  join(root, "lib/useDesignPagePresentationWorkspaceRegistration.ts"),
+  "utf8"
+);
 const designPageEditorCommandBarSource = readFileSync(
   join(root, "components/editor/design-page/DesignPageEditorCommandBar.tsx"),
   "utf8"
@@ -397,9 +401,9 @@ assert.match(
   "the command-bar wrapper should render room health in the top room status bar."
 );
 assert.match(
-  designPageSource,
-  /chrome:\s*\{[\s\S]*activeRoomHealthSummary/,
-  "the workspace should pass live room health into the presentation/QA boundary."
+  presentationWorkspaceSource,
+  /chrome:\s*\{[\s\S]*activeRoomHealthSummary:\s*sceneRoomRead\.state\.room\.activeRoomHealthSummary/,
+  "the presentation workspace should pass live room health into the presentation/QA boundary."
 );
 assert.match(
   presentationQaFacadeSource,
@@ -417,9 +421,9 @@ assert.match(
   "the command-bar wrapper should pass the active room health action to the room status bar."
 );
 assert.match(
-  designPageSource,
-  /fitPlanView:\s*handleFitPlanView[\s\S]*room:\s*\{[\s\S]*reviewHealth:\s*roomReadActions\.reviewActiveRoomHealth/,
-  "the workspace should inject the active room review and fit actions at the presentation/QA boundary."
+  presentationWorkspaceSource,
+  /fitPlanView:\s*camera\.actions\.navigation\.handleFitPlanView[\s\S]*room:\s*\{[\s\S]*reviewHealth:\s*sceneRoomRead\.actions\.room\.reviewActiveRoomHealth/,
+  "the presentation workspace should inject the active room review and fit actions at the presentation/QA boundary."
 );
 assert.match(
   editorChromeControllerSource,
@@ -432,9 +436,9 @@ assert.match(
   "the plan presentation model should own compact and health-visibility policy."
 );
 assert.match(
-  designPageSource,
-  /compactRoomStatus:\s*compactRoomPlanStatusBar,[\s\S]*showRoomHealth:\s*showRoomPlanStatusHealth,/,
-  "the workspace should pass compact and health-visibility policy through the command-bar boundary."
+  presentationWorkspaceSource,
+  /compactRoomStatus:\s*planWorkspace\.derived\.compactRoomPlanStatusBar,[\s\S]*showRoomHealth:\s*planWorkspace\.derived\.showRoomPlanStatusHealth,/,
+  "the presentation workspace should pass compact and health-visibility policy through the command-bar boundary."
 );
 assert.match(
   designPageEditorCommandBarSource,

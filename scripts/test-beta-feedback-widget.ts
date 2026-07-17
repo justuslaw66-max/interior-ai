@@ -25,6 +25,10 @@ const designPageSource = readFileSync(
   join(process.cwd(), "components/editor/design-page/DesignPageWorkspace.tsx"),
   "utf8"
 );
+const presentationWorkspaceSource = readFileSync(
+  join(process.cwd(), "lib/useDesignPagePresentationWorkspaceRegistration.ts"),
+  "utf8"
+);
 const dialogLayerSource = readFileSync(
   join(process.cwd(), "components/editor/design-page/DesignPageDialogLayer.tsx"),
   "utf8"
@@ -75,9 +79,9 @@ assert.match(
   "the design-page command wrapper should preserve the leaf feedback action contract."
 );
 assert.match(
-  designPageSource,
-  /useDesignPagePresentationQaFacade\(\{[\s\S]*?dialogs:\s*\{[\s\S]*?setFeedbackOpen/,
-  "the workspace should inject the feedback dialog setter into the presentation/QA facade."
+  presentationWorkspaceSource,
+  /useDesignPagePresentationQaFacade\(\{[\s\S]*?dialogs:\s*\{[\s\S]*?setFeedbackOpen: base\.actions\.dialogs\.setFeedbackOpen/,
+  "the presentation workspace should inject the feedback dialog setter into the presentation/QA facade."
 );
 assert.match(
   editorChromeControllerSource,

@@ -290,6 +290,10 @@ const designPageSource = fs.readFileSync(
   path.join(root, "components", "editor", "design-page", "DesignPageWorkspace.tsx"),
   "utf8"
 );
+const presentationWorkspaceSource = fs.readFileSync(
+  path.join(root, "lib/useDesignPagePresentationWorkspaceRegistration.ts"),
+  "utf8"
+);
 const designPagePanelRegionSource = fs.readFileSync(
   path.join(root, "components", "editor", "design-page", "DesignPagePanelRegion.tsx"),
   "utf8"
@@ -389,9 +393,9 @@ assert.match(
   "The command wrapper should apply the resolved Pro theme to the command-bar leaf."
 );
 assert.match(
-  designPageSource,
-  /useDesignPagePresentationQaFacade\(\{[\s\S]*?configuration:\s*\{[\s\S]*?designerTheme:\s*showDesignerTheme/,
-  "The workspace should inject its resolved designer theme into the presentation/QA facade."
+  presentationWorkspaceSource,
+  /useDesignPagePresentationQaFacade\(\{[\s\S]*?configuration:\s*\{[\s\S]*?designerTheme:\s*coreShell\.derived\.access\.showDesignerTheme/,
+  "The presentation workspace should inject its resolved designer theme into the presentation/QA facade."
 );
 assert.match(
   editorChromeControllerSource,

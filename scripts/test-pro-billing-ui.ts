@@ -54,6 +54,9 @@ assert.match(plansDialog, /Start monthly — \{state\.monthlyLabel\}/);
 assert.match(plansDialog, /Start yearly — \{state\.yearlyLabel\}/);
 
 const designPage = read("components/editor/design-page/DesignPageWorkspace.tsx");
+const presentationWorkspace = read(
+  "lib/useDesignPagePresentationWorkspaceRegistration.ts"
+);
 const coreShellRegistration = read(
   "lib/useDesignPageCoreShellRegistration.ts"
 );
@@ -148,9 +151,9 @@ assert.match(
   "The paywall lifecycle should preserve the billing controller contract."
 );
 assert.match(
-  designPage,
-  /useDesignPagePresentationQaFacade\(\{[\s\S]*?dialogs:\s*\{[\s\S]*?setPlansOpen: setShowPlans,[\s\S]*?billing:\s*\{ openPortal: openBillingPortal \}/,
-  "The workspace should inject plan and billing collaborators into the presentation/QA facade."
+  presentationWorkspace,
+  /useDesignPagePresentationQaFacade\(\{[\s\S]*?dialogs:\s*\{[\s\S]*?setPlansOpen:\s*base\.actions\.dialogs\.setShowPlans,[\s\S]*?billing:\s*\{ openPortal:\s*deferredPaywall\.actions\.openBillingPortal \}/,
+  "The presentation workspace should inject plan and billing collaborators into the presentation/QA facade."
 );
 assert.match(
   editorChromeController,

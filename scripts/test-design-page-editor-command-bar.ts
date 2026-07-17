@@ -13,6 +13,10 @@ const workspaceSource = fs.readFileSync(
   ),
   "utf8"
 );
+const presentationWorkspaceSource = fs.readFileSync(
+  path.join(root, "lib/useDesignPagePresentationWorkspaceRegistration.ts"),
+  "utf8"
+);
 const commandBarSource = fs.readFileSync(
   path.join(
     root,
@@ -166,9 +170,9 @@ assert.doesNotMatch(
   "The workspace should delegate command and room-status rendering to the wrapper."
 );
 assert.match(
-  workspaceSource,
-  /useDesignPagePresentationQaFacade\(\{[\s\S]*?editor:\s*\{[\s\S]*?activeRoom:\s*activeRoom \?\? null[\s\S]*?scene:\s*\{[\s\S]*?configuration:\s*\{[\s\S]*?actions:\s*\{[\s\S]*?room:\s*\{[\s\S]*?scenePerformance:\s*\{/,
-  "The workspace should inject grouped command, room, and performance state, configuration, and actions through the presentation/QA facade."
+  presentationWorkspaceSource,
+  /useDesignPagePresentationQaFacade\(\{[\s\S]*?editor:\s*\{[\s\S]*?activeRoom:\s*documentRoom\.derived\.room\.activeRoom \?\? null[\s\S]*?scene:\s*\{[\s\S]*?configuration:\s*\{[\s\S]*?actions:\s*\{[\s\S]*?room:\s*\{[\s\S]*?scenePerformance:\s*\{/,
+  "The presentation workspace should inject grouped command, room, and performance state, configuration, and actions through the presentation/QA facade."
 );
 assert.match(
   editorChromeControllerSource,
@@ -176,9 +180,9 @@ assert.match(
   "Unavailable Millwork should remain undefined so the leaf hides both command entries."
 );
 assert.match(
-  workspaceSource,
-  /openNewPlan: openNewPlanPicker[\s\S]*?saveDesignToCloud,[\s\S]*?openGuestPrompt/,
-  "The workspace should inject New plan and guest/cloud save collaborators."
+  presentationWorkspaceSource,
+  /openNewPlan:\s*persistence\.actions\.newPlan\.openNewPlanPicker[\s\S]*?saveDesignToCloud:[\s\S]*?persistence\.actions\.persistence\.saveDesignToCloud[\s\S]*?openGuestPrompt:\s*persistence\.actions\.persistence\.openGuestPrompt/,
+  "The presentation workspace should inject New plan and guest/cloud save collaborators."
 );
 assert.match(
   editorChromeControllerSource,

@@ -16,6 +16,10 @@ const workspaceSource = readFileSync(
   join(root, "components/editor/design-page/DesignPageWorkspace.tsx"),
   "utf8"
 );
+const presentationWorkspaceSource = readFileSync(
+  join(root, "lib/useDesignPagePresentationWorkspaceRegistration.ts"),
+  "utf8"
+);
 const commandBarWrapperSource = readFileSync(
   join(root, "components/editor/design-page/DesignPageEditorCommandBar.tsx"),
   "utf8"
@@ -111,9 +115,9 @@ assert.match(
   "The command wrapper should preserve the millwork state and action contract."
 );
 assert.match(
-  workspaceSource,
-  /useDesignPagePresentationQaFacade\(\{[\s\S]*?millworkActive:\s*cabinetryStudioState !== null[\s\S]*?canUseCabinetryStudio[\s\S]*?openStudio: openCabinetryStudio/,
-  "The workspace should inject millwork state, capability, and opening at the presentation/QA boundary."
+  presentationWorkspaceSource,
+  /useDesignPagePresentationQaFacade\(\{[\s\S]*?millworkActive:\s*cabinetry\.state\.studio !== null[\s\S]*?canUseCabinetryStudio:\s*cabinetry\.state\.canUseStudio[\s\S]*?openStudio:\s*cabinetry\.actions\.openCreateStudio/,
+  "The presentation workspace should inject millwork state, capability, and opening at the presentation/QA boundary."
 );
 assert.match(
   editorChromeControllerSource,

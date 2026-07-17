@@ -15,6 +15,14 @@ const designPagePath = path.join(
   "DesignPageWorkspace.tsx"
 );
 const designPageSource = fs.readFileSync(designPagePath, "utf8");
+const presentationWorkspaceSource = fs.readFileSync(
+  path.join(
+    process.cwd(),
+    "lib",
+    "useDesignPagePresentationWorkspaceRegistration.ts"
+  ),
+  "utf8"
+);
 const floorPlanControllerPath = path.join(
   process.cwd(),
   "lib",
@@ -575,9 +583,9 @@ assert.match(
 );
 
 assert.match(
-  designPageSource,
-  /useDesignPagePresentationQaFacade\(\{[\s\S]*?openNewPlan:\s*openNewPlanPicker/,
-  "The workspace should inject New plan at the presentation/QA boundary."
+  presentationWorkspaceSource,
+  /useDesignPagePresentationQaFacade\(\{[\s\S]*?openNewPlan:\s*persistence\.actions\.newPlan\.openNewPlanPicker/,
+  "The presentation workspace should inject New plan at the presentation/QA boundary."
 );
 assert.match(
   editorChromeControllerSource,

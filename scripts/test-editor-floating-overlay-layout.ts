@@ -10,6 +10,14 @@ const designPagePath = path.join(
   "DesignPageWorkspace.tsx"
 );
 const source = fs.readFileSync(designPagePath, "utf8");
+const presentationWorkspaceSource = fs.readFileSync(
+  path.join(
+    process.cwd(),
+    "lib",
+    "useDesignPagePresentationWorkspaceRegistration.ts"
+  ),
+  "utf8"
+);
 const editorConfigurationSource = fs.readFileSync(
   path.join(process.cwd(), "lib", "design-page-editor-configuration.ts"),
   "utf8"
@@ -435,9 +443,9 @@ assert.match(
   "The design-page command-bar wrapper should forward command actions to the base command bar."
 );
 assert.match(
-  source,
-  /useDesignPagePresentationQaFacade\(\{[\s\S]*?setFeedbackOpen/,
-  "The workspace should inject feedback state at the presentation/QA boundary."
+  presentationWorkspaceSource,
+  /useDesignPagePresentationQaFacade\(\{[\s\S]*?setFeedbackOpen: base\.actions\.dialogs\.setFeedbackOpen/,
+  "The presentation workspace should inject feedback state at the presentation/QA boundary."
 );
 assert.match(
   editorChromeControllerSource,
@@ -580,9 +588,9 @@ assert.doesNotMatch(
 );
 
 assert.match(
-  source,
-  /useDesignPagePresentationQaFacade\(\{[\s\S]*millworkActive:\s*cabinetryStudioState !== null[\s\S]*canUseCabinetryStudio[\s\S]*openStudio: openCabinetryStudio/,
-  "The workspace should inject Millwork state and capability at the presentation/QA boundary."
+  presentationWorkspaceSource,
+  /useDesignPagePresentationQaFacade\(\{[\s\S]*millworkActive:\s*cabinetry\.state\.studio !== null[\s\S]*canUseCabinetryStudio:\s*cabinetry\.state\.canUseStudio[\s\S]*openStudio:\s*cabinetry\.actions\.openCreateStudio/,
+  "The presentation workspace should inject Millwork state and capability at the presentation/QA boundary."
 );
 assert.match(
   editorChromeControllerSource,

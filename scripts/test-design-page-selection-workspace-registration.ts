@@ -30,7 +30,7 @@ assertSourceOrder(
   [
     "useDesignPageCabinetryWorkspaceRegistration({",
     "useDesignPageSelectionWorkspaceRegistration({",
-    "useDesignPagePresentationQaFacade({",
+    "useDesignPagePresentationWorkspaceRegistration({",
   ],
   "Workspace should preserve cabinetry, selection, and presentation order"
 );

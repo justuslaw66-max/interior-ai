@@ -17,6 +17,10 @@ const workspaceSource = readFileSync(
   join(process.cwd(), "components/editor/design-page/DesignPageWorkspace.tsx"),
   "utf8"
 );
+const presentationWorkspaceSource = readFileSync(
+  join(process.cwd(), "lib/useDesignPagePresentationWorkspaceRegistration.ts"),
+  "utf8"
+);
 const editorChromeControllerSource = readFileSync(
   join(process.cwd(), "lib/useDesignPageEditorChromeController.ts"),
   "utf8"
@@ -43,9 +47,9 @@ assert.match(
   "The design-page command wrapper should preserve Pro-tools and preview state/actions."
 );
 assert.match(
-  workspaceSource,
-  /useDesignPagePresentationQaFacade\(\{[\s\S]*?isDesigner,[\s\S]*?shell:\s*\{[\s\S]*?setClientPreview,[\s\S]*?setUrlMode/,
-  "The workspace should inject Pro-tools and client-preview state transitions into the presentation/QA facade."
+  presentationWorkspaceSource,
+  /useDesignPagePresentationQaFacade\(\{[\s\S]*?isDesigner:\s*coreShell\.derived\.access\.isDesigner[\s\S]*?shell:\s*\{[\s\S]*?setClientPreview:\s*base\.actions\.access\.setClientPreview[\s\S]*?setUrlMode:\s*coreShell\.actions\.paywall\.setUrlMode/,
+  "The presentation workspace should inject Pro-tools and client-preview state transitions into the presentation/QA facade."
 );
 assert.match(
   editorChromeControllerSource,
