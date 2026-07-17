@@ -30,7 +30,7 @@ assertSourceOrder(
   [
     "useDesignPageAiWorkspaceRegistration({",
     "useDesignPagePlacementWorkspaceRegistration({",
-    "useDesignPageCommerceActions({",
+    "useDesignPageCommerceOnboardingRegistration({",
   ],
   "Workspace should preserve AI, placement, and commerce registration order"
 );

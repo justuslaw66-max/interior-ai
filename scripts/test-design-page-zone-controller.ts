@@ -35,6 +35,9 @@ const onboardingSource = readSource("lib/useDesignPageOnboarding.ts");
 const onboardingRegistrationSource = readSource(
   "lib/useDesignPageOnboardingRegistrationFacade.ts"
 );
+const commerceOnboardingSource = readSource(
+  "lib/useDesignPageCommerceOnboardingRegistration.ts"
+);
 const clientLifecycleSource = readSource(
   "lib/useDesignPageEditorClientLifecycle.ts"
 );
@@ -299,7 +302,7 @@ assert.match(
 for (const { pattern, description } of [
   {
     pattern:
-      /useDesignPageOnboardingRegistrationFacade\(\{[\s\S]*?actions:\s*\{[\s\S]*?autoCreateSeatingZone,[\s\S]*?clampToRoom:\s*clampToActiveRoom/,
+      /useDesignPageOnboardingRegistrationFacade\(\{[\s\S]*?actions:\s*\{[\s\S]*?autoCreateSeatingZone:[\s\S]*?editorInteraction\.boundaries\.zone\.actions\.autoCreateSeatingZone[\s\S]*?clampToRoom: documentRoom\.actions\.room\.clampToActiveRoom/,
     description: "onboarding auto-create action",
   },
   { pattern: /zones:\s*planZones2D/, description: "2D plan zones" },
@@ -310,7 +313,9 @@ for (const { pattern, description } of [
   },
 ] as const) {
   assert.match(
-    workspaceSource,
+    description === "onboarding auto-create action"
+      ? commerceOnboardingSource
+      : workspaceSource,
     pattern,
     `Workspace should preserve its ${description} wiring.`
   );

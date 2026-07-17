@@ -464,7 +464,7 @@ assert.match(
 );
 assert.match(
   designPageSource,
-  /useDesignPageOnboardingRegistrationFacade/,
+  /useDesignPageCommerceOnboardingRegistration/,
   "design page should mount the first-run onboarding controller."
 );
 assert.match(

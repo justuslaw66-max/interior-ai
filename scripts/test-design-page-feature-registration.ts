@@ -12,19 +12,25 @@ const workspaceSource = readSource(
 const onboardingRegistrationSource = readSource(
   "lib/useDesignPageOnboardingRegistrationFacade.ts"
 );
+const commerceOnboardingSource = readSource(
+  "lib/useDesignPageCommerceOnboardingRegistration.ts"
+);
 const cabinetryRegistrationSource = readSource(
   "lib/useDesignPageCabinetryRegistrationFacade.ts"
+);
+const cabinetryWorkspaceSource = readSource(
+  "lib/useDesignPageCabinetryWorkspaceRegistration.ts"
 );
 
 assert.match(
   workspaceSource,
-  /import \{ useDesignPageOnboardingRegistrationFacade \} from "@\/lib\/useDesignPageOnboardingRegistrationFacade";/,
-  "The workspace should import the onboarding registration facade."
+  /import \{ useDesignPageCommerceOnboardingRegistration \} from "@\/lib\/useDesignPageCommerceOnboardingRegistration";/,
+  "The workspace should import the commerce/onboarding registration."
 );
 assert.match(
   workspaceSource,
-  /import \{ useDesignPageCabinetryRegistrationFacade \} from "@\/lib\/useDesignPageCabinetryRegistrationFacade";/,
-  "The workspace should import the cabinetry registration facade."
+  /import \{ useDesignPageCabinetryWorkspaceRegistration \} from "@\/lib\/useDesignPageCabinetryWorkspaceRegistration";/,
+  "The workspace should import the cabinetry workspace registration."
 );
 assert.doesNotMatch(
   workspaceSource,
@@ -38,9 +44,8 @@ assert.doesNotMatch(
 );
 
 const registrationOrder = [
-  "useDesignPageCommerceActions({",
-  "useDesignPageOnboardingRegistrationFacade({",
-  "useDesignPageCabinetryRegistrationFacade({",
+  "useDesignPageCommerceOnboardingRegistration({",
+  "useDesignPageCabinetryWorkspaceRegistration({",
   "useDesignPagePlacementSelectionWorkspaceFacade({",
 ];
 let previousRegistrationIndex = -1;
@@ -54,8 +59,8 @@ for (const marker of registrationOrder) {
 }
 
 assert.match(
-  workspaceSource,
-  /useDesignPageOnboardingRegistrationFacade\(\{[\s\S]*?isGuest:\s*!session\?\.user[\s\S]*?designRoomCount:\s*designSnapshot\.rooms\.length[\s\S]*?planRoomCount:\s*housePlan2D\.rooms\.length[\s\S]*?saveStatusKind:\s*saveStatus\.kind[\s\S]*?autoCreateSeatingZone,[\s\S]*?clampToRoom:\s*clampToActiveRoom[\s\S]*?showConstraintsForMoment,[\s\S]*?showConfidenceSummary,[\s\S]*?logFunnelEvent,[\s\S]*?roomWidth,[\s\S]*?roomDepth,[\s\S]*?wallThickness,/,
+  commerceOnboardingSource,
+  /useDesignPageOnboardingRegistrationFacade\(\{[\s\S]*?isGuest: !base\.state\.identity\.session\?\.user[\s\S]*?designRoomCount: coreShell\.state\.document\.designSnapshot\.rooms\.length[\s\S]*?planRoomCount: documentRoom\.derived\.plan\.housePlan2D\.rooms\.length[\s\S]*?saveStatusKind: persistence\.state\.persistence\.saveStatus\.kind[\s\S]*?autoCreateSeatingZone:[\s\S]*?editorInteraction\.boundaries\.zone\.actions\.autoCreateSeatingZone[\s\S]*?clampToRoom: documentRoom\.actions\.room\.clampToActiveRoom/,
   "The onboarding registration should retain identity, document, feedback, and room inputs."
 );
 assert.match(
@@ -65,8 +70,8 @@ assert.match(
 );
 
 assert.match(
-  workspaceSource,
-  /useDesignPageCabinetryRegistrationFacade\(\{[\s\S]*?activeRoom:\s*activeRoom \?\? null[\s\S]*?planRoomById:\s*houseRoomById[\s\S]*?activeSurfaceTarget,[\s\S]*?selectedWallFaceId:\s*roomReadModel\.activeSelectedWallFaceId[\s\S]*?refs:\s*\{ designSnapshot: designSnapshotRef, activeItems: itemsRef \}[\s\S]*?commitItemsToRoom,[\s\S]*?clampToCatalogPlacementRoom,[\s\S]*?isCatalogPlacementContainedInRoom,[\s\S]*?showToast:\s*showRuleToast/,
+  cabinetryWorkspaceSource,
+  /useDesignPageCabinetryRegistrationFacade\(\{[\s\S]*?activeRoom: activeRoom \?\? null[\s\S]*?planRoomById: sceneRoomRead\.derived\.scene\.houseRoomById[\s\S]*?activeSurfaceTarget: viewportShell\.state\.surface\.activeSurfaceTarget[\s\S]*?selectedWallFaceId:[\s\S]*?sceneRoomRead\.derived\.room\.activeSelectedWallFaceId[\s\S]*?commitItemsToRoom: itemDocument\.actions\.commitItemsToRoom[\s\S]*?clampToCatalogPlacementRoom:[\s\S]*?placement\.actions\.catalog\.clampToCatalogPlacementRoom/,
   "The cabinetry registration should retain room, surface, ref, placement, and document inputs."
 );
 assert.match(
@@ -74,6 +79,10 @@ assert.match(
   /const activePlanRoom =[\s\S]*?planRoomById\.get\(cabinetryState\.activeRoom\.id\)[\s\S]*?activeSurfaceTarget === "selected_wall" \? selectedWallFaceId : null;/,
   "The cabinetry facade should preserve active-plan-room and preferred-wall derivation."
 );
+
+assert.ok(commerceOnboardingSource.split("\n").length <= 180);
+assert.ok(cabinetryWorkspaceSource.split("\n").length <= 160);
+assert.ok(workspaceSource.split("\n").length <= 1600);
 assert.match(
   cabinetryRegistrationSource,
   /targetRef\.current = nextItems;[\s\S]*?useDesignPageCabinetry\(\{[\s\S]*?getDesignSnapshot:\s*\(\) => refs\.designSnapshot\.current[\s\S]*?replaceActiveItemsSnapshot\(refs\.activeItems, nextItems\);[\s\S]*?actions,[\s\S]*?boundaries:\s*\{ cabinetry \}[\s\S]*?selectedItem:\s*cabinetry\.state\.selected\?\.item \?\? null/,

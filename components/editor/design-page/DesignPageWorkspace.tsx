@@ -12,7 +12,7 @@ import { useDesignPagePlacementWorkspaceRegistration } from "@/lib/useDesignPage
 import { useDesignPageAiWorkspaceRegistration } from "@/lib/useDesignPageAiWorkspaceRegistration";
 import { useDesignPageCoreShellRegistration } from "@/lib/useDesignPageCoreShellRegistration";
 import { useDesignPageSceneItemDrag } from "@/lib/useDesignPageSceneItemDrag";
-import { useDesignPageOnboardingRegistrationFacade } from "@/lib/useDesignPageOnboardingRegistrationFacade";
+import { useDesignPageCommerceOnboardingRegistration } from "@/lib/useDesignPageCommerceOnboardingRegistration";
 import { buildDesignPageSceneRegionAdapter } from "@/lib/design-page-scene-region-adapter";
 import { buildDesignPageViewportRegionAdapter } from "@/lib/design-page-viewport-region-adapter";
 import { composeDesignPageSceneRegionModel } from "@/lib/design-page-viewport-region-model";
@@ -27,7 +27,7 @@ import {
   PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX,
 } from "@/lib/design-page-editor-configuration";
 import { PRO_PLAN_PRICING } from "@/lib/pro-plan-catalog";
-import { useDesignPageCommerceActions } from "@/lib/useDesignPageCommerceActions";
+import { useDesignPageCabinetryWorkspaceRegistration } from "@/lib/useDesignPageCabinetryWorkspaceRegistration";
 import { useDesignPagePresentationBackupRegistrationFacade } from "@/lib/useDesignPagePresentationBackupRegistrationFacade";
 import { useDesignPagePlacementSelectionWorkspaceFacade } from "@/lib/useDesignPagePlacementSelectionWorkspaceFacade";
 import { useDesignPageDocumentSelectionRegistrationFacade } from "@/lib/useDesignPageDocumentSelectionRegistrationFacade";
@@ -36,7 +36,6 @@ import { useDesignPageEditorInteractionRegistration } from "@/lib/useDesignPageE
 import { useDesignPagePersistenceWorkspaceRegistration } from "@/lib/useDesignPagePersistenceWorkspaceRegistration";
 import { useDesignPagePresentationQaFacade } from "@/lib/useDesignPagePresentationQaFacade";
 import { useDesignPageWorkspaceDeferredPaywallRegistration } from "@/lib/useDesignPagePaywallRegistrationFacade";
-import { useDesignPageCabinetryRegistrationFacade } from "@/lib/useDesignPageCabinetryRegistrationFacade";
 
 export function DesignPageWorkspace() {
   const coreShellRegistration = useDesignPageCoreShellRegistration({
@@ -55,7 +54,6 @@ export function DesignPageWorkspace() {
       feedback: {
         ruleToast,
         layoutConfidence,
-        constraintResults,
         visibleConstraints,
       },
       placement: { pendingAiLayoutProposal, crossRoomDragTarget },
@@ -80,7 +78,6 @@ export function DesignPageWorkspace() {
     },
     actions: {
       paywall: {
-        logFunnelEvent,
         trackFirstInteraction,
         signInWithReturn,
         setUrlMode,
@@ -115,10 +112,7 @@ export function DesignPageWorkspace() {
         designPanelCollapsed,
       },
     },
-    derived: {
-      navigation: { router, pathname, searchParams },
-      importedModels: { selectedImportedProductId },
-    },
+    derived: { navigation: { router, pathname, searchParams } },
     actions: {
       brief: { setStyle, setBudget, setMode },
       access: { setPlan, setClientPreview },
@@ -134,14 +128,9 @@ export function DesignPageWorkspace() {
       },
       panels: {
         setItemCartOpen,
-        setItemCart,
         setDesignPanelOpen,
         setPlanFocusPanelRevealed,
         setDismissedPlanCanvasGuidanceKey,
-      },
-      importedModels: {
-        ensureImportedCatalogItem,
-        getRelatedImportedProductIds,
       },
     },
   } = coreShellBaseRegistration;
@@ -161,7 +150,6 @@ export function DesignPageWorkspace() {
         planLayerPreset,
         planMeasurementUnit,
         exportStylePreset,
-        planGuidedActionsEnabled,
       },
       floorPlan: {
         floorPlanUnderlay,
@@ -185,7 +173,6 @@ export function DesignPageWorkspace() {
       presentation: { showPresentModal, presentModeRoomId },
       shopping: { shoppingReadinessFilter, hoveredCartInstanceId },
       surface: {
-        activeSurfaceTarget,
         selectedRendererSurfaceTarget,
       },
       editor: { editorMode, guidedPlanStartMode },
@@ -304,7 +291,6 @@ export function DesignPageWorkspace() {
   } = roomReadState;
   const {
     hasWholeHousePlan,
-    houseRoomById,
     selectedPlanRoomContext,
     roomSnapshotById,
   } = sceneReadModel;
@@ -315,15 +301,11 @@ export function DesignPageWorkspace() {
   const { selectedIds: selectedIdsRef, primaryId: primaryIdRef } =
     itemSelectionController.refs;
   const {
-    updateSelection,
     clearSelection,
     selectItem: handleSelect,
   } = itemSelectionController.actions;
   const {
-    commitItems,
-    commitItemsToRoom,
     setItemsPresent,
-    createInstanceId: newInstanceId,
   } = itemDocumentController.actions;
 
   const {
@@ -631,7 +613,6 @@ export function DesignPageWorkspace() {
     actions: {
       setPendingZoneType,
       createZoneFromSelection,
-      autoCreateSeatingZone,
       autoLayoutZone,
       rotateZone,
       ungroupZone,
@@ -780,7 +761,6 @@ export function DesignPageWorkspace() {
     },
     actions: {
       catalog: {
-        clampToCatalogPlacementRoom,
         findCatalogPlacementBlockerInRoom,
         isCatalogPlacementContainedInRoom,
         getItemDisplayName,
@@ -792,9 +772,6 @@ export function DesignPageWorkspace() {
         restoreLastValidCatalogPlacement,
         movePendingCatalogPlacementToBestRoom,
         switchPendingCatalogPlacementToBestOption,
-        addCatalogItemDirectlyToRoom,
-        addCatalogItemToRoom,
-        previewCatalogPlacementIntent,
         selectPendingCatalogPlacementBlocker,
         placePendingCatalogBesideBlocker,
         trySmallerPendingCatalogVariant,
@@ -819,69 +796,40 @@ export function DesignPageWorkspace() {
     },
   } = placementWorkspaceRegistration;
 
-  const {
-    actions: {
-      previewShoppingReplacement,
-      addSelectedImportedToRoom,
-      removeFromCart,
-      updateCartQty,
-      clearCart,
-      addAllToRoom,
-    },
-  } = useDesignPageCommerceActions({
-    state: { selectedImportedProductId, itemCart },
-    actions: {
-      catalog: {
-        previewPlacement: previewCatalogPlacementIntent,
-        addToRoom: addCatalogItemToRoom,
-        addDirectlyToRoom: addCatalogItemDirectlyToRoom,
+  const commerceOnboardingRegistration =
+    useDesignPageCommerceOnboardingRegistration({
+      boundaries: {
+        coreShell: coreShellRegistration,
+        documentSelection: documentSelectionRegistration,
+        editorInteraction: editorInteractionRegistration,
+        persistence: persistenceWorkspaceRegistration,
+        placement: placementWorkspaceRegistration,
       },
-      importedCatalog: {
-        getRelatedProductIds: getRelatedImportedProductIds,
-        ensureCatalogItem: ensureImportedCatalogItem,
-      },
-      cart: { setItems: setItemCart, setOpen: setItemCartOpen },
-      navigation: { goFurnish },
-      feedback: { showToast: showRuleToast },
-    },
-  });
-
+    });
   const {
-    state: { firstRunActivationState, nextBestActionNudge },
-  } = useDesignPageOnboardingRegistrationFacade({
     state: {
-      designId,
-      shareToken,
-      plan,
-      editorMode,
-      viewMode,
-      mode,
-      isClientPreview,
-      isGuest: !session?.user,
-      items,
-      zones,
-      constraintResults,
-      showBetaStart,
-      designRoomCount: designSnapshot.rooms.length,
-      planRoomCount: housePlan2D.rooms.length,
-      saveStatusKind: saveStatus.kind,
-      planGuidedActionsEnabled,
-      viewportSize,
+      onboarding: { firstRunActivationState, nextBestActionNudge },
     },
     actions: {
-      autoCreateSeatingZone,
-      clampToRoom: clampToActiveRoom,
-      showConstraintsForMoment,
-      showConfidenceSummary,
-      logFunnelEvent,
+      commerce: {
+        previewShoppingReplacement,
+        addSelectedImportedToRoom,
+        removeFromCart,
+        updateCartQty,
+        clearCart,
+        addAllToRoom,
+      },
     },
-    configuration: {
-      roomWidth,
-      roomDepth,
-      wallThickness,
+  } = commerceOnboardingRegistration;
+
+  const cabinetryRegistration = useDesignPageCabinetryWorkspaceRegistration({
+    boundaries: {
+      coreShell: coreShellRegistration,
+      documentSelection: documentSelectionRegistration,
+      planAuthoring: planAuthoringRegistration,
+      placement: placementWorkspaceRegistration,
     },
   });
-
   const {
     boundaries: { cabinetry: cabinetryWorkspace },
     state: {
@@ -903,43 +851,7 @@ export function DesignPageWorkspace() {
       saveDefinition: handleSaveCabinetDefinition,
       placeInPlan: handlePlaceCabinetInPlan,
     },
-  } = useDesignPageCabinetryRegistrationFacade({
-    state: {
-      activeRoom: activeRoom ?? null,
-      planRoomById: houseRoomById,
-      planRoomCount: housePlan2D.rooms.length,
-      planOpenings,
-      activeSurfaceTarget,
-      selectedWallFaceId: roomReadModel.activeSelectedWallFaceId,
-      selectedItem: selectedItem ?? null,
-      designSnapshot,
-    },
-    configuration: {
-      isClientPreview,
-      isDesigner,
-      canEdit,
-      designId,
-      roomWidth,
-      roomDepth,
-      wallThickness,
-      rotationSnapEnabled,
-      rotationSnapStepRadians,
-    },
-    refs: { designSnapshot: designSnapshotRef, activeItems: itemsRef },
-    actions: {
-      setDesignSnapshot,
-      commitItems,
-      commitItemsToRoom,
-      updateSelection,
-      createInstanceId: newInstanceId,
-      clampToActiveRoom,
-      clampToCatalogPlacementRoom,
-      isCatalogPlacementContainedInRoom,
-      getItemAABB,
-      getItemDisplayName,
-      showToast: showRuleToast,
-    },
-  });
+  } = cabinetryRegistration;
 
   const placementSelectionWorkspace =
     useDesignPagePlacementSelectionWorkspaceFacade({

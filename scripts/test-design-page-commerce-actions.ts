@@ -47,16 +47,20 @@ const placementWorkspaceSource = readFileSync(
   join(root, "lib/useDesignPagePlacementWorkspaceRegistration.ts"),
   "utf8"
 );
+const commerceOnboardingSource = readFileSync(
+  join(root, "lib/useDesignPageCommerceOnboardingRegistration.ts"),
+  "utf8"
+);
 
 assert.match(
   workspaceSource,
-  /import \{ useDesignPageCommerceActions \} from "@\/lib\/useDesignPageCommerceActions";/,
-  "The workspace should import commerce actions from their focused owner."
+  /import \{ useDesignPageCommerceOnboardingRegistration \} from "@\/lib\/useDesignPageCommerceOnboardingRegistration";/,
+  "The workspace should import commerce actions through their lifecycle owner."
 );
 assert.match(
-  workspaceSource,
+  commerceOnboardingSource,
   /useDesignPageCommerceActions\(\{/,
-  "The workspace should register the focused commerce action controller."
+  "The commerce/onboarding registration should mount the focused commerce controller."
 );
 for (const callbackName of [
   "previewShoppingReplacement",
@@ -80,8 +84,8 @@ assert.match(
 );
 const workspaceOrder = [
   "useDesignPagePlacementWorkspaceRegistration({",
-  "useDesignPageCommerceActions({",
-  "useDesignPageOnboardingRegistrationFacade({",
+  "useDesignPageCommerceOnboardingRegistration({",
+  "useDesignPageCabinetryWorkspaceRegistration({",
 ];
 let previousWorkspaceIndex = -1;
 for (const marker of workspaceOrder) {
@@ -92,6 +96,14 @@ for (const marker of workspaceOrder) {
   );
   previousWorkspaceIndex = index;
 }
+
+assert.ok(
+  commerceOnboardingSource.indexOf("useDesignPageCommerceActions({") <
+    commerceOnboardingSource.indexOf(
+      "useDesignPageOnboardingRegistrationFacade({"
+    ),
+  "Commerce should remain mounted before onboarding effects."
+);
 
 const previewOrder = [
   "goFurnish();",
