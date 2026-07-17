@@ -55,6 +55,11 @@ const viewportAdapterPath = path.join(
   "lib",
   "design-page-viewport-region-adapter.ts"
 );
+const viewportWorkspacePath = path.join(
+  process.cwd(),
+  "lib",
+  "design-page-viewport-workspace-registration.ts"
+);
 const cameraControllerPath = path.join(
   process.cwd(),
   "lib",
@@ -77,6 +82,7 @@ const viewportOverlaySource = fs.readFileSync(viewportOverlayPath, "utf8");
 const sceneRegionSource = fs.readFileSync(sceneRegionPath, "utf8");
 const sceneAdapterSource = fs.readFileSync(sceneAdapterPath, "utf8");
 const viewportAdapterSource = fs.readFileSync(viewportAdapterPath, "utf8");
+const viewportWorkspaceSource = fs.readFileSync(viewportWorkspacePath, "utf8");
 const cameraControllerSource = fs.readFileSync(cameraControllerPath, "utf8");
 const roomNavigatorBlock =
   viewportOverlaySource.match(
@@ -89,9 +95,9 @@ assert.match(
   "The scene region should import the viewport-overlay composition."
 );
 assert.match(
-  source,
-  /buildDesignPageViewportRegionAdapter\(\{[\s\S]*?rail:\s*floatingPlanOverlayStackVisible[\s\S]*?navigator:\s*\{[\s\S]*?enabled:\s*viewMode === "3d" && hasWholeHousePlan/,
-  "The design page should inject the shared rail policy and 3D whole-home navigator state into the viewport adapter."
+  viewportWorkspaceSource,
+  /buildDesignPageViewportRegionAdapter\(\{[\s\S]*?rail: planWorkspace\.derived\.floatingPlanOverlayStackVisible[\s\S]*?navigator:\s*\{[\s\S]*?base\.state\.editor\.viewMode === "3d" && scene\.hasWholeHousePlan/,
+  "The viewport workspace should inject the rail policy and 3D navigator state."
 );
 assert.match(
   viewportAdapterSource,

@@ -20,13 +20,16 @@ const sceneRegionSource = readSource(
 const viewportAdapterSource = readSource(
   "lib/design-page-viewport-region-adapter.ts"
 );
+const viewportWorkspaceSource = readSource(
+  "lib/design-page-viewport-workspace-registration.ts"
+);
 const controlsSource = readSource(
   "components/editor/design-page/DesignPageViewportSelectionControls.tsx"
 );
 const modelSource = readSource(
   "lib/design-page-viewport-selection-controls.ts"
 );
-const normalizedWorkspace = normalizeWhitespace(workspaceSource);
+const normalizedViewportWorkspace = normalizeWhitespace(viewportWorkspaceSource);
 const normalizedViewportOverlay = normalizeWhitespace(viewportOverlaySource);
 const normalizedViewportAdapter = normalizeWhitespace(viewportAdapterSource);
 const normalizedModel = normalizeWhitespace(modelSource);
@@ -48,10 +51,10 @@ assert.ok(
   "The viewport adapter should map the resolved theme into selection controls."
 );
 assert.ok(
-  normalizedWorkspace.includes(
-    "selectionControls: { floorStack: { switchFloor: documentFloorActions.handleSwitchFloor }"
+  normalizedViewportWorkspace.includes(
+    "floorStack: { switchFloor: documentRoom.actions.floor.handleSwitchFloor"
   ),
-  "Workspace should inject the live floor-stack action into the viewport adapter."
+  "Viewport workspace should inject the live floor-stack action."
 );
 assert.match(
   viewportOverlaySource,
@@ -100,28 +103,28 @@ assert.ok(
 );
 
 for (const expected of [
-  "viewMode",
-  "stackedFloorView",
-  "floorOptions",
-  "activeFloorLevel",
-  "hiddenFloorLevels",
-  "selectedCount: selectedIds.size",
-  "pendingZoneType",
-  "selectedZone",
-  "isClientPreview",
-  "floorStack: { switchFloor: documentFloorActions.handleSwitchFloor }",
-  "alignX: alignSelectionX",
-  "alignZ: alignSelectionZ",
-  "changeZoneType: setPendingZoneType",
-  "createZone: createZoneFromSelection",
-  "clear: clearAllSelection",
-  "autoLayout: autoLayoutZone",
-  "rotateZone",
-  "ungroup: ungroupZone",
+  "viewMode: base.state.editor.viewMode",
+  "stackedFloorView: floorState.stackedFloorView",
+  "floorOptions: floor.floorOptions",
+  "activeFloorLevel: floor.activeFloorLevel",
+  "hiddenFloorLevels: floorState.hiddenFloorLevels",
+  "selectedCount: itemSelection.state.selectedIds.size",
+  "pendingZoneType: zone.state.pendingZoneType",
+  "selectedZone: zone.state.selectedZone",
+  "isClientPreview: coreShell.derived.access.isClientPreview",
+  "switchFloor: documentRoom.actions.floor.handleSwitchFloor",
+  "alignX: placementSelection.actions.interaction.alignSelectionX",
+  "alignZ: placementSelection.actions.interaction.alignSelectionZ",
+  "changeZoneType: zone.actions.setPendingZoneType",
+  "createZone: zone.actions.createZoneFromSelection",
+  "clear: selectionInspection.actions.selection.clearAllSelection",
+  "autoLayout: zone.actions.autoLayoutZone",
+  "rotateZone: zone.actions.rotateZone",
+  "ungroup: zone.actions.ungroupZone",
 ] as const) {
   assert.ok(
-    normalizedWorkspace.includes(expected),
-    `Workspace should preserve ${expected}.`
+    normalizedViewportWorkspace.includes(expected),
+    `Viewport workspace should preserve ${expected}.`
   );
 }
 assert.ok(

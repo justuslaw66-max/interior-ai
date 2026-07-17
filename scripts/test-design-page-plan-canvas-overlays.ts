@@ -23,6 +23,9 @@ const sceneRegionSource = readSource(
 const viewportAdapterSource = readSource(
   "lib/design-page-viewport-region-adapter.ts"
 );
+const viewportWorkspaceSource = readSource(
+  "lib/design-page-viewport-workspace-registration.ts"
+);
 const actionsControllerSource = readSource(
   "lib/useDesignPagePlanCanvasActionsController.ts"
 );
@@ -39,7 +42,7 @@ const planWorkspaceFacadeSource = readSource(
 const planAuthoringRegistrationSource = readSource(
   "lib/useDesignPagePlanAuthoringRegistration.ts"
 );
-const normalizedWorkspace = normalizeWhitespace(workspaceSource);
+const normalizedViewportWorkspace = normalizeWhitespace(viewportWorkspaceSource);
 const normalizedViewportOverlay = normalizeWhitespace(viewportOverlaySource);
 const normalizedViewportAdapter = normalizeWhitespace(viewportAdapterSource);
 const normalizedActionsController = normalizeWhitespace(actionsControllerSource);
@@ -67,12 +70,16 @@ assert.match(
   "Plan authoring should compose the grouped plan boundary."
 );
 assert.ok(
-  normalizedWorkspace.includes("planCanvas: planCanvasOverlaysState"),
-  "Workspace should pass resolved plan-canvas state through the viewport boundary."
+  normalizedViewportWorkspace.includes(
+    "planCanvas: planWorkspace.derived.planCanvasOverlaysState"
+  ),
+  "Viewport workspace should pass resolved plan-canvas state through the viewport boundary."
 );
 assert.ok(
-  normalizedWorkspace.includes("planCanvas: planCanvasActions"),
-  "Workspace should pass controller-owned plan-canvas actions through the viewport adapter."
+  normalizedViewportWorkspace.includes(
+    "planCanvas: presentation.actions.planCanvas"
+  ),
+  "Viewport workspace should pass controller-owned plan-canvas actions through the viewport adapter."
 );
 assert.ok(
   normalizedViewportAdapter.includes("planCanvas: actions.planCanvas"),

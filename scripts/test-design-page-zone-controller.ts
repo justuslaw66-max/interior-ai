@@ -23,6 +23,9 @@ const sceneAdapterSource = readSource("lib/design-page-scene-region-adapter.ts")
 const viewportAdapterSource = readSource(
   "lib/design-page-viewport-region-adapter.ts"
 );
+const viewportWorkspaceRegistrationSource = readSource(
+  "lib/design-page-viewport-workspace-registration.ts"
+);
 const structureLayerSource = readSource(
   "components/editor/design-page/DesignSceneStructureLayer.tsx"
 );
@@ -320,9 +323,13 @@ for (const { pattern, description } of [
       ? commerceOnboardingSource
       : description === "2D plan zones"
         ? sceneRegionWorkspaceRegistrationSource
-      : workspaceSource,
-    description === "2D plan zones" ? /zones:\s*zone\.state\.planZones2D/ : pattern,
-    `Workspace should preserve its ${description} wiring.`
+        : viewportWorkspaceRegistrationSource,
+    description === "2D plan zones"
+      ? /zones:\s*zone\.state\.planZones2D/
+      : description === "manual zone action boundary"
+        ? /changeZoneType:\s*zone\.actions\.setPendingZoneType,[\s\S]*?createZone:\s*zone\.actions\.createZoneFromSelection/
+        : pattern,
+    `The owning registration should preserve its ${description} wiring.`
   );
 }
 
@@ -348,9 +355,9 @@ assert.match(
   "The scene region should pass the zone-bounds resolver to the guidance layer."
 );
 assert.match(
-  workspaceSource,
-  /selectionControls:\s*\{[\s\S]*?pendingZoneType,[\s\S]*?selectedZone,[\s\S]*?isClientPreview/,
-  "Workspace should inject viewport zone live-policy inputs."
+  viewportWorkspaceRegistrationSource,
+  /selectionControls:\s*\{[\s\S]*?pendingZoneType:\s*zone\.state\.pendingZoneType,[\s\S]*?selectedZone:\s*zone\.state\.selectedZone,[\s\S]*?isClientPreview:\s*coreShell\.derived\.access\.isClientPreview/,
+  "The viewport registration should inject zone live-policy inputs."
 );
 assert.match(
   viewportAdapterSource,
@@ -358,9 +365,9 @@ assert.match(
   "The viewport adapter should resolve zone live-policy state."
 );
 assert.match(
-  workspaceSource,
-  /selectedZone:\s*\{[\s\S]*?autoLayout:\s*autoLayoutZone,[\s\S]*?rotateZone,[\s\S]*?ungroup:\s*ungroupZone/,
-  "Workspace should inject selected-zone actions into the viewport adapter."
+  viewportWorkspaceRegistrationSource,
+  /selectedZone:\s*\{[\s\S]*?autoLayout:\s*zone\.actions\.autoLayoutZone,[\s\S]*?rotateZone:\s*zone\.actions\.rotateZone,[\s\S]*?ungroup:\s*zone\.actions\.ungroupZone/,
+  "The viewport registration should inject selected-zone actions into the adapter."
 );
 assert.match(
   viewportAdapterSource,

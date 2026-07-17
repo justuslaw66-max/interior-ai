@@ -18,6 +18,14 @@ const sceneRegionWorkspaceSource = fs.readFileSync(
   ),
   "utf8"
 );
+const viewportWorkspaceSource = fs.readFileSync(
+  path.join(
+    process.cwd(),
+    "lib",
+    "design-page-viewport-workspace-registration.ts"
+  ),
+  "utf8"
+);
 const presentationWorkspaceSource = fs.readFileSync(
   path.join(
     process.cwd(),
@@ -344,9 +352,9 @@ assert.match(
 );
 
 assert.match(
-  source,
-  /rail:\s*floatingPlanOverlayStackVisible[\s\S]*?enabled:\s*viewMode === "3d" && hasWholeHousePlan/,
-  "The workspace should inject the shared overlay gate and 3D whole-home navigator state."
+  viewportWorkspaceSource,
+  /rail:\s*planWorkspace\.derived\.floatingPlanOverlayStackVisible[\s\S]*?enabled:\s*base\.state\.editor\.viewMode === "3d" && scene\.hasWholeHousePlan/,
+  "The viewport registration should inject the shared overlay gate and 3D whole-home navigator state."
 );
 assert.match(
   viewportAdapterSource,
@@ -403,9 +411,9 @@ assert.match(
 );
 
 assert.match(
-  source,
-  /floatingOverlayStackWidthPx: PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX[\s\S]*?planQuality:\s*\{ setPanel: setPlanQualityReviewPanelNode \}[\s\S]*?planQuality:\s*\{ toggleCollapsed: togglePlanQualityReviewPanel, activateIssue: handlePlanQualityAction \}/,
-  "The workspace should inject controller-owned plan-review sizing, reference, and actions at the viewport-adapter boundary."
+  viewportWorkspaceSource,
+  /floatingOverlayStackWidthPx: PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX[\s\S]*?setPanel: planWorkspace\.refs\.quality\.setReviewPanelNode[\s\S]*?toggleCollapsed: planWorkspace\.actions\.quality\.toggleReviewPanel[\s\S]*?activateIssue: planWorkspace\.actions\.quality\.activateIssue/,
+  "The viewport workspace should inject plan-review sizing, reference, and actions."
 );
 assert.match(
   viewportAdapterSource,
@@ -536,9 +544,9 @@ assert.doesNotMatch(
 );
 
 assert.match(
-  source,
-  /selectionInspector: floatingSelectionInspectorVisible[\s\S]*?summary: selectedObjectInspector/,
-  "The workspace should inject inspector state and its deduped visibility flag."
+  viewportWorkspaceSource,
+  /selectionInspector:\s*inspector\.floatingSelectionInspectorVisible[\s\S]*?summary:\s*inspector\.selectedObjectInspector/,
+  "The viewport registration should inject inspector state and its deduped visibility flag."
 );
 assert.match(
   viewportAdapterSource,

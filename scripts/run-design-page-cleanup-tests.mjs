@@ -54,6 +54,7 @@ const typescriptGuardFiles = [
   "test-design-page-selection-inspector-model.ts",
   "test-design-page-selection-transforms.ts",
   "test-design-page-selection-workspace-registration.ts",
+  "test-design-page-viewport-workspace-registration.ts",
   "test-design-page-viewport-overlay-layer.ts",
   "test-design-page-viewport-selection-controls.ts",
   "test-design-page-wall-descriptors.ts",

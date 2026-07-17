@@ -56,6 +56,10 @@ const sceneRegionWorkspaceRegistrationSource = readFileSync(
   join(root, "lib/useDesignPageSceneRegionWorkspaceRegistration.ts"),
   "utf8"
 );
+const viewportWorkspaceRegistrationSource = readFileSync(
+  join(root, "lib/design-page-viewport-workspace-registration.ts"),
+  "utf8"
+);
 
 assert.match(planEditingFacadeSource, /useDesignPagePlanQualityController\(\{/);
 assert.match(planWorkspaceFacadeSource, /useDesignPagePlanEditingFacade\(\{/);
@@ -175,24 +179,24 @@ assert.doesNotMatch(
   "The workspace should delegate plan-quality review rendering to the viewport overlay layer."
 );
 assert.match(
-  workspaceSource,
-  /buildDesignPageViewportRegionAdapter\(\{[\s\S]*?visibility: \{[\s\S]*?planQuality: plan2DQualityReviewPanelVisible/,
-  "The workspace should inject controller-owned quality visibility at the viewport-adapter boundary."
+  viewportWorkspaceRegistrationSource,
+  /buildDesignPageViewportRegionAdapter\(\{[\s\S]*?visibility: \{[\s\S]*?planQuality: quality\.reviewPanelVisible/,
+  "The viewport workspace should inject controller-owned quality visibility."
 );
 assert.match(
-  workspaceSource,
-  /planQuality: \{ report: floorPlanQualityReport, collapsed: planQualityReviewCollapsed \}/,
-  "The workspace should inject the controller-owned quality report state."
+  viewportWorkspaceRegistrationSource,
+  /planQuality: \{[\s\S]*?report: quality\.report,[\s\S]*?collapsed: quality\.reviewPanelCollapsed/,
+  "The viewport workspace should inject the controller-owned quality report state."
 );
 assert.match(
-  workspaceSource,
-  /planQuality: \{ setPanel: setPlanQualityReviewPanelNode \}/,
-  "The workspace should inject the controller-owned quality panel reference."
+  viewportWorkspaceRegistrationSource,
+  /planQuality: \{[\s\S]*?setPanel: planWorkspace\.refs\.quality\.setReviewPanelNode/,
+  "The viewport workspace should inject the controller-owned quality panel reference."
 );
 assert.match(
-  workspaceSource,
-  /planQuality: \{ toggleCollapsed: togglePlanQualityReviewPanel, activateIssue: handlePlanQualityAction \}/,
-  "The workspace should inject controller-owned quality state, reference, and actions at the viewport-adapter boundary."
+  viewportWorkspaceRegistrationSource,
+  /planQuality: \{[\s\S]*?toggleCollapsed: planWorkspace\.actions\.quality\.toggleReviewPanel,[\s\S]*?activateIssue: planWorkspace\.actions\.quality\.activateIssue/,
+  "The viewport workspace should inject controller-owned quality actions."
 );
 assert.match(
   viewportAdapterSource,

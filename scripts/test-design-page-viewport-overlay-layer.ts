@@ -17,7 +17,10 @@ const regionSource = readSource(
   "components/editor/design-page/DesignPageSceneRegion.tsx"
 );
 const adapterSource = readSource("lib/design-page-viewport-region-adapter.ts");
-const normalizedWorkspace = normalizeWhitespace(workspaceSource);
+const viewportWorkspaceSource = readSource(
+  "lib/design-page-viewport-workspace-registration.ts"
+);
+const normalizedViewportWorkspace = normalizeWhitespace(viewportWorkspaceSource);
 const normalizedOverlay = normalizeWhitespace(overlaySource);
 const normalizedAdapter = normalizeWhitespace(adapterSource);
 
@@ -50,28 +53,28 @@ for (const contractName of [
   );
 }
 
-// Workspace injects live values; the adapter owns viewport policy and action shaping.
+// Viewport workspace injects live values; the adapter owns policy and action shaping.
 for (const expected of [
-  "rail: floatingPlanOverlayStackVisible",
-  "sceneLoading: sceneReadState.showSceneLoadingVeil",
-  "selectionInspector: floatingSelectionInspectorVisible",
-  "planQuality: plan2DQualityReviewPanelVisible",
-  "planCanvas: planCanvasOverlaysState",
-  "proposal: pendingAiLayoutProposal",
-  "crossRoomDragTarget",
-  'enabled: viewMode === "3d" && hasWholeHousePlan',
-  "floorProperties: floatingFloorPropertiesPanelVisible",
-  "planQuality: { setPanel: setPlanQualityReviewPanelNode }",
-  "deletePlanOverlay: deletePlanOverlayById",
-  "showToast: showRuleToast",
-  "planCanvas: planCanvasActions",
-  "navigator: { onMoveCamera: handleWholeHomeMoveCamera",
-  "addFloor: documentFloorActions.handleAddFloor",
-  "selectionControls: { floorStack: { switchFloor: documentFloorActions.handleSwitchFloor }",
+  "rail: planWorkspace.derived.floatingPlanOverlayStackVisible",
+  "sceneLoading: sceneRoomRead.state.scene.showSceneLoadingVeil",
+  "selectionInspector: inspector.floatingSelectionInspectorVisible",
+  "planQuality: quality.reviewPanelVisible",
+  "planCanvas: planWorkspace.derived.planCanvasOverlaysState",
+  "proposal: coreShell.state.placement.pendingAiLayoutProposal",
+  "crossRoomDragTarget: coreShell.state.placement.crossRoomDragTarget",
+  'enabled: base.state.editor.viewMode === "3d" && scene.hasWholeHousePlan',
+  "floorProperties: planWorkspace.derived.floatingFloorPropertiesPanelVisible",
+  "setPanel: planWorkspace.refs.quality.setReviewPanelNode",
+  "deletePlanOverlay: selectionInspection.actions.selection.deletePlanOverlayById",
+  "showToast: coreShell.actions.feedback.showRuleToast",
+  "planCanvas: presentation.actions.planCanvas",
+  "onMoveCamera: camera.actions.navigation.handleWholeHomeMoveCamera",
+  "addFloor: documentRoom.actions.floor.handleAddFloor",
+  "switchFloor: documentRoom.actions.floor.handleSwitchFloor",
 ] as const) {
   assert.ok(
-    normalizedWorkspace.includes(expected),
-    `Workspace should preserve the live viewport boundary: ${expected}.`
+    normalizedViewportWorkspace.includes(expected),
+    `Viewport workspace should preserve the live boundary: ${expected}.`
   );
 }
 
