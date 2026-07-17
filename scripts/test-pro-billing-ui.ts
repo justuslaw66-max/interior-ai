@@ -54,6 +54,9 @@ assert.match(plansDialog, /Start monthly — \{state\.monthlyLabel\}/);
 assert.match(plansDialog, /Start yearly — \{state\.yearlyLabel\}/);
 
 const designPage = read("components/editor/design-page/DesignPageWorkspace.tsx");
+const coreShellRegistration = read(
+  "lib/useDesignPageCoreShellRegistration.ts"
+);
 const editorChromeController = read("lib/useDesignPageEditorChromeController.ts");
 const designPageExport = read("lib/useDesignPageExport.ts");
 const paywallLifecycle = read("lib/useDesignPagePaywallTelemetryLifecycle.ts");
@@ -120,9 +123,9 @@ assert.match(
   "The workspace should delegate deferred billing wiring through its registration boundary."
 );
 assert.match(
-  designPage,
+  coreShellRegistration,
   /useDesignPageWorkspacePaywallRegistration\(\{/,
-  "The workspace should register early paywall telemetry through its boundary."
+  "The core shell should register early paywall telemetry through its boundary."
 );
 assert.match(
   paywallRegistrationFacade,

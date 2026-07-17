@@ -8,6 +8,10 @@ const pageSource = readFileSync(
   join(root, "components/editor/design-page/DesignPageWorkspace.tsx"),
   "utf8"
 );
+const coreShellSource = readFileSync(
+  join(root, "lib/useDesignPageCoreShellRegistration.ts"),
+  "utf8"
+);
 
 assert.match(
   hookSource,
@@ -30,14 +34,19 @@ assert.match(
   "Catalog readiness should settle after success or fallback without updating an unmounted page."
 );
 assert.match(
-  pageSource,
+  coreShellSource,
   /const liveCatalogReady = useDesignPageLiveCatalog\(\)/,
-  "The design page should consume the focused live catalog readiness controller."
+  "The core shell should consume the focused live catalog readiness controller."
+);
+assert.match(
+  coreShellSource,
+  /const canEdit = !isClientPreview && liveCatalogReady/,
+  "Editor mutations should remain gated by live catalog readiness."
 );
 assert.match(
   pageSource,
-  /const canEdit = !isClientPreview && liveCatalogReady/,
-  "Editor mutations should remain gated by live catalog readiness."
+  /useDesignPageCoreShellRegistration\(\{/,
+  "The design page should consume live catalog readiness through its core shell."
 );
 
 console.log("design page live catalog guardrails passed");

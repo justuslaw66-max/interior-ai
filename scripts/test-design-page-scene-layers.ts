@@ -27,6 +27,15 @@ const guidanceSource = readSource(
 const previewSource = readSource(
   "components/editor/design-page/DesignScenePreviewLayer.tsx"
 );
+const coreShellBaseRegistrationSource = readSource(
+  "lib/useDesignPageCoreShellBaseRegistration.ts"
+);
+const coreShellRegistrationSource = readSource(
+  "lib/useDesignPageCoreShellRegistration.ts"
+);
+const viewportShellRegistrationSource = readSource(
+  "lib/useDesignPageViewportShellRegistration.ts"
+);
 const planRuntimeSource = readSource(
   "lib/useDesignPagePlanViewportRuntime.ts"
 );
@@ -63,10 +72,10 @@ const assertSourceOrder = (
 };
 
 assertSourceOrder(
-  workspaceSource,
+  coreShellRegistrationSource,
   [
-    "useDesignPagePlanViewportRuntime({",
-    "useDesignPageEditorShellRuntime({",
+    "useDesignPageCoreShellBaseRegistration()",
+    "useDesignPageViewportShellRegistration({",
     "useEditorMode(",
     "useDesignPageTransientFeedback({",
     "const seatingZoneAutoDisabledRef",
@@ -74,7 +83,15 @@ assertSourceOrder(
     "useDesignPageEditorClientLifecycle({",
     "useDesignPageSnapshotDocumentState()",
   ],
-  "Workspace should preserve the flattened early-runtime hook order"
+  "Core shell registration should preserve the early-runtime hook order"
+);
+assertSourceOrder(
+  viewportShellRegistrationSource,
+  [
+    "useDesignPagePlanViewportRuntime({",
+    "useDesignPageEditorShellRuntime({",
+  ],
+  "Viewport shell registration should preserve viewport-before-shell order"
 );
 assertSourceOrder(
   workspaceSource,
@@ -141,7 +158,7 @@ assertSourceOrder(
   "Editor client lifecycle should preserve hydration-through-sign-in hook order"
 );
 assert.match(
-  workspaceSource,
+  coreShellBaseRegistrationSource,
   /useState<number>\(\(\) => Date\.now\(\)\)/,
   "The AI seed should use a lazy initializer instead of reading time directly during render."
 );
