@@ -68,7 +68,7 @@ function normalizePersistedItem({
   item: DesignItem;
   roomId: string;
   catalogItems: typeof CATALOG_ITEMS;
-}): DesignItem | null {
+}): DesignItem {
   if (isParametricCabinetItem(item)) {
     return normalizeCabinetDesignItem(item, {
       dropTemporaryGlbUrls: true,
@@ -77,12 +77,11 @@ function normalizePersistedItem({
   }
 
   const product = catalogItems[item.productId];
-  if (!product) return null;
-  const validVariant = product.variants.some(
-    (variant) => variant.id === item.variantId
-  )
-    ? item.variantId
-    : product.defaultVariantId;
+  const validVariant = product
+    ? product.variants.some((variant) => variant.id === item.variantId)
+      ? item.variantId
+      : product.defaultVariantId
+    : item.variantId;
 
   return {
     ...item,
@@ -111,8 +110,7 @@ function normalizePersistedItems({
   resolveConfiguredPlanningDimsMm: ResolveConfiguredPlanningDimsMm;
 }) {
   const cleanedItems = items
-    .map((item) => normalizePersistedItem({ item, roomId, catalogItems }))
-    .filter((item): item is DesignItem => item !== null);
+    .map((item) => normalizePersistedItem({ item, roomId, catalogItems }));
 
   return normalizeItemsToRoom({
     items: cleanedItems,

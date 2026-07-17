@@ -50,12 +50,19 @@ async function setupSelectedItem(page: Page) {
 
   const newPlan = page.getByTestId("editor-command-new-plan");
   await expect(newPlan).toBeVisible();
-  await newPlan.click();
-  const replaceCurrent = page.getByTestId("new-plan-replace-current");
-  if (await replaceCurrent.isVisible({ timeout: 3_000 }).catch(() => false)) {
-    await replaceCurrent.click();
-  }
-  await expect(page.getByTestId("starter-floor-plan-picker")).toBeVisible();
+  const starterPicker = page.getByTestId("starter-floor-plan-picker");
+  await expect(async () => {
+    if (await starterPicker.isVisible().catch(() => false)) return;
+
+    const replaceCurrent = page.getByTestId("new-plan-replace-current");
+    if (await replaceCurrent.isVisible().catch(() => false)) {
+      await replaceCurrent.click();
+    } else {
+      await newPlan.click();
+    }
+
+    await expect(starterPicker).toBeVisible({ timeout: 2_000 });
+  }).toPass({ timeout: 30_000 });
   await expect(page.getByTestId("apply-plan-template-studio")).toBeVisible();
   await page.getByTestId("apply-plan-template-studio").click();
   await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(

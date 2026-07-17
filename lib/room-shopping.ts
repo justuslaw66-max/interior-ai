@@ -97,7 +97,8 @@ function getResolvedUnitPrice(
 
 export function summarizeShoppingRooms(
   rooms: ShoppingRoom[],
-  activeRoomId: string
+  activeRoomId: string,
+  catalogItems: typeof CATALOG_ITEMS = CATALOG_ITEMS
 ): ShoppingRoomSummary[] {
   return rooms.map((room) => {
     let subtotal = 0;
@@ -108,7 +109,7 @@ export function summarizeShoppingRooms(
 
     for (const item of room.items) {
       if (!shouldCountItem(item)) continue;
-      const product = CATALOG_ITEMS[item.productId];
+      const product = catalogItems[item.productId];
       if (!product) {
         needsReviewCount += 1;
         continue;
@@ -171,14 +172,15 @@ export function summarizeWholeHomeShopping(
 }
 
 export function countRoomCategories(
-  room: RoomWithItems
+  room: RoomWithItems,
+  catalogItems: typeof CATALOG_ITEMS = CATALOG_ITEMS
 ): Partial<Record<CatalogTopCategory, number>> {
   const counts: Partial<Record<CatalogTopCategory, number>> = {};
   if (!room) return counts;
 
   for (const item of room.items) {
     if (!shouldCountItem(item)) continue;
-    const product = CATALOG_ITEMS[item.productId];
+    const product = catalogItems[item.productId];
     if (!product) continue;
     const category = mapToTopCategory(product.category, product);
     counts[category] = (counts[category] ?? 0) + getQuantity(item);
@@ -199,13 +201,16 @@ export function countRoomProductQuantities(room: RoomWithItems): Record<string, 
   return counts;
 }
 
-export function countRoomVariantQuantities(room: RoomWithItems): Record<string, number> {
+export function countRoomVariantQuantities(
+  room: RoomWithItems,
+  catalogItems: typeof CATALOG_ITEMS = CATALOG_ITEMS
+): Record<string, number> {
   const counts: Record<string, number> = {};
   if (!room) return counts;
 
   for (const item of room.items) {
     if (!shouldCountItem(item)) continue;
-    const product = CATALOG_ITEMS[item.productId];
+    const product = catalogItems[item.productId];
     if (!product) continue;
     const resolved = resolveCatalogVariant(product, item.variantId);
     const key = `${item.productId}:${resolved.variantId}`;
@@ -215,12 +220,15 @@ export function countRoomVariantQuantities(room: RoomWithItems): Record<string, 
   return counts;
 }
 
-export function resolveRoomShoppingItems(room: RoomWithItems): ActiveRoomShoppingItem[] {
+export function resolveRoomShoppingItems(
+  room: RoomWithItems,
+  catalogItems: typeof CATALOG_ITEMS = CATALOG_ITEMS
+): ActiveRoomShoppingItem[] {
   if (!room) return [];
 
   return room.items.flatMap((item) => {
     if (!shouldCountItem(item)) return [];
-    const product = CATALOG_ITEMS[item.productId];
+    const product = catalogItems[item.productId];
     if (!product) return [];
 
     const qty = getQuantity(item);

@@ -50,7 +50,7 @@ export type UseDesignPagePresentationQaFacadeInput = {
       zones: DesignPageProjectQaMarkersProps["activeRoomZones"];
     };
     persistence: {
-      lastPersistedSnapshotFingerprint: QaInput["state"]["persistence"]["lastPersistedSnapshotFingerprint"];
+      currentStoredDesignFingerprint: QaInput["state"]["persistence"]["currentStoredDesignFingerprint"];
       isSaving: ChromeCommandState["isSaving"];
       saveStatus: ChromeCommandState["saveStatus"];
     };
@@ -145,7 +145,7 @@ export type UseDesignPagePresentationQaFacadeInput = {
     navigation: Omit<ChromeActions["navigation"], "changeViewMode" | "fitPlan">;
     dialogs: Pick<ChromeActions["dialogs"], "setPlansOpen" | "openNewPlan" | "setFeedbackOpen">;
     billing: ChromeActions["billing"];
-    persistence: ChromeActions["persistence"] & QaInput["actions"];
+    persistence: ChromeActions["persistence"];
     cabinetry: ChromeActions["cabinetry"];
     room: ChromeActions["room"];
     scenePerformance: ChromeActions["scenePerformance"];
@@ -275,9 +275,8 @@ export function useDesignPagePresentationQaFacade({
   const qaReadModel = useDesignPageQaReadModel({
     state: {
       persistence: {
-        designId: state.identity.designId,
-        lastPersistedSnapshotFingerprint:
-          state.persistence.lastPersistedSnapshotFingerprint,
+        currentStoredDesignFingerprint:
+          state.persistence.currentStoredDesignFingerprint,
       },
       scene: state.scene,
       layout: {
@@ -288,10 +287,6 @@ export function useDesignPagePresentationQaFacade({
         planDebugMetrics: state.scene.planDebugMetrics,
         selectedPlanRoomId: state.plan.selectedPlanRoomId,
       },
-    },
-    actions: {
-      getStoredDesignForPersistence:
-        actions.persistence.getStoredDesignForPersistence,
     },
   });
 

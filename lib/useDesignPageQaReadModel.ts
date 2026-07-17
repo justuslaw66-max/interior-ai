@@ -7,10 +7,7 @@ import type {
   DesignPageScenePerformanceQaSnapshot,
 } from "@/components/editor/design-page/DesignPageQaMarkers";
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
-import type { StoredDesign } from "@/lib/room-persistence";
-import { storedToSnapshot } from "@/lib/room-persistence";
 import type { DesignSnapshot, RoomSnapshot } from "@/lib/room-types";
-import { fingerprintDesignSnapshot } from "@/lib/snapshot-fingerprint";
 import type { ScenePerformanceMode, SceneRenderQuality } from "@/lib/useDesignPageScenePerformance";
 import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
 
@@ -113,8 +110,7 @@ export function buildDesignPageLayoutQaSnapshot({
 export type UseDesignPageQaReadModelInput = {
   state: {
     persistence: {
-      designId: string | null;
-      lastPersistedSnapshotFingerprint: string | null;
+      currentStoredDesignFingerprint: string;
     };
     scene: {
       mode: ScenePerformanceMode;
@@ -137,32 +133,13 @@ export type UseDesignPageQaReadModelInput = {
       selectedPlanRoomId: string | null;
     };
   };
-  actions: {
-    getStoredDesignForPersistence: () => StoredDesign;
-  };
 };
 
 export function useDesignPageQaReadModel({
   state,
-  actions,
 }: UseDesignPageQaReadModelInput) {
   const { persistence, scene, layout } = state;
-  const { getStoredDesignForPersistence } = actions;
-  const qaSnapshotFingerprint = useMemo(() => {
-    if (
-      persistence.designId &&
-      persistence.lastPersistedSnapshotFingerprint
-    ) {
-      return persistence.lastPersistedSnapshotFingerprint;
-    }
-    return fingerprintDesignSnapshot(
-      storedToSnapshot(getStoredDesignForPersistence())
-    );
-  }, [
-    getStoredDesignForPersistence,
-    persistence.designId,
-    persistence.lastPersistedSnapshotFingerprint,
-  ]);
+  const qaSnapshotFingerprint = persistence.currentStoredDesignFingerprint;
   const qaScenePerformanceSnapshot = useMemo(
     () =>
       buildDesignPageScenePerformanceQaSnapshot({

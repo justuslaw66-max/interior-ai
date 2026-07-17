@@ -122,6 +122,9 @@ export function useDesignPageImportedModels() {
   const [catalogByProductId, setCatalogByProductId] = useState<
     Record<string, ImportedModelCatalog>
   >({});
+  const [catalogItemsById, setCatalogItemsById] = useState(() => ({
+    ...CATALOG_ITEMS,
+  }));
   const [modelUrlByAssetId, setModelUrlByAssetId] = useState<Record<string, string>>({});
 
   const modelById = useMemo(
@@ -134,6 +137,7 @@ export function useDesignPageImportedModels() {
       const imported = modelById.get(productId);
       if (!imported) return;
       upsertImportedOption(imported);
+      setCatalogItemsById({ ...CATALOG_ITEMS });
     },
     [modelById]
   );
@@ -173,6 +177,7 @@ export function useDesignPageImportedModels() {
         }
 
         setCatalogByProductId(nextCatalogByProductId);
+        setCatalogItemsById({ ...CATALOG_ITEMS });
         setModelUrlByAssetId(assembled.modelUrlByAssetId);
         setModelOptions(assembled.options);
       } catch {
@@ -293,6 +298,7 @@ export function useDesignPageImportedModels() {
       familyOptions,
       visibleModelOptions,
       catalogItems,
+      catalogItemsById,
     },
     actions: {
       setSelectedFamilyKey: selectFamily,

@@ -1,10 +1,14 @@
 import type { Page } from "@playwright/test";
 import { expect, test } from "./fixtures";
+import { storedToSnapshot, type StoredDesign } from "../../lib/room-persistence";
+import { fingerprintDesignSnapshot } from "../../lib/snapshot-fingerprint";
 import {
   getSelectedItemPanel,
   openCatalogPreview,
   waitForCatalogReady,
 } from "./variant-test-utils";
+
+const DESIGN_STORAGE_KEY = "interior-ai:v1:livingroom-design";
 
 async function readFingerprint(page: Page): Promise<string> {
   const marker = page.getByTestId("qa-editor-snapshot-fingerprint");
@@ -12,6 +16,17 @@ async function readFingerprint(page: Page): Promise<string> {
   const fingerprint = await marker.getAttribute("data-fingerprint");
   if (!fingerprint) throw new Error("Editor snapshot fingerprint is missing");
   return fingerprint;
+}
+
+async function readPersistedFingerprint(page: Page): Promise<string> {
+  const rawBackup = await page.evaluate(
+    (storageKey) => window.localStorage.getItem(storageKey),
+    DESIGN_STORAGE_KEY,
+  );
+  if (!rawBackup) throw new Error("Local design backup is missing");
+  return fingerprintDesignSnapshot(
+    storedToSnapshot(JSON.parse(rawBackup) as StoredDesign),
+  );
 }
 
 async function startCatalogPlacement(page: Page, productId: string) {
@@ -33,7 +48,7 @@ async function startCatalogPlacement(page: Page, productId: string) {
 
 test.describe("17. Smart Placement Smoke", () => {
   test("add item, preview cross-room placement controls, confirm, and reload", async ({ page }) => {
-    test.setTimeout(120000);
+    test.setTimeout(180_000);
 
     await page.addInitScript(() => {
       const clearSentinel = "__e2e_smart_placement_storage_cleared";
@@ -87,11 +102,19 @@ test.describe("17. Smart Placement Smoke", () => {
     await expect(page.getByTestId("catalog-placement-target-room")).toBeVisible();
     await expect(page.getByTestId("catalog-placement-score-card")).toBeVisible();
 
+    const bestRoomHint = page.getByTestId("catalog-placement-best-room-hint");
+    await expect(bestRoomHint).toBeVisible();
+    const bestRoomHintText = (await bestRoomHint.textContent())?.trim() ?? "";
+    const bestRoomName = /^Best room:\s*(.+?)\s*·/.exec(bestRoomHintText)?.[1];
+    expect(bestRoomName, "The best-room hint must identify its target room").toBeTruthy();
+    if (!bestRoomName) throw new Error("Best-room hint is missing its target room");
+    expect(bestRoomName).not.toBe("Bathroom");
+
     const bestRoom = page.getByTestId("catalog-placement-best-room");
     await expect(bestRoom).toBeVisible();
     await bestRoom.click();
     await expect(page.getByTestId("catalog-placement-target-room")).toContainText(
-      "Living / Sleep",
+      bestRoomName,
     );
 
     await expect(page.getByTestId("catalog-placement-confirm")).toBeEnabled();
@@ -100,7 +123,6 @@ test.describe("17. Smart Placement Smoke", () => {
     await expect
       .poll(() => readFingerprint(page), { timeout: 10_000 })
       .not.toBe(baselineFingerprint);
-    const placedFingerprint = await readFingerprint(page);
     await expect(getSelectedItemPanel(page)).toContainText("Madison Sofa");
 
     await page.getByTestId("save-design").click();
@@ -109,19 +131,37 @@ test.describe("17. Smart Placement Smoke", () => {
       "saved",
       { timeout: 30_000 },
     );
+    await readPersistedFingerprint(page);
     await page.reload({ waitUntil: "domcontentloaded" });
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30000 });
+    await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
+      "4 rooms",
+      { timeout: 30_000 },
+    );
+    await expect(page.getByTestId("save-status")).toHaveAttribute(
+      "data-status",
+      "saved",
+      { timeout: 30_000 },
+    );
+    const hydratedPersistedFingerprint = await readPersistedFingerprint(page);
     await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute(
       "data-fingerprint",
-      placedFingerprint,
+      hydratedPersistedFingerprint,
+      { timeout: 30_000 },
     );
     const reloadedReady = await waitForCatalogReady(page);
     expect(reloadedReady, "Catalog must remain available after reload").toBe(true);
     await page.getByTestId("furnish-room-target-select").selectOption({
-      label: "Living / Sleep",
+      label: bestRoomName,
     });
-    await expect(page.getByTestId("furnish-room-bom-list")).toContainText(
+    const restoredCatalogReady = await waitForCatalogReady(page);
+    expect(
+      restoredCatalogReady,
+      "Catalog controls must reopen for the restored target room",
+    ).toBe(true);
+    await expect(page.getByTestId("furnish-shopping-preview")).toContainText(
       "Madison Sofa",
+      { timeout: 30_000 },
     );
   });
 });

@@ -80,8 +80,8 @@ assert.match(
 );
 assert.match(
   registrationSource,
-  /getStoredDesignForPersistence:[\s\S]*?documentRoom\.refs\.documentHistory\.getStoredDesignForPersistence/,
-  "QA persistence reads should remain connected to document history."
+  /currentStoredDesignFingerprint:[\s\S]*?documentRoom\.state\.document\.currentStoredDesignFingerprint/,
+  "QA fingerprints should remain connected to the live document-history state."
 );
 
 assert.ok(registrationSource.split("\n").length <= 380);

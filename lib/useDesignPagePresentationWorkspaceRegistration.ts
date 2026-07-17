@@ -84,8 +84,8 @@ export function useDesignPagePresentationWorkspaceRegistration({
         zones: documentRoom.derived.room.zones,
       },
       persistence: {
-        lastPersistedSnapshotFingerprint:
-          persistence.state.persistence.lastPersistedSnapshotFingerprint,
+        currentStoredDesignFingerprint:
+          documentRoom.state.document.currentStoredDesignFingerprint,
         isSaving: persistence.state.persistence.isSaving,
         saveStatus: persistence.state.persistence.saveStatus,
       },
@@ -309,8 +309,6 @@ export function useDesignPagePresentationWorkspaceRegistration({
           persistence.actions.persistence.saveDesignToCloud,
         retrySaveStatus: persistence.actions.persistence.retrySaveStatus,
         openGuestPrompt: persistence.actions.persistence.openGuestPrompt,
-        getStoredDesignForPersistence:
-          documentRoom.refs.documentHistory.getStoredDesignForPersistence,
       },
       cabinetry: { openStudio: cabinetry.actions.openCreateStudio },
       room: {

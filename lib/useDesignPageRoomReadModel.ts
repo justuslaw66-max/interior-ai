@@ -7,7 +7,7 @@ import {
   type SetStateAction,
 } from "react";
 
-import { CATALOG_ITEMS } from "@/lib/catalog";
+import { type CATALOG_ITEMS } from "@/lib/catalog";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import {
   DEFAULT_FLOOR_MATERIAL_ID,
@@ -73,6 +73,7 @@ export type UseDesignPageRoomReadModelInput = {
   configuration: {
     isClientPreview: boolean;
     isDesigner: boolean;
+    catalogItems: typeof CATALOG_ITEMS;
   };
   derived: {
     roomSnapshotById: Map<string, RoomSnapshot>;
@@ -107,7 +108,7 @@ export function useDesignPageRoomReadModel({
     },
     surface: { activeSurfaceTarget, selectedWallSurfaceTarget },
   } = state;
-  const { isClientPreview, isDesigner } = configuration;
+  const { isClientPreview, isDesigner, catalogItems } = configuration;
   const { roomSnapshotById } = derived;
   const {
     setDesignPanelOpen,
@@ -130,9 +131,10 @@ export function useDesignPageRoomReadModel({
     () =>
       summarizeShoppingRooms(
         designSnapshot.rooms,
-        designSnapshot.activeRoomId
+        designSnapshot.activeRoomId,
+        catalogItems
       ),
-    [designSnapshot.activeRoomId, designSnapshot.rooms]
+    [catalogItems, designSnapshot.activeRoomId, designSnapshot.rooms]
   );
   const activeRoomShoppingSummary =
     roomShoppingSummaries.find(
@@ -145,13 +147,18 @@ export function useDesignPageRoomReadModel({
       activeRoom
         ? buildRoomHealthSummary({
             room: activeRoom,
-            catalogItems: CATALOG_ITEMS,
+            catalogItems,
             openings: planOpenings,
             shoppingNeedsReviewCount:
               activeRoomShoppingSummary?.needsReviewCount ?? 0,
           })
         : null,
-    [activeRoom, activeRoomShoppingSummary?.needsReviewCount, planOpenings]
+    [
+      activeRoom,
+      activeRoomShoppingSummary?.needsReviewCount,
+      catalogItems,
+      planOpenings,
+    ]
   );
   const reviewActiveRoomHealth = useCallback(() => {
     const target = resolveDesignPageRoomHealthReviewTarget(
@@ -292,20 +299,20 @@ export function useDesignPageRoomReadModel({
     activeRoomSurfaces?.ceilingColor ??
     "#f8f8f6";
   const activeRoomCategoryCounts = useMemo(
-    () => countRoomCategories(activeRoom),
-    [activeRoom]
+    () => countRoomCategories(activeRoom, catalogItems),
+    [activeRoom, catalogItems]
   );
   const activeRoomProductQuantities = useMemo(
     () => countRoomProductQuantities(activeRoom),
     [activeRoom]
   );
   const activeRoomVariantQuantities = useMemo(
-    () => countRoomVariantQuantities(activeRoom),
-    [activeRoom]
+    () => countRoomVariantQuantities(activeRoom, catalogItems),
+    [activeRoom, catalogItems]
   );
   const activeRoomShoppingItems = useMemo(
-    () => resolveRoomShoppingItems(activeRoom),
-    [activeRoom]
+    () => resolveRoomShoppingItems(activeRoom, catalogItems),
+    [activeRoom, catalogItems]
   );
   const wholeHomeShoppingSummary = useMemo(
     () => summarizeWholeHomeShopping(roomShoppingSummaries),

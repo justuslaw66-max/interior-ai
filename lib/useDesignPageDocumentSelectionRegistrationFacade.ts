@@ -105,7 +105,12 @@ export function useDesignPageDocumentSelectionRegistrationFacade({
           editorShell.state.surface.selectedWallSurfaceTarget,
       },
     },
-    configuration: { isClientPreview, isDesigner },
+    configuration: {
+      isClientPreview,
+      isDesigner,
+      catalogItems:
+        base.boundaries.importedModels.state.catalogItemsById,
+    },
     actions: {
       scene: {
         setSelectedPlanRoomId:
