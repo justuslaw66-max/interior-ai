@@ -84,9 +84,7 @@ const typescriptGuardFiles = [
   "test-touch-placement-polish.ts",
 ];
 
-// Register check-design-page-architecture.mjs here after the workspace reaches
-// its final line limit. Keeping Node guards explicit preserves deterministic runs.
-const nodeGuardFiles = [];
+const nodeGuardFiles = ["check-design-page-architecture.mjs"];
 
 const guardFiles = [...typescriptGuardFiles, ...nodeGuardFiles];
 
