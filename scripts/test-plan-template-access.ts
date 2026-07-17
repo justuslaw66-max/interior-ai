@@ -41,6 +41,10 @@ const persistenceNewPlanFacadeSource = fs.readFileSync(
   path.join(process.cwd(), "lib", "useDesignPagePersistenceNewPlanFacade.ts"),
   "utf8"
 );
+const persistenceRegistrationSource = fs.readFileSync(
+  path.join(process.cwd(), "lib", "useDesignPagePersistenceRegistration.ts"),
+  "utf8"
+);
 const documentStateControllerSource = fs.readFileSync(
   path.join(process.cwd(), "lib", "useDesignPageDocumentStateController.ts"),
   "utf8"
@@ -503,8 +507,18 @@ assert.ok(
 
 assert.match(
   designPageSource,
-  /state: \{[\s\S]*?newPlan: \{ startingNewPlan, newPlanStartError \}[\s\S]*?actions: \{[\s\S]*?newPlan: \{[\s\S]*?openNewPlanPicker,[\s\S]*?saveCurrentAndStartNewPlan,[\s\S]*?useDesignPagePersistenceNewPlanFacade\(\{[\s\S]*?pendingReplacement: pendingPlanTemplateReplacement[\s\S]*?clearHistory: \(\) => history\.clear\(\)[\s\S]*?clearPlanAnnotations: \(\) => setPlanAnnotations\(\[\]\)[\s\S]*?requestSignIn: signInWithReturn[\s\S]*?showToast: showRuleToast/,
-  "Workspace should consume the facade state/actions and wire history, annotation, sign-in, and toast collaborators."
+  /state: \{[\s\S]*?newPlan: \{ startingNewPlan, newPlanStartError \}[\s\S]*?actions: \{[\s\S]*?newPlan: \{[\s\S]*?openNewPlanPicker,[\s\S]*?saveCurrentAndStartNewPlan,[\s\S]*?useDesignPagePersistenceRegistration\(\{/,
+  "Workspace should consume the persistence registration's new-plan state and actions."
+);
+assert.match(
+  designPageSource,
+  /useDesignPagePersistenceRegistration\(\{[\s\S]*?pendingReplacement: pendingPlanTemplateReplacement[\s\S]*?requestSignIn: signInWithReturn,[\s\S]*?showToast: showRuleToast,[\s\S]*?clearPlanAnnotations: \(\) => setPlanAnnotations\(\[\]\)/,
+  "Workspace should wire replacement, sign-in, toast, and annotation collaborators into the registration."
+);
+assert.match(
+  persistenceRegistrationSource,
+  /useDesignPagePersistenceNewPlanFacade\(\{[\s\S]*?clearHistory: \(\) => history\.clear\(\)[\s\S]*?clearPlanAnnotations: actions\.clearPlanAnnotations/,
+  "The persistence registration should wire document history and annotation clearing into the new-plan facade."
 );
 assert.match(
   persistenceNewPlanFacadeSource,

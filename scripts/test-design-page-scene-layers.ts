@@ -45,6 +45,9 @@ const paywallRegistrationFacadeSource = readSource(
 const lateBoundRefSource = readSource(
   "lib/useDesignPageLateBoundRef.ts"
 );
+const persistenceRegistrationSource = readSource(
+  "lib/useDesignPagePersistenceRegistration.ts"
+);
 
 const assertSourceOrder = (
   source: string,
@@ -147,9 +150,17 @@ assertSourceOrder(
   [
     "useDesignPageLateBoundRef(resetSelectionStateRef",
     "useDesignPageSelectionInspectionRuntime({",
-    "useDesignPageLateBoundRef(localBackupPersistenceActionsRef",
+    "useDesignPagePersistenceRegistration({",
   ],
   "Late callback bridges should bind in dependency order"
+);
+assertSourceOrder(
+  persistenceRegistrationSource,
+  [
+    "useDesignPagePersistenceNewPlanFacade({",
+    "useDesignPageLateBoundRef(localBackupPersistenceActions",
+  ],
+  "Persistence should register before the local-backup bridge is rebound"
 );
 assertSourceOrder(
   selectionInspectionRuntimeSource,

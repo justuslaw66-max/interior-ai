@@ -42,8 +42,7 @@ import type {
 import { PRO_PLAN_PRICING } from "@/lib/pro-plan-catalog";
 import { useDesignPageLiveCatalog } from "@/lib/useDesignPageLiveCatalog";
 import { useDesignPageImportedModels } from "@/lib/useDesignPageImportedModels";
-import { useDesignPageLayoutVersionsController } from "@/lib/useDesignPageLayoutVersionsController";
-import { useDesignPageNamedCameraViewsController } from "@/lib/useDesignPageNamedCameraViewsController";
+import { useDesignPagePresentationStateRegistration } from "@/lib/useDesignPagePresentationStateRegistration";
 import { useDesignPageZoneController } from "@/lib/useDesignPageZoneController";
 import { useDesignPageItemDocumentController } from "@/lib/useDesignPageItemDocumentController";
 import { useDesignPageItemSelectionController } from "@/lib/useDesignPageItemSelectionController";
@@ -76,7 +75,7 @@ import {
   useDesignPageHistoryRevision,
   useDesignPageHistoryShortcuts,
 } from "@/lib/useDesignPageDocumentHistoryController";
-import { useDesignPagePersistenceNewPlanFacade } from "@/lib/useDesignPagePersistenceNewPlanFacade";
+import { useDesignPagePersistenceRegistration } from "@/lib/useDesignPagePersistenceRegistration";
 import { useDesignPageBetaStartController } from "@/lib/useDesignPageBetaStartController";
 import { useDesignPagePresentationQaFacade } from "@/lib/useDesignPagePresentationQaFacade";
 import {
@@ -408,7 +407,7 @@ export function DesignPageWorkspace() {
   } | null>(null);
   const snapshotDocumentController = useDesignPageSnapshotDocumentState();
   const {
-    state: { designSnapshot, localBackupHydrated },
+    state: { designSnapshot },
     actions: { setDesignSnapshot, setLocalBackupHydrated },
     refs: { designSnapshotRef },
   } = snapshotDocumentController;
@@ -452,7 +451,6 @@ export function DesignPageWorkspace() {
       house: housePlanController,
     },
     state: {
-      document: { currentStoredDesignFingerprint },
       floor: { hiddenFloorLevels, stackedFloorView },
     },
     derived: {
@@ -482,7 +480,6 @@ export function DesignPageWorkspace() {
       documentHistory: {
         history,
         getStoredDesignForPersistence,
-        fingerprintStoredDesign,
       },
     },
     actions: {
@@ -1219,43 +1216,30 @@ export function DesignPageWorkspace() {
     },
   } = useDesignPagePlanTracingFacade(planWorkspaceConfiguration.tracing);
   const {
-    state: { cameraViewNameInput },
+    state: { cameraViewNameInput, layoutVersionNameInput },
     actions: {
       setCameraViewNameInput,
       saveCurrentNamedView,
       deleteSavedCameraView,
       openSavedCameraView,
-    },
-  } = useDesignPageNamedCameraViewsController({
-    state: { cameraView },
-    configuration: {
-      maximumSavedViews: 6,
-      openTransitionDurationMs: 460,
-    },
-    refs: { designSnapshot: designSnapshotRef },
-    actions: {
-      setDesignSnapshot,
-      setLegacySavedViews: setSavedViews,
-      showToast: showRuleToast,
-      handleEditorViewModeChange,
-      transitionToCameraView,
-    },
-  });
-  const {
-    state: { layoutVersionNameInput },
-    actions: {
       setLayoutVersionNameInput,
       saveCurrentLayoutVersion,
       restoreRoomLayoutVersion,
       deleteRoomLayoutVersion,
     },
-  } = useDesignPageLayoutVersionsController({
+  } = useDesignPagePresentationStateRegistration({
+    state: { cameraView },
     refs: { designSnapshot: designSnapshotRef },
     actions: {
-      setDesignSnapshot,
-      history,
-      updateSelection,
-      showToast: showRuleToast,
+      document: { setDesignSnapshot },
+      camera: {
+        setLegacySavedViews: setSavedViews,
+        handleEditorViewModeChange,
+        transitionToCameraView,
+      },
+      history: { history },
+      selection: { updateSelection },
+      feedback: { showToast: showRuleToast },
     },
   });
 
@@ -1338,8 +1322,6 @@ export function DesignPageWorkspace() {
       persistence: {
         saveDesignToCloud,
         retrySaveStatus,
-        loadDesign,
-        clearPersistedSnapshotFingerprint,
         createShareLinkAndCopy,
         closeShareLinkFallback,
         copyFallbackShareLink,
@@ -1363,20 +1345,18 @@ export function DesignPageWorkspace() {
         saveCurrentAndStartNewPlan,
       },
     },
-  } = useDesignPagePersistenceNewPlanFacade({
+  } = useDesignPagePersistenceRegistration({
+    boundaries: {
+      snapshotDocument: snapshotDocumentController,
+      documentRoom: documentRoomRegistration,
+    },
     state: {
       identity: {
         designId,
         shareEnabled,
       },
       document: {
-        designSnapshot,
-        currentStoredDesignFingerprint,
-        items,
-        zones,
         savedViews,
-        roomWidth,
-        roomDepth,
         style,
         budget,
         mode,
@@ -1385,9 +1365,6 @@ export function DesignPageWorkspace() {
       session: {
         isAuthenticated: Boolean(session?.user),
         isDesigner,
-      },
-      lifecycle: {
-        localBackupHydrated,
       },
       newPlan: {
         pendingReplacement: pendingPlanTemplateReplacement,
@@ -1398,9 +1375,6 @@ export function DesignPageWorkspace() {
         setDesignId,
         setShareToken,
         setShareEnabled,
-        setDesignSnapshot,
-        hydratePersistedFloorPlanState,
-        clearHistory: () => history.clear(),
         setMode,
         setNotes,
         setSavedViews,
@@ -1418,25 +1392,14 @@ export function DesignPageWorkspace() {
         setDesignPanelCollapsed,
         cancelPendingReplacement: handleCancelPendingPlanTemplateReplacement,
         confirmPendingReplacement: handleConfirmPendingPlanTemplateReplacement,
-        clearHistory: () => history.clear(),
-        clearPlanAnnotations: () => setPlanAnnotations([]),
         requestSignIn: signInWithReturn,
         showToast: showRuleToast,
       },
-    },
-    configuration: {
-      storageKey: DESIGN_PAGE_LOCAL_BACKUP_STORAGE_KEY,
-      cloudSaveDelayMs: 900,
-      guestSaveDelayMs: 800,
+      clearPlanAnnotations: () => setPlanAnnotations([]),
     },
     refs: {
-      getStoredDesignForPersistence,
-      fingerprintStoredDesign,
+      localBackupPersistenceActions: localBackupPersistenceActionsRef,
     },
-  });
-  useDesignPageLateBoundRef(localBackupPersistenceActionsRef, {
-    loadDesign,
-    clearPersistedSnapshotFingerprint,
   });
 
   const walls = buildRoomWallDescriptors({

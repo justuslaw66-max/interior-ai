@@ -16,6 +16,10 @@ const facadeSource = fs.readFileSync(
   path.join(root, "lib", "useDesignPagePersistenceNewPlanFacade.ts"),
   "utf8"
 );
+const registrationSource = fs.readFileSync(
+  path.join(root, "lib", "useDesignPagePersistenceRegistration.ts"),
+  "utf8"
+);
 const zoneControllerSource = fs.readFileSync(
   path.join(root, "lib", "useDesignPageZoneController.ts"),
   "utf8"
@@ -27,7 +31,7 @@ const zoneOrchestrationSource = fs.readFileSync(
 
 assert.ok(
   pageSource.indexOf("useDesignPageZoneController({") <
-    pageSource.indexOf("useDesignPagePersistenceNewPlanFacade({"),
+    pageSource.indexOf("useDesignPagePersistenceRegistration({"),
   "Persistence effects must remain mounted after item and zone normalization."
 );
 assert.ok(
@@ -48,9 +52,9 @@ assert.match(
 );
 
 assert.match(
-  pageSource,
-  /useDesignPagePersistenceNewPlanFacade\(\{[\s\S]*?localBackupHydrated,[\s\S]*?cloudSaveDelayMs: 900,[\s\S]*?guestSaveDelayMs: 800/,
-  "The page should pass the hydration gate and preserve both debounce intervals."
+  registrationSource,
+  /useDesignPagePersistenceNewPlanFacade\(\{[\s\S]*?localBackupHydrated: snapshotDocument\.state\.localBackupHydrated[\s\S]*?cloudSaveDelayMs: 900,[\s\S]*?guestSaveDelayMs: 800/,
+  "The persistence registration should pass the hydration gate and preserve both debounce intervals."
 );
 
 assert.match(

@@ -24,20 +24,29 @@ const namedViewsControllerSource = readFileSync(
   join(root, "lib/useDesignPageNamedCameraViewsController.ts"),
   "utf8"
 );
+const presentationStateRegistrationSource = readFileSync(
+  join(root, "lib/useDesignPagePresentationStateRegistration.ts"),
+  "utf8"
+);
 const presentExportControllerSource = readFileSync(
   join(root, "lib/useDesignPagePresentExportController.ts"),
   "utf8"
 );
 
 assert.match(
-  workspaceSource,
-  /useDesignPageLayoutVersionsController\(\{[\s\S]*?refs:\s*\{[\s\S]*?actions:\s*\{/,
-  "The workspace should compose layout versions through grouped refs and actions."
+  presentationStateRegistrationSource,
+  /useDesignPageLayoutVersionsController\(\{[\s\S]*?refs,[\s\S]*?actions:\s*\{/,
+  "The presentation-state registration should compose layout versions through grouped refs and actions."
+);
+assert.match(
+  presentationStateRegistrationSource,
+  /useDesignPageNamedCameraViewsController\(\{[\s\S]*?state:\s*\{[\s\S]*?configuration:\s*\{[\s\S]*?refs,[\s\S]*?actions:\s*\{/,
+  "The presentation-state registration should compose named camera views through grouped contracts."
 );
 assert.match(
   workspaceSource,
-  /useDesignPageNamedCameraViewsController\(\{[\s\S]*?state:\s*\{[\s\S]*?configuration:\s*\{[\s\S]*?refs:\s*\{[\s\S]*?actions:\s*\{/,
-  "The workspace should compose named camera views through grouped contracts."
+  /useDesignPagePresentationStateRegistration\(\{[\s\S]*?state:\s*\{[\s\S]*?refs:\s*\{[\s\S]*?actions:\s*\{/,
+  "The workspace should compose room presentation state through the registration boundary."
 );
 assert.match(
   workspaceSource,
