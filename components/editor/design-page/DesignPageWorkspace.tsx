@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { LightingPreset } from "@/lib/lightingPresets";
@@ -16,10 +16,7 @@ import { DesignPageDialogLayer } from "@/components/editor/design-page/DesignPag
 import { DesignPagePanelRegion } from "@/components/editor/design-page/DesignPagePanelRegion";
 import { DesignPagePresentationQaLayer } from "@/components/editor/design-page/DesignPagePresentationQaLayer";
 import { DesignPageSceneRegion } from "@/components/editor/design-page/DesignPageSceneRegion";
-import {
-  useDesignPageCatalogPlacement,
-  type CatalogPlacementPreviewTarget,
-} from "@/lib/useDesignPageCatalogPlacement";
+import { useDesignPageCatalogPlacementRegistrationFacade } from "@/lib/useDesignPageCatalogPlacementRegistrationFacade";
 import { useDesignPageCameraWorkspaceFacade } from "@/lib/useDesignPageCameraWorkspaceFacade";
 import { useDesignPageAiPanelRegistrationFacade } from "@/lib/useDesignPageAiPanelRegistrationFacade";
 import { useDesignPageSceneItemDrag } from "@/lib/useDesignPageSceneItemDrag";
@@ -48,8 +45,6 @@ import { useDesignPageImportedModels } from "@/lib/useDesignPageImportedModels";
 import { useDesignPageLayoutVersionsController } from "@/lib/useDesignPageLayoutVersionsController";
 import { useDesignPageNamedCameraViewsController } from "@/lib/useDesignPageNamedCameraViewsController";
 import { useDesignPageZoneController } from "@/lib/useDesignPageZoneController";
-import { useDesignPagePlacementRoomQueries } from "@/lib/useDesignPagePlacementRoomQueries";
-import { useDesignPageCrossRoomItemTransfer } from "@/lib/useDesignPageCrossRoomItemTransfer";
 import { useDesignPageItemDocumentController } from "@/lib/useDesignPageItemDocumentController";
 import { useDesignPageItemSelectionController } from "@/lib/useDesignPageItemSelectionController";
 import { useDesignPageSceneRoomReadRegistration } from "@/lib/useDesignPageSceneRoomReadRegistration";
@@ -91,9 +86,6 @@ import {
   useDesignPageWorkspaceDeferredPaywallRegistration,
   useDesignPageWorkspacePaywallRegistration,
 } from "@/lib/useDesignPagePaywallRegistrationFacade";
-import {
-  isParametricCabinetItem,
-} from "@/features/cabinetry/designItemAdapters";
 import { useDesignPageCabinetryRegistrationFacade } from "@/lib/useDesignPageCabinetryRegistrationFacade";
 
 const DEFAULT_EDITOR_CAMERA_VIEW: CameraView = {
@@ -1539,158 +1531,114 @@ export function DesignPageWorkspace() {
     data: aiNotesData,
   } = aiNotesState;
 
-  const placementRoomQueries = useDesignPagePlacementRoomQueries({
-    configuration: { houseRoomById },
-    actions: { getItemAABB },
-  });
+  const catalogPlacementRegistration =
+    useDesignPageCatalogPlacementRegistrationFacade({
+      state: { crossRoomDragTarget },
+      configuration: {
+        activeRoom,
+        activeRoomId: designSnapshot.activeRoomId,
+        rooms: designSnapshot.rooms,
+        roomSnapshotById,
+        houseRoomById,
+        planOpenings,
+        roomWidth,
+        roomDepth,
+        wallThickness,
+        placementAddMode,
+        hasWholeHousePlan,
+        catalogCanvasDragDisabled:
+          isClientPreview || editorMode === "present",
+      },
+      refs: {
+        designSnapshot: designSnapshotRef,
+        activeItems: itemsRef,
+        dragCommit: dragCommitRef,
+      },
+      actions: {
+        getActiveItems: getActiveCatalogPlacementItems,
+        getActiveRoomId: getActiveCatalogPlacementRoomId,
+        getRooms: getCatalogPlacementRooms,
+        getItemAABB,
+        getPlanningDimensions: resolveConfiguredPlanningDimsMm,
+        commitItemsToRoom,
+        selectItems: selectCatalogPlacementItems,
+        createInstanceId: newInstanceId,
+        showToast: showRuleToast,
+        clampToActiveRoom,
+        resolveGroundPointFromClient,
+        findPlanRoomAtWorldPoint,
+        nudgeCameraForDrag: nudgeWholeHomeCameraForDrag,
+        setCanvasObjectDragging: setSofaDragging,
+        setCrossRoomDragTarget,
+        setDesignSnapshot,
+        updateSelection,
+        history,
+      },
+    });
   const {
-    clampToCatalogPlacementRoom,
-    catalogPlacementCollidesInRoom,
-    findCatalogPlacementBlockerInRoom,
-    isCatalogPlacementContainedInRoom,
-  } = placementRoomQueries.queries;
-
-  const getItemDisplayName = useCallback((item: DesignItem | null | undefined) => {
-    if (!item) return null;
-    if (isParametricCabinetItem(item)) return item.name ?? item.cabinetDefinition.name;
-    return CATALOG_ITEMS[item.productId]?.title ?? "another item";
-  }, []);
-
-  const setCatalogPlacementPreviewTarget = useCallback(
-    (target: CatalogPlacementPreviewTarget | null) => {
-      setCrossRoomDragTarget((current) => {
-        if (target) return target;
-        return current?.kind === "preview" ? null : current;
-      });
+    boundaries: {
+      roomQueries: placementRoomQueries,
+      catalogPlacement: catalogPlacementController,
+      crossRoomTransfer: crossRoomTransferController,
     },
-    []
-  );
-  const catalogPlacementController = useDesignPageCatalogPlacement({
-    configuration: {
-      activeRoom,
-      activeRoomId: designSnapshot.activeRoomId,
-      rooms: designSnapshot.rooms,
-      roomSnapshotById,
-      houseRoomById,
-      planOpenings,
-      roomWidth,
-      roomDepth,
-      wallThickness,
-      placementAddMode,
-      hasWholeHousePlan,
-      catalogCanvasDragDisabled: isClientPreview || editorMode === "present",
-    },
-    adapters: {
-      getActiveItems: getActiveCatalogPlacementItems,
-      getActiveRoomId: getActiveCatalogPlacementRoomId,
-      getRooms: getCatalogPlacementRooms,
-      getItemAABB,
-      getItemDisplayName,
-      getPlanningDimensions: resolveConfiguredPlanningDimsMm,
-      commitItemsToRoom,
-      selectItems: selectCatalogPlacementItems,
-      createInstanceId: newInstanceId,
-      showToast: showRuleToast,
-      clampToActiveRoom,
-      clampToCatalogPlacementRoom,
-      catalogPlacementCollidesInRoom,
-      findCatalogPlacementBlockerInRoom,
-      isCatalogPlacementContainedInRoom,
-      resolveGroundPointFromClient,
-      findPlanRoomAtWorldPoint,
-      nudgeCameraForDrag: nudgeWholeHomeCameraForDrag,
-      setCanvasObjectDragging: setSofaDragging,
-      setPreviewTarget: setCatalogPlacementPreviewTarget,
-    },
-  });
-  const {
-    pendingPlacement: pendingCatalogPlacement,
-    hoverPlacement: hoverCatalogPlacement,
-  } = catalogPlacementController.state;
-  const {
-    pendingCatalogPlacementScene,
-    hoverCatalogPlacementScene,
-    activeCatalogPlacementSurfaceHighlight,
-    pendingCatalogPlacementRoom,
-    activePlacementCompatibleZoneIds,
-    circulationHeatmap,
-  } = catalogPlacementController.scene;
-  const {
-    pendingCatalogPlacementBlocked,
-    restorableCatalogPlacement,
-    pendingCatalogPlacementScore,
-    pendingCatalogPlacementQuality,
-    pendingCatalogPlacementImprovement,
-    pendingCatalogBestRoomPlacement,
-    pendingCatalogBestVariantPlacement,
-    pendingCatalogPlacementHardInvalid,
-    pendingCatalogPlacementStatusLabel,
-    shouldConfirmImprovedCatalogPlacement,
-    shouldConfirmRestoredCatalogPlacement,
-  } = catalogPlacementController.assessment;
-  const {
-    targetPendingCatalogPlacementToRoom:
-      targetPendingCatalogPlacementToRoomAction,
-    rotatePendingCatalogPlacement,
-    nudgePendingCatalogPlacement,
-    centerPendingCatalogPlacement,
-    autoPlacePendingCatalogPlacement,
-    improvePendingCatalogPlacement,
-    restoreLastValidCatalogPlacement,
-    movePendingCatalogPlacementToBestRoom:
-      movePendingCatalogPlacementToBestRoomAction,
-    switchPendingCatalogPlacementToBestOption,
-    addCatalogItemDirectlyToRoom,
-    addCatalogItemToRoom,
-    previewCatalogPlacementIntent,
-    selectPendingCatalogPlacementBlocker,
-    placePendingCatalogBesideBlocker,
-    trySmallerPendingCatalogVariant,
-    movePendingCatalogBlockerAside,
-    swapPendingCatalogWithBlocker,
-    confirmPendingCatalogPlacement,
-    cancelPendingCatalogPlacement,
-    handleCatalogPlacementPointerDown,
-    handleCatalogPlacementPointerMove,
-    handleCatalogPlacementPointerUp,
-    handleCatalogCanvasDragOver,
-    handleCatalogCanvasDrop,
-    handleCatalogCanvasDragLeave,
-  } = catalogPlacementController.actions;
-
-  const placementTargetRoomId =
-    pendingCatalogPlacement?.roomId ?? crossRoomDragTarget?.roomId ?? null;
-  const placementTargetPlanRoom = useMemo(
-    () =>
-      placementTargetRoomId
-        ? houseRoomById.get(placementTargetRoomId) ?? null
-        : null,
-    [houseRoomById, placementTargetRoomId]
-  );
-  const placementTargetRoom = placementTargetRoomId
-    ? roomSnapshotById.get(placementTargetRoomId) ?? null
-    : null;
-
-  const crossRoomTransferController = useDesignPageCrossRoomItemTransfer({
-    configuration: { houseRoomById },
-    refs: {
-      designSnapshot: designSnapshotRef,
-      activeItems: itemsRef,
-      dragCommit: dragCommitRef,
+    state: { pendingCatalogPlacement, hoverCatalogPlacement },
+    derived: {
+      pendingCatalogPlacementScene,
+      hoverCatalogPlacementScene,
+      activeCatalogPlacementSurfaceHighlight,
+      pendingCatalogPlacementRoom,
+      activePlacementCompatibleZoneIds,
+      circulationHeatmap,
+      pendingCatalogPlacementBlocked,
+      restorableCatalogPlacement,
+      pendingCatalogPlacementScore,
+      pendingCatalogPlacementQuality,
+      pendingCatalogPlacementImprovement,
+      pendingCatalogBestRoomPlacement,
+      pendingCatalogBestVariantPlacement,
+      pendingCatalogPlacementHardInvalid,
+      pendingCatalogPlacementStatusLabel,
+      shouldConfirmImprovedCatalogPlacement,
+      shouldConfirmRestoredCatalogPlacement,
+      placementTargetRoomId,
+      placementTargetPlanRoom,
+      placementTargetRoom,
     },
     actions: {
-      getPlanningDimensions: resolveConfiguredPlanningDimsMm,
       clampToCatalogPlacementRoom,
-      isCatalogPlacementContainedInRoom,
       findCatalogPlacementBlockerInRoom,
+      isCatalogPlacementContainedInRoom,
       getItemDisplayName,
-      setDesignSnapshot,
-      updateSelection,
-      history,
-      showToast: showRuleToast,
+      targetPendingCatalogPlacementToRoom:
+        targetPendingCatalogPlacementToRoomAction,
+      rotatePendingCatalogPlacement,
+      nudgePendingCatalogPlacement,
+      centerPendingCatalogPlacement,
+      autoPlacePendingCatalogPlacement,
+      improvePendingCatalogPlacement,
+      restoreLastValidCatalogPlacement,
+      movePendingCatalogPlacementToBestRoom:
+        movePendingCatalogPlacementToBestRoomAction,
+      switchPendingCatalogPlacementToBestOption,
+      addCatalogItemDirectlyToRoom,
+      addCatalogItemToRoom,
+      previewCatalogPlacementIntent,
+      selectPendingCatalogPlacementBlocker,
+      placePendingCatalogBesideBlocker,
+      trySmallerPendingCatalogVariant,
+      movePendingCatalogBlockerAside,
+      swapPendingCatalogWithBlocker,
+      confirmPendingCatalogPlacement,
+      cancelPendingCatalogPlacement,
+      handleCatalogPlacementPointerDown,
+      handleCatalogPlacementPointerMove,
+      handleCatalogPlacementPointerUp,
+      handleCatalogCanvasDragOver,
+      handleCatalogCanvasDrop,
+      handleCatalogCanvasDragLeave,
+      transferItemToRoom,
     },
-  });
-  const { transferItemToRoom } = crossRoomTransferController.actions;
+  } = catalogPlacementRegistration;
 
   const canEditPlanGeometry = !isClientPreview;
   const placementTargetingController = useDesignPageSurfaceTargetingFacade({

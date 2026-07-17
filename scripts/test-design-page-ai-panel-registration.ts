@@ -57,7 +57,7 @@ assertSourceOrder(
   [
     "buildRoomWallDescriptors({",
     "useDesignPageAiPanelRegistrationFacade({",
-    "useDesignPagePlacementRoomQueries({",
+    "useDesignPageCatalogPlacementRegistrationFacade({",
   ],
   "The facade should remain in the original workspace registration slot"
 );
