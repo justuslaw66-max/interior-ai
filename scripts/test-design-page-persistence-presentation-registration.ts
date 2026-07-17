@@ -15,6 +15,9 @@ const presentationRegistrationSource = readSource(
 const persistenceRegistrationSource = readSource(
   "lib/useDesignPagePersistenceRegistration.ts"
 );
+const editorInteractionRegistrationSource = readSource(
+  "lib/useDesignPageEditorInteractionRegistration.ts"
+);
 
 const assertSourceOrder = (
   source: string,
@@ -32,13 +35,20 @@ const assertSourceOrder = (
 assertSourceOrder(
   workspaceSource,
   [
-    "useDesignPagePresentationStateRegistration({",
-    "useDesignPageZoneController({",
-    "updateCameraViewFromScene();",
+    "useDesignPageEditorInteractionRegistration({",
     "useDesignPagePersistenceRegistration({",
     "buildRoomWallDescriptors({",
   ],
-  "Workspace should preserve presentation, zone, scene sync, persistence, and wall registration order"
+  "Workspace should preserve interaction, persistence, and wall registration order"
+);
+assertSourceOrder(
+  editorInteractionRegistrationSource,
+  [
+    "useDesignPagePresentationStateRegistration({",
+    "useDesignPageZoneController({",
+    "updateCameraViewFromScene();",
+  ],
+  "Editor interaction should preserve presentation, zone, and scene sync order"
 );
 assertSourceOrder(
   presentationRegistrationSource,

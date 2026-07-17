@@ -37,6 +37,10 @@ const planWorkspaceFacadeSource = readFileSync(
   join(root, "lib/useDesignPagePlanWorkspaceFacade.ts"),
   "utf8"
 );
+const planAuthoringRegistrationSource = readFileSync(
+  join(root, "lib/useDesignPagePlanAuthoringRegistration.ts"),
+  "utf8"
+);
 
 assert.match(
   planEditingFacadeSource,
@@ -45,9 +49,9 @@ assert.match(
 );
 assert.match(planWorkspaceFacadeSource, /useDesignPagePlanEditingFacade\(\{/);
 assert.match(
-  workspaceSource,
+  planAuthoringRegistrationSource,
   /useDesignPagePlanWorkspaceRegistrationFacade\(\{/,
-  "The workspace should register the grouped plan boundary through its controller adapter."
+  "Plan authoring should register the grouped plan boundary through its controller adapter."
 );
 assert.doesNotMatch(
   workspaceSource,

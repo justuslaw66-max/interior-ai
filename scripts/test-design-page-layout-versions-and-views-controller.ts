@@ -28,6 +28,10 @@ const presentationStateRegistrationSource = readFileSync(
   join(root, "lib/useDesignPagePresentationStateRegistration.ts"),
   "utf8"
 );
+const editorInteractionRegistrationSource = readFileSync(
+  join(root, "lib/useDesignPageEditorInteractionRegistration.ts"),
+  "utf8"
+);
 const presentExportControllerSource = readFileSync(
   join(root, "lib/useDesignPagePresentExportController.ts"),
   "utf8"
@@ -44,9 +48,9 @@ assert.match(
   "The presentation-state registration should compose named camera views through grouped contracts."
 );
 assert.match(
-  workspaceSource,
+  editorInteractionRegistrationSource,
   /useDesignPagePresentationStateRegistration\(\{[\s\S]*?state:\s*\{[\s\S]*?refs:\s*\{[\s\S]*?actions:\s*\{/,
-  "The workspace should compose room presentation state through the registration boundary."
+  "Editor interaction should compose room presentation state through the registration boundary."
 );
 assert.match(
   workspaceSource,

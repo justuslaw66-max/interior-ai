@@ -34,6 +34,14 @@ const cameraWorkspaceFacadeSource = fs.readFileSync(
   ),
   "utf8"
 );
+const editorInteractionRegistrationSource = fs.readFileSync(
+  path.join(
+    process.cwd(),
+    "lib",
+    "useDesignPageEditorInteractionRegistration.ts"
+  ),
+  "utf8"
+);
 const placementTargetControllerSource = fs.readFileSync(
   path.join(
     process.cwd(),
@@ -387,9 +395,14 @@ assert.match(
   "The camera workspace facade should preserve the canvas interaction controller's navigation lock boundary."
 );
 assert.match(
+  editorInteractionRegistrationSource,
+  /const camera = useDesignPageCameraWorkspaceFacade\(\{/,
+  "Editor interaction should own the camera workspace registration."
+);
+assert.match(
   designPageSource,
-  /const cameraWorkspace = useDesignPageCameraWorkspaceFacade\(\{[\s\S]*?controlsEnabled: canvasControlsEnabled,[\s\S]*?changePlanRoomDragging: handlePlanRoomDragStateChange,[\s\S]*?changePlanRoomResizing: handlePlanRoomResizeStateChange/,
-  "The design page should consume the facade-owned room drag locks."
+  /camera: cameraWorkspace,[\s\S]*?controlsEnabled: canvasControlsEnabled,[\s\S]*?changePlanRoomDragging: handlePlanRoomDragStateChange,[\s\S]*?changePlanRoomResizing: handlePlanRoomResizeStateChange/,
+  "The design page should consume the registered facade-owned room drag locks."
 );
 assert.match(
   designPageSource,

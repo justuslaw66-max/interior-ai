@@ -40,13 +40,17 @@ const planWorkspaceFacadeSource = readFileSync(
   join(root, "lib/useDesignPagePlanWorkspaceFacade.ts"),
   "utf8"
 );
+const planAuthoringRegistrationSource = readFileSync(
+  join(root, "lib/useDesignPagePlanAuthoringRegistration.ts"),
+  "utf8"
+);
 
 assert.match(planEditingFacadeSource, /useDesignPagePlanQualityController\(\{/);
 assert.match(planWorkspaceFacadeSource, /useDesignPagePlanEditingFacade\(\{/);
 assert.match(
-  workspaceSource,
+  planAuthoringRegistrationSource,
   /useDesignPagePlanWorkspaceRegistrationFacade\(\{/,
-  "The workspace should register the grouped plan boundary through its controller adapter."
+  "Plan authoring should register the grouped plan boundary through its controller adapter."
 );
 for (const contract of ["state", "configuration", "refs", "actions"]) {
   assert.match(
@@ -130,9 +134,9 @@ assert.match(
   "The review panel should retain measured sizing and cleanup."
 );
 assert.match(
-  workspaceSource,
+  planAuthoringRegistrationSource,
   /reviewPanelTopPx: 76,[\s\S]*?collapsedReviewPanelFallbackHeightPx: 56,[\s\S]*?expandedReviewPanelFallbackHeightPx: 252,/,
-  "The workspace should preserve the review panel layout values."
+  "Plan authoring should preserve the review panel layout values."
 );
 
 assert.match(

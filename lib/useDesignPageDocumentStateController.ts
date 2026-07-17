@@ -184,6 +184,9 @@ export function useDesignPagePlanDocumentState() {
   );
 
   const defaultPlanOpeningsSeededRef = useRef(false);
+  const markDefaultPlanOpeningsSeeded = useCallback(() => {
+    defaultPlanOpeningsSeededRef.current = true;
+  }, []);
 
   return {
     state: {
@@ -213,6 +216,7 @@ export function useDesignPagePlanDocumentState() {
       setExportStylePreset,
       setPlanGuidedActionsEnabled,
       setPlanGuidedActionsChoiceSeen,
+      markDefaultPlanOpeningsSeeded,
     },
     refs: {
       planOpeningsRef,

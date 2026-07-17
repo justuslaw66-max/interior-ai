@@ -36,6 +36,9 @@ const planPresentationSource = readSource(
 const planWorkspaceFacadeSource = readSource(
   "lib/useDesignPagePlanWorkspaceFacade.ts"
 );
+const planAuthoringRegistrationSource = readSource(
+  "lib/useDesignPagePlanAuthoringRegistration.ts"
+);
 const normalizedWorkspace = normalizeWhitespace(workspaceSource);
 const normalizedViewportOverlay = normalizeWhitespace(viewportOverlaySource);
 const normalizedViewportAdapter = normalizeWhitespace(viewportAdapterSource);
@@ -59,9 +62,9 @@ assert.match(
   "The plan workspace facade should retain presentation-model ownership."
 );
 assert.match(
-  workspaceSource,
+  planAuthoringRegistrationSource,
   /useDesignPagePlanWorkspaceRegistrationFacade\(\{/,
-  "The workspace should compose the grouped plan boundary."
+  "Plan authoring should compose the grouped plan boundary."
 );
 assert.ok(
   normalizedWorkspace.includes("planCanvas: planCanvasOverlaysState"),

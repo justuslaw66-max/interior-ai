@@ -20,6 +20,10 @@ const registrationSource = fs.readFileSync(
   path.join(root, "lib", "useDesignPagePersistenceRegistration.ts"),
   "utf8"
 );
+const editorInteractionRegistrationSource = fs.readFileSync(
+  path.join(root, "lib", "useDesignPageEditorInteractionRegistration.ts"),
+  "utf8"
+);
 const zoneControllerSource = fs.readFileSync(
   path.join(root, "lib", "useDesignPageZoneController.ts"),
   "utf8"
@@ -30,9 +34,14 @@ const zoneOrchestrationSource = fs.readFileSync(
 );
 
 assert.ok(
-  pageSource.indexOf("useDesignPageZoneController({") <
+  pageSource.indexOf("useDesignPageEditorInteractionRegistration({") <
     pageSource.indexOf("useDesignPagePersistenceRegistration({"),
-  "Persistence effects must remain mounted after item and zone normalization."
+  "Persistence effects must remain mounted after editor interaction registration."
+);
+assert.match(
+  editorInteractionRegistrationSource,
+  /useDesignPageZoneController\(\{/,
+  "Editor interaction must retain zone normalization before persistence mounts."
 );
 assert.ok(
   facadeSource.indexOf("useDesignPagePersistence({") >= 0 &&

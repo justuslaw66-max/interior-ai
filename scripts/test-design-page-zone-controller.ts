@@ -27,6 +27,9 @@ const viewportOverlaySource = readSource(
   "components/editor/design-page/DesignPageViewportOverlayLayer.tsx"
 );
 const controllerSource = readSource("lib/useDesignPageZoneController.ts");
+const editorInteractionRegistrationSource = readSource(
+  "lib/useDesignPageEditorInteractionRegistration.ts"
+);
 const orchestrationSource = readSource("lib/design-page-zone-orchestration.ts");
 const onboardingSource = readSource("lib/useDesignPageOnboarding.ts");
 const onboardingRegistrationSource = readSource(
@@ -35,13 +38,15 @@ const onboardingRegistrationSource = readSource(
 const clientLifecycleSource = readSource(
   "lib/useDesignPageEditorClientLifecycle.ts"
 );
-const normalizedWorkspace = normalizeWhitespace(workspaceSource);
 const normalizedController = normalizeWhitespace(controllerSource);
+const normalizedEditorInteractionRegistration = normalizeWhitespace(
+  editorInteractionRegistrationSource
+);
 
 assert.match(
-  workspaceSource,
+  editorInteractionRegistrationSource,
   /useDesignPageZoneController\(\{[\s\S]*?state:\s*\{[\s\S]*?configuration:\s*\{[\s\S]*?refs:\s*\{[\s\S]*?actions:\s*\{/,
-  "Workspace should compose the zone controller through grouped contracts."
+  "Editor interaction should compose the zone controller through grouped contracts."
 );
 
 for (const contractName of [
@@ -232,10 +237,10 @@ assert.match(
   "Ungroup should persist active-room zones and preserve history/selection ordering."
 );
 assert.ok(
-  normalizedWorkspace.includes(
-    "seatingZoneAutoDisabled: seatingZoneAutoDisabledRef"
+  normalizedEditorInteractionRegistration.includes(
+    "seatingZoneAutoDisabled: coreShell.refs.seatingZoneAutoDisabledRef"
   ),
-  "Workspace should pass the hydrated disable ref into the controller."
+  "Editor interaction should pass the core shell's hydrated disable ref into the controller."
 );
 
 assert.match(

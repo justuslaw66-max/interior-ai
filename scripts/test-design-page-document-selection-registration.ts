@@ -72,9 +72,9 @@ assertSourceOrder(
     "useDesignPageDocumentSelectionRegistrationFacade({",
     "useDesignPagePresentationBackupRegistrationFacade({",
     "useDesignPageWorkspaceDeferredPaywallRegistration({",
-    "useDesignPageSelectionInspectionRuntime({",
+    "useDesignPagePlanAuthoringRegistration({",
   ],
-  "Workspace should preserve core, document, hydration, paywall, and inspection order"
+  "Workspace should preserve core, document, hydration, paywall, and authoring order"
 );
 
 for (const source of [documentRegistrationSource, presentationBackupSource]) {

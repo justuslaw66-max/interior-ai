@@ -25,6 +25,14 @@ const planWorkspaceFacadeSource = fs.readFileSync(
   path.join(process.cwd(), "lib", "useDesignPagePlanWorkspaceFacade.ts"),
   "utf8"
 );
+const planAuthoringRegistrationSource = fs.readFileSync(
+  path.join(
+    process.cwd(),
+    "lib",
+    "useDesignPagePlanAuthoringRegistration.ts"
+  ),
+  "utf8"
+);
 const cameraControllerPath = path.join(
   process.cwd(),
   "lib",
@@ -397,9 +405,9 @@ assert.match(
   "The plan workspace underlay boundary should delegate to the established controller."
 );
 assert.match(
-  designPageSource,
-  /useDesignPagePlanUnderlayFacade\(planWorkspaceConfiguration\.underlay\)/,
-  "The workspace should keep underlay registration at its deferred plan-facade slot."
+  planAuthoringRegistrationSource,
+  /useDesignPagePlanUnderlayFacade\([\s\S]*?planWorkspace\.configuration\.underlay/,
+  "Plan authoring should keep underlay registration at its deferred plan-facade slot."
 );
 
 assert.match(

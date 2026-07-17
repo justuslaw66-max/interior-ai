@@ -48,6 +48,9 @@ const clientLifecycleSource = readSource(
 const selectionInspectionRuntimeSource = readSource(
   "lib/useDesignPageSelectionInspectionRuntime.ts"
 );
+const planAuthoringRegistrationSource = readSource(
+  "lib/useDesignPagePlanAuthoringRegistration.ts"
+);
 const paywallRegistrationFacadeSource = readSource(
   "lib/useDesignPagePaywallRegistrationFacade.ts"
 );
@@ -104,9 +107,17 @@ assertSourceOrder(
   [
     "useDesignPagePresentationBackupRegistrationFacade({",
     "useDesignPageWorkspaceDeferredPaywallRegistration({",
-    "if (!planSettingsLoaded)",
+    "useDesignPagePlanAuthoringRegistration({",
   ],
   "Workspace should preserve deferred paywall registration order"
+);
+assertSourceOrder(
+  planAuthoringRegistrationSource,
+  [
+    "if (!planSettingsLoaded)",
+    "useDesignPageSelectionInspectionRuntime({",
+  ],
+  "Plan authoring should seed default openings before selection inspection"
 );
 assert.match(
   presentationBackupRegistrationSource,
@@ -177,14 +188,14 @@ assertSourceOrder(
   workspaceSource,
   [
     "useDesignPageDocumentSelectionRegistrationFacade({",
-    "useDesignPageSelectionInspectionRuntime({",
+    "useDesignPagePlanAuthoringRegistration({",
     "useDesignPagePersistenceRegistration({",
   ],
   "Late callback bridges should bind in dependency order"
 );
 assert.match(
   documentSelectionRegistrationSource,
-  /useDesignPageLateBoundRef\([\s\S]*?resetSelectionStateRef/,
+  /useDesignPageLateBoundRef\([\s\S]*?itemSelection\.actions\.resetSelectionState/,
   "Document registration should bind the selection reset bridge before downstream inspection."
 );
 assertSourceOrder(

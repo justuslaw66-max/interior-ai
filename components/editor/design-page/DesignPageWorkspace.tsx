@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import { isPro } from "@/lib/plan";
 import { track } from "@/lib/analytics";
@@ -11,11 +11,9 @@ import { DesignPagePanelRegion } from "@/components/editor/design-page/DesignPag
 import { DesignPagePresentationQaLayer } from "@/components/editor/design-page/DesignPagePresentationQaLayer";
 import { DesignPageSceneRegion } from "@/components/editor/design-page/DesignPageSceneRegion";
 import { useDesignPageCatalogPlacementRegistrationFacade } from "@/lib/useDesignPageCatalogPlacementRegistrationFacade";
-import { useDesignPageCameraWorkspaceFacade } from "@/lib/useDesignPageCameraWorkspaceFacade";
 import { useDesignPageAiPanelRegistrationFacade } from "@/lib/useDesignPageAiPanelRegistrationFacade";
 import { useDesignPageCoreShellRegistration } from "@/lib/useDesignPageCoreShellRegistration";
 import { useDesignPageSceneItemDrag } from "@/lib/useDesignPageSceneItemDrag";
-import { useDesignPageSurfaceWorkspaceFacade } from "@/lib/useDesignPageSurfaceWorkspaceFacade";
 import { useDesignPageSurfaceTargetingFacade } from "@/lib/useDesignPageSurfaceTargetingFacade";
 import { useDesignPageOnboardingRegistrationFacade } from "@/lib/useDesignPageOnboardingRegistrationFacade";
 import { buildDesignPageSceneRegionAdapter } from "@/lib/design-page-scene-region-adapter";
@@ -24,48 +22,25 @@ import { composeDesignPageSceneRegionModel } from "@/lib/design-page-viewport-re
 import { buildDesignPageDialogLayerAdapter } from "@/lib/design-page-dialog-layer-adapter";
 import { buildDesignPagePanelRegistration } from "@/lib/design-page-panel-registration";
 import { buildDesignPageDialogLayerModel } from "@/lib/design-page-dialog-layer-model";
-import type { CameraView } from "@/lib/design-page-types";
+import {
+  DEFAULT_EDITOR_CAMERA_VIEW,
+  EDITOR_3D_MAX_POLAR_ANGLE,
+  EDITOR_3D_MIN_CAMERA_DISTANCE,
+  EDITOR_3D_MIN_POLAR_ANGLE,
+  PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX,
+} from "@/lib/design-page-editor-configuration";
 import { PRO_PLAN_PRICING } from "@/lib/pro-plan-catalog";
-import { useDesignPagePresentationStateRegistration } from "@/lib/useDesignPagePresentationStateRegistration";
-import { useDesignPageZoneController } from "@/lib/useDesignPageZoneController";
 import { useDesignPageCommerceActions } from "@/lib/useDesignPageCommerceActions";
 import { useDesignPagePresentationBackupRegistrationFacade } from "@/lib/useDesignPagePresentationBackupRegistrationFacade";
-import {
-  useDesignPagePlanTracingFacade,
-  useDesignPagePlanUnderlayFacade,
-} from "@/lib/useDesignPagePlanWorkspaceFacade";
-import { useDesignPagePlanWorkspaceRegistrationFacade } from "@/lib/useDesignPagePlanWorkspaceRegistrationFacade";
 import { useDesignPagePlacementSelectionWorkspaceFacade } from "@/lib/useDesignPagePlacementSelectionWorkspaceFacade";
 import { useDesignPageDocumentSelectionRegistrationFacade } from "@/lib/useDesignPageDocumentSelectionRegistrationFacade";
-import { useDesignPageSelectionInspectionRuntime } from "@/lib/useDesignPageSelectionInspectionRuntime";
+import { useDesignPagePlanAuthoringRegistration } from "@/lib/useDesignPagePlanAuthoringRegistration";
+import { useDesignPageEditorInteractionRegistration } from "@/lib/useDesignPageEditorInteractionRegistration";
 import { buildRoomWallDescriptors } from "@/lib/design-page-wall-descriptors";
 import { useDesignPagePersistenceRegistration } from "@/lib/useDesignPagePersistenceRegistration";
 import { useDesignPagePresentationQaFacade } from "@/lib/useDesignPagePresentationQaFacade";
 import { useDesignPageWorkspaceDeferredPaywallRegistration } from "@/lib/useDesignPagePaywallRegistrationFacade";
 import { useDesignPageCabinetryRegistrationFacade } from "@/lib/useDesignPageCabinetryRegistrationFacade";
-
-const DEFAULT_EDITOR_CAMERA_VIEW: CameraView = {
-  pos: [6.2, 3.6, 7.2],
-  target: [0, 1.0, 0],
-  fov: 45,
-};
-const EDITOR_3D_MIN_CAMERA_DISTANCE = 1.4;
-const EDITOR_3D_MIN_POLAR_ANGLE = 0.02;
-const EDITOR_3D_MAX_POLAR_ANGLE = Math.PI - 0.02;
-const PLAN_FLOATING_OVERLAY_DESKTOP_MIN_WIDTH = 1024;
-const PLAN_FLOATING_OVERLAY_STACK_RIGHT_PX = 4;
-const PLAN_FLOATING_OVERLAY_INSPECTOR_STACK_TOP_PX = 324;
-const PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX = 264;
-const PLAN_FLOATING_OVERLAY_STACK_GAP_PX = 8;
-const SIMPLE_PLAN_LAYERS = {
-  grid: false,
-  dimensions: true,
-  labels: true,
-  openings: true,
-  builtIns: true,
-  zones: false,
-  annotations: false,
-};
 
 export function DesignPageWorkspace() {
   const coreShellRegistration = useDesignPageCoreShellRegistration({
@@ -98,7 +73,6 @@ export function DesignPageWorkspace() {
         isDesigner,
         isClientPreview,
         showDesignerTheme,
-        liveCatalogReady,
         canEdit,
       },
       paywall: {
@@ -125,10 +99,8 @@ export function DesignPageWorkspace() {
       document: { setDesignSnapshot },
     },
     refs: {
-      seatingZoneAutoDisabledRef,
       itemsRef,
       localBackupPersistenceActionsRef,
-      localBackupPlanningResolverRef,
       designSnapshotRef,
     },
   } = coreShellRegistration;
@@ -150,7 +122,6 @@ export function DesignPageWorkspace() {
         itemCart,
         designPanelOpen,
         designPanelCollapsed,
-        dismissedPlanCanvasGuidanceKey,
       },
     },
     derived: {
@@ -190,11 +161,8 @@ export function DesignPageWorkspace() {
   } = coreShellBaseRegistration;
   const {
     boundaries: {
-      planViewport: planViewportRuntime,
-      editorShell: editorShellRuntime,
       planDocument: planDocumentController,
       floorPlanDocument: floorPlanDocumentController,
-      cameraBridge,
       surfaceState: surfaceStateController,
     },
     state: {
@@ -208,8 +176,6 @@ export function DesignPageWorkspace() {
         planMeasurementUnit,
         exportStylePreset,
         planGuidedActionsEnabled,
-        planOpeningsStorageState,
-        planSettingsLoaded,
       },
       floorPlan: {
         floorPlanUnderlay,
@@ -234,7 +200,6 @@ export function DesignPageWorkspace() {
       shopping: { shoppingReadinessFilter, hoveredCartInstanceId },
       surface: {
         activeSurfaceTarget,
-        selectedWallSurfaceTarget,
         selectedRendererSurfaceTarget,
         surfaceBrushActive,
         surfaceBrushMaterialId,
@@ -256,17 +221,11 @@ export function DesignPageWorkspace() {
         setExportStylePreset,
         setPlanGuidedActionsEnabled,
         setPlanGuidedActionsChoiceSeen,
-        setSelectedPlanOverlayId,
         setSelectedPlanRoomId,
-      },
-      floorPlan: {
-        setFloorPlanTraceOpeningKind,
-        resetFloorPlanInteraction,
       },
       camera: {
         setSavedViews,
         updateProjection,
-        updateCameraViewFromScene,
         preserveCameraAfterPlanOverlaySelection,
         transitionToCameraView,
         resolveGroundPointFromClient,
@@ -282,7 +241,6 @@ export function DesignPageWorkspace() {
       },
     },
     refs: {
-      defaultPlanOpeningsSeededRef,
       canvasRef,
       cameraRef,
       orbitControlsRef,
@@ -318,7 +276,6 @@ export function DesignPageWorkspace() {
         historyDebugSnapshot,
       },
     },
-    refs: { zones: zonesRef },
     actions: {
       betaStart: betaStartActions,
       setSelectedZoneId,
@@ -329,10 +286,7 @@ export function DesignPageWorkspace() {
       history: { undoSafe, redoSafe },
     },
   } = documentSelectionRegistration;
-  const documentHistoryController =
-    documentRoomRegistration.boundaries.history;
   const roomFloorWorkspace = documentRoomRegistration.boundaries.roomFloor;
-  const housePlanController = documentRoomRegistration.boundaries.house;
   const documentFloorState = documentRoomRegistration.state.floor;
   const documentRoomModel = documentRoomRegistration.derived.room;
   const documentPlanModel = documentRoomRegistration.derived.plan;
@@ -361,8 +315,7 @@ export function DesignPageWorkspace() {
   const { activeFloorLevel, activeFloorRoomCount, floorOptions } =
     documentFloorModel;
   const { history } = documentHistoryRefs;
-  const { runHistoryTransaction, runCoalescedHistoryTransaction } =
-    documentHistoryActions;
+  const { runHistoryTransaction } = documentHistoryActions;
   const { clampToActiveRoom } = documentRoomActions;
 
   const sceneRoomReadFacade =
@@ -463,57 +416,18 @@ export function DesignPageWorkspace() {
     },
   });
 
-  useEffect(() => {
-    if (!planSettingsLoaded) return;
-    if (defaultPlanOpeningsSeededRef.current) return;
-    if (planOpeningsStorageState === "pending") return;
-    if (planOpeningsStorageState !== "missing" || planOpenings.length > 0) {
-      defaultPlanOpeningsSeededRef.current = true;
-      return;
-    }
-    defaultPlanOpeningsSeededRef.current = true;
-    setPlanOpenings([
-      {
-        id: "door-east-main",
-        wall: "east",
-        offsetMm: 0,
-        widthMm: 900,
-        kind: "door",
-      },
-      {
-        id: "window-west-main",
-        wall: "west",
-        offsetMm: 0,
-        widthMm: 1200,
-        kind: "window",
-      },
-    ]);
-  }, [
-    defaultPlanOpeningsSeededRef,
-    planOpenings.length,
-    planOpeningsStorageState,
-    planSettingsLoaded,
-    setPlanOpenings,
-  ]);
-
-  const selectionInspectionRuntime =
-    useDesignPageSelectionInspectionRuntime({
-      boundaries: {
-        planViewport: planViewportRuntime,
-        editorShell: editorShellRuntime,
-        snapshotDocument: snapshotDocumentController,
-        documentRoom: documentRoomRegistration,
-        itemSelection: itemSelectionController,
-        itemDocument: itemDocumentController,
-        importedModels: importedModelsWorkspace,
-      },
-      state: { isClientPreview, canEdit, liveCatalogReady },
-      configuration: { catalogItems: CATALOG_ITEMS },
-      refs: {
-        localBackupPlanningResolver: localBackupPlanningResolverRef,
-      },
-      actions: { setSelectedZoneId, showToast: showRuleToast },
-    });
+  const planAuthoringRegistration = useDesignPagePlanAuthoringRegistration({
+    boundaries: {
+      coreShell: coreShellRegistration,
+      documentSelection: documentSelectionRegistration,
+    },
+  });
+  const {
+    selectionInspection: selectionInspectionRuntime,
+    planWorkspace,
+    surfaceWorkspace,
+    underlay: planUnderlay,
+  } = planAuthoringRegistration.boundaries;
   const {
     boundaries: {
       coordination: selectionCoordinator,
@@ -561,7 +475,7 @@ export function DesignPageWorkspace() {
         changeActiveRoomCeilingColor:
           handleActiveRoomCeilingColorChange,
       },
-      geometry: { getItemAABB, getSelectionBounds },
+      geometry: { getItemAABB },
     },
   } = selectionInspectionRuntime;
 
@@ -655,114 +569,7 @@ export function DesignPageWorkspace() {
       },
       clearPlanFocusPoints,
     },
-    configuration: planWorkspaceConfiguration,
-  } = useDesignPagePlanWorkspaceRegistrationFacade({
-    boundaries: {
-      document: planDocumentController,
-      floorPlan: floorPlanDocumentController,
-      snapshot: snapshotDocumentController,
-      history: documentHistoryController,
-      house: housePlanController,
-      sceneRoom: sceneRoomReadFacade,
-      selection: {
-        items: itemSelectionController,
-        coordination: selectionCoordinator,
-      },
-      inspection: productInspectionController,
-      cameraBridge,
-    },
-    state: {
-      plan: {
-        selectedPlanRoomId,
-        suppressedDoorwaySuggestionKeys,
-        selectedPlanOverlayId,
-        canvasInteractionActive: documentPlanModel.activePlanCanvasInteraction,
-        canvasFocusActive: documentPlanModel.planCanvasFocusActive,
-        dismissedCanvasGuidanceKey: dismissedPlanCanvasGuidanceKey,
-        selectedZoneId,
-      },
-      editor: {
-        editorMode,
-        isClientPreview,
-        viewMode,
-        isDesigner,
-        simplePlanControls,
-        showDesignerTheme,
-        lightingPreset,
-        guidedPlanStartMode,
-        showBetaStart,
-      },
-      layout: {
-        designControlsPanelVisible: designControlsPanelVisibleForLayout,
-        designControlsPanelMode,
-        shoppingPanelVisible: shoppingPanelVisibleForLayout,
-        commercePanelVisible: documentPlanModel.commercePanelVisibleForLayout,
-        designPanelCollapsed,
-        floorCount: floorOptions.length,
-        viewportWidth: viewportSize.width,
-      },
-      export: { sceneReady },
-    },
-    configuration: {
-      canEdit,
-      catalogItems: CATALOG_ITEMS,
-      qualityReviewPanel: {
-        reviewPanelTopPx: 76,
-        collapsedReviewPanelFallbackHeightPx: 56,
-        expandedReviewPanelFallbackHeightPx: 252,
-      },
-      simplePlanLayers: SIMPLE_PLAN_LAYERS,
-      floatingOverlayDesktopMinWidthPx:
-        PLAN_FLOATING_OVERLAY_DESKTOP_MIN_WIDTH,
-      floatingOverlayStackRightPx: PLAN_FLOATING_OVERLAY_STACK_RIGHT_PX,
-      floatingOverlayInspectorStackTopPx:
-        PLAN_FLOATING_OVERLAY_INSPECTOR_STACK_TOP_PX,
-      floatingOverlayStackWidthPx: PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX,
-      floatingOverlayStackGapPx: PLAN_FLOATING_OVERLAY_STACK_GAP_PX,
-    },
-    actions: {
-      selection: { setSelectedPlanOverlayId },
-      room: {
-        setSelectedPlanRoomId,
-        renameRoom: documentRoomActions.handleRenameRoom,
-        handleAddRoom: documentRoomActions.handleAddRoom,
-      },
-      navigation: {
-        goPlan,
-        goFurnish,
-        setViewMode,
-        setTraceOpeningKind: setFloorPlanTraceOpeningKind,
-        setDesignPanelOpen,
-        setPlanFocusPanelRevealed,
-      },
-      feedback: { showToast: showRuleToast, track },
-    },
-  });
-  const surfaceWorkspace = useDesignPageSurfaceWorkspaceFacade({
-    state: {
-      document: { activeRoomId: designSnapshot.activeRoomId },
-      selection: { selectedPlanRoomId },
-      surface: { selectedWallSurfaceTarget, surfaceBrushPaint },
-    },
-    configuration: { isClientPreview, liveCatalogReady },
-    refs: { designSnapshot: designSnapshotRef },
-    actions: {
-      document: {
-        setDesignSnapshot,
-        runHistoryTransaction,
-        runCoalescedHistoryTransaction,
-      },
-      selection: { clearNonRoomSelection, setSelectedPlanRoomId },
-      surfaceState: surfaceStateActions,
-      navigation: { switchRoom: handleSwitchRoom, goPlan },
-      panels: {
-        setDesignPanelOpen,
-        setDesignPanelCollapsed,
-        inspectorUi: surfaceInspectorUiActions,
-      },
-      feedback: { showToast: showRuleToast, track },
-    },
-  });
+  } = planWorkspace;
   const {
     derived: surfaceWorkspaceDerived,
     actions: surfaceWorkspaceActions,
@@ -786,52 +593,21 @@ export function DesignPageWorkspace() {
       applyCalibration: handleApplyFloorPlanCalibration,
       clearUnderlay: handleClearFloorPlanUnderlay,
     },
-  } = useDesignPagePlanUnderlayFacade(planWorkspaceConfiguration.underlay);
-  const cameraWorkspace = useDesignPageCameraWorkspaceFacade({
-    state: {
-      cameraView,
-      navigation: {
-        viewMode,
-        sceneReady,
-        hasWholeHousePlan,
-        designRoomCount: designSnapshot.rooms.length,
-        rooms: housePlan2D.rooms,
-        items,
-        selectedItem: selectedItem ?? null,
-        selectedProduct: selectedProduct ?? null,
+  } = planUnderlay;
+  const editorInteractionRegistration =
+    useDesignPageEditorInteractionRegistration({
+      boundaries: {
+        coreShell: coreShellRegistration,
+        documentSelection: documentSelectionRegistration,
+        planAuthoring: planAuthoringRegistration,
       },
-      canvas: { showGrid, snapEnabled, isDesigner },
-    },
-    configuration: {
-      navigation: {
-        defaultCameraView: DEFAULT_EDITOR_CAMERA_VIEW,
-        designId,
-        viewportSize,
-        planFitBounds: plan2DFitBounds,
-        planSafeAreaLeftPx: plan2DSafeAreaLeftPx,
-        planSafeAreaRightPx: plan2DSafeAreaRightPx,
-        planSafeAreaBottomPx: plan2DSafeAreaBottomPx,
-        floatingPlanOverlayStackVisible,
-        floatingPlanOverlayStackWidthPx: PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX,
-        roomHeight,
-        planViewWidth,
-        planViewDepth,
-        min3DPolarAngle: EDITOR_3D_MIN_POLAR_ANGLE,
-        max3DPolarAngle: EDITOR_3D_MAX_POLAR_ANGLE,
-      },
-    },
-    refs: cameraBridge.refs,
-    actions: {
-      camera: cameraBridge.actions,
-      navigation: {
-        setViewMode,
-        resetFloorPlanInteraction,
-        showRuleToast,
-        switchRoom: handleSwitchRoom,
-      },
-      canvas: { history },
-    },
-  });
+    });
+  const {
+    camera: cameraWorkspace,
+    tracing: planTracing,
+    presentationState,
+    zone: zoneController,
+  } = editorInteractionRegistration.boundaries;
   const { plan2DWholeHomeViewFit } = cameraWorkspace.state.navigation;
   const {
     handleEditorViewModeChange,
@@ -884,7 +660,7 @@ export function DesignPageWorkspace() {
       handleResetFloorPlanTraceRoomPoints,
       handleUndoFloorPlanTraceRoomPoint,
     },
-  } = useDesignPagePlanTracingFacade(planWorkspaceConfiguration.tracing);
+  } = planTracing;
   const {
     state: { cameraViewNameInput, layoutVersionNameInput },
     actions: {
@@ -897,21 +673,7 @@ export function DesignPageWorkspace() {
       restoreRoomLayoutVersion,
       deleteRoomLayoutVersion,
     },
-  } = useDesignPagePresentationStateRegistration({
-    state: { cameraView },
-    refs: { designSnapshot: designSnapshotRef },
-    actions: {
-      document: { setDesignSnapshot },
-      camera: {
-        setLegacySavedViews: setSavedViews,
-        handleEditorViewModeChange,
-        transitionToCameraView,
-      },
-      history: { history },
-      selection: { updateSelection },
-      feedback: { showToast: showRuleToast },
-    },
-  });
+  } = presentationState;
 
   const {
     state: { selectedZone, pendingZoneType, planZones2D },
@@ -924,46 +686,7 @@ export function DesignPageWorkspace() {
       ungroupZone,
     },
     resolvers: { getZoneBounds },
-  } = useDesignPageZoneController({
-    state: {
-      items,
-      zones,
-      selectedZoneId,
-    },
-    configuration: {
-      editorMode,
-      isClientPreview,
-      isDesigner,
-      catalogItems: CATALOG_ITEMS,
-      roomWidth,
-      roomDepth,
-      wallThickness,
-    },
-    refs: {
-      selectedIds: selectedIdsRef,
-      items: itemsRef,
-      zones: zonesRef,
-      seatingZoneAutoDisabled: seatingZoneAutoDisabledRef,
-    },
-    actions: {
-      setDesignSnapshot,
-      setSelectedZoneId,
-      clearSelection,
-      commitItems,
-      history,
-      clampToRoom: clampToActiveRoom,
-      getSelectionBounds,
-      getItemAABB,
-    },
-  });
-
-  useEffect(() => {
-    if (!sceneReady) return;
-    const t = window.setTimeout(() => {
-      updateCameraViewFromScene();
-    }, 0);
-    return () => window.clearTimeout(t);
-  }, [sceneReady, updateCameraViewFromScene]);
+  } = zoneController;
 
   const {
     state: {

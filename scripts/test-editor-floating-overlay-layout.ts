@@ -10,6 +10,14 @@ const designPagePath = path.join(
   "DesignPageWorkspace.tsx"
 );
 const source = fs.readFileSync(designPagePath, "utf8");
+const editorConfigurationSource = fs.readFileSync(
+  path.join(process.cwd(), "lib", "design-page-editor-configuration.ts"),
+  "utf8"
+);
+const planAuthoringRegistrationSource = fs.readFileSync(
+  path.join(process.cwd(), "lib", "useDesignPagePlanAuthoringRegistration.ts"),
+  "utf8"
+);
 const panelRegistrationSource = fs.readFileSync(
   path.join(process.cwd(), "lib", "design-page-panel-registration.ts"),
   "utf8"
@@ -151,13 +159,13 @@ for (const movedComponent of [
 }
 
 assert.match(
-  source,
+  editorConfigurationSource,
   /const PLAN_FLOATING_OVERLAY_DESKTOP_MIN_WIDTH = 1024;/,
   "Plan floating overlay stack should use the 1024px desktop threshold."
 );
 
 assert.match(
-  source,
+  editorConfigurationSource,
   /const PLAN_FLOATING_OVERLAY_STACK_RIGHT_PX = 4;/,
   "Floating overlay stack should use a shared right edge."
 );
@@ -169,13 +177,13 @@ assert.match(
 );
 
 assert.match(
-  source,
+  editorConfigurationSource,
   /const PLAN_FLOATING_OVERLAY_INSPECTOR_STACK_TOP_PX = 324;/,
   "Selection inspector should dock beneath the floating room navigator."
 );
 
 assert.match(
-  source,
+  editorConfigurationSource,
   /const PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX = 264;/,
   "Selection inspector should match the floating room navigator width."
 );
@@ -347,9 +355,9 @@ assert.match(
 );
 
 assert.match(
-  source,
+  planAuthoringRegistrationSource,
   /reviewPanelTopPx: 76,[\s\S]*?collapsedReviewPanelFallbackHeightPx: 56,[\s\S]*?expandedReviewPanelFallbackHeightPx: 252,/,
-  "The design page should configure the plan review panel against the shared overlay row."
+  "Plan authoring should configure the review panel against the shared overlay row."
 );
 
 assert.match(

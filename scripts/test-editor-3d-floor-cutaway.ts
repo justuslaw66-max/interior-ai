@@ -12,6 +12,10 @@ const designPageSource = fs.readFileSync(
   ),
   "utf8"
 );
+const editorConfigurationSource = fs.readFileSync(
+  path.join(process.cwd(), "lib", "design-page-editor-configuration.ts"),
+  "utf8"
+);
 const designSceneCanvasSource = fs.readFileSync(
   path.join(
     process.cwd(),
@@ -32,8 +36,8 @@ const housePlanRendererSource = fs.readFileSync(
 );
 
 assert.match(
-  designPageSource,
-  /const EDITOR_3D_MAX_POLAR_ANGLE = Math\.PI - 0\.02;/,
+  editorConfigurationSource,
+  /EDITOR_3D_MAX_POLAR_ANGLE = Math\.PI - 0\.02;/,
   "3D orbit controls should allow underside rotation for inspection."
 );
 
