@@ -25,6 +25,10 @@ import type {
 } from "@/lib/room-types";
 import { CabinetSceneItem } from "@/features/cabinetry/components/CabinetSceneItem";
 import { isParametricCabinetItem } from "@/features/cabinetry/designItemAdapters";
+import {
+  addFloorElevationToItemPosition,
+  removeFloorElevationFromItemPosition,
+} from "@/lib/floor-plan-scene-elevation";
 
 export type SceneItemDimensionsMm = {
   w: number;
@@ -36,11 +40,13 @@ export type SceneRoomItemEntry = {
   item: DesignItem;
   roomId: string;
   roomOffset: { x: number; z: number };
+  roomFloorElevationMeters: number;
   roomWidth: number;
   roomDepth: number;
   roomHeight: number;
   roomPlanShape: RoomPlanShape;
   roomPlanPolygon?: RoomPlanPolygonPoint[];
+  roomPlanHoles?: RoomPlanPolygonPoint[][];
   roomWallThickness: number;
   roomWallInset: number;
   isActiveRoom: boolean;
@@ -146,13 +152,17 @@ export function SceneItemsLayer({
         const item = sceneEntry.item;
         const isActiveSceneRoom = sceneEntry.isActiveRoom;
         const roomOffset = sceneEntry.roomOffset;
+        const roomFloorElevation =
+          configuration.viewMode === "3d"
+            ? sceneEntry.roomFloorElevationMeters
+            : 0;
 
         if (isParametricCabinetItem(item)) {
-          const scenePosition: [number, number, number] = [
+          const scenePosition = addFloorElevationToItemPosition([
             item.position[0] + roomOffset.x,
             item.position[1] ?? 0,
             item.position[2] + roomOffset.z,
-          ];
+          ], roomFloorElevation);
           const sceneRenderItemKey = `${sceneEntry.roomId}:${item.instanceId}:${item.productId}:${
             item.variantId ?? ""
           }:${configuration.renderQuality}`;
@@ -287,11 +297,11 @@ export function SceneItemsLayer({
                 item.position[2],
               ]
             : item.position);
-        const scenePosition: [number, number, number] = [
+        const scenePosition = addFloorElevationToItemPosition([
           renderLocalPosition[0] + roomOffset.x,
           renderLocalPosition[1] ?? 0,
           renderLocalPosition[2] + roomOffset.z,
-        ];
+        ], roomFloorElevation);
         const sceneRenderItemKey = `${sceneEntry.roomId}:${item.instanceId}:${item.productId}:${
           effectiveVariantId ?? ""
         }:${configuration.renderQuality}`;
@@ -316,6 +326,7 @@ export function SceneItemsLayer({
             roomOriginZ={roomOffset.z}
             roomPlanShape={sceneEntry.roomPlanShape}
             roomPlanPolygon={sceneEntry.roomPlanPolygon}
+            roomPlanHoles={sceneEntry.roomPlanHoles}
             wallThickness={sceneEntry.roomWallThickness}
             wallContactInset={sceneEntry.roomWallInset}
             onDraggingChange={actions.onDraggingChange}
@@ -371,7 +382,10 @@ export function SceneItemsLayer({
                 sceneEntry,
                 configuredPlanningDimsMm: configuredPlanningDims,
                 id,
-                position,
+                position: removeFloorElevationFromItemPosition(
+                  position,
+                  roomFloorElevation
+                ),
               })
             }
             onDragPointerMove={actions.onDragPointerMove}
@@ -396,7 +410,14 @@ export function SceneItemsLayer({
             materialPreset={effectiveMaterialPreset}
             materialOverrides={item.materialOverrides}
             onDragEnd={(id, position) =>
-              actions.onDragEnd({ sceneEntry, id, position })
+              actions.onDragEnd({
+                sceneEntry,
+                id,
+                position: removeFloorElevationFromItemPosition(
+                  position,
+                  roomFloorElevation
+                ),
+              })
             }
           />
         );

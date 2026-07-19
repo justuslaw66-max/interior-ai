@@ -79,6 +79,8 @@ export function DesignSceneGuidanceLayer({
   const { placement, zones } = state;
   const targetRoom = placement.targetRoom;
   const supportSurface = placement.supportSurface;
+  const showingPlacementZones =
+    !supportSurface && (zones.pendingPlacement || zones.hoverPlacement);
 
   return (
     <>
@@ -162,15 +164,14 @@ export function DesignSceneGuidanceLayer({
           ]}
         >
           {zones.entries.map((zone) => {
+            if (zone.source === "auto" && !showingPlacementZones) return null;
+
             const bounds = resolvers.getZoneBounds(zone);
             if (!bounds) return null;
 
             const label = getZoneLabel(zone.type);
             const compatible =
               !supportSurface && zones.compatibleIds.has(zone.id);
-            const showingPlacementZones =
-              !supportSurface &&
-              (zones.pendingPlacement || zones.hoverPlacement);
 
             return (
               <ZoneOutline

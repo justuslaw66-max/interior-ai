@@ -438,6 +438,7 @@ for (const expected of [
   "raycast={() => null}",
   "<DesignerGrid",
   "<CirculationHeatmapOverlay",
+  'if (zone.source === "auto" && !showingPlacementZones) return null;',
   "!supportSurface && zones.compatibleIds.has(zone.id)",
   'helperLabel={compatible ? `Tap to place in ${label}` : undefined}',
   "actions.targetPendingPlacementToRoom(",

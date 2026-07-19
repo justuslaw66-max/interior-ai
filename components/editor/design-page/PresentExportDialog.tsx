@@ -6,6 +6,7 @@ import PlanOpeningInspector from "@/components/editor/PlanOpeningInspector";
 import { LightingPresetsUI } from "@/components/LightingPresetsUI";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type { ExportReadinessItem } from "@/lib/design-page-export-readiness";
+import type { DesignPageOpeningMetricsPatch } from "@/lib/design-page-opening-metrics";
 import { PLAN_LAYER_PRESETS, type PlanLayerPresetId, type PlanMeasurementUnit } from "@/lib/design-page-types";
 import { compareLayoutVersion, summarizeLayoutVersionComparison } from "@/lib/layout-versions";
 import type { LightingPreset } from "@/lib/lightingPresets";
@@ -15,13 +16,7 @@ import { formatTimeAgo } from "@/lib/design-page-utils";
 
 type AnnotationToolKind = "note" | "callout" | "room_tag";
 
-type OpeningMetrics = {
-  widthMeters?: number;
-  offsetMeters?: number;
-  heightMeters?: number;
-  bottomMeters?: number;
-  kind?: RoomOpening2D["kind"];
-};
+type OpeningMetrics = DesignPageOpeningMetricsPatch;
 
 export type PresentExportDialogProps = {
   configuration: {

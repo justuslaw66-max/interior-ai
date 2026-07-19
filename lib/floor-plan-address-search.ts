@@ -26,6 +26,12 @@ export type FloorPlanLibrarySearchResult = {
   accuracyNotice: string;
   matchLevel: "street" | "block" | "unit";
   unitMatches: FloorPlanLibraryUnitMatch[];
+  configuration?: {
+    groupId: string;
+    optionId: string;
+    label: string;
+    defaultSelected: boolean;
+  };
   template: HousePlanTemplate;
 };
 
@@ -132,12 +138,16 @@ function layoutToTemplate(
       offsetMeters: doorway.offset_meters,
       widthMeters: doorway.width_meters,
       kind: doorway.kind,
+      operation:
+        doorway.operation ?? (doorway.kind === "opening" ? "open" : "swing"),
     })),
     windows: layout.template.windows.map((window) => ({
       roomId: window.room_id,
       wall: window.wall,
       offsetMeters: window.offset_meters,
       widthMeters: window.width_meters,
+      kind: window.kind,
+      operation: window.operation,
     })),
     referenceZones: layout.template.reference_zones.map((zone) => ({
       id: zone.id,
@@ -199,8 +209,6 @@ function matchCatalog(
   rawQuery: string,
   queryTokens: string[]
 ): CatalogMatch | null {
-  if (catalog.publication.status !== "published") return null;
-
   const blockToken = queryTokens.find((token) => /^\d+[a-z]$/i.test(token));
   const matchedBuildings = catalog.address.buildings.filter((building) => {
     const blockMatches = blockToken
@@ -265,7 +273,15 @@ function matchCatalog(
   };
 }
 
-export function searchFloorPlanLibrary(
+/**
+ * Resolve a schema-v1 YAML fixture for admin review and regression checks.
+ *
+ * This function is intentionally named review-only. Its results contain a
+ * directly actionable legacy HousePlanTemplate and must never cross the
+ * consumer API boundary. Public address search uses only approved canonical
+ * revisions from FloorPlanRevision.
+ */
+export function searchReviewOnlyFloorPlanLibrary(
   catalogs: FloorPlanLibraryCatalog[],
   rawQuery: string,
   options: { limit?: number } = {}
@@ -358,6 +374,16 @@ export function searchFloorPlanLibrary(
         accuracyNotice: catalog.publication.accuracy_notice,
         matchLevel: requiresExactUnitMatch ? "unit" : addressMatchLevel,
         unitMatches,
+        ...(layout.configuration
+          ? {
+              configuration: {
+                groupId: layout.configuration.group_id,
+                optionId: layout.configuration.option_id,
+                label: layout.configuration.label,
+                defaultSelected: layout.configuration.default_selected,
+              },
+            }
+          : {}),
         template: layoutToTemplate(catalog, layout),
       });
     }
@@ -366,19 +392,19 @@ export function searchFloorPlanLibrary(
   return results;
 }
 
-export function browseFloorPlanLibrary(
+/** Browse schema-v1 YAML fixtures inside trusted review/test surfaces only. */
+export function browseReviewOnlyFloorPlanLibrary(
   catalogs: FloorPlanLibraryCatalog[],
   options: { limit?: number } = {}
 ): FloorPlanLibrarySearchResult[] {
   const limit = Math.min(100, Math.max(1, options.limit ?? 50));
   const results: FloorPlanLibrarySearchResult[] = [];
-  const publishedCatalogs = catalogs
-    .filter((catalog) => catalog.publication.status === "published")
+  const reviewCatalogs = [...catalogs]
     .sort((a, b) =>
       a.floor_plan.project_name.localeCompare(b.floor_plan.project_name)
     );
 
-  for (const catalog of publishedCatalogs) {
+  for (const catalog of reviewCatalogs) {
     const allBlocks = catalog.address.buildings.map((building) => building.block);
     const addressLabel = `${allBlocks.join(", ")} ${catalog.address.street_name}`;
     const buildingsById = new Map(
@@ -414,6 +440,16 @@ export function browseFloorPlanLibrary(
         accuracyNotice: catalog.publication.accuracy_notice,
         matchLevel: "street",
         unitMatches: [],
+        ...(layout.configuration
+          ? {
+              configuration: {
+                groupId: layout.configuration.group_id,
+                optionId: layout.configuration.option_id,
+                label: layout.configuration.label,
+                defaultSelected: layout.configuration.default_selected,
+              },
+            }
+          : {}),
         template: layoutToTemplate(catalog, layout),
       });
     }

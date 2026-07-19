@@ -198,8 +198,14 @@ assert.match(
 
 assert.match(
   source,
-  /testId: "plan-start-upload"[\s\S]*?label: "Import 2D drawing"[\s\S]*?setPlanStartMode\("upload"\)/,
-  "The import tile should keep the existing upload flow."
+  /const openFloorPlanUploadPicker = \(\) => \{[\s\S]*?flushSync\(\(\) => setPlanStartMode\("upload"\)\)[\s\S]*?getElementById\("floor-plan-upload"\)[\s\S]*?floor-plan-upload-input[\s\S]*?\.click\(\)/,
+  "The import action should mount the upload panel and open its file picker within the same user gesture."
+);
+
+assert.match(
+  source,
+  /testId: "plan-start-upload"[\s\S]*?label: "Import 2D drawing"[\s\S]*?onClick: openFloorPlanUploadPicker/,
+  "The import tile should invoke the working file-picker flow."
 );
 
 assert.match(
@@ -544,8 +550,8 @@ assert.match(
 );
 assert.match(
   persistenceWorkspaceRegistrationSource,
-  /useDesignPagePersistenceRegistration\(\{[\s\S]*?pendingReplacement: underlay\.state\.pendingTemplateReplacement[\s\S]*?requestSignIn: coreShell\.actions\.paywall\.signInWithReturn[\s\S]*?showToast: coreShell\.actions\.feedback\.showRuleToast[\s\S]*?clearPlanAnnotations: \(\) =>[\s\S]*?setPlanAnnotations\(\[\]\)/,
-  "The persistence workspace owner should wire replacement, sign-in, toast, and annotation collaborators into the registration."
+  /useDesignPagePersistenceRegistration\(\{[\s\S]*?pendingReplacement: underlay\.state\.pendingTemplateReplacement[\s\S]*?requestPlanChoiceForNextTemplate:\s*underlay\.actions\.requirePlanChoiceForNextTemplate[\s\S]*?requestSignIn: coreShell\.actions\.paywall\.signInWithReturn[\s\S]*?showToast: coreShell\.actions\.feedback\.showRuleToast[\s\S]*?clearPlanAnnotations: \(\) =>[\s\S]*?setPlanAnnotations\(\[\]\)/,
+  "The persistence workspace owner should wire explicit New-plan intent, replacement, sign-in, toast, and annotation collaborators into the registration."
 );
 assert.match(
   persistenceRegistrationSource,
@@ -560,8 +566,8 @@ assert.match(
 
 assert.match(
   newPlanControllerSource,
-  /const openNewPlanPicker = useCallback\(\(\) => \{\s*closeMyDesigns\(\);\s*setGuidedPlanStartMode\("template"\);\s*goPlan\(\);\s*setViewMode\("2d"\);\s*setDesignPanelOpen\(true\);\s*setDesignPanelCollapsed\(false\);\s*showToast\("Search by address or choose a floor plan template"\);\s*\},/,
-  "The controller-owned New plan action should preserve the exact close, template, Plan, 2D, expand, and guidance sequence."
+  /const openNewPlanPicker = useCallback\(\(\) => \{\s*requestPlanChoiceForNextTemplate\(\);\s*closeMyDesigns\(\);\s*setGuidedPlanStartMode\("template"\);\s*goPlan\(\);\s*setViewMode\("2d"\);\s*setDesignPanelOpen\(true\);\s*setDesignPanelCollapsed\(false\);\s*showToast\("Search by address or choose a floor plan template"\);\s*\},/,
+  "The controller-owned New plan action should retain explicit choice intent before opening the template workflow."
 );
 
 assert.doesNotMatch(

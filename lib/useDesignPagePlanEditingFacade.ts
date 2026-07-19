@@ -4,6 +4,7 @@ import {
   useDesignPagePlanOverlayController,
   type UseDesignPagePlanOverlayControllerInput,
 } from "@/lib/useDesignPagePlanOverlayController";
+import type { DesignPageCanonicalTopologyActions } from "@/lib/useDesignPageCanonicalTopologyController";
 import {
   useDesignPagePlanQualityController,
   type UseDesignPagePlanQualityControllerInput,
@@ -92,6 +93,7 @@ export type UseDesignPagePlanEditingFacadeInput = {
       selectPlanOverlay: OverlayInput["actions"]["selectPlanOverlay"];
       selectPlanRoom: QualityInput["actions"]["selectPlanRoom"];
       updateSelection: QualityInput["actions"]["updateSelection"];
+      canonicalTopology: DesignPageCanonicalTopologyActions;
     };
     room: Pick<
       RoomPlanInput["actions"],
@@ -191,6 +193,7 @@ export function useDesignPagePlanEditingFacade({
       runHistoryTransaction: actions.history.runHistoryTransaction,
       showToast: actions.feedback.showToast,
       track: actions.feedback.track,
+      canonicalTopology: actions.selection.canonicalTopology,
     },
   });
 

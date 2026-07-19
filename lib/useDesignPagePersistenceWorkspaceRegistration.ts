@@ -62,6 +62,8 @@ export function useDesignPagePersistenceWorkspaceRegistration({
         requestSignIn: coreShell.actions.paywall.signInWithReturn,
       },
       newPlan: {
+        requestPlanChoiceForNextTemplate:
+          underlay.actions.requirePlanChoiceForNextTemplate,
         setGuidedPlanStartMode:
           viewportShell.actions.editor.setGuidedPlanStartMode,
         goPlan: viewportShell.actions.panels.goPlan,

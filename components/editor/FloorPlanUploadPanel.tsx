@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import FloorPlanImportWorkspace from "./FloorPlanImportWorkspace";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type {
   FloorPlanDrawAngleLockMode,
@@ -68,12 +69,34 @@ const ACCEPTED_PLAN_FILE_TYPES = [
   "image/jpeg",
   "image/webp",
   "application/pdf",
+  "application/dxf",
+  "application/x-dxf",
+  "application/ifc",
+  "application/x-ifc",
+  "application/step",
+  "application/x-step",
+  "application/dwg",
+  "application/x-dwg",
   ".png",
   ".jpg",
   ".jpeg",
   ".webp",
   ".pdf",
+  ".dxf",
+  ".ifc",
+  ".ifcstep",
+  ".step",
+  ".stp",
+  ".dwg",
 ].join(",");
+
+function supportsImmediateTracingUnderlay(file: File) {
+  const mimeType = file.type.toLowerCase();
+  if (["application/pdf", "image/png", "image/jpeg", "image/webp"].includes(mimeType)) {
+    return true;
+  }
+  return /\.(pdf|png|jpe?g|webp)$/i.test(file.name);
+}
 
 const PRIMARY_DRAW_ROOM_TOOLS: Array<{
   id: FloorPlanDrawRoomMode;
@@ -151,6 +174,11 @@ export default function FloorPlanUploadPanel({
   onClear,
 }: FloorPlanUploadPanelProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const [trainingBenchmarkOptIn, setTrainingBenchmarkOptIn] = useState(false);
+  const [autoImportRequest, setAutoImportRequest] = useState<{
+    file: File;
+    trainingBenchmarkOptIn: boolean;
+  } | null>(null);
   const cardClass = dark
     ? "designer-raised rounded-xl p-3"
     : "rounded-xl border border-neutral-200 bg-white p-3";
@@ -213,7 +241,7 @@ export default function FloorPlanUploadPanel({
   };
 
   return (
-    <div className={cardClass}>
+    <div id="floor-plan-upload" className={cardClass}>
       <div className="flex items-center justify-between gap-3">
         <div>
           <div className={titleClass}>Floor plan</div>
@@ -229,7 +257,7 @@ export default function FloorPlanUploadPanel({
           disabled={disabled}
           onClick={() => inputRef.current?.click()}
         >
-          Upload
+          Import
         </button>
       </div>
 
@@ -243,22 +271,31 @@ export default function FloorPlanUploadPanel({
           const file = event.target.files?.[0];
           event.target.value = "";
           if (file) {
-            onUpload(file);
+            setAutoImportRequest({ file, trainingBenchmarkOptIn });
+            if (supportsImmediateTracingUnderlay(file)) onUpload(file);
           }
         }}
       />
 
       <div className="mt-3 space-y-3">
+        <FloorPlanImportWorkspace
+          request={autoImportRequest}
+          trainingBenchmarkOptIn={trainingBenchmarkOptIn}
+          dark={dark}
+          disabled={disabled}
+          onTrainingBenchmarkOptInChange={setTrainingBenchmarkOptIn}
+          onSourceContentDeleted={onClear}
+        />
         {!underlay && !showDrawRoomTools && (
           <div
             data-testid="floor-plan-upload-empty-state"
             className={dark ? "designer-recessed rounded-lg p-3" : "rounded-lg bg-neutral-50 p-3"}
           >
             <div className={dark ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-neutral-800"}>
-              Upload a floor-plan image or PDF
+              Upload a floor-plan image, PDF, DXF, IFC, or DWG
             </div>
             <div className={`${subtleClass} mt-1`}>
-              Use a drawing from your designer, contractor, or property listing, then set scale and draw rooms over it.
+              Images and PDFs can be traced immediately. CAD imports extract declared geometry and pause for review instead of inventing rooms or openings.
             </div>
           </div>
         )}
@@ -666,7 +703,10 @@ export default function FloorPlanUploadPanel({
               type="button"
               className={secondaryButtonClass}
               disabled={disabled}
-              onClick={onClear}
+              onClick={() => {
+                setAutoImportRequest(null);
+                onClear();
+              }}
             >
               Clear
             </button>

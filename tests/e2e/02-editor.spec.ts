@@ -65,6 +65,10 @@ async function setupSelectedItem(page: Page) {
   }).toPass({ timeout: 30_000 });
   await expect(page.getByTestId("apply-plan-template-studio")).toBeVisible();
   await page.getByTestId("apply-plan-template-studio").click();
+  const planChoice = page.getByTestId("new-plan-choice-dialog");
+  if (await planChoice.isVisible({ timeout: 1_500 }).catch(() => false)) {
+    await page.getByTestId("new-plan-replace-current").click();
+  }
   await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
     "4 rooms",
   );
@@ -97,6 +101,33 @@ async function setupSelectedItem(page: Page) {
 }
 
 test.describe("2. Editor Correctness", () => {
+  test("New plan asks before replacing even when the saved room still has starter geometry", async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      window.localStorage.clear();
+      window.sessionStorage.clear();
+    });
+    await page.goto("/design", { waitUntil: "domcontentloaded" });
+    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30_000 });
+    await page.waitForLoadState("networkidle");
+
+    const newPlan = page.getByTestId("editor-command-new-plan");
+    await expect(newPlan).toBeEnabled();
+    await newPlan.click();
+    await expect(page.getByTestId("starter-floor-plan-picker")).toBeVisible();
+    await page.getByTestId("apply-plan-template-studio").click();
+
+    const choice = page.getByTestId("new-plan-choice-dialog");
+    await expect(choice).toBeVisible();
+    await expect(choice).toContainText("Rectangular studio");
+    await expect(page.getByTestId("new-plan-save-current")).toBeVisible();
+    await expect(page.getByTestId("new-plan-replace-current")).toBeVisible();
+    await page.getByTestId("new-plan-cancel").click();
+    await expect(choice).toHaveCount(0);
+    await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("1 room");
+  });
+
   test("collision detection rejects an overlapping precision move", async ({
     page,
   }) => {

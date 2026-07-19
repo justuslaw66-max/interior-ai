@@ -4,6 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { getPostHogClient } from "@/lib/posthog-server";
 import { buildDesignUpdatePayload } from "@/lib/design-route-payload";
+import { sanitizePrivateFloorPlanUnderlayForSave } from "@/lib/floor-plan-imports/retention";
+import { projectSharedStoredDesign } from "@/lib/shared-design-snapshot";
+import { syncFloorPlanDesignReference } from "@/lib/floor-plan-design-reference";
 
 export async function GET(
   req: Request,
@@ -33,13 +36,17 @@ export async function GET(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
+    const responseSnapshot = isOwner
+      ? design.snapshot ?? null
+      : projectSharedStoredDesign(design.snapshot);
+
     return NextResponse.json({
       id: design.id,
       title: design.title,
       roomWidth: design.roomWidth,
       roomDepth: design.roomDepth,
       items: design.items,
-      snapshot: design.snapshot ?? null,
+      snapshot: responseSnapshot,
       zones: design.zones ?? [],
       savedViews: design.savedViews ?? [],
       style: design.style,
@@ -66,12 +73,13 @@ export async function PUT(
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const userId = session.user.id;
 
     const design = await prisma.design.findUnique({ where: { id } });
     if (!design) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
-    if (design.userId !== session.user.id) {
+    if (design.userId !== userId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -80,7 +88,7 @@ export async function PUT(
     const items = payload.items;
 
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: userId },
       select: { plan: true },
     });
     const isProUser = user?.plan === "pro";
@@ -103,11 +111,27 @@ export async function PUT(
     if (updateData.items) updateData.items = updateData.items as Prisma.InputJsonValue;
     if (updateData.zones) updateData.zones = updateData.zones as Prisma.InputJsonValue;
     if (updateData.savedViews) updateData.savedViews = updateData.savedViews as Prisma.InputJsonValue;
-    if (updateData.snapshot) updateData.snapshot = updateData.snapshot as Prisma.InputJsonValue;
-
-    const updated = await prisma.design.update({
-      where: { id },
-      data: updateData,
+    const updated = await prisma.$transaction(async (transaction) => {
+      if (updateData.snapshot) {
+        updateData.snapshot = (
+          await sanitizePrivateFloorPlanUnderlayForSave({
+            snapshot: updateData.snapshot,
+            ownerUserId: userId,
+            client: transaction,
+          })
+        ).snapshot as Prisma.InputJsonValue;
+      }
+      const saved = await transaction.design.update({
+        where: { id },
+        data: updateData,
+      });
+      await syncFloorPlanDesignReference({
+        client: transaction,
+        designId: saved.id,
+        ownerUserId: userId,
+        snapshot: saved.snapshot,
+      });
+      return saved;
     });
 
     return NextResponse.json({ id: updated.id, updatedAt: updated.updatedAt });

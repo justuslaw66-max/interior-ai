@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import { FloorPlanImportJobStatus, Prisma } from "@prisma/client";
 import { getFreshCatalogYamlMap } from "@/lib/catalog-yaml";
 import { getPublishedFlooringMaterials, getSurfaceMaterials } from "@/lib/catalog-registry";
+import { assessFloorPlanQueueHealth } from "@/lib/floor-plan-imports/queue-health";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -31,6 +33,54 @@ async function checkDatabase() {
   await Promise.race([prisma.$queryRaw`SELECT 1`, timeout]);
 }
 
+async function checkFloorPlanQueue() {
+  const now = new Date();
+  const processableStatuses: FloorPlanImportJobStatus[] = [
+    FloorPlanImportJobStatus.received,
+    FloorPlanImportJobStatus.rendered,
+    FloorPlanImportJobStatus.extracted,
+    FloorPlanImportJobStatus.scale_solved,
+    FloorPlanImportJobStatus.topology_built,
+    FloorPlanImportJobStatus.validating,
+  ];
+  const dueForProcessing: Prisma.FloorPlanImportJobWhereInput = {
+    status: { in: processableStatuses },
+    AND: [
+      { OR: [{ nextAttemptAt: null }, { nextAttemptAt: { lte: now } }] },
+      { OR: [{ leaseToken: null }, { leaseExpiresAt: { lte: now } }] },
+    ],
+  };
+  const failedSince = new Date(now.getTime() - 24 * 60 * 60 * 1_000);
+  const [queued, oldestQueued, active, expiredLeases, failedLast24Hours] =
+    await Promise.all([
+      prisma.floorPlanImportJob.count({ where: dueForProcessing }),
+      prisma.floorPlanImportJob.findFirst({
+        where: dueForProcessing,
+        orderBy: { createdAt: "asc" },
+        select: { createdAt: true },
+      }),
+      prisma.floorPlanImportJob.count({
+        where: { leaseToken: { not: null }, leaseExpiresAt: { gt: now } },
+      }),
+      prisma.floorPlanImportJob.count({
+        where: { leaseToken: { not: null }, leaseExpiresAt: { lte: now } },
+      }),
+      prisma.floorPlanImportJob.count({
+        where: { status: "failed", updatedAt: { gte: failedSince } },
+      }),
+    ]);
+  return assessFloorPlanQueueHealth({
+    now,
+    snapshot: {
+      queued,
+      active,
+      expiredLeases,
+      failedLast24Hours,
+      oldestQueuedAt: oldestQueued?.createdAt ?? null,
+    },
+  });
+}
+
 export async function GET(request: Request) {
   const startedAt = Date.now();
   const url = new URL(request.url);
@@ -42,22 +92,31 @@ export async function GET(request: Request) {
     const publishedFlooring = getPublishedFlooringMaterials();
     const catalogOk = yamlEntries.length > 0 && surfaceMaterials.length > 0;
     let database: "not_checked" | "ok" | "error" = "not_checked";
+    let floorPlanImports:
+      | { status: "not_checked" }
+      | Awaited<ReturnType<typeof checkFloorPlanQueue>> = { status: "not_checked" };
 
     if (deep) {
       try {
         await checkDatabase();
         database = "ok";
+        floorPlanImports = await checkFloorPlanQueue();
       } catch (error) {
         database = "error";
         void captureHealthError(error, "database");
       }
     }
 
-    const healthy = catalogOk && database !== "error";
+    const healthy =
+      catalogOk &&
+      database !== "error" &&
+      floorPlanImports.status !== "error";
+    const degraded =
+      !healthy || floorPlanImports.status === "degraded";
     return NextResponse.json(
       {
         service: "interior-ai",
-        status: healthy ? "ok" : "degraded",
+        status: degraded ? "degraded" : "ok",
         timestamp: new Date().toISOString(),
         build: buildIdentity(),
         durationMs: Date.now() - startedAt,
@@ -70,6 +129,7 @@ export async function GET(request: Request) {
             publishedFlooring: publishedFlooring.length,
           },
           database,
+          floorPlanImports,
         },
       },
       {

@@ -1,12 +1,27 @@
 import { NextResponse } from "next/server";
 import {
-  browseFloorPlanLibrary,
   parseFloorPlanUnitNumber,
-  searchFloorPlanLibrary,
 } from "@/lib/floor-plan-address-search";
-import { getAllFloorPlanLibraryCatalogs } from "@/lib/floor-plan-library-yaml";
+import {
+  PublishedRevisionFloorPlanCatalogRepository,
+} from "@/lib/floor-plan-catalog-repository";
+import {
+  decodeFloorPlanCatalogCursor,
+  encodeFloorPlanCatalogCursor,
+} from "@/lib/floor-plan-catalog-cursor";
+import { prismaPublishedFloorPlanRevisionDataSource } from "@/lib/floor-plan-catalog-prisma";
 
 const MAX_QUERY_LENGTH = 120;
+const MAX_PAGE_SIZE = 50;
+
+export const runtime = "nodejs";
+
+// Public search fails closed and reads only immutable canonical revisions that
+// passed the database-backed licence, overlay, review and binding gates. YAML
+// compatibility catalogs are review-only and never serve as an outage fallback.
+const floorPlanCatalogRepository = new PublishedRevisionFloorPlanCatalogRepository(
+  prismaPublishedFloorPlanRevisionDataSource
+);
 
 export async function GET(request: Request) {
   try {
@@ -20,12 +35,21 @@ export async function GET(request: Request) {
     }
 
     const requestedLimit = Number(url.searchParams.get("limit") ?? 24);
-    const limit = Number.isFinite(requestedLimit) ? requestedLimit : 24;
+    const limit = Number.isFinite(requestedLimit)
+      ? Math.min(MAX_PAGE_SIZE, Math.max(1, Math.floor(requestedLimit)))
+      : 24;
     const browse = url.searchParams.get("browse") === "1";
-    const catalogs = getAllFloorPlanLibraryCatalogs();
-    const results = browse
-      ? browseFloorPlanLibrary(catalogs, { limit })
-      : searchFloorPlanLibrary(catalogs, query, { limit });
+    const cursorScope = { mode: browse ? "browse" : "search", query } as const;
+    const cursorValue = url.searchParams.get("cursor");
+    const after = cursorValue
+      ? decodeFloorPlanCatalogCursor(cursorValue, cursorScope)
+      : null;
+    if (cursorValue && !after) {
+      return NextResponse.json({ error: "Invalid floor-plan search cursor." }, { status: 400 });
+    }
+    const page = browse
+      ? await floorPlanCatalogRepository.browsePage({ limit, after })
+      : await floorPlanCatalogRepository.searchPage(query, { limit, after });
     const unitQuery = browse ? null : parseFloorPlanUnitNumber(query);
 
     return NextResponse.json(
@@ -33,12 +57,17 @@ export async function GET(request: Request) {
         mode: browse ? "browse" : "search",
         query,
         unitQuery,
-        count: results.length,
-        results,
+        count: page.results.length,
+        nextCursor: page.nextKey
+          ? encodeFloorPlanCatalogCursor(page.nextKey, cursorScope)
+          : null,
+        results: page.results,
       },
       {
         headers: {
-          "Cache-Control": "public, max-age=60, stale-while-revalidate=300",
+          // Publication and withdrawal gates are accuracy-critical. Do not let a
+          // shared or browser cache keep serving a revision after it is retired.
+          "Cache-Control": "no-store, max-age=0",
         },
       }
     );

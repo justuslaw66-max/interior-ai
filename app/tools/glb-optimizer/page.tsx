@@ -1,6 +1,7 @@
 "use client";
 
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 
 type IconProps = {
   className?: string;
@@ -205,12 +206,12 @@ export default function GlbOptimizerPage() {
             <p className="text-xs font-medium uppercase tracking-[0.16em] text-cyan-300">Asset pipeline</p>
             <h1 className="mt-2 text-3xl font-semibold tracking-normal md:text-4xl">GLB Optimizer</h1>
           </div>
-          <a
+          <Link
             href="/admin/imports"
             className="inline-flex h-10 items-center justify-center rounded-md border border-white/15 px-3 text-sm font-medium text-neutral-100 hover:bg-white/10"
           >
             Import jobs
-          </a>
+          </Link>
         </header>
 
         <section className="grid flex-1 grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(340px,0.9fr)]">

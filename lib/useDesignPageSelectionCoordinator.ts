@@ -16,6 +16,11 @@ import type {
   RoomOpening2D,
 } from "@/lib/editorScene";
 import type { DesignItem } from "@/lib/room-types";
+import type { DesignSnapshot } from "@/lib/room-types";
+import {
+  useDesignPageCanonicalTopologyController,
+  type DesignPageCanonicalTopologyActions,
+} from "@/lib/useDesignPageCanonicalTopologyController";
 import {
   useDesignPageDeleteSelectionShortcut,
 } from "@/lib/useDesignPageSelectionKeyboard";
@@ -25,6 +30,7 @@ import type { RendererSurfaceTarget } from "@/lib/useDesignPageSurfaceActions";
 type DesignPageSelectionHistory = {
   begin: (name: string) => void;
   commit: () => void;
+  rollback: () => void;
 };
 
 type CommitDesignPageItems = (
@@ -47,6 +53,7 @@ export type DesignPageSelectionCoordinatorConfiguration = {
 };
 
 export type DesignPageSelectionCoordinatorRefs = {
+  designSnapshot: MutableRefObject<DesignSnapshot>;
   planAnnotations: MutableRefObject<EditorAnnotation2D[]>;
   planFixedElements: MutableRefObject<FixedElement2D[]>;
   planOpenings: MutableRefObject<RoomOpening2D[]>;
@@ -58,6 +65,7 @@ export type DesignPageSelectionCoordinatorActionAdapters = {
   commitItems: CommitDesignPageItems;
   history: DesignPageSelectionHistory;
   preserveCameraAfterPlanOverlaySelection: () => void;
+  setDesignSnapshot: Dispatch<SetStateAction<DesignSnapshot>>;
   setEditorMode: Dispatch<SetStateAction<DesignPageEditorMode>>;
   setPlanAnnotations: Dispatch<SetStateAction<EditorAnnotation2D[]>>;
   setPlanFixedElements: Dispatch<SetStateAction<FixedElement2D[]>>;
@@ -69,6 +77,7 @@ export type DesignPageSelectionCoordinatorActionAdapters = {
   >;
   setSelectedZoneId: Dispatch<SetStateAction<string | null>>;
   setSuppressedDoorwaySuggestionKeys: Dispatch<SetStateAction<string[]>>;
+  showToast: (message: string) => void;
 };
 
 export type UseDesignPageSelectionCoordinatorInput = {
@@ -85,6 +94,7 @@ export type DesignPageSelectionCoordinatorActions = {
   suppressDoorwaySuggestionKeys: (keys: string[]) => void;
   deletePlanOverlayById: (overlayId: string | null) => boolean;
   handleSelectPlanOverlay: (id: string | null) => void;
+  canonicalTopology: DesignPageCanonicalTopologyActions;
 };
 
 export type DesignPageSelectionCoordinatorResult = {
@@ -101,6 +111,7 @@ export function useDesignPageSelectionCoordinator({
   },
   configuration: { catalogItems },
   refs: {
+    designSnapshot: designSnapshotRef,
     planAnnotations: planAnnotationsRef,
     planFixedElements: planFixedElementsRef,
     planOpenings: planOpeningsRef,
@@ -111,6 +122,7 @@ export function useDesignPageSelectionCoordinator({
     commitItems,
     history,
     preserveCameraAfterPlanOverlaySelection,
+    setDesignSnapshot,
     setEditorMode,
     setPlanAnnotations,
     setPlanFixedElements,
@@ -120,8 +132,21 @@ export function useDesignPageSelectionCoordinator({
     setSelectedRendererSurfaceTarget,
     setSelectedZoneId,
     setSuppressedDoorwaySuggestionKeys,
+    showToast,
   },
 }: UseDesignPageSelectionCoordinatorInput): DesignPageSelectionCoordinatorResult {
+  const canonicalTopology = useDesignPageCanonicalTopologyController({
+    refs: {
+      designSnapshot: designSnapshotRef,
+      planOpenings: planOpeningsRef,
+    },
+    actions: {
+      setDesignSnapshot,
+      setPlanOpenings,
+      setPlanFixedElements,
+      showToast,
+    },
+  });
   const clearZoneSelection = useCallback(() => {
     setSelectedZoneId(null);
   }, [setSelectedZoneId]);
@@ -169,6 +194,21 @@ export function useDesignPageSelectionCoordinator({
       if (!overlayExists) return false;
 
       history.begin("Delete plan overlay");
+      const canonicalDelete = deletedOpening
+        ? canonicalTopology.actions.removeOpening(overlayId)
+        : "not_canonical";
+      if (canonicalDelete === "blocked") {
+        history.rollback();
+        return false;
+      }
+      if (canonicalDelete === "committed") {
+        suppressDoorwaySuggestionKeys(
+          getDeletedDoorwaySuggestionKeys(deletedOpening!, housePlanRooms)
+        );
+        history.commit();
+        setSelectedPlanOverlayId(null);
+        return true;
+      }
       setPlanOpenings((previous) => {
         const next = previous.filter((entry) => entry.id !== overlayId);
         if (next.length !== previous.length && deletedOpening) {
@@ -191,6 +231,7 @@ export function useDesignPageSelectionCoordinator({
     [
       history,
       housePlanRooms,
+      canonicalTopology.actions,
       planAnnotationsRef,
       planFixedElementsRef,
       planOpeningsRef,
@@ -251,6 +292,7 @@ export function useDesignPageSelectionCoordinator({
       suppressDoorwaySuggestionKeys,
       deletePlanOverlayById,
       handleSelectPlanOverlay,
+      canonicalTopology: canonicalTopology.actions,
     },
   };
 }

@@ -97,6 +97,11 @@ export function useDesignPagePlacementWorkspaceRegistration({
     },
   });
 
+  // Canonical walls are compiled from immutable millimetre geometry. Legacy
+  // room-height controls would only write ignored snapshot overrides, so keep
+  // those controls read-only until edits write/recompile FloorPlanDocumentV2.
+  const canEditPlanGeometry =
+    !isClientPreview && !Boolean(designSnapshot.floorPlan?.canonicalDocument);
   const targeting = useDesignPageSurfaceTargetingFacade({
     state: {
       targeting: {
@@ -127,7 +132,7 @@ export function useDesignPagePlacementWorkspaceRegistration({
       },
       inspector: {
         canEdit,
-        canEditPlanGeometry: !isClientPreview,
+        canEditPlanGeometry,
         isDesigner,
       },
     },
@@ -183,7 +188,7 @@ export function useDesignPagePlacementWorkspaceRegistration({
     },
     derived: {
       ...catalogPlacement.derived,
-      canEditPlanGeometry: !isClientPreview,
+      canEditPlanGeometry,
     },
     configuration: {},
     refs: {},

@@ -2,7 +2,7 @@ import type {
   DesignPageSceneRegionReferences,
   DesignPageSceneRegionState,
 } from "@/components/editor/design-page/DesignPageSceneRegion";
-import { formatCabinetMeasurement } from "@/features/cabinetry/measurementUnits";
+import type { DesignPageOpeningMetricsPatch } from "@/lib/design-page-opening-metrics";
 import {
   resolveDesignPageViewportSelectionControlsState,
   type DesignPageViewportSelectionControlsInput,
@@ -39,6 +39,7 @@ export type BuildDesignPageViewportRegionAdapterInput = {
         kind: NonNullable<ViewportState["selectedOpening"]>["kind"];
         wall: NonNullable<ViewportState["selectedOpening"]>["wall"];
         widthMm: number;
+        wallSpanMeters: number;
       } | null;
     };
     selectionInspector: {
@@ -53,6 +54,8 @@ export type BuildDesignPageViewportRegionAdapterInput = {
       surfaceInspector: NonNullable<ViewportState["selectionInspector"]>["surfaceInspector"];
       measurementUnit: NonNullable<ViewportState["selectionInspector"]>["measurementUnit"];
       activeRoomHeightMm: number;
+      activeRoomWallHeightEvidence: NonNullable<ViewportState["selectionInspector"]>["activeRoomWallHeightEvidence"];
+      canEditActiveRoomWallHeight: boolean;
       activeFloorRoomCount: number;
       designRoomCount: number;
     };
@@ -87,6 +90,7 @@ export type BuildDesignPageViewportRegionAdapterInput = {
       NonNullable<ViewportState["floorProperties"]>,
       "canRedo"
     > & { canRedo: boolean };
+    importedWallEditor: ViewportState["importedWallEditor"];
     selectionControls: DesignPageViewportSelectionControlsInput;
   };
   configuration: {
@@ -100,14 +104,21 @@ export type BuildDesignPageViewportRegionAdapterInput = {
     selectionInspectorWidthPx: number;
     planQualityReviewTopPx: number;
     editorMode: "design" | "adjust" | "ai" | "buy" | "present";
+    importedWallEditor: DesignPageViewportRegionModel["configuration"]["importedWallEditor"];
   };
   references: ViewportReferences;
   actions: {
     deletePlanOverlay: (overlayId: string | null) => void;
+    updateOpeningMetrics: (
+      openingId: string,
+      metrics: DesignPageOpeningMetricsPatch
+    ) => void;
     showToast: (message: string) => void;
     selectionInspector: Omit<
       ViewportActions["selectionInspector"],
-      "commitRoomDimensionMm" | "deleteSelectedPlanOverlay"
+      | "commitRoomDimensionMm"
+      | "commitOpeningWidthMm"
+      | "deleteSelectedPlanOverlay"
     > & {
       commitRoomDimensionMeters: (
         roomId: Parameters<CommitRoomDimensionMm>[0],
@@ -125,6 +136,7 @@ export type BuildDesignPageViewportRegionAdapterInput = {
     > & {
       addFloor: (direction: "upper" | "lower", mode: Parameters<AddFloor>[0]) => void;
     };
+    importedWallEditor: ViewportActions["importedWallEditor"];
     selectionControls: Omit<
       ViewportActions["selectionControls"],
       "selectedZone"
@@ -150,6 +162,15 @@ export function buildDesignPageViewportRegionAdapter({
 }: BuildDesignPageViewportRegionAdapterInput): DesignPageViewportRegionModel {
   const selectedOverlayId = state.opening.selectedId;
   const selectionSummary = state.selectionInspector.summary;
+  const selectedOpeningMaxWidthMm = state.opening.value
+    ? Math.max(400, (state.opening.value.wallSpanMeters - 0.06) * 1000)
+    : 400;
+  const commitOpeningWidthMm = (valueMm: number) => {
+    if (!selectedOverlayId) return;
+    actions.updateOpeningMetrics(selectedOverlayId, {
+      widthMeters: valueMm / 1000,
+    });
+  };
 
   return buildDesignPageViewportRegionModel({
     state: {
@@ -162,10 +183,9 @@ export function buildDesignPageViewportRegionAdapter({
           ? {
               kind: state.opening.value.kind,
               wall: state.opening.value.wall,
-              widthLabel: formatCabinetMeasurement(
-                state.opening.value.widthMm,
-                state.selectionInspector.measurementUnit
-              ),
+              widthMm: state.opening.value.widthMm,
+              maxWidthMm: selectedOpeningMaxWidthMm,
+              measurementUnit: state.selectionInspector.measurementUnit,
             }
           : null,
       selectionInspector:
@@ -181,6 +201,13 @@ export function buildDesignPageViewportRegionAdapter({
               hasSelectedPlanAnnotation:
                 state.selectionInspector.hasSelectedPlanAnnotation,
               hasSelectedPlanOverlay: Boolean(selectedOverlayId),
+              selectedOpening:
+                state.opening.value && selectedOverlayId
+                  ? {
+                      widthMm: state.opening.value.widthMm,
+                      maxWidthMm: selectedOpeningMaxWidthMm,
+                    }
+                  : null,
               surfaceInspectorIsWall:
                 state.selectionInspector.surfaceInspectorIsWall,
               surfaceInspectorIsCeiling:
@@ -189,6 +216,10 @@ export function buildDesignPageViewportRegionAdapter({
               measurementUnit: state.selectionInspector.measurementUnit,
               activeRoomHeightMm:
                 state.selectionInspector.activeRoomHeightMm,
+              activeRoomWallHeightEvidence:
+                state.selectionInspector.activeRoomWallHeightEvidence,
+              canEditActiveRoomWallHeight:
+                state.selectionInspector.canEditActiveRoomWallHeight,
               activeFloorRoomCount:
                 state.selectionInspector.activeFloorRoomCount,
               canDeleteSelectedRoom:
@@ -231,6 +262,7 @@ export function buildDesignPageViewportRegionAdapter({
       floorProperties: state.visibility.floorProperties
         ? state.floorProperties
         : null,
+      importedWallEditor: state.importedWallEditor,
       selectionControls: resolveDesignPageViewportSelectionControlsState(
         state.selectionControls
       ),
@@ -240,7 +272,10 @@ export function buildDesignPageViewportRegionAdapter({
         dark: configuration.dark,
         backgroundColor: configuration.sceneBackgroundColor,
       },
-      selectedOpening: { dark: configuration.dark },
+      selectedOpening: {
+        dark: configuration.dark,
+        canEdit: configuration.canEditPlanGeometry,
+      },
       selectionInspector: {
         dark: configuration.dark,
         canEditPlanGeometry: configuration.canEditPlanGeometry,
@@ -267,11 +302,13 @@ export function buildDesignPageViewportRegionAdapter({
         dark: configuration.dark,
         canEdit: configuration.canEditPlanGeometry,
       },
+      importedWallEditor: configuration.importedWallEditor,
       selectionControls: { dark: configuration.dark },
     },
     references,
     actions: {
       selectedOpening: {
+        changeWidthMm: commitOpeningWidthMm,
         deleteOpening: () => {
           actions.deletePlanOverlay(selectedOverlayId);
           actions.showToast("Opening deleted");
@@ -287,6 +324,7 @@ export function buildDesignPageViewportRegionAdapter({
           ),
         deleteSelectedPlanOverlay: () =>
           actions.deletePlanOverlay(selectedOverlayId),
+        commitOpeningWidthMm,
       },
       planQuality: actions.planQuality,
       planCanvas: actions.planCanvas,
@@ -299,6 +337,7 @@ export function buildDesignPageViewportRegionAdapter({
         onAddLowerFloor: (mode) =>
           actions.floorProperties.addFloor("lower", mode),
       },
+      importedWallEditor: actions.importedWallEditor,
       selectionControls: {
         ...actions.selectionControls,
         selectedZone: {

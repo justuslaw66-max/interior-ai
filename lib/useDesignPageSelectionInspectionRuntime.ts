@@ -112,6 +112,7 @@ export function useDesignPageSelectionInspectionRuntime({
     },
     configuration: { catalogItems: configuration.catalogItems },
     refs: {
+      designSnapshot: snapshotDocument.refs.designSnapshotRef,
       planAnnotations: planDocument.refs.planAnnotationsRef,
       planFixedElements: planDocument.refs.planFixedElementsRef,
       planOpenings: planDocument.refs.planOpeningsRef,
@@ -124,6 +125,7 @@ export function useDesignPageSelectionInspectionRuntime({
       preserveCameraAfterPlanOverlaySelection:
         planViewport.actions.camera.navigation
           .preserveCameraAfterPlanOverlaySelection,
+      setDesignSnapshot: snapshotDocument.actions.setDesignSnapshot,
       setEditorMode: editorShell.actions.editor.setEditorMode,
       setPlanAnnotations: planDocument.actions.setPlanAnnotations,
       setPlanFixedElements: planDocument.actions.setPlanFixedElements,
@@ -139,6 +141,7 @@ export function useDesignPageSelectionInspectionRuntime({
       setSuppressedDoorwaySuggestionKeys:
         planViewport.actions.overlaySelection
           .setSuppressedDoorwaySuggestionKeys,
+      showToast: actions.showToast,
     },
   });
   const {
@@ -157,6 +160,8 @@ export function useDesignPageSelectionInspectionRuntime({
     },
     actions: {
       setDesignSnapshot: snapshotDocument.actions.setDesignSnapshot,
+      setPlanOpenings: planDocument.actions.setPlanOpenings,
+      setPlanFixedElements: planDocument.actions.setPlanFixedElements,
       history: historyBoundary.refs.history,
       runHistoryTransaction:
         historyBoundary.actions.runHistoryTransaction,

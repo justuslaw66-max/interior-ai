@@ -15,7 +15,7 @@ export type RoomRendererOpening = {
   width: number;
   height?: number;
   bottom?: number;
-  doorStyle?: "swing" | "open";
+  doorStyle?: "swing" | "sliding" | "folding" | "open";
 };
 
 export type RoomRendererFixedElement = {

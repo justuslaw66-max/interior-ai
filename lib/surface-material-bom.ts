@@ -52,11 +52,18 @@ export type SurfaceMaterialBomRow = {
 function getRoomAreaSqm(room: RoomSnapshot): number {
   const polygon = room.planShape === "custom_polygon" ? room.planPolygon : null;
   if (polygon && polygon.length >= 3) {
-    const area = polygon.reduce((sum, point, index) => {
-      const next = polygon[(index + 1) % polygon.length];
+    const loopArea = (loop: NonNullable<RoomSnapshot["planPolygon"]>) => Math.abs(loop.reduce((sum, point, index) => {
+      const next = loop[(index + 1) % loop.length];
       return sum + point.x * next.z - next.x * point.z;
-    }, 0);
-    return Math.abs(area) / 2;
+    }, 0)) / 2;
+    return Math.max(
+      0,
+      loopArea(polygon) -
+        (room.planHoles ?? []).reduce(
+          (sum, hole) => sum + (hole.length >= 3 ? loopArea(hole) : 0),
+          0
+        )
+    );
   }
 
   return Math.max(0, room.geometry.width * room.geometry.depth);
@@ -75,10 +82,15 @@ function getRoomWallHeight(room: RoomSnapshot): number {
 function getRoomWallAreaSqm(room: RoomSnapshot): number {
   const polygon = room.planShape === "custom_polygon" ? room.planPolygon : null;
   if (polygon && polygon.length >= 2) {
-    const perimeter = polygon.reduce((sum, point, index) => {
-      const next = polygon[(index + 1) % polygon.length];
+    const loopPerimeter = (loop: NonNullable<RoomSnapshot["planPolygon"]>) => loop.reduce((sum, point, index) => {
+      const next = loop[(index + 1) % loop.length];
       return sum + Math.hypot(next.x - point.x, next.z - point.z);
     }, 0);
+    const perimeter = loopPerimeter(polygon) +
+      (room.planHoles ?? []).reduce(
+        (sum, hole) => sum + (hole.length >= 2 ? loopPerimeter(hole) : 0),
+        0
+      );
     return perimeter * getRoomWallHeight(room);
   }
   return Math.max(0, (room.geometry.width + room.geometry.depth) * 2 * getRoomWallHeight(room));

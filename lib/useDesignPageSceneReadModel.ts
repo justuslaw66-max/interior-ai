@@ -28,6 +28,7 @@ import type {
 } from "@/lib/room-types";
 import type { SurfaceTargetMode } from "@/lib/useDesignPageSurfaceActions";
 import { useDesignPageScenePerformance } from "@/lib/useDesignPageScenePerformance";
+import { resolveCanonicalFloorElevationMeters } from "@/lib/floor-plan-scene-elevation";
 
 type HousePlanRoom = ReturnType<typeof buildHousePlan2D>["rooms"][number];
 
@@ -35,11 +36,14 @@ type SceneRoomItem = {
   item: DesignItem;
   roomId: string;
   roomOffset: { x: number; z: number };
+  /** Finished-floor world elevation for 3D; item coordinates remain room-local. */
+  roomFloorElevationMeters: number;
   roomWidth: number;
   roomDepth: number;
   roomHeight: number;
   roomPlanShape: NonNullable<RoomSnapshot["planShape"]>;
   roomPlanPolygon: RoomSnapshot["planPolygon"];
+  roomPlanHoles: RoomSnapshot["planHoles"];
   roomWallThickness: number;
   roomWallInset: number;
   isActiveRoom: boolean;
@@ -71,12 +75,15 @@ export function buildDesignPageSceneRoomItems({
       item,
       roomId: activeRoom.id,
       roomOffset: { x: planRoom?.x ?? 0, z: planRoom?.z ?? 0 },
+      roomFloorElevationMeters:
+        resolveCanonicalFloorElevationMeters(activeRoom) ?? 0,
       roomWidth: activeRoom.geometry.width,
       roomDepth: activeRoom.geometry.depth,
       roomHeight:
         activeRoom.geometry.height ?? ROOM_DIMENSION_DEFAULTS.roomHeight,
       roomPlanShape: activeRoom.planShape ?? "rectangle",
       roomPlanPolygon: activeRoom.planPolygon,
+      roomPlanHoles: activeRoom.planHoles,
       roomWallThickness:
         activeRoom.geometry.wallThickness ??
         ROOM_DIMENSION_DEFAULTS.wallThickness,
@@ -101,12 +108,15 @@ export function buildDesignPageSceneRoomItems({
         item,
         roomId: room.id,
         roomOffset,
+        roomFloorElevationMeters:
+          resolveCanonicalFloorElevationMeters(room) ?? 0,
         roomWidth: room.geometry.width,
         roomDepth: room.geometry.depth,
         roomHeight:
           room.geometry.height ?? ROOM_DIMENSION_DEFAULTS.roomHeight,
         roomPlanShape: room.planShape ?? "rectangle",
         roomPlanPolygon: room.planPolygon,
+        roomPlanHoles: room.planHoles,
         roomWallThickness:
           viewMode === "2d"
             ? room.geometry.wallThickness ??

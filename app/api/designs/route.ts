@@ -5,6 +5,8 @@ import { auth } from "@/lib/auth";
 import { getPostHogClient } from "@/lib/posthog-server";
 import { config } from "@/lib/config";
 import { parseDesignCreatePayload } from "@/lib/design-route-payload";
+import { sanitizePrivateFloorPlanUnderlayForSave } from "@/lib/floor-plan-imports/retention";
+import { syncFloorPlanDesignReference } from "@/lib/floor-plan-design-reference";
 
 export const runtime = "nodejs";
 
@@ -15,9 +17,10 @@ export async function GET(_req: Request) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const userId = session.user.id;
 
     const designs = await prisma.design.findMany({
-      where: { userId: session.user.id },
+      where: { userId },
       select: {
         id: true,
         title: true,
@@ -44,6 +47,7 @@ export async function POST(req: Request) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const userId = session.user.id;
 
     const body = await req.json();
     const parsed = parseDesignCreatePayload(body);
@@ -75,14 +79,14 @@ export async function POST(req: Request) {
     const payload = parsed.value;
 
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: userId },
       select: { plan: true },
     });
     const isProUser = user?.plan === "pro";
 
     if (!isProUser) {
       const count = await prisma.design.count({
-        where: { userId: session.user.id },
+        where: { userId },
       });
       if (count >= 20) {
         return NextResponse.json(
@@ -103,23 +107,41 @@ export async function POST(req: Request) {
       });
     }
 
-    const design = await prisma.design.create({
-      data: {
-        title: payload.title,
-        roomWidth: payload.roomWidth,
-        roomDepth: payload.roomDepth,
-        items: payload.items as Prisma.InputJsonValue,
-        ...(payload.snapshot
-          ? { snapshot: payload.snapshot as unknown as Prisma.InputJsonValue }
-          : {}),
-        zones: payload.zones as Prisma.InputJsonValue,
-        savedViews: payload.savedViews as Prisma.InputJsonValue,
-        user: { connect: { id: session.user.id } },
-        style: payload.style,
-        budget: payload.budget,
-        mode: payload.mode,
-        notes: payload.notes,
-      },
+    const design = await prisma.$transaction(async (transaction) => {
+      const snapshot = payload.snapshot
+        ? (
+            await sanitizePrivateFloorPlanUnderlayForSave({
+              snapshot: payload.snapshot,
+              ownerUserId: userId,
+              client: transaction,
+            })
+          ).snapshot
+        : null;
+      const created = await transaction.design.create({
+        data: {
+          title: payload.title,
+          roomWidth: payload.roomWidth,
+          roomDepth: payload.roomDepth,
+          items: payload.items as Prisma.InputJsonValue,
+          ...(snapshot
+            ? { snapshot: snapshot as Prisma.InputJsonValue }
+            : {}),
+          zones: payload.zones as Prisma.InputJsonValue,
+          savedViews: payload.savedViews as Prisma.InputJsonValue,
+          user: { connect: { id: userId } },
+          style: payload.style,
+          budget: payload.budget,
+          mode: payload.mode,
+          notes: payload.notes,
+        },
+      });
+      await syncFloorPlanDesignReference({
+        client: transaction,
+        designId: created.id,
+        ownerUserId: userId,
+        snapshot: created.snapshot,
+      });
+      return created;
     });
 
     if (config.logLevel === "debug") {
@@ -129,7 +151,7 @@ export async function POST(req: Request) {
     // Server-side PostHog tracking for design creation (conversion event)
     const posthog = getPostHogClient();
     posthog.capture({
-      distinctId: session.user.id,
+      distinctId: userId,
       event: "design_created",
       properties: {
         design_id: design.id,

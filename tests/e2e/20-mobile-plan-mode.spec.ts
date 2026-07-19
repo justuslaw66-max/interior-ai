@@ -32,6 +32,8 @@ async function openTemplatePlan(page: import("@playwright/test").Page) {
   const starterPlanPicker = page.getByTestId("starter-floor-plan-picker");
   if (await starterPlanPicker.isVisible({ timeout: 1500 }).catch(() => false)) {
     await page.getByTestId("apply-plan-template-studio").click();
+    await expect(page.getByTestId("new-plan-choice-dialog")).toBeVisible();
+    await page.getByTestId("new-plan-replace-current").click();
   }
   await expect(page.getByTestId("room-plan-status")).toHaveCount(1, { timeout: 20000 });
   await page.getByRole("button", { name: "2D Plan", exact: true }).click();

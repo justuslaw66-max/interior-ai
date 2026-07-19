@@ -1,13 +1,20 @@
+import MeasurementField from "@/components/editor/MeasurementField";
+import type { PlanMeasurementUnit } from "@/lib/design-page-types";
+
 type SelectedPlanOpeningActionsProps = {
   state: {
     kind: "door" | "window";
     wall: string;
-    widthLabel: string;
+    widthMm: number;
+    maxWidthMm: number;
+    measurementUnit: PlanMeasurementUnit;
   };
   configuration: {
     dark: boolean;
+    canEdit: boolean;
   };
   actions: {
+    changeWidthMm: (valueMm: number) => void;
     deleteOpening: () => void;
   };
 };
@@ -33,15 +40,25 @@ export function SelectedPlanOpeningActions({
       <span className={configuration.dark ? "text-neutral-400" : "text-neutral-500"}>
         {state.wall}
       </span>
-      <span
-        className={
-          configuration.dark
-            ? "designer-recessed rounded-md px-2 py-1 text-[11px]"
-            : "rounded-md bg-neutral-100 px-2 py-1 text-[11px] text-neutral-600"
-        }
-      >
-        {state.widthLabel} wide
+      <span className={configuration.dark ? "text-neutral-400" : "text-neutral-500"}>
+        Width
       </span>
+      <MeasurementField
+        label={`${state.kind === "door" ? "Door" : "Window"} width`}
+        valueMm={state.widthMm}
+        unit={state.measurementUnit}
+        minMm={400}
+        maxMm={state.maxWidthMm}
+        stepMm={50}
+        keyboardStepMm={50}
+        disabled={!configuration.canEdit}
+        dark={configuration.dark}
+        compact
+        hideLabel
+        testId="selected-plan-opening-width-input"
+        className="w-[132px]"
+        onCommit={actions.changeWidthMm}
+      />
       <button
         type="button"
         data-testid="selected-plan-opening-delete"

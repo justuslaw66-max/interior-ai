@@ -2,16 +2,19 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import {
-  browseFloorPlanLibrary,
+  browseReviewOnlyFloorPlanLibrary as browseFloorPlanLibrary,
   normalizeFloorPlanAddress,
   parseFloorPlanUnitNumber,
-  searchFloorPlanLibrary,
+  searchReviewOnlyFloorPlanLibrary as searchFloorPlanLibrary,
 } from "@/lib/floor-plan-address-search";
 import {
   buildHouseRoomAdjacencyGuides,
   doesHouseRoomOverlap,
   resolveHousePlanTemplateOpeningMetrics,
   type HousePlanRoom2D,
+  type HousePlanTemplateDoorway,
+  type HousePlanTemplateReferenceZone,
+  type HousePlanTemplateRoom,
 } from "@/lib/design-page-house-plan";
 import {
   buildRoomWallSegments2D,
@@ -30,6 +33,30 @@ const pingYiCourt = catalogs.find(
 assert.ok(pingYiCourt, "Expected the Ping Yi Court floor-plan catalog to load.");
 assert.equal(pingYiCourt.floor_plan.plan_id, "sg-hdb-ping-yi-court");
 assert.deepEqual(
+  pingYiCourt.publication,
+  {
+    status: "draft",
+    visibility: "review_only",
+    accuracy_notice: pingYiCourt.publication.accuracy_notice,
+  },
+  "The Ping Yi compatibility catalog must remain an internal review fixture."
+);
+assert.equal(
+  pingYiCourt.source.license_status,
+  "unknown",
+  "Unknown source rights must be preserved instead of fabricated as approval."
+);
+const falselyPublishedCatalog = structuredClone(pingYiCourt) as unknown as {
+  publication: { status: string; visibility: string; accuracy_notice: string };
+};
+falselyPublishedCatalog.publication.status = "published";
+falselyPublishedCatalog.publication.visibility = "public";
+assert.equal(
+  floorPlanLibraryCatalogSchema.safeParse(falselyPublishedCatalog).success,
+  false,
+  "A schema-v1 YAML compatibility catalog must not be able to claim public publication."
+);
+assert.deepEqual(
   pingYiCourt.address.buildings.map((building) => building.block),
   ["810A", "811A", "811B", "811C", "811D"]
 );
@@ -40,6 +67,263 @@ assert.deepEqual(
 
 const GEOMETRY_EPSILON = 0.01;
 const geometryResults = browseFloorPlanLibrary([pingYiCourt]);
+const pingYiSourceManifest = JSON.parse(
+  fs.readFileSync(
+    path.join(
+      process.cwd(),
+      "catalog",
+      "floor-plans",
+      "sg",
+      "hdb",
+      "ping-yi-court",
+      "source-manifest.json"
+    ),
+    "utf8"
+  )
+) as {
+  schema_version: number;
+  fixture_kind: string;
+  plan_id: string;
+  coordinate_unit: string;
+  verification_status: string;
+  source: { url: string; sha256: string; page_count: number };
+  official_brochure: {
+    url: string;
+    sha256: string;
+    page_count: number;
+    unit_distribution_pdf_pages: number[];
+    unit_distribution_brochure_pages: number[];
+  };
+  stack_bindings: Array<{
+    block: string;
+    stacks: string[];
+    layout_id: string;
+    transform: string;
+  }>;
+  layouts: Array<{
+    layout_id: string;
+    source_page: number;
+    printed_dimensions_mm: number[];
+    catalog_room_assertions?: Array<Record<string, string | number>>;
+    catalog_polygon_assertions?: Array<{
+      room_id: string;
+      global_points_mm: number[][];
+      evidence: string;
+    }>;
+    catalog_opening_assertions?: Array<
+      Record<string, string | number | null>
+    >;
+    catalog_reference_zone_assertions?: Array<
+      Record<string, string | number>
+    >;
+    opening_semantics?: Array<{
+      id: string;
+      operation: string;
+      evidence: string;
+    }>;
+    unresolved?: string[];
+  }>;
+};
+
+function toSourceMillimetres(metres: number): number {
+  return Math.round(metres * 10_000) / 10;
+}
+
+assert.equal(pingYiSourceManifest.schema_version, 2);
+assert.equal(pingYiSourceManifest.fixture_kind, "floor_plan_source_manifest");
+assert.equal(pingYiSourceManifest.plan_id, pingYiCourt.floor_plan.plan_id);
+assert.equal(pingYiSourceManifest.coordinate_unit, "millimetre");
+assert.equal(
+  pingYiSourceManifest.verification_status,
+  "needs_review",
+  "A brochure tracing must not claim source verification before independent review."
+);
+assert.equal(pingYiSourceManifest.source.url, pingYiCourt.source.source_url);
+assert.equal(pingYiSourceManifest.source.sha256, pingYiCourt.source.sha256);
+assert.equal(pingYiSourceManifest.source.page_count, 7);
+const officialBrochure = pingYiCourt.source.corroborating_sources.find(
+  (source) => source.publisher === "Housing and Development Board"
+);
+assert.ok(officialBrochure);
+assert.equal(
+  pingYiSourceManifest.official_brochure.url,
+  officialBrochure.source_url
+);
+assert.equal(
+  pingYiSourceManifest.official_brochure.sha256,
+  "c222a058459f0128cc8046d039b2b7559e0cb36fd030ac9160d3a1807041be00"
+);
+assert.equal(pingYiSourceManifest.official_brochure.sha256, officialBrochure.sha256);
+assert.equal(pingYiSourceManifest.official_brochure.page_count, 24);
+assert.equal(pingYiSourceManifest.official_brochure.page_count, officialBrochure.page_count);
+assert.deepEqual(pingYiSourceManifest.official_brochure.unit_distribution_pdf_pages, [10, 11]);
+assert.deepEqual(
+  pingYiSourceManifest.official_brochure.unit_distribution_brochure_pages,
+  [17, 18, 19]
+);
+assert.deepEqual(pingYiCourt.unit_distribution_source?.pdf_pages, [10, 11]);
+assert.deepEqual(pingYiCourt.unit_distribution_source?.brochure_pages, [17, 18, 19]);
+assert.equal(
+  pingYiCourt.unit_distribution_source?.sha256,
+  pingYiSourceManifest.official_brochure.sha256
+);
+assert.equal(
+  pingYiCourt.unit_distribution_source?.page_count,
+  pingYiSourceManifest.official_brochure.page_count
+);
+assert.deepEqual(
+  pingYiSourceManifest.layouts.map(({ layout_id, source_page }) => ({
+    layout_id,
+    source_page,
+  })),
+  pingYiCourt.layouts.map(({ layout_id, source_page }) => ({
+    layout_id,
+    source_page,
+  })),
+  "The independent source manifest must cover every catalog layout and source page."
+);
+
+const allowedEvidence = new Set([
+  "explicit_dimension",
+  "derived_dimension",
+  "scale_traced",
+  "official_specification",
+]);
+for (const manifestLayout of pingYiSourceManifest.layouts) {
+  assert.ok(
+    manifestLayout.printed_dimensions_mm.every(
+      (dimension) => Number.isInteger(dimension) && dimension > 0
+    ),
+    `${manifestLayout.layout_id} printed dimensions must remain positive integer millimetres.`
+  );
+  const result = geometryResults.find(
+    (candidate) => candidate.layoutId === manifestLayout.layout_id
+  );
+  assert.ok(result, `Missing runtime template for ${manifestLayout.layout_id}.`);
+
+  for (const expectation of manifestLayout.catalog_room_assertions ?? []) {
+    assert.ok(allowedEvidence.has(String(expectation.evidence)));
+    const room: HousePlanTemplateRoom | undefined = result.template.rooms.find(
+      (candidate) => candidate.id === expectation.room_id
+    );
+    assert.ok(room, `${manifestLayout.layout_id} is missing room ${expectation.room_id}.`);
+    const actualByManifestKey: Record<string, number> = {
+      width_mm: toSourceMillimetres(room.width),
+      depth_mm: toSourceMillimetres(room.depth),
+      center_x_mm: toSourceMillimetres(room.x),
+      center_z_mm: toSourceMillimetres(room.z),
+    };
+    for (const key of ["width_mm", "depth_mm", "center_x_mm", "center_z_mm"]) {
+      if (expectation[key] === undefined) continue;
+      assert.equal(
+        actualByManifestKey[key],
+        expectation[key],
+        `${manifestLayout.layout_id}:${expectation.room_id} ${key} diverges from its source manifest.`
+      );
+    }
+  }
+
+  for (const expectation of manifestLayout.catalog_polygon_assertions ?? []) {
+    assert.ok(allowedEvidence.has(expectation.evidence));
+    const room: HousePlanTemplateRoom | undefined = result.template.rooms.find(
+      (candidate) => candidate.id === expectation.room_id
+    );
+    assert.ok(room?.planPolygon);
+    assert.deepEqual(
+      room.planPolygon.map((point) => [
+        toSourceMillimetres(room.x + point.x),
+        toSourceMillimetres(room.z + point.z),
+      ]),
+      expectation.global_points_mm,
+      `${manifestLayout.layout_id}:${expectation.room_id} polygon diverges from the registered source anchors.`
+    );
+  }
+
+  for (const expectation of manifestLayout.catalog_opening_assertions ?? []) {
+    assert.ok(allowedEvidence.has(String(expectation.evidence)));
+    const opening: HousePlanTemplateDoorway | undefined = result.template.doorways.find(
+      (candidate) =>
+        candidate.fromRoomId === expectation.from_room_id &&
+        (candidate.toRoomId ?? null) === expectation.to_room_id &&
+        candidate.wall === expectation.wall &&
+        candidate.kind === expectation.kind
+    );
+    assert.ok(
+      opening,
+      `${manifestLayout.layout_id} is missing source opening ${expectation.from_room_id} -> ${expectation.to_room_id ?? "outside"}.`
+    );
+    assert.equal(toSourceMillimetres(opening.widthMeters ?? 0.9), expectation.width_mm);
+    assert.equal(toSourceMillimetres(opening.offsetMeters ?? 0), expectation.offset_mm);
+  }
+
+  for (const expectation of manifestLayout.catalog_reference_zone_assertions ?? []) {
+    assert.ok(allowedEvidence.has(String(expectation.evidence)));
+    const zone: HousePlanTemplateReferenceZone | undefined = result.template.referenceZones?.find(
+      (candidate) => candidate.id === expectation.zone_id
+    );
+    assert.ok(
+      zone,
+      `${manifestLayout.layout_id} is missing source reference zone ${expectation.zone_id}.`
+    );
+    if (expectation.width_mm !== undefined) {
+      assert.equal(toSourceMillimetres(zone.width), expectation.width_mm);
+    }
+    if (expectation.depth_mm !== undefined) {
+      assert.equal(toSourceMillimetres(zone.depth), expectation.depth_mm);
+    }
+    assert.equal(zone.locked, true, "Source-only structural zones must not be furnishable rooms.");
+  }
+
+  if (
+    [
+      ...(manifestLayout.catalog_room_assertions ?? []),
+      ...(manifestLayout.catalog_reference_zone_assertions ?? []),
+    ].some((expectation) => expectation.evidence === "scale_traced")
+  ) {
+    assert.ok(
+      (manifestLayout.unresolved?.length ?? 0) > 0,
+      `${manifestLayout.layout_id} must disclose scale-traced, unprinted measurements.`
+    );
+  }
+
+  const expectedOperations = manifestLayout.opening_semantics ?? [];
+  for (const operation of ["sliding", "folding", "fixed", "open"] as const) {
+    const expectedCount = expectedOperations.filter(
+      (semantic) => semantic.operation === operation
+    ).length;
+    if (expectedCount === 0) continue;
+    const actualCount = result.template.doorways.filter(
+      (doorway) => doorway.operation === operation
+    ).length;
+    assert.ok(
+      actualCount >= expectedCount,
+      `${manifestLayout.layout_id} must preserve its ${operation} opening semantics in the runtime template.`
+    );
+  }
+  if (expectedOperations.some((semantic) => semantic.operation === "louvre")) {
+    assert.ok(
+      result.template.windows.some(
+        (window) => window.kind === "louvre" && window.operation === "fixed"
+      ),
+      `${manifestLayout.layout_id} must preserve its source-supported fixed louvre.`
+    );
+  }
+}
+
+assert.deepEqual(
+  pingYiSourceManifest.stack_bindings.find(
+    (binding) => binding.block === "810A" && binding.layout_id === "3gen"
+  ),
+  {
+    block: "810A",
+    stacks: ["509", "527"],
+    floor_ranges: [{ from: 2, to: 15 }],
+    layout_id: "3gen",
+    evidence: "official_unit_distribution",
+    transform: "needs_review",
+  },
+  "The source fixture must preserve the corrected 3Gen stack mapping without inventing a transform."
+);
 function roomOutline(room: HousePlanRoom2D): Array<{ x: number; z: number }> {
   if (room.shape === "custom_polygon" && room.polygon) {
     return room.polygon.map((point) => ({
@@ -202,13 +486,14 @@ assert.deepEqual(
     doorway.fromRoomId,
     doorway.offsetMeters,
     doorway.widthMeters,
+    doorway.operation,
   ]),
   [
-    ["bedroom", 0.955, 1.2],
-    ["bathroom", -0.29, 0.8],
-    ["shelter", 0, 0.7],
+    ["bedroom", 0.955, 1.2, "sliding"],
+    ["bathroom", -0.29, 0.8, "folding"],
+    ["shelter", 0, 0.7, "swing"],
   ],
-  "The bedroom partition and the 700 mm shelter door should retain their page-1 positions."
+  "The bedroom partition, folding bathroom door, and 700 mm shelter door should retain their page-1 semantics and positions."
 );
 assert.ok(
   twoRoomTypeOneDoorways.some(
@@ -217,6 +502,7 @@ assert.ok(
       doorway.toRoomId === "living_dining" &&
       doorway.wall === "east" &&
       doorway.kind === "opening" &&
+      doorway.operation === "open" &&
       doorway.offsetMeters === -0.3475 &&
       doorway.widthMeters === 1.8
   ),
@@ -302,7 +588,7 @@ assert.deepEqual(
     },
     serviceYard: {
       id: "service_yard", name: "Service Yard", roomType: "custom", shape: "rectangle",
-      width: 2.055, depth: 2.4, x: 5.2425, z: 7.53,
+      width: 1.425, depth: 2.4, x: 5.5575, z: 7.53,
     },
     shelter: {
       id: "shelter", name: "Household Shelter", roomType: "custom", shape: "rectangle",
@@ -338,8 +624,8 @@ assert.equal(
 );
 assert.deepEqual(
   fourRoomResult.template.referenceZones?.map((zone) => [zone.id, zone.locked]),
-  [["aircon_ledge", true], ["entry_structure", true]],
-  "Exterior and structural source zones should remain locked and outside room counts."
+  [["aircon_ledge", true], ["service_strip", true], ["entry_structure", true]],
+  "Exterior, service-strip, and structural source zones should remain locked and outside room counts."
 );
 assert.deepEqual(
   resolveHousePlanTemplateOpeningMetrics(3.035, 0.9, 1.0675),
@@ -477,6 +763,86 @@ assert.equal(
   "Self-intersecting detected room polygons must be rejected."
 );
 
+const validWideOpenPassage = structuredClone(pingYiCourt);
+const validWideOpening = validWideOpenPassage.layouts[0].template.doorways.find(
+  (doorway) => doorway.kind === "opening"
+);
+assert.ok(validWideOpening);
+validWideOpening.width_meters = 5.065;
+assert.equal(
+  floorPlanLibraryCatalogSchema.safeParse(validWideOpenPassage).success,
+  true,
+  "The catalog schema must support full-width open-plan boundaries wider than a conventional door."
+);
+
+const invalidWidePhysicalDoor = structuredClone(pingYiCourt);
+invalidWidePhysicalDoor.layouts[0].template.doorways[0].width_meters = 5.065;
+assert.equal(
+  floorPlanLibraryCatalogSchema.safeParse(invalidWidePhysicalDoor).success,
+  false,
+  "A physical door must remain capped at 4 metres even though open passages may be wider."
+);
+
+const invalidOversizedPassage = structuredClone(pingYiCourt);
+const invalidOversizedOpening = invalidOversizedPassage.layouts[0].template.doorways.find(
+  (doorway) => doorway.kind === "opening"
+);
+assert.ok(invalidOversizedOpening);
+invalidOversizedOpening.width_meters = 12.001;
+assert.equal(
+  floorPlanLibraryCatalogSchema.safeParse(invalidOversizedPassage).success,
+  false,
+  "Unbounded opening widths must still be rejected."
+);
+
+const invalidOpeningOperation = structuredClone(pingYiCourt);
+const openingWithSwing = invalidOpeningOperation.layouts[0].template.doorways.find(
+  (doorway) => doorway.kind === "opening"
+);
+assert.ok(openingWithSwing);
+openingWithSwing.operation = "swing";
+assert.equal(
+  floorPlanLibraryCatalogSchema.safeParse(invalidOpeningOperation).success,
+  false,
+  "An open passage must not claim a hinged-door operation."
+);
+
+const invalidDoorOperation = structuredClone(pingYiCourt);
+invalidDoorOperation.layouts[0].template.doorways[0].operation = "open";
+assert.equal(
+  floorPlanLibraryCatalogSchema.safeParse(invalidDoorOperation).success,
+  false,
+  "The open operation must not be attached to a physical door."
+);
+
+const threeRoomLouvre = geometryResults
+  .find((result) => result.layoutId === "3-room")
+  ?.template.windows.find((window) => window.roomId === "kitchen_utility");
+assert.deepEqual(
+  threeRoomLouvre,
+  {
+    roomId: "kitchen_utility",
+    wall: "west",
+    offsetMeters: 0.4,
+    widthMeters: 0.8,
+    kind: "louvre",
+    operation: "fixed",
+  },
+  "The source-supported service-strip aperture must remain a fixed louvre, not a generic window."
+);
+
+const invalidMovingLouvre = structuredClone(pingYiCourt);
+const louvre = invalidMovingLouvre.layouts
+  .find((layout) => layout.layout_id === "3-room")
+  ?.template.windows.find((window) => window.kind === "louvre");
+assert.ok(louvre);
+louvre.operation = "sliding";
+assert.equal(
+  floorPlanLibraryCatalogSchema.safeParse(invalidMovingLouvre).success,
+  false,
+  "Louvres and vents must stay fixed in the v1 compatibility schema."
+);
+
 assert.equal(
   normalizeFloorPlanAddress("Blk 810A, Chai Chee St Unit #12 / 509"),
   "810a chai chee street"
@@ -578,7 +944,7 @@ const expectedLayoutCounts: Record<string, number> = {
 
 for (const [block, expectedCount] of Object.entries(expectedLayoutCounts)) {
   const results = searchFloorPlanLibrary(catalogs, `Block ${block}, Chai Chee St`);
-  assert.equal(results.length, expectedCount, `${block} should return its published flat types.`);
+  assert.equal(results.length, expectedCount, `${block} should resolve its review-fixture flat types.`);
   assert.ok(
     results.every((result) => result.matchedBlocks.length === 1 && result.matchedBlocks[0] === block),
     `${block} results should not claim another block.`
@@ -588,14 +954,14 @@ for (const [block, expectedCount] of Object.entries(expectedLayoutCounts)) {
 }
 
 const streetResults = searchFloorPlanLibrary(catalogs, "Chai Chee Street");
-assert.equal(streetResults.length, 7, "A street search should expose all seven brochure variants.");
+assert.equal(streetResults.length, 7, "Internal review should resolve all seven brochure variants.");
 assert.ok(streetResults.every((result) => result.matchLevel === "street"));
 
 const browsableResults = browseFloorPlanLibrary(catalogs);
 assert.equal(
   browsableResults.length,
   7,
-  "Browsing should expose every published Ping Yi Court layout without an address query."
+  "Internal review should expose every Ping Yi Court fixture without an address query."
 );
 assert.deepEqual(
   browsableResults.map((result) => result.layoutId),
@@ -724,6 +1090,26 @@ assert.deepEqual(
   "A Type 2 unit should retain both editable flex variants."
 );
 assert.deepEqual(
+  searchFloorPlanLibrary(catalogs, "810A Chai Chee St #12-501").map(
+    (result) => result.configuration
+  ),
+  [
+    {
+      groupId: "2-room-flexi-type-2",
+      optionId: "open-flex",
+      label: "Open dining configuration",
+      defaultSelected: true,
+    },
+    {
+      groupId: "2-room-flexi-type-2",
+      optionId: "partitioned-flex",
+      label: "Partitioned flex-room configuration",
+      defaultSelected: false,
+    },
+  ],
+  "Source-supported configurations should be explicit before a consumer applies one."
+);
+assert.deepEqual(
   searchFloorPlanLibrary(catalogs, "Chai Chee Street #12-509").map(
     (result) => `${result.matchedBlocks[0]}:${result.layoutId}`
   ),
@@ -789,16 +1175,48 @@ const addressSearchSource = fs.readFileSync(
   path.join(process.cwd(), "components", "editor", "FloorPlanAddressSearch.tsx"),
   "utf8"
 );
-assert.match(
-  addressSearchSource,
-  /fetch\("\/api\/floor-plans\?browse=1&limit=50"[\s\S]*?data-testid="floor-plan-library-browse-toggle"[\s\S]*?data-testid="floor-plan-library-browse-result-count"/,
-  "The address library should load and expose a visible imported-floor-plan browser."
+const addressFieldsSource = fs.readFileSync(
+  path.join(process.cwd(), "components", "editor", "FloorPlanAddressFields.tsx"),
+  "utf8"
+);
+const resultListSource = fs.readFileSync(
+  path.join(process.cwd(), "components", "editor", "FloorPlanCatalogResultList.tsx"),
+  "utf8"
 );
 assert.match(
   addressSearchSource,
-  /const visibleResults = hasSearchQuery[\s\S]*?browseOpen[\s\S]*?browseResults[\s\S]*?data-testid=\{[\s\S]*?floor-plan-library-browse-results/,
-  "The imported library browser should render its browse results without requiring a search query."
+  /new URLSearchParams\(\{ browse: "1", limit: "12" \}\)[\s\S]*?fetch\(`\/api\/floor-plans\?\$\{params\}`\)/,
+  "The address library should load and expose a visible approved-floor-plan browser."
 );
+assert.match(addressFieldsSource, /Browse approved floor plans/);
+assert.doesNotMatch(
+  addressSearchSource,
+  /onApplyPlanTemplate\(result\.template\)/,
+  "Consumer UI must not retain a direct apply path for review-only YAML templates."
+);
+assert.match(
+  addressSearchSource,
+  /const sourceResults = hasSearchQuery \? results : browseOpen \? browseResults : \[\][\s\S]*?<FloorPlanCatalogResultList/,
+  "The approved library browser should render its browse results without requiring a search query."
+);
+assert.match(
+  resultListSource,
+  /data-testid=\{testId\}[\s\S]*?Start a new design[\s\S]*?Replace current plan/,
+  "Extracted result cards should keep non-destructive start-new as the primary action."
+);
+
+const adminQueueSource = fs.readFileSync(
+  path.join(process.cwd(), "app", "admin", "floor-plans", "page.tsx"),
+  "utf8"
+);
+const adminFixturePanelSource = fs.readFileSync(
+  path.join(process.cwd(), "app", "admin", "floor-plans", "AdminFloorPlanFixturePanel.tsx"),
+  "utf8"
+);
+assert.match(adminQueueSource, /<AdminFloorPlanFixturePanel/);
+assert.match(adminFixturePanelSource, /Review-only YAML fixtures/);
+assert.match(adminFixturePanelSource, /getAllFloorPlanLibraryCatalogs/);
+assert.match(adminFixturePanelSource, /catalog\.layouts\.map/);
 
 const planPanelSource = fs.readFileSync(
   path.join(process.cwd(), "components", "editor", "DesignControlsPlanPanel.tsx"),

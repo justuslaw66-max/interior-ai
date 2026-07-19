@@ -16,7 +16,12 @@ import type {
   SceneItemDragEndContext,
   SceneItemMoveContext,
 } from "@/components/editor/design-page/SceneItemsLayer";
-import type { DesignItem, RoomSnapshot } from "@/lib/room-types";
+import type {
+  DesignItem,
+  RoomPlanPolygonPoint,
+  RoomPlanShape,
+  RoomSnapshot,
+} from "@/lib/room-types";
 
 type CrossRoomDragTarget = {
   roomId: string;
@@ -75,7 +80,10 @@ type SceneItemDragOptions = {
       roomWidth: number,
       roomDepth: number,
       wallThickness: number,
-      rotationY?: number
+      rotationY?: number,
+      planShape?: RoomPlanShape,
+      planPolygon?: RoomPlanPolygonPoint[],
+      planHoles?: RoomPlanPolygonPoint[][]
     ) => [number, number];
     getItemBounds: (item: DesignItem) => AABB | null;
     getItemDisplayName: (item: DesignItem | null | undefined) => string | null;
@@ -260,7 +268,10 @@ export function useDesignPageSceneItemDrag({
                 targetRoom.geometry.width,
                 targetRoom.geometry.depth,
                 targetRoom.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness,
-                mover.rotationY ?? 0
+                mover.rotationY ?? 0,
+                targetRoom.planShape,
+                targetRoom.planPolygon,
+                targetRoom.planHoles
               );
           const targetPosition: [number, number, number] = surfacePlacement
             ? surfacePlacement.position
@@ -384,7 +395,10 @@ export function useDesignPageSceneItemDrag({
           roomWidth,
           roomDepth,
           wallThickness,
-          item.rotationY ?? 0
+          item.rotationY ?? 0,
+          activeRoom?.planShape,
+          activeRoom?.planPolygon,
+          activeRoom?.planHoles
         );
         return {
           ...item,

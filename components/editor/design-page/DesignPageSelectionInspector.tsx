@@ -12,7 +12,10 @@ import {
   type HousePlanRoom2D,
 } from "@/lib/design-page-house-plan";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
+import type { FloorPlanPropertyEvidenceV2 } from "@/lib/floor-plan-document-v2";
+import type { FloorPlanConsumerMeasurementEvidenceV2 } from "@/lib/floor-plan-measured-property-mutations";
 import type { DesignPageSelectionInspectorSummary } from "@/lib/useDesignPageSelectionInspectorModel";
+import FloorPlanPropertyEvidenceControl from "@/components/editor/FloorPlanPropertyEvidenceControl";
 
 type SelectedRoom = Pick<HousePlanRoom2D, "id" | "w" | "d">;
 
@@ -25,11 +28,17 @@ type DesignPageSelectionInspectorProps = {
     hasSelectedPlanFixedElement: boolean;
     hasSelectedPlanAnnotation: boolean;
     hasSelectedPlanOverlay: boolean;
+    selectedOpening: {
+      widthMm: number;
+      maxWidthMm: number;
+    } | null;
     surfaceInspectorIsWall: boolean;
     surfaceInspectorIsCeiling: boolean;
     surfaceInspector: SelectedSurfaceInspectorState | null;
     measurementUnit: PlanMeasurementUnit;
     activeRoomHeightMm: number;
+    activeRoomWallHeightEvidence: FloorPlanPropertyEvidenceV2 | null;
+    canEditActiveRoomWallHeight: boolean;
     activeFloorRoomCount: number;
     canDeleteSelectedRoom: boolean;
   };
@@ -51,7 +60,11 @@ type DesignPageSelectionInspectorProps = {
       dimension: "width" | "depth",
       valueMm: number
     ) => void;
-    commitActiveFloorWallHeightMm: (valueMm: number) => void;
+    commitActiveFloorWallHeightMm: (
+      valueMm: number,
+      evidence?: FloorPlanConsumerMeasurementEvidenceV2,
+      measurementNote?: string
+    ) => void;
     item: {
       center: () => void;
       snapToWall: () => void;
@@ -65,6 +78,7 @@ type DesignPageSelectionInspectorProps = {
       delete: (roomId: string) => void;
     };
     deleteSelectedPlanOverlay: () => void;
+    commitOpeningWidthMm: (valueMm: number) => void;
     surfaceInspector: SelectedSurfaceInspectorActions;
   };
 };
@@ -144,7 +158,56 @@ export function DesignPageSelectionInspector({
         </button>
       </div>
 
-      {state.summary.metrics.length > 0 ? (
+      {state.selectedOpening ? (
+        <div
+          data-testid="selection-inspector-opening-dimensions"
+          className="mt-3 grid grid-cols-2 gap-2"
+        >
+          <MeasurementField
+            label="Width"
+            valueMm={state.selectedOpening.widthMm}
+            unit={state.measurementUnit}
+            minMm={400}
+            maxMm={state.selectedOpening.maxWidthMm}
+            stepMm={50}
+            keyboardStepMm={50}
+            disabled={!configuration.canEditPlanGeometry}
+            dark={configuration.dark}
+            compact
+            testId="selection-inspector-opening-width"
+            onCommit={actions.commitOpeningWidthMm}
+          />
+          <div>
+            <div
+              className={
+                configuration.dark
+                  ? "flex items-center justify-between text-[11px] font-semibold text-neutral-300"
+                  : "flex items-center justify-between text-[11px] font-semibold text-neutral-600"
+              }
+            >
+              <span>Position</span>
+              <span
+                className={
+                  configuration.dark
+                    ? "font-normal text-neutral-400"
+                    : "font-normal text-neutral-500"
+                }
+              >
+                {state.measurementUnit}
+              </span>
+            </div>
+            <div
+              className={
+                configuration.dark
+                  ? "designer-raised mt-1 flex h-9 items-center rounded-md border px-2 text-xs font-semibold"
+                  : "mt-1 flex h-9 items-center rounded-md border border-neutral-200 bg-neutral-50 px-2 text-xs font-semibold text-neutral-800"
+              }
+            >
+              {state.summary.metrics[1]}
+            </div>
+          </div>
+        </div>
+      ) : state.summary.metrics.length > 0 ? (
         <div
           className={`mt-3 grid gap-2 ${
             state.summary.metrics.length === 1 ? "grid-cols-1" : "grid-cols-2"
@@ -216,7 +279,7 @@ export function DesignPageSelectionInspector({
               maxMm={ROOM_DIMENSION_DEFAULTS.max * 1000}
               stepMm={10}
               keyboardStepMm={50}
-              disabled={!configuration.canEditPlanGeometry}
+              disabled={!state.canEditActiveRoomWallHeight}
               dark={configuration.dark}
               compact
               testId="selection-inspector-room-width"
@@ -274,6 +337,19 @@ export function DesignPageSelectionInspector({
                 state.activeFloorRoomCount === 1 ? "" : "s"
               } on this floor.`}
               onCommit={actions.commitActiveFloorWallHeightMm}
+            />
+            <FloorPlanPropertyEvidenceControl
+              evidence={state.activeRoomWallHeightEvidence}
+              dark={configuration.dark}
+              disabled={!state.canEditActiveRoomWallHeight}
+              testId="selection-inspector-floor-wall-height-evidence"
+              onConfirm={(evidence, measurementNote) =>
+                actions.commitActiveFloorWallHeightMm(
+                  state.activeRoomHeightMm,
+                  evidence,
+                  measurementNote
+                )
+              }
             />
           </div>
         </div>

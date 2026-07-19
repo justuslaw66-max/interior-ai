@@ -11,6 +11,7 @@ const defaultOutput = path.join(rootDir, ".local", "asset-inventory.json");
 const roots = [
   "catalog",
   "public/assets/catalog",
+  "public/assets/floor-plans",
   "public/assets/models",
   "public/assets/thumbs",
 ];

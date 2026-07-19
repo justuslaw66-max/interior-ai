@@ -38,6 +38,12 @@ type PlanUnderlayRenderer2DProps = {
   onTraceOpeningPoint?: (point: FloorPlanPoint) => void;
 };
 
+class PlanUnderlayTextureLoader extends THREE.TextureLoader {
+  constructor() {
+    super(new THREE.LoadingManager());
+  }
+}
+
 function getPointFromEvent(point: THREE.Vector3, snapToGrid = false): FloorPlanPoint {
   const nextPoint = {
     x: Number(point.x.toFixed(3)),
@@ -116,7 +122,7 @@ function ImagePlanUnderlay({
   existingOpenings?: RoomOpening2D[];
   onTraceOpeningPoint?: (point: FloorPlanPoint) => void;
 }) {
-  const texture = useLoader(THREE.TextureLoader, underlay.assetUrl);
+  const texture = useLoader(PlanUnderlayTextureLoader, underlay.assetUrl);
   const [traceRoomPreviewPoint, setTraceRoomPreviewPoint] = useState<FloorPlanPoint | null>(null);
   const [traceOpeningPreviewPoint, setTraceOpeningPreviewPoint] =
     useState<FloorPlanPoint | null>(null);

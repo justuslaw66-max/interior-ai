@@ -246,6 +246,7 @@ export function buildDesignPagePlanWorkspaceRegistrationInput({
         selectPlanOverlay: coordination.actions.handleSelectPlanOverlay,
         selectPlanRoom: actions.room.setSelectedPlanRoomId,
         updateSelection: selection.actions.updateSelection,
+        canonicalTopology: coordination.actions.canonicalTopology,
         clearAllSelection: coordination.actions.clearAllSelection,
         setSelectedPlanOverlayId:
           actions.selection.setSelectedPlanOverlayId,

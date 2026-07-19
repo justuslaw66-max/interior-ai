@@ -1,6 +1,7 @@
 "use client";
 
-import type { ComponentProps } from "react";
+import { useMemo, type ComponentProps } from "react";
+import { Html } from "@react-three/drei/web/Html";
 
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
 import type { Plan2DViewOrientation } from "@/components/editor/camera/EditorCamera2D";
@@ -28,6 +29,9 @@ import type {
 import type { FloorPlanQualityIssue } from "@/lib/floor-plan-quality";
 import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
 import type { RendererSurfaceTarget } from "@/lib/useDesignPageSurfaceActions";
+import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
+import { compileCanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
+import { CANONICAL_ROOM_GEOMETRY_LOCK_REASON } from "@/lib/floor-plan-topology-editor";
 
 type UnderlayRendererProps = ComponentProps<typeof PlanUnderlayRenderer2D>;
 type PlanRendererProps = ComponentProps<typeof RoomRenderer2D>;
@@ -63,6 +67,8 @@ export type DesignSceneStructureLayerState = {
     scene: EditorScene2D;
     zones: PlanZone2D[];
     qualityIssues: FloorPlanQualityIssue[];
+    canonicalDocument: FloorPlanDocumentV2 | null;
+    canonicalGeometryHash: string | null;
   };
   wholeHome: {
     enabled: boolean;
@@ -181,6 +187,77 @@ export function DesignSceneStructureLayer({
   configuration,
   actions,
 }: DesignSceneStructureLayerProps) {
+  const canonicalResolution = useMemo(() => {
+    if (!state.plan.canonicalDocument) return { plan: null, error: null };
+    try {
+      return {
+        plan: compileCanonicalFloorPlanRenderModel(
+          state.plan.canonicalDocument,
+          state.plan.canonicalGeometryHash
+        ),
+        error: null,
+      };
+    } catch (cause) {
+      console.error("Canonical floor-plan render model rejected", cause);
+      return {
+        plan: null,
+        error:
+          cause instanceof Error
+            ? cause.message
+            : "Canonical floor-plan integrity check failed",
+      };
+    }
+  }, [state.plan.canonicalDocument, state.plan.canonicalGeometryHash]);
+  const canonicalPlan = canonicalResolution.plan;
+  const canonicalActiveFloorId =
+    canonicalPlan?.floors.find(
+      (floor) => floor.levelIndex + 1 === state.wholeHome.activeFloorLevel
+    )?.id ?? null;
+  const canonicalStructureExpected = Boolean(state.plan.canonicalDocument);
+  const canonicalIntegrityWarning = canonicalResolution.error ? (
+    <Html position={[0, 0.18, 0]} center transform={false} zIndexRange={[30, 0]}>
+      <div
+        data-testid="canonical-floor-plan-integrity-warning"
+        style={{
+          border: "1px solid rgba(220,38,38,0.3)",
+          borderRadius: 8,
+          background: "rgba(254,242,242,0.96)",
+          color: "#991b1b",
+          fontSize: 11,
+          fontWeight: 700,
+          maxWidth: 280,
+          padding: "8px 10px",
+          pointerEvents: "none",
+          textAlign: "center",
+        }}
+      >
+        Floor-plan integrity check failed. Canonical walls are hidden; reload or choose an approved revision.
+      </div>
+    </Html>
+  ) : null;
+  const canonicalEditingNotice =
+    canonicalPlan && configuration.editorMode !== "present" ? (
+      <Html position={[0, 0.1, 0]} center transform={false} zIndexRange={[18, 0]}>
+        <div
+          data-testid="canonical-room-geometry-lock-reason"
+          title={CANONICAL_ROOM_GEOMETRY_LOCK_REASON}
+          style={{
+            border: "1px solid rgba(37,99,235,0.22)",
+            borderRadius: 999,
+            background: "rgba(239,246,255,0.94)",
+            color: "#1e3a8a",
+            fontSize: 10,
+            fontWeight: 700,
+            padding: "4px 8px",
+            pointerEvents: "none",
+            whiteSpace: "nowrap",
+          }}
+        >
+          Room boundaries source-locked · openings editable on-wall
+        </div>
+      </Html>
+    ) : null;
+
   if (state.viewMode === "2d") {
     const { plan } = state;
     const { layers } = configuration.plan;
@@ -207,6 +284,8 @@ export function DesignSceneStructureLayer({
           width={plan.width}
           depth={plan.depth}
           rooms={plan.rooms}
+          activeFloorId={canonicalActiveFloorId}
+          activeFloorLevel={state.wholeHome.activeFloorLevel}
           activeRoomId={plan.activeRoomId}
           onSelectRoom={actions.rooms.select}
           onSelectSurfaceTarget={actions.rooms.selectSurfaceTarget}
@@ -214,12 +293,20 @@ export function DesignSceneStructureLayer({
             plan.calibration.enabled ? undefined : actions.rooms.clearSelection
           }
           onRenameRoom={actions.rooms.rename}
-          onDuplicateRoom={actions.rooms.duplicate}
-          onDeleteRoom={actions.rooms.delete}
+          onDuplicateRoom={
+            canonicalStructureExpected ? undefined : actions.rooms.duplicate
+          }
+          onDeleteRoom={
+            canonicalStructureExpected ? undefined : actions.rooms.delete
+          }
           onEditFloor={actions.rooms.editFloor}
           onFitRoom={actions.rooms.fit}
-          onMoveRoom={actions.rooms.move}
-          onResizeRoom={actions.rooms.resize}
+          onMoveRoom={
+            canonicalStructureExpected ? undefined : actions.rooms.move
+          }
+          onResizeRoom={
+            canonicalStructureExpected ? undefined : actions.rooms.resize
+          }
           onRoomDragStateChange={actions.rooms.setDragging}
           onRoomResizeStateChange={actions.rooms.setResizing}
           measurementUnit={configuration.plan.measurementUnit}
@@ -238,7 +325,11 @@ export function DesignSceneStructureLayer({
           onDeleteOverlay={actions.overlays.delete}
           onMoveOpening={actions.overlays.moveOpening}
           onResizeOpening={actions.overlays.resizeOpening}
-          onAddDoorwaySuggestion={actions.overlays.addDoorwaySuggestion}
+          onAddDoorwaySuggestion={
+            canonicalStructureExpected
+              ? undefined
+              : actions.overlays.addDoorwaySuggestion
+          }
           suppressedDoorwaySuggestionKeys={
             plan.suppressedDoorwaySuggestionKeys
           }
@@ -250,7 +341,11 @@ export function DesignSceneStructureLayer({
           drawRoomPreviewPoint={plan.roomTrace.previewPoint}
           onDrawRoomPoint={actions.drawing.addRoomPoint}
           onDrawRoomPreviewPoint={actions.drawing.previewRoomPoint}
-          onCommitRoomDimensionEdit={actions.drawing.commitRoomDimension}
+          onCommitRoomDimensionEdit={
+            canonicalStructureExpected
+              ? undefined
+              : actions.drawing.commitRoomDimension
+          }
           onCommitWallDrawSegmentLength={
             actions.drawing.commitWallSegmentLength
           }
@@ -261,12 +356,18 @@ export function DesignSceneStructureLayer({
           onTraceOpeningPoint={actions.drawing.addOpeningPoint}
           openings={mapPlanOpeningsToRoomRenderer(plan.scene.openings)}
           fixedElements={mapPlanFixedElementsToRoomRenderer(
-            plan.scene.fixedElements
+            canonicalPlan
+              ? plan.scene.fixedElements.filter((element) => !element.canonicalKind)
+              : plan.scene.fixedElements
           )}
           annotations={mapPlanAnnotationsToRoomRenderer(plan.scene.annotations)}
           zones={plan.zones}
           onPlanDebugMetricsChange={actions.reportPlanMetrics}
+          canonicalPlan={canonicalPlan}
+          canonicalStructureExpected={canonicalStructureExpected}
         />
+        {canonicalIntegrityWarning}
+        {canonicalEditingNotice}
         <PlanQualityHintOverlay
           rooms={plan.rooms}
           issues={plan.qualityIssues}
@@ -277,6 +378,7 @@ export function DesignSceneStructureLayer({
 
   if (state.wholeHome.enabled) {
     return (
+      <>
       <HousePlanRenderer3D
         rooms={state.wholeHome.rooms}
         openings={mapPlanOpeningsToRoomRenderer(state.plan.scene.openings)}
@@ -295,8 +397,17 @@ export function DesignSceneStructureLayer({
         onSelectSurfaceTarget={actions.rooms.selectSurfaceTarget}
         onSelectOpening={actions.overlays.select}
         onMoveOpening={actions.overlays.moveOpening}
-        onOpeningDragStateChange={actions.wholeHome.setOpeningDragging}
+        onResizeOpening={actions.overlays.resizeOpening}
+        onOpeningDragStateChange={(dragging, kind) => {
+          if (kind) actions.overlays.setDragging(dragging, kind);
+          else actions.wholeHome.setOpeningDragging(dragging);
+        }}
+        canonicalPlan={canonicalPlan}
+        canonicalStructureExpected={canonicalStructureExpected}
       />
+      {canonicalIntegrityWarning}
+      {canonicalEditingNotice}
+      </>
     );
   }
 

@@ -81,6 +81,7 @@ export function useDesignPageHousePlanState({
       : ROOM_DIMENSION_DEFAULTS.wallThickness;
   const activeRoomPlanShape = activeRoom?.planShape ?? "rectangle";
   const activeRoomPlanPolygon = activeRoom?.planPolygon;
+  const activeRoomPlanHoles = activeRoom?.planHoles;
   const activeFloorLevel =
     typeof activeRoom?.floorLevel === "number" && Number.isFinite(activeRoom.floorLevel)
       ? activeRoom.floorLevel
@@ -107,9 +108,10 @@ export function useDesignPageHousePlanState({
         targetWallThickness,
         rotationY,
         activeRoomPlanShape,
-        activeRoomPlanPolygon
+        activeRoomPlanPolygon,
+        activeRoomPlanHoles
       ),
-    [activeRoomPlanPolygon, activeRoomPlanShape]
+    [activeRoomPlanHoles, activeRoomPlanPolygon, activeRoomPlanShape]
   );
 
   const formattedRoomWidth = roomWidth.toFixed(2);

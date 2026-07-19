@@ -70,6 +70,7 @@ type FurnitureProps = {
   roomOriginZ?: number;
   roomPlanShape?: RoomPlanShape;
   roomPlanPolygon?: RoomPlanPolygonPoint[];
+  roomPlanHoles?: RoomPlanPolygonPoint[][];
   wallThickness?: number;
   wallContactInset?: number;
   margin?: number;
@@ -149,6 +150,7 @@ export function Furniture({
   roomOriginZ = 0,
   roomPlanShape = "rectangle",
   roomPlanPolygon,
+  roomPlanHoles,
   wallThickness = 0.12,
   wallContactInset,
   snapDistance = 0.25,
@@ -441,7 +443,8 @@ export function Furniture({
         wallThickness,
         nextRotationY,
         roomPlanShape,
-        roomPlanPolygon
+        roomPlanPolygon,
+        roomPlanHoles
       );
 
       return [localX + roomOriginX, localZ + roomOriginZ];
@@ -454,6 +457,7 @@ export function Furniture({
       roomOriginX,
       roomOriginZ,
       roomPlanPolygon,
+      roomPlanHoles,
       roomPlanShape,
       roomWidth,
       rotation,

@@ -143,6 +143,8 @@ export type BuildDesignPageDialogLayerModelInput = {
     validation: {
       constraints: Overlays["validation"]["constraints"];
       confidence: Overlays["validation"]["confidence"];
+      floorPlanOrientation?: Overlays["validation"]["floorPlanOrientation"];
+      floorPlanRevisionUpdate?: Overlays["validation"]["floorPlanRevisionUpdate"];
     };
   };
   sharing: {
@@ -291,6 +293,7 @@ export function buildDesignPageDialogLayerModel({
         hidden: false,
         constraints: feedback.validation.constraints,
         confidence: feedback.validation.confidence,
+        floorPlanOrientation: feedback.validation.floorPlanOrientation,
       },
       cabinetry: {
         state: cabinetry.state,

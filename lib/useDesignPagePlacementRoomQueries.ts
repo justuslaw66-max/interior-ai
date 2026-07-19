@@ -80,7 +80,8 @@ export function clampToPlacementRoom(
     room.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness,
     rotationY,
     room.planShape ?? "rectangle",
-    room.planPolygon
+    room.planPolygon,
+    room.planHoles
   );
 }
 
@@ -167,6 +168,7 @@ export function isPlacementContainedInRoom({
       name: room.name,
       shape: room.planShape ?? houseRoom?.shape ?? "rectangle",
       polygon: room.planPolygon ?? houseRoom?.polygon,
+      holes: room.planHoles ?? houseRoom?.holes,
       x: 0,
       z: 0,
       w: room.geometry.width,

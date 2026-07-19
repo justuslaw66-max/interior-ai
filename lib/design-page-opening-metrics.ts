@@ -1,4 +1,5 @@
 import type { RoomOpening2D } from "@/lib/editorScene";
+import type { FloorPlanConsumerMeasurementEvidenceV2 } from "@/lib/floor-plan-measured-property-mutations";
 import { PLAN_OPENING_DEFAULT_HEIGHT_METERS } from "@/lib/design-page-plan-overlays";
 
 export type DesignPageOpeningMetricsPatch = {
@@ -7,6 +8,12 @@ export type DesignPageOpeningMetricsPatch = {
   heightMeters?: number;
   bottomMeters?: number;
   kind?: RoomOpening2D["kind"];
+  /** Explicit evidence chosen for a canonical height edit. */
+  heightEvidence?: FloorPlanConsumerMeasurementEvidenceV2;
+  /** Explicit evidence chosen for a canonical sill-height edit. */
+  bottomEvidence?: FloorPlanConsumerMeasurementEvidenceV2;
+  /** Short method/note required when recording a site measurement. */
+  measurementNote?: string;
 };
 
 export type NormalizeDesignPageOpeningMetricsInput = {

@@ -3,7 +3,10 @@
 import { useState } from "react";
 import { ChevronDown, ChevronRight, Redo2 } from "lucide-react";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
+import type { FloorPlanPropertyEvidenceV2 } from "@/lib/floor-plan-document-v2";
+import type { FloorPlanConsumerMeasurementEvidenceV2 } from "@/lib/floor-plan-measured-property-mutations";
 import MeasurementField from "./MeasurementField";
+import FloorPlanPropertyEvidenceControl from "./FloorPlanPropertyEvidenceControl";
 
 export type FloorCreationMode = "blank" | "layout" | "walls";
 
@@ -18,8 +21,12 @@ export type FloorPropertiesPanelProps = {
   activeFloorRoomCount: number;
   measurementUnit: PlanMeasurementUnit;
   activeRoomHeightMm: number;
+  activeRoomWallHeightEvidence?: FloorPlanPropertyEvidenceV2 | null;
+  canEditActiveRoomWallHeight?: boolean;
   activeRoomWallThicknessMm: number;
   activeRoomSlabThicknessMm: number;
+  activeRoomSlabThicknessEvidence?: FloorPlanPropertyEvidenceV2 | null;
+  canEditActiveRoomSlabThickness?: boolean;
   activeRoomBaseboardDepthMm: number;
   activeRoomWallOpacity: number;
   activeRoomFloorOpacity: number;
@@ -37,9 +44,17 @@ export type FloorPropertiesPanelProps = {
   onStackedFloorViewChange: (enabled: boolean) => void;
   onRedo: () => void;
   canRedo: boolean;
-  onActiveRoomHeightMmChange: (valueMm: number) => void;
+  onActiveRoomHeightMmChange: (
+    valueMm: number,
+    evidence?: FloorPlanConsumerMeasurementEvidenceV2,
+    measurementNote?: string
+  ) => void;
   onActiveRoomWallThicknessMmChange: (valueMm: number) => void;
-  onActiveRoomSlabThicknessMmChange: (valueMm: number) => void;
+  onActiveRoomSlabThicknessMmChange: (
+    valueMm: number,
+    evidence?: FloorPlanConsumerMeasurementEvidenceV2,
+    measurementNote?: string
+  ) => void;
   onActiveRoomBaseboardDepthMmChange: (valueMm: number) => void;
   onActiveRoomSurfaceOpacityChange: (kind: "wall" | "floor" | "ceiling", opacity: number) => void;
   onActiveRoomCeilingVisibleChange: (visible: boolean) => void;
@@ -57,8 +72,12 @@ export default function FloorPropertiesPanel({
   activeFloorRoomCount,
   measurementUnit,
   activeRoomHeightMm,
+  activeRoomWallHeightEvidence = null,
+  canEditActiveRoomWallHeight = canEdit,
   activeRoomWallThicknessMm,
   activeRoomSlabThicknessMm,
+  activeRoomSlabThicknessEvidence = null,
+  canEditActiveRoomSlabThickness = canEdit,
   activeRoomBaseboardDepthMm,
   activeRoomWallOpacity,
   activeRoomFloorOpacity,
@@ -387,12 +406,25 @@ export default function FloorPropertiesPanel({
             maxMm={6000}
             stepMm={10}
             keyboardStepMm={50}
-            disabled={!canEdit}
+            disabled={!canEditActiveRoomWallHeight}
             dark={dark}
             compact
             testId="floor-properties-wall-height-input"
             hint={`Applies to ${activeFloorRoomCount} room${activeFloorRoomCount === 1 ? "" : "s"} on ${activeFloorLabel}.`}
             onCommit={onActiveRoomHeightMmChange}
+          />
+          <FloorPlanPropertyEvidenceControl
+            evidence={activeRoomWallHeightEvidence}
+            dark={dark}
+            disabled={!canEditActiveRoomWallHeight}
+            testId="floor-properties-wall-height-evidence"
+            onConfirm={(evidence, measurementNote) =>
+              onActiveRoomHeightMmChange(
+                activeRoomHeightMm,
+                evidence,
+                measurementNote
+              )
+            }
           />
           <MeasurementField
             label="Wall thickness"
@@ -416,11 +448,24 @@ export default function FloorPropertiesPanel({
             maxMm={600}
             stepMm={5}
             keyboardStepMm={5}
-            disabled={!canEdit}
+            disabled={!canEditActiveRoomSlabThickness}
             dark={dark}
             compact
             testId="floor-properties-slab-thickness-input"
             onCommit={onActiveRoomSlabThicknessMmChange}
+          />
+          <FloorPlanPropertyEvidenceControl
+            evidence={activeRoomSlabThicknessEvidence}
+            dark={dark}
+            disabled={!canEditActiveRoomSlabThickness}
+            testId="floor-properties-slab-thickness-evidence"
+            onConfirm={(evidence, measurementNote) =>
+              onActiveRoomSlabThicknessMmChange(
+                activeRoomSlabThicknessMm,
+                evidence,
+                measurementNote
+              )
+            }
           />
           <MeasurementField
             label="Baseboard projection"

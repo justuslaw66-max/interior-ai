@@ -133,15 +133,24 @@ source:
     - source_url: https://assets.hdb.gov.sg/residential/buying-a-flat/finding-a-flat/sales-brochure/25OCTBTO_pdf_selection/ping_yi_court.pdf
       source_title: Ping Yi Court sales brochure
       publisher: Housing and Development Board
+      sha256: c222a058459f0128cc8046d039b2b7559e0cb36fd030ac9160d3a1807041be00
+      page_count: 24
+      pdf_pages: [10, 11]
+      brochure_pages: [17, 18, 19]
 
 unit_distribution_source:
   source_url: https://assets.hdb.gov.sg/residential/buying-a-flat/finding-a-flat/sales-brochure/25OCTBTO_pdf_selection/ping_yi_court.pdf
   source_title: Ping Yi Court sales brochure unit distribution
   publisher: Housing and Development Board
+  sha256: c222a058459f0128cc8046d039b2b7559e0cb36fd030ac9160d3a1807041be00
+  page_count: 24
+  pdf_pages: [10, 11]
+  brochure_pages: [17, 18, 19]
 
 publication:
-  status: published
-  accuracy_notice: The official unit-distribution match verifies block, floor, stack, and flat type only. The editable tracing is approximate and for early space planning; confirm unit documents and on-site dimensions before construction, fabrication, or purchasing fitted items.
+  status: draft
+  visibility: review_only
+  accuracy_notice: Internal golden regression fixture only. The official unit-distribution match corroborates block, floor, stack, and flat type, but the editable tracing remains approximate, source transforms remain unresolved, and redistribution rights are unknown. It must pass canonical source, licence, overlay, address-binding, and independent-review gates before consumer publication.
 
 layouts:
   - layout_id: 2-room-flexi-type-1
@@ -184,10 +193,10 @@ layouts:
         - { id: shelter, source_label: HOUSE HOLD SHELTER, shape: rectangle, width: 1.18, depth: 1.15, x: 4.8, z: 4.09 }
         - { id: kitchen, source_label: KITCHEN, shape: rectangle, width: 2.265, depth: 2.495, x: 1.7575, z: 6.1375 }
       doorways:
-        - { from_room_id: bedroom, to_room_id: living_dining, wall: east, offset_meters: 0.955, width_meters: 1.2 }
-        - { from_room_id: bathroom, to_room_id: living_dining, wall: east, offset_meters: -0.29, width_meters: 0.8 }
+        - { from_room_id: bedroom, to_room_id: living_dining, wall: east, offset_meters: 0.955, width_meters: 1.2, operation: sliding }
+        - { from_room_id: bathroom, to_room_id: living_dining, wall: east, offset_meters: -0.29, width_meters: 0.8, operation: folding }
         - { from_room_id: shelter, to_room_id: living_dining, wall: west, offset_meters: 0, width_meters: 0.7 }
-        - { from_room_id: kitchen, to_room_id: living_dining, wall: east, offset_meters: -0.3475, width_meters: 1.8, kind: opening }
+        - { from_room_id: kitchen, to_room_id: living_dining, wall: east, offset_meters: -0.3475, width_meters: 1.8, kind: opening, operation: open }
         - { from_room_id: living_dining, wall: south, offset_meters: -0.8475, width_meters: 1.2 }
       windows:
         - { room_id: bedroom, wall: north, offset_meters: -0.19, width_meters: 1.8 }
@@ -208,6 +217,12 @@ layouts:
     preview_url: /assets/floor-plans/sg/hdb/ping-yi-court/previews/2-room-flexi-type-2-open.webp
     fidelity: approximate_editable
     verification_note: This is the page 2 open dining configuration. Confirm the Type 2 flat and preferred flex arrangement before using it.
+    configuration:
+      group_id: 2-room-flexi-type-2
+      option_id: open-flex
+      label: Open dining configuration
+      default_selected: true
+      source_supported: true
     template:
       summary: One bedroom with an open flexible dining area, living room, kitchen, bath, entry, and shelter
       best_for: Residents whose unit documents say 2-room Flexi Type 2
@@ -222,36 +237,57 @@ layouts:
           source_label: LIVING/DINING
           shape: custom_polygon
           width: 5.905
-          depth: 8.415
+          depth: 7.215
           x: 2.9525
-          z: 4.5025
+          z: 5.1025
           plan_polygon:
-            - { x: -0.1375, z: -4.2075 }
-            - { x: 2.9525, z: -4.2075 }
-            - { x: 2.9525, z: 0.1325 }
-            - { x: 1.3825, z: 0.1325 }
-            - { x: 1.3825, z: 1.9775 }
-            - { x: 1.0625, z: 1.9775 }
-            - { x: 1.0625, z: 4.2075 }
-            - { x: -0.1375, z: 4.2075 }
-            - { x: -0.1375, z: 0.1325 }
-            - { x: -2.9525, z: 0.1325 }
-            - { x: -2.9525, z: -1.4125 }
-            - { x: -0.1375, z: -1.4125 }
+            - { x: -0.1375, z: -3.6075 }
+            - { x: 2.9525, z: -3.6075 }
+            - { x: 2.9525, z: 0.7325 }
+            - { x: 1.3825, z: 0.7325 }
+            - { x: 1.3825, z: 2.5775 }
+            - { x: 1.0625, z: 2.5775 }
+            - { x: 1.0625, z: 3.6075 }
+            - { x: -0.1375, z: 3.6075 }
+            - { x: -0.1375, z: -0.4675 }
+            - { x: -2.9525, z: -0.4675 }
+            - { x: -2.9525, z: -2.0125 }
+            - { x: -0.1375, z: -2.0125 }
         - { id: bathroom, source_label: BATH/WC, shape: rectangle, width: 1.75, depth: 1.805, x: 1.94, z: 5.5375 }
-        - { id: shelter, source_label: HOUSE HOLD SHELTER, shape: rectangle, width: 1.24, depth: 1.845, x: 4.955, z: 5.5575 }
+        - { id: shelter, source_label: HOUSE HOLD SHELTER, shape: rectangle, width: 1.24, depth: 1.845, x: 4.955, z: 6.7575 }
         - { id: kitchen, source_label: KITCHEN, shape: rectangle, width: 2.68, depth: 2.27, x: 1.475, z: 7.575 }
       doorways:
-        - { from_room_id: bedroom, to_room_id: living_dining, wall: east, offset_meters: 0.55, width_meters: 0.9 }
-        - { from_room_id: bathroom, to_room_id: living_dining, wall: east, offset_meters: 0, width_meters: 0.7 }
+        - { from_room_id: bedroom, to_room_id: living_dining, wall: east, offset_meters: 0.55, width_meters: 0.9, operation: sliding }
+        - { from_room_id: bathroom, to_room_id: living_dining, wall: east, offset_meters: 0, width_meters: 0.7, operation: folding }
         - { from_room_id: shelter, to_room_id: living_dining, wall: west, offset_meters: 0, width_meters: 0.7 }
         - { from_room_id: kitchen, to_room_id: living_dining, wall: east, offset_meters: 0, width_meters: 1 }
+        - { from_room_id: living_dining, wall: south, offset_meters: 0.4625, width_meters: 1.2 }
       windows:
         - { room_id: bedroom, wall: north, offset_meters: 0, width_meters: 1.2 }
         - { room_id: living_dining, wall: north, offset_meters: 1.4075, width_meters: 1.3 }
         - { room_id: living_dining, wall: west, offset_meters: -0.64, width_meters: 0.7 }
         - { room_id: bathroom, wall: west, offset_meters: 0, width_meters: 0.6 }
         - { room_id: kitchen, wall: west, offset_meters: -0.3, width_meters: 0.8 }
+      reference_zones:
+        - { id: aircon_ledge, label: Air-con Ledge, kind: exterior, width: 1.065, depth: 1.805, x: 0.5325, z: 5.5375, locked: true }
+        # The shaft projection is registered to the drawing; neither dimension is printed.
+        - { id: entry_shaft, label: Structural / ventilation shaft, kind: structural, width: 0.33, depth: 1.2, x: 5.74, z: 5.235, locked: true }
+      annotations:
+        # Page 3 supplies a separate, optional partitioned configuration. In
+        # this default open plan it remains an annotation and is not a room.
+        - id: partitioned-flex-option
+          kind: suggested_room
+          text: OPTIONAL PARTITIONED FLEX ROOM
+          configuration_id: partitioned-flex
+          source_page: 3
+          source_supported: true
+          geometry:
+            kind: polygon
+            points:
+              - { x: 0, z: 3.09 }
+              - { x: 2.815, z: 3.09 }
+              - { x: 2.815, z: 4.635 }
+              - { x: 0, z: 4.635 }
 
   - layout_id: 2-room-flexi-type-2-partitioned
     label: 2-room Flexi Type 2 - Partitioned Flex
@@ -263,6 +299,12 @@ layouts:
     preview_url: /assets/floor-plans/sg/hdb/ping-yi-court/previews/2-room-flexi-type-2-partitioned.webp
     fidelity: approximate_editable
     verification_note: This is the page 3 partitioned sleeping configuration. Confirm the Type 2 flat and preferred flex arrangement before using it.
+    configuration:
+      group_id: 2-room-flexi-type-2
+      option_id: partitioned-flex
+      label: Partitioned flex-room configuration
+      default_selected: false
+      source_supported: true
     template:
       summary: One bedroom with a partitioned flexible sleeping area, living room, kitchen, bath, entry, and shelter
       best_for: Type 2 residents who want the brochure's partitioned flex-room starter
@@ -277,34 +319,39 @@ layouts:
           source_label: LIVING/DINING
           shape: custom_polygon
           width: 3.09
-          depth: 8.415
+          depth: 7.215
           x: 4.36
-          z: 4.5025
+          z: 5.1025
           plan_polygon:
-            - { x: -1.545, z: -4.2075 }
-            - { x: 1.545, z: -4.2075 }
-            - { x: 1.545, z: 0.1325 }
-            - { x: -0.025, z: 0.1325 }
-            - { x: -0.025, z: 1.9775 }
-            - { x: -0.345, z: 1.9775 }
-            - { x: -0.345, z: 4.2075 }
-            - { x: -1.545, z: 4.2075 }
+            - { x: -1.545, z: -3.6075 }
+            - { x: 1.545, z: -3.6075 }
+            - { x: 1.545, z: 0.7325 }
+            - { x: -0.025, z: 0.7325 }
+            - { x: -0.025, z: 2.5775 }
+            - { x: -0.345, z: 2.5775 }
+            - { x: -0.345, z: 3.6075 }
+            - { x: -1.545, z: 3.6075 }
         - { id: flex, name: Flex Room (suggested), room_type: custom, shape: rectangle, width: 2.815, depth: 1.545, x: 1.4075, z: 3.8625 }
         - { id: bathroom, source_label: BATH/WC, shape: rectangle, width: 1.75, depth: 1.805, x: 1.94, z: 5.5375 }
-        - { id: shelter, source_label: HOUSE HOLD SHELTER, shape: rectangle, width: 1.24, depth: 1.845, x: 4.955, z: 5.5575 }
+        - { id: shelter, source_label: HOUSE HOLD SHELTER, shape: rectangle, width: 1.24, depth: 1.845, x: 4.955, z: 6.7575 }
         - { id: kitchen, source_label: KITCHEN, shape: rectangle, width: 2.68, depth: 2.27, x: 1.475, z: 7.575 }
       doorways:
-        - { from_room_id: bedroom, to_room_id: living_dining, wall: east, offset_meters: 0.55, width_meters: 0.9 }
-        - { from_room_id: flex, to_room_id: living_dining, wall: east, offset_meters: 0, width_meters: 0.9 }
-        - { from_room_id: bathroom, to_room_id: living_dining, wall: east, offset_meters: 0, width_meters: 0.7 }
+        - { from_room_id: bedroom, to_room_id: living_dining, wall: east, offset_meters: 0.55, width_meters: 0.9, operation: sliding }
+        - { from_room_id: flex, to_room_id: living_dining, wall: east, offset_meters: 0.3225, width_meters: 0.9 }
+        - { from_room_id: bathroom, to_room_id: living_dining, wall: east, offset_meters: 0, width_meters: 0.7, operation: folding }
         - { from_room_id: shelter, to_room_id: living_dining, wall: west, offset_meters: 0, width_meters: 0.7 }
         - { from_room_id: kitchen, to_room_id: living_dining, wall: east, offset_meters: 0, width_meters: 1 }
+        - { from_room_id: living_dining, wall: south, offset_meters: -0.945, width_meters: 1.2 }
       windows:
         - { room_id: bedroom, wall: north, offset_meters: 0, width_meters: 1.2 }
         - { room_id: living_dining, wall: north, offset_meters: 0, width_meters: 1.3 }
         - { room_id: flex, wall: west, offset_meters: -0.25, width_meters: 0.7 }
         - { room_id: bathroom, wall: west, offset_meters: 0, width_meters: 0.6 }
         - { room_id: kitchen, wall: west, offset_meters: -0.3, width_meters: 0.8 }
+      reference_zones:
+        - { id: aircon_ledge, label: Air-con Ledge, kind: exterior, width: 1.065, depth: 1.805, x: 0.5325, z: 5.5375, locked: true }
+        # The shaft projection is registered to the drawing; neither dimension is printed.
+        - { id: entry_shaft, label: Structural / ventilation shaft, kind: structural, width: 0.33, depth: 1.2, x: 5.74, z: 5.235, locked: true }
 
   - layout_id: 3-room
     label: 3-room
@@ -349,22 +396,28 @@ layouts:
             - { x: -0.1475, z: -1.035 }
         - { id: main_bath, source_label: BATH/WC, shape: rectangle, width: 2.1, depth: 1.8, x: 1.05, z: 5.365 }
         - { id: common_bath, source_label: BATH/WC, shape: rectangle, width: 1.92, depth: 1.8, x: 3.06, z: 5.365 }
-        - { id: kitchen_utility, source_label: KITCHEN/UTILITY, shape: rectangle, width: 3.02, depth: 3.74, x: 4.47, z: 8.135 }
+        # The 2.380 m depth is scale-traced from the vector drawing; only the 3.020 m width is printed.
+        - { id: kitchen_utility, source_label: KITCHEN/UTILITY, shape: rectangle, width: 3.02, depth: 2.38, x: 4.47, z: 7.455 }
         - { id: shelter, source_label: HOUSE HOLD SHELTER, shape: rectangle, width: 1.175, depth: 1.86, x: 7.7675, z: 6.43 }
       doorways:
         - { from_room_id: main_bedroom, to_room_id: living_dining, wall: east, offset_meters: 1.5325, width_meters: 0.89 }
         - { from_room_id: bedroom, to_room_id: living_dining, wall: south, offset_meters: -0.73, width_meters: 0.9 }
-        - { from_room_id: main_bath, to_room_id: main_bedroom, wall: north, offset_meters: 0.4, width_meters: 0.8 }
-        - { from_room_id: common_bath, to_room_id: living_dining, wall: north, offset_meters: 0.44, width_meters: 0.8 }
-        - { from_room_id: kitchen_utility, to_room_id: living_dining, wall: north, offset_meters: 0.43, width_meters: 0.9 }
+        - { from_room_id: main_bath, to_room_id: main_bedroom, wall: north, offset_meters: 0.4, width_meters: 0.8, operation: folding }
+        - { from_room_id: common_bath, to_room_id: living_dining, wall: north, offset_meters: 0.44, width_meters: 0.8, operation: folding }
+        - { from_room_id: kitchen_utility, to_room_id: living_dining, wall: north, offset_meters: 0.53, width_meters: 1.96, kind: opening, operation: open }
         - { from_room_id: shelter, to_room_id: living_dining, wall: west, offset_meters: -0.38, width_meters: 0.7 }
+        - { from_room_id: living_dining, wall: south, offset_meters: 0.4525, width_meters: 1.2 }
       windows:
         - { room_id: main_bedroom, wall: north, offset_meters: 0, width_meters: 1.4 }
         - { room_id: bedroom, wall: north, offset_meters: 0, width_meters: 1.4 }
         - { room_id: living_dining, wall: north, offset_meters: 1.5, width_meters: 1.7 }
         - { room_id: main_bath, wall: south, offset_meters: 0, width_meters: 0.6 }
         - { room_id: common_bath, wall: south, offset_meters: 0, width_meters: 0.6 }
-        - { room_id: kitchen_utility, wall: west, offset_meters: 0.4, width_meters: 0.8 }
+        - { room_id: kitchen_utility, wall: west, offset_meters: 0.4, width_meters: 0.8, kind: louvre, operation: fixed }
+      reference_zones:
+        # Width follows the registered drawing; only the 1.030 m depth is printed.
+        - { id: aircon_ledge, label: Air-con Ledge, kind: exterior, width: 2.375, depth: 1.03, x: 1.1875, z: 6.78, locked: true }
+        - { id: service_strip, label: Service strip / louvres, kind: exterior, width: 0.585, depth: 2.38, x: 2.6675, z: 7.455, locked: true }
 
   - layout_id: 4-room
     label: 4-room
@@ -410,17 +463,17 @@ layouts:
             - { x: 1.185, z: -1.2225 }
         - { id: main_bath, source_label: BATH/WC, shape: rectangle, width: 2.815, depth: 1.83, x: 2.8075, z: 5.415 }
         - { id: common_bath, source_label: BATH/WC, shape: rectangle, width: 2.055, depth: 1.83, x: 5.2425, z: 5.415 }
-        - { id: service_yard, source_label: SERVICE YARD, shape: rectangle, width: 2.055, depth: 2.4, x: 5.2425, z: 7.53 }
+        - { id: service_yard, source_label: SERVICE YARD, shape: rectangle, width: 1.425, depth: 2.4, x: 5.5575, z: 7.53 }
         - { id: kitchen, source_label: KITCHEN, shape: rectangle, width: 2.815, depth: 2.4, x: 7.6775, z: 7.53 }
         - { id: shelter, source_label: HOUSE HOLD SHELTER, shape: rectangle, width: 1.23, depth: 2.305, x: 12.15, z: 6.7225 }
       doorways:
         - { from_room_id: main_bedroom, to_room_id: living_dining, wall: east, offset_meters: 1.8, width_meters: 0.9 }
         - { from_room_id: bedroom_1, to_room_id: living_dining, wall: south, offset_meters: 1.0675, width_meters: 0.9 }
         - { from_room_id: bedroom_2, to_room_id: living_dining, wall: south, offset_meters: -1.0575, width_meters: 0.9 }
-        - { from_room_id: main_bath, to_room_id: main_bedroom, wall: north, offset_meters: -0.1725, width_meters: 0.8 }
-        - { from_room_id: common_bath, to_room_id: living_dining, wall: north, offset_meters: 0, width_meters: 0.8 }
+        - { from_room_id: main_bath, to_room_id: main_bedroom, wall: north, offset_meters: -0.1725, width_meters: 0.8, operation: folding }
+        - { from_room_id: common_bath, to_room_id: living_dining, wall: north, offset_meters: 0, width_meters: 0.8, operation: folding }
         - { from_room_id: service_yard, to_room_id: kitchen, wall: east, offset_meters: -0.09, width_meters: 0.9 }
-        - { from_room_id: kitchen, to_room_id: living_dining, wall: north, offset_meters: 0, width_meters: 2.815, kind: opening }
+        - { from_room_id: kitchen, to_room_id: living_dining, wall: north, offset_meters: 0, width_meters: 2.815, kind: opening, operation: open }
         - { from_room_id: shelter, to_room_id: living_dining, wall: west, offset_meters: -0.4825, width_meters: 0.7 }
         - { from_room_id: living_dining, wall: south, offset_meters: 2.7225, width_meters: 1.2 }
       windows:
@@ -430,9 +483,10 @@ layouts:
         - { room_id: living_dining, wall: north, offset_meters: 3.025, width_meters: 1.8 }
         - { room_id: main_bath, wall: south, offset_meters: 0, width_meters: 0.6 }
         - { room_id: common_bath, wall: south, offset_meters: 0, width_meters: 0.6 }
-        - { room_id: service_yard, wall: west, offset_meters: 0, width_meters: 1 }
+        - { room_id: service_yard, wall: west, offset_meters: 0, width_meters: 1, kind: louvre, operation: fixed }
       reference_zones:
         - { id: aircon_ledge, label: Air-con Ledge, kind: exterior, width: 2.815, depth: 1.31, x: 2.8075, z: 6.985, locked: true }
+        - { id: service_strip, label: Service strip / louvres, kind: exterior, width: 0.63, depth: 2.4, x: 4.53, z: 7.53, locked: true }
         - { id: entry_structure, label: Structural core, kind: structural, width: 0.625, depth: 2.4, x: 9.3975, z: 7.53, locked: true }
 
   - layout_id: 5-room
@@ -471,9 +525,7 @@ layouts:
             - { x: 3.0175, z: 0.935 }
             - { x: 3.0175, z: 3.215 }
             - { x: 1.8175, z: 3.215 }
-            - { x: 1.8175, z: 0.935 }
-            - { x: -0.2725, z: 0.935 }
-            - { x: -0.2725, z: 1.745 }
+            - { x: 1.8175, z: 1.745 }
             - { x: -4.4125, z: 1.745 }
             - { x: -4.4125, z: -0.065 }
             - { x: -6.2225, z: -0.065 }
@@ -485,14 +537,15 @@ layouts:
         - { id: kitchen, source_label: KITCHEN, shape: rectangle, width: 5.065, depth: 2.55, x: 8.5075, z: 7.545 }
         - { id: shelter, source_label: HOUSE HOLD SHELTER, shape: rectangle, width: 1.185, depth: 2.28, x: 12.8325, z: 6.6 }
       doorways:
-        - { from_room_id: main_bedroom, to_room_id: living_dining, wall: east, offset_meters: 1.53, width_meters: 0.89 }
+        - { from_room_id: main_bedroom, to_room_id: living_dining, wall: east, offset_meters: 1.53, width_meters: 0.9 }
         - { from_room_id: bedroom_1, to_room_id: living_dining, wall: south, offset_meters: -0.48, width_meters: 0.9 }
         - { from_room_id: bedroom_2, to_room_id: living_dining, wall: south, offset_meters: -1.0075, width_meters: 0.9 }
-        - { from_room_id: main_bath, to_room_id: main_bedroom, wall: north, offset_meters: 0.075, width_meters: 0.8 }
-        - { from_room_id: common_bath, to_room_id: living_dining, wall: north, offset_meters: 0, width_meters: 0.8 }
-        - { from_room_id: service_yard, to_room_id: living_dining, wall: north, offset_meters: 0.115, width_meters: 0.9 }
-        - { from_room_id: kitchen, to_room_id: living_dining, wall: north, offset_meters: -1.045, width_meters: 1.2 }
+        - { from_room_id: main_bath, to_room_id: main_bedroom, wall: north, offset_meters: 0.075, width_meters: 0.8, operation: folding }
+        - { from_room_id: common_bath, to_room_id: living_dining, wall: north, offset_meters: 0, width_meters: 0.8, operation: folding }
+        - { from_room_id: service_yard, to_room_id: kitchen, wall: east, offset_meters: -0.345, width_meters: 0.9 }
+        - { from_room_id: kitchen, to_room_id: living_dining, wall: north, offset_meters: 0, width_meters: 5.065, kind: opening, operation: open }
         - { from_room_id: shelter, to_room_id: living_dining, wall: west, offset_meters: -0.4, width_meters: 0.7 }
+        - { from_room_id: living_dining, wall: south, offset_meters: 2.4175, width_meters: 1.2 }
       windows:
         - { room_id: main_bedroom, wall: north, offset_meters: 0, width_meters: 1.4 }
         - { room_id: bedroom_1, wall: north, offset_meters: 0, width_meters: 1.4 }
@@ -501,7 +554,22 @@ layouts:
         - { room_id: living_dining, wall: north, offset_meters: 5.015, width_meters: 1.3 }
         - { room_id: main_bath, wall: south, offset_meters: 0, width_meters: 0.6 }
         - { room_id: common_bath, wall: south, offset_meters: 0, width_meters: 0.6 }
-        - { room_id: service_yard, wall: west, offset_meters: 0, width_meters: 1 }
+        - { room_id: service_yard, wall: west, offset_meters: 0, width_meters: 1, kind: louvre, operation: fixed }
+      reference_zones:
+        - { id: aircon_ledge, label: Air-con Ledge, kind: exterior, width: 1.75, depth: 1.28, x: 2.125, z: 6.91, locked: true }
+        - { id: service_strip, label: Service strip / louvres, kind: exterior, width: 0.63, depth: 2.55, x: 4.265, z: 7.545, locked: true }
+      annotations:
+        # The dashed source mark is optional information, not a fourth bedroom
+        # or an authored wall loop in the default imported geometry.
+        - id: suggested-study
+          kind: optional_partition
+          text: SUGGESTED STUDY
+          configuration_id: suggested-study
+          source_supported: true
+          geometry:
+            kind: point
+            x: 13.35
+            z: 3.2
 
   - layout_id: 3gen
     label: 3Gen
@@ -556,13 +624,14 @@ layouts:
         - { from_room_id: main_bedroom_2, to_room_id: living_dining, wall: east, offset_meters: 1.9, width_meters: 0.9 }
         - { from_room_id: bedroom_1, to_room_id: living_dining, wall: south, offset_meters: 0.9375, width_meters: 0.9 }
         - { from_room_id: bedroom_2, to_room_id: living_dining, wall: south, offset_meters: -0.9875, width_meters: 0.9 }
-        - { from_room_id: main_bedroom_1, to_room_id: living_dining, wall: west, offset_meters: 1.535, width_meters: 0.89 }
-        - { from_room_id: common_bath, to_room_id: living_dining, wall: north, offset_meters: 0.275, width_meters: 0.8 }
-        - { from_room_id: main_1_bath, to_room_id: living_dining, wall: north, offset_meters: 0, width_meters: 0.8 }
-        - { from_room_id: main_2_bath, to_room_id: main_bedroom_2, wall: north, offset_meters: 0.1675, width_meters: 0.8 }
-        - { from_room_id: kitchen, to_room_id: living_dining, wall: north, offset_meters: -0.2215, width_meters: 1.1 }
+        - { from_room_id: main_bedroom_1, to_room_id: living_dining, wall: west, offset_meters: 1.535, width_meters: 0.9 }
+        - { from_room_id: common_bath, to_room_id: living_dining, wall: north, offset_meters: 0.275, width_meters: 0.8, operation: folding }
+        - { from_room_id: main_1_bath, to_room_id: living_dining, wall: north, offset_meters: 0, width_meters: 0.8, operation: folding }
+        - { from_room_id: main_2_bath, to_room_id: main_bedroom_2, wall: north, offset_meters: 0.1675, width_meters: 0.8, operation: folding }
+        - { from_room_id: kitchen, to_room_id: living_dining, wall: north, offset_meters: -0.2215, width_meters: 2.35, kind: opening, operation: open }
         - { from_room_id: shelter, to_room_id: living_dining, wall: west, offset_meters: -0.375, width_meters: 0.7 }
         - { from_room_id: kitchen, to_room_id: service_yard, wall: east, offset_meters: 0.165, width_meters: 1 }
+        - { from_room_id: living_dining, wall: south, offset_meters: -2.6675, width_meters: 1.2 }
       windows:
         - { room_id: main_bedroom_2, wall: north, offset_meters: 0, width_meters: 1.4 }
         - { room_id: living_dining, wall: north, offset_meters: -2.975, width_meters: 2.2 }
@@ -572,4 +641,9 @@ layouts:
         - { room_id: main_2_bath, wall: south, offset_meters: 0, width_meters: 0.6 }
         - { room_id: common_bath, wall: south, offset_meters: 0, width_meters: 0.6 }
         - { room_id: main_1_bath, wall: south, offset_meters: 0, width_meters: 0.6 }
-        - { room_id: service_yard, wall: east, offset_meters: 0, width_meters: 1 }
+        - { room_id: service_yard, wall: east, offset_meters: 0, width_meters: 1, kind: louvre, operation: fixed }
+      reference_zones:
+        - { id: aircon_ledge_left, label: Air-con Ledge (Main Bedroom 2), kind: exterior, width: 1.21, depth: 1.79, x: -0.135, z: 7.195, locked: true }
+        # The right ledge width is scale-derived; its 1.280 m depth is printed.
+        - { id: aircon_ledge_right, label: Air-con Ledge, kind: exterior, width: 1.132, depth: 1.28, x: 12.464, z: 6.91, locked: true }
+        - { id: service_strip, label: Service strip / louvres, kind: exterior, width: 0.63, depth: 2.73, x: 11.583, z: 7.635, locked: true }

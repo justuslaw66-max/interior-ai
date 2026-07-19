@@ -1,3 +1,5 @@
+import type { FloorPlanPropertyEvidenceV2 } from "@/lib/floor-plan-document-v2";
+
 export type EditorViewMode = "3d" | "2d";
 
 export type Vec2Mm = {
@@ -43,7 +45,13 @@ export type RoomOpening2D = {
   bottomMm?: number;
   kind: "door" | "window";
   /** A wall-free passage behaves like a door for circulation but has no door leaf. */
-  doorStyle?: "swing" | "open";
+  doorStyle?: "swing" | "sliding" | "folding" | "open";
+  canonicalWallId?: string;
+  operation?: "swing" | "sliding" | "folding" | "fixed" | "open";
+  evidence?: {
+    height?: FloorPlanPropertyEvidenceV2;
+    sillHeight?: FloorPlanPropertyEvidenceV2;
+  };
 };
 
 export type FixedElement2D = {
@@ -62,6 +70,7 @@ export type FixedElement2D = {
   rotationDeg: number;
   label?: string;
   locked?: boolean;
+  canonicalKind?: string;
 };
 
 export type EditorScene2D = {

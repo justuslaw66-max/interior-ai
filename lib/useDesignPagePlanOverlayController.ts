@@ -94,6 +94,17 @@ export type DesignPagePlanOverlayControllerActions = {
   runHistoryTransaction: (name: string, action: () => void) => void;
   showToast: (message: string) => void;
   track: TrackPlanOverlayAction;
+  canonicalTopology?: {
+    moveOpening: (id: string, offsetMeters: number) => boolean;
+    resizeOpening: (
+      id: string,
+      metrics: { widthMeters: number; offsetMeters: number }
+    ) => boolean;
+    updateOpeningMetrics: (
+      id: string,
+      metrics: DesignPageOpeningMetricsPatch
+    ) => boolean;
+  };
 };
 
 export type UseDesignPagePlanOverlayControllerInput = {
@@ -136,6 +147,7 @@ export function useDesignPagePlanOverlayController({
     runHistoryTransaction,
     showToast,
     track,
+    canonicalTopology,
   },
 }: UseDesignPagePlanOverlayControllerInput) {
   const [annotationToolKind, setAnnotationToolKind] =
@@ -173,7 +185,7 @@ export function useDesignPagePlanOverlayController({
     setPendingAnnotationText,
     cancelPlanAnnotation,
     commitPlanAnnotation: commitPlanAnnotationFromPlanAction,
-    handleMoveOpening2D,
+    handleMoveOpening2D: handleMoveOpening2DFromPlanAction,
     handleUpdateOpeningMetrics2D: handleUpdateOpeningMetrics2DFromPlanAction,
     handleAddSuggestedDoorway: handleAddSuggestedDoorwayFromPlanAction,
     handleMoveFixedElement2D,
@@ -195,6 +207,14 @@ export function useDesignPagePlanOverlayController({
     showRuleToast: showToast,
     track,
   });
+
+  const handleMoveOpening2D = useCallback(
+    (id: string, offsetMeters: number) => {
+      if (canonicalTopology?.moveOpening(id, offsetMeters)) return;
+      handleMoveOpening2DFromPlanAction(id, offsetMeters);
+    },
+    [canonicalTopology, handleMoveOpening2DFromPlanAction]
+  );
 
   const commitPlanAnnotation = useCallback(() => {
     if (!pendingAnnotationKind || !pendingAnnotationText.trim()) {
@@ -225,12 +245,14 @@ export function useDesignPagePlanOverlayController({
       const historyLabel =
         getDesignPageOpeningMetricsHistoryLabel(normalizedMetrics);
 
-      runHistoryTransaction(historyLabel, () =>
-        handleUpdateOpeningMetrics2DFromPlanAction(id, normalizedMetrics)
-      );
+      runHistoryTransaction(historyLabel, () => {
+        if (canonicalTopology?.updateOpeningMetrics(id, normalizedMetrics)) return;
+        handleUpdateOpeningMetrics2DFromPlanAction(id, normalizedMetrics);
+      });
     },
     [
       handleUpdateOpeningMetrics2DFromPlanAction,
+      canonicalTopology,
       planOpeningsRef,
       roomHeight,
       runHistoryTransaction,
@@ -242,9 +264,10 @@ export function useDesignPagePlanOverlayController({
       id: string,
       metrics: { widthMeters: number; offsetMeters: number }
     ) => {
+      if (canonicalTopology?.resizeOpening(id, metrics)) return;
       handleUpdateOpeningMetrics2DFromPlanAction(id, metrics);
     },
-    [handleUpdateOpeningMetrics2DFromPlanAction]
+    [canonicalTopology, handleUpdateOpeningMetrics2DFromPlanAction]
   );
 
   const runPlanOverlayCommand = useCallback(

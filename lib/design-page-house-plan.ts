@@ -1,4 +1,10 @@
 import type { FloorPlanDrawRoomMode } from "@/lib/floor-plan-types";
+import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
+import type { FloorPlanAddressTransform } from "@/lib/floor-plan-imports/types";
+import { resolveCanonicalFloorElevationMeters } from "@/lib/floor-plan-scene-elevation";
+import type {
+  PersistedFloorPlanAddressBinding,
+} from "@/lib/room-types";
 import type {
   RoomPlanShape,
   RoomSnapshot,
@@ -103,6 +109,7 @@ export type HousePlanTemplateDoorway = {
   offsetMeters?: number;
   widthMeters?: number;
   kind?: "door" | "opening";
+  operation?: "swing" | "sliding" | "folding" | "fixed" | "open";
 };
 
 export type HousePlanTemplateWindow = {
@@ -110,6 +117,8 @@ export type HousePlanTemplateWindow = {
   wall: "north" | "south" | "east" | "west";
   offsetMeters?: number;
   widthMeters?: number;
+  kind?: "window" | "vent" | "louvre";
+  operation?: "fixed" | "sliding" | "casement" | "awning";
 };
 
 export type HousePlanTemplateReferenceZone = {
@@ -156,6 +165,8 @@ export type HousePlanTemplateFurnishingPack = {
 
 export type HousePlanTemplateApplyOptions = {
   furnishingPackId?: HousePlanTemplateFurnishingPackId;
+  /** Address-library primary action: preserve the current design before applying. */
+  startAsNewDesign?: boolean;
 };
 
 export type HousePlanTemplate = {
@@ -174,6 +185,14 @@ export type HousePlanTemplate = {
   windows: HousePlanTemplateWindow[];
   referenceZones?: HousePlanTemplateReferenceZone[];
   furnishingPacks: HousePlanTemplateFurnishingPack[];
+  canonical?: {
+    document: FloorPlanDocumentV2;
+    revisionId: string;
+    geometryHash: string;
+    verificationTier: FloorPlanDocumentV2["verification"]["tier"];
+    addressTransform: FloorPlanAddressTransform;
+    addressBinding: PersistedFloorPlanAddressBinding;
+  };
 };
 
 const HOUSE_PLAN_TEMPLATE_BASES: Array<Omit<HousePlanTemplate, "furnishingPacks">> = [
@@ -1564,8 +1583,12 @@ export type HousePlanRoom2D = {
   roomType: RoomType;
   floorLevel?: number;
   floorLabel?: string;
+  floorElevationMm?: number;
+  floorStoreyHeightMm?: number;
+  floorSlabThicknessMm?: number;
   shape: RoomPlanShape;
   polygon?: Array<{ x: number; z: number }>;
+  holes?: Array<Array<{ x: number; z: number }>>;
   surfaces?: RoomSurfaceFinishes;
   surfaceFinishes?: RoomSurfaceFinishes;
   surfaceOpacity?: RoomSurfaceOpacity;
@@ -1585,6 +1608,31 @@ export type HousePlan2D = {
   width: number;
   depth: number;
 };
+
+/**
+ * Resolves a room's world-space finished-floor elevation. Canonical imports
+ * carry an exact millimetre elevation and always win; the historical display
+ * spacing remains only for non-canonical snapshots in stacked-floor mode.
+ */
+export function resolveHouseRoomFloorElevationMeters(
+  room: HousePlanRoom2D,
+  wallHeightMeters: number,
+  stackedFloors: boolean
+): number {
+  const canonicalElevation = resolveCanonicalFloorElevationMeters(room);
+  if (canonicalElevation !== null) return canonicalElevation;
+  if (!stackedFloors) return 0;
+  const level =
+    typeof room.floorLevel === "number" && Number.isFinite(room.floorLevel)
+      ? room.floorLevel
+      : 1;
+  return (
+    (level - 1) *
+    (wallHeightMeters +
+      Math.max(0.08, room.slabThickness ?? ROOM_DIMENSION_DEFAULTS.slabThickness) +
+      0.28)
+  );
+}
 
 export type HouseRoomAdjacencyGuide = {
   id: string;
@@ -1835,13 +1883,25 @@ export function buildHousePlan2D(
           ? room.floorLevel
           : 1,
       ...(room.floorLabel ? { floorLabel: room.floorLabel } : {}),
+      ...(typeof room.floorElevationMm === "number" && Number.isInteger(room.floorElevationMm)
+        ? { floorElevationMm: room.floorElevationMm }
+        : {}),
+      ...(typeof room.floorStoreyHeightMm === "number" && Number.isInteger(room.floorStoreyHeightMm)
+        ? { floorStoreyHeightMm: room.floorStoreyHeightMm }
+        : {}),
+      ...(typeof room.floorSlabThicknessMm === "number" && Number.isInteger(room.floorSlabThicknessMm)
+        ? { floorSlabThicknessMm: room.floorSlabThicknessMm }
+        : {}),
       shape: room.planShape ?? "rectangle",
       ...(room.planPolygon ? { polygon: room.planPolygon } : {}),
+      ...(room.planHoles?.length ? { holes: room.planHoles } : {}),
       ...(roomSurfaces ? { surfaces: roomSurfaces } : {}),
       ...(roomSurfaces ? { surfaceFinishes: roomSurfaces } : {}),
       ...(room.surfaceOpacity ? { surfaceOpacity: room.surfaceOpacity } : {}),
       slabThickness:
-        typeof room.geometry.slabThickness === "number" && Number.isFinite(room.geometry.slabThickness)
+        typeof room.floorSlabThicknessMm === "number" && Number.isInteger(room.floorSlabThicknessMm)
+          ? room.floorSlabThicknessMm / 1000
+          : typeof room.geometry.slabThickness === "number" && Number.isFinite(room.geometry.slabThickness)
           ? room.geometry.slabThickness
           : ROOM_DIMENSION_DEFAULTS.slabThickness,
       wallThickness:

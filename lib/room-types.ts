@@ -1,4 +1,9 @@
 import type {
+  FloorPlanDocumentV2,
+  FloorPlanPropertyEvidenceV2,
+} from "@/lib/floor-plan-document-v2";
+import type { FloorPlanAddressTransform } from "@/lib/floor-plan-imports/types";
+import type {
   CabinetBOMItem,
   CabinetCutListItem,
   CabinetDefinition,
@@ -162,6 +167,14 @@ export interface PersistedFloorPlanUnderlay {
   assetUrl: string;
   mimeType: string;
   sourceMimeType?: string;
+  /**
+   * SHA-256 of the original private upload (not the rendered PDF preview).
+   * Retention cleanup uses this owner-scoped link to remove persisted data-URL
+   * copies without touching the rest of the saved design.
+   */
+  sourceAssetSha256?: string;
+  /** Import-job link when the underlay was attached by an import workflow. */
+  sourceJobId?: string;
   renderedPage?: number;
   pageCount?: number;
   widthPx?: number;
@@ -184,7 +197,13 @@ export interface PersistedPlanOpening {
   heightMm?: number;
   bottomMm?: number;
   kind: "door" | "window";
-  doorStyle?: "swing" | "open";
+  doorStyle?: "swing" | "sliding" | "folding" | "open";
+  canonicalWallId?: string;
+  operation?: "swing" | "sliding" | "folding" | "fixed" | "open";
+  evidence?: {
+    height?: FloorPlanPropertyEvidenceV2;
+    sillHeight?: FloorPlanPropertyEvidenceV2;
+  };
 }
 
 export interface PersistedPlanFixedElement {
@@ -203,12 +222,58 @@ export interface PersistedPlanFixedElement {
   rotationDeg: number;
   label?: string;
   locked?: boolean;
+  canonicalKind?: string;
+}
+
+/**
+ * Immutable copy of the address-library binding selected by the consumer.
+ *
+ * Binding rows belong to immutable revisions, so a later correction receives
+ * a new row ID. The normalized address/stack/range tuple lets the application
+ * discover that newer row without changing the saved design in place.
+ */
+export interface PersistedFloorPlanAddressBinding {
+  bindingId: string;
+  countryCode: string;
+  addressNormalized: string;
+  block: string;
+  street: string;
+  postalCode: string | null;
+  stack: string | null;
+  floorMin: number | null;
+  floorMax: number | null;
+  transform: FloorPlanAddressTransform;
+  /** Exact searched unit context, when this plan was opened from #floor-stack. */
+  unitFloor?: number | null;
+  unitStack?: string | null;
 }
 
 export interface PersistedFloorPlanState {
   underlay?: PersistedFloorPlanUnderlay | null;
   openings?: PersistedPlanOpening[];
   fixedElements?: PersistedPlanFixedElement[];
+  canonicalDocument?: FloorPlanDocumentV2;
+  canonicalGeometryHash?: string;
+  revisionId?: string;
+  /** Geometry hash of the immutable, untransformed published revision. */
+  sourceRevisionGeometryHash?: string;
+  verificationTier?: FloorPlanDocumentV2["verification"]["tier"];
+  /**
+   * Non-geometric compatibility issues found while mapping legacy room-face
+   * finish keys onto canonical wall IDs. These keep the saved design in
+   * `needs_review` without mutating the immutable source revision.
+   */
+  surfaceMigrationReviewIssues?: Array<{
+    code: "AMBIGUOUS_LEGACY_WALL_FACE";
+    roomId: string;
+    faceId: string;
+    message: string;
+  }>;
+  addressTransform?: FloorPlanAddressTransform;
+  addressBinding?: PersistedFloorPlanAddressBinding;
+  sourceJobId?: string;
+  sourceAssetSha256?: string;
+  orientationConfirmed?: boolean;
 }
 
 export interface DesignItem {
@@ -286,10 +351,22 @@ export interface RoomSnapshot {
   roomType: RoomType;
   floorLevel?: number;
   floorLabel?: string;
+  /** Exact canonical floor elevation, retained independently of display level. */
+  floorElevationMm?: number;
+  /** Exact canonical floor-to-floor height for non-uniform multi-storey homes. */
+  floorStoreyHeightMm?: number;
+  /** Exact canonical slab thickness; geometry.slabThickness is the metre projection. */
+  floorSlabThicknessMm?: number;
   geometry: RoomGeometry;
   planPosition?: RoomPlanPosition;
   planShape?: RoomPlanShape;
   planPolygon?: RoomPlanPolygonPoint[];
+  /**
+   * Ordered local-space void/courtyard loops inside planPolygon. Canonical
+   * imports populate these from room wall loops so floor and ceiling surfaces
+   * cannot silently fill a source-authored hole.
+   */
+  planHoles?: RoomPlanPolygonPoint[][];
   surfaces?: RoomSurfaceAssignments;
   surfaceFinishes?: RoomSurfaceFinishes;
   surfaceOpacity?: RoomSurfaceOpacity;

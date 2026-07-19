@@ -11,6 +11,9 @@ import type {
 } from "@/lib/design-page-house-plan";
 import { type AiLayoutProposal, type PlanMeasurementUnit, type Style } from "@/lib/design-page-types";
 import type { RoomOpening2D } from "@/lib/editorScene";
+import type { DesignPageOpeningMetricsPatch } from "@/lib/design-page-opening-metrics";
+import type { FloorPlanPropertyEvidenceV2 } from "@/lib/floor-plan-document-v2";
+import type { FloorPlanConsumerMeasurementEvidenceV2 } from "@/lib/floor-plan-measured-property-mutations";
 import type {
   FloorPlanDrawAngleLockMode,
   FloorPlanDrawRoomMode,
@@ -150,8 +153,12 @@ export type DesignControlsPanelProps = {
   activeFloorLevel: number;
   activeFloorRoomCount: number;
   activeRoomHeightMm: number;
+  activeRoomWallHeightEvidence?: FloorPlanPropertyEvidenceV2 | null;
+  canEditActiveRoomWallHeight?: boolean;
   activeRoomWallThicknessMm: number;
   activeRoomSlabThicknessMm: number;
+  activeRoomSlabThicknessEvidence?: FloorPlanPropertyEvidenceV2 | null;
+  canEditActiveRoomSlabThickness?: boolean;
   activeRoomBaseboardDepthMm: number;
   activeRoomWallOpacity: number;
   activeRoomFloorOpacity: number;
@@ -225,9 +232,17 @@ export type DesignControlsPanelProps = {
   onRoomWidthInputChange: (value: string) => void;
   onRoomDepthInputChange: (value: string) => void;
   onCommitRoomDimension: (axis: "width" | "depth", valueMm: number) => void;
-  onActiveRoomHeightMmChange: (valueMm: number) => void;
+  onActiveRoomHeightMmChange: (
+    valueMm: number,
+    evidence?: FloorPlanConsumerMeasurementEvidenceV2,
+    measurementNote?: string
+  ) => void;
   onActiveRoomWallThicknessMmChange: (valueMm: number) => void;
-  onActiveRoomSlabThicknessMmChange: (valueMm: number) => void;
+  onActiveRoomSlabThicknessMmChange: (
+    valueMm: number,
+    evidence?: FloorPlanConsumerMeasurementEvidenceV2,
+    measurementNote?: string
+  ) => void;
   onActiveRoomBaseboardDepthMmChange: (valueMm: number) => void;
   onActiveRoomSurfaceOpacityChange: (kind: "wall" | "floor" | "ceiling", opacity: number) => void;
   onActiveRoomCeilingVisibleChange: (visible: boolean) => void;
@@ -267,11 +282,7 @@ export type DesignControlsPanelProps = {
   onAddSuggestedDoorway: (suggestion: HouseRoomDoorwaySuggestion) => void;
   onUpdateOpeningMetrics: (
     id: string,
-    metrics: {
-      widthMeters?: number;
-      offsetMeters?: number;
-      kind?: RoomOpening2D["kind"];
-    }
+    metrics: DesignPageOpeningMetricsPatch
   ) => void;
 };
 
@@ -359,8 +370,12 @@ export default function DesignControlsPanel({
   activeFloorLevel,
   activeFloorRoomCount,
   activeRoomHeightMm,
+  activeRoomWallHeightEvidence,
+  canEditActiveRoomWallHeight,
   activeRoomWallThicknessMm,
   activeRoomSlabThicknessMm,
+  activeRoomSlabThicknessEvidence,
+  canEditActiveRoomSlabThickness,
   activeRoomBaseboardDepthMm,
   activeRoomWallOpacity,
   activeRoomFloorOpacity,
@@ -683,8 +698,12 @@ export default function DesignControlsPanel({
             activeFloorLevel={activeFloorLevel}
             activeFloorRoomCount={activeFloorRoomCount}
             activeRoomHeightMm={activeRoomHeightMm}
+            activeRoomWallHeightEvidence={activeRoomWallHeightEvidence}
+            canEditActiveRoomWallHeight={canEditActiveRoomWallHeight}
             activeRoomWallThicknessMm={activeRoomWallThicknessMm}
             activeRoomSlabThicknessMm={activeRoomSlabThicknessMm}
+            activeRoomSlabThicknessEvidence={activeRoomSlabThicknessEvidence}
+            canEditActiveRoomSlabThickness={canEditActiveRoomSlabThickness}
             activeRoomBaseboardDepthMm={activeRoomBaseboardDepthMm}
             activeRoomWallOpacity={activeRoomWallOpacity}
             activeRoomFloorOpacity={activeRoomFloorOpacity}

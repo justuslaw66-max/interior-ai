@@ -44,7 +44,7 @@ async function createSampleFloorPlanPdf(): Promise<Buffer> {
 
 async function clickWithFallback(locator: Locator, timeout = 5000) {
   try {
-    await locator.click({ timeout });
+    await locator.click({ timeout, noWaitAfter: true });
   } catch {
     await locator.evaluate((node) => {
       node.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
@@ -186,8 +186,10 @@ test.describe("18. Multi-Room Whole Home", () => {
     if (await manualPlanChoice.isVisible().catch(() => false)) {
       await clickWithFallback(manualPlanChoice);
     }
-    await expect(page.getByTestId("plan-start-template")).toBeVisible();
-    await clickWithFallback(page.getByTestId("plan-start-template"));
+    const planStartTemplate = page.getByTestId("plan-start-template");
+    await expect(planStartTemplate).toBeVisible({ timeout: 20000 });
+    await expect(planStartTemplate).toBeEnabled({ timeout: 20000 });
+    await clickWithFallback(planStartTemplate);
   }
 
   test("keeps 2D projected room geometry from collapsing after fit and view toggles", async ({ page }) => {
@@ -1821,9 +1823,12 @@ test.describe("18. Multi-Room Whole Home", () => {
     await expect(planOpeningInspector).toBeVisible();
     await expect(page.getByTestId("plan-opening-live-label")).toContainText("Door");
     await expect(page.getByTestId("selected-plan-opening-actions")).toBeVisible();
-    await expect(page.getByTestId("selected-plan-opening-actions")).toContainText("900 mm wide");
-    await expect(page.getByTestId("selected-plan-opening-width-input")).toHaveCount(0);
-    await expect(planOpeningInspector.getByTestId("plan-opening-width-input")).toHaveValue("900");
+    const selectedOpeningWidth = page.getByTestId("selected-plan-opening-width-input");
+    await expect(selectedOpeningWidth).toHaveValue("900");
+    await selectedOpeningWidth.fill("1000");
+    await selectedOpeningWidth.press("Enter");
+    await expect(page.getByTestId("selection-inspector-opening-width")).toHaveValue("1000");
+    await expect(planOpeningInspector.getByTestId("plan-opening-width-input")).toHaveValue("1000");
     await planOpeningInspector.getByTestId("plan-opening-width-input").fill("1100");
     await planOpeningInspector.getByTestId("plan-opening-width-input").press("Enter");
     await expect(planOpeningInspector.getByTestId("plan-opening-width-input")).toHaveValue("1100");
@@ -1837,6 +1842,18 @@ test.describe("18. Multi-Room Whole Home", () => {
   });
 
   test("floor plan upload exposes pdf pages and calibration controls", async ({ page }) => {
+    const underlayRenderWarnings: string[] = [];
+    page.on("console", (message) => {
+      const text = message.text();
+      if (
+        text.includes("Cannot update a component") &&
+        text.includes("LoadingOverlay") &&
+        text.includes("ImagePlanUnderlay")
+      ) {
+        underlayRenderWarnings.push(text);
+      }
+    });
+
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
 
@@ -1862,5 +1879,6 @@ test.describe("18. Multi-Room Whole Home", () => {
     await page.getByTestId("floor-plan-calibration-toggle").click();
     await expect(page.getByText("Set plan scale")).toBeVisible();
     await expect(page.getByText("0/2 points")).toBeVisible();
+    expect(underlayRenderWarnings).toEqual([]);
   });
 });

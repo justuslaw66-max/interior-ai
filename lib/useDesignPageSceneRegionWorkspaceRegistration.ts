@@ -162,6 +162,10 @@ export function useDesignPageSceneRegionWorkspaceRegistration({
         editorScene: planWorkspace.state.overlay.editorScene2D,
         zones: zone.state.planZones2D,
         qualityIssues: planWorkspace.state.quality.report.issues,
+        canonicalDocument:
+          coreShell.state.document.designSnapshot.floorPlan?.canonicalDocument ?? null,
+        canonicalGeometryHash:
+          coreShell.state.document.designSnapshot.floorPlan?.canonicalGeometryHash ?? null,
         measurementUnit: viewportShell.state.plan.planMeasurementUnit,
         theme: planWorkspace.derived.effectivePlanTheme,
         layers: planWorkspace.derived.effectivePlanLayers,

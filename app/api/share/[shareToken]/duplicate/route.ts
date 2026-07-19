@@ -4,6 +4,7 @@ import { logAppEvent } from "@/lib/app-events";
 import { buildDuplicatedDesignData } from "@/lib/design-duplication";
 import { getPostHogClient } from "@/lib/posthog-server";
 import { prisma } from "@/lib/prisma";
+import { projectSharedStoredDesign } from "@/lib/shared-design-snapshot";
 
 export const runtime = "nodejs";
 
@@ -33,7 +34,7 @@ export async function POST(
         roomWidth: source.roomWidth,
         roomDepth: source.roomDepth,
         items: source.items,
-        snapshot: source.snapshot,
+        snapshot: projectSharedStoredDesign(source.snapshot),
         zones: source.zones,
         savedViews: source.savedViews,
         style: source.style,

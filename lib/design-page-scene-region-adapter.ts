@@ -66,6 +66,8 @@ export type BuildDesignPageSceneRegionAdapterInput = {
       editorScene: StructureState["plan"]["scene"];
       zones: StructureState["plan"]["zones"];
       qualityIssues: StructureState["plan"]["qualityIssues"];
+      canonicalDocument: StructureState["plan"]["canonicalDocument"];
+      canonicalGeometryHash: StructureState["plan"]["canonicalGeometryHash"];
       measurementUnit: StructureConfiguration["plan"]["measurementUnit"];
       theme: StructureConfiguration["plan"]["theme"];
       layers: StructureConfiguration["plan"]["layers"];
@@ -177,6 +179,8 @@ export function buildDesignPageSceneRegionAdapter({
           scene: plan.editorScene,
           zones: plan.zones,
           qualityIssues: plan.qualityIssues,
+          canonicalDocument: plan.canonicalDocument,
+          canonicalGeometryHash: plan.canonicalGeometryHash,
         },
         wholeHome: {
           enabled: room.wholeHomeEnabled,

@@ -17,6 +17,7 @@ import type { DesignPageDocumentSelectionRegistrationFacade } from "@/lib/useDes
 import {
   useDesignPageSelectionInspectionRuntime,
 } from "@/lib/useDesignPageSelectionInspectionRuntime";
+import { useDesignPageImportedWallEditingController } from "@/lib/useDesignPageImportedWallEditingController";
 import {
   useDesignPagePlanWorkspaceRegistrationFacade,
 } from "@/lib/useDesignPagePlanWorkspaceRegistrationFacade";
@@ -142,6 +143,23 @@ export function useDesignPagePlanAuthoringRegistration({
     },
     actions: {
       setSelectedZoneId: documentSelection.actions.setSelectedZoneId,
+      showToast: showRuleToast,
+    },
+  });
+
+  const importedWallEditing = useDesignPageImportedWallEditingController({
+    state: {
+      designSnapshot: snapshotDocument.state.designSnapshot,
+      canEdit,
+      isClientPreview,
+      viewMode,
+    },
+    refs: { designSnapshot: snapshotDocument.refs.designSnapshotRef },
+    actions: {
+      setDesignSnapshot: snapshotDocument.actions.setDesignSnapshot,
+      setPlanOpenings: planDocument.actions.setPlanOpenings,
+      setPlanFixedElements: planDocument.actions.setPlanFixedElements,
+      runHistoryTransaction: documentHistory.actions.runHistoryTransaction,
       showToast: showRuleToast,
     },
   });
@@ -290,6 +308,7 @@ export function useDesignPagePlanAuthoringRegistration({
     boundaries: {
       selectionInspection,
       planWorkspace,
+      importedWallEditing,
       surfaceWorkspace,
       underlay,
     },

@@ -5,6 +5,7 @@ import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import { getExportCapabilities, type UserPlan } from "@/lib/export-capabilities";
 import { prisma } from "@/lib/prisma";
 import { legacyApiToSnapshot } from "@/lib/room-persistence";
+import { projectSharedDesignSnapshot } from "@/lib/shared-design-snapshot";
 import { resolveRoomShoppingItems, summarizeShoppingRooms, summarizeWholeHomeShopping } from "@/lib/room-shopping";
 import { buildRoomSurfaceMaterialBomRows } from "@/lib/surface-material-bom";
 import type { DesignItem, DesignSnapshot, PersistedPlanOpening, RoomSnapshot, SavedView, ZoneMin } from "@/lib/room-types";
@@ -91,8 +92,13 @@ function getRoomMetrics(room: RoomSnapshot, rooms: RoomSnapshot[], openings: Per
   const width = room.geometry.width;
   const depth = room.geometry.depth;
   const polygon = room.planShape === "custom_polygon" ? room.planPolygon : null;
-  const areaSqm = polygon?.length ? getPolygonArea(polygon) : width * depth;
-  const perimeterM = polygon?.length ? getPolygonPerimeter(polygon) : (width + depth) * 2;
+  const holes = room.planHoles ?? [];
+  const areaSqm = polygon?.length
+    ? Math.max(0, getPolygonArea(polygon) - holes.reduce((sum, hole) => sum + getPolygonArea(hole), 0))
+    : width * depth;
+  const perimeterM = polygon?.length
+    ? getPolygonPerimeter(polygon) + holes.reduce((sum, hole) => sum + getPolygonPerimeter(hole), 0)
+    : (width + depth) * 2;
   const roomOpenings = getRoomOpenings(room, rooms, openings);
   const furnitureDensity = areaSqm > 0 ? room.items.length / areaSqm : 0;
   const densityLabel =
@@ -269,16 +275,18 @@ export async function GET(
       return NextResponse.json({ error: "Share link not found" }, { status: 404 });
     }
 
-    const designSnapshot: DesignSnapshot = legacyApiToSnapshot({
-      id: design.id,
-      title: design.title,
-      roomWidth: design.roomWidth,
-      roomDepth: design.roomDepth,
-      items: design.items as unknown as DesignItem[],
-      snapshot: design.snapshot as Parameters<typeof legacyApiToSnapshot>[0]["snapshot"],
-      zones: (design.zones as unknown as ZoneMin[]) || [],
-      savedViews: (design.savedViews as unknown as SavedView[]) || [],
-    });
+    const designSnapshot: DesignSnapshot = projectSharedDesignSnapshot(
+      legacyApiToSnapshot({
+        id: design.id,
+        title: design.title,
+        roomWidth: design.roomWidth,
+        roomDepth: design.roomDepth,
+        items: design.items as unknown as DesignItem[],
+        snapshot: design.snapshot as Parameters<typeof legacyApiToSnapshot>[0]["snapshot"],
+        zones: (design.zones as unknown as ZoneMin[]) || [],
+        savedViews: (design.savedViews as unknown as SavedView[]) || [],
+      })
+    );
 
     const rooms = designSnapshot.rooms ?? [];
     const userPlan: UserPlan = design.user?.plan === "pro" ? "pro" : "free";

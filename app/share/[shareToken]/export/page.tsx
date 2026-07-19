@@ -3,6 +3,7 @@ import { CATALOG_ITEMS } from "@/lib/catalog";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import { buildHousePlan2D } from "@/lib/design-page-house-plan";
 import { legacyApiToSnapshot } from "@/lib/room-persistence";
+import { projectSharedDesignSnapshot } from "@/lib/shared-design-snapshot";
 import {
   summarizeShoppingRooms,
   summarizeWholeHomeShopping,
@@ -103,8 +104,13 @@ function getRoomMetrics(
   const width = room.geometry.width;
   const depth = room.geometry.depth;
   const polygon = room.planShape === "custom_polygon" ? room.planPolygon : null;
-  const areaSqm = polygon?.length ? getPolygonArea(polygon) : width * depth;
-  const perimeterM = polygon?.length ? getPolygonPerimeter(polygon) : (width + depth) * 2;
+  const holes = room.planHoles ?? [];
+  const areaSqm = polygon?.length
+    ? Math.max(0, getPolygonArea(polygon) - holes.reduce((sum, hole) => sum + getPolygonArea(hole), 0))
+    : width * depth;
+  const perimeterM = polygon?.length
+    ? getPolygonPerimeter(polygon) + holes.reduce((sum, hole) => sum + getPolygonPerimeter(hole), 0)
+    : (width + depth) * 2;
   const clearSpanM = Math.min(width, depth);
   const roomOpenings = getRoomOpenings(room, rooms, openings);
   const furnitureDensity = areaSqm > 0 ? room.items.length / areaSqm : 0;
@@ -1038,16 +1044,18 @@ export default async function ExportPage({
   }
 
   // Convert to v3 format
-  const designSnapshot: DesignSnapshot = legacyApiToSnapshot({
-    id: design.id,
-    title: design.title,
-    roomWidth: design.roomWidth,
-    roomDepth: design.roomDepth,
-    items: design.items as unknown as DesignItem[],
-    snapshot: design.snapshot as Parameters<typeof legacyApiToSnapshot>[0]["snapshot"],
-    zones: (design.zones as unknown as ZoneMin[]) || [],
-    savedViews: (design.savedViews as unknown as SavedView[]) || [],
-  });
+  const designSnapshot: DesignSnapshot = projectSharedDesignSnapshot(
+    legacyApiToSnapshot({
+      id: design.id,
+      title: design.title,
+      roomWidth: design.roomWidth,
+      roomDepth: design.roomDepth,
+      items: design.items as unknown as DesignItem[],
+      snapshot: design.snapshot as Parameters<typeof legacyApiToSnapshot>[0]["snapshot"],
+      zones: (design.zones as unknown as ZoneMin[]) || [],
+      savedViews: (design.savedViews as unknown as SavedView[]) || [],
+    })
+  );
   const handoffFidelitySummary = buildShareExportFidelitySummary(designSnapshot, CATALOG_ITEMS);
   const qaFidelitySummary = handoffFidelitySummary;
 

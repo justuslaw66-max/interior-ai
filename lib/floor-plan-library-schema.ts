@@ -166,20 +166,61 @@ const floorPlanLibraryRoomSchema = z
     }
   });
 
-const floorPlanLibraryDoorwaySchema = z.object({
-  from_room_id: z.string().min(1),
-  to_room_id: z.string().min(1).optional(),
-  wall: wallSchema,
-  offset_meters: z.number().finite().optional(),
-  width_meters: z.number().positive().max(4).optional(),
-  kind: z.enum(["door", "opening"]).default("door"),
-});
+const floorPlanLibraryDoorwaySchema = z
+  .object({
+    from_room_id: z.string().min(1),
+    to_room_id: z.string().min(1).optional(),
+    wall: wallSchema,
+    offset_meters: z.number().finite().optional(),
+    // Open-plan boundaries can span an entire kitchen or living wall. The
+    // kind-aware refinement below keeps physical doors to a realistic limit.
+    width_meters: z.number().positive().max(12).optional(),
+    kind: z.enum(["door", "opening"]).default("door"),
+    operation: z
+      .enum(["swing", "sliding", "folding", "fixed", "open"])
+      .optional(),
+  })
+  .superRefine((doorway, context) => {
+    if (doorway.kind === "door" && (doorway.width_meters ?? 0) > 4) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["width_meters"],
+        message: "Physical doors cannot be wider than 4 metres.",
+      });
+    }
+    if (doorway.kind === "opening" && doorway.operation && doorway.operation !== "open") {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["operation"],
+        message: "Open passages must use the open operation.",
+      });
+    }
+    if (doorway.kind === "door" && doorway.operation === "open") {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["operation"],
+        message: "The open operation requires kind: opening.",
+      });
+    }
+  });
 
 const floorPlanLibraryWindowSchema = z.object({
   room_id: z.string().min(1),
   wall: wallSchema,
   offset_meters: z.number().finite().optional(),
   width_meters: z.number().positive().max(6).optional(),
+  kind: z.enum(["window", "vent", "louvre"]).default("window"),
+  operation: z
+    .enum(["fixed", "sliding", "casement", "awning"])
+    .default("fixed"),
+}).superRefine((window, context) => {
+  if (window.kind !== "window" && window.operation !== "fixed") {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["operation"],
+      message: "Vents and louvres must use the fixed operation.",
+    });
+  }
 });
 
 const floorPlanLibraryReferenceZoneSchema = z.object({
@@ -191,6 +232,77 @@ const floorPlanLibraryReferenceZoneSchema = z.object({
   x: z.number().finite(),
   z: z.number().finite(),
   locked: z.boolean().default(true),
+});
+
+const floorPlanLibraryAnnotationGeometrySchema = z
+  .discriminatedUnion("kind", [
+    z.object({
+      kind: z.literal("point"),
+      x: z.number().finite(),
+      z: z.number().finite(),
+    }),
+    z.object({
+      kind: z.literal("polygon"),
+      points: z.array(floorPlanLibraryPolygonPointSchema).min(3),
+    }),
+    z.object({
+      kind: z.literal("wall_span"),
+      room_id: z.string().min(1),
+      wall: wallSchema,
+      offset_meters: z.number().finite().default(0),
+      width_meters: z.number().positive().max(12),
+    }),
+  ])
+  .superRefine((geometry, context) => {
+    if (geometry.kind !== "polygon") return;
+      const uniquePoints = new Set(
+        geometry.points.map((point) => `${point.x.toFixed(6)}:${point.z.toFixed(6)}`)
+      );
+      if (uniquePoints.size < 3 || polygonArea(geometry.points) <= 0.0001) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Annotation polygon must contain at least three unique points and enclose an area.",
+        });
+      }
+      if (hasSelfIntersection(geometry.points)) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Annotation polygon cannot self-intersect.",
+        });
+      }
+    });
+
+const floorPlanLibraryAnnotationSchema = z
+  .object({
+    id: floorPlanLibraryIdSchema,
+    kind: z.enum(["label", "suggested_room", "optional_partition", "note"]),
+    text: z.string().min(1),
+    geometry: floorPlanLibraryAnnotationGeometrySchema,
+    configuration_id: floorPlanLibraryIdSchema.optional(),
+    source_page: z.number().int().positive().optional(),
+    // Catalog annotations are reserved for marks that are actually present in
+    // a supplied source. Product suggestions belong in user data, not here.
+    source_supported: z.literal(true),
+  })
+  .superRefine((annotation, context) => {
+    if (
+      (annotation.kind === "suggested_room" || annotation.kind === "optional_partition") &&
+      !annotation.configuration_id
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["configuration_id"],
+        message: `${annotation.kind} annotations require a configuration_id so they cannot be mistaken for physical rooms or walls.`,
+      });
+    }
+  });
+
+const floorPlanLibraryConfigurationSchema = z.object({
+  group_id: floorPlanLibraryIdSchema,
+  option_id: floorPlanLibraryIdSchema,
+  label: z.string().min(1),
+  default_selected: z.boolean(),
+  source_supported: z.literal(true),
 });
 
 const floorPlanLibraryLayoutSchema = z
@@ -205,6 +317,7 @@ const floorPlanLibraryLayoutSchema = z
     preview_url: z.string().regex(/^\/assets\/floor-plans\//),
     fidelity: z.literal("approximate_editable"),
     verification_note: z.string().min(1),
+    configuration: floorPlanLibraryConfigurationSchema.optional(),
     template: z.object({
       summary: z.string().min(1),
       best_for: z.string().min(1),
@@ -217,6 +330,7 @@ const floorPlanLibraryLayoutSchema = z
       doorways: z.array(floorPlanLibraryDoorwaySchema),
       windows: z.array(floorPlanLibraryWindowSchema),
       reference_zones: z.array(floorPlanLibraryReferenceZoneSchema).default([]),
+      annotations: z.array(floorPlanLibraryAnnotationSchema).default([]),
     }),
   })
   .superRefine((layout, context) => {
@@ -248,6 +362,26 @@ const floorPlanLibraryLayoutSchema = z
         context.addIssue({
           code: z.ZodIssueCode.custom,
           message: `Window references an unknown room: ${window.room_id}`,
+        });
+      }
+    }
+
+    const annotationIds = new Set<string>();
+    for (const annotation of layout.template.annotations) {
+      if (annotationIds.has(annotation.id)) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Duplicate annotation id: ${annotation.id}`,
+        });
+      }
+      annotationIds.add(annotation.id);
+      if (
+        annotation.geometry.kind === "wall_span" &&
+        !roomIds.has(annotation.geometry.room_id)
+      ) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Annotation ${annotation.id} references unknown room ${annotation.geometry.room_id}.`,
         });
       }
     }
@@ -291,6 +425,10 @@ export const floorPlanLibraryCatalogSchema = z
           source_url: z.string().url(),
           source_title: z.string().min(1),
           publisher: z.string().min(1),
+          sha256: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+          page_count: z.number().int().positive().optional(),
+          pdf_pages: z.array(z.number().int().positive()).optional(),
+          brochure_pages: z.array(z.number().int().positive()).optional(),
         })
       ),
     }),
@@ -299,10 +437,20 @@ export const floorPlanLibraryCatalogSchema = z
         source_url: z.string().url(),
         source_title: z.string().min(1),
         publisher: z.string().min(1),
+        sha256: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+        page_count: z.number().int().positive().optional(),
+        pdf_pages: z.array(z.number().int().positive()).optional(),
+        brochure_pages: z.array(z.number().int().positive()).optional(),
       })
       .optional(),
+    // Schema-v1 YAML catalogs are compatibility and regression inputs only.
+    // Consumer publication is reserved for immutable canonical DB revisions,
+    // where the licence, source overlay, reviewer and address-binding gates are
+    // enforced transactionally. Keeping these as literals prevents a catalog
+    // edit from bypassing that approval boundary.
     publication: z.object({
-      status: z.enum(["draft", "published"]),
+      status: z.literal("draft"),
+      visibility: z.literal("review_only"),
       accuracy_notice: z.string().min(1),
     }),
     layouts: z.array(floorPlanLibraryLayoutSchema).min(1),
@@ -324,6 +472,10 @@ export const floorPlanLibraryCatalogSchema = z
 
     const layoutIds = new Set<string>();
     const layoutById = new Map<string, (typeof catalog.layouts)[number]>();
+    const configurationGroups = new Map<
+      string,
+      Array<(typeof catalog.layouts)[number]>
+    >();
     for (const layout of catalog.layouts) {
       if (layoutIds.has(layout.layout_id)) {
         context.addIssue({
@@ -333,12 +485,66 @@ export const floorPlanLibraryCatalogSchema = z
       }
       layoutIds.add(layout.layout_id);
       layoutById.set(layout.layout_id, layout);
+      if (layout.configuration) {
+        const group = configurationGroups.get(layout.configuration.group_id) ?? [];
+        group.push(layout);
+        configurationGroups.set(layout.configuration.group_id, group);
+      }
       for (const buildingId of layout.applies_to_building_ids) {
         if (!buildingIds.has(buildingId)) {
           context.addIssue({
             code: z.ZodIssueCode.custom,
             message: `Layout ${layout.layout_id} references unknown building ${buildingId}`,
           });
+        }
+      }
+    }
+
+    for (const [groupId, layouts] of configurationGroups) {
+      if (layouts.length < 2) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Configuration group ${groupId} needs at least two source-supported layout options.`,
+        });
+      }
+      const optionIds = new Set<string>();
+      const defaultLayouts = layouts.filter(
+        (layout) => layout.configuration?.default_selected
+      );
+      for (const layout of layouts) {
+        const optionId = layout.configuration!.option_id;
+        if (optionIds.has(optionId)) {
+          context.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Configuration group ${groupId} repeats option ${optionId}.`,
+          });
+        }
+        optionIds.add(optionId);
+      }
+      if (defaultLayouts.length !== 1) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Configuration group ${groupId} needs exactly one default option.`,
+        });
+      }
+      const flatTypes = new Set(layouts.map((layout) => layout.flat_type));
+      if (flatTypes.size !== 1) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Configuration group ${groupId} cannot mix flat types.`,
+        });
+      }
+      for (const layout of layouts) {
+        for (const annotation of layout.template.annotations) {
+          if (
+            annotation.configuration_id &&
+            !optionIds.has(annotation.configuration_id)
+          ) {
+            context.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: `Annotation ${annotation.id} references unknown option ${annotation.configuration_id} in configuration group ${groupId}.`,
+            });
+          }
         }
       }
     }

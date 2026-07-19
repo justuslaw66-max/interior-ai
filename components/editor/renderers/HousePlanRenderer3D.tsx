@@ -4,7 +4,11 @@ import { Line } from "@react-three/drei/core/Line";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
+import {
+  ROOM_DIMENSION_DEFAULTS,
+  resolveHouseRoomFloorElevationMeters,
+  type HousePlanRoom2D,
+} from "@/lib/design-page-house-plan";
 import {
   PLAN_OPENING_EDGE_PADDING_METERS,
   type RoomRendererOpening,
@@ -28,7 +32,15 @@ import {
   normalizeFloorSurfaceSettings,
 } from "@/lib/surface-settings";
 import type { RoomFloorPattern } from "@/lib/room-types";
+import type { CanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
+import {
+  buildPlanarUnionPolygons,
+  type PlanarRegionMm,
+  type PlanarUnionPolygonMm,
+} from "@/lib/floor-plan-planar-union";
+import { CanonicalFloorPlanWalls3D } from "./CanonicalFloorPlanStructure";
 import { useSurfaceMaterialTexture } from "./useSurfaceMaterialTexture";
+import { buildRoomPlanShape } from "@/lib/room-plan-shape";
 
 type HousePlanRenderer3DProps = {
   rooms: HousePlanRoom2D[];
@@ -45,7 +57,16 @@ type HousePlanRenderer3DProps = {
   onSelectSurfaceTarget?: (target: { kind: "floor" | "wall" | "ceiling"; roomId: string; id: string }) => void;
   onSelectOpening?: (openingId: string | null) => void;
   onMoveOpening?: (openingId: string, offsetMeters: number) => void;
-  onOpeningDragStateChange?: (isDragging: boolean) => void;
+  onResizeOpening?: (
+    openingId: string,
+    metrics: { widthMeters: number; offsetMeters: number }
+  ) => void;
+  onOpeningDragStateChange?: (
+    isDragging: boolean,
+    kind?: "opening" | "opening_resize"
+  ) => void;
+  canonicalPlan?: CanonicalFloorPlanRenderModel | null;
+  canonicalStructureExpected?: boolean;
 };
 
 type WallId = RoomRendererOpening["wall"];
@@ -66,6 +87,7 @@ type WallOpening3D = {
   offset: number;
   width: number;
   height?: number;
+  bottom?: number;
   kind: RoomRendererOpening["kind"];
 };
 
@@ -85,8 +107,25 @@ type OpeningThreshold3D = WallPart3D & {
 
 type SharedWallRange3D = {
   roomId: string;
+  segmentKey?: string;
   start: number;
   end: number;
+};
+
+type LegacyFloorSlab3D = {
+  key: string;
+  floorLevel: number;
+  elevationMeters: number;
+  thicknessMeters: number;
+  polygons: PlanarUnionPolygonMm[];
+};
+
+type LegacyWallBand3D = {
+  key: string;
+  floorLevel: number;
+  bottomMeters: number;
+  topMeters: number;
+  polygons: PlanarUnionPolygonMm[];
 };
 
 type StructureTargetKind = "floor" | "wall" | "ceiling" | "opening";
@@ -99,7 +138,7 @@ type StructureTarget = {
 
 const STRUCTURE_THICKNESS_METERS = 0.025;
 const CEILING_THICKNESS_METERS = STRUCTURE_THICKNESS_METERS;
-const FLOOR_THICKNESS_METERS = STRUCTURE_THICKNESS_METERS;
+const FLOOR_THICKNESS_METERS = ROOM_DIMENSION_DEFAULTS.slabThickness;
 const CEILING_CAP_COLOR = "#9c9d99";
 const CEILING_EDGE_COLOR = "#f1f1ed";
 const ACTIVE_WALL_COLOR = "#fbfbf7";
@@ -107,6 +146,8 @@ const INACTIVE_WALL_COLOR = "#ddddda";
 const ACTIVE_WALL_OPACITY = 1;
 const INACTIVE_WALL_OPACITY = 1;
 const CAMERA_FACING_WALL_CUTAWAY_OPACITY = 0;
+const WALL_SECTION_CAP_COLOR = "#c9cac7";
+const WALL_SURFACE_OFFSET_METERS = 0.004;
 const STRUCTURE_HOVER_OUTLINE_COLOR = "#00d5e8";
 const STRUCTURE_SELECTED_OUTLINE_COLOR = "#2563eb";
 const ACTIVE_FLOOR_OUTLINE_COLOR = "#1d4ed8";
@@ -119,12 +160,6 @@ const WALL_SURFACE_TEXTURE_RESOLUTION = {
 
 function clampStructureOpacity(value: number | undefined): number {
   return Math.max(0.05, Math.min(1, typeof value === "number" && Number.isFinite(value) ? value : 1));
-}
-
-function getFloorYOffset(room: HousePlanRoom2D, wallHeight: number, stackedFloors: boolean): number {
-  if (!stackedFloors) return 0;
-  const level = typeof room.floorLevel === "number" && Number.isFinite(room.floorLevel) ? room.floorLevel : 1;
-  return (level - 1) * (wallHeight + Math.max(0.08, room.slabThickness ?? FLOOR_THICKNESS_METERS) + 0.28);
 }
 
 function getRoomFloorLevel(room: HousePlanRoom2D): number {
@@ -542,7 +577,16 @@ function getRoomOutlinePoints(room: HousePlanRoom2D): Array<[number, number]> {
 
 function buildRoomShapeGeometry(room: HousePlanRoom2D) {
   const points = getRoomOutlinePoints(room);
-  return buildShapeFromOutlinePoints(points);
+  return buildShapeFromOutlinePoints(points, getRoomHoleOutlinePoints(room));
+}
+
+function getRoomHoleOutlinePoints(room: HousePlanRoom2D): Array<Array<[number, number]>> {
+  return (room.holes ?? [])
+    .filter((hole) => hole.length >= 3)
+    .map((hole) => {
+      const points = hole.map((point): [number, number] => [point.x, point.z]);
+      return [...points, points[0]];
+    });
 }
 
 function getSignedArea(points: Array<[number, number]>) {
@@ -617,24 +661,20 @@ function offsetRoomOutlinePoints(room: HousePlanRoom2D, offset: number) {
   return [...offsetPoints, offsetPoints[0]];
 }
 
-function buildShapeFromOutlinePoints(points: Array<[number, number]>) {
-  const shape = new THREE.Shape();
-  const [firstX, firstZ] = points[0];
-  shape.moveTo(firstX, -firstZ);
-
-  for (const [x, z] of points.slice(1, -1)) {
-    shape.lineTo(x, -z);
-  }
-
-  shape.closePath();
-  return shape;
+function buildShapeFromOutlinePoints(
+  points: Array<[number, number]>,
+  holes: Array<Array<[number, number]>> = []
+) {
+  return buildRoomPlanShape(points, holes);
 }
 
 function buildHorizontalRoomGeometry(room: HousePlanRoom2D, edgeOffset = 0) {
   const points = edgeOffset > 0
     ? offsetRoomOutlinePoints(room, edgeOffset)
     : getRoomOutlinePoints(room);
-  const geometry = new THREE.ShapeGeometry(buildShapeFromOutlinePoints(points));
+  const geometry = new THREE.ShapeGeometry(
+    buildShapeFromOutlinePoints(points, getRoomHoleOutlinePoints(room))
+  );
   geometry.rotateX(-Math.PI / 2);
   geometry.computeBoundingSphere();
   return geometry;
@@ -647,22 +687,24 @@ function buildRoomEdgeBandGeometry(room: HousePlanRoom2D, height: number, edgeOf
   const vertices: number[] = [];
   const indices: number[] = [];
 
-  outline.slice(0, -1).forEach(([startX, startZ], index) => {
-    const [endX, endZ] = outline[index + 1];
-    const baseIndex = vertices.length / 3;
+  for (const loop of [outline, ...getRoomHoleOutlinePoints(room)]) {
+    loop.slice(0, -1).forEach(([startX, startZ], index) => {
+      const [endX, endZ] = loop[index + 1];
+      const baseIndex = vertices.length / 3;
 
-    vertices.push(
-      startX, 0, startZ,
-      endX, 0, endZ,
-      endX, height, endZ,
-      startX, height, startZ
-    );
+      vertices.push(
+        startX, 0, startZ,
+        endX, 0, endZ,
+        endX, height, endZ,
+        startX, height, startZ
+      );
 
-    indices.push(
-      baseIndex, baseIndex + 1, baseIndex + 2,
-      baseIndex, baseIndex + 2, baseIndex + 3
-    );
-  });
+      indices.push(
+        baseIndex, baseIndex + 1, baseIndex + 2,
+        baseIndex, baseIndex + 2, baseIndex + 3
+      );
+    });
+  }
 
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
@@ -827,6 +869,176 @@ function getOpeningWorldOffset(room: HousePlanRoom2D, opening: RoomRendererOpeni
     : room.z + opening.offset;
 }
 
+function wallPartCenter(segment: WallSegment3D, offset: number) {
+  return {
+    x: segment.x + Math.cos(segment.rotationY) * offset,
+    z: segment.z - Math.sin(segment.rotationY) * offset,
+  };
+}
+
+type LegacyWallJoinSide = 1 | -1;
+
+type LegacyWallEndJoinOptions = {
+  squareStart?: boolean;
+  squareEnd?: boolean;
+};
+
+const LEGACY_WALL_JOIN_TOLERANCE_METERS = 0.002;
+
+function legacyWallDirection(segment: WallSegment3D): [number, number] {
+  return [Math.cos(segment.rotationY), -Math.sin(segment.rotationY)];
+}
+
+function legacyWallEndpointLocal(
+  segment: WallSegment3D,
+  endpoint: "start" | "end"
+) {
+  const [directionX, directionZ] = legacyWallDirection(segment);
+  const offset = (endpoint === "start" ? -1 : 1) * segment.length / 2;
+  return {
+    x: segment.x + directionX * offset,
+    z: segment.z + directionZ * offset,
+  };
+}
+
+function legacyWallPartAxisRange(segment: WallSegment3D, part: WallPart3D) {
+  const [directionX, directionZ] = legacyWallDirection(segment);
+  const centerOffset =
+    (part.x - segment.x) * directionX +
+    (part.z - segment.z) * directionZ;
+  return {
+    centerOffset,
+    startOffset: centerOffset - part.length / 2,
+    endOffset: centerOffset + part.length / 2,
+  };
+}
+
+function legacyWallAdjacentSegment(
+  room: HousePlanRoom2D,
+  segment: WallSegment3D,
+  endpoint: "start" | "end"
+) {
+  const segments = getWallSegments(room);
+  const target = legacyWallEndpointLocal(segment, endpoint);
+  return segments.find((candidate) => {
+    if (candidate.key === segment.key) return false;
+    const candidateStart = legacyWallEndpointLocal(candidate, "start");
+    const candidateEnd = legacyWallEndpointLocal(candidate, "end");
+    return (
+      Math.hypot(target.x - candidateStart.x, target.z - candidateStart.z) <=
+        LEGACY_WALL_JOIN_TOLERANCE_METERS ||
+      Math.hypot(target.x - candidateEnd.x, target.z - candidateEnd.z) <=
+        LEGACY_WALL_JOIN_TOLERANCE_METERS
+    );
+  }) ?? null;
+}
+
+function legacyWallCutEndJoinOptions(
+  room: HousePlanRoom2D,
+  segment: WallSegment3D,
+  excludedSegmentKeys?: ReadonlySet<string>
+): LegacyWallEndJoinOptions {
+  if (!excludedSegmentKeys?.size) return {};
+  const startNeighbor = legacyWallAdjacentSegment(room, segment, "start");
+  const endNeighbor = legacyWallAdjacentSegment(room, segment, "end");
+  return {
+    squareStart: Boolean(
+      startNeighbor && excludedSegmentKeys.has(startNeighbor.key)
+    ),
+    squareEnd: Boolean(endNeighbor && excludedSegmentKeys.has(endNeighbor.key)),
+  };
+}
+
+function joinedLegacyWallPartAxisRange(
+  _room: HousePlanRoom2D,
+  segment: WallSegment3D,
+  part: WallPart3D,
+  _side: LegacyWallJoinSide,
+  wallThicknessMeters: number,
+  endJoinOptions: LegacyWallEndJoinOptions = {}
+) {
+  const range = legacyWallPartAxisRange(segment, part);
+  const touchesStart =
+    Math.abs(range.startOffset + segment.length / 2) <=
+    LEGACY_WALL_JOIN_TOLERANCE_METERS;
+  const touchesEnd =
+    Math.abs(range.endOffset - segment.length / 2) <=
+    LEGACY_WALL_JOIN_TOLERANCE_METERS;
+  const capExtension = wallThicknessMeters / 2;
+  return {
+    startOffset:
+      range.startOffset -
+      (touchesStart && !endJoinOptions.squareStart ? capExtension : 0),
+    endOffset:
+      range.endOffset +
+      (touchesEnd && !endJoinOptions.squareEnd ? capExtension : 0),
+  };
+}
+
+function joinedLegacyWallSurfacePart(
+  room: HousePlanRoom2D,
+  segment: WallSegment3D,
+  part: WallPart3D,
+  side: LegacyWallJoinSide,
+  wallThicknessMeters: number,
+  endJoinOptions: LegacyWallEndJoinOptions = {}
+) {
+  const original = legacyWallPartAxisRange(segment, part);
+  const joined = joinedLegacyWallPartAxisRange(
+    room,
+    segment,
+    part,
+    side,
+    wallThicknessMeters,
+    endJoinOptions
+  );
+  const length = Math.max(0.001, joined.endOffset - joined.startOffset);
+  const centerOffset = joined.startOffset + length / 2;
+  return {
+    centerDelta: centerOffset - original.centerOffset,
+    length,
+  };
+}
+
+export function getLegacyWallSurfaceJoinRangesForTest(
+  room: HousePlanRoom2D,
+  wallThicknessMeters: number,
+  excludedSegmentKeys?: ReadonlySet<string>
+) {
+  return getWallSegments(room).map((segment) => {
+    const part: WallPart3D = {
+      key: `${segment.key}:join-test`,
+      x: segment.x,
+      z: segment.z,
+      length: segment.length,
+    };
+    const endJoinOptions = legacyWallCutEndJoinOptions(
+      room,
+      segment,
+      excludedSegmentKeys
+    );
+    return {
+      segmentKey: segment.key,
+      plus: joinedLegacyWallSurfacePart(
+        room,
+        segment,
+        part,
+        1,
+        wallThicknessMeters,
+        endJoinOptions
+      ),
+      minus: joinedLegacyWallSurfacePart(
+        room,
+        segment,
+        part,
+        -1,
+        wallThicknessMeters,
+        endJoinOptions
+      ),
+    };
+  });
+}
+
 function wallsShareLine(
   room: HousePlanRoom2D,
   wall: WallId,
@@ -850,9 +1062,8 @@ function getWallOpenings(
   rooms: HousePlanRoom2D[],
   openings: RoomRendererOpening[]
 ): WallOpening3D[] {
-  if (!segment.wall) return [];
-
-  const directOpenings = openings
+  const directOpenings = segment.wall
+    ? openings
     .filter((opening) => opening.roomId === room.id && opening.wall === segment.wall)
     .map((opening) => ({
       id: opening.id,
@@ -860,25 +1071,53 @@ function getWallOpenings(
       offset: opening.offset,
       width: opening.width,
       height: opening.height,
+      bottom: opening.bottom,
       kind: opening.kind,
-    }));
+    }))
+    : [];
 
   const mirroredOpenings = openings.flatMap((opening) => {
-    if (!opening.roomId || opening.roomId === room.id || opening.wall !== oppositeWall(segment.wall!)) {
-      return [];
-    }
-
+    if (!opening.roomId) return [];
+    if (opening.roomId === room.id && opening.wall === segment.wall) return [];
     const sourceRoom = rooms.find((candidate) => candidate.id === opening.roomId);
-    if (!sourceRoom || !wallsShareLine(room, segment.wall!, sourceRoom, opening.wall)) {
+    if (!sourceRoom) return [];
+    const targetDirection = {
+      x: Math.cos(segment.rotationY),
+      z: -Math.sin(segment.rotationY),
+    };
+    const sourceDirection =
+      opening.wall === "north" || opening.wall === "south"
+        ? { x: 1, z: 0 }
+        : { x: 0, z: 1 };
+    if (
+      Math.abs(
+        targetDirection.x * sourceDirection.z -
+          targetDirection.z * sourceDirection.x
+      ) > 0.01
+    ) {
       return [];
     }
-
-    const offset = getOpeningWorldOffset(sourceRoom, opening) -
-      (segment.axis === "x" ? room.x : room.z);
-
-    if (Math.abs(offset) > segment.length / 2 + opening.width / 2) {
-      return [];
-    }
+    const openingCenter = {
+      x:
+        opening.wall === "north" || opening.wall === "south"
+          ? sourceRoom.x + opening.offset
+          : getWallCoordinate(sourceRoom, opening.wall),
+      z:
+        opening.wall === "east" || opening.wall === "west"
+          ? sourceRoom.z + opening.offset
+          : getWallCoordinate(sourceRoom, opening.wall),
+    };
+    const targetCenter = { x: room.x + segment.x, z: room.z + segment.z };
+    const delta = {
+      x: openingCenter.x - targetCenter.x,
+      z: openingCenter.z - targetCenter.z,
+    };
+    const perpendicularDistance = Math.abs(
+      delta.x * -targetDirection.z + delta.z * targetDirection.x
+    );
+    if (perpendicularDistance > 0.08) return [];
+    const offset = delta.x * targetDirection.x + delta.z * targetDirection.z;
+    if (Math.abs(offset) > segment.length / 2 + opening.width / 2) return [];
 
     return [
       {
@@ -887,12 +1126,25 @@ function getWallOpenings(
         offset,
         width: opening.width,
         height: opening.height,
+        bottom: opening.bottom,
         kind: opening.kind,
       },
     ];
   });
 
   return [...directOpenings, ...mirroredOpenings];
+}
+
+export function getLegacyWallOpeningCountsForTest(
+  rooms: HousePlanRoom2D[],
+  openings: RoomRendererOpening[]
+) {
+  return rooms.map((room) => ({
+    roomId: room.id,
+    segments: getWallSegments(room).map((segment) =>
+      getWallOpenings(room, segment, rooms, openings).map((opening) => opening.sourceId)
+    ),
+  }));
 }
 
 function buildWallParts(segment: WallSegment3D, openings: WallOpening3D[]): WallPart3D[] {
@@ -923,10 +1175,11 @@ function buildWallParts(segment: WallSegment3D, openings: WallOpening3D[]): Wall
     const partLength = gap.start - cursor;
     if (partLength > minPartLength) {
       const centerOffset = cursor + partLength / 2;
+      const center = wallPartCenter(segment, centerOffset);
       parts.push({
         key: `${segment.key}-part-${index}`,
-        x: segment.x + (segment.axis === "x" ? centerOffset : 0),
-        z: segment.z + (segment.axis === "z" ? centerOffset : 0),
+        x: center.x,
+        z: center.z,
         length: partLength,
       });
     }
@@ -947,20 +1200,37 @@ function getOpeningDisplayHeight(
   return Math.min(Math.max(0.08, displayHeight), wallHeight);
 }
 
+function getOpeningDisplayBottom(
+  opening: WallOpening3D,
+  wallHeight: number,
+  physicalWallHeight: number
+) {
+  const requestedBottom = opening.bottom;
+  if (!requestedBottom || !Number.isFinite(requestedBottom)) return 0;
+  return Math.min(
+    Math.max(0, (requestedBottom / Math.max(0.2, physicalWallHeight)) * wallHeight),
+    Math.max(0, wallHeight - 0.08)
+  );
+}
+
 function buildOpeningLintelParts(
   segment: WallSegment3D,
   openings: WallOpening3D[],
   wallHeight: number,
   physicalWallHeight: number
 ): WallPart3D[] {
-  if (!segment.wall) return [];
-
   const minLintelHeight = 0.08;
   const half = segment.length / 2;
 
   return openings.flatMap((opening): WallPart3D[] => {
+    const openingBottom = getOpeningDisplayBottom(
+      opening,
+      wallHeight,
+      physicalWallHeight
+    );
     const openingHeight = getOpeningDisplayHeight(opening, wallHeight, physicalWallHeight);
-    const lintelHeight = wallHeight - openingHeight;
+    const openingTop = Math.min(wallHeight, openingBottom + openingHeight);
+    const lintelHeight = wallHeight - openingTop;
     if (lintelHeight < minLintelHeight) return [];
 
     const start = Math.max(-half, opening.offset - opening.width / 2);
@@ -969,14 +1239,48 @@ function buildOpeningLintelParts(
     if (length <= 0.08) return [];
 
     const centerOffset = start + length / 2;
+    const center = wallPartCenter(segment, centerOffset);
     return [
       {
         key: `${segment.key}-${opening.id}-lintel`,
-        x: segment.x + (segment.axis === "x" ? centerOffset : 0),
-        z: segment.z + (segment.axis === "z" ? centerOffset : 0),
+        x: center.x,
+        z: center.z,
         length,
         height: lintelHeight,
-        centerY: openingHeight + lintelHeight / 2,
+        centerY: openingTop + lintelHeight / 2,
+      },
+    ];
+  });
+}
+
+function buildOpeningSillParts(
+  segment: WallSegment3D,
+  openings: WallOpening3D[],
+  wallHeight: number,
+  physicalWallHeight: number
+): WallPart3D[] {
+  const half = segment.length / 2;
+  return openings.flatMap((opening): WallPart3D[] => {
+    const sillHeight = getOpeningDisplayBottom(
+      opening,
+      wallHeight,
+      physicalWallHeight
+    );
+    if (sillHeight < 0.08) return [];
+    const start = Math.max(-half, opening.offset - opening.width / 2);
+    const end = Math.min(half, opening.offset + opening.width / 2);
+    const length = end - start;
+    if (length <= 0.08) return [];
+    const centerOffset = start + length / 2;
+    const center = wallPartCenter(segment, centerOffset);
+    return [
+      {
+        key: `${segment.key}-${opening.id}-sill`,
+        x: center.x,
+        z: center.z,
+        length,
+        height: sillHeight,
+        centerY: sillHeight / 2,
       },
     ];
   });
@@ -988,17 +1292,19 @@ function getOpeningThresholds(
   wallHeight: number,
   physicalWallHeight: number
 ): OpeningThreshold3D[] {
-  if (!segment.wall) return [];
   return openings
     .filter((opening) => opening.kind === "door")
-    .map((opening) => ({
-      key: `${segment.key}-${opening.id}-threshold`,
-      sourceId: opening.sourceId,
-      x: segment.x + (segment.axis === "x" ? opening.offset : 0),
-      z: segment.z + (segment.axis === "z" ? opening.offset : 0),
-      length: Math.min(segment.length, opening.width),
-      height: getOpeningDisplayHeight(opening, wallHeight, physicalWallHeight),
-    }));
+    .map((opening) => {
+      const center = wallPartCenter(segment, opening.offset);
+      return {
+        key: `${segment.key}-${opening.id}-threshold`,
+        sourceId: opening.sourceId,
+        x: center.x,
+        z: center.z,
+        length: Math.min(segment.length, opening.width),
+        height: getOpeningDisplayHeight(opening, wallHeight, physicalWallHeight),
+      };
+    });
 }
 
 function getSharedWallOverlapRanges(
@@ -1007,8 +1313,6 @@ function getSharedWallOverlapRanges(
   segment: WallSegment3D,
   minOverlap = 0.35
 ): SharedWallRange3D[] {
-  if (!segment.wall) return [];
-
   const tolerance = 0.08;
   const half = segment.length / 2;
   const segmentCenter = segment.axis === "x"
@@ -1016,6 +1320,48 @@ function getSharedWallOverlapRanges(
     : room.z + segment.z;
   const segmentStart = segmentCenter - half;
   const segmentEnd = segmentCenter + half;
+
+  if (!segment.wall) {
+    const [directionX, directionZ] = legacyWallDirection(segment);
+    const normalX = -directionZ;
+    const normalZ = directionX;
+    const worldCenterX = room.x + segment.x;
+    const worldCenterZ = room.z + segment.z;
+    return rooms.flatMap((otherRoom): SharedWallRange3D[] => {
+      if (otherRoom.id === room.id) return [];
+      return getWallSegments(otherRoom).flatMap(
+        (otherSegment): SharedWallRange3D[] => {
+          const [otherDirectionX, otherDirectionZ] =
+            legacyWallDirection(otherSegment);
+          const parallelCross = Math.abs(
+            directionX * otherDirectionZ - directionZ * otherDirectionX
+          );
+          if (parallelCross > 0.01) return [];
+          const deltaX = otherRoom.x + otherSegment.x - worldCenterX;
+          const deltaZ = otherRoom.z + otherSegment.z - worldCenterZ;
+          const lineDistance = Math.abs(deltaX * normalX + deltaZ * normalZ);
+          if (lineDistance > tolerance) return [];
+          const otherCenterOffset = deltaX * directionX + deltaZ * directionZ;
+          const directionAlignment = Math.abs(
+            directionX * otherDirectionX + directionZ * otherDirectionZ
+          );
+          const otherHalf = (otherSegment.length * directionAlignment) / 2;
+          const overlapStart = Math.max(-half, otherCenterOffset - otherHalf);
+          const overlapEnd = Math.min(half, otherCenterOffset + otherHalf);
+          if (overlapEnd - overlapStart <= minOverlap) return [];
+          return [
+            {
+              roomId: otherRoom.id,
+              segmentKey: otherSegment.key,
+              start: overlapStart,
+              end: overlapEnd,
+            },
+          ];
+        }
+      );
+    });
+  }
+
   const roomLeft = room.x - room.w / 2;
   const roomRight = room.x + room.w / 2;
   const roomNorth = room.z - room.d / 2;
@@ -1112,32 +1458,175 @@ function rangesOverlapBy(
   return Math.min(firstEnd, secondEnd) - Math.max(firstStart, secondStart) > minOverlap;
 }
 
-function isWallPartSharedWithAnotherRoom(
-  room: HousePlanRoom2D,
-  rooms: HousePlanRoom2D[],
-  segment: WallSegment3D,
-  part: WallPart3D
-): boolean {
-  return getSharedWallRoomIds(room, rooms, segment, part).length > 0;
-}
-
 function getSharedWallRoomIds(
   room: HousePlanRoom2D,
   rooms: HousePlanRoom2D[],
   segment: WallSegment3D,
   part: WallPart3D
 ): string[] {
-  if (!segment.wall) return [];
-
   const centerOffset = segment.axis === "x"
     ? part.x - segment.x
     : part.z - segment.z;
   const partStart = centerOffset - part.length / 2;
   const partEnd = centerOffset + part.length / 2;
 
-  return getSharedWallOverlapRanges(room, rooms, segment)
-    .filter((range) => rangesOverlapBy(partStart, partEnd, range.start, range.end, 0.35))
-    .map((range) => range.roomId);
+  return [
+    ...new Set(
+      getSharedWallOverlapRanges(room, rooms, segment)
+        .filter((range) =>
+          rangesOverlapBy(partStart, partEnd, range.start, range.end, 0.35)
+        )
+        .map((range) => range.roomId)
+    ),
+  ];
+}
+
+function getSharedWallMatches(
+  room: HousePlanRoom2D,
+  rooms: HousePlanRoom2D[],
+  segment: WallSegment3D,
+  part: WallPart3D
+) {
+  const centerOffset = segment.axis === "x"
+    ? part.x - segment.x
+    : part.z - segment.z;
+  const partStart = centerOffset - part.length / 2;
+  const partEnd = centerOffset + part.length / 2;
+  const matches = getSharedWallOverlapRanges(room, rooms, segment)
+    .filter((range) =>
+      rangesOverlapBy(partStart, partEnd, range.start, range.end, 0.35)
+    )
+    .flatMap((range) => {
+      const sharedRoom = rooms.find((candidate) => candidate.id === range.roomId);
+      if (!sharedRoom) return [];
+      const sharedSegments = getWallSegments(sharedRoom);
+      const sharedSegment = range.segmentKey
+        ? sharedSegments.find((candidate) => candidate.key === range.segmentKey)
+        : segment.wall
+          ? sharedSegments.find(
+              (candidate) => candidate.wall === oppositeWall(segment.wall as WallId)
+            )
+          : undefined;
+      return sharedSegment ? [{ room: sharedRoom, segment: sharedSegment }] : [];
+    });
+  return [
+    ...new Map(
+      matches.map((match) => [
+        `${match.room.id}:${match.segment.key}`,
+        match,
+      ])
+    ).values(),
+  ];
+}
+
+function legacyWallEndpointWorld(
+  room: HousePlanRoom2D,
+  segment: WallSegment3D,
+  endpoint: "start" | "end"
+) {
+  const local = legacyWallEndpointLocal(segment, endpoint);
+  return {
+    x: room.x + local.x,
+    z: room.z + local.z,
+  };
+}
+
+function legacyPhysicalWallCutEndJoinOptions(
+  room: HousePlanRoom2D,
+  rooms: HousePlanRoom2D[],
+  segment: WallSegment3D,
+  excludedSegmentKeys?: ReadonlySet<string>
+): LegacyWallEndJoinOptions {
+  const localOptions = legacyWallCutEndJoinOptions(
+    room,
+    segment,
+    excludedSegmentKeys
+  );
+  if (!excludedSegmentKeys?.size) return localOptions;
+
+  const endpoints = {
+    start: legacyWallEndpointWorld(room, segment, "start"),
+    end: legacyWallEndpointWorld(room, segment, "end"),
+  };
+  const endpointMatches = (
+    first: { x: number; z: number },
+    second: { x: number; z: number }
+  ) => Math.hypot(first.x - second.x, first.z - second.z) <= 0.08;
+  const exposedEndpoints = rooms.flatMap((candidateRoom) =>
+    getWallSegments(candidateRoom).flatMap((candidateSegment) => {
+      if (excludedSegmentKeys.has(candidateSegment.key)) return [];
+      const options = legacyWallCutEndJoinOptions(
+        candidateRoom,
+        candidateSegment,
+        excludedSegmentKeys
+      );
+      return [
+        ...(options.squareStart
+          ? [legacyWallEndpointWorld(candidateRoom, candidateSegment, "start")]
+          : []),
+        ...(options.squareEnd
+          ? [legacyWallEndpointWorld(candidateRoom, candidateSegment, "end")]
+          : []),
+      ];
+    })
+  );
+
+  return {
+    squareStart:
+      Boolean(localOptions.squareStart) ||
+      exposedEndpoints.some((endpoint) =>
+        endpointMatches(endpoints.start, endpoint)
+      ),
+    squareEnd:
+      Boolean(localOptions.squareEnd) ||
+      exposedEndpoints.some((endpoint) =>
+        endpointMatches(endpoints.end, endpoint)
+      ),
+  };
+}
+
+export function getLegacyPhysicalWallCutEndOptionsForTest({
+  rooms,
+  excludedSegmentKeys,
+}: {
+  rooms: HousePlanRoom2D[];
+  excludedSegmentKeys: ReadonlySet<string>;
+}) {
+  return rooms.flatMap((room) =>
+    getWallSegments(room).map((segment) => ({
+      roomId: room.id,
+      segmentKey: segment.key,
+      ...legacyPhysicalWallCutEndJoinOptions(
+        room,
+        rooms,
+        segment,
+        excludedSegmentKeys
+      ),
+    }))
+  );
+}
+
+export function getLegacySharedWallMatchesForTest(rooms: HousePlanRoom2D[]) {
+  return rooms.flatMap((room) =>
+    getWallSegments(room).map((segment) => {
+      const part: WallPart3D = {
+        key: `${segment.key}:shared-test`,
+        x: segment.x,
+        z: segment.z,
+        length: segment.length,
+      };
+      return {
+        roomId: room.id,
+        segmentKey: segment.key,
+        matches: getSharedWallMatches(room, rooms, segment, part).map(
+          (match) => ({
+            roomId: match.room.id,
+            segmentKey: match.segment.key,
+          })
+        ),
+      };
+    })
+  );
 }
 
 function getSharedWallRenderOwnerRoomId(
@@ -1152,16 +1641,542 @@ function getSharedWallRenderOwnerRoomId(
   return [room.id, ...sharedRoomIds].sort()[0];
 }
 
+function legacyPlanarShape(polygons: PlanarUnionPolygonMm[]) {
+  return polygons.map((polygon) => {
+    const shape = new THREE.Shape();
+    polygon.outer.forEach((point, index) => {
+      const x = point.xMm / 1000;
+      const y = -point.zMm / 1000;
+      if (index === 0) shape.moveTo(x, y);
+      else shape.lineTo(x, y);
+    });
+    shape.closePath();
+    for (const holePoints of polygon.holes) {
+      const hole = new THREE.Path();
+      holePoints.forEach((point, index) => {
+        const x = point.xMm / 1000;
+        const y = -point.zMm / 1000;
+        if (index === 0) hole.moveTo(x, y);
+        else hole.lineTo(x, y);
+      });
+      hole.closePath();
+      shape.holes.push(hole);
+    }
+    return shape;
+  });
+}
+
+function legacyWallPartRegion(
+  room: HousePlanRoom2D,
+  segment: WallSegment3D,
+  part: WallPart3D,
+  wallThicknessMeters: number,
+  endJoinOptions: LegacyWallEndJoinOptions = {}
+): PlanarRegionMm {
+  const [directionX, directionZ] = legacyWallDirection(segment);
+  const normalX = -directionZ;
+  const normalZ = directionX;
+  const halfThickness = wallThicknessMeters / 2;
+  const pointAt = (offset: number, side: LegacyWallJoinSide) => ({
+    xMm:
+      (room.x + segment.x + directionX * offset + normalX * side * halfThickness) *
+      1000,
+    zMm:
+      (room.z + segment.z + directionZ * offset + normalZ * side * halfThickness) *
+      1000,
+  });
+  const left = joinedLegacyWallPartAxisRange(
+    room,
+    segment,
+    part,
+    1,
+    wallThicknessMeters,
+    endJoinOptions
+  );
+  const right = joinedLegacyWallPartAxisRange(
+    room,
+    segment,
+    part,
+    -1,
+    wallThicknessMeters,
+    endJoinOptions
+  );
+  return {
+    outer: [
+      pointAt(left.startOffset, 1),
+      pointAt(left.endOffset, 1),
+      pointAt(right.endOffset, -1),
+      pointAt(right.startOffset, -1),
+    ],
+  };
+}
+
+function legacyRoomRegion(room: HousePlanRoom2D): PlanarRegionMm {
+  const toWorldRing = (points: Array<[number, number]>) =>
+    points.slice(0, -1).map(([x, z]) => ({
+      xMm: (room.x + x) * 1000,
+      zMm: (room.z + z) * 1000,
+    }));
+  return {
+    outer: toWorldRing(getRoomOutlinePoints(room)),
+    holes: getRoomHoleOutlinePoints(room).map(toWorldRing),
+  };
+}
+
+export function buildLegacyFloorSlabsForTest({
+  rooms,
+  openings = [],
+  defaultWallHeight,
+  stackedFloors,
+}: {
+  rooms: HousePlanRoom2D[];
+  openings?: RoomRendererOpening[];
+  defaultWallHeight: number;
+  stackedFloors: boolean;
+}): LegacyFloorSlab3D[] {
+  const groups = new Map<
+    string,
+    {
+      floorLevel: number;
+      elevationMeters: number;
+      thicknessMeters: number;
+      regions: PlanarRegionMm[];
+    }
+  >();
+  for (const room of rooms) {
+    const roomWallHeight = Math.max(0.2, room.height ?? defaultWallHeight);
+    const elevationMeters = resolveHouseRoomFloorElevationMeters(
+      room,
+      roomWallHeight,
+      stackedFloors
+    );
+    const floorLevel = getRoomFloorLevel(room);
+    const key = `${floorLevel}:${Math.round(elevationMeters * 1000)}`;
+    const group = groups.get(key) ?? {
+      floorLevel,
+      elevationMeters,
+      thicknessMeters: Math.max(0.01, room.slabThickness ?? FLOOR_THICKNESS_METERS),
+      regions: [],
+    };
+    group.thicknessMeters = Math.max(
+      group.thicknessMeters,
+      Math.max(0.01, room.slabThickness ?? FLOOR_THICKNESS_METERS)
+    );
+    group.regions.push(legacyRoomRegion(room));
+    const wallThickness = Math.max(
+      0.01,
+      room.wallThickness ?? STRUCTURE_THICKNESS_METERS
+    );
+    for (const segment of getWallSegments(room)) {
+      const faceId = getWallSurfaceFaceId(room, segment);
+      const segmentWallHeight = Math.max(
+        0.2,
+        room.wallHeights?.[faceId] ?? roomWallHeight
+      );
+      const wallOpenings = getWallOpenings(room, segment, rooms, openings);
+      const baseParts = [
+        ...splitWallPartsAtSharedBoundaries(
+          room,
+          rooms,
+          segment,
+          buildWallParts(segment, wallOpenings)
+        ),
+        ...buildOpeningSillParts(
+          segment,
+          wallOpenings,
+          segmentWallHeight,
+          segmentWallHeight
+        ),
+      ];
+      const endJoinOptions = legacyWallCutEndJoinOptions(room, segment);
+      for (const part of baseParts) {
+        group.regions.push(
+          legacyWallPartRegion(
+            room,
+            segment,
+            part,
+            wallThickness,
+            endJoinOptions
+          )
+        );
+      }
+    }
+    groups.set(key, group);
+  }
+  return [...groups.entries()].flatMap(([key, group]) => {
+    const polygons = buildPlanarUnionPolygons(group.regions);
+    return polygons.length
+      ? [
+          {
+            key,
+            floorLevel: group.floorLevel,
+            elevationMeters: group.elevationMeters,
+            thicknessMeters: group.thicknessMeters,
+            polygons,
+          },
+        ]
+      : [];
+  });
+}
+
+export function buildLegacyWallBandsForTest({
+  rooms,
+  openings,
+  defaultWallHeight,
+  stackedFloors,
+  excludedSegmentKeys,
+}: {
+  rooms: HousePlanRoom2D[];
+  openings: RoomRendererOpening[];
+  defaultWallHeight: number;
+  stackedFloors: boolean;
+  excludedSegmentKeys?: ReadonlySet<string>;
+}): LegacyWallBand3D[] {
+  const groups = new Map<
+    string,
+    {
+      floorLevel: number;
+      solids: Array<{
+        bottomMm: number;
+        topMm: number;
+        region: PlanarRegionMm;
+      }>;
+    }
+  >();
+  for (const room of rooms) {
+    const roomWallHeight = Math.max(0.2, room.height ?? defaultWallHeight);
+    const floorElevation = resolveHouseRoomFloorElevationMeters(
+      room,
+      roomWallHeight,
+      stackedFloors
+    );
+    const floorLevel = getRoomFloorLevel(room);
+    const key = `${floorLevel}:${Math.round(floorElevation * 1000)}`;
+    const group = groups.get(key) ?? { floorLevel, solids: [] };
+    const wallThickness = Math.max(
+      0.01,
+      room.wallThickness ?? STRUCTURE_THICKNESS_METERS
+    );
+    for (const segment of getWallSegments(room)) {
+      if (excludedSegmentKeys?.has(segment.key)) continue;
+      const endJoinOptions = legacyPhysicalWallCutEndJoinOptions(
+        room,
+        rooms,
+        segment,
+        excludedSegmentKeys
+      );
+      const faceId = getWallSurfaceFaceId(room, segment);
+      const segmentWallHeight = Math.max(
+        0.2,
+        room.wallHeights?.[faceId] ?? roomWallHeight
+      );
+      const wallOpenings = getWallOpenings(room, segment, rooms, openings);
+      const parts = splitWallPartsAtSharedBoundaries(
+        room,
+        rooms,
+        segment,
+        buildWallParts(segment, wallOpenings)
+      );
+      const lintels = buildOpeningLintelParts(
+        segment,
+        wallOpenings,
+        segmentWallHeight,
+        segmentWallHeight
+      );
+      const sills = buildOpeningSillParts(
+        segment,
+        wallOpenings,
+        segmentWallHeight,
+        segmentWallHeight
+      );
+      for (const part of [...parts, ...lintels, ...sills]) {
+        const partHeight = part.height ?? segmentWallHeight;
+        const centerY = part.centerY ?? segmentWallHeight / 2;
+        group.solids.push({
+          bottomMm: Math.round((floorElevation + centerY - partHeight / 2) * 1000),
+          topMm: Math.round((floorElevation + centerY + partHeight / 2) * 1000),
+          region: legacyWallPartRegion(
+            room,
+            segment,
+            part,
+            wallThickness,
+            endJoinOptions
+          ),
+        });
+      }
+    }
+    groups.set(key, group);
+  }
+
+  return [...groups.entries()].flatMap(([groupKey, group]) => {
+    const boundaries = [
+      ...new Set(group.solids.flatMap((solid) => [solid.bottomMm, solid.topMm])),
+    ].sort((left, right) => left - right);
+    return boundaries.slice(0, -1).flatMap((bottomMm, index) => {
+      const topMm = boundaries[index + 1];
+      if (topMm - bottomMm <= 1) return [];
+      const regions = group.solids
+        .filter(
+          (solid) => solid.bottomMm <= bottomMm && solid.topMm >= topMm
+        )
+        .map((solid) => solid.region);
+      const polygons = buildPlanarUnionPolygons(regions);
+      return polygons.length
+        ? [
+            {
+              key: `${groupKey}:${bottomMm}:${topMm}`,
+              floorLevel: group.floorLevel,
+              bottomMeters: bottomMm / 1000,
+              topMeters: topMm / 1000,
+              polygons,
+            },
+          ]
+        : [];
+    });
+  });
+}
+
+export function resolveLegacyCameraCutawaySegmentKeysForTest({
+  rooms,
+  activeRoomId,
+  cameraX,
+  cameraZ,
+  viewDirectionX,
+  viewDirectionZ,
+}: {
+  rooms: HousePlanRoom2D[];
+  activeRoomId: string;
+  cameraX: number;
+  cameraZ: number;
+  viewDirectionX?: number;
+  viewDirectionZ?: number;
+}): Set<string> {
+  const activeRoom = rooms.find((room) => room.id === activeRoomId);
+  if (!activeRoom) return new Set();
+
+  const suppliedViewMagnitude = Math.hypot(
+    viewDirectionX ?? 0,
+    viewDirectionZ ?? 0
+  );
+  const sourceDirectionX = suppliedViewMagnitude > 0.001
+    ? -(viewDirectionX ?? 0) / suppliedViewMagnitude
+    : cameraX - activeRoom.x;
+  const sourceDirectionZ = suppliedViewMagnitude > 0.001
+    ? -(viewDirectionZ ?? 0) / suppliedViewMagnitude
+    : cameraZ - activeRoom.z;
+  const sourceMagnitude = Math.hypot(sourceDirectionX, sourceDirectionZ);
+  const normalizedSourceX = sourceMagnitude > 0.001
+    ? sourceDirectionX / sourceMagnitude
+    : 1 / Math.sqrt(2);
+  const normalizedSourceZ = sourceMagnitude > 0.001
+    ? sourceDirectionZ / sourceMagnitude
+    : 1 / Math.sqrt(2);
+  const planBounds = rooms.reduce(
+    (bounds, room) => ({
+      minX: Math.min(bounds.minX, room.x - room.w / 2),
+      maxX: Math.max(bounds.maxX, room.x + room.w / 2),
+      minZ: Math.min(bounds.minZ, room.z - room.d / 2),
+      maxZ: Math.max(bounds.maxZ, room.z + room.d / 2),
+    }),
+    {
+      minX: activeRoom.x - activeRoom.w / 2,
+      maxX: activeRoom.x + activeRoom.w / 2,
+      minZ: activeRoom.z - activeRoom.d / 2,
+      maxZ: activeRoom.z + activeRoom.d / 2,
+    }
+  );
+  const virtualCameraDistance =
+    Math.hypot(
+      planBounds.maxX - planBounds.minX,
+      planBounds.maxZ - planBounds.minZ
+    ) * 4 + 4;
+  const stableCameraX =
+    activeRoom.x + normalizedSourceX * virtualCameraDistance;
+  const stableCameraZ =
+    activeRoom.z + normalizedSourceZ * virtualCameraDistance;
+
+  const cutawaySegmentKeys = new Set<string>();
+  for (const room of rooms) {
+    for (const segment of getWallSegments(room)) {
+      if (getSharedWallOverlapRanges(room, rooms, segment).length > 0) {
+        continue;
+      }
+      const opacity = resolveCutawayWallOpacity({
+        cameraX: stableCameraX,
+        cameraZ: stableCameraZ,
+        roomX: room.x,
+        roomZ: room.z,
+        roomWidth: room.w,
+        roomDepth: room.d,
+        wall: segment.wall,
+        baseOpacity: 1,
+        cutawayOpacity: CAMERA_FACING_WALL_CUTAWAY_OPACITY,
+        targetX: activeRoom.x,
+        targetZ: activeRoom.z,
+        targetWidth: activeRoom.w,
+        targetDepth: activeRoom.d,
+        wallCenterX: room.x + segment.x,
+        wallCenterZ: room.z + segment.z,
+        wallAxis: segment.axis,
+        wallLength: segment.length,
+      });
+      if (opacity <= 0.01) cutawaySegmentKeys.add(segment.key);
+    }
+  }
+  return cutawaySegmentKeys;
+}
+
+function legacyCutawaySegmentKeySignature(keys: ReadonlySet<string>) {
+  return [...keys].sort().join("|");
+}
+
+function useLegacyCameraCutawaySegmentKeys({
+  rooms,
+  activeRoomId,
+  enabled,
+}: {
+  rooms: HousePlanRoom2D[];
+  activeRoomId: string;
+  enabled: boolean;
+}) {
+  const { camera } = useThree();
+  const viewDirectionRef = useRef(new THREE.Vector3());
+  const initialKeys = useMemo(
+    () => {
+      if (!enabled) return new Set<string>();
+      const viewDirection = camera.getWorldDirection(new THREE.Vector3());
+      return resolveLegacyCameraCutawaySegmentKeysForTest({
+        rooms,
+        activeRoomId,
+        cameraX: camera.position.x,
+        cameraZ: camera.position.z,
+        viewDirectionX: viewDirection.x,
+        viewDirectionZ: viewDirection.z,
+      });
+    },
+    [activeRoomId, camera, enabled, rooms]
+  );
+  const [cutawaySegmentKeys, setCutawaySegmentKeys] = useState(initialKeys);
+  const signatureRef = useRef(legacyCutawaySegmentKeySignature(initialKeys));
+
+  useFrame(() => {
+    const viewDirection = camera.getWorldDirection(viewDirectionRef.current);
+    const nextKeys = enabled
+      ? resolveLegacyCameraCutawaySegmentKeysForTest({
+          rooms,
+          activeRoomId,
+          cameraX: camera.position.x,
+          cameraZ: camera.position.z,
+          viewDirectionX: viewDirection.x,
+          viewDirectionZ: viewDirection.z,
+        })
+      : new Set<string>();
+    const nextSignature = legacyCutawaySegmentKeySignature(nextKeys);
+    if (nextSignature === signatureRef.current) return;
+    signatureRef.current = nextSignature;
+    setCutawaySegmentKeys(nextKeys);
+  });
+
+  return cutawaySegmentKeys;
+}
+
+function LegacyFloorSlabMesh({ slab }: { slab: LegacyFloorSlab3D }) {
+  const { camera } = useThree();
+  const slabRef = useRef<THREE.Mesh | null>(null);
+  const shapes = useMemo(() => legacyPlanarShape(slab.polygons), [slab.polygons]);
+  useFrame(() => {
+    if (!slabRef.current) return;
+    slabRef.current.visible =
+      camera.position.y > slab.elevationMeters - slab.thicknessMeters * 0.35;
+  });
+  return (
+    <mesh
+      ref={slabRef}
+      position={[0, slab.elevationMeters - slab.thicknessMeters, 0]}
+      rotation-x={-Math.PI / 2}
+      raycast={() => null}
+      userData={{
+        testId: "legacy-watertight-floor-slab-3d",
+        floorLevel: slab.floorLevel,
+        polygonCount: slab.polygons.length,
+      }}
+    >
+      <extrudeGeometry
+        args={[
+          shapes,
+          { depth: slab.thicknessMeters, bevelEnabled: false, steps: 1 },
+        ]}
+      />
+      <meshBasicMaterial
+        attach="material-0"
+        transparent
+        opacity={0}
+        depthWrite={false}
+        colorWrite={false}
+      />
+      <meshBasicMaterial
+        attach="material-1"
+        transparent
+        opacity={0}
+        depthWrite={false}
+        colorWrite={false}
+      />
+    </mesh>
+  );
+}
+
+function LegacyWallBandMesh({
+  band,
+  opacity,
+}: {
+  band: LegacyWallBand3D;
+  opacity: number;
+}) {
+  const shapes = useMemo(() => legacyPlanarShape(band.polygons), [band.polygons]);
+  return (
+    <mesh
+      position={[0, band.bottomMeters, 0]}
+      rotation-x={-Math.PI / 2}
+      raycast={() => null}
+      userData={{
+        testId: "legacy-watertight-wall-band-3d",
+        floorLevel: band.floorLevel,
+        polygonCount: band.polygons.length,
+      }}
+    >
+      <extrudeGeometry
+        args={[
+          shapes,
+          {
+            depth: Math.max(0.001, band.topMeters - band.bottomMeters),
+            bevelEnabled: false,
+            steps: 1,
+          },
+        ]}
+      />
+      <meshStandardMaterial
+        color={INACTIVE_WALL_COLOR}
+        roughness={0.82}
+        flatShading
+        transparent={opacity < 0.999}
+        opacity={opacity}
+      />
+    </mesh>
+  );
+}
+
 function WallSurfaceSideMesh({
   materialKey,
   target,
   settings,
   partLength,
   partHeight,
+  centerOffset,
   side,
   wallThickness,
   active,
   baseOpacity,
+  renderSurface,
   outlineStyle,
   interactive,
   pickEnabledRef,
@@ -1175,10 +2190,12 @@ function WallSurfaceSideMesh({
   settings: ReturnType<typeof getWallFaceSurfaceSettings>;
   partLength: number;
   partHeight: number;
+  centerOffset: number;
   side: 1 | -1;
   wallThickness: number;
   active: boolean;
   baseOpacity: number;
+  renderSurface: boolean;
   outlineStyle: ReturnType<typeof getStructureOutlineStyle>;
   interactive: boolean;
   pickEnabledRef: { current: boolean };
@@ -1221,7 +2238,8 @@ function WallSurfaceSideMesh({
       : settings.paintColorHex ??
         getSurfaceMaterialFallbackColor(wallSurfaceMaterial) ??
         (active ? ACTIVE_WALL_COLOR : INACTIVE_WALL_COLOR);
-  const surfaceOffsetZ = side * (wallThickness / 2 + 0.0015);
+  const surfaceOffsetZ =
+    side * (wallThickness / 2 + WALL_SURFACE_OFFSET_METERS);
   const surfaceRotationY = side === 1 ? 0 : Math.PI;
   const raycastWhenPickable = useCallback(
     (raycaster: THREE.Raycaster, intersects: THREE.Intersection[]) => {
@@ -1271,9 +2289,10 @@ function WallSurfaceSideMesh({
   }, [invalidate, wallColor, wallTexture]);
 
   return (
-    <group position={[0, 0, surfaceOffsetZ]} rotation-y={surfaceRotationY}>
+    <group position={[centerOffset, 0, surfaceOffsetZ]} rotation-y={surfaceRotationY}>
       <mesh
         ref={surfaceMeshRef}
+        visible={renderSurface}
         renderOrder={12}
         raycast={raycastWhenPickable}
         onPointerOver={handlePointerOver}
@@ -1292,8 +2311,8 @@ function WallSurfaceSideMesh({
           depthWrite={baseOpacity > 0.34}
           opacity={baseOpacity}
           polygonOffset
-          polygonOffsetFactor={-1}
-          polygonOffsetUnits={-1}
+          polygonOffsetFactor={-4}
+          polygonOffsetUnits={-4}
         />
         {outlineStyle ? (
           <Line
@@ -1340,6 +2359,11 @@ function CutawayWallMesh({
   wallHeight,
   wallThickness,
   wallOpacity,
+  renderBase,
+  renderSurfaces,
+  forceCutaway,
+  squareStart,
+  squareEnd,
   activeRoomId,
   isActive,
   interactive,
@@ -1356,6 +2380,11 @@ function CutawayWallMesh({
   wallHeight: number;
   wallThickness: number;
   wallOpacity: number;
+  renderBase: boolean;
+  renderSurfaces: boolean;
+  forceCutaway: boolean;
+  squareStart: boolean;
+  squareEnd: boolean;
   activeRoomId: string;
   isActive: boolean;
   interactive: boolean;
@@ -1372,6 +2401,13 @@ function CutawayWallMesh({
   const baseOpacity = (isActive ? ACTIVE_WALL_OPACITY : INACTIVE_WALL_OPACITY) * wallOpacity;
   const partHeight = part.height ?? wallHeight;
   const partCenterY = part.centerY ?? wallHeight / 2;
+  const partAxisRange = legacyWallPartAxisRange(segment, part);
+  const partTouchesSegmentStart =
+    Math.abs(partAxisRange.startOffset + segment.length / 2) <=
+    LEGACY_WALL_JOIN_TOLERANCE_METERS;
+  const partTouchesSegmentEnd =
+    Math.abs(partAxisRange.endOffset - segment.length / 2) <=
+    LEGACY_WALL_JOIN_TOLERANCE_METERS;
   const faceId = getWallSurfaceFaceId(room, segment);
   const currentRoomTarget: StructureTarget = {
     kind: "wall",
@@ -1386,9 +2422,10 @@ function CutawayWallMesh({
     clampFloorPatternScale
   );
   const interiorSurfaceSide = getWallInteriorSurfaceSide(room, segment);
-  const isInteriorSharedWall = isWallPartSharedWithAnotherRoom(room, rooms, segment, part);
+  const sharedWallMatches = getSharedWallMatches(room, rooms, segment, part);
+  const isInteriorSharedWall = sharedWallMatches.length > 0;
+  const activeRoom = rooms.find((entry) => entry.id === activeRoomId);
   const sharedRoomIds = getSharedWallRoomIds(room, rooms, segment, part);
-  const sharedWall = segment.wall;
   const targetKey = getStructureTargetKey(currentRoomTarget) ?? `${room.id}:${faceId}`;
   const surfaceSides = [
     {
@@ -1399,11 +2436,8 @@ function CutawayWallMesh({
       side: interiorSurfaceSide,
       active: room.id === activeRoomId,
     },
-    ...(sharedWall
-      ? sharedRoomIds.flatMap((sharedRoomId) => {
-          const sharedRoom = rooms.find((entry) => entry.id === sharedRoomId);
-          if (!sharedRoom) return [];
-          const sharedFaceId = oppositeWall(sharedWall);
+    ...sharedWallMatches.flatMap(({ room: sharedRoom, segment: sharedSegment }) => {
+          const sharedFaceId = getWallSurfaceFaceId(sharedRoom, sharedSegment);
           const sharedTarget: StructureTarget = {
             kind: "wall",
             roomId: sharedRoom.id,
@@ -1425,8 +2459,7 @@ function CutawayWallMesh({
               active: sharedRoom.id === activeRoomId,
             },
           ];
-        })
-      : []),
+        }),
     ...(sharedRoomIds.length === 0
       ? [
           {
@@ -1467,20 +2500,28 @@ function CutawayWallMesh({
 
     let targetOpacity = baseOpacity;
 
-    if (!isInteriorSharedWall) {
-      targetOpacity = resolveCutawayWallOpacity({
-        cameraX: camera.position.x,
-        cameraZ: camera.position.z,
-        roomX: room.x,
-        roomZ: room.z,
-        roomWidth: room.w,
-        roomDepth: room.d,
-        wall: segment.wall,
-        baseOpacity,
-        cutawayEligible: true,
-        cutawayOpacity: CAMERA_FACING_WALL_CUTAWAY_OPACITY,
-      });
-    }
+    const cutawayEligible = forceCutaway && !isInteriorSharedWall;
+    targetOpacity = resolveCutawayWallOpacity({
+      cameraX: camera.position.x,
+      cameraZ: camera.position.z,
+      roomX: room.x,
+      roomZ: room.z,
+      roomWidth: room.w,
+      roomDepth: room.d,
+      wall: segment.wall,
+      baseOpacity,
+      cutawayEligible,
+      forceCutaway: cutawayEligible,
+      cutawayOpacity: CAMERA_FACING_WALL_CUTAWAY_OPACITY,
+      targetX: activeRoom?.x,
+      targetZ: activeRoom?.z,
+      targetWidth: activeRoom?.w,
+      targetDepth: activeRoom?.d,
+      wallCenterX: room.x + part.x,
+      wallCenterZ: room.z + part.z,
+      wallAxis: segment.axis,
+      wallLength: part.length,
+    });
 
     const shouldRender = targetOpacity > 0.01;
 
@@ -1521,37 +2562,83 @@ function CutawayWallMesh({
       position={[part.x, partCenterY, part.z]}
       rotation-y={segment.rotationY}
     >
-      <mesh raycast={() => null}>
-        <boxGeometry args={[part.length, partHeight, wallThickness]} />
-        <meshStandardMaterial
-          ref={baseMaterialRef}
-          color={isActive ? ACTIVE_WALL_COLOR : INACTIVE_WALL_COLOR}
-          transparent={baseOpacity < 0.999}
-          depthWrite={baseOpacity > 0.34}
-          opacity={baseOpacity}
-        />
-      </mesh>
-      {surfaceSides.map((surface) => (
-        <WallSurfaceSideMesh
-          key={surface.key}
-          materialKey={surface.key}
-          target={surface.target}
-          settings={surface.settings}
-          partLength={part.length}
-          partHeight={partHeight}
-          side={surface.side}
-          wallThickness={wallThickness}
-          active={surface.active}
-          baseOpacity={baseOpacity}
-          outlineStyle={getStructureOutlineStyle(surface.targetKey, hoveredTargetKey, selectedTargetKey)}
-          interactive={interactive}
-          pickEnabledRef={pickEnabledRef}
-          onMaterialReady={handleSurfaceMaterialReady}
-          onHoverTarget={onHoverTarget}
-          onClearHoverTarget={onClearHoverTarget}
-          onSelectTarget={onSelectTarget}
-        />
-      ))}
+      {renderBase ? (
+        <mesh raycast={() => null}>
+          <boxGeometry args={[part.length, partHeight, wallThickness]} />
+          <meshStandardMaterial
+            ref={baseMaterialRef}
+            color={isActive ? ACTIVE_WALL_COLOR : INACTIVE_WALL_COLOR}
+            transparent={baseOpacity < 0.999}
+            depthWrite={baseOpacity > 0.34}
+            opacity={baseOpacity}
+          />
+        </mesh>
+      ) : null}
+      {renderSurfaces && squareStart && partTouchesSegmentStart ? (
+        <mesh
+          position={[-part.length / 2 - 0.001, 0, 0]}
+          rotation-y={-Math.PI / 2}
+          raycast={() => null}
+          renderOrder={13}
+        >
+          <planeGeometry
+            args={[
+              wallThickness + WALL_SURFACE_OFFSET_METERS * 2,
+              partHeight,
+            ]}
+          />
+          <meshBasicMaterial color={WALL_SECTION_CAP_COLOR} toneMapped={false} />
+        </mesh>
+      ) : null}
+      {renderSurfaces && squareEnd && partTouchesSegmentEnd ? (
+        <mesh
+          position={[part.length / 2 + 0.001, 0, 0]}
+          rotation-y={Math.PI / 2}
+          raycast={() => null}
+          renderOrder={13}
+        >
+          <planeGeometry
+            args={[
+              wallThickness + WALL_SURFACE_OFFSET_METERS * 2,
+              partHeight,
+            ]}
+          />
+          <meshBasicMaterial color={WALL_SECTION_CAP_COLOR} toneMapped={false} />
+        </mesh>
+      ) : null}
+      {surfaceSides.map((surface) => {
+        const joinedSurface = joinedLegacyWallSurfacePart(
+          room,
+          segment,
+          part,
+          surface.side,
+          wallThickness,
+          { squareStart, squareEnd }
+        );
+        return (
+          <WallSurfaceSideMesh
+            key={surface.key}
+            materialKey={surface.key}
+            target={surface.target}
+            settings={surface.settings}
+            partLength={joinedSurface.length}
+            partHeight={partHeight}
+            centerOffset={joinedSurface.centerDelta}
+            side={surface.side}
+            wallThickness={wallThickness}
+            active={surface.active}
+            baseOpacity={baseOpacity}
+            renderSurface={renderSurfaces}
+            outlineStyle={getStructureOutlineStyle(surface.targetKey, hoveredTargetKey, selectedTargetKey)}
+            interactive={interactive}
+            pickEnabledRef={pickEnabledRef}
+            onMaterialReady={handleSurfaceMaterialReady}
+            onHoverTarget={onHoverTarget}
+            onClearHoverTarget={onClearHoverTarget}
+            onSelectTarget={onSelectTarget}
+          />
+        );
+      })}
     </group>
   );
 }
@@ -1752,7 +2839,7 @@ function OpeningThresholdMesh({
       }
     >
       <boxGeometry args={[threshold.length, 0.03, thresholdDepth]} />
-      <meshStandardMaterial color="#d6b88a" roughness={0.78} metalness={0} />
+      <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       <mesh
         ref={openingHitMeshRef}
         position={[0, hitHeight / 2, 0]}
@@ -1825,6 +2912,7 @@ function RoomFloorMesh({
   material,
   wallThickness,
   slabThickness,
+  showEdgeBand,
   floorWorldY,
   floorOpacity,
   interactive,
@@ -1837,6 +2925,7 @@ function RoomFloorMesh({
   material: FloorMaterial;
   wallThickness: number;
   slabThickness: number;
+  showEdgeBand: boolean;
   floorWorldY: number;
   floorOpacity: number;
   interactive: boolean;
@@ -1860,8 +2949,11 @@ function RoomFloorMesh({
   const surfaceMaterial = getRuntimeSurfaceMaterialById(surfaces?.floorMaterialId);
   const slabEdgeOffset = wallThickness / 2;
   const floorBandGeometry = useMemo(
-    () => buildRoomEdgeBandGeometry(room, slabThickness, slabEdgeOffset),
-    [room, slabEdgeOffset, slabThickness]
+    () =>
+      showEdgeBand
+        ? buildRoomEdgeBandGeometry(room, slabThickness, slabEdgeOffset)
+        : null,
+    [room, showEdgeBand, slabEdgeOffset, slabThickness]
   );
   const surfaceTexture = useSurfaceMaterialTexture({
     material: surfaceMaterial,
@@ -1911,7 +3003,7 @@ function RoomFloorMesh({
 
   useEffect(() => {
     return () => {
-      floorBandGeometry.dispose();
+      floorBandGeometry?.dispose();
     };
   }, [floorBandGeometry]);
 
@@ -1970,19 +3062,21 @@ function RoomFloorMesh({
           depthWrite={floorOpacity > 0.34}
         />
       </mesh>
-      <mesh
-        ref={floorBandRef}
-        geometry={floorBandGeometry}
-        position={[0, -slabThickness, 0]}
-        raycast={() => null}
-      >
-        <meshBasicMaterial
-          color={material.lineColor}
-          side={THREE.DoubleSide}
-          transparent={floorOpacity < 0.999}
-          opacity={floorOpacity}
-        />
-      </mesh>
+      {floorBandGeometry ? (
+        <mesh
+          ref={floorBandRef}
+          geometry={floorBandGeometry}
+          position={[0, -slabThickness, 0]}
+          raycast={() => null}
+        >
+          <meshBasicMaterial
+            color={material.lineColor}
+            side={THREE.DoubleSide}
+            transparent={floorOpacity < 0.999}
+            opacity={floorOpacity}
+          />
+        </mesh>
+      ) : null}
     </>
   );
 }
@@ -2140,7 +3234,10 @@ export default function HousePlanRenderer3D({
   onSelectSurfaceTarget,
   onSelectOpening,
   onMoveOpening,
+  onResizeOpening,
   onOpeningDragStateChange,
+  canonicalPlan = null,
+  canonicalStructureExpected = false,
 }: HousePlanRenderer3DProps) {
   const activeRoom = rooms.find((room) => room.id === activeRoomId);
   const resolvedActiveFloorLevel =
@@ -2160,6 +3257,42 @@ export default function HousePlanRenderer3D({
       : selectedOpening
         ? { kind: "opening", roomId: selectedOpening.roomId ?? activeRoomId, id: selectedOpening.id }
         : null
+  );
+  const legacyCutawaySegmentKeys = useLegacyCameraCutawaySegmentKeys({
+    rooms,
+    activeRoomId,
+    enabled: !canonicalPlan && rooms.length > 0,
+  });
+  const legacyWatertightGeometry = useMemo(() => {
+    if (canonicalPlan || rooms.length === 0) return null;
+    return {
+      floorSlabs: buildLegacyFloorSlabsForTest({
+        rooms,
+        openings,
+        defaultWallHeight: wallHeight,
+        stackedFloors,
+      }),
+      wallBands: buildLegacyWallBandsForTest({
+        rooms,
+        openings,
+        defaultWallHeight: wallHeight,
+        stackedFloors,
+        excludedSegmentKeys: legacyCutawaySegmentKeys,
+      }),
+    };
+  }, [
+    canonicalPlan,
+    legacyCutawaySegmentKeys,
+    openings,
+    rooms,
+    stackedFloors,
+    wallHeight,
+  ]);
+  const hasLegacyMergedSlab = Boolean(
+    legacyWatertightGeometry?.floorSlabs.length
+  );
+  const hasLegacyMergedWalls = Boolean(
+    legacyWatertightGeometry?.wallBands.length
   );
 
   const clearHoveredTarget = (target: StructureTarget) => {
@@ -2192,6 +3325,80 @@ export default function HousePlanRenderer3D({
 
   return (
     <group>
+      {legacyWatertightGeometry?.floorSlabs.map((slab) => (
+        <LegacyFloorSlabMesh
+          key={`legacy-floor-slab:${slab.key}`}
+          slab={slab}
+        />
+      ))}
+      {legacyWatertightGeometry?.wallBands.map((band) => (
+        <LegacyWallBandMesh
+          key={`legacy-wall-band:${band.key}`}
+          band={band}
+          opacity={
+            stackedFloors &&
+            fadeInactiveFloors &&
+            band.floorLevel !== resolvedActiveFloorLevel
+              ? INACTIVE_FLOOR_OPACITY_MULTIPLIER
+              : 1
+          }
+        />
+      ))}
+      {canonicalPlan && (
+        <CanonicalFloorPlanWalls3D
+          model={canonicalPlan}
+          rooms={rooms}
+          activeRoomId={activeRoomId}
+          activeFloorLevel={resolvedActiveFloorLevel}
+          selectedOpeningId={selectedOpeningId}
+          selectedWallId={
+            selectedSurfaceTarget?.kind === "wall"
+              ? selectedSurfaceTarget.id
+              : null
+          }
+          selectedWallRoomId={
+            selectedSurfaceTarget?.kind === "wall"
+              ? selectedSurfaceTarget.roomId
+              : null
+          }
+          stackedFloors={stackedFloors}
+          fadeInactiveFloors={fadeInactiveFloors}
+          interactive={interactive}
+          onSelectWall={(wallId, roomId, event) => {
+            if (!roomId) return;
+            selectStructureTarget(
+              { kind: "wall", roomId, id: wallId },
+              event
+            );
+          }}
+          onSelectOpening={onSelectOpening}
+          onEditOpening={(openingId, metrics, mode) => {
+            const sourceOpening = openings.find((opening) => opening.id === openingId);
+            const sourceRoom = sourceOpening?.roomId
+              ? rooms.find((room) => room.id === sourceOpening.roomId)
+              : null;
+            if (!sourceOpening || !sourceRoom) return;
+            const centerOffsetMeters =
+              sourceOpening.wall === "north" || sourceOpening.wall === "south"
+                ? metrics.centerMm.xMm / 1000 - sourceRoom.x
+                : metrics.centerMm.zMm / 1000 - sourceRoom.z;
+            if (mode === "resize") {
+              onResizeOpening?.(openingId, {
+                widthMeters: metrics.widthMm / 1000,
+                offsetMeters: centerOffsetMeters,
+              });
+            } else {
+              onMoveOpening?.(openingId, centerOffsetMeters);
+            }
+          }}
+          onOpeningDragStateChange={(dragging, mode) =>
+            onOpeningDragStateChange?.(
+              dragging,
+              mode === "resize" ? "opening_resize" : "opening"
+            )
+          }
+        />
+      )}
       {rooms.map((room) => {
         const isActive = room.id === activeRoomId;
         const roomFloorLevel = getRoomFloorLevel(room);
@@ -2214,8 +3421,16 @@ export default function HousePlanRenderer3D({
         );
         const ceilingColor = ceilingSettings.paintColorHex ?? surfaces?.ceilingColor ?? CEILING_CAP_COLOR;
         const slabThickness = Math.max(0.01, room.slabThickness ?? FLOOR_THICKNESS_METERS);
+        const roomWallThickness = Math.max(
+          0.01,
+          room.wallThickness ?? STRUCTURE_THICKNESS_METERS
+        );
         const roomWallHeight = Math.max(0.2, room.height ?? wallHeight);
-        const floorYOffset = getFloorYOffset(room, roomWallHeight, stackedFloors);
+        const floorYOffset = resolveHouseRoomFloorElevationMeters(
+          room,
+          roomWallHeight,
+          stackedFloors
+        );
         const floorTarget: StructureTarget = {
           kind: "floor",
           roomId: room.id,
@@ -2244,8 +3459,9 @@ export default function HousePlanRenderer3D({
             <RoomFloorMesh
               room={room}
               material={floorMaterial}
-              wallThickness={STRUCTURE_THICKNESS_METERS}
+              wallThickness={roomWallThickness}
               slabThickness={slabThickness}
+              showEdgeBand={!canonicalPlan && !hasLegacyMergedSlab}
               floorWorldY={floorYOffset}
               floorOpacity={floorOpacity}
               interactive={interactive}
@@ -2273,7 +3489,13 @@ export default function HousePlanRenderer3D({
               />
             ) : null}
 
-            {wallSegments.flatMap((segment) => {
+            {!canonicalStructureExpected && wallSegments.flatMap((segment) => {
+              const endJoinOptions = legacyPhysicalWallCutEndJoinOptions(
+                room,
+                rooms,
+                segment,
+                legacyCutawaySegmentKeys
+              );
               const wallFaceId = getWallSurfaceFaceId(room, segment);
               const segmentWallHeight = Math.max(
                 0.2,
@@ -2292,6 +3514,12 @@ export default function HousePlanRenderer3D({
                 segmentWallHeight,
                 segmentWallHeight
               );
+              const sillParts = buildOpeningSillParts(
+                segment,
+                wallOpenings,
+                segmentWallHeight,
+                segmentWallHeight
+              );
               const thresholds = getOpeningThresholds(
                 segment,
                 wallOpenings,
@@ -2300,7 +3528,7 @@ export default function HousePlanRenderer3D({
               );
 
               return [
-                ...[...parts, ...lintelParts].map((part) => (
+                ...[...parts, ...lintelParts, ...sillParts].map((part) => (
                   <CutawayWallMesh
                     key={part.key}
                     room={room}
@@ -2308,8 +3536,13 @@ export default function HousePlanRenderer3D({
                     segment={segment}
                     part={part}
                     wallHeight={segmentWallHeight}
-                    wallThickness={STRUCTURE_THICKNESS_METERS}
+                    wallThickness={roomWallThickness}
                     wallOpacity={wallOpacity}
+                    renderBase={!hasLegacyMergedWalls}
+                    renderSurfaces={!hasLegacyMergedWalls}
+                    forceCutaway={legacyCutawaySegmentKeys.has(segment.key)}
+                    squareStart={Boolean(endJoinOptions.squareStart)}
+                    squareEnd={Boolean(endJoinOptions.squareEnd)}
                     activeRoomId={activeRoomId}
                     isActive={isActive}
                     interactive={interactive}
@@ -2334,7 +3567,7 @@ export default function HousePlanRenderer3D({
                       roomId={room.id}
                       threshold={threshold}
                       segment={segment}
-                      wallThickness={STRUCTURE_THICKNESS_METERS}
+                      wallThickness={roomWallThickness}
                       sourceOpening={sourceOpening}
                       sourceRoom={sourceRoom}
                       floorWorldY={floorYOffset}
@@ -2356,7 +3589,7 @@ export default function HousePlanRenderer3D({
               room={room}
               floorWorldY={floorYOffset}
               wallHeight={roomWallHeight}
-              wallThickness={STRUCTURE_THICKNESS_METERS}
+              wallThickness={roomWallThickness}
               visible={room.ceilingVisible ?? true}
               opacity={ceilingOpacity}
               color={ceilingColor}

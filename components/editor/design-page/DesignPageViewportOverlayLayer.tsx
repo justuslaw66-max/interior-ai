@@ -9,6 +9,7 @@ import { CrossRoomDragTarget } from "@/components/editor/design-page/CrossRoomDr
 import { DesignPagePlanCanvasOverlays } from "@/components/editor/design-page/DesignPagePlanCanvasOverlays";
 import { DesignPageSelectionInspector } from "@/components/editor/design-page/DesignPageSelectionInspector";
 import { DesignPageViewportSelectionControls } from "@/components/editor/design-page/DesignPageViewportSelectionControls";
+import { ImportedFloorPlanWallEditor } from "@/components/editor/design-page/ImportedFloorPlanWallEditor";
 import { PlanQualityReviewPanel } from "@/components/editor/design-page/PlanQualityReviewPanel";
 import { SceneReadyVeil } from "@/components/editor/design-page/SceneReadyVeil";
 import { SelectedPlanOpeningActions } from "@/components/editor/design-page/SelectedPlanOpeningActions";
@@ -35,6 +36,7 @@ type ViewportSelectionControlsProps = ComponentProps<
 >;
 type RoomPanNavigatorProps = ComponentProps<typeof RoomPanNavigator>;
 type FloorPropertiesPanelProps = ComponentProps<typeof FloorPropertiesPanel>;
+type ImportedWallEditorProps = ComponentProps<typeof ImportedFloorPlanWallEditor>;
 
 type HandlerKeys<T> = Extract<keyof T, `on${string}`>;
 
@@ -75,6 +77,7 @@ export type DesignPageViewportOverlayLayerState = {
   crossRoomDragTarget: CrossRoomDragTargetProps["state"] | null;
   navigator: RoomPanNavigatorState | null;
   floorProperties: FloorPropertiesState | null;
+  importedWallEditor: ImportedWallEditorProps["state"] | null;
   selectionControls: ViewportSelectionControlsProps["state"];
 };
 
@@ -92,6 +95,7 @@ export type DesignPageViewportOverlayLayerConfiguration = {
   aiLayoutPreview: AiLayoutPreviewBannerProps["configuration"];
   navigator: RoomPanNavigatorConfiguration;
   floorProperties: FloorPropertiesConfiguration;
+  importedWallEditor: ImportedWallEditorProps["configuration"];
   selectionControls: ViewportSelectionControlsProps["configuration"];
 };
 
@@ -107,6 +111,7 @@ export type DesignPageViewportOverlayLayerActions = {
   aiLayoutPreview: AiLayoutPreviewBannerProps["actions"];
   navigator: RoomPanNavigatorActions;
   floorProperties: FloorPropertiesActions;
+  importedWallEditor: ImportedWallEditorProps["actions"];
   selectionControls: ViewportSelectionControlsProps["actions"];
 };
 
@@ -126,6 +131,8 @@ export function DesignPageViewportOverlayLayer({
   const [navigatorRailElement, setNavigatorRailElement] =
     useState<HTMLDivElement | null>(null);
   const [floorRailElement, setFloorRailElement] =
+    useState<HTMLDivElement | null>(null);
+  const [importedWallRailElement, setImportedWallRailElement] =
     useState<HTMLDivElement | null>(null);
   const [reviewRailElement, setReviewRailElement] =
     useState<HTMLDivElement | null>(null);
@@ -150,6 +157,12 @@ export function DesignPageViewportOverlayLayer({
           {state.floorProperties ? (
             <div
               ref={setFloorRailElement}
+              className="pointer-events-auto w-[264px] shrink-0"
+            />
+          ) : null}
+          {state.importedWallEditor ? (
+            <div
+              ref={setImportedWallRailElement}
               className="pointer-events-auto w-[264px] shrink-0"
             />
           ) : null}
@@ -239,6 +252,17 @@ export function DesignPageViewportOverlayLayer({
               {...actions.floorProperties}
             />,
             floorRailElement
+          )
+        : null}
+
+      {state.importedWallEditor && importedWallRailElement
+        ? createPortal(
+            <ImportedFloorPlanWallEditor
+              state={state.importedWallEditor}
+              configuration={configuration.importedWallEditor}
+              actions={actions.importedWallEditor}
+            />,
+            importedWallRailElement
           )
         : null}
 

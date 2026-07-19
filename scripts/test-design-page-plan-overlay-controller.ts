@@ -73,8 +73,8 @@ for (const callbackName of [
 
 assert.match(
   controllerSource,
-  /runHistoryTransaction\(historyLabel,\s*\(\)\s*=>\s*handleUpdateOpeningMetrics2DFromPlanAction\(id, normalizedMetrics\)/,
-  "Inspector metric edits should delegate their normalized patch through history."
+  /runHistoryTransaction\(historyLabel,\s*\(\)\s*=>\s*\{\s*if \(canonicalTopology\?\.updateOpeningMetrics\(id, normalizedMetrics\)\) return;\s*handleUpdateOpeningMetrics2DFromPlanAction\(id, normalizedMetrics\);\s*\}\)/,
+  "Inspector metric edits should prefer canonical topology and retain the legacy fallback inside one history transaction."
 );
 assert.match(
   controllerSource,

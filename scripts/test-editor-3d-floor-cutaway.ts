@@ -32,6 +32,16 @@ const housePlanRendererSource = fs.readFileSync(
   path.join(process.cwd(), "components", "editor", "renderers", "HousePlanRenderer3D.tsx"),
   "utf8"
 );
+const canonicalPlanRendererSource = fs.readFileSync(
+  path.join(
+    process.cwd(),
+    "components",
+    "editor",
+    "renderers",
+    "CanonicalFloorPlanStructure.tsx"
+  ),
+  "utf8"
+);
 
 assert.match(
   editorConfigurationSource,
@@ -91,6 +101,24 @@ assert.match(
   housePlanRendererSource,
   /floorBandRef\.current\.visible = floorVisible;/,
   "Whole-home slab edge visibility should follow the underside cutaway."
+);
+
+assert.match(
+  housePlanRendererSource,
+  /camera\.position\.y > slab\.elevationMeters - slab\.thicknessMeters \* 0\.35;/,
+  "The merged whole-home slab should hide when the camera moves beneath its floor."
+);
+
+assert.match(
+  housePlanRendererSource,
+  /slabRef\.current\.visible =\s*camera\.position\.y > slab\.elevationMeters/,
+  "The merged slab mesh should apply its underside visibility guard every frame."
+);
+
+assert.match(
+  canonicalPlanRendererSource,
+  /slabRef\.current\.visible =\s*camera\.position\.y > floor\.elevationMm \/ 1000 - thicknessMeters \* 0\.35/,
+  "Canonical floor-plan slabs should use the same underside cutaway as compatibility slabs."
 );
 
 assert.match(

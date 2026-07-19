@@ -7,7 +7,6 @@ export type BuildDesignPageViewportWorkspaceRegistrationInput = {
     presentation: DesignPagePresentationWorkspaceRegistration;
   };
 };
-
 /**
  * Builds the viewport overlays and editor controls from existing domain
  * boundaries. The registration is pure and owns no document or UI state.
@@ -21,8 +20,12 @@ export function buildDesignPageViewportWorkspaceRegistration({
   const { base, viewportShell } = coreShell.boundaries;
   const { documentRoom, sceneRoomRead, itemSelection } =
     documentSelection.boundaries;
-  const { selectionInspection, planWorkspace, surfaceWorkspace } =
-    planAuthoring.boundaries;
+  const {
+    selectionInspection,
+    planWorkspace,
+    importedWallEditing,
+    surfaceWorkspace,
+  } = planAuthoring.boundaries;
   const { camera, zone } = editorInteraction.boundaries;
   const placement = selection.boundaries.placement;
   const placementSelection = selection.boundaries.selection;
@@ -39,7 +42,8 @@ export function buildDesignPageViewportWorkspaceRegistration({
   const region = buildDesignPageViewportRegionAdapter({
     state: {
       visibility: {
-        rail: planWorkspace.derived.floatingPlanOverlayStackVisible,
+        rail: planWorkspace.derived.floatingPlanOverlayStackVisible ||
+          importedWallEditing.state.available,
         sceneLoading: sceneRoomRead.state.scene.showSceneLoadingVeil,
         selectionInspector: inspector.floatingSelectionInspectorVisible,
         planQuality: quality.reviewPanelVisible,
@@ -53,6 +57,7 @@ export function buildDesignPageViewportWorkspaceRegistration({
               kind: inspector.visiblePlanOpening.kind,
               wall: inspector.visiblePlanOpening.wall,
               widthMm: inspector.visiblePlanOpening.widthMm,
+              wallSpanMeters: inspector.visiblePlanOpeningWallSpanMeters,
             }
           : null,
       },
@@ -68,6 +73,8 @@ export function buildDesignPageViewportWorkspaceRegistration({
         surfaceInspector: placement.state.surfaceInspector,
         measurementUnit: viewportShell.state.plan.planMeasurementUnit,
         activeRoomHeightMm: roomRead.activeRoomHeightMm,
+        activeRoomWallHeightEvidence: roomRead.activeRoomWallHeightEvidence,
+        canEditActiveRoomWallHeight: roomRead.canEditActiveRoomWallHeight,
         activeFloorRoomCount: floor.activeFloorRoomCount,
         designRoomCount: coreShell.state.document.designSnapshot.rooms.length,
       },
@@ -101,8 +108,14 @@ export function buildDesignPageViewportWorkspaceRegistration({
         activeFloorRoomCount: floor.activeFloorRoomCount,
         measurementUnit: viewportShell.state.plan.planMeasurementUnit,
         activeRoomHeightMm: roomRead.activeRoomHeightMm,
+        activeRoomWallHeightEvidence: roomRead.activeRoomWallHeightEvidence,
+        canEditActiveRoomWallHeight: roomRead.canEditActiveRoomWallHeight,
         activeRoomWallThicknessMm: roomRead.activeRoomWallThicknessMm,
         activeRoomSlabThicknessMm: roomRead.activeRoomSlabThicknessMm,
+        activeRoomSlabThicknessEvidence:
+          roomRead.activeRoomSlabThicknessEvidence,
+        canEditActiveRoomSlabThickness:
+          roomRead.canEditActiveRoomSlabThickness,
         activeRoomBaseboardDepthMm: roomRead.activeRoomBaseboardDepthMm,
         activeRoomWallOpacity: roomRead.activeRoomWallOpacity,
         activeRoomFloorOpacity: roomRead.activeRoomFloorOpacity,
@@ -112,6 +125,9 @@ export function buildDesignPageViewportWorkspaceRegistration({
         stackedFloorView: floorState.stackedFloorView,
         canRedo: documentSelection.state.history.canRedo,
       },
+      importedWallEditor: importedWallEditing.state.available
+        ? importedWallEditing.state
+        : null,
       selectionControls: {
         viewMode: base.state.editor.viewMode,
         stackedFloorView: floorState.stackedFloorView,
@@ -138,6 +154,9 @@ export function buildDesignPageViewportWorkspaceRegistration({
         planWorkspace.derived.selectionInspectorWidthPx,
       planQualityReviewTopPx: quality.reviewPanelTopPx,
       editorMode: viewportShell.state.editor.editorMode,
+      importedWallEditor: {
+        dark: coreShell.derived.access.showDesignerTheme,
+      },
     },
     references: {
       planQuality: {
@@ -147,6 +166,7 @@ export function buildDesignPageViewportWorkspaceRegistration({
     actions: {
       deletePlanOverlay:
         selectionInspection.actions.selection.deletePlanOverlayById,
+      updateOpeningMetrics: planWorkspace.actions.overlay.handleUpdateOpeningMetrics2D,
       showToast: coreShell.actions.feedback.showRuleToast,
       selectionInspector: {
         clearSelection:
@@ -222,6 +242,7 @@ export function buildDesignPageViewportWorkspaceRegistration({
         onActiveRoomCeilingColorChange:
           selectionInspection.actions.roomGeometry.changeActiveRoomCeilingColor,
       },
+      importedWallEditor: importedWallEditing.actions,
       selectionControls: {
         floorStack: {
           switchFloor: documentRoom.actions.floor.handleSwitchFloor,

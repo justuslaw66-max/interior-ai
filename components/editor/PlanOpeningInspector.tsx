@@ -1,6 +1,9 @@
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
+import type { DesignPageOpeningMetricsPatch } from "@/lib/design-page-opening-metrics";
+import { floorPlanPropertyEvidenceIsEditable } from "@/lib/floor-plan-measured-property-mutations";
 import MeasurementField from "./MeasurementField";
+import FloorPlanPropertyEvidenceControl from "./FloorPlanPropertyEvidenceControl";
 import { formatCabinetMeasurement } from "@/features/cabinetry/measurementUnits";
 
 type PlanOpeningInspectorProps = {
@@ -10,16 +13,7 @@ type PlanOpeningInspectorProps = {
   maxHeightMeters?: number;
   measurementUnit: PlanMeasurementUnit;
   dark?: boolean;
-  onChange: (
-    id: string,
-    metrics: {
-      widthMeters?: number;
-      offsetMeters?: number;
-      heightMeters?: number;
-      bottomMeters?: number;
-      kind?: RoomOpening2D["kind"];
-    }
-  ) => void;
+  onChange: (id: string, metrics: DesignPageOpeningMetricsPatch) => void;
 };
 
 export default function PlanOpeningInspector({
@@ -33,6 +27,12 @@ export default function PlanOpeningInspector({
 }: PlanOpeningInspectorProps) {
   if (!opening) return null;
   const maxOffsetMm = Math.max(0, (wallSpanMeters * 1000 - opening.widthMm) / 2);
+  const heightEvidence = opening.evidence?.height;
+  const sillEvidence = opening.evidence?.sillHeight;
+  const heightEditable =
+    !heightEvidence || floorPlanPropertyEvidenceIsEditable(heightEvidence);
+  const sillEditable =
+    !sillEvidence || floorPlanPropertyEvidenceIsEditable(sillEvidence);
 
   return (
     <div
@@ -134,38 +134,78 @@ export default function PlanOpeningInspector({
           compact
           onCommit={(valueMm) => onChange(opening.id, { widthMeters: valueMm / 1000 })}
         />
-        <MeasurementField
-          label="Height"
-          testId="plan-opening-height-input"
-          valueMm={opening.heightMm ?? 2100}
-          unit={measurementUnit}
-          minMm={400}
-          maxMm={
-            Math.max(
-              0.4,
-              maxHeightMeters - (opening.kind === "window" ? (opening.bottomMm ?? 900) / 1000 : 0)
-            ) * 1000
-          }
-          stepMm={50}
-          keyboardStepMm={50}
-          dark={dark}
-          compact
-          onCommit={(valueMm) => onChange(opening.id, { heightMeters: valueMm / 1000 })}
-        />
-        {opening.kind === "window" ? (
+        <div>
           <MeasurementField
-            label="Sill height"
-            testId="plan-opening-bottom-input"
-            valueMm={opening.bottomMm ?? 900}
+            label="Height"
+            testId="plan-opening-height-input"
+            valueMm={opening.heightMm ?? 2100}
             unit={measurementUnit}
-            minMm={0}
-            maxMm={Math.max(0, maxHeightMeters - 0.4) * 1000}
+            minMm={400}
+            maxMm={
+              Math.max(
+                0.4,
+                maxHeightMeters - (opening.kind === "window" ? (opening.bottomMm ?? 900) / 1000 : 0)
+              ) * 1000
+            }
             stepMm={50}
             keyboardStepMm={50}
+            disabled={!heightEditable}
             dark={dark}
             compact
-            onCommit={(valueMm) => onChange(opening.id, { bottomMeters: valueMm / 1000 })}
+            onCommit={(valueMm) =>
+              onChange(opening.id, {
+                heightMeters: valueMm / 1000,
+                ...(heightEvidence ? { heightEvidence: "user_confirmed" } : {}),
+              })
+            }
           />
+          <FloorPlanPropertyEvidenceControl
+            evidence={heightEvidence}
+            dark={dark}
+            testId="plan-opening-height-evidence"
+            onConfirm={(evidence, measurementNote) =>
+              onChange(opening.id, {
+                heightMeters: (opening.heightMm ?? 2100) / 1000,
+                heightEvidence: evidence,
+                measurementNote,
+              })
+            }
+          />
+        </div>
+        {opening.kind === "window" ? (
+          <div>
+            <MeasurementField
+              label="Sill height"
+              testId="plan-opening-bottom-input"
+              valueMm={opening.bottomMm ?? 900}
+              unit={measurementUnit}
+              minMm={0}
+              maxMm={Math.max(0, maxHeightMeters - 0.4) * 1000}
+              stepMm={50}
+              keyboardStepMm={50}
+              disabled={!sillEditable}
+              dark={dark}
+              compact
+              onCommit={(valueMm) =>
+                onChange(opening.id, {
+                  bottomMeters: valueMm / 1000,
+                  ...(sillEvidence ? { bottomEvidence: "user_confirmed" } : {}),
+                })
+              }
+            />
+            <FloorPlanPropertyEvidenceControl
+              evidence={sillEvidence}
+              dark={dark}
+              testId="plan-opening-sill-evidence"
+              onConfirm={(evidence, measurementNote) =>
+                onChange(opening.id, {
+                  bottomMeters: (opening.bottomMm ?? 900) / 1000,
+                  bottomEvidence: evidence,
+                  measurementNote,
+                })
+              }
+            />
+          </div>
         ) : null}
         <MeasurementField
           label="Position from wall centre"

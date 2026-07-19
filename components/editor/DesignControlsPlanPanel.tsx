@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { flushSync } from "react-dom";
 import { track } from "@/lib/analytics";
 import type {
   HouseRoomConnectionChecklistItem,
@@ -30,6 +31,9 @@ import type {
   FloorPlanUnderlay,
 } from "@/lib/floor-plan-types";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
+import type { DesignPageOpeningMetricsPatch } from "@/lib/design-page-opening-metrics";
+import type { FloorPlanPropertyEvidenceV2 } from "@/lib/floor-plan-document-v2";
+import type { FloorPlanConsumerMeasurementEvidenceV2 } from "@/lib/floor-plan-measured-property-mutations";
 import {
   DEFAULT_FLOOR_PATTERN_SCALE,
   clampFloorPatternScale,
@@ -76,6 +80,7 @@ import FloorPlanUploadPanel from "./FloorPlanUploadPanel";
 import FloorPlanToolStrip, { type FloorPlanTool } from "./FloorPlanToolStrip";
 import PlanOpeningInspector from "./PlanOpeningInspector";
 import MeasurementField from "./MeasurementField";
+import FloorPlanPropertyEvidenceControl from "./FloorPlanPropertyEvidenceControl";
 import { formatCabinetMeasurement } from "@/features/cabinetry/measurementUnits";
 import RoomConnectionChecklist from "./RoomConnectionChecklist";
 
@@ -713,8 +718,12 @@ type DesignControlsPlanPanelProps = {
   activeFloorLevel: number;
   activeFloorRoomCount: number;
   activeRoomHeightMm: number;
+  activeRoomWallHeightEvidence?: FloorPlanPropertyEvidenceV2 | null;
+  canEditActiveRoomWallHeight?: boolean;
   activeRoomWallThicknessMm: number;
   activeRoomSlabThicknessMm: number;
+  activeRoomSlabThicknessEvidence?: FloorPlanPropertyEvidenceV2 | null;
+  canEditActiveRoomSlabThickness?: boolean;
   activeRoomBaseboardDepthMm: number;
   activeRoomWallOpacity: number;
   activeRoomFloorOpacity: number;
@@ -769,9 +778,17 @@ type DesignControlsPlanPanelProps = {
   onRoomWidthInputChange: (value: string) => void;
   onRoomDepthInputChange: (value: string) => void;
   onCommitRoomDimension: (axis: "width" | "depth", valueMm: number) => void;
-  onActiveRoomHeightMmChange: (valueMm: number) => void;
+  onActiveRoomHeightMmChange: (
+    valueMm: number,
+    evidence?: FloorPlanConsumerMeasurementEvidenceV2,
+    measurementNote?: string
+  ) => void;
   onActiveRoomWallThicknessMmChange: (valueMm: number) => void;
-  onActiveRoomSlabThicknessMmChange: (valueMm: number) => void;
+  onActiveRoomSlabThicknessMmChange: (
+    valueMm: number,
+    evidence?: FloorPlanConsumerMeasurementEvidenceV2,
+    measurementNote?: string
+  ) => void;
   onActiveRoomBaseboardDepthMmChange: (valueMm: number) => void;
   onActiveRoomSurfaceOpacityChange: (kind: "wall" | "floor" | "ceiling", opacity: number) => void;
   onActiveRoomCeilingVisibleChange: (visible: boolean) => void;
@@ -799,13 +816,7 @@ type DesignControlsPlanPanelProps = {
   onAddSuggestedDoorway: (suggestion: HouseRoomDoorwaySuggestion) => void;
   onUpdateOpeningMetrics: (
     id: string,
-    metrics: {
-      widthMeters?: number;
-      offsetMeters?: number;
-      heightMeters?: number;
-      bottomMeters?: number;
-      kind?: RoomOpening2D["kind"];
-    }
+    metrics: DesignPageOpeningMetricsPatch
   ) => void;
 };
 
@@ -878,8 +889,12 @@ export default function DesignControlsPlanPanel({
   activeFloorLevel,
   activeFloorRoomCount,
   activeRoomHeightMm,
+  activeRoomWallHeightEvidence = null,
+  canEditActiveRoomWallHeight = canEditPlanGeometry,
   activeRoomWallThicknessMm,
   activeRoomSlabThicknessMm,
+  activeRoomSlabThicknessEvidence = null,
+  canEditActiveRoomSlabThickness = canEditPlanGeometry,
   activeRoomBaseboardDepthMm,
   activeRoomWallOpacity,
   activeRoomFloorOpacity,
@@ -1006,6 +1021,19 @@ export default function DesignControlsPlanPanel({
   const openTemplatePicker = () => {
     setPlanStartMode("template");
   };
+  const openFloorPlanUploadPicker = () => {
+    flushSync(() => setPlanStartMode("upload"));
+    document
+      .getElementById("floor-plan-upload")
+      ?.querySelector<HTMLInputElement>('[data-testid="floor-plan-upload-input"]')
+      ?.click();
+  };
+  useEffect(() => {
+    const handleUploadRequest = () => openFloorPlanUploadPicker();
+    window.addEventListener("floor-plan-upload-requested", handleUploadRequest);
+    return () =>
+      window.removeEventListener("floor-plan-upload-requested", handleUploadRequest);
+  });
   useEffect(() => {
     if (planStartMode !== "template") return;
     const frameId = window.requestAnimationFrame(() => {
@@ -2465,7 +2493,7 @@ export default function DesignControlsPlanPanel({
             <button type="button" className={progressSecondaryActionClass} onClick={startDrawRoomSetup}>
               Draw room
             </button>
-            <button type="button" className={progressSecondaryActionClass} onClick={() => setPlanStartMode("upload")}>
+            <button type="button" className={progressSecondaryActionClass} onClick={openFloorPlanUploadPicker}>
               Upload plan
             </button>
             <button type="button" className={progressSecondaryActionClass} onClick={onAddDesignerRoom}>
@@ -3238,9 +3266,7 @@ export default function DesignControlsPlanPanel({
                       label: "Import 2D drawing",
                       active: planStartMode === "upload",
                       disabled: !canEdit,
-                      onClick: () => {
-                        setPlanStartMode("upload");
-                      },
+                      onClick: openFloorPlanUploadPicker,
                     })}
                   </div>
                 ),
@@ -3534,7 +3560,7 @@ export default function DesignControlsPlanPanel({
                 data-testid="plan-start-upload"
                 className={planStartButtonClass("upload")}
                 disabled={!canEdit}
-                onClick={() => setPlanStartMode("upload")}
+                onClick={openFloorPlanUploadPicker}
               >
                 Upload plan
               </button>
@@ -3998,11 +4024,24 @@ export default function DesignControlsPlanPanel({
                 maxMm={6000}
                 stepMm={10}
                 keyboardStepMm={50}
-                disabled={!canEditPlanGeometry}
+                disabled={!canEditActiveRoomWallHeight}
                 dark={dark}
                 compact
                 hint={`Applies to ${activeFloorRoomCount} room${activeFloorRoomCount === 1 ? "" : "s"} on ${activeFloorLabel}.`}
                 onCommit={onActiveRoomHeightMmChange}
+              />
+              <FloorPlanPropertyEvidenceControl
+                evidence={activeRoomWallHeightEvidence}
+                dark={dark}
+                disabled={!canEditActiveRoomWallHeight}
+                testId="plan-panel-floor-wall-height-evidence"
+                onConfirm={(evidence, measurementNote) =>
+                  onActiveRoomHeightMmChange(
+                    activeRoomHeightMm,
+                    evidence,
+                    measurementNote
+                  )
+                }
               />
               <MeasurementField
                 label="Wall thickness"
@@ -4025,10 +4064,23 @@ export default function DesignControlsPlanPanel({
                 maxMm={600}
                 stepMm={5}
                 keyboardStepMm={5}
-                disabled={!canEditPlanGeometry}
+                disabled={!canEditActiveRoomSlabThickness}
                 dark={dark}
                 compact
                 onCommit={onActiveRoomSlabThicknessMmChange}
+              />
+              <FloorPlanPropertyEvidenceControl
+                evidence={activeRoomSlabThicknessEvidence}
+                dark={dark}
+                disabled={!canEditActiveRoomSlabThickness}
+                testId="plan-panel-slab-thickness-evidence"
+                onConfirm={(evidence, measurementNote) =>
+                  onActiveRoomSlabThicknessMmChange(
+                    activeRoomSlabThicknessMm,
+                    evidence,
+                    measurementNote
+                  )
+                }
               />
               <MeasurementField
                 label="Baseboard projection"

@@ -43,6 +43,12 @@ import {
   splitWallBandByOpenings2D,
 } from "@/lib/room-renderer-2d-walls";
 import type { Plan2DViewOrientation } from "@/components/editor/camera/EditorCamera2D";
+import {
+  CanonicalFloorPlanWalls2D,
+  type CanonicalOpeningDragMetricsV2,
+} from "./CanonicalFloorPlanStructure";
+import type { CanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
+import { buildRoomPlanShape } from "@/lib/room-plan-shape";
 
 type RectZone = {
   id: string;
@@ -61,8 +67,77 @@ type Opening2D = {
   width: number;
   height?: number;
   kind: "door" | "window";
-  doorStyle?: "swing" | "open";
+  doorStyle?: "swing" | "sliding" | "folding" | "open";
 };
+
+type OpeningSegment2D = {
+  id: string;
+  kind: Opening2D["kind"];
+  doorStyle?: NonNullable<Opening2D["doorStyle"]>;
+  wall: Opening2D["wall"];
+  points: [[number, number, number], [number, number, number]];
+};
+
+type OpeningRenderSegment2D = OpeningSegment2D & {
+  offset: number;
+  width: number;
+  center: [number, number, number];
+  hitSize: [number, number];
+  labelPosition: [number, number, number];
+};
+
+function buildOpeningSymbolLines(
+  segment: OpeningSegment2D
+): Array<Array<[number, number, number]>> {
+  const [start, end] = segment.points;
+  if (segment.kind !== "door" || !segment.doorStyle || segment.doorStyle === "swing") {
+    return [[start, end]];
+  }
+  if (segment.doorStyle === "open") return [];
+
+  const horizontal = segment.wall === "north" || segment.wall === "south";
+  const alongX = end[0] - start[0];
+  const alongZ = end[2] - start[2];
+  const perpendicularX = horizontal ? 0 : 0.055;
+  const perpendicularZ = horizontal ? 0.055 : 0;
+  if (segment.doorStyle === "sliding") {
+    const firstEnd: [number, number, number] = [
+      start[0] + alongX * 0.58,
+      start[1],
+      start[2] + alongZ * 0.58,
+    ];
+    const secondStart: [number, number, number] = [
+      start[0] + alongX * 0.42 + perpendicularX,
+      start[1],
+      start[2] + alongZ * 0.42 + perpendicularZ,
+    ];
+    const secondEnd: [number, number, number] = [
+      end[0] + perpendicularX,
+      end[1],
+      end[2] + perpendicularZ,
+    ];
+    return [[start, firstEnd], [secondStart, secondEnd]];
+  }
+
+  const foldPoints = Array.from({ length: 5 }, (_, index): [number, number, number] => {
+    const ratio = index / 4;
+    const fold = index === 0 || index === 4 ? 0 : index % 2 === 0 ? -0.07 : 0.07;
+    return [
+      start[0] + alongX * ratio + (horizontal ? 0 : fold),
+      start[1],
+      start[2] + alongZ * ratio + (horizontal ? fold : 0),
+    ];
+  });
+  return [foldPoints];
+}
+
+function openingDisplayName(segment: OpeningSegment2D) {
+  if (segment.kind !== "door") return "Window";
+  if (segment.doorStyle === "open") return "Opening";
+  if (segment.doorStyle === "sliding") return "Sliding door";
+  if (segment.doorStyle === "folding") return "Folding door";
+  return "Door";
+}
 
 type FixedElement2D = {
   id: string;
@@ -91,6 +166,7 @@ type HouseRoom2D = {
   roomType: RoomType;
   shape: "rectangle" | "l_shape" | "custom_polygon";
   polygon?: Array<{ x: number; z: number }>;
+  holes?: Array<Array<{ x: number; z: number }>>;
   surfaces?: RoomSurfaceFinishes;
   surfaceFinishes?: RoomSurfaceFinishes;
   x: number;
@@ -279,6 +355,8 @@ type RoomRenderer2DProps = {
   annotations?: Annotation2D[];
   zones?: RectZone[];
   rooms?: HouseRoom2D[];
+  activeFloorId?: string | null;
+  activeFloorLevel: number;
   activeRoomId?: string | null;
   onSelectRoom?: (roomId: string) => void;
   onSelectSurfaceTarget?: (target: { kind: "floor" | "wall"; roomId: string; id: string }) => void;
@@ -327,6 +405,8 @@ type RoomRenderer2DProps = {
   onTraceOpeningPoint?: (point: FloorPlanPoint) => void;
   cameraNavigation?: CameraNavigation2D;
   onPlanDebugMetricsChange?: (metrics: { zoom: number; visibleLabelCount: number }) => void;
+  canonicalPlan?: CanonicalFloorPlanRenderModel | null;
+  canonicalStructureExpected?: boolean;
 };
 
 const getRoomOutlinePoints = (room: HouseRoom2D): Array<[number, number]> => {
@@ -363,23 +443,19 @@ const getRoomOutlinePoints = (room: HouseRoom2D): Array<[number, number]> => {
   ];
 };
 
-const buildRoomShapeFromPoints = (points: Array<[number, number]>) => {
-  const shape = new THREE.Shape();
-  const [firstX, firstZ] = points[0];
-  shape.moveTo(firstX, -firstZ);
+const getRoomHoleOutlinePoints = (room: HouseRoom2D): Array<Array<[number, number]>> =>
+  (room.holes ?? [])
+    .filter((hole) => hole.length >= 3)
+    .map((hole) => {
+      const points = hole.map((point): [number, number] => [point.x, point.z]);
+      return [...points, points[0]];
+    });
 
-  for (const [x, z] of points.slice(1, -1)) {
-    shape.lineTo(x, -z);
-  }
-
-  shape.closePath();
-  return shape;
-};
-
-const buildRoomShapeGeometry = (room: HouseRoom2D) => buildRoomShapeFromPoints(getRoomOutlinePoints(room));
+const buildRoomShapeGeometry = (room: HouseRoom2D) =>
+  buildRoomPlanShape(getRoomOutlinePoints(room), getRoomHoleOutlinePoints(room));
 
 const buildInnerFloorShapeGeometry = (room: HouseRoom2D) =>
-  buildRoomShapeFromPoints(buildInnerFloorGeometry2D(room));
+  buildRoomPlanShape(buildInnerFloorGeometry2D(room), getRoomHoleOutlinePoints(room));
 
 function buildRectangleLinePoints(points: FloorPlanPoint[]): Array<[number, number, number]> {
   if (points.length !== 2) return [];
@@ -1201,6 +1277,8 @@ export default function RoomRenderer2D({
   annotations = [],
   zones = [],
   rooms = [],
+  activeFloorId = null,
+  activeFloorLevel,
   activeRoomId = null,
   onSelectRoom,
   onSelectSurfaceTarget,
@@ -1238,6 +1316,8 @@ export default function RoomRenderer2D({
   onTraceOpeningPoint,
   cameraNavigation,
   onPlanDebugMetricsChange,
+  canonicalPlan = null,
+  canonicalStructureExpected = false,
 }: RoomRenderer2DProps) {
   const htmlZIndexRange: [number, number] = [5, 0];
   const { camera, gl } = useThree();
@@ -1251,6 +1331,7 @@ export default function RoomRenderer2D({
   const isPro = theme === "pro";
   const hasHouseRooms = rooms.length > 1;
   const canEditPlan = interactive && !drawRoomMode && !traceOpeningMode;
+  const canEditRoomGeometry = canEditPlan && !canonicalStructureExpected;
   const canClearRoomSelection = canEditPlan && Boolean(onClearRoomSelection);
   const workspaceWidth = drawRoomMode
     ? Math.max(DRAW_WORKSPACE_MIN_SIZE_METERS, width + DRAW_WORKSPACE_PADDING_METERS)
@@ -2002,7 +2083,7 @@ export default function RoomRenderer2D({
     room: HouseRoom2D,
     event: ReactPointerEvent<HTMLElement>
   ) => {
-    if (!canEditPlan || !onMoveRoom) return;
+    if (!canEditRoomGeometry || !onMoveRoom) return;
     stopDomRoomMoveEvent(event);
     const planPoint = getDrawPointFromClientPosition(event.clientX, event.clientY);
     if (!planPoint) return;
@@ -2662,7 +2743,7 @@ export default function RoomRenderer2D({
     [roomDragPreview, rooms]
   );
 
-  const openingSegments = openings.map((o) => {
+  const openingSegments = openings.map((o): OpeningRenderSegment2D => {
     const openingRoom = getOpeningRoom(o);
     const centerX = openingRoom?.x ?? 0;
     const centerZ = openingRoom?.z ?? 0;
@@ -2719,7 +2800,9 @@ export default function RoomRenderer2D({
     };
   });
   const wallBandLayout = useMemo(() => {
-    if (!hasHouseRooms) return { parts: [], windowMarkers: [], cornerCaps: [] };
+    if (!hasHouseRooms || canonicalStructureExpected) {
+      return { parts: [], windowMarkers: [], cornerCaps: [] };
+    }
     const mergedSegments = mergeSharedWallSegments2D(buildRoomWallSegments2D(wallBandRooms));
     return mergedSegments.reduce(
       (layout, segment) => {
@@ -2734,7 +2817,7 @@ export default function RoomRenderer2D({
         cornerCaps: buildWallBandCornerCaps2D(mergedSegments),
       }
     );
-  }, [hasHouseRooms, openings, wallBandRooms]);
+  }, [canonicalStructureExpected, hasHouseRooms, openings, wallBandRooms]);
   const navigationCameraPoint = cameraNavigation
     ? {
         x: cameraNavigation.cameraPosition[0],
@@ -2937,7 +3020,7 @@ export default function RoomRenderer2D({
       {hasHouseRooms &&
         rooms.map((room) => {
           const isActiveRoom = room.id === activeRoomId;
-          const isHoveredRoom = hoveredRoomId === room.id && canEditPlan;
+          const isHoveredRoom = hoveredRoomId === room.id && canEditRoomGeometry;
           const roomFillColor =
             isHoveredRoom && !isActiveRoom
               ? isPro
@@ -3008,7 +3091,7 @@ export default function RoomRenderer2D({
                     handleRoomDrawPointerDown(event);
                     return;
                   }
-                  if (!canEditPlan) return;
+                  if (!canEditRoomGeometry) return;
                   roomBodyPointerRef.current = {
                     roomId: room.id,
                     clientX: event.nativeEvent.clientX,
@@ -3095,7 +3178,7 @@ export default function RoomRenderer2D({
                   releasePointerCaptureIfSupported(event);
                 }}
                 onPointerOver={(event) => {
-                  if (!canEditPlan || canTraceOpeningOnGrid || canDrawRoomOnGrid) return;
+                  if (!canEditRoomGeometry || canTraceOpeningOnGrid || canDrawRoomOnGrid) return;
                   event.stopPropagation();
                   setHoveredRoomId(room.id);
                   document.body.style.cursor = "grab";
@@ -3123,11 +3206,13 @@ export default function RoomRenderer2D({
                   depthWrite={false}
                 />
               </mesh>
-              <Line
-                points={getRoomOutlinePoints(room).map(([x, z]) => [x, isDraggingRoom ? 0.008 : 0.0026, z])}
-                color={effectiveRoomOutlineColor}
-                lineWidth={effectiveRoomLineWidth}
-              />
+              {!canonicalStructureExpected && (
+                <Line
+                  points={getRoomOutlinePoints(room).map(([x, z]) => [x, isDraggingRoom ? 0.008 : 0.0026, z])}
+                  color={effectiveRoomOutlineColor}
+                  lineWidth={effectiveRoomLineWidth}
+                />
+              )}
               {isDraggingRoom && (
                 <Html
                   zIndexRange={[18, 0]}
@@ -3603,7 +3688,7 @@ export default function RoomRenderer2D({
               )}
 
               {isActiveRoom &&
-                canEditPlan &&
+                canEditRoomGeometry &&
                 onResizeRoom &&
                 room.shape !== "custom_polygon" &&
                 roomResizeHandles.map((handle) => (
@@ -3766,6 +3851,58 @@ export default function RoomRenderer2D({
             </div>
           </Html>
         </group>
+      )}
+
+      {canonicalPlan && (
+        <CanonicalFloorPlanWalls2D
+          model={canonicalPlan}
+          activeFloorId={activeFloorId}
+          activeFloorLevel={activeFloorLevel}
+          activeRoomId={activeRoomId}
+          selectedOpeningId={selectedOverlayId}
+          showOpenings={showOpenings}
+          showStructures={showBuiltIns}
+          interactive={interactive}
+          theme={theme}
+          onSelectRoom={onSelectRoom}
+          onSelectWall={(wallId, roomId) => {
+            if (roomId && onSelectSurfaceTarget) {
+              onSelectSurfaceTarget({ kind: "wall", roomId, id: wallId });
+            } else if (roomId) {
+              onSelectRoom?.(roomId);
+            }
+          }}
+          onSelectOpening={onSelectOverlay}
+          onEditOpening={(
+            openingId: string,
+            metrics: CanonicalOpeningDragMetricsV2,
+            mode
+          ) => {
+            const sourceOpening = openings.find((opening) => opening.id === openingId);
+            const sourceRoom = sourceOpening?.roomId
+              ? rooms.find((room) => room.id === sourceOpening.roomId)
+              : null;
+            if (!sourceOpening || !sourceRoom) return;
+            const centerOffsetMeters =
+              sourceOpening.wall === "north" || sourceOpening.wall === "south"
+                ? metrics.centerMm.xMm / 1000 - sourceRoom.x
+                : metrics.centerMm.zMm / 1000 - sourceRoom.z;
+            if (mode === "resize") {
+              onResizeOpening?.(openingId, {
+                widthMeters: metrics.widthMm / 1000,
+                offsetMeters: centerOffsetMeters,
+              });
+            } else {
+              onMoveOpening?.(openingId, centerOffsetMeters);
+            }
+          }}
+          onOpeningDragStateChange={(dragging, mode) =>
+            onOverlayDragStateChange?.(
+              dragging,
+              mode === "resize" ? "opening_resize" : "opening"
+            )
+          }
+        />
       )}
 
       {hasHouseRooms &&
@@ -4639,16 +4776,17 @@ export default function RoomRenderer2D({
         />
       )}
 
-      {showOpenings &&
+      {showOpenings && !canonicalStructureExpected &&
         openingSegments.map((seg) => (
           <group key={seg.id}>
-            {seg.doorStyle !== "open" && (
+            {buildOpeningSymbolLines(seg).map((points, lineIndex) => (
               <Line
-                points={seg.points}
+                key={`${seg.id}-symbol-${lineIndex}`}
+                points={points}
                 color={seg.kind === "door" ? openingDoorColor : openingWindowColor}
                 lineWidth={selectedOverlayId === seg.id ? 4 : 3.2}
               />
-            )}
+            ))}
             {selectedOverlayId === seg.id && (
               <>
                 <Line
@@ -4758,11 +4896,7 @@ export default function RoomRenderer2D({
                   }}
                 >
                   <span>
-                    {seg.kind === "door"
-                      ? seg.doorStyle === "open"
-                        ? "Opening"
-                        : "Door"
-                      : "Window"} {formatDimension(seg.width)}
+                    {openingDisplayName(seg)} {formatDimension(seg.width)}
                     {" · "}
                     {seg.wall} {formatDimension(seg.offset)}
                   </span>

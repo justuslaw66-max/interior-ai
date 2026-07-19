@@ -96,6 +96,7 @@ export function useDesignPageDocumentHistoryController({
 
   const buildPersistedFloorPlanState = useCallback(
     (): DesignSnapshot["floorPlan"] => {
+      const canonical = designSnapshotRef.current.floorPlan;
       const underlay =
         floorPlanUnderlay &&
         isPersistableFloorPlanAssetUrl(floorPlanUnderlay.assetUrl)
@@ -105,18 +106,20 @@ export function useDesignPageDocumentHistoryController({
       if (
         !underlay &&
         planOpenings.length === 0 &&
-        planFixedElements.length === 0
+        planFixedElements.length === 0 &&
+        !canonical?.canonicalDocument
       ) {
         return undefined;
       }
 
       return {
+        ...canonical,
         underlay,
         openings: planOpenings,
         fixedElements: planFixedElements,
       };
     },
-    [floorPlanUnderlay, planFixedElements, planOpenings]
+    [designSnapshotRef, floorPlanUnderlay, planFixedElements, planOpenings]
   );
 
   const buildDesignSnapshotForPersistence = useCallback(

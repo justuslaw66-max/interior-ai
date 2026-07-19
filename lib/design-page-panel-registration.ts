@@ -218,8 +218,14 @@ export function buildDesignPagePanelRegistration({
         activeFloorLevel: floor.activeFloorLevel,
         activeFloorRoomCount: floor.activeFloorRoomCount,
         activeRoomHeightMm: roomRead.activeRoomHeightMm,
+        activeRoomWallHeightEvidence: roomRead.activeRoomWallHeightEvidence,
+        canEditActiveRoomWallHeight: roomRead.canEditActiveRoomWallHeight,
         activeRoomWallThicknessMm: roomRead.activeRoomWallThicknessMm,
         activeRoomSlabThicknessMm: roomRead.activeRoomSlabThicknessMm,
+        activeRoomSlabThicknessEvidence:
+          roomRead.activeRoomSlabThicknessEvidence,
+        canEditActiveRoomSlabThickness:
+          roomRead.canEditActiveRoomSlabThickness,
         activeRoomBaseboardDepthMm: roomRead.activeRoomBaseboardDepthMm,
         activeRoomWallOpacity: roomRead.activeRoomWallOpacity,
         activeRoomFloorOpacity: roomRead.activeRoomFloorOpacity,

@@ -225,6 +225,11 @@ assert.match(
   /const saveCurrentAndStartNewPlan = useCallback\([\s\S]*?executeSaveCurrentAndStartNewPlan\(/
 );
 assert.match(
+  controllerSource,
+  /const openNewPlanPicker = useCallback\(\(\) => \{\s*requestPlanChoiceForNextTemplate\(\);\s*closeMyDesigns\(\);/,
+  "The visible New plan command must require a choice before the next template can replace the document."
+);
+assert.match(
   facadeSource,
   /useDesignPageNewPlanController\(\{[\s\S]*?state:\s*\{[\s\S]*?actions:\s*\{/
 );

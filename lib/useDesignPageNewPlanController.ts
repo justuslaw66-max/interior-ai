@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { PendingPlanTemplateReplacement } from "@/lib/useDesignPageFloorPlanUnderlayController";
 import type { PreserveCurrentDesignResult } from "@/lib/useDesignPagePersistence";
 
@@ -18,6 +18,7 @@ export type DesignPageNewPlanControllerActions = {
   setViewMode: (mode: "2d") => void;
   setDesignPanelOpen: (open: boolean) => void;
   setDesignPanelCollapsed: (collapsed: boolean) => void;
+  requestPlanChoiceForNextTemplate: () => void;
   cancelPendingReplacement: () => void;
   confirmPendingReplacement: () => void;
   preserveCurrentDesign: () => Promise<PreserveCurrentDesignResult>;
@@ -107,6 +108,7 @@ export function useDesignPageNewPlanController({
     setViewMode,
     setDesignPanelOpen,
     setDesignPanelCollapsed,
+    requestPlanChoiceForNextTemplate,
     cancelPendingReplacement,
     confirmPendingReplacement,
     preserveCurrentDesign,
@@ -122,6 +124,7 @@ export function useDesignPageNewPlanController({
   const startingNewPlanRef = useRef(false);
 
   const openNewPlanPicker = useCallback(() => {
+    requestPlanChoiceForNextTemplate();
     closeMyDesigns();
     setGuidedPlanStartMode("template");
     goPlan();
@@ -132,6 +135,7 @@ export function useDesignPageNewPlanController({
   }, [
     closeMyDesigns,
     goPlan,
+    requestPlanChoiceForNextTemplate,
     setDesignPanelCollapsed,
     setDesignPanelOpen,
     setGuidedPlanStartMode,
@@ -181,6 +185,11 @@ export function useDesignPageNewPlanController({
       showToast,
     ]
   );
+
+  useEffect(() => {
+    if (!pendingReplacement?.options?.startAsNewDesign) return;
+    void saveCurrentAndStartNewPlan();
+  }, [pendingReplacement, saveCurrentAndStartNewPlan]);
 
   return {
     state: {

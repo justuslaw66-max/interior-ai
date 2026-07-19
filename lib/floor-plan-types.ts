@@ -57,6 +57,8 @@ export type FloorPlanUnderlay = {
   assetUrl: string;
   mimeType: string;
   sourceMimeType?: string;
+  sourceAssetSha256?: string;
+  sourceJobId?: string;
   renderedPage?: number;
   pageCount?: number;
   widthPx?: number;

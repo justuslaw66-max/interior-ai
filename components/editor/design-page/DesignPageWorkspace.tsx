@@ -28,6 +28,7 @@ import { useDesignPageEditorInteractionRegistration } from "@/lib/useDesignPageE
 import { useDesignPagePersistenceWorkspaceRegistration } from "@/lib/useDesignPagePersistenceWorkspaceRegistration";
 import { useDesignPagePresentationWorkspaceRegistration } from "@/lib/useDesignPagePresentationWorkspaceRegistration";
 import { useDesignPageWorkspaceDeferredPaywallRegistration } from "@/lib/useDesignPagePaywallRegistrationFacade";
+import { useDesignPageFloorPlanLifecycleRegistration } from "@/lib/useDesignPageFloorPlanLifecycleRegistration";
 
 export function DesignPageWorkspace() {
   const coreShellRegistration = useDesignPageCoreShellRegistration({
@@ -267,7 +268,9 @@ export function DesignPageWorkspace() {
       },
     },
   } = persistenceWorkspaceRegistration;
-
+  const floorPlanLifecycleRegistration = useDesignPageFloorPlanLifecycleRegistration({
+    boundaries: { coreShell: coreShellRegistration, documentSelection: documentSelectionRegistration, persistence: persistenceWorkspaceRegistration },
+  });
   const aiWorkspaceRegistration = useDesignPageAiWorkspaceRegistration({
     boundaries: {
       coreShell: coreShellRegistration,
@@ -491,7 +494,8 @@ export function DesignPageWorkspace() {
     feedback: {
       beta: { open: feedbackOpen, context: betaFeedbackContext, onOpenChange: setFeedbackOpen },
       toasts: { ruleMessage: ruleToast, nudgeMessage: nextBestActionNudge, shareCopied: shareSuccessToast, shareErrorMessage: shareErrorToast },
-      validation: { constraints: visibleConstraints, confidence: layoutConfidence },
+      validation: { constraints: visibleConstraints, confidence: layoutConfidence,
+        ...floorPlanLifecycleRegistration.derived.validation },
     },
     sharing: { url: shareLinkFallback, onClose: closeShareLinkFallback, onCopy: copyFallbackShareLink, onOpen: openFallbackShareLink },
     cabinetry: {

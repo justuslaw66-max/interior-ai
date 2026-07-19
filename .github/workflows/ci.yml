@@ -77,6 +77,10 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Verify complete floor-plan platform
+        timeout-minutes: 20
+        run: npm run test:floor-plan-required
+
       - name: Verify Pro visual and Cabinet Preview policies
         run: npm run test:designer-theme-contrast && npm run test:cabinetry-preview-renderer
 

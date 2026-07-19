@@ -8,11 +8,13 @@ import {
   type SetStateAction,
 } from "react";
 import { track } from "@/lib/analytics";
+import { canonicalFloorPlanToDesignSnapshot } from "@/lib/floor-plan-legacy-adapters";
 import { DEFAULT_FLOOR_MATERIAL_ID } from "@/lib/floor-materials";
 import { applyFloorPlanScaleCalibration } from "@/lib/floor-plan-calibration";
 import type { FloorPlanPoint, FloorPlanUnderlay } from "@/lib/floor-plan-types";
 import {
   SUPPORTED_FLOOR_PLAN_MIME_TYPES,
+  hashFloorPlanSourceBytes,
   loadImageDimensions,
   readFileAsDataUrl,
   renderPdfPageToImageDataUrl,
@@ -135,6 +137,7 @@ export function useDesignPageFloorPlanUnderlayController({
   } = actions;
 
   const skipNextTemplateReplacementConfirmRef = useRef(false);
+  const requirePlanChoiceForNextTemplateRef = useRef(false);
   const [pendingTemplateReplacement, setPendingTemplateReplacement] =
     useState<PendingPlanTemplateReplacement | null>(null);
 
@@ -142,8 +145,10 @@ export function useDesignPageFloorPlanUnderlayController({
     (template: HousePlanTemplate, options?: HousePlanTemplateApplyOptions) => {
       if (
         !skipNextTemplateReplacementConfirmRef.current &&
-        shouldConfirmPlanTemplateReplacement(designSnapshotRef.current, planOpenings)
+        (requirePlanChoiceForNextTemplateRef.current ||
+          shouldConfirmPlanTemplateReplacement(designSnapshotRef.current, planOpenings))
       ) {
+        requirePlanChoiceForNextTemplateRef.current = false;
         setPendingTemplateReplacement({ template, options });
         track("floor_plan_template_replacement_prompted", {
           templateId: template.id,
@@ -154,8 +159,47 @@ export function useDesignPageFloorPlanUnderlayController({
         return;
       }
       skipNextTemplateReplacementConfirmRef.current = false;
+      requirePlanChoiceForNextTemplateRef.current = false;
 
       const timestamp = Date.now();
+      if (template.canonical) {
+        const canonical = canonicalFloorPlanToDesignSnapshot(
+          template.canonical.document,
+          {
+            title: template.label,
+            addressTransform: template.canonical.addressTransform,
+            addressBinding: template.canonical.addressBinding,
+            sourceRevisionGeometryHash: template.canonical.geometryHash,
+            sourceAssetSha256: template.canonical.document.sources[0]?.sha256,
+          }
+        );
+        revokeUnderlayObjectUrl();
+        pdfSourceDataRef.current = null;
+        setFloorPlanPdfSourceReady(false);
+        setFloorPlanUnderlay(null);
+        resetFloorPlanInteraction();
+        setPlanOpenings(canonical.openings);
+        setPlanFixedElements(canonical.fixedElements);
+        setSelectedPlanOverlayId(null);
+        clearAllSelection();
+        prepareCameraForPlanTemplate();
+        floorCameraViewsRef.current = {};
+        setViewMode("2d");
+        setDesignSnapshot(canonical.snapshot);
+        history.commit();
+        showRuleToast(`${template.label} added from verified revision`);
+        track("floor_plan_canonical_revision_applied", {
+          templateId: template.id,
+          revisionId: template.canonical.revisionId,
+          geometryHash: template.canonical.geometryHash,
+          verificationTier: template.canonical.verificationTier,
+          addressTransform: template.canonical.addressTransform,
+          roomCount: canonical.snapshot.rooms.length,
+          openingCount: canonical.openings.length,
+        });
+        return;
+      }
+
       const templateRoomIdMap = new Map<string, string>();
       const rooms = template.rooms.map((templateRoom, index) => {
         const room = createRoom(
@@ -223,7 +267,14 @@ export function useDesignPageFloorPlanUnderlayController({
               roomId,
               wall: doorway.wall,
               kind: "door" as const,
-              doorStyle: doorway.kind === "opening" ? "open" : "swing",
+              doorStyle:
+                doorway.kind === "opening" || doorway.operation === "open"
+                  ? "open"
+                  : doorway.operation === "sliding"
+                    ? "sliding"
+                    : doorway.operation === "folding"
+                      ? "folding"
+                      : "swing",
               offsetMm: metersToMm(offsetMeters),
               widthMm: metersToMm(widthMeters),
               ...(doorway.kind === "opening"
@@ -402,6 +453,10 @@ export function useDesignPageFloorPlanUnderlayController({
     });
   }, [designSnapshotRef, pendingTemplateReplacement, planOpenings.length]);
 
+  const requirePlanChoiceForNextTemplate = useCallback(() => {
+    requirePlanChoiceForNextTemplateRef.current = true;
+  }, []);
+
   const confirmPendingTemplateReplacement = useCallback(() => {
     const pending = pendingTemplateReplacement;
     if (!pending) return;
@@ -424,6 +479,16 @@ export function useDesignPageFloorPlanUnderlayController({
       let heightPx: number | undefined;
       let renderedPage: number | undefined;
       let pageCount: number | undefined;
+      let sourceBytes: ArrayBuffer;
+      let sourceAssetSha256: string;
+
+      try {
+        sourceBytes = await file.arrayBuffer();
+        sourceAssetSha256 = await hashFloorPlanSourceBytes(sourceBytes);
+      } catch {
+        showRuleToast("Floor plan file could not be read securely");
+        return;
+      }
 
       if (mimeType.startsWith("image/")) {
         pdfSourceDataRef.current = null;
@@ -439,7 +504,7 @@ export function useDesignPageFloorPlanUnderlayController({
         }
       } else if (mimeType === "application/pdf") {
         try {
-          const pdfData = await file.arrayBuffer();
+          const pdfData = sourceBytes;
           const rendered = await renderPdfPageToImageDataUrl(pdfData, 1);
           pdfSourceDataRef.current = pdfData;
           setFloorPlanPdfSourceReady(true);
@@ -476,6 +541,7 @@ export function useDesignPageFloorPlanUnderlayController({
         assetUrl,
         mimeType: renderedMimeType,
         sourceMimeType: mimeType,
+        sourceAssetSha256,
         renderedPage,
         pageCount,
         widthPx,
@@ -687,6 +753,7 @@ export function useDesignPageFloorPlanUnderlayController({
     },
     actions: {
       applyPlanTemplate,
+      requirePlanChoiceForNextTemplate,
       cancelPendingTemplateReplacement,
       confirmPendingTemplateReplacement,
       uploadUnderlay,

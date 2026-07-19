@@ -2,7 +2,12 @@ import { CATALOG_ITEMS } from "@/lib/catalog";
 import type { CatalogItemSchema, DimensionsMm, ProductCategory } from "@/lib/catalog-schema";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import { mapToTopCategory, type CatalogTopCategory } from "@/lib/catalog/view-builders";
-import { aabbIntersects, type AABB } from "@/lib/design-page-geometry";
+import {
+  aabbIntersects,
+  isFootprintInsideRoomPolygon,
+  isPointInsideRoomPolygonWithHoles,
+  type AABB,
+} from "@/lib/design-page-geometry";
 import { clamp, getRotatedFootprint } from "@/lib/design-page-utils";
 import type { DesignItem } from "@/lib/room-types";
 import { computeAABB } from "@/lib/snapGuides";
@@ -12,6 +17,7 @@ export type CatalogPlacementPlanRoom = {
   name: string;
   shape?: "rectangle" | "l_shape" | "custom_polygon";
   polygon?: Array<{ x: number; z: number }>;
+  holes?: Array<Array<{ x: number; z: number }>>;
   x: number;
   z: number;
   w: number;
@@ -330,7 +336,11 @@ export function isWorldPointInsideCatalogPlacementRoom(
   if (!insideBounds) return false;
 
   if (room.shape === "custom_polygon" && room.polygon?.length) {
-    return isPointInsideCatalogPlacementPolygon(localX, localZ, room.polygon);
+    return isPointInsideRoomPolygonWithHoles(
+      { x: localX, z: localZ },
+      room.polygon,
+      room.holes
+    );
   }
 
   if (room.shape === "l_shape") {
@@ -390,7 +400,14 @@ export function isCatalogPlacementFootprintInsideRoom({
     if (!insideBounds) return false;
 
     if (room.shape === "custom_polygon" && room.polygon?.length) {
-      return isPointInsideCatalogPlacementPolygon(localX, localZ, room.polygon);
+      return isFootprintInsideRoomPolygon(
+        localX,
+        localZ,
+        halfWidth + wall,
+        halfDepth + wall,
+        room.polygon,
+        room.holes
+      );
     }
 
     if (room.shape === "l_shape") {

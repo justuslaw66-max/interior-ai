@@ -9,6 +9,8 @@ import {
 
 import { type CATALOG_ITEMS } from "@/lib/catalog";
 import type { RoomOpening2D } from "@/lib/editorScene";
+import type { FloorPlanPropertyEvidenceV2 } from "@/lib/floor-plan-document-v2";
+import { floorPlanPropertyEvidenceIsEditable } from "@/lib/floor-plan-measured-property-mutations";
 import {
   DEFAULT_FLOOR_MATERIAL_ID,
   clampFloorPatternScale,
@@ -275,10 +277,28 @@ export function useDesignPageRoomReadModel({
     surfaceInspectorDisplayName,
   } = surfaceInspectorContext;
   const activeRoomHeightMm = Math.round(roomHeight * 1000);
+  const canonicalActiveFloor = designSnapshot.floorPlan?.canonicalDocument?.floors.find(
+    (floor) => floor.levelIndex === (activeRoom?.floorLevel ?? 1) - 1
+  );
+  const activeRoomWallHeightEvidence: FloorPlanPropertyEvidenceV2 | null =
+    canonicalActiveFloor?.defaults.wallHeight.evidence ?? null;
+  const canEditActiveRoomWallHeight =
+    !isClientPreview &&
+    (!activeRoomWallHeightEvidence ||
+      floorPlanPropertyEvidenceIsEditable(activeRoomWallHeightEvidence));
+  const activeRoomSlabThicknessEvidence: FloorPlanPropertyEvidenceV2 | null =
+    canonicalActiveFloor
+      ? canonicalActiveFloor.verticalEvidence?.slabThickness.evidence ?? "assumed"
+      : null;
+  const canEditActiveRoomSlabThickness =
+    !isClientPreview &&
+    (!activeRoomSlabThicknessEvidence ||
+      floorPlanPropertyEvidenceIsEditable(activeRoomSlabThicknessEvidence));
   const activeRoomWallThicknessMm = Math.round(wallThickness * 1000);
   const activeRoomSlabThicknessMm = Math.round(
-    (activeRoom?.geometry.slabThickness ??
-      ROOM_DIMENSION_DEFAULTS.slabThickness) * 1000
+    canonicalActiveFloor?.slabThicknessMm ??
+      (activeRoom?.geometry.slabThickness ??
+        ROOM_DIMENSION_DEFAULTS.slabThickness) * 1000
   );
   const activeRoomBaseboardDepthMm = Math.max(
     0,
@@ -359,6 +379,10 @@ export function useDesignPageRoomReadModel({
       surfaceInspectorIsCeiling,
       surfaceInspectorDisplayName,
       activeRoomHeightMm,
+      activeRoomWallHeightEvidence,
+      canEditActiveRoomWallHeight,
+      activeRoomSlabThicknessEvidence,
+      canEditActiveRoomSlabThickness,
       activeRoomWallThicknessMm,
       activeRoomSlabThicknessMm,
       activeRoomBaseboardDepthMm,

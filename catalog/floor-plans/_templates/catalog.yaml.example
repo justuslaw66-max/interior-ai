@@ -41,7 +41,8 @@ unit_distribution_source:
 
 publication:
   status: draft
-  accuracy_notice: Approximate editable tracing. Confirm the exact unit before design work.
+  visibility: review_only
+  accuracy_notice: Internal review fixture only. Publish a separately approved canonical revision before exposing this plan to consumers.
 
 layouts:
   - layout_id: example-layout
@@ -73,3 +74,6 @@ layouts:
           z: 1.5
       doorways: []
       windows: []
+      # Source-supported suggestions stay non-physical until the consumer
+      # chooses a separately authored configuration.
+      annotations: []

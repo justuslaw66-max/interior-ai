@@ -31,6 +31,9 @@ export interface StoredDesign {
     roomType: string;
     floorLevel?: number;
     floorLabel?: string;
+    floorElevationMm?: number;
+    floorStoreyHeightMm?: number;
+    floorSlabThicknessMm?: number;
     geometry: {
       width: number;
       depth: number;
@@ -43,6 +46,7 @@ export interface StoredDesign {
     planPosition?: { x: number; z: number };
     planShape?: string;
     planPolygon?: Array<{ x: number; z: number }>;
+    planHoles?: Array<Array<{ x: number; z: number }>>;
     surfaces?: RoomSurfaceAssignments;
     surfaceFinishes?: RoomSurfaceFinishes;
     surfaceOpacity?: RoomSurfaceOpacity;
@@ -141,10 +145,14 @@ export function snapshotToStored(snapshot: DesignSnapshot): StoredDesign {
       roomType: room.roomType,
       floorLevel: room.floorLevel ?? 1,
       floorLabel: room.floorLabel,
+      floorElevationMm: room.floorElevationMm,
+      floorStoreyHeightMm: room.floorStoreyHeightMm,
+      floorSlabThicknessMm: room.floorSlabThicknessMm,
       geometry: room.geometry,
       planPosition: room.planPosition,
       planShape: room.planShape,
       planPolygon: room.planPolygon,
+      planHoles: room.planHoles,
       surfaces: room.surfaces ? { ...room.surfaces } : room.surfaceFinishes ? { ...room.surfaceFinishes } : undefined,
       surfaceFinishes: room.surfaceFinishes ? { ...room.surfaceFinishes } : room.surfaces ? { ...room.surfaces } : undefined,
       surfaceOpacity: room.surfaceOpacity ? { ...room.surfaceOpacity } : undefined,

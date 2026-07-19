@@ -97,6 +97,13 @@ export function readFileAsDataUrl(file: File): Promise<string> {
   });
 }
 
+export async function hashFloorPlanSourceBytes(bytes: ArrayBuffer): Promise<string> {
+  const digest = await globalThis.crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest), (value) =>
+    value.toString(16).padStart(2, "0")
+  ).join("");
+}
+
 export function isPersistableFloorPlanAssetUrl(assetUrl: string): boolean {
   return (
     assetUrl.startsWith("data:") ||

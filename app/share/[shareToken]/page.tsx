@@ -21,6 +21,7 @@ import type { DesignItem, DesignSnapshot, SavedView, ZoneMin } from "@/lib/room-
 import LazyImage from "@/components/common/LazyImage";
 import ShopLink from "./export/ShopLink";
 import ShoppingCsvDownload from "./export/ShoppingCsvDownload";
+import { projectSharedDesignSnapshot } from "@/lib/shared-design-snapshot";
 
 export const metadata = {
   robots: { index: false, follow: false },
@@ -83,16 +84,18 @@ export default async function SharePage({
   }
 
   // Convert legacy format to v3
-  const designSnapshot: DesignSnapshot = legacyApiToSnapshot({
-    id: design.id,
-    title: design.title,
-    roomWidth: design.roomWidth,
-    roomDepth: design.roomDepth,
-    items: design.items as unknown as DesignItem[],
-    snapshot: design.snapshot as Parameters<typeof legacyApiToSnapshot>[0]["snapshot"],
-    zones: (design.zones as unknown as ZoneMin[]) || [],
-    savedViews: (design.savedViews as unknown as SavedView[]) || [],
-  });
+  const designSnapshot: DesignSnapshot = projectSharedDesignSnapshot(
+    legacyApiToSnapshot({
+      id: design.id,
+      title: design.title,
+      roomWidth: design.roomWidth,
+      roomDepth: design.roomDepth,
+      items: design.items as unknown as DesignItem[],
+      snapshot: design.snapshot as Parameters<typeof legacyApiToSnapshot>[0]["snapshot"],
+      zones: (design.zones as unknown as ZoneMin[]) || [],
+      savedViews: (design.savedViews as unknown as SavedView[]) || [],
+    })
+  );
   const shoppingRooms = summarizeShoppingRooms(
     designSnapshot.rooms,
     designSnapshot.activeRoomId
