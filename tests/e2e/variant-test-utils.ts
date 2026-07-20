@@ -386,15 +386,14 @@ export async function openCatalogPreview(
   if (!ready) return false;
 
   const openPreviewIfAvailable = async () => {
-    const exactPreviewButton = page.getByTestId(`catalog-preview-${productId}`);
-    const previewButton =
-      (await exactPreviewButton.count()) > 0
-        ? exactPreviewButton
-        : page.locator('[data-testid^="catalog-preview-"]').first();
-    if ((await previewButton.count()) === 0) return false;
-    await previewButton.scrollIntoViewIfNeeded().catch(() => undefined);
-    if (!(await previewButton.isVisible().catch(() => false))) return false;
-    await previewButton.click().catch(() => null);
+    const exactPreviewButton = page.getByTestId(`catalog-preview-${productId}`).first();
+    const exactProductVisible = await expect(exactPreviewButton)
+      .toBeVisible({ timeout: 5000 })
+      .then(() => true)
+      .catch(() => false);
+    if (!exactProductVisible) return false;
+    await exactPreviewButton.scrollIntoViewIfNeeded().catch(() => undefined);
+    await exactPreviewButton.click();
     return true;
   };
   for (let attempt = 0; attempt < 3; attempt += 1) {
