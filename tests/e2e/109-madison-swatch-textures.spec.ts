@@ -5,7 +5,9 @@ import {
   openCatalogPreview,
 } from "./variant-test-utils";
 
-const MADISON_3S_ID = "sofa-real-castlery-madison-3s";
+// The catalog deduplicates the Madison sofa family to its 2-seater card.
+// Bind drawer assertions to the exact representative instead of a hidden ID.
+const MADISON_CATALOG_REPRESENTATIVE_ID = "sofa-real-castlery-madison-2s";
 
 const expectedSwatches = [
   { label: "Bisque", urlPart: "AM-4001/Madison-Armchair-Bisque-Square-Det_1" },
@@ -22,7 +24,11 @@ test.describe("109. Madison Swatch Textures", () => {
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
 
-    const opened = await openCatalogPreview(page, MADISON_3S_ID, "Madison");
+    const opened = await openCatalogPreview(
+      page,
+      MADISON_CATALOG_REPRESENTATIVE_ID,
+      "Madison",
+    );
     expect(opened).toBeTruthy();
 
     const drawer = page.locator("aside").filter({ hasText: "Product details" }).first();
@@ -50,7 +56,11 @@ test.describe("109. Madison Swatch Textures", () => {
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
 
-    const opened = await openCatalogPreview(page, MADISON_3S_ID, "Madison");
+    const opened = await openCatalogPreview(
+      page,
+      MADISON_CATALOG_REPRESENTATIVE_ID,
+      "Madison",
+    );
     expect(opened).toBeTruthy();
 
     await expect(page.getByTestId("catalog-detail-add-to-room")).toBeVisible({ timeout: 10000 });
