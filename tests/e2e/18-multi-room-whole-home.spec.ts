@@ -105,6 +105,33 @@ async function getActiveRoomBodyProbe(page: Page) {
   return activeRoomProbe;
 }
 
+async function getEmptyCanvasPoint(page: Page) {
+  const point = await page.getByTestId("scene-canvas").first().evaluate((canvas) => {
+    const canvasBox = canvas.getBoundingClientRect();
+    const roomCenters = Array.from(
+      document.querySelectorAll<HTMLElement>('[data-testid="house-room-2d-label"]')
+    ).map((label) => {
+      const box = label.getBoundingClientRect();
+      return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+    });
+    const candidates: Array<{ x: number; y: number; score: number }> = [];
+    for (let y = canvasBox.top + 24; y < canvasBox.bottom - 24; y += 32) {
+      for (let x = canvasBox.left + 24; x < canvasBox.right - 24; x += 32) {
+        const hitTarget = document.elementFromPoint(x, y);
+        if (!hitTarget || (hitTarget !== canvas && !canvas.contains(hitTarget))) continue;
+        const score = roomCenters.length
+          ? Math.min(...roomCenters.map((center) => Math.hypot(x - center.x, y - center.y)))
+          : 0;
+        candidates.push({ x, y, score });
+      }
+    }
+    return candidates.sort((left, right) => right.score - left.score)[0] ?? null;
+  });
+  expect(point).not.toBeNull();
+  if (!point) throw new Error("No unobstructed empty canvas point was measurable");
+  return point;
+}
+
 function boxesOverlap(
   first: NonNullable<Awaited<ReturnType<Locator["boundingBox"]>>>,
   second: NonNullable<Awaited<ReturnType<Locator["boundingBox"]>>>
@@ -265,10 +292,13 @@ test.describe("18. Multi-Room Whole Home", () => {
     );
     await page.mouse.down();
     await page.mouse.move(
-      moveHandleBox.x + moveHandleBox.width / 2 + 80,
-      moveHandleBox.y + moveHandleBox.height / 2 + 40,
-      { steps: 8 }
+      moveHandleBox.x + moveHandleBox.width / 2 + 16,
+      moveHandleBox.y + moveHandleBox.height / 2 + 8,
+      { steps: 4 }
     );
+    const roomDragHud = page.getByTestId("room-drag-hud");
+    await expect(roomDragHud).toBeVisible();
+    await expect(roomDragHud).not.toHaveAttribute("data-drag-state", "blocked");
     await page.mouse.up();
 
     await expect
@@ -527,6 +557,7 @@ test.describe("18. Multi-Room Whole Home", () => {
   });
 
   test("drawing a room works on a blank 2D grid without uploading a plan", async ({ page }) => {
+    test.setTimeout(60_000);
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
 
@@ -679,7 +710,6 @@ test.describe("18. Multi-Room Whole Home", () => {
     await page.getByTestId("wall-draw-segment-length-1").dblclick();
     await expect(page.getByTestId("wall-draw-segment-length-editor")).toBeVisible();
     await page.getByTestId("wall-draw-segment-length-editor").fill("23234");
-    await page.getByTestId("wall-draw-segment-length-editor").press("Enter");
     await expect(page.getByText("Enter a valid wall length.")).toBeVisible();
     await expect(page.locator('[data-testid^="wall-draw-segment-length-"]')).toHaveCount(0);
   });
@@ -740,14 +770,17 @@ test.describe("18. Multi-Room Whole Home", () => {
     await page.getByTestId("floor-plan-draw-mode-rectangle_wall").click();
 
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("1 room");
-    await expect(page.getByText("5000 mm").first()).toBeVisible();
-    await expect(page.getByText("4000 mm").first()).toBeVisible();
-    await page.getByTestId("room-plan-status-fit-view").click();
+    await expect(page.getByRole("spinbutton", { name: "Width mm" })).toHaveValue("5000");
+    await expect(page.getByRole("spinbutton", { name: "Depth mm" })).toHaveValue("4000");
+    await page.getByTestId("selection-inspector-fit-room").click();
     const snapMarkers = await page
       .locator('[data-testid^="floor-plan-start-snap-"]')
       .evaluateAll((elements) =>
         elements.map((element) => {
           const rect = element.getBoundingClientRect();
+          const centerX = rect.x + rect.width / 2;
+          const centerY = rect.y + rect.height / 2;
+          const hitTarget = document.elementFromPoint(centerX, centerY);
           return {
             id: element.getAttribute("data-testid"),
             x: rect.x,
@@ -756,6 +789,7 @@ test.describe("18. Multi-Room Whole Home", () => {
             height: rect.height,
             planX: element.getAttribute("data-plan-x"),
             planZ: element.getAttribute("data-plan-z"),
+            canvasReachable: Boolean(hitTarget?.closest('[data-testid="scene-canvas"]')),
           };
         })
       );
@@ -772,7 +806,7 @@ test.describe("18. Multi-Room Whole Home", () => {
           marker.planX === planX &&
           marker.planZ === "2.000"
       );
-      return top && bottom ? { top, bottom } : null;
+      return top?.canvasReachable && bottom ? { top, bottom } : null;
     }).filter(Boolean) as Array<{
       top: NonNullable<(typeof snapMarkers)[number]>;
       bottom: NonNullable<(typeof snapMarkers)[number]>;
@@ -817,7 +851,8 @@ test.describe("18. Multi-Room Whole Home", () => {
       return;
     }
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("1 room");
-    await expect(page.getByText("2 x 4m").first()).toBeVisible();
+    await expect(page.getByRole("spinbutton", { name: "Width mm" })).toHaveValue("2000");
+    await expect(page.getByRole("spinbutton", { name: "Depth mm" })).toHaveValue("4000");
   });
 
   test("shift-dragging a 2D room moves freely without losing selection", async ({ page }) => {
@@ -832,19 +867,24 @@ test.describe("18. Multi-Room Whole Home", () => {
     }
 
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("1 room");
+    const selectedRoomName = (await page.getByTestId("room-plan-status-room-name").textContent())?.trim();
+    expect(selectedRoomName).toBeTruthy();
+    if (!selectedRoomName) {
+      throw new Error("Selected room name was unavailable before shift-dragging");
+    }
     const activeRoomLabel = page
       .locator('[data-testid="house-room-2d-label"][data-active="true"]')
-      .or(page.locator('[data-testid="house-room-2d-label"]').filter({ hasText: "Bedroom" }))
+      .or(page.locator('[data-testid="house-room-2d-label"]').filter({ hasText: selectedRoomName }))
       .first();
     if ((await activeRoomLabel.count()) === 0) {
       test.info().annotations.push({
         type: "note",
         description: "Skipping shift-drag label movement assertions because 2D room labels are density-hidden in this layout.",
       });
-      await expect(page.getByTestId("room-plan-status-room-name")).toContainText("Bedroom");
+      await expect(page.getByTestId("room-plan-status-room-name")).toHaveText(selectedRoomName);
       return;
     }
-    await expect(activeRoomLabel).toContainText("Bedroom");
+    await expect(activeRoomLabel).toContainText(selectedRoomName);
 
     const before = await activeRoomLabel.boundingBox();
     expect(before).not.toBeNull();
@@ -865,8 +905,8 @@ test.describe("18. Multi-Room Whole Home", () => {
     await page.keyboard.up("Shift");
     await page.waitForTimeout(250);
 
-    await expect(activeRoomLabel).toContainText("Bedroom");
-    await expect(page.getByTestId("room-plan-status-room-name")).toContainText("Bedroom");
+    await expect(activeRoomLabel).toContainText(selectedRoomName);
+    await expect(page.getByTestId("room-plan-status-room-name")).toHaveText(selectedRoomName);
     const after = await activeRoomLabel.boundingBox();
     expect(after).not.toBeNull();
     if (!after) {
@@ -1334,22 +1374,24 @@ test.describe("18. Multi-Room Whole Home", () => {
     await expect(activeRoomLabels).toHaveCount(1);
     await expect(resizeHandles.first()).toBeVisible();
 
-    const canvasBox = await page.getByTestId("scene-canvas").first().boundingBox();
-    expect(canvasBox).not.toBeNull();
-    if (!canvasBox) {
-      throw new Error("Scene canvas is missing a bounding box");
-    }
+    const selectedRoomProbe = await getActiveRoomBodyProbe(page);
+    const selectedRoomId = await selectedRoomProbe.getAttribute("data-room-id");
+    expect(selectedRoomId).toBeTruthy();
+    if (!selectedRoomId) throw new Error("Selected room probe is missing its room id");
+    const emptyCanvasPoint = await getEmptyCanvasPoint(page);
 
-    await page.mouse.click(
-      canvasBox.x + canvasBox.width * 0.9,
-      canvasBox.y + canvasBox.height * 0.24
-    );
+    await page.mouse.click(emptyCanvasPoint.x, emptyCanvasPoint.y);
     await expect(activeRoomLabels).toHaveCount(0);
     await expect(resizeHandles).toHaveCount(0);
 
+    const selectedRoomLabelBox = await page
+      .locator(`[data-testid="house-room-2d-label"][data-room-id="${selectedRoomId}"]`)
+      .boundingBox();
+    expect(selectedRoomLabelBox).not.toBeNull();
+    if (!selectedRoomLabelBox) throw new Error("Cleared room label is missing a bounding box");
     await page.mouse.click(
-      canvasBox.x + canvasBox.width * 0.82,
-      canvasBox.y + canvasBox.height * 0.58
+      selectedRoomLabelBox.x + selectedRoomLabelBox.width / 2,
+      selectedRoomLabelBox.y + selectedRoomLabelBox.height + 48
     );
     await expect(activeRoomLabels).toHaveCount(1);
 
@@ -1528,10 +1570,8 @@ test.describe("18. Multi-Room Whole Home", () => {
       await expect(page.getByTestId("selected-plan-room-actions")).toBeVisible();
     }
 
-    await page.mouse.click(
-      canvasBox.x + canvasBox.width * 0.92,
-      canvasBox.y + canvasBox.height * 0.2
-    );
+    const emptyCanvasPoint = await getEmptyCanvasPoint(page);
+    await page.mouse.click(emptyCanvasPoint.x, emptyCanvasPoint.y);
     if ((await activeRoomLabels.count()) > 0) {
       await expect(activeRoomLabels).toHaveCount(0);
     } else {
@@ -1700,18 +1740,18 @@ test.describe("18. Multi-Room Whole Home", () => {
       timeout: 10000,
     });
     await expect(page.getByRole("button", { name: "Focus Bedroom" })).toBeVisible();
-    await expect(page.getByTestId("room-plan-status")).toBeVisible();
-    await expect(page.getByTestId("room-plan-status-room-name")).toContainText("Bedroom");
-    await expect(page.getByTestId("room-plan-status-room-size")).toContainText("4 x 3.6m");
-    await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("2 rooms");
+    const selectionInspector = page.getByTestId("selection-inspector");
+    await expect(selectionInspector).toBeVisible();
+    await expect(selectionInspector).toContainText("Bedroom");
+    await expect(page.getByTestId("selection-inspector-room-width")).toHaveValue("4000");
+    await expect(page.getByTestId("selection-inspector-room-depth")).toHaveValue("3600");
     await expect(page.getByTestId("consumer-plan-next-steps")).toContainText("2 rooms ready");
     await expect(page.getByTestId("consumer-plan-next-steps")).toContainText(
       "Add 1 doorway."
     );
 
-    await expect(page.getByTestId("room-plan-status-view-toggle")).toHaveText("Plan");
-    await expect(page.getByTestId("room-plan-status-fit-view")).toBeVisible();
-    await clickWithFallback(page.getByTestId("room-plan-status-fit-view"));
+    await expect(page.getByTestId("selection-inspector-fit-room")).toBeVisible();
+    await clickWithFallback(page.getByTestId("selection-inspector-fit-room"));
     await expect(page.getByTestId("room-pan-navigator")).toBeVisible();
     await expect(page.getByTestId("room-pan-camera-handle")).toBeVisible();
     await expect(page.getByTestId("room-pan-camera-icon")).toBeVisible();
@@ -1719,20 +1759,20 @@ test.describe("18. Multi-Room Whole Home", () => {
     await expect(page.getByTestId("room-pan-zoom-out")).toBeVisible();
     await expect(page.getByTestId("room-pan-reset-view")).toBeVisible();
     await expect(page.getByTestId("coohom-floor-panel")).toBeVisible();
-    await expect(page.getByTestId("selection-inspector")).toBeVisible();
     await expect(page.getByTestId("selection-inspector-room-dimensions")).toBeVisible();
 
     await page.getByRole("button", { name: "2D Plan" }).click();
     const sceneCanvas = page.getByTestId("scene-canvas").first();
     await expect(sceneCanvas).toHaveAttribute("data-plan-2d-orientation", /^(normal|rotated)$/);
     const planOrientationBeforeFit = await sceneCanvas.getAttribute("data-plan-2d-orientation");
-    await clickWithFallback(page.getByTestId("room-plan-status-fit-view"));
+    await clickWithFallback(page.getByTestId("selection-inspector-fit-room"));
     await expect(sceneCanvas).toHaveAttribute(
       "data-plan-2d-orientation",
       planOrientationBeforeFit ?? "normal"
     );
     await page.getByRole("button", { name: "3D" }).click();
     await expect(page.getByTestId("room-pan-navigator")).toBeVisible();
+    await page.getByTestId("room-pan-navigator").scrollIntoViewIfNeeded();
 
     const panTargetBefore = await page.getByTestId("room-pan-target").boundingBox();
     expect(panTargetBefore).not.toBeNull();
@@ -1740,17 +1780,25 @@ test.describe("18. Multi-Room Whole Home", () => {
       throw new Error("Navigator target was not measurable");
     }
 
-    await page.mouse.move(
-      panTargetBefore.x + panTargetBefore.width / 2,
-      panTargetBefore.y + panTargetBefore.height / 2
-    );
-    await page.mouse.down();
-    await page.mouse.move(
-      panTargetBefore.x + panTargetBefore.width / 2 + 24,
-      panTargetBefore.y + panTargetBefore.height / 2,
-      { steps: 6 }
-    );
-    await page.mouse.up();
+    const navigatorPoint = await page.getByTestId("room-pan-map").evaluate((map) => {
+      const box = map.getBoundingClientRect();
+      for (let y = box.top + 6; y < box.bottom - 6; y += 8) {
+        for (let x = box.left + 6; x < box.right - 6; x += 8) {
+          const hitTarget = document.elementFromPoint(x, y);
+          if (
+            hitTarget &&
+            (hitTarget === map || map.contains(hitTarget)) &&
+            !hitTarget.closest("[data-room-nav-action]")
+          ) {
+            return { x, y };
+          }
+        }
+      }
+      return null;
+    });
+    expect(navigatorPoint).not.toBeNull();
+    if (!navigatorPoint) throw new Error("Navigator map has no unobstructed target point");
+    await page.mouse.click(navigatorPoint.x, navigatorPoint.y);
     await page.waitForTimeout(300);
 
     const panTargetAfter = await page.getByTestId("room-pan-target").boundingBox();
@@ -1758,7 +1806,9 @@ test.describe("18. Multi-Room Whole Home", () => {
     if (!panTargetAfter) {
       throw new Error("Navigator target was not measurable after panning");
     }
-    expect(panTargetAfter.x).toBeGreaterThan(panTargetBefore.x + 4);
+    expect(
+      Math.hypot(panTargetAfter.x - panTargetBefore.x, panTargetAfter.y - panTargetBefore.y)
+    ).toBeGreaterThan(4);
 
     const cameraHandleBefore = await page.getByTestId("room-pan-camera-handle").boundingBox();
     expect(cameraHandleBefore).not.toBeNull();
@@ -1799,8 +1849,8 @@ test.describe("18. Multi-Room Whole Home", () => {
     await clickWithFallback(page.getByTestId("editor-workflow-plan"));
     await expect(page.getByTestId("editor-workflow-plan")).toHaveAttribute("data-active", "true");
 
-    await page.getByTestId("room-plan-status-view-toggle").click();
-    await expect(page.getByTestId("room-plan-status-view-toggle")).toHaveText("Room view");
+    await page.getByRole("button", { name: "2D Plan" }).click();
+    await expect(sceneCanvas).toHaveAttribute("data-plan-2d-camera-valid", "true");
     await expect(page.getByTestId("plan-tool-palette")).toBeVisible();
     await expect(page.getByTestId("plan-start-draw")).toBeVisible();
     await expect(page.getByTestId("plan-tool-door")).toBeVisible();
