@@ -16,11 +16,13 @@ async function readStableFingerprint(page: Page): Promise<string> {
   });
   let previous = "";
   let stableSamples = 0;
-  for (let attempt = 0; attempt < 30; attempt += 1) {
+  // Local backup hydration can precede the authenticated cloud snapshot by
+  // more than 500 ms. Require two seconds of quiescence before comparing.
+  for (let attempt = 0; attempt < 80; attempt += 1) {
     const current = (await marker.getAttribute("data-fingerprint")) ?? "";
     if (current === previous) {
       stableSamples += 1;
-      if (stableSamples >= 2) return current;
+      if (stableSamples >= 8) return current;
     } else {
       previous = current;
       stableSamples = 0;
