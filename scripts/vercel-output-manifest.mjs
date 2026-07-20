@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { readdir, readFile, stat, writeFile } from "node:fs/promises";
+import { lstat, readdir, readFile, readlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import { spawnSync } from "node:child_process";
@@ -11,16 +11,18 @@ function sha256(bytes) {
   return createHash("sha256").update(bytes).digest("hex");
 }
 
-async function listFiles(root, current = root) {
+async function listEntries(root, current = root) {
   const entries = await readdir(current, { withFileTypes: true });
-  const files = [];
+  const paths = [];
   for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
     const absolute = path.join(current, entry.name);
-    if (entry.isDirectory()) files.push(...(await listFiles(root, absolute)));
-    else if (entry.isFile()) files.push(path.relative(root, absolute).split(path.sep).join("/"));
+    const relativePath = path.relative(root, absolute).split(path.sep).join("/");
+    if (entry.isDirectory()) paths.push(...(await listEntries(root, absolute)));
+    else if (entry.isFile()) paths.push({ path: relativePath, type: "file" });
+    else if (entry.isSymbolicLink()) paths.push({ path: relativePath, type: "symlink" });
     else throw new Error(`Unsupported artifact entry: ${absolute}`);
   }
-  return files;
+  return paths;
 }
 
 function git(args) {
@@ -36,17 +38,29 @@ export async function inspectVercelOutput() {
     throw new Error(`Expected Build Output API version 3, received ${JSON.stringify(config.version)}.`);
   }
 
-  const paths = await listFiles(outputRoot);
+  const paths = await listEntries(outputRoot);
   const files = [];
   let bytes = 0;
-  for (const relativePath of paths) {
-    const absolute = path.join(outputRoot, relativePath);
-    const [content, metadata] = await Promise.all([readFile(absolute), stat(absolute)]);
-    bytes += metadata.size;
-    files.push({ path: relativePath, bytes: metadata.size, sha256: sha256(content) });
+  for (const entry of paths) {
+    const absolute = path.join(outputRoot, entry.path);
+    const content = entry.type === "symlink"
+      ? Buffer.from(await readlink(absolute), "utf8")
+      : await readFile(absolute);
+    const metadata = await lstat(absolute);
+    bytes += content.byteLength;
+    files.push({
+      path: entry.path,
+      type: entry.type,
+      bytes: content.byteLength,
+      sha256: sha256(content),
+      ...(entry.type === "symlink" ? { target: content.toString("utf8") } : {}),
+    });
+    if (entry.type === "file" && metadata.size !== content.byteLength) {
+      throw new Error(`Artifact file changed while hashing: ${absolute}`);
+    }
   }
   const digestInput = files
-    .map((file) => `${file.sha256}  ${file.bytes}  ${file.path}\n`)
+    .map((file) => `${file.type}  ${file.sha256}  ${file.bytes}  ${file.path}\n`)
     .join("");
   return {
     schema: "interior-ai.vercel-prebuilt-manifest.v1",
