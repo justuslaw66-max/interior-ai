@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { createReadStream } from "node:fs";
 import { lstat, readdir, readFile, readlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
@@ -26,9 +27,64 @@ async function listEntries(root, current = root) {
 }
 
 function git(args) {
-  const result = spawnSync("git", args, { encoding: "utf8" });
+  const result = spawnSync("git", args, { encoding: "utf8", maxBuffer: 128 * 1024 * 1024 });
   if (result.status !== 0) throw new Error(result.stderr.trim() || `git ${args.join(" ")} failed`);
   return result.stdout.trim();
+}
+
+async function sha256File(filePath) {
+  const digest = createHash("sha256");
+  for await (const chunk of createReadStream(filePath)) digest.update(chunk);
+  return digest.digest("hex");
+}
+
+async function isEquivalentLfsNormalization(filePath) {
+  const attribute = git(["check-attr", "filter", "--", filePath]);
+  if (!attribute.endsWith(": filter: lfs")) return false;
+
+  const indexEntry = git(["ls-files", "-s", "--", filePath]);
+  const indexOid = indexEntry.match(/^\d+\s+([0-9a-f]{40,64})\s+\d+\t/)?.[1];
+  if (!indexOid) return false;
+
+  // Some historical GLBs are raw Git blobs even though a newer attribute now
+  // routes GLBs through LFS. Compare their unfiltered worktree bytes directly.
+  const worktreeOid = git(["hash-object", "--no-filters", "--", filePath]);
+  if (worktreeOid === indexOid) return true;
+
+  // For a normal LFS entry, accept the smudged worktree file only when both its
+  // byte length and SHA-256 match the pointer stored in the index.
+  const indexBytes = Number(git(["cat-file", "-s", indexOid]));
+  if (!Number.isSafeInteger(indexBytes) || indexBytes > 1024) return false;
+  const pointer = git(["cat-file", "blob", indexOid]);
+  const pointerOid = pointer.match(/^oid sha256:([0-9a-f]{64})$/m)?.[1];
+  const pointerBytes = Number(pointer.match(/^size (\d+)$/m)?.[1]);
+  if (!pointerOid || !Number.isSafeInteger(pointerBytes)) return false;
+  const metadata = await lstat(filePath);
+  return metadata.isFile()
+    && metadata.size === pointerBytes
+    && (await sha256File(filePath)) === pointerOid;
+}
+
+async function inspectGitTree() {
+  const status = git(["status", "--porcelain=v1", "-z", "--untracked-files=no"]);
+  if (!status) return { clean: true, lfsNormalizationEquivalentPathCount: 0 };
+
+  const records = status.split("\0").filter(Boolean);
+  const candidates = [];
+  for (let index = 0; index < records.length; index += 1) {
+    const record = records[index];
+    const code = record.slice(0, 2);
+    const filePath = record.slice(3);
+    if (code !== " M") return { clean: false, lfsNormalizationEquivalentPathCount: 0 };
+    candidates.push(filePath);
+    if (code.includes("R") || code.includes("C")) index += 1;
+  }
+
+  const equivalents = await Promise.all(candidates.map(isEquivalentLfsNormalization));
+  return {
+    clean: equivalents.every(Boolean),
+    lfsNormalizationEquivalentPathCount: equivalents.filter(Boolean).length,
+  };
 }
 
 export async function inspectVercelOutput() {
@@ -74,11 +130,12 @@ export async function inspectVercelOutput() {
 }
 
 export async function createVercelOutputManifest() {
-  const inspected = await inspectVercelOutput();
+  const [inspected, gitTree] = await Promise.all([inspectVercelOutput(), inspectGitTree()]);
   const manifest = {
     ...inspected,
     gitCommit: git(["rev-parse", "HEAD"]),
-    gitTreeStatus: git(["status", "--porcelain=v1", "--untracked-files=no"]) ? "dirty" : "clean",
+    gitTreeStatus: gitTree.clean ? "clean" : "dirty",
+    gitLfsNormalizationEquivalentPathCount: gitTree.lfsNormalizationEquivalentPathCount,
     nodeVersion: process.version,
     createdAt: new Date().toISOString(),
   };
@@ -90,9 +147,10 @@ export async function createVercelOutputManifest() {
 }
 
 export async function verifyVercelOutputManifest() {
-  const [recorded, inspected] = await Promise.all([
+  const [recorded, inspected, gitTree] = await Promise.all([
     readFile(manifestPath, "utf8").then(JSON.parse),
     inspectVercelOutput(),
+    inspectGitTree(),
   ]);
   for (const key of ["schema", "buildOutputApiVersion", "artifactSha256", "fileCount", "bytes"]) {
     if (recorded[key] !== inspected[key]) {
@@ -107,7 +165,7 @@ export async function verifyVercelOutputManifest() {
       `.vercel/output was built from ${recorded.gitCommit}, but HEAD is ${currentCommit}.`,
     );
   }
-  if (recorded.gitTreeStatus !== "clean" || git(["status", "--porcelain=v1", "--untracked-files=no"])) {
+  if (recorded.gitTreeStatus !== "clean" || !gitTree.clean) {
     throw new Error("The prebuilt artifact can only be verified from its clean tracked source tree.");
   }
   console.log(`Verified .vercel/output ${inspected.artifactSha256}.`);
