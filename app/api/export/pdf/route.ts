@@ -3,6 +3,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { PDFDocument, StandardFonts, degrees, rgb } from "pdf-lib";
 import { rateLimit } from "@/lib/rateLimit";
 import { prisma } from "@/lib/prisma";
+import {
+  ApiBoundaryError,
+  apiErrorResponse,
+  apiSuccessHeaders,
+  createOperationId,
+  readJsonRequest,
+} from "@/lib/api-boundary";
+import { logOperationalEvent } from "@/lib/observability";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,7 +32,12 @@ type PdfPayload = {
 
 type ExportTier = "free" | "pro" | "team";
 
-const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const MAX_TOTAL_IMAGE_BYTES = 25 * 1024 * 1024;
+const MAX_REQUEST_BYTES = 42 * 1024 * 1024;
+const MAX_IMAGE_DIMENSION = 8_192;
+const MAX_IMAGE_PIXELS = 40_000_000;
+const MAX_ITEMS = 500;
 
 const PAGE_SIZE: [number, number] = [612, 792];
 
@@ -72,19 +85,69 @@ const decodeBase64Image = (dataUrl: string) => {
   const base64 = match[2];
   const buffer = Buffer.from(base64, "base64");
   if (buffer.length > MAX_IMAGE_BYTES) return null;
+  const dimensions = readImageDimensions(buffer, type);
+  if (
+    !dimensions ||
+    dimensions.width > MAX_IMAGE_DIMENSION ||
+    dimensions.height > MAX_IMAGE_DIMENSION ||
+    dimensions.width * dimensions.height > MAX_IMAGE_PIXELS
+  ) return null;
   return { buffer, type } as const;
 };
 
+function readImageDimensions(buffer: Buffer, type: string) {
+  if (type === "png") {
+    if (buffer.length < 24 || buffer.toString("ascii", 1, 4) !== "PNG") return null;
+    return { width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20) };
+  }
+  if (type !== "jpeg" || buffer.length < 4 || buffer[0] !== 0xff || buffer[1] !== 0xd8) {
+    return null;
+  }
+  let offset = 2;
+  while (offset + 8 < buffer.length) {
+    if (buffer[offset] !== 0xff) {
+      offset += 1;
+      continue;
+    }
+    const marker = buffer[offset + 1];
+    const segmentLength = buffer.readUInt16BE(offset + 2);
+    if (segmentLength < 2 || offset + 2 + segmentLength > buffer.length) return null;
+    if ((marker >= 0xc0 && marker <= 0xc3) || (marker >= 0xc5 && marker <= 0xc7) ||
+        (marker >= 0xc9 && marker <= 0xcb) || (marker >= 0xcd && marker <= 0xcf)) {
+      return {
+        height: buffer.readUInt16BE(offset + 5),
+        width: buffer.readUInt16BE(offset + 7),
+      };
+    }
+    offset += 2 + segmentLength;
+  }
+  return null;
+}
+
+function normalizeHttpUrl(value: unknown) {
+  if (value === undefined || value === null || value === "") return null;
+  if (typeof value !== "string" || value.length > 2_048) return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(req: NextRequest) {
+  const operation = "export.presentation_pdf";
+  const operationId = createOperationId();
+  const startedAt = Date.now();
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      throw new ApiBoundaryError(401, "UNAUTHORIZED", "Sign in to continue.");
     }
 
     const rl = rateLimit(`export:${session.user.id}`, 6, 60_000);
     if (!rl.ok) {
-      return NextResponse.json({ error: "Too many export requests" }, { status: 429 });
+      throw new ApiBoundaryError(429, "RATE_LIMITED", "Too many export requests.");
     }
 
     const dbUser = await prisma.user.findUnique({
@@ -93,25 +156,54 @@ export async function POST(req: NextRequest) {
     });
     const exportTier = normalizeTierFromPlan(dbUser?.plan);
 
-    const body = (await req.json().catch(() => ({}))) as PdfPayload;
+    const rawBody = await readJsonRequest(req, MAX_REQUEST_BYTES);
+    const body = rawBody && typeof rawBody === "object" ? rawBody as PdfPayload : {};
     const title = typeof body.title === "string" && body.title.trim()
-      ? body.title.trim()
+      ? body.title.trim().slice(0, 160)
       : exportTier === "free"
         ? "Interior AI Room Design - Free Preview"
         : "Interior AI Room Design";
 
     const itemsRaw = Array.isArray(body.items) ? body.items : [];
-    const items = itemsRaw
-      .filter((item): item is PdfItem => Boolean(item) && typeof item.name === "string" && typeof item.price === "number")
-      .map((item) => ({
-        name: item.name,
+    if (itemsRaw.length > MAX_ITEMS) {
+      throw new ApiBoundaryError(400, "BAD_REQUEST", `Exports support at most ${MAX_ITEMS} items.`);
+    }
+    const items = itemsRaw.map((item) => {
+      if (
+        !item ||
+        typeof item.name !== "string" ||
+        !item.name.trim() ||
+        item.name.length > 200 ||
+        typeof item.price !== "number" ||
+        !Number.isFinite(item.price) ||
+        item.price < 0 ||
+        item.price > 1_000_000_000 ||
+        (item.qty !== undefined &&
+          (typeof item.qty !== "number" || !Number.isFinite(item.qty) || item.qty <= 0)) ||
+        (item.retailer !== undefined && item.retailer !== null &&
+          (typeof item.retailer !== "string" || item.retailer.length > 120)) ||
+        (item.buyUrl !== undefined && item.buyUrl !== null && !normalizeHttpUrl(item.buyUrl))
+      ) {
+        throw new ApiBoundaryError(400, "BAD_REQUEST", "Export contains an invalid item.");
+      }
+      return {
+        name: item.name.trim(),
         price: item.price,
         qty: typeof item.qty === "number" && item.qty > 0 ? Math.min(99, Math.floor(item.qty)) : 1,
-        retailer: typeof item.retailer === "string" ? item.retailer : null,
-        buyUrl: typeof item.buyUrl === "string" ? item.buyUrl : null,
-      }));
+        retailer: typeof item.retailer === "string" ? item.retailer.trim() : null,
+        buyUrl: normalizeHttpUrl(item.buyUrl),
+      };
+    });
 
     const images = Array.isArray(body.images) ? body.images.slice(0, maxImagesByTier[exportTier]) : [];
+    const decodedImages = images.map((image) => typeof image === "string" ? decodeBase64Image(image) : null);
+    if (decodedImages.some((image) => !image)) {
+      throw new ApiBoundaryError(400, "BAD_REQUEST", "Export contains an invalid or oversized image.");
+    }
+    const totalImageBytes = decodedImages.reduce((sum, image) => sum + (image?.buffer.length ?? 0), 0);
+    if (totalImageBytes > MAX_TOTAL_IMAGE_BYTES) {
+      throw new ApiBoundaryError(413, "PAYLOAD_TOO_LARGE", "Export images are too large.");
+    }
     const total = items.reduce((sum, item) => sum + item.price * (item.qty || 1), 0);
 
     const pdfDoc = await PDFDocument.create();
@@ -324,6 +416,14 @@ export async function POST(req: NextRequest) {
     const pdfBytes = await pdfDoc.save();
     const filename = `room-design-${exportTier}-${Date.now()}.pdf`;
 
+    logOperationalEvent({
+      operation,
+      operationId,
+      outcome: "succeeded",
+      durationMs: Date.now() - startedAt,
+      status: 200,
+      meta: { tier: exportTier, itemCount: items.length, imageCount: images.length },
+    });
     return new NextResponse(Buffer.from(pdfBytes), {
       status: 200,
       headers: {
@@ -332,13 +432,10 @@ export async function POST(req: NextRequest) {
         "Cache-Control": "no-cache, no-store, must-revalidate",
         "x-export-tier": exportTier,
         "x-export-watermark": exportTier === "free" ? "true" : "false",
+        ...apiSuccessHeaders(operationId),
       },
     });
   } catch (err) {
-    console.error("PDF export error:", err);
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "PDF generation failed" },
-      { status: 500 }
-    );
+    return apiErrorResponse(err, { operation, operationId, startedAt });
   }
 }

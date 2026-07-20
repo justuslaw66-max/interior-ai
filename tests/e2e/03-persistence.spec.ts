@@ -31,7 +31,13 @@ async function readStableFingerprint(page: Page): Promise<string> {
 
 async function openMyDesigns(page: Page) {
   const accountButton = page.getByTestId("editor-command-account");
-  await accountButton.click();
+  const accountMenu = page.getByTestId("editor-command-account-menu");
+  await expect(async () => {
+    if (!(await accountMenu.isVisible())) {
+      await accountButton.click();
+    }
+    await expect(accountMenu).toBeVisible({ timeout: 1_000 });
+  }).toPass({ timeout: 30_000 });
   await expect(page.getByTestId("editor-command-sign-out")).toBeVisible({
     timeout: 30_000,
   });
@@ -56,7 +62,9 @@ async function loadSeedDesign(
   });
   await openMyDesigns(page);
   await page.getByTestId(`load-design-${seed.designId}`).click();
-  await expect(page.getByTestId("load-designs-modal")).toBeHidden();
+  await expect(page.getByTestId("load-designs-modal")).toBeHidden({
+    timeout: 30_000,
+  });
   await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
     "3 rooms",
   );
@@ -143,6 +151,55 @@ test.describe("3. Save + Reload Persistence", () => {
       await expect(page.getByTestId("saved-camera-view-list")).toContainText(
         "Persistence E2E View",
       );
+    } finally {
+      await cleanupBetaSeed(seed.userId);
+    }
+  });
+
+  test("cloud save failure stays visible and recovers through retry", async ({ page }) => {
+    test.setTimeout(120_000);
+    const seed = await createBetaSeedDesign();
+    try {
+      await loadSeedDesign(page, seed);
+      let rejectedWrite = false;
+      const designRoute = `**/api/designs/${seed.designId}`;
+      await page.route(designRoute, async (route) => {
+        if (route.request().method() === "PUT" && !rejectedWrite) {
+          rejectedWrite = true;
+          await route.fulfill({
+            status: 503,
+            contentType: "application/json",
+            headers: { "x-operation-id": "phase7-save-failure" },
+            body: JSON.stringify({
+              error: "Cloud save is temporarily unavailable.",
+              code: "INTERNAL_ERROR",
+              operationId: "phase7-save-failure",
+            }),
+          });
+          return;
+        }
+        await route.continue();
+      });
+
+      const widthInput = page.getByRole("spinbutton", { name: "Width mm" }).first();
+      await widthInput.fill("5900");
+      await widthInput.press("Enter");
+      await expect(widthInput).toHaveValue("5900");
+
+      const saveStatus = page.getByTestId("save-status");
+      await expect(saveStatus).toHaveAttribute("data-status", "failed", {
+        timeout: 30_000,
+      });
+      await expect(saveStatus).toContainText("Cloud save failed");
+      await expect(page.getByTestId("save-status-retry")).toBeVisible();
+      expect(rejectedWrite).toBe(true);
+
+      await page.unroute(designRoute);
+      await page.getByTestId("save-status-retry").click();
+      await expect(saveStatus).toHaveAttribute("data-status", "saved", {
+        timeout: 30_000,
+      });
+      await expect(saveStatus).toContainText("Cloud saved");
     } finally {
       await cleanupBetaSeed(seed.userId);
     }

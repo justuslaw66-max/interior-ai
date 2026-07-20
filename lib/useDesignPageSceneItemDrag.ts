@@ -1,6 +1,6 @@
 "use client";
 
-import type { MutableRefObject } from "react";
+import { useRef, type MutableRefObject } from "react";
 
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import {
@@ -12,6 +12,12 @@ import {
 import { evaluateConstraints, type ConstraintResult } from "@/lib/constraints/evaluate";
 import { aabbIntersects, type AABB } from "@/lib/design-page-geometry";
 import { ROOM_DIMENSION_DEFAULTS } from "@/lib/design-page-house-plan";
+import {
+  applyDesignItemTransformPatches,
+  SCENE_ITEM_DRAG_COMMAND_ID,
+  type DesignItemTransformPatch,
+} from "@/lib/design-page-item-commands";
+import type { HistoryCommand } from "@/lib/historyManager";
 import type {
   SceneItemDragEndContext,
   SceneItemMoveContext,
@@ -33,8 +39,15 @@ type CrossRoomDragTarget = {
 type PlanningDimensions = { w: number; d: number; h: number };
 
 type SceneDragHistory = {
-  begin: (name: string) => void;
-  commit: () => void;
+  beginContinuousCommand: (command: {
+    id: string;
+    description: string;
+  }) => void;
+  updateContinuousCommand: <TInput, TResult>(
+    command: HistoryCommand<TInput, TResult>
+  ) => TResult;
+  commitContinuousCommand: (commandId: string) => void;
+  rollbackContinuousCommand: (commandId: string) => void;
 };
 
 type SceneItemDragOptions = {
@@ -90,6 +103,9 @@ type SceneItemDragOptions = {
     setItems: (
       next: DesignItem[] | ((previous: DesignItem[]) => DesignItem[])
     ) => void;
+    previewItems: (
+      next: DesignItem[] | ((previous: DesignItem[]) => DesignItem[])
+    ) => DesignItem[];
     history: SceneDragHistory;
     trackFirstInteraction: () => void;
     showToast: (message: string) => void;
@@ -128,6 +144,7 @@ export function useDesignPageSceneItemDrag({
     clampToRoom,
     getItemBounds,
     getItemDisplayName,
+    previewItems,
     setItems,
     history,
     trackFirstInteraction,
@@ -137,6 +154,80 @@ export function useDesignPageSceneItemDrag({
     showConstraints,
     showConfidence,
   } = actions;
+  const dragOriginalItemsRef = useRef<DesignItem[] | null>(null);
+  const dragDescriptionRef = useRef("Move item");
+
+  const applyDragPatches = (
+    description: string,
+    patches: DesignItemTransformPatch[],
+    publishAllMovedItems = false
+  ): void => {
+    if (!dragCommitRef.current) {
+      dragOriginalItemsRef.current = itemsRef.current;
+      dragDescriptionRef.current = description;
+      history.beginContinuousCommand({
+        id: SCENE_ITEM_DRAG_COMMAND_ID,
+        description,
+      });
+    }
+
+    try {
+      history.updateContinuousCommand({
+        id: SCENE_ITEM_DRAG_COMMAND_ID,
+        description,
+        input: patches,
+        execute: (input) => {
+          const update = (previous: DesignItem[]) =>
+            applyDesignItemTransformPatches(previous, input);
+          if (publishAllMovedItems) {
+            setItems(update);
+          } else {
+            previewItems(update);
+          }
+        },
+      });
+      dragCommitRef.current = true;
+    } catch (error) {
+      dragCommitRef.current = false;
+      if (dragOriginalItemsRef.current) {
+        previewItems(dragOriginalItemsRef.current);
+      }
+      dragOriginalItemsRef.current = null;
+      throw error;
+    }
+  };
+
+  const rollbackActiveDrag = (): void => {
+    if (!dragCommitRef.current) return;
+    history.rollbackContinuousCommand(SCENE_ITEM_DRAG_COMMAND_ID);
+    if (dragOriginalItemsRef.current) {
+      previewItems(dragOriginalItemsRef.current);
+    }
+    dragCommitRef.current = false;
+    dragOriginalItemsRef.current = null;
+  };
+
+  const commitActiveDrag = (): void => {
+    if (!dragCommitRef.current) return;
+    try {
+      history.updateContinuousCommand({
+        id: SCENE_ITEM_DRAG_COMMAND_ID,
+        description: dragDescriptionRef.current,
+        input: itemsRef.current,
+        execute: (input) => setItems(input),
+      });
+      history.commitContinuousCommand(SCENE_ITEM_DRAG_COMMAND_ID);
+      dragCommitRef.current = false;
+      dragOriginalItemsRef.current = null;
+    } catch (error) {
+      if (dragOriginalItemsRef.current) {
+        previewItems(dragOriginalItemsRef.current);
+      }
+      dragCommitRef.current = false;
+      dragOriginalItemsRef.current = null;
+      throw error;
+    }
+  };
 
   const handleMove = ({
     sceneEntry,
@@ -216,24 +307,16 @@ export function useDesignPageSceneItemDrag({
             [mover.instanceId, surfacePlacement.supportInstanceId ?? ""].filter(Boolean)
           );
           if (blocker) return false;
-          const update = (previous: DesignItem[]) =>
-            previous.map((item) =>
-              item.instanceId === id
-                ? {
-                    ...item,
-                    position: surfacePlacement.position,
-                    rotationY: surfacePlacement.rotationY,
-                    supportInstanceId: surfacePlacement.supportInstanceId,
-                  }
-                : item
-            );
-          if (!dragCommitRef.current) {
-            history.begin("Move item");
-            setItems(update(itemsRef.current));
-            dragCommitRef.current = true;
-          } else {
-            setItems(update);
-          }
+          applyDragPatches("Move item", [
+            {
+              instanceId: id,
+              changes: {
+                position: surfacePlacement.position,
+                rotationY: surfacePlacement.rotationY,
+                supportInstanceId: surfacePlacement.supportInstanceId,
+              },
+            },
+          ]);
           return true;
         }
 
@@ -347,17 +430,9 @@ export function useDesignPageSceneItemDrag({
             }
           }
         }
-        const update = (previous: DesignItem[]) =>
-          previous.map((item) =>
-            item.instanceId === id ? { ...item, position: localPosition } : item
-          );
-        if (!dragCommitRef.current) {
-          history.begin("Move item");
-          setItems(update(itemsRef.current));
-          dragCommitRef.current = true;
-        } else {
-          setItems(update);
-        }
+        applyDragPatches("Move item", [
+          { instanceId: id, changes: { position: localPosition } },
+        ]);
         return true;
       }
 
@@ -426,15 +501,25 @@ export function useDesignPageSceneItemDrag({
         }
       }
 
-      if (!dragCommitRef.current) {
-        history.begin("Move group");
-        setItems(nextItems);
-        dragCommitRef.current = true;
-      } else {
-        setItems(nextItems);
-      }
+      applyDragPatches(
+        "Move group",
+        nextItems
+          .filter((item) => movableIds.has(item.instanceId))
+          .map((item) => ({
+            instanceId: item.instanceId,
+            changes: { position: item.position },
+          })),
+        true
+      );
       return true;
     } catch (error) {
+      if (dragCommitRef.current) {
+        try {
+          rollbackActiveDrag();
+        } catch (rollbackError) {
+          console.error("[Editor] failed to rollback item drag", rollbackError);
+        }
+      }
       console.error("[Editor] onMove handler failed", { id, pos: position, error });
       return false;
     }
@@ -446,6 +531,7 @@ export function useDesignPageSceneItemDrag({
     position,
   }: SceneItemDragEndContext): void => {
     if (!sceneEntry.isActiveRoom) return;
+    let failed = false;
     try {
       const pointerRoom = hasWholeHousePlan
         ? findPlanRoomAtWorldPoint(position[0], position[2])
@@ -455,6 +541,9 @@ export function useDesignPageSceneItemDrag({
         if (!pointerRoom) return;
         const targetRoom = roomSnapshotById.get(pointerRoom.id);
         if (targetRoom && pointerRoom.id !== sceneEntry.roomId) {
+          // The cross-room command owns the final history entry. Discard any
+          // same-room preview so one pointer gesture cannot create two entries.
+          rollbackActiveDrag();
           const selectedIds = selectedIdsRef.current;
           if (selectedIds.size > 1 && selectedIds.has(id)) {
             moveSelectionToRoom(targetRoom.id);
@@ -481,11 +570,15 @@ export function useDesignPageSceneItemDrag({
       showConstraints(results);
       showConfidence(results);
     } catch (error) {
+      failed = true;
       console.error("[Editor] onDragEnd handler failed", { id, pos: position, error });
     } finally {
       if (dragCommitRef.current) {
-        history.commit();
-        dragCommitRef.current = false;
+        if (failed) {
+          rollbackActiveDrag();
+        } else {
+          commitActiveDrag();
+        }
       }
     }
   };

@@ -32,13 +32,13 @@ export default function DuplicateDesignButton({
     track("duplicate_design_clicked", {
       source,
       source_design_id: sourceDesignId ?? null,
-      share_token: shareToken ?? null,
+      shared_context: Boolean(shareToken),
     });
 
     if (status !== "authenticated") {
       track("duplicate_design_auth_required", {
         source,
-        share_token: shareToken ?? null,
+        shared_context: Boolean(shareToken),
       });
       await signIn("google", { callbackUrl: window.location.href });
       return;
@@ -85,7 +85,7 @@ export default function DuplicateDesignButton({
       track("duplicate_design_succeeded", {
         source,
         source_design_id: sourceDesignId ?? null,
-        share_token: shareToken ?? null,
+        shared_context: Boolean(shareToken),
         new_design_id: newDesignId,
       });
 

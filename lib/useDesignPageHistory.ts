@@ -5,26 +5,12 @@ import { HistoryManager } from "@/lib/historyManager";
 import type { EditorAnnotation2D, FixedElement2D, RoomOpening2D } from "@/lib/editorScene";
 import type { FloorPlanUnderlay } from "@/lib/floor-plan-types";
 import type { DesignSnapshot } from "@/lib/room-types";
-import type {
-  ExportStylePreset,
-  PlanLayers,
-  PlanTheme,
-} from "@/lib/useDesignPagePlanState";
-import type {
-  PlanLayerPresetId,
-  PlanMeasurementUnit,
-} from "@/lib/design-page-types";
 
 export type DesignPageHistorySnapshot = {
   designSnapshot: DesignSnapshot;
   planAnnotations: EditorAnnotation2D[];
   planFixedElements: FixedElement2D[];
   planOpenings: RoomOpening2D[];
-  planTheme: PlanTheme;
-  planLayers: PlanLayers;
-  planLayerPreset: PlanLayerPresetId;
-  planMeasurementUnit: PlanMeasurementUnit;
-  exportStylePreset: ExportStylePreset;
   floorPlanUnderlay: FloorPlanUnderlay | null;
 };
 
@@ -55,16 +41,14 @@ export function useDesignPageHistory({ adapters }: UseDesignPageHistoryInput) {
   }, [history]);
 
   const runHistoryTransaction = useCallback(
-    (name: string, action: () => void) => {
+    <TResult,>(name: string, action: () => TResult): TResult => {
       flushCoalescedHistoryTransaction();
-      try {
-        history.begin(name);
-        action();
-        history.commit();
-      } catch (error) {
-        history.rollback();
-        throw error;
-      }
+      return history.executeCommand({
+        id: "document-transaction",
+        description: name,
+        input: null,
+        execute: action,
+      });
     },
     [flushCoalescedHistoryTransaction, history]
   );
@@ -72,19 +56,31 @@ export function useDesignPageHistory({ adapters }: UseDesignPageHistoryInput) {
   const runCoalescedHistoryTransaction = useCallback(
     (name: string, action: () => void, idleMs = 420) => {
       if (!coalescedTransactionActiveRef.current) {
-        history.begin(name);
+        if (!history.begin(name)) {
+          throw new Error(`Cannot start coalesced history transaction "${name}"`);
+        }
         coalescedTransactionActiveRef.current = true;
       }
-      action();
-      if (coalescedCommitTimerRef.current !== null) {
-        window.clearTimeout(coalescedCommitTimerRef.current);
-      }
-      coalescedCommitTimerRef.current = window.setTimeout(() => {
-        coalescedCommitTimerRef.current = null;
-        if (!coalescedTransactionActiveRef.current) return;
-        history.commit();
+      try {
+        action();
+        if (coalescedCommitTimerRef.current !== null) {
+          window.clearTimeout(coalescedCommitTimerRef.current);
+        }
+        coalescedCommitTimerRef.current = window.setTimeout(() => {
+          coalescedCommitTimerRef.current = null;
+          if (!coalescedTransactionActiveRef.current) return;
+          history.commit();
+          coalescedTransactionActiveRef.current = false;
+        }, idleMs);
+      } catch (error) {
+        if (coalescedCommitTimerRef.current !== null) {
+          window.clearTimeout(coalescedCommitTimerRef.current);
+          coalescedCommitTimerRef.current = null;
+        }
+        if (coalescedTransactionActiveRef.current) history.rollback();
         coalescedTransactionActiveRef.current = false;
-      }, idleMs);
+        throw error;
+      }
     },
     [history]
   );

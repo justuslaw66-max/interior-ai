@@ -10,12 +10,14 @@ import {
 import { track } from "@/lib/analytics";
 import { CATALOG_ITEMS, CATALOG_ITEMS_MAP } from "@/lib/catalog";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
+import { resolveDesignItemVisualProduct } from "@/lib/design-item-product-snapshot";
 import {
   canAddToCart,
   getNonBuyableReason,
   reconcileCart,
 } from "@/lib/commerce-helpers";
-import { appendLayoutVersion } from "@/lib/layout-versions";
+import { applyReplaceRoomItemsCommand } from "@/lib/design-page-item-commands";
+import type { HistoryCommand } from "@/lib/historyManager";
 import {
   getActiveRoom,
   switchRoom,
@@ -39,8 +41,9 @@ export type CommitDesignPageItemsToRoomOptions = {
 };
 
 type DesignPageItemDocumentHistory = {
-  begin: (name: string) => void;
-  commit: () => void;
+  executeCommand: <TInput, TResult>(
+    command: HistoryCommand<TInput, TResult>
+  ) => TResult;
 };
 
 type DesignSnapshotSetter = (
@@ -124,10 +127,24 @@ export function reconcileDesignPageItems(
   const validCatalogIds = new Set(
     validCatalogItems.map((item) => item.instanceId)
   );
+  const snapshotBackedIds = new Set(
+    catalogItems
+      .filter(
+        (item) =>
+          Boolean(item.productSnapshot) &&
+          Boolean(resolveDesignItemVisualProduct(item))
+      )
+      .map((item) => item.instanceId)
+  );
+  const unresolvedInvalid = invalid.filter(
+    ({ item }) => !snapshotBackedIds.has(item.instanceId)
+  );
   const validItems = nextItems
     .filter(
       (item) =>
-        isParametricCabinetItem(item) || validCatalogIds.has(item.instanceId)
+        isParametricCabinetItem(item) ||
+        validCatalogIds.has(item.instanceId) ||
+        snapshotBackedIds.has(item.instanceId)
     )
     .map((item) =>
       isParametricCabinetItem(item)
@@ -135,7 +152,7 @@ export function reconcileDesignPageItems(
         : item
     );
 
-  return { validItems, invalid };
+  return { validItems, invalid: unresolvedInvalid };
 }
 
 export function useDesignPageItemDocumentController({
@@ -177,26 +194,24 @@ export function useDesignPageItemDocumentController({
 
   const commitItems = useCallback(
     (updater: DesignPageItemUpdater, actionName: string = "Edit") => {
-      history.begin(actionName);
       const nextItems =
         typeof updater === "function" ? updater(itemsRef.current) : updater;
       const room = getActiveRoom(designSnapshotRef.current);
-      if (!room) {
-        history.commit();
-        return;
-      }
+      if (!room) return;
       const { validItems } = reconcileDesignItems(nextItems, room.id);
-      const updatedRoom = { ...room, items: validItems };
-      const nextSnapshot = {
-        ...designSnapshotRef.current,
-        rooms: designSnapshotRef.current.rooms.map((entry) =>
-          entry.id === room.id ? updatedRoom : entry
-        ),
-      };
-
-      itemsRef.current = validItems;
-      setDesignSnapshot(nextSnapshot);
-      history.commit();
+      history.executeCommand({
+        id: "replace-active-room-items",
+        description: actionName,
+        input: { roomId: room.id, items: validItems },
+        execute: (input) => {
+          const nextSnapshot = applyReplaceRoomItemsCommand(
+            designSnapshotRef.current,
+            input
+          );
+          setDesignSnapshot(nextSnapshot);
+          itemsRef.current = input.items;
+        },
+      });
     },
     [
       designSnapshotRef,
@@ -207,18 +222,18 @@ export function useDesignPageItemDocumentController({
     ]
   );
 
-  const setItemsPresent = useCallback(
+  const previewItemsPresent = useCallback(
     (updater: DesignPageItemUpdater) => {
       const nextItems =
         typeof updater === "function" ? updater(itemsRef.current) : updater;
       const validItems = nextItems.filter((item) => {
         if (isParametricCabinetItem(item)) return true;
-        const catalogItem = CATALOG_ITEMS[item.productId];
+        const catalogItem = resolveDesignItemVisualProduct(item, CATALOG_ITEMS);
         if (!catalogItem) {
           console.warn(`Item ${item.productId} not found in catalog`);
           return false;
         }
-        if (!canAddToCart(catalogItem)) {
+        if (!item.productSnapshot && !canAddToCart(catalogItem)) {
           console.warn(
             `Item ${item.productId} cannot be added to cart: ${getNonBuyableReason(
               catalogItem
@@ -229,20 +244,26 @@ export function useDesignPageItemDocumentController({
         return true;
       });
 
+      itemsRef.current = validItems;
+      return validItems;
+    },
+    [itemsRef]
+  );
+
+  const setItemsPresent = useCallback(
+    (updater: DesignPageItemUpdater) => {
+      const validItems = previewItemsPresent(updater);
       const room = getActiveRoom(designSnapshotRef.current);
       if (!room) return;
-      const updatedRoom = { ...room, items: validItems };
       const nextSnapshot = {
         ...designSnapshotRef.current,
         rooms: designSnapshotRef.current.rooms.map((entry) =>
-          entry.id === room.id ? updatedRoom : entry
+          entry.id === room.id ? { ...room, items: validItems } : entry
         ),
       };
-
-      itemsRef.current = validItems;
       setDesignSnapshot(nextSnapshot);
     },
-    [designSnapshotRef, itemsRef, setDesignSnapshot]
+    [designSnapshotRef, previewItemsPresent, setDesignSnapshot]
   );
 
   const createInstanceId = useCallback(() => {
@@ -320,33 +341,30 @@ export function useDesignPageItemDocumentController({
       const room = snapshot.rooms.find((entry) => entry.id === roomId);
       if (!room) return null;
 
-      history.begin(actionName);
       const nextItems =
         typeof updater === "function" ? updater(room.items) : updater;
       const { validItems } = reconcileDesignItems(nextItems, room.id);
-      const nextSnapshot = {
-        ...snapshot,
-        activeRoomId: options.activateRoom ? room.id : snapshot.activeRoomId,
-        rooms: snapshot.rooms.map((entry) =>
-          entry.id === room.id
-            ? {
-                ...entry,
-                items: validItems,
-                layoutVersions: options.beforeLayoutVersion
-                  ? appendLayoutVersion(entry, options.beforeLayoutVersion)
-                      .layoutVersions
-                  : entry.layoutVersions,
-              }
-            : entry
-        ),
-      };
-
-      if (nextSnapshot.activeRoomId === room.id) {
-        itemsRef.current = validItems;
-      }
-      setDesignSnapshot(nextSnapshot);
-      history.commit();
-      return validItems;
+      return history.executeCommand({
+        id: "replace-room-items",
+        description: actionName,
+        input: {
+          roomId,
+          items: validItems,
+          activateRoom: options.activateRoom,
+          beforeLayoutVersion: options.beforeLayoutVersion,
+        },
+        execute: (input) => {
+          const nextSnapshot = applyReplaceRoomItemsCommand(
+            designSnapshotRef.current,
+            input
+          );
+          setDesignSnapshot(nextSnapshot);
+          if (nextSnapshot.activeRoomId === room.id) {
+            itemsRef.current = input.items;
+          }
+          return input.items;
+        },
+      });
     },
     [
       designSnapshotRef,
@@ -388,6 +406,7 @@ export function useDesignPageItemDocumentController({
     actions: {
       commitItems,
       commitItemsToRoom,
+      previewItemsPresent,
       setItemsPresent,
       createInstanceId,
       addItem,

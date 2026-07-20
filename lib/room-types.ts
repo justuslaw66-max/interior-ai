@@ -225,6 +225,16 @@ export interface PersistedPlanFixedElement {
   canonicalKind?: string;
 }
 
+export interface PersistedPlanAnnotation {
+  id: string;
+  xMm: number;
+  zMm: number;
+  text: string;
+  kind: "note" | "callout" | "room_tag";
+  anchorXMm?: number;
+  anchorZMm?: number;
+}
+
 /**
  * Immutable copy of the address-library binding selected by the consumer.
  *
@@ -252,6 +262,7 @@ export interface PersistedFloorPlanState {
   underlay?: PersistedFloorPlanUnderlay | null;
   openings?: PersistedPlanOpening[];
   fixedElements?: PersistedPlanFixedElement[];
+  annotations?: PersistedPlanAnnotation[];
   canonicalDocument?: FloorPlanDocumentV2;
   canonicalGeometryHash?: string;
   revisionId?: string;
@@ -276,11 +287,39 @@ export interface PersistedFloorPlanState {
   orientationConfirmed?: boolean;
 }
 
+/**
+ * Immutable visual identity captured when a catalog item is placed.
+ *
+ * This intentionally excludes commerce data (price, stock, delivery, and
+ * purchase URLs). Those values must always come from the current catalog.
+ */
+export interface PersistedProductSnapshot {
+  schemaVersion: 1;
+  productId: string;
+  variantId: string;
+  name: string;
+  category: string;
+  dimensionsMm: { w: number; d: number; h: number };
+  variantLabel: string;
+  finish?: {
+    code: string;
+    label: string;
+    colorHex?: string;
+  };
+  assets: {
+    assetId?: string;
+    modelUrl?: string;
+    thumbnailUrl?: string;
+    materialPreset?: string;
+  };
+}
+
 export interface DesignItem {
   id?: string;
   instanceId: string;
   productId: string;
   variantId: string;
+  productSnapshot?: PersistedProductSnapshot;
   assetType?: "catalog_item" | "parametric_cabinet";
   roomId?: string;
   assemblyType?: MillworkAssemblyType;

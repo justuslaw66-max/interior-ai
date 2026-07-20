@@ -70,29 +70,35 @@ export function getOnboardingProgress(
 
 /**
  * Eligibility rules for onboarding
- * Only show if: new user/guest AND not Pro AND not shared/read-only AND not Present
+ * Only show for a new user when the active experience does not skip guided
+ * onboarding, and the design is not shared, read-only, or in Present mode.
  */
 export function isOnboardingEligible(opts: {
   isNewUser?: boolean;
-  isPro?: boolean;
+  skipGuidedOnboarding?: boolean;
   isShared?: boolean;
   isClientPreview?: boolean;
   mode?: "design" | "adjust" | "buy" | "present";
 }): boolean {
   const {
     isNewUser = true,
-    isPro = false,
+    skipGuidedOnboarding = false,
     isShared = false,
     isClientPreview = false,
     mode = "design",
   } = opts;
 
   // Not eligible if:
-  // - Already Pro
+  // - The active experience intentionally skips guided onboarding
   // - Shared or client preview
   // - In Present mode
   // - Not a new user
-  if (isPro || isShared || isClientPreview || mode === "present") {
+  if (
+    skipGuidedOnboarding ||
+    isShared ||
+    isClientPreview ||
+    mode === "present"
+  ) {
     return false;
   }
 

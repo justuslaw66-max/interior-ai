@@ -127,12 +127,20 @@ const studioSource = readFileSync(
   resolve(process.cwd(), "features/cabinetry/components/CabinetryStudio.tsx"),
   "utf8"
 );
+const validationExposureHookSource = readFileSync(
+  resolve(
+    process.cwd(),
+    "features/cabinetry/hooks/useCabinetStudioValidationExposure.ts"
+  ),
+  "utf8"
+);
 assert.match(studioSource, /useDelayedCabinetPreviewRegenerationIndicator/);
-assert.match(studioSource, /millwork_validation_issue_exposed/);
-assert.match(studioSource, /issue_code: exposure\.issueCode/);
-assert.match(studioSource, /target_scope: exposure\.targetScope/);
+assert.match(studioSource, /useCabinetStudioValidationExposure/);
+assert.match(validationExposureHookSource, /millwork_validation_issue_exposed/);
+assert.match(validationExposureHookSource, /issue_code: exposure\.issueCode/);
+assert.match(validationExposureHookSource, /target_scope: exposure\.targetScope/);
 assert.doesNotMatch(
-  studioSource.match(/trackStudioInteraction\("millwork_validation_issue_exposed"[\s\S]*?\n\s*\}\);/)?.[0] ?? "",
+  validationExposureHookSource.match(/trackStudioInteraction\("millwork_validation_issue_exposed"[\s\S]*?\n\s*\}\);/)?.[0] ?? "",
   /message|title|field|moduleIds|hostId/,
   "the exposure event must not capture user-authored or dimensional fields"
 );

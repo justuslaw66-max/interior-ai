@@ -1387,9 +1387,17 @@ test.describe("18. Multi-Room Whole Home", () => {
     if (await noteTool.isVisible({ timeout: 2000 }).catch(() => false)) {
       await noteTool.click();
       await expect(page.getByTestId("plan-annotation-dialog")).toBeVisible();
+      await expect(page.getByTestId("plan-annotation-input")).toBeFocused();
+      const annotationClose = page.getByRole("button", {
+        name: "Close annotation dialog",
+      });
+      await annotationClose.focus();
+      await page.keyboard.press("Shift+Tab");
+      await expect(page.getByTestId("plan-annotation-save")).toBeFocused();
       await page.getByTestId("plan-annotation-input").fill("Keep path clear");
       await page.getByTestId("plan-annotation-save").click();
       await expect(page.getByTestId("plan-annotation-dialog")).toHaveCount(0);
+      await expect(noteTool).toBeFocused();
     } else {
       test.info().annotations.push({
         type: "note",
@@ -1404,6 +1412,11 @@ test.describe("18. Multi-Room Whole Home", () => {
       .first();
     await clickWithFallback(renameRoomButton);
     await expect(page.getByTestId("room-rename-dialog")).toBeVisible();
+    await expect(page.getByTestId("room-rename-input")).toBeFocused();
+    await page.keyboard.press("Escape");
+    await expect(page.getByTestId("room-rename-dialog")).toHaveCount(0);
+    await expect(renameRoomButton).toBeFocused();
+    await clickWithFallback(renameRoomButton);
     await page.getByTestId("room-rename-input").fill("Guest Room");
     await page.getByTestId("room-rename-save").click();
     await expect(page.getByTestId("room-rename-dialog")).toHaveCount(0);

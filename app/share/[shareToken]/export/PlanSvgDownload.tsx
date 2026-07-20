@@ -126,7 +126,7 @@ export default function PlanSvgDownload({
     downloadBlob(blob, `${slugify(title)}-${slugify(floorLabel)}-2d-plan.svg`);
 
     track("share_export_2d_plan_svg_downloaded", {
-      share_token: shareToken,
+      shared_context: Boolean(shareToken),
       floor_label: floorLabel,
       watermarked,
     });
@@ -166,7 +166,7 @@ export default function PlanSvgDownload({
 
       downloadBlob(pngBlob, `${slugify(title)}-${slugify(floorLabel)}-2d-plan.png`);
       track("share_export_2d_plan_png_downloaded", {
-        share_token: shareToken,
+        shared_context: Boolean(shareToken),
         floor_label: floorLabel,
         watermarked,
       });

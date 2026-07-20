@@ -32,6 +32,14 @@ const zoneOrchestrationSource = fs.readFileSync(
   path.join(root, "lib", "design-page-zone-orchestration.ts"),
   "utf8"
 );
+const designRouteSource = fs.readFileSync(
+  path.join(root, "app", "api", "designs", "[id]", "route.ts"),
+  "utf8"
+);
+const designsRouteSource = fs.readFileSync(
+  path.join(root, "app", "api", "designs", "route.ts"),
+  "utf8"
+);
 
 assert.ok(
   pageSource.indexOf("useDesignPageEditorInteractionRegistration({") <
@@ -68,8 +76,19 @@ assert.match(
 
 assert.match(
   controllerSource,
-  /const storedSnapshot = getStoredDesignForPersistence\(\);[\s\S]*?fetch\("\/api\/designs", \{[\s\S]*?method: "POST"[\s\S]*?setLastPersistedSnapshotFingerprint\(fingerprintStoredDesign\(storedSnapshot\)\)/,
-  "Manual saves should fingerprint the exact event-time snapshot sent by the POST."
+  /const storedSnapshot = getStoredDesignForPersistence\(\);[\s\S]*?const payload = \{[\s\S]*?designApi\.create\(payload\)[\s\S]*?setLastPersistedSnapshotFingerprint\(fingerprintStoredDesign\(storedSnapshot\)\)/,
+  "Manual saves should fingerprint the exact event-time snapshot sent through the design API client."
+);
+
+assert.match(
+  designRouteSource,
+  /expectedUpdatedAt[\s\S]*?transaction\.design\.updateMany\(\{[\s\S]*?where: \{[\s\S]*?id,[\s\S]*?userId,[\s\S]*?updatedAt: new Date\(expectedUpdatedAt\)[\s\S]*?result\.count !== 1[\s\S]*?ApiBoundaryError\(409, "CONFLICT"/,
+  "The design route should reject stale revisions through one conditional database update."
+);
+assert.match(
+  designsRouteSource,
+  /\{ id: design\.id, updatedAt: design\.updatedAt \}/,
+  "Create responses should establish the first client revision."
 );
 
 assert.match(
@@ -86,8 +105,14 @@ assert.match(
 
 assert.match(
   controllerSource,
-  /const timer = setTimeout\(async \(\) => \{[\s\S]*?const storedSnapshot = await enqueueCloudWrite\(async \(\) => \{[\s\S]*?const snapshot = getStoredDesignForPersistence\(\);[\s\S]*?fetch\(`\/api\/designs\/\$\{designId\}`,[\s\S]*?method: "PUT"[\s\S]*?return snapshot;[\s\S]*?fingerprintStoredDesign\(storedSnapshot\)/,
-  "Cloud autosave should capture and fingerprint its payload inside the debounce callback."
+  /const timer = setTimeout\(async \(\) => \{[\s\S]*?const storedSnapshot = await enqueueCloudWrite\(async \(\) => \{[\s\S]*?const snapshot = getStoredDesignForPersistence\(\);[\s\S]*?designApi\.update\([\s\S]*?designId,[\s\S]*?expectedUpdatedAt: lastCloudRevision[\s\S]*?return \{[\s\S]*?snapshot,[\s\S]*?updatedAt:[\s\S]*?fingerprintStoredDesign\(storedSnapshot\.snapshot\)/,
+  "Cloud autosave should capture its payload, enforce the loaded revision, and fingerprint the acknowledged snapshot."
+);
+
+assert.match(
+  controllerSource,
+  /const \[lastCloudRevision, setLastCloudRevision\][\s\S]*?typeof data\.updatedAt === "string"[\s\S]*?setLastCloudRevision\(storedSnapshot\.updatedAt\)/,
+  "Persistence should retain revisions returned by load/create/update operations."
 );
 
 assert.match(
@@ -97,11 +122,11 @@ assert.match(
 );
 
 for (const apiGuard of [
-  /fetch\("\/api\/designs\/claim", \{[\s\S]*?method: "POST"/,
-  /fetch\(`\/api\/designs\/\$\{id\}\/share`, \{ method: "POST" \}\)/,
-  /fetch\(`\/api\/designs\/\$\{targetId\}`,[\s\S]*?method: "DELETE"/,
+  /designApi\.claim\(payload\)/,
+  /designApi\.share\(id\)/,
+  /designApi\.delete\(targetId\)/,
 ]) {
-  assert.match(controllerSource, apiGuard, "Persistence API paths and methods should remain stable.");
+  assert.match(controllerSource, apiGuard, "Persistence API client operations should remain centralized.");
 }
 
 assert.match(

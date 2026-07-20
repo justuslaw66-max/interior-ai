@@ -228,8 +228,12 @@ function runCrossRoomTransferTest() {
         selectedPrimaryId = primaryId;
       },
       history: {
-        begin: (name) => historyEvents.push(`begin:${name}`),
-        commit: () => historyEvents.push("commit"),
+        rollbackContinuousCommand: (id) =>
+          historyEvents.push(`rollback-continuous:${id}`),
+        executeCommand: (command) => {
+          historyEvents.push(`execute:${command.description}`);
+          return command.execute(structuredClone(command.input));
+        },
       },
       showToast: (message) => toasts.push(message),
     },
@@ -237,9 +241,8 @@ function runCrossRoomTransferTest() {
 
   assert.equal(transferred, true);
   assert.deepEqual(historyEvents, [
-    "commit",
-    "begin:Move item to Bedroom",
-    "commit",
+    "rollback-continuous:scene-item-drag",
+    "execute:Move item to Bedroom",
   ]);
   assert.equal(refs.dragCommit.current, false);
   assert.equal(committedSnapshot.activeRoomId, targetRoom.id);

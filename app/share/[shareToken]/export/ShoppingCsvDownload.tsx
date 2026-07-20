@@ -92,7 +92,7 @@ export default function ShoppingCsvDownload({
     link.remove();
     URL.revokeObjectURL(url);
     track("share_export_shopping_csv_downloaded", {
-      share_token: shareToken,
+      shared_context: Boolean(shareToken),
       row_count: rows.length,
     });
     setMessage("Shopping CSV downloaded.");

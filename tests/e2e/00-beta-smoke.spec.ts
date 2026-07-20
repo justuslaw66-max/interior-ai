@@ -449,7 +449,9 @@ test.describe("00. Beta Smoke Gate", () => {
       await retailerPopup.waitForLoadState("domcontentloaded", { timeout: 10000 }).catch(() => undefined);
       expect(retailerClickPayload?.designId).toBe(seed.designId);
       expect(retailerClickPayload?.productId).toBe("armchair-real-castlery-avery-performance-armchair");
-      expect(String(retailerClickPayload?.buyUrl ?? "")).toContain("castlery.com");
+      expect(typeof retailerClickPayload?.variantId).toBe("string");
+      expect(retailerClickPayload).not.toHaveProperty("buyUrl");
+      expect(retailerClickPayload).not.toHaveProperty("price");
       expect(retailerPopup.url()).toContain("clickKey=beta-smoke-click");
       expect(retailerPopup.url()).toContain("utm_source=interior-ai");
       await retailerPopup.close();

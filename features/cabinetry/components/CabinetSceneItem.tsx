@@ -14,6 +14,7 @@ import {
   getCabinetConvertibleOpenDepth,
   isCabinetWallBedPanel,
 } from "../convertibleLayout";
+import { useCabinetSceneResourceOwnership } from "../hooks/useCabinetSceneResourceOwnership";
 import type { CabinetDefinition, CabinetPart, CabinetPartType } from "../types";
 
 export type CabinetSemanticSelectionScope = "assembly" | "module" | "part";
@@ -94,19 +95,6 @@ function resolveSemanticSelection(
     cabinetInstanceId: instanceId,
     additive,
   };
-}
-
-function disposeObject3D(object: THREE.Object3D) {
-  object.traverse((child) => {
-    const mesh = child as THREE.Mesh;
-    mesh.geometry?.dispose();
-    const material = mesh.material;
-    if (Array.isArray(material)) {
-      material.forEach((entry) => entry.dispose());
-    } else {
-      material?.dispose();
-    }
-  });
 }
 
 const PREVIEW_FRONT_EDGE_PART_TYPES = new Set<CabinetPartType>([
@@ -237,59 +225,11 @@ export function CabinetSceneItem({
     onRenderReadyChange?.(renderReadyKey, true);
   }, [onRenderReadyChange, renderReadyKey]);
 
-  useEffect(() => {
-    return () => disposeObject3D(assembly);
-  }, [assembly]);
-
-  useEffect(() => {
-    if (!previewFrontEdges) return;
-    return () => disposeObject3D(previewFrontEdges);
-  }, [previewFrontEdges]);
-
-  useEffect(() => {
-    const texturedMaterials = definition.materials.filter(
-      (material) => typeof material.textureUrl === "string" && material.textureUrl.length > 0
-    );
-    if (!texturedMaterials.length) return;
-
-    let cancelled = false;
-    const loadedTextures: THREE.Texture[] = [];
-    const loader = new THREE.TextureLoader();
-    for (const materialRef of texturedMaterials) {
-      loader.load(
-        materialRef.textureUrl!,
-        (texture) => {
-          if (cancelled) {
-            texture.dispose();
-            return;
-          }
-          texture.colorSpace = THREE.SRGBColorSpace;
-          texture.wrapS = THREE.RepeatWrapping;
-          texture.wrapT = THREE.RepeatWrapping;
-          loadedTextures.push(texture);
-          assembly.traverse((object) => {
-            const mesh = object as THREE.Mesh;
-            if (mesh.userData.materialId !== materialRef.id) return;
-            const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-            for (const material of materials) {
-              if (!(material instanceof THREE.MeshStandardMaterial)) continue;
-              material.map = texture;
-              material.needsUpdate = true;
-            }
-          });
-        },
-        undefined,
-        () => {
-          // The color fallback remains usable when a texture asset is unavailable.
-        }
-      );
-    }
-
-    return () => {
-      cancelled = true;
-      loadedTextures.forEach((texture) => texture.dispose());
-    };
-  }, [assembly, definition.materials]);
+  useCabinetSceneResourceOwnership({
+    assembly,
+    previewFrontEdges,
+    materials: definition.materials,
+  });
 
   const width = definition.totalWidth / 1000;
   const height = definition.height / 1000;

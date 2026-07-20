@@ -18,6 +18,7 @@ export function useDesignPageTransientFeedback({
   const toastTimerRef = useRef<number | null>(null);
   const constraintTimerRef = useRef<number | null>(null);
   const confidenceTimerRef = useRef<number | null>(null);
+  const confidenceDismissTimerRef = useRef<number | null>(null);
 
   const showToast = useCallback(
     (message: string) => {
@@ -56,9 +57,17 @@ export function useDesignPageTransientFeedback({
             ? "1 spacing issue detected"
             : `${issueCount} spacing issues detected`;
       if (confidenceTimerRef.current) window.clearTimeout(confidenceTimerRef.current);
+      if (confidenceDismissTimerRef.current) {
+        window.clearTimeout(confidenceDismissTimerRef.current);
+        confidenceDismissTimerRef.current = null;
+      }
       confidenceTimerRef.current = window.setTimeout(() => {
         setConfidence(message);
-        window.setTimeout(() => setConfidence(null), 1500);
+        confidenceTimerRef.current = null;
+        confidenceDismissTimerRef.current = window.setTimeout(() => {
+          setConfidence(null);
+          confidenceDismissTimerRef.current = null;
+        }, 1500);
       }, 700);
     },
     [editorMode, isClientPreview]
@@ -77,6 +86,9 @@ export function useDesignPageTransientFeedback({
       if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
       if (constraintTimerRef.current) window.clearTimeout(constraintTimerRef.current);
       if (confidenceTimerRef.current) window.clearTimeout(confidenceTimerRef.current);
+      if (confidenceDismissTimerRef.current) {
+        window.clearTimeout(confidenceDismissTimerRef.current);
+      }
     },
     []
   );

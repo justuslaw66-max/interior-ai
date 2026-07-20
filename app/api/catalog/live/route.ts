@@ -22,7 +22,7 @@ export async function GET() {
         },
       }
     );
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Live catalog is temporarily unavailable." }, { status: 500 });
   }
 }

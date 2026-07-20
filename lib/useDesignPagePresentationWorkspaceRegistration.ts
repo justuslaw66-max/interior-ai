@@ -142,6 +142,14 @@ export function useDesignPagePresentationWorkspaceRegistration({
           sceneRoomRead.state.scene.scenePerformanceSample.lastFps,
         fpsSamples:
           sceneRoomRead.state.scene.scenePerformanceSample.samples,
+        drawCalls:
+          sceneRoomRead.state.scene.sceneRendererMetrics.drawCalls,
+        triangles:
+          sceneRoomRead.state.scene.sceneRendererMetrics.triangles,
+        geometries:
+          sceneRoomRead.state.scene.sceneRendererMetrics.geometries,
+        textures:
+          sceneRoomRead.state.scene.sceneRendererMetrics.textures,
         planDebugMetrics: viewportShell.state.diagnostics.planDebugMetrics,
       },
       selection: {
@@ -176,13 +184,11 @@ export function useDesignPagePresentationWorkspaceRegistration({
         showLayoutDebugOverlay:
           viewportShell.state.diagnostics.showLayoutDebugOverlay,
         history: {
-          pastCount: documentSelection.state.history.historyDebugSnapshot.past
-            .length,
-          futureCount:
-            documentSelection.state.history.historyDebugSnapshot.future.length,
+          pastCount: documentSelection.state.history.historyStatus.pastCount,
+          futureCount: documentSelection.state.history.historyStatus.futureCount,
           transactionName:
-            documentSelection.state.history.historyDebugSnapshot.txn?.name ??
-            null,
+            documentSelection.state.history.historyStatus.activeCommand
+              ?.description ?? null,
         },
         cabinetSchedule: cabinetry.state.project.schedulePackage,
         cabinetHandoff: cabinetry.state.project.handoffPackage,
@@ -193,6 +199,10 @@ export function useDesignPagePresentationWorkspaceRegistration({
         viewportShell.state.editor.editorMode === "present" &&
         viewportShell.state.presentation.showPresentModal,
       designerTheme: coreShell.derived.access.showDesignerTheme,
+      canUseAdvancedPlanControls:
+        coreShell.derived.access.capabilities.configurePlanLayers,
+      canUseAdvancedExportStyles:
+        coreShell.derived.access.capabilities.exportMultipleViews,
       canUseDesigner: coreShell.derived.access.canUseDesigner,
       canUseCabinetryStudio: cabinetry.state.canUseStudio,
       compactRoomStatus: planWorkspace.derived.compactRoomPlanStatusBar,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { applyAISuggestionAction, type AISuggestionAction } from "@/lib/ai/applySuggestion";
 import { track } from "@/lib/analytics";
@@ -33,6 +33,8 @@ export function useDesignPageAiNotes({ state, actions }: UseDesignPageAiNotesOpt
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<AINotesResponse | null>(null);
+  const requestRef = useRef<AbortController | null>(null);
+  const requestEpochRef = useRef(0);
   const { items, designId, designerMode, authenticated } = state;
   const {
     getItems,
@@ -44,18 +46,23 @@ export function useDesignPageAiNotes({ state, actions }: UseDesignPageAiNotesOpt
   } = actions;
 
   const generate = useCallback(async () => {
+    requestRef.current?.abort();
+    const requestEpoch = ++requestEpochRef.current;
     if (!items.length) {
       showToast("Add some items to your design first");
       return;
     }
 
+    const controller = new AbortController();
+    requestRef.current = controller;
     setLoading(true);
     const startedAt = Date.now();
     const timeoutId = window.setTimeout(() => {
       setLoading(false);
       showToast(
-        "AI generation is taking longer than expected. Please check that OPENAI_API_KEY is set in .env.local and restart the dev server."
+        "AI generation is taking longer than expected. Please try again."
       );
+      controller.abort();
     }, 45_000);
 
     try {
@@ -64,22 +71,29 @@ export function useDesignPageAiNotes({ state, actions }: UseDesignPageAiNotesOpt
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           design: {
+            id: designId,
             items: items.map((item) => ({
               productId: item.productId,
               quantity: item.qty || 1,
               price: getItemPrice(CATALOG_ITEMS[item.productId]) || 0,
             })),
-            categories: [
-              ...new Set(items.map((item) => CATALOG_ITEMS[item.productId]?.category)),
-            ],
+            categories: Array.from(new Set(
+              items
+                .map((item) => CATALOG_ITEMS[item.productId]?.category)
+                .filter(
+                  (category): category is Exclude<typeof category, undefined> =>
+                    Boolean(category)
+                )
+            )),
+            budget: String(items.reduce(
+              (sum, item) =>
+                sum + (getItemPrice(CATALOG_ITEMS[item.productId]) || 0) * (item.qty || 1),
+              0
+            )),
           },
-          budget: items.reduce(
-            (sum, item) =>
-              sum + (getItemPrice(CATALOG_ITEMS[item.productId]) || 0) * (item.qty || 1),
-            0
-          ),
           mode: designerMode ? "designer" : "homeowner",
         }),
+        signal: controller.signal,
       });
       window.clearTimeout(timeoutId);
 
@@ -101,11 +115,12 @@ export function useDesignPageAiNotes({ state, actions }: UseDesignPageAiNotesOpt
           ms: elapsedMs,
         });
       }
+      if (requestEpoch !== requestEpochRef.current) return;
       setData(nextData);
       setOpen(true);
     } catch (error) {
       window.clearTimeout(timeoutId);
-      console.error("AI notes error:", error);
+      if (controller.signal.aborted) return;
       const message =
         error instanceof Error
           ? error.message
@@ -115,9 +130,14 @@ export function useDesignPageAiNotes({ state, actions }: UseDesignPageAiNotesOpt
       }
       showToast(message);
     } finally {
-      setLoading(false);
+      if (requestRef.current === controller) {
+        requestRef.current = null;
+        setLoading(false);
+      }
     }
   }, [authenticated, designId, designerMode, items, showToast]);
+
+  useEffect(() => () => requestRef.current?.abort(), []);
 
   const applySuggestion = useCallback(
     async (suggestion: AISuggestionAction) => {

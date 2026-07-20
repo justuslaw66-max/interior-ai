@@ -35,6 +35,7 @@ import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import type { CameraView } from "@/lib/design-page-types";
 import type { LightingConfig } from "@/lib/lightingPresets";
 import type { Plan2DCameraInvariantFit } from "@/lib/plan-camera-2d";
+import type { SceneRendererMetrics } from "@/lib/scene-performance-metrics";
 
 type ScenePerformanceMode = "auto" | "quality" | "lite";
 
@@ -92,6 +93,7 @@ type DesignSceneCanvasActions = {
   updateProjection: (camera: THREE.Camera | null) => void;
   onSceneProgressReadyChange: (ready: boolean) => void;
   onFpsSample: (fps: number) => void;
+  onRendererSample: (metrics: SceneRendererMetrics) => void;
   onSustainedLowFps: (fps: number) => void;
   onOrbitChange: () => void;
 };
@@ -212,6 +214,7 @@ export function DesignSceneCanvas({
             !state.liteSceneEnabled
           }
           onFpsSample={actions.onFpsSample}
+          onRendererSample={actions.onRendererSample}
           onSustainedLowFps={actions.onSustainedLowFps}
         />
         <Suspense fallback={null}>

@@ -4,6 +4,22 @@ import type {
   CabinetShelfSpacingMode,
 } from "./types";
 
+export const CABINET_SHELF_LAYOUT_FIELDS = [
+  "shelfCount",
+  "shelfSpacingMode",
+  "shelfPositionsMm",
+  "shelfPinRowsEnabled",
+  "shelfPinRowPairCount",
+  "shelfPinHoleCount",
+  "shelfPinHoleSpacing",
+  "shelfPinInsetFromFront",
+  "shelfPinStartHeight",
+] as const satisfies readonly (keyof CabinetModuleDefinition)[];
+
+export function cabinetShelfLayoutParameterPath(moduleId: string): string {
+  return `modules.${moduleId}.shelfLayout`;
+}
+
 export function getCabinetShelfSpacingMode(
   definition: CabinetDefinition,
   module: CabinetModuleDefinition

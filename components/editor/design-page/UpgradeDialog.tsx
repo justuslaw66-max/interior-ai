@@ -1,5 +1,11 @@
 "use client";
 
+import {
+  EditorDialog,
+  EditorDialogActions,
+  EditorDialogButton,
+} from "@/components/editor/design-system/EditorDialog";
+
 export type UpgradeDialogState = {
   open: boolean;
   variantLabel: string;
@@ -29,16 +35,47 @@ export function UpgradeDialog({ state, actions }: UpgradeDialogProps) {
   if (!state.open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-lg">
-        <div className="text-lg font-semibold">Upgrade to Pro</div>
+    <EditorDialog
+      open
+      title="Upgrade to Pro"
+      description={state.description}
+      onClose={actions.onClose}
+      closeDisabled={state.startingCheckout}
+      showCloseButton={false}
+      footer={
+        <EditorDialogActions>
+          <EditorDialogButton
+            variant="primary"
+            data-testid="upgrade-see-plans"
+            data-editor-dialog-initial-focus="true"
+            disabled={state.startingCheckout}
+            onClick={actions.onSeePlans}
+          >
+            {state.primaryCtaLabel}
+          </EditorDialogButton>
+          {state.showSignIn ? (
+            <EditorDialogButton
+              className="border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"
+              onClick={actions.onSignIn}
+            >
+              Sign in to save progress
+            </EditorDialogButton>
+          ) : null}
+          <EditorDialogButton
+            disabled={state.startingCheckout}
+            onClick={actions.onClose}
+          >
+            {state.dismissLabel}
+          </EditorDialogButton>
+        </EditorDialogActions>
+      }
+    >
         <div
-          className="mt-1 text-[11px] uppercase tracking-[0.2em] text-neutral-400"
+          className="text-[11px] uppercase tracking-[0.2em] text-neutral-400"
           data-testid="upgrade-variant-label"
         >
           Variant: {state.variantLabel}
         </div>
-        <div className="mt-2 text-sm text-neutral-600">{state.description}</div>
         <div className="mt-4 rounded-xl border border-neutral-200 bg-neutral-50 p-3 text-sm text-neutral-700">
           {state.contentVariant === "unlock_pro_exports" ? (
             <div data-testid="upgrade-variant-unlock-pro-exports">
@@ -73,31 +110,6 @@ export function UpgradeDialog({ state, actions }: UpgradeDialogProps) {
             </div>
           )}
         </div>
-        <div className="mt-4 flex flex-wrap justify-end gap-2">
-          <button
-            data-testid="upgrade-see-plans"
-            className="rounded-xl bg-neutral-900 px-4 py-2 text-sm text-white disabled:opacity-60"
-            disabled={state.startingCheckout}
-            onClick={actions.onSeePlans}
-          >
-            {state.primaryCtaLabel}
-          </button>
-          {state.showSignIn && (
-            <button
-              className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-2 text-sm text-blue-700"
-              onClick={actions.onSignIn}
-            >
-              Sign in to save progress
-            </button>
-          )}
-          <button
-            className="rounded-xl bg-neutral-200 px-4 py-2 text-sm"
-            onClick={actions.onClose}
-          >
-            {state.dismissLabel}
-          </button>
-        </div>
-      </div>
-    </div>
+    </EditorDialog>
   );
 }

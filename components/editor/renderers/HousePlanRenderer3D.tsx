@@ -43,8 +43,8 @@ import { useSurfaceMaterialTexture } from "./useSurfaceMaterialTexture";
 import { buildRoomPlanShape } from "@/lib/room-plan-shape";
 
 type HousePlanRenderer3DProps = {
-  rooms: HousePlanRoom2D[];
-  openings?: RoomRendererOpening[];
+  rooms: readonly HousePlanRoom2D[];
+  openings?: readonly RoomRendererOpening[];
   activeRoomId: string;
   activeFloorLevel?: number;
   wallHeight: number;
@@ -808,7 +808,7 @@ function getWallSurfaceFaceId(room: HousePlanRoom2D, segment: WallSegment3D): st
   return getDeterministicWallFaceId(suffix);
 }
 
-function getWallInteriorSurfaceSide(room: HousePlanRoom2D, segment: WallSegment3D): 1 | -1 {
+function getWallInteriorSurfaceSide(segment: WallSegment3D): 1 | -1 {
   if (segment.wall === "north" || segment.wall === "east") return 1;
   if (segment.wall === "south" || segment.wall === "west") return -1;
 
@@ -826,7 +826,7 @@ function getWallInteriorSurfaceSide(room: HousePlanRoom2D, segment: WallSegment3
 }
 
 export function getWallInteriorSurfaceSideForTest(
-  room: HousePlanRoom2D,
+  _room: HousePlanRoom2D,
   segment: {
     wall?: "north" | "east" | "south" | "west";
     x: number;
@@ -834,7 +834,7 @@ export function getWallInteriorSurfaceSideForTest(
     rotationY: number;
   }
 ): 1 | -1 {
-  return getWallInteriorSurfaceSide(room, {
+  return getWallInteriorSurfaceSide({
     key: "test-wall-segment",
     length: 1,
     axis: "x",
@@ -854,19 +854,6 @@ function getWallCoordinate(room: HousePlanRoom2D, wall: WallId): number {
   if (wall === "east") return room.x + room.w / 2;
   if (wall === "north") return room.z - room.d / 2;
   return room.z + room.d / 2;
-}
-
-function getWallSpan(room: HousePlanRoom2D, wall: WallId): { start: number; end: number } {
-  if (wall === "north" || wall === "south") {
-    return { start: room.x - room.w / 2, end: room.x + room.w / 2 };
-  }
-  return { start: room.z - room.d / 2, end: room.z + room.d / 2 };
-}
-
-function getOpeningWorldOffset(room: HousePlanRoom2D, opening: RoomRendererOpening): number {
-  return opening.wall === "north" || opening.wall === "south"
-    ? room.x + opening.offset
-    : room.z + opening.offset;
 }
 
 function wallPartCenter(segment: WallSegment3D, offset: number) {
@@ -1039,28 +1026,11 @@ export function getLegacyWallSurfaceJoinRangesForTest(
   });
 }
 
-function wallsShareLine(
-  room: HousePlanRoom2D,
-  wall: WallId,
-  otherRoom: HousePlanRoom2D,
-  otherWall: WallId,
-  tolerance = 0.04
-): boolean {
-  if (oppositeWall(wall) !== otherWall) return false;
-  if (Math.abs(getWallCoordinate(room, wall) - getWallCoordinate(otherRoom, otherWall)) > tolerance) {
-    return false;
-  }
-
-  const span = getWallSpan(room, wall);
-  const otherSpan = getWallSpan(otherRoom, otherWall);
-  return Math.min(span.end, otherSpan.end) - Math.max(span.start, otherSpan.start) > 0.45;
-}
-
 function getWallOpenings(
   room: HousePlanRoom2D,
   segment: WallSegment3D,
-  rooms: HousePlanRoom2D[],
-  openings: RoomRendererOpening[]
+  rooms: readonly HousePlanRoom2D[],
+  openings: readonly RoomRendererOpening[]
 ): WallOpening3D[] {
   const directOpenings = segment.wall
     ? openings
@@ -1136,8 +1106,8 @@ function getWallOpenings(
 }
 
 export function getLegacyWallOpeningCountsForTest(
-  rooms: HousePlanRoom2D[],
-  openings: RoomRendererOpening[]
+  rooms: readonly HousePlanRoom2D[],
+  openings: readonly RoomRendererOpening[]
 ) {
   return rooms.map((room) => ({
     roomId: room.id,
@@ -1309,7 +1279,7 @@ function getOpeningThresholds(
 
 function getSharedWallOverlapRanges(
   room: HousePlanRoom2D,
-  rooms: HousePlanRoom2D[],
+  rooms: readonly HousePlanRoom2D[],
   segment: WallSegment3D,
   minOverlap = 0.35
 ): SharedWallRange3D[] {
@@ -1407,7 +1377,7 @@ function getSharedWallOverlapRanges(
 
 function splitWallPartsAtSharedBoundaries(
   room: HousePlanRoom2D,
-  rooms: HousePlanRoom2D[],
+  rooms: readonly HousePlanRoom2D[],
   segment: WallSegment3D,
   parts: WallPart3D[]
 ): WallPart3D[] {
@@ -1460,7 +1430,7 @@ function rangesOverlapBy(
 
 function getSharedWallRoomIds(
   room: HousePlanRoom2D,
-  rooms: HousePlanRoom2D[],
+  rooms: readonly HousePlanRoom2D[],
   segment: WallSegment3D,
   part: WallPart3D
 ): string[] {
@@ -1483,7 +1453,7 @@ function getSharedWallRoomIds(
 
 function getSharedWallMatches(
   room: HousePlanRoom2D,
-  rooms: HousePlanRoom2D[],
+  rooms: readonly HousePlanRoom2D[],
   segment: WallSegment3D,
   part: WallPart3D
 ) {
@@ -1533,7 +1503,7 @@ function legacyWallEndpointWorld(
 
 function legacyPhysicalWallCutEndJoinOptions(
   room: HousePlanRoom2D,
-  rooms: HousePlanRoom2D[],
+  rooms: readonly HousePlanRoom2D[],
   segment: WallSegment3D,
   excludedSegmentKeys?: ReadonlySet<string>
 ): LegacyWallEndJoinOptions {
@@ -1589,7 +1559,7 @@ export function getLegacyPhysicalWallCutEndOptionsForTest({
   rooms,
   excludedSegmentKeys,
 }: {
-  rooms: HousePlanRoom2D[];
+  rooms: readonly HousePlanRoom2D[];
   excludedSegmentKeys: ReadonlySet<string>;
 }) {
   return rooms.flatMap((room) =>
@@ -1606,7 +1576,9 @@ export function getLegacyPhysicalWallCutEndOptionsForTest({
   );
 }
 
-export function getLegacySharedWallMatchesForTest(rooms: HousePlanRoom2D[]) {
+export function getLegacySharedWallMatchesForTest(
+  rooms: readonly HousePlanRoom2D[]
+) {
   return rooms.flatMap((room) =>
     getWallSegments(room).map((segment) => {
       const part: WallPart3D = {
@@ -1631,7 +1603,7 @@ export function getLegacySharedWallMatchesForTest(rooms: HousePlanRoom2D[]) {
 
 function getSharedWallRenderOwnerRoomId(
   room: HousePlanRoom2D,
-  rooms: HousePlanRoom2D[],
+  rooms: readonly HousePlanRoom2D[],
   segment: WallSegment3D,
   part: WallPart3D
 ): string {
@@ -1729,8 +1701,8 @@ export function buildLegacyFloorSlabsForTest({
   defaultWallHeight,
   stackedFloors,
 }: {
-  rooms: HousePlanRoom2D[];
-  openings?: RoomRendererOpening[];
+  rooms: readonly HousePlanRoom2D[];
+  openings?: readonly RoomRendererOpening[];
   defaultWallHeight: number;
   stackedFloors: boolean;
 }): LegacyFloorSlab3D[] {
@@ -1826,8 +1798,8 @@ export function buildLegacyWallBandsForTest({
   stackedFloors,
   excludedSegmentKeys,
 }: {
-  rooms: HousePlanRoom2D[];
-  openings: RoomRendererOpening[];
+  rooms: readonly HousePlanRoom2D[];
+  openings: readonly RoomRendererOpening[];
   defaultWallHeight: number;
   stackedFloors: boolean;
   excludedSegmentKeys?: ReadonlySet<string>;
@@ -1944,7 +1916,7 @@ export function resolveLegacyCameraCutawaySegmentKeysForTest({
   viewDirectionX,
   viewDirectionZ,
 }: {
-  rooms: HousePlanRoom2D[];
+  rooms: readonly HousePlanRoom2D[];
   activeRoomId: string;
   cameraX: number;
   cameraZ: number;
@@ -2035,7 +2007,7 @@ function useLegacyCameraCutawaySegmentKeys({
   activeRoomId,
   enabled,
 }: {
-  rooms: HousePlanRoom2D[];
+  rooms: readonly HousePlanRoom2D[];
   activeRoomId: string;
   enabled: boolean;
 }) {
@@ -2374,7 +2346,7 @@ function CutawayWallMesh({
   onSelectTarget,
 }: {
   room: HousePlanRoom2D;
-  rooms: HousePlanRoom2D[];
+  rooms: readonly HousePlanRoom2D[];
   segment: WallSegment3D;
   part: WallPart3D;
   wallHeight: number;
@@ -2421,7 +2393,7 @@ function CutawayWallMesh({
     normalizeFloorRotationDeg,
     clampFloorPatternScale
   );
-  const interiorSurfaceSide = getWallInteriorSurfaceSide(room, segment);
+  const interiorSurfaceSide = getWallInteriorSurfaceSide(segment);
   const sharedWallMatches = getSharedWallMatches(room, rooms, segment, part);
   const isInteriorSharedWall = sharedWallMatches.length > 0;
   const activeRoom = rooms.find((entry) => entry.id === activeRoomId);
@@ -3263,18 +3235,22 @@ export default function HousePlanRenderer3D({
     activeRoomId,
     enabled: !canonicalPlan && rooms.length > 0,
   });
+  // These editor-state arrays are immutable snapshots. The React compiler
+  // cannot prove that across the legacy geometry helpers, while retaining this
+  // memo avoids rebuilding planar unions during unrelated interactive renders.
+  /* eslint-disable react-hooks/preserve-manual-memoization */
   const legacyWatertightGeometry = useMemo(() => {
     if (canonicalPlan || rooms.length === 0) return null;
     return {
       floorSlabs: buildLegacyFloorSlabsForTest({
-        rooms,
-        openings,
+        rooms: [...rooms],
+        openings: [...openings],
         defaultWallHeight: wallHeight,
         stackedFloors,
       }),
       wallBands: buildLegacyWallBandsForTest({
-        rooms,
-        openings,
+        rooms: [...rooms],
+        openings: [...openings],
         defaultWallHeight: wallHeight,
         stackedFloors,
         excludedSegmentKeys: legacyCutawaySegmentKeys,
@@ -3288,6 +3264,7 @@ export default function HousePlanRenderer3D({
     stackedFloors,
     wallHeight,
   ]);
+  /* eslint-enable react-hooks/preserve-manual-memoization */
   const hasLegacyMergedSlab = Boolean(
     legacyWatertightGeometry?.floorSlabs.length
   );

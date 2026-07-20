@@ -9,7 +9,6 @@ function mapCatalogYaml(yaml: CatalogYamlRecord) {
     brand: yaml.brand,
     retailer: yaml.retailer,
     source_url: yaml.source_url,
-    authoring_notes: yaml.authoring_notes,
     category: yaml.category,
     assets: yaml.assets,
     media_presentation: yaml.media_presentation,
@@ -121,7 +120,7 @@ export async function buildImportedModelsPayload() {
       total: assetModels.length + yamlOnlyModels.length,
       models: [...assetModels, ...yamlOnlyModels],
     };
-  } catch (error) {
+  } catch {
     const models = Array.from(catalogMap.entries()).map(([id, yaml]) =>
       buildYamlOnlyModel(id, yaml as CatalogYamlRecord)
     );
@@ -130,7 +129,7 @@ export async function buildImportedModelsPayload() {
       total: models.length,
       models,
       degraded: true,
-      warning: `DB unavailable, serving YAML fallback: ${String(error)}`,
+      warning: "Catalog database unavailable; serving the validated live fallback.",
     };
   }
 }

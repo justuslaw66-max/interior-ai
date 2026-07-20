@@ -6,6 +6,7 @@ import type { DesignPageHistoryQaSummary, DesignPageProjectQaMarkersProps, Desig
 import type { DesignPagePresentationQaLayerProps } from "@/components/editor/design-page/DesignPagePresentationQaLayer";
 import { buildDesignPageBetaFeedbackContext, type DesignPageBetaFeedbackInput } from "@/lib/design-page-beta-feedback";
 import { getRoomTypeLabel } from "@/lib/design-page-house-plan";
+import { getEditorPlanLabel, resolveEditorCapabilities } from "@/lib/editor-capabilities";
 import { getAllRoomNames } from "@/lib/room-hooks";
 import { useDesignPageCommandPalette, type DesignPageCommandPaletteActions } from "@/lib/useDesignPageCommandPalette";
 import { useDesignPageEditorChromeController, type UseDesignPageEditorChromeControllerInput } from "@/lib/useDesignPageEditorChromeController";
@@ -101,6 +102,8 @@ export type UseDesignPagePresentationQaFacadeInput = {
   configuration: {
     presentOpen: boolean;
     designerTheme: boolean;
+    canUseAdvancedPlanControls: boolean;
+    canUseAdvancedExportStyles: boolean;
     canUseDesigner: ChromeInput["configuration"]["canUseDesigner"];
     canUseCabinetryStudio: ChromeInput["configuration"]["canUseCabinetryStudio"];
     compactRoomStatus: ChromeInput["configuration"]["commandBar"]["compactRoomStatus"];
@@ -179,6 +182,7 @@ export function useDesignPagePresentationQaFacade({
   configuration,
   actions,
 }: UseDesignPagePresentationQaFacadeInput): DesignPagePresentationQaFacade {
+  const editorCapabilities = resolveEditorCapabilities(state.editor.plan);
   const presentExport = useDesignPagePresentExportController({
     state: {
       dialog: {
@@ -221,7 +225,8 @@ export function useDesignPagePresentationQaFacade({
     configuration: {
       open: configuration.presentOpen,
       designerTheme: configuration.designerTheme,
-      canUseDesigner: configuration.canUseDesigner,
+      canUseAdvancedPlanControls: configuration.canUseAdvancedPlanControls,
+      canUseAdvancedExportStyles: configuration.canUseAdvancedExportStyles,
       eyeLevelTransitionDurationMs:
         configuration.eyeLevelTransitionDurationMs,
       focusTransitionDurationMs: configuration.focusTransitionDurationMs,
@@ -344,7 +349,8 @@ export function useDesignPagePresentationQaFacade({
           viewMode: state.editor.viewMode,
           isDesigner: state.editor.isDesigner,
           isAuthed: state.editor.authenticated,
-          isPro: state.editor.plan === "pro",
+          planLabel: getEditorPlanLabel(state.editor.plan),
+          canManageBilling: editorCapabilities.manageSubscription,
           isOpeningBillingPortal: state.chrome.openingBillingPortal,
           aiDesignEnabled: state.editor.aiDesignEnabled,
           canUndo: state.editor.canUndo,

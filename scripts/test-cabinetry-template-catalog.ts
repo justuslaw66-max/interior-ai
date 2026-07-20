@@ -278,6 +278,28 @@ const studioSource = readFileSync(
   join(process.cwd(), "features/cabinetry/components/CabinetryStudio.tsx"),
   "utf8",
 );
+const guidedViewSource = readFileSync(
+  join(
+    process.cwd(),
+    "features/cabinetry/components/CabinetryStudioGuidedView.tsx"
+  ),
+  "utf8",
+);
+const catalogCompositionSource = `${studioSource}\n${guidedViewSource}`;
+const diagramSource = readFileSync(
+  join(process.cwd(), "features/cabinetry/components/CabinetTemplateDiagrams.tsx"),
+  "utf8",
+);
+assert.match(
+  guidedViewSource,
+  /import \{[\s\S]*?CabinetTemplateDiagram,[\s\S]*?CabinetWardrobeArrangementDiagram[\s\S]*?\} from "\.\/CabinetTemplateDiagrams"/,
+  "The studio must compose the extracted template-diagram boundary.",
+);
+assert.doesNotMatch(
+  studioSource,
+  /function Cabinet(?:SpecialtyTemplate|Template|WardrobeArrangement)Diagram/,
+  "The studio shell must not regain ownership of template visualization implementations.",
+);
 for (const requiredWiring of [
   "cabinetPresetMatchesCatalogFilters(preset, query, templateCategory)",
   "getCabinetPresetSearchText(preset)",
@@ -287,7 +309,7 @@ for (const requiredWiring of [
   "aria-label=\"Template categories\"",
 ]) {
   assert(
-    studioSource.includes(requiredWiring),
+    catalogCompositionSource.includes(requiredWiring),
     `Studio must render and consume catalog metadata: ${requiredWiring}`,
   );
 }
@@ -295,8 +317,8 @@ for (const thumbnailKind of new Set(
   CABINET_PRESET_OPTIONS.map((option) => option.visualThumbnail.kind),
 )) {
   assert(
-    studioSource.includes(`case "${thumbnailKind}"`) || thumbnailKind === "casework",
-    `Studio must render the ${thumbnailKind} visual thumbnail kind`,
+    diagramSource.includes(`case "${thumbnailKind}"`) || thumbnailKind === "casework",
+    `Template diagrams must render the ${thumbnailKind} visual thumbnail kind`,
   );
 }
 

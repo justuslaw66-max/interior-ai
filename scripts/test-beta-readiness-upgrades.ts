@@ -72,7 +72,14 @@ const betaStartPanelSource = readFileSync(
   join(root, "components/editor/design-page/BetaStartPanel.tsx"),
   "utf8"
 );
-const adminPageSource = readFileSync(join(root, "app/admin/page.tsx"), "utf8");
+const adminDashboardSource = readFileSync(
+  join(root, "app/admin/OperationsDashboard.tsx"),
+  "utf8"
+);
+const adminOperationsDataSource = readFileSync(
+  join(root, "app/admin/operations-data.ts"),
+  "utf8"
+);
 const sharePageSource = readFileSync(join(root, "app/share/[shareToken]/page.tsx"), "utf8");
 const exportPageSource = readFileSync(join(root, "app/share/[shareToken]/export/page.tsx"), "utf8");
 const shareActionsSource = readFileSync(join(root, "components/SharePageActions.tsx"), "utf8");
@@ -168,18 +175,18 @@ assert.match(
   "Vercel serverless runtime should not require static model assets in each function bundle."
 );
 assert.match(
-  adminPageSource,
-  /href="\/admin\/catalog\/health"/,
-  "The admin overview should link operators to catalog health diagnostics."
+  adminDashboardSource,
+  /href: "\/admin\/audit"/,
+  "The admin dashboard should link operators to the current quality audit."
 );
 assert.match(
-  adminPageSource,
-  /Checkout started \(24h\)/,
+  adminOperationsDataSource,
+  /label: "Checkout starts"/,
   "The admin overview should expose checkout activity."
 );
 assert.match(
-  adminPageSource,
-  /Webhook failures \(24h\)/,
+  adminOperationsDataSource,
+  /name: "Webhook delivery"[\s\S]*failed in 24h/,
   "The admin overview should expose provider failure activity without secret values."
 );
 assert.match(

@@ -29,7 +29,7 @@ const evidenceFieldLabels: Record<keyof StagingSmokeEvidenceRecord, string> = {
   tester: "Tester",
   browserDevice: "Browser/device",
   savedDesignId: "Saved design ID",
-  shareToken: "Share token",
+  shareReferenceFingerprint: "Share reference fingerprint",
   editorSnapshotFingerprint: "Editor fingerprint",
   shareSnapshotFingerprint: "Share fingerprint",
   exportSnapshotFingerprint: "Export fingerprint",
@@ -61,13 +61,19 @@ function mergeSavedBundle(
 ): StagingSmokeEvidenceBundle {
   const base = cloneBundle(baseBundle);
   const savedRows = new Map((savedBundle.checklistRows ?? []).map((row) => [row.id, row]));
+  const savedEvidenceInput = savedBundle.evidence as
+    | (Partial<StagingSmokeEvidenceRecord> & { shareToken?: unknown })
+    | undefined;
+  const { shareToken: _discardedLegacyToken, ...savedEvidence } = savedEvidenceInput ?? {};
+  // Remove the legacy bearer-token field instead of carrying it into the next
+  // localStorage write. QA evidence records only a one-way fingerprint now.
 
   return {
     ...base,
     generatedAt: savedBundle.generatedAt || base.generatedAt,
     evidence: {
       ...base.evidence,
-      ...(savedBundle.evidence ?? {}),
+      ...savedEvidence,
     },
     checklistRows: base.checklistRows.map((baseRow) => {
       const savedRow = savedRows.get(baseRow.id);

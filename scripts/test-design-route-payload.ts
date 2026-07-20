@@ -195,7 +195,7 @@ runFixture("claim payload derives legacy fields from active v3 snapshot", () => 
   ];
 
   const result = parseDesignClaimPayload({
-    anonymousId: " anon-123 ",
+    anonymousId: " 5f843a12-5acd-4f13-83c1-24dd7d317f34 ",
     roomType: "living_room",
     itemsCount: 1,
     designSnapshot: {
@@ -215,7 +215,7 @@ runFixture("claim payload derives legacy fields from active v3 snapshot", () => 
 
   assert.equal(result.ok, true);
   if (!result.ok) return;
-  assert.equal(result.value.anonymousId, "anon-123");
+  assert.equal(result.value.anonymousId, "5f843a12-5acd-4f13-83c1-24dd7d317f34");
   assert.equal(result.value.roomType, "living_room");
   assert.equal(result.value.itemsCount, 1);
   assert.equal(result.value.design.roomWidth, 8.5);
@@ -240,7 +240,7 @@ runFixture("claim payload rejects invalid anonymous ids and snapshots", () => {
   }
 
   const invalidSnapshot = parseDesignClaimPayload({
-    anonymousId: "anon-456",
+    anonymousId: "8e1ea98c-5034-4cad-91e6-3f74884a5687",
     designSnapshot: {
       roomWidth: 5,
       roomDepth: 4,

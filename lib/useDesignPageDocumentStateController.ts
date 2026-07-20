@@ -5,17 +5,11 @@ import {
   useEffect,
   useRef,
   useState,
-  type Dispatch,
-  type SetStateAction,
 } from "react";
 
 import {
   ROOM_DIMENSION_DEFAULTS,
 } from "@/lib/design-page-house-plan";
-import type {
-  PlanLayerPresetId,
-  PlanMeasurementUnit,
-} from "@/lib/design-page-types";
 import type {
   EditorAnnotation2D,
   FixedElement2D,
@@ -31,9 +25,6 @@ import { useDesignPageFloorPlanWorkflowState } from "@/lib/useDesignPageFloorPla
 import type { DesignPageHistorySnapshot } from "@/lib/useDesignPageHistory";
 import {
   useDesignPagePlanState,
-  type ExportStylePreset,
-  type PlanLayers,
-  type PlanTheme,
 } from "@/lib/useDesignPagePlanState";
 
 type FunctionalStateAction<T> = T | ((previous: T) => T);
@@ -69,11 +60,6 @@ export function useDesignPagePlanDocumentState() {
   const planOpeningsRef = useRef(planOpenings);
   const planAnnotationsRef = useRef(planAnnotations);
   const planFixedElementsRef = useRef(planFixedElements);
-  const planThemeRef = useRef(planTheme);
-  const planLayersRef = useRef(planLayers);
-  const planLayerPresetRef = useRef(planLayerPreset);
-  const planMeasurementUnitRef = useRef(planMeasurementUnit);
-  const exportStylePresetRef = useRef(exportStylePreset);
 
   const setPlanOpenings = useCallback(
     (next: FunctionalStateAction<RoomOpening2D[]>) => {
@@ -117,72 +103,6 @@ export function useDesignPagePlanDocumentState() {
     [setPlanFixedElementsState]
   );
 
-  const setPlanTheme = useCallback(
-    (next: FunctionalStateAction<PlanTheme>) => {
-      const resolved =
-        typeof next === "function"
-          ? (next as (previous: PlanTheme) => PlanTheme)(planThemeRef.current)
-          : next;
-      planThemeRef.current = resolved;
-      setPlanThemeState(resolved);
-    },
-    [setPlanThemeState]
-  );
-
-  const setPlanLayers = useCallback(
-    (next: FunctionalStateAction<PlanLayers>) => {
-      const resolved =
-        typeof next === "function"
-          ? (next as (previous: PlanLayers) => PlanLayers)(planLayersRef.current)
-          : next;
-      planLayersRef.current = resolved;
-      setPlanLayersState(resolved);
-    },
-    [setPlanLayersState]
-  );
-
-  const setPlanLayerPreset = useCallback(
-    (next: FunctionalStateAction<PlanLayerPresetId>) => {
-      const resolved =
-        typeof next === "function"
-          ? (next as (previous: PlanLayerPresetId) => PlanLayerPresetId)(
-              planLayerPresetRef.current
-            )
-          : next;
-      planLayerPresetRef.current = resolved;
-      setPlanLayerPresetState(resolved);
-    },
-    [setPlanLayerPresetState]
-  );
-
-  const setPlanMeasurementUnit = useCallback(
-    (next: FunctionalStateAction<PlanMeasurementUnit>) => {
-      const resolved =
-        typeof next === "function"
-          ? (next as (previous: PlanMeasurementUnit) => PlanMeasurementUnit)(
-              planMeasurementUnitRef.current
-            )
-          : next;
-      planMeasurementUnitRef.current = resolved;
-      setPlanMeasurementUnitState(resolved);
-    },
-    [setPlanMeasurementUnitState]
-  );
-
-  const setExportStylePreset = useCallback(
-    (next: FunctionalStateAction<ExportStylePreset>) => {
-      const resolved =
-        typeof next === "function"
-          ? (next as (previous: ExportStylePreset) => ExportStylePreset)(
-              exportStylePresetRef.current
-            )
-          : next;
-      exportStylePresetRef.current = resolved;
-      setExportStylePresetState(resolved);
-    },
-    [setExportStylePresetState]
-  );
-
   const defaultPlanOpeningsSeededRef = useRef(false);
   const markDefaultPlanOpeningsSeeded = useCallback(() => {
     defaultPlanOpeningsSeededRef.current = true;
@@ -205,15 +125,15 @@ export function useDesignPagePlanDocumentState() {
       planSettingsLoaded,
     },
     actions: {
-      setPlanTheme,
-      setPlanLayers,
+      setPlanTheme: setPlanThemeState,
+      setPlanLayers: setPlanLayersState,
       setPlanAnnotations,
       setPlanOpenings,
       setPlanFixedElements,
       setSimplePlanControls,
-      setPlanLayerPreset,
-      setPlanMeasurementUnit,
-      setExportStylePreset,
+      setPlanLayerPreset: setPlanLayerPresetState,
+      setPlanMeasurementUnit: setPlanMeasurementUnitState,
+      setExportStylePreset: setExportStylePresetState,
       setPlanGuidedActionsEnabled,
       setPlanGuidedActionsChoiceSeen,
       markDefaultPlanOpeningsSeeded,
@@ -222,22 +142,7 @@ export function useDesignPagePlanDocumentState() {
       planOpeningsRef,
       planAnnotationsRef,
       planFixedElementsRef,
-      planThemeRef,
-      planLayersRef,
-      planLayerPresetRef,
-      planMeasurementUnitRef,
-      exportStylePresetRef,
       defaultPlanOpeningsSeededRef,
-    },
-    restoreActions: {
-      setPlanThemeState,
-      setPlanLayersState,
-      setPlanAnnotationsState,
-      setPlanOpeningsState,
-      setPlanFixedElementsState,
-      setPlanLayerPresetState,
-      setPlanMeasurementUnitState,
-      setExportStylePresetState,
     },
   };
 }
@@ -326,9 +231,6 @@ export function useDesignPageFloorPlanDocumentState() {
       floorPlanUnderlayUrlRef,
       floorPlanPdfSourceDataRef,
     },
-    restoreActions: {
-      setFloorPlanUnderlayState,
-    },
   };
 }
 
@@ -375,15 +277,9 @@ export function useDesignPageSnapshotDocumentState() {
 
 export type UseDesignPageDocumentRefSynchronizationInput = {
   state: {
-    designSnapshot: DesignSnapshot;
     planOpenings: RoomOpening2D[];
     planAnnotations: EditorAnnotation2D[];
     planFixedElements: FixedElement2D[];
-    planTheme: PlanTheme;
-    planLayers: PlanLayers;
-    planLayerPreset: PlanLayerPresetId;
-    planMeasurementUnit: PlanMeasurementUnit;
-    exportStylePreset: ExportStylePreset;
     floorPlanUnderlay: FloorPlanUnderlay | null;
   };
   actions: {
@@ -392,28 +288,22 @@ export type UseDesignPageDocumentRefSynchronizationInput = {
         | DesignSnapshot
         | ((previous: DesignSnapshot) => DesignSnapshot)
     ) => void;
-    setPlanAnnotationsState: Dispatch<SetStateAction<EditorAnnotation2D[]>>;
-    setPlanFixedElementsState: Dispatch<SetStateAction<FixedElement2D[]>>;
-    setPlanOpeningsState: Dispatch<SetStateAction<RoomOpening2D[]>>;
-    setPlanThemeState: Dispatch<SetStateAction<PlanTheme>>;
-    setPlanLayersState: Dispatch<SetStateAction<PlanLayers>>;
-    setPlanLayerPresetState: Dispatch<SetStateAction<PlanLayerPresetId>>;
-    setPlanMeasurementUnitState: Dispatch<SetStateAction<PlanMeasurementUnit>>;
-    setExportStylePresetState: Dispatch<SetStateAction<ExportStylePreset>>;
-    setFloorPlanUnderlayState: Dispatch<
-      SetStateAction<FloorPlanUnderlay | null>
-    >;
+    setPlanAnnotations: (
+      next: FunctionalStateAction<EditorAnnotation2D[]>
+    ) => void;
+    setPlanFixedElements: (
+      next: FunctionalStateAction<FixedElement2D[]>
+    ) => void;
+    setPlanOpenings: (next: FunctionalStateAction<RoomOpening2D[]>) => void;
+    setFloorPlanUnderlay: (
+      next: FunctionalStateAction<FloorPlanUnderlay | null>
+    ) => void;
   };
   refs: {
     designSnapshotRef: { current: DesignSnapshot };
     planOpeningsRef: { current: RoomOpening2D[] };
     planAnnotationsRef: { current: EditorAnnotation2D[] };
     planFixedElementsRef: { current: FixedElement2D[] };
-    planThemeRef: { current: PlanTheme };
-    planLayersRef: { current: PlanLayers };
-    planLayerPresetRef: { current: PlanLayerPresetId };
-    planMeasurementUnitRef: { current: PlanMeasurementUnit };
-    exportStylePresetRef: { current: ExportStylePreset };
     floorPlanUnderlayRef: { current: FloorPlanUnderlay | null };
   };
 };
@@ -423,46 +313,22 @@ export function useDesignPageDocumentRefSynchronization({
   actions,
   refs,
 }: UseDesignPageDocumentRefSynchronizationInput) {
-  const {
-    designSnapshot,
-    planOpenings,
-    planAnnotations,
-    planFixedElements,
-    planTheme,
-    planLayers,
-    planLayerPreset,
-    planMeasurementUnit,
-    exportStylePreset,
-    floorPlanUnderlay,
-  } = state;
+  const { planOpenings, planAnnotations, planFixedElements, floorPlanUnderlay } =
+    state;
   const {
     setDesignSnapshot,
-    setPlanAnnotationsState,
-    setPlanFixedElementsState,
-    setPlanOpeningsState,
-    setPlanThemeState,
-    setPlanLayersState,
-    setPlanLayerPresetState,
-    setPlanMeasurementUnitState,
-    setExportStylePresetState,
-    setFloorPlanUnderlayState,
+    setPlanAnnotations,
+    setPlanFixedElements,
+    setPlanOpenings,
+    setFloorPlanUnderlay,
   } = actions;
   const {
     designSnapshotRef,
     planOpeningsRef,
     planAnnotationsRef,
     planFixedElementsRef,
-    planThemeRef,
-    planLayersRef,
-    planLayerPresetRef,
-    planMeasurementUnitRef,
-    exportStylePresetRef,
     floorPlanUnderlayRef,
   } = refs;
-
-  useEffect(() => {
-    designSnapshotRef.current = designSnapshot;
-  }, [designSnapshot, designSnapshotRef]);
 
   useEffect(() => {
     planOpeningsRef.current = planOpenings;
@@ -477,26 +343,6 @@ export function useDesignPageDocumentRefSynchronization({
   }, [planFixedElements, planFixedElementsRef]);
 
   useEffect(() => {
-    planThemeRef.current = planTheme;
-  }, [planTheme, planThemeRef]);
-
-  useEffect(() => {
-    planLayersRef.current = planLayers;
-  }, [planLayers, planLayersRef]);
-
-  useEffect(() => {
-    planLayerPresetRef.current = planLayerPreset;
-  }, [planLayerPreset, planLayerPresetRef]);
-
-  useEffect(() => {
-    planMeasurementUnitRef.current = planMeasurementUnit;
-  }, [planMeasurementUnit, planMeasurementUnitRef]);
-
-  useEffect(() => {
-    exportStylePresetRef.current = exportStylePreset;
-  }, [exportStylePreset, exportStylePresetRef]);
-
-  useEffect(() => {
     floorPlanUnderlayRef.current = floorPlanUnderlay;
   }, [floorPlanUnderlay, floorPlanUnderlayRef]);
 
@@ -505,35 +351,15 @@ export function useDesignPageDocumentRefSynchronization({
     planAnnotations: planAnnotationsRef.current,
     planFixedElements: planFixedElementsRef.current,
     planOpenings: planOpeningsRef.current,
-    planTheme: planThemeRef.current,
-    planLayers: planLayersRef.current,
-    planLayerPreset: planLayerPresetRef.current,
-    planMeasurementUnit: planMeasurementUnitRef.current,
-    exportStylePreset: exportStylePresetRef.current,
     floorPlanUnderlay: floorPlanUnderlayRef.current,
   });
 
   const restoreHistorySnapshot = (snapshot: DesignPageHistorySnapshot) => {
-    designSnapshotRef.current = snapshot.designSnapshot;
     setDesignSnapshot(snapshot.designSnapshot);
-    planAnnotationsRef.current = snapshot.planAnnotations;
-    setPlanAnnotationsState(snapshot.planAnnotations);
-    planFixedElementsRef.current = snapshot.planFixedElements;
-    setPlanFixedElementsState(snapshot.planFixedElements);
-    planOpeningsRef.current = snapshot.planOpenings;
-    setPlanOpeningsState(snapshot.planOpenings);
-    planThemeRef.current = snapshot.planTheme;
-    setPlanThemeState(snapshot.planTheme);
-    planLayersRef.current = snapshot.planLayers;
-    setPlanLayersState(snapshot.planLayers);
-    planLayerPresetRef.current = snapshot.planLayerPreset;
-    setPlanLayerPresetState(snapshot.planLayerPreset);
-    planMeasurementUnitRef.current = snapshot.planMeasurementUnit;
-    setPlanMeasurementUnitState(snapshot.planMeasurementUnit);
-    exportStylePresetRef.current = snapshot.exportStylePreset;
-    setExportStylePresetState(snapshot.exportStylePreset);
-    floorPlanUnderlayRef.current = snapshot.floorPlanUnderlay;
-    setFloorPlanUnderlayState(snapshot.floorPlanUnderlay);
+    setPlanAnnotations(snapshot.planAnnotations);
+    setPlanFixedElements(snapshot.planFixedElements);
+    setPlanOpenings(snapshot.planOpenings);
+    setFloorPlanUnderlay(snapshot.floorPlanUnderlay);
   };
 
   return {

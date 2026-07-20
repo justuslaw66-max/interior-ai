@@ -18,6 +18,10 @@ export interface DesignPageScenePerformanceQaSnapshot {
   sceneItemCount: number;
   lastFps: number | null;
   fpsSamples: number;
+  drawCalls: number;
+  triangles: number;
+  geometries: number;
+  textures: number;
 }
 
 export interface DesignPageLayoutQaSnapshot {
@@ -200,6 +204,10 @@ export function DesignPageRuntimeQaMarkers({
           data-scene-item-count={String(scenePerformance.sceneItemCount)}
           data-last-fps={scenePerformance.lastFps === null ? "" : String(scenePerformance.lastFps)}
           data-fps-samples={String(scenePerformance.fpsSamples)}
+          data-draw-calls={String(scenePerformance.drawCalls)}
+          data-triangles={String(scenePerformance.triangles)}
+          data-geometries={String(scenePerformance.geometries)}
+          data-textures={String(scenePerformance.textures)}
           hidden
         />
       ) : null}

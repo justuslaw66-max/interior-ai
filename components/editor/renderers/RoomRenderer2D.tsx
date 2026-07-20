@@ -42,6 +42,7 @@ import {
   mergeSharedWallSegments2D,
   splitWallBandByOpenings2D,
 } from "@/lib/room-renderer-2d-walls";
+import { EDITOR_GEOMETRY_TOLERANCES } from "@/lib/editor-geometry-tolerances";
 import type { Plan2DViewOrientation } from "@/components/editor/camera/EditorCamera2D";
 import {
   CanonicalFloorPlanWalls2D,
@@ -299,7 +300,8 @@ function HouseRoomFloorFill2D({
 
 const DRAW_WORKSPACE_MIN_SIZE_METERS = 60;
 const DRAW_WORKSPACE_PADDING_METERS = 20;
-const DRAW_SNAP_VISUAL_EPSILON_METERS = 0.01;
+const DRAW_SNAP_VISUAL_EPSILON_METERS =
+  EDITOR_GEOMETRY_TOLERANCES.drawSnapMeters;
 
 type RoomDrawGuideLine = {
   id: string;
@@ -1389,6 +1391,7 @@ export default function RoomRenderer2D({
   const roomDrawLatestPointRef = useRef<FloorPlanPoint | null>(null);
   const roomDrawDragMovedRef = useRef(false);
   const nativeRoomDrawPointerIdsRef = useRef<Set<number>>(new Set());
+  const activeWindowGestureCleanupRef = useRef<(() => void) | null>(null);
   const roomDragPreviewFrameRef = useRef<number | null>(null);
   const pendingRoomDragPreviewRef = useRef<{
     id: string;
@@ -1430,6 +1433,21 @@ export default function RoomRenderer2D({
   } | null>(null);
   const [planZoom, setPlanZoom] = useState(readPlanZoom);
   const planZoomRef = useRef(planZoom);
+
+  const registerWindowGestureCleanup = useCallback((cleanup: () => void) => {
+    activeWindowGestureCleanupRef.current?.();
+    let active = true;
+    const registeredCleanup = () => {
+      if (!active) return;
+      active = false;
+      cleanup();
+      if (activeWindowGestureCleanupRef.current === registeredCleanup) {
+        activeWindowGestureCleanupRef.current = null;
+      }
+    };
+    activeWindowGestureCleanupRef.current = registeredCleanup;
+    return registeredCleanup;
+  }, []);
 
   const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
   const planLabelDensity = useMemo(() => {
@@ -1549,11 +1567,12 @@ export default function RoomRenderer2D({
 
   useEffect(() => {
     return () => {
+      activeWindowGestureCleanupRef.current?.();
       if (roomDragPreviewFrameRef.current !== null) {
         window.cancelAnimationFrame(roomDragPreviewFrameRef.current);
       }
     };
-  }, []);
+  }, [registerWindowGestureCleanup]);
 
   const canDrawRoomOnGrid = drawRoomMode;
   const activeDrawRoomPoints = useMemo(
@@ -2120,11 +2139,10 @@ export default function RoomRenderer2D({
       moveRoomDragToClientPoint(room, moveEvent.clientX, moveEvent.clientY);
     };
 
+    let cleanupWindowGesture = () => {};
     const onPointerUp = (upEvent: PointerEvent) => {
       stopDomRoomMoveEvent(upEvent);
-      window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("pointerup", onPointerUp);
-      window.removeEventListener("pointercancel", onPointerUp);
+      cleanupWindowGesture();
       try {
         moveTarget.releasePointerCapture(pointerId);
       } catch {}
@@ -2134,6 +2152,14 @@ export default function RoomRenderer2D({
     window.addEventListener("pointermove", onPointerMove);
     window.addEventListener("pointerup", onPointerUp, { once: true });
     window.addEventListener("pointercancel", onPointerUp, { once: true });
+    cleanupWindowGesture = registerWindowGestureCleanup(() => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerUp);
+      try {
+        moveTarget.releasePointerCapture(pointerId);
+      } catch {}
+    });
   };
 
   const moveCameraNavigationHandle = (
@@ -2364,6 +2390,7 @@ export default function RoomRenderer2D({
       setLocalDrawPreviewPoint(snappedPoint);
       onDrawRoomPreviewPoint?.(snappedPoint);
     };
+    let cleanupWindowGesture = () => {};
     const handleWindowPointerUp = (upEvent: PointerEvent) => {
       const endPoint =
         getDrawPointFromClientPosition(upEvent.clientX, upEvent.clientY) ??
@@ -2382,12 +2409,15 @@ export default function RoomRenderer2D({
       roomDrawDragMovedRef.current = false;
       setLocalDrawStartPoint(null);
       setLocalDrawPreviewPoint(null);
-      window.removeEventListener("pointermove", handleWindowPointerMove);
-      window.removeEventListener("pointerup", handleWindowPointerUp);
+      cleanupWindowGesture();
     };
 
     window.addEventListener("pointermove", handleWindowPointerMove);
     window.addEventListener("pointerup", handleWindowPointerUp, { once: true });
+    cleanupWindowGesture = registerWindowGestureCleanup(() => {
+      window.removeEventListener("pointermove", handleWindowPointerMove);
+      window.removeEventListener("pointerup", handleWindowPointerUp);
+    });
   };
 
   const handleRoomDrawPointerMove = (event: ThreeEvent<PointerEvent>) => {
@@ -2663,13 +2693,12 @@ export default function RoomRenderer2D({
       resizeRoomFromEdges(room, handle, edges, deltaX, deltaZ);
     };
 
+    let cleanupWindowGesture = () => {};
     const onPointerUp = (upEvent: PointerEvent) => {
       upEvent.preventDefault();
       upEvent.stopPropagation();
       upEvent.stopImmediatePropagation?.();
-      window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("pointerup", onPointerUp);
-      window.removeEventListener("pointercancel", onPointerUp);
+      cleanupWindowGesture();
       try {
         resizeTarget.releasePointerCapture(resizePointerId);
       } catch {}
@@ -2679,6 +2708,14 @@ export default function RoomRenderer2D({
     window.addEventListener("pointermove", onPointerMove);
     window.addEventListener("pointerup", onPointerUp, { once: true });
     window.addEventListener("pointercancel", onPointerUp, { once: true });
+    cleanupWindowGesture = registerWindowGestureCleanup(() => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerUp);
+      try {
+        resizeTarget.releasePointerCapture(resizePointerId);
+      } catch {}
+    });
   };
 
   const roomResizeHandles: Array<{
@@ -2704,7 +2741,7 @@ export default function RoomRenderer2D({
     const endX = workspaceWidth / 2;
     const startZ = -workspaceDepth / 2;
     const endZ = workspaceDepth / 2;
-    const epsilon = 1e-6;
+    const epsilon = EDITOR_GEOMETRY_TOLERANCES.boundaryMeters;
 
     for (let x = startX; x <= endX + epsilon; x += gridStep) {
       const mm = Math.round(Math.abs(x * 1000));
@@ -2843,7 +2880,7 @@ export default function RoomRenderer2D({
           const dx = navigationTargetPoint.x - navigationCameraPoint.x;
           const dz = navigationTargetPoint.z - navigationCameraPoint.z;
           const length = Math.hypot(dx, dz);
-          if (length <= 0.001) return [];
+          if (length <= EDITOR_GEOMETRY_TOLERANCES.wallSegmentMeters) return [];
           const dashLength = 0.18;
           const gapLength = 0.14;
           const step = dashLength + gapLength;

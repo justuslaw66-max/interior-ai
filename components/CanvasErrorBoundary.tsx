@@ -24,8 +24,7 @@ export class CanvasErrorBoundary extends React.Component<CanvasErrorBoundaryProp
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     try {
-      console.error('Canvas Error:', error, errorInfo);
-      console.error('Canvas Error Stack:', error?.stack);
+      console.error('Canvas render failed', { errorType: error.name });
     } catch {
       // Never let logging throw from an error boundary callback.
     }
@@ -39,15 +38,25 @@ export class CanvasErrorBoundary extends React.Component<CanvasErrorBoundaryProp
         try {
           const sentryContext = await import('@/lib/sentry-context');
 
+          const safeError = new Error(
+            message.includes('WebGL') || message.includes('context')
+              ? 'WebGL render failure'
+              : 'Canvas render failure'
+          );
           if (message.includes('WebGL') || message.includes('context')) {
-            sentryContext.captureWebGLError(error);
+            sentryContext.captureWebGLError(safeError);
             return;
           }
 
-          sentryContext.captureCanvasBoundaryError(error, errorInfo.componentStack ?? undefined);
+          sentryContext.captureCanvasBoundaryError(
+            safeError,
+            errorInfo.componentStack ?? undefined
+          );
         } catch (reportingError) {
           try {
-            console.error('Canvas error reporting failed:', reportingError);
+            console.error('Canvas error reporting failed', {
+              errorType: reportingError instanceof Error ? reportingError.name : 'unknown',
+            });
           } catch {
             // Ignore all secondary failures while reporting errors.
           }
@@ -55,7 +64,9 @@ export class CanvasErrorBoundary extends React.Component<CanvasErrorBoundaryProp
       });
     } catch (reportingError) {
       try {
-        console.error('Canvas error reporting failed:', reportingError);
+        console.error('Canvas error reporting failed', {
+          errorType: reportingError instanceof Error ? reportingError.name : 'unknown',
+        });
       } catch {
         // Ignore all secondary failures while reporting errors.
       }
@@ -76,7 +87,7 @@ export class CanvasErrorBoundary extends React.Component<CanvasErrorBoundaryProp
                 Oops! The 3D view encountered an error
               </h2>
               <p className="mb-4 text-sm text-gray-600">
-                {this.state.error?.message || 'Unknown error'}
+                The last valid design is still saved. Retry the 3D view or reload the page.
               </p>
               <p className="mb-6 text-xs text-gray-500">
                 We&apos;ve logged this issue. Please try refreshing or disabling hardware acceleration.

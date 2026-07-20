@@ -22,7 +22,7 @@ export const runtime = "nodejs";
 // The canonical candidate remains independently capped at 5 MB. The request
 // envelope leaves bounded room for review issues, optimistic versioning, and
 // the correction note without permitting an unbounded JSON buffer.
-export const MAX_FLOOR_PLAN_CANDIDATE_MUTATION_BODY_BYTES =
+const MAX_FLOOR_PLAN_CANDIDATE_MUTATION_BODY_BYTES =
   MAX_FLOOR_PLAN_CANDIDATE_BYTES + 2 * 1024 * 1024;
 
 function error(message: string, status: number) {

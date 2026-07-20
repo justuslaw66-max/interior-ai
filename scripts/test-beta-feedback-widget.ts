@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { buildDesignPageBetaFeedbackContext } from "../lib/design-page-beta-feedback";
 import { buildDesignPageDialogLayerAdapter } from "../lib/design-page-dialog-layer-adapter";
 import { buildDesignPageDialogLayerModel } from "../lib/design-page-dialog-layer-model";
+import { resolveEditorCapabilities } from "../lib/editor-capabilities";
 
 const widgetSource = readFileSync(
   join(process.cwd(), "components/BetaFeedbackWidget.tsx"),
@@ -200,7 +201,7 @@ const dialogModel = buildDesignPageDialogLayerModel({
   access: {
     isClientPreview: false,
     isAuthenticated: true,
-    isPro: true,
+    capabilities: resolveEditorCapabilities("pro"),
     designerTheme: false,
   },
   billing: {

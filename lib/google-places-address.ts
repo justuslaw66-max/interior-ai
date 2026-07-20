@@ -50,8 +50,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
-function readText(value: unknown) {
-  return typeof value === "string" ? value.trim() : "";
+function readText(value: unknown, maxLength = 500) {
+  return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
 }
 
 function readLocalizedText(value: unknown) {
@@ -60,12 +60,23 @@ function readLocalizedText(value: unknown) {
 }
 
 async function googleUpstreamError(response: Response) {
-  const payload = await response.json().catch(() => null);
-  const error = isRecord(payload) && isRecord(payload.error) ? payload.error : null;
-  const reason = error
-    ? readText(error.message) || readText(error.status)
-    : "";
-  return new GooglePlacesUpstreamError(response.status, reason.slice(0, 500));
+  return new GooglePlacesUpstreamError(response.status, `status_${response.status}`);
+}
+
+async function readBoundedGoogleJson(response: Response) {
+  const declaredLength = Number(response.headers.get("content-length"));
+  if (Number.isFinite(declaredLength) && declaredLength > 1024 * 1024) {
+    throw new GooglePlacesUpstreamError(502, "response_too_large");
+  }
+  const text = await response.text();
+  if (new TextEncoder().encode(text).byteLength > 1024 * 1024) {
+    throw new GooglePlacesUpstreamError(502, "response_too_large");
+  }
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    throw new GooglePlacesUpstreamError(502, "invalid_json");
+  }
 }
 
 function googleMapsApiKey() {
@@ -106,7 +117,7 @@ export function parseGoogleAddressSuggestions(
   value: unknown
 ): GoogleAddressSuggestion[] {
   if (!isRecord(value) || !Array.isArray(value.suggestions)) return [];
-  return value.suggestions.flatMap((suggestion) => {
+  return value.suggestions.slice(0, 20).flatMap((suggestion) => {
     if (!isRecord(suggestion) || !isRecord(suggestion.placePrediction)) {
       return [];
     }
@@ -124,7 +135,7 @@ export function parseGoogleAddressSuggestions(
     const secondaryText = structured
       ? readLocalizedText(structured.secondaryText)
       : "";
-    if (!placeId || !text) return [];
+    if (!/^[A-Za-z0-9_-]{10,256}$/.test(placeId) || !text) return [];
     return [{ placeId, text, mainText: mainText || text, secondaryText }];
   });
 }
@@ -152,11 +163,11 @@ export function parseGoogleResolvedAddress(
     throw new Error("Google returned an invalid address response");
   }
   const components = Array.isArray(value.addressComponents)
-    ? value.addressComponents.filter(isRecord) as GoogleAddressComponent[]
+    ? value.addressComponents.slice(0, 100).filter(isRecord) as GoogleAddressComponent[]
     : [];
   const postalAddress = isRecord(value.postalAddress) ? value.postalAddress : null;
   const addressLines = postalAddress && Array.isArray(postalAddress.addressLines)
-    ? postalAddress.addressLines.map(readText).filter(Boolean)
+    ? postalAddress.addressLines.slice(0, 20).map((line) => readText(line, 300)).filter(Boolean)
     : [];
   const formattedAddress = readText(value.formattedAddress);
   const streetNumber = addressComponent(components, ["street_number", "premise"]);
@@ -166,12 +177,15 @@ export function parseGoogleResolvedAddress(
     addressComponent(components, ["country"], true)
   ).toUpperCase();
   const postalCode = addressComponent(components, ["postal_code"]);
+  const returnedPlaceId = readText(value.id, 256);
   const addressNormalized = addressLines.join(", ") || formattedAddress;
   const location = isRecord(value.location) ? value.location : null;
-  const latitude = location && typeof location.latitude === "number"
+  const latitude = location && typeof location.latitude === "number" &&
+    Number.isFinite(location.latitude) && location.latitude >= -90 && location.latitude <= 90
     ? location.latitude
     : null;
-  const longitude = location && typeof location.longitude === "number"
+  const longitude = location && typeof location.longitude === "number" &&
+    Number.isFinite(location.longitude) && location.longitude >= -180 && location.longitude <= 180
     ? location.longitude
     : null;
   if (!addressNormalized || !countryCode) {
@@ -179,7 +193,9 @@ export function parseGoogleResolvedAddress(
   }
   return {
     provider: "google",
-    placeId: readText(value.id) || expectedPlaceId,
+    placeId: /^[A-Za-z0-9_-]{10,256}$/.test(returnedPlaceId)
+      ? returnedPlaceId
+      : expectedPlaceId,
     addressNormalized,
     formattedAddress: formattedAddress || addressNormalized,
     countryCode,
@@ -221,7 +237,7 @@ export async function searchGoogleAddresses(input: {
     }),
   });
   if (!response.ok) throw await googleUpstreamError(response);
-  return parseGoogleAddressSuggestions(await response.json());
+  return parseGoogleAddressSuggestions(await readBoundedGoogleJson(response));
 }
 
 export async function resolveGoogleAddress(input: {
@@ -244,5 +260,5 @@ export async function resolveGoogleAddress(input: {
     },
   });
   if (!response.ok) throw await googleUpstreamError(response);
-  return parseGoogleResolvedAddress(await response.json(), placeId);
+  return parseGoogleResolvedAddress(await readBoundedGoogleJson(response), placeId);
 }

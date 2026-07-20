@@ -18,11 +18,7 @@ import {
   isBetaCheckoutBoundary,
   resolveCheckoutBoundaryDiagnostics,
 } from "@/lib/beta-checkout-boundary";
-
-function getErrorMessage(error: unknown): string {
-  if (error instanceof Error) return error.message;
-  return String(error);
-}
+import { readJsonRequest } from "@/lib/api-boundary";
 
 function getStripeClient() {
   const secretKey = process.env.STRIPE_SECRET_KEY;
@@ -54,7 +50,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Too many checkout requests" }, { status: 429 });
     }
 
-    const body = await req.json().catch(() => null);
+    const body = await readJsonRequest(req, 2 * 1024).catch(() => null);
     if (!body || typeof body !== "object" || Array.isArray(body)) {
       return NextResponse.json(
         { error: "Request body must include a billing interval", code: "invalid_request" },
@@ -196,21 +192,26 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ sessionId: checkoutSession.id, url: checkoutSession.url });
   } catch (error: unknown) {
-    const message = getErrorMessage(error);
-    console.error("Stripe checkout error:", message);
+    console.error("Stripe checkout failed", {
+      errorType: error instanceof Error ? error.name : "unknown",
+    });
 
     const boundary = resolveCheckoutBoundaryDiagnostics();
     if (isBetaCheckoutBoundary(boundary)) {
       return NextResponse.json(
         buildCheckoutBoundaryResponsePayload(
-          buildProviderFailureBoundaryDiagnostics(boundary, "stripe", message)
+          buildProviderFailureBoundaryDiagnostics(
+            boundary,
+            "stripe",
+            "Checkout provider request failed"
+          )
         ),
         { status: 503 }
       );
     }
 
     return NextResponse.json(
-      { error: message || "Unable to create checkout session" },
+      { error: "Unable to create checkout session. Please try again." },
       { status: 500 }
     );
   }

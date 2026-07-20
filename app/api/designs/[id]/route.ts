@@ -7,11 +7,24 @@ import { buildDesignUpdatePayload } from "@/lib/design-route-payload";
 import { sanitizePrivateFloorPlanUnderlayForSave } from "@/lib/floor-plan-imports/retention";
 import { projectSharedStoredDesign } from "@/lib/shared-design-snapshot";
 import { syncFloorPlanDesignReference } from "@/lib/floor-plan-design-reference";
+import {
+  ApiBoundaryError,
+  apiErrorResponse,
+  apiSuccessHeaders,
+  createOperationId,
+  readJsonRequest,
+} from "@/lib/api-boundary";
+import { logOperationalEvent } from "@/lib/observability";
+
+class DesignRevisionConflictError extends Error {}
 
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const operation = "design.get";
+  const operationId = createOperationId();
+  const startedAt = Date.now();
   try {
     const { id } = await params;
     const session = await auth();
@@ -20,9 +33,7 @@ export async function GET(
       where: { id },
     });
 
-    if (!design) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
-    }
+    if (!design) throw new ApiBoundaryError(404, "NOT_FOUND", "Design not found.");
 
     const isOwner = Boolean(session?.user?.id && design.userId === session.user.id);
     const hasValidShareToken = Boolean(
@@ -33,13 +44,22 @@ export async function GET(
     );
 
     if (!isOwner && !hasValidShareToken) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      // Return the same response as a missing object so IDs cannot be probed.
+      throw new ApiBoundaryError(404, "NOT_FOUND", "Design not found.");
     }
 
     const responseSnapshot = isOwner
       ? design.snapshot ?? null
       : projectSharedStoredDesign(design.snapshot);
 
+    logOperationalEvent({
+      operation,
+      operationId,
+      outcome: "succeeded",
+      durationMs: Date.now() - startedAt,
+      status: 200,
+      meta: { access: isOwner ? "owner" : "shared" },
+    });
     return NextResponse.json({
       id: design.id,
       title: design.title,
@@ -56,10 +76,9 @@ export async function GET(
       updatedAt: design.updatedAt,
       shareToken: isOwner ? design.shareToken : null,
       shareEnabled: isOwner ? design.shareEnabled : hasValidShareToken,
-    });
+    }, { headers: apiSuccessHeaders(operationId) });
   } catch (err) {
-    console.error("GET error:", err);
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    return apiErrorResponse(err, { operation, operationId, startedAt });
   }
 }
 
@@ -67,25 +86,35 @@ export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const operation = "design.update";
+  const operationId = createOperationId();
+  const startedAt = Date.now();
   try {
     const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      throw new ApiBoundaryError(401, "UNAUTHORIZED", "Sign in to continue.");
     }
     const userId = session.user.id;
 
-    const design = await prisma.design.findUnique({ where: { id } });
-    if (!design) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
-    }
-    if (design.userId !== userId) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const design = await prisma.design.findFirst({ where: { id, userId } });
+    if (!design) throw new ApiBoundaryError(404, "NOT_FOUND", "Design not found.");
 
-    const body = await req.json();
+    const body = await readJsonRequest(req, 5 * 1024 * 1024);
     const payload = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
     const items = payload.items;
+    const expectedUpdatedAt = payload.expectedUpdatedAt;
+    if (
+      expectedUpdatedAt !== undefined &&
+      (typeof expectedUpdatedAt !== "string" ||
+        !Number.isFinite(Date.parse(expectedUpdatedAt)))
+    ) {
+      throw new ApiBoundaryError(
+        400,
+        "BAD_REQUEST",
+        "expectedUpdatedAt must be a valid revision timestamp."
+      );
+    }
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -94,18 +123,12 @@ export async function PUT(
     const isProUser = user?.plan === "pro";
     const itemsArr = Array.isArray(items) ? items : [];
     if (!isProUser && itemsArr.length > 20) {
-      return NextResponse.json(
-        { error: "Free beta limit: max 20 items per design." },
-        { status: 403 }
-      );
+        throw new ApiBoundaryError(403, "FORBIDDEN", "Free beta limit: max 20 items per design.");
     }
 
     const updatePayload = buildDesignUpdatePayload(payload);
     if (!updatePayload.ok) {
-      return NextResponse.json(
-        { error: updatePayload.error },
-        { status: updatePayload.status }
-      );
+      throw new ApiBoundaryError(updatePayload.status, "BAD_REQUEST", updatePayload.error);
     }
     const updateData = updatePayload.value;
     if (updateData.items) updateData.items = updateData.items as Prisma.InputJsonValue;
@@ -121,10 +144,32 @@ export async function PUT(
           })
         ).snapshot as Prisma.InputJsonValue;
       }
-      const saved = await transaction.design.update({
-        where: { id },
-        data: updateData,
-      });
+      let saved;
+      if (typeof expectedUpdatedAt === "string") {
+        const result = await transaction.design.updateMany({
+          where: {
+            id,
+            userId,
+            updatedAt: new Date(expectedUpdatedAt),
+          },
+          data: updateData,
+        });
+        if (result.count !== 1) {
+          throw new DesignRevisionConflictError(
+            "This design changed in another session. Reload it before saving again."
+          );
+        }
+        saved = await transaction.design.findUniqueOrThrow({ where: { id } });
+      } else {
+        const result = await transaction.design.updateMany({
+          where: { id, userId },
+          data: updateData,
+        });
+        if (result.count !== 1) {
+          throw new ApiBoundaryError(404, "NOT_FOUND", "Design not found.");
+        }
+        saved = await transaction.design.findFirstOrThrow({ where: { id, userId } });
+      }
       await syncFloorPlanDesignReference({
         client: transaction,
         designId: saved.id,
@@ -134,10 +179,25 @@ export async function PUT(
       return saved;
     });
 
-    return NextResponse.json({ id: updated.id, updatedAt: updated.updatedAt });
+    logOperationalEvent({
+      operation,
+      operationId,
+      outcome: "succeeded",
+      durationMs: Date.now() - startedAt,
+      status: 200,
+    });
+    return NextResponse.json(
+      { id: updated.id, updatedAt: updated.updatedAt },
+      { headers: apiSuccessHeaders(operationId) }
+    );
   } catch (err) {
-    console.error("PUT error:", err);
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    if (err instanceof DesignRevisionConflictError) {
+      return apiErrorResponse(
+        new ApiBoundaryError(409, "CONFLICT", err.message),
+        { operation, operationId, startedAt }
+      );
+    }
+    return apiErrorResponse(err, { operation, operationId, startedAt });
   }
 }
 
@@ -145,26 +205,32 @@ export async function DELETE(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const operation = "design.delete";
+  const operationId = createOperationId();
+  const startedAt = Date.now();
   try {
     const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      throw new ApiBoundaryError(401, "UNAUTHORIZED", "Sign in to continue.");
     }
 
-    const design = await prisma.design.findUnique({ where: { id } });
-    if (!design) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
-    }
-    if (design.userId !== session.user.id) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const design = await prisma.design.findFirst({
+      where: { id, userId: session.user.id },
+    });
+    if (!design) throw new ApiBoundaryError(404, "NOT_FOUND", "Design not found.");
 
-    await prisma.design.delete({ where: { id } });
+    const deleted = await prisma.design.deleteMany({
+      where: { id, userId: session.user.id },
+    });
+    if (deleted.count !== 1) {
+      throw new ApiBoundaryError(404, "NOT_FOUND", "Design not found.");
+    }
 
     // Server-side PostHog tracking for design deletion (churn analysis)
-    const posthog = getPostHogClient();
-    posthog.capture({
+    try {
+      const posthog = getPostHogClient();
+      posthog.capture({
       distinctId: session.user.id,
       event: "design_deleted",
       properties: {
@@ -173,11 +239,20 @@ export async function DELETE(
         budget: design.budget ?? null,
         mode: design.mode ?? null,
       },
-    });
+      });
+    } catch {
+      // Analytics is non-blocking.
+    }
 
-    return NextResponse.json({ ok: true });
+    logOperationalEvent({
+      operation,
+      operationId,
+      outcome: "succeeded",
+      durationMs: Date.now() - startedAt,
+      status: 200,
+    });
+    return NextResponse.json({ ok: true }, { headers: apiSuccessHeaders(operationId) });
   } catch (err) {
-    console.error("DELETE error:", err);
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    return apiErrorResponse(err, { operation, operationId, startedAt });
   }
 }

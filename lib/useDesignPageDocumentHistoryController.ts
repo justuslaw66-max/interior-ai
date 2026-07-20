@@ -9,6 +9,8 @@ import {
 } from "react";
 
 import { useUndoRedoHotkeys } from "@/hooks/useUndoRedoHotkeys";
+import { CATALOG_ITEMS } from "@/lib/catalog";
+import { enrichDesignSnapshotProductSnapshots } from "@/lib/design-item-product-snapshot";
 import { isPersistableFloorPlanAssetUrl } from "@/lib/design-page-floor-plan-utils";
 import type { PlanLayerPresetId, PlanMeasurementUnit } from "@/lib/design-page-types";
 import type {
@@ -44,6 +46,7 @@ export type UseDesignPageDocumentHistoryControllerInput = {
   state: {
     designSnapshot: DesignSnapshot;
     floorPlanUnderlay: FloorPlanUnderlay | null;
+    planAnnotations: EditorAnnotation2D[];
     planOpenings: RoomOpening2D[];
     planFixedElements: FixedElement2D[];
   };
@@ -55,6 +58,9 @@ export type UseDesignPageDocumentHistoryControllerInput = {
   actions: {
     setFloorPlanUnderlay: (
       next: FunctionalStateAction<FloorPlanUnderlay | null>
+    ) => void;
+    setPlanAnnotations: (
+      next: FunctionalStateAction<EditorAnnotation2D[]>
     ) => void;
     setPlanOpenings: (next: FunctionalStateAction<RoomOpening2D[]>) => void;
     setPlanFixedElements: (
@@ -73,12 +79,14 @@ export function useDesignPageDocumentHistoryController({
   state: {
     designSnapshot,
     floorPlanUnderlay,
+    planAnnotations,
     planOpenings,
     planFixedElements,
   },
   adapters,
   actions: {
     setFloorPlanUnderlay,
+    setPlanAnnotations,
     setPlanOpenings,
     setPlanFixedElements,
     setFloorPlanPdfSourceReady,
@@ -105,6 +113,7 @@ export function useDesignPageDocumentHistoryController({
 
       if (
         !underlay &&
+        planAnnotations.length === 0 &&
         planOpenings.length === 0 &&
         planFixedElements.length === 0 &&
         !canonical?.canonicalDocument
@@ -115,11 +124,18 @@ export function useDesignPageDocumentHistoryController({
       return {
         ...canonical,
         underlay,
+        annotations: planAnnotations,
         openings: planOpenings,
         fixedElements: planFixedElements,
       };
     },
-    [designSnapshotRef, floorPlanUnderlay, planFixedElements, planOpenings]
+    [
+      designSnapshotRef,
+      floorPlanUnderlay,
+      planAnnotations,
+      planFixedElements,
+      planOpenings,
+    ]
   );
 
   const buildDesignSnapshotForPersistence = useCallback(
@@ -133,7 +149,7 @@ export function useDesignPageDocumentHistoryController({
         delete nextSnapshot.floorPlan;
       }
 
-      return nextSnapshot;
+      return enrichDesignSnapshotProductSnapshots(nextSnapshot, CATALOG_ITEMS);
     },
     [buildPersistedFloorPlanState, designSnapshotRef]
   );
@@ -166,13 +182,13 @@ export function useDesignPageDocumentHistoryController({
           floorPlanPdfSourceDataRef.current = null;
           setFloorPlanPdfSourceReady(false);
           setFloorPlanUnderlay(null);
+          setPlanAnnotations([]);
           setPlanOpenings([]);
           setPlanFixedElements([]);
         }
         return;
       }
 
-      history.begin("Apply plan template");
       floorPlanPdfSourceDataRef.current = null;
       setFloorPlanPdfSourceReady(false);
       setFloorPlanUnderlay(
@@ -188,6 +204,9 @@ export function useDesignPageDocumentHistoryController({
             }
           : null
       );
+      setPlanAnnotations(
+        Array.isArray(floorPlan.annotations) ? floorPlan.annotations : []
+      );
       setPlanOpenings(
         Array.isArray(floorPlan.openings) ? floorPlan.openings : []
       );
@@ -198,11 +217,11 @@ export function useDesignPageDocumentHistoryController({
     },
     [
       floorPlanPdfSourceDataRef,
-      history,
       resetFloorPlanInteraction,
       revokeFloorPlanUnderlayUrl,
       setFloorPlanPdfSourceReady,
       setFloorPlanUnderlay,
+      setPlanAnnotations,
       setPlanFixedElements,
       setPlanOpenings,
     ]
@@ -241,7 +260,7 @@ export function useDesignPageHistoryShortcuts({
   const canRedo = history.canRedo();
   const undoName = history.getUndoName();
   const redoName = history.getRedoName();
-  const historyDebugSnapshot = history.getHistory();
+  const historyStatus = history.getStatus();
 
   const undoSafe = useCallback(() => {
     if (isClientPreview) return;
@@ -265,7 +284,7 @@ export function useDesignPageHistoryShortcuts({
       canRedo,
       undoName,
       redoName,
-      historyDebugSnapshot,
+      historyStatus,
     },
     actions: { undoSafe, redoSafe },
   };

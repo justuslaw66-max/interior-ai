@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { buildDesignPageDialogLayerModel } from "../lib/design-page-dialog-layer-model";
+import { resolveEditorCapabilities } from "../lib/editor-capabilities";
 
 const designPagePath = path.join(
   process.cwd(),
@@ -14,6 +15,10 @@ const designPagePath = path.join(
 const source = fs.readFileSync(designPagePath, "utf8");
 const controllerPath = path.join(process.cwd(), "lib", "useDesignPagePersistence.ts");
 const controllerSource = fs.readFileSync(controllerPath, "utf8");
+const designApiSource = fs.readFileSync(
+  path.join(process.cwd(), "lib", "design-api-client.ts"),
+  "utf8"
+);
 const dialogPath = path.join(
   process.cwd(),
   "components",
@@ -65,8 +70,13 @@ assert.match(
 
 assert.match(
   controllerSource,
-  /const handleDeleteSavedDesign = useCallback\(async \(\) => \{[\s\S]*?for \(const targetId of targetIds\) \{[\s\S]*?fetch\(`\/api\/designs\/\$\{targetId\}`,[\s\S]*?method: "DELETE"/,
-  "Deleting from My Designs should call the existing design DELETE API for each selected design."
+  /const handleDeleteSavedDesign = useCallback\(async \(\) => \{[\s\S]*?for \(const targetId of targetIds\) \{[\s\S]*?await designApi\.delete\(targetId\)/,
+  "Deleting from My Designs should use the shared design API client for each selected design."
+);
+assert.match(
+  designApiSource,
+  /delete\(id: string,[\s\S]*?fetchJson\(`\/api\/designs\/\$\{encodeURIComponent\(id\)\}`,[\s\S]*?method: "DELETE"/,
+  "The shared design API client should retain the encoded design DELETE endpoint."
 );
 
 assert.match(
@@ -131,7 +141,7 @@ const dialogModel = buildDesignPageDialogLayerModel({
   access: {
     isClientPreview: false,
     isAuthenticated: true,
-    isPro: true,
+    capabilities: resolveEditorCapabilities("pro"),
     designerTheme: true,
   },
   billing: {

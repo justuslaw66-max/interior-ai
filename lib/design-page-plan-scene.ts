@@ -1,4 +1,5 @@
 import type { CATALOG_ITEMS } from "@/lib/catalog";
+import { resolveDesignItemVisualProduct } from "@/lib/design-item-product-snapshot";
 import type { DesignItem } from "@/lib/room-types";
 import {
   metersToMm,
@@ -40,7 +41,7 @@ export function buildEditorScene2D({
       depthMm: metersToMm(roomDepth),
     },
     items: items.map((item) => {
-      const product = catalogItems[item.productId];
+      const product = resolveDesignItemVisualProduct(item, catalogItems);
       const planning = itemPlanningBoundsByInstanceId[item.instanceId];
       const dimsW = planning?.w ?? product?.dimsMm.w ?? 0;
       const dimsD = planning?.d ?? product?.dimsMm.d ?? 0;

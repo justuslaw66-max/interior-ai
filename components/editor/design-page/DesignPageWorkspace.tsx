@@ -1,9 +1,9 @@
 "use client";
 
-import { isPro } from "@/lib/plan";
 import { DesignPageComposition } from "@/components/editor/design-page/DesignPageComposition";
 import { DesignPageEditorChrome } from "@/components/editor/design-page/DesignPageEditorChrome";
 import { DesignPageDialogLayer } from "@/components/editor/design-page/DesignPageDialogLayer";
+import { LocalBackupRecoveryDialog } from "@/components/editor/design-page/LocalBackupRecoveryDialog";
 import { DesignPagePanelRegion } from "@/components/editor/design-page/DesignPagePanelRegion";
 import { DesignPagePresentationQaLayer } from "@/components/editor/design-page/DesignPagePresentationQaLayer";
 import { DesignPageSceneRegion } from "@/components/editor/design-page/DesignPageSceneRegion";
@@ -52,6 +52,7 @@ export function DesignPageWorkspace() {
     },
     derived: {
       access: {
+        capabilities,
         wantsDesigner,
         canUseDesigner,
         isClientPreview,
@@ -78,7 +79,6 @@ export function DesignPageWorkspace() {
     state: {
       identity: { session, designId },
       brief: { mode },
-      access: { plan },
       dialogs: { showPlans, feedbackOpen, showUpgrade },
       paywall: {
         upgradeReason,
@@ -437,7 +437,7 @@ export function DesignPageWorkspace() {
     boundaries: { presentation: presentationQaWorkspace },
   }).regions.panel;
   const dialogLayerModel = buildDesignPageDialogLayerAdapter(buildDesignPageDialogLayerModel({
-    access: { isClientPreview, isAuthenticated: Boolean(session?.user), isPro: isPro(plan), designerTheme: showDesignerTheme },
+    access: { isClientPreview, isAuthenticated: Boolean(session?.user), capabilities, designerTheme: showDesignerTheme },
     billing: {
       upgrade: { open: showUpgrade, variantLabel: upgradeCtaVariant, contentVariant: upgradeCtaVariant,
         description: upgradeDialogDescription, exportWorkflowBenefit: upgradeDialogExportWorkflowBenefit,
@@ -518,6 +518,10 @@ export function DesignPageWorkspace() {
       </div>
       <DesignPagePanelRegion {...panelRegionModel} />
       <DesignPageDialogLayer {...dialogLayerModel} />
+      <LocalBackupRecoveryDialog
+        state={presentationBackupRegistration.state.localBackupRecovery}
+        actions={presentationBackupRegistration.actions.localBackupRecovery}
+      />
     </DesignPageComposition>
   );
 }

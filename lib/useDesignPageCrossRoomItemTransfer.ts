@@ -14,6 +14,11 @@ import {
   ROOM_DIMENSION_DEFAULTS,
   type HousePlanRoom2D,
 } from "@/lib/design-page-house-plan";
+import {
+  applyMoveItemsBetweenRoomsCommand,
+  SCENE_ITEM_DRAG_COMMAND_ID,
+} from "@/lib/design-page-item-commands";
+import type { HistoryCommand } from "@/lib/historyManager";
 import type {
   ClampToPlacementRoom,
   FindPlacementBlockerInRoom,
@@ -28,8 +33,10 @@ import type {
 type ItemPosition = [number, number, number];
 
 type DesignPageRoomTransferHistory = {
-  begin: (name: string) => void;
-  commit: () => void;
+  executeCommand: <TInput, TResult>(
+    command: HistoryCommand<TInput, TResult>
+  ) => TResult;
+  rollbackContinuousCommand: (commandId: string) => void;
 };
 
 type DesignPageCrossRoomItemTransferConfiguration = {
@@ -207,38 +214,29 @@ export function transferDesignPageItemToRoom({
     return false;
   }
 
-  const sourceItems = sourceRoom.items.filter(
-    (entry) => entry.instanceId !== instanceId
-  );
-  const sourceZones = sourceRoom.zones
-    .map((zone) => ({
-      ...zone,
-      itemIds: zone.itemIds.filter((itemId) => itemId !== instanceId),
-    }))
-    .filter((zone) => zone.itemIds.length > 0);
-  const targetItems = [...targetRoom.items, movedItem];
-
   if (dragCommitRef.current) {
-    history.commit();
+    history.rollbackContinuousCommand(SCENE_ITEM_DRAG_COMMAND_ID);
     dragCommitRef.current = false;
   }
-  history.begin(`Move item to ${targetRoom.name}`);
-  const nextSnapshot: DesignSnapshot = {
-    ...snapshot,
-    activeRoomId: targetRoom.id,
-    rooms: snapshot.rooms.map((room) => {
-      if (room.id === sourceRoom.id) {
-        return { ...room, items: sourceItems, zones: sourceZones };
-      }
-      if (room.id === targetRoom.id) {
-        return { ...room, items: targetItems };
-      }
-      return room;
-    }),
-  };
-  itemsRef.current = targetItems;
-  setDesignSnapshot(nextSnapshot);
-  history.commit();
+  history.executeCommand({
+    id: "move-item-between-rooms",
+    description: `Move item to ${targetRoom.name}`,
+    input: {
+      sourceRoomId,
+      targetRoomId: targetRoom.id,
+      movedItems: [movedItem],
+      activateTargetRoom: true,
+    },
+    execute: (input) => {
+      const nextSnapshot = applyMoveItemsBetweenRoomsCommand(
+        designSnapshotRef.current,
+        input
+      );
+      setDesignSnapshot(nextSnapshot);
+      itemsRef.current =
+        nextSnapshot.rooms.find((room) => room.id === targetRoom.id)?.items ?? [];
+    },
+  });
   updateSelection(new Set([instanceId]), instanceId);
   showToast(`Moved to ${targetRoom.name}`);
   return true;

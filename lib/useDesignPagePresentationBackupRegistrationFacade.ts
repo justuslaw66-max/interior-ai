@@ -82,7 +82,7 @@ export function useDesignPagePresentationBackupRegistrationFacade({
     },
   });
 
-  useDesignPageLocalBackupHydration({
+  const localBackupRecovery = useDesignPageLocalBackupHydration({
     state: {
       roomWidth: documentRoom.derived.room.roomWidth,
       roomDepth: documentRoom.derived.room.roomDepth,
@@ -115,8 +115,16 @@ export function useDesignPagePresentationBackupRegistrationFacade({
   });
 
   return {
-    boundaries: { coreShell, documentSelection, exportRuntime },
-    state: exportRuntime.state,
+    boundaries: {
+      coreShell,
+      documentSelection,
+      exportRuntime,
+      localBackupRecovery,
+    },
+    state: {
+      ...exportRuntime.state,
+      localBackupRecovery: localBackupRecovery.state,
+    },
     derived: {
       document: {
         roomWidth: documentRoom.derived.room.roomWidth,
@@ -131,7 +139,10 @@ export function useDesignPagePresentationBackupRegistrationFacade({
       localBackupPersistenceActionsRef,
       localBackupPlanningResolverRef,
     },
-    actions: exportRuntime.actions,
+    actions: {
+      ...exportRuntime.actions,
+      localBackupRecovery: localBackupRecovery.actions,
+    },
   };
 }
 

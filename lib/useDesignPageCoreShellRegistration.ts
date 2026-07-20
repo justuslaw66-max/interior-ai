@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 
 import { useEditorMode } from "@/hooks/useEditorMode";
+import { resolveEditorCapabilities } from "@/lib/editor-capabilities";
 import type { CameraView } from "@/lib/design-page-types";
 import type { PendingAiLayoutProposal } from "@/lib/design-page-ai-layout-proposal";
 import type { DesignItem } from "@/lib/room-types";
@@ -91,8 +92,12 @@ export function useDesignPageCoreShellRegistration({
   } = viewportShellRegistration;
 
   const wantsDesigner = urlMode === "designer";
-  const canUseDesigner = plan === "pro";
-  const { isDesigner, isClientPreview } = useEditorMode(plan, clientPreview);
+  const capabilities = resolveEditorCapabilities(plan);
+  const canUseDesigner = capabilities.useDesignerWorkspace;
+  const { isDesigner, isClientPreview } = useEditorMode(
+    capabilities.useDesignerWorkspace,
+    clientPreview
+  );
   const showDesignerTheme = isDesigner && !isClientPreview;
   const {
     state: {
@@ -220,6 +225,7 @@ export function useDesignPageCoreShellRegistration({
     },
     derived: {
       access: {
+        capabilities,
         wantsDesigner,
         canUseDesigner,
         isDesigner,

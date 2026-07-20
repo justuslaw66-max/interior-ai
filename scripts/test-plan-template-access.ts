@@ -4,6 +4,7 @@ import path from "node:path";
 
 import { buildDesignControlsPanelModel } from "../lib/design-page-controls-panel-model";
 import { buildDesignPageDialogLayerModel } from "../lib/design-page-dialog-layer-model";
+import { resolveEditorCapabilities } from "../lib/editor-capabilities";
 
 const planPanelPath = path.join(process.cwd(), "components", "editor", "DesignControlsPlanPanel.tsx");
 const source = fs.readFileSync(planPanelPath, "utf8");
@@ -611,7 +612,7 @@ const replaceCurrentPlan = () => undefined;
 const saveCurrentAndStartNew = () => undefined;
 const signInForPlan = () => undefined;
 const dialogModel = buildDesignPageDialogLayerModel({
-  access: { isClientPreview: false, isAuthenticated: true, isPro: true, designerTheme: false },
+  access: { isClientPreview: false, isAuthenticated: true, capabilities: resolveEditorCapabilities("pro"), designerTheme: false },
   billing: { upgrade: {}, plans: {}, startingCheckout: false, annualSavingsLabel: "", upgradeActions: {}, plansActions: {} },
   persistence: {
     guestSave: { open: false, onNotNow: noop, onSaveAndContinue: noop },
@@ -664,7 +665,7 @@ assert.match(
 
 assert.match(
   persistenceControllerSource,
-  /const preserveCurrentDesign = useCallback[\s\S]*?fetch\(designId \? `\/api\/designs\/\$\{designId\}` : "\/api\/designs"[\s\S]*?method: designId \? "PUT" : "POST"[\s\S]*?return \{ ok: true, savedDesignId \};/,
+  /const preserveCurrentDesign = useCallback[\s\S]*?const data = await enqueueCloudWrite\(\(\) =>\s*designId \? designApi\.update\(designId, payload\) : designApi\.create\(payload\)\s*\);[\s\S]*?return \{ ok: true, savedDesignId \};/,
   "Preserving the current design should update an existing ID or create a saved copy without adopting it."
 );
 
@@ -731,8 +732,8 @@ assert.match(
 );
 assert.match(
   localBackupHydrationSource,
-  /const initialInputRef = useRef\(input\);[\s\S]*?useEffect\(\(\) => \{[\s\S]*?normalizeDesignPageLocalBackup\(\{[\s\S]*?finally \{[\s\S]*?setLocalBackupHydrated\(true\);[\s\S]*?\}, \[\]\);/,
-  "The local-backup boundary should retain one-shot restore semantics and always release its hydration gate."
+  /const initialInputRef = useRef\(input\);[\s\S]*?const restoreRawBackup = useCallback\(async[\s\S]*?normalizeDesignPageLocalBackup\(\{[\s\S]*?setLocalBackupHydrated\(true\);[\s\S]*?useEffect\(\(\) => \{[\s\S]*?if \(!raw\) \{[\s\S]*?setLocalBackupHydrated\(true\);[\s\S]*?void restoreRawBackup\(raw\);[\s\S]*?\}, \[restoreRawBackup\]\);/,
+  "The local-backup boundary should retain one-shot restore semantics, release valid or empty hydration, and leave invalid backups blocked for recovery."
 );
 assert.doesNotMatch(
   localBackupHydrationSource,

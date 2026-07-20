@@ -138,19 +138,50 @@ const studioSource = readFileSync(
   resolve(process.cwd(), "features/cabinetry/components/CabinetryStudio.tsx"),
   "utf8"
 );
+const preferencesSource = readFileSync(
+  resolve(
+    process.cwd(),
+    "features/cabinetry/hooks/useCabinetStudioPreferences.ts"
+  ),
+  "utf8"
+);
+const guidedReviewSource = readFileSync(
+  resolve(
+    process.cwd(),
+    "features/cabinetry/components/CabinetGuidedReviewPanel.tsx"
+  ),
+  "utf8"
+);
+const guidedViewSource = readFileSync(
+  resolve(
+    process.cwd(),
+    "features/cabinetry/components/CabinetryStudioGuidedView.tsx"
+  ),
+  "utf8"
+);
+const detailedViewSource = readFileSync(
+  resolve(
+    process.cwd(),
+    "features/cabinetry/components/CabinetryStudioDetailedView.tsx"
+  ),
+  "utf8"
+);
+const onboardingCompositionSource = `${guidedViewSource}\n${guidedReviewSource}`;
 for (const step of ["type", "size", "layout", "review"] as const) {
   assert.match(
-    studioSource,
+    onboardingCompositionSource,
     new RegExp(`<CabinetContextualOnboarding\\s+step="${step}"`),
     `${step} must expose its contextual first-use action`
   );
 }
+assert.match(guidedViewSource, /<CabinetGuidedReviewPanel\b/);
 assert.match(
-  studioSource,
+  preferencesSource,
   /readCabinetExperiencePreference\(window\.localStorage\)/,
   "create-mode entry must restore the returning professional's workspace"
 );
-assert.match(studioSource, /chooseExperienceMode\("detailed"\)/);
-assert.match(studioSource, /chooseExperienceMode\("guided"\)/);
+assert.match(studioSource, /useCabinetStudioPreferences\(/);
+assert.match(guidedViewSource, /chooseExperienceMode\("detailed"\)/);
+assert.match(detailedViewSource, /chooseExperienceMode\("guided"\)/);
 
 console.log("Cabinetry contextual onboarding checks passed.");

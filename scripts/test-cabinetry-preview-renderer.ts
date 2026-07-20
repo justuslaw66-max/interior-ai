@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import * as THREE from "three";
 
 import { CABINET_MATERIALS } from "../features/cabinetry/catalog/materials";
 import {
@@ -10,11 +11,51 @@ import {
 } from "../features/cabinetry/components/CabinetSceneItem";
 import { resolveCabinetPreviewCameraPose } from "../features/cabinetry/components/CabinetPreviewCameraController";
 import { generateCabinetParts } from "../features/cabinetry/generateCabinetParts";
+import {
+  disposeCabinetObject3DResources,
+  disposeCabinetOwnedTextures,
+} from "../features/cabinetry/hooks/useCabinetSceneResourceOwnership";
 import { createCabinetPreset } from "../features/cabinetry/presets";
 
 const root = process.cwd();
 const studioSource = readFileSync(
   resolve(root, "features/cabinetry/components/CabinetryStudio.tsx"),
+  "utf8"
+);
+const guidedViewSource = readFileSync(
+  resolve(root, "features/cabinetry/components/CabinetryStudioGuidedView.tsx"),
+  "utf8"
+);
+const detailedViewSource = readFileSync(
+  resolve(root, "features/cabinetry/components/CabinetryStudioDetailedView.tsx"),
+  "utf8"
+);
+const studioCompositionSource =
+  `${studioSource}\n${guidedViewSource}\n${detailedViewSource}`;
+const previewSource = readFileSync(
+  resolve(root, "features/cabinetry/components/CabinetPreview3D.tsx"),
+  "utf8"
+);
+const previewRendererSource = readFileSync(
+  resolve(root, "features/cabinetry/components/CabinetPreviewRenderer3D.tsx"),
+  "utf8"
+);
+const previewSceneSource = readFileSync(
+  resolve(root, "features/cabinetry/components/CabinetPreviewScene3D.tsx"),
+  "utf8"
+);
+const detailedPreviewsSource = readFileSync(
+  resolve(
+    root,
+    "features/cabinetry/components/CabinetStudioDetailedPreviews.tsx"
+  ),
+  "utf8"
+);
+const previewInteractionSource = readFileSync(
+  resolve(
+    root,
+    "features/cabinetry/components/CabinetStudioPreviewInteractionController.tsx"
+  ),
   "utf8"
 );
 const cameraSource = readFileSync(
@@ -25,37 +66,162 @@ const sceneItemSource = readFileSync(
   resolve(root, "features/cabinetry/components/CabinetSceneItem.tsx"),
   "utf8"
 );
+const resourceOwnershipSource = readFileSync(
+  resolve(root, "features/cabinetry/hooks/useCabinetSceneResourceOwnership.ts"),
+  "utf8"
+);
+const designItemPlanSource = readFileSync(
+  resolve(root, "features/cabinetry/components/CabinetDesignItemPlan2D.tsx"),
+  "utf8"
+);
+const designItemSpatialSource = readFileSync(
+  resolve(root, "features/cabinetry/components/CabinetDesignItemSpatial3D.tsx"),
+  "utf8"
+);
+const sceneItemsLayerSource = readFileSync(
+  resolve(root, "components/editor/design-page/SceneItemsLayer.tsx"),
+  "utf8"
+);
 
 assert.match(
-  studioSource,
+  previewRendererSource,
   /<Canvas[\s\S]*?data-cabinet-preview-renderer="rc5"[\s\S]*?data-shadow-maps-enabled="false"[\s\S]*?data-front-axis="negative-z"[\s\S]*?shadows=\{false\}[\s\S]*?outputColorSpace:\s*THREE\.SRGBColorSpace[\s\S]*?toneMapping:\s*THREE\.ACESFilmicToneMapping/,
   "Cabinet Preview must keep shadow maps disabled with sRGB output and ACES tone mapping."
 );
 assert.match(
+  previewSource,
+  /<CabinetPreviewRenderer3D[\s\S]*?<CabinetPreviewScene3D/,
+  "The preview adapter must compose separate runtime and scene boundaries."
+);
+assert.doesNotMatch(
+  previewSource,
+  /<Canvas|useFrame\(|useThree\(|<Environment|<OrbitControls/,
+  "The preview adapter must not regain Canvas, render-loop, or scene-detail ownership."
+);
+assert.match(
   studioSource,
+  /import \{ useCabinetDesktopPreviewActive \} from "\.\/CabinetPreview3D"/,
+  "The coordinator must retain responsive preview lifecycle ownership."
+);
+assert.match(
+  guidedViewSource,
+  /import \{ CabinetPreview3D \} from "\.\/CabinetPreview3D"/,
+  "The Guided view must compose its extracted preview boundary."
+);
+assert.doesNotMatch(
+  studioCompositionSource,
+  /<Canvas|useFrame\(|useThree\(/,
+  "The studio composition must not regain direct ownership of the 3D renderer."
+);
+assert.match(
+  detailedPreviewsSource,
   /data-testid="cabinet-preview"[\s\S]*?data-shadow-maps-enabled="false"[\s\S]*?data-front-axis="negative-z"[\s\S]*?data-render-color-space="srgb"[\s\S]*?data-tone-mapping="aces-filmic"/,
   "The Cabinet Preview container must expose its verified runtime renderer policy."
 );
 assert.match(
-  studioSource,
-  /data-preview-definition-id=\{definition\.id\}[\s\S]*?data-preview-preset-id=\{definition\.sourcePresetId \?\? ""\}[\s\S]*?data-preview-view=\{view\}[\s\S]*?data-preview-ready=\{previewReady \? "true" : "false"\}[\s\S]*?<CabinetPreviewReadySignal/,
+  previewRendererSource,
+  /data-preview-definition-id=\{definitionId\}[\s\S]*?data-preview-preset-id=\{presetId \?\? ""\}[\s\S]*?data-preview-view=\{view\}[\s\S]*?data-preview-ready=\{previewReady \? "true" : "false"\}[\s\S]*?<CabinetPreviewReadySignal/,
   "Every Cabinet Preview canvas must expose a frame-backed definition/view readiness signal."
 );
 assert.match(
-  studioSource,
-  /mobilePreviewOpen && desktopPreviewActive === false[\s\S]*?desktopPreviewActive === true[\s\S]*?desktopPreviewActive === false[\s\S]*?desktopPreviewActive === true/,
-  "Responsive Cabinet Preview layouts must mount only the active Canvas tree."
+  guidedViewSource,
+  /mobilePreviewOpen && desktopPreviewActive === false[\s\S]*?desktopPreviewActive: desktopPreviewActive === true/,
+  "The Guided view must preserve responsive preview ownership."
 );
 assert.match(
-  studioSource,
+  detailedPreviewsSource,
+  /!desktopPreviewActive \? \([\s\S]*?<CabinetPreview3D/,
+  "The compact detailed preview must mount only when the desktop preview is inactive."
+);
+assert.match(
+  previewInteractionSource,
+  /const preview = desktopPreviewActive \? \([\s\S]*?<CabinetPreview3D/,
+  "The desktop interaction controller must mount only the active Canvas tree."
+);
+assert.match(
+  previewSceneSource,
   /<Environment\s+resolution=\{128\}>[\s\S]*?<Lightformer[\s\S]*?<hemisphereLight[\s\S]*?<directionalLight/,
   "Cabinet Preview must use its deterministic procedural environment and no-shadow light rig."
 );
 assert.doesNotMatch(
-  studioSource,
+  previewSceneSource,
   /<ambientLight|castShadow(?!=\{false\})/,
   "Cabinet Preview must not restore ambient wash or shadow-casting lights."
 );
+assert.match(
+  previewRendererSource,
+  /useFrame\(\(\) =>[\s\S]*?frameCountRef\.current < 3[\s\S]*?onReady\(previewKey\)/,
+  "The render loop must remain limited to frame-backed readiness reporting."
+);
+assert.doesNotMatch(
+  previewRendererSource,
+  /price|checkout|permission|subscription|authentication|persistence/i,
+  "The preview render loop must not own business policy."
+);
+assert.match(
+  designItemPlanSource,
+  /projectSceneRoomItem\(sceneEntry, "plan"\)[\s\S]*?viewMode="2d"/,
+  "The placed-cabinet plan adapter must own only plan projection and 2D mapping."
+);
+assert.match(
+  designItemSpatialSource,
+  /projectSceneRoomItem\(sceneEntry, "spatial"\)[\s\S]*?viewMode="3d"/,
+  "The placed-cabinet spatial adapter must own only spatial projection and 3D mapping."
+);
+assert.match(
+  sceneItemsLayerSource,
+  /configuration\.viewMode === "3d"[\s\S]*?CabinetDesignItemSpatial3D[\s\S]*?: CabinetDesignItemPlan2D/,
+  "The generic scene layer must dispatch to distinct cabinet 2D and 3D adapters."
+);
+for (const rendererAdapterSource of [designItemPlanSource, designItemSpatialSource]) {
+  assert.doesNotMatch(
+    rendererAdapterSource,
+    /price|checkout|permission|subscription|authentication|persistence|localStorage|fetch\s*\(/i,
+    "Placed-cabinet render adapters must not own business or persistence policy."
+  );
+}
+assert.match(
+  sceneItemSource,
+  /useCabinetSceneResourceOwnership\(\{[\s\S]*?assembly,[\s\S]*?previewFrontEdges,[\s\S]*?materials: definition\.materials/,
+  "Cabinet scene items must delegate owned Three.js cleanup to the lifecycle hook."
+);
+assert.doesNotMatch(
+  sceneItemSource,
+  /new THREE\.TextureLoader\(|\.geometry\?\.dispose\(|loadedTextures/,
+  "Cabinet scene rendering must not duplicate resource lifecycle implementation."
+);
+assert.match(
+  resourceOwnershipSource,
+  /let cancelled = false[\s\S]*?if \(cancelled\)[\s\S]*?texture\.dispose\(\)[\s\S]*?return \(\) => \{[\s\S]*?cancelled = true[\s\S]*?disposeCabinetOwnedTextures\(loadedTextures\)/,
+  "Texture loading must dispose late results and all textures owned by the mounted scene item."
+);
+
+const sharedGeometry = new THREE.BoxGeometry(1, 1, 1);
+const sharedMaterial = new THREE.MeshStandardMaterial();
+let geometryDisposeCount = 0;
+let materialDisposeCount = 0;
+sharedGeometry.dispose = () => {
+  geometryDisposeCount += 1;
+};
+sharedMaterial.dispose = () => {
+  materialDisposeCount += 1;
+};
+const ownedGroup = new THREE.Group();
+ownedGroup.add(
+  new THREE.Mesh(sharedGeometry, sharedMaterial),
+  new THREE.Mesh(sharedGeometry, sharedMaterial)
+);
+disposeCabinetObject3DResources(ownedGroup);
+assert.equal(geometryDisposeCount, 1, "Shared cabinet geometry must be disposed exactly once.");
+assert.equal(materialDisposeCount, 1, "Shared cabinet material must be disposed exactly once.");
+
+const ownedTexture = new THREE.Texture();
+let textureDisposeCount = 0;
+ownedTexture.dispose = () => {
+  textureDisposeCount += 1;
+};
+disposeCabinetOwnedTextures([ownedTexture, ownedTexture]);
+assert.equal(textureDisposeCount, 1, "Each owned cabinet texture must be disposed exactly once.");
 assert.match(cameraSource, /fitDistanceForPlane/, "Named views must use FOV-aware fitting.");
 assert.match(
   sceneItemSource,

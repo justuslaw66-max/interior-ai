@@ -238,7 +238,7 @@ const fixtureBundle = buildStagingSmokeEvidenceBundle({
     buildIdOrCommitSha: "abc123",
     tester: "qa@example.test",
     savedDesignId: "design_123",
-    shareToken: "share_123",
+    shareReferenceFingerprint: "b6f0f84b4c2e091a",
     editorSnapshotFingerprint: "deadbeef",
     shareSnapshotFingerprint: "deadbeef",
     exportSnapshotFingerprint: "deadbeef",
@@ -269,7 +269,7 @@ assert.match(
 );
 assert.match(
   stagingEvidencePanelSource,
-  /savedDesignId: "Saved design ID"[\s\S]*shareToken: "Share token"[\s\S]*editorSnapshotFingerprint: "Editor fingerprint"[\s\S]*staging-smoke-evidence-field-\$\{field\}/,
+  /savedDesignId: "Saved design ID"[\s\S]*shareReferenceFingerprint: "Share reference fingerprint"[\s\S]*editorSnapshotFingerprint: "Editor fingerprint"[\s\S]*staging-smoke-evidence-field-\$\{field\}/,
   "staging evidence panel should expose editable required evidence fields."
 );
 assert.match(

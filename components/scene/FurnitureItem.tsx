@@ -26,7 +26,6 @@ import {
   normalizeRotationDegrees,
   ROTATION_SNAP_STEP_DEGREES,
   ROTATION_SNAP_STEP_RADIANS,
-  snapRotationRadians,
 } from "@/lib/design-page-utils";
 import { type GLBCalibration, getModelCalibration } from "@/lib/design-page-calibration";
 import {
@@ -41,9 +40,15 @@ import { GLBScaledModel } from "@/components/scene/GLBScaledModel";
 import ItemRenderer2D from "@/components/editor/renderers/ItemRenderer2D";
 import { radiansToDeg } from "@/lib/editorScene";
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
-import { clampToRoom } from "@/lib/design-page-geometry";
+import {
+  clampToRoom,
+  isAabbWithinPadding,
+  resolveAxisAlignedRoomItemBounds,
+  resolvePointerRotationRadians,
+} from "@/lib/design-page-geometry";
 import type { DesignItem, RoomPlanPolygonPoint, RoomPlanShape } from "@/lib/room-types";
 import { getAdjustablePendantHeight } from "@/lib/pendant-light-adjustment";
+import { EDITOR_GEOMETRY_TOLERANCES } from "@/lib/editor-geometry-tolerances";
 
 const normalizeModelCandidate = (value: string | null | undefined): string | null => {
   const raw = String(value ?? "").trim();
@@ -123,15 +128,6 @@ type FurnitureProps = {
 
 
 type SnapType = "none" | "wall-left" | "wall-right" | "wall-front" | "wall-back";
-
-function isAabbWithinPadding(target: AABB, reference: AABB, padding: number): boolean {
-  return !(
-    target.maxX < reference.minX - padding ||
-    target.minX > reference.maxX + padding ||
-    target.maxZ < reference.minZ - padding ||
-    target.minZ > reference.maxZ + padding
-  );
-}
 
 export function Furniture({
   product,
@@ -328,12 +324,13 @@ export function Furniture({
     if (!hit) return null;
     const dx = intersection.x - position[0];
     const dz = intersection.z - position[2];
-    if (Math.abs(dx) < 1e-4 && Math.abs(dz) < 1e-4) return null;
-    const raw = Math.atan2(dx, -dz);
-    const shouldSnap = snapToStep && rotationSnapEnabled;
-    return shouldSnap
-      ? snapRotationRadians(raw, rotationSnapStepRadians)
-      : raw;
+    return resolvePointerRotationRadians({
+      deltaX: dx,
+      deltaZ: dz,
+      snapToStep,
+      snapEnabled: rotationSnapEnabled,
+      snapStepRadians: rotationSnapStepRadians,
+    });
   };
 
   const onRotateHandlePointerDown = (e: ThreeEvent<PointerEvent>) => {
@@ -508,11 +505,6 @@ export function Furniture({
   );
 
   // Compute room bounds
-  const halfRoomW = roomWidth / 2;
-  const halfRoomD = roomDepth / 2;
-  const halfEffectiveW = effectiveWidth / 2;
-  const halfEffectiveD = effectiveDepth / 2;
-
   // Hard constraint bounds: prevent items from exiting the room
   // Walls have physical thickness, so we must account for that
   // Items must stay inside the inner room boundaries (wall edges)
@@ -520,10 +512,20 @@ export function Furniture({
     typeof wallContactInset === "number" && Number.isFinite(wallContactInset)
       ? wallContactInset
       : wallThickness;
-  const hardMinX = roomOriginX - halfRoomW + roomWallInset + halfEffectiveW;
-  const hardMaxX = roomOriginX + halfRoomW - roomWallInset - halfEffectiveW;
-  const hardMinZ = roomOriginZ - halfRoomD + roomWallInset + halfEffectiveD;
-  const hardMaxZ = roomOriginZ + halfRoomD - roomWallInset - halfEffectiveD;
+  const {
+    minX: hardMinX,
+    maxX: hardMaxX,
+    minZ: hardMinZ,
+    maxZ: hardMaxZ,
+  } = resolveAxisAlignedRoomItemBounds({
+    roomOriginX,
+    roomOriginZ,
+    roomWidth,
+    roomDepth,
+    wallContactInset: roomWallInset,
+    itemWidth: effectiveWidth,
+    itemDepth: effectiveDepth,
+  });
 
   // Soft snap bounds: walls where items snap flush
   // Items snap directly to hard bounds (wall edges), no gap
@@ -598,7 +600,6 @@ export function Furniture({
     setDragging(false);
     setSnapType("none"); // Reset snap type
     setInvalidPlacement(false);
-    onDraggingChange?.(false); // notify parent
     if (wasSnapped && interactive) {
       snapBumpUntilRef.current = performance.now() + 160;
       onSnapPulse?.();
@@ -609,6 +610,7 @@ export function Furniture({
     if (interactive && onDragEnd) {
       onDragEnd(instanceId, position);
     }
+    onDraggingChange?.(false); // notify parent after the document command finishes
   };
 
   const onPointerMove = (e: ThreeEvent<PointerEvent>) => {
@@ -1383,7 +1385,8 @@ export function Furniture({
           {showSelection && isSelected && <Edges scale={1.01} />}
         </mesh>
       )}
-      {Math.abs(planningWidth - width) > 0.001 || Math.abs(planningDepth - depth) > 0.001 ? (
+      {Math.abs(planningWidth - width) > EDITOR_GEOMETRY_TOLERANCES.dimensionMeters ||
+      Math.abs(planningDepth - depth) > EDITOR_GEOMETRY_TOLERANCES.dimensionMeters ? (
         <Line
           points={[
             [-planningWidth / 2, 0.01, -planningDepth / 2],

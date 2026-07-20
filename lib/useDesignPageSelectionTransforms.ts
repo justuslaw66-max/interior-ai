@@ -17,6 +17,8 @@ import {
   normalizeRotationDegrees,
   snapRotationRadians,
 } from "@/lib/design-page-utils";
+import { applyMoveItemsBetweenRoomsCommand } from "@/lib/design-page-item-commands";
+import type { HistoryCommand } from "@/lib/historyManager";
 import { buildAlignedSelectionItems } from "@/lib/design-page-zone-layout";
 import type { DesignItem, DesignSnapshot, RoomSnapshot } from "@/lib/room-types";
 
@@ -137,7 +139,11 @@ export type DesignPageSelectionTransformActions = {
     worldPosition: ItemPosition
   ) => boolean;
   setDesignSnapshot: (snapshot: DesignSnapshot) => void;
-  history: { begin: (actionName: string) => void; commit: () => void };
+  history: {
+    executeCommand: <TInput, TResult>(
+      command: HistoryCommand<TInput, TResult>
+    ) => TResult;
+  };
   showToast: (message: string) => void;
   showConstraintsForMoment: (results: ConstraintResult[]) => void;
   showConfidenceSummary: (results: ConstraintResult[]) => void;
@@ -744,33 +750,27 @@ export function useDesignPageSelectionTransforms({
         }
 
         const movedIds = new Set(movedItems.map((item) => item.instanceId));
-        const snapshot = getDesignSnapshot();
-        history.begin(`Move ${movedItems.length} items to ${targetRoom.name}`);
-        const nextSnapshot: DesignSnapshot = {
-          ...snapshot,
-          activeRoomId: targetRoom.id,
-          rooms: snapshot.rooms.map((room) => {
-            if (room.id === activeRoom.id) {
-              return {
-                ...room,
-                items: room.items.filter((item) => !movedIds.has(item.instanceId)),
-                zones: room.zones
-                  .map((zone) => ({
-                    ...zone,
-                    itemIds: zone.itemIds.filter((itemId) => !movedIds.has(itemId)),
-                  }))
-                  .filter((zone) => zone.itemIds.length > 0),
-              };
-            }
-            if (room.id === targetRoom.id) {
-              return { ...room, items: [...room.items, ...movedItems] };
-            }
-            return room;
-          }),
-        };
-        replaceActiveItemsSnapshot([...targetRoom.items, ...movedItems]);
-        setDesignSnapshot(nextSnapshot);
-        history.commit();
+        history.executeCommand({
+          id: "move-items-between-rooms",
+          description: `Move ${movedItems.length} items to ${targetRoom.name}`,
+          input: {
+            sourceRoomId: activeRoom.id,
+            targetRoomId: targetRoom.id,
+            movedItems,
+            activateTargetRoom: true,
+          },
+          execute: (input) => {
+            const nextSnapshot = applyMoveItemsBetweenRoomsCommand(
+              getDesignSnapshot(),
+              input
+            );
+            setDesignSnapshot(nextSnapshot);
+            replaceActiveItemsSnapshot(
+              nextSnapshot.rooms.find((room) => room.id === targetRoom.id)
+                ?.items ?? []
+            );
+          },
+        });
         updateSelection(movedIds, movedItems[0]?.instanceId ?? null);
         showToast(`Moved ${movedItems.length} items to ${targetRoom.name}`);
         return;

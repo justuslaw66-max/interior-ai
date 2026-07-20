@@ -6,6 +6,7 @@
  */
 
 import { getPostHogClient } from "@/lib/posthog-server";
+import { sanitizeObservabilityMeta } from "@/lib/observability";
 
 export type MonetizationEvent =
   | "export_opened"
@@ -19,7 +20,6 @@ export type MonetizationEvent =
 interface EventProperties {
   userId?: string;
   designId?: string;
-  shareToken?: string;
   trigger?: "pdf" | "watermark" | "branding";
   plan?: "free" | "pro";
 }
@@ -34,16 +34,18 @@ export async function trackMonetization(
 ) {
   const posthog = getPostHogClient();
 
-  posthog.capture({
-    distinctId: userId,
-    event,
-    properties: {
-      ...properties,
-      timestamp: new Date().toISOString(),
-    },
-  });
-
-  await posthog.shutdown();
+  try {
+    posthog.capture({
+      distinctId: userId,
+      event,
+      properties: sanitizeObservabilityMeta({
+        ...properties,
+        timestamp: new Date().toISOString(),
+      }),
+    });
+  } finally {
+    await posthog.shutdown().catch(() => undefined);
+  }
 }
 
 /**

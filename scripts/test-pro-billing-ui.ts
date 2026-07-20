@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { buildDesignPageDialogLayerModel } from "../lib/design-page-dialog-layer-model";
+import { resolveEditorCapabilities } from "../lib/editor-capabilities";
 
 const root = path.resolve(__dirname, "..");
 const read = (relativePath: string) =>
@@ -75,7 +76,7 @@ assert.match(
 
 const noop = () => undefined;
 const plansModel = buildDesignPageDialogLayerModel({
-  access: { isClientPreview: false, isAuthenticated: true, isPro: false, designerTheme: false },
+  access: { isClientPreview: false, isAuthenticated: true, capabilities: resolveEditorCapabilities("free"), designerTheme: false },
   billing: {
     upgrade: {},
     plans: {
@@ -165,6 +166,10 @@ assert.doesNotMatch(
   /<EditorCommandBar\b/,
   "The workspace should not bypass the command wrapper for billing actions."
 );
-assert.match(designPageExport, /!isPro\(plan\)[\s\S]*\{ name: "hero", yaw: 0 \}/);
+assert.match(
+  designPageExport,
+  /const canExportMultipleViews = capabilities\.exportMultipleViews[\s\S]*?!canExportMultipleViews[\s\S]*?\{ name: "hero", yaw: 0 \}/,
+  "Consumer image exports should remain limited by the centralized multi-view capability."
+);
 
 console.log("Pro billing UI/source checks passed.");

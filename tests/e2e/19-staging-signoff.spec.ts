@@ -1,5 +1,6 @@
 import { expect, test } from "./fixtures";
 import fs from "node:fs/promises";
+import crypto from "node:crypto";
 import type { APIRequestContext, Download, Locator, Page } from "@playwright/test";
 import { fingerprintDesignSnapshot } from "../../lib/snapshot-fingerprint";
 import { legacyApiToSnapshot } from "../../lib/room-persistence";
@@ -224,7 +225,9 @@ test.describe("19. Staging Signoff Evidence", () => {
       await page.getByTestId("staging-smoke-row-evidence-open_design_signed_out").fill("signed-out-design.png");
       await page.getByTestId("staging-smoke-row-notes-open_design_signed_out").fill("Editor shell loaded behind staging protection.");
       await page.getByTestId("staging-smoke-evidence-field-savedDesignId").fill(seed.designId);
-      await page.getByTestId("staging-smoke-evidence-field-shareToken").fill(seed.shareToken);
+      await page
+        .getByTestId("staging-smoke-evidence-field-shareReferenceFingerprint")
+        .fill(crypto.createHash("sha256").update(seed.shareToken).digest("hex").slice(0, 16));
       await page.getByTestId("staging-smoke-evidence-field-editorSnapshotFingerprint").fill(editorSnapshotFingerprint);
       await expect(page.getByTestId("staging-smoke-progress-summary")).toContainText("1/14 rows resolved");
 

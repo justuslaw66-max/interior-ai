@@ -2598,3 +2598,9 @@ export function createCabinetPreset(presetId: CabinetPresetId, id = `cabinet-${p
     automation: createCabinetAutomationState(definition),
   };
 }
+
+export function getCabinetPresetMillworkAssemblyType(
+  presetId: CabinetPresetId
+): CabinetDefinition["millworkAssemblyType"] {
+  return presets[presetId].millworkAssemblyType;
+}

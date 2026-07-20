@@ -17,7 +17,7 @@ export type StagingSmokeEvidenceRecord = {
   tester: string;
   browserDevice: string;
   savedDesignId: string;
-  shareToken: string;
+  shareReferenceFingerprint: string;
   editorSnapshotFingerprint: string;
   shareSnapshotFingerprint: string;
   exportSnapshotFingerprint: string;
@@ -176,7 +176,7 @@ export const STAGING_SMOKE_REQUIRED_EVIDENCE_FIELDS = [
   "Staging environment label",
   "Test user email",
   "Saved design ID",
-  "Share token",
+  "Share reference fingerprint (never the token)",
   "Editor snapshot fingerprint",
   "Share snapshot fingerprint",
   "Export snapshot fingerprint",
@@ -218,7 +218,7 @@ export function buildStagingSmokeEvidenceBundle(input: {
       tester: evidence.tester ?? EMPTY_EVIDENCE,
       browserDevice: evidence.browserDevice ?? EMPTY_EVIDENCE,
       savedDesignId: evidence.savedDesignId ?? EMPTY_EVIDENCE,
-      shareToken: evidence.shareToken ?? EMPTY_EVIDENCE,
+      shareReferenceFingerprint: evidence.shareReferenceFingerprint ?? EMPTY_EVIDENCE,
       editorSnapshotFingerprint: evidence.editorSnapshotFingerprint ?? EMPTY_EVIDENCE,
       shareSnapshotFingerprint: evidence.shareSnapshotFingerprint ?? EMPTY_EVIDENCE,
       exportSnapshotFingerprint: evidence.exportSnapshotFingerprint ?? EMPTY_EVIDENCE,

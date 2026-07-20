@@ -8,6 +8,7 @@ import { useMemo } from "react";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import type { DesignItem } from "@/lib/room-types";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
+import { resolveDesignItemVisualProduct } from "@/lib/design-item-product-snapshot";
 
 function Room({
   width,
@@ -164,7 +165,7 @@ export default function ReadOnlyViewer({
         <Room width={roomWidth} depth={roomDepth} />
 
         {safeItems.map((it) => {
-          const product = CATALOG_ITEMS[it.productId];
+          const product = resolveDesignItemVisualProduct(it, CATALOG_ITEMS);
           if (!product) return null;
           const resolved = resolveCatalogVariant(product, it.variantId);
           return (

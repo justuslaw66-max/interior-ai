@@ -10,6 +10,39 @@ import {
   type PendantCableAdjustment,
 } from "@/lib/pendant-light-adjustment";
 
+function disposeObjectGeometryAndMaterials(object: THREE.Object3D) {
+  object.traverse((child) => {
+    const mesh = child as THREE.Mesh;
+    mesh.geometry?.dispose();
+    const materials = Array.isArray(mesh.material)
+      ? mesh.material
+      : mesh.material
+        ? [mesh.material]
+        : [];
+    materials.forEach((material) => material.dispose());
+  });
+}
+
+function disposeObjectTextures(object: THREE.Object3D) {
+  const disposedTextures = new Set<THREE.Texture>();
+  object.traverse((child) => {
+    const mesh = child as THREE.Mesh;
+    const materials = Array.isArray(mesh.material)
+      ? mesh.material
+      : mesh.material
+        ? [mesh.material]
+        : [];
+    for (const material of materials) {
+      for (const value of Object.values(material)) {
+        if (value instanceof THREE.Texture && !disposedTextures.has(value)) {
+          disposedTextures.add(value);
+          value.dispose();
+        }
+      }
+    }
+  });
+}
+
 export function GLBScaledModel({
   url,
   productId,
@@ -54,6 +87,7 @@ export function GLBScaledModel({
 
   useEffect(() => {
     let cancelled = false;
+    let ownedTextures: THREE.Texture[] = [];
     setUpholsteryTexturesLoaded(false);
     onLoadStateChangeRef.current?.("loading");
     const loader = new THREE.TextureLoader();
@@ -90,13 +124,22 @@ export function GLBScaledModel({
       loadTexture(variantRenderAssets?.normalMap),
       loadTexture(variantRenderAssets?.roughnessMap),
     ]).then(([baseColorMap, normalMap, roughnessMap]) => {
-      if (cancelled) return;
+      ownedTextures = [baseColorMap, normalMap, roughnessMap].filter(
+        (texture): texture is THREE.Texture => Boolean(texture)
+      );
+      if (cancelled) {
+        ownedTextures.forEach((texture) => texture.dispose());
+        ownedTextures = [];
+        return;
+      }
       setUpholsteryTextures({ baseColorMap, normalMap, roughnessMap });
       setUpholsteryTexturesLoaded(true);
     });
 
     return () => {
       cancelled = true;
+      ownedTextures.forEach((texture) => texture.dispose());
+      ownedTextures = [];
     };
   }, [
     variantRenderAssets?.baseColorMap,
@@ -109,6 +152,7 @@ export function GLBScaledModel({
   useEffect(() => {
     let cancelled = false;
     let dracoLoader: { dispose?: () => void } | null = null;
+    let sourceScene: THREE.Object3D | null = null;
     setLoadedScene(null);
     onLoadStateChangeRef.current?.("loading");
 
@@ -151,7 +195,13 @@ export function GLBScaledModel({
         loader.load(
           url,
           (gltf) => {
-            if (cancelled) return;
+            sourceScene = gltf.scene;
+            if (cancelled) {
+              disposeObjectTextures(sourceScene);
+              disposeObjectGeometryAndMaterials(sourceScene);
+              sourceScene = null;
+              return;
+            }
             setLoadedScene(gltf.scene.clone(true));
           },
           undefined,
@@ -173,6 +223,11 @@ export function GLBScaledModel({
     return () => {
       cancelled = true;
       dracoLoader?.dispose?.();
+      if (sourceScene) {
+        disposeObjectTextures(sourceScene);
+        disposeObjectGeometryAndMaterials(sourceScene);
+        sourceScene = null;
+      }
     };
   }, [url]);
 
@@ -180,6 +235,13 @@ export function GLBScaledModel({
     if (!loadedScene) return null;
 
     const scene = loadedScene.clone(true);
+    scene.traverse((object) => {
+      if (!(object instanceof THREE.Mesh)) return;
+      object.geometry = object.geometry.clone();
+      object.material = Array.isArray(object.material)
+        ? object.material.map((material) => material.clone())
+        : object.material.clone();
+    });
     const bbox = new THREE.Box3().setFromObject(scene);
     const size = new THREE.Vector3();
     const center = new THREE.Vector3();
@@ -245,7 +307,7 @@ export function GLBScaledModel({
       const naturalHeightMeters = size.y * sy;
       scene.traverse((object) => {
         if (!(object instanceof THREE.Mesh)) return;
-        const geometry = object.geometry.clone();
+        const geometry = object.geometry;
         const sourcePosition = geometry.getAttribute("position");
         if (
           !(sourcePosition instanceof THREE.BufferAttribute) &&
@@ -1538,16 +1600,6 @@ export function GLBScaledModel({
       mesh.receiveShadow = false;
       if (preserveImportedModelMaterials) return;
 
-      // Madison GLBs can reuse one material across body + legs.
-      // Clone per mesh so upholstery overrides do not bleed into leg parts.
-      if (calibration?.preserveWoodLegMaterials) {
-        if (Array.isArray(mesh.material)) {
-          mesh.material = mesh.material.map((m) => (m ? m.clone() : m));
-        } else if (mesh.material) {
-          mesh.material = mesh.material.clone();
-        }
-      }
-
       const mat = mesh.material as THREE.MeshStandardMaterial | THREE.MeshStandardMaterial[];
       if (Array.isArray(mat)) {
         mat.forEach((m) => {
@@ -1895,6 +1947,7 @@ export function GLBScaledModel({
           physicalMat = new THREE.MeshPhysicalMaterial();
           physicalMat.copy(mat);
           mesh.material = physicalMat;
+          mat.dispose();
         } else {
           physicalMat = mat as THREE.MeshPhysicalMaterial;
         }
@@ -1946,6 +1999,11 @@ export function GLBScaledModel({
     if (!normalizedModel || !upholsteryTexturesLoaded) return;
     onLoadStateChangeRef.current?.("ready");
   }, [normalizedModel, upholsteryTexturesLoaded]);
+
+  useEffect(() => {
+    if (!normalizedModel) return;
+    return () => disposeObjectGeometryAndMaterials(normalizedModel);
+  }, [normalizedModel]);
 
   if (!normalizedModel || !upholsteryTexturesLoaded) return null;
 

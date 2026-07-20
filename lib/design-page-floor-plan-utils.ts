@@ -5,6 +5,7 @@ import {
   type HousePlanRoom2D,
   type HouseRoomDoorwaySuggestion,
 } from "@/lib/design-page-house-plan";
+export { HOUSE_PLAN_RENDERED_WALL_THICKNESS_METERS } from "@/lib/editor-geometry-tolerances";
 
 export const SUPPORTED_FLOOR_PLAN_MIME_TYPES = new Set([
   "image/png",
@@ -23,8 +24,6 @@ export const FLOOR_GROUT_COLOR_PALETTE = [
 ] as const;
 
 export const FLOOR_GROUT_SIZE_PRESETS_MM = [1, 1.5, 2, 3, 4, 5] as const;
-export const HOUSE_PLAN_RENDERED_WALL_THICKNESS_METERS = 0.025;
-
 const PDF_UNDERLAY_MAX_RENDERED_DIMENSION_PX = 1800;
 const PDF_UNDERLAY_MAX_RENDER_SCALE = 2;
 

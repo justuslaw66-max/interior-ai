@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
+import { resolveDesignItemVisualProduct } from "@/lib/design-item-product-snapshot";
 import { buildHousePlan2D } from "@/lib/design-page-house-plan";
 import { legacyApiToSnapshot } from "@/lib/room-persistence";
 import { projectSharedDesignSnapshot } from "@/lib/shared-design-snapshot";
@@ -425,7 +426,7 @@ function buildPlanDiagramFurniture(
 
   return sourceRoom.items.flatMap((item, index) => {
     if (item.bundleRole === "component") return [];
-    const product = CATALOG_ITEMS[item.productId];
+    const product = resolveDesignItemVisualProduct(item, CATALOG_ITEMS);
     if (!product) return [];
 
     const resolved = resolveCatalogVariant(product, item.variantId);

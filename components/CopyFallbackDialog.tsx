@@ -1,6 +1,10 @@
 "use client";
 
-import { useEffect, useId, useRef } from "react";
+import {
+  EditorDialog,
+  EditorDialogActions,
+  EditorDialogButton,
+} from "@/components/editor/design-system/EditorDialog";
 
 type CopyFallbackDialogProps = {
   open: boolean;
@@ -17,69 +21,34 @@ export default function CopyFallbackDialog({
   value,
   onClose,
 }: CopyFallbackDialogProps) {
-  const titleId = useId();
-  const descriptionId = useId();
-  const inputRef = useRef<HTMLInputElement | null>(null);
-
-  useEffect(() => {
-    if (!open) return;
-
-    const timer = window.setTimeout(() => {
-      inputRef.current?.focus();
-      inputRef.current?.select();
-    }, 0);
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => {
-      window.clearTimeout(timer);
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, [onClose, open]);
-
   if (!open) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby={titleId}
-      aria-describedby={descriptionId}
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
+    <EditorDialog
+      open
+      title={title}
+      description={description}
+      onClose={onClose}
+      panelClassName="max-w-md"
+      footer={
+        <EditorDialogActions>
+          <EditorDialogButton variant="primary" onClick={onClose}>
+            Done
+          </EditorDialogButton>
+        </EditorDialogActions>
+      }
     >
-      <div className="w-full max-w-md rounded-2xl border border-neutral-200 bg-white p-5 shadow-2xl">
-        <div id={titleId} className="text-lg font-semibold text-neutral-950">
-          {title}
-        </div>
-        <div id={descriptionId} className="mt-2 text-sm leading-6 text-neutral-600">
-          {description}
-        </div>
-        <label className="mt-4 block text-xs font-semibold uppercase tracking-wide text-neutral-500">
-          Copy manually
-        </label>
+      <label className="block text-xs font-semibold uppercase tracking-wide text-neutral-500">
+        Copy manually
         <input
-          ref={inputRef}
           readOnly
           value={value}
-          className="mt-1 w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm text-neutral-900 outline-none focus:border-neutral-500"
+          data-editor-dialog-initial-focus="true"
+          className="mt-1 min-h-11 w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm font-normal normal-case tracking-normal text-neutral-900 outline-none focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/30"
           data-testid="copy-fallback-value"
           onFocus={(event) => event.currentTarget.select()}
         />
-        <div className="mt-5 flex justify-end">
-          <button
-            type="button"
-            className="rounded-lg bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800"
-            onClick={onClose}
-          >
-            Done
-          </button>
-        </div>
-      </div>
-    </div>
+      </label>
+    </EditorDialog>
   );
 }

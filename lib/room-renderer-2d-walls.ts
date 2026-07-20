@@ -1,3 +1,5 @@
+import { EDITOR_GEOMETRY_TOLERANCES } from "@/lib/editor-geometry-tolerances";
+
 type WallSide2D = "north" | "south" | "east" | "west";
 
 type RoomLike2D = {
@@ -46,7 +48,7 @@ export type WallBandCornerCap2D = {
 };
 
 const WALL_THICKNESS_FALLBACK_METERS = 0.12;
-const WALL_SEGMENT_EPSILON = 0.001;
+const WALL_SEGMENT_EPSILON = EDITOR_GEOMETRY_TOLERANCES.wallSegmentMeters;
 
 function roundWallCoordinate(value: number): number {
   return Number(value.toFixed(4));

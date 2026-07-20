@@ -6,11 +6,6 @@ import { rateLimit } from "@/lib/rateLimit";
 import { logAppEvent } from "@/lib/app-events";
 import { trackMonetization } from "@/lib/monetization-tracking";
 
-function getErrorMessage(error: unknown): string {
-  if (error instanceof Error) return error.message;
-  return String(error);
-}
-
 function getStripeClient() {
   const secretKey = process.env.STRIPE_SECRET_KEY;
   if (!secretKey || secretKey.includes("...")) {
@@ -76,10 +71,11 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ url: portalSession.url });
   } catch (error: unknown) {
-    const message = getErrorMessage(error);
-    console.error("Stripe portal error:", message);
+    console.error("Stripe portal request failed", {
+      errorType: error instanceof Error ? error.name : "unknown",
+    });
     return NextResponse.json(
-      { error: message || "Unable to create portal session" },
+      { error: "Unable to create portal session. Please try again." },
       { status: 500 }
     );
   }

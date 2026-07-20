@@ -53,7 +53,7 @@ export async function GET(request: Request) {
         },
       }
     );
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Catalog media audit failed." }, { status: 500 });
   }
 }

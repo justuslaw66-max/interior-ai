@@ -40,7 +40,8 @@ export type DesignPagePresentExportControllerState = {
 export type DesignPagePresentExportControllerConfiguration = {
   open: boolean;
   designerTheme: boolean;
-  canUseDesigner: boolean;
+  canUseAdvancedPlanControls: boolean;
+  canUseAdvancedExportStyles: boolean;
   eyeLevelTransitionDurationMs: number;
   focusTransitionDurationMs: number;
 };
@@ -149,13 +150,17 @@ export function useDesignPagePresentExportController({
   }, [actions.camera, actions.shell, configuration.focusTransitionDurationMs]);
 
   const enableProPlanControls = useCallback(() => {
-    if (!configuration.canUseDesigner) {
+    if (!configuration.canUseAdvancedPlanControls) {
       actions.shell.setUpgradeReason("designer");
       actions.shell.setUpgradeOpen(true);
       return;
     }
     actions.plan.setSimpleControls(false);
-  }, [actions.plan, actions.shell, configuration.canUseDesigner]);
+  }, [
+    actions.plan,
+    actions.shell,
+    configuration.canUseAdvancedPlanControls,
+  ]);
 
   const changePlanLayerPreset = useCallback(
     (preset: PlanLayerPresetId) => {
@@ -242,7 +247,7 @@ export function useDesignPagePresentExportController({
 
   const changeExportStyle = useCallback(
     (preset: ExportStylePreset) => {
-      if (preset === "pro" && !configuration.canUseDesigner) {
+      if (preset === "pro" && !configuration.canUseAdvancedExportStyles) {
         actions.shell.setUpgradeReason("export_images");
         actions.shell.setUpgradeOpen(true);
         return;
@@ -259,7 +264,7 @@ export function useDesignPagePresentExportController({
       actions.plan,
       actions.presentation,
       actions.shell,
-      configuration.canUseDesigner,
+      configuration.canUseAdvancedExportStyles,
     ]
   );
 
@@ -282,7 +287,8 @@ export function useDesignPagePresentExportController({
     configuration: {
       open: configuration.open,
       designerTheme: configuration.designerTheme,
-      canUseDesigner: configuration.canUseDesigner,
+      canUseAdvancedPlanControls: configuration.canUseAdvancedPlanControls,
+      canUseAdvancedExportStyles: configuration.canUseAdvancedExportStyles,
     },
     state: state.dialog,
     actions: {

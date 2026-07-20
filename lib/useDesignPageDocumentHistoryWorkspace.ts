@@ -50,42 +50,23 @@ export function useDesignPageDocumentHistoryWorkspace({
     adapters: { captureHistorySnapshot, restoreHistorySnapshot },
   } = useDesignPageDocumentRefSynchronization({
     state: {
-      designSnapshot: snapshot.state.designSnapshot,
       planOpenings: plan.state.planOpenings,
       planAnnotations: plan.state.planAnnotations,
       planFixedElements: plan.state.planFixedElements,
-      planTheme: plan.state.planTheme,
-      planLayers: plan.state.planLayers,
-      planLayerPreset: plan.state.planLayerPreset,
-      planMeasurementUnit: plan.state.planMeasurementUnit,
-      exportStylePreset: plan.state.exportStylePreset,
       floorPlanUnderlay: floorPlan.state.floorPlanUnderlay,
     },
     actions: {
       setDesignSnapshot: snapshot.actions.setDesignSnapshot,
-      setPlanAnnotationsState: plan.restoreActions.setPlanAnnotationsState,
-      setPlanFixedElementsState: plan.restoreActions.setPlanFixedElementsState,
-      setPlanOpeningsState: plan.restoreActions.setPlanOpeningsState,
-      setPlanThemeState: plan.restoreActions.setPlanThemeState,
-      setPlanLayersState: plan.restoreActions.setPlanLayersState,
-      setPlanLayerPresetState: plan.restoreActions.setPlanLayerPresetState,
-      setPlanMeasurementUnitState:
-        plan.restoreActions.setPlanMeasurementUnitState,
-      setExportStylePresetState:
-        plan.restoreActions.setExportStylePresetState,
-      setFloorPlanUnderlayState:
-        floorPlan.restoreActions.setFloorPlanUnderlayState,
+      setPlanAnnotations: plan.actions.setPlanAnnotations,
+      setPlanFixedElements: plan.actions.setPlanFixedElements,
+      setPlanOpenings: plan.actions.setPlanOpenings,
+      setFloorPlanUnderlay: floorPlan.actions.setFloorPlanUnderlay,
     },
     refs: {
       designSnapshotRef: snapshot.refs.designSnapshotRef,
       planOpeningsRef: plan.refs.planOpeningsRef,
       planAnnotationsRef: plan.refs.planAnnotationsRef,
       planFixedElementsRef: plan.refs.planFixedElementsRef,
-      planThemeRef: plan.refs.planThemeRef,
-      planLayersRef: plan.refs.planLayersRef,
-      planLayerPresetRef: plan.refs.planLayerPresetRef,
-      planMeasurementUnitRef: plan.refs.planMeasurementUnitRef,
-      exportStylePresetRef: plan.refs.exportStylePresetRef,
       floorPlanUnderlayRef: floorPlan.refs.floorPlanUnderlayRef,
     },
   });
@@ -94,6 +75,7 @@ export function useDesignPageDocumentHistoryWorkspace({
     state: {
       designSnapshot: snapshot.state.designSnapshot,
       floorPlanUnderlay: floorPlan.state.floorPlanUnderlay,
+      planAnnotations: plan.state.planAnnotations,
       planOpenings: plan.state.planOpenings,
       planFixedElements: plan.state.planFixedElements,
     },
@@ -105,6 +87,7 @@ export function useDesignPageDocumentHistoryWorkspace({
     },
     actions: {
       setFloorPlanUnderlay: floorPlan.actions.setFloorPlanUnderlay,
+      setPlanAnnotations: plan.actions.setPlanAnnotations,
       setPlanOpenings: plan.actions.setPlanOpenings,
       setPlanFixedElements: plan.actions.setPlanFixedElements,
       setFloorPlanPdfSourceReady:

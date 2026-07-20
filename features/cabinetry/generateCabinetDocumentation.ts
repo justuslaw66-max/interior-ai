@@ -2625,9 +2625,15 @@ function assertCabinetDefinitionLike(value: unknown): CabinetDefinition {
   if (!Array.isArray(value.modules) || value.modules.length === 0) {
     throw new Error("Cabinet definition must include at least one module.");
   }
+  if (value.modules.length > 200) {
+    throw new Error("Cabinet definition cannot contain more than 200 modules.");
+  }
 
   if (!Array.isArray(value.materials)) {
     throw new Error("Cabinet definition must include material references.");
+  }
+  if (value.materials.length > 200) {
+    throw new Error("Cabinet definition cannot contain more than 200 material references.");
   }
 
   const validEdgeTreatments = [

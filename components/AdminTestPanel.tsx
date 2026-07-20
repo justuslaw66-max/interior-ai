@@ -52,7 +52,7 @@ export default function AdminTestPanel() {
       <h2 className="text-lg font-semibold">Testing Panel</h2>
       <p className="mt-1 text-xs text-neutral-500">
         Use this to simulate add_to_cart / checkout / purchase events for funnel
-        testing.
+        testing. Values and currencies are intentionally not recorded as revenue.
       </p>
 
       <div className="mt-3 grid gap-3 md:grid-cols-4">

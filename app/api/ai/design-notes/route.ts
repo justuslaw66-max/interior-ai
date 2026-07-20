@@ -4,6 +4,19 @@ import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { rateLimit } from "@/lib/rateLimit";
 import { config } from "@/lib/config";
+import {
+  ApiBoundaryError,
+  apiErrorResponse,
+  apiSuccessHeaders,
+  createOperationId,
+  readJsonRequest,
+} from "@/lib/api-boundary";
+import {
+  DESIGN_NOTES_MAX_BODY_BYTES,
+  parseDesignNotesInput,
+  parseDesignNotesOutput,
+} from "@/lib/ai/design-notes-contract";
+import { logOperationalEvent } from "@/lib/observability";
 
 export const runtime = "nodejs";
 
@@ -24,11 +37,6 @@ type HashableDesign = {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
-}
-
-function getErrorMessage(error: unknown): string {
-  if (error instanceof Error) return error.message;
-  return String(error);
 }
 
 function toInputJson(value: unknown) {
@@ -124,64 +132,80 @@ const responseSchema = {
 
 export async function POST(req: Request) {
   const startTime = Date.now();
+  const operation = "ai.design_notes";
+  const operationId = createOperationId();
   try {
     if (!config.features.aiEnabled) {
-      return NextResponse.json({ error: "AI is disabled" }, { status: 503 });
+      throw new ApiBoundaryError(503, "INTERNAL_ERROR", "AI suggestions are unavailable.");
     }
 
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      throw new ApiBoundaryError(401, "UNAUTHORIZED", "Sign in to continue.");
     }
 
-    const { design, mode, anonymousId } = await req.json();
-
-    if (!design) {
-      return NextResponse.json({ error: "Missing design data" }, { status: 400 });
+    const requestBody = await readJsonRequest(req, DESIGN_NOTES_MAX_BODY_BYTES);
+    const parsedInput = parseDesignNotesInput(requestBody);
+    if (!parsedInput) {
+      throw new ApiBoundaryError(400, "BAD_REQUEST", "Invalid design-notes request.");
     }
+    const { design, mode } = parsedInput;
 
     // Rate limit: 12 requests per minute per user
-    const key = session.user.id ? `user:${session.user.id}` : `anon:${anonymousId ?? "unknown"}`;
+    const key = `ai-design-notes:${session.user.id}`;
     const rl = rateLimit(key, 12, 60_000);
     if (!rl.ok) {
-      console.warn("Rate limit exceeded for key:", key);
-      return NextResponse.json(
-        { error: "Too many AI requests. Please try again in a minute." },
-        { status: 429 }
+      throw new ApiBoundaryError(
+        429,
+        "RATE_LIMITED",
+        "Too many AI requests. Please try again in a minute."
       );
     }
 
     // Check cache first (huge win if design hasn't changed)
     const designHash = hashDesign(design);
-    
-    try {
+    let cacheDesignId: string | null = null;
+    if (design.id) {
+      try {
       const db = await getPrisma();
-      const cached = await db.aiDesignNotes.findUnique({
-        where: {
-          designId_designHash_mode: {
-            designId: design.id,
-            designHash,
-            mode: mode ?? "homeowner",
-          },
-        },
+      const owned = await db.design.findFirst({
+        where: { id: design.id, userId: session.user.id },
+        select: { id: true },
       });
-
-      if (cached) {
-        const ms = Date.now() - startTime;
-        if (config.logLevel === "debug") {
-          console.log("AI cache hit:", { designId: design.id, ms });
-        }
-        // Return with cached flag for client metrics
-        return NextResponse.json({
-          ...(isRecord(cached.resultJson) ? cached.resultJson : {}),
-          cached: true,
-          ms,
+      cacheDesignId = owned?.id ?? null;
+      if (cacheDesignId) {
+        const cached = await db.aiDesignNotes.findUnique({
+          where: {
+            designId_designHash_mode: {
+              designId: cacheDesignId,
+              designHash,
+              mode,
+            },
+          },
         });
+
+        const parsedCached = cached ? parseDesignNotesOutput(cached.resultJson) : null;
+        if (parsedCached) {
+          const ms = Date.now() - startTime;
+          logOperationalEvent({
+            operation,
+            operationId,
+            outcome: "succeeded",
+            durationMs: ms,
+            status: 200,
+            meta: { cache: "hit", itemCount: design.items.length },
+          });
+          return NextResponse.json(
+            { ...parsedCached, cached: true, ms },
+            { headers: apiSuccessHeaders(operationId) }
+          );
+        }
       }
-    } catch (cacheReadErr) {
+      } catch (cacheReadErr) {
       // Log but don't fail if cache read fails - user gets fresh generation
-      if (config.logLevel !== "warn") {
-        console.warn("Cache read failed:", getErrorMessage(cacheReadErr));
+        console.warn("AI cache read failed", {
+          errorType: cacheReadErr instanceof Error ? cacheReadErr.name : "unknown",
+        });
       }
     }
 
@@ -214,7 +238,7 @@ export async function POST(req: Request) {
             action: { type: "ADD_LAMP_NEAR_READING" },
           },
         ],
-      });
+      }, { headers: apiSuccessHeaders(operationId) });
     }
 
     // Build a compact prompt that includes only the data we have
@@ -225,19 +249,16 @@ export async function POST(req: Request) {
       "that map to one of these action types: RUG_RESIZE_TO_SOFA, MAKE_CHEAPER, or ADD_LAMP_NEAR_READING.";
 
     const userContent = JSON.stringify({
-      mode: mode ?? "homeowner",
+      mode,
       design: {
         items: design.items ?? [],
-        categories: design.categories ?? [],
+        categories: design.categories,
         budget: design.budget ?? null,
       },
     });
 
     if (config.logLevel === "debug") {
-      console.log("Calling OpenAI with design data...", {
-        itemCount: design.items?.length,
-        categories: design.categories,
-      });
+      console.log("Calling AI design-notes provider", { itemCount: design.items.length });
     }
 
     // Call OpenAI with Structured Outputs (JSON schema) + timeout
@@ -265,11 +286,15 @@ export async function POST(req: Request) {
       },
     };
 
-    const response = await client.chat.completions.create(
-      requestPayload as unknown as Parameters<typeof client.chat.completions.create>[0]
-    );
-
-    clearTimeout(timeout);
+    let response;
+    try {
+      response = await client.chat.completions.create(
+        requestPayload as unknown as Parameters<typeof client.chat.completions.create>[0],
+        { signal: controller.signal }
+      );
+    } finally {
+      clearTimeout(timeout);
+    }
 
     if (config.logLevel === "debug") {
       console.log("OpenAI response received");
@@ -285,62 +310,55 @@ export async function POST(req: Request) {
       throw new Error("Empty AI response text");
     }
 
-    const result = JSON.parse(textContent) as unknown;
+    const result = parseDesignNotesOutput(JSON.parse(textContent) as unknown);
+    if (!result) {
+      throw new Error("AI provider returned a response outside the required contract");
+    }
 
     // Store in cache for future requests with same design hash
-    try {
+    if (cacheDesignId) try {
       const db = await getPrisma();
       await db.aiDesignNotes.create({
         data: {
-          designId: design.id,
+          designId: cacheDesignId,
           designHash,
-          mode: mode ?? "homeowner",
+          mode,
           resultJson: toInputJson(result),
         },
       });
       if (config.logLevel === "debug") {
-        console.log("Cached AI design-notes result:", { designId: design.id });
+        console.log("Cached AI design-notes result", { itemCount: design.items.length });
       }
     } catch (cacheErr) {
       // Log but don't fail if cache write fails
-      console.warn("Failed to cache AI result:", getErrorMessage(cacheErr));
+      console.warn("AI cache write failed", {
+        errorType: cacheErr instanceof Error ? cacheErr.name : "unknown",
+      });
     }
 
     const ms = Date.now() - startTime;
-    return NextResponse.json({
-      ...(isRecord(result) ? result : {}),
-      cached: false,
-      ms,
+    logOperationalEvent({
+      operation,
+      operationId,
+      outcome: "succeeded",
+      durationMs: ms,
+      status: 200,
+      meta: { cache: "miss", itemCount: design.items.length },
     });
-  } catch (err: unknown) {
-    const message = getErrorMessage(err);
-    const errCode = isRecord(err) ? err.code : undefined;
-    const errStatus = isRecord(err) ? err.status : undefined;
-
-    console.error("AI design-notes error:", {
-      message,
-      code: errCode,
-      status: errStatus,
-    });
-
-    // Provide helpful error messages
-    if (errCode === "ERR_ABORTED") {
-      return NextResponse.json(
-        { error: "AI request timed out. Please try again." },
-        { status: 504 }
-      );
-    }
-
-    if (message.includes("401") || message.includes("Unauthorized")) {
-      return NextResponse.json(
-        { error: "OpenAI API key invalid or expired" },
-        { status: 401 }
-      );
-    }
-
     return NextResponse.json(
-      { error: message || "AI request failed" },
-      { status: 500 }
+      { ...result, cached: false, ms },
+      { headers: apiSuccessHeaders(operationId) }
     );
+  } catch (err: unknown) {
+    if (
+      err instanceof Error &&
+      (err.name === "AbortError" || err.name === "APIUserAbortError")
+    ) {
+      return apiErrorResponse(
+        new ApiBoundaryError(504, "UPSTREAM_TIMEOUT", "AI request timed out. Please try again."),
+        { operation, operationId, startedAt: startTime }
+      );
+    }
+    return apiErrorResponse(err, { operation, operationId, startedAt: startTime });
   }
 }

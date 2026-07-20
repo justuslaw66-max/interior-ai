@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "title": "Legacy Studio",
+  "roomBounds": {
+    "width": 4.8,
+    "depth": 3.6,
+    "wallThickness": 0.12,
+    "height": 2.7
+  },
+  "items": [],
+  "zones": [],
+  "savedViews": [],
+  "legacyExtension": {
+    "source": "desktop-v1"
+  }
+}

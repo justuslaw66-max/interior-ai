@@ -7,6 +7,7 @@ import { CATALOG_ITEMS } from "@/lib/catalog";
 import { mapToTopCategory } from "@/lib/catalog/view-builders";
 import { evaluateConstraints, type ConstraintResult } from "@/lib/constraints/evaluate";
 import type { EditorViewMode } from "@/lib/editorScene";
+import { resolveEditorCapabilities } from "@/lib/editor-capabilities";
 import {
   buildFirstRunActivationState,
   type FirstRunActivationStepId,
@@ -266,9 +267,10 @@ export function useDesignPageOnboarding({
   }, []);
 
   useEffect(() => {
+    const capabilities = resolveEditorCapabilities(state.plan);
     const eligible = isOnboardingEligible({
       isNewUser: !onboardingState.enabled && onboardingState.step === "idle",
-      isPro: state.plan === "pro",
+      skipGuidedOnboarding: capabilities.skipGuidedOnboarding,
       isShared: Boolean(state.shareToken),
       isClientPreview: state.isClientPreview,
       mode: state.editorMode === "ai" ? "design" : state.editorMode,

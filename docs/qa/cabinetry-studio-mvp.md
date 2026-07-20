@@ -2,9 +2,12 @@
 
 ## Automated Checks
 
-- Run `npm run test:cabinetry` (domain/preset validity, numeric integrity, semantic preview, polygon/Fit hosts, wardrobe arrangements, structured room recommendations, preset provenance, the complete 33-template metadata catalog, and contextual onboarding/preferences).
-- Run `npm run test:cabinetry-performance` and retain the printed large-run and 33-preset timings with the build record.
-- Run `npm run test:cabinetry-accessibility` for static semantics, keyboard-control metadata, visual-choice labels, and project-unit conversion coverage. This supplements, but does not replace, the release-candidate keyboard/screen-reader smoke.
+- Run `npm run verify:cabinetry`. This is the target-scoped deterministic entry
+  point for domain and Studio behavior, the architecture/line-count/cycle
+  ratchet, static accessibility checks, and performance budgets. Retain the
+  printed large-run and 33-preset timings with the build record. Static
+  accessibility coverage supplements, but does not replace, the
+  release-candidate keyboard/screen-reader smoke.
 - Run `npx tsc --noEmit --incremental false --pretty false`.
 - Run `npm run build`.
 - Run `npx playwright test tests/e2e/cabinetry-studio.spec.ts`.
@@ -255,6 +258,23 @@ freeze a new release candidate and rerun the whole gate before product-owner sig
 41. Open `/design` as a homeowner/free user; confirm the Custom Millwork Studio launcher opens the Consumer Guided experience, shows the preliminary estimate and placement actions, and does not reveal Pro-only construction, fabrication, or export controls.
 
 ## Notes
+
+### Phase 6 consumer/pro mode and accessibility evidence
+
+- The editor now resolves UI behavior through `lib/editor-capabilities.ts`;
+  server API routes continue to enforce authenticated entitlements separately.
+- Consumer and professional experiences share the same design document, scene,
+  renderer, command, history, and persistence domains. Capabilities only shape
+  controls, defaults, guidance, export breadth, and workflow density.
+- Present & Export keeps advanced plan-layer/theme controls behind a client-only
+  dynamic import, while the default consumer workflow remains simple and
+  understandable.
+- Seven recurring modal workflows use the shared `EditorDialog` primitive for
+  labelled semantics, focus entry/trapping/return, Escape behavior, visible
+  focus, reduced motion, and minimum action targets.
+- Automated coverage: `npm run test:editor-capabilities-accessibility` plus the
+  focused `2D selected room toolbar and opening delete controls work` Playwright
+  scenario in `tests/e2e/18-multi-room-whole-home.spec.ts`.
 
 - Cabinetry is the first working generated geometry family, with semantic Custom Millwork presets for closet systems, media walls, mudrooms, laundry rooms, home offices, library walls, window seats, banquettes, Murphy beds, fold-down desks, platform storage beds, under-stair storage, room divider storage, home bars, kitchen islands, pantry systems, wine storage, pet built-ins, kids storage, hobby storage, wall paneling, slat walls, ceiling beams, coffered ceilings, fireplace surrounds, and trim packages using the same parametric pipeline.
 - Generated GLB URLs are local session object URLs for this MVP.

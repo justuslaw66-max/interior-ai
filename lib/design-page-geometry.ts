@@ -6,8 +6,12 @@
  */
 
 import { type AABB } from "@/lib/snapGuides";
-import { getRotatedFootprint } from "@/lib/design-page-utils";
+import {
+  getRotatedFootprint,
+  snapRotationRadians,
+} from "@/lib/design-page-utils";
 import type { RoomPlanPolygonPoint, RoomPlanShape } from "@/lib/room-types";
+import { EDITOR_GEOMETRY_TOLERANCES } from "@/lib/editor-geometry-tolerances";
 
 // Re-export AABB so callers don't need a separate snapGuides import for this type.
 export type { AABB };
@@ -21,11 +25,74 @@ export function getFurnitureWallInset(wallThickness: number): number {
   return Math.max(0.08, wall + 0.04);
 }
 
+export function isAabbWithinPadding(
+  target: AABB,
+  reference: AABB,
+  padding: number
+): boolean {
+  return !(
+    target.maxX < reference.minX - padding ||
+    target.minX > reference.maxX + padding ||
+    target.maxZ < reference.minZ - padding ||
+    target.minZ > reference.maxZ + padding
+  );
+}
+
+export function resolveAxisAlignedRoomItemBounds({
+  roomOriginX,
+  roomOriginZ,
+  roomWidth,
+  roomDepth,
+  wallContactInset,
+  itemWidth,
+  itemDepth,
+}: {
+  roomOriginX: number;
+  roomOriginZ: number;
+  roomWidth: number;
+  roomDepth: number;
+  wallContactInset: number;
+  itemWidth: number;
+  itemDepth: number;
+}): { minX: number; maxX: number; minZ: number; maxZ: number } {
+  return {
+    minX: roomOriginX - roomWidth / 2 + wallContactInset + itemWidth / 2,
+    maxX: roomOriginX + roomWidth / 2 - wallContactInset - itemWidth / 2,
+    minZ: roomOriginZ - roomDepth / 2 + wallContactInset + itemDepth / 2,
+    maxZ: roomOriginZ + roomDepth / 2 - wallContactInset - itemDepth / 2,
+  };
+}
+
+export function resolvePointerRotationRadians({
+  deltaX,
+  deltaZ,
+  snapToStep,
+  snapEnabled,
+  snapStepRadians,
+}: {
+  deltaX: number;
+  deltaZ: number;
+  snapToStep: boolean;
+  snapEnabled: boolean;
+  snapStepRadians: number;
+}): number | null {
+  if (
+    Math.abs(deltaX) < EDITOR_GEOMETRY_TOLERANCES.rotationVectorMeters &&
+    Math.abs(deltaZ) < EDITOR_GEOMETRY_TOLERANCES.rotationVectorMeters
+  ) {
+    return null;
+  }
+  const rotation = Math.atan2(deltaX, -deltaZ);
+  return snapToStep && snapEnabled
+    ? snapRotationRadians(rotation, snapStepRadians)
+    : rotation;
+}
+
 function isPointOnSegment(
   point: RoomPlanPolygonPoint,
   first: RoomPlanPolygonPoint,
   second: RoomPlanPolygonPoint,
-  epsilon = 0.0001
+  epsilon = EDITOR_GEOMETRY_TOLERANCES.polygonMeters
 ): boolean {
   const cross =
     (point.z - first.z) * (second.x - first.x) -
@@ -102,7 +169,7 @@ function lineSegmentsIntersect(
   const firstSideB = cross(firstStart, firstEnd, secondEnd);
   const secondSideA = cross(secondStart, secondEnd, firstStart);
   const secondSideB = cross(secondStart, secondEnd, firstEnd);
-  const epsilon = 0.0001;
+  const epsilon = EDITOR_GEOMETRY_TOLERANCES.polygonMeters;
 
   if (
     Math.abs(firstSideA) <= epsilon &&
@@ -258,8 +325,10 @@ function clampToCustomPolygonRoom(
     zCandidates.add(clampValue(point.z - clearanceHalfDepth, minZ, maxZ));
     zCandidates.add(clampValue(point.z + clearanceHalfDepth, minZ, maxZ));
   }
-  const holeClearanceX = clearanceHalfWidth + 0.001;
-  const holeClearanceZ = clearanceHalfDepth + 0.001;
+  const holeClearanceX =
+    clearanceHalfWidth + EDITOR_GEOMETRY_TOLERANCES.clearanceMeters;
+  const holeClearanceZ =
+    clearanceHalfDepth + EDITOR_GEOMETRY_TOLERANCES.clearanceMeters;
   for (const point of holes.flat()) {
     xCandidates.add(clampValue(point.x - holeClearanceX, minX, maxX));
     xCandidates.add(clampValue(point.x + holeClearanceX, minX, maxX));
@@ -394,7 +463,9 @@ export function separateIfOverlapping(
 ): [number, number] {
   const dx = ax - bx;
   const dz = az - bz;
-  const dist = Math.sqrt(dx * dx + dz * dz) || 0.0001;
+  const dist =
+    Math.sqrt(dx * dx + dz * dz) ||
+    EDITOR_GEOMETRY_TOLERANCES.polygonMeters;
   const minDist = ar + br + padding;
 
   if (dist >= minDist) return [ax, az];

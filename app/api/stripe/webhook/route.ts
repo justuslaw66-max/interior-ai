@@ -26,11 +26,6 @@ type AppliedEntitlement = {
   decision: EntitlementDecision | null;
 };
 
-function getErrorMessage(error: unknown): string {
-  if (error instanceof Error) return error.message;
-  return String(error);
-}
-
 function getStripeClient(): Stripe {
   const secretKey = process.env.STRIPE_SECRET_KEY;
   if (!secretKey || secretKey.includes("...")) {
@@ -184,7 +179,10 @@ export async function POST(req: Request) {
     webhookSecret = getWebhookSecret();
     catalog = resolveProPriceCatalog();
   } catch (error) {
-    return NextResponse.json({ error: getErrorMessage(error) }, { status: 503 });
+    console.error("Stripe webhook configuration unavailable", {
+      errorType: error instanceof Error ? error.name : "unknown",
+    });
+    return NextResponse.json({ error: "Webhook service unavailable" }, { status: 503 });
   }
 
   const signature = req.headers.get("stripe-signature");
@@ -197,12 +195,13 @@ export async function POST(req: Request) {
   try {
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
   } catch (error) {
-    const message = getErrorMessage(error);
     await logAppEvent({
       eventType: "webhook_failed",
-      meta: { provider: "stripe", reason: message || "signature" },
+      meta: { provider: "stripe", reason: "signature" },
     });
-    console.warn("Webhook signature verification failed:", message);
+    console.warn("Webhook signature verification failed", {
+      errorType: error instanceof Error ? error.name : "unknown",
+    });
     return NextResponse.json({ error: "Invalid webhook signature" }, { status: 400 });
   }
 
@@ -263,16 +262,17 @@ export async function POST(req: Request) {
       entitlement: applied.decision?.plan ?? "ignored",
     });
   } catch (error) {
-    const message = getErrorMessage(error);
     await logAppEvent({
       eventType: "webhook_failed",
       meta: {
         provider: "stripe",
         stripeEventId: event.id,
-        reason: message || "handler",
+        reason: "handler",
       },
     });
-    console.error("Webhook handler error:", message);
+    console.error("Webhook handler failed", {
+      errorType: error instanceof Error ? error.name : "unknown",
+    });
     return NextResponse.json({ error: "Webhook processing failed" }, { status: 500 });
   }
 }

@@ -33,7 +33,7 @@ export function PDFDownloadButton({
       track("export_upgrade_prompt_shown", {
         trigger: "pdf",
         design_id: designId,
-        share_token: shareToken,
+        shared_context: Boolean(shareToken),
       });
 
       fetch("/api/track/app-event", {
@@ -54,7 +54,7 @@ export function PDFDownloadButton({
 
     track("export_pdf_clicked", {
       design_id: designId,
-      share_token: shareToken,
+      shared_context: Boolean(shareToken),
     });
 
     fetch("/api/track/app-event", {

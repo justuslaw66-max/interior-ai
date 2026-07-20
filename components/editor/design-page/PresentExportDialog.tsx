@@ -1,18 +1,32 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import EditorViewToggle, { type EditorViewMode } from "@/components/editor/EditorViewToggle";
+import { EditorDialog } from "@/components/editor/design-system/EditorDialog";
 import ExportReadinessPreview from "@/components/editor/ExportReadinessPreview";
 import PlanOpeningInspector from "@/components/editor/PlanOpeningInspector";
 import { LightingPresetsUI } from "@/components/LightingPresetsUI";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type { ExportReadinessItem } from "@/lib/design-page-export-readiness";
 import type { DesignPageOpeningMetricsPatch } from "@/lib/design-page-opening-metrics";
-import { PLAN_LAYER_PRESETS, type PlanLayerPresetId, type PlanMeasurementUnit } from "@/lib/design-page-types";
+import type { PlanLayerPresetId, PlanMeasurementUnit } from "@/lib/design-page-types";
 import { compareLayoutVersion, summarizeLayoutVersionComparison } from "@/lib/layout-versions";
 import type { LightingPreset } from "@/lib/lightingPresets";
 import type { RoomSnapshot, SavedView } from "@/lib/room-types";
 import type { ExportStylePreset, PlanLayers, PlanTheme } from "@/lib/useDesignPagePlanState";
 import { formatTimeAgo } from "@/lib/design-page-utils";
+
+const PresentExportProfessionalPlanControls = dynamic(
+  () => import("@/components/editor/design-page/PresentExportProfessionalPlanControls"),
+  {
+    ssr: false,
+    loading: () => (
+      <div role="status" aria-live="polite" className="rounded-lg border border-gray-200/70 p-3 text-xs text-gray-500">
+        Loading professional plan controls…
+      </div>
+    ),
+  }
+);
 
 type AnnotationToolKind = "note" | "callout" | "room_tag";
 
@@ -22,7 +36,8 @@ export type PresentExportDialogProps = {
   configuration: {
     open: boolean;
     designerTheme: boolean;
-    canUseDesigner: boolean;
+    canUseAdvancedPlanControls: boolean;
+    canUseAdvancedExportStyles: boolean;
   };
   state: {
     exportReadiness: { items: ExportReadinessItem[]; readyCount: number; score: number };
@@ -89,7 +104,10 @@ export type PresentExportDialogProps = {
 
 export function PresentExportDialog({ configuration, state, actions }: PresentExportDialogProps) {
   const showDesignerTheme = configuration.designerTheme;
-  const canUseDesigner = configuration.canUseDesigner;
+  const canUseAdvancedPlanControls =
+    configuration.canUseAdvancedPlanControls;
+  const canUseAdvancedExportStyles =
+    configuration.canUseAdvancedExportStyles;
   const {
     exportReadiness,
     rooms,
@@ -130,40 +148,21 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
   if (!configuration.open) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4 sm:items-center"
-      onClick={actions.onClose}
+    <EditorDialog
+      open
+      title="Present & Export"
+      description="Review the design, save views, and prepare presentation outputs."
+      onClose={actions.onClose}
+      closeLabel="Close export panel"
+      dark={showDesignerTheme}
+      overlayClassName="items-start overflow-y-auto sm:items-center"
+      panelClassName={
+        showDesignerTheme
+          ? "designer-panel max-h-[calc(100vh-2rem)] max-w-lg overflow-y-auto"
+          : "max-h-[calc(100vh-2rem)] max-w-lg overflow-y-auto"
+      }
+      contentClassName="space-y-4"
     >
-      <div
-        className={
-          showDesignerTheme
-            ? "designer-panel max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-y-auto rounded-xl p-6 shadow-2xl"
-            : "max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-y-auto rounded-xl bg-white p-6 shadow-2xl"
-        }
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className={
-            showDesignerTheme
-              ? "designer-text-primary text-xl font-bold"
-              : "text-xl font-bold"
-          }>
-            Present & Export
-          </h2>
-          <button
-            aria-label="Close export panel"
-            onClick={actions.onClose}
-            className={
-              showDesignerTheme
-                ? "designer-text-secondary text-2xl hover:text-white"
-                : "text-2xl text-gray-500 hover:text-gray-700"
-            }
-          >
-            ✕
-          </button>
-        </div>
-
-        <div className="space-y-4">
           <ExportReadinessPreview
             dark={showDesignerTheme}
             items={exportReadiness.items}
@@ -504,8 +503,8 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
                     Simple controls
                   </button>
                   <button
-                    aria-disabled={!canUseDesigner}
-                    title={!canUseDesigner ? "Upgrade to Pro to use Pro controls" : undefined}
+                    aria-disabled={!canUseAdvancedPlanControls}
+                    title={!canUseAdvancedPlanControls ? "Upgrade to Pro to use advanced plan controls" : undefined}
                     className={
                       !simplePlanControls
                         ? "rounded-lg bg-teal-600 px-3 py-2 text-xs font-medium text-white"
@@ -530,109 +529,15 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
                     Simple mode keeps the plan clean. Use Pro controls for layers, doors/windows, and theme tuning.
                   </div>
                 ) : (
-                  <>
-                    <div className="rounded-lg border border-gray-200/70 p-2">
-                      <div className={showDesignerTheme ? "mb-2 text-[11px] text-neutral-400" : "mb-2 text-[11px] text-gray-500"}>
-                        Layer Presets
-                      </div>
-                      <div className="grid grid-cols-3 gap-2">
-                        <button
-                          className={
-                            planLayerPreset === "presentation"
-                              ? "rounded-lg bg-teal-600 px-2 py-2 text-[11px] font-medium text-white"
-                              : showDesignerTheme
-                                ? "designer-control rounded-lg border px-2 py-2 text-[11px] text-neutral-200"
-                                : "rounded-lg bg-gray-100 px-2 py-2 text-[11px] hover:bg-gray-200"
-                          }
-                          onClick={() => actions.onPlanLayerPresetChange("presentation")}
-                        >
-                          {PLAN_LAYER_PRESETS.presentation.label}
-                        </button>
-                        <button
-                          className={
-                            planLayerPreset === "technical"
-                              ? "rounded-lg bg-teal-600 px-2 py-2 text-[11px] font-medium text-white"
-                              : showDesignerTheme
-                                ? "designer-control rounded-lg border px-2 py-2 text-[11px] text-neutral-200"
-                                : "rounded-lg bg-gray-100 px-2 py-2 text-[11px] hover:bg-gray-200"
-                          }
-                          onClick={() => actions.onPlanLayerPresetChange("technical")}
-                        >
-                          {PLAN_LAYER_PRESETS.technical.label}
-                        </button>
-                        <button
-                          className={
-                            planLayerPreset === "staging"
-                              ? "rounded-lg bg-teal-600 px-2 py-2 text-[11px] font-medium text-white"
-                              : showDesignerTheme
-                                ? "designer-control rounded-lg border px-2 py-2 text-[11px] text-neutral-200"
-                                : "rounded-lg bg-gray-100 px-2 py-2 text-[11px] hover:bg-gray-200"
-                          }
-                          onClick={() => actions.onPlanLayerPresetChange("staging")}
-                        >
-                          {PLAN_LAYER_PRESETS.staging.label}
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        className={
-                          planTheme === "consumer"
-                            ? "rounded-lg bg-teal-600 px-3 py-2 text-xs font-medium text-white"
-                            : showDesignerTheme
-                              ? "designer-control rounded-lg border px-3 py-2 text-xs text-neutral-200"
-                              : "rounded-lg bg-gray-100 px-3 py-2 text-xs hover:bg-gray-200"
-                        }
-                        onClick={() => actions.onPlanThemeChange("consumer")}
-                      >
-                        Consumer Theme
-                      </button>
-                      <button
-                        className={
-                          planTheme === "pro"
-                            ? "rounded-lg bg-teal-600 px-3 py-2 text-xs font-medium text-white"
-                            : showDesignerTheme
-                              ? "designer-control rounded-lg border px-3 py-2 text-xs text-neutral-200"
-                              : "rounded-lg bg-gray-100 px-3 py-2 text-xs hover:bg-gray-200"
-                        }
-                        onClick={() => actions.onPlanThemeChange("pro")}
-                      >
-                        Pro Theme
-                      </button>
-                    </div>
-                  </>
-                )}
-
-                {!simplePlanControls && (
-                  <div className="grid grid-cols-2 gap-2">
-                    {[
-                      ["grid", "Grid"],
-                      ["dimensions", "Dimensions"],
-                      ["labels", "Labels"],
-                      ["openings", "Doors/windows"],
-                      ["builtIns", "Built-ins"],
-                      ["zones", "Zones"],
-                      ["annotations", "Notes"],
-                    ].map(([rawKey, label]) => {
-                      const key = rawKey as keyof typeof planLayers;
-                      return (
-                        <button
-                          key={rawKey}
-                          className={
-                            planLayers[key]
-                              ? "rounded-lg bg-teal-600 px-3 py-2 text-xs font-medium text-white"
-                              : showDesignerTheme
-                                ? "designer-control rounded-lg border px-3 py-2 text-xs text-neutral-200"
-                                : "rounded-lg bg-gray-100 px-3 py-2 text-xs hover:bg-gray-200"
-                          }
-                          onClick={() => actions.onTogglePlanLayer(key)}
-                        >
-                          {label}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <PresentExportProfessionalPlanControls
+                    dark={showDesignerTheme}
+                    preset={planLayerPreset}
+                    layers={planLayers}
+                    theme={planTheme}
+                    onPresetChange={actions.onPlanLayerPresetChange}
+                    onThemeChange={actions.onPlanThemeChange}
+                    onToggleLayer={actions.onTogglePlanLayer}
+                  />
                 )}
                 <div className="rounded-lg border border-gray-200/70 p-2">
                   <div className={showDesignerTheme ? "mb-2 text-[11px] text-neutral-400" : "mb-2 text-[11px] text-gray-500"}>
@@ -871,8 +776,8 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
                     Consumer
                   </button>
                   <button
-                    aria-disabled={!canUseDesigner}
-                    title={!canUseDesigner ? "Upgrade to Pro to use the Pro export preset" : undefined}
+                    aria-disabled={!canUseAdvancedExportStyles}
+                    title={!canUseAdvancedExportStyles ? "Upgrade to Pro to use the Pro export preset" : undefined}
                     className={
                       exportStylePreset === "pro"
                         ? "rounded-lg bg-teal-600 px-3 py-2 text-xs font-medium text-white"
@@ -935,8 +840,6 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
               ← Back to Design Mode
             </button>
           </div>
-        </div>
-      </div>
-    </div>
+    </EditorDialog>
   );
 }

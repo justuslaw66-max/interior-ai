@@ -62,7 +62,9 @@ export async function POST(request: Request) {
       return noStoreJson({ error: "Too many address searches. Try again shortly." }, 429);
     }
   } catch (cause) {
-    console.error("Google address shared rate limit failed", cause);
+    console.error("Google address shared rate limit failed", {
+      errorType: cause instanceof Error ? cause.name : "unknown",
+    });
     return noStoreJson({ error: "Address search protection is temporarily unavailable." }, 503);
   }
 
@@ -97,11 +99,9 @@ export async function POST(request: Request) {
       console.error("Google Places request failed", {
         status: cause.status,
         action,
-        reason: cause.reason,
       });
       return noStoreJson({ error: cause.message }, 502);
     }
-    const message = cause instanceof Error ? cause.message : "Invalid address search request.";
-    return noStoreJson({ error: message }, 400);
+    return noStoreJson({ error: "Invalid address search request." }, 400);
   }
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { PDFDocument, StandardFonts, degrees, rgb, type PDFFont, type PDFPage } from "pdf-lib";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
+import { resolveDesignItemVisualProduct } from "@/lib/design-item-product-snapshot";
 import { getExportCapabilities, type UserPlan } from "@/lib/export-capabilities";
 import { prisma } from "@/lib/prisma";
 import { legacyApiToSnapshot } from "@/lib/room-persistence";
@@ -227,7 +228,7 @@ function getItemRows(room: RoomSnapshot) {
   return room.items
     .filter((item) => item.bundleRole !== "component")
     .map((item) => {
-      const product = CATALOG_ITEMS[item.productId];
+      const product = resolveDesignItemVisualProduct(item, CATALOG_ITEMS);
       if (!product) return null;
       const resolved = resolveCatalogVariant(product, item.variantId);
       return {
@@ -264,7 +265,6 @@ export async function GET(
         user: {
           select: {
             name: true,
-            email: true,
             plan: true,
           },
         },
@@ -298,7 +298,7 @@ export async function GET(
       bold: await pdfDoc.embedFont(StandardFonts.HelveticaBold),
     };
     const createdDate = new Date(design.createdAt).toLocaleDateString("en-US");
-    const preparedBy = design.user?.name ?? design.user?.email ?? "Interior AI";
+    const preparedBy = design.user?.name ?? "Interior AI";
     const planOpenings = designSnapshot.floorPlan?.openings ?? [];
     const roomSummaries = summarizeShoppingRooms(rooms, designSnapshot.activeRoomId);
     const homeSummary = summarizeWholeHomeShopping(roomSummaries);
@@ -533,9 +533,11 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error("Share PDF export error:", error);
+    console.error("Share PDF export failed", {
+      errorType: error instanceof Error ? error.name : "unknown",
+    });
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "PDF export failed" },
+      { error: "PDF export failed. Please try again." },
       { status: 500 }
     );
   }

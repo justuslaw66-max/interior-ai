@@ -42,7 +42,6 @@ import {
   type ParametricCabinetDesignItem,
   updateCabinetPlacementMetadata,
 } from "./designItemAdapters";
-import { exportCabinetAsGlb } from "./exportCabinetGlb";
 import {
   createCabinetPolygonWallSpaces,
   createCabinetRoomWallSpaces,
@@ -500,16 +499,19 @@ export function useDesignPageCabinetry({
     if (staleCabinets.length === 0) return;
 
     let cancelled = false;
-    void Promise.all(
-      staleCabinets.map(async ({ roomId, item }) => {
-        const blob = await exportCabinetAsGlb(item.cabinetDefinition);
-        const { glbAssetUrl } = await assetStorage.saveGeneratedGlb({
-          cabinetId: item.instanceId,
-          blob,
-        });
-        return { roomId, instanceId: item.instanceId, glbAssetUrl };
-      })
-    )
+    void import("./exportCabinetGlb")
+      .then(({ exportCabinetAsGlb }) =>
+        Promise.all(
+          staleCabinets.map(async ({ roomId, item }) => {
+            const blob = await exportCabinetAsGlb(item.cabinetDefinition);
+            const { glbAssetUrl } = await assetStorage.saveGeneratedGlb({
+              cabinetId: item.instanceId,
+              blob,
+            });
+            return { roomId, instanceId: item.instanceId, glbAssetUrl };
+          })
+        )
+      )
       .then((updates) => {
         if (cancelled || updates.length === 0) return;
         const urlByInstanceId = new Map(

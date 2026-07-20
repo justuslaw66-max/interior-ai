@@ -15,8 +15,13 @@ const coreShellSource = readFileSync(
 
 assert.match(
   hookSource,
-  /fetch\("\/api\/catalog\/live", \{ cache: "no-store" \}\)/,
-  "The live catalog controller should retain the uncached editor endpoint."
+  /fetch\("\/api\/catalog\/live", \{\s*cache: "no-store",\s*signal: controller\.signal,\s*\}\)/,
+  "The live catalog controller should retain the uncached, abortable editor endpoint."
+);
+assert.match(
+  hookSource,
+  /return \(\) => \{\s*cancelled = true;\s*controller\.abort\(\);\s*\}/,
+  "The live catalog controller should abort its request when the editor unmounts."
 );
 assert.match(
   hookSource,

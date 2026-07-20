@@ -5,11 +5,13 @@ import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 
 import { CATALOG_ITEMS } from "@/lib/catalog";
+import { resolveDesignItemVisualProduct } from "@/lib/design-item-product-snapshot";
 import { track } from "@/lib/analytics";
 import type { CameraView } from "@/lib/design-page-types";
 import type { FunnelEventName } from "@/lib/design-page-paywall";
 import { getItemPrice } from "@/lib/design-page-utils";
-import { isPro, type Plan } from "@/lib/plan";
+import { resolveEditorCapabilities } from "@/lib/editor-capabilities";
+import type { Plan } from "@/lib/plan";
 import type { DesignItem, DesignSnapshot } from "@/lib/room-types";
 import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
 import type { ExportStylePreset } from "@/lib/useDesignPagePlanState";
@@ -111,6 +113,10 @@ export function useDesignPageExport({
     sceneRef,
     designSnapshotRef,
   } = refs;
+  const capabilities = resolveEditorCapabilities(plan);
+  const canExportMultipleViews = capabilities.exportMultipleViews;
+  const canExportPdf = capabilities.exportPdf;
+  const exportWithoutWatermark = capabilities.exportWithoutWatermark;
 
   const captureCanvasImage = useCallback((): string | null => {
     if (!cameraRef.current || !rendererRef.current || !sceneRef.current) return null;
@@ -127,7 +133,7 @@ export function useDesignPageExport({
 
     context.scale(2, 2);
     context.drawImage(canvas, 0, 0);
-    if (plan !== "pro") {
+    if (!exportWithoutWatermark) {
       context.resetTransform();
       context.fillStyle = "rgba(0, 0, 0, 0.6)";
       context.font = "bold 32px sans-serif";
@@ -136,7 +142,7 @@ export function useDesignPageExport({
       context.fillText("Free Tier - Interior AI", width, height);
     }
     return offscreenCanvas.toDataURL("image/png");
-  }, [cameraRef, canvasRef, plan, rendererRef, sceneRef]);
+  }, [cameraRef, canvasRef, exportWithoutWatermark, rendererRef, sceneRef]);
 
   const captureCanvasImageForPdf = useCallback((): string | null => {
     if (!cameraRef.current || !rendererRef.current || !sceneRef.current) return null;
@@ -168,7 +174,9 @@ export function useDesignPageExport({
     await waitForFrames(2);
 
     const angles =
-      exportStylePreset === "pro"
+      !canExportMultipleViews
+        ? [{ name: "hero", yaw: 0 }]
+        : exportStylePreset === "pro"
         ? [
             { name: "hero", yaw: 0 },
             { name: "left", yaw: Math.PI / 9 },
@@ -203,6 +211,7 @@ export function useDesignPageExport({
     cameraRef,
     cameraView.target,
     canvasRef,
+    canExportMultipleViews,
     captureCanvasImageForPdf,
     clientPreview,
     controlsRef,
@@ -216,7 +225,7 @@ export function useDesignPageExport({
     track("export_clicked", {
       design_id: designId,
       channel: "images",
-      is_pro: isPro(plan),
+      is_pro: canExportMultipleViews,
       export_style: exportStylePreset,
     });
     logFunnelEvent("export_clicked", {
@@ -229,7 +238,7 @@ export function useDesignPageExport({
       showToast("Scene not ready for export");
       return;
     }
-    if (!isPro(plan)) track("export_attempted", { is_pro: false });
+    if (!canExportMultipleViews) track("export_attempted", { is_pro: false });
     setIsExporting(true);
 
     try {
@@ -239,7 +248,7 @@ export function useDesignPageExport({
       setClientPreview(true);
       await waitForFrames(2);
       const angles =
-        !isPro(plan)
+        !canExportMultipleViews
           ? [{ name: "hero", yaw: 0 }]
           : exportStylePreset === "pro"
             ? [
@@ -288,12 +297,12 @@ export function useDesignPageExport({
       track("images_exported", {
         design_id: designId,
         count: images.length,
-        is_pro: isPro(plan),
+        is_pro: canExportMultipleViews,
         export_style: exportStylePreset,
         surface_material_floor_count: surfaceMaterialCount,
         surface_material_count: surfaceMaterialCount,
       });
-      if (!isPro(plan)) {
+      if (!canExportMultipleViews) {
         track("upgrade_prompt_shown", { source: "export_images" });
         setUpgradeReason("export_images");
         setShowUpgrade(true);
@@ -311,6 +320,7 @@ export function useDesignPageExport({
     cameraView.target,
     canvasRef,
     captureCanvasImage,
+    canExportMultipleViews,
     controlsRef,
     designId,
     designSnapshotRef,
@@ -329,7 +339,7 @@ export function useDesignPageExport({
     track("export_clicked", {
       design_id: designId,
       channel: "pdf",
-      is_pro: isPro(plan),
+      is_pro: canExportPdf,
       export_style: exportStylePreset,
     });
     logFunnelEvent("export_clicked", {
@@ -338,8 +348,7 @@ export function useDesignPageExport({
       export_style: exportStylePreset,
     });
 
-    const isProPlan = isPro(plan);
-    if (!isProPlan) track("pdf_export_attempted", { is_pro: false, tier: "free" });
+    if (!canExportPdf) track("pdf_export_attempted", { is_pro: false, tier: "free" });
     if (items.length === 0) {
       showToast("Add some items before exporting to PDF");
       return;
@@ -350,33 +359,39 @@ export function useDesignPageExport({
     const timeoutId = window.setTimeout(() => controller.abort(), 20_000);
     try {
       const images = await captureExportImages();
-      const tierImages = isProPlan ? images : images.slice(0, 1);
+      const tierImages = canExportPdf ? images : images.slice(0, 1);
       const response = await fetch("/api/export/pdf", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: isProPlan
+          title: canExportPdf
             ? exportStylePreset === "pro"
               ? "Interior AI Room Design - Technical Set"
               : "Interior AI Room Design - Presentation Set"
             : "Interior AI Room Design - Free Preview",
           images: tierImages,
           exportStylePreset,
-          requestedTier: isProPlan ? "pro" : "free",
+          requestedTier: canExportPdf ? "pro" : "free",
           items: items
             .map((item) => {
-              const product = CATALOG_ITEMS[item.productId];
-              if (!product) return null;
+              const liveProduct = CATALOG_ITEMS[item.productId];
+              const visualProduct = resolveDesignItemVisualProduct(
+                item,
+                CATALOG_ITEMS
+              );
+              if (!visualProduct) return null;
               return {
-                name: product.title,
-                price: getItemPrice(product),
+                name: visualProduct.title,
+                price: liveProduct ? getItemPrice(liveProduct) : 0,
                 qty: item.qty || 1,
                 retailer:
-                  product.commerce.type === "affiliate"
-                    ? product.commerce.data.retailer
+                  liveProduct?.commerce.type === "affiliate"
+                    ? liveProduct.commerce.data.retailer
                     : null,
                 buyUrl:
-                  product.commerce.type === "affiliate" ? product.commerce.data.url : null,
+                  liveProduct?.commerce.type === "affiliate"
+                    ? liveProduct.commerce.data.url
+                    : null,
               };
             })
             .filter(Boolean),
@@ -405,13 +420,13 @@ export function useDesignPageExport({
       track("pdf_exported", {
         design_id: designId,
         items_count: items.length,
-        is_pro: isProPlan,
-        tier: isProPlan ? "pro" : "free",
+        is_pro: canExportPdf,
+        tier: canExportPdf ? "pro" : "free",
         export_style: exportStylePreset,
         surface_material_floor_count: surfaceMaterialCount,
         surface_material_count: surfaceMaterialCount,
       });
-      if (!isProPlan) {
+      if (!canExportPdf) {
         track("upgrade_prompt_shown", { source: "export_pdf_free_completion" });
         setUpgradeReason("export_pdf");
         setShowUpgrade(true);
@@ -431,6 +446,7 @@ export function useDesignPageExport({
     }
   }, [
     captureExportImages,
+    canExportPdf,
     designId,
     designSnapshotRef,
     exportStylePreset,

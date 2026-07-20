@@ -1,5 +1,12 @@
 import type { CATALOG_ITEMS } from "@/lib/catalog";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
+import { enrichDesignItemProductSnapshot } from "@/lib/design-item-product-snapshot";
+import {
+  assertLocalBackupWithinSizeLimit,
+  DesignPageLocalBackupError,
+  getLocalBackupSourceVersion,
+} from "@/lib/design-page-local-backup-recovery";
+import { migrateDesignDocument } from "@/lib/design-document-migrations";
 import {
   ROOM_DIMENSION_DEFAULTS,
   resolveHouseRoomDimension,
@@ -60,6 +67,10 @@ export type NormalizedDesignPageLocalBackup = {
   cloudDesignId: string | null;
 };
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
 function normalizePersistedItem({
   item,
   roomId,
@@ -77,20 +88,25 @@ function normalizePersistedItem({
   }
 
   const product = catalogItems[item.productId];
-  const validVariant = product
-    ? product.variants.some((variant) => variant.id === item.variantId)
-      ? item.variantId
-      : product.defaultVariantId
-    : item.variantId;
+  const hasSavedVisualIdentity =
+    item.productSnapshot?.productId === item.productId &&
+    item.productSnapshot.variantId === item.variantId;
+  const validVariant = hasSavedVisualIdentity
+    ? item.variantId
+    : product
+      ? product.variants.some((variant) => variant.id === item.variantId)
+        ? item.variantId
+        : product.defaultVariantId
+      : item.variantId;
 
-  return {
+  return enrichDesignItemProductSnapshot({
     ...item,
     variantId: validVariant,
     position: item.position ?? [0, 0, 0],
     qty: typeof item.qty === "number" && item.qty > 0 ? item.qty : 1,
     includeInCheckout: item.includeInCheckout ?? true,
     locked: Boolean(item.locked),
-  };
+  }, catalogItems);
 }
 function normalizePersistedItems({
   items,
@@ -127,11 +143,41 @@ export function normalizeDesignPageLocalBackup({
   state: { activeRoomId, roomWidth, roomDepth, wallThickness },
   configuration: { catalogItems, resolveConfiguredPlanningDimsMm },
 }: NormalizeDesignPageLocalBackupInput): NormalizedDesignPageLocalBackup {
-  const parsed = JSON.parse(rawBackup) as ParsedLocalBackup;
+  assertLocalBackupWithinSizeLimit(rawBackup);
+  let parsedValue: unknown;
+  try {
+    parsedValue = JSON.parse(rawBackup);
+  } catch {
+    throw new DesignPageLocalBackupError(
+      "INVALID_JSON",
+      "Local design backup is not valid JSON.",
+      "unparseable"
+    );
+  }
+  if (!isRecord(parsedValue)) {
+    throw new DesignPageLocalBackupError(
+      "INVALID_DOCUMENT",
+      "Local design backup must be a document object.",
+      "unversioned"
+    );
+  }
+  const parsed = parsedValue as ParsedLocalBackup;
   const savedViews = sanitizeDesignPageSavedViews(parsed.savedViews);
 
-  if (parsed.version === 3 && Array.isArray(parsed.rooms)) {
-    const restored = storedToSnapshot(parsed as StoredDesign);
+  if (
+    parsed.version === 1 ||
+    parsed.version === 2 ||
+    parsed.version === 3
+  ) {
+    const migrated = migrateDesignDocument(parsed);
+    if (!migrated.ok) {
+      throw new DesignPageLocalBackupError(
+        migrated.error.code,
+        migrated.error.message,
+        migrated.error.sourceVersion
+      );
+    }
+    const restored = storedToSnapshot(migrated.document);
     const restoredRooms = restored.rooms.map((room) => {
       const nextWidth = resolveHouseRoomDimension(
         room.geometry.width,
@@ -171,7 +217,7 @@ export function normalizeDesignPageLocalBackup({
 
     if (restoredRooms.length === 0) {
       return {
-        format: "v3",
+        format: parsed.version === 3 ? "v3" : "legacy",
         snapshot: null,
         savedViews,
         cloudDesignId: null,
@@ -190,7 +236,7 @@ export function normalizeDesignPageLocalBackup({
     };
 
     return {
-      format: "v3",
+      format: parsed.version === 3 ? "v3" : "legacy",
       snapshot,
       savedViews,
       cloudDesignId:
@@ -198,6 +244,34 @@ export function normalizeDesignPageLocalBackup({
           ? parsed.designId
           : null,
     };
+  }
+
+  if (parsed.version !== undefined) {
+    throw new DesignPageLocalBackupError(
+      "UNSUPPORTED_VERSION",
+      "Unsupported local design backup version.",
+      getLocalBackupSourceVersion(rawBackup)
+    );
+  }
+
+  if (
+    !Array.isArray(parsed.items) ||
+    (parsed.zones !== undefined && !Array.isArray(parsed.zones)) ||
+    (parsed.savedViews !== undefined && !Array.isArray(parsed.savedViews)) ||
+    (parsed.roomWidth !== undefined &&
+      (typeof parsed.roomWidth !== "number" ||
+        !Number.isFinite(parsed.roomWidth) ||
+        parsed.roomWidth <= 0)) ||
+    (parsed.roomDepth !== undefined &&
+      (typeof parsed.roomDepth !== "number" ||
+        !Number.isFinite(parsed.roomDepth) ||
+        parsed.roomDepth <= 0))
+  ) {
+    throw new DesignPageLocalBackupError(
+      "INVALID_DOCUMENT",
+      "Unversioned local backup does not match the supported legacy format.",
+      "unversioned"
+    );
   }
 
   const persistedRoomWidth = resolveHouseRoomDimension(

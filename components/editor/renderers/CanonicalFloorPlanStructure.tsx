@@ -1416,7 +1416,7 @@ export function CanonicalFloorPlanWalls2D({
 
 type CanonicalFloorPlanWalls3DProps = {
   model: CanonicalFloorPlanRenderModel;
-  rooms?: HousePlanRoom2D[];
+  rooms?: readonly HousePlanRoom2D[];
   activeRoomId: string | null;
   activeFloorLevel?: number;
   selectedOpeningId?: string | null;

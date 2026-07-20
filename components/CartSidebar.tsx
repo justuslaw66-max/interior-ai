@@ -37,14 +37,12 @@ function getItemPrice(product: CatalogItemSchema) {
 async function trackAndOpen({
   designId,
   productId,
-  price,
-  retailer,
+  variantId,
   buyUrl,
 }: {
   designId?: string | null;
   productId: string;
-  price: number;
-  retailer: string | null;
+  variantId: string;
   buyUrl: string;
 }) {
   let urlToOpen = buyUrl;
@@ -56,9 +54,7 @@ async function trackAndOpen({
       body: JSON.stringify({
         designId: designId ?? null,
         productId,
-        price,
-        retailer,
-        buyUrl,
+        variantId,
       }),
     });
 
@@ -383,8 +379,7 @@ export default function CartSidebar({
           const urlToOpen = await trackAndOpen({
             designId,
             productId: line.productId,
-            price: line.linePrice,
-            retailer: line.retailer,
+            variantId: line.variantId,
             buyUrl: line.buyUrl!,
           });
           await openUrl(urlToOpen);

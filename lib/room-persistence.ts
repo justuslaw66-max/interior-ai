@@ -18,6 +18,16 @@ import type {
   ZoneMin,
 } from "./room-types";
 import { migrateToV3 } from "./room-types";
+import {
+  DESIGN_DOCUMENT_COORDINATE_SYSTEM,
+  DESIGN_DOCUMENT_LIMITS,
+  DESIGN_DOCUMENT_SCHEMA_REVISION,
+  DESIGN_DOCUMENT_UNITS,
+  getSerializedDesignDocumentByteLength,
+  type DesignDocumentCoordinateSystem,
+  type DesignDocumentUnits,
+} from "./design-document-contract";
+import { migrateDesignDocument } from "./design-document-migrations";
 
 /**
  * Format for storage (database or localStorage)
@@ -25,6 +35,9 @@ import { migrateToV3 } from "./room-types";
  */
 export interface StoredDesign {
   version: 3;
+  schemaRevision?: 1;
+  units?: DesignDocumentUnits;
+  coordinateSystem?: DesignDocumentCoordinateSystem;
   rooms: Array<{
     id: string;
     name: string;
@@ -55,6 +68,7 @@ export interface StoredDesign {
     zones: ZoneMin[];
     savedViews: SavedView[];
     layoutVersions?: LayoutVersion[];
+    [key: string]: unknown;
   }>;
   activeRoomId: string;
   // Design-level metadata
@@ -64,44 +78,40 @@ export interface StoredDesign {
   lightingPreset?: string;
   notes?: string;
   floorPlan?: PersistedFloorPlanState;
+  [key: string]: unknown;
 }
 
 export function isStoredDesign(value: unknown): value is StoredDesign {
-  if (!value || typeof value !== "object") return false;
-  const candidate = value as Partial<StoredDesign>;
-  if (candidate.version !== 3) return false;
-  if (!Array.isArray(candidate.rooms) || candidate.rooms.length === 0) return false;
-  if (typeof candidate.activeRoomId !== "string" || !candidate.activeRoomId.trim()) {
+  if (
+    !value ||
+    typeof value !== "object" ||
+    Array.isArray(value) ||
+    (value as { version?: unknown }).version !== 3
+  ) {
     return false;
   }
-  if (!candidate.rooms.some((room) => room?.id === candidate.activeRoomId)) {
-    return false;
-  }
-
-  return candidate.rooms.every((room) => {
-    if (!room || typeof room !== "object") return false;
-    const entry = room as StoredDesign["rooms"][number];
-    return (
-      typeof entry.id === "string" &&
-      typeof entry.name === "string" &&
-      typeof entry.roomType === "string" &&
-      Boolean(entry.geometry) &&
-      typeof entry.geometry.width === "number" &&
-      Number.isFinite(entry.geometry.width) &&
-      entry.geometry.width > 0 &&
-      typeof entry.geometry.depth === "number" &&
-      Number.isFinite(entry.geometry.depth) &&
-      entry.geometry.depth > 0 &&
-      Array.isArray(entry.items) &&
-      Array.isArray(entry.zones) &&
-      Array.isArray(entry.savedViews)
-    );
-  });
+  return migrateDesignDocument(value).ok;
 }
 
 export function sanitizeStoredDesign(value: unknown): StoredDesign | null {
-  if (!isStoredDesign(value)) return null;
-  return JSON.parse(JSON.stringify(value)) as StoredDesign;
+  if (
+    !value ||
+    typeof value !== "object" ||
+    Array.isArray(value) ||
+    (value as { version?: unknown }).version !== 3
+  ) {
+    return null;
+  }
+  const migrated = migrateDesignDocument(value);
+  if (!migrated.ok) return null;
+  const serialized = JSON.stringify(migrated.document);
+  if (
+    getSerializedDesignDocumentByteLength(serialized) >
+    DESIGN_DOCUMENT_LIMITS.maxSerializedBytes
+  ) {
+    return null;
+  }
+  return JSON.parse(serialized) as StoredDesign;
 }
 
 function stripTemporaryCabinetOutput(item: DesignItem): DesignItem {
@@ -136,10 +146,16 @@ function stripTemporaryCabinetOutput(item: DesignItem): DesignItem {
  */
 export function snapshotToStored(snapshot: DesignSnapshot): StoredDesign {
   const v3 = migrateToV3(snapshot);
+  const preserved = v3 as DesignSnapshot & Record<string, unknown>;
   
   return {
+    ...preserved,
     version: 3,
+    schemaRevision: DESIGN_DOCUMENT_SCHEMA_REVISION,
+    units: DESIGN_DOCUMENT_UNITS,
+    coordinateSystem: DESIGN_DOCUMENT_COORDINATE_SYSTEM,
     rooms: v3.rooms.map((room) => ({
+      ...(room as RoomSnapshot & Record<string, unknown>),
       id: room.id,
       name: room.name,
       roomType: room.roomType,
@@ -179,6 +195,7 @@ export function storedToSnapshot(stored: StoredDesign): DesignSnapshot {
   // If it has the v3 multi-room format, use it directly
   if (stored.version === 3 && stored.rooms && stored.rooms.length > 0) {
     return {
+      ...(stored as StoredDesign & Record<string, unknown>),
       version: 3,
       rooms: stored.rooms.map((room) => ({
         ...(room as RoomSnapshot),
@@ -222,8 +239,8 @@ export function loadFromLocalStorage(key: string = "design-snapshot"): DesignSna
   try {
     const item = localStorage.getItem(key);
     if (!item) return null;
-    const stored = JSON.parse(item) as StoredDesign;
-    return storedToSnapshot(stored);
+    const migrated = migrateDesignDocument(JSON.parse(item));
+    return migrated.ok ? storedToSnapshot(migrated.document) : null;
   } catch (err) {
     console.error("Failed to load from localStorage:", err);
     return null;
@@ -287,15 +304,15 @@ export function legacyApiToSnapshot(data: {
   items: DesignItem[];
   zones?: ZoneMin[];
   savedViews?: SavedView[];
-  snapshot?: StoredDesign | null;
+  snapshot?: unknown;
   style?: string;
   budget?: string;
   mode?: string;
   notes?: string;
 }): DesignSnapshot {
-  const safeSnapshot = sanitizeStoredDesign(data.snapshot);
-  if (safeSnapshot) {
-    return storedToSnapshot(safeSnapshot);
+  const migratedSnapshot = migrateDesignDocument(data.snapshot);
+  if (migratedSnapshot.ok) {
+    return storedToSnapshot(migratedSnapshot.document);
   }
 
   return migrateToV3({

@@ -103,8 +103,10 @@ test.describe("Custom Millwork Studio MVP", () => {
     await dismissBlockingPrompt(page);
     await openStudio.click();
 
-    await expect(page.getByTestId("custom-millwork-studio")).toHaveAttribute("data-access-level", "pro");
-    await expect(page.getByTestId("custom-millwork-studio")).toHaveAttribute("data-experience", "guided");
+    const studio = page.getByTestId("custom-millwork-studio");
+    await expect(studio).toBeVisible({ timeout: 15000 });
+    await expect(studio).toHaveAttribute("data-access-level", "pro");
+    await expect(studio).toHaveAttribute("data-experience", "guided");
     const onboarding = page.getByTestId("cabinet-onboarding-hint");
     await expect(onboarding).toContainText("Choose a template");
     await page.getByTestId("cabinet-onboarding-dismiss").click();
@@ -234,6 +236,27 @@ test.describe("Custom Millwork Studio MVP", () => {
       "data-experience",
       "guided"
     );
+  });
+
+  test("module drag reordering is committed once and remains undoable", async ({ page }) => {
+    await openDetailedProStudio(page);
+    await page.getByTestId("cabinet-preset-cabinet_run").click();
+
+    const firstModule = page.getByTestId("cabinet-module-1");
+    const thirdModule = page.getByTestId("cabinet-module-3");
+    await expect(firstModule).toHaveAttribute("data-module-id", "module-1");
+    await expect(thirdModule).toHaveAttribute("data-module-id", "module-3");
+
+    await thirdModule.dragTo(firstModule);
+    await expect(firstModule).toHaveAttribute("data-module-id", "module-3");
+    await expect(page.getByTestId("cabinet-module-2")).toHaveAttribute(
+      "data-module-id",
+      "module-1"
+    );
+
+    await page.getByTestId("cabinet-undo").click();
+    await expect(firstModule).toHaveAttribute("data-module-id", "module-1");
+    await expect(thirdModule).toHaveAttribute("data-module-id", "module-3");
   });
 
   test("guided Fit, locks, and validation recovery stay reversible", async ({ page }) => {
@@ -437,6 +460,7 @@ test.describe("Custom Millwork Studio MVP", () => {
     await expect(page.getByTestId("open-custom-millwork-studio")).toBeVisible({ timeout: 30000 });
     await dismissBlockingPrompt(page);
     await page.getByTestId("open-custom-millwork-studio").click();
+    await expect(page.getByTestId("custom-millwork-studio")).toBeVisible({ timeout: 15000 });
 
     const clearanceToggle = page.locator(
       '[data-testid="cabinet-preview-clearance-toggle"]:visible'
@@ -550,6 +574,17 @@ test.describe("Custom Millwork Studio MVP", () => {
     await page.getByTestId("cabinet-property-search-input").fill("");
     await expect(page.getByTestId("cabinet-overall-dimension-handles")).toBeVisible();
     await expect(page.getByTestId("cabinet-output-tabs")).toBeVisible();
+    const issuesTab = page.getByTestId("cabinet-output-tab-issues");
+    const bomTab = page.getByTestId("cabinet-output-tab-bom");
+    await issuesTab.focus();
+    await issuesTab.press("ArrowRight");
+    await expect(bomTab).toBeFocused();
+    await expect(bomTab).toHaveAttribute("aria-selected", "true");
+    await bomTab.press("Home");
+    await expect(page.getByTestId("cabinet-output-tab-overview")).toBeFocused();
+    await page.getByTestId("cabinet-output-tab-overview").press("End");
+    await expect(page.getByTestId("cabinet-output-tab-outputs")).toBeFocused();
+    await issuesTab.click();
     for (const preset of [
       "base",
       "wall",
@@ -1196,7 +1231,11 @@ test.describe("Custom Millwork Studio MVP", () => {
     await expect(page.getByTestId("cabinet-import-source-definition")).toBeVisible();
     await page.getByTestId("cabinet-preset-base").click();
     await expect(page.getByTestId("cabinet-module-3")).toHaveCount(0);
-    await page.getByTestId("cabinet-import-source-definition-input").setInputFiles(sourceDownloadPath!);
+    await page.getByTestId("cabinet-import-source-definition-input").setInputFiles({
+      name: sourceDownload.suggestedFilename(),
+      mimeType: "application/json",
+      buffer: fs.readFileSync(sourceDownloadPath!),
+    });
     await expect(page.getByTestId("cabinet-action-success")).toContainText(/Source definition imported/i);
     await expect(page.getByTestId("cabinet-module-3")).toBeVisible();
     await expect(page.getByTestId("cabinet-dimension-schedule")).toHaveAttribute("data-dimension-schedule-count", "4");
@@ -2192,6 +2231,40 @@ test.describe("Custom Millwork Studio MVP", () => {
     await expect(restoredCabinet).toHaveAttribute("data-transform-rotation-y", beforeRotation!);
     await expect(restoredCabinet).toHaveAttribute("data-asset-manifest-transform-position", beforePosition!);
     await expect(restoredCabinet).toHaveAttribute("data-asset-manifest-transform-rotation-y", beforeRotation!);
+  });
+
+  test("placed cabinet identity and transform stay consistent between 2D and 3D", async ({
+    page,
+  }) => {
+    const { placedCabinet, instanceId, beforePosition, beforeRotation } =
+      await placeCabinetRun(page);
+    const layoutDebug = page.getByTestId("qa-design-layout-debug");
+
+    await expect(layoutDebug).toHaveAttribute("data-view-mode", "3d");
+    await expect(placedCabinet).toHaveAttribute("data-instance-id", instanceId);
+    await expect(placedCabinet).toHaveAttribute("data-position", beforePosition);
+    await expect(placedCabinet).toHaveAttribute("data-rotation-y", beforeRotation);
+
+    await page.getByRole("button", { name: "2D Plan", exact: true }).click();
+    await expect(layoutDebug).toHaveAttribute("data-view-mode", "2d");
+    await expect(layoutDebug).toHaveAttribute("data-plan-2d-camera-valid", "true");
+    await expect(page.getByTestId("scene-canvas").first()).toHaveAttribute(
+      "data-plan-2d-camera-valid",
+      "true"
+    );
+    await expect(placedCabinet).toHaveAttribute("data-instance-id", instanceId);
+    await expect(placedCabinet).toHaveAttribute("data-position", beforePosition);
+    await expect(placedCabinet).toHaveAttribute("data-rotation-y", beforeRotation);
+    await expect(placedCabinet).toHaveAttribute("data-transform-position", beforePosition);
+    await expect(placedCabinet).toHaveAttribute("data-transform-rotation-y", beforeRotation);
+
+    await page.getByRole("button", { name: "3D", exact: true }).click();
+    await expect(layoutDebug).toHaveAttribute("data-view-mode", "3d");
+    await expect(placedCabinet).toHaveAttribute("data-instance-id", instanceId);
+    await expect(placedCabinet).toHaveAttribute("data-position", beforePosition);
+    await expect(placedCabinet).toHaveAttribute("data-rotation-y", beforeRotation);
+    await expect(placedCabinet).toHaveAttribute("data-transform-position", beforePosition);
+    await expect(placedCabinet).toHaveAttribute("data-transform-rotation-y", beforeRotation);
   });
 
   test("homeowner/free mode gets Guided millwork, an estimate, and no Pro controls", async ({ page }) => {

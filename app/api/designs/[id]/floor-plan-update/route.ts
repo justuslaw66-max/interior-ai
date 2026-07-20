@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { logAppEvent } from "@/lib/app-events";
+import { readJsonRequest } from "@/lib/api-boundary";
 import { compileCandidateFloorPlanDocumentV2 } from "@/lib/floor-plan-imports/validation";
 import { hashCanonicalJson } from "@/lib/floor-plan-imports/json";
 import { applyFloorPlanAddressTransformV2 } from "@/lib/floor-plan-legacy-adapters";
@@ -362,10 +363,10 @@ export async function GET(
       { headers: { "Cache-Control": "private, no-store" } }
     );
   } catch (cause) {
-    return NextResponse.json(
-      { error: cause instanceof Error ? cause.message : "Floor-plan update check failed" },
-      { status: 409 }
-    );
+    console.error("Floor-plan update check failed", {
+      errorType: cause instanceof Error ? cause.name : "unknown",
+    });
+    return NextResponse.json({ error: "Floor-plan update check failed." }, { status: 500 });
   }
 }
 
@@ -382,12 +383,13 @@ export async function POST(
   if (!design) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   try {
-    const body = (await request.json().catch(() => null)) as {
-      revisionId?: unknown;
-    } | null;
+    const rawBody = await readJsonRequest(request, 4 * 1024);
+    const body = rawBody && typeof rawBody === "object"
+      ? rawBody as { revisionId?: unknown }
+      : null;
     const requestedRevisionId =
       typeof body?.revisionId === "string" ? body.revisionId.trim() : "";
-    if (!requestedRevisionId) {
+    if (!requestedRevisionId || requestedRevisionId.length > 64) {
       return NextResponse.json(
         { error: "Choose the reviewed floor-plan revision before creating a copy." },
         { status: 400 }
@@ -525,9 +527,9 @@ export async function POST(
         { status: 500 }
       );
     }
-    return NextResponse.json(
-      { error: cause instanceof Error ? cause.message : "Updated copy could not be created" },
-      { status: 409 }
-    );
+    console.error("Updated floor-plan copy failed", {
+      errorType: cause instanceof Error ? cause.name : "unknown",
+    });
+    return NextResponse.json({ error: "Updated copy could not be created." }, { status: 500 });
   }
 }

@@ -2,6 +2,7 @@ import type { DesignSnapshot } from "@/lib/room-types";
 import { migrateToV3 } from "@/lib/room-types";
 
 const NOISY_KEYS = new Set(["timestamp", "updatedAt", "createdAt"]);
+const fingerprintCache = new WeakMap<DesignSnapshot, string>();
 
 function normalizeValue(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(normalizeValue);
@@ -35,5 +36,9 @@ export function serializeDesignSnapshotFingerprint(snapshot: DesignSnapshot) {
 }
 
 export function fingerprintDesignSnapshot(snapshot: DesignSnapshot) {
-  return hashString(serializeDesignSnapshotFingerprint(snapshot));
+  const cached = fingerprintCache.get(snapshot);
+  if (cached) return cached;
+  const fingerprint = hashString(serializeDesignSnapshotFingerprint(snapshot));
+  fingerprintCache.set(snapshot, fingerprint);
+  return fingerprint;
 }

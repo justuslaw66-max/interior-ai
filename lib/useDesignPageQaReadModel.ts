@@ -35,6 +35,10 @@ export type BuildDesignPageScenePerformanceQaSnapshotInput = {
   sceneItemCount: number;
   lastFps: number | null;
   fpsSamples: number;
+  drawCalls: number;
+  triangles: number;
+  geometries: number;
+  textures: number;
 };
 
 export function buildDesignPageScenePerformanceQaSnapshot({
@@ -49,6 +53,10 @@ export function buildDesignPageScenePerformanceQaSnapshot({
   sceneItemCount,
   lastFps,
   fpsSamples,
+  drawCalls,
+  triangles,
+  geometries,
+  textures,
 }: BuildDesignPageScenePerformanceQaSnapshotInput): DesignPageScenePerformanceQaSnapshot | null {
   if (!enabled) return null;
   return {
@@ -62,6 +70,10 @@ export function buildDesignPageScenePerformanceQaSnapshot({
     sceneItemCount,
     lastFps,
     fpsSamples,
+    drawCalls,
+    triangles,
+    geometries,
+    textures,
   };
 }
 
@@ -123,6 +135,10 @@ export type UseDesignPageQaReadModelInput = {
       sceneItemCount: number;
       lastFps: number | null;
       fpsSamples: number;
+      drawCalls: number;
+      triangles: number;
+      geometries: number;
+      textures: number;
     };
     layout: {
       viewMode: EditorViewMode;
@@ -154,12 +170,20 @@ export function useDesignPageQaReadModel({
         sceneItemCount: scene.sceneItemCount,
         lastFps: scene.lastFps,
         fpsSamples: scene.fpsSamples,
+        drawCalls: scene.drawCalls,
+        triangles: scene.triangles,
+        geometries: scene.geometries,
+        textures: scene.textures,
       }),
     [
       scene.activeRoomItemCount,
       scene.autoLite,
       scene.fpsSamples,
+      scene.drawCalls,
+      scene.geometries,
       scene.lastFps,
+      scene.textures,
+      scene.triangles,
       scene.liteEnabled,
       scene.mode,
       scene.renderQuality,

@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { generateReferralCode } from "@/lib/referralCode";
 import { getPostHogClient } from "@/lib/posthog-server";
+import { readJsonRequest } from "@/lib/api-boundary";
 
 async function ensureReferralCode(userId: string) {
   for (let attempt = 0; attempt < 5; attempt += 1) {
@@ -29,13 +30,15 @@ export async function POST(req: Request) {
 
   let body: { invitedByCode?: unknown } = {};
   try {
-    const raw = await req.text();
-    body = raw ? (JSON.parse(raw) as { invitedByCode?: unknown }) : {};
+    const raw = await readJsonRequest(req, 2 * 1024);
+    body = raw && typeof raw === "object" ? raw as { invitedByCode?: unknown } : {};
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
   const invitedByCode =
-    typeof body?.invitedByCode === "string" ? body.invitedByCode : null;
+    typeof body?.invitedByCode === "string" && /^[a-z0-9]{10}$/.test(body.invitedByCode)
+      ? body.invitedByCode
+      : null;
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
@@ -64,6 +67,18 @@ export async function POST(req: Request) {
     });
   }
 
+  const inviter = await prisma.user.findUnique({
+    where: { referralCode: invitedByCode },
+    select: { id: true },
+  });
+  if (!inviter) {
+    return NextResponse.json({
+      referralCode,
+      invitedByCode: user.invitedByCode ?? null,
+      applied: false,
+    });
+  }
+
   const updated = await prisma.user.update({
     where: { id: user.id },
     data: { invitedByCode },
@@ -71,15 +86,18 @@ export async function POST(req: Request) {
   });
 
   // Server-side PostHog tracking for referral code claimed (growth/viral event)
-  const posthog = getPostHogClient();
-  posthog.capture({
+  try {
+    const posthog = getPostHogClient();
+    posthog.capture({
     distinctId: session.user.id,
     event: "referral_code_claimed",
     properties: {
-      invited_by_code: invitedByCode,
-      user_referral_code: referralCode,
+      referral_applied: true,
     },
-  });
+    });
+  } catch {
+    // Analytics is non-blocking.
+  }
 
   return NextResponse.json({
     referralCode,

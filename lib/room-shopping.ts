@@ -111,7 +111,12 @@ export function summarizeShoppingRooms(
       if (!shouldCountItem(item)) continue;
       const product = catalogItems[item.productId];
       if (!product) {
-        needsReviewCount += 1;
+        const qty = getQuantity(item);
+        if (item.includeInCheckout ?? true) includedCount += qty;
+        needsReviewCount += qty;
+        if (previewNames.length < 3) {
+          previewNames.push(item.productSnapshot?.name ?? item.productId);
+        }
         continue;
       }
 
@@ -226,10 +231,39 @@ export function resolveRoomShoppingItems(
 ): ActiveRoomShoppingItem[] {
   if (!room) return [];
 
-  return room.items.flatMap((item) => {
+  return room.items.flatMap((item): ActiveRoomShoppingItem[] => {
     if (!shouldCountItem(item)) return [];
     const product = catalogItems[item.productId];
-    if (!product) return [];
+    if (!product) {
+      const snapshot = item.productSnapshot;
+      if (!snapshot) return [];
+      const qty = getQuantity(item);
+      return [
+        {
+          instanceId: item.instanceId,
+          productId: item.productId,
+          variantId: item.variantId,
+          title: snapshot.name,
+          variantLabel: snapshot.variantLabel,
+          imageUrl: snapshot.assets.thumbnailUrl ?? null,
+          fallbackImageUrl: snapshot.assets.thumbnailUrl ?? null,
+          priceLabel: "Price unavailable",
+          quantity: qty,
+          linePrice: 0,
+          isBundle: false,
+          retailerUrl: null,
+          retailerLabel: "Retailer",
+          commerceMode: "not_buyable",
+          retailerStatusLabel: "Catalog item unavailable",
+          includeInCheckout: item.includeInCheckout ?? true,
+          cartStatusLabel: "Needs commerce",
+          hasValidCommerce: false,
+          warningLabel:
+            "The saved visual is retained, but current purchase details are unavailable.",
+          category: "decor",
+        },
+      ];
+    }
 
     const qty = getQuantity(item);
     const resolved = resolveCatalogVariant(product, item.variantId);

@@ -29,6 +29,18 @@ const INVALID_BASE_PAYLOAD_ERROR =
   "Invalid payload: roomWidth and roomDepth must be numbers, items must be array";
 const INVALID_SNAPSHOT_ERROR = "Invalid payload: snapshot must be a v3 design snapshot";
 const INVALID_CLAIM_PAYLOAD_ERROR = "Invalid claim payload";
+const MAX_ITEMS = 2_000;
+const MAX_ZONES = 500;
+const MAX_SAVED_VIEWS = 50;
+const MAX_NOTES_LENGTH = 20_000;
+
+function isValidDimension(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0.5 && value <= 100;
+}
+
+function boundedString(value: unknown, maxLength: number) {
+  return typeof value === "string" ? value.trim().slice(0, maxLength) : null;
+}
 
 function cloneJson(value: unknown): unknown {
   return JSON.parse(JSON.stringify(value));
@@ -66,9 +78,14 @@ export function parseDesignCreatePayload(body: unknown): DesignPayloadResult<Par
   } = payload;
 
   if (
-    typeof roomWidth !== "number" ||
-    typeof roomDepth !== "number" ||
-    !Array.isArray(items)
+    !isValidDimension(roomWidth) ||
+    !isValidDimension(roomDepth) ||
+    !Array.isArray(items) ||
+    items.length > MAX_ITEMS ||
+    (zones !== undefined && (!Array.isArray(zones) || zones.length > MAX_ZONES)) ||
+    (savedViews !== undefined && (!Array.isArray(savedViews) || savedViews.length > MAX_SAVED_VIEWS)) ||
+    (notes !== undefined && notes !== null &&
+      (typeof notes !== "string" || notes.length > MAX_NOTES_LENGTH))
   ) {
     return { ok: false, error: INVALID_BASE_PAYLOAD_ERROR, status: 400 };
   }
@@ -83,7 +100,7 @@ export function parseDesignCreatePayload(body: unknown): DesignPayloadResult<Par
   return {
     ok: true,
     value: {
-      title: typeof title === "string" ? title : "Untitled Living Room",
+      title: boundedString(title, 120) || "Untitled Living Room",
       roomWidth: canonicalActiveRoom?.roomWidth ?? Number(roomWidth),
       roomDepth: canonicalActiveRoom?.roomDepth ?? Number(roomDepth),
       items: canonicalActiveRoom?.items ?? cloneJson(items),
@@ -93,10 +110,10 @@ export function parseDesignCreatePayload(body: unknown): DesignPayloadResult<Par
         canonicalActiveRoom?.savedViews ??
         (Array.isArray(savedViews) ? cloneJson(savedViews) : []),
       snapshot: safeSnapshot,
-      style: typeof style === "string" ? style : null,
-      budget: typeof budget === "string" ? budget : null,
-      mode: typeof mode === "string" ? mode : "homeowner",
-      notes: typeof notes === "string" ? notes : null,
+      style: boundedString(style, 80),
+      budget: boundedString(budget, 20),
+      mode: mode === "designer" ? "designer" : "homeowner",
+      notes: typeof notes === "string" ? notes.trim() : null,
     },
   };
 }
@@ -108,7 +125,7 @@ export function parseDesignClaimPayload(body: unknown): DesignPayloadResult<Pars
 
   if (
     !anonymousId ||
-    anonymousId.length > 64 ||
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(anonymousId) ||
     !designSnapshot ||
     typeof designSnapshot !== "object" ||
     Array.isArray(designSnapshot)
@@ -149,12 +166,31 @@ export function buildDesignUpdatePayload(body: unknown): DesignPayloadResult<Rec
   } = payload;
 
   const updateData: Record<string, unknown> = {};
-  if (typeof title === "string") updateData.title = title;
-  if (typeof roomWidth === "number") updateData.roomWidth = Number(roomWidth);
-  if (typeof roomDepth === "number") updateData.roomDepth = Number(roomDepth);
-  if (Array.isArray(items)) updateData.items = cloneJson(items);
-  if (Array.isArray(zones)) updateData.zones = cloneJson(zones);
-  if (Array.isArray(savedViews)) updateData.savedViews = cloneJson(savedViews);
+  if (title !== undefined) {
+    const safeTitle = boundedString(title, 120);
+    if (!safeTitle) return { ok: false, error: INVALID_BASE_PAYLOAD_ERROR, status: 400 };
+    updateData.title = safeTitle;
+  }
+  if (roomWidth !== undefined) {
+    if (!isValidDimension(roomWidth)) return { ok: false, error: INVALID_BASE_PAYLOAD_ERROR, status: 400 };
+    updateData.roomWidth = roomWidth;
+  }
+  if (roomDepth !== undefined) {
+    if (!isValidDimension(roomDepth)) return { ok: false, error: INVALID_BASE_PAYLOAD_ERROR, status: 400 };
+    updateData.roomDepth = roomDepth;
+  }
+  if (items !== undefined) {
+    if (!Array.isArray(items) || items.length > MAX_ITEMS) return { ok: false, error: INVALID_BASE_PAYLOAD_ERROR, status: 400 };
+    updateData.items = cloneJson(items);
+  }
+  if (zones !== undefined) {
+    if (!Array.isArray(zones) || zones.length > MAX_ZONES) return { ok: false, error: INVALID_BASE_PAYLOAD_ERROR, status: 400 };
+    updateData.zones = cloneJson(zones);
+  }
+  if (savedViews !== undefined) {
+    if (!Array.isArray(savedViews) || savedViews.length > MAX_SAVED_VIEWS) return { ok: false, error: INVALID_BASE_PAYLOAD_ERROR, status: 400 };
+    updateData.savedViews = cloneJson(savedViews);
+  }
   if (snapshot !== undefined && snapshot !== null) {
     const safeSnapshot = sanitizeStoredDesign(snapshot);
     if (!safeSnapshot) {
@@ -163,10 +199,24 @@ export function buildDesignUpdatePayload(body: unknown): DesignPayloadResult<Rec
     updateData.snapshot = safeSnapshot;
     Object.assign(updateData, buildCanonicalActiveRoomFields(safeSnapshot));
   }
-  if (typeof style === "string") updateData.style = style;
-  if (typeof budget === "string") updateData.budget = budget;
-  if (typeof mode === "string") updateData.mode = mode;
-  if (typeof notes === "string") updateData.notes = notes;
+  if (style !== undefined) {
+    const safeStyle = boundedString(style, 80);
+    if (!safeStyle) return { ok: false, error: INVALID_BASE_PAYLOAD_ERROR, status: 400 };
+    updateData.style = safeStyle;
+  }
+  if (budget !== undefined) {
+    const safeBudget = boundedString(budget, 20);
+    if (!safeBudget) return { ok: false, error: INVALID_BASE_PAYLOAD_ERROR, status: 400 };
+    updateData.budget = safeBudget;
+  }
+  if (mode !== undefined) {
+    if (mode !== "homeowner" && mode !== "designer") return { ok: false, error: INVALID_BASE_PAYLOAD_ERROR, status: 400 };
+    updateData.mode = mode;
+  }
+  if (notes !== undefined) {
+    if (typeof notes !== "string" || notes.length > MAX_NOTES_LENGTH) return { ok: false, error: INVALID_BASE_PAYLOAD_ERROR, status: 400 };
+    updateData.notes = notes.trim();
+  }
 
   return { ok: true, value: updateData };
 }

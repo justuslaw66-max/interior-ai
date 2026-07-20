@@ -1,14 +1,32 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import type { MutableRefObject } from "react";
 
 import { track } from "@/lib/analytics";
-import CabinetryStudio, {
-  type CabinetryStudioProps,
-} from "@/features/cabinetry/components/CabinetryStudio";
+import type { CabinetryStudioProps } from "@/features/cabinetry/components/CabinetryStudio.contract";
 import { CabinetMeasurementUnitProvider } from "@/features/cabinetry/components/CabinetMeasurementUnitContext";
 import type { CabinetDefinition } from "@/features/cabinetry/types";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
+
+const CabinetryStudio = dynamic<CabinetryStudioProps>(
+  () =>
+    import("@/features/cabinetry/components/CabinetryStudio").then(
+      (module) => module.default
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        className="grid h-full place-items-center bg-white px-6 text-sm text-neutral-600"
+        role="status"
+        aria-live="polite"
+      >
+        Loading cabinetry studio…
+      </div>
+    ),
+  }
+);
 
 export type CabinetryStudioOverlayState = {
   mode: "create" | "edit";

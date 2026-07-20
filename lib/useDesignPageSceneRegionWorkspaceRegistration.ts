@@ -61,6 +61,7 @@ export function useDesignPageSceneRegionWorkspaceRegistration({
       clampToRoom: documentRoom.actions.room.clampToActiveRoom,
       getItemBounds: selectionInspection.actions.geometry.getItemAABB,
       getItemDisplayName: placement.actions.catalog.getItemDisplayName,
+      previewItems: itemDocument.actions.previewItemsPresent,
       setItems: itemDocument.actions.setItemsPresent,
       history: documentRoom.refs.documentHistory.history,
       trackFirstInteraction: coreShell.actions.paywall.trackFirstInteraction,
@@ -301,6 +302,8 @@ export function useDesignPageSceneRegionWorkspaceRegistration({
           sceneRoomRead.actions.scene.setSceneProgressReady,
         onFpsSample:
           sceneRoomRead.actions.scene.handleScenePerformanceSample,
+        onRendererSample:
+          sceneRoomRead.actions.scene.handleSceneRendererPerformanceSample,
         onSustainedLowFps:
           sceneRoomRead.actions.scene.handleSustainedLowFps,
         onOrbitChange: camera.actions.canvas.handleOrbitChange,

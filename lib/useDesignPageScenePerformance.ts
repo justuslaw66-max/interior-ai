@@ -4,6 +4,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { track } from "@/lib/analytics";
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
+import {
+  EMPTY_SCENE_RENDERER_METRICS,
+  type SceneRendererMetrics,
+} from "@/lib/scene-performance-metrics";
 
 export type ScenePerformanceMode = "auto" | "quality" | "lite";
 export type SceneRenderQuality = "standard" | "lite";
@@ -22,6 +26,9 @@ export function useDesignPageScenePerformance({
     lastFps: null,
     samples: 0,
   });
+  const [rendererMetrics, setRendererMetrics] = useState<SceneRendererMetrics>(
+    EMPTY_SCENE_RENDERER_METRICS
+  );
   const userChangedRef = useRef(false);
   const { itemCount, viewMode } = state;
   const { showToast } = actions;
@@ -77,6 +84,17 @@ export function useDesignPageScenePerformance({
     setSample((current) => ({ lastFps: fps, samples: current.samples + 1 }));
   }, []);
 
+  const recordRendererSample = useCallback((metrics: SceneRendererMetrics) => {
+    setRendererMetrics((current) =>
+      current.drawCalls === metrics.drawCalls &&
+      current.triangles === metrics.triangles &&
+      current.geometries === metrics.geometries &&
+      current.textures === metrics.textures
+        ? current
+        : metrics
+    );
+  }, []);
+
   const handleSustainedLowFps = useCallback(
     (fps: number) => {
       setAutoLite((current) => {
@@ -97,7 +115,12 @@ export function useDesignPageScenePerformance({
   const renderQuality: SceneRenderQuality = liteEnabled ? "lite" : "standard";
 
   return {
-    state: { mode, autoLite, sample, liteEnabled, renderQuality },
-    actions: { changeMode, recordSample, handleSustainedLowFps },
+    state: { mode, autoLite, sample, rendererMetrics, liteEnabled, renderQuality },
+    actions: {
+      changeMode,
+      recordSample,
+      recordRendererSample,
+      handleSustainedLowFps,
+    },
   };
 }

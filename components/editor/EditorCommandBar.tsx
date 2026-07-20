@@ -24,7 +24,8 @@ type EditorCommandBarProps = {
   viewMode: EditorViewMode;
   isDesigner: boolean;
   isAuthed: boolean;
-  isPro: boolean;
+  planLabel: string;
+  canManageBilling: boolean;
   isOpeningBillingPortal: boolean;
   canUndo: boolean;
   canRedo: boolean;
@@ -86,7 +87,8 @@ export default function EditorCommandBar({
   viewMode,
   isDesigner,
   isAuthed,
-  isPro,
+  planLabel,
+  canManageBilling,
   isOpeningBillingPortal,
   canUndo,
   canRedo,
@@ -345,7 +347,9 @@ export default function EditorCommandBar({
           data-status={saveStatus.kind}
           data-source={saveStatus.source}
           title={`${saveStatus.label}: ${saveStatus.detail}`}
-          className={`hidden h-9 min-w-0 items-center gap-1.5 rounded-full border px-2 text-xs md:flex ${getSaveStatusClassName(
+          className={`hidden h-9 min-w-0 items-center gap-1.5 rounded-full border px-2 text-xs md:flex ${
+            saveStatus.canRetry ? "shrink-0" : ""
+          } ${getSaveStatusClassName(
             saveStatus.tone,
             dark
           )}`}
@@ -356,7 +360,7 @@ export default function EditorCommandBar({
             }`}
             aria-hidden="true"
           />
-          <span className="hidden min-w-0 max-w-24 truncate font-semibold xl:inline">
+          <span className="hidden min-w-0 max-w-24 truncate font-semibold 2xl:inline">
             {saveStatus.label}
           </span>
           {saveStatus.canRetry ? (
@@ -537,9 +541,9 @@ export default function EditorCommandBar({
                     : "mb-1 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs font-semibold text-neutral-600"
                 }
               >
-                {isPro ? "Pro plan" : "Free plan"}
+                {planLabel}
               </div>
-              {isAuthed && (isPro ? (
+              {isAuthed && (canManageBilling ? (
                 <button
                   type="button"
                   data-testid="editor-command-manage-billing"

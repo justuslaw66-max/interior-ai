@@ -15,12 +15,9 @@ import { findCatalogPlacementPlanRoomAtWorldPoint } from "@/lib/catalog-placemen
 import { buildAiLayoutPreviewFootprints } from "@/lib/design-page-ai-layout-preview";
 import type { PendingAiLayoutProposal } from "@/lib/design-page-ai-layout-proposal";
 import {
-  HOUSE_PLAN_RENDERED_WALL_THICKNESS_METERS,
-} from "@/lib/design-page-floor-plan-utils";
-import {
-  ROOM_DIMENSION_DEFAULTS,
   buildHousePlan2D,
 } from "@/lib/design-page-house-plan";
+import { buildDesignPageSceneRoomItems } from "@/lib/design-page-scene-domain";
 import type {
   DesignItem,
   DesignSnapshot,
@@ -28,108 +25,8 @@ import type {
 } from "@/lib/room-types";
 import type { SurfaceTargetMode } from "@/lib/useDesignPageSurfaceActions";
 import { useDesignPageScenePerformance } from "@/lib/useDesignPageScenePerformance";
-import { resolveCanonicalFloorElevationMeters } from "@/lib/floor-plan-scene-elevation";
 
 type HousePlanRoom = ReturnType<typeof buildHousePlan2D>["rooms"][number];
-
-type SceneRoomItem = {
-  item: DesignItem;
-  roomId: string;
-  roomOffset: { x: number; z: number };
-  /** Finished-floor world elevation for 3D; item coordinates remain room-local. */
-  roomFloorElevationMeters: number;
-  roomWidth: number;
-  roomDepth: number;
-  roomHeight: number;
-  roomPlanShape: NonNullable<RoomSnapshot["planShape"]>;
-  roomPlanPolygon: RoomSnapshot["planPolygon"];
-  roomPlanHoles: RoomSnapshot["planHoles"];
-  roomWallThickness: number;
-  roomWallInset: number;
-  isActiveRoom: boolean;
-};
-
-export type BuildDesignPageSceneRoomItemsInput = {
-  activeRoom: RoomSnapshot | null;
-  designSnapshot: DesignSnapshot;
-  hasWholeHousePlan: boolean;
-  housePlanRooms: HousePlanRoom[];
-  houseRoomById: Map<string, HousePlanRoom>;
-  usesHousePlanScene: boolean;
-  viewMode: EditorViewMode;
-};
-
-export function buildDesignPageSceneRoomItems({
-  activeRoom,
-  designSnapshot,
-  hasWholeHousePlan,
-  housePlanRooms,
-  houseRoomById,
-  usesHousePlanScene,
-  viewMode,
-}: BuildDesignPageSceneRoomItemsInput): SceneRoomItem[] {
-  if (!hasWholeHousePlan) {
-    if (!activeRoom) return [];
-    const planRoom = houseRoomById.get(activeRoom.id);
-    return activeRoom.items.map((item) => ({
-      item,
-      roomId: activeRoom.id,
-      roomOffset: { x: planRoom?.x ?? 0, z: planRoom?.z ?? 0 },
-      roomFloorElevationMeters:
-        resolveCanonicalFloorElevationMeters(activeRoom) ?? 0,
-      roomWidth: activeRoom.geometry.width,
-      roomDepth: activeRoom.geometry.depth,
-      roomHeight:
-        activeRoom.geometry.height ?? ROOM_DIMENSION_DEFAULTS.roomHeight,
-      roomPlanShape: activeRoom.planShape ?? "rectangle",
-      roomPlanPolygon: activeRoom.planPolygon,
-      roomPlanHoles: activeRoom.planHoles,
-      roomWallThickness:
-        activeRoom.geometry.wallThickness ??
-        ROOM_DIMENSION_DEFAULTS.wallThickness,
-      roomWallInset:
-        viewMode === "2d"
-          ? 0
-          : usesHousePlanScene
-            ? HOUSE_PLAN_RENDERED_WALL_THICKNESS_METERS / 2
-            : activeRoom.geometry.wallThickness ??
-              ROOM_DIMENSION_DEFAULTS.wallThickness,
-      isActiveRoom: true,
-    }));
-  }
-
-  const visibleRoomIds = new Set(housePlanRooms.map((room) => room.id));
-  return designSnapshot.rooms
-    .filter((room) => visibleRoomIds.has(room.id))
-    .flatMap((room) => {
-      const planRoom = houseRoomById.get(room.id);
-      const roomOffset = { x: planRoom?.x ?? 0, z: planRoom?.z ?? 0 };
-      return room.items.map((item) => ({
-        item,
-        roomId: room.id,
-        roomOffset,
-        roomFloorElevationMeters:
-          resolveCanonicalFloorElevationMeters(room) ?? 0,
-        roomWidth: room.geometry.width,
-        roomDepth: room.geometry.depth,
-        roomHeight:
-          room.geometry.height ?? ROOM_DIMENSION_DEFAULTS.roomHeight,
-        roomPlanShape: room.planShape ?? "rectangle",
-        roomPlanPolygon: room.planPolygon,
-        roomPlanHoles: room.planHoles,
-        roomWallThickness:
-          viewMode === "2d"
-            ? room.geometry.wallThickness ??
-              ROOM_DIMENSION_DEFAULTS.wallThickness
-            : HOUSE_PLAN_RENDERED_WALL_THICKNESS_METERS,
-        roomWallInset:
-          viewMode === "2d"
-            ? 0
-            : HOUSE_PLAN_RENDERED_WALL_THICKNESS_METERS / 2,
-        isActiveRoom: room.id === designSnapshot.activeRoomId,
-      }));
-    });
-}
 
 export function reconcileDesignPageSceneReadiness(
   current: Record<string, boolean>,
@@ -299,12 +196,14 @@ export function useDesignPageSceneReadModel({
       mode: scenePerformanceMode,
       autoLite: autoLiteScene,
       sample: scenePerformanceSample,
+      rendererMetrics: sceneRendererMetrics,
       liteEnabled: liteSceneEnabled,
       renderQuality: sceneRenderQuality,
     },
     actions: {
       changeMode: handleScenePerformanceModeChange,
       recordSample: handleScenePerformanceSample,
+      recordRendererSample: handleSceneRendererPerformanceSample,
       handleSustainedLowFps,
     },
   } = useDesignPageScenePerformance({
@@ -320,7 +219,6 @@ export function useDesignPageSceneReadModel({
         housePlanRooms,
         houseRoomById,
         usesHousePlanScene,
-        viewMode,
       }),
     [
       activeRoom,
@@ -329,7 +227,6 @@ export function useDesignPageSceneReadModel({
       housePlanRooms,
       houseRoomById,
       usesHousePlanScene,
-      viewMode,
     ]
   );
   const sceneRenderItemKeys = useMemo(
@@ -411,6 +308,7 @@ export function useDesignPageSceneReadModel({
       scenePerformanceMode,
       autoLiteScene,
       scenePerformanceSample,
+      sceneRendererMetrics,
       liteSceneEnabled,
       sceneRenderQuality,
     },
@@ -430,6 +328,7 @@ export function useDesignPageSceneReadModel({
       handleSceneRenderItemReadyChange,
       handleScenePerformanceModeChange,
       handleScenePerformanceSample,
+      handleSceneRendererPerformanceSample,
       handleSustainedLowFps,
     },
     queries: { findPlanRoomAtWorldPoint },

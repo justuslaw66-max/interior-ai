@@ -11,7 +11,9 @@ import {
 } from "react";
 import { track } from "@/lib/analytics";
 import { getAnonId } from "@/lib/anon";
+import { designApi, DesignApiError } from "@/lib/design-api-client";
 import { getDesignPageSaveStatus } from "@/lib/design-page-save-status";
+import { writeValidatedLocalBackup } from "@/lib/design-page-local-backup-recovery";
 import { STYLES, type NamedCameraView, type Style } from "@/lib/design-page-types";
 import {
   loadGuestDesigns,
@@ -112,28 +114,6 @@ export type UseDesignPagePersistenceParams = {
   refs: DesignPagePersistenceRefs;
 };
 
-type LoadedDesignResponse = Parameters<typeof legacyApiToSnapshot>[0] & {
-  shareEnabled?: boolean;
-  shareToken?: string | null;
-};
-
-async function readCloudSaveError(response: Response): Promise<string> {
-  try {
-    const text = await response.text();
-    if (!text) return `Server error (${response.status}): No response body`;
-    try {
-      const parsed = JSON.parse(text) as { error?: unknown };
-      return typeof parsed.error === "string"
-        ? parsed.error
-        : `Server error (${response.status})`;
-    } catch {
-      return `Server error (${response.status}): ${text}`;
-    }
-  } catch {
-    return `Server error (${response.status}): Unable to read response`;
-  }
-}
-
 export function sanitizeDesignPageSavedViews(value: unknown): NamedCameraView[] {
   if (!Array.isArray(value)) return [];
 
@@ -195,6 +175,8 @@ export function useDesignPagePersistence({
 }: UseDesignPagePersistenceParams) {
   const [lastLocalAutosaveAt, setLastLocalAutosaveAt] = useState<number | null>(null);
   const [lastDbSaveAt, setLastDbSaveAt] = useState<number | null>(null);
+  const [lastCloudRevision, setLastCloudRevision] = useState<string | null>(null);
+  const [cloudRetryNonce, setCloudRetryNonce] = useState(0);
   const [lastPersistedSnapshotFingerprint, setLastPersistedSnapshotFingerprint] =
     useState<string | null>(null);
   const [lastLocalSaveError, setLastLocalSaveError] = useState<string | null>(null);
@@ -218,6 +200,9 @@ export function useDesignPagePersistence({
   const guestPromptActionRef = useRef<null | (() => void)>(null);
   const documentEpochRef = useRef(0);
   const cloudWriteTailRef = useRef<Promise<unknown>>(Promise.resolve());
+  const shareStatusAbortRef = useRef<AbortController | null>(null);
+  const designListAbortRef = useRef<AbortController | null>(null);
+  const designLoadAbortRef = useRef<AbortController | null>(null);
 
   const enqueueCloudWrite = useCallback(<T,>(operation: () => Promise<T>): Promise<T> => {
     const queued = cloudWriteTailRef.current
@@ -235,17 +220,21 @@ export function useDesignPagePersistence({
       const targetId = id ?? designId;
       if (!targetId) return;
       const requestEpoch = documentEpochRef.current;
+      shareStatusAbortRef.current?.abort();
+      const controller = new AbortController();
+      shareStatusAbortRef.current = controller;
 
       try {
-        const res = await fetch(`/api/designs/${targetId}`);
-        if (!res.ok) return;
-        const raw = await res.text();
-        const data = raw ? JSON.parse(raw) : null;
+        const data = await designApi.get(targetId, controller.signal);
         if (requestEpoch !== documentEpochRef.current) return;
         setShareToken(data?.shareToken ?? null);
         setShareEnabled(Boolean(data?.shareEnabled));
       } catch {
         // ignore share status errors
+      } finally {
+        if (shareStatusAbortRef.current === controller) {
+          shareStatusAbortRef.current = null;
+        }
       }
     },
     [designId, setShareEnabled, setShareToken]
@@ -255,21 +244,19 @@ export function useDesignPagePersistence({
     async (id: string) => {
       const requestEpoch = documentEpochRef.current;
       try {
-        const res = await fetch(`/api/designs/${id}/share`, { method: "POST" });
-        const raw = await res.text();
-        const data = raw ? JSON.parse(raw) : null;
-        if (res.ok && requestEpoch === documentEpochRef.current) {
+        const data = await designApi.share(id);
+        if (requestEpoch === documentEpochRef.current) {
           setShareToken(data?.shareToken ?? null);
           setShareEnabled(true);
           if (data?.shareToken) {
             track("share_link_created", {
               design_id: id,
-              share_token: data.shareToken,
+              shared_context: true,
             });
           }
         }
-      } catch (error) {
-        console.error("Share enable error:", error);
+      } catch {
+        // Explicit share actions surface errors; automatic designer sharing is best-effort.
       }
     },
     [setShareEnabled, setShareToken]
@@ -292,28 +279,12 @@ export function useDesignPagePersistence({
         notes,
       };
 
-      const res = await enqueueCloudWrite(() =>
-        fetch("/api/designs", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        })
-      );
-
-      if (!res.ok) {
-        const errorMessage = await readCloudSaveError(res);
-        if (res.status === 403) {
-          showMaxDesignUpgrade();
-          track("upgrade_prompt_shown", { reason: "max_designs" });
-        }
-        setLastCloudSaveError(errorMessage);
-        showRuleToast(`Save failed: ${errorMessage}`);
-        return null;
-      }
-
-      const data = await res.json();
+      const data = await enqueueCloudWrite(() => designApi.create(payload));
       if (data?.id) {
         setDesignId(data.id);
+        setLastCloudRevision(
+          typeof data.updatedAt === "string" ? data.updatedAt : null
+        );
         setLastDbSaveAt(Date.now());
         setLastPersistedSnapshotFingerprint(fingerprintStoredDesign(storedSnapshot));
         setLastCloudSaveError(null);
@@ -338,7 +309,11 @@ export function useDesignPagePersistence({
       setLastCloudSaveError("No design ID returned");
       return null;
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = error instanceof Error ? error.message : "Cloud save failed.";
+      if (error instanceof DesignApiError && error.kind === "forbidden") {
+        showMaxDesignUpgrade();
+        track("upgrade_prompt_shown", { reason: "max_designs" });
+      }
       setLastCloudSaveError(message);
       showRuleToast(`Save failed: ${message}`);
       return null;
@@ -378,13 +353,8 @@ export function useDesignPagePersistence({
       const storedSnapshot = getStoredDesignForPersistence();
       const legacyData = snapshotToLegacyApi(storedToSnapshot(storedSnapshot));
       const creatingSavedCopy = !designId;
-      const response = await enqueueCloudWrite(() =>
-        fetch(designId ? `/api/designs/${designId}` : "/api/designs", {
-          method: designId ? "PUT" : "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(
-            designId
-              ? {
+      const payload = designId
+        ? {
                   items,
                   zones,
                   savedViews,
@@ -395,8 +365,11 @@ export function useDesignPagePersistence({
                   budget,
                   mode,
                   notes,
+                  ...(lastCloudRevision
+                    ? { expectedUpdatedAt: lastCloudRevision }
+                    : {}),
                 }
-              : {
+        : {
                   title: "My Living Room",
                   ...legacyData,
                   savedViews,
@@ -404,22 +377,10 @@ export function useDesignPagePersistence({
                   budget,
                   mode,
                   notes,
-                }
-          ),
-        })
+                };
+      const data = await enqueueCloudWrite(() =>
+        designId ? designApi.update(designId, payload) : designApi.create(payload)
       );
-
-      if (!response.ok) {
-        const error = await readCloudSaveError(response);
-        if (response.status === 403) {
-          showMaxDesignUpgrade();
-          track("upgrade_prompt_shown", { reason: "max_designs" });
-        }
-        setLastCloudSaveError(error);
-        return { ok: false, error };
-      }
-
-      const data = (await response.json().catch(() => null)) as { id?: unknown } | null;
       const savedDesignId = designId ??
         (typeof data?.id === "string" && data.id.trim() ? data.id : null);
       if (!savedDesignId) {
@@ -429,6 +390,9 @@ export function useDesignPagePersistence({
       }
 
       setLastDbSaveAt(Date.now());
+      setLastCloudRevision(
+        typeof data?.updatedAt === "string" ? data.updatedAt : null
+      );
       setLastPersistedSnapshotFingerprint(fingerprintStoredDesign(storedSnapshot));
       setLastCloudSaveError(null);
       track("design_preserved_before_new_plan", {
@@ -439,7 +403,11 @@ export function useDesignPagePersistence({
       });
       return { ok: true, savedDesignId };
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = error instanceof Error ? error.message : "Cloud save failed.";
+      if (error instanceof DesignApiError && error.kind === "forbidden") {
+        showMaxDesignUpgrade();
+        track("upgrade_prompt_shown", { reason: "max_designs" });
+      }
       setLastCloudSaveError(message);
       return { ok: false, error: message };
     } finally {
@@ -454,6 +422,7 @@ export function useDesignPagePersistence({
     getStoredDesignForPersistence,
     isAuthenticated,
     items,
+    lastCloudRevision,
     mode,
     notes,
     roomDepth,
@@ -466,12 +435,15 @@ export function useDesignPagePersistence({
 
   const detachCurrentDesignForNewDraft = useCallback(() => {
     documentEpochRef.current += 1;
+    shareStatusAbortRef.current?.abort();
+    designLoadAbortRef.current?.abort();
     setDesignId(null);
     setShareToken(null);
     setShareEnabled(false);
     setLastPersistedSnapshotFingerprint(null);
     setLastDbSaveAt(null);
     setLastCloudSaveError(null);
+    setLastCloudRevision(null);
     setLastLocalAutosaveAt(null);
     setLastLocalSaveError(null);
     setIsSaving(false);
@@ -498,15 +470,13 @@ export function useDesignPagePersistence({
 
   const fetchMyDesigns = useCallback(async () => {
     if (!isAuthenticated) return;
+    designListAbortRef.current?.abort();
+    const controller = new AbortController();
+    designListAbortRef.current = controller;
     setLoadingDesigns(true);
     try {
-      const res = await fetch("/api/designs");
-      if (!res.ok) {
-        console.error("Failed to fetch designs:", res.status);
-        return;
-      }
-      const data = await res.json();
-      const nextDesigns = Array.isArray(data) ? (data as SavedDesignSummary[]) : [];
+      const data = await designApi.list(controller.signal);
+      const nextDesigns = data as SavedDesignSummary[];
       setMyDesigns(nextDesigns);
       setSelectedSavedDesignIds((previous) => {
         if (!Array.isArray(data) || previous.size === 0) return previous;
@@ -516,11 +486,16 @@ export function useDesignPagePersistence({
         return new Set(Array.from(previous).filter((id) => availableIds.has(id)));
       });
     } catch (error) {
-      console.error("Error fetching designs:", error);
+      if (!(error instanceof DesignApiError && error.kind === "aborted")) {
+        showRuleToast(error instanceof Error ? error.message : "Failed to load designs.");
+      }
     } finally {
-      setLoadingDesigns(false);
+      if (designListAbortRef.current === controller) {
+        designListAbortRef.current = null;
+        setLoadingDesigns(false);
+      }
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, showRuleToast]);
 
   const toggleMyDesigns = useCallback(() => {
     if (!showMyDesigns) {
@@ -590,14 +565,12 @@ export function useDesignPagePersistence({
     const failedIds: string[] = [];
     try {
       for (const targetId of targetIds) {
-        const res = await fetch(`/api/designs/${targetId}`, {
-          method: "DELETE",
-        });
-        if (!res.ok) {
+        try {
+          await designApi.delete(targetId);
+          deletedIds.add(targetId);
+        } catch {
           failedIds.push(targetId);
-          continue;
         }
-        deletedIds.add(targetId);
       }
 
       if (deletedIds.size > 0) {
@@ -632,8 +605,7 @@ export function useDesignPagePersistence({
         count: deletedIds.size,
         mode: target.mode,
       });
-    } catch (error) {
-      console.error("Delete saved design error:", error);
+    } catch {
       showRuleToast("Delete failed");
     } finally {
       setDeletingDesignIds(new Set());
@@ -652,32 +624,7 @@ export function useDesignPagePersistence({
     if (!designId) return;
     setSharingDesign(true);
     try {
-      const res = await fetch(`/api/designs/${designId}/share`, { method: "POST" });
-      const raw = await res.text();
-      let data = null;
-      try {
-        data = raw ? JSON.parse(raw) : null;
-      } catch (parseError) {
-        console.error("Failed to parse share response:", parseError, raw);
-        setShareErrorToast("Failed to create share link (invalid response)");
-        setTimeout(() => setShareErrorToast(null), 3000);
-        return;
-      }
-
-      if (!res.ok) {
-        const errorMessage = data?.error || `Server error (${res.status})`;
-        console.error("Share creation failed:", errorMessage);
-        setShareErrorToast(`Failed to create share link: ${errorMessage}`);
-        setTimeout(() => setShareErrorToast(null), 3000);
-        return;
-      }
-
-      if (!data?.shareToken) {
-        console.error("No share token in response:", data);
-        setShareErrorToast("Failed to create share link (no token)");
-        setTimeout(() => setShareErrorToast(null), 3000);
-        return;
-      }
+      const data = await designApi.share(designId);
 
       setShareToken(data.shareToken);
       setShareEnabled(true);
@@ -689,14 +636,14 @@ export function useDesignPagePersistence({
         setTimeout(() => setShareSuccessToast(false), 3000);
         track("share_link_copied", {
           design_id: designId,
-          share_token: data.shareToken,
+          shared_context: true,
         });
       } catch (clipboardError) {
         console.warn("Clipboard access denied, showing fallback modal:", clipboardError);
         setShareLinkFallback(shareUrl);
         track("share_link_created_fallback", {
           design_id: designId,
-          share_token: data.shareToken,
+          shared_context: true,
           error:
             clipboardError instanceof Error
               ? clipboardError.name
@@ -704,8 +651,7 @@ export function useDesignPagePersistence({
         });
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error("Share error:", error);
+      const errorMessage = error instanceof Error ? error.message : "Unable to create share link.";
       setShareErrorToast(`Failed to create share link: ${errorMessage}`);
       setTimeout(() => setShareErrorToast(null), 3000);
     } finally {
@@ -734,18 +680,11 @@ export function useDesignPagePersistence({
       options?: { notFoundMessage?: string }
     ): Promise<boolean> => {
       const requestEpoch = documentEpochRef.current;
+      designLoadAbortRef.current?.abort();
+      const controller = new AbortController();
+      designLoadAbortRef.current = controller;
       try {
-        const res = await fetch(`/api/designs/${id}`);
-        if (!res.ok) {
-          showRuleToast(
-            res.status === 403
-              ? "You do not have access to that design"
-              : options?.notFoundMessage ?? "Design not found"
-          );
-          return false;
-        }
-
-        const data = (await res.json()) as LoadedDesignResponse;
+        const data = await designApi.get(id, controller.signal);
         if (requestEpoch !== documentEpochRef.current) return false;
         documentEpochRef.current += 1;
         const snapshot = legacyApiToSnapshot(data);
@@ -754,6 +693,9 @@ export function useDesignPagePersistence({
         hydratePersistedFloorPlanState(snapshot, true);
         clearHistory();
         setDesignId(data.id);
+        setLastCloudRevision(
+          typeof data.updatedAt === "string" ? data.updatedAt : null
+        );
         const nextMode = data?.mode === "designer" ? "designer" : "homeowner";
         setMode(nextMode);
         setNotes(typeof data?.notes === "string" ? data.notes : "");
@@ -774,9 +716,21 @@ export function useDesignPagePersistence({
         showRuleToast(`Loaded ${data.title}`);
         return true;
       } catch (error) {
-        console.error("Load error:", error);
-        showRuleToast("Failed to load design");
+        if (error instanceof DesignApiError && error.kind === "aborted") return false;
+        showRuleToast(
+          error instanceof DesignApiError && error.kind === "forbidden"
+            ? "You do not have access to that design"
+            : error instanceof DesignApiError && error.kind === "not_found"
+              ? options?.notFoundMessage ?? "Design not found"
+              : error instanceof Error
+                ? error.message
+                : "Failed to load design"
+        );
         return false;
+      } finally {
+        if (designLoadAbortRef.current === controller) {
+          designLoadAbortRef.current = null;
+        }
       }
     },
     [
@@ -832,14 +786,8 @@ export function useDesignPagePersistence({
       },
     };
 
-    const res = await fetch("/api/designs/claim", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    const data = await res.json().catch(() => ({}));
-    if (res.ok && data?.designId) {
+    const data = await designApi.claim(payload);
+    if (data?.designId) {
       markGuestDesignClaimed("current", data.designId);
     }
   }, [
@@ -873,6 +821,24 @@ export function useDesignPagePersistence({
   }, []);
 
   useEffect(() => {
+    return () => {
+      shareStatusAbortRef.current?.abort();
+      designListAbortRef.current?.abort();
+      designLoadAbortRef.current?.abort();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!lastCloudSaveError || !designId || !isAuthenticated) return;
+    const retryAfterReconnect = () => {
+      setLastCloudSaveError(null);
+      setCloudRetryNonce((value) => value + 1);
+    };
+    window.addEventListener("online", retryAfterReconnect);
+    return () => window.removeEventListener("online", retryAfterReconnect);
+  }, [designId, isAuthenticated, lastCloudSaveError]);
+
+  useEffect(() => {
     if (!isDesigner) return;
     if (!designId || shareEnabled) return;
     void enableShare(designId);
@@ -886,14 +852,12 @@ export function useDesignPagePersistence({
 
   const writeLocalDesignBackup = useCallback(() => {
     try {
-      window.localStorage.setItem(
-        storageKey,
-        JSON.stringify({
-          ...getStoredDesignForPersistence(designSnapshot),
-          savedViews,
-          designId,
-        })
-      );
+      const serialized = JSON.stringify({
+        ...getStoredDesignForPersistence(designSnapshot),
+        savedViews,
+        designId,
+      });
+      writeValidatedLocalBackup(window.localStorage, storageKey, serialized);
       setLastLocalAutosaveAt(Date.now());
       setLastLocalSaveError(null);
       return true;
@@ -935,23 +899,27 @@ export function useDesignPagePersistence({
         const storedSnapshot = await enqueueCloudWrite(async () => {
           if (scheduledEpoch !== documentEpochRef.current) return null;
           const snapshot = getStoredDesignForPersistence();
-          const res = await fetch(`/api/designs/${designId}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
+          const responseData = await designApi.update(
+            designId,
+            {
               items,
               zones,
               savedViews,
               roomWidth,
               roomDepth,
               snapshot,
-            }),
-          });
-          if (!res.ok) {
-            const data = await res.json().catch(() => null);
-            throw new Error(data?.error || `Autosave failed (${res.status})`);
-          }
-          return snapshot;
+              ...(lastCloudRevision
+                ? { expectedUpdatedAt: lastCloudRevision }
+                : {}),
+            }
+          );
+          return {
+            snapshot,
+            updatedAt:
+              typeof responseData?.updatedAt === "string"
+                ? responseData.updatedAt
+                : null,
+          };
         });
         if (
           storedSnapshot &&
@@ -959,7 +927,10 @@ export function useDesignPagePersistence({
           scheduledEpoch === documentEpochRef.current
         ) {
           setLastDbSaveAt(Date.now());
-          setLastPersistedSnapshotFingerprint(fingerprintStoredDesign(storedSnapshot));
+          setLastCloudRevision(storedSnapshot.updatedAt);
+          setLastPersistedSnapshotFingerprint(
+            fingerprintStoredDesign(storedSnapshot.snapshot)
+          );
           setLastCloudSaveError(null);
         }
       } catch (error) {
@@ -981,12 +952,14 @@ export function useDesignPagePersistence({
     };
   }, [
     cloudSaveDelayMs,
+    cloudRetryNonce,
     currentStoredDesignFingerprint,
     designId,
     enqueueCloudWrite,
     fingerprintStoredDesign,
     getStoredDesignForPersistence,
     items,
+    lastCloudRevision,
     lastPersistedSnapshotFingerprint,
     localBackupHydrated,
     roomDepth,
@@ -1064,6 +1037,11 @@ export function useDesignPagePersistence({
 
   const retrySaveStatus = useCallback(async () => {
     if (lastCloudSaveError && isAuthenticated) {
+      if (designId) {
+        setLastCloudSaveError(null);
+        setCloudRetryNonce((value) => value + 1);
+        return;
+      }
       const savedId = await saveDesignToCloud();
       if (savedId) {
         showRuleToast("Cloud save restored");
@@ -1077,6 +1055,7 @@ export function useDesignPagePersistence({
       showRuleToast("Local backup failed");
     }
   }, [
+    designId,
     isAuthenticated,
     lastCloudSaveError,
     saveDesignToCloud,
@@ -1087,6 +1066,7 @@ export function useDesignPagePersistence({
   return {
     state: {
       lastPersistedSnapshotFingerprint,
+      lastCloudRevision,
       isSaving,
       saveStatus,
       sharingDesign,

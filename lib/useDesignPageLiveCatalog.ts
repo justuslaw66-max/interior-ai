@@ -14,25 +14,34 @@ export function useDesignPageLiveCatalog(): boolean {
 
   useEffect(() => {
     let cancelled = false;
+    const controller = new AbortController();
 
     void (async () => {
       try {
-        const response = await fetch("/api/catalog/live", { cache: "no-store" });
+        const response = await fetch("/api/catalog/live", {
+          cache: "no-store",
+          signal: controller.signal,
+        });
+        if (!response.ok) throw new Error("Live catalog request failed");
         const payload = (await response.json().catch(() => ({
           ids: [],
           itemIds: [],
           assetIds: [],
         }))) as LiveCatalogPayload;
-        const allowedItemIds = new Set(
-          Array.isArray(payload.itemIds)
+        const rawItemIds = Array.isArray(payload.itemIds)
             ? payload.itemIds
             : Array.isArray(payload.ids)
               ? payload.ids
-              : []
-        );
-        const allowedAssetIds = new Set(
-          Array.isArray(payload.assetIds) ? payload.assetIds : []
-        );
+              : [];
+        const rawAssetIds = Array.isArray(payload.assetIds) ? payload.assetIds : [];
+        if (
+          rawItemIds.length > 10_000 ||
+          rawAssetIds.length > 10_000 ||
+          rawItemIds.some((id) => typeof id !== "string" || id.length > 160) ||
+          rawAssetIds.some((id) => typeof id !== "string" || id.length > 160)
+        ) throw new Error("Live catalog response is invalid");
+        const allowedItemIds = new Set(rawItemIds as string[]);
+        const allowedAssetIds = new Set(rawAssetIds as string[]);
 
         if (cancelled) return;
 
@@ -90,6 +99,7 @@ export function useDesignPageLiveCatalog(): boolean {
 
     return () => {
       cancelled = true;
+      controller.abort();
     };
   }, []);
 

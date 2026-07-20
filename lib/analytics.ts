@@ -1,6 +1,7 @@
 "use client";
 
 import posthog from "posthog-js";
+import { sanitizeObservabilityMeta } from "@/lib/observability";
 
 type TrackProps = object;
 
@@ -25,11 +26,15 @@ export function isClientAnalyticsDisabled(): boolean {
 export function track(event: string, props: TrackProps = {}) {
   if (isClientAnalyticsDisabled()) return;
 
-  const base = {
+  const base = sanitizeObservabilityMeta({
     app: "interior_designer",
     platform: "desktop",
     ...props,
-  };
+  });
 
-  posthog.capture(event, base);
+  try {
+    posthog.capture(event, base);
+  } catch {
+    // Analytics is best-effort and must never interrupt editing or saving.
+  }
 }

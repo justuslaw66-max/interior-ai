@@ -21,12 +21,13 @@ export default async function CheckoutSuccessPage({
         <h1 className="text-2xl font-semibold">Thank you 🎉</h1>
 
         <p className="mt-2 text-sm text-neutral-600">
-          Your order has been placed successfully.
+          You returned from Shopify. Use the confirmation from Shopify as the
+          authoritative receipt and order status.
         </p>
 
         {orderRef && (
           <div className="mt-3 rounded-lg bg-neutral-50 p-3 text-xs font-mono">
-            Order Ref: {orderRef}
+            Checkout Ref: {orderRef}
           </div>
         )}
 

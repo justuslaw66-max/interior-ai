@@ -9,7 +9,6 @@ import {
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import type { ResolvedCatalogVariant } from "@/lib/catalog/variant-resolver";
 import type { Style } from "@/lib/design-page-types";
-import { getItemPrice } from "@/lib/design-page-utils";
 import type { DesignItem } from "@/lib/room-types";
 import { findSwapOptions } from "@/lib/swap";
 
@@ -263,7 +262,7 @@ export function useDesignPageSelectedItemPanelController({
   const openSelectedItemCommerce = useCallback(async () => {
     if (!selectedProduct || !selectedResolvedVariant) return;
 
-    const { buyUrl, retailer } = getDesignPageSelectedItemCommerceTarget({
+    const { buyUrl } = getDesignPageSelectedItemCommerceTarget({
       product: selectedProduct,
       resolvedVariant: selectedResolvedVariant,
     });
@@ -276,9 +275,7 @@ export function useDesignPageSelectedItemPanelController({
         body: JSON.stringify({
           designId: designId ?? null,
           productId: selectedProduct.id,
-          price: getItemPrice(selectedProduct),
-          retailer,
-          buyUrl,
+          variantId: selectedResolvedVariant.variantId,
         }),
       });
       const data = await response.json();

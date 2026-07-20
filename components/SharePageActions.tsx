@@ -23,10 +23,10 @@ export default function SharePageActions({ shareToken, title }: SharePageActions
 
     try {
       await navigator.clipboard.writeText(shareUrl);
-      track("share_page_link_copied", { share_token: shareToken, source });
+      track("share_page_link_copied", { shared_context: true, source });
       setMessage("Link copied.");
     } catch {
-      track("share_page_link_copy_fallback", { share_token: shareToken, source });
+      track("share_page_link_copy_fallback", { shared_context: true, source });
       setManualCopyUrl(shareUrl);
       setMessage("Copy the link from the dialog.");
     }
@@ -47,12 +47,12 @@ export default function SharePageActions({ shareToken, title }: SharePageActions
         text: `${title} - Interior AI design preview`,
         url: shareUrl,
       });
-      track("share_page_native_shared", { share_token: shareToken });
+      track("share_page_native_shared", { shared_context: true });
       setMessage("Shared.");
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
       track("share_page_native_share_failed", {
-        share_token: shareToken,
+        shared_context: true,
         error: error instanceof Error ? error.name : "unknown",
       });
       await copyShareLink("native_fallback");
@@ -99,7 +99,7 @@ export default function SharePageActions({ shareToken, title }: SharePageActions
           <Link
             href={`/share/${shareToken}/export`}
             data-testid="share-export-pack"
-            onClick={() => track("share_page_export_clicked", { share_token: shareToken })}
+            onClick={() => track("share_page_export_clicked", { shared_context: true })}
             className="rounded-lg bg-neutral-900 px-3 py-2 text-xs font-semibold text-white shadow hover:bg-neutral-800"
           >
             Export pack

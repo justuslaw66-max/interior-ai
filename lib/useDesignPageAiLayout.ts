@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, type Dispatch, type SetStateAction } from "react";
+import { useCallback, useEffect, useRef, type Dispatch, type SetStateAction } from "react";
 import { track } from "@/lib/analytics";
 import type { AiLayoutRole } from "@/lib/ai/layout-planner";
 import { bulkSwapItems } from "@/lib/bulkSwap";
@@ -91,6 +91,8 @@ export function useDesignPageAiLayout({
   },
   refs: { getItems, createInstanceId, clampToRoom },
 }: UseDesignPageAiLayoutParams) {
+  const requestRef = useRef<AbortController | null>(null);
+  const requestEpochRef = useRef(0);
   const buildItemsFromPlan = useCallback(
     (plan: LayoutPlan) =>
       buildAiLayoutItemsFromPlan({
@@ -209,6 +211,9 @@ export function useDesignPageAiLayout({
       nextSeed?: number;
       requestedRoles?: AiLayoutRole[];
     } = {}) => {
+      requestRef.current?.abort();
+      requestRef.current = null;
+      const requestEpoch = ++requestEpochRef.current;
       if (!isAuthenticated) {
         openGuestPrompt("ai_layout", () => {});
         return;
@@ -267,6 +272,8 @@ export function useDesignPageAiLayout({
       }
 
       try {
+        const controller = new AbortController();
+        requestRef.current = controller;
         const response = await fetch("/api/ai/layout", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -281,8 +288,11 @@ export function useDesignPageAiLayout({
             catalog,
             floorPlanQualityContext,
           }),
+          signal: controller.signal,
         });
         const plan = await response.json();
+
+        if (requestEpoch !== requestEpochRef.current) return;
 
         if (!response.ok) {
           if (plan?.code === "unsupported_room_type") {
@@ -321,6 +331,7 @@ export function useDesignPageAiLayout({
           });
         }
       } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") return;
         applyFallbackLayout(error instanceof Error ? error.message : "AI failed");
       }
     },
@@ -340,6 +351,8 @@ export function useDesignPageAiLayout({
       style,
     ]
   );
+
+  useEffect(() => () => requestRef.current?.abort(), []);
 
   const regenerateAiLayout = useCallback(
     (requestedRoles?: AiLayoutRole[]) =>

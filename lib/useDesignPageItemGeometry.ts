@@ -5,6 +5,7 @@ import { useCallback } from "react";
 import { getCabinetPlanningDimsMm } from "@/features/cabinetry/designItemAdapters";
 import type { CATALOG_ITEMS } from "@/lib/catalog";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
+import { resolveDesignItemVisualProduct } from "@/lib/design-item-product-snapshot";
 import { getRotatedFootprint } from "@/lib/design-page-utils";
 import type { DesignItem } from "@/lib/room-types";
 import { computeAABB, type AABB } from "@/lib/snapGuides";
@@ -68,7 +69,7 @@ export function useDesignPageItemGeometry({
         return computeAABB(position, width, depth);
       }
 
-      const product = catalogItems[item.productId];
+      const product = resolveDesignItemVisualProduct(item, catalogItems);
       if (!product) return null;
       const configuredDims = resolveConfiguredPlanningDimsMm(item, product);
       const rotationY = rotationOverride ?? item.rotationY ?? 0;

@@ -54,6 +54,9 @@ function projectSharedFloorPlanState(
   );
 
   const projected: PersistedFloorPlanState = {
+    ...(floorPlan.annotations
+      ? { annotations: cloneJson(floorPlan.annotations) }
+      : {}),
     ...(floorPlan.openings
       ? {
           openings: cloneJson(floorPlan.openings).map((opening) => {

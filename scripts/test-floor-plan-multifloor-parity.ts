@@ -386,21 +386,22 @@ assert.match(
   /const floorYOffset = resolveHouseRoomFloorElevationMeters\(/,
   "Room floors and ceilings must use the same exact canonical elevation as canonical walls."
 );
-const sceneReadModel = source("lib/useDesignPageSceneReadModel.ts");
+const sceneDomain = source("lib/design-page-scene-domain.ts");
 assert.match(
-  sceneReadModel,
+  sceneDomain,
   /roomFloorElevationMeters:\s*resolveCanonicalFloorElevationMeters\(/,
   "Furniture scene entries must carry the canonical room elevation."
 );
 const itemsLayer = source("components/editor/design-page/SceneItemsLayer.tsx");
 assert.match(
   itemsLayer,
-  /addFloorElevationToItemPosition/,
-  "3D furniture must add the exact canonical finished-floor elevation."
+  /projectSceneRoomItem/,
+  "Both furniture renderers must project the canonical scene entry."
 );
+const sceneProjection = source("lib/design-page-scene-projection.ts");
 assert.match(
-  itemsLayer,
-  /removeFloorElevationFromItemPosition/,
+  sceneProjection,
+  /position\[1\] - entry\.roomFloorElevationMeters/,
   "Furniture edits must convert world Y back to room-local Y before persistence."
 );
 const canonicalRenderer = source(

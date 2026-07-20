@@ -1,4 +1,5 @@
 import type { PresentExportDialogProps } from "@/components/editor/design-page/PresentExportDialog";
+import type { EditorCapabilities } from "@/lib/editor-capabilities";
 import type { BuildDesignPageDialogLayerAdapterInput } from "@/lib/design-page-dialog-layer-adapter";
 
 type Dialogs = BuildDesignPageDialogLayerAdapterInput["dialogs"];
@@ -79,7 +80,7 @@ export type BuildDesignPageDialogLayerModelInput = {
   access: {
     isClientPreview: boolean;
     isAuthenticated: boolean;
-    isPro: boolean;
+    capabilities: EditorCapabilities;
     designerTheme: boolean;
   };
   billing: {
@@ -222,7 +223,7 @@ export function buildDesignPageDialogLayerModel({
         state: {
           open: billing.plans.open,
           layout: billing.plans.layout,
-          proActive: access.isPro,
+          proActive: access.capabilities.manageSubscription,
           startingCheckout: billing.startingCheckout,
           openingBillingPortal: billing.plans.openingBillingPortal,
           monthlyLabel: billing.plans.monthlyLabel,
@@ -236,7 +237,7 @@ export function buildDesignPageDialogLayerModel({
       aiNotes: {
         open: ai.notes.open,
         data: ai.notes.data,
-        canApplySuggestions: access.isPro,
+        canApplySuggestions: access.capabilities.applyAiSuggestions,
         onApplySuggestion: ai.notes.onApplySuggestion,
         onClose: ai.notes.onClose,
       },

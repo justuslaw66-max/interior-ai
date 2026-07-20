@@ -4,6 +4,7 @@ import { canAccessAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { getImportJobValidationBlockers } from "@/lib/import-jobs/admin-workflow";
 import type { AdminImportWorkflowJob } from "@/lib/import-jobs/admin-workflow-shared";
+import { readJsonRequest } from "@/lib/api-boundary";
 
 interface BulkUpdateRequest {
   ids: string[];
@@ -18,7 +19,7 @@ export async function PATCH(request: Request) {
 
   let body: unknown;
   try {
-    body = await request.json();
+    body = await readJsonRequest(request, 32 * 1024);
   } catch {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
@@ -26,7 +27,13 @@ export async function PATCH(request: Request) {
   const typedBody = body as BulkUpdateRequest;
   const { ids, status } = typedBody;
 
-  if (!Array.isArray(ids) || !ids.every((id) => typeof id === "string") || ids.length === 0) {
+  if (
+    !Array.isArray(ids) ||
+    !ids.every((id) => typeof id === "string" && id.length > 0 && id.length <= 64) ||
+    ids.length === 0 ||
+    ids.length > 100 ||
+    new Set(ids).size !== ids.length
+  ) {
     return NextResponse.json({ error: "ids must be a non-empty array of strings" }, { status: 400 });
   }
 

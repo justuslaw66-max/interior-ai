@@ -1,3 +1,10 @@
+"use client";
+
+import {
+  EditorDialog,
+  EditorDialogActions,
+  EditorDialogButton,
+} from "@/components/editor/design-system/EditorDialog";
 import type { AISuggestionAction } from "@/lib/ai/applySuggestion";
 import type { AINotesResponse } from "@/lib/design-page-types";
 
@@ -19,27 +26,29 @@ export function AiNotesDialog({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-lg dark:bg-[#1e2839]">
-        <div className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <h2 className="text-lg font-bold">AI Design Notes</h2>
-            {data?.cached && (
-              <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-200">
-                ✓ Instant (cached)
-              </span>
-            )}
-          </div>
-          <button
-            type="button"
-            aria-label="Close AI design notes"
-            onClick={onClose}
-            className="text-2xl font-bold text-gray-500 hover:text-gray-700"
-          >
-            ✕
-          </button>
+    <EditorDialog
+      open
+      title="AI Design Notes"
+      description="Review the generated rationale and suggested design actions."
+      onClose={onClose}
+      closeLabel="Close AI design notes"
+      panelClassName="max-w-2xl"
+      footer={
+        <EditorDialogActions>
+          <EditorDialogButton data-editor-dialog-initial-focus="true" onClick={onClose}>
+            Close
+          </EditorDialogButton>
+        </EditorDialogActions>
+      }
+    >
+      {data?.cached ? (
+        <div
+          role="status"
+          className="mb-4 inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-200"
+        >
+          <span aria-hidden="true">✓</span>&nbsp;Instant result (cached)
         </div>
-
+      ) : null}
         {data && (
           <div className="space-y-4">
             <div>
@@ -72,7 +81,7 @@ export function AiNotesDialog({
                         <button
                           type="button"
                           onClick={() => onApplySuggestion(suggestion.action)}
-                          className="rounded bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-700"
+                          className="min-h-11 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white outline-none hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                         >
                           Apply
                         </button>
@@ -80,7 +89,7 @@ export function AiNotesDialog({
                         <button
                           type="button"
                           disabled
-                          className="rounded bg-gray-400 px-3 py-1 text-sm text-white"
+                          className="min-h-11 rounded-lg bg-gray-400 px-4 py-2 text-sm font-semibold text-white"
                           title="Upgrade to pro to apply suggestions"
                         >
                           Pro Only
@@ -93,23 +102,13 @@ export function AiNotesDialog({
             )}
 
             {!canApplySuggestions && (
-              <div className="mt-4 rounded-lg bg-blue-50 p-3 text-sm text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+              <div role="note" className="mt-4 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800 dark:border-blue-700 dark:bg-blue-900 dark:text-blue-200">
                 Upgrade to Pro to apply AI suggestions to your design.
               </div>
             )}
           </div>
         )}
 
-        <div className="mt-6 flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
+    </EditorDialog>
   );
 }

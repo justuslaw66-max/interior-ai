@@ -6,6 +6,7 @@ import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
 import { Furniture } from "@/components/scene/FurnitureItem";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
+import { resolveDesignItemVisualProduct } from "@/lib/design-item-product-snapshot";
 import {
   findCatalogSurfacePlacement,
   getCeilingMountedItemBaseY,
@@ -18,17 +19,16 @@ import type {
   WallDescriptor,
 } from "@/lib/design-page-types";
 import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
-import type {
-  DesignItem,
-  RoomPlanPolygonPoint,
-  RoomPlanShape,
-} from "@/lib/room-types";
-import { CabinetSceneItem } from "@/features/cabinetry/components/CabinetSceneItem";
+import type { DesignItem } from "@/lib/room-types";
+import { CabinetDesignItemPlan2D } from "@/features/cabinetry/components/CabinetDesignItemPlan2D";
+import { CabinetDesignItemSpatial3D } from "@/features/cabinetry/components/CabinetDesignItemSpatial3D";
 import { isParametricCabinetItem } from "@/features/cabinetry/designItemAdapters";
+import type { SceneRoomItemEntry } from "@/lib/design-page-scene-domain";
 import {
-  addFloorElevationToItemPosition,
-  removeFloorElevationFromItemPosition,
-} from "@/lib/floor-plan-scene-elevation";
+  projectSceneRoomItem,
+  removeSceneProjectionElevation,
+  type SceneProjection,
+} from "@/lib/design-page-scene-projection";
 
 export type SceneItemDimensionsMm = {
   w: number;
@@ -36,21 +36,7 @@ export type SceneItemDimensionsMm = {
   h: number;
 };
 
-export type SceneRoomItemEntry = {
-  item: DesignItem;
-  roomId: string;
-  roomOffset: { x: number; z: number };
-  roomFloorElevationMeters: number;
-  roomWidth: number;
-  roomDepth: number;
-  roomHeight: number;
-  roomPlanShape: RoomPlanShape;
-  roomPlanPolygon?: RoomPlanPolygonPoint[];
-  roomPlanHoles?: RoomPlanPolygonPoint[][];
-  roomWallThickness: number;
-  roomWallInset: number;
-  isActiveRoom: boolean;
-};
+export type { SceneRoomItemEntry } from "@/lib/design-page-scene-domain";
 
 export type SceneItemMoveContext = {
   sceneEntry: SceneRoomItemEntry;
@@ -152,27 +138,23 @@ export function SceneItemsLayer({
         const item = sceneEntry.item;
         const isActiveSceneRoom = sceneEntry.isActiveRoom;
         const roomOffset = sceneEntry.roomOffset;
-        const roomFloorElevation =
-          configuration.viewMode === "3d"
-            ? sceneEntry.roomFloorElevationMeters
-            : 0;
+        const projection: SceneProjection =
+          configuration.viewMode === "3d" ? "spatial" : "plan";
 
         if (isParametricCabinetItem(item)) {
-          const scenePosition = addFloorElevationToItemPosition([
-            item.position[0] + roomOffset.x,
-            item.position[1] ?? 0,
-            item.position[2] + roomOffset.z,
-          ], roomFloorElevation);
           const sceneRenderItemKey = `${sceneEntry.roomId}:${item.instanceId}:${item.productId}:${
             item.variantId ?? ""
           }:${configuration.renderQuality}`;
+          const CabinetDesignItemRenderer =
+            configuration.viewMode === "3d"
+              ? CabinetDesignItemSpatial3D
+              : CabinetDesignItemPlan2D;
 
           return (
-            <CabinetSceneItem
+            <CabinetDesignItemRenderer
               key={`${sceneEntry.roomId}:${item.instanceId}`}
-              definition={item.cabinetDefinition}
-              position={scenePosition}
-              rotationY={item.rotationY ?? 0}
+              sceneEntry={sceneEntry}
+              item={item}
               selected={
                 isActiveSceneRoom &&
                 configuration.editorMode !== "present" &&
@@ -183,8 +165,6 @@ export function SceneItemsLayer({
                 configuration.editorMode !== "present" &&
                 !configuration.isClientPreview
               }
-              instanceId={item.instanceId}
-              viewMode={configuration.viewMode}
               renderReadyKey={sceneRenderItemKey}
               onRenderReadyChange={actions.onRenderReadyChange}
               onSelect={(id, additive) => {
@@ -201,7 +181,7 @@ export function SceneItemsLayer({
           );
         }
 
-        const product = CATALOG_ITEMS[item.productId];
+        const product = resolveDesignItemVisualProduct(item, CATALOG_ITEMS);
         if (!product) return null;
 
         const effectiveVariantId =
@@ -297,11 +277,11 @@ export function SceneItemsLayer({
                 item.position[2],
               ]
             : item.position);
-        const scenePosition = addFloorElevationToItemPosition([
-          renderLocalPosition[0] + roomOffset.x,
-          renderLocalPosition[1] ?? 0,
-          renderLocalPosition[2] + roomOffset.z,
-        ], roomFloorElevation);
+        const sceneProjection = projectSceneRoomItem(
+          sceneEntry,
+          projection,
+          renderLocalPosition
+        );
         const sceneRenderItemKey = `${sceneEntry.roomId}:${item.instanceId}:${item.productId}:${
           effectiveVariantId ?? ""
         }:${configuration.renderQuality}`;
@@ -318,8 +298,8 @@ export function SceneItemsLayer({
             hangingHeightCm={item.hangingHeightCm}
             planningBoundsMm={configuredPlanningDims}
             nodeTransforms={configuredNodeTransforms ?? undefined}
-            initialPosition={scenePosition}
-            initialRotationY={item.rotationY ?? 0}
+            initialPosition={sceneProjection.position}
+            initialRotationY={sceneProjection.rotationY}
             roomWidth={sceneEntry.roomWidth}
             roomDepth={sceneEntry.roomDepth}
             roomOriginX={roomOffset.x}
@@ -327,8 +307,8 @@ export function SceneItemsLayer({
             roomPlanShape={sceneEntry.roomPlanShape}
             roomPlanPolygon={sceneEntry.roomPlanPolygon}
             roomPlanHoles={sceneEntry.roomPlanHoles}
-            wallThickness={sceneEntry.roomWallThickness}
-            wallContactInset={sceneEntry.roomWallInset}
+            wallThickness={sceneProjection.wallThickness}
+            wallContactInset={sceneProjection.wallContactInset}
             onDraggingChange={actions.onDraggingChange}
             walls={isActiveSceneRoom ? configuration.walls : []}
             instanceId={item.instanceId}
@@ -382,9 +362,10 @@ export function SceneItemsLayer({
                 sceneEntry,
                 configuredPlanningDimsMm: configuredPlanningDims,
                 id,
-                position: removeFloorElevationFromItemPosition(
-                  position,
-                  roomFloorElevation
+                position: removeSceneProjectionElevation(
+                  sceneEntry,
+                  projection,
+                  position
                 ),
               })
             }
@@ -413,9 +394,10 @@ export function SceneItemsLayer({
               actions.onDragEnd({
                 sceneEntry,
                 id,
-                position: removeFloorElevationFromItemPosition(
-                  position,
-                  roomFloorElevation
+                position: removeSceneProjectionElevation(
+                  sceneEntry,
+                  projection,
+                  position
                 ),
               })
             }

@@ -1,0 +1,120 @@
+{
+  "version": 3,
+  "activeRoomId": "legacy-kitchen",
+  "title": "Legacy kitchen with base cabinet",
+  "style": "modern",
+  "budget": "mid",
+  "notes": "Fixture captured before preset provenance and generated-output snapshots were persisted.",
+  "rooms": [
+    {
+      "id": "legacy-kitchen",
+      "name": "Legacy Kitchen",
+      "roomType": "kitchen",
+      "geometry": {
+        "width": 5,
+        "depth": 4,
+        "wallThickness": 0.2,
+        "height": 2.7
+      },
+      "items": [
+        {
+          "instanceId": "legacy-cabinet-instance",
+          "productId": "parametric-cabinet",
+          "variantId": "legacy-cabinet-definition-v1",
+          "assetType": "parametric_cabinet",
+          "roomId": "legacy-kitchen",
+          "name": "Legacy base cabinet",
+          "cabinetDefinition": {
+            "id": "legacy-cabinet-definition-v1",
+            "name": "Legacy base cabinet",
+            "version": 1,
+            "units": "mm",
+            "totalWidth": 900,
+            "height": 720,
+            "depth": 580,
+            "boardThickness": 18,
+            "backPanelThickness": 6,
+            "toeKickHeight": 100,
+            "revealGap": 3,
+            "modules": [
+              {
+                "id": "legacy-module-1",
+                "type": "base",
+                "width": 900,
+                "height": 720,
+                "depth": 580,
+                "frontType": "double_door",
+                "doorStyle": "flat_slab",
+                "doorCount": 2,
+                "drawerCount": 0,
+                "shelfCount": 1,
+                "materialId": "white_melamine",
+                "frontMaterialId": "oak_veneer",
+                "hardwareId": "brushed_steel_bar_pull"
+              }
+            ],
+            "materials": [
+              {
+                "id": "white_melamine",
+                "name": "White melamine",
+                "color": "#f5f3ec",
+                "roughness": 0.62,
+                "metalness": 0,
+                "skuId": "CAB-MAT-WHITE-MEL"
+              },
+              {
+                "id": "oak_veneer",
+                "name": "Oak veneer",
+                "color": "#caa56f",
+                "roughness": 0.55,
+                "metalness": 0,
+                "skuId": "CAB-MAT-OAK-VNR"
+              }
+            ],
+            "hardware": [
+              {
+                "id": "brushed_steel_bar_pull",
+                "name": "Brushed steel bar pull",
+                "type": "bar_pull",
+                "role": "front_operation",
+                "skuId": "CAB-HDL-BAR-STL"
+              }
+            ],
+            "createdAt": "2025-01-15T08:00:00.000Z",
+            "updatedAt": "2025-01-15T08:00:00.000Z"
+          },
+          "glbAssetUrl": "blob:https://legacy.invalid/session-only-cabinet",
+          "position": [
+            0.35,
+            0,
+            -0.45
+          ],
+          "rotationY": 1.5707963267948966,
+          "transform": {
+            "position": [
+              0.35,
+              0,
+              -0.45
+            ],
+            "rotationY": 1.5707963267948966,
+            "rotation": [
+              0,
+              1.5707963267948966,
+              0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ]
+          },
+          "qty": 1,
+          "includeInCheckout": false,
+          "locked": false
+        }
+      ],
+      "zones": [],
+      "savedViews": []
+    }
+  ]
+}
