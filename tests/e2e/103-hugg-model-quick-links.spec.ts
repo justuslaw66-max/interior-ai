@@ -20,9 +20,10 @@ test.describe("103. Hugg Model Quick Links", () => {
     const opened = await openCatalogPreview(page, HUGG_RECTANGULAR_BASALT_CLOSED_ID, "Hugg");
     expect(opened).toBeTruthy();
 
-    await expect(page.getByText("Product details")).toBeVisible({ timeout: 10000 });
-    await page.getByRole("button", { name: /^Black$/i }).first().click();
-    await expect(page.getByTestId("catalog-detail-variant-label")).toContainText(/Black/i);
+    const catalogDrawer = page.getByTestId("catalog-item-drawer");
+    await expect(catalogDrawer.getByText("Product details")).toBeVisible({ timeout: 10000 });
+    await catalogDrawer.getByRole("button", { name: /^Black$/i }).first().click();
+    await expect(catalogDrawer.getByTestId("catalog-detail-variant-label")).toContainText(/Black/i);
 
     await addCatalogDrawerItemToRoom(page);
 

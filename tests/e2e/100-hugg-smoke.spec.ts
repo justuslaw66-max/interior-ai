@@ -28,15 +28,16 @@ test.describe("100. Hugg Catalog Smoke", () => {
     expect(opened).toBeTruthy();
     expect(duplicateFinishKeyWarnings).toEqual([]);
 
-    await expect(page.getByText("Product details")).toBeVisible({ timeout: 10000 });
-    await expect(page.getByTestId("catalog-detail-add-to-room")).toBeVisible({ timeout: 10000 });
+    const catalogDrawer = page.getByTestId("catalog-item-drawer");
+    await expect(catalogDrawer.getByText("Product details")).toBeVisible({ timeout: 10000 });
+    await expect(catalogDrawer.getByTestId("catalog-detail-add-to-room")).toBeVisible({ timeout: 10000 });
 
-    await expect(page.getByRole("button", { name: /Performance Dune/i }).first()).toBeVisible();
-    await page.getByRole("button", { name: /Performance Dune/i }).first().click();
+    await expect(catalogDrawer.getByRole("button", { name: /Performance Dune/i }).first()).toBeVisible();
+    await catalogDrawer.getByRole("button", { name: /Performance Dune/i }).first().click();
 
-    await expect(page.getByRole("button", { name: /^Black$/i }).first()).toBeVisible();
-    await page.getByRole("button", { name: /^Black$/i }).first().click();
-    await expect(page.getByTestId("catalog-detail-variant-label")).toContainText(/Black/i);
+    await expect(catalogDrawer.getByRole("button", { name: /^Black$/i }).first()).toBeVisible();
+    await catalogDrawer.getByRole("button", { name: /^Black$/i }).first().click();
+    await expect(catalogDrawer.getByTestId("catalog-detail-variant-label")).toContainText(/Black/i);
 
     await addCatalogDrawerItemToRoom(page);
 
