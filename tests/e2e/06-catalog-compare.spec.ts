@@ -1,15 +1,36 @@
 import { test, expect } from "./fixtures";
+import { waitForCatalogReady } from "./variant-test-utils";
 
-test.describe.skip("6. Catalog Compare", () => {
+async function openCatalog(page: Parameters<typeof waitForCatalogReady>[0]) {
+  const continueToFurnish = page.getByRole("button", { name: "Continue to Furnish" });
+  if (await continueToFurnish.isVisible().catch(() => false)) {
+    await continueToFurnish.click();
+  }
+  expect(await waitForCatalogReady(page)).toBe(true);
+}
+
+async function visibleCompareIds(page: Parameters<typeof waitForCatalogReady>[0], count: number) {
+  const compareButtons = page.locator('[data-testid^="catalog-compare-toggle-"]');
+  await expect(compareButtons.nth(count - 1)).toBeVisible({ timeout: 20000 });
+  const ids = await compareButtons.evaluateAll((buttons, requestedCount) =>
+    buttons
+      .slice(0, requestedCount)
+      .map((button) => button.getAttribute("data-testid"))
+      .filter((id): id is string => Boolean(id)),
+  count);
+  expect(ids).toHaveLength(count);
+  return ids;
+}
+
+test.describe("6. Catalog Compare", () => {
   test("quick compare tray supports add and clear", async ({ page }) => {
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
+    await openCatalog(page);
 
-    const compareButtons = page.locator('[data-testid^="catalog-compare-toggle-"]');
-    await expect(compareButtons.first()).toBeVisible({ timeout: 20000 });
-
-    await compareButtons.nth(0).click();
-    await compareButtons.nth(1).click();
+    const compareIds = await visibleCompareIds(page, 2);
+    await page.getByTestId(compareIds[0]).click();
+    await page.getByTestId(compareIds[1]).click();
 
     const tray = page.locator('[data-testid="catalog-compare-tray"]');
     await expect(tray).toBeVisible();
@@ -22,22 +43,23 @@ test.describe.skip("6. Catalog Compare", () => {
   test("catalog panel search, filters, and drawer open", async ({ page }) => {
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
+    await openCatalog(page);
 
     const filtersButton = page.getByRole("button", { name: "Filters" });
     await expect(filtersButton).toBeVisible({ timeout: 20000 });
 
-    await page.getByRole("button", { name: /Arm Chair/ }).click();
-
-    const searchInput = page.getByPlaceholder("Search title, brand, style, finish, SKU...");
+    const searchInput = page.getByRole("textbox", { name: "Search catalog products" });
     await searchInput.fill("sofa");
     await searchInput.clear();
 
     await filtersButton.click();
     await expect(page.getByText("Structured Filters")).toBeVisible();
     await page.getByLabel("Small-room friendly").check();
+    await expect(page.getByLabel("Small-room friendly")).toBeChecked();
+    await page.getByLabel("Small-room friendly").uncheck();
     await page.getByRole("button", { name: "Close" }).click();
 
-    const previewButtons = page.getByRole("button", { name: "Preview" });
+    const previewButtons = page.getByRole("button", { name: "View details" });
     await expect(previewButtons.first()).toBeVisible();
     await previewButtons.first().click();
 
@@ -47,30 +69,21 @@ test.describe.skip("6. Catalog Compare", () => {
   test("compare keeps max 3 and replaces oldest", async ({ page }) => {
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
+    await openCatalog(page);
 
-    const compareButtons = page.locator('[data-testid^="catalog-compare-toggle-"]');
-    await expect(compareButtons.nth(0)).toBeVisible({ timeout: 20000 });
+    const [firstId, secondId, thirdId, fourthId] = await visibleCompareIds(page, 4);
 
-    const firstId = await compareButtons.nth(0).getAttribute("data-testid");
-    const secondId = await compareButtons.nth(1).getAttribute("data-testid");
-    const thirdId = await compareButtons.nth(2).getAttribute("data-testid");
-    const fourthId = await compareButtons.nth(3).getAttribute("data-testid");
-
-    await compareButtons.nth(0).click();
-    await compareButtons.nth(1).click();
-    await compareButtons.nth(2).click();
-    await compareButtons.nth(3).click();
+    for (const id of [firstId, secondId, thirdId, fourthId]) {
+      await page.getByTestId(id).click();
+    }
 
     const tray = page.locator('[data-testid="catalog-compare-tray"]');
     await expect(tray).toContainText("Quick compare (3/3)");
 
-    if (firstId) {
-      const firstRemove = page.locator(`[data-testid="catalog-compare-remove-${firstId.replace("catalog-compare-toggle-", "")}"]`);
-      await expect(firstRemove).toHaveCount(0);
-    }
+    const firstRemove = page.locator(`[data-testid="catalog-compare-remove-${firstId.replace("catalog-compare-toggle-", "")}"]`);
+    await expect(firstRemove).toHaveCount(0);
 
     for (const id of [secondId, thirdId, fourthId]) {
-      if (!id) continue;
       const remove = page.locator(`[data-testid="catalog-compare-remove-${id.replace("catalog-compare-toggle-", "")}"]`);
       await expect(remove).toHaveCount(1);
     }
@@ -80,10 +93,10 @@ test.describe.skip("6. Catalog Compare", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
+    await openCatalog(page);
 
-    const compareButtons = page.locator('[data-testid^="catalog-compare-toggle-"]');
-    await expect(compareButtons.first()).toBeVisible({ timeout: 20000 });
-    await compareButtons.first().click();
+    const [compareId] = await visibleCompareIds(page, 1);
+    await page.getByTestId(compareId).click();
 
     const tray = page.locator('[data-testid="catalog-compare-tray"]');
     await expect(tray).toBeVisible();
