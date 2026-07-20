@@ -26,10 +26,10 @@ async function listEntries(root, current = root) {
   return paths;
 }
 
-function git(args) {
+function git(args, { trim = true } = {}) {
   const result = spawnSync("git", args, { encoding: "utf8", maxBuffer: 128 * 1024 * 1024 });
   if (result.status !== 0) throw new Error(result.stderr.trim() || `git ${args.join(" ")} failed`);
-  return result.stdout.trim();
+  return trim ? result.stdout.trim() : result.stdout;
 }
 
 async function sha256File(filePath) {
@@ -66,7 +66,10 @@ async function isEquivalentLfsNormalization(filePath) {
 }
 
 async function inspectGitTree() {
-  const status = git(["status", "--porcelain=v1", "-z", "--untracked-files=no"]);
+  const status = git(
+    ["status", "--porcelain=v1", "-z", "--untracked-files=no"],
+    { trim: false },
+  );
   if (!status) return { clean: true, lfsNormalizationEquivalentPathCount: 0 };
 
   const records = status.split("\0").filter(Boolean);
@@ -77,7 +80,6 @@ async function inspectGitTree() {
     const filePath = record.slice(3);
     if (code !== " M") return { clean: false, lfsNormalizationEquivalentPathCount: 0 };
     candidates.push(filePath);
-    if (code.includes("R") || code.includes("C")) index += 1;
   }
 
   const equivalents = await Promise.all(candidates.map(isEquivalentLfsNormalization));
