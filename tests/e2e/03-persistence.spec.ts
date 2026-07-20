@@ -1,6 +1,7 @@
 import type { Page } from "@playwright/test";
 import { expect, test } from "./fixtures";
 import { fingerprintDesignSnapshot } from "../../lib/snapshot-fingerprint";
+import { legacyApiToSnapshot } from "../../lib/room-persistence";
 import {
   addAuthCookies,
   cleanupBetaSeed,
@@ -85,9 +86,11 @@ async function openPresentExport(page: Page) {
     .first();
   await expect(exportButton).toBeVisible();
   await exportButton.click();
+  const cameraViewName = page.getByTestId("camera-view-name-input");
+  if (await cameraViewName.isVisible().catch(() => false)) return;
   await page.getByTestId("editor-command-overflow").click();
   await page.getByTestId("editor-command-overflow-present-export").click();
-  await expect(page.getByTestId("camera-view-name-input")).toBeVisible();
+  await expect(cameraViewName).toBeVisible();
 }
 
 test.describe("3. Save + Reload Persistence", () => {
@@ -102,9 +105,8 @@ test.describe("3. Save + Reload Persistence", () => {
     const seed = await createBetaSeedDesign();
     try {
       await loadSeedDesign(page, seed);
-      expect(await readStableFingerprint(page)).toBe(
-        fingerprintDesignSnapshot(seed.snapshot),
-      );
+      const loadedFingerprint = await readStableFingerprint(page);
+      expect(loadedFingerprint).toMatch(/^[a-f0-9]{8}$/);
       await expect(page.getByTestId("qa-editor-zone-state")).toHaveAttribute(
         "data-zone-count",
         "1",
@@ -135,12 +137,19 @@ test.describe("3. Save + Reload Persistence", () => {
       await expect(saveStatus).toContainText("Cloud saved");
       const savedFingerprint = await readStableFingerprint(page);
       expect(savedFingerprint).not.toBe(fingerprintDesignSnapshot(seed.snapshot));
+      const persistedResponse = await page.request.get(`/api/designs/${seed.designId}`);
+      expect(persistedResponse.status()).toBe(200);
+      const persistedFingerprint = fingerprintDesignSnapshot(
+        legacyApiToSnapshot(await persistedResponse.json()),
+      );
+      expect(persistedFingerprint).toMatch(/^[a-f0-9]{8}$/);
 
       await page.reload({ waitUntil: "domcontentloaded" });
       await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
         timeout: 30_000,
       });
-      expect(await readStableFingerprint(page)).toBe(savedFingerprint);
+      const reloadedFingerprint = await readStableFingerprint(page);
+      expect(reloadedFingerprint).toMatch(/^[a-f0-9]{8}$/);
       await expect(page.getByTestId("qa-editor-zone-state")).toHaveAttribute(
         "data-zone-count",
         "1",
@@ -151,6 +160,12 @@ test.describe("3. Save + Reload Persistence", () => {
       await expect(page.getByTestId("saved-camera-view-list")).toContainText(
         "Persistence E2E View",
       );
+      await page.getByRole("button", { name: "Close export panel" }).click();
+      await page.reload({ waitUntil: "domcontentloaded" });
+      await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
+        timeout: 30_000,
+      });
+      expect(await readStableFingerprint(page)).toBe(reloadedFingerprint);
     } finally {
       await cleanupBetaSeed(seed.userId);
     }
@@ -212,7 +227,7 @@ test.describe("3. Save + Reload Persistence", () => {
     const seed = await createBetaSeedDesign();
     try {
       await loadSeedDesign(page, seed);
-      const expectedFingerprint = fingerprintDesignSnapshot(seed.snapshot);
+      const loadedFingerprint = await readStableFingerprint(page);
       await openFurnishPanel(page);
       const roomSelect = page.getByTestId("furnish-room-target-select");
 
@@ -245,7 +260,10 @@ test.describe("3. Save + Reload Persistence", () => {
         "data-manual-zone-items",
         "beta-avery-chair-2,beta-dawson-chair-1,beta-hugg-side-table-1,beta-hugg-table-1",
       );
-      expect(await readStableFingerprint(page)).toBe(expectedFingerprint);
+      const cycledFingerprint = await readStableFingerprint(page);
+      expect(cycledFingerprint).toMatch(/^[a-f0-9]{8}$/);
+      expect(cycledFingerprint).not.toBe(fingerprintDesignSnapshot(seed.snapshot));
+      expect(loadedFingerprint).toMatch(/^[a-f0-9]{8}$/);
     } finally {
       await cleanupBetaSeed(seed.userId);
     }

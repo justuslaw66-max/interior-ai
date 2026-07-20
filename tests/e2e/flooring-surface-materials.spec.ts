@@ -48,6 +48,16 @@ async function isDatabaseReachable(prisma: PrismaClient) {
   }
 }
 
+async function mockProPlan(page: import("@playwright/test").Page) {
+  await page.route("**/api/me", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ plan: "pro", source: "playwright" }),
+    });
+  });
+}
+
 async function dismissBlockingDialogs(page: import("@playwright/test").Page) {
   const modalOverlay = page.locator(".fixed.inset-0.z-50").first();
   await Promise.race([
@@ -97,6 +107,7 @@ test.describe("Flooring surface materials", () => {
   test("designer can apply draft flooring and keep it after reload", async ({ page }) => {
     test.setTimeout(90000);
 
+    await mockProPlan(page);
     await page.goto("/design?mode=designer");
     await page.waitForLoadState("domcontentloaded");
     await expect(page.locator('[data-testid="scene-canvas"]:visible').first()).toBeVisible({ timeout: 30000 });
@@ -108,35 +119,37 @@ test.describe("Flooring surface materials", () => {
 
     await page.getByTestId("plan-change-floor-finish").click();
 
-    await expect(page.getByTestId("room-surfaces-floor-panel")).toBeVisible({ timeout: 30000 });
-    await page.getByTestId("surfaces-filter-toggle").click();
-    await page.getByTestId("surfaces-filter-effect").selectOption("Marble");
-    await page.getByTestId("surfaces-filter-color").selectOption("White");
+    const surfacesPanel = page.getByTestId("floor-finish-panel");
+    const surfaceControls = surfacesPanel.getByTestId("room-surfaces-floor-panel");
+    await expect(surfaceControls).toBeVisible({ timeout: 30000 });
+    await surfaceControls.getByTestId("surfaces-filter-toggle").click();
+    await surfaceControls.getByTestId("surfaces-filter-effect").selectOption("Marble");
+    await surfaceControls.getByTestId("surfaces-filter-color").selectOption("White");
 
-    const materialCard = page.getByTestId(`surface-floor-material-${PANEL_FLOORING_ID}`);
+    const materialCard = surfaceControls.getByTestId(`surface-floor-material-${PANEL_FLOORING_ID}`);
     await expect(materialCard).toBeVisible({ timeout: 30000 });
-    await page.getByTestId(`surface-favorite-${PANEL_FLOORING_ID}`).click();
-    await expect(page.getByTestId("surfaces-favorites-filter")).toBeVisible();
+    await surfaceControls.getByTestId(`surface-favorite-${PANEL_FLOORING_ID}`).click();
+    await expect(surfaceControls.getByTestId("surfaces-favorites-filter")).toBeVisible();
     await materialCard.locator("button").first().click();
 
     await expect(floorPanel).toHaveAttribute("data-floor-material-id", PANEL_FLOORING_ID);
     await expect(floorPanel).toContainText(PANEL_FLOORING_NAME);
-    await page.getByTestId("surface-pattern-select").selectOption("herringbone");
-    await page.getByTestId("surface-rotation-45").click();
-    await page.getByTestId("surface-joint-size-4").click();
-    await page.getByTestId("surface-joint-color").click();
-    await expect(page.getByTestId("surface-grout-color-palette")).toBeVisible();
-    await page.getByTestId("surface-grout-color-cc8a10").click();
-    await expect(page.getByTestId("surface-grout-color-palette")).toBeHidden();
-    await page.getByTestId("surface-offset-right").click();
-    const offsetControls = page.getByTestId("surface-offset-controls");
+    await floorPanel.getByTestId("surface-pattern-select").selectOption("herringbone");
+    await floorPanel.getByTestId("surface-rotation-45").click();
+    await floorPanel.getByTestId("surface-joint-size-4").click();
+    await floorPanel.getByTestId("surface-joint-color").click();
+    await expect(floorPanel.getByTestId("surface-grout-color-palette")).toBeVisible();
+    await floorPanel.getByTestId("surface-grout-color-cc8a10").click();
+    await expect(floorPanel.getByTestId("surface-grout-color-palette")).toBeHidden();
+    await floorPanel.getByTestId("surface-offset-right").click();
+    const offsetControls = floorPanel.getByTestId("surface-offset-controls");
     await offsetControls.focus();
     await page.keyboard.press("ArrowUp");
     await expect(offsetControls).toContainText("Offset 0.05, 0.05");
-    await page.getByTestId("surface-summary-open").click();
-    await expect(page.getByTestId("surface-summary-panel")).toContainText("Herringbone");
-    await expect(page.getByTestId("surface-summary-panel")).toContainText("45°");
-    await page.getByTestId("surface-summary-panel").getByRole("button", { name: "Close" }).click();
+    await surfaceControls.getByTestId("surface-summary-open").click();
+    await expect(surfaceControls.getByTestId("surface-summary-panel")).toContainText("Herringbone");
+    await expect(surfaceControls.getByTestId("surface-summary-panel")).toContainText("45°");
+    await surfaceControls.getByTestId("surface-summary-panel").getByRole("button", { name: "Close" }).click();
 
     await page.getByRole("button", { name: "2D Plan" }).click();
     await expect(page.locator('[data-testid="scene-canvas"]:visible').first()).toBeVisible();
@@ -160,14 +173,15 @@ test.describe("Flooring surface materials", () => {
       { timeout: 30000 }
     );
     await page.getByTestId("plan-change-floor-finish").click();
-    await expect(page.getByTestId("surface-pattern-select")).toHaveValue("herringbone");
-    await expect(page.getByTestId("surface-rotation-45")).toHaveClass(/bg-emerald-600/);
-    await expect(page.getByTestId("surface-joint-size")).toHaveText("4 mm");
+    await expect(floorPanel.getByTestId("surface-pattern-select")).toHaveValue("herringbone");
+    await expect(floorPanel.getByTestId("surface-rotation-45")).toHaveClass(/bg-emerald-600/);
+    await expect(floorPanel.getByTestId("surface-joint-size")).toHaveText("4 mm");
   });
 
   test("size selector applies the selected Gardenia variant live", async ({ page }) => {
     test.setTimeout(90000);
 
+    await mockProPlan(page);
     await page.goto("/design?mode=designer");
     await page.waitForLoadState("domcontentloaded");
     await expect(page.locator('[data-testid="scene-canvas"]:visible').first()).toBeVisible({ timeout: 30000 });
@@ -202,46 +216,48 @@ test.describe("Flooring surface materials", () => {
     await expect(page.getByTestId("qa-design-layout-debug")).toHaveAttribute("data-view-mode", "3d");
 
     await page.getByTestId("plan-change-floor-finish").click();
-    await expect(page.getByTestId("room-surfaces-floor-panel")).toBeVisible({ timeout: 30000 });
+    const surfacesPanel = page.getByTestId("floor-finish-panel");
+    const surfaceControls = surfacesPanel.getByTestId("room-surfaces-floor-panel");
+    await expect(surfaceControls).toBeVisible({ timeout: 30000 });
     await expect(page.getByTestId("qa-design-layout-debug")).toHaveAttribute("data-view-mode", "3d");
-    await expect(page.getByTestId("room-surfaces-floor-panel")).toHaveAttribute("data-surface-target", "floor");
-    await page.getByTestId("surfaces-search").fill("Dorica Crema");
+    await expect(surfaceControls).toHaveAttribute("data-surface-target", "floor");
+    await surfaceControls.getByTestId("surfaces-search").fill("Dorica Crema");
 
-    const doricaCremaCard = page.getByRole("button", { name: /Dorica Crema Marble .*5 sizes/i }).first();
+    const doricaCremaCard = surfaceControls.getByRole("button", { name: /Dorica Crema Marble .*5 sizes/i }).first();
     await expect(doricaCremaCard).toBeVisible({ timeout: 30000 });
     await doricaCremaCard.click();
-    await page.getByTestId(`surface-size-option-${GARDENIA_DORICA_CREMA_120_ID}`).click();
+    await floorPanel.getByTestId(`surface-size-option-${GARDENIA_DORICA_CREMA_120_ID}`).click();
     await expect(floorPanel).toHaveAttribute("data-floor-material-id", GARDENIA_DORICA_CREMA_120_ID);
     await expect(page.getByTestId("selection-inspector-floor-size-options")).toBeVisible();
     await expect(floorPanel).toContainText("Size 120x120");
-    await expect(page.getByTestId("surface-pattern-options").getByRole("button")).toHaveCount(3);
-    await expect(page.getByTestId("surface-pattern-option-straight")).toBeVisible();
-    await expect(page.getByTestId("surface-pattern-option-brick")).toBeVisible();
-    await expect(page.getByTestId("surface-pattern-option-vertical_brick")).toBeVisible();
-    await expect(page.getByTestId("surface-pattern-option-herringbone")).toHaveCount(0);
-    await expect(page.getByTestId("surface-pattern-option-random_stagger")).toHaveCount(0);
+    await expect(floorPanel.getByTestId("surface-pattern-options").getByRole("button")).toHaveCount(3);
+    await expect(floorPanel.getByTestId("surface-pattern-option-straight")).toBeVisible();
+    await expect(floorPanel.getByTestId("surface-pattern-option-brick")).toBeVisible();
+    await expect(floorPanel.getByTestId("surface-pattern-option-vertical_brick")).toBeVisible();
+    await expect(floorPanel.getByTestId("surface-pattern-option-herringbone")).toHaveCount(0);
+    await expect(floorPanel.getByTestId("surface-pattern-option-random_stagger")).toHaveCount(0);
 
-    await page.getByTestId("surface-pattern-option-vertical_brick").click();
-    await expect(page.getByTestId("surface-pattern-select")).toHaveValue("vertical_brick");
+    await floorPanel.getByTestId("surface-pattern-option-vertical_brick").click();
+    await expect(floorPanel.getByTestId("surface-pattern-select")).toHaveValue("vertical_brick");
 
-    await page.getByTestId(`surface-size-option-${GARDENIA_DORICA_CREMA_20X120_ID}`).click();
+    await floorPanel.getByTestId(`surface-size-option-${GARDENIA_DORICA_CREMA_20X120_ID}`).click();
     await expect(floorPanel).toHaveAttribute("data-floor-material-id", GARDENIA_DORICA_CREMA_20X120_ID);
     await expect(floorPanel).toContainText("Size 20x120");
-    await expect(page.getByTestId("surface-pattern-options").getByRole("button")).toHaveCount(5);
-    await expect(page.getByTestId("surface-pattern-option-herringbone")).toBeVisible();
-    await expect(page.getByTestId("surface-pattern-option-random_stagger")).toBeVisible();
-    await expect(page.getByTestId("surface-pattern-option-straight")).toBeVisible();
-    await expect(page.getByTestId("surface-pattern-option-brick")).toBeVisible();
-    await expect(page.getByTestId("surface-pattern-option-vertical_brick")).toBeVisible();
-    await expect(page.getByTestId("surface-pattern-select")).toHaveValue("vertical_brick");
+    await expect(floorPanel.getByTestId("surface-pattern-options").getByRole("button")).toHaveCount(5);
+    await expect(floorPanel.getByTestId("surface-pattern-option-herringbone")).toBeVisible();
+    await expect(floorPanel.getByTestId("surface-pattern-option-random_stagger")).toBeVisible();
+    await expect(floorPanel.getByTestId("surface-pattern-option-straight")).toBeVisible();
+    await expect(floorPanel.getByTestId("surface-pattern-option-brick")).toBeVisible();
+    await expect(floorPanel.getByTestId("surface-pattern-option-vertical_brick")).toBeVisible();
+    await expect(floorPanel.getByTestId("surface-pattern-select")).toHaveValue("vertical_brick");
 
-    await page.getByTestId("surface-pattern-option-herringbone").click();
-    await expect(page.getByTestId("surface-pattern-select")).toHaveValue("herringbone");
+    await floorPanel.getByTestId("surface-pattern-option-herringbone").click();
+    await expect(floorPanel.getByTestId("surface-pattern-select")).toHaveValue("herringbone");
 
-    await page.getByTestId(`surface-size-option-${GARDENIA_DORICA_CREMA_120_ID}`).click();
+    await floorPanel.getByTestId(`surface-size-option-${GARDENIA_DORICA_CREMA_120_ID}`).click();
     await expect(floorPanel).toHaveAttribute("data-floor-material-id", GARDENIA_DORICA_CREMA_120_ID);
-    await expect(page.getByTestId("surface-pattern-options").getByRole("button")).toHaveCount(3);
-    await expect(page.getByTestId("surface-pattern-select")).toHaveValue("straight");
+    await expect(floorPanel.getByTestId("surface-pattern-options").getByRole("button")).toHaveCount(3);
+    await expect(floorPanel.getByTestId("surface-pattern-select")).toHaveValue("straight");
   });
 
   test("ceiling target can use the paint colour picker", async ({ page }) => {

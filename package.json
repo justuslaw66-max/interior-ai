@@ -10,6 +10,13 @@
   "scripts": {
     "postinstall": "npm run prisma:generate",
     "prisma:generate": "node scripts/prisma-generate.mjs",
+    "gate:a3:db": "node scripts/provision-gate-a3-database.mjs",
+    "release:vercel:pull": "npx --yes vercel@56.3.2 pull --yes --environment=production",
+    "release:vercel:build": "npx --yes vercel@56.3.2 build --prod && node scripts/vercel-output-manifest.mjs",
+    "release:vercel:verify": "node scripts/vercel-output-manifest.mjs --verify",
+    "release:vercel:stage": "node scripts/vercel-prebuilt-release.mjs stage",
+    "release:vercel:certify": "node scripts/vercel-prebuilt-release.mjs certify",
+    "release:vercel:promote": "node scripts/vercel-prebuilt-release.mjs promote",
     "typecheck": "tsc --noEmit --pretty false",
     "assets:inventory": "node scripts/asset-inventory.mjs",
     "assets:inventory:strict": "node scripts/asset-inventory.mjs --strict",

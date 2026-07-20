@@ -61,12 +61,13 @@ export function useDesignPageItemSelectionController({
 
   const updateSelection = useCallback(
     (next: Set<string>, nextPrimary: string | null) => {
+      const hadSelection = selectedIdsRef.current.size > 0;
       setSelectedIds(next);
       setPrimaryId(nextPrimary);
 
       if (next.size > 0 && editorMode === "design") {
         setEditorMode("adjust");
-      } else if (next.size === 0 && editorMode === "adjust") {
+      } else if (next.size === 0 && hadSelection && editorMode === "adjust") {
         setEditorMode("design");
       }
     },

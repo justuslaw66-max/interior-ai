@@ -25,6 +25,9 @@ export default defineConfig({
   retries: 0,
   workers: 1,
   reporter: [["list"]],
+  metadata: {
+    gateA3ReleaseBaseURL: releaseBaseURL ?? null,
+  },
   use: {
     baseURL,
     actionTimeout: 30000,

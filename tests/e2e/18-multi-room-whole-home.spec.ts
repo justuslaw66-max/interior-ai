@@ -278,6 +278,7 @@ test.describe("18. Multi-Room Whole Home", () => {
         return Math.hypot(nextX - roomXBeforeMoveHandle, nextZ - roomZBeforeMoveHandle);
       })
       .toBeGreaterThan(0.1);
+    await expect(page.getByTestId("room-drag-hud")).toHaveCount(0);
 
     const roomXBeforeBodyDrag = await readNumberAttribute(roomLabel, "data-room-x");
     const roomZBeforeBodyDrag = await readNumberAttribute(roomLabel, "data-room-z");

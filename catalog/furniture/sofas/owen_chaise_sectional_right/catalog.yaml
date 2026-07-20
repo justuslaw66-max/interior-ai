@@ -13,7 +13,7 @@ price_usd: 1999
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 design_zone: "living_zone"
-anchor_role: "primary"
+anchor_role: "sofa_anchor"
 
 dimensions:
   width_cm: 256
@@ -22,7 +22,7 @@ dimensions:
 
 seat_capacity: 4
 size_class: "extra_large"
-shape: "l_shaped"
+shape: "rectangular"
 base_type: "legged"
 material_family: "upholstered"
 material_mix: "upholstered_wood"
@@ -168,6 +168,7 @@ variants:
     affiliate_url: "https://www.castlery.com/sg/products/owen-chaise-sectional-sofa?leg_color=natural&material=pearl_beige&orientation=right_facing"
     collection_type: "stocked_fabric"
     price_usd: 1999
+    dimensions: { width_cm: 256, depth_cm: 166, height_cm: 81 }
   - variant: "Owen Chaise Sectional Sofa / Right Facing / Opal Beige / Natural"
     sku: "owen-chaise-right-opal-beige-natural"
     finish_code: "natural"
@@ -183,6 +184,7 @@ variants:
     affiliate_url: "https://www.castlery.com/sg/products/owen-chaise-sectional-sofa?leg_color=natural&material=opal_beige&orientation=right_facing"
     collection_type: "stocked_fabric"
     price_usd: 1999
+    dimensions: { width_cm: 256, depth_cm: 166, height_cm: 81 }
   - variant: "Owen Chaise Sectional Sofa / Right Facing / Haze / Natural"
     sku: "owen-chaise-right-haze-natural"
     finish_code: "natural"
@@ -198,6 +200,7 @@ variants:
     affiliate_url: "https://www.castlery.com/sg/products/owen-chaise-sectional-sofa?leg_color=natural&material=haze&orientation=right_facing"
     collection_type: "stocked_fabric"
     price_usd: 1999
+    dimensions: { width_cm: 256, depth_cm: 166, height_cm: 81 }
   - variant: "Owen Chaise Sectional Sofa / Right Facing / Pearl Beige / Walnut"
     sku: "owen-chaise-right-pearl-beige-walnut"
     finish_code: "walnut"
@@ -213,6 +216,7 @@ variants:
     affiliate_url: "https://www.castlery.com/sg/products/owen-chaise-sectional-sofa?leg_color=walnut&material=pearl_beige&orientation=right_facing"
     collection_type: "stocked_fabric"
     price_usd: 1999
+    dimensions: { width_cm: 256, depth_cm: 166, height_cm: 81 }
   - variant: "Owen Chaise Sectional Sofa / Right Facing / Opal Beige / Walnut"
     sku: "owen-chaise-right-opal-beige-walnut"
     finish_code: "walnut"
@@ -228,6 +232,7 @@ variants:
     affiliate_url: "https://www.castlery.com/sg/products/owen-chaise-sectional-sofa?leg_color=walnut&material=opal_beige&orientation=right_facing"
     collection_type: "stocked_fabric"
     price_usd: 1999
+    dimensions: { width_cm: 256, depth_cm: 166, height_cm: 81 }
   - variant: "Owen Chaise Sectional Sofa / Right Facing / Haze / Walnut"
     sku: "owen-chaise-right-haze-walnut"
     finish_code: "walnut"
@@ -243,3 +248,4 @@ variants:
     affiliate_url: "https://www.castlery.com/sg/products/owen-chaise-sectional-sofa?leg_color=walnut&material=haze&orientation=right_facing"
     collection_type: "stocked_fabric"
     price_usd: 1999
+    dimensions: { width_cm: 256, depth_cm: 166, height_cm: 81 }

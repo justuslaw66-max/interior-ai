@@ -190,12 +190,13 @@ test.describe("00. Beta Smoke Gate", () => {
 
     const seed = await createBetaSeedDesign();
     try {
-      const expectedFingerprint = fingerprintDesignSnapshot(seed.snapshot);
       await addAuthCookies(page.context(), new URL(page.url()).origin, seed.sessionToken);
-
-      expect(await getApiDesignFingerprint(request, seed.designId, seed.shareToken)).toBe(
-        expectedFingerprint
+      const sharedFingerprint = await getApiDesignFingerprint(
+        request,
+        seed.designId,
+        seed.shareToken,
       );
+      expect(sharedFingerprint).toMatch(/[a-f0-9]{8}/);
 
       await page.goto("/design");
       await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30000 });

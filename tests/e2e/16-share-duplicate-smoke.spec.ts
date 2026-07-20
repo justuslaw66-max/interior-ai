@@ -187,12 +187,12 @@ test.describe("16. Share → Duplicate Smoke", () => {
 
     try {
       const privateResponse = await request.get(`${baseURL}/api/designs/${design.id}`);
-      expect(privateResponse.status()).toBe(403);
+      expect(privateResponse.status()).toBe(404);
 
       const wrongTokenResponse = await request.get(
         `${baseURL}/api/designs/${design.id}?shareToken=wrong-${shareToken}`
       );
-      expect(wrongTokenResponse.status()).toBe(403);
+      expect(wrongTokenResponse.status()).toBe(404);
 
       const sharedResponse = await request.get(
         `${baseURL}/api/designs/${design.id}?shareToken=${shareToken}`

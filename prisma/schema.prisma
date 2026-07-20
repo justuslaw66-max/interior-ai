@@ -186,6 +186,9 @@ model ImportJob {
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
   status            ImportJobStatus @default(received)
+  workflowStage     String?         @default("intake")
+  workflowBlockers  String[]        @default([])
+  nextAction        String?
   sourceBrand       String?
   sourceFileName    String
   sourceFileUrl     String

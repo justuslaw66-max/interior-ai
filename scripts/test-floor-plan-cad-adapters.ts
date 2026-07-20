@@ -452,8 +452,9 @@ async function main() {
   assert.match(assistant, /Deterministic CAD linework preview/);
   assert.match(
     assistant,
-    /\/api\/floor-plan-imports\/\$\{encodeURIComponent\(jobId\)\}\/assets\//
+    /\/api\/floor-plan-imports\/\$\{encodeURIComponent\(jobId\)\}\/assets/
   );
+  assert.match(assistant, /\/\$\{encodeURIComponent\(page\.assetKey\)\}/);
 
   const worker = fs.readFileSync(
     path.join(process.cwd(), "lib/floor-plan-imports/worker.ts"),

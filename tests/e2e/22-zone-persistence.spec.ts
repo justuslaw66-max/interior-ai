@@ -200,6 +200,7 @@ async function buildStoredFixtureForLocalHydration(page: Page) {
           productId?: string;
           variantId?: string;
           purchaseOptionId?: string;
+          productSnapshot?: unknown;
         }>;
       }>;
     };
@@ -211,6 +212,7 @@ async function buildStoredFixtureForLocalHydration(page: Page) {
       item.productId = productId;
       item.variantId = variantId;
       delete item.purchaseOptionId;
+      delete item.productSnapshot;
     }
     return JSON.stringify(stored);
   }, {

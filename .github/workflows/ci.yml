@@ -50,6 +50,11 @@ jobs:
       NEXTAUTH_SECRET: ci-only-auth-secret-at-least-32-characters
       NEXTAUTH_URL: http://127.0.0.1:3000
       APP_ORIGIN: http://127.0.0.1:3000
+      AUTH_TRUST_HOST: "true"
+      GOOGLE_CLIENT_ID: 123456789012-gate-a3-ci.apps.googleusercontent.com
+      GOOGLE_CLIENT_SECRET: gate-a3-ci-google-client-secret-placeholder
+      ADMIN_EMAILS: gate-a3-admin@example.test
+      PLAYWRIGHT_ADMIN_EMAIL: gate-a3-admin@example.test
       CATALOG_STRICT_VALIDATION: "false"
     steps:
       - uses: actions/checkout@v4
@@ -66,7 +71,9 @@ jobs:
         run: npm ci
 
       - name: Apply database migrations
-        run: npx prisma migrate deploy
+        env:
+          GATE_A3_DATABASE_URL: ${{ env.DATABASE_URL }}
+        run: npm run gate:a3:db
 
       - name: Lint (zero warnings)
         run: npm run lint -- --max-warnings=0
@@ -143,6 +150,11 @@ jobs:
       NEXTAUTH_SECRET: ci-only-auth-secret-at-least-32-characters
       NEXTAUTH_URL: http://127.0.0.1:3000
       APP_ORIGIN: http://127.0.0.1:3000
+      AUTH_TRUST_HOST: "true"
+      GOOGLE_CLIENT_ID: 123456789012-gate-a3-ci.apps.googleusercontent.com
+      GOOGLE_CLIENT_SECRET: gate-a3-ci-google-client-secret-placeholder
+      ADMIN_EMAILS: gate-a3-admin@example.test
+      PLAYWRIGHT_ADMIN_EMAIL: gate-a3-admin@example.test
     steps:
       - uses: actions/checkout@v4
         with:
@@ -158,7 +170,9 @@ jobs:
         run: npm ci
 
       - name: Apply database migrations
-        run: npx prisma migrate deploy
+        env:
+          GATE_A3_DATABASE_URL: ${{ env.DATABASE_URL }}
+        run: npm run gate:a3:db
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium

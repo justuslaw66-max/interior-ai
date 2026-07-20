@@ -318,13 +318,13 @@ export function buildBetaDesignSnapshot(): DesignSnapshot {
   };
 }
 
-export async function createBetaSeedDesign() {
+export async function createBetaSeedDesign(options: { email?: string } = {}) {
   const prisma = getBetaPrismaClient();
   let user: Awaited<ReturnType<typeof prisma.user.create>> | null = null;
   let lastCreateError: unknown = null;
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const userId = betaId("user");
-    const email = `${betaId("beta-smoke")}@example.com`;
+    const email = options.email ?? `${betaId("beta-smoke")}@example.com`;
     try {
       user = await prisma.user.create({
         data: { id: userId, email, name: "Beta Smoke User", plan: "free" },

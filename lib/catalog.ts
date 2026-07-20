@@ -1010,6 +1010,58 @@ function buildAveryUpholsteryVariants(params: {
 
 const CATALOG: Record<string, Product> = {
   // =========================
+  // DINING TABLES
+  // =========================
+  "dining-real-castlery-sloane-travertine-180": {
+    id: "dining-real-castlery-sloane-travertine-180",
+    name: "Castlery Sloane Travertine Dining Table 180cm",
+    category: "dining_table",
+    price: 1999,
+    dimensions: { w: 1.8, d: 0.9, h: 0.76 },
+    styleTags: ["modern", "minimalistic", "luxury"],
+    galleryImages: [
+      "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723776681/crusader/variants/AS-000564/Sloane-Travertine-Dining-Table-180cm-Front-1723776679.jpg",
+      "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723776680/crusader/variants/AS-000564/Sloane-Travertine-Dining-Table-180cm-Angle-1723776679.jpg",
+      "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723777296/crusader/variants/TAS-000564/Sloane-Travertine-Dining-Table-180cm-Dim-1723777294.jpg",
+    ],
+    defaultVariantId: "180_grey_oak",
+    purchaseMode: "affiliate",
+    retailer: "Castlery Singapore",
+    buyUrl:
+      "https://www.castlery.com/sg/products/sloane-travertine-dining-table?length=1_8m",
+    modelUrl: "/assets/models/dining-real-castlery-sloane-travertine-180.glb",
+    variants: [
+      {
+        id: "180_grey_oak",
+        name: "180cm / Grey Oak",
+        colorHex: "#4b453b",
+        dimensionsMm: { w: 1800, d: 900, h: 760 },
+        sizeLabel: "180cm",
+        modelUrl: "/assets/models/dining-real-castlery-sloane-travertine-180.glb",
+        affiliateUrl:
+          "https://www.castlery.com/sg/products/sloane-travertine-dining-table?length=1_8m",
+        priceHint: 1999,
+        available: true,
+        finishCode: "grey_oak",
+        finishLabel: "Grey Oak",
+        materialType: "Wood",
+        swatchGroup: "wood_finish",
+        swatchHex: "#4b453b",
+        swatchTextureUrl:
+          "https://res.cloudinary.com/castlery/image/upload/w_128,f_auto,q_auto/v1678775201/knight/cms/swatch/Sloane-Dining-Chair_Swatch_1_1.jpg",
+        collectionType: "stocked",
+        thumbnailUrl:
+          "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723776681/crusader/variants/AS-000564/Sloane-Travertine-Dining-Table-180cm-Front-1723776679.jpg",
+        galleryImages: [
+          "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723776681/crusader/variants/AS-000564/Sloane-Travertine-Dining-Table-180cm-Front-1723776679.jpg",
+          "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723776680/crusader/variants/AS-000564/Sloane-Travertine-Dining-Table-180cm-Angle-1723776679.jpg",
+          "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723777296/crusader/variants/TAS-000564/Sloane-Travertine-Dining-Table-180cm-Dim-1723777294.jpg",
+        ],
+      },
+    ],
+  },
+
+  // =========================
   // BEDS
   // =========================
   "bed-real-castlery-lexi-tufted": {

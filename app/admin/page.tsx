@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { canAccessAdmin } from "@/lib/admin";
+import { buildStagingSmokeEvidenceBundle } from "@/lib/beta-staging-evidence";
+import StagingSmokeEvidencePanel from "@/components/admin/StagingSmokeEvidencePanel";
 import OperationsDashboard from "./OperationsDashboard";
 import { loadOperationsDashboardData } from "./operations-data";
 
@@ -18,5 +20,10 @@ export default async function AdminOperationsPage() {
 
   const data = await loadOperationsDashboardData();
 
-  return <OperationsDashboard data={data} userEmail={session?.user?.email ?? null} />;
+  return (
+    <>
+      <OperationsDashboard data={data} userEmail={session?.user?.email ?? null} />
+      <StagingSmokeEvidencePanel bundle={buildStagingSmokeEvidenceBundle({})} />
+    </>
+  );
 }

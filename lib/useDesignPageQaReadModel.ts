@@ -195,7 +195,9 @@ export function useDesignPageQaReadModel({
   const qaDesignLayoutSnapshot = useMemo(
     () =>
       buildDesignPageLayoutQaSnapshot({
-        enabled: process.env.NODE_ENV !== "production",
+        // This read-only marker is intentionally available in release builds so
+        // the exact production artifact can be certified before promotion.
+        enabled: true,
         viewMode: layout.viewMode,
         editorMode: layout.editorMode,
         designSnapshot: layout.designSnapshot,

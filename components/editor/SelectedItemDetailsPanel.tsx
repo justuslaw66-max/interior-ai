@@ -189,6 +189,7 @@ export default function SelectedItemDetailsPanel({
           <button
             type="button"
             className={actionToggleClass(showInspectorDetails)}
+            aria-label={showInspectorDetails ? "Hide details" : "Show details"}
             aria-pressed={showInspectorDetails}
             onClick={onToggleInspectorDetails}
             title={showInspectorDetails ? "Hide details" : "Show details"}
@@ -199,6 +200,13 @@ export default function SelectedItemDetailsPanel({
           <button
             type="button"
             className={actionToggleClass(showFullDimensions, !hasFullDimensions)}
+            aria-label={
+              hasFullDimensions
+                ? showFullDimensions
+                  ? "Hide full dimensions"
+                  : "Full dimensions"
+                : "Full dimensions unavailable"
+            }
             disabled={!hasFullDimensions}
             aria-pressed={showFullDimensions}
             onClick={onToggleFullDimensions}
@@ -214,6 +222,13 @@ export default function SelectedItemDetailsPanel({
           <button
             type="button"
             className={actionToggleClass(showDeliveryWarranty, !hasDeliveryWarranty)}
+            aria-label={
+              hasDeliveryWarranty
+                ? showDeliveryWarranty
+                  ? "Hide delivery and warranty"
+                  : "Delivery & warranty"
+                : "Delivery and warranty unavailable"
+            }
             disabled={!hasDeliveryWarranty}
             aria-pressed={showDeliveryWarranty}
             onClick={onToggleDeliveryWarranty}

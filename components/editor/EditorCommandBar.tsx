@@ -314,7 +314,7 @@ export default function EditorCommandBar({
         </div>
       </div>
 
-      <div className="pointer-events-none hidden min-w-0 flex-[0.8] items-center justify-center lg:flex xl:flex-[0.95]">
+      <div className="pointer-events-none hidden min-w-0 flex-[0.95] items-center justify-center 2xl:flex">
         {contextSlot ? (
           <div
             data-testid="editor-command-context"

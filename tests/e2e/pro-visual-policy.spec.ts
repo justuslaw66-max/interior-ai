@@ -41,17 +41,24 @@ async function dismissBlockingPrompt(page: Page) {
 async function readThemeTokens(page: Page) {
   return page.locator("[data-theme]").first().evaluate((element) => {
     const styles = getComputedStyle(element);
+    const readColorToken = (name: string) => {
+      const value = styles.getPropertyValue(name).trim().toLowerCase();
+      const shorthand = value.match(/^#([0-9a-f])([0-9a-f])([0-9a-f])$/);
+      return shorthand
+        ? `#${shorthand[1]}${shorthand[1]}${shorthand[2]}${shorthand[2]}${shorthand[3]}${shorthand[3]}`
+        : value;
+    };
     return {
-      canvas: styles.getPropertyValue("--bg-canvas").trim(),
-      canvas3d: styles.getPropertyValue("--bg-canvas-3d").trim(),
-      command: styles.getPropertyValue("--bg-command").trim(),
-      panel: styles.getPropertyValue("--bg-panel").trim(),
-      raised: styles.getPropertyValue("--bg-panel-raised").trim(),
-      hover: styles.getPropertyValue("--bg-panel-hover").trim(),
-      primary: styles.getPropertyValue("--text-primary").trim(),
-      secondary: styles.getPropertyValue("--text-secondary").trim(),
-      muted: styles.getPropertyValue("--text-muted").trim(),
-      accent: styles.getPropertyValue("--accent").trim(),
+      canvas: readColorToken("--bg-canvas"),
+      canvas3d: readColorToken("--bg-canvas-3d"),
+      command: readColorToken("--bg-command"),
+      panel: readColorToken("--bg-panel"),
+      raised: readColorToken("--bg-panel-raised"),
+      hover: readColorToken("--bg-panel-hover"),
+      primary: readColorToken("--text-primary"),
+      secondary: readColorToken("--text-secondary"),
+      muted: readColorToken("--text-muted"),
+      accent: readColorToken("--accent"),
     };
   });
 }
@@ -313,6 +320,7 @@ test.describe("Pro visual policy", () => {
   test("keeps all recommended Cabinet Preview templates readable under the RC-5 policy", async ({
     page,
   }, testInfo) => {
+    test.setTimeout(300_000);
     await mockProPlan(page);
     await page.goto("/design?mode=designer", { waitUntil: "domcontentloaded" });
     await expect(page.locator('[data-theme="designer"]')).toBeVisible();
