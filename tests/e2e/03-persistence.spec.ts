@@ -231,7 +231,11 @@ test.describe("3. Save + Reload Persistence", () => {
       await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
         timeout: 30_000,
       });
-      expect(await readStableFingerprint(page)).toBe(fingerprintBeforeSecondReload);
+      await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute(
+        "data-fingerprint",
+        fingerprintBeforeSecondReload,
+        { timeout: 60_000 },
+      );
     } finally {
       await cleanupBetaSeed(seed.userId);
     }
