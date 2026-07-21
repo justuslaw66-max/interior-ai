@@ -32,6 +32,25 @@ async function readStableFingerprint(page: Page): Promise<string> {
   throw new Error("Editor snapshot fingerprint did not stabilize");
 }
 
+async function expectPersistedFingerprint(
+  page: Page,
+  designId: string,
+  expectedFingerprint: string,
+) {
+  await expect
+    .poll(
+      async () => {
+        const response = await page.request.get(`/api/designs/${designId}`);
+        if (response.status() !== 200) return `http-${response.status()}`;
+        return fingerprintDesignSnapshot(
+          legacyApiToSnapshot(await response.json()),
+        );
+      },
+      { timeout: 60_000 },
+    )
+    .toBe(expectedFingerprint);
+}
+
 async function openMyDesigns(page: Page) {
   const accountButton = page.getByTestId("editor-command-account");
   const accountMenu = page.getByTestId("editor-command-account-menu");
@@ -95,6 +114,14 @@ async function openPresentExport(page: Page) {
   await expect(cameraViewName).toBeVisible();
 }
 
+async function closePresentExport(page: Page) {
+  const close = page.getByRole("button", { name: "Close export panel" });
+  await expect(close).toBeVisible();
+  await expect(close).toBeEnabled();
+  await close.evaluate((button) => (button as HTMLButtonElement).click());
+  await expect(close).toBeHidden();
+}
+
 test.describe("3. Save + Reload Persistence", () => {
   test.afterAll(async () => {
     await disconnectBetaPrismaClient();
@@ -126,7 +153,7 @@ test.describe("3. Save + Reload Persistence", () => {
       await expect(page.getByTestId("saved-camera-view-list")).toContainText(
         "Persistence E2E View",
       );
-      await page.getByRole("button", { name: "Close export panel" }).click();
+      await closePresentExport(page);
 
       const saveButton = page.getByTestId("save-design");
       await expect(saveButton).toBeVisible();
@@ -139,12 +166,7 @@ test.describe("3. Save + Reload Persistence", () => {
       await expect(saveStatus).toContainText("Cloud saved");
       const savedFingerprint = await readStableFingerprint(page);
       expect(savedFingerprint).not.toBe(fingerprintDesignSnapshot(seed.snapshot));
-      const persistedResponse = await page.request.get(`/api/designs/${seed.designId}`);
-      expect(persistedResponse.status()).toBe(200);
-      const persistedFingerprint = fingerprintDesignSnapshot(
-        legacyApiToSnapshot(await persistedResponse.json()),
-      );
-      expect(persistedFingerprint).toMatch(/^[a-f0-9]{8}$/);
+      await expectPersistedFingerprint(page, seed.designId, savedFingerprint);
 
       await page.reload({ waitUntil: "domcontentloaded" });
       await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
@@ -162,12 +184,17 @@ test.describe("3. Save + Reload Persistence", () => {
       await expect(page.getByTestId("saved-camera-view-list")).toContainText(
         "Persistence E2E View",
       );
-      await page.getByRole("button", { name: "Close export panel" }).click();
+      await closePresentExport(page);
       await saveButton.click();
       await expect(saveStatus).toHaveAttribute("data-status", "saved", {
         timeout: 30_000,
       });
       const fingerprintBeforeSecondReload = await readStableFingerprint(page);
+      await expectPersistedFingerprint(
+        page,
+        seed.designId,
+        fingerprintBeforeSecondReload,
+      );
       await page.reload({ waitUntil: "domcontentloaded" });
       await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
         timeout: 30_000,
