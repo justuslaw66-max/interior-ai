@@ -89,9 +89,14 @@ async function setupSelectedItem(page: Page) {
   const controlsToggle = selectedPanel.getByTestId(
     "selected-item-advanced-controls-toggle",
   );
+  await expect(controlsToggle).toBeVisible();
+  await expect(controlsToggle).toBeEnabled();
   if ((await controlsToggle.getAttribute("aria-expanded")) !== "true") {
-    await controlsToggle.click();
+    await controlsToggle.evaluate((button) =>
+      (button as HTMLButtonElement).click(),
+    );
   }
+  await expect(controlsToggle).toHaveAttribute("aria-expanded", "true");
 
   const xInput = selectedPanel.getByTestId("selected-item-position-x");
   const zInput = selectedPanel.getByTestId("selected-item-position-z");
