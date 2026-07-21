@@ -942,15 +942,19 @@ export function useDesignPagePersistence({
         });
         if (
           storedSnapshot &&
-          !cancelled &&
           scheduledEpoch === documentEpochRef.current
         ) {
-          setLastDbSaveAt(Date.now());
+          // A request can commit after this effect has been superseded. Keep
+          // its server revision even when the older UI snapshot should no
+          // longer become the displayed saved fingerprint.
           setLastCloudRevision(storedSnapshot.updatedAt);
-          setLastPersistedSnapshotFingerprint(
-            fingerprintStoredDesign(storedSnapshot.snapshot)
-          );
-          setLastCloudSaveError(null);
+          if (!cancelled) {
+            setLastDbSaveAt(Date.now());
+            setLastPersistedSnapshotFingerprint(
+              fingerprintStoredDesign(storedSnapshot.snapshot)
+            );
+            setLastCloudSaveError(null);
+          }
         }
       } catch (error) {
         if (!cancelled) {

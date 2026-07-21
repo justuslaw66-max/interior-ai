@@ -249,7 +249,7 @@ test.describe("3. Save + Reload Persistence", () => {
       let rejectedWrite = false;
       const designRoute = `**/api/designs/${seed.designId}`;
       await page.route(designRoute, async (route) => {
-        if (route.request().method() === "PUT" && !rejectedWrite) {
+        if (route.request().method() === "PUT") {
           rejectedWrite = true;
           await route.fulfill({
             status: 503,

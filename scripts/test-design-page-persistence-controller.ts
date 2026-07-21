@@ -110,8 +110,8 @@ assert.match(
 
 assert.match(
   controllerSource,
-  /const timer = setTimeout\(async \(\) => \{[\s\S]*?const storedSnapshot = await enqueueCloudWrite\(async \(\) => \{[\s\S]*?const snapshot = getStoredDesignForPersistence\(\);[\s\S]*?designApi\.update\([\s\S]*?designId,[\s\S]*?expectedUpdatedAt: lastCloudRevision[\s\S]*?return \{[\s\S]*?snapshot,[\s\S]*?updatedAt:[\s\S]*?fingerprintStoredDesign\(storedSnapshot\.snapshot\)/,
-  "Cloud autosave should capture its payload, enforce the loaded revision, and fingerprint the acknowledged snapshot."
+  /const timer = setTimeout\(async \(\) => \{[\s\S]*?const storedSnapshot = await enqueueCloudWrite\(async \(\) => \{[\s\S]*?const snapshot = getStoredDesignForPersistence\(\);[\s\S]*?designApi\.update\([\s\S]*?designId,[\s\S]*?expectedUpdatedAt: lastCloudRevision[\s\S]*?return \{[\s\S]*?snapshot,[\s\S]*?updatedAt:[\s\S]*?scheduledEpoch === documentEpochRef\.current[\s\S]*?setLastCloudRevision\(storedSnapshot\.updatedAt\);[\s\S]*?if \(!cancelled\) \{[\s\S]*?fingerprintStoredDesign\(storedSnapshot\.snapshot\)/,
+  "Cloud autosave should capture its payload, enforce the loaded revision, retain every committed revision, and fingerprint only the current acknowledged snapshot."
 );
 
 assert.match(
