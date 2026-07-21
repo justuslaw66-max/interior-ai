@@ -132,6 +132,15 @@ test.describe("3. Save + Reload Persistence", () => {
   }) => {
     test.setTimeout(180_000);
     const seed = await createBetaSeedDesign();
+    let designCreateRequests = 0;
+    page.on("request", (request) => {
+      if (
+        request.method() === "POST" &&
+        new URL(request.url()).pathname === "/api/designs"
+      ) {
+        designCreateRequests += 1;
+      }
+    });
     try {
       await loadSeedDesign(page, seed);
       const loadedFingerprint = await readStableFingerprint(page);
@@ -164,6 +173,7 @@ test.describe("3. Save + Reload Persistence", () => {
       });
       await expect(saveStatus).toHaveAttribute("data-source", "cloud");
       await expect(saveStatus).toContainText("Cloud saved");
+      expect(designCreateRequests).toBe(0);
       const savedFingerprint = await readStableFingerprint(page);
       expect(savedFingerprint).not.toBe(fingerprintDesignSnapshot(seed.snapshot));
       await expectPersistedFingerprint(page, seed.designId, savedFingerprint);
@@ -172,6 +182,27 @@ test.describe("3. Save + Reload Persistence", () => {
       await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
         timeout: 30_000,
       });
+      await expect
+        .poll(() =>
+          page.evaluate(
+            ({ key, designId }) => {
+              const raw = window.localStorage.getItem(key);
+              return raw ? JSON.parse(raw)?.designId === designId : false;
+            },
+            {
+              key: "interior-ai:v1:livingroom-design",
+              designId: seed.designId,
+            },
+          ),
+        )
+        .toBe(true);
+      await expect(page.getByTestId("qa-editor-cloud-design")).toHaveAttribute(
+        "data-design-id",
+        seed.designId,
+        {
+          timeout: 30_000,
+        },
+      );
       const reloadedFingerprint = await readStableFingerprint(page);
       expect(reloadedFingerprint).toMatch(/^[a-f0-9]{8}$/);
       await expect(page.getByTestId("qa-editor-zone-state")).toHaveAttribute(
@@ -189,6 +220,7 @@ test.describe("3. Save + Reload Persistence", () => {
       await expect(saveStatus).toHaveAttribute("data-status", "saved", {
         timeout: 30_000,
       });
+      expect(designCreateRequests).toBe(0);
       const fingerprintBeforeSecondReload = await readStableFingerprint(page);
       await expectPersistedFingerprint(
         page,

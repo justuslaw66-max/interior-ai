@@ -445,6 +445,7 @@ export function useDesignPagePresentationQaFacade({
   const presentationQaLayer: DesignPagePresentationQaLayerProps = {
     project: {
       snapshotFingerprint: qaSnapshotFingerprint,
+      cloudDesignId: state.identity.designId,
       activeRoomId: state.document.snapshot.activeRoomId,
       activeRoomZones: state.document.zones,
       cabinetSchedule: state.qa.cabinetSchedule,

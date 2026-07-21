@@ -28,6 +28,12 @@ import type { DesignSnapshot } from "@/lib/room-types";
 export const DESIGN_PAGE_LOCAL_BACKUP_STORAGE_KEY =
   "interior-ai:v1:livingroom-design";
 
+export type DesignPageCloudLoadResult =
+  | "loaded"
+  | "missing"
+  | "unavailable"
+  | "superseded";
+
 type LocalBackupNormalizationState = Pick<
   NormalizeDesignPageLocalBackupInput["state"],
   "roomWidth" | "roomDepth" | "wallThickness"
@@ -53,7 +59,7 @@ export type UseDesignPageLocalBackupHydrationInput = {
     loadDesign: (
       id: string,
       options?: { notFoundMessage?: string }
-    ) => Promise<boolean>;
+    ) => Promise<DesignPageCloudLoadResult>;
     clearPersistedSnapshotFingerprint: () => void;
   };
 };
@@ -91,6 +97,7 @@ export function useDesignPageLocalBackupHydration(
   input: UseDesignPageLocalBackupHydrationInput
 ): DesignPageLocalBackupHydrationResult {
   const initialInputRef = useRef(input);
+  const hydrationStartedRef = useRef(false);
   const invalidRawRef = useRef<string | null>(null);
   const quarantineKeyRef = useRef<string | null>(null);
   const [recovery, setRecovery] = useState<DesignPageLocalBackupRecoveryState>({
@@ -152,10 +159,14 @@ export function useDesignPageLocalBackupHydration(
       setSavedViews(restored.savedViews);
 
       if (restored.cloudDesignId) {
-        const loaded = await loadDesign(restored.cloudDesignId, {
+        // Keep the validated backup identity stable while its cloud snapshot is
+        // checked. Persistence writers remain gated until hydration completes,
+        // and only a definitive missing/inaccessible response detaches it.
+        setDesignId(restored.cloudDesignId);
+        const loadResult = await loadDesign(restored.cloudDesignId, {
           notFoundMessage: "Cloud design not found; restored local backup",
         });
-        if (!loaded) {
+        if (loadResult === "missing") {
           setDesignId(null);
           setShareToken(null);
           setShareEnabled(false);
@@ -232,6 +243,12 @@ export function useDesignPageLocalBackupHydration(
   useEffect(() => {
     const { configuration: { storageKey }, actions: { setLocalBackupHydrated } } =
       initialInputRef.current;
+
+    // React Strict Mode replays passive mount effects in development. Starting
+    // two cloud restores would let the aborted request clear an identity that
+    // the successful request just restored.
+    if (hydrationStartedRef.current) return;
+    hydrationStartedRef.current = true;
 
     if (typeof window === "undefined") {
       setLocalBackupHydrated(true);

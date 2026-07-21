@@ -10,7 +10,10 @@ import type { DesignItem } from "@/lib/room-types";
 import { useDesignPageCoreShellBaseRegistration } from "@/lib/useDesignPageCoreShellBaseRegistration";
 import { useDesignPageEditorClientLifecycle } from "@/lib/useDesignPageEditorClientLifecycle";
 import { useDesignPageLiveCatalog } from "@/lib/useDesignPageLiveCatalog";
-import type { UseDesignPageLocalBackupHydrationInput } from "@/lib/useDesignPageLocalBackupHydration";
+import type {
+  DesignPageCloudLoadResult,
+  UseDesignPageLocalBackupHydrationInput,
+} from "@/lib/useDesignPageLocalBackupHydration";
 import { useDesignPageWorkspacePaywallRegistration } from "@/lib/useDesignPagePaywallRegistrationFacade";
 import { useDesignPageSnapshotDocumentState } from "@/lib/useDesignPageDocumentStateController";
 import { useDesignPageTransientFeedback } from "@/lib/useDesignPageTransientFeedback";
@@ -122,7 +125,8 @@ export function useDesignPageCoreShellRegistration({
       "loadDesign" | "clearPersistedSnapshotFingerprint"
     >
   >({
-    loadDesign: () => Promise.resolve(false),
+    loadDesign: () =>
+      Promise.resolve<DesignPageCloudLoadResult>("unavailable"),
     clearPersistedSnapshotFingerprint: () => undefined,
   });
   const localBackupPlanningResolverRef = useRef<

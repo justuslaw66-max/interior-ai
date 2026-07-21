@@ -51,6 +51,7 @@ export interface DesignPageHistoryQaSummary {
 
 export interface DesignPageProjectQaMarkersProps {
   snapshotFingerprint: string | null;
+  cloudDesignId: string | null;
   activeRoomId: string;
   activeRoomZones: ZoneMin[];
   cabinetSchedule: CabinetProjectSchedulePackage;
@@ -59,6 +60,7 @@ export interface DesignPageProjectQaMarkersProps {
 
 export function DesignPageProjectQaMarkers({
   snapshotFingerprint,
+  cloudDesignId,
   activeRoomId,
   activeRoomZones,
   cabinetSchedule,
@@ -68,6 +70,11 @@ export function DesignPageProjectQaMarkers({
 
   return (
     <>
+      <div
+        data-testid="qa-editor-cloud-design"
+        data-design-id={cloudDesignId ?? ""}
+        hidden
+      />
       {snapshotFingerprint ? (
         <div
           data-testid="qa-editor-snapshot-fingerprint"

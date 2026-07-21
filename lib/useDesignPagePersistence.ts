@@ -28,6 +28,7 @@ import {
 } from "@/lib/room-persistence";
 import { fingerprintDesignSnapshot } from "@/lib/snapshot-fingerprint";
 import type { DesignItem, DesignSnapshot, ZoneMin } from "@/lib/room-types";
+import type { DesignPageCloudLoadResult } from "@/lib/useDesignPageLocalBackupHydration";
 
 type Budget = "$" | "$$" | "$$$";
 type DesignMode = "homeowner" | "designer";
@@ -279,22 +280,29 @@ export function useDesignPagePersistence({
         notes,
       };
 
-      const data = await enqueueCloudWrite(() => designApi.create(payload));
-      if (data?.id) {
-        setDesignId(data.id);
+      const data = await enqueueCloudWrite(() =>
+        designId
+          ? designApi.update(designId, payload)
+          : designApi.create(payload)
+      );
+      const savedDesignId =
+        designId ??
+        (typeof data?.id === "string" && data.id.trim() ? data.id : null);
+      if (savedDesignId) {
+        setDesignId(savedDesignId);
         setLastCloudRevision(
           typeof data.updatedAt === "string" ? data.updatedAt : null
         );
         setLastDbSaveAt(Date.now());
         setLastPersistedSnapshotFingerprint(fingerprintStoredDesign(storedSnapshot));
         setLastCloudSaveError(null);
-        void fetchShareStatus(data.id);
+        void fetchShareStatus(savedDesignId);
         if (isDesigner) {
-          void enableShare(data.id);
+          void enableShare(savedDesignId);
         }
         if (!firstSaveRef.current) {
           track("design_saved_db", {
-            design_id: data.id,
+            design_id: savedDesignId,
             items_count: items.length,
             room_type: "living_room",
             mode,
@@ -302,7 +310,7 @@ export function useDesignPagePersistence({
           });
           firstSaveRef.current = true;
         }
-        return data.id as string;
+        return savedDesignId;
       }
 
       showRuleToast("Save failed: no design ID returned");
@@ -322,6 +330,7 @@ export function useDesignPagePersistence({
     }
   }, [
     budget,
+    designId,
     enableShare,
     enqueueCloudWrite,
     fetchShareStatus,
@@ -678,14 +687,14 @@ export function useDesignPagePersistence({
     async (
       id: string,
       options?: { notFoundMessage?: string }
-    ): Promise<boolean> => {
+    ): Promise<DesignPageCloudLoadResult> => {
       const requestEpoch = documentEpochRef.current;
       designLoadAbortRef.current?.abort();
       const controller = new AbortController();
       designLoadAbortRef.current = controller;
       try {
         const data = await designApi.get(id, controller.signal);
-        if (requestEpoch !== documentEpochRef.current) return false;
+        if (requestEpoch !== documentEpochRef.current) return "superseded";
         documentEpochRef.current += 1;
         const snapshot = legacyApiToSnapshot(data);
         setLastPersistedSnapshotFingerprint(fingerprintDesignSnapshot(snapshot));
@@ -693,8 +702,13 @@ export function useDesignPagePersistence({
         hydratePersistedFloorPlanState(snapshot, true);
         clearHistory();
         setDesignId(data.id);
-        setLastCloudRevision(
-          typeof data.updatedAt === "string" ? data.updatedAt : null
+        const loadedRevision =
+          typeof data.updatedAt === "string" ? data.updatedAt : null;
+        setLastCloudRevision(loadedRevision);
+        setLastDbSaveAt(
+          loadedRevision && Number.isFinite(Date.parse(loadedRevision))
+            ? Date.parse(loadedRevision)
+            : Date.now()
         );
         const nextMode = data?.mode === "designer" ? "designer" : "homeowner";
         setMode(nextMode);
@@ -714,9 +728,11 @@ export function useDesignPagePersistence({
           void enableShare(data.id);
         }
         showRuleToast(`Loaded ${data.title}`);
-        return true;
+        return "loaded";
       } catch (error) {
-        if (error instanceof DesignApiError && error.kind === "aborted") return false;
+        if (error instanceof DesignApiError && error.kind === "aborted") {
+          return "superseded";
+        }
         showRuleToast(
           error instanceof DesignApiError && error.kind === "forbidden"
             ? "You do not have access to that design"
@@ -726,7 +742,10 @@ export function useDesignPagePersistence({
                 ? error.message
                 : "Failed to load design"
         );
-        return false;
+        return error instanceof DesignApiError &&
+          (error.kind === "forbidden" || error.kind === "not_found")
+          ? "missing"
+          : "unavailable";
       } finally {
         if (designLoadAbortRef.current === controller) {
           designLoadAbortRef.current = null;

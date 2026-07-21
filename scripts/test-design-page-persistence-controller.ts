@@ -93,8 +93,13 @@ assert.match(
 
 assert.match(
   controllerSource,
-  /const snapshot = legacyApiToSnapshot\(data\);[\s\S]*?setLastPersistedSnapshotFingerprint\(fingerprintDesignSnapshot\(snapshot\)\);[\s\S]*?setDesignSnapshot\(snapshot\);/,
-  "Cloud loads should set the persisted fingerprint before applying the loaded snapshot."
+  /const snapshot = legacyApiToSnapshot\(data\);[\s\S]*?setLastPersistedSnapshotFingerprint\(fingerprintDesignSnapshot\(snapshot\)\);[\s\S]*?setDesignSnapshot\(snapshot\);[\s\S]*?setDesignId\(data\.id\);[\s\S]*?setLastCloudRevision\(loadedRevision\);[\s\S]*?setLastDbSaveAt\(/,
+  "Cloud loads should set the persisted fingerprint, identity, revision, and save timestamp."
+);
+assert.match(
+  controllerSource,
+  /requestEpoch !== documentEpochRef\.current\) return "superseded";[\s\S]*?error\.kind === "aborted"[\s\S]*?return "superseded";[\s\S]*?error\.kind === "forbidden" \|\| error\.kind === "not_found"[\s\S]*?\? "missing"[\s\S]*?: "unavailable"/,
+  "Cloud loads should distinguish superseded and transient requests from missing designs."
 );
 
 assert.match(

@@ -732,7 +732,7 @@ assert.match(
 );
 assert.match(
   localBackupHydrationSource,
-  /const initialInputRef = useRef\(input\);[\s\S]*?const restoreRawBackup = useCallback\(async[\s\S]*?normalizeDesignPageLocalBackup\(\{[\s\S]*?setLocalBackupHydrated\(true\);[\s\S]*?useEffect\(\(\) => \{[\s\S]*?if \(!raw\) \{[\s\S]*?setLocalBackupHydrated\(true\);[\s\S]*?void restoreRawBackup\(raw\);[\s\S]*?\}, \[restoreRawBackup\]\);/,
+  /const initialInputRef = useRef\(input\);[\s\S]*?const hydrationStartedRef = useRef\(false\);[\s\S]*?const restoreRawBackup = useCallback\(async[\s\S]*?normalizeDesignPageLocalBackup\(\{[\s\S]*?if \(restored\.cloudDesignId\) \{[\s\S]*?setDesignId\(restored\.cloudDesignId\);[\s\S]*?loadResult === "missing"[\s\S]*?setDesignId\(null\);[\s\S]*?setLocalBackupHydrated\(true\);[\s\S]*?useEffect\(\(\) => \{[\s\S]*?if \(hydrationStartedRef\.current\) return;[\s\S]*?hydrationStartedRef\.current = true;[\s\S]*?if \(!raw\) \{[\s\S]*?setLocalBackupHydrated\(true\);[\s\S]*?void restoreRawBackup\(raw\);[\s\S]*?\}, \[restoreRawBackup\]\);/,
   "The local-backup boundary should retain one-shot restore semantics, release valid or empty hydration, and leave invalid backups blocked for recovery."
 );
 assert.doesNotMatch(
