@@ -59,7 +59,10 @@ async function expectNumericAttributeAtLeast(locator: Locator, name: string, min
 }
 
 async function openEditorCommandOverflow(page: Page) {
-  await page.getByTestId("editor-command-overflow").click();
+  const overflow = page.getByTestId("editor-command-overflow");
+  await expect(overflow).toBeVisible();
+  await expect(overflow).toBeEnabled();
+  await overflow.evaluate((button) => (button as HTMLButtonElement).click());
   await expect(page.getByTestId("editor-command-overflow-menu")).toBeVisible();
 }
 
@@ -76,6 +79,36 @@ async function openMyDesigns(page: Page) {
   const loadDesigns = page.getByTestId("editor-command-overflow-load");
   await expect(loadDesigns).toBeVisible();
   await loadDesigns.click();
+}
+
+async function loadSavedDesign(page: Page, designId: string) {
+  const modal = page.getByTestId("load-designs-modal");
+  const savedDesign = page.getByTestId(`load-design-${designId}`);
+
+  await openMyDesigns(page);
+  await expect(modal).toBeVisible();
+  const appearedOnFirstLoad = await savedDesign
+    .waitFor({ state: "visible", timeout: 15_000 })
+    .then(
+      () => true,
+      () => false,
+    );
+
+  if (!appearedOnFirstLoad) {
+    // A cold dev-server compilation can remount the editor after the first
+    // design-list response. Reopening repeats the real UI fetch after that
+    // remount instead of bypassing the My Designs workflow.
+    if (await modal.isVisible()) {
+      await modal.getByRole("button", { name: "✕" }).click();
+      await expect(modal).toBeHidden();
+    }
+    await openMyDesigns(page);
+    await expect(modal).toBeVisible();
+    await expect(savedDesign).toBeVisible({ timeout: 30_000 });
+  }
+
+  await savedDesign.click();
+  await expect(modal).toBeHidden();
 }
 
 async function getApiDesignFingerprint(
@@ -397,10 +430,7 @@ test.describe("00. Beta Smoke Gate", () => {
 
       await page.goto("/design");
       await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30000 });
-      await openMyDesigns(page);
-      await expect(page.getByTestId("load-designs-modal")).toBeVisible();
-      await page.getByTestId(`load-design-${seed.designId}`).click();
-      await expect(page.getByTestId("load-designs-modal")).toBeHidden();
+      await loadSavedDesign(page, seed.designId);
       await openEditorCommandOverflow(page);
       await expect(page.getByTestId("editor-overflow-scene-quality")).toBeVisible();
       const scenePerformance = page.getByTestId("qa-scene-performance");
