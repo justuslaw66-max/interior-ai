@@ -58,27 +58,29 @@ async function expectNumericAttributeAtLeast(locator: Locator, name: string, min
     .toBeGreaterThanOrEqual(minimum);
 }
 
+async function clickVisibleControl(locator: Locator) {
+  await expect(locator).toBeVisible();
+  await expect(locator).toBeEnabled();
+  await locator.evaluate((control) => (control as HTMLButtonElement).click());
+}
+
 async function openEditorCommandOverflow(page: Page) {
   const overflow = page.getByTestId("editor-command-overflow");
-  await expect(overflow).toBeVisible();
-  await expect(overflow).toBeEnabled();
-  await overflow.evaluate((button) => (button as HTMLButtonElement).click());
+  await clickVisibleControl(overflow);
   await expect(page.getByTestId("editor-command-overflow-menu")).toBeVisible();
 }
 
 async function openMyDesigns(page: Page) {
   const accountButton = page.getByTestId("editor-command-account");
   const accountMenu = page.getByTestId("editor-command-account-menu");
-  await accountButton.click();
+  await clickVisibleControl(accountButton);
   await expect(accountMenu).toBeVisible();
   await expect(page.getByTestId("editor-command-sign-out")).toBeVisible({ timeout: 30000 });
-  await accountButton.click();
-  await expect(accountMenu).toBeHidden();
 
   await openEditorCommandOverflow(page);
+  await expect(accountMenu).toBeHidden();
   const loadDesigns = page.getByTestId("editor-command-overflow-load");
-  await expect(loadDesigns).toBeVisible();
-  await loadDesigns.click();
+  await clickVisibleControl(loadDesigns);
 }
 
 async function loadSavedDesign(page: Page, designId: string) {
@@ -99,7 +101,7 @@ async function loadSavedDesign(page: Page, designId: string) {
     // design-list response. Reopening repeats the real UI fetch after that
     // remount instead of bypassing the My Designs workflow.
     if (await modal.isVisible()) {
-      await modal.getByRole("button", { name: "✕" }).click();
+      await clickVisibleControl(modal.getByRole("button", { name: "✕" }));
       await expect(modal).toBeHidden();
     }
     await openMyDesigns(page);
@@ -107,7 +109,7 @@ async function loadSavedDesign(page: Page, designId: string) {
     await expect(savedDesign).toBeVisible({ timeout: 30_000 });
   }
 
-  await savedDesign.click();
+  await clickVisibleControl(savedDesign);
   await expect(modal).toBeHidden();
 }
 
@@ -167,20 +169,18 @@ test.describe("00. Beta Smoke Gate", () => {
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30000 });
     const betaStartTemplate = page.getByTestId("beta-start-template");
     if (await betaStartTemplate.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await expect(betaStartTemplate).toBeEnabled({ timeout: 30000 });
-      await betaStartTemplate.click();
+      await clickVisibleControl(betaStartTemplate);
       await expect(page.getByTestId("apply-furnished-template-studio")).toBeVisible();
       await expect(page.getByTestId(/plan-template-furnishing-marker-studio-.+/).first()).toBeVisible();
-      await page.getByTestId("apply-furnished-template-studio").click();
+      await clickVisibleControl(page.getByTestId("apply-furnished-template-studio"));
     } else if (
       await page.getByTestId("plan-start-template").isVisible({ timeout: 5000 }).catch(() => false)
     ) {
       const planStartTemplate = page.getByTestId("plan-start-template");
-      await expect(planStartTemplate).toBeEnabled({ timeout: 30000 });
-      await planStartTemplate.click();
+      await clickVisibleControl(planStartTemplate);
       await expect(page.getByTestId("apply-furnished-template-studio")).toBeVisible();
       await expect(page.getByTestId(/plan-template-furnishing-marker-studio-.+/).first()).toBeVisible();
-      await page.getByTestId("apply-furnished-template-studio").click();
+      await clickVisibleControl(page.getByTestId("apply-furnished-template-studio"));
     } else {
       await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("4 rooms");
     }
@@ -200,13 +200,12 @@ test.describe("00. Beta Smoke Gate", () => {
       }
       await route.continue();
     });
-    await page.getByTestId("editor-command-overflow").click();
-    await expect(page.getByTestId("editor-command-overflow-menu")).toBeVisible();
-    await page.getByTestId("beta-feedback-open").click();
+    await openEditorCommandOverflow(page);
+    await clickVisibleControl(page.getByTestId("beta-feedback-open"));
     await expect(page.getByTestId("editor-command-overflow-menu")).toBeHidden();
     await expect(page.getByTestId("beta-feedback-dialog")).toBeVisible();
     await page.getByTestId("beta-feedback-note").fill("Beta smoke feedback capture works.");
-    await page.getByTestId("beta-feedback-submit").click();
+    await clickVisibleControl(page.getByTestId("beta-feedback-submit"));
     await expect(page.getByRole("status")).toContainText("Sent.");
     await expect(page.getByTestId("beta-feedback-report-id")).toHaveText("evt_beta_smoke");
     await expect.poll(() => betaFeedbackPayloads.length).toBe(1);
@@ -236,13 +235,13 @@ test.describe("00. Beta Smoke Gate", () => {
       await openMyDesigns(page);
       await expect(page.getByTestId("load-designs-modal")).toBeVisible();
       await expect(page.getByTestId("load-designs-template-shortcut")).toBeVisible();
-      await page.getByTestId("load-designs-open-templates").click();
+      await clickVisibleControl(page.getByTestId("load-designs-open-templates"));
       await expect(page.getByTestId("load-designs-modal")).toBeHidden();
       await expect(page.getByTestId("starter-floor-plan-picker")).toBeVisible();
       await expect(page.getByTestId("apply-furnished-template-studio")).toBeVisible();
       await openMyDesigns(page);
       await expect(page.getByTestId("load-designs-modal")).toBeVisible();
-      await page.getByTestId(`load-design-${seed.designId}`).click();
+      await clickVisibleControl(page.getByTestId(`load-design-${seed.designId}`));
       await expect(page.getByTestId("load-designs-modal")).toBeHidden();
       const loadedEditorFingerprint = await getStableFingerprint(
         page.getByTestId("qa-editor-snapshot-fingerprint")
