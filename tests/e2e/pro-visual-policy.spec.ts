@@ -323,7 +323,7 @@ test.describe("Pro visual policy", () => {
     test.setTimeout(300_000);
     await mockProPlan(page);
     await page.goto("/design?mode=designer", { waitUntil: "domcontentloaded" });
-    await expect(page.locator('[data-theme="designer"]')).toBeVisible();
+    await expect(page.locator('[data-theme="designer"]')).toBeVisible({ timeout: 30_000 });
     await expect(page.getByTestId("editor-command-bar")).toBeVisible();
     const openStudio = page.getByTestId("open-custom-millwork-studio");
     await expect(openStudio).toBeVisible({ timeout: 30_000 });

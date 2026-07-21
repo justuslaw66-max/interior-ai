@@ -12,6 +12,10 @@ import {
 } from "./beta-seed";
 
 const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000";
+const ADMIN_EMAIL =
+  process.env.PLAYWRIGHT_ADMIN_EMAIL?.trim() ||
+  process.env.ADMIN_EMAILS?.split(",")[0]?.trim() ||
+  "gate-a3-admin@example.test";
 
 async function getFingerprint(locator: Locator) {
   await expect(locator).toHaveAttribute("data-fingerprint", /[a-f0-9]{8}/, { timeout: 20000 });
@@ -147,7 +151,7 @@ test.describe("19. Staging Signoff Evidence", () => {
     expect(reloadedEditorFingerprint).toMatch(/[a-f0-9]{8}/);
 
     const seed = await createBetaSeedDesign({
-      email: process.env.PLAYWRIGHT_ADMIN_EMAIL ?? "gate-a3-admin@example.test",
+      email: ADMIN_EMAIL,
     });
     try {
       await addAuthCookies(page.context(), new URL(page.url()).origin, seed.sessionToken);

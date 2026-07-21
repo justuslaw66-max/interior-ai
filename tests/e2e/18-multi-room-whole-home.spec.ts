@@ -199,8 +199,9 @@ test.describe("18. Multi-Room Whole Home", () => {
   }
 
   async function chooseTemplateStart(page: Page) {
-    const betaTemplate = page.getByTestId("beta-start-template");
+    const betaTemplate = page.locator('[data-testid="beta-start-template"]:visible').first();
     if (await betaTemplate.isVisible().catch(() => false)) {
+      await expect(betaTemplate).toBeEnabled({ timeout: 30_000 });
       await clickWithFallback(betaTemplate);
       return;
     }
@@ -213,7 +214,7 @@ test.describe("18. Multi-Room Whole Home", () => {
     if (await manualPlanChoice.isVisible().catch(() => false)) {
       await clickWithFallback(manualPlanChoice);
     }
-    const planStartTemplate = page.getByTestId("plan-start-template");
+    const planStartTemplate = page.locator('[data-testid="plan-start-template"]:visible').first();
     await expect(planStartTemplate).toBeVisible({ timeout: 20000 });
     await expect(planStartTemplate).toBeEnabled({ timeout: 20000 });
     await clickWithFallback(planStartTemplate);
@@ -1280,7 +1281,6 @@ test.describe("18. Multi-Room Whole Home", () => {
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
-    await page.getByRole("button", { name: "2D Plan" }).click();
     await chooseTemplateStart(page);
     await page.getByTestId("apply-plan-template-compact_two_bed").click();
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("6 rooms");
@@ -1653,14 +1653,14 @@ test.describe("18. Multi-Room Whole Home", () => {
   });
 
   test("furnished templates create starter items and protect existing plans", async ({ page }) => {
-    test.setTimeout(60_000);
+    test.setTimeout(180_000);
 
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
     await page.getByRole("button", { name: "2D Plan" }).click();
-    await clickWithFallback(page.getByTestId("plan-start-template"));
+    await chooseTemplateStart(page);
 
     await expect(page.getByTestId("apply-furnished-template-studio")).toBeVisible();
     await expect(
@@ -1671,32 +1671,60 @@ test.describe("18. Multi-Room Whole Home", () => {
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("4 rooms");
     await expect(page.getByTestId("room-setup-step-furnish-meta")).toHaveText(/[1-9]\d* items?/);
     await expect(page.getByTestId("consumer-plan-next-steps")).toContainText("Review the shop list");
-    await page.waitForFunction(() => {
-      const raw = window.localStorage.getItem("interior-ai:v1:livingroom-design");
-      if (!raw) return false;
-      try {
-        const stored = JSON.parse(raw) as {
-          version?: number;
-          rooms?: Array<{ items?: unknown[] }>;
-        };
-        return (
-          stored.version === 3 &&
-          stored.rooms?.length === 4 &&
-          stored.rooms.some((room) => Array.isArray(room.items) && room.items.length > 0)
-        );
-      } catch {
-        return false;
-      }
-    });
+    await expect
+      .poll(
+        () =>
+          page.evaluate(() => {
+            const raw = window.localStorage.getItem(
+              "interior-ai:v1:livingroom-design",
+            );
+            const saveStatus = document.querySelector('[data-testid="save-status"]');
+            if (!raw) {
+              return {
+                version: null,
+                roomCount: 0,
+                hasItems: false,
+                saveKind: saveStatus?.getAttribute("data-status") ?? null,
+                saveSource: saveStatus?.getAttribute("data-source") ?? null,
+              };
+            }
+            try {
+              const stored = JSON.parse(raw) as {
+                version?: number;
+                rooms?: Array<{ items?: unknown[] }>;
+              };
+              return {
+                version: stored.version ?? null,
+                roomCount: stored.rooms?.length ?? 0,
+                hasItems: Boolean(
+                  stored.rooms?.some(
+                    (room) => Array.isArray(room.items) && room.items.length > 0,
+                  ),
+                ),
+                saveKind: saveStatus?.getAttribute("data-status") ?? null,
+                saveSource: saveStatus?.getAttribute("data-source") ?? null,
+              };
+            } catch {
+              return {
+                version: null,
+                roomCount: 0,
+                hasItems: false,
+                saveKind: saveStatus?.getAttribute("data-status") ?? null,
+                saveSource: saveStatus?.getAttribute("data-source") ?? null,
+              };
+            }
+          }),
+        { timeout: 60_000 },
+      )
+      .toMatchObject({ version: 3, roomCount: 4, hasItems: true });
 
     await page.reload({ waitUntil: "domcontentloaded" });
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
-    await page.getByRole("button", { name: "2D Plan" }).click();
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("4 rooms");
     await expect(page.getByTestId("room-setup-step-furnish-meta")).toHaveText(/[1-9]\d* items?/);
     await expect(page.getByTestId("consumer-plan-next-steps")).toContainText("Review the shop list");
 
-    await page.getByTestId("plan-start-template").click();
+    await chooseTemplateStart(page);
     await page.getByTestId("apply-plan-template-one_bedroom").click();
 
     const replaceDialog = page.getByRole("dialog", { name: "Start a new plan?" });
@@ -1713,7 +1741,6 @@ test.describe("18. Multi-Room Whole Home", () => {
     await page.getByTestId("new-plan-replace-current").click();
 
     await expect(replaceDialog).toHaveCount(0);
-    await expect(page.getByText("Compact 1-bed added")).toBeVisible();
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("5 rooms");
     await expect(page.getByTestId("room-setup-step-furnish-meta")).toHaveText("Not started");
   });

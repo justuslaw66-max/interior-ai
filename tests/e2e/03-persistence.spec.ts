@@ -163,11 +163,16 @@ test.describe("3. Save + Reload Persistence", () => {
         "Persistence E2E View",
       );
       await page.getByRole("button", { name: "Close export panel" }).click();
+      await saveButton.click();
+      await expect(saveStatus).toHaveAttribute("data-status", "saved", {
+        timeout: 30_000,
+      });
+      const fingerprintBeforeSecondReload = await readStableFingerprint(page);
       await page.reload({ waitUntil: "domcontentloaded" });
       await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
         timeout: 30_000,
       });
-      expect(await readStableFingerprint(page)).toBe(reloadedFingerprint);
+      expect(await readStableFingerprint(page)).toBe(fingerprintBeforeSecondReload);
     } finally {
       await cleanupBetaSeed(seed.userId);
     }

@@ -297,7 +297,7 @@ test.describe("00. Beta Smoke Gate", () => {
       expect(duplicatedFingerprint).toBe(cloudFingerprint);
 
       await page.getByTestId("share-export-pack").click();
-      await expect(page).toHaveURL(/\/export$/);
+      await expect(page).toHaveURL(/\/export$/, { timeout: 30_000 });
       await expect(page.getByText("Export Overview")).toBeVisible({ timeout: 30000 });
       await expectFingerprint(page.getByTestId("qa-export-snapshot-fingerprint"), cloudFingerprint);
       stagingSmokeEvidence.exportSnapshotFingerprint = cloudFingerprint;

@@ -40,8 +40,9 @@ async function activateWithKeyboard(locator: Locator) {
 }
 
 async function chooseTemplateStart(page: Page) {
-  const betaTemplate = page.getByTestId("beta-start-template");
+  const betaTemplate = page.locator('[data-testid="beta-start-template"]:visible').first();
   if (await betaTemplate.isVisible().catch(() => false)) {
+    await expect(betaTemplate).toBeEnabled({ timeout: 30_000 });
     await clickWithDomFallback(betaTemplate);
     return;
   }
@@ -58,8 +59,10 @@ async function chooseTemplateStart(page: Page) {
     await clickWithDomFallback(manualPlanChoice);
   }
 
-  await expect(page.getByTestId("plan-start-template")).toBeVisible();
-  await clickWithDomFallback(page.getByTestId("plan-start-template"));
+  const planStartTemplate = page.locator('[data-testid="plan-start-template"]:visible').first();
+  await expect(planStartTemplate).toBeVisible({ timeout: 30_000 });
+  await expect(planStartTemplate).toBeEnabled({ timeout: 30_000 });
+  await clickWithDomFallback(planStartTemplate);
 }
 
 async function readStoredZoneState(page: Page): Promise<StoredZoneState | null> {
@@ -224,7 +227,9 @@ async function buildStoredFixtureForLocalHydration(page: Page) {
 
 async function createManualZoneInBedroom(page: Page) {
   await chooseTemplateStart(page);
-  await page.getByTestId("add-room-template-bedroom").click();
+  const addBedroom = page.getByTestId("add-room-template-bedroom");
+  await expect(addBedroom).toBeVisible({ timeout: 30_000 });
+  await addBedroom.click();
 
   const catalogReady = await waitForCatalogReady(page);
   expect(catalogReady, "The live catalog must be ready for the zone fixture").toBe(
