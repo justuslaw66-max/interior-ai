@@ -188,48 +188,52 @@ export function SelectedItemPanel({
             aria-label="Product availability"
             className={
               dark
-                ? "designer-raised mt-3 rounded-lg border border-amber-300/20 p-3"
-                : "mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3"
+                ? "designer-raised mt-2 rounded-lg border border-amber-300/20 px-2.5 py-2"
+                : "mt-2 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-2"
             }
           >
-            <div
-              className={
-                dark
-                  ? "text-xs font-semibold uppercase tracking-[0.08em] text-amber-100"
-                  : "text-xs font-semibold uppercase tracking-[0.08em] text-amber-900"
-              }
-            >
-              Availability
+            <div className="flex items-center gap-2">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <span
+                    aria-hidden="true"
+                    className={`h-2 w-2 shrink-0 rounded-full ${
+                      dark ? "bg-amber-300" : "bg-amber-500"
+                    }`}
+                  />
+                  <span
+                    className={
+                      dark
+                        ? "text-xs font-semibold text-neutral-100"
+                        : "text-xs font-semibold text-neutral-900"
+                    }
+                  >
+                    Availability
+                  </span>
+                </div>
+                <p
+                  className={
+                    dark
+                      ? "mt-0.5 text-[11px] leading-4 text-neutral-400"
+                      : "mt-0.5 text-[11px] leading-4 text-neutral-600"
+                  }
+                >
+                  Current stock and delivery on retailer site.
+                </p>
+              </div>
+              <button
+                type="button"
+                aria-label={`Check stock at ${affiliateCommerce.retailer}`}
+                className={
+                  dark
+                    ? "designer-control shrink-0 rounded-md border px-2.5 py-1.5 text-xs font-semibold text-neutral-100"
+                    : "shrink-0 rounded-md border border-amber-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-amber-950 hover:bg-amber-100"
+                }
+                onClick={actions.onOpenCommerce}
+              >
+                Check stock <span aria-hidden="true">↗</span>
+              </button>
             </div>
-            <div
-              className={
-                dark
-                  ? "mt-1 text-sm font-semibold text-neutral-100"
-                  : "mt-1 text-sm font-semibold text-neutral-900"
-              }
-            >
-              Check current stock at {affiliateCommerce.retailer}
-            </div>
-            <p
-              className={
-                dark
-                  ? "mt-1 text-xs leading-5 text-neutral-400"
-                  : "mt-1 text-xs leading-5 text-neutral-600"
-              }
-            >
-              Stock and delivery timing can vary by finish and location. The retailer page is the live source of truth.
-            </p>
-            <button
-              type="button"
-              className={
-                dark
-                  ? "designer-control mt-2 w-full rounded-lg border px-3 py-2 text-sm font-semibold text-neutral-100"
-                  : "mt-2 w-full rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm font-semibold text-amber-950 hover:bg-amber-100"
-              }
-              onClick={actions.onOpenCommerce}
-            >
-              Check live availability at {affiliateCommerce.retailer}
-            </button>
           </section>
         ) : null}
 

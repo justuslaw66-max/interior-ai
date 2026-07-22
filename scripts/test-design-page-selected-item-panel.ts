@@ -225,8 +225,8 @@ assert.match(
 );
 assert.match(
   panelSource,
-  /data-testid="selected-item-availability"[\s\S]*?Check current stock at \{affiliateCommerce\.retailer\}[\s\S]*?retailer page is the live source of truth[\s\S]*?Check live availability at \{affiliateCommerce\.retailer\}/,
-  "Affiliate products should disclose availability separately and link to the retailer as the live source of truth.",
+  /data-testid="selected-item-availability"[\s\S]*?Current stock and delivery on retailer site[\s\S]*?aria-label=\{`Check stock at \$\{affiliateCommerce\.retailer\}`\}[\s\S]*?Check stock/,
+  "Affiliate products should disclose availability in a compact row and link to the retailer as the live source of truth.",
 );
 assert.match(
   panelSource,
@@ -260,8 +260,8 @@ assert.match(
 for (const label of [
   "Swap to cheaper",
   "Upgrade this item",
-  "Check current stock at",
-  "Check live availability at",
+  "Current stock and delivery on retailer site",
+  "Check stock at",
   "View retailer",
   "Buy now",
   "Needs commerce review",

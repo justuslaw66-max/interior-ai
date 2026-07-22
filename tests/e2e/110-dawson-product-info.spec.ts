@@ -31,10 +31,11 @@ test.describe("110. Dawson Product Info", () => {
     const availability = page.getByTestId("selected-item-availability");
     await expect(availability).toBeVisible();
     await expect(availability).toContainText("Availability");
-    await expect(availability).toContainText(/Check current stock at Castlery/i);
-    await expect(availability).toContainText(/retailer page is the live source of truth/i);
+    await expect(availability).toContainText(
+      /Current stock and delivery on retailer site/i,
+    );
     const liveAvailabilityButton = availability.getByRole("button", {
-      name: /Check live availability at Castlery/i,
+      name: /Check stock at Castlery/i,
     });
     await expect(liveAvailabilityButton).toBeVisible();
     await page.context().route(/^https:\/\/www\.castlery\.com\/sg\/products\//, (route) =>
