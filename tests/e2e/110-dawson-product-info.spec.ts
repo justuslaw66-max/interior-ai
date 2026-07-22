@@ -30,12 +30,10 @@ test.describe("110. Dawson Product Info", () => {
     await expect(page.getByText(/Dawson 3 Seater Sofa|Dawson/i).first()).toBeVisible();
     const availability = page.getByTestId("selected-item-availability");
     await expect(availability).toBeVisible();
-    await expect(availability).toContainText("Availability");
-    await expect(availability).toContainText(
-      /Current stock and delivery on retailer site/i,
-    );
+    await expect(availability).toContainText("External retailer");
+    await expect(availability).toContainText("Check stock");
     const liveAvailabilityButton = availability.getByRole("button", {
-      name: /Check stock at Castlery/i,
+      name: /Check current stock and delivery at Castlery/i,
     });
     await expect(liveAvailabilityButton).toBeVisible();
     await page.context().route(/^https:\/\/www\.castlery\.com\/sg\/products\//, (route) =>

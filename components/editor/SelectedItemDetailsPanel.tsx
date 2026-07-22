@@ -44,6 +44,7 @@ type SelectedItemDetailsPanelProps = {
   onSnapToWall: () => void;
   onNudge: (deltaX: number, deltaZ: number) => void;
   onSetPosition: (x: number, z: number) => void;
+  onCheckRetailerStock?: () => void;
   adjustableHangingHeight?: {
     valueCm: number;
     minCm: number;
@@ -87,6 +88,7 @@ export default function SelectedItemDetailsPanel({
   onSnapToWall,
   onNudge,
   onSetPosition,
+  onCheckRetailerStock,
   adjustableHangingHeight,
   onAdjustHangingHeight,
   onApplyStyleAlternative,
@@ -174,15 +176,39 @@ export default function SelectedItemDetailsPanel({
         </div>
       )}
 
-      {product.commerce.type === "shopify" ? (
-        <span className="inline-flex rounded-full bg-green-100 px-2 py-1 text-xs text-green-700">
-          Buy on this site
-        </span>
-      ) : (
-        <span className="inline-flex rounded-full bg-blue-100 px-2 py-1 text-xs text-blue-700">
-          External retailer
-        </span>
-      )}
+      <div
+        className="flex flex-wrap items-center gap-1.5"
+        data-testid={
+          product.commerce.type === "affiliate"
+            ? "selected-item-availability"
+            : undefined
+        }
+      >
+        {product.commerce.type === "shopify" ? (
+          <span className="inline-flex rounded-full bg-green-100 px-2 py-1 text-xs text-green-700">
+            Buy on this site
+          </span>
+        ) : (
+          <span className="inline-flex rounded-full bg-blue-100 px-2 py-1 text-xs text-blue-700">
+            External retailer
+          </span>
+        )}
+        {product.commerce.type === "affiliate" && onCheckRetailerStock ? (
+          <button
+            type="button"
+            aria-label={`Check current stock and delivery at ${product.commerce.data.retailer}`}
+            title="Current stock and delivery are confirmed on the retailer site"
+            className={
+              dark
+                ? "designer-control inline-flex items-center rounded-full border px-2 py-1 text-xs font-semibold text-amber-100"
+                : "inline-flex items-center rounded-full border border-amber-300 bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-900 hover:bg-amber-100"
+            }
+            onClick={onCheckRetailerStock}
+          >
+            Check stock <span aria-hidden="true">↗</span>
+          </button>
+        ) : null}
+      </div>
 
       <div className="pt-1">
         <div className="grid grid-cols-2 gap-2">

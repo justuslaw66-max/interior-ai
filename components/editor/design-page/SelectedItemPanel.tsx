@@ -136,10 +136,6 @@ export function SelectedItemPanel({
   const { dark, isDesigner, isClientPreview, canEdit } = configuration;
   const commerceAvailable =
     state.commerceType === "affiliate" || state.commerceType === "shopify";
-  const affiliateCommerce =
-    state.details.product.commerce.type === "affiliate"
-      ? state.details.product.commerce.data
-      : null;
 
   return (
     <div
@@ -178,64 +174,14 @@ export function SelectedItemPanel({
           dark={dark}
           isDesigner={isDesigner}
           canEdit={canEdit}
+          onCheckRetailerStock={
+            state.details.product.commerce.type === "affiliate"
+              ? actions.onOpenCommerce
+              : undefined
+          }
           {...state.details}
           {...actions.details}
         />
-
-        {affiliateCommerce ? (
-          <section
-            data-testid="selected-item-availability"
-            aria-label="Product availability"
-            className={
-              dark
-                ? "designer-raised mt-2 rounded-lg border border-amber-300/20 px-2.5 py-2"
-                : "mt-2 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-2"
-            }
-          >
-            <div className="flex items-center gap-2">
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5">
-                  <span
-                    aria-hidden="true"
-                    className={`h-2 w-2 shrink-0 rounded-full ${
-                      dark ? "bg-amber-300" : "bg-amber-500"
-                    }`}
-                  />
-                  <span
-                    className={
-                      dark
-                        ? "text-xs font-semibold text-neutral-100"
-                        : "text-xs font-semibold text-neutral-900"
-                    }
-                  >
-                    Availability
-                  </span>
-                </div>
-                <p
-                  className={
-                    dark
-                      ? "mt-0.5 text-[11px] leading-4 text-neutral-400"
-                      : "mt-0.5 text-[11px] leading-4 text-neutral-600"
-                  }
-                >
-                  Current stock and delivery on retailer site.
-                </p>
-              </div>
-              <button
-                type="button"
-                aria-label={`Check stock at ${affiliateCommerce.retailer}`}
-                className={
-                  dark
-                    ? "designer-control shrink-0 rounded-md border px-2.5 py-1.5 text-xs font-semibold text-neutral-100"
-                    : "shrink-0 rounded-md border border-amber-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-amber-950 hover:bg-amber-100"
-                }
-                onClick={actions.onOpenCommerce}
-              >
-                Check stock <span aria-hidden="true">↗</span>
-              </button>
-            </div>
-          </section>
-        ) : null}
 
         {state.rotation ? (
           <SelectedItemRotationControls

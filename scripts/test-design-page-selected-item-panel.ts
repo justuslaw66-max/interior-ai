@@ -15,6 +15,10 @@ const workspaceSource = readSource(
 const panelSource = readSource(
   "components/editor/design-page/SelectedItemPanel.tsx",
 );
+const detailsPanelSource = readSource(
+  "components/editor/SelectedItemDetailsPanel.tsx",
+);
+const selectedItemSource = `${panelSource}\n${detailsPanelSource}`;
 const panelRegionSource = readSource(
   "components/editor/design-page/DesignPagePanelRegion.tsx",
 );
@@ -224,14 +228,14 @@ assert.match(
   "The Selected Item heading should remain sticky while the inspector scrolls.",
 );
 assert.match(
-  panelSource,
-  /data-testid="selected-item-availability"[\s\S]*?Current stock and delivery on retailer site[\s\S]*?aria-label=\{`Check stock at \$\{affiliateCommerce\.retailer\}`\}[\s\S]*?Check stock/,
-  "Affiliate products should disclose availability in a compact row and link to the retailer as the live source of truth.",
+  detailsPanelSource,
+  /data-testid=\{[\s\S]*?"selected-item-availability"[\s\S]*?External retailer[\s\S]*?Check current stock and delivery at \$\{product\.commerce\.data\.retailer\}[\s\S]*?Check stock/,
+  "Affiliate products should place a compact stock action beside the external-retailer badge.",
 );
 assert.match(
   panelSource,
-  /state\.details\.product\.commerce\.type === "affiliate"[\s\S]*?state\.details\.product\.commerce\.data/,
-  "The availability disclosure should use the selected product's resolved affiliate retailer.",
+  /onCheckRetailerStock=\{[\s\S]*?state\.details\.product\.commerce\.type === "affiliate"[\s\S]*?actions\.onOpenCommerce/,
+  "The external-retailer stock action should use the selected-item commerce handler.",
 );
 
 for (const childName of [
@@ -260,8 +264,8 @@ assert.match(
 for (const label of [
   "Swap to cheaper",
   "Upgrade this item",
-  "Current stock and delivery on retailer site",
-  "Check stock at",
+  "Check current stock and delivery at",
+  "Check stock",
   "View retailer",
   "Buy now",
   "Needs commerce review",
@@ -270,7 +274,7 @@ for (const label of [
   "Remove",
 ] as const) {
   assert.match(
-    panelSource,
+    selectedItemSource,
     new RegExp(label),
     `The selected-item panel should preserve the ${label} commerce/action copy.`,
   );
