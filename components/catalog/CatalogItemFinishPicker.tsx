@@ -1,5 +1,8 @@
 import { inferCollectionType, shouldShowCollectionGrouping } from "@/lib/catalog/variant-normalization";
 
+type MaterialType = "Fabric" | "Leather" | "Wood";
+type CollectionType = "stocked" | "custom";
+
 type FinishOption = {
   id: string;
   productId?: string;
@@ -7,7 +10,7 @@ type FinishOption = {
   label: string;
   swatchHex?: string;
   swatchTextureUrl?: string;
-  materialType: "Fabric" | "Leather" | "Wood";
+  materialType: MaterialType;
   collectionType?: string;
   finishCode?: string;
 };
@@ -18,132 +21,125 @@ type Props = {
   onSetFinish: (finishId: string, finish: FinishOption) => void;
 };
 
+const COLLECTION_TYPES: CollectionType[] = ["stocked", "custom"];
+const UPHOLSTERY_TYPES: Array<Exclude<MaterialType, "Wood">> = ["Fabric", "Leather"];
+
+function getMaterialLabel(materialType: MaterialType): string {
+  if (materialType === "Wood") return "Wood colour";
+  return `${materialType} colour`;
+}
+
+function getCollectionLabel(collectionType: CollectionType, materialType: MaterialType): string {
+  const collectionLabel = collectionType === "stocked" ? "Stocked" : "Custom";
+  const materialLabel =
+    materialType === "Fabric" ? "Fabrics" : materialType === "Leather" ? "Leathers" : "Finishes";
+  return `${collectionLabel} ${materialLabel}:`;
+}
+
 export default function CatalogItemFinishPicker({ finishOptions, activeFinishId, onSetFinish }: Props) {
   if (finishOptions.length === 0) return null;
 
-  const selectedFinish = finishOptions.find(
-    (finish) => finish.id === activeFinishId || finish.variantId === activeFinishId
+  const isActiveFinish = (finish: FinishOption) =>
+    finish.id === activeFinishId || finish.variantId === activeFinishId;
+  const resolveCollectionType = (finish: FinishOption) =>
+    inferCollectionType(finish.collectionType, finish.finishCode ?? finish.id ?? finish.label);
+  const selectedFinish = finishOptions.find(isActiveFinish);
+  const shouldShowCollectionGroups = shouldShowCollectionGrouping(
+    finishOptions.map(resolveCollectionType)
   );
-  const resolvedCollectionTypes = finishOptions.map((finish) =>
-    inferCollectionType(finish.collectionType, finish.finishCode ?? finish.id ?? finish.label)
+  const upholsteryMaterialTypes = UPHOLSTERY_TYPES.filter((materialType) =>
+    finishOptions.some((finish) => finish.materialType === materialType)
   );
-  const shouldShowCollectionGroups = shouldShowCollectionGrouping(resolvedCollectionTypes);
+  const activeUpholsteryMaterialType =
+    selectedFinish && selectedFinish.materialType !== "Wood"
+      ? selectedFinish.materialType
+      : upholsteryMaterialTypes[0];
+  const activeCollectionType = selectedFinish ? resolveCollectionType(selectedFinish) : undefined;
 
-  // Group by collectionType first, then by materialType when meaningful.
-  const collectionTypes = ["stocked", "custom"];
-  const materialTypes: Array<"Fabric" | "Leather" | "Wood"> = ["Fabric", "Wood", "Leather"];
-
-  const getMaterialLabel = (materialType: "Fabric" | "Leather" | "Wood") =>
-    materialType === "Wood" ? "Wood colour" : materialType === "Fabric" ? "Fabric colour" : "Leather";
-
-  const renderSwatchGroup = (
-    collectionKey: string,
-    materialGroup: {
-      materialType: "Fabric" | "Leather" | "Wood";
-      items: FinishOption[];
-    }
-  ) => (
-    <div key={`${collectionKey}-${materialGroup.materialType}`} className="mt-3 rounded-2xl border border-neutral-100 bg-white p-3">
-      <div className="flex items-center justify-between gap-2">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-neutral-500">
-          {getMaterialLabel(materialGroup.materialType)}
-        </div>
-        <div className="text-[11px] text-neutral-500">
-          {materialGroup.items.length} option{materialGroup.items.length === 1 ? "" : "s"}
-        </div>
-      </div>
-      <div className="mt-3 grid grid-cols-4 gap-2.5">
-        {materialGroup.items.map((finish, index) => {
-          const active = finish.id === activeFinishId;
-          return (
-            <button
-              key={`${collectionKey}-${materialGroup.materialType}-${finish.id}-${index}`}
-              type="button"
-              onClick={() => onSetFinish(finish.id, finish)}
-              data-testid={`catalog-finish-option-${finish.id}`}
-              title={finish.label}
-              aria-label={finish.label}
-              aria-pressed={active}
-              className={`group relative h-16 w-full overflow-hidden rounded-xl border shadow-sm transition ${
-                active
-                  ? "border-neutral-950 ring-2 ring-neutral-950/20"
-                  : "border-neutral-200 hover:border-neutral-400 hover:shadow"
-              }`}
-              style={{
-                backgroundColor: finish.swatchHex ?? "#d1d5db",
-                backgroundImage: finish.swatchTextureUrl ? `url(${finish.swatchTextureUrl})` : undefined,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-              }}
-            >
-              <span className="sr-only">{finish.label}</span>
-              {active ? (
-                <>
-                  <span className="pointer-events-none absolute inset-0 rounded-xl shadow-[inset_0_0_0_1px_rgba(255,255,255,0.75)]" />
-                  <span className="pointer-events-none absolute bottom-0 left-0 right-0 bg-neutral-950/85 px-1 py-0.5 text-center text-[9px] font-semibold uppercase tracking-wide text-white">
-                    Selected
-                  </span>
-                </>
-              ) : null}
-            </button>
-          );
-        })}
-      </div>
-      {(() => {
-        const selectedInGroup = materialGroup.items.find((finish) => finish.id === activeFinishId);
-        if (!selectedInGroup) return null;
+  const renderSwatches = (sectionKey: string, items: FinishOption[]) => (
+    <div className="mt-3 grid grid-cols-4 gap-2.5">
+      {items.map((finish, index) => {
+        const active = isActiveFinish(finish);
         return (
-          <div className="mt-2 rounded-lg bg-neutral-50 px-2.5 py-2 text-[11px] text-neutral-600">
-            <span className="font-semibold text-neutral-900">Selected:</span> {selectedInGroup.label}
-          </div>
+          <button
+            key={`${sectionKey}-${finish.id}-${index}`}
+            type="button"
+            onClick={() => onSetFinish(finish.id, finish)}
+            data-testid={`catalog-finish-option-${finish.id}`}
+            title={finish.label}
+            aria-label={finish.label}
+            aria-pressed={active}
+            className={`group relative h-16 w-full overflow-hidden rounded-xl border shadow-sm transition ${
+              active
+                ? "border-neutral-950 ring-2 ring-neutral-950/20"
+                : "border-neutral-200 hover:border-neutral-400 hover:shadow"
+            }`}
+            style={{
+              backgroundColor: finish.swatchHex ?? "#d1d5db",
+              backgroundImage: finish.swatchTextureUrl ? `url(${finish.swatchTextureUrl})` : undefined,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          >
+            <span className="sr-only">{finish.label}</span>
+            {active ? (
+              <>
+                <span className="pointer-events-none absolute inset-0 rounded-xl shadow-[inset_0_0_0_1px_rgba(255,255,255,0.75)]" />
+                <span className="pointer-events-none absolute bottom-0 left-0 right-0 bg-neutral-950/85 px-1 py-0.5 text-center text-[9px] font-semibold uppercase tracking-wide text-white">
+                  Selected
+                </span>
+              </>
+            ) : null}
+          </button>
         );
-      })()}
+      })}
     </div>
   );
 
-  const buildMaterialGroups = (items: FinishOption[]) => {
-    const itemsByMaterial = materialTypes
-      .map((materialType) => ({
-        materialType,
-        items: items.filter((opt) => (opt.materialType ?? "Fabric") === materialType),
-      }))
-      .filter((group) => group.items.length > 0);
+  const renderFinishSections = (materialType: MaterialType, items: FinishOption[]) => {
+    const sections = shouldShowCollectionGroups
+      ? COLLECTION_TYPES.map((collectionType) => ({
+          collectionType,
+          items: items.filter((finish) => resolveCollectionType(finish) === collectionType),
+        })).filter((section) => section.items.length > 0)
+      : [{ collectionType: null, items }];
 
-    if (itemsByMaterial.length > 0) return itemsByMaterial;
-    return [{ materialType: "Fabric" as const, items }];
+    return sections.map((section) => {
+      const sectionKey = `${section.collectionType ?? "all"}-${materialType.toLowerCase()}`;
+      return (
+        <section
+          key={sectionKey}
+          className="mt-4"
+          data-testid={`catalog-finish-section-${sectionKey}`}
+        >
+          <div className="flex items-baseline justify-between gap-3">
+            <h4 className="text-sm font-semibold text-[#4b2635]">
+              {section.collectionType
+                ? getCollectionLabel(section.collectionType, materialType)
+                : getMaterialLabel(materialType)}
+            </h4>
+            <span className="text-[11px] text-neutral-500">
+              {section.items.length} option{section.items.length === 1 ? "" : "s"}
+            </span>
+          </div>
+          {section.collectionType === "custom" ? (
+            <p className="mt-1 text-xs leading-relaxed text-neutral-600">
+              Create a piece made just for you in one of our custom {materialType.toLowerCase()}s.
+            </p>
+          ) : null}
+          {renderSwatches(sectionKey, section.items)}
+        </section>
+      );
+    });
   };
-  
-  const grouped = shouldShowCollectionGroups
-    ? collectionTypes
-        .map((collectionType) => {
-          const itemsByCollection = finishOptions.filter(
-            (opt) =>
-              inferCollectionType(opt.collectionType, opt.finishCode ?? opt.id ?? opt.label) ===
-              collectionType
-          );
-          if (itemsByCollection.length === 0) return null;
 
-          return {
-            collectionType,
-            materialGroups: buildMaterialGroups(itemsByCollection),
-          };
-        })
-        .filter((group) => group !== null) as Array<{
-          collectionType: string;
-          materialGroups: Array<{
-            materialType: "Fabric" | "Leather" | "Wood";
-            items: FinishOption[];
-          }>;
-        }>
-    : [
-        {
-          collectionType: null,
-          materialGroups: buildMaterialGroups(finishOptions),
-        },
-      ];
+  const activeUpholsteryOptions = activeUpholsteryMaterialType
+    ? finishOptions.filter((finish) => finish.materialType === activeUpholsteryMaterialType)
+    : [];
+  const woodOptions = finishOptions.filter((finish) => finish.materialType === "Wood");
 
   return (
-    <div>
+    <div data-testid="catalog-finish-picker">
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">
@@ -157,66 +153,47 @@ export default function CatalogItemFinishPicker({ finishOptions, activeFinishId,
           Variant-safe
         </div>
       </div>
-      {grouped.map((collectionGroup) => (
-        <div key={collectionGroup.collectionType ?? "all"} className="mt-3">
-          {collectionGroup.collectionType ? (
-            <div className="text-[10px] font-semibold text-neutral-600 uppercase tracking-wide">
-              {collectionGroup.collectionType === "stocked" ? "Stocked" : "Custom"}
-            </div>
-          ) : null}
-          
-          {(() => {
-            const collectionKey = collectionGroup.collectionType ?? "all";
-            const upholsteryGroups = collectionGroup.materialGroups.filter(
-              (group) => group.materialType === "Fabric" || group.materialType === "Leather"
+
+      {upholsteryMaterialTypes.length > 1 && activeUpholsteryMaterialType ? (
+        <div className="mt-4 grid grid-cols-2 gap-2" role="tablist" aria-label="Material">
+          {upholsteryMaterialTypes.map((materialType) => {
+            const active = materialType === activeUpholsteryMaterialType;
+            const matchingOptions = finishOptions.filter(
+              (finish) => finish.materialType === materialType
             );
-            const woodGroups = collectionGroup.materialGroups.filter((group) => group.materialType === "Wood");
-            const activeUpholsteryGroup =
-              upholsteryGroups.find((group) =>
-                group.items.some((finish) => finish.id === activeFinishId)
-              ) ?? upholsteryGroups[0];
+            const nextFinish =
+              matchingOptions.find(
+                (finish) => resolveCollectionType(finish) === activeCollectionType
+              ) ?? matchingOptions[0];
 
             return (
-              <>
-                {upholsteryGroups.length > 1 && activeUpholsteryGroup ? (
-                  <div className="mt-3">
-                    <div className="grid grid-cols-2 gap-2" role="tablist" aria-label="Material">
-                      {upholsteryGroups.map((materialGroup) => {
-                        const active = materialGroup.materialType === activeUpholsteryGroup.materialType;
-                        const firstFinish = materialGroup.items[0];
-                        return (
-                          <button
-                            key={`${collectionKey}-material-tab-${materialGroup.materialType}`}
-                            type="button"
-                            role="tab"
-                            aria-selected={active}
-                            onClick={() => {
-                              if (firstFinish) onSetFinish(firstFinish.id, firstFinish);
-                            }}
-                            className={[
-                              "rounded-full border px-3 py-2 text-xs font-semibold transition",
-                              active
-                                ? "border-[#5a2135] bg-[#5a2135] text-white"
-                                : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-400",
-                            ].join(" ")}
-                          >
-                            {materialGroup.materialType}
-                          </button>
-                        );
-                      })}
-                    </div>
-                    {renderSwatchGroup(collectionKey, activeUpholsteryGroup)}
-                  </div>
-                ) : (
-                  upholsteryGroups.map((materialGroup) => renderSwatchGroup(collectionKey, materialGroup))
-                )}
-
-                {woodGroups.map((materialGroup) => renderSwatchGroup(collectionKey, materialGroup))}
-              </>
+              <button
+                key={`material-tab-${materialType}`}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => {
+                  if (nextFinish) onSetFinish(nextFinish.id, nextFinish);
+                }}
+                className={[
+                  "rounded-full border px-3 py-2 text-xs font-semibold transition",
+                  active
+                    ? "border-[#5a2135] bg-[#5a2135] text-white"
+                    : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-400",
+                ].join(" ")}
+              >
+                {materialType}
+              </button>
             );
-          })()}
+          })}
         </div>
-      ))}
+      ) : null}
+
+      {activeUpholsteryMaterialType && activeUpholsteryOptions.length > 0
+        ? renderFinishSections(activeUpholsteryMaterialType, activeUpholsteryOptions)
+        : null}
+
+      {woodOptions.length > 0 ? renderFinishSections("Wood", woodOptions) : null}
     </div>
   );
 }
