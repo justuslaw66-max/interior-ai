@@ -716,6 +716,13 @@ export const GLB_CALIBRATION_BY_PRODUCT_ID: Record<string, GLBCalibration> = {
     useVariantColor: false,
     swapWidthDepthAxes: false,
   },
+  "accessory-real-castlery-cedric-floor-lamp-with-table": {
+    // The source GLB's long footprint axis is X, while the catalog's long
+    // 44 cm footprint axis is depth. Swap before fitting dimensions so the
+    // spherical shade and circular table keep their authored proportions.
+    useVariantColor: false,
+    swapWidthDepthAxes: true,
+  },
   "dining-real-castlery-kelsey-marble-160": {
     brightness: 1.18,
     saturation: 0.88,
