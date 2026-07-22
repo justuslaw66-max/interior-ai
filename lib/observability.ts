@@ -1,5 +1,5 @@
 const SENSITIVE_KEY =
-  /(authorization|cookie|credential|password|secret|token|api[-_]?key|private[-_]?key|card|cvv|payment|session)/i;
+  /(authorization|cookie|credential|password|secret|token|api[-_]?key|private[-_]?key|card|cvv|payment|session|address|street|postal|room[-_]?name|project[-_]?name|design[-_]?title|notes?|free[-_]?form|search[-_]?(term|query))/i;
 
 const MAX_DEPTH = 4;
 const MAX_KEYS = 40;

@@ -22,6 +22,7 @@ type MeasurementFieldProps = {
   disabled?: boolean;
   dark?: boolean;
   compact?: boolean;
+  touchFriendly?: boolean;
   hideLabel?: boolean;
   hint?: string;
   testId?: string;
@@ -46,6 +47,7 @@ export default function MeasurementField({
   disabled = false,
   dark = false,
   compact = false,
+  touchFriendly = false,
   hideLabel = false,
   hint,
   testId,
@@ -182,7 +184,7 @@ export default function MeasurementField({
           aria-valuemin={displayMin}
           aria-valuemax={displayMax}
           aria-valuenow={validation.status === "valid" ? validation.value : displayValue}
-          className={`${compact ? "h-9 rounded-md px-2" : "h-10 rounded-lg px-3"} w-full border pr-11 text-sm font-semibold outline-none transition focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+          className={`${touchFriendly ? "min-h-11 rounded-md px-2" : compact ? "h-9 rounded-md px-2" : "h-10 rounded-lg px-3"} w-full border pr-11 text-sm font-semibold outline-none transition focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
             dark
               ? error
                 ? "border-red-400 bg-[#10131a] text-red-100 focus-visible:ring-red-400/20"

@@ -2,6 +2,13 @@
 
 import posthog from "posthog-js";
 import { sanitizeObservabilityMeta } from "@/lib/observability";
+import {
+  sanitizeProductPerformanceObservation,
+  sanitizeProductTelemetryProperties,
+  type ProductPerformanceObservation,
+  type ProductTelemetryEvent,
+  type ProductTelemetryProperties,
+} from "@/lib/product-telemetry";
 
 type TrackProps = object;
 
@@ -37,4 +44,21 @@ export function track(event: string, props: TrackProps = {}) {
   } catch {
     // Analytics is best-effort and must never interrupt editing or saving.
   }
+}
+
+export function trackProductEvent(
+  event: ProductTelemetryEvent,
+  properties: ProductTelemetryProperties = {}
+) {
+  track(event, sanitizeProductTelemetryProperties(properties));
+}
+
+export function trackProductPerformance(observation: ProductPerformanceObservation) {
+  const safe = sanitizeProductPerformanceObservation(observation);
+  if (!safe) return;
+  track("editor_performance_measured", {
+    metric: safe.metric,
+    value: safe.value,
+    ...(safe.context ?? {}),
+  });
 }

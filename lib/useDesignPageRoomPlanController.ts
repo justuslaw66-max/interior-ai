@@ -8,7 +8,7 @@ import {
   type SetStateAction,
 } from "react";
 
-import { track } from "@/lib/analytics";
+import { track, trackProductEvent } from "@/lib/analytics";
 import type { CATALOG_ITEMS } from "@/lib/catalog";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import {
@@ -426,6 +426,11 @@ export function useDesignPageRoomPlanController({
       }
 
       track("editor_room_dimension_edited", { roomId, axis, width, depth });
+      trackProductEvent("room_dimensions_completed", {
+        source: "dimension_input",
+        unit: "mm",
+        result: "success",
+      });
       if (repositionedItemCount > 0 || roomShifted) {
         const details = [
           roomShifted ? "an edge was anchored to avoid overlap" : null,
@@ -524,6 +529,11 @@ export function useDesignPageRoomPlanController({
       setDesignSnapshot((previous) => updateRoom(previous, nextRoom));
       history.commit();
       track("editor_room_resized", { roomId: room.id, width, depth });
+      trackProductEvent("room_dimensions_completed", {
+        source: "room_resize",
+        unit: "mm",
+        result: "success",
+      });
 
       setRoomWidthInput(width.toFixed(2));
       setRoomDepthInput(depth.toFixed(2));

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { getPostHogClient } from "@/lib/posthog-server";
+import { trackServerEvent } from "@/lib/server-analytics";
 import { config } from "@/lib/config";
 import { rateLimit } from "@/lib/rateLimit";
 import { logAppEvent } from "@/lib/app-events";
@@ -332,22 +332,12 @@ export async function POST(req: Request) {
     throw new ApiBoundaryError(502, "INTERNAL_ERROR", "Shopify returned an invalid checkout link.");
   }
 
-  // Server-side PostHog tracking for checkout initiation (critical conversion event)
   const session = await auth();
-  try {
-    const posthog = getPostHogClient();
-    posthog.capture({
-    distinctId: session?.user?.id ?? "anonymous",
-    event: "checkout_initiated",
-    properties: {
-      provider_reference_present: true,
-      items_count: parsedLines.length,
-      total_quantity: parsedLines.reduce((sum: number, l) => sum + l.quantity, 0),
-    },
-    });
-  } catch {
-    // Analytics is non-blocking.
-  }
+  trackServerEvent("checkout_initiated", session?.user?.id ?? "anonymous", {
+    provider_reference_present: true,
+    items_count: parsedLines.length,
+    total_quantity: parsedLines.reduce((sum: number, l) => sum + l.quantity, 0),
+  });
 
   void logAppEvent({
     eventType: "checkout_started",

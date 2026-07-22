@@ -46,6 +46,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# local release-review artifacts and temporary worktree links
+/release-evidence-private/
+
 # editor
 .vscode/
 

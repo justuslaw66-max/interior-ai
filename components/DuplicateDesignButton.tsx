@@ -10,6 +10,7 @@ type DuplicateDesignButtonProps = {
   shareToken?: string;
   className?: string;
   children?: React.ReactNode;
+  unauthenticatedChildren?: React.ReactNode;
   "data-testid"?: string;
 };
 
@@ -18,6 +19,7 @@ export default function DuplicateDesignButton({
   shareToken,
   className,
   children,
+  unauthenticatedChildren,
   "data-testid": testId,
 }: DuplicateDesignButtonProps) {
   const [busy, setBusy] = useState(false);
@@ -107,7 +109,11 @@ export default function DuplicateDesignButton({
         onClick={handleDuplicate}
         disabled={busy}
       >
-        {busy ? "Duplicating..." : (children ?? "Duplicate")}
+        {busy
+          ? "Duplicating..."
+          : status === "unauthenticated" && unauthenticatedChildren
+            ? unauthenticatedChildren
+            : (children ?? "Duplicate")}
       </button>
       {message && (
         <span className="text-xs text-red-600" role="alert">

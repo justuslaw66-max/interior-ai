@@ -4,16 +4,16 @@ import { useRef, useState } from "react";
 
 import { useEditorMode } from "@/hooks/useEditorMode";
 import { resolveEditorCapabilities } from "@/lib/editor-capabilities";
-import type { CameraView } from "@/lib/design-page-types";
+import type {
+  CameraView,
+  DesignPageCloudLoadResult,
+} from "@/lib/design-page-types";
 import type { PendingAiLayoutProposal } from "@/lib/design-page-ai-layout-proposal";
 import type { DesignItem } from "@/lib/room-types";
 import { useDesignPageCoreShellBaseRegistration } from "@/lib/useDesignPageCoreShellBaseRegistration";
 import { useDesignPageEditorClientLifecycle } from "@/lib/useDesignPageEditorClientLifecycle";
 import { useDesignPageLiveCatalog } from "@/lib/useDesignPageLiveCatalog";
-import type {
-  DesignPageCloudLoadResult,
-  UseDesignPageLocalBackupHydrationInput,
-} from "@/lib/useDesignPageLocalBackupHydration";
+import type { UseDesignPageLocalBackupHydrationInput } from "@/lib/useDesignPageLocalBackupHydration";
 import { useDesignPageWorkspacePaywallRegistration } from "@/lib/useDesignPagePaywallRegistrationFacade";
 import { useDesignPageSnapshotDocumentState } from "@/lib/useDesignPageDocumentStateController";
 import { useDesignPageTransientFeedback } from "@/lib/useDesignPageTransientFeedback";

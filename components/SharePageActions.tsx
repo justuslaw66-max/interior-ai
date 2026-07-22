@@ -106,11 +106,15 @@ export default function SharePageActions({ shareToken, title }: SharePageActions
           </Link>
           <DuplicateDesignButton
             shareToken={shareToken}
+            unauthenticatedChildren="Sign in to copy"
             data-testid="share-copy-to-edit"
             className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white shadow hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
           >
             Copy to edit
           </DuplicateDesignButton>
+        </div>
+        <div className="text-right text-[11px] text-neutral-500">
+          Editing creates a private copy in your account.
         </div>
         {message ? (
           <div className="text-xs text-neutral-600" role="status">

@@ -771,8 +771,8 @@ test.describe("18. Multi-Room Whole Home", () => {
     await page.getByTestId("floor-plan-draw-mode-rectangle_wall").click();
 
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("1 room");
-    await expect(page.getByRole("spinbutton", { name: "Width mm" })).toHaveValue("5000");
-    await expect(page.getByRole("spinbutton", { name: "Depth mm" })).toHaveValue("4000");
+    await expect(page.getByTestId("selection-inspector-room-width")).toHaveValue("5000");
+    await expect(page.getByTestId("selection-inspector-room-depth")).toHaveValue("4000");
     await page.getByTestId("selection-inspector-fit-room").click();
     const snapMarkers = await page
       .locator('[data-testid^="floor-plan-start-snap-"]')
@@ -852,8 +852,8 @@ test.describe("18. Multi-Room Whole Home", () => {
       return;
     }
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("1 room");
-    await expect(page.getByRole("spinbutton", { name: "Width mm" })).toHaveValue("2000");
-    await expect(page.getByRole("spinbutton", { name: "Depth mm" })).toHaveValue("4000");
+    await expect(page.getByTestId("selection-inspector-room-width")).toHaveValue("2000");
+    await expect(page.getByTestId("selection-inspector-room-depth")).toHaveValue("4000");
   });
 
   test("shift-dragging a 2D room moves freely without losing selection", async ({ page }) => {

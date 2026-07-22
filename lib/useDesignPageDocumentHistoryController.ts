@@ -9,6 +9,7 @@ import {
 } from "react";
 
 import { useUndoRedoHotkeys } from "@/hooks/useUndoRedoHotkeys";
+import { trackProductEvent } from "@/lib/analytics";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import { enrichDesignSnapshotProductSnapshots } from "@/lib/design-item-product-snapshot";
 import { isPersistableFloorPlanAssetUrl } from "@/lib/design-page-floor-plan-utils";
@@ -267,6 +268,10 @@ export function useDesignPageHistoryShortcuts({
     flushCoalescedHistoryTransaction();
     const label = history.undo();
     if (!label) return;
+    trackProductEvent("undo_used", {
+      source: "editor_history",
+      result: "success",
+    });
   }, [flushCoalescedHistoryTransaction, history, isClientPreview]);
 
   const redoSafe = useCallback(() => {

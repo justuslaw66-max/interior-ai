@@ -2,7 +2,7 @@ import { test, expect } from "./fixtures";
 import { waitForCatalogReady } from "./variant-test-utils";
 
 async function openCatalog(page: Parameters<typeof waitForCatalogReady>[0]) {
-  const continueToFurnish = page.getByRole("button", { name: "Continue to Furnish" });
+  const continueToFurnish = page.getByTestId("room-setup-continue-furnish");
   if (await continueToFurnish.isVisible().catch(() => false)) {
     await continueToFurnish.click();
   }

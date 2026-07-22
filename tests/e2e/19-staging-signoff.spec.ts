@@ -53,15 +53,17 @@ async function openMyDesigns(page: Page) {
   await expect(accountMenu).toBeHidden();
 
   await expect
-    .poll(() =>
-      page.evaluate(() => {
-        const button = document.querySelector<HTMLButtonElement>(
-          '[data-testid="editor-command-overflow"]',
-        );
-        if (!button) return false;
-        button.click();
-        return true;
-      }),
+    .poll(
+      () =>
+        page.evaluate(() => {
+          const button = document.querySelector<HTMLButtonElement>(
+            '[data-testid="editor-command-overflow"]',
+          );
+          if (!button) return false;
+          button.click();
+          return true;
+        }),
+      { timeout: 30000 },
     )
     .toBe(true);
   await expect(page.getByTestId("editor-command-overflow-menu")).toBeVisible();
@@ -227,23 +229,24 @@ test.describe("19. Staging Signoff Evidence", () => {
         origin: BASE_URL,
       });
       await page.goto("/admin");
-      await expect(page.getByTestId("staging-smoke-evidence")).toBeVisible({ timeout: 30000 });
-      await expect(page.getByTestId("staging-smoke-row-open_design_signed_out")).toContainText("TODO");
-      await expect(page.getByTestId("staging-smoke-row-checkout_boundary")).toContainText("Redacted response diagnostics");
-      await expect(page.getByTestId("staging-smoke-checkout-mode")).toContainText(/test checkout URL|boundary blocked/);
-      await expect(page.getByTestId("staging-smoke-progress-summary")).toContainText("0/14 rows resolved");
-      await page.getByTestId("staging-smoke-row-status-open_design_signed_out").selectOption("PASS");
-      await page.getByTestId("staging-smoke-row-evidence-open_design_signed_out").fill("signed-out-design.png");
-      await page.getByTestId("staging-smoke-row-notes-open_design_signed_out").fill("Editor shell loaded behind staging protection.");
-      await page.getByTestId("staging-smoke-evidence-field-savedDesignId").fill(seed.designId);
-      await page
+      const evidencePanel = page.getByTestId("staging-smoke-evidence").first();
+      await expect(evidencePanel).toBeVisible({ timeout: 30000 });
+      await expect(evidencePanel.getByTestId("staging-smoke-row-open_design_signed_out")).toContainText("TODO");
+      await expect(evidencePanel.getByTestId("staging-smoke-row-checkout_boundary")).toContainText("Redacted response diagnostics");
+      await expect(evidencePanel.getByTestId("staging-smoke-checkout-mode")).toContainText(/test checkout URL|boundary blocked/);
+      await expect(evidencePanel.getByTestId("staging-smoke-progress-summary")).toContainText("0/14 rows resolved");
+      await evidencePanel.getByTestId("staging-smoke-row-status-open_design_signed_out").selectOption("PASS");
+      await evidencePanel.getByTestId("staging-smoke-row-evidence-open_design_signed_out").fill("signed-out-design.png");
+      await evidencePanel.getByTestId("staging-smoke-row-notes-open_design_signed_out").fill("Editor shell loaded behind staging protection.");
+      await evidencePanel.getByTestId("staging-smoke-evidence-field-savedDesignId").fill(seed.designId);
+      await evidencePanel
         .getByTestId("staging-smoke-evidence-field-shareReferenceFingerprint")
         .fill(crypto.createHash("sha256").update(seed.shareToken).digest("hex").slice(0, 16));
-      await page.getByTestId("staging-smoke-evidence-field-editorSnapshotFingerprint").fill(editorSnapshotFingerprint);
-      await expect(page.getByTestId("staging-smoke-progress-summary")).toContainText("1/14 rows resolved");
+      await evidencePanel.getByTestId("staging-smoke-evidence-field-editorSnapshotFingerprint").fill(editorSnapshotFingerprint);
+      await expect(evidencePanel.getByTestId("staging-smoke-progress-summary")).toContainText("1/14 rows resolved");
 
-      await page.getByTestId("staging-smoke-evidence-copy-json").click();
-      await expect(page.getByRole("status")).toContainText("JSON evidence copied.");
+      await evidencePanel.getByTestId("staging-smoke-evidence-copy-json").click();
+      await expect(evidencePanel.getByRole("status")).toContainText("JSON evidence copied.");
       const copiedEvidence = await page.evaluate(() => navigator.clipboard.readText());
       expect(copiedEvidence).toContain("checklistRows");
       expect(copiedEvidence).toContain("hardStops");
@@ -252,7 +255,7 @@ test.describe("19. Staging Signoff Evidence", () => {
       expect(copiedEvidence).toContain(seed.designId);
 
       const jsonDownloadPromise = page.waitForEvent("download");
-      await page.getByTestId("staging-smoke-evidence-json").click();
+      await evidencePanel.getByTestId("staging-smoke-evidence-json").click();
       const jsonDownload = await jsonDownloadPromise;
       expect(jsonDownload.suggestedFilename()).toBe("beta-staging-smoke-evidence.json");
       const jsonEvidence = await readDownloadText(jsonDownload);
@@ -260,7 +263,7 @@ test.describe("19. Staging Signoff Evidence", () => {
       expect(jsonEvidence).toContain("checkoutBoundaryResponseMode");
 
       const csvEvidenceDownloadPromise = page.waitForEvent("download");
-      await page.getByTestId("staging-smoke-evidence-csv").click();
+      await evidencePanel.getByTestId("staging-smoke-evidence-csv").click();
       const csvEvidenceDownload = await csvEvidenceDownloadPromise;
       expect(csvEvidenceDownload.suggestedFilename()).toBe("beta-staging-smoke-evidence.csv");
       const csvEvidence = await readDownloadText(csvEvidenceDownload);
@@ -268,7 +271,7 @@ test.describe("19. Staging Signoff Evidence", () => {
       expect(csvEvidence).toContain("checkout_boundary");
 
       const markdownDownloadPromise = page.waitForEvent("download");
-      await page.getByTestId("staging-smoke-evidence-markdown").click();
+      await evidencePanel.getByTestId("staging-smoke-evidence-markdown").click();
       const markdownDownload = await markdownDownloadPromise;
       expect(markdownDownload.suggestedFilename()).toBe("beta-staging-smoke-evidence.md");
       const markdownEvidence = await readDownloadText(markdownDownload);

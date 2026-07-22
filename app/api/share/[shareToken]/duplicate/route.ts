@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { logAppEvent } from "@/lib/app-events";
 import { buildDuplicatedDesignData } from "@/lib/design-duplication";
-import { getPostHogClient } from "@/lib/posthog-server";
+import { trackServerEvent } from "@/lib/server-analytics";
 import { prisma } from "@/lib/prisma";
 import { projectSharedStoredDesign } from "@/lib/shared-design-snapshot";
 import { rateLimit } from "@/lib/rateLimit";
@@ -71,22 +71,13 @@ export async function POST(
     },
   });
 
-  try {
-    const posthog = getPostHogClient();
-    posthog.capture({
-    distinctId: userId,
-    event: "share_design_duplicated",
-    properties: {
-      source_design_id: source.id,
-      shared_context: true,
-      new_design_id: copy.id,
-      style: source.style ?? null,
-      budget: source.budget ?? null,
-    },
-    });
-  } catch {
-    // Analytics is non-blocking.
-  }
+  trackServerEvent("share_design_duplicated", userId, {
+    source_design_id: source.id,
+    shared_context: true,
+    new_design_id: copy.id,
+    style: source.style ?? null,
+    budget: source.budget ?? null,
+  });
 
   return NextResponse.json({ id: copy.id });
 }

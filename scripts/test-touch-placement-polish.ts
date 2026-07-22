@@ -53,7 +53,7 @@ assert.match(
 );
 assert.match(
   selectedPanel,
-  /data-testid="selected-item-nudge-left"[\s\S]*min-h-10/,
+  /data-testid="selected-item-nudge-left"[\s\S]*min-h-1[01]/,
   "selected item nudge buttons should keep larger touch targets"
 );
 

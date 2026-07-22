@@ -6,6 +6,7 @@ import {
   buildDesignPageSceneRoomItems,
   resolveSceneItemCanonicalTransform,
   resolveSceneItemLocalPosition,
+  resolveSceneItemViewContinuity,
 } from "@/lib/design-page-scene-domain";
 import {
   projectSceneRoomItem,
@@ -26,8 +27,24 @@ const item: DesignItem = {
   instanceId: "scene-item",
   productId: "test-product",
   variantId: "test-variant",
+  productSnapshot: {
+    schemaVersion: 1,
+    productId: "test-product",
+    variantId: "test-variant",
+    name: "Continuity test product",
+    category: "table",
+    dimensionsMm: { w: 1200, d: 700, h: 420 },
+    variantLabel: "Natural oak",
+    assets: { modelUrl: "/models/continuity-test.glb" },
+  },
   position: [0.25, 0.125, -0.5],
   rotationY: Math.PI * 1.75,
+  materialPreset: "oak-natural",
+  materialOverrides: {
+    roughness: 0.42,
+    metalness: 0.03,
+    colorHex: "#b88b5a",
+  },
 };
 const room = createRoom("upper-room", "Upper room");
 room.floorElevationMm = 3475;
@@ -59,6 +76,31 @@ assert.equal(entry.item, item, "The canonical scene entry must retain the docume
 assert.equal(entry.roomFloorElevationMeters, 3.475, "Integer millimetres project to metres once.");
 assert.equal(entry.roomWallThickness, 0.14);
 assert.equal(entry.roomWallModel, "house-plan-shell");
+assert.equal(entry.layerId, "room:upper-room:items");
+assert.equal(entry.visible, true);
+
+const continuityInput = {
+  visualDimensionsMm: { w: 1200, d: 700, h: 420 },
+  planningDimensionsMm: { w: 1250, d: 750, h: 420 },
+  selected: true,
+};
+const continuity = resolveSceneItemViewContinuity(entry, continuityInput);
+assert.deepEqual(continuity, {
+  instanceId: item.instanceId,
+  roomId: room.id,
+  layerId: "room:upper-room:items",
+  visible: true,
+  productId: item.productId,
+  variantId: item.variantId,
+  productSnapshot: item.productSnapshot,
+  localPosition: item.position,
+  rotationY: item.rotationY,
+  visualDimensionsMm: continuityInput.visualDimensionsMm,
+  planningDimensionsMm: continuityInput.planningDimensionsMm,
+  materialPreset: item.materialPreset,
+  materialOverrides: item.materialOverrides,
+  selected: true,
+});
 
 const canonical = resolveSceneItemCanonicalTransform(entry);
 assert.deepEqual(canonical.localPosition, item.position);
@@ -67,6 +109,11 @@ assert.equal(canonical.rotationY, item.rotationY);
 
 const planProjection = projectSceneRoomItem(entry, "plan");
 const spatialProjection = projectSceneRoomItem(entry, "spatial");
+assert.deepEqual(
+  resolveSceneItemViewContinuity(entry, continuityInput),
+  continuity,
+  "Changing projection must not change canonical object state."
+);
 assert.deepEqual(planProjection.position, [4.25, 0.125, -2.5]);
 assert.deepEqual(spatialProjection.position, canonical.worldPosition);
 assert.equal(planProjection.rotationY, spatialProjection.rotationY);
@@ -212,6 +259,9 @@ assert.doesNotMatch(
   "The canonical item model must not vary by active renderer."
 );
 assert.match(itemLayerSource, /projectSceneRoomItem\(\s*sceneEntry,\s*projection/);
+assert.match(itemLayerSource, /resolveSceneItemViewContinuity\(sceneEntry/);
+assert.match(itemLayerSource, /sceneLayerId:\s*continuity\.layerId/);
+assert.match(itemLayerSource, /visible=\{continuity\.visible\}/);
 assert.doesNotMatch(
   itemLayerSource,
   /addFloorElevationToItemPosition|removeFloorElevationFromItemPosition/,

@@ -10,6 +10,7 @@ export type DesignPageSaveStatusInput = {
   lastLocalAutosaveAt: number | null;
   lastLocalSaveError: string | null;
   hasPendingCloudSnapshotChanges: boolean;
+  hasCloudConflict: boolean;
 };
 
 export function getDesignPageSaveStatus({
@@ -21,7 +22,12 @@ export function getDesignPageSaveStatus({
   lastLocalAutosaveAt,
   lastLocalSaveError,
   hasPendingCloudSnapshotChanges,
+  hasCloudConflict,
 }: DesignPageSaveStatusInput): EditorSaveStatus {
+  const lastSuccessfulSaveAt = designId
+    ? lastDbSaveAt ?? lastLocalAutosaveAt
+    : lastLocalAutosaveAt;
+
   if (isSaving) {
     return {
       kind: "saving",
@@ -30,6 +36,19 @@ export function getDesignPageSaveStatus({
       detail: designId ? "Syncing this design to your account." : "Writing a browser backup.",
       tone: "saving",
       canRetry: false,
+      lastSuccessfulSaveAt,
+    };
+  }
+
+  if (hasCloudConflict) {
+    return {
+      kind: "conflict",
+      source: "cloud",
+      label: "Save conflict",
+      detail: "Cloud changed in another session. Choose which copy to keep.",
+      tone: "error",
+      canRetry: false,
+      lastSuccessfulSaveAt,
     };
   }
 
@@ -43,6 +62,7 @@ export function getDesignPageSaveStatus({
         : lastCloudSaveError,
       tone: "error",
       canRetry: isAuthenticated,
+      lastSuccessfulSaveAt,
     };
   }
 
@@ -54,6 +74,7 @@ export function getDesignPageSaveStatus({
       detail: lastLocalSaveError,
       tone: "error",
       canRetry: true,
+      lastSuccessfulSaveAt,
     };
   }
 
@@ -65,6 +86,7 @@ export function getDesignPageSaveStatus({
       detail: formatTimeAgo(lastDbSaveAt),
       tone: "saved",
       canRetry: false,
+      lastSuccessfulSaveAt: lastDbSaveAt,
     };
   }
 
@@ -76,6 +98,7 @@ export function getDesignPageSaveStatus({
       detail: isAuthenticated ? "Cloud save pending" : formatTimeAgo(lastLocalAutosaveAt),
       tone: "saved",
       canRetry: false,
+      lastSuccessfulSaveAt: lastLocalAutosaveAt,
     };
   }
 
@@ -86,5 +109,6 @@ export function getDesignPageSaveStatus({
     detail: "Autosave will run after your next edit.",
     tone: "pending",
     canRetry: false,
+    lastSuccessfulSaveAt,
   };
 }

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import { CATALOG_ITEMS } from "@/lib/catalog";
-import { track } from "@/lib/analytics";
+import { track, trackProductEvent } from "@/lib/analytics";
 import { createCommerceEvent } from "@/lib/commerce-helpers";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import { trackVariantIssues } from "@/lib/catalog/variant-observability";
@@ -296,6 +296,10 @@ export default function CartSidebar({
       cart_items_shopify: shopifyItems.length,
       cart_items_affiliate: affiliateItems.length,
     });
+    trackProductEvent("shopping_list_opened", {
+      source: "editor_cart",
+      itemCount: shopifyItems.length + affiliateItems.length,
+    });
     cartOpenedRef.current = true;
   }, [isCollapsed, designId, shopifyItems.length, affiliateItems.length]);
 
@@ -382,6 +386,11 @@ export default function CartSidebar({
             variantId: line.variantId,
             buyUrl: line.buyUrl!,
           });
+          trackProductEvent("product_purchase_clicked", {
+            source: "affiliate",
+            category: line.category,
+            result: "success",
+          });
           await openUrl(urlToOpen);
 
           if (openInSameTab) return;
@@ -437,6 +446,11 @@ export default function CartSidebar({
       design_id: designId ?? null,
       cart_items_shopify: shopifyItems.length,
       cart_items_affiliate: affiliateItems.length,
+    });
+    trackProductEvent("product_purchase_clicked", {
+      source: "shopify_checkout",
+      itemCount: lines.length,
+      result: "success",
     });
 
     setBusy(true);

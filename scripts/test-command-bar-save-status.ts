@@ -41,6 +41,16 @@ assert.match(
   /data-testid="save-status-retry"/,
   "Save status retry should stay available from the command bar."
 );
+assert.match(
+  commandBarSource,
+  /data-last-successful-save-at=/,
+  "Save status should expose the exact last successful save time."
+);
+assert.match(
+  commandBarSource,
+  /role="status"[\s\S]*?aria-live="polite"/,
+  "Save progress and failures should be announced without stealing focus."
+);
 assert.doesNotMatch(
   designPageSource,
   /fixed right-4 top-16[\s\S]*data-testid="save-status"/,

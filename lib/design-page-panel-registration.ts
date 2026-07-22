@@ -284,6 +284,8 @@ export function buildDesignPagePanelRegistration({
           planDocument.state.planGuidedActionsEnabled,
       },
       actions: {
+        onMeasurementUnitChange:
+          planDocument.actions.setPlanMeasurementUnit,
         onPlanCompletionHandled: actions.floorPlan.completionHandled,
         onPlanStartModeChange: actions.floorPlan.changeStartMode,
         onPlanQualityAction: actions.floorPlan.activateQualityIssue,

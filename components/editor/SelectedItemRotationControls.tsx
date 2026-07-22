@@ -45,10 +45,10 @@ export default function SelectedItemRotationControls({
     ? "designer-text-secondary mt-2 text-[11px]"
     : "mt-2 text-[11px] text-neutral-500";
   const buttonClass = dark
-    ? "rounded-lg border border-white/15 px-2 py-2 text-xs"
-    : "rounded-lg border border-neutral-200 px-2 py-2 text-xs text-neutral-800";
+    ? "min-h-11 rounded-lg border border-white/15 px-2 py-2 text-xs"
+    : "min-h-11 rounded-lg border border-neutral-200 px-2 py-2 text-xs text-neutral-800";
   const snapPresetClass = (preset: RotationSnapPresetDegrees) =>
-    `rounded-lg border px-2 py-1.5 text-xs ${
+    `min-h-11 rounded-lg border px-2 py-1.5 text-xs ${
       rotationSnapPresetDegrees === preset
         ? "designer-accent-border"
         : dark
@@ -191,8 +191,8 @@ export default function SelectedItemRotationControls({
                   data-testid="rotation-input"
                   className={
                     dark
-                      ? "w-full rounded-lg border border-white/15 bg-transparent px-2 py-1.5 text-xs"
-                      : "w-full rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-xs text-neutral-900"
+                      ? "min-h-11 w-full rounded-lg border border-white/15 bg-transparent px-2 py-1.5 text-xs"
+                      : "min-h-11 w-full rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-xs text-neutral-900"
                   }
                   type="number"
                   step="0.1"
@@ -212,8 +212,8 @@ export default function SelectedItemRotationControls({
                   data-testid="rotation-input-apply"
                   className={
                     dark
-                      ? "rounded-lg border border-white/15 px-3 py-1.5 text-xs"
-                      : "rounded-lg border border-neutral-200 px-3 py-1.5 text-xs text-neutral-800"
+                      ? "min-h-11 rounded-lg border border-white/15 px-3 py-1.5 text-xs"
+                      : "min-h-11 rounded-lg border border-neutral-200 px-3 py-1.5 text-xs text-neutral-800"
                   }
                   disabled={disabled}
                   onClick={onApplyRotationInput}

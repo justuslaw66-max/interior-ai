@@ -26,7 +26,7 @@ import {
   buildCatalogRecommendationSet,
   buildCatalogRoomGuidance,
 } from "@/lib/catalog/recommendations";
-import { track } from "@/lib/analytics";
+import { track, trackProductEvent } from "@/lib/analytics";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import { trackVariantIssues } from "@/lib/catalog/variant-observability";
 import {
@@ -210,6 +210,13 @@ export default function CatalogPanel({
 
   const debouncedSearch = useDebouncedValue(rawSearch, 180);
 
+  useEffect(() => {
+    trackProductEvent("catalog_opened", {
+      source: "furnish_panel",
+      itemCount: items.length,
+    });
+  }, [items.length]);
+
   const facets = useMemo(() => collectFilterFacets(items), [items]);
 
   const allCatalogFamilies = useMemo(() => groupCatalogItems(items), [items]);
@@ -288,6 +295,15 @@ export default function CatalogPanel({
   const filteredItems = useMemo(() => {
     return filterCatalogItems(scopedItems, debouncedSearch, searchScopedFilters);
   }, [scopedItems, debouncedSearch, searchScopedFilters]);
+
+  useEffect(() => {
+    const term = debouncedSearch.trim();
+    if (term.length < 2) return;
+    trackProductEvent("product_searched", {
+      source: "catalog",
+      resultCount: filteredItems.length,
+    });
+  }, [debouncedSearch, filteredItems.length]);
 
   const filteredFamilies = useMemo(() => groupCatalogItems(filteredItems), [filteredItems]);
 
@@ -686,6 +702,12 @@ export default function CatalogPanel({
 
   const addRememberedItem = (id: string, variantId?: string) => {
     rememberRecent(id);
+    const product = itemById.get(id);
+    trackProductEvent("product_placed", {
+      source: "catalog",
+      category: product?.category,
+      result: "success",
+    });
     onAddToRoom(id, variantId ?? variantSelectionByItem[id]);
   };
 

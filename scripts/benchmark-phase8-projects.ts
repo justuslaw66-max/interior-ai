@@ -40,9 +40,9 @@ const ITERATIONS: Record<Phase8ProjectScale, number> = {
 };
 
 const EXPECTED_FINGERPRINTS: Record<Phase8ProjectScale, string> = {
-  small: "5ed59743",
-  medium: "9a7954f1",
-  large: "fd13cee0",
+  small: "3acd8307",
+  medium: "8064c579",
+  large: "c76918bc",
 };
 
 function percentile(values: readonly number[], fraction: number): number {

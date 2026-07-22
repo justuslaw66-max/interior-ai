@@ -54,6 +54,12 @@ function createItem(roomIndex: number, itemIndex: number): DesignItem {
       Math.floor(itemIndex / 10) * 0.78 - 2.1,
     ],
     rotationY: (itemIndex % 8) * (Math.PI / 4),
+    materialPreset: variantId === "natural" ? "oak-natural" : "fabric-charcoal",
+    materialOverrides: {
+      roughness: 0.35 + (itemIndex % 4) * 0.1,
+      metalness: itemIndex % 3 === 0 ? 0.08 : 0.02,
+      colorHex: variantId === "natural" ? "#b88b5a" : "#343434",
+    },
     includeInCheckout: itemIndex % 4 !== 0,
     locked: itemIndex % 17 === 0,
     createdAt: `2026-07-19T00:${String(itemIndex % 60).padStart(2, "0")}:00.000Z`,

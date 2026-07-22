@@ -5,8 +5,7 @@
  * Keep it clean - no extra noise.
  */
 
-import { getPostHogClient } from "@/lib/posthog-server";
-import { sanitizeObservabilityMeta } from "@/lib/observability";
+import { trackServerEvent } from "@/lib/server-analytics";
 
 export type MonetizationEvent =
   | "export_opened"
@@ -32,29 +31,8 @@ export async function trackMonetization(
   userId: string,
   properties?: EventProperties
 ) {
-  const posthog = getPostHogClient();
-
-  try {
-    posthog.capture({
-      distinctId: userId,
-      event,
-      properties: sanitizeObservabilityMeta({
-        ...properties,
-        timestamp: new Date().toISOString(),
-      }),
-    });
-  } finally {
-    await posthog.shutdown().catch(() => undefined);
-  }
-}
-
-/**
- * Client-side tracking helper (for use in components)
- */
-export function getClientTrackingCode(event: MonetizationEvent, properties?: EventProperties) {
-  return `
-    if (window.posthog) {
-      window.posthog.capture('${event}', ${JSON.stringify(properties || {})});
-    }
-  `;
+  trackServerEvent(event, userId, {
+    ...properties,
+    timestamp: new Date().toISOString(),
+  });
 }

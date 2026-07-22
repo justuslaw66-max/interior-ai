@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { getPostHogClient } from "@/lib/posthog-server";
+import { trackServerEvent } from "@/lib/server-analytics";
 import { logAppEvent } from "@/lib/app-events";
 import { rateLimit } from "@/lib/rateLimit";
 import {
@@ -55,20 +55,11 @@ export async function POST(req: Request) {
       meta: { providerReferencePresent: true },
     });
 
-    try {
-      const posthog = getPostHogClient();
-      posthog.capture({
-        distinctId: userId ?? "anonymous",
-        event: "checkout_return_observed",
-        properties: {
-          design_id: ownedDesignId,
-          provider_reference_present: true,
-          order_verified: false,
-        },
-      });
-    } catch {
-      // Analytics is non-blocking.
-    }
+    trackServerEvent("checkout_return_observed", userId ?? "anonymous", {
+      design_id: ownedDesignId,
+      provider_reference_present: true,
+      order_verified: false,
+    });
 
     logOperationalEvent({
       operation,

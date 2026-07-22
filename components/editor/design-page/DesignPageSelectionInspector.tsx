@@ -174,6 +174,7 @@ export function DesignPageSelectionInspector({
             disabled={!configuration.canEditPlanGeometry}
             dark={configuration.dark}
             compact
+            touchFriendly
             testId="selection-inspector-opening-width"
             onCommit={actions.commitOpeningWidthMm}
           />
@@ -254,14 +255,15 @@ export function DesignPageSelectionInspector({
                 <button
                   key={unit}
                   type="button"
+                  aria-pressed={state.measurementUnit === unit}
                   className={
                     state.measurementUnit === unit
                       ? configuration.dark
-                        ? "designer-work-control-active rounded px-1.5 py-1 text-[10px] font-semibold"
-                        : "rounded bg-neutral-950 px-1.5 py-1 text-[10px] font-semibold text-white"
+                        ? "designer-work-control-active min-h-11 rounded px-1.5 py-1 text-[10px] font-semibold"
+                        : "min-h-11 rounded bg-neutral-950 px-1.5 py-1 text-[10px] font-semibold text-white"
                       : configuration.dark
-                        ? "designer-work-control rounded px-1.5 py-1 text-[10px]"
-                        : "rounded px-1.5 py-1 text-[10px] text-neutral-500 hover:bg-white"
+                        ? "designer-work-control min-h-11 rounded px-1.5 py-1 text-[10px]"
+                        : "min-h-11 rounded px-1.5 py-1 text-[10px] text-neutral-500 hover:bg-white"
                   }
                   onClick={() => actions.setMeasurementUnit(unit)}
                 >
@@ -279,9 +281,10 @@ export function DesignPageSelectionInspector({
               maxMm={ROOM_DIMENSION_DEFAULTS.max * 1000}
               stepMm={10}
               keyboardStepMm={50}
-              disabled={!state.canEditActiveRoomWallHeight}
+              disabled={!configuration.canEditPlanGeometry}
               dark={configuration.dark}
               compact
+              touchFriendly
               testId="selection-inspector-room-width"
               onCommit={(valueMm) =>
                 actions.commitRoomDimensionMm(state.selectedRoom!.id, "width", valueMm)
@@ -298,6 +301,7 @@ export function DesignPageSelectionInspector({
               disabled={!configuration.canEditPlanGeometry}
               dark={configuration.dark}
               compact
+              touchFriendly
               testId="selection-inspector-room-depth"
               onCommit={(valueMm) =>
                 actions.commitRoomDimensionMm(state.selectedRoom!.id, "depth", valueMm)

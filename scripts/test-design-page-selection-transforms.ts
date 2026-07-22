@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
+import { buildNearbyDuplicateOffsets } from "../lib/design-page-object-placement";
+
 const root = process.cwd();
 const pageSource = readFileSync(
   join(root, "components/editor/design-page/DesignPageWorkspace.tsx"),
@@ -21,6 +23,14 @@ const selectionWorkspaceSource = readFileSync(
 );
 const controllerSource = readFileSync(
   join(root, "lib/useDesignPageSelectionTransforms.ts"),
+  "utf8"
+);
+const dragControllerSource = readFileSync(
+  join(root, "lib/useDesignPageSceneItemDrag.ts"),
+  "utf8"
+);
+const selectedItemPanelSource = readFileSync(
+  join(root, "components/editor/SelectedItemDetailsPanel.tsx"),
   "utf8"
 );
 
@@ -65,9 +75,34 @@ for (const historyLabel of [
 }
 
 assert.match(controllerSource, /track\("editor_item_rotated"/);
+assert.match(controllerSource, /editor_item_transform_rejected/);
 assert.match(controllerSource, /selectionType: "single"/);
 assert.match(controllerSource, /selectionType: "group"/);
+assert.match(controllerSource, /buildNearbyDuplicateOffsets/);
+assert.match(controllerSource, /findCatalogPlacementBlockerInRoom/);
+assert.match(controllerSource, /No clear nearby space is available for a duplicate/);
 assert.match(controllerSource, /selectProductVariant/);
+assert.match(dragControllerSource, /dragRejectionRef/);
+assert.match(dragControllerSource, /now - previous\.shownAt < 1_500/);
+assert.match(dragControllerSource, /commitContinuousCommand\(SCENE_ITEM_DRAG_COMMAND_ID\)/);
+assert.match(selectedItemPanelSource, /selected-item-size-guidance/);
+assert.match(selectedItemPanelSource, /touchFriendly/);
+
+const nearbyOffsets = buildNearbyDuplicateOffsets({
+  widthMeters: 1,
+  depthMeters: 0.5,
+  clearanceMeters: 0.1,
+});
+assert.equal(nearbyOffsets.length, 16);
+assert.deepEqual(nearbyOffsets[0], [0, 0.6]);
+assert.ok(
+  nearbyOffsets.every(([deltaX, deltaZ]) => deltaX !== 0 || deltaZ !== 0),
+  "Duplicate placement candidates must never reuse the source position."
+);
+assert.ok(
+  Math.hypot(...nearbyOffsets[0]) <= Math.hypot(...nearbyOffsets.at(-1)!),
+  "Duplicate placement candidates should be searched nearest-first."
+);
 assert.doesNotMatch(
   controllerSource,
   /Cabinet|cabinet/,

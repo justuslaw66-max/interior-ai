@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { getPostHogClient } from "@/lib/posthog-server";
+import { trackServerEvent } from "@/lib/server-analytics";
 import { logAppEvent } from "@/lib/app-events";
 import { buildDuplicatedDesignData } from "@/lib/design-duplication";
 import { rateLimit } from "@/lib/rateLimit";
@@ -67,22 +67,12 @@ export async function POST(
     },
   });
 
-  // Server-side PostHog tracking for design duplication (engagement metric)
-  try {
-    const posthog = getPostHogClient();
-    posthog.capture({
-    distinctId: userId,
-    event: "design_duplicated",
-    properties: {
-      original_design_id: id,
-      new_design_id: copy.id,
-      style: design.style ?? null,
-      budget: design.budget ?? null,
-    },
-    });
-  } catch {
-    // Analytics is non-blocking.
-  }
+  trackServerEvent("design_duplicated", userId, {
+    original_design_id: id,
+    new_design_id: copy.id,
+    style: design.style ?? null,
+    budget: design.budget ?? null,
+  });
 
   return NextResponse.json({ id: copy.id });
 }

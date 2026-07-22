@@ -4,6 +4,7 @@ import { DesignPageComposition } from "@/components/editor/design-page/DesignPag
 import { DesignPageEditorChrome } from "@/components/editor/design-page/DesignPageEditorChrome";
 import { DesignPageDialogLayer } from "@/components/editor/design-page/DesignPageDialogLayer";
 import { LocalBackupRecoveryDialog } from "@/components/editor/design-page/LocalBackupRecoveryDialog";
+import { CloudSaveConflictDialog } from "@/components/editor/design-page/CloudSaveConflictDialog";
 import { DesignPagePanelRegion } from "@/components/editor/design-page/DesignPagePanelRegion";
 import { DesignPagePresentationQaLayer } from "@/components/editor/design-page/DesignPagePresentationQaLayer";
 import { DesignPageSceneRegion } from "@/components/editor/design-page/DesignPageSceneRegion";
@@ -238,6 +239,7 @@ export function DesignPageWorkspace() {
         selectedSavedDesignIds,
         deletingDesignIds,
         pendingDeleteDesign,
+        cloudSaveConflict,
         allSavedDesignIds,
         selectedSavedDesignCount,
         allSavedDesignsSelected,
@@ -259,6 +261,8 @@ export function DesignPageWorkspace() {
         handleDeleteSavedDesign,
         handleGuestPromptNotNow,
         handleGuestSaveAndContinue,
+        saveConflictAsNewCopy,
+        reloadCloudAfterConflict,
       },
       newPlan: {
         openNewPlanPicker,
@@ -521,6 +525,12 @@ export function DesignPageWorkspace() {
       <LocalBackupRecoveryDialog
         state={presentationBackupRegistration.state.localBackupRecovery}
         actions={presentationBackupRegistration.actions.localBackupRecovery}
+      />
+      <CloudSaveConflictDialog
+        state={cloudSaveConflict}
+        dark={showDesignerTheme}
+        onSaveAsNewCopy={saveConflictAsNewCopy}
+        onReloadCloudCopy={reloadCloudAfterConflict}
       />
     </DesignPageComposition>
   );

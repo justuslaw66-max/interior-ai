@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { getPostHogClient } from "@/lib/posthog-server";
+import { trackServerEvent } from "@/lib/server-analytics";
 import { config } from "@/lib/config";
 import { rateLimit } from "@/lib/rateLimit";
 import {
@@ -138,29 +138,19 @@ export async function POST(req: Request) {
     return NextResponse.json(plan, { status: 422 });
   }
 
-  // Server-side PostHog tracking
-  try {
-    const posthog = getPostHogClient();
-    posthog.capture({
-    distinctId: session.user.id,
-    event: "ai_layout_generated",
-    properties: {
-      style: styleNorm,
-      budget: budgetNorm,
-      seed: seedNum,
-      room_type: plan.meta.roomType,
-      room_width: roomWidth,
-      room_depth: roomDepth,
-      quality_completeness: plan.quality.completeness,
-      quality_fit_risk: plan.quality.fitRisk,
-      quality_required_missing: plan.quality.requiredMissing,
-      requested_roles: plan.meta.requestedRoles,
-      items_count: Object.values(plan.picks).filter(Boolean).length,
-    },
-    });
-  } catch {
-    // Analytics is non-blocking.
-  }
+  trackServerEvent("ai_layout_generated", session.user.id, {
+    style: styleNorm,
+    budget: budgetNorm,
+    seed: seedNum,
+    room_type: plan.meta.roomType,
+    room_width: roomWidth,
+    room_depth: roomDepth,
+    quality_completeness: plan.quality.completeness,
+    quality_fit_risk: plan.quality.fitRisk,
+    quality_required_missing: plan.quality.requiredMissing,
+    requested_roles: plan.meta.requestedRoles,
+    items_count: Object.values(plan.picks).filter(Boolean).length,
+  });
 
   logOperationalEvent({
     operation,

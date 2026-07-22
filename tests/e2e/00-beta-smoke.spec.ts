@@ -206,7 +206,9 @@ test.describe("00. Beta Smoke Gate", () => {
     await expect(page.getByTestId("beta-feedback-dialog")).toBeVisible();
     await page.getByTestId("beta-feedback-note").fill("Beta smoke feedback capture works.");
     await clickVisibleControl(page.getByTestId("beta-feedback-submit"));
-    await expect(page.getByRole("status")).toContainText("Sent.");
+    await expect(
+      page.getByTestId("beta-feedback-dialog").getByRole("status")
+    ).toContainText("Sent.");
     await expect(page.getByTestId("beta-feedback-report-id")).toHaveText("evt_beta_smoke");
     await expect.poll(() => betaFeedbackPayloads.length).toBe(1);
     const betaFeedbackPayload = betaFeedbackPayloads[0];

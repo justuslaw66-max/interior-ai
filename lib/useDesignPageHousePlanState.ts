@@ -15,7 +15,7 @@ import {
   type RoomPlanShape,
   type RoomType,
 } from "@/lib/room-types";
-import { track } from "@/lib/analytics";
+import { track, trackProductEvent } from "@/lib/analytics";
 import { clampToRoom } from "@/lib/design-page-geometry";
 import {
   buildHousePlan2D,
@@ -234,6 +234,11 @@ export function useDesignPageHousePlanState({
     });
 
     track("editor_room_added", { roomType: newRoom.roomType, roomName: newRoom.name });
+    trackProductEvent("room_created", {
+      roomType: newRoom.roomType,
+      source: "editor",
+      roomCount: activeFloorRooms.length + 1,
+    });
   }, [
     activeRoom,
     activeFloorLevel,

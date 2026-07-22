@@ -15,6 +15,12 @@ export type NamedCameraView = {
   view: CameraView;
 };
 
+export type DesignPageCloudLoadResult =
+  | "loaded"
+  | "missing"
+  | "unavailable"
+  | "superseded";
+
 export type LayoutPlanRole =
   | "sofa"
   | "rug"

@@ -9,6 +9,7 @@ import {
   type SetStateAction,
 } from "react";
 
+import { trackProductEvent, trackProductPerformance } from "@/lib/analytics";
 import {
   normalizeDesignPageLocalBackup,
   type NormalizeDesignPageLocalBackupInput,
@@ -22,17 +23,16 @@ import {
   seedLastKnownValidLocalBackup,
 } from "@/lib/design-page-local-backup-recovery";
 import { getSerializedDesignDocumentByteLength } from "@/lib/design-document-contract";
-import type { NamedCameraView } from "@/lib/design-page-types";
+import type {
+  DesignPageCloudLoadResult,
+  NamedCameraView,
+} from "@/lib/design-page-types";
 import type { DesignSnapshot } from "@/lib/room-types";
+
+export type { DesignPageCloudLoadResult } from "@/lib/design-page-types";
 
 export const DESIGN_PAGE_LOCAL_BACKUP_STORAGE_KEY =
   "interior-ai:v1:livingroom-design";
-
-export type DesignPageCloudLoadResult =
-  | "loaded"
-  | "missing"
-  | "unavailable"
-  | "superseded";
 
 type LocalBackupNormalizationState = Pick<
   NormalizeDesignPageLocalBackupInput["state"],
@@ -113,6 +113,7 @@ export function useDesignPageLocalBackupHydration(
   });
 
   const restoreRawBackup = useCallback(async (raw: string): Promise<boolean> => {
+    const loadStartedAt = performance.now();
     const {
       state: { roomWidth, roomDepth, wallThickness },
       configuration: {
@@ -155,6 +156,25 @@ export function useDesignPageLocalBackupHydration(
         setDesignSnapshot(restored.snapshot);
         hydratePersistedFloorPlanState(restored.snapshot);
         clearHistory();
+        const durationMs = performance.now() - loadStartedAt;
+        trackProductEvent("project_reloaded", {
+          source: "local_backup",
+          result: "success",
+          durationMs,
+          roomCount: restored.snapshot.rooms.length,
+          itemCount: restored.snapshot.rooms.reduce(
+            (count, room) => count + room.items.length,
+            0,
+          ),
+        });
+        trackProductPerformance({
+          metric: "load_duration_ms",
+          value: durationMs,
+          context: {
+            source: "local_backup",
+            roomCount: restored.snapshot.rooms.length,
+          },
+        });
       }
       setSavedViews(restored.savedViews);
 
@@ -236,6 +256,11 @@ export function useDesignPageLocalBackupHydration(
           }
         })(),
       });
+      trackProductEvent("validation_warning_shown", {
+        source: "local_backup",
+        warningCode: failure.code,
+        result: "blocked",
+      });
       return false;
     }
   }, []);
@@ -271,7 +296,12 @@ export function useDesignPageLocalBackupHydration(
 
   const retry = useCallback(async () => {
     const raw = invalidRawRef.current;
-    if (raw) await restoreRawBackup(raw);
+    if (raw && (await restoreRawBackup(raw))) {
+      trackProductEvent("project_recovered", {
+        recoverySource: "last_known_valid",
+        result: "success",
+      });
+    }
   }, [restoreRawBackup]);
 
   const openLastKnownValid = useCallback(async () => {
@@ -337,6 +367,10 @@ export function useDesignPageLocalBackupHydration(
       isWorking: false,
     }));
     setLocalBackupHydrated(true);
+    trackProductEvent("project_recovered", {
+      recoverySource: "clean_copy",
+      result: "success",
+    });
   }, []);
 
   return {

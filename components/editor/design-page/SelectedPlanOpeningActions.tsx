@@ -54,6 +54,7 @@ export function SelectedPlanOpeningActions({
         disabled={!configuration.canEdit}
         dark={configuration.dark}
         compact
+        touchFriendly
         hideLabel
         testId="selected-plan-opening-width-input"
         className="w-[132px]"

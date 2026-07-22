@@ -11,6 +11,7 @@ export type LocalBackupStorage = Pick<
 
 export const LOCAL_BACKUP_LAST_VALID_SUFFIX = ":last-known-valid";
 export const LOCAL_BACKUP_QUARANTINE_SUFFIX = ":quarantine:";
+export const LOCAL_BACKUP_QUARANTINE_POINTER_SUFFIX = ":quarantine-latest";
 
 export class DesignPageLocalBackupError extends Error {
   constructor(
@@ -110,8 +111,25 @@ export function quarantineInvalidLocalBackup(
   raw: string,
   timestamp: number = Date.now()
 ): string {
+  const pointerKey = `${storageKey}${LOCAL_BACKUP_QUARANTINE_POINTER_SUFFIX}`;
+  const existingQuarantineKey = storage.getItem(pointerKey);
+  if (
+    existingQuarantineKey?.startsWith(
+      `${storageKey}${LOCAL_BACKUP_QUARANTINE_SUFFIX}`
+    ) &&
+    storage.getItem(existingQuarantineKey) === raw
+  ) {
+    return existingQuarantineKey;
+  }
+
   const quarantineKey = `${storageKey}${LOCAL_BACKUP_QUARANTINE_SUFFIX}${timestamp}`;
   storage.setItem(quarantineKey, raw);
+  try {
+    storage.setItem(pointerKey, quarantineKey);
+  } catch {
+    // The raw quarantine copy is already retained; a failed deduplication
+    // pointer must not downgrade that successful recovery step.
+  }
   return quarantineKey;
 }
 

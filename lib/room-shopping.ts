@@ -27,6 +27,7 @@ export type ActiveRoomShoppingItem = {
   retailerUrl: string | null;
   retailerLabel: string;
   commerceMode: "shopify" | "affiliate" | "not_buyable";
+  shopifyVariantId: string | null;
   retailerStatusLabel: string;
   includeInCheckout: boolean;
   cartStatusLabel: string;
@@ -254,6 +255,7 @@ export function resolveRoomShoppingItems(
           retailerUrl: null,
           retailerLabel: "Retailer",
           commerceMode: "not_buyable",
+          shopifyVariantId: null,
           retailerStatusLabel: "Catalog item unavailable",
           includeInCheckout: item.includeInCheckout ?? true,
           cartStatusLabel: "Needs commerce",
@@ -268,6 +270,7 @@ export function resolveRoomShoppingItems(
     const qty = getQuantity(item);
     const resolved = resolveCatalogVariant(product, item.variantId);
     const purchaseOption = getPurchaseOption(item, resolved);
+    const commerceMode = purchaseOption?.affiliateUrl ? "affiliate" : resolved.commerce.type;
     const linePrice = purchaseOption?.priceHint ?? getResolvedUnitPrice(product, resolved) * qty;
     const retailerUrl =
       purchaseOption?.affiliateUrl ?? (resolved.commerce.type === "affiliate" ? resolved.commerce.url : null);
@@ -289,7 +292,7 @@ export function resolveRoomShoppingItems(
           : "Not buyable";
     const hasValidCommerce = Boolean(purchaseOption?.affiliateUrl) || isValidCommerce(resolved.commerce);
     const cartStatusLabel = hasValidCommerce
-      ? resolved.commerce.type === "shopify"
+      ? commerceMode === "shopify"
         ? item.includeInCheckout ?? true
           ? "Cart-ready"
           : "Not in cart"
@@ -326,7 +329,11 @@ export function resolveRoomShoppingItems(
         isBundle: Boolean(purchaseOption && purchaseOption.quantity > 1),
         retailerUrl,
         retailerLabel,
-        commerceMode: resolved.commerce.type,
+        commerceMode,
+        shopifyVariantId:
+          commerceMode === "shopify" && resolved.commerce.type === "shopify"
+            ? resolved.commerce.variantId
+            : null,
         retailerStatusLabel,
         includeInCheckout: item.includeInCheckout ?? true,
         cartStatusLabel,

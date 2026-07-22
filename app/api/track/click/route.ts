@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import crypto from "crypto";
-import { getPostHogClient } from "@/lib/posthog-server";
+import { trackServerEvent } from "@/lib/server-analytics";
 import { CATALOG_ITEMS_MAP } from "@/lib/catalog";
 import { assertStrictVariantResolution } from "@/lib/catalog/variant-resolver";
 import { rateLimit } from "@/lib/rateLimit";
@@ -71,22 +71,13 @@ export async function POST(req: Request) {
       },
     });
 
-    try {
-      const posthog = getPostHogClient();
-      posthog.capture({
-        distinctId: session?.user?.id ?? "anonymous",
-        event: "product_clicked",
-        properties: {
-          design_id: ownedDesignId,
-          product_id: productId,
-          price: commerce.priceHint,
-          retailer: commerce.retailer,
-          click_reference_created: true,
-        },
-      });
-    } catch {
-      // Analytics is non-blocking.
-    }
+    trackServerEvent("product_clicked", session?.user?.id ?? "anonymous", {
+      design_id: ownedDesignId,
+      product_id: productId,
+      price: commerce.priceHint,
+      retailer: commerce.retailer,
+      click_reference_created: true,
+    });
 
     return NextResponse.json({ ok: true, clickKey }, {
       headers: { "x-operation-id": operationId },

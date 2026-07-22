@@ -8,12 +8,13 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 type EditorMode = "design" | "adjust" | "ai" | "buy" | "present";
 
 export type EditorSaveStatus = {
-  kind: string;
+  kind: "pending" | "saving" | "saved" | "failed" | "conflict";
   source: string;
   label: string;
   detail: string;
   tone: "error" | "saving" | "saved" | "pending";
   canRetry: boolean;
+  lastSuccessfulSaveAt: number | null;
 };
 
 type EditorCommandBarProps = {
@@ -252,8 +253,8 @@ export default function EditorCommandBar({
           aria-label={undoName ? `Undo ${undoName}` : "Undo"}
           className={
             dark
-              ? "designer-control h-9 w-9 shrink-0 rounded-xl border text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40"
-              : "h-9 w-9 shrink-0 rounded-xl border border-neutral-200 bg-white text-sm font-semibold text-neutral-900 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40"
+              ? "designer-control h-11 w-11 shrink-0 rounded-xl border text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40"
+              : "h-11 w-11 shrink-0 rounded-xl border border-neutral-200 bg-white text-sm font-semibold text-neutral-900 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40"
           }
           onClick={onUndo}
           disabled={isClientPreview || !canUndo}
@@ -267,8 +268,8 @@ export default function EditorCommandBar({
           aria-label={redoName ? `Redo ${redoName}` : "Redo"}
           className={
             dark
-              ? "designer-control h-9 w-9 shrink-0 rounded-xl border text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40"
-              : "h-9 w-9 shrink-0 rounded-xl border border-neutral-200 bg-white text-sm font-semibold text-neutral-900 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40"
+              ? "designer-control h-11 w-11 shrink-0 rounded-xl border text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40"
+              : "h-11 w-11 shrink-0 rounded-xl border border-neutral-200 bg-white text-sm font-semibold text-neutral-900 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40"
           }
           onClick={onRedo}
           disabled={isClientPreview || !canRedo}
@@ -346,6 +347,14 @@ export default function EditorCommandBar({
           data-testid="save-status"
           data-status={saveStatus.kind}
           data-source={saveStatus.source}
+          data-last-successful-save-at={
+            saveStatus.lastSuccessfulSaveAt
+              ? new Date(saveStatus.lastSuccessfulSaveAt).toISOString()
+              : ""
+          }
+          role="status"
+          aria-live="polite"
+          aria-label={`${saveStatus.label}. ${saveStatus.detail}`}
           title={`${saveStatus.label}: ${saveStatus.detail}`}
           className={`hidden h-9 min-w-0 items-center gap-1.5 rounded-full border px-2 text-xs md:flex ${
             saveStatus.canRetry ? "shrink-0" : ""
@@ -360,8 +369,11 @@ export default function EditorCommandBar({
             }`}
             aria-hidden="true"
           />
-          <span className="hidden min-w-0 max-w-24 truncate font-semibold 2xl:inline">
+          <span className="hidden min-w-0 max-w-28 truncate font-semibold lg:inline">
             {saveStatus.label}
+          </span>
+          <span className="hidden min-w-0 max-w-36 truncate xl:inline">
+            {saveStatus.detail}
           </span>
           {saveStatus.canRetry ? (
             <button

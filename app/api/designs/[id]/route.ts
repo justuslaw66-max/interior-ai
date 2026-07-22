@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { getPostHogClient } from "@/lib/posthog-server";
+import { trackServerEvent } from "@/lib/server-analytics";
 import { buildDesignUpdatePayload } from "@/lib/design-route-payload";
 import { sanitizePrivateFloorPlanUnderlayForSave } from "@/lib/floor-plan-imports/retention";
 import { projectSharedStoredDesign } from "@/lib/shared-design-snapshot";
@@ -227,22 +227,12 @@ export async function DELETE(
       throw new ApiBoundaryError(404, "NOT_FOUND", "Design not found.");
     }
 
-    // Server-side PostHog tracking for design deletion (churn analysis)
-    try {
-      const posthog = getPostHogClient();
-      posthog.capture({
-      distinctId: session.user.id,
-      event: "design_deleted",
-      properties: {
-        design_id: id,
-        style: design.style ?? null,
-        budget: design.budget ?? null,
-        mode: design.mode ?? null,
-      },
-      });
-    } catch {
-      // Analytics is non-blocking.
-    }
+    trackServerEvent("design_deleted", session.user.id, {
+      design_id: id,
+      style: design.style ?? null,
+      budget: design.budget ?? null,
+      mode: design.mode ?? null,
+    });
 
     logOperationalEvent({
       operation,

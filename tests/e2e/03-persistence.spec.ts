@@ -290,6 +290,114 @@ test.describe("3. Save + Reload Persistence", () => {
     }
   });
 
+  test("cloud conflict pauses autosave and preserves local work as a new copy", async ({
+    page,
+  }) => {
+    test.setTimeout(150_000);
+    const seed = await createBetaSeedDesign();
+    try {
+      await loadSeedDesign(page, seed);
+      let rejectedWrites = 0;
+      await page.route(`**/api/designs/${seed.designId}`, async (route) => {
+        if (route.request().method() === "PUT") {
+          rejectedWrites += 1;
+          await route.fulfill({
+            status: 409,
+            contentType: "application/json",
+            body: JSON.stringify({
+              error: "This design changed in another session.",
+              code: "CONFLICT",
+            }),
+          });
+          return;
+        }
+        await route.continue();
+      });
+
+      const widthInput = page.getByRole("spinbutton", { name: "Width mm" }).first();
+      await widthInput.fill("5900");
+      await widthInput.press("Enter");
+      const localFingerprint = await readStableFingerprint(page);
+
+      const dialog = page.getByTestId("cloud-save-conflict-dialog");
+      await expect(dialog).toBeVisible({ timeout: 30_000 });
+      await expect(page.getByTestId("cloud-conflict-save-copy")).toBeFocused();
+      const saveStatus = page.getByTestId("save-status");
+      await expect(saveStatus).toHaveAttribute("data-status", "conflict");
+      await expect(saveStatus).toHaveAttribute(
+        "data-last-successful-save-at",
+        /\d{4}-\d{2}-\d{2}T/
+      );
+
+      const writesAtConflict = rejectedWrites;
+      await page.waitForTimeout(2_200);
+      expect(rejectedWrites).toBe(writesAtConflict);
+
+      await page.getByTestId("cloud-conflict-save-copy").click();
+      await expect(dialog).toBeHidden({ timeout: 30_000 });
+      await expect(page.getByTestId("qa-editor-cloud-design")).not.toHaveAttribute(
+        "data-design-id",
+        seed.designId
+      );
+      await expect(saveStatus).toHaveAttribute("data-status", "saved");
+      await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute(
+        "data-fingerprint",
+        localFingerprint
+      );
+    } finally {
+      await cleanupBetaSeed(seed.userId);
+    }
+  });
+
+  test("cloud conflict reload requires an explicit destructive choice", async ({
+    page,
+  }) => {
+    test.setTimeout(150_000);
+    const seed = await createBetaSeedDesign();
+    try {
+      await loadSeedDesign(page, seed);
+      const loadedCloudFingerprint = await readStableFingerprint(page);
+      await page.route(`**/api/designs/${seed.designId}`, async (route) => {
+        if (route.request().method() === "PUT") {
+          await route.fulfill({
+            status: 409,
+            contentType: "application/json",
+            body: JSON.stringify({
+              error: "This design changed in another session.",
+              code: "CONFLICT",
+            }),
+          });
+          return;
+        }
+        await route.continue();
+      });
+
+      const widthInput = page.getByRole("spinbutton", { name: "Width mm" }).first();
+      await widthInput.fill("5900");
+      await widthInput.press("Enter");
+      const dialog = page.getByTestId("cloud-save-conflict-dialog");
+      await expect(dialog).toBeVisible({ timeout: 30_000 });
+      await expect(dialog).toContainText("Autosave is paused");
+      await page.keyboard.press("Escape");
+      await expect(dialog).toBeVisible();
+
+      await page.getByTestId("cloud-conflict-reload").click();
+      await expect(dialog).toBeHidden({ timeout: 30_000 });
+      await expect(widthInput).toHaveValue("5800");
+      await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute(
+        "data-fingerprint",
+        loadedCloudFingerprint,
+        { timeout: 30_000 }
+      );
+      await expect(page.getByTestId("save-status")).toHaveAttribute(
+        "data-status",
+        "saved"
+      );
+    } finally {
+      await cleanupBetaSeed(seed.userId);
+    }
+  });
+
   test("switching rooms restores each room's isolated items and zones", async ({
     page,
   }) => {

@@ -79,6 +79,11 @@ assert.match(
   /const storedSnapshot = getStoredDesignForPersistence\(\);[\s\S]*?const payload = \{[\s\S]*?designApi\.create\(payload\)[\s\S]*?setLastPersistedSnapshotFingerprint\(fingerprintStoredDesign\(storedSnapshot\)\)/,
   "Manual saves should fingerprint the exact event-time snapshot sent through the design API client."
 );
+assert.match(
+  controllerSource,
+  /const saveDesignToCloud = useCallback[\s\S]*?expectedUpdatedAt: lastCloudRevision[\s\S]*?designApi\.update\(designId, payload\)/,
+  "Manual updates should reject stale cloud revisions just like autosave."
+);
 
 assert.match(
   designRouteSource,
@@ -118,6 +123,16 @@ assert.match(
   controllerSource,
   /const \[lastCloudRevision, setLastCloudRevision\][\s\S]*?typeof data\.updatedAt === "string"[\s\S]*?setLastCloudRevision\(storedSnapshot\.updatedAt\)/,
   "Persistence should retain revisions returned by load/create/update operations."
+);
+assert.match(
+  controllerSource,
+  /error\.kind === "conflict"[\s\S]*?setCloudSaveConflict[\s\S]*?if \(cloudSaveConflict\) \{[\s\S]*?setIsSaving\(false\);[\s\S]*?return;/,
+  "A revision conflict should become durable UI state and pause repeated autosave writes."
+);
+assert.match(
+  controllerSource,
+  /const saveConflictAsNewCopy = useCallback[\s\S]*?designApi\.create[\s\S]*?const reloadCloudAfterConflict = useCallback[\s\S]*?loadDesign\(conflict\.designId\)/,
+  "Conflict resolution should offer a new-copy path and an explicit cloud-reload path."
 );
 
 assert.match(

@@ -132,6 +132,7 @@ export default function PlanOpeningInspector({
           keyboardStepMm={50}
           dark={dark}
           compact
+          touchFriendly
           onCommit={(valueMm) => onChange(opening.id, { widthMeters: valueMm / 1000 })}
         />
         <div>
@@ -152,6 +153,7 @@ export default function PlanOpeningInspector({
             disabled={!heightEditable}
             dark={dark}
             compact
+            touchFriendly
             onCommit={(valueMm) =>
               onChange(opening.id, {
                 heightMeters: valueMm / 1000,
@@ -186,6 +188,7 @@ export default function PlanOpeningInspector({
               disabled={!sillEditable}
               dark={dark}
               compact
+              touchFriendly
               onCommit={(valueMm) =>
                 onChange(opening.id, {
                   bottomMeters: valueMm / 1000,
@@ -218,6 +221,7 @@ export default function PlanOpeningInspector({
           keyboardStepMm={50}
           dark={dark}
           compact
+          touchFriendly
           onCommit={(valueMm) => onChange(opening.id, { offsetMeters: valueMm / 1000 })}
         />
       </div>

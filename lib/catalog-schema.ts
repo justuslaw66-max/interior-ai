@@ -236,6 +236,24 @@ export interface AdjustablePendantHeightMetadata {
   cableEndRatio: number;
 }
 
+export type CatalogAssetQualityStatus = "approved" | "needs_review" | "blocked";
+export type CatalogLicensingStatus = "verified" | "unverified" | "restricted";
+
+export interface CatalogLicensingMetadata {
+  status: CatalogLicensingStatus;
+  licenseId?: string;
+  sourceUrl?: string;
+  attribution?: string;
+  usageNotes?: string;
+  verifiedAt?: string;
+}
+
+export interface CatalogAssetQualityMetadata {
+  status: CatalogAssetQualityStatus;
+  validatorVersion?: string;
+  validatedAt?: string;
+}
+
 // ============================================================================
 // Complete Catalog Item (Full Contract)
 // ============================================================================
@@ -275,6 +293,7 @@ export interface CatalogItemSchema {
   // Metadata
   metadata?: {
     brand?: string;
+    merchantId?: string;
     modelLabel?: string;
     productFamily?: string;
     productName?: string;
@@ -286,6 +305,12 @@ export interface CatalogItemSchema {
     colorFamily?: string;
     tone?: string;
     priceUsd?: number;
+    currencyCode?: string;
+    lastSynchronizedAt?: string;
+    deliveryInformation?: string;
+    promotions?: string[];
+    licensing?: CatalogLicensingMetadata;
+    assetQuality?: CatalogAssetQualityMetadata;
     priceBand?: string;
     seatCapacity?: number;
     materialFamily?: string;

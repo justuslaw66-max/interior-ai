@@ -6,6 +6,7 @@ import SharePageActions from "@/components/SharePageActions";
 import { legacyApiToSnapshot } from "@/lib/room-persistence";
 import {
   buildCheckoutReadinessRows,
+  buildShareCheckoutLines,
   buildShoppingCsvRows,
 } from "@/lib/share-shopping-csv";
 import { CATALOG_ITEMS } from "@/lib/catalog";
@@ -22,6 +23,8 @@ import LazyImage from "@/components/common/LazyImage";
 import ShopLink from "./export/ShopLink";
 import ShoppingCsvDownload from "./export/ShoppingCsvDownload";
 import { projectSharedDesignSnapshot } from "@/lib/shared-design-snapshot";
+import ShareFloorPlanPreview from "@/components/ShareFloorPlanPreview";
+import ShareShoppingCheckout from "@/components/ShareShoppingCheckout";
 
 export const metadata = {
   robots: { index: false, follow: false },
@@ -67,6 +70,7 @@ export default async function SharePage({
       savedViews: true,
       style: true,
       budget: true,
+      notes: true,
     },
   });
 
@@ -125,6 +129,7 @@ export default async function SharePage({
     }))
   );
   const checkoutReadinessRows = buildCheckoutReadinessRows(designSnapshot.rooms);
+  const shareCheckoutLines = buildShareCheckoutLines(checkoutReadinessRows);
   const shoppingCsvRows = buildShoppingCsvRows(checkoutReadinessRows);
   const checkoutReadyRows = checkoutReadinessRows.filter(
     (item) => item.hasValidCommerce && item.commerceMode === "shopify" && item.includeInCheckout
@@ -412,6 +417,19 @@ export default async function SharePage({
         <ShareViewer initialSnapshot={designSnapshot} />
       </div>
 
+      <ShareFloorPlanPreview snapshot={designSnapshot} />
+
+      {design.notes ? (
+        <section className="border-t bg-white" data-testid="share-design-notes">
+          <div className="mx-auto max-w-6xl px-6 py-5">
+            <h2 className="text-lg font-semibold text-neutral-950">Design notes</h2>
+            <p className="mt-2 whitespace-pre-wrap rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-sm leading-6 text-neutral-700">
+              {design.notes}
+            </p>
+          </div>
+        </section>
+      ) : null}
+
       {presentationViewItems.length > 0 ? (
         <section className="border-t bg-white">
           <div className="mx-auto max-w-6xl px-6 py-5">
@@ -588,6 +606,16 @@ export default async function SharePage({
               </div>
             </div>
           </div>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-neutral-200 bg-neutral-50 p-4">
+            <div>
+              <div className="text-sm font-semibold text-neutral-950">Live commerce checkout</div>
+              <div className="mt-1 max-w-2xl text-xs leading-5 text-neutral-600">
+                Direct-checkout stock and prices are verified with the retailer before a cart is created.
+                External retailer items stay available through their individual links.
+              </div>
+            </div>
+            <ShareShoppingCheckout lines={shareCheckoutLines} />
+          </div>
         </div>
       </section>
 
@@ -661,6 +689,13 @@ export default async function SharePage({
 
           {visibleShoppingItems.length > 0 ? (
             <>
+              <div
+                className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-900"
+                data-testid="share-availability-warning"
+              >
+                Prices are estimates. Stock, delivery, and final pricing can change; direct-checkout items are
+                revalidated live, and retailer-link items must be confirmed on the retailer site.
+              </div>
               <div className="mt-4 grid gap-3 md:grid-cols-2">
                 {visibleShoppingItems.map((item) => (
                   <div
@@ -702,6 +737,11 @@ export default async function SharePage({
                             {item.cartStatusLabel}
                           </span>
                         </div>
+                        {item.warningLabel ? (
+                          <div className="mt-2 text-xs font-medium text-amber-700">
+                            {item.warningLabel}
+                          </div>
+                        ) : null}
                         {item.retailerUrl ? (
                           <ShopLink
                             url={item.retailerUrl}

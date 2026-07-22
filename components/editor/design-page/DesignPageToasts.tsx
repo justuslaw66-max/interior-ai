@@ -15,7 +15,12 @@ export function DesignPageToasts({
     <>
       {/* Collision/Rule Toast */}
       {ruleMessage && (
-        <div data-testid="collision-toast" className="pointer-events-none fixed top-16 left-1/2 z-50 -translate-x-1/2 animate-fade-in">
+        <div
+          data-testid="collision-toast"
+          role="status"
+          aria-live="polite"
+          className="pointer-events-none fixed top-16 left-1/2 z-50 -translate-x-1/2 animate-fade-in"
+        >
           <div className="rounded-lg bg-orange-500 px-4 py-3 text-sm font-semibold text-white shadow-lg">
             ⚠️ {ruleMessage}
           </div>

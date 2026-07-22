@@ -29,6 +29,13 @@ export type ShoppingCsvRow = {
   reviewNote: string | null;
 };
 
+export type ShareCheckoutLine = {
+  merchandiseId: string;
+  quantity: number;
+  productId: string;
+  variantId: string;
+};
+
 function formatCategory(value: string) {
   return value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
@@ -57,6 +64,45 @@ export function buildCheckoutReadinessRows(rooms: RoomSnapshot[]): CheckoutReadi
       floorLabel: room.floorLabel,
     }))
   );
+}
+
+export function buildShareCheckoutLines(rows: CheckoutReadinessRow[]): ShareCheckoutLine[] {
+  const grouped = new Map<string, ShareCheckoutLine>();
+
+  for (const row of rows) {
+    if (
+      row.commerceMode !== "shopify" ||
+      !row.hasValidCommerce ||
+      !row.includeInCheckout ||
+      !row.shopifyVariantId
+    ) {
+      continue;
+    }
+
+    const key = `${row.productId}:${row.variantId}:${row.shopifyVariantId}`;
+    const existing = grouped.get(key);
+    if (existing) {
+      existing.quantity += row.quantity;
+    } else {
+      grouped.set(key, {
+        merchandiseId: row.shopifyVariantId,
+        quantity: row.quantity,
+        productId: row.productId,
+        variantId: row.variantId,
+      });
+    }
+  }
+
+  return Array.from(grouped.values()).flatMap((line) => {
+    const chunks: ShareCheckoutLine[] = [];
+    let remaining = line.quantity;
+    while (remaining > 0) {
+      const quantity = Math.min(20, remaining);
+      chunks.push({ ...line, quantity });
+      remaining -= quantity;
+    }
+    return chunks;
+  });
 }
 
 export function buildShoppingCsvRows(rows: CheckoutReadinessRow[]): ShoppingCsvRow[] {

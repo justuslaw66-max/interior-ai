@@ -103,7 +103,7 @@ export default function SelectedItemDetailsPanel({
     : "rounded-md border border-neutral-200 px-2 py-1 text-xs text-neutral-700 hover:bg-neutral-50 disabled:opacity-50";
   const actionToggleClass = (active: boolean, disabled = false) => {
     const base =
-      "inline-flex min-h-10 items-center justify-start gap-2 rounded-lg border px-3 text-xs font-semibold transition-colors";
+      "inline-flex min-h-11 items-center justify-start gap-2 rounded-lg border px-3 text-xs font-semibold transition-colors";
     if (disabled) {
       return dark
         ? `${base} cursor-not-allowed border-white/10 bg-white/[0.03] text-neutral-500 opacity-60`
@@ -325,7 +325,7 @@ export default function SelectedItemDetailsPanel({
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
-              className={`${disabledButtonClass} min-h-10`}
+              className={`${disabledButtonClass} min-h-11`}
               disabled={itemActionsDisabled}
               onClick={onCenterInRoom}
               data-testid="selected-item-center"
@@ -335,7 +335,7 @@ export default function SelectedItemDetailsPanel({
             </button>
             <button
               type="button"
-              className={`${disabledButtonClass} min-h-10`}
+              className={`${disabledButtonClass} min-h-11`}
               disabled={itemActionsDisabled}
               onClick={onSnapToWall}
               data-testid="selected-item-snap-wall"
@@ -345,7 +345,7 @@ export default function SelectedItemDetailsPanel({
             </button>
             <button
               type="button"
-              className={`${disabledButtonClass} min-h-10`}
+              className={`${disabledButtonClass} min-h-11`}
               disabled={itemActionsDisabled}
               onClick={onDuplicate}
               data-testid="selected-item-duplicate"
@@ -355,7 +355,7 @@ export default function SelectedItemDetailsPanel({
             </button>
             <button
               type="button"
-              className={`${disabledButtonClass} min-h-10`}
+              className={`${disabledButtonClass} min-h-11`}
               disabled={itemActionsDisabled}
               onClick={onDelete}
               data-testid="selected-item-delete"
@@ -379,6 +379,12 @@ export default function SelectedItemDetailsPanel({
                 {dimensionLabel}
               </span>
             </div>
+            <div
+              className={dark ? "mt-1 text-[11px] text-neutral-400" : "mt-1 text-[11px] text-neutral-500"}
+              data-testid="selected-item-size-guidance"
+            >
+              Catalog size is preserved. Choose an available model or size option below to resize accurately.
+            </div>
             <div className="mt-2 grid grid-cols-2 gap-2">
               <MeasurementField
                 label="Position X"
@@ -390,6 +396,7 @@ export default function SelectedItemDetailsPanel({
                 disabled={itemActionsDisabled}
                 dark={dark}
                 compact
+                touchFriendly
                 onCommit={(valueMm) => onSetPosition(valueMm / 1000, positionZ)}
               />
               <MeasurementField
@@ -402,6 +409,7 @@ export default function SelectedItemDetailsPanel({
                 disabled={itemActionsDisabled}
                 dark={dark}
                 compact
+                touchFriendly
                 onCommit={(valueMm) => onSetPosition(positionX, valueMm / 1000)}
               />
             </div>
@@ -409,7 +417,7 @@ export default function SelectedItemDetailsPanel({
               <button
                 type="button"
                 data-testid="selected-item-nudge-left"
-                className={`${disabledButtonClass} min-h-10`}
+                className={`${disabledButtonClass} min-h-11`}
                 disabled={itemActionsDisabled}
                 aria-label="Nudge selected item left by 5 centimeters"
                 onClick={() => onNudge(-0.05, 0)}
@@ -419,7 +427,7 @@ export default function SelectedItemDetailsPanel({
               <button
                 type="button"
                 data-testid="selected-item-nudge-back"
-                className={`${disabledButtonClass} min-h-10`}
+                className={`${disabledButtonClass} min-h-11`}
                 disabled={itemActionsDisabled}
                 aria-label="Nudge selected item back by 5 centimeters"
                 onClick={() => onNudge(0, -0.05)}
@@ -429,7 +437,7 @@ export default function SelectedItemDetailsPanel({
               <button
                 type="button"
                 data-testid="selected-item-nudge-front"
-                className={`${disabledButtonClass} min-h-10`}
+                className={`${disabledButtonClass} min-h-11`}
                 disabled={itemActionsDisabled}
                 aria-label="Nudge selected item forward by 5 centimeters"
                 onClick={() => onNudge(0, 0.05)}
@@ -439,7 +447,7 @@ export default function SelectedItemDetailsPanel({
               <button
                 type="button"
                 data-testid="selected-item-nudge-right"
-                className={`${disabledButtonClass} min-h-10`}
+                className={`${disabledButtonClass} min-h-11`}
                 disabled={itemActionsDisabled}
                 aria-label="Nudge selected item right by 5 centimeters"
                 onClick={() => onNudge(0.05, 0)}
@@ -520,8 +528,8 @@ export default function SelectedItemDetailsPanel({
                 data-testid="selected-item-move-room"
                 className={
                   dark
-                    ? "mt-1 h-9 w-full rounded-md border border-white/15 bg-[#111827] px-2 text-xs text-neutral-100"
-                    : "mt-1 h-9 w-full rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-900"
+                    ? "mt-1 h-11 w-full rounded-md border border-white/15 bg-[#111827] px-2 text-xs text-neutral-100"
+                    : "mt-1 h-11 w-full rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-900"
                 }
                 value={activeRoomId}
                 disabled={itemActionsDisabled}

@@ -11,7 +11,7 @@ import {
 } from "react";
 
 import { getAnonId } from "@/lib/anon";
-import { track } from "@/lib/analytics";
+import { track, trackProductEvent } from "@/lib/analytics";
 import {
   ANNUAL_PLAN_SAVINGS_LABEL,
   buildPaywallContextMeta,
@@ -211,6 +211,11 @@ export function useDesignPagePaywallTelemetryController({
         design_id: identity.designId ?? null,
         mode: state.editor.mode,
         is_guest: !state.editor.isAuthenticated,
+      });
+      trackProductEvent("project_started", {
+        mode: state.editor.mode === "designer" ? "pro" : "consumer",
+        itemCount: refs.items.current.length,
+        firstInSession: true,
       });
       logFunnelEvent("design_started", {
         mode: state.editor.mode,

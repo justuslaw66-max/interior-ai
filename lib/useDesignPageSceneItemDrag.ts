@@ -2,6 +2,7 @@
 
 import { useRef, type MutableRefObject } from "react";
 
+import { trackProductEvent } from "@/lib/analytics";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import {
   findCatalogSurfacePlacement,
@@ -156,6 +157,17 @@ export function useDesignPageSceneItemDrag({
   } = actions;
   const dragOriginalItemsRef = useRef<DesignItem[] | null>(null);
   const dragDescriptionRef = useRef("Move item");
+  const dragRejectionRef = useRef<{ message: string; shownAt: number } | null>(null);
+
+  const showDragRejection = (message: string): void => {
+    const now = Date.now();
+    const previous = dragRejectionRef.current;
+    if (previous && previous.message === message && now - previous.shownAt < 1_500) {
+      return;
+    }
+    dragRejectionRef.current = { message, shownAt: now };
+    showToast(message);
+  };
 
   const applyDragPatches = (
     description: string,
@@ -217,6 +229,12 @@ export function useDesignPageSceneItemDrag({
         execute: (input) => setItems(input),
       });
       history.commitContinuousCommand(SCENE_ITEM_DRAG_COMMAND_ID);
+      trackProductEvent("object_transformed", {
+        operation: "move",
+        source: "scene_drag",
+        itemCount: Math.max(1, selectedIdsRef.current.size),
+        result: "success",
+      });
       dragCommitRef.current = false;
       dragOriginalItemsRef.current = null;
     } catch (error) {
@@ -249,6 +267,7 @@ export function useDesignPageSceneItemDrag({
           valid: false,
           kind: "item",
         });
+        showDragRejection("Drop the item fully inside a room.");
         return false;
       }
 
@@ -263,7 +282,10 @@ export function useDesignPageSceneItemDrag({
       if (!groupMove) {
         const currentItems = itemsRef.current;
         const mover = currentItems.find((item) => item.instanceId === id);
-        if (!mover) return false;
+        if (!mover) {
+          showDragRejection("This item is no longer available.");
+          return false;
+        }
         const product = CATALOG_ITEMS[mover.productId];
         if (product?.category === "rug") return true;
 
@@ -279,9 +301,15 @@ export function useDesignPageSceneItemDrag({
             items: currentItems,
             nearPosition: localPosition,
           });
-          if (!surfacePlacement) return false;
+          if (!surfacePlacement) {
+            showDragRejection("Place this item on a clear supported surface.");
+            return false;
+          }
           const moverRoom = roomSnapshotById.get(sceneEntry.roomId) ?? activeRoom;
-          if (!moverRoom) return false;
+          if (!moverRoom) {
+            showDragRejection("Choose a room before moving this item.");
+            return false;
+          }
           const candidate = {
             ...mover,
             position: surfacePlacement.position,
@@ -296,6 +324,7 @@ export function useDesignPageSceneItemDrag({
               configuredPlanningDims
             )
           ) {
+            showDragRejection(`Place the whole item inside ${moverRoom.name}.`);
             return false;
           }
           const blocker = findPlacementBlocker(
@@ -306,7 +335,12 @@ export function useDesignPageSceneItemDrag({
             configuredPlanningDims,
             [mover.instanceId, surfacePlacement.supportInstanceId ?? ""].filter(Boolean)
           );
-          if (blocker) return false;
+          if (blocker) {
+            showDragRejection(
+              `Move blocked by ${getItemDisplayName(blocker) ?? "another item"}.`
+            );
+            return false;
+          }
           applyDragPatches("Move item", [
             {
               instanceId: id,
@@ -425,7 +459,9 @@ export function useDesignPageSceneItemDrag({
             }
             const blockerBounds = getItemBounds(blocker);
             if (blockerBounds && aabbIntersects(moverBounds, blockerBounds)) {
-              showToast("Overlapping item — move blocked");
+              showDragRejection(
+                `Move blocked by ${getItemDisplayName(blocker) ?? "another item"}.`
+              );
               return false;
             }
           }
@@ -438,7 +474,10 @@ export function useDesignPageSceneItemDrag({
 
       const currentItems = itemsRef.current;
       const mover = currentItems.find((item) => item.instanceId === id);
-      if (!mover) return false;
+      if (!mover) {
+        showDragRejection("This item is no longer available.");
+        return false;
+      }
       if (pointerRoom && pointerRoom.id !== sceneEntry.roomId && hasWholeHousePlan) {
         const targetRoom = roomSnapshotById.get(pointerRoom.id);
         setCrossRoomDragTarget({
@@ -455,7 +494,10 @@ export function useDesignPageSceneItemDrag({
       const movable = currentItems.filter(
         (item) => selectedIds.has(item.instanceId) && !(designerMode && item.locked)
       );
-      if (!movable.length) return false;
+      if (!movable.length) {
+        showDragRejection("Unlock at least one selected item to move the group.");
+        return false;
+      }
       const movableIds = new Set(movable.map((item) => item.instanceId));
       const blockers = currentItems.filter((item) => !movableIds.has(item.instanceId));
       const nextItems = currentItems.map((item) => {
@@ -497,7 +539,12 @@ export function useDesignPageSceneItemDrag({
             continue;
           }
           const blockerBounds = getItemBounds(blocker);
-          if (blockerBounds && aabbIntersects(movedBounds, blockerBounds)) return false;
+          if (blockerBounds && aabbIntersects(movedBounds, blockerBounds)) {
+            showDragRejection(
+              `Move blocked by ${getItemDisplayName(blocker) ?? "another item"}.`
+            );
+            return false;
+          }
         }
       }
 
@@ -521,6 +568,7 @@ export function useDesignPageSceneItemDrag({
         }
       }
       console.error("[Editor] onMove handler failed", { id, pos: position, error });
+      showDragRejection("Could not move the item. Try again.");
       return false;
     }
   };
@@ -580,6 +628,7 @@ export function useDesignPageSceneItemDrag({
           commitActiveDrag();
         }
       }
+      dragRejectionRef.current = null;
     }
   };
 

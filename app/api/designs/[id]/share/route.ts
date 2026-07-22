@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import crypto from "crypto";
-import { getPostHogClient } from "@/lib/posthog-server";
+import { trackServerEvent } from "@/lib/server-analytics";
 import { rateLimit } from "@/lib/rateLimit";
 import { logAppEvent } from "@/lib/app-events";
 import { sendShareLinkEmail } from "@/lib/email";
@@ -117,16 +117,10 @@ export async function POST(
     throw new ApiBoundaryError(500, "INTERNAL_ERROR", "Could not create a share link.");
   }
 
-  try {
-    const posthog = getPostHogClient();
-    posthog.capture({
-      distinctId: session.user.id,
-      event: "share_link_enabled",
-      properties: { design_id: id, is_regenerate: regenerate },
-    });
-  } catch {
-    // Analytics must not prevent a successfully-created share link.
-  }
+  trackServerEvent("share_link_enabled", session.user.id, {
+    design_id: id,
+    is_regenerate: regenerate,
+  });
 
   await logAppEvent({
     eventType: "share_link_created",

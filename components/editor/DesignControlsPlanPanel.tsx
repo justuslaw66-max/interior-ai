@@ -80,6 +80,7 @@ import FloorPlanUploadPanel from "./FloorPlanUploadPanel";
 import FloorPlanToolStrip, { type FloorPlanTool } from "./FloorPlanToolStrip";
 import PlanOpeningInspector from "./PlanOpeningInspector";
 import MeasurementField from "./MeasurementField";
+import { ConsumerRoomSetupCard } from "./ConsumerRoomSetupCard";
 import FloorPlanPropertyEvidenceControl from "./FloorPlanPropertyEvidenceControl";
 import { formatCabinetMeasurement } from "@/features/cabinetry/measurementUnits";
 import RoomConnectionChecklist from "./RoomConnectionChecklist";
@@ -777,6 +778,7 @@ type DesignControlsPlanPanelProps = {
   onRoomPresetChange: (presetId: RoomSizePresetId) => void;
   onRoomWidthInputChange: (value: string) => void;
   onRoomDepthInputChange: (value: string) => void;
+  onMeasurementUnitChange: (unit: PlanMeasurementUnit) => void;
   onCommitRoomDimension: (axis: "width" | "depth", valueMm: number) => void;
   onActiveRoomHeightMmChange: (
     valueMm: number,
@@ -948,6 +950,7 @@ export default function DesignControlsPlanPanel({
   onRoomPresetChange,
   onRoomWidthInputChange,
   onRoomDepthInputChange,
+  onMeasurementUnitChange,
   onCommitRoomDimension,
   onActiveRoomHeightMmChange,
   onActiveRoomWallThicknessMmChange,
@@ -998,16 +1001,16 @@ export default function DesignControlsPlanPanel({
   const [templateBedroomFilter, setTemplateBedroomFilter] = useState<"all" | "studio" | "one" | "two">("all");
   const [templateFootprintFilter, setTemplateFootprintFilter] = useState<"all" | "compact" | "narrow" | "wide">("all");
   const [templateStyleFilter, setTemplateStyleFilter] = useState<"all" | "open" | "separated" | "adu">("all");
-  const [collapsedPlanSections, setCollapsedPlanSections] = useState<Record<CollapsiblePlanSection, boolean>>({
+  const [collapsedPlanSections, setCollapsedPlanSections] = useState<Record<CollapsiblePlanSection, boolean>>(() => ({
     floorPlan: false,
-    importFloorPlan: false,
-    drawRoom: false,
-    openings: false,
-    templates: false,
+    importFloorPlan: !isDesigner,
+    drawRoom: !isDesigner,
+    openings: !isDesigner,
+    templates: !isDesigner,
     planQuality: true,
     selectedRoom: true,
     connections: false,
-  });
+  }));
   const templatePickerRef = useRef<HTMLDivElement | null>(null);
   const floorFinishPanelOpenSignalRef = useRef(0);
   const pendingSurfaceRevealRef = useRef(false);
@@ -1019,9 +1022,17 @@ export default function DesignControlsPlanPanel({
     onPlanStartModeChange?.(mode);
   };
   const openTemplatePicker = () => {
+    track("launch_path_selected", {
+      path: "template",
+      source: isDesigner ? "pro_plan_tools" : "consumer_room_setup",
+    });
     setPlanStartMode("template");
   };
   const openFloorPlanUploadPicker = () => {
+    track("launch_path_selected", {
+      path: "upload",
+      source: isDesigner ? "pro_plan_tools" : "consumer_room_setup",
+    });
     flushSync(() => setPlanStartMode("upload"));
     document
       .getElementById("floor-plan-upload")
@@ -3081,6 +3092,10 @@ export default function DesignControlsPlanPanel({
     </div>
   );
   const startDrawRoomSetup = () => {
+    track("launch_path_selected", {
+      path: "draw",
+      source: isDesigner ? "pro_plan_tools" : "consumer_room_setup",
+    });
     startDrawRoomMode("rectangle_wall");
   };
   const getPlanQualityActionLabel = (action: FloorPlanQualityAction) => {
@@ -3215,11 +3230,11 @@ export default function DesignControlsPlanPanel({
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <div className="text-base font-semibold">Floor plan</div>
+                <div className="text-base font-semibold">Room setup</div>
                 <div className={progressMetaClass}>
                   {hasRooms
                     ? `${planRoomCount} room${planRoomCount === 1 ? "" : "s"} · ${activeRoomName}`
-                    : "Import, draw, or choose a starter layout."}
+                    : "Choose a starter layout, enter dimensions, or draw."}
                 </div>
                 {hasRooms && (
                   <div data-testid="consumer-plan-next-steps" className={progressMetaClass}>
@@ -3255,13 +3270,47 @@ export default function DesignControlsPlanPanel({
 
           {!floorPlanCollapsed && (
             <>
+              <ConsumerRoomSetupCard
+                dark={dark}
+                canEdit={canEdit}
+                canEditPlanGeometry={canEditPlanGeometry}
+                hasRooms={hasRooms}
+                activeRoomName={activeRoomName}
+                newRoomType={newRoomType}
+                activeRoomPresetId={activeRoomPresetId}
+                roomWidthInput={roomWidthInput}
+                roomDepthInput={roomDepthInput}
+                roomWidth={roomWidth}
+                roomDepth={roomDepth}
+                measurementUnit={measurementUnit}
+                openingCount={planOpeningCount}
+                hasConnectionBlockers={hasConnectionBlockers}
+                actions={{
+                  changeRoomType: onNewRoomTypeChange,
+                  changeRoomPreset: onRoomPresetChange,
+                  changeRoomWidthInput: onRoomWidthInputChange,
+                  changeRoomDepthInput: onRoomDepthInputChange,
+                  commitRoomDimension: onCommitRoomDimension,
+                  changeMeasurementUnit: onMeasurementUnitChange,
+                  createRoom: () => {
+                    onNewRoomShapeChange("rectangle");
+                    onAddDesignerRoom();
+                  },
+                  chooseTemplate: openTemplatePicker,
+                  drawRoom: startDrawRoomSetup,
+                  uploadPlan: openFloorPlanUploadPicker,
+                  addOpening: onAddFloorPlanOpeningFromTool,
+                  continueToFurnish: onGoFurnish,
+                }}
+              />
+
               {renderPlanToolSection({
                 section: "importFloorPlan",
                 title: "Import floor plan",
                 children: (
                   <div className={planToolGridClass}>
                     {renderPlanToolTile({
-                      testId: "plan-start-upload",
+                      testId: "plan-tool-import-2d",
                       icon: "upload",
                       label: "Import 2D drawing",
                       active: planStartMode === "upload",
@@ -3292,7 +3341,7 @@ export default function DesignControlsPlanPanel({
                       onClick: () => startDrawRoomMode("straight_wall"),
                     })}
                     {renderPlanToolTile({
-                      testId: "plan-start-draw",
+                      testId: "plan-tool-rectangle-wall",
                       icon: "rectangleWall",
                       label: "Rectangle wall",
                       shortcut: "F",
@@ -3326,7 +3375,7 @@ export default function DesignControlsPlanPanel({
                 children: (
                   <div className={planToolGridClass}>
                     {renderPlanToolTile({
-                      testId: "plan-tool-door",
+                      testId: "plan-tool-door-advanced",
                       icon: "door",
                       label: "Door",
                       active: activeFloorPlanTool === "door",
@@ -3334,7 +3383,7 @@ export default function DesignControlsPlanPanel({
                       onClick: () => onAddFloorPlanOpeningFromTool("door"),
                     })}
                     {renderPlanToolTile({
-                      testId: "plan-tool-window",
+                      testId: "plan-tool-window-advanced",
                       icon: "window",
                       label: "Window",
                       active: activeFloorPlanTool === "window",
@@ -3367,7 +3416,7 @@ export default function DesignControlsPlanPanel({
                   <div className={planToolGridClass}>
                     <button
                       type="button"
-                      data-testid="plan-start-template"
+                      data-testid="plan-tool-template-library"
                       data-active={planStartMode === "template" ? "true" : "false"}
                       data-disabled={!canEdit ? "true" : "false"}
                       aria-pressed={planStartMode === "template"}
@@ -3810,6 +3859,7 @@ export default function DesignControlsPlanPanel({
                   disabled={!canEditPlanGeometry}
                   dark={dark}
                   compact
+                  touchFriendly
                   testId="mobile-room-width-input"
                   onCommit={(valueMm) => onCommitRoomDimension("width", valueMm)}
                 />
@@ -3824,6 +3874,7 @@ export default function DesignControlsPlanPanel({
                   disabled={!canEditPlanGeometry}
                   dark={dark}
                   compact
+                  touchFriendly
                   testId="mobile-room-depth-input"
                   onCommit={(valueMm) => onCommitRoomDimension("depth", valueMm)}
                 />

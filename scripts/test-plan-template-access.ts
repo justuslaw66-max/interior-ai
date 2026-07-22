@@ -8,6 +8,10 @@ import { resolveEditorCapabilities } from "../lib/editor-capabilities";
 
 const planPanelPath = path.join(process.cwd(), "components", "editor", "DesignControlsPlanPanel.tsx");
 const source = fs.readFileSync(planPanelPath, "utf8");
+const consumerRoomSetupSource = fs.readFileSync(
+  path.join(process.cwd(), "components", "editor", "ConsumerRoomSetupCard.tsx"),
+  "utf8"
+);
 const designPagePath = path.join(
   process.cwd(),
   "components",
@@ -164,8 +168,16 @@ const editorChromeControllerSource = fs.readFileSync(
   path.join(process.cwd(), "lib", "useDesignPageEditorChromeController.ts"),
   "utf8"
 );
+const betaStartControllerSource = fs.readFileSync(
+  path.join(process.cwd(), "lib", "useDesignPageBetaStartController.ts"),
+  "utf8"
+);
 const betaSmokePath = path.join(process.cwd(), "tests", "e2e", "00-beta-smoke.spec.ts");
 const betaSmokeSource = fs.readFileSync(betaSmokePath, "utf8");
+const consumerRoomSetupE2ESource = fs.readFileSync(
+  path.join(process.cwd(), "tests", "e2e", "23-consumer-room-setup.spec.ts"),
+  "utf8"
+);
 
 assert.match(
   source,
@@ -181,20 +193,75 @@ assert.match(
 
 assert.match(
   source,
-  /data-testid="plan-tool-palette"[\s\S]*?overflow-hidden rounded-sm border[\s\S]*?Floor plan[\s\S]*?Import floor plan[\s\S]*?Draw room[\s\S]*?Place doors and windows[\s\S]*?Templates/,
-  "Plan editing should use one compact Floor plan umbrella with grouped subcategories."
+  /data-testid="plan-tool-palette"[\s\S]*?overflow-hidden rounded-sm border[\s\S]*?Room setup[\s\S]*?ConsumerRoomSetupCard[\s\S]*?Import floor plan[\s\S]*?Draw room[\s\S]*?Place doors and windows[\s\S]*?Templates/,
+  "Consumer plan editing should lead with one focused Room setup card while retaining grouped advanced tools."
 );
 
 assert.match(
   source,
   /const planToolSectionClass =[\s\S]*border-b[\s\S]*last:border-b-0[\s\S]*const planToolSectionHeaderClass =[\s\S]*px-3 py-2\.5/,
-  "Plan subcategory rows should be compact dividers inside the Floor plan umbrella, not large separate cards."
+  "Plan subcategory rows should remain compact secondary tools inside the Room setup umbrella."
+);
+
+assert.match(
+  consumerRoomSetupSource,
+  /data-testid="plan-start-template"[\s\S]*?onClick=\{actions\.chooseTemplate\}[\s\S]*?Starter layouts/,
+  "The primary consumer setup should visibly expose starter layouts."
+);
+
+assert.match(
+  consumerRoomSetupSource,
+  /data-testid="room-setup-measurement-units"[\s\S]*?aria-pressed=\{selected\}[\s\S]*?min-h-11[\s\S]*?touchFriendly[\s\S]*?testId="room-setup-width-input"[\s\S]*?touchFriendly[\s\S]*?testId="room-setup-depth-input"/,
+  "Consumer room units and dimensions should expose pressed state, immediate validation fields, and touch-sized controls."
+);
+
+assert.match(
+  consumerRoomSetupSource,
+  /data-testid="room-setup-scale-summary"[\s\S]*?role="status"[\s\S]*?Visible scale:[\s\S]*?data-testid="plan-tool-door"[\s\S]*?data-testid="plan-tool-window"/,
+  "Consumer room setup should keep scale and door/window correction paths visible."
+);
+
+assert.match(
+  consumerRoomSetupSource,
+  /id="room-setup-opening-status"[\s\S]*?data-testid="room-setup-continue-furnish"[\s\S]*?aria-describedby=\{hasConnectionBlockers \? "room-setup-opening-status" : undefined\}/,
+  "Blocked Consumer progression should be disabled and described by the visible doorway correction status."
 );
 
 assert.match(
   source,
-  /data-testid="plan-start-template"[\s\S]*?onClick=\{openTemplatePicker\}[\s\S]*?Starter layouts/,
-  "The template tile should visibly jump to the starter floor plan picker."
+  /importFloorPlan: !isDesigner,[\s\S]*?drawRoom: !isDesigner,[\s\S]*?openings: !isDesigner,[\s\S]*?templates: !isDesigner/,
+  "Consumer advanced plan sections should start collapsed while Pro retains the dense tool surface."
+);
+
+assert.match(
+  source,
+  /track\("launch_path_selected", \{[\s\S]*?path: "template"[\s\S]*?source: isDesigner \? "pro_plan_tools" : "consumer_room_setup"/,
+  "Room-setup path selection should emit privacy-safe source telemetry."
+);
+
+for (const pathName of ["template", "draw", "upload", "ai"] as const) {
+  assert.match(
+    betaStartControllerSource,
+    new RegExp(`track\\("launch_path_selected", \\{ path: "${pathName}", source: "beta_start" \\}\\)`),
+    `Beta start should record the ${pathName} launch path without room contents.`
+  );
+}
+
+assert.match(
+  documentStateControllerSource,
+  /track\("display_unit_changed", \{[\s\S]*?previous_unit: previousUnit,[\s\S]*?unit,[\s\S]*?\}\);/,
+  "Display-unit changes should be measured centrally without recording dimensions."
+);
+
+assert.match(
+  consumerRoomSetupE2ESource,
+  /plan_measurement_unit[\s\S]*?room-setup-width-input[\s\S]*?aria-invalid[\s\S]*?data-model-value-mm[\s\S]*?plan-focus-control[\s\S]*?plan-canvas-guidance/,
+  "The Consumer room-setup gate should cover invalid input recovery, saved units, and opening correction guidance."
+);
+assert.doesNotMatch(
+  consumerRoomSetupE2ESource,
+  /test\.(?:skip|fixme)|test\.info\(\)\.skip/,
+  "The Consumer room-setup candidate test must not declare skips or conditional exclusions."
 );
 
 assert.match(
@@ -205,13 +272,13 @@ assert.match(
 
 assert.match(
   source,
-  /testId: "plan-start-upload"[\s\S]*?label: "Import 2D drawing"[\s\S]*?onClick: openFloorPlanUploadPicker/,
+  /testId: "plan-tool-import-2d"[\s\S]*?label: "Import 2D drawing"[\s\S]*?onClick: openFloorPlanUploadPicker/,
   "The import tile should invoke the working file-picker flow."
 );
 
 assert.match(
   source,
-  /testId: "plan-start-draw"[\s\S]*?label: "Rectangle wall"[\s\S]*?startDrawRoomMode\("rectangle_wall"\)/,
+  /testId: "plan-tool-rectangle-wall"[\s\S]*?label: "Rectangle wall"[\s\S]*?startDrawRoomMode\("rectangle_wall"\)/,
   "The rectangle wall tile should keep the existing draw-from-scratch flow."
 );
 
@@ -253,7 +320,7 @@ assert.match(
 
 const wallToolMappings = [
   ["plan-tool-straight-wall", "Straight wall", "B", "straight_wall"],
-  ["plan-start-draw", "Rectangle wall", "F", "rectangle_wall"],
+  ["plan-tool-rectangle-wall", "Rectangle wall", "F", "rectangle_wall"],
   ["plan-tool-arc-wall", "Arc wall", "H", "arc_wall"],
 ] as const;
 

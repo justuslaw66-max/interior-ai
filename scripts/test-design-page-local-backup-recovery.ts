@@ -67,6 +67,19 @@ const quarantineKey = quarantineInvalidLocalBackup(
 assert.equal(storage.getItem(storageKey), invalidRaw, "quarantine must not replace source");
 assert.equal(storage.getItem(quarantineKey), invalidRaw);
 assert.equal(readLastKnownValidLocalBackup(storage, storageKey), validRaw);
+assert.equal(
+  quarantineInvalidLocalBackup(storage, storageKey, invalidRaw, 67890),
+  quarantineKey,
+  "repeated recovery must reuse an identical quarantine copy"
+);
+assert.equal(
+  Array.from(storage.entries.entries()).filter(
+    ([key, value]) =>
+      key.startsWith(`${storageKey}:quarantine:`) && value === invalidRaw
+  ).length,
+  1,
+  "repeated invalid hydration must not grow duplicate quarantine copies"
+);
 
 assert.throws(
   () => writeValidatedLocalBackup(storage, storageKey, invalidRaw),

@@ -57,6 +57,15 @@ test.describe("4. Share Link Read-Only", () => {
         "data-item-count",
         "9",
       );
+      await expect(page.getByTestId("share-floor-plan-preview")).toBeVisible();
+      await expect(page.getByTestId("share-floor-plan-preview")).toContainText("Living Room");
+      await expect(page.getByTestId("share-design-notes")).toContainText(
+        "Deterministic beta smoke fixture.",
+      );
+      await expect(page.getByTestId("share-live-commerce")).toBeVisible();
+      await expect(page.getByTestId("share-availability-warning")).toBeVisible();
+      await expect(page.getByText("Editing creates a private copy in your account.")).toBeVisible();
+      await expect(page.getByTestId("share-copy-to-edit")).toBeVisible();
 
       await expect(page.getByTestId("save-design")).toHaveCount(0);
       await expect(page.getByTestId("command-undo")).toHaveCount(0);

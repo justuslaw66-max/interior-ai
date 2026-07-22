@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { getPostHogClient } from "@/lib/posthog-server";
+import { trackServerEvent } from "@/lib/server-analytics";
 import { config } from "@/lib/config";
 import { parseDesignCreatePayload } from "@/lib/design-route-payload";
 import { sanitizePrivateFloorPlanUnderlayForSave } from "@/lib/floor-plan-imports/retention";
@@ -155,26 +155,16 @@ export async function POST(req: Request) {
       console.log("Design created successfully:", design.id);
     }
 
-    // Server-side PostHog tracking for design creation (conversion event)
-    try {
-      const posthog = getPostHogClient();
-      posthog.capture({
-      distinctId: userId,
-      event: "design_created",
-      properties: {
-        design_id: design.id,
-        items_count: Array.isArray(rawPayload.items) ? rawPayload.items.length : 0,
-        style: payload.style,
-        budget: payload.budget,
-        mode: payload.mode,
-        room_width: payload.roomWidth,
-        room_depth: payload.roomDepth,
-        is_pro: isProUser,
-      },
-      });
-    } catch {
-      // Analytics is non-blocking.
-    }
+    trackServerEvent("design_created", userId, {
+      design_id: design.id,
+      items_count: Array.isArray(rawPayload.items) ? rawPayload.items.length : 0,
+      style: payload.style,
+      budget: payload.budget,
+      mode: payload.mode,
+      room_width: payload.roomWidth,
+      room_depth: payload.roomDepth,
+      is_pro: isProUser,
+    });
 
     logOperationalEvent({
       operation,

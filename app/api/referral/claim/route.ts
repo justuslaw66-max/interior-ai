@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { generateReferralCode } from "@/lib/referralCode";
-import { getPostHogClient } from "@/lib/posthog-server";
+import { trackServerEvent } from "@/lib/server-analytics";
 import { readJsonRequest } from "@/lib/api-boundary";
 
 async function ensureReferralCode(userId: string) {
@@ -85,19 +85,9 @@ export async function POST(req: Request) {
     select: { invitedByCode: true },
   });
 
-  // Server-side PostHog tracking for referral code claimed (growth/viral event)
-  try {
-    const posthog = getPostHogClient();
-    posthog.capture({
-    distinctId: session.user.id,
-    event: "referral_code_claimed",
-    properties: {
-      referral_applied: true,
-    },
-    });
-  } catch {
-    // Analytics is non-blocking.
-  }
+  trackServerEvent("referral_code_claimed", session.user.id, {
+    referral_applied: true,
+  });
 
   return NextResponse.json({
     referralCode,

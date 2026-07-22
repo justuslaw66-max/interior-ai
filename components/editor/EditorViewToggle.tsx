@@ -1,5 +1,7 @@
 "use client";
 
+import { trackProductEvent } from "@/lib/analytics";
+
 export type EditorViewMode = "3d" | "2d";
 
 type EditorViewToggleProps = {
@@ -19,6 +21,9 @@ export default function EditorViewToggle({ value, onChange, dark = false }: Edit
 
   return (
     <div
+      role="group"
+      aria-label="Design view"
+      data-testid="editor-view-toggle"
       className={
         dark
           ? "designer-work-surface grid grid-cols-2 gap-1 rounded-full p-1"
@@ -28,13 +33,31 @@ export default function EditorViewToggle({ value, onChange, dark = false }: Edit
       <button
         type="button"
         aria-label="2D Plan"
+        aria-pressed={value === "2d"}
+        data-testid="editor-view-2d"
         className={value === "2d" ? active : inactive}
         onClick={() => onChange("2d")}
       >
         <span className="sm:hidden">2D</span>
         <span className="hidden sm:inline">2D Plan</span>
       </button>
-      <button type="button" className={value === "3d" ? active : inactive} onClick={() => onChange("3d")}>
+      <button
+        type="button"
+        aria-label="3D"
+        aria-pressed={value === "3d"}
+        data-testid="editor-view-3d"
+        className={value === "3d" ? active : inactive}
+        onClick={() => {
+          onChange("3d");
+          if (value !== "3d") {
+            trackProductEvent("view_switched_to_3d", {
+              source: "editor_view_toggle",
+              viewMode: "3d",
+              result: "success",
+            });
+          }
+        }}
+      >
         3D
       </button>
     </div>

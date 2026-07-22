@@ -231,6 +231,7 @@ export type DesignControlsPanelProps = {
   onRoomPresetChange: (presetId: RoomSizePresetId) => void;
   onRoomWidthInputChange: (value: string) => void;
   onRoomDepthInputChange: (value: string) => void;
+  onMeasurementUnitChange: (unit: PlanMeasurementUnit) => void;
   onCommitRoomDimension: (axis: "width" | "depth", valueMm: number) => void;
   onActiveRoomHeightMmChange: (
     valueMm: number,
@@ -447,6 +448,7 @@ export default function DesignControlsPanel({
   onRoomPresetChange,
   onRoomWidthInputChange,
   onRoomDepthInputChange,
+  onMeasurementUnitChange,
   onCommitRoomDimension,
   onActiveRoomHeightMmChange,
   onActiveRoomWallThicknessMmChange,
@@ -757,6 +759,7 @@ export default function DesignControlsPanel({
             onRoomPresetChange={onRoomPresetChange}
             onRoomWidthInputChange={onRoomWidthInputChange}
             onRoomDepthInputChange={onRoomDepthInputChange}
+            onMeasurementUnitChange={onMeasurementUnitChange}
             onCommitRoomDimension={onCommitRoomDimension}
             onActiveRoomHeightMmChange={onActiveRoomHeightMmChange}
             onActiveRoomWallThicknessMmChange={onActiveRoomWallThicknessMmChange}

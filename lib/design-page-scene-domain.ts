@@ -24,6 +24,10 @@ export type SceneRoomWallModel = "canonical-room" | "house-plan-shell";
 export type SceneRoomItemEntry = {
   item: DesignItem;
   roomId: string;
+  /** Stable semantic layer shared by every presentation of this item. */
+  layerId: string;
+  /** Canonical visibility; renderers may change presentation, never this value. */
+  visible: boolean;
   roomOffset: { x: number; z: number };
   roomFloorElevationMeters: number;
   roomWidth: number;
@@ -56,6 +60,8 @@ function buildSceneRoomItemEntry(
   return {
     item,
     roomId: room.id,
+    layerId: `room:${room.id}:items`,
+    visible: true,
     roomOffset,
     roomFloorElevationMeters:
       resolveCanonicalFloorElevationMeters(room) ?? 0,
@@ -70,6 +76,48 @@ function buildSceneRoomItemEntry(
       room.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness,
     roomWallModel,
     isActiveRoom,
+  };
+}
+
+export type SceneItemContinuityDimensionsMm = {
+  w: number;
+  d: number;
+  h: number;
+};
+
+export type SceneItemViewContinuityInput = {
+  variantId?: string;
+  visualDimensionsMm: SceneItemContinuityDimensionsMm;
+  planningDimensionsMm: SceneItemContinuityDimensionsMm;
+  materialPreset?: string;
+  materialOverrides?: DesignItem["materialOverrides"];
+  selected: boolean;
+};
+
+/**
+ * Resolves the renderer-independent state that must survive a 2D/3D view
+ * change. Both renderers consume this record; only projection is allowed to
+ * differ between them.
+ */
+export function resolveSceneItemViewContinuity(
+  entry: SceneRoomItemEntry,
+  input: SceneItemViewContinuityInput
+) {
+  return {
+    instanceId: entry.item.instanceId,
+    roomId: entry.roomId,
+    layerId: entry.layerId,
+    visible: entry.visible,
+    productId: entry.item.productId,
+    variantId: input.variantId ?? entry.item.variantId,
+    productSnapshot: entry.item.productSnapshot,
+    localPosition: [...entry.item.position] as [number, number, number],
+    rotationY: entry.item.rotationY ?? 0,
+    visualDimensionsMm: { ...input.visualDimensionsMm },
+    planningDimensionsMm: { ...input.planningDimensionsMm },
+    materialPreset: input.materialPreset ?? entry.item.materialPreset,
+    materialOverrides: input.materialOverrides ?? entry.item.materialOverrides,
+    selected: input.selected,
   };
 }
 

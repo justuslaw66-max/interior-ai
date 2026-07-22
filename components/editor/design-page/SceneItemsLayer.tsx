@@ -23,7 +23,10 @@ import type { DesignItem } from "@/lib/room-types";
 import { CabinetDesignItemPlan2D } from "@/features/cabinetry/components/CabinetDesignItemPlan2D";
 import { CabinetDesignItemSpatial3D } from "@/features/cabinetry/components/CabinetDesignItemSpatial3D";
 import { isParametricCabinetItem } from "@/features/cabinetry/designItemAdapters";
-import type { SceneRoomItemEntry } from "@/lib/design-page-scene-domain";
+import {
+  resolveSceneItemViewContinuity,
+  type SceneRoomItemEntry,
+} from "@/lib/design-page-scene-domain";
 import {
   projectSceneRoomItem,
   removeSceneProjectionElevation,
@@ -135,6 +138,8 @@ export function SceneItemsLayer({
   return (
     <>
       {state.entries.map((sceneEntry) => {
+        if (!sceneEntry.visible) return null;
+
         const item = sceneEntry.item;
         const isActiveSceneRoom = sceneEntry.isActiveRoom;
         const roomOffset = sceneEntry.roomOffset;
@@ -142,6 +147,10 @@ export function SceneItemsLayer({
           configuration.viewMode === "3d" ? "spatial" : "plan";
 
         if (isParametricCabinetItem(item)) {
+          const selected =
+            isActiveSceneRoom &&
+            configuration.editorMode !== "present" &&
+            state.selectedIds.has(item.instanceId);
           const sceneRenderItemKey = `${sceneEntry.roomId}:${item.instanceId}:${item.productId}:${
             item.variantId ?? ""
           }:${configuration.renderQuality}`;
@@ -151,33 +160,38 @@ export function SceneItemsLayer({
               : CabinetDesignItemPlan2D;
 
           return (
-            <CabinetDesignItemRenderer
+            <group
               key={`${sceneEntry.roomId}:${item.instanceId}`}
-              sceneEntry={sceneEntry}
-              item={item}
-              selected={
-                isActiveSceneRoom &&
-                configuration.editorMode !== "present" &&
-                state.selectedIds.has(item.instanceId)
-              }
-              interactive={
-                isActiveSceneRoom &&
-                configuration.editorMode !== "present" &&
-                !configuration.isClientPreview
-              }
-              renderReadyKey={sceneRenderItemKey}
-              onRenderReadyChange={actions.onRenderReadyChange}
-              onSelect={(id, additive) => {
-                if (!isActiveSceneRoom) return;
-                if (
-                  configuration.editorMode === "buy" ||
-                  configuration.editorMode === "present"
-                ) {
-                  return;
-                }
-                actions.onSelect(id, additive);
+              name={`${sceneEntry.layerId}:${item.instanceId}`}
+              visible={sceneEntry.visible}
+              userData={{
+                sceneItemId: item.instanceId,
+                sceneLayerId: sceneEntry.layerId,
               }}
-            />
+            >
+              <CabinetDesignItemRenderer
+                sceneEntry={sceneEntry}
+                item={item}
+                selected={selected}
+                interactive={
+                  isActiveSceneRoom &&
+                  configuration.editorMode !== "present" &&
+                  !configuration.isClientPreview
+                }
+                renderReadyKey={sceneRenderItemKey}
+                onRenderReadyChange={actions.onRenderReadyChange}
+                onSelect={(id, additive) => {
+                  if (!isActiveSceneRoom) return;
+                  if (
+                    configuration.editorMode === "buy" ||
+                    configuration.editorMode === "present"
+                  ) {
+                    return;
+                  }
+                  actions.onSelect(id, additive);
+                }}
+              />
+            </group>
           );
         }
 
@@ -223,36 +237,52 @@ export function SceneItemsLayer({
           variant.id
         );
         const configuredNodeTransforms = resolvers.resolveConfiguredNodeTransforms(item);
-        const effectiveProduct =
-          configuredVisualDims.w === product.dimsMm.w &&
-          configuredVisualDims.d === product.dimsMm.d &&
-          configuredVisualDims.h === product.dimsMm.h &&
-          configuredModelUrl === product.assets.modelUrl
-            ? product
-            : {
-                ...product,
-                dimsMm: configuredVisualDims,
-                dimensionsMm: configuredVisualDims,
-                bounds: {
-                  type: "aabb" as const,
-                  size: {
-                    w: configuredVisualDims.w / 1000,
-                    d: configuredVisualDims.d / 1000,
-                    h: configuredVisualDims.h / 1000,
-                  },
-                  center: [0, configuredVisualDims.h / 2000, 0] as [number, number, number],
-                },
-                assets: {
-                  ...product.assets,
-                  modelUrl: configuredModelUrl ?? product.assets.modelUrl,
-                },
-              };
         const effectiveMaterialPreset =
           isActiveSceneRoom &&
           item.instanceId === state.selectedInstanceId &&
           state.previewMaterialPresetId
             ? state.previewMaterialPresetId
             : item.materialPreset;
+        const selected =
+          isActiveSceneRoom &&
+          configuration.editorMode !== "present" &&
+          state.selectedIds.has(item.instanceId);
+        const continuity = resolveSceneItemViewContinuity(sceneEntry, {
+          variantId: effectiveVariantId,
+          visualDimensionsMm: configuredVisualDims,
+          planningDimensionsMm: configuredPlanningDims,
+          materialPreset: effectiveMaterialPreset,
+          materialOverrides: item.materialOverrides,
+          selected,
+        });
+        const effectiveProduct =
+          continuity.visualDimensionsMm.w === product.dimsMm.w &&
+          continuity.visualDimensionsMm.d === product.dimsMm.d &&
+          continuity.visualDimensionsMm.h === product.dimsMm.h &&
+          configuredModelUrl === product.assets.modelUrl
+            ? product
+            : {
+                ...product,
+                dimsMm: continuity.visualDimensionsMm,
+                dimensionsMm: continuity.visualDimensionsMm,
+                bounds: {
+                  type: "aabb" as const,
+                  size: {
+                    w: continuity.visualDimensionsMm.w / 1000,
+                    d: continuity.visualDimensionsMm.d / 1000,
+                    h: continuity.visualDimensionsMm.h / 1000,
+                  },
+                  center: [
+                    0,
+                    continuity.visualDimensionsMm.h / 2000,
+                    0,
+                  ] as [number, number, number],
+                },
+                assets: {
+                  ...product.assets,
+                  modelUrl: configuredModelUrl ?? product.assets.modelUrl,
+                },
+              };
         const recoveredSurfacePlacement =
           isSurfaceOnlyCatalogItem(effectiveProduct) && (item.position[1] ?? 0) <= 0.001
             ? findCatalogSurfacePlacement({
@@ -268,140 +298,145 @@ export function SceneItemsLayer({
           recoveredSurfacePlacement?.position ??
           (isCeilingOnlyCatalogItem(effectiveProduct)
             ? [
-                item.position[0],
+                continuity.localPosition[0],
                 getCeilingMountedItemBaseY({
                   product: effectiveProduct,
-                  dimsMm: configuredVisualDims,
+                  dimsMm: continuity.visualDimensionsMm,
                   roomHeight: sceneEntry.roomHeight,
                 }),
-                item.position[2],
+                continuity.localPosition[2],
               ]
-            : item.position);
+            : continuity.localPosition);
         const sceneProjection = projectSceneRoomItem(
           sceneEntry,
           projection,
           renderLocalPosition
         );
-        const sceneRenderItemKey = `${sceneEntry.roomId}:${item.instanceId}:${item.productId}:${
-          effectiveVariantId ?? ""
+        const sceneRenderItemKey = `${continuity.roomId}:${continuity.instanceId}:${continuity.productId}:${
+          continuity.variantId ?? ""
         }:${configuration.renderQuality}`;
 
         return (
-          <Furniture
+          <group
             key={`${sceneEntry.roomId}:${item.instanceId}`}
-            data-testid="item-in-scene"
-            product={effectiveProduct}
-            variantColor={variant.colorHex}
-            variantName={variant.label}
-            variantId={variant.id}
-            variantRenderAssets={variant.renderAssets}
-            hangingHeightCm={item.hangingHeightCm}
-            planningBoundsMm={configuredPlanningDims}
-            nodeTransforms={configuredNodeTransforms ?? undefined}
-            initialPosition={sceneProjection.position}
-            initialRotationY={sceneProjection.rotationY}
-            roomWidth={sceneEntry.roomWidth}
-            roomDepth={sceneEntry.roomDepth}
-            roomOriginX={roomOffset.x}
-            roomOriginZ={roomOffset.z}
-            roomPlanShape={sceneEntry.roomPlanShape}
-            roomPlanPolygon={sceneEntry.roomPlanPolygon}
-            roomPlanHoles={sceneEntry.roomPlanHoles}
-            wallThickness={sceneProjection.wallThickness}
-            wallContactInset={sceneProjection.wallContactInset}
-            onDraggingChange={actions.onDraggingChange}
-            walls={isActiveSceneRoom ? configuration.walls : []}
-            instanceId={item.instanceId}
-            isSelected={
-              isActiveSceneRoom &&
-              configuration.editorMode !== "present" &&
-              state.selectedIds.has(item.instanceId)
-            }
-            isPrimarySelected={
-              isActiveSceneRoom && item.instanceId === state.selectedInstanceId
-            }
-            onDuplicate={() => {
-              if (item.instanceId !== state.selectedInstanceId) return;
-              actions.onDuplicateSelectedItem();
+            name={`${continuity.layerId}:${continuity.instanceId}`}
+            visible={continuity.visible}
+            userData={{
+              sceneItemId: continuity.instanceId,
+              sceneLayerId: continuity.layerId,
             }}
-            onDelete={() => {
-              if (item.instanceId !== state.selectedInstanceId) return;
-              actions.onDeleteSelectedItem();
-            }}
-            rotationSnapStepRadians={configuration.rotationSnapStepRadians}
-            rotationSnapStepDegrees={configuration.rotationSnapStepDegrees}
-            rotationSnapEnabled={configuration.rotationSnapEnabled}
-            showGuidesAndMeasurements={
-              isActiveSceneRoom &&
-              (configuration.editorMode === "design" || configuration.editorMode === "adjust")
-            }
-            cartPreviewed={
-              isActiveSceneRoom &&
-              configuration.editorMode === "buy" &&
-              state.hoveredCartInstanceId === item.instanceId
-            }
-            viewMode={configuration.viewMode}
-            planShowLabels={configuration.planShowLabels}
-            planShowDimensions={configuration.planShowDimensions}
-            planMeasurementUnit={configuration.planMeasurementUnit}
-            renderQuality={configuration.renderQuality}
-            renderReadyKey={sceneRenderItemKey}
-            onRenderReadyChange={actions.onRenderReadyChange}
-            onSelect={(id, additive) => {
-              if (!isActiveSceneRoom) return;
-              if (
-                configuration.editorMode === "buy" ||
-                configuration.editorMode === "present"
-              ) {
-                return;
+          >
+            <Furniture
+              data-testid="item-in-scene"
+              product={effectiveProduct}
+              variantColor={variant.colorHex}
+              variantName={variant.label}
+              variantId={variant.id}
+              variantRenderAssets={variant.renderAssets}
+              hangingHeightCm={item.hangingHeightCm}
+              planningBoundsMm={continuity.planningDimensionsMm}
+              nodeTransforms={configuredNodeTransforms ?? undefined}
+              initialPosition={sceneProjection.position}
+              initialRotationY={continuity.rotationY}
+              roomWidth={sceneEntry.roomWidth}
+              roomDepth={sceneEntry.roomDepth}
+              roomOriginX={roomOffset.x}
+              roomOriginZ={roomOffset.z}
+              roomPlanShape={sceneEntry.roomPlanShape}
+              roomPlanPolygon={sceneEntry.roomPlanPolygon}
+              roomPlanHoles={sceneEntry.roomPlanHoles}
+              wallThickness={sceneProjection.wallThickness}
+              wallContactInset={sceneProjection.wallContactInset}
+              onDraggingChange={actions.onDraggingChange}
+              walls={isActiveSceneRoom ? configuration.walls : []}
+              instanceId={continuity.instanceId}
+              isSelected={continuity.selected}
+              isPrimarySelected={
+                isActiveSceneRoom && item.instanceId === state.selectedInstanceId
               }
-              actions.onSelect(id, additive);
-            }}
-            onMove={(id, position) =>
-              actions.onMove({
-                sceneEntry,
-                configuredPlanningDimsMm: configuredPlanningDims,
-                id,
-                position: removeSceneProjectionElevation(
+              onDuplicate={() => {
+                if (item.instanceId !== state.selectedInstanceId) return;
+                actions.onDuplicateSelectedItem();
+              }}
+              onDelete={() => {
+                if (item.instanceId !== state.selectedInstanceId) return;
+                actions.onDeleteSelectedItem();
+              }}
+              rotationSnapStepRadians={configuration.rotationSnapStepRadians}
+              rotationSnapStepDegrees={configuration.rotationSnapStepDegrees}
+              rotationSnapEnabled={configuration.rotationSnapEnabled}
+              showGuidesAndMeasurements={
+                isActiveSceneRoom &&
+                (configuration.editorMode === "design" || configuration.editorMode === "adjust")
+              }
+              cartPreviewed={
+                isActiveSceneRoom &&
+                configuration.editorMode === "buy" &&
+                state.hoveredCartInstanceId === item.instanceId
+              }
+              viewMode={configuration.viewMode}
+              planShowLabels={configuration.planShowLabels}
+              planShowDimensions={configuration.planShowDimensions}
+              planMeasurementUnit={configuration.planMeasurementUnit}
+              renderQuality={configuration.renderQuality}
+              renderReadyKey={sceneRenderItemKey}
+              onRenderReadyChange={actions.onRenderReadyChange}
+              onSelect={(id, additive) => {
+                if (!isActiveSceneRoom) return;
+                if (
+                  configuration.editorMode === "buy" ||
+                  configuration.editorMode === "present"
+                ) {
+                  return;
+                }
+                actions.onSelect(id, additive);
+              }}
+              onMove={(id, position) =>
+                actions.onMove({
                   sceneEntry,
-                  projection,
-                  position
-                ),
-              })
-            }
-            onDragPointerMove={actions.onDragPointerMove}
-            onRotate={actions.onRotate}
-            locked={item.locked}
-            interactive={configuration.canEdit && isActiveSceneRoom}
-            allowCrossRoomDrag={configuration.hasWholeHousePlan && isActiveSceneRoom}
-            showSelection={configuration.canEdit && isActiveSceneRoom}
-            showLocks={
-              configuration.isDesigner &&
-              !configuration.isClientPreview &&
-              isActiveSceneRoom
-            }
-            onSnapPulse={actions.onSnapPulse}
-            enableSnap={
-              configuration.snapEnabled &&
-              !configuration.isClientPreview &&
-              isActiveSceneRoom
-            }
-            items={isActiveSceneRoom ? state.activeSceneItemsForGuides : []}
-            itemPlanningBoundsByInstanceId={state.itemPlanningBoundsByInstanceId}
-            materialPreset={effectiveMaterialPreset}
-            materialOverrides={item.materialOverrides}
-            onDragEnd={(id, position) =>
-              actions.onDragEnd({
-                sceneEntry,
-                id,
-                position: removeSceneProjectionElevation(
+                  configuredPlanningDimsMm: continuity.planningDimensionsMm,
+                  id,
+                  position: removeSceneProjectionElevation(
+                    sceneEntry,
+                    projection,
+                    position
+                  ),
+                })
+              }
+              onDragPointerMove={actions.onDragPointerMove}
+              onRotate={actions.onRotate}
+              locked={item.locked}
+              interactive={configuration.canEdit && isActiveSceneRoom}
+              allowCrossRoomDrag={configuration.hasWholeHousePlan && isActiveSceneRoom}
+              showSelection={configuration.canEdit && isActiveSceneRoom}
+              showLocks={
+                configuration.isDesigner &&
+                !configuration.isClientPreview &&
+                isActiveSceneRoom
+              }
+              onSnapPulse={actions.onSnapPulse}
+              enableSnap={
+                configuration.snapEnabled &&
+                !configuration.isClientPreview &&
+                isActiveSceneRoom
+              }
+              items={isActiveSceneRoom ? state.activeSceneItemsForGuides : []}
+              itemPlanningBoundsByInstanceId={state.itemPlanningBoundsByInstanceId}
+              materialPreset={continuity.materialPreset}
+              materialOverrides={continuity.materialOverrides}
+              onDragEnd={(id, position) =>
+                actions.onDragEnd({
                   sceneEntry,
-                  projection,
-                  position
-                ),
-              })
-            }
-          />
+                  id,
+                  position: removeSceneProjectionElevation(
+                    sceneEntry,
+                    projection,
+                    position
+                  ),
+                })
+              }
+            />
+          </group>
         );
       })}
     </>

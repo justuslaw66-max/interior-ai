@@ -12,6 +12,7 @@ import {
 import type { PlanStartMode } from "@/components/editor/DesignControlsPlanPanel";
 import type { BetaStartPanelProps } from "@/components/editor/design-page/BetaStartPanel";
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
+import { track } from "@/lib/analytics";
 
 export const BETA_START_DISMISSED_STORAGE_KEY =
   "interior-ai:beta-start-dismissed";
@@ -70,6 +71,7 @@ export function useDesignPageBetaStartController({
   }, []);
 
   const chooseTemplate = useCallback(() => {
+    track("launch_path_selected", { path: "template", source: "beta_start" });
     actions.setGuidedPlanStartMode("template");
     actions.goPlan();
     actions.setViewMode("2d");
@@ -79,6 +81,7 @@ export function useDesignPageBetaStartController({
   }, [actions, dismiss]);
 
   const drawRoom = useCallback(() => {
+    track("launch_path_selected", { path: "draw", source: "beta_start" });
     actions.setGuidedPlanStartMode("draw");
     actions.goPlan();
     actions.setViewMode("2d");
@@ -89,6 +92,7 @@ export function useDesignPageBetaStartController({
   }, [actions, dismiss]);
 
   const uploadPlan = useCallback(() => {
+    track("launch_path_selected", { path: "upload", source: "beta_start" });
     actions.setGuidedPlanStartMode("upload");
     actions.goPlan();
     actions.setViewMode("2d");
@@ -100,6 +104,7 @@ export function useDesignPageBetaStartController({
   }, [actions, dismiss]);
 
   const generateAiLayout = useCallback(() => {
+    track("launch_path_selected", { path: "ai", source: "beta_start" });
     actions.goAiDesign();
     actions.setDesignPanelOpen(true);
     actions.showToast("Complete the AI brief, then generate a layout");

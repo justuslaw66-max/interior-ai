@@ -9,12 +9,17 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
-import { track } from "@/lib/analytics";
+import { track, trackProductEvent, trackProductPerformance } from "@/lib/analytics";
 import { getAnonId } from "@/lib/anon";
 import { designApi, DesignApiError } from "@/lib/design-api-client";
 import { getDesignPageSaveStatus } from "@/lib/design-page-save-status";
 import { writeValidatedLocalBackup } from "@/lib/design-page-local-backup-recovery";
-import { STYLES, type NamedCameraView, type Style } from "@/lib/design-page-types";
+import {
+  STYLES,
+  type DesignPageCloudLoadResult,
+  type NamedCameraView,
+  type Style,
+} from "@/lib/design-page-types";
 import {
   loadGuestDesigns,
   markGuestDesignClaimed,
@@ -28,7 +33,6 @@ import {
 } from "@/lib/room-persistence";
 import { fingerprintDesignSnapshot } from "@/lib/snapshot-fingerprint";
 import type { DesignItem, DesignSnapshot, ZoneMin } from "@/lib/room-types";
-import type { DesignPageCloudLoadResult } from "@/lib/useDesignPageLocalBackupHydration";
 
 type Budget = "$" | "$$" | "$$$";
 type DesignMode = "homeowner" | "designer";
@@ -49,6 +53,14 @@ export type PendingSavedDesignDelete = {
 export type PreserveCurrentDesignResult =
   | { ok: true; savedDesignId: string }
   | { ok: false; error: string };
+
+export type DesignPageCloudSaveConflictState = {
+  designId: string;
+  detectedAt: number;
+  message: string;
+  isWorking: boolean;
+  resolutionError: string | null;
+};
 
 type DesignPagePersistenceState = {
   identity: {
@@ -182,6 +194,8 @@ export function useDesignPagePersistence({
     useState<string | null>(null);
   const [lastLocalSaveError, setLastLocalSaveError] = useState<string | null>(null);
   const [lastCloudSaveError, setLastCloudSaveError] = useState<string | null>(null);
+  const [cloudSaveConflict, setCloudSaveConflict] =
+    useState<DesignPageCloudSaveConflictState | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [sharingDesign, setSharingDesign] = useState(false);
   const [shareSuccessToast, setShareSuccessToast] = useState(false);
@@ -215,6 +229,37 @@ export function useDesignPagePersistence({
     );
     return queued;
   }, []);
+
+  const recordCloudSaveFailure = useCallback(
+    (error: unknown, targetDesignId: string | null, fallback: string) => {
+      const message = error instanceof Error ? error.message : fallback;
+      setLastCloudSaveError(message);
+      if (
+        targetDesignId &&
+        error instanceof DesignApiError &&
+        error.kind === "conflict"
+      ) {
+        setCloudSaveConflict((previous) =>
+          previous?.designId === targetDesignId
+            ? {
+                ...previous,
+                message,
+                isWorking: false,
+                resolutionError: null,
+              }
+            : {
+                designId: targetDesignId,
+                detectedAt: Date.now(),
+                message,
+                isWorking: false,
+                resolutionError: null,
+              }
+        );
+      }
+      return message;
+    },
+    []
+  );
 
   const fetchShareStatus = useCallback(
     async (id?: string) => {
@@ -254,6 +299,10 @@ export function useDesignPagePersistence({
               design_id: id,
               shared_context: true,
             });
+            trackProductEvent("design_shared", {
+              source: "share_link",
+              result: "success",
+            });
           }
         }
       } catch {
@@ -264,6 +313,7 @@ export function useDesignPagePersistence({
   );
 
   const saveDesignToCloud = useCallback(async () => {
+    const saveStartedAt = performance.now();
     setIsSaving(true);
     setLastCloudSaveError(null);
     try {
@@ -278,6 +328,9 @@ export function useDesignPagePersistence({
         budget,
         mode,
         notes,
+        ...(designId && lastCloudRevision
+          ? { expectedUpdatedAt: lastCloudRevision }
+          : {}),
       };
 
       const data = await enqueueCloudWrite(() =>
@@ -296,6 +349,7 @@ export function useDesignPagePersistence({
         setLastDbSaveAt(Date.now());
         setLastPersistedSnapshotFingerprint(fingerprintStoredDesign(storedSnapshot));
         setLastCloudSaveError(null);
+        setCloudSaveConflict(null);
         void fetchShareStatus(savedDesignId);
         if (isDesigner) {
           void enableShare(savedDesignId);
@@ -310,20 +364,56 @@ export function useDesignPagePersistence({
           });
           firstSaveRef.current = true;
         }
+        const durationMs = performance.now() - saveStartedAt;
+        trackProductEvent("project_saved", {
+          source: "cloud",
+          result: "success",
+          durationMs,
+          itemCount: items.length,
+        });
+        trackProductPerformance({
+          metric: "save_duration_ms",
+          value: durationMs,
+          context: {
+            mode: mode === "designer" ? "pro" : "consumer",
+            itemCount: items.length,
+            source: "cloud",
+          },
+        });
         return savedDesignId;
       }
 
       showRuleToast("Save failed: no design ID returned");
       setLastCloudSaveError("No design ID returned");
+      trackProductEvent("project_save_failed", {
+        source: "cloud",
+        result: "failure",
+        errorCode: "missing_design_id",
+        durationMs: performance.now() - saveStartedAt,
+      });
       return null;
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Cloud save failed.";
+      const message = recordCloudSaveFailure(
+        error,
+        designId,
+        "Cloud save failed."
+      );
       if (error instanceof DesignApiError && error.kind === "forbidden") {
         showMaxDesignUpgrade();
         track("upgrade_prompt_shown", { reason: "max_designs" });
       }
-      setLastCloudSaveError(message);
       showRuleToast(`Save failed: ${message}`);
+      trackProductEvent("project_save_failed", {
+        source: "cloud",
+        result: "failure",
+        errorCode:
+          error instanceof DesignApiError
+            ? error.kind
+            : error instanceof Error
+              ? error.name
+              : "unknown",
+        durationMs: performance.now() - saveStartedAt,
+      });
       return null;
     } finally {
       setIsSaving(false);
@@ -341,6 +431,8 @@ export function useDesignPagePersistence({
     items.length,
     mode,
     notes,
+    lastCloudRevision,
+    recordCloudSaveFailure,
     savedViews,
     setDesignId,
     showMaxDesignUpgrade,
@@ -404,6 +496,7 @@ export function useDesignPagePersistence({
       );
       setLastPersistedSnapshotFingerprint(fingerprintStoredDesign(storedSnapshot));
       setLastCloudSaveError(null);
+      setCloudSaveConflict(null);
       track("design_preserved_before_new_plan", {
         design_id: savedDesignId,
         created_saved_copy: creatingSavedCopy,
@@ -412,12 +505,15 @@ export function useDesignPagePersistence({
       });
       return { ok: true, savedDesignId };
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Cloud save failed.";
+      const message = recordCloudSaveFailure(
+        error,
+        designId,
+        "Cloud save failed."
+      );
       if (error instanceof DesignApiError && error.kind === "forbidden") {
         showMaxDesignUpgrade();
         track("upgrade_prompt_shown", { reason: "max_designs" });
       }
-      setLastCloudSaveError(message);
       return { ok: false, error: message };
     } finally {
       setIsSaving(false);
@@ -436,6 +532,7 @@ export function useDesignPagePersistence({
     notes,
     roomDepth,
     roomWidth,
+    recordCloudSaveFailure,
     savedViews,
     showMaxDesignUpgrade,
     style,
@@ -452,6 +549,7 @@ export function useDesignPagePersistence({
     setLastPersistedSnapshotFingerprint(null);
     setLastDbSaveAt(null);
     setLastCloudSaveError(null);
+    setCloudSaveConflict(null);
     setLastCloudRevision(null);
     setLastLocalAutosaveAt(null);
     setLastLocalSaveError(null);
@@ -710,6 +808,8 @@ export function useDesignPagePersistence({
             ? Date.parse(loadedRevision)
             : Date.now()
         );
+        setLastCloudSaveError(null);
+        setCloudSaveConflict(null);
         const nextMode = data?.mode === "designer" ? "designer" : "homeowner";
         setMode(nextMode);
         setNotes(typeof data?.notes === "string" ? data.notes : "");
@@ -767,6 +867,113 @@ export function useDesignPagePersistence({
       showRuleToast,
     ]
   );
+
+  const saveConflictAsNewCopy = useCallback(async () => {
+    const conflict = cloudSaveConflict;
+    if (!conflict || conflict.isWorking) return;
+    setCloudSaveConflict({
+      ...conflict,
+      isWorking: true,
+      resolutionError: null,
+    });
+    try {
+      const storedSnapshot = getStoredDesignForPersistence();
+      const legacyData = snapshotToLegacyApi(storedToSnapshot(storedSnapshot));
+      const data = await enqueueCloudWrite(() =>
+        designApi.create({
+          title: "Recovered design copy",
+          ...legacyData,
+          savedViews,
+          style,
+          budget,
+          mode,
+          notes,
+        })
+      );
+      const savedDesignId =
+        typeof data?.id === "string" && data.id.trim() ? data.id : null;
+      const savedRevision =
+        typeof data?.updatedAt === "string" && data.updatedAt.trim()
+          ? data.updatedAt
+          : null;
+      if (!savedDesignId || !savedRevision) {
+        throw new Error("The new cloud copy did not return a valid revision.");
+      }
+
+      documentEpochRef.current += 1;
+      setDesignId(savedDesignId);
+      setShareToken(null);
+      setShareEnabled(false);
+      setLastCloudRevision(savedRevision);
+      setLastDbSaveAt(Date.now());
+      setLastPersistedSnapshotFingerprint(
+        fingerprintStoredDesign(storedSnapshot)
+      );
+      setLastCloudSaveError(null);
+      setCloudSaveConflict(null);
+      void fetchShareStatus(savedDesignId);
+      if (isDesigner) void enableShare(savedDesignId);
+      track("design_conflict_saved_as_copy", {
+        prior_design_id: conflict.designId,
+        saved_design_id: savedDesignId,
+      });
+      showRuleToast("Local changes saved as a new cloud copy");
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "The local copy could not be saved to the cloud.";
+      setCloudSaveConflict((previous) =>
+        previous?.designId === conflict.designId
+          ? { ...previous, isWorking: false, resolutionError: message }
+          : previous
+      );
+    }
+  }, [
+    budget,
+    cloudSaveConflict,
+    enableShare,
+    enqueueCloudWrite,
+    fetchShareStatus,
+    fingerprintStoredDesign,
+    getStoredDesignForPersistence,
+    isDesigner,
+    mode,
+    notes,
+    savedViews,
+    setDesignId,
+    setShareEnabled,
+    setShareToken,
+    showRuleToast,
+    style,
+  ]);
+
+  const reloadCloudAfterConflict = useCallback(async () => {
+    const conflict = cloudSaveConflict;
+    if (!conflict || conflict.isWorking) return;
+    setCloudSaveConflict({
+      ...conflict,
+      isWorking: true,
+      resolutionError: null,
+    });
+    const result = await loadDesign(conflict.designId);
+    if (result === "loaded") {
+      setLastCloudSaveError(null);
+      setCloudSaveConflict(null);
+      showRuleToast("Newer cloud copy loaded");
+      return;
+    }
+    setCloudSaveConflict((previous) =>
+      previous?.designId === conflict.designId
+        ? {
+            ...previous,
+            isWorking: false,
+            resolutionError:
+              "The newer cloud copy could not be loaded. Your local backup is unchanged.",
+          }
+        : previous
+    );
+  }, [cloudSaveConflict, loadDesign, showRuleToast]);
 
   const handleLoadDesign = useCallback(
     async (id: string) => {
@@ -848,14 +1055,21 @@ export function useDesignPagePersistence({
   }, []);
 
   useEffect(() => {
-    if (!lastCloudSaveError || !designId || !isAuthenticated) return;
+    if (
+      !lastCloudSaveError ||
+      !designId ||
+      !isAuthenticated ||
+      cloudSaveConflict
+    ) {
+      return;
+    }
     const retryAfterReconnect = () => {
       setLastCloudSaveError(null);
       setCloudRetryNonce((value) => value + 1);
     };
     window.addEventListener("online", retryAfterReconnect);
     return () => window.removeEventListener("online", retryAfterReconnect);
-  }, [designId, isAuthenticated, lastCloudSaveError]);
+  }, [cloudSaveConflict, designId, isAuthenticated, lastCloudSaveError]);
 
   useEffect(() => {
     if (!isDesigner) return;
@@ -902,6 +1116,10 @@ export function useDesignPagePersistence({
   useEffect(() => {
     if (!designId) return;
     if (!localBackupHydrated) return;
+    if (cloudSaveConflict) {
+      setIsSaving(false);
+      return;
+    }
     if (
       lastPersistedSnapshotFingerprint &&
       currentStoredDesignFingerprint === lastPersistedSnapshotFingerprint
@@ -954,13 +1172,12 @@ export function useDesignPagePersistence({
               fingerprintStoredDesign(storedSnapshot.snapshot)
             );
             setLastCloudSaveError(null);
+            setCloudSaveConflict(null);
           }
         }
       } catch (error) {
         if (!cancelled) {
-          setLastCloudSaveError(
-            error instanceof Error ? error.message : "Autosave failed"
-          );
+          recordCloudSaveFailure(error, designId, "Autosave failed");
         }
       } finally {
         if (!cancelled) {
@@ -976,6 +1193,7 @@ export function useDesignPagePersistence({
   }, [
     cloudSaveDelayMs,
     cloudRetryNonce,
+    cloudSaveConflict,
     currentStoredDesignFingerprint,
     designId,
     enqueueCloudWrite,
@@ -985,6 +1203,7 @@ export function useDesignPagePersistence({
     lastCloudRevision,
     lastPersistedSnapshotFingerprint,
     localBackupHydrated,
+    recordCloudSaveFailure,
     roomDepth,
     roomWidth,
     savedViews,
@@ -1038,6 +1257,7 @@ export function useDesignPagePersistence({
     () =>
       getDesignPageSaveStatus({
         designId,
+        hasCloudConflict: Boolean(cloudSaveConflict),
         hasPendingCloudSnapshotChanges,
         isAuthenticated,
         isSaving,
@@ -1048,6 +1268,7 @@ export function useDesignPagePersistence({
       }),
     [
       designId,
+      cloudSaveConflict,
       hasPendingCloudSnapshotChanges,
       isAuthenticated,
       isSaving,
@@ -1059,6 +1280,7 @@ export function useDesignPagePersistence({
   );
 
   const retrySaveStatus = useCallback(async () => {
+    if (cloudSaveConflict) return;
     if (lastCloudSaveError && isAuthenticated) {
       if (designId) {
         setLastCloudSaveError(null);
@@ -1079,6 +1301,7 @@ export function useDesignPagePersistence({
     }
   }, [
     designId,
+    cloudSaveConflict,
     isAuthenticated,
     lastCloudSaveError,
     saveDesignToCloud,
@@ -1090,6 +1313,7 @@ export function useDesignPagePersistence({
     state: {
       lastPersistedSnapshotFingerprint,
       lastCloudRevision,
+      cloudSaveConflict,
       isSaving,
       saveStatus,
       sharingDesign,
@@ -1111,6 +1335,8 @@ export function useDesignPagePersistence({
       saveDesignToCloud,
       preserveCurrentDesign,
       detachCurrentDesignForNewDraft,
+      saveConflictAsNewCopy,
+      reloadCloudAfterConflict,
       retrySaveStatus,
       loadDesign,
       clearPersistedSnapshotFingerprint,

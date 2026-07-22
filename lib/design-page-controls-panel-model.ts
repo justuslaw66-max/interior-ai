@@ -109,6 +109,7 @@ type FloorPlanState = StateSlice<
 >;
 
 type FloorPlanActions = ActionSlice<
+  | "onMeasurementUnitChange"
   | "onPlanCompletionHandled"
   | "onPlanStartModeChange"
   | "onPlanQualityAction"

@@ -10,6 +10,7 @@ import {
 import {
   ROOM_DIMENSION_DEFAULTS,
 } from "@/lib/design-page-house-plan";
+import { track } from "@/lib/analytics";
 import type {
   EditorAnnotation2D,
   FixedElement2D,
@@ -60,6 +61,11 @@ export function useDesignPagePlanDocumentState() {
   const planOpeningsRef = useRef(planOpenings);
   const planAnnotationsRef = useRef(planAnnotations);
   const planFixedElementsRef = useRef(planFixedElements);
+  const planMeasurementUnitRef = useRef(planMeasurementUnit);
+
+  useEffect(() => {
+    planMeasurementUnitRef.current = planMeasurementUnit;
+  }, [planMeasurementUnit]);
 
   const setPlanOpenings = useCallback(
     (next: FunctionalStateAction<RoomOpening2D[]>) => {
@@ -103,6 +109,21 @@ export function useDesignPagePlanDocumentState() {
     [setPlanFixedElementsState]
   );
 
+  const setPlanMeasurementUnit = useCallback(
+    (next: FunctionalStateAction<typeof planMeasurementUnit>) => {
+      const previousUnit = planMeasurementUnitRef.current;
+      const unit = typeof next === "function" ? next(previousUnit) : next;
+      if (unit === previousUnit) return;
+      planMeasurementUnitRef.current = unit;
+      setPlanMeasurementUnitState(unit);
+      track("display_unit_changed", {
+        previous_unit: previousUnit,
+        unit,
+      });
+    },
+    [setPlanMeasurementUnitState]
+  );
+
   const defaultPlanOpeningsSeededRef = useRef(false);
   const markDefaultPlanOpeningsSeeded = useCallback(() => {
     defaultPlanOpeningsSeededRef.current = true;
@@ -132,7 +153,7 @@ export function useDesignPagePlanDocumentState() {
       setPlanFixedElements,
       setSimplePlanControls,
       setPlanLayerPreset: setPlanLayerPresetState,
-      setPlanMeasurementUnit: setPlanMeasurementUnitState,
+      setPlanMeasurementUnit,
       setExportStylePreset: setExportStylePresetState,
       setPlanGuidedActionsEnabled,
       setPlanGuidedActionsChoiceSeen,
