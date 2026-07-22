@@ -68,6 +68,7 @@ export function useDesignPageViewportShellRegistration({
         selectedPlanOverlayId,
         suppressedDoorwaySuggestionKeys,
         selectedPlanRoomId,
+        selectedPlanRoomIds,
       },
       camera: { cameraView, savedViews },
     },
@@ -92,6 +93,7 @@ export function useDesignPageViewportShellRegistration({
       overlaySelection: {
         setSelectedPlanOverlayId,
         setSelectedPlanRoomId,
+        setSelectedPlanRoomSelection,
       },
       camera: {
         setSavedViews,
@@ -198,6 +200,7 @@ export function useDesignPageViewportShellRegistration({
         selectedPlanOverlayId,
         suppressedDoorwaySuggestionKeys,
         selectedPlanRoomId,
+        selectedPlanRoomIds,
       },
       camera: { cameraView, savedViews },
       presentation: { showPresentModal, presentModeRoomId },
@@ -228,6 +231,7 @@ export function useDesignPageViewportShellRegistration({
         setPlanGuidedActionsChoiceSeen,
         setSelectedPlanOverlayId,
         setSelectedPlanRoomId,
+        setSelectedPlanRoomSelection,
       },
       floorPlan: {
         setFloorPlanTraceOpeningKind,

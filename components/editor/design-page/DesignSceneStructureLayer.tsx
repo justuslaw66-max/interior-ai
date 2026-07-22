@@ -62,6 +62,7 @@ export type DesignSceneStructureLayerState = {
     depth: number;
     rooms: HousePlanRoom2D[];
     activeRoomId: string | null;
+    selectedRoomIds: string[];
     selectedOverlayId: string | null;
     suppressedDoorwaySuggestionKeys: string[];
     scene: EditorScene2D;
@@ -287,6 +288,7 @@ export function DesignSceneStructureLayer({
           activeFloorId={canonicalActiveFloorId}
           activeFloorLevel={state.wholeHome.activeFloorLevel}
           activeRoomId={plan.activeRoomId}
+          selectedRoomIds={plan.selectedRoomIds}
           onSelectRoom={actions.rooms.select}
           onSelectSurfaceTarget={actions.rooms.selectSurfaceTarget}
           onClearRoomSelection={

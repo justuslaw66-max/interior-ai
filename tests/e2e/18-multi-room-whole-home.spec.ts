@@ -1652,6 +1652,58 @@ test.describe("18. Multi-Room Whole Home", () => {
     expect(Math.abs(widthLabelBox.y - depthLabelBox.y)).toBeGreaterThan(24);
   });
 
+  test("plan summary exposes footprint dimensions and additive room selection", async ({ page }) => {
+    await clearBrowserStorageBeforeNextLoad(page);
+    await page.goto("/design");
+    await page.waitForLoadState("domcontentloaded");
+
+    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
+    await page.getByRole("button", { name: "2D Plan" }).click();
+    await chooseTemplateStart(page);
+
+    await expect(page.getByTestId("plan-template-dimensions-studio")).toContainText(
+      "Footprint 6.3 × 5.7 m"
+    );
+    await page.getByTestId("apply-plan-template-studio").click();
+
+    const summary = page.locator('[data-testid="plan-room-summary"]:visible').first();
+    await expect(summary).toBeVisible();
+    await expect(summary).toContainText("6.3 × 5.7 m");
+    await expect(summary).toContainText("32.1 m²");
+
+    const livingLabel = page
+      .locator('[data-testid="house-room-2d-label"]')
+      .filter({ hasText: "Living / Sleep" });
+    const kitchenetteLabel = page
+      .locator('[data-testid="house-room-2d-label"]')
+      .filter({ hasText: "Kitchenette" });
+    await expect(livingLabel).toBeVisible();
+    await expect(kitchenetteLabel).toBeVisible();
+    const livingBox = await livingLabel.boundingBox();
+    const kitchenetteBox = await kitchenetteLabel.boundingBox();
+    expect(livingBox).not.toBeNull();
+    expect(kitchenetteBox).not.toBeNull();
+    if (!livingBox || !kitchenetteBox) throw new Error("Room labels were not measurable");
+
+    await page.mouse.click(
+      livingBox.x + livingBox.width / 2,
+      livingBox.y + livingBox.height / 2 + 40
+    );
+    await page.keyboard.down("Shift");
+    await page.mouse.click(
+      kitchenetteBox.x + kitchenetteBox.width / 2,
+      kitchenetteBox.y + kitchenetteBox.height / 2 - 30
+    );
+    await page.keyboard.up("Shift");
+
+    await expect(summary).toHaveAttribute("data-selected-room-count", "2");
+    await expect(summary.getByTestId("plan-room-selection-summary")).toContainText(
+      "2 rooms selected"
+    );
+    await expect(livingLabel).toHaveAttribute("data-selected", "true");
+    await expect(kitchenetteLabel).toHaveAttribute("data-selected", "true");
+  });
+
   test("furnished templates create starter items and protect existing plans", async ({ page }) => {
     test.setTimeout(180_000);
 

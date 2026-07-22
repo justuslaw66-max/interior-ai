@@ -61,6 +61,7 @@ export type BuildDesignPageSceneRegionAdapterInput = {
       width: StructureState["plan"]["width"];
       depth: StructureState["plan"]["depth"];
       selectedRoomId: StructureState["plan"]["activeRoomId"];
+      selectedRoomIds: StructureState["plan"]["selectedRoomIds"];
       selectedOverlayId: StructureState["plan"]["selectedOverlayId"];
       suppressedDoorwaySuggestionKeys: StructureState["plan"]["suppressedDoorwaySuggestionKeys"];
       editorScene: StructureState["plan"]["scene"];
@@ -173,6 +174,7 @@ export function buildDesignPageSceneRegionAdapter({
           depth: plan.depth,
           rooms: plan.rooms,
           activeRoomId: plan.selectedRoomId,
+          selectedRoomIds: plan.selectedRoomIds,
           selectedOverlayId: plan.selectedOverlayId,
           suppressedDoorwaySuggestionKeys:
             plan.suppressedDoorwaySuggestionKeys,

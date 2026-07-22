@@ -147,7 +147,7 @@ assertSourceOrder(
     "useDesignPageFloorPlanDocumentState()",
     "selectedPlanOverlayId, setSelectedPlanOverlayId",
     "suppressedDoorwaySuggestionKeys, setSuppressedDoorwaySuggestionKeys",
-    "selectedPlanRoomId, setSelectedPlanRoomId",
+    "planRoomSelection, setPlanRoomSelection",
     "useDesignPageCameraBridgeController({",
   ],
   "Plan runtime should preserve plan, selection, and camera hook order"

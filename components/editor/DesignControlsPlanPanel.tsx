@@ -4648,11 +4648,17 @@ export default function DesignControlsPlanPanel({
                     <span className="flex items-center justify-between gap-2">
                       <span>{template.label}</span>
                       <span className={dark ? "shrink-0 text-xs text-neutral-400" : "shrink-0 text-xs text-neutral-500"}>
-                        {Math.round(areaSqm)} m2
+                        {Math.round(areaSqm)} m²
                       </span>
                     </span>
                     <span className={dark ? "mt-0.5 block text-xs text-neutral-400" : "mt-0.5 block text-xs text-neutral-500"}>
                       {template.summary}
+                    </span>
+                    <span
+                      data-testid={`plan-template-dimensions-${template.id}`}
+                      className={dark ? "mt-1 block text-[11px] font-semibold text-neutral-300" : "mt-1 block text-[11px] font-semibold text-neutral-700"}
+                    >
+                      Footprint {planWidth.toFixed(1)} × {planDepth.toFixed(1)} m · {template.rooms.length} room{template.rooms.length === 1 ? "" : "s"}
                     </span>
                     <span className={dark ? "mt-1 block text-[11px] font-semibold text-emerald-200" : "mt-1 block text-[11px] font-semibold text-emerald-700"}>
                       Good for: {template.bestFor}

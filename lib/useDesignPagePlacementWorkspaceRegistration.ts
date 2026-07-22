@@ -106,6 +106,8 @@ export function useDesignPagePlacementWorkspaceRegistration({
     state: {
       targeting: {
         editorMode,
+        selectedPlanRoomIds:
+          viewportShell.state.planSelection.selectedPlanRoomIds,
         surfaceBrush: {
           active: viewportShell.state.surface.surfaceBrushActive,
           materialId: viewportShell.state.surface.surfaceBrushMaterialId,
@@ -144,6 +146,8 @@ export function useDesignPagePlacementWorkspaceRegistration({
         selectionInspection.actions.selection.clearNonRoomSelection,
       setSelectedPlanRoomId:
         viewportShell.actions.plan.setSelectedPlanRoomId,
+      setSelectedPlanRoomSelection:
+        viewportShell.actions.plan.setSelectedPlanRoomSelection,
       setSelectedRendererSurfaceTarget:
         viewportShell.actions.surface.setSelectedRendererSurfaceTarget,
       setSelectedWallSurfaceTarget:

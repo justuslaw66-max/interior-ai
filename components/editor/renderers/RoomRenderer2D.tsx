@@ -243,7 +243,10 @@ function HouseRoomFloorFill2D({
   isDraggingRoom: boolean;
   fillOpacity: number;
   interactive: boolean;
-  onSelectRoom?: (roomId: string) => void;
+  onSelectRoom?: (
+    roomId: string,
+    options?: { additive?: boolean }
+  ) => void;
   onSelectSurfaceTarget?: (target: { kind: "floor" | "wall"; roomId: string; id: string }) => void;
 }) {
   const { gl } = useThree();
@@ -274,11 +277,24 @@ function HouseRoomFloorFill2D({
       rotation-x={-Math.PI / 2}
       position={[0, 0.0007, 0]}
       raycast={interactive ? undefined : () => null}
+      onPointerDown={
+        interactive
+          ? (event) => {
+              event.stopPropagation();
+            }
+          : undefined
+      }
       onClick={
         interactive
           ? (event) => {
               event.stopPropagation();
-              if (onSelectSurfaceTarget) {
+              const additive =
+                event.nativeEvent.shiftKey ||
+                event.nativeEvent.metaKey ||
+                event.nativeEvent.ctrlKey;
+              if (additive) {
+                onSelectRoom?.(room.id, { additive: true });
+              } else if (onSelectSurfaceTarget) {
                 onSelectSurfaceTarget({ kind: "floor", roomId: room.id, id: "floor" });
               } else {
                 onSelectRoom?.(room.id);
@@ -360,7 +376,11 @@ type RoomRenderer2DProps = {
   activeFloorId?: string | null;
   activeFloorLevel: number;
   activeRoomId?: string | null;
-  onSelectRoom?: (roomId: string) => void;
+  selectedRoomIds?: readonly string[];
+  onSelectRoom?: (
+    roomId: string,
+    options?: { additive?: boolean }
+  ) => void;
   onSelectSurfaceTarget?: (target: { kind: "floor" | "wall"; roomId: string; id: string }) => void;
   onClearRoomSelection?: () => void;
   onRenameRoom?: (roomId: string) => void;
@@ -1282,6 +1302,7 @@ export default function RoomRenderer2D({
   activeFloorId = null,
   activeFloorLevel,
   activeRoomId = null,
+  selectedRoomIds = [],
   onSelectRoom,
   onSelectSurfaceTarget,
   onClearRoomSelection,
@@ -3057,6 +3078,7 @@ export default function RoomRenderer2D({
       {hasHouseRooms &&
         rooms.map((room) => {
           const isActiveRoom = room.id === activeRoomId;
+          const isSelectedRoom = selectedRoomIds.includes(room.id);
           const isHoveredRoom = hoveredRoomId === room.id && canEditRoomGeometry;
           const roomFillColor =
             isHoveredRoom && !isActiveRoom
@@ -3066,6 +3088,8 @@ export default function RoomRenderer2D({
               : getHouseRoomFloorPlanColor(room, isActiveRoom, isPro);
           const roomOutlineColor = isActiveRoom
             ? activeRoomBorderColor
+            : isSelectedRoom
+              ? "#10b981"
             : isHoveredRoom
               ? "#0f766e"
               : borderColor;
@@ -3081,7 +3105,15 @@ export default function RoomRenderer2D({
                 ? "#2563eb"
                 : activeRoomBorderColor;
           const effectiveRoomOutlineColor = isDraggingRoom ? dragOutlineColor : roomOutlineColor;
-          const effectiveRoomLineWidth = isDraggingRoom ? 4.2 : isActiveRoom ? 3 : isHoveredRoom ? 2.4 : 1.5;
+          const effectiveRoomLineWidth = isDraggingRoom
+            ? 4.2
+            : isActiveRoom
+              ? 3
+              : isSelectedRoom
+                ? 2.7
+                : isHoveredRoom
+                  ? 2.4
+                  : 1.5;
           const effectiveFillOpacity = isDraggingRoom
             ? dragStatus === "blocked"
               ? 0.54
@@ -3205,7 +3237,12 @@ export default function RoomRenderer2D({
                     const deltaY = event.nativeEvent.clientY - pointerStart.clientY;
                     roomBodyPointerRef.current = null;
                     if (Math.hypot(deltaX, deltaY) <= roomBodyClickThresholdPx) {
-                      onSelectRoom?.(room.id);
+                      onSelectRoom?.(room.id, {
+                        additive:
+                          event.nativeEvent.shiftKey ||
+                          event.nativeEvent.metaKey ||
+                          event.nativeEvent.ctrlKey,
+                      });
                     }
                   }
                 }}
@@ -3310,14 +3347,18 @@ export default function RoomRenderer2D({
                     data-testid="house-room-2d-label"
                     data-room-id={room.id}
                     data-active={isActiveRoom ? "true" : "false"}
+                    data-selected={isSelectedRoom ? "true" : "false"}
                     data-room-x={renderX.toFixed(3)}
                     data-room-z={renderZ.toFixed(3)}
                     style={{
                       fontSize: 11,
                       fontWeight: 700,
-                      color: isActiveRoom ? "#166534" : "#525252",
+                      color: isActiveRoom || isSelectedRoom ? "#166534" : "#525252",
                       background: "rgba(255,255,255,0.78)",
-                      border: isActiveRoom ? "1px solid rgba(34,197,94,0.35)" : "1px solid rgba(82,82,82,0.18)",
+                      border:
+                        isActiveRoom || isSelectedRoom
+                          ? "1px solid rgba(34,197,94,0.35)"
+                          : "1px solid rgba(82,82,82,0.18)",
                       borderRadius: 4,
                       padding: "2px 7px",
                       pointerEvents: "none",

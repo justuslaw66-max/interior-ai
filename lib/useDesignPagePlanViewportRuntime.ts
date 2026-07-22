@@ -1,6 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import {
+  useCallback,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 
 import type { DesignPagePlanDebugMetrics } from "@/lib/useDesignPageQaReadModel";
 import {
@@ -44,8 +49,38 @@ export function useDesignPagePlanViewportRuntime({
     useState<string | null>(null);
   const [suppressedDoorwaySuggestionKeys, setSuppressedDoorwaySuggestionKeys] =
     useState<string[]>([]);
-  const [selectedPlanRoomId, setSelectedPlanRoomId] =
-    useState<string | null>(null);
+  const [planRoomSelection, setPlanRoomSelection] = useState<{
+    primaryId: string | null;
+    ids: string[];
+  }>({ primaryId: null, ids: [] });
+  const setSelectedPlanRoomId = useCallback<
+    Dispatch<SetStateAction<string | null>>
+  >((nextValue) => {
+    setPlanRoomSelection((current) => {
+      const primaryId =
+        typeof nextValue === "function"
+          ? nextValue(current.primaryId)
+          : nextValue;
+      return {
+        primaryId,
+        ids: primaryId ? [primaryId] : [],
+      };
+    });
+  }, []);
+  const setSelectedPlanRoomSelection = useCallback(
+    (ids: readonly string[], primaryId: string | null) => {
+      const uniqueIds = Array.from(new Set(ids));
+      const resolvedPrimaryId =
+        primaryId && uniqueIds.includes(primaryId)
+          ? primaryId
+          : uniqueIds.at(-1) ?? null;
+      setPlanRoomSelection({
+        primaryId: resolvedPrimaryId,
+        ids: uniqueIds,
+      });
+    },
+    []
+  );
   const cameraBridge = useDesignPageCameraBridgeController({
     configuration: configuration.camera,
   });
@@ -63,7 +98,8 @@ export function useDesignPagePlanViewportRuntime({
       overlaySelection: {
         selectedPlanOverlayId,
         suppressedDoorwaySuggestionKeys,
-        selectedPlanRoomId,
+        selectedPlanRoomId: planRoomSelection.primaryId,
+        selectedPlanRoomIds: planRoomSelection.ids,
       },
       camera: cameraBridge.state,
     },
@@ -79,6 +115,7 @@ export function useDesignPagePlanViewportRuntime({
         setSelectedPlanOverlayId,
         setSuppressedDoorwaySuggestionKeys,
         setSelectedPlanRoomId,
+        setSelectedPlanRoomSelection,
       },
       camera: cameraBridge.actions,
     },

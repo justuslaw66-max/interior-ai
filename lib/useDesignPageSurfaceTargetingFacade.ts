@@ -25,6 +25,7 @@ export type UseDesignPageSurfaceTargetingFacadeInput = {
     targetPendingCatalogPlacementToRoom: PlacementActions["placement"]["targetPendingCatalogPlacementToRoom"];
     clearNonRoomSelection: PlacementActions["selection"]["clearNonRoomSelection"];
     setSelectedPlanRoomId: PlacementActions["selection"]["setSelectedPlanRoomId"];
+    setSelectedPlanRoomSelection: PlacementActions["selection"]["setSelectedPlanRoomSelection"];
     setSelectedRendererSurfaceTarget: PlacementActions["selection"]["setSelectedRendererSurfaceTarget"];
     setSelectedWallSurfaceTarget: PlacementActions["selection"]["setSelectedWallSurfaceTarget"];
     preserveCameraAfterPlanOverlaySelection: PlacementActions["navigation"]["preserveCameraAfterPlanOverlaySelection"];
@@ -60,6 +61,7 @@ export function useDesignPageSurfaceTargetingFacade({
       selection: {
         clearNonRoomSelection: actions.clearNonRoomSelection,
         setSelectedPlanRoomId: actions.setSelectedPlanRoomId,
+        setSelectedPlanRoomSelection: actions.setSelectedPlanRoomSelection,
         setSelectedRendererSurfaceTarget:
           actions.setSelectedRendererSurfaceTarget,
         setSelectedWallSurfaceTarget: actions.setSelectedWallSurfaceTarget,

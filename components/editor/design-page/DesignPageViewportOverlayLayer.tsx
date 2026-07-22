@@ -11,6 +11,7 @@ import { DesignPageSelectionInspector } from "@/components/editor/design-page/De
 import { DesignPageViewportSelectionControls } from "@/components/editor/design-page/DesignPageViewportSelectionControls";
 import { ImportedFloorPlanWallEditor } from "@/components/editor/design-page/ImportedFloorPlanWallEditor";
 import { PlanQualityReviewPanel } from "@/components/editor/design-page/PlanQualityReviewPanel";
+import { PlanRoomSummaryCard } from "@/components/editor/design-page/PlanRoomSummaryCard";
 import { SceneReadyVeil } from "@/components/editor/design-page/SceneReadyVeil";
 import { SelectedPlanOpeningActions } from "@/components/editor/design-page/SelectedPlanOpeningActions";
 
@@ -27,6 +28,7 @@ type PlanQualityReviewPanelProps = ComponentProps<
 type PlanCanvasOverlaysProps = ComponentProps<
   typeof DesignPagePlanCanvasOverlays
 >;
+type PlanRoomSummaryProps = ComponentProps<typeof PlanRoomSummaryCard>;
 type AiLayoutPreviewBannerProps = ComponentProps<
   typeof AiLayoutPreviewBanner
 >;
@@ -71,6 +73,7 @@ export type DesignPageViewportOverlayLayerState = {
   sceneLoadingVisible: boolean;
   selectedOpening: SelectedPlanOpeningActionsProps["state"] | null;
   selectionInspector: SelectionInspectorProps["state"] | null;
+  planSummary: PlanRoomSummaryProps["state"] | null;
   planQuality: PlanQualityReviewPanelProps["state"] | null;
   planCanvas: PlanCanvasOverlaysProps["state"];
   aiLayoutPreview: AiLayoutPreviewBannerProps["state"] | null;
@@ -88,6 +91,7 @@ export type DesignPageViewportOverlayLayerConfiguration = {
     SelectionInspectorProps["configuration"],
     "portalTarget"
   >;
+  planSummary: Omit<PlanRoomSummaryProps["configuration"], "mobile">;
   planQuality: Omit<
     PlanQualityReviewPanelProps["configuration"],
     "portalTarget"
@@ -106,6 +110,7 @@ export type DesignPageViewportOverlayLayerReferences = {
 export type DesignPageViewportOverlayLayerActions = {
   selectedOpening: SelectedPlanOpeningActionsProps["actions"];
   selectionInspector: SelectionInspectorProps["actions"];
+  planSummary: PlanRoomSummaryProps["actions"];
   planQuality: PlanQualityReviewPanelProps["actions"];
   planCanvas: PlanCanvasOverlaysProps["actions"];
   aiLayoutPreview: AiLayoutPreviewBannerProps["actions"];
@@ -138,6 +143,8 @@ export function DesignPageViewportOverlayLayer({
     useState<HTMLDivElement | null>(null);
   const [selectionRailElement, setSelectionRailElement] =
     useState<HTMLDivElement | null>(null);
+  const [planSummaryRailElement, setPlanSummaryRailElement] =
+    useState<HTMLDivElement | null>(null);
 
   return (
     <>
@@ -148,6 +155,12 @@ export function DesignPageViewportOverlayLayer({
           className="pointer-events-none absolute bottom-24 right-1 top-16 z-30 hidden w-[268px] flex-col gap-2 overflow-y-auto overflow-x-hidden pr-1 lg:flex"
           style={{ overscrollBehavior: "contain" }}
         >
+          {state.planSummary ? (
+            <div
+              ref={setPlanSummaryRailElement}
+              className="pointer-events-auto w-[264px] shrink-0"
+            />
+          ) : null}
           {state.navigator ? (
             <div
               ref={setNavigatorRailElement}
@@ -204,6 +217,16 @@ export function DesignPageViewportOverlayLayer({
         />
       ) : null}
 
+      {state.planSummary ? (
+        <div className="absolute bottom-3 right-3 z-50 w-[min(20rem,calc(100%-4.5rem))] lg:hidden">
+          <PlanRoomSummaryCard
+            state={state.planSummary}
+            configuration={{ ...configuration.planSummary, mobile: true }}
+            actions={actions.planSummary}
+          />
+        </div>
+      ) : null}
+
       {state.planQuality ? (
         <PlanQualityReviewPanel
           state={state.planQuality}
@@ -241,6 +264,17 @@ export function DesignPageViewportOverlayLayer({
               {...actions.navigator}
             />,
             navigatorRailElement
+          )
+        : null}
+
+      {state.railVisible && state.planSummary && planSummaryRailElement
+        ? createPortal(
+            <PlanRoomSummaryCard
+              state={state.planSummary}
+              configuration={configuration.planSummary}
+              actions={actions.planSummary}
+            />,
+            planSummaryRailElement
           )
         : null}
 

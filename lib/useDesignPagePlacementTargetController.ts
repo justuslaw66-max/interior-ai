@@ -14,6 +14,7 @@ import {
 import type { CatalogPlacementRoomTargetOptions } from "@/lib/catalog-placement-policy";
 import type { CatalogPlacementTargetResult } from "@/lib/useDesignPageCatalogPlacement";
 import type { DesignSnapshot } from "@/lib/room-types";
+import { resolvePlanRoomSelection } from "@/lib/plan-room-summary";
 import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
 import type {
   DesignPageSurfaceActions,
@@ -36,6 +37,7 @@ type TrackDesignPagePlacementTarget = (
 export type UseDesignPagePlacementTargetControllerInput = {
   state: {
     editorMode: DesignPageEditorMode;
+    selectedPlanRoomIds: string[];
     surfaceBrush: {
       active: boolean;
       materialId: string | null;
@@ -55,6 +57,10 @@ export type UseDesignPagePlacementTargetControllerInput = {
     selection: {
       clearNonRoomSelection: () => void;
       setSelectedPlanRoomId: Dispatch<SetStateAction<string | null>>;
+      setSelectedPlanRoomSelection: (
+        ids: readonly string[],
+        primaryId: string | null
+      ) => void;
       setSelectedRendererSurfaceTarget: Dispatch<
         SetStateAction<RendererSurfaceTarget | null>
       >;
@@ -89,7 +95,7 @@ export function useDesignPagePlacementTargetController({
   refs,
   actions,
 }: UseDesignPagePlacementTargetControllerInput) {
-  const { editorMode, surfaceBrush } = state;
+  const { editorMode, selectedPlanRoomIds, surfaceBrush } = state;
   const {
     active: surfaceBrushActive,
     materialId: surfaceBrushMaterialId,
@@ -105,6 +111,7 @@ export function useDesignPagePlacementTargetController({
     selection: {
       clearNonRoomSelection,
       setSelectedPlanRoomId,
+      setSelectedPlanRoomSelection,
       setSelectedRendererSurfaceTarget,
       setSelectedWallSurfaceTarget,
     },
@@ -137,7 +144,7 @@ export function useDesignPagePlacementTargetController({
   );
 
   const handlePlacementAwareRoomSelect = useCallback(
-    (roomId: string) => {
+    (roomId: string, options?: { additive?: boolean }) => {
       preserveCameraAfterPlanOverlaySelection();
       handleResetFloorPlanTraceRoomPoints();
 
@@ -151,9 +158,24 @@ export function useDesignPagePlacementTargetController({
       });
 
       clearNonRoomSelection();
-      setSelectedPlanRoomId(roomId);
-      if (decision.shouldSetDesignMode) setEditorMode("design");
-      if (decision.shouldSwitchRoom) handleSwitchRoom(roomId);
+      if (options?.additive && !pendingPlacementHandled) {
+        const nextSelection = resolvePlanRoomSelection(
+          selectedPlanRoomIds,
+          roomId,
+          true
+        );
+        setSelectedPlanRoomSelection(
+          nextSelection.ids,
+          nextSelection.primaryId
+        );
+        // Multi-room comparison is a plan-only selection. Keep the furnishing
+        // room active so its document switch does not collapse the group.
+        if (decision.shouldSetDesignMode) setEditorMode("design");
+      } else {
+        setSelectedPlanRoomId(roomId);
+        if (decision.shouldSetDesignMode) setEditorMode("design");
+        if (decision.shouldSwitchRoom) handleSwitchRoom(roomId);
+      }
     },
     [
       clearNonRoomSelection,
@@ -164,6 +186,8 @@ export function useDesignPagePlacementTargetController({
       preserveCameraAfterPlanOverlaySelection,
       setEditorMode,
       setSelectedPlanRoomId,
+      setSelectedPlanRoomSelection,
+      selectedPlanRoomIds,
       targetPendingCatalogPlacementToRoom,
     ]
   );

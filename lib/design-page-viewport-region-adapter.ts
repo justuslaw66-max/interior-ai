@@ -59,6 +59,7 @@ export type BuildDesignPageViewportRegionAdapterInput = {
       activeFloorRoomCount: number;
       designRoomCount: number;
     };
+    planSummary: ViewportState["planSummary"];
     planQuality: {
       report: NonNullable<ViewportState["planQuality"]>["report"];
       collapsed: boolean;
@@ -126,6 +127,7 @@ export type BuildDesignPageViewportRegionAdapterInput = {
         valueMeters: number
       ) => void;
     };
+    planSummary: ViewportActions["planSummary"];
     planQuality: ViewportActions["planQuality"];
     planCanvas: ViewportActions["planCanvas"];
     aiLayoutPreview: ViewportActions["aiLayoutPreview"];
@@ -226,6 +228,7 @@ export function buildDesignPageViewportRegionAdapter({
                 state.selectionInspector.designRoomCount > 1,
             }
           : null,
+      planSummary: state.planSummary,
       planQuality: state.visibility.planQuality
         ? {
             report: state.planQuality.report,
@@ -286,6 +289,7 @@ export function buildDesignPageViewportRegionAdapter({
         floatingTopPx: configuration.selectionInspectorTopPx,
         floatingWidthPx: configuration.selectionInspectorWidthPx,
       },
+      planSummary: { dark: configuration.dark },
       planQuality: {
         dark: configuration.dark,
         dockedWidthPx: configuration.floatingOverlayStackWidthPx,
@@ -326,6 +330,7 @@ export function buildDesignPageViewportRegionAdapter({
           actions.deletePlanOverlay(selectedOverlayId),
         commitOpeningWidthMm,
       },
+      planSummary: actions.planSummary,
       planQuality: actions.planQuality,
       planCanvas: actions.planCanvas,
       aiLayoutPreview: actions.aiLayoutPreview,

@@ -78,6 +78,14 @@ export function buildDesignPageViewportWorkspaceRegistration({
         activeFloorRoomCount: floor.activeFloorRoomCount,
         designRoomCount: coreShell.state.document.designSnapshot.rooms.length,
       },
+      planSummary:
+        base.state.editor.viewMode === "2d" && plan.housePlan2D.rooms.length > 0
+          ? {
+              rooms: plan.housePlan2D.rooms,
+              selectedRoomIds:
+                viewportShell.state.planSelection.selectedPlanRoomIds,
+            }
+          : null,
       planQuality: {
         report: quality.report,
         collapsed: quality.reviewPanelCollapsed,
@@ -192,6 +200,23 @@ export function buildDesignPageViewportWorkspaceRegistration({
           delete: planWorkspace.actions.room.deleteRoom,
         },
         surfaceInspector: placement.actions.targeting.surfaceInspector,
+      },
+      planSummary: {
+        selectAllRooms: () => {
+          selectionInspection.actions.selection.clearNonRoomSelection();
+          const roomIds = plan.housePlan2D.rooms.map((room) => room.id);
+          const primaryId =
+            viewportShell.state.planSelection.selectedPlanRoomId ??
+            coreShell.state.document.designSnapshot.activeRoomId ??
+            roomIds[0] ??
+            null;
+          viewportShell.actions.plan.setSelectedPlanRoomSelection(
+            roomIds,
+            primaryId
+          );
+        },
+        clearRoomSelection:
+          selectionInspection.actions.selection.clearAllSelection,
       },
       planQuality: {
         toggleCollapsed: planWorkspace.actions.quality.toggleReviewPanel,
