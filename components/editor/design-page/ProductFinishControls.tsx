@@ -25,6 +25,7 @@ type SwatchOption = {
 type StructuredColourOption = {
   variantId: string;
   label: string;
+  accessibleLabel: string;
   colorHex: string;
   swatchTextureUrl: string | null;
   active: boolean;
@@ -470,7 +471,8 @@ export function ProductFinishControls({
                       aria-describedby={
                         option.hovered ? "material-swatch-preview" : undefined
                       }
-                      aria-label={`Select ${option.label || "finish"}`}
+                      title={option.accessibleLabel}
+                      aria-label={`Select ${option.accessibleLabel || "finish"}`}
                     />
                   ))}
                 </div>

@@ -1701,6 +1701,11 @@ export function useDesignPageProductConfiguration({ state, actions, configuratio
                       null)
               ) ?? null;
             const materialDisplayLabel = getMaterialDisplayLabel(variant);
+            const accessibleLabel =
+              materialDisplayLabel.trim().toLowerCase() ===
+              colourLabel.trim().toLowerCase()
+                ? materialDisplayLabel
+                : `${materialDisplayLabel}, ${colourLabel}`;
             const hoverProfile = resolveFabricDetailProfile({
               finishCode: finishKey,
               finishLabel: variant.finishLabel?.trim() || "",
@@ -1712,6 +1717,7 @@ export function useDesignPageProductConfiguration({ state, actions, configuratio
             return {
               variantId: variant.id,
               label: materialDisplayLabel,
+              accessibleLabel,
               colorHex: variant.swatchHex ?? variant.colorHex,
               swatchTextureUrl,
               active: variant.id === selectedItem?.variantId,
