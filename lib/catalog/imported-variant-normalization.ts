@@ -11,6 +11,7 @@ import {
   normalizeUpholsteryCode,
   sentenceCaseLabel,
 } from "./variant-normalization";
+import { resolveCastleryVariantAffiliateUrl } from "./castlery-retailer-links";
 
 type ImportedRenderAssetsLike = {
   normal_map?: string;
@@ -102,6 +103,7 @@ export type ImportedVariantEntryLike = {
 
 export type NormalizeImportedVariantsInput = {
   productId: string;
+  sourceUrl?: string;
   variantEntries: ImportedVariantEntryLike[];
   sharedUpholsteryOptions?: ImportedUpholsteryOptionLike[];
   fallbackThumbnailUrl: string;
@@ -267,6 +269,7 @@ function normalizeImportedPurchaseOptions(value: unknown): CatalogPurchaseOption
 
 export function normalizeImportedVariants({
   productId,
+  sourceUrl,
   variantEntries,
   sharedUpholsteryOptions = [],
   fallbackThumbnailUrl,
@@ -516,7 +519,7 @@ export function normalizeImportedVariants({
       (legFinishCode
         ? sentenceCaseLabel(legFinishCode.replace(/-/g, " "))
         : undefined);
-    const affiliateUrl = normalizeImportedUrl(entryAny.affiliate_url ?? entryAny.affiliateUrl);
+    const authoredAffiliateUrl = normalizeImportedUrl(entryAny.affiliate_url ?? entryAny.affiliateUrl);
     const priceHint = normalizePositiveNumber(entryAny.price_usd ?? entryAny.priceUsd);
     const purchaseOptions = normalizeImportedPurchaseOptions(entryAny.purchase_options);
     const available = typeof entryAny.available === "boolean" ? entryAny.available : undefined;
@@ -546,6 +549,17 @@ export function normalizeImportedVariants({
       : inferredOptionMaterialType === "Leather" || inferredMaterialType === "Leather"
         ? "Leather"
         : "Fabric";
+    const affiliateUrl = resolveCastleryVariantAffiliateUrl({
+      productId,
+      sourceUrl,
+      authoredAffiliateUrl,
+      variantId,
+      upholsteryCode: entry.upholstery_code,
+      finishCode: entry.finish_code,
+      finishLabel,
+      materialType,
+      legFinishCode,
+    });
 
     return {
       id: variantId,

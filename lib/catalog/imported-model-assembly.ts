@@ -1175,6 +1175,7 @@ export function buildImportedCatalogItem({
   const fallbackThumbnailUrl = resolveImportedThumbUrl(imported, productId);
   const normalizedImportedVariants = normalizeImportedVariants({
     productId,
+    sourceUrl: importedSourceUrl ?? undefined,
     variantEntries: yamlPreferredVariants,
     sharedUpholsteryOptions,
     fallbackThumbnailUrl,

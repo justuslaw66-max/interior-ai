@@ -6,6 +6,7 @@ import {
   type ProductCategory as NormalizedCategory,
 } from "./catalog-schema";
 import type { CatalogMediaPresentationMode } from "./catalog/media-policy";
+import { resolveCastleryVariantAffiliateUrl } from "./catalog/castlery-retailer-links";
 import { getModelAsset } from "./model-assets";
 
 export type Variant = {
@@ -514,7 +515,15 @@ function buildCatalogItem(product: Product): CatalogItemSchema {
       dimensionsMm: variant.dimensionsMm,
       sizeLabel: variant.sizeLabel,
       modelUrl: variant.modelUrl,
-      affiliateUrl: variant.affiliateUrl,
+      affiliateUrl: resolveCastleryVariantAffiliateUrl({
+        productId: product.id,
+        sourceUrl: product.buyUrl,
+        authoredAffiliateUrl: variant.affiliateUrl,
+        variantId: variant.id,
+        finishCode: variant.finishCode,
+        finishLabel: variant.finishLabel,
+        materialType: variant.materialType,
+      }),
       priceHint: variant.priceHint,
       available: variant.available,
     })),
