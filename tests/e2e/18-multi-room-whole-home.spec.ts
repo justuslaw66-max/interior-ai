@@ -1702,6 +1702,19 @@ test.describe("18. Multi-Room Whole Home", () => {
     );
     await expect(livingLabel).toHaveAttribute("data-selected", "true");
     await expect(kitchenetteLabel).toHaveAttribute("data-selected", "true");
+    await expect(livingLabel).toHaveAttribute("data-selection-visual", "comparison");
+    await expect(kitchenetteLabel).toHaveAttribute("data-selection-visual", "comparison");
+    await expect(page.getByTestId("house-room-2d-selection-badge")).toHaveCount(2);
+    await expect(
+      page.locator('[data-testid="house-room-2d-label"][data-active="true"]')
+    ).toHaveCount(1);
+
+    await summary.getByTestId("select-all-rooms").click();
+    await expect(summary).toHaveAttribute("data-selected-room-count", "4");
+    await expect(page.getByTestId("house-room-2d-selection-badge")).toHaveCount(4);
+    await expect(
+      page.locator('[data-testid="house-room-2d-label"][data-active="true"]')
+    ).toHaveCount(1);
   });
 
   test("furnished templates create starter items and protect existing plans", async ({ page }) => {

@@ -1,10 +1,17 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import {
   buildPlanRoomSummary,
   resolvePlanRoomSelection,
 } from "@/lib/plan-room-summary";
+
+const roomRendererSource = readFileSync(
+  join(process.cwd(), "components/editor/renderers/RoomRenderer2D.tsx"),
+  "utf8"
+);
 
 const rooms: HousePlanRoom2D[] = [
   {
@@ -92,5 +99,21 @@ assert.deepEqual(resolvePlanRoomSelection(["living"], "living", true), {
   ids: [],
   primaryId: null,
 });
+
+assert.match(
+  roomRendererSource,
+  /function HouseRoomComparisonOverlay2D\([\s\S]*?<meshBasicMaterial[\s\S]*?depthTest=\{false\}[\s\S]*?<Line[\s\S]*?depthTest=\{false\}[\s\S]*?renderOrder=\{18\}/,
+  "Selected rooms should receive a dedicated fill and high-priority outline that cannot be hidden by structural rendering."
+);
+assert.match(
+  roomRendererSource,
+  /\{isSelectedRoom && !isDraggingRoom && \(\s*<HouseRoomComparisonOverlay2D room=\{room\} active=\{isActiveRoom\} \/>\s*\)\}/,
+  "Every selected room should receive the independent comparison overlay."
+);
+assert.match(
+  roomRendererSource,
+  /data-selection-visual=\{isSelectedRoom \? "comparison" : "none"\}[\s\S]*?data-testid="house-room-2d-selection-badge"/,
+  "Selected room labels should expose a visible, testable comparison badge."
+);
 
 console.log("Plan room summary checks passed.");

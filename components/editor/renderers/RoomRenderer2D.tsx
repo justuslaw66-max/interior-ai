@@ -314,6 +314,41 @@ function HouseRoomFloorFill2D({
   );
 }
 
+function HouseRoomComparisonOverlay2D({
+  room,
+  active,
+}: {
+  room: HouseRoom2D;
+  active: boolean;
+}) {
+  return (
+    <>
+      <mesh
+        rotation-x={-Math.PI / 2}
+        position={[0, 0.0035, 0]}
+        raycast={() => null}
+        renderOrder={17}
+      >
+        <shapeGeometry args={[buildRoomShapeGeometry(room)]} />
+        <meshBasicMaterial
+          color="#10b981"
+          transparent
+          opacity={active ? 0.13 : 0.17}
+          depthTest={false}
+          depthWrite={false}
+        />
+      </mesh>
+      <Line
+        points={getRoomOutlinePoints(room).map(([x, z]) => [x, 0.021, z])}
+        color={active ? "#047857" : "#10b981"}
+        lineWidth={active ? 4.8 : 4.2}
+        depthTest={false}
+        renderOrder={18}
+      />
+    </>
+  );
+}
+
 const DRAW_WORKSPACE_MIN_SIZE_METERS = 60;
 const DRAW_WORKSPACE_PADDING_METERS = 20;
 const DRAW_SNAP_VISUAL_EPSILON_METERS =
@@ -3287,6 +3322,9 @@ export default function RoomRenderer2D({
                   lineWidth={effectiveRoomLineWidth}
                 />
               )}
+              {isSelectedRoom && !isDraggingRoom && (
+                <HouseRoomComparisonOverlay2D room={room} active={isActiveRoom} />
+              )}
               {isDraggingRoom && (
                 <Html
                   zIndexRange={[18, 0]}
@@ -3348,23 +3386,44 @@ export default function RoomRenderer2D({
                     data-room-id={room.id}
                     data-active={isActiveRoom ? "true" : "false"}
                     data-selected={isSelectedRoom ? "true" : "false"}
+                    data-selection-visual={isSelectedRoom ? "comparison" : "none"}
                     data-room-x={renderX.toFixed(3)}
                     data-room-z={renderZ.toFixed(3)}
                     style={{
+                      alignItems: "center",
+                      background: isSelectedRoom
+                        ? "rgba(209,250,229,0.97)"
+                        : "rgba(255,255,255,0.78)",
                       fontSize: 11,
                       fontWeight: 700,
                       color: isActiveRoom || isSelectedRoom ? "#166534" : "#525252",
-                      background: "rgba(255,255,255,0.78)",
                       border:
-                        isActiveRoom || isSelectedRoom
-                          ? "1px solid rgba(34,197,94,0.35)"
+                        isSelectedRoom
+                          ? "2px solid rgba(16,185,129,0.78)"
+                          : isActiveRoom
+                            ? "1px solid rgba(34,197,94,0.35)"
                           : "1px solid rgba(82,82,82,0.18)",
                       borderRadius: 4,
+                      boxShadow: isSelectedRoom
+                        ? "0 2px 8px rgba(5,150,105,0.24)"
+                        : "none",
+                      display: "flex",
+                      gap: 4,
                       padding: "2px 7px",
                       pointerEvents: "none",
                       whiteSpace: "nowrap",
                     }}
                   >
+                    {isSelectedRoom ? (
+                      <span
+                        data-testid="house-room-2d-selection-badge"
+                        data-room-id={room.id}
+                        aria-hidden="true"
+                        style={{ fontSize: 10, fontWeight: 900 }}
+                      >
+                        ✓
+                      </span>
+                    ) : null}
                     {room.name}
                   </div>
                 </Html>
