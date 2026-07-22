@@ -268,6 +268,19 @@ export function useDesignPageSelectedItemPanelController({
     });
     if (!buyUrl) return;
 
+    // Open synchronously so Safari treats this as a user-initiated navigation.
+    // Tracking can take long enough that opening only after the request is
+    // resolved is blocked as an unsolicited popup.
+    const retailerWindow = window.open("", "_blank");
+    if (retailerWindow) retailerWindow.opener = null;
+    const openRetailerUrl = (targetUrl: string) => {
+      if (retailerWindow && !retailerWindow.closed) {
+        retailerWindow.location.replace(targetUrl);
+        return;
+      }
+      window.open(targetUrl, "_blank", "noopener,noreferrer");
+    };
+
     try {
       const response = await fetch("/api/track/click", {
         method: "POST",
@@ -285,9 +298,9 @@ export function useDesignPageSelectedItemPanelController({
       if (clickKey) url.searchParams.set("clickKey", clickKey);
       url.searchParams.set("utm_source", "interior-ai");
       url.searchParams.set("utm_medium", "affiliate");
-      window.open(url.toString(), "_blank", "noopener,noreferrer");
+      openRetailerUrl(url.toString());
     } catch {
-      window.open(buyUrl, "_blank", "noopener,noreferrer");
+      openRetailerUrl(buyUrl);
     }
   }, [designId, selectedProduct, selectedResolvedVariant]);
 

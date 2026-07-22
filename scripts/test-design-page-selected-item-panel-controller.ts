@@ -271,12 +271,15 @@ for (const expected of [
   "designId: designId ?? null",
   "productId: selectedProduct.id",
   "variantId: selectedResolvedVariant.variantId",
+  'const retailerWindow = window.open("", "_blank")',
+  "retailerWindow.opener = null",
+  "retailerWindow.location.replace(targetUrl)",
   "const clickKey = data?.clickKey",
   'url.searchParams.set("clickKey", clickKey)',
   'url.searchParams.set("utm_source", "interior-ai")',
   'url.searchParams.set("utm_medium", "affiliate")',
-  'window.open(url.toString(), "_blank", "noopener,noreferrer")',
-  'window.open(buyUrl, "_blank", "noopener,noreferrer")',
+  "openRetailerUrl(url.toString())",
+  "openRetailerUrl(buyUrl)",
 ] as const) {
   assertIncludes(
     commerceSource,

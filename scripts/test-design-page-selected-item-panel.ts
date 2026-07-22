@@ -223,6 +223,16 @@ assert.match(
   /sticky top-0 z-20 -mx-4 mb-2 border-b[^"`]*px-4 py-2/,
   "The Selected Item heading should remain sticky while the inspector scrolls.",
 );
+assert.match(
+  panelSource,
+  /data-testid="selected-item-availability"[\s\S]*?Check current stock at \{affiliateCommerce\.retailer\}[\s\S]*?retailer page is the live source of truth[\s\S]*?Check live availability at \{affiliateCommerce\.retailer\}/,
+  "Affiliate products should disclose availability separately and link to the retailer as the live source of truth.",
+);
+assert.match(
+  panelSource,
+  /state\.details\.product\.commerce\.type === "affiliate"[\s\S]*?state\.details\.product\.commerce\.data/,
+  "The availability disclosure should use the selected product's resolved affiliate retailer.",
+);
 
 for (const childName of [
   "SelectedItemDetailsPanel",
@@ -250,6 +260,8 @@ assert.match(
 for (const label of [
   "Swap to cheaper",
   "Upgrade this item",
+  "Check current stock at",
+  "Check live availability at",
   "View retailer",
   "Buy now",
   "Needs commerce review",

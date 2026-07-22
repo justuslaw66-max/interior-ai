@@ -136,6 +136,10 @@ export function SelectedItemPanel({
   const { dark, isDesigner, isClientPreview, canEdit } = configuration;
   const commerceAvailable =
     state.commerceType === "affiliate" || state.commerceType === "shopify";
+  const affiliateCommerce =
+    state.details.product.commerce.type === "affiliate"
+      ? state.details.product.commerce.data
+      : null;
 
   return (
     <div
@@ -177,6 +181,57 @@ export function SelectedItemPanel({
           {...state.details}
           {...actions.details}
         />
+
+        {affiliateCommerce ? (
+          <section
+            data-testid="selected-item-availability"
+            aria-label="Product availability"
+            className={
+              dark
+                ? "designer-raised mt-3 rounded-lg border border-amber-300/20 p-3"
+                : "mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3"
+            }
+          >
+            <div
+              className={
+                dark
+                  ? "text-xs font-semibold uppercase tracking-[0.08em] text-amber-100"
+                  : "text-xs font-semibold uppercase tracking-[0.08em] text-amber-900"
+              }
+            >
+              Availability
+            </div>
+            <div
+              className={
+                dark
+                  ? "mt-1 text-sm font-semibold text-neutral-100"
+                  : "mt-1 text-sm font-semibold text-neutral-900"
+              }
+            >
+              Check current stock at {affiliateCommerce.retailer}
+            </div>
+            <p
+              className={
+                dark
+                  ? "mt-1 text-xs leading-5 text-neutral-400"
+                  : "mt-1 text-xs leading-5 text-neutral-600"
+              }
+            >
+              Stock and delivery timing can vary by finish and location. The retailer page is the live source of truth.
+            </p>
+            <button
+              type="button"
+              className={
+                dark
+                  ? "designer-control mt-2 w-full rounded-lg border px-3 py-2 text-sm font-semibold text-neutral-100"
+                  : "mt-2 w-full rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm font-semibold text-amber-950 hover:bg-amber-100"
+              }
+              onClick={actions.onOpenCommerce}
+            >
+              Check live availability at {affiliateCommerce.retailer}
+            </button>
+          </section>
+        ) : null}
 
         {state.rotation ? (
           <SelectedItemRotationControls
