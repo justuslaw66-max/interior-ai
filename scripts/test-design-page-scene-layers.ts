@@ -563,8 +563,8 @@ assert.match(
 
 assert.match(
   regionSource,
-  /useState\(true\)[\s\S]*data-testid="active-room-focus-toolbar"[\s\S]*data-testid="active-room-focus-toggle"[\s\S]*Show home[\s\S]*Focus room/,
-  "Whole-home 3D editing should expose a reversible active-room focus control that starts focused."
+  /useState\(false\)[\s\S]*data-testid="active-room-focus-toolbar"[\s\S]*data-testid="active-room-focus-toggle"[\s\S]*Show home[\s\S]*Focus room/,
+  "Whole-home 3D editing should expose a reversible active-room focus control that starts with the entire home visible."
 );
 assert.match(
   regionSource,
@@ -603,8 +603,13 @@ assert.match(
 );
 assert.match(
   scaledModelSource,
-  /mesh\.castShadow = true;[\s\S]*mesh\.receiveShadow = true;/,
-  "Loaded GLB furniture should participate in quality-mode grounding shadows."
+  /mesh\.castShadow = true;[\s\S]*mesh\.receiveShadow = false;/,
+  "Loaded GLB furniture should cast grounding shadows without receiving topology-shaped self-shadow artifacts."
+);
+assert.match(
+  furnitureSource,
+  /<mesh castShadow receiveShadow=\{false\} visible=\{!showModel\}>/,
+  "Fallback furniture geometry should follow the same cast-only shadow policy."
 );
 
 console.log("Design-page scene layer ownership checks passed.");

@@ -80,7 +80,7 @@ export function DesignPageSceneRegion({
   resolvers,
   actions,
 }: DesignPageSceneRegionProps) {
-  const [activeRoomFocusEnabled, setActiveRoomFocusEnabled] = useState(true);
+  const [activeRoomFocusEnabled, setActiveRoomFocusEnabled] = useState(false);
   const lastAppliedFocusKeyRef = useRef<string | null>(null);
   const activeRoom = state.structure.wholeHome.rooms.find(
     (room) => room.id === state.structure.wholeHome.activeRoomId

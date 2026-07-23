@@ -1361,7 +1361,7 @@ export function Furniture({
           onRotateHandlePointerUp={onRotateHandlePointerUp}
         />
       ) : (
-        <mesh castShadow receiveShadow visible={!showModel}>
+        <mesh castShadow receiveShadow={false} visible={!showModel}>
           <boxGeometry args={[width, height, depth]} />
           <meshStandardMaterial
             color={

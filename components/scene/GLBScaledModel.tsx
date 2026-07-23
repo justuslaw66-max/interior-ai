@@ -1597,7 +1597,10 @@ export function GLBScaledModel({
       const mesh = obj as THREE.Mesh;
       if (!mesh.isMesh) return;
       mesh.castShadow = true;
-      mesh.receiveShadow = true;
+      // Imported meshes often contain dense or discontinuous topology that
+      // produces visible self-shadow triangles. Let furniture cast onto the
+      // room while floors and walls remain the shadow receivers.
+      mesh.receiveShadow = false;
       if (preserveImportedModelMaterials) return;
 
       const mat = mesh.material as THREE.MeshStandardMaterial | THREE.MeshStandardMaterial[];
