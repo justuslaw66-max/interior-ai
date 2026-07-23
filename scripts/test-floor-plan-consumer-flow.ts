@@ -311,6 +311,21 @@ assert.match(
 );
 assert.match(
   roomRenderer,
+  /segment\.kind === "window"[\s\S]*?glazingOffset[\s\S]*?firstStart[\s\S]*?secondStart[\s\S]*?\[firstStart, firstEnd\][\s\S]*?\[secondStart, secondEnd\]/,
+  "Windows should render as a distinct double-line glazing symbol."
+);
+assert.match(
+  roomRenderer,
+  /!segment\.doorStyle \|\| segment\.doorStyle === "swing"[\s\S]*?const openEnd[\s\S]*?const swingArc = Array\.from\(\{ length: 9 \}[\s\S]*?return \[\[start, openEnd\], swingArc\];/,
+  "Swing doors should render a leaf and quarter-circle swing arc."
+);
+assert.match(
+  roomRenderer,
+  /selectedOverlayId !== seg\.id && seg\.roomId === activeRoomId[\s\S]*?data-testid="plan-opening-kind-label"[\s\S]*?data-opening-kind=\{seg\.kind\}[\s\S]*?\{openingDisplayName\(seg\)\}/,
+  "Every unselected opening in the active room should carry a compact visible identity label."
+);
+assert.match(
+  roomRenderer,
   /function buildOpeningSymbolLines\([\s\S]*?segment\.doorStyle === "sliding"[\s\S]*?secondStart[\s\S]*?secondEnd/,
   "Sliding doors should render as overlapping parallel leaves instead of a swing symbol."
 );

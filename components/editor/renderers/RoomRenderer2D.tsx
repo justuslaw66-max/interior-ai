@@ -73,6 +73,7 @@ type Opening2D = {
 
 type OpeningSegment2D = {
   id: string;
+  roomId?: string;
   kind: Opening2D["kind"];
   doorStyle?: NonNullable<Opening2D["doorStyle"]>;
   wall: Opening2D["wall"];
@@ -84,23 +85,62 @@ type OpeningRenderSegment2D = OpeningSegment2D & {
   width: number;
   center: [number, number, number];
   hitSize: [number, number];
+  identityLabelPosition: [number, number, number];
   labelPosition: [number, number, number];
 };
+
+function getOpeningInwardNormal(
+  wall: OpeningSegment2D["wall"]
+): [number, number] {
+  if (wall === "north") return [0, 1];
+  if (wall === "south") return [0, -1];
+  if (wall === "west") return [1, 0];
+  return [-1, 0];
+}
 
 function buildOpeningSymbolLines(
   segment: OpeningSegment2D
 ): Array<Array<[number, number, number]>> {
   const [start, end] = segment.points;
-  if (segment.kind !== "door" || !segment.doorStyle || segment.doorStyle === "swing") {
-    return [[start, end]];
-  }
-  if (segment.doorStyle === "open") return [];
-
-  const horizontal = segment.wall === "north" || segment.wall === "south";
   const alongX = end[0] - start[0];
   const alongZ = end[2] - start[2];
-  const perpendicularX = horizontal ? 0 : 0.055;
-  const perpendicularZ = horizontal ? 0.055 : 0;
+  const width = Math.max(0.001, Math.hypot(alongX, alongZ));
+  const alongUnitX = alongX / width;
+  const alongUnitZ = alongZ / width;
+  const [inwardX, inwardZ] = getOpeningInwardNormal(segment.wall);
+
+  if (segment.kind === "window") {
+    const glazingOffset = 0.045;
+    const firstStart: [number, number, number] = [
+      start[0] - inwardX * glazingOffset,
+      start[1],
+      start[2] - inwardZ * glazingOffset,
+    ];
+    const firstEnd: [number, number, number] = [
+      end[0] - inwardX * glazingOffset,
+      end[1],
+      end[2] - inwardZ * glazingOffset,
+    ];
+    const secondStart: [number, number, number] = [
+      start[0] + inwardX * glazingOffset,
+      start[1],
+      start[2] + inwardZ * glazingOffset,
+    ];
+    const secondEnd: [number, number, number] = [
+      end[0] + inwardX * glazingOffset,
+      end[1],
+      end[2] + inwardZ * glazingOffset,
+    ];
+    return [
+      [firstStart, firstEnd],
+      [secondStart, secondEnd],
+      [firstStart, secondStart],
+      [firstEnd, secondEnd],
+    ];
+  }
+
+  if (segment.doorStyle === "open") return [];
+
   if (segment.doorStyle === "sliding") {
     const firstEnd: [number, number, number] = [
       start[0] + alongX * 0.58,
@@ -108,25 +148,42 @@ function buildOpeningSymbolLines(
       start[2] + alongZ * 0.58,
     ];
     const secondStart: [number, number, number] = [
-      start[0] + alongX * 0.42 + perpendicularX,
+      start[0] + alongX * 0.42 + inwardX * 0.055,
       start[1],
-      start[2] + alongZ * 0.42 + perpendicularZ,
+      start[2] + alongZ * 0.42 + inwardZ * 0.055,
     ];
     const secondEnd: [number, number, number] = [
-      end[0] + perpendicularX,
+      end[0] + inwardX * 0.055,
       end[1],
-      end[2] + perpendicularZ,
+      end[2] + inwardZ * 0.055,
     ];
     return [[start, firstEnd], [secondStart, secondEnd]];
+  }
+
+  if (!segment.doorStyle || segment.doorStyle === "swing") {
+    const openEnd: [number, number, number] = [
+      start[0] + inwardX * width,
+      start[1],
+      start[2] + inwardZ * width,
+    ];
+    const swingArc = Array.from({ length: 9 }, (_, index): [number, number, number] => {
+      const angle = (index / 8) * (Math.PI / 2);
+      return [
+        start[0] + alongUnitX * width * Math.cos(angle) + inwardX * width * Math.sin(angle),
+        start[1],
+        start[2] + alongUnitZ * width * Math.cos(angle) + inwardZ * width * Math.sin(angle),
+      ];
+    });
+    return [[start, openEnd], swingArc];
   }
 
   const foldPoints = Array.from({ length: 5 }, (_, index): [number, number, number] => {
     const ratio = index / 4;
     const fold = index === 0 || index === 4 ? 0 : index % 2 === 0 ? -0.07 : 0.07;
     return [
-      start[0] + alongX * ratio + (horizontal ? 0 : fold),
+      start[0] + alongX * ratio + inwardX * fold,
       start[1],
-      start[2] + alongZ * ratio + (horizontal ? fold : 0),
+      start[2] + alongZ * ratio + inwardZ * fold,
     ];
   });
   return [foldPoints];
@@ -1417,8 +1474,8 @@ export default function RoomRenderer2D({
   const zoneLabelColor = isPro ? "#115e59" : "#0f766e";
   const activeRoomBorderColor = "#22c55e";
   const activeRoomHandleColor = "#16a34a";
-  const openingDoorColor = isPro ? "#0b3b6f" : "#1d4ed8";
-  const openingWindowColor = isPro ? "#0f766e" : "#0f766e";
+  const openingDoorColor = isPro ? "#9a3412" : "#c2410c";
+  const openingWindowColor = isPro ? "#0369a1" : "#0284c7";
   const snapThreshold = 0.12;
   const openingMinWidth = 0.4;
   const openingEdgePadding = 0.03;
@@ -2850,6 +2907,7 @@ export default function RoomRenderer2D({
       const center = [(x0 + x1) / 2, 0.003, z] as [number, number, number];
       return {
         id: o.id,
+        roomId: o.roomId,
         kind: o.kind,
         doorStyle: o.doorStyle,
         wall: o.wall,
@@ -2857,6 +2915,11 @@ export default function RoomRenderer2D({
         width: o.width,
         center,
         hitSize: [Math.max(o.width, openingMinHitLength), openingHitDepth] as [number, number],
+        identityLabelPosition: [
+          center[0],
+          0.07,
+          z + (o.wall === "north" ? 0.22 : -0.22),
+        ] as [number, number, number],
         labelPosition: [
           center[0],
           0.07,
@@ -2874,6 +2937,7 @@ export default function RoomRenderer2D({
     const center = [x, 0.003, (z0 + z1) / 2] as [number, number, number];
     return {
       id: o.id,
+      roomId: o.roomId,
       kind: o.kind,
       doorStyle: o.doorStyle,
       wall: o.wall,
@@ -2881,6 +2945,11 @@ export default function RoomRenderer2D({
       width: o.width,
       center,
       hitSize: [openingHitDepth, Math.max(o.width, openingMinHitLength)] as [number, number],
+      identityLabelPosition: [
+        x + (o.wall === "west" ? 0.22 : -0.22),
+        0.07,
+        center[2],
+      ] as [number, number, number],
       labelPosition: [
         x + (o.wall === "west" ? -0.34 : 0.34),
         0.07,
@@ -4915,7 +4984,14 @@ export default function RoomRenderer2D({
 
       {showOpenings && !canonicalStructureExpected &&
         openingSegments.map((seg) => (
-          <group key={seg.id}>
+          <group
+            key={seg.id}
+            userData={{
+              testId: "plan-opening-symbol",
+              openingKind: seg.kind,
+              openingStyle: seg.doorStyle ?? null,
+            }}
+          >
             {buildOpeningSymbolLines(seg).map((points, lineIndex) => (
               <Line
                 key={`${seg.id}-symbol-${lineIndex}`}
@@ -4924,6 +5000,37 @@ export default function RoomRenderer2D({
                 lineWidth={selectedOverlayId === seg.id ? 4 : 3.2}
               />
             ))}
+            {selectedOverlayId !== seg.id && seg.roomId === activeRoomId && (
+              <Html
+                zIndexRange={[10, 0]}
+                position={seg.identityLabelPosition}
+                center
+                transform={false}
+                style={{ pointerEvents: "none" }}
+              >
+                <div
+                  data-testid="plan-opening-kind-label"
+                  data-opening-kind={seg.kind}
+                  style={{
+                    border: `1px solid ${
+                      seg.kind === "door" ? "rgba(194,65,12,0.32)" : "rgba(2,132,199,0.32)"
+                    }`,
+                    borderRadius: 5,
+                    background: "rgba(255,255,255,0.92)",
+                    color: seg.kind === "door" ? openingDoorColor : openingWindowColor,
+                    fontSize: 10,
+                    fontWeight: 800,
+                    lineHeight: 1,
+                    padding: "3px 5px",
+                    pointerEvents: "none",
+                    whiteSpace: "nowrap",
+                    boxShadow: "0 1px 3px rgba(15,23,42,0.1)",
+                  }}
+                >
+                  {openingDisplayName(seg)}
+                </div>
+              </Html>
+            )}
             {selectedOverlayId === seg.id && (
               <>
                 <Line
