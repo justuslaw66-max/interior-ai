@@ -134,8 +134,28 @@ function runPlacementRoomQueryTests() {
     1,
     1
   );
-  assert.ok(clampedX < 2 && clampedX > 0);
-  assert.ok(clampedZ > -2 && clampedZ < 0);
+  assert.equal(clampedX, 1.43);
+  assert.equal(clampedZ, -1.43);
+  assert.equal(
+    isPlacementContainedInRoom({
+      room,
+      position: [clampedX, 0, clampedZ],
+      rotationY: 0,
+      dimensions: { w: 1000, d: 1000 },
+    }),
+    true,
+    "A placement snapped to the inner wall face clearance must remain valid."
+  );
+  assert.equal(
+    isPlacementContainedInRoom({
+      room,
+      position: [clampedX + 0.01, 0, clampedZ],
+      rotationY: 0,
+      dimensions: { w: 1000, d: 1000 },
+    }),
+    false,
+    "Containment must reject a placement beyond the shared wall clearance."
+  );
 }
 
 function runCrossRoomTransferTest() {

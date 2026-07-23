@@ -420,6 +420,14 @@ export function Furniture({
     return () => window.removeEventListener("keydown", handleEscape);
   }, [instanceId, onDraggingChange, rotateDragging]);
 
+  // Room outlines represent wall centrelines. Use the shared inner-face
+  // clearance for both clamping and snapping so every wall axis lands at the
+  // same visible distance without intersecting the wall mesh.
+  const roomWallInset =
+    typeof wallContactInset === "number" && Number.isFinite(wallContactInset)
+      ? wallContactInset
+      : wallThickness;
+
   const clampWorldToRoomShape = useCallback(
     (
       worldX: number,
@@ -437,7 +445,7 @@ export function Furniture({
         planningDepth,
         roomWidth,
         roomDepth,
-        wallThickness,
+        roomWallInset,
         nextRotationY,
         roomPlanShape,
         roomPlanPolygon,
@@ -458,7 +466,7 @@ export function Furniture({
       roomPlanShape,
       roomWidth,
       rotation,
-      wallThickness,
+      roomWallInset,
     ]
   );
 
@@ -508,10 +516,6 @@ export function Furniture({
   // Hard constraint bounds: prevent items from exiting the room
   // Walls have physical thickness, so we must account for that
   // Items must stay inside the inner room boundaries (wall edges)
-  const roomWallInset =
-    typeof wallContactInset === "number" && Number.isFinite(wallContactInset)
-      ? wallContactInset
-      : wallThickness;
   const {
     minX: hardMinX,
     maxX: hardMaxX,

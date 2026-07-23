@@ -8,7 +8,11 @@ import {
   findCatalogPlacementCollision,
   isCatalogPlacementLocalFootprintInsideRoom,
 } from "@/lib/catalog-placement";
-import { clampToRoom, type AABB } from "@/lib/design-page-geometry";
+import {
+  clampToRoom,
+  getFurnitureWallInset,
+  type AABB,
+} from "@/lib/design-page-geometry";
 import {
   ROOM_DIMENSION_DEFAULTS,
   type HousePlanRoom2D,
@@ -77,7 +81,9 @@ export function clampToPlacementRoom(
     itemDepth,
     room.geometry.width,
     room.geometry.depth,
-    room.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness,
+    getFurnitureWallInset(
+      room.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness
+    ),
     rotationY,
     room.planShape ?? "rectangle",
     room.planPolygon,
@@ -177,8 +183,9 @@ export function isPlacementContainedInRoom({
     position,
     rotationY,
     dimsMm: dimensions,
-    wallThickness:
-      room.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness,
+    wallThickness: getFurnitureWallInset(
+      room.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness
+    ),
   });
 }
 

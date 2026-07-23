@@ -20,9 +20,11 @@ function clampValue(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
+export const FURNITURE_WALL_CLEARANCE_METERS = 0.02;
+
 export function getFurnitureWallInset(wallThickness: number): number {
   const wall = Number.isFinite(wallThickness) ? Math.max(0, wallThickness) : 0;
-  return Math.max(0.08, wall + 0.04);
+  return wall / 2 + FURNITURE_WALL_CLEARANCE_METERS;
 }
 
 export function isAabbWithinPadding(

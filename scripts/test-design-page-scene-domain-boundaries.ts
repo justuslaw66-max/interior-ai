@@ -129,9 +129,17 @@ assert.equal(
   HOUSE_PLAN_RENDERED_WALL_THICKNESS_METERS / 2
 );
 assert.ok(
-  Math.abs(getFurnitureWallInset(entry.roomWallThickness) - 0.18) <
+  Math.abs(getFurnitureWallInset(entry.roomWallThickness) - 0.09) <
     EDITOR_GEOMETRY_TOLERANCES.boundaryMeters,
-  "Furniture snapping must derive its safe inset from the canonical physical wall, not the thin visual shell."
+  "Furniture snapping must resolve the canonical wall inner face plus a small visible clearance."
+);
+assert.ok(
+  Math.abs(
+    getFurnitureWallInset(entry.roomWallThickness) -
+      entry.roomWallThickness / 2 -
+      0.02
+  ) < EDITOR_GEOMETRY_TOLERANCES.boundaryMeters,
+  "Furniture wall clearance must be measured from the inner wall face."
 );
 assert.deepEqual(
   removeSceneProjectionElevation(entry, "spatial", spatialProjection.position),

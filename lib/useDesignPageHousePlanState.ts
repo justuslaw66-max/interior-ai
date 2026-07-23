@@ -16,7 +16,10 @@ import {
   type RoomType,
 } from "@/lib/room-types";
 import { track, trackProductEvent } from "@/lib/analytics";
-import { clampToRoom } from "@/lib/design-page-geometry";
+import {
+  clampToRoom,
+  getFurnitureWallInset,
+} from "@/lib/design-page-geometry";
 import {
   buildHousePlan2D,
   clampRoomDimension,
@@ -105,7 +108,7 @@ export function useDesignPageHousePlanState({
         itemDepth,
         targetRoomWidth,
         targetRoomDepth,
-        targetWallThickness,
+        getFurnitureWallInset(targetWallThickness),
         rotationY,
         activeRoomPlanShape,
         activeRoomPlanPolygon,
