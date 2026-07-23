@@ -65,6 +65,12 @@ type DesignSceneCanvasConfiguration = {
     centerZ: number;
     roomHeight: number;
   };
+  presentationBounds?: {
+    widthMeters: number;
+    depthMeters: number;
+    centerX: number;
+    centerZ: number;
+  };
   planSafeArea: {
     leftPx: number;
     rightPx: number;
@@ -114,6 +120,8 @@ export function DesignSceneCanvas({
   children,
 }: DesignSceneCanvasProps) {
   const { planBounds } = configuration;
+  const presentationBounds =
+    configuration.presentationBounds ?? configuration.planBounds;
   const { planDiagnostics, viewMode } = state;
   const controlsRef = sceneRefs.controls;
 
@@ -121,7 +129,9 @@ export function DesignSceneCanvas({
     <CanvasErrorBoundary>
       <Canvas
         data-testid="scene-canvas"
-        data-shadow-maps-enabled="false"
+        data-shadow-maps-enabled={
+          viewMode === "3d" && !state.liteSceneEnabled ? "true" : "false"
+        }
         data-tone-mapping="aces"
         data-lighting-model="ambient-hemi-key-fill-ibl"
         data-camera-y={viewMode === "3d" ? String(state.cameraY) : undefined}
@@ -155,7 +165,7 @@ export function DesignSceneCanvas({
           opacity: state.showSceneLoadingVeil ? 0 : 1,
           transition: "opacity 160ms ease",
         }}
-        shadows={false}
+        shadows={viewMode === "3d" && !state.liteSceneEnabled}
         dpr={state.liteSceneEnabled ? [1, 1] : [1, 2]}
         gl={{
           antialias: true,
@@ -205,6 +215,30 @@ export function DesignSceneCanvas({
           updateProjection={actions.updateProjection}
         />
         <color attach="background" args={[configuration.backgroundColor]} />
+        {viewMode === "3d" ? (
+          <mesh
+            position={[
+              presentationBounds.centerX,
+              -0.09,
+              presentationBounds.centerZ,
+            ]}
+            rotation-x={-Math.PI / 2}
+            receiveShadow={!state.liteSceneEnabled}
+            raycast={() => null}
+          >
+            <planeGeometry
+              args={[
+                Math.max(8, presentationBounds.widthMeters + 5),
+                Math.max(8, presentationBounds.depthMeters + 5),
+              ]}
+            />
+            <meshStandardMaterial
+              color="#e9e5dc"
+              roughness={1}
+              metalness={0}
+            />
+          </mesh>
+        ) : null}
         <LoadingOverlay />
         <SceneProgressBridge onReadyChange={actions.onSceneProgressReadyChange} />
         <ScenePerformanceBridge
@@ -251,6 +285,17 @@ export function DesignSceneCanvas({
             configuration.lightConfig.keyIntensity ??
             configuration.lightConfig.directionalIntensity
           }
+          castShadow={viewMode === "3d" && !state.liteSceneEnabled}
+          shadow-mapSize-width={512}
+          shadow-mapSize-height={512}
+          shadow-camera-near={0.5}
+          shadow-camera-far={80}
+          shadow-camera-left={-24}
+          shadow-camera-right={24}
+          shadow-camera-top={24}
+          shadow-camera-bottom={-24}
+          shadow-bias={-0.00015}
+          shadow-normalBias={0.02}
         />
         <directionalLight
           position={[-4, 4, -3]}

@@ -228,6 +228,16 @@ assert.match(
   "The Selected Item heading should remain sticky while the inspector scrolls.",
 );
 assert.match(
+  panelSource,
+  /data-testid="selected-item-panel-collapse"[\s\S]*aria-expanded=\{!collapsed\}[\s\S]*Collapse[\s\S]*Expand/,
+  "The selected-item inspector should expose an accessible compact-state toggle.",
+);
+assert.match(
+  panelSource,
+  /data-collapsed=\{collapsed \? "true" : "false"\}[\s\S]*data-testid="selected-item-panel-summary"[\s\S]*state\.details\.selectedBrand[\s\S]*state\.details\.product\.title/,
+  "Collapsed selected-item inspectors should preserve the selected product identity.",
+);
+assert.match(
   detailsPanelSource,
   /data-testid=\{[\s\S]*?"selected-item-availability"[\s\S]*?External retailer[\s\S]*?Check current stock and delivery at \$\{product\.commerce\.data\.retailer\}[\s\S]*?Check stock/,
   "Affiliate products should place a compact stock action beside the external-retailer badge.",

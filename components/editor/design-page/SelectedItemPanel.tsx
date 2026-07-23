@@ -1,6 +1,6 @@
 "use client";
 
-import type { ComponentProps } from "react";
+import { useState, type ComponentProps } from "react";
 
 import SelectedItemDetailsPanel from "@/components/editor/SelectedItemDetailsPanel";
 import SelectedItemRotationControls from "@/components/editor/SelectedItemRotationControls";
@@ -134,6 +134,7 @@ export function SelectedItemPanel({
   actions,
 }: SelectedItemPanelProps) {
   const { dark, isDesigner, isClientPreview, canEdit } = configuration;
+  const [collapsed, setCollapsed] = useState(false);
   const commerceAvailable =
     state.commerceType === "affiliate" || state.commerceType === "shopify";
 
@@ -146,6 +147,7 @@ export function SelectedItemPanel({
     >
       <div
         data-testid="selected-item-panel"
+        data-collapsed={collapsed ? "true" : "false"}
         className={
           dark
             ? "designer-panel designer-panel-strong w-full rounded-xl p-4"
@@ -162,115 +164,155 @@ export function SelectedItemPanel({
           <div
             className={
               dark
-                ? "designer-raised designer-divider sticky top-0 z-20 -mx-4 mb-2 border-b px-4 py-2"
-                : "sticky top-0 z-20 -mx-4 mb-2 border-b border-neutral-200 bg-white/95 px-4 py-2 backdrop-blur"
+                ? "designer-raised designer-divider sticky top-0 z-20 -mx-4 mb-2 border-b flex items-center justify-between gap-3 px-4 py-2"
+                : "sticky top-0 z-20 -mx-4 mb-2 border-b flex items-center justify-between gap-3 border-neutral-200 bg-white/95 px-4 py-2 backdrop-blur"
             }
           >
-            Selected Item
+            <span>Selected Item</span>
+            <button
+              type="button"
+              data-testid="selected-item-panel-collapse"
+              aria-expanded={!collapsed}
+              aria-label={
+                collapsed
+                  ? "Expand selected item inspector"
+                  : "Collapse selected item inspector"
+              }
+              className={
+                dark
+                  ? "designer-control rounded-full border px-2.5 py-1 text-xs font-semibold text-neutral-100"
+                  : "rounded-full border border-neutral-200 bg-white px-2.5 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
+              }
+              onClick={() => setCollapsed((current) => !current)}
+            >
+              {collapsed ? "Expand" : "Collapse"}
+            </button>
           </div>
         </div>
 
-        <SelectedItemDetailsPanel
-          dark={dark}
-          isDesigner={isDesigner}
-          canEdit={canEdit}
-          onCheckRetailerStock={
-            state.details.product.commerce.type === "affiliate"
-              ? actions.onOpenCommerce
-              : undefined
-          }
-          {...state.details}
-          {...actions.details}
-        />
+        {collapsed ? (
+          <div
+            data-testid="selected-item-panel-summary"
+            className={
+              dark
+                ? "designer-work-muted rounded-lg px-3 py-2"
+                : "rounded-lg bg-neutral-50 px-3 py-2"
+            }
+          >
+            <div className="truncate text-[11px] font-semibold uppercase tracking-wide opacity-60">
+              {state.details.selectedBrand}
+            </div>
+            <div className="truncate text-sm font-semibold">
+              {state.details.product.title}
+            </div>
+          </div>
+        ) : (
+          <>
+            <SelectedItemDetailsPanel
+              dark={dark}
+              isDesigner={isDesigner}
+              canEdit={canEdit}
+              onCheckRetailerStock={
+                state.details.product.commerce.type === "affiliate"
+                  ? actions.onOpenCommerce
+                  : undefined
+              }
+              {...state.details}
+              {...actions.details}
+            />
 
-        {state.rotation ? (
-          <SelectedItemRotationControls
-            dark={dark}
-            isDesigner={isDesigner}
-            {...state.rotation}
-            {...actions.rotation}
-          />
-        ) : null}
+            {state.rotation ? (
+              <SelectedItemRotationControls
+                dark={dark}
+                isDesigner={isDesigner}
+                {...state.rotation}
+                {...actions.rotation}
+              />
+            ) : null}
 
-        <ProductModelVariantControls
-          state={state.productModelVariants}
-          configuration={{ dark }}
-          actions={actions.productModelVariants}
-        />
+            <ProductModelVariantControls
+              state={state.productModelVariants}
+              configuration={{ dark }}
+              actions={actions.productModelVariants}
+            />
 
-        <ProductFinishControls
-          state={state.productFinishes}
-          configuration={{ dark }}
-          actions={actions.productFinishes}
-        />
+            <ProductFinishControls
+              state={state.productFinishes}
+              configuration={{ dark }}
+              actions={actions.productFinishes}
+            />
 
-        <button
-          className={
-            dark
-              ? "designer-control mt-2 w-full rounded-lg border px-3 py-2 text-sm text-neutral-100"
-              : "mt-2 w-full rounded-lg bg-neutral-900 px-3 py-2 text-sm text-white"
-          }
-          disabled={!canEdit}
-          onClick={actions.onSwapToCheaper}
-        >
-          Swap to cheaper
-        </button>
-
-        <button
-          className={
-            dark
-              ? "mt-2 w-full rounded-lg border px-3 py-2 text-sm"
-              : "mt-2 w-full rounded-lg border px-3 py-2 text-sm"
-          }
-          disabled={!canEdit}
-          onClick={actions.onUpgradeItem}
-        >
-          Upgrade this item
-        </button>
-
-        <div className="pt-2 flex gap-2">
-          {commerceAvailable ? (
-            <button
-              className="mt-3 w-full rounded-lg bg-green-600 px-3 py-2 text-sm text-white"
-              onClick={actions.onOpenCommerce}
-            >
-              {state.commerceType === "affiliate" ? "View retailer" : "Buy now"}
-            </button>
-          ) : (
-            <button
-              className="mt-3 w-full rounded-lg bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800 ring-1 ring-amber-100"
-              disabled
-            >
-              Needs commerce review
-            </button>
-          )}
-
-          {isDesigner ? (
             <button
               className={
                 dark
-                  ? "rounded-lg border px-3 py-2 text-sm"
-                  : "rounded-lg border px-3 py-2 text-sm text-neutral-900"
+                  ? "designer-control mt-2 w-full rounded-lg border px-3 py-2 text-sm text-neutral-100"
+                  : "mt-2 w-full rounded-lg bg-neutral-900 px-3 py-2 text-sm text-white"
               }
               disabled={!canEdit}
-              onClick={actions.onToggleLock}
+              onClick={actions.onSwapToCheaper}
             >
-              {state.lockLabel}
+              Swap to cheaper
             </button>
-          ) : null}
 
-          <button
-            className={
-              dark
-                ? "designer-control rounded-lg border px-3 py-2 text-sm text-neutral-100"
-                : "rounded-lg bg-neutral-100 px-3 py-2 text-sm text-neutral-900 hover:bg-neutral-200"
-            }
-            disabled={!canEdit}
-            onClick={actions.onRemove}
-          >
-            Remove
-          </button>
-        </div>
+            <button
+              className={
+                dark
+                  ? "mt-2 w-full rounded-lg border px-3 py-2 text-sm"
+                  : "mt-2 w-full rounded-lg border px-3 py-2 text-sm"
+              }
+              disabled={!canEdit}
+              onClick={actions.onUpgradeItem}
+            >
+              Upgrade this item
+            </button>
+
+            <div className="flex gap-2 pt-2">
+              {commerceAvailable ? (
+                <button
+                  className="mt-3 w-full rounded-lg bg-green-600 px-3 py-2 text-sm text-white"
+                  onClick={actions.onOpenCommerce}
+                >
+                  {state.commerceType === "affiliate"
+                    ? "View retailer"
+                    : "Buy now"}
+                </button>
+              ) : (
+                <button
+                  className="mt-3 w-full rounded-lg bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800 ring-1 ring-amber-100"
+                  disabled
+                >
+                  Needs commerce review
+                </button>
+              )}
+
+              {isDesigner ? (
+                <button
+                  className={
+                    dark
+                      ? "rounded-lg border px-3 py-2 text-sm"
+                      : "rounded-lg border px-3 py-2 text-sm text-neutral-900"
+                  }
+                  disabled={!canEdit}
+                  onClick={actions.onToggleLock}
+                >
+                  {state.lockLabel}
+                </button>
+              ) : null}
+
+              <button
+                className={
+                  dark
+                    ? "designer-control rounded-lg border px-3 py-2 text-sm text-neutral-100"
+                    : "rounded-lg bg-neutral-100 px-3 py-2 text-sm text-neutral-900 hover:bg-neutral-200"
+                }
+                disabled={!canEdit}
+                onClick={actions.onRemove}
+              >
+                Remove
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

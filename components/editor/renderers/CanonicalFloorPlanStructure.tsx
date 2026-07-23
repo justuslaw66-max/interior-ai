@@ -1418,6 +1418,7 @@ type CanonicalFloorPlanWalls3DProps = {
   model: CanonicalFloorPlanRenderModel;
   rooms?: readonly HousePlanRoom2D[];
   activeRoomId: string | null;
+  focusRoomId?: string | null;
   activeFloorLevel?: number;
   selectedOpeningId?: string | null;
   selectedWallId?: string | null;
@@ -1446,6 +1447,7 @@ export function CanonicalFloorPlanWalls3D({
   model,
   rooms = [],
   activeRoomId,
+  focusRoomId = null,
   activeFloorLevel = 1,
   selectedOpeningId = null,
   selectedWallId = null,
@@ -1485,10 +1487,18 @@ export function CanonicalFloorPlanWalls3D({
     >
       {model.floors.flatMap((floor) => {
         const floorLevel = floor.levelIndex + 1;
+        if (focusRoomId && floorLevel !== activeFloorLevel) return [];
         const isActiveFloor = floorLevel === activeFloorLevel;
         const opacity =
           stackedFloors && fadeInactiveFloors && !isActiveFloor ? 0.28 : 1;
-        const structures = floor.structures.map((structure) => (
+        const visibleWalls = focusRoomId
+          ? floor.walls.filter((wall) =>
+              wall.adjacentRoomIds.includes(focusRoomId)
+            )
+          : floor.walls;
+        const visibleFloor =
+          visibleWalls === floor.walls ? floor : { ...floor, walls: visibleWalls };
+        const structures = (focusRoomId ? [] : floor.structures).map((structure) => (
           <CanonicalStructure3D
             key={`${floor.id}:${structure.id}:structure`}
             structure={structure}
@@ -1498,7 +1508,7 @@ export function CanonicalFloorPlanWalls3D({
             opacity={opacity}
           />
         ));
-        const slab = (
+        const slab = focusRoomId ? null : (
           <CanonicalFloorSlab3D
             key={`${floor.id}:slab`}
             floor={floor}
@@ -1508,13 +1518,13 @@ export function CanonicalFloorPlanWalls3D({
         const wallBodies = (
           <CanonicalWallBodies3D
             key={`${floor.id}:wall-bodies`}
-            floor={floor}
+            floor={visibleFloor}
             geometryHash={model.geometryHash}
             opacity={opacity}
             cutawayWallKeys={cutawayWallKeys}
           />
         );
-        const walls = floor.walls.flatMap((wall) => {
+        const walls = visibleWalls.flatMap((wall) => {
           if (cutawayWallKeys.has(canonicalWallCutawayKey(floor.id, wall.id))) {
             return [];
           }
@@ -1568,9 +1578,15 @@ export function CanonicalFloorPlanWalls3D({
 
       {model.floors.flatMap((floor) => {
         const floorLevel = floor.levelIndex + 1;
+        if (focusRoomId && floorLevel !== activeFloorLevel) return [];
         const opacity =
           stackedFloors && fadeInactiveFloors && floorLevel !== activeFloorLevel ? 0.28 : 1;
-        return floor.walls.flatMap((wall) =>
+        return floor.walls
+          .filter(
+            (wall) =>
+              !focusRoomId || wall.adjacentRoomIds.includes(focusRoomId)
+          )
+          .flatMap((wall) =>
           cutawayWallKeys.has(canonicalWallCutawayKey(floor.id, wall.id))
             ? []
             : wall.openingPaths.map(({ opening, segments }) => (

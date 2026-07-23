@@ -128,6 +128,7 @@ type SceneItemsLayerProps = {
   configuration: SceneItemsLayerConfiguration;
   resolvers: SceneItemsLayerResolvers;
   actions: SceneItemsLayerActions;
+  focusRoomId?: string | null;
 };
 
 export function SceneItemsLayer({
@@ -135,10 +136,15 @@ export function SceneItemsLayer({
   configuration,
   resolvers,
   actions,
+  focusRoomId = null,
 }: SceneItemsLayerProps) {
+  const visibleEntries = focusRoomId
+    ? state.entries.filter((entry) => entry.roomId === focusRoomId)
+    : state.entries;
+
   return (
     <>
-      {state.entries.map((sceneEntry) => {
+      {visibleEntries.map((sceneEntry) => {
         if (!sceneEntry.visible) return null;
 
         const item = sceneEntry.item;

@@ -181,12 +181,14 @@ type DesignSceneStructureLayerProps = {
   state: DesignSceneStructureLayerState;
   configuration: DesignSceneStructureLayerConfiguration;
   actions: DesignSceneStructureLayerActions;
+  focusRoomId?: string | null;
 };
 
 export function DesignSceneStructureLayer({
   state,
   configuration,
   actions,
+  focusRoomId = null,
 }: DesignSceneStructureLayerProps) {
   const canonicalResolution = useMemo(() => {
     if (!state.plan.canonicalDocument) return { plan: null, error: null };
@@ -379,12 +381,22 @@ export function DesignSceneStructureLayer({
   }
 
   if (state.wholeHome.enabled) {
+    const visibleRooms = focusRoomId
+      ? state.wholeHome.rooms.filter((room) => room.id === focusRoomId)
+      : state.wholeHome.rooms;
+    const visibleOpenings = mapPlanOpeningsToRoomRenderer(
+      state.plan.scene.openings
+    ).filter(
+      (opening) => !focusRoomId || opening.roomId === focusRoomId
+    );
+
     return (
       <>
       <HousePlanRenderer3D
-        rooms={state.wholeHome.rooms}
-        openings={mapPlanOpeningsToRoomRenderer(state.plan.scene.openings)}
+        rooms={visibleRooms}
+        openings={visibleOpenings}
         activeRoomId={state.wholeHome.activeRoomId}
+        focusRoomId={focusRoomId}
         activeFloorLevel={state.wholeHome.activeFloorLevel}
         wallHeight={state.wholeHome.wallHeight}
         stackedFloors={state.wholeHome.stackedFloors}

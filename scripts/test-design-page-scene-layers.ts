@@ -17,6 +17,9 @@ const workspaceSource = readSource(
 const regionSource = readSource(
   "components/editor/design-page/DesignPageSceneRegion.tsx"
 );
+const canvasSource = readSource(
+  "components/editor/design-page/DesignSceneCanvas.tsx"
+);
 const adapterSource = readSource("lib/design-page-scene-region-adapter.ts");
 const sceneWorkspaceSource = readSource(
   "lib/useDesignPageSceneRegionWorkspaceRegistration.ts"
@@ -32,6 +35,14 @@ const previewSource = readSource(
 );
 const itemsSource = readSource(
   "components/editor/design-page/SceneItemsLayer.tsx"
+);
+const furnitureSource = readSource("components/scene/FurnitureItem.tsx");
+const scaledModelSource = readSource("components/scene/GLBScaledModel.tsx");
+const cameraNavigationSource = readSource(
+  "lib/useDesignPageCameraNavigation.ts"
+);
+const canonicalStructureSource = readSource(
+  "components/editor/renderers/CanonicalFloorPlanStructure.tsx"
 );
 const coreShellBaseRegistrationSource = readSource(
   "lib/useDesignPageCoreShellBaseRegistration.ts"
@@ -548,6 +559,52 @@ assert.match(
   sceneWorkspaceSource,
   /buildDesignPageSceneRegionAdapter\(\{[\s\S]*pendingScene:\s*placement\.derived\.pendingCatalogPlacementScene[\s\S]*hoverScene:\s*placement\.derived\.hoverCatalogPlacementScene[\s\S]*hardInvalid:\s*placement\.derived\.pendingCatalogPlacementHardInvalid/,
   "Scene workspace should inject pending, hover, and hard-invalid preview state into the scene adapter."
+);
+
+assert.match(
+  regionSource,
+  /useState\(true\)[\s\S]*data-testid="active-room-focus-toolbar"[\s\S]*data-testid="active-room-focus-toggle"[\s\S]*Show home[\s\S]*Focus room/,
+  "Whole-home 3D editing should expose a reversible active-room focus control that starts focused."
+);
+assert.match(
+  regionSource,
+  /focusRoomId=\{focusedRoomId\}[\s\S]*<SceneItemsLayer[\s\S]*focusRoomId=\{focusedRoomId\}/,
+  "Active-room focus should reach both the structure and furniture layers."
+);
+assert.match(
+  structureSource,
+  /const visibleRooms = focusRoomId[\s\S]*state\.wholeHome\.rooms\.filter[\s\S]*const visibleOpenings =[\s\S]*opening\.roomId === focusRoomId[\s\S]*focusRoomId=\{focusRoomId\}/,
+  "Focused 3D structure rendering should omit inactive rooms and openings."
+);
+assert.match(
+  itemsSource,
+  /const visibleEntries = focusRoomId[\s\S]*entry\.roomId === focusRoomId[\s\S]*visibleEntries\.map/,
+  "Focused 3D furniture rendering should omit inactive-room items."
+);
+assert.match(
+  canonicalStructureSource,
+  /focusRoomId[\s\S]*wall\.adjacentRoomIds\.includes\(focusRoomId\)[\s\S]*floor=\{visibleFloor\}/,
+  "Canonical 3D focus should retain only walls adjacent to the focused room."
+);
+assert.match(
+  cameraNavigationSource,
+  /handleFitSelectedPlanRoom[\s\S]*if \(viewMode === "3d"\)[\s\S]*applyQueued3DView\([\s\S]*room\.name\} focused/,
+  "Focused rooms should receive a dedicated 3D camera fit."
+);
+assert.match(
+  canvasSource,
+  /data-shadow-maps-enabled=[\s\S]*shadows=\{viewMode === "3d" && !state\.liteSceneEnabled\}[\s\S]*presentationBounds[\s\S]*receiveShadow[\s\S]*castShadow=\{viewMode === "3d" && !state\.liteSceneEnabled\}/,
+  "Quality-mode 3D should provide a bounded ground plane and soft shadow-map depth."
+);
+assert.match(
+  furnitureSource,
+  /testId: "selected-furniture-outline"[\s\S]*color="#2563eb"[\s\S]*lineWidth=\{2\.5\}/,
+  "Selected GLB furniture should retain a strong 3D outline independent of its model materials."
+);
+assert.match(
+  scaledModelSource,
+  /mesh\.castShadow = true;[\s\S]*mesh\.receiveShadow = true;/,
+  "Loaded GLB furniture should participate in quality-mode grounding shadows."
 );
 
 console.log("Design-page scene layer ownership checks passed.");

@@ -1386,9 +1386,30 @@ export function Furniture({
               showSelection && isSelected ? 0.15 : cartPreviewed ? 0.12 : isSnapped && dragging ? 0.3 : 0
             }
           />
-          {showSelection && isSelected && <Edges scale={1.01} />}
         </mesh>
       )}
+      {viewMode === "3d" && showSelection && isSelected ? (
+        <mesh
+          raycast={() => null}
+          renderOrder={24}
+          userData={{ testId: "selected-furniture-outline" }}
+        >
+          <boxGeometry args={[width + 0.05, height + 0.05, depth + 0.05]} />
+          <meshBasicMaterial
+            transparent
+            opacity={0}
+            depthWrite={false}
+            colorWrite={false}
+          />
+          <Edges
+            scale={1.012}
+            color="#2563eb"
+            lineWidth={2.5}
+            depthTest={false}
+            threshold={12}
+          />
+        </mesh>
+      ) : null}
       {Math.abs(planningWidth - width) > EDITOR_GEOMETRY_TOLERANCES.dimensionMeters ||
       Math.abs(planningDepth - depth) > EDITOR_GEOMETRY_TOLERANCES.dimensionMeters ? (
         <Line

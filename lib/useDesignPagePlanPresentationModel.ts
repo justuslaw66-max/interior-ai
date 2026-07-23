@@ -294,8 +294,10 @@ export function useDesignPagePlanPresentationModel({
   );
   const lightConfig = LIGHTING_PRESETS[presentation.lightingPreset];
   const sceneBackgroundColor =
-    presentation.showDesignerTheme && layout.viewMode === "3d"
-      ? "#dedfdf"
+    layout.viewMode === "3d"
+      ? presentation.showDesignerTheme
+        ? "#dedfdf"
+        : "#f4f2ed"
       : "#ffffff";
   const effectivePlanLayers = presentation.simplePlanControls
     ? simplePlanLayers

@@ -691,6 +691,39 @@ export function useDesignPageCameraNavigation({
       const paddedWidth = room.w + 1.4;
       const paddedDepth = room.d + 1.4;
 
+      if (viewMode === "3d") {
+        const roomRadius =
+          Math.sqrt(
+            paddedWidth * paddedWidth + paddedDepth * paddedDepth
+          ) /
+            2 +
+          Math.max(0.8, roomHeight * 0.3);
+        const cameraDistance = Math.max(6.2, roomRadius * 1.9);
+        const target = new THREE.Vector3(
+          room.x,
+          Math.min(1.1, roomHeight * 0.4),
+          room.z
+        );
+        const direction = new THREE.Vector3(0.62, 0.58, 0.9).normalize();
+        const position = target
+          .clone()
+          .addScaledVector(direction, cameraDistance);
+        applyQueued3DView(
+          {
+            target: [target.x, target.y, target.z],
+            pos: [position.x, position.y, position.z],
+            fov: 44,
+          },
+          320
+        );
+        showRuleToast(`${room.name} focused`);
+        track("floor_plan_fit_selected_room_clicked", {
+          roomId,
+          viewMode,
+        });
+        return;
+      }
+
       if (
         !applyPlan2DCameraView({
           centerX: room.x,
@@ -716,9 +749,17 @@ export function useDesignPageCameraNavigation({
       }
 
       showRuleToast(`${room.name} fitted`);
-      track("floor_plan_fit_selected_room_clicked", { roomId });
+      track("floor_plan_fit_selected_room_clicked", { roomId, viewMode });
     },
-    [applyPlan2DCameraView, roomHeight, rooms, showRuleToast, transitionToCameraView]
+    [
+      applyPlan2DCameraView,
+      applyQueued3DView,
+      roomHeight,
+      rooms,
+      showRuleToast,
+      transitionToCameraView,
+      viewMode,
+    ]
   );
 
   const focusWholeHomeCameraPoint = useCallback(

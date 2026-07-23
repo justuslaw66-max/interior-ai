@@ -46,6 +46,7 @@ type HousePlanRenderer3DProps = {
   rooms: readonly HousePlanRoom2D[];
   openings?: readonly RoomRendererOpening[];
   activeRoomId: string;
+  focusRoomId?: string | null;
   activeFloorLevel?: number;
   wallHeight: number;
   stackedFloors?: boolean;
@@ -3001,6 +3002,7 @@ function RoomFloorMesh({
         ref={floorSurfaceRef}
         rotation-x={-Math.PI / 2}
         position={[0, 0.001, 0]}
+        receiveShadow
         raycast={raycastFloorSurface}
         onPointerOver={
           interactive
@@ -3195,6 +3197,7 @@ export default function HousePlanRenderer3D({
   rooms,
   openings = [],
   activeRoomId,
+  focusRoomId = null,
   activeFloorLevel,
   wallHeight,
   stackedFloors = false,
@@ -3326,6 +3329,7 @@ export default function HousePlanRenderer3D({
           model={canonicalPlan}
           rooms={rooms}
           activeRoomId={activeRoomId}
+          focusRoomId={focusRoomId}
           activeFloorLevel={resolvedActiveFloorLevel}
           selectedOpeningId={selectedOpeningId}
           selectedWallId={

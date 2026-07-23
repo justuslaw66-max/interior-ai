@@ -1596,8 +1596,8 @@ export function GLBScaledModel({
     scene.traverse((obj) => {
       const mesh = obj as THREE.Mesh;
       if (!mesh.isMesh) return;
-      mesh.castShadow = false;
-      mesh.receiveShadow = false;
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
       if (preserveImportedModelMaterials) return;
 
       const mat = mesh.material as THREE.MeshStandardMaterial | THREE.MeshStandardMaterial[];

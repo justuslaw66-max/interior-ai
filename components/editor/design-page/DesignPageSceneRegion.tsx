@@ -1,6 +1,13 @@
 "use client";
 
-import type { ComponentProps, DragEventHandler } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentProps,
+  type DragEventHandler,
+} from "react";
 
 import { DesignPageViewportOverlayLayer } from "@/components/editor/design-page/DesignPageViewportOverlayLayer";
 import { DesignSceneCanvas } from "@/components/editor/design-page/DesignSceneCanvas";
@@ -73,6 +80,46 @@ export function DesignPageSceneRegion({
   resolvers,
   actions,
 }: DesignPageSceneRegionProps) {
+  const [activeRoomFocusEnabled, setActiveRoomFocusEnabled] = useState(true);
+  const lastAppliedFocusKeyRef = useRef<string | null>(null);
+  const activeRoom = state.structure.wholeHome.rooms.find(
+    (room) => room.id === state.structure.wholeHome.activeRoomId
+  );
+  const focusAvailable =
+    state.canvas.viewMode === "3d" &&
+    state.structure.wholeHome.enabled &&
+    state.structure.wholeHome.rooms.length > 1 &&
+    Boolean(activeRoom);
+  const focusedRoomId =
+    focusAvailable && activeRoomFocusEnabled ? activeRoom?.id ?? null : null;
+
+  useEffect(() => {
+    if (!focusedRoomId) {
+      lastAppliedFocusKeyRef.current = null;
+      return;
+    }
+    const focusKey = `${focusedRoomId}:${state.canvas.viewMode}`;
+    if (lastAppliedFocusKeyRef.current === focusKey) return;
+    lastAppliedFocusKeyRef.current = focusKey;
+    actions.structure.rooms.fit(focusedRoomId);
+  }, [actions.structure.rooms, focusedRoomId, state.canvas.viewMode]);
+
+  const canvasConfiguration = useMemo(
+    () => ({
+      ...configuration.canvas,
+      presentationBounds:
+        focusedRoomId && activeRoom
+          ? {
+              widthMeters: activeRoom.w,
+              depthMeters: activeRoom.d,
+              centerX: activeRoom.x,
+              centerZ: activeRoom.z,
+            }
+          : configuration.canvas.planBounds,
+    }),
+    [activeRoom, configuration.canvas, focusedRoomId]
+  );
+
   return (
     <div
       className="relative h-full w-full"
@@ -82,7 +129,7 @@ export function DesignPageSceneRegion({
     >
       <DesignSceneCanvas
         state={state.canvas}
-        configuration={configuration.canvas}
+        configuration={canvasConfiguration}
         sceneRefs={references.canvas}
         actions={actions.canvas}
       >
@@ -90,6 +137,7 @@ export function DesignPageSceneRegion({
           state={state.structure}
           configuration={configuration.structure}
           actions={actions.structure}
+          focusRoomId={focusedRoomId}
         />
         <DesignSceneGuidanceLayer
           state={state.guidance}
@@ -102,6 +150,7 @@ export function DesignPageSceneRegion({
           configuration={configuration.items}
           resolvers={resolvers.items}
           actions={actions.items}
+          focusRoomId={focusedRoomId}
         />
         <DesignScenePreviewLayer
           state={state.preview}
@@ -116,6 +165,45 @@ export function DesignPageSceneRegion({
         references={references.viewport}
         actions={actions.viewport}
       />
+
+      {focusAvailable ? (
+        <div
+          data-testid="active-room-focus-toolbar"
+          data-focus-enabled={activeRoomFocusEnabled ? "true" : "false"}
+          className="pointer-events-auto absolute left-1/2 top-20 z-30 flex -translate-x-1/2 items-center gap-2 rounded-full border border-neutral-200 bg-white/95 px-2 py-1.5 text-xs text-neutral-700 shadow-md backdrop-blur"
+        >
+          <span
+            aria-hidden="true"
+            className={`h-2 w-2 rounded-full ${
+              activeRoomFocusEnabled ? "bg-emerald-500" : "bg-neutral-300"
+            }`}
+          />
+          <span className="max-w-40 truncate font-medium">
+            {activeRoomFocusEnabled
+              ? `Focused: ${activeRoom?.name ?? "Active room"}`
+              : "Entire home visible"}
+          </span>
+          <button
+            type="button"
+            data-testid="active-room-focus-toggle"
+            aria-pressed={activeRoomFocusEnabled}
+            className="rounded-full bg-neutral-900 px-3 py-1.5 font-semibold text-white hover:bg-neutral-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500"
+            onClick={() => {
+              if (activeRoomFocusEnabled) {
+                setActiveRoomFocusEnabled(false);
+                window.requestAnimationFrame(() => {
+                  actions.viewport.navigator.onResetView?.();
+                });
+                return;
+              }
+              lastAppliedFocusKeyRef.current = null;
+              setActiveRoomFocusEnabled(true);
+            }}
+          >
+            {activeRoomFocusEnabled ? "Show home" : "Focus room"}
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }
