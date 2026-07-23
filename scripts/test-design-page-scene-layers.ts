@@ -568,8 +568,8 @@ assert.match(
 );
 assert.match(
   regionSource,
-  /focusRoomId=\{focusedRoomId\}[\s\S]*<SceneItemsLayer[\s\S]*focusRoomId=\{focusedRoomId\}/,
-  "Active-room focus should reach both the structure and furniture layers."
+  /const renderFocusRoomId = state\.canvas\.showSceneLoadingVeil[\s\S]*focusRoomId=\{renderFocusRoomId\}[\s\S]*<SceneItemsLayer[\s\S]*focusRoomId=\{renderFocusRoomId\}/,
+  "Active-room focus should wait until the full scene has mounted and reported readiness."
 );
 assert.match(
   structureSource,

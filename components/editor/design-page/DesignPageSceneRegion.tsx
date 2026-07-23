@@ -92,6 +92,12 @@ export function DesignPageSceneRegion({
     Boolean(activeRoom);
   const focusedRoomId =
     focusAvailable && activeRoomFocusEnabled ? activeRoom?.id ?? null : null;
+  // Readiness is tracked for every item in the current design. Keep the full
+  // scene mounted behind the loading veil so inactive-room models can report
+  // ready before active-room focus removes them from the render tree.
+  const renderFocusRoomId = state.canvas.showSceneLoadingVeil
+    ? null
+    : focusedRoomId;
 
   useEffect(() => {
     if (!focusedRoomId) {
@@ -137,7 +143,7 @@ export function DesignPageSceneRegion({
           state={state.structure}
           configuration={configuration.structure}
           actions={actions.structure}
-          focusRoomId={focusedRoomId}
+          focusRoomId={renderFocusRoomId}
         />
         <DesignSceneGuidanceLayer
           state={state.guidance}
@@ -150,7 +156,7 @@ export function DesignPageSceneRegion({
           configuration={configuration.items}
           resolvers={resolvers.items}
           actions={actions.items}
-          focusRoomId={focusedRoomId}
+          focusRoomId={renderFocusRoomId}
         />
         <DesignScenePreviewLayer
           state={state.preview}
