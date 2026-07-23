@@ -13,6 +13,7 @@ import {
   removeSceneProjectionElevation,
 } from "@/lib/design-page-scene-projection";
 import {
+  getFurnitureWallInset,
   resolveAxisAlignedRoomItemBounds,
   resolvePointerRotationRadians,
 } from "@/lib/design-page-geometry";
@@ -126,6 +127,11 @@ assert.equal(
 assert.equal(
   spatialProjection.wallContactInset,
   HOUSE_PLAN_RENDERED_WALL_THICKNESS_METERS / 2
+);
+assert.ok(
+  Math.abs(getFurnitureWallInset(entry.roomWallThickness) - 0.18) <
+    EDITOR_GEOMETRY_TOLERANCES.boundaryMeters,
+  "Furniture snapping must derive its safe inset from the canonical physical wall, not the thin visual shell."
 );
 assert.deepEqual(
   removeSceneProjectionElevation(entry, "spatial", spatialProjection.position),

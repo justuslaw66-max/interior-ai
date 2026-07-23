@@ -30,6 +30,9 @@ const guidanceSource = readSource(
 const previewSource = readSource(
   "components/editor/design-page/DesignScenePreviewLayer.tsx"
 );
+const itemsSource = readSource(
+  "components/editor/design-page/SceneItemsLayer.tsx"
+);
 const coreShellBaseRegistrationSource = readSource(
   "lib/useDesignPageCoreShellBaseRegistration.ts"
 );
@@ -507,6 +510,17 @@ assert.match(
   previewSource,
   /Math\.max\(configuration\.planDepth, 1\)[\s\S]*configuration\.pendingRoomSize\?\.depth[\s\S]*configuration\.activeRoomDepth/,
   "The drag plane should retain whole-plan and active-room depth fallbacks."
+);
+
+assert.match(
+  itemsSource,
+  /wallThickness=\{sceneEntry\.roomWallThickness\}[\s\S]*wallContactInset=\{getFurnitureWallInset\(\s*sceneEntry\.roomWallThickness\s*\)\}/,
+  "Furniture drag snapping should use the canonical room wall inset used by placement validation."
+);
+assert.doesNotMatch(
+  itemsSource,
+  /wall(?:Thickness|ContactInset)=\{sceneProjection\.(?:wallThickness|wallContactInset)\}/,
+  "Visual wall projection thickness must not leak into furniture collision or snap bounds."
 );
 
 assert.match(

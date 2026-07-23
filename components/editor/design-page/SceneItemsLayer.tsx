@@ -18,6 +18,7 @@ import type {
   PlanMeasurementUnit,
   WallDescriptor,
 } from "@/lib/design-page-types";
+import { getFurnitureWallInset } from "@/lib/design-page-geometry";
 import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
 import type { DesignItem } from "@/lib/room-types";
 import { CabinetDesignItemPlan2D } from "@/features/cabinetry/components/CabinetDesignItemPlan2D";
@@ -345,8 +346,10 @@ export function SceneItemsLayer({
               roomPlanShape={sceneEntry.roomPlanShape}
               roomPlanPolygon={sceneEntry.roomPlanPolygon}
               roomPlanHoles={sceneEntry.roomPlanHoles}
-              wallThickness={sceneProjection.wallThickness}
-              wallContactInset={sceneProjection.wallContactInset}
+              wallThickness={sceneEntry.roomWallThickness}
+              wallContactInset={getFurnitureWallInset(
+                sceneEntry.roomWallThickness
+              )}
               onDraggingChange={actions.onDraggingChange}
               walls={isActiveSceneRoom ? configuration.walls : []}
               instanceId={continuity.instanceId}
