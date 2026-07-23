@@ -11,6 +11,7 @@ const workspaceSource = readSource(
 const registrationSource = readSource(
   "lib/useDesignPageSceneRegionWorkspaceRegistration.ts"
 );
+const sceneItemDragSource = readSource("lib/useDesignPageSceneItemDrag.ts");
 
 assert.match(
   workspaceSource,
@@ -52,6 +53,11 @@ assert.match(
   registrationSource,
   /onDragPointerMove: scene\.hasWholeHousePlan[\s\S]*?camera\.actions\.navigation\.nudgeWholeHomeCameraForDrag/,
   "Whole-home drag camera nudging should remain conditional."
+);
+assert.match(
+  sceneItemDragSource,
+  /const moverRoom = roomSnapshotById\.get\(sceneEntry\.roomId\) \?\? activeRoom;[\s\S]*?!isPlacementContained\([\s\S]*?localPosition,[\s\S]*?mover\.rotationY \?\? 0,[\s\S]*?configuredPlanningDims[\s\S]*?Move blocked by a wall\.[\s\S]*?return false;[\s\S]*?const moverBounds/,
+  "Same-room dragging must reject a full rotated footprint that crosses a room wall before collision checks or item mutation."
 );
 
 assert.ok(registrationSource.split("\n").length <= 440);

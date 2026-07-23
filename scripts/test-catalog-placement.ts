@@ -73,6 +73,39 @@ function runCatalogPlacementHitTests() {
     }),
     false
   );
+  assert.equal(
+    isCatalogPlacementLocalFootprintInsideRoom({
+      room: rooms[0],
+      position: [1.4, 0, 0],
+      rotationY: 0,
+      dimsMm: { w: 1000, d: 500 },
+      wallThickness: 0.1,
+    }),
+    true,
+    "a furniture footprint may sit flush to the room's inner wall face"
+  );
+  assert.equal(
+    isCatalogPlacementLocalFootprintInsideRoom({
+      room: rooms[0],
+      position: [1.41, 0, 0],
+      rotationY: 0,
+      dimsMm: { w: 1000, d: 500 },
+      wallThickness: 0.1,
+    }),
+    false,
+    "a furniture footprint must not cross an internal room wall"
+  );
+  assert.equal(
+    isCatalogPlacementLocalFootprintInsideRoom({
+      room: rooms[0],
+      position: [1.68, 0, 0],
+      rotationY: Math.PI / 2,
+      dimsMm: { w: 1000, d: 500 },
+      wallThickness: 0.1,
+    }),
+    false,
+    "wall containment must use the rotated furniture footprint"
+  );
 
   const lShapeRoom: CatalogPlacementPlanRoom = {
     id: "l-shape",

@@ -445,6 +445,22 @@ export function useDesignPageSceneItemDrag({
           });
         }
 
+        const moverRoom = roomSnapshotById.get(sceneEntry.roomId) ?? activeRoom;
+        if (
+          moverRoom &&
+          !isPlacementContained(
+            moverRoom,
+            localPosition,
+            mover.rotationY ?? 0,
+            configuredPlanningDims
+          )
+        ) {
+          showDragRejection(
+            `Move blocked by a wall. Keep the whole item inside ${moverRoom.name}.`
+          );
+          return false;
+        }
+
         const moverBounds = getItemBounds({ ...mover, position: localPosition });
         if (moverBounds) {
           for (const blocker of currentItems) {
