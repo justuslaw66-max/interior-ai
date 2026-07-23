@@ -112,6 +112,11 @@ type DesignSceneCanvasProps = {
   children: ReactNode;
 };
 
+const QUALITY_SHADOW_MAP_SIZE = 2048;
+const MIN_SHADOW_CAMERA_HALF_SPAN_METERS = 8;
+const MAX_SHADOW_CAMERA_HALF_SPAN_METERS = 32;
+const SHADOW_CAMERA_PADDING_METERS = 3;
+
 export function DesignSceneCanvas({
   state,
   configuration,
@@ -122,6 +127,18 @@ export function DesignSceneCanvas({
   const { planBounds } = configuration;
   const presentationBounds =
     configuration.presentationBounds ?? configuration.planBounds;
+  const shadowCameraHalfSpan = Math.min(
+    MAX_SHADOW_CAMERA_HALF_SPAN_METERS,
+    Math.max(
+      MIN_SHADOW_CAMERA_HALF_SPAN_METERS,
+      Math.max(
+        presentationBounds.widthMeters,
+        presentationBounds.depthMeters
+      ) /
+        2 +
+        SHADOW_CAMERA_PADDING_METERS
+    )
+  );
   const { planDiagnostics, viewMode } = state;
   const controlsRef = sceneRefs.controls;
 
@@ -132,6 +149,8 @@ export function DesignSceneCanvas({
         data-shadow-maps-enabled={
           viewMode === "3d" && !state.liteSceneEnabled ? "true" : "false"
         }
+        data-shadow-map-size={QUALITY_SHADOW_MAP_SIZE}
+        data-shadow-camera-half-span={shadowCameraHalfSpan}
         data-tone-mapping="aces"
         data-lighting-model="ambient-hemi-key-fill-ibl"
         data-camera-y={viewMode === "3d" ? String(state.cameraY) : undefined}
@@ -286,14 +305,14 @@ export function DesignSceneCanvas({
             configuration.lightConfig.directionalIntensity
           }
           castShadow={viewMode === "3d" && !state.liteSceneEnabled}
-          shadow-mapSize-width={512}
-          shadow-mapSize-height={512}
+          shadow-mapSize-width={QUALITY_SHADOW_MAP_SIZE}
+          shadow-mapSize-height={QUALITY_SHADOW_MAP_SIZE}
           shadow-camera-near={0.5}
           shadow-camera-far={80}
-          shadow-camera-left={-24}
-          shadow-camera-right={24}
-          shadow-camera-top={24}
-          shadow-camera-bottom={-24}
+          shadow-camera-left={-shadowCameraHalfSpan}
+          shadow-camera-right={shadowCameraHalfSpan}
+          shadow-camera-top={shadowCameraHalfSpan}
+          shadow-camera-bottom={-shadowCameraHalfSpan}
           shadow-bias={-0.00015}
           shadow-normalBias={0.02}
         />

@@ -597,6 +597,11 @@ assert.match(
   "Quality-mode 3D should provide a bounded ground plane and soft shadow-map depth."
 );
 assert.match(
+  canvasSource,
+  /QUALITY_SHADOW_MAP_SIZE = 2048[\s\S]*shadowCameraHalfSpan[\s\S]*presentationBounds\.widthMeters[\s\S]*presentationBounds\.depthMeters[\s\S]*shadow-mapSize-width=\{QUALITY_SHADOW_MAP_SIZE\}[\s\S]*shadow-camera-left=\{-shadowCameraHalfSpan\}[\s\S]*shadow-camera-right=\{shadowCameraHalfSpan\}/,
+  "Quality-mode 3D shadows should use a high-resolution map fitted to the visible plan instead of a low-resolution fixed frustum."
+);
+assert.match(
   furnitureSource,
   /testId: "selected-furniture-outline"[\s\S]*color="#2563eb"[\s\S]*lineWidth=\{2\.5\}/,
   "Selected GLB furniture should retain a strong 3D outline independent of its model materials."
