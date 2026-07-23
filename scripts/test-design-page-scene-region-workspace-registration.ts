@@ -46,6 +46,11 @@ assert.match(
 );
 assert.match(
   registrationSource,
+  /flushCoalescedHistoryTransaction:[\s\S]*?documentRoom\.actions\.history\.flushCoalescedHistoryTransaction/,
+  "Scene dragging should flush a pending coalesced edit before opening its gesture transaction."
+);
+assert.match(
+  registrationSource,
   /onRenderReadyChange:[\s\S]*?sceneRoomRead\.actions\.scene\.handleSceneRenderItemReadyChange/,
   "Scene readiness should remain connected to the scene read controller."
 );
@@ -58,6 +63,16 @@ assert.match(
   sceneItemDragSource,
   /const moverRoom = roomSnapshotById\.get\(sceneEntry\.roomId\) \?\? activeRoom;[\s\S]*?!isPlacementContained\([\s\S]*?localPosition,[\s\S]*?mover\.rotationY \?\? 0,[\s\S]*?configuredPlanningDims[\s\S]*?Move blocked by a wall\.[\s\S]*?return false;[\s\S]*?const moverBounds/,
   "Same-room dragging must reject a full rotated footprint that crosses a room wall before collision checks or item mutation."
+);
+assert.match(
+  sceneItemDragSource,
+  /flushCoalescedHistoryTransaction\(\);[\s\S]*?rollbackInterruptedSceneItemDrag\(history\);[\s\S]*?history\.beginContinuousCommand/,
+  "A new scene drag should recover an interrupted drag transaction before beginning another one."
+);
+assert.match(
+  sceneItemDragSource,
+  /setCrossRoomDragTarget\(null\);[\s\S]*?Could not move the item\. Try again\./,
+  "Unexpected drag failures should clear the room-target overlay instead of leaving the item stuck in transfer mode."
 );
 
 assert.ok(registrationSource.split("\n").length <= 440);

@@ -15,10 +15,11 @@ import { aabbIntersects, type AABB } from "@/lib/design-page-geometry";
 import { ROOM_DIMENSION_DEFAULTS } from "@/lib/design-page-house-plan";
 import {
   applyDesignItemTransformPatches,
+  rollbackInterruptedSceneItemDrag,
   SCENE_ITEM_DRAG_COMMAND_ID,
   type DesignItemTransformPatch,
 } from "@/lib/design-page-item-commands";
-import type { HistoryCommand } from "@/lib/historyManager";
+import type { HistoryCommand, HistoryStatus } from "@/lib/historyManager";
 import type {
   SceneItemDragEndContext,
   SceneItemMoveContext,
@@ -49,6 +50,7 @@ type SceneDragHistory = {
   ) => TResult;
   commitContinuousCommand: (commandId: string) => void;
   rollbackContinuousCommand: (commandId: string) => void;
+  getStatus: () => HistoryStatus;
 };
 
 type SceneItemDragOptions = {
@@ -108,6 +110,7 @@ type SceneItemDragOptions = {
       next: DesignItem[] | ((previous: DesignItem[]) => DesignItem[])
     ) => DesignItem[];
     history: SceneDragHistory;
+    flushCoalescedHistoryTransaction: () => void;
     trackFirstInteraction: () => void;
     showToast: (message: string) => void;
     moveSelectionToRoom: (roomId: string) => void;
@@ -148,6 +151,7 @@ export function useDesignPageSceneItemDrag({
     previewItems,
     setItems,
     history,
+    flushCoalescedHistoryTransaction,
     trackFirstInteraction,
     showToast,
     moveSelectionToRoom,
@@ -175,6 +179,8 @@ export function useDesignPageSceneItemDrag({
     publishAllMovedItems = false
   ): void => {
     if (!dragCommitRef.current) {
+      flushCoalescedHistoryTransaction();
+      rollbackInterruptedSceneItemDrag(history);
       dragOriginalItemsRef.current = itemsRef.current;
       dragDescriptionRef.current = description;
       history.beginContinuousCommand({
@@ -583,6 +589,7 @@ export function useDesignPageSceneItemDrag({
           console.error("[Editor] failed to rollback item drag", rollbackError);
         }
       }
+      setCrossRoomDragTarget(null);
       console.error("[Editor] onMove handler failed", { id, pos: position, error });
       showDragRejection("Could not move the item. Try again.");
       return false;

@@ -14,12 +14,15 @@ import {
   getPlanOverlayMoveHistoryLabel,
   type PlanOverlayDragKind,
 } from "@/lib/design-page-floor-plan-utils";
-import { SCENE_ITEM_DRAG_COMMAND_ID } from "@/lib/design-page-item-commands";
+import {
+  rollbackInterruptedSceneItemDrag,
+  SCENE_ITEM_DRAG_COMMAND_ID,
+} from "@/lib/design-page-item-commands";
 import type { HistoryManager } from "@/lib/historyManager";
 
 type CanvasInteractionHistory = Pick<
   HistoryManager,
-  "begin" | "commit" | "rollbackContinuousCommand"
+  "begin" | "commit" | "getStatus" | "rollbackContinuousCommand"
 >;
 
 export type UseDesignPageCanvasInteractionControllerInput = {
@@ -81,6 +84,7 @@ export function useDesignPageCanvasInteractionController({
     (dragging: boolean) => {
       setCanvasObjectDragging(dragging);
       if (dragging) {
+        rollbackInterruptedSceneItemDrag(history);
         itemDragCommitRef.current = false;
         return;
       }

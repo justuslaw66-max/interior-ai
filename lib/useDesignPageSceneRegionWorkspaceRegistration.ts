@@ -64,6 +64,8 @@ export function useDesignPageSceneRegionWorkspaceRegistration({
       previewItems: itemDocument.actions.previewItemsPresent,
       setItems: itemDocument.actions.setItemsPresent,
       history: documentRoom.refs.documentHistory.history,
+      flushCoalescedHistoryTransaction:
+        documentRoom.actions.history.flushCoalescedHistoryTransaction,
       trackFirstInteraction: coreShell.actions.paywall.trackFirstInteraction,
       showToast: coreShell.actions.feedback.showRuleToast,
       moveSelectionToRoom:

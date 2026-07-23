@@ -1,4 +1,5 @@
 import { appendLayoutVersion } from "@/lib/layout-versions";
+import type { HistoryStatus } from "@/lib/historyManager";
 import type {
   DesignItem,
   DesignSnapshot,
@@ -6,6 +7,26 @@ import type {
 } from "@/lib/room-types";
 
 export const SCENE_ITEM_DRAG_COMMAND_ID = "scene-item-drag";
+
+type SceneItemDragHistoryRecovery = {
+  getStatus: () => HistoryStatus;
+  rollbackContinuousCommand: (commandId: string) => void;
+};
+
+/** Recover a gesture transaction when the browser loses its pointer-end event. */
+export function rollbackInterruptedSceneItemDrag(
+  history: SceneItemDragHistoryRecovery
+): boolean {
+  const activeCommand = history.getStatus().activeCommand;
+  if (
+    !activeCommand?.continuous ||
+    activeCommand.id !== SCENE_ITEM_DRAG_COMMAND_ID
+  ) {
+    return false;
+  }
+  history.rollbackContinuousCommand(SCENE_ITEM_DRAG_COMMAND_ID);
+  return true;
+}
 
 export type ReplaceRoomItemsCommandInput = {
   roomId: string;

@@ -4,6 +4,7 @@ import {
   applyDesignItemTransformPatches,
   applyMoveItemsBetweenRoomsCommand,
   applyReplaceRoomItemsCommand,
+  rollbackInterruptedSceneItemDrag,
   SCENE_ITEM_DRAG_COMMAND_ID,
 } from "@/lib/design-page-item-commands";
 import {
@@ -129,6 +130,40 @@ function testContinuousCommands() {
   );
   assert.deepEqual(workspace.getState(), { value: 80, label: "drag" });
   assert.equal(workspace.history.getStatus().activeCommand, null);
+}
+
+function testInterruptedDragRecovery() {
+  const workspace = createCounterHistory();
+  workspace.history.beginContinuousCommand({
+    id: SCENE_ITEM_DRAG_COMMAND_ID,
+    description: "Move item",
+  });
+  workspace.history.updateContinuousCommand({
+    id: SCENE_ITEM_DRAG_COMMAND_ID,
+    description: "Move item",
+    input: { position: 14 },
+    execute: ({ position }) =>
+      workspace.setState({ value: position, label: "interrupted-drag" }),
+  });
+
+  assert.equal(rollbackInterruptedSceneItemDrag(workspace.history), true);
+  assert.deepEqual(workspace.getState(), { value: 0, label: "initial" });
+  assert.equal(workspace.history.getStatus().activeCommand, null);
+  assert.equal(rollbackInterruptedSceneItemDrag(workspace.history), false);
+
+  workspace.history.beginContinuousCommand({
+    id: SCENE_ITEM_DRAG_COMMAND_ID,
+    description: "Move item",
+  });
+  workspace.history.updateContinuousCommand({
+    id: SCENE_ITEM_DRAG_COMMAND_ID,
+    description: "Move item",
+    input: { position: 9 },
+    execute: ({ position }) =>
+      workspace.setState({ value: position, label: "recovered-drag" }),
+  });
+  workspace.history.commitContinuousCommand(SCENE_ITEM_DRAG_COMMAND_ID);
+  assert.deepEqual(workspace.getState(), { value: 9, label: "recovered-drag" });
 }
 
 function testLongMixedSequenceAndMemoryBound() {
@@ -260,6 +295,7 @@ function testPlanAnnotationPersistence() {
 
 testDiscreteCommandsAndRollback();
 testContinuousCommands();
+testInterruptedDragRecovery();
 testLongMixedSequenceAndMemoryBound();
 testPureItemCommandReducers();
 testPlanAnnotationPersistence();
