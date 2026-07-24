@@ -301,6 +301,18 @@ export default function EditorCommandBar({
           <EditorViewToggle value={viewMode} onChange={handleViewModeChange} dark={dark} />
         </div>
 
+        {isDesigner && !isClientPreview ? (
+          <span
+            data-testid="pro-mode-indicator"
+            role="status"
+            aria-label="Pro mode active"
+            className="inline-flex h-7 shrink-0 items-center rounded-full border border-blue-200 bg-blue-50 px-2 text-[11px] font-bold text-blue-700"
+          >
+            <span className="sm:hidden">Pro</span>
+            <span className="hidden sm:inline">Pro mode</span>
+          </span>
+        ) : null}
+
         <div
           className={
             dark

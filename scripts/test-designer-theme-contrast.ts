@@ -306,6 +306,14 @@ const planPresentationSource = fs.readFileSync(
   path.join(root, "lib", "useDesignPagePlanPresentationModel.ts"),
   "utf8"
 );
+const coreShellSource = fs.readFileSync(
+  path.join(root, "lib", "useDesignPageCoreShellRegistration.ts"),
+  "utf8"
+);
+const editorCommandBarSource = fs.readFileSync(
+  path.join(root, "components", "editor", "EditorCommandBar.tsx"),
+  "utf8"
+);
 const designPageCommandBarSource = fs.readFileSync(
   path.join(
     root,
@@ -385,6 +393,16 @@ assert.doesNotMatch(
   selectedItemPanelSource,
   legacySurfacePattern,
   "The Pro selected-item panel should not restore the legacy blue-black palette."
+);
+assert.match(
+  coreShellSource,
+  /const showDesignerTheme = false;/,
+  "Pro capability mode should keep the shared light product theme."
+);
+assert.match(
+  editorCommandBarSource,
+  /data-testid="pro-mode-indicator"[\s\S]{0,300}?aria-label="Pro mode active"[\s\S]{0,300}?>Pro mode</,
+  "The shared command bar should clearly label Pro mode without changing its theme."
 );
 assert.match(
   designPageCommandBarSource,
@@ -472,13 +490,13 @@ assert.match(
 );
 assert.match(
   planPresentationSource,
-  /presentation\.showDesignerTheme\s*&&\s*layout\.viewMode\s*===\s*"3d"\s*\?\s*"#dedfdf"\s*:\s*"#ffffff"/,
-  "The plan presentation model should keep Pro 3D neutral while consumer and 2D views stay white."
+  /layout\.viewMode\s*===\s*"3d"[\s\S]{0,120}?presentation\.showDesignerTheme[\s\S]{0,80}?"#dedfdf"[\s\S]{0,80}?"#f4f2ed"[\s\S]{0,80}?"#ffffff"/,
+  "The plan presentation model should use the normal warm 3D canvas whenever the optional designer theme is inactive."
 );
 assert.match(
   designSceneCanvasSource,
-  /<Canvas[\s\S]*?data-shadow-maps-enabled="false"[\s\S]*?data-tone-mapping="aces"[\s\S]*?data-lighting-model="ambient-hemi-key-fill-ibl"[\s\S]*?shadows=\{false\}[\s\S]*?outputColorSpace:\s*THREE\.SRGBColorSpace[\s\S]*?toneMapping:\s*THREE\.ACESFilmicToneMapping/,
-  "The whole-home renderer should keep shadow maps disabled with sRGB output and ACES tone mapping."
+  /<Canvas[\s\S]*?data-shadow-maps-enabled=\{[\s\S]*?effectiveShadowsEnabled[\s\S]*?data-tone-mapping="aces"[\s\S]*?data-lighting-model="ambient-hemi-key-fill-ibl"[\s\S]*?shadows=\{effectiveShadowsEnabled \? QUALITY_SHADOW_FILTER : false\}[\s\S]*?outputColorSpace:\s*THREE\.SRGBColorSpace[\s\S]*?toneMapping:\s*THREE\.ACESFilmicToneMapping/,
+  "The whole-home renderer should honor the effective shadow preference with sRGB output and ACES tone mapping."
 );
 assert.match(
   designSceneCanvasSource,

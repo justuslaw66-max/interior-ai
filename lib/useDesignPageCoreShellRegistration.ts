@@ -101,7 +101,10 @@ export function useDesignPageCoreShellRegistration({
     capabilities.useDesignerWorkspace,
     clientPreview
   );
-  const showDesignerTheme = isDesigner && !isClientPreview;
+  // Pro mode changes the available tools, not the product's visual theme.
+  // Keeping one shared light interface avoids contrast regressions and makes
+  // switching modes feel continuous.
+  const showDesignerTheme = false;
   const {
     state: {
       toast: ruleToast,
