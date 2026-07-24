@@ -10,11 +10,6 @@ import {
   type PendantCableAdjustment,
 } from "@/lib/pendant-light-adjustment";
 
-export type GLBRenderBounds = {
-  center: [number, number, number];
-  size: [number, number, number];
-};
-
 function disposeObjectGeometryAndMaterials(object: THREE.Object3D) {
   object.traverse((child) => {
     const mesh = child as THREE.Mesh;
@@ -62,7 +57,6 @@ export function GLBScaledModel({
   variantRenderAssets,
   pendantCableAdjustment,
   onLoadStateChange,
-  onBoundsChange,
 }: {
   url: string;
   productId?: string;
@@ -77,7 +71,6 @@ export function GLBScaledModel({
   variantRenderAssets?: CatalogItemSchema["variants"][number]["renderAssets"];
   pendantCableAdjustment?: PendantCableAdjustment | null;
   onLoadStateChange?: (state: "loading" | "ready" | "error") => void;
-  onBoundsChange?: (bounds: GLBRenderBounds) => void;
 }) {
   const [loadedScene, setLoadedScene] = useState<THREE.Object3D | null>(null);
   const [upholsteryTexturesLoaded, setUpholsteryTexturesLoaded] = useState(false);
@@ -87,15 +80,10 @@ export function GLBScaledModel({
     roughnessMap?: THREE.Texture;
   }>({});
   const onLoadStateChangeRef = useRef(onLoadStateChange);
-  const onBoundsChangeRef = useRef(onBoundsChange);
 
   useEffect(() => {
     onLoadStateChangeRef.current = onLoadStateChange;
   }, [onLoadStateChange]);
-
-  useEffect(() => {
-    onBoundsChangeRef.current = onBoundsChange;
-  }, [onBoundsChange]);
 
   useEffect(() => {
     let cancelled = false;
@@ -2014,22 +2002,6 @@ export function GLBScaledModel({
     if (!normalizedModel || !upholsteryTexturesLoaded) return;
     onLoadStateChangeRef.current?.("ready");
   }, [normalizedModel, upholsteryTexturesLoaded]);
-
-  useEffect(() => {
-    if (!normalizedModel) return;
-    normalizedModel.updateWorldMatrix(true, true);
-    const bounds = new THREE.Box3().setFromObject(normalizedModel, true);
-    if (bounds.isEmpty()) return;
-
-    const center = new THREE.Vector3();
-    const size = new THREE.Vector3();
-    bounds.getCenter(center);
-    bounds.getSize(size);
-    onBoundsChangeRef.current?.({
-      center: [center.x, center.y, center.z],
-      size: [size.x, size.y, size.z],
-    });
-  }, [normalizedModel]);
 
   useEffect(() => {
     if (!normalizedModel) return;

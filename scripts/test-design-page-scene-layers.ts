@@ -628,13 +628,8 @@ assert.match(
 );
 assert.match(
   furnitureSource,
-  /SELECTION_OUTLINE_SIDE_PADDING_METERS = 0\.04[\s\S]*SELECTION_OUTLINE_TOP_PADDING_METERS = 0\.04[\s\S]*SELECTION_OUTLINE_BOTTOM_INSET_METERS = 0\.006[\s\S]*modelRenderBounds[\s\S]*selectionOutlineBounds[\s\S]*onBoundsChange=\{setModelRenderBounds\}[\s\S]*position=\{selectionOutlineBounds\.position\}[\s\S]*testId: "selected-furniture-outline"[\s\S]*boxGeometry args=\{selectionOutlineBounds\.size\}[\s\S]*color="#79a9e8"[\s\S]*lineWidth=\{1\.75\}[\s\S]*depthTest[\s\S]*depthWrite=\{false\}/,
-  "Selected GLB furniture should derive a padded, floor-safe, depth-aware 3D outline from the model's rendered bounds."
-);
-assert.match(
-  scaledModelSource,
-  /export type GLBRenderBounds[\s\S]*onBoundsChange\?: \(bounds: GLBRenderBounds\)[\s\S]*new THREE\.Box3\(\)\.setFromObject\(normalizedModel, true\)[\s\S]*onBoundsChangeRef\.current\?\.\(\{[\s\S]*center: \[center\.x, center\.y, center\.z\][\s\S]*size: \[size\.x, size\.y, size\.z\]/,
-  "GLB models should report their post-calibration rendered bounds for stable selection geometry."
+  /SELECTION_FOOTPRINT_PADDING_METERS = 0\.06[\s\S]*SELECTION_FOOTPRINT_HEIGHT_METERS = 0\.012[\s\S]*selectionFootprintWidth[\s\S]*selectionFootprintDepth[\s\S]*testId: "selected-furniture-outline"[\s\S]*points=\{\[[\s\S]*color="#79a9e8"[\s\S]*lineWidth=\{1\.75\}[\s\S]*opacity=\{0\.9\}[\s\S]*depthTest[\s\S]*depthWrite=\{false\}/,
+  "Selected 3D furniture should use a soft, depth-aware floor footprint instead of a visually dominant wireframe cage."
 );
 assert.match(
   scaledModelSource,
