@@ -598,8 +598,8 @@ assert.match(
 );
 assert.match(
   canvasSource,
-  /WORKSPACE_GRID_CELL_SIZE_METERS = 0\.25[\s\S]*WORKSPACE_GRID_SECTION_SIZE_METERS = 1[\s\S]*data-workspace-grid=\{viewMode === "3d" \? "visible" : "hidden"\}[\s\S]*<Grid[\s\S]*cellSize=\{WORKSPACE_GRID_CELL_SIZE_METERS\}[\s\S]*sectionSize=\{WORKSPACE_GRID_SECTION_SIZE_METERS\}[\s\S]*raycast=\{\(\) => null\}/,
-  "3D should provide a non-interactive planning grid with 250 mm subdivisions and one-metre sections."
+  /WORKSPACE_GRID_CELL_SIZE_METERS = 0\.2[\s\S]*WORKSPACE_GRID_SECTION_SIZE_METERS = 1[\s\S]*data-workspace-grid=\{viewMode === "3d" \? "visible" : "hidden"\}[\s\S]*<Grid[\s\S]*cellSize=\{WORKSPACE_GRID_CELL_SIZE_METERS\}[\s\S]*cellThickness=\{0\.65\}[\s\S]*sectionSize=\{WORKSPACE_GRID_SECTION_SIZE_METERS\}[\s\S]*sectionThickness=\{1\}[\s\S]*raycast=\{\(\) => null\}/,
+  "3D should provide a non-interactive planning grid with five visible 200 mm subdivisions inside every one-metre section."
 );
 assert.match(
   canvasSource,

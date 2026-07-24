@@ -120,7 +120,7 @@ const QUALITY_SHADOW_INTENSITY = 0.58;
 const MIN_SHADOW_CAMERA_HALF_SPAN_METERS = 8;
 const MAX_SHADOW_CAMERA_HALF_SPAN_METERS = 32;
 const SHADOW_CAMERA_PADDING_METERS = 3;
-const WORKSPACE_GRID_CELL_SIZE_METERS = 0.25;
+const WORKSPACE_GRID_CELL_SIZE_METERS = 0.2;
 const WORKSPACE_GRID_SECTION_SIZE_METERS = 1;
 const WORKSPACE_GRID_MIN_SIZE_METERS = 160;
 const WORKSPACE_GRID_PLAN_PADDING_METERS = 60;
@@ -302,11 +302,11 @@ export function DesignSceneCanvas({
                 presentationBounds.centerZ,
               ]}
               cellSize={WORKSPACE_GRID_CELL_SIZE_METERS}
-              cellThickness={0.45}
-              cellColor="#dfe5e4"
+              cellThickness={0.65}
+              cellColor="#d3dddb"
               sectionSize={WORKSPACE_GRID_SECTION_SIZE_METERS}
-              sectionThickness={0.85}
-              sectionColor="#cbd5d4"
+              sectionThickness={1}
+              sectionColor="#bdc9c7"
               fadeDistance={WORKSPACE_GRID_FADE_DISTANCE_METERS}
               fadeStrength={1.35}
               fadeFrom={1}
