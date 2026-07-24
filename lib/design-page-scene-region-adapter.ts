@@ -36,6 +36,7 @@ export type BuildDesignPageSceneRegionAdapterInput = {
     };
     scene: {
       liteEnabled: CanvasState["liteSceneEnabled"];
+      shadowsEnabled: CanvasState["shadowsEnabled"];
       loadingVisible: CanvasState["showSceneLoadingVeil"];
       performanceMode: CanvasState["scenePerformanceMode"];
       renderQuality: StructureConfiguration["renderQuality"];
@@ -157,6 +158,7 @@ export function buildDesignPageSceneRegionAdapter({
         viewMode: editor.viewMode,
         isClientPreview: editor.isClientPreview,
         liteSceneEnabled: scene.liteEnabled,
+        shadowsEnabled: scene.shadowsEnabled,
         showSceneLoadingVeil: scene.loadingVisible,
         scenePerformanceMode: scene.performanceMode,
         controlsEnabled: scene.controlsEnabled,

@@ -338,6 +338,34 @@ export function validateStoredDesignDocument(
       message: "activeRoomId must be a non-empty stable identifier.",
     });
   }
+  if (value.lighting !== undefined) {
+    if (!isRecord(value.lighting)) {
+      issues.push({
+        code: "INVALID_TYPE",
+        path: "$.lighting",
+        message: "Lighting settings must be an object.",
+      });
+    } else {
+      if (
+        value.lighting.preset !== "daylight" &&
+        value.lighting.preset !== "warm" &&
+        value.lighting.preset !== "studio"
+      ) {
+        issues.push({
+          code: "INVALID_VALUE",
+          path: "$.lighting.preset",
+          message: "Lighting preset must be daylight, warm, or studio.",
+        });
+      }
+      if (typeof value.lighting.shadowsEnabled !== "boolean") {
+        issues.push({
+          code: "INVALID_TYPE",
+          path: "$.lighting.shadowsEnabled",
+          message: "Lighting shadowsEnabled must be a boolean.",
+        });
+      }
+    }
+  }
 
   const roomIds = new Set<string>();
   const instanceIds = new Set<string>();

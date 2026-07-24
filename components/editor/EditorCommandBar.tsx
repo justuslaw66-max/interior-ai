@@ -1,9 +1,16 @@
 "use client";
 
 import EditorViewToggle, { type EditorViewMode } from "@/components/editor/EditorViewToggle";
+import { LightingSettingsDrawer } from "@/components/editor/design-page/LightingSettingsDrawer";
 import { Ellipsis, Plus, UserRound } from "lucide-react";
 import { signIn, signOut } from "next-auth/react";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 
 type EditorMode = "design" | "adjust" | "ai" | "buy" | "present";
 
@@ -57,6 +64,7 @@ type EditorCommandBarProps = {
   onOpenPresentExport: () => void;
   contextSlot?: ReactNode;
   overflowSlot?: ReactNode;
+  lightingSettingsSlot?: ReactNode;
 };
 
 function getSaveStatusClassName(tone: EditorSaveStatus["tone"], dark: boolean) {
@@ -120,11 +128,18 @@ export default function EditorCommandBar({
   onOpenPresentExport,
   contextSlot,
   overflowSlot,
+  lightingSettingsSlot,
 }: EditorCommandBarProps) {
   const [overflowOpen, setOverflowOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [lightingSettingsOpen, setLightingSettingsOpen] = useState(false);
   const overflowRef = useRef<HTMLDivElement | null>(null);
   const accountRef = useRef<HTMLDivElement | null>(null);
+  const moreButtonRef = useRef<HTMLButtonElement | null>(null);
+  const closeLightingSettings = useCallback(
+    () => setLightingSettingsOpen(false),
+    []
+  );
 
   useEffect(() => {
     if (!overflowOpen && !accountOpen) return;
@@ -238,6 +253,10 @@ export default function EditorCommandBar({
     const callbackUrl = typeof window !== "undefined" ? window.location.href : "/";
     signIn("google", { callbackUrl });
   };
+  const handleViewModeChange = (next: EditorViewMode) => {
+    if (next !== "3d") setLightingSettingsOpen(false);
+    onViewModeChange(next);
+  };
 
   return (
     <div
@@ -279,7 +298,7 @@ export default function EditorCommandBar({
         </button>
 
         <div className="shrink-0">
-          <EditorViewToggle value={viewMode} onChange={onViewModeChange} dark={dark} />
+          <EditorViewToggle value={viewMode} onChange={handleViewModeChange} dark={dark} />
         </div>
 
         <div
@@ -407,11 +426,15 @@ export default function EditorCommandBar({
 
         <div ref={overflowRef} className="relative shrink-0">
           <button
+            ref={moreButtonRef}
             type="button"
             data-testid="editor-command-overflow"
             aria-label="More"
             aria-haspopup="menu"
             aria-expanded={overflowOpen}
+            aria-controls={
+              lightingSettingsOpen ? "lighting-settings-drawer" : undefined
+            }
             className={
               dark
                 ? "designer-control inline-flex h-9 w-9 items-center justify-center rounded-xl border text-sm font-semibold sm:w-auto sm:px-3"
@@ -478,6 +501,7 @@ export default function EditorCommandBar({
                   className={menuButtonClass}
                   onClick={() => {
                     setOverflowOpen(false);
+                    setLightingSettingsOpen(false);
                     onToggleClientPreview();
                   }}
                 >
@@ -497,6 +521,20 @@ export default function EditorCommandBar({
                   Export & Camera
                 </button>
               )}
+              {viewMode === "3d" && lightingSettingsSlot ? (
+                <button
+                  type="button"
+                  role="menuitem"
+                  data-testid="editor-command-overflow-lighting"
+                  className={menuButtonClass}
+                  onClick={() => {
+                    setOverflowOpen(false);
+                    setLightingSettingsOpen(true);
+                  }}
+                >
+                  Lighting settings
+                </button>
+              ) : null}
               {overflowSlot ? (
                 <div className="mt-1 border-t border-neutral-200 pt-1">
                   {overflowSlot}
@@ -610,6 +648,20 @@ export default function EditorCommandBar({
           )}
         </div>
       </div>
+      {lightingSettingsSlot ? (
+        <LightingSettingsDrawer
+          open={
+            lightingSettingsOpen &&
+            !isClientPreview &&
+            viewMode === "3d"
+          }
+          dark={dark}
+          returnFocusRef={moreButtonRef}
+          onClose={closeLightingSettings}
+        >
+          {lightingSettingsSlot}
+        </LightingSettingsDrawer>
+      ) : null}
     </div>
   );
 }

@@ -2,7 +2,12 @@
 
 import type { ComponentProps } from "react";
 import EditorCommandBar from "@/components/editor/EditorCommandBar";
+import { LightingSettingsControls } from "@/components/editor/design-page/LightingSettingsControls";
 import RoomPlanStatusBar from "@/components/editor/RoomPlanStatusBar";
+import type {
+  DesignLightingSettings,
+  LightingPreset,
+} from "@/lib/lightingPresets";
 import type { ScenePerformanceMode } from "@/lib/useDesignPageScenePerformance";
 
 type EditorCommandBarProps = ComponentProps<typeof EditorCommandBar>;
@@ -11,7 +16,11 @@ type HandlerKeys<T> = Extract<keyof T, `on${string}`>;
 
 type CommandBarState = Omit<
   EditorCommandBarProps,
-  HandlerKeys<EditorCommandBarProps> | "dark" | "contextSlot" | "overflowSlot"
+  | HandlerKeys<EditorCommandBarProps>
+  | "dark"
+  | "contextSlot"
+  | "overflowSlot"
+  | "lightingSettingsSlot"
 >;
 type CommandBarActions = Pick<
   EditorCommandBarProps,
@@ -53,6 +62,10 @@ export type DesignPageEditorCommandBarState = {
     mode: ScenePerformanceMode;
     liteEnabled: boolean;
   };
+  sceneLighting: {
+    settings: DesignLightingSettings;
+    liteEnabled: boolean;
+  };
 };
 
 export type DesignPageEditorCommandBarConfiguration = {
@@ -66,6 +79,10 @@ export type DesignPageEditorCommandBarActions = {
   room: RoomStatusActions;
   scenePerformance: {
     changeMode: (mode: ScenePerformanceMode) => void;
+  };
+  sceneLighting: {
+    changePreset: (preset: LightingPreset) => void;
+    changeShadowsEnabled: (enabled: boolean) => void;
   };
 };
 
@@ -194,6 +211,17 @@ export function DesignPageEditorCommandBar({
       ) : null}
     </div>
   ) : null;
+  const lightingSettingsSlot =
+    !state.commandBar.isClientPreview &&
+    state.commandBar.viewMode === "3d" ? (
+      <LightingSettingsControls
+        settings={state.sceneLighting.settings}
+        liteEnabled={state.sceneLighting.liteEnabled}
+        dark={configuration.dark}
+        onPresetChange={actions.sceneLighting.changePreset}
+        onShadowsEnabledChange={actions.sceneLighting.changeShadowsEnabled}
+      />
+    ) : null;
 
   return (
     <EditorCommandBar
@@ -202,6 +230,7 @@ export function DesignPageEditorCommandBar({
       dark={configuration.dark}
       contextSlot={contextSlot}
       overflowSlot={overflowSlot}
+      lightingSettingsSlot={lightingSettingsSlot}
     />
   );
 }

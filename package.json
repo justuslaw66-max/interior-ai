@@ -18,6 +18,7 @@
     "release:vercel:certify": "node scripts/vercel-prebuilt-release.mjs certify",
     "release:vercel:promote": "node scripts/vercel-prebuilt-release.mjs promote",
     "typecheck": "tsc --noEmit --pretty false",
+    "test:lighting-settings": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-lighting-settings.ts",
     "test:phase13-batch5": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-phase13-batch5-sharing.ts",
     "assets:inventory": "node scripts/asset-inventory.mjs",
     "assets:inventory:strict": "node scripts/asset-inventory.mjs --strict",

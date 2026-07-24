@@ -593,8 +593,8 @@ assert.match(
 );
 assert.match(
   canvasSource,
-  /receiveShadow=\{!liteSceneEnabled\}[\s\S]*data-shadow-maps-enabled=[\s\S]*shadows=\{[\s\S]*viewMode === "3d" && !state\.liteSceneEnabled[\s\S]*QUALITY_SHADOW_FILTER[\s\S]*castShadow=\{viewMode === "3d" && !state\.liteSceneEnabled\}/,
-  "Quality-mode 3D should provide a shadow-receiving workspace plane and soft shadow-map depth."
+  /receiveShadow=\{shadowsEnabled\}[\s\S]*const effectiveShadowsEnabled =[\s\S]*viewMode === "3d" &&[\s\S]*state\.shadowsEnabled &&[\s\S]*!state\.liteSceneEnabled[\s\S]*data-shadow-maps-enabled=[\s\S]*shadows=\{effectiveShadowsEnabled \? QUALITY_SHADOW_FILTER : false\}[\s\S]*castShadow=\{effectiveShadowsEnabled\}/,
+  "Quality-mode 3D should provide user-controlled shadow maps, a matching key light, and a shadow-receiving workspace plane."
 );
 assert.match(
   canvasSource,
@@ -603,7 +603,7 @@ assert.match(
 );
 assert.match(
   canvasSource,
-  /WORKSPACE_GRID_MIN_SIZE_METERS = 160[\s\S]*<meshBasicMaterial[\s\S]*color="#f3f5f5"[\s\S]*toneMapped=\{false\}[\s\S]*<shadowMaterial[\s\S]*opacity=\{liteSceneEnabled \? 0 : 0\.2\}[\s\S]*<Grid[\s\S]*args=\{\[size, size\]\}[\s\S]*fadeDistance=\{WORKSPACE_GRID_FADE_DISTANCE_METERS\}[\s\S]*workspaceGridSize/,
+  /WORKSPACE_GRID_MIN_SIZE_METERS = 160[\s\S]*<meshBasicMaterial[\s\S]*color="#f3f5f5"[\s\S]*toneMapped=\{false\}[\s\S]*<shadowMaterial[\s\S]*opacity=\{shadowsEnabled \? 0\.2 : 0\}[\s\S]*<Grid[\s\S]*args=\{\[size, size\]\}[\s\S]*fadeDistance=\{WORKSPACE_GRID_FADE_DISTANCE_METERS\}[\s\S]*workspaceGridSize/,
   "The 3D grid should cover a full light workspace, retain soft grounding shadows, and fade before its boundary."
 );
 assert.match(

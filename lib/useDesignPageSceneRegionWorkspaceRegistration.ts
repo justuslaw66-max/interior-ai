@@ -1,6 +1,7 @@
 "use client";
 
 import { buildDesignPageSceneRegionAdapter } from "@/lib/design-page-scene-region-adapter";
+import { resolveDesignLightingSettings } from "@/lib/design-lighting-settings";
 import {
   DEFAULT_EDITOR_CAMERA_VIEW,
   EDITOR_3D_MAX_POLAR_ANGLE,
@@ -82,6 +83,9 @@ export function useDesignPageSceneRegionWorkspaceRegistration({
   const roomRead = sceneRoomRead.derived.room;
   const sceneState = sceneRoomRead.state.scene;
   const planFit = camera.state.navigation.plan2DWholeHomeViewFit;
+  const lightingSettings = resolveDesignLightingSettings(
+    coreShell.state.document.designSnapshot
+  );
 
   const region = buildDesignPageSceneRegionAdapter({
     state: {
@@ -94,6 +98,7 @@ export function useDesignPageSceneRegionWorkspaceRegistration({
       },
       scene: {
         liteEnabled: sceneState.liteSceneEnabled,
+        shadowsEnabled: lightingSettings.shadowsEnabled,
         loadingVisible: sceneState.showSceneLoadingVeil,
         performanceMode: sceneState.scenePerformanceMode,
         renderQuality: sceneState.sceneRenderQuality,

@@ -1,5 +1,15 @@
 "use client";
 
+import { useCallback } from "react";
+
+import {
+  resolveDesignLightingSettings,
+  updateDesignLightingSettings,
+} from "@/lib/design-lighting-settings";
+import type {
+  DesignLightingSettings,
+  LightingPreset,
+} from "@/lib/lightingPresets";
 import type { DesignPageAiWorkspaceRegistration } from "@/lib/useDesignPageAiWorkspaceRegistration";
 import type { DesignPageCommerceOnboardingRegistration } from "@/lib/useDesignPageCommerceOnboardingRegistration";
 import type { useDesignPageWorkspaceDeferredPaywallRegistration } from "@/lib/useDesignPagePaywallRegistrationFacade";
@@ -54,6 +64,40 @@ export function useDesignPagePresentationWorkspaceRegistration({
   const placement = selection.boundaries.placement;
   const cabinetry = selection.boundaries.cabinetry;
   const aiPanel = aiWorkspace.boundaries.aiPanel;
+  const lightingSettings = resolveDesignLightingSettings(
+    coreShell.state.document.designSnapshot
+  );
+  const updateLightingSettings = useCallback(
+    (
+      patch: Partial<DesignLightingSettings>,
+      transactionName: string
+    ) => {
+      documentRoom.actions.history.runHistoryTransaction(
+        transactionName,
+        () => {
+          coreShell.actions.document.setDesignSnapshot((snapshot) =>
+            updateDesignLightingSettings(snapshot, patch)
+          );
+        }
+      );
+    },
+    [
+      coreShell.actions.document,
+      documentRoom.actions.history,
+    ]
+  );
+  const changeLightingPreset = useCallback(
+    (preset: LightingPreset) => {
+      updateLightingSettings({ preset }, "Change lighting preset");
+    },
+    [updateLightingSettings]
+  );
+  const changeShadowsEnabled = useCallback(
+    (shadowsEnabled: boolean) => {
+      updateLightingSettings({ shadowsEnabled }, "Toggle scene shadows");
+    },
+    [updateLightingSettings]
+  );
 
   const presentationQa = useDesignPagePresentationQaFacade({
     state: {
@@ -100,7 +144,8 @@ export function useDesignPagePresentationWorkspaceRegistration({
         cameraViewNameInput: presentationState.state.cameraViewNameInput,
         layoutVersionNameInput: presentationState.state.layoutVersionNameInput,
         simplePlanControls: viewportShell.state.plan.simplePlanControls,
-        lightingPreset: base.state.editor.lightingPreset,
+        lightingPreset: lightingSettings.preset,
+        lightingSettings,
         sharingDesign: persistence.state.persistence.sharingDesign,
         exportStylePreset: viewportShell.state.plan.exportStylePreset,
         isExporting: presentationBackup.state.isExporting,
@@ -329,9 +374,12 @@ export function useDesignPagePresentationWorkspaceRegistration({
         changeMode:
           sceneRoomRead.actions.scene.handleScenePerformanceModeChange,
       },
+      lighting: {
+        changeShadowsEnabled,
+      },
       betaStart: documentSelection.actions.betaStart,
       presentation: {
-        changeLightingPreset: base.actions.editor.setLightingPreset,
+        changeLightingPreset,
         createShareLink:
           persistence.actions.persistence.createShareLinkAndCopy,
         setExportStylePreset: viewportShell.actions.plan.setExportStylePreset,

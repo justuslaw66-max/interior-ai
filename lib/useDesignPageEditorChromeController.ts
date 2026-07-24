@@ -14,6 +14,8 @@ type CommandBarActions = DesignPageEditorChromeActions["commandBar"]["commandBar
 type RoomActions = DesignPageEditorChromeActions["commandBar"]["room"];
 type ScenePerformanceActions =
   DesignPageEditorChromeActions["commandBar"]["scenePerformance"];
+type SceneLightingActions =
+  DesignPageEditorChromeActions["commandBar"]["sceneLighting"];
 
 export type UseDesignPageEditorChromeControllerInput = {
   state: {
@@ -77,6 +79,7 @@ export type UseDesignPageEditorChromeControllerInput = {
     scenePerformance: {
       changeMode: ScenePerformanceActions["changeMode"];
     };
+    sceneLighting: SceneLightingActions;
     betaStart: DesignPageEditorChromeActions["betaStart"];
     showToast: (message: string) => void;
   };
@@ -220,6 +223,7 @@ export function useDesignPageEditorChromeController({
         scenePerformance: {
           changeMode: actions.scenePerformance.changeMode,
         },
+        sceneLighting: actions.sceneLighting,
       },
       betaStart: actions.betaStart,
       toolRail: {

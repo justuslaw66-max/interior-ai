@@ -4,6 +4,7 @@ import { useEffect } from "react";
 
 import { track } from "@/lib/analytics";
 import { CATALOG_ITEMS } from "@/lib/catalog";
+import { resolveDesignLightingSettings } from "@/lib/design-lighting-settings";
 import {
   PLAN_FLOATING_OVERLAY_DESKTOP_MIN_WIDTH,
   PLAN_FLOATING_OVERLAY_INSPECTOR_STACK_TOP_PX,
@@ -57,7 +58,10 @@ export function useDesignPagePlanAuthoringRegistration({
   const documentHistory = documentRoom.boundaries.history;
   const house = documentRoom.boundaries.house;
   const { editorMode, guidedPlanStartMode } = editorShell.state.editor;
-  const { viewMode, lightingPreset } = base.state.editor;
+  const { viewMode } = base.state.editor;
+  const lightingPreset = resolveDesignLightingSettings(
+    snapshotDocument.state.designSnapshot
+  ).preset;
   const {
     designPanelCollapsed,
     dismissedPlanCanvasGuidanceKey,

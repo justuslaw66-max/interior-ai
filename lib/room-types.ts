@@ -26,6 +26,7 @@ import type {
   MillworkHardwareRef,
   MillworkMaterialRef,
 } from "@/features/millwork/types";
+import type { DesignLightingSettings } from "@/lib/lightingPresets";
 
 /**
  * Multi-Room Foundation Types v3
@@ -428,6 +429,7 @@ export interface DesignSnapshot {
   title?: string;
   style?: string;
   budget?: "budget" | "mid" | "luxury";
+  lighting?: DesignLightingSettings;
   lightingPreset?: string;
   notes?: string;
   floorPlan?: PersistedFloorPlanState;
@@ -520,6 +522,7 @@ export function migrateToV3(snapshot: DesignSnapshot): DesignSnapshot {
     title: snapshot.title,
     style: snapshot.style,
     budget: snapshot.budget,
+    lighting: snapshot.lighting,
     lightingPreset: snapshot.lightingPreset,
     notes: snapshot.notes,
     floorPlan: snapshot.floorPlan,

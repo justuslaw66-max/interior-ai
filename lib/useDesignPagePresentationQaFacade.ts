@@ -7,6 +7,7 @@ import type { DesignPagePresentationQaLayerProps } from "@/components/editor/des
 import { buildDesignPageBetaFeedbackContext, type DesignPageBetaFeedbackInput } from "@/lib/design-page-beta-feedback";
 import { getRoomTypeLabel } from "@/lib/design-page-house-plan";
 import { getEditorPlanLabel, resolveEditorCapabilities } from "@/lib/editor-capabilities";
+import type { DesignLightingSettings } from "@/lib/lightingPresets";
 import { getAllRoomNames } from "@/lib/room-hooks";
 import { useDesignPageCommandPalette, type DesignPageCommandPaletteActions } from "@/lib/useDesignPageCommandPalette";
 import { useDesignPageEditorChromeController, type UseDesignPageEditorChromeControllerInput } from "@/lib/useDesignPageEditorChromeController";
@@ -60,6 +61,7 @@ export type UseDesignPagePresentationQaFacadeInput = {
       "lightingPreset" | "sharingDesign" | "exportStylePreset" | "isExporting" | "isPdfExporting" | "aiNotesLoading"
     > & {
       presentModeRoomId: string | null;
+      lightingSettings: DesignLightingSettings;
     };
     plan: Pick<PresentDialogState,
       "planLayerPreset" | "planLayers" | "planMeasurementUnit" | "planTheme" | "annotationToolKind" |
@@ -152,6 +154,9 @@ export type UseDesignPagePresentationQaFacadeInput = {
     cabinetry: ChromeActions["cabinetry"];
     room: ChromeActions["room"];
     scenePerformance: ChromeActions["scenePerformance"];
+    lighting: {
+      changeShadowsEnabled: (enabled: boolean) => void;
+    };
     betaStart: ChromeActions["betaStart"];
     presentation: PresentActions["presentation"];
     feedback: { showToast: ChromeActions["showToast"] };
@@ -386,6 +391,10 @@ export function useDesignPagePresentationQaFacade({
           mode: state.scene.mode,
           liteEnabled: state.scene.liteEnabled,
         },
+        sceneLighting: {
+          settings: state.presentation.lightingSettings,
+          liteEnabled: state.scene.liteEnabled,
+        },
       },
       betaStart: {
         visible: state.chrome.showBetaStart,
@@ -435,6 +444,10 @@ export function useDesignPagePresentationQaFacade({
       cabinetry: actions.cabinetry,
       room: actions.room,
       scenePerformance: actions.scenePerformance,
+      sceneLighting: {
+        changePreset: actions.presentation.changeLightingPreset,
+        changeShadowsEnabled: actions.lighting.changeShadowsEnabled,
+      },
       betaStart: actions.betaStart,
       showToast: actions.feedback.showToast,
     },

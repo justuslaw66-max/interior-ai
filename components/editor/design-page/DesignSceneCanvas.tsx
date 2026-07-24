@@ -45,6 +45,7 @@ type DesignSceneCanvasState = {
   viewMode: EditorViewMode;
   isClientPreview: boolean;
   liteSceneEnabled: boolean;
+  shadowsEnabled: boolean;
   showSceneLoadingVeil: boolean;
   scenePerformanceMode: ScenePerformanceMode;
   controlsEnabled: boolean;
@@ -134,7 +135,7 @@ type WorkspacePlanningGridProps = {
   centerX: number;
   centerZ: number;
   ceilingY: number;
-  liteSceneEnabled: boolean;
+  shadowsEnabled: boolean;
   size: number;
 };
 
@@ -142,7 +143,7 @@ function WorkspacePlanningGrid({
   centerX,
   centerZ,
   ceilingY,
-  liteSceneEnabled,
+  shadowsEnabled,
   size,
 }: WorkspacePlanningGridProps) {
   const floorGridRef = useRef<THREE.Group>(null);
@@ -178,13 +179,13 @@ function WorkspacePlanningGrid({
             centerZ,
           ]}
           rotation-x={-Math.PI / 2}
-          receiveShadow={!liteSceneEnabled}
+          receiveShadow={shadowsEnabled}
           raycast={() => null}
         >
           <planeGeometry args={[size, size]} />
           <shadowMaterial
             color="#66736f"
-            opacity={liteSceneEnabled ? 0 : 0.2}
+            opacity={shadowsEnabled ? 0.2 : 0}
             transparent
           />
         </mesh>
@@ -287,13 +288,17 @@ export function DesignSceneCanvas({
     planBounds.roomHeight + WORKSPACE_GRID_CEILING_CLEARANCE_METERS;
   const { planDiagnostics, viewMode } = state;
   const controlsRef = sceneRefs.controls;
+  const effectiveShadowsEnabled =
+    viewMode === "3d" &&
+    state.shadowsEnabled &&
+    !state.liteSceneEnabled;
 
   return (
     <CanvasErrorBoundary>
       <Canvas
         data-testid="scene-canvas"
         data-shadow-maps-enabled={
-          viewMode === "3d" && !state.liteSceneEnabled ? "true" : "false"
+          effectiveShadowsEnabled ? "true" : "false"
         }
         data-shadow-filter={QUALITY_SHADOW_FILTER}
         data-shadow-map-size={QUALITY_SHADOW_MAP_SIZE}
@@ -335,11 +340,7 @@ export function DesignSceneCanvas({
           opacity: state.showSceneLoadingVeil ? 0 : 1,
           transition: "opacity 160ms ease",
         }}
-        shadows={
-          viewMode === "3d" && !state.liteSceneEnabled
-            ? QUALITY_SHADOW_FILTER
-            : false
-        }
+        shadows={effectiveShadowsEnabled ? QUALITY_SHADOW_FILTER : false}
         dpr={state.liteSceneEnabled ? [1, 1] : [1, 2]}
         gl={{
           antialias: true,
@@ -394,7 +395,7 @@ export function DesignSceneCanvas({
             centerX={presentationBounds.centerX}
             centerZ={presentationBounds.centerZ}
             ceilingY={workspaceGridCeilingY}
-            liteSceneEnabled={state.liteSceneEnabled}
+            shadowsEnabled={effectiveShadowsEnabled}
             size={workspaceGridSize}
           />
         ) : null}
@@ -444,7 +445,7 @@ export function DesignSceneCanvas({
             configuration.lightConfig.keyIntensity ??
             configuration.lightConfig.directionalIntensity
           }
-          castShadow={viewMode === "3d" && !state.liteSceneEnabled}
+          castShadow={effectiveShadowsEnabled}
           shadow-mapSize-width={QUALITY_SHADOW_MAP_SIZE}
           shadow-mapSize-height={QUALITY_SHADOW_MAP_SIZE}
           shadow-camera-near={0.5}

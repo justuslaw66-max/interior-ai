@@ -18,6 +18,8 @@ import type {
   ZoneMin,
 } from "./room-types";
 import { migrateToV3 } from "./room-types";
+import type { DesignLightingSettings } from "./lightingPresets";
+import { resolveDesignLightingSettings } from "./design-lighting-settings";
 import {
   DESIGN_DOCUMENT_COORDINATE_SYSTEM,
   DESIGN_DOCUMENT_LIMITS,
@@ -75,6 +77,7 @@ export interface StoredDesign {
   title?: string;
   style?: string;
   budget?: string;
+  lighting?: DesignLightingSettings;
   lightingPreset?: string;
   notes?: string;
   floorPlan?: PersistedFloorPlanState;
@@ -147,6 +150,7 @@ function stripTemporaryCabinetOutput(item: DesignItem): DesignItem {
 export function snapshotToStored(snapshot: DesignSnapshot): StoredDesign {
   const v3 = migrateToV3(snapshot);
   const preserved = v3 as DesignSnapshot & Record<string, unknown>;
+  const lighting = resolveDesignLightingSettings(v3);
   
   return {
     ...preserved,
@@ -182,7 +186,8 @@ export function snapshotToStored(snapshot: DesignSnapshot): StoredDesign {
     title: v3.title,
     style: v3.style,
     budget: v3.budget,
-    lightingPreset: v3.lightingPreset,
+    lighting,
+    lightingPreset: lighting.preset,
     notes: v3.notes,
     floorPlan: v3.floorPlan,
   };
@@ -194,6 +199,7 @@ export function snapshotToStored(snapshot: DesignSnapshot): StoredDesign {
 export function storedToSnapshot(stored: StoredDesign): DesignSnapshot {
   // If it has the v3 multi-room format, use it directly
   if (stored.version === 3 && stored.rooms && stored.rooms.length > 0) {
+    const lighting = resolveDesignLightingSettings(stored);
     return {
       ...(stored as StoredDesign & Record<string, unknown>),
       version: 3,
@@ -207,7 +213,8 @@ export function storedToSnapshot(stored: StoredDesign): DesignSnapshot {
       title: stored.title,
       style: stored.style,
       budget: stored.budget as DesignSnapshot["budget"],
-      lightingPreset: stored.lightingPreset,
+      lighting,
+      lightingPreset: lighting.preset,
       notes: stored.notes,
       floorPlan: stored.floorPlan,
     };

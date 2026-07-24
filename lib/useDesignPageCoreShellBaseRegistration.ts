@@ -12,7 +12,6 @@ import type {
   UpgradeCtaVariant,
 } from "@/lib/design-page-paywall";
 import type { DesignPagePlacementAddMode } from "@/lib/design-page-editor-client-preferences";
-import type { LightingPreset } from "@/lib/lightingPresets";
 import type { Plan } from "@/lib/plan";
 import { useDesignPageHistoryRevision } from "@/lib/useDesignPageDocumentHistoryController";
 import { useDesignPageImportedModels } from "@/lib/useDesignPageImportedModels";
@@ -68,8 +67,6 @@ export function useDesignPageCoreShellBaseRegistration() {
   const [placementPreferencesLoaded, setPlacementPreferencesLoaded] =
     useState(false);
   const [, bumpHistoryRevision] = useDesignPageHistoryRevision();
-  const [lightingPreset, setLightingPreset] =
-    useState<LightingPreset>("studio");
   const [viewMode, setViewMode] = useState<EditorViewMode>("3d");
   const [designPanelOpen, setDesignPanelOpen] = useState(true);
   const [designPanelCollapsed, setDesignPanelCollapsed] = useState(false);
@@ -95,7 +92,6 @@ export function useDesignPageCoreShellBaseRegistration() {
         snapEnabled,
         placementAddMode,
         placementPreferencesLoaded,
-        lightingPreset,
         viewMode,
       },
       panels: {
@@ -132,7 +128,6 @@ export function useDesignPageCoreShellBaseRegistration() {
         setSnapEnabled,
         setPlacementAddMode,
         setPlacementPreferencesLoaded,
-        setLightingPreset,
         setViewMode,
         bumpHistoryRevision,
       },

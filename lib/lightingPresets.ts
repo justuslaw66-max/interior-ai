@@ -4,6 +4,20 @@
 
 export type LightingPreset = "daylight" | "warm" | "studio";
 
+export interface DesignLightingSettings {
+  preset: LightingPreset;
+  shadowsEnabled: boolean;
+}
+
+export const DEFAULT_DESIGN_LIGHTING_SETTINGS: DesignLightingSettings = {
+  preset: "studio",
+  shadowsEnabled: true,
+};
+
+export function isLightingPreset(value: unknown): value is LightingPreset {
+  return value === "daylight" || value === "warm" || value === "studio";
+}
+
 export type EnvironmentPreset =
   | "apartment"
   | "city"
