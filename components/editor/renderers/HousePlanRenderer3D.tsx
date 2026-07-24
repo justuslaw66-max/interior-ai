@@ -622,7 +622,7 @@ function offsetRoomOutlinePoints(room: HousePlanRoom2D, offset: number) {
   const outline = getRoomOutlinePoints(room);
   const openPoints = outline.slice(0, -1);
 
-  if (offset <= 0.001 || openPoints.length < 3) {
+  if (Math.abs(offset) <= 0.001 || openPoints.length < 3) {
     return outline;
   }
 
@@ -670,7 +670,7 @@ function buildShapeFromOutlinePoints(
 }
 
 function buildHorizontalRoomGeometry(room: HousePlanRoom2D, edgeOffset = 0) {
-  const points = edgeOffset > 0
+  const points = Math.abs(edgeOffset) > 0.001
     ? offsetRoomOutlinePoints(room, edgeOffset)
     : getRoomOutlinePoints(room);
   const geometry = new THREE.ShapeGeometry(
@@ -682,7 +682,7 @@ function buildHorizontalRoomGeometry(room: HousePlanRoom2D, edgeOffset = 0) {
 }
 
 function buildRoomEdgeBandGeometry(room: HousePlanRoom2D, height: number, edgeOffset = 0) {
-  const outline = edgeOffset > 0
+  const outline = Math.abs(edgeOffset) > 0.001
     ? offsetRoomOutlinePoints(room, edgeOffset)
     : getRoomOutlinePoints(room);
   const vertices: number[] = [];
@@ -3088,14 +3088,19 @@ function RoomCeilingCapMesh({
   const groupRef = useRef<THREE.Group | null>(null);
   const ceilingCapMeshRef = useRef<THREE.Mesh | null>(null);
   const ceilingCapPickEnabledRef = useRef(false);
-  const slabEdgeOffset = wallThickness / 2;
+  const ceilingEdgeInset = -wallThickness / 2;
   const ceilingCapGeometry = useMemo(
-    () => buildHorizontalRoomGeometry(room, slabEdgeOffset),
-    [room, slabEdgeOffset]
+    () => buildHorizontalRoomGeometry(room, ceilingEdgeInset),
+    [room, ceilingEdgeInset]
   );
   const ceilingBandGeometry = useMemo(
-    () => buildRoomEdgeBandGeometry(room, CEILING_THICKNESS_METERS, slabEdgeOffset),
-    [room, slabEdgeOffset]
+    () =>
+      buildRoomEdgeBandGeometry(
+        room,
+        CEILING_THICKNESS_METERS,
+        ceilingEdgeInset
+      ),
+    [room, ceilingEdgeInset]
   );
   const raycastCeilingCap = useCallback(
     (raycaster: THREE.Raycaster, intersects: THREE.Intersection[]) => {

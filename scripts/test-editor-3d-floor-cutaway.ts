@@ -177,6 +177,12 @@ assert.match(
 
 assert.match(
   housePlanRendererSource,
+  /if \(Math\.abs\(offset\) <= 0\.001 \|\| openPoints\.length < 3\)[\s\S]*const ceilingEdgeInset = -wallThickness \/ 2;[\s\S]*buildHorizontalRoomGeometry\(room, ceilingEdgeInset\)[\s\S]*buildRoomEdgeBandGeometry\([\s\S]*ceilingEdgeInset/,
+  "Ceiling surfaces and edge bands should inset to the interior wall face instead of overhanging the wall exterior."
+);
+
+assert.match(
+  housePlanRendererSource,
   /if \(onSelectSurfaceTarget\) \{[\s\S]*?onSelectSurfaceTarget\(\{[\s\S]*?\}\);[\s\S]*?\} else \{\s*onSelectRoom\?\.\(target\.roomId\);\s*\}/,
   "A structure click should select either its surface target or its room, never both."
 );
