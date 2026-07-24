@@ -19,6 +19,8 @@ type ItemRenderer2DProps = {
   label: string;
   measurementUnit?: "mm" | "cm" | "in";
   rotationHudLabel?: string | null;
+  interactive?: boolean;
+  onSelect?: (additive: boolean) => void;
   onRotateHandlePointerDown?: (e: ThreeEvent<PointerEvent>) => void;
   onRotateHandlePointerMove?: (e: ThreeEvent<PointerEvent>) => void;
   onRotateHandlePointerUp?: (e: ThreeEvent<PointerEvent>) => void;
@@ -43,6 +45,8 @@ export default function ItemRenderer2D({
   label,
   measurementUnit = "mm",
   rotationHudLabel = null,
+  interactive = false,
+  onSelect,
   onRotateHandlePointerDown,
   onRotateHandlePointerMove,
   onRotateHandlePointerUp,
@@ -244,20 +248,51 @@ export default function ItemRenderer2D({
 
       {showLabels && (selected || hovered || !dragging) && (
         <Html zIndexRange={htmlZIndexRange} position={[0, 0.01, 0]} center transform={false}>
-          <div
-            style={{
-              fontSize: 11,
-              padding: "2px 6px",
-              borderRadius: 6,
-              background: "rgba(255,255,255,0.9)",
-              border: "1px solid rgba(120,120,120,0.35)",
-              color: "#1f2937",
-              whiteSpace: "nowrap",
-              pointerEvents: "none",
-            }}
-          >
-            {label}
-          </div>
+          {interactive && onSelect ? (
+            <button
+              type="button"
+              data-testid="plan-item-keyboard-target"
+              aria-label={`Select ${label} in 2D plan`}
+              aria-pressed={selected}
+              className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+              onPointerDown={(event) => event.stopPropagation()}
+              onClick={(event) => {
+                event.stopPropagation();
+                onSelect(event.shiftKey);
+              }}
+              style={{
+                appearance: "none",
+                fontSize: 11,
+                padding: "2px 6px",
+                borderRadius: 6,
+                background: "rgba(255,255,255,0.9)",
+                border: selected
+                  ? "1px solid rgba(37,99,235,0.62)"
+                  : "1px solid rgba(120,120,120,0.35)",
+                color: "#1f2937",
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+                pointerEvents: "auto",
+              }}
+            >
+              {label}
+            </button>
+          ) : (
+            <div
+              style={{
+                fontSize: 11,
+                padding: "2px 6px",
+                borderRadius: 6,
+                background: "rgba(255,255,255,0.9)",
+                border: "1px solid rgba(120,120,120,0.35)",
+                color: "#1f2937",
+                whiteSpace: "nowrap",
+                pointerEvents: "none",
+              }}
+            >
+              {label}
+            </div>
+          )}
         </Html>
       )}
 

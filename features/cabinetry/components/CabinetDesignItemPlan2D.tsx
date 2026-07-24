@@ -11,6 +11,7 @@ export function CabinetDesignItemPlan2D({
   item,
   selected,
   interactive,
+  showPlanLabel,
   renderReadyKey,
   onRenderReadyChange,
   onSelect,
@@ -26,6 +27,7 @@ export function CabinetDesignItemPlan2D({
       interactive={interactive}
       instanceId={item.instanceId}
       viewMode="2d"
+      showPlanLabel={showPlanLabel}
       renderReadyKey={renderReadyKey}
       onRenderReadyChange={onRenderReadyChange}
       onSelect={onSelect}

@@ -185,6 +185,7 @@ export function SceneItemsLayer({
                   configuration.editorMode !== "present" &&
                   !configuration.isClientPreview
                 }
+                showPlanLabel={configuration.planShowLabels}
                 renderReadyKey={sceneRenderItemKey}
                 onRenderReadyChange={actions.onRenderReadyChange}
                 onSelect={(id, additive) => {

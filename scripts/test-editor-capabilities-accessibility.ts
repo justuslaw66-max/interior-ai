@@ -142,4 +142,27 @@ assert.match(
   "placed-item keyboard selection should use the canonical single-selection controller"
 );
 
+const planItemRenderer = read(
+  "components/editor/renderers/ItemRenderer2D.tsx"
+);
+for (const required of [
+  'data-testid="plan-item-keyboard-target"',
+  "aria-label={`Select ${label} in 2D plan`}",
+  "aria-pressed={selected}",
+  "focus-visible:outline",
+  "onSelect(event.shiftKey)",
+]) {
+  assert.ok(
+    planItemRenderer.includes(required),
+    `2D plan item keyboard target must preserve ${required}`
+  );
+}
+
+const furnitureItem = read("components/scene/FurnitureItem.tsx");
+assert.match(
+  furnitureItem,
+  /onSelect=\{\(additive\)\s*=>\s*onSelect\?\.\(instanceId,\s*additive\)\}/,
+  "2D plan item buttons should use the canonical furniture selection callback"
+);
+
 console.log("Editor capabilities and accessibility checks passed.");

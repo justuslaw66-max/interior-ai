@@ -1,6 +1,7 @@
 "use client";
 
 import { Edges } from "@react-three/drei/core/Edges";
+import { Html } from "@react-three/drei/web/Html";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { createCabinetThreeGroup } from "../createCabinetThreeGroup";
@@ -43,6 +44,7 @@ export type CabinetSceneItemProps = {
   interactive?: boolean;
   instanceId?: string;
   viewMode?: "2d" | "3d";
+  showPlanLabel?: boolean;
   onSelect?: (id: string, additive: boolean) => void;
   onSemanticSelect?: (selection: CabinetSemanticSelection) => void;
   renderReadyKey?: string;
@@ -189,6 +191,7 @@ export function CabinetSceneItem({
   interactive = true,
   instanceId,
   viewMode = "3d",
+  showPlanLabel = true,
   onSelect,
   onSemanticSelect,
   renderReadyKey,
@@ -318,17 +321,68 @@ export function CabinetSceneItem({
       }}
     >
       {viewMode === "2d" ? (
-        <mesh position={[0, 0.018, 0]} castShadow={false} receiveShadow>
-          <boxGeometry args={[width, 0.028, depth]} />
-          <meshStandardMaterial
-            color={selected ? "#bfdbfe" : "#d8d2c6"}
-            roughness={0.78}
-            metalness={0.02}
-            transparent
-            opacity={0.92}
-          />
-          {selected ? <Edges scale={1.01} color="#2563eb" /> : null}
-        </mesh>
+        <>
+          <mesh position={[0, 0.018, 0]} castShadow={false} receiveShadow>
+            <boxGeometry args={[width, 0.028, depth]} />
+            <meshStandardMaterial
+              color={selected ? "#bfdbfe" : "#d8d2c6"}
+              roughness={0.78}
+              metalness={0.02}
+              transparent
+              opacity={0.92}
+            />
+            {selected ? <Edges scale={1.01} color="#2563eb" /> : null}
+          </mesh>
+          {showPlanLabel ? (
+            <Html zIndexRange={[5, 0]} position={[0, 0.08, 0]} center transform={false}>
+              {interactive && instanceId ? (
+                <button
+                  type="button"
+                  data-testid="plan-item-keyboard-target"
+                  aria-label={`Select ${definition.name} in 2D plan`}
+                  aria-pressed={selected}
+                  className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                  onPointerDown={(event) => event.stopPropagation()}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onSelect?.(instanceId, event.shiftKey);
+                  }}
+                  style={{
+                    appearance: "none",
+                    background: "rgba(255,255,255,0.9)",
+                    border: selected
+                      ? "1px solid rgba(37,99,235,0.62)"
+                      : "1px solid rgba(120,120,120,0.35)",
+                    borderRadius: 6,
+                    color: "#1f2937",
+                    cursor: "pointer",
+                    fontSize: 11,
+                    padding: "2px 6px",
+                    pointerEvents: "auto",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {definition.name}
+                </button>
+              ) : (
+                <div
+                  style={{
+                    background: "rgba(255,255,255,0.9)",
+                    border: "1px solid rgba(120,120,120,0.35)",
+                    borderRadius: 6,
+                    color: "#1f2937",
+                    fontSize: 11,
+                    padding: "2px 6px",
+                    pointerEvents: "none",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {definition.name}
+                </div>
+              )}
+            </Html>
+          ) : null}
+        </>
       ) : (
         <>
           <primitive object={assembly} position={[-width / 2, 0, -depth / 2]} />

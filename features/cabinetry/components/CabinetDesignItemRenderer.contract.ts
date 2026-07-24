@@ -7,6 +7,7 @@ export type CabinetDesignItemRendererProps = {
   item: ParametricCabinetDesignItem;
   selected: boolean;
   interactive: boolean;
+  showPlanLabel?: boolean;
   renderReadyKey: string;
   onRenderReadyChange: (key: string, ready: boolean) => void;
   onSelect: (id: string, additive: boolean) => void;

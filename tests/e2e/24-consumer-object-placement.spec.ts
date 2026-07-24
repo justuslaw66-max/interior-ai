@@ -63,37 +63,38 @@ async function setupConsumerItem(page: Page): Promise<Locator> {
 }
 
 test.describe("24. Consumer object placement", () => {
-  test("selects a placed item by keyboard before running transform shortcuts", async ({ page }) => {
+  test("tabs to a placed item in the 2D plan before running transform shortcuts", async ({ page }) => {
     test.setTimeout(150_000);
     await setupConsumerItem(page);
 
     await page.keyboard.press("Escape");
     await expect(page.getByTestId("selected-item-panel")).not.toBeVisible();
+    await page.setViewportSize({ width: 1440, height: 900 });
 
-    const continueToFurnish = page.getByTestId("room-setup-continue-furnish");
-    if (await continueToFurnish.isVisible().catch(() => false)) {
-      await continueToFurnish.click();
-    } else {
-      const furnishWorkflow = page
-        .locator('[data-testid="editor-workflow-furnish"]:visible')
-        .first();
-      if (
-        (await furnishWorkflow.isVisible().catch(() => false)) &&
-        (await furnishWorkflow.getAttribute("data-active")) !== "true"
-      ) {
-        await furnishWorkflow.click();
-      }
+    const planWorkflow = page
+      .locator('[data-testid="editor-workflow-plan"]:visible')
+      .first();
+    if ((await planWorkflow.getAttribute("data-active")) !== "true") {
+      await planWorkflow.click();
     }
+    await expect(planWorkflow).toHaveAttribute("data-active", "true");
+    const planView = page.getByTestId("editor-view-2d");
+    if ((await planView.getAttribute("aria-pressed")) !== "true") {
+      await planView.click();
+    }
+    await expect(planView).toHaveAttribute("aria-pressed", "true");
 
-    const placedItems = page.getByTestId("placed-item-selector");
-    await expect(placedItems).toBeVisible();
-    const itemButton = placedItems.getByRole("button", {
-      name: /Select Hugg/i,
+    const itemButton = page.getByTestId("plan-item-keyboard-target").filter({
+      hasText: "Hugg",
     });
     await expect(itemButton).toBeVisible();
     await expect(itemButton).toHaveAttribute("aria-pressed", "false");
 
     await itemButton.focus();
+    await expect(itemButton).toBeFocused();
+    await page.keyboard.press("Shift+Tab");
+    await expect(itemButton).not.toBeFocused();
+    await page.keyboard.press("Tab");
     await expect(itemButton).toBeFocused();
     await itemButton.press("Enter");
     await expect(page.getByTestId("selected-item-panel")).toBeVisible();

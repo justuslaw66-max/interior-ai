@@ -1387,6 +1387,8 @@ export function Furniture({
           measurementUnit={planMeasurementUnit}
           label={product.title}
           rotationHudLabel={rotationHudLabel}
+          interactive={interactive}
+          onSelect={(additive) => onSelect?.(instanceId, additive)}
           onRotateHandlePointerDown={onRotateHandlePointerDown}
           onRotateHandlePointerMove={onRotateHandlePointerMove}
           onRotateHandlePointerUp={onRotateHandlePointerUp}
