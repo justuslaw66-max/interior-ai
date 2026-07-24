@@ -3,7 +3,7 @@
 /* eslint-disable react-hooks/refs -- This shell intentionally forwards grouped ref objects to Three.js bridge components. */
 
 import * as THREE from "three";
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { Environment } from "@react-three/drei/core/Environment";
 import { Grid } from "@react-three/drei/core/Grid";
 import { Lightformer } from "@react-three/drei/core/Lightformer";
@@ -11,6 +11,7 @@ import { MapControls } from "@react-three/drei/core/MapControls";
 import { OrbitControls } from "@react-three/drei/core/OrbitControls";
 import {
   Suspense,
+  useRef,
   type CSSProperties,
   type MutableRefObject,
   type ReactNode,
@@ -125,6 +126,131 @@ const WORKSPACE_GRID_SECTION_SIZE_METERS = 1;
 const WORKSPACE_GRID_MIN_SIZE_METERS = 160;
 const WORKSPACE_GRID_PLAN_PADDING_METERS = 60;
 const WORKSPACE_GRID_FADE_DISTANCE_METERS = 80;
+const WORKSPACE_GRID_FLOOR_Y_METERS = -0.1;
+const WORKSPACE_GRID_CAMERA_SWITCH_Y_METERS = -0.05;
+const WORKSPACE_GRID_CEILING_CLEARANCE_METERS = 0.15;
+
+type WorkspacePlanningGridProps = {
+  centerX: number;
+  centerZ: number;
+  ceilingY: number;
+  liteSceneEnabled: boolean;
+  size: number;
+};
+
+function WorkspacePlanningGrid({
+  centerX,
+  centerZ,
+  ceilingY,
+  liteSceneEnabled,
+  size,
+}: WorkspacePlanningGridProps) {
+  const floorGridRef = useRef<THREE.Group>(null);
+  const ceilingGridRef = useRef<THREE.Group>(null);
+
+  useFrame(({ camera }) => {
+    const showCeilingGrid =
+      camera.position.y < WORKSPACE_GRID_CAMERA_SWITCH_Y_METERS;
+
+    if (floorGridRef.current) {
+      floorGridRef.current.visible = !showCeilingGrid;
+    }
+    if (ceilingGridRef.current) {
+      ceilingGridRef.current.visible = showCeilingGrid;
+    }
+  });
+
+  return (
+    <>
+      <group ref={floorGridRef} name="workspace-floor-grid">
+        <mesh
+          position={[centerX, WORKSPACE_GRID_FLOOR_Y_METERS, centerZ]}
+          rotation-x={-Math.PI / 2}
+          raycast={() => null}
+        >
+          <planeGeometry args={[size, size]} />
+          <meshBasicMaterial color="#f3f5f5" toneMapped={false} />
+        </mesh>
+        <mesh
+          position={[
+            centerX,
+            WORKSPACE_GRID_FLOOR_Y_METERS + 0.005,
+            centerZ,
+          ]}
+          rotation-x={-Math.PI / 2}
+          receiveShadow={!liteSceneEnabled}
+          raycast={() => null}
+        >
+          <planeGeometry args={[size, size]} />
+          <shadowMaterial
+            color="#66736f"
+            opacity={liteSceneEnabled ? 0 : 0.2}
+            transparent
+          />
+        </mesh>
+        <Grid
+          args={[size, size]}
+          position={[
+            centerX,
+            WORKSPACE_GRID_FLOOR_Y_METERS + 0.01,
+            centerZ,
+          ]}
+          cellSize={WORKSPACE_GRID_CELL_SIZE_METERS}
+          cellThickness={0.45}
+          cellColor="#ffffff"
+          sectionSize={WORKSPACE_GRID_SECTION_SIZE_METERS}
+          sectionThickness={0.8}
+          sectionColor="#ffffff"
+          fadeDistance={WORKSPACE_GRID_FADE_DISTANCE_METERS}
+          fadeStrength={1.35}
+          fadeFrom={1}
+          followCamera={false}
+          infiniteGrid={false}
+          side={THREE.DoubleSide}
+          material-toneMapped={false}
+          raycast={() => null}
+        />
+      </group>
+
+      <group
+        ref={ceilingGridRef}
+        name="workspace-ceiling-grid"
+        visible={false}
+      >
+        <mesh
+          position={[centerX, ceilingY + 0.005, centerZ]}
+          rotation-x={-Math.PI / 2}
+          raycast={() => null}
+        >
+          <planeGeometry args={[size, size]} />
+          <meshBasicMaterial
+            color="#f3f5f5"
+            side={THREE.DoubleSide}
+            toneMapped={false}
+          />
+        </mesh>
+        <Grid
+          args={[size, size]}
+          position={[centerX, ceilingY, centerZ]}
+          cellSize={WORKSPACE_GRID_CELL_SIZE_METERS}
+          cellThickness={0.45}
+          cellColor="#ffffff"
+          sectionSize={WORKSPACE_GRID_SECTION_SIZE_METERS}
+          sectionThickness={0.8}
+          sectionColor="#ffffff"
+          fadeDistance={WORKSPACE_GRID_FADE_DISTANCE_METERS}
+          fadeStrength={1.35}
+          fadeFrom={1}
+          followCamera={false}
+          infiniteGrid={false}
+          side={THREE.DoubleSide}
+          material-toneMapped={false}
+          raycast={() => null}
+        />
+      </group>
+    </>
+  );
+}
 
 export function DesignSceneCanvas({
   state,
@@ -157,6 +283,8 @@ export function DesignSceneCanvas({
       ) + WORKSPACE_GRID_PLAN_PADDING_METERS
     )
   );
+  const workspaceGridCeilingY =
+    planBounds.roomHeight + WORKSPACE_GRID_CEILING_CLEARANCE_METERS;
   const { planDiagnostics, viewMode } = state;
   const controlsRef = sceneRefs.controls;
 
@@ -173,6 +301,7 @@ export function DesignSceneCanvas({
         data-tone-mapping="aces"
         data-lighting-model="ambient-hemi-key-fill-ibl"
         data-workspace-grid={viewMode === "3d" ? "visible" : "hidden"}
+        data-workspace-grid-mode="camera-aware-floor-and-ceiling"
         data-workspace-grid-minor-meters={WORKSPACE_GRID_CELL_SIZE_METERS}
         data-workspace-grid-major-meters={WORKSPACE_GRID_SECTION_SIZE_METERS}
         data-camera-y={viewMode === "3d" ? String(state.cameraY) : undefined}
@@ -261,62 +390,13 @@ export function DesignSceneCanvas({
         />
         <color attach="background" args={[configuration.backgroundColor]} />
         {viewMode === "3d" ? (
-          <>
-            <mesh
-              position={[
-                presentationBounds.centerX,
-                -0.1,
-                presentationBounds.centerZ,
-              ]}
-              rotation-x={-Math.PI / 2}
-              raycast={() => null}
-            >
-              <planeGeometry args={[workspaceGridSize, workspaceGridSize]} />
-              <meshBasicMaterial
-                color="#f3f5f5"
-                toneMapped={false}
-              />
-            </mesh>
-            <mesh
-              position={[
-                presentationBounds.centerX,
-                -0.095,
-                presentationBounds.centerZ,
-              ]}
-              rotation-x={-Math.PI / 2}
-              receiveShadow={!state.liteSceneEnabled}
-              raycast={() => null}
-            >
-              <planeGeometry args={[workspaceGridSize, workspaceGridSize]} />
-              <shadowMaterial
-                color="#66736f"
-                opacity={state.liteSceneEnabled ? 0 : 0.2}
-                transparent
-              />
-            </mesh>
-            <Grid
-              args={[workspaceGridSize, workspaceGridSize]}
-              position={[
-                presentationBounds.centerX,
-                -0.09,
-                presentationBounds.centerZ,
-              ]}
-              cellSize={WORKSPACE_GRID_CELL_SIZE_METERS}
-              cellThickness={0.45}
-              cellColor="#ffffff"
-              sectionSize={WORKSPACE_GRID_SECTION_SIZE_METERS}
-              sectionThickness={0.8}
-              sectionColor="#ffffff"
-              fadeDistance={WORKSPACE_GRID_FADE_DISTANCE_METERS}
-              fadeStrength={1.35}
-              fadeFrom={1}
-              followCamera={false}
-              infiniteGrid={false}
-              side={THREE.DoubleSide}
-              material-toneMapped={false}
-              raycast={() => null}
-            />
-          </>
+          <WorkspacePlanningGrid
+            centerX={presentationBounds.centerX}
+            centerZ={presentationBounds.centerZ}
+            ceilingY={workspaceGridCeilingY}
+            liteSceneEnabled={state.liteSceneEnabled}
+            size={workspaceGridSize}
+          />
         ) : null}
         <LoadingOverlay />
         <SceneProgressBridge onReadyChange={actions.onSceneProgressReadyChange} />

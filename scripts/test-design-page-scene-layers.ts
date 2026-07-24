@@ -593,18 +593,28 @@ assert.match(
 );
 assert.match(
   canvasSource,
-  /data-shadow-maps-enabled=[\s\S]*shadows=\{[\s\S]*viewMode === "3d" && !state\.liteSceneEnabled[\s\S]*QUALITY_SHADOW_FILTER[\s\S]*presentationBounds[\s\S]*receiveShadow[\s\S]*castShadow=\{viewMode === "3d" && !state\.liteSceneEnabled\}/,
+  /receiveShadow=\{!liteSceneEnabled\}[\s\S]*data-shadow-maps-enabled=[\s\S]*shadows=\{[\s\S]*viewMode === "3d" && !state\.liteSceneEnabled[\s\S]*QUALITY_SHADOW_FILTER[\s\S]*castShadow=\{viewMode === "3d" && !state\.liteSceneEnabled\}/,
   "Quality-mode 3D should provide a shadow-receiving workspace plane and soft shadow-map depth."
 );
 assert.match(
   canvasSource,
-  /WORKSPACE_GRID_CELL_SIZE_METERS = 0\.2[\s\S]*WORKSPACE_GRID_SECTION_SIZE_METERS = 1[\s\S]*data-workspace-grid=\{viewMode === "3d" \? "visible" : "hidden"\}[\s\S]*color="#f3f5f5"[\s\S]*<Grid[\s\S]*cellSize=\{WORKSPACE_GRID_CELL_SIZE_METERS\}[\s\S]*cellThickness=\{0\.45\}[\s\S]*cellColor="#ffffff"[\s\S]*sectionSize=\{WORKSPACE_GRID_SECTION_SIZE_METERS\}[\s\S]*sectionThickness=\{0\.8\}[\s\S]*sectionColor="#ffffff"[\s\S]*material-toneMapped=\{false\}[\s\S]*raycast=\{\(\) => null\}/,
+  /WORKSPACE_GRID_CELL_SIZE_METERS = 0\.2[\s\S]*WORKSPACE_GRID_SECTION_SIZE_METERS = 1[\s\S]*color="#f3f5f5"[\s\S]*<Grid[\s\S]*cellSize=\{WORKSPACE_GRID_CELL_SIZE_METERS\}[\s\S]*cellThickness=\{0\.45\}[\s\S]*cellColor="#ffffff"[\s\S]*sectionSize=\{WORKSPACE_GRID_SECTION_SIZE_METERS\}[\s\S]*sectionThickness=\{0\.8\}[\s\S]*sectionColor="#ffffff"[\s\S]*material-toneMapped=\{false\}[\s\S]*raycast=\{\(\) => null\}[\s\S]*data-workspace-grid=\{viewMode === "3d" \? "visible" : "hidden"\}[\s\S]*data-workspace-grid-mode="camera-aware-floor-and-ceiling"/,
   "3D should provide a soft light-on-light planning grid with five 200 mm subdivisions inside every one-metre section."
 );
 assert.match(
   canvasSource,
-  /WORKSPACE_GRID_MIN_SIZE_METERS = 160[\s\S]*workspaceGridSize[\s\S]*<meshBasicMaterial[\s\S]*color="#f3f5f5"[\s\S]*toneMapped=\{false\}[\s\S]*<shadowMaterial[\s\S]*opacity=\{state\.liteSceneEnabled \? 0 : 0\.2\}[\s\S]*<Grid[\s\S]*args=\{\[workspaceGridSize, workspaceGridSize\]\}[\s\S]*fadeDistance=\{WORKSPACE_GRID_FADE_DISTANCE_METERS\}/,
+  /WORKSPACE_GRID_MIN_SIZE_METERS = 160[\s\S]*<meshBasicMaterial[\s\S]*color="#f3f5f5"[\s\S]*toneMapped=\{false\}[\s\S]*<shadowMaterial[\s\S]*opacity=\{liteSceneEnabled \? 0 : 0\.2\}[\s\S]*<Grid[\s\S]*args=\{\[size, size\]\}[\s\S]*fadeDistance=\{WORKSPACE_GRID_FADE_DISTANCE_METERS\}[\s\S]*workspaceGridSize/,
   "The 3D grid should cover a full light workspace, retain soft grounding shadows, and fade before its boundary."
+);
+assert.match(
+  canvasSource,
+  /WORKSPACE_GRID_CAMERA_SWITCH_Y_METERS = -0\.05[\s\S]*useFrame\(\(\{ camera \}\) => \{[\s\S]*camera\.position\.y < WORKSPACE_GRID_CAMERA_SWITCH_Y_METERS[\s\S]*floorGridRef\.current\.visible = !showCeilingGrid[\s\S]*ceilingGridRef\.current\.visible = showCeilingGrid[\s\S]*name="workspace-floor-grid"[\s\S]*name="workspace-ceiling-grid"[\s\S]*visible=\{false\}/,
+  "Bottom-up 3D views should replace the floor grid with a separate overhead grid instead of showing the floor grid from below."
+);
+assert.match(
+  canvasSource,
+  /WORKSPACE_GRID_CEILING_CLEARANCE_METERS = 0\.15[\s\S]*workspaceGridCeilingY =[\s\S]*planBounds\.roomHeight \+ WORKSPACE_GRID_CEILING_CLEARANCE_METERS[\s\S]*ceilingY=\{workspaceGridCeilingY\}/,
+  "The bottom-up workspace grid should sit just above the plan wall height so it reads as an overhead reference plane."
 );
 assert.match(
   canvasSource,
