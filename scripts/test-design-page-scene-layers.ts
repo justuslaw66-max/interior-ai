@@ -593,13 +593,18 @@ assert.match(
 );
 assert.match(
   canvasSource,
-  /data-shadow-maps-enabled=[\s\S]*shadows=\{viewMode === "3d" && !state\.liteSceneEnabled\}[\s\S]*presentationBounds[\s\S]*receiveShadow[\s\S]*castShadow=\{viewMode === "3d" && !state\.liteSceneEnabled\}/,
+  /data-shadow-maps-enabled=[\s\S]*shadows=\{[\s\S]*viewMode === "3d" && !state\.liteSceneEnabled[\s\S]*QUALITY_SHADOW_FILTER[\s\S]*presentationBounds[\s\S]*receiveShadow[\s\S]*castShadow=\{viewMode === "3d" && !state\.liteSceneEnabled\}/,
   "Quality-mode 3D should provide a bounded ground plane and soft shadow-map depth."
 );
 assert.match(
   canvasSource,
   /QUALITY_SHADOW_MAP_SIZE = 2048[\s\S]*shadowCameraHalfSpan[\s\S]*presentationBounds\.widthMeters[\s\S]*presentationBounds\.depthMeters[\s\S]*shadow-mapSize-width=\{QUALITY_SHADOW_MAP_SIZE\}[\s\S]*shadow-camera-left=\{-shadowCameraHalfSpan\}[\s\S]*shadow-camera-right=\{shadowCameraHalfSpan\}/,
   "Quality-mode 3D shadows should use a high-resolution map fitted to the visible plan instead of a low-resolution fixed frustum."
+);
+assert.match(
+  canvasSource,
+  /QUALITY_SHADOW_FILTER = "percentage"[\s\S]*QUALITY_SHADOW_RADIUS = 3\.5[\s\S]*QUALITY_SHADOW_INTENSITY = 0\.58[\s\S]*data-shadow-filter=\{QUALITY_SHADOW_FILTER\}[\s\S]*shadow-radius=\{QUALITY_SHADOW_RADIUS\}[\s\S]*shadow-intensity=\{QUALITY_SHADOW_INTENSITY\}/,
+  "Quality-mode 3D should select the supported percentage-filtered shader and keep furniture shadows softly blended."
 );
 assert.match(
   furnitureSource,

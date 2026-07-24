@@ -113,6 +113,9 @@ type DesignSceneCanvasProps = {
 };
 
 const QUALITY_SHADOW_MAP_SIZE = 2048;
+const QUALITY_SHADOW_FILTER = "percentage";
+const QUALITY_SHADOW_RADIUS = 3.5;
+const QUALITY_SHADOW_INTENSITY = 0.58;
 const MIN_SHADOW_CAMERA_HALF_SPAN_METERS = 8;
 const MAX_SHADOW_CAMERA_HALF_SPAN_METERS = 32;
 const SHADOW_CAMERA_PADDING_METERS = 3;
@@ -149,6 +152,7 @@ export function DesignSceneCanvas({
         data-shadow-maps-enabled={
           viewMode === "3d" && !state.liteSceneEnabled ? "true" : "false"
         }
+        data-shadow-filter={QUALITY_SHADOW_FILTER}
         data-shadow-map-size={QUALITY_SHADOW_MAP_SIZE}
         data-shadow-camera-half-span={shadowCameraHalfSpan}
         data-tone-mapping="aces"
@@ -184,7 +188,11 @@ export function DesignSceneCanvas({
           opacity: state.showSceneLoadingVeil ? 0 : 1,
           transition: "opacity 160ms ease",
         }}
-        shadows={viewMode === "3d" && !state.liteSceneEnabled}
+        shadows={
+          viewMode === "3d" && !state.liteSceneEnabled
+            ? QUALITY_SHADOW_FILTER
+            : false
+        }
         dpr={state.liteSceneEnabled ? [1, 1] : [1, 2]}
         gl={{
           antialias: true,
@@ -315,6 +323,8 @@ export function DesignSceneCanvas({
           shadow-camera-bottom={-shadowCameraHalfSpan}
           shadow-bias={-0.00015}
           shadow-normalBias={0.02}
+          shadow-radius={QUALITY_SHADOW_RADIUS}
+          shadow-intensity={QUALITY_SHADOW_INTENSITY}
         />
         <directionalLight
           position={[-4, 4, -3]}
