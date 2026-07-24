@@ -628,8 +628,13 @@ assert.match(
 );
 assert.match(
   furnitureSource,
-  /position=\{\[0, 0\.022, 0\]\}[\s\S]*testId: "selected-furniture-outline"[\s\S]*boxGeometry args=\{\[width \+ 0\.04, height \+ 0\.04, depth \+ 0\.04\]\}[\s\S]*color="#79a9e8"[\s\S]*lineWidth=\{1\.75\}[\s\S]*depthTest[\s\S]*depthWrite=\{false\}/,
-  "Selected GLB furniture should retain a soft, floor-aligned, depth-aware 3D outline that does not show hidden edges through scene geometry."
+  /SELECTION_OUTLINE_SIDE_PADDING_METERS = 0\.04[\s\S]*SELECTION_OUTLINE_TOP_PADDING_METERS = 0\.04[\s\S]*SELECTION_OUTLINE_BOTTOM_INSET_METERS = 0\.006[\s\S]*modelRenderBounds[\s\S]*selectionOutlineBounds[\s\S]*onBoundsChange=\{setModelRenderBounds\}[\s\S]*position=\{selectionOutlineBounds\.position\}[\s\S]*testId: "selected-furniture-outline"[\s\S]*boxGeometry args=\{selectionOutlineBounds\.size\}[\s\S]*color="#79a9e8"[\s\S]*lineWidth=\{1\.75\}[\s\S]*depthTest[\s\S]*depthWrite=\{false\}/,
+  "Selected GLB furniture should derive a padded, floor-safe, depth-aware 3D outline from the model's rendered bounds."
+);
+assert.match(
+  scaledModelSource,
+  /export type GLBRenderBounds[\s\S]*onBoundsChange\?: \(bounds: GLBRenderBounds\)[\s\S]*new THREE\.Box3\(\)\.setFromObject\(normalizedModel, true\)[\s\S]*onBoundsChangeRef\.current\?\.\(\{[\s\S]*center: \[center\.x, center\.y, center\.z\][\s\S]*size: \[size\.x, size\.y, size\.z\]/,
+  "GLB models should report their post-calibration rendered bounds for stable selection geometry."
 );
 assert.match(
   scaledModelSource,
