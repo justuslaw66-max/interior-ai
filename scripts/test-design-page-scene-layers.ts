@@ -598,12 +598,12 @@ assert.match(
 );
 assert.match(
   canvasSource,
-  /WORKSPACE_GRID_CELL_SIZE_METERS = 0\.2[\s\S]*WORKSPACE_GRID_SECTION_SIZE_METERS = 1[\s\S]*data-workspace-grid=\{viewMode === "3d" \? "visible" : "hidden"\}[\s\S]*<Grid[\s\S]*cellSize=\{WORKSPACE_GRID_CELL_SIZE_METERS\}[\s\S]*cellThickness=\{0\.65\}[\s\S]*sectionSize=\{WORKSPACE_GRID_SECTION_SIZE_METERS\}[\s\S]*sectionThickness=\{1\}[\s\S]*raycast=\{\(\) => null\}/,
-  "3D should provide a non-interactive planning grid with five visible 200 mm subdivisions inside every one-metre section."
+  /WORKSPACE_GRID_CELL_SIZE_METERS = 0\.2[\s\S]*WORKSPACE_GRID_SECTION_SIZE_METERS = 1[\s\S]*data-workspace-grid=\{viewMode === "3d" \? "visible" : "hidden"\}[\s\S]*color="#f3f5f5"[\s\S]*<Grid[\s\S]*cellSize=\{WORKSPACE_GRID_CELL_SIZE_METERS\}[\s\S]*cellThickness=\{0\.45\}[\s\S]*cellColor="#ffffff"[\s\S]*sectionSize=\{WORKSPACE_GRID_SECTION_SIZE_METERS\}[\s\S]*sectionThickness=\{0\.8\}[\s\S]*sectionColor="#ffffff"[\s\S]*material-toneMapped=\{false\}[\s\S]*raycast=\{\(\) => null\}/,
+  "3D should provide a soft light-on-light planning grid with five 200 mm subdivisions inside every one-metre section."
 );
 assert.match(
   canvasSource,
-  /WORKSPACE_GRID_MIN_SIZE_METERS = 160[\s\S]*workspaceGridSize[\s\S]*<meshBasicMaterial[\s\S]*color="#f8faf8"[\s\S]*toneMapped=\{false\}[\s\S]*<shadowMaterial[\s\S]*opacity=\{state\.liteSceneEnabled \? 0 : 0\.2\}[\s\S]*<Grid[\s\S]*args=\{\[workspaceGridSize, workspaceGridSize\]\}[\s\S]*fadeDistance=\{WORKSPACE_GRID_FADE_DISTANCE_METERS\}/,
+  /WORKSPACE_GRID_MIN_SIZE_METERS = 160[\s\S]*workspaceGridSize[\s\S]*<meshBasicMaterial[\s\S]*color="#f3f5f5"[\s\S]*toneMapped=\{false\}[\s\S]*<shadowMaterial[\s\S]*opacity=\{state\.liteSceneEnabled \? 0 : 0\.2\}[\s\S]*<Grid[\s\S]*args=\{\[workspaceGridSize, workspaceGridSize\]\}[\s\S]*fadeDistance=\{WORKSPACE_GRID_FADE_DISTANCE_METERS\}/,
   "The 3D grid should cover a full light workspace, retain soft grounding shadows, and fade before its boundary."
 );
 assert.match(

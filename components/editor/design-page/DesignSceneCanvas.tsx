@@ -273,7 +273,7 @@ export function DesignSceneCanvas({
             >
               <planeGeometry args={[workspaceGridSize, workspaceGridSize]} />
               <meshBasicMaterial
-                color="#f8faf8"
+                color="#f3f5f5"
                 toneMapped={false}
               />
             </mesh>
@@ -302,17 +302,18 @@ export function DesignSceneCanvas({
                 presentationBounds.centerZ,
               ]}
               cellSize={WORKSPACE_GRID_CELL_SIZE_METERS}
-              cellThickness={0.65}
-              cellColor="#d3dddb"
+              cellThickness={0.45}
+              cellColor="#ffffff"
               sectionSize={WORKSPACE_GRID_SECTION_SIZE_METERS}
-              sectionThickness={1}
-              sectionColor="#bdc9c7"
+              sectionThickness={0.8}
+              sectionColor="#ffffff"
               fadeDistance={WORKSPACE_GRID_FADE_DISTANCE_METERS}
               fadeStrength={1.35}
               fadeFrom={1}
               followCamera={false}
               infiniteGrid={false}
               side={THREE.DoubleSide}
+              material-toneMapped={false}
               raycast={() => null}
             />
           </>
