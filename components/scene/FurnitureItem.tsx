@@ -1403,8 +1403,8 @@ export function Furniture({
           />
           <Edges
             scale={1.012}
-            color="#2563eb"
-            lineWidth={2.5}
+            color="#79a9e8"
+            lineWidth={1.75}
             depthTest={false}
             threshold={12}
           />

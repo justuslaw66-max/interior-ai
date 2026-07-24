@@ -628,8 +628,8 @@ assert.match(
 );
 assert.match(
   furnitureSource,
-  /testId: "selected-furniture-outline"[\s\S]*color="#2563eb"[\s\S]*lineWidth=\{2\.5\}/,
-  "Selected GLB furniture should retain a strong 3D outline independent of its model materials."
+  /testId: "selected-furniture-outline"[\s\S]*color="#79a9e8"[\s\S]*lineWidth=\{1\.75\}/,
+  "Selected GLB furniture should retain a soft, visible 3D outline independent of its model materials."
 );
 assert.match(
   scaledModelSource,
