@@ -63,6 +63,47 @@ async function setupConsumerItem(page: Page): Promise<Locator> {
 }
 
 test.describe("24. Consumer object placement", () => {
+  test("selects a placed item by keyboard before running transform shortcuts", async ({ page }) => {
+    test.setTimeout(150_000);
+    await setupConsumerItem(page);
+
+    await page.keyboard.press("Escape");
+    await expect(page.getByTestId("selected-item-panel")).not.toBeVisible();
+
+    const continueToFurnish = page.getByTestId("room-setup-continue-furnish");
+    if (await continueToFurnish.isVisible().catch(() => false)) {
+      await continueToFurnish.click();
+    } else {
+      const furnishWorkflow = page
+        .locator('[data-testid="editor-workflow-furnish"]:visible')
+        .first();
+      if (
+        (await furnishWorkflow.isVisible().catch(() => false)) &&
+        (await furnishWorkflow.getAttribute("data-active")) !== "true"
+      ) {
+        await furnishWorkflow.click();
+      }
+    }
+
+    const placedItems = page.getByTestId("placed-item-selector");
+    await expect(placedItems).toBeVisible();
+    const itemButton = placedItems.getByRole("button", {
+      name: /Select Hugg/i,
+    });
+    await expect(itemButton).toBeVisible();
+    await expect(itemButton).toHaveAttribute("aria-pressed", "false");
+
+    await itemButton.focus();
+    await expect(itemButton).toBeFocused();
+    await itemButton.press("Enter");
+    await expect(page.getByTestId("selected-item-panel")).toBeVisible();
+    await expect(itemButton).toHaveAttribute("aria-pressed", "true");
+
+    const beforeNudge = await readFingerprint(page);
+    await page.keyboard.press("ArrowRight");
+    await expect.poll(() => readFingerprint(page)).not.toBe(beforeNudge);
+  });
+
   test("keeps transform controls touch friendly and every edit recoverable", async ({ page }) => {
     test.setTimeout(150_000);
     const panel = await setupConsumerItem(page);

@@ -198,6 +198,7 @@ type ShoppingState = StateSlice<
   | "activeRoomShoppingSubtotal"
   | "activeRoomPreviewNames"
   | "activeRoomShoppingItems"
+  | "selectedPlacedItemId"
   | "activeRoomProductQuantities"
   | "activeRoomVariantQuantities"
   | "placementAddMode"
@@ -212,6 +213,7 @@ type ShoppingActions = ActionSlice<
   | "onCatalogDragEnd"
   | "onAddActiveRoomCartReadyItems"
   | "onReviewShoppingIssue"
+  | "onSelectPlacedItem"
   | "onSelectedImportedFamilyChange"
   | "onSelectedImportedProductChange"
 >;

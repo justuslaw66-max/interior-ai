@@ -39,6 +39,7 @@ type DesignControlsFurnishPanelProps = {
   activeRoomShoppingSubtotal: number;
   activeRoomPreviewNames: string[];
   activeRoomShoppingItems: ActiveRoomShoppingItem[];
+  selectedPlacedItemId: string | null;
   activeRoomProductQuantities: Record<string, number>;
   activeRoomVariantQuantities: Record<string, number>;
   placementAddMode: "preview" | "auto";
@@ -59,6 +60,7 @@ type DesignControlsFurnishPanelProps = {
   onCatalogDragEnd?: () => void;
   onAddActiveRoomCartReadyItems: () => void;
   onReviewShoppingIssue: (filter: ShoppingReadinessFilter) => void;
+  onSelectPlacedItem: (instanceId: string) => void;
   onSelectRoom: (roomId: string) => void;
   onPlacementAddModeChange: (mode: "preview" | "auto") => void;
   onGoShop: () => void;
@@ -128,6 +130,7 @@ export default function DesignControlsFurnishPanel({
   activeRoomShoppingSubtotal,
   activeRoomPreviewNames,
   activeRoomShoppingItems,
+  selectedPlacedItemId,
   activeRoomProductQuantities,
   activeRoomVariantQuantities,
   placementAddMode,
@@ -148,6 +151,7 @@ export default function DesignControlsFurnishPanel({
   onCatalogDragEnd,
   onAddActiveRoomCartReadyItems,
   onReviewShoppingIssue,
+  onSelectPlacedItem,
   onSelectRoom,
   onPlacementAddModeChange,
   onGoShop,
@@ -433,6 +437,75 @@ export default function DesignControlsFurnishPanel({
             <div className={mutedClass}>Review</div>
           </div>
         </div>
+        {activeRoomShoppingItems.length > 0 ? (
+          <div
+            className={
+              dark
+                ? "mt-4 rounded-xl border border-white/10 bg-white/5 p-3"
+                : "mt-4 rounded-xl border border-neutral-200 bg-neutral-50 p-3"
+            }
+            data-testid="placed-item-selector"
+          >
+            <div className="flex items-baseline justify-between gap-3">
+              <div className={titleClass}>Placed items</div>
+              <div className={mutedClass}>{activeRoomShoppingItems.length}</div>
+            </div>
+            <p className={`mt-1 ${mutedClass}`}>
+              Tab to an item, then press Enter or Space to select.
+            </p>
+            <div
+              className="mt-2 max-h-36 space-y-1 overflow-y-auto pr-1"
+              role="list"
+              aria-label={`Placed items in ${activeRoomName}`}
+            >
+              {activeRoomShoppingItems.map((item) => {
+                const selected = selectedPlacedItemId === item.instanceId;
+                const selectionLabel = item.variantLabel
+                  ? `Select ${item.title}, ${item.variantLabel}`
+                  : `Select ${item.title}`;
+                return (
+                  <div key={item.instanceId} role="listitem">
+                    <button
+                      type="button"
+                      aria-label={selectionLabel}
+                      aria-pressed={selected}
+                      data-testid={`placed-item-select-${item.instanceId}`}
+                      disabled={!canEdit}
+                      onClick={() => onSelectPlacedItem(item.instanceId)}
+                      className={
+                        selected
+                          ? dark
+                            ? "flex min-h-10 w-full items-center justify-between gap-3 rounded-lg border border-sky-300 bg-sky-300/15 px-3 py-2 text-left text-sm font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 disabled:cursor-not-allowed disabled:opacity-50"
+                            : "flex min-h-10 w-full items-center justify-between gap-3 rounded-lg border border-sky-400 bg-sky-50 px-3 py-2 text-left text-sm font-semibold text-neutral-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 disabled:cursor-not-allowed disabled:opacity-50"
+                          : dark
+                            ? "designer-control flex min-h-10 w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left text-sm font-medium text-neutral-100 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 disabled:cursor-not-allowed disabled:opacity-50"
+                            : "flex min-h-10 w-full items-center justify-between gap-3 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-left text-sm font-medium text-neutral-800 hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 disabled:cursor-not-allowed disabled:opacity-50"
+                      }
+                    >
+                      <span className="min-w-0">
+                        <span className="block truncate">{item.title}</span>
+                        {item.variantLabel ? (
+                          <span
+                            className={
+                              dark
+                                ? "block truncate text-xs font-normal text-neutral-400"
+                                : "block truncate text-xs font-normal text-neutral-500"
+                            }
+                          >
+                            {item.variantLabel}
+                          </span>
+                        ) : null}
+                      </span>
+                      <span aria-hidden="true" className="shrink-0 text-xs">
+                        {selected ? "Selected" : "Select"}
+                      </span>
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
         <div className="mt-4" data-testid="furnish-experience-picker">
           <div className={titleClass}>How do you want to furnish?</div>
           <div className="mt-2 grid grid-cols-2 gap-2" role="group" aria-label="Furnishing experience">

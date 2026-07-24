@@ -172,6 +172,7 @@ export type DesignControlsPanelProps = {
   activeRoomShoppingSubtotal: number;
   activeRoomPreviewNames: string[];
   activeRoomShoppingItems: ActiveRoomShoppingItem[];
+  selectedPlacedItemId: string | null;
   activeRoomProductQuantities: Record<string, number>;
   activeRoomVariantQuantities: Record<string, number>;
   placementAddMode: "preview" | "auto";
@@ -256,6 +257,7 @@ export type DesignControlsPanelProps = {
   onCatalogDragEnd?: () => void;
   onAddActiveRoomCartReadyItems: () => void;
   onReviewShoppingIssue: (filter: ShoppingReadinessFilter) => void;
+  onSelectPlacedItem: (instanceId: string) => void;
   onSelectedImportedFamilyChange: (familyKey: string) => void;
   onSelectedImportedProductChange: (productId: string) => void;
   onGridToggle: () => void;
@@ -390,6 +392,7 @@ export default function DesignControlsPanel({
   activeRoomShoppingSubtotal,
   activeRoomPreviewNames,
   activeRoomShoppingItems,
+  selectedPlacedItemId,
   activeRoomProductQuantities,
   activeRoomVariantQuantities,
   placementAddMode,
@@ -465,6 +468,7 @@ export default function DesignControlsPanel({
   onCatalogDragEnd,
   onAddActiveRoomCartReadyItems,
   onReviewShoppingIssue,
+  onSelectPlacedItem,
   onSelectedImportedFamilyChange,
   onSelectedImportedProductChange,
   onGridToggle,
@@ -830,6 +834,7 @@ export default function DesignControlsPanel({
             activeRoomShoppingSubtotal={activeRoomShoppingSubtotal}
             activeRoomPreviewNames={activeRoomPreviewNames}
             activeRoomShoppingItems={activeRoomShoppingItems}
+            selectedPlacedItemId={selectedPlacedItemId}
             activeRoomProductQuantities={activeRoomProductQuantities}
             activeRoomVariantQuantities={activeRoomVariantQuantities}
             placementAddMode={placementAddMode}
@@ -850,6 +855,7 @@ export default function DesignControlsPanel({
             onCatalogDragEnd={onCatalogDragEnd}
             onAddActiveRoomCartReadyItems={onAddActiveRoomCartReadyItems}
             onReviewShoppingIssue={onReviewShoppingIssue}
+            onSelectPlacedItem={onSelectPlacedItem}
             onSelectRoom={onSelectRoom}
             onPlacementAddModeChange={onPlacementAddModeChange}
             onGoShop={onGoShop}

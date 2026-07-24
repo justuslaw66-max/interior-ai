@@ -117,4 +117,29 @@ const pdfRoute = read("app/api/export/pdf/route.ts");
 assert.match(pdfRoute, /select:\s*\{\s*plan:\s*true\s*\}/);
 assert.match(pdfRoute, /normalizeTierFromPlan\(dbUser\?\.plan\)/);
 
+const furnishPanel = read(
+  "components/editor/DesignControlsFurnishPanel.tsx"
+);
+for (const required of [
+  'data-testid="placed-item-selector"',
+  'role="list"',
+  'role="listitem"',
+  "aria-label={selectionLabel}",
+  "aria-pressed={selected}",
+  "focus-visible:ring-2",
+  "Tab to an item, then press Enter or Space to select.",
+]) {
+  assert.ok(
+    furnishPanel.includes(required),
+    `placed-item keyboard selector must preserve ${required}`
+  );
+}
+
+const panelRegistration = read("lib/design-page-panel-registration.ts");
+assert.match(
+  panelRegistration,
+  /onSelectPlacedItem:\s*\(instanceId\)\s*=>\s*placementSelection\.actions\.selection\.selectItem\(instanceId,\s*false\)/,
+  "placed-item keyboard selection should use the canonical single-selection controller"
+);
+
 console.log("Editor capabilities and accessibility checks passed.");

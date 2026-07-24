@@ -418,6 +418,8 @@ export function buildDesignPagePanelRegistration({
         activeRoomPreviewNames:
           roomRead.activeRoomShoppingSummary?.previewNames ?? [],
         activeRoomShoppingItems: roomRead.activeRoomShoppingItems,
+        selectedPlacedItemId:
+          placementSelection.state.selection.selectedInstanceId,
         activeRoomProductQuantities: roomRead.activeRoomProductQuantities,
         activeRoomVariantQuantities: roomRead.activeRoomVariantQuantities,
         placementAddMode: state.shopping.placementAddMode,
@@ -434,6 +436,8 @@ export function buildDesignPagePanelRegistration({
         onAddActiveRoomCartReadyItems:
           interactionActions.addActiveRoomCartReadyItems,
         onReviewShoppingIssue: actions.shopping.reviewIssue,
+        onSelectPlacedItem: (instanceId) =>
+          placementSelection.actions.selection.selectItem(instanceId, false),
         onSelectedImportedFamilyChange:
           importedModels.actions.setSelectedFamilyKey,
         onSelectedImportedProductChange:
