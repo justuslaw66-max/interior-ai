@@ -1436,7 +1436,8 @@ export function Furniture({
           <Edges
             color="#79a9e8"
             lineWidth={1.75}
-            depthTest
+            renderOrder={25}
+            depthTest={false}
             depthWrite={false}
             threshold={12}
           />

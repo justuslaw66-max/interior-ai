@@ -628,8 +628,8 @@ assert.match(
 );
 assert.match(
   furnitureSource,
-  /SELECTION_BOX_SIDE_PADDING_METERS = 0\.035[\s\S]*SELECTION_BOX_TOP_PADDING_METERS = 0\.035[\s\S]*SELECTION_BOX_BOTTOM_INSET_METERS = 0\.012[\s\S]*modelLocalRenderBounds[\s\S]*selectionBoxBounds[\s\S]*onLocalBoundsChange=\{setModelLocalRenderBounds\}[\s\S]*position=\{selectionBoxBounds\.position\}[\s\S]*testId: "selected-furniture-outline"[\s\S]*boxGeometry args=\{selectionBoxBounds\.size\}[\s\S]*color="#79a9e8"[\s\S]*lineWidth=\{1\.75\}[\s\S]*depthTest[\s\S]*depthWrite=\{false\}/,
-  "Selected 3D furniture should use a soft, depth-aware full box derived from model-local rendered bounds."
+  /SELECTION_BOX_SIDE_PADDING_METERS = 0\.035[\s\S]*SELECTION_BOX_TOP_PADDING_METERS = 0\.035[\s\S]*SELECTION_BOX_BOTTOM_INSET_METERS = 0\.012[\s\S]*modelLocalRenderBounds[\s\S]*selectionBoxBounds[\s\S]*onLocalBoundsChange=\{setModelLocalRenderBounds\}[\s\S]*position=\{selectionBoxBounds\.position\}[\s\S]*testId: "selected-furniture-outline"[\s\S]*boxGeometry args=\{selectionBoxBounds\.size\}[\s\S]*color="#79a9e8"[\s\S]*lineWidth=\{1\.75\}[\s\S]*renderOrder=\{25\}[\s\S]*depthTest=\{false\}[\s\S]*depthWrite=\{false\}/,
+  "Selected 3D furniture should use a soft, always-visible full box derived from model-local rendered bounds."
 );
 assert.match(
   scaledModelSource,
