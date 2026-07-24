@@ -165,4 +165,38 @@ assert.match(
   "2D plan item buttons should use the canonical furniture selection callback"
 );
 
+const designPageToasts = read(
+  "components/editor/design-page/DesignPageToasts.tsx"
+);
+for (const required of [
+  'data-testid="rule-announcement-alert"',
+  'role="alert"',
+  'aria-live="assertive"',
+  'data-testid="rule-announcement-status"',
+  'role="status"',
+  'aria-live="polite"',
+  'aria-atomic="true"',
+  'aria-hidden="true"',
+]) {
+  assert.ok(
+    designPageToasts.includes(required),
+    `transient feedback must preserve ${required}`
+  );
+}
+assert.match(
+  designPageToasts,
+  /failed\|failure\|invalid\|error\|blocked\|unavailable/,
+  "validation and save failures should use the assertive live region"
+);
+assert.match(
+  designPageToasts,
+  /assertiveRuleMessage \?\? ""/,
+  "the assertive live region should stay mounted and update its text"
+);
+assert.match(
+  designPageToasts,
+  /politeRuleMessage \?\? ""/,
+  "the polite live region should stay mounted and update its text"
+);
+
 console.log("Editor capabilities and accessibility checks passed.");

@@ -1635,7 +1635,20 @@ test.describe("18. Multi-Room Whole Home", () => {
     await page.getByTestId("active-room-dimension-width").click();
     await expect(page.getByTestId("active-room-dimension-editor-width")).toBeVisible();
     await page.getByTestId("active-room-dimension-editor-width").fill("23234");
-    await expect(page.getByText("Enter a valid room dimension.")).toBeVisible();
+    await expect(page.getByTestId("collision-toast")).toContainText(
+      "Enter a valid room dimension."
+    );
+    await expect(page.getByTestId("rule-announcement-alert")).toHaveText(
+      "Enter a valid room dimension."
+    );
+    await expect(page.getByTestId("rule-announcement-alert")).toHaveAttribute(
+      "aria-live",
+      "assertive"
+    );
+    await expect(page.getByTestId("collision-toast")).toHaveAttribute(
+      "aria-hidden",
+      "true"
+    );
     await expect(page.getByTestId("active-room-dimension-editor-width")).toHaveCount(0);
     await expect(page.getByTestId("active-room-dimension-width")).not.toContainText("23234");
     await expect(page.getByTestId("active-room-dimension-width")).toHaveText(
