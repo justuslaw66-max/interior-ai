@@ -622,7 +622,7 @@ function offsetRoomOutlinePoints(room: HousePlanRoom2D, offset: number) {
   const outline = getRoomOutlinePoints(room);
   const openPoints = outline.slice(0, -1);
 
-  if (Math.abs(offset) <= 0.001 || openPoints.length < 3) {
+  if (offset <= 0.001 || openPoints.length < 3) {
     return outline;
   }
 
@@ -670,7 +670,7 @@ function buildShapeFromOutlinePoints(
 }
 
 function buildHorizontalRoomGeometry(room: HousePlanRoom2D, edgeOffset = 0) {
-  const points = Math.abs(edgeOffset) > 0.001
+  const points = edgeOffset > 0.001
     ? offsetRoomOutlinePoints(room, edgeOffset)
     : getRoomOutlinePoints(room);
   const geometry = new THREE.ShapeGeometry(
@@ -682,7 +682,7 @@ function buildHorizontalRoomGeometry(room: HousePlanRoom2D, edgeOffset = 0) {
 }
 
 function buildRoomEdgeBandGeometry(room: HousePlanRoom2D, height: number, edgeOffset = 0) {
-  const outline = Math.abs(edgeOffset) > 0.001
+  const outline = edgeOffset > 0.001
     ? offsetRoomOutlinePoints(room, edgeOffset)
     : getRoomOutlinePoints(room);
   const vertices: number[] = [];
@@ -3059,7 +3059,6 @@ function RoomCeilingCapMesh({
   room,
   floorWorldY,
   wallHeight,
-  wallThickness,
   visible,
   opacity,
   color,
@@ -3073,7 +3072,6 @@ function RoomCeilingCapMesh({
   room: HousePlanRoom2D;
   floorWorldY: number;
   wallHeight: number;
-  wallThickness: number;
   visible: boolean;
   opacity: number;
   color: string;
@@ -3088,19 +3086,13 @@ function RoomCeilingCapMesh({
   const groupRef = useRef<THREE.Group | null>(null);
   const ceilingCapMeshRef = useRef<THREE.Mesh | null>(null);
   const ceilingCapPickEnabledRef = useRef(false);
-  const ceilingEdgeInset = -wallThickness / 2;
   const ceilingCapGeometry = useMemo(
-    () => buildHorizontalRoomGeometry(room, ceilingEdgeInset),
-    [room, ceilingEdgeInset]
+    () => buildHorizontalRoomGeometry(room),
+    [room]
   );
   const ceilingBandGeometry = useMemo(
-    () =>
-      buildRoomEdgeBandGeometry(
-        room,
-        CEILING_THICKNESS_METERS,
-        ceilingEdgeInset
-      ),
-    [room, ceilingEdgeInset]
+    () => buildRoomEdgeBandGeometry(room, CEILING_THICKNESS_METERS),
+    [room]
   );
   const raycastCeilingCap = useCallback(
     (raycaster: THREE.Raycaster, intersects: THREE.Intersection[]) => {
@@ -3575,7 +3567,6 @@ export default function HousePlanRenderer3D({
               room={room}
               floorWorldY={floorYOffset}
               wallHeight={roomWallHeight}
-              wallThickness={roomWallThickness}
               visible={room.ceilingVisible ?? true}
               opacity={ceilingOpacity}
               color={ceilingColor}

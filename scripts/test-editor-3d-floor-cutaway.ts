@@ -177,8 +177,14 @@ assert.match(
 
 assert.match(
   housePlanRendererSource,
-  /if \(Math\.abs\(offset\) <= 0\.001 \|\| openPoints\.length < 3\)[\s\S]*const ceilingEdgeInset = -wallThickness \/ 2;[\s\S]*buildHorizontalRoomGeometry\(room, ceilingEdgeInset\)[\s\S]*buildRoomEdgeBandGeometry\([\s\S]*ceilingEdgeInset/,
-  "Ceiling surfaces and edge bands should inset to the interior wall face instead of overhanging the wall exterior."
+  /const ceilingCapGeometry = useMemo\(\s*\(\) => buildHorizontalRoomGeometry\(room\),[\s\S]*const ceilingBandGeometry = useMemo\(\s*\(\) => buildRoomEdgeBandGeometry\(room, CEILING_THICKNESS_METERS\)/,
+  "Ceiling surfaces and edge bands should terminate on the room wall boundary without an outward or inward offset."
+);
+
+assert.doesNotMatch(
+  housePlanRendererSource,
+  /ceilingEdge(Inset|Offset)/,
+  "Ceiling geometry should not apply a half-wall inset or overhang."
 );
 
 assert.match(
