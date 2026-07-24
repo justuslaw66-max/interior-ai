@@ -27,6 +27,9 @@ const sceneWorkspaceSource = readSource(
 const structureSource = readSource(
   "components/editor/design-page/DesignSceneStructureLayer.tsx"
 );
+const planRendererSource = readSource(
+  "components/editor/renderers/RoomRenderer2D.tsx"
+);
 const guidanceSource = readSource(
   "components/editor/design-page/DesignSceneGuidanceLayer.tsx"
 );
@@ -417,6 +420,26 @@ assert.match(
   structureSource,
   /traceOpeningMode=\{plan\.openingTrace\.enabled && !plan\.underlay\}/,
   "Blank-grid opening tracing should remain disabled while an underlay owns tracing."
+);
+assert.match(
+  structureSource,
+  /gridBounds=\{configuration\.plan\.gridBounds\}/,
+  "The 2D plan renderer should receive whole-plan grid bounds."
+);
+assert.match(
+  adapterSource,
+  /gridBounds: plan\.fitBounds/,
+  "The scene adapter should source 2D grid bounds from the whole-plan fit bounds."
+);
+assert.match(
+  planRendererSource,
+  /const PLAN_GRID_MIN_SIZE_METERS = 80;/,
+  "The Pro plan grid should cover a useful workspace beyond the plan footprint."
+);
+assert.match(
+  planRendererSource,
+  /Math\.floor\(\(gridCenterX - gridWidth \/ 2\) \/ gridStep\) \* gridStep/,
+  "The expanded grid should remain aligned to the global measurement grid."
 );
 assert.match(
   structureSource,

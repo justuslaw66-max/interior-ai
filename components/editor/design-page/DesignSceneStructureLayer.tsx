@@ -111,6 +111,12 @@ export type DesignSceneStructureLayerConfiguration = {
       zones: boolean;
     };
     orientation: Plan2DViewOrientation;
+    gridBounds: {
+      centerX: number;
+      centerZ: number;
+      widthMeters: number;
+      depthMeters: number;
+    };
   };
   renderQuality: NonNullable<SingleRoomRendererProps["renderQuality"]>;
 };
@@ -323,6 +329,7 @@ export function DesignSceneStructureLayer({
           showAnnotations={layers.annotations}
           showZones={layers.zones}
           planViewOrientation={configuration.plan.orientation}
+          gridBounds={configuration.plan.gridBounds}
           interactive={configuration.editorMode !== "present"}
           selectedOverlayId={plan.selectedOverlayId}
           onSelectOverlay={actions.overlays.select}

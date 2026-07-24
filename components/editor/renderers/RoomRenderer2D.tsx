@@ -408,6 +408,8 @@ function HouseRoomComparisonOverlay2D({
 
 const DRAW_WORKSPACE_MIN_SIZE_METERS = 60;
 const DRAW_WORKSPACE_PADDING_METERS = 20;
+const PLAN_GRID_MIN_SIZE_METERS = 80;
+const PLAN_GRID_PADDING_METERS = 20;
 const DRAW_SNAP_VISUAL_EPSILON_METERS =
   EDITOR_GEOMETRY_TOLERANCES.drawSnapMeters;
 
@@ -460,6 +462,12 @@ type RoomRenderer2DProps = {
   theme?: "consumer" | "pro";
   planViewOrientation?: Plan2DViewOrientation;
   gridStep?: number;
+  gridBounds?: {
+    centerX: number;
+    centerZ: number;
+    widthMeters: number;
+    depthMeters: number;
+  };
   openings?: Opening2D[];
   fixedElements?: FixedElement2D[];
   annotations?: Annotation2D[];
@@ -1386,6 +1394,7 @@ export default function RoomRenderer2D({
   theme = "consumer",
   planViewOrientation = "normal",
   gridStep = 0.5,
+  gridBounds,
   openings = [],
   fixedElements = [],
   annotations = [],
@@ -1456,6 +1465,20 @@ export default function RoomRenderer2D({
     : depth;
   const drawSurfaceWidth = workspaceWidth;
   const drawSurfaceDepth = workspaceDepth;
+  const gridWidth = drawRoomMode
+    ? workspaceWidth
+    : Math.max(
+        PLAN_GRID_MIN_SIZE_METERS,
+        (gridBounds?.widthMeters ?? width) + PLAN_GRID_PADDING_METERS
+      );
+  const gridDepth = drawRoomMode
+    ? workspaceDepth
+    : Math.max(
+        PLAN_GRID_MIN_SIZE_METERS,
+        (gridBounds?.depthMeters ?? depth) + PLAN_GRID_PADDING_METERS
+      );
+  const gridCenterX = drawRoomMode ? 0 : gridBounds?.centerX ?? 0;
+  const gridCenterZ = drawRoomMode ? 0 : gridBounds?.centerZ ?? 0;
   const isStraightWallDrawMode = drawRoomMode && drawRoomInteractionMode === "straight_wall";
   const isRectangleWallDrawMode = drawRoomMode && drawRoomInteractionMode === "rectangle_wall";
   const isArcWallDrawMode = drawRoomMode && drawRoomInteractionMode === "arc_wall";
@@ -2850,10 +2873,14 @@ export default function RoomRenderer2D({
 
   const gridLines: Array<{ points: Array<[number, number, number]>; major: boolean; key: string }> = [];
   if (showGrid) {
-    const startX = -workspaceWidth / 2;
-    const endX = workspaceWidth / 2;
-    const startZ = -workspaceDepth / 2;
-    const endZ = workspaceDepth / 2;
+    const startX =
+      Math.floor((gridCenterX - gridWidth / 2) / gridStep) * gridStep;
+    const endX =
+      Math.ceil((gridCenterX + gridWidth / 2) / gridStep) * gridStep;
+    const startZ =
+      Math.floor((gridCenterZ - gridDepth / 2) / gridStep) * gridStep;
+    const endZ =
+      Math.ceil((gridCenterZ + gridDepth / 2) / gridStep) * gridStep;
     const epsilon = EDITOR_GEOMETRY_TOLERANCES.boundaryMeters;
 
     for (let x = startX; x <= endX + epsilon; x += gridStep) {

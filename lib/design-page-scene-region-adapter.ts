@@ -255,6 +255,7 @@ export function buildDesignPageSceneRegionAdapter({
           theme: plan.theme,
           layers: plan.layers,
           orientation: plan.orientation,
+          gridBounds: plan.fitBounds,
         },
         renderQuality: scene.renderQuality,
       },
