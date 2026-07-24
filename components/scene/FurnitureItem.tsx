@@ -3,6 +3,7 @@
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
+import { Edges } from "@react-three/drei/core/Edges";
 import { Line } from "@react-three/drei/core/Line";
 import { Html } from "@react-three/drei/web/Html";
 import { useCursor } from "@react-three/drei/web/useCursor";
@@ -35,7 +36,10 @@ import {
 } from "@/lib/design-page-types";
 import { SnapGuides } from "@/components/SnapGuides";
 import { Measurements } from "@/components/Measurements";
-import { GLBScaledModel } from "@/components/scene/GLBScaledModel";
+import {
+  GLBScaledModel,
+  type GLBLocalRenderBounds,
+} from "@/components/scene/GLBScaledModel";
 import ItemRenderer2D from "@/components/editor/renderers/ItemRenderer2D";
 import { radiansToDeg } from "@/lib/editorScene";
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
@@ -57,8 +61,9 @@ const normalizeModelCandidate = (value: string | null | undefined): string | nul
   return `/assets/models/${raw.replace(/^\/+/, "")}`;
 };
 
-const SELECTION_FOOTPRINT_PADDING_METERS = 0.06;
-const SELECTION_FOOTPRINT_HEIGHT_METERS = 0.012;
+const SELECTION_BOX_SIDE_PADDING_METERS = 0.035;
+const SELECTION_BOX_TOP_PADDING_METERS = 0.035;
+const SELECTION_BOX_BOTTOM_INSET_METERS = 0.012;
 
 type FurnitureProps = {
   product: CatalogItemSchema;
@@ -211,6 +216,8 @@ export function Furniture({
   const [modelExists, setModelExists] = useState<boolean>(false);
   const [runtimeModelUrl, setRuntimeModelUrl] = useState<string | null>(null);
   const [modelLoadState, setModelLoadState] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [modelLocalRenderBounds, setModelLocalRenderBounds] =
+    useState<GLBLocalRenderBounds | null>(null);
   const groupRef = useRef<THREE.Group>(null);
   const shakeUntilRef = useRef(0);
   const placementStartRef = useRef<number | null>(null);
@@ -910,10 +917,27 @@ export function Furniture({
         .filter((value, index, arr): value is string => Boolean(value) && arr.indexOf(value) === index)[0] ?? null,
     [modelUrl, preferredModelUrl]
   );
-  const selectionFootprintWidth =
-    Math.max(width, planningWidth) + SELECTION_FOOTPRINT_PADDING_METERS * 2;
-  const selectionFootprintDepth =
-    Math.max(depth, planningDepth) + SELECTION_FOOTPRINT_PADDING_METERS * 2;
+  const selectionBoxBounds = useMemo(() => {
+    const center = modelLocalRenderBounds?.center ?? [0, 0, 0];
+    const size = modelLocalRenderBounds?.size ?? [width, height, depth];
+    const minY = center[1] - size[1] / 2;
+    const maxY = center[1] + size[1] / 2;
+    const bottomY = minY + SELECTION_BOX_BOTTOM_INSET_METERS;
+    const topY = maxY + SELECTION_BOX_TOP_PADDING_METERS;
+
+    return {
+      position: [center[0], (bottomY + topY) / 2, center[2]] as [
+        number,
+        number,
+        number,
+      ],
+      size: [
+        size[0] + SELECTION_BOX_SIDE_PADDING_METERS * 2,
+        topY - bottomY,
+        size[2] + SELECTION_BOX_SIDE_PADDING_METERS * 2,
+      ] as [number, number, number],
+    };
+  }, [depth, height, modelLocalRenderBounds, width]);
 
   const effectiveModelCalibration: GLBCalibration | undefined = (() => {
     const modelUrlKey = String(product.assets?.modelUrl ?? "").toLowerCase();
@@ -1337,6 +1361,7 @@ export function Furniture({
             variantName={variantName}
             variantRenderAssets={variantRenderAssets}
             pendantCableAdjustment={pendantCableAdjustment}
+            onLocalBoundsChange={setModelLocalRenderBounds}
             onLoadStateChange={(state) => {
               if (state === "loading") setModelLoadState("loading");
               else if (state === "ready") setModelLoadState("ready");
@@ -1395,25 +1420,27 @@ export function Furniture({
         </mesh>
       )}
       {viewMode === "3d" && showSelection && isSelected ? (
-        <Line
+        <mesh
           raycast={() => null}
           renderOrder={24}
-          position={[0, -height / 2 + SELECTION_FOOTPRINT_HEIGHT_METERS, 0]}
+          position={selectionBoxBounds.position}
           userData={{ testId: "selected-furniture-outline" }}
-          points={[
-            [-selectionFootprintWidth / 2, 0, -selectionFootprintDepth / 2],
-            [selectionFootprintWidth / 2, 0, -selectionFootprintDepth / 2],
-            [selectionFootprintWidth / 2, 0, selectionFootprintDepth / 2],
-            [-selectionFootprintWidth / 2, 0, selectionFootprintDepth / 2],
-            [-selectionFootprintWidth / 2, 0, -selectionFootprintDepth / 2],
-          ]}
-          color="#79a9e8"
-          lineWidth={1.75}
-          transparent
-          opacity={0.9}
-          depthTest
-          depthWrite={false}
-        />
+        >
+          <boxGeometry args={selectionBoxBounds.size} />
+          <meshBasicMaterial
+            transparent
+            opacity={0}
+            depthWrite={false}
+            colorWrite={false}
+          />
+          <Edges
+            color="#79a9e8"
+            lineWidth={1.75}
+            depthTest
+            depthWrite={false}
+            threshold={12}
+          />
+        </mesh>
       ) : null}
       {Math.abs(planningWidth - width) > EDITOR_GEOMETRY_TOLERANCES.dimensionMeters ||
       Math.abs(planningDepth - depth) > EDITOR_GEOMETRY_TOLERANCES.dimensionMeters ? (

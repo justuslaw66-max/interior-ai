@@ -10,6 +10,11 @@ import {
   type PendantCableAdjustment,
 } from "@/lib/pendant-light-adjustment";
 
+export type GLBLocalRenderBounds = {
+  center: [number, number, number];
+  size: [number, number, number];
+};
+
 function disposeObjectGeometryAndMaterials(object: THREE.Object3D) {
   object.traverse((child) => {
     const mesh = child as THREE.Mesh;
@@ -57,6 +62,7 @@ export function GLBScaledModel({
   variantRenderAssets,
   pendantCableAdjustment,
   onLoadStateChange,
+  onLocalBoundsChange,
 }: {
   url: string;
   productId?: string;
@@ -71,6 +77,7 @@ export function GLBScaledModel({
   variantRenderAssets?: CatalogItemSchema["variants"][number]["renderAssets"];
   pendantCableAdjustment?: PendantCableAdjustment | null;
   onLoadStateChange?: (state: "loading" | "ready" | "error") => void;
+  onLocalBoundsChange?: (bounds: GLBLocalRenderBounds) => void;
 }) {
   const [loadedScene, setLoadedScene] = useState<THREE.Object3D | null>(null);
   const [upholsteryTexturesLoaded, setUpholsteryTexturesLoaded] = useState(false);
@@ -80,10 +87,15 @@ export function GLBScaledModel({
     roughnessMap?: THREE.Texture;
   }>({});
   const onLoadStateChangeRef = useRef(onLoadStateChange);
+  const onLocalBoundsChangeRef = useRef(onLocalBoundsChange);
 
   useEffect(() => {
     onLoadStateChangeRef.current = onLoadStateChange;
   }, [onLoadStateChange]);
+
+  useEffect(() => {
+    onLocalBoundsChangeRef.current = onLocalBoundsChange;
+  }, [onLocalBoundsChange]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1997,6 +2009,31 @@ export function GLBScaledModel({
 
     return scene;
   }, [loadedScene, width, height, depth, nodeTransforms, calibration, variantColorHex, upholsteryTextures, variantRenderAssets, url, variantName, productId, variantId, pendantCableAdjustment]);
+
+  const localRenderBounds = useMemo<GLBLocalRenderBounds | null>(() => {
+    if (!normalizedModel) return null;
+
+    // Measure a detached clone so the Furniture group's world position and
+    // rotation can never leak into bounds that are consumed in local space.
+    const detachedModel = normalizedModel.clone(true);
+    detachedModel.updateWorldMatrix(true, true);
+    const bounds = new THREE.Box3().setFromObject(detachedModel, true);
+    if (bounds.isEmpty()) return null;
+
+    const center = new THREE.Vector3();
+    const size = new THREE.Vector3();
+    bounds.getCenter(center);
+    bounds.getSize(size);
+    return {
+      center: [center.x, center.y, center.z],
+      size: [size.x, size.y, size.z],
+    };
+  }, [normalizedModel]);
+
+  useEffect(() => {
+    if (!localRenderBounds) return;
+    onLocalBoundsChangeRef.current?.(localRenderBounds);
+  }, [localRenderBounds]);
 
   useEffect(() => {
     if (!normalizedModel || !upholsteryTexturesLoaded) return;
