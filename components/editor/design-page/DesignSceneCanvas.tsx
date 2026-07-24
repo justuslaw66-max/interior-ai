@@ -5,6 +5,7 @@
 import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
 import { Environment } from "@react-three/drei/core/Environment";
+import { Grid } from "@react-three/drei/core/Grid";
 import { Lightformer } from "@react-three/drei/core/Lightformer";
 import { MapControls } from "@react-three/drei/core/MapControls";
 import { OrbitControls } from "@react-three/drei/core/OrbitControls";
@@ -119,6 +120,11 @@ const QUALITY_SHADOW_INTENSITY = 0.58;
 const MIN_SHADOW_CAMERA_HALF_SPAN_METERS = 8;
 const MAX_SHADOW_CAMERA_HALF_SPAN_METERS = 32;
 const SHADOW_CAMERA_PADDING_METERS = 3;
+const WORKSPACE_GRID_CELL_SIZE_METERS = 0.25;
+const WORKSPACE_GRID_SECTION_SIZE_METERS = 1;
+const WORKSPACE_GRID_MIN_SIZE_METERS = 160;
+const WORKSPACE_GRID_PLAN_PADDING_METERS = 60;
+const WORKSPACE_GRID_FADE_DISTANCE_METERS = 80;
 
 export function DesignSceneCanvas({
   state,
@@ -142,6 +148,15 @@ export function DesignSceneCanvas({
         SHADOW_CAMERA_PADDING_METERS
     )
   );
+  const workspaceGridSize = Math.max(
+    WORKSPACE_GRID_MIN_SIZE_METERS,
+    Math.ceil(
+      Math.max(
+        presentationBounds.widthMeters,
+        presentationBounds.depthMeters
+      ) + WORKSPACE_GRID_PLAN_PADDING_METERS
+    )
+  );
   const { planDiagnostics, viewMode } = state;
   const controlsRef = sceneRefs.controls;
 
@@ -157,6 +172,9 @@ export function DesignSceneCanvas({
         data-shadow-camera-half-span={shadowCameraHalfSpan}
         data-tone-mapping="aces"
         data-lighting-model="ambient-hemi-key-fill-ibl"
+        data-workspace-grid={viewMode === "3d" ? "visible" : "hidden"}
+        data-workspace-grid-minor-meters={WORKSPACE_GRID_CELL_SIZE_METERS}
+        data-workspace-grid-major-meters={WORKSPACE_GRID_SECTION_SIZE_METERS}
         data-camera-y={viewMode === "3d" ? String(state.cameraY) : undefined}
         data-plan-2d-orientation={
           viewMode === "2d" ? configuration.planFit.orientation : undefined
@@ -243,28 +261,61 @@ export function DesignSceneCanvas({
         />
         <color attach="background" args={[configuration.backgroundColor]} />
         {viewMode === "3d" ? (
-          <mesh
-            position={[
-              presentationBounds.centerX,
-              -0.09,
-              presentationBounds.centerZ,
-            ]}
-            rotation-x={-Math.PI / 2}
-            receiveShadow={!state.liteSceneEnabled}
-            raycast={() => null}
-          >
-            <planeGeometry
-              args={[
-                Math.max(8, presentationBounds.widthMeters + 5),
-                Math.max(8, presentationBounds.depthMeters + 5),
+          <>
+            <mesh
+              position={[
+                presentationBounds.centerX,
+                -0.1,
+                presentationBounds.centerZ,
               ]}
+              rotation-x={-Math.PI / 2}
+              raycast={() => null}
+            >
+              <planeGeometry args={[workspaceGridSize, workspaceGridSize]} />
+              <meshBasicMaterial
+                color="#f8faf8"
+                toneMapped={false}
+              />
+            </mesh>
+            <mesh
+              position={[
+                presentationBounds.centerX,
+                -0.095,
+                presentationBounds.centerZ,
+              ]}
+              rotation-x={-Math.PI / 2}
+              receiveShadow={!state.liteSceneEnabled}
+              raycast={() => null}
+            >
+              <planeGeometry args={[workspaceGridSize, workspaceGridSize]} />
+              <shadowMaterial
+                color="#66736f"
+                opacity={state.liteSceneEnabled ? 0 : 0.2}
+                transparent
+              />
+            </mesh>
+            <Grid
+              args={[workspaceGridSize, workspaceGridSize]}
+              position={[
+                presentationBounds.centerX,
+                -0.09,
+                presentationBounds.centerZ,
+              ]}
+              cellSize={WORKSPACE_GRID_CELL_SIZE_METERS}
+              cellThickness={0.45}
+              cellColor="#dfe5e4"
+              sectionSize={WORKSPACE_GRID_SECTION_SIZE_METERS}
+              sectionThickness={0.85}
+              sectionColor="#cbd5d4"
+              fadeDistance={WORKSPACE_GRID_FADE_DISTANCE_METERS}
+              fadeStrength={1.35}
+              fadeFrom={1}
+              followCamera={false}
+              infiniteGrid={false}
+              side={THREE.DoubleSide}
+              raycast={() => null}
             />
-            <meshStandardMaterial
-              color="#e9e5dc"
-              roughness={1}
-              metalness={0}
-            />
-          </mesh>
+          </>
         ) : null}
         <LoadingOverlay />
         <SceneProgressBridge onReadyChange={actions.onSceneProgressReadyChange} />
