@@ -432,6 +432,21 @@ assert.match(
   "The scene adapter should source 2D grid bounds from the whole-plan fit bounds."
 );
 assert.match(
+  adapterSource,
+  /coverage: editor\.viewMode === "2d" \? "workspace" : "local"/,
+  "The active Pro guidance grid should use full-workspace coverage in 2D without changing the local 3D grid."
+);
+assert.match(
+  guidanceSource,
+  /coverage=\{configuration\.grid\.coverage\}/,
+  "The guidance layer should forward the selected grid coverage to the active grid renderer."
+);
+assert.match(
+  readSource("components/scene/DesignerGrid.tsx"),
+  /const WORKSPACE_GRID_FADE_DISTANCE_METERS = 200;/,
+  "The visible Pro plan grid should remain present across the usable 2D canvas."
+);
+assert.match(
   planRendererSource,
   /const PLAN_GRID_MIN_SIZE_METERS = 80;/,
   "The Pro plan grid should cover a useful workspace beyond the plan footprint."

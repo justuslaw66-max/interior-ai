@@ -39,6 +39,7 @@ export type DesignSceneGuidanceLayerConfiguration = {
   grid: {
     visible: boolean;
     pulse: boolean;
+    coverage: "local" | "workspace";
   };
   zonesVisible: boolean;
   activeRoomOffset: { x: number; z: number };
@@ -149,6 +150,7 @@ export function DesignSceneGuidanceLayer({
       <DesignerGrid
         visible={configuration.grid.visible}
         pulse={configuration.grid.pulse}
+        coverage={configuration.grid.coverage}
       />
 
       {state.circulationHeatmap ? (

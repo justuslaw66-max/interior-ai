@@ -267,6 +267,7 @@ export function buildDesignPageSceneRegionAdapter({
             !editor.isClientPreview &&
             (editor.editorMode === "design" || editor.editorMode === "adjust"),
           pulse: scene.gridPulse,
+          coverage: editor.viewMode === "2d" ? "workspace" : "local",
         },
         zonesVisible:
           !editor.isClientPreview && editor.editorMode !== "present",
