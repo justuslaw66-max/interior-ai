@@ -1392,9 +1392,10 @@ export function Furniture({
         <mesh
           raycast={() => null}
           renderOrder={24}
+          position={[0, 0.022, 0]}
           userData={{ testId: "selected-furniture-outline" }}
         >
-          <boxGeometry args={[width + 0.05, height + 0.05, depth + 0.05]} />
+          <boxGeometry args={[width + 0.04, height + 0.04, depth + 0.04]} />
           <meshBasicMaterial
             transparent
             opacity={0}
@@ -1402,10 +1403,10 @@ export function Furniture({
             colorWrite={false}
           />
           <Edges
-            scale={1.012}
             color="#79a9e8"
             lineWidth={1.75}
-            depthTest={false}
+            depthTest
+            depthWrite={false}
             threshold={12}
           />
         </mesh>

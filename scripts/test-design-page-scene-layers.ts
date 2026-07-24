@@ -628,8 +628,8 @@ assert.match(
 );
 assert.match(
   furnitureSource,
-  /testId: "selected-furniture-outline"[\s\S]*color="#79a9e8"[\s\S]*lineWidth=\{1\.75\}/,
-  "Selected GLB furniture should retain a soft, visible 3D outline independent of its model materials."
+  /position=\{\[0, 0\.022, 0\]\}[\s\S]*testId: "selected-furniture-outline"[\s\S]*boxGeometry args=\{\[width \+ 0\.04, height \+ 0\.04, depth \+ 0\.04\]\}[\s\S]*color="#79a9e8"[\s\S]*lineWidth=\{1\.75\}[\s\S]*depthTest[\s\S]*depthWrite=\{false\}/,
+  "Selected GLB furniture should retain a soft, floor-aligned, depth-aware 3D outline that does not show hidden edges through scene geometry."
 );
 assert.match(
   scaledModelSource,
