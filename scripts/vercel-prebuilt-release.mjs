@@ -32,13 +32,16 @@ async function stage() {
   const result = run(
     npxExecutable,
     [...pinnedVercelArgs, "deploy", "--prebuilt", "--prod", "--skip-domain", "--archive=tgz", "--yes"],
-    { stdio: ["inherit", "pipe", "inherit"] },
+    { stdio: ["inherit", "pipe", "pipe"] },
   );
-  const deploymentUrl = result.stdout
-    .trim()
-    .split(/\s+/)
-    .reverse()
-    .find((value) => /^https:\/\//.test(value));
+  if (result.stderr) process.stderr.write(result.stderr);
+  const output = `${result.stdout ?? ""}\n${result.stderr ?? ""}`.replace(
+    /\u001b\[[0-9;]*m/g,
+    "",
+  );
+  const deploymentUrl =
+    output.match(/(?:Production|Preview)\s+(https:\/\/[^\s]+)/)?.[1] ??
+    output.match(/https:\/\/[^\s]+\.vercel\.app/)?.[0];
   if (!deploymentUrl) throw new Error("Vercel did not return a staged deployment URL.");
   const staged = {
     schema: "interior-ai.vercel-staged-deployment.v1",
