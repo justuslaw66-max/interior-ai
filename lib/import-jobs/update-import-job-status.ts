@@ -11,6 +11,7 @@ import type {
 type ImportJobRow = {
   id: string;
   status: ImportJobStatus;
+  workflowBlockers: string[];
   normalizedAssetId: string | null;
   catalogItemId: string | null;
 };
@@ -134,6 +135,7 @@ export async function updateImportJobStatus(
         select: {
           id: true;
           status: true;
+          workflowBlockers: true;
           normalizedAssetId: true;
           catalogItemId: true;
         };
@@ -176,7 +178,13 @@ export async function updateImportJobStatus(
 
   const current = await prismaCompat.importJob.findUnique({
     where: { id: input.id },
-    select: { id: true, status: true, normalizedAssetId: true, catalogItemId: true },
+    select: {
+      id: true,
+      status: true,
+      workflowBlockers: true,
+      normalizedAssetId: true,
+      catalogItemId: true,
+    },
   });
 
   if (!current) {
@@ -194,6 +202,17 @@ export async function updateImportJobStatus(
   const nextNormalizedAssetId =
     input.normalizedAssetId !== undefined ? input.normalizedAssetId : current.normalizedAssetId;
   const nextCatalogItemId = input.catalogItemId !== undefined ? input.catalogItemId : current.catalogItemId;
+
+  if (
+    (nextStatus === "approved" || nextStatus === "published") &&
+    current.workflowBlockers.length > 0
+  ) {
+    throw new ImportJobUpdateValidationError(
+      `Cannot move import job ${input.id} to ${nextStatus} while workflow blockers remain: ${current.workflowBlockers.join(
+        ", "
+      )}.`
+    );
+  }
 
   if ((nextStatus === "approved" || nextStatus === "published") && !nextNormalizedAssetId) {
     throw new ImportJobUpdateValidationError(

@@ -8,43 +8,19 @@
  */
 
 import crypto from "node:crypto";
-import fs from "node:fs";
-import path from "node:path";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import { test, expect } from "./fixtures";
+import { getE2EBaseUrl, resolveE2EDatabaseUrl } from "./release-environment";
 
-const baseURL = "http://localhost:3000";
+const baseURL = getE2EBaseUrl();
 
 let prismaClient: PrismaClient | null = null;
 
-function resolveDatabaseUrl() {
-  if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
-
-  const candidates = [
-    path.resolve(process.cwd(), ".env.local"),
-    path.resolve(process.cwd(), ".env"),
-  ];
-
-  for (const envPath of candidates) {
-    if (!fs.existsSync(envPath)) continue;
-    const content = fs.readFileSync(envPath, "utf8");
-    const match = content.match(/^DATABASE_URL=(.*)$/m);
-    if (!match?.[1]) continue;
-    const value = match[1].trim().replace(/^"|"$/g, "").replace(/^'|'$/g, "");
-    if (value) {
-      process.env.DATABASE_URL = value;
-      return value;
-    }
-  }
-
-  return undefined;
-}
-
 function getPrismaClient(): PrismaClient {
   if (prismaClient) return prismaClient;
-  const url = resolveDatabaseUrl();
+  const url = resolveE2EDatabaseUrl();
   if (!url) throw new Error("DATABASE_URL is required for share-duplicate smoke tests");
   prismaClient = new PrismaClient({
     adapter: new PrismaPg(new Pool({ connectionString: url })),

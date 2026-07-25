@@ -130,6 +130,7 @@ test.describe("11. Rotation Shortcuts And Presets", () => {
     await expect(precisePreset).toBeVisible();
     await expect(precisePreset).toBeEnabled();
     await precisePreset.click();
+    await expect(page.getByTestId("rotation-angle-label")).toContainText("snap 5 deg");
     await page.keyboard.press("E");
     await expectAngle(page, start + 5);
 
@@ -137,6 +138,7 @@ test.describe("11. Rotation Shortcuts And Presets", () => {
     await expect(freePreset).toBeVisible();
     await expect(freePreset).toBeEnabled();
     await freePreset.click();
+    await expect(page.getByTestId("rotation-angle-label")).toContainText("free");
     await page.keyboard.press("E");
     await expectAngle(page, start + 6);
   });

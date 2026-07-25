@@ -1,37 +1,22 @@
 import crypto from "node:crypto";
-import fs from "node:fs";
-import path from "node:path";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import type { DesignItem, DesignSnapshot } from "../../lib/room-types";
+import { resolveE2EDatabaseUrl } from "./release-environment";
 
 type PrismaJson = Parameters<PrismaClient["design"]["create"]>[0]["data"]["items"];
 
 let prismaClient: PrismaClient | null = null;
 let pgPool: Pool | null = null;
 
-function readEnvDatabaseUrl() {
-  if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
-
-  for (const envPath of [".env.local", ".env"]) {
-    const fullPath = path.resolve(process.cwd(), envPath);
-    if (!fs.existsSync(fullPath)) continue;
-    const content = fs.readFileSync(fullPath, "utf8");
-    const match = content.match(/^DATABASE_URL=(.*)$/m);
-    const value = match?.[1]?.trim().replace(/^"|"$/g, "").replace(/^'|'$/g, "");
-    if (value) {
-      process.env.DATABASE_URL = value;
-      return value;
-    }
-  }
-
-  throw new Error("DATABASE_URL is required for beta smoke tests");
-}
-
 export function getBetaPrismaClient() {
   if (prismaClient) return prismaClient;
-  pgPool = new Pool({ connectionString: readEnvDatabaseUrl() });
+  const databaseUrl = resolveE2EDatabaseUrl();
+  if (!databaseUrl) {
+    throw new Error("DATABASE_URL is required for beta smoke tests");
+  }
+  pgPool = new Pool({ connectionString: databaseUrl });
   prismaClient = new PrismaClient({ adapter: new PrismaPg(pgPool) });
   return prismaClient;
 }
@@ -383,19 +368,18 @@ export async function addAuthCookies(
   sessionToken: string
 ) {
   const expires = Math.floor(Date.now() / 1000) + 24 * 60 * 60;
-  await context.addCookies(
-    [
-      {
-        name: "authjs.session-token",
-        value: sessionToken,
-        url: baseURL,
-        expires,
-        httpOnly: true,
-        sameSite: "Lax" as const,
-        secure: new URL(baseURL).protocol === "https:",
-      },
-    ]
-  );
+  const secure = new URL(baseURL).protocol === "https:";
+  await context.addCookies([
+    {
+      name: secure ? "__Secure-authjs.session-token" : "authjs.session-token",
+      value: sessionToken,
+      url: baseURL,
+      expires,
+      httpOnly: true,
+      sameSite: "Lax" as const,
+      secure,
+    },
+  ]);
 }
 
 export async function cleanupBetaSeed(userId: string) {

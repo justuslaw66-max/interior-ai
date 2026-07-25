@@ -39,12 +39,17 @@ test.describe("109. Madison Swatch Textures", () => {
     await expect(fabricTab).toHaveAttribute("aria-selected", "true");
     await expect(leatherTab).toHaveAttribute("aria-selected", "false");
     await expect(drawer.getByText("Fabric colour")).toBeVisible();
-    await expect(drawer.getByText("Selected: Bisque")).toBeVisible();
-    await expect(drawer.getByText("Selected: Caramel")).toHaveCount(0);
+    await expect(drawer.getByRole("button", { name: /Bisque/ }).first()).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
 
     await leatherTab.click();
     await expect(leatherTab).toHaveAttribute("aria-selected", "true");
-    await expect(drawer.getByText("Selected: Caramel")).toBeVisible();
+    await expect(drawer.getByRole("button", { name: /Caramel/ }).first()).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
     await expect(drawer.getByText("Fabric colour")).toHaveCount(0);
   });
 

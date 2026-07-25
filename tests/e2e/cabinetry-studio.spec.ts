@@ -15,18 +15,27 @@ async function mockPlan(page: import("@playwright/test").Page, plan: "free" | "p
 
 async function dismissBlockingPrompt(page: import("@playwright/test").Page) {
   const overlay = page
-    .locator(".fixed.inset-0.z-50")
+    .locator(".fixed.inset-0.z-50:visible")
     .filter({ hasText: /Upgrade to Pro|Save and sync this design/i })
     .last();
   if (!(await overlay.isVisible().catch(() => false))) return;
 
   const closeButton = overlay
-    .getByRole("button", { name: /Maybe later|Close|Not now/i })
+    .locator("button:visible")
+    .filter({ hasText: /Maybe later|Close|Not now/i })
     .last();
-  if ((await closeButton.count()) > 0) {
-    await closeButton.evaluate((element) => (element as HTMLButtonElement).click());
-    await expect(overlay).toBeHidden({ timeout: 5000 });
+  if ((await closeButton.count()) > 0 && await closeButton.isVisible().catch(() => false)) {
+    await closeButton
+      .click({ force: true, timeout: 2000 })
+      .catch(() => page.keyboard.press("Escape"));
+  } else {
+    await page.keyboard.press("Escape");
   }
+  await expect(
+    page
+      .locator(".fixed.inset-0.z-50:visible")
+      .filter({ hasText: /Upgrade to Pro|Save and sync this design/i }),
+  ).toHaveCount(0, { timeout: 5000 });
 }
 
 async function openDetailedProStudio(page: import("@playwright/test").Page) {

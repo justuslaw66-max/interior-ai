@@ -7,6 +7,7 @@ import {
   openCatalogPreview,
   waitForCatalogReady,
 } from "./variant-test-utils";
+import { confirmPlanTemplateReplacementIfNeeded } from "./plan-template-test-utils";
 
 const DESIGN_STORAGE_KEY = "interior-ai:v1:livingroom-design";
 
@@ -71,6 +72,7 @@ test.describe("17. Smart Placement Smoke", () => {
     }
     await expect(page.getByTestId("apply-furnished-template-studio")).toBeVisible();
     await page.getByTestId("apply-furnished-template-studio").click();
+    await confirmPlanTemplateReplacementIfNeeded(page);
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
       "4 rooms",
     );

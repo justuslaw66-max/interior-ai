@@ -9,10 +9,10 @@ import {
   createBetaSeedDesign,
   disconnectBetaPrismaClient,
 } from "./beta-seed";
+import { confirmPlanTemplateReplacementIfNeeded } from "./plan-template-test-utils";
+import { getE2EBaseUrl } from "./release-environment";
 
-const BASE_URL =
-  process.env.PLAYWRIGHT_BASE_URL ??
-  `http://127.0.0.1:${process.env.PLAYWRIGHT_WEB_SERVER_PORT ?? 3000}`;
+const BASE_URL = getE2EBaseUrl();
 const EDITOR_STORAGE_KEY = "interior-ai:v1:livingroom-design";
 
 async function getFingerprint(locator: Locator) {
@@ -173,16 +173,14 @@ test.describe("00. Beta Smoke Gate", () => {
       await expect(page.getByTestId("apply-furnished-template-studio")).toBeVisible();
       await expect(page.getByTestId(/plan-template-furnishing-marker-studio-.+/).first()).toBeVisible();
       await clickVisibleControl(page.getByTestId("apply-furnished-template-studio"));
-    } else if (
-      await page.getByTestId("plan-start-template").isVisible({ timeout: 5000 }).catch(() => false)
-    ) {
-      const planStartTemplate = page.getByTestId("plan-start-template");
-      await clickVisibleControl(planStartTemplate);
+      await confirmPlanTemplateReplacementIfNeeded(page);
+    } else {
+      await clickVisibleControl(page.getByTestId("editor-command-new-plan"));
+      await expect(page.getByTestId("starter-floor-plan-picker")).toBeVisible();
       await expect(page.getByTestId("apply-furnished-template-studio")).toBeVisible();
       await expect(page.getByTestId(/plan-template-furnishing-marker-studio-.+/).first()).toBeVisible();
       await clickVisibleControl(page.getByTestId("apply-furnished-template-studio"));
-    } else {
-      await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("4 rooms");
+      await confirmPlanTemplateReplacementIfNeeded(page);
     }
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("4 rooms");
     await expect(page.getByTestId("room-setup-step-furnish-meta")).toHaveText(/[1-9]\d* items?/);

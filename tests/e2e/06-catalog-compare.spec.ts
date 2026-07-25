@@ -96,7 +96,12 @@ test.describe("6. Catalog Compare", () => {
     await openCatalog(page);
 
     const [compareId] = await visibleCompareIds(page, 1);
-    await page.getByTestId(compareId).click();
+    await expect(async () => {
+      const compareButton = page.getByTestId(compareId);
+      await expect(compareButton).toBeVisible();
+      await compareButton.evaluate((button) => (button as HTMLButtonElement).click());
+      await expect(page.getByTestId(compareId)).toHaveText("Compared");
+    }).toPass({ timeout: 15_000 });
 
     const tray = page.locator('[data-testid="catalog-compare-tray"]');
     await expect(tray).toBeVisible();

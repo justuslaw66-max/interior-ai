@@ -1,4 +1,5 @@
 import { expect, test } from "./fixtures";
+import { confirmPlanTemplateReplacementIfNeeded } from "./plan-template-test-utils";
 
 test.describe("00. Runtime smoke", () => {
   test("furnished template remains stable without a render loop", async ({ page }) => {
@@ -32,6 +33,7 @@ test.describe("00. Runtime smoke", () => {
     const studioTemplate = page.getByTestId("apply-furnished-template-studio");
     if (await studioTemplate.isVisible({ timeout: 5_000 }).catch(() => false)) {
       await studioTemplate.click();
+      await confirmPlanTemplateReplacementIfNeeded(page);
     }
 
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("4 rooms", {

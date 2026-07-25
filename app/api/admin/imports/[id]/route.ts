@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { canAccessAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
-import { updateImportJobStatus } from "@/lib/import-jobs/update-import-job-status";
+import {
+  ImportJobUpdateValidationError,
+  updateImportJobStatus,
+} from "@/lib/import-jobs/update-import-job-status";
 import type { ImportJobStatus } from "@/lib/import-jobs/types";
 
 type ImportJobDetailRow = {
@@ -119,14 +122,21 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
 
-  await updateImportJobStatus({
-    id,
-    to: status,
-    notes: body.notes,
-    errorMessage: body.errorMessage,
-    normalizedAssetId: body.normalizedAssetId,
-    catalogItemId: body.catalogItemId,
-  });
+  try {
+    await updateImportJobStatus({
+      id,
+      to: status,
+      notes: body.notes,
+      errorMessage: body.errorMessage,
+      normalizedAssetId: body.normalizedAssetId,
+      catalogItemId: body.catalogItemId,
+    });
+  } catch (error) {
+    if (error instanceof ImportJobUpdateValidationError) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+    throw error;
+  }
 
   return NextResponse.json({ ok: true });
 }

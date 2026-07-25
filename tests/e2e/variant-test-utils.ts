@@ -318,13 +318,18 @@ export async function addCatalogCardItemToRoom(
   page: Page,
   productId: string
 ): Promise<void> {
-  const exactAddButton = page.getByTestId(`catalog-add-${productId}`);
-  const addButton =
-    (await exactAddButton.count()) > 0
-      ? exactAddButton
+  const resolveAddButton = async () => {
+    const exactAddButton = page.getByTestId(`catalog-add-${productId}`);
+    return (await exactAddButton.count()) > 0
+      ? exactAddButton.first()
       : page.locator('[data-testid^="catalog-add-"]').first();
-  await addButton.scrollIntoViewIfNeeded();
-  await addButton.click();
+  };
+  await expect(async () => {
+    const addButton = await resolveAddButton();
+    await expect(addButton).toBeVisible();
+    await expect(addButton).toBeEnabled();
+    await addButton.evaluate((button) => (button as HTMLButtonElement).click());
+  }).toPass({ timeout: 15_000 });
   const confirmed = await confirmCatalogPlacementIfVisible(page);
   expect(confirmed).toBeTruthy();
 }

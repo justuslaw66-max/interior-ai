@@ -2,13 +2,14 @@ import type { Page } from "@playwright/test";
 import { test, expect } from "./fixtures";
 import {
   addImportedProductIfReady,
+  getSelectedItemPanel,
   selectImportedFamilyByHint,
   selectImportedProductById,
   waitForCatalogReady,
 } from "./variant-test-utils";
 
 function getVisibleFinishSwatches(page: Page) {
-  return page.getByRole("button", { name: /^Select / });
+  return getSelectedItemPanel(page).getByRole("button", { name: /^Select / });
 }
 
 async function captureSwatchStrip(page: Page): Promise<Buffer | null> {

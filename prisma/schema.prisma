@@ -182,32 +182,36 @@ model ModelAsset {
 }
 
 model ImportJob {
-  id                String          @id @default(cuid())
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-  status            ImportJobStatus @default(received)
-  workflowStage     String?         @default("intake")
-  workflowBlockers  String[]        @default([])
-  nextAction        String?
-  sourceBrand       String?
-  sourceFileName    String
-  sourceFileUrl     String
-  uploadedByUserId  String?
-  notes             String?
-  errorMessage      String?
-  rawMetadataJson   Json?
-  reportJson        Json?
-  rawFileUrl        String?
-  normalizedFileUrl String?
-  optimizedFileUrl  String?
-  thumbnailUrl      String?
-  metadataReportUrl String?
-  qaReportUrl       String?
-  normalizedAssetId String?
-  catalogItemId     String?
-  uploadedBy        User?           @relation(fields: [uploadedByUserId], references: [id], onDelete: SetNull)
-  normalizedAsset   ModelAsset?     @relation(fields: [normalizedAssetId], references: [id], onDelete: SetNull)
-  catalogItem       CatalogItem?    @relation(fields: [catalogItemId], references: [id], onDelete: SetNull)
+  id                           String          @id @default(cuid())
+  createdAt                    DateTime        @default(now())
+  updatedAt                    DateTime        @updatedAt
+  status                       ImportJobStatus @default(received)
+  workflowStage                String?         @default("intake")
+  workflowBlockers             String[]        @default([])
+  nextAction                   String?
+  reviewNotes                  String?
+  dimensionsVerificationStatus String?
+  sourceBrand                  String?
+  sourceSku                    String?
+  sourceProductUrl             String?
+  sourceFileName               String
+  sourceFileUrl                String
+  uploadedByUserId             String?
+  notes                        String?
+  errorMessage                 String?
+  rawMetadataJson              Json?
+  reportJson                   Json?
+  rawFileUrl                   String?
+  normalizedFileUrl            String?
+  optimizedFileUrl             String?
+  thumbnailUrl                 String?
+  metadataReportUrl            String?
+  qaReportUrl                  String?
+  normalizedAssetId            String?
+  catalogItemId                String?
+  uploadedBy                   User?           @relation(fields: [uploadedByUserId], references: [id], onDelete: SetNull)
+  normalizedAsset              ModelAsset?     @relation(fields: [normalizedAssetId], references: [id], onDelete: SetNull)
+  catalogItem                  CatalogItem?    @relation(fields: [catalogItemId], references: [id], onDelete: SetNull)
 
   @@index([status])
   @@index([createdAt])
@@ -429,20 +433,20 @@ model FloorPlanRevision {
 /// revision. Internal source manifests, filenames and reviewer notes are never
 /// projected through this record.
 model FloorPlanRevisionPublicMetadata {
-  revisionId       String            @id
-  createdAt        DateTime          @default(now())
-  projectName      String            @db.VarChar(160)
-  label            String            @db.VarChar(160)
-  flatType         String            @db.VarChar(80)
-  floorAreaSqm     Float?
-  previewUrl       String            @db.VarChar(2048)
-  sourceUrl        String?           @db.VarChar(2048)
-  sourceTitle      String?           @db.VarChar(200)
-  sourcePage       Int?
-  publisher        String            @db.VarChar(160)
-  approvedAt       DateTime
-  approvedByEmail  String            @db.VarChar(320)
-  revision         FloorPlanRevision @relation(fields: [revisionId], references: [id], onDelete: Restrict)
+  revisionId      String            @id
+  createdAt       DateTime          @default(now())
+  projectName     String            @db.VarChar(160)
+  label           String            @db.VarChar(160)
+  flatType        String            @db.VarChar(80)
+  floorAreaSqm    Float?
+  previewUrl      String            @db.VarChar(2048)
+  sourceUrl       String?           @db.VarChar(2048)
+  sourceTitle     String?           @db.VarChar(200)
+  sourcePage      Int?
+  publisher       String            @db.VarChar(160)
+  approvedAt      DateTime
+  approvedByEmail String            @db.VarChar(320)
+  revision        FloorPlanRevision @relation(fields: [revisionId], references: [id], onDelete: Restrict)
 
   @@index([projectName])
   @@index([flatType])

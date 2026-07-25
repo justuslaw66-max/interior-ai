@@ -10,8 +10,10 @@ import {
   createBetaSeedDesign,
   disconnectBetaPrismaClient,
 } from "./beta-seed";
+import { confirmPlanTemplateReplacementIfNeeded } from "./plan-template-test-utils";
+import { getE2EBaseUrl } from "./release-environment";
 
-const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000";
+const BASE_URL = getE2EBaseUrl();
 const ADMIN_EMAIL =
   process.env.PLAYWRIGHT_ADMIN_EMAIL?.trim() ||
   process.env.ADMIN_EMAILS?.split(",")[0]?.trim() ||
@@ -138,9 +140,11 @@ test.describe("19. Staging Signoff Evidence", () => {
     if (await betaStartTemplate.isVisible({ timeout: 5000 }).catch(() => false)) {
       await betaStartTemplate.click();
     } else {
-      await page.getByTestId("plan-start-template").click({ timeout: 5000 });
+      await page.getByTestId("editor-command-new-plan").click();
+      await expect(page.getByTestId("starter-floor-plan-picker")).toBeVisible();
     }
     await page.getByTestId("apply-furnished-template-studio").click();
+    await confirmPlanTemplateReplacementIfNeeded(page);
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("4 rooms");
     await expect(page.getByTestId("room-setup-step-furnish-meta")).toHaveText(/[1-9]\d* items?/);
     const localEditorFingerprint = await getFingerprint(page.getByTestId("qa-editor-snapshot-fingerprint"));

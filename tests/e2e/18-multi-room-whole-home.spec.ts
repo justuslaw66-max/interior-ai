@@ -1,6 +1,7 @@
 import { test, expect } from "./fixtures";
 import type { Locator, Page } from "@playwright/test";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import { confirmPlanTemplateReplacementIfNeeded } from "./plan-template-test-utils";
 
 async function createSampleFloorPlanPdf(): Promise<Buffer> {
   const pdf = await PDFDocument.create();
@@ -417,7 +418,9 @@ test.describe("18. Multi-Room Whole Home", () => {
       (button as HTMLButtonElement).click();
     });
     await expect(page.getByTestId("scene-performance-lite")).toHaveAttribute("data-active", "true");
-    await expect(page.getByText("Lite scene mode enabled")).toBeVisible();
+    await expect(
+      page.getByText("Lite scene mode enabled", { exact: true }).filter({ visible: true }),
+    ).toBeVisible();
     await expect
       .poll(() => page.evaluate(() => window.localStorage.getItem("scene_performance_mode")))
       .toBe("lite");
@@ -1745,6 +1748,7 @@ test.describe("18. Multi-Room Whole Home", () => {
       page.getByTestId(/plan-template-furnishing-marker-studio-.+/).first()
     ).toBeVisible();
     await page.getByTestId("apply-furnished-template-studio").click();
+    await confirmPlanTemplateReplacementIfNeeded(page);
 
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("4 rooms");
     await expect(page.getByTestId("room-setup-step-furnish-meta")).toHaveText(/[1-9]\d* items?/);
