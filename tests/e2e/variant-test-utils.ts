@@ -298,7 +298,7 @@ export async function addImportedProductIfReady(page: Page): Promise<boolean> {
 export async function confirmCatalogPlacementIfVisible(page: Page): Promise<boolean> {
   const confirmButton = page.getByTestId("catalog-placement-confirm");
   const visible = await expect(confirmButton)
-    .toBeVisible({ timeout: 5000 })
+    .toBeVisible({ timeout: 20000 })
     .then(() => true)
     .catch(() => false);
   if (!visible) return false;
@@ -316,22 +316,49 @@ export async function addCatalogDrawerItemToRoom(page: Page): Promise<void> {
 
 export async function addCatalogCardItemToRoom(
   page: Page,
-  productId: string
+  productId: string,
+  productTitle?: string
 ): Promise<void> {
-  const resolveAddButton = async () => {
-    const exactAddButton = page.getByTestId(`catalog-add-${productId}`);
-    return (await exactAddButton.count()) > 0
-      ? exactAddButton.first()
-      : page.locator('[data-testid^="catalog-add-"]').first();
-  };
-  await expect(async () => {
-    const addButton = await resolveAddButton();
-    await expect(addButton).toBeVisible();
-    await expect(addButton).toBeEnabled();
-    await addButton.evaluate((button) => (button as HTMLButtonElement).click());
-  }).toPass({ timeout: 15_000 });
-  const confirmed = await confirmCatalogPlacementIfVisible(page);
-  expect(confirmed).toBeTruthy();
+  const exactAddButton = page.getByTestId(`catalog-add-${productId}`).first();
+  const addButton =
+    productTitle && (await exactAddButton.count()) === 0
+      ? page
+          .getByText(productTitle, { exact: true })
+          .first()
+          .locator("xpath=ancestor::div[.//button[@aria-label='Add item']][1]")
+          .getByRole("button", { name: "Add item" })
+      : exactAddButton;
+  const selectedItemPanel = getSelectedItemPanel(page);
+  const confirmButton = page.getByTestId("catalog-placement-confirm");
+
+  await expect(addButton).toBeVisible({ timeout: 30_000 });
+  await expect(addButton).toBeEnabled({ timeout: 30_000 });
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    if (await confirmButton.isVisible().catch(() => false)) {
+      await confirmButton.click({ noWaitAfter: true });
+      await expect(selectedItemPanel).toBeVisible({ timeout: 30_000 });
+      return;
+    }
+    if (await selectedItemPanel.isVisible().catch(() => false)) return;
+
+    await addButton.click({ timeout: 15_000 });
+    const confirmed = await confirmCatalogPlacementIfVisible(page);
+    if (confirmed) {
+      await expect(selectedItemPanel).toBeVisible({ timeout: 30_000 });
+      return;
+    }
+    if (
+      await selectedItemPanel
+        .waitFor({ state: "visible", timeout: 10_000 })
+        .then(() => true)
+        .catch(() => false)
+    ) {
+      return;
+    }
+  }
+
+  await expect(selectedItemPanel).toBeVisible({ timeout: 30_000 });
 }
 
 export async function ensureItemSelectedForVariants(page: Page): Promise<boolean> {

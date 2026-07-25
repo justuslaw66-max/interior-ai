@@ -419,7 +419,7 @@ test.describe("18. Multi-Room Whole Home", () => {
     });
     await expect(page.getByTestId("scene-performance-lite")).toHaveAttribute("data-active", "true");
     await expect(
-      page.getByText("Lite scene mode enabled", { exact: true }).filter({ visible: true }),
+      page.getByText(/^Lite scene mode enabled(?: for smoother editing)?$/).filter({ visible: true }),
     ).toBeVisible();
     await expect
       .poll(() => page.evaluate(() => window.localStorage.getItem("scene_performance_mode")))
@@ -664,9 +664,10 @@ test.describe("18. Multi-Room Whole Home", () => {
     await page.mouse.move(postFitStart.x, postFitStart.y);
     await expect(page.getByText(/Snap to (corner|wall)/)).toBeVisible();
     await page.mouse.click(postFitStart.x, postFitStart.y);
-    await expect(page.getByTestId("wall-draw-continuation-cue")).toContainText(
-      /Continue from corner|Continue on wall/
+    await expect(page.getByRole("toolbar", { name: "Plan focus controls" })).toContainText(
+      /Drawing room\s*1 corner/
     );
+    await expect(page.getByRole("status").filter({ hasText: "Trace next wall" })).toBeVisible();
     await page.mouse.move(postFitStart.x + wallStepX, postFitStart.y);
     await page.mouse.click(postFitStart.x + wallStepX, postFitStart.y);
     await expectDrawPointCount(page, 2);

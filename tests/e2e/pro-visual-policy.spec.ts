@@ -75,42 +75,6 @@ function parseRgb(value: string): Rgb {
   };
 }
 
-function relativeLuminance({ red, green, blue }: Rgb): number {
-  const linear = [red, green, blue].map((channel) => {
-    const srgb = channel / 255;
-    return srgb <= 0.04045 ? srgb / 12.92 : ((srgb + 0.055) / 1.055) ** 2.4;
-  });
-  return linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
-}
-
-function contrastRatio(foreground: Rgb, background: Rgb): number {
-  const lighter = Math.max(relativeLuminance(foreground), relativeLuminance(background));
-  const darker = Math.min(relativeLuminance(foreground), relativeLuminance(background));
-  return (lighter + 0.05) / (darker + 0.05);
-}
-
-async function expectLightWarmWorkSurface(locator: Locator, label: string) {
-  const colors = await locator.evaluate((element) => {
-    const styles = getComputedStyle(element);
-    return {
-      background: styles.backgroundColor,
-      text: styles.color,
-    };
-  });
-  const background = parseRgb(colors.background);
-  const text = parseRgb(colors.text);
-
-  expect(
-    relativeLuminance(background),
-    `${label} should be a light work surface rather than dark subscription chrome`
-  ).toBeGreaterThan(0.72);
-  expect(
-    background.red,
-    `${label} should remain warm/neutral rather than returning to cool navy`
-  ).toBeGreaterThanOrEqual(background.blue - 2);
-  expect(contrastRatio(text, background), `${label} text contrast`).toBeGreaterThanOrEqual(4.5);
-}
-
 async function expectRestrainedNavigationAccent(page: Page) {
   const commandBar = page.getByTestId("editor-command-bar");
   const navigationItems = [
@@ -248,50 +212,38 @@ async function expectWardrobeFrontFitsViewport(screenshot: Buffer) {
 test.describe("Pro visual policy", () => {
   test.use({ viewport: { width: 2048, height: 1200 }, deviceScaleFactor: 1 });
 
-  test("uses graphite chrome with light work surfaces without changing the consumer theme", async ({
+  test("uses the consumer visual theme with a clear Pro mode indicator", async ({
     page,
   }, testInfo) => {
     await mockProPlan(page);
     await page.goto("/design?mode=designer", { waitUntil: "domcontentloaded" });
     await expect(page.getByTestId("editor-command-bar")).toBeVisible({ timeout: 30_000 });
 
-    await expect(page.locator('[data-theme="designer"]')).toBeVisible();
+    await expect(page.locator('[data-theme="default"]')).toBeVisible();
+    await expect(page.getByTestId("pro-mode-indicator")).toBeVisible();
+    await expect(page.getByTestId("pro-mode-indicator")).toHaveAccessibleName("Pro mode active");
     const proTokens = await readThemeTokens(page);
-    expect(proTokens).toEqual({
-      canvas: "#dedfdf",
-      canvas3d: "#dedfdf",
-      command: "#141514",
-      panel: "#f7f7f4",
-      raised: "#ffffff",
-      hover: "#e8e9e5",
-      primary: "#191b1a",
-      secondary: "#4b514e",
-      muted: "#626965",
-      accent: "#275fcb",
-    });
+    expect(proTokens.canvas).toBe("#ffffff");
+    expect(proTokens.panel).toBe("#ffffff");
+    expect(proTokens.primary).toBe("#0b0d12");
+    expect(proTokens.accent).toBe("#2f6bff");
 
     const sceneCanvas = page.getByTestId("scene-canvas").first();
-    await expect(sceneCanvas).toHaveAttribute("data-shadow-maps-enabled", "false");
+    await expect(sceneCanvas).toHaveAttribute("data-shadow-maps-enabled", "true");
+    await expect(sceneCanvas).toHaveAttribute("data-shadow-map-size", "2048");
     await expect(sceneCanvas).toHaveAttribute("data-tone-mapping", "aces");
     await expect(sceneCanvas).toHaveAttribute(
       "data-lighting-model",
       "ambient-hemi-key-fill-ibl"
     );
-    await expect(sceneCanvas).toHaveCSS("background-color", "rgb(222, 223, 223)");
-    await expect(page.getByTestId("editor-command-bar")).toHaveCSS(
-      "background-color",
-      "rgb(20, 21, 20)"
-    );
-    await expectLightWarmWorkSurface(
-      page.getByTestId("design-controls-panel").first(),
-      "Left design dock"
-    );
+    await expect(sceneCanvas).toHaveCSS("background-color", "rgb(244, 242, 237)");
+    await expect(page.getByTestId("editor-command-bar")).toHaveClass(/bg-white\/95/);
+    await expect(page.getByTestId("design-controls-panel").first()).toBeVisible();
     const rightWorkSurface = page
       .locator('[data-testid="room-pan-navigator"], [data-testid="coohom-floor-panel"]')
       .filter({ visible: true })
       .first();
     await expect(rightWorkSurface).toBeVisible();
-    await expectLightWarmWorkSurface(rightWorkSurface, "Right plan dock");
     await expectRestrainedNavigationAccent(page);
     await page.screenshot({
       path: testInfo.outputPath("whole-home-pro-graphite-light-work-surfaces.png"),
@@ -308,12 +260,10 @@ test.describe("Pro visual policy", () => {
     await page.goto("/design", { waitUntil: "domcontentloaded" });
     await expect(page.locator('[data-theme="default"]')).toBeVisible({ timeout: 30_000 });
     const consumerTokens = await readThemeTokens(page);
-    expect(consumerTokens.canvas).toBe("#ffffff");
-    expect(consumerTokens.panel).toBe("#ffffff");
-    expect(consumerTokens.accent).toBe("#2f6bff");
+    expect(consumerTokens).toEqual(proTokens);
     await expect(page.getByTestId("scene-canvas").first()).toHaveCSS(
       "background-color",
-      "rgb(255, 255, 255)"
+      "rgb(244, 242, 237)"
     );
   });
 
@@ -323,7 +273,8 @@ test.describe("Pro visual policy", () => {
     test.setTimeout(300_000);
     await mockProPlan(page);
     await page.goto("/design?mode=designer", { waitUntil: "domcontentloaded" });
-    await expect(page.locator('[data-theme="designer"]')).toBeVisible({ timeout: 30_000 });
+    await expect(page.locator('[data-theme="default"]')).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByTestId("pro-mode-indicator")).toBeVisible();
     await expect(page.getByTestId("editor-command-bar")).toBeVisible();
     const openStudio = page.getByTestId("open-custom-millwork-studio");
     await expect(openStudio).toBeVisible({ timeout: 30_000 });

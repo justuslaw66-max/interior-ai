@@ -305,18 +305,25 @@ export function buildBetaDesignSnapshot(): DesignSnapshot {
 
 export async function createBetaSeedDesign(options: { email?: string } = {}) {
   const prisma = getBetaPrismaClient();
-  let user: Awaited<ReturnType<typeof prisma.user.create>> | null = null;
+  const requestedEmail = options.email?.trim();
+  let user = requestedEmail
+    ? await prisma.user.findUnique({ where: { email: requestedEmail } })
+    : null;
+  let userCreated = false;
   let lastCreateError: unknown = null;
-  for (let attempt = 0; attempt < 3; attempt += 1) {
+  for (let attempt = 0; !user && attempt < 3; attempt += 1) {
     const userId = betaId("user");
-    const email = options.email ?? `${betaId("beta-smoke")}@example.com`;
+    const email = requestedEmail ?? `${betaId("beta-smoke")}@example.com`;
     try {
       user = await prisma.user.create({
         data: { id: userId, email, name: "Beta Smoke User", plan: "free" },
       });
-      break;
+      userCreated = true;
     } catch (error) {
       lastCreateError = error;
+      if (requestedEmail) {
+        user = await prisma.user.findUnique({ where: { email: requestedEmail } });
+      }
     }
   }
   if (!user) {
@@ -359,6 +366,7 @@ export async function createBetaSeedDesign(options: { email?: string } = {}) {
     sessionToken,
     shareToken,
     snapshot,
+    userCreated,
   };
 }
 
@@ -382,9 +390,27 @@ export async function addAuthCookies(
   ]);
 }
 
-export async function cleanupBetaSeed(userId: string) {
+type BetaSeedCleanupTarget = {
+  userId: string;
+  designId: string;
+  sessionToken: string;
+  userCreated: boolean;
+};
+
+export async function cleanupBetaSeed(target: string | BetaSeedCleanupTarget) {
   const prisma = getBetaPrismaClient();
-  await prisma.design.deleteMany({ where: { userId } }).catch(() => {});
-  await prisma.session.deleteMany({ where: { userId } }).catch(() => {});
-  await prisma.user.deleteMany({ where: { id: userId } }).catch(() => {});
+  if (typeof target === "string") {
+    await prisma.design.deleteMany({ where: { userId: target } }).catch(() => {});
+    await prisma.session.deleteMany({ where: { userId: target } }).catch(() => {});
+    await prisma.user.deleteMany({ where: { id: target } }).catch(() => {});
+    return;
+  }
+
+  await prisma.design.deleteMany({ where: { id: target.designId } }).catch(() => {});
+  await prisma.session
+    .deleteMany({ where: { sessionToken: target.sessionToken } })
+    .catch(() => {});
+  if (target.userCreated) {
+    await prisma.user.deleteMany({ where: { id: target.userId } }).catch(() => {});
+  }
 }

@@ -281,8 +281,8 @@ export default async function SharePage({
       ) : null}
       <ShareTracking shareToken={shareToken} designId={design.id} />
       <header className="mx-auto max-w-6xl px-6 pt-6">
-        <div className="flex items-start justify-between gap-4">
-          <div>
+        <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
             <h1 className="text-xl font-semibold">{design.title}</h1>
             <div className="text-sm text-neutral-600">
               Read-only • {design.style ?? "Style"} • {design.budget ?? "Budget"}

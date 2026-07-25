@@ -61,11 +61,11 @@ export default function SharePageActions({ shareToken, title }: SharePageActions
 
   return (
     <>
-      <div className="flex flex-col items-end gap-2">
+      <div className="flex w-full min-w-0 flex-col items-stretch gap-2 sm:w-auto sm:items-end">
         <div className="rounded-lg bg-white px-3 py-2 text-xs shadow">
           Interior AI (Beta)
         </div>
-        <div className="flex flex-wrap justify-end gap-2">
+        <div className="flex min-w-0 flex-wrap justify-start gap-2 sm:justify-end">
           <button
             type="button"
             data-testid="share-copy-link"

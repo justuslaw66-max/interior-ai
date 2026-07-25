@@ -10,25 +10,33 @@ const JARON_CASES = [
   {
     name: "3 Seater Slim Arm",
     model: /^3 Seater Recliner Sofa/i,
+    optionKey: "3-seater",
     arm: "Slim arm",
+    armKey: "slim",
     expectedSlug: "jaron-leather-recliner-3-seater-sofa",
   },
   {
     name: "3 Seater Wide Arm",
     model: /^3 Seater Recliner Sofa/i,
+    optionKey: "3-seater",
     arm: "Wide arm",
+    armKey: "wide",
     expectedSlug: "jaron-leather-recliner-3-seater-sofa",
   },
   {
     name: "Extended 3 Seater Slim Arm",
     model: /^Extended 3 Seater Recliner Sofa/i,
+    optionKey: "extended-3-seater",
     arm: "Slim arm",
+    armKey: "slim",
     expectedSlug: "jaron-leather-recliner-extended-3-seater-sofa",
   },
   {
     name: "Extended 3 Seater Wide Arm",
     model: /^Extended 3 Seater Recliner Sofa/i,
+    optionKey: "extended-3-seater",
     arm: "Wide arm",
+    armKey: "wide",
     expectedSlug: "jaron-leather-recliner-extended-3-seater-sofa",
   },
 ] as const;
@@ -73,13 +81,23 @@ test.describe("17. Retailer Link Identity", () => {
     await page.waitForLoadState("domcontentloaded");
     await expect.poll(() => waitForCatalogReady(page), { timeout: 45_000 }).toBeTruthy();
     await expect.poll(() => fillCatalogSearch(page, "Jaron"), { timeout: 45_000 }).toBeTruthy();
-    await addCatalogCardItemToRoom(page, "sofa-real-castlery-jaron-extended-3s-wide-arm");
+    await addCatalogCardItemToRoom(
+      page,
+      "sofa-real-castlery-jaron-extended-3s-wide-arm",
+      "Jaron Recliner Sofa",
+    );
     await page.getByText("Jaron Recliner Sofa").first().waitFor({ timeout: 15_000 });
     const selectedItemPanel = getSelectedItemPanel(page);
 
     for (const testCase of JARON_CASES) {
       await selectedItemPanel.getByRole("button", { name: testCase.model }).click();
+      await expect(
+        selectedItemPanel.getByTestId(`jaron-config-option-${testCase.optionKey}`),
+      ).toHaveAttribute("data-active", "true");
       await selectedItemPanel.getByRole("button", { name: testCase.arm, exact: true }).click();
+      await expect(
+        selectedItemPanel.getByTestId(`jaron-arm-${testCase.armKey}`),
+      ).toHaveAttribute("data-active", "true");
 
       const popupPromise = page.waitForEvent("popup", { timeout: 15_000 });
       await selectedItemPanel.getByRole("button", { name: "View retailer" }).click();

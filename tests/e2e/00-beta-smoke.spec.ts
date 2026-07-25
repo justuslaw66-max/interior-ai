@@ -178,6 +178,9 @@ test.describe("00. Beta Smoke Gate", () => {
       await clickVisibleControl(betaStartTemplate);
       await expect(page.getByTestId("apply-furnished-template-studio")).toBeVisible();
       await expect(page.getByTestId(/plan-template-furnishing-marker-studio-.+/).first()).toBeVisible();
+      await expect(page.getByTestId("apply-furnished-template-studio")).toBeEnabled({
+        timeout: 30_000,
+      });
       await clickVisibleControl(page.getByTestId("apply-furnished-template-studio"));
       await confirmPlanTemplateReplacementIfNeeded(page);
     } else {
@@ -185,6 +188,9 @@ test.describe("00. Beta Smoke Gate", () => {
       await expect(page.getByTestId("starter-floor-plan-picker")).toBeVisible();
       await expect(page.getByTestId("apply-furnished-template-studio")).toBeVisible();
       await expect(page.getByTestId(/plan-template-furnishing-marker-studio-.+/).first()).toBeVisible();
+      await expect(page.getByTestId("apply-furnished-template-studio")).toBeEnabled({
+        timeout: 30_000,
+      });
       await clickVisibleControl(page.getByTestId("apply-furnished-template-studio"));
       await confirmPlanTemplateReplacementIfNeeded(page);
     }

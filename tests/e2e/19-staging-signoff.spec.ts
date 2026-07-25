@@ -11,13 +11,13 @@ import {
   disconnectBetaPrismaClient,
 } from "./beta-seed";
 import { confirmPlanTemplateReplacementIfNeeded } from "./plan-template-test-utils";
-import { getE2EBaseUrl } from "./release-environment";
+import {
+  getE2EBaseUrl,
+  resolveE2EAdminEmail,
+} from "./release-environment";
 
 const BASE_URL = getE2EBaseUrl();
-const ADMIN_EMAIL =
-  process.env.PLAYWRIGHT_ADMIN_EMAIL?.trim() ||
-  process.env.ADMIN_EMAILS?.split(",")[0]?.trim() ||
-  "gate-a3-admin@example.test";
+const ADMIN_EMAIL = resolveE2EAdminEmail();
 
 async function getFingerprint(locator: Locator) {
   await expect(locator).toHaveAttribute("data-fingerprint", /[a-f0-9]{8}/, { timeout: 20000 });
@@ -103,11 +103,11 @@ async function getStableApiDesignFingerprint(
   let previous = "";
   let stableSamples = 0;
 
-  for (let attempt = 0; attempt < 30; attempt += 1) {
+  for (let attempt = 0; attempt < 60; attempt += 1) {
     const current = await getApiDesignFingerprint(request, designId, shareToken);
     if (current === previous) {
       stableSamples += 1;
-      if (stableSamples >= 2) return current;
+      if (stableSamples >= 6) return current;
     } else {
       previous = current;
       stableSamples = 0;
@@ -169,6 +169,11 @@ test.describe("19. Staging Signoff Evidence", () => {
       await page.getByTestId(`load-design-${seed.designId}`).click();
       await expect(page.getByTestId("load-designs-modal")).toBeHidden();
       await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("3 rooms");
+      await expect(page.getByTestId("save-status")).toHaveAttribute(
+        "data-status",
+        "saved",
+        { timeout: 30_000 },
+      );
       const editorSnapshotFingerprint = await getStableFingerprint(
         page.getByTestId("qa-editor-snapshot-fingerprint")
       );
@@ -300,7 +305,7 @@ test.describe("19. Staging Signoff Evidence", () => {
         checkoutBoundaryResponseMode: "test checkout URL",
       });
     } finally {
-      await cleanupBetaSeed(seed.userId);
+      await cleanupBetaSeed(seed);
     }
   });
 });

@@ -41,3 +41,19 @@ export function resolveE2EDatabaseUrl(): string | undefined {
 
   return undefined;
 }
+
+export function resolveE2EAdminEmail(): string {
+  const explicitEmail = process.env.PLAYWRIGHT_ADMIN_EMAIL?.trim();
+  if (explicitEmail) return explicitEmail;
+
+  const configuredAdminEmails =
+    process.env.ADMIN_EMAILS?.trim() ||
+    readEnvValue(path.resolve(process.cwd(), ".env"), "ADMIN_EMAILS") ||
+    readEnvValue(path.resolve(process.cwd(), ".env.local"), "ADMIN_EMAILS");
+  const firstConfiguredEmail = configuredAdminEmails
+    ?.split(",")
+    .map((email) => email.trim())
+    .find(Boolean);
+
+  return firstConfiguredEmail || "gate-a3-admin@example.test";
+}
