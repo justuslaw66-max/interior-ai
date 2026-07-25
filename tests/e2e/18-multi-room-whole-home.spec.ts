@@ -715,7 +715,7 @@ test.describe("18. Multi-Room Whole Home", () => {
     await page.getByTestId("wall-draw-segment-length-1").dblclick();
     await expect(page.getByTestId("wall-draw-segment-length-editor")).toBeVisible();
     await page.getByTestId("wall-draw-segment-length-editor").fill("23234");
-    await expect(page.getByText("Enter a valid wall length.")).toBeVisible();
+    await expect(page.getByText("⚠️ Enter a valid wall length.", { exact: true })).toBeVisible();
     await expect(page.locator('[data-testid^="wall-draw-segment-length-"]')).toHaveCount(0);
   });
 
@@ -1987,7 +1987,7 @@ test.describe("18. Multi-Room Whole Home", () => {
     await expect(page.getByTestId("room-connection-checklist")).toContainText("shared wall");
     await expect(page.getByTestId("room-connection-add-doorway")).toHaveText("Add doorway");
     await page.getByTestId("room-connection-add-doorway").click();
-    await expect(page.getByText("Doorway added")).toBeVisible();
+    await expect(page.getByText("⚠️ Doorway added", { exact: true })).toBeVisible();
     await expect(page.getByTestId("consumer-plan-next-steps")).toContainText("openings placed");
     const selectedRoomSectionToggle = page.getByTestId("plan-section-toggle-selectedRoom");
     if ((await selectedRoomSectionToggle.getAttribute("aria-expanded")) === "false") {
