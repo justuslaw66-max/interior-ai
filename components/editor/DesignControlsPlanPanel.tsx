@@ -1012,6 +1012,9 @@ export default function DesignControlsPlanPanel({
     connections: false,
   }));
   const templatePickerRef = useRef<HTMLDivElement | null>(null);
+  const templatePickerHeadingRef = useRef<HTMLHeadingElement | null>(null);
+  const firstTemplateActionRef = useRef<HTMLButtonElement | null>(null);
+  const templatePickerOpenerRef = useRef<HTMLElement | null>(null);
   const floorFinishPanelOpenSignalRef = useRef(0);
   const pendingSurfaceRevealRef = useRef(false);
   const surfaceWorkspaceRef = useRef<HTMLDivElement | null>(null);
@@ -1047,11 +1050,27 @@ export default function DesignControlsPlanPanel({
   });
   useEffect(() => {
     if (planStartMode !== "template") return;
+    const activeElement =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    if (activeElement && activeElement !== document.body) {
+      templatePickerOpenerRef.current = activeElement;
+    }
     const frameId = window.requestAnimationFrame(() => {
+      templatePickerHeadingRef.current?.focus({ preventScroll: true });
       templatePickerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
     return () => window.cancelAnimationFrame(frameId);
   }, [planStartMode]);
+  const closePlanStartWorkflow = () => {
+    const opener = templatePickerOpenerRef.current;
+    templatePickerOpenerRef.current = null;
+    setPlanStartMode("start");
+    window.requestAnimationFrame(() => {
+      if (opener?.isConnected) opener.focus({ preventScroll: true });
+    });
+  };
 
   const titleClass = dark
     ? "designer-text-primary text-sm font-semibold"
@@ -3484,7 +3503,8 @@ export default function DesignControlsPlanPanel({
                     ? "rounded-lg border border-white/15 px-2.5 py-1.5 text-xs font-semibold text-neutral-200"
                     : "rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-neutral-700"
                 }
-                onClick={() => setPlanStartMode("start")}
+                data-testid="close-plan-start-workflow"
+                onClick={closePlanStartWorkflow}
               >
                 Close
               </button>
@@ -4446,6 +4466,13 @@ export default function DesignControlsPlanPanel({
         <div
           ref={templatePickerRef}
           data-testid="starter-floor-plan-picker"
+          role="region"
+          aria-labelledby="starter-floor-plan-picker-title"
+          onKeyDown={(event) => {
+            if (event.key !== "Escape") return;
+            event.preventDefault();
+            closePlanStartWorkflow();
+          }}
           className={
             dark
               ? "designer-raised mt-3 rounded-xl p-3"
@@ -4453,9 +4480,30 @@ export default function DesignControlsPlanPanel({
           }
         >
           <div className="flex items-center justify-between gap-3">
-            <div className={titleClass}>Choose a floor plan</div>
-            <div className={dark ? "text-xs font-semibold text-neutral-400" : "text-xs font-semibold text-neutral-500"}>
-              {filteredPlanTemplates.length} starter layouts
+            <h2
+              ref={templatePickerHeadingRef}
+              id="starter-floor-plan-picker-title"
+              tabIndex={-1}
+              className={`${titleClass} rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2`}
+            >
+              Choose a floor plan
+            </h2>
+            <div className="flex items-center gap-2">
+              <div className={dark ? "text-xs font-semibold text-neutral-400" : "text-xs font-semibold text-neutral-500"}>
+                {filteredPlanTemplates.length} starter layouts
+              </div>
+              <button
+                type="button"
+                data-testid="skip-to-starter-layouts"
+                className={
+                  dark
+                    ? "rounded-md border border-white/15 px-2 py-1 text-xs font-semibold text-neutral-100 outline-none hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-blue-400"
+                    : "rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs font-semibold text-neutral-700 outline-none hover:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-blue-500"
+                }
+                onClick={() => firstTemplateActionRef.current?.focus()}
+              >
+                Skip to starter layouts
+              </button>
             </div>
           </div>
           <div className="mt-3">
@@ -4521,7 +4569,7 @@ export default function DesignControlsPlanPanel({
             </div>
           </div>
           <div className="mt-2 grid gap-2">
-            {filteredPlanTemplates.map((template) => {
+            {filteredPlanTemplates.map((template, templateIndex) => {
               const areaSqm = template.rooms.reduce(
                 (sum, room) => sum + room.width * room.depth,
                 0
@@ -4687,6 +4735,7 @@ export default function DesignControlsPlanPanel({
                     </span>
                     <span className="mt-2 grid grid-cols-2 gap-2">
                       <button
+                        ref={templateIndex === 0 ? firstTemplateActionRef : undefined}
                         type="button"
                         data-testid={`apply-plan-template-${template.id}`}
                         onClick={() => onApplyPlanTemplate(template)}

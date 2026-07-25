@@ -106,6 +106,38 @@ async function setupSelectedItem(page: Page) {
 }
 
 test.describe("2. Editor Correctness", () => {
+  test("New plan moves focus into the picker and restores it when dismissed", async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      window.localStorage.clear();
+      window.sessionStorage.clear();
+    });
+    await page.goto("/design", { waitUntil: "domcontentloaded" });
+    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30_000 });
+    await page.waitForLoadState("networkidle");
+
+    const newPlan = page.getByTestId("editor-command-new-plan");
+    await expect(newPlan).toBeEnabled();
+    await newPlan.focus();
+    await page.keyboard.press("Enter");
+
+    const picker = page.getByTestId("starter-floor-plan-picker");
+    const pickerHeading = page.getByRole("heading", { name: "Choose a floor plan" });
+    await expect(picker).toBeVisible();
+    await expect(pickerHeading).toBeFocused();
+
+    await page.keyboard.press("Tab");
+    const skipToLayouts = page.getByTestId("skip-to-starter-layouts");
+    await expect(skipToLayouts).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect(page.getByTestId("apply-plan-template-studio")).toBeFocused();
+
+    await page.keyboard.press("Escape");
+    await expect(picker).toBeHidden();
+    await expect(newPlan).toBeFocused();
+  });
+
   test("New plan asks before replacing even when the saved room still has starter geometry", async ({
     page,
   }) => {
