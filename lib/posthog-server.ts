@@ -1,5 +1,6 @@
 import { PostHog } from "posthog-node";
 import { config } from "@/lib/config";
+import { isUsablePostHogKey } from "@/lib/posthog-config";
 
 let posthogClient: PostHog | null = null;
 
@@ -15,7 +16,7 @@ export function getPostHogClient() {
 
   if (!posthogClient) {
     const key = process.env.POSTHOG_KEY || process.env.NEXT_PUBLIC_POSTHOG_KEY;
-    if (!key) {
+    if (!isUsablePostHogKey(key)) {
       if (config.isProdLike) {
         throw new Error("POSTHOG_KEY is required in staging/production");
       }

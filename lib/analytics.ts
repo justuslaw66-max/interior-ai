@@ -2,6 +2,7 @@
 
 import posthog from "posthog-js";
 import { sanitizeObservabilityMeta } from "@/lib/observability";
+import { isUsablePostHogKey } from "@/lib/posthog-config";
 import {
   sanitizeProductPerformanceObservation,
   sanitizeProductTelemetryProperties,
@@ -26,6 +27,7 @@ export function setClientAnalyticsDisabled(disabled: boolean) {
 export function isClientAnalyticsDisabled(): boolean {
   return (
     process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS === "1" ||
+    !isUsablePostHogKey(process.env.NEXT_PUBLIC_POSTHOG_KEY) ||
     (typeof window !== "undefined" && window.__INTERIOR_AI_ANALYTICS_DISABLED__ === true)
   );
 }

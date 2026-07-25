@@ -58,6 +58,12 @@ async function expectNumericAttributeAtLeast(locator: Locator, name: string, min
     .toBeGreaterThanOrEqual(minimum);
 }
 
+async function expectCloudSaveSettled(page: Page) {
+  const saveStatus = page.getByTestId("save-status");
+  await expect(saveStatus).toHaveAttribute("data-source", "cloud", { timeout: 30000 });
+  await expect(saveStatus).toHaveAttribute("data-status", "saved", { timeout: 30000 });
+}
+
 async function clickVisibleControl(locator: Locator) {
   await expect(locator).toBeVisible();
   await expect(locator).toBeEnabled();
@@ -278,6 +284,7 @@ test.describe("00. Beta Smoke Gate", () => {
         { key: EDITOR_STORAGE_KEY, designId: seed.designId },
         { timeout: 10000 }
       );
+      await expectCloudSaveSettled(page);
 
       await page.reload({ waitUntil: "domcontentloaded" });
       await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30000 });
@@ -285,6 +292,7 @@ test.describe("00. Beta Smoke Gate", () => {
         page.getByTestId("qa-editor-snapshot-fingerprint")
       );
       expect(reloadedEditorFingerprint).toMatch(/[a-f0-9]{8}/);
+      await expectCloudSaveSettled(page);
 
       const cloudFingerprint = await getApiDesignFingerprint(request, seed.designId, seed.shareToken);
       expect(cloudFingerprint).toMatch(/[a-f0-9]{8}/);

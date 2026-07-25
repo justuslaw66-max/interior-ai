@@ -4,6 +4,7 @@ import posthog from "posthog-js";
 import { PostHogProvider as PHProvider } from "posthog-js/react";
 import { useEffect } from "react";
 import { setClientAnalyticsDisabled } from "@/lib/analytics";
+import { isUsablePostHogKey } from "@/lib/posthog-config";
 
 function resolvePostHogIngestHost(rawHost?: string): string {
   const fallback = "https://us.i.posthog.com";
@@ -35,18 +36,21 @@ export function PostHogProvider({
   children: React.ReactNode;
   analyticsDisabled?: boolean;
 }) {
+  const postHogKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
+  const effectiveAnalyticsDisabled =
+    analyticsDisabled || !isUsablePostHogKey(postHogKey);
+
   useEffect(() => {
-    setClientAnalyticsDisabled(analyticsDisabled);
+    setClientAnalyticsDisabled(effectiveAnalyticsDisabled);
 
     if (typeof window === "undefined") return;
-    if (analyticsDisabled) return;
-    if (!process.env.NEXT_PUBLIC_POSTHOG_KEY) return;
+    if (effectiveAnalyticsDisabled || !isUsablePostHogKey(postHogKey)) return;
 
     const isDevelopment = process.env.NODE_ENV === "development";
     const ingestHost = resolvePostHogIngestHost(process.env.NEXT_PUBLIC_POSTHOG_HOST);
     const uiHost = process.env.NEXT_PUBLIC_POSTHOG_UI_HOST || "https://us.posthog.com";
 
-    posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
+    posthog.init(postHogKey, {
       // In local dev, call PostHog directly to avoid flaky local proxy timeouts.
       api_host: isDevelopment ? ingestHost : "/ingest",
       ui_host: uiHost,
@@ -56,9 +60,9 @@ export function PostHogProvider({
       // Reduce noisy recorder traffic/errors in development.
       disable_session_recording: isDevelopment,
     });
-  }, [analyticsDisabled]);
+  }, [effectiveAnalyticsDisabled, postHogKey]);
 
-  if (analyticsDisabled) {
+  if (effectiveAnalyticsDisabled) {
     return <>{children}</>;
   }
 

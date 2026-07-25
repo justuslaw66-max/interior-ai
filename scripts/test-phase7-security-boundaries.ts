@@ -12,6 +12,7 @@ import {
   parseDesignClaimPayload,
   parseDesignCreatePayload,
 } from "@/lib/design-route-payload";
+import { isUsablePostHogKey } from "@/lib/posthog-config";
 
 const root = process.cwd();
 const read = (relativePath: string) => fs.readFileSync(path.join(root, relativePath), "utf8");
@@ -48,6 +49,16 @@ function testPrivacySanitization() {
   assert.equal(safe?.designId, "design-1");
   assert.equal(safe?.authorization, "[redacted]");
   assert.deepEqual(safe?.nested, { shareToken: "[redacted]", result: "ok" });
+}
+
+function testPostHogConfiguration() {
+  assert.equal(isUsablePostHogKey("phc_live_key"), true);
+  assert.equal(isUsablePostHogKey("  phc_live_key  "), true);
+  assert.equal(isUsablePostHogKey(undefined), false);
+  assert.equal(isUsablePostHogKey(""), false);
+  assert.equal(isUsablePostHogKey("[SENSITIVE]"), false);
+  assert.equal(isUsablePostHogKey("[REDACTED]"), false);
+  assert.equal(isUsablePostHogKey("placeholder"), false);
 }
 
 function testAiContracts() {
@@ -164,6 +175,7 @@ function walk(directory: string): string[] {
 async function main() {
   await testRequestBoundary();
   testPrivacySanitization();
+  testPostHogConfiguration();
   testAiContracts();
   testImportContracts();
   testSourceGuards();
