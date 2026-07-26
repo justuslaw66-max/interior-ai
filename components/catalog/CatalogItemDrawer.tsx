@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { CatalogDetailView } from "@/lib/catalog/view-builders";
 import CatalogPlacementHint from "./CatalogPlacementHint";
@@ -42,6 +42,23 @@ type Props = {
   onSetConfiguration?: (productId: string) => void;
 };
 
+const FOCUSABLE_SELECTOR = [
+  "a[href]",
+  "button:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  '[tabindex]:not([tabindex="-1"])',
+].join(",");
+
+function getFocusableElements(container: HTMLElement): HTMLElement[] {
+  return Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
+    (element) =>
+      element.getAttribute("aria-hidden") !== "true" &&
+      !element.closest('[aria-hidden="true"]')
+  );
+}
+
 export default function CatalogItemDrawer({
   open,
   detail,
@@ -61,6 +78,66 @@ export default function CatalogItemDrawer({
   onSetConfiguration,
 }: Props) {
   const [selectedPurchaseOptionId, setSelectedPurchaseOptionId] = useState<string | null>(null);
+  const titleId = useId();
+  const panelRef = useRef<HTMLElement | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const opener =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const frame = window.requestAnimationFrame(() => {
+      closeButtonRef.current?.focus();
+    });
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const panel = panelRef.current;
+      if (!panel) return;
+
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        onCloseRef.current();
+        return;
+      }
+
+      if (event.key !== "Tab") return;
+      const focusable = getFocusableElements(panel);
+      if (focusable.length === 0) {
+        event.preventDefault();
+        panel.focus();
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement;
+      if (event.shiftKey && (active === first || !panel.contains(active))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (active === last || !panel.contains(active))) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+      if (opener?.isConnected) opener.focus();
+    };
+  }, [open]);
 
   const selectedPurchaseOption = useMemo(() => {
     if (!detail) return null;
@@ -104,20 +181,36 @@ export default function CatalogItemDrawer({
     : undefined;
 
   return createPortal(
-    <aside
-      data-testid="catalog-item-drawer"
-      className="fixed bottom-6 right-4 top-20 z-[90] flex w-[28rem] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl"
-    >
+    <>
+      <div
+        data-testid="catalog-item-drawer-backdrop"
+        className="fixed inset-0 z-[89] bg-transparent"
+        aria-hidden="true"
+        onPointerDown={() => onCloseRef.current()}
+      />
+      <aside
+        ref={panelRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        data-testid="catalog-item-drawer"
+        className="fixed bottom-6 right-4 top-20 z-[90] flex w-[28rem] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl outline-none"
+      >
       <div className="flex items-center justify-between border-b border-neutral-100 px-4 py-3">
         <div>
           <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-500">
             Product preview
           </div>
-          <div className="text-sm font-semibold text-neutral-900">Review exact variant</div>
+          <div id={titleId} className="text-sm font-semibold text-neutral-900">
+            Review exact variant
+          </div>
         </div>
         <button
+          ref={closeButtonRef}
           type="button"
           onClick={onClose}
+          data-testid="catalog-item-drawer-close"
           className="rounded-full border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-neutral-50"
         >
           Close
@@ -482,7 +575,8 @@ export default function CatalogItemDrawer({
           </button>
         </div>
       </div>
-    </aside>,
+      </aside>
+    </>,
     document.body
   );
 }

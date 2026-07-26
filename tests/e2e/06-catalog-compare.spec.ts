@@ -66,6 +66,36 @@ test.describe("6. Catalog Compare", () => {
     await expect(page.getByText("Product details")).toBeVisible();
   });
 
+  test("product drawer receives, contains, and restores keyboard focus", async ({ page }) => {
+    await page.goto("/design");
+    await page.waitForLoadState("domcontentloaded");
+    await openCatalog(page);
+
+    const previewButton = page.locator('[data-testid^="catalog-preview-"]:visible').first();
+    await expect(previewButton).toBeVisible();
+    await previewButton.focus();
+    await page.keyboard.press("Enter");
+
+    const drawer = page.getByTestId("catalog-item-drawer");
+    const closeButton = page.getByTestId("catalog-item-drawer-close");
+    await expect(drawer).toHaveAttribute("role", "dialog");
+    await expect(drawer).toHaveAttribute("aria-modal", "true");
+    await expect(closeButton).toBeFocused();
+
+    await page.keyboard.press("Shift+Tab");
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          Boolean(document.activeElement?.closest('[data-testid="catalog-item-drawer"]'))
+        )
+      )
+      .toBe(true);
+
+    await page.keyboard.press("Escape");
+    await expect(drawer).toBeHidden();
+    await expect(previewButton).toBeFocused();
+  });
+
   test("compare keeps max 3 and replaces oldest", async ({ page }) => {
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
