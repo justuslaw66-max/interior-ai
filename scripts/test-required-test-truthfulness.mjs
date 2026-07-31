@@ -922,6 +922,45 @@ assert.equal(
   );
 }
 
+{
+  const workflow = readFileSync(
+    path.join(process.cwd(), ".github/workflows/ci.yml"),
+    "utf8",
+  );
+  const exactHeadCheckouts = [
+    ...workflow.matchAll(
+      /uses:\s*actions\/checkout@v4[\s\S]{0,180}?ref:\s*\$\{\{ github\.event\.pull_request\.head\.sha \|\| github\.sha \}\}/g,
+    ),
+  ];
+  assert.equal(
+    exactHeadCheckouts.length,
+    3,
+    "every CI checkout must bind pull-request execution to the exact head commit",
+  );
+  const stableJob = workflow.slice(
+    workflow.indexOf("  stable-checks:"),
+    workflow.indexOf("  e2e-full:"),
+  );
+  assert.ok(
+    stableJob.indexOf("Apply database migrations") <
+      stableJob.indexOf("Build strict production-equivalent artifact evidence"),
+    "the fresh PostgreSQL service must be migrated before production smoke",
+  );
+  assert.ok(
+    stableJob.indexOf("Run runtime smoke tests") <
+      stableJob.indexOf("Prepare standalone production evidence bundle"),
+    "only completed smoke evidence may be bundled",
+  );
+  assert.match(stableJob, /if-no-files-found:\s*error/);
+  assert.match(stableJob, /path:\s*\.local\/production-artifact-evidence\/upload\//);
+  assert.match(
+    workflow,
+    /e2e-full:[\s\S]*?if:\s*always\(\)[^\n]*github\.event_name == 'pull_request'/,
+    "the non-blocking advisory inventory must still execute on the verification PR",
+  );
+  assert.match(workflow, /merge-gate:\n\s+name:\s*merge-gate\n/);
+}
+
 const realRepository = validateRequiredTestRepository({ repositoryRoot: process.cwd() });
 assert.deepEqual(realRepository.issues, [], "the checked-in required-test contract must validate itself");
 assert.equal(realRepository.valid, true);

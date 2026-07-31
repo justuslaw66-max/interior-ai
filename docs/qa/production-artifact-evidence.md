@@ -38,6 +38,7 @@ npm run evidence:production:build
 
 npm run evidence:production:smoke
 npm run evidence:production:verify
+npm run evidence:production:bundle
 ```
 
 `evidence:production:build` refuses a dirty tracked tree, any untracked source,
@@ -70,6 +71,32 @@ Generated output is written only under the ignored directory
 - `manifest.json`: canonical UTF-8 provenance manifest;
 - `manifest.json.sha256`: accidental-tamper sidecar for the exact manifest bytes;
 - `runtime-smoke.json`: Playwright JSON report bound to the manifest identity.
+- `upload/ch0016-ch0017-evidence-bundle.tar.gz`: a scanned transport archive
+  containing the exact artifact roots, manifest/report, lockfile identity, and
+  standalone verifier inputs while preserving symlinks;
+- `upload/ch0016-ch0017-evidence-bundle.tar.gz.sha256`: the archive sidecar.
+
+Playwright commit and diff capture is disabled because CI diffs can contain
+configured environment values from workflow source. After constraining its
+cleanup target to the dedicated upload directory, the bundle command removes
+any prior upload candidate, revalidates the complete evidence, scans artifact
+bytes for configured sensitive values, and packages only the approved inputs.
+Raw Playwright traces and other unscanned diagnostics are not upload inputs.
+
+After downloading the GitHub artifact into a fresh directory, verify the archive
+sidecar, extract it, and run:
+
+```sh
+PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA='<workflow-head-sha>' \
+node scripts/production-artifact-evidence.mjs verify-standalone
+```
+
+Standalone mode requires that explicit source SHA, rehashes the extracted
+`.next` and `public` inventory (including preserved symlink identities), checks
+the lockfile, build ID, manifest sidecar, runtime report hash and stable test
+identities, and rejects source/artifact/report disagreement. It does not need a
+Git checkout or `node_modules`; the original run remains responsible for the
+recorded full trace-closure and installed-lockfile checks.
 
 The manifest is an automated report suitable for hashing into the existing
 Phase 15 signed release manifest. The sidecar is an integrity check, not a
@@ -100,10 +127,11 @@ fields, or a repository claim that marks an external control verified.
 
 ## CI behavior and retention
 
-The required `stable-checks` job runs the negative-case contract test, performs
-the strict evidence build with shaped nonfunctional staging placeholders, runs
-runtime smoke against that exact artifact, validates it, and uploads
-`.local/production-artifact-evidence/` with a requested 14-day retention. Placeholder configuration
+The required `stable-checks` job migrates its fresh PostgreSQL service, runs the
+negative-case contract test, performs the strict evidence build with shaped
+nonfunctional staging placeholders, runs runtime smoke against that exact
+artifact, validates it, and uploads only the prepared standalone bundle with a
+requested 14-day retention. Placeholder configuration
 proves application configuration shape only; no external integration call or
 external-control claim follows from it. GitHub execution and artifact retention
 must be confirmed from an actual workflow run.
@@ -138,9 +166,10 @@ process must attach platform evidence without copying secrets.
 
 ## Rollback
 
-Revert the focused CH-0016 implementation commit. That restores the previous
-lenient/dev CI behavior and is therefore a release-integrity rollback, not a
-recommended steady state. No schema, migration, dependency, persisted data,
+If the CH-0017 external-run follow-up is present, revert it before reverting the
+focused CH-0016 implementation commit. That restores the previous lenient/dev
+CI behavior and is therefore a release-integrity rollback, not a recommended
+steady state. No schema, migration-file, dependency-version, persisted data,
 deployment, or external configuration rollback is involved. Generated
 `.local/production-artifact-evidence/` files are ignored and can be regenerated
 from the exact clean candidate; local copies are ephemeral and are not durable

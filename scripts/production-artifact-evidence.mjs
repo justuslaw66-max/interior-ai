@@ -25,6 +25,8 @@ export const PRODUCTION_EVIDENCE_SERVER_COMMAND =
 const DEFAULT_EVIDENCE_DIRECTORY = ".local/production-artifact-evidence";
 const DEFAULT_MANIFEST_PATH = `${DEFAULT_EVIDENCE_DIRECTORY}/manifest.json`;
 const DEFAULT_REPORT_PATH = `${DEFAULT_EVIDENCE_DIRECTORY}/runtime-smoke.json`;
+const DEFAULT_UPLOAD_DIRECTORY = `${DEFAULT_EVIDENCE_DIRECTORY}/upload`;
+const DEFAULT_BUNDLE_PATH = `${DEFAULT_UPLOAD_DIRECTORY}/ch0016-ch0017-evidence-bundle.tar.gz`;
 const GENERATED_SOURCE_CHECK_COMMAND =
   "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/generate-surface-material-runtime.ts --check";
 const BUILD_COMMAND = "npm run build";
@@ -531,24 +533,39 @@ async function inspectTraceInventory(repositoryRoot, artifactFiles) {
   };
 }
 
-export async function inspectProductionArtifact(repositoryRoot) {
+export async function inspectProductionArtifact(
+  repositoryRoot,
+  { requireSymlinkTargets = true, inspectTraces = true } = {},
+) {
   const entries = listArtifactPaths(repositoryRoot);
   const files = [];
   let bytes = 0;
   for (const entry of entries) {
     const type = entry.metadata.isSymbolicLink() ? "symlink" : "file";
     const content = type === "symlink" ? Buffer.from(readlinkSync(entry.absolutePath), "utf8") : null;
-    const target =
-      type === "symlink"
-        ? portableTracePath(
-            realpathSync(repositoryRoot),
-            containedRealPath(
-              repositoryRoot,
-              entry.absolutePath,
-              `Production artifact symlink ${entry.relativePath}`,
-            ),
-          )
-        : undefined;
+    let target;
+    if (type === "symlink") {
+      if (requireSymlinkTargets) {
+        target = portableTracePath(
+          realpathSync(repositoryRoot),
+          containedRealPath(
+            repositoryRoot,
+            entry.absolutePath,
+            `Production artifact symlink ${entry.relativePath}`,
+          ),
+        );
+      } else {
+        target = portableTracePath(
+          repositoryRoot,
+          path.resolve(path.dirname(entry.absolutePath), readlinkSync(entry.absolutePath)),
+        );
+        if (tracePathProhibited(target)) {
+          throw new Error(
+            `Production artifact symlink ${entry.relativePath} targets prohibited path ${target}.`,
+          );
+        }
+      }
+    }
     const digest = content ? sha256(content) : await sha256File(entry.absolutePath);
     const size = content ? content.byteLength : statSync(entry.absolutePath).size;
     if (!content && size !== entry.metadata.size) {
@@ -571,7 +588,9 @@ export async function inspectProductionArtifact(repositoryRoot) {
     .join("");
   const nextBuildId = readFileSync(path.join(repositoryRoot, ".next/BUILD_ID"), "utf8").trim();
   if (!nextBuildId) throw new Error("The Next.js BUILD_ID is empty.");
-  const traceInventory = await inspectTraceInventory(repositoryRoot, files);
+  const traceInventory = inspectTraces
+    ? await inspectTraceInventory(repositoryRoot, files)
+    : null;
   return {
     roots: [...ARTIFACT_ROOTS],
     excludedMutablePaths: [...ARTIFACT_EXCLUSIONS],
@@ -723,6 +742,26 @@ function leakedSensitiveEnvironmentValues(manifestBytes, environment = process.e
     }
   }
   return leaks;
+}
+
+async function sensitiveArtifactEnvironmentValues(repositoryRoot, environment = process.env) {
+  const candidates = Object.entries(environment)
+    .filter(
+      ([name, value]) =>
+        SENSITIVE_ENVIRONMENT_NAME.test(name) &&
+        typeof value === "string" &&
+        value.length >= 8,
+    )
+    .map(([name, value]) => [name, Buffer.from(value)]);
+  const leaks = new Set();
+  for (const entry of listArtifactPaths(repositoryRoot)) {
+    if (!entry.metadata.isFile()) continue;
+    const bytes = readFileSync(entry.absolutePath);
+    for (const [name, value] of candidates) {
+      if (bytes.includes(value)) leaks.add(name);
+    }
+  }
+  return [...leaks].sort(comparePortablePaths);
 }
 
 export async function createProductionEvidenceManifest(options) {
@@ -957,7 +996,13 @@ function readReport(repositoryRoot, test, issues, environment) {
   }
 }
 
-function validateTestRecord(manifest, test, report, issues) {
+function validateTestRecord(
+  manifest,
+  test,
+  report,
+  issues,
+  { requiredTestRepositoryRoot, validateRequiredTestRepository = true } = {},
+) {
   if (
     test.name !== "runtime-smoke" ||
     test.command !== RUNTIME_SMOKE_COMMAND ||
@@ -1029,11 +1074,13 @@ function validateTestRecord(manifest, test, report, issues) {
     issues.push("test report metadata does not identify the recorded production artifact");
   }
   const truthfulness = validateRequiredTestReport({
-    repositoryRoot: path.resolve(import.meta.dirname, ".."),
+    repositoryRoot:
+      requiredTestRepositoryRoot ?? path.resolve(import.meta.dirname, ".."),
     gateId: "ci.production-runtime-smoke",
     report,
     processExitCode: test.processExitCode,
     requireMetadata: false,
+    validateRepository: validateRequiredTestRepository,
   });
   issues.push(...truthfulness.issues.map((issue) => `required runtime smoke: ${issue}`));
 }
@@ -1042,6 +1089,8 @@ export async function validateProductionEvidence({
   repositoryRoot,
   manifestPath,
   requireTests = true,
+  standalone = false,
+  expectedSourceCommitSha,
   environment = process.env,
 }) {
   const root = path.resolve(repositoryRoot);
@@ -1059,15 +1108,23 @@ export async function validateProductionEvidence({
   const leaks = leakedSensitiveEnvironmentValues(bytes.toString("utf8"), environment);
   if (leaks.length > 0) issues.push(`manifest contains sensitive environment values: ${leaks.join(", ")}`);
 
-  let currentSource;
-  try {
-    currentSource = inspectSourceIdentity(root);
-    issues.push(...sourceIssues(manifest.source, currentSource));
-    if (JSON.stringify(manifest.source) !== JSON.stringify(currentSource)) {
-      issues.push("recorded source identity does not match the current checkout");
+  if (standalone) {
+    issues.push(...sourceIssues(manifest.source));
+    if (!/^[0-9a-f]{40,64}$/i.test(expectedSourceCommitSha ?? "")) {
+      issues.push("standalone verification requires an exact expected source commit SHA");
+    } else if (manifest.source?.commitSha !== expectedSourceCommitSha) {
+      issues.push("standalone evidence belongs to another source commit");
     }
-  } catch (error) {
-    issues.push(error instanceof Error ? error.message : String(error));
+  } else {
+    try {
+      const currentSource = inspectSourceIdentity(root);
+      issues.push(...sourceIssues(manifest.source, currentSource));
+      if (JSON.stringify(manifest.source) !== JSON.stringify(currentSource)) {
+        issues.push("recorded source identity does not match the current checkout");
+      }
+    } catch (error) {
+      issues.push(error instanceof Error ? error.message : String(error));
+    }
   }
 
   if (!/^[A-Za-z0-9._:-]{1,128}$/.test(manifest.candidateIdentifier ?? "")) {
@@ -1130,7 +1187,23 @@ export async function validateProductionEvidence({
   }
 
   try {
-    const dependencies = await inspectDependencyIdentity(root);
+    const dependencies = standalone
+      ? await (async () => {
+          const packagePath = path.join(root, "package.json");
+          const lockfilePath = path.join(root, "package-lock.json");
+          if (!existsSync(packagePath)) throw new Error("package.json is missing.");
+          if (!existsSync(lockfilePath)) throw new Error("package-lock.json is missing.");
+          const packageJson = JSON.parse(readFileSync(packagePath, "utf8"));
+          return {
+            packageManager: packageJson.packageManager,
+            lockfile: {
+              path: "package-lock.json",
+              sha256: await sha256File(lockfilePath),
+              version: JSON.parse(readFileSync(lockfilePath, "utf8")).lockfileVersion,
+            },
+          };
+        })()
+      : await inspectDependencyIdentity(root);
     if (manifest.dependencies?.lockfile?.path !== "package-lock.json") {
       issues.push("lockfile path is not canonical");
     }
@@ -1142,7 +1215,10 @@ export async function validateProductionEvidence({
     } else if (dependencies.lockfile.sha256 !== manifest.dependencies?.lockfile?.sha256) {
       issues.push("lockfile SHA-256 mismatch");
     }
-    if (dependencies.installedLockfile.sha256 !== manifest.dependencies?.installedLockfile?.sha256) {
+    if (
+      !standalone &&
+      dependencies.installedLockfile.sha256 !== manifest.dependencies?.installedLockfile?.sha256
+    ) {
       issues.push("installed dependency identity does not match the npm ci result");
     }
     if (manifest.dependencies?.installCommand !== DEPENDENCY_INSTALL_COMMAND) {
@@ -1167,13 +1243,15 @@ export async function validateProductionEvidence({
   }
 
   try {
-    const artifact = await inspectProductionArtifact(root);
+    const artifact = await inspectProductionArtifact(
+      root,
+      standalone ? { requireSymlinkTargets: false, inspectTraces: false } : {},
+    );
     if (artifact.sha256 !== manifest.artifact?.sha256) issues.push("artifact SHA-256 mismatch");
     if (artifact.nextBuildId !== manifest.build?.nextBuildId) {
       issues.push("Next.js BUILD_ID does not match the recorded build");
     }
-    compareTraceInventory(manifest.artifact?.traceInventory, artifact.traceInventory, issues);
-    const currentArtifactRecord = {
+    const currentArtifactCore = {
       roots: artifact.roots,
       excludedMutablePaths: artifact.excludedMutablePaths,
       hashAlgorithm: artifact.hashAlgorithm,
@@ -1181,10 +1259,30 @@ export async function validateProductionEvidence({
       fileCount: artifact.fileCount,
       bytes: artifact.bytes,
       files: artifact.files,
-      traceInventory: artifact.traceInventory,
     };
-    if (JSON.stringify(manifest.artifact) !== JSON.stringify(currentArtifactRecord)) {
+    const { traceInventory: recordedTraceInventory, ...recordedArtifactCore } =
+      manifest.artifact ?? {};
+    if (JSON.stringify(recordedArtifactCore) !== JSON.stringify(currentArtifactCore)) {
       issues.push("artifact file inventory does not match the recorded manifest");
+    }
+    if (standalone) {
+      if (
+        !recordedTraceInventory ||
+        recordedTraceInventory.traceFileCount <= 0 ||
+        recordedTraceInventory.referenceCount <= 0 ||
+        recordedTraceInventory.missingPaths?.length !== 0 ||
+        recordedTraceInventory.prohibitedPaths?.length !== 0
+      ) {
+        issues.push("recorded traced output inventory is incomplete or unsafe");
+      }
+    } else {
+      compareTraceInventory(recordedTraceInventory, artifact.traceInventory, issues);
+      if (
+        JSON.stringify(manifest.artifact) !==
+        JSON.stringify({ ...currentArtifactCore, traceInventory: artifact.traceInventory })
+      ) {
+        issues.push("artifact file inventory does not match the recorded manifest");
+      }
     }
   } catch (error) {
     issues.push(error instanceof Error ? error.message : String(error));
@@ -1264,7 +1362,10 @@ export async function validateProductionEvidence({
     }
     for (const test of manifest.tests) {
       const report = readReport(root, test, issues, environment);
-      validateTestRecord(manifest, test, report, issues);
+      validateTestRecord(manifest, test, report, issues, {
+        requiredTestRepositoryRoot: standalone ? root : undefined,
+        validateRequiredTestRepository: !standalone,
+      });
       if (!canonicalUtcTimestamp(test.completedAt)) {
         issues.push("test evidence timestamp must use valid UTC ISO 8601 format");
       }
@@ -1495,6 +1596,84 @@ async function buildEvidence(repositoryRoot, manifestPath) {
   );
 }
 
+export async function createProductionEvidenceBundle({
+  repositoryRoot,
+  manifestPath = DEFAULT_MANIFEST_PATH,
+  reportPath = DEFAULT_REPORT_PATH,
+  bundlePath = DEFAULT_BUNDLE_PATH,
+  environment = process.env,
+}) {
+  const root = path.resolve(repositoryRoot);
+  if (normalizeRelativePath(bundlePath) !== DEFAULT_BUNDLE_PATH) {
+    throw new Error(
+      `evidence bundle path must be exactly ${DEFAULT_BUNDLE_PATH}`,
+    );
+  }
+  const uploadDirectory = resolveRepositoryPath(
+    root,
+    DEFAULT_UPLOAD_DIRECTORY,
+    "evidence upload directory",
+  );
+  if (uploadDirectory !== path.join(root, DEFAULT_UPLOAD_DIRECTORY)) {
+    throw new Error("evidence upload directory is not the dedicated safe path");
+  }
+  rmSync(uploadDirectory, { recursive: true, force: true });
+  const result = await validateProductionEvidence({
+    repositoryRoot: root,
+    manifestPath,
+    requireTests: true,
+    environment,
+  });
+  if (!result.valid) throw new Error(result.issues.join("; "));
+  const artifactLeaks = await sensitiveArtifactEnvironmentValues(root, environment);
+  if (artifactLeaks.length > 0) {
+    throw new Error(
+      `production artifact contains sensitive environment values: ${artifactLeaks.join(", ")}`,
+    );
+  }
+
+  const bundleInputs = [
+    ".next",
+    "public",
+    ".nvmrc",
+    "package.json",
+    "package-lock.json",
+    "scripts/production-artifact-evidence.mjs",
+    "scripts/required-test-truthfulness.mjs",
+    "scripts/required-test-manifest.json",
+    manifestPath,
+    `${manifestPath}.sha256`,
+    reportPath,
+  ];
+  for (const relativePath of bundleInputs) {
+    const absolutePath = resolveRepositoryPath(root, relativePath, "evidence bundle input");
+    if (!existsSync(absolutePath)) {
+      throw new Error(`evidence bundle input is missing: ${relativePath}`);
+    }
+  }
+  await mkdir(uploadDirectory, { recursive: true });
+  const absoluteBundlePath = resolveRepositoryPath(root, bundlePath, "evidence bundle path");
+  run(
+    "tar",
+    [
+      "-czf",
+      absoluteBundlePath,
+      ...ARTIFACT_EXCLUSIONS.map((excludedPath) => `--exclude=${excludedPath}`),
+      ...bundleInputs,
+    ],
+    { cwd: root, stdio: ["ignore", "pipe", "pipe"] },
+  );
+  const bundleSha256 = await sha256File(absoluteBundlePath);
+  writeFileSync(
+    `${absoluteBundlePath}.sha256`,
+    `${bundleSha256}  ${path.basename(absoluteBundlePath)}\n`,
+  );
+  console.log(
+    `Prepared standalone evidence bundle ${bundleSha256} for ${result.manifest.source.commitSha}.`,
+  );
+  return { bundlePath, bundleSha256, manifest: result.manifest };
+}
+
 async function serveEvidence(repositoryRoot, manifestPath) {
   const result = await validateProductionEvidence({
     repositoryRoot,
@@ -1607,7 +1786,26 @@ async function cli() {
   if (command === "build") await buildEvidence(repositoryRoot, manifestPath);
   else if (command === "serve") await serveEvidence(repositoryRoot, manifestPath);
   else if (command === "smoke") await smokeEvidence(repositoryRoot, manifestPath, reportPath);
-  else if (command === "verify") {
+  else if (command === "bundle") {
+    await createProductionEvidenceBundle({
+      repositoryRoot,
+      manifestPath,
+      reportPath,
+    });
+  } else if (command === "verify-standalone") {
+    const result = await validateProductionEvidence({
+      repositoryRoot,
+      manifestPath,
+      requireTests: true,
+      standalone: true,
+      expectedSourceCommitSha:
+        process.env.PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA?.trim(),
+    });
+    if (!result.valid) throw new Error(result.issues.join("; "));
+    console.log(
+      `Standalone production artifact evidence valid for ${result.manifest.source.commitSha} (${result.manifest.artifact.sha256}, ${result.manifest.build.nextBuildId}).`,
+    );
+  } else if (command === "verify") {
     const result = await validateProductionEvidence({
       repositoryRoot,
       manifestPath,
@@ -1619,7 +1817,7 @@ async function cli() {
     );
   } else {
     throw new Error(
-      "Usage: production-artifact-evidence.mjs build|serve|smoke|verify",
+      "Usage: production-artifact-evidence.mjs build|serve|smoke|bundle|verify|verify-standalone",
     );
   }
 }

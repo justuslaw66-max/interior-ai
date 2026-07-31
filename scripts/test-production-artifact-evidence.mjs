@@ -1,9 +1,12 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import {
+  lstatSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  readlinkSync,
   rmSync,
   symlinkSync,
   writeFileSync,
@@ -16,6 +19,7 @@ import {
   PRODUCTION_EVIDENCE_SERVER_COMMAND,
   canonicalizeProductionEvidenceReport,
   comparePortablePaths,
+  createProductionEvidenceBundle,
   createProductionEvidenceManifest,
   recordProductionEvidenceTest,
   validateProductionEvidence,
@@ -52,6 +56,22 @@ async function fixture({ environmentOverrides = {} } = {}) {
     lockfileVersion: 3,
     packages: {},
   }, null, 2)}\n`);
+  write(root, ".nvmrc", "24.13.0\n");
+  write(
+    root,
+    "scripts/production-artifact-evidence.mjs",
+    readFileSync(path.join(process.cwd(), "scripts/production-artifact-evidence.mjs"), "utf8"),
+  );
+  write(
+    root,
+    "scripts/required-test-truthfulness.mjs",
+    readFileSync(path.join(process.cwd(), "scripts/required-test-truthfulness.mjs"), "utf8"),
+  );
+  write(
+    root,
+    "scripts/required-test-manifest.json",
+    readFileSync(path.join(process.cwd(), "scripts/required-test-manifest.json"), "utf8"),
+  );
   write(root, "generated/runtime.ts", "export const generated = true;\n");
   write(root, "public/asset.txt", "public artifact\n");
   write(root, ".next/BUILD_ID", "build-fixture-001\n");
@@ -63,12 +83,28 @@ async function fixture({ environmentOverrides = {} } = {}) {
     version: 1,
     files: ["../../package.json", "../../node_modules/.package-lock.json"],
   })}\n`);
+  symlinkSync("../../public/asset.txt", path.join(root, ".next/server/public-asset-link"));
+  write(root, ".next/cache/excluded.txt", "mutable cache\n");
+  write(root, ".next/dev/excluded.txt", "development output\n");
+  write(root, ".next/diagnostics/excluded.txt", "diagnostics\n");
+  write(root, ".next/trace/excluded.txt", "trace\n");
   write(root, "node_modules/.package-lock.json", "installed dependency identity\n");
 
   git(root, ["init", "-q"]);
   git(root, ["config", "user.name", "CH-0016 test"]);
   git(root, ["config", "user.email", "ch-0016@example.test"]);
-  git(root, ["add", ".gitignore", "package.json", "package-lock.json", "generated/runtime.ts", "public/asset.txt"]);
+  git(root, [
+    "add",
+    ".gitignore",
+    ".nvmrc",
+    "package.json",
+    "package-lock.json",
+    "scripts/production-artifact-evidence.mjs",
+    "scripts/required-test-truthfulness.mjs",
+    "scripts/required-test-manifest.json",
+    "generated/runtime.ts",
+    "public/asset.txt",
+  ]);
   git(root, ["commit", "-qm", "fixture"]);
 
   const evidenceDirectory = ".local/production-artifact-evidence";
@@ -251,6 +287,131 @@ async function expectRejected(context, expectedText) {
   assert.equal(result.valid, true);
   assert.equal(result.manifest.repositoryEvidence.status, "valid");
   assert.equal(result.manifest.repositoryEvidence.releaseReady, false);
+}
+
+{
+  const context = await fixture();
+  const manifest = readManifest(context.root, context.manifestPath);
+  rmSync(path.join(context.root, ".git"), { recursive: true, force: true });
+  rmSync(path.join(context.root, "node_modules"), { recursive: true, force: true });
+  const result = await validateProductionEvidence({
+    repositoryRoot: context.root,
+    manifestPath: context.manifestPath,
+    requireTests: true,
+    standalone: true,
+    expectedSourceCommitSha: manifest.source.commitSha,
+  });
+  assert.deepEqual(result.issues, []);
+  assert.equal(result.valid, true, "downloaded evidence must verify without Git or node_modules");
+
+  const mismatched = await validateProductionEvidence({
+    repositoryRoot: context.root,
+    manifestPath: context.manifestPath,
+    requireTests: true,
+    standalone: true,
+    expectedSourceCommitSha: "f".repeat(40),
+  });
+  assert.equal(mismatched.valid, false);
+  assert.ok(
+    mismatched.issues.includes("standalone evidence belongs to another source commit"),
+  );
+}
+
+{
+  const context = await fixture();
+  const manifest = readManifest(context.root, context.manifestPath);
+  const bundle = await createProductionEvidenceBundle({
+    repositoryRoot: context.root,
+    manifestPath: context.manifestPath,
+    reportPath: context.reportPath,
+  });
+  const absoluteBundlePath = path.join(context.root, bundle.bundlePath);
+  const archiveBytes = readFileSync(absoluteBundlePath);
+  const archiveSha256 = createHash("sha256").update(archiveBytes).digest("hex");
+  assert.equal(bundle.bundleSha256, archiveSha256);
+  assert.equal(
+    readFileSync(`${absoluteBundlePath}.sha256`, "utf8"),
+    `${archiveSha256}  ${path.basename(absoluteBundlePath)}\n`,
+  );
+
+  const archiveEntries = execFileSync("tar", ["-tzf", absoluteBundlePath], {
+    encoding: "utf8",
+  })
+    .trim()
+    .split("\n")
+    .map((entry) => entry.replace(/\/$/, ""));
+  const allowedFiles = new Set([
+    ".nvmrc",
+    "package.json",
+    "package-lock.json",
+    "scripts/production-artifact-evidence.mjs",
+    "scripts/required-test-truthfulness.mjs",
+    "scripts/required-test-manifest.json",
+    context.manifestPath,
+    `${context.manifestPath}.sha256`,
+    context.reportPath,
+  ]);
+  const allowedDirectories = new Set([
+    ".next",
+    "public",
+    "scripts",
+    ".local",
+    ".local/production-artifact-evidence",
+  ]);
+  for (const entry of archiveEntries) {
+    assert.ok(
+      allowedFiles.has(entry) ||
+        allowedDirectories.has(entry) ||
+        entry.startsWith(".next/") ||
+        entry.startsWith("public/"),
+      `standalone archive contains non-allowlisted input ${entry}`,
+    );
+    assert.equal(
+      /^(?:\.next\/(?:cache|dev|diagnostics|trace))(?:\/|$)/.test(entry),
+      false,
+      `standalone archive contains mutable artifact path ${entry}`,
+    );
+  }
+
+  const extractedRoot = mkdtempSync(path.join(tmpdir(), "ch-0016-bundle-roundtrip-"));
+  execFileSync("tar", ["-xzf", absoluteBundlePath, "-C", extractedRoot]);
+  const extractedLink = path.join(extractedRoot, ".next/server/public-asset-link");
+  assert.equal(lstatSync(extractedLink).isSymbolicLink(), true);
+  assert.equal(readlinkSync(extractedLink), "../../public/asset.txt");
+  const standaloneOutput = execFileSync(
+    process.execPath,
+    ["scripts/production-artifact-evidence.mjs", "verify-standalone"],
+    {
+      cwd: extractedRoot,
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: manifest.source.commitSha,
+      },
+    },
+  );
+  assert.match(standaloneOutput, /Standalone production artifact evidence valid/);
+}
+
+{
+  const context = await fixture();
+  const packagePath = path.join(context.root, "package.json");
+  const packageBefore = readFileSync(packagePath, "utf8");
+  await assert.rejects(
+    () =>
+      createProductionEvidenceBundle({
+        repositoryRoot: context.root,
+        manifestPath: context.manifestPath,
+        reportPath: context.reportPath,
+        bundlePath: "bundle.tar.gz",
+      }),
+    /evidence bundle path must be exactly/,
+  );
+  assert.equal(
+    readFileSync(packagePath, "utf8"),
+    packageBefore,
+    "an unsafe bundle override must be rejected before any repository mutation",
+  );
 }
 
 {
@@ -679,11 +840,26 @@ assert.match(
   /reuseExistingServer: productionArtifactEvidence \? false/,
   "production artifact evidence must never reuse an unrelated listener",
 );
+assert.match(
+  playwrightConfiguration,
+  /captureGitInfo:\s*\{\s*commit:\s*false,\s*diff:\s*false\s*\}/,
+  "portable reports must not capture a source diff that can contain configured secrets",
+);
+const proVisualPlaywrightConfiguration = readFileSync(
+  path.join(process.cwd(), "playwright.pro-visual.config.ts"),
+  "utf8",
+);
+assert.match(
+  proVisualPlaywrightConfiguration,
+  /captureGitInfo:\s*\{\s*commit:\s*false,\s*diff:\s*false\s*\}/,
+  "the required Pro visual report must not capture a secret-bearing CI diff",
+);
 const workflow = readFileSync(path.join(process.cwd(), ".github/workflows/ci.yml"), "utf8");
 assert.equal(workflow.includes('CATALOG_STRICT_VALIDATION: "false"'), false);
 assert.match(workflow, /npm run evidence:production:build/);
 assert.match(workflow, /npm run evidence:production:smoke/);
-assert.match(workflow, /\.local\/production-artifact-evidence\//);
+assert.match(workflow, /npm run evidence:production:bundle/);
+assert.match(workflow, /\.local\/production-artifact-evidence\/upload\//);
 const vercelManifestSource = readFileSync(
   path.join(process.cwd(), "scripts/vercel-output-manifest.mjs"),
   "utf8",

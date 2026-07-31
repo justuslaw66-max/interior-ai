@@ -549,11 +549,30 @@ export function validateRequiredTestReport({
   report,
   processExitCode,
   requireMetadata = true,
+  validateRepository = true,
   expectedSourceCommitSha,
   expectedArtifactSha256,
   environment = process.env,
 }) {
-  const repository = validateRequiredTestRepository({ repositoryRoot });
+  let repository;
+  if (validateRepository) {
+    repository = validateRequiredTestRepository({ repositoryRoot });
+  } else {
+    try {
+      const manifest = loadRequiredTestManifest(repositoryRoot);
+      const gate = manifest.gates.find((entry) => entry.id === gateId);
+      const issues = [];
+      if (gate) validateGateShape(gate, issues);
+      repository = { valid: issues.length === 0, issues, manifest, inventories: new Map() };
+    } catch (error) {
+      repository = {
+        valid: false,
+        issues: [error instanceof Error ? error.message : String(error)],
+        manifest: null,
+        inventories: new Map(),
+      };
+    }
+  }
   const issues = [...repository.issues];
   const gate = repository.manifest?.gates.find((entry) => entry.id === gateId);
   if (!gate) return { valid: false, blocking: true, issues: [...issues, `unknown required-test gate ${gateId}`] };

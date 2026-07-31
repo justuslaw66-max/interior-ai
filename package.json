@@ -22,6 +22,7 @@
     "evidence:production:build": "node scripts/production-artifact-evidence.mjs build",
     "evidence:production:serve": "node scripts/production-artifact-evidence.mjs serve",
     "evidence:production:smoke": "node scripts/production-artifact-evidence.mjs smoke",
+    "evidence:production:bundle": "node scripts/production-artifact-evidence.mjs bundle",
     "evidence:production:verify": "node scripts/production-artifact-evidence.mjs verify",
     "typecheck": "tsc --noEmit --pretty false",
     "test:auth-env-hardening": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-auth-env-hardening.ts && npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-admin-authorization.ts",

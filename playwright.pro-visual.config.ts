@@ -31,6 +31,7 @@ if (requiredTestReportPath) {
 export default defineConfig({
   testDir: "./tests/e2e",
   testMatch: "pro-visual-policy.spec.ts",
+  captureGitInfo: { commit: false, diff: false },
   forbidOnly: true,
   fullyParallel: false,
   timeout: 300_000,

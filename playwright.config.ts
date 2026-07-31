@@ -94,6 +94,7 @@ if (requiredTestReportPath) {
 
 export default defineConfig({
   testDir: "./tests/e2e",
+  captureGitInfo: { commit: false, diff: false },
   forbidOnly: true,
   outputDir: productionArtifactEvidence
     ? ".local/production-artifact-evidence/playwright-output"

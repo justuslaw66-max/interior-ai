@@ -138,7 +138,10 @@ whether the workflow ran for the candidate, or whether uploaded evidence was
 retained for the requested duration. Attach the actual workflow/run/settings
 evidence before treating those controls as verified.
 
-Rollback is one revert of the CH-0017 implementation commit. That would restore
-aggregate-only and advisory ambiguity and is not an acceptable steady state.
-Ignored `.local/required-test-evidence/`, `.vercel` reports, and Playwright
-outputs are regenerated evidence, not source to commit.
+Rollback the external-run follow-up first, then revert the CH-0017 implementation
+commit `c840c06dc2c5e67f463542292bb7391b0f93d731`. That would restore aggregate-only
+and advisory ambiguity and is not an acceptable steady state. Ignored
+`.local/required-test-evidence/`, `.local/production-artifact-evidence/`,
+`.vercel` reports, and Playwright outputs are regenerated evidence, not source
+to commit. GitHub ruleset changes, if separately approved later, require their
+own administrator rollback and are not implied by either repository revert.
