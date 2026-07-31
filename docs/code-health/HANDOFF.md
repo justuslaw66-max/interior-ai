@@ -1,5 +1,7 @@
 # Code health audit handoff
 
+Current superseding status: CH-0001 and CH-0012 repository remediation are complete. CH-0016 is the next READY P1 and has not been started. The latest implementation record is at the end of this handoff.
+
 Audit date: 2026-07-31
 Canonical repository: `/Users/justus/Developer/interior-ai`
 Safety checkpoint: `08bdfe0c5e5c882777dc5da38168ea7db14840ad` on `safety/code-health-pre-audit-20260731`
@@ -204,3 +206,43 @@ The four reported inherited groups remain separate from CH-0001:
 Focused post-closure checks also invalidated the claim that those four groups are the only remaining red evidence. These are not CH-0001 regressions: the design architecture checker is still 594/550 and 361/300 and is masked behind the save-status failure; Phase 8 CPU fingerprinting now passes but initial-JS raw size remains 7,068,799/6,955,000 bytes; Pro visual policy remains 2/4 because the Cabinet Preview opener is hidden in Chromium and WebKit. They require separate CH-0019 batches and must not be folded into the inherited four.
 
 The decision rule selects exactly one next batch: **CH-0012 canonical saved-design routing characterization and redirect/URL boundary**. CH-0002, CH-0007, and CH-0008 rank higher by raw risk but require product decisions; CH-0012 is the highest-risk READY P1 and affects dashboard, duplicate, checkout-success, and direct saved-design entry into a lossy legacy editor. Likely files, required tests, exact future validation commands, and rollback are recorded in the queue and Phase 3 of `04_REFACTOR_ROADMAP.md`. No implementation has started.
+
+The historical selection above is superseded by the completed CH-0012 record below.
+
+---
+
+## CH-0012 canonical saved-design routing — 2026-07-31
+
+Status: **RESOLVED — REPOSITORY-CONTROLLED REMEDIATION COMPLETE** on `fix/ch-0012-canonical-saved-design-routing`. Starting SHA: `62ba966ecb2011e4233c99ce1dcc0641914af008`. The four post-CH-0001 triage documents were isolated first in `195deacba6e22293b4e887dd4b4bb5203028c0fb`. The local implementation commit is the commit containing this record; its resolved SHA is reported after creation in the final Codex response. Nothing was pushed or deployed.
+
+The verified root cause was route selection, not snapshot storage: dashboard, duplicate, and checkout-success callers hard-coded `/design/[id]`, selecting an independent legacy `DesignerCanvas` loader that cast items through `unknown` and omitted modern multi-room, floor-plan/opening, finish/opacity, zone, saved-view, and capability state. Route inventory also found that My Designs could change the loaded state without changing history, denied query loads could retain a prior document under the wrong URL, and successful floor-plan revision copies could retain the source URL.
+
+The editable contract is now `/design?designId=<encoded opaque ID>`. The typed helper emits Consumer/default mode without `mode`; it preserves only verified `mode=designer`, `view=2d`, `workspace=furnish`, and explicitly supplied encoded `floorPlanImport`. It rejects an empty ID and does not forward arbitrary redirects, return targets, or analytics attribution. A URL can request Designer presentation but cannot grant Pro: `/api/me` plan/capabilities remain authoritative. `GET /api/designs/[id]` still requires owner identity or an enabled valid share token and returns 404 otherwise; writes remain owner-only.
+
+Implemented behavior:
+
+- dashboard, duplicate success, and checkout success use the canonical helper; duplicate failure does not navigate and success uses the authoritative returned copy ID;
+- `/design/[id]` is a temporary server redirect with no Prisma/auth load or legacy renderer and forwards only the verified context allowlist;
+- My Designs closes and synchronously pushes the canonical URL, after which the route loader owns history, refresh, loading, and save identity;
+- direct canonical loads wait for session and local-backup hydration, treat IDs as opaque, ignore superseded loads, and restore the prior canonical identity or `/design` after missing/denied/unavailable results;
+- floor-plan revision copies navigate only after the returned copy loads exactly as `"loaded"`; an operation generation invalidated on unmount stops every post-await stale continuation;
+- `MyDesignsDialog` is open-gated and lazy, keeping CH-0012 below the exact starting initial-JS artifact;
+- existing floor-plan import assistant/history URLs were already canonical and remain unchanged; `/share/[shareToken]` remains the separate read-only share/client-preview contract; orphaned `/d/[token]` remains read-only compatibility debt outside CH-0012.
+
+The complete per-entry routing table is in `06_P0_P1_REMEDIATION_QUEUE.md`. No separate recent-design route was found, billing success has no saved-design continuation ID, and no new route architecture was invented.
+
+Final evidence on the exact pre-commit tree:
+
+- PASS: `npm run test:design-editor-routing`; `npm run verify:design-persistence`; `npm run check:code-quality` (1,012 production files, 198 oversized baselines, 554 function-debt baselines, 20 suppression baselines, no runtime cycle or unsafe TypeScript suppression); targeted and expanded ESLint with zero warnings; `npm run typecheck`; `npm run test:floor-plan-revision-copy`; direct `scripts/test-floor-plan-consumer-flow.ts`; `git diff --check`.
+- PASS: `APP_ENV=development npx playwright test tests/e2e/design-editor-routing.spec.ts --project=chromium` — 6/6 in 3.0 minutes. The database-backed fixture verifies complete multi-room structure, openings, finishes/opacity, item identities/transforms, zones, saved views, startup writes/no create, edit/save/reload identity, history/refresh, legacy allowlist redirect, Pro non-escalation, duplicate returned ID/failure behavior, checkout present/missing context, and denied-ID fallback with preserved allowed context.
+- PASS: existing `tests/e2e/16-share-duplicate-smoke.spec.ts` — 4/4 in 16.7 seconds.
+- PASS: `APP_ENV=development npm run build`; inherited lenient-catalog notices and the Turbopack whole-project tracing warning remain.
+- EXPECTED INHERITED FAIL: full lint remains exactly `CatalogPanel.tsx:358` plus `FloorPlanImportAssistant.tsx:294`; design cleanup remains exactly `test-command-bar-save-status.ts:34`; architecture remains 594/550 and 361/300.
+- EXPECTED INHERITED FAIL WITH IMPROVEMENT: the configured Phase 8 initial-JS budget remains red at 7,062,575/6,955,000 raw and 1,159,786/1,130,000 Brotli. The exact CH-0012 starting artifact was 7,068,799 raw / 1,160,288 Brotli, so this batch improves by 6,224 raw / 502 Brotli bytes and introduces no bundle regression.
+- NOT RECLASSIFIED: five Hamilton controlled-vocabulary failures and Pro visual policy 2/4 were not rerun; their source/policy inputs were not changed. No inherited failure was suppressed, rebaselined, or claimed green.
+
+Independent read-only review initially found the My Designs URL/history gap, denied-ID wrong-URL state, floor-plan copy source identity, allowed-context loss, and late navigation after unmount. Each valid finding was fixed and affected checks rerun. Final disposition: **no blockers**. Non-blocking residuals are the lazy dialog's null/chunk-error fallback, unusual external close during pending delete, duplicate success being compositional rather than one monolithic UI sequence, and orphaned read-only `/d/[token]` debt.
+
+Rollback is one `git revert` of the CH-0012 implementation commit; an emergency partial rollback should revert callers first while retaining `/design/[id]` as the compatibility redirect. There is no schema, migration, dependency, persisted-document rewrite, production-data action, push, deployment, or external-control change to reverse.
+
+Next READY P1: **CH-0016 production-equivalent artifact evidence**. Do not start it as part of this batch.

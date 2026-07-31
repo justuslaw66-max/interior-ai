@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession, signIn } from "next-auth/react";
 import { track } from "@/lib/analytics";
+import { buildDesignEditorUrl } from "@/lib/design-editor-url";
 
 type DuplicateDesignButtonProps = {
   sourceDesignId?: string;
@@ -91,7 +92,7 @@ export default function DuplicateDesignButton({
         new_design_id: newDesignId,
       });
 
-      router.push(`/design/${newDesignId}`);
+      router.push(buildDesignEditorUrl({ designId: newDesignId }));
       router.refresh();
     } finally {
       setBusy(false);

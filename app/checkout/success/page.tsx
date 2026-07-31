@@ -1,5 +1,6 @@
 import ConfirmOrderClient from "./confirm-client";
 import Link from "next/link";
+import { buildDesignEditorUrl } from "@/lib/design-editor-url";
 
 export default async function CheckoutSuccessPage({
   searchParams,
@@ -36,7 +37,7 @@ export default async function CheckoutSuccessPage({
         <div className="mt-6 flex flex-col gap-2">
           {designId ? (
             <Link
-              href={`/design/${designId}`}
+              href={buildDesignEditorUrl({ designId })}
               className="rounded-xl bg-neutral-900 px-4 py-2 text-center text-sm text-white"
             >
               Back to this design

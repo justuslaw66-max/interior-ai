@@ -2,7 +2,7 @@
 
 This register is anchored to checkpoint `08bdfe0c5e5c882777dc5da38168ea7db14840ad`. IDs are stable: implementation commits, pull requests, exceptions, and release evidence should cite them without renumbering. P0 means active catastrophic risk, P1 high risk or release blocker, P2 material maintainability/reliability debt, and P3 hygiene. No P0 was confirmed in this audit.
 
-Post-CH-0001 triage was performed on 2026-07-31 at `62ba966ecb2011e4233c99ce1dcc0641914af008`. The current classification is zero unresolved P0 findings, sixteen unresolved P1 findings, and two former P1 findings downgraded to P2 with current evidence. The finding-by-finding evidence, reachability, dependencies, test coverage, remediation scope, rollback, and ordered queue are recorded in `06_P0_P1_REMEDIATION_QUEUE.md`.
+Post-CH-0001 triage was performed on 2026-07-31 at `62ba966ecb2011e4233c99ce1dcc0641914af008`. CH-0012 repository remediation was then completed on `fix/ch-0012-canonical-saved-design-routing` from documentation checkpoint `195deacba6e22293b4e887dd4b4bb5203028c0fb`. The current classification is zero unresolved P0 findings, fifteen unresolved P1 findings, two resolved P1 findings, and two former P1 findings downgraded to P2 with current evidence. The finding-by-finding evidence, reachability, dependencies, test coverage, remediation scope, rollback, and ordered queue are recorded in `06_P0_P1_REMEDIATION_QUEUE.md`.
 
 ## Priority summary
 
@@ -19,7 +19,7 @@ The first ten risks by consequence, exploitability, customer impact, and change 
 9. CH-0013 generated surface payload/drift contract;
 10. CH-0014 per-item 3D resource and event ownership.
 
-CH-0001 was the first READY implementation batch because it was high consequence, narrowly bounded, behavior-preserving for correctly configured production, and did not require a product decision. It is now closed for repository-controlled remediation. CH-0002, CH-0007, and CH-0008 still require explicit policy decisions before changing production semantics. Under the post-closure decision rule, CH-0012 is the highest-risk READY P1 and is the single selected next implementation batch; no implementation is part of this triage.
+CH-0001 and CH-0012 are now closed for repository-controlled remediation. CH-0002, CH-0007, and CH-0008 still require explicit policy decisions before changing production semantics. Under the same decision rule, CH-0016 is now the highest-risk READY P1 and the next eligible batch; it was not started as part of CH-0012.
 
 ## Findings
 
@@ -164,14 +164,15 @@ CH-0001 was the first READY implementation batch because it was high consequence
 ### CH-0012 — Saved-design entry points open a lossy legacy editor
 
 - **Severity:** P1.
-- **Locations/symbols:** `components/DesignsListWithSelection.tsx`; `components/DuplicateDesignButton.tsx`; `app/checkout/success/page.tsx`; `app/design/[id]/page.tsx`; canonical `components/editor/design-page/DesignPageWorkspace.tsx` design-id loading.
-- **Evidence/current behavior:** Dashboard, duplicate, and checkout success link to `/design/[id]`. That route casts items through `unknown`, drops modern multi-room, floor-plan, finish/material and capability state, and renders legacy `DesignerCanvas`. Canonical loading already exists at `/design?designId=...`.
+- **Status:** RESOLVED — REPOSITORY-CONTROLLED REMEDIATION COMPLETE. The local implementation commit is the commit containing this record; its resolved SHA is recorded after creation in the final Codex response.
+- **Locations/symbols:** `lib/design-editor-url.ts:buildDesignEditorUrl`; `app/design/[id]/page.tsx`; `components/DesignsListWithSelection.tsx`; `components/DuplicateDesignButton.tsx`; `app/checkout/success/page.tsx`; `components/editor/design-page/DesignPageWorkspace.tsx`; `components/editor/design-page/DesignPageDialogLayer.tsx`; `lib/useDesignPageFloorPlanLifecycleRegistration.ts`; `lib/useDesignPagePersistence.ts`.
+- **Pre-remediation evidence:** Dashboard, duplicate, and checkout success linked to `/design/[id]`. That route cast items through `unknown`, dropped modern multi-room, floor-plan, finish/material and capability state, and rendered legacy `DesignerCanvas`. The canonical persisted-document loader already existed at `/design?designId=...`. Characterization also found that in-editor My Designs loaded a different design without changing the URL, failed/denied route loads could retain a prior document under the wrong URL, and successful floor-plan revision copies could leave the source identity in the address bar.
 - **Risk:** The same saved design looks or behaves materially differently depending on entry point; users can conclude data was lost.
-- **Improvement:** Add a characterized canonical URL helper/redirect, migrate entry points, retain the legacy component only behind an explicit migration adapter until telemetry/references reach zero.
-- **Expected outcome:** Every saved-design entry opens the same document model, renderer, entitlements, and persistence path.
-- **Tests:** dashboard, duplicate, checkout success, direct old URL, auth redirect, multi-room/floor-plan/material fixture, query preservation, back navigation.
-- **Dependencies/decision:** None if canonical editor is confirmed; inventory external old URLs.
-- **Compatibility:** Behavior-preserving relative to saved document truth; routing changes intentionally remove legacy divergence.
+- **Resolution/current behavior:** All supported editable saved-design entry points use one typed helper and canonical `/design?designId=<opaque-id>` contract. `/design/[id]` is now a temporary server redirect and contains no database load or legacy renderer. Dashboard, successful duplicate response, checkout continuation, in-editor My Designs, refresh/history, and successful floor-plan revision-copy loading converge on the canonical v3 snapshot loader. Missing/denied loads restore the prior canonical identity or `/design`; superseded/unmounted operations cannot pull navigation back. My Designs is loaded on demand so the routing change does not worsen the inherited initial-JS bundle.
+- **Canonical contract:** Consumer is the default with no `mode`; `mode=designer` only requests Designer presentation and never grants entitlement. Only verified `mode=designer`, `view=2d`, `workspace=furnish`, and an explicitly supplied encoded `floorPlanImport` value can accompany the encoded opaque `designId`. Arbitrary redirect, attribution, or destination parameters are not forwarded. Empty IDs are rejected by the helper. The design API remains the owner/enabled-share-token read boundary and owner-only write boundary; `/api/me` plan/capabilities remain the Pro authority.
+- **Regression evidence:** `npm run test:design-editor-routing`; `npm run verify:design-persistence`; final six-case database-backed Chromium spec (6/6 in 3.0 minutes); existing share/duplicate smoke (4/4 in 16.7 seconds); floor-plan revision-copy and consumer-flow guards; focused and expanded zero-warning lint; typecheck; code-quality ratchet; explicit-development production build. The fixture proves full multi-room geometry, openings, finishes/opacity, item identities/transforms, zones, saved views, save/reload identity, no startup create, duplicate returned-ID use, checkout context, legacy redirect filtering, Pro non-escalation, history/refresh, and denied-ID fallback.
+- **Compatibility:** Existing `/design/[id]` bookmarks remain compatible through a non-permanent redirect. `/share/[shareToken]` and the orphaned read-only `/d/[token]` compatibility route are separate share contracts; the latter remains documented debt, not an editable saved-design fallback.
+- **Rollback:** Revert the single CH-0012 implementation commit. A partial emergency rollback should revert callers first while retaining `/design/[id]` as a compatibility redirect. There is no schema, migration, persisted-document rewrite, dependency upgrade, push, or deployment to undo.
 
 ### CH-0013 — Generated surface registry is an unenforced, oversized client contract
 

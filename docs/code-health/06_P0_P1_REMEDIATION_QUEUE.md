@@ -4,19 +4,21 @@ Triage date: 2026-07-31 (Asia/Singapore)
 
 Repository: `/Users/justus/Developer/interior-ai`
 
-Branch: `security/ch-0001-fail-closed-admin-auth`
+Branch: `fix/ch-0012-canonical-saved-design-routing`
 
-HEAD: `62ba966ecb2011e4233c99ce1dcc0641914af008`
+CH-0012 starting HEAD: `62ba966ecb2011e4233c99ce1dcc0641914af008`
 
-This queue is a post-CH-0001 evidence review. It does not authorize implementation, push, deployment, external-control changes, or release promotion. The worktree was clean at entry. Node listeners on ports 3000 and 52401 both resolved with `lsof` to the canonical repository.
+Post-triage documentation checkpoint: `195deacba6e22293b4e887dd4b4bb5203028c0fb`
+
+This queue began as a post-CH-0001 evidence review and now includes the completed CH-0012 repository remediation. It does not authorize another finding, push, deployment, external-control changes, or release promotion. The CH-0012 worktree was clean after the isolated documentation commit. Node listeners on ports 3000 and 52401 both resolved with `lsof` to the canonical repository before code edits.
 
 ## Counts and selected action
 
 - Unresolved P0: **0**.
-- Unresolved P1: **16**.
-- Resolved P1: **1** (`CH-0001`).
+- Unresolved P1: **15**.
+- Resolved P1: **2** (`CH-0001`, `CH-0012`).
 - Former P1 findings downgraded with current evidence: **2** (`CH-0009`, `CH-0014`).
-- Selected next batch: **CH-0012 canonical saved-design routing characterization and redirect/URL boundary**. It is the highest-risk `READY` P1 after higher-ranked decision-blocked findings. No implementation was started.
+- Selected next batch: **CH-0016 production-equivalent artifact evidence**. It is now the highest-risk `READY` P1 after higher-ranked decision-blocked findings. No CH-0016 implementation was started.
 
 ## Classification summary
 
@@ -33,7 +35,7 @@ This queue is a post-CH-0001 evidence review. It does not authorize implementati
 | CH-0009 | P2 | DOWNGRADED_WITH_EVIDENCE | CH-0001 now makes the bounded route allowlisted-admin-only; mutable request-time package execution remains material debt. |
 | CH-0010 | P1 | REQUIRES_PRODUCT_DECISION | Irreversible revocation is fail-safe, but automatic designer sharing changes the user contract. |
 | CH-0011 | P1, conditional | REQUIRES_PRODUCT_DECISION | Legal basis, consent, opt-out, masking, and project-side PostHog state require an owner decision and external verification. |
-| CH-0012 | P1 | READY | Internal links demonstrably target the lossy route while the canonical query route already exists. |
+| CH-0012 | P1, resolved | RESOLVED | Supported editable entry points now converge on the canonical persisted-document loader; legacy bookmarks temporarily redirect. |
 | CH-0013 | P1 | READY | Gate wiring is decision-free; payload restructuring can follow behind parity fixtures. |
 | CH-0014 | P2 | DOWNGRADED_WITH_EVIDENCE | Source shows per-item ownership, but no measured P1 outage, data loss, or security/privacy consequence is currently demonstrated. |
 | CH-0015 | P1 | READY | Invisible focusable drawer content is a concrete accessibility/core-workflow defect and a shared primitive exists. |
@@ -123,10 +125,13 @@ This queue is a post-CH-0001 evidence review. It does not authorize implementati
 
 ### CH-0012 — lossy saved-design routing
 
-- **Current evidence and affected symbols:** `components/DesignsListWithSelection.tsx`, `components/DuplicateDesignButton.tsx`, and `app/checkout/success/page.tsx` link to `/design/[id]`. `app/design/[id]/page.tsx` casts `design.items` through `unknown` and renders legacy `DesignerCanvas`. `components/editor/design-page/DesignPageWorkspace.tsx` already loads `?designId=` through the canonical editor.
-- **Reach and impact:** Dashboard, duplicate, checkout-success, and direct legacy URLs are production-reachable core workflows. There is no direct security impact; the lossy adapter can omit modern room/floor/material/capability meaning and create apparent data loss or divergent saves.
-- **Dependencies and tests:** No product decision if the canonical editor is authoritative; inventory external old links during characterization. Add a named route/helper test plus dashboard/duplicate/checkout/direct-old-URL Playwright coverage using a modern multi-room/floor-plan/material fixture, auth redirects, query preservation, reload, and back navigation. Existing `npm run verify:design-persistence` is required.
-- **Scope and rollback:** First batch: characterize both URLs, add one canonical URL helper, and turn the old route into a safe redirect/adapter while updating internal callers. Roll back callers first; retain the compatibility redirect until reference/telemetry proof permits removal. This is the **selected next batch**.
+- **Status:** RESOLVED — repository-controlled remediation complete. The local implementation commit is the commit containing this record; resolve its SHA after creation. No push or deployment was performed.
+- **Verified root cause:** Three production callers hard-coded `/design/[id]`, which selected an independent server-loaded `DesignerCanvas` adapter rather than the canonical v3 persistence path. The adapter cast items through `unknown` and omitted multi-room geometry, floor-plan/opening data, surface finishes/opacity, zones, saved views, and modern capability state. Route inventory then exposed three related identity defects: My Designs changed state without changing URL, denied route loads could leave a prior document under the denied identity, and a loaded floor-plan revision copy could retain the source URL.
+- **Canonical URL contract:** `/design?designId=<percent-encoded opaque ID>` is the editable saved-design route. Consumer/default mode omits `mode`; only the verified `mode=designer`, `view=2d`, `workspace=furnish`, and explicitly supplied encoded `floorPlanImport` value can be added. Arbitrary `next`, redirect, return, or analytics parameters are dropped. The URL can request Designer presentation but cannot grant Pro: `/api/me` plan/capabilities remain authoritative. Empty IDs are rejected by the helper. `GET /api/designs/[id]` remains owner-or-enabled-valid-share-token and returns 404 otherwise; writes remain owner-only.
+- **Implemented boundary:** `lib/design-editor-url.ts` is the single typed URL builder. Dashboard, duplicate success, checkout success, My Designs, denied-load recovery, and floor-plan revision-copy navigation use it. `/design/[id]` performs a temporary server redirect and no longer imports authentication, Prisma, or `DesignerCanvas`. The route forwards only verified context. Canonical loading treats IDs as opaque, waits for session/local-backup hydration, suppresses stale/superseded callbacks, restores the prior canonical URL or `/design` on failure, and guards floor-plan copy navigation with an operation generation invalidated on unmount. `MyDesignsDialog` is open-gated and lazy so the fix does not worsen initial JS.
+- **Reach and impact after remediation:** Dashboard, in-editor My Designs, duplicate, checkout-success, old bookmarks, canonical direct load, refresh, browser back/forward, Consumer, Designer, and floor-plan revision copies all reach the same v3 loader and persistence identity. Existing floor-plan import assistant/history URLs were already canonical and were retained. `/share/[shareToken]` remains the canonical read-only share/client-preview path; `/d/[token]` is an orphaned read-only compatibility route with no discovered internal producer and is not an editable fallback. Billing success has no saved-design ID, and no distinct recent-design entry was found.
+- **Tests and evidence:** Named source/helper guard; persistence umbrella; rich database-backed Chromium fixture; exact duplicate response ID and failure-no-navigation; checkout present/missing context; legacy redirect allowlist and Pro non-escalation; My Designs history/refresh; denied-ID owner isolation and context restoration; startup create/write monitoring; floor-plan copy generation guard; existing share duplicate smoke. Final Chromium results are 6/6 in 3.0 minutes plus 4/4 in 16.7 seconds.
+- **Scope and rollback:** The batch changes routing, the persistence call surface made obsolete by route-driven My Designs, the directly related revision-copy continuation, the on-demand dialog boundary needed for bundle no-worsening, focused tests, and these records only. Revert the one implementation commit for full rollback; for a partial emergency rollback, revert callers first and retain the compatibility redirect. No schema, migration, saved-document rewrite, dependency, auth redesign, or feature flag is involved.
 
 ### CH-0013 — generated surface payload and drift contract
 
@@ -195,8 +200,8 @@ Risk order includes blocked findings so decisions are visible; `READY` ordering 
 1. `CH-0002` — `REQUIRES_PRODUCT_DECISION` (highest storage/cost/integrity exposure).
 2. `CH-0007` — `REQUIRES_PRODUCT_DECISION` (catalog identity and partial-authoring integrity).
 3. `CH-0008` — `REQUIRES_PRODUCT_DECISION` (fail-open public product availability).
-4. `CH-0012` — `READY`, **selected next batch** (highest-risk READY core workflow/data-fidelity issue).
-5. `CH-0016` — `READY` (production-equivalent artifact evidence).
+4. `CH-0012` — `RESOLVED` (canonical saved-design routing repository remediation complete).
+5. `CH-0016` — `READY`, **selected next batch** (production-equivalent artifact evidence).
 6. `CH-0017` — `READY` (required test truthfulness and coverage).
 7. `CH-0018` — `BLOCKED_DEPENDENCY` (populated upgrade/data-loss evidence).
 8. `CH-0010` — `REQUIRES_PRODUCT_DECISION` (permanent share revocation and auto-sharing).
@@ -209,21 +214,41 @@ Risk order includes blocked findings so decisions are visible; `READY` ordering 
 15. `CH-0015` — `READY` (accessible overlay ownership).
 16. `CH-0019` — `READY` in bounded baseline batches and required before architectural refactoring.
 
-`CH-0009` and `CH-0014` remain queued as P2; neither competes in the P1 decision rule. Baseline A/B/C should be accumulated as independent reviewed fixes before architectural refactoring, but the single next selected P1 remains CH-0012.
+`CH-0009` and `CH-0014` remain queued as P2; neither competes in the P1 decision rule. Baseline A/B/C should be accumulated as independent reviewed fixes before architectural refactoring, but the single next selected P1 is now CH-0016.
 
-## Selected batch contract: CH-0012 only
+## Completed batch record: CH-0012 only
 
-Likely files and symbols:
+Implemented files and symbols:
 
-- new `lib/design-editor-url.ts` canonical URL helper;
+- `lib/design-editor-url.ts` canonical URL helper;
 - `app/design/[id]/page.tsx` legacy loader/redirect boundary;
 - `components/DesignsListWithSelection.tsx` saved-design link;
 - `components/DuplicateDesignButton.tsx` post-duplicate navigation;
 - `app/checkout/success/page.tsx` design continuation link;
-- `components/editor/design-page/DesignPageWorkspace.tsx` canonical `designId` loading contract, only if characterization exposes a boundary gap;
-- new focused script and Playwright characterization for dashboard, duplicate, checkout success, direct legacy URL, authentication, and query preservation.
+- `components/editor/design-page/DesignPageWorkspace.tsx` canonical `designId` loading, My Designs navigation, failure restoration, and superseded/unmount guard;
+- `components/editor/design-page/DesignPageDialogLayer.tsx` open-gated lazy My Designs boundary used to prevent initial-bundle regression;
+- `lib/useDesignPageFloorPlanLifecycleRegistration.ts` successful revision-copy canonical continuation plus operation-generation guard;
+- `lib/useDesignPagePersistence.ts` removal of the obsolete direct My Designs load wrapper while retaining the authoritative loader;
+- `scripts/test-design-editor-routing.ts`, `scripts/test-floor-plan-revision-copy.ts`, `scripts/test-floor-plan-consumer-flow.ts`, `tests/e2e/design-editor-routing.spec.ts`, and the `test:design-editor-routing` package command.
 
-Required validation commands for that future implementation batch:
+Verified routing inventory:
+
+| Origin/action | Pre-remediation route/behavior | Identity and mode source | Canonical result / compatibility |
+| --- | --- | --- | --- |
+| Dashboard saved-design row | `/design/[id]` -> lossy `DesignerCanvas` | Server-listed owned `design.id`; no mode | Helper -> `/design?designId=...`; rich persisted fixture loads and only that ID saves. |
+| In-editor My Designs | Direct `handleLoadDesign(id)` left the old URL and broke refresh/history identity | Owned `/api/designs` summary ID; allowed current editor context | Close dialog and synchronously push helper URL; route loader owns load, back/forward, and refresh. Dialog code loads only when opened. |
+| Dashboard/share duplicate button | Success used `/design/[newId]`; failure path already stayed put | Authoritative successful duplicate response ID, never source/browser input | Navigate only after success to returned ID through helper; failure does not navigate. |
+| Checkout success | `/design/[designId]` | Associated query context emitted by the existing checkout return flow | Helper link when ID exists; missing context renders no design link and selects no unrelated ID. |
+| Direct `/design/[id]` bookmark | Server loaded lossy legacy editor | Opaque path ID; optional caller query | Temporary server redirect to helper contract; only `designer`, `2d`, `furnish`, and explicit floor-plan import context survive. No arbitrary attribution/destination forwarding. |
+| Direct canonical, refresh, back/forward | Existing query load, but failure could retain another state under the requested URL | Query `designId`; API response snapshot/mode; session/local backup hydration | Canonical v3 API loader; failed/denied load restores previous helper URL or `/design`; superseded/unmounted continuation cannot pull history back. |
+| Consumer / Designer | URL could request `mode`; entitlement remained separate | Default Consumer; verified `mode=designer` request; server `/api/me` plan/capabilities | Same canonical URL; URL never elevates a free user. Loaded persisted mode and server capabilities remain authoritative. |
+| Floor-plan import assistant/history | Already emitted canonical query URL with `view=2d`, `workspace=furnish`, and encoded import ID | Returned design/import job IDs | Retained unchanged after characterization. |
+| Floor-plan revision copy | Loaded returned copy in place while the source URL remained | Authoritative POST response copy ID and existing allowed context | After exact `"loaded"`, helper push uses returned copy ID; operation generation stops stale post-await navigation. |
+| `/share/[shareToken]` / client preview | Separate read-only canonical share renderer | Enabled share token and server share boundary | Preserved; common duplicate button now opens its returned editable copy canonically. |
+| `/d/[token]` | Orphaned legacy read-only token renderer | Share token | No internal producer found; retained as explicit compatibility debt outside editable CH-0012 scope. |
+| Billing success / recent | Billing success has no saved ID; no separate recent-design producer found | None | Unchanged; no invented route or context. |
+
+Final validation commands:
 
 ```bash
 git branch --show-current
@@ -234,12 +259,16 @@ npm run verify:design-persistence
 npm run check:code-quality
 npx eslint 'lib/design-editor-url.ts' 'app/design/[id]/page.tsx' components/DesignsListWithSelection.tsx components/DuplicateDesignButton.tsx app/checkout/success/page.tsx --max-warnings=0
 npm run typecheck
-npx playwright test tests/e2e/design-editor-routing.spec.ts --project=chromium
+APP_ENV=development npx playwright test tests/e2e/design-editor-routing.spec.ts --project=chromium
 APP_ENV=development npm run build
 git diff --check
 git status --short
 ```
 
-`test:design-editor-routing` and `tests/e2e/design-editor-routing.spec.ts` are planned new characterization artifacts, not commands/files currently present. `npm run test:design-page-cleanup` should also be run as an inherited-baseline comparison, but it must remain reported as failing until Baseline B and the masked architecture ratchet are resolved.
+Results: focused routing, persistence, code-quality, targeted/expanded lint, typecheck, floor-plan copy/consumer, production build, and diff hygiene passed. The final database-backed routing spec passed 6/6 in 3.0 minutes; the existing share/duplicate smoke passed 4/4 in 16.7 seconds. `npm run test:design-page-cleanup` remains the expected inherited failure at `test-command-bar-save-status.ts:34`.
 
-Rollback: revert internal link callers first and keep `/design/[id]` as a compatibility redirect/adapter; remove the legacy renderer only after reference, telemetry, and parity proof. No document rewrite, migration, schema change, or feature flag is part of the first batch.
+Quality comparison: full lint remains exactly one `CatalogPanel.tsx:358` error and one `FloorPlanImportAssistant.tsx:294` warning. Architecture remains 594/550 and 361/300. Final initial JS is 7,062,575 raw / 1,159,786 Brotli versus the exact starting 7,068,799 / 1,160,288, an improvement of 6,224 raw / 502 Brotli bytes; the configured 6,955,000 / 1,130,000 budget therefore remains an inherited CH-0019 failure rather than a CH-0012 regression. Hamilton vocabulary and Pro visual inputs were not changed or reclassified.
+
+Independent review first identified stale My Designs history, denied-ID identity, floor-plan copy identity, context loss, and unmounted late-navigation races. All valid findings were fixed and focused coverage rerun. Final disposition: no blockers. Residual non-blockers are the lazy dialog's null/chunk-error fallback, unusual external close during pending deletion, compositional duplicate-success UI coverage, and orphaned `/d/[token]` read-only debt.
+
+Rollback: revert the single CH-0012 implementation commit. If callers must be isolated first, keep `/design/[id]` as a compatibility redirect. No document rewrite, migration, schema change, feature flag, push, or deployment is part of this batch.

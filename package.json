@@ -36,6 +36,7 @@
     "test:e2e:smart-placement": "playwright test tests/e2e/17-smart-placement-smoke.spec.ts",
     "test:e2e:pro-upgrade": "playwright test tests/e2e/pro-upgrade.spec.ts",
     "test:design-page-cleanup": "node scripts/run-design-page-cleanup-tests.mjs",
+    "test:design-editor-routing": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-design-editor-routing.ts",
     "test:editor-capabilities-accessibility": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-editor-capabilities-accessibility.ts",
     "test:design-document-compatibility": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-design-document-compatibility.ts",
     "test:design-page-local-backup-recovery": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-design-page-local-backup-recovery.ts",

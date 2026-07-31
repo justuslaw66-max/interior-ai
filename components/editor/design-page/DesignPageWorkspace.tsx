@@ -1,6 +1,5 @@
 "use client";
-
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { DesignPageComposition } from "@/components/editor/design-page/DesignPageComposition";
 import { DesignPageEditorChrome } from "@/components/editor/design-page/DesignPageEditorChrome";
 import { DesignPageDialogLayer } from "@/components/editor/design-page/DesignPageDialogLayer";
@@ -31,6 +30,7 @@ import { useDesignPagePersistenceWorkspaceRegistration } from "@/lib/useDesignPa
 import { useDesignPagePresentationWorkspaceRegistration } from "@/lib/useDesignPagePresentationWorkspaceRegistration";
 import { useDesignPageWorkspaceDeferredPaywallRegistration } from "@/lib/useDesignPagePaywallRegistrationFacade";
 import { useDesignPageFloorPlanLifecycleRegistration } from "@/lib/useDesignPageFloorPlanLifecycleRegistration";
+import { buildDesignEditorUrl } from "@/lib/design-editor-url";
 
 export function DesignPageWorkspace() {
   const coreShellRegistration = useDesignPageCoreShellRegistration({
@@ -258,7 +258,7 @@ export function DesignPageWorkspace() {
         copyFallbackShareLink,
         openFallbackShareLink,
         closeMyDesigns,
-        handleLoadDesign,
+        loadDesign,
         toggleSavedDesignSelection,
         toggleAllSavedDesignSelection,
         requestDeleteSavedDesigns,
@@ -277,28 +277,24 @@ export function DesignPageWorkspace() {
       },
     },
   } = persistenceWorkspaceRegistration;
-  const requestedDesignId = searchParams.get("designId")?.trim() ?? "";
-  const requestedDesignLoadRef = useRef<string | null>(null);
+  const requestedDesignId = searchParams.get("designId") ?? "";
 
   useEffect(() => {
     if (
       !requestedDesignId ||
       !session?.user ||
       !localBackupHydrated ||
-      designId === requestedDesignId ||
-      requestedDesignLoadRef.current === requestedDesignId
-    ) {
-      return;
-    }
-
-    requestedDesignLoadRef.current = requestedDesignId;
-    void handleLoadDesign(requestedDesignId);
+      designId === requestedDesignId
+    ) return;
+    let active = true;
+    void loadDesign(requestedDesignId).then((result) => {
+      if (!active || result === "loaded" || result === "superseded") return;
+      router.replace(designId ? buildDesignEditorUrl({ designId, context: searchParams }) : "/design");
+    });
+    return () => { active = false; };
   }, [
-    designId,
-    handleLoadDesign,
-    localBackupHydrated,
-    requestedDesignId,
-    session?.user,
+    designId, localBackupHydrated, loadDesign, requestedDesignId, router,
+    searchParams, session?.user,
   ]);
   const floorPlanLifecycleRegistration = useDesignPageFloorPlanLifecycleRegistration({
     boundaries: { coreShell: coreShellRegistration, documentSelection: documentSelectionRegistration, persistence: persistenceWorkspaceRegistration },
@@ -487,7 +483,11 @@ export function DesignPageWorkspace() {
           selectedDesignIds: selectedSavedDesignIds, selectedDesignCount: selectedSavedDesignCount,
           allDesignsSelected: allSavedDesignsSelected, deletingDesignIds, pendingDeleteDesign },
         actions: { onClose: closeMyDesigns, onOpenTemplates: openNewPlanPicker, onToggleAll: toggleAllSavedDesignSelection,
-          onToggleSelection: toggleSavedDesignSelection, onLoadDesign: handleLoadDesign, onRequestDelete: requestDeleteSavedDesigns,
+          onToggleSelection: toggleSavedDesignSelection,
+          onLoadDesign: (id) => {
+            closeMyDesigns(); router.push(buildDesignEditorUrl({ designId: id, context: searchParams }));
+          },
+          onRequestDelete: requestDeleteSavedDesigns,
           onCancelDelete: cancelDeleteSavedDesigns, onConfirmDelete: handleDeleteSavedDesign },
       },
       templateChoice: {

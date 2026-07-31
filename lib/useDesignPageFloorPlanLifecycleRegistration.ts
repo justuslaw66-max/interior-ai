@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { DesignValidationFeedbackProps } from "@/components/editor/design-page/DesignValidationFeedback";
 import { track } from "@/lib/analytics";
+import { buildDesignEditorUrl } from "@/lib/design-editor-url";
 import { reorientConsumerFloorPlanDesign } from "@/lib/floor-plan-consumer-orientation";
 import type { DesignPageCoreShellRegistration } from "@/lib/useDesignPageCoreShellRegistration";
 import type { DesignPageDocumentSelectionRegistrationFacade } from "@/lib/useDesignPageDocumentSelectionRegistrationFacade";
@@ -38,6 +39,10 @@ export type UseDesignPageFloorPlanLifecycleRegistrationInput = {
 
 const revisionUpdateKey = (update: AvailableFloorPlanRevisionUpdate) =>
   `${update.currentRevisionId}:${update.revisionId}`;
+const revisionCopySuperseded = Symbol("revision-copy-superseded");
+const assertCurrentRevisionCopy = (ref: { current: number }, operationId: number) => {
+  if (operationId !== ref.current) throw revisionCopySuperseded;
+};
 
 /**
  * Owns address-orientation confirmation and immutable floor-plan revision-copy
@@ -62,14 +67,11 @@ export function useDesignPageFloorPlanLifecycleRegistration({
   const { preserveCurrentDesign, loadDesign } =
     persistence.actions.persistence;
 
-  const [revisionUpdate, setRevisionUpdate] =
-    useState<AvailableFloorPlanRevisionUpdate | null>(null);
-  const [dismissedRevisionUpdateKey, setDismissedRevisionUpdateKey] =
-    useState<string | null>(null);
+  const [revisionUpdate, setRevisionUpdate] = useState<AvailableFloorPlanRevisionUpdate | null>(null);
+  const [dismissedRevisionUpdateKey, setDismissedRevisionUpdateKey] = useState<string | null>(null);
   const [creatingRevisionCopy, setCreatingRevisionCopy] = useState(false);
-  const [revisionCopyError, setRevisionCopyError] = useState<string | null>(
-    null
-  );
+  const [revisionCopyError, setRevisionCopyError] = useState<string | null>(null);
+  const revisionCopyOperationRef = useRef(0); useEffect(() => () => { revisionCopyOperationRef.current += 1; }, []);
 
   const revisionUpdateSourceKey = (() => {
     const binding = designSnapshot.floorPlan?.addressBinding;
@@ -179,10 +181,12 @@ export function useDesignPageFloorPlanLifecycleRegistration({
 
   const createUpdatedCopy = useCallback(async () => {
     if (!designId || !revisionUpdate || creatingRevisionCopy) return;
+    const operationId = ++revisionCopyOperationRef.current;
     setCreatingRevisionCopy(true);
     setRevisionCopyError(null);
     try {
       const preserved = await preserveCurrentDesign();
+      assertCurrentRevisionCopy(revisionCopyOperationRef, operationId);
       if (!preserved.ok) throw new Error(preserved.error);
 
       const response = await fetch(`/api/designs/${designId}/floor-plan-update`, {
@@ -197,6 +201,7 @@ export function useDesignPageFloorPlanLifecycleRegistration({
         id?: unknown;
         error?: unknown;
       } | null;
+      assertCurrentRevisionCopy(revisionCopyOperationRef, operationId);
       if (!response.ok || typeof payload?.id !== "string") {
         if (response.status === 403) base.actions.dialogs.setShowUpgrade(true);
         throw new Error(
@@ -209,11 +214,11 @@ export function useDesignPageFloorPlanLifecycleRegistration({
       setDismissedRevisionUpdateKey(revisionUpdateKey(revisionUpdate));
       setRevisionUpdate(null);
       const loaded = await loadDesign(payload.id);
-      showRuleToast(
-        loaded
-          ? "Updated floor-plan copy created; the original design is unchanged"
-          : "Updated copy created in My Designs; the original design is unchanged"
-      );
+      assertCurrentRevisionCopy(revisionCopyOperationRef, operationId);
+      if (loaded === "loaded") {
+        base.derived.navigation.router.push(buildDesignEditorUrl({ designId: payload.id, context: base.derived.navigation.searchParams }));
+      }
+      showRuleToast("Updated floor-plan copy created; the original design is unchanged");
       track("floor_plan_revision_copy_opened", {
         source_design_id: designId,
         copied_design_id: payload.id,
@@ -222,16 +227,16 @@ export function useDesignPageFloorPlanLifecycleRegistration({
         loaded,
       });
     } catch (cause) {
-      setRevisionCopyError(
+      if (cause !== revisionCopySuperseded && operationId === revisionCopyOperationRef.current) setRevisionCopyError(
         cause instanceof Error
           ? cause.message
           : "The updated design copy could not be created."
       );
     } finally {
-      setCreatingRevisionCopy(false);
+      if (operationId === revisionCopyOperationRef.current) setCreatingRevisionCopy(false);
     }
   }, [
-    base.actions.dialogs,
+    base.actions.dialogs, base.derived.navigation.router, base.derived.navigation.searchParams,
     creatingRevisionCopy,
     designId,
     loadDesign,

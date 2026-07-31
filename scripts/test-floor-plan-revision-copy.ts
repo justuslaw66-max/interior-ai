@@ -308,6 +308,16 @@ assert.match(
   lifecycleSource,
   /preserveCurrentDesign\(\)[\s\S]*?method: "POST"[\s\S]*?revisionId: revisionUpdate\.revisionId/
 );
+assert.match(
+  lifecycleSource,
+  /const loaded = await loadDesign\(payload\.id\)[\s\S]*?loaded === "loaded"[\s\S]*?router\.push\(buildDesignEditorUrl\(\{[\s\S]*?designId: payload\.id/,
+  "A loaded revision copy must replace the source design identity in the editor URL."
+);
+assert.match(
+  lifecycleSource,
+  /revisionCopyOperationRef[\s\S]*?assertCurrentRevisionCopy\(revisionCopyOperationRef, operationId\)[\s\S]*?loadDesign\(payload\.id\)[\s\S]*?assertCurrentRevisionCopy\(revisionCopyOperationRef, operationId\)[\s\S]*?router\.push/,
+  "Revision-copy navigation must stop when its operation is superseded or unmounted."
+);
 assert.match(workspaceSource, /useDesignPageFloorPlanLifecycleRegistration\(\{/);
 assert.match(promptSource, /Your current design will stay unchanged\./);
 assert.match(promptSource, /Create updated copy/);

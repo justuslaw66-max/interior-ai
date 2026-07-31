@@ -1,5 +1,6 @@
 "use client";
 
+import { lazy, Suspense } from "react";
 import BetaFeedbackWidget, {
   type BetaFeedbackWidgetProps,
 } from "@/components/BetaFeedbackWidget";
@@ -30,10 +31,7 @@ import {
   GuestSavePromptDialog,
   type GuestSavePromptDialogProps,
 } from "@/components/editor/design-page/GuestSavePromptDialog";
-import {
-  MyDesignsDialog,
-  type MyDesignsDialogProps,
-} from "@/components/editor/design-page/MyDesignsDialog";
+import type { MyDesignsDialogProps } from "@/components/editor/design-page/MyDesignsDialog";
 import {
   PlanAnnotationDialog,
   type PlanAnnotationDialogProps,
@@ -62,6 +60,11 @@ import {
   UpgradeDialog,
   type UpgradeDialogProps,
 } from "@/components/editor/design-page/UpgradeDialog";
+
+const MyDesignsDialog = lazy(async () => {
+  const dialogModule = await import("@/components/editor/design-page/MyDesignsDialog");
+  return { default: dialogModule.MyDesignsDialog };
+});
 
 export type DesignPageDialogLayerDialogs = {
   upgrade: UpgradeDialogProps;
@@ -101,7 +104,11 @@ export function DesignPageDialogLayer({
       <PlansDialog {...dialogs.plans} />
       <AiNotesDialog {...dialogs.aiNotes} />
       <PresentExportDialog {...dialogs.presentExport} />
-      <MyDesignsDialog {...dialogs.myDesigns} />
+      {dialogs.myDesigns.open ? (
+        <Suspense fallback={null}>
+          <MyDesignsDialog {...dialogs.myDesigns} />
+        </Suspense>
+      ) : null}
       <RoomRenameDialog {...dialogs.roomRename} />
       <PlanAnnotationDialog {...dialogs.planAnnotation} />
       <CatalogPlacementConfirmPanel {...dialogs.catalogPlacement} />

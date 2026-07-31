@@ -810,11 +810,20 @@ export function useDesignPagePersistence({
         );
         setLastCloudSaveError(null);
         setCloudSaveConflict(null);
-        const nextMode = data?.mode === "designer" ? "designer" : "homeowner";
+        const nextMode =
+          data?.mode === "designer" ? "designer" : "homeowner";
         setMode(nextMode);
-        setNotes(typeof data?.notes === "string" ? data.notes : "");
-        setSavedViews(sanitizeDesignPageSavedViews(data?.savedViews));
-        if (typeof data?.style === "string" && STYLES.includes(data.style as Style)) {
+        setNotes(
+          typeof data?.notes === "string"
+            ? data.notes : ""
+        );
+        setSavedViews(
+          sanitizeDesignPageSavedViews(data?.savedViews)
+        );
+        if (
+          typeof data?.style === "string" &&
+          STYLES.includes(data.style as Style)
+        ) {
           setStyle(data.style as Style);
         }
         if (
@@ -974,14 +983,6 @@ export function useDesignPagePersistence({
         : previous
     );
   }, [cloudSaveConflict, loadDesign, showRuleToast]);
-
-  const handleLoadDesign = useCallback(
-    async (id: string) => {
-      await loadDesign(id);
-      setShowMyDesigns(false);
-    },
-    [loadDesign]
-  );
 
   const openGuestPrompt = useCallback((reason: string, onContinue: () => void) => {
     guestPromptActionRef.current = onContinue;
@@ -1346,7 +1347,6 @@ export function useDesignPagePersistence({
       openFallbackShareLink,
       toggleMyDesigns,
       closeMyDesigns,
-      handleLoadDesign,
       toggleSavedDesignSelection,
       toggleAllSavedDesignSelection,
       requestDeleteSavedDesigns,

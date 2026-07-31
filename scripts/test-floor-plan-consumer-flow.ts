@@ -441,7 +441,7 @@ assert.match(
 );
 assert.match(
   designWorkspace,
-  /searchParams\.get\("designId"\)[\s\S]*?localBackupHydrated[\s\S]*?handleLoadDesign\(requestedDesignId\)/,
+  /searchParams\.get\("designId"\)[\s\S]*?localBackupHydrated[\s\S]*?loadDesign\(requestedDesignId\)/,
   "The canonical editor should hydrate the saved design requested by the import handoff."
 );
 assert.match(

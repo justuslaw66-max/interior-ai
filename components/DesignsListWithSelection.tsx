@@ -5,6 +5,7 @@ import { useState } from "react";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import DeleteDesignButton from "@/components/DeleteDesignButton";
 import DuplicateDesignButton from "@/components/DuplicateDesignButton";
+import { buildDesignEditorUrl } from "@/lib/design-editor-url";
 
 type DesignListItem = {
   id: string;
@@ -112,7 +113,7 @@ export default function DesignsListWithSelection({
 
             <div className="flex gap-2">
               <Link
-                href={`/design/${design.id}`}
+                href={buildDesignEditorUrl({ designId: design.id })}
                 className="rounded-lg bg-neutral-900 px-3 py-2 text-sm text-white"
               >
                 Open

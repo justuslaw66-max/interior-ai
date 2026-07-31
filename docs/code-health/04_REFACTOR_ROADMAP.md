@@ -97,8 +97,8 @@ Planned change:
 ## Phase 3 — Canonical saved-design routing
 
 **Finding:** CH-0012.
-**Status:** SELECTED NEXT BATCH by the post-CH-0001 decision rule. CH-0002, CH-0007, and CH-0008 rank higher by raw risk but require product decisions; CH-0012 is the highest-risk READY P1. This selection is planning only and does not authorize implementation in the triage session.
-**Batches:** characterize a modern saved document through both URLs; add `lib/design-editor-url.ts`; make `/design/[id]` a safe canonical redirect/adapter; update dashboard, duplicate, and checkout-success links; remove legacy canvas only after zero references/telemetry.
+**Status:** RESOLVED — repository-controlled remediation complete on `fix/ch-0012-canonical-saved-design-routing`. CH-0016 is the next READY P1; it was not started.
+**Implemented batch:** characterized a modern v3 document through every discovered entry; added `lib/design-editor-url.ts`; made `/design/[id]` a temporary canonical redirect; updated dashboard, duplicate, checkout-success, My Designs, and floor-plan revision-copy navigation; made denied/superseded/unmounted loads restore or retain the correct identity; and removed all legacy rendering from the compatibility route.
 
 Expected first routing files:
 
@@ -109,11 +109,12 @@ Expected first routing files:
 - `app/checkout/success/page.tsx`
 - a focused script contract and Playwright route fixture under `scripts/` and `tests/e2e/`
 
-**Entry:** canonical `/design?designId=` persistence fixture passes; external old-link consumers inventoried.
-**Exit:** all internal entry points use the helper; old URL preserves design identity/query/auth and opens canonical renderer; multi-room/floor-plan/material fixture has save/reload/export parity.
-**Verification:** add a named `npm run test:design-editor-routing` characterization command; `npm run verify:design-persistence`; `npm run check:code-quality`; focused lint over the routing files; `npm run typecheck`; focused Playwright dashboard/duplicate/checkout/direct-link tests; `APP_ENV=development npm run build`; `git diff --check`. Run `npm run test:design-page-cleanup` as an inherited-baseline comparison until Baselines B and the masked architecture ratchet are green; do not report that umbrella as passing while either remains.
-**Rollback:** revert link callers first; redirect route remains a compatibility adapter until confirmed safe to remove.
-**Compatibility:** one canonical editor; no document rewrite.
+**Entry result:** canonical `/design?designId=` persistence behavior and the complete route graph were characterized before production changes. No separate recent-design route or billing-success saved-design continuation exists. External bookmarks remain covered by the compatibility redirect.
+**Exit result:** all supported editable entry points use the canonical contract; the old URL preserves only verified context and opens the canonical renderer; the rich multi-room/floor-plan/material fixture retains full structure, saves and reloads the same ID, and does not create or overwrite another design during startup/history/denied-load cases.
+**Verification result:** PASS — named routing guard, persistence umbrella, code-quality ratchet, focused and expanded lint, typecheck, floor-plan copy/consumer guards, six-case Chromium routing spec, four-case share/duplicate smoke, explicit-development production build, and diff hygiene. EXPECTED INHERITED FAIL — full lint, design cleanup, design architecture, and Phase 8 bundle budget remain limited to their documented baseline findings. Final `/design` initial JS is 7,062,575 raw / 1,159,786 Brotli versus the exact starting 7,068,799 / 1,160,288, so CH-0012 improves rather than worsens both measures while the configured 6,955,000 / 1,130,000 budget remains red.
+**Independent review:** Initial findings for My Designs history, denied-ID state, floor-plan revision-copy identity, context loss, and late navigation after unmount were fixed and covered. Final disposition: no blockers. Non-blocking residuals are the lazy dialog's null/chunk-error fallback, unusual external close during pending delete, compositional duplicate browser coverage, and orphaned read-only `/d/[token]` debt.
+**Rollback:** revert the single implementation commit; if isolating callers during an emergency, retain `/design/[id]` as the compatibility redirect. No document rewrite or schema/data rollback exists.
+**Compatibility:** one canonical editable editor; no document rewrite, entitlement change, or authorization redesign.
 
 ## Phase 4 — Security and workflow services
 
