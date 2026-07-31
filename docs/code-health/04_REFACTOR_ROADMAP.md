@@ -22,12 +22,11 @@ Every batch must:
 
 Recommended one-issue batches:
 
-- P0-A: decide and fix the lint effect ownership in `CatalogPanel`; remove the unnecessary dependency warning.
-- P0-B: characterize intended command-bar save status, then update implementation or stale assertion—not both by assumption.
-- P0-C: repair the three Hamilton catalog values against the canonical schema.
-- P0-D: reproduce Phase 8 cold fingerprint and either fix the regression or make the fixture statistically stable without weakening its budget.
-- P0-E: restore the design architecture ratchet through extraction, not a limit increase.
-- P0-F: confirm Cabinet Preview visibility policy and fix UI or test navigation accordingly.
+- Baseline A — React-hook lint remediation: fix `CatalogPanel` effect ownership. Include the `FloorPlanImportAssistant` unnecessary dependency only if both changes remain small, behavior-preserving, and independently reviewable.
+- Baseline B — command-bar save-status contract remediation: characterize the intended responsive chip contract, then update the stale assertion or implementation according to that evidence; do not change both by assumption.
+- Baseline C — Hamilton controlled-vocabulary remediation: repair five invalid values across the three source YAML files against the existing canonical vocabulary; do not weaken the schema.
+
+These three batches account for the four inherited failure groups reported at CH-0001 closure. Post-closure triage also confirmed three separate CH-0019 follow-ups that were previously masked or omitted: restore the design architecture ratchet through extraction rather than a limit increase; reduce the initial-JS raw bundle below 6,955,000 bytes without moving equivalent eager bytes; and resolve the hidden Cabinet Preview opener after the product visibility policy is recorded. They are not CH-0001 regressions and must not be folded into the three inherited-failure batches.
 
 **Entry:** checkpoint and audit docs reviewed; intended command-bar/Cabinet Preview behavior confirmed.
 **Exit:** lint, design cleanup, design architecture, catalog audit, Phase 8, build, runtime smoke, and Pro visual policy pass twice; no temporary exception without owner and expiry.
@@ -38,7 +37,7 @@ Recommended one-issue batches:
 ## Phase 1 — READY: fail-closed deployment/admin boundary
 
 **Finding:** CH-0001.
-**Status:** COMPLETE in the repository-controlled CH-0001 batch; platform configuration verification remains in `docs/security/CH-0001_EXTERNAL_CONTROLS_CHECKLIST.md`.
+**Status:** RESOLVED — REPOSITORY-CONTROLLED REMEDIATION COMPLETE at `62ba966ecb2011e4233c99ce1dcc0641914af008`; platform configuration verification remains in `docs/security/CH-0001_EXTERNAL_CONTROLS_CHECKLIST.md`.
 **Why first:** Highest-consequence confirmed defect that is narrow, server-side, decision-free, and independent of the red UI/catalog baseline.
 
 ### Exact intended batch
@@ -98,6 +97,7 @@ Planned change:
 ## Phase 3 — Canonical saved-design routing
 
 **Finding:** CH-0012.
+**Status:** SELECTED NEXT BATCH by the post-CH-0001 decision rule. CH-0002, CH-0007, and CH-0008 rank higher by raw risk but require product decisions; CH-0012 is the highest-risk READY P1. This selection is planning only and does not authorize implementation in the triage session.
 **Batches:** characterize a modern saved document through both URLs; add `lib/design-editor-url.ts`; make `/design/[id]` a safe canonical redirect/adapter; update dashboard, duplicate, and checkout-success links; remove legacy canvas only after zero references/telemetry.
 
 Expected first routing files:
@@ -111,7 +111,7 @@ Expected first routing files:
 
 **Entry:** canonical `/design?designId=` persistence fixture passes; external old-link consumers inventoried.
 **Exit:** all internal entry points use the helper; old URL preserves design identity/query/auth and opens canonical renderer; multi-room/floor-plan/material fixture has save/reload/export parity.
-**Verification:** route/helper test; `npm run verify:design-persistence`; `npm run test:design-page-cleanup`; focused Playwright dashboard/duplicate/checkout/direct-link tests; build.
+**Verification:** add a named `npm run test:design-editor-routing` characterization command; `npm run verify:design-persistence`; `npm run check:code-quality`; focused lint over the routing files; `npm run typecheck`; focused Playwright dashboard/duplicate/checkout/direct-link tests; `APP_ENV=development npm run build`; `git diff --check`. Run `npm run test:design-page-cleanup` as an inherited-baseline comparison until Baselines B and the masked architecture ratchet are green; do not report that umbrella as passing while either remains.
 **Rollback:** revert link callers first; redirect route remains a compatibility adapter until confirmed safe to remove.
 **Compatibility:** one canonical editor; no document rewrite.
 

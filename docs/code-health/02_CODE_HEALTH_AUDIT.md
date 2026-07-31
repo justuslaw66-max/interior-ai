@@ -2,6 +2,8 @@
 
 This register is anchored to checkpoint `08bdfe0c5e5c882777dc5da38168ea7db14840ad`. IDs are stable: implementation commits, pull requests, exceptions, and release evidence should cite them without renumbering. P0 means active catastrophic risk, P1 high risk or release blocker, P2 material maintainability/reliability debt, and P3 hygiene. No P0 was confirmed in this audit.
 
+Post-CH-0001 triage was performed on 2026-07-31 at `62ba966ecb2011e4233c99ce1dcc0641914af008`. The current classification is zero unresolved P0 findings, sixteen unresolved P1 findings, and two former P1 findings downgraded to P2 with current evidence. The finding-by-finding evidence, reachability, dependencies, test coverage, remediation scope, rollback, and ordered queue are recorded in `06_P0_P1_REMEDIATION_QUEUE.md`.
+
 ## Priority summary
 
 The first ten risks by consequence, exploitability, customer impact, and change frequency are:
@@ -17,16 +19,18 @@ The first ten risks by consequence, exploitability, customer impact, and change 
 9. CH-0013 generated surface payload/drift contract;
 10. CH-0014 per-item 3D resource and event ownership.
 
-CH-0001 is the first READY implementation batch because it is high consequence, narrowly bounded, behavior-preserving for correctly configured production, and does not require a product decision. CH-0002, CH-0007, and CH-0008 require explicit policy decisions before changing production semantics.
+CH-0001 was the first READY implementation batch because it was high consequence, narrowly bounded, behavior-preserving for correctly configured production, and did not require a product decision. It is now closed for repository-controlled remediation. CH-0002, CH-0007, and CH-0008 still require explicit policy decisions before changing production semantics. Under the post-closure decision rule, CH-0012 is the highest-risk READY P1 and is the single selected next implementation batch; no implementation is part of this triage.
 
 ## Findings
 
 ### CH-0001 — Deployment classification can fail open into admin access
 
 - **Severity:** P1.
-- **Status:** RESOLVED in repository on the CH-0001 security branch; external platform settings remain explicitly unverified in `docs/security/CH-0001_EXTERNAL_CONTROLS_CHECKLIST.md`.
+- **Status:** RESOLVED — REPOSITORY-CONTROLLED REMEDIATION COMPLETE. External platform settings remain explicitly unverified in `docs/security/CH-0001_EXTERNAL_CONTROLS_CHECKLIST.md`.
+- **Resolution commit:** `62ba966ecb2011e4233c99ce1dcc0641914af008`.
 - **Locations/symbols:** `lib/config.ts:getApplicationEnvironment`; `lib/admin.ts:isAdmin`; `app/layout.tsx` configuration validation.
-- **Evidence/current behavior:** Missing or unknown `APP_ENV`, `NEXT_PUBLIC_APP_ENV`, and `VERCEL_ENV` becomes `development`. When `ADMIN_EMAILS` is empty, `isAdmin` treats any nonempty authenticated email as admin in that state; `NODE_ENV === "development"` is not required.
+- **Pre-remediation evidence:** Missing or unknown `APP_ENV`, `NEXT_PUBLIC_APP_ENV`, and `VERCEL_ENV` became `development`. When `ADMIN_EMAILS` was empty, `isAdmin` treated any nonempty authenticated email as admin in that state; `NODE_ENV === "development"` was not required.
+- **Evidence/current behavior at resolution HEAD:** Missing, blank, or unknown deployment classification is invalid; public variables and CI flags have no authorization authority; every administrative environment requires a valid Auth.js session email in a complete valid server allowlist; the former request-controlled catalog-audit bypasses are absent; discovered privileged handlers/pages and operational entry points enforce their applicable guard before work.
 - **Risk:** A misconfigured or non-Vercel production deployment can grant every Google-authenticated user admin APIs and Pro access.
 - **Improvement:** Fail closed. Permit a local bypass only through an explicit opt-in combined with Node development mode and loopback/local-host evidence; validate deployment classification at startup and in security tests.
 - **Expected outcome:** Unknown production configuration cannot create privilege; intentional local development remains convenient and explicit.
@@ -122,7 +126,8 @@ CH-0001 is the first READY implementation batch because it is high consequence, 
 
 ### CH-0009 — Request-time GLB optimization executes an unpinned network CLI
 
-- **Severity:** P1.
+- **Severity:** P2 at post-CH-0001 HEAD; downgraded from P1 with evidence.
+- **Status:** DOWNGRADED_WITH_EVIDENCE. CH-0001 made the route directly admin-only and the request body is bounded before optimization. The mutable request-time package execution remains a real supply-chain and availability defect, but current reachability requires a valid allowlisted administrator and no ordinary public caller can trigger it.
 - **Locations/symbols:** `lib/asset-pipeline/normalize.ts`; `lib/asset-pipeline/optimize.ts`; `app/api/tools/glb-optimizer/route.ts`.
 - **Evidence/current behavior:** The route accepts files up to 80 MB and synchronously executes `npx -y @gltf-transform/cli`, which is absent from package dependencies.
 - **Risk:** Mutable supply-chain execution, runtime network dependency, event-loop blocking, and unbounded CPU/memory/output pressure.
@@ -182,8 +187,9 @@ CH-0001 is the first READY implementation batch because it is high consequence, 
 
 ### CH-0014 — Each 3D item owns expensive loading, listeners, and frame work
 
-- **Severity:** P1.
-- **Locations/symbols:** scene item layer, `components/scene/Furniture.tsx`, `components/scene/GLBScaledModel.tsx`, GLB normalization helpers.
+- **Severity:** P2 at post-CH-0001 triage; downgraded from P1 with evidence.
+- **Status:** DOWNGRADED_WITH_EVIDENCE. The per-item loaders, global listeners, clones, and frame work remain visible in source, but the audit has no measured production threshold breach, data-loss path, security/privacy consequence, or demonstrated core-workflow outage attributable to this ownership. Keep it as material performance/reliability debt and promote it only if the required 10/100/500-item benchmark proves high-impact failure.
+- **Locations/symbols:** scene item layer, `components/scene/FurnitureItem.tsx`, `components/scene/GLBScaledModel.tsx`, GLB normalization helpers.
 - **Evidence/current behavior:** Instances create loader/decoder/load/clone work; each item registers global keyboard handling and frame callbacks. This scales per object rather than per scene/selection and complicates disposal.
 - **Risk:** Large designs amplify network/decode/memory/event/frame costs, create duplicated handlers, and increase stale resource or leak risk.
 - **Improvement:** Introduce a scene asset resource manager with promise/cache/ref-count/disposal ownership, centralize keyboard commands at editor scope, and invalidate frames only for active animation/interaction.
@@ -243,8 +249,9 @@ CH-0001 is the first READY implementation batch because it is high consequence, 
 ### CH-0019 — The audit baseline is red and masking later assertions
 
 - **Severity:** P1 for release readiness, P2 as code-health debt.
+- **Status:** READY as bounded baseline-restoration batches; it does not outrank a higher-risk READY product finding under the post-closure decision rule.
 - **Locations/symbols:** `CatalogPanel.tsx`; `FloorPlanImportAssistant.tsx`; `scripts/test-command-bar-save-status.ts`; three Hamilton catalog YAMLs; design architecture checker; Phase 8 benchmark; Pro visual policy.
-- **Evidence/current behavior:** Lint, design cleanup, design architecture, catalog quality, Phase 8 performance, and Pro visual gates fail. Sequential umbrella commands stop at the first failure and hide later results. Production build passes only in catalog-lenient mode.
+- **Evidence/current behavior:** At `62ba966ecb2011e4233c99ce1dcc0641914af008`, focused reruns confirm the four inherited groups: one `CatalogPanel` hook error, one `FloorPlanImportAssistant` hook warning, the stale command-bar save-status assertion, and five catalog vocabulary failures across three Hamilton YAML files. Separate current checks also confirm masked or omitted failures: design architecture is 594/550 and 361/300 lines, Phase 8 CPU fingerprinting now passes but the initial-JS raw bundle is 7,068,799/6,955,000 bytes, and Pro visual policy remains 2/4 because the Cabinet Preview opener is hidden in Chromium and WebKit. Sequential commands mask the architecture check behind the save-status assertion. CI builds with `CATALOG_STRICT_VALIDATION=false`.
 - **Risk:** Refactors cannot distinguish regressions from inherited failures; release confidence is ambiguous.
 - **Improvement:** Establish a baseline-restoration phase with one defect per reviewed commit, record stale-test versus implementation decisions explicitly, and run masked checks separately until green.
 - **Expected outcome:** Required fast baseline is green before structural work, with any temporary exception owner/expiry documented.
