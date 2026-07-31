@@ -1,6 +1,6 @@
 # Code health audit handoff
 
-Current superseding status: CH-0001, CH-0012, and CH-0016 repository remediation are complete. CH-0016 requires external GitHub/Vercel execution verification; no external control is claimed verified. CH-0017 is the next READY P1 and has not been started. The latest implementation record is at the end of this handoff.
+Current superseding status: CH-0001, CH-0012, and CH-0016 repository remediation are complete. CH-0016 requires external GitHub/Vercel execution verification; no external control is claimed verified. CH-0017 is the next READY P1, has not been started, and must wait for external verification of the exact CH-0016 commit. The latest implementation record is at the end of this handoff.
 
 Audit date: 2026-07-31
 Canonical repository: `/Users/justus/Developer/interior-ai`
@@ -251,7 +251,7 @@ CH-0016 was subsequently completed as its own bounded repository-evidence batch.
 
 ## CH-0016 production-equivalent artifact evidence — 2026-07-31
 
-Status: **REPOSITORY REMEDIATION COMPLETE — EXTERNAL EXECUTION/VERIFICATION REQUIRED** on `fix/ch-0016-production-equivalent-artifact-evidence`. Starting SHA: `2c9e8b4d2322484a8d80873019d2c3495dd862f5`. Both required predecessors, CH-0001 `62ba966ecb2011e4233c99ce1dcc0641914af008` and CH-0012 `2c9e8b4d2322484a8d80873019d2c3495dd862f5`, were ancestors; entry status/diff/untracked checks were empty. Before editing, `lsof` resolved the listening Node process to `/Users/justus/Developer/interior-ai`, matching the intended canonical checkout. The local implementation commit is the commit containing this record; its content-derived SHA is reported after creation in the final Codex response. Nothing was pushed or deployed.
+Status: **REPOSITORY REMEDIATION COMPLETE — EXTERNAL EXECUTION/VERIFICATION REQUIRED** on `fix/ch-0016-production-equivalent-artifact-evidence`. Starting SHA: `2c9e8b4d2322484a8d80873019d2c3495dd862f5`. Implementation SHA: `cbed3550026e2803675f740b49be5fb15f15612b`. Both required predecessors, CH-0001 `62ba966ecb2011e4233c99ce1dcc0641914af008` and CH-0012 `2c9e8b4d2322484a8d80873019d2c3495dd862f5`, were ancestors; entry status/diff/untracked checks were empty. Before editing, `lsof` resolved the listening Node process to `/Users/justus/Developer/interior-ai`, matching the intended canonical checkout. Nothing was pushed or deployed.
 
 The verified root cause was a broken evidence chain. Required CI explicitly set `CATALOG_STRICT_VALIDATION=false`, built once, then invoked a Playwright smoke configuration that selected `npm run dev`, producing and testing a second development compilation. The report did not identify the built artifact, the health endpoint did not expose its Next build ID/artifact/source identity, and no validator bound source, dependency lock, generated source, build, trace closure, runtime, and report. The Vercel prebuilt manifest also omitted untracked and ignored influential source. A safe diagnostic rebuild confirmed that broad Next tracing could capture ignored `.env`, `.env.local`, and private release-evidence paths.
 
@@ -263,6 +263,10 @@ Repository-controlled contract and flow:
 - The Playwright JSON records its actual web-server command/reuse policy and manifest metadata. Known machine-local Playwright paths are canonicalized to `<repository-root>` before hashing; non-canonical path fields, sensitive field names, or known secret values fail. Passing evidence requires positive test count and zero failed, flaky, or skipped critical tests. Its embedded report hash, canonical UTC timestamps, current-state revalidation, and same-artifact fields reject modification, substitution, or stale reuse.
 - Repository evidence always uses `evidenceKind=local-production-mode-artifact`, `releaseReady=false`, `actualDeploymentVerified=false`, and the exact fixed Vercel/GitHub/OAuth/scheduler/database checklist with every status `not_verified`. Human approval and external execution remain separate. The CI upload requests 14-day retention, but only an actual GitHub run can verify execution and retention.
 
+Local validation artifacts were generated successfully in an ephemeral detached-worktree directory. Their hashes and results are recorded below for local verification only. The temporary manifest, runtime report, and 403 MB build artifact may disappear after restart, cleanup, or operating-system maintenance; none is durable release evidence and the build artifact must not be committed.
+
+Durable evidence retention remains pending a real GitHub Actions execution and artifact upload.
+
 Primary implementation surfaces are `scripts/production-artifact-evidence.mjs`, its temporary-Git-repository negative suite, the strict `stable-checks` build/smoke path, the evidence-specific Playwright configuration, runtime health identity, trace exclusions, the Vercel clean-source inspector, and `docs/qa/production-artifact-evidence.md`. No dependency, package lock, schema, migration, catalog content, production data, product workflow, external setting, or human approval mechanism changed.
 
 Focused fail-closed coverage exercises the real exported validator for clean success; tracked, ordinary untracked, and ignored influential source; wrong source SHA; missing/tampered lock and installed-lock identity; failed generated check; missing/tampered artifact and empty/missing/prohibited/symlink-escaped trace closure; missing/tampered/non-canonical manifest and report; stale/non-UTC timestamps; missing/unknown/contradictory environment; development build/server and enabled development flags; actual Playwright server command/listener reuse; failed/flaky/zero/skipped tests; wrong artifact binding; external overclaim; report path portability; and secret field/value leakage. The same suite behaviorally proves Vercel inspection rejects both ordinary untracked and ignored influential input. Static contract checks prove CI has no lenient override, evidence mode has no development fallback, and Next excludes prohibited private roots; the existing real catalog validator rejects an invalid catalog fixture.
@@ -272,13 +276,40 @@ Validation on the reviewed pre-commit tree:
 - PASS: `npm run test:production-artifact-evidence`; targeted ESLint over every changed JavaScript/TypeScript/config file with `--max-warnings=0`; `npm run typecheck`; `npm run check:code-quality` (1,012 production files, 198 file baselines, 554 function-debt baselines, 20 suppressions, no cycle/unsafe-TypeScript regression); `npm run test:auth-env-hardening`; `npm run test:phase7-security-boundaries`; `npm run test:phase15`; `npm run test:cabinetry-release-evidence`; `git diff --check`.
 - PASS: the existing generated surface-runtime `--check`; strict staging diagnostic `npm run build` with shaped nonfunctional configuration; current-artifact inspection found 2,403 artifact files / 403,549,198 bytes, 112 NFT manifests / 42,879 references, zero missing/prohibited paths, and a content-bound closure of 4,436 entries / 6,085 files. The exact diagnostic hashes and build ID are not release evidence because that checkout contained ignored local environment/evidence inputs.
 - EXPECTED ENVIRONMENTAL RETRY: the initial sandboxed Turbopack build could not bind its helper port; the approved unsandboxed diagnostic build passed. The existing broad-tracing warning through the floor-plan PDF path remains and is bounded by the manifest rather than claimed fixed.
-- PASS on the exact post-commit candidate is required separately: fresh-worktree `evidence:production:build`, production-server smoke, and `evidence:production:verify`. Their exact source/artifact/report identities are reported in the final response because a commit cannot include its own content-derived SHA.
-- EXPECTED INHERITED FAIL, reproduced unchanged: full lint remains `CatalogPanel.tsx:358` plus `FloorPlanImportAssistant.tsx:294`; design cleanup remains the command-bar assertion at `test-command-bar-save-status.ts:34`; catalog audit remains five controlled-vocabulary failures in the same three Hamilton YAML files; direct design architecture remains 594/550 and 361/300; Phase 8 representative project timings pass before the same initial-JS raw limit fails at 7,062,575/6,955,000 bytes. Pro visual policy remains the recorded starting 2/4 and was not rerun because none of its source/policy inputs changed. CH-0016 changed none of these inputs, suppressions, baselines, thresholds, or expected assertions; no inherited failure is claimed fixed.
+- PASS on the exact post-commit candidate: fresh detached-worktree `evidence:production:build`, production-server smoke, `evidence:production:verify`, and manifest sidecar verification. The local identities are recorded below; the underlying files remain ephemeral.
+- EXPECTED INHERITED FAIL: full lint remains `CatalogPanel.tsx:358` plus `FloorPlanImportAssistant.tsx:294`; design cleanup remains the command-bar assertion at `test-command-bar-save-status.ts:34`; catalog audit remains five controlled-vocabulary failures in the same three Hamilton YAML files; and direct design architecture remains 594/550 and 361/300. The same inherited Phase 8 budget gate remains failing: representative project timings pass before the initial-JS raw limit fails at 7,062,575/6,955,000 bytes. Compared with the earlier 7,068,799-byte measurement, raw initial JS decreased by 6,224 bytes and did not worsen. Pro visual policy remains the recorded starting 2/4 and was not rerun because none of its source/policy inputs changed. CH-0016 changed none of these inputs, suppressions, baselines, thresholds, or expected assertions; no inherited failure is claimed fixed.
+
+Exact local validation record for `cbed3550026e2803675f740b49be5fb15f15612b`:
+
+- Artifact SHA-256: `687ae0dc8caef59efa70744fa15bf4bdad10cbe340573b7526c9bd325f5b6a1b`.
+- Next build ID: `rA5fXIu9h0ME9YOlllsOn`.
+- Manifest SHA-256: `35022a6d8270427b615f45d24fd48b29f46a24ceb55c7a7294da4fd6ec3eba36`.
+- Runtime report SHA-256: `bf2521c331f0ef20ef8eb5cf862cf36bf625025aee5b83341ff86e5c5d053453`.
+- Production smoke: 2/2 passed; zero failed, flaky, or skipped tests; process exit code 0.
+- Standalone verification and manifest sidecar verification: PASS.
+
+These identities describe the one local run, not a reproducible-build promise. A GitHub build may have a different artifact SHA-256 or Next build ID; its own manifest, tested artifact, health response, and test report must agree with each other and identify the exact source SHA.
 
 Independent read-only review found and drove fixes for: incomplete manifest-field revalidation; runtime-closure content not initially bound; ignored build inputs; macOS realpath and artifact/trace symlink escape handling; legitimate traced dependency directories; locale-dependent inventory order; zero-trace acceptance; canonical UTC test timestamps; contradictory public/Vercel environment identity; overclaimable repository statements; secret-bearing or absolute-path report data; metadata that did not prove the actual Playwright server; a nonzero Playwright process exit that could initially leave passing JSON marked valid; text-only Vercel regression coverage; and missing negative/HANDOFF coverage. Every valid finding was addressed in the contract and affected tests rerun. Final disposition after the complete stable diff review: **PASS — no blocking findings**.
 
 External controls still requiring dated human/platform evidence are: Vercel project/environment/deployment and runtime configuration; GitHub required checks, permissions, immutable run, and artifact retention; OAuth provider applications/redirects/credential state; scheduler identity/target/cadence/retry state; and database target/access/backup/migration state. Repository output does not mark any of them verified.
 
-Rollback is `git revert <CH-0016-implementation-commit>`. This removes the evidence scripts, strict CI binding, health identity, trace exclusions, and documentation together; it restores the unsafe lenient/dev evidence path and is therefore an emergency rollback, not an acceptable long-term state. Ignored `.local/production-artifact-evidence/` output is regenerated, not source-controlled. No external deployment or setting exists to roll back.
+External GitHub Actions verification record — **PENDING**:
 
-Next READY P1: **CH-0017 required-test truthfulness and coverage**. It was not started and must remain a separate batch.
+- GitHub workflow run: Pending.
+- Source SHA: `cbed3550026e2803675f740b49be5fb15f15612b`.
+- Workflow/ref: Pending.
+- Artifact name: Pending platform confirmation (configured name: `playwright-smoke-results`).
+- Artifact expiry/retention: Pending platform confirmation.
+- CI artifact SHA-256: Pending.
+- CI build ID: Pending.
+- Manifest SHA-256: Pending.
+- Runtime report SHA-256: Pending.
+- Standalone verification of downloaded evidence: Pending.
+- Required-check conclusion: Pending.
+- External controls verified: None.
+- External controls still unverified: GitHub execution/retention and all Vercel, OAuth, scheduler, and database controls listed above.
+
+Rollback is `git revert cbed3550026e2803675f740b49be5fb15f15612b`. This removes the evidence scripts, strict CI binding, health identity, trace exclusions, and implementation documentation together; it restores the unsafe lenient/dev evidence path and is therefore an emergency rollback, not an acceptable long-term state. Ignored `.local/production-artifact-evidence/` output is regenerated, not source-controlled. No external deployment or setting exists to roll back.
+
+Next READY P1: **CH-0017 required-test truthfulness and coverage**. It was not started, must remain a separate batch, and must not begin until the exact CH-0016 implementation commit has completed the external GitHub Actions verification above.

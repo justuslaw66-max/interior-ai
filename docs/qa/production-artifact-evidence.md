@@ -100,10 +100,17 @@ fields, or a repository claim that marks an external control verified.
 The required `stable-checks` job runs the negative-case contract test, performs
 the strict evidence build with shaped nonfunctional staging placeholders, runs
 runtime smoke against that exact artifact, validates it, and uploads
-`.local/production-artifact-evidence/` for 14 days. Placeholder configuration
+`.local/production-artifact-evidence/` with a requested 14-day retention. Placeholder configuration
 proves application configuration shape only; no external integration call or
 external-control claim follows from it. GitHub execution and artifact retention
 must be confirmed from an actual workflow run.
+
+Local validation output generated in `.local/production-artifact-evidence/`
+inside a detached worktree is ephemeral. Its hashes and results may be recorded
+for local verification, but the temporary manifest, runtime report, and built
+artifact are not durable release evidence and must not be committed merely for
+retention. Durable evidence remains pending a real GitHub Actions execution,
+successful artifact upload, and platform confirmation of the requested expiry.
 
 The existing Vercel prebuilt path remains the owner for Build Output API
 deployment identity. Its source-tree inspection includes non-ignored untracked
@@ -133,4 +140,5 @@ lenient/dev CI behavior and is therefore a release-integrity rollback, not a
 recommended steady state. No schema, migration, dependency, persisted data,
 deployment, or external configuration rollback is involved. Generated
 `.local/production-artifact-evidence/` files are ignored and can be regenerated
-from the exact clean candidate.
+from the exact clean candidate; local copies are ephemeral and are not durable
+release evidence.

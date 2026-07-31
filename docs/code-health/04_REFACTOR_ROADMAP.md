@@ -96,18 +96,18 @@ Planned change:
 
 ### CH-0016 implementation record
 
-Status: **REPOSITORY REMEDIATION COMPLETE — EXTERNAL EXECUTION/VERIFICATION REQUIRED**. The focused commit adds a fail-closed production artifact evidence owner, negative-case suite, strict CI build/start/smoke path, exact health/build identity, trace-closure exclusions and inventory, Vercel untracked-source enforcement, retained CI reports, and the repository/external guarantee split in `docs/qa/production-artifact-evidence.md`.
+Status: **REPOSITORY REMEDIATION COMPLETE — EXTERNAL EXECUTION/VERIFICATION REQUIRED** at `cbed3550026e2803675f740b49be5fb15f15612b`. The focused commit adds a fail-closed production artifact evidence owner, negative-case suite, strict CI build/start/smoke path, exact health/build identity, trace-closure exclusions and inventory, Vercel untracked-source enforcement, a configured CI evidence upload with requested retention, and the repository/external guarantee split in `docs/qa/production-artifact-evidence.md`. Local detached-worktree output is ephemeral; durable retention remains pending an actual GitHub Actions upload and platform confirmation.
 
 The build contract requires a clean exact commit, no influential local env file, `npm ci --include=dev`, lock/install identities, existing generated-runtime drift check, staging/production environment shape, strict catalog validation, one production build, Next build ID, and SHA-256 inventory of `.next` plus `public`. The test contract re-verifies the artifact, prohibits listener reuse/dev fallback, starts the unchanged `npm run start`, and binds Playwright JSON plus health identity to the same source/artifact/build. Missing, stale, modified, failed, flaky, skipped, development-mode, mismatched, or overclaimed evidence fails closed.
 
 The strict diagnostic build passed after shaped nonfunctional staging configuration was supplied. Trace inventory changed from concrete `.env`/private-evidence leakage to 112 trace manifests and 42,879 references with zero missing/prohibited paths. The existing Turbopack broad-tracing warning remains explicit. No actual GitHub/Vercel run, preview/staging/production deployment, external-control verification, schema/data change, or dependency change is included. CH-0013 schema/payload work, CH-0017 test-truthfulness work, and CH-0018 migration evidence remain separate.
 
-Rollback is one `git revert` of the CH-0016 implementation commit. Generated evidence is ignored and regenerated from an exact clean candidate. The next READY P1 is CH-0017; do not start it inside this batch.
+Rollback is one `git revert cbed3550026e2803675f740b49be5fb15f15612b`. Generated evidence is ignored and regenerated from an exact clean candidate. The next READY P1 is CH-0017, but do not start it until external GitHub Actions verification of the exact CH-0016 commit is complete.
 
 ## Phase 3 — Canonical saved-design routing
 
 **Finding:** CH-0012.
-**Status:** RESOLVED — repository-controlled remediation complete at `2c9e8b4d2322484a8d80873019d2c3495dd862f5`. CH-0016 was subsequently completed as the bounded P2-E evidence batch; CH-0017 is now the next READY P1.
+**Status:** RESOLVED — repository-controlled remediation complete at `2c9e8b4d2322484a8d80873019d2c3495dd862f5`. CH-0016 was subsequently completed as the bounded P2-E evidence batch at `cbed3550026e2803675f740b49be5fb15f15612b`; CH-0017 is the next READY P1 after CH-0016 external verification.
 **Implemented batch:** characterized a modern v3 document through every discovered entry; added `lib/design-editor-url.ts`; made `/design/[id]` a temporary canonical redirect; updated dashboard, duplicate, checkout-success, My Designs, and floor-plan revision-copy navigation; made denied/superseded/unmounted loads restore or retain the correct identity; and removed all legacy rendering from the compatibility route.
 
 Expected first routing files:
