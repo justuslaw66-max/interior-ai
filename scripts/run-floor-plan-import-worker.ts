@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { validateDeploymentEnvironmentOrThrow } from "@/lib/config";
 import {
   createFloorPlanWorkerId,
   processNextFloorPlanImportJob,
@@ -31,6 +32,7 @@ function wait(ms: number) {
 }
 
 async function main() {
+  validateDeploymentEnvironmentOrThrow();
   let processed = 0;
   while (!stopping && processed < limit) {
     const result = await processNextFloorPlanImportJob({ workerId });

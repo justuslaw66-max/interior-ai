@@ -45,6 +45,7 @@ jobs:
           - 5432:5432
     env:
       CI: "true"
+      APP_ENV: development
       DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
       AUTH_SECRET: ci-only-auth-secret-at-least-32-characters
       NEXTAUTH_SECRET: ci-only-auth-secret-at-least-32-characters
@@ -75,6 +76,9 @@ jobs:
         env:
           CODE_QUALITY_BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: npm run check:code-quality
+
+      - name: Verify fail-closed authentication and admin environment policy
+        run: npm run test:auth-env-hardening
 
       - name: Apply database migrations
         env:
@@ -151,6 +155,7 @@ jobs:
           - 5432:5432
     env:
       CI: "true"
+      APP_ENV: development
       DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
       AUTH_SECRET: ci-only-auth-secret-at-least-32-characters
       NEXTAUTH_SECRET: ci-only-auth-secret-at-least-32-characters

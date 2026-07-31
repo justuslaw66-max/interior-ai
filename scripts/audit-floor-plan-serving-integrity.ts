@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { validateDeploymentEnvironmentOrThrow } from "@/lib/config";
 import { assessFloorPlanServingIntegrity } from "@/lib/floor-plan-imports/serving-integrity";
 
 function requestedLimit() {
@@ -9,6 +10,7 @@ function requestedLimit() {
 }
 
 async function main() {
+  validateDeploymentEnvironmentOrThrow();
   const rows = await prisma.floorPlanRevision.findMany({
     where: { publicationStatus: "published" },
     orderBy: [{ publishedAt: "desc" }, { id: "asc" }],

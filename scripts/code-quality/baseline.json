@@ -1073,7 +1073,7 @@
     "app/api/admin/audit/route.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 107
+        "maximum": 102
       }
     },
     "app/api/admin/catalog/[catalogItemId]/route.ts": {

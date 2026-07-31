@@ -1,13 +1,26 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+case "${APP_ENV:-}" in
+  development|staging|production) ;;
+  *)
+    echo "APP_ENV must explicitly be development, staging, or production." >&2
+    exit 1
+    ;;
+esac
+
 if ! command -v psql >/dev/null 2>&1; then
   echo "psql is required (install PostgreSQL client tools)." >&2
   exit 1
 fi
 
-if [[ $# -lt 1 ]]; then
-  echo "Usage: $0 <backup.sql>" >&2
+if [[ $# -lt 2 ]]; then
+  echo "Usage: $0 <backup.sql> --confirm-environment=${APP_ENV}" >&2
+  exit 1
+fi
+
+if [[ "$2" != "--confirm-environment=${APP_ENV}" ]]; then
+  echo "Refusing restore: pass --confirm-environment=${APP_ENV} after verifying DATABASE_URL." >&2
   exit 1
 fi
 

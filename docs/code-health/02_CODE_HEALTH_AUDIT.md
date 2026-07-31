@@ -24,6 +24,7 @@ CH-0001 is the first READY implementation batch because it is high consequence, 
 ### CH-0001 — Deployment classification can fail open into admin access
 
 - **Severity:** P1.
+- **Status:** RESOLVED in repository on the CH-0001 security branch; external platform settings remain explicitly unverified in `docs/security/CH-0001_EXTERNAL_CONTROLS_CHECKLIST.md`.
 - **Locations/symbols:** `lib/config.ts:getApplicationEnvironment`; `lib/admin.ts:isAdmin`; `app/layout.tsx` configuration validation.
 - **Evidence/current behavior:** Missing or unknown `APP_ENV`, `NEXT_PUBLIC_APP_ENV`, and `VERCEL_ENV` becomes `development`. When `ADMIN_EMAILS` is empty, `isAdmin` treats any nonempty authenticated email as admin in that state; `NODE_ENV === "development"` is not required.
 - **Risk:** A misconfigured or non-Vercel production deployment can grant every Google-authenticated user admin APIs and Pro access.
@@ -32,6 +33,8 @@ CH-0001 is the first READY implementation batch because it is high consequence, 
 - **Tests:** Table-driven environment/admin-email matrix; missing and invalid variables; preview/staging/production; loopback versus forwarded host; ordinary signed-in user denied every admin boundary.
 - **Dependencies/decision:** Deployment environment inventory. No product decision.
 - **Compatibility:** Behavior-preserving for valid production and explicit local development; it intentionally removes accidental privilege.
+- **Resolution:** `getApplicationEnvironment` now accepts only the repository's explicit server-side deployment model, `instrumentation.ts` rejects missing/unknown classifiers during server preparation, and admin authorization requires a valid server session email in a complete valid `ADMIN_EMAILS` allowlist in every environment. Auth.js credentials no longer gain fixed or short-secret fallbacks from CI flags, and malformed reviewer/publisher lists deny the complete narrower role. `NEXT_PUBLIC_APP_ENV`, `NODE_ENV`, `ADMIN_REQUIRE_AUTH`, empty allowlists, CI flags, and the two query/header audit bypasses have no authority. The complete surface and deployment tables are in `docs/security/CH-0001_AUTHORIZATION_MATRIX.md`.
+- **Regression evidence:** `npm run test:auth-env-hardening` discovers 25 admin route files and 14 admin pages, checks all direct handlers plus `/api/me`, the optimizer, the synthetic conversion route, eight operational TypeScript CLI/background entry points, and five backup/restore/test-only utilities, and covers environment/auth-credential/allowlist/session/side-effect negatives. `tests/e2e/13-admin-variant-audit.spec.ts` uses real local/CI Auth.js database sessions for signed-out, forged, expired, free, Pro, and allowlisted-admin direct requests.
 
 ### CH-0002 — Guest storage and plan quotas are bypassable and non-atomic
 

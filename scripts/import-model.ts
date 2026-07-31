@@ -4,6 +4,10 @@ import * as os from "node:os";
 import * as path from "node:path";
 import * as crypto from "node:crypto";
 import { prisma } from "../lib/prisma";
+import {
+  getApplicationEnvironment,
+  validateDeploymentEnvironmentOrThrow,
+} from "../lib/config";
 import { resolveImportQaLimits, type ImportQaLimits } from "../lib/importQaPolicy";
 import { validateVariantForPublish } from "../lib/finish-taxonomy";
 import {
@@ -111,7 +115,7 @@ function formatBytes(bytes: number): string {
 function runImportQA(glbPath: string, input: ImportInput, limits: ImportQaLimits): ImportQAResult {
   const checks: ImportCheck[] = [];
   const requireFinishMappings = process.env.IMPORT_QA_REQUIRE_FINISH_MAPPING === "true";
-  const strictInStaging = process.env.NODE_ENV === "production" || process.env.VERCEL_ENV === "preview";
+  const strictInStaging = getApplicationEnvironment() !== "development";
 
   const stat = fs.statSync(glbPath);
   if (stat.size > limits.maxFileSizeBytes) {
@@ -302,6 +306,7 @@ function writeQAReport(report: ImportQAReport, overridePath?: string): string {
 }
 
 async function main() {
+  validateDeploymentEnvironmentOrThrow();
   const jsonPath = process.argv[2];
   if (!jsonPath) throw new Error("Usage: ts-node scripts/import-model.ts <import.json>");
 
@@ -858,4 +863,3 @@ main()
     console.error(e);
     process.exit(1);
   });
-

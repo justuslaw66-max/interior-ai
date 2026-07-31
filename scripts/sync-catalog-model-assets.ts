@@ -3,6 +3,7 @@ import path from "node:path";
 import { parse } from "yaml";
 
 import { isLiveCatalogEntry } from "../lib/catalog-publication";
+import { validateDeploymentEnvironmentOrThrow } from "../lib/config";
 import { prisma } from "../lib/prisma";
 
 type CatalogAssetDoc = {
@@ -127,6 +128,7 @@ async function upsertCandidate(candidate: SyncCandidate): Promise<void> {
 }
 
 async function run(): Promise<void> {
+  validateDeploymentEnvironmentOrThrow();
   const rootDir = path.join(process.cwd(), "catalog", "furniture");
   const candidates = findCatalogFiles(rootDir)
     .map(readCandidate)

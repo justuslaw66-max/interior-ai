@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { prisma } from "../lib/prisma";
+import { validateDeploymentEnvironmentOrThrow } from "../lib/config";
 
 function walk(dir: string): string[] {
   const out: string[] = [];
@@ -23,6 +24,7 @@ function walk(dir: string): string[] {
 }
 
 async function main() {
+  validateDeploymentEnvironmentOrThrow();
   const sourceArg = process.argv[2];
   if (!sourceArg) {
     console.error("Usage: npx tsx scripts/restore-model-assets.ts <source-dir>");

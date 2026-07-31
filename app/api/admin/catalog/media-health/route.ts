@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { isAdminEmail } from "@/lib/admin";
-import { config } from "@/lib/config";
 import { CATALOG_ITEMS_MAP } from "@/lib/catalog";
 import { runVariantResolutionAudit } from "@/lib/catalog/variant-audit";
 import {
@@ -9,16 +8,10 @@ import {
   CATALOG_MEDIA_PRESENTATION_PRESETS,
 } from "@/lib/catalog/media-policy";
 
-export async function GET(request: Request) {
+export async function GET(_request: Request) {
   try {
-    const url = new URL(request.url);
-    const allowDevBypass =
-      config.isDev &&
-      url.searchParams.get("devBypass") === "1" &&
-      request.headers.get("x-interior-admin-bypass") === "1";
-
     const session = await auth();
-    if (!allowDevBypass && (!session?.user?.email || !isAdminEmail(session.user.email))) {
+    if (!session?.user?.email || !isAdminEmail(session.user.email)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

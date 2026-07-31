@@ -38,7 +38,7 @@ Recommended one-issue batches:
 ## Phase 1 — READY: fail-closed deployment/admin boundary
 
 **Finding:** CH-0001.
-**Status:** READY for implementation after audit review.
+**Status:** COMPLETE in the repository-controlled CH-0001 batch; platform configuration verification remains in `docs/security/CH-0001_EXTERNAL_CONTROLS_CHECKLIST.md`.
 **Why first:** Highest-consequence confirmed defect that is narrow, server-side, decision-free, and independent of the red UI/catalog baseline.
 
 ### Exact intended batch
@@ -64,6 +64,18 @@ Planned change:
 **Verification:** `git diff --check`; `npx eslint lib/config.ts lib/admin.ts scripts/test-auth-env-hardening.ts --max-warnings=0`; new `npm run test:auth-env-hardening`; `npm run test:phase7-security-boundaries`; `npm run typecheck`; `npm run build`; negative local requests to `/api/me` and one admin route under missing/invalid env.
 **Rollback:** revert the batch commit; no data migration. Preserve a break-glass documented configured `ADMIN_EMAILS`, never a fail-open classifier.
 **Compatibility:** correctly configured users see no change; accidental admin privilege is intentionally removed.
+
+### Implementation record
+
+- strict server classification recognizes explicit `development`, `staging`, and `production`, plus Vercel `development`, `preview` (staging), and `production` only when `APP_ENV` is absent;
+- public deployment variables, missing/blank/unknown values, malformed admin/reviewer/publisher lists, unauthenticated local access, and request-controlled audit bypasses deny;
+- GitHub Actions flags no longer substitute fixed/missing Auth.js credentials or accept a short secret; CI supplies explicit build credentials and the required test exercises production denial;
+- CI and the local example now set `APP_ENV=development` explicitly;
+- `instrumentation.ts` validates deployment classification during production-server preparation, while each direct privileged handler still performs its own authentication and authorization before work;
+- eight operational TypeScript CLI/background entry points now validate the same deployment classifier before database, filesystem, object-store, or queue work; their operator credentials and concrete targets remain external controls;
+- backup/restore scripts require explicit environment state (restore also requires exact target-environment confirmation), while legacy seed and billing utilities refuse non-development/non-local production targets;
+- `npm run test:auth-env-hardening` is a required stable check, and the authorization matrix inventories all affected pages, handlers, operation-specific reviewer/publisher policies, and deployment scripts;
+- removing the unsafe audit bypass shortened an existing overlong function from 107 to 102 lines, so the permanent no-growth ratchet required that single baseline maximum to decrease. No rule, threshold, exception, or suppression was weakened.
 
 ## Phase 2 — Make verification truthful and production-equivalent
 

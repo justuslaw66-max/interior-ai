@@ -4,14 +4,7 @@ import { AuthProvider } from "@/components/AuthProvider";
 import { PostHogProvider } from "@/app/providers/PostHogProvider";
 import { IdentifyGate } from "@/app/providers/IdentifyGate";
 import { validateCatalogOrThrow } from "@/lib/catalog-runtime";
-import { validateEnvOrThrow } from "@/lib/config";
-
-const isProdLike =
-  process.env.APP_ENV === "staging" ||
-  process.env.APP_ENV === "production" ||
-  process.env.VERCEL_ENV === "preview" ||
-  process.env.VERCEL_ENV === "production" ||
-  process.env.NODE_ENV === "production";
+import { config, validateEnvOrThrow } from "@/lib/config";
 
 export const metadata: Metadata = {
   title: "Interior AI",
@@ -28,7 +21,7 @@ export default function RootLayout({
   try {
     validateCatalogOrThrow();
   } catch (err) {
-    if (isProdLike) {
+    if (config.isProdLike) {
       throw err;
     }
     console.warn("⚠️ Catalog validation warning:", err instanceof Error ? err.message : err);

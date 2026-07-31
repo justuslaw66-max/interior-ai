@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { parse } from "yaml";
 
+import { validateDeploymentEnvironmentOrThrow } from "../lib/config";
 import { prisma } from "../lib/prisma";
 
 type CatalogAssetDoc = {
@@ -35,6 +36,7 @@ function toMillimeters(valueCm: number): number {
 }
 
 async function run(): Promise<void> {
+  validateDeploymentEnvironmentOrThrow();
   for (const relativePath of TARGET_FILES) {
     const filePath = path.join(process.cwd(), relativePath);
     const raw = fs.readFileSync(filePath, "utf8");

@@ -22,7 +22,7 @@ These should be deterministic and blocking:
 6. proposed test-manifest audit and server/client import-boundary check;
 7. `npm run test:design-page-cleanup`;
 8. `npm run verify:design-persistence`;
-9. `npm run test:phase7-security-boundaries` plus CH-0001 environment/admin matrix;
+9. `npm run test:auth-env-hardening` plus `npm run test:phase7-security-boundaries`;
 10. `npm run test:floor-plan-required`, amended to include `test:floor-plan-live-progress`;
 11. `npm run test:designer-theme-contrast` and `npm run test:cabinetry-preview-renderer`;
 12. generated surface `--check` and surface schema test through named package commands;

@@ -1,15 +1,18 @@
+const EMAIL_PATTERN = /^[^\s,@]+@[^\s,@]+\.[^\s,@]+$/;
+
 function normalizedEmail(value?: string | null) {
   const email = value?.trim().toLowerCase() ?? "";
-  return email && email.includes("@") ? email : null;
+  return EMAIL_PATTERN.test(email) ? email : null;
 }
 
 function configuredEmails(name: string) {
-  return new Set(
-    (process.env[name] ?? "")
-      .split(",")
-      .map((value) => normalizedEmail(value))
-      .filter((value): value is string => Boolean(value))
-  );
+  const raw = process.env[name];
+  if (!raw?.trim()) return null;
+
+  const emails = raw.split(",").map((value) => normalizedEmail(value));
+  if (emails.some((email) => email === null)) return null;
+
+  return new Set(emails as string[]);
 }
 
 /**
@@ -19,12 +22,12 @@ function configuredEmails(name: string) {
  */
 export function canReviewPublicFloorPlans(email?: string | null) {
   const actor = normalizedEmail(email);
-  return Boolean(actor && configuredEmails("FLOOR_PLAN_REVIEWER_EMAILS").has(actor));
+  return Boolean(actor && configuredEmails("FLOOR_PLAN_REVIEWER_EMAILS")?.has(actor));
 }
 
 export function canPublishPublicFloorPlans(email?: string | null) {
   const actor = normalizedEmail(email);
-  return Boolean(actor && configuredEmails("FLOOR_PLAN_PUBLISHER_EMAILS").has(actor));
+  return Boolean(actor && configuredEmails("FLOOR_PLAN_PUBLISHER_EMAILS")?.has(actor));
 }
 
 export function requireFloorPlanReviewer(email?: string | null) {

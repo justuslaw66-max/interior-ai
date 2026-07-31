@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { validateDeploymentEnvironmentOrThrow } from "@/lib/config";
 import { PrismaFloorPlanRetentionService } from "@/lib/floor-plan-imports/retention";
 import { createFloorPlanObjectStorageFromEnv } from "@/lib/floor-plan-imports/object-storage-factory";
 import { processFloorPlanObjectDeletionBatch } from "@/lib/floor-plan-imports/retention-outbox-runner";
@@ -12,6 +13,7 @@ function numericArgument(name: string, fallback: number) {
 }
 
 async function main() {
+  validateDeploymentEnvironmentOrThrow();
   const limit = numericArgument("limit", 50);
   const deletionLimit = numericArgument("deletion-limit", 25);
   const dryRun = process.argv.includes("--dry-run");

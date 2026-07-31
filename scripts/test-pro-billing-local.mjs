@@ -16,6 +16,12 @@ const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(scriptDir, "..");
 loadEnvConfig(rootDir, true);
 
+assert.equal(
+  process.env.APP_ENV?.trim().toLowerCase(),
+  "development",
+  "Pro billing lifecycle tests require APP_ENV=development"
+);
+
 const baseUrl = process.env.PRO_BILLING_BASE_URL ?? "http://127.0.0.1:3000";
 const stripeKey = process.env.STRIPE_SECRET_KEY ?? "";
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET ?? "";
@@ -30,9 +36,14 @@ assert.notEqual(monthlyPriceId, yearlyPriceId, "Monthly/yearly prices must diffe
 
 const databaseUrl = process.env.DATABASE_URL;
 assert.ok(databaseUrl, "DATABASE_URL is required");
-const database = new URL(databaseUrl);
+let database;
+try {
+  database = new URL(databaseUrl);
+} catch {
+  assert.fail("DATABASE_URL must be a valid local database URL");
+}
 assert.ok(
-  ["localhost", "127.0.0.1", "::1"].includes(database.hostname),
+  ["localhost", "127.0.0.1", "[::1]"].includes(database.hostname),
   "Pro billing lifecycle tests require a local database"
 );
 

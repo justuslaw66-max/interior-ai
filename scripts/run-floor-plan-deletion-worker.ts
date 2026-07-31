@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { validateDeploymentEnvironmentOrThrow } from "@/lib/config";
 import { createFloorPlanObjectStorageFromEnv } from "@/lib/floor-plan-imports/object-storage-factory";
 import {
   processNextFloorPlanObjectDeletion,
@@ -34,6 +35,7 @@ function wait(milliseconds: number) {
 }
 
 async function main() {
+  validateDeploymentEnvironmentOrThrow();
   const storage = createFloorPlanObjectStorageFromEnv();
   if (!storage) {
     throw new Error(
