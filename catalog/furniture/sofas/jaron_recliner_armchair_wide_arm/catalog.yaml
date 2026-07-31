@@ -138,7 +138,7 @@ authoring_notes:
   category_confidence: "high"
   source_checked: "Castlery Singapore Jaron leather and fabric recliner armchair pages, 2026-06-20"
   source_url: "https://www.castlery.com/sg/products/jaron-leather-recliner-armchair?variant=wide_arm&material=marche_Ivory"
-  note: "Wide-arm Jaron recliner armchair. Open and closed GLBs are visualization states only; purchasable identity remains material/arm-style variant."
+  note: "Wide-arm Jaron recliner armchair. Open visual bounds are calibrated against the closed GLB's fixed side-arm panels; the 165cm reclined size remains the planning/collision envelope. Open and closed GLBs are visualization states only; purchasable identity remains material/arm-style variant."
 
 shipping_and_warranty:
   free_delivery_threshold_sgd: 500
@@ -358,8 +358,8 @@ configurations:
     model_url: "/assets/models/armchair-real-castlery-jaron-recliner-armchair-wide-arm-open.glb"
     visual_bounds_cm:
       width_cm: 144
-      depth_cm: 165
-      height_cm: 77
+      depth_cm: 147
+      height_cm: 90
     planning_bounds_cm:
       width_cm: 144
       depth_cm: 165

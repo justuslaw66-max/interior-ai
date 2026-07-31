@@ -264,6 +264,9 @@ export function useDesignPagePlacementTargetController({
       setSelectedWallSurfaceTarget({
         roomId: target.roomId,
         faceId: target.id,
+        panelId: target.panelId,
+        panelAliases: target.panelAliases,
+        surfaceSide: target.surfaceSide,
       });
       setActiveSurfaceTarget("selected_wall");
       if (brushAction?.kind === "wall_paint") {
@@ -271,19 +274,24 @@ export function useDesignPagePlacementTargetController({
           brushAction.paint.colorHex,
           brushAction.paint.name,
           target.roomId,
-          target.id
+          target.id,
+          target.panelId,
+          target.panelAliases,
         );
       } else if (brushAction?.kind === "wall_material") {
         handleApplyWallMaterialToRoom(
           brushAction.materialId,
           target.roomId,
-          target.id
+          target.id,
+          target.panelId,
+          target.panelAliases,
         );
       }
       track("surface_scene_target_selected", {
         target: "selected_wall",
         roomId: target.roomId,
         faceId: target.id,
+        panelId: target.panelId,
         brush: surfaceBrushActive,
       });
     },

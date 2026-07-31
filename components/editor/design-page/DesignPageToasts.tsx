@@ -54,7 +54,7 @@ export function DesignPageToasts({
         <div
           data-testid="collision-toast"
           aria-hidden="true"
-          className="pointer-events-none fixed top-16 left-1/2 z-50 -translate-x-1/2 animate-fade-in"
+          className="pointer-events-none fixed top-11 left-1/2 z-50 -translate-x-1/2 animate-fade-in"
         >
           <div className="rounded-lg bg-orange-500 px-4 py-3 text-sm font-semibold text-white shadow-lg">
             ⚠️ {ruleMessage}
@@ -64,7 +64,7 @@ export function DesignPageToasts({
 
       {/* Onboarding/Nudge Toast */}
       {nudgeMessage && (
-        <div data-testid="sofa-nudge" className="fixed top-28 left-1/2 z-50 -translate-x-1/2 animate-fade-in">
+        <div data-testid="sofa-nudge" className="fixed top-23 left-1/2 z-50 -translate-x-1/2 animate-fade-in">
           <div className="rounded-lg bg-purple-600 px-4 py-3 text-sm font-semibold text-white shadow-lg">
             💡 {nudgeMessage}
           </div>

@@ -61,7 +61,7 @@ export default function RoomPlanStatusBar({
   const containerClass = [
     "flex min-w-0 flex-nowrap items-center justify-start overflow-hidden rounded-full border backdrop-blur",
     isCommand
-      ? "h-9 max-w-full gap-1 px-1 py-0 shadow-none"
+      ? "h-[30px] max-w-full gap-1 px-1 py-0 shadow-none"
       : compact
       ? "max-w-[min(34rem,calc(100vw-2rem))] gap-1.5 px-1.5 py-1 shadow-md"
       : "max-w-[min(44rem,calc(100vw-2rem))] gap-2 px-2 py-1.5 shadow-lg",
@@ -118,7 +118,7 @@ export default function RoomPlanStatusBar({
       <div className="min-w-0 px-2">
         <div
           data-testid="room-plan-status-room-name"
-          className={`truncate font-semibold leading-5 ${compact || isCommand ? "text-[13px]" : "text-sm"} ${
+          className={`truncate font-semibold ${compact || isCommand ? "text-[13px] leading-none" : "text-sm leading-5"} ${
             isCommand ? "max-w-[7.5rem] xl:max-w-[10rem] 2xl:max-w-[12rem]" : ""
           }`}
         >

@@ -254,6 +254,28 @@ export interface CatalogAssetQualityMetadata {
   validatedAt?: string;
 }
 
+export type FixtureEmitterType = "point" | "spot";
+export type FixturePhotometricVerification =
+  | "estimated"
+  | "manufacturer"
+  | "photometric";
+
+/**
+ * Immutable emitter facts supplied by the catalog or copied into a placed
+ * product snapshot. Values are authored in local product space.
+ */
+export interface FixturePhotometricMetadata {
+  emitterType: FixtureEmitterType;
+  localOffsetMeters: [number, number, number];
+  direction: [number, number, number];
+  beamAngleDeg: number;
+  luminousFluxLumens: number;
+  cctKelvin: number;
+  dimmable: boolean;
+  emissiveMeshNames?: string[];
+  verification: FixturePhotometricVerification;
+}
+
 // ============================================================================
 // Complete Catalog Item (Full Contract)
 // ============================================================================
@@ -284,6 +306,7 @@ export interface CatalogItemSchema {
 
   // Rendering
   assets: AssetReferences;
+  lighting?: FixturePhotometricMetadata;
   variants: ProductVariant[];
   defaultVariantId: string; // must exist in variants array
 

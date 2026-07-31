@@ -2,6 +2,7 @@ export const FLOOR_PLAN_IMPORT_STATUSES = [
   "received",
   "rendered",
   "extracted",
+  "selecting_page",
   "scale_solved",
   "topology_built",
   "validating",
@@ -93,6 +94,19 @@ export type FloorPlanRenderedPage = {
   };
 };
 
+export type FloorPlanPageCandidate = {
+  pageNumber: number;
+  rank: number;
+  score: number;
+  widthPx: number;
+  heightPx: number;
+  roomLabelCount: number;
+  dimensionLabelCount: number;
+  openingSymbolCount: number;
+  vectorPathCount: number;
+  vectorSegmentCount: number;
+};
+
 export type FloorPlanExtractionResult = {
   candidate: Record<string, unknown> | null;
   sourceManifest: Record<string, unknown> | null;
@@ -105,6 +119,7 @@ export type FloorPlanImportJobRecord = {
   userId: string;
   sourceAssetId: string;
   status: FloorPlanImportStatus;
+  statusChangedAt: Date | null;
   adapterId: string | null;
   extractionVersion: string | null;
   renderedPages: FloorPlanRenderedPage[];
@@ -129,10 +144,11 @@ export type FloorPlanImportJobRecord = {
 export const FLOOR_PLAN_MVP_SUGGESTION_CODES = new Set([
   "rooms_confirmation",
   "source_room_coverage_incomplete",
-  "dimensions_confirmation",
+  "unlabeled_rooms_require_name",
   "openings_confirmation",
   "entrance_confirmation",
   "assumed_heights_confirmation",
+  "exterior_boundary_confirmation",
 ]);
 
 export function isFloorPlanMvpSuggestionIssue(

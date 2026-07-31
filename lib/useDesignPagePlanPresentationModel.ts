@@ -4,7 +4,7 @@ import { useCallback, useMemo } from "react";
 
 import type { PlanStartMode } from "@/components/editor/DesignControlsPlanPanel";
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
-import { LIGHTING_PRESETS, type LightingPreset } from "@/lib/lightingPresets";
+import type { LightingPreset } from "@/lib/lightingPresets";
 import {
   buildExportReadinessItems,
   getExportReadinessScore,
@@ -112,7 +112,7 @@ export function resolveDesignPageViewportLayout({
     ? floatingOverlayInspectorStackTopPx
     : planQualityReviewVisible
       ? planQualityReviewReservedBottomPx + floatingOverlayStackGapPx
-      : 160;
+      : 140;
   const selectionInspectorWidthPx = selectionInspectorDockedWithRightRail
     ? floatingOverlayStackWidthPx
     : 288;
@@ -292,7 +292,6 @@ export function useDesignPagePlanPresentationModel({
     () => getExportReadinessScore(exportReadinessItems),
     [exportReadinessItems]
   );
-  const lightConfig = LIGHTING_PRESETS[presentation.lightingPreset];
   const sceneBackgroundColor =
     layout.viewMode === "3d"
       ? presentation.showDesignerTheme
@@ -431,7 +430,6 @@ export function useDesignPagePlanPresentationModel({
       exportReadinessItems,
       exportReadinessReadyCount,
       exportReadinessScore,
-      lightConfig,
       sceneBackgroundColor,
       effectivePlanLayers,
       effectivePlanTheme,

@@ -1095,10 +1095,13 @@ export default async function ExportPage({
   const openingScheduleRows = buildOpeningScheduleRows(rooms, planOpenings);
   const checkoutReadinessRows = buildCheckoutReadinessRows(rooms);
   const presentationViewRows = buildPresentationViewRows(rooms);
-  const surfaceMaterialBomRows = buildRoomSurfaceMaterialBomRows(rooms);
+  const surfaceMaterialBomRows = buildRoomSurfaceMaterialBomRows(
+    rooms,
+    planOpenings
+  );
   const shoppingCsvRows = [
     ...buildShoppingCsvRows(checkoutReadinessRows),
-    ...buildSurfaceMaterialCsvRows(rooms),
+    ...buildSurfaceMaterialCsvRows(rooms, planOpenings),
   ];
   const handoffReady =
     handoffFidelitySummary.missingCommerceCount === 0 &&

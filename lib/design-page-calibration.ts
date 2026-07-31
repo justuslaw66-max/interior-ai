@@ -39,6 +39,9 @@ export type GLBCalibration = {
   upperUpholsteryFadeStart?: number;
   upperUpholsteryFadeEnd?: number;
   upperUpholsteryPreserveWarmWood?: boolean;
+  upperUpholsteryPreserveLowerComponents?: boolean;
+  upperUpholsteryLowerComponentMaxHeight?: number;
+  upperUpholsteryLowerComponentMaxFloorOffset?: number;
 };
 
 export const STANDARD_IMPORTED_CASTLERY_SOFA_CALIBRATION: GLBCalibration = {
@@ -63,12 +66,15 @@ const HAMILTON_SOFA_PRODUCT_IDS = [
   "sofa-real-castlery-hamilton-2-seater-with-storage-ottoman",
   "sofa-real-castlery-hamilton-3-seater",
   "sofa-real-castlery-hamilton-3-seater-with-storage-ottoman",
+  "sofa-real-castlery-hamilton-3-seater-sofa-bed",
   "sofa-real-castlery-hamilton-chaise-sectional-left",
   "sofa-real-castlery-hamilton-chaise-sectional-right",
   "sofa-real-castlery-hamilton-chaise-sectional-with-storage-ottoman-left",
   "sofa-real-castlery-hamilton-chaise-sectional-with-storage-ottoman-right",
   "sofa-real-castlery-hamilton-round-chaise-sectional-left",
   "sofa-real-castlery-hamilton-round-chaise-sectional-right",
+  "sofa-real-castlery-hamilton-chaise-sectional-sofa-bed-left",
+  "sofa-real-castlery-hamilton-chaise-sectional-sofa-bed-right",
   "armchair-real-castlery-hamilton-round-swivel-armchair",
   "armchair-real-castlery-hamilton-round-swivel-1-5-seater-armchair",
 ];
@@ -76,6 +82,9 @@ const HAMILTON_SOFA_PRODUCT_IDS = [
 const HAMILTON_SOFA_CALIBRATION: GLBCalibration = {
   brightness: 1,
   saturation: 1,
+  // Marcel is a fine plain weave; keep its high-contrast normal map at
+  // micro-texture strength so it does not read as coarse upholstery dimples.
+  importedNormalScale: 0.012,
   roughnessOverride: 0.86,
   metalnessOverride: 0,
   aoMapIntensity: 0.24,
@@ -274,6 +283,16 @@ export const GLB_CALIBRATION_BY_PRODUCT_ID: Record<string, GLBCalibration> = {
     specularIntensityOverride: 0.12,
     disableAoMap: false,
     disableVertexColors: true,
+    // Cammy is a single mesh/material, including its dark lower leg assembly.
+    // Tint only the upholstered body so variant colour never reaches the legs.
+    upperUpholsteryTint: true,
+    upperUpholsteryTintStrength: 1,
+    upperUpholsteryPreserveSourceLuma: false,
+    upperUpholsteryFadeStart: 0.24,
+    upperUpholsteryFadeEnd: 0.32,
+    upperUpholsteryPreserveLowerComponents: true,
+    upperUpholsteryLowerComponentMaxHeight: 0.4,
+    upperUpholsteryLowerComponentMaxFloorOffset: 0.12,
     useVariantColor: true,
     preserveWoodLegMaterials: true,
     preserveWoodLegColorHex: "#252525",

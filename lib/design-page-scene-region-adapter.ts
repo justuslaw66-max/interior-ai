@@ -36,7 +36,6 @@ export type BuildDesignPageSceneRegionAdapterInput = {
     };
     scene: {
       liteEnabled: CanvasState["liteSceneEnabled"];
-      shadowsEnabled: CanvasState["shadowsEnabled"];
       loadingVisible: CanvasState["showSceneLoadingVeil"];
       performanceMode: CanvasState["scenePerformanceMode"];
       renderQuality: StructureConfiguration["renderQuality"];
@@ -45,7 +44,11 @@ export type BuildDesignPageSceneRegionAdapterInput = {
       planDiagnostics: CanvasState["planDiagnostics"];
       cursor: CanvasConfiguration["cursor"];
       backgroundColor: CanvasConfiguration["backgroundColor"];
-      lightConfig: CanvasConfiguration["lightConfig"];
+      lightingSettings: CanvasConfiguration["lightingSettings"];
+      lightingItems: CanvasConfiguration["lightingItems"];
+      activeRoomId: CanvasConfiguration["activeRoomId"];
+      selectedItemIds: CanvasConfiguration["selectedItemIds"];
+      lightingModeOverride: CanvasConfiguration["lightingModeOverride"];
       showGrid: boolean;
       gridPulse: boolean;
     };
@@ -158,7 +161,6 @@ export function buildDesignPageSceneRegionAdapter({
         viewMode: editor.viewMode,
         isClientPreview: editor.isClientPreview,
         liteSceneEnabled: scene.liteEnabled,
-        shadowsEnabled: scene.shadowsEnabled,
         showSceneLoadingVeil: scene.loadingVisible,
         scenePerformanceMode: scene.performanceMode,
         controlsEnabled: scene.controlsEnabled,
@@ -239,7 +241,12 @@ export function buildDesignPageSceneRegionAdapter({
       canvas: {
         cursor: scene.cursor,
         backgroundColor: scene.backgroundColor,
-        lightConfig: scene.lightConfig,
+        lightingSettings: scene.lightingSettings,
+        lightingItems: scene.lightingItems,
+        lightingOpenings: plan.editorScene.openings,
+        activeRoomId: scene.activeRoomId,
+        selectedItemIds: scene.selectedItemIds,
+        lightingModeOverride: scene.lightingModeOverride,
         initialCameraView: configuration.initialCameraView,
         planFit: plan.fit,
         planBounds: { ...plan.fitBounds, roomHeight: room.height },

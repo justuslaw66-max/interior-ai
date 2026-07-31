@@ -37,6 +37,7 @@ function makeJob(id: string): FloorPlanImportJobRecord {
     userId: "user-1",
     sourceAssetId: "source-1",
     status: "received",
+    statusChangedAt: null,
     adapterId: null,
     extractionVersion: null,
     renderedPages: [],
@@ -244,7 +245,14 @@ function makeMinimalDocument(): Record<string, unknown> {
         openings: [],
         structures: [],
         annotations: [],
-        dimensions: [],
+        dimensions: [{
+          id: "dimension-1",
+          fromVertexId: "vertex-1",
+          toVertexId: "vertex-2",
+          axis: "horizontal",
+          measuredMm: 4000,
+          provenance,
+        }],
       },
     ],
   };
@@ -294,8 +302,117 @@ async function testCriticalIssueStopsPipeline() {
   ]);
 }
 
+async function testMultiPageImportPausesForSelection() {
+  const repository = new MemoryRepository(makeJob("page-selection"));
+  const envelope = {
+    kind: "floor_plan_deterministic_evidence_v2",
+    source: {
+      id: "source-1",
+      fileName: "home.pdf",
+      mimeType: "application/pdf",
+      sha256: "a".repeat(64),
+    },
+    pages: [{ pageNumber: 1 }, { pageNumber: 2 }],
+    pageCandidates: [
+      {
+        pageNumber: 2,
+        rank: 1,
+        score: 100,
+        widthPx: 1000,
+        heightPx: 800,
+        roomLabelCount: 3,
+        dimensionLabelCount: 2,
+        openingSymbolCount: 1,
+        vectorPathCount: 10,
+        vectorSegmentCount: 40,
+      },
+      {
+        pageNumber: 1,
+        rank: 2,
+        score: 20,
+        widthPx: 1000,
+        heightPx: 800,
+        roomLabelCount: 0,
+        dimensionLabelCount: 0,
+        openingSymbolCount: 0,
+        vectorPathCount: 2,
+        vectorSegmentCount: 8,
+      },
+    ],
+    selectedPageNumber: null,
+    scale: null,
+    scales: [],
+  };
+  const canonical = makeMinimalDocument();
+  const adapter: FloorPlanSourceAdapter = {
+    id: "page-selection-adapter",
+    extractionVersion: "2.0.0",
+    supports: () => true,
+    async render() {
+      return [
+        { pageNumber: 1, widthPx: 1000, heightPx: 800, assetKey: "page-1" },
+        { pageNumber: 2, widthPx: 1000, heightPx: 800, assetKey: "page-2" },
+      ];
+    },
+    async extract() {
+      return {
+        candidate: envelope,
+        sourceManifest: { pages: [] },
+        reviewIssues: [],
+      };
+    },
+    async solveScale() {
+      return {
+        candidate: canonical,
+        sourceManifest: { pages: [] },
+        reviewIssues: [],
+      };
+    },
+    async buildTopology(previous) {
+      return previous;
+    },
+    async validate(previous) {
+      return previous;
+    },
+  };
+  const paused = await runFloorPlanImportPipeline({
+    jobId: repository.job.id,
+    repository,
+    store,
+    adapters: new FloorPlanSourceAdapterRegistry([adapter]),
+  });
+  assert.equal(paused.status, "selecting_page");
+  assert.deepEqual(repository.transitions, [
+    "received->rendered",
+    "rendered->extracted",
+    "extracted->selecting_page",
+  ]);
+
+  repository.job = {
+    ...repository.job,
+    candidate: { ...envelope, selectedPageNumber: 2 },
+  };
+  const completed = await runFloorPlanImportPipeline({
+    jobId: repository.job.id,
+    repository,
+    store,
+    adapters: new FloorPlanSourceAdapterRegistry([adapter]),
+  });
+  assert.equal(completed.status, "ready");
+  assert.deepEqual(repository.transitions.slice(3), [
+    "selecting_page->scale_solved",
+    "scale_solved->topology_built",
+    "topology_built->validating",
+    "validating->ready",
+  ]);
+}
+
 async function testSourceCompletenessCannotBeWaived() {
   const repository = new MemoryRepository(makeJob("source-completeness"));
+  const incompleteDocument = makeMinimalDocument();
+  (
+    incompleteDocument.floors as Array<Record<string, unknown>>
+  )[0].dimensions = [];
   const result = await runFloorPlanImportPipeline({
     jobId: "source-completeness",
     repository,
@@ -310,7 +427,7 @@ async function testSourceCompletenessCannotBeWaived() {
           resolved: true,
           resolution: "I checked only the visible room and accepted it.",
         },
-        makeMinimalDocument(),
+        incompleteDocument,
         {
           pages: [{
             pageNumber: 1,
@@ -564,6 +681,7 @@ assert.throws(() =>
 async function main() {
   await testHappyPipeline();
   await testCriticalIssueStopsPipeline();
+  await testMultiPageImportPausesForSelection();
   await testSourceCompletenessCannotBeWaived();
   await testCorrectedCandidateResumesValidation();
   await testEveryPersistedProcessingStageResumes();

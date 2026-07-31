@@ -41,6 +41,28 @@ const planAuthoringRegistrationSource = readFileSync(
   join(root, "lib/useDesignPagePlanAuthoringRegistration.ts"),
   "utf8"
 );
+const surfaceInspectorControllerSource = readFileSync(
+  join(root, "lib/useDesignPageSurfaceInspector.ts"),
+  "utf8"
+);
+const surfaceActionsSource = readFileSync(
+  join(root, "lib/useDesignPageSurfaceActions.ts"),
+  "utf8"
+);
+const selectedSurfaceInspectorSource = readFileSync(
+  join(
+    root,
+    "components/editor/design-page/SelectedSurfaceInspector.tsx"
+  ),
+  "utf8"
+);
+const wallRendererSource = readFileSync(
+  join(
+    root,
+    "components/editor/renderers/house-plan-3d/wallAndOpeningMeshes.tsx"
+  ),
+  "utf8"
+);
 
 assert.match(
   planEditingFacadeSource,
@@ -67,6 +89,82 @@ assert.doesNotMatch(
   modelSource,
   /recentOpenings\.find/,
   "Recent openings must not be promoted into the selection inspector."
+);
+const applyAllSource = surfaceInspectorControllerSource.slice(
+  surfaceInspectorControllerSource.indexOf("const onApplyAll"),
+  surfaceInspectorControllerSource.indexOf("const onSelectPickerMaterial")
+);
+assert.match(
+  applyAllSource,
+  /surfaceInspectorIsWall[\s\S]*?wallInspectorSettings\.paintColorHex[\s\S]*?applyWallPaintToAllRooms\([\s\S]*?wallInspectorSettings\.paintColorHex,[\s\S]*?wallInspectorSettings\.paintName[\s\S]*?surfaceInspectorMaterialId[\s\S]*?applyWallMaterialToAllRooms\([\s\S]*?surfaceInspectorMaterialId,[\s\S]*?selectedWallMaterialSettingsPatch/,
+  "Selected-wall Apply all should copy paint colours as paint and catalog finishes as materials."
+);
+assert.match(
+  surfaceInspectorControllerSource,
+  /surfaceInspectorIsWall &&[\s\S]*?!surfaceInspectorMaterialId &&[\s\S]*?!wallInspectorSettings\.paintColorHex/,
+  "A painted selected wall should keep Apply all enabled even without a catalog material ID."
+);
+assert.match(
+  selectedSurfaceInspectorSource,
+  /data-testid=\{[\s\S]*?state\.target === "wall"[\s\S]*?"selection-inspector-wall-apply-all"[\s\S]*?\{state\.target === "wall" \? "Apply to all walls" : "Apply all"\}/,
+  "The selected-wall inspector should expose an explicit Apply to all walls action."
+);
+const applyRoomSource = surfaceInspectorControllerSource.slice(
+  surfaceInspectorControllerSource.indexOf("const onApplyRoom"),
+  surfaceInspectorControllerSource.indexOf("const onSelectPickerMaterial")
+);
+assert.match(
+  applyRoomSource,
+  /surfaceInspectorIsWall[\s\S]*?wallInspectorSettings\.paintColorHex[\s\S]*?applyWallPaintToRoom\([\s\S]*?selectedPlanRoom\.id,[\s\S]*?null[\s\S]*?surfaceInspectorMaterialId[\s\S]*?applyWallMaterialToRoom\([\s\S]*?selectedPlanRoom\.id,[\s\S]*?null/,
+  "Apply to room should copy the selected wall paint or catalog finish to every wall in the selected room."
+);
+assert.match(
+  selectedSurfaceInspectorSource,
+  /data-testid="selection-inspector-wall-apply-room"[\s\S]*?onClick=\{actions\.onApplyRoom\}[\s\S]*?Apply to room/,
+  "The selected-wall inspector should expose an explicit Apply to room action."
+);
+assert.match(
+  surfaceInspectorControllerSource,
+  /wallInspectorSupportsGrout = Boolean\([\s\S]*?surfaceInspectorIsWall[\s\S]*?surface_category ===[\s\S]*?"wall_tile"[\s\S]*?material_family ===[\s\S]*?"tile"[\s\S]*?const wallGrout =[\s\S]*?wallInspectorSupportsGrout[\s\S]*?wallInspectorSettings\.jointSizeMm[\s\S]*?wallInspectorSettings\.jointColor/,
+  "Wall grout controls should appear only for tiled wall materials and reflect the selected panel settings."
+);
+assert.match(
+  surfaceInspectorControllerSource,
+  /const onSelectGroutSize[\s\S]*?surfaceInspectorIsWall[\s\S]*?changeActiveWallSurfaceSettings\([\s\S]*?jointSizeMm[\s\S]*?wallInspectorFaceId[\s\S]*?const onSelectGroutColor[\s\S]*?surfaceInspectorIsWall[\s\S]*?changeActiveWallSurfaceSettings\([\s\S]*?jointColor[\s\S]*?wallInspectorFaceId/,
+  "Wall grout edits should use the canonical selected-wall mutation path."
+);
+assert.match(
+  selectedSurfaceInspectorSource,
+  /data-testid="selection-inspector-wall-grout"[\s\S]*?<SurfaceGroutControls[\s\S]*?grout=\{state\.wallGrout\}[\s\S]*?testIdPrefix="wall-surface"/,
+  "The selected tiled-wall inspector should render grout size and colour controls."
+);
+assert.match(
+  wallRendererSource,
+  /useSurfaceMaterialTexture\(\{[\s\S]*?jointSizeMm: settings\.jointSizeMm,[\s\S]*?jointColor: settings\.jointColor,/,
+  "Canonical wall textures should render the selected panel's grout size and colour."
+);
+assert.match(
+  surfaceInspectorControllerSource,
+  /selectedWallMaterialSettingsPatch[\s\S]*?jointSizeMm: wallInspectorSettings\.jointSizeMm,[\s\S]*?jointColor: wallInspectorSettings\.jointColor,[\s\S]*?applyWallMaterialToAllRooms\([\s\S]*?selectedWallMaterialSettingsPatch/,
+  "Apply to all walls should carry the selected wall tile's grout configuration."
+);
+const roomMaterialMutationSource = surfaceActionsSource.slice(
+  surfaceActionsSource.indexOf("const handleApplyWallMaterialToRoom"),
+  surfaceActionsSource.indexOf("const handleApplyWallMaterialToAllRooms")
+);
+assert.match(
+  roomMaterialMutationSource,
+  /normalizedFaceId[\s\S]*?replaceAllWallSurfaceSettings\([\s\S]*?currentSurfaces,[\s\S]*?nextWallSettings,[\s\S]*?appliedMaterialId/,
+  "Applying a material to room walls should clear that room's stale face and panel overrides."
+);
+const roomPaintMutationSource = surfaceActionsSource.slice(
+  surfaceActionsSource.indexOf("const handleApplyWallPaintToRoom"),
+  surfaceActionsSource.indexOf("const handleApplyWallPaintToAllRooms")
+);
+assert.match(
+  roomPaintMutationSource,
+  /normalizedFaceId[\s\S]*?replaceAllWallSurfaceSettings\([\s\S]*?currentSurfaces,[\s\S]*?nextWallSettings,[\s\S]*?null/,
+  "Applying paint to room walls should clear that room's stale face and panel overrides."
 );
 
 const defaultSurfaceInspector: SurfaceInspectorParams = {

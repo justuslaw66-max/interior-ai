@@ -3,7 +3,7 @@ import {
   type ActiveRoomShoppingItem,
 } from "@/lib/room-shopping";
 import { buildRoomSurfaceMaterialBomRows } from "@/lib/surface-material-bom";
-import type { RoomSnapshot } from "@/lib/room-types";
+import type { PersistedPlanOpening, RoomSnapshot } from "@/lib/room-types";
 
 export type CheckoutReadinessRow = ActiveRoomShoppingItem & {
   roomId: string;
@@ -125,8 +125,11 @@ export function buildShoppingCsvRows(rows: CheckoutReadinessRow[]): ShoppingCsvR
   }));
 }
 
-export function buildSurfaceMaterialCsvRows(rooms: RoomSnapshot[]): ShoppingCsvRow[] {
-  return buildRoomSurfaceMaterialBomRows(rooms).map((row) => {
+export function buildSurfaceMaterialCsvRows(
+  rooms: RoomSnapshot[],
+  planOpenings: readonly PersistedPlanOpening[] = []
+): ShoppingCsvRow[] {
+  return buildRoomSurfaceMaterialBomRows(rooms, planOpenings).map((row) => {
     const brandLabel = row.brand ?? row.supplier;
     const status =
       row.status === "published"

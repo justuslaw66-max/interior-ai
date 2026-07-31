@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { DesignPageComposition } from "@/components/editor/design-page/DesignPageComposition";
 import { DesignPageEditorChrome } from "@/components/editor/design-page/DesignPageEditorChrome";
 import { DesignPageDialogLayer } from "@/components/editor/design-page/DesignPageDialogLayer";
@@ -50,6 +51,7 @@ export function DesignPageWorkspace() {
         layoutConfidence,
         visibleConstraints,
       },
+      document: { localBackupHydrated },
     },
     derived: {
       access: {
@@ -90,6 +92,7 @@ export function DesignPageWorkspace() {
         itemCartOpen,
         itemCart,
       },
+      editor: { viewMode },
     },
     derived: { navigation: { router, pathname, searchParams } },
     actions: {
@@ -108,6 +111,7 @@ export function DesignPageWorkspace() {
       plan: {
         planMeasurementUnit,
       },
+      editor: { editorMode },
     },
   } = viewportShellRegistration;
   const documentSelectionRegistration =
@@ -184,6 +188,7 @@ export function DesignPageWorkspace() {
     planWorkspace,
     underlay: planUnderlay,
   } = planAuthoringRegistration.boundaries;
+  const sourceReferenceUnderlay = planUnderlay.state.floorPlanUnderlay;
 
   const {
     state: {
@@ -272,6 +277,29 @@ export function DesignPageWorkspace() {
       },
     },
   } = persistenceWorkspaceRegistration;
+  const requestedDesignId = searchParams.get("designId")?.trim() ?? "";
+  const requestedDesignLoadRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (
+      !requestedDesignId ||
+      !session?.user ||
+      !localBackupHydrated ||
+      designId === requestedDesignId ||
+      requestedDesignLoadRef.current === requestedDesignId
+    ) {
+      return;
+    }
+
+    requestedDesignLoadRef.current = requestedDesignId;
+    void handleLoadDesign(requestedDesignId);
+  }, [
+    designId,
+    handleLoadDesign,
+    localBackupHydrated,
+    requestedDesignId,
+    session?.user,
+  ]);
   const floorPlanLifecycleRegistration = useDesignPageFloorPlanLifecycleRegistration({
     boundaries: { coreShell: coreShellRegistration, documentSelection: documentSelectionRegistration, persistence: persistenceWorkspaceRegistration },
   });
@@ -519,6 +547,35 @@ export function DesignPageWorkspace() {
       <div className="absolute inset-0">
         <DesignPageSceneRegion {...sceneRegionModel} />
         <DesignPageEditorChrome {...editorChromeModel} />
+        {viewMode === "2d" &&
+        editorMode === "adjust" &&
+        sourceReferenceUnderlay ? (
+          <div className="pointer-events-auto absolute bottom-4 left-4 z-40 flex items-center gap-3 rounded-xl border border-neutral-200 bg-white/95 px-3 py-2 shadow-lg backdrop-blur md:left-[304px]">
+            <div>
+              <div className="text-xs font-semibold text-neutral-900">
+                Source reference
+              </div>
+              <div className="text-[10px] text-neutral-500">
+                Locked import underlay
+              </div>
+            </div>
+            <button
+              type="button"
+              data-testid="floor-plan-source-reference-toggle"
+              className="rounded-lg border border-neutral-200 bg-white px-2.5 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
+              aria-pressed={sourceReferenceUnderlay.visible !== false}
+              onClick={() =>
+                planUnderlay.actions.changeUnderlayOpacity(
+                  sourceReferenceUnderlay.visible === false
+                    ? sourceReferenceUnderlay.opacity || 0.45
+                    : 0
+                )
+              }
+            >
+              {sourceReferenceUnderlay.visible === false ? "Show" : "Hide"}
+            </button>
+          </div>
+        ) : null}
       </div>
       <DesignPagePanelRegion {...panelRegionModel} />
       <DesignPageDialogLayer {...dialogLayerModel} />

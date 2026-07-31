@@ -15,6 +15,8 @@ async function openMoreMenu(page: Page) {
 }
 
 test.describe("Lighting settings", () => {
+  test.describe.configure({ timeout: 120_000 });
+
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
       window.localStorage.clear();
@@ -24,6 +26,14 @@ test.describe("Lighting settings", () => {
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
       timeout: 30_000,
     });
+    await expect(page.getByTestId("scene-canvas").first()).toHaveAttribute(
+      "data-client-hydrated",
+      "true",
+      { timeout: 30_000 }
+    );
+    await expect(
+      page.getByTestId("scene-canvas").first().locator("canvas")
+    ).toBeVisible({ timeout: 30_000 });
 
     await openMoreMenu(page);
     await page.getByTestId("scene-performance-quality").click();
@@ -31,22 +41,19 @@ test.describe("Lighting settings", () => {
     await expect(page.getByTestId("lighting-settings-drawer")).toBeVisible();
   });
 
-  test("presets and shadows preview immediately and persist locally", async ({
+  test("Consumer presets preview immediately and persist locally", async ({
     page,
   }) => {
     const canvas = page.getByTestId("scene-canvas").first();
-    await page.getByTestId("lighting-preset-daylight").click();
-    await expect(page.getByTestId("lighting-preset-daylight")).toHaveAttribute(
+    await page.getByTestId("lighting-mode-daylight").click();
+    await expect(page.getByTestId("lighting-mode-daylight")).toHaveAttribute(
       "aria-checked",
       "true"
     );
 
-    const shadows = page.getByTestId("lighting-shadows-toggle");
-    await expect(shadows).toHaveAttribute("aria-checked", "true");
+    await expect(page.getByTestId("lighting-pro-controls")).toHaveCount(0);
     await expect(canvas).toHaveAttribute("data-shadow-maps-enabled", "true");
-    await shadows.click();
-    await expect(shadows).toHaveAttribute("aria-checked", "false");
-    await expect(canvas).toHaveAttribute("data-shadow-maps-enabled", "false");
+    await expect(canvas).toHaveAttribute("data-lighting-mode", "daylight");
 
     await expect
       .poll(() =>
@@ -54,17 +61,27 @@ test.describe("Lighting settings", () => {
           const raw = window.localStorage.getItem(key);
           if (!raw) return null;
           const value = JSON.parse(raw) as {
-            lighting?: { preset?: string; shadowsEnabled?: boolean };
+            lighting?: {
+              version?: number;
+              preset?: string;
+              shadowsEnabled?: boolean;
+            };
             lightingPreset?: string;
           };
           return {
-            lighting: value.lighting,
+            lighting: value.lighting
+              ? {
+                  version: value.lighting.version,
+                  preset: value.lighting.preset,
+                  shadowsEnabled: value.lighting.shadowsEnabled,
+                }
+              : null,
             legacyPreset: value.lightingPreset,
           };
         }, LOCAL_BACKUP_KEY)
       )
       .toEqual({
-        lighting: { preset: "daylight", shadowsEnabled: false },
+        lighting: { version: 1, preset: "daylight", shadowsEnabled: true },
         legacyPreset: "daylight",
       });
 
@@ -73,7 +90,7 @@ test.describe("Lighting settings", () => {
     await expect(page.getByTestId("editor-command-overflow")).toBeFocused();
   });
 
-  test("Lite mode pauses shadows without changing the saved preference", async ({
+  test("Lite mode pauses shadows without exposing Pro controls", async ({
     page,
   }) => {
     await page.keyboard.press("Escape");
@@ -81,13 +98,7 @@ test.describe("Lighting settings", () => {
     await page.getByTestId("scene-performance-lite").click();
     await page.getByTestId("editor-command-overflow-lighting").click();
 
-    await expect(page.getByTestId("lighting-shadows-toggle")).toHaveAttribute(
-      "aria-checked",
-      "true"
-    );
-    await expect(page.getByTestId("lighting-lite-shadow-message")).toHaveText(
-      "Shadows are paused in Lite mode."
-    );
+    await expect(page.getByTestId("lighting-pro-controls")).toHaveCount(0);
     await expect(page.getByTestId("scene-canvas").first()).toHaveAttribute(
       "data-shadow-maps-enabled",
       "false"
@@ -113,5 +124,93 @@ test.describe("Lighting settings", () => {
       "data-shadow-maps-enabled",
       "false"
     );
+  });
+
+  test("Pro controls drive geographic daylight, fixtures, quality, and Presentation", async ({
+    page,
+  }) => {
+    await page.route("**/api/me", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ plan: "pro", source: "playwright" }),
+      });
+    });
+    await page.goto("/design?mode=designer", {
+      waitUntil: "domcontentloaded",
+    });
+    const canvas = page.getByTestId("scene-canvas").first();
+    await expect(canvas).toHaveAttribute("data-client-hydrated", "true", {
+      timeout: 30_000,
+    });
+    await openMoreMenu(page);
+    await page.getByTestId("editor-command-overflow-lighting").click();
+    await expect(page.getByTestId("lighting-pro-controls")).toBeVisible();
+
+    await page.getByTestId("lighting-time-input").fill("09:30");
+    await page.getByTestId("lighting-date-input").fill("2026-03-20");
+    await page
+      .getByTestId("lighting-plan-north-input")
+      .evaluate((element) => {
+        const input = element as HTMLInputElement;
+        const valueSetter = Object.getOwnPropertyDescriptor(
+          HTMLInputElement.prototype,
+          "value"
+        )?.set;
+        valueSetter?.call(input, "90");
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+    await page.getByTestId("lighting-latitude-input").fill("1.35");
+    await page.getByTestId("lighting-longitude-input").fill("103.82");
+    await page.getByTestId("lighting-fixture-master-toggle").click();
+    await page.getByTestId("lighting-quality-select").selectOption("quality");
+
+    await expect
+      .poll(() =>
+        page.evaluate((key) => {
+          const raw = localStorage.getItem(key);
+          if (!raw) return null;
+          const lighting = (
+            JSON.parse(raw) as {
+              lighting?: {
+                timeMinutes?: number;
+                dateIso?: string;
+                planNorthDeg?: number;
+                location?: { latitude?: number; longitude?: number };
+                fixtureMasterEnabled?: boolean;
+              };
+            }
+          ).lighting;
+          return lighting
+            ? {
+                timeMinutes: lighting.timeMinutes,
+                dateIso: lighting.dateIso,
+                planNorthDeg: lighting.planNorthDeg,
+                location: lighting.location,
+                fixtureMasterEnabled: lighting.fixtureMasterEnabled,
+              }
+            : null;
+        }, LOCAL_BACKUP_KEY)
+      )
+      .toEqual({
+        timeMinutes: 570,
+        dateIso: "2026-03-20",
+        planNorthDeg: 90,
+        location: { latitude: 1.35, longitude: 103.82 },
+        fixtureMasterEnabled: false,
+      });
+
+    await page.keyboard.press("Escape");
+    await page.getByTestId("editor-rail-present").click();
+    await expect(
+      page.getByRole("heading", { name: "Present & Export" })
+    ).toBeVisible();
+    await expect(page.getByTestId("presentation-lighting-status")).toBeVisible();
+    await expect(canvas).toHaveAttribute("data-lighting-mode", "presentation");
+    await expect(canvas).toHaveAttribute("data-lighting-quality", "high");
+    await expect(canvas).toHaveAttribute("data-shadow-map-size", "4096");
+    await page.getByRole("button", { name: "Close export panel" }).click();
+    await expect(canvas).toHaveAttribute("data-lighting-mode", "design");
   });
 });

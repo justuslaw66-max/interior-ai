@@ -163,9 +163,9 @@ export default function FloorPlanSourceReviewCanvas({
     <section className="mt-3" aria-label="Interactive 2D plan preview">
       <div className="mb-2 flex items-center justify-between gap-2">
         <div>
-          <div className="text-xs font-semibold">2D plan preview</div>
+          <div className="text-sm font-semibold">2D plan preview</div>
           <div
-            className={dark ? "text-[10px] text-neutral-400" : "text-[10px] text-neutral-600"}
+            className={dark ? "text-xs text-neutral-400" : "text-xs text-neutral-600"}
           >
             {overlay
               ? "Saved room and wall outlines are shown over the uploaded plan."

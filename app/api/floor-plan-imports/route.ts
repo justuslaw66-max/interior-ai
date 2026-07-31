@@ -20,6 +20,7 @@ import {
   type FloorPlanImportPrivacy,
 } from "@/lib/floor-plan-imports/privacy";
 import {
+  readBoundedJsonObject,
   readBoundedRequestBody,
   RequestBodyTooLargeError,
 } from "@/lib/bounded-request-body";
@@ -29,6 +30,18 @@ const MAX_FLOOR_PLAN_MULTIPART_BYTES =
   MAX_FLOOR_PLAN_UPLOAD_BYTES + 1_000_000;
 const DEFAULT_IMPORT_LIST_LIMIT = 8;
 const MAX_IMPORT_LIST_LIMIT = 20;
+const MAX_BULK_HISTORY_DELETE_BODY_BYTES = 32 * 1024;
+const MAX_SELECTED_HISTORY_DELETE_JOBS = 200;
+const BULK_DELETE_CANCEL_STATUSES = [
+  "received",
+  "rendered",
+  "extracted",
+  "selecting_page",
+  "scale_solved",
+  "topology_built",
+  "validating",
+  "needs_review",
+] as const;
 
 function error(message: string, status: number) {
   return NextResponse.json({ error: message }, { status });
@@ -76,14 +89,14 @@ export async function GET(request: Request) {
 
   if (cursor) {
     const ownedCursor = await prisma.floorPlanImportJob.findFirst({
-      where: { id: cursor, userId },
+      where: { id: cursor, userId, historyDeletedAt: null },
       select: { id: true },
     });
     if (!ownedCursor) return error("Floor-plan import cursor not found", 400);
   }
 
   const rows = await prisma.floorPlanImportJob.findMany({
-    where: { userId },
+    where: { userId, historyDeletedAt: null },
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
     take: limit + 1,
@@ -293,4 +306,131 @@ export async function POST(request: Request) {
     console.error("Floor-plan import creation failed", cause);
     return error("Unable to create the floor-plan import", 500);
   }
+}
+
+export async function DELETE(request: Request) {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return error("Unauthorized", 401);
+  const allowance = rateLimit(
+    `floor-plan-import-history-bulk-delete:${userId}`,
+    10,
+    60_000
+  );
+  if (!allowance.ok) {
+    return error("Too many floor-plan import deletion requests", 429);
+  }
+
+  let body: Record<string, unknown>;
+  try {
+    body = await readBoundedJsonObject(
+      request,
+      MAX_BULK_HISTORY_DELETE_BODY_BYTES
+    );
+  } catch (cause) {
+    if (cause instanceof RequestBodyTooLargeError) {
+      return error("Too many floor-plan imports were selected", 413);
+    }
+    return error("Invalid bulk deletion request", 400);
+  }
+
+  const deleteAll = body.all === true;
+  const selectedJobIds = Array.isArray(body.jobIds)
+    ? [
+        ...new Set(
+          body.jobIds.filter(
+            (value): value is string =>
+              typeof value === "string" &&
+              /^[a-z0-9_-]{8,160}$/i.test(value)
+          )
+        ),
+      ]
+    : [];
+  if (deleteAll === (selectedJobIds.length > 0)) {
+    return error("Choose selected imports or all imports", 400);
+  }
+  if (selectedJobIds.length > MAX_SELECTED_HISTORY_DELETE_JOBS) {
+    return error(
+      `Select no more than ${MAX_SELECTED_HISTORY_DELETE_JOBS} imports at once`,
+      400
+    );
+  }
+
+  const now = new Date();
+  const rows = await prisma.floorPlanImportJob.findMany({
+    where: {
+      userId,
+      historyDeletedAt: null,
+      ...(deleteAll ? {} : { id: { in: selectedJobIds } }),
+    },
+    select: {
+      id: true,
+      status: true,
+      leaseToken: true,
+      leaseExpiresAt: true,
+    },
+  });
+  const eligibleRows = rows.filter(
+    (job) =>
+      !job.leaseToken ||
+      !job.leaseExpiresAt ||
+      job.leaseExpiresAt.getTime() <= now.getTime()
+  );
+  const processableIds = eligibleRows
+    .filter((job) =>
+      (BULK_DELETE_CANCEL_STATUSES as readonly string[]).includes(job.status)
+    )
+    .map((job) => job.id);
+  const completedIds = eligibleRows
+    .filter(
+      (job) =>
+        !(BULK_DELETE_CANCEL_STATUSES as readonly string[]).includes(job.status)
+    )
+    .map((job) => job.id);
+
+  const [cancelled, completed] = await prisma.$transaction([
+    prisma.floorPlanImportJob.updateMany({
+      where: {
+        id: { in: processableIds },
+        userId,
+        historyDeletedAt: null,
+        status: { in: [...BULK_DELETE_CANCEL_STATUSES] },
+        OR: [{ leaseToken: null }, { leaseExpiresAt: { lte: now } }],
+      },
+      data: {
+        historyDeletedAt: now,
+        status: "failed",
+        statusChangedAt: now,
+        progress: 100,
+        errorMessage: "Deleted by owner",
+        leaseToken: null,
+        leaseOwner: null,
+        leaseExpiresAt: null,
+        nextAttemptAt: null,
+      },
+    }),
+    prisma.floorPlanImportJob.updateMany({
+      where: {
+        id: { in: completedIds },
+        userId,
+        historyDeletedAt: null,
+        status: { notIn: [...BULK_DELETE_CANCEL_STATUSES] },
+        OR: [{ leaseToken: null }, { leaseExpiresAt: { lte: now } }],
+      },
+      data: { historyDeletedAt: now },
+    }),
+  ]);
+  const deletedCount = cancelled.count + completed.count;
+  return NextResponse.json(
+    {
+      ok: true,
+      scope: deleteAll ? "all" : "selected",
+      requestedCount: deleteAll ? rows.length : selectedJobIds.length,
+      matchedCount: rows.length,
+      deletedCount,
+      skippedBusyCount: rows.length - deletedCount,
+      designPreserved: true,
+    },
+    { headers: { "Cache-Control": "private, no-store" } }
+  );
 }

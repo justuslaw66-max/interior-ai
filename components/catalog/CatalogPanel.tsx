@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import CatalogSearchInput from "./CatalogSearchInput";
 import CatalogCategoryTabs from "./CatalogCategoryTabs";
@@ -14,13 +14,16 @@ import {
   buildCatalogCardView,
   buildCatalogDetailView,
   collectFilterFacets,
+  deriveSeatCount,
   filterCatalogItems,
+  getSofaSeatCapacityBucket,
   getTopCategoryLabel,
   mapToTopCategory,
   type CatalogCardView,
   type CatalogDetailView,
   type CatalogFilterState,
   type CatalogTopCategory,
+  type SofaSeatCapacityBucket,
 } from "@/lib/catalog/view-builders";
 import {
   buildCatalogRecommendationSet,
@@ -148,11 +151,29 @@ function hasActiveCatalogFilters(filters: CatalogFilterState) {
 }
 
 function countActiveCatalogFilters(filters: CatalogFilterState) {
-  return Object.values(filters).reduce<number>((count, value) => {
+  const rawCount = Object.values(filters).reduce<number>((count, value) => {
     if (Array.isArray(value)) return count + (value.length > 0 ? 1 : 0);
     if (typeof value === "number") return count + (Number.isFinite(value) ? 1 : 0);
     return count + (value ? 1 : 0);
   }, 0);
+  const groupedRangeDuplicates =
+    (
+      typeof filters.priceMin === "number" &&
+      Number.isFinite(filters.priceMin) &&
+      typeof filters.priceMax === "number" &&
+      Number.isFinite(filters.priceMax)
+        ? 1
+        : 0
+    ) +
+    (
+      typeof filters.widthMinCm === "number" &&
+      Number.isFinite(filters.widthMinCm) &&
+      typeof filters.widthMaxCm === "number" &&
+      Number.isFinite(filters.widthMaxCm)
+        ? 1
+        : 0
+    );
+  return rawCount - groupedRangeDuplicates;
 }
 
 export default function CatalogPanel({
@@ -199,6 +220,12 @@ export default function CatalogPanel({
   const [smartFilters, setSmartFilters] = useState<CatalogSmartFilter[]>([]);
   const [detailPrefetchMap, setDetailPrefetchMap] = useState<Record<string, CatalogDetailView>>({});
   const [variantSelectionByItem, setVariantSelectionByItem] = useState<Record<string, string>>({});
+  const catalogGridRef = useRef<HTMLDivElement>(null);
+
+  const resetCatalogScroll = useCallback(() => {
+    setScrollTop(0);
+    if (catalogGridRef.current) catalogGridRef.current.scrollTop = 0;
+  }, []);
 
   useEffect(() => {
     writeStoredIds(FAVORITES_STORAGE_KEY, favoriteIds);
@@ -247,6 +274,7 @@ export default function CatalogPanel({
         : [selectedCategory],
     [categoryCounts, selectedCategory, selectedMainGroupId]
   );
+  const showSofaSeatCapacityFilter = selectedCategoryScope.includes("sofa");
   const selectedCategoryLabel = selectedMainGroup?.allLabel ?? getTopCategoryLabel(selectedCategory);
   const recommendedCategorySet = useMemo(
     () => new Set(recommendedCategoryIds),
@@ -283,18 +311,61 @@ export default function CatalogPanel({
   }, [favoriteIds, itemById, items, memoryScope, recentIds]);
 
   const effectiveFilters = useMemo<CatalogFilterState>(() => {
-    if (memoryScope === "all") return { ...filters, category: selectedCategoryScope };
-    return { ...filters, category: undefined };
-  }, [filters, memoryScope, selectedCategoryScope]);
+    const nextFilters: CatalogFilterState =
+      memoryScope === "all"
+        ? { ...filters, category: selectedCategoryScope }
+        : { ...filters, category: undefined };
+    if (!showSofaSeatCapacityFilter) delete nextFilters.sofaSeatCapacityBuckets;
+    return nextFilters;
+  }, [filters, memoryScope, selectedCategoryScope, showSofaSeatCapacityFilter]);
 
   const searchScopedFilters = useMemo(() => {
     if (!debouncedSearch.trim()) return effectiveFilters;
     return { ...effectiveFilters, category: undefined };
   }, [debouncedSearch, effectiveFilters]);
 
+  const sofaSeatCapacityCounts = useMemo<Record<SofaSeatCapacityBucket, number>>(() => {
+    const filtersWithoutSeatCapacity = { ...searchScopedFilters };
+    delete filtersWithoutSeatCapacity.sofaSeatCapacityBuckets;
+    const sofaCandidates = filterCatalogItems(scopedItems, debouncedSearch, {
+      ...filtersWithoutSeatCapacity,
+      category: ["sofa"],
+    });
+    const counts: Record<SofaSeatCapacityBucket, number> = {
+      "2": 0,
+      "3": 0,
+      "4_plus": 0,
+    };
+
+    for (const family of groupCatalogItems(sofaCandidates)) {
+      const familyBuckets = new Set<SofaSeatCapacityBucket>();
+      for (const item of family.items) {
+        const bucket = getSofaSeatCapacityBucket(deriveSeatCount(item));
+        if (bucket) familyBuckets.add(bucket);
+      }
+      for (const bucket of familyBuckets) counts[bucket] += 1;
+    }
+
+    return counts;
+  }, [debouncedSearch, scopedItems, searchScopedFilters]);
+
   const filteredItems = useMemo(() => {
     return filterCatalogItems(scopedItems, debouncedSearch, searchScopedFilters);
   }, [scopedItems, debouncedSearch, searchScopedFilters]);
+
+  useEffect(() => {
+    if (showSofaSeatCapacityFilter || !filters.sofaSeatCapacityBuckets?.length) return;
+    setFilters((prev) => {
+      const next = { ...prev };
+      delete next.sofaSeatCapacityBuckets;
+      return next;
+    });
+    resetCatalogScroll();
+  }, [
+    filters.sofaSeatCapacityBuckets,
+    resetCatalogScroll,
+    showSofaSeatCapacityFilter,
+  ]);
 
   useEffect(() => {
     const term = debouncedSearch.trim();
@@ -588,15 +659,26 @@ export default function CatalogPanel({
         delete next.priceMax;
         return next;
       }
+      if (key === "widthMinCm") {
+        delete next.widthMinCm;
+        delete next.widthMaxCm;
+        return next;
+      }
       delete next[key];
       return next;
     });
+    resetCatalogScroll();
   };
 
   const clearAllFilters = () => {
     setFilters({});
     setSmartFilters([]);
-    setScrollTop(0);
+    resetCatalogScroll();
+  };
+
+  const handleFilterPatch = (patch: Partial<CatalogFilterState>) => {
+    setFilters((prev) => ({ ...prev, ...patch }));
+    resetCatalogScroll();
   };
 
   const handleSelectCategory = (nextCategory: CatalogTopCategory) => {
@@ -608,7 +690,7 @@ export default function CatalogPanel({
     });
     setInternalSelectedCategory(nextCategory);
     onSelectedCategoryChange?.(nextCategory);
-    setScrollTop(0);
+    resetCatalogScroll();
   };
 
   const handleSelectMainGroup = (groupId: CatalogMainGroupId) => {
@@ -617,7 +699,7 @@ export default function CatalogPanel({
       ...prev,
       [activeRoomLabel]: { groupId, anchorCategory: selectedCategory },
     }));
-    setScrollTop(0);
+    resetCatalogScroll();
     track("catalog_main_group_select", {
       group: groupId,
       room: activeRoomLabel,
@@ -627,7 +709,7 @@ export default function CatalogPanel({
 
   const handleSetMemoryScope = (scope: CatalogMemoryScope) => {
     setMemoryScope(scope);
-    setScrollTop(0);
+    resetCatalogScroll();
     track("catalog_memory_scope_change", { scope });
   };
 
@@ -642,7 +724,7 @@ export default function CatalogPanel({
       });
       return next;
     });
-    setScrollTop(0);
+    resetCatalogScroll();
   };
 
   const prefetchDetail = (id: string) => {
@@ -831,7 +913,7 @@ export default function CatalogPanel({
               className="shrink-0 px-2 py-1 text-[11px] font-semibold text-neutral-500 hover:text-neutral-900"
               onClick={() => {
                 setSmartFilters([]);
-                setScrollTop(0);
+                resetCatalogScroll();
               }}
             >
               Clear
@@ -852,11 +934,14 @@ export default function CatalogPanel({
         brands={facets.brands}
         styles={facets.styles}
         materials={facets.materials}
+        showSofaSeatCapacityFilter={showSofaSeatCapacityFilter}
+        sofaSeatCapacityCounts={sofaSeatCapacityCounts}
         onClose={() => setFiltersOpen(false)}
-        onPatch={(patch) => setFilters((prev) => ({ ...prev, ...patch }))}
+        onPatch={handleFilterPatch}
       />
 
       <div
+        ref={catalogGridRef}
         className="mt-3 overflow-y-auto"
         style={{ maxHeight: GRID_HEIGHT, minHeight: GRID_HEIGHT }}
         onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
@@ -953,7 +1038,7 @@ export default function CatalogPanel({
                 className="rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
                 onClick={() => {
                   setRawSearch("");
-                  setScrollTop(0);
+                  resetCatalogScroll();
                 }}
               >
                 Clear search
@@ -974,7 +1059,7 @@ export default function CatalogPanel({
                 className="rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
                 onClick={() => {
                   setSmartFilters([]);
-                  setScrollTop(0);
+                  resetCatalogScroll();
                 }}
               >
                 Clear smart filters

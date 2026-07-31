@@ -9,6 +9,15 @@ const roomEnvironmentPath = path.join(
   "RoomEnvironment.tsx"
 );
 const source = fs.readFileSync(roomEnvironmentPath, "utf8");
+const housePlanRendererPath = path.join(
+  process.cwd(),
+  "components",
+  "editor",
+  "renderers",
+  "house-plan-3d",
+  "surfaceMeshes.tsx"
+);
+const housePlanSource = fs.readFileSync(housePlanRendererPath, "utf8");
 
 assert.match(
   source,
@@ -32,6 +41,24 @@ assert.match(
   source,
   /polygonOffsetFactor:\s*-1,/,
   "Room floor material should bias the wood floor toward the camera."
+);
+
+assert.match(
+  housePlanSource,
+  /const ROOM_FLOOR_SURFACE_OFFSET_METERS = 0\.006;/,
+  "House-plan room floors must keep enough height above structural geometry to avoid z-fighting."
+);
+
+assert.match(
+  housePlanSource,
+  /position=\{\[0, ROOM_FLOOR_SURFACE_OFFSET_METERS, 0\]\}/,
+  "House-plan room floor meshes must use the guarded surface offset."
+);
+
+assert.match(
+  housePlanSource,
+  /renderOrder=\{1 \+ floorLayerIndex\}[\s\S]*?polygonOffset[\s\S]*?polygonOffsetFactor=\{-1\}[\s\S]*?polygonOffsetUnits=\{-\(floorLayerIndex \+ 1\)\}/,
+  "House-plan room floors must use deterministic depth bias when room surfaces overlap."
 );
 
 console.log("Room floor rendering guardrails passed.");

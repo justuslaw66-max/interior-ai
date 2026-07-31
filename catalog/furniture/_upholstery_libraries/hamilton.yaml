@@ -375,7 +375,7 @@ upholstery_options:
     material_type: "leather"
     texture_type: "smooth_leather"
     swatch_group: "upholstery_option"
-    swatch_hex: "#B16A3B"
+    swatch_hex: "#A88354"
     swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626941768/crusader/variants/LE-4016/Jonathan-Sofa-Caramel_1.jpg"
     display_assets:
       swatch_image: "https://res.cloudinary.com/castlery/image/private/w_128,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626941768/crusader/variants/LE-4016/Jonathan-Sofa-Caramel_1.jpg"

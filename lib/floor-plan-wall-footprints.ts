@@ -295,6 +295,113 @@ function miterAuthoredWallNode(references: AuthoredWallEndpoint[]) {
   }
 }
 
+function wallFootprintIsStable(
+  solid: WallSolid,
+  wall: WallWithFootprints
+) {
+  const thicknessMm = wall.thicknessMm;
+  const dx = solid.end.xMm - solid.start.xMm;
+  const dz = solid.end.zMm - solid.start.zMm;
+  const lengthMm = Math.hypot(dx, dz);
+  if (lengthMm <= WALL_JOIN_EPSILON_MM) return false;
+  // A span shorter than its own thickness is normally an adjacency ownership
+  // transition rather than a distinct physical wall. A square swept footprint
+  // unions safely with its neighbors; two independently extended miters can
+  // cross and expose the corner notch seen in imported plans.
+  const wallLengthMm =
+    wall.centerlineSegments.at(-1)?.endOffsetMm ?? lengthMm;
+  if (
+    wall.path.kind === "line" &&
+    wallLengthMm < thicknessMm - WALL_JOIN_EPSILON_MM
+  ) {
+    return false;
+  }
+
+  const points = [
+    solid.footprint.startLeft,
+    solid.footprint.endLeft,
+    solid.footprint.endRight,
+    solid.footprint.startRight,
+  ];
+  let signedAreaTwice = 0;
+  for (let index = 0; index < points.length; index += 1) {
+    const current = points[index];
+    const next = points[(index + 1) % points.length];
+    signedAreaTwice +=
+      current.xMm * next.zMm - next.xMm * current.zMm;
+  }
+  const containsPoint = (point: FloorPlanPointMmV2) => {
+    let inside = false;
+    for (
+      let index = 0, previousIndex = points.length - 1;
+      index < points.length;
+      previousIndex = index++
+    ) {
+      const current = points[index];
+      const previous = points[previousIndex];
+      const edgeX = current.xMm - previous.xMm;
+      const edgeZ = current.zMm - previous.zMm;
+      const edgeLengthSquared = edgeX * edgeX + edgeZ * edgeZ;
+      if (edgeLengthSquared > WALL_JOIN_EPSILON_MM * WALL_JOIN_EPSILON_MM) {
+        const projection = Math.max(
+          0,
+          Math.min(
+            1,
+            ((point.xMm - previous.xMm) * edgeX +
+              (point.zMm - previous.zMm) * edgeZ) /
+              edgeLengthSquared
+          )
+        );
+        const nearestX = previous.xMm + edgeX * projection;
+        const nearestZ = previous.zMm + edgeZ * projection;
+        if (
+          Math.hypot(point.xMm - nearestX, point.zMm - nearestZ) <=
+          WALL_JOIN_EPSILON_MM
+        ) {
+          return true;
+        }
+      }
+      const crossesRay =
+        current.zMm > point.zMm !== previous.zMm > point.zMm;
+      if (
+        crossesRay &&
+        point.xMm <
+          ((previous.xMm - current.xMm) *
+            (point.zMm - current.zMm)) /
+            (previous.zMm - current.zMm) +
+            current.xMm
+      ) {
+        inside = !inside;
+      }
+    }
+    return inside;
+  };
+  const containsOwnCenterline = [0.25, 0.5, 0.75].every((amount) =>
+    containsPoint({
+      xMm: solid.start.xMm + dx * amount,
+      zMm: solid.start.zMm + dz * amount,
+    })
+  );
+  return (
+    Number.isFinite(signedAreaTwice) &&
+    Math.abs(signedAreaTwice) >=
+      Math.max(1, lengthMm * thicknessMm * 0.25) &&
+    containsOwnCenterline
+  );
+}
+
+function stabilizeWallFootprints(walls: WallWithFootprints[]) {
+  for (const wall of walls) {
+    for (const solid of wall.solids) {
+      if (wallFootprintIsStable(solid, wall)) continue;
+      solid.footprint = buildRectangularWallFootprint(
+        solid,
+        wall.thicknessMm
+      );
+    }
+  }
+}
+
 /**
  * Derive watertight wall footprints from authored wall topology. Continuous
  * arc fragments and every wall incident to the same authored vertex share the
@@ -323,5 +430,6 @@ export function applyCanonicalWallFootprintJoins<TWall extends WallWithFootprint
   for (const references of endpointsByVertexId.values()) {
     miterAuthoredWallNode(references);
   }
+  stabilizeWallFootprints(walls);
   return walls;
 }

@@ -29,8 +29,8 @@ export function SelectedPlanOpeningActions({
       data-testid="selected-plan-opening-actions"
       className={
         configuration.dark
-          ? "designer-work-surface absolute left-1/2 top-[112px] z-30 flex -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs"
-          : "absolute left-1/2 top-[112px] z-30 flex -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white/95 px-3 py-2 text-xs text-neutral-800 shadow-xl backdrop-blur"
+          ? "designer-work-surface absolute left-1/2 top-23 z-30 flex -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs"
+          : "absolute left-1/2 top-23 z-30 flex -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white/95 px-3 py-2 text-xs text-neutral-800 shadow-xl backdrop-blur"
       }
       style={{ maxWidth: "calc(100% - 2rem)" }}
     >

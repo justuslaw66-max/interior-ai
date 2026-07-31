@@ -151,7 +151,7 @@ assert.match(
 );
 assert.match(
   planAuthoringRegistrationSource,
-  /reviewPanelTopPx: 76,[\s\S]*?collapsedReviewPanelFallbackHeightPx: 56,[\s\S]*?expandedReviewPanelFallbackHeightPx: 252,/,
+  /reviewPanelTopPx: 56,[\s\S]*?collapsedReviewPanelFallbackHeightPx: 56,[\s\S]*?expandedReviewPanelFallbackHeightPx: 252,/,
   "Plan authoring should preserve the review panel layout values."
 );
 

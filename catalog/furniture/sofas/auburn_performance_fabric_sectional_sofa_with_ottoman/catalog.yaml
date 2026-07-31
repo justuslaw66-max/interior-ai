@@ -1,13 +1,13 @@
 brand: "Castlery"
-status: "draft"
-source_url: "https://www.castlery.com/sg/products/auburn-performance-boucle-l-shape-sectional-sofa-with-ottoman?material=chalk_boucle"
+status: "published"
+source_url: "https://www.castlery.com/sg/products/auburn-performance-boucle-sectional-sofa-with-ottoman?material=chalk_boucle"
 category: "sectional_sofa"
 
 product_family: "Auburn"
 product_name: "Auburn Performance Fabric Sectional Sofa With Ottoman"
-variant: "Chalk Boucle with ottoman draft import"
+variant: "Chalk Bouclé"
 
-price_usd: 4259
+price_usd: 2929
 price_band: "premium"
 brand_tier: "premium_mid"
 
@@ -26,6 +26,8 @@ material_family: "upholstered"
 color_family: "beige"
 tone: "neutral"
 style_cluster: "contemporary"
+
+upholstery_library_ref: "auburn"
 
 room_compatibility:
   - "living_room"
@@ -47,10 +49,8 @@ assets:
   thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683797597/crusader/variants/PB-LR0345/Auburn-Performance-Boucle-L-Shape-Sectional-Sofa-With-Ottoman-Chalk-1683797595.jpg"
 
 variants:
-  - variant: "Chalk Boucle with ottoman draft import"
-    upholstery_code: "chalk_boucle"
-    upholstery_label: "Chalk Boucle"
-    price_usd: 4259
+  - variant: "Selected upholstery"
+    price_usd: 2929
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions:
@@ -60,13 +60,28 @@ variants:
     color_family: "beige"
     tone: "neutral"
 
-publish_blockers:
-  - "confirm_exact_product_source_url"
-  - "confirm_price_and_variant_metadata"
-  - "confirm_catalog_dimensions_against_supplier_specs"
-  - "confirm_local_model_asset_availability"
-  - "complete_product_details"
+product_details:
+  material:
+    - { label: "Fabric composition", value: "100% polyester, spill-resistant bouclé fabric" }
+    - { label: "Frame", value: "Engineered wood with plywood" }
+    - { label: "Leg frame", value: "Plastic" }
+    - { label: "Filling", value: "Foam, fibre and pocket spring seat; foam and fibre back" }
+    - { label: "Cover type", value: "Fixed" }
+  dimensions:
+    - { label: "Seating depth", value: "62cm" }
+    - { label: "Seating height", value: "42.5cm" }
+    - { label: "Armrest height", value: "56cm" }
+    - { label: "Leg height", value: "3cm" }
+  delivery_and_warranty:
+    - { label: "Warranty", value: "Frame 10 years; Fabric 1 year; Foam 2 years" }
+    - { label: "Returns", value: "30-day returns" }
 
-notes:
-  - "Draft mapping for an approved imported ModelAsset so governance can track publication readiness."
-  - "Do not publish until product metadata, pricing, dimensions, and local model availability are confirmed."
+shipping_and_warranty:
+  free_delivery_threshold_sgd: 500
+  warranty: "Frame 10 years; Fabric 1 year; Foam 2 years"
+  return_policy: "30-day returns"
+
+authoring_notes:
+  source_checked: "Castlery Singapore product pages, 2026-07-30"
+  local_model_status: "Copied and verified at the declared public model URL"
+  note: "Published after source, price, dimensions, upholstery, and local model availability review."

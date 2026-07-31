@@ -2,7 +2,7 @@
 
 import EditorViewToggle, { type EditorViewMode } from "@/components/editor/EditorViewToggle";
 import { LightingSettingsDrawer } from "@/components/editor/design-page/LightingSettingsDrawer";
-import { Ellipsis, Plus, UserRound } from "lucide-react";
+import { ChevronDown, Ellipsis, PanelLeft, Plus, UserRound } from "lucide-react";
 import { signIn, signOut } from "next-auth/react";
 import {
   useCallback,
@@ -39,6 +39,8 @@ type EditorCommandBarProps = {
   canRedo: boolean;
   undoName: string | null;
   redoName: string | null;
+  designSidebarCollapsed: boolean;
+  onToggleDesignSidebar: () => void;
   onPlan: () => void;
   millworkActive?: boolean;
   onMillwork?: () => void;
@@ -103,6 +105,8 @@ export default function EditorCommandBar({
   canRedo,
   undoName,
   redoName,
+  designSidebarCollapsed,
+  onToggleDesignSidebar,
   onPlan,
   millworkActive = false,
   onMillwork,
@@ -130,9 +134,11 @@ export default function EditorCommandBar({
   overflowSlot,
   lightingSettingsSlot,
 }: EditorCommandBarProps) {
+  const [workspaceOpen, setWorkspaceOpen] = useState(false);
   const [overflowOpen, setOverflowOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [lightingSettingsOpen, setLightingSettingsOpen] = useState(false);
+  const workspaceRef = useRef<HTMLDivElement | null>(null);
   const overflowRef = useRef<HTMLDivElement | null>(null);
   const accountRef = useRef<HTMLDivElement | null>(null);
   const moreButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -142,20 +148,23 @@ export default function EditorCommandBar({
   );
 
   useEffect(() => {
-    if (!overflowOpen && !accountOpen) return;
+    if (!workspaceOpen && !overflowOpen && !accountOpen) return;
 
     const handlePointerDown = (event: PointerEvent) => {
       const target = event.target;
       if (!(target instanceof Node)) return;
+      const insideWorkspace = workspaceRef.current?.contains(target) ?? false;
       const insideOverflow = overflowRef.current?.contains(target) ?? false;
       const insideAccount = accountRef.current?.contains(target) ?? false;
-      if (!insideOverflow && !insideAccount) {
+      if (!insideWorkspace && !insideOverflow && !insideAccount) {
+        setWorkspaceOpen(false);
         setOverflowOpen(false);
         setAccountOpen(false);
       }
     };
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
+        setWorkspaceOpen(false);
         setOverflowOpen(false);
         setAccountOpen(false);
       }
@@ -167,7 +176,7 @@ export default function EditorCommandBar({
       window.removeEventListener("pointerdown", handlePointerDown);
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [accountOpen, overflowOpen]);
+  }, [accountOpen, overflowOpen, workspaceOpen]);
 
   const workflowSteps: Array<{
     id: string;
@@ -231,24 +240,22 @@ export default function EditorCommandBar({
       active: !millworkActive && editorMode === "present",
     },
   ];
-  const workflowButtonClass = (active: boolean) => {
-    if (dark) {
-      return [
-        "inline-flex h-9 items-center rounded-xl px-3 text-sm font-semibold transition-colors",
-        active ? "designer-command-selection" : "text-neutral-200 hover:bg-white/10",
-      ].join(" ");
-    }
-    return [
-      "inline-flex h-9 items-center rounded-xl px-3 text-sm font-semibold transition-colors",
-      active ? "bg-neutral-900 text-white shadow-sm" : "text-neutral-700 hover:bg-neutral-100",
-    ].join(" ");
-  };
+  const activeWorkflowStep =
+    workflowSteps.find((step) => step.active) ?? workflowSteps[0];
+  const designSidebarToggleVisible =
+    !millworkActive &&
+    (editorMode === "design" ||
+      editorMode === "adjust" ||
+      editorMode === "ai");
   const menuButtonClass = dark
     ? "designer-work-control flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-semibold"
     : "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-semibold text-neutral-800 hover:bg-neutral-100";
   const menuPanelClass = dark
     ? "designer-work-surface absolute right-0 top-[calc(100%+0.5rem)] z-[80] w-64 rounded-2xl p-2 shadow-2xl"
     : "absolute right-0 top-[calc(100%+0.5rem)] z-[80] w-64 rounded-2xl border border-neutral-200 bg-white p-2 text-neutral-900 shadow-2xl";
+  const workspaceMenuPanelClass = dark
+    ? "designer-work-surface absolute left-0 top-[calc(100%+0.5rem)] z-[80] w-64 rounded-2xl p-2 shadow-2xl"
+    : "absolute left-0 top-[calc(100%+0.5rem)] z-[80] w-64 rounded-2xl border border-neutral-200 bg-white p-2 text-neutral-900 shadow-2xl";
   const signInWithReturn = () => {
     const callbackUrl = typeof window !== "undefined" ? window.location.href : "/";
     signIn("google", { callbackUrl });
@@ -261,19 +268,41 @@ export default function EditorCommandBar({
   return (
     <div
       data-testid="editor-command-bar"
-      className={`absolute left-0 right-0 top-0 z-50 flex h-14 items-center gap-2 overflow-visible border-b px-2 shadow-sm backdrop-blur transition-opacity duration-300 sm:px-4 ${
+      className={`absolute left-0 right-0 top-0 z-50 flex h-9 items-center gap-2 overflow-visible border-b px-2 shadow-sm backdrop-blur transition-opacity duration-300 sm:px-4 ${
         dark ? "designer-command-bar" : "border-neutral-200 bg-white/95 text-neutral-950"
       } ${isClientPreview ? "pointer-events-none opacity-0" : "opacity-100"}`}
     >
       <div className="flex min-w-0 flex-[1.25] items-center gap-1.5">
+        {designSidebarToggleVisible ? (
+          <button
+            type="button"
+            data-testid="editor-design-sidebar-toggle"
+            data-state={designSidebarCollapsed ? "collapsed" : "expanded"}
+            aria-label={
+              designSidebarCollapsed
+                ? "Open design sidebar"
+                : "Collapse design sidebar"
+            }
+            aria-expanded={!designSidebarCollapsed}
+            title="Toggle design sidebar (Ctrl/⌘ B)"
+            className={
+              dark
+                ? "designer-control inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-md border"
+                : "inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-md border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 hover:text-neutral-950"
+            }
+            onClick={onToggleDesignSidebar}
+          >
+            <PanelLeft className="h-4 w-4" aria-hidden="true" />
+          </button>
+        ) : null}
         <button
           type="button"
           data-testid="command-undo"
           aria-label={undoName ? `Undo ${undoName}` : "Undo"}
           className={
             dark
-              ? "designer-control h-11 w-11 shrink-0 rounded-xl border text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40"
-              : "h-11 w-11 shrink-0 rounded-xl border border-neutral-200 bg-white text-sm font-semibold text-neutral-900 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40"
+              ? "designer-control inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg border text-sm font-semibold leading-none disabled:cursor-not-allowed disabled:opacity-40"
+              : "inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg border border-neutral-200 bg-white text-sm font-semibold leading-none text-neutral-900 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40"
           }
           onClick={onUndo}
           disabled={isClientPreview || !canUndo}
@@ -287,8 +316,8 @@ export default function EditorCommandBar({
           aria-label={redoName ? `Redo ${redoName}` : "Redo"}
           className={
             dark
-              ? "designer-control h-11 w-11 shrink-0 rounded-xl border text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40"
-              : "h-11 w-11 shrink-0 rounded-xl border border-neutral-200 bg-white text-sm font-semibold text-neutral-900 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40"
+              ? "designer-control inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg border text-sm font-semibold leading-none disabled:cursor-not-allowed disabled:opacity-40"
+              : "inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg border border-neutral-200 bg-white text-sm font-semibold leading-none text-neutral-900 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40"
           }
           onClick={onRedo}
           disabled={isClientPreview || !canRedo}
@@ -301,49 +330,94 @@ export default function EditorCommandBar({
           <EditorViewToggle value={viewMode} onChange={handleViewModeChange} dark={dark} />
         </div>
 
+        <div ref={workspaceRef} className="relative shrink-0">
+          <button
+            type="button"
+            data-testid="editor-command-workspace"
+            aria-label={`Workspace: ${activeWorkflowStep.label}`}
+            aria-haspopup="menu"
+            aria-expanded={workspaceOpen}
+            className={
+              dark
+                ? "designer-control inline-flex h-[30px] items-center gap-1.5 rounded-lg border px-2.5 text-sm font-semibold leading-none sm:px-3"
+                : "inline-flex h-[30px] items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-2.5 text-sm font-semibold leading-none text-neutral-800 shadow-sm hover:bg-neutral-50 sm:px-3"
+            }
+            onClick={() => {
+              setWorkspaceOpen((value) => !value);
+              setOverflowOpen(false);
+              setAccountOpen(false);
+            }}
+          >
+            <span className="hidden text-xs font-medium opacity-60 lg:inline">
+              Workspace
+            </span>
+            <span>{activeWorkflowStep.label}</span>
+            <ChevronDown
+              className={`h-4 w-4 transition-transform ${
+                workspaceOpen ? "rotate-180" : ""
+              }`}
+              aria-hidden="true"
+            />
+          </button>
+          <div
+            data-testid="editor-command-workspace-menu"
+            role="menu"
+            aria-label="Workspace"
+            className={`${workspaceMenuPanelClass} ${
+              workspaceOpen ? "" : "hidden"
+            }`}
+          >
+            <div className="px-3 pb-1 pt-1 text-[11px] font-bold uppercase tracking-[0.14em] opacity-50">
+              Workspace
+            </div>
+            {workflowSteps.map((step) => (
+              <button
+                key={step.id}
+                type="button"
+                role="menuitem"
+                data-testid={step.testId}
+                data-active={step.active ? "true" : "false"}
+                aria-current={step.active ? "page" : undefined}
+                aria-label={step.ariaLabel}
+                title={step.title}
+                className={menuButtonClass}
+                onClick={() => {
+                  setWorkspaceOpen(false);
+                  step.onClick();
+                }}
+              >
+                {step.legacyTestId ? (
+                  <span data-testid={step.legacyTestId}>
+                    <span data-testid="open-cabinetry-studio">
+                      {step.label}
+                    </span>
+                    {step.screenReaderLabel ? (
+                      <span className="sr-only">{step.screenReaderLabel}</span>
+                    ) : null}
+                  </span>
+                ) : (
+                  <span>{step.label}</span>
+                )}
+                {step.active ? (
+                  <span className="text-xs font-medium opacity-60">Current</span>
+                ) : null}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {isDesigner && !isClientPreview ? (
           <span
             data-testid="pro-mode-indicator"
             role="status"
             aria-label="Pro mode active"
-            className="inline-flex h-7 shrink-0 items-center rounded-full border border-blue-200 bg-blue-50 px-2 text-[11px] font-bold text-blue-700"
+            className="inline-flex h-[30px] shrink-0 items-center rounded-full border border-blue-200 bg-blue-50 px-2 text-[11px] font-bold text-blue-700"
           >
             <span className="sm:hidden">Pro</span>
             <span className="hidden sm:inline">Pro mode</span>
           </span>
         ) : null}
 
-        <div
-          className={
-            dark
-              ? "hidden shrink-0 items-center gap-1 rounded-2xl border border-white/10 bg-white/[0.04] p-1 xl:flex"
-              : "hidden shrink-0 items-center gap-1 rounded-2xl border border-neutral-200 bg-white p-1 shadow-sm xl:flex"
-          }
-          aria-label="Design workflow"
-        >
-          {workflowSteps.map((step) => (
-            <button
-              key={step.id}
-              type="button"
-              data-testid={step.testId}
-              data-active={step.active ? "true" : "false"}
-              aria-label={step.ariaLabel}
-              aria-pressed={step.active}
-              title={step.title}
-              className={workflowButtonClass(step.active)}
-              onClick={step.onClick}
-            >
-              {step.legacyTestId ? (
-                <span data-testid={step.legacyTestId}>
-                  <span data-testid="open-cabinetry-studio">{step.label}</span>
-                  {step.screenReaderLabel ? (
-                    <span className="sr-only">{step.screenReaderLabel}</span>
-                  ) : null}
-                </span>
-              ) : step.label}
-            </button>
-          ))}
-        </div>
       </div>
 
       <div className="pointer-events-none hidden min-w-0 flex-[0.95] items-center justify-center 2xl:flex">
@@ -365,8 +439,8 @@ export default function EditorCommandBar({
           title="Start a new floor plan"
           className={
             dark
-              ? "designer-control inline-flex h-9 w-9 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-emerald-300/30 bg-emerald-300/10 text-sm font-semibold text-emerald-100 hover:bg-emerald-300/20 sm:w-auto sm:px-3"
-              : "inline-flex h-9 w-9 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 text-sm font-semibold text-emerald-800 shadow-sm hover:bg-emerald-100 sm:w-auto sm:px-3"
+              ? "designer-control inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center gap-1.5 rounded-lg border border-emerald-300/30 bg-emerald-300/10 text-sm font-semibold leading-none text-emerald-100 hover:bg-emerald-300/20 sm:w-auto sm:px-3"
+              : "inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 text-sm font-semibold leading-none text-emerald-800 shadow-sm hover:bg-emerald-100 sm:w-auto sm:px-3"
           }
           onClick={onNewPlan}
         >
@@ -387,7 +461,7 @@ export default function EditorCommandBar({
           aria-live="polite"
           aria-label={`${saveStatus.label}. ${saveStatus.detail}`}
           title={`${saveStatus.label}: ${saveStatus.detail}`}
-          className={`hidden h-9 min-w-0 items-center gap-1.5 rounded-full border px-2 text-xs md:flex ${
+          className={`hidden h-[30px] min-w-0 items-center gap-1.5 rounded-full border px-2 text-xs md:flex ${
             saveStatus.canRetry ? "shrink-0" : ""
           } ${getSaveStatusClassName(
             saveStatus.tone,
@@ -427,8 +501,8 @@ export default function EditorCommandBar({
           data-testid="save-design"
           className={
             dark
-              ? "designer-primary-action h-9 shrink-0 rounded-xl px-3 text-sm font-semibold disabled:cursor-wait disabled:opacity-70 sm:px-4"
-              : "h-9 shrink-0 rounded-xl bg-neutral-900 px-3 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800 disabled:cursor-wait disabled:opacity-70 sm:px-4"
+              ? "designer-primary-action inline-flex h-[30px] shrink-0 items-center justify-center rounded-lg px-3 text-sm font-semibold leading-none disabled:cursor-wait disabled:opacity-70 sm:px-4"
+              : "inline-flex h-[30px] shrink-0 items-center justify-center rounded-lg bg-neutral-900 px-3 text-sm font-semibold leading-none text-white shadow-sm hover:bg-neutral-800 disabled:cursor-wait disabled:opacity-70 sm:px-4"
           }
           onClick={onSave}
           disabled={isSaving}
@@ -449,11 +523,12 @@ export default function EditorCommandBar({
             }
             className={
               dark
-                ? "designer-control inline-flex h-9 w-9 items-center justify-center rounded-xl border text-sm font-semibold sm:w-auto sm:px-3"
-                : "inline-flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200 bg-white text-sm font-semibold text-neutral-800 hover:bg-neutral-50 sm:w-auto sm:px-3"
+                ? "designer-control inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg border text-sm font-semibold leading-none sm:w-auto sm:px-3"
+                : "inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg border border-neutral-200 bg-white text-sm font-semibold leading-none text-neutral-800 hover:bg-neutral-50 sm:w-auto sm:px-3"
             }
             onClick={() => {
               setOverflowOpen((value) => !value);
+              setWorkspaceOpen(false);
               setAccountOpen(false);
             }}
           >
@@ -466,22 +541,6 @@ export default function EditorCommandBar({
               role="menu"
               className={menuPanelClass}
             >
-              {onMillwork ? (
-                <button
-                  type="button"
-                  data-testid="editor-command-overflow-millwork"
-                  data-active={millworkActive ? "true" : "false"}
-                  aria-pressed={millworkActive}
-                  className={`${menuButtonClass} xl:hidden`}
-                  onClick={() => {
-                    setOverflowOpen(false);
-                    onMillwork();
-                  }}
-                >
-                  <span>Millwork</span>
-                  <span className="text-xs font-medium opacity-60">Studio</span>
-                </button>
-              ) : null}
               {showLoadDesign && (
                 <button
                   type="button"
@@ -578,11 +637,12 @@ export default function EditorCommandBar({
             aria-expanded={accountOpen}
             className={
               dark
-                ? "designer-control inline-flex h-9 w-9 items-center justify-center rounded-xl border text-sm font-semibold sm:w-auto sm:px-3"
-                : "inline-flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200 bg-white text-sm font-semibold text-neutral-800 hover:bg-neutral-50 sm:w-auto sm:px-3"
+                ? "designer-control inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg border text-sm font-semibold leading-none sm:w-auto sm:px-3"
+                : "inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg border border-neutral-200 bg-white text-sm font-semibold leading-none text-neutral-800 hover:bg-neutral-50 sm:w-auto sm:px-3"
             }
             onClick={() => {
               setAccountOpen((value) => !value);
+              setWorkspaceOpen(false);
               setOverflowOpen(false);
             }}
           >

@@ -263,6 +263,20 @@ const placementWorkspace = read("lib/useDesignPagePlacementWorkspaceRegistration
 assert.match(canonicalRenderer, /testId: "canonical-wall-surface-3d"/);
 assert.match(canonicalRenderer, /getWallFaceSurfaceSettings\([\s\S]*?wallId/);
 assert.match(canonicalRenderer, /canonicalRoomId: room\.id/);
+const canonicalWallSurfaceSource = canonicalRenderer.slice(
+  canonicalRenderer.indexOf("function CanonicalWallSurfaceMesh"),
+  canonicalRenderer.indexOf("function CanonicalOpening3DSymbol")
+);
+assert.doesNotMatch(
+  canonicalWallSurfaceSource,
+  /castShadow/,
+  "Canonical finish planes must not cast edge shadows over the continuous structural wall body."
+);
+assert.doesNotMatch(
+  canonicalWallSurfaceSource,
+  /active \? "#fbfbf7" : "#ddddda"/,
+  "Canonical unfinished walls must not change surface color at room boundaries."
+);
 assert.match(canonicalRenderer, /testId: "canonical-opening-symbol-2d"/);
 assert.match(canonicalRenderer, /testId: "canonical-opening-symbol-3d"/);
 assert.match(canonicalRenderer, /canonicalHinge: opening\.hinge/);

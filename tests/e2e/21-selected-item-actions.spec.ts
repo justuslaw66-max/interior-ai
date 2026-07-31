@@ -3,6 +3,7 @@ import {
   addCatalogDrawerItemToRoom,
   getSelectedItemPanel,
   openCatalogPreview,
+  selectEditorWorkspace,
 } from "./variant-test-utils";
 
 const HUGG_SQUARE_ID =
@@ -60,10 +61,7 @@ test.describe("21. Selected Item Actions", () => {
     await selectedItemPanel.getByRole("button", { name: "Remove", exact: true }).click();
 
     await expect(page.getByTestId("selected-item-panel")).toHaveCount(0);
-    await page
-      .locator('[data-testid="editor-workflow-furnish"]:visible')
-      .first()
-      .click();
+    await selectEditorWorkspace(page, "editor-workflow-furnish");
     await expect(shoppingPreview).toBeVisible();
     await expect(shoppingPreview).toContainText(
       "Add real catalog items to build this room list."

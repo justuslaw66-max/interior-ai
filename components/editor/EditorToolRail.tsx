@@ -132,8 +132,8 @@ export default function EditorToolRail({
       data-testid="editor-tool-rail"
       className={
         dark
-          ? "designer-tool-rail absolute left-4 top-20 z-40 flex w-12 flex-col items-center gap-2 rounded-2xl p-2"
-          : "absolute left-4 top-20 z-40 flex w-12 flex-col items-center gap-2 rounded-2xl border border-neutral-200 bg-white/95 p-2 shadow-xl backdrop-blur"
+          ? "designer-tool-rail absolute left-4 top-15 z-40 flex w-12 flex-col items-center gap-2 rounded-2xl p-2"
+          : "absolute left-4 top-15 z-40 flex w-12 flex-col items-center gap-2 rounded-2xl border border-neutral-200 bg-white/95 p-2 shadow-xl backdrop-blur"
       }
       aria-label="Editor tools"
     >

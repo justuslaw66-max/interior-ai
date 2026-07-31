@@ -23,6 +23,10 @@ import {
   canonicalWallCutawayKey,
   resolveCanonicalCameraCutawayWallKeys,
 } from "@/lib/floor-plan-camera-cutaway";
+import {
+  applyCanonicalWallFootprintJoins,
+  buildRectangularWallFootprint,
+} from "@/lib/floor-plan-wall-footprints";
 import { loadPingYiCourtV2ReviewSeedBundle } from "@/lib/floor-plan-seeds/ping-yi-court-review-intake";
 
 const provenance: FloorPlanEntityProvenanceV2 = {
@@ -338,6 +342,110 @@ for (let index = 0; index < curved.solids.length - 1; index += 1) {
   );
 }
 
+const shortOwnershipSegment = {
+  start: { xMm: 0, zMm: 0 },
+  end: { xMm: 100, zMm: 0 },
+  startOffsetMm: 0,
+  endOffsetMm: 100,
+};
+const shortOwnershipWalls = applyCanonicalWallFootprintJoins([
+  {
+    path: {
+      kind: "line" as const,
+      startVertexId: "previous-start",
+      endVertexId: "short-start",
+    },
+    thicknessMm: 200,
+    centerlineSegments: [
+      {
+        start: { xMm: 0, zMm: -1000 },
+        end: { xMm: 0, zMm: 0 },
+        startOffsetMm: 0,
+        endOffsetMm: 1000,
+      },
+    ],
+    solids: [
+      {
+        start: { xMm: 0, zMm: -1000 },
+        end: { xMm: 0, zMm: 0 },
+        startOffsetMm: 0,
+        endOffsetMm: 1000,
+        bottomMm: 0,
+        topMm: 2600,
+        footprint: buildRectangularWallFootprint(
+          {
+            start: { xMm: 0, zMm: -1000 },
+            end: { xMm: 0, zMm: 0 },
+            startOffsetMm: 0,
+            endOffsetMm: 1000,
+          },
+          200
+        ),
+      },
+    ],
+  },
+  {
+    path: {
+      kind: "line" as const,
+      startVertexId: "short-start",
+      endVertexId: "short-end",
+    },
+    thicknessMm: 200,
+    centerlineSegments: [shortOwnershipSegment],
+    solids: [
+      {
+        ...shortOwnershipSegment,
+        bottomMm: 0,
+        topMm: 2600,
+        footprint: buildRectangularWallFootprint(
+          shortOwnershipSegment,
+          200
+        ),
+      },
+    ],
+  },
+  {
+    path: {
+      kind: "line" as const,
+      startVertexId: "short-end",
+      endVertexId: "next-end",
+    },
+    thicknessMm: 200,
+    centerlineSegments: [
+      {
+        start: { xMm: 100, zMm: 0 },
+        end: { xMm: 100, zMm: 1000 },
+        startOffsetMm: 0,
+        endOffsetMm: 1000,
+      },
+    ],
+    solids: [
+      {
+        start: { xMm: 100, zMm: 0 },
+        end: { xMm: 100, zMm: 1000 },
+        startOffsetMm: 0,
+        endOffsetMm: 1000,
+        bottomMm: 0,
+        topMm: 2600,
+        footprint: buildRectangularWallFootprint(
+          {
+            start: { xMm: 100, zMm: 0 },
+            end: { xMm: 100, zMm: 1000 },
+            startOffsetMm: 0,
+            endOffsetMm: 1000,
+          },
+          200
+        ),
+      },
+    ],
+  },
+]);
+assert.deepEqual(
+  shortOwnershipWalls[1].solids[0].footprint,
+  buildRectangularWallFootprint(shortOwnershipSegment, 200),
+  "A wall-ownership span shorter than its thickness must retain a safe swept footprint instead of an inverted miter."
+);
+
 assert.throws(
   () => compileCanonicalFloorPlanRenderModel(document, "0".repeat(64)),
   /CANONICAL_GEOMETRY_HASH_MISMATCH/,
@@ -434,13 +542,83 @@ const bedroomCameraCutaway = resolveCanonicalCameraCutawayWallKeys(
   { x: 4.55, z: 1.68, width: 3.035, depth: 3.355 }
 );
 assert(
-  bedroomCameraCutaway.has(canonicalWallCutawayKey(fourRoomFloor.id, "wall:9")),
-  "A shared partition between the camera and the active room must join the dollhouse cutaway."
+  !bedroomCameraCutaway.has(canonicalWallCutawayKey(fourRoomFloor.id, "wall:9")),
+  "A shared partition between the camera and the active room must remain visible."
 );
 assert(
   !bedroomCameraCutaway.has(canonicalWallCutawayKey(fourRoomFloor.id, "wall:8")),
   "A side partition that does not block the active room must remain visible."
 );
+assert(
+  bedroomCameraCutaway.has(canonicalWallCutawayKey(fourRoomFloor.id, "wall:18")),
+  "A camera-facing exterior wall should retain the established dollhouse cutaway."
+);
+const zoomedBedroomCameraCutaway = resolveCanonicalCameraCutawayWallKeys(
+  fourRoomModel,
+  { x: 4.55, z: 30 },
+  { x: 4.55, z: 1.68, width: 3.035, depth: 3.355 },
+  { viewDirection: { x: 0, z: -1 } }
+);
+const nearBedroomCameraCutaway = resolveCanonicalCameraCutawayWallKeys(
+  fourRoomModel,
+  { x: 4.55, z: 9 },
+  { x: 4.55, z: 1.68, width: 3.035, depth: 3.355 },
+  { viewDirection: { x: 0, z: -1 } }
+);
+assert.deepEqual(
+  [...zoomedBedroomCameraCutaway],
+  [...nearBedroomCameraCutaway],
+  "Dolly zoom must not change the canonical exterior cutaway set."
+);
+const pinnedBedroomCameraCutaway = resolveCanonicalCameraCutawayWallKeys(
+  fourRoomModel,
+  { x: 4.55, z: 15 },
+  { x: 4.55, z: 1.68, width: 3.035, depth: 3.355 },
+  { pinnedWallIds: new Set(["wall:18"]) }
+);
+assert(
+  !pinnedBedroomCameraCutaway.has(
+    canonicalWallCutawayKey(fourRoomFloor.id, "wall:18")
+  ),
+  "A selected exterior wall must remain visible instead of becoming a paper-thin cutaway remnant."
+);
+const bedroomExcludedWallIds = new Set(
+  fourRoomFloor.walls
+    .filter((wall) =>
+      bedroomCameraCutaway.has(
+        canonicalWallCutawayKey(fourRoomFloor.id, wall.id)
+      )
+    )
+    .map((wall) => wall.id)
+);
+const bedroomCutawayBands = buildCanonicalWallUnionBands(fourRoomFloor, {
+  excludedWallIds: bedroomExcludedWallIds,
+});
+for (const wall of fourRoomFloor.walls) {
+  if (bedroomExcludedWallIds.has(wall.id)) continue;
+  for (const solid of wall.solids) {
+    const heightMm = (solid.bottomMm + solid.topMm) / 2;
+    const band = bedroomCutawayBands.find(
+      (candidate) =>
+        candidate.bottomMm <= heightMm && candidate.topMm >= heightMm
+    );
+    assert(band, `Expected a wall height band for ${solid.id}.`);
+    for (const amount of [0.25, 0.5, 0.75]) {
+      assert.equal(
+        slabContainsPoint(band.polygons, {
+          xMm:
+            solid.start.xMm +
+            (solid.end.xMm - solid.start.xMm) * amount,
+          zMm:
+            solid.start.zMm +
+            (solid.end.zMm - solid.start.zMm) * amount,
+        }),
+        true,
+        `Cutaway wall union must retain the source centerline for ${solid.id}.`
+      );
+    }
+  }
+}
 
 const read = (relativePath: string) =>
   fs.readFileSync(path.join(process.cwd(), relativePath), "utf8");
@@ -491,7 +669,7 @@ assert.match(
 );
 assert.match(
   canonicalRenderer,
-  /useCanonicalCameraCutawayWallKeys\(\s*model,\s*cutawayTarget\s*\)[\s\S]*?cutawayWallKeys\.has\(canonicalWallCutawayKey\(floor\.id, wall\.id\)\)/,
+  /useCanonicalCameraCutawayWallKeys\(\s*model,\s*cutawayTarget,\s*pinnedWallIds\s*\)[\s\S]*?cutawayWallKeys\.has\(canonicalWallCutawayKey\(floor\.id, wall\.id\)\)/,
   "Canonical exterior walls should follow the camera-aware dollhouse cutaway instead of blocking the floor plan."
 );
 assert.doesNotMatch(

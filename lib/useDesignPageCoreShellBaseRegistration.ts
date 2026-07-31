@@ -24,6 +24,8 @@ export function useDesignPageCoreShellBaseRegistration() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const urlMode = searchParams.get("mode");
+  const urlView = searchParams.get("view");
+  const urlWorkspace = searchParams.get("workspace");
   const paywallVariantOverride = searchParams.get("paywall_variant");
   const debugLayoutParam = searchParams.get("debug_layout");
 
@@ -67,7 +69,9 @@ export function useDesignPageCoreShellBaseRegistration() {
   const [placementPreferencesLoaded, setPlacementPreferencesLoaded] =
     useState(false);
   const [, bumpHistoryRevision] = useDesignPageHistoryRevision();
-  const [viewMode, setViewMode] = useState<EditorViewMode>("3d");
+  const [viewMode, setViewMode] = useState<EditorViewMode>(
+    urlView === "2d" ? "2d" : "3d"
+  );
   const [designPanelOpen, setDesignPanelOpen] = useState(true);
   const [designPanelCollapsed, setDesignPanelCollapsed] = useState(false);
   const [planFocusPanelRevealed, setPlanFocusPanelRevealed] = useState(false);
@@ -109,6 +113,8 @@ export function useDesignPageCoreShellBaseRegistration() {
         pathname,
         searchParams,
         urlMode,
+        urlView,
+        urlWorkspace,
         debugLayoutParam,
       },
       importedModels: { selectedImportedProductId },

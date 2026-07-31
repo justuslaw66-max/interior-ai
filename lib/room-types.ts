@@ -27,6 +27,7 @@ import type {
   MillworkMaterialRef,
 } from "@/features/millwork/types";
 import type { DesignLightingSettings } from "@/lib/lightingPresets";
+import type { FixturePhotometricMetadata } from "@/lib/catalog-schema";
 
 /**
  * Multi-Room Foundation Types v3
@@ -101,6 +102,14 @@ export interface RoomSurfaceZone {
 export interface RoomWallSurfaceAssignments {
   default?: SurfaceSettings;
   faces?: Record<string, SurfaceSettings>;
+  /**
+   * Optional finish overrides for one contiguous visible wall-face piece.
+   * Pieces stop at openings, corners, or true geometry/height discontinuities.
+   * An adjoining-room boundary on the opposite side does not split the
+   * room-facing panel. Panel ids are renderer-stable surface ids; wall height
+   * and other structural properties continue to belong to the parent wall face.
+   */
+  panels?: Record<string, SurfaceSettings>;
 }
 
 export interface RoomSurfaceAssignments {
@@ -184,6 +193,8 @@ export interface PersistedFloorPlanUnderlay {
   widthMeters: number;
   depthMeters: number;
   opacity: number;
+  /** Legacy underlays omit this and remain visible. */
+  visible?: boolean;
   rotationDeg: number;
   locked: boolean;
   calibration?: PersistedFloorPlanCalibration;
@@ -313,6 +324,16 @@ export interface PersistedProductSnapshot {
     thumbnailUrl?: string;
     materialPreset?: string;
   };
+  /** Immutable emitter defaults captured when the product is placed. */
+  lighting?: FixturePhotometricMetadata;
+}
+
+export interface PlacedFixtureLightState {
+  isOn?: boolean;
+  dimmer?: number;
+  cctKelvin?: number;
+  /** User-authored beam width in degrees; spot emitters clamp this to 5–90°. */
+  beamAngleDeg?: number;
 }
 
 export interface DesignItem {
@@ -373,6 +394,8 @@ export interface DesignItem {
     metalness?: number;
     colorHex?: string;
   };
+  /** User-authored controls; omitted fields continue to follow catalog defaults. */
+  fixtureLight?: PlacedFixtureLightState;
   // NO roomId field - items are stored inside room.items[]
 }
 

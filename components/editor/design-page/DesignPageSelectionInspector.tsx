@@ -16,6 +16,8 @@ import type { FloorPlanPropertyEvidenceV2 } from "@/lib/floor-plan-document-v2";
 import type { FloorPlanConsumerMeasurementEvidenceV2 } from "@/lib/floor-plan-measured-property-mutations";
 import type { DesignPageSelectionInspectorSummary } from "@/lib/useDesignPageSelectionInspectorModel";
 import FloorPlanPropertyEvidenceControl from "@/components/editor/FloorPlanPropertyEvidenceControl";
+import type { FixturePhotometricVerification } from "@/lib/catalog-schema";
+import type { PlacedFixtureLightState } from "@/lib/room-types";
 
 type SelectedRoom = Pick<HousePlanRoom2D, "id" | "w" | "d">;
 
@@ -41,6 +43,16 @@ type DesignPageSelectionInspectorProps = {
     canEditActiveRoomWallHeight: boolean;
     activeFloorRoomCount: number;
     canDeleteSelectedRoom: boolean;
+    selectedFixtureLight: {
+      isOn: boolean;
+      dimmer: number;
+      cctKelvin: number;
+      beamAngleDeg: number;
+      beamAdjustable: boolean;
+      luminousFluxLumens: number;
+      dimmable: boolean;
+      verification: FixturePhotometricVerification;
+    } | null;
   };
   configuration: {
     dark: boolean;
@@ -70,6 +82,7 @@ type DesignPageSelectionInspectorProps = {
       snapToWall: () => void;
       duplicate: () => void;
       delete: () => void;
+      changeFixtureLight: (patch: PlacedFixtureLightState) => void;
     };
     room: {
       editFloor: (roomId: string) => void;
@@ -227,6 +240,157 @@ export function DesignPageSelectionInspector({
             </div>
           ))}
         </div>
+      ) : null}
+
+      {state.selectedFixtureLight ? (
+        <section
+          data-testid="selection-inspector-fixture-lighting"
+          className={
+            configuration.dark
+              ? "designer-divider mt-3 border-t pt-3"
+              : "mt-3 border-t border-neutral-200 pt-3"
+          }
+          aria-labelledby="selection-inspector-fixture-heading"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <div
+                id="selection-inspector-fixture-heading"
+                className="text-[11px] font-semibold uppercase text-neutral-500"
+              >
+                Fixture light
+              </div>
+              <div className="mt-0.5 text-[11px] opacity-65">
+                {state.selectedFixtureLight.luminousFluxLumens} lm ·{" "}
+                {state.selectedFixtureLight.verification === "estimated"
+                  ? "Estimated output"
+                  : state.selectedFixtureLight.verification === "manufacturer"
+                    ? "Manufacturer data"
+                    : "Photometric data"}
+              </div>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={state.selectedFixtureLight.isOn}
+              data-testid="selection-inspector-fixture-power"
+              className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
+                state.selectedFixtureLight.isOn
+                  ? "bg-emerald-500"
+                  : configuration.dark
+                    ? "bg-neutral-700"
+                    : "bg-neutral-300"
+              }`}
+              onClick={() =>
+                actions.item.changeFixtureLight({
+                  isOn: !state.selectedFixtureLight!.isOn,
+                })
+              }
+            >
+              <span
+                aria-hidden="true"
+                className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                  state.selectedFixtureLight.isOn
+                    ? "translate-x-6"
+                    : "translate-x-1"
+                }`}
+              />
+              <span className="sr-only">
+                {state.selectedFixtureLight.isOn
+                  ? "Turn fixture off"
+                  : "Turn fixture on"}
+              </span>
+            </button>
+          </div>
+
+          <label className="mt-3 block text-[11px] font-semibold">
+            Dimmer
+            <span className="float-right font-normal opacity-60">
+              {Math.round(state.selectedFixtureLight.dimmer * 100)}%
+            </span>
+            <input
+              type="range"
+              data-testid="selection-inspector-fixture-dimmer"
+              className="mt-1 w-full accent-emerald-500"
+              min={0}
+              max={100}
+              step={5}
+              value={Math.round(state.selectedFixtureLight.dimmer * 100)}
+              disabled={!state.selectedFixtureLight.dimmable}
+              onChange={(event) =>
+                actions.item.changeFixtureLight({
+                  dimmer: Number(event.currentTarget.value) / 100,
+                })
+              }
+            />
+          </label>
+
+          <label className="mt-3 block text-[11px] font-semibold">
+            Colour temperature
+            <select
+              data-testid="selection-inspector-fixture-cct"
+              className={
+                configuration.dark
+                  ? "mt-1 h-9 w-full rounded-lg border border-white/15 bg-neutral-900 px-2 text-xs"
+                  : "mt-1 h-9 w-full rounded-lg border border-neutral-200 bg-white px-2 text-xs"
+              }
+              value={String(state.selectedFixtureLight.cctKelvin)}
+              onChange={(event) =>
+                actions.item.changeFixtureLight({
+                  cctKelvin: Number(event.currentTarget.value),
+                })
+              }
+            >
+              {Array.from(
+                new Set([
+                  state.selectedFixtureLight.cctKelvin,
+                  2200,
+                  2700,
+                  3000,
+                  4000,
+                  5000,
+                  6500,
+                ])
+              )
+                .sort((left, right) => left - right)
+                .map((kelvin) => (
+                  <option key={kelvin} value={kelvin}>
+                    {kelvin}K
+                  </option>
+                ))}
+            </select>
+          </label>
+
+          <label className="mt-3 block text-[11px] font-semibold">
+            Beam width
+            <span className="float-right font-normal opacity-60">
+              {Math.round(state.selectedFixtureLight.beamAngleDeg)}°
+            </span>
+            <input
+              type="range"
+              data-testid="selection-inspector-fixture-beam"
+              className="mt-1 w-full accent-emerald-500"
+              min={5}
+              max={90}
+              step={1}
+              value={Math.min(
+                90,
+                Math.max(5, state.selectedFixtureLight.beamAngleDeg)
+              )}
+              disabled={!state.selectedFixtureLight.beamAdjustable}
+              onChange={(event) =>
+                actions.item.changeFixtureLight({
+                  beamAngleDeg: Number(event.currentTarget.value),
+                })
+              }
+            />
+            {!state.selectedFixtureLight.beamAdjustable ? (
+              <span className="mt-1 block font-normal opacity-55">
+                Omnidirectional fixture
+              </span>
+            ) : null}
+          </label>
+        </section>
       ) : null}
 
       {roomSelectionActive && state.selectedRoom ? (

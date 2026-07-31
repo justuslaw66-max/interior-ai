@@ -82,7 +82,7 @@ export default async function AdminFloorPlansPage({
   );
 
   const summary = {
-    active: ["received", "rendered", "extracted", "scale_solved", "topology_built", "validating"]
+    active: ["received", "rendered", "extracted", "selecting_page", "scale_solved", "topology_built", "validating"]
       .reduce((total, status) => total + (counts.get(status) ?? 0), 0),
     needsReview: counts.get("needs_review") ?? 0,
     ready: counts.get("ready") ?? 0,

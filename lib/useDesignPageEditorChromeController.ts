@@ -48,6 +48,7 @@ export type UseDesignPageEditorChromeControllerInput = {
     editor: {
       setMode: Dispatch<SetStateAction<DesignPageEditorMode>>;
       setDesignPanelOpen: Dispatch<SetStateAction<boolean>>;
+      setDesignPanelCollapsed: Dispatch<SetStateAction<boolean>>;
       setItemCartOpen: Dispatch<SetStateAction<boolean>>;
       setClientPreview: Dispatch<SetStateAction<boolean>>;
       setUrlMode: (mode: "designer" | "homeowner") => void;
@@ -155,6 +156,15 @@ export function useDesignPageEditorChromeController({
     actions.editor.setDesignPanelOpen(true);
   };
 
+  const toggleDesignSidebar = () => {
+    if (!state.designPanelOpen) {
+      actions.editor.setDesignPanelOpen(true);
+      actions.editor.setDesignPanelCollapsed(false);
+      return;
+    }
+    actions.editor.setDesignPanelCollapsed((collapsed) => !collapsed);
+  };
+
   const openAdjustTools = () => {
     actions.editor.setMode("adjust");
     actions.editor.setDesignPanelOpen(true);
@@ -202,6 +212,7 @@ export function useDesignPageEditorChromeController({
           onExport: togglePresentMode,
           onUndo: actions.history.undo,
           onRedo: actions.history.redo,
+          onToggleDesignSidebar: toggleDesignSidebar,
           onViewModeChange: actions.navigation.changeViewMode,
           onToggleDesignerMode: toggleDesignerMode,
           onToggleClientPreview: toggleClientPreview,

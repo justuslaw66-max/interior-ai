@@ -67,6 +67,8 @@ export type FloorPlanUnderlay = {
   widthMeters: number;
   depthMeters: number;
   opacity: number;
+  /** Legacy underlays omit this and remain visible. */
+  visible?: boolean;
   rotationDeg: number;
   locked: boolean;
   calibration?: FloorPlanScaleCalibration;

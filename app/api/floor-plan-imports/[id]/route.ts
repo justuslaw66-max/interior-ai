@@ -6,9 +6,12 @@ import {
   RequestBodyTooLargeError,
 } from "@/lib/bounded-request-body";
 import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/rateLimit";
 import { takeFloorPlanCandidateMutationAllowance } from "@/lib/floor-plan-imports/candidate-mutation-rate-limit";
 import { hashCanonicalJson } from "@/lib/floor-plan-imports/json";
 import { FLOOR_PLAN_IMPORT_PROGRESS } from "@/lib/floor-plan-imports/status";
+import { buildFloorPlanProgressEstimate } from "@/lib/floor-plan-imports/progress-estimate-server";
+import { recordFloorPlanEtaPrediction } from "@/lib/floor-plan-imports/eta-calibration";
 import { applyConsumerFloorPlanCorrection } from "@/lib/floor-plan-imports/review";
 import {
   compileCandidateFloorPlanDocumentV2,
@@ -24,6 +27,16 @@ export const runtime = "nodejs";
 // the correction note without permitting an unbounded JSON buffer.
 const MAX_FLOOR_PLAN_CANDIDATE_MUTATION_BODY_BYTES =
   MAX_FLOOR_PLAN_CANDIDATE_BYTES + 2 * 1024 * 1024;
+const HISTORY_DELETE_CANCEL_STATUSES = new Set<string>([
+  "received",
+  "rendered",
+  "extracted",
+  "selecting_page",
+  "scale_solved",
+  "topology_built",
+  "validating",
+  "needs_review",
+]);
 
 function error(message: string, status: number) {
   return NextResponse.json({ error: message }, { status });
@@ -49,10 +62,11 @@ export async function GET(
   const { id } = await params;
 
   const job = await prisma.floorPlanImportJob.findFirst({
-    where: { id, userId: session.user.id },
+    where: { id, userId: session.user.id, historyDeletedAt: null },
     select: {
       id: true,
       status: true,
+      statusChangedAt: true,
       progress: true,
       adapterId: true,
       extractionVersion: true,
@@ -101,7 +115,37 @@ export async function GET(
     },
   });
   if (!job) return error("Floor-plan import not found", 404);
-  return NextResponse.json({ job }, { headers: { "Cache-Control": "no-store" } });
+  const progressEstimate = await buildFloorPlanProgressEstimate({
+    job: {
+      status: job.status,
+      progress: job.progress,
+      statusChangedAt: job.statusChangedAt,
+      lastAttemptAt: job.lastAttemptAt,
+      nextAttemptAt: job.nextAttemptAt,
+      leaseExpiresAt: job.leaseExpiresAt,
+      heartbeatAt: job.heartbeatAt,
+      renderedPageCount: Array.isArray(job.renderedPagesJson)
+        ? job.renderedPagesJson.length
+        : 0,
+    },
+    adapterId: job.adapterId,
+    extractionVersion: job.extractionVersion,
+  });
+  try {
+    await recordFloorPlanEtaPrediction({
+      jobId: job.id,
+      status: job.status,
+      adapterId: job.adapterId,
+      extractionVersion: job.extractionVersion,
+      estimate: progressEstimate,
+    });
+  } catch (cause) {
+    console.warn("Floor-plan ETA calibration could not be recorded", cause);
+  }
+  return NextResponse.json(
+    { job, progressEstimate },
+    { headers: { "Cache-Control": "no-store" } }
+  );
 }
 
 export async function PATCH(
@@ -132,7 +176,7 @@ export async function PATCH(
   }
   const { id } = await params;
   const current = await prisma.floorPlanImportJob.findFirst({
-    where: { id, userId },
+    where: { id, userId, historyDeletedAt: null },
     select: {
       id: true,
       status: true,
@@ -194,6 +238,7 @@ export async function PATCH(
       where: {
         id,
         userId,
+        historyDeletedAt: null,
         status: "needs_review",
         candidateVersion: current.candidateVersion,
       },
@@ -213,6 +258,7 @@ export async function PATCH(
         ] as Prisma.InputJsonValue,
         candidateVersion: nextVersion,
         status: "validating",
+        statusChangedAt: new Date(),
         progress: FLOOR_PLAN_IMPORT_PROGRESS.validating,
         errorMessage: null,
       },
@@ -225,4 +271,82 @@ export async function PATCH(
     const message = cause instanceof Error ? cause.message : "Invalid candidate correction";
     return error(message, 400);
   }
+}
+
+/**
+ * Removes a completed import from the consumer's history without touching an
+ * already-created design. The durable import row remains as a privacy-safe
+ * tombstone so source retention, deletion outbox work, and audit lineage can
+ * finish independently.
+ */
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return error("Unauthorized", 401);
+  const allowance = rateLimit(
+    `floor-plan-import-history-delete:${userId}`,
+    30,
+    60_000
+  );
+  if (!allowance.ok) {
+    return error("Too many floor-plan import deletion requests", 429);
+  }
+  const { id } = await params;
+  const now = new Date();
+  const owned = await prisma.floorPlanImportJob.findFirst({
+    where: { id, userId, historyDeletedAt: null },
+    select: {
+      id: true,
+      status: true,
+      leaseToken: true,
+      leaseExpiresAt: true,
+    },
+  });
+  if (!owned) return error("Floor-plan import not found", 404);
+  if (owned.leaseToken && owned.leaseExpiresAt && owned.leaseExpiresAt > now) {
+    return error(
+      "This import is still finishing its current processing step. Try deleting it again shortly.",
+      409
+    );
+  }
+  const cancelImport = HISTORY_DELETE_CANCEL_STATUSES.has(owned.status);
+  const deleted = await prisma.floorPlanImportJob.updateMany({
+    where: {
+      id,
+      userId,
+      historyDeletedAt: null,
+      status: owned.status,
+      OR: [{ leaseToken: null }, { leaseExpiresAt: { lte: now } }],
+    },
+    data: {
+      historyDeletedAt: now,
+      ...(cancelImport
+        ? {
+            status: "failed" as const,
+            statusChangedAt: now,
+            progress: FLOOR_PLAN_IMPORT_PROGRESS.failed,
+            errorMessage: "Deleted by owner",
+            leaseToken: null,
+            leaseOwner: null,
+            leaseExpiresAt: null,
+            nextAttemptAt: null,
+          }
+        : {}),
+    },
+  });
+  if (deleted.count !== 1) {
+    return error("This floor-plan import changed; refresh and try again.", 409);
+  }
+
+  return NextResponse.json(
+    {
+      ok: true,
+      deletedFromHistory: true,
+      designPreserved: true,
+    },
+    { headers: { "Cache-Control": "private, no-store" } }
+  );
 }

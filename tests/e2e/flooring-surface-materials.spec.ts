@@ -260,6 +260,28 @@ test.describe("Flooring surface materials", () => {
     await expect(floorPanel.getByTestId("surface-pattern-select")).toHaveValue("straight");
   });
 
+  test("apply all uses the selected wall paint instead of the custom default", async ({ page }) => {
+    test.setTimeout(90000);
+
+    await page.goto("/design?mode=designer");
+    await page.waitForLoadState("domcontentloaded");
+    await expect(page.locator('[data-testid="scene-canvas"]:visible').first()).toBeVisible({ timeout: 30000 });
+    await dismissBlockingDialogs(page);
+
+    const surfacesPanel = await openSurfacesPanelFromInspector(page);
+    await page.getByTestId("surface-target-walls").click();
+    await page.getByTestId("wall-paint-search").fill("Dutchess Pink");
+    await page.getByTestId("wall-paint-swatch-nippon-9072-dutchess-pink").click();
+
+    await expect(page.getByTestId("wall-paint-custom-color")).toHaveValue("#d77c8e");
+    await page.getByTestId("wall-paint-apply-all").click();
+
+    await expect(surfacesPanel).toContainText("All walls · Dutchess Pink");
+    await expect(page.getByTestId("rule-announcement-status")).toHaveText(
+      "Dutchess Pink (9072) applied to all room walls"
+    );
+  });
+
   test("ceiling target can use the paint colour picker", async ({ page }) => {
     test.setTimeout(90000);
 

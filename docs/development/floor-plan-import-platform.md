@@ -8,7 +8,7 @@ This application treats a floor plan as evidence-backed geometry, not as an imag
 - `source_verified` requires licensed publication-rights evidence, a separately recorded source-observation manifest, one-to-one mappings for every observed and canonical critical entity, exact dimension reconciliation, registered source anchors, topology validation, and reviewer approval.
 - `construction_verified` additionally requires unit-specific CAD/as-built documents or site measurements.
 - Assumed floor elevations, wall/structure base offsets, wall/structure heights, door/window heights, sills, slabs, or storey heights remain visibly marked `assumed` until supported evidence or a user/site measurement confirms them.
-- Extraction failure never creates invented rooms. The upload remains available as an underlay for guided calibration and tracing.
+- Extraction failure never creates invented rooms. Upload and review are isolated from the open design, so a failed import cannot overlay or mutate existing rooms and furniture.
 
 The seven Ping Yi Court documents are internal golden regression fixtures and remain `needs_review` until their source overlays and manifests pass every publication gate. Their schema-v1 YAML catalog is locked to `draft` + `review_only`; its unknown source licence and unresolved address transforms are preserved. It is available to authenticated admins for source/preview comparison and to internal regression tests, but consumers cannot search, browse, or apply it.
 
@@ -22,7 +22,9 @@ Optional rooms and partitions remain annotations in the default canonical docume
 
 ## Import lifecycle
 
-`received -> rendered -> extracted -> scale_solved -> topology_built -> validating -> needs_review -> ready -> applied/published | failed`
+`received -> rendered -> extracted -> selecting_page -> scale_solved -> topology_built -> validating -> needs_review -> ready -> applied/published | failed`
+
+`selecting_page` is used only when an enhanced image/PDF import has multiple candidate plan pages. The background queue ignores an unselected job. `POST /api/floor-plan-imports/:id/select-page` records one owner-confirmed page with optimistic candidate versioning and marks the job resumable without reversing its lifecycle. Single-page and legacy jobs skip this pause.
 
 Processing stages are lease-guarded and resumable. Production defaults to `FLOOR_PLAN_PROCESSING_MODE=background`: the process endpoint acknowledges the durable queued job and never ties extraction to the browser or HTTP request lifetime. Run `npm run worker:floor-plans` as a persistent worker; scheduled deployments can invoke it with `--once`. Expired leases resume from the last committed stage, while stale workers are prevented from committing. `inline` remains available for local or single-process development and must not be used as the only production worker.
 
@@ -37,6 +39,7 @@ Consumer endpoints:
 - `POST /api/floor-plan-imports`
 - `GET /api/floor-plan-imports/:id`
 - `PATCH /api/floor-plan-imports/:id/candidate`
+- `POST /api/floor-plan-imports/:id/select-page`
 - `POST /api/floor-plan-imports/:id/process`
 - `POST /api/floor-plan-imports/:id/confirm`
 - `DELETE /api/floor-plan-imports/:id/source`
@@ -45,7 +48,7 @@ Upload ingress is bounded before multipart parsing. The route authenticates and 
 
 The import limit is enforced both by the process-local fast path and by atomic Postgres `ApiRateLimitBucket` counters shared across application instances. Bucket keys are HMAC-SHA-256 digests, not stored user IDs. Production must set `API_RATE_LIMIT_HASH_SECRET` to at least 16 characters, or supply an existing `AUTH_SECRET`/`NEXTAUTH_SECRET` of that length; limiter configuration or database failure returns `503` before the upload is accepted. Deploy the `20260716213000_add_shared_api_rate_limit` Prisma migration before enabling imports. Expired buckets are removed through the indexed cleanup performed by the limiter.
 
-Confirmation creates a new saved design and never overwrites the design that was open during upload. Candidate updates use optimistic `candidateVersion` checks and the server sanitizes consumer corrections so source identity, evidence tier, and verification status cannot be forged.
+Confirmation is always explicit, creates a new saved design, and never overwrites the design that was open during upload. The editor opens that design in the 2D Furnish workspace with no furniture. Its selected source page is attached as a locked, initially hidden reference layer with an owner-scoped asset URL. Candidate and page-selection updates use optimistic `candidateVersion` checks, and the server sanitizes consumer corrections so source identity, evidence tier, and verification status cannot be forged.
 
 Every design create and update transaction also synchronizes a one-to-one `FloorPlanDesignReference`. Revision, import-job and address-binding foreign keys are accepted only after owner and cross-lineage validation; geometry and source hashes must agree with the durable records. Private imports may retain their synthetic document revision inside snapshot JSON, but only their owner-scoped persisted job becomes an indexed foreign key. Legacy or local synthetic revisions without a durable job remain JSON-only so compatibility designs continue to save without manufacturing a database relation. Removing floor-plan lineage from a snapshot removes the projection in the same transaction.
 
@@ -133,7 +136,7 @@ Owner-requested deletion also scrubs SHA/job-linked underlays from saved designs
 
 Authenticated consumers can call `DELETE /api/floor-plan-imports/:id/source` once an import is ready, applied or failed. The request is owner-scoped and idempotent, covers all private processing copies that share that owner-scoped source, and never deletes the resulting saved design. Database deletion returns `deletionState: deleted`; external deletion returns HTTP 202 with `deletionState: queued` until the leased worker confirms it. The editor clears only its local rendered underlay when a request is accepted and does not fabricate a server tombstone while external deletion is pending; canonical geometry and integrity hashes remain.
 
-Semantic classification is optional and configured with `OPENAI_API_KEY` plus an optional `FLOOR_PLAN_VISION_MODEL`. It remains off unless `FLOOR_PLAN_VISION_ENABLED=1`; omit the key or leave the flag at `0` for the deterministic-only path. Without a configured classifier, outlined text or weak scans correctly remain in review/guided-tracing fallback instead of being guessed.
+Enhanced detection is controlled by `FLOOR_PLAN_IMPORT_ENHANCED_DETECTION`; set it to `0` for rollback. Semantic classification is separately optional and configured with `OPENAI_API_KEY` plus an optional `FLOOR_PLAN_VISION_MODEL`. It remains off unless `FLOOR_PLAN_VISION_ENABLED=1`. Ranked page previews use a low-detail semantic pass, while the confirmed plan crop uses original detail with structured output and `store: false`. Model labels, boxes and span endpoints remain proposals: deterministic source linework supplies scale and geometry, and unsupported observations return to review. Without a configured classifier, outlined text or weak scans correctly remain in review/guided-tracing fallback instead of being guessed.
 
 Share-token and public-catalog boundaries never return raw source manifests or private import lineage. Shared canonical documents receive a geometry-derived share ID, lose source job/address/underlay/reviewer metadata, and retain only sanitized room and structure display names. Catalog room summaries are derived from an allowlisted semantic room type with server-generated IDs; a malformed or uploader-defined type fails closed instead of exposing the manifest label.
 

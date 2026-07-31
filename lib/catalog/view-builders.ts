@@ -110,14 +110,15 @@ export type CatalogFilterState = {
   materialFamilies?: string[];
   styleTags?: string[];
   roomTags?: string[];
-  seatCounts?: number[];
-  widthBand?: "small" | "medium" | "large";
+  sofaSeatCapacityBuckets?: SofaSeatCapacityBucket[];
+  widthMinCm?: number;
+  widthMaxCm?: number;
   smallRoomFriendly?: boolean;
   starterEligible?: boolean;
-  curatedOnly?: boolean;
   aiPlacementEligible?: boolean;
-  wallFriendly?: boolean;
 };
+
+export type SofaSeatCapacityBucket = "2" | "3" | "4_plus";
 
 export type CatalogCardView = {
   id: string;
@@ -456,16 +457,45 @@ export function getTopCategoryLabel(category: CatalogTopCategory): string {
 }
 
 export function deriveSeatCount(item: CatalogItemSchema): number | null {
-  const match = item.title.match(/(\d+)\s*(seater|seat)/i);
-  if (match) return Number(match[1]);
+  const metadataSeatCapacity = Number(item.metadata?.seatCapacity);
+  if (Number.isInteger(metadataSeatCapacity) && metadataSeatCapacity > 0) {
+    return metadataSeatCapacity;
+  }
+
+  const match = item.title.match(/(\d+(?:\.\d+)?)\s*(seater|seat)/i);
+  if (match) {
+    const titleSeatCapacity = Number(match[1]);
+    if (Number.isInteger(titleSeatCapacity) && titleSeatCapacity > 0) {
+      return titleSeatCapacity;
+    }
+  }
+
   if (mapToTopCategory(item.category, item) === "sofa") {
     const width = item.dimsMm.w;
+    if (!Number.isFinite(width) || width <= 0) return null;
     if (width >= 2400) return 4;
     if (width >= 1900) return 3;
     if (width >= 1300) return 2;
     return 1;
   }
   return null;
+}
+
+export function getSofaSeatCapacityBucket(
+  seatCapacity: number | null,
+): SofaSeatCapacityBucket | null {
+  if (seatCapacity === 2) return "2";
+  if (seatCapacity === 3) return "3";
+  if (typeof seatCapacity === "number" && seatCapacity >= 4) return "4_plus";
+  return null;
+}
+
+export function matchesSofaSeatCapacityBuckets(
+  seatCapacity: number | null,
+  buckets: readonly SofaSeatCapacityBucket[],
+): boolean {
+  const bucket = getSofaSeatCapacityBucket(seatCapacity);
+  return bucket !== null && buckets.includes(bucket);
 }
 
 export function deriveBadges(item: CatalogItemSchema): string[] {
@@ -892,7 +922,7 @@ export function filterCatalogItems(
     const seatCount = deriveSeatCount(item);
     const priceNumber = getPriceNumber(item);
     const badges = deriveBadges(item).map((x) => x.toLowerCase());
-    const widthBand = getWidthBand(item);
+    const widthCm = item.dimsMm.w / 10;
 
     const searchable = [
       item.title,
@@ -937,13 +967,31 @@ export function filterCatalogItems(
     ) {
       return false;
     }
-    if (filters.seatCounts?.length && seatCount && !filters.seatCounts.includes(seatCount)) return false;
-    if (filters.widthBand && widthBand !== filters.widthBand) return false;
+    if (filters.sofaSeatCapacityBuckets?.length) {
+      if (
+        topCategory !== "sofa" ||
+        !matchesSofaSeatCapacityBuckets(seatCount, filters.sofaSeatCapacityBuckets)
+      ) {
+        return false;
+      }
+    }
+    if (
+      typeof filters.widthMinCm === "number" &&
+      Number.isFinite(filters.widthMinCm) &&
+      widthCm < filters.widthMinCm
+    ) {
+      return false;
+    }
+    if (
+      typeof filters.widthMaxCm === "number" &&
+      Number.isFinite(filters.widthMaxCm) &&
+      widthCm > filters.widthMaxCm
+    ) {
+      return false;
+    }
     if (filters.smallRoomFriendly && !badges.includes("small-room friendly")) return false;
     if (filters.starterEligible && !badges.includes("starter-friendly")) return false;
-    if (filters.curatedOnly && !badges.includes("curated")) return false;
     if (filters.aiPlacementEligible && !badges.includes("ai recommended")) return false;
-    if (filters.wallFriendly && !badges.includes("works against wall")) return false;
 
     return true;
   });

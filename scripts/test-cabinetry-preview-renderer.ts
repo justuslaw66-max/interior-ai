@@ -66,6 +66,13 @@ const sceneItemSource = readFileSync(
   resolve(root, "features/cabinetry/components/CabinetSceneItem.tsx"),
   "utf8"
 );
+const scenePreviewEdgesSource = readFileSync(
+  resolve(
+    root,
+    "features/cabinetry/components/cabinetScenePreviewEdges.ts"
+  ),
+  "utf8"
+);
 const resourceOwnershipSource = readFileSync(
   resolve(root, "features/cabinetry/hooks/useCabinetSceneResourceOwnership.ts"),
   "utf8"
@@ -224,12 +231,12 @@ disposeCabinetOwnedTextures([ownedTexture, ownedTexture]);
 assert.equal(textureDisposeCount, 1, "Each owned cabinet texture must be disposed exactly once.");
 assert.match(cameraSource, /fitDistanceForPlane/, "Named views must use FOV-aware fitting.");
 assert.match(
-  sceneItemSource,
+  scenePreviewEdgesSource,
   /PREVIEW_FRONT_EDGE_PART_TYPES[\s\S]*?"door_front"[\s\S]*?"drawer_front"/,
   "Preview separation edges must be limited to door and drawer fronts."
 );
 assert.match(
-  sceneItemSource,
+  scenePreviewEdgesSource,
   /sourceType:\s*"cabinet_preview_front_edge"[\s\S]*?previewOnly:\s*true/,
   "Front separation edges must remain explicitly preview-only."
 );

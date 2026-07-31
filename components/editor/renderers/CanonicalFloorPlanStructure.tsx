@@ -1,18 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Line } from "@react-three/drei/core/Line";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
-import {
-  BufferGeometry,
-  DoubleSide,
-  Float32BufferAttribute,
-  Mesh,
-  Path,
-  Plane,
-  Shape,
-  Vector3,
-} from "three";
+import { DoubleSide, Mesh } from "three";
 import type {
   CompiledFloorPlanOpeningV2,
   CompiledFloorPlanStructureV2,
@@ -30,424 +21,51 @@ import type {
   CanonicalFloorPlanWallSolid,
 } from "@/lib/floor-plan-render-model";
 import { resolveCanonicalFloorPlan2DActiveFloor } from "@/lib/floor-plan-render-model";
-import type { PlanarUnionPolygonMm } from "@/lib/floor-plan-planar-union";
 import {
   buildCanonicalFloorSlabPolygons,
   buildCanonicalWallUnionBands,
 } from "@/lib/floor-plan-watertight-geometry";
 import {
   canonicalWallCutawayKey,
-  resolveCanonicalCameraCutawayWallKeys,
   type CanonicalCutawayTarget,
 } from "@/lib/floor-plan-camera-cutaway";
 import { clampFloorPatternScale, normalizeFloorRotationDeg } from "@/lib/floor-materials";
 import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
 import { getWallFaceSurfaceSettings } from "@/lib/surface-settings";
-import type { RoomSurfaceAssignments } from "@/lib/room-types";
+import { resolveWallSurfaceColorFillIntensity } from "@/lib/wall-paint-rendering";
 import { useSurfaceMaterialTexture } from "./useSurfaceMaterialTexture";
+import {
+  planarUnionShapes,
+  preferredRoomId,
+  segmentTransform,
+  structureColor,
+  structureOutlinePoints,
+  structureShape,
+  wallSolidShape,
+  wallSurfaceEdge,
+  wallSurfaceGeometry,
+} from "./canonical-floor-plan/geometry";
+import {
+  useCanonicalOpeningDrag,
+  type CanonicalOpeningDragMetricsV2,
+  type CanonicalOpeningDragMode,
+} from "./canonical-floor-plan/openingDrag";
+import {
+  WALL_SURFACE_TEXTURE_RESOLUTION,
+  resolveRoomSurfaceAssignments,
+  surfaceMaterialFallbackColor,
+} from "./canonical-floor-plan/surfaceMaterials";
+import { useCanonicalCameraCutawayWallKeys } from "./canonical-floor-plan/useCameraCutaway";
+
+export type { CanonicalOpeningDragMetricsV2 } from "./canonical-floor-plan/openingDrag";
 
 type CanonicalPointerEvent = ThreeEvent<MouseEvent | PointerEvent>;
 
-export type CanonicalOpeningDragMetricsV2 = {
-  centerMm: { xMm: number; zMm: number };
-  widthMm: number;
-};
-
-type CanonicalOpeningDragMode = "move" | "resize";
-
-function capturePointer(event: ThreeEvent<PointerEvent>) {
-  const target = event.target as EventTarget & {
-    setPointerCapture?: (pointerId: number) => void;
-  };
-  target.setPointerCapture?.(event.pointerId);
-}
-
-function releasePointer(event: ThreeEvent<PointerEvent>) {
-  const target = event.target as EventTarget & {
-    releasePointerCapture?: (pointerId: number) => void;
-  };
-  target.releasePointerCapture?.(event.pointerId);
-}
-
-function useCanonicalOpeningDrag({
-  opening,
-  wallStart,
-  wallEnd,
-  floorY,
-  enabled,
-  onEdit,
-  onDragStateChange,
-}: {
-  opening: CompiledFloorPlanOpeningV2;
-  wallStart: { xMm: number; zMm: number };
-  wallEnd: { xMm: number; zMm: number };
-  floorY: number;
-  enabled: boolean;
-  onEdit?: (
-    openingId: string,
-    metrics: CanonicalOpeningDragMetricsV2,
-    mode: CanonicalOpeningDragMode
-  ) => void;
-  onDragStateChange?: (dragging: boolean, mode: CanonicalOpeningDragMode) => void;
-}) {
-  const plane = useMemo(() => new Plane(new Vector3(0, 1, 0), -floorY), [floorY]);
-  const pointRef = useRef(new Vector3());
-  const dragRef = useRef<
-    | { pointerId: number; mode: "move"; grabDeltaMm: number }
-    | { pointerId: number; mode: "resize"; fixedOffsetMm: number }
-    | null
-  >(null);
-  const dx = wallEnd.xMm - wallStart.xMm;
-  const dz = wallEnd.zMm - wallStart.zMm;
-  const wallLengthMm = Math.hypot(dx, dz);
-
-  const pointerOffsetMm = useCallback(
-    (event: ThreeEvent<PointerEvent>) => {
-      const point = event.ray.intersectPlane(plane, pointRef.current);
-      if (!point || wallLengthMm <= 0) return null;
-      const xMm = point.x * 1000;
-      const zMm = point.z * 1000;
-      return (
-        ((xMm - wallStart.xMm) * dx + (zMm - wallStart.zMm) * dz) /
-        wallLengthMm
-      );
-    },
-    [dx, dz, plane, wallLengthMm, wallStart.xMm, wallStart.zMm]
-  );
-
-  const emit = useCallback(
-    (offsetMm: number, widthMm: number, mode: CanonicalOpeningDragMode) => {
-      if (!onEdit || wallLengthMm <= 0) return;
-      const centerOffsetMm = offsetMm + widthMm / 2;
-      onEdit(
-        opening.id,
-        {
-          centerMm: {
-            xMm: Math.round(wallStart.xMm + (dx * centerOffsetMm) / wallLengthMm),
-            zMm: Math.round(wallStart.zMm + (dz * centerOffsetMm) / wallLengthMm),
-          },
-          widthMm: Math.round(widthMm),
-        },
-        mode
-      );
-    },
-    [dx, dz, onEdit, opening.id, wallLengthMm, wallStart.xMm, wallStart.zMm]
-  );
-
-  const beginMove = useCallback(
-    (event: ThreeEvent<PointerEvent>) => {
-      if (!enabled) return;
-      const pointer = pointerOffsetMm(event);
-      if (pointer === null) return;
-      event.stopPropagation();
-      capturePointer(event);
-      dragRef.current = {
-        pointerId: event.pointerId,
-        mode: "move",
-        grabDeltaMm: opening.offsetMm + opening.widthMm / 2 - pointer,
-      };
-      onDragStateChange?.(true, "move");
-    },
-    [enabled, onDragStateChange, opening.offsetMm, opening.widthMm, pointerOffsetMm]
-  );
-
-  const beginResize = useCallback(
-    (edge: "start" | "end", event: ThreeEvent<PointerEvent>) => {
-      if (!enabled) return;
-      event.stopPropagation();
-      capturePointer(event);
-      dragRef.current = {
-        pointerId: event.pointerId,
-        mode: "resize",
-        fixedOffsetMm:
-          edge === "start" ? opening.offsetMm + opening.widthMm : opening.offsetMm,
-      };
-      onDragStateChange?.(true, "resize");
-    },
-    [enabled, onDragStateChange, opening.offsetMm, opening.widthMm]
-  );
-
-  const move = useCallback(
-    (event: ThreeEvent<PointerEvent>) => {
-      const drag = dragRef.current;
-      if (!drag || drag.pointerId !== event.pointerId) return;
-      const pointer = pointerOffsetMm(event);
-      if (pointer === null) return;
-      event.stopPropagation();
-      if (drag.mode === "move") {
-        const halfWidth = opening.widthMm / 2;
-        const center = Math.min(
-          wallLengthMm - halfWidth,
-          Math.max(halfWidth, pointer + drag.grabDeltaMm)
-        );
-        emit(center - halfWidth, opening.widthMm, "move");
-        return;
-      }
-      const minimumWidthMm = 400;
-      let moving = Math.min(wallLengthMm, Math.max(0, pointer));
-      if (Math.abs(moving - drag.fixedOffsetMm) < minimumWidthMm) {
-        moving = Math.min(
-          wallLengthMm,
-          Math.max(
-            0,
-            drag.fixedOffsetMm + (moving >= drag.fixedOffsetMm ? minimumWidthMm : -minimumWidthMm)
-          )
-        );
-      }
-      emit(
-        Math.min(moving, drag.fixedOffsetMm),
-        Math.abs(moving - drag.fixedOffsetMm),
-        "resize"
-      );
-    },
-    [emit, opening.widthMm, pointerOffsetMm, wallLengthMm]
-  );
-
-  const finish = useCallback(
-    (event: ThreeEvent<PointerEvent>) => {
-      const drag = dragRef.current;
-      if (!drag || drag.pointerId !== event.pointerId) return;
-      event.stopPropagation();
-      releasePointer(event);
-      dragRef.current = null;
-      onDragStateChange?.(false, drag.mode);
-    },
-    [onDragStateChange]
-  );
-
-  return { beginMove, beginResize, move, finish };
-}
-
-const WALL_SURFACE_TEXTURE_RESOLUTION = {
-  maxSize: 4096,
-  minSize: 768,
-  pixelsPerMeter: 560,
-} as const;
-
-function surfaceMaterialFallbackColor(
-  material: ReturnType<typeof getRuntimeSurfaceMaterialById>
-) {
-  const family = material?.classification?.color_family;
-  if (family === "grey") return "#b7b7b2";
-  if (family === "charcoal") return "#5b5d5a";
-  if (family === "brown" || family === "walnut") return "#8b755c";
-  if (family === "cream" || family === "beige") return "#d8ccbb";
-  if (family === "white") return "#ece9e1";
-  return material ? "#c9c2b4" : null;
-}
-
-function resolveRoomSurfaceAssignments(room: HousePlanRoom2D): RoomSurfaceAssignments | undefined {
-  const compatibility = room.surfaceFinishes;
-  const current = room.surfaces;
-  if (!compatibility) return current;
-  if (!current) return compatibility;
-  return {
-    ...compatibility,
-    ...current,
-    walls:
-      compatibility.walls || current.walls
-        ? {
-            ...compatibility.walls,
-            ...current.walls,
-            default: {
-              ...compatibility.walls?.default,
-              ...current.walls?.default,
-            },
-            faces: {
-              ...compatibility.walls?.faces,
-              ...current.walls?.faces,
-            },
-          }
-        : undefined,
-  };
-}
-
-function segmentTransform(segment: CanonicalFloorPlanLineSegment) {
-  const startX = segment.start.xMm / 1000;
-  const startZ = segment.start.zMm / 1000;
-  const endX = segment.end.xMm / 1000;
-  const endZ = segment.end.zMm / 1000;
-  const dx = endX - startX;
-  const dz = endZ - startZ;
-  return {
-    centerX: (startX + endX) / 2,
-    centerZ: (startZ + endZ) / 2,
-    length: Math.max(0.001, Math.hypot(dx, dz)),
-    rotationY: -Math.atan2(dz, dx),
-    points: [
-      [startX, 0, startZ],
-      [endX, 0, endZ],
-    ] as [[number, number, number], [number, number, number]],
-  };
-}
-
-function wallSolidShape(solid: CanonicalFloorPlanWallSolid) {
-  const shape = new Shape();
-  const points = [
-    solid.footprint.startLeft,
-    solid.footprint.endLeft,
-    solid.footprint.endRight,
-    solid.footprint.startRight,
-  ];
-  points.forEach((point, index) => {
-    const x = point.xMm / 1000;
-    const y = -point.zMm / 1000;
-    if (index === 0) shape.moveTo(x, y);
-    else shape.lineTo(x, y);
-  });
-  shape.closePath();
-  return shape;
-}
-
-function appendPlanarRing(
-  path: Shape | Path,
-  points: PlanarUnionPolygonMm["outer"]
-) {
-  points.forEach((point, index) => {
-    const x = point.xMm / 1000;
-    const y = -point.zMm / 1000;
-    if (index === 0) path.moveTo(x, y);
-    else path.lineTo(x, y);
-  });
-  path.closePath();
-}
-
-function planarUnionShapes(polygons: PlanarUnionPolygonMm[]) {
-  return polygons.map((polygon) => {
-    const shape = new Shape();
-    appendPlanarRing(shape, polygon.outer);
-    for (const holePoints of polygon.holes) {
-      const hole = new Path();
-      appendPlanarRing(hole, holePoints);
-      shape.holes.push(hole);
-    }
-    return shape;
-  });
-}
-
-function wallKeySignature(keys: ReadonlySet<string>) {
-  return [...keys].sort().join("|");
-}
-
-function useCanonicalCameraCutawayWallKeys(
-  model: CanonicalFloorPlanRenderModel,
-  target: CanonicalCutawayTarget | null
-) {
-  const { camera } = useThree();
-  const [cutawayWallKeys, setCutawayWallKeys] = useState(() =>
-    resolveCanonicalCameraCutawayWallKeys(model, camera.position, target)
-  );
-  const signatureRef = useRef(wallKeySignature(cutawayWallKeys));
-
-  useFrame(() => {
-    const next = resolveCanonicalCameraCutawayWallKeys(
-      model,
-      camera.position,
-      target
-    );
-    const signature = wallKeySignature(next);
-    if (signature === signatureRef.current) return;
-    signatureRef.current = signature;
-    setCutawayWallKeys(next);
-  });
-
-  return cutawayWallKeys;
-}
-
-function wallSurfaceEdge(solid: CanonicalFloorPlanWallSolid, side: 1 | -1) {
-  const dx = solid.end.xMm - solid.start.xMm;
-  const dz = solid.end.zMm - solid.start.zMm;
-  const segmentLengthMm = Math.max(1, Math.hypot(dx, dz));
-  const normalX = -dz / segmentLengthMm;
-  const normalZ = dx / segmentLengthMm;
-  const renderOffsetMm = side * 1.5;
-  const authoredStart =
-    side === 1 ? solid.footprint.startLeft : solid.footprint.endRight;
-  const authoredEnd =
-    side === 1 ? solid.footprint.endLeft : solid.footprint.startRight;
-  return {
-    start: {
-      x: (authoredStart.xMm + normalX * renderOffsetMm) / 1000,
-      z: (authoredStart.zMm + normalZ * renderOffsetMm) / 1000,
-    },
-    end: {
-      x: (authoredEnd.xMm + normalX * renderOffsetMm) / 1000,
-      z: (authoredEnd.zMm + normalZ * renderOffsetMm) / 1000,
-    },
-  };
-}
-
-function wallSurfaceGeometry(solid: CanonicalFloorPlanWallSolid, side: 1 | -1) {
-  const edge = wallSurfaceEdge(solid, side);
-  const bottom = solid.bottomMm / 1000;
-  const top = solid.topMm / 1000;
-  const geometry = new BufferGeometry();
-  geometry.setAttribute(
-    "position",
-    new Float32BufferAttribute(
-      [
-        edge.start.x,
-        bottom,
-        edge.start.z,
-        edge.end.x,
-        bottom,
-        edge.end.z,
-        edge.end.x,
-        top,
-        edge.end.z,
-        edge.start.x,
-        top,
-        edge.start.z,
-      ],
-      3
-    )
-  );
-  geometry.setAttribute(
-    "uv",
-    new Float32BufferAttribute([0, 0, 1, 0, 1, 1, 0, 1], 2)
-  );
-  geometry.setIndex([0, 1, 2, 0, 2, 3]);
-  geometry.computeVertexNormals();
-  return geometry;
-}
-
-function preferredRoomId(roomIds: string[], activeRoomId: string | null) {
-  return (activeRoomId && roomIds.includes(activeRoomId) ? activeRoomId : roomIds[0]) ?? null;
-}
-
-function structureShape(points: CompiledFloorPlanStructureV2["points"]) {
-  const shape = new Shape();
-  points.forEach((point, index) => {
-    const x = point.xMm / 1000;
-    // Shape geometry is authored in XY, then rotated onto the XZ plan plane.
-    const y = -point.zMm / 1000;
-    if (index === 0) shape.moveTo(x, y);
-    else shape.lineTo(x, y);
-  });
-  if (points.length > 2) {
-    shape.lineTo(points[0].xMm / 1000, -points[0].zMm / 1000);
-  }
-  return shape;
-}
-
-function structureOutlinePoints(
-  points: CompiledFloorPlanStructureV2["points"],
-  elevation: number
-) {
-  if (!points.length) return [];
-  return [...points, points[0]].map(
-    (point) => [point.xMm / 1000, elevation, point.zMm / 1000] as [number, number, number]
-  );
-}
-
-function structureColor(kind: CompiledFloorPlanStructureV2["kind"]) {
-  if (kind === "ledge") return "#bfdbfe";
-  if (kind === "service_strip") return "#fde68a";
-  if (kind === "void") return "#f8fafc";
-  if (kind === "shaft") return "#cbd5e1";
-  if (kind === "column" || kind === "structural_core") return "#94a3b8";
-  return "#d1d5db";
-}
+const CANONICAL_WALL_TOP_CAP_OFFSET_METERS = 0.0005;
+const CANONICAL_ACTIVE_WALL_COLOR = "#fbfbf7";
+const CANONICAL_WALL_BODY_COLOR = "#ddddda";
+const CANONICAL_WALL_CUT_SURFACE_COLOR = CANONICAL_WALL_BODY_COLOR;
+const CANONICAL_WALL_INDIRECT_FILL_INTENSITY = 0.08;
 
 function CanonicalStructure2D({
   structure,
@@ -544,6 +162,7 @@ function CanonicalStructure3D({
   }
   return (
     <mesh
+      castShadow
       rotation-x={-Math.PI / 2}
       position={[0, baseMeters, 0]}
       raycast={() => null}
@@ -858,34 +477,75 @@ function CanonicalWallBodies3D({
     );
     return buildCanonicalWallUnionBands(floor, { excludedWallIds });
   }, [cutawayWallKeys, floor]);
+  const maximumTopMm = Math.max(
+    Number.NEGATIVE_INFINITY,
+    ...bands.map((band) => band.topMm)
+  );
   return bands.map((band, index) => {
     const shapes = planarUnionShapes(band.polygons);
     const heightMeters = Math.max(0.001, (band.topMm - band.bottomMm) / 1000);
+    const topMeters = floor.elevationMm / 1000 + band.topMm / 1000;
     return (
-      <mesh
+      <group
         key={`${floor.id}:wall-band:${band.bottomMm}:${band.topMm}:${index}`}
-        position={[0, floor.elevationMm / 1000 + band.bottomMm / 1000, 0]}
-        rotation-x={-Math.PI / 2}
-        raycast={() => null}
-        userData={{
-          testId: "canonical-wall-body-3d",
-          canonicalFloorId: floor.id,
-          canonicalWallBandBottomMm: band.bottomMm,
-          canonicalWallBandTopMm: band.topMm,
-          canonicalWallPolygonCount: band.polygons.length,
-          canonicalGeometryHash: geometryHash,
-        }}
       >
-        <extrudeGeometry
-          args={[shapes, { depth: heightMeters, bevelEnabled: false, steps: 1 }]}
-        />
-        <meshStandardMaterial
-          color="#9b978f"
-          roughness={0.82}
-          transparent={opacity < 0.999}
-          opacity={opacity}
-        />
-      </mesh>
+        <mesh
+          castShadow
+          position={[0, floor.elevationMm / 1000 + band.bottomMm / 1000, 0]}
+          rotation-x={-Math.PI / 2}
+          raycast={() => null}
+          userData={{
+            testId: "canonical-wall-body-3d",
+            canonicalFloorId: floor.id,
+            canonicalWallBandBottomMm: band.bottomMm,
+            canonicalWallBandTopMm: band.topMm,
+            canonicalWallPolygonCount: band.polygons.length,
+            canonicalGeometryHash: geometryHash,
+          }}
+        >
+          <extrudeGeometry
+            args={[shapes, { depth: heightMeters, bevelEnabled: false, steps: 1 }]}
+          />
+          <meshStandardMaterial
+            color={CANONICAL_WALL_BODY_COLOR}
+            emissive={CANONICAL_WALL_BODY_COLOR}
+            emissiveIntensity={CANONICAL_WALL_INDIRECT_FILL_INTENSITY}
+            roughness={0.86}
+            transparent={opacity < 0.999}
+            opacity={opacity}
+          />
+        </mesh>
+        {band.topMm === maximumTopMm ? (
+          <mesh
+            position={[0, topMeters + CANONICAL_WALL_TOP_CAP_OFFSET_METERS, 0]}
+            rotation-x={-Math.PI / 2}
+            renderOrder={100}
+            raycast={() => null}
+            userData={{
+              testId: "canonical-wall-top-cap-3d",
+              canonicalFloorId: floor.id,
+              canonicalWallBandTopMm: band.topMm,
+              canonicalWallPolygonCount: band.polygons.length,
+              canonicalGeometryHash: geometryHash,
+            }}
+          >
+            <shapeGeometry args={[shapes]} />
+            <meshStandardMaterial
+              color={CANONICAL_WALL_CUT_SURFACE_COLOR}
+              emissive={CANONICAL_WALL_CUT_SURFACE_COLOR}
+              emissiveIntensity={CANONICAL_WALL_INDIRECT_FILL_INTENSITY}
+              roughness={0.86}
+              depthTest
+              depthWrite={opacity >= 0.999}
+              transparent={opacity < 0.999}
+              opacity={opacity}
+              polygonOffset
+              polygonOffsetFactor={0}
+              polygonOffsetUnits={-4}
+            />
+          </mesh>
+        ) : null}
+      </group>
     );
   });
 }
@@ -897,7 +557,6 @@ function CanonicalWallSurfaceMesh({
   floorElevationMm,
   room,
   side,
-  active,
   selected,
   opacity,
   geometryHash,
@@ -911,7 +570,6 @@ function CanonicalWallSurfaceMesh({
   floorElevationMm: number;
   room: HousePlanRoom2D;
   side: 1 | -1;
-  active: boolean;
   selected: boolean;
   opacity: number;
   geometryHash: string;
@@ -949,11 +607,17 @@ function CanonicalWallSurfaceMesh({
     uvMode: "normalized",
     textureResolution: WALL_SURFACE_TEXTURE_RESOLUTION,
   });
-  const color = texture
+  const displayedColor = texture
     ? "#ffffff"
     : settings.paintColorHex ??
       surfaceMaterialFallbackColor(material) ??
-      (active ? "#fbfbf7" : "#ddddda");
+      CANONICAL_ACTIVE_WALL_COLOR;
+  const displayedColorFillIntensity =
+    resolveWallSurfaceColorFillIntensity({
+      hasTexture: Boolean(texture),
+      paintColorHex: settings.paintColorHex,
+      neutralFillIntensity: CANONICAL_WALL_INDIRECT_FILL_INTENSITY,
+    });
   const roomOpacity = Math.max(
     0.05,
     Math.min(1, Number.isFinite(room.surfaceOpacity?.wall) ? room.surfaceOpacity!.wall! : 1)
@@ -985,8 +649,12 @@ function CanonicalWallSurfaceMesh({
     >
       <primitive object={geometry} attach="geometry" />
       <meshStandardMaterial
-        color={color}
+        color={displayedColor}
         map={texture ?? undefined}
+        emissive={
+          displayedColorFillIntensity > 0 ? displayedColor : "#000000"
+        }
+        emissiveIntensity={displayedColorFillIntensity}
         roughness={material?.rendering.roughness ?? 0.86}
         metalness={material?.rendering.metalness ?? 0}
         side={DoubleSide}
@@ -1473,9 +1141,23 @@ export function CanonicalFloorPlanWalls3D({
         : null,
     [activeRoom]
   );
+  const pinnedWallIds = useMemo(() => {
+    const pinned = new Set<string>();
+    if (selectedWallId) pinned.add(selectedWallId);
+    if (selectedOpeningId) {
+      for (const floor of model.floors) {
+        const host = floor.walls.find((wall) =>
+          wall.openings.some((opening) => opening.id === selectedOpeningId)
+        );
+        if (host) pinned.add(host.id);
+      }
+    }
+    return pinned;
+  }, [model.floors, selectedOpeningId, selectedWallId]);
   const cutawayWallKeys = useCanonicalCameraCutawayWallKeys(
     model,
-    cutawayTarget
+    cutawayTarget,
+    pinnedWallIds
   );
   return (
     <group
@@ -1557,7 +1239,6 @@ export function CanonicalFloorPlanWalls3D({
                   floorElevationMm={floor.elevationMm}
                   room={room}
                   side={side}
-                  active={surfaceRoomId === activeRoomId}
                   selected={
                     selected &&
                     (selectedWallRoomId === null || selectedWallRoomId === surfaceRoomId)

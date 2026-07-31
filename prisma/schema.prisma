@@ -272,6 +272,7 @@ model FloorPlanImportJob {
   userId                          String
   sourceAssetId                   String
   status                          FloorPlanImportJobStatus       @default(received)
+  statusChangedAt                 DateTime?
   adapterId                       String?
   extractionVersion               String?
   progress                        Int                            @default(5)
@@ -290,6 +291,7 @@ model FloorPlanImportJob {
   trainingBenchmarkRevokedAt      DateTime?
   sourceRetentionExpiresAt        DateTime                       @default(dbgenerated("CURRENT_TIMESTAMP + INTERVAL '30 days'"))
   sourceDeletionRequestedAt       DateTime?
+  historyDeletedAt                DateTime?
   leaseToken                      String?                        @db.VarChar(64)
   leaseOwner                      String?                        @db.VarChar(160)
   leaseExpiresAt                  DateTime?
@@ -312,8 +314,10 @@ model FloorPlanImportJob {
   constructionSources             FloorPlanConstructionSource[]
   designReferences                FloorPlanDesignReference[]
   stageEvents                     FloorPlanImportStageEvent[]
+  etaPredictions                  FloorPlanImportEtaPrediction[]
 
   @@index([userId, createdAt])
+  @@index([userId, historyDeletedAt, createdAt])
   @@index([userId, status])
   @@index([sourceAssetId])
   @@index([status, updatedAt])
@@ -583,6 +587,29 @@ model FloorPlanImportStageEvent {
 
   @@index([jobId, createdAt])
   @@index([toStatus, createdAt])
+  @@index([adapterId, extractionVersion, fromStatus, createdAt])
+}
+
+/// Privacy-safe ETA calibration facts. These rows contain timing and
+/// operational version identifiers only; never source names, text or geometry.
+model FloorPlanImportEtaPrediction {
+  id                 String                    @id @default(cuid())
+  createdAt          DateTime                  @default(now())
+  completedAt        DateTime?
+  jobId              String
+  fromStatus         FloorPlanImportJobStatus
+  outcomeStatus      FloorPlanImportJobStatus?
+  adapterId          String?                   @db.VarChar(160)
+  extractionVersion  String?                   @db.VarChar(160)
+  lowerMs            Int
+  upperMs            Int
+  confidence         String?                   @db.VarChar(16)
+  sampleCount        Int                       @default(0)
+  actualRemainingMs  Int?
+  job                FloorPlanImportJob        @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, fromStatus])
+  @@index([adapterId, extractionVersion, fromStatus, createdAt])
 }
 
 /// Fixed-window counters shared by every application instance. Keys are
@@ -805,6 +832,7 @@ enum FloorPlanImportJobStatus {
   received
   rendered
   extracted
+  selecting_page
   scale_solved
   topology_built
   validating

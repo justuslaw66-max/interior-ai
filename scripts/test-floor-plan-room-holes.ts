@@ -257,9 +257,12 @@ assert(
 const read = (relativePath: string) =>
   fs.readFileSync(path.join(process.cwd(), relativePath), "utf8");
 assert.match(read("components/editor/renderers/RoomRenderer2D.tsx"), /buildRoomPlanShape/);
-assert.match(read("components/editor/renderers/HousePlanRenderer3D.tsx"), /buildRoomPlanShape/);
+const housePlanGeometrySource = read(
+  "components/editor/renderers/house-plan-3d/geometry.ts"
+);
+assert.match(housePlanGeometrySource, /buildRoomPlanShape/);
 assert.match(
-  read("components/editor/renderers/HousePlanRenderer3D.tsx"),
+  housePlanGeometrySource,
   /buildHorizontalRoomGeometry[\s\S]*?getRoomHoleOutlinePoints/
 );
 

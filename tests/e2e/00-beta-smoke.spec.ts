@@ -83,8 +83,9 @@ async function openMyDesigns(page: Page) {
   await expect(accountMenu).toBeVisible();
   await expect(page.getByTestId("editor-command-sign-out")).toBeVisible({ timeout: 30000 });
 
-  await openEditorCommandOverflow(page);
+  await clickVisibleControl(accountButton);
   await expect(accountMenu).toBeHidden();
+  await openEditorCommandOverflow(page);
   const loadDesigns = page.getByTestId("editor-command-overflow-load");
   await clickVisibleControl(loadDesigns);
 }

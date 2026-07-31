@@ -233,9 +233,30 @@ export default function FloorPlanScaleReviewPanel({
               );
               onPickingScaleChange(false);
             } catch (cause) {
+              const validationIssues =
+                cause &&
+                typeof cause === "object" &&
+                Array.isArray(
+                  (cause as { issues?: unknown }).issues
+                )
+                  ? (
+                      cause as {
+                        issues: Array<{ code?: unknown; message?: unknown }>;
+                      }
+                    ).issues
+                      .slice(0, 4)
+                      .map((issue) =>
+                        [issue.code, issue.message]
+                          .filter((value) => typeof value === "string")
+                          .join(": ")
+                      )
+                      .filter(Boolean)
+                  : [];
               onError(
-                cause instanceof Error
-                  ? cause.message
+                validationIssues.length
+                  ? validationIssues.join(" · ")
+                  : cause instanceof Error
+                    ? cause.message
                   : "Scale could not be applied."
               );
             }

@@ -1,11 +1,12 @@
 import {
   NIPPON_PAINT_COLOURS,
   NIPPON_PAINT_COLOUR_COUNT,
+  NIPPON_PAINT_FAMILIES,
   NIPPON_PAINT_SOURCE_URL,
   type NipponPaintFamily,
 } from "./nippon-paint-colours";
 
-export type WallPaintFamily = NipponPaintFamily | "cream" | "charcoal";
+export type WallPaintFamily = NipponPaintFamily;
 export type WallPaintSource = "curated" | "nippon";
 export type WallPaintFamilyFilterId = WallPaintFamily | "all";
 
@@ -22,17 +23,17 @@ export type WallPaintSwatch = {
 
 export const CURATED_WALL_PAINT_SWATCHES: WallPaintSwatch[] = [
   { id: "soft-gallery-white", name: "Soft Gallery White", hex: "#F5F1E8", family: "white", source: "curated" },
-  { id: "warm-linen", name: "Warm Linen", hex: "#E7DCCB", family: "cream", source: "curated" },
-  { id: "oat-milk", name: "Oat Milk", hex: "#D8C7B0", family: "cream", source: "curated" },
+  { id: "warm-linen", name: "Warm Linen", hex: "#E7DCCB", family: "beige", source: "curated" },
+  { id: "oat-milk", name: "Oat Milk", hex: "#D8C7B0", family: "beige", source: "curated" },
   { id: "mist-grey", name: "Mist Grey", hex: "#D6D8D2", family: "grey", source: "curated" },
   { id: "stone-grey", name: "Stone Grey", hex: "#A9A89F", family: "grey", source: "curated" },
   { id: "sage-wash", name: "Sage Wash", hex: "#B8C2B2", family: "green", source: "curated" },
   { id: "olive-clay", name: "Olive Clay", hex: "#8F927A", family: "green", source: "curated" },
   { id: "powder-blue", name: "Powder Blue", hex: "#B8C8D6", family: "blue", source: "curated" },
-  { id: "deep-ink", name: "Deep Ink", hex: "#2F3B46", family: "charcoal", source: "curated" },
+  { id: "deep-ink", name: "Deep Ink", hex: "#2F3B46", family: "grey", source: "curated" },
   { id: "rose-plaster", name: "Rose Plaster", hex: "#D7B8AF", family: "pink", source: "curated" },
   { id: "terracotta-mist", name: "Terracotta Mist", hex: "#B9826E", family: "brown", source: "curated" },
-  { id: "soft-charcoal", name: "Soft Charcoal", hex: "#55575A", family: "charcoal", source: "curated" },
+  { id: "soft-charcoal", name: "Soft Charcoal", hex: "#55575A", family: "grey", source: "curated" },
 ];
 
 export const NIPPON_WALL_PAINT_SOURCE_URL = NIPPON_PAINT_SOURCE_URL;
@@ -76,9 +77,18 @@ export const WALL_PAINT_FAMILY_FILTERS: Array<{
   { id: "grey", label: "Grey", hex: "#9B9B9B" },
   { id: "black", label: "Black", hex: "#050505" },
   { id: "accent", label: "Accent", hex: "#210099" },
-  { id: "cream", label: "Cream", hex: "#EFE5D2" },
-  { id: "charcoal", label: "Charcoal", hex: "#343A40" },
 ];
+
+if (
+  WALL_PAINT_FAMILY_FILTERS.length !== NIPPON_PAINT_FAMILIES.length + 1 ||
+  NIPPON_PAINT_FAMILIES.some(
+    (family, index) => WALL_PAINT_FAMILY_FILTERS[index + 1]?.id !== family
+  )
+) {
+  throw new Error(
+    "Wall paint family filters must match Nippon Paint Singapore's official order."
+  );
+}
 
 export function normalizeWallPaintColorHex(value: unknown): string | null {
   if (typeof value !== "string") return null;

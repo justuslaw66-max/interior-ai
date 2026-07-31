@@ -35,7 +35,7 @@ export function PlanCanvasFocusControl({ state, actions }: PlanCanvasFocusContro
     <div
       data-testid="plan-focus-control"
       data-focused={state.focused ? "true" : "false"}
-      className="absolute left-4 top-20 z-30 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-xl border border-neutral-200 bg-white/95 px-2.5 py-2 shadow-xl backdrop-blur"
+      className="absolute left-4 top-15 z-30 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-xl border border-neutral-200 bg-white/95 px-2.5 py-2 shadow-xl backdrop-blur"
       role="toolbar"
       aria-label="Plan focus controls"
     >

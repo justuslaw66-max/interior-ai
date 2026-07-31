@@ -20,6 +20,8 @@ export type ImportedConfigurationEntry = {
   configuration_label?: string;
   state_type?: string;
   description?: string;
+  model_asset_id?: string;
+  model_url?: string;
   dimensions?: {
     width_cm?: number;
     depth_cm?: number;
@@ -37,13 +39,19 @@ export type ImportedConfigurationEntry = {
   };
   planning_bounds_cm?: {
     width?: number;
+    width_cm?: number;
     depth?: number;
+    depth_cm?: number;
     height?: number;
+    height_cm?: number;
   };
   visual_bounds_cm?: {
     width?: number;
+    width_cm?: number;
     depth?: number;
+    depth_cm?: number;
     height?: number;
+    height_cm?: number;
   };
   placement_footprint?: {
     planning_width_cm?: number;

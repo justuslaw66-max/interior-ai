@@ -47,7 +47,6 @@ export type ConsumerRoomSetupCardProps = {
     createRoom: () => void;
     chooseTemplate: () => void;
     drawRoom: () => void;
-    uploadPlan: () => void;
     addOpening: (kind: RoomOpening2D["kind"]) => void;
     continueToFurnish: () => void;
   };
@@ -396,15 +395,6 @@ export function ConsumerRoomSetupCard({
           onClick={actions.drawRoom}
         >
           Draw measured room
-        </button>
-        <button
-          type="button"
-          data-testid="plan-start-upload"
-          className={`${secondaryActionClass} col-span-2`}
-          disabled={!canEdit}
-          onClick={actions.uploadPlan}
-        >
-          Upload an existing plan
         </button>
       </div>
     </section>

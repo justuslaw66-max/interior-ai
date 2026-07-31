@@ -248,6 +248,48 @@ function testPureItemCommandReducers() {
   assert.deepEqual(transformed[0].position, [4, 0, 5]);
   assert.equal(transformed[0].rotationY, 1.5);
   assert.deepEqual(transformed[1].position, [6, 0, 7]);
+
+  const cabinet = {
+    instanceId: "cabinet-a",
+    productId: "parametric-cabinet",
+    variantId: "cabinet-definition-a",
+    assetType: "parametric_cabinet",
+    cabinetDefinition: { id: "cabinet-definition-a" },
+    position: [0, 0, 0],
+    rotationY: 0,
+    transform: {
+      position: [0, 0, 0],
+      rotationY: 0,
+      rotation: [0, 0, 0],
+      scale: [1, 1, 1],
+    },
+    millworkAssetManifest: {
+      transform: {
+        position: [0, 0, 0],
+        rotation: [0, 0, 0],
+        scale: [1, 1, 1],
+      },
+    },
+  } as unknown as DesignItem;
+  const [transformedCabinet] = applyDesignItemTransformPatches([cabinet], [
+    {
+      instanceId: cabinet.instanceId,
+      changes: { position: [1.25, 0, -0.75], rotationY: Math.PI / 2 },
+    },
+  ]);
+  assert.deepEqual(transformedCabinet.position, [1.25, 0, -0.75]);
+  assert.deepEqual(transformedCabinet.transform?.position, [1.25, 0, -0.75]);
+  assert.equal(transformedCabinet.transform?.rotationY, Math.PI / 2);
+  assert.deepEqual(transformedCabinet.transform?.rotation, [0, Math.PI / 2, 0]);
+  assert.deepEqual(
+    transformedCabinet.millworkAssetManifest?.transform.position,
+    [1.25, 0, -0.75]
+  );
+  assert.deepEqual(
+    transformedCabinet.millworkAssetManifest?.transform.rotation,
+    [0, Math.PI / 2, 0]
+  );
+
   assert.throws(
     () =>
       applyDesignItemTransformPatches(original.rooms[0].items, [

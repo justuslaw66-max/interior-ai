@@ -48,18 +48,7 @@ type SurfacePickerState = {
   emptyMessage: string;
 };
 
-type FloorPatternState = {
-  value: RoomFloorPattern;
-  options: Array<{
-    id: RoomFloorPattern;
-    label: string;
-    selected: boolean;
-  }>;
-  rotations: Array<{
-    value: number;
-    selected: boolean;
-  }>;
-  scale: number;
+type SurfaceGroutState = {
   groutSizes: Array<{
     valueMm: number;
     selected: boolean;
@@ -73,12 +62,27 @@ type FloorPatternState = {
     selected: boolean;
     testId: string;
   }>;
-  offset: { x: number; y: number };
   disabled: boolean;
+};
+
+type FloorPatternState = SurfaceGroutState & {
+  value: RoomFloorPattern;
+  options: Array<{
+    id: RoomFloorPattern;
+    label: string;
+    selected: boolean;
+  }>;
+  rotations: Array<{
+    value: number;
+    selected: boolean;
+  }>;
+  scale: number;
+  offset: { x: number; y: number };
 };
 
 export type SelectedSurfaceInspectorState = {
   target: SurfaceInspectorTarget;
+  wallPanelId: string | null;
   floorMaterialId: string;
   materialId: string;
   wallHeight: WallHeightState | null;
@@ -98,6 +102,7 @@ export type SelectedSurfaceInspectorState = {
     applyAllDisabled: boolean;
   };
   picker: SurfacePickerState | null;
+  wallGrout: SurfaceGroutState | null;
   floorPattern: FloorPatternState | null;
   footer: string;
   blockers: string | null;
@@ -110,6 +115,7 @@ export type SelectedSurfaceInspectorActions = {
   onChangeMaterial: () => void;
   onRotate: () => void;
   onReset: () => void;
+  onApplyRoom: () => void;
   onApplyAll: () => void;
   onClosePicker: () => void;
   onSelectPickerMaterial: (materialId: string) => void;
@@ -131,6 +137,131 @@ type SelectedSurfaceInspectorProps = {
   };
   actions: SelectedSurfaceInspectorActions;
 };
+
+function SurfaceGroutControls({
+  grout,
+  dark,
+  actions,
+  testIdPrefix,
+}: {
+  grout: SurfaceGroutState;
+  dark: boolean;
+  actions: Pick<
+    SelectedSurfaceInspectorActions,
+    "onSelectGroutSize" | "onToggleGroutPalette" | "onSelectGroutColor"
+  >;
+  testIdPrefix: "surface" | "wall-surface";
+}) {
+  return (
+    <div className="mt-2">
+      <div
+        className={
+          dark
+            ? "text-[11px] font-semibold text-neutral-300"
+            : "text-[11px] font-semibold text-neutral-600"
+        }
+      >
+        Grout
+      </div>
+      <div className="mt-1 grid grid-cols-[1fr_auto] gap-2">
+        <div
+          className={
+            dark
+              ? "block text-[11px] font-semibold text-neutral-300"
+              : "block text-[11px] font-semibold text-neutral-600"
+          }
+        >
+          Grout size
+          <div className="mt-1 grid grid-cols-3 gap-1">
+            {grout.groutSizes.map((size) => (
+              <button
+                key={size.valueMm}
+                type="button"
+                data-testid={size.testId}
+                disabled={grout.disabled}
+                className={
+                  size.selected
+                    ? "min-h-8 rounded-lg bg-emerald-600 px-2 py-1 text-xs font-semibold text-white"
+                    : dark
+                      ? "min-h-8 rounded-lg border border-white/15 px-2 py-1 text-xs font-semibold text-neutral-100 hover:bg-white/10"
+                      : "min-h-8 rounded-lg border border-neutral-200 bg-neutral-50 px-2 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-100"
+                }
+                onClick={() => actions.onSelectGroutSize(size.valueMm)}
+              >
+                {size.valueMm} mm
+              </button>
+            ))}
+          </div>
+        </div>
+        <div
+          className={
+            dark
+              ? "block text-[11px] font-semibold text-neutral-300"
+              : "block text-[11px] font-semibold text-neutral-600"
+          }
+        >
+          Color
+          <button
+            type="button"
+            data-testid={`${testIdPrefix}-joint-color`}
+            disabled={grout.disabled}
+            className={
+              dark
+                ? "designer-control mt-1 grid h-8 w-12 place-items-center rounded-lg border p-1 disabled:opacity-50"
+                : "mt-1 grid h-8 w-12 place-items-center rounded-lg border border-neutral-200 bg-white p-1 disabled:opacity-50"
+            }
+            aria-label="Choose grout color"
+            title="Choose grout color"
+            onClick={actions.onToggleGroutPalette}
+          >
+            <span
+              aria-hidden="true"
+              className="block h-full w-full rounded border border-black/15"
+              style={{ backgroundColor: grout.groutColor }}
+            />
+          </button>
+        </div>
+      </div>
+      {grout.groutPaletteOpen ? (
+        <div
+          data-testid={`${testIdPrefix}-grout-color-palette`}
+          className={
+            dark
+              ? "designer-recessed mt-2 grid grid-cols-5 gap-1.5 rounded-lg p-1.5"
+              : "mt-2 grid grid-cols-5 gap-1.5 rounded-lg border border-neutral-200 bg-neutral-50 p-1.5"
+          }
+        >
+          {grout.groutColors.map((color) => (
+            <button
+              key={color.key}
+              type="button"
+              data-testid={color.testId}
+              disabled={grout.disabled}
+              className={
+                color.selected
+                  ? dark
+                    ? "grid aspect-square min-h-8 place-items-center rounded-md border border-white/25 bg-white/10 p-0"
+                    : "grid aspect-square min-h-8 place-items-center rounded-md border border-neutral-200 bg-white p-0 shadow-sm"
+                  : dark
+                    ? "grid aspect-square min-h-8 place-items-center rounded-md border border-transparent bg-white/5 p-0 hover:bg-white/10"
+                    : "grid aspect-square min-h-8 place-items-center rounded-md border border-transparent bg-white p-0 hover:border-neutral-200"
+              }
+              aria-label={`Set grout color ${color.color}`}
+              title={color.color}
+              onClick={() => actions.onSelectGroutColor(color.color)}
+            >
+              <span
+                aria-hidden="true"
+                className="block h-[calc(100%-2px)] w-[calc(100%-2px)] rounded-md border border-black/5"
+                style={{ backgroundColor: color.color }}
+              />
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 export function SelectedSurfaceInspector({
   state,
@@ -160,6 +291,7 @@ export function SelectedSurfaceInspector({
       data-floor-material-id={state.floorMaterialId}
       data-surface-target={state.target === "wall" ? "selected_wall" : state.target}
       data-surface-material-id={state.materialId}
+      data-selected-wall-panel-id={state.wallPanelId ?? undefined}
       className="mt-2 px-0.5"
     >
       {state.wallHeight ? (
@@ -376,18 +508,37 @@ export function SelectedSurfaceInspector({
           >
             Reset
           </button>
+          {state.target === "wall" ? (
+            <button
+              type="button"
+              data-testid="selection-inspector-wall-apply-room"
+              className={
+                dark
+                  ? "min-h-8 rounded-lg border border-white/15 px-2 py-1 text-xs font-semibold text-neutral-100 hover:bg-white/10"
+                  : "min-h-8 rounded-lg border border-neutral-200 bg-white px-2 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
+              }
+              disabled={state.controls.applyAllDisabled}
+              onClick={actions.onApplyRoom}
+            >
+              Apply to room
+            </button>
+          ) : null}
           <button
             type="button"
-            data-testid="selection-inspector-floor-apply-all"
+            data-testid={
+              state.target === "wall"
+                ? "selection-inspector-wall-apply-all"
+                : "selection-inspector-floor-apply-all"
+            }
             className={
               dark
-                ? "min-h-8 rounded-lg border border-white/15 px-2 py-1 text-xs font-semibold text-neutral-100 hover:bg-white/10"
-                : "min-h-8 rounded-lg border border-neutral-200 bg-white px-2 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
+                ? `${state.target === "wall" ? "col-span-2 " : ""}min-h-8 rounded-lg border border-white/15 px-2 py-1 text-xs font-semibold text-neutral-100 hover:bg-white/10`
+                : `${state.target === "wall" ? "col-span-2 " : ""}min-h-8 rounded-lg border border-neutral-200 bg-white px-2 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-50`
             }
             disabled={state.controls.applyAllDisabled}
             onClick={actions.onApplyAll}
           >
-            Apply all
+            {state.target === "wall" ? "Apply to all walls" : "Apply all"}
           </button>
         </div>
       )}
@@ -513,6 +664,24 @@ export function SelectedSurfaceInspector({
         </div>
       ) : null}
 
+      {state.wallGrout ? (
+        <div
+          data-testid="selection-inspector-wall-grout"
+          className={
+            dark
+              ? "mt-2 border-t border-white/10 pt-1"
+              : "mt-2 border-t border-neutral-100 pt-1"
+          }
+        >
+          <SurfaceGroutControls
+            grout={state.wallGrout}
+            dark={dark}
+            actions={actions}
+            testIdPrefix="wall-surface"
+          />
+        </div>
+      ) : null}
+
       {state.floorPattern ? (
         <div
           className={
@@ -631,113 +800,12 @@ export function SelectedSurfaceInspector({
             />
           </label>
 
-          <div className="mt-2">
-            <div
-              className={
-                dark
-                  ? "text-[11px] font-semibold text-neutral-300"
-                  : "text-[11px] font-semibold text-neutral-600"
-              }
-            >
-              Grout
-            </div>
-            <div className="mt-1 grid grid-cols-[1fr_auto] gap-2">
-              <div
-                className={
-                  dark
-                    ? "block text-[11px] font-semibold text-neutral-300"
-                    : "block text-[11px] font-semibold text-neutral-600"
-                }
-              >
-                Grout size
-                <div className="mt-1 grid grid-cols-3 gap-1">
-                  {state.floorPattern.groutSizes.map((size) => (
-                    <button
-                      key={size.valueMm}
-                      type="button"
-                      data-testid={size.testId}
-                      disabled={state.floorPattern?.disabled}
-                      className={
-                        size.selected
-                          ? "min-h-8 rounded-lg bg-emerald-600 px-2 py-1 text-xs font-semibold text-white"
-                          : dark
-                            ? "min-h-8 rounded-lg border border-white/15 px-2 py-1 text-xs font-semibold text-neutral-100 hover:bg-white/10"
-                            : "min-h-8 rounded-lg border border-neutral-200 bg-neutral-50 px-2 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-100"
-                      }
-                      onClick={() => actions.onSelectGroutSize(size.valueMm)}
-                    >
-                      {size.valueMm} mm
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div
-                className={
-                  dark
-                    ? "block text-[11px] font-semibold text-neutral-300"
-                    : "block text-[11px] font-semibold text-neutral-600"
-                }
-              >
-                Color
-                <button
-                  type="button"
-                  data-testid="surface-joint-color"
-                  disabled={state.floorPattern.disabled}
-                  className={
-                    dark
-                      ? "designer-control mt-1 grid h-8 w-12 place-items-center rounded-lg border p-1 disabled:opacity-50"
-                      : "mt-1 grid h-8 w-12 place-items-center rounded-lg border border-neutral-200 bg-white p-1 disabled:opacity-50"
-                  }
-                  aria-label="Choose grout color"
-                  title="Choose grout color"
-                  onClick={actions.onToggleGroutPalette}
-                >
-                  <span
-                    aria-hidden="true"
-                    className="block h-full w-full rounded border border-black/15"
-                    style={{ backgroundColor: state.floorPattern.groutColor }}
-                  />
-                </button>
-              </div>
-            </div>
-            {state.floorPattern.groutPaletteOpen ? (
-              <div
-                data-testid="surface-grout-color-palette"
-                className={
-                  dark
-                    ? "designer-recessed mt-2 grid grid-cols-5 gap-1.5 rounded-lg p-1.5"
-                    : "mt-2 grid grid-cols-5 gap-1.5 rounded-lg border border-neutral-200 bg-neutral-50 p-1.5"
-                }
-              >
-                {state.floorPattern.groutColors.map((color) => (
-                  <button
-                    key={color.key}
-                    type="button"
-                    data-testid={color.testId}
-                    disabled={state.floorPattern?.disabled}
-                    className={
-                      color.selected
-                        ? dark
-                          ? "grid aspect-square min-h-8 place-items-center rounded-md border border-white/25 bg-white/10 p-0"
-                          : "grid aspect-square min-h-8 place-items-center rounded-md border border-neutral-200 bg-white p-0 shadow-sm"
-                        : dark
-                          ? "grid aspect-square min-h-8 place-items-center rounded-md border border-transparent bg-white/5 p-0 hover:bg-white/10"
-                          : "grid aspect-square min-h-8 place-items-center rounded-md border border-transparent bg-white p-0 hover:border-neutral-200"
-                    }
-                    aria-label={`Set grout color ${color.color}`}
-                    title={color.color}
-                    onClick={() => actions.onSelectGroutColor(color.color)}
-                  >
-                    <span
-                      aria-hidden="true"
-                      className="block h-[calc(100%-2px)] w-[calc(100%-2px)] rounded-md border border-black/5"
-                      style={{ backgroundColor: color.color }}
-                    />
-                  </button>
-                ))}
-              </div>
-            ) : null}
-          </div>
+          <SurfaceGroutControls
+            grout={state.floorPattern}
+            dark={dark}
+            actions={actions}
+            testIdPrefix="surface"
+          />
 
           <div
             data-testid="surface-offset-controls"

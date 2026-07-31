@@ -98,6 +98,16 @@ assert.deepEqual(
 assert.equal(
   resolvePlacementAwareRoomSelectionDecision({
     pendingPlacementHandled: false,
+    editorMode: "adjust",
+    activeRoomId: "room-current",
+    targetRoomId: "room-target",
+  }).shouldSetDesignMode,
+  false,
+  "selecting a room in Furnish must preserve the Furnish workspace"
+);
+assert.equal(
+  resolvePlacementAwareRoomSelectionDecision({
+    pendingPlacementHandled: false,
     editorMode: "design",
     activeRoomId: "room-target",
     targetRoomId: "room-target",

@@ -79,7 +79,7 @@ async function expectRestrainedNavigationAccent(page: Page) {
   const commandBar = page.getByTestId("editor-command-bar");
   const navigationItems = [
     commandBar.getByRole("button", { name: "3D", exact: true }),
-    page.getByTestId("editor-workflow-plan"),
+    page.getByTestId("editor-command-workspace"),
     page.getByTestId("editor-rail-design"),
   ];
   const activeBackgrounds: string[] = [];
@@ -231,10 +231,13 @@ test.describe("Pro visual policy", () => {
     const sceneCanvas = page.getByTestId("scene-canvas").first();
     await expect(sceneCanvas).toHaveAttribute("data-shadow-maps-enabled", "true");
     await expect(sceneCanvas).toHaveAttribute("data-shadow-map-size", "2048");
-    await expect(sceneCanvas).toHaveAttribute("data-tone-mapping", "aces");
+    await expect(sceneCanvas).toHaveAttribute(
+      "data-tone-mapping",
+      "aces"
+    );
     await expect(sceneCanvas).toHaveAttribute(
       "data-lighting-model",
-      "ambient-hemi-key-fill-ibl"
+      "central-environment-sun-ambient"
     );
     await expect(sceneCanvas).toHaveCSS("background-color", "rgb(244, 242, 237)");
     await expect(page.getByTestId("editor-command-bar")).toHaveClass(/bg-white\/95/);

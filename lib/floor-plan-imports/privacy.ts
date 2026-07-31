@@ -135,6 +135,7 @@ const PROCESSABLE_STATUSES = new Set<FloorPlanImportStatus>([
   "received",
   "rendered",
   "extracted",
+  "selecting_page",
   "scale_solved",
   "topology_built",
   "validating",

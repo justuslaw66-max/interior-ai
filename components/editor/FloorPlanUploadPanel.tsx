@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import FloorPlanImportWorkspace from "./FloorPlanImportWorkspace";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type {
@@ -42,7 +43,6 @@ type FloorPlanUploadPanelProps = {
   pdfPageChanging?: boolean;
   disabled?: boolean;
   dark?: boolean;
-  onUpload: (file: File) => void;
   onPdfPageChange?: (pageNumber: number) => void;
   onOpacityChange: (opacity: number) => void;
   onLockChange: (locked: boolean) => void;
@@ -89,14 +89,6 @@ const ACCEPTED_PLAN_FILE_TYPES = [
   ".stp",
   ".dwg",
 ].join(",");
-
-function supportsImmediateTracingUnderlay(file: File) {
-  const mimeType = file.type.toLowerCase();
-  if (["application/pdf", "image/png", "image/jpeg", "image/webp"].includes(mimeType)) {
-    return true;
-  }
-  return /\.(pdf|png|jpe?g|webp)$/i.test(file.name);
-}
 
 const PRIMARY_DRAW_ROOM_TOOLS: Array<{
   id: FloorPlanDrawRoomMode;
@@ -152,7 +144,6 @@ export default function FloorPlanUploadPanel({
   pdfPageChanging = false,
   disabled = false,
   dark = false,
-  onUpload,
   onPdfPageChange,
   onOpacityChange,
   onLockChange,
@@ -174,7 +165,9 @@ export default function FloorPlanUploadPanel({
   onClear,
 }: FloorPlanUploadPanelProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const dialogRef = useRef<HTMLElement | null>(null);
   const [trainingBenchmarkOptIn, setTrainingBenchmarkOptIn] = useState(false);
+  const [importWorkspaceOpen, setImportWorkspaceOpen] = useState(false);
   const [autoImportRequest, setAutoImportRequest] = useState<{
     file: File;
     trainingBenchmarkOptIn: boolean;
@@ -239,11 +232,33 @@ export default function FloorPlanUploadPanel({
       onTraceRoomModeChange?.(true);
     }
   };
+  useEffect(() => {
+    if (!importWorkspaceOpen) return;
+    const previouslyFocused =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    const previousBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    dialogRef.current?.focus({ preventScroll: true });
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      setImportWorkspaceOpen(false);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      window.removeEventListener("keydown", closeOnEscape);
+      document.body.style.overflow = previousBodyOverflow;
+      previouslyFocused?.focus({ preventScroll: true });
+    };
+  }, [importWorkspaceOpen]);
 
   return (
+    <>
     <div id="floor-plan-upload" className={cardClass}>
       <div className="flex items-center justify-between gap-3">
-        <div>
+        <div className="min-w-0">
           <div className={titleClass}>Floor plan</div>
           {underlay && (
             <div className={`${subtleClass} mt-0.5 truncate`} data-testid="floor-plan-file-name">
@@ -255,7 +270,7 @@ export default function FloorPlanUploadPanel({
           type="button"
           className={buttonClass}
           disabled={disabled}
-          onClick={() => inputRef.current?.click()}
+          onClick={() => setImportWorkspaceOpen(true)}
         >
           Import
         </button>
@@ -265,27 +280,49 @@ export default function FloorPlanUploadPanel({
         ref={inputRef}
         type="file"
         data-testid="floor-plan-upload-input"
+        aria-label="Choose a floor plan to import"
         accept={ACCEPTED_PLAN_FILE_TYPES}
-        className="hidden"
+        className="sr-only"
         onChange={(event) => {
           const file = event.target.files?.[0];
           event.target.value = "";
           if (file) {
             setAutoImportRequest({ file, trainingBenchmarkOptIn });
-            if (supportsImmediateTracingUnderlay(file)) onUpload(file);
+            setImportWorkspaceOpen(true);
           }
         }}
       />
 
       <div className="mt-3 space-y-3">
-        <FloorPlanImportWorkspace
-          request={autoImportRequest}
-          trainingBenchmarkOptIn={trainingBenchmarkOptIn}
-          dark={dark}
+        <button
+          type="button"
+          data-testid="floor-plan-import-workspace-launcher"
+          className={
+            dark
+              ? "designer-recessed flex w-full items-center justify-between gap-3 rounded-lg p-3 text-left"
+              : "flex w-full items-center justify-between gap-3 rounded-lg bg-neutral-50 p-3 text-left hover:bg-neutral-100"
+          }
           disabled={disabled}
-          onTrainingBenchmarkOptInChange={setTrainingBenchmarkOptIn}
-          onSourceContentDeleted={onClear}
-        />
+          onClick={() => setImportWorkspaceOpen(true)}
+        >
+          <span className="min-w-0">
+            <span
+              className={
+                dark
+                  ? "block text-xs font-semibold text-neutral-100"
+                  : "block text-xs font-semibold text-neutral-800"
+              }
+            >
+              Open import workspace
+            </span>
+            <span className={`${subtleClass} mt-0.5 block`}>
+              Review the source at full size without covering your design.
+            </span>
+          </span>
+          <span aria-hidden="true" className="shrink-0 text-lg">
+            ↗
+          </span>
+        </button>
         {!underlay && !showDrawRoomTools && (
           <div
             data-testid="floor-plan-upload-empty-state"
@@ -295,13 +332,50 @@ export default function FloorPlanUploadPanel({
               Upload a floor-plan image, PDF, DXF, IFC, or DWG
             </div>
             <div className={`${subtleClass} mt-1`}>
-              Images and PDFs can be traced immediately. CAD imports extract declared geometry and pause for review instead of inventing rooms or openings.
+              Imports are analyzed in a separate review workspace and never
+              placed over the design you are currently editing.
             </div>
           </div>
         )}
 
         {underlay && (
           <>
+          <div
+            className={
+              dark
+                ? "designer-recessed flex items-center justify-between gap-2 rounded-lg p-3"
+                : "flex items-center justify-between gap-2 rounded-lg bg-neutral-50 p-3"
+            }
+          >
+            <div>
+              <div
+                className={
+                  dark
+                    ? "text-xs font-semibold text-neutral-100"
+                    : "text-xs font-semibold text-neutral-800"
+                }
+              >
+                Source reference
+              </div>
+              <div className={subtleClass}>
+                Locked visual reference; it is not editable room geometry.
+              </div>
+            </div>
+            <button
+              type="button"
+              data-testid="floor-plan-source-reference-toggle"
+              className={secondaryButtonClass}
+              disabled={disabled}
+              aria-pressed={underlay.visible !== false}
+              onClick={() =>
+                onOpacityChange(
+                  underlay.visible === false ? underlay.opacity || 0.45 : 0
+                )
+              }
+            >
+              {underlay.visible === false ? "Show" : "Hide"}
+            </button>
+          </div>
           <div>
             <div className="mb-1 flex items-center justify-between">
               <span className={subtleClass}>Plan visibility</span>
@@ -313,7 +387,7 @@ export default function FloorPlanUploadPanel({
               max={0.85}
               step={0.05}
               value={underlay.opacity}
-              disabled={disabled}
+              disabled={disabled || underlay.visible === false}
               className={rangeClass}
               onChange={(event) => onOpacityChange(Number(event.target.value))}
             />
@@ -751,5 +825,101 @@ export default function FloorPlanUploadPanel({
         )}
       </div>
     </div>
+    {importWorkspaceOpen
+      ? createPortal(
+          <div
+            className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-0 backdrop-blur-sm sm:p-4"
+            data-testid="floor-plan-import-dialog-backdrop"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) {
+                setImportWorkspaceOpen(false);
+              }
+            }}
+          >
+            <section
+              ref={dialogRef}
+              aria-labelledby="floor-plan-import-dialog-title"
+              aria-modal="true"
+              className={
+                dark
+                  ? "flex h-[100dvh] w-full min-w-0 flex-col overflow-hidden bg-neutral-950 text-neutral-100 shadow-2xl outline-none sm:h-[calc(100dvh-2rem)] sm:max-w-[1600px] sm:rounded-2xl sm:border sm:border-white/10"
+                  : "flex h-[100dvh] w-full min-w-0 flex-col overflow-hidden bg-white text-neutral-950 shadow-2xl outline-none sm:h-[calc(100dvh-2rem)] sm:max-w-[1600px] sm:rounded-2xl sm:border sm:border-neutral-200"
+              }
+              data-testid="floor-plan-import-dialog"
+              role="dialog"
+              tabIndex={-1}
+            >
+              <header
+                className={
+                  dark
+                    ? "flex shrink-0 items-center justify-between gap-3 border-b border-white/10 bg-neutral-950/95 px-4 py-3 sm:px-6 sm:py-4"
+                    : "flex shrink-0 items-center justify-between gap-3 border-b border-neutral-200 bg-white/95 px-4 py-3 sm:px-6 sm:py-4"
+                }
+              >
+                <div className="min-w-0">
+                  <div
+                    className={
+                      dark
+                        ? "text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-300"
+                        : "text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-700"
+                    }
+                  >
+                    Import workspace
+                  </div>
+                  <h2
+                    id="floor-plan-import-dialog-title"
+                    className="truncate text-lg font-semibold sm:text-xl"
+                  >
+                    Import a floor plan
+                  </h2>
+                  <p className={`${subtleClass} hidden sm:block`}>
+                    Upload once. AI builds an editable 2D and 3D design.
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  <button
+                    type="button"
+                    className={buttonClass}
+                    disabled={disabled}
+                    onClick={() => inputRef.current?.click()}
+                  >
+                    Choose file
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Close floor-plan import"
+                    className={
+                      dark
+                        ? "designer-control flex h-10 w-10 items-center justify-center rounded-full border text-xl text-neutral-100 hover:bg-white/10"
+                        : "flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 bg-white text-xl text-neutral-700 hover:bg-neutral-100"
+                    }
+                    onClick={() => setImportWorkspaceOpen(false)}
+                  >
+                    <span aria-hidden="true">×</span>
+                  </button>
+                </div>
+              </header>
+              <div
+                className={
+                  dark
+                    ? "min-h-0 flex-1 overflow-y-auto bg-neutral-950 p-3 sm:p-5 lg:p-6"
+                    : "min-h-0 flex-1 overflow-y-auto bg-neutral-100/70 p-3 sm:p-5 lg:p-6"
+                }
+              >
+                <FloorPlanImportWorkspace
+                  request={autoImportRequest}
+                  trainingBenchmarkOptIn={trainingBenchmarkOptIn}
+                  dark={dark}
+                  disabled={disabled}
+                  onChooseFile={() => inputRef.current?.click()}
+                  onTrainingBenchmarkOptInChange={setTrainingBenchmarkOptIn}
+                />
+              </div>
+            </section>
+          </div>,
+          document.body
+        )
+      : null}
+    </>
   );
 }

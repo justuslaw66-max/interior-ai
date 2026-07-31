@@ -4,14 +4,15 @@
 
 import * as THREE from "three";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Environment } from "@react-three/drei/core/Environment";
 import { Grid } from "@react-three/drei/core/Grid";
-import { Lightformer } from "@react-three/drei/core/Lightformer";
 import { MapControls } from "@react-three/drei/core/MapControls";
 import { OrbitControls } from "@react-three/drei/core/OrbitControls";
 import {
   Suspense,
+  useEffect,
+  useMemo,
   useRef,
+  useState,
   type CSSProperties,
   type MutableRefObject,
   type ReactNode,
@@ -33,10 +34,20 @@ import { LoadingOverlay } from "@/components/scene/LoadingOverlay";
 import { RoomSkeleton } from "@/components/scene/RoomSkeleton";
 import { ScenePerformanceBridge } from "@/components/scene/ScenePerformanceBridge";
 import { SceneProgressBridge } from "@/components/scene/SceneProgressBridge";
+import {
+  LightingSystem,
+  resolveEditorLighting,
+  selectFixtureLightBudget,
+  selectWindowLightBudget,
+  type LightingMode,
+} from "@/components/editor/design-page/lighting";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
+import type { SceneRoomItemEntry } from "@/lib/design-page-scene-domain";
 import type { CameraView } from "@/lib/design-page-types";
-import type { LightingConfig } from "@/lib/lightingPresets";
+import type { RoomOpening2D } from "@/lib/editorScene";
+import type { DesignLightingSettings } from "@/lib/lightingPresets";
 import type { Plan2DCameraInvariantFit } from "@/lib/plan-camera-2d";
+import { resolveLightingScene } from "@/lib/resolve-lighting-scene";
 import type { SceneRendererMetrics } from "@/lib/scene-performance-metrics";
 
 type ScenePerformanceMode = "auto" | "quality" | "lite";
@@ -45,7 +56,6 @@ type DesignSceneCanvasState = {
   viewMode: EditorViewMode;
   isClientPreview: boolean;
   liteSceneEnabled: boolean;
-  shadowsEnabled: boolean;
   showSceneLoadingVeil: boolean;
   scenePerformanceMode: ScenePerformanceMode;
   controlsEnabled: boolean;
@@ -56,7 +66,12 @@ type DesignSceneCanvasState = {
 type DesignSceneCanvasConfiguration = {
   cursor: CSSProperties["cursor"];
   backgroundColor: string;
-  lightConfig: LightingConfig;
+  lightingSettings: DesignLightingSettings;
+  lightingItems: SceneRoomItemEntry[];
+  lightingOpenings: RoomOpening2D[];
+  activeRoomId: string;
+  selectedItemIds: ReadonlySet<string>;
+  lightingModeOverride?: LightingMode;
   initialCameraView: CameraView;
   planFit: Plan2DCameraInvariantFit & {
     orientation: Plan2DViewFitOrientation;
@@ -115,10 +130,7 @@ type DesignSceneCanvasProps = {
   children: ReactNode;
 };
 
-const QUALITY_SHADOW_MAP_SIZE = 2048;
 const QUALITY_SHADOW_FILTER = "percentage";
-const QUALITY_SHADOW_RADIUS = 3.5;
-const QUALITY_SHADOW_INTENSITY = 0.58;
 const MIN_SHADOW_CAMERA_HALF_SPAN_METERS = 8;
 const MAX_SHADOW_CAMERA_HALF_SPAN_METERS = 32;
 const SHADOW_CAMERA_PADDING_METERS = 3;
@@ -185,7 +197,7 @@ function WorkspacePlanningGrid({
           <planeGeometry args={[size, size]} />
           <shadowMaterial
             color="#66736f"
-            opacity={shadowsEnabled ? 0.2 : 0}
+            opacity={shadowsEnabled ? 0.08 : 0}
             transparent
           />
         </mesh>
@@ -208,6 +220,8 @@ function WorkspacePlanningGrid({
           followCamera={false}
           infiniteGrid={false}
           side={THREE.DoubleSide}
+          material-depthTest
+          material-depthWrite={false}
           material-toneMapped={false}
           raycast={() => null}
         />
@@ -245,6 +259,8 @@ function WorkspacePlanningGrid({
           followCamera={false}
           infiniteGrid={false}
           side={THREE.DoubleSide}
+          material-depthTest
+          material-depthWrite={false}
           material-toneMapped={false}
           raycast={() => null}
         />
@@ -260,6 +276,12 @@ export function DesignSceneCanvas({
   actions,
   children,
 }: DesignSceneCanvasProps) {
+  const [clientHydrated, setClientHydrated] = useState(false);
+
+  useEffect(() => {
+    setClientHydrated(true);
+  }, []);
+
   const { planBounds } = configuration;
   const presentationBounds =
     configuration.presentationBounds ?? configuration.planBounds;
@@ -288,23 +310,109 @@ export function DesignSceneCanvas({
     planBounds.roomHeight + WORKSPACE_GRID_CEILING_CLEARANCE_METERS;
   const { planDiagnostics, viewMode } = state;
   const controlsRef = sceneRefs.controls;
+  const physicalLightingScene = useMemo(
+    () =>
+      resolveLightingScene({
+        settings: configuration.lightingSettings,
+        rooms: configuration.planRooms,
+        openings: configuration.lightingOpenings,
+        items: configuration.lightingItems,
+        qualityMode: state.scenePerformanceMode,
+        liteEnabled: state.liteSceneEnabled,
+        activeRoomId: configuration.activeRoomId,
+      }),
+    [
+      configuration.activeRoomId,
+      configuration.lightingItems,
+      configuration.lightingOpenings,
+      configuration.lightingSettings,
+      configuration.planRooms,
+      state.liteSceneEnabled,
+      state.scenePerformanceMode,
+    ]
+  );
+  const lighting = resolveEditorLighting(configuration.lightingSettings, {
+    performanceMode: state.scenePerformanceMode,
+    liteEnabled: state.liteSceneEnabled,
+    modeOverride: configuration.lightingModeOverride,
+    physicalScene: physicalLightingScene,
+  });
   const effectiveShadowsEnabled =
-    viewMode === "3d" &&
-    state.shadowsEnabled &&
-    !state.liteSceneEnabled;
+    viewMode === "3d" && lighting.shadows.enabled;
+  const fixtureLights = useMemo(() => {
+    if (!lighting.fixtures.enabled) return [];
+
+    return physicalLightingScene.fixtures.map((fixture) => ({
+      ...fixture,
+      priority:
+        (configuration.selectedItemIds.has(fixture.id) ? 1_000 : 0) +
+        (fixture.roomId === configuration.activeRoomId ? 100 : 0) +
+        (fixture.verification === "photometric" ? 20 : 0),
+    }));
+  }, [
+    configuration.activeRoomId,
+    configuration.selectedItemIds,
+    lighting.fixtures.enabled,
+    physicalLightingScene.fixtures,
+  ]);
+  const windowLights = useMemo(() => {
+    if (!lighting.windows.enabled) return [];
+
+    return physicalLightingScene.windows.map((window) => ({
+      ...window,
+      priority:
+        (window.roomId === configuration.activeRoomId ? 100 : 0) +
+        (window.estimatedMeasurements ? 0 : 20),
+    }));
+  }, [
+    configuration.activeRoomId,
+    lighting.windows.enabled,
+    physicalLightingScene.windows,
+  ]);
+  const activeFixtureLights = selectFixtureLightBudget(
+    fixtureLights,
+    lighting
+  );
+  const activeWindowLights = selectWindowLightBudget(windowLights, lighting);
+  const activeLightCount =
+    (lighting.ambient.enabled ? 1 : 0) +
+    (lighting.sun.enabled ? 1 : 0) +
+    activeWindowLights.length +
+    activeFixtureLights.length;
+  const shadowCastingLightCount =
+    (lighting.sun.enabled &&
+    lighting.sun.castShadow &&
+    lighting.shadows.enabled
+      ? 1
+      : 0) +
+    activeFixtureLights.filter((fixture) => fixture.castShadow).length;
 
   return (
     <CanvasErrorBoundary>
       <Canvas
         data-testid="scene-canvas"
+        data-client-hydrated={clientHydrated ? "true" : "false"}
         data-shadow-maps-enabled={
           effectiveShadowsEnabled ? "true" : "false"
         }
         data-shadow-filter={QUALITY_SHADOW_FILTER}
-        data-shadow-map-size={QUALITY_SHADOW_MAP_SIZE}
+        data-shadow-map-size={lighting.shadows.mapSize}
         data-shadow-camera-half-span={shadowCameraHalfSpan}
         data-tone-mapping="aces"
-        data-lighting-model="ambient-hemi-key-fill-ibl"
+        data-lighting-model="central-environment-sun-ambient"
+        data-lighting-mode={lighting.id}
+        data-lighting-source-mode={lighting.sourceMode}
+        data-lighting-preset={configuration.lightingSettings.preset}
+        data-lighting-quality={lighting.quality}
+        data-lighting-exposure={lighting.renderer.exposure.toFixed(3)}
+        data-lighting-environment-intensity={lighting.environment.intensity.toFixed(
+          3
+        )}
+        data-active-light-count={activeLightCount}
+        data-active-window-light-count={activeWindowLights.length}
+        data-active-fixture-light-count={activeFixtureLights.length}
+        data-shadow-casting-light-count={shadowCastingLightCount}
+        data-lighting-diagnostics="Central preset-driven lighting"
         data-workspace-grid={viewMode === "3d" ? "visible" : "hidden"}
         data-workspace-grid-mode="camera-aware-floor-and-ceiling"
         data-workspace-grid-minor-meters={WORKSPACE_GRID_CELL_SIZE_METERS}
@@ -344,22 +452,12 @@ export function DesignSceneCanvas({
         dpr={state.liteSceneEnabled ? [1, 1] : [1, 2]}
         gl={{
           antialias: true,
-          outputColorSpace: THREE.SRGBColorSpace,
-          toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: configuration.lightConfig.exposure ?? 1,
         }}
         camera={{
           position: [...configuration.initialCameraView.pos],
           fov: configuration.initialCameraView.fov,
           near: 0.1,
           far: 300,
-        }}
-        onCreated={({ gl }) => {
-          (
-            gl as THREE.WebGLRenderer & {
-              physicallyCorrectLights?: boolean;
-            }
-          ).physicallyCorrectLights = true;
         }}
         onPointerMissed={actions.onClearSelection}
       >
@@ -411,62 +509,21 @@ export function DesignSceneCanvas({
           onRendererSample={actions.onRendererSample}
           onSustainedLowFps={actions.onSustainedLowFps}
         />
-        <Suspense fallback={null}>
-          <Environment resolution={state.liteSceneEnabled ? 32 : 128}>
-            <Lightformer
-              intensity={state.liteSceneEnabled ? 0.55 : 0.9}
-              color={configuration.lightConfig.keyColor ?? "#ffffff"}
-              position={[5, 6, 4]}
-              rotation={[0, Math.PI / 4, 0]}
-              scale={[8, 8, 1]}
-            />
-            <Lightformer
-              intensity={state.liteSceneEnabled ? 0.2 : 0.45}
-              color={configuration.lightConfig.fillColor ?? "#f1f4f8"}
-              position={[-4, 3, -3]}
-              rotation={[0, -Math.PI / 6, 0]}
-              scale={[6, 6, 1]}
-            />
-          </Environment>
-        </Suspense>
-        <ambientLight
-          color={configuration.lightConfig.ambientColor ?? "#f6f6f4"}
-          intensity={configuration.lightConfig.ambientIntensity}
-        />
-        <hemisphereLight
-          color={configuration.lightConfig.skyColor ?? "#f5f6fa"}
-          groundColor={configuration.lightConfig.groundColor ?? "#d9d7d1"}
-          intensity={configuration.lightConfig.hemiIntensity ?? 0.3}
-        />
-        <directionalLight
-          position={[5, 7, 4]}
-          color={configuration.lightConfig.keyColor ?? "#ffffff"}
-          intensity={
-            configuration.lightConfig.keyIntensity ??
-            configuration.lightConfig.directionalIntensity
-          }
-          castShadow={effectiveShadowsEnabled}
-          shadow-mapSize-width={QUALITY_SHADOW_MAP_SIZE}
-          shadow-mapSize-height={QUALITY_SHADOW_MAP_SIZE}
-          shadow-camera-near={0.5}
-          shadow-camera-far={80}
-          shadow-camera-left={-shadowCameraHalfSpan}
-          shadow-camera-right={shadowCameraHalfSpan}
-          shadow-camera-top={shadowCameraHalfSpan}
-          shadow-camera-bottom={-shadowCameraHalfSpan}
-          shadow-bias={-0.00015}
-          shadow-normalBias={0.02}
-          shadow-radius={QUALITY_SHADOW_RADIUS}
-          shadow-intensity={QUALITY_SHADOW_INTENSITY}
-        />
-        <directionalLight
-          position={[-4, 4, -3]}
-          color={configuration.lightConfig.fillColor ?? "#f1f4f8"}
-          intensity={
-            configuration.lightConfig.fillIntensity ??
-            configuration.lightConfig.directionalIntensity * 0.5
-          }
-        />
+        {viewMode === "3d" ? (
+          <LightingSystem
+            lighting={lighting}
+            shadowCameraHalfSpan={shadowCameraHalfSpan}
+            fixtures={fixtureLights}
+            windows={windowLights}
+            bounds={{
+              centerX: presentationBounds.centerX,
+              centerZ: presentationBounds.centerZ,
+              width: presentationBounds.widthMeters,
+              depth: presentationBounds.depthMeters,
+              roomHeight: planBounds.roomHeight,
+            }}
+          />
+        ) : null}
 
         <Suspense fallback={<RoomSkeleton />}>{children}</Suspense>
 

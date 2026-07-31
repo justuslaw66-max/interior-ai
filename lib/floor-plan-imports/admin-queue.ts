@@ -50,6 +50,7 @@ const PROCESSING_STATUSES: FloorPlanImportJobStatus[] = [
   FloorPlanImportJobStatus.received,
   FloorPlanImportJobStatus.rendered,
   FloorPlanImportJobStatus.extracted,
+  FloorPlanImportJobStatus.selecting_page,
   FloorPlanImportJobStatus.scale_solved,
   FloorPlanImportJobStatus.topology_built,
   FloorPlanImportJobStatus.validating,

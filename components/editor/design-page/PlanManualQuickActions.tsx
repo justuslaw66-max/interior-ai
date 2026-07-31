@@ -105,7 +105,7 @@ export function PlanManualQuickActions({ state, actions }: PlanManualQuickAction
   return (
     <div
       data-testid="plan-manual-quick-actions"
-      className="pointer-events-auto absolute left-1/2 top-20 z-30 flex max-w-[calc(100vw-2rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-1 rounded-xl border border-neutral-200 bg-white/95 p-1 shadow-xl backdrop-blur"
+      className="pointer-events-auto absolute left-1/2 top-15 z-30 flex max-w-[calc(100vw-2rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-1 rounded-xl border border-neutral-200 bg-white/95 p-1 shadow-xl backdrop-blur"
       role="toolbar"
       aria-label="Manual plan actions"
     >

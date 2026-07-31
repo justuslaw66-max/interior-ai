@@ -1,16 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { flushSync } from "react-dom";
 import { track } from "@/lib/analytics";
-import type {
-  HouseRoomConnectionChecklistItem,
-  HouseRoomDoorwaySuggestion,
-  HousePlanTemplate,
-  HousePlanTemplateApplyOptions,
-  HouseRoomTemplateId,
-  RoomSizePresetId,
-} from "@/lib/design-page-house-plan";
+import type { RoomSizePresetId } from "@/lib/design-page-house-plan";
 import {
   HOUSE_ROOM_SHAPES,
   HOUSE_PLAN_TEMPLATES,
@@ -23,30 +16,19 @@ import type { RoomOpening2D } from "@/lib/editorScene";
 import type {
   FloorPlanQualityAction,
   FloorPlanQualityIssue,
-  FloorPlanQualityReport,
 } from "@/lib/floor-plan-quality";
-import type {
-  FloorPlanDrawAngleLockMode,
-  FloorPlanDrawRoomMode,
-  FloorPlanUnderlay,
-} from "@/lib/floor-plan-types";
-import type { PlanMeasurementUnit } from "@/lib/design-page-types";
-import type { DesignPageOpeningMetricsPatch } from "@/lib/design-page-opening-metrics";
-import type { FloorPlanPropertyEvidenceV2 } from "@/lib/floor-plan-document-v2";
-import type { FloorPlanConsumerMeasurementEvidenceV2 } from "@/lib/floor-plan-measured-property-mutations";
+import type { FloorPlanDrawRoomMode } from "@/lib/floor-plan-types";
 import {
   DEFAULT_FLOOR_PATTERN_SCALE,
   clampFloorPatternScale,
   getFloorMaterialById,
   normalizeFloorRotationDeg,
-  type FloorMaterial,
 } from "@/lib/floor-materials";
-import type { RoomFloorPattern, RoomPlanShape, RoomSurfaceAssignments, RoomType } from "@/lib/room-types";
+import type { RoomPlanShape, RoomType } from "@/lib/room-types";
 import {
   SURFACE_MATERIAL_RENDER_REGISTRY,
   getSurfaceMaterialTextureSource,
   getRuntimeSurfaceMaterialById,
-  type SurfaceMaterialRenderInfo,
 } from "@/lib/surface-material-runtime";
 import {
   DEFAULT_FLOOR_JOINT_COLOR,
@@ -58,769 +40,70 @@ import {
   getWallFaceLabel,
   getWallFaceSurfaceSettings,
   normalizeFloorSurfaceSettings,
-  type FloorSurfacePatch,
   type NormalizedSurfaceSettings,
-  type SurfaceSettingsPatch,
 } from "@/lib/surface-settings";
 import {
   DEFAULT_WALL_PAINT_SWATCH,
-  NIPPON_WALL_PAINT_COLOUR_COUNT,
   NIPPON_WALL_PAINT_SWATCHES,
-  WALL_PAINT_FAMILY_FILTERS,
   getWallPaintDisplayName,
-  getWallPaintSwatchLabel,
   getWallPaintSwatchSearchText,
   normalizeWallPaintColorHex,
   type WallPaintFamilyFilterId,
   type WallPaintSwatch,
 } from "@/lib/wall-paint";
-import type { EditorViewMode } from "./EditorViewToggle";
 import FloorPlanAddressSearch from "./FloorPlanAddressSearch";
 import FloorPlanUploadPanel from "./FloorPlanUploadPanel";
-import FloorPlanToolStrip, { type FloorPlanTool } from "./FloorPlanToolStrip";
+import FloorPlanToolStrip from "./FloorPlanToolStrip";
 import PlanOpeningInspector from "./PlanOpeningInspector";
 import MeasurementField from "./MeasurementField";
 import { ConsumerRoomSetupCard } from "./ConsumerRoomSetupCard";
 import FloorPlanPropertyEvidenceControl from "./FloorPlanPropertyEvidenceControl";
 import { formatCabinetMeasurement } from "@/features/cabinetry/measurementUnits";
 import RoomConnectionChecklist from "./RoomConnectionChecklist";
+import type { PlanToolIconName } from "./design-controls-plan/PlanToolIcon";
+import {
+  CollapsiblePlanHeader,
+  PlanToolSection,
+  PlanToolTile,
+  type CollapsiblePlanSection,
+} from "./design-controls-plan/PlanToolComponents";
+import { WallPaintPicker } from "./design-controls-plan/WallPaintPicker";
+import {
+  SURFACE_MATERIAL_INITIAL_VISIBLE_COUNT,
+  SURFACE_MATERIAL_VISIBLE_INCREMENT,
+  WALL_PAINT_INITIAL_VISIBLE_COUNT,
+  buildFacetOptions,
+  buildSurfaceMaterialProductGroups,
+  formatSurfaceMaterialValue,
+  getFloorMaterialSwatchStyle,
+  getSurfaceMaterialCollectionLabel,
+  getSurfaceMaterialColorLabel,
+  getSurfaceMaterialEffectLabel,
+  getSurfaceMaterialGroupMetaLabel,
+  getSurfaceMaterialGroupSizeLabels,
+  getSurfaceMaterialPrimaryId,
+  getSurfaceMaterialProductDisplayName,
+  getSurfaceMaterialSizeLabel,
+  getSurfaceMaterialSizeOptionLabel,
+  getSurfaceMaterialSupplierLabel,
+  getSurfaceMaterialSwatchStyle,
+  getSurfaceRoomAreaSqm,
+  getSurfaceRoomWallAreaSqm,
+  getSurfaceRoomWallFaceAreaSqm,
+  type SurfaceBrowserTab,
+  type SurfaceBrowserViewMode,
+  type SurfaceFilterKey,
+  type SurfaceFilterState,
+  type SurfaceMaterialProductGroup,
+  type SurfaceSummaryRow,
+  type WallSurfaceMode,
+} from "./design-controls-plan/surfaceCatalog";
 
-export type PlanStartMode = "start" | "draw" | "upload" | "template";
-type SurfaceBrowserTab = "tiles" | "rooms";
-type WallSurfaceMode = "paint" | "materials";
-type SurfaceBrowserViewMode = "grid" | "list";
-type SurfaceFilterKey = "effect" | "collection" | "size" | "color";
-type SurfaceTargetMode = "floor" | "walls" | "selected_wall" | "ceiling";
-type CollapsiblePlanSection =
-  | "floorPlan"
-  | "importFloorPlan"
-  | "drawRoom"
-  | "openings"
-  | "templates"
-  | "planQuality"
-  | "selectedRoom"
-  | "connections";
-type PlanToolIconName =
-  | "upload"
-  | "straightWall"
-  | "rectangleWall"
-  | "arcWall"
-  | "externalArea"
-  | "door"
-  | "window"
-  | "opening"
-  | "bayWindow"
-  | "template";
-
-type HouseRoomTemplate = {
-  id: HouseRoomTemplateId;
-  label: string;
-  roomType: RoomType;
-  shape: RoomPlanShape;
-  width: number;
-  depth: number;
-};
-
-type SurfaceRoomSummary = {
-  id: string;
-  name: string;
-  floorLabel?: string;
-  roomType: RoomType;
-  width: number;
-  depth: number;
-  height?: number;
-  surfaces?: RoomSurfaceAssignments;
-  surfaceFinishes?: RoomSurfaceAssignments;
-};
-
-type SurfaceFilterState = Partial<Record<SurfaceFilterKey, string>> & {
-  favoritesOnly?: boolean;
-  recommendedOnly?: boolean;
-};
-
-const SURFACE_MATERIAL_INITIAL_VISIBLE_COUNT = 16;
-const SURFACE_MATERIAL_VISIBLE_INCREMENT = 32;
-const WALL_PAINT_INITIAL_VISIBLE_COUNT = 36;
-const WALL_PAINT_VISIBLE_INCREMENT = 72;
-
-type SurfaceSummaryRow = {
-  id: string;
-  room: SurfaceRoomSummary;
-  target: SurfaceTargetMode;
-  surfaceLabel: string;
-  materialId: string;
-  materialName: string;
-  supplier: string;
-  areaSqm: number;
-  status: string;
-  sampleUrl: string | null;
-  settings: {
-    pattern: RoomFloorPattern;
-    rotationDeg: number;
-    scale: number;
-    offset: { x: number; y: number };
-    jointSizeMm: number;
-    jointColor: string;
-  };
-};
-
-type SurfaceMaterialProductGroup = {
-  id: string;
-  key: string;
-  primary: SurfaceMaterialRenderInfo;
-  variants: SurfaceMaterialRenderInfo[];
-};
-
-function getFloorMaterialSwatchStyle(material: FloorMaterial): CSSProperties {
-  if (material.pattern === "wood_plank") {
-    return {
-      backgroundColor: material.swatchColor,
-      backgroundImage: [
-        `repeating-linear-gradient(0deg, transparent 0 7px, ${material.lineColor}66 7px 8px)`,
-        `linear-gradient(135deg, ${material.swatchColor}, ${material.accentColor})`,
-      ].join(", "),
-    };
-  }
-
-  if (material.pattern === "tile_grid") {
-    return {
-      backgroundColor: material.swatchColor,
-      backgroundImage: [
-        `repeating-linear-gradient(0deg, transparent 0 9px, ${material.lineColor}70 9px 10px)`,
-        `repeating-linear-gradient(90deg, transparent 0 9px, ${material.lineColor}70 9px 10px)`,
-        `linear-gradient(135deg, ${material.swatchColor}, ${material.accentColor})`,
-      ].join(", "),
-    };
-  }
-
-  if (material.pattern === "soft_fleck") {
-    return {
-      backgroundColor: material.swatchColor,
-      backgroundImage: [
-        `radial-gradient(circle at 24% 28%, ${material.lineColor}80 0 1px, transparent 2px)`,
-        `radial-gradient(circle at 68% 58%, ${material.accentColor}70 0 1px, transparent 2px)`,
-        `radial-gradient(circle at 42% 78%, ${material.lineColor}55 0 1px, transparent 2px)`,
-        `linear-gradient(135deg, ${material.swatchColor}, ${material.accentColor})`,
-      ].join(", "),
-    };
-  }
-
-  return {
-    background: `linear-gradient(135deg, ${material.swatchColor}, ${material.accentColor})`,
-  };
-}
-
-function formatSurfaceMaterialValue(value: string) {
-  return value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
-}
-
-function getSurfaceMaterialSupplierLabel(material: SurfaceMaterialRenderInfo) {
-  return material.surface_material.brand ?? formatSurfaceMaterialValue(material.surface_material.supplier);
-}
-
-function getSurfaceMaterialCollectionLabel(material: SurfaceMaterialRenderInfo) {
-  return (
-    material.surface_material.collection ??
-    material.surface_material.brand ??
-    formatSurfaceMaterialValue(material.surface_material.supplier)
-  );
-}
-
-function getSurfaceMaterialSizeLabel(material: SurfaceMaterialRenderInfo) {
-  const specs = material.physical_specs;
-  if (specs?.tile_width_mm && specs.tile_length_mm) {
-    return `${Math.round(specs.tile_width_mm)}x${Math.round(specs.tile_length_mm)} mm`;
-  }
-  if (specs?.plank_width_mm && specs.plank_length_mm) {
-    return `${Math.round(specs.plank_width_mm)}x${Math.round(specs.plank_length_mm)} mm`;
-  }
-  return "Size TBC";
-}
-
-function getSurfaceMaterialEffectLabel(material: SurfaceMaterialRenderInfo) {
-  return formatSurfaceMaterialValue(material.classification?.design_effect ?? "unknown");
-}
-
-function getSurfaceMaterialThicknessLabel(material: SurfaceMaterialRenderInfo) {
-  const thickness = material.physical_specs?.total_thickness_mm;
-  return typeof thickness === "number" && Number.isFinite(thickness)
-    ? `${thickness.toLocaleString(undefined, { maximumFractionDigits: 2 })} mm thick`
-    : null;
-}
-
-function getSurfaceMaterialDisplayName(material: SurfaceMaterialRenderInfo) {
-  const productName = material.surface_material.product_name.trim();
-  const prefixes = [
-    material.surface_material.brand,
-    "Gardenia Orchidea",
-    "Gardenia",
-  ].filter(Boolean) as string[];
-
-  for (const prefix of prefixes) {
-    const trimmedPrefix = prefix.trim();
-    const normalizedPrefix = `${trimmedPrefix} `.toLowerCase();
-    if (productName.toLowerCase().startsWith(normalizedPrefix)) {
-      return productName.slice(trimmedPrefix.length).trim();
-    }
-  }
-
-  return productName;
-}
-
-function getSurfaceMaterialProductDisplayName(material: SurfaceMaterialRenderInfo) {
-  const displayName = getSurfaceMaterialDisplayName(material);
-  const withoutSize = displayName
-    .replace(
-      /\s+\d+(?:[.,]\d+)?x\d+(?:[.,]\d+)?(?:\s+(?:nat|natural|soft|lux|rett|ret|rect|lappato|lapp|mat|matt|polished|grip|out|outdoor|antique|3d|decor|dec|mix|r\d+))*$/i,
-      ""
-    )
-    .trim();
-  return withoutSize || displayName;
-}
-
-function getSurfaceMaterialSizeOptionLabel(material: SurfaceMaterialRenderInfo) {
-  const displayName = getSurfaceMaterialDisplayName(material);
-  const match = displayName.match(
-    /(\d+(?:[.,]\d+)?x\d+(?:[.,]\d+)?(?:\s+(?:nat|natural|soft|lux|rett|ret|rect|lappato|lapp|mat|matt|polished|grip|out|outdoor|antique|3d|decor|dec|mix|r\d+))*)$/i
-  );
-  if (match?.[1]) return match[1].replace(/\s+/g, " ").trim();
-  return getSurfaceMaterialSizeLabel(material).replace(/\s*mm$/i, " mm");
-}
-
-function getSurfaceMaterialGroupKey(material: SurfaceMaterialRenderInfo) {
-  return [
-    material.surface_material.supplier,
-    material.surface_material.brand,
-    material.surface_material.collection,
-    material.surface_material.surface_category,
-    material.surface_material.material_family,
-    material.classification?.design_effect,
-    material.classification?.color_family,
-    getSurfaceMaterialProductDisplayName(material),
-  ]
-    .map((part) => String(part ?? "").trim().toLowerCase())
-    .join("|");
-}
-
-function getSurfaceMaterialVariantAreaMm(material: SurfaceMaterialRenderInfo) {
-  const specs = material.physical_specs;
-  const width = specs?.tile_width_mm ?? specs?.plank_width_mm ?? 0;
-  const length = specs?.tile_length_mm ?? specs?.plank_length_mm ?? 0;
-  return width * length;
-}
-
-function compareSurfaceMaterialVariants(a: SurfaceMaterialRenderInfo, b: SurfaceMaterialRenderInfo) {
-  const areaDelta = getSurfaceMaterialVariantAreaMm(b) - getSurfaceMaterialVariantAreaMm(a);
-  if (areaDelta !== 0) return areaDelta;
-  return getSurfaceMaterialSizeOptionLabel(a).localeCompare(getSurfaceMaterialSizeOptionLabel(b));
-}
-
-function buildSurfaceMaterialProductGroups(
-  materials: SurfaceMaterialRenderInfo[],
-  preferredMaterialIds: Array<string | null | undefined> = []
-) {
-  const preferredIds = new Set(preferredMaterialIds.filter(Boolean) as string[]);
-  const groups = new Map<string, SurfaceMaterialRenderInfo[]>();
-  for (const material of materials) {
-    const key = getSurfaceMaterialGroupKey(material);
-    groups.set(key, [...(groups.get(key) ?? []), material]);
-  }
-
-  return Array.from(groups.entries())
-    .map(([key, variants]) => {
-      const sortedVariants = [...variants].sort(compareSurfaceMaterialVariants);
-      const preferredVariant =
-        sortedVariants.find((variant) => preferredIds.has(variant.surface_material.material_id)) ??
-        sortedVariants[0];
-      return {
-        id: preferredVariant.surface_material.material_id,
-        key,
-        primary: preferredVariant,
-        variants: sortedVariants,
-      };
-    })
-    .sort((a, b) =>
-      getSurfaceMaterialProductDisplayName(a.primary).localeCompare(
-        getSurfaceMaterialProductDisplayName(b.primary)
-      )
-    );
-}
-
-function getSurfaceMaterialGroupSizeLabels(group: SurfaceMaterialProductGroup) {
-  return Array.from(new Set(group.variants.map(getSurfaceMaterialSizeOptionLabel)));
-}
-
-function getSurfaceMaterialGroupMetaLabel(group: SurfaceMaterialProductGroup) {
-  const sizeLabels = getSurfaceMaterialGroupSizeLabels(group);
-  const thicknessLabels = Array.from(
-    new Set(group.variants.map(getSurfaceMaterialThicknessLabel).filter(Boolean))
-  );
-  return [
-    getSurfaceMaterialEffectLabel(group.primary),
-    `${sizeLabels.length} size${sizeLabels.length === 1 ? "" : "s"}`,
-    thicknessLabels.length === 1 ? thicknessLabels[0] : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
-}
-
-function getSurfaceMaterialColorLabel(material: SurfaceMaterialRenderInfo) {
-  return formatSurfaceMaterialValue(material.classification?.color_family ?? "unknown");
-}
-
-function buildFacetOptions(
-  materials: SurfaceMaterialRenderInfo[],
-  getValue: (material: SurfaceMaterialRenderInfo) => string
-) {
-  return Array.from(new Set(materials.map(getValue).filter(Boolean))).sort((a, b) =>
-    a.localeCompare(b)
-  );
-}
-
-function getSurfaceRoomAreaSqm(room: SurfaceRoomSummary) {
-  return Math.max(0, room.width * room.depth);
-}
-
-function getSurfaceRoomWallHeight(room: SurfaceRoomSummary) {
-  return Math.max(0.2, room.height ?? ROOM_DIMENSION_DEFAULTS.roomHeight);
-}
-
-function getSurfaceRoomWallAreaSqm(room: SurfaceRoomSummary) {
-  return Math.max(0, (room.width + room.depth) * 2 * getSurfaceRoomWallHeight(room));
-}
-
-function getSurfaceRoomWallFaceAreaSqm(room: SurfaceRoomSummary, faceId: string) {
-  const height = getSurfaceRoomWallHeight(room);
-  if (faceId === "north" || faceId === "south") return Math.max(0, room.width * height);
-  if (faceId === "east" || faceId === "west") return Math.max(0, room.depth * height);
-  return Math.max(0, Math.max(room.width, room.depth) * height);
-}
-
-function getSurfaceMaterialPrimaryId(material: SurfaceMaterialRenderInfo | null) {
-  return material?.surface_material.material_id ?? null;
-}
-
-function getSurfaceMaterialSwatchStyle(material: SurfaceMaterialRenderInfo): CSSProperties {
-  const textureSource = getSurfaceMaterialTextureSource(material);
-  if (textureSource) {
-    return {
-      backgroundColor: "#e8e2d6",
-      backgroundImage: `url("${textureSource.url}")`,
-      backgroundPosition: "center",
-      backgroundSize: textureSource.kind === "swatch" ? "cover" : "48px 48px",
-    };
-  }
-
-  const effect = material.classification?.design_effect;
-  const colorFamily = material.classification?.color_family;
-  const base =
-    colorFamily === "grey"
-      ? "#cfd3d4"
-      : colorFamily === "charcoal"
-        ? "#5f6365"
-        : colorFamily === "brown" || colorFamily === "walnut"
-          ? "#8c6848"
-          : colorFamily === "cream" || colorFamily === "beige"
-            ? "#dfd2bd"
-            : "#d8c29a";
-  const line = effect === "stone" || effect === "marble" ? "#9ea1a3" : "#a9855e";
-
-  return {
-    backgroundColor: base,
-    backgroundImage:
-      effect === "stone" || effect === "marble" || effect === "concrete"
-        ? `linear-gradient(135deg, ${base}, #f4f0e8), radial-gradient(circle at 28% 35%, ${line}77 0 1px, transparent 2px)`
-        : `repeating-linear-gradient(0deg, transparent 0 8px, ${line}66 8px 9px), linear-gradient(135deg, ${base}, #f0e3c8)`,
-  };
-}
-
-function PlanToolSvg({ className, children }: { className: string; children: ReactNode }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 64 64"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-      shapeRendering="geometricPrecision"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      {children}
-    </svg>
-  );
-}
-
-function PlanToolIcon({
-  name,
-  dark,
-  muted = false,
-}: {
-  name: PlanToolIconName;
-  dark: boolean;
-  muted?: boolean;
-}) {
-  const svgClass = "mx-auto h-12 w-12 max-w-full";
-  const stroke = muted
-    ? dark
-      ? "#7f8794"
-      : "#858a92"
-    : dark
-      ? "#d6dae2"
-      : "#50535a";
-  const lightStroke = muted
-    ? dark
-      ? "#646c78"
-      : "#c4c9d0"
-    : dark
-      ? "#858d9b"
-      : "#9ca1a8";
-  const fill = muted
-    ? dark
-      ? "#343a44"
-      : "#d7d9dc"
-    : dark
-      ? "#3c424d"
-      : "#c0c2c5";
-  const side = muted
-    ? dark
-      ? "#292f38"
-      : "#b7bbc1"
-    : dark
-      ? "#272d36"
-      : "#a7a9ad";
-  const top = muted
-    ? dark
-      ? "#464d58"
-      : "#e7e8ea"
-    : dark
-      ? "#555d69"
-      : "#ebeced";
-  const glass = dark ? "#29475a" : "#d9edf7";
-  const inset = muted
-    ? dark
-      ? "#303640"
-      : "#c6c9ce"
-    : dark
-      ? "#171b21"
-      : "#b7b9bd";
-
-  if (name === "upload") {
-    return (
-      <PlanToolSvg className={svgClass}>
-        <path d="M12 18V10h8M44 10h8v8M52 46v8h-8M20 54h-8v-8" stroke="#60a5fa" strokeWidth="4" strokeLinecap="round" />
-        <path d="M23 13h18l8 8v29H23V13Z" fill="#bfdbfe" stroke="#93c5fd" strokeWidth="2" />
-        <path d="M41 13v10h8" fill="#dbeafe" stroke="#93c5fd" strokeWidth="2" />
-        <rect x="27" y="30" width="18" height="10" rx="1.5" fill="#60a5fa" />
-        <text x="28" y="27" fill="#60a5fa" fontSize="8" fontWeight="700">JPG</text>
-        <text x="29" y="38" fill="#ffffff" fontSize="8" fontWeight="700">CAD</text>
-      </PlanToolSvg>
-    );
-  }
-
-  if (name === "straightWall") {
-    return (
-      <PlanToolSvg className={svgClass}>
-        <path d="m9 17 6-6h41l-6 6Z" fill={top} stroke={stroke} strokeWidth="1.75" />
-        <path d="m50 17 6-6v41l-6 6Z" fill={side} stroke={stroke} strokeWidth="1.75" />
-        <path d="M9 17h41v41H9Z" fill={fill} stroke={stroke} strokeWidth="1.75" />
-      </PlanToolSvg>
-    );
-  }
-
-  if (name === "rectangleWall") {
-    return (
-      <PlanToolSvg className={svgClass}>
-        <path d="M9 25h39v34H9Z" fill={fill} stroke={stroke} strokeWidth="1.75" />
-        <path d="m48 25 11-12.5v34L48 59Z" fill={side} stroke={stroke} strokeWidth="1.75" />
-        <path d="m9 25 12.5-12.5H59L48 25Z" fill={top} stroke={stroke} strokeWidth="1.75" />
-        <path d="m17.5 21.5 7.5-6h28l-7 6Z" fill={inset} stroke={lightStroke} strokeWidth="1.25" />
-      </PlanToolSvg>
-    );
-  }
-
-  if (name === "arcWall") {
-    return (
-      <PlanToolSvg className={svgClass}>
-        <path
-          d="M10.5 20.8C17.4 25.6 28.8 27.5 38.2 24.8C46.4 22.5 50.8 18.2 50.2 13C54.8 13.4 58 15.5 58 18.6v29C58 54.1 51 58.4 41.5 60C29.8 62 17.3 59 10.5 54.3Z"
-          fill={fill}
-          stroke={stroke}
-          strokeWidth="1.75"
-        />
-        <path
-          d="M10.5 20.8C15.8 16.6 22.8 14.2 29.6 13.8C36.4 13.4 42.3 15.1 45.1 18.2C46.5 19.7 46.6 21.2 46 22.5C43.8 23.5 41.2 24.3 38.2 24.8C28.8 27.5 17.4 25.6 10.5 20.8Z"
-          fill={top}
-          stroke={stroke}
-          strokeWidth="1.75"
-        />
-      </PlanToolSvg>
-    );
-  }
-
-  if (name === "externalArea") {
-    return (
-      <PlanToolSvg className={svgClass}>
-        <path
-          d="m3 23 15-17 21 9-16 16Z"
-          fill={dark ? "#2b313a" : "#f5f6f7"}
-        />
-        <path
-          d="m3 23 20 8v21L3 43Z"
-          fill={dark ? "#252b34" : "#eef0f2"}
-          stroke={lightStroke}
-          strokeWidth="1.4"
-        />
-        <path
-          d="m23 31 16-16v20L23 52Z"
-          fill={dark ? "#20262e" : "#e4e6e9"}
-          stroke={lightStroke}
-          strokeWidth="1.4"
-        />
-        <path
-          d="M3 23 18 6l21 9"
-          stroke={lightStroke}
-          strokeWidth="1.4"
-          strokeDasharray="3 2.5"
-        />
-        <path d="m20 40 30-19 13 7-30 23Z" fill={fill} stroke={stroke} strokeWidth="1.75" />
-        <path
-          d="m27.5 35.3 13 9.7M35 30.5l13 8.8M42.5 25.8l13 7.7M26.5 44.8l30-19"
-          stroke={lightStroke}
-          strokeWidth="1.2"
-        />
-        <path d="m33 51 30-23v4L33 56Z" fill={side} stroke={stroke} strokeWidth="1.4" />
-      </PlanToolSvg>
-    );
-  }
-
-  if (name === "door") {
-    return (
-      <PlanToolSvg className={svgClass}>
-        <rect x="20" y="9" width="26" height="46" rx="2" fill={fill} stroke={stroke} strokeWidth="3" />
-        <rect x="25" y="15" width="16" height="34" rx="1.5" fill="#eeeeef" stroke={lightStroke} strokeWidth="2" />
-        <circle cx="26" cy="33" r="2" fill={stroke} />
-        <path d="M20 9h26l5 5v42" stroke={stroke} strokeWidth="2" />
-      </PlanToolSvg>
-    );
-  }
-
-  if (name === "window") {
-    return (
-      <PlanToolSvg className={svgClass}>
-        <rect x="14" y="18" width="36" height="32" fill={glass} stroke={stroke} strokeWidth="3" />
-        <path d="M32 18v32M14 34h36" stroke={stroke} strokeWidth="2.5" />
-        <path d="M18 14h36v32" stroke={lightStroke} strokeWidth="2" />
-        <path d="M18 52h36" stroke={lightStroke} strokeWidth="2" />
-      </PlanToolSvg>
-    );
-  }
-
-  if (name === "bayWindow") {
-    return (
-      <PlanToolSvg className={svgClass}>
-        <polygon points="12 27 22 18 48 18 56 27 56 47 12 47" fill={glass} stroke={stroke} strokeWidth="3" strokeLinejoin="round" />
-        <path d="M22 18v29M48 18v29M12 33h44" stroke={stroke} strokeWidth="2" />
-        <path d="M16 49h36l-5 7H21Z" fill="#d8d8d9" stroke={stroke} strokeWidth="2" />
-      </PlanToolSvg>
-    );
-  }
-
-  if (name === "opening") {
-    return (
-      <PlanToolSvg className={svgClass}>
-        <path d="M16 53V21h32v32" fill="#f5f5f5" stroke={lightStroke} strokeWidth="2" strokeDasharray="4 3" />
-        <path d="M23 53V34c0-7 4-13 9-13s9 6 9 13v19" fill="#ffffff" stroke={stroke} strokeWidth="3" strokeLinejoin="round" />
-        <path d="M23 53h18" stroke="#ffffff" strokeWidth="5" />
-      </PlanToolSvg>
-    );
-  }
-
-  return (
-    <PlanToolSvg className={svgClass}>
-      <rect x="10" y="12" width="44" height="40" rx="2" fill="#eff6ff" stroke={stroke} strokeWidth="3" />
-      <rect x="14" y="16" width="15" height="14" fill="#dbeafe" stroke="#bfdbfe" strokeWidth="1.5" />
-      <rect x="35" y="16" width="15" height="14" fill="#f8fafc" stroke="#d6d9de" strokeWidth="1.5" />
-      <rect x="14" y="37" width="15" height="11" fill="#f8fafc" stroke="#d6d9de" strokeWidth="1.5" />
-      <rect x="36" y="37" width="14" height="11" fill="#dbeafe" stroke="#bfdbfe" strokeWidth="1.5" />
-      <path d="M32 12v40M10 33h44" stroke={stroke} strokeWidth="3" strokeLinecap="square" />
-      <path d="M21 33h8M32 40v8" stroke="#eff6ff" strokeWidth="5" strokeLinecap="butt" />
-      <path d="M21 33a8 8 0 0 1 8 8M32 40a8 8 0 0 0 8 8" stroke="#60a5fa" strokeWidth="2" fill="none" />
-    </PlanToolSvg>
-  );
-}
-
-type DesignControlsPlanPanelProps = {
-  dark: boolean;
-  isClientPreview: boolean;
-  isDesigner: boolean;
-  canEdit: boolean;
-  canEditPlanGeometry: boolean;
-  showFloorPropertiesPanel?: boolean;
-  aiDesignEnabled?: boolean;
-  viewMode: EditorViewMode;
-  snapEnabled: boolean;
-  newRoomType: RoomType;
-  newRoomShape: RoomPlanShape;
-  activeRoomPresetId: string;
-  roomWidthInput: string;
-  roomDepthInput: string;
-  roomWidth: number;
-  roomDepth: number;
-  measurementUnit: PlanMeasurementUnit;
-  floorPlanUnderlay: FloorPlanUnderlay | null;
-  floorPlanCalibrationMode: boolean;
-  floorPlanCalibrationPointCount: number;
-  floorPlanCalibrationDistanceInput: string;
-  floorPlanCalibrationSummary: string | null;
-  floorPlanTraceRoomMode: boolean;
-  floorPlanDrawRoomMode: FloorPlanDrawRoomMode;
-  floorPlanDrawAngleLockMode: FloorPlanDrawAngleLockMode;
-  floorPlanExactWallLengthInput: string;
-  floorPlanTraceRoomPointCount: number;
-  floorPlanTraceRoomType: RoomType;
-  floorPlanTraceOpeningMode: boolean;
-  floorPlanTraceOpeningPointCount: number;
-  floorPlanTraceOpeningKind: RoomOpening2D["kind"];
-  canTraceOpenings: boolean;
-  floorPlanPdfSourceReady: boolean;
-  floorPlanPdfRenderingPage: number | null;
-  roomConnectionChecklistItems: HouseRoomConnectionChecklistItem[];
-  visiblePlanOpening: RoomOpening2D | null;
-  visiblePlanOpeningRoomName: string;
-  visiblePlanOpeningWallSpanMeters: number;
-  visiblePlanOpeningMaxHeightMeters: number;
-  planRoomCount: number;
-  planItemCount: number;
-  planOpeningCount: number;
-  activeRoomName: string;
-  activeRoomId: string;
-  activeRoomType: RoomType;
-  activeRoomFloorMaterialId?: string;
-  activeRoomFloorRotationDeg?: number;
-  activeRoomFloorScale?: number;
-  activeRoomFloorPattern?: RoomFloorPattern;
-  activeRoomFloorPatternOffset?: { x: number; y: number };
-  activeRoomFloorJointSizeMm?: number;
-  activeRoomFloorJointColor?: string;
-  activeSurfaceTarget: SurfaceTargetMode;
-  selectedWallFaceId?: string | null;
-  selectedWallLabel?: string | null;
-  activeRoomWallSettings?: NormalizedSurfaceSettings;
-  activeRoomSelectedWallSettings?: NormalizedSurfaceSettings;
-  activeRoomCeilingSettings?: NormalizedSurfaceSettings;
-  surfaceBrushActive: boolean;
-  surfaceBrushMaterialId?: string | null;
-  surfaceBrushPaintColorHex?: string | null;
-  surfaceBrushPaintName?: string | null;
-  surfaceRooms: SurfaceRoomSummary[];
-  floorFinishPanelOpenSignal?: number;
-  floorOptions: Array<{ level: number; label: string; roomCount: number }>;
-  activeFloorLevel: number;
-  activeFloorRoomCount: number;
-  activeRoomHeightMm: number;
-  activeRoomWallHeightEvidence?: FloorPlanPropertyEvidenceV2 | null;
-  canEditActiveRoomWallHeight?: boolean;
-  activeRoomWallThicknessMm: number;
-  activeRoomSlabThicknessMm: number;
-  activeRoomSlabThicknessEvidence?: FloorPlanPropertyEvidenceV2 | null;
-  canEditActiveRoomSlabThickness?: boolean;
-  activeRoomBaseboardDepthMm: number;
-  activeRoomWallOpacity: number;
-  activeRoomFloorOpacity: number;
-  activeRoomCeilingOpacity: number;
-  activeRoomCeilingVisible: boolean;
-  activeRoomCeilingColor: string;
-  stackedFloorView: boolean;
-  activeFloorPlanTool: FloorPlanTool;
-  simplePlanControls: boolean;
-  planGuidedActionsEnabled: boolean;
-  planStartMode?: PlanStartMode;
-  planCompletionSignal?: { id: number; kind: "room" | "opening" } | null;
-  floorPlanQualityReport?: FloorPlanQualityReport | null;
-  onPlanCompletionHandled?: (id: number) => void;
-  onPlanStartModeChange?: (mode: PlanStartMode) => void;
-  onPlanQualityAction?: (action: FloorPlanQualityAction, issue?: FloorPlanQualityIssue) => void;
-  onSimplePlanControlsChange: (enabled: boolean) => void;
-  onPlanGuidedActionsEnabledChange: (enabled: boolean) => void;
-  onSelectFloorPlanTool: () => void;
-  onDrawFloorPlanRoom: () => void;
-  onAddFloorPlanOpeningFromTool: (kind: RoomOpening2D["kind"]) => void;
-  onGoFurnish: () => void;
-  onGoAiDesign: () => void;
-  onGoShop: () => void;
-  onGoView3D?: () => void;
-  onApplyPlanTemplate: (template: HousePlanTemplate, options?: HousePlanTemplateApplyOptions) => void;
-  onAddDesignerRoom: () => void;
-  onAddRoomTemplate: (template: HouseRoomTemplate) => void;
-  onSelectRoom: (roomId: string) => void;
-  onApplyFloorMaterialToRoom: (materialId: string, roomId?: string) => void;
-  onApplyFloorMaterialToAllRooms: (materialId: string) => void;
-  onRotateActiveFloorMaterial: () => void;
-  onResetActiveFloorMaterialPattern: () => void;
-  onActiveFloorMaterialScaleChange: (scale: number) => void;
-  onActiveFloorSurfaceSettingsChange: (patch: FloorSurfacePatch) => void;
-  onSurfaceTargetChange: (target: SurfaceTargetMode) => void;
-  onSurfaceBrushActiveChange: (active: boolean) => void;
-  onSurfaceMaterialSelected: (materialId: string | null) => void;
-  onSurfacePaintSelected: (colorHex: string | null, name?: string | null) => void;
-  onApplyWallMaterialToRoom: (materialId: string, roomId?: string, faceId?: string | null) => void;
-  onApplyWallMaterialToAllRooms: (materialId: string) => void;
-  onApplyWallPaintToRoom: (colorHex: string, name?: string | null, roomId?: string, faceId?: string | null) => void;
-  onApplyWallPaintToAllRooms: (colorHex: string, name?: string | null) => void;
-  onApplyCeilingPaintToRoom: (colorHex: string, name?: string | null, roomId?: string | null) => void;
-  onApplyCeilingPaintToAllRooms: (colorHex: string, name?: string | null) => void;
-  onActiveWallSurfaceSettingsChange: (patch: SurfaceSettingsPatch) => void;
-  onResetActiveWallSurface: () => void;
-  onResetActiveCeilingSurface: () => void;
-  onNewRoomTypeChange: (roomType: RoomType) => void;
-  onNewRoomShapeChange: (shape: RoomPlanShape) => void;
-  onRoomPresetChange: (presetId: RoomSizePresetId) => void;
-  onRoomWidthInputChange: (value: string) => void;
-  onRoomDepthInputChange: (value: string) => void;
-  onMeasurementUnitChange: (unit: PlanMeasurementUnit) => void;
-  onCommitRoomDimension: (axis: "width" | "depth", valueMm: number) => void;
-  onActiveRoomHeightMmChange: (
-    valueMm: number,
-    evidence?: FloorPlanConsumerMeasurementEvidenceV2,
-    measurementNote?: string
-  ) => void;
-  onActiveRoomWallThicknessMmChange: (valueMm: number) => void;
-  onActiveRoomSlabThicknessMmChange: (
-    valueMm: number,
-    evidence?: FloorPlanConsumerMeasurementEvidenceV2,
-    measurementNote?: string
-  ) => void;
-  onActiveRoomBaseboardDepthMmChange: (valueMm: number) => void;
-  onActiveRoomSurfaceOpacityChange: (kind: "wall" | "floor" | "ceiling", opacity: number) => void;
-  onActiveRoomCeilingVisibleChange: (visible: boolean) => void;
-  onActiveRoomCeilingColorChange: (color: string) => void;
-  onFloorPlanUpload: (file: File) => void;
-  onFloorPlanPdfPageChange: (pageNumber: number) => void;
-  onFloorPlanOpacityChange: (opacity: number) => void;
-  onFloorPlanLockChange: (locked: boolean) => void;
-  onFloorPlanCalibrationModeChange: (enabled: boolean) => void;
-  onFloorPlanCalibrationDistanceChange: (value: string) => void;
-  onApplyFloorPlanCalibration: () => void;
-  onResetFloorPlanCalibrationPoints: () => void;
-  onFloorPlanTraceRoomModeChange: (enabled: boolean) => void;
-  onFloorPlanTraceRoomDrawModeChange: (mode: FloorPlanDrawRoomMode) => void;
-  onFloorPlanDrawAngleLockModeChange: (mode: FloorPlanDrawAngleLockMode) => void;
-  onFloorPlanExactWallLengthInputChange: (value: string) => void;
-  onApplyFloorPlanExactWallLength: () => void;
-  onFloorPlanTraceRoomTypeChange: (roomType: RoomType) => void;
-  onUndoFloorPlanTraceRoomPoint: () => void;
-  onResetFloorPlanTraceRoomPoints: () => void;
-  onFloorPlanTraceOpeningModeChange: (enabled: boolean) => void;
-  onFloorPlanTraceOpeningKindChange: (kind: RoomOpening2D["kind"]) => void;
-  onResetFloorPlanTraceOpeningPoints: () => void;
-  onClearFloorPlan: () => void;
-  onAddSuggestedDoorway: (suggestion: HouseRoomDoorwaySuggestion) => void;
-  onUpdateOpeningMetrics: (
-    id: string,
-    metrics: DesignPageOpeningMetricsPatch
-  ) => void;
-};
+export type { PlanStartMode } from "./design-controls-plan/DesignControlsPlanPanel.types";
+import type {
+  DesignControlsPlanPanelProps,
+  PlanStartMode,
+} from "./design-controls-plan/DesignControlsPlanPanel.types";
 
 export default function DesignControlsPlanPanel({
   dark,
@@ -959,7 +242,6 @@ export default function DesignControlsPlanPanel({
   onActiveRoomSurfaceOpacityChange,
   onActiveRoomCeilingVisibleChange,
   onActiveRoomCeilingColorChange,
-  onFloorPlanUpload,
   onFloorPlanPdfPageChange,
   onFloorPlanOpacityChange,
   onFloorPlanLockChange,
@@ -991,6 +273,7 @@ export default function DesignControlsPlanPanel({
   const [wallPaintFamilyFilter, setWallPaintFamilyFilter] = useState<WallPaintFamilyFilterId>("all");
   const [wallPaintVisibleLimit, setWallPaintVisibleLimit] = useState(WALL_PAINT_INITIAL_VISIBLE_COUNT);
   const [customWallPaintHex, setCustomWallPaintHex] = useState(DEFAULT_WALL_PAINT_SWATCH.hex);
+  const [wallPaintApplyName, setWallPaintApplyName] = useState("Custom paint");
   const [surfaceViewMode, setSurfaceViewMode] = useState<SurfaceBrowserViewMode>("grid");
   const [surfaceFilterDrawerOpen, setSurfaceFilterDrawerOpen] = useState(false);
   const [surfaceFilters, setSurfaceFilters] = useState<SurfaceFilterState>({});
@@ -1037,10 +320,21 @@ export default function DesignControlsPlanPanel({
       source: isDesigner ? "pro_plan_tools" : "consumer_room_setup",
     });
     flushSync(() => setPlanStartMode("upload"));
-    document
-      .getElementById("floor-plan-upload")
-      ?.querySelector<HTMLInputElement>('[data-testid="floor-plan-upload-input"]')
-      ?.click();
+    const uploadPanel = document.getElementById("floor-plan-upload");
+    const uploadInput = uploadPanel?.querySelector<HTMLInputElement>(
+      '[data-testid="floor-plan-upload-input"]'
+    );
+    const importWorkspaceLauncher = uploadPanel?.querySelector<HTMLButtonElement>(
+      '[data-testid="floor-plan-import-workspace-launcher"]'
+    );
+    if (importWorkspaceLauncher) {
+      importWorkspaceLauncher.click();
+    } else {
+      uploadInput?.click();
+    }
+    window.requestAnimationFrame(() => {
+      uploadPanel?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
   };
   useEffect(() => {
     const handleUploadRequest = () => openFloorPlanUploadPicker();
@@ -1460,56 +754,23 @@ export default function DesignControlsPlanPanel({
     accessory?: ReactNode;
   }) => {
     const collapsed = isPlanSectionCollapsed(section);
-
     return (
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <div className={titleClass}>{title}</div>
-          {subtitle ? <div className={progressMetaClass}>{subtitle}</div> : null}
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
-          {accessory}
-          <button
-            type="button"
-            data-testid={`plan-section-toggle-${section}`}
-            className={collapsedToggleClass}
-            aria-label={`${collapsed ? "Expand" : "Collapse"} ${title.toLowerCase()}`}
-            aria-expanded={!collapsed}
-            onClick={() => setPlanSectionCollapsed(section, !collapsed)}
-          >
-            {collapsed ? "Expand" : "Collapse"}
-          </button>
-        </div>
-      </div>
+      <CollapsiblePlanHeader
+        section={section}
+        title={title}
+        subtitle={subtitle}
+        accessory={accessory}
+        collapsed={collapsed}
+        titleClassName={titleClass}
+        metaClassName={progressMetaClass}
+        toggleClassName={collapsedToggleClass}
+        onToggle={() => setPlanSectionCollapsed(section, !collapsed)}
+      />
     );
   };
-  const planToolSectionClass = dark
-    ? "border-b border-white/10 last:border-b-0"
-    : "border-b border-neutral-100 last:border-b-0";
-  const planToolSectionHeaderClass = dark
-    ? "flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left hover:bg-white/5"
-    : "flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left hover:bg-neutral-50";
-  const planToolSectionTitleClass = dark
-    ? "text-sm font-semibold text-neutral-100"
-    : "text-sm font-semibold text-neutral-800";
   const planToolGridClass = dark
     ? "designer-recessed designer-divider grid grid-cols-3 gap-2 border-t p-2"
     : "grid grid-cols-3 gap-2 border-t border-neutral-100 bg-white p-2";
-  const planToolTileClass = (active = false, disabled = false) =>
-    [
-      "group relative isolate flex min-w-0 flex-col items-center justify-center gap-2 overflow-hidden rounded-[2px] border px-1.5 py-2 text-center transition-[transform,background-color,border-color,box-shadow] duration-150 focus:outline-none focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-blue-500/70 focus-visible:ring-offset-2 active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none",
-      disabled
-        ? dark
-          ? "cursor-not-allowed border-transparent bg-white/[0.035] text-neutral-400 focus-visible:ring-offset-[var(--bg-panel)]"
-          : "cursor-not-allowed border-transparent bg-[#f6f6f7] text-neutral-500 focus-visible:ring-offset-white"
-        : active
-          ? dark
-            ? "border-blue-400/70 bg-blue-400/15 text-blue-100 shadow-[inset_0_0_0_1px_rgba(96,165,250,0.12)] hover:bg-blue-400/20 focus-visible:ring-offset-[var(--bg-panel)]"
-            : "border-blue-400 bg-blue-50 text-neutral-950 shadow-[inset_0_0_0_1px_rgba(96,165,250,0.12)] hover:bg-blue-100/70 focus-visible:ring-offset-white"
-          : dark
-            ? "border-transparent bg-white/[0.055] text-neutral-100 hover:border-white/15 hover:bg-white/10 focus-visible:ring-offset-[var(--bg-panel)]"
-            : "border-transparent bg-[#f6f6f7] text-[#30333a] hover:border-[#d9dce0] hover:bg-[#f1f2f3] focus-visible:ring-offset-white",
-    ].join(" ");
   const renderPlanToolSection = ({
     section,
     title,
@@ -1520,25 +781,16 @@ export default function DesignControlsPlanPanel({
     children: ReactNode;
   }) => {
     const collapsed = isPlanSectionCollapsed(section);
-
     return (
-      <section data-testid={`plan-tool-section-${section}`} className={planToolSectionClass}>
-        <button
-          type="button"
-          className={planToolSectionHeaderClass}
-          aria-expanded={!collapsed}
-          onClick={() => setPlanSectionCollapsed(section, !collapsed)}
-        >
-          <span className={planToolSectionTitleClass}>{title}</span>
-          <span
-            aria-hidden="true"
-            className={dark ? "text-lg leading-none text-neutral-400" : "text-lg leading-none text-neutral-400"}
-          >
-            {collapsed ? "+" : "-"}
-          </span>
-        </button>
-        {!collapsed ? children : null}
-      </section>
+      <PlanToolSection
+        dark={dark}
+        section={section}
+        title={title}
+        collapsed={collapsed}
+        onToggle={() => setPlanSectionCollapsed(section, !collapsed)}
+      >
+        {children}
+      </PlanToolSection>
     );
   };
   const renderPlanToolTile = ({
@@ -1560,49 +812,17 @@ export default function DesignControlsPlanPanel({
     title?: string;
     onClick?: () => void;
   }) => (
-    <button
-      type="button"
-      data-testid={testId}
-      data-active={active ? "true" : "false"}
-      data-disabled={disabled ? "true" : "false"}
-      aria-pressed={typeof active === "boolean" ? active : undefined}
-      aria-keyshortcuts={shortcut}
-      aria-label={disabled && title ? `${label}. ${title}` : undefined}
-      className={planToolTileClass(active, disabled)}
+    <PlanToolTile
+      dark={dark}
+      testId={testId}
+      icon={icon}
+      label={label}
+      shortcut={shortcut}
+      active={active}
       disabled={disabled}
       title={title}
       onClick={onClick}
-    >
-      <PlanToolIcon name={icon} dark={dark} muted={disabled} />
-      <span
-        className={[
-          "block text-[12px] font-normal leading-[1.25] tracking-normal",
-          disabled
-            ? dark
-              ? "text-neutral-400"
-              : "text-[#64686f]"
-            : dark
-              ? "text-neutral-100"
-              : "text-[#30333a]",
-        ].join(" ")}
-      >
-        {label}
-        {shortcut ? (
-          <>
-            {" "}
-            <span
-              className={
-                dark
-                  ? "whitespace-nowrap text-neutral-100"
-                  : "whitespace-nowrap text-[#30333a]"
-              }
-            >
-              ({shortcut})
-            </span>
-          </>
-        ) : null}
-      </span>
-    </button>
+    />
   );
   const startDrawRoomMode = (mode: FloorPlanDrawRoomMode) => {
     setPlanStartMode("draw");
@@ -1882,6 +1102,8 @@ export default function DesignControlsPlanPanel({
     const normalizedColor = normalizeWallPaintColorHex(colorHex);
     if (!normalizedColor) return null;
     const paintName = getWallPaintDisplayName(normalizedColor, name);
+    setCustomWallPaintHex(normalizedColor);
+    setWallPaintApplyName(paintName);
     setSelectedSurfaceMaterialId(null);
     onSurfaceMaterialSelected(null);
     onSurfacePaintSelected(normalizedColor, paintName);
@@ -1945,237 +1167,34 @@ export default function DesignControlsPlanPanel({
     }
     onApplyWallPaintToAllRooms(paint.colorHex, paint.name);
   };
-  const renderWallPaintPicker = () => {
-    const activePaintColorHex = activeTargetSettings.paintColorHex;
-    const activePaintName = activePaintColorHex
-      ? getWallPaintDisplayName(activePaintColorHex, activeTargetSettings.paintName)
-      : "No paint selected";
-    const activeWallPaintFamilyFilter =
-      WALL_PAINT_FAMILY_FILTERS.find((family) => family.id === wallPaintFamilyFilter) ??
-      WALL_PAINT_FAMILY_FILTERS[0];
-    const paintTargetNoun = activeSurfaceTarget === "ceiling" ? "ceiling" : "wall";
-    const normalizedCustomPaintHex =
-      normalizeWallPaintColorHex(customWallPaintHex) ?? DEFAULT_WALL_PAINT_SWATCH.hex;
-    const wallPaintSearchInputClass = dark
-      ? "designer-control h-9 w-full rounded-lg border px-2 text-xs font-semibold text-neutral-100 outline-none placeholder:text-neutral-500"
-      : "h-9 w-full rounded-lg border border-neutral-200 bg-white px-2 text-xs font-semibold text-neutral-800 outline-none placeholder:text-neutral-400";
-    const applyWallPaintSwatch = (swatch: WallPaintSwatch, source: "swatch" | "nippon") => {
-      setWallPaintFamilyFilter(swatch.family);
-      applyWallPaintToActiveTarget(swatch.hex, getWallPaintSwatchLabel(swatch), source);
-    };
-    const renderWallPaintSwatchButton = (swatch: WallPaintSwatch, variant: "chip" | "row") => {
-      const label = getWallPaintSwatchLabel(swatch);
-      const selected = swatch.hex.toUpperCase() === activePaintColorHex?.toUpperCase();
-      const source = swatch.source === "nippon" ? "nippon" : "swatch";
-      const selectedClass = dark
-        ? "border-emerald-300 bg-white/10"
-        : "border-emerald-500 bg-emerald-50";
-      const idleClass = dark
-        ? "designer-control border"
-        : "border-neutral-200 bg-white hover:bg-neutral-50";
-      if (variant === "chip") {
-        return (
-          <button
-            key={swatch.id}
-            type="button"
-            data-testid={`wall-paint-swatch-${swatch.id}`}
-            className={`grid aspect-square place-items-center rounded-lg border p-1 ${selected ? selectedClass : idleClass}`}
-            disabled={!canEdit || !canApplyActiveSurfaceTarget}
-            title={label}
-            aria-label={`Apply ${label}`}
-            onClick={() => applyWallPaintSwatch(swatch, source)}
-          >
-            <span
-              aria-hidden="true"
-              className="block h-full w-full rounded-md border border-black/10"
-              style={{ backgroundColor: swatch.hex }}
-            />
-          </button>
-        );
-      }
-
-      return (
-        <button
-          key={swatch.id}
-          type="button"
-          data-testid={`wall-paint-swatch-${swatch.id}`}
-          className={`flex h-11 min-w-0 items-center gap-2 rounded-lg border p-1.5 text-left ${selected ? selectedClass : idleClass}`}
-          disabled={!canEdit || !canApplyActiveSurfaceTarget}
-          title={label}
-          aria-label={`Apply ${label}`}
-          onClick={() => applyWallPaintSwatch(swatch, source)}
-        >
-          <span
-            aria-hidden="true"
-            className="h-7 w-7 shrink-0 rounded-md border border-black/10"
-            style={{ backgroundColor: swatch.hex }}
-          />
-          <span className="min-w-0 flex-1">
-            <span className={dark ? "block truncate text-[11px] font-semibold text-neutral-100" : "block truncate text-[11px] font-semibold text-neutral-900"}>
-              {swatch.name}
-            </span>
-            <span className={dark ? "block truncate text-[10px] font-medium text-neutral-400" : "block truncate text-[10px] font-medium text-neutral-500"}>
-              {swatch.code ?? swatch.hex}
-            </span>
-          </span>
-        </button>
-      );
-    };
-
-    return (
-      <div
-        data-testid="wall-paint-panel"
-        className={dark ? "designer-recessed mt-2 rounded-lg p-2" : "mt-2 rounded-lg border border-neutral-200 bg-white p-2"}
-      >
-        <div className="flex items-start gap-2">
-          <span
-            aria-hidden="true"
-            className="h-12 w-12 shrink-0 rounded-md border border-black/10"
-            style={{ backgroundColor: activePaintColorHex ?? "#f7f5ef" }}
-          />
-          <div className="min-w-0 flex-1">
-            <div className={dark ? "truncate text-xs font-semibold text-neutral-100" : "truncate text-xs font-semibold text-neutral-900"}>
-              {activePaintName}
-            </div>
-            <div className={floorMaterialMetaClass}>
-              {activePaintColorHex ?? `Choose a ${paintTargetNoun} colour`}
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-3">
-          <div className="flex items-center justify-between gap-2">
-            <div className={dark ? "text-xs font-semibold text-neutral-200" : "text-xs font-semibold text-neutral-700"}>
-              Colour family: {activeWallPaintFamilyFilter.id === "all" ? "ALL" : activeWallPaintFamilyFilter.label.toUpperCase()}
-            </div>
-            {wallPaintFamilyFilter !== "all" ? (
-              <button
-                type="button"
-                data-testid="wall-paint-family-clear"
-                className={dark ? "text-[11px] font-semibold text-neutral-300 hover:text-white" : "text-[11px] font-semibold text-neutral-500 hover:text-neutral-900"}
-                onClick={() => setWallPaintFamilyFilter("all")}
-              >
-                All
-              </button>
-            ) : null}
-          </div>
-          <div
-            data-testid="wall-paint-family-filter"
-            className="mt-2 grid grid-flow-col grid-rows-2 auto-cols-max gap-2 overflow-x-auto pb-1"
-            aria-label="Filter paint colours by family"
-          >
-            {WALL_PAINT_FAMILY_FILTERS.filter((family) => family.id !== "all").map((family) => {
-              const selected = family.id === wallPaintFamilyFilter;
-              const familyButtonClass = selected
-                ? dark
-                  ? "h-9 w-9 shrink-0 rounded-full border-2 border-emerald-300 shadow-sm ring-2 ring-emerald-300/30"
-                  : "h-9 w-9 shrink-0 rounded-full border-2 border-neutral-950 shadow-sm ring-2 ring-emerald-200"
-                : dark
-                  ? "h-9 w-9 shrink-0 rounded-full border border-white/15 shadow-sm hover:border-white/40"
-                  : "h-9 w-9 shrink-0 rounded-full border border-neutral-200 shadow-sm hover:border-neutral-400";
-              return (
-                <button
-                  key={family.id}
-                  type="button"
-                  data-testid={`wall-paint-family-${family.id}`}
-                  className={familyButtonClass}
-                  style={{ backgroundColor: family.hex }}
-                  aria-label={`Show ${family.label} paint colours`}
-                  aria-pressed={selected}
-                  title={family.label}
-                  onClick={() => setWallPaintFamilyFilter(family.id)}
-                >
-                  <span className="sr-only">{family.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="mt-3 grid gap-2">
-          <div className="flex items-center justify-between gap-2">
-            <div className={dark ? "text-xs font-semibold text-neutral-200" : "text-xs font-semibold text-neutral-700"}>
-              Nippon Paint
-            </div>
-            <div className={floorMaterialMetaClass}>
-              {filteredNipponWallPaintSwatches.length.toLocaleString()} / {NIPPON_WALL_PAINT_COLOUR_COUNT.toLocaleString()}
-            </div>
-          </div>
-          <input
-            type="search"
-            data-testid="wall-paint-search"
-            value={wallPaintSearch}
-            onChange={(event) => setWallPaintSearch(event.currentTarget.value)}
-            className={wallPaintSearchInputClass}
-            placeholder="Search name, code, family, or hex"
-          />
-          {visibleNipponWallPaintSwatches.length > 0 ? (
-            <div className="grid grid-cols-2 gap-1.5">
-              {visibleNipponWallPaintSwatches.map((swatch) => renderWallPaintSwatchButton(swatch, "row"))}
-            </div>
-          ) : (
-            <div className={dark ? "rounded-lg border border-white/10 p-3 text-xs text-neutral-400" : "rounded-lg border border-neutral-200 bg-white p-3 text-xs text-neutral-500"}>
-              No Nippon Paint colours match.
-            </div>
-          )}
-          {hiddenNipponWallPaintCount > 0 ? (
-            <button
-              type="button"
-              data-testid="wall-paint-show-more"
-              className={`${progressSecondaryActionClass} min-h-9 w-full`}
-              onClick={() => setWallPaintVisibleLimit((limit) => limit + WALL_PAINT_VISIBLE_INCREMENT)}
-            >
-              Show more ({hiddenNipponWallPaintCount.toLocaleString()})
-            </button>
-          ) : null}
-        </div>
-
-        <div className="mt-3 grid grid-cols-[auto_1fr] items-end gap-2">
-          <label className={dark ? "block text-xs font-semibold text-neutral-200" : "block text-xs font-semibold text-neutral-700"}>
-            Custom
-            <input
-              type="color"
-              data-testid="wall-paint-custom-color"
-              value={normalizedCustomPaintHex}
-              disabled={!canEdit || !canApplyActiveSurfaceTarget}
-              onChange={(event) => setCustomWallPaintHex(event.currentTarget.value)}
-              className="mt-1 h-9 w-14 rounded-md border border-black/10 bg-transparent p-0"
-            />
-          </label>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              data-testid="wall-paint-apply-custom"
-              className={progressActionClass}
-              disabled={!canEdit || !canApplyActiveSurfaceTarget}
-              onClick={() => applyWallPaintToActiveTarget(normalizedCustomPaintHex, "Custom paint", "custom")}
-            >
-              Apply target
-            </button>
-            <button
-              type="button"
-              data-testid="wall-paint-apply-all"
-              className={progressSecondaryActionClass}
-              disabled={!canEdit}
-              onClick={() => applyWallPaintToAllRooms(normalizedCustomPaintHex, "Custom paint", "custom")}
-            >
-              Apply all
-            </button>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          data-testid="wall-paint-reset"
-          className={`${progressSecondaryActionClass} mt-2 min-h-9 w-full`}
-          disabled={!canEdit || !canApplyActiveSurfaceTarget}
-          onClick={activeSurfaceTarget === "ceiling" ? onResetActiveCeilingSurface : onResetActiveWallSurface}
-        >
-          Reset {paintTargetNoun} finish
-        </button>
-      </div>
-    );
-  };
+  const renderWallPaintPicker = () => (
+    <WallPaintPicker
+      dark={dark}
+      activeTargetSettings={activeTargetSettings}
+      wallPaintFamilyFilter={wallPaintFamilyFilter}
+      setWallPaintFamilyFilter={setWallPaintFamilyFilter}
+      activeSurfaceTarget={activeSurfaceTarget}
+      customWallPaintHex={customWallPaintHex}
+      setCustomWallPaintHex={setCustomWallPaintHex}
+      wallPaintApplyName={wallPaintApplyName}
+      setWallPaintApplyName={setWallPaintApplyName}
+      floorMaterialMetaClass={floorMaterialMetaClass}
+      canEdit={canEdit}
+      canApplyActiveSurfaceTarget={canApplyActiveSurfaceTarget}
+      filteredNipponWallPaintSwatches={filteredNipponWallPaintSwatches}
+      visibleNipponWallPaintSwatches={visibleNipponWallPaintSwatches}
+      wallPaintSearch={wallPaintSearch}
+      setWallPaintSearch={setWallPaintSearch}
+      setWallPaintVisibleLimit={setWallPaintVisibleLimit}
+      hiddenNipponWallPaintCount={hiddenNipponWallPaintCount}
+      progressActionClass={progressActionClass}
+      progressSecondaryActionClass={progressSecondaryActionClass}
+      applyWallPaintToActiveTarget={applyWallPaintToActiveTarget}
+      applyWallPaintToAllRooms={applyWallPaintToAllRooms}
+      onResetActiveCeilingSurface={onResetActiveCeilingSurface}
+      onResetActiveWallSurface={onResetActiveWallSurface}
+    />
+  );
   const openSurfaceSummary = (source: "header" | "information_fallback") => {
     setSurfaceSummaryOpen(true);
     track("surface_summary_opened", {
@@ -3317,7 +2336,6 @@ export default function DesignControlsPlanPanel({
                   },
                   chooseTemplate: openTemplatePicker,
                   drawRoom: startDrawRoomSetup,
-                  uploadPlan: openFloorPlanUploadPicker,
                   addOpening: onAddFloorPlanOpeningFromTool,
                   continueToFurnish: onGoFurnish,
                 }}
@@ -3433,32 +2451,14 @@ export default function DesignControlsPlanPanel({
                 title: "Templates",
                 children: (
                   <div className={planToolGridClass}>
-                    <button
-                      type="button"
-                      data-testid="plan-tool-template-library"
-                      data-active={planStartMode === "template" ? "true" : "false"}
-                      data-disabled={!canEdit ? "true" : "false"}
-                      aria-pressed={planStartMode === "template"}
-                      className={planToolTileClass(planStartMode === "template", !canEdit)}
-                      disabled={!canEdit}
-                      onClick={openTemplatePicker}
-                    >
-                      <PlanToolIcon name="template" dark={dark} muted={!canEdit} />
-                      <span
-                        className={[
-                          "block text-[12px] font-normal leading-[1.25] tracking-normal",
-                          !canEdit
-                            ? dark
-                              ? "text-neutral-400"
-                              : "text-[#64686f]"
-                            : dark
-                              ? "text-neutral-100"
-                              : "text-[#30333a]",
-                        ].join(" ")}
-                      >
-                        Starter layouts
-                      </span>
-                    </button>
+                    {renderPlanToolTile({
+                      testId: "plan-tool-template-library",
+                      icon: "template",
+                      label: "Starter layouts",
+                      active: planStartMode === "template",
+                      disabled: !canEdit,
+                      onClick: openTemplatePicker,
+                    })}
                   </div>
                 ),
               })}
@@ -4427,7 +3427,6 @@ export default function DesignControlsPlanPanel({
           pdfPageChanging={floorPlanPdfRenderingPage !== null}
           disabled={isClientPreview}
           dark={dark}
-          onUpload={onFloorPlanUpload}
           onPdfPageChange={onFloorPlanPdfPageChange}
           onOpacityChange={onFloorPlanOpacityChange}
           onLockChange={onFloorPlanLockChange}

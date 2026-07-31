@@ -1,0 +1,194 @@
+status: "published"
+brand: "Castlery"
+retailer: "Castlery Singapore"
+source_url: "https://www.castlery.com/sg/products/hamilton-chaise-sectional-sofa-bed?orientation=left_facing&material=performance_brilliant_white"
+category: "sofa"
+
+product_family: "Hamilton"
+product_name: "Hamilton Chaise Sectional Sofa Bed"
+slug: "castlery-hamilton-chaise-sectional-sofa-bed-left"
+variant: "Chaise Sectional Sofa Bed / Left Facing"
+
+price_usd: 3199
+price_band: "premium"
+brand_tier: "premium_mid"
+design_zone: "living_zone"
+anchor_role: "sofa_anchor"
+
+dimensions:
+  width_cm: 296
+  depth_cm: 171
+  height_cm: 86
+
+seat_capacity: 4
+size_class: "extra_large"
+shape: "l_shaped"
+base_type: "low_metal_leg"
+material_family: "upholstered"
+material_mix: "upholstered_metal"
+color_family: "white"
+tone: "neutral"
+style_cluster: "contemporary"
+style_secondary: "modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "rounded"
+  silhouette: "l_shaped"
+  form_language: "soft"
+spatial_attributes:
+  footprint_shape: "l_shaped"
+  walkway_clearance_cm: 75
+room_compatibility: ["living_room", "family_room", "open_plan", "guest_room"]
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  floating_layout_supported: true
+design_pairings: ["coffee_table", "side_table", "floor_lamp", "rug", "accent_chair"]
+
+summary:
+  short_description: "Left-facing Hamilton Chaise Sectional Sofa Bed in Performance Marcel Brilliant White, with closed sofa and open sleeper states."
+  key_features:
+    - "Pull-out sleeper mechanism with cooling gel memory foam mattress"
+    - "Soft-closing gaslift chaise storage"
+    - "Removable cushion and frame covers"
+
+feature_flags:
+  has_removable_cover: true
+  has_removable_cushion: true
+  has_storage: true
+  has_sleeper: true
+  has_hidden_function: true
+  is_configurable: true
+
+authoring_notes:
+  category_confidence: "high"
+  source_checked: "Castlery Singapore product page, 2026-07-31"
+  source_url: "https://www.castlery.com/sg/products/hamilton-chaise-sectional-sofa-bed?orientation=left_facing"
+  local_source_model: "/Users/justus/Desktop/Webapp project/castlery/Sofa/Hamilton /sofa bed/Hamilton Chaise Sectional Sofa Bed left facing closed.glb"
+  note: "The supplied Performance Marcel Brilliant White GLBs provide separate closed and opened sleeper geometry for the left-facing chaise. The open state is visualized separately and does not create a second purchasable variant."
+
+shipping_and_warranty:
+  free_delivery_threshold_sgd: 500
+  warranty: "Frame 10 years; Fabric 1 year; Foam 2 years"
+  return_policy: "30-day returns"
+
+product_details:
+  material:
+    - { label: "Material", value: "Frame: engineered wood, plywood, metal and stainless steel; leg: stainless steel" }
+    - { label: "Filling", value: "Seat: foam, fibre and pocket spring; back: fibre" }
+    - { label: "Special feature", value: "High-density foam and cooling gel memory foam" }
+    - { label: "Suspension", value: "Sinuous spring for chaise only" }
+    - { label: "Cover type", value: "Removable cushion covers and frame cover" }
+    - { label: "Material & safety standards", value: "Low formaldehyde" }
+  dimensions:
+    - { label: "Dimension", value: "As Sofa: W296 x D171 x H86cm; As Sofa Bed: W296 x D227 x H86cm" }
+    - { label: "Mattress space dimension", value: "W152 x D181 x H9.5cm" }
+    - { label: "Armrest height", value: "63cm" }
+    - { label: "Seating depth", value: "58/131cm" }
+    - { label: "Seatable width", value: "104–279cm" }
+    - { label: "Seating height", value: "47cm" }
+    - { label: "Leg height", value: "4.5cm" }
+    - { label: "Backrest height", value: "40cm" }
+    - { label: "Product weight", value: "140.5kg" }
+    - { label: "Storage inner dimension", value: "W80 x D143 x H22cm" }
+    - { label: "Max bearing support", value: "As Sofa: 4 x 150kg; As Sofa Bed: 270kg" }
+    - { label: "Sleep height", value: "53cm from floor to top of mattress" }
+  delivery_and_warranty:
+    - { label: "Cancellation", value: "Free—5 working days before delivery" }
+    - { label: "Warranty", value: "Frame 10 years; Fabric 1 year; Foam 2 years" }
+    - { label: "Return policy", value: "30-day returns" }
+    - { label: "Assembly", value: "Legs to be fitted" }
+
+comfort_profile:
+  seat_comfort: { label: "Relaxed", value: 2, min_label: "Relaxed", max_label: "Upright" }
+  seat_depth: { label: "Deep", value: 4, min_label: "Shallow", max_label: "Deep" }
+  seat_height: { label: "Medium", value: 3, min_label: "Low", max_label: "High" }
+  seat_softness: { label: "Soft", value: 2, min_label: "Soft", max_label: "Firm" }
+
+upholstery_library_ref: "hamilton"
+supported_upholstery_codes:
+  - "marcel_brilliant_white"
+
+configurable_metadata:
+  is_configurable: true
+  default_configuration: "closed"
+  configuration_ui:
+    type: "segmented_control"
+    label: "Sleeper State"
+    options:
+      - "closed"
+      - "open_sleeper"
+    option_labels:
+      closed: "Closed"
+      open_sleeper: "Open"
+    helper_text: "Open state is for space planning and visualization. Cart and checkout use the selected sofa-bed product."
+  configuration_behavior:
+    affects_visual_footprint: true
+    affects_space_planning: true
+    affects_collision_bounds: true
+    affects_recommendation_logic: false
+
+configurations:
+  - configuration_code: "closed"
+    configuration_label: "Closed"
+    state_type: "sleeper_closed"
+    description: "Left-facing chaise sofa bed in its closed seating position."
+    planning_bounds_cm: { width: 296, depth: 171, height: 86 }
+    visual_bounds_cm: { width: 296, depth: 171, height: 86 }
+    collision_bounds_cm: { width: 296, depth: 171, height: 86 }
+  - configuration_code: "open_sleeper"
+    configuration_label: "Open"
+    state_type: "sleeper_open"
+    description: "Left-facing chaise with its pull-out mattress fully opened."
+    planning_bounds_cm: { width: 296, depth: 227, height: 86 }
+    visual_bounds_cm: { width: 296, depth: 227, height: 86 }
+    collision_bounds_cm: { width: 296, depth: 227, height: 86 }
+
+assets:
+  asset_id: "sofa-real-castlery-hamilton-chaise-sectional-sofa-bed-left"
+  model_url: "/assets/models/sofas/sofa-real-castlery-hamilton-chaise-sectional-sofa-bed-left-closed.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1770609301/crusader/variants/50441102-PM4002/Hamilton-Chaise-Sectional-Sleeper-Sofa-Left-Facing-Performance-Brilliant-White-Angle-1770609299.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1770001270/crusader/variants/50441102-PM4002/Hamilton-Chaise-Sectional-Sleeper-Sofa-Left-Facing-Brilliant-White-Set_2-1770001267.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1770609301/crusader/variants/50441102-PM4002/Hamilton-Chaise-Sectional-Sleeper-Sofa-Left-Facing-Performance-Brilliant-White-Angle-1770609299.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1770001268/crusader/variants/50441102-PM4002/Hamilton-Chaise-Sectional-Sleeper-Sofa-Left-Facing-Brilliant-White-With-Vera-Walnut-Wood-Nesting-Table-With-Glass-table-Set_1-1770001266.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1500,f_auto,q_auto,c_fit/v1775180690/crusader/variants/T50441102/Hamilton-Chaise-Sectional-Sleeper-Sofa-Left-Facing-Performance-Brilliant-White-Dim-1775180688.jpg"
+  media_presentation: "studio"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+
+variants:
+  - variant: "Chaise Sectional Sofa Bed / Left Facing / Performance Marcel, Brilliant White"
+    sku: "50441102-PM4002"
+    size_label: "296x171"
+    finish_code: "marcel_brilliant_white"
+    finish_label: "Performance Marcel, Brilliant White"
+    upholstery_code: "marcel_brilliant_white"
+    upholstery_label: "Performance Marcel, Brilliant White"
+    model_asset_id: "sofa-real-castlery-hamilton-chaise-sectional-sofa-bed-left"
+    model_url: "/assets/models/sofas/sofa-real-castlery-hamilton-chaise-sectional-sofa-bed-left-closed.glb"
+    state_assets:
+      closed:
+        model_url: "/assets/models/sofas/sofa-real-castlery-hamilton-chaise-sectional-sofa-bed-left-closed.glb"
+      open_sleeper:
+        model_url: "/assets/models/sofas/sofa-real-castlery-hamilton-chaise-sectional-sofa-bed-left-open.glb"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1770609301/crusader/variants/50441102-PM4002/Hamilton-Chaise-Sectional-Sleeper-Sofa-Left-Facing-Performance-Brilliant-White-Angle-1770609299.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1770001270/crusader/variants/50441102-PM4002/Hamilton-Chaise-Sectional-Sleeper-Sofa-Left-Facing-Brilliant-White-Set_2-1770001267.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1770609301/crusader/variants/50441102-PM4002/Hamilton-Chaise-Sectional-Sleeper-Sofa-Left-Facing-Performance-Brilliant-White-Angle-1770609299.jpg"
+    swatch_group: "upholstery_option"
+    collection_type: "stocked_fabric"
+    price_usd: 3199
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions: { width_cm: 296, depth_cm: 171, height_cm: 86 }
+    seat_capacity: 4
+    size_class: "extra_large"
+    affiliate_url: "https://www.castlery.com/sg/products/hamilton-chaise-sectional-sofa-bed?orientation=left_facing&material=performance_brilliant_white"
+    available: true

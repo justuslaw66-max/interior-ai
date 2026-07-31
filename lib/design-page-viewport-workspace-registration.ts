@@ -1,6 +1,9 @@
 import { buildDesignPageViewportRegionAdapter } from "@/lib/design-page-viewport-region-adapter";
 import { PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX } from "@/lib/design-page-editor-configuration";
 import type { DesignPagePresentationWorkspaceRegistration } from "@/lib/useDesignPagePresentationWorkspaceRegistration";
+import { resolveDesignLightingSettings } from "@/lib/design-lighting-settings";
+import { LIGHTING_PRESETS } from "@/lib/lightingPresets";
+import { resolveFixturePhotometrics } from "@/lib/resolve-lighting-scene";
 
 export type BuildDesignPageViewportWorkspaceRegistrationInput = {
   boundaries: {
@@ -18,7 +21,7 @@ export function buildDesignPageViewportWorkspaceRegistration({
   const { coreShell, documentSelection, planAuthoring, editorInteraction } =
     aiWorkspace.boundaries;
   const { base, viewportShell } = coreShell.boundaries;
-  const { documentRoom, sceneRoomRead, itemSelection } =
+  const { documentRoom, sceneRoomRead, itemSelection, itemDocument } =
     documentSelection.boundaries;
   const {
     selectionInspection,
@@ -38,6 +41,39 @@ export function buildDesignPageViewportWorkspaceRegistration({
   const roomRead = sceneRoomRead.derived.room;
   const quality = planWorkspace.state.quality;
   const inspector = planWorkspace.state.inspector;
+  const lightingSettings = resolveDesignLightingSettings(
+    coreShell.state.document.designSnapshot
+  );
+  const selectedFixturePhotometrics = itemSelection.state.selectedItem
+    ? resolveFixturePhotometrics(
+        itemSelection.state.selectedItem,
+        selectionInspection.derived.selectedProduct
+      )
+    : null;
+  const selectedFixtureLight =
+    coreShell.derived.access.isDesigner &&
+    itemSelection.state.selectedItem &&
+    selectedFixturePhotometrics
+      ? {
+          isOn:
+            itemSelection.state.selectedItem.fixtureLight?.isOn ??
+            LIGHTING_PRESETS[lightingSettings.preset].fixtureDefaultOn,
+          dimmer:
+            itemSelection.state.selectedItem.fixtureLight?.dimmer ?? 1,
+          cctKelvin:
+            itemSelection.state.selectedItem.fixtureLight?.cctKelvin ??
+            selectedFixturePhotometrics.cctKelvin,
+          beamAngleDeg:
+            itemSelection.state.selectedItem.fixtureLight?.beamAngleDeg ??
+            selectedFixturePhotometrics.beamAngleDeg,
+          beamAdjustable:
+            selectedFixturePhotometrics.emitterType === "spot",
+          luminousFluxLumens:
+            selectedFixturePhotometrics.luminousFluxLumens,
+          dimmable: selectedFixturePhotometrics.dimmable,
+          verification: selectedFixturePhotometrics.verification,
+        }
+      : null;
 
   const region = buildDesignPageViewportRegionAdapter({
     state: {
@@ -77,6 +113,7 @@ export function buildDesignPageViewportWorkspaceRegistration({
         canEditActiveRoomWallHeight: roomRead.canEditActiveRoomWallHeight,
         activeFloorRoomCount: floor.activeFloorRoomCount,
         designRoomCount: coreShell.state.document.designSnapshot.rooms.length,
+        selectedFixtureLight,
       },
       planSummary:
         base.state.editor.viewMode === "2d" && plan.housePlan2D.rooms.length > 0
@@ -192,6 +229,26 @@ export function buildDesignPageViewportWorkspaceRegistration({
           duplicate:
             placementSelection.actions.interaction.duplicateSelectedItem,
           delete: placementSelection.actions.interaction.deleteSelectedItem,
+          changeFixtureLight: (patch) => {
+            const selectedInstanceId =
+              itemSelection.state.selectedItem?.instanceId;
+            if (!selectedInstanceId) return;
+            itemDocument.actions.commitItems(
+              (items) =>
+                items.map((item) =>
+                  item.instanceId === selectedInstanceId
+                    ? {
+                        ...item,
+                        fixtureLight: {
+                          ...item.fixtureLight,
+                          ...patch,
+                        },
+                      }
+                    : item
+                ),
+              "Change fixture lighting"
+            );
+          },
         },
         room: {
           editFloor: surfaceWorkspace.actions.openFloorEditorForRoom,

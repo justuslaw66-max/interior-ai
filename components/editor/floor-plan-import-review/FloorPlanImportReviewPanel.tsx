@@ -26,7 +26,10 @@ type FloorPlanImportReviewPanelProps = {
   entranceOpeningId: string;
   setEntranceOpeningId: (value: string) => void;
   cannotFinishReason: string | null;
-  onSubmit: () => void;
+  onChooseFile?: () => void;
+  onRetryDetection?: () => void;
+  retryingDetection?: boolean;
+  onSubmit: (reviewIssues?: FloorPlanReviewIssue[]) => void;
   submitting: boolean;
   disabled?: boolean;
   dark?: boolean;
@@ -79,11 +82,9 @@ function issuePrerequisite(
   }
   if (
     issue.code === "assumed_heights_confirmation" &&
-    (Object.values(floor.defaults).some((property) => property.evidence === "assumed") ||
-      !floor.verticalEvidence ||
-      Object.values(floor.verticalEvidence).some(
-        (property) => property.evidence === "assumed"
-      ))
+    Object.values(floor.defaults).some(
+      (property) => property.evidence === "assumed"
+    )
   ) {
     return "Confirm or replace every assumed height above first.";
   }
@@ -128,6 +129,9 @@ export default function FloorPlanImportReviewPanel({
   entranceOpeningId,
   setEntranceOpeningId,
   cannotFinishReason,
+  onChooseFile,
+  onRetryDetection,
+  retryingDetection = false,
   onSubmit,
   submitting,
   disabled = false,
@@ -138,6 +142,7 @@ export default function FloorPlanImportReviewPanel({
   const [resolutionNotes, setResolutionNotes] = useState<Record<string, string>>(
     () => Object.fromEntries(issues.map((issue) => [issue.id, issue.resolution ?? ""]))
   );
+  const [manualToolsOpen, setManualToolsOpen] = useState(false);
   if (!floor) return null;
 
   const subtle = dark ? "text-neutral-400" : "text-neutral-600";
@@ -145,6 +150,18 @@ export default function FloorPlanImportReviewPanel({
     ? "designer-control rounded-md border px-2 py-1.5 text-xs"
     : "rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-xs";
   const unresolvedCritical = issues.filter(isFloorPlanMvpBlockingIssue);
+  const blockingPrerequisites = unresolvedCritical
+    .map((issue) => issuePrerequisite(issue, candidate, entranceOpeningId))
+    .filter((value): value is string => Boolean(value));
+  const needsRoomRecovery = !floor.rooms.length || !floor.walls.length;
+  const needsScaleRecovery = floor.calibrations.length === 0;
+  const needsDetectionRetry = unresolvedCritical.some(
+    (issue) => issue.code === "canonical_document_invalid"
+  );
+  const needsManualRecovery =
+    Boolean(cannotFinishReason) ||
+    blockingPrerequisites.length > 0 ||
+    needsDetectionRetry;
   const focusedIssueEntityIds =
     issues.find((issue) => issue.id === focusedIssueId)?.entityIds ?? [];
 
@@ -289,50 +306,179 @@ export default function FloorPlanImportReviewPanel({
     );
   };
 
+  const openManualTools = () => {
+    setManualToolsOpen(true);
+    window.requestAnimationFrame(() => {
+      document
+        .getElementById("floor-plan-manual-tools")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
+
+  const confirmDetectedPlan = () => {
+    if (needsManualRecovery) return;
+    const reviewedIssues = issues.map((issue) =>
+      isFloorPlanMvpBlockingIssue(issue)
+        ? {
+            ...issue,
+            resolved: true,
+            resolution:
+              "Consumer confirmed the AI-generated plan against the uploaded source.",
+          }
+        : issue
+    );
+    setIssues(reviewedIssues);
+    onSubmit(reviewedIssues);
+  };
+
   return (
     <>
-      <div className="text-xs font-semibold">Source accuracy review</div>
-      <p className={`mt-1 text-xs leading-4 ${subtle}`}>
-        Required items protect the measured wall geometry used by 2D and 3D.
-        Room names, entrance labels, and extra opening details are suggestions
-        that can be completed later.
-      </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div
+            className={
+              needsManualRecovery
+                ? "text-xs font-bold uppercase tracking-[0.14em] text-amber-700"
+                : "text-xs font-bold uppercase tracking-[0.14em] text-emerald-700"
+            }
+          >
+            AI floor-plan check
+          </div>
+          <h3 className="mt-1 text-xl font-semibold">
+            {needsRoomRecovery
+              ? "AI needs a clearer wall outline"
+              : needsScaleRecovery
+                ? "Confirm one real measurement"
+                : unresolvedCritical.length
+                  ? "Check the detected plan"
+                  : "Your plan is ready for a final check"}
+          </h3>
+          <p className={`mt-1 max-w-3xl text-sm leading-6 ${subtle}`}>
+            {needsRoomRecovery
+              ? "The drawing is visible, but the AI could not safely close the room walls. Nothing has been created or added to your current design."
+              : needsScaleRecovery
+                ? "The rooms are visible, but the AI needs one printed measurement to make the editable plan the correct real-world size."
+                : "AI detected the architectural plan. Check the preview once, then continue to create a separate editable 2D and 3D design."}
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2 text-xs">
+          <span
+            className={
+              dark
+                ? "rounded-full bg-white/10 px-3 py-1.5 font-semibold"
+                : "rounded-full bg-white px-3 py-1.5 font-semibold text-neutral-700 shadow-sm"
+            }
+          >
+            {floor.rooms.length} room{floor.rooms.length === 1 ? "" : "s"}
+          </span>
+          <span
+            className={
+              dark
+                ? "rounded-full bg-white/10 px-3 py-1.5 font-semibold"
+                : "rounded-full bg-white px-3 py-1.5 font-semibold text-neutral-700 shadow-sm"
+            }
+          >
+            {floor.dimensions.length} measurement
+            {floor.dimensions.length === 1 ? "" : "s"}
+          </span>
+          <span
+            className={
+              dark
+                ? "rounded-full bg-white/10 px-3 py-1.5 font-semibold"
+                : "rounded-full bg-white px-3 py-1.5 font-semibold text-neutral-700 shadow-sm"
+            }
+          >
+            {floor.openings.length} opening
+            {floor.openings.length === 1 ? "" : "s"}
+          </span>
+        </div>
+      </div>
+      {needsManualRecovery ? (
+        <div
+          className={
+            dark
+              ? "mt-4 rounded-xl border border-amber-300/20 bg-amber-300/10 p-4"
+              : "mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4"
+          }
+          data-testid="floor-plan-import-simple-recovery"
+        >
+          <div className="text-sm font-semibold">
+            {needsRoomRecovery
+              ? "For the fastest result, upload the original plan"
+              : "One small correction is needed"}
+          </div>
+          <p className={`mt-1 text-xs leading-5 ${subtle}`}>
+            {needsRoomRecovery
+              ? "Use the original PDF or a clean image without browser controls, furniture labels, or another editor drawn over it. AI will retry automatically."
+              : blockingPrerequisites[0] ??
+                "Open the correction tools and adjust the highlighted part of the plan."}
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {onRetryDetection ? (
+              <button
+                type="button"
+                className={
+                  dark
+                    ? "designer-control-active rounded-lg border px-4 py-2 text-xs font-semibold"
+                    : "rounded-lg bg-neutral-900 px-4 py-2 text-xs font-semibold text-white hover:bg-neutral-700"
+                }
+                disabled={disabled || submitting || retryingDetection}
+                onClick={onRetryDetection}
+              >
+                {retryingDetection
+                  ? "Retrying improved detection…"
+                  : needsRoomRecovery
+                    ? "Retry with improved detection"
+                    : "Rerun AI detection"}
+              </button>
+            ) : null}
+            {onChooseFile ? (
+              <button
+                type="button"
+                className={
+                  dark
+                    ? "designer-control rounded-lg border px-4 py-2 text-xs font-semibold"
+                    : "rounded-lg border border-neutral-300 bg-white px-4 py-2 text-xs font-semibold hover:bg-neutral-50"
+                }
+                disabled={disabled || submitting}
+                onClick={onChooseFile}
+              >
+                Upload a clearer file
+              </button>
+            ) : null}
+            <button
+              type="button"
+              className={control}
+              disabled={disabled || submitting}
+              onClick={openManualTools}
+            >
+              Help AI finish this one
+            </button>
+          </div>
+        </div>
+      ) : null}
       <FloorPlanVisualReviewTools
         key={job.id}
         document={candidate}
         job={job}
         focusedIssueEntityIds={focusedIssueEntityIds}
         onChange={(next) => setCandidate(next)}
+        consumerMode
+        manualToolsOpen={manualToolsOpen}
+        onManualToolsOpenChange={setManualToolsOpen}
         dark={dark}
         disabled={disabled}
       />
-      <FloorPlanOptionalConfigurationPanel
-        document={candidate}
-        dark={dark}
-        disabled={disabled}
-        compact
-      />
-      {cannotFinishReason ? (
-        <div
+      {floor.rooms.length > 0 ? (
+        <details
           className={
             dark
-              ? "mt-2 rounded-md bg-amber-400/10 p-2 text-xs text-amber-100"
-              : "mt-2 rounded-md bg-amber-100 p-2 text-xs text-amber-900"
+              ? "designer-recessed mt-4 rounded-xl p-3"
+              : "mt-4 rounded-xl border border-neutral-200 bg-white p-3"
           }
         >
-          {cannotFinishReason}
-          {/(dxf|ifc|dwg)/i.test(job.adapterId ?? "") ? (
-            <span className="mt-1 block text-[10px]">
-              Ask an administrator to map reviewed CAD topology, or keep the
-              underlay and use guided calibration and tracing.
-            </span>
-          ) : null}
-        </div>
-      ) : null}
-      {floor.rooms.length > 0 ? (
-        <details className="mt-3" open>
           <summary className="cursor-pointer text-xs font-semibold">
-            Room names
+            Edit room names (optional)
           </summary>
           <div className="mt-2 grid gap-2">
             {floor.rooms.map((room) => (
@@ -353,11 +499,21 @@ export default function FloorPlanImportReviewPanel({
           </div>
         </details>
       ) : null}
-      <details className="mt-3">
+      <details
+        className={
+          dark
+            ? "designer-recessed mt-3 rounded-xl p-3"
+            : "mt-3 rounded-xl border border-neutral-200 bg-white p-3"
+        }
+      >
         <summary className="cursor-pointer text-xs font-semibold">
-          Optional 3D assumptions (does not change 2D accuracy)
+          Optional plan details
         </summary>
-        <div className="mt-2 grid grid-cols-2 gap-2">
+        <p className={`mt-2 text-xs leading-5 ${subtle}`}>
+          These settings are not needed to generate the editable plan. The
+          editor starts with sensible 3D defaults that can be changed later.
+        </p>
+        <div className="mt-3 grid grid-cols-2 gap-2">
           {(
             [
               ["storeyHeight", "Storey height", floor.storeyHeightMm],
@@ -442,134 +598,175 @@ export default function FloorPlanImportReviewPanel({
           This records your confirmation only; it does not make the heights
           source-verified or site-measured.
         </p>
-      </details>
-      {floor.openings.length > 0 ? (
-        <label className={`mt-3 block text-[11px] ${subtle}`}>
-          Main entrance
-          <select
-            className={`${control} mt-1 w-full`}
-            value={entranceOpeningId}
-            onChange={(event) => setEntranceOpeningId(event.target.value)}
-          >
-            <option value="">Choose an opening…</option>
-            {floor.openings
-              .filter(
-                (opening) =>
-                  opening.kind === "door" || opening.kind === "gate"
-              )
-              .map((opening) => (
-                <option key={opening.id} value={opening.id}>
-                  {opening.id} · {opening.widthMm} mm · {opening.operation}
-                </option>
-              ))}
-          </select>
-        </label>
-      ) : null}
-      <div className="mt-3 grid gap-2">
-        {issues.map((issue) => {
-          const level = floorPlanMvpIssueLevel(issue);
-          const blocked = issuePrerequisite(
-            issue,
-            candidate,
-            entranceOpeningId
-          );
-          const resolution = resolutionNotes[issue.id] ?? "";
-          return (
-            <div
-              key={issue.id}
-              className={
-                dark
-                  ? "flex gap-2 rounded-md bg-white/5 p-2 text-xs"
-                  : "flex gap-2 rounded-md bg-white p-2 text-xs"
-              }
+        {floor.openings.length > 0 ? (
+          <label className={`mt-3 block text-[11px] ${subtle}`}>
+            Main entrance (optional)
+            <select
+              className={`${control} mt-1 w-full`}
+              value={entranceOpeningId}
+              onChange={(event) => setEntranceOpeningId(event.target.value)}
             >
-              <input
-                aria-label={`Resolve ${issue.message}`}
-                checked={issue.resolved}
-                className="mt-0.5"
-                disabled={
-                  disabled ||
-                  Boolean(blocked) ||
-                  (level === "blocking" &&
-                    !issue.resolved &&
-                    resolution.trim().length < 12)
-                }
-                type="checkbox"
-                onChange={(event) =>
-                  resolveIssue(issue.id, event.target.checked)
-                }
-              />
-              <div className="min-w-0 flex-1">
-                <span className={`mb-0.5 block text-[9px] font-semibold uppercase tracking-wide ${
-                  level === "blocking" ? "text-red-600" : subtle
-                }`}>
-                  {level === "blocking" ? "Required" : level === "resolved" ? "Reviewed" : "Suggestion"}
-                </span>
-                <span className="block font-semibold">{issue.message}</span>
-                {issue.code === "openings_confirmation" ? (
-                  <span className={`mt-1 block text-[10px] leading-4 ${subtle}`}>
-                    Use Step 3 above to select both ends of each visible opening
-                    on the plan. If none are shown, mark this suggestion reviewed.
-                  </span>
-                ) : null}
-                {blocked ? (
-                  <span className={`mt-0.5 block text-[10px] ${subtle}`}>
-                    {blocked}
-                  </span>
-                ) : null}
-                {level === "blocking" ? (
-                  <label className={`mt-1 block text-[10px] ${subtle}`}>
-                    What did you verify or correct?
-                    <textarea
-                      className={`${control} mt-1 min-h-14 w-full resize-y`}
-                      maxLength={2000}
-                      value={resolution}
-                      onChange={(event) =>
-                        setResolutionNotes((current) => ({
-                          ...current,
-                          [issue.id]: event.target.value,
-                        }))
-                      }
-                      placeholder="Example: Added the missing kitchen window and checked its span against the source."
-                    />
-                  </label>
-                ) : null}
-                {issue.entityIds?.length ? (
-                  <button
-                    type="button"
-                    className="mt-1 text-[10px] font-semibold text-blue-600"
-                    aria-pressed={focusedIssueId === issue.id}
-                    onClick={() =>
-                      setFocusedIssueId((current) =>
-                        current === issue.id ? null : issue.id
-                      )
-                    }
-                  >
-                    {focusedIssueId === issue.id
-                      ? "Clear source focus"
-                      : `Show ${issue.entityIds.length} affected item${
-                          issue.entityIds.length === 1 ? "" : "s"
-                        }`}
-                  </button>
-                ) : null}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-      <button
-        type="button"
-        className="mt-3 w-full rounded-md bg-emerald-600 px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
-        disabled={
-          disabled ||
-          submitting ||
-          Boolean(cannotFinishReason) ||
-          unresolvedCritical.length > 0
+              <option value="">Choose later</option>
+              {floor.openings
+                .filter(
+                  (opening) =>
+                    opening.kind === "door" || opening.kind === "gate"
+                )
+                .map((opening) => (
+                  <option key={opening.id} value={opening.id}>
+                    Door · {opening.widthMm} mm · {opening.operation}
+                  </option>
+                ))}
+            </select>
+          </label>
+        ) : null}
+        <FloorPlanOptionalConfigurationPanel
+          document={candidate}
+          dark={dark}
+          disabled={disabled}
+          compact
+        />
+      </details>
+      <details
+        className={
+          dark
+            ? "designer-recessed mt-3 rounded-xl p-3"
+            : "mt-3 rounded-xl border border-neutral-200 bg-white p-3"
         }
-        onClick={onSubmit}
+        data-testid="floor-plan-import-technical-details"
       >
-        {submitting ? "Checking…" : "Confirm and validate"}
-      </button>
+        <summary className="cursor-pointer text-xs font-semibold">
+          Technical validation details
+        </summary>
+        <p className={`mt-2 text-xs leading-5 ${subtle}`}>
+          These checks protect wall geometry and scale. Most consumers do not
+          need to edit them directly.
+        </p>
+        <div className="mt-3 grid gap-2">
+          {issues.map((issue) => {
+            const level = floorPlanMvpIssueLevel(issue);
+            const blocked = issuePrerequisite(
+              issue,
+              candidate,
+              entranceOpeningId
+            );
+            const resolution = resolutionNotes[issue.id] ?? "";
+            return (
+              <div
+                key={issue.id}
+                className={
+                  dark
+                    ? "flex gap-2 rounded-md bg-white/5 p-2 text-xs"
+                    : "flex gap-2 rounded-md bg-neutral-50 p-2 text-xs"
+                }
+              >
+                <input
+                  aria-label={`Resolve ${issue.message}`}
+                  checked={issue.resolved}
+                  className="mt-0.5"
+                  disabled={
+                    disabled ||
+                    Boolean(blocked) ||
+                    (level === "blocking" &&
+                      !issue.resolved &&
+                      resolution.trim().length < 12)
+                  }
+                  type="checkbox"
+                  onChange={(event) =>
+                    resolveIssue(issue.id, event.target.checked)
+                  }
+                />
+                <div className="min-w-0 flex-1">
+                  <span
+                    className={`mb-0.5 block text-[9px] font-semibold uppercase tracking-wide ${
+                      level === "blocking" ? "text-red-600" : subtle
+                    }`}
+                  >
+                    {level === "blocking"
+                      ? "Needs correction"
+                      : level === "resolved"
+                        ? "Checked"
+                        : "Optional"}
+                  </span>
+                  <span className="block font-semibold">{issue.message}</span>
+                  {issue.code === "openings_confirmation" ? (
+                    <span
+                      className={`mt-1 block text-[10px] leading-4 ${subtle}`}
+                    >
+                      Use Step 3 above to select both ends of each visible
+                      opening on the plan. If none are shown, mark this
+                      suggestion reviewed.
+                    </span>
+                  ) : null}
+                  {blocked ? (
+                    <span className={`mt-0.5 block text-[10px] ${subtle}`}>
+                      {blocked}
+                    </span>
+                  ) : null}
+                  {level === "blocking" ? (
+                    <label className={`mt-1 block text-[10px] ${subtle}`}>
+                      What did you verify or correct?
+                      <textarea
+                        className={`${control} mt-1 min-h-14 w-full resize-y`}
+                        maxLength={2000}
+                        value={resolution}
+                        onChange={(event) =>
+                          setResolutionNotes((current) => ({
+                            ...current,
+                            [issue.id]: event.target.value,
+                          }))
+                        }
+                        placeholder="Example: Checked the corrected wall against the source."
+                      />
+                    </label>
+                  ) : null}
+                  {issue.entityIds?.length ? (
+                    <button
+                      type="button"
+                      className="mt-1 text-[10px] font-semibold text-blue-600"
+                      aria-pressed={focusedIssueId === issue.id}
+                      onClick={() =>
+                        setFocusedIssueId((current) =>
+                          current === issue.id ? null : issue.id
+                        )
+                      }
+                    >
+                      {focusedIssueId === issue.id
+                        ? "Clear source focus"
+                        : `Show ${issue.entityIds.length} affected item${
+                            issue.entityIds.length === 1 ? "" : "s"
+                          }`}
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </details>
+      {!needsManualRecovery ? (
+        <div
+          className={
+            dark
+              ? "designer-recessed mt-4 rounded-xl p-4"
+              : "mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4"
+          }
+        >
+          <div className="text-sm font-semibold">Looks like your plan?</div>
+          <p className={`mt-1 text-xs leading-5 ${subtle}`}>
+            Continue to run the final geometry check. Your current design will
+            not be changed.
+          </p>
+          <button
+            type="button"
+            className="mt-3 w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={disabled || submitting}
+            onClick={confirmDetectedPlan}
+          >
+            {submitting ? "Checking the plan…" : "Yes, continue"}
+          </button>
+        </div>
+      ) : null}
     </>
   );
 }

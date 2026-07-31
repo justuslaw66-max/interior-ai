@@ -391,17 +391,20 @@ export function DesignSceneStructureLayer({
     const visibleRooms = focusRoomId
       ? state.wholeHome.rooms.filter((room) => room.id === focusRoomId)
       : state.wholeHome.rooms;
-    const visibleOpenings = mapPlanOpeningsToRoomRenderer(
+    // Focus mode is a visibility filter, not a topology filter. Adjacent-room
+    // openings can cut a focused room's shared wall even when their owning
+    // room is hidden, so the legacy topology builder must always receive the
+    // complete whole-home room/opening graph.
+    const topologyOpenings = mapPlanOpeningsToRoomRenderer(
       state.plan.scene.openings
-    ).filter(
-      (opening) => !focusRoomId || opening.roomId === focusRoomId
     );
 
     return (
       <>
       <HousePlanRenderer3D
         rooms={visibleRooms}
-        openings={visibleOpenings}
+        topologyRooms={state.wholeHome.rooms}
+        openings={topologyOpenings}
         activeRoomId={state.wholeHome.activeRoomId}
         focusRoomId={focusRoomId}
         activeFloorLevel={state.wholeHome.activeFloorLevel}

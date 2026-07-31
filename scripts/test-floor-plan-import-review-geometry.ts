@@ -20,7 +20,10 @@ import {
   nextFloorPlanReviewEntityId,
 } from "@/lib/floor-plan-review-structure-rectangle";
 import { loadPingYiCourtV2ReviewSeedBundle } from "@/lib/floor-plan-seeds/ping-yi-court-review-intake";
-import { validateReviewIssueResolution } from "@/lib/floor-plan-imports/review";
+import {
+  applyConsumerFloorPlanCorrection,
+  validateReviewIssueResolution,
+} from "@/lib/floor-plan-imports/review";
 
 const bundle = loadPingYiCourtV2ReviewSeedBundle();
 const seed = bundle.fixtures.find(
@@ -272,6 +275,13 @@ const emptyTraceRegistered = registerEmptyPlanScaleCalibration({
   printedMm: 4000,
 });
 assert.equal(emptyTraceRegistered.floors[0].calibrations.length, 1);
+assert.equal(
+  emptyTraceRegistered.floors[0].dimensions.length,
+  1,
+  "Manual two-point calibration must preserve the printed source dimension."
+);
+assert.equal(emptyTraceRegistered.floors[0].dimensions[0].measuredMm, 4000);
+assert.equal(emptyTraceRegistered.floors[0].dimensions[0].axis, "aligned");
 const firstTracedRoom = traceRoomFromSourcePolygon({
   document: emptyTraceRegistered,
   floorId: emptyTraceFloor.id,
@@ -354,6 +364,33 @@ assert.equal(
   false,
   "Opening endpoints far from every wall must be rejected"
 );
+
+const reviewCurrent = structuredClone(firstGuidedOpening);
+reviewCurrent.verification = { tier: "needs_review", criticalIssueIds: [] };
+const reviewNext = structuredClone(reviewCurrent);
+reviewNext.revisionId = "client-guided-revision";
+reviewNext.parentRevisionId = "client-guided-parent";
+const reviewSourceSha = reviewCurrent.sources.find(
+  (entry) => entry.id === sourceId
+)?.sha256;
+assert.ok(reviewSourceSha);
+const reviewed = applyConsumerFloorPlanCorrection({
+  current: reviewCurrent,
+  next: reviewNext,
+  currentIssues: [],
+  submittedIssues: [],
+  sourceId,
+  sourceSha256: reviewSourceSha,
+  userId: "reviewer",
+  note: "Reviewer confirmed the guided correction.",
+  at: "2026-07-18T00:01:00.000Z",
+});
+assert.equal(
+  reviewed.document.revisionId,
+  reviewCurrent.revisionId,
+  "The server must retain canonical revision identity after guided client edits."
+);
+assert.equal(reviewed.document.parentRevisionId, reviewCurrent.parentRevisionId);
 const secondTracedRoom = traceRoomFromSourcePolygon({
   document: firstTracedRoom,
   floorId: emptyTraceFloor.id,
@@ -461,7 +498,9 @@ const matching = applyPointScaleCalibration({
   printedMm: 5000,
 });
 assert.equal(
-  matching.floors[0].dimensions.at(-1)?.measuredMm,
+  matching.floors[0].dimensions.find(
+    (dimension) => dimension.id === "fixed-source-dimension"
+  )?.measuredMm,
   measuredMm,
   "Printed dimension values must never be rescaled"
 );
@@ -721,8 +760,8 @@ assert.match(topologyReviewUi, /FloorPlanStructureCorrectionFields/);
 assert.match(topologyReviewUi, /FloorPlanDimensionCorrectionFields/);
 const criticalIssue = {
   id: "critical-review-note",
-  code: "exterior_boundary_confirmation",
-  message: "Confirm the measured exterior boundary.",
+  code: "canonical_document_invalid",
+  message: "Repair the invalid canonical wall topology.",
   severity: "critical" as const,
   resolved: false,
 };

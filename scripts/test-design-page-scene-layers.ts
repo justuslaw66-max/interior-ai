@@ -20,6 +20,15 @@ const regionSource = readSource(
 const canvasSource = readSource(
   "components/editor/design-page/DesignSceneCanvas.tsx"
 );
+const lightingSystemSource = readSource(
+  "components/editor/design-page/lighting/LightingSystem.tsx"
+);
+const sunControllerSource = readSource(
+  "components/editor/design-page/lighting/SunController.tsx"
+);
+const shadowBudgetManagerSource = readSource(
+  "components/editor/design-page/lighting/ShadowBudgetManager.ts"
+);
 const adapterSource = readSource("lib/design-page-scene-region-adapter.ts");
 const sceneWorkspaceSource = readSource(
   "lib/useDesignPageSceneRegionWorkspaceRegistration.ts"
@@ -41,6 +50,18 @@ const itemsSource = readSource(
 );
 const furnitureSource = readSource("components/scene/FurnitureItem.tsx");
 const scaledModelSource = readSource("components/scene/GLBScaledModel.tsx");
+const normalizeGLBSceneSource = readSource(
+  "components/scene/glb-scaled-model/normalizeGLBScene.ts"
+);
+const selectionOutlineSource = readSource(
+  "components/scene/furniture/FurnitureSelectionOutline.tsx"
+);
+const localRenderBoundsSource = readSource(
+  "components/scene/glb-scaled-model/localRenderBounds.ts"
+);
+const modelDiagnosticsSource = readSource(
+  "components/scene/glb-scaled-model/modelDiagnostics.ts"
+);
 const cameraNavigationSource = readSource(
   "lib/useDesignPageCameraNavigation.ts"
 );
@@ -611,8 +632,8 @@ assert.match(
 );
 assert.match(
   structureSource,
-  /const visibleRooms = focusRoomId[\s\S]*state\.wholeHome\.rooms\.filter[\s\S]*const visibleOpenings =[\s\S]*opening\.roomId === focusRoomId[\s\S]*focusRoomId=\{focusRoomId\}/,
-  "Focused 3D structure rendering should omit inactive rooms and openings."
+  /const visibleRooms = focusRoomId[\s\S]*state\.wholeHome\.rooms\.filter\(\(room\) => room\.id === focusRoomId\)[\s\S]*const topologyOpenings = mapPlanOpeningsToRoomRenderer\([\s\S]*state\.plan\.scene\.openings[\s\S]*rooms=\{visibleRooms\}[\s\S]*topologyRooms=\{state\.wholeHome\.rooms\}[\s\S]*openings=\{topologyOpenings\}[\s\S]*focusRoomId=\{focusRoomId\}/,
+  "Focused 3D structure rendering should hide inactive rooms while retaining the complete room and opening graph for shared-wall topology."
 );
 assert.match(
   itemsSource,
@@ -630,8 +651,8 @@ assert.match(
   "Focused rooms should receive a dedicated 3D camera fit."
 );
 assert.match(
-  canvasSource,
-  /receiveShadow=\{shadowsEnabled\}[\s\S]*const effectiveShadowsEnabled =[\s\S]*viewMode === "3d" &&[\s\S]*state\.shadowsEnabled &&[\s\S]*!state\.liteSceneEnabled[\s\S]*data-shadow-maps-enabled=[\s\S]*shadows=\{effectiveShadowsEnabled \? QUALITY_SHADOW_FILTER : false\}[\s\S]*castShadow=\{effectiveShadowsEnabled\}/,
+  [canvasSource, lightingSystemSource, sunControllerSource].join("\n"),
+  /receiveShadow=\{shadowsEnabled\}[\s\S]*const effectiveShadowsEnabled =[\s\S]*viewMode === "3d" && lighting\.shadows\.enabled[\s\S]*data-shadow-maps-enabled=[\s\S]*shadows=\{effectiveShadowsEnabled \? QUALITY_SHADOW_FILTER : false\}[\s\S]*<LightingSystem[\s\S]*<SunController[\s\S]*castShadow=\{lighting\.sun\.castShadow && lighting\.shadows\.enabled\}/,
   "Quality-mode 3D should provide user-controlled shadow maps, a matching key light, and a shadow-receiving workspace plane."
 );
 assert.match(
@@ -641,7 +662,7 @@ assert.match(
 );
 assert.match(
   canvasSource,
-  /WORKSPACE_GRID_MIN_SIZE_METERS = 160[\s\S]*<meshBasicMaterial[\s\S]*color="#f3f5f5"[\s\S]*toneMapped=\{false\}[\s\S]*<shadowMaterial[\s\S]*opacity=\{shadowsEnabled \? 0\.2 : 0\}[\s\S]*<Grid[\s\S]*args=\{\[size, size\]\}[\s\S]*fadeDistance=\{WORKSPACE_GRID_FADE_DISTANCE_METERS\}[\s\S]*workspaceGridSize/,
+  /WORKSPACE_GRID_MIN_SIZE_METERS = 160[\s\S]*<meshBasicMaterial[\s\S]*color="#f3f5f5"[\s\S]*toneMapped=\{false\}[\s\S]*<shadowMaterial[\s\S]*opacity=\{shadowsEnabled \? 0\.08 : 0\}[\s\S]*<Grid[\s\S]*args=\{\[size, size\]\}[\s\S]*fadeDistance=\{WORKSPACE_GRID_FADE_DISTANCE_METERS\}[\s\S]*workspaceGridSize/,
   "The 3D grid should cover a full light workspace, retain soft grounding shadows, and fade before its boundary."
 );
 assert.match(
@@ -655,34 +676,54 @@ assert.match(
   "The bottom-up workspace grid should sit just above the plan wall height so it reads as an overhead reference plane."
 );
 assert.match(
-  canvasSource,
-  /QUALITY_SHADOW_MAP_SIZE = 2048[\s\S]*shadowCameraHalfSpan[\s\S]*presentationBounds\.widthMeters[\s\S]*presentationBounds\.depthMeters[\s\S]*shadow-mapSize-width=\{QUALITY_SHADOW_MAP_SIZE\}[\s\S]*shadow-camera-left=\{-shadowCameraHalfSpan\}[\s\S]*shadow-camera-right=\{shadowCameraHalfSpan\}/,
+  [canvasSource, sunControllerSource].join("\n"),
+  /shadowCameraHalfSpan[\s\S]*presentationBounds\.widthMeters[\s\S]*presentationBounds\.depthMeters[\s\S]*shadow-mapSize-width=\{lighting\.shadows\.mapSize\}[\s\S]*shadow-camera-left=\{-shadowCameraHalfSpan\}[\s\S]*shadow-camera-right=\{shadowCameraHalfSpan\}/,
   "Quality-mode 3D shadows should use a high-resolution map fitted to the visible plan instead of a low-resolution fixed frustum."
 );
 assert.match(
-  canvasSource,
-  /QUALITY_SHADOW_FILTER = "percentage"[\s\S]*QUALITY_SHADOW_RADIUS = 3\.5[\s\S]*QUALITY_SHADOW_INTENSITY = 0\.58[\s\S]*data-shadow-filter=\{QUALITY_SHADOW_FILTER\}[\s\S]*shadow-radius=\{QUALITY_SHADOW_RADIUS\}[\s\S]*shadow-intensity=\{QUALITY_SHADOW_INTENSITY\}/,
+  [canvasSource, sunControllerSource].join("\n"),
+  /QUALITY_SHADOW_FILTER = "percentage"[\s\S]*data-shadow-filter=\{QUALITY_SHADOW_FILTER\}[\s\S]*shadow-radius=\{lighting\.shadows\.radius\}[\s\S]*shadow-intensity=\{0\.52\}/,
   "Quality-mode 3D should select the supported percentage-filtered shader and keep furniture shadows softly blended."
 );
 assert.match(
+  selectionOutlineSource,
+  /SELECTION_BOX_SIDE_PADDING_METERS = 0\.035[\s\S]*SELECTION_BOX_TOP_PADDING_METERS = 0\.035[\s\S]*SELECTION_BOX_BOTTOM_INSET_METERS = 0\.012[\s\S]*const centerX = localRenderBounds\.center\[0\][\s\S]*selectionBoxBounds = useMemo[\s\S]*position=\{selectionBoxBounds\.position\}[\s\S]*testId: "selected-furniture-outline"[\s\S]*boxGeometry args=\{selectionBoxBounds\.size\}[\s\S]*color="#79a9e8"[\s\S]*lineWidth=\{1\.75\}[\s\S]*renderOrder=\{25\}[\s\S]*depthTest=\{false\}[\s\S]*depthWrite=\{false\}/,
+  "Selected 3D furniture should use a memoized, always-visible full box derived from primitive model-local bounds."
+);
+assert.match(
+  [localRenderBoundsSource, scaledModelSource].join("\n"),
+  /GLB_LOCAL_RENDER_BOUNDS_EPSILON_METERS = 1e-6[\s\S]*areGLBLocalRenderBoundsEquivalent[\s\S]*observeGLBLocalRenderBounds[\s\S]*onLocalBoundsChange\?: \(bounds: GLBLocalRenderBounds\)[\s\S]*localBoundsTrackerRef[\s\S]*const detachedModel = normalizedModel\.clone\(true\)[\s\S]*new THREE\.Box3\(\)\.setFromObject\(detachedModel, true\)[\s\S]*const observation = observeGLBLocalRenderBounds[\s\S]*observation\.outcome !== "changed"[\s\S]*onLocalBoundsChangeRef\.current\?\.\(observation\.bounds\)/,
+  "GLB selection bounds should be measured in local space, semantically tracked, and published only after a material bounds change."
+);
+assert.doesNotMatch(
   furnitureSource,
-  /SELECTION_BOX_SIDE_PADDING_METERS = 0\.035[\s\S]*SELECTION_BOX_TOP_PADDING_METERS = 0\.035[\s\S]*SELECTION_BOX_BOTTOM_INSET_METERS = 0\.012[\s\S]*modelLocalRenderBounds[\s\S]*selectionBoxBounds[\s\S]*onLocalBoundsChange=\{setModelLocalRenderBounds\}[\s\S]*position=\{selectionBoxBounds\.position\}[\s\S]*testId: "selected-furniture-outline"[\s\S]*boxGeometry args=\{selectionBoxBounds\.size\}[\s\S]*color="#79a9e8"[\s\S]*lineWidth=\{1\.75\}[\s\S]*renderOrder=\{25\}[\s\S]*depthTest=\{false\}[\s\S]*depthWrite=\{false\}/,
-  "Selected 3D furniture should use a soft, always-visible full box derived from model-local rendered bounds."
+  /modelLocalRenderBounds|setModelLocalRenderBounds|onLocalBoundsChange=/,
+  "Furniture should not mirror model-derived bounds into React state."
 );
 assert.match(
-  scaledModelSource,
-  /export type GLBLocalRenderBounds[\s\S]*onLocalBoundsChange\?: \(bounds: GLBLocalRenderBounds\)[\s\S]*const detachedModel = normalizedModel\.clone\(true\)[\s\S]*new THREE\.Box3\(\)\.setFromObject\(detachedModel, true\)[\s\S]*onLocalBoundsChangeRef\.current\?\.\(localRenderBounds\)/,
-  "GLB selection bounds should be measured from a detached clone so world transforms cannot be reapplied as local geometry."
+  [furnitureSource, scaledModelSource].join("\n"),
+  /setReportedModelLoad\(\(current\) =>[\s\S]*current\.url === runtimeModelUrl && current\.state === nextState[\s\S]*diagnosticKey=\{instanceId\}[\s\S]*showSelectionOutline=\{Boolean\([\s\S]*selectionOutlineVisible[\s\S]*<FurnitureSelectionOutline localRenderBounds=\{localRenderBounds\}/,
+  "Model load synchronization should be idempotent while the model owns its precise selection outline."
 );
 assert.match(
-  scaledModelSource,
-  /mesh\.castShadow = true;[\s\S]*mesh\.receiveShadow = false;/,
-  "Loaded GLB furniture should cast grounding shadows without receiving topology-shaped self-shadow artifacts."
+  modelDiagnosticsSource,
+  /GLB_MATERIAL_BOUNDS_CHANGE_WARNING_THRESHOLD = 6[\s\S]*boundsMaterialChangeCount[\s\S]*boundsPublicationCount[\s\S]*excessiveBoundsWarningCount[\s\S]*selectionOutlineVisible/,
+  "Development diagnostics should expose excessive bounds churn, publications, and selection-outline visibility."
+);
+assert.match(
+  [scaledModelSource, normalizeGLBSceneSource].join("\n"),
+  /castShadow\?: boolean[\s\S]*castShadow = true[\s\S]*castShadow,[\s\S]*mesh\.castShadow = castShadow;[\s\S]*mesh\.receiveShadow = false;/,
+  "Loaded GLB furniture should consume the central cast-shadow decision without receiving topology-shaped self-shadow artifacts."
 );
 assert.match(
   furnitureSource,
-  /<mesh castShadow receiveShadow=\{false\} visible=\{!showModel\}>/,
-  "Fallback furniture geometry should follow the same cast-only shadow policy."
+  /resolveObjectShadowEligibility\([\s\S]*castShadow=\{shadowPolicy\.castShadow\}[\s\S]*receiveShadow=\{shadowPolicy\.receiveShadow\}/,
+  "GLB and fallback furniture should consume the same object-shadow policy."
+);
+assert.match(
+  shadowBudgetManagerSource,
+  /quality === "low" \|\| transparent[\s\S]*NON_SHADOW_CATEGORY_PATTERN[\s\S]*castShadow: true[\s\S]*receiveShadow: false/,
+  "The central policy should skip low-tier and transparent/decorative shadows while retaining cast-only furniture shadows."
 );
 
 console.log("Design-page scene layer ownership checks passed.");

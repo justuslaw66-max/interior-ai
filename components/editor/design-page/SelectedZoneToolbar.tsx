@@ -24,7 +24,7 @@ export function SelectedZoneToolbar({
     : "rounded-full border border-neutral-200 px-2 py-1 text-xs text-neutral-900";
 
   return (
-    <div className="absolute left-1/2 top-16 z-30 -translate-x-1/2">
+    <div className="absolute left-1/2 top-11 z-30 -translate-x-1/2">
       <div
         className={
           configuration.dark

@@ -11,6 +11,8 @@ import type { DesignSnapshot, RoomSnapshot, SavedView } from "@/lib/room-types";
 import { getActiveRoom, switchRoom } from "@/lib/room-types";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import { resolveDesignItemVisualProduct } from "@/lib/design-item-product-snapshot";
+import { ViewerLighting } from "@/components/editor/design-page/lighting";
+import { resolveDesignLightingSettings } from "@/lib/design-lighting-settings";
 
 type ShareCameraView = {
   id: string;
@@ -245,6 +247,10 @@ export default function ShareViewer({
     if (node) node.dataset.ready = "true";
   }, []);
   const activeRoom = useMemo(() => getActiveRoom(snapshot), [snapshot]);
+  const lightingSettings = useMemo(
+    () => resolveDesignLightingSettings(snapshot),
+    [snapshot]
+  );
   const rooms = snapshot.rooms || [];
   const savedViews = useMemo(
     () =>
@@ -302,20 +308,13 @@ export default function ShareViewer({
             shadows
             camera={{ position: DEFAULT_CAMERA_POSITION, fov: DEFAULT_CAMERA_FOV, near: 0.1, far: 100 }}
           >
-            <ambientLight intensity={0.5} color="#fff8ef" />
-            <directionalLight
-              position={[6, 8, 4]}
-              intensity={1.1}
-              color="#fff6e8"
-              castShadow
-              shadow-mapSize-width={2048}
-              shadow-mapSize-height={2048}
-              shadow-camera-near={1}
-              shadow-camera-far={25}
-              shadow-camera-left={-10}
-              shadow-camera-right={10}
-              shadow-camera-top={10}
-              shadow-camera-bottom={-10}
+            <ViewerLighting
+              settings={lightingSettings}
+              roomId={activeRoom.id}
+              roomWidth={activeRoom.geometry.width}
+              roomDepth={activeRoom.geometry.depth}
+              roomHeight={activeRoom.geometry.height}
+              items={items}
             />
 
             <Room 

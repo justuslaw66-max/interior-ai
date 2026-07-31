@@ -119,6 +119,17 @@ function polygonSignature(polygons: PlanarUnionPolygonMm[]) {
   return JSON.stringify(polygons);
 }
 
+function planarPolygonsContainPoint(
+  polygons: PlanarUnionPolygonMm[],
+  point: FloorPlanPointMmV2
+) {
+  return polygons.some(
+    (polygon) =>
+      isPointInPlanarRing(point, polygon.outer) &&
+      !(polygon.holes ?? []).some((hole) => isPointInPlanarRing(point, hole))
+  );
+}
+
 /**
  * Slice wall solids at every vertical transition, union their plan footprints,
  * and merge identical neighboring slices. Each visible height band is one
@@ -130,10 +141,24 @@ export function buildCanonicalWallUnionBands(
   options: { excludedWallIds?: ReadonlySet<string> } = {}
 ): CanonicalWallUnionBand[] {
   const excludedWallIds = options.excludedWallIds;
-  const hasCutawayWalls = Boolean(excludedWallIds?.size);
   const wallThicknessById = new Map(
     floor.walls.map((wall) => [wall.id, wall.thicknessMm])
   );
+  const wallLengthById = new Map(
+    floor.walls.map((wall) => [
+      wall.id,
+      wall.centerlineSegments.at(-1)?.endOffsetMm ?? 0,
+    ])
+  );
+  const excludedEndpointVertexIds = new Set(
+    floor.walls
+      .filter((wall) => excludedWallIds?.has(wall.id))
+      .flatMap((wall) => [
+        wall.path.startVertexId,
+        wall.path.endVertexId,
+      ])
+  );
+  const wallById = new Map(floor.walls.map((wall) => [wall.id, wall]));
   const solids = floor.walls
     .filter((wall) => !excludedWallIds?.has(wall.id))
     .flatMap((wall) => wall.solids);
@@ -144,33 +169,87 @@ export function buildCanonicalWallUnionBands(
     const bottomMm = boundaries[index];
     const topMm = boundaries[index + 1];
     if (topMm - bottomMm <= 0.001) continue;
-    const regions: PlanarRegionMm[] = solids
+    const regionsWithSamples = solids
       .filter(
         (solid) =>
           solid.bottomMm <= bottomMm + 0.001 &&
           solid.topMm >= topMm - 0.001
       )
       .map((solid) => {
-        // A cutaway removes the neighboring wall that normally completes a
-        // miter. Rebuild the surviving solid as a square-ended rectangle so
-        // its exposed section is capped cleanly instead of retaining a
-        // diagonal notch from the hidden wall.
-        const footprint = hasCutawayWalls
-          ? buildRectangularWallFootprint(
-              solid,
-              wallThicknessById.get(solid.wallId) ?? 1
-            )
-          : solid.footprint;
+        const wall = wallById.get(solid.wallId);
+        const wallLengthMm = wallLengthById.get(solid.wallId) ?? 0;
+        const touchesWallStart = solid.startOffsetMm <= 0.001;
+        const touchesWallEnd =
+          Math.abs(solid.endOffsetMm - wallLengthMm) <= 0.001;
+        const squareStart =
+          Boolean(wall) &&
+          touchesWallStart &&
+          excludedEndpointVertexIds.has(wall!.path.startVertexId);
+        const squareEnd =
+          Boolean(wall) &&
+          touchesWallEnd &&
+          excludedEndpointVertexIds.has(wall!.path.endVertexId);
+        let footprint = solid.footprint;
+        if (squareStart || squareEnd) {
+          // Only endpoints made physical by the removed exterior wall are
+          // squared. Rebuilding every wall as a rectangle whenever any cutaway
+          // exists destroys unrelated miters and creates visible corner steps.
+          const rectangular = buildRectangularWallFootprint(
+            solid,
+            wallThicknessById.get(solid.wallId) ?? 1
+          );
+          footprint = {
+            ...solid.footprint,
+            ...(squareStart
+              ? {
+                  startLeft: rectangular.startLeft,
+                  startRight: rectangular.startRight,
+                }
+              : {}),
+            ...(squareEnd
+              ? {
+                  endLeft: rectangular.endLeft,
+                  endRight: rectangular.endRight,
+                }
+              : {}),
+          };
+        }
         return {
-          outer: [
-            footprint.startLeft,
-            footprint.endLeft,
-            footprint.endRight,
-            footprint.startRight,
-          ],
+          region: {
+            outer: [
+              footprint.startLeft,
+              footprint.endLeft,
+              footprint.endRight,
+              footprint.startRight,
+            ],
+          } satisfies PlanarRegionMm,
+          centerlineSamples: [0.25, 0.5, 0.75].map((amount) => ({
+            xMm:
+              solid.start.xMm +
+              (solid.end.xMm - solid.start.xMm) * amount,
+            zMm:
+              solid.start.zMm +
+              (solid.end.zMm - solid.start.zMm) * amount,
+          })),
         };
       });
+    const regions = regionsWithSamples.map(({ region }) => region);
     const polygons = buildPlanarUnionPolygons(regions);
+    // The planar union is intentionally optimized for large connected wall
+    // graphs. Highly segmented imported façades can still form a rare
+    // degenerate cycle at an opening lintel after a neighboring cutaway wall
+    // is removed. Never let that cycle discard a source-proven wall solid:
+    // restore only the affected solid as a normalized standalone polygon.
+    for (const { region, centerlineSamples } of regionsWithSamples) {
+      if (
+        centerlineSamples.every((point) =>
+          planarPolygonsContainPoint(polygons, point)
+        )
+      ) {
+        continue;
+      }
+      polygons.push(...buildPlanarUnionPolygons([region]));
+    }
     if (!polygons.length) continue;
     const previous = bands.at(-1);
     if (

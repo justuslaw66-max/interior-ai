@@ -2,14 +2,12 @@
 
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
-import { Edges } from "@react-three/drei/core/Edges";
+import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { Line } from "@react-three/drei/core/Line";
 import { Html } from "@react-three/drei/web/Html";
 import { useCursor } from "@react-three/drei/web/useCursor";
 import { track } from "@/lib/analytics";
 import { CATALOG_ITEMS } from "@/lib/catalog";
-import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import {
   computeSnapCandidates,
   computeAABB,
@@ -20,119 +18,35 @@ import {
 } from "@/lib/snapGuides";
 import { generateMeasurements, type Measure } from "@/lib/measurements";
 import { resolveMaterialProps } from "@/lib/design-page-material-props";
-import { shouldApplyVariantColorTint } from "@/lib/catalog-variant-color";
 import {
   getRotatedFootprint,
   normalizeRotationDegrees,
   ROTATION_SNAP_STEP_DEGREES,
   ROTATION_SNAP_STEP_RADIANS,
 } from "@/lib/design-page-utils";
-import { type GLBCalibration, getModelCalibration } from "@/lib/design-page-calibration";
 import {
   type SnapNeighbor,
-  type ConfigurableNodeTransform,
-  type PlanMeasurementUnit,
-  type WallDescriptor,
 } from "@/lib/design-page-types";
 import { SnapGuides } from "@/components/SnapGuides";
 import { Measurements } from "@/components/Measurements";
-import {
-  GLBScaledModel,
-  type GLBLocalRenderBounds,
-} from "@/components/scene/GLBScaledModel";
+import { GLBScaledModel } from "@/components/scene/GLBScaledModel";
 import ItemRenderer2D from "@/components/editor/renderers/ItemRenderer2D";
 import { radiansToDeg } from "@/lib/editorScene";
-import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
 import {
   clampToRoom,
   isAabbWithinPadding,
   resolveAxisAlignedRoomItemBounds,
   resolvePointerRotationRadians,
 } from "@/lib/design-page-geometry";
-import type { DesignItem, RoomPlanPolygonPoint, RoomPlanShape } from "@/lib/room-types";
 import { getAdjustablePendantHeight } from "@/lib/pendant-light-adjustment";
 import { EDITOR_GEOMETRY_TOLERANCES } from "@/lib/editor-geometry-tolerances";
+import { resolveObjectShadowEligibility } from "@/components/editor/design-page/lighting";
+import type { FurnitureProps } from "./furniture/FurnitureProps";
+import { FurnitureSelectionOutline } from "./furniture/FurnitureSelectionOutline";
+import { resolveFurnitureModelAppearance } from "./furniture/resolveFurnitureModelAppearance";
 
-const normalizeModelCandidate = (value: string | null | undefined): string | null => {
-  const raw = String(value ?? "").trim();
-  if (!raw) return null;
-  if (/^https?:\/\//i.test(raw) || raw.startsWith("/")) return raw;
-  if (raw.startsWith("assets/")) return `/${raw}`;
-  return `/assets/models/${raw.replace(/^\/+/, "")}`;
-};
-
-const SELECTION_BOX_SIDE_PADDING_METERS = 0.035;
-const SELECTION_BOX_TOP_PADDING_METERS = 0.035;
-const SELECTION_BOX_BOTTOM_INSET_METERS = 0.012;
-
-type FurnitureProps = {
-  product: CatalogItemSchema;
-  planningBoundsMm?: { w: number; d: number; h: number };
-  nodeTransforms?: Record<string, ConfigurableNodeTransform>;
-  variantColor: string;
-  variantName?: string;
-  variantId: string;
-  variantRenderAssets?: CatalogItemSchema["variants"][number]["renderAssets"];
-  hangingHeightCm?: number;
-  initialPosition?: [number, number, number];
-  initialRotationY?: number;
-  roomWidth?: number;
-  roomDepth?: number;
-  roomOriginX?: number;
-  roomOriginZ?: number;
-  roomPlanShape?: RoomPlanShape;
-  roomPlanPolygon?: RoomPlanPolygonPoint[];
-  roomPlanHoles?: RoomPlanPolygonPoint[][];
-  wallThickness?: number;
-  wallContactInset?: number;
-  margin?: number;
-  snapDistance?: number;
-  enableSnap?: boolean;
-  allowCrossRoomDrag?: boolean;
-  onDraggingChange?: (dragging: boolean) => void;
-  walls?: WallDescriptor[];
-  instanceId: string;
-  isSelected?: boolean;
-  isPrimarySelected?: boolean;
-  onSelect?: (id: string, additive: boolean) => void;
-  onMove?: (id: string, pos: [number, number, number]) => boolean | void;
-  onDragPointerMove?: (event: ThreeEvent<PointerEvent>) => void;
-  onDuplicate?: (id: string) => void;
-  onDelete?: (id: string) => void;
-  onRotate?: (
-    id: string,
-    rotationY: number,
-    meta?: {
-      source?: "keyboard" | "handle" | "inspector" | "canvas";
-      snap?: boolean;
-    }
-  ) => boolean | void;
-  onDragEnd?: (id: string, pos: [number, number, number]) => void;
-  locked?: boolean;
-  interactive?: boolean;
-  showSelection?: boolean;
-  showLocks?: boolean;
-  onSnapPulse?: () => void;
-  onSnapSuccess?: () => void;
-  items?: DesignItem[];
-  materialPreset?: string;
-  materialOverrides?: DesignItem["materialOverrides"];
-  itemPlanningBoundsByInstanceId?: Record<string, { w: number; d: number; h: number }>;
-  showGuidesAndMeasurements?: boolean;
-  cartPreviewed?: boolean;
-  viewMode?: EditorViewMode;
-  planShowLabels?: boolean;
-  planShowDimensions?: boolean;
-  planMeasurementUnit?: PlanMeasurementUnit;
-  rotationSnapStepRadians?: number;
-  rotationSnapStepDegrees?: number;
-  rotationSnapEnabled?: boolean;
-  renderQuality?: "standard" | "lite";
-  renderReadyKey?: string;
-  onRenderReadyChange?: (key: string, ready: boolean) => void;
-  "data-testid"?: string;
-};
-
+export { CameraCapture } from "./furniture/CameraCapture";
+export type { FurnitureProps } from "./furniture/FurnitureProps";
 
 type SnapType = "none" | "wall-left" | "wall-right" | "wall-front" | "wall-back";
 
@@ -196,11 +110,30 @@ export function Furniture({
   const width = product.dimsMm.w / 1000;
   const depth = product.dimsMm.d / 1000;
   const height = product.dimsMm.h / 1000;
+  const shadowPolicy = resolveObjectShadowEligibility({
+    category: product.category,
+    quality: renderQuality === "lite" ? "low" : "medium",
+  });
   const planningWidth = (planningBoundsMm?.w ?? product.dimsMm.w) / 1000;
   const planningDepth = (planningBoundsMm?.d ?? product.dimsMm.d) / 1000;
   const pendantCableAdjustment = useMemo(
     () => getAdjustablePendantHeight(product, { hangingHeightCm }),
     [hangingHeightCm, product]
+  );
+  const {
+    modelUrl,
+    shouldTintVariantColor,
+    expectedModelUrl,
+    effectiveModelCalibration,
+  } = useMemo(
+    () =>
+      resolveFurnitureModelAppearance({
+        product,
+        variantId,
+        variantName,
+        variantColor,
+      }),
+    [product, variantColor, variantId, variantName]
   );
   const [dragging, setDragging] = useState(false);
   const [position, setPosition] = useState<[number, number, number]>(
@@ -213,11 +146,37 @@ export function Furniture({
   const [hovered, setHovered] = useState(false);
   const [invalidPlacement, setInvalidPlacement] = useState(false);
   const [rotateDragging, setRotateDragging] = useState(false);
-  const [modelExists, setModelExists] = useState<boolean>(false);
-  const [runtimeModelUrl, setRuntimeModelUrl] = useState<string | null>(null);
-  const [modelLoadState, setModelLoadState] = useState<"idle" | "loading" | "ready" | "error">("idle");
-  const [modelLocalRenderBounds, setModelLocalRenderBounds] =
-    useState<GLBLocalRenderBounds | null>(null);
+  const [reportedModelLoad, setReportedModelLoad] = useState<{
+    url: string | null;
+    state: "loading" | "ready" | "error";
+  }>({
+    url: null,
+    state: "loading",
+  });
+  const runtimeModelUrl = expectedModelUrl ?? null;
+  const shouldLoadModel =
+    viewMode === "3d" &&
+    renderQuality !== "lite" &&
+    Boolean(modelUrl && runtimeModelUrl);
+  const modelLoadState =
+    reportedModelLoad.url === runtimeModelUrl
+      ? reportedModelLoad.state
+      : runtimeModelUrl
+        ? "loading"
+        : "idle";
+  const handleModelLoadStateChange = useCallback(
+    (nextState: "loading" | "ready" | "error") => {
+      setReportedModelLoad((current) =>
+        current.url === runtimeModelUrl && current.state === nextState
+          ? current
+          : { url: runtimeModelUrl, state: nextState }
+      );
+    },
+    [runtimeModelUrl]
+  );
+  const initialPositionX = initialPosition[0];
+  const initialPositionY = initialPosition[1];
+  const initialPositionZ = initialPosition[2];
   const groupRef = useRef<THREE.Group>(null);
   const shakeUntilRef = useRef(0);
   const placementStartRef = useRef<number | null>(null);
@@ -227,6 +186,10 @@ export function Furniture({
   const rotatePointerTargetRef = useRef<HTMLElement | null>(null);
   const rotatePointerIdRef = useRef<number | null>(null);
   const rotateSnapEnabledRef = useRef(true);
+  const lastReportedRenderReadyRef = useRef<{
+    key: string;
+    ready: boolean;
+  } | null>(null);
 
   const materialProps = useMemo(() => {
     return resolveMaterialProps({
@@ -240,14 +203,32 @@ export function Furniture({
   useEffect(() => {
     if (dragging) return;
     const frameId = window.requestAnimationFrame(() => {
-      setPosition(initialPosition);
-      setRotation(initialRotationY);
-      setSnapType("none");
+      setPosition((currentPosition) =>
+        currentPosition[0] === initialPositionX &&
+        currentPosition[1] === initialPositionY &&
+        currentPosition[2] === initialPositionZ
+          ? currentPosition
+          : [initialPositionX, initialPositionY, initialPositionZ]
+      );
+      setRotation((currentRotation) =>
+        currentRotation === initialRotationY
+          ? currentRotation
+          : initialRotationY
+      );
+      setSnapType((currentSnapType) =>
+        currentSnapType === "none" ? currentSnapType : "none"
+      );
       rotateStartRef.current = initialRotationY;
       rotateTargetRef.current = initialRotationY;
     });
     return () => window.cancelAnimationFrame(frameId);
-  }, [dragging, initialPosition, initialRotationY]);
+  }, [
+    dragging,
+    initialPositionX,
+    initialPositionY,
+    initialPositionZ,
+    initialRotationY,
+  ]);
 
   useEffect(() => {
     rotateTargetRef.current = rotation;
@@ -826,486 +807,6 @@ export function Furniture({
     viewMode === "2d" && rotateDragging
       ? `${normalizeRotationDegrees(radiansToDeg(rotation))}°`
       : null;
-  const activeVariant = product?.variants.find((variant) => variant.id === variantId);
-  const modelUrl = activeVariant?.modelUrl ?? (product?.assets?.modelUrl as string | undefined);
-  const shouldTintVariantColor = useMemo(
-    () => shouldApplyVariantColorTint(product, activeVariant),
-    [product, activeVariant],
-  );
-  const modelCalibration = getModelCalibration(product);
-  const variantMarker = `${String(variantName ?? "")} ${String(variantId ?? "")}`.toLowerCase();
-  const variantColorKey = String(variantColor ?? "").trim().toLowerCase();
-  const isKelseyTableVariant = product.id.startsWith("dining-real-castlery-kelsey-marble-");
-  const variantHex = variantColorKey.match(/^#([0-9a-f]{6})$/i)?.[1] ?? null;
-  const variantLuma = useMemo(() => {
-    if (!variantHex) return null;
-    const r = parseInt(variantHex.slice(0, 2), 16) / 255;
-    const g = parseInt(variantHex.slice(2, 4), 16) / 255;
-    const b = parseInt(variantHex.slice(4, 6), 16) / 255;
-    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  }, [variantHex]);
-  const normalizedVariantMarker = variantMarker.replace(/[_-]+/g, " ");
-  // variantMarker includes variantId (e.g. "cocoa_leather") so check both name and marker.
-  const isLeatherVariant = /\bleather\b/i.test(String(variantName ?? "")) || /\bleather\b/i.test(normalizedVariantMarker);
-  const isMadisonProduct =
-    product.id.startsWith("sofa-real-castlery-madison-") ||
-    product.id.startsWith("armchair-real-castlery-madison-");
-  const isMadisonFabricVariant = isMadisonProduct && !isLeatherVariant;
-  const isMadisonBisqueFabricVariant =
-    isMadisonFabricVariant && /\bbisque\b/i.test(normalizedVariantMarker);
-  const isMadisonStoneFabricVariant =
-    isMadisonFabricVariant && /\bstone\b/i.test(normalizedVariantMarker);
-  const isMadisonCamilleForestFabricVariant =
-    isMadisonFabricVariant &&
-    (/\bcamille\b.*\bforest\b/i.test(normalizedVariantMarker) || /\bforest\b/i.test(normalizedVariantMarker));
-  const isDawsonFabricVariant =
-    product.id.startsWith("sofa-real-castlery-dawson-") && !isLeatherVariant;
-  const isDawsonCreamyWhiteVariant =
-    product.id.startsWith("sofa-real-castlery-dawson-") &&
-    /(?:\bcreamy[\s_-]*white\b|\bperformance[\s_-]*creamy[\s_-]*white\b|\bpt4001\b)/i.test(variantMarker);
-  const isDawsonPerformanceTwillVariant =
-    isDawsonFabricVariant &&
-    !isDawsonCreamyWhiteVariant &&
-    /(?:\bperformance[\s_-]*twill\b|\bperformance_twill_\w+\b|\bpt400[2-5]\b)/i.test(variantMarker);
-  const isDawsonPeytonVariant =
-    isDawsonFabricVariant &&
-    /(?:\bpeyton\b|\bpy400[1-4]\b|\bpeyton_[a-z_]+\b)/i.test(variantMarker);
-  const isDawsonGenovaVariant =
-    isDawsonFabricVariant &&
-    /(?:\bgenova\b|\bperformance_linen_weave\b|\bperformance[\s_-]*linen[\s_-]*weave\b|\bpg400[2-4]\b)/i.test(variantMarker);
-  const isDawsonBoucleVariant =
-    isDawsonFabricVariant &&
-    /(?:\bboucle\b|\bin400[2-5]\b|\bperformance_boucle_cream\b|\bperformance_infinity_boucle_moss\b|\binfinity_boucle_[a-z_]+\b)/i.test(variantMarker);
-  const isDawsonChenilleVariant =
-    isDawsonFabricVariant &&
-    /(?:\bwashed[\s_-]*chenille\b|\bgreta\b|\bgr400[1-4]\b|\bwashed_chenille_[a-z_]+\b|\bgreta_[a-z_]+\b)/i.test(variantMarker);
-  const isDawsonStockedLinenVariant =
-    isDawsonFabricVariant &&
-    /(?:\bbeach[\s_-]*linen\b|\bnavagio\b|\bseagull\b|\bng400[12]\b|\bbeach_linen\b|\bnavagio_seagull\b)/i.test(variantMarker);
-  const isJaronProduct =
-    product.id.startsWith("sofa-real-castlery-jaron-") ||
-    product.id.startsWith("armchair-real-castlery-jaron-");
-  const isPerformanceDuneFabricVariant =
-    (isJaronProduct && /(?:\bperformance[\s_-]*dune\b|\bdune\b)/.test(variantMarker)) ||
-    (/performance\s*dune/i.test(String(variantName ?? "")) &&
-      /\bfabric\b/i.test(String(variantName ?? "")));
-  const isIvoryLeatherVariant =
-    (isJaronProduct && /\bivory\b/.test(variantMarker)) ||
-    (isLeatherVariant && /\bivory\b/i.test(String(variantName ?? "")));
-  const isCocoaLeatherVariant =
-    (isJaronProduct && /\bcocoa\b/.test(variantMarker)) ||
-    (isLeatherVariant && /\bcocoa\b/i.test(String(variantName ?? "")));
-  const isGraphiteLeatherVariant =
-    isLeatherVariant && /\bgraphite\b/i.test(String(variantName ?? ""));
-  const isMadisonCaramelLeatherVariant =
-    isMadisonProduct &&
-    /\bcaramel\b/i.test(String(variantName ?? "")) &&
-    /\bleather\b/i.test(String(variantName ?? ""));
-  const kelseyHasWhiteToken = /white[\s_-]*wash/i.test(variantMarker);
-  const kelseyHasDarkWalnutToken = /dark[\s_-]*walnut/i.test(variantMarker);
-  const isKelseyWhiteWashVariant =
-    isKelseyTableVariant &&
-    (kelseyHasWhiteToken || variantColorKey === "#d8d0c2" || (!kelseyHasDarkWalnutToken && (variantLuma ?? 1) >= 0.72));
-  const isKelseyDarkWalnutVariant =
-    isKelseyTableVariant &&
-    (kelseyHasDarkWalnutToken || variantColorKey === "#7a4b2d" || (!kelseyHasWhiteToken && (variantLuma ?? 1) < 0.72));
-  const preferredModelUrl = modelUrl ?? null;
-  const expectedModelUrl = useMemo(
-    () =>
-      [preferredModelUrl, modelUrl]
-        .map((value) => normalizeModelCandidate(value))
-        .filter((value, index, arr): value is string => Boolean(value) && arr.indexOf(value) === index)[0] ?? null,
-    [modelUrl, preferredModelUrl]
-  );
-  const selectionBoxBounds = useMemo(() => {
-    const center = modelLocalRenderBounds?.center ?? [0, 0, 0];
-    const size = modelLocalRenderBounds?.size ?? [width, height, depth];
-    const minY = center[1] - size[1] / 2;
-    const maxY = center[1] + size[1] / 2;
-    const bottomY = minY + SELECTION_BOX_BOTTOM_INSET_METERS;
-    const topY = maxY + SELECTION_BOX_TOP_PADDING_METERS;
-
-    return {
-      position: [center[0], (bottomY + topY) / 2, center[2]] as [
-        number,
-        number,
-        number,
-      ],
-      size: [
-        size[0] + SELECTION_BOX_SIDE_PADDING_METERS * 2,
-        topY - bottomY,
-        size[2] + SELECTION_BOX_SIDE_PADDING_METERS * 2,
-      ] as [number, number, number],
-    };
-  }, [depth, height, modelLocalRenderBounds, width]);
-
-  const effectiveModelCalibration: GLBCalibration | undefined = (() => {
-    const modelUrlKey = String(product.assets?.modelUrl ?? "").toLowerCase();
-    const productIdKey = String(product.id ?? "").toLowerCase();
-    const variantKey = String(variantName ?? "").toLowerCase();
-    const isSloaneOrSawyerSideboard =
-      product.category === "sideboard" &&
-      (/(sloane|sawyer)[-_ ]sideboard/.test(productIdKey) ||
-        /(sloane|sawyer)[-_ ]sideboard/.test(modelUrlKey) ||
-        /(sloane|sawyer)/.test(productIdKey) ||
-        /(sloane|sawyer)/.test(modelUrlKey) ||
-        /(grey\s*oak|natural)/.test(variantKey));
-
-    // Sideboards can arrive through multiple catalog paths/IDs; enforce a stable
-    // lighter wood calibration here to avoid crushed dark tones from tint stacking.
-    if (isSloaneOrSawyerSideboard) {
-      return {
-        ...(modelCalibration ?? {}),
-        useVariantColor: false,
-        brightness: 1.43,
-        saturation: 0.94,
-        roughnessOverride: 0.82,
-        metalnessOverride: 0,
-        disableAoMap: false,
-        aoMapIntensity: 0.2,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.08,
-        disableVertexColors: true,
-      };
-    }
-
-    if (!modelCalibration) return modelCalibration;
-
-    if (isMadisonBisqueFabricVariant) {
-      // Madison Bisque fabric: light warm woven beige, matched to the Castlery SG swatch card.
-      return {
-        ...modelCalibration,
-        forceBaseColorHex: "#d8d0c2",
-        disableBaseColorMap: true,
-        brightness: 1.02,
-        saturation: 0.78,
-        roughnessOverride: 0.97,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.2,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.05,
-      };
-    }
-
-    if (isMadisonCamilleForestFabricVariant) {
-      // Madison Camille, Forest fabric: muted moss-green, matched to the Castlery SG swatch card.
-      return {
-        ...modelCalibration,
-        forceBaseColorHex: "#566448",
-        disableBaseColorMap: true,
-        brightness: 0.96,
-        saturation: 1.02,
-        roughnessOverride: 0.98,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.22,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.04,
-      };
-    }
-
-    if (isMadisonStoneFabricVariant) {
-      return {
-        ...modelCalibration,
-        forceBaseColorHex: "#9d9991",
-        disableBaseColorMap: true,
-        brightness: 0.98,
-        saturation: 0.72,
-        roughnessOverride: 0.98,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.22,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.04,
-      };
-    }
-
-    if (isDawsonCreamyWhiteVariant) {
-      // Dawson Creamy White should stay soft and warm relative to Sand, without the
-      // crisp, pebbled micro-relief that makes it read as artificial plaster.
-      return {
-        ...modelCalibration,
-        forceBaseColorHex: "#dfd7ca",
-        brightness: 0.95,
-        saturation: 0.88,
-        roughnessOverride: 0.9,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.18,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.04,
-        importedNormalScale: 0.012,
-      };
-    }
-
-    if (isDawsonPerformanceTwillVariant) {
-      return {
-        ...modelCalibration,
-        brightness: 0.97,
-        saturation: 0.94,
-        roughnessOverride: 0.9,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.18,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.05,
-        importedNormalScale: 0.014,
-      };
-    }
-
-    if (isDawsonPeytonVariant) {
-      return {
-        ...modelCalibration,
-        brightness: 0.96,
-        saturation: 0.94,
-        roughnessOverride: 0.93,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.14,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.03,
-        importedNormalScale: 0.014,
-      };
-    }
-
-    if (isDawsonGenovaVariant) {
-      return {
-        ...modelCalibration,
-        brightness: 0.98,
-        saturation: 0.94,
-        roughnessOverride: 0.92,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.16,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.04,
-        importedNormalScale: 0.016,
-      };
-    }
-
-    if (isDawsonBoucleVariant) {
-      return {
-        ...modelCalibration,
-        brightness: 0.97,
-        saturation: 0.95,
-        roughnessOverride: 0.95,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.12,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.025,
-        importedNormalScale: 0.02,
-      };
-    }
-
-    if (isDawsonChenilleVariant) {
-      return {
-        ...modelCalibration,
-        brightness: 0.97,
-        saturation: 0.95,
-        roughnessOverride: 0.91,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.16,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.04,
-        importedNormalScale: 0.015,
-      };
-    }
-
-    if (isDawsonStockedLinenVariant) {
-      return {
-        ...modelCalibration,
-        brightness: 0.98,
-        saturation: 0.94,
-        roughnessOverride: 0.92,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.16,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.04,
-        importedNormalScale: 0.018,
-      };
-    }
-
-
-    if (isMadisonCaramelLeatherVariant) {
-      // Keep base texture map for Madison caramel leather so non-upholstery parts
-      // (legs/frame details) retain separation instead of collapsing into one flat tint.
-      return {
-        ...modelCalibration,
-        forceBaseColorHex: "#956a43",
-        disableBaseColorMap: false,
-        brightness: 0.86,
-        saturation: 0.98,
-        roughnessOverride: 0.26,
-        metalnessOverride: 0.03,
-        aoMapIntensity: 0.36,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.5,
-        clearcoatOverride: 0.3,
-        clearcoatRoughnessOverride: 0.42,
-      };
-    }
-
-    if (isKelseyDarkWalnutVariant) {
-      // Kelsey ships as a single baked material, so tint the lower assembly by height.
-      return {
-        ...modelCalibration,
-        preserveWoodLegColorHex: "#7a4b2d",
-        lowerAssemblyTintHex: "#7a4b2d",
-        lowerAssemblyTintStrength: 0.95,
-        // Cover full legs and underframe while leaving the tabletop cap mostly unchanged.
-        lowerAssemblyFadeStart: 0.82,
-        lowerAssemblyFadeEnd: 0.94,
-      };
-    }
-
-    if (isKelseyWhiteWashVariant) {
-      return {
-        ...modelCalibration,
-        preserveWoodLegColorHex: "#d8d0c2",
-        lowerAssemblyTintHex: "#e1d6c8",
-        lowerAssemblyTintStrength: 0,
-        lowerAssemblyFadeStart: 0.82,
-        lowerAssemblyFadeEnd: 0.94,
-      };
-    }
-
-    if (isJaronProduct) {
-      if (isPerformanceDuneFabricVariant) {
-        // Tweed-like fabric target: matte, soft contrast, almost no glossy rolloff.
-        return {
-          ...modelCalibration,
-          forceBaseColorHex: "#efeae2",
-          disableBaseColorMap: true,
-          brightness: 1.08,
-          saturation: 0.68,
-          roughnessOverride: 0.98,
-          metalnessOverride: 0,
-          aoMapIntensity: 0.3,
-          emissiveBoost: 0,
-          specularIntensityOverride: 0.02,
-          clearcoatOverride: 0,
-          clearcoatRoughnessOverride: 1,
-        };
-      }
-
-      if (!isLeatherVariant && !isCocoaLeatherVariant && !isIvoryLeatherVariant) return modelCalibration;
-
-      if (isCocoaLeatherVariant) {
-        // Cocoa Marche leather: rich warm chocolate-brown saddle tone.
-        // Reference eyedrop mid-tone #805134 → albedo ~#a87050. Lift brightness
-        // and add a small emissive fill so the GLB's baked shadows don't collapse it.
-        return {
-          ...modelCalibration,
-          forceBaseColorHex: "#a87050",
-          disableBaseColorMap: true,
-          brightness: 1.06,
-          saturation: 1.04,
-          roughnessOverride: 0.7,
-          metalnessOverride: 0.02,
-          aoMapIntensity: 0.12,
-          emissiveBoost: 0.06,
-          specularIntensityOverride: 0.24,
-          clearcoatOverride: 0.08,
-          clearcoatRoughnessOverride: 0.72,
-        };
-      }
-
-      if (isIvoryLeatherVariant) {
-        // Ivory Marche leather: warm cream/parchment. Reference eyedrop mid-tone
-        // #b4afa6 → albedo ~#d0c8b4. Reduce brightness (was 1.2 → pure white) and
-        // add warm saturation so it reads as cream, not grey-white.
-        return {
-          ...modelCalibration,
-          forceBaseColorHex: "#cfc4ae",
-          disableBaseColorMap: true,
-          brightness: 0.9,
-          saturation: 1.06,
-          roughnessOverride: 0.8,
-          metalnessOverride: 0,
-          aoMapIntensity: 0.08,
-          emissiveBoost: 0.04,
-          specularIntensityOverride: 0.14,
-          clearcoatOverride: 0.04,
-          clearcoatRoughnessOverride: 0.84,
-        };
-      }
-
-      // Jaron default leather: aligns with cross-brand leather baseline.
-      return {
-        ...modelCalibration,
-        brightness: 0.96,
-        saturation: 1.08,
-        roughnessOverride: 0.38,
-        metalnessOverride: 0.04,
-        normalScale: 0.5,
-        aoMapIntensity: 0.26,
-        emissiveBoost: 0.03,
-        specularIntensityOverride: 0.48,
-        clearcoatOverride: 0.24,
-        clearcoatRoughnessOverride: 0.44,
-      };
-    }
-
-    if (!isLeatherVariant && !isCocoaLeatherVariant && !isIvoryLeatherVariant) return modelCalibration;
-
-    if (isGraphiteLeatherVariant) {
-      // Graphite leather should stay deep, but avoid crushed blacks on large cushions.
-      return {
-        ...modelCalibration,
-        brightness: 1.18,
-        saturation: 1.05,
-        roughnessOverride: 0.3,
-        metalnessOverride: 0.04,
-        normalScale: 0.5,
-        aoMapIntensity: 0.24,
-        emissiveBoost: 0.04,
-        specularIntensityOverride: 0.7,
-        clearcoatOverride: 0.34,
-        clearcoatRoughnessOverride: 0.48,
-      };
-    }
-
-    // Leather: semi-gloss with visible clearcoat sheen regardless of geometry.
-    // Low roughness + high clearcoat so broad cushion faces still catch env reflections.
-    // normalScale: 0.5 prevents inheriting fabric-level bump (e.g. Dawson base 4.2)
-    // which scatters specular and makes leather read as matte.
-    return {
-      ...modelCalibration,
-      brightness: 0.96,
-      saturation: 1.08,
-      roughnessOverride: 0.31,
-      metalnessOverride: 0.04,
-      normalScale: 0.5,
-      aoMapIntensity: 0.32,
-      emissiveBoost: 0.03,
-      specularIntensityOverride: 0.6,
-      clearcoatOverride: 0.3,
-      clearcoatRoughnessOverride: 0.44,
-    };
-  })();
-
-  useEffect(() => {
-    let cancelled = false;
-
-    if (!modelUrl || !expectedModelUrl) {
-      const frameId = window.requestAnimationFrame(() => {
-        setModelExists(false);
-        setRuntimeModelUrl(null);
-        setModelLoadState("idle");
-      });
-      return () => window.cancelAnimationFrame(frameId);
-    }
-
-    // Do not preflight with HEAD requests: some valid model hosts and dev servers
-    // reject HEAD while serving GET successfully, which hides models incorrectly.
-    void Promise.resolve().then(() => {
-      if (cancelled) return;
-      setRuntimeModelUrl(expectedModelUrl);
-      setModelExists(true);
-      setModelLoadState("loading");
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [expectedModelUrl, modelUrl]);
-
-  const shouldLoadModel =
-    viewMode === "3d" && renderQuality !== "lite" && Boolean(runtimeModelUrl) && modelExists;
   const showModel = shouldLoadModel && modelLoadState === "ready";
   const shouldWaitForModel =
     viewMode === "3d" && renderQuality !== "lite" && Boolean(expectedModelUrl);
@@ -1316,6 +817,17 @@ export function Furniture({
 
   useEffect(() => {
     if (!renderReadyKey) return;
+    const lastReported = lastReportedRenderReadyRef.current;
+    if (
+      lastReported?.key === renderReadyKey &&
+      lastReported.ready === renderReady
+    ) {
+      return;
+    }
+    lastReportedRenderReadyRef.current = {
+      key: renderReadyKey,
+      ready: renderReady,
+    };
     onRenderReadyChange?.(renderReadyKey, renderReady);
   }, [onRenderReadyChange, renderReady, renderReadyKey]);
 
@@ -1361,12 +873,12 @@ export function Furniture({
             variantName={variantName}
             variantRenderAssets={variantRenderAssets}
             pendantCableAdjustment={pendantCableAdjustment}
-            onLocalBoundsChange={setModelLocalRenderBounds}
-            onLoadStateChange={(state) => {
-              if (state === "loading") setModelLoadState("loading");
-              else if (state === "ready") setModelLoadState("ready");
-              else setModelLoadState("error");
-            }}
+            castShadow={shadowPolicy.castShadow}
+            diagnosticKey={instanceId}
+            showSelectionOutline={Boolean(
+              showModel && showSelection && isSelected
+            )}
+            onLoadStateChange={handleModelLoadStateChange}
           />
         </Suspense>
       ) : null}
@@ -1394,7 +906,11 @@ export function Furniture({
           onRotateHandlePointerUp={onRotateHandlePointerUp}
         />
       ) : (
-        <mesh castShadow receiveShadow={false} visible={!showModel}>
+        <mesh
+          castShadow={shadowPolicy.castShadow}
+          receiveShadow={shadowPolicy.receiveShadow}
+          visible={!showModel}
+        >
           <boxGeometry args={[width, height, depth]} />
           <meshStandardMaterial
             color={
@@ -1421,29 +937,13 @@ export function Furniture({
           />
         </mesh>
       )}
-      {viewMode === "3d" && showSelection && isSelected ? (
-        <mesh
-          raycast={() => null}
-          renderOrder={24}
-          position={selectionBoxBounds.position}
-          userData={{ testId: "selected-furniture-outline" }}
-        >
-          <boxGeometry args={selectionBoxBounds.size} />
-          <meshBasicMaterial
-            transparent
-            opacity={0}
-            depthWrite={false}
-            colorWrite={false}
-          />
-          <Edges
-            color="#79a9e8"
-            lineWidth={1.75}
-            renderOrder={25}
-            depthTest={false}
-            depthWrite={false}
-            threshold={12}
-          />
-        </mesh>
+      {viewMode === "3d" && showSelection && isSelected && !showModel ? (
+        <FurnitureSelectionOutline
+          localRenderBounds={{
+            center: [0, 0, 0],
+            size: [width, height, depth],
+          }}
+        />
       ) : null}
       {Math.abs(planningWidth - width) > EDITOR_GEOMETRY_TOLERANCES.dimensionMeters ||
       Math.abs(planningDepth - depth) > EDITOR_GEOMETRY_TOLERANCES.dimensionMeters ? (
@@ -1565,27 +1065,4 @@ export function Furniture({
       )}
     </group>
   );
-}
-
-export function CameraCapture({
-  cameraRef,
-  canvasRef,
-  rendererRef,
-  sceneRef,
-}: {
-  cameraRef: React.MutableRefObject<THREE.Camera | null>;
-  canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
-  rendererRef: React.MutableRefObject<THREE.WebGLRenderer | null>;
-  sceneRef: React.MutableRefObject<THREE.Scene | null>;
-}) {
-  const { camera, gl, scene } = useThree();
-
-  useFrame(() => {
-    cameraRef.current = camera as THREE.Camera;
-    rendererRef.current = gl as THREE.WebGLRenderer;
-    sceneRef.current = scene;
-    canvasRef.current = gl.domElement as HTMLCanvasElement;
-  });
-
-  return null;
 }

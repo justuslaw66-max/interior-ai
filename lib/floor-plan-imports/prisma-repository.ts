@@ -17,6 +17,7 @@ type JobRow = {
   userId: string;
   sourceAssetId: string;
   status: string;
+  statusChangedAt: Date | null;
   adapterId: string | null;
   extractionVersion: string | null;
   renderedPagesJson: unknown;
@@ -70,6 +71,7 @@ function mapJob(row: JobRow): FloorPlanImportJobRecord {
     userId: row.userId,
     sourceAssetId: row.sourceAssetId,
     status: row.status as FloorPlanImportStatus,
+    statusChangedAt: row.statusChangedAt,
     adapterId: row.adapterId,
     extractionVersion: row.extractionVersion,
     renderedPages: recordArray<FloorPlanRenderedPage>(row.renderedPagesJson),
@@ -104,6 +106,7 @@ function selectJobFields() {
     userId: true,
     sourceAssetId: true,
     status: true,
+    statusChangedAt: true,
     adapterId: true,
     extractionVersion: true,
     renderedPagesJson: true,
@@ -138,11 +141,13 @@ export class PrismaFloorPlanImportJobRepository implements FloorPlanImportJobRep
     sourceAssetId: string;
     privacy: import("./privacy").FloorPlanImportPrivacy;
   }) {
+    const now = new Date();
     const row = await asClient(this.client).floorPlanImportJob.create({
       data: {
         userId: input.userId,
         sourceAssetId: input.sourceAssetId,
         status: "received",
+        statusChangedAt: now,
         progress: FLOOR_PLAN_IMPORT_PROGRESS.received,
         trainingBenchmarkOptIn: input.privacy.trainingBenchmarkOptIn,
         trainingBenchmarkOptInAt: input.privacy.trainingBenchmarkOptInAt,
@@ -187,6 +192,7 @@ export class PrismaFloorPlanImportJobRepository implements FloorPlanImportJobRep
       },
       data: {
         status: to,
+        statusChangedAt: new Date(),
         ...(patch.adapterId !== undefined ? { adapterId: patch.adapterId } : {}),
         ...(patch.extractionVersion !== undefined
           ? { extractionVersion: patch.extractionVersion }

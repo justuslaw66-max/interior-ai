@@ -20,10 +20,7 @@ async function openFurnishPanel(page: Page): Promise<void> {
   const searchInput = getCatalogSearchInput(page);
   if (await searchInput.isVisible().catch(() => false)) return;
 
-  const visibleFurnishButton = page.locator('[data-testid="editor-workflow-furnish"]:visible').first();
-  if (await visibleFurnishButton.isVisible().catch(() => false)) {
-    await clickButtonWithDomFallback(visibleFurnishButton);
-  }
+  await selectEditorWorkspace(page, "editor-workflow-furnish");
 
   if (await searchInput.isVisible().catch(() => false)) return;
 
@@ -78,22 +75,28 @@ async function clickButtonWithDomFallback(locator: Locator): Promise<void> {
   });
 }
 
-export async function openShopPanel(page: Page): Promise<void> {
-  const visibleShopButton = page.locator('[data-testid="editor-workflow-shop"]:visible').first();
-  if (await visibleShopButton.isVisible().catch(() => false)) {
-    await clickButtonWithDomFallback(visibleShopButton);
-    return;
+export async function selectEditorWorkspace(
+  page: Page,
+  itemTestId: string
+): Promise<void> {
+  const item = page.getByTestId(itemTestId).first();
+  if (!(await item.isVisible().catch(() => false))) {
+    const trigger = page.getByTestId("editor-command-workspace");
+    await expect(trigger).toBeVisible({ timeout: 20_000 });
+    await clickButtonWithDomFallback(trigger);
   }
+  await expect(item).toBeVisible({ timeout: 10_000 });
+  await clickButtonWithDomFallback(item);
+}
 
+export async function openShopPanel(page: Page): Promise<void> {
   const visibleCartRailButton = page.locator('[data-testid="editor-rail-cart"]:visible').first();
   if (await visibleCartRailButton.isVisible().catch(() => false)) {
     await visibleCartRailButton.click();
     return;
   }
 
-  await page.getByTestId("editor-workflow-shop").first().evaluate((button) => {
-    (button as HTMLButtonElement).click();
-  });
+  await selectEditorWorkspace(page, "editor-workflow-shop");
 }
 
 function getCatalogSearchInput(page: Page): Locator {

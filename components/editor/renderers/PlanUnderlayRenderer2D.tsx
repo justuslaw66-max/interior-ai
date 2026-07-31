@@ -541,7 +541,10 @@ export default function PlanUnderlayRenderer2D({
   existingOpenings = [],
   onTraceOpeningPoint,
 }: PlanUnderlayRenderer2DProps) {
-  if (!underlay?.mimeType.startsWith("image/")) {
+  if (
+    !underlay?.mimeType.startsWith("image/") ||
+    underlay.visible === false
+  ) {
     return null;
   }
 

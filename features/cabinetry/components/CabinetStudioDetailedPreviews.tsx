@@ -131,27 +131,49 @@ export function CabinetDetailedPreviewPanel({
       data-front-axis="negative-z"
       data-render-color-space="srgb"
       data-tone-mapping="aces-filmic"
-      className="relative min-h-0 bg-[#e8ece7]"
+      className="relative min-h-0 bg-[#e8ece7] [&_[data-dimension-field=depth]]:!top-28"
     >
       <CabinetStudioPreviewInteractionController {...interaction} />
-      <div className="absolute left-1/2 top-4 z-30 flex -translate-x-1/2 items-center gap-2">
-        <CabinetPreviewViewSelector value={view} onChange={onViewChange} />
-        <button
-          type="button"
-          data-testid="cabinet-preview-clearance-toggle"
-          aria-pressed={showClearances}
-          className={`inline-flex items-center gap-1.5 rounded-lg border border-white/60 px-2.5 py-2 text-[11px] font-semibold shadow-sm backdrop-blur focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2 ${
-            showClearances
-              ? "bg-blue-600 text-white"
-              : "bg-white/90 text-neutral-700"
-          }`}
-          onClick={onToggleClearances}
+      <div className="absolute inset-x-4 top-4 z-30 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-2">
+        <div
+          data-testid="cabinet-preview-summary"
+          className="pointer-events-none min-w-0 max-w-full justify-self-start rounded-md bg-white/90 px-3 py-2 text-xs text-neutral-700 shadow-sm"
         >
-          {showClearances ? (
-            <Check aria-hidden="true" className="h-3 w-3" />
-          ) : null}
-          Clearances
-        </button>
+          <span className="block break-words">{dimensionsLabel}</span>
+          <span className="mt-1 block break-words font-semibold text-blue-700">
+            Selected: {selectionLabel}
+          </span>
+        </div>
+        <div
+          data-testid="cabinet-preview-controls"
+          className="flex items-center gap-2"
+        >
+          <CabinetPreviewViewSelector value={view} onChange={onViewChange} />
+          <button
+            type="button"
+            data-testid="cabinet-preview-clearance-toggle"
+            aria-pressed={showClearances}
+            className={`inline-flex items-center gap-1.5 rounded-lg border border-white/60 px-2.5 py-2 text-[11px] font-semibold shadow-sm backdrop-blur focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2 ${
+              showClearances
+                ? "bg-blue-600 text-white"
+                : "bg-white/90 text-neutral-700"
+            }`}
+            onClick={onToggleClearances}
+          >
+            {showClearances ? (
+              <Check aria-hidden="true" className="h-3 w-3" />
+            ) : null}
+            Clearances
+          </button>
+        </div>
+        <div
+          data-testid="cabinet-preview-status"
+          role="status"
+          aria-live="polite"
+          className="pointer-events-none justify-self-end rounded-md bg-white/90 px-3 py-2 text-xs text-neutral-700 shadow-sm"
+        >
+          {status === "regenerating" ? "Regenerating preview..." : "Preview ready"}
+        </div>
       </div>
       {activeModuleIssues.length ? (
         <button
@@ -164,20 +186,6 @@ export function CabinetDetailedPreviewPanel({
           {activeModuleIssues.length === 1 ? "issue" : "issues"}
         </button>
       ) : null}
-      <div className="pointer-events-none absolute left-4 top-4 rounded-md bg-white/90 px-3 py-2 text-xs text-neutral-700 shadow-sm">
-        <span className="block">{dimensionsLabel}</span>
-        <span className="mt-1 block font-semibold text-blue-700">
-          Selected: {selectionLabel}
-        </span>
-      </div>
-      <div
-        data-testid="cabinet-preview-status"
-        role="status"
-        aria-live="polite"
-        className="pointer-events-none absolute right-4 top-4 rounded-md bg-white/90 px-3 py-2 text-xs text-neutral-700 shadow-sm"
-      >
-        {status === "regenerating" ? "Regenerating preview..." : "Preview ready"}
-      </div>
     </main>
   );
 }

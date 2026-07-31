@@ -291,6 +291,15 @@ export function resolveConfiguredModelUrl(
   const variantStateModelUrl = resolveVariantStateAssetModelUrl(bestVariantEntry, code);
   if (variantStateModelUrl) return variantStateModelUrl;
 
+  const configurationEntry = resolveItemConfigurationEntry(item, ctx);
+  const configurationModelUrl = normalizeModelUrlValue(configurationEntry?.model_url);
+  if (configurationModelUrl) return configurationModelUrl;
+
+  const configurationAssetModelUrl = resolveAssetIdToModelUrl(
+    configurationEntry?.model_asset_id
+  );
+  if (configurationAssetModelUrl) return configurationAssetModelUrl;
+
   const assetMap = code ? catalog?.configurableMetadata?.configuration_model_assets?.[code] : null;
   if (assetMap) {
     const candidateAssetId =
@@ -303,12 +312,37 @@ export function resolveConfiguredModelUrl(
   }
 
   if (bestVariantEntry) {
-      const directUrl = normalizeModelUrlValue(bestVariantEntry.model_url);
-      if (directUrl) return directUrl;
+    const directUrl = normalizeModelUrlValue(bestVariantEntry.model_url);
+    if (directUrl) return directUrl;
 
-      const mapped = resolveAssetIdToModelUrl(bestVariantEntry.model_asset_id);
-      if (mapped) return mapped;
+    const mapped = resolveAssetIdToModelUrl(bestVariantEntry.model_asset_id);
+    if (mapped) return mapped;
   }
 
   return fallbackModelUrl;
+}
+
+export function applyConfiguredModelUrlToVariant(
+  variants: CatalogItemSchema["variants"],
+  activeVariantId: string,
+  configuredModelUrl: string | undefined
+): CatalogItemSchema["variants"] {
+  if (!configuredModelUrl) return variants;
+
+  let changed = false;
+  const configuredVariants = variants.map((variant) => {
+    if (
+      variant.id !== activeVariantId ||
+      variant.modelUrl === configuredModelUrl
+    ) {
+      return variant;
+    }
+    changed = true;
+    return {
+      ...variant,
+      modelUrl: configuredModelUrl,
+    };
+  });
+
+  return changed ? configuredVariants : variants;
 }

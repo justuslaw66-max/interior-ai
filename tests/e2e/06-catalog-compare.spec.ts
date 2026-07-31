@@ -9,6 +9,16 @@ async function openCatalog(page: Parameters<typeof waitForCatalogReady>[0]) {
   expect(await waitForCatalogReady(page)).toBe(true);
 }
 
+async function selectCatalogCategory(
+  page: Parameters<typeof waitForCatalogReady>[0],
+  mainGroup: "seating" | "tables",
+  category: "sofa" | "coffee_table" | "dining_table",
+) {
+  await page.getByTestId("catalog-category-trigger").click();
+  await page.getByTestId(`catalog-main-group-${mainGroup}`).click();
+  await page.getByTestId(`catalog-category-option-${category}`).click();
+}
+
 async function visibleCompareIds(page: Parameters<typeof waitForCatalogReady>[0], count: number) {
   const compareButtons = page.locator('[data-testid^="catalog-compare-toggle-"]');
   await expect(compareButtons.nth(count - 1)).toBeVisible({ timeout: 20000 });
@@ -54,6 +64,8 @@ test.describe("6. Catalog Compare", () => {
 
     await filtersButton.click();
     await expect(page.getByText("Structured Filters")).toBeVisible();
+    await expect(page.getByLabel("Curated only")).toHaveCount(0);
+    await expect(page.getByLabel("Wall-friendly")).toHaveCount(0);
     await page.getByLabel("Small-room friendly").check();
     await expect(page.getByLabel("Small-room friendly")).toBeChecked();
     await page.getByLabel("Small-room friendly").uncheck();
@@ -64,6 +76,115 @@ test.describe("6. Catalog Compare", () => {
     await previewButtons.first().click();
 
     await expect(page.getByText("Product details")).toBeVisible();
+  });
+
+  test("sofa capacity filters map 2, 3, and 4+ seat products", async ({ page }) => {
+    test.setTimeout(90_000);
+    await page.setViewportSize({ width: 1440, height: 768 });
+    await page.goto("/design");
+    await page.waitForLoadState("domcontentloaded");
+    await openCatalog(page);
+    await selectCatalogCategory(page, "seating", "sofa");
+
+    const filtersButton = page.getByRole("button", { name: "Filters" });
+    await filtersButton.click();
+
+    const filterDrawer = page.getByTestId("catalog-filter-drawer");
+    await expect(filterDrawer).toBeVisible();
+    await expect(filterDrawer.getByText("Seat capacity")).toBeVisible();
+    const drawerBounds = await filterDrawer.boundingBox();
+    expect(drawerBounds).not.toBeNull();
+    expect((drawerBounds?.y ?? 0) + (drawerBounds?.height ?? 0)).toBeLessThanOrEqual(768);
+
+    const twoSeater = filterDrawer.getByLabel("2 seater");
+    const threeSeater = filterDrawer.getByLabel("3 seater");
+    const fourPlusSeater = filterDrawer.getByLabel("4+ seater");
+    await expect(twoSeater).toBeEnabled({ timeout: 20_000 });
+    await expect(threeSeater).toBeEnabled();
+    await expect(fourPlusSeater).toBeEnabled();
+    await expect(twoSeater.locator("..")).toContainText(/\d+ options?/);
+
+    await twoSeater.check();
+    await expect(page.getByRole("button", { name: "Seats: 2 x" })).toBeVisible();
+    await expect(filtersButton).toContainText("1");
+    await expect(
+      page.getByTestId("catalog-preview-sofa-real-castlery-hamilton-2-seater")
+    ).toBeVisible({ timeout: 20_000 });
+
+    await threeSeater.check();
+    await expect(page.getByRole("button", { name: "Seats: 2, 3 x" })).toBeVisible();
+
+    await page.getByRole("button", { name: "Close" }).click();
+    await page.getByRole("button", { name: "Seats: 2, 3 x" }).click();
+    await filtersButton.click();
+    await expect(twoSeater).not.toBeChecked();
+    await expect(threeSeater).not.toBeChecked();
+
+    await fourPlusSeater.check();
+    await expect(page.getByRole("button", { name: "Seats: 4+ x" })).toBeVisible();
+    await page.getByRole("button", { name: "Close" }).click();
+
+    const searchInput = page.getByRole("textbox", { name: "Search catalog products" });
+    await searchInput.fill("Dawson Pit");
+    await expect(
+      page.getByTestId("catalog-preview-sofa-real-castlery-dawson-pit-sectional")
+    ).toBeVisible({ timeout: 20_000 });
+    await searchInput.fill("Dawson 3 Seater");
+    await expect(
+      page.getByTestId("catalog-preview-sofa-real-castlery-dawson-3s")
+    ).toHaveCount(0);
+
+    await page.getByRole("button", { name: "Seats: 4+ x" }).click();
+    await expect(
+      page.getByTestId("catalog-preview-sofa-real-castlery-dawson-3s")
+    ).toBeVisible({ timeout: 20_000 });
+
+    await searchInput.clear();
+    await filtersButton.click();
+    await twoSeater.check();
+    await page.getByRole("button", { name: "Close" }).click();
+    await selectCatalogCategory(page, "tables", "coffee_table");
+    await expect(page.getByRole("button", { name: "Seats: 2 x" })).toHaveCount(0);
+    await filtersButton.click();
+    await expect(page.getByText("Seat capacity")).toHaveCount(0);
+  });
+
+  test("catalog width filter uses an inclusive centimetre range", async ({ page }) => {
+    test.setTimeout(60_000);
+    await page.goto("/design");
+    await page.waitForLoadState("domcontentloaded");
+    await openCatalog(page);
+    await selectCatalogCategory(page, "tables", "dining_table");
+
+    const filtersButton = page.getByRole("button", { name: "Filters" });
+    await filtersButton.click();
+    const filterDrawer = page.getByTestId("catalog-filter-drawer");
+    const widthMin = filterDrawer.getByLabel("Width min (cm)");
+    const widthMax = filterDrawer.getByLabel("Width max (cm)");
+
+    await expect(widthMin).toBeVisible();
+    await expect(widthMax).toBeVisible();
+    await widthMin.fill("155");
+    await widthMax.fill("165");
+    await expect(widthMin).toHaveValue("155");
+    await expect(widthMax).toHaveValue("165");
+    await expect(
+      page.getByRole("button", { name: "Width: 155–165 cm x" })
+    ).toBeVisible();
+    await expect(filtersButton).toContainText("1");
+
+    await page.getByRole("button", { name: "Close" }).click();
+    await expect(
+      page.getByTestId("catalog-preview-dining-real-castlery-kelsey-marble-160")
+    ).toBeVisible({ timeout: 20_000 });
+    await expect(
+      page.getByTestId("catalog-preview-dining-real-castlery-forma-oval-150")
+    ).toHaveCount(0);
+
+    await page.getByRole("button", { name: "Width: 155–165 cm x" }).click();
+    await filtersButton.click();
+    await expect(widthMin).toHaveValue("");
+    await expect(widthMax).toHaveValue("");
   });
 
   test("product drawer receives, contains, and restores keyboard focus", async ({ page }) => {

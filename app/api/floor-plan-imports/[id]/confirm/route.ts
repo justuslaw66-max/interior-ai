@@ -11,6 +11,7 @@ import {
   parseReviewIssues,
 } from "@/lib/floor-plan-imports/validation";
 import { collectFloorPlanImportReadinessIssues } from "@/lib/floor-plan-imports/readiness";
+import { isFloorPlanMvpBlockingIssue } from "@/lib/floor-plan-imports/types";
 import { syncFloorPlanDesignReference } from "@/lib/floor-plan-design-reference";
 
 export const runtime = "nodejs";
@@ -48,10 +49,18 @@ export async function POST(
       candidateVersion: true,
       candidateJson: true,
       sourceManifestJson: true,
+      renderedPagesJson: true,
       reviewIssuesJson: true,
       appliedDesignId: true,
       revision: { select: { id: true } },
-      sourceAsset: { select: { id: true, sha256: true } },
+      sourceAsset: {
+        select: {
+          id: true,
+          sha256: true,
+          fileName: true,
+          mimeType: true,
+        },
+      },
     },
   });
   if (!job) return error("Floor-plan import not found", 404);
@@ -82,7 +91,7 @@ export async function POST(
           ? (job.sourceManifestJson as Record<string, unknown>)
           : null,
     });
-    if (readinessIssues.length) {
+    if (readinessIssues.some(isFloorPlanMvpBlockingIssue)) {
       return error(
         "The imported floor plan is not source-complete. Finish room, scale, and printed-dimension review before creating a design",
         409
@@ -98,6 +107,86 @@ export async function POST(
       title: title || "Imported floor plan",
       sourceJobId: id,
       sourceAssetSha256: job.sourceAsset.sha256,
+      orientationConfirmed: true,
+      underlay: (() => {
+        const floor = compiled.document.floors[0];
+        const calibration = floor?.calibrations[0];
+        const renderedPages = Array.isArray(job.renderedPagesJson)
+          ? (job.renderedPagesJson as Array<{
+              pageNumber?: unknown;
+              widthPx?: unknown;
+              heightPx?: unknown;
+              assetKey?: unknown;
+            }>)
+          : [];
+        const rendered = renderedPages.find(
+          (page) => page.pageNumber === calibration?.pageNumber
+        );
+        if (
+          !calibration ||
+          !rendered ||
+          typeof rendered.assetKey !== "string" ||
+          !Number.isFinite(rendered.widthPx) ||
+          !Number.isFinite(rendered.heightPx)
+        ) {
+          return null;
+        }
+        const [first, second] = calibration.controlPoints;
+        const sourceDistancePx =
+          first && second
+            ? Math.hypot(
+                second.sourcePx.x - first.sourcePx.x,
+                second.sourcePx.y - first.sourcePx.y
+              )
+            : 0;
+        const planDistanceMm =
+          first && second
+            ? Math.hypot(
+                second.planMm.xMm - first.planMm.xMm,
+                second.planMm.zMm - first.planMm.zMm
+              )
+            : 0;
+        if (sourceDistancePx <= 0 || planDistanceMm <= 0) return null;
+        const millimetresPerPixel = planDistanceMm / sourceDistancePx;
+        const widthPx = Number(rendered.widthPx);
+        const heightPx = Number(rendered.heightPx);
+        const widthMeters = (widthPx * millimetresPerPixel) / 1_000;
+        const depthMeters = (heightPx * millimetresPerPixel) / 1_000;
+        return {
+          id: `import-underlay-${id}`,
+          floorId: floor.id,
+          name: job.sourceAsset.fileName,
+          assetUrl: `/api/floor-plan-imports/${encodeURIComponent(
+            id
+          )}/assets/${encodeURIComponent(rendered.assetKey)}`,
+          mimeType: "image/png",
+          sourceMimeType: job.sourceAsset.mimeType,
+          sourceAssetSha256: job.sourceAsset.sha256,
+          sourceJobId: id,
+          renderedPage: calibration.pageNumber,
+          pageCount: renderedPages.length,
+          widthPx,
+          heightPx,
+          position: {
+            x: widthMeters / 2,
+            z: depthMeters / 2,
+          },
+          widthMeters,
+          depthMeters,
+          opacity: 0.45,
+          visible: false,
+          rotationDeg: 0,
+          locked: true,
+          calibration: {
+            pixelsPerMeter: 1_000 / millimetresPerPixel,
+            referenceLengthMeters: planDistanceMm / 1_000,
+            referencePointsPx: [
+              { x: first.sourcePx.x, y: first.sourcePx.y },
+              { x: second.sourcePx.x, y: second.sourcePx.y },
+            ],
+          },
+        };
+      })(),
     });
   } catch (cause) {
     const message = cause instanceof Error ? cause.message : "Invalid canonical floor plan";
@@ -158,6 +247,7 @@ export async function POST(
         },
         data: {
           status: "applied",
+          statusChangedAt: new Date(),
           appliedDesignId: created.id,
           confirmedAt: new Date(),
           progress: 100,

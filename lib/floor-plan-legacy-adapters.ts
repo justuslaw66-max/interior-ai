@@ -9,6 +9,7 @@ import type { FloorPlanAddressTransform } from "@/lib/floor-plan-imports/types";
 import {
   createRoom,
   type DesignSnapshot,
+  type PersistedFloorPlanUnderlay,
   type PersistedFloorPlanAddressBinding,
   type RoomSnapshot,
   type RoomSurfaceAssignments,
@@ -24,7 +25,9 @@ type CanonicalDesignAdapterOptions = {
   sourceAssetSha256?: string;
   addressTransform?: FloorPlanAddressTransform;
   addressBinding?: PersistedFloorPlanAddressBinding;
+  orientationConfirmed?: boolean;
   sourceRevisionGeometryHash?: string;
+  underlay?: PersistedFloorPlanUnderlay | null;
 };
 
 export type CanonicalDesignAdapterResult = {
@@ -605,7 +608,13 @@ export function canonicalFloorPlanToDesignSnapshot(
       sourceAssetSha256:
         options.sourceAssetSha256 ?? authoredDocument.sources[0]?.sha256,
       orientationConfirmed:
-        options.baseSnapshot?.floorPlan?.orientationConfirmed ?? false,
+        options.orientationConfirmed ??
+        options.baseSnapshot?.floorPlan?.orientationConfirmed ??
+        false,
+      underlay:
+        options.underlay === undefined
+          ? options.baseSnapshot?.floorPlan?.underlay
+          : options.underlay,
       openings,
       fixedElements,
     },

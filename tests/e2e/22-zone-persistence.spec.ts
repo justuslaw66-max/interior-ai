@@ -2,6 +2,7 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 
 import {
   openCatalogPreview,
+  selectEditorWorkspace,
   waitForCatalogReady,
 } from "./variant-test-utils";
 
@@ -47,9 +48,9 @@ async function chooseTemplateStart(page: Page) {
     return;
   }
 
-  const planTab = page.getByTestId("editor-workflow-plan");
-  if (await planTab.isVisible().catch(() => false)) {
-    await clickWithDomFallback(planTab);
+  const planTab = page.getByTestId("editor-workflow-plan").first();
+  if ((await planTab.getAttribute("data-active")) !== "true") {
+    await selectEditorWorkspace(page, "editor-workflow-plan");
   }
 
   const manualPlanChoice = page.getByTestId(

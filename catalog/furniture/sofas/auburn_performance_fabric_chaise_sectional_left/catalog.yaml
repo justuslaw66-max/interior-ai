@@ -1,11 +1,11 @@
 brand: "Castlery"
-status: "draft"
+status: "published"
 source_url: "https://www.castlery.com/sg/products/auburn-performance-boucle-chaise-sectional-sofa?orientation=left_facing&material=chalk_boucle"
 category: "sectional_sofa"
 
 product_family: "Auburn"
 product_name: "Auburn Performance Fabric Chaise Sectional Left"
-variant: "Left facing chalk boucle draft import"
+variant: "Chalk Bouclé"
 
 price_usd: 2767
 price_band: "premium"
@@ -27,6 +27,8 @@ color_family: "beige"
 tone: "neutral"
 style_cluster: "contemporary"
 
+upholstery_library_ref: "auburn"
+
 room_compatibility:
   - "living_room"
   - "family_room"
@@ -47,9 +49,7 @@ assets:
   thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1691053192/crusader/variants/AS-000382-CB4001/Auburn-Performance-Left-Chaise-Sectional-Sofa-Front_-1691053190.jpg"
 
 variants:
-  - variant: "Left facing chalk boucle draft import"
-    upholstery_code: "chalk_boucle"
-    upholstery_label: "Chalk Boucle"
+  - variant: "Selected upholstery"
     price_usd: 2767
     price_band: "premium"
     brand_tier: "premium_mid"
@@ -60,13 +60,28 @@ variants:
     color_family: "beige"
     tone: "neutral"
 
-publish_blockers:
-  - "confirm_exact_product_source_url"
-  - "confirm_price_and_variant_metadata"
-  - "confirm_catalog_dimensions_against_supplier_specs"
-  - "confirm_local_model_asset_availability"
-  - "complete_product_details"
+product_details:
+  material:
+    - { label: "Fabric composition", value: "100% polyester, spill-resistant bouclé fabric" }
+    - { label: "Frame", value: "Engineered wood with plywood" }
+    - { label: "Leg frame", value: "Plastic" }
+    - { label: "Filling", value: "Foam, fibre and pocket spring seat; foam and fibre back" }
+    - { label: "Cover type", value: "Fixed" }
+  dimensions:
+    - { label: "Seating depth", value: "62cm" }
+    - { label: "Seating height", value: "42.5cm" }
+    - { label: "Armrest height", value: "56cm" }
+    - { label: "Leg height", value: "3cm" }
+  delivery_and_warranty:
+    - { label: "Warranty", value: "Frame 10 years; Fabric 1 year; Foam 2 years" }
+    - { label: "Returns", value: "30-day returns" }
 
-notes:
-  - "Draft mapping for an approved imported ModelAsset so governance can track publication readiness."
-  - "Do not publish until product metadata, pricing, dimensions, and local model availability are confirmed."
+shipping_and_warranty:
+  free_delivery_threshold_sgd: 500
+  warranty: "Frame 10 years; Fabric 1 year; Foam 2 years"
+  return_policy: "30-day returns"
+
+authoring_notes:
+  source_checked: "Castlery Singapore product pages, 2026-07-30"
+  local_model_status: "Copied and verified at the declared public model URL"
+  note: "Published after source, price, dimensions, upholstery, and local model availability review."

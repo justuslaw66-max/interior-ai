@@ -17,6 +17,7 @@
 /playwright-report
 /test-results
 /catalog/furniture/_route_hardening/
+/test-fixtures/private-floor-plans/
 
 # next.js
 /.next/

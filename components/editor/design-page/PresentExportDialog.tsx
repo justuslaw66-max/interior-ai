@@ -706,6 +706,18 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
               onChange={actions.onLightingPresetChange}
               theme={showDesignerTheme ? "designer" : "default"}
             />
+            <p
+              data-testid="presentation-lighting-status"
+              className={
+                showDesignerTheme
+                  ? "mt-2 text-xs text-neutral-400"
+                  : "mt-2 text-xs text-gray-500"
+              }
+            >
+              The chosen scene is previewed with Presentation shadow and
+              effect quality while this panel is open and is used for image
+              and PDF captures.
+            </p>
           </div>
 
           {/* Client Handoff Section */}

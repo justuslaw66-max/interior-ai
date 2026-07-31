@@ -10,6 +10,7 @@ import type {
   DesignLightingSettings,
   LightingPreset,
 } from "@/lib/lightingPresets";
+import { LIGHTING_PRESETS } from "@/lib/lightingPresets";
 import type { DesignPageAiWorkspaceRegistration } from "@/lib/useDesignPageAiWorkspaceRegistration";
 import type { DesignPageCommerceOnboardingRegistration } from "@/lib/useDesignPageCommerceOnboardingRegistration";
 import type { useDesignPageWorkspaceDeferredPaywallRegistration } from "@/lib/useDesignPagePaywallRegistrationFacade";
@@ -19,6 +20,7 @@ import {
   type DesignPagePresentationQaFacade,
 } from "@/lib/useDesignPagePresentationQaFacade";
 import type { DesignPageSelectionWorkspaceRegistration } from "@/lib/useDesignPageSelectionWorkspaceRegistration";
+import { resolveFixturePhotometrics } from "@/lib/resolve-lighting-scene";
 
 type DeferredPaywallRegistration = ReturnType<
   typeof useDesignPageWorkspaceDeferredPaywallRegistration
@@ -67,6 +69,31 @@ export function useDesignPagePresentationWorkspaceRegistration({
   const lightingSettings = resolveDesignLightingSettings(
     coreShell.state.document.designSnapshot
   );
+  const placedFixtureEntries =
+    coreShell.state.document.designSnapshot.rooms.flatMap((room) =>
+      room.items
+        .map((item) => ({
+          item,
+          metadata: resolveFixturePhotometrics(item),
+        }))
+        .filter(
+          (
+            entry
+          ): entry is typeof entry & {
+            metadata: NonNullable<typeof entry.metadata>;
+          } => entry.metadata !== null
+        )
+    );
+  const activeFixtureCount =
+    lightingSettings.fixtureMasterEnabled &&
+    lightingSettings.fixtureMasterLevel > 0
+      ? placedFixtureEntries.filter(
+          ({ item }) =>
+            (item.fixtureLight?.isOn ??
+              LIGHTING_PRESETS[lightingSettings.preset].fixtureDefaultOn) &&
+            (item.fixtureLight?.dimmer ?? 1) > 0
+        ).length
+      : 0;
   const updateLightingSettings = useCallback(
     (
       patch: Partial<DesignLightingSettings>,
@@ -146,6 +173,13 @@ export function useDesignPagePresentationWorkspaceRegistration({
         simplePlanControls: viewportShell.state.plan.simplePlanControls,
         lightingPreset: lightingSettings.preset,
         lightingSettings,
+        lightingStatus: {
+          placedFixtureCount: placedFixtureEntries.length,
+          activeFixtureCount,
+          estimatedFixtureCount: placedFixtureEntries.filter(
+            ({ metadata }) => metadata.verification === "estimated"
+          ).length,
+        },
         sharingDesign: persistence.state.persistence.sharingDesign,
         exportStylePreset: viewportShell.state.plan.exportStylePreset,
         isExporting: presentationBackup.state.isExporting,
@@ -224,6 +258,7 @@ export function useDesignPagePresentationWorkspaceRegistration({
         firstRunActivation:
           commerceOnboarding.state.onboarding.firstRunActivationState,
         designPanelOpen: base.state.panels.designPanelOpen,
+        designPanelCollapsed: base.state.panels.designPanelCollapsed,
       },
       qa: {
         showLayoutDebugOverlay:
@@ -267,6 +302,8 @@ export function useDesignPagePresentationWorkspaceRegistration({
         setUpgradeReason: base.actions.paywall.setUpgradeReason,
         setUpgradeOpen: base.actions.dialogs.setShowUpgrade,
         setDesignPanelOpen: base.actions.panels.setDesignPanelOpen,
+        setDesignPanelCollapsed:
+          base.actions.panels.setDesignPanelCollapsed,
         setItemCartOpen: base.actions.panels.setItemCartOpen,
         setClientPreview: base.actions.access.setClientPreview,
         setUrlMode: coreShell.actions.paywall.setUrlMode,
@@ -376,6 +413,8 @@ export function useDesignPagePresentationWorkspaceRegistration({
       },
       lighting: {
         changeShadowsEnabled,
+        updateSettings: (patch: Partial<DesignLightingSettings>) =>
+          updateLightingSettings(patch, "Change lighting settings"),
       },
       betaStart: documentSelection.actions.betaStart,
       presentation: {

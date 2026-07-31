@@ -158,7 +158,43 @@ export function applyDesignItemTransformPatches(
     const patch = patchesById.get(item.instanceId);
     if (!patch) return item;
     appliedIds.add(item.instanceId);
-    return { ...item, ...patch.changes };
+    const transformed = { ...item, ...patch.changes };
+    if (item.assetType !== "parametric_cabinet" || !item.cabinetDefinition) {
+      return transformed;
+    }
+
+    const position = patch.changes.position ?? item.position;
+    const rotationY =
+      patch.changes.rotationY ??
+      item.rotationY ??
+      item.transform?.rotationY ??
+      item.transform?.rotation?.[1] ??
+      0;
+    const scale = item.transform?.scale ?? [1, 1, 1];
+    const transform = {
+      ...item.transform,
+      position,
+      rotationY,
+      rotation: [0, rotationY, 0] as [number, number, number],
+      scale,
+    };
+    const manifestTransform = item.millworkAssetManifest?.transform;
+
+    return {
+      ...transformed,
+      transform,
+      millworkAssetManifest: item.millworkAssetManifest
+        ? {
+            ...item.millworkAssetManifest,
+            transform: {
+              ...manifestTransform,
+              position,
+              rotation: [0, rotationY, 0] as [number, number, number],
+              scale: manifestTransform?.scale ?? scale,
+            },
+          }
+        : item.millworkAssetManifest,
+    };
   });
 
   for (const id of patchesById.keys()) {

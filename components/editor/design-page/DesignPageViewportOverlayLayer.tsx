@@ -152,7 +152,7 @@ export function DesignPageViewportOverlayLayer({
         <aside
           data-testid="plan-right-rail"
           aria-label="Plan information and controls"
-          className="pointer-events-none absolute bottom-24 right-1 top-16 z-30 hidden w-[268px] flex-col gap-2 overflow-y-auto overflow-x-hidden pr-1 lg:flex"
+          className="pointer-events-none absolute bottom-24 right-1 top-11 z-30 hidden w-[268px] flex-col gap-2 overflow-y-auto overflow-x-hidden pr-1 lg:flex"
           style={{ overscrollBehavior: "contain" }}
         >
           {state.planSummary ? (

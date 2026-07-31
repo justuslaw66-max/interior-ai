@@ -98,7 +98,6 @@ export function useDesignPageSceneRegionWorkspaceRegistration({
       },
       scene: {
         liteEnabled: sceneState.liteSceneEnabled,
-        shadowsEnabled: lightingSettings.shadowsEnabled,
         loadingVisible: sceneState.showSceneLoadingVeil,
         performanceMode: sceneState.scenePerformanceMode,
         renderQuality: sceneState.sceneRenderQuality,
@@ -124,7 +123,14 @@ export function useDesignPageSceneRegionWorkspaceRegistration({
         },
         cursor: planWorkspace.derived.planCanvasCursor,
         backgroundColor: planWorkspace.derived.sceneBackgroundColor,
-        lightConfig: planWorkspace.derived.lightConfig,
+        lightingSettings,
+        lightingItems: scene.sceneRoomItems,
+        lightingModeOverride:
+          viewportShell.state.editor.editorMode === "present"
+            ? "presentation"
+            : undefined,
+        activeRoomId: coreShell.state.document.designSnapshot.activeRoomId,
+        selectedItemIds: itemSelection.state.selectedIds,
         showGrid: base.state.editor.showGrid,
         gridPulse: camera.state.canvas.gridPulse,
       },

@@ -1840,6 +1840,23 @@ function mergeRoomSurfaceFinishes(
                   ])
                 )
               : undefined,
+          panels:
+            baseWalls?.panels || nextWalls?.panels
+              ? Object.fromEntries(
+                  Array.from(
+                    new Set([
+                      ...Object.keys(baseWalls?.panels ?? {}),
+                      ...Object.keys(nextWalls?.panels ?? {}),
+                    ])
+                  ).map((panelId) => [
+                    panelId,
+                    {
+                      ...baseWalls?.panels?.[panelId],
+                      ...nextWalls?.panels?.[panelId],
+                    },
+                  ])
+                )
+              : undefined,
         }
       : undefined;
 

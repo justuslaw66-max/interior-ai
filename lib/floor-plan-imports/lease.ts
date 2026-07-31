@@ -7,10 +7,16 @@ export const FLOOR_PLAN_PROCESSABLE_STATUSES = [
   "received",
   "rendered",
   "extracted",
+  "selecting_page",
   "scale_solved",
   "topology_built",
   "validating",
 ] as const satisfies readonly FloorPlanImportStatus[];
+
+const FLOOR_PLAN_BACKGROUND_PROCESSABLE_STATUSES =
+  FLOOR_PLAN_PROCESSABLE_STATUSES.filter(
+    (status) => status !== "selecting_page"
+  );
 
 const processableStatuses = new Set<FloorPlanImportStatus>(
   FLOOR_PLAN_PROCESSABLE_STATUSES
@@ -227,6 +233,7 @@ export class PrismaFloorPlanImportLeaseService {
           where: leaseCasWhere(row),
           data: {
             status: "failed",
+            statusChangedAt: now,
             progress: FLOOR_PLAN_IMPORT_PROGRESS.failed,
             leaseToken: null,
             leaseOwner: null,
@@ -302,7 +309,13 @@ export class PrismaFloorPlanImportLeaseService {
     );
     const candidates = await client.floorPlanImportJob.findMany({
       where: {
-        status: { in: [...FLOOR_PLAN_PROCESSABLE_STATUSES] },
+        OR: [
+          { status: { in: [...FLOOR_PLAN_BACKGROUND_PROCESSABLE_STATUSES] } },
+          {
+            status: "selecting_page",
+            nextAttemptAt: { not: null },
+          },
+        ],
         AND: [
           { OR: [{ nextAttemptAt: null }, { nextAttemptAt: { lte: now } }] },
           { OR: [{ leaseToken: null }, { leaseExpiresAt: { lte: now } }] },
@@ -418,6 +431,7 @@ export class PrismaFloorPlanImportLeaseService {
               }
             : {
                 status: "failed",
+                statusChangedAt: now,
                 progress: FLOOR_PLAN_IMPORT_PROGRESS.failed,
                 nextAttemptAt: null,
               }),
@@ -466,6 +480,7 @@ export class PrismaFloorPlanImportLeaseService {
             ...(exhausted
               ? {
                   status: "failed",
+                  statusChangedAt: now,
                   progress: FLOOR_PLAN_IMPORT_PROGRESS.failed,
                   nextAttemptAt: null,
                   lastErrorAt: now,

@@ -2,6 +2,7 @@ import { test, expect } from "./fixtures";
 import {
   addCatalogDrawerItemToRoom,
   getSelectedItemPanel,
+  selectEditorWorkspace,
 } from "./variant-test-utils";
 
 test.describe("152. Material Swatch Detail Preview", () => {
@@ -20,7 +21,7 @@ test.describe("152. Material Swatch Detail Preview", () => {
     await page.waitForLoadState("domcontentloaded");
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
 
-    await page.locator('[data-testid="editor-workflow-furnish"]:visible').first().click();
+    await selectEditorWorkspace(page, "editor-workflow-furnish");
     const catalogSearch = page.getByRole("textbox", { name: "Search catalog products" });
     await expect(catalogSearch).toBeVisible({ timeout: 20000 });
     await catalogSearch.fill("Owen 3 Seater");

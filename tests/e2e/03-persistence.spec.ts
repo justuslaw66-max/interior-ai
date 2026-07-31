@@ -8,6 +8,7 @@ import {
   createBetaSeedDesign,
   disconnectBetaPrismaClient,
 } from "./beta-seed";
+import { selectEditorWorkspace } from "./variant-test-utils";
 
 async function readStableFingerprint(page: Page): Promise<string> {
   const marker = page.getByTestId("qa-editor-snapshot-fingerprint");
@@ -93,20 +94,12 @@ async function loadSeedDesign(
 }
 
 async function openFurnishPanel(page: Page) {
-  const furnishButton = page
-    .locator('[data-testid="editor-workflow-furnish"]:visible')
-    .first();
-  await expect(furnishButton).toBeVisible();
-  await furnishButton.click();
+  await selectEditorWorkspace(page, "editor-workflow-furnish");
   await expect(page.getByTestId("furnish-room-target-select")).toBeVisible();
 }
 
 async function openPresentExport(page: Page) {
-  const exportButton = page
-    .locator('[data-testid="editor-workflow-export"]:visible')
-    .first();
-  await expect(exportButton).toBeVisible();
-  await exportButton.click();
+  await selectEditorWorkspace(page, "editor-workflow-export");
   const cameraViewName = page.getByTestId("camera-view-name-input");
   if (await cameraViewName.isVisible().catch(() => false)) return;
   await page.getByTestId("editor-command-overflow").click();

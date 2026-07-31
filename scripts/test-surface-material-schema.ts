@@ -26,7 +26,9 @@ import {
   DEFAULT_FLOOR_JOINT_SIZE_MM,
   DEFAULT_FLOOR_PATTERN_OFFSET,
   getWallFaceSurfaceSettings,
+  getWallPanelSurfaceSettings,
   normalizeFloorSurfaceSettings,
+  replaceAllWallSurfaceSettings,
 } from "../lib/surface-settings";
 import {
   NIPPON_WALL_PAINT_COLOUR_COUNT,
@@ -44,6 +46,7 @@ import {
 } from "../lib/generated/surface-material-runtime.generated";
 import type { RoomSnapshot } from "../lib/room-types";
 import { resolveSurfaceTextureRepeat } from "../lib/surface-material-texture-repeat";
+import { buildHousePlan2D } from "../lib/design-page-house-plan";
 import {
   getHerringboneBasisVectorsForTest,
   getHerringbonePlankSizeForTest,
@@ -940,6 +943,78 @@ assert.match(
   "surface BOM CSV rows must include floor pattern, rotation, and joint metadata"
 );
 
+const canonicalBomPanelId =
+  "wall-panel:v2:1:bom_panel_room:north:segment-start:opening-bom-door-start:interior";
+const roomWithCanonicalPanelFinish: RoomSnapshot = {
+  id: "bom_panel_room",
+  name: "Panel BOM room",
+  roomType: "living",
+  geometry: { width: 4, depth: 3, height: 2.5 },
+  planPosition: { x: 0, z: 0 },
+  surfaces: {
+    walls: {
+      default: {
+        materialId: "goodrich-geff-novaclick-gnv-002-silver-oak",
+      },
+      panels: {
+        [canonicalBomPanelId]: {
+          materialId: "goodrich-geff-novaclick-gnv-003-ash-oak",
+        },
+      },
+    },
+  },
+  items: [],
+  zones: [],
+  savedViews: [],
+};
+const canonicalPanelBomRows = buildRoomSurfaceMaterialBomRows(
+  [roomWithCanonicalPanelFinish],
+  [
+    {
+      id: "bom-door",
+      roomId: roomWithCanonicalPanelFinish.id,
+      wall: "north",
+      offsetMm: 0,
+      widthMm: 1000,
+      heightMm: 2100,
+      bottomMm: 0,
+      kind: "door",
+    },
+  ]
+);
+const canonicalPanelBomRow = canonicalPanelBomRows.find(
+  (row) => row.wallPanelId === canonicalBomPanelId
+);
+assert.ok(
+  canonicalPanelBomRow,
+  "A canonical panel override must create its own material BOM row."
+);
+assert.equal(
+  canonicalPanelBomRow.surfaceAreaSqm,
+  3.75,
+  "A canonical panel BOM row must use panel width × wall height."
+);
+const canonicalInheritedWallRow = canonicalPanelBomRows.find(
+  (row) => row.surface === "walls"
+);
+assert.ok(canonicalInheritedWallRow);
+assert.equal(
+  canonicalInheritedWallRow.surfaceAreaSqm,
+  28.75,
+  "The overridden panel area must be subtracted from the inherited wall material."
+);
+assert.equal(
+  canonicalPanelBomRows.reduce(
+    (sum, row) =>
+      row.surface === "walls" || row.surface === "selected_wall"
+        ? sum + row.surfaceAreaSqm
+        : sum,
+    0
+  ),
+  32.5,
+  "Wall BOM rows must cover the solid wall area exactly once after subtracting the doorway."
+);
+
 assert.equal(normalizeWallPaintColorHex("f5f1e8"), "#F5F1E8", "wall paint colors should normalize to uppercase hex");
 assert.equal(normalizeWallPaintColorHex("#xyz123"), null, "invalid wall paint colors should be rejected");
 assert.equal(getWallPaintDisplayName("#F5F1E8", "  "), "Soft Gallery White", "known paint swatches should resolve display labels");
@@ -987,12 +1062,79 @@ const roomWithPaintedWalls: RoomSnapshot = {
           paintName: "Deep Ink",
         },
       },
+      panels: {
+        "room_paint_test-north-part-1": {
+          materialId: null,
+          paintColorHex: "#8b725e",
+          paintName: "Centre Panel",
+        },
+      },
     },
   },
   items: [],
   zones: [],
   savedViews: [],
 };
+const mergedPanelAliasPlan = buildHousePlan2D(
+  [
+    {
+      ...roomWithPaintedWalls,
+      surfaces: {
+        walls: {
+          default: { paintName: "Current default" },
+          faces: {
+            north: { paintName: "Current face" },
+          },
+          panels: {
+            "wall-panel:v2:1:room_paint_test:north:a:b:interior": {
+              paintName: "Canonical panel",
+            },
+          },
+        },
+      },
+      surfaceFinishes: {
+        walls: {
+          default: { paintColorHex: "#AABBCC" },
+          faces: {
+            north: { paintColorHex: "#112233" },
+          },
+          panels: {
+            "room_paint_test-north-part-1": {
+              paintColorHex: "#8B725E",
+              paintName: "Legacy panel",
+            },
+          },
+        },
+      },
+    },
+  ],
+  3,
+  3.5
+);
+assert.deepEqual(
+  mergedPanelAliasPlan.rooms[0]?.surfaces?.walls?.default,
+  {
+    paintColorHex: "#AABBCC",
+    paintName: "Current default",
+  },
+  "surface aliases must deeply merge wall defaults instead of dropping compatibility fields",
+);
+assert.deepEqual(
+  mergedPanelAliasPlan.rooms[0]?.surfaces?.walls?.faces?.north,
+  {
+    paintColorHex: "#112233",
+    paintName: "Current face",
+  },
+  "surface aliases must deeply merge wall-face overrides",
+);
+assert.deepEqual(
+  Object.keys(mergedPanelAliasPlan.rooms[0]?.surfaces?.walls?.panels ?? {}).sort(),
+  [
+    "room_paint_test-north-part-1",
+    "wall-panel:v2:1:room_paint_test:north:a:b:interior",
+  ],
+  "surface aliases must deeply merge canonical and legacy panel collections",
+);
 const defaultPaintSettings = getWallFaceSurfaceSettings(
   roomWithPaintedWalls.surfaces,
   "east",
@@ -1010,6 +1152,158 @@ const accentPaintSettings = getWallFaceSurfaceSettings(
 );
 assert.equal(accentPaintSettings.paintColorHex, "#2F3B46", "selected wall paint color must override the default");
 assert.equal(accentPaintSettings.paintName, "Deep Ink", "selected wall paint name must override the default");
+const panelPaintSettings = getWallPanelSurfaceSettings(
+  roomWithPaintedWalls.surfaces,
+  "north",
+  "room_paint_test-north-part-1",
+  normalizeFloorRotationDeg,
+  clampFloorPatternScale
+);
+assert.equal(
+  panelPaintSettings.paintColorHex,
+  "#8B725E",
+  "a selected wall panel must override its parent wall face finish",
+);
+assert.equal(
+  getWallPanelSurfaceSettings(
+    roomWithPaintedWalls.surfaces,
+    "north",
+    "room_paint_test-north-part-1-shared-split-0-selectable-face",
+    normalizeFloorRotationDeg,
+    clampFloorPatternScale,
+    [
+      "room_paint_test-north-part-1-shared-split-0",
+      "room_paint_test-north-part-1",
+    ],
+  ).paintColorHex,
+  "#8B725E",
+  "a newly split room-boundary panel must retain its former parent-panel finish",
+);
+assert.equal(
+  getWallPanelSurfaceSettings(
+    {
+      ...roomWithPaintedWalls.surfaces,
+      walls: {
+        ...roomWithPaintedWalls.surfaces!.walls,
+        panels: {
+          ...roomWithPaintedWalls.surfaces!.walls?.panels,
+          "room_paint_test-north-part-1-shared-split-0-selectable-face": {
+            materialId: null,
+            paintColorHex: "#557766",
+            paintName: "Exact Split Panel",
+          },
+        },
+      },
+    },
+    "north",
+    "room_paint_test-north-part-1-shared-split-0-selectable-face",
+    normalizeFloorRotationDeg,
+    clampFloorPatternScale,
+    [
+      "room_paint_test-north-part-1-shared-split-0",
+      "room_paint_test-north-part-1",
+    ],
+  ).paintColorHex,
+  "#557766",
+  "an exact split-panel finish must take priority over the compatibility fallback",
+);
+const sideSpecificPanelSettings = {
+  ...roomWithPaintedWalls.surfaces,
+  walls: {
+    ...roomWithPaintedWalls.surfaces!.walls,
+    panels: {
+      ...roomWithPaintedWalls.surfaces!.walls?.panels,
+      "room_paint_test-north-part-1-shared-split-0-selectable-face-side-positive": {
+        materialId: null,
+        paintColorHex: "#446688",
+        paintName: "Positive Physical Side",
+      },
+      "room_paint_test-north-part-1-shared-split-0-selectable-face-side-negative": {
+        materialId: null,
+        paintColorHex: "#884466",
+        paintName: "Negative Physical Side",
+      },
+    },
+  },
+};
+assert.equal(
+  getWallPanelSurfaceSettings(
+    sideSpecificPanelSettings,
+    "north",
+    "room_paint_test-north-part-1-shared-split-0-selectable-face-side-positive",
+    normalizeFloorRotationDeg,
+    clampFloorPatternScale,
+    [
+      "room_paint_test-north-part-1-shared-split-0-selectable-face",
+      "room_paint_test-north-part-1-shared-split-0",
+      "room_paint_test-north-part-1",
+    ],
+  ).paintColorHex,
+  "#446688",
+  "the selected physical side must resolve its own finish",
+);
+assert.equal(
+  getWallPanelSurfaceSettings(
+    sideSpecificPanelSettings,
+    "north",
+    "room_paint_test-north-part-1-shared-split-0-selectable-face-side-negative",
+    normalizeFloorRotationDeg,
+    clampFloorPatternScale,
+    [
+      "room_paint_test-north-part-1-shared-split-0-selectable-face",
+      "room_paint_test-north-part-1-shared-split-0",
+      "room_paint_test-north-part-1",
+    ],
+  ).paintColorHex,
+  "#884466",
+  "the opposite physical side must not inherit the selected side's finish",
+);
+assert.equal(
+  getWallPanelSurfaceSettings(
+    roomWithPaintedWalls.surfaces,
+    "north",
+    "room_paint_test-north-part-0",
+    normalizeFloorRotationDeg,
+    clampFloorPatternScale,
+  ).paintColorHex,
+  "#2F3B46",
+  "a wall panel without an override must inherit its parent wall face finish",
+);
+const allWallsPaintedSettings = replaceAllWallSurfaceSettings(
+  roomWithPaintedWalls.surfaces,
+  {
+    materialId: null,
+    paintColorHex: "#D77C8E",
+    paintName: "Dutchess Pink (9072)",
+  },
+  null,
+);
+assert.deepEqual(
+  allWallsPaintedSettings.walls?.faces,
+  {},
+  "applying a finish to all walls must clear stale selected-wall overrides",
+);
+assert.deepEqual(
+  allWallsPaintedSettings.walls?.panels,
+  {},
+  "applying a finish to all walls must clear stale wall-panel overrides",
+);
+const replacedAccentPaintSettings = getWallFaceSurfaceSettings(
+  allWallsPaintedSettings,
+  "north",
+  normalizeFloorRotationDeg,
+  clampFloorPatternScale,
+);
+assert.equal(
+  replacedAccentPaintSettings.paintColorHex,
+  "#D77C8E",
+  "applying paint to all walls must make every face inherit the selected paint",
+);
+assert.equal(
+  replacedAccentPaintSettings.paintName,
+  "Dutchess Pink (9072)",
+  "applying paint to all walls must preserve the selected swatch name",
+);
 
 const roomWithPaintOverWallMaterial: RoomSnapshot = {
   id: "room_paint_over_material_test",

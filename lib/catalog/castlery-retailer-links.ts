@@ -68,6 +68,7 @@ const MATERIAL_HANDLE_BY_CODE: Record<string, string> = {
 
 const CONTROLLED_PRODUCT_PREFIXES = [
   "armchair-real-castlery-avery-",
+  "armchair-real-castlery-hamilton-",
   "armchair-real-castlery-jaron-",
   "armchair-real-castlery-lena-",
   "armchair-real-castlery-madison-",
@@ -75,6 +76,7 @@ const CONTROLLED_PRODUCT_PREFIXES = [
   "coffee-real-castlery-hugg-",
   "dining-real-castlery-kelsey-",
   "sofa-real-castlery-dawson-",
+  "sofa-real-castlery-hamilton-",
   "sofa-real-castlery-jaron-",
   "sofa-real-castlery-madison-",
   "sofa-real-castlery-ollie-",
@@ -151,6 +153,30 @@ function withAverySelection(url: URL, input: CastleryVariantLinkInput): string |
   if (!handle) return undefined;
   url.searchParams.set("material", handle);
   if (input.productId.endsWith("performance-armchair")) url.searchParams.set("quantity", "single");
+  return url.toString();
+}
+
+function withHamiltonSelection(url: URL, input: CastleryVariantLinkInput): string | undefined {
+  const handle = materialHandle(input);
+  if (!handle) return undefined;
+
+  const leather = isLeather(input, handle);
+  if (input.productId === "sofa-real-castlery-hamilton-3-seater") {
+    url.pathname = leather
+      ? "/sg/products/hamilton-leather-3-seater-sofa"
+      : "/sg/products/hamilton-3-seater-sofa";
+  } else if (input.productId === "armchair-real-castlery-hamilton-round-swivel-armchair") {
+    url.pathname = leather
+      ? "/sg/products/hamilton-leather-round-swivel-armchair"
+      : "/sg/products/hamilton-round-performance-fabric-swivel-armchair";
+  } else if (leather) {
+    return undefined;
+  }
+
+  url.searchParams.set("material", handle);
+  if (input.productId.includes("chaise-sectional")) {
+    url.searchParams.set("orientation", input.productId.endsWith("-left") ? "left_facing" : "right_facing");
+  }
   return url.toString();
 }
 
@@ -264,6 +290,9 @@ export function resolveCastleryVariantAffiliateUrl(input: CastleryVariantLinkInp
   }
   if (input.productId.startsWith("armchair-real-castlery-avery-")) {
     return withAverySelection(url, input) ?? authored;
+  }
+  if (input.productId.includes("real-castlery-hamilton-")) {
+    return withHamiltonSelection(url, input) ?? authored;
   }
   if (input.productId.includes("real-castlery-jaron-")) {
     return withJaronSelection(url, input) ?? authored;

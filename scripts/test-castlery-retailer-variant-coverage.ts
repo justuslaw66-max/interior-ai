@@ -164,6 +164,28 @@ const representativeCases = [
     params: { material: "performance_ginger", quantity: "single" },
   },
   {
+    name: "Hamilton 3 seater graphite leather",
+    input: {
+      productId: "sofa-real-castlery-hamilton-3-seater",
+      sourceUrl: "https://www.castlery.com/sg/products/hamilton-3-seater-sofa",
+      upholsteryCode: "marche_graphite_leather",
+      materialType: "Leather",
+    },
+    path: "/sg/products/hamilton-leather-3-seater-sofa",
+    params: { material: "marche_graphite" },
+  },
+  {
+    name: "Hamilton round swivel ivory leather",
+    input: {
+      productId: "armchair-real-castlery-hamilton-round-swivel-armchair",
+      sourceUrl: "https://www.castlery.com/sg/products/hamilton-round-performance-fabric-swivel-armchair",
+      upholsteryCode: "marche_ivory_leather",
+      materialType: "Leather",
+    },
+    path: "/sg/products/hamilton-leather-round-swivel-armchair",
+    params: { material: "marche_Ivory" },
+  },
+  {
     name: "Jaron wide-arm fabric",
     input: {
       productId: "sofa-real-castlery-jaron-3s-wide-arm",

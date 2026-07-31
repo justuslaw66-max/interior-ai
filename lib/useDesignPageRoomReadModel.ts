@@ -37,7 +37,7 @@ import type { ShoppingReadinessFilter } from "@/lib/shopping-readiness";
 import {
   getCeilingSurfaceSettings,
   getDefaultWallSurfaceSettings,
-  getWallFaceSurfaceSettings,
+  getWallPanelSurfaceSettings,
   normalizeFloorSurfaceSettings,
 } from "@/lib/surface-settings";
 import {
@@ -225,14 +225,20 @@ export function useDesignPageRoomReadModel({
     selectedWallSurfaceTarget.roomId === activeRoom?.id
       ? selectedWallSurfaceTarget.faceId
       : null;
+  const activeSelectedWallPanelId =
+    selectedWallSurfaceTarget &&
+    selectedWallSurfaceTarget.roomId === activeRoom?.id
+      ? selectedWallSurfaceTarget.panelId ?? null
+      : null;
   const activeRoomWallSettings = getDefaultWallSurfaceSettings(
     activeRoomSurfaces,
     normalizeFloorRotationDeg,
     clampFloorPatternScale
   );
-  const activeRoomSelectedWallSettings = getWallFaceSurfaceSettings(
+  const activeRoomSelectedWallSettings = getWallPanelSurfaceSettings(
     activeRoomSurfaces,
     activeSelectedWallFaceId,
+    activeSelectedWallPanelId,
     normalizeFloorRotationDeg,
     clampFloorPatternScale
   );
@@ -368,6 +374,7 @@ export function useDesignPageRoomReadModel({
       activeRoomFloorSettings,
       activeRoomCeilingSettings,
       activeSelectedWallFaceId,
+      activeSelectedWallPanelId,
       activeRoomWallSettings,
       activeRoomSelectedWallSettings,
       surfaceRoomSummaries,

@@ -21,6 +21,7 @@ export type UseDesignPageEditorShellRuntimeInput = {
   state: {
     debugLayoutParam: string | null;
     designPanelOpen: boolean;
+    initialWorkspace?: string | null;
   };
   actions: {
     setDesignPanelOpen: Dispatch<SetStateAction<boolean>>;
@@ -64,7 +65,9 @@ export function useDesignPageEditorShellRuntime({
     useState<ShoppingReadinessFilter>("all");
   const surfaceState = useDesignPageSurfaceStateController();
   const [editorMode, setEditorMode] =
-    useState<DesignPageEditorMode>("design");
+    useState<DesignPageEditorMode>(
+      state.initialWorkspace === "furnish" ? "adjust" : "design"
+    );
   const [guidedPlanStartMode, setGuidedPlanStartMode] =
     useState<PlanStartMode>("start");
   const panelMode = useDesignPagePanelMode({

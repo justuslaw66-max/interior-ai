@@ -251,6 +251,15 @@ assert.equal(
   false,
   "A newly projected canonical plan must request non-blocking orientation confirmation."
 );
+const importedRoundTrip = canonicalFloorPlanToDesignSnapshot(
+  migrated.document,
+  { orientationConfirmed: true }
+);
+assert.equal(
+  importedRoundTrip.snapshot.floorPlan?.orientationConfirmed,
+  true,
+  "A source-image import must not require an address-orientation confirmation."
+);
 for (const original of snapshot.rooms) {
   const projected = roundTrip.snapshot.rooms.find((room) => room.id === original.id);
   assert.ok(projected, `Room ${original.id} must survive the canonical round-trip.`);

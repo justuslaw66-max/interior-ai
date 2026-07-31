@@ -345,15 +345,15 @@ const importAssistantSource = fs.readFileSync(
   path.join(process.cwd(), "components/editor/FloorPlanImportAssistant.tsx"),
   "utf8"
 );
-assert.match(
+assert.doesNotMatch(
   uploadPanelSource,
   /onSourceContentDeleted=\{onClear\}/,
-  "early source deletion must also clear the saved-design underlay copy"
+  "source deletion must not clear an unrelated underlay in the open design"
 );
-assert.match(
+assert.doesNotMatch(
   importAssistantSource,
   /onSourceContentDeleted\?\.\(\)/,
-  "the deletion callback must run only after the server accepts deletion"
+  "the isolated import must rely on owner-scoped server scrubbing, not open-design mutation"
 );
 
 const createDesignRouteSource = fs.readFileSync(

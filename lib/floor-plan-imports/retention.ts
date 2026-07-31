@@ -461,6 +461,7 @@ export class PrismaFloorPlanRetentionService {
           },
           data: {
             status: "failed",
+            statusChangedAt: input.now,
             progress: FLOOR_PLAN_IMPORT_PROGRESS.failed,
             errorMessage:
               "Private floor-plan source retention expired before the import finished",

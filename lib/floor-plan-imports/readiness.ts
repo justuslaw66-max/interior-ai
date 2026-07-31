@@ -6,11 +6,14 @@ const READINESS_ISSUE_IDS = new Set([
   "canonical-room-coverage-incomplete",
   "source-room-coverage-incomplete",
   "source-dimension-coverage-incomplete",
+  "source-dimension-missing",
+  "unlabeled-room-review",
 ]);
 
 type SourceManifestPageCounts = {
   pageNumber: number;
   selectedForSemanticClassification: boolean;
+  selectedForGeometry: boolean;
   semanticRoomLabelCount: number;
   semanticDimensionCount: number;
 };
@@ -38,6 +41,7 @@ function sourceManifestPageCounts(
       pageNumber: Number(page.pageNumber),
       selectedForSemanticClassification:
         page.selectedForSemanticClassification === true,
+      selectedForGeometry: page.selectedForGeometry === true,
       semanticRoomLabelCount: count(page.semanticRoomLabelCount),
       semanticDimensionCount: count(page.semanticDimensionCount),
     }];
@@ -107,6 +111,8 @@ export function collectFloorPlanImportReadinessIssues(input: {
   );
   const relevantPages = registeredPageNumbers.size
     ? manifestPages.filter((page) => registeredPageNumbers.has(page.pageNumber))
+    : manifestPages.some((page) => page.selectedForGeometry)
+      ? manifestPages.filter((page) => page.selectedForGeometry)
     : manifestPages.filter((page) => page.selectedForSemanticClassification);
   const expectedRoomCount = relevantPages.reduce(
     (total, page) => total + page.semanticRoomLabelCount,
@@ -122,12 +128,40 @@ export function collectFloorPlanImportReadinessIssues(input: {
   const dimensionIds = input.document.floors.flatMap((floor) =>
     floor.dimensions.map((dimension) => dimension.id)
   );
+  const genericRoomIds = input.document.floors.flatMap((floor) =>
+    floor.rooms
+      .filter((room) => /^Room \d+$/i.test(room.name.trim()))
+      .map((room) => room.id)
+  );
+
+  if (genericRoomIds.length) {
+    issues.push(issue(
+      "unlabeled-room-review",
+      "unlabeled_rooms_require_name",
+      `${genericRoomIds.length} enclosed ${
+        genericRoomIds.length === 1 ? "space has" : "spaces have"
+      } no unambiguous source label. You can name ${
+        genericRoomIds.length === 1 ? "it" : "them"
+      } after creating the design.`,
+      genericRoomIds,
+      "warning"
+    ));
+  }
+
+  if (dimensionIds.length === 0) {
+    issues.push(issue(
+      "source-dimension-missing",
+      "source_dimension_missing",
+      "At least one exact source dimension must be preserved in the editable plan.",
+      []
+    ));
+  }
 
   if (roomIds.length < expectedRoomCount) {
     issues.push(issue(
       "source-room-coverage-incomplete",
       "source_room_coverage_incomplete",
-      `Source analysis found ${expectedRoomCount} indicated room labels, but the canonical plan contains ${roomIds.length} rooms. Review or rename generic rooms when convenient.`,
+      `Source analysis found ${expectedRoomCount} area labels across ${roomIds.length} enclosed rooms. Open-plan labels are preserved separately and can be edited later.`,
       roomIds,
       "warning"
     ));

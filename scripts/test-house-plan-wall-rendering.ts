@@ -1,6 +1,44 @@
 import fs from "node:fs";
 import path from "node:path";
 import assert from "node:assert/strict";
+import {
+  getWallPaintColorFidelityFillIntensity,
+  resolveWallSurfaceColorFillIntensity,
+} from "@/lib/wall-paint-rendering";
+
+const angelPinkFillIntensity =
+  resolveWallSurfaceColorFillIntensity({
+    hasTexture: false,
+    paintColorHex: "#FBF1F2",
+    neutralFillIntensity: 0.08,
+  });
+assert.ok(
+  angelPinkFillIntensity > 0.77 && angelPinkFillIntensity <= 0.8,
+  "Paint should receive the shared color-fidelity fill."
+);
+assert.ok(
+  getWallPaintColorFidelityFillIntensity("#C2756D") <
+    angelPinkFillIntensity,
+  "Mid-tone paint should receive less compensation than near-white paint."
+);
+assert.equal(
+  resolveWallSurfaceColorFillIntensity({
+    hasTexture: true,
+    paintColorHex: "#FBF1F2",
+    neutralFillIntensity: 0.08,
+  }),
+  0,
+  "Textured finishes must not receive paint color compensation."
+);
+assert.equal(
+  resolveWallSurfaceColorFillIntensity({
+    hasTexture: false,
+    paintColorHex: null,
+    neutralFillIntensity: 0.08,
+  }),
+  0.08,
+  "Unpainted structural surfaces retain their low neutral fill."
+);
 
 const rendererPath = path.join(
   process.cwd(),
@@ -9,7 +47,41 @@ const rendererPath = path.join(
   "renderers",
   "HousePlanRenderer3D.tsx"
 );
-const source = fs.readFileSync(rendererPath, "utf8");
+const rendererSourcePaths = [
+  rendererPath,
+  path.join(path.dirname(rendererPath), "CanonicalFloorPlanStructure.tsx"),
+  path.join(path.dirname(rendererPath), "house-plan-3d", "geometry.ts"),
+  path.join(path.dirname(rendererPath), "house-plan-3d", "wallAndOpeningMeshes.tsx"),
+  path.join(path.dirname(rendererPath), "house-plan-3d", "surfaceMeshes.tsx"),
+  path.join(process.cwd(), "lib", "wall-paint-rendering.ts"),
+];
+const source = rendererSourcePaths
+  .map((sourcePath) => fs.readFileSync(sourcePath, "utf8"))
+  .join("\n");
+const structureLayerSource = fs.readFileSync(
+  path.join(
+    process.cwd(),
+    "components",
+    "editor",
+    "design-page",
+    "DesignSceneStructureLayer.tsx"
+  ),
+  "utf8"
+);
+const surfaceWorkspaceSource = fs.readFileSync(
+  path.join(process.cwd(), "lib", "useDesignPageSurfaceWorkspaceFacade.ts"),
+  "utf8"
+);
+const designSceneCanvasSource = fs.readFileSync(
+  path.join(
+    process.cwd(),
+    "components",
+    "editor",
+    "design-page",
+    "DesignSceneCanvas.tsx"
+  ),
+  "utf8"
+);
 
 assert.match(
   source,
@@ -73,6 +145,18 @@ assert.match(
 
 assert.match(
   source,
+  /function getSharedWallRoomIds\([\s\S]*?rangesOverlapBy\([\s\S]*?LEGACY_WALL_JOIN_TOLERANCE_METERS[\s\S]*?function getSharedWallMatches\([\s\S]*?rangesOverlapBy\([\s\S]*?LEGACY_WALL_JOIN_TOLERANCE_METERS/,
+  "Even very narrow shared-wall fragments must stay shared instead of exposing an overlapping exterior face."
+);
+
+assert.doesNotMatch(
+  source,
+  /rangesOverlapBy\(partStart, partEnd, range\.start, range\.end, 0\.35\)/,
+  "Shared-wall classification must not discard selectable fragments merely because they are narrower than 350 mm."
+);
+
+assert.match(
+  source,
   /if \(!segment\.wall\) \{[\s\S]*?getWallSegments\(otherRoom\)[\s\S]*?segmentKey: otherSegment\.key/,
   "Imported custom-polygon rooms should match coincident physical wall segments."
 );
@@ -85,8 +169,8 @@ assert.match(
 
 assert.match(
   source,
-  /const cutawayEligible = forceCutaway && !isInteriorSharedWall;[\s\S]*?cutawayEligible,[\s\S]*?forceCutaway: cutawayEligible/,
-  "Only exterior camera-facing walls should use the dollhouse cutaway; shared partitions must stay consistent."
+  /const cutawayEligible =\s*forceCutaway && !isInteriorSharedWall && !isSelectedWallFace;[\s\S]*?cutawayEligible,[\s\S]*?forceCutaway: cutawayEligible/,
+  "Only unselected exterior camera-facing walls should use the dollhouse cutaway; shared partitions and selected faces must stay consistent."
 );
 
 assert.match(
@@ -120,6 +204,30 @@ assert.match(
 );
 
 assert.match(
+  structureLayerSource,
+  /topologyRooms=\{state\.wholeHome\.rooms\}/,
+  "Focus room mode must preserve the whole-home room graph for shared-wall topology."
+);
+
+assert.match(
+  structureLayerSource,
+  /const topologyOpenings = mapPlanOpeningsToRoomRenderer\([\s\S]*?openings=\{topologyOpenings\}/,
+  "Focus room mode must preserve adjacent-room openings for mirrored wall cuts."
+);
+
+assert.match(
+  source,
+  /topologyRooms\s*=\s*rooms/,
+  "The legacy renderer must accept a whole-home topology graph independently of visible rooms."
+);
+
+assert.match(
+  surfaceWorkspaceSource,
+  /setSelectedWallSurfaceTarget\(\(current\) =>[\s\S]*?current\?\.roomId === roomId && current\.faceId === faceId[\s\S]*?\? current/,
+  "Opening the wall material picker must preserve a canonical panel target instead of repainting the parent face."
+);
+
+assert.match(
   source,
   /forceCutaway=\{legacyCutawaySegmentKeys\.has\(segment\.key\)\}/,
   "Compatibility wall finishes and their unioned structural body should share one cutaway decision."
@@ -127,8 +235,8 @@ assert.match(
 
 assert.match(
   source,
-  /const nextTransparent = targetOpacity < 0\.999 \|\| material\.opacity < 0\.999;[\s\S]*?material\.transparent = nextTransparent;/,
-  "Wall meshes should render in the transparent pass only during exterior cutaway or explicit opacity."
+  /transparent: opacity < 0\.999,[\s\S]*?depthWrite: opacity >= 0\.999,/,
+  "Only an already-settled translucent wall may enter the transparent pass; visible opaque walls must own depth."
 );
 
 assert.match(
@@ -205,7 +313,7 @@ assert.match(
 );
 assert.match(
   source,
-  /position=\{\[0, band\.bottomMeters, 0\]\}[\s\S]*?depth: Math\.max\(0\.001, band\.topMeters - band\.bottomMeters\)/,
+  /function buildLegacyWallBandCoreGeometry\([\s\S]*?depth: Math\.max\(0\.001, band\.topMeters - band\.bottomMeters\)[\s\S]*?position=\{\[0, band\.bottomMeters, 0\]\}/,
   "Wall bands should terminate at the finished-floor level instead of extending below the slab top."
 );
 
@@ -241,26 +349,141 @@ assert.match(
 
 assert.match(
   source,
-  /joinedLegacyWallSurfacePart\([\s\S]*?surface\.side,[\s\S]*?wallThickness,[\s\S]*?\{ squareStart, squareEnd \}/,
-  "Visible wall finishes should use the real wall thickness and the same selective cut boundary as the wall body."
+  /joinedLegacyWallSurfacePart\([\s\S]*?surface\.side,[\s\S]*?wallThickness,[\s\S]*?\{ squareStart, squareEnd \},[\s\S]*?WALL_SURFACE_CUT_OVERLAP_METERS/,
+  "Visible wall finishes should use the real wall thickness and share the same selective cut boundary."
 );
 
 assert.match(
   source,
-  /squareStart && partTouchesSegmentStart[\s\S]*?WALL_SECTION_CAP_COLOR[\s\S]*?squareEnd && partTouchesSegmentEnd[\s\S]*?WALL_SECTION_CAP_COLOR/,
-  "Exposed dollhouse wall ends should receive clean section-cap faces."
+  /const INACTIVE_WALL_COLOR = "#ddddda";[\s\S]*?const WALL_CUT_SURFACE_COLOR = INACTIVE_WALL_COLOR;[\s\S]*?function LegacyWallBandMesh[\s\S]*?<meshStandardMaterial[\s\S]*?color=\{INACTIVE_WALL_COLOR\}[\s\S]*?roughness=\{0\.86\}/,
+  "Merged compatibility wall shells should use a neutral diffuse material that retains directional face shading."
 );
 
 assert.match(
   source,
   /function LegacyWallBandMesh[\s\S]*?<meshStandardMaterial[\s\S]*?flatShading/,
-  "Merged architectural wall shells should use hard face normals without diagonal smoothing facets."
+  "Merged architectural wall shells should keep hard face normals so triangulation cannot create faint wall creases."
 );
 
 assert.match(
   source,
-  /WALL_SURFACE_OFFSET_METERS[\s\S]*?polygonOffsetFactor=\{-4\}[\s\S]*?polygonOffsetUnits=\{-4\}/,
-  "Visible wall finishes should remain decisively in front of the merged structural shell."
+  /const CANONICAL_WALL_BODY_COLOR = "#ddddda";[\s\S]*?const CANONICAL_WALL_CUT_SURFACE_COLOR = CANONICAL_WALL_BODY_COLOR;[\s\S]*?function CanonicalWallBodies3D[\s\S]*?<meshStandardMaterial[\s\S]*?color=\{CANONICAL_WALL_BODY_COLOR\}[\s\S]*?roughness=\{0\.86\}/,
+  "Canonical wall bodies should use the same directionally shaded neutral material as compatibility walls."
+);
+
+assert.match(
+  source,
+  /const WALL_CUT_SURFACE_COLOR = INACTIVE_WALL_COLOR;/,
+  "Compatibility wall cut surfaces should use exactly the structural wall neutral."
+);
+
+assert.match(
+  source,
+  /const CANONICAL_WALL_CUT_SURFACE_COLOR = CANONICAL_WALL_BODY_COLOR;/,
+  "Canonical wall cut surfaces should use exactly the structural wall neutral."
+);
+
+const wallSurfaceSideSource = source.slice(
+  source.indexOf("function WallSurfaceSideMesh"),
+  source.indexOf("function WallSurfaceCutCapMesh")
+);
+assert.match(
+  source,
+  /const WALL_INDIRECT_FILL_INTENSITY = 0\.08;/,
+  "Compatibility neutral wall fill should stay low enough to preserve face definition."
+);
+assert.match(
+  wallSurfaceSideSource,
+  /const wallColor =[\s\S]*?resolveWallSurfaceColorFillIntensity\(\{[\s\S]*?hasTexture: Boolean\(wallTexture\),[\s\S]*?paintColorHex: settings\.paintColorHex,[\s\S]*?neutralFillIntensity: WALL_INDIRECT_FILL_INTENSITY,[\s\S]*?<meshStandardMaterial[\s\S]*?color=\{wallColor\}[\s\S]*?emissiveIntensity=\{wallColorFillIntensity\}[\s\S]*?roughness=/,
+  "Compatibility paint should use the shared color-fidelity fill while neutral and textured walls keep their original treatment."
+);
+assert.doesNotMatch(
+  wallSurfaceSideSource,
+  /emissiveIntensity=\{?0\.(?:8[5-9]|9\d)|WALL_PAINT_EMISSIVE_INTENSITY|WALL_EMISSIVE_INTENSITY/,
+  "Compatibility wall finishes must not use a near-unlit emissive treatment that flattens directional face shading."
+);
+
+const canonicalWallSurfaceSource = source.slice(
+  source.indexOf("function CanonicalWallSurfaceMesh"),
+  source.indexOf("function CanonicalOpening3DSymbol")
+);
+assert.match(
+  source,
+  /const CANONICAL_WALL_INDIRECT_FILL_INTENSITY = 0\.08;/,
+  "Canonical neutral wall fill should stay low enough to preserve face definition."
+);
+assert.match(
+  canonicalWallSurfaceSource,
+  /const displayedColor =[\s\S]*?resolveWallSurfaceColorFillIntensity\(\{[\s\S]*?hasTexture: Boolean\(texture\),[\s\S]*?paintColorHex: settings\.paintColorHex,[\s\S]*?neutralFillIntensity: CANONICAL_WALL_INDIRECT_FILL_INTENSITY,[\s\S]*?<meshStandardMaterial[\s\S]*?color=\{displayedColor\}[\s\S]*?emissiveIntensity=\{displayedColorFillIntensity\}[\s\S]*?roughness=/,
+  "Canonical paint should use the same shared color-fidelity calibration as compatibility walls."
+);
+assert.doesNotMatch(
+  canonicalWallSurfaceSource,
+  /CANONICAL_PAINT_EMISSIVE_INTENSITY|CANONICAL_WALL_EMISSIVE_INTENSITY/,
+  "Canonical wall finishes must not restore the strong flat-shading emissive path."
+);
+assert.match(
+  source,
+  /WALL_PAINT_COLOR_FIDELITY_MIN_FILL_INTENSITY = 0\.35[\s\S]*?WALL_PAINT_COLOR_FIDELITY_MAX_FILL_INTENSITY = 0\.8[\s\S]*?WALL_PAINT_COLOR_FIDELITY_LUMINANCE_SCALE = 0\.55[\s\S]*?WALL_PAINT_COLOR_FIDELITY_LUMINANCE_EXPONENT = 1\.25/,
+  "Paint color-fidelity compensation must remain luminance-aware and capped below the near-unlit range."
+);
+
+assert.match(
+  source,
+  /function LegacyWallBandMesh[\s\S]*?buildLegacyWallBandCoreGeometry\([\s\S]*?removeTopCap: showTopCap[\s\S]*?position=\{\[0, band\.topMeters, 0\]\}[\s\S]*?legacy-watertight-wall-top-cap-3d[\s\S]*?<shapeGeometry args=\{\[shapes\]\}/,
+  "The compatibility top cap must be the only depth owner at the exact union-footprint wall top."
+);
+
+assert.match(
+  source,
+  /function CanonicalWallBodies3D[\s\S]*?canonical-wall-top-cap-3d[\s\S]*?<shapeGeometry args=\{\[shapes\]\}/,
+  "Canonical wall shells should cover structural join edges with one union-footprint top cap."
+);
+
+assert.doesNotMatch(
+  wallSurfaceSideSource,
+  /polygonOffset|polygonOffsetFactor|polygonOffsetUnits/,
+  "Visible wall finishes must not use per-triangle depth bias that exposes their diagonal at grazing angles."
+);
+
+assert.match(
+  source,
+  /const WALL_SURFACE_THICKNESS_METERS = 0\.0015;/,
+  "Visible wall finishes must use a real 1.5 mm shell rather than a depth-only separation."
+);
+assert.match(
+  wallSurfaceSideSource,
+  /buildWallFinishShellGeometry\(\{[\s\S]*?widthMeters: partLength,[\s\S]*?heightMeters: partHeight,[\s\S]*?thicknessMeters: WALL_SURFACE_THICKNESS_METERS/,
+  "The visible finish must provide its own physical broad face, top, bottom, and edge depth."
+);
+assert.match(
+  source,
+  /function buildWallFinishShellGeometry\([\s\S]*?isInnerBroadFace[\s\S]*?removedInnerFaceTriangleCount \+= 1;[\s\S]*?continue;/,
+  "A finish shell must omit its flush inner broad face so the opposite side cannot become a duplicate depth or selection owner."
+);
+
+assert.doesNotMatch(
+  source,
+  /hitMeshRef|raycastHitWhenPickable|partLength \+ 0\.02|partHeight \+ 0\.04/,
+  "Wall fragments must not add oversized invisible hit planes that overlap neighboring selectable pieces."
+);
+
+assert.match(
+  source,
+  /const WALL_SURFACE_CUT_OVERLAP_METERS = 0;/,
+  "Paint and material planes should terminate flush with exposed structural cuts."
+);
+
+assert.match(
+  source,
+  /function legacyWallSurfaceMiterOffset\([\s\S]*?const isInteriorSurface = side === getWallInteriorSurfaceSide\(segment\);[\s\S]*?intersectOffsetLines\([\s\S]*?legacyWallSurfaceMiterOffset\([\s\S]*?"start"[\s\S]*?legacyWallSurfaceMiterOffset\([\s\S]*?"end"/,
+  "Decorative finishes should meet the matching interior or exterior face at a true side-aware wall miter."
+);
+
+assert.match(
+  source,
+  /touchesStart && endJoinOptions\.squareStart \? -cutOverlapMeters : 0[\s\S]*?touchesEnd && endJoinOptions\.squareEnd \? -cutOverlapMeters : 0/,
+  "The finish boundary adjustment must remain scoped to camera-exposed wall endpoints."
 );
 
 assert.match(
@@ -283,20 +506,121 @@ assert.match(
 
 assert.match(
   source,
-  /renderSurfaces=\{!hasLegacyMergedWalls\}/,
-  "Unioned compatibility walls must suppress duplicate visible finish planes that would z-fight with the merged shell."
+  /renderBase=\{!hasLegacyMergedWalls\}[\s\S]*?renderSurfaces(?:=\{true\})?/,
+  "Unioned compatibility walls must retain their offset finish planes so saved paint and wall materials remain visible."
 );
 
 assert.match(
   source,
   /ref=\{surfaceMeshRef\}[\s\S]*?visible=\{renderSurface\}/,
-  "Hidden compatibility finishes should retain their separate invisible interaction mesh without drawing a second wall layer."
+  "Compatibility walls should keep their independently controlled continuous visible surface mesh."
+);
+
+assert.doesNotMatch(
+  source,
+  /hasVisibleFinish|visible=\{renderSurface &&/,
+  "Neutral compatibility faces must not expose the segmented structural shell beneath the finish layer."
 );
 
 assert.match(
   source,
-  /renderSurfaces && squareStart && partTouchesSegmentStart[\s\S]*?renderSurfaces && squareEnd && partTouchesSegmentEnd/,
-  "Merged compatibility walls should not draw separate section-cap planes over their structural end faces."
+  /function buildWallSurfacePanels\([\s\S]*?getWallSolidSpans\(segment, openings\)\.map/,
+  "Room-facing finish panels must be built once from opening-bounded topology, independently of structural ownership splits."
+);
+
+assert.doesNotMatch(
+  source,
+  /<WallSurfacePanelMesh[\s\S]*?surfaceSeamOverlap=/,
+  "Canonical room-facing panels must not use fragment seam extensions or competing coplanar finish overlap."
+);
+
+assert.match(
+  source,
+  /ref=\{surfaceMeshRef\}[\s\S]{0,160}?castShadow[\s\S]{0,80}?receiveShadow/,
+  "The sole visible wall finish must own the wall's broad-face shadowing after the structural face is removed."
+);
+
+assert.match(
+  source,
+  /ref=\{materialRef\}[\s\S]*?depthTest[\s\S]*?depthWrite=\{baseOpacity >= 0\.999\}/,
+  "Opaque finish planes should own normal depth so geometry behind a wall cannot show through."
+);
+
+assert.match(
+  source,
+  /material\.depthWrite = renderState\.depthWrite/,
+  "Atomic cutaways should stop writing depth while every visible opaque wall layer occludes geometry behind it."
+);
+
+assert.doesNotMatch(
+  source,
+  /getSurfaceMaterialFallbackColor\(wallSurfaceMaterial\) \?\?[\s\S]{0,80}?active \?/,
+  "Unfinished compatibility walls must use one neutral surface color across room-ownership splits."
+);
+
+const wallCutCapSource = source.slice(
+  source.indexOf("function WallSurfaceCutCapMesh"),
+  source.indexOf("export function CutawayWallMesh")
+);
+assert.match(
+  wallCutCapSource,
+  /const wallColor = isActive \? ACTIVE_WALL_COLOR : INACTIVE_WALL_COLOR;[\s\S]*?<meshStandardMaterial[\s\S]*?color=\{wallColor\}[\s\S]*?roughness=\{0\.86\}[\s\S]*?depthTest\s+depthWrite=\{baseOpacity >= 0\.999\}/,
+  "Camera-exposed wall ends should remain depth-tested so hidden caps cannot draw through opaque walls."
+);
+assert.doesNotMatch(
+  wallCutCapSource,
+  /polygonOffset|renderOrder/,
+  "Camera-exposed wall ends must meet the finish shell physically instead of winning through render-order bias."
+);
+assert.doesNotMatch(
+  wallCutCapSource,
+  /depthTest=\{false\}|depthWrite=\{false\}/,
+  "Camera-cut end caps must never bypass normal wall occlusion."
+);
+assert.match(
+  wallCutCapSource,
+  /position=\{\[-partLength \/ 2, 0, 0\]\}[\s\S]*?wallThickness \+ WALL_SURFACE_THICKNESS_METERS \* 2[\s\S]*?position=\{\[partLength \/ 2, 0, 0\]\}[\s\S]*?wallThickness \+ WALL_SURFACE_THICKNESS_METERS \* 2/,
+  "Both structural cut caps should terminate at the exact panel edge and bridge the complete finish thickness."
+);
+assert.doesNotMatch(
+  wallCutCapSource,
+  /settings|paintColorHex|materialId/,
+  "Structural cut caps must not read or render the adjacent wall finish."
+);
+
+assert.match(
+  source,
+  /<WallSurfaceCutCapMesh[\s\S]*?showStart=\{squareStart && partTouchesSegmentStart\}[\s\S]*?showEnd=\{squareEnd && partTouchesSegmentEnd\}/,
+  "Finish-aware cut caps must be limited to physical endpoints exposed by the camera cutaway."
+);
+
+assert.match(
+  source,
+  /showTopCap \? \([\s\S]*?position=\{\[0, band\.topMeters, 0\]\}[\s\S]*?legacy-watertight-wall-top-cap-3d[\s\S]*?<shapeGeometry args=\{\[shapes\]\} \/>[\s\S]*?<meshStandardMaterial[\s\S]*?color=\{WALL_CUT_SURFACE_COLOR\}[\s\S]*?roughness=\{0\.86\}[\s\S]*?depthTest\s+depthWrite=\{opacity >= 0\.999\}/,
+  "Merged wall tops should own their exact depth without a duplicate structural cap or polygon bias."
+);
+
+assert.match(
+  source,
+  /buildLegacyWallFaceRenderPatchesForTest\([\s\S]*?buildWallSurfacePanels\([\s\S]*?buildOpeningLintelParts\([\s\S]*?buildOpeningSillParts\(/,
+  "Render coverage must include canonical panels together with opening lintels and sills."
+);
+assert.match(
+  source,
+  /function triangleWallFacePatchCoverage\([\s\S]*?coveredArea[\s\S]*?function buildLegacyWallBandCoreGeometry\([\s\S]*?triangleWallFacePatchCoverage\([\s\S]*?if \(coverage\.covered\)[\s\S]*?removedCoveredTriangleCount \+= 1;[\s\S]*?continue;/,
+  "The structural wall shell must physically omit broad triangles covered by the complete coplanar patch union."
+);
+
+assert.match(
+  source,
+  /band\.topMm === maximumTopMm \? \([\s\S]*?renderOrder=\{100\}[\s\S]*?canonical-wall-top-cap-3d[\s\S]*?<shapeGeometry args=\{\[shapes\]\} \/>[\s\S]*?<meshStandardMaterial[\s\S]*?color=\{CANONICAL_WALL_CUT_SURFACE_COLOR\}[\s\S]*?roughness=\{0\.86\}[\s\S]*?depthTest\s+depthWrite=\{opacity >= 0\.999\}[\s\S]*?polygonOffsetUnits=\{-4\}/,
+  "Canonical wall tops should use the same depth-tested seamless cut-surface treatment."
+);
+
+assert.match(
+  source,
+  /legacyWallTopMetersByFloor[\s\S]*?showTopCap=\{[\s\S]*?band\.topMeters[\s\S]*?legacyWallTopMetersByFloor\.get\(band\.floorLevel\)/,
+  "Compatibility wall caps should render only at the real floor-level wall top, never at opening-band boundaries."
 );
 
 assert.match(
@@ -319,8 +643,126 @@ assert.match(
 
 assert.match(
   source,
-  /const selectedTargetKey = getStructureTargetKey\(\s*selectedSurfaceTarget\?\.roomId === activeRoomId\s*\? selectedSurfaceTarget/,
+  /const selectedLogicalTargetKey = getStructureTargetKey\(\s*selectedSurfaceTarget\?\.roomId === activeRoomId\s*\? selectedSurfaceTarget/,
   "The page-controlled surface selection should suppress stale outlines when rooms switch or selection clears."
+);
+
+assert.match(
+  source,
+  /pieceKey\?: string;[\s\S]*?panelAliases\?: string\[\];[\s\S]*?surfaceSide\?: 1 \| -1;[\s\S]*?const persistedWallPanelKey =[\s\S]*?`\$\{selectedLogicalTargetKey\}:\$\{selectedSurfaceTarget\.panelId\}`/,
+  "Wall selection must restore the exact persisted canonical panel and carry its compatibility aliases."
+);
+
+assert.doesNotMatch(
+  source,
+  /selectedWallPiece|setSelectedWallPiece/,
+  "Canonical renderer surface state must be the only selected-wall identity."
+);
+
+assert.match(
+  source,
+  /const visibleHoveredTargetKey =\s*selectedSurfaceTarget\?\.kind === "wall" && selectedTargetKey\s*\? null\s*: hoveredTargetKey;[\s\S]*?hoveredTargetKey=\{visibleHoveredTargetKey\}[\s\S]*?selectedTargetKey=\{selectedTargetKey\}/,
+  "A selected wall panel should keep the only visible wall outline while pointer movement crosses neighboring panels."
+);
+
+assert.match(
+  source,
+  /const interiorWallSurfacePanels =\s*buildWallSurfacePanels\(room, segment, wallOpenings\);[\s\S]*?const wallSurfacePanels = \[[\s\S]*?buildWallSurfacePanels\([\s\S]*?"exterior"[\s\S]*?getSharedWallRoomIds\([\s\S]*?const wallPanelParts = interiorWallSurfacePanels\.map\(\s*\(panel\) => panel\.part\s*\);[\s\S]*?splitWallPartsAtSharedBoundaries\([\s\S]*?wallPanelParts/,
+  "Interior and exposed exterior surface topology must be built before shared-room structural ownership splits."
+);
+
+assert.match(
+  source,
+  /<CutawayWallMesh[\s\S]*?renderSurfaces=\{!isFullHeightStructuralPart\}[\s\S]*?interactive=\{false\}[\s\S]*?resolvedWallSurfacePanels\.map\(\s*\(panel\) => \([\s\S]*?<WallSurfacePanelMesh/,
+  "Structural fragments must not render finish planes or receive raycasts; one canonical panel mesh owns both."
+);
+
+assert.match(
+  source,
+  /export function WallSurfacePanelMesh\([\s\S]*?pieceKey: `wall:\$\{panel\.roomId\}:\$\{panel\.faceId\}:\$\{panel\.panelId\}`,[\s\S]*?panelAliases: panel\.legacyPanelIds,[\s\S]*?getWallPanelSurfaceSettings\([\s\S]*?panel\.panelId[\s\S]*?panel\.legacyPanelIds/,
+  "Every finish mesh must resolve one canonical target and one settings object with deterministic legacy fallbacks."
+);
+
+assert.match(
+  source,
+  /function getWallSurfacePanelId\([\s\S]*?"wall-panel",[\s\S]*?"v2",[\s\S]*?normalizeWallPanelIdToken\(room\.id\)[\s\S]*?normalizeWallPanelIdToken\(getWallSurfaceFaceId\(room, segment\)\)[\s\S]*?startAnchor[\s\S]*?endAnchor[\s\S]*?role/,
+  "Canonical panel ids must be versioned and anchored by room, face, boundaries, and surface role."
+);
+
+assert.match(
+  source,
+  /const minPartLength = LEGACY_WALL_JOIN_TOLERANCE_METERS;/,
+  "Legitimate narrow structural intervals must survive down to the common 2 mm topology tolerance."
+);
+
+assert.match(
+  source,
+  /const tolerance = LEGACY_WALL_JOIN_TOLERANCE_METERS;/,
+  "Shared-wall discovery must use the same 2 mm geometry tolerance instead of the former broad threshold."
+);
+
+assert.match(
+  source,
+  /const legacyPanelIds = \[[\s\S]*?getSelectableWallSurfacePanelId\(legacyFacePanelId, side\)[\s\S]*?legacyFacePanelId,[\s\S]*?getSelectableWallSurfacePanelId\(part\.key, side\)[\s\S]*?part\.key/,
+  "Each canonical panel must carry all prior side-specific and non-side assignment aliases."
+);
+
+assert.match(
+  source,
+  /const target: StructureTarget = \{[\s\S]*?roomId: panel\.roomId,[\s\S]*?id: panel\.faceId,[\s\S]*?panelId: panel\.panelId,[\s\S]*?surfaceSide: panel\.side/,
+  "Clicks on a panel must return the canonical room, face, panel, and physical side."
+);
+
+assert.match(
+  source,
+  /<WallSurfaceSideMesh[\s\S]*?target=\{target\}[\s\S]*?texturePanelLength=\{joinedSurface\.length\}[\s\S]*?interactive=\{interactive\}/,
+  "The one complete panel finish mesh must own raycasting and a UV domain spanning the whole panel."
+);
+
+assert.match(
+  source,
+  /function isWallSurfacePanelCutawayEligible\([\s\S]*?return forceCutaway && !hasSharedSupport && !isSelected;[\s\S]*?const cutawayEligible = isWallSurfacePanelCutawayEligible\(\{[\s\S]*?forceCutaway,[\s\S]*?hasSharedSupport,[\s\S]*?isSelected,/,
+  "Panel-level cutaway must hide both finish-shell sides while pinning the complete selected or shared panel visible."
+);
+assert.doesNotMatch(
+  source,
+  /cutawayEligible[\s\S]{0,240}?panel\.role === "interior"/,
+  "Exterior finish shells must not bypass the physical wall cutaway and remain as paper-thin walls."
+);
+assert.match(
+  source,
+  /resolveAtomicWallCutawayRenderState\(targetOpacity\)[\s\S]*?material\.opacity = renderState\.opacity;[\s\S]*?material\.depthWrite = renderState\.depthWrite;[\s\S]*?groupRef\.current\.visible = renderState\.visible;/,
+  "Cutaway walls must settle opacity and depth ownership before becoming visible."
+);
+assert.doesNotMatch(
+  source,
+  /material\.opacity \+ \(targetOpacity - material\.opacity\) \* 0\.28|referenceOpacity \+ \(targetOpacity - referenceOpacity\) \* 0\.28/,
+  "Wall cutaway transitions must not fade through the planning grid."
+);
+assert.equal(
+  designSceneCanvasSource.match(
+    /material-depthTest[\s\S]{0,80}?material-depthWrite=\{false\}/g
+  )?.length,
+  2,
+  "Both floor and ceiling planning grids must depth-test without owning depth."
+);
+
+assert.match(
+  source,
+  /onSelectSurfaceTarget\(\{[\s\S]*?panelId: target\.panelId,[\s\S]*?panelAliases: target\.panelAliases,[\s\S]*?surfaceSide: target\.surfaceSide/,
+  "Scene selection must pass canonical identity, aliases, and physical side into editor state."
+);
+
+assert.match(
+  source,
+  /const outlinePoints:[\s\S]*?\[outlineLeftX, outlineBottomY, outlineZ\][\s\S]*?\[outlineRightX, outlineBottomY, outlineZ\][\s\S]*?\[outlineRightX, outlineTopY, outlineZ\][\s\S]*?\[outlineLeftX, outlineTopY, outlineZ\][\s\S]*?\[outlineLeftX, outlineBottomY, outlineZ\][\s\S]*?key=\{`wall-surface-panel-outline:\$\{panel\.panelId\}`\}[\s\S]*?renderOrder=\{25\}[\s\S]*?depthTest=\{false\}[\s\S]*?depthWrite=\{false\}/,
+  "A selected canonical panel must draw one closed four-edge overlay that cannot be occluded by adjacent wall caps."
+);
+
+assert.doesNotMatch(
+  source,
+  /key=\{`wall-panel-outline:\$\{surface\.key\}/,
+  "The renderer must not retain per-fragment duplicate wall outlines."
 );
 
 assert.doesNotMatch(

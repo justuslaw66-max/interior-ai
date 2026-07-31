@@ -1,103 +1,95 @@
 /**
- * Lighting preset configurations for different room moods
+ * Versioned lighting settings and the three user-facing scene shortcuts.
+ *
+ * The preset is deliberately only one input to the lighting resolver. Fixture
+ * overrides live on placed items and are never mutated when this value changes.
  */
 
 export type LightingPreset = "daylight" | "warm" | "studio";
 
+export type LightingLocation = {
+  latitude: number;
+  longitude: number;
+};
+
 export interface DesignLightingSettings {
+  version: 1;
   preset: LightingPreset;
+  timeMinutes: number;
+  planNorthDeg: number;
+  location?: LightingLocation;
+  dateIso?: string;
+  exposureCompensationEv: number;
+  fixtureMasterEnabled: boolean;
+  fixtureMasterLevel: number;
   shadowsEnabled: boolean;
+  previewFillEnabled: boolean;
 }
 
 export const DEFAULT_DESIGN_LIGHTING_SETTINGS: DesignLightingSettings = {
+  version: 1,
   preset: "studio",
+  timeMinutes: 12 * 60,
+  planNorthDeg: 0,
+  exposureCompensationEv: 0,
+  fixtureMasterEnabled: true,
+  fixtureMasterLevel: 1,
   shadowsEnabled: true,
+  previewFillEnabled: true,
 };
 
 export function isLightingPreset(value: unknown): value is LightingPreset {
   return value === "daylight" || value === "warm" || value === "studio";
 }
 
-export type EnvironmentPreset =
-  | "apartment"
-  | "city"
-  | "dawn"
-  | "forest"
-  | "lobby"
-  | "night"
-  | "park"
-  | "studio"
-  | "sunset"
-  | "warehouse";
-
 export interface LightingConfig {
   name: string;
-  ambientIntensity: number;
-  directionalIntensity: number;
-  ambientColor?: string;
-  hemiIntensity?: number;
-  skyColor?: string;
-  groundColor?: string;
-  keyIntensity?: number;
-  keyColor?: string;
-  fillIntensity?: number;
-  fillColor?: string;
-  exposure?: number;
-  envPreset?: EnvironmentPreset;
-  shadowBias?: number;
-  shadowRadius?: number;
+  description: string;
+  defaultTimeMinutes: number;
+  baseExposure: number;
+  skyLuminance: number;
+  skyTurbidity: number;
+  skyRayleigh: number;
+  sunIlluminanceLux: number;
+  exteriorCctKelvin: number;
+  fixtureDefaultOn: boolean;
 }
 
 export const LIGHTING_PRESETS: Record<LightingPreset, LightingConfig> = {
   daylight: {
     name: "Natural Daylight",
-    ambientIntensity: 0.16,
-    ambientColor: "#f5f4f1",
-    hemiIntensity: 0.44,
-    skyColor: "#f2f5f9",
-    groundColor: "#c9b8a3",
-    directionalIntensity: 0.92,
-    keyIntensity: 1.15,
-    keyColor: "#fffaf0",
-    fillIntensity: 0.22,
-    fillColor: "#e9eff7",
-    exposure: 0.96,
-    envPreset: "apartment",
-    shadowBias: -0.0012,
-    shadowRadius: 2.8,
+    description: "Daylight-balanced sky and sun",
+    defaultTimeMinutes: 12 * 60,
+    baseExposure: 0.96,
+    skyLuminance: 0.28,
+    skyTurbidity: 3.2,
+    skyRayleigh: 1.4,
+    sunIlluminanceLux: 58_000,
+    exteriorCctKelvin: 6500,
+    fixtureDefaultOn: false,
   },
   warm: {
-    name: "Warm Evening",
-    ambientIntensity: 0.11,
-    ambientColor: "#f3e4d3",
-    hemiIntensity: 0.3,
-    skyColor: "#f3d6b2",
-    groundColor: "#b68d67",
-    directionalIntensity: 0.72,
-    keyIntensity: 0.9,
-    keyColor: "#ffd3a2",
-    fillIntensity: 0.14,
-    fillColor: "#f3c99c",
-    exposure: 0.86,
-    envPreset: "sunset",
-    shadowBias: -0.002,
-    shadowRadius: 3.5,
+    name: "Evening",
+    description: "Soft, readable evening preview",
+    defaultTimeMinutes: 18 * 60 + 30,
+    baseExposure: 0.86,
+    skyLuminance: 0.36,
+    skyTurbidity: 6,
+    skyRayleigh: 2.2,
+    sunIlluminanceLux: 0,
+    exteriorCctKelvin: 9000,
+    fixtureDefaultOn: true,
   },
   studio: {
-    name: "Studio White",
-    ambientIntensity: 0.18,
-    ambientColor: "#f7f7f5",
-    hemiIntensity: 0.34,
-    skyColor: "#f5f6fa",
-    groundColor: "#d9d7d1",
-    directionalIntensity: 0.95,
-    keyIntensity: 1.18,
-    keyColor: "#ffffff",
-    fillIntensity: 0.2,
-    fillColor: "#edf2fa",
-    exposure: 1,
-    envPreset: "studio",
-    shadowBias: -0.0005,
-    shadowRadius: 1.8,
+    name: "Bright & Clear",
+    description: "Stable neutral light for editing",
+    defaultTimeMinutes: 12 * 60,
+    baseExposure: 1,
+    skyLuminance: 0.3,
+    skyTurbidity: 2,
+    skyRayleigh: 0.8,
+    sunIlluminanceLux: 22_000,
+    exteriorCctKelvin: 5000,
+    fixtureDefaultOn: false,
   },
 };

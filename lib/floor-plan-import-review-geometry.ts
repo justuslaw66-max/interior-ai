@@ -373,6 +373,41 @@ function rescaleFloorHorizontalGeometry(
     annotation.geometry.offsetMm = scaleLength(annotation.geometry.offsetMm);
     annotation.geometry.widthMm = scaleLength(annotation.geometry.widthMm);
   }
+  const vertices = new Map(floor.vertices.map((vertex) => [vertex.id, vertex]));
+  const straightWallLength = (wallId: string) => {
+    const wall = floor.walls.find((entry) => entry.id === wallId);
+    if (!wall || wall.path.kind !== "line") return null;
+    const start = vertices.get(wall.path.startVertexId);
+    const end = vertices.get(wall.path.endVertexId);
+    return start && end
+      ? Math.round(Math.hypot(end.xMm - start.xMm, end.zMm - start.zMm))
+      : null;
+  };
+  for (const opening of floor.openings) {
+    const wallLengthMm = straightWallLength(opening.wallId);
+    if (wallLengthMm === null) continue;
+    opening.widthMm = Math.min(opening.widthMm, wallLengthMm);
+    opening.offsetMm = Math.max(
+      0,
+      Math.min(opening.offsetMm, wallLengthMm - opening.widthMm)
+    );
+  }
+  for (const annotation of floor.annotations) {
+    if (annotation.geometry.kind !== "wall_span") continue;
+    const wallLengthMm = straightWallLength(annotation.geometry.wallId);
+    if (wallLengthMm === null) continue;
+    annotation.geometry.widthMm = Math.min(
+      annotation.geometry.widthMm,
+      wallLengthMm
+    );
+    annotation.geometry.offsetMm = Math.max(
+      0,
+      Math.min(
+        annotation.geometry.offsetMm,
+        wallLengthMm - annotation.geometry.widthMm
+      )
+    );
+  }
   for (const calibration of floor.calibrations) {
     calibration.controlPoints = calibration.controlPoints.map((control) => ({
       ...control,
@@ -383,6 +418,140 @@ function rescaleFloorHorizontalGeometry(
     }));
     calibration.rmsErrorPx = undefined;
   }
+}
+
+function upsertReviewerSourceDimension(input: {
+  document: FloorPlanDocumentV2;
+  floor: FloorPlanDocumentV2["floors"][number];
+  calibrationId: string;
+  sourceId: string;
+  pageNumber: number;
+  firstSource: ReviewSourcePoint;
+  secondSource: ReviewSourcePoint;
+  firstPlan: FloorPlanPointMmV2;
+  secondPlan: FloorPlanPointMmV2;
+  measuredMm: number;
+  firstVertexId?: string;
+  secondVertexId?: string;
+}) {
+  const safeCalibrationId = input.calibrationId.replace(
+    /[^A-Za-z0-9_.:-]/g,
+    "-"
+  );
+  const baseId = `consumer-source-dimension:${input.floor.id}:${safeCalibrationId}`;
+  const at = new Date().toISOString();
+  const provenance = (
+    role: "start" | "end" | "dimension"
+  ): FloorPlanEntityProvenanceV2 => ({
+    confidence: 1,
+    extractionVersion: "consumer-scale-calibration-v1",
+    evidence: [
+      {
+        sourceId: input.sourceId,
+        basis: "user_confirmed",
+        confidence: 1,
+        extractorVersion: "consumer-scale-calibration-v1",
+        pageNumber: input.pageNumber,
+        calibrationId: input.calibrationId,
+        cropPx: {
+          xPx: Math.max(
+            0,
+            Math.floor(Math.min(input.firstSource.x, input.secondSource.x))
+          ),
+          yPx: Math.max(
+            0,
+            Math.floor(Math.min(input.firstSource.y, input.secondSource.y))
+          ),
+          widthPx: Math.max(
+            1,
+            Math.ceil(
+              Math.abs(input.secondSource.x - input.firstSource.x)
+            )
+          ),
+          heightPx: Math.max(
+            1,
+            Math.ceil(
+              Math.abs(input.secondSource.y - input.firstSource.y)
+            )
+          ),
+        },
+        sourceAnchors:
+          role === "start"
+            ? [{ role: "start", sourcePx: input.firstSource }]
+            : role === "end"
+              ? [{ role: "end", sourcePx: input.secondSource }]
+              : [
+                  { role: "start", sourcePx: input.firstSource },
+                  { role: "end", sourcePx: input.secondSource },
+                ],
+        note:
+          role === "dimension"
+            ? "Printed source dimension entered and confirmed by the reviewer."
+            : `${role === "start" ? "First" : "Second"} endpoint of the reviewer-confirmed printed dimension.`,
+      },
+    ],
+    reviewHistory: [
+      {
+        id: `${baseId}:${role}:confirmation`,
+        action: "confirmed",
+        reviewerId: "consumer-import-review",
+        reviewedAt: at,
+        note: "Reviewer confirmed the printed source dimension and endpoints.",
+      },
+    ],
+  });
+  const vertex = (
+    preferredId: string | undefined,
+    suffix: "start" | "end",
+    point: FloorPlanPointMmV2
+  ) => {
+    if (preferredId) return preferredId;
+    const coincident = input.floor.vertices.find(
+      (entry) =>
+        Math.hypot(entry.xMm - point.xMm, entry.zMm - point.zMm) <= 1
+    );
+    if (coincident) return coincident.id;
+    const id = `${baseId}:${suffix}`;
+    const existing = input.floor.vertices.find((entry) => entry.id === id);
+    if (existing) {
+      existing.xMm = Math.round(point.xMm);
+      existing.zMm = Math.round(point.zMm);
+      existing.provenance = provenance(suffix);
+      return id;
+    }
+    input.floor.vertices.push({
+      id,
+      xMm: Math.round(point.xMm),
+      zMm: Math.round(point.zMm),
+      provenance: provenance(suffix),
+    });
+    return id;
+  };
+  const fromVertexId = vertex(
+    input.firstVertexId,
+    "start",
+    input.firstPlan
+  );
+  const toVertexId = vertex(
+    input.secondVertexId,
+    "end",
+    input.secondPlan
+  );
+  const id = `${baseId}:measurement`;
+  const nextDimension = {
+    id,
+    label: `${Math.round(input.measuredMm)} mm`,
+    fromVertexId,
+    toVertexId,
+    axis: "aligned" as const,
+    measuredMm: Math.round(input.measuredMm),
+    provenance: provenance("dimension"),
+  };
+  const existingIndex = input.floor.dimensions.findIndex(
+    (dimension) => dimension.id === id
+  );
+  if (existingIndex >= 0) input.floor.dimensions[existingIndex] = nextDimension;
+  else input.floor.dimensions.push(nextDimension);
 }
 
 export function applyPointScaleCalibration(input: {
@@ -436,6 +605,23 @@ export function applyPointScaleCalibration(input: {
     throw new Error("The requested scale is invalid.");
   }
   rescaleFloorHorizontalGeometry(floor, oldStart, factor);
+  const registeredStart = projectReviewSourcePointToPlan(existing, input.first);
+  const registeredEnd = projectReviewSourcePointToPlan(existing, input.second);
+  if (!registeredStart || !registeredEnd) {
+    throw new Error("The updated source registration is invalid.");
+  }
+  upsertReviewerSourceDimension({
+    document: next,
+    floor,
+    calibrationId: existing.id,
+    sourceId: input.sourceId,
+    pageNumber: input.pageNumber,
+    firstSource: input.first,
+    secondSource: input.second,
+    firstPlan: registeredStart,
+    secondPlan: registeredEnd,
+    measuredMm: input.printedMm,
+  });
   next.verification = {
     tier: "needs_review",
     criticalIssueIds: [...next.verification.criticalIssueIds],
@@ -512,7 +698,7 @@ export function registerPointScaleCalibration(input: {
   const usedIds = new Set(floor.calibrations.map((item) => item.id));
   let suffix = 1;
   while (usedIds.has(`consumer-registration-${input.pageNumber}-${suffix}`)) suffix += 1;
-  floor.calibrations.push({
+  const calibration = {
     id: `consumer-registration-${input.pageNumber}-${suffix}`,
     sourceId: input.sourceId,
     pageNumber: input.pageNumber,
@@ -528,6 +714,21 @@ export function registerPointScaleCalibration(input: {
         planMm: { xMm: registeredSecond.xMm, zMm: registeredSecond.zMm },
       },
     ],
+  };
+  floor.calibrations.push(calibration);
+  upsertReviewerSourceDimension({
+    document: next,
+    floor,
+    calibrationId: calibration.id,
+    sourceId: input.sourceId,
+    pageNumber: input.pageNumber,
+    firstSource: input.first,
+    secondSource: input.second,
+    firstPlan: { xMm: registeredFirst.xMm, zMm: registeredFirst.zMm },
+    secondPlan: { xMm: registeredSecond.xMm, zMm: registeredSecond.zMm },
+    measuredMm: input.printedMm,
+    firstVertexId: registeredFirst.id,
+    secondVertexId: registeredSecond.id,
   });
   next.verification = {
     tier: "needs_review",
@@ -586,8 +787,9 @@ export function registerEmptyPlanScaleCalibration(input: {
   while (usedIds.has(`manual-registration-${input.pageNumber}-${suffix}`)) {
     suffix += 1;
   }
+  const calibrationId = `manual-registration-${input.pageNumber}-${suffix}`;
   floor.calibrations.push({
-    id: `manual-registration-${input.pageNumber}-${suffix}`,
+    id: calibrationId,
     sourceId: input.sourceId,
     pageNumber: input.pageNumber,
     imageWidthPx: input.pageWidthPx,
@@ -602,6 +804,18 @@ export function registerEmptyPlanScaleCalibration(input: {
         planMm: { xMm: Math.round(input.printedMm), zMm: 0 },
       },
     ],
+  });
+  upsertReviewerSourceDimension({
+    document: next,
+    floor,
+    calibrationId,
+    sourceId: input.sourceId,
+    pageNumber: input.pageNumber,
+    firstSource: input.first,
+    secondSource: input.second,
+    firstPlan: { xMm: 0, zMm: 0 },
+    secondPlan: { xMm: Math.round(input.printedMm), zMm: 0 },
+    measuredMm: input.printedMm,
   });
   next.verification = {
     tier: "needs_review",

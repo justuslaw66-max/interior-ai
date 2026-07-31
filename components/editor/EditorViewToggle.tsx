@@ -12,12 +12,12 @@ type EditorViewToggleProps = {
 
 export default function EditorViewToggle({ value, onChange, dark = false }: EditorViewToggleProps) {
   const inactive = dark
-    ? "designer-work-control rounded-full px-2 py-1.5 text-sm font-semibold sm:px-4"
-    : "rounded-full px-2 py-1.5 text-sm font-semibold text-neutral-600 hover:bg-white sm:px-4";
+    ? "designer-work-control inline-flex h-[26px] items-center justify-center rounded-full px-2 text-sm font-semibold leading-none sm:px-4"
+    : "inline-flex h-[26px] items-center justify-center rounded-full px-2 text-sm font-semibold leading-none text-neutral-600 hover:bg-white sm:px-4";
 
   const active = dark
-    ? "designer-work-control-active rounded-full px-2 py-1.5 text-sm font-semibold sm:px-4"
-    : "rounded-full bg-emerald-500 px-2 py-1.5 text-sm font-semibold text-white shadow-sm sm:px-4";
+    ? "designer-work-control-active inline-flex h-[26px] items-center justify-center rounded-full px-2 text-sm font-semibold leading-none sm:px-4"
+    : "inline-flex h-[26px] items-center justify-center rounded-full bg-emerald-500 px-2 text-sm font-semibold leading-none text-white shadow-sm sm:px-4";
 
   return (
     <div
@@ -26,8 +26,8 @@ export default function EditorViewToggle({ value, onChange, dark = false }: Edit
       data-testid="editor-view-toggle"
       className={
         dark
-          ? "designer-work-surface grid grid-cols-2 gap-1 rounded-full p-1"
-          : "grid grid-cols-2 gap-1 rounded-full bg-neutral-100 p-1"
+          ? "designer-work-surface grid h-[30px] grid-cols-2 gap-1 rounded-full p-0.5"
+          : "grid h-[30px] grid-cols-2 gap-1 rounded-full bg-neutral-100 p-0.5"
       }
     >
       <button

@@ -24,12 +24,14 @@ import {
   DEFAULT_FLOOR_JOINT_COLOR,
   DEFAULT_FLOOR_JOINT_SIZE_MM,
   DEFAULT_FLOOR_PATTERN_OFFSET,
+  DEFAULT_WALL_JOINT_COLOR,
   createSurfaceSettingsPatch,
   getWallFaceLabel,
   normalizeFloorJointColor,
   normalizeFloorJointSizeMm,
   normalizeFloorPattern,
   normalizeFloorPatternOffset,
+  replaceAllWallSurfaceSettings,
   type FloorSurfacePatch,
   type SurfaceSettingsPatch,
 } from "@/lib/surface-settings";
@@ -43,12 +45,18 @@ export type SurfaceTargetMode = "floor" | "walls" | "selected_wall" | "ceiling";
 export type SelectedWallSurfaceTarget = {
   roomId: string;
   faceId: string;
+  panelId?: string;
+  panelAliases?: string[];
+  surfaceSide?: 1 | -1;
 };
 
 export type RendererSurfaceTarget = {
   kind: "floor" | "wall" | "ceiling";
   roomId: string;
   id: string;
+  panelId?: string;
+  panelAliases?: string[];
+  surfaceSide?: 1 | -1;
 };
 
 export type SurfaceBrushPaint = {
@@ -74,13 +82,21 @@ export type DesignPageSurfaceActions = {
     materialId: string,
     roomId?: string | null,
     faceId?: string | null,
+    panelId?: string | null,
+    panelAliases?: readonly string[] | null,
+    settingsPatch?: SurfaceSettingsPatch | null,
   ) => void;
-  applyWallMaterialToAllRooms: (materialId: string) => void;
+  applyWallMaterialToAllRooms: (
+    materialId: string,
+    settingsPatch?: SurfaceSettingsPatch | null,
+  ) => void;
   applyWallPaintToRoom: (
     colorHex: string,
     name?: string | null,
     roomId?: string | null,
     faceId?: string | null,
+    panelId?: string | null,
+    panelAliases?: readonly string[] | null,
   ) => void;
   applyWallPaintToAllRooms: (colorHex: string, name?: string | null) => void;
   applyCeilingPaintToRoom: (
@@ -94,10 +110,14 @@ export type DesignPageSurfaceActions = {
     patch: SurfaceSettingsPatch,
     roomId?: string | null,
     faceId?: string | null,
+    panelId?: string | null,
+    panelAliases?: readonly string[] | null,
   ) => void;
   resetActiveWallSurface: (
     roomId?: string | null,
     faceId?: string | null,
+    panelId?: string | null,
+    panelAliases?: readonly string[] | null,
   ) => void;
   changeSurfaceTargetMode: (mode: SurfaceTargetMode) => void;
   changeSurfaceBrushActive: (active: boolean) => void;
@@ -155,6 +175,29 @@ export type UseDesignPageSurfaceActionsResult = {
   actions: DesignPageSurfaceActions;
 };
 
+function getPanelAssignment(
+  panels: Record<string, SurfaceSettings>,
+  panelId: string,
+  aliases: readonly string[]
+): SurfaceSettings | undefined {
+  return panels[panelId] ??
+    aliases.map((alias) => panels[alias]).find(Boolean);
+}
+
+function replacePanelAssignment(
+  panels: Record<string, SurfaceSettings>,
+  panelId: string,
+  aliases: readonly string[],
+  settings?: SurfaceSettings
+): Record<string, SurfaceSettings> {
+  const nextPanels = { ...panels };
+  [panelId, ...aliases].forEach((key) => {
+    delete nextPanels[key];
+  });
+  if (settings) nextPanels[panelId] = settings;
+  return nextPanels;
+}
+
 export function useDesignPageSurfaceActions({
   state,
   configuration,
@@ -175,6 +218,56 @@ export function useDesignPageSurfaceActions({
     setSurfaceBrushMaterialId,
     setSurfaceBrushPaint,
   } = adapters;
+
+  const resolveWallPanelId = useCallback(
+    (
+      roomId: string,
+      faceId: string | null,
+      panelId?: string | null,
+    ): string | null => {
+      const explicitPanelId = panelId?.trim();
+      if (explicitPanelId) return explicitPanelId;
+      if (
+        faceId &&
+        selectedWallSurfaceTarget?.roomId === roomId &&
+        selectedWallSurfaceTarget.faceId === faceId
+      ) {
+        return selectedWallSurfaceTarget.panelId?.trim() || null;
+      }
+      return null;
+    },
+    [selectedWallSurfaceTarget],
+  );
+
+  const resolveWallPanelAliases = useCallback(
+    (
+      roomId: string,
+      faceId: string | null,
+      panelId: string | null,
+      aliases?: readonly string[] | null,
+    ): string[] => {
+      const explicitAliases = (aliases ?? [])
+        .map((alias) => alias.trim())
+        .filter(Boolean);
+      if (explicitAliases.length > 0) {
+        return [...new Set(explicitAliases)].filter(
+          (alias) => alias !== panelId,
+        );
+      }
+      if (
+        panelId &&
+        selectedWallSurfaceTarget?.roomId === roomId &&
+        selectedWallSurfaceTarget.faceId === faceId &&
+        selectedWallSurfaceTarget.panelId === panelId
+      ) {
+        return [...new Set(selectedWallSurfaceTarget.panelAliases ?? [])].filter(
+          (alias) => alias && alias !== panelId,
+        );
+      }
+      return [];
+    },
+    [selectedWallSurfaceTarget],
+  );
 
   const handleApplyFloorMaterialToRoom = useCallback(
     (materialId: string, roomId?: string | null) => {
@@ -374,19 +467,24 @@ export function useDesignPageSurfaceActions({
   );
 
   const buildWallSurfaceSettings = useCallback(
-    (materialId: string, current?: SurfaceSettings): SurfaceSettings =>
+    (
+      materialId: string,
+      current?: SurfaceSettings,
+      settingsPatch?: SurfaceSettingsPatch | null,
+    ): SurfaceSettings =>
       createSurfaceSettingsPatch(
         materialId,
         normalizeFloorRotationDeg,
         clampFloorPatternScale,
         {
-          materialId,
           pattern: "straight",
           rotationDeg: 0,
           scale: DEFAULT_FLOOR_PATTERN_SCALE,
           offset: DEFAULT_FLOOR_PATTERN_OFFSET,
           jointSizeMm: DEFAULT_FLOOR_JOINT_SIZE_MM,
-          jointColor: DEFAULT_FLOOR_JOINT_COLOR,
+          jointColor: DEFAULT_WALL_JOINT_COLOR,
+          ...(settingsPatch ?? {}),
+          materialId,
         },
         current,
       ),
@@ -394,7 +492,14 @@ export function useDesignPageSurfaceActions({
   );
 
   const handleApplyWallMaterialToRoom = useCallback(
-    (materialId: string, roomId?: string | null, faceId?: string | null) => {
+    (
+      materialId: string,
+      roomId?: string | null,
+      faceId?: string | null,
+      panelId?: string | null,
+      panelAliases?: readonly string[] | null,
+      settingsPatch?: SurfaceSettingsPatch | null,
+    ) => {
       const surfaceMaterial = getRuntimeSurfaceMaterialById(materialId);
       const material = getFloorMaterialById(materialId);
       const appliedMaterialId =
@@ -410,8 +515,21 @@ export function useDesignPageSurfaceActions({
       if (!room) return;
 
       const normalizedFaceId = faceId?.trim() || null;
+      const normalizedPanelId = resolveWallPanelId(
+        room.id,
+        normalizedFaceId,
+        panelId,
+      );
+      const normalizedPanelAliases = resolveWallPanelAliases(
+        room.id,
+        normalizedFaceId,
+        normalizedPanelId,
+        panelAliases,
+      );
       runHistoryTransaction(
-        normalizedFaceId
+        normalizedPanelId
+          ? "Apply selected wall panel material"
+          : normalizedFaceId
           ? "Apply selected wall material"
           : "Apply wall material",
         () =>
@@ -425,13 +543,35 @@ export function useDesignPageSurfaceActions({
             };
             const currentWalls = currentSurfaces.walls ?? {};
             const currentFaces = currentWalls.faces ?? {};
+            const currentPanels = currentWalls.panels ?? {};
             const nextWallSettings = buildWallSurfaceSettings(
               appliedMaterialId,
-              normalizedFaceId
+              normalizedPanelId
+                ? (getPanelAssignment(
+                    currentPanels,
+                    normalizedPanelId,
+                    normalizedPanelAliases,
+                  ) ??
+                  (normalizedFaceId
+                    ? currentFaces[normalizedFaceId]
+                    : undefined) ??
+                  currentWalls.default)
+                : normalizedFaceId
                 ? (currentFaces[normalizedFaceId] ?? currentWalls.default)
                 : currentWalls.default,
+              settingsPatch,
             );
-            const nextWalls = normalizedFaceId
+            const nextWalls = normalizedPanelId
+              ? {
+                  ...currentWalls,
+                  panels: replacePanelAssignment(
+                    currentPanels,
+                    normalizedPanelId,
+                    normalizedPanelAliases,
+                    nextWallSettings,
+                  ),
+                }
+              : normalizedFaceId
               ? {
                   ...currentWalls,
                   faces: {
@@ -443,13 +583,16 @@ export function useDesignPageSurfaceActions({
                   ...currentWalls,
                   default: nextWallSettings,
                 };
-            const nextSurfaces: RoomSurfaceAssignments = {
-              ...currentSurfaces,
-              ...(normalizedFaceId
-                ? {}
-                : { wallMaterialId: appliedMaterialId }),
-              walls: nextWalls,
-            };
+            const nextSurfaces = normalizedFaceId
+              ? {
+                  ...currentSurfaces,
+                  walls: nextWalls,
+                }
+              : replaceAllWallSurfaceSettings(
+                  currentSurfaces,
+                  nextWallSettings,
+                  appliedMaterialId,
+                );
 
             return updateRoom(prev, {
               ...target,
@@ -460,20 +603,29 @@ export function useDesignPageSurfaceActions({
       );
 
       showRuleToast(
-        normalizedFaceId
+        normalizedPanelId
+          ? `${appliedMaterialName} applied to selected wall panel`
+          : normalizedFaceId
           ? `${appliedMaterialName} applied to ${getWallFaceLabel(normalizedFaceId)}`
           : `${appliedMaterialName} applied to ${room.name} walls`,
       );
       track("wall_finish_applied", {
         materialId: appliedMaterialId,
         roomId: room.id,
-        scope: normalizedFaceId ? "selected_wall" : "room_walls",
+        scope: normalizedPanelId
+          ? "selected_wall_panel"
+          : normalizedFaceId
+            ? "selected_wall"
+            : "room_walls",
         faceId: normalizedFaceId,
+        panelId: normalizedPanelId,
       });
     },
     [
       buildWallSurfaceSettings,
       designSnapshotRef,
+      resolveWallPanelId,
+      resolveWallPanelAliases,
       runHistoryTransaction,
       setDesignSnapshot,
       showRuleToast,
@@ -481,7 +633,10 @@ export function useDesignPageSurfaceActions({
   );
 
   const handleApplyWallMaterialToAllRooms = useCallback(
-    (materialId: string) => {
+    (
+      materialId: string,
+      settingsPatch?: SurfaceSettingsPatch | null,
+    ) => {
       const surfaceMaterial = getRuntimeSurfaceMaterialById(materialId);
       const material = getFloorMaterialById(materialId);
       const appliedMaterialId =
@@ -501,17 +656,15 @@ export function useDesignPageSurfaceActions({
                 ...room.surfaceFinishes,
               };
               const currentWalls = currentSurfaces.walls ?? {};
-              const nextSurfaces: RoomSurfaceAssignments = {
-                ...currentSurfaces,
-                wallMaterialId: appliedMaterialId,
-                walls: {
-                  ...currentWalls,
-                  default: buildWallSurfaceSettings(
-                    appliedMaterialId,
-                    currentWalls.default,
-                  ),
-                },
-              };
+              const nextSurfaces = replaceAllWallSurfaceSettings(
+                currentSurfaces,
+                buildWallSurfaceSettings(
+                  appliedMaterialId,
+                  currentWalls.default,
+                  settingsPatch,
+                ),
+                appliedMaterialId,
+              );
               return {
                 ...room,
                 surfaces: nextSurfaces,
@@ -571,6 +724,8 @@ export function useDesignPageSurfaceActions({
       name?: string | null,
       roomId?: string | null,
       faceId?: string | null,
+      panelId?: string | null,
+      panelAliases?: readonly string[] | null,
     ) => {
       const normalizedColor = normalizeWallPaintColorHex(colorHex);
       if (!normalizedColor) {
@@ -587,8 +742,23 @@ export function useDesignPageSurfaceActions({
       if (!room) return;
 
       const normalizedFaceId = faceId?.trim() || null;
+      const normalizedPanelId = resolveWallPanelId(
+        room.id,
+        normalizedFaceId,
+        panelId,
+      );
+      const normalizedPanelAliases = resolveWallPanelAliases(
+        room.id,
+        normalizedFaceId,
+        normalizedPanelId,
+        panelAliases,
+      );
       runHistoryTransaction(
-        normalizedFaceId ? "Paint selected wall" : "Paint walls",
+        normalizedPanelId
+          ? "Paint selected wall panel"
+          : normalizedFaceId
+            ? "Paint selected wall"
+            : "Paint walls",
         () =>
           setDesignSnapshot((prev) => {
             const target = prev.rooms.find((entry) => entry.id === room.id);
@@ -600,16 +770,37 @@ export function useDesignPageSurfaceActions({
             };
             const currentWalls = currentSurfaces.walls ?? {};
             const currentFaces = currentWalls.faces ?? {};
+            const currentPanels = currentWalls.panels ?? {};
             const nextWallSettings = buildWallPaintSettings(
               normalizedColor,
               paintName,
-              normalizedFaceId
+              normalizedPanelId
+                ? (getPanelAssignment(
+                    currentPanels,
+                    normalizedPanelId,
+                    normalizedPanelAliases,
+                  ) ??
+                  (normalizedFaceId
+                    ? currentFaces[normalizedFaceId]
+                    : undefined) ??
+                  currentWalls.default)
+                : normalizedFaceId
                 ? (currentFaces[normalizedFaceId] ?? currentWalls.default)
                 : currentWalls.default,
             );
             if (!nextWallSettings) return prev;
 
-            const nextWalls = normalizedFaceId
+            const nextWalls = normalizedPanelId
+              ? {
+                  ...currentWalls,
+                  panels: replacePanelAssignment(
+                    currentPanels,
+                    normalizedPanelId,
+                    normalizedPanelAliases,
+                    nextWallSettings,
+                  ),
+                }
+              : normalizedFaceId
               ? {
                   ...currentWalls,
                   faces: {
@@ -621,11 +812,16 @@ export function useDesignPageSurfaceActions({
                   ...currentWalls,
                   default: nextWallSettings,
                 };
-            const nextSurfaces: RoomSurfaceAssignments = {
-              ...currentSurfaces,
-              ...(normalizedFaceId ? {} : { wallMaterialId: null }),
-              walls: nextWalls,
-            };
+            const nextSurfaces = normalizedFaceId
+              ? {
+                  ...currentSurfaces,
+                  walls: nextWalls,
+                }
+              : replaceAllWallSurfaceSettings(
+                  currentSurfaces,
+                  nextWallSettings,
+                  null,
+                );
 
             return updateRoom(prev, {
               ...target,
@@ -636,7 +832,9 @@ export function useDesignPageSurfaceActions({
       );
 
       showRuleToast(
-        normalizedFaceId
+        normalizedPanelId
+          ? `${paintName} applied to selected wall panel`
+          : normalizedFaceId
           ? `${paintName} applied to ${getWallFaceLabel(normalizedFaceId)}`
           : `${paintName} applied to ${room.name} walls`,
       );
@@ -644,13 +842,20 @@ export function useDesignPageSurfaceActions({
         colorHex: normalizedColor,
         name: paintName,
         roomId: room.id,
-        scope: normalizedFaceId ? "selected_wall" : "room_walls",
+        scope: normalizedPanelId
+          ? "selected_wall_panel"
+          : normalizedFaceId
+            ? "selected_wall"
+            : "room_walls",
         faceId: normalizedFaceId,
+        panelId: normalizedPanelId,
       });
     },
     [
       buildWallPaintSettings,
       designSnapshotRef,
+      resolveWallPanelId,
+      resolveWallPanelAliases,
       runHistoryTransaction,
       setDesignSnapshot,
       showRuleToast,
@@ -684,14 +889,11 @@ export function useDesignPageSurfaceActions({
                 currentWalls.default,
               );
               if (!nextWallSettings) return room;
-              const nextSurfaces: RoomSurfaceAssignments = {
-                ...currentSurfaces,
-                wallMaterialId: null,
-                walls: {
-                  ...currentWalls,
-                  default: nextWallSettings,
-                },
-              };
+              const nextSurfaces = replaceAllWallSurfaceSettings(
+                currentSurfaces,
+                nextWallSettings,
+                null,
+              );
               return {
                 ...room,
                 surfaces: nextSurfaces,
@@ -884,6 +1086,8 @@ export function useDesignPageSurfaceActions({
       patch: SurfaceSettingsPatch,
       roomId?: string | null,
       faceId?: string | null,
+      panelId?: string | null,
+      panelAliases?: readonly string[] | null,
     ) => {
       const room =
         (roomId
@@ -894,6 +1098,17 @@ export function useDesignPageSurfaceActions({
       if (!room) return;
 
       const normalizedFaceId = faceId?.trim() || null;
+      const normalizedPanelId = resolveWallPanelId(
+        room.id,
+        normalizedFaceId,
+        panelId,
+      );
+      const normalizedPanelAliases = resolveWallPanelAliases(
+        room.id,
+        normalizedFaceId,
+        normalizedPanelId,
+        panelAliases,
+      );
       runHistoryTransaction("Update wall surface", () =>
         setDesignSnapshot((prev) => {
           const target = prev.rooms.find((entry) => entry.id === room.id);
@@ -905,7 +1120,18 @@ export function useDesignPageSurfaceActions({
           };
           const currentWalls = currentSurfaces.walls ?? {};
           const currentFaces = currentWalls.faces ?? {};
-          const baseSettings = normalizedFaceId
+          const currentPanels = currentWalls.panels ?? {};
+          const baseSettings = normalizedPanelId
+            ? (getPanelAssignment(
+                currentPanels,
+                normalizedPanelId,
+                normalizedPanelAliases,
+              ) ??
+              (normalizedFaceId
+                ? currentFaces[normalizedFaceId]
+                : undefined) ??
+              currentWalls.default)
+            : normalizedFaceId
             ? (currentFaces[normalizedFaceId] ?? currentWalls.default)
             : currentWalls.default;
           const normalizedSettings = createSurfaceSettingsPatch(
@@ -918,7 +1144,17 @@ export function useDesignPageSurfaceActions({
             patch,
             baseSettings,
           );
-          const nextWalls = normalizedFaceId
+          const nextWalls = normalizedPanelId
+            ? {
+                ...currentWalls,
+                panels: replacePanelAssignment(
+                  currentPanels,
+                  normalizedPanelId,
+                  normalizedPanelAliases,
+                  normalizedSettings,
+                ),
+              }
+            : normalizedFaceId
             ? {
                 ...currentWalls,
                 faces: {
@@ -949,14 +1185,26 @@ export function useDesignPageSurfaceActions({
       track("wall_finish_pattern_changed", {
         roomId: room.id,
         faceId: normalizedFaceId,
+        panelId: normalizedPanelId,
         fields: Object.keys(patch).join(","),
       });
     },
-    [designSnapshotRef, runHistoryTransaction, setDesignSnapshot],
+    [
+      designSnapshotRef,
+      resolveWallPanelId,
+      resolveWallPanelAliases,
+      runHistoryTransaction,
+      setDesignSnapshot,
+    ],
   );
 
   const handleResetActiveWallSurface = useCallback(
-    (roomId?: string | null, faceId?: string | null) => {
+    (
+      roomId?: string | null,
+      faceId?: string | null,
+      panelId?: string | null,
+      panelAliases?: readonly string[] | null,
+    ) => {
       const room =
         (roomId
           ? (designSnapshotRef.current.rooms.find(
@@ -966,6 +1214,17 @@ export function useDesignPageSurfaceActions({
       if (!room) return;
 
       const normalizedFaceId = faceId?.trim() || null;
+      const normalizedPanelId = resolveWallPanelId(
+        room.id,
+        normalizedFaceId,
+        panelId,
+      );
+      const normalizedPanelAliases = resolveWallPanelAliases(
+        room.id,
+        normalizedFaceId,
+        normalizedPanelId,
+        panelAliases,
+      );
       runHistoryTransaction("Reset wall surface", () =>
         setDesignSnapshot((prev) => {
           const target = prev.rooms.find((entry) => entry.id === room.id);
@@ -977,10 +1236,20 @@ export function useDesignPageSurfaceActions({
           };
           const currentWalls = currentSurfaces.walls ?? {};
           const currentFaces = { ...(currentWalls.faces ?? {}) };
+          const currentPanels = { ...(currentWalls.panels ?? {}) };
           let nextWalls = currentWalls;
           let nextSurfaces: RoomSurfaceAssignments = { ...currentSurfaces };
 
-          if (normalizedFaceId) {
+          if (normalizedPanelId) {
+            nextWalls = {
+              ...currentWalls,
+              panels: replacePanelAssignment(
+                currentPanels,
+                normalizedPanelId,
+                normalizedPanelAliases,
+              ),
+            };
+          } else if (normalizedFaceId) {
             delete currentFaces[normalizedFaceId];
             nextWalls = {
               ...currentWalls,
@@ -991,6 +1260,7 @@ export function useDesignPageSurfaceActions({
               ...currentWalls,
               default: undefined,
               faces: {},
+              panels: {},
             };
             nextSurfaces = {
               ...nextSurfaces,
@@ -1012,17 +1282,22 @@ export function useDesignPageSurfaceActions({
       );
 
       showRuleToast(
-        normalizedFaceId
+        normalizedPanelId
+          ? "Selected wall panel reset"
+          : normalizedFaceId
           ? `${getWallFaceLabel(normalizedFaceId)} reset`
           : `${room.name} walls reset`,
       );
       track("wall_finish_reset", {
         roomId: room.id,
         faceId: normalizedFaceId,
+        panelId: normalizedPanelId,
       });
     },
     [
       designSnapshotRef,
+      resolveWallPanelId,
+      resolveWallPanelAliases,
       runHistoryTransaction,
       setDesignSnapshot,
       showRuleToast,

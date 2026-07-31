@@ -1,19 +1,30 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   floorPlanImportResponseJson,
+  loadConsumerFloorPlanImportJob,
   parseFloorPlanImportDocument,
   parseFloorPlanImportIssues,
   useConsumerFloorPlanImportSession,
 } from "./useConsumerFloorPlanImportSession";
-import { pollFloorPlanImportJobUntilPaused } from "@/lib/floor-plan-import-client";
-import { isFloorPlanMvpBlockingIssue } from "@/lib/floor-plan-imports/types";
+import {
+  isPausedFloorPlanImportStatus,
+  startAndPollFloorPlanImport,
+} from "@/lib/floor-plan-import-client";
+import {
+  isFloorPlanMvpBlockingIssue,
+  type FloorPlanReviewIssue,
+} from "@/lib/floor-plan-imports/types";
 import type { ConsumerFloorPlanImportJob } from "./floor-plan-import-ui-types";
 import FloorPlanImportReviewPanel from "./floor-plan-import-review/FloorPlanImportReviewPanel";
+import FloorPlanVisualReviewTools from "./floor-plan-import-review/FloorPlanVisualReviewTools";
 import FloorPlanOptionalConfigurationPanel from "./FloorPlanOptionalConfigurationPanel";
 import { inspectFloorPlanOptionalConfigurations } from "@/lib/floor-plan-optional-configurations";
+import { readFloorPlanPageSelection } from "@/lib/floor-plan-imports/page-selection";
+import { formatFloorPlanRemainingTime } from "@/lib/floor-plan-imports/progress-estimate";
+import FloorPlanPageSelectionPanel from "./FloorPlanPageSelectionPanel";
 
 type FloorPlanImportAssistantProps = {
   file: File | null;
@@ -21,8 +32,9 @@ type FloorPlanImportAssistantProps = {
   dark?: boolean;
   disabled?: boolean;
   resumeJobId?: string | null;
+  onChooseFile?: () => void;
   onActiveJobIdChange?: (jobId: string | null) => void;
-  onSourceContentDeleted?: () => void;
+  onJobUpdate?: (job: ConsumerFloorPlanImportJob) => void;
 };
 
 export default function FloorPlanImportAssistant({
@@ -31,8 +43,9 @@ export default function FloorPlanImportAssistant({
   dark = false,
   disabled = false,
   resumeJobId = null,
+  onChooseFile,
   onActiveJobIdChange,
-  onSourceContentDeleted,
+  onJobUpdate,
 }: FloorPlanImportAssistantProps) {
   const router = useRouter();
   const {
@@ -49,6 +62,7 @@ export default function FloorPlanImportAssistant({
     resumeJobId,
     trainingBenchmarkOptIn,
     onActiveJobIdChange,
+    onJobUpdate,
   });
   const [entranceOpeningId, setEntranceOpeningId] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -57,8 +71,12 @@ export default function FloorPlanImportAssistant({
   const [sourceDeletionQueued, setSourceDeletionQueued] = useState(false);
   const [savedUnderlaysScrubbed, setSavedUnderlaysScrubbed] = useState(0);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [autoCreateError, setAutoCreateError] = useState<string | null>(null);
-  const autoCreateAttemptRef = useRef<string | null>(null);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+  const [retryingDetection, setRetryingDetection] = useState(false);
+  const [selectedPageNumber, setSelectedPageNumber] = useState<number | null>(
+    null
+  );
 
   useEffect(() => {
     setEntranceOpeningId("");
@@ -66,11 +84,77 @@ export default function FloorPlanImportAssistant({
     setSourceDeletionQueued(false);
     setSavedUnderlaysScrubbed(0);
     setDeleteError(null);
-    setAutoCreateError(null);
-    autoCreateAttemptRef.current = null;
+    setCreateError(null);
+    setReviewError(null);
+    setRetryingDetection(false);
+    setSelectedPageNumber(null);
   }, [file, resumeJobId]);
 
   const activeJob = state.kind === "job" ? state.job : null;
+  const pageSelection = useMemo(
+    () => readFloorPlanPageSelection(activeJob?.candidateJson),
+    [activeJob?.candidateJson]
+  );
+  useEffect(() => {
+    if (
+      activeJob?.status !== "selecting_page" ||
+      !pageSelection?.candidates.length
+    ) {
+      return;
+    }
+    setSelectedPageNumber(
+      pageSelection.selectedPageNumber ??
+        pageSelection.candidates[0].pageNumber
+    );
+  }, [activeJob?.status, pageSelection]);
+
+  const showWorkingJob = useCallback(
+    (job: ConsumerFloorPlanImportJob, fallbackMessage: string) => {
+      onJobUpdate?.(job);
+      const estimate = job.progressEstimate;
+      const nextProgress = estimate?.estimatedPercent ?? job.progress;
+      setState((current) => ({
+        kind: "working",
+        message: estimate?.stageLabel ?? fallbackMessage,
+        progress:
+          current.kind === "working" && current.status === job.status
+            ? Math.max(current.progress, nextProgress)
+            : nextProgress,
+        status: job.status,
+        estimate,
+      }));
+    },
+    [onJobUpdate, setState]
+  );
+
+  const processAndPoll = useCallback(
+    async (
+      jobId: string,
+      fallbackMessage: string,
+      options: { continueSelectedPage?: boolean } = {}
+    ) => {
+      const statusUrl = `/api/floor-plan-imports/${encodeURIComponent(jobId)}`;
+      const loadJob = () => loadConsumerFloorPlanImportJob(statusUrl);
+      const initialJob = await loadJob();
+      showWorkingJob(initialJob, fallbackMessage);
+      return startAndPollFloorPlanImport({
+        initialJob,
+        startProcessing: async () =>
+          floorPlanImportResponseJson(
+            await fetch(`${statusUrl}/process`, { method: "POST" })
+          ),
+        loadJob,
+        isPaused: options.continueSelectedPage
+          ? (job) =>
+              job.status === "selecting_page"
+                ? false
+                : isPausedFloorPlanImportStatus(job.status)
+          : undefined,
+        onProgress: (job) => showWorkingJob(job, fallbackMessage),
+      });
+    },
+    [showWorkingJob]
+  );
   const sourceContentDeleted = Boolean(
     sourceDeleted || activeJob?.sourceAsset?.contentDeletedAt
   );
@@ -95,20 +179,28 @@ export default function FloorPlanImportAssistant({
     activeJob?.adapterId?.includes("dwg")
     ? activeJob.renderedPagesJson?.[0] ?? null
     : null;
-  const unresolvedCritical = issues.filter(isFloorPlanMvpBlockingIssue);
   const cannotFinishReason = useMemo(() => {
     if (!candidate || !floor) return "No canonical plan candidate is available.";
     if (!floor.rooms.length || !floor.walls.length) {
       return cadPreview
         ? "The CAD source does not contain enough reviewed room topology to create a design. The importer will not promote unrelated linework into rooms."
-        : "Automatic room detection was too weak. Keep the underlay and use Set scale + Draw room; the importer will not invent a layout.";
+        : "Automatic room detection was too weak. Use Set scale + Draw room in this isolated review; the importer will not invent a layout.";
     }
     return null;
   }, [cadPreview, candidate, floor]);
 
-  const submitReview = async () => {
-    if (!activeJob || !candidate || unresolvedCritical.length > 0) return;
+  const submitReview = async (
+    reviewIssues: FloorPlanReviewIssue[] = issues
+  ) => {
+    if (
+      !activeJob ||
+      !candidate ||
+      reviewIssues.some(isFloorPlanMvpBlockingIssue)
+    ) {
+      return;
+    }
     setSubmitting(true);
+    setReviewError(null);
     try {
       const nextCandidate = structuredClone(candidate);
       const nextFloor = nextCandidate.floors[0];
@@ -144,51 +236,35 @@ export default function FloorPlanImportAssistant({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             candidate: nextCandidate,
-            reviewIssues: issues,
+            reviewIssues,
             candidateVersion: activeJob.candidateVersion,
-            correctionNote: "Consumer completed the quick floor-plan review.",
+            correctionNote:
+              "Consumer confirmed the AI-generated floor plan against the uploaded source.",
           }),
         })
       );
-      setState({ kind: "working", message: "Validating your corrections", progress: 78 });
-      await floorPlanImportResponseJson(
-        await fetch(`/api/floor-plan-imports/${activeJob.id}/process`, { method: "POST" })
+      const job = await processAndPoll(
+        activeJob.id,
+        "Validating your corrections"
       );
-      const refreshed = await floorPlanImportResponseJson(
-        await fetch(`/api/floor-plan-imports/${activeJob.id}`, { cache: "no-store" })
-      );
-      let job = refreshed.job as ConsumerFloorPlanImportJob;
-      job = await pollFloorPlanImportJobUntilPaused({
-        initialJob: job,
-        loadJob: async () => {
-          const pending = await floorPlanImportResponseJson(
-            await fetch(`/api/floor-plan-imports/${activeJob.id}`, { cache: "no-store" })
-          );
-          return pending.job as ConsumerFloorPlanImportJob;
-        },
-        onProgress: (pendingJob) => setState({
-          kind: "working",
-          message: "Validating your corrections",
-          progress: pendingJob.progress,
-        }),
-      });
       setCandidate(parseFloorPlanImportDocument(job.candidateJson));
       setIssues(parseFloorPlanImportIssues(job.reviewIssuesJson));
       setState({ kind: "job", job });
     } catch (cause) {
-      setState({
-        kind: "error",
-        message: cause instanceof Error ? cause.message : "Unable to save floor-plan review",
-      });
+      setReviewError(
+        cause instanceof Error
+          ? cause.message
+          : "Unable to save floor-plan review"
+      );
     } finally {
       setSubmitting(false);
     }
   };
 
-  const createDesign = useCallback(async (automatic = false) => {
+  const createDesign = useCallback(async () => {
     if (!activeJob || activeJob.status !== "ready") return;
     setSubmitting(true);
-    setAutoCreateError(null);
+    setCreateError(null);
     try {
       const payload = await floorPlanImportResponseJson(
         await fetch(`/api/floor-plan-imports/${activeJob.id}/confirm`, {
@@ -200,13 +276,18 @@ export default function FloorPlanImportAssistant({
       const id = typeof payload.id === "string" ? payload.id : null;
       if (!id) throw new Error("The new design ID is missing");
       onActiveJobIdChange?.(null);
-      router.push(`/design/${encodeURIComponent(id)}`);
+      router.push(
+        `/design?designId=${encodeURIComponent(
+          id
+        )}&view=2d&workspace=furnish&floorPlanImport=${encodeURIComponent(
+          activeJob.id
+        )}`
+      );
     } catch (cause) {
       const message = cause instanceof Error
         ? cause.message
         : "Unable to create the new design";
-      if (automatic) setAutoCreateError(message);
-      else setState({ kind: "error", message });
+      setCreateError(message);
     } finally {
       setSubmitting(false);
     }
@@ -217,27 +298,90 @@ export default function FloorPlanImportAssistant({
     [candidate]
   );
 
-  useEffect(() => {
+  const confirmSelectedPage = async () => {
     if (
-      disabled ||
-      submitting ||
       !activeJob ||
-      activeJob.status !== "ready" ||
-      optionalConfigurationCount > 0
+      activeJob.status !== "selecting_page" ||
+      selectedPageNumber === null
     ) {
       return;
     }
-    const attemptKey = `${activeJob.id}:${activeJob.candidateVersion}`;
-    if (autoCreateAttemptRef.current === attemptKey) return;
-    autoCreateAttemptRef.current = attemptKey;
-    void createDesign(true);
-  }, [
-    activeJob,
-    createDesign,
-    disabled,
-    optionalConfigurationCount,
-    submitting,
-  ]);
+    setSubmitting(true);
+    try {
+      await floorPlanImportResponseJson(
+        await fetch(
+          `/api/floor-plan-imports/${activeJob.id}/select-page`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              pageNumber: selectedPageNumber,
+              candidateVersion: activeJob.candidateVersion,
+            }),
+          }
+        )
+      );
+      const job = await processAndPoll(
+        activeJob.id,
+        "Analyzing the selected floor plan",
+        { continueSelectedPage: true }
+      );
+      setCandidate(parseFloorPlanImportDocument(job.candidateJson));
+      setIssues(parseFloorPlanImportIssues(job.reviewIssuesJson));
+      setState({ kind: "job", job });
+    } catch (cause) {
+      setState({
+        kind: "error",
+        message:
+          cause instanceof Error
+            ? cause.message
+            : "Unable to analyze the selected page",
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const retryDetection = async () => {
+    if (!activeJob || !["needs_review", "failed"].includes(activeJob.status)) {
+      return;
+    }
+    setRetryingDetection(true);
+    setReviewError(null);
+    try {
+      const retryPayload = await floorPlanImportResponseJson(
+        await fetch(
+          `/api/floor-plan-imports/${activeJob.id}/retry-detection`,
+          { method: "POST" }
+        )
+      );
+      const retryJobId =
+        retryPayload.job &&
+        typeof retryPayload.job === "object" &&
+        typeof (retryPayload.job as { id?: unknown }).id === "string"
+          ? (retryPayload.job as { id: string }).id
+          : null;
+      if (!retryJobId) throw new Error("The retry job ID is missing");
+      onActiveJobIdChange?.(retryJobId);
+      const job = await processAndPoll(
+        retryJobId,
+        "Retrying with improved wall and dimension detection"
+      );
+      setCandidate(parseFloorPlanImportDocument(job.candidateJson));
+      setIssues(parseFloorPlanImportIssues(job.reviewIssuesJson));
+      setState({ kind: "job", job });
+    } catch (cause) {
+      setState({
+        kind: "error",
+        message:
+          cause instanceof Error
+            ? cause.message
+            : "Unable to retry floor-plan detection",
+      });
+    } finally {
+      setRetryingDetection(false);
+    }
+  };
 
   const deletePrivateSource = async () => {
     if (!activeJob || sourceContentDeleted || sourceDeletionPending) return;
@@ -261,7 +405,6 @@ export default function FloorPlanImportAssistant({
       );
       setSourceDeletionQueued(deletionQueued);
       setSourceDeleted(deletionCompleted);
-      onSourceContentDeleted?.();
       setState((current) =>
         current.kind === "job"
           ? {
@@ -296,22 +439,92 @@ export default function FloorPlanImportAssistant({
 
   if ((!file && !resumeJobId) || state.kind === "idle") return null;
   const surface = dark
-    ? "designer-recessed rounded-lg border border-white/10 p-3"
-    : "rounded-lg border border-emerald-200 bg-emerald-50/70 p-3";
+    ? "designer-recessed rounded-xl border border-white/10 p-4 sm:p-5"
+    : "rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 shadow-sm sm:p-5";
   const subtle = dark ? "text-neutral-400" : "text-neutral-600";
   const control = dark
     ? "designer-control rounded-md border px-2 py-1.5 text-xs text-neutral-100"
     : "rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-xs text-neutral-900";
 
   if (state.kind === "working") {
+    const estimate = state.estimate;
+    const progress = Math.max(0, Math.min(99, Math.round(state.progress)));
+    const retrySeconds =
+      estimate?.activity === "retrying" && estimate.nextAttemptAt
+        ? Math.max(
+            1,
+            Math.ceil((Date.parse(estimate.nextAttemptAt) - Date.now()) / 1_000)
+          )
+        : null;
+    const timingMessage =
+      estimate?.activity === "queued"
+        ? "Waiting to start"
+        : estimate?.activity === "retrying"
+          ? `Retrying in ${retrySeconds ?? 1} sec`
+          : estimate?.activity === "awaiting_user"
+            ? "Waiting for your review"
+            : estimate?.activity === "attention" &&
+                !estimate.heartbeatHealthy
+              ? "Processing connection delayed"
+              : estimate?.unusuallySlow
+                ? "Taking longer than usual — AI is still working"
+                : formatFloorPlanRemainingTime(
+                    estimate?.remainingRangeMs ?? null,
+                    estimate?.confidence ?? null
+                  );
     return (
-      <div className={surface} data-testid="floor-plan-import-progress" aria-live="polite">
-        <div className="flex items-center justify-between gap-2 text-xs font-semibold">
-          <span>{state.message}</span>
-          <span>{Math.max(0, Math.min(100, Math.round(state.progress)))}%</span>
+      <div
+        className={`${surface} flex min-h-[440px] flex-col items-center justify-center text-center`}
+        data-testid="floor-plan-import-progress"
+      >
+        <div className="relative h-14 w-14">
+          <div className="absolute inset-0 rounded-full border-4 border-emerald-100" />
+          <div className="absolute inset-0 animate-spin rounded-full border-4 border-transparent border-t-emerald-600" />
         </div>
-        <div className={dark ? "mt-2 h-1.5 overflow-hidden rounded-full bg-white/10" : "mt-2 h-1.5 overflow-hidden rounded-full bg-emerald-100"}>
-          <div className="h-full rounded-full bg-emerald-500 transition-all" style={{ width: `${state.progress}%` }} />
+        <h3 className="mt-5 text-xl font-semibold">AI is reading your floor plan</h3>
+        <p className={`mt-2 max-w-lg text-sm leading-6 ${subtle}`}>
+          Finding walls, printed dimensions, room names, doors, and windows.
+          You can leave this screen and return later.
+        </p>
+        <div className="mt-5 w-full max-w-xl">
+          <div className="flex items-center justify-between gap-2 text-xs font-semibold">
+            <span className="flex items-center gap-2 text-left">
+              {state.message}
+              {estimate?.heartbeatHealthy ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-800">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  Live
+                </span>
+              ) : null}
+            </span>
+            <span>{progress}%</span>
+          </div>
+          <div
+            role="progressbar"
+            aria-label="Estimated floor-plan import progress"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={progress}
+            className={
+              dark
+                ? "mt-2 h-2 overflow-hidden rounded-full bg-white/10"
+                : "mt-2 h-2 overflow-hidden rounded-full bg-emerald-100"
+            }
+          >
+            <div
+              className="h-full rounded-full bg-emerald-500 transition-all"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <div className={`mt-3 text-xs font-medium ${subtle}`}>
+            Estimated progress
+          </div>
+          <div className={`mt-1 min-h-5 text-sm ${subtle}`} aria-live="polite">
+            {timingMessage ?? "Calculating time remaining…"}
+          </div>
+          <div className={`mt-2 text-xs ${subtle}`}>
+            Upload · Detection · Dimensions · Editable plan
+          </div>
         </div>
       </div>
     );
@@ -322,6 +535,15 @@ export default function FloorPlanImportAssistant({
       <div className={dark ? "designer-recessed rounded-lg border border-amber-400/20 p-3" : "rounded-lg border border-amber-200 bg-amber-50 p-3"} data-testid="floor-plan-import-error">
         <div className="text-xs font-semibold">Auto-detection paused</div>
         <p className={`mt-1 text-xs leading-4 ${subtle}`}>{state.message}</p>
+        {state.resumableJobId && !state.authenticationRequired ? (
+          <button
+            type="button"
+            className={`${control} mt-3 font-semibold`}
+            onClick={() => window.location.reload()}
+          >
+            Resume processing
+          </button>
+        ) : null}
       </div>
     );
   }
@@ -331,8 +553,20 @@ export default function FloorPlanImportAssistant({
       <div className={surface} data-testid="floor-plan-import-failed">
         <div className="text-xs font-semibold">Could not read this drawing</div>
         <p className={`mt-1 text-xs ${subtle}`}>
-          {activeJob.errorMessage ?? "Keep the uploaded underlay and continue with guided tracing."}
+          {activeJob.errorMessage ?? "Retry with a clearer drawing or start a new import."}
         </p>
+        {!sourceContentDeleted && !sourceDeletionPending ? (
+          <button
+            type="button"
+            className="mt-3 rounded-md bg-neutral-900 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
+            disabled={disabled || retryingDetection}
+            onClick={() => void retryDetection()}
+          >
+            {retryingDetection
+              ? "Retrying improved detection…"
+              : "Retry with improved detection"}
+          </button>
+        ) : null}
         {!sourceContentDeleted && !sourceDeletionPending ? (
           <button
             type="button"
@@ -340,17 +574,17 @@ export default function FloorPlanImportAssistant({
             disabled={disabled || deletingSource}
             onClick={() => void deletePrivateSource()}
           >
-            {deletingSource ? "Deleting upload…" : "Delete upload and underlay now"}
+            {deletingSource ? "Deleting upload…" : "Delete private upload now"}
           </button>
         ) : sourceDeletionPending ? (
           <p className={`mt-2 text-[10px] ${subtle}`}>
-            Deletion requested. The underlay is cleared now; removal from private storage is queued.
+            Deletion requested; removal from private storage is queued.
           </p>
         ) : (
           <p className={`mt-2 text-[10px] ${subtle}`}>
             {savedUnderlaysScrubbed > 0
-              ? "Upload and matching saved-design underlay deleted."
-              : "Upload deleted and the open underlay cleared."}
+              ? "Upload and matching saved-design reference deleted."
+              : "Private upload deleted."}
           </p>
         )}
         {deleteError && <p className="mt-2 text-[10px] text-red-600">{deleteError}</p>}
@@ -361,77 +595,164 @@ export default function FloorPlanImportAssistant({
   if (activeJob?.status === "ready") {
     return (
       <div className={surface} data-testid="floor-plan-import-ready">
-        <div className="text-xs font-semibold text-emerald-700">Floor plan ready</div>
-        <p
-          className={`mt-1 text-xs leading-4 ${subtle}`}
-          data-testid="floor-plan-import-accuracy-baseline"
-        >
-          Accuracy baseline passed: {canonicalRoomCount} canonical room
-          {canonicalRoomCount === 1 ? "" : "s"} and {canonicalDimensionCount} exact
-          printed dimension{canonicalDimensionCount === 1 ? "" : "s"}. Source
-          scale and all critical review items passed validation.
+        <div className="text-xs font-bold uppercase tracking-[0.14em] text-emerald-700">
+          AI import complete
+        </div>
+        <h3 className="mt-1 text-2xl font-semibold">Your editable plan is ready</h3>
+        <p className={`mt-2 max-w-3xl text-sm leading-6 ${subtle}`}>
+          AI found {canonicalRoomCount} room
+          {canonicalRoomCount === 1 ? "" : "s"} and{" "}
+          {canonicalDimensionCount} exact printed measurement
+          {canonicalDimensionCount === 1 ? "" : "s"}. Create a separate design
+          with editable walls, rooms, doors, and windows. It starts with no
+          furniture.
         </p>
-        <p className={`mt-1 text-xs leading-4 ${subtle}`}>
-          {optionalConfigurationCount > 0
-            ? "Choose any source-supported option, then create the saved design. Your current design stays saved and is not replaced."
-            : submitting && !autoCreateError
-              ? "Creating the editable 2D/3D design now. Your current design stays saved and is not replaced."
-              : "The editable design is created automatically. Your current design stays saved and is not replaced."}
-        </p>
-        <p className={`mt-1 text-[10px] leading-4 ${subtle}`}>
-          {sourceDeletionPending
-            ? "Deletion requested. The open underlay is cleared; removal from private storage is queued. The editable plan and integrity hashes remain."
-            : sourceContentDeleted
-            ? savedUnderlaysScrubbed > 0
-              ? "The upload and matching saved-design underlay have been deleted. The editable plan and integrity hashes remain."
-              : "The upload was deleted and the open underlay cleared. The editable plan and integrity hashes remain."
-            : retentionDate && !Number.isNaN(retentionDate.getTime())
-              ? `Private file bytes are scheduled for deletion by ${retentionDate.toLocaleDateString()}. You can delete them now without deleting this plan.`
-              : "Private file bytes are retained temporarily and can be deleted now without deleting this plan."}
-        </p>
-        <input
-          className={`${control} mt-2 w-full`}
-          value={title}
-          maxLength={160}
-          aria-label="New design name"
-          onChange={(event) => setTitle(event.target.value)}
-        />
-        {candidate ? (
-          <FloorPlanOptionalConfigurationPanel
+        <div className="mt-4 flex flex-wrap gap-2 text-xs">
+          <span className="rounded-full bg-emerald-100 px-3 py-1.5 font-semibold text-emerald-800">
+            Editable 2D
+          </span>
+          <span className="rounded-full bg-emerald-100 px-3 py-1.5 font-semibold text-emerald-800">
+            Editable 3D
+          </span>
+          <span className="rounded-full bg-emerald-100 px-3 py-1.5 font-semibold text-emerald-800">
+            Zero furniture
+          </span>
+          <span className="rounded-full bg-emerald-100 px-3 py-1.5 font-semibold text-emerald-800">
+            Current design unchanged
+          </span>
+        </div>
+        {candidate && floor ? (
+          <FloorPlanVisualReviewTools
             document={candidate}
+            job={activeJob}
+            focusedIssueEntityIds={[]}
+            onChange={(next) => setCandidate(next)}
+            previewOnly
             dark={dark}
-            disabled={disabled || submitting}
-            compact
+            disabled
           />
         ) : null}
         <button
           type="button"
-          className="mt-2 w-full rounded-md bg-emerald-600 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
+          className="mt-4 w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"
           disabled={disabled || submitting}
-          onClick={() => void createDesign(false)}
+          onClick={() => void createDesign()}
         >
           {submitting
             ? "Creating and opening…"
-            : autoCreateError
+            : createError
               ? "Try creating again"
-              : "Create new design"}
+              : "Create editable plan"}
         </button>
-        {autoCreateError ? (
+        <p className={`mt-2 text-center text-xs leading-5 ${subtle}`}>
+          Opens in 2D Furnish. Switch to 3D at any time.
+        </p>
+        {createError ? (
           <p className="mt-2 text-[10px] leading-4 text-red-600">
-            Automatic creation paused: {autoCreateError}
+            Creation paused: {createError}
           </p>
         ) : null}
-        {!sourceContentDeleted && !sourceDeletionPending && (
-          <button
-            type="button"
-            className={dark ? "designer-control mt-2 w-full rounded-md border px-3 py-2 text-xs font-semibold" : "mt-2 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-xs font-semibold text-neutral-700"}
-            disabled={disabled || deletingSource || submitting}
-            onClick={() => void deletePrivateSource()}
+        <details
+          className={
+            dark
+              ? "designer-recessed mt-4 rounded-xl p-3"
+              : "mt-4 rounded-xl border border-neutral-200 bg-white p-3"
+          }
+        >
+          <summary className="cursor-pointer text-xs font-semibold">
+            Rename, plan options & privacy
+          </summary>
+          <label className={`mt-3 block text-xs ${subtle}`}>
+            Design name
+            <input
+              className={`${control} mt-1 w-full`}
+              value={title}
+              maxLength={160}
+              aria-label="New design name"
+              onChange={(event) => setTitle(event.target.value)}
+            />
+          </label>
+          {candidate && optionalConfigurationCount > 0 ? (
+            <FloorPlanOptionalConfigurationPanel
+              document={candidate}
+              dark={dark}
+              disabled={disabled || submitting}
+              compact
+            />
+          ) : null}
+          <p
+            className={`mt-3 text-xs leading-5 ${subtle}`}
+            data-testid="floor-plan-import-accuracy-baseline"
           >
-            {deletingSource ? "Deleting upload…" : "Delete upload and underlay now"}
-          </button>
-        )}
-        {deleteError && <p className="mt-2 text-[10px] text-red-600">{deleteError}</p>}
+            Accuracy baseline passed: {canonicalRoomCount} canonical room
+            {canonicalRoomCount === 1 ? "" : "s"} and{" "}
+            {canonicalDimensionCount} exact printed dimension
+            {canonicalDimensionCount === 1 ? "" : "s"}. Source scale and all
+            critical review items passed validation.
+          </p>
+          <p className={`mt-2 text-xs leading-5 ${subtle}`}>
+            {sourceDeletionPending
+              ? "Private-source deletion is queued."
+              : sourceContentDeleted
+                ? savedUnderlaysScrubbed > 0
+                  ? "The upload and saved-design reference were deleted."
+                  : "The private upload was deleted."
+                : retentionDate && !Number.isNaN(retentionDate.getTime())
+                  ? `Private file bytes are scheduled for deletion by ${retentionDate.toLocaleDateString()}.`
+                  : "Private file bytes are retained temporarily."}
+          </p>
+          {!sourceContentDeleted && !sourceDeletionPending ? (
+            <button
+              type="button"
+              className={
+                dark
+                  ? "designer-control mt-2 rounded-md border px-3 py-2 text-xs font-semibold"
+                  : "mt-2 rounded-md border border-neutral-300 bg-white px-3 py-2 text-xs font-semibold text-neutral-700"
+              }
+              disabled={disabled || deletingSource || submitting}
+              onClick={() => void deletePrivateSource()}
+            >
+              {deletingSource ? "Deleting upload…" : "Delete private upload"}
+            </button>
+          ) : null}
+          {onChooseFile ? (
+            <button
+              type="button"
+              className={
+                dark
+                  ? "designer-control ml-2 mt-2 rounded-md border px-3 py-2 text-xs font-semibold"
+                  : "ml-2 mt-2 rounded-md border border-neutral-300 bg-white px-3 py-2 text-xs font-semibold text-neutral-700"
+              }
+              disabled={disabled || submitting}
+              onClick={onChooseFile}
+            >
+              Use a different file
+            </button>
+          ) : null}
+          {deleteError ? (
+            <p className="mt-2 text-[10px] text-red-600">{deleteError}</p>
+          ) : null}
+        </details>
+      </div>
+    );
+  }
+
+  if (
+    activeJob?.status === "selecting_page" &&
+    pageSelection?.candidates.length
+  ) {
+    return (
+      <div className={surface}>
+        <FloorPlanPageSelectionPanel
+          job={activeJob}
+          candidates={pageSelection.candidates}
+          selectedPageNumber={selectedPageNumber}
+          onSelectedPageNumberChange={setSelectedPageNumber}
+          onConfirm={() => void confirmSelectedPage()}
+          submitting={submitting}
+          disabled={disabled}
+          dark={dark}
+        />
       </div>
     );
   }
@@ -440,6 +761,11 @@ export default function FloorPlanImportAssistant({
 
   return (
     <div className={surface} data-testid="floor-plan-import-review">
+      {reviewError ? (
+        <p className="mb-3 rounded-md bg-red-50 p-2 text-xs text-red-700" role="alert">
+          {reviewError}
+        </p>
+      ) : null}
       <FloorPlanImportReviewPanel
         candidate={candidate}
         job={activeJob}
@@ -449,7 +775,10 @@ export default function FloorPlanImportAssistant({
         entranceOpeningId={entranceOpeningId}
         setEntranceOpeningId={setEntranceOpeningId}
         cannotFinishReason={cannotFinishReason}
-        onSubmit={() => void submitReview()}
+        onChooseFile={onChooseFile}
+        onRetryDetection={() => void retryDetection()}
+        retryingDetection={retryingDetection}
+        onSubmit={(reviewIssues) => void submitReview(reviewIssues)}
         submitting={submitting}
         disabled={disabled}
         dark={dark}

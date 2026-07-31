@@ -1,4 +1,3 @@
-import { CABINET_FRONT_THICKNESS } from "./layout";
 import { getCabinetDrawerHeightProportions } from "./frontBehavior";
 import type { CabinetDefinition, CabinetModuleDefinition } from "./types";
 
@@ -115,7 +114,7 @@ export function getCabinetDrawerSlideLayouts(
         Math.max(0, front.height - CABINET_DRAWER_SLIDE_PAIR_HEIGHT),
         CABINET_DEFAULT_DRAWER_SLIDE_OFFSET_FROM_BOTTOM
       ),
-    localZ: -CABINET_FRONT_THICKNESS,
+    localZ: 0,
     width: front.width,
   }));
 }

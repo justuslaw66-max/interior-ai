@@ -181,7 +181,6 @@ export function applyConsumerFloorPlanCorrection(input: {
 }) {
   if (
     input.next.id !== input.current.id ||
-    input.next.revisionId !== input.current.revisionId ||
     input.next.schemaVersion !== 2 ||
     input.next.units !== "mm"
   ) {
@@ -203,6 +202,11 @@ export function applyConsumerFloorPlanCorrection(input: {
   const currentFloors = new Map(input.current.floors.map((floor) => [floor.id, floor]));
   const document: FloorPlanDocumentV2 = {
     ...input.next,
+    // Guided repair mutations use transient client revision IDs so their local
+    // history remains auditable. The import job owns canonical revision
+    // identity, so never persist client-supplied revision lineage.
+    revisionId: input.current.revisionId,
+    parentRevisionId: input.current.parentRevisionId,
     createdAt: input.current.createdAt,
     sources: input.current.sources,
     verification: {

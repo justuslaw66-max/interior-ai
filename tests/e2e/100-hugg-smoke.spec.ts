@@ -1,5 +1,9 @@
 import { test, expect } from "./fixtures";
-import { addCatalogDrawerItemToRoom, openCatalogPreview } from "./variant-test-utils";
+import {
+  addCatalogDrawerItemToRoom,
+  openCatalogPreview,
+  openShopPanel,
+} from "./variant-test-utils";
 
 const HUGG_BASALT_CLOSED_ID =
   "coffee-real-castlery-hugg-nesting-square-performance-basalt-closed";
@@ -66,16 +70,7 @@ test.describe("100. Hugg Catalog Smoke", () => {
     await expect(furnishBom.getByText(/Hugg Nesting Square Coffee Table/i)).toBeVisible();
     await expect(furnishBom.getByText(/Black\s*·\s*Qty 1/i)).toBeVisible();
 
-    const shopButton = page.locator('[data-testid="editor-workflow-shop"]:visible').first();
-    const cartRailButton = page.locator('[data-testid="editor-rail-cart"]:visible').first();
-    const reviewButton = page.getByRole("button", { name: /^Review$/ }).first();
-    if (await shopButton.isVisible().catch(() => false)) {
-      await shopButton.click();
-    } else if (await cartRailButton.isVisible().catch(() => false)) {
-      await cartRailButton.click();
-    } else {
-      await reviewButton.click();
-    }
+    await openShopPanel(page);
 
     await expect(page.getByTestId("shopping-overview-panel")).toBeVisible({ timeout: 10000 });
     await expect(page.getByText("Shopping overview")).toBeVisible();

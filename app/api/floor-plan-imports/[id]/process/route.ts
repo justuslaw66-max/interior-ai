@@ -4,6 +4,7 @@ import { rateLimit } from "@/lib/rateLimit";
 import { prisma } from "@/lib/prisma";
 import { resolveFloorPlanProcessingMode } from "@/lib/floor-plan-imports/processing-mode";
 import { processFloorPlanImportJob } from "@/lib/floor-plan-imports/worker";
+import { readFloorPlanPageSelection } from "@/lib/floor-plan-imports/page-selection";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -13,7 +14,7 @@ function error(message: string, status: number) {
 }
 
 export async function POST(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
@@ -39,9 +40,23 @@ export async function POST(
       leaseExpiresAt: true,
       heartbeatAt: true,
       errorMessage: true,
+      candidateJson: true,
     },
   });
   if (!owned) return error("Floor-plan import not found", 404);
+  if (
+    owned.status === "selecting_page" &&
+    !readFloorPlanPageSelection(owned.candidateJson)?.selectedPageNumber
+  ) {
+    return NextResponse.json({
+      job: owned,
+      processing: {
+        outcome: "not_processable",
+        resumable: true,
+        reason: "page_selection_required",
+      },
+    });
+  }
   if (["needs_review", "ready", "applied", "published"].includes(owned.status)) {
     return NextResponse.json({
       job: owned,
@@ -87,7 +102,6 @@ export async function POST(
     const result = await processFloorPlanImportJob({
       jobId: id,
       ownerUserId: userId,
-      signal: request.signal,
     });
     if (result.outcome === "not_found") return error("Floor-plan import not found", 404);
     if (result.outcome === "failed" || result.outcome === "attempts_exhausted") {

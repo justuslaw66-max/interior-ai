@@ -69,7 +69,7 @@ export function SelectedCabinetPanel({
 
   return (
         <div
-          className={`absolute right-4 top-20 z-40 w-[320px] max-h-[calc(100vh-6rem)] overflow-y-auto pr-1 transition-opacity duration-300 md:w-[21.25rem] ${
+          className={`absolute right-4 top-15 z-40 w-[320px] max-h-[calc(100vh-4.75rem)] overflow-y-auto pr-1 transition-opacity duration-300 md:w-[21.25rem] ${
             isClientPreview ? "pointer-events-none opacity-0" : "opacity-100"
           }`}
           aria-hidden={isClientPreview}

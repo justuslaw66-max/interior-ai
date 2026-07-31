@@ -5,6 +5,7 @@ import {
   addCatalogDrawerItemToRoom,
   getSelectedItemPanel,
   openCatalogPreview,
+  selectEditorWorkspace,
 } from "./variant-test-utils";
 
 const TEST_ITEM_ID =
@@ -71,11 +72,9 @@ test.describe("24. Consumer object placement", () => {
     await expect(page.getByTestId("selected-item-panel")).not.toBeVisible();
     await page.setViewportSize({ width: 1440, height: 900 });
 
-    const planWorkflow = page
-      .locator('[data-testid="editor-workflow-plan"]:visible')
-      .first();
+    const planWorkflow = page.getByTestId("editor-workflow-plan").first();
     if ((await planWorkflow.getAttribute("data-active")) !== "true") {
-      await planWorkflow.click();
+      await selectEditorWorkspace(page, "editor-workflow-plan");
     }
     await expect(planWorkflow).toHaveAttribute("data-active", "true");
     const planView = page.getByTestId("editor-view-2d");

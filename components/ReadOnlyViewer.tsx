@@ -9,6 +9,8 @@ import { CATALOG_ITEMS } from "@/lib/catalog";
 import type { DesignItem } from "@/lib/room-types";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import { resolveDesignItemVisualProduct } from "@/lib/design-item-product-snapshot";
+import { ViewerLighting } from "@/components/editor/design-page/lighting";
+import { DEFAULT_DESIGN_LIGHTING_SETTINGS } from "@/lib/lightingPresets";
 
 function Room({
   width,
@@ -146,20 +148,11 @@ export default function ReadOnlyViewer({
         shadows
         camera={{ position: [4.5, 3.2, 5.5], fov: 45, near: 0.1, far: 100 }}
       >
-        <ambientLight intensity={0.5} color="#fff8ef" />
-        <directionalLight
-          position={[6, 8, 4]}
-          intensity={1.1}
-          color="#fff6e8"
-          castShadow
-          shadow-mapSize-width={2048}
-          shadow-mapSize-height={2048}
-          shadow-camera-near={1}
-          shadow-camera-far={25}
-          shadow-camera-left={-10}
-          shadow-camera-right={10}
-          shadow-camera-top={10}
-          shadow-camera-bottom={-10}
+        <ViewerLighting
+          settings={DEFAULT_DESIGN_LIGHTING_SETTINGS}
+          roomWidth={roomWidth}
+          roomDepth={roomDepth}
+          items={safeItems}
         />
 
         <Room width={roomWidth} depth={roomDepth} />

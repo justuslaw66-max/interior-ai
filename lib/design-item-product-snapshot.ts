@@ -42,6 +42,22 @@ export function createPersistedProductSnapshot(
         resolved.media.thumbUrl ?? product.assets.thumbUrl ?? undefined,
       materialPreset: product.assets.materialsProfile.preset || undefined,
     },
+    ...(product.lighting
+      ? {
+          lighting: {
+            ...product.lighting,
+            localOffsetMeters: [...product.lighting.localOffsetMeters],
+            direction: [...product.lighting.direction],
+            ...(product.lighting.emissiveMeshNames
+              ? {
+                  emissiveMeshNames: [
+                    ...product.lighting.emissiveMeshNames,
+                  ],
+                }
+              : {}),
+          },
+        }
+      : {}),
   };
 }
 
@@ -172,6 +188,7 @@ export function resolveDesignItemVisualProduct(
           "default",
       },
     },
+    lighting: snapshot.lighting ?? live?.lighting,
     variants,
     defaultVariantId: snapshot.variantId,
   };

@@ -19,6 +19,7 @@ import {
   type RoomOpening2D,
 } from "@/lib/editorScene";
 import type { DesignItem } from "@/lib/room-types";
+import { resolveFixturePhotometrics } from "@/lib/resolve-lighting-scene";
 
 export type DesignPageSelectionInspectorSummary = {
   kind: string;
@@ -129,6 +130,23 @@ export function buildDesignPageSelectionInspectorSummary({
     const dims =
       selectedItemPlanningDimensionsMm ??
       resolveCatalogVariant(selectedProduct, selectedItem.variantId).dimsMm;
+    const fixture = resolveFixturePhotometrics(selectedItem, selectedProduct);
+    if (fixture) {
+      return {
+        kind: "Light fixture",
+        title: selectedProduct.title,
+        detail: activeRoomName ?? "Current room",
+        metrics: [
+          `${fixture.luminousFluxLumens} lm`,
+          `${selectedItem.fixtureLight?.cctKelvin ?? fixture.cctKelvin}K`,
+          fixture.verification === "estimated"
+            ? "Estimated output"
+            : fixture.verification === "manufacturer"
+              ? "Manufacturer data"
+              : "Photometric data",
+        ],
+      };
+    }
     return {
       kind: "Furniture",
       title: selectedProduct.title,

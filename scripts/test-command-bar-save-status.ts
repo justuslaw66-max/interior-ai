@@ -33,7 +33,7 @@ assert.match(
 );
 assert.match(
   commandBarSource,
-  /data-testid="save-status"[\s\S]*?className=\{`hidden h-9 min-w-0[\s\S]*?md:flex/,
+  /data-testid="save-status"[\s\S]*?className=\{`hidden h-7 min-w-0[\s\S]*?md:flex/,
   "Save status should be a compact command-bar chip that avoids crowding smaller screens."
 );
 assert.match(

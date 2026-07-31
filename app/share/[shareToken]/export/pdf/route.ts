@@ -308,7 +308,10 @@ export async function GET(
         roomName: room.name,
       }))
     );
-    const surfaceMaterialBomRows = buildRoomSurfaceMaterialBomRows(rooms);
+    const surfaceMaterialBomRows = buildRoomSurfaceMaterialBomRows(
+      rooms,
+      planOpenings
+    );
     const metricsByRoomId = new Map(
       rooms.map((room) => [room.id, getRoomMetrics(room, rooms, planOpenings)])
     );

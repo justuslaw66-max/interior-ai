@@ -3,7 +3,8 @@ import type { FloorPlanImportStatus } from "./types";
 const TRANSITIONS: Record<FloorPlanImportStatus, readonly FloorPlanImportStatus[]> = {
   received: ["rendered", "failed"],
   rendered: ["extracted", "failed"],
-  extracted: ["scale_solved", "needs_review", "failed"],
+  extracted: ["selecting_page", "scale_solved", "needs_review", "failed"],
+  selecting_page: ["scale_solved", "failed"],
   scale_solved: ["topology_built", "needs_review", "failed"],
   topology_built: ["validating", "needs_review", "failed"],
   validating: ["needs_review", "ready", "failed"],
@@ -18,6 +19,7 @@ export const FLOOR_PLAN_IMPORT_PROGRESS: Record<FloorPlanImportStatus, number> =
   received: 5,
   rendered: 20,
   extracted: 40,
+  selecting_page: 45,
   scale_solved: 55,
   topology_built: 70,
   validating: 85,

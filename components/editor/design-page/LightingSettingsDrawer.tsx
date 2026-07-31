@@ -117,7 +117,8 @@ export function LightingSettingsDrawer({
                   : "mt-1 text-sm text-neutral-600"
               }
             >
-              Adjust the mood and shadows for this design.
+              Choose a clear viewport scene and adjust only supported rendering
+              preferences.
             </p>
           </div>
           <button

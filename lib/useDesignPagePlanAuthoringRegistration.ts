@@ -223,7 +223,7 @@ export function useDesignPagePlanAuthoringRegistration({
       canEdit,
       catalogItems: CATALOG_ITEMS,
       qualityReviewPanel: {
-        reviewPanelTopPx: 76,
+        reviewPanelTopPx: 56,
         collapsedReviewPanelFallbackHeightPx: 56,
         expandedReviewPanelFallbackHeightPx: 252,
       },

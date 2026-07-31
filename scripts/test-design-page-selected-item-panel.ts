@@ -1,8 +1,18 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
+import {
+  CASTLERY_CONFIGURATION_ICON_BY_PRODUCT_ID,
+  CASTLERY_CONFIGURATION_ICON_FALLBACK,
+  getCastleryConfigurationIconDescriptor,
+} from "../components/editor/design-page/castleryConfigurationIcons";
 import { buildDesignPagePanelRegionAdapter } from "../lib/design-page-panel-region-adapter";
+import {
+  MODEL_FAMILY_BY_PRODUCT_ID,
+  MODEL_SELECTOR_PRODUCT_IDS_BY_PRODUCT_ID,
+  MODEL_SELECTOR_REPRESENTATIVE_BY_PRODUCT_ID,
+} from "../lib/design-page-model-maps";
 import { buildDesignPageSelectionPanelModels } from "../lib/design-page-selection-panel-model";
 
 const root = process.cwd();
@@ -27,6 +37,9 @@ const controllerSource = readSource(
 );
 const finishControlsSource = readSource(
   "components/editor/design-page/ProductFinishControls.tsx",
+);
+const modelVariantControlsSource = readSource(
+  "components/editor/design-page/ProductModelVariantControls.tsx",
 );
 
 assert.match(
@@ -204,7 +217,7 @@ assert.match(
 );
 assert.match(
   panelSource,
-  /max-h-\[calc\(100vh-6rem\)\][^"`]*overflow-y-auto/,
+  /max-h-\[calc\(100vh-4\.75rem\)\][^"`]*overflow-y-auto/,
   "The panel should preserve its bounded scrolling container.",
 );
 assert.match(
@@ -269,6 +282,278 @@ assert.match(
   panelSource,
   /state\.rotation\s*\?\s*\(\s*<SelectedItemRotationControls\b/,
   "Rotation controls should remain conditional on selected-item rotation state.",
+);
+assert.match(
+  modelVariantControlsSource,
+  /data-testid=\{`\$\{family\}-configuration-selector`\}[\s\S]*Configuration[\s\S]*configurations/,
+  "Mapped Castlery collections should render through the compact configuration selector.",
+);
+for (const family of ["STANDARD", "L-SHAPED", "U-SHAPED", "ARMCHAIR", "SLEEPER"] as const) {
+  assert.match(
+    modelVariantControlsSource,
+    new RegExp(`label: "${family}"`),
+    `The Castlery configuration selector should include the ${family} family.`,
+  );
+}
+assert.match(
+  modelVariantControlsSource,
+  /data-testid=\{`\$\{family\}-config-option-\$\{option\.key\}`\}[\s\S]*CastleryConfigurationDiagram/,
+  "Mapped Castlery configurations should use visual plan cards instead of long text buttons.",
+);
+assert.match(
+  modelVariantControlsSource,
+  /getCastleryConfigurationIconDescriptor\(productId\)[\s\S]*<img[\s\S]*src=\{descriptor\.src\}/,
+  "Hamilton and Dawson diagrams should render typed local icon descriptors.",
+);
+assert.match(
+  modelVariantControlsSource,
+  /filter:\s*active\s*\?\s*"brightness\(0\) invert\(1\)"/,
+  "Selected configuration artwork should be recoloured white.",
+);
+assert.doesNotMatch(
+  modelVariantControlsSource,
+  /<svg\b|rx="/,
+  "Mapped product controls should not retain the rounded procedural SVG fallback.",
+);
+assert.match(
+  modelVariantControlsSource,
+  /className="grid grid-cols-4[^"]*"[\s\S]*data-testid=\{`\$\{family\}-configuration-grid`\}/,
+  "Castlery configuration cards should remain visible in rows of four without horizontal scrolling.",
+);
+assert.match(
+  modelVariantControlsSource,
+  /className=\{`flex h-12 min-w-0/,
+  "Castlery configuration cards should retain the compact 48px height.",
+);
+assert.match(
+  modelVariantControlsSource,
+  /data-testid=\{`\$\{family\}-orientation-selector`\}[\s\S]*\$\{family\}-orientation-/,
+  "Mapped Castlery orientation should use a separate diagram-based selector.",
+);
+assert.match(
+  modelVariantControlsSource,
+  /activeCastleryConfigurationGroup === "sleeper"/,
+  "Mapped Castlery sleeper products should expose their state control beneath the configuration selector.",
+);
+const hamiltonFamilyProductIds = [
+  "sofa-real-castlery-hamilton-2-seater",
+  "sofa-real-castlery-hamilton-2-seater-with-storage-ottoman",
+  "sofa-real-castlery-hamilton-3-seater",
+  "sofa-real-castlery-hamilton-3-seater-with-storage-ottoman",
+  "sofa-real-castlery-hamilton-3-seater-sofa-bed",
+  "sofa-real-castlery-hamilton-chaise-sectional-left",
+  "sofa-real-castlery-hamilton-chaise-sectional-right",
+  "sofa-real-castlery-hamilton-chaise-sectional-with-storage-ottoman-left",
+  "sofa-real-castlery-hamilton-chaise-sectional-with-storage-ottoman-right",
+  "sofa-real-castlery-hamilton-round-chaise-sectional-left",
+  "sofa-real-castlery-hamilton-round-chaise-sectional-right",
+  "sofa-real-castlery-hamilton-chaise-sectional-sofa-bed-left",
+  "sofa-real-castlery-hamilton-chaise-sectional-sofa-bed-right",
+  "armchair-real-castlery-hamilton-round-swivel-armchair",
+  "armchair-real-castlery-hamilton-round-swivel-1-5-seater-armchair",
+] as const;
+const hamiltonSelectorProductIds = [
+  "sofa-real-castlery-hamilton-3-seater",
+  "sofa-real-castlery-hamilton-3-seater-with-storage-ottoman",
+  "sofa-real-castlery-hamilton-2-seater",
+  "sofa-real-castlery-hamilton-2-seater-with-storage-ottoman",
+  "sofa-real-castlery-hamilton-round-chaise-sectional-left",
+  "sofa-real-castlery-hamilton-chaise-sectional-left",
+  "sofa-real-castlery-hamilton-chaise-sectional-with-storage-ottoman-left",
+  "armchair-real-castlery-hamilton-round-swivel-armchair",
+  "armchair-real-castlery-hamilton-round-swivel-1-5-seater-armchair",
+  "sofa-real-castlery-hamilton-3-seater-sofa-bed",
+  "sofa-real-castlery-hamilton-chaise-sectional-sofa-bed-left",
+] as const;
+const dawsonFamilyProductIds = [
+  "sofa-real-castlery-dawson-3s",
+  "sofa-real-castlery-dawson-extended-sofa",
+  "sofa-real-castlery-dawson-ottoman",
+  "sofa-real-castlery-dawson-storage-ottoman",
+  "sofa-real-castlery-dawson-wide-chaise-sectional-left",
+  "sofa-real-castlery-dawson-wide-chaise-sectional",
+  "sofa-real-castlery-dawson-chaise-sectional-left",
+  "sofa-real-castlery-dawson-chaise-sectional",
+  "sofa-real-castlery-dawson-pit-sectional",
+  "sofa-real-castlery-dawson-swivel-armchair",
+] as const;
+const castleryIconProductIds = [
+  ...hamiltonFamilyProductIds,
+  ...dawsonFamilyProductIds,
+] as const;
+
+for (const productId of castleryIconProductIds) {
+  const descriptor = CASTLERY_CONFIGURATION_ICON_BY_PRODUCT_ID[productId];
+  assert.ok(descriptor, `${productId} should resolve to a configuration icon.`);
+  assert.equal(
+    descriptor.fallback,
+    undefined,
+    `${productId} should not use the missing-asset fallback.`,
+  );
+  assert.equal(
+    existsSync(join(root, "public", descriptor.src.slice(1))),
+    true,
+    `${productId} should reference an asset that exists in public/.`,
+  );
+}
+const canonicalHamiltonAssetByProductId = {
+  "sofa-real-castlery-hamilton-3-seater": "3-seater.avif",
+  "sofa-real-castlery-hamilton-3-seater-with-storage-ottoman":
+    "3-seater-with-ottoman.avif",
+  "sofa-real-castlery-hamilton-2-seater": "2-seater.avif",
+  "sofa-real-castlery-hamilton-2-seater-with-storage-ottoman":
+    "2-seater-with-ottoman.avif",
+  "sofa-real-castlery-hamilton-round-chaise-sectional-left":
+    "round-chaise-left.avif",
+  "sofa-real-castlery-hamilton-chaise-sectional-left": "chaise-left.avif",
+  "sofa-real-castlery-hamilton-chaise-sectional-with-storage-ottoman-left":
+    "chaise-with-ottoman-left.avif",
+  "armchair-real-castlery-hamilton-round-swivel-armchair":
+    "round-swivel-armchair.avif",
+  "armchair-real-castlery-hamilton-round-swivel-1-5-seater-armchair":
+    "round-swivel-1-5-seater.avif",
+  "sofa-real-castlery-hamilton-3-seater-sofa-bed":
+    "3-seater-sofa-bed.avif",
+  "sofa-real-castlery-hamilton-chaise-sectional-sofa-bed-left":
+    "chaise-sofa-bed-left.avif",
+} as const;
+for (const [productId, assetName] of Object.entries(
+  canonicalHamiltonAssetByProductId,
+)) {
+  const descriptor = CASTLERY_CONFIGURATION_ICON_BY_PRODUCT_ID[productId];
+  assert.equal(
+    descriptor.src,
+    `/assets/configuration-icons/castlery/hamilton/${assetName}`,
+    `${productId} should resolve to its exact locally stored Castlery artwork.`,
+  );
+  const assetBytes = readFileSync(
+    join(root, "public", descriptor.src.slice(1)),
+  );
+  assert.equal(
+    assetBytes.subarray(4, 12).toString("ascii"),
+    "ftypavif",
+    `${productId} should use the unmodified transparent AVIF delivered by Castlery.`,
+  );
+}
+assert.equal(
+  Object.keys(canonicalHamiltonAssetByProductId).length,
+  hamiltonSelectorProductIds.length,
+  "Every Hamilton selector configuration should have one canonical Castlery asset.",
+);
+for (const productId of dawsonFamilyProductIds) {
+  assert.match(
+    CASTLERY_CONFIGURATION_ICON_BY_PRODUCT_ID[productId].src,
+    /^\/assets\/configuration-icons\/castlery\/[^/]+\.svg$/,
+    `${productId} should retain its local Dawson SVG asset.`,
+  );
+}
+for (const productId of hamiltonFamilyProductIds) {
+  assert.deepEqual(
+    MODEL_SELECTOR_PRODUCT_IDS_BY_PRODUCT_ID[productId],
+    [...hamiltonSelectorProductIds],
+    `${productId} should expose Castlery's round-chaise, chaise, and chaise-with-ottoman order.`,
+  );
+}
+
+for (const [leftProductId, rightProductId] of [
+  [
+    "sofa-real-castlery-hamilton-chaise-sectional-left",
+    "sofa-real-castlery-hamilton-chaise-sectional-right",
+  ],
+  [
+    "sofa-real-castlery-hamilton-chaise-sectional-with-storage-ottoman-left",
+    "sofa-real-castlery-hamilton-chaise-sectional-with-storage-ottoman-right",
+  ],
+  [
+    "sofa-real-castlery-hamilton-round-chaise-sectional-left",
+    "sofa-real-castlery-hamilton-round-chaise-sectional-right",
+  ],
+  [
+    "sofa-real-castlery-hamilton-chaise-sectional-sofa-bed-left",
+    "sofa-real-castlery-hamilton-chaise-sectional-sofa-bed-right",
+  ],
+  [
+    "sofa-real-castlery-dawson-wide-chaise-sectional-left",
+    "sofa-real-castlery-dawson-wide-chaise-sectional",
+  ],
+  [
+    "sofa-real-castlery-dawson-chaise-sectional-left",
+    "sofa-real-castlery-dawson-chaise-sectional",
+  ],
+] as const) {
+  const left = CASTLERY_CONFIGURATION_ICON_BY_PRODUCT_ID[leftProductId];
+  const right = CASTLERY_CONFIGURATION_ICON_BY_PRODUCT_ID[rightProductId];
+  assert.equal(
+    right.src,
+    left.src,
+    `${rightProductId} should reuse the canonical left-facing asset.`,
+  );
+  assert.notEqual(
+    left.mirror,
+    true,
+    `${leftProductId} should retain the canonical asset orientation.`,
+  );
+  assert.equal(
+    right.mirror,
+    true,
+    `${rightProductId} should mirror the canonical left-facing asset.`,
+  );
+}
+
+assert.equal(
+  CASTLERY_CONFIGURATION_ICON_BY_PRODUCT_ID[
+    "sofa-real-castlery-dawson-ottoman"
+  ].src,
+  "/assets/configuration-icons/castlery/ottoman.svg",
+  "The Dawson ottoman should use the square top-view artwork.",
+);
+assert.equal(
+  CASTLERY_CONFIGURATION_ICON_BY_PRODUCT_ID[
+    "sofa-real-castlery-dawson-storage-ottoman"
+  ].src,
+  "/assets/configuration-icons/castlery/storage-ottoman.svg",
+  "The Dawson storage ottoman should use the square top-view artwork.",
+);
+assert.strictEqual(
+  getCastleryConfigurationIconDescriptor("missing-castlery-product"),
+  CASTLERY_CONFIGURATION_ICON_FALLBACK,
+  "Unknown configurations should resolve the local missing-asset fallback.",
+);
+const dawsonSelectorProductIds = [
+  "sofa-real-castlery-dawson-3s",
+  "sofa-real-castlery-dawson-extended-sofa",
+  "sofa-real-castlery-dawson-ottoman",
+  "sofa-real-castlery-dawson-storage-ottoman",
+  "sofa-real-castlery-dawson-wide-chaise-sectional-left",
+  "sofa-real-castlery-dawson-chaise-sectional-left",
+  "sofa-real-castlery-dawson-pit-sectional",
+  "sofa-real-castlery-dawson-swivel-armchair",
+] as const;
+for (const productId of dawsonFamilyProductIds) {
+  assert.deepEqual(
+    MODEL_FAMILY_BY_PRODUCT_ID[productId],
+    [...dawsonFamilyProductIds],
+    `${productId} should resolve the complete Dawson model family.`,
+  );
+  assert.deepEqual(
+    MODEL_SELECTOR_PRODUCT_IDS_BY_PRODUCT_ID[productId],
+    [...dawsonSelectorProductIds],
+    `${productId} should expose the eight geometry-backed Dawson configurations.`,
+  );
+}
+assert.equal(
+  MODEL_SELECTOR_REPRESENTATIVE_BY_PRODUCT_ID[
+    "sofa-real-castlery-dawson-wide-chaise-sectional"
+  ],
+  "sofa-real-castlery-dawson-wide-chaise-sectional-left",
+  "The right-facing Dawson wide chaise should resolve to its one selector card.",
+);
+assert.equal(
+  MODEL_SELECTOR_REPRESENTATIVE_BY_PRODUCT_ID[
+    "sofa-real-castlery-dawson-chaise-sectional"
+  ],
+  "sofa-real-castlery-dawson-chaise-sectional-left",
+  "The right-facing Dawson chaise should resolve to its one selector card.",
 );
 
 for (const label of [

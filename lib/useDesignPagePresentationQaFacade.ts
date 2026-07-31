@@ -62,6 +62,11 @@ export type UseDesignPagePresentationQaFacadeInput = {
     > & {
       presentModeRoomId: string | null;
       lightingSettings: DesignLightingSettings;
+      lightingStatus: {
+        placedFixtureCount: number;
+        activeFixtureCount: number;
+        estimatedFixtureCount: number;
+      };
     };
     plan: Pick<PresentDialogState,
       "planLayerPreset" | "planLayers" | "planMeasurementUnit" | "planTheme" | "annotationToolKind" |
@@ -93,6 +98,7 @@ export type UseDesignPagePresentationQaFacadeInput = {
       showBetaStart: boolean;
       firstRunActivation: DesignPageRuntimeQaMarkersProps["firstRunActivation"];
       designPanelOpen: boolean;
+      designPanelCollapsed: boolean;
     };
     qa: {
       showLayoutDebugOverlay: DesignPageRuntimeQaMarkersProps["showLayoutDebugOverlay"];
@@ -123,6 +129,7 @@ export type UseDesignPagePresentationQaFacadeInput = {
       setUpgradeReason: PresentActions["shell"]["setUpgradeReason"];
       setUpgradeOpen: ChromeActions["dialogs"]["setUpgradeOpen"];
       setDesignPanelOpen: ChromeActions["editor"]["setDesignPanelOpen"];
+      setDesignPanelCollapsed: ChromeActions["editor"]["setDesignPanelCollapsed"];
       setItemCartOpen: ChromeActions["editor"]["setItemCartOpen"];
       setClientPreview: ChromeActions["editor"]["setClientPreview"];
       setUrlMode: ChromeActions["editor"]["setUrlMode"];
@@ -156,6 +163,7 @@ export type UseDesignPagePresentationQaFacadeInput = {
     scenePerformance: ChromeActions["scenePerformance"];
     lighting: {
       changeShadowsEnabled: (enabled: boolean) => void;
+      updateSettings: (patch: Partial<DesignLightingSettings>) => void;
     };
     betaStart: ChromeActions["betaStart"];
     presentation: PresentActions["presentation"];
@@ -362,6 +370,9 @@ export function useDesignPagePresentationQaFacade({
           canRedo: state.editor.canRedo,
           undoName: state.editor.undoName,
           redoName: state.editor.redoName,
+          designSidebarCollapsed:
+            state.chrome.designPanelCollapsed ||
+            !state.chrome.designPanelOpen,
           millworkActive: state.chrome.millworkActive,
           showLoadDesign: state.editor.authenticated,
           isSaving: state.persistence.isSaving,
@@ -394,6 +405,7 @@ export function useDesignPagePresentationQaFacade({
         sceneLighting: {
           settings: state.presentation.lightingSettings,
           liteEnabled: state.scene.liteEnabled,
+          ...state.presentation.lightingStatus,
         },
       },
       betaStart: {
@@ -429,6 +441,7 @@ export function useDesignPagePresentationQaFacade({
       editor: {
         setMode: actions.shell.setEditorMode,
         setDesignPanelOpen: actions.shell.setDesignPanelOpen,
+        setDesignPanelCollapsed: actions.shell.setDesignPanelCollapsed,
         setItemCartOpen: actions.shell.setItemCartOpen,
         setClientPreview: actions.shell.setClientPreview,
         setUrlMode: actions.shell.setUrlMode,
@@ -447,6 +460,7 @@ export function useDesignPagePresentationQaFacade({
       sceneLighting: {
         changePreset: actions.presentation.changeLightingPreset,
         changeShadowsEnabled: actions.lighting.changeShadowsEnabled,
+        updateSettings: actions.lighting.updateSettings,
       },
       betaStart: actions.betaStart,
       showToast: actions.feedback.showToast,

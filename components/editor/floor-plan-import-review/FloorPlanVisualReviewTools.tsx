@@ -22,6 +22,10 @@ type FloorPlanVisualReviewToolsProps = {
   assetRoutePrefix?: string;
   guidedLayout?: boolean;
   openScaleByDefault?: boolean;
+  consumerMode?: boolean;
+  manualToolsOpen?: boolean;
+  onManualToolsOpenChange?: (value: boolean) => void;
+  previewOnly?: boolean;
   sidebarFooter?: ReactNode;
   dark?: boolean;
   disabled?: boolean;
@@ -35,6 +39,10 @@ export default function FloorPlanVisualReviewTools({
   assetRoutePrefix,
   guidedLayout = false,
   openScaleByDefault = false,
+  consumerMode = false,
+  manualToolsOpen = false,
+  onManualToolsOpenChange,
+  previewOnly = false,
   sidebarFooter,
   dark = false,
   disabled = false,
@@ -214,6 +222,45 @@ export default function FloorPlanVisualReviewTools({
       {sidebarFooter}
     </>
   );
+
+  if (previewOnly) return canvas;
+
+  if (consumerMode) {
+    return (
+      <>
+        {canvas}
+        <details
+          id="floor-plan-manual-tools"
+          className={
+            dark
+              ? "designer-recessed mt-4 rounded-xl border border-white/10 p-4"
+              : "mt-4 rounded-xl border border-neutral-200 bg-white p-4"
+          }
+          open={manualToolsOpen}
+          onToggle={(event) => {
+            const open = event.currentTarget.open;
+            if (open !== manualToolsOpen) onManualToolsOpenChange?.(open);
+          }}
+        >
+          <summary className="cursor-pointer text-sm font-semibold">
+            Help AI finish this plan
+          </summary>
+          <p
+            className={
+              dark
+                ? "mt-2 text-xs leading-5 text-neutral-400"
+                : "mt-2 text-xs leading-5 text-neutral-600"
+            }
+          >
+            Only use these tools when the preview is missing a room, scale,
+            door, or wall. Your changes are checked again before a design can
+            be created.
+          </p>
+          {primaryControls}
+        </details>
+      </>
+    );
+  }
 
   if (!guidedLayout) {
     return (

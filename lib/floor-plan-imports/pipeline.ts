@@ -18,6 +18,7 @@ import type {
   FloorPlanImportStageTelemetry,
   FloorPlanImportTelemetryObserver,
 } from "./telemetry";
+import { readFloorPlanPageSelection } from "./page-selection";
 
 export type FloorPlanImportJobPatch = Partial<
   Omit<FloorPlanImportJobRecord, "id" | "userId" | "sourceAssetId" | "status">
@@ -241,6 +242,27 @@ export async function runFloorPlanImportPipeline(input: {
       }
       case "extracted": {
         const startedAt = Date.now();
+        const pageSelection = readFloorPlanPageSelection(job.candidate);
+        if (
+          pageSelection?.required &&
+          pageSelection.selectedPageNumber === null
+        ) {
+          job = await move(
+            input.repository,
+            job,
+            "selecting_page",
+            {},
+            input.lease,
+            {
+              observer: input.telemetry,
+              startedAt,
+              metrics: {
+                candidatePlanPageCount: pageSelection.candidates.length,
+              },
+            }
+          );
+          return job;
+        }
         job = await stopForReviewIfNeeded(
           input.repository,
           job,
@@ -249,6 +271,23 @@ export async function runFloorPlanImportPipeline(input: {
           startedAt
         );
         if (job.status === "needs_review") return job;
+        const previous = stageResultFromJob(job);
+        const result = await adapter.solveScale(previous, context);
+        const issues = mergeIssues(job.reviewIssues, result.reviewIssues);
+        job = await move(
+          input.repository,
+          job,
+          "scale_solved",
+          patchFromStage(result, issues),
+          input.lease,
+          { observer: input.telemetry, startedAt, metrics: result.metrics }
+        );
+        break;
+      }
+      case "selecting_page": {
+        const startedAt = Date.now();
+        const pageSelection = readFloorPlanPageSelection(job.candidate);
+        if (!pageSelection?.selectedPageNumber) return job;
         const previous = stageResultFromJob(job);
         const result = await adapter.solveScale(previous, context);
         const issues = mergeIssues(job.reviewIssues, result.reviewIssues);

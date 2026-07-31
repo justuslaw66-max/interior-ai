@@ -77,6 +77,19 @@ test.describe("23. Consumer room setup", () => {
       `${revisedWidthCm} cm`
     );
 
+    const importFloorPlanSection = page.getByTestId(
+      "plan-tool-section-importFloorPlan"
+    );
+    await importFloorPlanSection
+      .getByRole("button", { name: "Import floor plan", exact: true })
+      .click();
+    await expect(
+      importFloorPlanSection.getByRole("button", {
+        name: "Import floor plan",
+        exact: true,
+      })
+    ).toHaveAttribute("aria-expanded", "true");
+
     const touchTargets = [
       [millimetres, "millimetres unit"],
       [centimetres, "centimetres unit"],
@@ -88,11 +101,14 @@ test.describe("23. Consumer room setup", () => {
       [page.getByTestId("room-setup-continue-furnish"), "continue to furnish"],
       [page.getByTestId("plan-start-template"), "starter layouts"],
       [page.getByTestId("plan-start-draw"), "draw measured room"],
-      [page.getByTestId("plan-start-upload"), "upload plan"],
+      [page.getByTestId("plan-tool-import-2d"), "import 2D drawing"],
     ] as const;
     for (const [locator, label] of touchTargets) {
       await expectTouchTarget(locator, label);
     }
+    await expect(
+      page.getByText("Upload an existing plan", { exact: true })
+    ).toHaveCount(0);
 
     await page.getByTestId("plan-tool-window").click();
     await expect(page.getByTestId("plan-focus-control")).toContainText("Placing window");

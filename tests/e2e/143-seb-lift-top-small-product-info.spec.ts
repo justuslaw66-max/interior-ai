@@ -1,5 +1,7 @@
 import { expect, test } from "./fixtures";
 import {
+  applyConfiguredModelUrlToVariant,
+  resolveConfiguredModelUrl,
   resolveConfiguredNodeTransforms,
   resolveConfiguredPlanningDimsMm,
   resolveConfiguredVisualDimsMm,
@@ -76,7 +78,7 @@ test.describe("143. Seb Lift Top Small Product Info", () => {
               configurations: [
                 {
                   configuration_code: "open_recliner",
-                  visual_bounds_cm: { width_cm: 134, depth_cm: 165, height_cm: 77 },
+                  visual_bounds_cm: { width_cm: 134, depth_cm: 150, height_cm: 98 },
                   planning_bounds_cm: { width_cm: 134, depth_cm: 165, height_cm: 77 },
                 },
               ],
@@ -89,14 +91,90 @@ test.describe("143. Seb Lift Top Small Product Info", () => {
 
     expect(resolveConfiguredVisualDimsMm(item as never, fallbackProduct as never, ctx as never)).toEqual({
       w: 1340,
-      d: 1650,
-      h: 770,
+      d: 1500,
+      h: 980,
     });
     expect(resolveConfiguredPlanningDimsMm(item as never, fallbackProduct as never, ctx as never)).toEqual({
       w: 1340,
       d: 1650,
       h: 770,
     });
+  });
+
+  test("Jaron open state uses the configuration GLB when variant state matching is unavailable", () => {
+    const productId = "armchair-real-castlery-jaron-recliner-armchair";
+    const item = {
+      instanceId: "jaron-open-model",
+      productId,
+      variantId: "persisted-jaron-variant",
+      configurationCode: "open_recliner",
+      position: [0, 0, 0],
+      rotationY: 0,
+    };
+    const ctx = {
+      importedModelById: new Map([
+        [
+          productId,
+          {
+            id: productId,
+            catalog: {
+              configurations: [
+                {
+                  configuration_code: "open_recliner",
+                  model_url:
+                    "/assets/models/armchair-real-castlery-jaron-recliner-armchair-slim-arm-open.glb",
+                },
+              ],
+              variants: [],
+            },
+          },
+        ],
+      ]),
+      itemConfigurationByInstanceId: {},
+      importedModelUrlByAssetId: {},
+      catalogItems: {},
+    };
+
+    expect(
+      resolveConfiguredModelUrl(
+        item as never,
+        "/assets/models/armchair-real-castlery-jaron-recliner-armchair-slim-arm-closed.glb",
+        item.variantId,
+        ctx as never
+      )
+    ).toBe(
+      "/assets/models/armchair-real-castlery-jaron-recliner-armchair-slim-arm-open.glb"
+    );
+  });
+
+  test("Jaron configured GLB overrides the closed purchase variant at the scene handoff", () => {
+    const closedModelUrl =
+      "/assets/models/armchair-real-castlery-jaron-recliner-armchair-slim-arm-closed.glb";
+    const openModelUrl =
+      "/assets/models/armchair-real-castlery-jaron-recliner-armchair-slim-arm-open.glb";
+    const variants = [
+      {
+        id: "jaron-ivory",
+        label: "Ivory",
+        colorHex: "#eeeae1",
+        modelUrl: closedModelUrl,
+      },
+      {
+        id: "jaron-cocoa",
+        label: "Cocoa",
+        colorHex: "#8d593f",
+        modelUrl: closedModelUrl,
+      },
+    ];
+
+    const configured = applyConfiguredModelUrlToVariant(
+      variants as never,
+      "jaron-ivory",
+      openModelUrl
+    );
+
+    expect(configured[0]?.modelUrl).toBe(openModelUrl);
+    expect(configured[1]).toBe(variants[1]);
   });
 
   test("configurable bounds keep the open lift-top footprint instead of closed variant size", () => {

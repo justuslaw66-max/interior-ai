@@ -255,7 +255,16 @@ const commandBarSource = fs.readFileSync(
 );
 assert.match(commandBarSource, /designer-command-bar/, "The Pro command bar should use the shell token.");
 assert.match(commandBarSource, /designer-control/, "The Pro command bar should use strong control boundaries.");
-assert.match(commandBarSource, /designer-command-selection/, "The Pro command bar should use restrained neutral selection states.");
+assert.match(
+  commandBarSource,
+  /data-testid="editor-command-workspace"[\s\S]*?designer-control/,
+  "The Pro workspace trigger should use a restrained neutral command control."
+);
+assert.match(
+  commandBarSource,
+  /data-testid=\{step\.testId\}[\s\S]*?data-active=\{step\.active \? "true" : "false"\}[\s\S]*?aria-current=\{step\.active \? "page" : undefined\}[\s\S]*?step\.active[\s\S]*?Current/,
+  "The Pro workspace menu should expose its current workflow semantically."
+);
 assert.match(commandBarSource, /designer-work-surface/, "The Pro command menus should use light work surfaces.");
 assert.match(commandBarSource, /designer-primary-action/, "The Pro command bar should reserve solid blue for its primary action.");
 assert.match(commandBarSource, /designer-status-(?:ready|blocked|info|pending)/, "Save states should use semantic Pro statuses.");
@@ -362,6 +371,28 @@ const selectedItemPanelSource = fs.readFileSync(
 );
 const designSceneCanvasSource = fs.readFileSync(
   path.join(root, "components", "editor", "design-page", "DesignSceneCanvas.tsx"),
+  "utf8"
+);
+const lightingSystemSource = fs.readFileSync(
+  path.join(
+    root,
+    "components",
+    "editor",
+    "design-page",
+    "lighting",
+    "LightingSystem.tsx"
+  ),
+  "utf8"
+);
+const exposureControllerSource = fs.readFileSync(
+  path.join(
+    root,
+    "components",
+    "editor",
+    "design-page",
+    "lighting",
+    "ExposureController.tsx"
+  ),
   "utf8"
 );
 const commandPaletteSource = fs.readFileSync(
@@ -495,18 +526,23 @@ assert.match(
 );
 assert.match(
   designSceneCanvasSource,
-  /<Canvas[\s\S]*?data-shadow-maps-enabled=\{[\s\S]*?effectiveShadowsEnabled[\s\S]*?data-tone-mapping="aces"[\s\S]*?data-lighting-model="ambient-hemi-key-fill-ibl"[\s\S]*?shadows=\{effectiveShadowsEnabled \? QUALITY_SHADOW_FILTER : false\}[\s\S]*?outputColorSpace:\s*THREE\.SRGBColorSpace[\s\S]*?toneMapping:\s*THREE\.ACESFilmicToneMapping/,
-  "The whole-home renderer should honor the effective shadow preference with sRGB output and ACES tone mapping."
-);
-assert.match(
-  designSceneCanvasSource,
-  /<hemisphereLight[\s\S]*?color=\{configuration\.lightConfig\.skyColor[\s\S]*?groundColor=\{configuration\.lightConfig\.groundColor[\s\S]*?intensity=\{configuration\.lightConfig\.hemiIntensity/,
-  "The whole-home renderer should use the configured hemisphere light for directional ambient depth."
+  /<Canvas[\s\S]*?data-shadow-maps-enabled=\{[\s\S]*?effectiveShadowsEnabled[\s\S]*?data-tone-mapping="aces"[\s\S]*?data-lighting-model="central-environment-sun-ambient"[\s\S]*?shadows=\{effectiveShadowsEnabled \? QUALITY_SHADOW_FILTER : false\}[\s\S]*?<LightingSystem/,
+  "The whole-home renderer should mount the central preset-driven lighting system."
 );
 assert.doesNotMatch(
   designSceneCanvasSource,
-  /<ambientLight\s+color="#ffffff"\s+intensity=\{0\.24\}/,
-  "The whole-home renderer should not restore the unconditional white ambient wash."
+  /physicallyCorrectLights/,
+  "The whole-home renderer should not restore the obsolete physical-light assignment."
+);
+assert.match(
+  lightingSystemSource,
+  /<ExposureController[\s\S]*?<EnvironmentController[\s\S]*?<ambientLight[\s\S]*?<SunController/,
+  "The central lighting system should own renderer output and the complete global light stack."
+);
+assert.match(
+  exposureControllerSource,
+  /THREE\.SRGBColorSpace[\s\S]*?THREE\.ACESFilmicToneMapping[\s\S]*?lighting\.renderer\.exposure/,
+  "The renderer controller should own sRGB output, ACES tone mapping, and preset exposure."
 );
 assert.match(
   selectionInspectorSource,

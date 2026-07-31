@@ -33,6 +33,7 @@ import {
   removeSceneProjectionElevation,
   type SceneProjection,
 } from "@/lib/design-page-scene-projection";
+import { applyConfiguredModelUrlToVariant } from "@/lib/design-page-config-resolvers";
 
 export type SceneItemDimensionsMm = {
   w: number;
@@ -198,6 +199,46 @@ export function SceneItemsLayer({
                   }
                   actions.onSelect(id, additive);
                 }}
+                locked={item.locked}
+                onDraggingChange={actions.onDraggingChange}
+                onDragPointerMove={actions.onDragPointerMove}
+                onMove={
+                  configuration.viewMode === "3d" &&
+                  configuration.canEdit &&
+                  isActiveSceneRoom
+                    ? (id, position) =>
+                        actions.onMove({
+                          sceneEntry,
+                          configuredPlanningDimsMm: {
+                            w: item.cabinetDefinition.totalWidth,
+                            d: item.cabinetDefinition.depth,
+                            h: item.cabinetDefinition.height,
+                          },
+                          id,
+                          position: removeSceneProjectionElevation(
+                            sceneEntry,
+                            projection,
+                            position
+                          ),
+                        })
+                    : undefined
+                }
+                onDragEnd={
+                  configuration.viewMode === "3d" &&
+                  configuration.canEdit &&
+                  isActiveSceneRoom
+                    ? (id, position) =>
+                        actions.onDragEnd({
+                          sceneEntry,
+                          id,
+                          position: removeSceneProjectionElevation(
+                            sceneEntry,
+                            projection,
+                            position
+                          ),
+                        })
+                    : undefined
+                }
               />
             </group>
           );
@@ -290,6 +331,14 @@ export function SceneItemsLayer({
                   ...product.assets,
                   modelUrl: configuredModelUrl ?? product.assets.modelUrl,
                 },
+                // Furniture model selection prefers variant assets. Carry the
+                // configured state URL through that final lookup so an open state
+                // cannot fall back to the closed purchase GLB.
+                variants: applyConfiguredModelUrlToVariant(
+                  product.variants,
+                  variant.id,
+                  configuredModelUrl
+                ),
               };
         const recoveredSurfacePlacement =
           isSurfaceOnlyCatalogItem(effectiveProduct) && (item.position[1] ?? 0) <= 0.001

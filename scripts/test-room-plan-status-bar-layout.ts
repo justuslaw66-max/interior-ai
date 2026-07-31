@@ -7,7 +7,7 @@ const source = fs.readFileSync(statusBarPath, "utf8");
 
 assert.match(
   source,
-  /flex flex-nowrap items-center justify-start overflow-hidden/,
+  /flex min-w-0 flex-nowrap items-center justify-start overflow-hidden/,
   "Room plan status bar should stay on one row instead of wrapping the view toggle under the status copy."
 );
 
@@ -19,8 +19,14 @@ assert.doesNotMatch(
 
 assert.match(
   source,
-  /data-testid="room-plan-status-next-action"[\s\S]*?max-w-36 truncate 2xl:block/,
+  /data-testid="room-plan-status-next-action"[\s\S]*?max-w-36 truncate \$\{isCommand \? "" : "2xl:block"\}/,
   "Long health guidance should stay truncated and only appear on very wide screens."
+);
+
+assert.match(
+  source,
+  /isCommand[\s\S]*\? "h-\[30px\] max-w-full/,
+  "Command-bar room context should fit the balanced 30px toolbar control height."
 );
 
 assert.match(

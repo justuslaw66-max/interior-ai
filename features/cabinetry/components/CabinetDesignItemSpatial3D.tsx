@@ -14,6 +14,11 @@ export function CabinetDesignItemSpatial3D({
   renderReadyKey,
   onRenderReadyChange,
   onSelect,
+  locked,
+  onDraggingChange,
+  onDragPointerMove,
+  onMove,
+  onDragEnd,
 }: CabinetDesignItemRendererProps) {
   const sceneProjection = projectSceneRoomItem(sceneEntry, "spatial");
 
@@ -29,6 +34,11 @@ export function CabinetDesignItemSpatial3D({
       renderReadyKey={renderReadyKey}
       onRenderReadyChange={onRenderReadyChange}
       onSelect={onSelect}
+      locked={locked}
+      onDraggingChange={onDraggingChange}
+      onDragPointerMove={onDragPointerMove}
+      onMove={onMove}
+      onDragEnd={onDragEnd}
     />
   );
 }

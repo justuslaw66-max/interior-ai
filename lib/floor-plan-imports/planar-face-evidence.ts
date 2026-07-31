@@ -19,6 +19,7 @@ const DEFAULT_MAX_RAW_EDGES = 4_096;
 const DEFAULT_MAX_INTERSECTION_CHECKS = 300_000;
 const DEFAULT_MAX_ATOMIC_EDGES = 12_000;
 const DEFAULT_MAX_HALF_EDGE_STEPS = 100_000;
+const OPEN_PLAN_ROOM_TYPES = new Set(["living", "dining", "kitchen"]);
 
 export type RegisteredPlanarFaceEdge = {
   evidenceId: string;
@@ -36,6 +37,7 @@ export type RegisteredPlanarFaceEvidence = {
   roomType: SemanticRoomLabel["roomType"];
   confidence: number;
   sourcePoints: SourcePointPx[];
+  sourceLabels: SemanticRoomLabel[];
   edges: RegisteredPlanarFaceEdge[];
 };
 
@@ -443,19 +445,33 @@ export function assembleRegisteredPlanarFaces(
         cycle.points
       );
     });
-    if (labels.length > 1) continue;
     const label = labels[0];
+    const openPlan =
+      labels.length > 1 &&
+      labels.every((entry) => OPEN_PLAN_ROOM_TYPES.has(entry.roomType)) &&
+      new Set(labels.map((entry) => entry.roomType)).size > 1;
+    if (labels.length > 1 && !openPlan) continue;
     const genericRoomNumber = faces.filter((face) => face.roomType === "other").length + 1;
     faces.push({
       id: `registered-face-${page.pageNumber}-${faces.length + 1}`,
       pageNumber: page.pageNumber,
-      label: label?.label ?? `Room ${genericRoomNumber}`,
-      roomType: label?.roomType ?? "other",
+      label: openPlan
+        ? "Open Plan"
+        : label?.label ?? `Room ${genericRoomNumber}`,
+      roomType: openPlan
+        ? labels.find((entry) => entry.roomType === "living")?.roomType ??
+          labels.find((entry) => entry.roomType === "dining")?.roomType ??
+          label?.roomType ??
+          "other"
+        : label?.roomType ?? "other",
       confidence: Math.min(
-        label?.confidence ?? 0.7,
+        ...(labels.length
+          ? labels.map((entry) => entry.confidence)
+          : [0.7]),
         ...cycle.edges.map((edge) => edge.confidence)
       ),
       sourcePoints: cycle.points,
+      sourceLabels: labels,
       edges: cycle.edges.map((edge) => ({
         evidenceId: edge.id,
         kind: edge.kind,

@@ -49,11 +49,11 @@ placement_rules:
 design_pairings: ["coffee_table", "side_table", "floor_lamp", "rug", "accent_chair"]
 
 summary:
-  short_description: "Hamilton 3 Seater Sofa in Performance Marcel Brilliant White, with product-specific fabric availability."
+  short_description: "Hamilton 3 Seater Sofa in Performance Marcel Brilliant White, with product-specific fabric and leather availability."
   key_features:
     - "Deep foam, fibre and pocket-spring seating"
     - "Removable frame, seat and back cushion covers"
-    - "22 verified fabric choices"
+    - "27 verified upholstery choices: 22 fabric and 5 leather"
 
 feature_flags:
   has_removable_cover: true
@@ -62,10 +62,10 @@ feature_flags:
 
 authoring_notes:
   category_confidence: "high"
-  source_checked: "Castlery Singapore product page, 2026-07-12"
-  source_url: "https://www.castlery.com/sg/products/hamilton-3-seater-sofa"
+  source_checked: "Castlery Singapore fabric and leather product pages, 2026-07-30"
+  source_url: "https://www.castlery.com/sg/products/hamilton-leather-3-seater-sofa"
   local_source_model: "/Users/justus/Desktop/Webapp project/castlery/Sofa/Hamilton /3 Seater.glb"
-  note: "The supplied GLB is the baked Performance Marcel Brilliant White geometry. Runtime upholstery variants are restricted to the 22 choices verified on this exact Castlery listing; leather is excluded because it is sold as a separate Hamilton Leather product and no leather GLB was supplied."
+  note: "The supplied GLB is the baked Performance Marcel Brilliant White geometry. Castlery SG exposes the same 3 Seater configuration on separate fabric and leather listings; runtime variants include the 22 verified fabric choices and 5 verified leather choices."
 
 shipping_and_warranty:
   free_delivery_threshold_sgd: 500
@@ -113,6 +113,11 @@ supported_upholstery_codes:
   - "washed_chenille_sand"
   - "washed_chenille_caramel"
   - "washed_chenille_moss"
+  - "marche_ivory_leather"
+  - "marche_graphite_leather"
+  - "caramel_leather"
+  - "warm_taupe_leather"
+  - "marche_cocoa_leather"
 
 assets:
   asset_id: "sofa-real-castlery-hamilton-3-seater"

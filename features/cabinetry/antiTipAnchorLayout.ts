@@ -63,7 +63,7 @@ export function getCabinetAntiTipAnchorLayouts(module: CabinetModuleDefinition):
       centerY,
       localX: centerX - CABINET_ANTI_TIP_ANCHOR_WIDTH / 2,
       localY: centerY - CABINET_ANTI_TIP_ANCHOR_HEIGHT / 2,
-      localZ: Math.max(0, module.depth - CABINET_ANTI_TIP_ANCHOR_DEPTH),
+      localZ: module.depth,
     };
   });
 }

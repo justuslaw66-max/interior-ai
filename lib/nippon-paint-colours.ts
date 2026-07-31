@@ -1,19 +1,22 @@
-export type NipponPaintFamily =
-  | "white"
-  | "beige"
-  | "neutral"
-  | "red"
-  | "pink"
-  | "orange"
-  | "yellow"
-  | "green"
-  | "blue-green"
-  | "blue"
-  | "purple"
-  | "brown"
-  | "grey"
-  | "black"
-  | "accent";
+export const NIPPON_PAINT_FAMILIES = [
+  "white",
+  "beige",
+  "neutral",
+  "red",
+  "pink",
+  "orange",
+  "yellow",
+  "green",
+  "blue-green",
+  "blue",
+  "purple",
+  "brown",
+  "grey",
+  "black",
+  "accent",
+] as const;
+
+export type NipponPaintFamily = (typeof NIPPON_PAINT_FAMILIES)[number];
 
 export type NipponPaintColour = {
   id: string;

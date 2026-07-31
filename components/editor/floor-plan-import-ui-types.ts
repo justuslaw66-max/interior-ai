@@ -1,10 +1,41 @@
 import type { FloorPlanImportStatus } from "@/lib/floor-plan-imports/types";
 
+export type ConsumerFloorPlanImportProgressEstimate = {
+  asOf: string;
+  activity:
+    | "queued"
+    | "working"
+    | "retrying"
+    | "awaiting_user"
+    | "complete"
+    | "failed"
+    | "attention";
+  stageLabel: string;
+  confirmedPercent: number;
+  estimatedPercent: number;
+  nextMilestonePercent: number;
+  stageElapsedMs: number | null;
+  remainingRangeMs: { min: number; max: number } | null;
+  confidence: "low" | "medium" | "high" | null;
+  sampleCount: number;
+  heartbeatHealthy: boolean;
+  unusuallySlow: boolean;
+  nextAttemptAt: string | null;
+  pollAfterMs: number;
+};
+
 export type ConsumerFloorPlanImportJob = {
   id: string;
   status: FloorPlanImportStatus;
   progress: number;
   adapterId: string | null;
+  extractionVersion: string | null;
+  statusChangedAt: string | null;
+  lastAttemptAt: string | null;
+  nextAttemptAt: string | null;
+  leaseExpiresAt: string | null;
+  heartbeatAt: string | null;
+  progressEstimate?: ConsumerFloorPlanImportProgressEstimate;
   renderedPagesJson: Array<{
     pageNumber: number;
     widthPx: number;

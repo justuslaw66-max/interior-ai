@@ -4,8 +4,10 @@ import {
   type FloorPlanImportStatus,
   type FloorPlanReviewIssue,
 } from "./types";
+import { invalidateFloorPlanTimingProfile } from "./progress-timing-cache";
+import { completeFloorPlanEtaPredictions } from "./eta-calibration";
 
-const MAX_METRICS = 32;
+const MAX_METRICS = 40;
 const MAX_METRIC_ABS = 1_000_000_000_000;
 const MAX_POSTGRES_INT = 2_147_483_647;
 const OPERATIONAL_ID = /^[a-zA-Z0-9][a-zA-Z0-9._:/-]{0,159}$/;
@@ -16,9 +18,30 @@ const APPROVED_STAGE_METRIC_KEYS = new Set([
   "pageCount",
   "vectorPageCount",
   "rasterLineworkPageCount",
+  "candidatePlanPageCount",
+  "visionAttempted",
+  "visionSucceeded",
+  "labelObservationCount",
+  "roomBoundaryProposalCount",
+  "dimensionObservationCount",
+  "openingObservationCount",
+  "geometrySnapRejectCount",
+  "geometryInvalidProposalRejectCount",
+  "geometryPlanRegionRejectCount",
+  "geometryUnsupportedEdgeRejectCount",
+  "geometryCornerRejectCount",
+  "geometryPolygonRejectCount",
+  "geometryLabelRejectCount",
+  "geometryResidualRejectCount",
+  "geometryMedianSourceDeviationPx",
+  "geometryMaxSourceDeviationPx",
+  "manualRepairCount",
   "scaleSolved",
   "scaleDimensionCount",
   "scaleResidualMm",
+  "scaleSingleSegmentCandidateCount",
+  "scaleCompoundSpanCandidateCount",
+  "scaleUnsupportedSpanCount",
   "roomCount",
   "wallCount",
   "openingCount",
@@ -152,6 +175,20 @@ export function createPrismaFloorPlanImportTelemetryObserver(
           metricsJson: projected.metrics as Prisma.InputJsonValue,
         },
       });
+      invalidateFloorPlanTimingProfile(
+        projected.adapterId,
+        projected.extractionVersion
+      );
+      if (
+        ["selecting_page", "needs_review", "ready", "failed"].includes(
+          projected.toStatus
+        )
+      ) {
+        await completeFloorPlanEtaPredictions(client, {
+          jobId: projected.jobId,
+          outcomeStatus: projected.toStatus,
+        });
+      }
     },
   };
 }

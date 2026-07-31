@@ -401,11 +401,17 @@ async function testRasterAdapterIntegration() {
     const rendered = await adapter.render(source, context);
     const extracted = await adapter.extract(source, rendered, context);
     const envelope = extracted.candidate as {
+      renderedPages?: Array<{ pageNumber: number; assetKey: string }>;
       pages: Array<{
         vectorSegments: Array<{ evidenceKind?: string }>;
         vectorPaths: Array<{ evidenceKind?: string }>;
       }>;
     };
+    assert.equal(
+      envelope.renderedPages?.length,
+      1,
+      "The confirmed-page stage must retain its derivative reference for the original-detail second vision pass."
+    );
     assert.equal(envelope.pages[0].vectorPaths.length, 1);
     assert.equal(
       envelope.pages[0].vectorSegments[0].evidenceKind,

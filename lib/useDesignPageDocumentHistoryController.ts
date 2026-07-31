@@ -201,6 +201,7 @@ export function useDesignPageDocumentHistoryController({
                 typeof floorPlan.underlay.opacity === "number"
                   ? floorPlan.underlay.opacity
                   : 0.45,
+              visible: floorPlan.underlay.visible ?? true,
               locked: floorPlan.underlay.locked ?? true,
             }
           : null

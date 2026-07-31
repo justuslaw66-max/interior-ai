@@ -9,6 +9,7 @@ const CANCELLABLE_STATUSES = [
   "received",
   "rendered",
   "extracted",
+  "selecting_page",
   "scale_solved",
   "topology_built",
   "validating",
@@ -40,6 +41,7 @@ export async function POST(
     },
     data: {
       status: "failed",
+      statusChangedAt: now,
       progress: FLOOR_PLAN_IMPORT_PROGRESS.failed,
       errorMessage: "Cancelled by owner",
       leaseToken: null,

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type {
+  FloorPlanAnnotationV2,
   FloorPlanDimensionV2,
   FloorPlanDocumentV2,
   FloorPlanEntityProvenanceV2,
@@ -22,6 +23,8 @@ import { floorPlanMvpBlockingIssueIds } from "./types";
 import {
   applySemanticEvidencePrior,
   multiplyMatrices,
+  parsePrintedLengthMm,
+  pointInPolygon,
   registerRoomBoundaries,
   segmentLengthPx,
   semanticEvidencePrior,
@@ -30,6 +33,7 @@ import {
   type Matrix2D,
   type PageSemanticEvidence,
   type RegisteredPageEvidence,
+  type SemanticBoundingBox,
   type SourcePointPx,
   type SourceScaleSolution,
   type SourceTextEvidence,
@@ -37,6 +41,11 @@ import {
   type SourceVectorSegment,
   type RegisteredRoomBoundary,
 } from "./deterministic-evidence";
+import {
+  ENHANCED_FLOOR_PLAN_EVIDENCE_KIND,
+  isEnhancedFloorPlanImportEnabled,
+} from "./page-selection";
+import type { FloorPlanPageCandidate } from "./types";
 import {
   extractRasterLinework,
   normalizeRasterForLinework,
@@ -62,6 +71,11 @@ import {
   type RegisteredPlanarFaceResult,
 } from "./planar-face-evidence";
 import { assessRegisteredDirectPathCompleteness } from "./room-topology-completeness";
+import {
+  inferRoomIdentityFromFixtures,
+  registerVisionGuidedRoomBoundaries,
+  type VisionGuidedTopologyResult,
+} from "./vision-guided-topology";
 import { parsePdfDrawPathEvidence } from "./pdf-vector-evidence";
 import {
   buildSourceBoundCatalogDraft,
@@ -71,7 +85,7 @@ import {
   type CatalogFloorPlanDraftMatchReference,
 } from "./catalog-draft-match";
 
-const EXTRACTION_VERSION = "pdf-raster-hybrid-1.4.0";
+const EXTRACTION_VERSION = "pdf-raster-hybrid-2.4.0";
 const MAX_PDF_PAGES = 30;
 const MAX_SEMANTIC_PAGES = 8;
 const MAX_VECTOR_SEGMENTS_PER_PAGE = 20_000;
@@ -92,9 +106,23 @@ type LocalOcrPageDiagnostics = Pick<
 };
 
 const semanticSchema = z.object({
+  planRegion: z
+    .object({
+      bbox: z.object({
+        leftRatio: z.number().min(0).max(1),
+        topRatio: z.number().min(0).max(1),
+        rightRatio: z.number().min(0).max(1),
+        bottomRatio: z.number().min(0).max(1),
+      }),
+      rotationDegrees: z.number().min(-180).max(180),
+      confidence: z.number().min(0).max(1),
+    })
+    .nullable(),
+  unitSystem: z.enum(["metric_mm", "metric_cm", "imperial", "unknown"]),
   roomLabels: z.array(
     z.object({
       label: z.string().trim().min(1).max(120),
+      rawText: z.string().trim().max(160),
       roomType: z.enum([
         "living",
         "dining",
@@ -108,15 +136,63 @@ const semanticSchema = z.object({
       ]),
       centerXRatio: z.number().min(0).max(1),
       centerYRatio: z.number().min(0).max(1),
+      bbox: z.object({
+        leftRatio: z.number().min(0).max(1),
+        topRatio: z.number().min(0).max(1),
+        rightRatio: z.number().min(0).max(1),
+        bottomRatio: z.number().min(0).max(1),
+      }),
+      confidence: z.number().min(0).max(1),
+    })
+  ).max(100),
+  roomBoundaries: z.array(
+    z.object({
+      label: z.string().trim().min(1).max(120),
+      roomType: z.enum([
+        "living",
+        "dining",
+        "bedroom",
+        "kitchen",
+        "toilet",
+        "service_yard",
+        "shelter",
+        "study",
+        "other",
+      ]),
+      points: z.array(
+        z.object({
+          xRatio: z.number().min(0).max(1),
+          yRatio: z.number().min(0).max(1),
+        })
+      ).min(3).max(24),
       confidence: z.number().min(0).max(1),
     })
   ).max(100),
   dimensionLabels: z.array(
     z.object({
       valueMm: z.number().int().min(100).max(100_000),
+      rawText: z.string().trim().max(80),
       centerXRatio: z.number().min(0).max(1),
       centerYRatio: z.number().min(0).max(1),
       orientation: z.enum(["horizontal", "vertical", "unknown"]),
+      bbox: z.object({
+        leftRatio: z.number().min(0).max(1),
+        topRatio: z.number().min(0).max(1),
+        rightRatio: z.number().min(0).max(1),
+        bottomRatio: z.number().min(0).max(1),
+      }),
+      extensionStart: z
+        .object({
+          xRatio: z.number().min(0).max(1),
+          yRatio: z.number().min(0).max(1),
+        })
+        .nullable(),
+      extensionEnd: z
+        .object({
+          xRatio: z.number().min(0).max(1),
+          yRatio: z.number().min(0).max(1),
+        })
+        .nullable(),
       confidence: z.number().min(0).max(1),
     })
   ).max(200),
@@ -126,9 +202,51 @@ const semanticSchema = z.object({
       operation: z.enum(["swing", "sliding", "folding", "fixed", "open", "unknown"]),
       centerXRatio: z.number().min(0).max(1),
       centerYRatio: z.number().min(0).max(1),
+      bbox: z.object({
+        leftRatio: z.number().min(0).max(1),
+        topRatio: z.number().min(0).max(1),
+        rightRatio: z.number().min(0).max(1),
+        bottomRatio: z.number().min(0).max(1),
+      }),
+      spanStart: z
+        .object({
+          xRatio: z.number().min(0).max(1),
+          yRatio: z.number().min(0).max(1),
+        })
+        .nullable(),
+      spanEnd: z
+        .object({
+          xRatio: z.number().min(0).max(1),
+          yRatio: z.number().min(0).max(1),
+        })
+        .nullable(),
       confidence: z.number().min(0).max(1),
     })
   ).max(200),
+  fixtureSymbols: z.array(
+    z.object({
+      kind: z.enum([
+        "toilet",
+        "bathtub",
+        "shower",
+        "basin",
+        "kitchen_sink",
+        "stove",
+        "washer",
+        "dryer",
+        "other",
+      ]),
+      centerXRatio: z.number().min(0).max(1),
+      centerYRatio: z.number().min(0).max(1),
+      bbox: z.object({
+        leftRatio: z.number().min(0).max(1),
+        topRatio: z.number().min(0).max(1),
+        rightRatio: z.number().min(0).max(1),
+        bottomRatio: z.number().min(0).max(1),
+      }),
+      confidence: z.number().min(0).max(1),
+    })
+  ).max(300),
   entrance: z
     .object({
       centerXRatio: z.number().min(0).max(1),
@@ -146,10 +264,13 @@ type PageScaleSolution = {
   rmsResidualMm: number;
   confidence: number;
   evidence?: SourceScaleSolution["evidence"];
+  diagnostics?: SourceScaleSolution["diagnostics"];
 };
 
 type ExtractionEnvelope = {
-  kind: "floor_plan_deterministic_evidence_v1";
+  kind:
+    | "floor_plan_deterministic_evidence_v1"
+    | typeof ENHANCED_FLOOR_PLAN_EVIDENCE_KIND;
   source: {
     id: string;
     fileName: string;
@@ -157,6 +278,9 @@ type ExtractionEnvelope = {
     sha256: string;
   };
   pages: RegisteredPageEvidence[];
+  renderedPages?: FloorPlanRenderedPage[];
+  pageCandidates?: FloorPlanPageCandidate[];
+  selectedPageNumber?: number | null;
   scale: PageScaleSolution | null;
   /** Page-bound solutions prevent dimensions from one brochure page scaling another. */
   scales?: PageScaleSolution[];
@@ -177,9 +301,13 @@ type PdfTextItem = {
 
 function emptySemantics(): PageSemanticEvidence {
   return {
+    planRegion: null,
+    unitSystem: "unknown",
     roomLabels: [],
+    roomBoundaries: [],
     dimensionLabels: [],
     openingSymbols: [],
+    fixtureSymbols: [],
     entrance: null,
     notes: [],
   };
@@ -187,28 +315,121 @@ function emptySemantics(): PageSemanticEvidence {
 
 function mergeSemantics(
   deterministic: PageSemanticEvidence,
-  semantic: PageSemanticEvidence | null
+  semantic: PageSemanticEvidence | null,
+  preferSemantic = false
 ): PageSemanticEvidence {
   if (!semantic) return deterministic;
-  const dimensionKeys = new Set(
-    deterministic.dimensionLabels.map(
-      (item) => `${item.valueMm}:${item.centerXRatio.toFixed(3)}:${item.centerYRatio.toFixed(3)}`
-    )
-  );
+  const distanceBetween = (
+    left: { centerXRatio: number; centerYRatio: number },
+    right: { centerXRatio: number; centerYRatio: number }
+  ) =>
+    Math.hypot(
+      left.centerXRatio - right.centerXRatio,
+      left.centerYRatio - right.centerYRatio
+    );
+  const preferred = preferSemantic ? semantic : deterministic;
+  const supplemental = preferSemantic ? deterministic : semantic;
+  const roomLabels = [...preferred.roomLabels];
+  for (const candidate of supplemental.roomLabels) {
+    const normalizedLabel = candidate.label.trim().toLocaleLowerCase();
+    if (
+      roomLabels.some(
+        (existing) =>
+          existing.label.trim().toLocaleLowerCase() === normalizedLabel &&
+          distanceBetween(existing, candidate) <= 0.04
+      )
+    ) {
+      continue;
+    }
+    roomLabels.push(candidate);
+  }
+  const roomBoundaries = [...(preferred.roomBoundaries ?? [])];
+  for (const candidate of supplemental.roomBoundaries ?? []) {
+    const centroid = candidate.points.reduce(
+      (total, point) => ({
+        centerXRatio: total.centerXRatio + point.xRatio / candidate.points.length,
+        centerYRatio: total.centerYRatio + point.yRatio / candidate.points.length,
+      }),
+      { centerXRatio: 0, centerYRatio: 0 }
+    );
+    const normalizedLabel = candidate.label.trim().toLocaleLowerCase();
+    if (
+      roomBoundaries.some((existing) => {
+        const existingCentroid = existing.points.reduce(
+          (total, point) => ({
+            centerXRatio:
+              total.centerXRatio + point.xRatio / existing.points.length,
+            centerYRatio:
+              total.centerYRatio + point.yRatio / existing.points.length,
+          }),
+          { centerXRatio: 0, centerYRatio: 0 }
+        );
+        return (
+          existing.label.trim().toLocaleLowerCase() === normalizedLabel &&
+          distanceBetween(existingCentroid, centroid) <= 0.04
+        );
+      })
+    ) {
+      continue;
+    }
+    roomBoundaries.push(candidate);
+  }
+  const dimensionLabels = [...preferred.dimensionLabels];
+  for (const candidate of supplemental.dimensionLabels) {
+    if (
+      dimensionLabels.some(
+        (existing) =>
+          Math.abs(existing.valueMm - candidate.valueMm) <=
+            Math.max(10, candidate.valueMm * 0.01) &&
+          (existing.orientation === candidate.orientation ||
+            existing.orientation === "unknown" ||
+            candidate.orientation === "unknown") &&
+          distanceBetween(existing, candidate) <= 0.04
+      )
+    ) {
+      continue;
+    }
+    dimensionLabels.push(candidate);
+  }
+  const openingSymbols = [...preferred.openingSymbols];
+  for (const candidate of supplemental.openingSymbols) {
+    if (
+      openingSymbols.some(
+        (existing) =>
+          existing.kind === candidate.kind &&
+          distanceBetween(existing, candidate) <= 0.04
+      )
+    ) {
+      continue;
+    }
+    openingSymbols.push(candidate);
+  }
+  const fixtureSymbols = [...(preferred.fixtureSymbols ?? [])];
+  for (const candidate of supplemental.fixtureSymbols ?? []) {
+    if (
+      fixtureSymbols.some(
+        (existing) =>
+          existing.kind === candidate.kind &&
+          distanceBetween(existing, candidate) <= 0.035
+      )
+    ) {
+      continue;
+    }
+    fixtureSymbols.push(candidate);
+  }
   return {
-    roomLabels: [...deterministic.roomLabels, ...semantic.roomLabels],
-    dimensionLabels: [
-      ...deterministic.dimensionLabels,
-      ...semantic.dimensionLabels.filter(
-        (item) =>
-          !dimensionKeys.has(
-            `${item.valueMm}:${item.centerXRatio.toFixed(3)}:${item.centerYRatio.toFixed(3)}`
-          )
-      ),
-    ],
-    openingSymbols: [...deterministic.openingSymbols, ...semantic.openingSymbols],
-    entrance: semantic.entrance ?? deterministic.entrance,
-    notes: [...deterministic.notes, ...semantic.notes],
+    planRegion: preferred.planRegion ?? supplemental.planRegion ?? null,
+    unitSystem:
+      preferred.unitSystem && preferred.unitSystem !== "unknown"
+        ? preferred.unitSystem
+        : supplemental.unitSystem ?? "unknown",
+    roomLabels,
+    roomBoundaries,
+    dimensionLabels,
+    openingSymbols,
+    fixtureSymbols,
+    entrance: preferred.entrance ?? supplemental.entrance,
+    notes: [...supplemental.notes, ...preferred.notes],
   };
 }
 
@@ -217,14 +438,40 @@ export function rankFloorPlanSemanticPages(
   pages: readonly RegisteredPageEvidence[]
 ) {
   return [...pages].sort((left, right) => {
-    const score = (page: RegisteredPageEvidence) =>
-      page.semantics.roomLabels.length * 10_000 +
-      page.semantics.dimensionLabels.length * 500 +
-      Math.min(page.vectorPaths.length, 500) * 30 +
-      Math.min(page.vectorSegments.length, 20_000) * 0.02 +
-      Math.min(page.text.length, 1_000) * 2;
-    return score(right) - score(left) || left.pageNumber - right.pageNumber;
+    return (
+      floorPlanSemanticPageScore(right) -
+        floorPlanSemanticPageScore(left) ||
+      left.pageNumber - right.pageNumber
+    );
   });
+}
+
+function floorPlanSemanticPageScore(page: RegisteredPageEvidence) {
+  return (
+    page.semantics.roomLabels.length * 10_000 +
+    page.semantics.dimensionLabels.length * 500 +
+    page.semantics.openingSymbols.length * 250 +
+    Math.min(page.vectorPaths.length, 500) * 30 +
+    Math.min(page.vectorSegments.length, 20_000) * 0.02 +
+    Math.min(page.text.length, 1_000) * 2
+  );
+}
+
+function buildPageCandidates(
+  pages: readonly RegisteredPageEvidence[]
+): FloorPlanPageCandidate[] {
+  return rankFloorPlanSemanticPages(pages).map((page, index) => ({
+    pageNumber: page.pageNumber,
+    rank: index + 1,
+    score: Number(floorPlanSemanticPageScore(page).toFixed(2)),
+    widthPx: page.widthPx,
+    heightPx: page.heightPx,
+    roomLabelCount: page.semantics.roomLabels.length,
+    dimensionLabelCount: page.semantics.dimensionLabels.length,
+    openingSymbolCount: page.semantics.openingSymbols.length,
+    vectorPathCount: page.vectorPaths.length,
+    vectorSegmentCount: page.vectorSegments.length,
+  }));
 }
 
 function roomTypeFromLabel(label: string): PageSemanticEvidence["roomLabels"][number]["roomType"] | null {
@@ -262,10 +509,12 @@ function semanticsFromPositionedText(
       });
     }
     const normalized = item.text.replace(/[,\s]/g, "");
-    if (/^\d{3,5}$/.test(normalized)) {
-      const valueMm = Number(normalized);
+    const parsedImperialMm = parsePrintedLengthMm(item.text);
+    if (/^\d{3,5}$/.test(normalized) || parsedImperialMm !== null) {
+      const valueMm = parsedImperialMm ?? Number(normalized);
       result.dimensionLabels.push({
         valueMm,
+        rawText: item.text,
         centerXRatio: item.center.x / widthPx,
         centerYRatio: item.center.y / heightPx,
         orientation: item.widthPx >= item.heightPx ? "horizontal" : "vertical",
@@ -700,7 +949,9 @@ async function extractPdfEvidence(
 
 async function classifyRenderedPage(
   page: FloorPlanRenderedPage,
-  context: FloorPlanAdapterContext
+  context: FloorPlanAdapterContext,
+  detail: "low" | "original",
+  planCrop?: SemanticBoundingBox | null
 ): Promise<PageSemanticEvidence | null> {
   if (
     process.env.FLOOR_PLAN_VISION_ENABLED !== "1" ||
@@ -712,43 +963,227 @@ async function classifyRenderedPage(
   }
   const derivative = await context.store.readDerivative(page.assetKey);
   if (!derivative) return null;
+  const requestedCrop =
+    planCrop &&
+    planCrop.rightRatio > planCrop.leftRatio &&
+    planCrop.bottomRatio > planCrop.topRatio
+      ? {
+          leftRatio: Math.max(0, Math.min(1, planCrop.leftRatio)),
+          topRatio: Math.max(0, Math.min(1, planCrop.topRatio)),
+          rightRatio: Math.max(0, Math.min(1, planCrop.rightRatio)),
+          bottomRatio: Math.max(0, Math.min(1, planCrop.bottomRatio)),
+        }
+      : null;
+  let imageMimeType = derivative.mimeType;
+  let imageBytes = derivative.bytes;
+  if (
+    requestedCrop &&
+    (requestedCrop.rightRatio - requestedCrop.leftRatio) *
+      (requestedCrop.bottomRatio - requestedCrop.topRatio) >=
+      0.05
+  ) {
+    const { createCanvas, loadImage } = await import("@napi-rs/canvas");
+    const sourceImage = await loadImage(Buffer.from(derivative.bytes));
+    const leftPx = Math.floor(requestedCrop.leftRatio * sourceImage.width);
+    const topPx = Math.floor(requestedCrop.topRatio * sourceImage.height);
+    const widthPx = Math.max(
+      1,
+      Math.ceil(
+        (requestedCrop.rightRatio - requestedCrop.leftRatio) *
+          sourceImage.width
+      )
+    );
+    const heightPx = Math.max(
+      1,
+      Math.ceil(
+        (requestedCrop.bottomRatio - requestedCrop.topRatio) *
+          sourceImage.height
+      )
+    );
+    const canvas = createCanvas(widthPx, heightPx);
+    canvas
+      .getContext("2d")
+      .drawImage(
+        sourceImage,
+        leftPx,
+        topPx,
+        widthPx,
+        heightPx,
+        0,
+        0,
+        widthPx,
+        heightPx
+      );
+    imageBytes = new Uint8Array(canvas.toBuffer("image/png"));
+    imageMimeType = "image/png";
+  }
   const [{ default: OpenAI }, { zodTextFormat }] = await Promise.all([
     import("openai"),
     import("openai/helpers/zod"),
   ]);
   const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const semanticInstructions =
+    detail === "original"
+      ? "Analyze the confirmed floor-plan crop exhaustively at original detail. Propose every visually closed architectural face, including small bathrooms, toilets, closets, washrooms, utility rooms, and unlabeled enclosed spaces. Detect recognizable plan symbols for toilets, bathtubs, showers, basins, kitchen sinks, stoves, washers, and dryers. Use a sanitary fixture cluster such as a toilet with a bathtub, shower, or basin to classify an unlabeled enclosed face as Bathroom with roomType toilet, and return that face boundary even when no room text is printed. Fixture symbols are semantic evidence only: they are never walls, openings, or furniture to create. When Family Room, Dining Area, and Kitchen share one undivided face, return one Open Plan boundary and keep all three printed labels. Follow visible architectural wall faces through supported door, window, and passage gaps, using the fewest vertices needed. A room polygon is only a proposal: deterministic source-line snapping will accept or reject every edge. Do not omit a closed face merely because its name is missing or ambiguous. Never treat furniture, fixtures, cabinetry, appliances, hatching, text boxes, dimension strokes, decoration, or editor UI as architecture. Never invent measurements, wall spans, or 3D heights."
+      : "Classify floor-plan semantics for page ranking and crop location. Locate the main plan region and rotation, page unit system, room-label boxes, approximate architectural room boundaries, printed dimension labels with approximate extension endpoints, entrance, door/window/passage spans, and recognizable sanitary or appliance fixture symbols. Room polygons are non-authoritative proposals that will be checked against deterministic source linework. Fixtures provide room-type evidence but are never architecture or furniture to create. Never treat colored UI overlays, selection boxes, furniture, fixtures, cabinetry, text boxes, dimension lines, or decoration as room boundaries. Never invent measurements, widths, or 3D heights.";
   const response = await client.responses.parse({
-    model: process.env.FLOOR_PLAN_VISION_MODEL ?? "gpt-4o",
+    model: process.env.FLOOR_PLAN_VISION_MODEL || "gpt-5.6",
+    store: false,
     input: [
       {
         role: "system",
-        content:
-          "Classify floor-plan semantics only. Read room names, printed dimensions, entrance and visible opening symbols. Coordinates are approximate normalized anchors used only to associate labels with deterministic vector linework; never invent walls, measurements, room boundaries, opening widths, or 3D heights. Omit anything uncertain and lower confidence when the symbol is ambiguous.",
+        content: semanticInstructions,
       },
       {
         role: "user",
         content: [
           {
             type: "input_text",
-            text: "Return the visible semantic labels and symbols for this floor-plan page.",
+            text:
+              detail === "original"
+                ? "Return the confirmed plan region, units, every visible room or area label, every closed architectural face proposal, printed dimensions, architectural openings, and every recognizable sanitary or appliance fixture symbol. Explicitly inspect every toilet, bathtub, shower, and basin cluster for an unlabeled bathroom face. Preserve open-plan labels as separate point observations while returning one shared face."
+                : "Return the plan region, units, visible room labels, source-supported room boundary proposals, printed dimensions, architectural openings, and recognizable sanitary or appliance fixture symbols. Ignore furniture, decoration, and editor UI overlays.",
           },
           {
             type: "input_image",
-            image_url: `data:${derivative.mimeType};base64,${Buffer.from(derivative.bytes).toString("base64")}`,
-            detail: "high",
+            image_url: `data:${imageMimeType};base64,${Buffer.from(
+              imageBytes
+            ).toString("base64")}`,
+            detail,
           },
         ],
       },
     ],
     text: { format: zodTextFormat(semanticSchema, "floor_plan_semantics") },
   });
-  return response.output_parsed
-    ? applySemanticEvidencePrior(response.output_parsed, "vision")
-    : null;
+  if (!response.output_parsed) return null;
+  const ratioPoint = (
+    point: { xRatio: number; yRatio: number } | null
+  ) =>
+    point && requestedCrop
+      ? {
+          xRatio:
+            requestedCrop.leftRatio +
+            point.xRatio *
+              (requestedCrop.rightRatio - requestedCrop.leftRatio),
+          yRatio:
+            requestedCrop.topRatio +
+            point.yRatio *
+              (requestedCrop.bottomRatio - requestedCrop.topRatio),
+        }
+      : point;
+  const ratioBox = (bbox: SemanticBoundingBox) =>
+    requestedCrop
+      ? {
+          leftRatio:
+            requestedCrop.leftRatio +
+            bbox.leftRatio *
+              (requestedCrop.rightRatio - requestedCrop.leftRatio),
+          topRatio:
+            requestedCrop.topRatio +
+            bbox.topRatio *
+              (requestedCrop.bottomRatio - requestedCrop.topRatio),
+          rightRatio:
+            requestedCrop.leftRatio +
+            bbox.rightRatio *
+              (requestedCrop.rightRatio - requestedCrop.leftRatio),
+          bottomRatio:
+            requestedCrop.topRatio +
+            bbox.bottomRatio *
+              (requestedCrop.bottomRatio - requestedCrop.topRatio),
+        }
+      : bbox;
+  const center = (xRatio: number, yRatio: number) =>
+    ratioPoint({ xRatio, yRatio })!;
+  return applySemanticEvidencePrior(
+    {
+      ...response.output_parsed,
+      planRegion: response.output_parsed.planRegion
+        ? {
+            ...response.output_parsed.planRegion,
+            bbox: ratioBox(response.output_parsed.planRegion.bbox),
+          }
+        : null,
+      roomLabels: response.output_parsed.roomLabels.map((room) => ({
+        ...room,
+        centerXRatio: center(room.centerXRatio, room.centerYRatio).xRatio,
+        centerYRatio: center(room.centerXRatio, room.centerYRatio).yRatio,
+        bbox: ratioBox(room.bbox),
+      })),
+      roomBoundaries: response.output_parsed.roomBoundaries.map((room) => ({
+        ...room,
+        points: room.points.map((point) => ratioPoint(point)!),
+      })),
+      dimensionLabels: response.output_parsed.dimensionLabels.map(
+        ({
+          extensionStart,
+          extensionEnd,
+          centerXRatio,
+          centerYRatio,
+          ...dimension
+        }) => ({
+          ...dimension,
+          centerXRatio: center(centerXRatio, centerYRatio).xRatio,
+          centerYRatio: center(centerXRatio, centerYRatio).yRatio,
+          bbox: ratioBox(dimension.bbox),
+          ...(extensionStart
+            ? { extensionStart: ratioPoint(extensionStart)! }
+            : {}),
+          ...(extensionEnd
+            ? { extensionEnd: ratioPoint(extensionEnd)! }
+            : {}),
+        })
+      ),
+      openingSymbols: response.output_parsed.openingSymbols.map(
+        ({
+          spanStart,
+          spanEnd,
+          centerXRatio,
+          centerYRatio,
+          ...opening
+        }) => ({
+          ...opening,
+          centerXRatio: center(centerXRatio, centerYRatio).xRatio,
+          centerYRatio: center(centerXRatio, centerYRatio).yRatio,
+          bbox: ratioBox(opening.bbox),
+          ...(spanStart ? { spanStart: ratioPoint(spanStart)! } : {}),
+          ...(spanEnd ? { spanEnd: ratioPoint(spanEnd)! } : {}),
+        })
+      ),
+      fixtureSymbols: response.output_parsed.fixtureSymbols.map(
+        ({ centerXRatio, centerYRatio, ...fixture }) => ({
+          ...fixture,
+          centerXRatio: center(centerXRatio, centerYRatio).xRatio,
+          centerYRatio: center(centerXRatio, centerYRatio).yRatio,
+          bbox: ratioBox(fixture.bbox),
+        })
+      ),
+      entrance: response.output_parsed.entrance
+        ? {
+            ...response.output_parsed.entrance,
+            centerXRatio: center(
+              response.output_parsed.entrance.centerXRatio,
+              response.output_parsed.entrance.centerYRatio
+            ).xRatio,
+            centerYRatio: center(
+              response.output_parsed.entrance.centerXRatio,
+              response.output_parsed.entrance.centerYRatio
+            ).yRatio,
+          }
+        : null,
+    },
+    "vision"
+  );
 }
 
 function asEnvelope(candidate: Record<string, unknown> | null): ExtractionEnvelope {
-  if (!candidate || candidate.kind !== "floor_plan_deterministic_evidence_v1") {
+  if (
+    !candidate ||
+    ![
+      "floor_plan_deterministic_evidence_v1",
+      ENHANCED_FLOOR_PLAN_EVIDENCE_KIND,
+    ].includes(String(candidate.kind))
+  ) {
     throw new Error("Floor-plan extraction evidence is missing");
   }
   return candidate as unknown as ExtractionEnvelope;
@@ -821,6 +1256,7 @@ export type RegisteredPageTopology = {
   centerlines: RegisteredWallCenterlineResult;
   openingGaps: RegisteredOpeningGapResult;
   planarFaces: RegisteredPlanarFaceResult;
+  visionGuided?: VisionGuidedTopologyResult;
   promotionComplete: boolean;
   promotionBlockers: string[];
 };
@@ -899,6 +1335,26 @@ function unavailableRegisteredPageTopology(
   };
 }
 
+function applyVisionGuidedFallback(
+  topology: RegisteredPageTopology,
+  visionGuided: VisionGuidedTopologyResult
+): RegisteredPageTopology {
+  if (visionGuided.complete) {
+    return {
+      ...topology,
+      rooms: visionGuided.rooms,
+      visionGuided,
+      promotionComplete: true,
+      promotionBlockers: [],
+    };
+  }
+  if (visionGuided.diagnostics.proposalCount === 0) return topology;
+  return addPromotionBlockers(
+    { ...topology, visionGuided },
+    visionGuided.blockers
+  );
+}
+
 export function registerSupportedPageTopology(
   page: RegisteredPageEvidence,
   scale: PageScaleSolution | null
@@ -924,12 +1380,18 @@ export function registerSupportedPageTopology(
     };
   }
   const directBlockers = directCompleteness?.blockers ?? [];
+  // Registration is pixel-space work. Run it even before scale is solved so a
+  // scale failure cannot silently suppress every room proposal and diagnostic.
+  const visionGuided = registerVisionGuidedRoomBoundaries(page);
   if (!scale) {
     return addPromotionBlockers(
-      unavailableRegisteredPageTopology(
-        wallFootprintBands.length,
-        "scale_unavailable"
-      ),
+      {
+        ...unavailableRegisteredPageTopology(
+          wallFootprintBands.length,
+          "scale_unavailable"
+        ),
+        visionGuided,
+      },
       directBlockers
     );
   }
@@ -939,13 +1401,16 @@ export function registerSupportedPageTopology(
     scale.millimetresPerPixel
   );
   if (centerlines.diagnostics.status !== "complete") {
-    return addPromotionBlockers({
-      ...unavailableRegisteredPageTopology(
-        wallFootprintBands.length,
-        centerlines.diagnostics.limitReason ?? "centerline_evidence_unavailable"
-      ),
-      centerlines,
-    }, directBlockers);
+    return applyVisionGuidedFallback(
+      addPromotionBlockers({
+        ...unavailableRegisteredPageTopology(
+          wallFootprintBands.length,
+          centerlines.diagnostics.limitReason ?? "centerline_evidence_unavailable"
+        ),
+        centerlines,
+      }, directBlockers),
+      visionGuided
+    );
   }
   const openingGaps = detectRegisteredOpeningGaps(
     page,
@@ -953,14 +1418,17 @@ export function registerSupportedPageTopology(
     scale.millimetresPerPixel
   );
   if (openingGaps.diagnostics.status !== "complete") {
-    return addPromotionBlockers({
-      ...unavailableRegisteredPageTopology(
-        wallFootprintBands.length,
-        openingGaps.diagnostics.limitReason ?? "opening_evidence_unavailable"
-      ),
-      centerlines,
-      openingGaps,
-    }, directBlockers);
+    return applyVisionGuidedFallback(
+      addPromotionBlockers({
+        ...unavailableRegisteredPageTopology(
+          wallFootprintBands.length,
+          openingGaps.diagnostics.limitReason ?? "opening_evidence_unavailable"
+        ),
+        centerlines,
+        openingGaps,
+      }, directBlockers),
+      visionGuided
+    );
   }
   const planarFaces = assembleRegisteredPlanarFaces(
     page,
@@ -968,15 +1436,18 @@ export function registerSupportedPageTopology(
     openingGaps.gaps
   );
   if (planarFaces.diagnostics.status !== "complete") {
-    return addPromotionBlockers({
-      ...unavailableRegisteredPageTopology(
-        wallFootprintBands.length,
-        planarFaces.diagnostics.limitReason ?? "planar_faces_unavailable"
-      ),
-      centerlines,
-      openingGaps,
-      planarFaces,
-    }, directBlockers);
+    return applyVisionGuidedFallback(
+      addPromotionBlockers({
+        ...unavailableRegisteredPageTopology(
+          wallFootprintBands.length,
+          planarFaces.diagnostics.limitReason ?? "planar_faces_unavailable"
+        ),
+        centerlines,
+        openingGaps,
+        planarFaces,
+      }, directBlockers),
+      visionGuided
+    );
   }
   const gapById = new Map(openingGaps.gaps.map((gap) => [gap.id, gap]));
   const completeness = assessRegisteredTopologyCompleteness(
@@ -986,11 +1457,30 @@ export function registerSupportedPageTopology(
     openingGaps,
     planarFaces
   );
-  const registeredRooms: RegisteredRoomBoundary[] = planarFaces.faces.map((face, index) => ({
+  const registeredRooms: RegisteredRoomBoundary[] = planarFaces.faces.map((face, index) => {
+    const sourceFixtures = (page.semantics.fixtureSymbols ?? []).filter(
+      (fixture) =>
+        fixture.confidence >= 0.5 &&
+        pointInPolygon(
+          {
+            x: fixture.centerXRatio * page.widthPx,
+            y: fixture.centerYRatio * page.heightPx,
+          },
+          face.sourcePoints
+        )
+    );
+    const fixtureIdentity =
+      face.sourceLabels.length === 0
+        ? inferRoomIdentityFromFixtures(sourceFixtures)
+        : null;
+    return {
     key: `room-${index + 1}`,
-    label: face.label,
-    roomType: face.roomType,
-    confidence: face.confidence,
+    label: fixtureIdentity?.label ?? face.label,
+    roomType: fixtureIdentity?.roomType ?? face.roomType,
+    confidence: Math.min(
+      face.confidence,
+      fixtureIdentity?.confidence ?? face.confidence
+    ),
     pathId: face.id,
     bbox: {
       left: Math.min(...face.sourcePoints.map((point) => point.x)),
@@ -999,6 +1489,8 @@ export function registerSupportedPageTopology(
       bottom: Math.max(...face.sourcePoints.map((point) => point.y)),
     },
     sourcePoints: face.sourcePoints,
+    sourceLabels: face.sourceLabels,
+    sourceFixtures,
     registrationKind: "assembled_wall_topology",
     sourceEdges: face.edges.map((edge) => {
       const gap = edge.openingGapId
@@ -1026,8 +1518,9 @@ export function registerSupportedPageTopology(
           : undefined,
       };
     }),
-  }));
-  return addPromotionBlockers({
+  };
+  });
+  const deterministicTopology = addPromotionBlockers({
     rooms: completeness.complete ? registeredRooms : [],
     wallFootprintBandCount: wallFootprintBands.length,
     centerlines,
@@ -1036,6 +1529,9 @@ export function registerSupportedPageTopology(
     promotionComplete: completeness.complete,
     promotionBlockers: completeness.blockers,
   }, completeness.complete ? [] : directBlockers);
+  return completeness.complete
+    ? deterministicTopology
+    : applyVisionGuidedFallback(deterministicTopology, visionGuided);
 }
 
 function buildCanonicalCandidate(
@@ -1047,7 +1543,12 @@ function buildCanonicalCandidate(
   topology: RegisteredPageTopology;
 } {
   const issues: FloorPlanReviewIssue[] = [];
-  const ranked = envelope.pages
+  const eligiblePages = envelope.selectedPageNumber
+    ? envelope.pages.filter(
+        (candidate) => candidate.pageNumber === envelope.selectedPageNumber
+      )
+    : envelope.pages;
+  const ranked = eligiblePages
     .map((page) => {
       const scale =
         envelope.scales?.find((entry) => entry.pageNumber === page.pageNumber) ??
@@ -1060,7 +1561,7 @@ function buildCanonicalCandidate(
         left.page.pageNumber - right.page.pageNumber
     );
   const selected = ranked[0];
-  const page = selected?.page ?? envelope.pages[0];
+  const page = selected?.page ?? eligiblePages[0];
   const rooms = selected?.topology.rooms ?? [];
   const topology =
     selected?.topology ?? unavailableRegisteredPageTopology(0, "page_unavailable");
@@ -1117,8 +1618,8 @@ function buildCanonicalCandidate(
   const openings: FloorPlanOpeningV2[] = [];
   const openingByEvidenceId = new Map<string, FloorPlanOpeningV2>();
   const dimensions: FloorPlanDimensionV2[] = [];
+  const annotations: FloorPlanAnnotationV2[] = [];
   const vertexByPoint = new Map<string, FloorPlanVertexV2>();
-  const sourcePointByVertexId = new Map<string, SourcePointPx>();
   const wallBySpan = new Map<
     string,
     { wall: FloorPlanWallV2; start: SourcePointPx; end: SourcePointPx }
@@ -1130,6 +1631,16 @@ function buildCanonicalCandidate(
     const key = `${xMm}:${zMm}`;
     const existing = vertexByPoint.get(key);
     if (existing) return existing;
+    const mergeToleranceMm = Math.max(2, millimetresPerPixel * 0.5);
+    const nearby = vertices.find(
+      (vertex) =>
+        Math.hypot(vertex.xMm - xMm, vertex.zMm - zMm) <=
+        mergeToleranceMm
+    );
+    if (nearby) {
+      vertexByPoint.set(key, nearby);
+      return nearby;
+    }
     const vertex: FloorPlanVertexV2 = {
       id: `v${vertices.length + 1}`,
       xMm,
@@ -1144,8 +1655,122 @@ function buildCanonicalCandidate(
     };
     vertices.push(vertex);
     vertexByPoint.set(key, vertex);
-    sourcePointByVertexId.set(vertex.id, { x: xPx, y: yPx });
     return vertex;
+  };
+  const getVertexAtMillimetres = (
+    xMm: number,
+    zMm: number,
+    confidence: number,
+    note: string
+  ) => {
+    const key = `${xMm}:${zMm}`;
+    const existing = vertexByPoint.get(key);
+    if (existing) return existing;
+    const vertex: FloorPlanVertexV2 = {
+      id: `v${vertices.length + 1}`,
+      xMm,
+      zMm,
+      provenance: makeProvenance(
+        sourceId,
+        pageNumber,
+        confidence,
+        geometryBasis,
+        note
+      ),
+    };
+    vertices.push(vertex);
+    vertexByPoint.set(key, vertex);
+    return vertex;
+  };
+  const annotatedSourceLabels = new Set<string>();
+  const allRoomCorners = rooms.flatMap((room) => room.sourcePoints);
+  const splitRoomBoundaryEdges = (room: RegisteredRoomBoundary) =>
+    room.sourcePoints.flatMap((sourceStart, side) => {
+      const sourceEnd =
+        room.sourcePoints[(side + 1) % room.sourcePoints.length];
+      const edgeLength = Math.hypot(
+        sourceEnd.x - sourceStart.x,
+        sourceEnd.y - sourceStart.y
+      );
+      const candidates = [
+        { point: sourceStart, ratio: 0 },
+        { point: sourceEnd, ratio: 1 },
+        ...allRoomCorners.flatMap((point) => {
+          const projected = pointToSegmentDistance(
+            point,
+            sourceStart,
+            sourceEnd
+          );
+          if (
+            projected.distance > 0.75 ||
+            projected.ratio <= 0.001 ||
+            projected.ratio >= 0.999
+          ) {
+            return [];
+          }
+          return [{ point, ratio: projected.ratio }];
+        }),
+      ].sort((left, right) => left.ratio - right.ratio);
+      const unique = candidates.filter(
+        (candidate, index) =>
+          index === 0 ||
+          Math.abs(candidate.ratio - candidates[index - 1].ratio) *
+            Math.max(1, edgeLength) >
+            0.5
+      );
+      return unique.slice(0, -1).flatMap((candidate, index) => {
+        const next = unique[index + 1];
+        if (
+          !next ||
+          Math.hypot(
+            candidate.point.x - next.point.x,
+            candidate.point.y - next.point.y
+          ) < 0.5
+        ) {
+          return [];
+        }
+        return [
+          {
+            sourceStart: candidate.point,
+            sourceEnd: next.point,
+            edgeEvidence: room.sourceEdges?.[side],
+          },
+        ];
+      });
+    });
+  const sourceLabelKey = (label: {
+    label: string;
+    centerXRatio: number;
+    centerYRatio: number;
+  }) =>
+    `${label.label.trim().toLocaleLowerCase()}:${label.centerXRatio.toFixed(5)}:${label.centerYRatio.toFixed(5)}`;
+  const addSourceLabelAnnotation = (
+    label: NonNullable<RegisteredRoomBoundary["sourceLabels"]>[number],
+    reason: string
+  ) => {
+    if (!page) return;
+    const key = sourceLabelKey(label);
+    if (annotatedSourceLabels.has(key)) return;
+    annotatedSourceLabels.add(key);
+    const labelVertex = getVertex(
+      label.centerXRatio * page.widthPx,
+      label.centerYRatio * page.heightPx,
+      label.confidence
+    );
+    annotations.push({
+      id: `source-space-label-${annotations.length + 1}`,
+      kind: "label",
+      text: label.label,
+      geometry: { kind: "point", vertexId: labelVertex.id },
+      configurationId: "source-open-plan-label",
+      provenance: makeProvenance(
+        sourceId,
+        pageNumber,
+        label.confidence,
+        "inferred",
+        reason
+      ),
+    });
   };
 
   for (const [roomIndex, detected] of rooms.entries()) {
@@ -1153,12 +1778,12 @@ function buildCanonicalCandidate(
     // private drawing text. Canonical IDs must remain opaque because they are
     // preserved in immutable geometry hashes and public revisions.
     const roomId = `room-${roomIndex + 1}`;
-    const sourcePoints = detected.sourcePoints;
     const roomWalls: FloorPlanRoomV2["wallLoops"][number]["walls"] = [];
-    for (let side = 0; side < sourcePoints.length; side += 1) {
-      const sourceStart = sourcePoints[side];
-      const sourceEnd = sourcePoints[(side + 1) % sourcePoints.length];
-      const edgeEvidence = detected.sourceEdges?.[side];
+    for (const {
+      sourceStart,
+      sourceEnd,
+      edgeEvidence,
+    } of splitRoomBoundaryEdges(detected)) {
       const start = getVertex(sourceStart.x, sourceStart.y, detected.confidence);
       const end = getVertex(sourceEnd.x, sourceEnd.y, detected.confidence);
       const forwardKey = `${start.id}:${end.id}`;
@@ -1260,11 +1885,46 @@ function buildCanonicalCandidate(
         pageNumber,
         detected.confidence,
         geometryBasis,
-        detected.registrationKind === "assembled_wall_topology"
-          ? "Semantic label classified a mathematically closed face assembled only from paired source wall boundaries and supported opening spans"
-          : `Semantic label associated with a closed ${geometryEvidenceName} path`
+        (detected.sourceFixtures?.length ?? 0) > 0 &&
+          detected.roomType === "toilet"
+          ? "Unlabeled bathroom classified from a sanitary fixture cluster; its closed boundary was accepted only after every edge registered to deterministic source wall linework"
+          : detected.registrationKind === "assembled_wall_topology"
+            ? "Semantic label classified a mathematically closed face assembled only from paired source wall boundaries and supported opening spans"
+            : detected.registrationKind === "vision_guided_source_snap"
+              ? "Semantic boundary proposal accepted only after every edge snapped to deterministic source linework and the closed-room topology passed validation"
+              : `Semantic label associated with a closed ${geometryEvidenceName} path`
       ),
     });
+    if ((detected.sourceLabels?.length ?? 0) > 1 && page) {
+      for (const sourceLabel of detected.sourceLabels ?? []) {
+        addSourceLabelAnnotation(
+          sourceLabel,
+          "Source room label preserved as an editable open-plan area label"
+        );
+      }
+    }
+  }
+
+  // Classification is part of the canonical geometry contract and drives the
+  // exterior-only 3D dollhouse cutaway. Older raster candidates marked every
+  // wall as interior, which forced the renderer to guess from incomplete room
+  // ownership and allowed camera movement to remove room partitions.
+  for (const wall of walls) {
+    wall.classification =
+      wall.adjacentRoomIds.length > 1 ? "interior" : "exterior";
+  }
+
+  if (page && canonicalRooms.length > 0) {
+    const mappedLabels = new Set(
+      rooms.flatMap((room) => (room.sourceLabels ?? []).map(sourceLabelKey))
+    );
+    for (const sourceLabel of page.semantics.roomLabels) {
+      if (mappedLabels.has(sourceLabelKey(sourceLabel))) continue;
+      addSourceLabelAnnotation(
+        sourceLabel,
+        "Printed area label did not map unambiguously to one closed face and was preserved as an editable annotation"
+      );
+    }
   }
 
   if (page && walls.length > 0) {
@@ -1274,10 +1934,59 @@ function buildCanonicalCandidate(
         x: symbol.centerXRatio * page.widthPx,
         y: symbol.centerYRatio * page.heightPx,
       };
-      const nearest = [...wallBySpan.values()]
+      const rankedWalls = [...wallBySpan.values()]
         .map((entry) => ({ entry, ...pointToSegmentDistance(sourcePoint, entry.start, entry.end) }))
-        .sort((left, right) => left.distance - right.distance)[0];
-      if (!nearest || nearest.distance > Math.hypot(page.widthPx, page.heightPx) * 0.04) continue;
+        .sort((left, right) => left.distance - right.distance);
+      const nearest = rankedWalls[0];
+      const secondNearest = rankedWalls.find(
+        (entry) => entry.entry.wall.id !== nearest?.entry.wall.id
+      );
+      const pageDiagonal = Math.hypot(page.widthPx, page.heightPx);
+      const hostUnambiguous = Boolean(
+        nearest &&
+          nearest.distance <= pageDiagonal * 0.04 &&
+          (!secondNearest ||
+            secondNearest.distance - nearest.distance >
+              pageDiagonal * 0.008)
+      );
+      const addOpeningSuggestion = (
+        wallSpan?: { wallId: string; offsetMm: number; widthMm: number }
+      ) => {
+        const kindLabel = symbol.kind.replace(/_/g, " ");
+        const geometry: FloorPlanAnnotationV2["geometry"] = wallSpan
+          ? {
+              kind: "wall_span",
+              wallId: wallSpan.wallId,
+              offsetMm: wallSpan.offsetMm,
+              widthMm: wallSpan.widthMm,
+            }
+          : {
+              kind: "point",
+              vertexId: getVertex(
+                sourcePoint.x,
+                sourcePoint.y,
+                symbol.confidence
+              ).id,
+            };
+        annotations.push({
+          id: `source-opening-suggestion-${annotations.length + 1}`,
+          kind: "note",
+          text: `Possible ${kindLabel}`,
+          geometry,
+          configurationId: "source-opening-suggestion",
+          provenance: makeProvenance(
+            sourceId,
+            pageNumber,
+            symbol.confidence,
+            "inferred",
+            "Semantic opening retained as an editable suggestion because its source span or host wall was ambiguous"
+          ),
+        });
+      };
+      if (!nearest || !hostUnambiguous) {
+        addOpeningSuggestion();
+        continue;
+      }
       const lengthMm = Math.round(segmentLengthPx({
         id: "candidate",
         pageNumber,
@@ -1295,8 +2004,54 @@ function buildCanonicalCandidate(
         )
       ) continue;
       const requestedWidth = symbol.kind === "window" ? 1200 : 900;
-      const widthMm = Math.max(100, Math.min(requestedWidth, lengthMm));
-      const centerMm = Math.round(nearest.ratio * lengthMm);
+      const sourceSpan =
+        symbol.spanStart && symbol.spanEnd
+          ? [
+              {
+                x: symbol.spanStart.xRatio * page.widthPx,
+                y: symbol.spanStart.yRatio * page.heightPx,
+              },
+              {
+                x: symbol.spanEnd.xRatio * page.widthPx,
+                y: symbol.spanEnd.yRatio * page.heightPx,
+              },
+            ] as const
+          : null;
+      const snappedSpan = sourceSpan
+        ? sourceSpan.map((point) =>
+            pointToSegmentDistance(
+              point,
+              nearest.entry.start,
+              nearest.entry.end
+            )
+          )
+        : null;
+      const spanEndpointsSupported =
+        snappedSpan?.every(
+          (entry) =>
+            entry.distance <=
+            Math.hypot(page.widthPx, page.heightPx) * 0.025
+        ) ?? false;
+      const spanWidthMm =
+        spanEndpointsSupported && snappedSpan
+          ? Math.round(
+              Math.abs(snappedSpan[1].ratio - snappedSpan[0].ratio) *
+                lengthMm
+            )
+          : 0;
+      const spanSupported =
+        spanEndpointsSupported &&
+        spanWidthMm >= 300 &&
+        spanWidthMm <= Math.min(5_000, lengthMm * 0.8);
+      const widthMm = Math.max(
+        100,
+        Math.min(spanSupported ? spanWidthMm : requestedWidth, lengthMm)
+      );
+      const centerMm = Math.round(
+        (spanSupported && snappedSpan
+          ? (snappedSpan[0].ratio + snappedSpan[1].ratio) / 2
+          : nearest.ratio) * lengthMm
+      );
       const offsetMm = Math.max(0, Math.min(lengthMm - widthMm, centerMm - Math.round(widthMm / 2)));
       const kind = symbol.kind;
       const operation =
@@ -1307,6 +2062,27 @@ function buildCanonicalCandidate(
             : symbol.operation === "unknown" || symbol.operation === "fixed" || symbol.operation === "open"
               ? "swing"
               : symbol.operation;
+      if (!spanSupported) {
+        addOpeningSuggestion({
+          wallId: nearest.entry.wall.id,
+          offsetMm,
+          widthMm,
+        });
+        continue;
+      }
+      if (
+        openings.some(
+          (opening) =>
+            opening.wallId === nearest.entry.wall.id &&
+            Math.max(opening.offsetMm, offsetMm) <
+              Math.min(
+                opening.offsetMm + opening.widthMm,
+                offsetMm + widthMm
+              )
+        )
+      ) {
+        continue;
+      }
       openings.push({
         id: `opening-${openings.length + 1}`,
         wallId: nearest.entry.wall.id,
@@ -1321,67 +2097,54 @@ function buildCanonicalCandidate(
           pageNumber,
           Math.min(0.65, symbol.confidence),
           "inferred",
-          "Symbol classified semantically and snapped to a deterministic wall; width and handing need review"
+          spanSupported
+            ? "Semantic opening span snapped to a deterministic host wall; handing needs review"
+            : "Symbol classified semantically and snapped to a deterministic wall; width and handing need review"
         ),
       });
     }
   }
 
-  if (page && scale) {
-    const axisDistance = (
-      sourcePoint: SourcePointPx,
-      target: SourcePointPx,
-      axis: FloorPlanDimensionV2["axis"]
-    ) =>
-      axis === "horizontal"
-        ? Math.abs(sourcePoint.x - target.x) +
-          Math.abs(sourcePoint.y - target.y) * 0.05
-        : axis === "vertical"
-          ? Math.abs(sourcePoint.y - target.y) +
-            Math.abs(sourcePoint.x - target.x) * 0.05
-          : Math.hypot(sourcePoint.x - target.x, sourcePoint.y - target.y);
-    const maxAnchorDistance = Math.hypot(page.widthPx, page.heightPx) * 0.03;
+  if (page && scale && walls.length > 0) {
     for (const [index, evidence] of (scale.evidence ?? []).entries()) {
-      const dx = Math.abs(evidence.end.x - evidence.start.x);
-      const dy = Math.abs(evidence.end.y - evidence.start.y);
+      const sourceDx = evidence.end.x - evidence.start.x;
+      const sourceDy = evidence.end.y - evidence.start.y;
+      const dx = Math.abs(sourceDx);
+      const dy = Math.abs(sourceDy);
       const axis: FloorPlanDimensionV2["axis"] =
         Math.min(dx, dy) <= Math.max(1, Math.max(dx, dy) * 0.02)
           ? dx >= dy
             ? "horizontal"
             : "vertical"
           : "aligned";
-      const rank = (target: SourcePointPx) =>
-        vertices
-          .map((vertex) => ({
-            vertex,
-            distance: axisDistance(
-              sourcePointByVertexId.get(vertex.id)!,
-              target,
-              axis
-            ),
-          }))
-          .sort((left, right) => left.distance - right.distance);
-      const from = rank(evidence.start)[0];
-      const to = rank(evidence.end).find(
-        (entry) => entry.vertex.id !== from?.vertex.id
+      const from = getVertexAtMillimetres(
+        Math.round(evidence.start.x * millimetresPerPixel),
+        Math.round(evidence.start.y * millimetresPerPixel),
+        scale.confidence,
+        `Printed dimension anchor registered from source span ${evidence.segmentId}`
       );
-      if (
-        !from ||
-        !to ||
-        from.distance > maxAnchorDistance ||
-        to.distance > maxAnchorDistance
-      ) {
-        continue;
-      }
-      const actual = Math.hypot(
-        to.vertex.xMm - from.vertex.xMm,
-        to.vertex.zMm - from.vertex.zMm
+      const sourceLength = Math.max(1, Math.hypot(sourceDx, sourceDy));
+      const direction =
+        axis === "horizontal"
+          ? { x: sourceDx >= 0 ? 1 : -1, z: 0 }
+          : axis === "vertical"
+            ? { x: 0, z: sourceDy >= 0 ? 1 : -1 }
+            : {
+                x: sourceDx / sourceLength,
+                z: sourceDy / sourceLength,
+              };
+      const to = getVertexAtMillimetres(
+        Math.round(from.xMm + direction.x * evidence.valueMm),
+        Math.round(from.zMm + direction.z * evidence.valueMm),
+        scale.confidence,
+        `Printed dimension endpoint registered from source span ${evidence.segmentId}; accepted residual ${Math.round(Math.abs(evidence.residualMm))} mm`
       );
-      if (Math.abs(actual - evidence.valueMm) > 0.5) continue;
+      const actual = Math.hypot(to.xMm - from.xMm, to.zMm - from.zMm);
+      if (Math.abs(actual - evidence.valueMm) > 1) continue;
       dimensions.push({
         id: `dimension-${index + 1}`,
-        fromVertexId: from.vertex.id,
-        toVertexId: to.vertex.id,
+        fromVertexId: from.id,
+        toVertexId: to.id,
         axis,
         measuredMm: evidence.valueMm,
         provenance: makeProvenance(
@@ -1545,7 +2308,7 @@ function buildCanonicalCandidate(
         rooms: canonicalRooms,
         openings,
         structures: [],
-        annotations: [],
+        annotations,
         dimensions,
       },
     ],
@@ -1641,7 +2404,7 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
       const rendered = renderedByPage.get(page.pageNumber);
       if (!rendered) continue;
       try {
-        const semantic = await classifyRenderedPage(rendered, context);
+        const semantic = await classifyRenderedPage(rendered, context, "low");
         page.semantics = mergeSemantics(page.semantics, semantic);
       } catch (cause) {
         page.semantics.notes.push(
@@ -1649,8 +2412,12 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
         );
       }
     }
+    const enhanced = isEnhancedFloorPlanImportEnabled();
+    const pageCandidates = buildPageCandidates(pages);
     const envelope: ExtractionEnvelope = {
-      kind: "floor_plan_deterministic_evidence_v1",
+      kind: enhanced
+        ? ENHANCED_FLOOR_PLAN_EVIDENCE_KIND
+        : "floor_plan_deterministic_evidence_v1",
       source: {
         id: source.id,
         fileName: source.fileName,
@@ -1658,6 +2425,16 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
         sha256: source.sha256,
       },
       pages,
+      renderedPages,
+      ...(enhanced
+        ? {
+            pageCandidates,
+            selectedPageNumber:
+              pageCandidates.length === 1
+                ? pageCandidates[0].pageNumber
+                : null,
+          }
+        : {}),
       scale: null,
       scales: [],
       catalogDraftMatch: null,
@@ -1732,9 +2509,13 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
             selectedForSemanticClassification: semanticPages.some(
               (entry) => entry.pageNumber === page.pageNumber
             ),
+            selectedForGeometry:
+              pageCandidates.length === 1 &&
+              pageCandidates[0].pageNumber === page.pageNumber,
             semanticRoomLabelCount: page.semantics.roomLabels.length,
             semanticDimensionCount: page.semantics.dimensionLabels.length,
             semanticOpeningCount: page.semantics.openingSymbols.length,
+            semanticFixtureCount: page.semantics.fixtureSymbols?.length ?? 0,
           };
         }),
       },
@@ -1753,6 +2534,45 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
           0
         ),
         externalVisionEnabled: process.env.FLOOR_PLAN_VISION_ENABLED === "1",
+        visionAttempted:
+          process.env.FLOOR_PLAN_VISION_ENABLED === "1" &&
+          Boolean(process.env.OPENAI_API_KEY),
+        visionSucceeded: pages.some((page) =>
+          page.semantics.roomLabels.some(
+            (entry) => entry.evidenceKind === "vision"
+          ) ||
+          page.semantics.dimensionLabels.some(
+            (entry) => entry.evidenceKind === "vision"
+          ) ||
+          page.semantics.openingSymbols.some(
+            (entry) => entry.evidenceKind === "vision"
+          ) ||
+          (page.semantics.fixtureSymbols ?? []).some(
+            (entry) => entry.evidenceKind === "vision"
+          )
+        ),
+        candidatePlanPageCount: pageCandidates.length,
+        labelObservationCount: pages.reduce(
+          (total, page) => total + page.semantics.roomLabels.length,
+          0
+        ),
+        roomBoundaryProposalCount: pages.reduce(
+          (total, page) =>
+            total + (page.semantics.roomBoundaries?.length ?? 0),
+          0
+        ),
+        dimensionObservationCount: pages.reduce(
+          (total, page) => total + page.semantics.dimensionLabels.length,
+          0
+        ),
+        openingObservationCount: pages.reduce(
+          (total, page) => total + page.semantics.openingSymbols.length,
+          0
+        ),
+        fixtureObservationCount: pages.reduce(
+          (total, page) => total + (page.semantics.fixtureSymbols?.length ?? 0),
+          0
+        ),
         catalogDraftMatched: Boolean(catalogDraftMatch),
         catalogDraftMatchKind: catalogDraftMatch?.matchKind ?? null,
         catalogDraftLayoutId: catalogDraftMatch?.layout.layout_id ?? null,
@@ -1760,9 +2580,48 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
     };
   }
 
-  async solveScale(result: FloorPlanStageResult): Promise<FloorPlanStageResult> {
+  async solveScale(
+    result: FloorPlanStageResult,
+    context?: FloorPlanAdapterContext
+  ): Promise<FloorPlanStageResult> {
     const envelope = asEnvelope(result.candidate);
-    const solutions = envelope.pages
+    const selectedPages = envelope.selectedPageNumber
+      ? envelope.pages.filter(
+          (page) => page.pageNumber === envelope.selectedPageNumber
+        )
+      : envelope.pages;
+    if (
+      envelope.kind === ENHANCED_FLOOR_PLAN_EVIDENCE_KIND &&
+      envelope.selectedPageNumber &&
+      context
+    ) {
+      const selectedPage = selectedPages[0];
+      const rendered = envelope.renderedPages?.find(
+        (page) => page.pageNumber === selectedPage?.pageNumber
+      );
+      if (selectedPage && rendered) {
+        try {
+          const semantic = await classifyRenderedPage(
+            rendered,
+            context,
+            "original",
+            selectedPage.semantics.planRegion?.bbox
+          );
+          selectedPage.semantics = mergeSemantics(
+            selectedPage.semantics,
+            semantic,
+            true
+          );
+        } catch (cause) {
+          selectedPage.semantics.notes.push(
+            `Selected-page semantic classification unavailable: ${
+              cause instanceof Error ? cause.message : "unknown error"
+            }`
+          );
+        }
+      }
+    }
+    const solutions = selectedPages
       .map((page) => ({ page, solution: solveScaleFromRegisteredEvidence(page) }))
       .filter((entry) => entry.solution !== null)
       .sort(
@@ -1780,6 +2639,7 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
               rmsResidualMm: solution.rmsResidualMm,
               confidence: solution.confidence,
               evidence: solution.evidence,
+              diagnostics: solution.diagnostics,
             },
           ]
         : []
@@ -1796,17 +2656,53 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
               rmsResidualMm: best.solution.rmsResidualMm,
               confidence: best.solution.confidence,
               evidence: best.solution.evidence,
+              diagnostics: best.solution.diagnostics,
             }
           : null,
     };
     return {
       ...result,
       candidate: next as unknown as Record<string, unknown>,
+      sourceManifest: result.sourceManifest
+        ? {
+            ...result.sourceManifest,
+            selectedPageNumber: next.selectedPageNumber ?? next.scale?.pageNumber ?? null,
+            scale: next.scale
+              ? {
+                  pageNumber: next.scale.pageNumber,
+                  dimensionCount: next.scale.dimensionCount,
+                  rmsResidualMm: next.scale.rmsResidualMm,
+                  confidence: next.scale.confidence,
+                  diagnostics: next.scale.diagnostics ?? null,
+                }
+              : null,
+            pages: Array.isArray(result.sourceManifest.pages)
+              ? result.sourceManifest.pages.map((value) => {
+                  if (!value || typeof value !== "object" || Array.isArray(value)) {
+                    return value;
+                  }
+                  const page = value as Record<string, unknown>;
+                  return {
+                    ...page,
+                    selectedForGeometry:
+                      page.pageNumber ===
+                      (next.selectedPageNumber ?? next.scale?.pageNumber),
+                  };
+                })
+              : result.sourceManifest.pages,
+          }
+        : result.sourceManifest,
       metrics: {
         ...result.metrics,
         scaleSolved: Boolean(next.scale),
         scaleDimensionCount: next.scale?.dimensionCount ?? 0,
         scaleResidualMm: next.scale?.rmsResidualMm ?? null,
+        scaleSingleSegmentCandidateCount:
+          next.scale?.diagnostics?.singleSegmentCandidateCount ?? 0,
+        scaleCompoundSpanCandidateCount:
+          next.scale?.diagnostics?.compoundSpanCandidateCount ?? 0,
+        scaleUnsupportedSpanCount:
+          next.scale?.diagnostics?.rejectedUnsupportedSpan ?? 0,
       },
     };
   }
@@ -1857,6 +2753,66 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
         roomCount: built.document.floors[0]?.rooms.length ?? 0,
         wallCount: built.document.floors[0]?.walls.length ?? 0,
         openingCount: built.document.floors[0]?.openings.length ?? 0,
+        exteriorWallCount:
+          built.document.floors[0]?.walls.filter(
+            (wall) => wall.classification === "exterior"
+          ).length ?? 0,
+        sharedInteriorWallCount:
+          built.document.floors[0]?.walls.filter(
+            (wall) =>
+              wall.classification === "interior" &&
+              wall.adjacentRoomIds.length > 1
+          ).length ?? 0,
+        shortWallOwnershipSpanCount:
+          built.document.floors[0]?.walls.filter((wall) => {
+            if (wall.path.kind !== "line") return false;
+            const floor = built.document.floors[0];
+            const start = floor?.vertices.find(
+              (vertex) => vertex.id === wall.path.startVertexId
+            );
+            const end = floor?.vertices.find(
+              (vertex) => vertex.id === wall.path.endVertexId
+            );
+            return Boolean(
+              start &&
+                end &&
+                Math.hypot(
+                  end.xMm - start.xMm,
+                  end.zMm - start.zMm
+                ) < wall.thicknessMm
+            );
+          }).length ?? 0,
+        geometrySnapRejectCount:
+          built.topology.visionGuided?.diagnostics.rejectedProposalCount ?? 0,
+        geometryInvalidProposalRejectCount:
+          built.topology.visionGuided?.diagnostics.rejectionCounts
+            .invalidProposal ?? 0,
+        geometryPlanRegionRejectCount:
+          built.topology.visionGuided?.diagnostics.rejectionCounts
+            .outsidePlanRegion ?? 0,
+        geometryUnsupportedEdgeRejectCount:
+          built.topology.visionGuided?.diagnostics.rejectionCounts
+            .unsupportedEdge ?? 0,
+        geometryCornerRejectCount:
+          built.topology.visionGuided?.diagnostics.rejectionCounts
+            .unsnappableCorner ?? 0,
+        geometryPolygonRejectCount:
+          built.topology.visionGuided?.diagnostics.rejectionCounts
+            .invalidPolygon ?? 0,
+        geometryLabelRejectCount:
+          built.topology.visionGuided?.diagnostics.rejectionCounts
+            .ambiguousLabel ?? 0,
+        geometryFixtureConflictRejectCount:
+          built.topology.visionGuided?.diagnostics.rejectionCounts
+            .incompatibleFixtureCluster ?? 0,
+        geometryResidualRejectCount:
+          built.topology.visionGuided?.diagnostics.rejectionCounts
+            .excessiveResidual ?? 0,
+        geometryMedianSourceDeviationPx:
+          built.topology.visionGuided?.diagnostics
+            .medianSourceDeviationPx ?? 0,
+        geometryMaxSourceDeviationPx:
+          built.topology.visionGuided?.diagnostics.maxSourceDeviationPx ?? 0,
         wallFootprintBandCount: envelope.pages.reduce(
           (total, page) =>
             total + detectRegisteredWallFootprintBands(page).length,

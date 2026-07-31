@@ -8,15 +8,29 @@ import type {
 } from "@/lib/floor-plan-imports/types";
 import {
   isPausedFloorPlanImportStatus,
-  pollFloorPlanImportJobUntilPaused,
+  startAndPollFloorPlanImport,
 } from "@/lib/floor-plan-import-client";
-import type { ConsumerFloorPlanImportJob } from "./floor-plan-import-ui-types";
+import type {
+  ConsumerFloorPlanImportJob,
+  ConsumerFloorPlanImportProgressEstimate,
+} from "./floor-plan-import-ui-types";
 
 export type ConsumerFloorPlanImportState =
   | { kind: "idle" }
-  | { kind: "working"; message: string; progress: number }
+  | {
+      kind: "working";
+      message: string;
+      progress: number;
+      status?: FloorPlanImportStatus;
+      estimate?: ConsumerFloorPlanImportProgressEstimate;
+    }
   | { kind: "job"; job: ConsumerFloorPlanImportJob }
-  | { kind: "error"; message: string; authenticationRequired?: boolean };
+  | {
+      kind: "error";
+      message: string;
+      authenticationRequired?: boolean;
+      resumableJobId?: string;
+    };
 
 export function parseFloorPlanImportDocument(value: unknown): FloorPlanDocumentV2 | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
@@ -47,11 +61,27 @@ export async function floorPlanImportResponseJson(response: Response) {
   return payload;
 }
 
+export async function loadConsumerFloorPlanImportJob(
+  statusUrl: string,
+  signal?: AbortSignal
+) {
+  const payload = await floorPlanImportResponseJson(
+    await fetch(statusUrl, { signal, cache: "no-store" })
+  );
+  const job = (payload.job ?? null) as ConsumerFloorPlanImportJob;
+  if (payload.progressEstimate && typeof payload.progressEstimate === "object") {
+    job.progressEstimate =
+      payload.progressEstimate as ConsumerFloorPlanImportProgressEstimate;
+  }
+  return job;
+}
+
 function progressMessage(status: FloorPlanImportStatus) {
   const messages: Partial<Record<FloorPlanImportStatus, string>> = {
     received: "Upload received",
     rendered: "Pages rendered",
     extracted: "Reading labels and source linework",
+    selecting_page: "Waiting for source-page selection",
     scale_solved: "Scale checked against printed dimensions",
     topology_built: "Building rooms, walls and openings",
     validating: "Checking geometry",
@@ -64,8 +94,15 @@ export function useConsumerFloorPlanImportSession(input: {
   resumeJobId: string | null;
   trainingBenchmarkOptIn: boolean;
   onActiveJobIdChange?: (jobId: string | null) => void;
+  onJobUpdate?: (job: ConsumerFloorPlanImportJob) => void;
 }) {
-  const { file, resumeJobId, trainingBenchmarkOptIn, onActiveJobIdChange } = input;
+  const {
+    file,
+    resumeJobId,
+    trainingBenchmarkOptIn,
+    onActiveJobIdChange,
+    onJobUpdate,
+  } = input;
   const runIdRef = useRef(0);
   const [state, setState] = useState<ConsumerFloorPlanImportState>({ kind: "idle" });
   const [candidate, setCandidate] = useState<FloorPlanDocumentV2 | null>(null);
@@ -84,13 +121,16 @@ export function useConsumerFloorPlanImportSession(input: {
     if (file) setTitle(file.name.replace(/\.[^.]+$/, "") || "Imported floor plan");
 
     const loadJob = async (statusUrl: string) => {
-      const payload = await floorPlanImportResponseJson(
-        await fetch(statusUrl, { signal: controller.signal, cache: "no-store" })
+      const job = await loadConsumerFloorPlanImportJob(
+        statusUrl,
+        controller.signal
       );
-      return (payload.job ?? null) as ConsumerFloorPlanImportJob;
+      onJobUpdate?.(job);
+      return job;
     };
 
     const run = async () => {
+      let recoveryJobId: string | null = resumeJobId;
       try {
         let next: { processUrl?: string; statusUrl?: string } | undefined;
         if (file) {
@@ -107,7 +147,10 @@ export function useConsumerFloorPlanImportSession(input: {
           );
           next = created.next as { processUrl?: string; statusUrl?: string } | undefined;
           const createdJob = created.job as { id?: unknown } | undefined;
-          if (typeof createdJob?.id === "string") onActiveJobIdChange?.(createdJob.id);
+          if (typeof createdJob?.id === "string") {
+            recoveryJobId = createdJob.id;
+            onActiveJobIdChange?.(createdJob.id);
+          }
         } else {
           setState({ kind: "working", message: "Resuming private import", progress: 5 });
           next = {
@@ -122,25 +165,45 @@ export function useConsumerFloorPlanImportSession(input: {
         const sourceName = job.sourceAsset?.fileName;
         if (!file && sourceName) setTitle(sourceName.replace(/\.[^.]+$/, "") || "Imported floor plan");
         if (!isPausedFloorPlanImportStatus(job.status)) {
-          setState({ kind: "working", message: "Reading the drawing", progress: job.progress });
-          await floorPlanImportResponseJson(
-            await fetch(next.processUrl, { method: "POST", signal: controller.signal })
-          );
-          job = await loadJob(next.statusUrl);
+          setState({
+            kind: "working",
+            message: job.progressEstimate?.stageLabel ?? progressMessage(job.status),
+            progress: job.progressEstimate?.estimatedPercent ?? job.progress,
+            status: job.status,
+            estimate: job.progressEstimate,
+          });
+          job = await startAndPollFloorPlanImport({
+            initialJob: job,
+            startProcessing: async () =>
+              floorPlanImportResponseJson(
+                await fetch(next.processUrl!, { method: "POST" })
+              ),
+            loadJob: () => loadJob(next.statusUrl!),
+            signal: controller.signal,
+            onProgress: (pendingJob) => {
+              if (runIdRef.current !== runId) return;
+              onJobUpdate?.(pendingJob);
+              const nextProgress =
+                pendingJob.progressEstimate?.estimatedPercent ??
+                pendingJob.progress;
+              setState((current) => ({
+                kind: "working",
+                message:
+                  pendingJob.progressEstimate?.stageLabel ??
+                  progressMessage(pendingJob.status),
+                progress:
+                  current.kind === "working" &&
+                  current.status === pendingJob.status
+                    ? Math.max(current.progress, nextProgress)
+                    : nextProgress,
+                status: pendingJob.status,
+                estimate: pendingJob.progressEstimate,
+              }));
+            },
+          });
+        } else {
+          onJobUpdate?.(job);
         }
-        job = await pollFloorPlanImportJobUntilPaused({
-          initialJob: job,
-          loadJob: () => loadJob(next.statusUrl!),
-          signal: controller.signal,
-          onProgress: (pendingJob) => {
-            if (runIdRef.current !== runId) return;
-            setState({
-              kind: "working",
-              message: progressMessage(pendingJob.status),
-              progress: pendingJob.progress,
-            });
-          },
-        });
         if (runIdRef.current !== runId) return;
         setCandidate(parseFloorPlanImportDocument(job.candidateJson));
         setIssues(parseFloorPlanImportIssues(job.reviewIssuesJson));
@@ -155,16 +218,23 @@ export function useConsumerFloorPlanImportSession(input: {
           message: error.status === 401
             ? isCad
               ? "Sign in to privately extract and review this CAD plan."
-              : "Sign in to auto-detect and save this plan. The underlay remains available for tracing."
+              : "Sign in to privately detect, review, and save this plan."
             : error.message,
           authenticationRequired: error.status === 401,
+          ...(recoveryJobId ? { resumableJobId: recoveryJobId } : {}),
         });
       }
     };
 
     void run();
     return () => controller.abort();
-  }, [file, onActiveJobIdChange, resumeJobId, trainingBenchmarkOptIn]);
+  }, [
+    file,
+    onActiveJobIdChange,
+    onJobUpdate,
+    resumeJobId,
+    trainingBenchmarkOptIn,
+  ]);
 
   return {
     state,

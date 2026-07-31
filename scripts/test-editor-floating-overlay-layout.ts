@@ -204,13 +204,13 @@ assert.match(
 
 assert.match(
   viewportOverlaySource,
-  /data-testid="plan-right-rail"[\s\S]{0,300}?right-1 top-16/,
+  /data-testid="plan-right-rail"[\s\S]{0,300}?right-1 top-11/,
   "Floating overlay stack should align with the left plan panel top edge."
 );
 
 assert.match(
   editorConfigurationSource,
-  /const PLAN_FLOATING_OVERLAY_INSPECTOR_STACK_TOP_PX = 324;/,
+  /const PLAN_FLOATING_OVERLAY_INSPECTOR_STACK_TOP_PX = 304;/,
   "Selection inspector should dock beneath the floating room navigator."
 );
 
@@ -388,7 +388,7 @@ assert.match(
 
 assert.match(
   planAuthoringRegistrationSource,
-  /reviewPanelTopPx: 76,[\s\S]*?collapsedReviewPanelFallbackHeightPx: 56,[\s\S]*?expandedReviewPanelFallbackHeightPx: 252,/,
+  /reviewPanelTopPx: 56,[\s\S]*?collapsedReviewPanelFallbackHeightPx: 56,[\s\S]*?expandedReviewPanelFallbackHeightPx: 252,/,
   "Plan authoring should configure the review panel against the shared overlay row."
 );
 
@@ -445,19 +445,19 @@ assert.match(
 
 assert.match(
   viewportOverlaySource,
-  /data-testid="plan-right-rail"[\s\S]{0,300}?bottom-24 right-1 top-16[\s\S]{0,200}?w-\[268px\][\s\S]{0,200}?overflow-x-hidden/,
+  /data-testid="plan-right-rail"[\s\S]{0,300}?bottom-24 right-1 top-11[\s\S]{0,200}?w-\[268px\][\s\S]{0,200}?overflow-x-hidden/,
   "Floating plan overlays should stay inside a fixed, right-anchored scroll rail."
 );
 
 assert.match(
   planManualQuickActionsSource,
-  /data-testid="plan-manual-quick-actions"[\s\S]*left-1\/2 top-20[\s\S]*-translate-x-1\/2/,
+  /data-testid="plan-manual-quick-actions"[\s\S]*left-1\/2 top-15[\s\S]*-translate-x-1\/2/,
   "Manual plan quick actions should be centered near the top of the canvas instead of overlapping the left panel."
 );
 
 assert.match(
   planGuidedActionsToggleSource,
-  /const toggleClass = \[[\s\S]{0,500}?state\.compact[\s\S]{0,300}?left-1\/2 top-20 -translate-x-1\/2[\s\S]{0,900}?data-testid="plan-guided-actions-toggle"[\s\S]{0,400}?className=\{toggleClass\}/,
+  /const toggleClass = \[[\s\S]{0,500}?state\.compact[\s\S]{0,300}?left-1\/2 top-15 -translate-x-1\/2[\s\S]{0,900}?data-testid="plan-guided-actions-toggle"[\s\S]{0,400}?className=\{toggleClass\}/,
   "Guided actions toggle should derive its shared top-center placement class locally."
 );
 
@@ -497,7 +497,7 @@ assert.match(
 
 assert.match(
   planPresentationSource,
-  /const selectionInspectorTopPx = selectionInspectorDockedWithPlanStack[\s\S]*\? floatingOverlayInspectorStackTopPx[\s\S]*: planQualityReviewVisible[\s\S]*\? planQualityReviewReservedBottomPx \+ floatingOverlayStackGapPx[\s\S]*: 160;/,
+  /const selectionInspectorTopPx = selectionInspectorDockedWithPlanStack[\s\S]*\? floatingOverlayInspectorStackTopPx[\s\S]*: planQualityReviewVisible[\s\S]*\? planQualityReviewReservedBottomPx \+ floatingOverlayStackGapPx[\s\S]*: 140;/,
   "The plan presentation model should place the selection inspector below the navigator or plan review panel."
 );
 
@@ -568,6 +568,14 @@ const editorCommandBarSource = fs.readFileSync(
   path.join(process.cwd(), "components", "editor", "EditorCommandBar.tsx"),
   "utf8"
 );
+const editorViewToggleSource = fs.readFileSync(
+  path.join(process.cwd(), "components", "editor", "EditorViewToggle.tsx"),
+  "utf8"
+);
+const roomPlanStatusBarSource = fs.readFileSync(
+  path.join(process.cwd(), "components", "editor", "RoomPlanStatusBar.tsx"),
+  "utf8"
+);
 const cabinetryControllerSource = fs.readFileSync(
   path.join(process.cwd(), "features", "cabinetry", "useDesignPageCabinetry.ts"),
   "utf8"
@@ -583,8 +591,92 @@ assert.match(
 
 assert.match(
   designControlsPanelSource,
-  /bottom-1 left-1 right-1[\s\S]*md:top-16[\s\S]*md:left-1/,
+  /const panelLeftClass = temporarilyRevealed[\s\S]*?: "left-1 md:left-1";[\s\S]*?bottom-1 right-1 top-auto[\s\S]*?md:top-11/,
   "Main left design controls column should sit as close to the viewport edge as the right overlay stack."
+);
+
+assert.match(
+  designControlsPanelSource,
+  /data-testid="design-controls-edge-reveal"[\s\S]*?onMouseEnter=\{openEdgePreview\}[\s\S]*?data-testid="design-controls-edge-toggle"/,
+  "Collapsed design controls should reveal from a mouse-sensitive left-edge target with a keyboard/touch toggle."
+);
+
+assert.match(
+  designControlsPanelSource,
+  /data-temporary-reveal=\{temporarilyRevealed \? "true" : "false"\}[\s\S]*?onMouseEnter=\{cancelEdgePreviewClose\}[\s\S]*?onMouseLeave=\{\(\) => \{[\s\S]*?scheduleEdgePreviewClose\(\)[\s\S]*?data-testid="design-controls-sidebar-toggle"[\s\S]*?Keep open/,
+  "The edge-revealed sidebar should dismiss on pointer exit and support pinning itself open."
+);
+
+assert.match(
+  designControlsPanelSource,
+  /const panelLeftClass = temporarilyRevealed[\s\S]*?\? "left-0 md:left-0"/,
+  "The temporary sidebar should stay under the left-edge cursor instead of opening beside it."
+);
+
+assert.match(
+  designControlsPanelSource,
+  /const scheduleEdgePreviewClose = \(\) => \{[\s\S]*?setTimeout\(\(\) => \{[\s\S]*?setEdgePreviewOpen\(false\)[\s\S]*?\}, 180\)/,
+  "The temporary sidebar should use a short exit grace period instead of flickering."
+);
+
+assert.match(
+  designControlsPanelSource,
+  /event\.metaKey \|\| event\.ctrlKey[\s\S]*?event\.key\.toLowerCase\(\) !== "b"[\s\S]*?onCollapsedChange\(!collapsed\)/,
+  "The design sidebar should expose a Codex-style Ctrl/Cmd+B toggle without intercepting text fields."
+);
+
+assert.match(
+  editorCommandBarSource,
+  /data-testid="editor-design-sidebar-toggle"[\s\S]*?data-state=\{designSidebarCollapsed \? "collapsed" : "expanded"\}[\s\S]*?aria-expanded=\{!designSidebarCollapsed\}[\s\S]*?onClick=\{onToggleDesignSidebar\}[\s\S]*?<PanelLeft/,
+  "The command bar should expose a compact Codex-style sidebar toggle in the top-left controls."
+);
+
+assert.match(
+  editorCommandBarSource,
+  /data-testid="editor-command-bar"[\s\S]{0,200}?h-9/,
+  "The editor command bar should be exactly 36px tall."
+);
+
+for (const controlTestId of [
+  "editor-design-sidebar-toggle",
+  "command-undo",
+  "command-redo",
+  "editor-command-workspace",
+  "editor-command-new-plan",
+  "save-status",
+  "save-design",
+  "editor-command-overflow",
+  "editor-command-account",
+] as const) {
+  assert.match(
+    editorCommandBarSource,
+    new RegExp(`data-testid="${controlTestId}"[\\s\\S]{0,1400}?h-\\[30px\\]`),
+    `${controlTestId} should use the shared 30px closed-control height.`
+  );
+}
+
+assert.match(
+  editorViewToggleSource,
+  /h-\[26px\][\s\S]*h-\[30px\][\s\S]*p-0\.5/,
+  "The view selector should combine centered 26px buttons with a balanced 30px shell."
+);
+
+assert.match(
+  roomPlanStatusBarSource,
+  /isCommand[\s\S]*\? "h-\[30px\] max-w-full/,
+  "Command-bar room context should use the shared 30px closed-control height."
+);
+
+assert.match(
+  editorCommandBarSource,
+  /const menuButtonClass = dark[\s\S]*?px-3 py-2 text-left text-sm/,
+  "Opened command menus should retain their comfortable row sizing."
+);
+
+assert.match(
+  editorChromeControllerSource,
+  /const toggleDesignSidebar = \(\) => \{[\s\S]*?setDesignPanelOpen\(true\)[\s\S]*?setDesignPanelCollapsed\(false\)[\s\S]*?setDesignPanelCollapsed\(\(collapsed\) => !collapsed\)[\s\S]*?onToggleDesignSidebar: toggleDesignSidebar/,
+  "The top-left sidebar control should reopen a hidden panel and toggle an already-open panel."
 );
 
 assert.match(
@@ -601,8 +693,14 @@ assert.match(
 
 assert.match(
   editorCommandBarSource,
-  /data-testid="editor-command-overflow-millwork"[\s\S]{0,500}?xl:hidden/,
-  "Narrow layouts should keep Millwork accessible from the top-bar More menu."
+  /data-testid="editor-command-workspace"[\s\S]*?aria-label=\{`Workspace: \$\{activeWorkflowStep\.label\}`\}[\s\S]*?data-testid="editor-command-workspace-menu"[\s\S]*?workflowSteps\.map[\s\S]*?data-testid=\{step\.testId\}/,
+  "Every desktop width should expose the complete workflow through the dedicated Workspace menu."
+);
+
+assert.doesNotMatch(
+  editorCommandBarSource,
+  /aria-label="Design workflow"/,
+  "The permanently collapsed workflow should not return as a width-dependent command strip."
 );
 
 assert.doesNotMatch(

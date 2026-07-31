@@ -41,22 +41,10 @@ export function assessRegisteredRoomCoverage(
     };
     return regions.filter((region) => pointInPolygon(point, region.sourcePoints)).length;
   });
-  const regionCoverage = regions.map(
-    (region) =>
-      labels.filter((label) =>
-        pointInPolygon(
-          {
-            x: label.centerXRatio * page.widthPx,
-            y: label.centerYRatio * page.heightPx,
-          },
-          region.sourcePoints
-        )
-      ).length
-  );
-  if (
-    labelCoverage.some((count) => count !== 1) ||
-    regionCoverage.some((count) => count > 1)
-  ) {
+  // Several printed labels may describe functional areas inside one open-plan
+  // architectural face. Every label still has to map to exactly one face, but
+  // a face is no longer rejected merely because it contains several labels.
+  if (labelCoverage.some((count) => count !== 1)) {
     blockers.push("unmapped_or_duplicate_room_labels");
   }
   return uniqueBlockers(blockers);

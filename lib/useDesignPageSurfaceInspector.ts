@@ -29,7 +29,7 @@ import {
   FLOOR_ROTATION_PRESETS_DEG,
   getCeilingSurfaceSettings,
   getWallFaceLabel,
-  getWallFaceSurfaceSettings,
+  getWallPanelSurfaceSettings,
   normalizeFloorJointColor,
   normalizeFloorJointSizeMm,
   normalizeFloorPattern,
@@ -73,10 +73,12 @@ export type DesignPageSurfaceInspectorContext = {
   floorInspectorPatternValue: RoomFloorPattern;
   floorInspectorSwatchStyle: CSSProperties;
   wallInspectorFaceId: string | null;
+  wallInspectorPanelId: string | null;
   wallInspectorDefaultHeight: number;
   wallInspectorHeight: number;
   wallInspectorHasHeightOverride: boolean;
-  wallInspectorSettings: ReturnType<typeof getWallFaceSurfaceSettings>;
+  wallInspectorSupportsGrout: boolean;
+  wallInspectorSettings: ReturnType<typeof getWallPanelSurfaceSettings>;
   surfaceInspectorIsWall: boolean;
   surfaceInspectorIsCeiling: boolean;
   ceilingInspectorSettings: ReturnType<typeof getCeilingSurfaceSettings>;
@@ -226,6 +228,10 @@ export function useDesignPageSurfaceInspectorContext({
     selectedWallSurfaceTarget.roomId === inspectorRoom?.id
       ? selectedWallSurfaceTarget.faceId
       : null;
+  const wallInspectorPanelId =
+    wallInspectorFaceId && selectedWallSurfaceTarget
+      ? selectedWallSurfaceTarget.panelId ?? null
+      : null;
   const surfaceInspectorIsWall = Boolean(wallInspectorFaceId);
   const surfaceInspectorIsCeiling = activeSurfaceTarget === "ceiling";
   const ceilingInspectorSettings = getCeilingSurfaceSettings(
@@ -251,9 +257,10 @@ export function useDesignPageSurfaceInspectorContext({
         wallInspectorFaceId
       )
   );
-  const wallInspectorSettings = getWallFaceSurfaceSettings(
+  const wallInspectorSettings = getWallPanelSurfaceSettings(
     floorInspectorSurfaces,
     wallInspectorFaceId,
+    wallInspectorPanelId,
     normalizeFloorRotationDeg,
     clampFloorPatternScale
   );
@@ -261,6 +268,14 @@ export function useDesignPageSurfaceInspectorContext({
   const wallInspectorSurfaceMaterial = wallInspectorMaterialId
     ? getRuntimeSurfaceMaterialById(wallInspectorMaterialId)
     : null;
+  const wallInspectorSupportsGrout = Boolean(
+    surfaceInspectorIsWall &&
+      wallInspectorSurfaceMaterial &&
+      (wallInspectorSurfaceMaterial.surface_material.surface_category ===
+        "wall_tile" ||
+        wallInspectorSurfaceMaterial.surface_material.material_family ===
+          "tile")
+  );
   const wallInspectorStarterMaterial = wallInspectorMaterialId
     ? getFloorMaterialById(wallInspectorMaterialId)
     : null;
@@ -418,9 +433,11 @@ export function useDesignPageSurfaceInspectorContext({
       floorInspectorPatternValue,
       floorInspectorSwatchStyle,
       wallInspectorFaceId,
+      wallInspectorPanelId,
       wallInspectorDefaultHeight,
       wallInspectorHeight,
       wallInspectorHasHeightOverride,
+      wallInspectorSupportsGrout,
       wallInspectorSettings,
       surfaceInspectorIsWall,
       surfaceInspectorIsCeiling,
@@ -507,9 +524,11 @@ export function useDesignPageSurfaceInspector({
     floorInspectorPatternOptions,
     floorInspectorPatternValue,
     wallInspectorFaceId,
+    wallInspectorPanelId,
     wallInspectorDefaultHeight,
     wallInspectorHeight,
     wallInspectorHasHeightOverride,
+    wallInspectorSupportsGrout,
     wallInspectorSettings,
     surfaceInspectorIsWall,
     surfaceInspectorIsCeiling,
@@ -612,6 +631,24 @@ export function useDesignPageSurfaceInspector({
     }
     surface.resetActiveFloorMaterialPattern(selectedPlanRoom.id);
   }, [selectedPlanRoom, surface, surfaceInspectorIsCeiling, surfaceInspectorIsWall, wallInspectorFaceId]);
+  const selectedWallMaterialSettingsPatch = useMemo(
+    () => ({
+      pattern: wallInspectorSettings.pattern,
+      rotationDeg: wallInspectorSettings.rotationDeg,
+      scale: wallInspectorSettings.scale,
+      offset: wallInspectorSettings.offset,
+      jointSizeMm: wallInspectorSettings.jointSizeMm,
+      jointColor: wallInspectorSettings.jointColor,
+    }),
+    [
+      wallInspectorSettings.jointColor,
+      wallInspectorSettings.jointSizeMm,
+      wallInspectorSettings.offset,
+      wallInspectorSettings.pattern,
+      wallInspectorSettings.rotationDeg,
+      wallInspectorSettings.scale,
+    ]
+  );
   const onApplyAll = useCallback(() => {
     if (!selectedPlanRoom) return;
     if (surfaceInspectorIsCeiling) {
@@ -623,8 +660,19 @@ export function useDesignPageSurfaceInspector({
       return;
     }
     if (surfaceInspectorIsWall) {
-      if (!surfaceInspectorMaterialId) return;
-      surface.applyWallMaterialToAllRooms(surfaceInspectorMaterialId);
+      if (wallInspectorSettings.paintColorHex) {
+        surface.applyWallPaintToAllRooms(
+          wallInspectorSettings.paintColorHex,
+          wallInspectorSettings.paintName
+        );
+        return;
+      }
+      if (surfaceInspectorMaterialId) {
+        surface.applyWallMaterialToAllRooms(
+          surfaceInspectorMaterialId,
+          selectedWallMaterialSettingsPatch
+        );
+      }
       return;
     }
     surface.applyFloorMaterialToAllRooms(floorInspectorMaterialId);
@@ -637,6 +685,39 @@ export function useDesignPageSurfaceInspector({
     surfaceInspectorIsCeiling,
     surfaceInspectorIsWall,
     surfaceInspectorMaterialId,
+    selectedWallMaterialSettingsPatch,
+    wallInspectorSettings.paintColorHex,
+    wallInspectorSettings.paintName,
+  ]);
+  const onApplyRoom = useCallback(() => {
+    if (!selectedPlanRoom || !surfaceInspectorIsWall) return;
+    if (wallInspectorSettings.paintColorHex) {
+      surface.applyWallPaintToRoom(
+        wallInspectorSettings.paintColorHex,
+        wallInspectorSettings.paintName,
+        selectedPlanRoom.id,
+        null
+      );
+      return;
+    }
+    if (surfaceInspectorMaterialId) {
+      surface.applyWallMaterialToRoom(
+        surfaceInspectorMaterialId,
+        selectedPlanRoom.id,
+        null,
+        null,
+        null,
+        selectedWallMaterialSettingsPatch
+      );
+    }
+  }, [
+    selectedPlanRoom,
+    surface,
+    surfaceInspectorIsWall,
+    surfaceInspectorMaterialId,
+    selectedWallMaterialSettingsPatch,
+    wallInspectorSettings.paintColorHex,
+    wallInspectorSettings.paintName,
   ]);
   const onSelectPickerMaterial = useCallback(
     (materialId: string) => {
@@ -687,23 +768,51 @@ export function useDesignPageSurfaceInspector({
   const onSelectGroutSize = useCallback(
     (sizeMm: number) => {
       if (!selectedPlanRoom) return;
+      if (surfaceInspectorIsWall) {
+        surface.changeActiveWallSurfaceSettings(
+          { jointSizeMm: normalizeFloorJointSizeMm(sizeMm) },
+          selectedPlanRoom.id,
+          wallInspectorFaceId
+        );
+        return;
+      }
       surface.changeActiveFloorSurfaceSettings(
         { floorJointSizeMm: normalizeFloorJointSizeMm(sizeMm) },
         selectedPlanRoom.id
       );
     },
-    [selectedPlanRoom, surface]
+    [
+      selectedPlanRoom,
+      surface,
+      surfaceInspectorIsWall,
+      wallInspectorFaceId,
+    ]
   );
   const onSelectGroutColor = useCallback(
     (color: string) => {
       if (!selectedPlanRoom) return;
+      if (surfaceInspectorIsWall) {
+        surface.changeActiveWallSurfaceSettings(
+          { jointColor: normalizeFloorJointColor(color) },
+          selectedPlanRoom.id,
+          wallInspectorFaceId
+        );
+        inspectorUi.closeGroutPalette();
+        return;
+      }
       surface.changeActiveFloorSurfaceSettings(
-        { floorJointColor: color },
+        { floorJointColor: normalizeFloorJointColor(color) },
         selectedPlanRoom.id
       );
       inspectorUi.closeGroutPalette();
     },
-    [inspectorUi, selectedPlanRoom, surface]
+    [
+      inspectorUi,
+      selectedPlanRoom,
+      surface,
+      surfaceInspectorIsWall,
+      wallInspectorFaceId,
+    ]
   );
   const onMovePattern = useCallback(
     (deltaX: number, deltaY: number) => {
@@ -873,6 +982,36 @@ export function useDesignPageSurfaceInspector({
                   disabled: !canEdit,
                 }
               : null;
+          const wallGrout =
+            surfaceInspectorIsWall && wallInspectorSupportsGrout
+              ? {
+                  groutSizes: FLOOR_GROUT_SIZE_PRESETS_MM.map((sizeMm) => {
+                    const selected =
+                      wallInspectorSettings.jointSizeMm === sizeMm;
+                    return {
+                      valueMm: sizeMm,
+                      selected,
+                      testId: selected
+                        ? "wall-surface-joint-size"
+                        : `wall-surface-joint-size-${String(sizeMm).replace(".", "-")}`,
+                    };
+                  }),
+                  groutColor: wallInspectorSettings.jointColor,
+                  groutPaletteOpen,
+                  groutColors: FLOOR_GROUT_COLOR_PALETTE.map((color) => {
+                    const normalizedColor = normalizeFloorJointColor(color);
+                    return {
+                      key: color,
+                      color: normalizedColor,
+                      selected:
+                        normalizedColor.toLowerCase() ===
+                        wallInspectorSettings.jointColor.toLowerCase(),
+                      testId: `wall-surface-grout-color-${color.replace("#", "")}`,
+                    };
+                  }),
+                  disabled: !canEdit,
+                }
+              : null;
           const headerLabel = surfaceInspectorIsWall
             ? `${getWallFaceLabel(wallInspectorFaceId)} settings`
             : surfaceInspectorIsCeiling
@@ -901,6 +1040,8 @@ export function useDesignPageSurfaceInspector({
 
           return {
             target,
+            wallPanelId:
+              surfaceInspectorIsWall ? wallInspectorPanelId : null,
             floorMaterialId: floorInspectorMaterialId,
             materialId: surfaceInspectorMaterialId,
             wallHeight,
@@ -919,6 +1060,7 @@ export function useDesignPageSurfaceInspector({
               draft: surfaceInspectorPublishStatus === "draft",
             },
             sizeOptions,
+            wallGrout,
             controls: {
               changeDisabled: !canEdit,
               rotateDisabled:
@@ -927,7 +1069,9 @@ export function useDesignPageSurfaceInspector({
               resetDisabled: !canEdit,
               applyAllDisabled:
                 !canEdit ||
-                (surfaceInspectorIsWall && !surfaceInspectorMaterialId) ||
+                (surfaceInspectorIsWall &&
+                  !surfaceInspectorMaterialId &&
+                  !wallInspectorSettings.paintColorHex) ||
                 (surfaceInspectorIsCeiling &&
                   !ceilingInspectorSettings.paintColorHex),
             },
@@ -947,6 +1091,7 @@ export function useDesignPageSurfaceInspector({
       onChangeMaterial,
       onRotate,
       onReset,
+      onApplyRoom,
       onApplyAll,
       onClosePicker: inspectorUi.closeMaterialPicker,
       onSelectPickerMaterial,

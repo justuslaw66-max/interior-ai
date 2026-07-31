@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { CATALOG_ITEMS } from "@/lib/catalog";
+import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import {
   buildImportedModelOptions,
   normalizeImportedFamilyName,
@@ -64,55 +65,10 @@ function upsertImportedOption(option: ImportedModelOption): void {
   });
 }
 
-function buildCatalogItems(importedModelOptions: ImportedModelOption[]) {
-  const allItems = Object.values(CATALOG_ITEMS);
-  const importedIds = new Set(importedModelOptions.map((option) => option.id));
-  const dedupedByFamily = new Map<string, (typeof allItems)[number]>();
-
-  for (const item of allItems) {
-    const brand = String(item.metadata?.brand ?? "").trim().toLowerCase();
-    const family = String(item.metadata?.productFamily ?? "").trim().toLowerCase();
-    const productName = String(item.metadata?.productName ?? item.title ?? "")
-      .trim()
-      .toLowerCase();
-    const modelSelectorIds = MODEL_SELECTOR_PRODUCT_IDS_BY_PRODUCT_ID[item.id] ?? [];
-    const modelFamilyRepresentativeId =
-      modelSelectorIds.length > 1 ? modelSelectorIds[0] : null;
-    const dedupeProductName = modelFamilyRepresentativeId
-      ? `model-family:${modelFamilyRepresentativeId}`
-      : productName;
-    const dedupeKey = `${brand}|${item.category}|${family}|${dedupeProductName}`;
-
-    const existing = dedupedByFamily.get(dedupeKey);
-    if (!existing) {
-      dedupedByFamily.set(dedupeKey, item);
-      continue;
-    }
-
-    if (modelFamilyRepresentativeId) {
-      const itemIsRepresentative = item.id === modelFamilyRepresentativeId;
-      const existingIsRepresentative = existing.id === modelFamilyRepresentativeId;
-      if (itemIsRepresentative && !existingIsRepresentative) {
-        dedupedByFamily.set(dedupeKey, item);
-        continue;
-      }
-      if (!itemIsRepresentative && existingIsRepresentative) continue;
-    }
-
-    const itemIsImported = importedIds.has(item.id);
-    const existingIsImported = importedIds.has(existing.id);
-    if (itemIsImported && !existingIsImported) {
-      dedupedByFamily.set(dedupeKey, item);
-      continue;
-    }
-    if (!itemIsImported && existingIsImported) continue;
-
-    if (item.variants.length > existing.variants.length) {
-      dedupedByFamily.set(dedupeKey, item);
-    }
-  }
-
-  return Array.from(dedupedByFamily.values());
+export function buildFurnishCatalogItems(
+  catalogItemsById: Readonly<Record<string, CatalogItemSchema>>
+): CatalogItemSchema[] {
+  return Object.values(catalogItemsById);
 }
 
 export function useDesignPageImportedModels() {
@@ -285,7 +241,10 @@ export function useDesignPageImportedModels() {
     [modelOptions]
   );
 
-  const catalogItems = useMemo(() => buildCatalogItems(modelOptions), [modelOptions]);
+  const catalogItems = useMemo(
+    () => buildFurnishCatalogItems(catalogItemsById),
+    [catalogItemsById]
+  );
 
   return {
     state: {

@@ -1227,6 +1227,7 @@ export function useDesignPageProductConfiguration({ state, actions, configuratio
               ? `${Math.round(
                   Number(
                     selectedConfigEntry.planning_bounds_cm?.width ??
+                      selectedConfigEntry.planning_bounds_cm?.width_cm ??
                       selectedConfigEntry.dimensions_recommended_planning?.width_cm ??
                       selectedConfigEntry.placement_footprint?.planning_width_cm ??
                       0
@@ -1234,6 +1235,7 @@ export function useDesignPageProductConfiguration({ state, actions, configuratio
                 )} x ${Math.round(
                   Number(
                     selectedConfigEntry.planning_bounds_cm?.depth ??
+                      selectedConfigEntry.planning_bounds_cm?.depth_cm ??
                       selectedConfigEntry.dimensions_recommended_planning?.depth_cm ??
                       selectedConfigEntry.placement_footprint?.planning_depth_cm ??
                       0
@@ -1244,9 +1246,17 @@ export function useDesignPageProductConfiguration({ state, actions, configuratio
               selectedConfigBehavior?.affects_visual_footprint &&
               selectedConfigEntry?.visual_bounds_cm
                 ? `${Math.round(
-                    Number(selectedConfigEntry.visual_bounds_cm.width ?? 0)
+                    Number(
+                      selectedConfigEntry.visual_bounds_cm.width ??
+                        selectedConfigEntry.visual_bounds_cm.width_cm ??
+                        0
+                    )
                   )} x ${Math.round(
-                    Number(selectedConfigEntry.visual_bounds_cm.depth ?? 0)
+                    Number(
+                      selectedConfigEntry.visual_bounds_cm.depth ??
+                        selectedConfigEntry.visual_bounds_cm.depth_cm ??
+                        0
+                    )
                   )} cm`
                 : null,
             estimationNote: selectedConfigEntry?.estimation_note || null,

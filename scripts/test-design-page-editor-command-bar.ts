@@ -85,6 +85,16 @@ assert.match(
   /const overflowSlot = contextVisible \? \(/,
   "The context and overflow slots should share the exact visibility gate."
 );
+assert.match(
+  commandBarSource,
+  /data-testid="editor-command-overflow-room-context"[\s\S]*?2xl:hidden[\s\S]*?data-testid="editor-command-overflow-room-name"[\s\S]*?room\.roomName[\s\S]*?room\.widthMeters\.toFixed\(1\)[\s\S]*?room\.depthMeters\.toFixed\(1\)/,
+  "Compact desktop overflow should preserve room identity and dimensions when the header context is hidden."
+);
+assert.match(
+  commandBarSource,
+  /data-testid="editor-command-overflow-fit-view"[\s\S]*?actions\.room\.onFitPlan[\s\S]*?data-testid="editor-command-overflow-view-toggle"[\s\S]*?actions\.room\.onViewModeChange/,
+  "Compact desktop overflow should preserve fit and view-switch actions."
+);
 
 assert.match(
   commandBarSource,

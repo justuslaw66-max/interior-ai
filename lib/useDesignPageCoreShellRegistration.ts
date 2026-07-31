@@ -58,6 +58,7 @@ export function useDesignPageCoreShellRegistration({
         pathname,
         searchParams,
         urlMode,
+        urlWorkspace,
         debugLayoutParam,
       },
     },
@@ -75,7 +76,11 @@ export function useDesignPageCoreShellRegistration({
   } = baseRegistration;
 
   const viewportShellRegistration = useDesignPageViewportShellRegistration({
-    state: { debugLayoutParam, designPanelOpen },
+    state: {
+      debugLayoutParam,
+      designPanelOpen,
+      initialWorkspace: urlWorkspace,
+    },
     actions: {
       setDesignPanelOpen,
       setDesignPanelCollapsed,

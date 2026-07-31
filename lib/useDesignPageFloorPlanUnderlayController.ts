@@ -550,6 +550,7 @@ export function useDesignPageFloorPlanUnderlayController({
         widthMeters,
         depthMeters,
         opacity: 0.45,
+        visible: true,
         rotationDeg: 0,
         locked: true,
       });
@@ -580,18 +581,37 @@ export function useDesignPageFloorPlanUnderlayController({
 
   const changeUnderlayOpacity = useCallback(
     (opacity: number) => {
-      runCoalescedHistoryTransaction("Change floor plan opacity", () =>
+      const applyChange = () =>
         setFloorPlanUnderlay((previous) =>
           previous
             ? {
                 ...previous,
-                opacity: Math.max(0.15, Math.min(0.85, opacity)),
+                ...(opacity <= 0
+                  ? { visible: false }
+                  : {
+                      visible: true,
+                      opacity: Math.max(0.15, Math.min(0.85, opacity)),
+                    }),
               }
             : previous
-        )
-      );
+        );
+      if (opacity <= 0 || floorPlanUnderlay?.visible === false) {
+        runHistoryTransaction(
+          opacity <= 0
+            ? "Hide floor plan reference"
+            : "Show floor plan reference",
+          applyChange
+        );
+        return;
+      }
+      runCoalescedHistoryTransaction("Change floor plan opacity", applyChange);
     },
-    [runCoalescedHistoryTransaction, setFloorPlanUnderlay]
+    [
+      floorPlanUnderlay?.visible,
+      runCoalescedHistoryTransaction,
+      runHistoryTransaction,
+      setFloorPlanUnderlay,
+    ]
   );
 
   const changeUnderlayLock = useCallback(
@@ -750,6 +770,7 @@ export function useDesignPageFloorPlanUnderlayController({
   return {
     state: {
       pendingTemplateReplacement,
+      floorPlanUnderlay,
     },
     actions: {
       applyPlanTemplate,

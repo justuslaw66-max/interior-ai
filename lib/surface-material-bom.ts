@@ -1,12 +1,28 @@
 import { getSurfaceMaterialById } from "./catalog-registry";
 import { clampFloorPatternScale, normalizeFloorRotationDeg } from "./floor-materials";
 import {
+  getWallPanelSurfaceSettings,
   getDefaultWallSurfaceSettings,
   getWallFaceLabel,
   getWallFaceSurfaceSettings,
   normalizeFloorSurfaceSettings,
 } from "./surface-settings";
-import type { RoomFloorPattern, RoomSnapshot, RoomSurfaceAssignments } from "./room-types";
+import {
+  buildHousePlan2D,
+  type HousePlanRoom2D,
+} from "./design-page-house-plan";
+import { mapPlanOpeningsToRoomRenderer } from "./design-page-plan-overlays";
+import {
+  buildWallSurfacePanels,
+  getWallOpenings,
+  getWallSegments,
+} from "@/components/editor/renderers/house-plan-3d/geometry";
+import type {
+  PersistedPlanOpening,
+  RoomFloorPattern,
+  RoomSnapshot,
+  RoomSurfaceAssignments,
+} from "./room-types";
 
 export type SurfaceMaterialBomRow = {
   roomId: string;
@@ -16,6 +32,7 @@ export type SurfaceMaterialBomRow = {
   surfaceLabel: string;
   surfaceAreaSqm: number;
   wallFaceId?: string | null;
+  wallPanelId?: string | null;
   materialId: string;
   materialName: string;
   supplier: string;
@@ -97,7 +114,10 @@ function getRoomWallAreaSqm(room: RoomSnapshot): number {
 }
 
 function getRoomWallFaceAreaSqm(room: RoomSnapshot, faceId: string): number {
-  const height = getRoomWallHeight(room);
+  const height = Math.max(
+    0.2,
+    room.geometry.wallHeights?.[faceId] ?? getRoomWallHeight(room)
+  );
   if (faceId === "north" || faceId === "south") return Math.max(0, room.geometry.width * height);
   if (faceId === "east" || faceId === "west") return Math.max(0, room.geometry.depth * height);
   return Math.max(0, Math.max(room.geometry.width, room.geometry.depth) * height);
@@ -107,10 +127,72 @@ export function getRoomSurfaceAssignments(room: RoomSnapshot): RoomSurfaceAssign
   return room.surfaces ?? room.surfaceFinishes;
 }
 
-export function buildRoomSurfaceMaterialBomRows(rooms: RoomSnapshot[]): SurfaceMaterialBomRow[] {
+type BomWallPanel = {
+  panelId: string;
+  faceId: string;
+  areaSqm: number;
+  legacyPanelIds: readonly string[];
+};
+
+function buildRoomBomWallPanels(
+  room: RoomSnapshot,
+  topologyRoom: HousePlanRoom2D | undefined,
+  topologyRooms: readonly HousePlanRoom2D[],
+  openings: ReturnType<typeof mapPlanOpeningsToRoomRenderer>
+): BomWallPanel[] {
+  if (!topologyRoom) return [];
+  return getWallSegments(topologyRoom).flatMap((segment) => {
+    const faceId = segment.wall ?? segment.key;
+    const height = Math.max(
+      0.2,
+      topologyRoom.wallHeights?.[faceId] ??
+        topologyRoom.height ??
+        getRoomWallHeight(room)
+    );
+    return buildWallSurfacePanels(
+      topologyRoom,
+      segment,
+      getWallOpenings(topologyRoom, segment, topologyRooms, openings)
+    ).map((panel) => ({
+      panelId: panel.panelId,
+      faceId: panel.faceId,
+      areaSqm: panel.part.length * height,
+      legacyPanelIds: panel.legacyPanelIds,
+    }));
+  });
+}
+
+export function buildRoomSurfaceMaterialBomRows(
+  rooms: RoomSnapshot[],
+  planOpenings: readonly PersistedPlanOpening[] = []
+): SurfaceMaterialBomRow[] {
+  const fallbackRoom = rooms[0];
+  const housePlan = buildHousePlan2D(
+    rooms,
+    fallbackRoom?.geometry.width ?? 4,
+    fallbackRoom?.geometry.depth ?? 5
+  );
+  const topologyRoomById = new Map(
+    housePlan.rooms.map((room) => [room.id, room])
+  );
+  const rendererOpenings = mapPlanOpeningsToRoomRenderer([...planOpenings]);
+
   return rooms.flatMap((room) => {
     const surfaces = getRoomSurfaceAssignments(room);
     const rows: SurfaceMaterialBomRow[] = [];
+    const wallPanels = buildRoomBomWallPanels(
+      room,
+      topologyRoomById.get(room.id),
+      housePlan.rooms,
+      rendererOpenings
+    );
+    const wallPanelAreaByFace = new Map<string, number>();
+    wallPanels.forEach((panel) => {
+      wallPanelAreaByFace.set(
+        panel.faceId,
+        (wallPanelAreaByFace.get(panel.faceId) ?? 0) + panel.areaSqm
+      );
+    });
 
     const makeRow = ({
       materialId,
@@ -118,6 +200,7 @@ export function buildRoomSurfaceMaterialBomRows(rooms: RoomSnapshot[]): SurfaceM
       surfaceLabel,
       surfaceAreaSqm,
       wallFaceId = null,
+      wallPanelId = null,
       settings,
     }: {
       materialId: string | null | undefined;
@@ -125,6 +208,7 @@ export function buildRoomSurfaceMaterialBomRows(rooms: RoomSnapshot[]): SurfaceM
       surfaceLabel: string;
       surfaceAreaSqm: number;
       wallFaceId?: string | null;
+      wallPanelId?: string | null;
       settings: {
         pattern: RoomFloorPattern;
         rotationDeg: number;
@@ -156,6 +240,7 @@ export function buildRoomSurfaceMaterialBomRows(rooms: RoomSnapshot[]): SurfaceM
         surfaceLabel,
         surfaceAreaSqm: roundedSurfaceAreaSqm,
         wallFaceId,
+        wallPanelId,
         materialId: material.surface_material.material_id,
         materialName: material.surface_material.product_name,
         supplier: material.surface_material.brand ?? material.surface_material.supplier,
@@ -217,12 +302,55 @@ export function buildRoomSurfaceMaterialBomRows(rooms: RoomSnapshot[]): SurfaceM
       clampFloorPatternScale
     );
     const faceIds = Object.keys(surfaces?.walls?.faces ?? {});
-    const wallAreaSqm = getRoomWallAreaSqm(room);
+    const wallAreaSqm =
+      wallPanelAreaByFace.size > 0
+        ? [...wallPanelAreaByFace.values()].reduce(
+            (sum, areaSqm) => sum + areaSqm,
+            0
+          )
+        : getRoomWallAreaSqm(room);
+    const panelAssignments = surfaces?.walls?.panels ?? {};
+    const resolvedPanels = wallPanels.flatMap((panel) => {
+      const assignmentId = [panel.panelId, ...panel.legacyPanelIds].find(
+        (panelId) =>
+          Object.prototype.hasOwnProperty.call(panelAssignments, panelId)
+      );
+      if (!assignmentId) return [];
+      const settings = getWallPanelSurfaceSettings(
+        surfaces,
+        panel.faceId,
+        panel.panelId,
+        normalizeFloorRotationDeg,
+        clampFloorPatternScale,
+        panel.legacyPanelIds
+      );
+      return [{ ...panel, settings }];
+    });
+    const panelOverrideAreaByFace = new Map<string, number>();
+    resolvedPanels.forEach((panel) => {
+      panelOverrideAreaByFace.set(
+        panel.faceId,
+        (panelOverrideAreaByFace.get(panel.faceId) ?? 0) + panel.areaSqm
+      );
+    });
     const faceAreaTotal = faceIds.reduce(
-      (sum, faceId) => sum + getRoomWallFaceAreaSqm(room, faceId),
+      (sum, faceId) =>
+        sum +
+        (wallPanelAreaByFace.get(faceId) ??
+          getRoomWallFaceAreaSqm(room, faceId)),
       0
     );
-    const remainingWallAreaSqm = Math.max(0, wallAreaSqm - Math.min(wallAreaSqm, faceAreaTotal));
+    const panelAreaOnDefaultFaces = resolvedPanels.reduce(
+      (sum, panel) =>
+        faceIds.includes(panel.faceId) ? sum : sum + panel.areaSqm,
+      0
+    );
+    const remainingWallAreaSqm = Math.max(
+      0,
+      wallAreaSqm -
+        Math.min(wallAreaSqm, faceAreaTotal) -
+        panelAreaOnDefaultFaces
+    );
     const wallDefaultRow = makeRow({
       materialId: wallDefaultSettings.materialId,
       surface: "walls",
@@ -250,7 +378,12 @@ export function buildRoomSurfaceMaterialBomRows(rooms: RoomSnapshot[]): SurfaceM
         materialId: faceSettings.materialId,
         surface: "selected_wall",
         surfaceLabel: getWallFaceLabel(faceId),
-        surfaceAreaSqm: getRoomWallFaceAreaSqm(room, faceId),
+        surfaceAreaSqm: Math.max(
+          0,
+          (wallPanelAreaByFace.get(faceId) ??
+            getRoomWallFaceAreaSqm(room, faceId)) -
+            (panelOverrideAreaByFace.get(faceId) ?? 0)
+        ),
         wallFaceId: faceId,
         settings: {
           pattern: faceSettings.pattern,
@@ -262,6 +395,26 @@ export function buildRoomSurfaceMaterialBomRows(rooms: RoomSnapshot[]): SurfaceM
         },
       });
       if (faceRow) rows.push(faceRow);
+    });
+
+    resolvedPanels.forEach((panel) => {
+      const panelRow = makeRow({
+        materialId: panel.settings.materialId,
+        surface: "selected_wall",
+        surfaceLabel: `${getWallFaceLabel(panel.faceId)} panel`,
+        surfaceAreaSqm: panel.areaSqm,
+        wallFaceId: panel.faceId,
+        wallPanelId: panel.panelId,
+        settings: {
+          pattern: panel.settings.pattern,
+          rotationDeg: panel.settings.rotationDeg,
+          scale: panel.settings.scale,
+          offset: panel.settings.offset,
+          jointSizeMm: panel.settings.jointSizeMm,
+          jointColor: panel.settings.jointColor,
+        },
+      });
+      if (panelRow) rows.push(panelRow);
     });
 
     return rows;

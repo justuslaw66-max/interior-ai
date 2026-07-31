@@ -2,7 +2,8 @@
 
 import { Edges } from "@react-three/drei/core/Edges";
 import { Html } from "@react-three/drei/web/Html";
-import { useEffect, useMemo, useRef } from "react";
+import type { ThreeEvent } from "@react-three/fiber";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { createCabinetThreeGroup } from "../createCabinetThreeGroup";
 import { generateCabinetParts } from "../generateCabinetParts";
@@ -16,168 +17,24 @@ import {
   isCabinetWallBedPanel,
 } from "../convertibleLayout";
 import { useCabinetSceneResourceOwnership } from "../hooks/useCabinetSceneResourceOwnership";
-import type { CabinetDefinition, CabinetPart, CabinetPartType } from "../types";
+import {
+  CABINET_DRAG_START_DISTANCE_M,
+  type CabinetDragState,
+  type CabinetSceneItemProps,
+} from "./CabinetSceneItem.types";
+import { createCabinetPreviewFrontEdgeGroup } from "./cabinetScenePreviewEdges";
+import { resolveSemanticSelection } from "./cabinetSceneSemanticSelection";
 
-export type CabinetSemanticSelectionScope = "assembly" | "module" | "part";
-
-export type CabinetSemanticSelection = {
-  scope: CabinetSemanticSelectionScope;
-  cabinetDefinitionId: string;
-  cabinetInstanceId?: string;
-  moduleId?: string;
-  partId?: string;
-  partType?: CabinetPartType;
-  additive: boolean;
-};
-
-export type CabinetSceneItemProps = {
-  definition: CabinetDefinition;
-  generatedParts?: readonly CabinetPart[];
-  showClearances?: boolean;
-  position?: [number, number, number];
-  rotationY?: number;
-  selected?: boolean;
-  highlightModuleId?: string;
-  highlightPartId?: string;
-  /** Adds preview-only separation lines to slab fronts without changing generated/export geometry. */
-  showPreviewFrontEdges?: boolean;
-  interactive?: boolean;
-  instanceId?: string;
-  viewMode?: "2d" | "3d";
-  showPlanLabel?: boolean;
-  onSelect?: (id: string, additive: boolean) => void;
-  onSemanticSelect?: (selection: CabinetSemanticSelection) => void;
-  renderReadyKey?: string;
-  onRenderReadyChange?: (key: string, ready: boolean) => void;
-};
-
-function resolveSemanticSelection(
-  object: THREE.Object3D,
-  boundary: THREE.Object3D | null,
-  definition: CabinetDefinition,
-  instanceId: string | undefined,
-  partById: ReadonlyMap<string, CabinetPart>,
-  moduleIds: ReadonlySet<string>,
-  additive: boolean
-): CabinetSemanticSelection {
-  let current: THREE.Object3D | null = object;
-
-  while (current && current !== boundary) {
-    const partId = typeof current.userData.partId === "string" ? current.userData.partId : undefined;
-    const part = partId ? partById.get(partId) : undefined;
-    if (part) {
-      return {
-        scope: "part",
-        cabinetDefinitionId: definition.id,
-        cabinetInstanceId: instanceId,
-        moduleId: part.moduleId,
-        partId: part.id,
-        partType: part.type,
-        additive,
-      };
-    }
-
-    const moduleId = typeof current.userData.moduleId === "string" ? current.userData.moduleId : undefined;
-    if (moduleId && moduleIds.has(moduleId)) {
-      return {
-        scope: "module",
-        cabinetDefinitionId: definition.id,
-        cabinetInstanceId: instanceId,
-        moduleId,
-        additive,
-      };
-    }
-
-    current = current.parent;
-  }
-
-  return {
-    scope: "assembly",
-    cabinetDefinitionId: definition.id,
-    cabinetInstanceId: instanceId,
-    additive,
-  };
-}
-
-const PREVIEW_FRONT_EDGE_PART_TYPES = new Set<CabinetPartType>([
-  "door_front",
-  "drawer_front",
-]);
-export const CABINET_PREVIEW_FRONT_EDGE_OFFSET_M = 0.0004;
-
-export function resolveCabinetPreviewFrontEdgeStyle(materialColor?: string): {
-  color: string;
-  opacity: number;
-} {
-  const color = new THREE.Color(materialColor ?? "#d8d2c6");
-  const luminance = color.r * 0.2126 + color.g * 0.7152 + color.b * 0.0722;
-
-  if (luminance < 0.08) return { color: "#879198", opacity: 0.62 };
-  if (luminance < 0.4) return { color: "#d1d6d9", opacity: 0.42 };
-  return { color: "#505a63", opacity: 0.3 };
-}
-
-export function createCabinetPreviewFrontEdgePositions(
-  part: CabinetPart
-): Float32Array | null {
-  if (!PREVIEW_FRONT_EDGE_PART_TYPES.has(part.type)) return null;
-
-  const x0 = part.position.x / 1000;
-  const x1 = (part.position.x + part.size.width) / 1000;
-  const y0 = part.position.y / 1000;
-  const y1 = (part.position.y + part.size.height) / 1000;
-  const z = part.position.z / 1000 - CABINET_PREVIEW_FRONT_EDGE_OFFSET_M;
-
-  return new Float32Array([
-    x0, y0, z, x1, y0, z,
-    x1, y0, z, x1, y1, z,
-    x1, y1, z, x0, y1, z,
-    x0, y1, z, x0, y0, z,
-  ]);
-}
-
-function createCabinetPreviewFrontEdgeGroup(
-  definition: CabinetDefinition,
-  parts: readonly CabinetPart[]
-): THREE.Group {
-  const group = new THREE.Group();
-  group.name = `CabinetPreviewFrontEdges_${definition.id}`;
-
-  for (const part of parts) {
-    const positions = createCabinetPreviewFrontEdgePositions(part);
-    if (!positions) continue;
-
-    const edgeGeometry = new THREE.BufferGeometry();
-    edgeGeometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-
-    const materialRef = definition.materials.find(
-      (material) => material.id === part.materialId
-    );
-    const edgeStyle = resolveCabinetPreviewFrontEdgeStyle(materialRef?.color);
-    const edgeMaterial = new THREE.LineBasicMaterial({
-      color: edgeStyle.color,
-      transparent: true,
-      opacity: edgeStyle.opacity,
-      depthTest: true,
-      depthWrite: false,
-      toneMapped: false,
-    });
-    const edgeLines = new THREE.LineSegments(edgeGeometry, edgeMaterial);
-    edgeLines.name = `CabinetPreviewFrontEdge_${part.id}`;
-    edgeLines.renderOrder = 1;
-    edgeLines.raycast = () => undefined;
-    edgeLines.userData = {
-      sourceType: "cabinet_preview_front_edge",
-      partId: part.id,
-      partType: part.type,
-      previewOnly: true,
-    };
-    group.add(edgeLines);
-  }
-
-  return group;
-}
-
+export type {
+  CabinetSceneItemProps,
+  CabinetSemanticSelection,
+  CabinetSemanticSelectionScope,
+} from "./CabinetSceneItem.types";
+export {
+  CABINET_PREVIEW_FRONT_EDGE_OFFSET_M,
+  createCabinetPreviewFrontEdgePositions,
+  resolveCabinetPreviewFrontEdgeStyle,
+} from "./cabinetScenePreviewEdges";
 export function CabinetSceneItem({
   definition,
   generatedParts,
@@ -194,10 +51,22 @@ export function CabinetSceneItem({
   showPlanLabel = true,
   onSelect,
   onSemanticSelect,
+  locked = false,
+  onDraggingChange,
+  onDragPointerMove,
+  onMove,
+  onDragEnd,
   renderReadyKey,
   onRenderReadyChange,
 }: CabinetSceneItemProps) {
   const groupRef = useRef<THREE.Group>(null);
+  const dragStateRef = useRef<CabinetDragState | null>(null);
+  const dragPlaneRef = useRef(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0));
+  const dragPointRef = useRef(new THREE.Vector3());
+  const didDragRef = useRef(false);
+  const [dragging, setDragging] = useState(false);
+  const [renderPosition, setRenderPosition] = useState(position);
+  const displayedPosition = dragging ? renderPosition : position;
   const previewModel = useMemo(() => {
     const parts = getCabinetVisiblePreviewParts(
       definition,
@@ -292,17 +161,124 @@ export function CabinetSceneItem({
     };
   }, [depth, highlightModuleId, highlightPartId, parts, width]);
 
+  const beginDrag = (event: ThreeEvent<PointerEvent>) => {
+    if (
+      viewMode !== "3d" ||
+      !interactive ||
+      locked ||
+      !instanceId ||
+      !onMove
+    ) {
+      return;
+    }
+
+    event.stopPropagation();
+    const plane = dragPlaneRef.current;
+    plane.set(new THREE.Vector3(0, 1, 0), -position[1]);
+    const point = event.ray.intersectPlane(plane, dragPointRef.current);
+    if (!point) return;
+
+    didDragRef.current = false;
+    setRenderPosition(position);
+    dragStateRef.current = {
+      pointerId: event.pointerId,
+      additiveSelection: Boolean(event.shiftKey),
+      offsetX: position[0] - point.x,
+      offsetZ: position[2] - point.z,
+      startX: point.x,
+      startZ: point.z,
+      lastAcceptedPosition: position,
+    };
+    (event.target as unknown as HTMLElement).setPointerCapture(event.pointerId);
+    setDragging(true);
+    onDraggingChange?.(true);
+  };
+
+  const moveDrag = (event: ThreeEvent<PointerEvent>) => {
+    const drag = dragStateRef.current;
+    if (
+      !drag ||
+      drag.pointerId !== event.pointerId ||
+      !instanceId ||
+      !onMove
+    ) {
+      return;
+    }
+
+    event.stopPropagation();
+    onDragPointerMove?.(event);
+    const point = event.ray.intersectPlane(
+      dragPlaneRef.current,
+      dragPointRef.current
+    );
+    if (!point) return;
+
+    if (
+      !didDragRef.current &&
+      Math.hypot(point.x - drag.startX, point.z - drag.startZ) <
+        CABINET_DRAG_START_DISTANCE_M
+    ) {
+      return;
+    }
+
+    if (!didDragRef.current) {
+      didDragRef.current = true;
+      onSelect?.(instanceId, drag.additiveSelection);
+    }
+
+    const nextPosition: [number, number, number] = [
+      point.x + drag.offsetX,
+      drag.lastAcceptedPosition[1],
+      point.z + drag.offsetZ,
+    ];
+    const accepted = onMove(instanceId, nextPosition);
+    if (accepted !== false) {
+      drag.lastAcceptedPosition = nextPosition;
+      setRenderPosition(nextPosition);
+    }
+  };
+
+  const finishDrag = (event: ThreeEvent<PointerEvent>) => {
+    const drag = dragStateRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+
+    event.stopPropagation();
+    try {
+      (event.target as unknown as HTMLElement).releasePointerCapture(
+        event.pointerId
+      );
+    } catch {}
+    dragStateRef.current = null;
+    setDragging(false);
+    if (didDragRef.current && instanceId) {
+      onDragEnd?.(instanceId, drag.lastAcceptedPosition);
+    }
+    onDraggingChange?.(false);
+  };
+
   return (
     <group
       ref={groupRef}
-      position={[position[0], position[1], position[2]]}
+      position={[
+        displayedPosition[0],
+        displayedPosition[1],
+        displayedPosition[2],
+      ]}
       rotation-y={rotationY}
+      onPointerDown={beginDrag}
+      onPointerMove={moveDrag}
+      onPointerUp={finishDrag}
+      onPointerCancel={finishDrag}
       onClick={(event) => {
         const canSelectInstance = interactive && Boolean(instanceId);
         const canSelectSemantic = Boolean(onSemanticSelect);
         if (!canSelectInstance && !canSelectSemantic) return;
 
         event.stopPropagation();
+        if (didDragRef.current) {
+          didDragRef.current = false;
+          return;
+        }
         const additive = Boolean(event.shiftKey);
         if (canSelectInstance && instanceId) onSelect?.(instanceId, additive);
         if (canSelectSemantic) {

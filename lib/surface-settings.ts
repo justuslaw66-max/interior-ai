@@ -304,6 +304,88 @@ export function getWallFaceSurfaceSettings(
   );
 }
 
+export function getWallPanelSurfaceSettings(
+  surfaces: RoomSurfaceAssignments | undefined,
+  faceId: string | null | undefined,
+  panelId: string | null | undefined,
+  normalizeRotationDeg: (rotationDeg?: number | null) => number,
+  clampScale: (scale?: number | null) => number,
+  fallbackPanelIds?: string | readonly string[] | null
+): NormalizedSurfaceSettings {
+  const faceSettings = getWallFaceSurfaceSettings(
+    surfaces,
+    faceId,
+    normalizeRotationDeg,
+    clampScale
+  );
+  const fallbackIds =
+    typeof fallbackPanelIds === "string"
+      ? [fallbackPanelIds]
+      : fallbackPanelIds ?? [];
+  const panelSettings =
+    (panelId ? surfaces?.walls?.panels?.[panelId] : undefined) ??
+    fallbackIds
+      .map((fallbackPanelId) => surfaces?.walls?.panels?.[fallbackPanelId])
+      .find((settings) => Boolean(settings));
+  if (!panelSettings) return faceSettings;
+
+  return normalizeSurfaceSettings(
+    {
+      materialId: hasOwnSurfaceSetting(panelSettings, "materialId")
+        ? panelSettings.materialId
+        : faceSettings.materialId,
+      paintColorHex: hasOwnSurfaceSetting(panelSettings, "paintColorHex")
+        ? panelSettings.paintColorHex
+        : faceSettings.paintColorHex,
+      paintName: hasOwnSurfaceSetting(panelSettings, "paintName")
+        ? panelSettings.paintName
+        : faceSettings.paintName,
+      pattern: hasOwnSurfaceSetting(panelSettings, "pattern")
+        ? panelSettings.pattern
+        : faceSettings.pattern,
+      rotationDeg: hasOwnSurfaceSetting(panelSettings, "rotationDeg")
+        ? panelSettings.rotationDeg
+        : faceSettings.rotationDeg,
+      scale: hasOwnSurfaceSetting(panelSettings, "scale")
+        ? panelSettings.scale
+        : faceSettings.scale,
+      offset: hasOwnSurfaceSetting(panelSettings, "offset")
+        ? panelSettings.offset
+        : faceSettings.offset,
+      jointSizeMm: hasOwnSurfaceSetting(panelSettings, "jointSizeMm")
+        ? panelSettings.jointSizeMm
+        : faceSettings.jointSizeMm,
+      jointColor: hasOwnSurfaceSetting(panelSettings, "jointColor")
+        ? panelSettings.jointColor
+        : faceSettings.jointColor,
+    },
+    normalizeRotationDeg,
+    clampScale,
+    {
+      jointColor: DEFAULT_WALL_JOINT_COLOR,
+    }
+  );
+}
+
+export function replaceAllWallSurfaceSettings(
+  surfaces: RoomSurfaceAssignments | undefined,
+  defaultSettings: SurfaceSettings,
+  wallMaterialId: string | null
+): RoomSurfaceAssignments {
+  const currentSurfaces = surfaces ?? {};
+  const currentWalls = currentSurfaces.walls ?? {};
+  return {
+    ...currentSurfaces,
+    wallMaterialId,
+    walls: {
+      ...currentWalls,
+      default: defaultSettings,
+      faces: {},
+      panels: {},
+    },
+  };
+}
+
 export function createSurfaceSettingsPatch(
   materialId: string | null | undefined,
   normalizeRotationDeg: (rotationDeg?: number | null) => number,

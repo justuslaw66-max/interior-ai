@@ -71,6 +71,7 @@ export function useDesignPageSurfaceWorkspaceFacade({
 } {
   const { activeRoomId } = state.document;
   const { selectedPlanRoomId } = state.selection;
+  const { selectedWallSurfaceTarget } = state.surface;
   const {
     clearNonRoomSelection,
     setSelectedPlanRoomId,
@@ -136,7 +137,18 @@ export function useDesignPageSurfaceWorkspaceFacade({
 
       clearNonRoomSelection();
       setSelectedPlanRoomId(roomId);
-      setSelectedWallSurfaceTarget({ roomId, faceId });
+      // Opening the material catalog for a mesh-selected panel must not
+      // collapse that precise target back to its parent wall face. Doing so
+      // caused the next catalog click to write a face override and repaint
+      // every panel on the wall.
+      setSelectedWallSurfaceTarget((current) =>
+        current?.roomId === roomId && current.faceId === faceId
+          ? current
+          : selectedWallSurfaceTarget?.roomId === roomId &&
+              selectedWallSurfaceTarget.faceId === faceId
+            ? selectedWallSurfaceTarget
+            : { roomId, faceId }
+      );
       setActiveSurfaceTarget("selected_wall");
       goPlan();
       setDesignPanelOpen(true);
@@ -160,6 +172,7 @@ export function useDesignPageSurfaceWorkspaceFacade({
       setDesignPanelCollapsed,
       setDesignPanelOpen,
       setSelectedPlanRoomId,
+      selectedWallSurfaceTarget,
       setSelectedWallSurfaceTarget,
       showToast,
       switchRoom,

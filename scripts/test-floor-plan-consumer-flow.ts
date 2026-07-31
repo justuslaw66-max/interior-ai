@@ -35,6 +35,10 @@ const assistant = [
   .join("\n");
 const uploadPanel = read("components/editor/FloorPlanUploadPanel.tsx");
 const importWorkspace = read("components/editor/FloorPlanImportWorkspace.tsx");
+const pageSelectionPanel = read("components/editor/FloorPlanPageSelectionPanel.tsx");
+const selectPageRoute = read(
+  "app/api/floor-plan-imports/[id]/select-page/route.ts"
+);
 const importSession = read("components/editor/useConsumerFloorPlanImportSession.ts");
 const importHistory = read("components/editor/FloorPlanImportHistory.tsx");
 const addressSearch = read("components/editor/FloorPlanAddressSearch.tsx");
@@ -43,9 +47,26 @@ const catalogResults = read("components/editor/FloorPlanCatalogResultList.tsx");
 const orientationFeedback = read("components/editor/design-page/DesignValidationFeedback.tsx");
 const newPlanController = read("lib/useDesignPageNewPlanController.ts");
 const importListRoute = read("app/api/floor-plan-imports/route.ts");
+const importJobRoute = read("app/api/floor-plan-imports/[id]/route.ts");
 const cancelRoute = read("app/api/floor-plan-imports/[id]/cancel/route.ts");
 const retryRoute = read("app/api/floor-plan-imports/[id]/retry/route.ts");
+const retryDetectionRoute = read(
+  "app/api/floor-plan-imports/[id]/retry-detection/route.ts"
+);
+const confirmRoute = read(
+  "app/api/floor-plan-imports/[id]/confirm/route.ts"
+);
 const roomRenderer = read("components/editor/renderers/RoomRenderer2D.tsx");
+const underlayRenderer = read(
+  "components/editor/renderers/PlanUnderlayRenderer2D.tsx"
+);
+const coreShellBase = read("lib/useDesignPageCoreShellBaseRegistration.ts");
+const designWorkspace = read(
+  "components/editor/design-page/DesignPageWorkspace.tsx"
+);
+const underlayController = read(
+  "lib/useDesignPageFloorPlanUnderlayController.ts"
+);
 
 assert.equal(
   buildStructuredFloorPlanAddressQuery({ address: " 810A  Chai Chee St ", floor: "7", stack: "509" }),
@@ -145,10 +166,10 @@ assert.match(
   /import FloorPlanImportWorkspace from "\.\/FloorPlanImportWorkspace"/,
   "The underlay upload panel should include the modular canonical import workspace."
 );
-assert.match(
+assert.doesNotMatch(
   uploadPanel,
-  /setAutoImportRequest\(\{ file, trainingBenchmarkOptIn \}\);[\s\S]*?onUpload\(file\);/,
-  "One file selection should retain the guided underlay while starting canonical detection."
+  /onUpload\(file\)/,
+  "A canonical import must not place the source over the currently open design."
 );
 assert.match(
   uploadPanel,
@@ -156,9 +177,44 @@ assert.match(
   "The selected source file should reach the import assistant."
 );
 assert.match(
+  uploadPanel,
+  /createPortal\([\s\S]*?data-testid="floor-plan-import-dialog"[\s\S]*?role="dialog"[\s\S]*?document\.body/,
+  "The consumer import workflow should render in a viewport-level dialog instead of the narrow editor panel."
+);
+assert.match(
+  uploadPanel,
+  /aria-modal="true"[\s\S]*?h-\[100dvh\][\s\S]*?sm:max-w-\[1600px\]/,
+  "The import dialog should use the full mobile viewport and a wide desktop workspace."
+);
+assert.match(
+  uploadPanel,
+  /event\.key !== "Escape"[\s\S]*?setImportWorkspaceOpen\(false\)/,
+  "The large import dialog should support Escape dismissal."
+);
+assert.match(
+  uploadPanel,
+  /document\.body\.style\.overflow = "hidden"[\s\S]*?document\.body\.style\.overflow = previousBodyOverflow/,
+  "The large import dialog should lock and restore background scrolling."
+);
+assert.match(
   importWorkspace,
-  /<FloorPlanImportHistory[\s\S]*?<FloorPlanImportAssistant[\s\S]*?resumeJobId=/,
-  "The import workspace should expose resumable owner history beside the active assistant."
+  /<FloorPlanImportAssistant[\s\S]*?resumeJobId=/,
+  "The import workspace should expose the active assistant."
+);
+assert.match(
+  importWorkspace,
+  /<FloorPlanImportHistory[\s\S]*?onResume=\{selectImportJob\}/,
+  "The import workspace should preserve resumable owner history."
+);
+assert.match(
+  importWorkspace,
+  /data-testid="floor-plan-import-secondary-options"[\s\S]*?<summary[\s\S]*?Previous imports & privacy/,
+  "History and privacy should be collapsed outside the primary consumer journey."
+);
+assert.doesNotMatch(
+  importWorkspace,
+  /lg:grid-cols-\[minmax\(260px,320px\)_minmax\(0,1fr\)\]/,
+  "The consumer review should not permanently give screen space to a technical sidebar."
 );
 for (const acceptedType of [
   "application/pdf",
@@ -176,29 +232,104 @@ assert.match(
 );
 assert.match(
   importSession,
-  /fetch\(next\.processUrl, \{ method: "POST"/,
-  "The assistant should start the deterministic processing pipeline."
+  /startAndPollFloorPlanImport\(\{[\s\S]*?startProcessing:[\s\S]*?fetch\(next\.processUrl![\s\S]*?loadJob:/,
+  "The assistant should start processing and poll the durable job concurrently."
 );
 assert.match(
   importSession,
-  /pollFloorPlanImportJobUntilPaused\([\s\S]*?loadJob: \(\) => loadJob\(next\.statusUrl!\)/,
+  /startAndPollFloorPlanImport\([\s\S]*?loadJob: \(\) => loadJob\(next\.statusUrl!\)/,
   "Progress should poll until the import reaches a review, ready, applied, published or failed state."
 );
 assert.match(
   assistant,
-  /fetch\(`\/api\/floor-plan-imports\/\$\{activeJob\.id\}\/process`, \{ method: "POST" \}\)[\s\S]*?pollFloorPlanImportJobUntilPaused/,
-  "A corrected candidate must keep polling when background validation remains intermediate."
+  /const processAndPoll[\s\S]*?startAndPollFloorPlanImport[\s\S]*?submitReview[\s\S]*?processAndPoll/,
+  "Review, selection, and retry flows should share the same concurrent processing helper."
 );
 assert.match(
   importSession,
-  /error\.status === 401[\s\S]*?underlay remains available for tracing/,
-  "Unauthenticated auto-detection should preserve the local guided-tracing fallback."
+  /error\.status === 401[\s\S]*?privately detect, review, and save this plan/,
+  "Unauthenticated imports should explain the private server-side workflow."
 );
-assert.match(importHistory, /action: "cancel" \| "retry"/);
+assert.match(pageSelectionPanel, /Best match[\s\S]*?Use this page/);
+assert.match(
+  selectPageRoute,
+  /status !== "selecting_page"[\s\S]*?candidateVersion[\s\S]*?updateMany/,
+  "Page selection must be owner-scoped, state-checked, and optimistic."
+);
+assert.match(importHistory, /action: "cancel" \| "retry" \| "delete"/);
 assert.match(importHistory, /\/\$\{action\}`/);
-assert.match(importListRoute, /export async function GET\(request: Request\)[\s\S]*?where: \{ userId \}[\s\S]*?nextCursor/);
+assert.match(
+  importHistory,
+  /Delete this import from your history\?[\s\S]*?Any design already[\s\S]*?created from it will stay[\s\S]*?runAction\(job, "delete"\)/,
+  "Completed imports should expose a confirmation before disappearing from owner history."
+);
+assert.match(
+  importHistory,
+  /action === "delete" \? jobUrl[\s\S]*?method: action === "delete" \? "DELETE" : "POST"/,
+  "History deletion must use the owner-scoped import DELETE endpoint."
+);
+assert.match(
+  importHistory,
+  /data-testid="floor-plan-import-bulk-actions"[\s\S]*?Select shown[\s\S]*?Delete selected[\s\S]*?Delete all/,
+  "Import history should support multi-selection and whole-history deletion."
+);
+assert.match(
+  importHistory,
+  /data-testid="floor-plan-import-bulk-delete-confirmation"[\s\S]*?Generated designs will stay[\s\S]*?runBulkDelete\(bulkDeleteScope\)/,
+  "Bulk deletion must require confirmation and explain that designs are preserved."
+);
+assert.match(
+  importHistory,
+  /fetch\("\/api\/floor-plan-imports", \{[\s\S]*?method: "DELETE"[\s\S]*?scope === "all" \? \{ all: true \} : \{ jobIds: selectedIds \}/,
+  "Selected and delete-all actions must use one bounded owner-scoped request."
+);
+assert.match(
+  importListRoute,
+  /export async function GET\(request: Request\)[\s\S]*?where: \{ userId, historyDeletedAt: null \}[\s\S]*?nextCursor/,
+  "Deleted history tombstones must not reappear after refresh or pagination."
+);
+assert.match(
+  importListRoute,
+  /export async function DELETE\(request: Request\)[\s\S]*?MAX_SELECTED_HISTORY_DELETE_JOBS[\s\S]*?userId,[\s\S]*?historyDeletedAt: null[\s\S]*?status: "failed"[\s\S]*?historyDeletedAt: now[\s\S]*?designPreserved: true/,
+  "Bulk history deletion must be bounded, owner-scoped, stop unfinished jobs, and preserve designs."
+);
+assert.match(
+  importJobRoute,
+  /export async function DELETE\([\s\S]*?where: \{ id, userId, historyDeletedAt: null \}[\s\S]*?HISTORY_DELETE_CANCEL_STATUSES\.has\(owned\.status\)[\s\S]*?historyDeletedAt: now[\s\S]*?errorMessage: "Deleted by owner"/,
+  "Import deletion must remain owner-scoped and safely stop unfinished jobs."
+);
+assert.match(
+  importJobRoute,
+  /deletedFromHistory: true[\s\S]*?designPreserved: true/,
+  "Deleting import history must explicitly preserve the generated design."
+);
 assert.match(cancelRoute, /status: \{ in: \[\.\.\.CANCELLABLE_STATUSES\] \}[\s\S]*?leaseExpiresAt: \{ lte: now \}/);
 assert.match(retryRoute, /status: "failed"[\s\S]*?sourceRetentionExpiresAt[\s\S]*?repository\.create/);
+assert.match(
+  retryDetectionRoute,
+  /where: \{ id, userId \}[\s\S]*?\["needs_review", "failed"\]\.includes\(sourceJob\.status\)/,
+  "Detection retries must be owner-scoped and limited to immutable paused jobs."
+);
+assert.match(
+  retryDetectionRoute,
+  /sourceAsset\.contentDeletedAt[\s\S]*?sourceDeletionRequestedAt[\s\S]*?sourceRetentionExpiresAt\.getTime\(\) <= now\.getTime\(\)/,
+  "Deleted, queued-for-deletion, or expired private sources must not be retried."
+);
+assert.match(
+  retryDetectionRoute,
+  /floor-plan-retry-detection[\s\S]*?takeSharedRateLimit[\s\S]*?Too many floor-plan retries/,
+  "One-click detection retries must be locally and centrally rate limited."
+);
+assert.match(
+  retryDetectionRoute,
+  /trainingBenchmarkOptIn: sourceJob\.trainingBenchmarkOptIn[\s\S]*?sourceRetentionExpiresAt: sourceJob\.sourceRetentionExpiresAt/,
+  "A fresh retry must copy privacy consent without extending source retention."
+);
+assert.match(
+  assistant,
+  /\/api\/floor-plan-imports\/\$\{activeJob\.id\}\/retry-detection[\s\S]*?Retry with improved detection/,
+  "Consumers should be able to rerun the current extractor without uploading again."
+);
 assert.match(addressFields, /floor-plan-address-floor[\s\S]*?floor-plan-address-stack/);
 for (const requestMarker of [
   "floorPlanRequest",
@@ -230,13 +361,23 @@ for (const prerequisite of [
 }
 assert.match(
   assistant,
-  /Use Step 3 above to select both ends of each visible opening[\s\S]*?If none are shown, mark this suggestion reviewed/,
+  /Use Step 3 above to select both ends of each visible[\s\S]*?opening[\s\S]*?If none are shown, mark this[\s\S]*?suggestion reviewed/,
   "Opening review should be guided and must not block plans that show no openings."
 );
 assert.match(
   assistant,
-  /Required items protect the measured wall geometry[\s\S]*?Room names, entrance labels,[\s\S]*?suggestions/,
-  "The review UI must distinguish 2D\/3D blockers from optional metadata."
+  /AI detected the architectural plan[\s\S]*?editable 2D and 3D design/,
+  "The primary review should explain the consumer outcome rather than internal validation mechanics."
+);
+assert.match(
+  assistant,
+  /data-testid="floor-plan-import-simple-recovery"[\s\S]*?Upload a clearer file[\s\S]*?Help AI finish this one/,
+  "When detection is unsafe, the consumer should get one simple recovery choice before manual tools."
+);
+assert.match(
+  assistant,
+  /data-testid="floor-plan-import-technical-details"[\s\S]*?Technical validation details/,
+  "Detailed validation issues should remain available but collapsed outside the main path."
 );
 assert.match(assistant, /isFloorPlanMvpBlockingIssue/);
 assert.match(
@@ -260,8 +401,8 @@ assert.match(
 );
 assert.match(
   assistant,
-  /fetch\(`\/api\/floor-plan-imports\/\$\{activeJob\.id\}\/process`, \{ method: "POST" \}\)/,
-  "Corrected candidates should return through server validation before use."
+  /candidateVersion: activeJob\.candidateVersion[\s\S]*?processAndPoll\([\s\S]*?activeJob\.id[\s\S]*?"Validating your corrections"/,
+  "Corrected candidates should return through live server validation before use."
 );
 assert.match(
   assistant,
@@ -270,18 +411,18 @@ assert.match(
 );
 assert.match(
   assistant,
-  /The editable design is created automatically\. Your current design stays saved and is not replaced\./,
-  "The ready state should make non-destructive design creation explicit."
+  /Current design unchanged[\s\S]*?Create editable plan/,
+  "The ready state should make the editable outcome and non-destructive creation clear."
 );
-assert.match(
+assert.doesNotMatch(
   assistant,
-  /autoCreateAttemptRef\.current = attemptKey;[\s\S]*?void createDesign\(true\)/,
-  "A ready source-complete import should automatically create and open its editable design."
+  /autoCreateAttemptRef|void createDesign\(true\)/,
+  "A ready import must wait for the consumer to create the new design."
 );
 assert.match(
   assistant,
   /optionalConfigurationCount > 0/,
-  "Automatic creation must pause when the source contains a layout choice."
+  "Source-supported layout choices should remain visible before explicit creation."
 );
 assert.match(
   assistant,
@@ -290,8 +431,43 @@ assert.match(
 );
 assert.match(
   assistant,
-  /router\.push\(`\/design\/\$\{encodeURIComponent\(id\)\}`\)/,
-  "A confirmed import should open its newly created saved design."
+  /\/design\?designId=[\s\S]*?view=2d&workspace=furnish&floorPlanImport=/,
+  "A confirmed import should open its new design in the 2D furnish workspace."
+);
+assert.match(
+  importHistory,
+  /\/design\?designId=[\s\S]*?view=2d&workspace=furnish&floorPlanImport=/,
+  "Import history must reopen an applied plan in the canonical 2D furnish editor."
+);
+assert.match(
+  designWorkspace,
+  /searchParams\.get\("designId"\)[\s\S]*?localBackupHydrated[\s\S]*?handleLoadDesign\(requestedDesignId\)/,
+  "The canonical editor should hydrate the saved design requested by the import handoff."
+);
+assert.match(
+  designWorkspace,
+  /Source reference[\s\S]*?floor-plan-source-reference-toggle[\s\S]*?changeUnderlayOpacity[\s\S]*?visible === false/,
+  "The 2D furnish workspace should expose the imported source-reference toggle."
+);
+assert.match(
+  underlayController,
+  /state: \{[\s\S]*?floorPlanUnderlay/,
+  "The underlay boundary should expose persisted visibility to the canonical editor."
+);
+assert.match(
+  coreShellBase,
+  /urlView === "2d" \? "2d" : "3d"/,
+  "The imported-design route should initialize directly in 2D."
+);
+assert.match(
+  confirmRoute,
+  /assetUrl: `\/api\/floor-plan-imports\/[\s\S]*?visible: false,[\s\S]*?locked: true/,
+  "Confirmation should attach a locked, initially hidden owner-scoped source reference."
+);
+assert.match(
+  underlayRenderer,
+  /underlay\.visible === false/,
+  "The 2D renderer must honor persisted source-reference visibility."
 );
 assert.match(
   assistant,

@@ -72,6 +72,70 @@ function isFiniteTuple(value: unknown, length: number): value is number[] {
   );
 }
 
+function validateFixturePhotometrics(
+  value: unknown,
+  path: string,
+  issues: DesignDocumentValidationIssue[]
+): void {
+  if (!isRecord(value)) {
+    issues.push({
+      code: "INVALID_TYPE",
+      path,
+      message: "Fixture photometrics must be an object.",
+    });
+    return;
+  }
+  if (value.emitterType !== "point" && value.emitterType !== "spot") {
+    issues.push({
+      code: "INVALID_VALUE",
+      path: `${path}.emitterType`,
+      message: "Fixture emitterType must be point or spot.",
+    });
+  }
+  if (!isFiniteTuple(value.localOffsetMeters, 3)) {
+    issues.push({
+      code: "INVALID_VALUE",
+      path: `${path}.localOffsetMeters`,
+      message: "Fixture local offset must contain three finite metre values.",
+    });
+  }
+  if (!isFiniteTuple(value.direction, 3)) {
+    issues.push({
+      code: "INVALID_VALUE",
+      path: `${path}.direction`,
+      message: "Fixture direction must contain three finite values.",
+    });
+  }
+  for (const key of ["beamAngleDeg", "luminousFluxLumens", "cctKelvin"] as const) {
+    if (!isPositiveFiniteNumber(value[key])) {
+      issues.push({
+        code: "INVALID_VALUE",
+        path: `${path}.${key}`,
+        message: `Fixture ${key} must be a positive finite number.`,
+      });
+    }
+  }
+  if (typeof value.dimmable !== "boolean") {
+    issues.push({
+      code: "INVALID_TYPE",
+      path: `${path}.dimmable`,
+      message: "Fixture dimmable must be a boolean.",
+    });
+  }
+  if (
+    value.verification !== "estimated" &&
+    value.verification !== "manufacturer" &&
+    value.verification !== "photometric"
+  ) {
+    issues.push({
+      code: "INVALID_VALUE",
+      path: `${path}.verification`,
+      message:
+        "Fixture verification must be estimated, manufacturer, or photometric.",
+    });
+  }
+}
+
 function validateProductSnapshot(
   value: unknown,
   path: string,
@@ -130,6 +194,9 @@ function validateProductSnapshot(
       message: "Product snapshot dimensions must contain positive finite millimeters.",
     });
   }
+  if (value.lighting !== undefined) {
+    validateFixturePhotometrics(value.lighting, `${path}.lighting`, issues);
+  }
 }
 
 function validateItem(
@@ -181,6 +248,62 @@ function validateItem(
       path: `${path}.rotationY`,
       message: "Item rotationY must be a finite angle in radians.",
     });
+  }
+  if (value.fixtureLight !== undefined) {
+    if (!isRecord(value.fixtureLight)) {
+      issues.push({
+        code: "INVALID_TYPE",
+        path: `${path}.fixtureLight`,
+        message: "Placed fixture lighting must be an object.",
+      });
+    } else {
+      if (
+        value.fixtureLight.isOn !== undefined &&
+        typeof value.fixtureLight.isOn !== "boolean"
+      ) {
+        issues.push({
+          code: "INVALID_TYPE",
+          path: `${path}.fixtureLight.isOn`,
+          message: "Placed fixture isOn must be a boolean.",
+        });
+      }
+      if (
+        value.fixtureLight.dimmer !== undefined &&
+        (!isFiniteNumber(value.fixtureLight.dimmer) ||
+          value.fixtureLight.dimmer < 0 ||
+          value.fixtureLight.dimmer > 1)
+      ) {
+        issues.push({
+          code: "INVALID_VALUE",
+          path: `${path}.fixtureLight.dimmer`,
+          message: "Placed fixture dimmer must be between 0 and 1.",
+        });
+      }
+      if (
+        value.fixtureLight.cctKelvin !== undefined &&
+        (!isFiniteNumber(value.fixtureLight.cctKelvin) ||
+          value.fixtureLight.cctKelvin < 1800 ||
+          value.fixtureLight.cctKelvin > 6500)
+      ) {
+        issues.push({
+          code: "INVALID_VALUE",
+          path: `${path}.fixtureLight.cctKelvin`,
+          message: "Placed fixture CCT must be between 1800K and 6500K.",
+        });
+      }
+      if (
+        value.fixtureLight.beamAngleDeg !== undefined &&
+        (!isFiniteNumber(value.fixtureLight.beamAngleDeg) ||
+          value.fixtureLight.beamAngleDeg < 5 ||
+          value.fixtureLight.beamAngleDeg > 180)
+      ) {
+        issues.push({
+          code: "INVALID_VALUE",
+          path: `${path}.fixtureLight.beamAngleDeg`,
+          message: "Placed fixture beam angle must be between 5° and 180°.",
+        });
+      }
+    }
   }
   for (const key of ["rotation", "scale"] as const) {
     if (value[key] !== undefined && !isFiniteTuple(value[key], 3)) {
@@ -347,6 +470,16 @@ export function validateStoredDesignDocument(
       });
     } else {
       if (
+        value.lighting.version !== undefined &&
+        value.lighting.version !== 1
+      ) {
+        issues.push({
+          code: "INVALID_VERSION",
+          path: "$.lighting.version",
+          message: "Lighting settings version must be 1.",
+        });
+      }
+      if (
         value.lighting.preset !== "daylight" &&
         value.lighting.preset !== "warm" &&
         value.lighting.preset !== "studio"
@@ -363,6 +496,52 @@ export function validateStoredDesignDocument(
           path: "$.lighting.shadowsEnabled",
           message: "Lighting shadowsEnabled must be a boolean.",
         });
+      }
+      for (const key of [
+        "timeMinutes",
+        "planNorthDeg",
+        "exposureCompensationEv",
+        "fixtureMasterLevel",
+      ] as const) {
+        if (
+          value.lighting[key] !== undefined &&
+          !isFiniteNumber(value.lighting[key])
+        ) {
+          issues.push({
+            code: "INVALID_TYPE",
+            path: `$.lighting.${key}`,
+            message: `Lighting ${key} must be a finite number.`,
+          });
+        }
+      }
+      for (const key of [
+        "fixtureMasterEnabled",
+        "previewFillEnabled",
+      ] as const) {
+        if (
+          value.lighting[key] !== undefined &&
+          typeof value.lighting[key] !== "boolean"
+        ) {
+          issues.push({
+            code: "INVALID_TYPE",
+            path: `$.lighting.${key}`,
+            message: `Lighting ${key} must be a boolean.`,
+          });
+        }
+      }
+      if (value.lighting.location !== undefined) {
+        if (
+          !isRecord(value.lighting.location) ||
+          !isFiniteNumber(value.lighting.location.latitude) ||
+          !isFiniteNumber(value.lighting.location.longitude)
+        ) {
+          issues.push({
+            code: "INVALID_VALUE",
+            path: "$.lighting.location",
+            message:
+              "Lighting location must contain finite latitude and longitude.",
+          });
+        }
       }
     }
   }

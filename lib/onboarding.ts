@@ -155,7 +155,7 @@ export function getEmptyStateCoaching(
 ): string | null {
   switch (mode) {
     case "design":
-      return "Start with a sofa to define the room.";
+      return "Choose a furnishing that fits how you use this room.";
     case "adjust":
       return "Select an item to fine-tune spacing and finishes.";
     case "buy":
@@ -196,7 +196,7 @@ export function getNextBestActionNudge(opts: {
 
   if (mode === "design" || mode === "adjust") {
     if (!hasItems) {
-      return "Try placing a sofa first.";
+      return "Choose a furnishing that fits how you use this room.";
     }
     if (hasSofa && !hasRug && !hasCoffeeTable) {
       return "Add a rug or coffee table to complete the seating area.";
