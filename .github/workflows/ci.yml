@@ -53,10 +53,17 @@ jobs:
       APP_ORIGIN: http://127.0.0.1:3000
       AUTH_TRUST_HOST: "true"
       GOOGLE_CLIENT_ID: 123456789012-gate-a3-ci.apps.googleusercontent.com
-      GOOGLE_CLIENT_SECRET: gate-a3-ci-google-client-secret-placeholder
+      GOOGLE_CLIENT_SECRET: GOCSPX-gate-a3-ci-placeholder
       ADMIN_EMAILS: gate-a3-admin@example.test
       PLAYWRIGHT_ADMIN_EMAIL: gate-a3-admin@example.test
-      CATALOG_STRICT_VALIDATION: "false"
+      OPENAI_API_KEY: gate-a3-ci-openai-placeholder
+      SHOPIFY_STORE_DOMAIN: gate-a3-ci.myshopify.com
+      SHOPIFY_STOREFRONT_TOKEN: gate-a3-ci-shopify-placeholder
+      POSTHOG_KEY: gate-a3-ci-posthog-placeholder
+      STRIPE_SECRET_KEY: sk_test_gate_a3_ci_placeholder
+      STRIPE_WEBHOOK_SECRET: whsec_gate_a3_ci_placeholder
+      STRIPE_PRICE_PRO_MONTHLY: price_gate_a3_ci_monthly
+      STRIPE_PRICE_PRO_YEARLY: price_gate_a3_ci_yearly
     steps:
       - uses: actions/checkout@v4
         with:
@@ -76,6 +83,22 @@ jobs:
         env:
           CODE_QUALITY_BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: npm run check:code-quality
+
+      - name: Verify production artifact evidence contract
+        run: npm run test:production-artifact-evidence
+
+      - name: Build strict production-equivalent artifact evidence
+        env:
+          APP_ENV: staging
+          CATALOG_STRICT_VALIDATION: "true"
+          PRODUCTION_EVIDENCE_CANDIDATE_ID: github-${{ github.run_id }}-${{ github.run_attempt }}
+        run: npm run evidence:production:build
+
+      - name: Install Playwright Chromium and WebKit
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Run runtime smoke tests
+        run: npm run evidence:production:smoke
 
       - name: Verify fail-closed authentication and admin environment policy
         run: npm run test:auth-env-hardening
@@ -110,17 +133,10 @@ jobs:
       - name: Audit catalog asset availability
         run: npm run test:catalog-asset-availability
 
-      - name: Build production application
-        run: npm run build
-
-      - name: Install Playwright Chromium and WebKit
-        run: npx playwright install --with-deps chromium webkit
-
-      - name: Run runtime smoke tests
-        run: npm run test:e2e:smoke
-
       - name: Run Pro visual policy matrix
         env:
+          APP_ENV: staging
+          CATALOG_STRICT_VALIDATION: "true"
           PLAYWRIGHT_USE_PRODUCTION_SERVER: "1"
         run: npm run test:pro-visual-policy
 
@@ -129,7 +145,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-smoke-results
-          path: test-results/
+          path: |
+            .local/production-artifact-evidence/
+            test-results/
           if-no-files-found: ignore
           retention-days: 14
 

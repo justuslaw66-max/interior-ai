@@ -1,5 +1,10 @@
 # Exact-artifact Vercel release workflow
 
+Repository-controlled local production-mode evidence is defined in
+`docs/qa/production-artifact-evidence.md`. It is a required artifact/build/start
+integrity input, not proof of Vercel execution. The workflow below is the
+separately authorized external deployment path.
+
 This workflow makes `.vercel/output` the immutable release artifact. It follows
 Vercel's Build Output API flow: pull production settings, build once, hash the
 output, stage that prebuilt output without assigning production domains, run
@@ -8,6 +13,11 @@ Gate A3 against the staged URL, and promote the already-tested deployment.
 ## Preconditions
 
 - Use a clean, committed candidate checkout with Git LFS assets materialized.
+- Non-ignored untracked files and ignored files outside the explicit generated
+  roots (`.next`, `.vercel`, `node_modules`, and generated Prisma output) are
+  part of the clean-source check. Root `.env*`, private/local evidence, editor,
+  test-fixture, and other ignored inputs are rejected. Vercel-pulled settings
+  remain an external input under `.vercel` and require separate platform review.
 - Configure the linked Vercel project and authenticate the pinned local CLI.
 - Provision a dedicated Gate A3 PostgreSQL database. Never point destructive or
   fixture-writing tests at customer or production data.

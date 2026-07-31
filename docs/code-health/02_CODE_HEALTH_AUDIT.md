@@ -2,7 +2,7 @@
 
 This register is anchored to checkpoint `08bdfe0c5e5c882777dc5da38168ea7db14840ad`. IDs are stable: implementation commits, pull requests, exceptions, and release evidence should cite them without renumbering. P0 means active catastrophic risk, P1 high risk or release blocker, P2 material maintainability/reliability debt, and P3 hygiene. No P0 was confirmed in this audit.
 
-Post-CH-0001 triage was performed on 2026-07-31 at `62ba966ecb2011e4233c99ce1dcc0641914af008`. CH-0012 repository remediation was then completed on `fix/ch-0012-canonical-saved-design-routing` from documentation checkpoint `195deacba6e22293b4e887dd4b4bb5203028c0fb`. The current classification is zero unresolved P0 findings, fifteen unresolved P1 findings, two resolved P1 findings, and two former P1 findings downgraded to P2 with current evidence. The finding-by-finding evidence, reachability, dependencies, test coverage, remediation scope, rollback, and ordered queue are recorded in `06_P0_P1_REMEDIATION_QUEUE.md`.
+Post-CH-0001 triage was performed on 2026-07-31 at `62ba966ecb2011e4233c99ce1dcc0641914af008`. CH-0012 repository remediation was then completed at `2c9e8b4d2322484a8d80873019d2c3495dd862f5`. CH-0016 repository remediation was completed next on `fix/ch-0016-production-equivalent-artifact-evidence`; its local implementation commit is the commit containing this record and is resolved in the final Codex response. The current classification is zero unresolved P0 findings, fourteen unresolved P1 findings, three resolved P1 findings, and two former P1 findings downgraded to P2 with current evidence. The finding-by-finding evidence, reachability, dependencies, test coverage, remediation scope, rollback, and ordered queue are recorded in `06_P0_P1_REMEDIATION_QUEUE.md`.
 
 ## Priority summary
 
@@ -19,7 +19,7 @@ The first ten risks by consequence, exploitability, customer impact, and change 
 9. CH-0013 generated surface payload/drift contract;
 10. CH-0014 per-item 3D resource and event ownership.
 
-CH-0001 and CH-0012 are now closed for repository-controlled remediation. CH-0002, CH-0007, and CH-0008 still require explicit policy decisions before changing production semantics. Under the same decision rule, CH-0016 is now the highest-risk READY P1 and the next eligible batch; it was not started as part of CH-0012.
+CH-0001, CH-0012, and CH-0016 are now closed for repository-controlled remediation. CH-0002, CH-0007, and CH-0008 still require explicit policy decisions before changing production semantics. CH-0017 is now the highest-risk READY P1 and the next eligible batch; it was not started as part of CH-0016.
 
 ## Findings
 
@@ -214,14 +214,16 @@ CH-0001 and CH-0012 are now closed for repository-controlled remediation. CH-000
 ### CH-0016 — CI does not validate a strict production-equivalent artifact
 
 - **Severity:** P1.
+- **Status:** RESOLVED — REPOSITORY REMEDIATION COMPLETE; EXTERNAL EXECUTION/VERIFICATION REQUIRED. The local implementation commit is the commit containing this record; no GitHub or Vercel execution is claimed.
 - **Locations/symbols:** `.github/workflows/ci.yml`; `lib/catalog-runtime.ts`; `playwright.config.ts`; build and smoke scripts.
-- **Evidence/current behavior:** CI forces `CATALOG_STRICT_VALIDATION=false`, builds leniently, then smoke defaults to `npm run dev` rather than `npm start` against the built output. Local build also reported lenient catalog validation and whole-project tracing.
+- **Pre-remediation evidence:** CI forced `CATALOG_STRICT_VALIDATION=false`, built leniently, then smoke defaulted to `npm run dev` rather than `npm start` against the built output. Existing Vercel source inspection ignored untracked files. A diagnostic artifact trace contained `.env`, `.env.local`, and a private release-evidence file.
 - **Risk:** A green workflow can ship a production-only catalog, tracing, server-start, or build-artifact defect.
-- **Improvement:** Define staging-equivalent required environment, build strict, start the exact immutable artifact, probe health/build identity, and run smoke against that server. Keep developer-mode smoke as a separate fast check.
-- **Expected outcome:** Required CI proves the artifact intended for preview/promotion, not a second development compilation.
-- **Tests:** strict invalid catalog fails build; build ID matches runtime; production server smoke; no dev fallback; traced-output inventory.
+- **Resolution/current behavior:** Required CI now runs `npm ci --include=dev` from a clean exact commit, the existing generated-runtime drift check, a strict staging-mode `npm run build`, SHA-256 inventory of `.next` and `public`, blocking NFT trace-closure validation, and runtime smoke through a manifest-verifying wrapper around unchanged `npm run start`. Playwright cannot reuse a listener or choose `npm run dev`; its JSON report and `/api/health` response must match the source SHA, artifact SHA-256, and Next build ID. The manifest sidecar, embedded report hash, and current-state revalidation reject tampering or reuse. Local evidence always records `releaseReady=false`, `actualDeploymentVerified=false`, and Vercel/GitHub/OAuth/scheduler/database controls as `not_verified`.
+- **Expected outcome:** Required CI proves one local production-mode artifact rather than a second development compilation, while external deployment claims remain separate.
+- **Tests/evidence:** `npm run test:production-artifact-evidence` covers clean happy path, tracked/untracked source, SHA/lock/generated/artifact/report/staleness/environment/dev/skip/failure/same-artifact/external-control/secret/trace negatives and strict invalid-catalog validation. Strict staging build passed; rebuilt trace inventory contained 112 trace manifests/42,879 references with zero missing or prohibited paths. Final exact-candidate `evidence:production:build`, smoke, and verify results are recorded in the handoff/final response.
 - **Dependencies/decision:** CI secret/environment inventory. No product decision.
-- **Compatibility:** Gate-only; it may expose existing release blockers.
+- **Compatibility/limits:** Gate-only; no product/data behavior, dependency, schema, migration, deployment, or external setting changed. Turbopack still warns that one floor-plan import causes broad tracing; the evidence inventories and bounds that closure rather than claiming the warning is fixed. CH-0013, CH-0017, and CH-0018 remain separate.
+- **Rollback:** Revert the one CH-0016 implementation commit. This restores lenient/dev release evidence and is not a recommended steady state.
 
 ### CH-0017 — Critical tests are omitted or can report false passes
 

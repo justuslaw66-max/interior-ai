@@ -1,4 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 
 const localBaseURL = "http://127.0.0.1:3000";
 const releaseBaseURL = process.env.PLAYWRIGHT_RELEASE_BASE_URL?.trim().replace(
@@ -6,6 +8,61 @@ const releaseBaseURL = process.env.PLAYWRIGHT_RELEASE_BASE_URL?.trim().replace(
   ""
 );
 const useProductionServer = process.env.PLAYWRIGHT_USE_PRODUCTION_SERVER === "1";
+const productionEvidenceManifestPath = process.env.PRODUCTION_EVIDENCE_MANIFEST?.trim();
+const productionEvidenceReportPath = process.env.PLAYWRIGHT_JSON_OUTPUT_FILE?.trim();
+
+function repositoryPath(relativePath: string, description: string) {
+  if (path.isAbsolute(relativePath)) {
+    throw new Error(`${description} must be repository-relative.`);
+  }
+  const root = process.cwd();
+  const resolved = path.resolve(root, relativePath);
+  if (!resolved.startsWith(`${root}${path.sep}`)) {
+    throw new Error(`${description} must remain inside the repository.`);
+  }
+  return resolved;
+}
+
+const productionArtifactEvidence = productionEvidenceManifestPath
+  ? (() => {
+      if (!useProductionServer) {
+        throw new Error(
+          "Production artifact evidence requires PLAYWRIGHT_USE_PRODUCTION_SERVER=1."
+        );
+      }
+      if (releaseBaseURL) {
+        throw new Error(
+          "Local production artifact evidence cannot be presented as HTTPS deployment evidence."
+        );
+      }
+      if (!productionEvidenceReportPath) {
+        throw new Error(
+          "PLAYWRIGHT_JSON_OUTPUT_FILE is required for production artifact evidence."
+        );
+      }
+      repositoryPath(productionEvidenceReportPath, "Production evidence report path");
+      const manifest = JSON.parse(
+        readFileSync(
+          repositoryPath(
+            productionEvidenceManifestPath,
+            "Production evidence manifest path"
+          ),
+          "utf8"
+        )
+      );
+      if (manifest.schema !== "interior-ai.production-artifact-evidence.v1") {
+        throw new Error("Unsupported production artifact evidence manifest.");
+      }
+      return {
+        schema: manifest.schema,
+        sourceCommitSha: manifest.source?.commitSha,
+        artifactSha256: manifest.artifact?.sha256,
+        nextBuildId: manifest.build?.nextBuildId,
+        serverCommand: "npm run evidence:production:serve",
+        buildMode: manifest.build?.mode,
+      };
+    })()
+  : null;
 
 if (releaseBaseURL) {
   const parsedURL = new URL(releaseBaseURL);
@@ -21,12 +78,21 @@ const baseURL = releaseBaseURL ?? localBaseURL;
 
 export default defineConfig({
   testDir: "./tests/e2e",
+  outputDir: productionArtifactEvidence
+    ? ".local/production-artifact-evidence/playwright-output"
+    : "test-results",
   fullyParallel: false,
   retries: 0,
   workers: 1,
-  reporter: [["list"]],
+  reporter: productionArtifactEvidence
+    ? [
+        ["list"],
+        ["json", { outputFile: productionEvidenceReportPath }],
+      ]
+    : [["list"]],
   metadata: {
     gateA3ReleaseBaseURL: releaseBaseURL ?? null,
+    productionArtifactEvidence,
   },
   use: {
     baseURL,
@@ -46,9 +112,13 @@ export default defineConfig({
     ? {}
     : {
         webServer: {
-          command: useProductionServer ? "npm run start" : "npm run dev",
+          command: productionArtifactEvidence
+            ? "npm run evidence:production:serve"
+            : useProductionServer
+              ? "npm run start"
+              : "npm run dev",
           url: localBaseURL,
-          reuseExistingServer: !process.env.CI,
+          reuseExistingServer: productionArtifactEvidence ? false : !process.env.CI,
           timeout: 120000,
         },
       }),

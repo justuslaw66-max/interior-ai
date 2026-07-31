@@ -4,21 +4,21 @@ Triage date: 2026-07-31 (Asia/Singapore)
 
 Repository: `/Users/justus/Developer/interior-ai`
 
-Branch: `fix/ch-0012-canonical-saved-design-routing`
+Branch: `fix/ch-0016-production-equivalent-artifact-evidence`
 
-CH-0012 starting HEAD: `62ba966ecb2011e4233c99ce1dcc0641914af008`
+CH-0016 starting HEAD: `2c9e8b4d2322484a8d80873019d2c3495dd862f5`
 
 Post-triage documentation checkpoint: `195deacba6e22293b4e887dd4b4bb5203028c0fb`
 
-This queue began as a post-CH-0001 evidence review and now includes the completed CH-0012 repository remediation. It does not authorize another finding, push, deployment, external-control changes, or release promotion. The CH-0012 worktree was clean after the isolated documentation commit. Node listeners on ports 3000 and 52401 both resolved with `lsof` to the canonical repository before code edits.
+This queue began as a post-CH-0001 evidence review and now includes the completed CH-0012 and CH-0016 repository remediations. It does not authorize another finding, push, deployment, external-control changes, or release promotion. CH-0016 started from the clean CH-0012 commit; both required commits were ancestors. The listening Node process resolved with `lsof` to the canonical repository before code edits.
 
 ## Counts and selected action
 
 - Unresolved P0: **0**.
-- Unresolved P1: **15**.
-- Resolved P1: **2** (`CH-0001`, `CH-0012`).
+- Unresolved P1: **14**.
+- Resolved P1: **3** (`CH-0001`, `CH-0012`, `CH-0016`).
 - Former P1 findings downgraded with current evidence: **2** (`CH-0009`, `CH-0014`).
-- Selected next batch: **CH-0016 production-equivalent artifact evidence**. It is now the highest-risk `READY` P1 after higher-ranked decision-blocked findings. No CH-0016 implementation was started.
+- Selected next batch: **CH-0017 required-test truthfulness and coverage**. It is now the highest-risk `READY` P1 after higher-ranked decision-blocked findings. No CH-0017 implementation was started.
 
 ## Classification summary
 
@@ -39,7 +39,7 @@ This queue began as a post-CH-0001 evidence review and now includes the complete
 | CH-0013 | P1 | READY | Gate wiring is decision-free; payload restructuring can follow behind parity fixtures. |
 | CH-0014 | P2 | DOWNGRADED_WITH_EVIDENCE | Source shows per-item ownership, but no measured P1 outage, data loss, or security/privacy consequence is currently demonstrated. |
 | CH-0015 | P1 | READY | Invisible focusable drawer content is a concrete accessibility/core-workflow defect and a shared primitive exists. |
-| CH-0016 | P1 | READY | Strict immutable build/start/smoke is a gate-only correction with no product-policy dependency. |
+| CH-0016 | P1, resolved | RESOLVED | Strict clean-source build, artifact/trace hashing, production start, health/report identity, and CI retention now fail closed; external execution remains unverified. |
 | CH-0017 | P1 | READY | The first bounded batches—manifest coverage and required-test truthfulness—are decision-free. |
 | CH-0018 | P1 | BLOCKED_DEPENDENCY | Supported predecessor versions and a representative sanitized fixture owner are required. |
 | CH-0019 | P1 release / P2 code health | READY | Several bounded baseline batches are independent; failures must remain separate from CH-0001. |
@@ -156,10 +156,12 @@ This queue began as a post-CH-0001 evidence review and now includes the complete
 
 ### CH-0016 — non-equivalent CI artifact
 
-- **Current evidence and affected symbols:** `.github/workflows/ci.yml` still sets `CATALOG_STRICT_VALIDATION=false`. `playwright.config.ts` defaults local smoke to `npm run dev`; the workflow builds first but does not set `PLAYWRIGHT_USE_PRODUCTION_SERVER=1` for runtime smoke. Full E2E remains informational and `continue-on-error`.
-- **Reach and impact:** This affects every merge/release validation path, not runtime authorization directly. It can certify an artifact different from the one built for release, masking catalog/startup/tracing defects and allowing core workflow regressions to ship.
-- **Dependencies and tests:** Requires CI environment/secret inventory but no product semantics. Add invalid-catalog build failure, build-ID/runtime identity, production-start smoke, no-dev-fallback, and traced-output inventory tests.
-- **Scope and rollback:** Make strict build and exact `npm start` artifact smoke required, leaving developer smoke separate. Roll back workflow wiring only for infrastructure failure with a named blocking issue; never label dev smoke production evidence.
+- **Status and commit:** `RESOLVED — REPOSITORY REMEDIATION COMPLETE; EXTERNAL EXECUTION/VERIFICATION REQUIRED`. The local implementation commit is the commit containing this record; its SHA is reported after creation. No GitHub/Vercel execution, push, or deployment occurred.
+- **Verified root cause:** Required CI explicitly forced `CATALOG_STRICT_VALIDATION=false`, built once, then allowed runtime smoke to select `npm run dev`, creating a second development compilation. Neither smoke JSON nor health proved the built artifact ID. Existing Vercel source inspection used `--untracked-files=no`. Rebuilt pre-fix trace evidence exposed `.env`, `.env.local`, and a private release-evidence file through the broad trace closure.
+- **Implemented evidence flow:** `scripts/production-artifact-evidence.mjs` owns build, serve, smoke, and verification. It requires clean tracked/untracked/submodule state, no influential local env file, exact candidate/commit, `npm ci --include=dev`, lock/install hashes, existing generated-source drift check, strict staging/production configuration shape, and one fresh production build. It hashes `.next` and `public`, validates every NFT trace, records the Next build ID, starts unchanged `npm run start` through a revalidating wrapper, and binds health plus Playwright JSON to the same source/artifact/build. Canonical manifest/report hashes, timestamps, test counts, and fixed external-control statuses are revalidated.
+- **Fail-closed coverage:** Focused temporary-repository cases cover happy path, dirty tracked and untracked source, source/lock/generated/artifact/report/stale/missing/environment/development/server/test-count/same-artifact/external-control/secret/trace failures, manifest sidecar tampering, strict invalid-catalog rejection, no dev fallback, no listener reuse, CI strict wiring, and Vercel untracked-source inspection.
+- **Validation and limitations:** Strict staging diagnostic build passed. Post-build inventory: 112 NFT files, 42,879 references, zero missing paths, and zero prohibited paths. The Turbopack broad-tracing warning remains and is reported rather than reclassified. Final exact-clean-candidate build/smoke/verify and independent review are recorded in `HANDOFF.md` and the final response. CH-0013, CH-0017, CH-0018, inherited baseline failures, and external controls remain untouched/unverified.
+- **Scope and rollback:** Gate/evidence/configuration/docs only; no dependency, schema, migration, catalog content, production data, product behavior, or external setting. Revert the single implementation commit; that restores lenient/dev evidence and is not a recommended steady state.
 
 ### CH-0017 — omitted and false-pass tests
 
@@ -201,8 +203,8 @@ Risk order includes blocked findings so decisions are visible; `READY` ordering 
 2. `CH-0007` — `REQUIRES_PRODUCT_DECISION` (catalog identity and partial-authoring integrity).
 3. `CH-0008` — `REQUIRES_PRODUCT_DECISION` (fail-open public product availability).
 4. `CH-0012` — `RESOLVED` (canonical saved-design routing repository remediation complete).
-5. `CH-0016` — `READY`, **selected next batch** (production-equivalent artifact evidence).
-6. `CH-0017` — `READY` (required test truthfulness and coverage).
+5. `CH-0016` — `RESOLVED` (production-equivalent artifact evidence repository remediation complete; external execution remains unverified).
+6. `CH-0017` — `READY`, **selected next batch** (required test truthfulness and coverage).
 7. `CH-0018` — `BLOCKED_DEPENDENCY` (populated upgrade/data-loss evidence).
 8. `CH-0010` — `REQUIRES_PRODUCT_DECISION` (permanent share revocation and auto-sharing).
 9. `CH-0011` — `REQUIRES_PRODUCT_DECISION` (privacy consent/masking and external PostHog state).
@@ -214,7 +216,7 @@ Risk order includes blocked findings so decisions are visible; `READY` ordering 
 15. `CH-0015` — `READY` (accessible overlay ownership).
 16. `CH-0019` — `READY` in bounded baseline batches and required before architectural refactoring.
 
-`CH-0009` and `CH-0014` remain queued as P2; neither competes in the P1 decision rule. Baseline A/B/C should be accumulated as independent reviewed fixes before architectural refactoring, but the single next selected P1 is now CH-0016.
+`CH-0009` and `CH-0014` remain queued as P2; neither competes in the P1 decision rule. Baseline A/B/C should be accumulated as independent reviewed fixes before architectural refactoring, but the single next selected P1 is now CH-0017.
 
 ## Completed batch record: CH-0012 only
 

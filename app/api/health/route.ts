@@ -17,11 +17,32 @@ async function captureHealthError(error: unknown, check: "application" | "databa
 
 function buildIdentity() {
   return (
+    process.env.PRODUCTION_ARTIFACT_BUILD_ID ||
     process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 12) ||
     process.env.GIT_COMMIT_SHA?.slice(0, 12) ||
     process.env.npm_package_version ||
     "development"
   );
+}
+
+function productionArtifactIdentity() {
+  if (process.env.PRODUCTION_ARTIFACT_EVIDENCE !== "1") return null;
+  const nextBuildId = process.env.PRODUCTION_ARTIFACT_BUILD_ID;
+  const artifactSha256 = process.env.PRODUCTION_ARTIFACT_SHA256;
+  const sourceCommitSha = process.env.PRODUCTION_ARTIFACT_COMMIT_SHA;
+  if (
+    !nextBuildId ||
+    !/^[0-9a-f]{64}$/i.test(artifactSha256 ?? "") ||
+    !/^[0-9a-f]{40,64}$/i.test(sourceCommitSha ?? "")
+  ) {
+    throw new Error("Production artifact identity is incomplete or malformed");
+  }
+  return {
+    kind: "local-production-mode-artifact",
+    nextBuildId,
+    artifactSha256,
+    sourceCommitSha,
+  };
 }
 
 async function checkDatabase() {
@@ -85,7 +106,6 @@ export async function GET(request: Request) {
   const startedAt = Date.now();
   const url = new URL(request.url);
   const deep = url.searchParams.get("deep") === "1";
-
   try {
     const yamlEntries = Array.from(getFreshCatalogYamlMap().values());
     const surfaceMaterials = getSurfaceMaterials({ includeDrafts: true });
@@ -119,6 +139,7 @@ export async function GET(request: Request) {
         status: degraded ? "degraded" : "ok",
         timestamp: new Date().toISOString(),
         build: buildIdentity(),
+        productionArtifact: productionArtifactIdentity(),
         durationMs: Date.now() - startedAt,
         checks: {
           application: "ok",

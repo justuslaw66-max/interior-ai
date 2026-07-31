@@ -85,7 +85,7 @@ Planned change:
 - P2-B: add `test:floor-plan-live-progress` to the required umbrella and add a meta-test classifying all floor-plan test commands.
 - P2-C: create a repository test manifest/audit and typecheck E2E separately; classify the 44 orphan scripts before adding them to required CI.
 - P2-D: eliminate gate early returns in commerce/variant E2E using deterministic fixtures; make reporter distinguish pass/skip/not-run.
-- P2-E: strict build plus `npm start` smoke against the exact artifact/build ID; developer smoke remains separate.
+- P2-E: **COMPLETE (CH-0016)** — strict build plus verified `npm start` smoke against the exact artifact/build ID; developer smoke remains separate.
 - P2-F: blank-install plus populated-predecessor migration gate and ordered digest in release evidence.
 
 **Entry:** Phase 0 green or explicit baseline exception; CI budget/fixture owners named.
@@ -94,10 +94,20 @@ Planned change:
 **Rollback:** each gate wiring change is independent; revert the gate commit if infrastructure is broken, preserving a dated blocking issue rather than weakening assertions.
 **Compatibility:** gate/evidence only.
 
+### CH-0016 implementation record
+
+Status: **REPOSITORY REMEDIATION COMPLETE — EXTERNAL EXECUTION/VERIFICATION REQUIRED**. The focused commit adds a fail-closed production artifact evidence owner, negative-case suite, strict CI build/start/smoke path, exact health/build identity, trace-closure exclusions and inventory, Vercel untracked-source enforcement, retained CI reports, and the repository/external guarantee split in `docs/qa/production-artifact-evidence.md`.
+
+The build contract requires a clean exact commit, no influential local env file, `npm ci --include=dev`, lock/install identities, existing generated-runtime drift check, staging/production environment shape, strict catalog validation, one production build, Next build ID, and SHA-256 inventory of `.next` plus `public`. The test contract re-verifies the artifact, prohibits listener reuse/dev fallback, starts the unchanged `npm run start`, and binds Playwright JSON plus health identity to the same source/artifact/build. Missing, stale, modified, failed, flaky, skipped, development-mode, mismatched, or overclaimed evidence fails closed.
+
+The strict diagnostic build passed after shaped nonfunctional staging configuration was supplied. Trace inventory changed from concrete `.env`/private-evidence leakage to 112 trace manifests and 42,879 references with zero missing/prohibited paths. The existing Turbopack broad-tracing warning remains explicit. No actual GitHub/Vercel run, preview/staging/production deployment, external-control verification, schema/data change, or dependency change is included. CH-0013 schema/payload work, CH-0017 test-truthfulness work, and CH-0018 migration evidence remain separate.
+
+Rollback is one `git revert` of the CH-0016 implementation commit. Generated evidence is ignored and regenerated from an exact clean candidate. The next READY P1 is CH-0017; do not start it inside this batch.
+
 ## Phase 3 — Canonical saved-design routing
 
 **Finding:** CH-0012.
-**Status:** RESOLVED — repository-controlled remediation complete on `fix/ch-0012-canonical-saved-design-routing`. CH-0016 is the next READY P1; it was not started.
+**Status:** RESOLVED — repository-controlled remediation complete at `2c9e8b4d2322484a8d80873019d2c3495dd862f5`. CH-0016 was subsequently completed as the bounded P2-E evidence batch; CH-0017 is now the next READY P1.
 **Implemented batch:** characterized a modern v3 document through every discovered entry; added `lib/design-editor-url.ts`; made `/design/[id]` a temporary canonical redirect; updated dashboard, duplicate, checkout-success, My Designs, and floor-plan revision-copy navigation; made denied/superseded/unmounted loads restore or retain the correct identity; and removed all legacy rendering from the compatibility route.
 
 Expected first routing files:

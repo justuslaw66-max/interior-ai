@@ -12,10 +12,14 @@ function sha256(bytes) {
   return createHash("sha256").update(bytes).digest("hex");
 }
 
+function comparePortablePaths(left, right) {
+  return left < right ? -1 : left > right ? 1 : 0;
+}
+
 async function listEntries(root, current = root) {
   const entries = await readdir(current, { withFileTypes: true });
   const paths = [];
-  for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
+  for (const entry of entries.sort((a, b) => comparePortablePaths(a.name, b.name))) {
     const absolute = path.join(current, entry.name);
     const relativePath = path.relative(root, absolute).split(path.sep).join("/");
     if (entry.isDirectory()) paths.push(...(await listEntries(root, absolute)));
@@ -26,10 +30,37 @@ async function listEntries(root, current = root) {
   return paths;
 }
 
-function git(args, { trim = true } = {}) {
-  const result = spawnSync("git", args, { encoding: "utf8", maxBuffer: 128 * 1024 * 1024 });
+function git(args, { trim = true, cwd = process.cwd() } = {}) {
+  const result = spawnSync("git", args, {
+    cwd,
+    encoding: "utf8",
+    maxBuffer: 128 * 1024 * 1024,
+  });
   if (result.status !== 0) throw new Error(result.stderr.trim() || `git ${args.join(" ")} failed`);
   return trim ? result.stdout.trim() : result.stdout;
+}
+
+function allowedIgnoredVercelPath(filePath) {
+  const normalized = filePath.split(path.sep).join("/");
+  const generatedRoots = [".next", ".vercel", "node_modules", "app/generated/prisma"];
+  return (
+    generatedRoots.some(
+      (root) => normalized === root || normalized.startsWith(`${root}/`),
+    ) ||
+    normalized === "next-env.d.ts" ||
+    normalized.endsWith(".tsbuildinfo")
+  );
+}
+
+function inspectIgnoredInfluentialFiles(repositoryRoot) {
+  return git(
+    ["ls-files", "--others", "--ignored", "--exclude-standard", "-z"],
+    { trim: false, cwd: repositoryRoot },
+  )
+    .split("\0")
+    .filter(Boolean)
+    .filter((filePath) => !allowedIgnoredVercelPath(filePath))
+    .sort(comparePortablePaths);
 }
 
 async function sha256File(filePath) {
@@ -38,39 +69,56 @@ async function sha256File(filePath) {
   return digest.digest("hex");
 }
 
-async function isEquivalentLfsNormalization(filePath) {
-  const attribute = git(["check-attr", "filter", "--", filePath]);
+async function isEquivalentLfsNormalization(repositoryRoot, filePath) {
+  const attribute = git(["check-attr", "filter", "--", filePath], { cwd: repositoryRoot });
   if (!attribute.endsWith(": filter: lfs")) return false;
 
-  const indexEntry = git(["ls-files", "-s", "--", filePath]);
+  const indexEntry = git(["ls-files", "-s", "--", filePath], { cwd: repositoryRoot });
   const indexOid = indexEntry.match(/^\d+\s+([0-9a-f]{40,64})\s+\d+\t/)?.[1];
   if (!indexOid) return false;
 
   // Some historical GLBs are raw Git blobs even though a newer attribute now
   // routes GLBs through LFS. Compare their unfiltered worktree bytes directly.
-  const worktreeOid = git(["hash-object", "--no-filters", "--", filePath]);
+  const worktreeOid = git(["hash-object", "--no-filters", "--", filePath], {
+    cwd: repositoryRoot,
+  });
   if (worktreeOid === indexOid) return true;
 
   // For a normal LFS entry, accept the smudged worktree file only when both its
   // byte length and SHA-256 match the pointer stored in the index.
-  const indexBytes = Number(git(["cat-file", "-s", indexOid]));
+  const indexBytes = Number(git(["cat-file", "-s", indexOid], { cwd: repositoryRoot }));
   if (!Number.isSafeInteger(indexBytes) || indexBytes > 1024) return false;
-  const pointer = git(["cat-file", "blob", indexOid]);
+  const pointer = git(["cat-file", "blob", indexOid], { cwd: repositoryRoot });
   const pointerOid = pointer.match(/^oid sha256:([0-9a-f]{64})$/m)?.[1];
   const pointerBytes = Number(pointer.match(/^size (\d+)$/m)?.[1]);
   if (!pointerOid || !Number.isSafeInteger(pointerBytes)) return false;
-  const metadata = await lstat(filePath);
+  const absolutePath = path.join(repositoryRoot, filePath);
+  const metadata = await lstat(absolutePath);
   return metadata.isFile()
     && metadata.size === pointerBytes
-    && (await sha256File(filePath)) === pointerOid;
+    && (await sha256File(absolutePath)) === pointerOid;
 }
 
-async function inspectGitTree() {
+export async function inspectGitTree(repositoryRoot = process.cwd()) {
+  const ignoredInfluentialFiles = inspectIgnoredInfluentialFiles(repositoryRoot);
+  if (ignoredInfluentialFiles.length > 0) {
+    return {
+      clean: false,
+      ignoredInfluentialFiles,
+      lfsNormalizationEquivalentPathCount: 0,
+    };
+  }
   const status = git(
-    ["status", "--porcelain=v1", "-z", "--untracked-files=no"],
-    { trim: false },
+    ["status", "--porcelain=v1", "-z", "--untracked-files=all"],
+    { trim: false, cwd: repositoryRoot },
   );
-  if (!status) return { clean: true, lfsNormalizationEquivalentPathCount: 0 };
+  if (!status) {
+    return {
+      clean: true,
+      ignoredInfluentialFiles: [],
+      lfsNormalizationEquivalentPathCount: 0,
+    };
+  }
 
   const records = status.split("\0").filter(Boolean);
   const candidates = [];
@@ -78,13 +126,22 @@ async function inspectGitTree() {
     const record = records[index];
     const code = record.slice(0, 2);
     const filePath = record.slice(3);
-    if (code !== " M") return { clean: false, lfsNormalizationEquivalentPathCount: 0 };
+    if (code !== " M") {
+      return {
+        clean: false,
+        ignoredInfluentialFiles: [],
+        lfsNormalizationEquivalentPathCount: 0,
+      };
+    }
     candidates.push(filePath);
   }
 
-  const equivalents = await Promise.all(candidates.map(isEquivalentLfsNormalization));
+  const equivalents = await Promise.all(
+    candidates.map((filePath) => isEquivalentLfsNormalization(repositoryRoot, filePath)),
+  );
   return {
     clean: equivalents.every(Boolean),
+    ignoredInfluentialFiles: [],
     lfsNormalizationEquivalentPathCount: equivalents.filter(Boolean).length,
   };
 }
@@ -137,6 +194,9 @@ export async function createVercelOutputManifest() {
     ...inspected,
     gitCommit: git(["rev-parse", "HEAD"]),
     gitTreeStatus: gitTree.clean ? "clean" : "dirty",
+    gitUntrackedFilesChecked: true,
+    gitIgnoredInfluentialFilesChecked: true,
+    gitIgnoredInfluentialFileCount: gitTree.ignoredInfluentialFiles.length,
     gitLfsNormalizationEquivalentPathCount: gitTree.lfsNormalizationEquivalentPathCount,
     nodeVersion: process.version,
     createdAt: new Date().toISOString(),
@@ -168,7 +228,17 @@ export async function verifyVercelOutputManifest() {
     );
   }
   if (recorded.gitTreeStatus !== "clean" || !gitTree.clean) {
-    throw new Error("The prebuilt artifact can only be verified from its clean tracked source tree.");
+    throw new Error("The prebuilt artifact can only be verified from a clean source tree.");
+  }
+  if (recorded.gitUntrackedFilesChecked !== true) {
+    throw new Error("The prebuilt artifact manifest did not verify untracked source files.");
+  }
+  if (
+    recorded.gitIgnoredInfluentialFilesChecked !== true ||
+    recorded.gitIgnoredInfluentialFileCount !== 0 ||
+    gitTree.ignoredInfluentialFiles.length !== 0
+  ) {
+    throw new Error("The prebuilt artifact manifest did not reject ignored build inputs.");
   }
   console.log(`Verified .vercel/output ${inspected.artifactSha256}.`);
   return recorded;

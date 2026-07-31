@@ -402,7 +402,8 @@ test.describe("00. Runtime smoke", () => {
   test("health and catalog endpoints report ready", async ({ request }) => {
     const health = await request.get("/api/health");
     expect(health.status()).toBe(200);
-    await expect(health.json()).resolves.toMatchObject({
+    const healthPayload = await health.json();
+    expect(healthPayload).toMatchObject({
       service: "interior-ai",
       status: "ok",
       checks: {
@@ -410,6 +411,20 @@ test.describe("00. Runtime smoke", () => {
         catalog: { status: "ok" },
       },
     });
+
+    const expectedBuildId = process.env.PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID;
+    const expectedArtifactSha256 =
+      process.env.PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256;
+    const expectedCommitSha = process.env.PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA;
+    if (expectedBuildId || expectedArtifactSha256 || expectedCommitSha) {
+      expect(healthPayload.productionArtifact).toEqual({
+        kind: "local-production-mode-artifact",
+        nextBuildId: expectedBuildId,
+        artifactSha256: expectedArtifactSha256,
+        sourceCommitSha: expectedCommitSha,
+      });
+      expect(healthPayload.build).toBe(expectedBuildId);
+    }
 
     const catalog = await request.get("/api/catalog/live");
     expect(catalog.status()).toBe(200);

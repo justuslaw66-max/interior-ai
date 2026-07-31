@@ -1,0 +1,136 @@
+# Production-equivalent artifact evidence
+
+Status: repository-controlled CH-0016 contract. This document describes local
+production-mode artifact evidence and required CI behavior. It does not describe
+or prove a Vercel deployment, stable staging, production, or external platform
+configuration.
+
+## Claim supported
+
+The evidence proves that one exact clean commit was installed with
+`npm ci --include=dev` (build tooling included from the committed lockfile),
+checked for generated surface-runtime drift, built once in strict staging or
+production mode, hashed, started with the production Next.js server, and tested
+without a development-server fallback. The Playwright JSON report identifies the
+same source commit, artifact SHA-256, and Next.js build ID returned by the running
+health endpoint.
+
+It does not claim bit-for-bit reproducibility across machines. It does not prove
+that Vercel, GitHub, OAuth, scheduler, or database controls are configured
+correctly. A local `next start` process also does not reproduce Vercel-specific
+edge, serverless, routing, networking, or project controls.
+
+## Canonical flow
+
+Run this only in a fresh clean checkout without `.env`, `.env.local`,
+`.env.production`, `.env.production.local`, or an existing `.next` directory.
+Supply required non-production configuration through the process environment;
+the evidence records required variable names and safe booleans, never values or
+an environment dump. `APP_ENV` and `NEXT_PUBLIC_APP_ENV` must match; an optional
+`VERCEL_ENV=preview` maps only to staging and `VERCEL_ENV=production` maps only
+to production.
+
+```sh
+PRODUCTION_EVIDENCE_CANDIDATE_ID='<immutable-candidate-id>' \
+APP_ENV=staging \
+CATALOG_STRICT_VALIDATION=true \
+npm run evidence:production:build
+
+npm run evidence:production:smoke
+npm run evidence:production:verify
+```
+
+`evidence:production:build` refuses a dirty tracked tree, any untracked source,
+an ignored file outside explicit generated dependency/build/evidence roots, an
+unresolved submodule, an influential local environment
+file, an existing build output, an unknown/development environment, a
+development-only QA/fixture flag, missing configuration shape, or non-strict
+catalog mode. It then runs the committed-lockfile install, the existing generated
+surface runtime check, one production build, and artifact hashing.
+
+`evidence:production:smoke` verifies the manifest before starting the app. Its
+Playwright configuration cannot reuse an existing listener and selects
+`npm run evidence:production:serve`, which re-verifies the artifact and invokes
+the unchanged `npm run start` production server. It never selects `npm run dev`.
+The health response must return the expected full commit, artifact SHA-256, and
+Next.js build ID before the runtime smoke can pass.
+
+The Playwright JSON is normalized so its repository-local configuration and
+test/output paths use `<repository-root>` rather than a machine path. Validation
+also checks the report's actual web-server command, URL, listener-reuse setting,
+process exit code, counts, metadata, secret-bearing fields/known values, and
+embedded SHA-256 identity.
+
+Generated output is written only under the ignored directory
+`.local/production-artifact-evidence/`:
+
+- `manifest.json`: canonical UTF-8 provenance manifest;
+- `manifest.json.sha256`: accidental-tamper sidecar for the exact manifest bytes;
+- `runtime-smoke.json`: Playwright JSON report bound to the manifest identity.
+
+The manifest is an automated report suitable for hashing into the existing
+Phase 15 signed release manifest. The sidecar is an integrity check, not a
+substitute for the product-owner signature required by the final release
+process.
+
+## Repository-controlled contract
+
+| Boundary | Required evidence |
+| --- | --- |
+| Source | Full commit SHA; branch/ref metadata when available; clean tracked and untracked status; clean submodules; no influential local environment or other ignored build-input files outside explicit generated roots. |
+| Dependencies | Exact `npm@11.6.2` package-manager declaration; `package-lock.json` v3 SHA-256; `node_modules/.package-lock.json` SHA-256 produced after `npm ci --include=dev`; Node/npm versions. |
+| Generated source | Existing surface-runtime generator `--check` completed before the build. This does not resolve CH-0013's separate schema, payload, or command-ownership work. |
+| Environment | Explicit `staging` or `production`; strict catalog validation; development QA/fixture flags disabled; required configuration names present; no values recorded. |
+| Build | One `npm run build`; production mode; UTC start/completion timestamps; nonempty `.next/BUILD_ID`. |
+| Artifact | Stable SHA-256 inventory of `.next` and `public`, excluding only named mutable Next cache/diagnostic paths; required manifests/server/static output present. |
+| Trace closure | Every `.nft.json` is parsed; positive trace/reference counts are required; missing, outside-repository, `.env`, Git, local evidence, Vercel metadata, private release-evidence, and test-result lexical or resolved paths are rejected; unique file and contained-directory contents are hashed. |
+| Test | Runtime smoke uses the verified production server; no listener reuse; process exit zero; expected tests greater than zero; zero failure, flaky, or skipped cases; canonical portable JSON paths, metadata, and health identity match the artifact. |
+| Integrity | Canonical manifest plus sidecar; current source/lock/install/artifact/trace/report hashes rechecked; stale source/artifact/report reuse rejected. |
+| Claim | `evidenceKind=local-production-mode-artifact`; `releaseReady=false`; `actualDeploymentVerified=false`; every external control remains `not_verified`. |
+
+The validator fails closed for a missing/malformed manifest, source or lockfile
+mismatch, dirty or untracked source, stale generated output, development mode,
+non-strict catalog mode, enabled test fixtures, missing build output, artifact or
+report tampering, trace gaps, a different build ID, zero/failed/flaky/skipped
+smoke or nonzero test process, non-UTC/stale timestamps, a mismatched same-artifact identity, secret-bearing
+fields, or a repository claim that marks an external control verified.
+
+## CI behavior and retention
+
+The required `stable-checks` job runs the negative-case contract test, performs
+the strict evidence build with shaped nonfunctional staging placeholders, runs
+runtime smoke against that exact artifact, validates it, and uploads
+`.local/production-artifact-evidence/` for 14 days. Placeholder configuration
+proves application configuration shape only; no external integration call or
+external-control claim follows from it. GitHub execution and artifact retention
+must be confirmed from an actual workflow run.
+
+The existing Vercel prebuilt path remains the owner for Build Output API
+deployment identity. Its source-tree inspection includes non-ignored untracked
+files and rejects ignored inputs outside explicit generated roots; pulled
+`.vercel` configuration remains an external platform boundary.
+Staging, certification, promotion, and cross-project production handling remain
+separately authorized external operations under
+`docs/qa/vercel-prebuilt-release.md`.
+
+## External verification checklist
+
+Repository evidence fixes none of the controls below. The responsible human or
+process must attach platform evidence without copying secrets.
+
+| Control | Platform | Expected state | Evidence required | Responsible role/process | Date/status |
+| --- | --- | --- | --- | --- | --- |
+| Deployment artifact and runtime configuration | Vercel | Recorded project/environment deploys the intended prebuilt output with approved configuration | Deployment ID/URL, project/environment ID, artifact comparison, build/runtime configuration fingerprint | Release engineering | Unverified |
+| Required workflow and retention | GitHub | Required checks, permissions, protected branches, immutable run identity, and retained evidence are approved | Workflow run URL/ID, commit, required-check settings, artifact digest and expiry | Repository administration | Unverified |
+| Redirects and credentials | OAuth provider | Approved non-production/production clients, redirects, scopes, and credential ownership | Provider project/client identifiers, reviewed redirect/scopes, verifier and timestamp | Identity/security owner | Unverified |
+| Background jobs | Scheduler | Approved identity, target, cadence, retry, and environment | Scheduler job ID/configuration evidence, target commit/deployment, verifier and timestamp | Operations owner | Unverified |
+| Target, migrations, access, backup | Database platform | Correct isolated target and approved access/backup/migration state | Non-secret instance/database ID, migration status/digest, access/backup evidence, verifier and timestamp | Database/release owner | Unverified |
+
+## Rollback
+
+Revert the focused CH-0016 implementation commit. That restores the previous
+lenient/dev CI behavior and is therefore a release-integrity rollback, not a
+recommended steady state. No schema, migration, dependency, persisted data,
+deployment, or external configuration rollback is involved. Generated
+`.local/production-artifact-evidence/` files are ignored and can be regenerated
+from the exact clean candidate.
