@@ -14,50 +14,29 @@ test.describe('7. Kelsey Marble Variant Integration', () => {
     await page.goto('/design');
     await page.waitForLoadState('domcontentloaded');
     const ready = await waitForCatalogReady(page);
-    if (!ready) {
-      test.info().annotations.push({
-        type: 'note',
-        description: 'Skipping Kelsey dropdown assertion because catalog controls were unavailable',
-      });
-      return;
-    }
+    expect(ready, 'catalog controls must be available for the required Kelsey gate').toBeTruthy();
 
     // Select the Kelsey family first, then validate the product picker options.
     const hasKelseyFamily = await selectImportedFamilyByHint(page, 'kelsey');
-    if (!hasKelseyFamily) {
-      test.info().annotations.push({
-        type: 'note',
-        description: 'Skipping Kelsey dropdown assertion because Kelsey family option was unavailable in this runtime',
-      });
-      return;
-    }
+    expect(hasKelseyFamily, 'Kelsey family must be present in the required catalog fixture').toBeTruthy();
 
     const select = await getImportedProductSelect(page);
-    if (!select) return;
+    expect(select, 'imported product selector must be available').not.toBeNull();
+    if (!select) throw new Error('imported product selector must be available');
 
-    const hasBothKelseySizes = await expect
+    await expect
       .poll(async () => {
         const optionTexts = await select.locator('option').allTextContents().catch(() => [] as string[]);
         const has160 = optionTexts.some((t) => t.toLowerCase().includes('kelsey') && t.includes('160'));
         const has180 = optionTexts.some((t) => t.toLowerCase().includes('kelsey') && t.includes('180'));
         return has160 && has180;
       }, { timeout: 20000 })
-      .toBeTruthy()
-      .then(() => true)
-      .catch(() => false);
-
-    if (!hasBothKelseySizes) {
-      test.info().annotations.push({
-        type: 'note',
-        description: 'Skipping Kelsey size option assertion because Kelsey products were not available in this runtime',
-      });
-      return;
-    }
+      .toBeTruthy();
   });
 
   test('API returns White Wash and Dark Walnut variants for both Kelsey sizes', async ({ request }) => {
     // The imported-model route can briefly return non-200 while runtime services warm up in CI.
-    const endpointReady = await expect
+    await expect
       .poll(async () => {
         try {
           const response = await request.get('http://localhost:3000/api/models/imported');
@@ -68,17 +47,7 @@ test.describe('7. Kelsey Marble Variant Integration', () => {
           return false;
         }
       }, { timeout: 45000 })
-      .toBeTruthy()
-      .then(() => true)
-      .catch(() => false);
-
-    if (!endpointReady) {
-      test.info().annotations.push({
-        type: 'note',
-        description: 'Skipping Kelsey imported-model API assertions because /api/models/imported stayed unavailable in this runtime',
-      });
-      return;
-    }
+      .toBeTruthy();
 
     // Verify the live imported-model API exposes both Kelsey models and their variant lists.
     const response = await request.get('http://localhost:3000/api/models/imported');
@@ -110,37 +79,32 @@ test.describe('7. Kelsey Marble Variant Integration', () => {
     await page.goto('/design');
     await page.waitForLoadState('domcontentloaded');
     const ready = await waitForCatalogReady(page);
-    if (!ready) {
-      test.info().annotations.push({
-        type: 'note',
-        description: 'Skipping Kelsey swatch assertions because catalog controls were unavailable',
-      });
-      return;
-    }
+    expect(ready, 'catalog controls must be available for the required Kelsey gate').toBeTruthy();
 
     // Select Kelsey family first so product options include Kelsey variants.
     const familySelected = await selectImportedFamilyByHint(page, 'kelsey');
-    if (!familySelected) return;
+    expect(familySelected, 'Kelsey family must be selectable').toBeTruthy();
 
     const kelsey160Value = await findImportedProductValue(
       page,
       (label) => label.toLowerCase().includes('kelsey') && label.includes('160'),
     );
-    if (!kelsey160Value) return; // not seeded — skip gracefully
+    expect(kelsey160Value, 'Kelsey 160 must be present in the required catalog fixture').not.toBeNull();
+    if (!kelsey160Value) throw new Error('Kelsey 160 must be present in the required catalog fixture');
 
     const selected = await selectImportedProductById(page, kelsey160Value);
-    if (!selected) return;
+    expect(selected, 'Kelsey 160 must be selectable').toBeTruthy();
 
     const added = await addImportedProductIfReady(page);
-    if (!added) return;
+    expect(added, 'Kelsey 160 must be addable to the room').toBeTruthy();
 
     const selectedItem = await ensureItemSelectedForVariants(page);
-    if (!selectedItem) return;
+    expect(selectedItem, 'the placed Kelsey item must be selectable').toBeTruthy();
 
     // Check for variant swatch panel; skip if item not selectable
     const swatches = page.locator('[data-testid^="variant-swatch-"]');
     const swatchCount = await swatches.count();
-    if (swatchCount === 0) return;
+    expect(swatchCount, 'the selected Kelsey item must expose variant swatches').toBeGreaterThan(0);
 
     // Verify label presence
     const labels = await swatches.allTextContents();
@@ -156,7 +120,8 @@ test.describe('7. Kelsey Marble Variant Integration', () => {
         break;
       }
     }
-    if (!darkWalnutSwatch) return;
+    expect(darkWalnutSwatch, 'Dark Walnut swatch must be present').not.toBeNull();
+    if (!darkWalnutSwatch) throw new Error('Dark Walnut swatch must be present');
 
     const beforeAttr = await darkWalnutSwatch.getAttribute('data-active');
     await darkWalnutSwatch.click();

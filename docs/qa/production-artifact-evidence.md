@@ -59,7 +59,10 @@ The Playwright JSON is normalized so its repository-local configuration and
 test/output paths use `<repository-root>` rather than a machine path. Validation
 also checks the report's actual web-server command, URL, listener-reuse setting,
 process exit code, counts, metadata, secret-bearing fields/known values, and
-embedded SHA-256 identity.
+embedded SHA-256 identity. CH-0017 additionally validates the two stable runtime
+requirement identities, the Chromium project, unfiltered configuration,
+`forbidOnly`, per-test execution, and aggregate/per-test agreement through the
+canonical required-test manifest.
 
 Generated output is written only under the ignored directory
 `.local/production-artifact-evidence/`:

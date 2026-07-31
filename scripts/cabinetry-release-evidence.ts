@@ -263,7 +263,45 @@ export const EXPECTED_RELEASE_EVIDENCE_RECORD_COUNT =
   REQUIRED_TEMPLATE_CHECKS.length +
   REQUIRED_RELEASE_GATES.length;
 
-export const REQUIRED_CABINETRY_BROWSER_TEST_COUNT = 18;
+type RequiredBrowserTestIdentity = {
+  id: string;
+  file: string;
+  title: string;
+};
+
+const requiredTestManifest = JSON.parse(
+  readFileSync(resolve(process.cwd(), "scripts/required-test-manifest.json"), "utf8")
+) as {
+  gates?: Array<{
+    id?: unknown;
+    command?: unknown;
+    maxAgeMinutes?: unknown;
+    requiredTests?: unknown;
+  }>;
+};
+const cabinetryBrowserGate = requiredTestManifest.gates?.find(
+  (gate) => gate.id === "release.cabinetry-browser"
+);
+if (!Array.isArray(cabinetryBrowserGate?.requiredTests)) {
+  throw new Error("Required-test manifest is missing release.cabinetry-browser identities.");
+}
+if (typeof cabinetryBrowserGate.command !== "string") {
+  throw new Error("Required-test manifest is missing the cabinetry browser command.");
+}
+if (
+  typeof cabinetryBrowserGate.maxAgeMinutes !== "number" ||
+  !Number.isFinite(cabinetryBrowserGate.maxAgeMinutes) ||
+  cabinetryBrowserGate.maxAgeMinutes <= 0
+) {
+  throw new Error("Required-test manifest is missing cabinetry evidence freshness.");
+}
+const REQUIRED_CABINETRY_BROWSER_COMMAND = cabinetryBrowserGate.command;
+const REQUIRED_CABINETRY_BROWSER_MAX_AGE_MS =
+  cabinetryBrowserGate.maxAgeMinutes * 60 * 1000;
+export const REQUIRED_CABINETRY_BROWSER_TESTS =
+  cabinetryBrowserGate.requiredTests as RequiredBrowserTestIdentity[];
+export const REQUIRED_CABINETRY_BROWSER_TEST_COUNT =
+  REQUIRED_CABINETRY_BROWSER_TESTS.length;
 
 export const REQUIRED_ANALYTICS_EVENTS = {
   consumer: [
@@ -324,6 +362,7 @@ export const ARTIFACT_KINDS = [
   "screen_recording",
   "screenshot",
   "session_notes",
+  "required_test_evidence",
   "playwright_report",
   "analytics_capture",
   ...REQUIRED_FABRICATOR_ARTIFACT_KINDS,
@@ -397,6 +436,7 @@ const DetailsSchema = z
         passed: z.number().int().nonnegative(),
         failed: z.number().int().nonnegative(),
         skipped: z.number().int().nonnegative(),
+        requiredTestEvidenceArtifactPath: nonBlank,
         reportArtifactPath: nonBlank,
       })
       .strict()
@@ -447,6 +487,7 @@ const EvidenceSchema = z
       .object({
         releaseCandidateId: nonBlank,
         commit: commitSha,
+        artifactSha256: sha256,
         environment: nonBlank,
         baseUrl: z.string().url(),
       })
@@ -547,6 +588,7 @@ export const CabinetryReleaseEvidenceSchema = z
       .object({
         id: nonBlank.nullable(),
         buildCommit: commitSha.nullable(),
+        artifactSha256: sha256.nullable(),
         environment: nonBlank.nullable(),
         baseUrl: z.string().url().nullable(),
       })
@@ -845,6 +887,7 @@ function validateEvidenceCommon(
   if (
     !release.releaseCandidate.id ||
     !release.releaseCandidate.buildCommit ||
+    !release.releaseCandidate.artifactSha256 ||
     !release.releaseCandidate.environment ||
     !release.releaseCandidate.baseUrl
   ) {
@@ -855,6 +898,14 @@ function validateEvidenceCommon(
     }
     if (evidence.build.commit !== release.releaseCandidate.buildCommit) {
       addIssue(issues, "error", `${path}.build.commit`, "does not match release candidate commit");
+    }
+    if (evidence.build.artifactSha256 !== release.releaseCandidate.artifactSha256) {
+      addIssue(
+        issues,
+        "error",
+        `${path}.build.artifactSha256`,
+        "does not match release candidate artifact"
+      );
     }
     if (evidence.build.environment !== release.releaseCandidate.environment) {
       addIssue(issues, "error", `${path}.build.environment`, "does not match release candidate environment");
@@ -1075,7 +1126,16 @@ type PlaywrightJsonSuite = {
 function collectPlaywrightSpecs(
   suites: unknown,
   inheritedFile: string | null,
-  result: Array<{ file: string; title: string; ok: boolean; skipped: boolean; executed: boolean }>
+  result: Array<{
+    file: string;
+    title: string;
+    project: string;
+    ok: boolean;
+    skipped: boolean;
+    executed: boolean;
+    retried: boolean;
+    annotated: boolean;
+  }>
 ) {
   if (!Array.isArray(suites)) return;
   for (const rawSuite of suites) {
@@ -1094,13 +1154,40 @@ function collectPlaywrightSpecs(
         const file = typeof spec.file === "string" ? spec.file : suiteFile ?? "";
         const tests = Array.isArray(spec.tests) ? spec.tests : [];
         const statuses = tests.map((test) => {
-          if (!test || typeof test !== "object") return { declared: "", final: "" };
-          const testObject = test as { status?: unknown; results?: unknown };
+          if (!test || typeof test !== "object") {
+            return { declared: "", final: "", project: "", retried: false, annotated: false };
+          }
+          const testObject = test as {
+            status?: unknown;
+            projectName?: unknown;
+            projectId?: unknown;
+            annotations?: unknown;
+            results?: unknown;
+          };
           const results = Array.isArray(testObject.results) ? testObject.results : [];
-          const last = results[results.length - 1] as { status?: unknown } | undefined;
+          const last = results[results.length - 1] as {
+            status?: unknown;
+            retry?: unknown;
+            annotations?: unknown;
+          } | undefined;
           return {
             declared: typeof testObject.status === "string" ? testObject.status : "",
             final: typeof last?.status === "string" ? last.status : "",
+            project:
+              typeof testObject.projectName === "string"
+                ? testObject.projectName
+                : typeof testObject.projectId === "string"
+                  ? testObject.projectId
+                  : "",
+            retried:
+              results.length > 1 ||
+              results.some((entry) => {
+                const retry = (entry as { retry?: unknown })?.retry;
+                return typeof retry === "number" && retry > 0;
+              }),
+            annotated:
+              (Array.isArray(testObject.annotations) && testObject.annotations.length > 0) ||
+              (Array.isArray(last?.annotations) && last.annotations.length > 0),
           };
         });
         const skipped =
@@ -1111,17 +1198,64 @@ function collectPlaywrightSpecs(
           spec.ok === true &&
           statuses.length > 0 &&
           statuses.every(({ declared, final }) => declared === "expected" && final === "passed");
-        result.push({
-          file,
-          title: typeof spec.title === "string" ? spec.title : "",
-          ok,
-          skipped,
-          executed,
-        });
+        for (const status of statuses) {
+          result.push({
+            file,
+            title: typeof spec.title === "string" ? spec.title : "",
+            project: status.project,
+            ok,
+            skipped,
+            executed,
+            retried: status.retried,
+            annotated: status.annotated,
+          });
+        }
       }
     }
     collectPlaywrightSpecs(suite.suites, suiteFile, result);
   }
+}
+
+function collectSecretReportFields(value: unknown, currentPath = "report", result: string[] = []) {
+  if (Array.isArray(value)) {
+    value.forEach((entry, index) =>
+      collectSecretReportFields(entry, `${currentPath}[${index}]`, result)
+    );
+  } else if (value && typeof value === "object") {
+    for (const [key, child] of Object.entries(value)) {
+      const childPath = `${currentPath}.${key}`;
+      if (/(secret|token|password|private.?key|cookie|database.?url|credential)/i.test(key)) {
+        result.push(childPath);
+      }
+      collectSecretReportFields(child, childPath, result);
+    }
+  }
+  return result;
+}
+
+function collectMachineLocalReportFields(
+  value: unknown,
+  currentPath = "report",
+  result: string[] = []
+) {
+  if (typeof value === "string") {
+    if (
+      /(?:^|[\s"'(])(?:\/(?:Users|home)\/[^/\s]+\/|\/(?:tmp|var\/tmp)\/|\/private\/(?:tmp|var)\/|\/var\/folders\/|[A-Za-z]:[\\/](?:Users|Temp)[\\/])/i.test(
+        value
+      )
+    ) {
+      result.push(currentPath);
+    }
+  } else if (Array.isArray(value)) {
+    value.forEach((entry, index) =>
+      collectMachineLocalReportFields(entry, `${currentPath}[${index}]`, result)
+    );
+  } else if (value && typeof value === "object") {
+    for (const [key, child] of Object.entries(value)) {
+      collectMachineLocalReportFields(child, `${currentPath}.${key}`, result);
+    }
+  }
+  return result;
 }
 
 function validateBrowserGate(
@@ -1136,11 +1270,87 @@ function validateBrowserGate(
   requireOnlyDetail(evidence, "browserSuite", path, issues);
   const suite = evidence.details.browserSuite;
   if (!suite) return;
-  if (/--list(?:\s|$)/.test(suite.command)) {
-    addIssue(issues, "error", `${path}.details.browserSuite.command`, "test discovery is not execution");
+  if (suite.command !== REQUIRED_CABINETRY_BROWSER_COMMAND) {
+    addIssue(issues, "error", `${path}.details.browserSuite.command`, "must match the canonical required-test command");
   }
-  if (!/playwright\s+test/.test(suite.command) || !/cabinetry-studio\.spec\.ts/.test(suite.command)) {
-    addIssue(issues, "error", `${path}.details.browserSuite.command`, "must execute the cabinetry Playwright spec");
+  const requiredEvidenceArtifact = findArtifact(
+    evidence,
+    "required_test_evidence",
+    suite.requiredTestEvidenceArtifactPath,
+    path,
+    issues
+  );
+  if (!requiredEvidenceArtifact) return;
+  const requiredEvidenceContent = readVerifiedArtifact(
+    requiredEvidenceArtifact,
+    repositoryRoot,
+    `${path}.requiredTestEvidence`,
+    issues
+  );
+  if (!requiredEvidenceContent) return;
+  let requiredEvidence: {
+    schema?: unknown;
+    gateId?: unknown;
+    command?: unknown;
+    sourceCommitSha?: unknown;
+    artifactSha256?: unknown;
+    processExitCode?: unknown;
+    startedAt?: unknown;
+    completedAt?: unknown;
+    report?: { path?: unknown; sha256?: unknown };
+    result?: unknown;
+    diagnostics?: unknown;
+  };
+  try {
+    requiredEvidence = JSON.parse(requiredEvidenceContent.toString("utf8")) as typeof requiredEvidence;
+  } catch {
+    addIssue(issues, "error", `${path}.requiredTestEvidence`, "required-test evidence is not valid JSON");
+    return;
+  }
+  if (
+    requiredEvidence.schema !== "interior-ai.required-test-evidence.v1" ||
+    requiredEvidence.gateId !== "release.cabinetry-browser" ||
+    requiredEvidence.command !== REQUIRED_CABINETRY_BROWSER_COMMAND ||
+    requiredEvidence.sourceCommitSha !== evidence.build.commit ||
+    requiredEvidence.artifactSha256 !== evidence.build.artifactSha256 ||
+    requiredEvidence.processExitCode !== 0 ||
+    requiredEvidence.result !== "passed" ||
+    !Array.isArray(requiredEvidence.diagnostics) ||
+    requiredEvidence.diagnostics.length !== 0
+  ) {
+    addIssue(
+      issues,
+      "blocker",
+      `${path}.requiredTestEvidence`,
+      "must be a passing process-captured envelope for the exact source and artifact"
+    );
+  }
+  const processStartedAt = Date.parse(String(requiredEvidence.startedAt ?? ""));
+  const processCompletedAt = Date.parse(String(requiredEvidence.completedAt ?? ""));
+  const observedStartedAt = Date.parse(evidence.timing.startedAt);
+  const observedCompletedAt = Date.parse(evidence.timing.completedAt);
+  if (
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(
+      String(requiredEvidence.startedAt ?? "")
+    ) ||
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(
+      String(requiredEvidence.completedAt ?? "")
+    ) ||
+    !Number.isFinite(processStartedAt) ||
+    !Number.isFinite(processCompletedAt) ||
+    processCompletedAt < processStartedAt ||
+    processCompletedAt - processStartedAt > REQUIRED_CABINETRY_BROWSER_MAX_AGE_MS ||
+    Date.now() - processCompletedAt > REQUIRED_CABINETRY_BROWSER_MAX_AGE_MS ||
+    processCompletedAt > Date.now() + 5 * 60 * 1000 ||
+    processStartedAt < observedStartedAt - 1000 ||
+    processCompletedAt > observedCompletedAt + 1000
+  ) {
+    addIssue(
+      issues,
+      "blocker",
+      `${path}.requiredTestEvidence`,
+      "process timestamps must be valid and contained by the observed browser-run interval"
+    );
   }
   const artifact = findArtifact(
     evidence,
@@ -1150,6 +1360,17 @@ function validateBrowserGate(
     issues
   );
   if (!artifact) return;
+  if (
+    requiredEvidence.report?.path !== artifact.path ||
+    requiredEvidence.report?.sha256 !== artifact.sha256
+  ) {
+    addIssue(
+      issues,
+      "blocker",
+      `${path}.requiredTestEvidence.report`,
+      "must bind the attached Playwright report path and SHA-256"
+    );
+  }
   const content = readVerifiedArtifact(artifact, repositoryRoot, `${path}.playwrightReport`, issues);
   if (!content) return;
   let report: unknown;
@@ -1164,13 +1385,146 @@ function validateBrowserGate(
     return;
   }
   const reportObject = report as {
+    config?: unknown;
     suites?: unknown;
     errors?: unknown;
+    stats?: unknown;
   };
+  const secretReportFields = collectSecretReportFields(reportObject);
+  if (secretReportFields.length > 0) {
+    addIssue(
+      issues,
+      "blocker",
+      `${path}.playwrightReport`,
+      `contains secret-bearing fields: ${secretReportFields.join(", ")}`
+    );
+  }
+  const machineLocalReportFields = collectMachineLocalReportFields(reportObject);
+  if (machineLocalReportFields.length > 0) {
+    addIssue(
+      issues,
+      "blocker",
+      `${path}.playwrightReport`,
+      `contains machine-local paths: ${machineLocalReportFields.join(", ")}`
+    );
+  }
+  const reportStats = reportObject.stats as {
+    startTime?: unknown;
+    duration?: unknown;
+  } | undefined;
+  const reportStartTime = Date.parse(String(reportStats?.startTime ?? ""));
+  const reportDuration = reportStats?.duration;
+  const reportEndTime =
+    typeof reportDuration === "number" ? reportStartTime + reportDuration : Number.NaN;
+  if (
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(
+      String(reportStats?.startTime ?? "")
+    ) ||
+    !Number.isFinite(reportStartTime) ||
+    typeof reportDuration !== "number" ||
+    reportDuration < 0 ||
+    reportStartTime < processStartedAt - 1000 ||
+    reportEndTime > processCompletedAt + 1000 ||
+    Date.now() - reportEndTime > REQUIRED_CABINETRY_BROWSER_MAX_AGE_MS
+  ) {
+    addIssue(
+      issues,
+      "blocker",
+      `${path}.playwrightReport.stats`,
+      "report timing must be canonical, fresh, and contained by the captured process interval"
+    );
+  }
   if (Array.isArray(reportObject.errors) && reportObject.errors.length > 0) {
     addIssue(issues, "blocker", `${path}.playwrightReport.errors`, "Playwright report contains top-level errors");
   }
-  const specs: Array<{ file: string; title: string; ok: boolean; skipped: boolean; executed: boolean }> = [];
+  const config = reportObject.config as {
+    configFile?: unknown;
+    rootDir?: unknown;
+    forbidOnly?: unknown;
+    grep?: unknown;
+    grepInvert?: unknown;
+    shard?: unknown;
+    projects?: unknown;
+    metadata?: unknown;
+  } | undefined;
+  const configFile = String(config?.configFile ?? "").replace(/\\/g, "/");
+  const rootDir = String(config?.rootDir ?? "").replace(/\\/g, "/");
+  if (
+    !(
+      configFile === "<repository-root>/playwright.config.ts" ||
+      configFile === "playwright.config.ts"
+    ) ||
+    !(rootDir === "<repository-root>/tests/e2e" || rootDir === "tests/e2e")
+  ) {
+    addIssue(
+      issues,
+      "blocker",
+      `${path}.playwrightReport.config`,
+      "must identify the canonical Playwright configuration and test root"
+    );
+  }
+  const projectConfigs = Array.isArray(config?.projects)
+    ? config.projects.map(
+        (project) =>
+          project as { name?: unknown; retries?: unknown; repeatEach?: unknown }
+      )
+    : [];
+  const projects = projectConfigs.map((project) => project.name);
+  if (
+    config?.forbidOnly !== true ||
+    (config?.grep && Object.keys(config.grep as object).length > 0) ||
+    config?.grepInvert != null ||
+    config?.shard != null ||
+    projects.length !== 1 ||
+    projects[0] !== "chromium" ||
+    projectConfigs[0]?.retries !== 0 ||
+    projectConfigs[0]?.repeatEach !== 1
+  ) {
+    addIssue(
+      issues,
+      "blocker",
+      `${path}.playwrightReport.config`,
+      "must forbid focused tests and execute the unfiltered Chromium project"
+    );
+  }
+  const metadata = config?.metadata as {
+    gateA3ReleaseBaseURL?: unknown;
+    requiredTestEvidence?: {
+      schema?: unknown;
+      gateId?: unknown;
+      sourceCommitSha?: unknown;
+      artifactSha256?: unknown;
+      releaseCandidateId?: unknown;
+      releaseEnvironment?: unknown;
+    };
+  } | undefined;
+  const reportIdentity = metadata?.requiredTestEvidence;
+  if (
+    reportIdentity?.schema !== "interior-ai.required-test-evidence.v1" ||
+    reportIdentity?.gateId !== "release.cabinetry-browser" ||
+    reportIdentity?.sourceCommitSha !== evidence.build.commit ||
+    reportIdentity?.artifactSha256 !== evidence.build.artifactSha256 ||
+    reportIdentity?.releaseCandidateId !== evidence.build.releaseCandidateId ||
+    reportIdentity?.releaseEnvironment !== evidence.build.environment ||
+    metadata?.gateA3ReleaseBaseURL !== evidence.build.baseUrl
+  ) {
+    addIssue(
+      issues,
+      "blocker",
+      `${path}.playwrightReport.config.metadata`,
+      "must identify the exact release candidate commit, environment, and base URL"
+    );
+  }
+  const specs: Array<{
+    file: string;
+    title: string;
+    project: string;
+    ok: boolean;
+    skipped: boolean;
+    executed: boolean;
+    retried: boolean;
+    annotated: boolean;
+  }> = [];
   collectPlaywrightSpecs(reportObject.suites, null, specs);
   const currentSpecs = specs.filter((spec) => {
     const normalizedFile = spec.file.replace(/\\/g, "/");
@@ -1188,19 +1542,27 @@ function validateBrowserGate(
   const executed = currentSpecs.filter((spec) => spec.executed).length;
   const passed = currentSpecs.filter((spec) => spec.ok).length;
   const failed = currentSpecs.filter((spec) => spec.executed && !spec.ok).length;
-  if (
-    discovered < REQUIRED_CABINETRY_BROWSER_TEST_COUNT ||
-    discovered !== currentSpecs.length
-  ) {
+  const requiredTitles = new Set(REQUIRED_CABINETRY_BROWSER_TESTS.map((test) => test.title));
+  const missingRequirements = REQUIRED_CABINETRY_BROWSER_TESTS.filter(
+    (test) => !currentSpecs.some((spec) => spec.title === test.title && spec.project === "chromium")
+  );
+  const unexpectedTitles = [...uniqueTitles].filter((title) => !requiredTitles.has(title));
+  if (missingRequirements.length > 0 || unexpectedTitles.length > 0 || discovered !== currentSpecs.length) {
     addIssue(
       issues,
       "blocker",
       `${path}.playwrightReport.suites`,
-      `requires at least ${REQUIRED_CABINETRY_BROWSER_TEST_COUNT} unique current cabinetry tests`
+      `required cabinetry identities differ (missing: ${missingRequirements.map((test) => test.id).join(", ") || "none"}; unexpected: ${unexpectedTitles.join(", ") || "none"})`
     );
   }
-  if (executed !== discovered || passed !== discovered || failed !== 0 || skipped !== 0) {
-    addIssue(issues, "blocker", `${path}.playwrightReport.suites`, "all discovered cabinetry tests must execute and pass without skips");
+  if (
+    executed !== discovered ||
+    passed !== discovered ||
+    failed !== 0 ||
+    skipped !== 0 ||
+    currentSpecs.some((spec) => spec.retried || spec.annotated)
+  ) {
+    addIssue(issues, "blocker", `${path}.playwrightReport.suites`, "all required cabinetry tests must execute once and pass without skips, retries, or annotations");
   }
   const declared = {
     discovered: suite.discovered,
@@ -1212,6 +1574,25 @@ function validateBrowserGate(
   const parsedCounts = { discovered, executed, passed, failed, skipped };
   if (JSON.stringify(declared) !== JSON.stringify(parsedCounts)) {
     addIssue(issues, "error", `${path}.details.browserSuite`, "declared counts do not match the hashed Playwright report");
+  }
+  const aggregate = reportObject.stats as {
+    expected?: unknown;
+    skipped?: unknown;
+    unexpected?: unknown;
+    flaky?: unknown;
+  };
+  if (
+    aggregate.expected !== passed ||
+    aggregate.skipped !== skipped ||
+    aggregate.unexpected !== failed ||
+    aggregate.flaky !== 0
+  ) {
+    addIssue(
+      issues,
+      "blocker",
+      `${path}.playwrightReport.stats`,
+      "aggregate statistics do not match the parsed cabinetry test results"
+    );
   }
 }
 

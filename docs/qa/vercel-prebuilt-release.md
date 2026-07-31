@@ -53,25 +53,31 @@ that output via `vercel deploy --prebuilt --prod --skip-domain`.
 
 ## Certify and promote
 
-Run the full Playwright suite against the HTTPS URL recorded in
-`.vercel/staged-deployment.json`, with JSON reporting enabled. Then bind that
-passing report to the deployment and artifact:
+Run the canonical required-test wrapper against the HTTPS URL recorded in
+`.vercel/staged-deployment.json`. Supply the verified prebuilt artifact SHA-256;
+the wrapper deletes stale output, preserves the Playwright process status, and
+binds the full checked-in spec inventory plus its JSON report to the source and
+artifact. Then bind that evidence to the deployment:
 
 ```sh
 PLAYWRIGHT_RELEASE_BASE_URL='https://staged.example.vercel.app' \
-PLAYWRIGHT_JSON_OUTPUT_FILE='.vercel/gate-a3-playwright.json' \
-  npx playwright test --reporter=json
+REQUIRED_TEST_ARTIFACT_SHA256='<sha256 from .vercel/prebuilt-manifest.json>' \
+  npm run test:e2e:release
 
 GATE_A3_CERTIFIED_DEPLOYMENT_URL='https://staged.example.vercel.app' \
-GATE_A3_ALLOWED_SKIPPED='0' \
-  npm run release:vercel:certify -- .vercel/gate-a3-playwright.json
+  npm run release:vercel:certify -- \
+  .vercel/gate-a3-required-test-evidence.json
 
 npm run release:vercel:promote
 ```
 
-Certification rejects unexpected or flaky tests and requires the exact reviewed
-skip count (zero by default). It also verifies that the JSON report metadata
-identifies the recorded staged URL. Promotion re-hashes `.vercel/output` and
-requires the manifest, staged deployment, and certification to identify the
-same artifact and deployment URL. Do not run `vercel deploy` again between
+Certification rejects a nonzero test process, focus/filter/shard execution,
+missing required specs/projects, skips, retries, flakes, failures, annotations,
+not-run tests, aggregate/per-test disagreement, stale or malformed evidence,
+dirty release source, and source/artifact/URL mismatch. Promotion re-hashes
+`.vercel/output`, re-reads and hashes the recorded required-test envelope,
+revalidates its current report and freshness, and requires the manifest, staged
+deployment, certification, envelope, and report to identify the same source,
+artifact, and deployment URL. Editing or substituting only the certification
+JSON cannot bypass this check. Do not run `vercel deploy` again between
 certification and promotion.

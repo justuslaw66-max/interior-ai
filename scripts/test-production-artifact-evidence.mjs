@@ -124,9 +124,15 @@ async function fixture({ environmentOverrides = {} } = {}) {
     config: {
       configFile: path.join(root, "playwright.config.ts"),
       rootDir: path.join(root, "tests/e2e"),
+      forbidOnly: true,
+      grep: {},
+      grepInvert: null,
+      shard: null,
       projects: [
         {
           name: "chromium",
+          retries: 0,
+          repeatEach: 1,
           outputDir: path.join(root, ".local/production-artifact-evidence/playwright-output"),
           testDir: path.join(root, "tests/e2e"),
           snapshotDir: null,
@@ -148,7 +154,51 @@ async function fixture({ environmentOverrides = {} } = {}) {
         },
       },
     },
-    stats: { expected: 2, skipped: 0, unexpected: 0, flaky: 0 },
+    suites: [
+      {
+        title: "00-runtime-smoke.spec.ts",
+        file: "00-runtime-smoke.spec.ts",
+        specs: [
+          {
+            title: "furnished template remains stable without a render loop",
+            file: "00-runtime-smoke.spec.ts",
+            ok: true,
+            tests: [
+              {
+                projectId: "chromium",
+                projectName: "chromium",
+                status: "expected",
+                annotations: [],
+                results: [{ status: "passed", retry: 0, annotations: [] }],
+              },
+            ],
+          },
+          {
+            title: "health and catalog endpoints report ready",
+            file: "00-runtime-smoke.spec.ts",
+            ok: true,
+            tests: [
+              {
+                projectId: "chromium",
+                projectName: "chromium",
+                status: "expected",
+                annotations: [],
+                results: [{ status: "passed", retry: 0, annotations: [] }],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    errors: [],
+    stats: {
+      startTime: "2026-07-31T00:00:04.500Z",
+      duration: 400,
+      expected: 2,
+      skipped: 0,
+      unexpected: 0,
+      flaky: 0,
+    },
   };
   write(root, reportPath, `${JSON.stringify(report, null, 2)}\n`);
   canonicalizeProductionEvidenceReport(root, reportPath);
@@ -415,6 +465,35 @@ await assert.rejects(
     manifest.repositoryEvidence.status = "failed";
   });
   await expectRejected(context, "critical production smoke contains skipped tests");
+}
+
+{
+  const context = await fixture();
+  const report = JSON.parse(readFileSync(path.join(context.root, context.reportPath), "utf8"));
+  report.config.forbidOnly = false;
+  write(context.root, context.reportPath, `${JSON.stringify(report, null, 2)}\n`);
+  await expectRejected(context, "focused .only execution is forbidden");
+}
+
+{
+  const context = await fixture();
+  const report = JSON.parse(readFileSync(path.join(context.root, context.reportPath), "utf8"));
+  report.suites[0].specs.pop();
+  report.stats.expected = 1;
+  write(context.root, context.reportPath, `${JSON.stringify(report, null, 2)}\n`);
+  await expectRejected(context, "requirement runtime.health-catalog-ready is missing");
+}
+
+{
+  const context = await fixture();
+  const report = JSON.parse(readFileSync(path.join(context.root, context.reportPath), "utf8"));
+  report.config.projects[0].name = "webkit";
+  report.suites[0].specs.forEach((spec) => {
+    spec.tests[0].projectId = "webkit";
+    spec.tests[0].projectName = "webkit";
+  });
+  write(context.root, context.reportPath, `${JSON.stringify(report, null, 2)}\n`);
+  await expectRejected(context, "required project chromium is missing");
 }
 
 {

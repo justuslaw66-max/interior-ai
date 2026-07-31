@@ -19,18 +19,18 @@ These should be deterministic and blocking:
 3. `npm run lint -- --max-warnings=0`;
 4. `npm run typecheck` and proposed `npm run typecheck:e2e`;
 5. `npx prisma validate`;
-6. proposed test-manifest audit and server/client import-boundary check;
+6. `npm run test:required-test-truthfulness` for the implemented CH-0017 manifest/report contract, plus the still-proposed server/client import-boundary check;
 7. `npm run test:design-page-cleanup`;
 8. `npm run verify:design-persistence`;
-9. `npm run test:auth-env-hardening` plus `npm run test:phase7-security-boundaries`;
-10. `npm run test:floor-plan-required`, amended to include `test:floor-plan-live-progress`;
+9. `npm run test:auth-env-hardening` plus `npm run test:critical-required`, which includes Phase 7, persistence, Stripe, Phase 14/15, Consumer/Pro, and cabinetry contracts;
+10. `npm run test:floor-plan-required`, now including `test:floor-plan-live-progress`;
 11. `npm run test:designer-theme-contrast` and `npm run test:cabinetry-preview-renderer`;
 12. generated surface `--check` and surface schema test through named package commands;
 13. `npm run assets:inventory:strict`;
 14. `npm run test:catalog-audit` and `npm run test:catalog-asset-availability`;
 15. strict staging-equivalent `npm run build`.
 
-The complete `verify:cabinetry` and all floor-plan subgroups need not run redundantly if the manifests prove the same commands are included. The manifest should emit an expanded command report so coverage is inspectable.
+The implemented manifest recursively proves the named package umbrellas reach their required test sources. The complete `verify:cabinetry` and floor-plan subgroups therefore run once through their canonical required owners rather than being duplicated as separate CI steps.
 
 ### Risk-triggered required checks
 
@@ -82,7 +82,7 @@ Add named commands (names illustrative but should remain stable once introduced)
 - `generate:surface-material-runtime`: write generated source;
 - `check:surface-material-runtime`: run generator in `--check` mode;
 - `test:surface-material-schema`: validate all authoring YAML;
-- `check:test-manifest`: every `scripts/test-*`/E2E file classified;
+- `test:required-test-truthfulness`: implemented classification and fail-closed evidence audit for every `scripts/test-*`/E2E file;
 - `check:migration-digest`: ordered directories, checksums, schema and evidence match;
 - `check:catalog-projections`: authoring source and immutable client/server projections match selected policy.
 
@@ -123,6 +123,16 @@ Keep the existing no-cycle checks and add:
 Architecture limits are not style goals by themselves. A module can remain large when it is generated/data or a cohesive algorithm with strong tests. Behavior-heavy, high-churn, multi-owner functions are the extraction priority.
 
 ## Test-result truthfulness
+
+CH-0017 implements this policy in `scripts/required-test-manifest.json` and
+`scripts/required-test-truthfulness.mjs`. The manifest currently locks 245
+script-test paths, 98 Playwright spec paths, 14 imported browser-module paths,
+8 imported cabinetry script-test module paths, and 21 merge/release/advisory gates. It also locks split-suite
+registrations, recursive package-command closures, all 23 cabinetry identities,
+six repaired commerce/Kelsey identities, two stable runtime identities, required
+projects, cadence, report type, artifact
+binding, and CI ownership. `docs/qa/required-test-truthfulness.md` is the
+operating contract.
 
 The release reporter must record per test: passed, failed, skipped with approved reason, expected failure with expiry, not run, and infrastructure failure. It must reject:
 

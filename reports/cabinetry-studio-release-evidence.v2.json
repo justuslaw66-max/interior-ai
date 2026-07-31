@@ -4,6 +4,7 @@
   "releaseCandidate": {
     "id": null,
     "buildCommit": null,
+    "artifactSha256": null,
     "environment": null,
     "baseUrl": null
   },

@@ -84,6 +84,9 @@ jobs:
           CODE_QUALITY_BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: npm run check:code-quality
 
+      - name: Verify required-test truthfulness
+        run: npm run test:required-test-truthfulness
+
       - name: Verify production artifact evidence contract
         run: npm run test:production-artifact-evidence
 
@@ -102,6 +105,9 @@ jobs:
 
       - name: Verify fail-closed authentication and admin environment policy
         run: npm run test:auth-env-hardening
+
+      - name: Verify critical domain contracts
+        run: npm run test:critical-required
 
       - name: Apply database migrations
         env:
@@ -147,6 +153,7 @@ jobs:
           name: playwright-smoke-results
           path: |
             .local/production-artifact-evidence/
+            .local/required-test-evidence/
             test-results/
           if-no-files-found: ignore
           retention-days: 14
@@ -206,15 +213,17 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
-      - name: Run E2E tests
-        run: npm run test:e2e
+      - name: Run advisory full E2E inventory
+        run: npm run test:e2e:advisory
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-full-results
-          path: test-results/
+          path: |
+            .local/required-test-evidence/
+            test-results/
           if-no-files-found: ignore
           retention-days: 30
 

@@ -2,7 +2,7 @@
 
 This register is anchored to checkpoint `08bdfe0c5e5c882777dc5da38168ea7db14840ad`. IDs are stable: implementation commits, pull requests, exceptions, and release evidence should cite them without renumbering. P0 means active catastrophic risk, P1 high risk or release blocker, P2 material maintainability/reliability debt, and P3 hygiene. No P0 was confirmed in this audit.
 
-Post-CH-0001 triage was performed on 2026-07-31 at `62ba966ecb2011e4233c99ce1dcc0641914af008`. CH-0012 repository remediation was then completed at `2c9e8b4d2322484a8d80873019d2c3495dd862f5`. CH-0016 repository remediation was completed next at `cbed3550026e2803675f740b49be5fb15f15612b`; external execution and durable evidence retention remain unverified. The current classification is zero unresolved P0 findings, fourteen unresolved P1 findings, three resolved P1 findings, and two former P1 findings downgraded to P2 with current evidence. The finding-by-finding evidence, reachability, dependencies, test coverage, remediation scope, rollback, and ordered queue are recorded in `06_P0_P1_REMEDIATION_QUEUE.md`.
+Post-CH-0001 triage was performed on 2026-07-31 at `62ba966ecb2011e4233c99ce1dcc0641914af008`. CH-0012 repository remediation was then completed at `2c9e8b4d2322484a8d80873019d2c3495dd862f5`. CH-0016 repository remediation was completed next at `cbed3550026e2803675f740b49be5fb15f15612b`; external execution and durable evidence retention remain unverified. CH-0017 repository remediation now makes required-test discovery and evidence fail closed; its local implementation SHA is reported after commit and external CI enforcement remains unverified. The current classification is zero unresolved P0 findings, thirteen unresolved P1 findings, four resolved P1 findings, and two former P1 findings downgraded to P2 with current evidence. The finding-by-finding evidence, reachability, dependencies, test coverage, remediation scope, rollback, and ordered queue are recorded in `06_P0_P1_REMEDIATION_QUEUE.md`.
 
 ## Priority summary
 
@@ -19,7 +19,7 @@ The first ten risks by consequence, exploitability, customer impact, and change 
 9. CH-0013 generated surface payload/drift contract;
 10. CH-0014 per-item 3D resource and event ownership.
 
-CH-0001, CH-0012, and CH-0016 are now closed for repository-controlled remediation. CH-0002, CH-0007, and CH-0008 still require explicit policy decisions before changing production semantics. CH-0017 is the highest-risk READY P1, but it is not eligible to start until external GitHub Actions verification of the exact CH-0016 implementation commit completes; it was not started as part of CH-0016.
+CH-0001, CH-0012, CH-0016, and CH-0017 are now closed for repository-controlled remediation. CH-0002, CH-0007, and CH-0008 still require explicit policy decisions before changing production semantics. CH-0004 trusted event provenance is the next READY P1; it has not been started.
 
 ## Findings
 
@@ -228,14 +228,15 @@ CH-0001, CH-0012, and CH-0016 are now closed for repository-controlled remediati
 ### CH-0017 — Critical tests are omitted or can report false passes
 
 - **Severity:** P1.
-- **Locations/symbols:** `tests/e2e/05-buy.spec.ts`; `07-kelsey-variants.spec.ts`; `scripts/vercel-prebuilt-release.mjs`; CI full-E2E job; package test manifests.
-- **Evidence/current behavior:** Commerce/variant cases annotate and return when fixtures/assertions are absent, which Playwright records as expected passes. Full E2E is manual/staging and `continue-on-error`. Security, persistence, Stripe, Phase 14/15, full cabinetry browser checks, and `test:floor-plan-live-progress` are not merge-required; the last is omitted from the floor-plan umbrella despite new migrations.
+- **Status:** RESOLVED — REPOSITORY REMEDIATION COMPLETE; EXTERNAL CI ENFORCEMENT VERIFICATION REQUIRED. The local implementation SHA is reported after commit.
+- **Locations/symbols:** `scripts/required-test-manifest.json`; `scripts/required-test-truthfulness.mjs`; `tests/e2e/05-buy.spec.ts`; `07-kelsey-variants.spec.ts`; `scripts/cabinetry-tests/export-behavior.ts`; CH-0016 and cabinetry report validators; `scripts/vercel-prebuilt-release.mjs`; Playwright configurations; CI/package gate wiring.
+- **Pre-remediation evidence:** Commerce/variant cases annotated and returned when core fixtures/assertions were absent, which Playwright recorded as expected passes. The cabinetry GLB export test caught a missing `FileReader`, printed a skip message, and exited zero. The floor-plan live-progress test was absent from its required umbrella. Full E2E was non-required and `continue-on-error` without a separate process-bound release evidence contract. Gate A3 consumed only aggregate counts and URL; cabinetry used a minimum test count; CH-0016 did not verify its two stable runtime identities. Security, persistence, Stripe, Phase 14/15, Consumer/Pro, and cabinetry contract suites were not merge-required as one explicit critical group.
 - **Risk:** Release summaries overstate validated customer paths and new persistence behavior can merge untested.
-- **Improvement:** Make gate fixtures deterministic and fail missing prerequisites; classify every suite required/optional/integration/destructive; add risk-based required groups and the live-progress test; retain full Gate A3 only for the final immutable release artifact.
-- **Expected outcome:** A pass means assertions ran, and every critical domain check has an explicit cadence.
-- **Tests:** meta-test detects early-return gate patterns/unclassified scripts; release reporter distinguishes pass/skip/not-run; manifest coverage; CI workflow test.
-- **Dependencies/decision:** CI runtime budget and fixture ownership, not product semantics.
-- **Compatibility:** Gate-only; initially exposes latent failures.
+- **Resolution/current behavior:** One canonical manifest classifies 245 script tests, 98 browser specs, 14 imported browser modules, and 8 imported cabinetry script-test modules; binds source-inventory and recursively reachable package-command closure hashes, split-suite registrations, stable requirement IDs, commands, projects, cadence, reports, artifact policy, and CI ownership. Required Playwright evidence rejects zero discovery, missing/renamed/excluded specs or registrations, missing projects, filters/shards, `.only`, skips, retries/flakes, annotations, not-run/failed tests, aggregate disagreement, nonzero child status, stale/malformed/tampered reports, source/artifact/URL mismatch, machine-local paths, and secret-bearing fields. The two named commerce/variant specs now fail on missing prerequisites. A deterministic Node `FileReader` shim makes the GLB export assertion execute instead of skip. Live progress is in the required floor-plan chain. Critical domain contracts are merge-blocking. Broad full E2E is explicitly advisory; exact Gate A3 is separately release-blocking and bound to the staged prebuilt artifact. Cabinetry release evidence uses a clean-source process-captured envelope for all 23 stable workflows and binds its report to the top-level candidate artifact.
+- **Tests:** Temporary-directory negative suite exercises the real exported validator; CH-0016 and cabinetry suites exercise their real integrations and stable test identities. Exact cases and commands are recorded in `docs/qa/required-test-truthfulness.md` and `HANDOFF.md`.
+- **Dependencies/decision:** No product semantics changed. Honest commerce/visual/browser failures may now block their required cadence; resolving such behavior is a separate finding or fixture-owner decision, never a truthfulness waiver.
+- **Compatibility:** Gate/test-evidence only; the cabinetry release-evidence contract schema is strengthened, but no dependency, framework, product/database/persisted-data schema, migration, catalog, product behavior, deployment, or external setting changed.
+- **Rollback:** Revert the one CH-0017 implementation commit. This restores false-pass evidence paths and is not an acceptable steady state.
 
 ### CH-0018 — Migration validation proves fresh install, not safe upgrade
 

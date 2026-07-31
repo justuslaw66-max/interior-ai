@@ -97,6 +97,50 @@ import {
   clone,
 } from "./helpers";
 
+class NodeFileReader {
+  result: string | ArrayBuffer | null = null;
+  onloadend: (() => void) | null = null;
+  onerror: ((error: Error) => void) | null = null;
+
+  readAsArrayBuffer(blob: Blob): void {
+    void blob.arrayBuffer().then(
+      (result) => this.complete(result),
+      (error: unknown) => this.fail(error)
+    );
+  }
+
+  readAsDataURL(blob: Blob): void {
+    void blob.arrayBuffer().then(
+      (result) => {
+        const mimeType = blob.type || "application/octet-stream";
+        this.complete(`data:${mimeType};base64,${Buffer.from(result).toString("base64")}`);
+      },
+      (error: unknown) => this.fail(error)
+    );
+  }
+
+  private complete(result: string | ArrayBuffer): void {
+    this.result = result;
+    this.onloadend?.();
+  }
+
+  private fail(error: unknown): void {
+    this.onerror?.(error instanceof Error ? error : new Error(String(error)));
+  }
+}
+
+function installNodeFileReader(): () => void {
+  const previous = Object.getOwnPropertyDescriptor(globalThis, "FileReader");
+  Object.defineProperty(globalThis, "FileReader", {
+    configurable: true,
+    value: NodeFileReader,
+  });
+  return () => {
+    if (previous) Object.defineProperty(globalThis, "FileReader", previous);
+    else Reflect.deleteProperty(globalThis, "FileReader");
+  };
+}
+
 export async function runExportBehaviorTests(): Promise<void> {
   const base = createCabinetPreset("base", "cabinet-test-export-base");
   const run = clone(base);
@@ -2518,14 +2562,11 @@ export async function runExportBehaviorTests(): Promise<void> {
     "project revision comparison JSON should be parseable and preserve the schema"
   );
 
+  const restoreFileReader = installNodeFileReader();
   try {
     const blob = await exportCabinetAsGlb(base);
     assert(blob.size > 0, "GLB export should return a non-empty Blob");
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    if (!/FileReader|document|window|self/i.test(message)) {
-      throw error;
-    }
-    console.warn(`Skipping GLB export assertion in this runtime: ${message}`);
+  } finally {
+    restoreFileReader();
   }
 }

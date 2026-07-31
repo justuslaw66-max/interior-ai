@@ -15,6 +15,7 @@ import {
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
+import { validateRequiredTestReport } from "./required-test-truthfulness.mjs";
 
 export const PRODUCTION_EVIDENCE_SCHEMA =
   "interior-ai.production-artifact-evidence.v1";
@@ -1027,6 +1028,14 @@ function validateTestRecord(manifest, test, report, issues) {
   ) {
     issues.push("test report metadata does not identify the recorded production artifact");
   }
+  const truthfulness = validateRequiredTestReport({
+    repositoryRoot: path.resolve(import.meta.dirname, ".."),
+    gateId: "ci.production-runtime-smoke",
+    report,
+    processExitCode: test.processExitCode,
+    requireMetadata: false,
+  });
+  issues.push(...truthfulness.issues.map((issue) => `required runtime smoke: ${issue}`));
 }
 
 export async function validateProductionEvidence({
@@ -1341,6 +1350,14 @@ export async function recordProductionEvidenceTest({
   ) {
     throw new Error("test report does not prove the canonical non-reused production server");
   }
+  const truthfulness = validateRequiredTestReport({
+    repositoryRoot: path.resolve(import.meta.dirname, ".."),
+    gateId: "ci.production-runtime-smoke",
+    report,
+    processExitCode,
+    requireMetadata: false,
+  });
+  if (!truthfulness.valid) throw new Error(truthfulness.issues.join("; "));
   const stats = report.stats ?? {};
   const passed =
     processExitCode === 0 &&

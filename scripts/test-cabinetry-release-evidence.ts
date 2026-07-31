@@ -29,6 +29,7 @@ import {
   PRO_ACCESS_SMOKE_CRITERIA,
   REQUIRED_ANALYTICS_EVENTS,
   REQUIRED_CABINETRY_BROWSER_TEST_COUNT,
+  REQUIRED_CABINETRY_BROWSER_TESTS,
   REQUIRED_FABRICATOR_ARTIFACT_KINDS,
   REQUIRED_RELEASE_GATES,
   REQUIRED_SCENARIO_CRITERIA,
@@ -46,9 +47,20 @@ const temporaryEvidenceRoot = mkdtempSync(join(tmpdir(), "cabinetry-release-evid
 const BUILD = {
   releaseCandidateId: "cabinetry-studio-rc-2026-07-10-1",
   commit: "0123456789abcdef0123456789abcdef01234567",
+  artifactSha256: "a".repeat(64),
   environment: "release-staging",
   baseUrl: "https://release-staging.interior-ai.test",
 } as const;
+const BROWSER_COMPLETED_AT = new Date(Date.now() - 1_000).toISOString();
+const BROWSER_STARTED_AT = new Date(
+  Date.parse(BROWSER_COMPLETED_AT) - 60_000
+).toISOString();
+const APPROVAL_SIGNED_AT = new Date(
+  Date.parse(BROWSER_COMPLETED_AT) + 1_000
+).toISOString();
+const DOCUMENT_GENERATED_AT = new Date(
+  Date.parse(BROWSER_COMPLETED_AT) + 2_000
+).toISOString();
 
 function parseJsonWithUniqueObjectKeys<T>(source: string, label: string): T {
   let cursor = 0;
@@ -186,6 +198,33 @@ function replaceArtifactContent(
   const serialized = typeof content === "string" ? content : JSON.stringify(content, null, 2);
   writeFileSync(target.path, serialized);
   target.sha256 = createHash("sha256").update(serialized).digest("hex");
+  if (kind === "playwright_report") {
+    const envelopeArtifact = evidence.artifacts.find(
+      (entry) => entry.kind === "required_test_evidence"
+    );
+    if (envelopeArtifact) {
+      const envelope = JSON.parse(
+        readFileSync(envelopeArtifact.path, "utf8")
+      ) as { report?: { path?: string; sha256?: string } };
+      if (envelope.report?.path === target.path) {
+        envelope.report.sha256 = target.sha256;
+        const envelopeBytes = JSON.stringify(envelope, null, 2);
+        writeFileSync(envelopeArtifact.path, envelopeBytes);
+        envelopeArtifact.sha256 = createHash("sha256").update(envelopeBytes).digest("hex");
+      }
+    }
+  }
+}
+
+function mutateRequiredTestEvidence(
+  evidence: CabinetryReleaseRunEvidence,
+  mutate: (value: Record<string, unknown>) => void
+) {
+  const target = evidence.artifacts.find((entry) => entry.kind === "required_test_evidence");
+  assert.ok(target, "expected required_test_evidence artifact");
+  const value = JSON.parse(readFileSync(target.path, "utf8")) as Record<string, unknown>;
+  mutate(value);
+  replaceArtifactContent(evidence, "required_test_evidence", value);
 }
 
 const observedScreenRecording = artifact(
@@ -287,9 +326,23 @@ const MANUAL_GATE_CRITERIA: Record<string, readonly string[]> = {
 function makePlaywrightReport() {
   return {
     config: {
+      configFile: "<repository-root>/playwright.config.ts",
+      rootDir: "<repository-root>/tests/e2e",
+      forbidOnly: true,
+      grep: {},
+      grepInvert: null,
+      shard: null,
+      projects: [{ name: "chromium", retries: 0, repeatEach: 1 }],
       metadata: {
-        buildCommit: BUILD.commit,
-        releaseEnvironment: BUILD.environment,
+        gateA3ReleaseBaseURL: BUILD.baseUrl,
+        requiredTestEvidence: {
+          schema: "interior-ai.required-test-evidence.v1",
+          gateId: "release.cabinetry-browser",
+          sourceCommitSha: BUILD.commit,
+          artifactSha256: BUILD.artifactSha256,
+          releaseCandidateId: BUILD.releaseCandidateId,
+          releaseEnvironment: BUILD.environment,
+        },
       },
     },
     errors: [],
@@ -297,13 +350,29 @@ function makePlaywrightReport() {
       {
         title: "cabinetry studio",
         file: "cabinetry-studio.spec.ts",
-        specs: Array.from({ length: REQUIRED_CABINETRY_BROWSER_TEST_COUNT }, (_, index) => ({
-          title: `cabinetry acceptance ${index + 1}`,
+        specs: REQUIRED_CABINETRY_BROWSER_TESTS.map((requirement) => ({
+          title: requirement.title,
           ok: true,
-          tests: [{ status: "expected", results: [{ status: "passed", duration: 25 }] }],
+          tests: [
+            {
+              projectId: "chromium",
+              projectName: "chromium",
+              status: "expected",
+              annotations: [],
+              results: [{ status: "passed", duration: 25, retry: 0, annotations: [] }],
+            },
+          ],
         })),
       },
     ],
+    stats: {
+      startTime: BROWSER_STARTED_AT,
+      duration: 60_000,
+      expected: REQUIRED_CABINETRY_BROWSER_TEST_COUNT,
+      skipped: 0,
+      unexpected: 0,
+      flaky: 0,
+    },
   };
 }
 
@@ -453,19 +522,47 @@ function makeCompleteEvidence(): CabinetryReleaseEvidence {
     if (requirement.id === "full-browser-suite") {
       const evidence = makeCommonEvidence("release_browser_execution", requirement.id);
       evidence.device.category = "ci-browser";
+      evidence.timing = {
+        startedAt: BROWSER_STARTED_AT,
+        completedAt: BROWSER_COMPLETED_AT,
+        elapsedSeconds: 60,
+      };
+      evidence.attestation.signedAt = BROWSER_COMPLETED_AT;
       const report = artifact(
         "playwright_report",
         "playwright-report.json",
         JSON.stringify(makePlaywrightReport(), null, 2)
       );
-      evidence.artifacts = [report];
+      const requiredTestEvidence = artifact(
+        "required_test_evidence",
+        "cabinetry-required-test-evidence.json",
+        JSON.stringify(
+          {
+            schema: "interior-ai.required-test-evidence.v1",
+            gateId: "release.cabinetry-browser",
+            command: "npm run test:e2e:cabinetry-release",
+            sourceCommitSha: BUILD.commit,
+            artifactSha256: BUILD.artifactSha256,
+            processExitCode: 0,
+            startedAt: BROWSER_STARTED_AT,
+            completedAt: BROWSER_COMPLETED_AT,
+            report: { path: report.path, sha256: report.sha256 },
+            result: "passed",
+            diagnostics: [],
+          },
+          null,
+          2
+        )
+      );
+      evidence.artifacts = [report, requiredTestEvidence];
       evidence.details.browserSuite = {
-        command: "npx playwright test tests/e2e/cabinetry-studio.spec.ts --reporter=json",
+        command: "npm run test:e2e:cabinetry-release",
         discovered: REQUIRED_CABINETRY_BROWSER_TEST_COUNT,
         executed: REQUIRED_CABINETRY_BROWSER_TEST_COUNT,
         passed: REQUIRED_CABINETRY_BROWSER_TEST_COUNT,
         failed: 0,
         skipped: 0,
+        requiredTestEvidenceArtifactPath: requiredTestEvidence.path,
         reportArtifactPath: report.path,
       };
       return makeRecord(requirement, evidence);
@@ -519,10 +616,11 @@ function makeCompleteEvidence(): CabinetryReleaseEvidence {
 
   return {
     schemaVersion: CABINETRY_RELEASE_EVIDENCE_SCHEMA_VERSION,
-    generatedAt: "2026-07-10T01:05:00.000+08:00",
+    generatedAt: DOCUMENT_GENERATED_AT,
     releaseCandidate: {
       id: BUILD.releaseCandidateId,
       buildCommit: BUILD.commit,
+      artifactSha256: BUILD.artifactSha256,
       environment: BUILD.environment,
       baseUrl: BUILD.baseUrl,
     },
@@ -543,7 +641,7 @@ function signEvidence(
     keyId,
     ownerName: "Priya Shah",
     ownerRole: "Product Owner",
-    signedAt: "2026-07-10T01:04:00.000+08:00",
+    signedAt: APPROVAL_SIGNED_AT,
     signatureBase64: "AA==",
   };
   evidence.approval.signatureBase64 = signEd25519(
@@ -676,6 +774,14 @@ try {
     "complete synthetic evidence without trusted signature must not release"
   );
 
+  const mismatchedCandidateArtifact = makeCompleteEvidence();
+  mismatchedCandidateArtifact.releaseCandidate.artifactSha256 = "b".repeat(64);
+  assert.equal(
+    validateCabinetryReleaseEvidence(mismatchedCandidateArtifact).evidenceComplete,
+    false,
+    "every evidence row must bind to the top-level release-candidate artifact"
+  );
+
   const arbitraryHttpsArtifact = makeCompleteEvidence();
   arbitraryHttpsArtifact.usabilityScenarios[0].evidence!.artifacts[0].path =
     "https://release-evidence.invalid/recording.webm";
@@ -740,13 +846,188 @@ try {
   )!;
   const skippedReport = makePlaywrightReport();
   skippedReport.suites[0].specs[0] = {
-    title: "cabinetry acceptance 1",
+    title: REQUIRED_CABINETRY_BROWSER_TESTS[0].title,
     ok: false,
-    tests: [{ status: "skipped", results: [{ status: "skipped", duration: 0 }] }],
+    tests: [
+      {
+        projectId: "chromium",
+        projectName: "chromium",
+        status: "skipped",
+        annotations: [],
+        results: [{ status: "skipped", duration: 0, retry: 0, annotations: [] }],
+      },
+    ],
   };
   replaceArtifactContent(browser.evidence!, "playwright_report", skippedReport);
   const skippedResult = validateCabinetryReleaseEvidence(skippedBrowserRun);
   assert.equal(skippedResult.evidenceComplete, false, "parsed browser skips must block");
+
+  const focusedBrowserRun = makeCompleteEvidence();
+  const focusedBrowser = focusedBrowserRun.releaseGates.find(
+    (record) => record.id === "full-browser-suite"
+  )!;
+  const focusedReport = makePlaywrightReport();
+  focusedReport.config.forbidOnly = false;
+  replaceArtifactContent(focusedBrowser.evidence!, "playwright_report", focusedReport);
+  assert.equal(
+    validateCabinetryReleaseEvidence(focusedBrowserRun).evidenceComplete,
+    false,
+    "reports that permit focused execution must not satisfy cabinetry release evidence"
+  );
+
+  const wrongConfigRun = makeCompleteEvidence();
+  const wrongConfigBrowser = wrongConfigRun.releaseGates.find(
+    (record) => record.id === "full-browser-suite"
+  )!;
+  const wrongConfigReport = makePlaywrightReport();
+  wrongConfigReport.config.configFile = "<repository-root>/playwright.other.config.ts";
+  replaceArtifactContent(wrongConfigBrowser.evidence!, "playwright_report", wrongConfigReport);
+  assert.equal(
+    validateCabinetryReleaseEvidence(wrongConfigRun).evidenceComplete,
+    false,
+    "another Playwright configuration must not satisfy cabinetry release evidence"
+  );
+
+  const unsafeReportRun = makeCompleteEvidence();
+  const unsafeReportBrowser = unsafeReportRun.releaseGates.find(
+    (record) => record.id === "full-browser-suite"
+  )!;
+  const unsafeReport = makePlaywrightReport();
+  const unsafeMetadata = unsafeReport.config.metadata as Record<string, unknown>;
+  unsafeMetadata.authToken = "must-not-enter-release-evidence";
+  unsafeMetadata.outputPath = "/Users/example/Library/Caches/cabinetry-report.json";
+  replaceArtifactContent(unsafeReportBrowser.evidence!, "playwright_report", unsafeReport);
+  assert.equal(
+    validateCabinetryReleaseEvidence(unsafeReportRun).evidenceComplete,
+    false,
+    "secret-bearing or machine-local cabinetry reports must not satisfy release evidence"
+  );
+
+  const nonzeroBrowserRun = makeCompleteEvidence();
+  const nonzeroBrowser = nonzeroBrowserRun.releaseGates.find(
+    (record) => record.id === "full-browser-suite"
+  )!;
+  mutateRequiredTestEvidence(nonzeroBrowser.evidence!, (value) => {
+    value.processExitCode = 1;
+  });
+  assert.equal(
+    validateCabinetryReleaseEvidence(nonzeroBrowserRun).evidenceComplete,
+    false,
+    "a nonzero cabinetry Playwright process must remain release-blocking"
+  );
+
+  const staleBrowserRun = makeCompleteEvidence();
+  const staleBrowser = staleBrowserRun.releaseGates.find(
+    (record) => record.id === "full-browser-suite"
+  )!;
+  const staleCompletedAt = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+  const staleStartedAt = new Date(Date.parse(staleCompletedAt) - 60_000).toISOString();
+  staleBrowser.evidence!.timing = {
+    startedAt: staleStartedAt,
+    completedAt: staleCompletedAt,
+    elapsedSeconds: 60,
+  };
+  staleBrowser.evidence!.attestation.signedAt = staleCompletedAt;
+  const staleReport = makePlaywrightReport();
+  staleReport.stats.startTime = staleStartedAt;
+  replaceArtifactContent(staleBrowser.evidence!, "playwright_report", staleReport);
+  mutateRequiredTestEvidence(staleBrowser.evidence!, (value) => {
+    value.startedAt = staleStartedAt;
+    value.completedAt = staleCompletedAt;
+  });
+  assert.equal(
+    validateCabinetryReleaseEvidence(staleBrowserRun).evidenceComplete,
+    false,
+    "stale cabinetry process envelopes and reports must not satisfy release evidence"
+  );
+
+  const mismatchedBrowserRun = makeCompleteEvidence();
+  const mismatchedBrowser = mismatchedBrowserRun.releaseGates.find(
+    (record) => record.id === "full-browser-suite"
+  )!;
+  const mismatchedReport = makePlaywrightReport();
+  (mismatchedReport.config.metadata.requiredTestEvidence as { sourceCommitSha: string }).sourceCommitSha =
+    "f".repeat(40);
+  replaceArtifactContent(mismatchedBrowser.evidence!, "playwright_report", mismatchedReport);
+  assert.equal(
+    validateCabinetryReleaseEvidence(mismatchedBrowserRun).evidenceComplete,
+    false,
+    "cabinetry reports from another source commit must not satisfy release evidence"
+  );
+
+  const wrongUrlBrowserRun = makeCompleteEvidence();
+  const wrongUrlBrowser = wrongUrlBrowserRun.releaseGates.find(
+    (record) => record.id === "full-browser-suite"
+  )!;
+  const wrongUrlReport = makePlaywrightReport();
+  (wrongUrlReport.config.metadata as { gateA3ReleaseBaseURL: string }).gateA3ReleaseBaseURL =
+    "https://another-candidate.example.test";
+  replaceArtifactContent(wrongUrlBrowser.evidence!, "playwright_report", wrongUrlReport);
+  assert.equal(
+    validateCabinetryReleaseEvidence(wrongUrlBrowserRun).evidenceComplete,
+    false,
+    "cabinetry reports from another release URL must not satisfy release evidence"
+  );
+
+  const aggregateMismatchRun = makeCompleteEvidence();
+  const aggregateMismatchBrowser = aggregateMismatchRun.releaseGates.find(
+    (record) => record.id === "full-browser-suite"
+  )!;
+  const aggregateMismatchReport = makePlaywrightReport();
+  aggregateMismatchReport.stats.expected -= 1;
+  aggregateMismatchReport.stats.unexpected = 1;
+  replaceArtifactContent(
+    aggregateMismatchBrowser.evidence!,
+    "playwright_report",
+    aggregateMismatchReport
+  );
+  assert.equal(
+    validateCabinetryReleaseEvidence(aggregateMismatchRun).evidenceComplete,
+    false,
+    "cabinetry aggregate statistics must agree with parsed stable test identities"
+  );
+
+  const retryConfigRun = makeCompleteEvidence();
+  const retryConfigBrowser = retryConfigRun.releaseGates.find(
+    (record) => record.id === "full-browser-suite"
+  )!;
+  const retryConfigReport = makePlaywrightReport();
+  retryConfigReport.config.projects[0].retries = 1;
+  replaceArtifactContent(retryConfigBrowser.evidence!, "playwright_report", retryConfigReport);
+  assert.equal(
+    validateCabinetryReleaseEvidence(retryConfigRun).evidenceComplete,
+    false,
+    "cabinetry configuration must not permit retries"
+  );
+
+  const renamedBrowserRun = makeCompleteEvidence();
+  const renamedBrowser = renamedBrowserRun.releaseGates.find(
+    (record) => record.id === "full-browser-suite"
+  )!;
+  const renamedReport = makePlaywrightReport();
+  renamedReport.suites[0].specs[0].title = "renamed without updating the requirement identity";
+  replaceArtifactContent(renamedBrowser.evidence!, "playwright_report", renamedReport);
+  assert.equal(
+    validateCabinetryReleaseEvidence(renamedBrowserRun).evidenceComplete,
+    false,
+    "renamed tests must update the canonical requirement identity"
+  );
+
+  const retriedBrowserRun = makeCompleteEvidence();
+  const retriedBrowser = retriedBrowserRun.releaseGates.find(
+    (record) => record.id === "full-browser-suite"
+  )!;
+  const retriedReport = makePlaywrightReport();
+  retriedReport.suites[0].specs[0].tests[0].results = [
+    { status: "failed", duration: 5, retry: 0, annotations: [] },
+    { status: "passed", duration: 25, retry: 1, annotations: [] },
+  ];
+  replaceArtifactContent(retriedBrowser.evidence!, "playwright_report", retriedReport);
+  assert.equal(
+    validateCabinetryReleaseEvidence(retriedBrowserRun).evidenceComplete,
+    false,
+    "retried cabinetry tests must remain visible and release-blocking"
+  );
 
   const mixedBrowserRun = makeCompleteEvidence();
   const mixedBrowser = mixedBrowserRun.releaseGates.find(
@@ -760,7 +1041,15 @@ try {
       {
         title: "unrelated acceptance",
         ok: true,
-        tests: [{ status: "expected", results: [{ status: "passed", duration: 5 }] }],
+        tests: [
+          {
+            projectId: "chromium",
+            projectName: "chromium",
+            status: "expected",
+            annotations: [],
+            results: [{ status: "passed", duration: 5, retry: 0, annotations: [] }],
+          },
+        ],
       },
     ],
   });

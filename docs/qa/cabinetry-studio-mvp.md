@@ -32,31 +32,39 @@ record.
   passing evidence and the complete canonical payload has trusted product-owner approval.
 - Run `npm run test:cabinetry-release-evidence` after changing the schema or validator.
 
-Every executed record requires the observer, exact release-candidate commit and
-environment, device/browser/viewport, start/end/elapsed timing, result, hesitations,
+Every executed record requires the observer, exact release-candidate commit,
+artifact SHA-256 and environment, device/browser/viewport, start/end/elapsed timing, result, hesitations,
 findings, source artifacts, and a same-observer attestation. Every artifact `path` must
 be a readable local file, and its non-null SHA-256 must match the file bytes; HTTPS URLs
 and issue links are not source artifacts. Issue URLs may appear only as finding references. A human
 observer must sign usability, accessibility, live-analytics, and fabricator evidence.
-The browser row may record automated Playwright execution, but it must contain a full
-run of at least 18 current cabinetry tests with no failures/skips and a hashed local
-Playwright JSON report; discovery or self-reported counts alone are rejected. Live
+The browser row may record automated Playwright execution, but it must contain the
+process-captured required-test envelope and hashed Playwright JSON report for all 23
+stable cabinetry identities in Chromium, with no failure, skip, retry, annotation,
+filter, focus, or aggregate disagreement. The envelope must bind the real child exit,
+exact source commit, release artifact SHA-256, candidate/environment, and HTTPS base
+URL; discovery or self-reported counts alone are rejected. Live
 analytics needs a hashed normalized JSON capture whose event payloads match the emitted
 snake_case contract, with QA hooks off in an environment whose name is not QA, test,
 local, development, or dev.
 
-Capture the browser source report with the JSON reporter, then record its repository
-path and SHA-256 in the evidence row:
+Capture the browser source report through the canonical fail-closed wrapper, then
+record both generated repository paths and SHA-256 values in the evidence row:
 
 ```bash
-PLAYWRIGHT_USE_PRODUCTION_SERVER=1 \
-PLAYWRIGHT_JSON_OUTPUT_NAME=reports/cabinetry-playwright-release.json \
-  npx playwright test tests/e2e/cabinetry-studio.spec.ts --reporter=json
-shasum -a 256 reports/cabinetry-playwright-release.json
+PLAYWRIGHT_RELEASE_BASE_URL='https://the-exact-release-candidate.example' \
+REQUIRED_TEST_ARTIFACT_SHA256='<64-character release artifact digest>' \
+REQUIRED_TEST_RELEASE_CANDIDATE_ID='<release-candidate-id>' \
+REQUIRED_TEST_RELEASE_ENVIRONMENT='<release-environment>' \
+  npm run test:e2e:cabinetry-release
+shasum -a 256 \
+  .local/required-test-evidence/release.cabinetry-browser/evidence.json \
+  .local/required-test-evidence/release.cabinetry-browser/playwright.json
 ```
 
 The validator checks structure, exact required IDs, cross-record build consistency,
-timing arithmetic, exact observed criteria, file hashes, parsed browser and analytics
+including every row against the top-level candidate artifact SHA-256, timing
+arithmetic, exact observed criteria, file hashes, parsed browser and analytics
 records, review artifacts, and explicit attestations. `Evidence completeness` and
 `Release evidence gate` are deliberately separate: complete source evidence is still
 not release-ready until its entire canonical payload—including findings and waivers—is

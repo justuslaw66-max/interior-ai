@@ -58,12 +58,18 @@
     "releaseCandidate": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "buildCommit", "environment", "baseUrl"],
+      "required": ["id", "buildCommit", "artifactSha256", "environment", "baseUrl"],
       "properties": {
         "id": { "$ref": "#/$defs/nullableNonBlank" },
         "buildCommit": {
           "oneOf": [
             { "type": "string", "pattern": "^[0-9a-fA-F]{7,40}$" },
+            { "type": "null" }
+          ]
+        },
+        "artifactSha256": {
+          "oneOf": [
+            { "$ref": "#/$defs/sha256" },
             { "type": "null" }
           ]
         },
@@ -155,10 +161,11 @@
     "build": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["releaseCandidateId", "commit", "environment", "baseUrl"],
+      "required": ["releaseCandidateId", "commit", "artifactSha256", "environment", "baseUrl"],
       "properties": {
         "releaseCandidateId": { "$ref": "#/$defs/nonBlank" },
         "commit": { "type": "string", "pattern": "^[0-9a-fA-F]{7,40}$" },
+        "artifactSha256": { "$ref": "#/$defs/sha256" },
         "environment": { "$ref": "#/$defs/nonBlank" },
         "baseUrl": { "type": "string", "format": "uri" }
       }
@@ -271,6 +278,7 @@
             "screen_recording",
             "screenshot",
             "session_notes",
+            "required_test_evidence",
             "playwright_report",
             "analytics_capture",
             "glb",
@@ -412,6 +420,7 @@
         "passed",
         "failed",
         "skipped",
+        "requiredTestEvidenceArtifactPath",
         "reportArtifactPath"
       ],
       "properties": {
@@ -421,6 +430,7 @@
         "passed": { "type": "integer", "minimum": 0 },
         "failed": { "type": "integer", "minimum": 0 },
         "skipped": { "type": "integer", "minimum": 0 },
+        "requiredTestEvidenceArtifactPath": { "$ref": "#/$defs/nonBlank" },
         "reportArtifactPath": { "$ref": "#/$defs/nonBlank" }
       }
     },

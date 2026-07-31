@@ -102,12 +102,22 @@ The build contract requires a clean exact commit, no influential local env file,
 
 The strict diagnostic build passed after shaped nonfunctional staging configuration was supplied. Trace inventory changed from concrete `.env`/private-evidence leakage to 112 trace manifests and 42,879 references with zero missing/prohibited paths. The existing Turbopack broad-tracing warning remains explicit. No actual GitHub/Vercel run, preview/staging/production deployment, external-control verification, schema/data change, or dependency change is included. CH-0013 schema/payload work, CH-0017 test-truthfulness work, and CH-0018 migration evidence remain separate.
 
-Rollback is one `git revert cbed3550026e2803675f740b49be5fb15f15612b`. Generated evidence is ignored and regenerated from an exact clean candidate. The next READY P1 is CH-0017, but do not start it until external GitHub Actions verification of the exact CH-0016 commit is complete.
+Rollback is one `git revert cbed3550026e2803675f740b49be5fb15f15612b`. Generated evidence is ignored and regenerated from an exact clean candidate. At CH-0016 completion, CH-0017 was the next READY P1; it was subsequently implemented as the separate record below. CH-0016 external GitHub Actions verification remains pending and was not reclassified by CH-0017.
+
+### CH-0017 implementation record
+
+Status: **REPOSITORY REMEDIATION COMPLETE — EXTERNAL CI ENFORCEMENT VERIFICATION REQUIRED**. The local implementation SHA is reported after commit. `scripts/required-test-manifest.json` is now the single required/advisory gate inventory, while `package.json` remains the executable command owner. Sorted inventory hashes classify 245 script tests, 98 browser specs, 14 imported browser modules, and 8 imported cabinetry script-test modules; registration checks and recursive package-command closure hashes block silent exclusions. Stable IDs bind the two CH-0016 runtime checks, six repaired commerce/Kelsey cases, and all 23 cabinetry browser tests without using totals as the only protection.
+
+The fail-closed runner deletes stale output, records the real Playwright process exit, canonicalizes paths, hashes JSON, and validates required files, identities, projects, configuration, per-test outcomes, aggregate agreement, source/artifact/deployment binding, timestamps, and secret-free structure. CH-0016 runtime evidence and cabinetry release evidence consume the same identities. Gate A3 certification now accepts the process-bound evidence envelope instead of raw aggregate JSON. Broad staging E2E remains explicitly advisory and cannot be mistaken for release certification.
+
+The floor-plan live-progress test is included in `test:floor-plan-required`; security, persistence, Stripe, Phase 14/15, Consumer/Pro, and cabinetry contracts are in one required CI umbrella; and the named commerce/variant tests fail missing prerequisites instead of annotating a pass. The cabinetry GLB export check uses a deterministic Node `FileReader` shim and executes its assertion instead of logging a skip and returning success. Existing behavioral failures remain visible and were not weakened, suppressed, or rebaselined. CH-0013, CH-0018, CH-0019, and external GitHub settings remain separate.
+
+Focused negative tests cover valid evidence, missing/renamed source, zero discovery, missing project, filtered scope, skips, retries, `.only`, annotated returns, swallowed child failure, report-declared failure, missing/malformed/stale evidence, source/artifact mismatch, advisory visibility, and secret fields. Rollback is one revert of the CH-0017 implementation commit; generated `.local/required-test-evidence/` and `.vercel` reports are ignored and regenerated.
 
 ## Phase 3 — Canonical saved-design routing
 
 **Finding:** CH-0012.
-**Status:** RESOLVED — repository-controlled remediation complete at `2c9e8b4d2322484a8d80873019d2c3495dd862f5`. CH-0016 was subsequently completed as the bounded P2-E evidence batch at `cbed3550026e2803675f740b49be5fb15f15612b`; CH-0017 is the next READY P1 after CH-0016 external verification.
+**Status:** RESOLVED — repository-controlled remediation complete at `2c9e8b4d2322484a8d80873019d2c3495dd862f5`. CH-0016 was subsequently completed as the bounded P2-E evidence batch at `cbed3550026e2803675f740b49be5fb15f15612b`; CH-0017 was subsequently completed as its own required-test truthfulness batch.
 **Implemented batch:** characterized a modern v3 document through every discovered entry; added `lib/design-editor-url.ts`; made `/design/[id]` a temporary canonical redirect; updated dashboard, duplicate, checkout-success, My Designs, and floor-plan revision-copy navigation; made denied/superseded/unmounted loads restore or retain the correct identity; and removed all legacy rendering from the compatibility route.
 
 Expected first routing files:
