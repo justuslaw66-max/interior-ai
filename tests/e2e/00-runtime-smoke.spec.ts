@@ -57,6 +57,11 @@ test.describe("00. Runtime smoke", () => {
                 boundsInvalidCount: number;
                 excessiveBoundsWarningCount: number;
                 selectionOutlineVisible: boolean;
+                loadState: "loading" | "ready" | "error";
+                loadErrorCode:
+                  | "gltf-load-failed"
+                  | "gltf-loader-import-failed"
+                  | null;
               }
             >;
           }
@@ -66,6 +71,62 @@ test.describe("00. Runtime smoke", () => {
           diagnostic: diagnostics?.[key] ?? null,
         }));
       }, diagnosticKeys);
+    const waitForModelDiagnosticsReady = async ({
+      minimumMountCount,
+      phase,
+      requireAuburnSelectionOutline = true,
+    }: {
+      minimumMountCount: number;
+      phase: string;
+      requireAuburnSelectionOutline?: boolean;
+    }) => {
+      const startedAt = Date.now();
+      let lastDiagnostics = await readModelDiagnostics();
+      await expect
+        .poll(
+          async () => {
+            lastDiagnostics = await readModelDiagnostics();
+            const terminalErrors = lastDiagnostics.filter(
+              ({ diagnostic }) => diagnostic?.loadState === "error"
+            );
+            if (terminalErrors.length > 0) {
+              throw new Error(
+                `GLB diagnostics reached a terminal error during ${phase}: ${JSON.stringify(
+                  terminalErrors
+                )}`
+              );
+            }
+            const ready = lastDiagnostics.every(
+              ({ key, diagnostic }) =>
+                diagnostic?.loadState === "ready" &&
+                diagnostic.mountCount >= minimumMountCount &&
+                diagnostic.boundsMaterialChangeCount >= 1 &&
+                diagnostic.boundsPublicationCount === 0 &&
+                diagnostic.boundsInvalidCount === 0 &&
+                diagnostic.excessiveBoundsWarningCount === 0 &&
+                (!requireAuburnSelectionOutline ||
+                  key !== "runtime-smoke-model-3" ||
+                  diagnostic.selectionOutlineVisible)
+            );
+            return ready
+              ? "ready"
+              : JSON.stringify({
+                  phase,
+                  elapsedMs: Date.now() - startedAt,
+                  fixtureDesign: "furnished-template-studio",
+                  modelRequests: Object.fromEntries(modelRequestCounts),
+                  modelResponses: Object.fromEntries(modelResponseCounts),
+                  diagnostics: lastDiagnostics,
+                });
+          },
+          {
+            timeout: 60_000,
+            message: `GLB diagnostics must reach semantic readiness during ${phase}`,
+          }
+        )
+        .toBe("ready");
+      return lastDiagnostics;
+    };
     const waitForModelDiagnosticsToSettle = async () => {
       let previous = await readModelDiagnostics();
       let stableSamples = 0;
@@ -274,29 +335,14 @@ test.describe("00. Runtime smoke", () => {
         { timeout: 60_000 }
       )
       .toBe(true);
-    await page.waitForTimeout(1_500);
     await expect(getSelectedItemPanel(page)).toContainText("Auburn");
     await expect(page.locator("body")).not.toContainText(
       "Maximum update depth exceeded"
     );
-    await expect
-      .poll(async () => {
-        const diagnostics = await readModelDiagnostics();
-        return diagnostics.every(
-          ({ key, diagnostic }) =>
-            diagnostic &&
-            diagnostic.mountCount >= 1 &&
-            diagnostic.boundsMaterialChangeCount >= 1 &&
-            diagnostic.boundsPublicationCount === 0 &&
-            diagnostic.boundsInvalidCount === 0 &&
-            diagnostic.excessiveBoundsWarningCount === 0 &&
-            (key !== "runtime-smoke-model-3" ||
-              diagnostic.selectionOutlineVisible)
-        )
-          ? "ready"
-          : JSON.stringify(diagnostics);
-      })
-      .toBe("ready");
+    await waitForModelDiagnosticsReady({
+      minimumMountCount: 1,
+      phase: "initial 3D load",
+    });
     const settledDiagnosticsBefore =
       await waitForModelDiagnosticsToSettle();
     await page.waitForTimeout(1_000);
@@ -320,23 +366,16 @@ test.describe("00. Runtime smoke", () => {
     await expect(layoutDebug).toHaveAttribute("data-view-mode", "2d");
     await view3d.click();
     await expect(layoutDebug).toHaveAttribute("data-view-mode", "3d");
-    await page.waitForTimeout(1_500);
     await expect(getSelectedItemPanel(page)).toContainText("Auburn");
-    await expect
-      .poll(async () => {
-        const diagnostics = await readModelDiagnostics();
-        return diagnostics.every(
-          ({ key, diagnostic }) =>
-            diagnostic &&
-            diagnostic.mountCount >= 2 &&
-            diagnostic.unmountCount >= 1 &&
-            diagnostic.boundsPublicationCount === 0 &&
-            diagnostic.excessiveBoundsWarningCount === 0 &&
-            (key !== "runtime-smoke-model-3" ||
-              diagnostic.selectionOutlineVisible)
-        );
-      })
-      .toBe(true);
+    const remountedDiagnostics = await waitForModelDiagnosticsReady({
+      minimumMountCount: 2,
+      phase: "2D to 3D remount",
+    });
+    expect(
+      remountedDiagnostics.every(
+        ({ diagnostic }) => (diagnostic?.unmountCount ?? 0) >= 1
+      )
+    ).toBe(true);
 
     for (let reloadIndex = 0; reloadIndex < 3; reloadIndex += 1) {
       const reloadResponse = await page.reload({ waitUntil: "domcontentloaded" });
@@ -363,7 +402,11 @@ test.describe("00. Runtime smoke", () => {
           { timeout: 60_000 }
         )
         .toBe(true);
-      await page.waitForTimeout(1_000);
+      await waitForModelDiagnosticsReady({
+        minimumMountCount: 1,
+        phase: `reload ${reloadIndex + 1}`,
+        requireAuburnSelectionOutline: false,
+      });
       await expect(page.locator("body")).not.toContainText(
         "Maximum update depth exceeded"
       );

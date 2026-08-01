@@ -451,6 +451,10 @@
         "cabinetry-browser-modules",
         "multi-room-browser-modules"
       ],
+      "reportOwnershipRegistrations": [
+        "cabinetry-browser-registrations",
+        "multi-room-browser-registrations"
+      ],
       "requiredSources": [],
       "requiredTests": [
         { "id": "commerce.shopify-cart-checkout", "file": "tests/e2e/05-buy.spec.ts", "title": "add Shopify-mapped item to cart and checkout link works" },
@@ -485,6 +489,10 @@
         "cabinetry-browser-modules",
         "multi-room-browser-modules"
       ],
+      "reportOwnershipRegistrations": [
+        "cabinetry-browser-registrations",
+        "multi-room-browser-registrations"
+      ],
       "requiredSources": [],
       "requiredTests": [
         { "id": "commerce.shopify-cart-checkout", "file": "tests/e2e/05-buy.spec.ts", "title": "add Shopify-mapped item to cart and checkout link works" },
@@ -514,6 +522,7 @@
       "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "21953753f89d99e6e1d9c07447e2648cb8e042e3a830467fc4a40fc7a08c82b4" },
       "runner": "playwright",
       "supportingInventories": ["cabinetry-browser-modules"],
+      "reportOwnershipRegistrations": ["cabinetry-browser-registrations"],
       "requiredSources": ["tests/e2e/cabinetry-studio.spec.ts"],
       "requiredTests": [
         { "id": "cabinetry.wardrobe-selection", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "Detailed wardrobe selection stays coherent from module to shelf and back" },

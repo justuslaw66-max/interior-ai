@@ -94,9 +94,9 @@ const REQUIRED_CONFIGURATION_SHAPE = [
   ["ADMIN_EMAILS"],
 ];
 const SENSITIVE_ENVIRONMENT_NAME =
-  /(SECRET|TOKEN|PASSWORD|PRIVATE_KEY|COOKIE|DATABASE_URL|AUTH_SECRET|CLIENT_SECRET)/i;
+  /(SECRET|TOKEN|PASSWORD|PRIVATE_KEY|API_KEY|ACCESS_KEY|COOKIE|DATABASE_URL|AUTH_SECRET|CLIENT_SECRET)/i;
 const SENSITIVE_MANIFEST_KEY =
-  /(secret|token|password|private.?key|cookie|database.?url|credential)/i;
+  /(secret|token|password|private.?key|api.?key|access.?key|cookie|database.?url|credential)/i;
 const REPOSITORY_EVIDENCE_STATEMENT =
   "Repository evidence only: a local production-mode Next.js artifact is not a Vercel, staging, or production deployment.";
 const EXTERNAL_CONTROLS = [

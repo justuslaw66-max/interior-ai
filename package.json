@@ -18,6 +18,7 @@
     "release:vercel:certify": "node scripts/vercel-prebuilt-release.mjs certify",
     "release:vercel:promote": "node scripts/vercel-prebuilt-release.mjs promote",
     "test:required-test-truthfulness": "node scripts/test-required-test-truthfulness.mjs",
+    "evidence:required-tests:prepare-upload": "node scripts/required-test-truthfulness.mjs prepare-upload",
     "test:production-artifact-evidence": "node scripts/test-production-artifact-evidence.mjs",
     "evidence:production:build": "node scripts/production-artifact-evidence.mjs build",
     "evidence:production:serve": "node scripts/production-artifact-evidence.mjs serve",

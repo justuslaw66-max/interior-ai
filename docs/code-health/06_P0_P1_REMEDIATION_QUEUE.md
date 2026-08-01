@@ -10,15 +10,15 @@ CH-0017 starting HEAD: `cea0cabe53742da8b47c1e119d889033351a1fdf`
 
 Post-triage documentation checkpoint: `195deacba6e22293b4e887dd4b4bb5203028c0fb`
 
-This queue began as a post-CH-0001 evidence review and now includes the completed CH-0012, CH-0016, and CH-0017 repository remediations. It does not authorize another finding, push, deployment, external-control changes, or release promotion. CH-0017 started from clean `cea0cabe53742da8b47c1e119d889033351a1fdf`; CH-0001, CH-0012, and CH-0016 were ancestors. The listening Node process resolved with `lsof` to the canonical repository before code edits.
+This queue began as a post-CH-0001 evidence review and now includes completed CH-0012 and CH-0016 repository remediations plus the reopened CH-0017 Outcome-D follow-up. It does not authorize another finding, push, deployment, external-control changes, or release promotion. CH-0017 started from clean `cea0cabe53742da8b47c1e119d889033351a1fdf`; Outcome D was reproduced from exact head `b811ddeaad5f3e2d64f647bad5c5fbe59db1615b`; CH-0001, CH-0012, and CH-0016 were ancestors. The listening Node process resolved with `lsof` to the canonical repository before code edits.
 
 ## Counts and selected action
 
 - Unresolved P0: **0**.
-- Unresolved P1: **13**.
-- Resolved P1: **4** (`CH-0001`, `CH-0012`, `CH-0016`, `CH-0017`).
+- Unresolved P1: **14** (including reopened `CH-0017`).
+- Resolved P1: **3** (`CH-0001`, `CH-0012`, `CH-0016`).
 - Former P1 findings downgraded with current evidence: **2** (`CH-0009`, `CH-0014`).
-- Selected next batch: **CH-0004 trusted event provenance**. It is now the highest-risk `READY` P1 after higher-ranked decision-blocked findings. No CH-0004 implementation was started.
+- Selected active batch: **reopened CH-0017 required-test truthfulness**. CH-0004 remains the next otherwise-READY P1, but it is paused and was not started.
 
 ## Classification summary
 
@@ -40,7 +40,7 @@ This queue began as a post-CH-0001 evidence review and now includes the complete
 | CH-0014 | P2 | DOWNGRADED_WITH_EVIDENCE | Source shows per-item ownership, but no measured P1 outage, data loss, or security/privacy consequence is currently demonstrated. |
 | CH-0015 | P1 | READY | Invisible focusable drawer content is a concrete accessibility/core-workflow defect and a shared primitive exists. |
 | CH-0016 | P1, resolved | RESOLVED | Strict clean-source build, artifact/trace hashing, production start, and health/report identity now fail closed; CI upload/retention is configured but external execution and platform acceptance remain unverified. |
-| CH-0017 | P1, resolved | RESOLVED | Repository-controlled test discovery, execution, reporting, cadence, and artifact binding now fail closed; external GitHub enforcement remains unverified. |
+| CH-0017 | P1, reopened | REOPENED | Outcome-D repository defects are fixed locally, but a new exact-head workflow run and required GitHub status-check configuration remain unverified. |
 | CH-0018 | P1 | BLOCKED_DEPENDENCY | Supported predecessor versions and a representative sanitized fixture owner are required. |
 | CH-0019 | P1 release / P2 code health | READY | Several bounded baseline batches are independent; failures must remain separate from CH-0001. |
 
@@ -165,11 +165,13 @@ This queue began as a post-CH-0001 evidence review and now includes the complete
 
 ### CH-0017 — omitted and false-pass tests
 
-- **Status:** `RESOLVED — REPOSITORY REMEDIATION COMPLETE; EXTERNAL CI ENFORCEMENT VERIFICATION REQUIRED`. Local implementation SHA is reported after commit.
+- **Status:** `REOPENED AFTER OUTCOME D — REPOSITORY FOLLOW-UP COMPLETE LOCALLY; EXTERNAL WORKFLOW AND ENFORCEMENT VERIFICATION REQUIRED`. Original implementation: `c840c06dc2c5e67f463542292bb7391b0f93d731`; first external-hardening follow-up: `b811ddeaad5f3e2d64f647bad5c5fbe59db1615b`; Outcome-D follow-up: the commit containing this record.
 - **Verified root cause:** `05-buy.spec.ts` and `07-kelsey-variants.spec.ts` turned absent prerequisites into expected Playwright passes; the cabinetry GLB export check swallowed a missing `FileReader` and exited zero; live progress was omitted from the required floor-plan chain; critical domain suites lacked a required CI owner; the full-E2E job was advisory without a distinct release contract; Gate A3 trusted aggregate counts/URL without child status, file/project scope, stable identities, freshness, or artifact-bound evidence; cabinetry used a minimum count; CH-0016 runtime smoke trusted aggregates rather than its two requirement identities.
 - **Implemented contract:** The canonical manifest classifies all 245 script tests, 98 Playwright specs, 14 imported cabinetry/multi-room browser modules, and 8 imported cabinetry script-test modules by cadence and locks their path inventories, split-suite registrations, and recursively reachable package-command closures. Every required entry names its invariant, command, sources/identities, projects, skip/retry policy, report type, artifact policy, and enforcement point. Required Playwright evidence is process-bound and rejects focus/filter/shard, zero/missing/moved/excluded scope, skipped/retried/flaky/annotated/not-run/failed cases, aggregate disagreement, malformed/stale/tampered output, dirty release source, wrong source/artifact/deployment, machine-local paths, and secret-bearing fields. The six named commerce/Kelsey requirements now fail missing prerequisites and are locked in Gate A3; the GLB export assertion executes under a deterministic Node `FileReader` shim; live progress is required; critical domains are in stable CI; advisory full E2E and release Gate A3 are unambiguous. CH-0016 locks two stable runtime identities. Cabinetry owns all 23 registered browser identities and consumes the wrapper envelope/report bound to the top-level release-candidate artifact.
-- **Coverage and compatibility:** The temporary-fixture negative suite and real CH-0016/cabinetry integrations cover the contract. Test expectations and the cabinetry release-evidence contract schema were strengthened only to replace false passes. No product/data behavior, threshold, dependency, framework, product/database/persisted-data schema, migration, catalog, deployment, or external setting changed. Honest existing failures are not reclassified.
-- **Scope and rollback:** Revert the single CH-0017 implementation commit. This restores false-pass and aggregate-only release evidence, so it is an emergency rollback rather than an acceptable steady state. Ignored generated evidence is regenerated.
+- **Outcome-D evidence and remediation:** Exact-head GitHub run `30658564565` attempts 1 and 2 passed secret scan, 42 migrations, truthfulness/evidence contracts, and strict build, then failed only the furnished-template runtime identity at the same implicit five-second diagnostics poll. The fixture is browser-local and its GLB load/normalization/bounds diagnostics are client-computed; no database/API/worker/scheduler producer is missing. This is a test synchronization defect. The runtime now exposes `loading`/`ready`/terminal-`error`, and required smoke waits on that semantic state with bounded safe diagnostics while retaining the original behavioral assertions. Local CI-shaped production smoke passed both stable identities with process exit 0 and 0/0/0 failed/flaky/skipped.
+- **Ownership and portability:** Aggregator specs own execution; each registered imported module must contribute report records in every required project before attribution to exactly one owner. Missing/reclassified modules and owner-only false coverage fail, while helpers remain non-runnable. Advisory upload preparation atomically publishes only strict UTF-8 text with portable path placeholders and a complete included/omitted inventory; binary/archive content is omitted, generic/shaped secrets are rejected, and failure removes the upload directory. Required stable evidence remains unavailable after smoke failure by design.
+- **Coverage and compatibility:** The temporary-fixture negative suite and real CH-0016/cabinetry integrations cover the contract, module attribution, unsafe-path/credential/binary cases, and atomic upload failure. Test expectations and the cabinetry release-evidence contract schema were strengthened only to replace false passes. No product/data behavior, threshold, dependency, framework, product/database/persisted-data schema, migration, catalog, deployment, or external setting changed. Honest existing failures are not reclassified. Ruleset `staging-light-protection` (`13671593`) still requires no status check; no ruleset mutation is part of this batch.
+- **Scope and rollback:** Revert the Outcome-D follow-up first, then `b811ddeaad5f3e2d64f647bad5c5fbe59db1615b`, then `c840c06dc2c5e67f463542292bb7391b0f93d731`. This restores timing-dependent smoke, unsafe/raw retention, and false-pass/aggregate-only evidence, so it is an emergency rollback rather than an acceptable steady state. Ignored generated evidence is regenerated.
 
 ### CH-0018 — fresh-only migration validation
 
@@ -205,11 +207,11 @@ Risk order includes blocked findings so decisions are visible; `READY` ordering 
 3. `CH-0008` — `REQUIRES_PRODUCT_DECISION` (fail-open public product availability).
 4. `CH-0012` — `RESOLVED` (canonical saved-design routing repository remediation complete).
 5. `CH-0016` — `RESOLVED` (production-equivalent artifact evidence repository remediation complete; external execution remains unverified).
-6. `CH-0017` — `RESOLVED` (required test truthfulness and coverage; external CI enforcement unverified).
+6. `CH-0017` — `REOPENED`, **selected active batch** (Outcome-D repository follow-up complete locally; external workflow and enforcement unverified).
 7. `CH-0018` — `BLOCKED_DEPENDENCY` (populated upgrade/data-loss evidence).
 8. `CH-0010` — `REQUIRES_PRODUCT_DECISION` (permanent share revocation and auto-sharing).
 9. `CH-0011` — `REQUIRES_PRODUCT_DECISION` (privacy consent/masking and external PostHog state).
-10. `CH-0004` — `READY`, **selected next batch** (trusted event provenance).
+10. `CH-0004` — `READY`, **paused until CH-0017 closes** (trusted event provenance).
 11. `CH-0006` — `BLOCKED_DEPENDENCY` (legacy public API consumers).
 12. `CH-0003` — `REQUIRES_PRODUCT_DECISION` (distributed cost budgets/outage policy).
 13. `CH-0005` — `REQUIRES_PRODUCT_DECISION` (retirement authority).
@@ -217,7 +219,7 @@ Risk order includes blocked findings so decisions are visible; `READY` ordering 
 15. `CH-0015` — `READY` (accessible overlay ownership).
 16. `CH-0019` — `READY` in bounded baseline batches and required before architectural refactoring.
 
-`CH-0009` and `CH-0014` remain queued as P2; neither competes in the P1 decision rule. Baseline A/B/C should be accumulated as independent reviewed fixes before architectural refactoring, but the single next selected P1 is now CH-0004.
+`CH-0009` and `CH-0014` remain queued as P2; neither competes in the P1 decision rule. Baseline A/B/C should be accumulated as independent reviewed fixes before architectural refactoring. The active finding remains reopened CH-0017; CH-0004 must not begin until its external workflow and enforcement verification is complete.
 
 ## Completed batch record: CH-0012 only
 

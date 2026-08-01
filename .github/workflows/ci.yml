@@ -220,15 +220,17 @@ jobs:
       - name: Run advisory full E2E inventory
         run: npm run test:e2e:advisory
 
+      - name: Prepare portable advisory evidence
+        if: always()
+        run: npm run evidence:required-tests:prepare-upload
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-full-results
-          path: |
-            .local/required-test-evidence/
-            test-results/
-          if-no-files-found: ignore
+          path: .local/required-test-upload/
+          if-no-files-found: error
           retention-days: 30
 
   merge-gate:

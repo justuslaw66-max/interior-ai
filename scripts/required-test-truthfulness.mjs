@@ -5,6 +5,7 @@ import {
   mkdirSync,
   readFileSync,
   readdirSync,
+  renameSync,
   rmSync,
   statSync,
   writeFileSync,
@@ -18,9 +19,37 @@ export const REQUIRED_TEST_EVIDENCE_SCHEMA =
   "interior-ai.required-test-evidence.v1";
 
 const DEFAULT_MANIFEST_PATH = "scripts/required-test-manifest.json";
+const DEFAULT_REQUIRED_TEST_EVIDENCE_ROOT = ".local/required-test-evidence";
+const DEFAULT_REQUIRED_TEST_UPLOAD_ROOT = ".local/required-test-upload";
 const UTC_TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 const SENSITIVE_KEY =
-  /(secret|token|password|private.?key|cookie|database.?url|credential)/i;
+  /(secret|token|password|private.?key|api.?key|access.?key|cookie|database.?url|credential)/i;
+const RETAINED_TEXT_EXTENSIONS = new Set([
+  ".css",
+  ".html",
+  ".js",
+  ".json",
+  ".log",
+  ".md",
+  ".txt",
+  ".xml",
+  ".yaml",
+  ".yml",
+]);
+const PROHIBITED_ENVIRONMENT_OUTPUT =
+  /["']?\b(?:AUTH_SECRET|NEXTAUTH_SECRET|DATABASE_URL|GOOGLE_CLIENT_SECRET|OPENAI_API_KEY|SHOPIFY_STOREFRONT_(?:ACCESS_)?TOKEN|STRIPE_SECRET_KEY|STRIPE_WEBHOOK_SECRET)["']?\s*(?:=|:)/i;
+const SHAPED_SECRET_VALUE =
+  /\b(?:GOCSPX-[A-Za-z0-9_-]{8,}|sk_(?:live|test)_[A-Za-z0-9_-]{8,}|whsec_[A-Za-z0-9_-]{8,})\b/;
+const GENERIC_CREDENTIAL_VALUE =
+  /(?:\bgithub_pat_[A-Za-z0-9_]{10,}|\bgh[pousr]_[A-Za-z0-9_]{10,}|\bAuthorization\s*:\s*(?:Bearer|Basic)\s+\S+|-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----)/i;
+const BINARY_SIGNATURES = [
+  [0x50, 0x4b, 0x03, 0x04],
+  [0x1f, 0x8b],
+  [0x89, 0x50, 0x4e, 0x47],
+  [0xff, 0xd8, 0xff],
+  [0x1a, 0x45, 0xdf, 0xa3],
+  [0x25, 0x50, 0x44, 0x46, 0x2d],
+];
 
 function sha256(bytes) {
   return createHash("sha256").update(bytes).digest("hex");
@@ -28,6 +57,287 @@ function sha256(bytes) {
 
 function normalizePath(value) {
   return value.split(path.sep).join("/");
+}
+
+function machineLocalPathPatterns() {
+  return [
+    /\/home\/[^\s"'<>]+/gi,
+    /\/Users\/[^\s"'<>]+/gi,
+    /\/(?:private\/)?tmp\/[^\s"'<>]+/gi,
+    /\/(?:private\/)?var\/(?:tmp|folders)\/[^\s"'<>]+/gi,
+    /\b[A-Za-z]:[\\/](?:Users[\\/]|Temp[\\/]|a[\\/])[^\s"'<>]+/gi,
+  ];
+}
+
+export function sanitizePortableEvidenceText(text, repositoryRoot) {
+  let sanitized = text;
+  const repositoryRoots = [path.resolve(repositoryRoot), normalizePath(path.resolve(repositoryRoot))]
+    .filter((root, index, values) => values.indexOf(root) === index)
+    .sort((left, right) => right.length - left.length);
+  for (const root of repositoryRoots) {
+    sanitized = sanitized.split(root).join("<WORKSPACE>");
+  }
+  for (const pattern of machineLocalPathPatterns()) {
+    sanitized = sanitized.replace(pattern, "<WORKSPACE>");
+  }
+  return sanitized;
+}
+
+function containsMachineLocalPath(text) {
+  return machineLocalPathPatterns().some((pattern) => pattern.test(text));
+}
+
+function leakedSensitiveEnvironmentText(text, environment) {
+  return Object.entries(environment ?? {})
+    .filter(
+      ([name, value]) =>
+        SENSITIVE_KEY.test(name) &&
+        typeof value === "string" &&
+        value.length >= 8 &&
+        text.includes(value),
+    )
+    .map(([name]) => name);
+}
+
+function sanitizeEvidenceValue(value, repositoryRoot) {
+  if (typeof value === "string") {
+    return sanitizePortableEvidenceText(value, repositoryRoot);
+  }
+  if (Array.isArray(value)) {
+    return value.map((entry) => sanitizeEvidenceValue(entry, repositoryRoot));
+  }
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, child]) => [
+        key,
+        sanitizeEvidenceValue(child, repositoryRoot),
+      ]),
+    );
+  }
+  return value;
+}
+
+function decodeInspectableText(relativePath, bytes) {
+  if (
+    BINARY_SIGNATURES.some(
+      (signature) =>
+        bytes.length >= signature.length &&
+        signature.every((byte, index) => bytes[index] === byte),
+    )
+  ) {
+    throw new Error(`retained evidence ${relativePath} has a binary or archive signature`);
+  }
+  if (
+    bytes.some(
+      (byte) => byte === 0 || (byte < 0x20 && byte !== 0x09 && byte !== 0x0a && byte !== 0x0d),
+    )
+  ) {
+    throw new Error(`retained evidence ${relativePath} contains binary control bytes`);
+  }
+  try {
+    return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  } catch {
+    throw new Error(`retained evidence ${relativePath} is not valid UTF-8 text`);
+  }
+}
+
+function assertRetainedTextSafe(relativePath, text, environment, parsedJson = null) {
+  if (containsMachineLocalPath(text)) {
+    throw new Error(`retained evidence ${relativePath} contains a machine-local path`);
+  }
+  if (PROHIBITED_ENVIRONMENT_OUTPUT.test(text)) {
+    throw new Error(`retained evidence ${relativePath} contains prohibited environment output`);
+  }
+  if (SHAPED_SECRET_VALUE.test(text)) {
+    throw new Error(`retained evidence ${relativePath} contains a shaped secret value`);
+  }
+  if (GENERIC_CREDENTIAL_VALUE.test(text)) {
+    throw new Error(`retained evidence ${relativePath} contains a generic credential value`);
+  }
+  const environmentLeaks = leakedSensitiveEnvironmentText(text, environment);
+  if (environmentLeaks.length > 0) {
+    throw new Error(
+      `retained evidence ${relativePath} contains sensitive environment values: ${environmentLeaks.join(", ")}`,
+    );
+  }
+  if (parsedJson) {
+    const secretFields = sensitiveKeys(parsedJson);
+    if (secretFields.length > 0) {
+      throw new Error(
+        `retained evidence ${relativePath} contains secret-bearing fields: ${secretFields.join(", ")}`,
+      );
+    }
+  }
+}
+
+function listRetainedEvidenceFiles(root, relativeDirectory) {
+  const directory = repositoryPath(root, relativeDirectory, "retained evidence directory");
+  if (!existsSync(directory) || !statSync(directory).isDirectory()) {
+    throw new Error(`retained evidence directory ${relativeDirectory} is missing`);
+  }
+  const files = [];
+  const visit = (absoluteDirectory) => {
+    for (const entry of readdirSync(absoluteDirectory, { withFileTypes: true }).sort(
+      (left, right) => (left.name < right.name ? -1 : left.name > right.name ? 1 : 0),
+    )) {
+      const absolutePath = path.join(absoluteDirectory, entry.name);
+      const relativePath = normalizePath(path.relative(root, absolutePath));
+      if (entry.isSymbolicLink()) {
+        throw new Error(`retained evidence cannot contain symbolic link ${relativePath}`);
+      }
+      if (entry.isDirectory()) visit(absolutePath);
+      else if (entry.isFile()) files.push(relativePath);
+      else throw new Error(`retained evidence contains unsupported entry ${relativePath}`);
+    }
+  };
+  visit(directory);
+  return files;
+}
+
+export function auditRetainedEvidenceDirectory({
+  repositoryRoot,
+  evidenceRoot = DEFAULT_REQUIRED_TEST_UPLOAD_ROOT,
+  environment = process.env,
+}) {
+  const root = path.resolve(repositoryRoot);
+  const files = listRetainedEvidenceFiles(root, evidenceRoot);
+  if (files.length === 0) throw new Error("retained evidence upload is empty");
+  for (const relativePath of files) {
+    if (!RETAINED_TEXT_EXTENSIONS.has(path.extname(relativePath).toLowerCase())) {
+      throw new Error(`retained evidence contains uninspectable file ${relativePath}`);
+    }
+    const text = decodeInspectableText(
+      relativePath,
+      readFileSync(path.join(root, relativePath)),
+    );
+    let parsedJson = null;
+    if (path.extname(relativePath).toLowerCase() === ".json") {
+      try {
+        parsedJson = JSON.parse(text);
+      } catch {
+        throw new Error(`retained evidence ${relativePath} is malformed JSON`);
+      }
+    }
+    assertRetainedTextSafe(relativePath, text, environment, parsedJson);
+  }
+  return files;
+}
+
+export function prepareRequiredTestEvidenceUpload({
+  repositoryRoot,
+  evidenceRoot = DEFAULT_REQUIRED_TEST_EVIDENCE_ROOT,
+  uploadRoot = DEFAULT_REQUIRED_TEST_UPLOAD_ROOT,
+  environment = process.env,
+}) {
+  const root = path.resolve(repositoryRoot);
+  const inputRoot = repositoryPath(root, evidenceRoot, "required-test evidence root");
+  const outputRoot = repositoryPath(root, uploadRoot, "required-test upload root");
+  const canonicalOutputRoot = path.join(root, DEFAULT_REQUIRED_TEST_UPLOAD_ROOT);
+  if (
+    normalizePath(uploadRoot) !== DEFAULT_REQUIRED_TEST_UPLOAD_ROOT ||
+    outputRoot !== canonicalOutputRoot
+  ) {
+    throw new Error(
+      `required-test upload root must be exactly ${DEFAULT_REQUIRED_TEST_UPLOAD_ROOT}`,
+    );
+  }
+  if (inputRoot === outputRoot || outputRoot.startsWith(`${inputRoot}${path.sep}`)) {
+    throw new Error("required-test upload root must be separate from raw Playwright output");
+  }
+  const stagingUploadRoot = `${DEFAULT_REQUIRED_TEST_UPLOAD_ROOT}.staging`;
+  const stagingRoot = path.join(root, stagingUploadRoot);
+  rmSync(outputRoot, { recursive: true, force: true });
+  rmSync(stagingRoot, { recursive: true, force: true });
+  try {
+    const inputFiles = listRetainedEvidenceFiles(root, evidenceRoot);
+    const included = [];
+    const omitted = [];
+    for (const inputRelativePath of inputFiles) {
+      const relativeWithinEvidence = normalizePath(
+        path.relative(inputRoot, path.join(root, inputRelativePath)),
+      );
+      const extension = path.extname(inputRelativePath).toLowerCase();
+      if (!RETAINED_TEXT_EXTENSIONS.has(extension)) {
+        omitted.push({
+          path: relativeWithinEvidence,
+          reason: "uninspectable-or-binary",
+        });
+        continue;
+      }
+      const rawText = decodeInspectableText(
+        relativeWithinEvidence,
+        readFileSync(path.join(root, inputRelativePath)),
+      );
+      let sanitizedText;
+      let parsedJson = null;
+      if (extension === ".json") {
+        let rawJson;
+        try {
+          rawJson = JSON.parse(rawText);
+        } catch {
+          throw new Error(`required-test evidence ${relativeWithinEvidence} is malformed JSON`);
+        }
+        parsedJson = sanitizeEvidenceValue(rawJson, root);
+        sanitizedText = `${JSON.stringify(parsedJson, null, 2)}\n`;
+      } else {
+        sanitizedText = sanitizePortableEvidenceText(rawText, root);
+      }
+      assertRetainedTextSafe(relativeWithinEvidence, sanitizedText, environment, parsedJson);
+      const outputRelativePath = normalizePath(
+        path.posix.join(
+          stagingUploadRoot,
+          "required-test-evidence",
+          relativeWithinEvidence,
+        ),
+      );
+      const outputAbsolutePath = repositoryPath(
+        root,
+        outputRelativePath,
+        "sanitized required-test evidence output",
+      );
+      mkdirSync(path.dirname(outputAbsolutePath), { recursive: true });
+      writeFileSync(outputAbsolutePath, sanitizedText);
+      included.push(relativeWithinEvidence);
+    }
+    if (included.length === 0) {
+      throw new Error("required-test evidence contains no inspectable files to retain");
+    }
+    const inventory = {
+      schema: "interior-ai.retained-required-test-evidence.v1",
+      policy: {
+        textPaths: "sanitized-to-<WORKSPACE>",
+        sensitiveValues: "rejected",
+        uninspectableOrBinary: "omitted",
+        uploadRoot: DEFAULT_REQUIRED_TEST_UPLOAD_ROOT,
+      },
+      included: included.sort(),
+      omitted: omitted.sort((left, right) =>
+        left.path < right.path ? -1 : left.path > right.path ? 1 : 0,
+      ),
+      prohibitedContentScan: "passed",
+    };
+    mkdirSync(stagingRoot, { recursive: true });
+    writeFileSync(
+      path.join(stagingRoot, "retained-evidence-inventory.json"),
+      `${JSON.stringify(inventory, null, 2)}\n`,
+    );
+    auditRetainedEvidenceDirectory({
+      repositoryRoot: root,
+      evidenceRoot: stagingUploadRoot,
+      environment,
+    });
+    renameSync(stagingRoot, outputRoot);
+    const retainedFiles = auditRetainedEvidenceDirectory({
+      repositoryRoot: root,
+      evidenceRoot: uploadRoot,
+      environment,
+    });
+    return { included, omitted, retainedFiles };
+  } catch (error) {
+    rmSync(stagingRoot, { recursive: true, force: true });
+    rmSync(outputRoot, { recursive: true, force: true });
+    throw error;
+  }
 }
 
 function repositoryPath(repositoryRoot, relativePath, description) {
@@ -208,6 +518,88 @@ function validateGateShape(gate, issues) {
   }
 }
 
+function resolveRegisteredModulePath(repositoryRoot, entryPath, modulePath) {
+  const basePath = normalizePath(
+    path.posix.join(path.posix.dirname(entryPath), modulePath),
+  );
+  const candidates = /\.[A-Za-z0-9]+$/.test(basePath)
+    ? [basePath]
+    : [basePath, `${basePath}.ts`, `${basePath}.tsx`, `${basePath}.mjs`, `${basePath}.js`];
+  return candidates.find((candidate) => {
+    const absolutePath = path.join(repositoryRoot, candidate);
+    return existsSync(absolutePath) && statSync(absolutePath).isFile();
+  }) ?? null;
+}
+
+function reportOwnershipAliases(manifest, gate, inventories, repositoryRoot, issues) {
+  const aliases = new Map();
+  const runnableSources = new Set(expectedSources(manifest, gate, inventories));
+  const supportingSources = new Set(
+    (gate.supportingInventories ?? []).flatMap(
+      (inventoryId) => inventories.get(inventoryId) ?? [],
+    ),
+  );
+  const registrationGroups = new Map(
+    (manifest.requiredRegistrations ?? []).map((group) => [group.id, group]),
+  );
+  const requiredOwnershipGroups = (manifest.requiredRegistrations ?? []).filter(
+    (group) =>
+      runnableSources.has(group.entry) &&
+      group.entry.endsWith(".spec.ts") &&
+      (group.registrations ?? []).length > 0,
+  );
+  const selectedGroupIds = gate.reportOwnershipRegistrations ?? [];
+  const selectedGroupIdSet = new Set(selectedGroupIds);
+  if (selectedGroupIdSet.size !== selectedGroupIds.length) {
+    issues.push(`gate ${gate.id} duplicates an aggregator ownership registration group`);
+  }
+  for (const group of requiredOwnershipGroups) {
+    if (!selectedGroupIdSet.has(group.id)) {
+      issues.push(
+        `gate ${gate.id} omits aggregator ownership registration group ${group.id}`,
+      );
+    }
+  }
+  for (const groupId of selectedGroupIds) {
+    const group = registrationGroups.get(groupId);
+    if (!group) {
+      issues.push(`gate ${gate.id} references unknown aggregator ownership group ${groupId}`);
+      continue;
+    }
+    if (!runnableSources.has(group.entry) || !group.entry.endsWith(".spec.ts")) {
+      issues.push(
+        `gate ${gate.id} aggregator owner ${group.entry} is not a runnable required spec`,
+      );
+    }
+    for (const registration of group.registrations ?? []) {
+      const source = resolveRegisteredModulePath(
+        repositoryRoot,
+        group.entry,
+        registration.module,
+      );
+      if (!source) {
+        issues.push(
+          `required registration ${group.id} module ${registration.module} is missing`,
+        );
+        continue;
+      }
+      if (!supportingSources.has(source)) {
+        issues.push(
+          `gate ${gate.id} registered imported module ${source} is not classified by a supporting inventory`,
+        );
+      }
+      if (aliases.has(source)) {
+        issues.push(
+          `gate ${gate.id} imported module ${source} has more than one aggregator owner`,
+        );
+      } else {
+        aliases.set(source, group.entry);
+      }
+    }
+  }
+  return aliases;
+}
+
 export function validateRequiredTestRepository({
   repositoryRoot,
   manifestPath = DEFAULT_MANIFEST_PATH,
@@ -261,6 +653,7 @@ export function validateRequiredTestRepository({
         issues.push(`gate ${gate.id} references missing supporting inventory ${inventoryId}`);
       }
     }
+    reportOwnershipAliases(manifest, gate, inventories, root, issues);
     for (const source of gate.requiredSources ?? []) {
       let absolutePath;
       try {
@@ -413,6 +806,17 @@ export function validateRequiredTestRepository({
       const escapedSymbol = registration.symbol.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       if (!new RegExp(`\\b${escapedSymbol}\\s*\\(\\s*\\)\\s*;`).test(entrySource)) {
         issues.push(`required registration ${registrationGroup.id} does not invoke ${registration.symbol}`);
+      }
+      if (
+        !resolveRegisteredModulePath(
+          root,
+          registrationGroup.entry,
+          registration.module,
+        )
+      ) {
+        issues.push(
+          `required registration ${registrationGroup.id} module ${registration.module} is missing`,
+        );
       }
     }
   }
@@ -634,7 +1038,34 @@ export function validateRequiredTestReport({
       }
     }
   }
-  const records = collectReportTests(report.suites);
+  const ownershipIssues = [];
+  const ownershipAliases = reportOwnershipAliases(
+    repository.manifest,
+    gate,
+    repository.inventories,
+    path.resolve(repositoryRoot),
+    ownershipIssues,
+  );
+  issues.push(...ownershipIssues);
+  const reportedRecords = collectReportTests(report.suites);
+  for (const importedModule of ownershipAliases.keys()) {
+    for (const project of requiredProjects) {
+      if (
+        !reportedRecords.some(
+          (record) => record.file === importedModule && record.project === project,
+        )
+      ) {
+        issues.push(
+          `gate ${gateId} registered imported module ${importedModule} did not contribute test records in project ${project}`,
+        );
+      }
+    }
+  }
+  const records = reportedRecords.map((record) => ({
+    ...record,
+    reportedFile: record.file,
+    file: ownershipAliases.get(record.file) ?? record.file,
+  }));
   const recordIdentities = records.map(
     (record) => `${record.file}\u0000${record.title}\u0000${record.project}`,
   );
@@ -1100,9 +1531,14 @@ async function cli() {
     });
     if (!result.valid) throw new Error(result.issues.join("; "));
     console.log(`Required-test evidence ${process.argv[3]} is valid.`);
+  } else if (command === "prepare-upload") {
+    const result = prepareRequiredTestEvidenceUpload({ repositoryRoot });
+    console.log(
+      `Prepared ${result.included.length} portable required-test evidence files; omitted ${result.omitted.length} uninspectable or binary files.`,
+    );
   } else {
     throw new Error(
-      "Usage: required-test-truthfulness.mjs check|run <gate-id>|verify <gate-id> [evidence-path]",
+      "Usage: required-test-truthfulness.mjs check|run <gate-id>|verify <gate-id> [evidence-path]|prepare-upload",
     );
   }
 }

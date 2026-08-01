@@ -65,6 +65,14 @@ requirement identities, the Chromium project, unfiltered configuration,
 `forbidOnly`, per-test execution, and aggregate/per-test agreement through the
 canonical required-test manifest.
 
+The furnished-template identity does not infer readiness from completed GLB
+HTTP responses. The production component reports its existing semantic load
+lifecycle to diagnostics. The test fails immediately on a terminal load code,
+waits boundedly for semantic readiness, and then applies the original bounds,
+selection, remount, reload, and render-idle assertions. This fixes the external
+timing race without adding retries, seeding a test-only success state, changing
+`npm run start`, or weakening the required identity.
+
 Generated output is written only under the ignored directory
 `.local/production-artifact-evidence/`:
 
@@ -82,6 +90,17 @@ cleanup target to the dedicated upload directory, the bundle command removes
 any prior upload candidate, revalidates the complete evidence, scans artifact
 bytes for configured sensitive values, and packages only the approved inputs.
 Raw Playwright traces and other unscanned diagnostics are not upload inputs.
+
+Repository-owned artifact uploads are deliberately separate:
+
+| Job/path | Retained policy |
+| --- | --- |
+| `stable-checks` → `.local/production-artifact-evidence/upload/` | Only the validated standalone `.tar.gz` bundle and SHA-256 sidecar. The bundle is created only after required smoke succeeds; missing files fail the upload. Artifact bytes are scanned for every sensitive CI environment value, including API/access keys. |
+| `e2e-full` → `.local/required-test-upload/` | Only strictly decoded text evidence sanitized to portable paths and rescanned immediately before upload. The inventory names every included text file and every omitted binary/uninspectable Playwright file. Preparation publishes atomically; any failure leaves no uploadable directory. |
+| Raw `.local/required-test-evidence/`, `test-results/`, traces, video, screenshots, attachments, archives | Never direct upload inputs. Text diagnostics may be copied only through the sanitizer; uninspectable binary forms are omitted rather than rewritten. |
+
+The Git-history secret-scan action produces its GitHub check result; this
+repository supplies no `actions/upload-artifact` path for it.
 
 After downloading the GitHub artifact into a fresh directory, verify the archive
 sidecar, extract it, and run:
@@ -136,6 +155,14 @@ proves application configuration shape only; no external integration call or
 external-control claim follows from it. GitHub execution and artifact retention
 must be confirmed from an actual workflow run.
 
+Outcome-D execution at exact head `b811ddeaad5f3e2d64f647bad5c5fbe59db1615b`
+failed the first furnished-template diagnostic poll in both attempts while the
+health/catalog identity passed. Because bundling follows smoke, no stable bundle
+was published, which is the intended fail-closed ordering. The repository
+follow-up replaces the timing proxy with semantic model readiness and keeps the
+same source/artifact/report binding. A fresh external exact-head run is still
+required before durable evidence is claimed.
+
 Local validation output generated in `.local/production-artifact-evidence/`
 inside a detached worktree is ephemeral. Its hashes and results may be recorded
 for local verification, but the temporary manifest, runtime report, and built
@@ -166,8 +193,9 @@ process must attach platform evidence without copying secrets.
 
 ## Rollback
 
-If the CH-0017 external-run follow-up is present, revert it before reverting the
-focused CH-0016 implementation commit. That restores the previous lenient/dev
+Revert the Outcome-D follow-up first, then
+`b811ddeaad5f3e2d64f647bad5c5fbe59db1615b`, before reverting the focused CH-0016
+implementation commit. That restores the previous lenient/dev
 CI behavior and is therefore a release-integrity rollback, not a recommended
 steady state. No schema, migration-file, dependency-version, persisted data,
 deployment, or external configuration rollback is involved. Generated

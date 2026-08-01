@@ -15,6 +15,8 @@ export type GLBModelDiagnosticSnapshot = {
   boundsPublicationCount: number;
   excessiveBoundsWarningCount: number;
   selectionOutlineVisible: boolean;
+  loadState: "loading" | "ready" | "error";
+  loadErrorCode: "gltf-load-failed" | "gltf-loader-import-failed" | null;
 };
 
 type GLBDiagnosticsGlobal = typeof globalThis & {
@@ -52,6 +54,8 @@ function getDiagnostic(key: string, url: string) {
     boundsPublicationCount: 0,
     excessiveBoundsWarningCount: 0,
     selectionOutlineVisible: false,
+    loadState: "loading",
+    loadErrorCode: null,
   };
   store[key].url = url;
   return store[key];
@@ -103,6 +107,21 @@ export function recordGLBSelectionOutlineVisibility(
 ) {
   const diagnostic = getDiagnostic(key, url);
   if (diagnostic) diagnostic.selectionOutlineVisible = visible;
+}
+
+export function reportGLBModelLoadState(
+  key: string,
+  url: string,
+  state: GLBModelDiagnosticSnapshot["loadState"],
+  onLoadStateChange?: (state: GLBModelDiagnosticSnapshot["loadState"]) => void,
+  errorCode: GLBModelDiagnosticSnapshot["loadErrorCode"] = null
+) {
+  const diagnostic = getDiagnostic(key, url);
+  if (diagnostic) {
+    diagnostic.loadState = state;
+    diagnostic.loadErrorCode = state === "error" ? errorCode : null;
+  }
+  onLoadStateChange?.(state);
 }
 
 export function recordGLBExcessiveBoundsWarning(key: string, url: string) {

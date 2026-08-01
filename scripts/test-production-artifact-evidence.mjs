@@ -43,7 +43,7 @@ function git(root, args) {
   return execFileSync("git", args, { cwd: root, encoding: "utf8" }).trim();
 }
 
-async function fixture({ environmentOverrides = {} } = {}) {
+async function fixture({ environmentOverrides = {}, publicArtifactText = "public artifact\n" } = {}) {
   const root = mkdtempSync(path.join(tmpdir(), "ch-0016-evidence-"));
   write(root, ".gitignore", ".next/\n.local/\nnode_modules/\n*.local.js\n");
   write(root, "package.json", `${JSON.stringify({
@@ -73,7 +73,7 @@ async function fixture({ environmentOverrides = {} } = {}) {
     readFileSync(path.join(process.cwd(), "scripts/required-test-manifest.json"), "utf8"),
   );
   write(root, "generated/runtime.ts", "export const generated = true;\n");
-  write(root, "public/asset.txt", "public artifact\n");
+  write(root, "public/asset.txt", publicArtifactText);
   write(root, ".next/BUILD_ID", "build-fixture-001\n");
   write(root, ".next/build-manifest.json", "{}\n");
   write(root, ".next/required-server-files.json", "{}\n");
@@ -287,6 +287,24 @@ async function expectRejected(context, expectedText) {
   assert.equal(result.valid, true);
   assert.equal(result.manifest.repositoryEvidence.status, "valid");
   assert.equal(result.manifest.repositoryEvidence.releaseReady, false);
+}
+
+{
+  const openAiSecret = "gate-a3-ci-openai-placeholder";
+  const context = await fixture({
+    environmentOverrides: { OPENAI_API_KEY: openAiSecret },
+    publicArtifactText: `embedded ${openAiSecret}\n`,
+  });
+  await assert.rejects(
+    () =>
+      createProductionEvidenceBundle({
+        repositoryRoot: context.root,
+        manifestPath: context.manifestPath,
+        reportPath: context.reportPath,
+        environment: { OPENAI_API_KEY: openAiSecret },
+      }),
+    /production artifact contains sensitive environment values: OPENAI_API_KEY/,
+  );
 }
 
 {

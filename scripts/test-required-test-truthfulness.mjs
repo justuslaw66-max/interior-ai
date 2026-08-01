@@ -17,9 +17,12 @@ import {
   REQUIRED_TEST_EVIDENCE_SCHEMA,
   REQUIRED_TEST_MANIFEST_SCHEMA,
   assertCleanRequiredTestSource,
+  auditRetainedEvidenceDirectory,
   canonicalizeRequiredTestReport,
+  prepareRequiredTestEvidenceUpload,
   removeUnsafeRequiredTestArtifacts,
   requiredTestArtifactsAreUnsafe,
+  sanitizePortableEvidenceText,
   validateRequiredTestEvidence,
   validateRequiredTestReport,
   validateRequiredTestRepository,
@@ -131,6 +134,7 @@ function makeRepository() {
     packageClosure: packageClosure(packageScripts, ["test:release"]),
     runner: "playwright",
     supportingInventories: ["browser-test-modules"],
+    reportOwnershipRegistrations: ["fixture-browser-registration"],
     requiredSources: ["tests/e2e/required.spec.ts"],
     requiredTests: [
       {
@@ -292,7 +296,7 @@ function makeReport({
   sourceSha = SOURCE_SHA,
   artifactSha = ARTIFACT_SHA,
   project = "chromium",
-  file = "required.spec.ts",
+  file = "required-module.ts",
   title = "required identity",
   status = "passed",
   declaredStatus = "expected",
@@ -415,6 +419,261 @@ function writeEvidence(root, { report = makeReport(), mutateEvidence } = {}) {
   const result = reportResult(context.root, makeReport());
   assert.deepEqual(result.issues, []);
   assert.equal(result.valid, true, "a complete required suite must pass");
+}
+
+{
+  const context = makeRepository();
+  const portableCases = [
+    "/home/runner/work/interior-ai/interior-ai/test-results/error-context.md",
+    "/Users/example/Developer/interior-ai/test-results/error-context.md",
+    "C:\\Users\\example\\Developer\\interior-ai\\test-results\\error-context.md",
+    "/private/tmp/ch-0017/results/error-context.md",
+  ];
+  for (const machinePath of portableCases) {
+    const sanitized = sanitizePortableEvidenceText(
+      `Failure attachment: ${machinePath}`,
+      context.root,
+    );
+    assert.equal(sanitized.includes(machinePath), false);
+    assert.match(sanitized, /<WORKSPACE>/);
+  }
+}
+
+{
+  const context = makeRepository();
+  write(
+    context.root,
+    ".local/required-test-evidence/advisory.fixture/evidence.json",
+    `${JSON.stringify({
+      schema: REQUIRED_TEST_EVIDENCE_SCHEMA,
+      gateId: "advisory.fixture",
+      sourceCommitSha: SOURCE_SHA,
+      diagnostics: ["failed at /home/runner/work/interior-ai/interior-ai/tests/e2e/required.spec.ts"],
+    })}\n`,
+  );
+  write(
+    context.root,
+    ".local/required-test-evidence/advisory.fixture/playwright-output/failure/error-context.md",
+    "Location: /home/runner/work/interior-ai/interior-ai/tests/e2e/required.spec.ts:10:3\n",
+  );
+  write(
+    context.root,
+    ".local/required-test-evidence/advisory.fixture/playwright-output/failure/nested/debug.log",
+    "macOS source /Users/example/Developer/interior-ai/tests/e2e/required.spec.ts\n",
+  );
+  write(
+    context.root,
+    ".local/required-test-evidence/advisory.fixture/playwright-output/failure/trace.zip",
+    "uninspectable archive fixture",
+  );
+  const prepared = prepareRequiredTestEvidenceUpload({
+    repositoryRoot: context.root,
+    environment: { AUTH_SECRET: "fixture-sensitive-value" },
+  });
+  assert.equal(prepared.included.length, 3);
+  assert.deepEqual(prepared.omitted, [
+    {
+      path: "advisory.fixture/playwright-output/failure/trace.zip",
+      reason: "uninspectable-or-binary",
+    },
+  ]);
+  const retainedErrorContext = readFileSync(
+    path.join(
+      context.root,
+      ".local/required-test-upload/required-test-evidence/advisory.fixture/playwright-output/failure/error-context.md",
+    ),
+    "utf8",
+  );
+  assert.equal(retainedErrorContext.includes("/home/runner/work/"), false);
+  assert.match(retainedErrorContext, /<WORKSPACE>/);
+  assert.doesNotThrow(() =>
+    auditRetainedEvidenceDirectory({
+      repositoryRoot: context.root,
+      environment: { AUTH_SECRET: "fixture-sensitive-value" },
+    }),
+  );
+  write(
+    context.root,
+    ".local/required-test-upload/late-unsafe.log",
+    "late path /tmp/ch-0017/unsafe.log\n",
+  );
+  assert.throws(
+    () =>
+      auditRetainedEvidenceDirectory({
+        repositoryRoot: context.root,
+        environment: { AUTH_SECRET: "fixture-sensitive-value" },
+      }),
+    /contains a machine-local path/,
+  );
+}
+
+{
+  const context = makeRepository();
+  write(
+    context.root,
+    ".local/required-test-evidence/advisory.fixture/playwright-output/nested.json",
+    `${JSON.stringify({ metadata: { OPENAI_API_KEY: "gate-a3-ci-openai-placeholder" } })}\n`,
+  );
+  assert.throws(
+    () => prepareRequiredTestEvidenceUpload({ repositoryRoot: context.root }),
+    /contains prohibited environment output|contains secret-bearing fields/,
+  );
+  assert.equal(existsSync(path.join(context.root, ".local/required-test-upload")), false);
+}
+
+{
+  const context = makeRepository();
+  write(
+    context.root,
+    ".local/required-test-evidence/advisory.fixture/playwright-output/environment.log",
+    "OPENAI_API_KEY: gate-a3-ci-openai-placeholder\n",
+  );
+  assert.throws(
+    () => prepareRequiredTestEvidenceUpload({ repositoryRoot: context.root }),
+    /contains prohibited environment output/,
+  );
+  assert.equal(existsSync(path.join(context.root, ".local/required-test-upload")), false);
+}
+
+{
+  const context = makeRepository();
+  write(
+    context.root,
+    ".local/required-test-evidence/advisory.fixture/playwright-output/renamed-archive.log",
+    Buffer.from([0x50, 0x4b, 0x03, 0x04, 0x00, 0xff]),
+  );
+  assert.throws(
+    () => prepareRequiredTestEvidenceUpload({ repositoryRoot: context.root }),
+    /has a binary or archive signature/,
+  );
+  assert.equal(
+    existsSync(path.join(context.root, ".local/required-test-upload")),
+    false,
+    "a binary-under-text-extension failure must leave nothing uploadable",
+  );
+}
+
+{
+  const context = makeRepository();
+  write(
+    context.root,
+    ".local/required-test-evidence/advisory.fixture/playwright-output/credential.txt",
+    "Authorization: Bearer github_pat_this_is_not_retained_123456\n",
+  );
+  assert.throws(
+    () => prepareRequiredTestEvidenceUpload({ repositoryRoot: context.root }),
+    /contains a generic credential value/,
+  );
+}
+
+{
+  const context = makeRepository();
+  const sentinelPath = path.join(context.root, "repository-sentinel.txt");
+  write(context.root, "repository-sentinel.txt", "must survive unsafe output input\n");
+  write(
+    context.root,
+    ".local/required-test-evidence/advisory.fixture/evidence.json",
+    "{}\n",
+  );
+  assert.throws(
+    () =>
+      prepareRequiredTestEvidenceUpload({
+        repositoryRoot: context.root,
+        uploadRoot: ".",
+      }),
+    /upload root must be exactly \.local\/required-test-upload/,
+  );
+  assert.equal(
+    readFileSync(sentinelPath, "utf8"),
+    "must survive unsafe output input\n",
+    "an invalid upload root must be rejected before any cleanup",
+  );
+}
+
+{
+  const context = makeRepository();
+  write(
+    context.root,
+    ".local/required-test-evidence/advisory.fixture/playwright-output/error-context.md",
+    "unsafe shaped value sk_test_gate_a3_ci_placeholder\n",
+  );
+  assert.throws(
+    () => prepareRequiredTestEvidenceUpload({ repositoryRoot: context.root }),
+    /contains a shaped secret value/,
+  );
+  assert.equal(
+    existsSync(path.join(context.root, ".local/required-test-upload")),
+    false,
+    "failed sanitization must leave no canonical upload directory",
+  );
+  assert.equal(
+    existsSync(path.join(context.root, ".local/required-test-upload.staging")),
+    false,
+    "failed sanitization must remove partial staging output",
+  );
+}
+
+{
+  const context = makeRepository();
+  const importedModuleReport = makeReport({ file: "required-module.ts" });
+  const result = reportResult(context.root, importedModuleReport);
+  assert.deepEqual(result.issues, []);
+  assert.equal(result.valid, true, "an imported test module must report through its aggregator owner");
+  assert.equal(result.records[0].file, "tests/e2e/required.spec.ts");
+  assert.equal(result.records[0].reportedFile, "tests/e2e/required-module.ts");
+}
+
+{
+  const context = makeRepository();
+  expectIssue(
+    reportResult(context.root, makeReport({ file: "required.spec.ts" })),
+    "registered imported module tests/e2e/required-module.ts did not contribute test records in project chromium",
+  );
+}
+
+{
+  const context = makeRepository();
+  for (const gate of context.manifest.gates) {
+    delete gate.reportOwnershipRegistrations;
+  }
+  write(
+    context.root,
+    "scripts/required-test-manifest.json",
+    `${JSON.stringify(context.manifest, null, 2)}\n`,
+  );
+  expectIssue(
+    validateRequiredTestRepository({ repositoryRoot: context.root }),
+    "omits aggregator ownership registration group fixture-browser-registration",
+  );
+}
+
+{
+  const context = makeRepository();
+  context.manifest.sourceInventories.find(
+    (inventory) => inventory.id === "browser-test-modules",
+  ).filePattern = "^intentionally-hidden-module\\.ts$";
+  context.manifest.sourceInventories.find(
+    (inventory) => inventory.id === "browser-test-modules",
+  ).expectedFileCount = 0;
+  context.manifest.sourceInventories.find(
+    (inventory) => inventory.id === "browser-test-modules",
+  ).expectedPathSha256 = inventoryHash([]);
+  write(
+    context.root,
+    "scripts/required-test-manifest.json",
+    `${JSON.stringify(context.manifest, null, 2)}\n`,
+  );
+  expectIssue(
+    validateRequiredTestRepository({ repositoryRoot: context.root }),
+    "registered imported module tests/e2e/required-module.ts is not classified by a supporting inventory",
+  );
+}
+
+{
+  const context = makeRepository();
+  rmSync(path.join(context.root, "tests/e2e/required-module.ts"));
+  const result = validateRequiredTestRepository({ repositoryRoot: context.root });
+  expectIssue(result, "required registration fixture-browser-registration module ./required-module is missing");
 }
 
 {
@@ -953,6 +1212,23 @@ assert.equal(
   );
   assert.match(stableJob, /if-no-files-found:\s*error/);
   assert.match(stableJob, /path:\s*\.local\/production-artifact-evidence\/upload\//);
+  const advisoryJob = workflow.slice(
+    workflow.indexOf("  e2e-full:"),
+    workflow.indexOf("  merge-gate:"),
+  );
+  assert.ok(
+    advisoryJob.indexOf("Prepare portable advisory evidence") <
+      advisoryJob.indexOf("Upload test results"),
+    "advisory output must be sanitized immediately before retention",
+  );
+  assert.match(advisoryJob, /npm run evidence:required-tests:prepare-upload/);
+  assert.match(advisoryJob, /path:\s*\.local\/required-test-upload\//);
+  assert.match(advisoryJob, /if-no-files-found:\s*error/);
+  assert.doesNotMatch(
+    advisoryJob,
+    /path:\s*[|>]?[\s\S]*?\.local\/required-test-evidence\//,
+    "raw Playwright evidence must not be uploaded",
+  );
   assert.match(
     workflow,
     /e2e-full:[\s\S]*?if:\s*always\(\)[^\n]*github\.event_name == 'pull_request'/,

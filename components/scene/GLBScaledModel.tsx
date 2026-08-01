@@ -21,7 +21,7 @@ import {
   recordGLBModelMount,
   recordGLBModelRender,
   recordGLBModelUnmount,
-  recordGLBSelectionOutlineVisibility,
+  recordGLBSelectionOutlineVisibility, reportGLBModelLoadState,
 } from "./glb-scaled-model/modelDiagnostics";
 import { normalizeGLBScene } from "./glb-scaled-model/normalizeGLBScene";
 
@@ -212,7 +212,7 @@ export const GLBScaledModel = memo(function GLBScaledModel({
     let dracoLoader: { dispose?: () => void } | null = null;
     let sourceScene: THREE.Object3D | null = null;
     setLoadedScene((current) => (current === null ? current : null));
-    onLoadStateChangeRef.current?.("loading");
+    reportGLBModelLoadState(resolvedDiagnosticKey, url, "loading", onLoadStateChangeRef.current);
 
     (async () => {
       try {
@@ -267,14 +267,14 @@ export const GLBScaledModel = memo(function GLBScaledModel({
             if (cancelled) return;
             console.warn("[GLBScaledModel] Failed to load", { url, error });
             setLoadedScene((current) => (current === null ? current : null));
-            onLoadStateChangeRef.current?.("error");
+            reportGLBModelLoadState(resolvedDiagnosticKey, url, "error", onLoadStateChangeRef.current, "gltf-load-failed");
           }
         );
       } catch (error) {
         if (cancelled) return;
         console.warn("[GLBScaledModel] Failed to import GLTFLoader", { error });
         setLoadedScene((current) => (current === null ? current : null));
-        onLoadStateChangeRef.current?.("error");
+        reportGLBModelLoadState(resolvedDiagnosticKey, url, "error", onLoadStateChangeRef.current, "gltf-loader-import-failed");
       }
     })();
 
@@ -287,7 +287,7 @@ export const GLBScaledModel = memo(function GLBScaledModel({
         sourceScene = null;
       }
     };
-  }, [url]);
+  }, [resolvedDiagnosticKey, url]);
 
   const stableNodeTransforms = useSemanticallyStableJSONValue(nodeTransforms);
   const stableCalibration = useSemanticallyStableJSONValue(calibration);
@@ -416,8 +416,8 @@ export const GLBScaledModel = memo(function GLBScaledModel({
 
   useEffect(() => {
     if (!normalizedModel || !upholsteryTexturesLoaded) return;
-    onLoadStateChangeRef.current?.("ready");
-  }, [normalizedModel, upholsteryTexturesLoaded]);
+    reportGLBModelLoadState(resolvedDiagnosticKey, url, "ready", onLoadStateChangeRef.current);
+  }, [normalizedModel, resolvedDiagnosticKey, upholsteryTexturesLoaded, url]);
 
   useEffect(() => {
     if (!normalizedModel) return;

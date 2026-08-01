@@ -150,7 +150,7 @@ assert.match(
 );
 assert.match(
   diagnosticsSource,
-  /GLB_MATERIAL_BOUNDS_CHANGE_WARNING_THRESHOLD = 6[\s\S]*boundsMaterialChangeCount[\s\S]*boundsPublicationCount[\s\S]*excessiveBoundsWarningCount/,
+  /GLB_MATERIAL_BOUNDS_CHANGE_WARNING_THRESHOLD = 6[\s\S]*boundsMaterialChangeCount[\s\S]*boundsPublicationCount[\s\S]*excessiveBoundsWarningCount[\s\S]*loadState[\s\S]*loadErrorCode/,
   "Development diagnostics must track bounds churn and publications."
 );
 
