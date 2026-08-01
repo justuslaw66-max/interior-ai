@@ -52,6 +52,11 @@ const sequentialRuntimeSmokeBudgetMs = RUNTIME_SMOKE_PHASE_BUDGETS.reduce(
 const runtimeSmokeOverheadBudgetMs = Object.values(
   RUNTIME_SMOKE_OVERHEAD_BUDGETS,
 ).reduce((total, budget) => total + budget, 0);
+const boundsPhaseBudgets = RUNTIME_SMOKE_PHASE_BUDGETS.filter(
+  (phase) => phase.name === "bounds-verification",
+);
+assert.equal(boundsPhaseBudgets.length, 1, "bounds-verification must have one canonical budget");
+assert.equal(boundsPhaseBudgets[0]?.timeoutMs, 45_000);
 assert.equal(
   RUNTIME_SMOKE_WHOLE_TEST_TIMEOUT_MS,
   sequentialRuntimeSmokeBudgetMs + runtimeSmokeOverheadBudgetMs,
@@ -61,8 +66,10 @@ assert.ok(
   RUNTIME_SMOKE_WHOLE_TEST_TIMEOUT_MS > sequentialRuntimeSmokeBudgetMs,
   "the whole-test timeout must leave explicit setup, teardown, assertion, and orchestration headroom",
 );
-const increasedPhaseBudgets = RUNTIME_SMOKE_PHASE_BUDGETS.map((phase, index) =>
-  index === 0 ? { ...phase, timeoutMs: phase.timeoutMs + 7_000 } : phase,
+const increasedPhaseBudgets = RUNTIME_SMOKE_PHASE_BUDGETS.map((phase) =>
+  phase.name === "bounds-verification"
+    ? { ...phase, timeoutMs: phase.timeoutMs + 7_000 }
+    : phase,
 );
 assert.equal(
   deriveRuntimeSmokeWholeTestTimeout({ phases: increasedPhaseBudgets }),
@@ -73,36 +80,50 @@ assert.equal(
 {
   const terminalRecorder = createRuntimeSmokePhaseRecorder({
     repositoryRoot: process.cwd(),
-    phaseBudgets: [{ name: "terminal-fixture", timeoutMs: 1_000 }],
+    phaseBudgets: [{ name: "bounds-verification", timeoutMs: 1_000 }],
   });
   let attempts = 0;
+  const terminalStartedAt = Date.now();
   await assert.rejects(
-    terminalRecorder.run("terminal-fixture", async () => {
+    terminalRecorder.run("bounds-verification", async () => {
       attempts += 1;
-      throw new RuntimeSmokeTerminalError("terminal-fixture");
+      throw new RuntimeSmokeTerminalError("bounds-verification");
     }, () => "error"),
-    /reached terminal lifecycle state error/,
+    /bounds-verification reached terminal lifecycle state error/,
   );
   assert.equal(attempts, 1, "a terminal lifecycle error must fail immediately");
+  assert.ok(Date.now() - terminalStartedAt < 1_000, "terminal error must beat the phase timeout");
   assert.deepEqual(
-    terminalRecorder.records.map(({ outcome, safeDiagnosticCategory }) => ({
+    terminalRecorder.records.map(({ outcome, finalLifecycleState, safeDiagnosticCategory }) => ({
       outcome,
+      finalLifecycleState,
       safeDiagnosticCategory,
     })),
-    [{ outcome: "terminal-error", safeDiagnosticCategory: "glb-terminal-error" }],
+    [{
+      outcome: "terminal-error",
+      finalLifecycleState: "error",
+      safeDiagnosticCategory: "glb-terminal-error",
+    }],
   );
 }
 
 {
   const timeoutRecorder = createRuntimeSmokePhaseRecorder({
     repositoryRoot: process.cwd(),
-    phaseBudgets: [{ name: "bounded-fixture", timeoutMs: 5 }],
+    phaseBudgets: [{ name: "bounds-verification", timeoutMs: 5 }],
   });
   await assert.rejects(
-    timeoutRecorder.run("bounded-fixture", () => new Promise(() => {})),
-    /Runtime-smoke phase bounded-fixture exceeded its 5ms budget/,
+    timeoutRecorder.run(
+      "bounds-verification",
+      () => new Promise(() => {}),
+      () => "loading",
+    ),
+    /Runtime-smoke phase bounds-verification exceeded its 5ms budget/,
   );
   assert.equal(timeoutRecorder.records[0]?.outcome, "timed-out");
+  assert.equal(timeoutRecorder.records[0]?.name, "bounds-verification");
+  assert.equal(timeoutRecorder.records[0]?.timeoutBudgetMs, 5);
+  assert.equal(timeoutRecorder.records[0]?.finalLifecycleState, "loading");
   assert.equal(
     timeoutRecorder.records[0]?.safeDiagnosticCategory,
     "phase-timeout",

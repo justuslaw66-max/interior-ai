@@ -1,4 +1,7 @@
 {
-  "googleClientId": "123456789012-gate-a3-ci.apps.googleusercontent.com",
-  "googleClientSecret": "GOCSPX-gate-a3-ci-placeholder"
+  "schema": "interior-ai.synthetic-ci-oauth-fixture-policy.v1",
+  "provider": "google",
+  "generatedAtRuntime": true,
+  "usesRepositoryOrOrganizationSecrets": false,
+  "externalAuthenticationCapable": false
 }

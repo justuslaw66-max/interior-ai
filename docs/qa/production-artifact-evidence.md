@@ -70,9 +70,12 @@ HTTP responses. The production component reports its existing semantic load
 lifecycle to diagnostics. The test fails immediately on a terminal load code,
 waits boundedly for semantic readiness, and then applies the original bounds,
 selection, remount, three reload, persistence, render-idle, and final-state
-assertions. A canonical 585,000 ms sequential phase budget plus 75,000 ms of
-named setup/teardown/assertion/orchestration overhead derives the 660,000 ms
-whole-test timeout. This fixes the external whole-test envelope defect without
+assertions. After exact-head run `30707099465` exhausted the former 20,000 ms
+bounds phase ceiling, three clean CI-like executions measured unchanged bounds
+completion at 7,476/7,108/7,253 ms. A canonical 610,000 ms sequential phase
+budget now includes a bounded 45,000 ms bounds ceiling; plus 75,000 ms of named
+setup/teardown/assertion/orchestration overhead it derives the 685,000 ms
+whole-test timeout. This fixes the external phase-envelope defect without
 adding retries, seeding a test-only success state, changing `npm run start`, or
 weakening the required identity.
 
@@ -201,7 +204,8 @@ process must attach platform evidence without copying secrets.
 
 ## Rollback
 
-Revert the Outcome-D follow-up first, then
+Revert the Outcome-C follow-up first, then
+`8cb7cae37d6bb49cd66d61f5523927dc7b64283d`, then the Outcome-D follow-up and
 `b811ddeaad5f3e2d64f647bad5c5fbe59db1615b`, before reverting the focused CH-0016
 implementation commit. That restores the previous lenient/dev
 CI behavior and is therefore a release-integrity rollback, not a recommended

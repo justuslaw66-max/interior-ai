@@ -1,8 +1,8 @@
 # Required-test truthfulness
 
-Status: CH-0017 remains reopened after exact-head run `30684560486` at
-`701aaa473518a0a4fdbc9cf9809dd8bd1bac918a`. The repository-controlled timeout,
-advisory-auth, safe-evidence, and SARIF-layout defects are remediated by the
+Status: CH-0017 remains reopened after Outcome-C run `30707099465` at
+`8cb7cae37d6bb49cd66d61f5523927dc7b64283d`. Its repository-controlled bounds
+budget and unmasked synthetic OAuth transport defects are remediated by the
 follow-up containing this record. A new exact-head GitHub run, downloaded
 artifact inspection, and required-check configuration remain external controls
 and are not marked verified here.
@@ -223,13 +223,16 @@ The same external run's 232-test advisory job reported 107 passed, 92 failed,
 and 33 not run with process exit 1, but its environment used the structurally
 invalid `gate-a3-ci-google-client-secret-placeholder`; those results are not a
 clean product baseline. Stable and advisory CI now call one repository-owned
-synthetic OAuth fixture. The complete non-secret pair is committed once in
-`scripts/ci-auth-fixture.json`, outside the application build graph. CI
-transports it only as exactly three allowlisted single-line assignments in the
-runner-owned `GITHUB_ENV`, whose real path must exist outside the checkout; the
-immediately following step validates propagation. It never prints fixture
-values or runner paths, writes a workspace transport, uses `BASH_ENV`, or places
-the values in workflow YAML. Marker-only detection in
+synthetic OAuth fixture policy. The policy is committed once in
+`scripts/ci-auth-fixture.json`, outside the application build graph; each pair
+is generated only in exporter memory. CI transports it only as exactly three
+allowlisted single-line assignments in runner-owned `GITHUB_ENV`, whose real
+path must exist outside the checkout. The exporter registers both generated
+values with `add-mask` before the write, and the immediately following step
+validates propagation. It never prints fixture values or runner paths outside
+the required masking command, writes a workspace transport, uses `BASH_ENV`, or
+places values in workflow YAML, command arguments, outputs, summaries,
+artifacts, manifests, or JSON diagnostics. Pair detection in
 `lib/auth-env.ts` requires explicit CI/test activation and a canonically resolved
 `development` or `staging` environment; missing, invalid, and Vercel-production
 classifications reject it. The pair is never an implicit application or
@@ -276,6 +279,39 @@ are therefore taken only from the final clean detached, migrated-database proof.
 The inherited catalog audit remains five invalid Hamilton enum values in three
 unchanged YAML files.
 
+## Exact-head 8cb7cae Outcome-C correction
+
+Run `30707099465`, stable job `91387983537`, passed checkout, migration,
+truthfulness, production-evidence, strict-build, and OAuth validation steps, then
+failed `Run runtime smoke tests` when `bounds-verification` exhausted its
+20,000 ms budget. Runner metadata after `Configure synthetic CI OAuth fixture`
+also exposed `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and
+`CI_AUTH_FIXTURE_ACTIVE`; no value is reproduced. The values were synthetic,
+not derived from repository or organization secrets, and not a registered
+externally authenticating Google client/secret.
+
+Three clean CI-like executions against an isolated migrated PostgreSQL database
+passed 2/2, with zero failures, flakes, skips, or retries. Bounds started/ended
+at 29,192/36,668 ms, 29,685/36,793 ms, and 29,579/36,832 ms: elapsed 7,476,
+7,108, and 7,253 ms. Each completed only after diagnostics settled, one further
+second elapsed, bounds material-change deltas remained zero, and lifecycle was
+recorded `stable`; whole bodies completed in 119,946, 123,137, and 119,869 ms.
+The phase budget is 45,000 ms, leaving 37,524 ms over the slowest local result
+and a bounded CI margin above the externally exhausted ceiling. The sequential
+sum is 610,000 ms and the unchanged 75,000 ms named overhead derives a 685,000
+ms whole-test timeout.
+
+The runtime-generated nonce is shared only between the client-ID and secret
+shapes; it is random, unregistered, unrelated to any GitHub secret, and the
+policy declares external authentication incapable. Both values are registered
+with `add-mask` before the only `GITHUB_ENV` append. Exact allowlisting,
+single-line validation, outside-workspace realpath checks, next-step structural
+validation, `/api/auth/session` JSON preflight, explicit CI/test activation,
+and production exclusion remain fail closed. Tests reject write-before-mask,
+wrong mask/value binding, non-allowlisted keys, CR/LF, workspace/symlink
+transports, mismatched pair fingerprints, production use, and the retired fixed
+fixture pair in both production and non-activated development.
+
 ## External controls and rollback
 
 Repository checks cannot verify which GitHub checks branch protection requires,
@@ -283,7 +319,9 @@ whether the workflow ran for the candidate, or whether uploaded evidence was
 retained for the requested duration. Attach the actual workflow/run/settings
 evidence before treating those controls as verified.
 
-Rollback the follow-up containing the exact-head 701aaa remediation first, then
+Rollback the Outcome-C follow-up first, then
+`8cb7cae37d6bb49cd66d61f5523927dc7b64283d`, then the follow-up containing the
+exact-head 701aaa remediation, then
 the Outcome-D commit, then
 `b811ddeaad5f3e2d64f647bad5c5fbe59db1615b`, then the CH-0017 implementation
 `c840c06dc2c5e67f463542292bb7391b0f93d731`. That would restore unsafe/raw

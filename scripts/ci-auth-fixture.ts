@@ -5,6 +5,7 @@ import {
   realpathSync,
   statSync,
 } from "node:fs";
+import { randomBytes } from "node:crypto";
 import net from "node:net";
 import path from "node:path";
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
@@ -17,22 +18,30 @@ type SyntheticCiOAuthFixture = Readonly<{
   googleClientSecret: string;
 }>;
 
-function readCanonicalFixture(): SyntheticCiOAuthFixture {
+type SyntheticCiOAuthFixturePolicy = Readonly<{
+  schema: string;
+  provider: string;
+  generatedAtRuntime: boolean;
+  usesRepositoryOrOrganizationSecrets: boolean;
+  externalAuthenticationCapable: boolean;
+}>;
+
+function readFixturePolicy(): SyntheticCiOAuthFixturePolicy {
   const fixturePath = path.join(process.cwd(), "scripts", "ci-auth-fixture.json");
-  const parsed = JSON.parse(readFileSync(fixturePath, "utf8")) as Partial<SyntheticCiOAuthFixture>;
+  const parsed = JSON.parse(readFileSync(fixturePath, "utf8")) as Partial<SyntheticCiOAuthFixturePolicy>;
   if (
-    !/^[0-9]+-gate-a3-ci\.apps\.googleusercontent\.com$/i.test(parsed.googleClientId ?? "") ||
-    !/^GOCSPX[-_]gate-a3-ci-placeholder$/.test(parsed.googleClientSecret ?? "")
+    parsed.schema !== "interior-ai.synthetic-ci-oauth-fixture-policy.v1" ||
+    parsed.provider !== "google" ||
+    parsed.generatedAtRuntime !== true ||
+    parsed.usesRepositoryOrOrganizationSecrets !== false ||
+    parsed.externalAuthenticationCapable !== false
   ) {
-    throw new Error("Canonical synthetic CI OAuth fixture is missing or malformed");
+    throw new Error("Synthetic CI OAuth fixture policy is missing or malformed");
   }
-  return Object.freeze({
-    googleClientId: parsed.googleClientId,
-    googleClientSecret: parsed.googleClientSecret,
-  }) as SyntheticCiOAuthFixture;
+  return Object.freeze(parsed) as SyntheticCiOAuthFixturePolicy;
 }
 
-const SYNTHETIC_CI_OAUTH_FIXTURE = readCanonicalFixture();
+const SYNTHETIC_CI_OAUTH_FIXTURE_POLICY = readFixturePolicy();
 
 export const CI_AUTH_GITHUB_ENV_ALLOWLIST = Object.freeze([
   "GOOGLE_CLIENT_ID",
@@ -45,6 +54,11 @@ type CiAuthGitHubEnvironmentKey =
 
 type CiAuthGitHubEnvironmentAssignments = Readonly<
   Record<CiAuthGitHubEnvironmentKey, string>
+>;
+
+export type CiAuthFixtureTransportEvent = Readonly<
+  | { kind: "mask"; name: CiAuthGitHubEnvironmentKey; value: string }
+  | { kind: "github-environment"; assignments: CiAuthGitHubEnvironmentAssignments }
 >;
 
 const PREFLIGHT_HOST = "127.0.0.1";
@@ -62,17 +76,47 @@ function assertExplicitFixtureScope(environment: NodeJS.ProcessEnv): void {
   }
 }
 
-function canonicalFixtureEnvironment(environment: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
+function generateSyntheticFixtureForExport(): SyntheticCiOAuthFixture {
+  if (
+    !SYNTHETIC_CI_OAUTH_FIXTURE_POLICY.generatedAtRuntime ||
+    SYNTHETIC_CI_OAUTH_FIXTURE_POLICY.usesRepositoryOrOrganizationSecrets ||
+    SYNTHETIC_CI_OAUTH_FIXTURE_POLICY.externalAuthenticationCapable
+  ) {
+    throw new Error("Synthetic CI OAuth fixture policy does not permit runtime generation");
+  }
+  const nonce = randomBytes(16).toString("hex");
+  const accountDigits = randomBytes(6).readUIntBE(0, 6).toString().padStart(15, "0");
+  return Object.freeze({
+    googleClientId: `${accountDigits}-gate-a3-ci-${nonce}.apps.googleusercontent.com`,
+    googleClientSecret: `GOCSPX-gate-a3-ci-${nonce}`,
+  });
+}
+
+function syntheticFixtureMatches(
+  googleClientId: string | undefined,
+  googleClientSecret: string | undefined,
+): boolean {
+  const client = googleClientId?.match(
+    /^[0-9]+-gate-a3-ci-([a-f0-9]{32})\.apps\.googleusercontent\.com$/i,
+  );
+  const secret = googleClientSecret?.match(
+    /^GOCSPX[-_]gate-a3-ci-([a-f0-9]{32})$/i,
+  );
+  return Boolean(client && secret && client[1]?.toLowerCase() === secret[1]?.toLowerCase());
+}
+
+function fixtureEnvironmentForLocalExecution(environment: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
+  const fixture = generateSyntheticFixtureForExport();
   return {
     ...environment,
-    GOOGLE_CLIENT_ID: SYNTHETIC_CI_OAUTH_FIXTURE.googleClientId,
-    GOOGLE_CLIENT_SECRET: SYNTHETIC_CI_OAUTH_FIXTURE.googleClientSecret,
+    GOOGLE_CLIENT_ID: fixture.googleClientId,
+    GOOGLE_CLIENT_SECRET: fixture.googleClientSecret,
     CI_AUTH_FIXTURE_ACTIVE: "1",
   };
 }
 
 function localFixtureEnvironment(): NodeJS.ProcessEnv {
-  return canonicalFixtureEnvironment({
+  return fixtureEnvironmentForLocalExecution({
     ...process.env,
     APP_ENV: "development",
     CI: "true",
@@ -98,15 +142,17 @@ function isPathInside(parentPath: string, candidatePath: string): boolean {
   );
 }
 
-function canonicalGitHubEnvironmentAssignments(): CiAuthGitHubEnvironmentAssignments {
+function canonicalGitHubEnvironmentAssignments(
+  fixture: SyntheticCiOAuthFixture,
+): CiAuthGitHubEnvironmentAssignments {
   return Object.freeze({
-    GOOGLE_CLIENT_ID: SYNTHETIC_CI_OAUTH_FIXTURE.googleClientId,
-    GOOGLE_CLIENT_SECRET: SYNTHETIC_CI_OAUTH_FIXTURE.googleClientSecret,
+    GOOGLE_CLIENT_ID: fixture.googleClientId,
+    GOOGLE_CLIENT_SECRET: fixture.googleClientSecret,
     CI_AUTH_FIXTURE_ACTIVE: "1",
   });
 }
 
-function serializeGitHubEnvironmentAssignments(
+export function serializeGitHubEnvironmentAssignments(
   assignments: Readonly<Record<string, string>>,
 ): string {
   const names = Object.keys(assignments);
@@ -133,12 +179,49 @@ function serializeGitHubEnvironmentAssignments(
   }).join("\n")}\n`;
 }
 
+export function assertLogSafeFixtureTransportOrder(
+  events: ReadonlyArray<CiAuthFixtureTransportEvent>,
+): void {
+  const maskedValues = new Map<CiAuthGitHubEnvironmentKey, string>();
+  let environmentWrites = 0;
+  for (const event of events) {
+    if (event.kind === "mask") {
+      if (!CI_AUTH_GITHUB_ENV_ALLOWLIST.includes(event.name)) {
+        throw new Error("Synthetic CI OAuth fixture mask contains a non-allowlisted variable");
+      }
+      if (event.name === "CI_AUTH_FIXTURE_ACTIVE") {
+        throw new Error("Only generated synthetic OAuth values may be masked");
+      }
+      if (maskedValues.has(event.name)) {
+        throw new Error("Synthetic CI OAuth fixture values must be masked exactly once");
+      }
+      maskedValues.set(event.name, event.value);
+      continue;
+    }
+    environmentWrites += 1;
+    if (
+      maskedValues.get("GOOGLE_CLIENT_ID") !== event.assignments.GOOGLE_CLIENT_ID ||
+      maskedValues.get("GOOGLE_CLIENT_SECRET") !== event.assignments.GOOGLE_CLIENT_SECRET
+    ) {
+      throw new Error("Synthetic CI OAuth fixture values must be masked before GITHUB_ENV write");
+    }
+  }
+  if (environmentWrites !== 1 || events.at(-1)?.kind !== "github-environment") {
+    throw new Error("Synthetic CI OAuth fixture requires one final GITHUB_ENV write");
+  }
+}
+
 export function exportFixtureToGitHubEnvironment({
   environment = process.env,
-  assignments = canonicalGitHubEnvironmentAssignments(),
+  fixtureFactory = generateSyntheticFixtureForExport,
+  writeWorkflowCommand = (command: string) => process.stdout.write(`${command}\n`),
+  appendEnvironmentFile = (filePath: string, content: string) =>
+    appendFileSync(filePath, content, { encoding: "utf8" }),
 }: {
   environment?: NodeJS.ProcessEnv;
-  assignments?: Readonly<Record<string, string>>;
+  fixtureFactory?: () => SyntheticCiOAuthFixture;
+  writeWorkflowCommand?: (command: string) => void;
+  appendEnvironmentFile?: (filePath: string, content: string) => void;
 } = {}): void {
   assertExplicitFixtureScope(environment);
   if (environment.CI !== "true" || environment.GITHUB_ACTIONS !== "true") {
@@ -163,11 +246,22 @@ export function exportFixtureToGitHubEnvironment({
   if (isPathInside(resolvedWorkspacePath, resolvedEnvironmentPath)) {
     throw new Error("GitHub Actions environment file must remain outside GITHUB_WORKSPACE");
   }
-  appendFileSync(
-    resolvedEnvironmentPath,
-    serializeGitHubEnvironmentAssignments(assignments),
-    { encoding: "utf8" },
-  );
+  const fixture = fixtureFactory();
+  const assignments = canonicalGitHubEnvironmentAssignments(fixture);
+  const serializedAssignments = serializeGitHubEnvironmentAssignments(assignments);
+  const events: CiAuthFixtureTransportEvent[] = [
+    { kind: "mask", name: "GOOGLE_CLIENT_ID", value: fixture.googleClientId },
+    { kind: "mask", name: "GOOGLE_CLIENT_SECRET", value: fixture.googleClientSecret },
+    { kind: "github-environment", assignments },
+  ];
+  assertLogSafeFixtureTransportOrder(events);
+  for (const event of events) {
+    if (event.kind === "mask") {
+      writeWorkflowCommand(`::add-mask::${event.value}`);
+    } else {
+      appendEnvironmentFile(resolvedEnvironmentPath, serializedAssignments);
+    }
+  }
   console.log("Configured the canonical synthetic CI OAuth fixture.");
 }
 
@@ -179,8 +273,10 @@ export function validateFixtureEnvironment(): void {
   const authEnvironment = getAuthEnvOrThrow();
   if (
     process.env.CI_AUTH_FIXTURE_ACTIVE !== "1" ||
-    authEnvironment.googleClientId !== SYNTHETIC_CI_OAUTH_FIXTURE.googleClientId ||
-    authEnvironment.googleClientSecret !== SYNTHETIC_CI_OAUTH_FIXTURE.googleClientSecret
+    !syntheticFixtureMatches(
+      authEnvironment.googleClientId,
+      authEnvironment.googleClientSecret,
+    )
   ) {
     throw new Error("GitHub Actions did not propagate the canonical CI OAuth fixture");
   }
@@ -212,8 +308,11 @@ async function preflightAuthSession(environment: NodeJS.ProcessEnv): Promise<voi
   assertExplicitFixtureScope(environment);
   const authEnvironment = getAuthEnvOrThrow();
   if (
-    authEnvironment.googleClientId !== SYNTHETIC_CI_OAUTH_FIXTURE.googleClientId ||
-    authEnvironment.googleClientSecret !== SYNTHETIC_CI_OAUTH_FIXTURE.googleClientSecret
+    environment.CI_AUTH_FIXTURE_ACTIVE !== "1" ||
+    !syntheticFixtureMatches(
+      authEnvironment.googleClientId,
+      authEnvironment.googleClientSecret,
+    )
   ) {
     throw new Error("Advisory auth preflight did not receive the canonical CI OAuth fixture");
   }

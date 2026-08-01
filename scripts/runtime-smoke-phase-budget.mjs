@@ -11,7 +11,7 @@ export const RUNTIME_SMOKE_PHASE_BUDGETS = Object.freeze([
   { name: "fixture-reload-2d-readiness", timeoutMs: 60_000 },
   { name: "initial-glb-loading-and-selection-verification", timeoutMs: 45_000 },
   { name: "semantic-readiness", timeoutMs: 65_000 },
-  { name: "bounds-verification", timeoutMs: 20_000 },
+  { name: "bounds-verification", timeoutMs: 45_000 },
   { name: "render-loop-assertions", timeoutMs: 5_000 },
   { name: "remount", timeoutMs: 60_000 },
   { name: "reload-1", timeoutMs: 70_000 },

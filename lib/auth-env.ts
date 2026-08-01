@@ -90,17 +90,33 @@ function validateAuthShapeOrThrow(authEnv: AuthEnv): void {
 }
 
 function validateSyntheticCiFixtureScopeOrThrow(authEnv: AuthEnv): void {
-  // Match the non-secret fixture by structure without embedding either complete
-  // fixture value in the application graph or its production artifact.
-  const syntheticClientId =
+  const retiredSyntheticClientId =
     /^[0-9]+-gate-a3-ci\.apps\.googleusercontent\.com$/i.test(authEnv.googleClientId);
-  const syntheticClientSecret =
+  const retiredSyntheticClientSecret =
     /^GOCSPX[-_]gate-a3-ci-placeholder$/.test(authEnv.googleClientSecret);
+  if (retiredSyntheticClientId || retiredSyntheticClientSecret) {
+    throw new Error(
+      "Retired synthetic CI OAuth fixture values are rejected in every environment",
+    );
+  }
+
+  // Match the runtime-generated, inert fixture by structure without embedding
+  // either complete value in the application graph or production artifact.
+  const syntheticClientId = authEnv.googleClientId.match(
+    /^[0-9]+-gate-a3-ci-([a-f0-9]{32})\.apps\.googleusercontent\.com$/i
+  );
+  const syntheticClientSecret = authEnv.googleClientSecret.match(
+    /^GOCSPX[-_]gate-a3-ci-([a-f0-9]{32})$/i
+  );
   const usesSyntheticFixture =
     syntheticClientId || syntheticClientSecret;
   if (!usesSyntheticFixture) return;
 
-  const exactFixture = syntheticClientId && syntheticClientSecret;
+  const exactFixture = Boolean(
+    syntheticClientId &&
+      syntheticClientSecret &&
+      syntheticClientId[1]?.toLowerCase() === syntheticClientSecret[1]?.toLowerCase()
+  );
   const explicitlyEnabled = process.env.CI_AUTH_FIXTURE_ACTIVE === "1";
   const githubCi = process.env.CI === "true" && process.env.GITHUB_ACTIONS === "true";
   const localPreflight = process.env.CI_AUTH_FIXTURE_LOCAL_TEST === "1";

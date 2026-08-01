@@ -508,3 +508,70 @@ Rollback order is the commit containing this record, then
 `c840c06dc2c5e67f463542292bb7391b0f93d731`. This is emergency rollback only:
 it would restore the undersized timeout, contaminated advisory auth, missing
 safe failure evidence, runner-prefixed SARIF, and earlier false-pass paths.
+
+## CH-0017 exact-head 8cb7cae Outcome-C follow-up — 2026-08-02
+
+Scope remains CH-0017 only. GitHub Actions run `30707099465`, exact PR head
+`8cb7cae37d6bb49cd66d61f5523927dc7b64283d`, established Outcome C. Stable job
+`91387983537` failed in `Run runtime smoke tests` because
+`bounds-verification` reached its 20,000 ms phase ceiling; the always-run
+`Upload smoke diagnostics` step then also failed because no stable bundle was
+eligible. The runner metadata for steps after `Configure synthetic CI OAuth
+fixture` exposed the unmasked values of `GOOGLE_CLIENT_ID`,
+`GOOGLE_CLIENT_SECRET`, and `CI_AUTH_FIXTURE_ACTIVE`. No value is reproduced in
+this record. The pair was synthetic, generated from the earlier repository
+fixture rather than a GitHub repository or organization secret, and was not a
+registered Google client/secret capable of external authentication.
+
+The bounds assertions and synchronization are unchanged. Three clean CI-like
+executions against an isolated 42-migration PostgreSQL database all completed
+2/2 with process exit 0 and zero failed, flaky, skipped, or retried tests:
+
+| Run | Phase start (relative) | Phase end (relative) | Elapsed | Lifecycle/completion | Complete test body |
+| --- | ---: | ---: | ---: | --- | ---: |
+| 1 | 29,192 ms | 36,668 ms | 7,476 ms | `stable`; settled bounds stayed unchanged | 119,946 ms |
+| 2 | 29,685 ms | 36,793 ms | 7,108 ms | `stable`; settled bounds stayed unchanged | 123,137 ms |
+| 3 | 29,579 ms | 36,832 ms | 7,253 ms | `stable`; settled bounds stayed unchanged | 119,869 ms |
+
+The canonical bounds budget is now 45,000 ms. It leaves 37,524 ms headroom
+above the slowest clean local observation and a bounded CI-contention margin
+above the externally exhausted 20-second ceiling. The maximum sequential phase
+sum is 610,000 ms; the unchanged named 75,000 ms setup, teardown, assertion,
+and orchestration allowances mechanically derive a 685,000 ms whole-test
+timeout. Semantic GLB readiness, selection and bounds assertions, remount, all
+three reloads, persistence, render-loop assertions, retries=0, and terminal
+error fail-fast remain intact. Contract negatives lock the one canonical
+budget, derivation, phase-specific timeout/safe state, immediate terminal
+failure, and absence of retry or skip.
+
+The OAuth policy file now contains only an inert runtime-generation policy.
+The exporter creates a fresh nonce-bound client/secret pair in memory, registers
+both exact values with GitHub `add-mask` workflow commands, and only then appends
+the three fixed allowlisted single-line assignments to runner-owned
+`GITHUB_ENV`. It never routes values through workflow YAML, command arguments,
+`GITHUB_OUTPUT`, job outputs, `GITHUB_STEP_SUMMARY`, artifacts, evidence
+manifests, or JSON diagnostics. Structural validation in the following step and
+the advisory `/api/auth/session` JSON preflight remain fail closed. Application
+validation accepts the pair only when both nonce fingerprints match, explicit
+CI/test activation is present, and the canonical environment is development or
+staging; production and implicit/malformed use fail before browser execution.
+The retired fixed fixture shape is rejected in every environment so stale
+configuration cannot be reclassified as ordinary Google credentials.
+
+Independent read-only review found one fail-closed regression before commit:
+the retired fixed fixture pair could otherwise have passed the generic Google
+shape validators after runtime generation replaced it. The accepted correction
+rejects either retired marker half in every environment and adds production and
+non-activated-development negatives. The reviewer then rechecked the complete
+ten-file diff, assertion preservation, timeout math, transport ordering,
+production exclusion, `.mjs` syntax, and diff hygiene and returned **PASS — no
+remaining actionable CH-0017 findings**.
+
+Rollback this Outcome-C follow-up first, then
+`8cb7cae37d6bb49cd66d61f5523927dc7b64283d`, then the previously recorded
+CH-0017 commits. That rollback would restore the externally demonstrated
+undersized phase budget and unmasked transport and is therefore emergency-only.
+Ruleset `13671593` remains active with the same pull-request/thread-resolution
+policy and no required-status-check rule. No ruleset, PR state, deployment,
+product, schema, migration, dependency, catalog, or production data was changed;
+CH-0004 remains paused.
