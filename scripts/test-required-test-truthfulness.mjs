@@ -23,6 +23,7 @@ import {
   removeUnsafeRequiredTestArtifacts,
   requiredTestArtifactsAreUnsafe,
   sanitizePortableEvidenceText,
+  verifyRequiredTestEvidenceArchive,
   validateRequiredTestEvidence,
   validateRequiredTestReport,
   validateRequiredTestRepository,
@@ -723,11 +724,25 @@ for (const testCase of [
     ".local/required-test-evidence/advisory.fixture/playwright-output/failure/trace.zip",
     "uninspectable archive fixture",
   );
+  const lastRunBytes = Buffer.from(
+    `${JSON.stringify({ status: "failed", failedTests: ["advisory fixture"] })}\n`,
+  );
+  write(
+    context.root,
+    ".local/required-test-evidence/advisory.fixture/playwright-output/.last-run.json",
+    lastRunBytes,
+  );
   const prepared = prepareAdvisoryUpload(context, {
     environment: { AUTH_SECRET: "fixture-sensitive-value" },
   });
-  assert.equal(prepared.included.length, 4);
+  assert.equal(prepared.included.length, 5);
   assert.deepEqual(prepared.omitted, [
+    {
+      path: "advisory.fixture/playwright-output/.last-run.json",
+      omissionCategory: "redundant-playwright-run-state",
+      reasonCode: "redundant-with-hash-bound-playwright-report-and-evidence-envelope",
+      originalSha256: sha256(lastRunBytes),
+    },
     {
       path: "advisory.fixture/playwright-output/failure/trace.zip",
       omissionCategory: "prohibited-binary-or-uninspectable-evidence",
@@ -749,6 +764,22 @@ for (const testCase of [
       path.join(context.root, ".local/required-test-upload/retained-evidence-inventory.json"),
       "utf8",
     ),
+  );
+  assert.deepEqual(inventory.included, [
+    "optional-diagnostics/advisory.fixture/failure/error-context.md",
+    "optional-diagnostics/advisory.fixture/failure/nested/debug.log",
+    "required-test-evidence/advisory.fixture/evidence.json",
+    "required-test-evidence/advisory.fixture/playwright.json",
+    "retained-evidence-inventory.json",
+  ]);
+  assert.equal(
+    existsSync(
+      path.join(
+        context.root,
+        ".local/required-test-upload/optional-diagnostics/advisory.fixture/.last-run.json",
+      ),
+    ),
+    false,
   );
   assert.equal(inventory.policy.rawPlaywrightDirectoriesUploaded, false);
   assert.equal(inventory.advisorySummaries[0].conclusion, "failed");
@@ -774,6 +805,73 @@ for (const testCase of [
         environment: { AUTH_SECRET: "fixture-sensitive-value" },
       }),
     /contains a machine-local path/,
+  );
+}
+
+{
+  const context = makeRepository();
+  writeAdvisoryUploadEvidence(context.root);
+  prepareAdvisoryUpload(context);
+  const downloadedRoot = ".local/downloaded-playwright-full-results";
+  renameSync(
+    path.join(context.root, ".local/required-test-upload"),
+    path.join(context.root, downloadedRoot),
+  );
+  assert.doesNotThrow(() =>
+    verifyRequiredTestEvidenceArchive({
+      repositoryRoot: context.root,
+      archiveRoot: downloadedRoot,
+    }),
+  );
+  write(context.root, `${downloadedRoot}/extra.log`, "unexpected archive entry\n");
+  assert.throws(
+    () =>
+      verifyRequiredTestEvidenceArchive({
+        repositoryRoot: context.root,
+        archiveRoot: downloadedRoot,
+      }),
+    /does not exactly match the archive tree/,
+  );
+}
+
+{
+  const context = makeRepository();
+  writeAdvisoryUploadEvidence(context.root);
+  prepareAdvisoryUpload(context);
+  rmSync(
+    path.join(
+      context.root,
+      ".local/required-test-upload/required-test-evidence/advisory.fixture/playwright.json",
+    ),
+  );
+  assert.throws(
+    () => verifyRequiredTestEvidenceArchive({ repositoryRoot: context.root }),
+    /does not exactly match the archive tree/,
+  );
+}
+
+{
+  const context = makeRepository();
+  writeAdvisoryUploadEvidence(context.root);
+  prepareAdvisoryUpload(context);
+  write(context.root, ".local/required-test-upload/.hidden.json", "{}\n");
+  assert.throws(
+    () => verifyRequiredTestEvidenceArchive({ repositoryRoot: context.root }),
+    /hidden path entry/,
+  );
+}
+
+{
+  const context = makeRepository();
+  writeAdvisoryUploadEvidence(context.root);
+  write(
+    context.root,
+    ".local/required-test-evidence/advisory.fixture/playwright-output/.other-hidden.json",
+    "{}\n",
+  );
+  assert.throws(
+    () => prepareAdvisoryUpload(context),
+    /unsupported hidden path/,
   );
 }
 
@@ -1528,6 +1626,13 @@ assert.equal(
   assert.match(stableJob, /if-no-files-found:\s*error/);
   assert.match(stableJob, /path:\s*\.local\/production-artifact-evidence\/upload\//);
   assert.match(stableJob, /Configure synthetic CI OAuth fixture[\s\S]*npm run ci:auth-fixture:export/);
+  assert.ok(
+    stableJob.indexOf("npm run ci:auth-fixture:export") <
+      stableJob.indexOf("npm run ci:auth-fixture:validate") &&
+      stableJob.indexOf("npm run ci:auth-fixture:validate") <
+        stableJob.indexOf("Apply database migrations"),
+    "stable CI must validate GITHUB_ENV propagation immediately after export",
+  );
   assert.doesNotMatch(stableJob, /^\s+GOOGLE_CLIENT_(?:ID|SECRET):/m);
   const advisoryJob = workflow.slice(
     workflow.indexOf("  e2e-full:"),
@@ -1548,6 +1653,13 @@ assert.equal(
     "a malformed advisory auth environment must fail before browser installation",
   );
   assert.match(advisoryJob, /npm run ci:auth-fixture:preflight/);
+  assert.ok(
+    advisoryJob.indexOf("npm run ci:auth-fixture:export") <
+      advisoryJob.indexOf("npm run ci:auth-fixture:validate") &&
+      advisoryJob.indexOf("npm run ci:auth-fixture:validate") <
+        advisoryJob.indexOf("Apply database migrations"),
+    "advisory CI must validate GITHUB_ENV propagation immediately after export",
+  );
   assert.doesNotMatch(advisoryJob, /^\s+GOOGLE_CLIENT_(?:ID|SECRET):/m);
   assert.doesNotMatch(
     advisoryJob,
@@ -1566,6 +1678,17 @@ assert.equal(
     workflow.indexOf("  stable-checks:"),
   );
   assert.match(secretScanJob, /GITLEAKS_ENABLE_UPLOAD_ARTIFACT:\s*"false"/);
+  assert.doesNotMatch(secretScanJob, /^\s+GITHUB_SHA:/m);
+  assert.ok(
+    secretScanJob.indexOf("gitleaks-artifact.mjs verify-source") <
+      secretScanJob.indexOf("gitleaks-artifact.mjs prepare"),
+    "the checkout identity must be verified before Gitleaks artifact preparation",
+  );
+  assert.match(
+    secretScanJob,
+    /GITLEAKS_SOURCE_COMMIT_SHA:\s*\$\{\{ steps\.verify-source\.outputs\.tested_source_sha \}\}/,
+  );
+  assert.match(secretScanJob, /GITLEAKS_WORKFLOW_CONTEXT_SHA:\s*\$\{\{ github\.sha \}\}/);
   assert.match(secretScanJob, /node scripts\/gitleaks-artifact\.mjs prepare/);
   assert.match(secretScanJob, /path:\s*\.local\/gitleaks-upload\//);
   assert.match(secretScanJob, /retention-days:\s*90/);

@@ -225,8 +225,11 @@ invalid `gate-a3-ci-google-client-secret-placeholder`; those results are not a
 clean product baseline. Stable and advisory CI now call one repository-owned
 synthetic OAuth fixture. The complete non-secret pair is committed once in
 `scripts/ci-auth-fixture.json`, outside the application build graph. CI
-transports it only through a mode-0600 ephemeral `BASH_ENV` file rather than
-printing it or placing it in workflow YAML. Marker-only detection in
+transports it only as exactly three allowlisted single-line assignments in the
+runner-owned `GITHUB_ENV`, whose real path must exist outside the checkout; the
+immediately following step validates propagation. It never prints fixture
+values or runner paths, writes a workspace transport, uses `BASH_ENV`, or places
+the values in workflow YAML. Marker-only detection in
 `lib/auth-env.ts` requires explicit CI/test activation and a canonically resolved
 `development` or `staging` environment; missing, invalid, and Vercel-production
 classifications reject it. The pair is never an implicit application or

@@ -1,4 +1,10 @@
-import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  appendFileSync,
+  existsSync,
+  readFileSync,
+  realpathSync,
+  statSync,
+} from "node:fs";
 import net from "node:net";
 import path from "node:path";
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
@@ -27,6 +33,19 @@ function readCanonicalFixture(): SyntheticCiOAuthFixture {
 }
 
 const SYNTHETIC_CI_OAUTH_FIXTURE = readCanonicalFixture();
+
+export const CI_AUTH_GITHUB_ENV_ALLOWLIST = Object.freeze([
+  "GOOGLE_CLIENT_ID",
+  "GOOGLE_CLIENT_SECRET",
+  "CI_AUTH_FIXTURE_ACTIVE",
+] as const);
+
+type CiAuthGitHubEnvironmentKey =
+  (typeof CI_AUTH_GITHUB_ENV_ALLOWLIST)[number];
+
+type CiAuthGitHubEnvironmentAssignments = Readonly<
+  Record<CiAuthGitHubEnvironmentKey, string>
+>;
 
 const PREFLIGHT_HOST = "127.0.0.1";
 const PREFLIGHT_PORT = 3317;
@@ -69,34 +88,103 @@ function localFixtureEnvironment(): NodeJS.ProcessEnv {
   });
 }
 
-function exportFixtureToGitHubEnvironment(): void {
-  assertExplicitFixtureScope(process.env);
-  if (process.env.CI !== "true" || process.env.GITHUB_ACTIONS !== "true") {
+function isPathInside(parentPath: string, candidatePath: string): boolean {
+  const relative = path.relative(parentPath, candidatePath);
+  return (
+    relative === "" ||
+    (!relative.startsWith(`..${path.sep}`) &&
+      relative !== ".." &&
+      !path.isAbsolute(relative))
+  );
+}
+
+function canonicalGitHubEnvironmentAssignments(): CiAuthGitHubEnvironmentAssignments {
+  return Object.freeze({
+    GOOGLE_CLIENT_ID: SYNTHETIC_CI_OAUTH_FIXTURE.googleClientId,
+    GOOGLE_CLIENT_SECRET: SYNTHETIC_CI_OAUTH_FIXTURE.googleClientSecret,
+    CI_AUTH_FIXTURE_ACTIVE: "1",
+  });
+}
+
+function serializeGitHubEnvironmentAssignments(
+  assignments: Readonly<Record<string, string>>,
+): string {
+  const names = Object.keys(assignments);
+  if (
+    names.length !== CI_AUTH_GITHUB_ENV_ALLOWLIST.length ||
+    names.some(
+      (name) =>
+        !CI_AUTH_GITHUB_ENV_ALLOWLIST.includes(
+          name as CiAuthGitHubEnvironmentKey,
+        ),
+    )
+  ) {
+    throw new Error("Synthetic CI OAuth fixture export contains a non-allowlisted variable");
+  }
+  return `${CI_AUTH_GITHUB_ENV_ALLOWLIST.map((name) => {
+    if (!/^[A-Z][A-Z0-9_]*$/.test(name)) {
+      throw new Error("Synthetic CI OAuth fixture export contains an invalid variable name");
+    }
+    const value = assignments[name];
+    if (typeof value !== "string" || /[\r\n]/.test(value)) {
+      throw new Error("Synthetic CI OAuth fixture export values must be single-line strings");
+    }
+    return `${name}=${value}`;
+  }).join("\n")}\n`;
+}
+
+export function exportFixtureToGitHubEnvironment({
+  environment = process.env,
+  assignments = canonicalGitHubEnvironmentAssignments(),
+}: {
+  environment?: NodeJS.ProcessEnv;
+  assignments?: Readonly<Record<string, string>>;
+} = {}): void {
+  assertExplicitFixtureScope(environment);
+  if (environment.CI !== "true" || environment.GITHUB_ACTIONS !== "true") {
     throw new Error("Synthetic CI OAuth fixture export requires GitHub Actions CI");
   }
-  const githubEnvironmentPath = process.env.GITHUB_ENV;
+  const githubEnvironmentPath = environment.GITHUB_ENV;
   if (!githubEnvironmentPath || !path.isAbsolute(githubEnvironmentPath)) {
     throw new Error("GitHub Actions environment file is unavailable");
   }
-  const fixtureDirectory = path.join(process.cwd(), ".local", "ci-auth-fixture");
-  const fixtureEnvironmentPath = path.join(fixtureDirectory, "oauth-fixture.sh");
-  mkdirSync(fixtureDirectory, { recursive: true, mode: 0o700 });
-  writeFileSync(
-    fixtureEnvironmentPath,
-    [
-      `export GOOGLE_CLIENT_ID=${SYNTHETIC_CI_OAUTH_FIXTURE.googleClientId}`,
-      `export GOOGLE_CLIENT_SECRET=${SYNTHETIC_CI_OAUTH_FIXTURE.googleClientSecret}`,
-      "export CI_AUTH_FIXTURE_ACTIVE=1",
-      "",
-    ].join("\n"),
-    { encoding: "utf8", mode: 0o600 },
-  );
+  const githubWorkspacePath = environment.GITHUB_WORKSPACE;
+  if (!githubWorkspacePath || !path.isAbsolute(githubWorkspacePath)) {
+    throw new Error("GitHub Actions workspace is unavailable");
+  }
+  if (!existsSync(githubEnvironmentPath) || !statSync(githubEnvironmentPath).isFile()) {
+    throw new Error("GitHub Actions environment file is absent");
+  }
+  if (!existsSync(githubWorkspacePath) || !statSync(githubWorkspacePath).isDirectory()) {
+    throw new Error("GitHub Actions workspace is absent");
+  }
+  const resolvedEnvironmentPath = realpathSync(githubEnvironmentPath);
+  const resolvedWorkspacePath = realpathSync(githubWorkspacePath);
+  if (isPathInside(resolvedWorkspacePath, resolvedEnvironmentPath)) {
+    throw new Error("GitHub Actions environment file must remain outside GITHUB_WORKSPACE");
+  }
   appendFileSync(
-    githubEnvironmentPath,
-    `BASH_ENV=${fixtureEnvironmentPath}\n`,
-    { encoding: "utf8", mode: 0o600 },
+    resolvedEnvironmentPath,
+    serializeGitHubEnvironmentAssignments(assignments),
+    { encoding: "utf8" },
   );
-  console.log("Configured the canonical synthetic CI OAuth fixture without printing values.");
+  console.log("Configured the canonical synthetic CI OAuth fixture.");
+}
+
+export function validateFixtureEnvironment(): void {
+  assertExplicitFixtureScope(process.env);
+  if (process.env.CI !== "true" || process.env.GITHUB_ACTIONS !== "true") {
+    throw new Error("Synthetic CI OAuth fixture validation requires GitHub Actions CI");
+  }
+  const authEnvironment = getAuthEnvOrThrow();
+  if (
+    process.env.CI_AUTH_FIXTURE_ACTIVE !== "1" ||
+    authEnvironment.googleClientId !== SYNTHETIC_CI_OAUTH_FIXTURE.googleClientId ||
+    authEnvironment.googleClientSecret !== SYNTHETIC_CI_OAUTH_FIXTURE.googleClientSecret
+  ) {
+    throw new Error("GitHub Actions did not propagate the canonical CI OAuth fixture");
+  }
+  console.log("Validated the canonical synthetic CI OAuth fixture.");
 }
 
 async function assertPortAvailable(): Promise<void> {
@@ -205,6 +293,10 @@ async function main(): Promise<void> {
     exportFixtureToGitHubEnvironment();
     return;
   }
+  if (command === "validate-env") {
+    validateFixtureEnvironment();
+    return;
+  }
   if (command === "preflight") {
     await preflightAuthSession(process.env);
     return;
@@ -242,11 +334,13 @@ async function main(): Promise<void> {
     return;
   }
   throw new Error(
-    "Usage: ci-auth-fixture.ts export-github-env|preflight|preflight-local|runtime-smoke-local",
+    "Usage: ci-auth-fixture.ts export-github-env|validate-env|preflight|preflight-local|runtime-smoke-local",
   );
 }
 
-main().catch((error) => {
-  console.error(error instanceof Error ? error.message : String(error));
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((error) => {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(1);
+  });
+}

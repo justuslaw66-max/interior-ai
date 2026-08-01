@@ -61,6 +61,12 @@ function normalizePath(value) {
   return value.split(path.sep).join("/");
 }
 
+function hasHiddenPathSegment(relativePath) {
+  return normalizePath(relativePath)
+    .split("/")
+    .some((segment) => segment.startsWith("."));
+}
+
 function machineLocalPathPatterns() {
   return [
     /\/home\/[^\s"'<>]+/gi,
@@ -227,6 +233,45 @@ export function auditRetainedEvidenceDirectory({
     assertRetainedTextSafe(relativePath, text, environment, parsedJson);
   }
   return files;
+}
+
+export function verifyRequiredTestEvidenceArchive({
+  repositoryRoot,
+  archiveRoot = DEFAULT_REQUIRED_TEST_UPLOAD_ROOT,
+  environment = process.env,
+}) {
+  const root = path.resolve(repositoryRoot);
+  const archiveAbsoluteRoot = repositoryPath(root, archiveRoot, "required-test archive root");
+  const retainedFiles = auditRetainedEvidenceDirectory({
+    repositoryRoot: root,
+    evidenceRoot: archiveRoot,
+    environment,
+  });
+  const archiveEntries = retainedFiles
+    .map((relativePath) => normalizePath(path.relative(archiveAbsoluteRoot, path.join(root, relativePath))))
+    .sort();
+  if (archiveEntries.some(hasHiddenPathSegment)) {
+    throw new Error("required-test archive contains a hidden path entry");
+  }
+  const inventoryPath = path.join(archiveAbsoluteRoot, "retained-evidence-inventory.json");
+  const inventory = readJson(inventoryPath, "retained required-test evidence inventory");
+  if (inventory.schema !== "interior-ai.retained-required-test-evidence.v1") {
+    throw new Error("retained required-test evidence inventory schema is unsupported");
+  }
+  if (
+    !Array.isArray(inventory.included) ||
+    inventory.included.some((entry) => typeof entry !== "string" || hasHiddenPathSegment(entry))
+  ) {
+    throw new Error("retained required-test evidence inventory contains invalid archive entries");
+  }
+  const inventoryEntries = [...inventory.included].sort();
+  if (new Set(inventoryEntries).size !== inventoryEntries.length) {
+    throw new Error("retained required-test evidence inventory contains duplicate archive entries");
+  }
+  if (JSON.stringify(inventoryEntries) !== JSON.stringify(archiveEntries)) {
+    throw new Error("retained required-test evidence inventory does not exactly match the archive tree");
+  }
+  return { inventory, archiveEntries };
 }
 
 function advisoryEvidenceClassification(relativePath) {
@@ -465,6 +510,19 @@ export function prepareRequiredTestEvidenceUpload({
       const originalSha256 = sha256(rawBytes);
       const extension = path.extname(inputRelativePath).toLowerCase();
       const required = classification.category === "required-structured-evidence";
+      if (/^[^/]+\/playwright-output\/\.last-run\.json$/.test(relativeWithinEvidence)) {
+        omitted.push({
+          path: relativeWithinEvidence,
+          omissionCategory: "redundant-playwright-run-state",
+          reasonCode: "redundant-with-hash-bound-playwright-report-and-evidence-envelope",
+          originalSha256,
+        });
+        requiredGateIds.add(classification.gateId);
+        continue;
+      }
+      if (hasHiddenPathSegment(relativeWithinEvidence)) {
+        throw new Error(`required-test evidence contains unsupported hidden path ${relativeWithinEvidence}`);
+      }
       try {
         assertRetainedTextSafe("retained evidence path", relativeWithinEvidence, environment);
       } catch (error) {
@@ -557,7 +615,7 @@ export function prepareRequiredTestEvidenceUpload({
       );
       mkdirSync(path.dirname(outputAbsolutePath), { recursive: true });
       writeFileSync(outputAbsolutePath, sanitizedText);
-      included.push(relativeWithinEvidence);
+      included.push(retainedWithinUpload);
     }
     if (requiredGateIds.size === 0) {
       throw new Error("required-test evidence contains no mandatory structured evidence");
@@ -596,6 +654,7 @@ export function prepareRequiredTestEvidenceUpload({
         }),
       );
     }
+    included.push("retained-evidence-inventory.json");
     const inventory = {
       schema: "interior-ai.retained-required-test-evidence.v1",
       policy: {
@@ -623,9 +682,9 @@ export function prepareRequiredTestEvidenceUpload({
       environment,
     });
     renameSync(stagingRoot, outputRoot);
-    const retainedFiles = auditRetainedEvidenceDirectory({
+    const { archiveEntries: retainedFiles } = verifyRequiredTestEvidenceArchive({
       repositoryRoot: root,
-      evidenceRoot: uploadRoot,
+      archiveRoot: uploadRoot,
       environment,
     });
     return { included, omitted, retainedFiles };
@@ -1832,9 +1891,15 @@ async function cli() {
     console.log(
       `Prepared ${result.included.length} portable required-test evidence files; omitted ${result.omitted.length} uninspectable or binary files.`,
     );
+  } else if (command === "verify-upload") {
+    const result = verifyRequiredTestEvidenceArchive({
+      repositoryRoot,
+      archiveRoot: process.argv[3] ?? DEFAULT_REQUIRED_TEST_UPLOAD_ROOT,
+    });
+    console.log(`Verified ${result.archiveEntries.length} exact required-test archive entries.`);
   } else {
     throw new Error(
-      "Usage: required-test-truthfulness.mjs check|run <gate-id>|verify <gate-id> [evidence-path]|prepare-upload",
+      "Usage: required-test-truthfulness.mjs check|run <gate-id>|verify <gate-id> [evidence-path]|prepare-upload|verify-upload [archive-root]",
     );
   }
 }

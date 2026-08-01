@@ -32,6 +32,8 @@ import {
   GITLEAKS_ARCHIVE_ENTRIES,
   GITLEAKS_STAGING_ROOT,
   prepareGitleaksArtifact,
+  verifyCheckedOutSourceIdentity,
+  verifyGitleaksArtifact,
 } from "./gitleaks-artifact.mjs";
 import {
   RUNTIME_SMOKE_OVERHEAD_BUDGETS,
@@ -121,6 +123,9 @@ assert.doesNotMatch(runtimeSmokeSource, /test\.slow\(|test\.skip\(|retries\s*:/)
 
 {
   const root = mkdtempSync(path.join(tmpdir(), "ch-0017-gitleaks-artifact-"));
+  git(root, ["init"]);
+  git(root, ["config", "user.name", "CH-0017 Fixture"]);
+  git(root, ["config", "user.email", "ch-0017@example.test"]);
   const sarifBytes = Buffer.from(
     `${JSON.stringify({
       version: "2.1.0",
@@ -129,9 +134,45 @@ assert.doesNotMatch(runtimeSmokeSource, /test\.slow\(|test\.skip\(|retries\s*:/)
   );
   write(root, "results.sarif", sarifBytes);
   write(root, "unrelated-runner-file.txt", "must not enter the artifact\n");
+  git(root, ["add", "results.sarif", "unrelated-runner-file.txt"]);
+  git(root, ["commit", "-m", "fixture"]);
+  const testedSourceSha = git(root, ["rev-parse", "HEAD"]);
+  const workflowContextSha = "8".repeat(40);
+  const githubOutputPath = path.join(root, "github-output");
+  writeFileSync(githubOutputPath, "");
+  assert.equal(
+    verifyCheckedOutSourceIdentity({
+      repositoryRoot: root,
+      expectedSourceSha: testedSourceSha,
+      githubOutputPath,
+    }),
+    testedSourceSha,
+  );
+  assert.equal(readFileSync(githubOutputPath, "utf8"), `tested_source_sha=${testedSourceSha}\n`);
+  assert.throws(
+    () =>
+      verifyCheckedOutSourceIdentity({
+        repositoryRoot: root,
+        expectedSourceSha: "9".repeat(40),
+        githubOutputPath,
+      }),
+    /does not match/,
+  );
+  for (const malformed of [undefined, "not-a-sha"] ) {
+    assert.throws(
+      () =>
+        verifyCheckedOutSourceIdentity({
+          repositoryRoot: root,
+          expectedSourceSha: malformed,
+          githubOutputPath,
+        }),
+      /expected source SHA is missing or malformed/,
+    );
+  }
   const manifest = prepareGitleaksArtifact({
     repositoryRoot: root,
-    sourceCommitSha: "7".repeat(40),
+    testedSourceSha,
+    workflowContextSha,
     runId: "30684560486",
     runAttempt: "1",
   });
@@ -145,12 +186,69 @@ assert.doesNotMatch(runtimeSmokeSource, /test\.slow\(|test\.skip\(|retries\s*:/)
     sarifBytes,
     "portable staging must preserve the already-scanned SARIF bytes",
   );
+  assert.equal(manifest.testedSourceSha, testedSourceSha);
+  assert.equal(manifest.workflowContextSha, workflowContextSha);
   assert.equal(manifest.sarif.archiveEntry, "results.sarif");
   assert.equal(
     readFileSync(path.join(root, GITLEAKS_STAGING_ROOT, "artifact-manifest.json"), "utf8")
       .includes("work/interior-ai/interior-ai"),
     false,
   );
+  assert.doesNotThrow(() =>
+    verifyGitleaksArtifact({
+      repositoryRoot: root,
+      expectedTestedSourceSha: testedSourceSha,
+    }),
+  );
+  write(root, `${GITLEAKS_STAGING_ROOT}/extra.txt`, "unexpected\n");
+  assert.throws(
+    () =>
+      verifyGitleaksArtifact({
+        repositoryRoot: root,
+        expectedTestedSourceSha: testedSourceSha,
+      }),
+    /archive entries are not exact/,
+  );
+  rmSync(path.join(root, GITLEAKS_STAGING_ROOT, "extra.txt"));
+  const manifestPath = path.join(root, GITLEAKS_STAGING_ROOT, "artifact-manifest.json");
+  const storedManifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+  storedManifest.testedSourceSha = "a".repeat(40);
+  storedManifest.workflowContextSha = testedSourceSha;
+  writeFileSync(manifestPath, `${JSON.stringify(storedManifest, null, 2)}\n`);
+  assert.throws(
+    () =>
+      verifyGitleaksArtifact({
+        repositoryRoot: root,
+        expectedTestedSourceSha: testedSourceSha,
+      }),
+    /testedSourceSha does not match/,
+    "workflowContextSha must never compensate for a wrong testedSourceSha",
+  );
+  writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  assert.throws(
+    () =>
+      prepareGitleaksArtifact({
+        repositoryRoot: root,
+        testedSourceSha: "7".repeat(40),
+        workflowContextSha,
+        runId: "30684560486",
+        runAttempt: "1",
+      }),
+    /does not match the checked-out source SHA/,
+  );
+  for (const malformed of [undefined, "merge-sha"] ) {
+    assert.throws(
+      () =>
+        prepareGitleaksArtifact({
+          repositoryRoot: root,
+          testedSourceSha,
+          workflowContextSha: malformed,
+          runId: "30684560486",
+          runAttempt: "1",
+        }),
+      /workflow-context SHA is missing or malformed/,
+    );
+  }
 
   write(
     root,
@@ -164,7 +262,8 @@ assert.doesNotMatch(runtimeSmokeSource, /test\.slow\(|test\.skip\(|retries\s*:/)
     () =>
       prepareGitleaksArtifact({
         repositoryRoot: root,
-        sourceCommitSha: "7".repeat(40),
+        testedSourceSha,
+        workflowContextSha,
         runId: "30684560486",
         runAttempt: "1",
       }),

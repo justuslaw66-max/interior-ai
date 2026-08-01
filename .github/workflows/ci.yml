@@ -23,6 +23,11 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
+      - name: Verify checked-out source identity
+        id: verify-source
+        env:
+          GITLEAKS_EXPECTED_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/gitleaks-artifact.mjs verify-source
       - uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -30,7 +35,8 @@ jobs:
       - name: Prepare portable Gitleaks SARIF artifact
         if: always()
         env:
-          GITHUB_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          GITLEAKS_SOURCE_COMMIT_SHA: ${{ steps.verify-source.outputs.tested_source_sha }}
+          GITLEAKS_WORKFLOW_CONTEXT_SHA: ${{ github.sha }}
         run: node scripts/gitleaks-artifact.mjs prepare
       - name: Upload portable Gitleaks SARIF artifact
         if: always()
@@ -96,6 +102,9 @@ jobs:
 
       - name: Configure synthetic CI OAuth fixture
         run: npm run ci:auth-fixture:export
+
+      - name: Validate synthetic CI OAuth fixture
+        run: npm run ci:auth-fixture:validate
 
       - name: Apply database migrations
         env:
@@ -225,6 +234,9 @@ jobs:
 
       - name: Configure synthetic CI OAuth fixture
         run: npm run ci:auth-fixture:export
+
+      - name: Validate synthetic CI OAuth fixture
+        run: npm run ci:auth-fixture:validate
 
       - name: Apply database migrations
         env:

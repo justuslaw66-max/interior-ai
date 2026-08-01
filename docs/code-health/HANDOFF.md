@@ -424,8 +424,11 @@ baseline. One repository-owned synthetic fixture now serves stable and
 advisory CI. Its complete non-secret pair is committed once in
 `scripts/ci-auth-fixture.json`, outside the application build graph; only its
 environment transport is materialized in an explicit non-production CI/test
-mode-0600 `BASH_ENV` file. It is absent from workflow YAML/log environment
-declarations and evidence inputs, cannot act as an implicit application
+scope by appending exactly three allowlisted single-line assignments to the
+runner-owned `GITHUB_ENV`, after proving its real path is outside the checkout.
+The next workflow step validates propagation. Values and paths are absent from
+logs and evidence inputs; no `BASH_ENV` or workspace transport is used. It
+cannot act as an implicit application
 fallback, and canonical environment classification rejects missing, invalid,
 and production deployment state. The
 preflight runs before browser installation and proved that the advisory Next.js
@@ -479,7 +482,8 @@ advisory safe-subset fixture, and artifact hashes are recorded in the final
 local response after the commit is created.
 
 Independent read-only review initially found and verified fixes for: a tracked
-Playwright last-run artifact; terminal GLB state being masked while response
+Playwright last-run artifact, now omitted as hashed redundant rerun state rather
+than claimed as uploaded evidence; terminal GLB state being masked while response
 counts were polled; phase records without closed fields, non-overlap, whole-test
 containment, or passed-lifecycle consistency; the complete OAuth pair entering
 the application build graph; raw `APP_ENV` checks bypassing the canonical Vercel
