@@ -16,6 +16,12 @@ import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import { validateRequiredTestReport } from "./required-test-truthfulness.mjs";
+import {
+  RUNTIME_SMOKE_OVERHEAD_BUDGETS,
+  RUNTIME_SMOKE_PHASE_BUDGETS,
+  RUNTIME_SMOKE_PHASE_TIMING_SCHEMA,
+  RUNTIME_SMOKE_WHOLE_TEST_TIMEOUT_MS,
+} from "./runtime-smoke-phase-budget.mjs";
 
 export const PRODUCTION_EVIDENCE_SCHEMA =
   "interior-ai.production-artifact-evidence.v1";
@@ -25,6 +31,8 @@ export const PRODUCTION_EVIDENCE_SERVER_COMMAND =
 const DEFAULT_EVIDENCE_DIRECTORY = ".local/production-artifact-evidence";
 const DEFAULT_MANIFEST_PATH = `${DEFAULT_EVIDENCE_DIRECTORY}/manifest.json`;
 const DEFAULT_REPORT_PATH = `${DEFAULT_EVIDENCE_DIRECTORY}/runtime-smoke.json`;
+const DEFAULT_PHASE_TIMINGS_PATH =
+  `${DEFAULT_EVIDENCE_DIRECTORY}/runtime-smoke-phases.json`;
 const DEFAULT_UPLOAD_DIRECTORY = `${DEFAULT_EVIDENCE_DIRECTORY}/upload`;
 const DEFAULT_BUNDLE_PATH = `${DEFAULT_UPLOAD_DIRECTORY}/ch0016-ch0017-evidence-bundle.tar.gz`;
 const GENERATED_SOURCE_CHECK_COMMAND =
@@ -996,10 +1004,149 @@ function readReport(repositoryRoot, test, issues, environment) {
   }
 }
 
+function readRuntimeSmokePhaseTimings(repositoryRoot, test, issues, environment) {
+  if (test.phaseTimings?.path !== DEFAULT_PHASE_TIMINGS_PATH) {
+    issues.push("runtime-smoke phase timing path is not canonical");
+    return null;
+  }
+  let timingPath;
+  try {
+    timingPath = resolveRepositoryPath(
+      repositoryRoot,
+      test.phaseTimings.path,
+      "runtime-smoke phase timing path",
+    );
+  } catch (error) {
+    issues.push(error instanceof Error ? error.message : String(error));
+    return null;
+  }
+  if (!existsSync(timingPath) || !statSync(timingPath).isFile()) {
+    issues.push("runtime-smoke phase timing record is missing");
+    return null;
+  }
+  const bytes = readFileSync(timingPath);
+  if (sha256(bytes) !== test.phaseTimings.sha256) {
+    issues.push("runtime-smoke phase timing SHA-256 mismatch");
+  }
+  try {
+    const text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+    if (localRepositoryPathLeaks(repositoryRoot, text).length > 0) {
+      issues.push("runtime-smoke phase timing record contains machine-local repository paths");
+    }
+    const leaks = leakedSensitiveEnvironmentValues(text, environment);
+    if (leaks.length > 0) {
+      issues.push(
+        `runtime-smoke phase timing record contains sensitive environment values: ${leaks.join(", ")}`,
+      );
+    }
+    const timing = JSON.parse(text);
+    const exactKeys = (value, expected) =>
+      value !== null &&
+      typeof value === "object" &&
+      !Array.isArray(value) &&
+      JSON.stringify(Object.keys(value).sort()) === JSON.stringify([...expected].sort());
+    const canonicalText = `${JSON.stringify(timing, null, 2)}\n`;
+    if (sensitiveManifestKeys(timing, "phaseTimings").length > 0) {
+      issues.push("runtime-smoke phase timing record contains secret-bearing fields");
+    }
+    const expectedPhaseNames = RUNTIME_SMOKE_PHASE_BUDGETS.map((phase) => phase.name);
+    const recordedPhaseNames = Array.isArray(timing.phases)
+      ? timing.phases.map((phase) => phase.name)
+      : [];
+    if (
+      text !== canonicalText ||
+      !exactKeys(timing, [
+        "schema",
+        "testIdentity",
+        "wholeTestTimeoutMs",
+        "sequentialPhaseBudgetMs",
+        "overheadBudgets",
+        "phaseBudgets",
+        "phases",
+        "complete",
+      ]) ||
+      timing.schema !== RUNTIME_SMOKE_PHASE_TIMING_SCHEMA ||
+      timing.testIdentity !== "runtime.template-stability" ||
+      timing.wholeTestTimeoutMs !== RUNTIME_SMOKE_WHOLE_TEST_TIMEOUT_MS ||
+      timing.sequentialPhaseBudgetMs !==
+        RUNTIME_SMOKE_PHASE_BUDGETS.reduce((total, phase) => total + phase.timeoutMs, 0) ||
+      JSON.stringify(timing.overheadBudgets) !==
+        JSON.stringify(RUNTIME_SMOKE_OVERHEAD_BUDGETS) ||
+      JSON.stringify(timing.phaseBudgets) !== JSON.stringify(RUNTIME_SMOKE_PHASE_BUDGETS) ||
+      JSON.stringify(recordedPhaseNames) !== JSON.stringify(expectedPhaseNames) ||
+      timing.complete !== true
+    ) {
+      issues.push("runtime-smoke phase timing contract is incomplete or non-canonical");
+    }
+    if (
+      !Array.isArray(timing.phases) ||
+      timing.phases.some(
+        (phase, index) =>
+          !exactKeys(phase, [
+            "name",
+            "startTimeRelativeMs",
+            "elapsedMs",
+            "outcome",
+            "timeoutBudgetMs",
+            "finalLifecycleState",
+            "safeDiagnosticCategory",
+          ]) ||
+          phase.outcome !== "passed" ||
+          phase.safeDiagnosticCategory !== "none" ||
+          !["not-observed", "loading", "ready", "stable", "persisted"].includes(
+            phase.finalLifecycleState,
+          ) ||
+          !Number.isSafeInteger(phase.startTimeRelativeMs) ||
+          phase.startTimeRelativeMs < 0 ||
+          !Number.isSafeInteger(phase.elapsedMs) ||
+          phase.elapsedMs < 0 ||
+          phase.elapsedMs > phase.timeoutBudgetMs ||
+          phase.timeoutBudgetMs !== RUNTIME_SMOKE_PHASE_BUDGETS[index]?.timeoutMs,
+      )
+    ) {
+      issues.push("runtime-smoke phase timing outcomes are invalid");
+    }
+    if (Array.isArray(timing.phases)) {
+      const timelineInvalid = timing.phases.some((phase, index) => {
+        if (
+          !Number.isSafeInteger(phase.startTimeRelativeMs) ||
+          !Number.isSafeInteger(phase.elapsedMs)
+        ) {
+          return true;
+        }
+        const phaseEnd = phase.startTimeRelativeMs + phase.elapsedMs;
+        if (!Number.isSafeInteger(phaseEnd) || phaseEnd > RUNTIME_SMOKE_WHOLE_TEST_TIMEOUT_MS) {
+          return true;
+        }
+        if (index === 0) return false;
+        const previous = timing.phases[index - 1];
+        if (
+          !Number.isSafeInteger(previous?.startTimeRelativeMs) ||
+          !Number.isSafeInteger(previous?.elapsedMs)
+        ) {
+          return true;
+        }
+        return phase.startTimeRelativeMs <
+          previous.startTimeRelativeMs + previous.elapsedMs;
+      });
+      if (timelineInvalid) {
+        issues.push(
+          "runtime-smoke phase timing timeline is overlapping or exceeds the whole-test timeout",
+        );
+      }
+    }
+    return timing;
+  } catch {
+    issues.push("runtime-smoke phase timing record is not strict UTF-8 JSON");
+    return null;
+  }
+}
+
 function validateTestRecord(
   manifest,
   test,
   report,
+  phaseTimings,
   issues,
   { requiredTestRepositoryRoot, validateRequiredTestRepository = true } = {},
 ) {
@@ -1021,6 +1168,15 @@ function validateTestRecord(
   }
   if (test.serverCommand !== PRODUCTION_EVIDENCE_SERVER_COMMAND) {
     issues.push("development server or unverified server command was used for production evidence");
+  }
+  if (
+    phaseTimings &&
+    (test.phaseTimings.wholeTestTimeoutMs !== phaseTimings.wholeTestTimeoutMs ||
+      test.phaseTimings.phaseCount !== phaseTimings.phases.length ||
+      test.phaseTimings.totalElapsedMs !==
+        phaseTimings.phases.reduce((total, phase) => total + phase.elapsedMs, 0))
+  ) {
+    issues.push("recorded runtime-smoke phase timing summary does not match its report");
   }
   const stats = test.stats ?? {};
   if (test.processExitCode !== 0) {
@@ -1362,7 +1518,13 @@ export async function validateProductionEvidence({
     }
     for (const test of manifest.tests) {
       const report = readReport(root, test, issues, environment);
-      validateTestRecord(manifest, test, report, issues, {
+      const phaseTimings = readRuntimeSmokePhaseTimings(
+        root,
+        test,
+        issues,
+        environment,
+      );
+      validateTestRecord(manifest, test, report, phaseTimings, issues, {
         requiredTestRepositoryRoot: standalone ? root : undefined,
         validateRequiredTestRepository: !standalone,
       });
@@ -1387,6 +1549,7 @@ export async function recordProductionEvidenceTest({
   repositoryRoot,
   manifestPath,
   reportPath,
+  phaseTimingPath = DEFAULT_PHASE_TIMINGS_PATH,
   name,
   command,
   processExitCode,
@@ -1459,6 +1622,32 @@ export async function recordProductionEvidenceTest({
     requireMetadata: false,
   });
   if (!truthfulness.valid) throw new Error(truthfulness.issues.join("; "));
+  const absolutePhaseTimingPath = resolveRepositoryPath(
+    repositoryRoot,
+    phaseTimingPath,
+    "runtime-smoke phase timing path",
+  );
+  if (!existsSync(absolutePhaseTimingPath)) {
+    throw new Error("runtime-smoke phase timing record is missing");
+  }
+  const phaseTimingBytes = readFileSync(absolutePhaseTimingPath);
+  const phaseTimingIssues = [];
+  const phaseTimings = readRuntimeSmokePhaseTimings(
+    repositoryRoot,
+    {
+      phaseTimings: {
+        path: normalizeRelativePath(
+          path.relative(repositoryRoot, absolutePhaseTimingPath),
+        ),
+        sha256: sha256(phaseTimingBytes),
+      },
+    },
+    phaseTimingIssues,
+    process.env,
+  );
+  if (!phaseTimings || phaseTimingIssues.length > 0) {
+    throw new Error(phaseTimingIssues.join("; "));
+  }
   const stats = report.stats ?? {};
   const passed =
     processExitCode === 0 &&
@@ -1478,6 +1667,18 @@ export async function recordProductionEvidenceTest({
     report: {
       path: normalizeRelativePath(path.relative(repositoryRoot, absoluteReportPath)),
       sha256: sha256(reportBytes),
+    },
+    phaseTimings: {
+      path: normalizeRelativePath(
+        path.relative(repositoryRoot, absolutePhaseTimingPath),
+      ),
+      sha256: sha256(phaseTimingBytes),
+      wholeTestTimeoutMs: phaseTimings.wholeTestTimeoutMs,
+      phaseCount: phaseTimings.phases.length,
+      totalElapsedMs: phaseTimings.phases.reduce(
+        (total, phase) => total + phase.elapsedMs,
+        0,
+      ),
     },
     stats,
     completedAt,
@@ -1639,11 +1840,13 @@ export async function createProductionEvidenceBundle({
     "package.json",
     "package-lock.json",
     "scripts/production-artifact-evidence.mjs",
+    "scripts/runtime-smoke-phase-budget.mjs",
     "scripts/required-test-truthfulness.mjs",
     "scripts/required-test-manifest.json",
     manifestPath,
     `${manifestPath}.sha256`,
     reportPath,
+    DEFAULT_PHASE_TIMINGS_PATH,
   ];
   for (const relativePath of bundleInputs) {
     const absolutePath = resolveRepositoryPath(root, relativePath, "evidence bundle input");
@@ -1732,6 +1935,12 @@ async function smokeEvidence(repositoryRoot, manifestPath, reportPath) {
   const manifest = preflight.manifest;
   const absoluteReportPath = resolveRepositoryPath(repositoryRoot, reportPath, "test report path");
   if (existsSync(absoluteReportPath)) rmSync(absoluteReportPath);
+  const absolutePhaseTimingPath = resolveRepositoryPath(
+    repositoryRoot,
+    DEFAULT_PHASE_TIMINGS_PATH,
+    "runtime-smoke phase timing path",
+  );
+  if (existsSync(absolutePhaseTimingPath)) rmSync(absolutePhaseTimingPath);
   const environment = {
     ...process.env,
     CI: "true",
@@ -1740,6 +1949,7 @@ async function smokeEvidence(repositoryRoot, manifestPath, reportPath) {
     PLAYWRIGHT_USE_PRODUCTION_SERVER: "1",
     PRODUCTION_EVIDENCE_MANIFEST: manifestPath,
     PLAYWRIGHT_JSON_OUTPUT_FILE: reportPath,
+    RUNTIME_SMOKE_PHASE_TIMINGS_PATH: DEFAULT_PHASE_TIMINGS_PATH,
     PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: manifest.build.nextBuildId,
     PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256: manifest.artifact.sha256,
     PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: manifest.source.commitSha,
@@ -1760,6 +1970,7 @@ async function smokeEvidence(repositoryRoot, manifestPath, reportPath) {
     repositoryRoot,
     manifestPath,
     reportPath,
+    phaseTimingPath: DEFAULT_PHASE_TIMINGS_PATH,
     name: "runtime-smoke",
     command: RUNTIME_SMOKE_COMMAND,
     processExitCode: playwright.status ?? 1,

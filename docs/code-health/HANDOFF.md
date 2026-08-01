@@ -373,3 +373,134 @@ Repository ruleset `staging-light-protection` (`13671593`) still contains no req
 Rollback the Outcome-D follow-up first, then `b811ddeaad5f3e2d64f647bad5c5fbe59db1615b`, then `c840c06dc2c5e67f463542292bb7391b0f93d731`. That would restore timing-dependent runtime evidence, unsafe/raw advisory retention, and the original false-pass paths; it is an emergency rollback, not a recommended steady state. GitHub ruleset rollback is separately administrator-owned and is not implied.
 
 Active P1: **CH-0017 required-test truthfulness**. CH-0004 trusted event provenance was not started and must remain paused until CH-0017 is externally verified and closed.
+
+---
+
+## CH-0017 exact-head 701aaa CI evidence follow-up — 2026-08-01
+
+Scope remains CH-0017 only. Starting SHA was
+`701aaa473518a0a4fdbc9cf9809dd8bd1bac918a` on
+`fix/ch-0017-required-test-truthfulness`; the tree was clean and untracked-free,
+draft PR #27 remained open against `staging`, its remote head matched, and
+ruleset `staging-light-protection` (`13671593`) still had no required-status
+checks. No push, merge, deployment, ruleset, schema, migration, dependency,
+catalog, production-data, or product/UI change was made. `lsof` showed no app
+listener on port 3000 before this follow-up; the only relevant Node process cwd
+matched the canonical `/Users/justus/Developer/interior-ai` checkout.
+
+Commit relationship is explicit: CH-0016 implementation
+`cbed3550026e2803675f740b49be5fb15f15612b`; CH-0017 starting checkpoint
+`cea0cabe53742da8b47c1e119d889033351a1fdf`; the intervening `cea0cabe...`
+commit is the separately reviewed `docs/ch-0016-verification-handoff`
+documentation checkpoint (five documentation files, no production change);
+CH-0017 implementation `c840c06dc2c5e67f463542292bb7391b0f93d731`;
+hardening `b811ddeaad5f3e2d64f647bad5c5fbe59db1615b`; Outcome-D follow-up
+`701aaa473518a0a4fdbc9cf9809dd8bd1bac918a`; this follow-up is the commit
+containing this record.
+
+Authoritative run `30684560486` passed the 42-migration/pre-smoke contracts and
+strict build. Required furnished-template smoke then failed after semantic GLB
+readiness because its manually duplicated 240-second whole-test timeout expired
+during a later body assertion; health/catalog passed, yielding 1 passed, 1
+failed, process exit 1, and a correctly failed merge gate. The fix preserves all
+selection, bounds, remount, three reload, persistence, render-loop, body, and
+terminal lifecycle assertions. A single 14-phase definition totals 585,000 ms;
+fixture setup, fixture teardown, assertion scheduling (15,000 ms each), and a
+30,000 ms orchestration margin derive a 660,000 ms whole-test timeout. The
+production bundle now includes strict portable `runtime-smoke-phases.json`, and
+the manifest binds its SHA-256, phase count, elapsed total, and derived timeout.
+Focused negatives prove mechanical derivation, phase changes updating the
+whole envelope, immediate terminal failure, phase-specific timeout diagnostics,
+absence of retry/skip/`test.slow()`, canonical non-overlapping timeline order,
+whole-envelope containment, closed timing fields, and non-error passed lifecycle
+states. The first two post-fixture phases are truthfully named
+`fixture-reload-2d-readiness` and
+`initial-glb-loading-and-selection-verification` for the work they run.
+
+The advisory run's 107 passed, 92 failed, and 33 not-run results were
+contaminated by the malformed
+`gate-a3-ci-google-client-secret-placeholder` and are not a clean product
+baseline. One repository-owned synthetic fixture now serves stable and
+advisory CI. Its complete non-secret pair is committed once in
+`scripts/ci-auth-fixture.json`, outside the application build graph; only its
+environment transport is materialized in an explicit non-production CI/test
+mode-0600 `BASH_ENV` file. It is absent from workflow YAML/log environment
+declarations and evidence inputs, cannot act as an implicit application
+fallback, and canonical environment classification rejects missing, invalid,
+and production deployment state. The
+preflight runs before browser installation and proved that the advisory Next.js
+server returns a structured anonymous `/api/auth/session` JSON response without
+auth initialization, HTML 500, `Unexpected token '<'`, or `ClientFetchError`.
+
+The exact unsafe optional input was the flooring `error-context.md` named by the
+external preparation log; its prohibited contents were not reproduced here.
+Preparation now requires and validates `evidence.json` plus `playwright.json`,
+including source SHA, report hash, process exit, project identity, per-test
+identities, and truthful passed/failed/skipped/not-run/flaky/retry totals. It
+also binds the registered advisory command, exact checkout, 0-255 process exit,
+fresh process/report interval, configured project, full validator diagnostics,
+and conclusion while requiring every release/artifact identity to remain null.
+Safe
+text is normalized into a new output layout; no raw `playwright-output/`
+directory is uploadable. Optional unsafe, malformed, or binary diagnostics are
+omitted with only safe relative path, category, reason code, and original
+SHA-256; an unsafe filename is replaced by a stable hashed path identifier.
+Unsafe/malformed mandatory JSON still rejects the entire bundle. Final
+scanning and publication are atomic and every failure removes staging and final
+directories. A representative process-exit-1 report remains downloadable and
+truthful with its omission manifest.
+
+Official Gitleaks v2 source confirms it always scans with
+`--report-path=results.sarif` and separately honors
+`GITLEAKS_ENABLE_UPLOAD_ARTIFACT=false`. CI disables only that automatic
+workspace-root upload. Repository staging validates strict SARIF JSON and
+portable paths, preserves its exact bytes, records exact source/run identity,
+and uploads only root-level `artifact-manifest.json` and `results.sarif` from
+`.local/gitleaks-upload/` for 90 days. A future real artifact download must
+still verify the ZIP entries. The advisory job's former `needs: stable-checks`
+edge was removed only after proving it consumes no stable artifact/output,
+database, or environment; `merge-gate` remains exactly dependent on
+`secret-scan` and `stable-checks`, so advisory remains nonblocking and separate.
+
+Local validation passed: required-test truthfulness; CH-0016 production
+evidence and standalone bundle round trip; auth hardening; live advisory auth
+preflight; GLB lifecycle/bounds; cabinetry release evidence; complete critical
+required and floor-plan required umbrellas; typecheck; targeted ESLint with
+zero warnings; code-quality ratchets (1,012 production files, 198 size and 554
+function-debt baselines, 20 suppressions, no cycle/unsafe-TypeScript regression);
+generated surface-runtime drift; strict 1,613-file/283,251,305-byte asset
+inventory; catalog asset availability; and diff hygiene. A focused development
+runtime run completed every lifecycle/reload phase in about two minutes, then
+correctly failed only its final console-error assertion because its deliberately
+nonexistent fallback database returned two 500s; it was not represented as the
+required pass. The final clean detached production build, 42-migration isolated
+database, 2/2 smoke, phase timing, stable bundle, standalone verification,
+advisory safe-subset fixture, and artifact hashes are recorded in the final
+local response after the commit is created.
+
+Independent read-only review initially found and verified fixes for: a tracked
+Playwright last-run artifact; terminal GLB state being masked while response
+counts were polled; phase records without closed fields, non-overlap, whole-test
+containment, or passed-lifecycle consistency; the complete OAuth pair entering
+the application build graph; raw `APP_ENV` checks bypassing the canonical Vercel
+deployment classifier; advisory pairs not binding command, exact checkout,
+project, process/report conclusion, diagnostics, freshness, or null release
+identity; secret-shaped optional filenames escaping into the omission inventory;
+and phase names that did not match their actual work. After the fixes and focused
+reruns, the reviewer returned **PASS — no remaining actionable CH-0017 findings**
+on the complete diff. Its final read-only checks also passed diff hygiene, Node
+syntax for changed/new `.mjs` files, JSON parsing, and transient-output cleanup.
+
+Inherited and out of scope: catalog audit still has five enum failures across
+the same three Hamilton YAML files. Existing full-lint/design-cleanup/Pro visual
+failures from the previous handoff were not modified or reclassified. GitHub
+workflow execution/retention and enforcement are still external: ruleset
+`13671593` does not require `merge-gate`; advisory is correctly not required.
+CH-0004 remains paused.
+
+Rollback order is the commit containing this record, then
+`701aaa473518a0a4fdbc9cf9809dd8bd1bac918a`, then
+`b811ddeaad5f3e2d64f647bad5c5fbe59db1615b`, then
+`c840c06dc2c5e67f463542292bb7391b0f93d731`. This is emergency rollback only:
+it would restore the undersized timeout, contaminated advisory auth, missing
+safe failure evidence, runner-prefixed SARIF, and earlier false-pass paths.

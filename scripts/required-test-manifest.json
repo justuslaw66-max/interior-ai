@@ -51,7 +51,8 @@
       "command": "gitleaks/gitleaks-action@v2",
       "runner": "github-action",
       "requiredSources": [
-        ".github/workflows/ci.yml"
+        ".github/workflows/ci.yml",
+        "scripts/gitleaks-artifact.mjs"
       ],
       "requiredProjects": [],
       "allowSkips": false,
@@ -116,6 +117,7 @@
       "runner": "node",
       "requiredSources": [
         "scripts/production-artifact-evidence.mjs",
+        "scripts/runtime-smoke-phase-budget.mjs",
         "scripts/test-production-artifact-evidence.mjs"
       ],
       "requiredProjects": [],
@@ -151,7 +153,10 @@
       "packageScript": "evidence:production:smoke",
       "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "d9971664dba648e6b1026b61fbf13ad8bf14f6faa052b3d0e5eed4d8cc7fd2b1" },
       "runner": "playwright",
-      "requiredSources": ["tests/e2e/00-runtime-smoke.spec.ts"],
+      "requiredSources": [
+        "tests/e2e/00-runtime-smoke.spec.ts",
+        "scripts/runtime-smoke-phase-budget.mjs"
+      ],
       "requiredTests": [
         {
           "id": "runtime.template-stability",
@@ -186,6 +191,9 @@
       "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "d2a92b4f2ee3191abb9d4fc30f5d8497b9da0b1c59dfc1d6333101fb9d398e84" },
       "runner": "ts-node",
       "requiredSources": [
+        "lib/auth-env.ts",
+        "scripts/ci-auth-fixture.json",
+        "scripts/ci-auth-fixture.ts",
         "scripts/test-auth-env-hardening.ts",
         "scripts/test-admin-authorization.ts"
       ],

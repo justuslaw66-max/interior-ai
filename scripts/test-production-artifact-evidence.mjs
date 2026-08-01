@@ -2,10 +2,12 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
+  existsSync,
   lstatSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  readdirSync,
   readlinkSync,
   rmSync,
   symlinkSync,
@@ -26,6 +28,151 @@ import {
   writeProductionEvidenceManifest,
 } from "./production-artifact-evidence.mjs";
 import { inspectGitTree } from "./vercel-output-manifest.mjs";
+import {
+  GITLEAKS_ARCHIVE_ENTRIES,
+  GITLEAKS_STAGING_ROOT,
+  prepareGitleaksArtifact,
+} from "./gitleaks-artifact.mjs";
+import {
+  RUNTIME_SMOKE_OVERHEAD_BUDGETS,
+  RUNTIME_SMOKE_PHASE_BUDGETS,
+  RUNTIME_SMOKE_PHASE_TIMING_SCHEMA,
+  RUNTIME_SMOKE_WHOLE_TEST_TIMEOUT_MS,
+  RuntimeSmokeTerminalError,
+  createRuntimeSmokePhaseRecorder,
+  deriveRuntimeSmokeWholeTestTimeout,
+} from "./runtime-smoke-phase-budget.mjs";
+
+const sequentialRuntimeSmokeBudgetMs = RUNTIME_SMOKE_PHASE_BUDGETS.reduce(
+  (total, phase) => total + phase.timeoutMs,
+  0,
+);
+const runtimeSmokeOverheadBudgetMs = Object.values(
+  RUNTIME_SMOKE_OVERHEAD_BUDGETS,
+).reduce((total, budget) => total + budget, 0);
+assert.equal(
+  RUNTIME_SMOKE_WHOLE_TEST_TIMEOUT_MS,
+  sequentialRuntimeSmokeBudgetMs + runtimeSmokeOverheadBudgetMs,
+  "the whole-test timeout must equal all sequential phase budgets plus explicit overhead",
+);
+assert.ok(
+  RUNTIME_SMOKE_WHOLE_TEST_TIMEOUT_MS > sequentialRuntimeSmokeBudgetMs,
+  "the whole-test timeout must leave explicit setup, teardown, assertion, and orchestration headroom",
+);
+const increasedPhaseBudgets = RUNTIME_SMOKE_PHASE_BUDGETS.map((phase, index) =>
+  index === 0 ? { ...phase, timeoutMs: phase.timeoutMs + 7_000 } : phase,
+);
+assert.equal(
+  deriveRuntimeSmokeWholeTestTimeout({ phases: increasedPhaseBudgets }),
+  RUNTIME_SMOKE_WHOLE_TEST_TIMEOUT_MS + 7_000,
+  "changing one canonical phase budget must mechanically update the whole-test timeout",
+);
+
+{
+  const terminalRecorder = createRuntimeSmokePhaseRecorder({
+    repositoryRoot: process.cwd(),
+    phaseBudgets: [{ name: "terminal-fixture", timeoutMs: 1_000 }],
+  });
+  let attempts = 0;
+  await assert.rejects(
+    terminalRecorder.run("terminal-fixture", async () => {
+      attempts += 1;
+      throw new RuntimeSmokeTerminalError("terminal-fixture");
+    }, () => "error"),
+    /reached terminal lifecycle state error/,
+  );
+  assert.equal(attempts, 1, "a terminal lifecycle error must fail immediately");
+  assert.deepEqual(
+    terminalRecorder.records.map(({ outcome, safeDiagnosticCategory }) => ({
+      outcome,
+      safeDiagnosticCategory,
+    })),
+    [{ outcome: "terminal-error", safeDiagnosticCategory: "glb-terminal-error" }],
+  );
+}
+
+{
+  const timeoutRecorder = createRuntimeSmokePhaseRecorder({
+    repositoryRoot: process.cwd(),
+    phaseBudgets: [{ name: "bounded-fixture", timeoutMs: 5 }],
+  });
+  await assert.rejects(
+    timeoutRecorder.run("bounded-fixture", () => new Promise(() => {})),
+    /Runtime-smoke phase bounded-fixture exceeded its 5ms budget/,
+  );
+  assert.equal(timeoutRecorder.records[0]?.outcome, "timed-out");
+  assert.equal(
+    timeoutRecorder.records[0]?.safeDiagnosticCategory,
+    "phase-timeout",
+    "a bounded phase must emit its own diagnostic before the whole-test envelope",
+  );
+}
+
+const runtimeSmokeSource = readFileSync(
+  path.join(process.cwd(), "tests/e2e/00-runtime-smoke.spec.ts"),
+  "utf8",
+);
+assert.match(
+  runtimeSmokeSource,
+  /test\.setTimeout\(RUNTIME_SMOKE_WHOLE_TEST_TIMEOUT_MS\)/,
+  "the required identity must consume the derived timeout without duplicating a number",
+);
+assert.doesNotMatch(runtimeSmokeSource, /test\.slow\(|test\.skip\(|retries\s*:/);
+
+{
+  const root = mkdtempSync(path.join(tmpdir(), "ch-0017-gitleaks-artifact-"));
+  const sarifBytes = Buffer.from(
+    `${JSON.stringify({
+      version: "2.1.0",
+      runs: [{ tool: { driver: { name: "gitleaks" } }, results: [] }],
+    }, null, 2)}\n`,
+  );
+  write(root, "results.sarif", sarifBytes);
+  write(root, "unrelated-runner-file.txt", "must not enter the artifact\n");
+  const manifest = prepareGitleaksArtifact({
+    repositoryRoot: root,
+    sourceCommitSha: "7".repeat(40),
+    runId: "30684560486",
+    runAttempt: "1",
+  });
+  assert.deepEqual(
+    readdirSync(path.join(root, GITLEAKS_STAGING_ROOT)).sort(),
+    [...GITLEAKS_ARCHIVE_ENTRIES],
+    "the staging tree must contain only deterministic root-level entries",
+  );
+  assert.deepEqual(
+    readFileSync(path.join(root, GITLEAKS_STAGING_ROOT, "results.sarif")),
+    sarifBytes,
+    "portable staging must preserve the already-scanned SARIF bytes",
+  );
+  assert.equal(manifest.sarif.archiveEntry, "results.sarif");
+  assert.equal(
+    readFileSync(path.join(root, GITLEAKS_STAGING_ROOT, "artifact-manifest.json"), "utf8")
+      .includes("work/interior-ai/interior-ai"),
+    false,
+  );
+
+  write(
+    root,
+    "results.sarif",
+    `${JSON.stringify({
+      version: "2.1.0",
+      runs: [{ artifacts: [{ location: { uri: "/home/runner/work/repo/results" } }] }],
+    })}\n`,
+  );
+  assert.throws(
+    () =>
+      prepareGitleaksArtifact({
+        repositoryRoot: root,
+        sourceCommitSha: "7".repeat(40),
+        runId: "30684560486",
+        runAttempt: "1",
+      }),
+    /contains runner paths/,
+  );
+  assert.equal(existsSync(path.join(root, GITLEAKS_STAGING_ROOT)), false);
+  assert.equal(existsSync(path.join(root, `${GITLEAKS_STAGING_ROOT}.staging`)), false);
+}
 
 assert.deepEqual(
   ["é", "a", "Z", "!"].sort(comparePortablePaths),
@@ -69,6 +216,11 @@ async function fixture({ environmentOverrides = {}, publicArtifactText = "public
   );
   write(
     root,
+    "scripts/runtime-smoke-phase-budget.mjs",
+    readFileSync(path.join(process.cwd(), "scripts/runtime-smoke-phase-budget.mjs"), "utf8"),
+  );
+  write(
+    root,
     "scripts/required-test-manifest.json",
     readFileSync(path.join(process.cwd(), "scripts/required-test-manifest.json"), "utf8"),
   );
@@ -100,6 +252,7 @@ async function fixture({ environmentOverrides = {}, publicArtifactText = "public
     "package.json",
     "package-lock.json",
     "scripts/production-artifact-evidence.mjs",
+    "scripts/runtime-smoke-phase-budget.mjs",
     "scripts/required-test-truthfulness.mjs",
     "scripts/required-test-manifest.json",
     "generated/runtime.ts",
@@ -110,6 +263,7 @@ async function fixture({ environmentOverrides = {}, publicArtifactText = "public
   const evidenceDirectory = ".local/production-artifact-evidence";
   const manifestPath = `${evidenceDirectory}/manifest.json`;
   const reportPath = `${evidenceDirectory}/runtime-smoke.json`;
+  const phaseTimingPath = `${evidenceDirectory}/runtime-smoke-phases.json`;
   const manifest = await createProductionEvidenceManifest({
     repositoryRoot: root,
     candidateIdentifier: "ch-0016-fixture",
@@ -237,6 +391,28 @@ async function fixture({ environmentOverrides = {}, publicArtifactText = "public
     },
   };
   write(root, reportPath, `${JSON.stringify(report, null, 2)}\n`);
+  write(
+    root,
+    phaseTimingPath,
+    `${JSON.stringify({
+      schema: RUNTIME_SMOKE_PHASE_TIMING_SCHEMA,
+      testIdentity: "runtime.template-stability",
+      wholeTestTimeoutMs: RUNTIME_SMOKE_WHOLE_TEST_TIMEOUT_MS,
+      sequentialPhaseBudgetMs: sequentialRuntimeSmokeBudgetMs,
+      overheadBudgets: RUNTIME_SMOKE_OVERHEAD_BUDGETS,
+      phaseBudgets: RUNTIME_SMOKE_PHASE_BUDGETS,
+      phases: RUNTIME_SMOKE_PHASE_BUDGETS.map((phase, index) => ({
+        name: phase.name,
+        startTimeRelativeMs: index * 10,
+        elapsedMs: 10,
+        outcome: "passed",
+        timeoutBudgetMs: phase.timeoutMs,
+        finalLifecycleState: index < 5 ? "loading" : "stable",
+        safeDiagnosticCategory: "none",
+      })),
+      complete: true,
+    }, null, 2)}\n`,
+  );
   canonicalizeProductionEvidenceReport(root, reportPath);
   const canonicalReport = readFileSync(path.join(root, reportPath), "utf8");
   assert.equal(canonicalReport.includes(root), false);
@@ -245,12 +421,13 @@ async function fixture({ environmentOverrides = {}, publicArtifactText = "public
     repositoryRoot: root,
     manifestPath,
     reportPath,
+    phaseTimingPath,
     name: "runtime-smoke",
     command: "npx playwright test tests/e2e/00-runtime-smoke.spec.ts --project=chromium",
     processExitCode: 0,
     completedAt: "2026-07-31T00:00:05.000Z",
   });
-  return { root, manifestPath, reportPath };
+  return { root, manifestPath, reportPath, phaseTimingPath };
 }
 
 function readManifest(root, manifestPath) {
@@ -261,6 +438,17 @@ async function rewriteManifest(root, manifestPath, mutate) {
   const manifest = readManifest(root, manifestPath);
   mutate(manifest);
   await writeProductionEvidenceManifest({ repositoryRoot: root, manifestPath, manifest });
+}
+
+async function rewritePhaseTimings(context, mutate) {
+  const absolutePath = path.join(context.root, context.phaseTimingPath);
+  const timing = JSON.parse(readFileSync(absolutePath, "utf8"));
+  mutate(timing);
+  const bytes = Buffer.from(`${JSON.stringify(timing, null, 2)}\n`);
+  writeFileSync(absolutePath, bytes);
+  await rewriteManifest(context.root, context.manifestPath, (manifest) => {
+    manifest.tests[0].phaseTimings.sha256 = createHash("sha256").update(bytes).digest("hex");
+  });
 }
 
 async function expectRejected(context, expectedText) {
@@ -287,6 +475,40 @@ async function expectRejected(context, expectedText) {
   assert.equal(result.valid, true);
   assert.equal(result.manifest.repositoryEvidence.status, "valid");
   assert.equal(result.manifest.repositoryEvidence.releaseReady, false);
+}
+
+{
+  const context = await fixture();
+  await rewritePhaseTimings(context, (timing) => {
+    timing.phases[1].startTimeRelativeMs =
+      timing.phases[0].startTimeRelativeMs + timing.phases[0].elapsedMs - 1;
+  });
+  await expectRejected(context, "phase timing timeline is overlapping");
+}
+
+{
+  const context = await fixture();
+  await rewritePhaseTimings(context, (timing) => {
+    const finalPhase = timing.phases.at(-1);
+    finalPhase.startTimeRelativeMs = timing.wholeTestTimeoutMs - finalPhase.elapsedMs + 1;
+  });
+  await expectRejected(context, "exceeds the whole-test timeout");
+}
+
+{
+  const context = await fixture();
+  await rewritePhaseTimings(context, (timing) => {
+    timing.phases[0].message = "private diagnostic text must not be retained";
+  });
+  await expectRejected(context, "phase timing outcomes are invalid");
+}
+
+{
+  const context = await fixture();
+  await rewritePhaseTimings(context, (timing) => {
+    timing.phases[0].finalLifecycleState = "credential-bearing-private-state";
+  });
+  await expectRejected(context, "phase timing outcomes are invalid");
 }
 
 {
@@ -363,11 +585,13 @@ async function expectRejected(context, expectedText) {
     "package.json",
     "package-lock.json",
     "scripts/production-artifact-evidence.mjs",
+    "scripts/runtime-smoke-phase-budget.mjs",
     "scripts/required-test-truthfulness.mjs",
     "scripts/required-test-manifest.json",
     context.manifestPath,
     `${context.manifestPath}.sha256`,
     context.reportPath,
+    ".local/production-artifact-evidence/runtime-smoke-phases.json",
   ]);
   const allowedDirectories = new Set([
     ".next",

@@ -26,6 +26,20 @@ jobs:
       - uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"
+      - name: Prepare portable Gitleaks SARIF artifact
+        if: always()
+        env:
+          GITHUB_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/gitleaks-artifact.mjs prepare
+      - name: Upload portable Gitleaks SARIF artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gitleaks-results.sarif
+          path: .local/gitleaks-upload/
+          if-no-files-found: error
+          retention-days: 90
 
   stable-checks:
     name: Stable checks
@@ -46,6 +60,7 @@ jobs:
           - 5432:5432
     env:
       CI: "true"
+      CI_AUTH_FIXTURE_MODE: "1"
       APP_ENV: development
       DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
       AUTH_SECRET: ci-only-auth-secret-at-least-32-characters
@@ -53,8 +68,6 @@ jobs:
       NEXTAUTH_URL: http://127.0.0.1:3000
       APP_ORIGIN: http://127.0.0.1:3000
       AUTH_TRUST_HOST: "true"
-      GOOGLE_CLIENT_ID: 123456789012-gate-a3-ci.apps.googleusercontent.com
-      GOOGLE_CLIENT_SECRET: GOCSPX-gate-a3-ci-placeholder
       ADMIN_EMAILS: gate-a3-admin@example.test
       PLAYWRIGHT_ADMIN_EMAIL: gate-a3-admin@example.test
       OPENAI_API_KEY: gate-a3-ci-openai-placeholder
@@ -80,6 +93,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Configure synthetic CI OAuth fixture
+        run: npm run ci:auth-fixture:export
 
       - name: Apply database migrations
         env:
@@ -165,7 +181,6 @@ jobs:
     name: Full E2E (informational)
     if: always() && (github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request' || github.ref == 'refs/heads/staging')
     runs-on: ubuntu-latest
-    needs: stable-checks
     continue-on-error: true
     services:
       postgres:
@@ -183,6 +198,7 @@ jobs:
           - 5432:5432
     env:
       CI: "true"
+      CI_AUTH_FIXTURE_MODE: "1"
       APP_ENV: development
       DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
       AUTH_SECRET: ci-only-auth-secret-at-least-32-characters
@@ -190,8 +206,6 @@ jobs:
       NEXTAUTH_URL: http://127.0.0.1:3000
       APP_ORIGIN: http://127.0.0.1:3000
       AUTH_TRUST_HOST: "true"
-      GOOGLE_CLIENT_ID: 123456789012-gate-a3-ci.apps.googleusercontent.com
-      GOOGLE_CLIENT_SECRET: gate-a3-ci-google-client-secret-placeholder
       ADMIN_EMAILS: gate-a3-admin@example.test
       PLAYWRIGHT_ADMIN_EMAIL: gate-a3-admin@example.test
     steps:
@@ -209,10 +223,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Configure synthetic CI OAuth fixture
+        run: npm run ci:auth-fixture:export
+
       - name: Apply database migrations
         env:
           GATE_A3_DATABASE_URL: ${{ env.DATABASE_URL }}
         run: npm run gate:a3:db
+
+      - name: Preflight advisory authentication environment
+        run: npm run ci:auth-fixture:preflight
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium

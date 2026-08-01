@@ -165,7 +165,7 @@ function makeRepository() {
     allowSkips: true,
     allowRetries: true,
     allowAnnotations: true,
-    reportPath: "evidence/advisory-evidence.json",
+    reportPath: ".local/required-test-evidence/advisory.fixture/evidence.json",
     artifactBinding: "none",
     ci: { job: "e2e-full", step: "Advisory" },
   };
@@ -411,6 +411,100 @@ function writeEvidence(root, { report = makeReport(), mutateEvidence } = {}) {
   return evidence;
 }
 
+function writeAdvisoryUploadEvidence(
+  root,
+  {
+    status = "failed",
+    processExitCode = status === "passed" ? 0 : 1,
+    includeNotRun = false,
+  } = {},
+) {
+  const gateId = "advisory.fixture";
+  const report = makeReport({
+    status,
+    declaredStatus: status === "passed" ? "expected" : "unexpected",
+  });
+  report.config.metadata.requiredTestEvidence = {
+    schema: REQUIRED_TEST_EVIDENCE_SCHEMA,
+    gateId,
+    sourceCommitSha: SOURCE_SHA,
+    artifactSha256: null,
+    releaseCandidateId: null,
+    releaseEnvironment: null,
+  };
+  report.config.metadata.gateA3ReleaseBaseURL = null;
+  report.config.metadata.productionArtifactEvidence = null;
+  if (includeNotRun) {
+    report.suites[0].specs.push({
+      title: "not-run advisory identity",
+      file: "required-module.ts",
+      ok: false,
+      tests: [
+        {
+          projectId: "chromium",
+          projectName: "chromium",
+          status: "unexpected",
+          annotations: [],
+          results: [],
+        },
+      ],
+    });
+  }
+  const reportPath =
+    `.local/required-test-evidence/${gateId}/playwright.json`;
+  const reportBytes = Buffer.from(`${JSON.stringify(report, null, 2)}\n`);
+  const truthfulness = validateRequiredTestReport({
+    repositoryRoot: root,
+    gateId,
+    report,
+    processExitCode,
+    requireMetadata: true,
+    expectedSourceCommitSha: SOURCE_SHA,
+    environment: {},
+  });
+  write(root, reportPath, reportBytes);
+  write(
+    root,
+    `.local/required-test-evidence/${gateId}/evidence.json`,
+    `${JSON.stringify({
+      schema: REQUIRED_TEST_EVIDENCE_SCHEMA,
+      gateId,
+      command: "npm run test:advisory",
+      sourceCommitSha: SOURCE_SHA,
+      artifactSha256: null,
+      processExitCode,
+      startedAt: new Date(Date.parse(report.stats.startTime) - 100).toISOString(),
+      completedAt: new Date(Date.parse(report.stats.startTime) + 200).toISOString(),
+      report: { path: reportPath, sha256: sha256(reportBytes) },
+      result: truthfulness.valid ? "passed" : "failed",
+      diagnostics: truthfulness.issues,
+    }, null, 2)}\n`,
+  );
+  return { report, reportPath };
+}
+
+function prepareAdvisoryUpload(context, options = {}) {
+  return prepareRequiredTestEvidenceUpload({
+    repositoryRoot: context.root,
+    expectedSourceCommitSha: SOURCE_SHA,
+    ...options,
+  });
+}
+
+function rewriteAdvisoryUploadPair(root, { mutateEvidence, mutateReport } = {}) {
+  const gateId = "advisory.fixture";
+  const reportPath = `.local/required-test-evidence/${gateId}/playwright.json`;
+  const evidencePath = `.local/required-test-evidence/${gateId}/evidence.json`;
+  const report = JSON.parse(readFileSync(path.join(root, reportPath), "utf8"));
+  const evidence = JSON.parse(readFileSync(path.join(root, evidencePath), "utf8"));
+  mutateReport?.(report);
+  const reportBytes = Buffer.from(`${JSON.stringify(report, null, 2)}\n`);
+  write(root, reportPath, reportBytes);
+  evidence.report.sha256 = sha256(reportBytes);
+  mutateEvidence?.(evidence);
+  write(root, evidencePath, `${JSON.stringify(evidence, null, 2)}\n`);
+}
+
 {
   const context = makeRepository();
   const repository = validateRequiredTestRepository({ repositoryRoot: context.root });
@@ -419,6 +513,178 @@ function writeEvidence(root, { report = makeReport(), mutateEvidence } = {}) {
   const result = reportResult(context.root, makeReport());
   assert.deepEqual(result.issues, []);
   assert.equal(result.valid, true, "a complete required suite must pass");
+}
+
+{
+  const context = makeRepository();
+  writeAdvisoryUploadEvidence(context.root);
+  const unsafeFileName = "GOCSPX-not-retained-filename.log";
+  write(
+    context.root,
+    `.local/required-test-evidence/advisory.fixture/playwright-output/${unsafeFileName}`,
+    "safe diagnostic content\n",
+  );
+  const prepared = prepareAdvisoryUpload(context);
+  assert.equal(prepared.omitted[0]?.reasonCode, "optional-unsafe-path");
+  assert.match(prepared.omitted[0]?.path ?? "", /^\.omitted\/optional-path-sha256-[0-9a-f]{64}$/);
+  const inventoryText = readFileSync(
+    path.join(context.root, ".local/required-test-upload/retained-evidence-inventory.json"),
+    "utf8",
+  );
+  assert.equal(inventoryText.includes(unsafeFileName), false);
+  assert.doesNotThrow(() =>
+    auditRetainedEvidenceDirectory({ repositoryRoot: context.root }),
+  );
+}
+
+{
+  const context = makeRepository();
+  writeAdvisoryUploadEvidence(context.root);
+  rewriteAdvisoryUploadPair(context.root, {
+    mutateEvidence: (evidence) => {
+      evidence.result = "passed";
+      evidence.diagnostics = [];
+    },
+  });
+  assert.throws(
+    () => prepareAdvisoryUpload(context),
+    /conclusion, process, report, or diagnostics are contradictory/,
+  );
+}
+
+{
+  const context = makeRepository();
+  writeAdvisoryUploadEvidence(context.root, { status: "passed" });
+  rewriteAdvisoryUploadPair(context.root, {
+    mutateEvidence: (evidence) => {
+      evidence.result = "failed";
+      evidence.diagnostics = ["invented failure"];
+    },
+  });
+  assert.throws(
+    () => prepareAdvisoryUpload(context),
+    /conclusion, process, report, or diagnostics are contradictory/,
+  );
+}
+
+{
+  const context = makeRepository();
+  writeAdvisoryUploadEvidence(context.root);
+  rewriteAdvisoryUploadPair(context.root, {
+    mutateReport: (report) => {
+      const record = report.suites[0].specs[0].tests[0];
+      record.projectId = "webkit";
+      record.projectName = "webkit";
+    },
+  });
+  assert.throws(
+    () => prepareAdvisoryUpload(context),
+    /unexpected record project/,
+  );
+}
+
+{
+  const context = makeRepository();
+  writeAdvisoryUploadEvidence(context.root);
+  assert.throws(
+    () => prepareAdvisoryUpload(context, { expectedSourceCommitSha: "f".repeat(40) }),
+    /belongs to another source commit/,
+  );
+}
+
+for (const mutation of [
+  {
+    mutateEvidence: (evidence) => {
+      evidence.command = "npm run test:e2e:release";
+    },
+  },
+  {
+    mutateEvidence: (evidence) => {
+      evidence.artifactSha256 = "2".repeat(64);
+    },
+  },
+  {
+    mutateReport: (report) => {
+      report.config.metadata.requiredTestEvidence.artifactSha256 = "2".repeat(64);
+    },
+  },
+  {
+    mutateReport: (report) => {
+      report.config.metadata.requiredTestEvidence.releaseCandidateId = "rc-masquerade";
+    },
+  },
+  {
+    mutateReport: (report) => {
+      report.config.metadata.requiredTestEvidence.releaseEnvironment = "staging";
+    },
+  },
+  {
+    mutateReport: (report) => {
+      report.config.metadata.gateA3ReleaseBaseURL = "https://release.example.test";
+    },
+  },
+  {
+    mutateReport: (report) => {
+      report.config.metadata.productionArtifactEvidence = {
+        sourceCommitSha: SOURCE_SHA,
+      };
+    },
+  },
+]) {
+  const context = makeRepository();
+  writeAdvisoryUploadEvidence(context.root);
+  rewriteAdvisoryUploadPair(context.root, mutation);
+  assert.throws(
+    () => prepareAdvisoryUpload(context),
+    /canonical command|advisory artifact binding|release or production-artifact identity/,
+  );
+}
+
+for (const testCase of [
+  {
+    mutateEvidence: (evidence) => {
+      evidence.processExitCode = -1;
+    },
+    expected: /evidence\.json is malformed/,
+  },
+  {
+    mutateEvidence: (evidence) => {
+      evidence.startedAt = new Date(Date.parse(evidence.completedAt) + 1_000).toISOString();
+    },
+    expected: /evidence\.json is malformed/,
+  },
+  {
+    mutateReport: (report) => {
+      report.stats.startTime = "2020-01-01T00:00:00.000Z";
+    },
+    expected: /report timing is outside the recorded process interval/,
+  },
+  {
+    mutateEvidence: (evidence) => {
+      evidence.startedAt = "2020-01-01T00:00:00.000Z";
+      evidence.completedAt = "2020-01-01T00:00:01.000Z";
+    },
+    mutateReport: (report) => {
+      report.stats.startTime = "2020-01-01T00:00:00.100Z";
+    },
+    expected: /is stale/,
+  },
+  {
+    mutateEvidence: (evidence) => {
+      const future = Date.now() + 10 * 60 * 1_000;
+      evidence.startedAt = new Date(future).toISOString();
+      evidence.completedAt = new Date(future + 1_000).toISOString();
+    },
+    mutateReport: (report) => {
+      report.stats.startTime = new Date(Date.now() + 10 * 60 * 1_000 + 100).toISOString();
+    },
+    expected: /timestamp is in the future/,
+  },
+]) {
+  const context = makeRepository();
+  writeAdvisoryUploadEvidence(context.root);
+  rewriteAdvisoryUploadPair(context.root, testCase);
+  assert.throws(() => prepareAdvisoryUpload(context), testCase.expected);
 }
 
 {
@@ -441,16 +707,7 @@ function writeEvidence(root, { report = makeReport(), mutateEvidence } = {}) {
 
 {
   const context = makeRepository();
-  write(
-    context.root,
-    ".local/required-test-evidence/advisory.fixture/evidence.json",
-    `${JSON.stringify({
-      schema: REQUIRED_TEST_EVIDENCE_SCHEMA,
-      gateId: "advisory.fixture",
-      sourceCommitSha: SOURCE_SHA,
-      diagnostics: ["failed at /home/runner/work/interior-ai/interior-ai/tests/e2e/required.spec.ts"],
-    })}\n`,
-  );
+  writeAdvisoryUploadEvidence(context.root, { includeNotRun: true });
   write(
     context.root,
     ".local/required-test-evidence/advisory.fixture/playwright-output/failure/error-context.md",
@@ -466,26 +723,39 @@ function writeEvidence(root, { report = makeReport(), mutateEvidence } = {}) {
     ".local/required-test-evidence/advisory.fixture/playwright-output/failure/trace.zip",
     "uninspectable archive fixture",
   );
-  const prepared = prepareRequiredTestEvidenceUpload({
-    repositoryRoot: context.root,
+  const prepared = prepareAdvisoryUpload(context, {
     environment: { AUTH_SECRET: "fixture-sensitive-value" },
   });
-  assert.equal(prepared.included.length, 3);
+  assert.equal(prepared.included.length, 4);
   assert.deepEqual(prepared.omitted, [
     {
       path: "advisory.fixture/playwright-output/failure/trace.zip",
-      reason: "uninspectable-or-binary",
+      omissionCategory: "prohibited-binary-or-uninspectable-evidence",
+      reasonCode: "optional-uninspectable-extension",
+      originalSha256: sha256(Buffer.from("uninspectable archive fixture")),
     },
   ]);
   const retainedErrorContext = readFileSync(
     path.join(
       context.root,
-      ".local/required-test-upload/required-test-evidence/advisory.fixture/playwright-output/failure/error-context.md",
+      ".local/required-test-upload/optional-diagnostics/advisory.fixture/failure/error-context.md",
     ),
     "utf8",
   );
   assert.equal(retainedErrorContext.includes("/home/runner/work/"), false);
   assert.match(retainedErrorContext, /<WORKSPACE>/);
+  const inventory = JSON.parse(
+    readFileSync(
+      path.join(context.root, ".local/required-test-upload/retained-evidence-inventory.json"),
+      "utf8",
+    ),
+  );
+  assert.equal(inventory.policy.rawPlaywrightDirectoriesUploaded, false);
+  assert.equal(inventory.advisorySummaries[0].conclusion, "failed");
+  assert.equal(inventory.advisorySummaries[0].processExitCode, 1);
+  assert.equal(inventory.advisorySummaries[0].failed, 1);
+  assert.equal(inventory.advisorySummaries[0].notRun, 1);
+  assert.equal(inventory.advisorySummaries[0].discovered, 2);
   assert.doesNotThrow(() =>
     auditRetainedEvidenceDirectory({
       repositoryRoot: context.root,
@@ -509,60 +779,104 @@ function writeEvidence(root, { report = makeReport(), mutateEvidence } = {}) {
 
 {
   const context = makeRepository();
+  writeAdvisoryUploadEvidence(context.root);
   write(
     context.root,
     ".local/required-test-evidence/advisory.fixture/playwright-output/nested.json",
     `${JSON.stringify({ metadata: { OPENAI_API_KEY: "gate-a3-ci-openai-placeholder" } })}\n`,
   );
-  assert.throws(
-    () => prepareRequiredTestEvidenceUpload({ repositoryRoot: context.root }),
-    /contains prohibited environment output|contains secret-bearing fields/,
-  );
-  assert.equal(existsSync(path.join(context.root, ".local/required-test-upload")), false);
+  const prepared = prepareAdvisoryUpload(context);
+  assert.equal(prepared.omitted[0]?.path, "advisory.fixture/playwright-output/nested.json");
+  assert.match(prepared.omitted[0]?.reasonCode ?? "", /optional-(?:environment-output|sensitive-structure)/);
+  assert.equal(existsSync(path.join(context.root, ".local/required-test-upload")), true);
 }
 
 {
   const context = makeRepository();
+  writeAdvisoryUploadEvidence(context.root);
   write(
     context.root,
     ".local/required-test-evidence/advisory.fixture/playwright-output/environment.log",
     "OPENAI_API_KEY: gate-a3-ci-openai-placeholder\n",
   );
-  assert.throws(
-    () => prepareRequiredTestEvidenceUpload({ repositoryRoot: context.root }),
-    /contains prohibited environment output/,
-  );
-  assert.equal(existsSync(path.join(context.root, ".local/required-test-upload")), false);
+  const prepared = prepareAdvisoryUpload(context);
+  assert.equal(prepared.omitted[0]?.reasonCode, "optional-environment-output");
+  assert.equal(existsSync(path.join(context.root, ".local/required-test-upload")), true);
 }
 
 {
   const context = makeRepository();
+  writeAdvisoryUploadEvidence(context.root);
   write(
     context.root,
     ".local/required-test-evidence/advisory.fixture/playwright-output/renamed-archive.log",
     Buffer.from([0x50, 0x4b, 0x03, 0x04, 0x00, 0xff]),
   );
-  assert.throws(
-    () => prepareRequiredTestEvidenceUpload({ repositoryRoot: context.root }),
-    /has a binary or archive signature/,
-  );
+  const prepared = prepareAdvisoryUpload(context);
+  assert.equal(prepared.omitted[0]?.reasonCode, "optional-uninspectable-content");
   assert.equal(
     existsSync(path.join(context.root, ".local/required-test-upload")),
-    false,
-    "a binary-under-text-extension failure must leave nothing uploadable",
+    true,
+    "a binary optional diagnostic must not eliminate truthful mandatory evidence",
   );
 }
 
 {
   const context = makeRepository();
+  writeAdvisoryUploadEvidence(context.root);
   write(
     context.root,
     ".local/required-test-evidence/advisory.fixture/playwright-output/credential.txt",
     "Authorization: Bearer github_pat_this_is_not_retained_123456\n",
   );
+  const prepared = prepareAdvisoryUpload(context);
+  assert.equal(prepared.omitted[0]?.reasonCode, "optional-credential-value");
+}
+
+for (const [fileName, content, expectedReason] of [
+  [
+    "safe-name-database.txt",
+    "FLOORING_DEBUG_VALUE=postgresql://user:password@localhost:5432/private\n",
+    "optional-database-url",
+  ],
+  [
+    "oauth-shaped.txt",
+    "FLOORING_DEBUG_VALUE=GOCSPX-not-retained-value\n",
+    "optional-oauth-or-shaped-secret",
+  ],
+  [
+    "private-key.txt",
+    "-----BEGIN PRIVATE KEY-----\nnot-retained\n-----END PRIVATE KEY-----\n",
+    "optional-credential-value",
+  ],
+]) {
+  const context = makeRepository();
+  writeAdvisoryUploadEvidence(context.root);
+  write(
+    context.root,
+    `.local/required-test-evidence/advisory.fixture/playwright-output/${fileName}`,
+    content,
+  );
+  const prepared = prepareAdvisoryUpload(context);
+  assert.equal(prepared.omitted[0]?.reasonCode, expectedReason);
+}
+
+{
+  const context = makeRepository();
+  writeAdvisoryUploadEvidence(context.root);
+  write(
+    context.root,
+    ".local/required-test-evidence/advisory.fixture/evidence.json",
+    "{ malformed\n",
+  );
   assert.throws(
-    () => prepareRequiredTestEvidenceUpload({ repositoryRoot: context.root }),
-    /contains a generic credential value/,
+    () => prepareAdvisoryUpload(context),
+    /malformed JSON/,
+  );
+  assert.equal(existsSync(path.join(context.root, ".local/required-test-upload")), false);
+  assert.equal(
+    existsSync(path.join(context.root, ".local/required-test-upload.staging")),
+    false,
   );
 }
 
@@ -577,8 +891,7 @@ function writeEvidence(root, { report = makeReport(), mutateEvidence } = {}) {
   );
   assert.throws(
     () =>
-      prepareRequiredTestEvidenceUpload({
-        repositoryRoot: context.root,
+      prepareAdvisoryUpload(context, {
         uploadRoot: ".",
       }),
     /upload root must be exactly \.local\/required-test-upload/,
@@ -592,19 +905,21 @@ function writeEvidence(root, { report = makeReport(), mutateEvidence } = {}) {
 
 {
   const context = makeRepository();
+  const { report, reportPath } = writeAdvisoryUploadEvidence(context.root);
+  report.config.metadata.OPENAI_API_KEY = "gate-a3-ci-openai-placeholder";
   write(
     context.root,
-    ".local/required-test-evidence/advisory.fixture/playwright-output/error-context.md",
-    "unsafe shaped value sk_test_gate_a3_ci_placeholder\n",
+    reportPath,
+    `${JSON.stringify(report, null, 2)}\n`,
   );
   assert.throws(
-    () => prepareRequiredTestEvidenceUpload({ repositoryRoot: context.root }),
-    /contains a shaped secret value/,
+    () => prepareAdvisoryUpload(context),
+    /contains prohibited environment output|contains secret-bearing fields/,
   );
   assert.equal(
     existsSync(path.join(context.root, ".local/required-test-upload")),
     false,
-    "failed sanitization must leave no canonical upload directory",
+    "unsafe required evidence must leave no canonical upload directory",
   );
   assert.equal(
     existsSync(path.join(context.root, ".local/required-test-upload.staging")),
@@ -1212,6 +1527,8 @@ assert.equal(
   );
   assert.match(stableJob, /if-no-files-found:\s*error/);
   assert.match(stableJob, /path:\s*\.local\/production-artifact-evidence\/upload\//);
+  assert.match(stableJob, /Configure synthetic CI OAuth fixture[\s\S]*npm run ci:auth-fixture:export/);
+  assert.doesNotMatch(stableJob, /^\s+GOOGLE_CLIENT_(?:ID|SECRET):/m);
   const advisoryJob = workflow.slice(
     workflow.indexOf("  e2e-full:"),
     workflow.indexOf("  merge-gate:"),
@@ -1224,6 +1541,14 @@ assert.equal(
   assert.match(advisoryJob, /npm run evidence:required-tests:prepare-upload/);
   assert.match(advisoryJob, /path:\s*\.local\/required-test-upload\//);
   assert.match(advisoryJob, /if-no-files-found:\s*error/);
+  assert.doesNotMatch(advisoryJob, /\n\s+needs:\s*stable-checks/);
+  assert.ok(
+    advisoryJob.indexOf("Preflight advisory authentication environment") <
+      advisoryJob.indexOf("Install Playwright browsers"),
+    "a malformed advisory auth environment must fail before browser installation",
+  );
+  assert.match(advisoryJob, /npm run ci:auth-fixture:preflight/);
+  assert.doesNotMatch(advisoryJob, /^\s+GOOGLE_CLIENT_(?:ID|SECRET):/m);
   assert.doesNotMatch(
     advisoryJob,
     /path:\s*[|>]?[\s\S]*?\.local\/required-test-evidence\//,
@@ -1235,6 +1560,15 @@ assert.equal(
     "the non-blocking advisory inventory must still execute on the verification PR",
   );
   assert.match(workflow, /merge-gate:\n\s+name:\s*merge-gate\n/);
+  assert.match(workflow, /merge-gate:[\s\S]*needs:\s*\[secret-scan, stable-checks\]/);
+  const secretScanJob = workflow.slice(
+    workflow.indexOf("  secret-scan:"),
+    workflow.indexOf("  stable-checks:"),
+  );
+  assert.match(secretScanJob, /GITLEAKS_ENABLE_UPLOAD_ARTIFACT:\s*"false"/);
+  assert.match(secretScanJob, /node scripts\/gitleaks-artifact\.mjs prepare/);
+  assert.match(secretScanJob, /path:\s*\.local\/gitleaks-upload\//);
+  assert.match(secretScanJob, /retention-days:\s*90/);
 }
 
 const realRepository = validateRequiredTestRepository({ repositoryRoot: process.cwd() });

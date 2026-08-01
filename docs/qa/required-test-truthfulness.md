@@ -1,9 +1,11 @@
 # Required-test truthfulness
 
-Status: CH-0017 is reopened after Outcome D. The repository follow-up closes the
-observed runtime-synchronization, aggregator-ownership, and retained-evidence
-portability defects locally. A new exact-head GitHub run and required-check
-configuration remain external controls and are not marked verified here.
+Status: CH-0017 remains reopened after exact-head run `30684560486` at
+`701aaa473518a0a4fdbc9cf9809dd8bd1bac918a`. The repository-controlled timeout,
+advisory-auth, safe-evidence, and SARIF-layout defects are remediated by the
+follow-up containing this record. A new exact-head GitHub run, downloaded
+artifact inspection, and required-check configuration remain external controls
+and are not marked verified here.
 
 ## Canonical inventory
 
@@ -79,14 +81,18 @@ process exit, report path/hash, result, and diagnostics. It never records an
 environment dump, credentials, cookies, private designs, or machine-local
 repository paths.
 
-CI never uploads this raw directory. After any required/advisory runner result,
-`evidence:required-tests:prepare-upload` builds a separate staging tree,
-canonicalizes Linux/macOS/Windows/home/temp paths to `<WORKSPACE>`, rejects
-sensitive keys and values, validates strict UTF-8 text, and omits screenshots,
-videos, traces, archives, and other uninspectable/binary files. The staged tree
-is audited and atomically published as `.local/required-test-upload/`; any error
-removes both staging and canonical output so the always-run GitHub upload has
-nothing unsafe or partial to retain.
+CI never uploads this raw directory. After an advisory runner result,
+`evidence:required-tests:prepare-upload` requires the process envelope and
+Playwright JSON report, verifies their source/hash/process/project/totals
+relationship, and writes a safe failing-or-passing summary. Mandatory malformed
+or unsafe JSON rejects the complete bundle. Optional diagnostic text is decoded
+as strict UTF-8, normalized from Linux/macOS/Windows/home/temp paths to
+`<WORKSPACE>`, and retained only under `optional-diagnostics/`; unsafe optional
+files are omitted with a safe path, category, reason code, and original SHA-256.
+Screenshots, videos, traces, archives, and other binary/uninspectable files are
+never copied. A retained/omitted inventory makes omissions explicit. The staged
+tree is rescanned and atomically published as `.local/required-test-upload/`;
+every failure removes both staging and canonical output.
 
 Process-only gates remain direct package commands or `&&`-chained umbrellas, so
 missing executable files and nonzero child results already stop the command.
@@ -192,6 +198,81 @@ lint, design cleanup, and catalog audit retain the same inherited failures
 recorded in the code-health handoff; no exception, threshold, baseline, or
 expectation was changed.
 
+## Exact-head 701aaa follow-up
+
+GitHub Actions run `30684560486` attempt 1 proved the pre-smoke contracts and
+strict build, then truthfully rejected required smoke: health/catalog passed,
+while the furnished-template identity reached semantic GLB readiness but the
+manually duplicated 240-second whole-test timeout expired during a later body
+assertion (about 4.3 minutes). The fix does not alter production GLB behavior,
+remove a reload, introduce a retry, or downgrade the identity. One canonical
+14-phase table budgets every sequential setup, navigation, fixture creation,
+fixture reload/2D readiness, combined initial GLB loading and selection
+verification, lifecycle, bounds, render-idle, remount, three reload,
+persistence, and final-state phase. Its 585,000 ms sequential sum plus 15,000 ms each for
+fixture setup, fixture teardown, and assertion scheduling and a documented
+30,000 ms orchestration margin mechanically derives the 660,000 ms Playwright
+whole-test timeout. Every phase has its own preemptive timeout, and terminal GLB
+`error` still rejects immediately. The strict phase JSON records only relative
+start, elapsed time, outcome, phase budget, lifecycle state, and a safe category.
+Its schema and encoding are closed; canonical order must be non-overlapping,
+every phase end must remain inside the derived whole-test envelope, and a passed
+phase cannot claim terminal `error` state.
+
+The same external run's 232-test advisory job reported 107 passed, 92 failed,
+and 33 not run with process exit 1, but its environment used the structurally
+invalid `gate-a3-ci-google-client-secret-placeholder`; those results are not a
+clean product baseline. Stable and advisory CI now call one repository-owned
+synthetic OAuth fixture. The complete non-secret pair is committed once in
+`scripts/ci-auth-fixture.json`, outside the application build graph. CI
+transports it only through a mode-0600 ephemeral `BASH_ENV` file rather than
+printing it or placing it in workflow YAML. Marker-only detection in
+`lib/auth-env.ts` requires explicit CI/test activation and a canonically resolved
+`development` or `staging` environment; missing, invalid, and Vercel-production
+classifications reject it. The pair is never an implicit application or
+production fallback. Before browser installation,
+the advisory job validates that exact environment, starts the same Next.js app,
+and requires `/api/auth/session` to return structured JSON without Auth.js HTML
+or `ClientFetchError` signatures. Unit coverage retains trimming policy while
+rejecting absent, quoted, whitespace-only, truncated, malformed, mismatched,
+implicit, and production fixture use.
+
+The run's flooring error context was the exact optional file rejected for
+prohibited environment output; no diagnostic contents were copied into this
+record. It is now omitted without discarding the mandatory failing report. The
+mandatory pair is bound to the registered advisory command, exact checkout SHA,
+configured project, process exit, canonical/fresh timing envelope, report hash,
+full validator diagnostics, and a conclusion that cannot contradict the report.
+Production-artifact, release-candidate, release-environment, and Gate A3 URL
+bindings must remain null. Unsafe optional filenames are represented in the
+omission inventory only by a stable SHA-256 path identifier so a secret-shaped
+name cannot eliminate the safe bundle. The
+advisory job consumes no stable-checks output, artifact, database, or environment
+state and has its own exact-head checkout and PostgreSQL service, so its
+`needs: stable-checks` edge was removed. `merge-gate` still depends only on
+`secret-scan` and `stable-checks`; the advisory conclusion remains separately
+visible and non-required.
+
+Gitleaks still scans the full checkout with the official v2 action and writes
+`results.sarif`; its automatic workspace-root artifact upload is disabled. A
+repository-owned atomic staging step validates strict SARIF JSON and rejects
+runner paths, preserves the SARIF bytes, and uploads only root-level
+`results.sarif` plus `artifact-manifest.json` from `.local/gitleaks-upload/` at
+the existing 90-day policy. The next real artifact download must still verify
+the ZIP entry layout.
+
+Focused local validation passed the phase derivation/terminal/timeout tests,
+required-test truthfulness, production evidence, auth hardening, live auth
+preflight, GLB bounds, cabinetry evidence, complete critical and floor-plan
+umbrellas, typecheck, targeted zero-warning ESLint, code-quality ratchets,
+generated-runtime drift, strict asset inventory, and catalog asset availability.
+A development smoke exercised all phases in about two minutes; its final check
+correctly reported two 500 console errors caused by the deliberately nonexistent
+local fallback database. The required 2/2 result and production evidence hashes
+are therefore taken only from the final clean detached, migrated-database proof.
+The inherited catalog audit remains five invalid Hamilton enum values in three
+unchanged YAML files.
+
 ## External controls and rollback
 
 Repository checks cannot verify which GitHub checks branch protection requires,
@@ -199,7 +280,8 @@ whether the workflow ran for the candidate, or whether uploaded evidence was
 retained for the requested duration. Attach the actual workflow/run/settings
 evidence before treating those controls as verified.
 
-Rollback this Outcome-D follow-up first, then
+Rollback the follow-up containing the exact-head 701aaa remediation first, then
+the Outcome-D commit, then
 `b811ddeaad5f3e2d64f647bad5c5fbe59db1615b`, then the CH-0017 implementation
 `c840c06dc2c5e67f463542292bb7391b0f93d731`. That would restore unsafe/raw
 retention, timing-dependent smoke, aggregate-only evidence, and advisory

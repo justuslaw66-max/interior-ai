@@ -69,9 +69,12 @@ The furnished-template identity does not infer readiness from completed GLB
 HTTP responses. The production component reports its existing semantic load
 lifecycle to diagnostics. The test fails immediately on a terminal load code,
 waits boundedly for semantic readiness, and then applies the original bounds,
-selection, remount, reload, and render-idle assertions. This fixes the external
-timing race without adding retries, seeding a test-only success state, changing
-`npm run start`, or weakening the required identity.
+selection, remount, three reload, persistence, render-idle, and final-state
+assertions. A canonical 585,000 ms sequential phase budget plus 75,000 ms of
+named setup/teardown/assertion/orchestration overhead derives the 660,000 ms
+whole-test timeout. This fixes the external whole-test envelope defect without
+adding retries, seeding a test-only success state, changing `npm run start`, or
+weakening the required identity.
 
 Generated output is written only under the ignored directory
 `.local/production-artifact-evidence/`:
@@ -79,6 +82,9 @@ Generated output is written only under the ignored directory
 - `manifest.json`: canonical UTF-8 provenance manifest;
 - `manifest.json.sha256`: accidental-tamper sidecar for the exact manifest bytes;
 - `runtime-smoke.json`: Playwright JSON report bound to the manifest identity.
+- `runtime-smoke-phases.json`: strict portable per-phase timing and outcome
+  evidence bound by path, SHA-256, phase count, elapsed total, and derived
+  whole-test timeout in the production manifest;
 - `upload/ch0016-ch0017-evidence-bundle.tar.gz`: a scanned transport archive
   containing the exact artifact roots, manifest/report, lockfile identity, and
   standalone verifier inputs while preserving symlinks;
@@ -96,11 +102,13 @@ Repository-owned artifact uploads are deliberately separate:
 | Job/path | Retained policy |
 | --- | --- |
 | `stable-checks` → `.local/production-artifact-evidence/upload/` | Only the validated standalone `.tar.gz` bundle and SHA-256 sidecar. The bundle is created only after required smoke succeeds; missing files fail the upload. Artifact bytes are scanned for every sensitive CI environment value, including API/access keys. |
-| `e2e-full` → `.local/required-test-upload/` | Only strictly decoded text evidence sanitized to portable paths and rescanned immediately before upload. The inventory names every included text file and every omitted binary/uninspectable Playwright file. Preparation publishes atomically; any failure leaves no uploadable directory. |
+| `e2e-full` → `.local/required-test-upload/` | Mandatory envelope/Playwright JSON plus a truthful totals/process/source/project summary are required even when the advisory suite fails. Safe optional text is normalized into `optional-diagnostics/`; unsafe or binary optional files are omitted with category/reason/SHA-256. Mandatory unsafe or malformed content rejects the bundle. Preparation publishes atomically; any failure leaves no uploadable directory. |
+| `secret-scan` → `.local/gitleaks-upload/` | The official Gitleaks v2 scan remains authoritative, but automatic checkout-root upload is disabled. Atomic staging preserves `results.sarif` bytes and adds only a source/run manifest; both archive entries are root-level and retained for 90 days. A real artifact download must confirm the final ZIP layout. |
 | Raw `.local/required-test-evidence/`, `test-results/`, traces, video, screenshots, attachments, archives | Never direct upload inputs. Text diagnostics may be copied only through the sanitizer; uninspectable binary forms are omitted rather than rewritten. |
 
-The Git-history secret-scan action produces its GitHub check result; this
-repository supplies no `actions/upload-artifact` path for it.
+The Git-history secret-scan action still produces the required check result.
+Repository staging changes only the transport layout; it cannot turn scan
+findings or action failure into success.
 
 After downloading the GitHub artifact into a fresh directory, verify the archive
 sidecar, extract it, and run:

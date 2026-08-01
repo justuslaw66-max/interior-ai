@@ -1,3 +1,5 @@
+import { getApplicationEnvironment } from "./config";
+
 type RequiredAuthEnvKey = "GOOGLE_CLIENT_ID" | "GOOGLE_CLIENT_SECRET";
 
 type AuthEnv = {
@@ -87,6 +89,37 @@ function validateAuthShapeOrThrow(authEnv: AuthEnv): void {
   }
 }
 
+function validateSyntheticCiFixtureScopeOrThrow(authEnv: AuthEnv): void {
+  // Match the non-secret fixture by structure without embedding either complete
+  // fixture value in the application graph or its production artifact.
+  const syntheticClientId =
+    /^[0-9]+-gate-a3-ci\.apps\.googleusercontent\.com$/i.test(authEnv.googleClientId);
+  const syntheticClientSecret =
+    /^GOCSPX[-_]gate-a3-ci-placeholder$/.test(authEnv.googleClientSecret);
+  const usesSyntheticFixture =
+    syntheticClientId || syntheticClientSecret;
+  if (!usesSyntheticFixture) return;
+
+  const exactFixture = syntheticClientId && syntheticClientSecret;
+  const explicitlyEnabled = process.env.CI_AUTH_FIXTURE_ACTIVE === "1";
+  const githubCi = process.env.CI === "true" && process.env.GITHUB_ACTIONS === "true";
+  const localPreflight = process.env.CI_AUTH_FIXTURE_LOCAL_TEST === "1";
+  const applicationEnvironment = getApplicationEnvironment(process.env);
+  const explicitlyNonProduction =
+    applicationEnvironment === "development" || applicationEnvironment === "staging";
+
+  if (
+    !exactFixture ||
+    !explicitlyEnabled ||
+    (!githubCi && !localPreflight) ||
+    !explicitlyNonProduction
+  ) {
+    throw new Error(
+      "[auth] Synthetic CI OAuth fixture is restricted to explicit non-production CI/test execution"
+    );
+  }
+}
+
 export function getAuthEnvOrThrow(): AuthEnv {
   const env: AuthEnv = {
     authSecret: readAndSanitizeAuthSecretEnv(),
@@ -95,6 +128,7 @@ export function getAuthEnvOrThrow(): AuthEnv {
   };
 
   validateAuthShapeOrThrow(env);
+  validateSyntheticCiFixtureScopeOrThrow(env);
   return env;
 }
 
