@@ -1750,6 +1750,10 @@ assert.equal(
   );
   assert.equal(failureUpload?.with?.["if-no-files-found"], "error");
   assert.match(failureDiagnostics.run, /failure-upload\.staging/);
+  assert.match(
+    failureDiagnostics.run,
+    /node scripts\/production-artifact-evidence\.mjs verify-runtime-failure/,
+  );
   assert.match(failureDiagnostics.run, /Runtime failure diagnostics inventory is not exact/);
   assert.match(failureDiagnostics.run, /safe_failure_diagnostics_ready=true/);
   const runWorkflowShell = (source, cwd, environment = {}) =>
@@ -1777,14 +1781,21 @@ assert.equal(
     for (const file of ["manifest.json", "runtime-smoke.json", "runtime-smoke-phases.json"]) {
       write(root, `${evidenceRoot}/${file}`, `${JSON.stringify({ schema: file })}\n`);
     }
-    const result = runWorkflowShell(failureDiagnostics.run, root, {
+    const result = runWorkflowShell(
+      failureDiagnostics.run.replace(
+        "node scripts/production-artifact-evidence.mjs verify-runtime-failure",
+        "true",
+      ),
+      root,
+      {
       GITHUB_OUTPUT: outputPath,
       GOOGLE_CLIENT_ID: "generated-client-value.example.test",
       GOOGLE_CLIENT_SECRET: "generated-secret-value",
       AUTH_SECRET: "generated-auth-secret-value",
       NEXTAUTH_SECRET: "generated-nextauth-secret-value",
       DATABASE_URL: "database-url-value",
-    });
+      },
+    );
     assert.equal(result.status, 0, result.stderr);
     assert.equal(readFileSync(outputPath, "utf8"), "safe_failure_diagnostics_ready=true\n");
     assert.deepEqual(
@@ -1801,10 +1812,17 @@ assert.equal(
     write(root, `${evidenceRoot}/manifest.json`, `${JSON.stringify({ value: "generated-secret-value" })}\n`);
     write(root, `${evidenceRoot}/runtime-smoke.json`, "{}\n");
     write(root, `${evidenceRoot}/runtime-smoke-phases.json`, "{}\n");
-    const result = runWorkflowShell(failureDiagnostics.run, root, {
+    const result = runWorkflowShell(
+      failureDiagnostics.run.replace(
+        "node scripts/production-artifact-evidence.mjs verify-runtime-failure",
+        "true",
+      ),
+      root,
+      {
       GITHUB_OUTPUT: outputPath,
       GOOGLE_CLIENT_SECRET: "generated-secret-value",
-    });
+      },
+    );
     assert.notEqual(result.status, 0, "credential-bearing failure diagnostics must fail closed");
     assert.equal(existsSync(path.join(root, `${evidenceRoot}/failure-upload`)), false);
     assert.equal(existsSync(path.join(root, `${evidenceRoot}/failure-upload.staging`)), false);

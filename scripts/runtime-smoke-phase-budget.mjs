@@ -1,11 +1,27 @@
 import { mkdirSync, renameSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
+import {
+  RuntimeSmokeNoProgressError,
+  RuntimeSmokeOperationTimeoutError,
+  RuntimeSmokePhaseTimeoutError,
+  createRuntimeSmokeFailureProvenance,
+  runtimeSmokeFailureDisposition,
+} from "./runtime-smoke-failure-evidence.mjs";
+
+export {
+  RuntimeSmokeNoProgressError,
+  RuntimeSmokeOperationTimeoutError,
+  RuntimeSmokePhaseTimeoutError,
+  RuntimeSmokeTerminalError,
+} from "./runtime-smoke-failure-evidence.mjs";
+
 export const RUNTIME_SMOKE_PHASE_TIMING_SCHEMA =
-  "interior-ai.runtime-smoke-phase-timings.v2";
+  "interior-ai.runtime-smoke-phase-timings.v3";
 
 function freezePhaseContract({
   operations,
+  nestedOperations = [],
   orchestrationMarginMs,
   noProgressTimeoutMs,
   performanceWarningThresholdMs,
@@ -13,6 +29,9 @@ function freezePhaseContract({
   return Object.freeze({
     operations: Object.freeze(
       operations.map((operation) => Object.freeze({ ...operation })),
+    ),
+    nestedOperations: Object.freeze(
+      nestedOperations.map((operation) => Object.freeze({ ...operation })),
     ),
     orchestrationMarginMs,
     noProgressTimeoutMs,
@@ -48,6 +67,41 @@ export function runtimeSmokeAggregateLifecycleState({
   return "loading";
 }
 
+const DIAGNOSTICS_SETTLE_REQUIRED_STABLE_SAMPLES = 2;
+const DIAGNOSTICS_SETTLE_SAMPLE_INTERVAL_MS = 500;
+const DIAGNOSTICS_SETTLE_BASELINE_EVALUATIONS = 1;
+const DIAGNOSTICS_SETTLE_EVALUATION_TIMEOUT_MS = 10_000;
+const DIAGNOSTICS_SETTLE_ASSERTION_ALLOWANCE_MS = 1_000;
+const DIAGNOSTICS_SETTLE_ORCHESTRATION_MARGIN_MS = 10_000;
+const DIAGNOSTICS_SETTLE_EVALUATION_COUNT =
+  DIAGNOSTICS_SETTLE_BASELINE_EVALUATIONS +
+  DIAGNOSTICS_SETTLE_REQUIRED_STABLE_SAMPLES;
+const DIAGNOSTICS_SETTLE_SAMPLING_WINDOW_MS =
+  DIAGNOSTICS_SETTLE_REQUIRED_STABLE_SAMPLES *
+  DIAGNOSTICS_SETTLE_SAMPLE_INTERVAL_MS;
+const DIAGNOSTICS_SETTLE_MAXIMUM_LEGAL_SEQUENTIAL_ENVELOPE_MS =
+  DIAGNOSTICS_SETTLE_SAMPLING_WINDOW_MS +
+  DIAGNOSTICS_SETTLE_EVALUATION_COUNT *
+    DIAGNOSTICS_SETTLE_EVALUATION_TIMEOUT_MS +
+  DIAGNOSTICS_SETTLE_ASSERTION_ALLOWANCE_MS;
+
+export const RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT = Object.freeze({
+  requiredStableSamples: DIAGNOSTICS_SETTLE_REQUIRED_STABLE_SAMPLES,
+  sampleIntervalMs: DIAGNOSTICS_SETTLE_SAMPLE_INTERVAL_MS,
+  firstSampleImmediate: true,
+  baselineEvaluationCount: DIAGNOSTICS_SETTLE_BASELINE_EVALUATIONS,
+  evaluationCount: DIAGNOSTICS_SETTLE_EVALUATION_COUNT,
+  evaluationTimeoutMs: DIAGNOSTICS_SETTLE_EVALUATION_TIMEOUT_MS,
+  assertionAllowanceMs: DIAGNOSTICS_SETTLE_ASSERTION_ALLOWANCE_MS,
+  minimumTheoreticalCompletionMs: DIAGNOSTICS_SETTLE_SAMPLING_WINDOW_MS,
+  maximumLegalSequentialEnvelopeMs:
+    DIAGNOSTICS_SETTLE_MAXIMUM_LEGAL_SEQUENTIAL_ENVELOPE_MS,
+  orchestrationMarginMs: DIAGNOSTICS_SETTLE_ORCHESTRATION_MARGIN_MS,
+  timeoutMs:
+    DIAGNOSTICS_SETTLE_MAXIMUM_LEGAL_SEQUENTIAL_ENVELOPE_MS +
+    DIAGNOSTICS_SETTLE_ORCHESTRATION_MARGIN_MS,
+});
+
 export const FURNISHED_TEMPLATE_RELOAD_CONTRACT = freezePhaseContract({
   operations: [
     { name: "navigation", timeoutMs: 60_000 },
@@ -57,9 +111,19 @@ export const FURNISHED_TEMPLATE_RELOAD_CONTRACT = freezePhaseContract({
     { name: "view-activation", timeoutMs: 30_000 },
     { name: "model-responses-and-readiness", timeoutMs: 70_000 },
     { name: "body-state-assertion", timeoutMs: 5_000 },
-    { name: "diagnostics-settle", timeoutMs: 10_000 },
+    {
+      name: "diagnostics-settle",
+      timeoutMs: RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT.timeoutMs,
+    },
     { name: "post-settle-observation", timeoutMs: 1_000 },
     { name: "final-diagnostics-snapshot", timeoutMs: 5_000 },
+  ],
+  nestedOperations: [
+    {
+      name: "diagnostics-settle-evaluation",
+      parentOperationName: "diagnostics-settle",
+      timeoutMs: RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT.evaluationTimeoutMs,
+    },
   ],
   orchestrationMarginMs: 30_000,
   noProgressTimeoutMs: 75_000,
@@ -68,9 +132,19 @@ export const FURNISHED_TEMPLATE_RELOAD_CONTRACT = freezePhaseContract({
 
 const FURNISHED_TEMPLATE_BOUNDS_CONTRACT = freezePhaseContract({
   operations: [
-    { name: "diagnostics-settle", timeoutMs: 10_000 },
+    {
+      name: "diagnostics-settle",
+      timeoutMs: RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT.timeoutMs,
+    },
     { name: "post-settle-observation", timeoutMs: 1_000 },
     { name: "diagnostic-snapshot-and-assertions", timeoutMs: 30_000 },
+  ],
+  nestedOperations: [
+    {
+      name: "diagnostics-settle-evaluation",
+      parentOperationName: "diagnostics-settle",
+      timeoutMs: RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT.evaluationTimeoutMs,
+    },
   ],
   orchestrationMarginMs: 30_000,
   noProgressTimeoutMs: 60_000,
@@ -229,28 +303,6 @@ export function runtimeSmokePhaseBudget(
   return phase.timeoutMs;
 }
 
-export class RuntimeSmokeTerminalError extends Error {
-  constructor(phaseName, safeCategory = "glb-terminal-error") {
-    super(`Runtime-smoke phase ${phaseName} reached terminal lifecycle state error`);
-    this.name = "RuntimeSmokeTerminalError";
-    this.safeCategory = safeCategory;
-  }
-}
-
-export class RuntimeSmokePhaseTimeoutError extends Error {
-  constructor(phaseName, timeoutMs, operationName = null) {
-    super(
-      operationName
-        ? `Runtime-smoke phase ${phaseName} operation ${operationName} exceeded its ${timeoutMs}ms budget`
-        : `Runtime-smoke phase ${phaseName} exceeded its ${timeoutMs}ms budget`,
-    );
-    this.name = "RuntimeSmokePhaseTimeoutError";
-    this.phaseName = phaseName;
-    this.timeoutMs = timeoutMs;
-    this.operationName = operationName;
-  }
-}
-
 export async function runRuntimeSmokeBoundedOperation({
   phaseName,
   operationName,
@@ -258,6 +310,7 @@ export async function runRuntimeSmokeBoundedOperation({
   task,
   setTimer = setTimeout,
   clearTimer = clearTimeout,
+  now = Date.now,
 }) {
   if (!/^[a-z0-9][a-z0-9-]{0,95}$/.test(operationName)) {
     throw new Error("Runtime-smoke operation name is unsafe");
@@ -265,11 +318,17 @@ export async function runRuntimeSmokeBoundedOperation({
   if (!Number.isSafeInteger(timeoutMs) || timeoutMs <= 0) {
     throw new Error("Runtime-smoke operation timeout must be a positive integer");
   }
+  const startedAt = now();
   let timeoutHandle;
   const timeout = new Promise((_, reject) => {
     timeoutHandle = setTimer(
       () => reject(
-        new RuntimeSmokePhaseTimeoutError(phaseName, timeoutMs, operationName),
+        new RuntimeSmokeOperationTimeoutError({
+          phaseId: phaseName,
+          operationId: operationName,
+          operationElapsedMs: Math.max(0, now() - startedAt),
+          operationBudgetMs: timeoutMs,
+        }),
       ),
       timeoutMs,
     );
@@ -279,23 +338,6 @@ export async function runRuntimeSmokeBoundedOperation({
   } finally {
     if (timeoutHandle !== undefined) clearTimer(timeoutHandle);
   }
-}
-
-export class RuntimeSmokeNoProgressError extends Error {
-  constructor(phaseName, timeoutMs) {
-    super(`Runtime-smoke phase ${phaseName} made no progress for ${timeoutMs}ms`);
-    this.name = "RuntimeSmokeNoProgressError";
-    this.phaseName = phaseName;
-    this.timeoutMs = timeoutMs;
-  }
-}
-
-function diagnosticCategory(error) {
-  if (error instanceof RuntimeSmokeTerminalError) return error.safeCategory;
-  if (error instanceof RuntimeSmokePhaseTimeoutError) return "phase-timeout";
-  if (error instanceof RuntimeSmokeNoProgressError) return "lack-of-progress";
-  if (error?.name === "AssertionError") return "assertion-failure";
-  return "unexpected-test-error";
 }
 
 function safeLifecycleState(value) {
@@ -348,6 +390,7 @@ export function createRuntimeSmokePhaseRecorder({
       overheadBudgets: RUNTIME_SMOKE_OVERHEAD_BUDGETS,
       phaseBudgets,
       phases: records,
+      failure: records.find((record) => record.failure !== null)?.failure ?? null,
       complete: records.length === phaseBudgets.length &&
         records.every((record) => record.outcome === "passed"),
     };
@@ -372,7 +415,12 @@ export function createRuntimeSmokePhaseRecorder({
       const progressCheckpoints = [];
       const timeout = new Promise((_, reject) => {
         timeoutHandle = setTimer(
-          () => reject(new RuntimeSmokePhaseTimeoutError(phaseName, timeoutMs)),
+          () => reject(
+            new RuntimeSmokePhaseTimeoutError({
+              phaseId: phaseName,
+              phaseBudgetMs: timeoutMs,
+            }),
+          ),
           timeoutMs,
         );
       });
@@ -386,10 +434,10 @@ export function createRuntimeSmokePhaseRecorder({
         if (noProgressHandle !== undefined) clearTimer(noProgressHandle);
         noProgressHandle = setTimer(
           () => rejectNoProgress(
-            new RuntimeSmokeNoProgressError(
-              phaseName,
-              phaseContract.noProgressTimeoutMs,
-            ),
+            new RuntimeSmokeNoProgressError({
+              phaseId: phaseName,
+              noProgressBudgetMs: phaseContract.noProgressTimeoutMs,
+            }),
           ),
           phaseContract.noProgressTimeoutMs,
         );
@@ -409,8 +457,9 @@ export function createRuntimeSmokePhaseRecorder({
         });
         scheduleNoProgressTimeout();
       };
-      const createRecord = ({ outcome, safeDiagnosticCategory }) => {
+      const createRecord = ({ outcome, error = null }) => {
         const elapsedMs = Math.max(0, now() - startedAt);
+        const finalState = safeLifecycleState(finalLifecycleState());
         const performanceWarningThresholdMs =
           phaseContract?.performanceWarningThresholdMs ?? null;
         const performanceWarningExceeded =
@@ -431,8 +480,17 @@ export function createRuntimeSmokePhaseRecorder({
           timeoutBudgetMs: timeoutMs,
           performanceWarningThresholdMs,
           performanceWarningExceeded,
-          finalLifecycleState: safeLifecycleState(finalLifecycleState()),
-          safeDiagnosticCategory,
+          finalLifecycleState: finalState,
+          failure: error
+            ? createRuntimeSmokeFailureProvenance({
+                error,
+                phaseId: phaseName,
+                phaseElapsedMs: elapsedMs,
+                phaseBudgetMs: timeoutMs,
+                progressCheckpoints,
+                safeLifecycleState: finalState,
+              })
+            : null,
           progressCheckpoints,
         };
       };
@@ -447,22 +505,15 @@ export function createRuntimeSmokePhaseRecorder({
         checkpoint("phase-complete");
         records.push(createRecord({
           outcome: "passed",
-          safeDiagnosticCategory: "none",
         }));
         completedNames.add(phaseName);
         write();
         return result;
       } catch (error) {
+        const disposition = runtimeSmokeFailureDisposition(error);
         records.push(createRecord({
-          outcome:
-            error instanceof RuntimeSmokePhaseTimeoutError
-              ? "timed-out"
-              : error instanceof RuntimeSmokeNoProgressError
-                ? "stalled"
-              : error instanceof RuntimeSmokeTerminalError
-                ? "terminal-error"
-                : "failed",
-          safeDiagnosticCategory: diagnosticCategory(error),
+          outcome: disposition.phaseOutcome,
+          error,
         }));
         completedNames.add(phaseName);
         write();

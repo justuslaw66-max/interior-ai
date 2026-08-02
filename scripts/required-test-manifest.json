@@ -117,6 +117,7 @@
       "runner": "node",
       "requiredSources": [
         "scripts/production-artifact-evidence.mjs",
+        "scripts/runtime-smoke-failure-evidence.mjs",
         "scripts/runtime-smoke-phase-budget.mjs",
         "scripts/test-production-artifact-evidence.mjs"
       ],
@@ -155,6 +156,7 @@
       "runner": "playwright",
       "requiredSources": [
         "tests/e2e/00-runtime-smoke.spec.ts",
+        "scripts/runtime-smoke-failure-evidence.mjs",
         "scripts/runtime-smoke-phase-budget.mjs"
       ],
       "requiredTests": [

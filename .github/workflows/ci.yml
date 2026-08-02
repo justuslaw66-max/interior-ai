@@ -202,6 +202,7 @@ jobs:
               exit 0
             fi
           done
+          node scripts/production-artifact-evidence.mjs verify-runtime-failure
           mkdir -p "$staging_root"
           trap 'rm -rf "$staging_root"' EXIT
           for required_file in "${required_files[@]}"; do

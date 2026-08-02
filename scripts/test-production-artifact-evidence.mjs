@@ -25,6 +25,7 @@ import {
   createProductionEvidenceManifest,
   recordProductionEvidenceTest,
   validateProductionEvidence,
+  verifyRuntimeSmokeFailureEvidence,
   writeProductionEvidenceManifest,
 } from "./production-artifact-evidence.mjs";
 import { inspectGitTree } from "./vercel-output-manifest.mjs";
@@ -38,11 +39,13 @@ import {
 import {
   FURNISHED_TEMPLATE_PHASE_CONTRACTS,
   FURNISHED_TEMPLATE_RELOAD_CONTRACT,
+  RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT,
   RUNTIME_SMOKE_OVERHEAD_BUDGETS,
   RUNTIME_SMOKE_PHASE_BUDGETS,
   RUNTIME_SMOKE_PHASE_TIMING_SCHEMA,
   RUNTIME_SMOKE_WHOLE_TEST_TIMEOUT_MS,
   RuntimeSmokeNoProgressError,
+  RuntimeSmokeOperationTimeoutError,
   RuntimeSmokePhaseTimeoutError,
   RuntimeSmokeTerminalError,
   createRuntimeSmokePhaseRecorder,
@@ -64,16 +67,35 @@ const boundsPhaseBudgets = RUNTIME_SMOKE_PHASE_BUDGETS.filter(
   (phase) => phase.name === "bounds-verification",
 );
 assert.equal(boundsPhaseBudgets.length, 1, "bounds-verification must have one canonical budget");
-assert.equal(boundsPhaseBudgets[0]?.timeoutMs, 71_000);
+assert.equal(boundsPhaseBudgets[0]?.timeoutMs, 103_000);
+assert.deepEqual(RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT, {
+  requiredStableSamples: 2,
+  sampleIntervalMs: 500,
+  firstSampleImmediate: true,
+  baselineEvaluationCount: 1,
+  evaluationCount: 3,
+  evaluationTimeoutMs: 10_000,
+  assertionAllowanceMs: 1_000,
+  minimumTheoreticalCompletionMs: 1_000,
+  maximumLegalSequentialEnvelopeMs: 32_000,
+  orchestrationMarginMs: 10_000,
+  timeoutMs: 42_000,
+});
+assert.ok(
+  RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT.timeoutMs >=
+    RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT.maximumLegalSequentialEnvelopeMs +
+      RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT.orchestrationMarginMs,
+  "diagnostics-settle budget must contain its full sequential envelope and margin",
+);
 const reloadOperationEnvelopeMs = FURNISHED_TEMPLATE_RELOAD_CONTRACT.operations.reduce(
   (total, operation) => total + operation.timeoutMs,
   0,
 );
-assert.equal(reloadOperationEnvelopeMs, 246_000);
+assert.equal(reloadOperationEnvelopeMs, 278_000);
 assert.equal(FURNISHED_TEMPLATE_RELOAD_CONTRACT.orchestrationMarginMs, 30_000);
 assert.equal(
   deriveFurnishedTemplatePhaseTimeout(FURNISHED_TEMPLATE_RELOAD_CONTRACT),
-  276_000,
+  308_000,
   "reload correctness timeout must equal the legal nested envelope plus margin",
 );
 assert.equal(FURNISHED_TEMPLATE_RELOAD_CONTRACT.performanceWarningThresholdMs, 70_000);
@@ -109,7 +131,7 @@ for (const phaseName of ["reload-1", "reload-2", "reload-3"]) {
     FURNISHED_TEMPLATE_RELOAD_CONTRACT,
     `${phaseName} must consume the one canonical reload contract`,
   );
-  assert.equal(runtimeSmokePhaseBudget(phaseName), 276_000);
+  assert.equal(runtimeSmokePhaseBudget(phaseName), 308_000);
 }
 assert.equal(runtimeSmokePhaseBudget("remount"), 165_000);
 assert.ok(
@@ -137,12 +159,45 @@ assert.ok(
   await assert.rejects(
     operation,
     (error) =>
-      error instanceof RuntimeSmokePhaseTimeoutError &&
-      error.phaseName === "reload-1" &&
-      error.operationName === "hydration-snapshot" &&
-      error.timeoutMs === 5_000,
+      error instanceof RuntimeSmokeOperationTimeoutError &&
+      error.phaseId === "reload-1" &&
+      error.operationId === "hydration-snapshot" &&
+      error.operationBudgetMs === 5_000,
   );
   assert.equal(clearedHandle, 17);
+}
+
+{
+  let clock = 0;
+  const nestedTimeoutRecorder = createRuntimeSmokePhaseRecorder({
+    repositoryRoot: process.cwd(),
+    now: () => clock,
+    phaseBudgets: [{ name: "bounds-verification", timeoutMs: 103_000 }],
+  });
+  await assert.rejects(
+    nestedTimeoutRecorder.run(
+      "bounds-verification",
+      () => {
+        clock = 42_000;
+        throw new RuntimeSmokeOperationTimeoutError({
+          phaseId: "bounds-verification",
+          operationId: "diagnostics-settle",
+          operationElapsedMs: 42_000,
+          operationBudgetMs: 42_000,
+        });
+      },
+      () => "ready",
+    ),
+    RuntimeSmokeOperationTimeoutError,
+  );
+  const record = nestedTimeoutRecorder.records[0];
+  assert.equal(record?.outcome, "failed");
+  assert.equal(record?.timeoutBudgetMs, 103_000);
+  assert.equal(record?.failure?.failureKind, "nested-operation-timeout");
+  assert.equal(record?.failure?.operationId, "diagnostics-settle");
+  assert.equal(record?.failure?.operationOutcome, "timed-out");
+  assert.equal(record?.failure?.operationBudgetMs, 42_000);
+  assert.equal(record?.failure?.phaseBudgetMs, 103_000);
 }
 assert.ok(
   runtimeSmokePhaseBudget("remount") - 53_769 >= 100_000,
@@ -208,15 +263,15 @@ assert.equal(
   assert.equal(attempts, 1, "a terminal lifecycle error must fail immediately");
   assert.ok(Date.now() - terminalStartedAt < 1_000, "terminal error must beat the phase timeout");
   assert.deepEqual(
-    terminalRecorder.records.map(({ outcome, finalLifecycleState, safeDiagnosticCategory }) => ({
+    terminalRecorder.records.map(({ outcome, finalLifecycleState, failure }) => ({
       outcome,
       finalLifecycleState,
-      safeDiagnosticCategory,
+      failureKind: failure?.failureKind,
     })),
     [{
       outcome: "terminal-error",
       finalLifecycleState: "error",
-      safeDiagnosticCategory: "glb-terminal-error",
+      failureKind: "terminal-lifecycle-error",
     }],
   );
 }
@@ -232,16 +287,76 @@ assert.equal(
       () => new Promise(() => {}),
       () => "loading",
     ),
-    /Runtime-smoke phase bounds-verification exceeded its 5ms budget/,
+    (error) =>
+      error instanceof RuntimeSmokePhaseTimeoutError &&
+      error.phaseId === "bounds-verification" &&
+      error.phaseBudgetMs === 5,
   );
   assert.equal(timeoutRecorder.records[0]?.outcome, "timed-out");
   assert.equal(timeoutRecorder.records[0]?.name, "bounds-verification");
   assert.equal(timeoutRecorder.records[0]?.timeoutBudgetMs, 5);
   assert.equal(timeoutRecorder.records[0]?.finalLifecycleState, "loading");
+  assert.equal(timeoutRecorder.records[0]?.failure?.failureKind, "phase-timeout");
+  assert.equal(timeoutRecorder.records[0]?.failure?.operationId, null);
+}
+
+{
+  const assertionRecorder = createRuntimeSmokePhaseRecorder({
+    repositoryRoot: process.cwd(),
+    phaseBudgets: [{ name: "bounds-verification", timeoutMs: 1_000 }],
+  });
+  await assert.rejects(
+    assertionRecorder.run("bounds-verification", () => assert.fail("fixture assertion")),
+    /fixture assertion/,
+  );
+  assert.equal(assertionRecorder.records[0]?.outcome, "failed");
   assert.equal(
-    timeoutRecorder.records[0]?.safeDiagnosticCategory,
-    "phase-timeout",
-    "a bounded phase must emit its own diagnostic before the whole-test envelope",
+    assertionRecorder.records[0]?.failure?.failureKind,
+    "assertion-failure",
+  );
+}
+
+{
+  const playwrightAssertionRecorder = createRuntimeSmokePhaseRecorder({
+    repositoryRoot: process.cwd(),
+    phaseBudgets: [{ name: "remount", timeoutMs: 165_000 }],
+  });
+  const matcherError = new Error("structured matcher fixture");
+  matcherError.matcherResult = { pass: false };
+  await assert.rejects(
+    playwrightAssertionRecorder.run("remount", () => {
+      throw matcherError;
+    }),
+    /structured matcher fixture/,
+  );
+  assert.equal(
+    playwrightAssertionRecorder.records[0]?.failure?.failureKind,
+    "assertion-failure",
+  );
+}
+
+{
+  let clock = 0;
+  const unexpectedRecorder = createRuntimeSmokePhaseRecorder({
+    repositoryRoot: process.cwd(),
+    now: () => clock,
+    phaseBudgets: [{ name: "bounds-verification", timeoutMs: 103_000 }],
+  });
+  await assert.rejects(
+    unexpectedRecorder.run(
+      "bounds-verification",
+      () => {
+        clock = 12_088;
+        throw new Error("unexpected structured fixture");
+      },
+      () => "loading",
+    ),
+    /unexpected structured fixture/,
+  );
+  assert.equal(unexpectedRecorder.records[0]?.outcome, "failed");
+  assert.equal(
+    unexpectedRecorder.records[0]?.failure?.failureKind,
+    "unexpected-error",
   );
 }
 
@@ -303,8 +418,8 @@ assert.equal(
   );
   assert.equal(noProgressRecorder.records[0]?.outcome, "stalled");
   assert.equal(
-    noProgressRecorder.records[0]?.safeDiagnosticCategory,
-    "lack-of-progress",
+    noProgressRecorder.records[0]?.failure?.failureKind,
+    "no-progress-watchdog",
   );
   lateCheckpoint("late-task-progress", "ready");
   assert.deepEqual(
@@ -344,6 +459,12 @@ assert.doesNotMatch(
 );
 assert.match(runtimeSmokeSource, /remainingOperationTimeout/);
 assert.match(runtimeSmokeSource, /runRuntimeSmokeBoundedOperation/);
+assert.match(runtimeSmokeSource, /RuntimeSmokeOperationTimeoutError/);
+assert.doesNotMatch(
+  runtimeSmokeSource,
+  /RuntimeSmokePhaseTimeoutError/,
+  "nested operation exhaustion must not be flattened into a parent phase timeout",
+);
 for (const operation of FURNISHED_TEMPLATE_RELOAD_CONTRACT.operations) {
   const uses = runtimeSmokeSource.match(
     new RegExp(
@@ -367,6 +488,7 @@ const phaseOperationUseCount = (phaseName, operationName) =>
   )?.length ?? 0;
 for (const phaseName of [
   "initial-glb-loading-and-selection-verification",
+  "bounds-verification",
   "remount",
 ]) {
   for (const operation of FURNISHED_TEMPLATE_PHASE_CONTRACTS[phaseName].operations) {
@@ -608,6 +730,14 @@ async function fixture({ environmentOverrides = {}, publicArtifactText = "public
   );
   write(
     root,
+    "scripts/runtime-smoke-failure-evidence.mjs",
+    readFileSync(
+      path.join(process.cwd(), "scripts/runtime-smoke-failure-evidence.mjs"),
+      "utf8",
+    ),
+  );
+  write(
+    root,
     "scripts/required-test-manifest.json",
     readFileSync(path.join(process.cwd(), "scripts/required-test-manifest.json"), "utf8"),
   );
@@ -640,6 +770,7 @@ async function fixture({ environmentOverrides = {}, publicArtifactText = "public
     "package-lock.json",
     "scripts/production-artifact-evidence.mjs",
     "scripts/runtime-smoke-phase-budget.mjs",
+    "scripts/runtime-smoke-failure-evidence.mjs",
     "scripts/required-test-truthfulness.mjs",
     "scripts/required-test-manifest.json",
     "generated/runtime.ts",
@@ -768,6 +899,7 @@ async function fixture({ environmentOverrides = {}, publicArtifactText = "public
       },
     ],
     errors: [],
+    runtimeSmokeFailure: null,
     stats: {
       startTime: "2026-07-31T00:00:04.500Z",
       duration: 400,
@@ -799,7 +931,7 @@ async function fixture({ environmentOverrides = {}, publicArtifactText = "public
             ?.performanceWarningThresholdMs ?? null,
         performanceWarningExceeded: false,
         finalLifecycleState: index < 5 ? "loading" : "stable",
-        safeDiagnosticCategory: "none",
+        failure: null,
         progressCheckpoints: [
           {
             name: "phase-start",
@@ -813,6 +945,7 @@ async function fixture({ environmentOverrides = {}, publicArtifactText = "public
           },
         ],
       })),
+      failure: null,
       complete: true,
     }, null, 2)}\n`,
   );
@@ -854,6 +987,87 @@ async function rewritePhaseTimings(context, mutate) {
   });
 }
 
+async function rewriteFailurePair(context, mutate) {
+  const absoluteReportPath = path.join(context.root, context.reportPath);
+  const absoluteTimingPath = path.join(context.root, context.phaseTimingPath);
+  const report = JSON.parse(readFileSync(absoluteReportPath, "utf8"));
+  const timing = JSON.parse(readFileSync(absoluteTimingPath, "utf8"));
+  mutate({ report, timing });
+  const reportBytes = Buffer.from(`${JSON.stringify(report, null, 2)}\n`);
+  const timingBytes = Buffer.from(`${JSON.stringify(timing, null, 2)}\n`);
+  writeFileSync(absoluteReportPath, reportBytes);
+  writeFileSync(absoluteTimingPath, timingBytes);
+  await rewriteManifest(context.root, context.manifestPath, (manifest) => {
+    const test = manifest.tests[0];
+    test.report.sha256 = createHash("sha256").update(reportBytes).digest("hex");
+    test.phaseTimings.sha256 = createHash("sha256").update(timingBytes).digest("hex");
+    test.phaseTimings.phaseCount = timing.phases.length;
+    test.phaseTimings.totalElapsedMs = timing.phases.reduce(
+      (total, phase) => total + phase.elapsedMs,
+      0,
+    );
+    test.stats = report.stats;
+  });
+}
+
+async function runtimeFailureFixture() {
+  const context = await fixture();
+  await rewriteManifest(context.root, context.manifestPath, (manifest) => {
+    manifest.tests = [];
+    manifest.repositoryEvidence.status = "pending_tests";
+  });
+  const absoluteReportPath = path.join(context.root, context.reportPath);
+  const absoluteTimingPath = path.join(context.root, context.phaseTimingPath);
+  const report = JSON.parse(readFileSync(absoluteReportPath, "utf8"));
+  const timing = JSON.parse(readFileSync(absoluteTimingPath, "utf8"));
+  const furnishedSpec = report.suites[0].specs[0];
+  furnishedSpec.ok = false;
+  furnishedSpec.tests[0].status = "unexpected";
+  furnishedSpec.tests[0].results[0].status = "failed";
+  furnishedSpec.tests[0].results[0].error = {
+    name: "RuntimeSmokeOperationTimeoutError",
+    message: "Structured fixture failure",
+  };
+  report.stats.expected = 1;
+  report.stats.unexpected = 1;
+  const failurePhase = timing.phases[6];
+  failurePhase.elapsedMs = 42_000;
+  failurePhase.outcome = "failed";
+  failurePhase.finalLifecycleState = "ready";
+  failurePhase.progressCheckpoints = [failurePhase.progressCheckpoints[0]];
+  failurePhase.failure = {
+    failureKind: "nested-operation-timeout",
+    phaseId: "bounds-verification",
+    phaseElapsedMs: 42_000,
+    phaseBudgetMs: 103_000,
+    operationId: "diagnostics-settle",
+    operationOutcome: "timed-out",
+    operationElapsedMs: 42_000,
+    operationBudgetMs: 42_000,
+    watchdogBudgetMs: null,
+    lastSafeCheckpoint: "phase-start",
+    safeLifecycleState: "ready",
+    progressObserved: false,
+    originalCause: null,
+  };
+  timing.phases = timing.phases.slice(0, 7);
+  timing.complete = false;
+  timing.failure = failurePhase.failure;
+  report.runtimeSmokeFailure = failurePhase.failure;
+  writeFileSync(absoluteReportPath, `${JSON.stringify(report, null, 2)}\n`);
+  writeFileSync(absoluteTimingPath, `${JSON.stringify(timing, null, 2)}\n`);
+  await recordProductionEvidenceTest({
+    repositoryRoot: context.root,
+    manifestPath: context.manifestPath,
+    reportPath: context.reportPath,
+    phaseTimingPath: context.phaseTimingPath,
+    name: "runtime-smoke",
+    command: "npx playwright test tests/e2e/00-runtime-smoke.spec.ts --project=chromium",
+    processExitCode: 1,
+  });
+  return context;
+}
+
 async function expectRejected(context, expectedText) {
   const result = await validateProductionEvidence({
     repositoryRoot: context.root,
@@ -878,6 +1092,270 @@ async function expectRejected(context, expectedText) {
   assert.equal(result.valid, true);
   assert.equal(result.manifest.repositoryEvidence.status, "valid");
   assert.equal(result.manifest.repositoryEvidence.releaseReady, false);
+}
+
+{
+  const context = await runtimeFailureFixture();
+  const verified = await verifyRuntimeSmokeFailureEvidence({
+    repositoryRoot: context.root,
+    manifestPath: context.manifestPath,
+    reportPath: context.reportPath,
+    phaseTimingPath: context.phaseTimingPath,
+  });
+  assert.equal(verified.failure.failureKind, "nested-operation-timeout");
+  assert.equal(verified.failure.operationId, "diagnostics-settle");
+  assert.equal(verified.failure.operationBudgetMs, 42_000);
+  assert.equal(verified.failure.phaseBudgetMs, 103_000);
+  assert.equal(verified.timing.phases.at(-1).outcome, "failed");
+  const stableResult = await validateProductionEvidence({
+    repositoryRoot: context.root,
+    manifestPath: context.manifestPath,
+    requireTests: true,
+  });
+  assert.equal(stableResult.valid, false, "failed smoke must withhold stable evidence");
+  assert.ok(
+    stableResult.issues.some((issue) =>
+      issue.includes("failed evidence validation cannot produce an approval-ready result")
+    ),
+  );
+}
+
+{
+  const context = await runtimeFailureFixture();
+  await rewriteFailurePair(context, ({ report, timing }) => {
+    const failure = timing.phases.at(-1).failure;
+    failure.phaseElapsedMs = 12_088;
+    failure.operationId = "diagnostics-settle-evaluation";
+    failure.operationElapsedMs = 10_000;
+    failure.operationBudgetMs = 10_000;
+    timing.phases.at(-1).elapsedMs = 12_088;
+    timing.failure = failure;
+    report.runtimeSmokeFailure = failure;
+  });
+  const verified = await verifyRuntimeSmokeFailureEvidence({
+    repositoryRoot: context.root,
+    manifestPath: context.manifestPath,
+    reportPath: context.reportPath,
+    phaseTimingPath: context.phaseTimingPath,
+  });
+  assert.equal(verified.failure.failureKind, "nested-operation-timeout");
+  assert.equal(verified.failure.operationId, "diagnostics-settle-evaluation");
+  assert.equal(verified.failure.operationBudgetMs, 10_000);
+}
+
+{
+  const context = await runtimeFailureFixture();
+  await rewriteFailurePair(context, ({ report, timing }) => {
+    const failure = timing.phases.at(-1).failure;
+    failure.failureKind = "no-progress-watchdog";
+    failure.phaseElapsedMs = 60_000;
+    failure.operationId = null;
+    failure.operationOutcome = null;
+    failure.operationElapsedMs = null;
+    failure.operationBudgetMs = null;
+    failure.watchdogBudgetMs = 60_000;
+    timing.phases.at(-1).elapsedMs = 60_000;
+    timing.phases.at(-1).outcome = "stalled";
+    timing.phases.at(-1).performanceWarningExceeded = true;
+    timing.failure = failure;
+    report.runtimeSmokeFailure = failure;
+  });
+  const verified = await verifyRuntimeSmokeFailureEvidence({
+    repositoryRoot: context.root,
+    manifestPath: context.manifestPath,
+    reportPath: context.reportPath,
+    phaseTimingPath: context.phaseTimingPath,
+  });
+  assert.equal(verified.failure.failureKind, "no-progress-watchdog");
+  assert.equal(verified.failure.watchdogBudgetMs, 60_000);
+  assert.equal(verified.timing.phases.at(-1).outcome, "stalled");
+}
+
+{
+  const context = await runtimeFailureFixture();
+  await rewriteFailurePair(context, ({ report, timing }) => {
+    const failure = timing.phases.at(-1).failure;
+    failure.failureKind = "unexpected-error";
+    failure.phaseElapsedMs = 12_088;
+    failure.operationId = null;
+    failure.operationOutcome = null;
+    failure.operationElapsedMs = null;
+    failure.operationBudgetMs = null;
+    timing.phases.at(-1).elapsedMs = 12_088;
+    timing.failure = failure;
+    report.runtimeSmokeFailure = failure;
+  });
+  const verified = await verifyRuntimeSmokeFailureEvidence({
+    repositoryRoot: context.root,
+    manifestPath: context.manifestPath,
+    reportPath: context.reportPath,
+    phaseTimingPath: context.phaseTimingPath,
+  });
+  assert.equal(verified.failure.failureKind, "unexpected-error");
+  assert.equal(verified.timing.phases.at(-1).outcome, "failed");
+}
+
+{
+  const context = await runtimeFailureFixture();
+  await rewriteManifest(context.root, context.manifestPath, (manifest) => {
+    const substitutedSource = "f".repeat(40);
+    const substitutedArtifact = "e".repeat(64);
+    const substitutedBuildId = "substituted-build-id";
+    manifest.source.commitSha = substitutedSource;
+    manifest.artifact.sha256 = substitutedArtifact;
+    manifest.build.nextBuildId = substitutedBuildId;
+    manifest.tests[0].sourceCommitSha = substitutedSource;
+    manifest.tests[0].artifactSha256 = substitutedArtifact;
+    manifest.tests[0].nextBuildId = substitutedBuildId;
+  });
+  await assert.rejects(
+    () => verifyRuntimeSmokeFailureEvidence({
+      repositoryRoot: context.root,
+      manifestPath: context.manifestPath,
+      reportPath: context.reportPath,
+      phaseTimingPath: context.phaseTimingPath,
+    }),
+    /source|artifact|build|metadata/i,
+  );
+}
+
+{
+  const context = await runtimeFailureFixture();
+  await rewriteFailurePair(context, ({ report, timing }) => {
+    const failure = timing.phases.at(-1).failure;
+    failure.failureKind = "phase-timeout";
+    failure.phaseElapsedMs = 103_000;
+    failure.operationId = null;
+    failure.operationOutcome = null;
+    failure.operationElapsedMs = null;
+    failure.operationBudgetMs = null;
+    timing.phases.at(-1).elapsedMs = 103_000;
+    timing.phases.at(-1).outcome = "timed-out";
+    timing.failure = failure;
+    report.runtimeSmokeFailure = failure;
+    timing.phases.at(-1).performanceWarningExceeded = true;
+  });
+  const verified = await verifyRuntimeSmokeFailureEvidence({
+    repositoryRoot: context.root,
+    manifestPath: context.manifestPath,
+    reportPath: context.reportPath,
+    phaseTimingPath: context.phaseTimingPath,
+  });
+  assert.equal(verified.failure.failureKind, "phase-timeout");
+  assert.equal(verified.failure.operationId, null);
+}
+
+for (const mutate of [
+  ({ report, timing }) => {
+    timing.failure.operationId = null;
+    timing.phases.at(-1).failure.operationId = null;
+    report.runtimeSmokeFailure.operationId = null;
+  },
+  ({ report, timing }) => {
+    timing.failure.operationBudgetMs = 10_000;
+    timing.phases.at(-1).failure.operationBudgetMs = 10_000;
+    report.runtimeSmokeFailure.operationBudgetMs = 10_000;
+  },
+  ({ timing }) => {
+    timing.phases.at(-1).outcome = "timed-out";
+  },
+  ({ report, timing }) => {
+    const failure = timing.phases.at(-1).failure;
+    failure.failureKind = "phase-timeout";
+    failure.phaseBudgetMs = 42_000;
+    failure.operationId = null;
+    failure.operationOutcome = null;
+    failure.operationElapsedMs = null;
+    failure.operationBudgetMs = null;
+    timing.phases.at(-1).outcome = "timed-out";
+    timing.failure = failure;
+    report.runtimeSmokeFailure = failure;
+  },
+  ({ report }) => {
+    report.runtimeSmokeFailure.operationId = "final-diagnostics-snapshot";
+  },
+  ({ timing }) => {
+    timing.failure = null;
+  },
+  ({ report, timing }) => {
+    timing.failure.failureKind = "unknown-failure";
+    timing.phases.at(-1).failure.failureKind = "unknown-failure";
+    report.runtimeSmokeFailure.failureKind = "unknown-failure";
+  },
+  ({ report, timing }) => {
+    timing.failure.phaseId = "reload-1";
+    timing.phases.at(-1).failure.phaseId = "reload-1";
+    report.runtimeSmokeFailure.phaseId = "reload-1";
+  },
+  ({ report, timing }) => {
+    const failure = timing.phases.at(-1).failure;
+    failure.failureKind = "no-progress-watchdog";
+    failure.phaseElapsedMs = 59_999;
+    failure.operationId = null;
+    failure.operationOutcome = null;
+    failure.operationElapsedMs = null;
+    failure.operationBudgetMs = null;
+    failure.watchdogBudgetMs = 60_000;
+    timing.phases.at(-1).elapsedMs = 59_999;
+    timing.phases.at(-1).outcome = "stalled";
+    timing.phases.at(-1).performanceWarningExceeded = true;
+    timing.failure = failure;
+    report.runtimeSmokeFailure = failure;
+  },
+  ({ report, timing }) => {
+    const failure = timing.phases.at(-1).failure;
+    failure.failureKind = "terminal-lifecycle-error";
+    failure.operationId = null;
+    failure.operationOutcome = null;
+    failure.operationElapsedMs = null;
+    failure.operationBudgetMs = null;
+    timing.phases.at(-1).outcome = "terminal-error";
+    timing.failure = failure;
+    report.runtimeSmokeFailure = failure;
+  },
+  ({ report, timing }) => {
+    const failure = timing.phases.at(-1).failure;
+    failure.failureKind = "unexpected-error";
+    failure.phaseElapsedMs = 103_001;
+    failure.operationId = null;
+    failure.operationOutcome = null;
+    failure.operationElapsedMs = null;
+    failure.operationBudgetMs = null;
+    timing.phases.at(-1).elapsedMs = 103_001;
+    timing.phases.at(-1).outcome = "failed";
+    timing.phases.at(-1).performanceWarningExceeded = true;
+    timing.failure = failure;
+    report.runtimeSmokeFailure = failure;
+  },
+  ({ report, timing }) => {
+    timing.failure.operationElapsedMs = 41_999;
+    timing.phases.at(-1).failure.operationElapsedMs = 41_999;
+    report.runtimeSmokeFailure.operationElapsedMs = 41_999;
+  },
+  ({ report, timing }) => {
+    const unsafeCause = {
+      name: "RuntimeSmokeOperationTimeoutError",
+      operationId: "diagnostics-settle-evaluation",
+      operationElapsedMs: 9_999,
+      operationBudgetMs: 10_000,
+      message: "unbounded cause text is not portable evidence",
+    };
+    timing.failure.originalCause = unsafeCause;
+    timing.phases.at(-1).failure.originalCause = unsafeCause;
+    report.runtimeSmokeFailure.originalCause = unsafeCause;
+  },
+]) {
+  const context = await runtimeFailureFixture();
+  await rewriteFailurePair(context, mutate);
+  await assert.rejects(
+    () => verifyRuntimeSmokeFailureEvidence({
+      repositoryRoot: context.root,
+      manifestPath: context.manifestPath,
+      reportPath: context.reportPath,
+      phaseTimingPath: context.phaseTimingPath,
+    }),
+    /runtime-smoke/,
+  );
 }
 
 {
@@ -1014,6 +1492,7 @@ async function expectRejected(context, expectedText) {
     "package-lock.json",
     "scripts/production-artifact-evidence.mjs",
     "scripts/runtime-smoke-phase-budget.mjs",
+    "scripts/runtime-smoke-failure-evidence.mjs",
     "scripts/required-test-truthfulness.mjs",
     "scripts/required-test-manifest.json",
     context.manifestPath,

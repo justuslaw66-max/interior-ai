@@ -359,6 +359,44 @@ validation. Gate/source inventories remain 21/365, no required gate changed
 cadence, and `merge-gate` still depends exactly on `secret-scan` and
 `stable-checks`.
 
+## Runtime failure provenance
+
+Runtime smoke timing uses schema version 3 and a closed failure-kind enum:
+`phase-timeout`, `nested-operation-timeout`, `no-progress-watchdog`,
+`terminal-lifecycle-error`, `assertion-failure`, and `unexpected-error`. Every
+failure carries phase identity, elapsed time and budget, last safe checkpoint,
+safe lifecycle state, progress observation, and a bounded safe cause summary.
+Nested-operation failures additionally require the canonical operation identity,
+elapsed time, budget, and `operationOutcome=timed-out`; their parent phase must
+be `failed`. A true phase timeout requires parent `timed-out` and forbids child
+identity. Validators reject missing, extra, unknown, unsafe, budget-drifted, or
+cross-record-inconsistent fields.
+
+`diagnostics-settle-evaluation` is a canonical 10,000 ms child of the 42,000 ms
+`diagnostics-settle` operation. A child evaluation timeout remains attributed to
+that child; only exhaustion of the complete settle envelope is attributed to the
+parent operation. No-progress records retain the canonical watchdog budget and
+originating phase, and terminal/assertion/unexpected failures cannot exceed the
+parent phase budget.
+
+The `diagnostics-settle` operation is derived rather than guessed: one immediate
+baseline read plus two required stable samples at 500 ms intervals entails three
+browser evaluations. Three 10,000 ms evaluation allowances, 1,000 ms assertion
+allowance, and 10,000 ms orchestration margin produce its 42,000 ms bound. The
+source test must throw `RuntimeSmokeOperationTimeoutError` for nested expiry;
+only the actual parent deadline may throw `RuntimeSmokePhaseTimeoutError`.
+
+Stable CI runs `production-artifact-evidence.mjs verify-runtime-failure` before
+preparing any always-run failure diagnostic. A coherent real failure remains
+visible through the existing safe three-file archive; an ambiguous schema-v2
+record, mismatched report/timing pair, wrong budget or outcome, substituted
+source/artifact identity, or unsafe diagnostic is rejected and not uploaded.
+The verifier recomputes the current checkout, artifact inventory and BUILD_ID,
+and validates the canonical manifest/sidecar and report production metadata; it
+does not accept identities merely because test and manifest fields agree with
+each other.
+The successful path remains fail closed and requires no failure provenance.
+
 ## External controls and rollback
 
 Repository checks cannot verify which GitHub checks branch protection requires,

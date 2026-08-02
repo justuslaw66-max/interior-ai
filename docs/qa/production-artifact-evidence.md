@@ -179,6 +179,32 @@ fields, or a repository claim that marks an external control verified.
 
 ## CI behavior and retention
 
+### Structured runtime failure evidence
+
+Portable runtime timing schema version 3 binds any failed smoke result to one
+structured provenance object repeated consistently at the timing-envelope and
+failed-phase boundaries. The paired Playwright report carries the same safe
+provenance. `verify-runtime-failure` verifies exact source and artifact identity,
+report/timing hashes, nonzero process status, failed test identity, phase and
+operation budgets, parent/child outcomes, checkpoint/lifecycle data, and the
+closed failure-kind semantics before a stable diagnostic can be staged.
+
+This permits safe diagnosis without turning a failed smoke into release
+evidence. Nested-operation timeout means the child operation is `timed-out` and
+the parent phase is `failed`; phase timeout means the parent is `timed-out` and
+no child is invented. No-progress, terminal-lifecycle, assertion, and unexpected
+errors retain distinct kinds. Contradictory or legacy ambiguous timing is
+withheld. A verified failure archive remains the exact existing three-file safe
+subset; successful production evidence continues to require process exit zero,
+two passed identities, zero failures/flakes/skips, complete timing, and null
+failure provenance.
+
+The 10,000 ms `diagnostics-settle-evaluation` child and 42,000 ms
+`diagnostics-settle` parent are distinct canonical operations. The verifier also
+rechecks the manifest sidecar/canonical form, current clean checkout, artifact
+inventory/hash, BUILD_ID, commands/server, and Playwright production metadata.
+Self-consistent substitutions confined to manifest/test fields are rejected.
+
 The required `stable-checks` job migrates its fresh PostgreSQL service, runs the
 negative-case contract test, performs the strict evidence build with shaped
 nonfunctional staging placeholders, runs runtime smoke against that exact

@@ -4,8 +4,9 @@ import { getSelectedItemPanel } from "./variant-test-utils";
 import {
   FURNISHED_TEMPLATE_PHASE_CONTRACTS,
   FURNISHED_TEMPLATE_RELOAD_CONTRACT,
+  RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT,
   RUNTIME_SMOKE_WHOLE_TEST_TIMEOUT_MS,
-  RuntimeSmokePhaseTimeoutError,
+  RuntimeSmokeOperationTimeoutError,
   RuntimeSmokeTerminalError,
   createRuntimeSmokePhaseRecorder,
   runRuntimeSmokeBoundedOperation,
@@ -43,12 +44,19 @@ function phaseOperationTimeout(
 
 function remainingOperationTimeout(
   phaseName: string,
+  operationName: string,
   startedAt: number,
   timeoutMs: number,
 ): number {
-  const remainingMs = timeoutMs - (Date.now() - startedAt);
+  const elapsedMs = Date.now() - startedAt;
+  const remainingMs = timeoutMs - elapsedMs;
   if (remainingMs <= 0) {
-    throw new RuntimeSmokePhaseTimeoutError(phaseName, timeoutMs);
+    throw new RuntimeSmokeOperationTimeoutError({
+      phaseId: phaseName,
+      operationId: operationName,
+      operationElapsedMs: elapsedMs,
+      operationBudgetMs: timeoutMs,
+    });
   }
   return remainingMs;
 }
@@ -154,14 +162,24 @@ test.describe("00. Runtime smoke", () => {
       let lastDiagnostics = await readModelDiagnosticsWithin(
         phaseName,
         "model-readiness",
-        remainingOperationTimeout(phaseName, startedAt, timeoutMs),
+        remainingOperationTimeout(
+          phaseName,
+          "model-readiness",
+          startedAt,
+          timeoutMs,
+        ),
       );
       let previousProgressSignature = "";
       while (true) {
         lastDiagnostics = await readModelDiagnosticsWithin(
           phaseName,
           "model-readiness",
-          remainingOperationTimeout(phaseName, startedAt, timeoutMs),
+          remainingOperationTimeout(
+            phaseName,
+            "model-readiness",
+            startedAt,
+            timeoutMs,
+          ),
         );
         const progressSignature = lastDiagnostics
           .map(({ diagnostic }) =>
@@ -218,7 +236,12 @@ test.describe("00. Runtime smoke", () => {
         await page.waitForTimeout(
           Math.min(
             500,
-            remainingOperationTimeout(phaseName, startedAt, timeoutMs),
+            remainingOperationTimeout(
+              phaseName,
+              "model-readiness",
+              startedAt,
+              timeoutMs,
+            ),
           ),
         );
       }
@@ -226,28 +249,53 @@ test.describe("00. Runtime smoke", () => {
     const waitForModelDiagnosticsToSettle = async (
       phaseName: string,
       checkpoint?: RuntimeSmokeCheckpoint,
-      timeoutMs = 10_000,
+      timeoutMs = RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT.timeoutMs,
     ) => {
       const startedAt = Date.now();
-      let previous = await readModelDiagnosticsWithin(
-        phaseName,
-        "diagnostics-settle",
-        remainingOperationTimeout(phaseName, startedAt, timeoutMs),
-      );
+      const readSettleSample = async () => {
+        const evaluationTimeoutMs = Math.min(
+          RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT.evaluationTimeoutMs,
+          remainingOperationTimeout(
+            phaseName,
+            "diagnostics-settle",
+            startedAt,
+            timeoutMs,
+          ),
+        );
+        try {
+          return await readModelDiagnosticsWithin(
+            phaseName,
+            "diagnostics-settle-evaluation",
+            evaluationTimeoutMs,
+          );
+        } catch (error) {
+          if (!(error instanceof RuntimeSmokeOperationTimeoutError)) throw error;
+          const settleElapsedMs = Date.now() - startedAt;
+          if (settleElapsedMs < timeoutMs) throw error;
+          throw new RuntimeSmokeOperationTimeoutError({
+            phaseId: phaseName,
+            operationId: "diagnostics-settle",
+            operationElapsedMs: settleElapsedMs,
+            operationBudgetMs: timeoutMs,
+          });
+        }
+      };
+      let previous = await readSettleSample();
       let stableSamples = 0;
       let previousProgressSignature = "";
       for (let sampleIndex = 0; ; sampleIndex += 1) {
         await page.waitForTimeout(
           Math.min(
-            500,
-            remainingOperationTimeout(phaseName, startedAt, timeoutMs),
+            RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT.sampleIntervalMs,
+            remainingOperationTimeout(
+              phaseName,
+              "diagnostics-settle",
+              startedAt,
+              timeoutMs,
+            ),
           ),
         );
-        const current = await readModelDiagnosticsWithin(
-          phaseName,
-          "diagnostics-settle",
-          remainingOperationTimeout(phaseName, startedAt, timeoutMs),
-        );
+        const current = await readSettleSample();
         const progressSignature = current
           .map(({ diagnostic }) =>
             diagnostic
@@ -272,7 +320,12 @@ test.describe("00. Runtime smoke", () => {
           );
         });
         stableSamples = stable ? stableSamples + 1 : 0;
-        if (stableSamples >= 2) return current;
+        if (
+          stableSamples >=
+          RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT.requiredStableSamples
+        ) {
+          return current;
+        }
         previous = current;
       }
     };
@@ -292,7 +345,12 @@ test.describe("00. Runtime smoke", () => {
         const diagnostics = await readModelDiagnosticsWithin(
           phaseName,
           "model-responses-and-readiness",
-          remainingOperationTimeout(phaseName, startedAt, timeoutMs),
+          remainingOperationTimeout(
+            phaseName,
+            "model-responses-and-readiness",
+            startedAt,
+            timeoutMs,
+          ),
         );
         const loadingModelCount = diagnostics.filter(
           ({ diagnostic }) => diagnostic?.loadState === "loading",
@@ -366,7 +424,12 @@ test.describe("00. Runtime smoke", () => {
         await page.waitForTimeout(
           Math.min(
             500,
-            remainingOperationTimeout(phaseName, startedAt, timeoutMs),
+            remainingOperationTimeout(
+              phaseName,
+              "model-responses-and-readiness",
+              startedAt,
+              timeoutMs,
+            ),
           ),
         );
       }
@@ -389,7 +452,12 @@ test.describe("00. Runtime smoke", () => {
         const diagnostics = await readModelDiagnosticsWithin(
           phaseName,
           "model-responses",
-          remainingOperationTimeout(phaseName, startedAt, timeoutMs),
+          remainingOperationTimeout(
+            phaseName,
+            "model-responses",
+            startedAt,
+            timeoutMs,
+          ),
         );
         if (
           diagnostics.some(
@@ -425,7 +493,12 @@ test.describe("00. Runtime smoke", () => {
         await page.waitForTimeout(
           Math.min(
             250,
-            remainingOperationTimeout(phaseName, startedAt, timeoutMs),
+            remainingOperationTimeout(
+              phaseName,
+              "model-responses",
+              startedAt,
+              timeoutMs,
+            ),
           ),
         );
       }

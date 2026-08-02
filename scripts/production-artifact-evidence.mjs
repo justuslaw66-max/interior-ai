@@ -23,6 +23,9 @@ import {
   RUNTIME_SMOKE_PHASE_TIMING_SCHEMA,
   RUNTIME_SMOKE_WHOLE_TEST_TIMEOUT_MS,
 } from "./runtime-smoke-phase-budget.mjs";
+import {
+  validateRuntimeSmokeFailureProvenance,
+} from "./runtime-smoke-failure-evidence.mjs";
 
 export const PRODUCTION_EVIDENCE_SCHEMA =
   "interior-ai.production-artifact-evidence.v1";
@@ -43,6 +46,11 @@ const DEPENDENCY_INSTALL_COMMAND = "npm ci --include=dev";
 const UNDERLYING_SERVER_COMMAND = "npm run start";
 const RUNTIME_SMOKE_COMMAND =
   "npx playwright test tests/e2e/00-runtime-smoke.spec.ts --project=chromium";
+const EXPECTED_RUNTIME_FAILURE_ISSUE_PATTERNS = Object.freeze([
+  /test process exited nonzero$/,
+  /required test failed: tests\/e2e\/00-runtime-smoke\.spec\.ts :: furnished template remains stable without a render loop :: chromium$/,
+  /aggregate report contains failures$/,
+]);
 const ARTIFACT_ROOTS = [".next", "public"];
 const ARTIFACT_EXCLUSIONS = [
   ".next/cache",
@@ -970,6 +978,28 @@ export function canonicalizeProductionEvidenceReport(repositoryRoot, reportPath)
   );
 }
 
+export function bindRuntimeSmokeFailureToReport(
+  repositoryRoot,
+  reportPath,
+  phaseTimingPath = DEFAULT_PHASE_TIMINGS_PATH,
+) {
+  const absoluteReportPath = resolveRepositoryPath(
+    repositoryRoot,
+    reportPath,
+    "test report path",
+  );
+  const absoluteTimingPath = resolveRepositoryPath(
+    repositoryRoot,
+    phaseTimingPath,
+    "runtime-smoke phase timing path",
+  );
+  const report = JSON.parse(readFileSync(absoluteReportPath, "utf8"));
+  const timing = JSON.parse(readFileSync(absoluteTimingPath, "utf8"));
+  report.runtimeSmokeFailure = timing.failure ?? null;
+  writeFileSync(absoluteReportPath, `${JSON.stringify(report, null, 2)}\n`);
+  return report.runtimeSmokeFailure;
+}
+
 function readReport(repositoryRoot, test, issues, environment) {
   let reportPath;
   try {
@@ -1005,7 +1035,13 @@ function readReport(repositoryRoot, test, issues, environment) {
   }
 }
 
-function readRuntimeSmokePhaseTimings(repositoryRoot, test, issues, environment) {
+function readRuntimeSmokePhaseTimings(
+  repositoryRoot,
+  test,
+  issues,
+  environment,
+  { allowFailure = false, report = null } = {},
+) {
   if (test.phaseTimings?.path !== DEFAULT_PHASE_TIMINGS_PATH) {
     issues.push("runtime-smoke phase timing path is not canonical");
     return null;
@@ -1064,6 +1100,7 @@ function readRuntimeSmokePhaseTimings(repositoryRoot, test, issues, environment)
         "overheadBudgets",
         "phaseBudgets",
         "phases",
+        "failure",
         "complete",
       ]) ||
       timing.schema !== RUNTIME_SMOKE_PHASE_TIMING_SCHEMA ||
@@ -1074,15 +1111,34 @@ function readRuntimeSmokePhaseTimings(repositoryRoot, test, issues, environment)
       JSON.stringify(timing.overheadBudgets) !==
         JSON.stringify(RUNTIME_SMOKE_OVERHEAD_BUDGETS) ||
       JSON.stringify(timing.phaseBudgets) !== JSON.stringify(RUNTIME_SMOKE_PHASE_BUDGETS) ||
-      JSON.stringify(recordedPhaseNames) !== JSON.stringify(expectedPhaseNames) ||
-      timing.complete !== true
+      JSON.stringify(recordedPhaseNames) !== JSON.stringify(
+        allowFailure
+          ? expectedPhaseNames.slice(0, recordedPhaseNames.length)
+          : expectedPhaseNames,
+      ) ||
+      timing.complete !== !allowFailure ||
+      (allowFailure ? timing.failure === null : timing.failure !== null)
     ) {
       issues.push("runtime-smoke phase timing contract is incomplete or non-canonical");
     }
-    if (
+    const phases = Array.isArray(timing.phases) ? timing.phases : [];
+    const failurePhases = phases.filter((phase) => phase.failure !== null);
+    const phaseOutcomesInvalid =
       !Array.isArray(timing.phases) ||
-      timing.phases.some(
-        (phase, index) =>
+      phases.some((phase, index) => {
+        const isFailurePhase = phase.failure !== null;
+        const checkpoints = Array.isArray(phase.progressCheckpoints)
+          ? phase.progressCheckpoints
+          : [];
+        const lifecycleStates = [
+          "not-observed",
+          "loading",
+          "ready",
+          "error",
+          "stable",
+          "persisted",
+        ];
+        return (
           !exactKeys(phase, [
             "name",
             "startTimeRelativeMs",
@@ -1092,19 +1148,16 @@ function readRuntimeSmokePhaseTimings(repositoryRoot, test, issues, environment)
             "performanceWarningThresholdMs",
             "performanceWarningExceeded",
             "finalLifecycleState",
-            "safeDiagnosticCategory",
+            "failure",
             "progressCheckpoints",
           ]) ||
-          phase.outcome !== "passed" ||
-          phase.safeDiagnosticCategory !== "none" ||
-          !["not-observed", "loading", "ready", "stable", "persisted"].includes(
-            phase.finalLifecycleState,
-          ) ||
+          (!isFailurePhase && phase.outcome !== "passed") ||
+          !lifecycleStates.includes(phase.finalLifecycleState) ||
           !Number.isSafeInteger(phase.startTimeRelativeMs) ||
           phase.startTimeRelativeMs < 0 ||
           !Number.isSafeInteger(phase.elapsedMs) ||
           phase.elapsedMs < 0 ||
-          phase.elapsedMs > phase.timeoutBudgetMs ||
+          (!isFailurePhase && phase.elapsedMs > phase.timeoutBudgetMs) ||
           phase.timeoutBudgetMs !== RUNTIME_SMOKE_PHASE_BUDGETS[index]?.timeoutMs ||
           phase.performanceWarningThresholdMs !==
             (FURNISHED_TEMPLATE_PHASE_CONTRACTS[phase.name]
@@ -1112,9 +1165,8 @@ function readRuntimeSmokePhaseTimings(repositoryRoot, test, issues, environment)
           phase.performanceWarningExceeded !==
             (phase.performanceWarningThresholdMs !== null &&
               phase.elapsedMs > phase.performanceWarningThresholdMs) ||
-          !Array.isArray(phase.progressCheckpoints) ||
-          phase.progressCheckpoints.length < 2 ||
-          phase.progressCheckpoints.some(
+          checkpoints.length < (isFailurePhase ? 1 : 2) ||
+          checkpoints.some(
             (checkpoint) =>
               !exactKeys(checkpoint, [
                 "name",
@@ -1126,19 +1178,44 @@ function readRuntimeSmokePhaseTimings(repositoryRoot, test, issues, environment)
               !Number.isSafeInteger(checkpoint.elapsedMs) ||
               checkpoint.elapsedMs < 0 ||
               checkpoint.elapsedMs > phase.elapsedMs ||
-              !["not-observed", "loading", "ready", "stable", "persisted"].includes(
-                checkpoint.finalLifecycleState,
-              ),
+              !lifecycleStates.includes(checkpoint.finalLifecycleState),
           ) ||
-          phase.progressCheckpoints[0]?.name !== "phase-start" ||
-          phase.progressCheckpoints.at(-1)?.name !== "phase-complete" ||
-          phase.progressCheckpoints.some((checkpoint, checkpointIndex) =>
+          checkpoints[0]?.name !== "phase-start" ||
+          (!isFailurePhase && checkpoints.at(-1)?.name !== "phase-complete") ||
+          checkpoints.some((checkpoint, checkpointIndex) =>
             checkpointIndex > 0 &&
-            checkpoint.elapsedMs < phase.progressCheckpoints[checkpointIndex - 1].elapsedMs
-          ),
-      )
+            checkpoint.elapsedMs < checkpoints[checkpointIndex - 1].elapsedMs
+          )
+        );
+      });
+    if (
+      phaseOutcomesInvalid ||
+      (allowFailure
+        ? failurePhases.length !== 1 || phases.at(-1) !== failurePhases[0]
+        : failurePhases.length !== 0)
     ) {
       issues.push("runtime-smoke phase timing outcomes are invalid");
+    }
+    if (allowFailure && failurePhases.length === 1) {
+      const failurePhase = failurePhases[0];
+      issues.push(
+        ...validateRuntimeSmokeFailureProvenance({
+          failure: failurePhase.failure,
+          phase: failurePhase,
+          phaseContract: FURNISHED_TEMPLATE_PHASE_CONTRACTS[failurePhase.name],
+        }),
+      );
+      if (JSON.stringify(timing.failure) !== JSON.stringify(failurePhase.failure)) {
+        issues.push("runtime-smoke top-level failure disagrees with its phase record");
+      }
+      if (
+        !report ||
+        JSON.stringify(report.runtimeSmokeFailure) !== JSON.stringify(timing.failure)
+      ) {
+        issues.push("runtime-smoke report failure disagrees with phase timing evidence");
+      }
+    } else if (!allowFailure && report?.runtimeSmokeFailure !== null) {
+      issues.push("successful runtime-smoke report retains stale failure provenance");
     }
     if (Array.isArray(timing.phases)) {
       const timelineInvalid = timing.phases.some((phase, index) => {
@@ -1182,7 +1259,11 @@ function validateTestRecord(
   report,
   phaseTimings,
   issues,
-  { requiredTestRepositoryRoot, validateRequiredTestRepository = true } = {},
+  {
+    requiredTestRepositoryRoot,
+    validateRequiredTestRepository = true,
+    allowFailedRuntimeSmoke = false,
+  } = {},
 ) {
   if (
     test.name !== "runtime-smoke" ||
@@ -1213,16 +1294,22 @@ function validateTestRecord(
     issues.push("recorded runtime-smoke phase timing summary does not match its report");
   }
   const stats = test.stats ?? {};
-  if (test.processExitCode !== 0) {
-    issues.push("production smoke command exited nonzero");
-  }
-  if (stats.unexpected !== 0 || stats.flaky !== 0) {
-    issues.push("required test report contains failures or flaky tests");
+  if (allowFailedRuntimeSmoke) {
+    if (test.processExitCode === 0 || stats.unexpected <= 0 || stats.flaky !== 0) {
+      issues.push("runtime-smoke failure evidence does not record a real failed process");
+    }
+  } else {
+    if (test.processExitCode !== 0) {
+      issues.push("production smoke command exited nonzero");
+    }
+    if (stats.unexpected !== 0 || stats.flaky !== 0) {
+      issues.push("required test report contains failures or flaky tests");
+    }
+    if (!Number.isSafeInteger(stats.expected) || stats.expected <= 0) {
+      issues.push("required test report contains zero passing tests");
+    }
   }
   if (stats.skipped !== 0) issues.push("critical production smoke contains skipped tests");
-  if (!Number.isSafeInteger(stats.expected) || stats.expected <= 0) {
-    issues.push("required test report contains zero passing tests");
-  }
   if (!report) return;
   const projects = report.config?.projects;
   if (
@@ -1272,7 +1359,10 @@ function validateTestRecord(
     requireMetadata: false,
     validateRepository: validateRequiredTestRepository,
   });
-  issues.push(...truthfulness.issues.map((issue) => `required runtime smoke: ${issue}`));
+  const truthfulnessIssues = allowFailedRuntimeSmoke
+    ? truthfulRuntimeSmokeFailureIssues(truthfulness)
+    : truthfulness.issues;
+  issues.push(...truthfulnessIssues.map((issue) => `required runtime smoke: ${issue}`));
 }
 
 export async function validateProductionEvidence({
@@ -1282,6 +1372,7 @@ export async function validateProductionEvidence({
   standalone = false,
   expectedSourceCommitSha,
   environment = process.env,
+  allowFailedRuntimeSmoke = false,
 }) {
   const root = path.resolve(repositoryRoot);
   const issues = [];
@@ -1557,10 +1648,12 @@ export async function validateProductionEvidence({
         test,
         issues,
         environment,
+        { report, allowFailure: allowFailedRuntimeSmoke && test.processExitCode !== 0 },
       );
       validateTestRecord(manifest, test, report, phaseTimings, issues, {
         requiredTestRepositoryRoot: standalone ? root : undefined,
         validateRequiredTestRepository: !standalone,
+        allowFailedRuntimeSmoke,
       });
       if (!canonicalUtcTimestamp(test.completedAt)) {
         issues.push("test evidence timestamp must use valid UTC ISO 8601 format");
@@ -1573,10 +1666,34 @@ export async function validateProductionEvidence({
       }
     }
   }
-  if (requireTests && manifest.repositoryEvidence?.status !== "valid") {
+  if (
+    requireTests &&
+    !allowFailedRuntimeSmoke &&
+    manifest.repositoryEvidence?.status !== "valid"
+  ) {
     issues.push("failed evidence validation cannot produce an approval-ready result");
   }
+  if (
+    requireTests &&
+    allowFailedRuntimeSmoke &&
+    manifest.repositoryEvidence?.status !== "failed"
+  ) {
+    issues.push("runtime-smoke failure evidence does not remain fail-closed");
+  }
   return { valid: issues.length === 0, issues, manifest };
+}
+
+function truthfulRuntimeSmokeFailureIssues(truthfulness) {
+  const unexpectedIssues = truthfulness.issues.filter(
+    (issue) =>
+      !EXPECTED_RUNTIME_FAILURE_ISSUE_PATTERNS.some((pattern) => pattern.test(issue)),
+  );
+  const missingExpectedFailure = EXPECTED_RUNTIME_FAILURE_ISSUE_PATTERNS.some(
+    (pattern) => !truthfulness.issues.some((issue) => pattern.test(issue)),
+  );
+  return missingExpectedFailure
+    ? [...unexpectedIssues, "required runtime-smoke failure signals are incomplete"]
+    : unexpectedIssues;
 }
 
 export async function recordProductionEvidenceTest({
@@ -1655,7 +1772,14 @@ export async function recordProductionEvidenceTest({
     processExitCode,
     requireMetadata: false,
   });
-  if (!truthfulness.valid) throw new Error(truthfulness.issues.join("; "));
+  if (processExitCode === 0) {
+    if (!truthfulness.valid) throw new Error(truthfulness.issues.join("; "));
+  } else {
+    const failureIssues = truthfulRuntimeSmokeFailureIssues(truthfulness);
+    if (failureIssues.length > 0) {
+      throw new Error([...truthfulness.issues, ...failureIssues].join("; "));
+    }
+  }
   const absolutePhaseTimingPath = resolveRepositoryPath(
     repositoryRoot,
     phaseTimingPath,
@@ -1678,6 +1802,7 @@ export async function recordProductionEvidenceTest({
     },
     phaseTimingIssues,
     process.env,
+    { allowFailure: processExitCode !== 0, report },
   );
   if (!phaseTimings || phaseTimingIssues.length > 0) {
     throw new Error(phaseTimingIssues.join("; "));
@@ -1723,6 +1848,93 @@ export async function recordProductionEvidenceTest({
   manifest.repositoryEvidence.actualDeploymentVerified = false;
   await writeProductionEvidenceManifest({ repositoryRoot, manifestPath, manifest });
   return manifest;
+}
+
+export async function verifyRuntimeSmokeFailureEvidence({
+  repositoryRoot,
+  manifestPath = DEFAULT_MANIFEST_PATH,
+  reportPath = DEFAULT_REPORT_PATH,
+  phaseTimingPath = DEFAULT_PHASE_TIMINGS_PATH,
+  environment = process.env,
+}) {
+  const root = path.resolve(repositoryRoot);
+  const fullValidation = await validateProductionEvidence({
+    repositoryRoot: root,
+    manifestPath,
+    requireTests: true,
+    environment,
+    allowFailedRuntimeSmoke: true,
+  });
+  if (!fullValidation.valid) throw new Error(fullValidation.issues.join("; "));
+  const manifest = fullValidation.manifest;
+  const absoluteReportPath = resolveRepositoryPath(root, reportPath, "test report path");
+  const absoluteTimingPath = resolveRepositoryPath(
+    root,
+    phaseTimingPath,
+    "runtime-smoke phase timing path",
+  );
+  const reportBytes = readFileSync(absoluteReportPath);
+  const timingBytes = readFileSync(absoluteTimingPath);
+  const report = JSON.parse(reportBytes.toString("utf8"));
+  const test = manifest.tests?.find((candidate) => candidate.name === "runtime-smoke");
+  const issues = [];
+  if (
+    manifest.repositoryEvidence?.status !== "failed" ||
+    manifest.repositoryEvidence?.releaseReady !== false ||
+    !test ||
+    test.processExitCode === 0
+  ) {
+    issues.push("runtime-smoke failure evidence does not remain fail-closed");
+  }
+  if (
+    test?.sourceCommitSha !== manifest.source?.commitSha ||
+    test?.artifactSha256 !== manifest.artifact?.sha256 ||
+    test?.nextBuildId !== manifest.build?.nextBuildId
+  ) {
+    issues.push("runtime-smoke failure evidence is bound to another source or artifact");
+  }
+  if (
+    test?.report?.path !== reportPath ||
+    test?.report?.sha256 !== sha256(reportBytes) ||
+    test?.phaseTimings?.path !== phaseTimingPath ||
+    test?.phaseTimings?.sha256 !== sha256(timingBytes)
+  ) {
+    issues.push("runtime-smoke failure evidence hashes or paths are contradictory");
+  }
+  const timing = readRuntimeSmokePhaseTimings(
+    root,
+    {
+      phaseTimings: {
+        path: phaseTimingPath,
+        sha256: sha256(timingBytes),
+      },
+    },
+    issues,
+    environment,
+    { allowFailure: true, report },
+  );
+  if (
+    timing &&
+    (test?.phaseTimings?.wholeTestTimeoutMs !== timing.wholeTestTimeoutMs ||
+      test?.phaseTimings?.phaseCount !== timing.phases.length ||
+      test?.phaseTimings?.totalElapsedMs !==
+        timing.phases.reduce((total, phase) => total + phase.elapsedMs, 0))
+  ) {
+    issues.push("runtime-smoke failure timing summary is contradictory");
+  }
+  const truthfulness = validateRequiredTestReport({
+    repositoryRoot: path.resolve(import.meta.dirname, ".."),
+    gateId: "ci.production-runtime-smoke",
+    report,
+    processExitCode: test?.processExitCode ?? 1,
+    requireMetadata: false,
+  });
+  issues.push(...truthfulRuntimeSmokeFailureIssues(truthfulness));
+  if (JSON.stringify(test?.stats) !== JSON.stringify(report.stats)) {
+    issues.push("runtime-smoke failure aggregate stats disagree with the test report");
+  }
+  if (issues.length > 0) throw new Error(issues.join("; "));
+  return { manifest, report, timing, failure: timing.failure };
 }
 
 function npmVersion(repositoryRoot) {
@@ -1875,6 +2087,7 @@ export async function createProductionEvidenceBundle({
     "package-lock.json",
     "scripts/production-artifact-evidence.mjs",
     "scripts/runtime-smoke-phase-budget.mjs",
+    "scripts/runtime-smoke-failure-evidence.mjs",
     "scripts/required-test-truthfulness.mjs",
     "scripts/required-test-manifest.json",
     manifestPath,
@@ -2000,6 +2213,11 @@ async function smokeEvidence(repositoryRoot, manifestPath, reportPath) {
   );
   if (!existsSync(absoluteReportPath)) throw new Error("required test report is missing");
   canonicalizeProductionEvidenceReport(repositoryRoot, reportPath);
+  bindRuntimeSmokeFailureToReport(
+    repositoryRoot,
+    reportPath,
+    DEFAULT_PHASE_TIMINGS_PATH,
+  );
   await recordProductionEvidenceTest({
     repositoryRoot,
     manifestPath,
@@ -2031,7 +2249,16 @@ async function cli() {
   if (command === "build") await buildEvidence(repositoryRoot, manifestPath);
   else if (command === "serve") await serveEvidence(repositoryRoot, manifestPath);
   else if (command === "smoke") await smokeEvidence(repositoryRoot, manifestPath, reportPath);
-  else if (command === "bundle") {
+  else if (command === "verify-runtime-failure") {
+    const result = await verifyRuntimeSmokeFailureEvidence({
+      repositoryRoot,
+      manifestPath,
+      reportPath,
+    });
+    console.log(
+      `Verified structured ${result.failure.failureKind} runtime-smoke failure evidence.`,
+    );
+  } else if (command === "bundle") {
     await createProductionEvidenceBundle({
       repositoryRoot,
       manifestPath,
@@ -2062,7 +2289,7 @@ async function cli() {
     );
   } else {
     throw new Error(
-      "Usage: production-artifact-evidence.mjs build|serve|smoke|bundle|verify|verify-standalone",
+      "Usage: production-artifact-evidence.mjs build|serve|smoke|verify-runtime-failure|bundle|verify|verify-standalone",
     );
   }
 }

@@ -769,3 +769,91 @@ negative tests, and CH-0017 documentation. It is local only. A new commit SHA
 must receive separate authorization before any push or external run. No
 ruleset, PR, workflow, deployment, secret, environment, database setting, or
 other external control changed; CH-0004 remains paused.
+
+## CH-0017 nested runtime-timeout provenance correction — 2026-08-02
+
+Scope remains CH-0017 only. Exact-head run at
+`7a58b5aca0350f2500d12922e4684841625dfbfa` exposed one remaining truthfulness
+defect: `bounds-verification` reported a parent phase timeout even though the
+expired bound belonged to its nested `diagnostics-settle` operation. The helper
+created `RuntimeSmokePhaseTimeoutError` with the child budget, and the recorder
+then classified every instance by error class as `phase-timeout`, discarded the
+operation identity, and marked the parent `timed-out`. No later wrapper caused
+the ambiguity; it originated at the nested timeout helper and was flattened by
+the phase recorder.
+
+The correction introduces one closed structured failure-provenance contract for
+`phase-timeout`, `nested-operation-timeout`, `no-progress-watchdog`,
+`terminal-lifecycle-error`, `assertion-failure`, and `unexpected-error`.
+Nested-operation expiry records the phase ID and parent elapsed/budget, operation
+ID and elapsed/budget, last safe checkpoint, lifecycle state, progress status,
+and a safe original-cause summary; the operation is `timed-out` while its parent
+phase is `failed`. A true phase deadline has no invented operation identity and
+keeps parent outcome `timed-out`. The no-progress and terminal paths keep their
+own outcomes, while Node and Playwright matcher assertions remain assertion
+failures. The version-3 timing validator rejects missing or unknown identities,
+budget drift, parent/child outcome contradictions, top-level/phase disagreement,
+unsafe cause fields, and legacy version-2 ambiguous records.
+
+The settle operation and each browser evaluation have separate canonical
+identities. An evaluation that exhausts its 10,000 ms child bound remains
+`diagnostics-settle-evaluation`; it is never relabeled as though the 42,000 ms
+parent settle operation expired. Only actual exhaustion of the parent emits
+`diagnostics-settle`. No-progress evidence retains and validates its canonical
+watchdog budget and originating phase. Every non-phase-timeout failure must fit
+inside the parent phase budget.
+
+The settle arithmetic is derived from the actual work: one immediate baseline
+evaluation plus two required stable samples at 500 ms intervals means three
+bounded browser evaluations. At 10,000 ms per evaluation, 1,000 ms assertion
+allowance, and 10,000 ms orchestration margin, the legal operation budget is
+42,000 ms (32,000 ms sequential envelope plus margin), not the former 10,000
+ms. `bounds-verification` is therefore 103,000 ms and each reload phase is
+308,000 ms. The complete sequential phase sum is 2,115,000 ms; the existing
+75,000 ms named overhead derives a 2,190,000 ms whole-test timeout. Performance
+warning thresholds, retries, skips, assertions, terminal fail-fast behavior,
+and the 75,000 ms no-progress watchdog are unchanged.
+
+Stable failure handling now validates the semantic report/timing pair before
+staging diagnostic evidence. A genuine, internally consistent runtime failure
+may produce the existing exact three-file safe diagnostic archive; contradictory
+or ambiguous records fail closed and withhold upload. The standalone production
+evidence verifier binds the structured failure to the tested source, artifact,
+report hash, process status, and failed test identity. Success evidence still
+requires a complete failure-free timing record.
+
+That pre-upload verifier runs the full production-evidence identity validation:
+canonical manifest and sidecar, exact clean checkout, recomputed artifact and
+BUILD_ID, canonical commands/server, and Playwright production metadata. A
+coherently substituted manifest/test identity cannot pass against an unchanged
+checkout, artifact, or report.
+
+Three clean CI-like executions against separate databases with all 42
+migrations passed both runtime identities 2/2, with no retries/skips,
+performance warning, watchdog, terminal error, or failure provenance:
+
+| Run | Bounds | Remount | Reload 1 | Reload 2 | Reload 3 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 7 | 7,231/103,000 | 12,042/165,000 | 23,430/308,000 | 23,577/308,000 | 22,859/308,000 |
+| 8 | 7,562/103,000 | 11,556/165,000 | 23,349/308,000 | 22,222/308,000 | 22,323/308,000 |
+| 9 | 7,119/103,000 | 11,477/165,000 | 24,363/308,000 | 22,705/308,000 | 22,174/308,000 |
+
+An earlier isolated run reached an existing `verify-selection` product
+assertion instead of a timeout. It was not counted among the three clean runs,
+was not repaired or reclassified, and confirmed that a structured Playwright
+matcher error is retained as `assertion-failure` rather than
+`unexpected-error`. No inherited product failure is claimed fixed.
+
+The independent read-only implementation review first found missing full
+checkout/artifact/report binding in failure staging, leaf-versus-parent settle
+timeout ambiguity, incomplete watchdog provenance, async negative-test misuse,
+and terminal/non-phase containment gaps. All valid findings were corrected and
+the affected suites and three runtime smokes were rerun. Final disposition:
+**PASS — no remaining actionable CH-0017 findings**.
+
+This correction changes only runtime failure/timing evidence, its focused
+validators/tests, workflow staging order, and these CH-0017 records. It does not
+change the staging ruleset, required-check configuration, workflow trigger, PR
+state, application behavior, schema, migration, dependency, deployment, or
+secret. CH-0004 remains paused. The single local commit containing this entry
+requires separate authorization before any push or exact-head external run.
