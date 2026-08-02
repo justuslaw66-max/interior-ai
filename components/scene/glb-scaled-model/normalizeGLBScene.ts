@@ -15,7 +15,7 @@ export type GLBUpholsteryTextures = {
   roughnessMap?: THREE.Texture;
 };
 
-type NormalizeGLBSceneInput = {
+export type NormalizeGLBSceneInput = {
   loadedScene: THREE.Object3D | null;
   width: number;
   height: number;

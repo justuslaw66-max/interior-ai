@@ -2,7 +2,7 @@
 
 This register is anchored to checkpoint `08bdfe0c5e5c882777dc5da38168ea7db14840ad`. IDs are stable: implementation commits, pull requests, exceptions, and release evidence should cite them without renumbering. P0 means active catastrophic risk, P1 high risk or release blocker, P2 material maintainability/reliability debt, and P3 hygiene. No P0 was confirmed in this audit.
 
-Post-CH-0001 triage was performed on 2026-07-31 at `62ba966ecb2011e4233c99ce1dcc0641914af008`. CH-0012 repository remediation was then completed at `2c9e8b4d2322484a8d80873019d2c3495dd862f5`. CH-0016 repository remediation was completed next at `cbed3550026e2803675f740b49be5fb15f15612b`; external execution and durable evidence retention remain unverified. CH-0017 was reopened after Outcome D at exact head `b811ddeaad5f3e2d64f647bad5c5fbe59db1615b`; the repository follow-up closes the observed synchronization, aggregator-ownership, and retained-evidence portability defects locally, while a new exact-head run and GitHub required-check configuration remain unverified external controls. The current classification is zero unresolved P0 findings, fourteen unresolved P1 findings, three resolved P1 findings, and two former P1 findings downgraded to P2 with current evidence. The finding-by-finding evidence, reachability, dependencies, test coverage, remediation scope, rollback, and ordered queue are recorded in `06_P0_P1_REMEDIATION_QUEUE.md`.
+Post-CH-0001 triage was performed on 2026-07-31 at `62ba966ecb2011e4233c99ce1dcc0641914af008`. CH-0012 repository remediation was then completed at `2c9e8b4d2322484a8d80873019d2c3495dd862f5`. CH-0016 repository remediation was completed next at `cbed3550026e2803675f740b49be5fb15f15612b`; external execution and durable evidence retention remain unverified. CH-0017 is **TRUTHFULNESS AND EXTERNAL WORKFLOW VERIFIED — IMPLEMENTATION FROZEN** at `8e0260f5654126ec21b669d0471bcfb3c0f5cf5b`. CH-0028 is the separate bounded runtime finding created from the truthfully reported first-reload model-readiness failure at that source. The current classification is zero unresolved P0 findings, fourteen unresolved P1 findings, four resolved P1 findings, and two former P1 findings downgraded to P2 with current evidence. The finding-by-finding evidence, reachability, dependencies, test coverage, remediation scope, rollback, and ordered queue are recorded in `06_P0_P1_REMEDIATION_QUEUE.md`.
 
 ## Priority summary
 
@@ -19,7 +19,7 @@ The first ten risks by consequence, exploitability, customer impact, and change 
 9. CH-0013 generated surface payload/drift contract;
 10. CH-0014 per-item 3D resource and event ownership.
 
-CH-0001, CH-0012, and CH-0016 are closed for repository-controlled remediation. CH-0017 remains reopened until the repository follow-up is exercised externally and the repository-enforcement result is recorded. CH-0004 trusted event provenance has not been started and is paused until CH-0017 closes.
+CH-0001, CH-0012, and CH-0016 are closed for repository-controlled remediation. CH-0017 is **TRUTHFULNESS AND EXTERNAL WORKFLOW VERIFIED — IMPLEMENTATION FROZEN**. CH-0028 is active as a separate runtime remediation; CH-0004 trusted event provenance was not started.
 
 ## Findings
 
@@ -228,7 +228,7 @@ CH-0001, CH-0012, and CH-0016 are closed for repository-controlled remediation. 
 ### CH-0017 — Critical tests are omitted or can report false passes
 
 - **Severity:** P1.
-- **Status:** REOPENED AFTER OUTCOME D — REPOSITORY FOLLOW-UP COMPLETE LOCALLY; EXTERNAL WORKFLOW AND ENFORCEMENT VERIFICATION REQUIRED. Original implementation: `c840c06dc2c5e67f463542292bb7391b0f93d731`; first external-hardening follow-up: `b811ddeaad5f3e2d64f647bad5c5fbe59db1615b`; the Outcome-D follow-up is the commit containing this record and its exact SHA is reported after creation.
+- **Status:** TRUTHFULNESS AND EXTERNAL WORKFLOW VERIFIED — IMPLEMENTATION FROZEN at `8e0260f5654126ec21b669d0471bcfb3c0f5cf5b`. Its evidence model, source binding, workflow isolation, OAuth transport, required-test registry, artifact safety, and timeout provenance are unchanged by CH-0028.
 - **Locations/symbols:** `scripts/required-test-manifest.json`; `scripts/required-test-truthfulness.mjs`; `tests/e2e/05-buy.spec.ts`; `07-kelsey-variants.spec.ts`; `scripts/cabinetry-tests/export-behavior.ts`; CH-0016 and cabinetry report validators; `scripts/vercel-prebuilt-release.mjs`; Playwright configurations; CI/package gate wiring.
 - **Pre-remediation evidence:** Commerce/variant cases annotated and returned when core fixtures/assertions were absent, which Playwright recorded as expected passes. The cabinetry GLB export test caught a missing `FileReader`, printed a skip message, and exited zero. The floor-plan live-progress test was absent from its required umbrella. Full E2E was non-required and `continue-on-error` without a separate process-bound release evidence contract. Gate A3 consumed only aggregate counts and URL; cabinetry used a minimum test count; CH-0016 did not verify its two stable runtime identities. Security, persistence, Stripe, Phase 14/15, Consumer/Pro, and cabinetry contract suites were not merge-required as one explicit critical group.
 - **Risk:** Release summaries overstate validated customer paths and new persistence behavior can merge untested.
@@ -358,6 +358,24 @@ CH-0001, CH-0012, and CH-0016 are closed for repository-controlled remediation. 
 - **Tests:** documentation link/command audit; migration-count/digest check; clean-clone status; formatter check only after a dedicated no-behavior baseline.
 - **Dependencies/decision:** Formatter choice is a team decision; documentation corrections are not.
 - **Compatibility:** Behavior-preserving; keep formatting churn out of refactor batches.
+
+### CH-0028 — First-reload model readiness convergence
+
+- **Severity:** P1 release/runtime reliability.
+- **Status:** REPOSITORY REMEDIATION COMPLETE LOCALLY — SEPARATE REQUIRED-ONLY EXTERNAL VERIFICATION REQUIRED. The implementation is the single local commit containing this record; no push, PR mutation, workflow run, ruleset change, merge, or deployment is included.
+- **Authoritative evidence:** Source `8e0260f5654126ec21b669d0471bcfb3c0f5cf5b`, run `30745386331`: furnished-template failed, health/catalog passed, retries 0, exit 1. Reload 1 failed at 76,043/308,000 ms because `model-responses-and-readiness` expired at 70,001/70,000 ms with all responses complete, zero outstanding, and three current required fixture records still loading. CH-0017 reported the runtime failure truthfully and remains frozen.
+- **Verified classification:** **F — genuine performance condition.** The external artifact retained aggregate loading state after all responses, not an exact post-response stage trace. Controlled same-path exact-identity/stage tracing showed current-generation active entries, no stale or optional blockers, no ignored current completion, and normal parse/normalization/bounds/attachment progression. The canonical component repeated GLB parse/decode, geometry/material normalization, and bounds work during the forced in-document remount. The external nine-versus-six response count confirms that extra generation; combined with the controlled trace and external timing, this supports the performance classification.
+- **Resolution/current behavior:** One 32-entry ref-counted parsed cache and one 32-entry ref-counted prepared cache share equivalent resources across an in-document remount. Failed loads evict, inactive least-recently-used entries prune, disposal is per entry, prepared resources retain their parsed-source lease, terminal page hide clears prepared before parsed resources, and BFCache preservation retains both. Cache and network consumers emit equivalent lifecycle stages. The one existing safe diagnostic registry now binds scene/product/variant/readiness key, URL/hash, mount instance, reload generation, required/active state, stages, cancellation, transition time, and closed terminal category; inactive diagnostic tombstones are bounded at 128. Exact required identities and stable registry size—not aggregate counts alone—gate the smoke.
+- **Compatibility and limits:** True page reloads still create new document generations and real responses. The 70,000 ms nested operation, 308,000 ms reload parent, three reloads, zero retries/skips, response checks, selection, bounds, persistence, remount, render-loop, and final-state assertions are unchanged. No schema, migration, dependency, catalog, product data, user content, URL-forced readiness, timeout increase, Full E2E, or external mutation is included.
+- **Validation:** Deterministic lifecycle and cache contracts cover network/cache readiness, unmount cancellation, supersession/stale callback rejection, duplicate URLs, optional scoping, post-response pending stage, terminal parse/normalization/bounds categories, bounded ownership/disposal, and three generation resets without registry growth. GLB bounds, design persistence, production-evidence, required-test truthfulness, typecheck, zero-warning targeted lint, code-quality, strict production build, and diff hygiene pass. Three separate 42-migration PostgreSQL runs passed furnished-template and health/catalog 2/2, exit 0:
+
+| Run | Semantic | Bounds | Remount | Reload 1 | Reload 2 | Reload 3 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 7,159/80,000 | 6,823/103,000 | 10,572/165,000 | 19,917/308,000 | 21,581/308,000 | 22,064/308,000 |
+| 2 | 7,309/80,000 | 6,894/103,000 | 10,864/165,000 | 22,939/308,000 | 21,064/308,000 | 21,311/308,000 |
+| 3 | 6,815/80,000 | 6,861/103,000 | 11,294/165,000 | 21,414/308,000 | 21,210/308,000 | 20,404/308,000 |
+
+- **Rollback:** Revert the one CH-0028 commit. This disables resource reuse and exact lifecycle diagnostics together; no data rollback exists. Detailed ownership and safe diagnostic rules are in `docs/architecture/glb-model-lifecycle.md`.
 
 ## Positive controls worth preserving
 

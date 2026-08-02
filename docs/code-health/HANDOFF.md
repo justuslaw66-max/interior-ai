@@ -1,6 +1,6 @@
 # Code health audit handoff
 
-Current superseding status: CH-0001, CH-0012, and CH-0016 repository remediation are complete. CH-0017 is reopened after Outcome D; the repository follow-up is complete locally, but a new exact-head GitHub run and required-check configuration remain unverified external controls. CH-0004 trusted event provenance has not been started and is paused until CH-0017 closes. The latest implementation record is at the end of this handoff.
+Current superseding status: CH-0001, CH-0012, and CH-0016 repository remediation are complete. CH-0017 is **TRUTHFULNESS AND EXTERNAL WORKFLOW VERIFIED — IMPLEMENTATION FROZEN** at `8e0260f5654126ec21b669d0471bcfb3c0f5cf5b`. CH-0028 is the separate active runtime remediation; CH-0004 was not started. The latest implementation record is at the end of this handoff.
 
 Audit date: 2026-07-31
 Canonical repository: `/Users/justus/Developer/interior-ai`
@@ -908,3 +908,123 @@ hygiene also passed. The independent read-only review first found a public raw
 branding escape hatch, missing split-module bundle/source ownership, and a
 missing capped-poll assertion. All were corrected; final disposition was
 **PASS — no actionable findings**.
+
+## CH-0028 first-reload model readiness convergence — 2026-08-02
+
+This bounded runtime finding is separate from CH-0017. The branch
+`fix/ch-0028-reload-model-readiness` was created from exact clean source
+`8e0260f5654126ec21b669d0471bcfb3c0f5cf5b`. Before edits, PR #27 was open,
+draft, targeted `staging`, and still pointed to the frozen source; `lsof`
+resolved the port-3000 Node listener to the canonical
+`/Users/justus/Developer/interior-ai` checkout. CH-0020 through CH-0027 were
+already assigned globally, so the next unused ID is CH-0028.
+
+### Authoritative condition and classification
+
+Required run `30745386331` truthfully reported furnished-template failed,
+health/catalog passed, retries 0, and process exit 1. Reload 1 ended failed at
+76,043/308,000 ms because `model-responses-and-readiness` expired at
+70,001/70,000 ms (64,679 ms last attempt allowance). All nine responses were
+complete, required responses were six, outstanding responses were zero, and
+the lifecycle retained three loading / zero ready / zero terminal error.
+
+The exact records were:
+
+| Key | Product / variant | URL / safe hash |
+| --- | --- | --- |
+| `runtime-smoke-model-1` | `sofa-real-castlery-dawson-ottoman` / `runtime-smoke-sofa-real-castlery-dawson-ottoman` | `/assets/models/sofa-real-castlery-dawson-ottoman.glb` / `fnv1a-09942d68` |
+| `runtime-smoke-model-2` | `sofa-real-castlery-jaron-3s` / `runtime-smoke-sofa-real-castlery-jaron-3s` | `/assets/models/sofa-real-castlery-jaron-3s.glb` / `fnv1a-a7623e72` |
+| `runtime-smoke-model-3` | `sofa-real-castlery-auburn-performance-fabric-3-seater-sofa` / `runtime-smoke-sofa-real-castlery-auburn-performance-fabric-3-seater-sofa` | `/assets/models/sofa-real-castlery-auburn-performance-fabric-3-seater-sofa.glb` / `fnv1a-3fa7f0e6` |
+
+Classification is **F — genuine performance condition**. Exact safe
+key/mount/generation/stage tracing proved that the current required identities
+progress through response, parse, normalization, material, bounds, attachment,
+and ready on the controlled production path. It found no stale generation,
+unmounted blocker, ignored current callback, optional-entry contamination,
+cache-hit transition gap, terminal error, or registry growth. Pre-fix source
+created new loader work and repeated parse/decode, geometry/material cloning,
+normalization, and bounds work during the forced 2D→3D remount. The external
+nine-versus-six response count is direct evidence of that extra generation.
+The external artifact retained aggregate loading rather than exact
+post-response stages. Completion of those stages on controlled same-path
+production traces, combined with the external response timing, supports the F
+classification; it is not presented as a retained external stage trace.
+
+### Remediation and lifecycle result
+
+Before: each forced remount started a new GLTF loader and repeated the complete
+prepared-scene pipeline. Safe diagnostics exposed aggregate state but did not
+bind every stage to exact required current-generation identity.
+
+After: `useGLBModelLifecycle` owns exact lifecycle identity and
+`modelDiagnostics` remains its only registry. A ref-counted 32-entry parsed
+cache shares URL-backed results; a separate 32-entry prepared cache shares
+equivalent normalized geometry/material and local bounds only for models
+without external variant texture maps. Failed loads evict, inactive LRU entries
+prune, resources dispose once per cache entry, prepared entries retain their
+source lease, and `pagehide` clears prepared before parsed resources. Cache
+hits emit equivalent response/parse/normalize/bounds stages and never seed
+ready. True reloads create new document generations and perform real responses.
+
+Unmount and supersession explicitly terminalize old records as non-blocking
+`cancelled`; stale handles cannot mutate a newer mount. Required readiness is
+checked against exact key/mount/generation identities and the stable complete
+active-required-key set. Closed safe stages identify post-response work, and
+closed error categories terminalize loader/import/parse, normalization,
+material, bounds/empty-bounds, and attachment failure reports.
+
+### Validation
+
+Focused passes:
+
+- lifecycle contract: network/cache ready, unmount cancellation,
+  supersession/stale rejection, current completion, duplicate URL/distinct
+  identity, optional scoping, terminal categories, three generations, no
+  registry growth;
+- bounded resource cache: concurrent dedupe, cached remount, failure eviction,
+  inactive LRU pruning, ref ownership, one disposal path, clear;
+- GLB local bounds/normalization and requested-design persistence umbrella;
+- production-artifact evidence and required-test truthfulness with the frozen
+  manifest/hash unchanged;
+- typecheck, targeted ESLint with zero warnings, code-quality ratchet, and
+  `git diff --check`;
+- strict production build; the inherited broad Turbopack/NFT floor-plan trace
+  warning remains separate and unchanged;
+- focused production smoke 2/2 with all three reloads and
+  zero retry/skip/failure.
+
+Three CI-like production smokes used separate databases, each newly created and
+verified at 42 completed migrations. Every run passed furnished-template and
+health/catalog 2/2, with exit 0, no failed/flaky/skipped/retried cases, no
+performance warning, no stale loading identity, and the expected registry size:
+
+| Run | Semantic | Bounds | Remount | Reload 1 | Reload 2 | Reload 3 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 7,159/80,000 | 6,823/103,000 | 10,572/165,000 | 19,917/308,000 | 21,581/308,000 | 22,064/308,000 |
+| 2 | 7,309/80,000 | 6,894/103,000 | 10,864/165,000 | 22,939/308,000 | 21,064/308,000 | 21,311/308,000 |
+| 3 | 6,815/80,000 | 6,861/103,000 | 11,294/165,000 | 21,414/308,000 | 21,210/308,000 | 20,404/308,000 |
+
+The first ready checkpoints in the three reloads retained explicit 8-ready,
+0-loading, 0-error complete active-required states, while the three exact
+response fixtures retained cumulative real response counts 6, 9, and 12.
+The 70,000 ms nested budget, 308,000 ms parent budget, three reloads, response
+requirements, zero retries/skips, and all selection, bounds, persistence,
+remount, render-loop, and final-state assertions remain unchanged.
+
+Independent complete-diff review disposition is **PASS — no actionable
+findings**. The reviewer verified metadata-only updates, configuration-bound
+attempt identity, full active-required gating plus exact fixture assertions,
+material and attachment terminal emitters, absorbing terminal state, bounded
+inactive diagnostics, stale resource/material suppression, bounds error
+classification, BFCache cleanup, and external-fact versus controlled-inference
+wording. The reviewer reran the lifecycle/cache/bounds checks and
+`git diff --check`, made no edits, and ran no browser suite. The one focused
+commit containing this entry cannot contain its own content-derived SHA.
+Therefore the resolved SHA, detached exact-commit production
+build/smoke/bundle/standalone verification, final worktree status, and reviewer
+disposition are reported after commit in the final Codex response.
+
+No Full E2E, timeout increase, CH-0004 work, CH-0017 evidence change, workflow
+or ruleset mutation, push, PR update, merge, deployment, dependency, schema,
+migration, catalog, production data, or user-content change is included.
+Rollback is one `git revert` of the CH-0028 commit; no data rollback exists.

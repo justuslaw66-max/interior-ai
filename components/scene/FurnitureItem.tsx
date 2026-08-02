@@ -874,7 +874,7 @@ export function Furniture({
             variantRenderAssets={variantRenderAssets}
             pendantCableAdjustment={pendantCableAdjustment}
             castShadow={shadowPolicy.castShadow}
-            diagnosticKey={instanceId}
+            diagnosticKey={instanceId} readinessKey={renderReadyKey} requiredForReadiness={Boolean(renderReadyKey)}
             showSelectionOutline={Boolean(
               showModel && showSelection && isSelected
             )}

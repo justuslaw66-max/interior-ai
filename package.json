@@ -35,6 +35,8 @@
     "typecheck": "tsc --noEmit --pretty false",
     "test:auth-env-hardening": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-auth-env-hardening.ts && npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-admin-authorization.ts",
     "test:glb-local-render-bounds": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\",\"jsx\":\"react-jsx\"}' -r tsconfig-paths/register scripts/test-glb-local-render-bounds.ts",
+    "test:glb-model-lifecycle": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/check-glb-model-lifecycle.ts",
+    "test:glb-resource-cache": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/check-glb-resource-cache.ts",
     "test:wall-paint-catalog": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-wall-paint-catalog.ts",
     "test:lighting-settings": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-lighting-settings.ts",
     "test:phase13-batch5": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-phase13-batch5-sharing.ts",

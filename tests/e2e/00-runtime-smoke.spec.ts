@@ -93,6 +93,7 @@ test.describe("00. Runtime smoke", () => {
             __INTERIOR_AI_GLB_DIAGNOSTICS__?: Record<
               string,
               {
+                key: string;
                 mountCount: number;
                 unmountCount: number;
                 renderCount: number;
@@ -101,20 +102,182 @@ test.describe("00. Runtime smoke", () => {
                 boundsInvalidCount: number;
                 excessiveBoundsWarningCount: number;
                 selectionOutlineVisible: boolean;
-                loadState: "loading" | "ready" | "error";
-                loadErrorCode:
-                  | "gltf-load-failed"
-                  | "gltf-loader-import-failed"
-                  | null;
+                sceneItemId: string;
+                productId: string | null;
+                variantId: string | null;
+                readinessKey: string | null;
+                requiredForReadiness: boolean;
+                url: string;
+                urlHash: string;
+                mountInstanceId: string;
+                reloadGeneration: number;
+                active: boolean;
+                supersededMountCount: number;
+                ignoredStaleTransitionCount: number;
+                loadState: "loading" | "ready" | "error" | "cancelled";
+                pendingStage: string | null;
+                requestStarted: boolean;
+                responseCompleted: boolean;
+                cacheStatus: "unknown" | "network" | "cache-hit";
+                parseDecodeState: "not-started" | "pending" | "complete" | "error";
+                normalizationState: "not-started" | "pending" | "complete" | "error";
+                materialState: "not-started" | "pending" | "complete" | "error";
+                boundsState: "not-started" | "pending" | "complete" | "error";
+                sceneAttachmentState:
+                  | "not-started"
+                  | "pending"
+                  | "complete"
+                  | "error";
+                cancellationState: "active" | "unmounted" | "superseded";
+                lastTransitionAtMs: number;
+                terminalErrorCategory: string | null;
+                loadErrorCode: string | null;
               }
             >;
           }
         ).__INTERIOR_AI_GLB_DIAGNOSTICS__;
+        const registry = Object.values(diagnostics ?? {});
+        const activeRequiredKeys = registry
+          .filter(
+            (diagnostic) =>
+              diagnostic.active && diagnostic.requiredForReadiness
+          )
+          .map((diagnostic) => diagnostic.key)
+          .sort();
+        const activeRequiredDiagnostics = registry
+          .filter(
+            (diagnostic) =>
+              diagnostic.active && diagnostic.requiredForReadiness
+          )
+          .sort((left, right) => left.key.localeCompare(right.key));
         return keys.map((key) => ({
           key,
           diagnostic: diagnostics?.[key] ?? null,
+          registrySize: registry.length,
+          activeRequiredKeys,
+          activeRequiredDiagnostics,
         }));
       }, diagnosticKeys);
+    let expectedLifecycleRegistrySize: number | null = null;
+    let expectedActiveRequiredKeys: string[] | null = null;
+    const expectedDiagnosticReady = (
+      entry: Awaited<ReturnType<typeof readModelDiagnostics>>[number],
+      index: number,
+      minimumReloadGeneration = 1,
+    ) => {
+      const diagnostic = entry.diagnostic;
+      const fixture = MODEL_FIXTURES[index];
+      const expectedVariantId = `runtime-smoke-${fixture.id}`;
+      const readinessSuffix = [
+        entry.key,
+        fixture.id,
+        expectedVariantId,
+        "standard",
+      ].join(":");
+      return Boolean(
+        diagnostic?.active &&
+          diagnostic.requiredForReadiness &&
+          diagnostic.sceneItemId === entry.key &&
+          diagnostic.productId === fixture.id &&
+          diagnostic.variantId === expectedVariantId &&
+          diagnostic.readinessKey?.endsWith(readinessSuffix) &&
+          diagnostic.url === fixture.modelPath &&
+          /^fnv1a-[a-f0-9]{8}$/.test(diagnostic.urlHash) &&
+          /^g\d+:m\d+$/.test(diagnostic.mountInstanceId) &&
+          diagnostic.reloadGeneration >= minimumReloadGeneration &&
+          diagnostic.loadState === "ready" &&
+          diagnostic.pendingStage === null &&
+          diagnostic.requestStarted &&
+          diagnostic.responseCompleted &&
+          diagnostic.cacheStatus !== "unknown" &&
+          diagnostic.parseDecodeState === "complete" &&
+          diagnostic.normalizationState === "complete" &&
+          diagnostic.materialState === "complete" &&
+          diagnostic.boundsState === "complete" &&
+          diagnostic.sceneAttachmentState === "complete" &&
+          diagnostic.cancellationState === "active" &&
+          diagnostic.terminalErrorCategory === null
+      );
+    };
+    const activeRequiredDiagnosticsFor = (
+      diagnostics: Awaited<ReturnType<typeof readModelDiagnostics>>,
+    ) => diagnostics[0]?.activeRequiredDiagnostics ?? [];
+    const completeActiveRequiredReady = (
+      diagnostics: Awaited<ReturnType<typeof readModelDiagnostics>>,
+      minimumReloadGeneration = 1,
+    ) => {
+      const activeRequired = activeRequiredDiagnosticsFor(diagnostics);
+      const generations = new Set(
+        activeRequired.map((diagnostic) => diagnostic.reloadGeneration),
+      );
+      return (
+        activeRequired.length > 0 &&
+        generations.size === 1 &&
+        activeRequired.every(
+          (diagnostic) =>
+            diagnostic.active &&
+            diagnostic.requiredForReadiness &&
+            diagnostic.sceneItemId === diagnostic.key &&
+            Boolean(diagnostic.readinessKey) &&
+            /^fnv1a-[a-f0-9]{8}$/.test(diagnostic.urlHash) &&
+            /^g\d+:m\d+$/.test(diagnostic.mountInstanceId) &&
+            diagnostic.reloadGeneration >= minimumReloadGeneration &&
+            diagnostic.loadState === "ready" &&
+            diagnostic.pendingStage === null &&
+            diagnostic.requestStarted &&
+            diagnostic.responseCompleted &&
+            diagnostic.cacheStatus !== "unknown" &&
+            diagnostic.parseDecodeState === "complete" &&
+            diagnostic.normalizationState === "complete" &&
+            diagnostic.materialState === "complete" &&
+            diagnostic.boundsState === "complete" &&
+            diagnostic.sceneAttachmentState === "complete" &&
+            diagnostic.cancellationState === "active" &&
+            diagnostic.terminalErrorCategory === null &&
+            diagnostic.loadErrorCode === null,
+        )
+      );
+    };
+    const exactRequiredRegistryReady = (
+      diagnostics: Awaited<ReturnType<typeof readModelDiagnostics>>,
+      minimumReloadGeneration = 1,
+    ) => {
+      const observedRegistrySize = diagnostics[0]?.registrySize ?? 0;
+      const observedActiveRequiredKeys =
+        diagnostics[0]?.activeRequiredKeys ?? [];
+      const activeRequired = activeRequiredDiagnosticsFor(diagnostics);
+      return (
+        diagnostics.length === diagnosticKeys.length &&
+        observedRegistrySize >= diagnosticKeys.length &&
+        activeRequired.length === observedActiveRequiredKeys.length &&
+        completeActiveRequiredReady(diagnostics, minimumReloadGeneration) &&
+        diagnosticKeys.every((key) =>
+          observedActiveRequiredKeys.includes(key),
+        ) &&
+        (expectedLifecycleRegistrySize === null ||
+          observedRegistrySize === expectedLifecycleRegistrySize) &&
+        (expectedActiveRequiredKeys === null ||
+          JSON.stringify(observedActiveRequiredKeys) ===
+            JSON.stringify(expectedActiveRequiredKeys)) &&
+        diagnostics.every(
+          ({ registrySize, activeRequiredKeys }) =>
+            registrySize === observedRegistrySize &&
+            JSON.stringify(activeRequiredKeys) ===
+              JSON.stringify(observedActiveRequiredKeys),
+        )
+      );
+    };
+    const pendingStageCheckpoint = (
+      diagnostics: Awaited<ReturnType<typeof readModelDiagnostics>>,
+    ) =>
+      `pending-${diagnostics
+        .map(
+          ({ diagnostic }, index) =>
+            `m${index + 1}-${(diagnostic?.pendingStage ?? "missing")
+              .toLowerCase()
+              .replace(/[^a-z0-9-]/g, "-")}`,
+        )
+        .join("-")}`.slice(0, 96);
     const readModelDiagnosticsWithin = async (
       operationContext: ReturnType<typeof createRuntimeSmokeOperationDeadline>,
       maximumAttemptMs?: number,
@@ -143,27 +306,29 @@ test.describe("00. Runtime smoke", () => {
       });
       let lastDiagnostics = await readModelDiagnosticsWithin(operationContext);
       let previousProgressSignature = "";
+      let previousPendingStageCheckpoint = "";
       while (true) {
         lastDiagnostics = await readModelDiagnosticsWithin(operationContext);
-        const progressSignature = lastDiagnostics
-          .map(({ diagnostic }) =>
-            diagnostic
-              ? `${diagnostic.loadState}-${diagnostic.mountCount}-${diagnostic.boundsMaterialChangeCount}`
-              : "missing",
+        const activeRequired = activeRequiredDiagnosticsFor(lastDiagnostics);
+        const progressSignature = activeRequired
+          .map((diagnostic) =>
+            `${diagnostic.key}-${diagnostic.loadState}-${diagnostic.pendingStage}`,
           )
           .join("-");
-        const loadingModelCount = lastDiagnostics.filter(
-          ({ diagnostic }) => diagnostic?.loadState === "loading",
+        const loadingModelCount = activeRequired.filter(
+          (diagnostic) => diagnostic.loadState === "loading",
         ).length;
-        const readyModelCount = lastDiagnostics.filter(
-          ({ diagnostic }) => diagnostic?.loadState === "ready",
+        const readyModelCount = activeRequired.filter(
+          (diagnostic) => diagnostic.loadState === "ready",
         ).length;
-        const terminalErrorModelCount = lastDiagnostics.filter(
-          ({ diagnostic }) => diagnostic?.loadState === "error",
+        const terminalErrorModelCount = activeRequired.filter(
+          (diagnostic) => diagnostic.loadState === "error",
         ).length;
-        const diagnosticsReady = lastDiagnostics.every(
-          ({ key, diagnostic }) =>
-            diagnostic?.loadState === "ready" &&
+        const diagnosticsReady =
+          exactRequiredRegistryReady(lastDiagnostics) &&
+          lastDiagnostics.every(
+          ({ key, diagnostic }, index) =>
+            expectedDiagnosticReady(lastDiagnostics[index], index) &&
             diagnostic.mountCount >= minimumMountCount &&
             diagnostic.boundsMaterialChangeCount >= 1 &&
             diagnostic.boundsPublicationCount === 0 &&
@@ -172,9 +337,9 @@ test.describe("00. Runtime smoke", () => {
             (!requireAuburnSelectionOutline ||
               key !== "runtime-smoke-model-3" ||
               diagnostic.selectionOutlineVisible),
-        );
+          );
         const aggregateLifecycleState = runtimeSmokeAggregateLifecycleState({
-          expectedModelCount: diagnosticKeys.length,
+          expectedModelCount: activeRequired.length,
           readyModelCount,
           loadingModelCount,
           terminalErrorModelCount,
@@ -187,6 +352,14 @@ test.describe("00. Runtime smoke", () => {
             aggregateLifecycleState,
           );
           previousProgressSignature = progressSignature;
+        }
+        const pendingCheckpoint = pendingStageCheckpoint(lastDiagnostics);
+        if (
+          !diagnosticsReady &&
+          pendingCheckpoint !== previousPendingStageCheckpoint
+        ) {
+          checkpoint?.(pendingCheckpoint, aggregateLifecycleState);
+          previousPendingStageCheckpoint = pendingCheckpoint;
         }
         if (terminalErrorModelCount > 0) {
           finalLifecycleState = "error";
@@ -278,10 +451,12 @@ test.describe("00. Runtime smoke", () => {
     };
     const waitForReloadModelsReady = async ({
       minimumResponseCount,
+      minimumReloadGeneration,
       phaseName,
       checkpoint,
     }: {
       minimumResponseCount: number;
+      minimumReloadGeneration: number;
       phaseName: string;
       checkpoint: RuntimeSmokeCheckpoint;
     }) => {
@@ -290,16 +465,18 @@ test.describe("00. Runtime smoke", () => {
         operationName: "model-responses-and-readiness",
       });
       let previousProgressSignature = "";
+      let previousPendingStageCheckpoint = "";
       while (true) {
         const diagnostics = await readModelDiagnosticsWithin(operationContext);
-        const loadingModelCount = diagnostics.filter(
-          ({ diagnostic }) => diagnostic?.loadState === "loading",
+        const activeRequired = activeRequiredDiagnosticsFor(diagnostics);
+        const loadingModelCount = activeRequired.filter(
+          (diagnostic) => diagnostic.loadState === "loading",
         ).length;
-        const readyModelCount = diagnostics.filter(
-          ({ diagnostic }) => diagnostic?.loadState === "ready",
+        const readyModelCount = activeRequired.filter(
+          (diagnostic) => diagnostic.loadState === "ready",
         ).length;
-        const terminalErrorModelCount = diagnostics.filter(
-          ({ diagnostic }) => diagnostic?.loadState === "error",
+        const terminalErrorModelCount = activeRequired.filter(
+          (diagnostic) => diagnostic.loadState === "error",
         ).length;
         const totalResponses = MODEL_FIXTURES.reduce(
           (total, { modelPath }) =>
@@ -316,18 +493,28 @@ test.describe("00. Runtime smoke", () => {
           ({ modelPath }) =>
             (modelResponseCounts.get(modelPath) ?? 0) >= minimumResponseCount,
         );
-        const diagnosticsReady = diagnostics.every(
-          ({ diagnostic }) =>
-            diagnostic?.loadState === "ready" &&
+        const reloadGenerations = new Set(
+          activeRequired.map((diagnostic) => diagnostic.reloadGeneration),
+        );
+        const diagnosticsReady =
+          reloadGenerations.size === 1 &&
+          exactRequiredRegistryReady(diagnostics, minimumReloadGeneration) &&
+          diagnostics.every(
+          ({ diagnostic }, index) =>
+            expectedDiagnosticReady(
+              diagnostics[index],
+              index,
+              minimumReloadGeneration,
+            ) &&
             diagnostic.mountCount >= 1 &&
             diagnostic.boundsMaterialChangeCount >= 1 &&
             diagnostic.boundsPublicationCount === 0 &&
             diagnostic.boundsInvalidCount === 0 &&
             diagnostic.excessiveBoundsWarningCount === 0,
-        );
+          );
         const combinedReadinessSatisfied = responsesReady && diagnosticsReady;
         const aggregateLifecycleState = runtimeSmokeAggregateLifecycleState({
-          expectedModelCount: MODEL_FIXTURES.length,
+          expectedModelCount: activeRequired.length,
           readyModelCount,
           loadingModelCount,
           terminalErrorModelCount,
@@ -350,6 +537,14 @@ test.describe("00. Runtime smoke", () => {
             aggregateLifecycleState,
           );
           previousProgressSignature = progressSignature;
+        }
+        const pendingCheckpoint = pendingStageCheckpoint(diagnostics);
+        if (
+          !diagnosticsReady &&
+          pendingCheckpoint !== previousPendingStageCheckpoint
+        ) {
+          checkpoint(pendingCheckpoint, aggregateLifecycleState);
+          previousPendingStageCheckpoint = pendingCheckpoint;
         }
         if (terminalErrorModelCount > 0) {
           finalLifecycleState = "error";
@@ -382,10 +577,9 @@ test.describe("00. Runtime smoke", () => {
       let previousResponseCount = -1;
       while (true) {
         const diagnostics = await readModelDiagnosticsWithin(operationContext);
+        const activeRequired = activeRequiredDiagnosticsFor(diagnostics);
         if (
-          diagnostics.some(
-            ({ diagnostic }) => diagnostic?.loadState === "error"
-          )
+          activeRequired.some((diagnostic) => diagnostic.loadState === "error")
         ) {
           finalLifecycleState = "error";
           throw new RuntimeSmokeTerminalError(phaseName);
@@ -408,8 +602,8 @@ test.describe("00. Runtime smoke", () => {
           checkpoint?.(`model-responses-${totalResponses}`, finalLifecycleState);
           previousResponseCount = totalResponses;
         }
-        finalLifecycleState = diagnostics.some(
-          ({ diagnostic }) => diagnostic?.loadState === "loading"
+        finalLifecycleState = activeRequired.some(
+          (diagnostic) => diagnostic.loadState === "loading"
         )
           ? "loading"
           : finalLifecycleState;
@@ -701,12 +895,19 @@ test.describe("00. Runtime smoke", () => {
       checkpoint("initial-model-selection-verified");
     }, () => finalLifecycleState);
 
+    let completedReloadGeneration = 0;
     await phaseRecorder.run("semantic-readiness", async ({ checkpoint }) => {
-      await waitForModelDiagnosticsReady({
+      const semanticDiagnostics = await waitForModelDiagnosticsReady({
         minimumMountCount: 1,
         phaseName: "semantic-readiness",
         checkpoint,
       });
+      completedReloadGeneration =
+        semanticDiagnostics[0]?.diagnostic?.reloadGeneration ?? 0;
+      expectedLifecycleRegistrySize =
+        semanticDiagnostics[0]?.registrySize ?? null;
+      expectedActiveRequiredKeys =
+        semanticDiagnostics[0]?.activeRequiredKeys ?? null;
       checkpoint("semantic-models-ready", "ready");
     }, () => finalLifecycleState);
 
@@ -849,11 +1050,15 @@ test.describe("00. Runtime smoke", () => {
           });
         }
         checkpoint("view-3d-active", "loading");
-        await waitForReloadModelsReady({
+        const reloadDiagnostics = await waitForReloadModelsReady({
           minimumResponseCount: reloadIndex + 2,
+          minimumReloadGeneration: completedReloadGeneration + 1,
           phaseName,
           checkpoint,
         });
+        completedReloadGeneration =
+          reloadDiagnostics[0]?.diagnostic?.reloadGeneration ??
+          completedReloadGeneration;
         await expect(page.locator("body")).not.toContainText(
           "Maximum update depth exceeded",
           { timeout: reloadOperationTimeout("body-state-assertion") },

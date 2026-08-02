@@ -10,6 +10,10 @@ import {
   observeGLBLocalRenderBounds,
   type GLBLocalRenderBounds,
 } from "../components/scene/glb-scaled-model/localRenderBounds";
+import {
+  categorizeGLBBoundsFailure,
+  GLBSourceLoadError,
+} from "../components/scene/glb-scaled-model/glbModelResources";
 
 const baseBounds: GLBLocalRenderBounds = {
   center: [0.25, 0.5, -0.75],
@@ -121,6 +125,16 @@ assert.equal(
   "invalid"
 );
 assert.equal(strictModeRemountTracker.materialChangeCount, 2);
+assert.equal(
+  categorizeGLBBoundsFailure(new Error("unexpected bounds failure")).category,
+  "glb-bounds-failed"
+);
+assert.equal(
+  categorizeGLBBoundsFailure(
+    new GLBSourceLoadError("glb-empty-bounds")
+  ).category,
+  "glb-empty-bounds"
+);
 
 const readSource = (relativePath: string) =>
   readFileSync(join(process.cwd(), relativePath), "utf8");
@@ -129,8 +143,12 @@ const scaledModelSource = readSource("components/scene/GLBScaledModel.tsx");
 const selectionOutlineSource = readSource(
   "components/scene/furniture/FurnitureSelectionOutline.tsx"
 );
-const diagnosticsSource = readSource(
-  "components/scene/glb-scaled-model/modelDiagnostics.ts"
+const diagnosticsSource = [
+  readSource("components/scene/glb-scaled-model/modelDiagnostics.ts"),
+  readSource("components/scene/glb-scaled-model/modelLifecycleTypes.ts"),
+].join("\n");
+const resourcesSource = readSource(
+  "components/scene/glb-scaled-model/glbModelResources.ts"
 );
 
 assert.doesNotMatch(
@@ -142,6 +160,11 @@ assert.match(
   scaledModelSource,
   /createGLBLocalRenderBoundsTracker[\s\S]*memo\(function GLBScaledModel[\s\S]*observeGLBLocalRenderBounds\([\s\S]*observation\.outcome !== "changed"[\s\S]*showSelectionOutline[\s\S]*FurnitureSelectionOutline/,
   "The GLB renderer must be memoized, semantically track bounds, and own its precise outline."
+);
+assert.match(
+  resourcesSource,
+  /pagehide[\s\S]*event\.persisted[\s\S]*preparedCache\.clear\(\)[\s\S]*parsedCache\.clear\(\)/,
+  "BFCache pagehide must preserve live resources; terminal pagehide clears prepared before parsed."
 );
 assert.match(
   selectionOutlineSource,
