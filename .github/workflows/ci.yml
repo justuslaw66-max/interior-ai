@@ -10,14 +10,13 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   secret-scan:
     name: Secret scan
     runs-on: ubuntu-latest
+    concurrency:
+      group: required-secret-scan-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
         with:
@@ -50,6 +49,9 @@ jobs:
   stable-checks:
     name: Stable checks
     runs-on: ubuntu-latest
+    concurrency:
+      group: required-stable-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: false
     services:
       postgres:
         image: postgres:15
@@ -91,6 +93,12 @@ jobs:
           lfs: true
           fetch-depth: 0
 
+      - name: Verify checked-out source identity
+        id: verify-source
+        env:
+          GITLEAKS_EXPECTED_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/gitleaks-artifact.mjs verify-source
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -111,9 +119,6 @@ jobs:
           GATE_A3_DATABASE_URL: ${{ env.DATABASE_URL }}
         run: npm run gate:a3:db
 
-      - name: Preflight advisory authentication environment
-        run: npm run ci:auth-fixture:preflight
-
       - name: Verify fail-closed authentication and admin environment policy
         run: npm run test:auth-env-hardening
 
@@ -128,7 +133,42 @@ jobs:
       - name: Verify production artifact evidence contract
         run: npm run test:production-artifact-evidence
 
+      - name: Verify pristine strict-build workspace
+        shell: bash
+        env:
+          TESTED_SOURCE_SHA: ${{ steps.verify-source.outputs.tested_source_sha }}
+        run: |
+          set -euo pipefail
+          actual_source_sha="$(git rev-parse HEAD)"
+          if [ "$actual_source_sha" != "$TESTED_SOURCE_SHA" ]; then
+            echo "Stable workspace source identity changed before the strict build" >&2
+            exit 1
+          fi
+          if [ -e .next ]; then
+            echo "Stable workspace was contaminated by a pre-build .next path" >&2
+            exit 1
+          fi
+          git diff --quiet
+          git diff --cached --quiet
+          unexpected_paths="$({
+            git status --porcelain=v1 --untracked-files=all --ignored=matching |
+              awk 'substr($0, 1, 2) == "??" || substr($0, 1, 2) == "!!" { print substr($0, 4) }' |
+              while IFS= read -r candidate; do
+                case "$candidate" in
+                  node_modules|node_modules/|node_modules/*) ;;
+                  *) printf '%s\n' "$candidate" ;;
+                esac
+              done
+          })"
+          if [ -n "$unexpected_paths" ]; then
+            echo "Stable workspace contains an unexpected ignored or untracked path" >&2
+            printf '%s\n' "$unexpected_paths" >&2
+            exit 1
+          fi
+          echo "Verified exact clean stable workspace before the strict build."
+
       - name: Build strict production-equivalent artifact evidence
+        id: strict-build
         env:
           APP_ENV: staging
           CATALOG_STRICT_VALIDATION: "true"
@@ -139,12 +179,87 @@ jobs:
         run: npx playwright install --with-deps chromium webkit
 
       - name: Run runtime smoke tests
+        id: runtime-smoke
         run: npm run evidence:production:smoke
 
+      - name: Prepare safe runtime failure diagnostics
+        id: failure-diagnostics
+        if: failure() && !cancelled() && steps.strict-build.outcome == 'success' && steps.runtime-smoke.outcome == 'failure'
+        shell: bash
+        run: |
+          set -euo pipefail
+          evidence_root=".local/production-artifact-evidence"
+          final_root="$evidence_root/failure-upload"
+          staging_root="$evidence_root/failure-upload.staging"
+          required_files=(manifest.json runtime-smoke.json runtime-smoke-phases.json)
+          if [ -e "$final_root" ] || [ -e "$staging_root" ]; then
+            echo "Runtime failure diagnostics staging path is not pristine" >&2
+            exit 1
+          fi
+          for required_file in "${required_files[@]}"; do
+            if [ ! -f "$evidence_root/$required_file" ]; then
+              echo "No complete safe runtime diagnostics payload was produced."
+              exit 0
+            fi
+          done
+          mkdir -p "$staging_root"
+          trap 'rm -rf "$staging_root"' EXIT
+          for required_file in "${required_files[@]}"; do
+            cp "$evidence_root/$required_file" "$staging_root/$required_file"
+          done
+          FAILURE_DIAGNOSTICS_ROOT="$staging_root" node <<'NODE'
+          const fs = require("node:fs");
+          const path = require("node:path");
+          const root = process.env.FAILURE_DIAGNOSTICS_ROOT;
+          const expected = ["manifest.json", "runtime-smoke-phases.json", "runtime-smoke.json"];
+          const actual = fs.readdirSync(root).sort();
+          if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+            throw new Error("Runtime failure diagnostics inventory is not exact");
+          }
+          const content = actual.map((name) => {
+            const text = fs.readFileSync(path.join(root, name), "utf8");
+            JSON.parse(text);
+            return text;
+          }).join("\n");
+          const sensitiveValues = [
+            process.env.GOOGLE_CLIENT_ID,
+            process.env.GOOGLE_CLIENT_SECRET,
+            process.env.AUTH_SECRET,
+            process.env.NEXTAUTH_SECRET,
+            process.env.DATABASE_URL,
+            process.env.OPENAI_API_KEY,
+            process.env.SHOPIFY_STOREFRONT_TOKEN,
+            process.env.POSTHOG_KEY,
+            process.env.STRIPE_SECRET_KEY,
+            process.env.STRIPE_WEBHOOK_SECRET,
+          ].filter((value) => typeof value === "string" && value.length > 0);
+          if (sensitiveValues.some((value) => content.includes(value))) {
+            throw new Error("Runtime failure diagnostics contain an environment credential");
+          }
+          if (/(?:^|[\s"'(])\/(?:home|Users|private\/tmp|tmp|var\/tmp|var\/folders)\//im.test(content)) {
+            throw new Error("Runtime failure diagnostics contain a machine-local path");
+          }
+          NODE
+          mv "$staging_root" "$final_root"
+          trap - EXIT
+          echo "safe_failure_diagnostics_ready=true" >> "$GITHUB_OUTPUT"
+
+      - name: Upload safe runtime failure diagnostics
+        if: always() && !cancelled() && steps.failure-diagnostics.outputs.safe_failure_diagnostics_ready == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-smoke-failure-diagnostics
+          path: .local/production-artifact-evidence/failure-upload/
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+
       - name: Prepare standalone production evidence bundle
+        id: prepare-stable-evidence
         run: npm run evidence:production:bundle
 
       - name: Verify standalone production evidence bundle
+        id: verify-stable-evidence
         shell: bash
         run: |
           set -euo pipefail
@@ -158,6 +273,48 @@ jobs:
             PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA="$tested_source_sha" \
               node scripts/production-artifact-evidence.mjs verify-standalone
           )
+
+      - name: Declare stable evidence ready
+        id: stable-evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          upload_root=".local/production-artifact-evidence/upload"
+          expected_entries=$'ch0016-ch0017-evidence-bundle.tar.gz\nch0016-ch0017-evidence-bundle.tar.gz.sha256'
+          if [ ! -d "$upload_root" ]; then
+            echo "Stable evidence producer completed without its upload directory" >&2
+            exit 1
+          fi
+          shopt -s dotglob nullglob
+          entries=("$upload_root"/*)
+          if [ "${#entries[@]}" -ne 2 ]; then
+            echo "Stable evidence upload inventory is missing or unexpected" >&2
+            exit 1
+          fi
+          names=()
+          for entry in "${entries[@]}"; do
+            if [ ! -f "$entry" ] || [ -L "$entry" ]; then
+              echo "Stable evidence upload inventory contains a non-regular entry" >&2
+              exit 1
+            fi
+            names+=("$(basename "$entry")")
+          done
+          actual_entries="$(printf '%s\n' "${names[@]}" | LC_ALL=C sort)"
+          if [ "$actual_entries" != "$expected_entries" ]; then
+            echo "Stable evidence upload inventory is missing or unexpected" >&2
+            exit 1
+          fi
+          echo "stable_evidence_ready=true" >> "$GITHUB_OUTPUT"
+
+      - name: Upload stable production evidence
+        if: steps.stable-evidence.outputs.stable_evidence_ready == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-smoke-results
+          path: .local/production-artifact-evidence/upload/
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
 
       - name: Verify critical domain contracts
         run: npm run test:critical-required
@@ -194,28 +351,132 @@ jobs:
           PLAYWRIGHT_USE_PRODUCTION_SERVER: "1"
         run: npm run test:pro-visual-policy
 
-      - name: Upload smoke diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
+      - name: Explain absent production evidence payload
+        if: always() && !cancelled() && steps.stable-evidence.outputs.stable_evidence_ready != 'true' && steps.failure-diagnostics.outputs.safe_failure_diagnostics_ready != 'true'
+        shell: bash
+        run: |
+          if [ "${{ steps.strict-build.outcome }}" != "success" ]; then
+            echo "No production evidence payload was expected because the strict build did not complete." >> "$GITHUB_STEP_SUMMARY"
+          elif [ "${{ steps.runtime-smoke.outcome }}" != "success" ]; then
+            echo "Runtime smoke failed without producing a complete safe diagnostics payload." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Production evidence preparation did not declare an uploadable payload." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  advisory-contract-preflight:
+    name: Advisory contract preflight
+    runs-on: ubuntu-latest
+    concurrency:
+      group: required-advisory-preflight-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: interior_ai_test
+        options: >-
+          --health-cmd "pg_isready -U test -d interior_ai_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    env:
+      CI: "true"
+      CI_AUTH_FIXTURE_MODE: "1"
+      APP_ENV: development
+      DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
+      AUTH_SECRET: ci-only-auth-secret-at-least-32-characters
+      NEXTAUTH_SECRET: ci-only-auth-secret-at-least-32-characters
+      NEXTAUTH_URL: http://127.0.0.1:3000
+      APP_ORIGIN: http://127.0.0.1:3000
+      AUTH_TRUST_HOST: "true"
+      ADMIN_EMAILS: gate-a3-admin@example.test
+      PLAYWRIGHT_ADMIN_EMAIL: gate-a3-admin@example.test
+      OPENAI_API_KEY: gate-a3-ci-openai-placeholder
+      SHOPIFY_STORE_DOMAIN: gate-a3-ci.myshopify.com
+      SHOPIFY_STOREFRONT_TOKEN: gate-a3-ci-shopify-placeholder
+      POSTHOG_KEY: gate-a3-ci-posthog-placeholder
+      STRIPE_SECRET_KEY: sk_test_gate_a3_ci_placeholder
+      STRIPE_WEBHOOK_SECRET: whsec_gate_a3_ci_placeholder
+      STRIPE_PRICE_PRO_MONTHLY: price_gate_a3_ci_monthly
+      STRIPE_PRICE_PRO_YEARLY: price_gate_a3_ci_yearly
+    steps:
+      - uses: actions/checkout@v4
         with:
-          name: playwright-smoke-results
-          path: .local/production-artifact-evidence/upload/
-          if-no-files-found: error
-          retention-days: 14
-          compression-level: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          lfs: true
+          fetch-depth: 0
+
+      - name: Verify checked-out source identity
+        id: verify-source
+        env:
+          GITLEAKS_EXPECTED_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/gitleaks-artifact.mjs verify-source
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Configure synthetic CI OAuth fixture
+        run: npm run ci:auth-fixture:export
+
+      - name: Validate synthetic CI OAuth fixture
+        run: npm run ci:auth-fixture:validate
+
+      - name: Apply database migrations
+        env:
+          GATE_A3_DATABASE_URL: ${{ env.DATABASE_URL }}
+        run: npm run gate:a3:db
+
+      - name: Verify fail-closed authentication and admin environment policy
+        run: npm run test:auth-env-hardening
+
+      - name: Preflight advisory authentication environment
+        run: npm run ci:auth-fixture:preflight
+
+      - name: Verify lightweight advisory evidence contract
+        run: npm run test:required-test-truthfulness
+
+      - name: Verify advisory preflight cleanup and isolation
+        shell: bash
+        env:
+          TESTED_SOURCE_SHA: ${{ steps.verify-source.outputs.tested_source_sha }}
+        run: |
+          set -euo pipefail
+          if [ "$(git rev-parse HEAD)" != "$TESTED_SOURCE_SHA" ]; then
+            echo "Advisory preflight source identity changed" >&2
+            exit 1
+          fi
+          if [ ! -d .next ]; then
+            echo "Live advisory preflight did not remain isolated in its dedicated workspace" >&2
+            exit 1
+          fi
+          node -e 'const net=require("node:net");const socket=net.createConnection({host:"127.0.0.1",port:3317});socket.once("connect",()=>{socket.destroy();console.error("Advisory preflight server remained active");process.exit(1)});socket.once("error",()=>process.exit(0));setTimeout(()=>{socket.destroy();console.error("Advisory preflight cleanup check timed out");process.exit(1)},5000)'
 
   merge-gate:
     name: merge-gate
     runs-on: ubuntu-latest
-    needs: [secret-scan, stable-checks]
+    concurrency:
+      group: required-merge-gate-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
+    needs: [secret-scan, stable-checks, advisory-contract-preflight]
     if: always()
     steps:
       - name: Check required results
         env:
           SECRET_SCAN_RESULT: ${{ needs.secret-scan.result }}
           STABLE_CHECKS_RESULT: ${{ needs.stable-checks.result }}
+          ADVISORY_CONTRACT_PREFLIGHT_RESULT: ${{ needs.advisory-contract-preflight.result }}
         run: |
-          if [ "$SECRET_SCAN_RESULT" != "success" ] || [ "$STABLE_CHECKS_RESULT" != "success" ]; then
+          if [ "$SECRET_SCAN_RESULT" != "success" ] || [ "$STABLE_CHECKS_RESULT" != "success" ] || [ "$ADVISORY_CONTRACT_PREFLIGHT_RESULT" != "success" ]; then
             echo "Required CI checks failed"
             exit 1
           fi

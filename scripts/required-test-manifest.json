@@ -424,7 +424,7 @@
     },
     {
       "id": "ci.merge-gate",
-      "invariant": "Merge eligibility requires both secret-scan and stable-checks to conclude successfully.",
+      "invariant": "Merge eligibility requires secret-scan, stable-checks, and advisory-contract-preflight to conclude successfully.",
       "cadence": "merge-required",
       "blocking": true,
       "command": "GitHub Actions merge-gate result aggregation",
@@ -439,8 +439,8 @@
         "job": "merge-gate",
         "step": "Check required results",
         "invocations": [
-          "needs: [secret-scan, stable-checks]",
-          "if [ \"$SECRET_SCAN_RESULT\" != \"success\" ] || [ \"$STABLE_CHECKS_RESULT\" != \"success\" ]; then",
+          "needs: [secret-scan, stable-checks, advisory-contract-preflight]",
+          "if [ \"$SECRET_SCAN_RESULT\" != \"success\" ] || [ \"$STABLE_CHECKS_RESULT\" != \"success\" ] || [ \"$ADVISORY_CONTRACT_PREFLIGHT_RESULT\" != \"success\" ]; then",
           "exit 1"
         ]
       }

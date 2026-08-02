@@ -6,12 +6,15 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  readdirSync,
   renameSync,
   rmSync,
+  symlinkSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { parse as parseYaml } from "yaml";
 
 import {
   REQUIRED_TEST_EVIDENCE_SCHEMA,
@@ -1603,18 +1606,65 @@ assert.equal(
     path.join(process.cwd(), ".github/workflows/full-advisory-e2e.yml"),
     "utf8",
   );
-  const exactHeadCheckouts = [
-    ...`${requiredWorkflow}\n${advisoryWorkflow}`.matchAll(
-      /uses:\s*actions\/checkout@v4[\s\S]{0,180}?ref:\s*\$\{\{ github\.event\.pull_request\.head\.sha \|\| github\.sha \}\}/g,
-    ),
+  const requiredDefinition = parseYaml(requiredWorkflow);
+  const advisoryDefinition = parseYaml(advisoryWorkflow);
+  assert.ok(requiredDefinition && advisoryDefinition, "both workflow files must be valid YAML");
+  const requiredJobs = requiredDefinition.jobs;
+  assert.ok(requiredJobs?.["secret-scan"], "the required secret-scan job must retain its exact id");
+  assert.ok(requiredJobs?.["stable-checks"], "the required stable-checks job must retain its exact id");
+  assert.ok(
+    requiredJobs?.["advisory-contract-preflight"],
+    "the required advisory-contract-preflight job must retain its exact id",
+  );
+  assert.ok(requiredJobs?.["merge-gate"], "the required merge-gate job must retain its exact id");
+  const requiredSourceJobs = [
+    "secret-scan",
+    "stable-checks",
+    "advisory-contract-preflight",
   ];
+  for (const jobId of requiredSourceJobs) {
+    const job = requiredJobs[jobId];
+    const checkout = job.steps.find((step) => step.uses === "actions/checkout@v4");
+    const sourceVerification = job.steps.find(
+      (step) => step.name === "Verify checked-out source identity",
+    );
+    assert.equal(
+      checkout?.with?.ref,
+      "${{ github.event.pull_request.head.sha || github.sha }}",
+      `${jobId} must checkout the exact pull-request head`,
+    );
+    assert.equal(
+      sourceVerification?.run,
+      "node scripts/gitleaks-artifact.mjs verify-source",
+      `${jobId} must independently verify git rev-parse HEAD`,
+    );
+    assert.equal(
+      sourceVerification?.env?.GITLEAKS_EXPECTED_SOURCE_SHA,
+      "${{ github.event.pull_request.head.sha || github.sha }}",
+      `${jobId} must compare the checkout to the workflow's exact expected source`,
+    );
+  }
   assert.equal(
-    exactHeadCheckouts.length,
-    2,
-    "both required-lane checkouts must bind pull-request execution to the exact head commit",
+    requiredDefinition.concurrency,
+    undefined,
+    "workflow-wide cancellation must not couple stable and advisory preflight jobs",
+  );
+  assert.notEqual(
+    requiredJobs["stable-checks"].concurrency.group,
+    requiredJobs["advisory-contract-preflight"].concurrency.group,
+    "stable and advisory preflight jobs need separate concurrency groups",
+  );
+  assert.equal(requiredJobs["stable-checks"].concurrency["cancel-in-progress"], false);
+  assert.equal(
+    requiredJobs["advisory-contract-preflight"].concurrency["cancel-in-progress"],
+    true,
   );
   const stableJob = requiredWorkflow.slice(
     requiredWorkflow.indexOf("  stable-checks:"),
+    requiredWorkflow.indexOf("  advisory-contract-preflight:"),
+  );
+  const contractPreflightJob = requiredWorkflow.slice(
+    requiredWorkflow.indexOf("  advisory-contract-preflight:"),
     requiredWorkflow.indexOf("  merge-gate:"),
   );
   assert.ok(
@@ -1627,8 +1677,19 @@ assert.equal(
       stableJob.indexOf("Prepare standalone production evidence bundle"),
     "only completed smoke evidence may be bundled",
   );
-  assert.match(stableJob, /if-no-files-found:\s*error/);
-  assert.match(stableJob, /path:\s*\.local\/production-artifact-evidence\/upload\//);
+  assert.doesNotMatch(
+    stableJob.slice(0, stableJob.indexOf("Build strict production-equivalent artifact evidence")),
+    /ci:auth-fixture:preflight|next dev|test:advisory-auth-preflight/,
+    "stable-checks must not start a live Next server before the strict build",
+  );
+  assert.ok(
+    stableJob.indexOf("Verify pristine strict-build workspace") <
+      stableJob.indexOf("Build strict production-equivalent artifact evidence"),
+    "the strict build must be guarded by a pristine-workspace assertion",
+  );
+  assert.match(stableJob, /if \[ -e \.next \]/);
+  assert.match(stableJob, /git status --porcelain=v1 --untracked-files=all --ignored=matching/);
+  assert.match(stableJob, /TESTED_SOURCE_SHA:\s*\$\{\{ steps\.verify-source\.outputs\.tested_source_sha \}\}/);
   assert.match(stableJob, /Configure synthetic CI OAuth fixture[\s\S]*npm run ci:auth-fixture:export/);
   assert.ok(
     stableJob.indexOf("npm run ci:auth-fixture:export") <
@@ -1638,19 +1699,190 @@ assert.equal(
     "stable CI must validate GITHUB_ENV propagation immediately after export",
   );
   assert.ok(
-    stableJob.indexOf("Apply database migrations") <
-      stableJob.indexOf("npm run ci:auth-fixture:preflight") &&
-      stableJob.indexOf("npm run ci:auth-fixture:preflight") <
-        stableJob.indexOf("npm run test:auth-env-hardening") &&
-      stableJob.indexOf("npm run test:auth-env-hardening") <
+    stableJob.indexOf("npm run test:auth-env-hardening") <
         stableJob.indexOf("npm run test:required-test-truthfulness") &&
       stableJob.indexOf("npm run test:required-test-truthfulness") <
         stableJob.indexOf("Build strict production-equivalent artifact evidence"),
-    "the required lane must run the lightweight advisory auth/evidence preflight before the expensive build",
+    "stable-checks may retain non-server structural validation before the expensive build",
   );
   assert.match(stableJob, /Verify standalone production evidence bundle/);
   assert.match(stableJob, /verify-standalone/);
+  assert.match(
+    contractPreflightJob,
+    /Preflight advisory authentication environment[\s\S]*npm run ci:auth-fixture:preflight/,
+  );
+  assert.match(contractPreflightJob, /npm run test:auth-env-hardening/);
+  assert.match(contractPreflightJob, /npm run test:required-test-truthfulness/);
+  assert.match(contractPreflightJob, /Verify advisory preflight cleanup and isolation/);
+  assert.match(contractPreflightJob, /if \[ ! -d \.next \]/);
+  assert.doesNotMatch(contractPreflightJob, /test:e2e:advisory|Run advisory full E2E inventory/);
+  assert.equal(
+    requiredJobs["stable-checks"].steps.filter((step) => step.uses === "actions/checkout@v4").length,
+    1,
+  );
+  assert.equal(
+    requiredJobs["advisory-contract-preflight"].steps.filter(
+      (step) => step.uses === "actions/checkout@v4",
+    ).length,
+    1,
+    "the live preflight must own a separate checkout/workspace boundary",
+  );
+  const stableSteps = requiredJobs["stable-checks"].steps;
+  const failureDiagnostics = stableSteps.find(
+    (step) => step.name === "Prepare safe runtime failure diagnostics",
+  );
+  const failureUpload = stableSteps.find(
+    (step) => step.name === "Upload safe runtime failure diagnostics",
+  );
+  const stableReady = stableSteps.find((step) => step.name === "Declare stable evidence ready");
+  const stableUpload = stableSteps.find(
+    (step) => step.name === "Upload stable production evidence",
+  );
+  assert.equal(
+    failureDiagnostics?.if,
+    "failure() && !cancelled() && steps.strict-build.outcome == 'success' && steps.runtime-smoke.outcome == 'failure'",
+    "runtime diagnostics may be prepared only after a failing runtime producer",
+  );
+  assert.equal(
+    failureUpload?.if,
+    "always() && !cancelled() && steps.failure-diagnostics.outputs.safe_failure_diagnostics_ready == 'true'",
+    "runtime diagnostics upload must be skipped when no producer declared a safe payload",
+  );
+  assert.equal(failureUpload?.with?.["if-no-files-found"], "error");
+  assert.match(failureDiagnostics.run, /failure-upload\.staging/);
+  assert.match(failureDiagnostics.run, /Runtime failure diagnostics inventory is not exact/);
+  assert.match(failureDiagnostics.run, /safe_failure_diagnostics_ready=true/);
+  const runWorkflowShell = (source, cwd, environment = {}) =>
+    spawnSync("bash", ["-c", source], {
+      cwd,
+      encoding: "utf8",
+      env: { ...process.env, ...environment },
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+  {
+    const root = mkdtempSync(path.join(tmpdir(), "ch-0017-no-runtime-diagnostics-"));
+    const outputPath = path.join(root, "github-output");
+    const result = runWorkflowShell(failureDiagnostics.run, root, {
+      GITHUB_OUTPUT: outputPath,
+    });
+    assert.equal(result.status, 0, "an absent runtime producer must not invent a payload");
+    assert.equal(existsSync(path.join(root, ".local/production-artifact-evidence/failure-upload")), false);
+    assert.equal(existsSync(outputPath), false, "an absent producer must not report ready=true");
+    rmSync(root, { recursive: true, force: true });
+  }
+  {
+    const root = mkdtempSync(path.join(tmpdir(), "ch-0017-safe-runtime-diagnostics-"));
+    const evidenceRoot = ".local/production-artifact-evidence";
+    const outputPath = path.join(root, "github-output");
+    for (const file of ["manifest.json", "runtime-smoke.json", "runtime-smoke-phases.json"]) {
+      write(root, `${evidenceRoot}/${file}`, `${JSON.stringify({ schema: file })}\n`);
+    }
+    const result = runWorkflowShell(failureDiagnostics.run, root, {
+      GITHUB_OUTPUT: outputPath,
+      GOOGLE_CLIENT_ID: "generated-client-value.example.test",
+      GOOGLE_CLIENT_SECRET: "generated-secret-value",
+      AUTH_SECRET: "generated-auth-secret-value",
+      NEXTAUTH_SECRET: "generated-nextauth-secret-value",
+      DATABASE_URL: "database-url-value",
+    });
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(readFileSync(outputPath, "utf8"), "safe_failure_diagnostics_ready=true\n");
+    assert.deepEqual(
+      readdirSync(path.join(root, `${evidenceRoot}/failure-upload`)).sort(),
+      ["manifest.json", "runtime-smoke-phases.json", "runtime-smoke.json"],
+    );
+    assert.equal(existsSync(path.join(root, `${evidenceRoot}/failure-upload.staging`)), false);
+    rmSync(root, { recursive: true, force: true });
+  }
+  {
+    const root = mkdtempSync(path.join(tmpdir(), "ch-0017-unsafe-runtime-diagnostics-"));
+    const evidenceRoot = ".local/production-artifact-evidence";
+    const outputPath = path.join(root, "github-output");
+    write(root, `${evidenceRoot}/manifest.json`, `${JSON.stringify({ value: "generated-secret-value" })}\n`);
+    write(root, `${evidenceRoot}/runtime-smoke.json`, "{}\n");
+    write(root, `${evidenceRoot}/runtime-smoke-phases.json`, "{}\n");
+    const result = runWorkflowShell(failureDiagnostics.run, root, {
+      GITHUB_OUTPUT: outputPath,
+      GOOGLE_CLIENT_SECRET: "generated-secret-value",
+    });
+    assert.notEqual(result.status, 0, "credential-bearing failure diagnostics must fail closed");
+    assert.equal(existsSync(path.join(root, `${evidenceRoot}/failure-upload`)), false);
+    assert.equal(existsSync(path.join(root, `${evidenceRoot}/failure-upload.staging`)), false);
+    assert.equal(existsSync(outputPath), false);
+    rmSync(root, { recursive: true, force: true });
+  }
+  assert.ok(
+    stableJob.indexOf("Verify standalone production evidence bundle") <
+      stableJob.indexOf("Declare stable evidence ready") &&
+      stableJob.indexOf("Declare stable evidence ready") <
+        stableJob.indexOf("Upload stable production evidence"),
+    "successful standalone evidence must be verified before it becomes mandatory to upload",
+  );
+  assert.match(stableReady.run, /Stable evidence producer completed without its upload directory/);
+  assert.match(stableReady.run, /Stable evidence upload inventory contains a non-regular entry/);
+  assert.match(stableReady.run, /stable_evidence_ready=true/);
+  {
+    const root = mkdtempSync(path.join(tmpdir(), "ch-0017-stable-evidence-ready-"));
+    const uploadRoot = ".local/production-artifact-evidence/upload";
+    const outputPath = path.join(root, "github-output");
+    write(root, `${uploadRoot}/ch0016-ch0017-evidence-bundle.tar.gz`, "bundle");
+    write(root, `${uploadRoot}/ch0016-ch0017-evidence-bundle.tar.gz.sha256`, "hash\n");
+    const ready = runWorkflowShell(stableReady.run, root, { GITHUB_OUTPUT: outputPath });
+    assert.equal(ready.status, 0, ready.stderr);
+    assert.equal(readFileSync(outputPath, "utf8"), "stable_evidence_ready=true\n");
+    rmSync(root, { recursive: true, force: true });
+  }
+  {
+    const root = mkdtempSync(path.join(tmpdir(), "ch-0017-stable-evidence-missing-"));
+    const uploadRoot = ".local/production-artifact-evidence/upload";
+    const outputPath = path.join(root, "github-output");
+    write(root, `${uploadRoot}/ch0016-ch0017-evidence-bundle.tar.gz`, "bundle");
+    const missing = runWorkflowShell(stableReady.run, root, { GITHUB_OUTPUT: outputPath });
+    assert.notEqual(missing.status, 0, "a declared stable producer with a missing file must fail closed");
+    assert.equal(existsSync(outputPath), false, "a missing stable payload must not report ready=true");
+    rmSync(root, { recursive: true, force: true });
+  }
+  {
+    const root = mkdtempSync(path.join(tmpdir(), "ch-0017-stable-evidence-extra-"));
+    const uploadRoot = ".local/production-artifact-evidence/upload";
+    const outputPath = path.join(root, "github-output");
+    write(root, `${uploadRoot}/ch0016-ch0017-evidence-bundle.tar.gz`, "bundle");
+    write(root, `${uploadRoot}/ch0016-ch0017-evidence-bundle.tar.gz.sha256`, "hash\n");
+    mkdirSync(path.join(root, uploadRoot, "unexpected-directory"));
+    const extra = runWorkflowShell(stableReady.run, root, { GITHUB_OUTPUT: outputPath });
+    assert.notEqual(extra.status, 0, "an extra stable upload directory must fail closed");
+    assert.equal(existsSync(outputPath), false, "an extra entry must not report ready=true");
+    rmSync(root, { recursive: true, force: true });
+  }
+  {
+    const root = mkdtempSync(path.join(tmpdir(), "ch-0017-stable-evidence-symlink-"));
+    const uploadRoot = ".local/production-artifact-evidence/upload";
+    const outputPath = path.join(root, "github-output");
+    write(root, "real-bundle", "bundle");
+    write(root, `${uploadRoot}/ch0016-ch0017-evidence-bundle.tar.gz.sha256`, "hash\n");
+    symlinkSync(
+      path.join(root, "real-bundle"),
+      path.join(root, uploadRoot, "ch0016-ch0017-evidence-bundle.tar.gz"),
+    );
+    const symlink = runWorkflowShell(stableReady.run, root, { GITHUB_OUTPUT: outputPath });
+    assert.notEqual(symlink.status, 0, "a symlinked stable bundle must fail closed");
+    assert.equal(existsSync(outputPath), false, "a symlinked payload must not report ready=true");
+    rmSync(root, { recursive: true, force: true });
+  }
+  assert.equal(
+    stableUpload?.if,
+    "steps.stable-evidence.outputs.stable_evidence_ready == 'true'",
+  );
+  assert.equal(stableUpload?.with?.["if-no-files-found"], "error");
+  assert.equal(stableUpload?.with?.path, ".local/production-artifact-evidence/upload/");
+  assert.doesNotMatch(stableJob, /if-no-files-found:\s*ignore/);
+  assert.match(
+    stableJob,
+    /Explain absent production evidence payload[\s\S]*No production evidence payload was expected because the strict build did not complete/,
+    "a pre-runtime build failure must explain why every upload is skipped",
+  );
   assert.doesNotMatch(stableJob, /^\s+GOOGLE_CLIENT_(?:ID|SECRET):/m);
+  assert.doesNotMatch(contractPreflightJob, /^\s+GOOGLE_CLIENT_(?:ID|SECRET):/m);
   assert.doesNotMatch(requiredWorkflow, /^  e2e-full:\s*$/m);
   assert.doesNotMatch(requiredWorkflow, /npm run test:e2e:advisory/);
   const advisoryJob = advisoryWorkflow.slice(advisoryWorkflow.indexOf("  e2e-full:"));
@@ -1714,11 +1946,22 @@ assert.equal(
   );
   assert.match(advisoryJob, /if:\s*always\(\) && !cancelled\(\)/);
   assert.match(requiredWorkflow, /merge-gate:\n\s+name:\s*merge-gate\n/);
-  assert.match(requiredWorkflow, /merge-gate:[\s\S]*needs:\s*\[secret-scan, stable-checks\]/);
-  assert.doesNotMatch(
-    requiredWorkflow.slice(requiredWorkflow.indexOf("  merge-gate:")),
-    /e2e-full|full-advisory|test:e2e:advisory/,
+  assert.deepEqual(
+    requiredJobs["merge-gate"].needs,
+    ["secret-scan", "stable-checks", "advisory-contract-preflight"],
+    "merge-gate must fail closed over every required job",
   );
+  const mergeGateSource = requiredWorkflow.slice(requiredWorkflow.indexOf("  merge-gate:"));
+  assert.match(
+    mergeGateSource,
+    /ADVISORY_CONTRACT_PREFLIGHT_RESULT:\s*\$\{\{ needs\.advisory-contract-preflight\.result \}\}/,
+  );
+  assert.match(
+    mergeGateSource,
+    /\[ "\$ADVISORY_CONTRACT_PREFLIGHT_RESULT" != "success" \]/,
+    "a failed or cancelled required preflight must fail merge-gate",
+  );
+  assert.doesNotMatch(mergeGateSource, /e2e-full|full-advisory|test:e2e:advisory/);
   const secretScanJob = requiredWorkflow.slice(
     requiredWorkflow.indexOf("  secret-scan:"),
     requiredWorkflow.indexOf("  stable-checks:"),
