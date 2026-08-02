@@ -84,15 +84,18 @@ than external network dependencies.
 
 One canonical 14-phase contract now derives every correctness timeout from its
 named nested operations plus an explicit orchestration margin. Reload-1,
-reload-2, and reload-3 share the same 236,000 ms legal operation envelope plus
-30,000 ms margin, for 266,000 ms each. A separate non-failing 70,000 ms
+reload-2, and reload-3 share the same 246,000 ms legal operation envelope plus
+30,000 ms margin, for 276,000 ms each. Storage hydration and the final
+diagnostic snapshot have explicit 5,000 ms wall-clock bounds; every diagnostic
+evaluation is bounded by its enclosing named operation, and settle/readiness
+loops enforce elapsed time rather than a sample count. A separate non-failing 70,000 ms
 performance observation threshold records regressions without redefining test
 correctness. Safe progress checkpoints reset a bounded 75,000 ms no-progress
 watchdog, while terminal model errors still fail immediately. The canonical
-1,957,000 ms sequential sum plus 75,000 ms of named whole-test overhead derives
-the 2,032,000 ms whole-test timeout. Three clean CI-like runs of this exact
-corrected tree used 7,111–7,502/71,000 ms for bounds,
-11,911–12,677/165,000 ms for remount, and 22,141–28,099/266,000 ms for each
+1,987,000 ms sequential sum plus 75,000 ms of named whole-test overhead derives
+the 2,062,000 ms whole-test timeout. Three clean CI-like runs of this exact
+corrected tree used 7,253–7,365/71,000 ms for bounds,
+11,908–12,330/165,000 ms for remount, and 21,746–25,016/276,000 ms for each
 reload, with no performance warning. This
 fixes the invalid parent/nested phase contract without adding retries, seeding
 a test-only success state, changing `npm run start`, or weakening the required

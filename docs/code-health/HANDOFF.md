@@ -704,3 +704,68 @@ ruleset, PR state, deployment, product behavior, schema, migration, dependency,
 catalog, or production data changes are included. No push is included; a new
 exact-head required run and unchanged-ruleset verification are still required,
 and CH-0004 remains paused.
+
+## CH-0017 pre-push reload-envelope reconciliation — 2026-08-02
+
+The authorized pre-push gate for commit
+`31766eba834ad26a99953a8cad8d6ea3bad7c1d0` stopped the push before any remote
+mutation. PR `#27` remained open, draft, and targeted at `staging`; its remote
+head remained `d295e98c4abe3b00d02507cc3820df20439b2134`. Ruleset `13671593` remained
+active and unchanged with only the `pull_request` rule, zero required approvals,
+and required review-thread resolution. No workflow or full advisory run was
+triggered.
+
+The original 311,000 ms figure and the final legal reload envelope reconcile as
+follows:
+
+| Operation | Old bound/classification | Corrected bound/classification |
+| --- | ---: | ---: |
+| Navigation/reload | 60,000 ms sequential | 60,000 ms sequential |
+| Scene canvas | 30,000 ms sequential | concurrent inside one 30,000 ms bootstrap bound |
+| Room restoration | 5,000 ms sequential | concurrent with scene canvas; no additive bound |
+| Local hydration identity | outside the old 311,000 ms; evaluation unbounded | 5,000 ms sequential, bounded operation |
+| 3D view state read | 30,000 ms sequential | 30,000 ms sequential |
+| Conditional 3D activation | 30,000 ms mutually exclusive with the already-active branch, but sequential in the worst branch | 30,000 ms worst-branch sequential |
+| Model response observation | 70,000 ms sequential | replaced by one combined 70,000 ms wall-clock operation |
+| Semantic model readiness | 70,000 ms sequential | concurrent in the combined model-response/readiness operation; no second 70,000 ms |
+| Body error assertion | 5,000 ms sequential | 5,000 ms sequential |
+| Diagnostic settling | 10,000 ms sample-count loop with unbounded evaluations | 10,000 ms sequential elapsed-time operation with every evaluation bounded by remaining time |
+| Post-settle observation | 1,000 ms sequential | 1,000 ms sequential |
+| Final diagnostic snapshot | outside the old 311,000 ms; evaluation unbounded | 5,000 ms sequential, bounded operation |
+
+The old finite sum is 60,000 + 30,000 + 5,000 + 30,000 + 30,000 + 70,000 +
+70,000 + 5,000 + 10,000 + 1,000 = 311,000 ms, plus unbounded diagnostic
+evaluations. The first 236,000 ms replacement was not mechanically sufficient:
+it omitted bounded ownership for hydration/final snapshots and its settle/read
+helpers did not enforce the declared wall clock. The pre-push gate therefore
+correctly refused to push it. The corrected maximum legal sequential envelope
+is 60,000 + 30,000 + 5,000 + 30,000 + 30,000 + 70,000 + 5,000 + 10,000 +
+1,000 + 5,000 = **246,000 ms**. A 30,000 ms orchestration margin derives each
+reload parent at 276,000 ms. All three reloads consume the same contract.
+
+The complete phase sum is now 1,987,000 ms; 75,000 ms named whole-test overhead
+derives a 2,062,000 ms test-body timeout. That test-body timeout deliberately
+does not include server startup or post-test evidence work. Playwright has no
+finite `globalTimeout`; its independent web-server startup allowance is 120,000
+ms. The evidence runner's Playwright child process and the runtime-smoke GitHub
+step have no smaller shell/step timeout. The stable job has no explicit timeout
+override and therefore retains GitHub's 360-minute job ceiling, leaving more
+than 325 minutes beyond the 34-minute-22-second test-body envelope for startup,
+report/evidence finalization, cleanup, and the other stable steps. The separate
+20-minute floor-plan step occurs later and does not enclose runtime smoke.
+
+Three clean CI-like runs against a fresh database with all 42 migrations passed
+both identities 2/2 with process exit 0, no retries/skips, no performance
+warning, no watchdog, and no terminal lifecycle error:
+
+| Run | Bounds | Remount | Reload 1 | Reload 2 | Reload 3 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 1 | 7,253/71,000 | 12,203/165,000 | 23,711/276,000 | 21,746/276,000 | 22,519/276,000 |
+| 2 | 7,292/71,000 | 11,908/165,000 | 25,016/276,000 | 23,647/276,000 | 23,453/276,000 |
+| 3 | 7,365/71,000 | 12,330/165,000 | 23,099/276,000 | 23,676/276,000 | 22,743/276,000 |
+
+This follow-up changes only the reload timing/evidence contract, focused
+negative tests, and CH-0017 documentation. It is local only. A new commit SHA
+must receive separate authorization before any push or external run. No
+ruleset, PR, workflow, deployment, secret, environment, database setting, or
+other external control changed; CH-0004 remains paused.

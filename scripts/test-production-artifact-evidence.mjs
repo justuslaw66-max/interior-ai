@@ -43,10 +43,12 @@ import {
   RUNTIME_SMOKE_PHASE_TIMING_SCHEMA,
   RUNTIME_SMOKE_WHOLE_TEST_TIMEOUT_MS,
   RuntimeSmokeNoProgressError,
+  RuntimeSmokePhaseTimeoutError,
   RuntimeSmokeTerminalError,
   createRuntimeSmokePhaseRecorder,
   deriveFurnishedTemplatePhaseTimeout,
   deriveRuntimeSmokeWholeTestTimeout,
+  runRuntimeSmokeBoundedOperation,
   runtimeSmokeAggregateLifecycleState,
   runtimeSmokePhaseBudget,
 } from "./runtime-smoke-phase-budget.mjs";
@@ -67,11 +69,11 @@ const reloadOperationEnvelopeMs = FURNISHED_TEMPLATE_RELOAD_CONTRACT.operations.
   (total, operation) => total + operation.timeoutMs,
   0,
 );
-assert.equal(reloadOperationEnvelopeMs, 236_000);
+assert.equal(reloadOperationEnvelopeMs, 246_000);
 assert.equal(FURNISHED_TEMPLATE_RELOAD_CONTRACT.orchestrationMarginMs, 30_000);
 assert.equal(
   deriveFurnishedTemplatePhaseTimeout(FURNISHED_TEMPLATE_RELOAD_CONTRACT),
-  266_000,
+  276_000,
   "reload correctness timeout must equal the legal nested envelope plus margin",
 );
 assert.equal(FURNISHED_TEMPLATE_RELOAD_CONTRACT.performanceWarningThresholdMs, 70_000);
@@ -107,13 +109,41 @@ for (const phaseName of ["reload-1", "reload-2", "reload-3"]) {
     FURNISHED_TEMPLATE_RELOAD_CONTRACT,
     `${phaseName} must consume the one canonical reload contract`,
   );
-  assert.equal(runtimeSmokePhaseBudget(phaseName), 266_000);
+  assert.equal(runtimeSmokePhaseBudget(phaseName), 276_000);
 }
 assert.equal(runtimeSmokePhaseBudget("remount"), 165_000);
 assert.ok(
   runtimeSmokePhaseBudget("bounds-verification") - 43_432 >= 25_000,
   "bounds verification needs meaningful GitHub-runner headroom",
 );
+
+{
+  let fireTimeout;
+  let clearedHandle = null;
+  const operation = runRuntimeSmokeBoundedOperation({
+    phaseName: "reload-1",
+    operationName: "hydration-snapshot",
+    timeoutMs: 5_000,
+    task: () => new Promise(() => {}),
+    setTimer: (callback) => {
+      fireTimeout = callback;
+      return 17;
+    },
+    clearTimer: (handle) => {
+      clearedHandle = handle;
+    },
+  });
+  fireTimeout();
+  await assert.rejects(
+    operation,
+    (error) =>
+      error instanceof RuntimeSmokePhaseTimeoutError &&
+      error.phaseName === "reload-1" &&
+      error.operationName === "hydration-snapshot" &&
+      error.timeoutMs === 5_000,
+  );
+  assert.equal(clearedHandle, 17);
+}
 assert.ok(
   runtimeSmokePhaseBudget("remount") - 53_769 >= 100_000,
   "remount needs meaningful GitHub-runner headroom",
@@ -302,6 +332,18 @@ assert.match(reloadLoop, /waitForReloadModelsReady/);
 assert.doesNotMatch(reloadLoop, /waitForModelResponsesOrTerminal/);
 assert.doesNotMatch(reloadLoop, /waitForModelDiagnosticsReady/);
 assert.match(reloadLoop, /Promise\.all\(\[/);
+assert.doesNotMatch(
+  reloadLoop,
+  /await\s+readModelDiagnostics\(\)/,
+  "reload diagnostics must not bypass a named wall-clock operation bound",
+);
+assert.doesNotMatch(
+  runtimeSmokeSource,
+  /maximumSamples/,
+  "diagnostics settling must enforce elapsed wall time rather than sample count",
+);
+assert.match(runtimeSmokeSource, /remainingOperationTimeout/);
+assert.match(runtimeSmokeSource, /runRuntimeSmokeBoundedOperation/);
 for (const operation of FURNISHED_TEMPLATE_RELOAD_CONTRACT.operations) {
   const uses = runtimeSmokeSource.match(
     new RegExp(

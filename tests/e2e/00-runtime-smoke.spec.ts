@@ -8,6 +8,7 @@ import {
   RuntimeSmokePhaseTimeoutError,
   RuntimeSmokeTerminalError,
   createRuntimeSmokePhaseRecorder,
+  runRuntimeSmokeBoundedOperation,
   runtimeSmokeAggregateLifecycleState,
   runtimeSmokePhaseBudget,
 } from "../../scripts/runtime-smoke-phase-budget.mjs";
@@ -38,6 +39,18 @@ function phaseOperationTimeout(
     throw new Error(`Unknown ${phaseName} operation: ${operationName}`);
   }
   return operation.timeoutMs;
+}
+
+function remainingOperationTimeout(
+  phaseName: string,
+  startedAt: number,
+  timeoutMs: number,
+): number {
+  const remainingMs = timeoutMs - (Date.now() - startedAt);
+  if (remainingMs <= 0) {
+    throw new RuntimeSmokePhaseTimeoutError(phaseName, timeoutMs);
+  }
+  return remainingMs;
 }
 
 const MODEL_FIXTURES = [
@@ -112,6 +125,17 @@ test.describe("00. Runtime smoke", () => {
           diagnostic: diagnostics?.[key] ?? null,
         }));
       }, diagnosticKeys);
+    const readModelDiagnosticsWithin = async (
+      phaseName: string,
+      operationName: string,
+      timeoutMs: number,
+    ): Promise<Awaited<ReturnType<typeof readModelDiagnostics>>> =>
+      (await runRuntimeSmokeBoundedOperation({
+        phaseName,
+        operationName,
+        timeoutMs,
+        task: readModelDiagnostics,
+      })) as Awaited<ReturnType<typeof readModelDiagnostics>>;
     const waitForModelDiagnosticsReady = async ({
       minimumMountCount,
       phaseName,
@@ -127,10 +151,18 @@ test.describe("00. Runtime smoke", () => {
     }) => {
       const startedAt = Date.now();
       const timeoutMs = operationTimeoutMs ?? runtimeSmokePhaseBudget(phaseName);
-      let lastDiagnostics = await readModelDiagnostics();
+      let lastDiagnostics = await readModelDiagnosticsWithin(
+        phaseName,
+        "model-readiness",
+        remainingOperationTimeout(phaseName, startedAt, timeoutMs),
+      );
       let previousProgressSignature = "";
-      while (Date.now() - startedAt < timeoutMs) {
-        lastDiagnostics = await readModelDiagnostics();
+      while (true) {
+        lastDiagnostics = await readModelDiagnosticsWithin(
+          phaseName,
+          "model-readiness",
+          remainingOperationTimeout(phaseName, startedAt, timeoutMs),
+        );
         const progressSignature = lastDiagnostics
           .map(({ diagnostic }) =>
             diagnostic
@@ -183,21 +215,39 @@ test.describe("00. Runtime smoke", () => {
           return lastDiagnostics;
         }
         finalLifecycleState = "loading";
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(
+          Math.min(
+            500,
+            remainingOperationTimeout(phaseName, startedAt, timeoutMs),
+          ),
+        );
       }
-      throw new RuntimeSmokePhaseTimeoutError(phaseName, timeoutMs);
     };
     const waitForModelDiagnosticsToSettle = async (
+      phaseName: string,
       checkpoint?: RuntimeSmokeCheckpoint,
       timeoutMs = 10_000,
     ) => {
-      let previous = await readModelDiagnostics();
+      const startedAt = Date.now();
+      let previous = await readModelDiagnosticsWithin(
+        phaseName,
+        "diagnostics-settle",
+        remainingOperationTimeout(phaseName, startedAt, timeoutMs),
+      );
       let stableSamples = 0;
       let previousProgressSignature = "";
-      const maximumSamples = Math.ceil(timeoutMs / 500);
-      for (let sampleIndex = 0; sampleIndex < maximumSamples; sampleIndex += 1) {
-        await page.waitForTimeout(500);
-        const current = await readModelDiagnostics();
+      for (let sampleIndex = 0; ; sampleIndex += 1) {
+        await page.waitForTimeout(
+          Math.min(
+            500,
+            remainingOperationTimeout(phaseName, startedAt, timeoutMs),
+          ),
+        );
+        const current = await readModelDiagnosticsWithin(
+          phaseName,
+          "diagnostics-settle",
+          remainingOperationTimeout(phaseName, startedAt, timeoutMs),
+        );
         const progressSignature = current
           .map(({ diagnostic }) =>
             diagnostic
@@ -225,9 +275,6 @@ test.describe("00. Runtime smoke", () => {
         if (stableSamples >= 2) return current;
         previous = current;
       }
-      throw new Error(
-        `GLB diagnostics did not settle: ${JSON.stringify(previous)}`
-      );
     };
     const waitForReloadModelsReady = async ({
       minimumResponseCount,
@@ -241,8 +288,12 @@ test.describe("00. Runtime smoke", () => {
       const timeoutMs = reloadOperationTimeout("model-responses-and-readiness");
       const startedAt = Date.now();
       let previousProgressSignature = "";
-      while (Date.now() - startedAt < timeoutMs) {
-        const diagnostics = await readModelDiagnostics();
+      while (true) {
+        const diagnostics = await readModelDiagnosticsWithin(
+          phaseName,
+          "model-responses-and-readiness",
+          remainingOperationTimeout(phaseName, startedAt, timeoutMs),
+        );
         const loadingModelCount = diagnostics.filter(
           ({ diagnostic }) => diagnostic?.loadState === "loading",
         ).length;
@@ -312,9 +363,13 @@ test.describe("00. Runtime smoke", () => {
           return diagnostics;
         }
         finalLifecycleState = aggregateLifecycleState;
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(
+          Math.min(
+            500,
+            remainingOperationTimeout(phaseName, startedAt, timeoutMs),
+          ),
+        );
       }
-      throw new RuntimeSmokePhaseTimeoutError(phaseName, timeoutMs);
     };
     const waitForModelResponsesOrTerminal = async ({
       minimumResponseCount,
@@ -330,8 +385,12 @@ test.describe("00. Runtime smoke", () => {
       const timeoutMs = operationTimeoutMs ?? runtimeSmokePhaseBudget(phaseName);
       const startedAt = Date.now();
       let previousResponseCount = -1;
-      while (Date.now() - startedAt < timeoutMs) {
-        const diagnostics = await readModelDiagnostics();
+      while (true) {
+        const diagnostics = await readModelDiagnosticsWithin(
+          phaseName,
+          "model-responses",
+          remainingOperationTimeout(phaseName, startedAt, timeoutMs),
+        );
         if (
           diagnostics.some(
             ({ diagnostic }) => diagnostic?.loadState === "error"
@@ -363,9 +422,13 @@ test.describe("00. Runtime smoke", () => {
         )
           ? "loading"
           : finalLifecycleState;
-        await page.waitForTimeout(250);
+        await page.waitForTimeout(
+          Math.min(
+            250,
+            remainingOperationTimeout(phaseName, startedAt, timeoutMs),
+          ),
+        );
       }
-      throw new RuntimeSmokePhaseTimeoutError(phaseName, timeoutMs);
     };
 
     await phaseRecorder.run("test-body-setup", async ({ checkpoint }) => {
@@ -671,12 +734,22 @@ test.describe("00. Runtime smoke", () => {
     let settledDiagnosticsAfter: Awaited<ReturnType<typeof readModelDiagnostics>> = [];
     await phaseRecorder.run("bounds-verification", async ({ checkpoint }) => {
       settledDiagnosticsBefore = await waitForModelDiagnosticsToSettle(
+        "bounds-verification",
         checkpoint,
         phaseOperationTimeout("bounds-verification", "diagnostics-settle"),
       );
       checkpoint("bounds-baseline-settled", "ready");
-      await page.waitForTimeout(1_000);
-      settledDiagnosticsAfter = await readModelDiagnostics();
+      await page.waitForTimeout(
+        phaseOperationTimeout("bounds-verification", "post-settle-observation"),
+      );
+      settledDiagnosticsAfter = await readModelDiagnosticsWithin(
+        "bounds-verification",
+        "diagnostic-snapshot-and-assertions",
+        phaseOperationTimeout(
+          "bounds-verification",
+          "diagnostic-snapshot-and-assertions",
+        ),
+      );
       settledDiagnosticsAfter.forEach(({ key, diagnostic }, index) => {
         const before = settledDiagnosticsBefore[index]?.diagnostic;
         expect(diagnostic, `${key} should expose model diagnostics`).not.toBeNull();
@@ -756,22 +829,28 @@ test.describe("00. Runtime smoke", () => {
             { timeout: bootstrapReadinessTimeoutMs },
           ),
         ]);
-        const restoredIdentity = await page.evaluate((storageKey) => {
-          const raw = window.localStorage.getItem(storageKey);
-          if (!raw) return { designId: null, roomCount: 0, itemCount: 0 };
-          const stored = JSON.parse(raw) as {
-            designId?: string;
-            rooms?: Array<{ items?: unknown[] }>;
-          };
-          return {
-            designId: stored.designId ?? null,
-            roomCount: stored.rooms?.length ?? 0,
-            itemCount: (stored.rooms ?? []).reduce(
-              (total, room) => total + (room.items?.length ?? 0),
-              0,
-            ),
-          };
-        }, DESIGN_STORAGE_KEY);
+        const restoredIdentity = (await runRuntimeSmokeBoundedOperation({
+          phaseName,
+          operationName: "hydration-snapshot",
+          timeoutMs: reloadOperationTimeout("hydration-snapshot"),
+          task: () =>
+            page.evaluate((storageKey) => {
+              const raw = window.localStorage.getItem(storageKey);
+              if (!raw) return { designId: null, roomCount: 0, itemCount: 0 };
+              const stored = JSON.parse(raw) as {
+                designId?: string;
+                rooms?: Array<{ items?: unknown[] }>;
+              };
+              return {
+                designId: stored.designId ?? null,
+                roomCount: stored.rooms?.length ?? 0,
+                itemCount: (stored.rooms ?? []).reduce(
+                  (total, room) => total + (room.items?.length ?? 0),
+                  0,
+                ),
+              };
+            }, DESIGN_STORAGE_KEY),
+        })) as { designId: string | null; roomCount: number; itemCount: number };
         expect(restoredIdentity.designId).toBeNull();
         checkpoint(
           `local-fixture-hydrated-rooms-${restoredIdentity.roomCount}` +
@@ -801,6 +880,7 @@ test.describe("00. Runtime smoke", () => {
           { timeout: reloadOperationTimeout("body-state-assertion") },
         );
         const reloadSettledBefore = await waitForModelDiagnosticsToSettle(
+          phaseName,
           checkpoint,
           reloadOperationTimeout("diagnostics-settle"),
         );
@@ -808,7 +888,11 @@ test.describe("00. Runtime smoke", () => {
         await page.waitForTimeout(
           reloadOperationTimeout("post-settle-observation"),
         );
-        const reloadSettledAfter = await readModelDiagnostics();
+        const reloadSettledAfter = await readModelDiagnosticsWithin(
+          phaseName,
+          "final-diagnostics-snapshot",
+          reloadOperationTimeout("final-diagnostics-snapshot"),
+        );
         reloadSettledAfter.forEach(({ key, diagnostic }, index) => {
           const before = reloadSettledBefore[index]?.diagnostic;
           expect(diagnostic, `${key} should remount with diagnostics`).not.toBeNull();

@@ -52,12 +52,14 @@ export const FURNISHED_TEMPLATE_RELOAD_CONTRACT = freezePhaseContract({
   operations: [
     { name: "navigation", timeoutMs: 60_000 },
     { name: "bootstrap-readiness", timeoutMs: 30_000 },
+    { name: "hydration-snapshot", timeoutMs: 5_000 },
     { name: "view-state-read", timeoutMs: 30_000 },
     { name: "view-activation", timeoutMs: 30_000 },
     { name: "model-responses-and-readiness", timeoutMs: 70_000 },
     { name: "body-state-assertion", timeoutMs: 5_000 },
     { name: "diagnostics-settle", timeoutMs: 10_000 },
     { name: "post-settle-observation", timeoutMs: 1_000 },
+    { name: "final-diagnostics-snapshot", timeoutMs: 5_000 },
   ],
   orchestrationMarginMs: 30_000,
   noProgressTimeoutMs: 75_000,
@@ -236,11 +238,46 @@ export class RuntimeSmokeTerminalError extends Error {
 }
 
 export class RuntimeSmokePhaseTimeoutError extends Error {
-  constructor(phaseName, timeoutMs) {
-    super(`Runtime-smoke phase ${phaseName} exceeded its ${timeoutMs}ms budget`);
+  constructor(phaseName, timeoutMs, operationName = null) {
+    super(
+      operationName
+        ? `Runtime-smoke phase ${phaseName} operation ${operationName} exceeded its ${timeoutMs}ms budget`
+        : `Runtime-smoke phase ${phaseName} exceeded its ${timeoutMs}ms budget`,
+    );
     this.name = "RuntimeSmokePhaseTimeoutError";
     this.phaseName = phaseName;
     this.timeoutMs = timeoutMs;
+    this.operationName = operationName;
+  }
+}
+
+export async function runRuntimeSmokeBoundedOperation({
+  phaseName,
+  operationName,
+  timeoutMs,
+  task,
+  setTimer = setTimeout,
+  clearTimer = clearTimeout,
+}) {
+  if (!/^[a-z0-9][a-z0-9-]{0,95}$/.test(operationName)) {
+    throw new Error("Runtime-smoke operation name is unsafe");
+  }
+  if (!Number.isSafeInteger(timeoutMs) || timeoutMs <= 0) {
+    throw new Error("Runtime-smoke operation timeout must be a positive integer");
+  }
+  let timeoutHandle;
+  const timeout = new Promise((_, reject) => {
+    timeoutHandle = setTimer(
+      () => reject(
+        new RuntimeSmokePhaseTimeoutError(phaseName, timeoutMs, operationName),
+      ),
+      timeoutMs,
+    );
+  });
+  try {
+    return await Promise.race([Promise.resolve().then(task), timeout]);
+  } finally {
+    if (timeoutHandle !== undefined) clearTimer(timeoutHandle);
   }
 }
 
