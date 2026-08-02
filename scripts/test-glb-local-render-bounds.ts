@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import * as THREE from "three";
 
 import {
   areGLBLocalRenderBoundsEquivalent,
@@ -12,8 +13,37 @@ import {
 } from "../components/scene/glb-scaled-model/localRenderBounds";
 import {
   categorizeGLBBoundsFailure,
+  clonePreparedGLBForMount,
   GLBSourceLoadError,
 } from "../components/scene/glb-scaled-model/glbModelResources";
+
+const preparedSource = new THREE.Group();
+const preparedSourceMesh = new THREE.Mesh(
+  new THREE.BoxGeometry(1, 1, 1),
+  new THREE.MeshStandardMaterial({ color: 0x336699 }),
+);
+preparedSource.add(preparedSourceMesh);
+const preparedFirst = clonePreparedGLBForMount(preparedSource);
+const preparedSecond = clonePreparedGLBForMount(preparedSource);
+const preparedFirstMesh = preparedFirst.children[0] as THREE.Mesh;
+const preparedSecondMesh = preparedSecond.children[0] as THREE.Mesh;
+assert.notEqual(preparedFirstMesh, preparedSecondMesh);
+assert.notEqual(preparedFirstMesh.geometry, preparedSecondMesh.geometry);
+assert.notEqual(preparedFirstMesh.material, preparedSecondMesh.material);
+preparedFirst.position.x = 4;
+const preparedSecondFirstVertexX = preparedSecondMesh.geometry
+  .getAttribute("position")
+  .getX(0);
+preparedFirstMesh.geometry.translate(2, 0, 0);
+(preparedFirstMesh.material as THREE.Material).opacity = 0.25;
+assert.equal(preparedSecond.position.x, 0);
+assert.equal(
+  preparedSecondMesh.geometry.getAttribute("position").getX(0),
+  preparedSecondFirstVertexX,
+);
+assert.equal((preparedSecondMesh.material as THREE.Material).opacity, 1);
+assert.equal(preparedSource.position.x, 0);
+assert.equal((preparedSourceMesh.material as THREE.Material).opacity, 1);
 
 const baseBounds: GLBLocalRenderBounds = {
   center: [0.25, 0.5, -0.75],
@@ -150,6 +180,13 @@ const diagnosticsSource = [
 const resourcesSource = readSource(
   "components/scene/glb-scaled-model/glbModelResources.ts"
 );
+const loadedResourceSource = readSource(
+  "components/scene/glb-scaled-model/useGLBLoadedResource.ts"
+);
+const requiredSnapshotSource = readSource(
+  "components/scene/glb-scaled-model/glbRequiredSnapshot.ts"
+);
+const runtimeSmokeSource = readSource("tests/e2e/00-runtime-smoke.spec.ts");
 
 assert.doesNotMatch(
   furnitureSource,
@@ -165,6 +202,27 @@ assert.match(
   resourcesSource,
   /pagehide[\s\S]*event\.persisted[\s\S]*preparedCache\.clear\(\)[\s\S]*parsedCache\.clear\(\)/,
   "BFCache pagehide must preserve live resources; terminal pagehide clears prepared before parsed."
+);
+assert.match(
+  loadedResourceSource,
+  /clonePreparedGLBForMount\(prepared\.scene\)/,
+  "each scene item must receive an isolated prepared scene, geometry, and material clone."
+);
+assert.match(
+  loadedResourceSource,
+  /function reportLoadFailure[\s\S]*releaseControl\(control\)[\s\S]*reportGLBModelLoadState\(handle, "error"/,
+  "failed loads must release their cache lease before terminal lifecycle publication."
+);
+assert.doesNotMatch(
+  requiredSnapshotSource,
+  /\.traverse\(|\.clone\(|measureGLBLocalRenderBounds|normalizeGLBScene|setState/,
+  "the required snapshot must remain metadata-only and side-effect free."
+);
+assert.match(runtimeSmokeSource, /__INTERIOR_AI_GLB_REQUIRED_SNAPSHOT__/);
+assert.doesNotMatch(
+  runtimeSmokeSource,
+  /__INTERIOR_AI_GLB_DIAGNOSTICS__/,
+  "required reload proof must not depend on the optional rich diagnostics object."
 );
 assert.match(
   selectionOutlineSource,

@@ -1,17 +1,19 @@
-import * as THREE from "three";
 import { useEffect, useMemo, useRef, type RefObject } from "react";
 
 import type { GLBCalibration } from "@/lib/design-page-calibration";
 import type { ConfigurableNodeTransform } from "@/lib/design-page-types";
 import type { PendantCableAdjustment } from "@/lib/pendant-light-adjustment";
 import {
-  categorizeGLBBoundsFailure,
   disposeObjectGeometryAndMaterials,
-  measureGLBLocalRenderBounds,
   type GLBLoadedResource,
   type GLBModelNormalizationConfig,
 } from "./glbModelResources";
-import type { GLBLocalRenderBounds } from "./localRenderBounds";
+import {
+  boundsForResource,
+  normalizeResource,
+  type GLBBoundsResult,
+  type GLBModelResult,
+} from "./glbModelResourceResolution";
 import {
   recordGLBModelMount,
   recordGLBModelMetadata,
@@ -22,9 +24,8 @@ import {
 } from "./modelDiagnostics";
 import type {
   GLBModelLifecycleHandle,
-  GLBModelTerminalErrorCategory,
 } from "./modelLifecycleTypes";
-import { normalizeGLBScene, type GLBUpholsteryTextures } from "./normalizeGLBScene";
+import type { GLBUpholsteryTextures } from "./normalizeGLBScene";
 import { useGLBLoadedResource } from "./useGLBLoadedResource";
 
 type GLBModelLifecycleInput = {
@@ -47,12 +48,6 @@ type GLBModelLifecycleInput = {
   upholsteryTextures: GLBUpholsteryTextures;
   onLoadStateChange?: (state: "loading" | "ready" | "error") => void;
 };
-type ModelResult = {
-  model: THREE.Object3D | null;
-  errorCode: GLBModelTerminalErrorCategory | null;
-  ownsResources: boolean;
-};
-
 function useLifecycleHandle(
   input: GLBModelLifecycleInput,
   lifecycleKey: string
@@ -95,59 +90,53 @@ function useLifecycleHandle(
   return handleRef;
 }
 
-function normalizeResource(
-  resource: GLBLoadedResource | null,
-  config: GLBModelNormalizationConfig,
-  upholsteryTextures: GLBUpholsteryTextures
-): ModelResult {
-  if (!resource) return { model: null, errorCode: null, ownsResources: false };
-  if (resource.kind === "prepared") {
-    return { model: resource.model, errorCode: null, ownsResources: false };
-  }
-  try {
-    return {
-      model: normalizeGLBScene({
-        ...config,
-        loadedScene: resource.scene,
-        upholsteryTextures,
-      }),
-      errorCode: null,
-      ownsResources: true,
-    };
-  } catch {
-    return {
-      model: null,
-      errorCode: "glb-normalization-failed",
-      ownsResources: false,
-    };
-  }
+function recordNormalizationStages(
+  handle: GLBModelLifecycleHandle,
+  timing: NonNullable<GLBModelResult["normalizationTiming"]>
+) {
+  recordGLBModelPipelineStage(handle, "normalization-started", {
+    atMs: timing.startedAtMs,
+    eventLoopDelayMs: timing.eventLoopDelayMs.started,
+  });
+  recordGLBModelPipelineStage(handle, "material-cloning-started", {
+    atMs: timing.materialCloningStartedAtMs,
+    eventLoopDelayMs: timing.eventLoopDelayMs.materialCloningStarted,
+  });
+  recordGLBModelPipelineStage(handle, "material-cloning-complete", {
+    atMs: timing.materialCloningCompletedAtMs,
+    eventLoopDelayMs: timing.eventLoopDelayMs.materialCloningCompleted,
+  });
+  recordGLBModelPipelineStage(handle, "normalization-complete", {
+    atMs: timing.completedAtMs,
+    eventLoopDelayMs: timing.eventLoopDelayMs.completed,
+  });
 }
 
-function boundsForResource(
-  resource: GLBLoadedResource | null,
-  model: THREE.Object3D | null
+function recordBoundsStages(
+  handle: GLBModelLifecycleHandle,
+  timing: {
+    startedAtMs: number;
+    completedAtMs: number;
+    startedEventLoopDelayMs: number | null;
+    completedEventLoopDelayMs: number | null;
+  }
 ) {
-  if (resource?.kind === "prepared") {
-    return { bounds: resource.localRenderBounds, errorCode: null };
-  }
-  if (!model) return { bounds: null, errorCode: null };
-  try {
-    return { bounds: measureGLBLocalRenderBounds(model), errorCode: null };
-  } catch (error) {
-    const errorCode = categorizeGLBBoundsFailure(error).category;
-    return { bounds: null, errorCode };
-  }
+  recordGLBModelPipelineStage(handle, "bounds-started", {
+    atMs: timing.startedAtMs,
+    eventLoopDelayMs: timing.startedEventLoopDelayMs,
+  });
+  recordGLBModelPipelineStage(handle, "bounds-complete", {
+    atMs: timing.completedAtMs,
+    eventLoopDelayMs: timing.completedEventLoopDelayMs,
+  });
 }
 
 function usePipelineCompletion(
   handleRef: RefObject<GLBModelLifecycleHandle | null>,
   onLoadStateChangeRef: RefObject<GLBModelLifecycleInput["onLoadStateChange"]>,
   resource: GLBLoadedResource | null,
-  modelResult: ModelResult,
-  boundsResult: {
-    bounds: GLBLocalRenderBounds | null;
-    errorCode: GLBModelTerminalErrorCategory | null;
-  }
+  modelResult: GLBModelResult,
+  boundsResult: GLBBoundsResult,
 ) {
   useEffect(() => {
     const handle = handleRef.current;
@@ -160,12 +149,14 @@ function usePipelineCompletion(
         modelResult.errorCode
       );
     } else if (modelResult.model) {
-      recordGLBModelPipelineStage(handle, "normalization-complete");
+      const timing = modelResult.normalizationTiming;
+      if (timing) recordNormalizationStages(handle, timing);
     }
   }, [
     handleRef,
     modelResult.errorCode,
     modelResult.model,
+    modelResult.normalizationTiming,
     onLoadStateChangeRef,
     resource,
   ]);
@@ -180,7 +171,7 @@ function usePipelineCompletion(
         boundsResult.errorCode
       );
     } else if (boundsResult.bounds) {
-      recordGLBModelPipelineStage(handle, "bounds-complete");
+      if (boundsResult.timing) recordBoundsStages(handle, boundsResult.timing);
     }
   }, [boundsResult, handleRef, modelResult.model, onLoadStateChangeRef]);
 }

@@ -1,11 +1,25 @@
 import * as THREE from "three";
 
-import { createGLBResourceCache, type GLBResourceLease } from "./glbResourceCache";
+import {
+  createGLBResourceCache,
+  type GLBResourceLease,
+  type GLBResourceCacheStatus,
+} from "./glbResourceCache";
+import {
+  safeGLBResourceCacheInspection,
+  type GLBResourceCachesMetadataSnapshot,
+} from "./glbResourceCacheMetadata";
+import { applyGLBResourcePageHidePolicy } from "./glbResourcePageLifecycle";
+import {
+  disposeObjectGeometryAndMaterials,
+  disposeObjectTextures,
+} from "./glbSceneResourceOwnership";
+import {
+  categorizeGLBBoundsFailure,
+  GLBSourceLoadError,
+} from "./glbSourceLoadError";
 import type { GLBLocalRenderBounds } from "./localRenderBounds";
-import type {
-  GLBModelCacheStatus,
-  GLBModelTerminalErrorCategory,
-} from "./modelLifecycleTypes";
+import type { GLBModelCacheStatus } from "./modelLifecycleTypes";
 import {
   normalizeGLBScene,
   type NormalizeGLBSceneInput,
@@ -21,7 +35,27 @@ export type GLBLoadedResource =
       kind: "prepared";
       model: THREE.Object3D;
       localRenderBounds: GLBLocalRenderBounds;
+      preparationTimings: GLBPreparationTimings;
     };
+
+export type GLBPreparationTimings = {
+  parseCompletedAtMs: number;
+  normalizationStartedAtMs: number;
+  normalizationCompletedAtMs: number;
+  materialCloningStartedAtMs: number;
+  materialCloningCompletedAtMs: number;
+  boundsStartedAtMs: number;
+  boundsCompletedAtMs: number;
+  eventLoopDelayMs: {
+    parseCompleted: number | null;
+    normalizationStarted: number | null;
+    normalizationCompleted: number | null;
+    materialCloningStarted: number | null;
+    materialCloningCompleted: number | null;
+    boundsStarted: number | null;
+    boundsCompleted: number | null;
+  };
+};
 
 type CachedGLBSource = {
   scene: THREE.Object3D;
@@ -32,56 +66,15 @@ type PreparedGLBResource = {
   localRenderBounds: GLBLocalRenderBounds;
   deliveryCacheStatus: GLBModelCacheStatus;
   releaseSource: () => void;
+  preparationTimings: GLBPreparationTimings;
+  parsedCacheStatus: GLBResourceCacheStatus;
 };
 
-export class GLBSourceLoadError extends Error {
-  readonly category: GLBModelTerminalErrorCategory;
-
-  constructor(category: GLBModelTerminalErrorCategory) {
-    super(category);
-    this.name = "GLBSourceLoadError";
-    this.category = category;
-  }
-}
-
-export function categorizeGLBBoundsFailure(error: unknown) {
-  return error instanceof GLBSourceLoadError
-    ? error
-    : new GLBSourceLoadError("glb-bounds-failed");
-}
-
-export function disposeObjectGeometryAndMaterials(object: THREE.Object3D) {
-  object.traverse((child) => {
-    const mesh = child as THREE.Mesh;
-    mesh.geometry?.dispose();
-    const materials = Array.isArray(mesh.material)
-      ? mesh.material
-      : mesh.material
-        ? [mesh.material]
-        : [];
-    materials.forEach((material) => material.dispose());
-  });
-}
-
-function disposeObjectTextures(object: THREE.Object3D) {
-  const disposedTextures = new Set<THREE.Texture>();
-  object.traverse((child) => {
-    const mesh = child as THREE.Mesh;
-    const materials = Array.isArray(mesh.material)
-      ? mesh.material
-      : mesh.material
-        ? [mesh.material]
-        : [];
-    for (const material of materials) {
-      for (const value of Object.values(material)) {
-        if (value instanceof THREE.Texture && !disposedTextures.has(value)) {
-          disposedTextures.add(value);
-          value.dispose();
-        }
-      }
-    }
-  });
-}
+export {
+  clonePreparedGLBForMount,
+  disposeObjectGeometryAndMaterials,
+} from "./glbSceneResourceOwnership";
+export { categorizeGLBBoundsFailure, GLBSourceLoadError } from "./glbSourceLoadError";
 
 const parsedCache = createGLBResourceCache<CachedGLBSource>({
   maximumEntries: 32,
@@ -99,21 +92,44 @@ const preparedCache = createGLBResourceCache<PreparedGLBResource>({
 });
 let cleanupRegistered = false;
 
+export type { GLBResourceCachesMetadataSnapshot } from "./glbResourceCacheMetadata";
+
+export function snapshotGLBResourceCaches(): GLBResourceCachesMetadataSnapshot {
+  return {
+    parsed: safeGLBResourceCacheInspection(parsedCache.inspect()),
+    prepared: safeGLBResourceCacheInspection(preparedCache.inspect()),
+  };
+}
+
 export function ensureGLBResourceCleanup() {
   if (cleanupRegistered || typeof window === "undefined") return;
   cleanupRegistered = true;
   window.addEventListener(
     "pagehide",
     (event) => {
-      if (event.persisted) return;
-      preparedCache.clear();
-      parsedCache.clear();
+      applyGLBResourcePageHidePolicy({
+        persisted: event.persisted,
+        clearPrepared: () => preparedCache.clear(),
+        clearParsed: () => parsedCache.clear(),
+      });
     }
   );
 }
 
-function responseCacheStatus(url: string): GLBModelCacheStatus {
-  if (typeof performance === "undefined") return "unknown";
+function observedEventLoopDelayMs() {
+  return (
+    globalThis as typeof globalThis & {
+      __INTERIOR_AI_GLB_EVENT_LOOP_PROBE__?: { lastDelayMs: number };
+    }
+  ).__INTERIOR_AI_GLB_EVENT_LOOP_PROBE__?.lastDelayMs ?? null;
+}
+
+function responsePerformance(url: string): {
+  cacheStatus: GLBModelCacheStatus;
+  completedAtMs: number;
+} {
+  const fallback = { cacheStatus: "unknown" as const, completedAtMs: 0 };
+  if (typeof performance === "undefined") return fallback;
   try {
     const absoluteUrl = new URL(url, window.location.href).href;
     const entries = performance.getEntriesByName(
@@ -121,12 +137,18 @@ function responseCacheStatus(url: string): GLBModelCacheStatus {
       "resource"
     ) as PerformanceResourceTiming[];
     const latest = entries.at(-1);
-    if (!latest) return "unknown";
-    return latest.transferSize === 0 && latest.decodedBodySize > 0
-      ? "cache-hit"
-      : "network";
+    if (!latest) {
+      return { ...fallback, completedAtMs: performance.now() };
+    }
+    return {
+      cacheStatus:
+        latest.transferSize === 0 && latest.decodedBodySize > 0
+          ? "cache-hit"
+          : "network",
+      completedAtMs: latest.responseEnd || performance.now(),
+    };
   } catch {
-    return "unknown";
+    return { ...fallback, completedAtMs: performance.now() };
   }
 }
 
@@ -175,15 +197,19 @@ async function configureGLTFLoader(
 function loadScene(
   loader: import("three/examples/jsm/loaders/GLTFLoader.js").GLTFLoader,
   url: string,
-  onResponseComplete: (cacheStatus: GLBModelCacheStatus) => void
+  onResponseComplete: (
+    cacheStatus: GLBModelCacheStatus,
+    completedAtMs: number
+  ) => void
 ) {
   let responseCompleted = false;
   let deliveryCacheStatus: GLBModelCacheStatus = "unknown";
   const markResponse = () => {
     if (responseCompleted) return;
     responseCompleted = true;
-    deliveryCacheStatus = responseCacheStatus(url);
-    onResponseComplete(deliveryCacheStatus);
+    const response = responsePerformance(url);
+    deliveryCacheStatus = response.cacheStatus;
+    onResponseComplete(deliveryCacheStatus, response.completedAtMs);
   };
   const scene = new Promise<THREE.Object3D>((resolve, reject) => {
     loader.load(
@@ -210,7 +236,10 @@ function loadScene(
 
 async function loadGLBSource(
   url: string,
-  onResponseComplete: (cacheStatus: GLBModelCacheStatus) => void
+  onResponseComplete: (
+    cacheStatus: GLBModelCacheStatus,
+    completedAtMs: number
+  ) => void
 ): Promise<CachedGLBSource> {
   const [{ GLTFLoader }, { DRACOLoader }] = await importGLTFLoaders();
   const loader = new GLTFLoader();
@@ -245,43 +274,101 @@ export function measureGLBLocalRenderBounds(
 
 export function acquireParsedGLB(
   url: string,
-  onResponseComplete: (cacheStatus: GLBModelCacheStatus) => void
+  onResponseComplete: (
+    cacheStatus: GLBModelCacheStatus,
+    completedAtMs: number
+  ) => void
 ) {
   return parsedCache.acquire(url, () => loadGLBSource(url, onResponseComplete));
 }
 
+function normalizePreparedScene(
+  config: GLBModelNormalizationConfig,
+  loadedScene: THREE.Object3D
+) {
+  const startedAtMs = performance.now();
+  const startedEventLoopDelayMs = observedEventLoopDelayMs();
+  let scene: THREE.Object3D | null;
+  try {
+    scene = normalizeGLBScene({
+      ...config,
+      loadedScene,
+      upholsteryTextures: {},
+    });
+  } catch {
+    throw new GLBSourceLoadError("glb-normalization-failed");
+  }
+  const completedAtMs = performance.now();
+  const completedEventLoopDelayMs = observedEventLoopDelayMs();
+  if (!scene) throw new GLBSourceLoadError("glb-normalization-failed");
+  return {
+    scene,
+    startedAtMs,
+    completedAtMs,
+    startedEventLoopDelayMs,
+    completedEventLoopDelayMs,
+  };
+}
+
+function measurePreparedBounds(scene: THREE.Object3D) {
+  const startedAtMs = performance.now();
+  const startedEventLoopDelayMs = observedEventLoopDelayMs();
+  try {
+    return {
+      bounds: measureGLBLocalRenderBounds(scene),
+      startedAtMs,
+      completedAtMs: performance.now(),
+      startedEventLoopDelayMs,
+      completedEventLoopDelayMs: observedEventLoopDelayMs(),
+    };
+  } catch (error) {
+    throw categorizeGLBBoundsFailure(error);
+  }
+}
+
 async function prepareGLB(
   config: GLBModelNormalizationConfig,
-  onResponseComplete: (cacheStatus: GLBModelCacheStatus) => void
+  onResponseComplete: (
+    cacheStatus: GLBModelCacheStatus,
+    completedAtMs: number
+  ) => void
 ): Promise<PreparedGLBResource> {
   const sourceLease = acquireParsedGLB(config.url, onResponseComplete);
   let scene: THREE.Object3D | null = null;
   try {
     const source = await sourceLease.resource;
-    try {
-      scene = normalizeGLBScene({
-        ...config,
-        loadedScene: source.scene,
-        upholsteryTextures: {},
-      });
-    } catch {
-      throw new GLBSourceLoadError("glb-normalization-failed");
-    }
-    if (!scene) throw new GLBSourceLoadError("glb-normalization-failed");
-    let localRenderBounds: GLBLocalRenderBounds;
-    try {
-      localRenderBounds = measureGLBLocalRenderBounds(scene);
-    } catch (error) {
-      throw categorizeGLBBoundsFailure(error);
-    }
+    const parseCompletedAtMs = performance.now();
+    const parseCompletedEventLoopDelayMs = observedEventLoopDelayMs();
+    const normalization = normalizePreparedScene(config, source.scene);
+    scene = normalization.scene;
+    const bounds = measurePreparedBounds(scene);
     return {
       scene,
-      localRenderBounds,
+      localRenderBounds: bounds.bounds,
       deliveryCacheStatus:
         sourceLease.cacheStatus === "cache-hit"
           ? "cache-hit"
           : source.deliveryCacheStatus,
       releaseSource: sourceLease.release,
+      preparationTimings: {
+        parseCompletedAtMs,
+        normalizationStartedAtMs: normalization.startedAtMs,
+        normalizationCompletedAtMs: normalization.completedAtMs,
+        materialCloningStartedAtMs: normalization.startedAtMs,
+        materialCloningCompletedAtMs: normalization.completedAtMs,
+        boundsStartedAtMs: bounds.startedAtMs,
+        boundsCompletedAtMs: bounds.completedAtMs,
+        eventLoopDelayMs: {
+          parseCompleted: parseCompletedEventLoopDelayMs,
+          normalizationStarted: normalization.startedEventLoopDelayMs,
+          normalizationCompleted: normalization.completedEventLoopDelayMs,
+          materialCloningStarted: normalization.startedEventLoopDelayMs,
+          materialCloningCompleted: normalization.completedEventLoopDelayMs,
+          boundsStarted: bounds.startedEventLoopDelayMs,
+          boundsCompleted: bounds.completedEventLoopDelayMs,
+        },
+      },
+      parsedCacheStatus: sourceLease.cacheStatus,
     };
   } catch (error) {
     if (scene) disposeObjectGeometryAndMaterials(scene);
@@ -295,7 +382,10 @@ async function prepareGLB(
 export function acquirePreparedGLB(
   key: string,
   config: GLBModelNormalizationConfig,
-  onResponseComplete: (cacheStatus: GLBModelCacheStatus) => void
+  onResponseComplete: (
+    cacheStatus: GLBModelCacheStatus,
+    completedAtMs: number
+  ) => void
 ): GLBResourceLease<PreparedGLBResource> {
   return preparedCache.acquire(key, () =>
     prepareGLB(config, onResponseComplete)

@@ -14,8 +14,11 @@ import {
   runtimeSmokeAggregateLifecycleState,
   runtimeSmokeOperationAttempt,
 } from "../../scripts/runtime-smoke-phase-budget.mjs";
+import type { GLBRequiredSnapshot } from "../../components/scene/glb-scaled-model/glbRequiredSnapshot";
+import { calculateGLBRequiredSnapshotTransportTiming } from "../../components/scene/glb-scaled-model/glbSnapshotTiming";
 
 const DESIGN_STORAGE_KEY = "interior-ai:v1:livingroom-design";
+const EXPECTED_ACTIVE_REQUIRED_MODEL_COUNT = 8;
 
 type RuntimeSmokeCheckpoint = (
   name: string,
@@ -50,6 +53,7 @@ const MODEL_FIXTURES = [
     dimensionsMm: { w: 930, d: 930, h: 450 },
     position: [-1.2, 0, 1.1] as [number, number, number],
     modelPath: "/assets/models/sofa-real-castlery-dawson-ottoman.glb",
+    modelPathHash: "fnv1a-09942d68",
   },
   {
     id: "sofa-real-castlery-jaron-3s",
@@ -57,6 +61,7 @@ const MODEL_FIXTURES = [
     dimensionsMm: { w: 2200, d: 1150, h: 770 },
     position: [0, 0, 1.1] as [number, number, number],
     modelPath: "/assets/models/sofa-real-castlery-jaron-3s.glb",
+    modelPathHash: "fnv1a-a7623e72",
   },
   {
     id: "sofa-real-castlery-auburn-performance-fabric-3-seater-sofa",
@@ -65,6 +70,7 @@ const MODEL_FIXTURES = [
     position: [1.1, 0, -0.9] as [number, number, number],
     modelPath:
       "/assets/models/sofa-real-castlery-auburn-performance-fabric-3-seater-sofa.glb",
+    modelPathHash: "fnv1a-3fa7f0e6",
   },
 ] as const;
 
@@ -86,80 +92,160 @@ test.describe("00. Runtime smoke", () => {
     const diagnosticKeys = MODEL_FIXTURES.map(
       (_, index) => `runtime-smoke-model-${index + 1}`
     );
-    const readModelDiagnostics = () =>
-      page.evaluate((keys) => {
-        const diagnostics = (
-          globalThis as typeof globalThis & {
-            __INTERIOR_AI_GLB_DIAGNOSTICS__?: Record<
-              string,
-              {
-                key: string;
-                mountCount: number;
-                unmountCount: number;
-                renderCount: number;
-                boundsMaterialChangeCount: number;
-                boundsPublicationCount: number;
-                boundsInvalidCount: number;
-                excessiveBoundsWarningCount: number;
-                selectionOutlineVisible: boolean;
-                sceneItemId: string;
-                productId: string | null;
-                variantId: string | null;
-                readinessKey: string | null;
-                requiredForReadiness: boolean;
-                url: string;
-                urlHash: string;
-                mountInstanceId: string;
-                reloadGeneration: number;
-                active: boolean;
-                supersededMountCount: number;
-                ignoredStaleTransitionCount: number;
-                loadState: "loading" | "ready" | "error" | "cancelled";
-                pendingStage: string | null;
-                requestStarted: boolean;
-                responseCompleted: boolean;
-                cacheStatus: "unknown" | "network" | "cache-hit";
-                parseDecodeState: "not-started" | "pending" | "complete" | "error";
-                normalizationState: "not-started" | "pending" | "complete" | "error";
-                materialState: "not-started" | "pending" | "complete" | "error";
-                boundsState: "not-started" | "pending" | "complete" | "error";
-                sceneAttachmentState:
-                  | "not-started"
-                  | "pending"
-                  | "complete"
-                  | "error";
-                cancellationState: "active" | "unmounted" | "superseded";
-                lastTransitionAtMs: number;
-                terminalErrorCategory: string | null;
-                loadErrorCode: string | null;
-              }
-            >;
-          }
-        ).__INTERIOR_AI_GLB_DIAGNOSTICS__;
-        const registry = Object.values(diagnostics ?? {});
-        const activeRequiredKeys = registry
-          .filter(
-            (diagnostic) =>
-              diagnostic.active && diagnostic.requiredForReadiness
-          )
-          .map((diagnostic) => diagnostic.key)
-          .sort();
-        const activeRequiredDiagnostics = registry
-          .filter(
-            (diagnostic) =>
-              diagnostic.active && diagnostic.requiredForReadiness
-          )
-          .sort((left, right) => left.key.localeCompare(right.key));
-        return keys.map((key) => ({
+    type RequiredSnapshotTiming = {
+      hostRequestStartedAtUnixMs: number;
+      callbackEnteredAtUnixMs: number;
+      computationStartedAtUnixMs: number;
+      computationCompletedAtUnixMs: number;
+      serializationCompletedAtUnixMs: number;
+      hostResultReceivedAtUnixMs: number;
+      schedulingDelayMs: number;
+      computationDurationMs: number;
+      serializationDurationMs: number;
+      transferDurationMs: number;
+    };
+    type RequiredSnapshotMilestone = {
+      hostRequestStartedAtUnixMs: number;
+      callbackEnteredAtUnixMs: number;
+      computationStartedAtUnixMs: number;
+      computationCompletedAtUnixMs?: number;
+      serializationCompletedAtUnixMs?: number;
+    };
+    let lastRequiredSnapshot: GLBRequiredSnapshot | null = null;
+    let lastRequiredSnapshotTiming: RequiredSnapshotTiming | null = null;
+    let requiredSnapshotMilestoneCheckpoint: RuntimeSmokeCheckpoint | null = null;
+    const recordBrowserSnapshotMilestone = (milestone: RequiredSnapshotMilestone) => {
+      const checkpoint = requiredSnapshotMilestoneCheckpoint;
+      if (!checkpoint) return;
+      checkpoint(
+        `snapshot-callback-entered-after-${Math.max(
+          0,
+          milestone.callbackEnteredAtUnixMs - milestone.hostRequestStartedAtUnixMs,
+        )}`,
+        "ready",
+      );
+      if (milestone.computationCompletedAtUnixMs !== undefined) {
+        checkpoint(
+          `snapshot-computation-complete-${Math.max(
+            0,
+            milestone.computationCompletedAtUnixMs - milestone.computationStartedAtUnixMs,
+          )}`,
+          "ready",
+        );
+      }
+      if (milestone.serializationCompletedAtUnixMs !== undefined) {
+        checkpoint(
+          `snapshot-serialization-complete-${Math.max(
+            0,
+            milestone.serializationCompletedAtUnixMs -
+              (milestone.computationCompletedAtUnixMs ??
+                milestone.computationStartedAtUnixMs),
+          )}`,
+          "ready",
+        );
+      }
+    };
+    const readModelDiagnostics = async (
+      milestoneCheckpoint: RuntimeSmokeCheckpoint | null = null,
+    ) => {
+      const hostRequestStartedAtUnixMs = Date.now();
+      requiredSnapshotMilestoneCheckpoint = milestoneCheckpoint;
+      milestoneCheckpoint?.("snapshot-host-request-started", "ready");
+      const transfer = await page.evaluate(
+        ({ captureMilestones, hostRequestStartedAtUnixMs }) => {
+          const emitMilestone = (milestone: RequiredSnapshotMilestone) => {
+            if (!captureMilestones) return;
+            console.info(
+              "[runtime-smoke-required-snapshot-milestone]",
+              JSON.stringify(milestone),
+            );
+          };
+          const callbackEnteredAtUnixMs = Date.now();
+          const computationStartedAtUnixMs = Date.now();
+          emitMilestone({
+            hostRequestStartedAtUnixMs,
+            callbackEnteredAtUnixMs,
+            computationStartedAtUnixMs,
+          });
+          const snapshot = (
+            globalThis as typeof globalThis & {
+              __INTERIOR_AI_GLB_REQUIRED_SNAPSHOT__?: () => unknown;
+            }
+          ).__INTERIOR_AI_GLB_REQUIRED_SNAPSHOT__?.();
+          const computationCompletedAtUnixMs = Date.now();
+          emitMilestone({
+            hostRequestStartedAtUnixMs,
+            callbackEnteredAtUnixMs,
+            computationStartedAtUnixMs,
+            computationCompletedAtUnixMs,
+          });
+          const serializedSnapshot = snapshot ? JSON.stringify(snapshot) : null;
+          const serializationCompletedAtUnixMs = Date.now();
+          emitMilestone({
+            hostRequestStartedAtUnixMs,
+            callbackEnteredAtUnixMs,
+            computationStartedAtUnixMs,
+            computationCompletedAtUnixMs,
+            serializationCompletedAtUnixMs,
+          });
+          return {
+            hostRequestStartedAtUnixMs,
+            callbackEnteredAtUnixMs,
+            computationStartedAtUnixMs,
+            computationCompletedAtUnixMs,
+            serializationCompletedAtUnixMs,
+            serializedSnapshot,
+          };
+        },
+        {
+          captureMilestones: milestoneCheckpoint !== null,
+          hostRequestStartedAtUnixMs,
+        },
+      );
+      const hostResultReceivedAtUnixMs = Date.now();
+      requiredSnapshotMilestoneCheckpoint = null;
+      const { serializedSnapshot, ...transferMilestones } = transfer;
+      lastRequiredSnapshotTiming = {
+        ...transferMilestones,
+        hostResultReceivedAtUnixMs,
+        ...calculateGLBRequiredSnapshotTransportTiming({
+          ...transferMilestones,
+          hostResultReceivedAtUnixMs,
+        }),
+      };
+      if (!serializedSnapshot) {
+        lastRequiredSnapshot = null;
+        return diagnosticKeys.map((key) => ({
           key,
-          diagnostic: diagnostics?.[key] ?? null,
-          registrySize: registry.length,
-          activeRequiredKeys,
-          activeRequiredDiagnostics,
+          diagnostic: null,
+          registrySize: 0,
+          activeRequiredKeys: [] as string[],
+          activeRequiredDiagnostics: [] as GLBRequiredSnapshot["models"],
         }));
-      }, diagnosticKeys);
+      }
+      const snapshot = JSON.parse(
+        serializedSnapshot,
+      ) as GLBRequiredSnapshot;
+      lastRequiredSnapshot = snapshot;
+      const activeRequiredDiagnostics = snapshot.models.filter(
+        (diagnostic) =>
+          diagnostic.active && diagnostic.requiredForReadiness,
+      );
+      return diagnosticKeys.map((key) => ({
+        key,
+        diagnostic:
+          snapshot.models.find((diagnostic) => diagnostic.key === key) ?? null,
+        registrySize: snapshot.registryEntryCount,
+        activeRequiredKeys: snapshot.activeRequiredModelIds,
+        activeRequiredDiagnostics,
+      }));
+    };
     let expectedLifecycleRegistrySize: number | null = null;
     let expectedActiveRequiredKeys: string[] | null = null;
+    let expectedReloadCacheEntryCounts: {
+      parsed: number;
+      prepared: number;
+    } | null = null;
     const expectedDiagnosticReady = (
       entry: Awaited<ReturnType<typeof readModelDiagnostics>>[number],
       index: number,
@@ -181,8 +267,7 @@ test.describe("00. Runtime smoke", () => {
           diagnostic.productId === fixture.id &&
           diagnostic.variantId === expectedVariantId &&
           diagnostic.readinessKey?.endsWith(readinessSuffix) &&
-          diagnostic.url === fixture.modelPath &&
-          /^fnv1a-[a-f0-9]{8}$/.test(diagnostic.urlHash) &&
+          diagnostic.urlHash === fixture.modelPathHash &&
           /^g\d+:m\d+$/.test(diagnostic.mountInstanceId) &&
           diagnostic.reloadGeneration >= minimumReloadGeneration &&
           diagnostic.loadState === "ready" &&
@@ -211,7 +296,7 @@ test.describe("00. Runtime smoke", () => {
         activeRequired.map((diagnostic) => diagnostic.reloadGeneration),
       );
       return (
-        activeRequired.length > 0 &&
+        activeRequired.length === EXPECTED_ACTIVE_REQUIRED_MODEL_COUNT &&
         generations.size === 1 &&
         activeRequired.every(
           (diagnostic) =>
@@ -281,14 +366,145 @@ test.describe("00. Runtime smoke", () => {
     const readModelDiagnosticsWithin = async (
       operationContext: ReturnType<typeof createRuntimeSmokeOperationDeadline>,
       maximumAttemptMs?: number,
+      milestoneCheckpoint: RuntimeSmokeCheckpoint | null = null,
     ): Promise<Awaited<ReturnType<typeof readModelDiagnostics>>> =>
       (await runRuntimeSmokeBoundedOperation({
         operationAttempt: runtimeSmokeOperationAttempt(
           operationContext,
           maximumAttemptMs,
         ),
-        task: readModelDiagnostics,
+        task: () => readModelDiagnostics(milestoneCheckpoint),
       })) as Awaited<ReturnType<typeof readModelDiagnostics>>;
+    const recordRequiredSnapshotProof = (
+      phaseName: string,
+      checkpoint: RuntimeSmokeCheckpoint,
+    ) => {
+      const snapshot = lastRequiredSnapshot;
+      const timing = lastRequiredSnapshotTiming;
+      expect(snapshot, `${phaseName} should capture the required snapshot`).not.toBeNull();
+      expect(timing, `${phaseName} should capture snapshot timing`).not.toBeNull();
+      if (!snapshot || !timing) return;
+      expect(snapshot.schema).toBe("interior-ai.glb-required-snapshot.v1");
+      expect(snapshot.registryCoherent).toBe(true);
+      expect(snapshot.consistency).toEqual({
+        cacheSnapshotsCoherent: true,
+        cacheReferenceTotalsAgree: true,
+        cacheOwnershipMatchesLifecycle: true,
+        referenceCountsNonNegative: true,
+        zeroReferenceRetentionWithinPolicy: true,
+        activeRequiredModelsAreCurrent: true,
+        activeRequiredModelsConverged: true,
+      });
+      expect(snapshot.activeRequiredCount).toBe(
+        snapshot.activeRequiredModelIds.length,
+      );
+      expect(snapshot.activeRequiredCount).toBe(
+        EXPECTED_ACTIVE_REQUIRED_MODEL_COUNT,
+      );
+      if (expectedReloadCacheEntryCounts) {
+        expect(snapshot.caches.parsed.entryCount).toBe(
+          expectedReloadCacheEntryCounts.parsed,
+        );
+        expect(snapshot.caches.prepared.entryCount).toBe(
+          expectedReloadCacheEntryCounts.prepared,
+        );
+      } else {
+        expectedReloadCacheEntryCounts = {
+          parsed: snapshot.caches.parsed.entryCount,
+          prepared: snapshot.caches.prepared.entryCount,
+        };
+      }
+      const activeRequired = snapshot.models.filter(
+        (model) => model.active && model.requiredForReadiness,
+      );
+      expect(activeRequired).toHaveLength(snapshot.activeRequiredCount);
+      expect(
+        activeRequired.filter((model) => model.loadState === "ready"),
+      ).toHaveLength(EXPECTED_ACTIVE_REQUIRED_MODEL_COUNT);
+      activeRequired.forEach((model) => {
+        expect(model.generationState, `${model.key} should be current`).toBe(
+          "current",
+        );
+        expect(model.resourceKeyHash).toMatch(/^fnv1a-[a-f0-9]{8}$/);
+        expect(model.cacheEntry?.state).toBe("ready");
+        expect(model.cacheEntry?.referenceCount ?? 0).toBeGreaterThan(0);
+        expect(model.parsedCacheEntry?.state).toBe("ready");
+        if (model.resourceKind === "prepared") {
+          expect(model.preparedCacheEntry?.state).toBe("ready");
+          expect(["hit", "miss"]).toContain(model.preparedCacheStatus);
+          if (model.preparedCacheStatus === "miss") {
+            expect(["hit", "miss"]).toContain(model.parsedCacheStatus);
+          } else {
+            expect(model.parsedCacheStatus).toBeNull();
+          }
+        } else {
+          expect(["hit", "miss"]).toContain(model.parsedCacheStatus);
+          expect(model.preparedCacheStatus).toBeNull();
+        }
+      });
+      const maximumEventLoopDelayMs = Math.round(
+        Math.max(
+          0,
+          snapshot.eventLoopProbe.maximumDelayMs,
+          ...activeRequired.flatMap((model) =>
+            Object.values(model.stageTimings).map(
+              (stage) => stage?.eventLoopDelayMs ?? 0,
+            ),
+          ),
+        ),
+      );
+      const longestSynchronousStage = activeRequired
+        .flatMap((model) =>
+          model.longestSynchronousStage
+            ? [{ key: model.key, ...model.longestSynchronousStage }]
+            : [],
+        )
+        .sort((left, right) => right.durationMs - left.durationMs)[0];
+      const maximumSceneAttachmentMs = Math.round(
+        Math.max(
+          0,
+          ...activeRequired.map(
+            (model) => model.stageDurationsMs.sceneAttachment ?? 0,
+          ),
+        ),
+      );
+      checkpoint(
+        `snapshot-wait-${timing.schedulingDelayMs}-compute-${timing.computationDurationMs}` +
+          `-serialize-${timing.serializationDurationMs}-transfer-${timing.transferDurationMs}`,
+        "ready",
+      );
+      checkpoint(
+        `snapshot-cache-parsed-${snapshot.caches.parsed.entryCount}` +
+          `-prepared-${snapshot.caches.prepared.entryCount}` +
+          `-retained-${snapshot.caches.prepared.zeroReferenceEntryCount}`,
+        "ready",
+      );
+      checkpoint(
+        `snapshot-registry-${snapshot.registryEntryCount}-required-${snapshot.activeRequiredCount}` +
+          `-parsed-refs-${snapshot.caches.parsed.activeReferenceCount}` +
+          `-prepared-refs-${snapshot.caches.prepared.activeReferenceCount}`,
+        "ready",
+      );
+      checkpoint(`snapshot-max-event-loop-delay-${maximumEventLoopDelayMs}`, "ready");
+      checkpoint(
+        `snapshot-max-scene-attachment-${maximumSceneAttachmentMs}`,
+        "ready",
+      );
+      if (longestSynchronousStage) {
+        const safeCategory = longestSynchronousStage.category
+          .replace(/([a-z])([A-Z])/g, "$1-$2")
+          .toLowerCase();
+        checkpoint(
+          `snapshot-longest-${safeCategory}` +
+            `-${Math.round(longestSynchronousStage.durationMs)}`,
+          "ready",
+        );
+      }
+      console.info(
+        "[runtime-smoke-required-snapshot]",
+        JSON.stringify({ phaseName, timing, snapshot }),
+      );
+    };
     const waitForModelDiagnosticsReady = async ({
       minimumMountCount,
       phaseName,
@@ -489,9 +705,17 @@ test.describe("00. Runtime smoke", () => {
           0,
         );
         const requiredResponses = MODEL_FIXTURES.length * minimumResponseCount;
+        const responsesOverExpected = MODEL_FIXTURES.filter(
+          ({ modelPath }) =>
+            (modelResponseCounts.get(modelPath) ?? 0) > minimumResponseCount,
+        );
+        expect(
+          responsesOverExpected,
+          `${phaseName} must not create a duplicate fixture loader generation`,
+        ).toEqual([]);
         const responsesReady = MODEL_FIXTURES.every(
           ({ modelPath }) =>
-            (modelResponseCounts.get(modelPath) ?? 0) >= minimumResponseCount,
+            (modelResponseCounts.get(modelPath) ?? 0) === minimumResponseCount,
         );
         const reloadGenerations = new Set(
           activeRequired.map((diagnostic) => diagnostic.reloadGeneration),
@@ -616,6 +840,19 @@ test.describe("00. Runtime smoke", () => {
     await phaseRecorder.run("test-body-setup", async ({ checkpoint }) => {
       page.on("pageerror", (error) => fatalErrors.push(error.message));
       page.on("console", (message) => {
+        const snapshotMilestonePrefix =
+          "[runtime-smoke-required-snapshot-milestone] ";
+        if (message.text().startsWith(snapshotMilestonePrefix)) {
+          try {
+            recordBrowserSnapshotMilestone(
+              JSON.parse(
+                message.text().slice(snapshotMilestonePrefix.length),
+              ) as RequiredSnapshotMilestone,
+            );
+          } catch {
+            fatalErrors.push("Malformed required snapshot milestone");
+          }
+        }
         if (message.type() === "error") {
           fatalErrors.push(message.text());
         }
@@ -908,6 +1145,13 @@ test.describe("00. Runtime smoke", () => {
         semanticDiagnostics[0]?.registrySize ?? null;
       expectedActiveRequiredKeys =
         semanticDiagnostics[0]?.activeRequiredKeys ?? null;
+      if (lastRequiredSnapshot) {
+        checkpoint(
+          `cache-baseline-parsed-${lastRequiredSnapshot.caches.parsed.entryCount}` +
+            `-prepared-${lastRequiredSnapshot.caches.prepared.entryCount}`,
+          "ready",
+        );
+      }
       checkpoint("semantic-models-ready", "ready");
     }, () => finalLifecycleState);
 
@@ -1076,7 +1320,10 @@ test.describe("00. Runtime smoke", () => {
             phaseName,
             operationName: "final-diagnostics-snapshot",
           }),
+          undefined,
+          checkpoint,
         );
+        recordRequiredSnapshotProof(phaseName, checkpoint);
         reloadSettledAfter.forEach(({ key, diagnostic }, index) => {
           const before = reloadSettledBefore[index]?.diagnostic;
           expect(diagnostic, `${key} should remount with diagnostics`).not.toBeNull();
@@ -1123,8 +1370,8 @@ test.describe("00. Runtime smoke", () => {
       expect(
         MODEL_FIXTURES.every(
           ({ modelPath }) =>
-            (modelRequestCounts.get(modelPath) ?? 0) >= 4 &&
-            (modelResponseCounts.get(modelPath) ?? 0) >= 4
+            (modelRequestCounts.get(modelPath) ?? 0) === 4 &&
+            (modelResponseCounts.get(modelPath) ?? 0) === 4
         )
       ).toBe(true);
       await expect(page.locator("body")).not.toContainText(

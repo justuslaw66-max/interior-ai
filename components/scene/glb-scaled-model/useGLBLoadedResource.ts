@@ -1,9 +1,11 @@
 import { useEffect, useState, type RefObject } from "react";
 
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
+import { safeGLBResourceHash } from "./createModelDiagnosticSnapshot";
 import {
   acquireParsedGLB,
   acquirePreparedGLB,
+  clonePreparedGLBForMount,
   ensureGLBResourceCleanup,
   GLBSourceLoadError,
   type GLBLoadedResource,
@@ -11,12 +13,16 @@ import {
 } from "./glbModelResources";
 import {
   recordGLBModelPipelineStage,
+  recordGLBModelParsedCacheStatus,
+  recordGLBModelResourceAcquired,
+  recordGLBModelResourceReleased,
   reportGLBModelLoadState,
 } from "./modelDiagnostics";
 import type {
   GLBModelCacheStatus,
   GLBModelLifecycleHandle,
 } from "./modelLifecycleTypes";
+import type { GLBResourceCacheStatus } from "./glbResourceCache";
 
 type RenderAssets = CatalogItemSchema["variants"][number]["renderAssets"];
 type LoadStateCallback = (state: "loading" | "ready" | "error") => void;
@@ -24,6 +30,34 @@ type LoadControl = {
   cancelled: boolean;
   release: (() => void) | null;
 };
+
+function observedEventLoopDelayMs() {
+  return (
+    globalThis as typeof globalThis & {
+      __INTERIOR_AI_GLB_EVENT_LOOP_PROBE__?: { lastDelayMs: number };
+    }
+  ).__INTERIOR_AI_GLB_EVENT_LOOP_PROBE__?.lastDelayMs ?? null;
+}
+
+function attachLeaseRelease(
+  control: LoadControl,
+  handle: GLBModelLifecycleHandle,
+  releaseLease: () => void,
+) {
+  let released = false;
+  control.release = () => {
+    if (released) return;
+    released = true;
+    recordGLBModelResourceReleased(handle);
+    releaseLease();
+  };
+}
+
+function releaseControl(control: LoadControl) {
+  const release = control.release;
+  control.release = null;
+  release?.();
+}
 
 function preparedResourceKey(
   config: GLBModelNormalizationConfig,
@@ -39,11 +73,20 @@ function preparedResourceKey(
   return JSON.stringify(config);
 }
 
+function cacheAcquisitionStatus(status: GLBResourceCacheStatus) {
+  return status === "cache-hit" ? ("hit" as const) : ("miss" as const);
+}
+
 function recordResponse(
   handle: GLBModelLifecycleHandle,
-  cacheStatus: GLBModelCacheStatus
+  cacheStatus: GLBModelCacheStatus,
+  atMs?: number
 ) {
-  recordGLBModelPipelineStage(handle, "response-complete", { cacheStatus });
+  recordGLBModelPipelineStage(handle, "response-complete", {
+    cacheStatus,
+    atMs,
+    eventLoopDelayMs: atMs === undefined ? undefined : null,
+  });
 }
 
 async function loadPreparedForMount(
@@ -53,25 +96,57 @@ async function loadPreparedForMount(
   control: LoadControl,
   publish: (resource: GLBLoadedResource) => void
 ) {
-  const lease = acquirePreparedGLB(key, config, (status) =>
-    recordResponse(handle, status)
+  const lease = acquirePreparedGLB(key, config, (status, completedAtMs) =>
+    recordResponse(handle, status, completedAtMs)
   );
-  control.release = lease.release;
+  recordGLBModelResourceAcquired(
+    handle,
+    "prepared",
+    safeGLBResourceHash(key),
+    {
+      parsed: null,
+      prepared: cacheAcquisitionStatus(lease.cacheStatus),
+    },
+  );
+  attachLeaseRelease(control, handle, lease.release);
   const prepared = await lease.resource;
   if (control.cancelled) return;
+  recordGLBModelParsedCacheStatus(
+    handle,
+    lease.cacheStatus === "cache-hit"
+      ? null
+      : cacheAcquisitionStatus(prepared.parsedCacheStatus),
+  );
   recordResponse(
     handle,
     lease.cacheStatus === "cache-hit"
       ? "cache-hit"
       : prepared.deliveryCacheStatus
   );
-  recordGLBModelPipelineStage(handle, "parse-complete");
-  recordGLBModelPipelineStage(handle, "normalization-complete");
-  recordGLBModelPipelineStage(handle, "bounds-complete");
+  recordGLBModelPipelineStage(handle, "parse-complete", {
+    atMs: prepared.preparationTimings.parseCompletedAtMs,
+    eventLoopDelayMs:
+      prepared.preparationTimings.eventLoopDelayMs.parseCompleted,
+  });
+  const materialCloningStartedAtMs = performance.now();
+  const materialCloningStartedEventLoopDelayMs = observedEventLoopDelayMs();
+  const model = clonePreparedGLBForMount(prepared.scene);
+  const materialCloningCompletedAtMs = performance.now();
+  const materialCloningCompletedEventLoopDelayMs = observedEventLoopDelayMs();
   publish({
     kind: "prepared",
-    model: prepared.scene.clone(true),
+    model,
     localRenderBounds: prepared.localRenderBounds,
+    preparationTimings: {
+      ...prepared.preparationTimings,
+      materialCloningStartedAtMs,
+      materialCloningCompletedAtMs,
+      eventLoopDelayMs: {
+        ...prepared.preparationTimings.eventLoopDelayMs,
+        materialCloningStarted: materialCloningStartedEventLoopDelayMs,
+        materialCloningCompleted: materialCloningCompletedEventLoopDelayMs,
+      },
+    },
   });
 }
 
@@ -81,15 +156,22 @@ async function loadParsedForMount(
   control: LoadControl,
   publish: (resource: GLBLoadedResource) => void
 ) {
-  const lease = acquireParsedGLB(url, (status) => recordResponse(handle, status));
-  control.release = lease.release;
+  const lease = acquireParsedGLB(url, (status, completedAtMs) =>
+    recordResponse(handle, status, completedAtMs)
+  );
+  recordGLBModelResourceAcquired(handle, "parsed", safeGLBResourceHash(url), {
+    parsed: cacheAcquisitionStatus(lease.cacheStatus),
+    prepared: null,
+  });
+  attachLeaseRelease(control, handle, lease.release);
   const source = await lease.resource;
   if (control.cancelled) return;
   recordResponse(
     handle,
     lease.cacheStatus === "cache-hit" ? "cache-hit" : source.deliveryCacheStatus
   );
-  recordGLBModelPipelineStage(handle, "parse-complete");
+  const parseCompletedAtMs = performance.now();
+  recordGLBModelPipelineStage(handle, "parse-complete", { atMs: parseCompletedAtMs });
   publish({ kind: "parsed", scene: source.scene });
 }
 
@@ -115,6 +197,7 @@ function reportLoadFailure({
     error instanceof GLBSourceLoadError
       ? error.category
       : "gltf-parse-decode-failed";
+  releaseControl(control);
   console.warn("[GLBScaledModel] Failed to load", {
     diagnosticKey,
     errorCode: category,
@@ -174,7 +257,7 @@ export function useGLBLoadedResource({
     );
     return () => {
       control.cancelled = true;
-      control.release?.();
+      releaseControl(control);
     };
   }, [config, diagnosticKey, handleRef, identity, key, onLoadStateChangeRef]);
   return resourceState?.identity === identity ? resourceState.resource : null;

@@ -6,6 +6,8 @@ type DiagnosticsGlobal = typeof globalThis & {
   __INTERIOR_AI_ENABLE_GLB_DIAGNOSTICS__?: boolean;
   __INTERIOR_AI_GLB_DIAGNOSTICS__?: Record<string, unknown>;
   __INTERIOR_AI_GLB_DIAGNOSTICS_GENERATION__?: number;
+  __INTERIOR_AI_GLB_DIAGNOSTICS_VERSION__?: number;
+  __INTERIOR_AI_GLB_REQUIRED_SNAPSHOT__?: () => import("../components/scene/glb-scaled-model/glbRequiredSnapshot").GLBRequiredSnapshot;
 };
 
 const diagnosticsGlobal = globalThis as DiagnosticsGlobal;
@@ -32,6 +34,8 @@ const diagnostics = await import(
 function resetDocumentGeneration() {
   delete diagnosticsGlobal.__INTERIOR_AI_GLB_DIAGNOSTICS__;
   delete diagnosticsGlobal.__INTERIOR_AI_GLB_DIAGNOSTICS_GENERATION__;
+  delete diagnosticsGlobal.__INTERIOR_AI_GLB_DIAGNOSTICS_VERSION__;
+  delete diagnosticsGlobal.__INTERIOR_AI_GLB_REQUIRED_SNAPSHOT__;
 }
 
 function snapshot(key: string) {
@@ -51,13 +55,24 @@ const first = diagnostics.recordGLBModelMount(
     requiredForReadiness: true,
   }
 );
+diagnostics.recordGLBModelResourceAcquired(
+  first,
+  "parsed",
+  "fnv1a-4e2fb75c",
+  { parsed: "miss", prepared: null },
+);
 diagnostics.recordGLBModelPipelineStage(first, "request-started");
 diagnostics.recordGLBModelPipelineStage(first, "response-complete", {
   cacheStatus: "network",
 });
 diagnostics.recordGLBModelPipelineStage(first, "parse-complete");
+diagnostics.recordGLBModelPipelineStage(first, "normalization-started");
+diagnostics.recordGLBModelPipelineStage(first, "material-cloning-started");
+diagnostics.recordGLBModelPipelineStage(first, "material-cloning-complete");
 diagnostics.recordGLBModelPipelineStage(first, "normalization-complete");
+diagnostics.recordGLBModelPipelineStage(first, "materials-started");
 diagnostics.recordGLBModelPipelineStage(first, "materials-complete");
+diagnostics.recordGLBModelPipelineStage(first, "bounds-started");
 diagnostics.recordGLBModelPipelineStage(first, "bounds-complete");
 diagnostics.recordGLBModelPipelineStage(first, "scene-attached");
 diagnostics.reportGLBModelLoadState(first, "ready");
@@ -74,6 +89,28 @@ assert.equal(initial.materialState, "complete");
 assert.equal(initial.boundsState, "complete");
 assert.equal(initial.sceneAttachmentState, "complete");
 assert.equal(initial.terminalErrorCategory, null);
+assert.equal(initial.lastTransitionName, "ready");
+assert.ok(initial.stageTimings["request-started"]);
+assert.ok(initial.stageTimings["response-complete"]);
+assert.ok(initial.stageTimings["parse-complete"]);
+assert.ok(initial.stageTimings["material-cloning-started"]);
+assert.ok(initial.stageTimings["material-cloning-complete"]);
+assert.ok(initial.stageTimings.ready);
+assert.equal(initial.resourceKind, "parsed");
+assert.equal(initial.resourceKeyHash, "fnv1a-4e2fb75c");
+assert.equal(initial.parsedCacheStatus, "miss");
+assert.equal(initial.preparedCacheStatus, null);
+assert.ok(initial.resourceAcquiredAtMs !== null);
+const requiredSnapshot = diagnosticsGlobal.__INTERIOR_AI_GLB_REQUIRED_SNAPSHOT__?.();
+assert.ok(requiredSnapshot, "the canonical required snapshot API should be installed");
+assert.equal(requiredSnapshot.schema, "interior-ai.glb-required-snapshot.v1");
+assert.equal(requiredSnapshot.registryCoherent, true);
+assert.equal(requiredSnapshot.registryVersionStart, requiredSnapshot.registryVersionEnd);
+assert.equal(requiredSnapshot.registryEntryCount, 1);
+assert.deepEqual(requiredSnapshot.activeRequiredModelIds, ["scene-item-1"]);
+assert.equal(requiredSnapshot.consistency.cacheSnapshotsCoherent, true);
+assert.equal(requiredSnapshot.consistency.cacheReferenceTotalsAgree, true);
+assert.equal(requiredSnapshot.consistency.referenceCountsNonNegative, true);
 
 const initialReadiness = diagnostics.evaluateRequiredGLBModelReadiness(
   [initial],
@@ -106,6 +143,7 @@ assert.equal(unmounted.active, false);
 assert.equal(unmounted.loadState, "cancelled");
 assert.equal(unmounted.cancellationState, "unmounted");
 assert.equal(unmounted.pendingStage, "cancelled");
+assert.equal(unmounted.lastTransitionName, "cancelled");
 
 const cached = diagnostics.recordGLBModelMount(
   "scene-item-1",
@@ -341,6 +379,159 @@ for (let reload = 0; reload < 2; reload += 1) {
     1
   );
 }
+
+resetDocumentGeneration();
+for (let index = 0; index < 8; index += 1) {
+  const key = `required-${index + 1}`;
+  const handle = diagnostics.recordGLBModelMount(
+    key,
+    `/assets/models/required-${index % 7}.glb`,
+    {
+      sceneItemId: key,
+      productId: `product-${index + 1}`,
+      variantId: `variant-${index + 1}`,
+      readinessKey: `room-1:${key}:product-${index + 1}:variant-${index + 1}:standard`,
+      requiredForReadiness: true,
+    }
+  );
+  diagnostics.recordGLBModelResourceAcquired(
+    handle,
+    "prepared",
+    index < 2 ? "fnv1a-duplicate" : `fnv1a-resource-${index}`,
+    {
+      parsed: index < 2 ? null : "miss",
+      prepared: index < 2 ? "hit" : "miss",
+    },
+  );
+  diagnostics.recordGLBModelPipelineStage(handle, "request-started");
+  diagnostics.recordGLBModelPipelineStage(handle, "response-complete", {
+    cacheStatus: index < 2 ? "cache-hit" : "network",
+  });
+  diagnostics.recordGLBModelPipelineStage(handle, "parse-complete");
+  diagnostics.recordGLBModelPipelineStage(handle, "normalization-started");
+  diagnostics.recordGLBModelPipelineStage(handle, "material-cloning-started");
+  diagnostics.recordGLBModelPipelineStage(handle, "material-cloning-complete");
+  diagnostics.recordGLBModelPipelineStage(handle, "normalization-complete");
+  diagnostics.recordGLBModelPipelineStage(handle, "materials-started");
+  diagnostics.recordGLBModelPipelineStage(handle, "materials-complete");
+  diagnostics.recordGLBModelPipelineStage(handle, "bounds-started");
+  diagnostics.recordGLBModelPipelineStage(handle, "bounds-complete");
+  diagnostics.recordGLBModelPipelineStage(handle, "scene-attached");
+  diagnostics.reportGLBModelLoadState(handle, "ready");
+}
+const versionBeforeRequiredSnapshot =
+  diagnosticsGlobal.__INTERIOR_AI_GLB_DIAGNOSTICS_VERSION__;
+const requiredSnapshotStartedAtMs = performance.now();
+const eightModelSnapshot =
+  diagnosticsGlobal.__INTERIOR_AI_GLB_REQUIRED_SNAPSHOT__?.();
+const requiredSnapshotElapsedMs = performance.now() - requiredSnapshotStartedAtMs;
+assert.ok(eightModelSnapshot);
+assert.ok(
+  requiredSnapshotElapsedMs < 500,
+  `eight-model metadata snapshot should retain substantial 5s headroom, observed ${requiredSnapshotElapsedMs}ms`
+);
+assert.equal(
+  diagnosticsGlobal.__INTERIOR_AI_GLB_DIAGNOSTICS_VERSION__,
+  versionBeforeRequiredSnapshot,
+  "required snapshot reads must not mutate lifecycle state"
+);
+assert.equal(eightModelSnapshot.registryCoherent, true);
+assert.equal(eightModelSnapshot.registryEntryCount, 8);
+assert.equal(eightModelSnapshot.activeRequiredCount, 8);
+assert.equal(eightModelSnapshot.models.every((model) => model.active), true);
+assert.equal(
+  eightModelSnapshot.models.every((model) => model.generationState === "current"),
+  true
+);
+assert.notEqual(
+  eightModelSnapshot.models[0]?.key,
+  eightModelSnapshot.models[1]?.key,
+  "duplicate resource hashes must retain distinct scene identities"
+);
+assert.equal(
+  eightModelSnapshot.models[0]?.resourceKeyHash,
+  eightModelSnapshot.models[1]?.resourceKeyHash
+);
+assert.equal(eightModelSnapshot.models[0]?.preparedCacheStatus, "hit");
+assert.equal(eightModelSnapshot.models[0]?.parsedCacheStatus, null);
+assert.equal(eightModelSnapshot.models[2]?.preparedCacheStatus, "miss");
+assert.equal(eightModelSnapshot.models[2]?.parsedCacheStatus, "miss");
+assert.equal(
+  "url" in eightModelSnapshot.models[0]!,
+  false,
+  "the required snapshot must expose only the safe URL hash",
+);
+const canonicalReadyAtMs = snapshot("required-1").stageTimings.ready?.atMs;
+assert.ok(canonicalReadyAtMs !== undefined);
+eightModelSnapshot.models[0]!.stageTimings.ready!.atMs = -1;
+assert.equal(
+  snapshot("required-1").stageTimings.ready?.atMs,
+  canonicalReadyAtMs,
+  "mutating a returned snapshot must not mutate the canonical registry",
+);
+
+resetDocumentGeneration();
+const failedResource = diagnostics.recordGLBModelMount(
+  "failed-required",
+  "/assets/models/failed-required.glb",
+  {
+    sceneItemId: "failed-required",
+    productId: "failed-product",
+    variantId: "failed-variant",
+    readinessKey: "room-1:failed-required:failed-product:failed-variant:standard",
+    requiredForReadiness: true,
+  },
+);
+diagnostics.recordGLBModelResourceAcquired(
+  failedResource,
+  "parsed",
+  "fnv1a-failed",
+  { parsed: "miss", prepared: null },
+);
+diagnostics.recordGLBModelResourceReleased(failedResource);
+diagnostics.reportGLBModelLoadState(
+  failedResource,
+  "error",
+  undefined,
+  "gltf-load-failed",
+);
+const failedRequiredSnapshot =
+  diagnosticsGlobal.__INTERIOR_AI_GLB_REQUIRED_SNAPSHOT__?.();
+assert.ok(failedRequiredSnapshot);
+assert.equal(failedRequiredSnapshot.activeRequiredCount, 1);
+assert.equal(failedRequiredSnapshot.models[0]?.loadState, "error");
+assert.ok(failedRequiredSnapshot.models[0]?.resourceReleasedAtMs !== null);
+assert.equal(failedRequiredSnapshot.models[0]?.cacheEntry, null);
+assert.equal(
+  failedRequiredSnapshot.consistency.cacheOwnershipMatchesLifecycle,
+  true,
+  "a failed and released lease must not remain an active cache owner",
+);
+assert.equal(
+  failedRequiredSnapshot.consistency.activeRequiredModelsConverged,
+  true,
+);
+
+const snapshotContract = await import(
+  "../components/scene/glb-scaled-model/glbSnapshotTiming"
+);
+assert.deepEqual(
+  snapshotContract.calculateGLBRequiredSnapshotTransportTiming({
+    hostRequestStartedAtUnixMs: 1_000,
+    callbackEnteredAtUnixMs: 4_500,
+    computationStartedAtUnixMs: 4_501,
+    computationCompletedAtUnixMs: 4_511,
+    serializationCompletedAtUnixMs: 4_514,
+    hostResultReceivedAtUnixMs: 4_519,
+  }),
+  {
+    schedulingDelayMs: 3_500,
+    computationDurationMs: 10,
+    serializationDurationMs: 3,
+    transferDurationMs: 5,
+  },
+  "host scheduling delay must remain distinct from in-page computation and serialization"
+);
 
 const componentSource = readFileSync(
   join(process.cwd(), "components/scene/GLBScaledModel.tsx"),

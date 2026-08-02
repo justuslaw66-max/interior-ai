@@ -1,6 +1,6 @@
 # Code health audit handoff
 
-Current superseding status: CH-0001, CH-0012, and CH-0016 repository remediation are complete. CH-0017 is **TRUTHFULNESS AND EXTERNAL WORKFLOW VERIFIED — IMPLEMENTATION FROZEN** at `8e0260f5654126ec21b669d0471bcfb3c0f5cf5b`. CH-0028 is the separate active runtime remediation; CH-0004 was not started. The latest implementation record is at the end of this handoff.
+Current superseding status: CH-0001, CH-0012, and CH-0016 repository remediation are complete. CH-0017 is **TRUTHFULNESS AND EXTERNAL WORKFLOW VERIFIED — IMPLEMENTATION FROZEN** at `8e0260f5654126ec21b669d0471bcfb3c0f5cf5b`. CH-0028 is the separate active runtime remediation, with constrained-runner reload latency recorded separately as CH-0029; CH-0004 was not started. The latest implementation record is at the end of this handoff.
 
 Audit date: 2026-07-31
 Canonical repository: `/Users/justus/Developer/interior-ai`
@@ -1028,3 +1028,129 @@ No Full E2E, timeout increase, CH-0004 work, CH-0017 evidence change, workflow
 or ruleset mutation, push, PR update, merge, deployment, dependency, schema,
 migration, catalog, production data, or user-content change is included.
 Rollback is one `git revert` of the CH-0028 commit; no data rollback exists.
+
+## CH-0028 post-readiness cache snapshot follow-up — 2026-08-02
+
+This entry supersedes the CH-0028 status above without modifying CH-0017.
+The follow-up began from exact source
+`c0ccd0d5f4c4d20b058712e4c6e20c3146f02068` on
+`fix/ch-0028-reload-model-readiness`. The active Node listener's working
+directory matched `/Users/justus/Developer/interior-ai` before edits. No PR,
+workflow, ruleset, deployment, timeout, retry, skip, schema, migration,
+dependency, catalog, CH-0004, or Full E2E action was taken.
+
+### Authoritative failure and exact classification
+
+Required-only run `30752899319` reached 8 ready / 0 loading / 0 error, the
+expected six cumulative fixture responses on reload 1, exact Dawson/Jaron/
+Auburn identities, current reload generation, registry-size equality, and
+stable active-required keys. Semantic readiness used 13,533 ms, bounds 40,109
+ms, remount 58,849 ms, reload 1 119,031 ms, models-ready approximately 71,352
+ms from reload start, and bounds-settled approximately 109,629 ms. The final
+diagnostic snapshot then exceeded its unchanged canonical 5,000 ms operation
+budget. Safe failure artifact `8835124580` contained exactly three JSON files,
+was source-bound to `c0ccd0d5f4c4d20b058712e4c6e20c3146f02068`, and correctly withheld stable
+evidence.
+
+The failure is classified exactly as **B — browser main-thread starvation**.
+The external artifact did not contain callback-entry/computation/serialization
+milestones, so the five-second total alone was not used. Instead, the retained
+phase evidence showed that prior browser-evaluation callbacks were delayed:
+models-ready was observed around 71.3 seconds, the next diagnostic sample
+around 98.5 seconds, and bounds-settled around 109.6 seconds. The new required
+path separately records host request, in-page callback entry, computation
+start/end, explicit JSON serialization completion, and host receipt; safe
+failure-path checkpoints retain the last reached milestone even when no result
+returns. Across the final nine clean local reloads, host-to-callback scheduling
+used 510–674 ms, snapshot computation 0–0.2 ms (0–1 ms at wall-clock
+precision), serialization 0 ms, and result transfer 255–448 ms. The in-page
+event-loop probe independently recorded 9,557.2–11,320.3 ms stalls. This
+excludes snapshot execution,
+registry convergence, payload serialization, and stale-source observation as
+the primary failure.
+
+### Required snapshot and cache proof
+
+`modelDiagnostics` remains the single lifecycle registry owner. The parsed and
+prepared caches now expose synchronous read-only inspections; no second cache
+or lifecycle store exists. Schema `interior-ai.glb-required-snapshot.v1`
+exports only safe identities/hashes, reload generation and mutation epochs,
+active-required state, closed per-model stages/timings, separate parsed and
+prepared per-model hit-or-miss outcomes, cache metadata and counters,
+refcounts, and consistency results. It does not traverse or expose
+Three.js graphs, clone geometry/materials, recalculate bounds, parse GLBs,
+perform network work, update React state, mutate either cache, expose raw cache
+keys or raw URLs, or include machine-local/private data. Returned stage-timing
+objects are detached from the registry. The runtime smoke no longer
+depends on the obsolete rich global for its required proof.
+
+Every post-reload snapshot in all three clean runs proved:
+
+- registry 8, active-required 8, all current and ready;
+- parsed cache 8 entries / 13 active references;
+- prepared cache 12 entries / 7 active references;
+- five zero-reference prepared configuration variants retained within the
+  documented 32-entry LRU policy;
+- stable entry counts across reloads 1, 2, and 3;
+- coherent registry/cache versions, exact internal reference sums, lifecycle
+  ownership agreement, nonnegative references, no stale active entry, and no
+  terminal error.
+
+The pre-remount semantic baseline was seven prepared entries. The intentional
+2D→3D configuration change added five distinct prepared variants, after which
+the bounded stable count was 12 rather than a leak. Cumulative real fixture
+response totals remained 6, 9, and 12 on the three true document reloads.
+
+### Performance-stage result and threshold semantics
+
+The three fresh 42-migration databases each passed furnished-template and
+health/catalog 2/2 with exit 0 and zero failed/flaky/skipped/retried cases:
+
+| Run | Semantic | Bounds | Remount | Reload 1 | Reload 2 | Reload 3 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 1,867/80,000 | 6,892/103,000 | 12,537/165,000 | 20,765/308,000 | 20,860/308,000 | 20,708/308,000 |
+| 2 | 6,759/80,000 | 6,878/103,000 | 12,210/165,000 | 20,639/308,000 | 22,178/308,000 | 20,251/308,000 |
+| 3 | 7,328/80,000 | 7,406/103,000 | 12,186/165,000 | 20,876/308,000 | 20,489/308,000 | 21,029/308,000 |
+
+Across those reloads, per-model maxima were response 696.1 ms, parse/decode
+287.7 ms, normalization 8.4 ms, isolated per-instance material/geometry cloning
+0.3 ms, material setup 168.5 ms, bounds 4.0 ms,
+prerequisite-to-post-commit scene attachment 97.4 ms, and ready publication
+0.1 ms. Separate acquisition outcomes proved prepared miss/parsed miss,
+prepared miss/parsed hit, and direct parsed hit rather than collapsing them
+into one ambiguous status. Disposal, stale-completion, cache state, and active
+reference counters did not identify a leak or long pipeline stage. Per-stage
+event-loop samples are observations captured at the same stage boundary, not
+causal attribution; historical Resource Timing response ends carry a null loop
+sample. The measured performance category is **main-thread scheduling**,
+amplified on the constrained external runner. CI CPU contention is a plausible
+contributor to that amplification, but the evidence does not justify claiming
+it as the only cause.
+
+There are two distinct 70-second values and neither changed. The canonical
+`model-responses-and-readiness` operation retains its hard 70,000 ms budget.
+The reload phase separately carries `performanceWarningThresholdMs: 70_000`,
+which `runtime-smoke-phase-budget.mjs` explicitly describes as a **non-failing
+performance observation threshold**. It is not an authoritative product
+performance requirement or an independent release requirement. Therefore
+CH-0028 lifecycle/cache correctness can complete while end-to-end latency
+remains visible as separate P2 finding **CH-0029 — constrained-runner reload
+latency**. CH-0029 is observation-only in this batch; no optimization, cache
+policy expansion, threshold change, or workflow mutation is authorized here.
+
+### Validation and remaining external step
+
+Focused lifecycle, resource-cache/refcount, local bounds/remount/isolation,
+design-persistence, CH-0017 required-test truthfulness, production-artifact
+evidence, typecheck, targeted zero-warning ESLint, code-quality ratchet, strict
+production build, and `git diff --check` passed. The strict build retained the
+pre-existing Turbopack/NFT floor-plan trace warning. Independent complete-diff
+read-only review is **PASS — no remaining actionable findings** after corrections
+for exact response/eight-model assertions, raw-URL exclusion, deep snapshot and
+prepared-instance isolation, truthful stage/event-loop/attachment timing,
+failed-lease ownership, BFCache behavior, monotonic transition time, split
+parsed/prepared acquisition outcomes, and production-file ratchets. Final local
+validation still requires one focused commit and a detached exact-commit
+production evidence proof. After those steps, the exact commit is ready for
+another required-only `workflow_dispatch`; no external verification or release
+claim is made by this entry.

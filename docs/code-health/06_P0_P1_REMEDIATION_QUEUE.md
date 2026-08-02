@@ -10,7 +10,7 @@ CH-0017 starting HEAD: `cea0cabe53742da8b47c1e119d889033351a1fdf`
 
 Post-triage documentation checkpoint: `195deacba6e22293b4e887dd4b4bb5203028c0fb`
 
-This queue began as a post-CH-0001 evidence review and now includes completed CH-0012 and CH-0016 repository remediations, frozen CH-0017 truthfulness, and the separately authorized CH-0028 runtime finding. CH-0017 is **TRUTHFULNESS AND EXTERNAL WORKFLOW VERIFIED — IMPLEMENTATION FROZEN** at `8e0260f5654126ec21b669d0471bcfb3c0f5cf5b`. CH-0028 branched from that exact clean commit and does not change CH-0017 evidence/workflow ownership. Before production edits, the port-3000 Node listener resolved to `/Users/justus/Developer/interior-ai`, matching the canonical checkout. This batch authorizes no push, deployment, external-control change, release promotion, CH-0004 work, or Full E2E.
+This queue began as a post-CH-0001 evidence review and now includes completed CH-0012 and CH-0016 repository remediations, frozen CH-0017 truthfulness, and the separately authorized CH-0028 runtime finding. CH-0017 is **TRUTHFULNESS AND EXTERNAL WORKFLOW VERIFIED — IMPLEMENTATION FROZEN** at `8e0260f5654126ec21b669d0471bcfb3c0f5cf5b`. CH-0028 does not change CH-0017 evidence/workflow ownership. Its post-readiness follow-up began at exact source `c0ccd0d5f4c4d20b058712e4c6e20c3146f02068`; before edits, `lsof` resolved the active Node listener to `/Users/justus/Developer/interior-ai`, matching the canonical checkout. This batch authorizes no push, deployment, external-control change, release promotion, CH-0004 work, or Full E2E.
 
 ## Counts and selected action
 
@@ -43,7 +43,8 @@ This queue began as a post-CH-0001 evidence review and now includes completed CH
 | CH-0017 | P1, resolved/frozen | RESOLVED | TRUTHFULNESS AND EXTERNAL WORKFLOW VERIFIED — IMPLEMENTATION FROZEN at `8e0260f5654126ec21b669d0471bcfb3c0f5cf5b`. |
 | CH-0018 | P1 | BLOCKED_DEPENDENCY | Supported predecessor versions and a representative sanitized fixture owner are required. |
 | CH-0019 | P1 release / P2 code health | READY | Several bounded baseline batches are independent; failures must remain separate from CH-0001. |
-| CH-0028 | P1 release/runtime | LOCAL_REMEDIATION_COMPLETE | Classification F: redundant remount parse/normalization/bounds work produced a genuine slow-runner condition. Bounded resource reuse and exact lifecycle identity/stage diagnostics pass three isolated required smokes; separate exact-head external verification remains required. |
+| CH-0028 | P1 release/runtime | LOCAL_REMEDIATION_COMPLETE | Required-only run `30752899319` proved lifecycle readiness but its final 5,000 ms snapshot timed out. Classification **B — browser main-thread starvation**: preceding callbacks were delayed for tens of seconds, while the bounded replacement snapshot computes in 0–0.2 ms and serializes in 0 ms. Atomic lifecycle/cache/refcount proof passes three isolated required smokes; separate exact-head external verification remains required. |
+| CH-0029 | P2 performance | OPEN_MEASUREMENT | End-to-end reload latency is dominated by main-thread scheduling under constrained execution. The explicit 70,000 ms reload performance threshold is non-failing, so this latency remains visible here without blocking CH-0028 lifecycle/cache correctness. |
 
 ## Finding evidence and remediation boundaries
 
@@ -196,20 +197,30 @@ This queue began as a post-CH-0001 evidence review and now includes completed CH
 
 ### CH-0028 — first-reload model readiness convergence
 
-- **Status/classification:** `LOCAL_REMEDIATION_COMPLETE — REQUIRED-ONLY EXTERNAL VERIFICATION REQUIRED`; verified **F — genuine performance condition**.
-- **External evidence and identities:** Run `30745386331` at source `8e0260f5654126ec21b669d0471bcfb3c0f5cf5b` failed furnished-template only, with reload 1 at 76,043/308,000 ms and nested readiness at 70,001/70,000 ms. Nine responses were complete, zero outstanding, and `runtime-smoke-model-1` Dawson Ottoman (`fnv1a-09942d68`), `runtime-smoke-model-2` Jaron 3S (`fnv1a-a7623e72`), and `runtime-smoke-model-3` Auburn 3 Seater (`fnv1a-3fa7f0e6`) were the three current required fixture records still loading.
-- **Cause proof:** The external artifact retained aggregate loading after all responses, not exact post-response stages. Controlled exact diagnostic key/mount/generation tracing found current active identities, correct required scoping, explicit unmount/supersession terminalization, and no stale callback, optional record, parse error, normalization error, or bounds deadlock. Pre-fix source repeated parse/decode and prepared-scene work on the forced 2D→3D remount. The authoritative nine-versus-six response count is the extra remount generation. Completion of every stage on controlled production traces, combined with the external timing, supports performance rather than lifecycle loss.
-- **Canonical fix:** `useGLBModelLifecycle` owns the lifecycle; `modelDiagnostics` remains the only readiness registry. Ref-counted 32-entry parsed/prepared caches reuse URL-backed parse output and equivalent normalized/bounds output within one document, evict failures, prune inactive LRU entries, dispose once per entry, retain source leases, and clear in dependency order on `pagehide`. Network and cache consumers emit equivalent stages. True reloads create a new document generation and real responses.
-- **Coverage:** Deterministic checks cover network/cache, unmount, supersession, current completion, duplicate URL/distinct identity, optional scoping, post-response pending stages, closed terminal categories, three generations, stable registry size, bounded cache ownership, failure eviction, and cleanup. The runtime smoke asserts each exact fixture identity plus the stable complete active-required-key set, reload generation advance, terminal stages, no stale growth, all original product assertions, three reloads, zero retry/skip, 70,000 ms nested and 308,000 ms parent budgets.
+- **Status/classification:** `LOCAL_REMEDIATION_COMPLETE — REQUIRED-ONLY EXTERNAL VERIFICATION REQUIRED`. The final-snapshot failure is exactly **B — browser main-thread starvation**; CH-0028 lifecycle/cache correctness is locally complete.
+- **Authoritative follow-up evidence:** Required-only run `30752899319` at source `c0ccd0d5f4c4d20b058712e4c6e20c3146f02068` reached 8 ready / 0 loading / 0 error, six cumulative fixture responses, exact Dawson/Jaron/Auburn identity success, stable active keys and registry equality, and current-generation readiness. Semantic readiness used 13,533 ms, bounds 40,109 ms, remount 58,849 ms, reload 1 119,031 ms, models-ready approximately 71,352 ms from reload start, and bounds-settled approximately 109,629 ms. The final required snapshot alone exceeded its unchanged 5,000 ms operation budget. Safe artifact `8835124580` retained the failure but, by itself, could not distinguish callback scheduling from computation or serialization.
+- **Snapshot cause proof:** The external run's earlier diagnostic callbacks were themselves delayed: models-ready occurred around 71.3 seconds, the next sample around 98.5 seconds, and bounds-settled around 109.6 seconds. The replacement records host request, callback entry, computation start/end, explicit JSON serialization completion, and host receipt independently; failure-path checkpoints retain how far the operation progressed even if no result returns. Across the final nine clean local reloads, callback scheduling was 510–674 ms, bounded snapshot computation was 0–0.2 ms (0–1 ms at wall-clock precision), JSON serialization was 0 ms, and transfer was 255–448 ms. The browser event-loop probe nevertheless observed 9,557.2–11,320.3 ms stalls. Snapshot logic and payload cost are therefore excluded; the external timeout is scheduling starvation, not A/C/D/E.
+- **Atomic required snapshot:** `modelDiagnostics` remains the single lifecycle registry owner, and the existing parsed/prepared caches expose synchronous read-only metadata inspections. The schema-v1 export contains current required identities, generation/registry epochs, closed stage state/timing, safe resource hashes, separate per-model parsed/prepared hit-or-miss outcomes, cache state/counts/refcounts, disposal/failure/stale-completion counters, and consistency booleans. It performs no Three.js traversal, clone, bounds work, network request, React update, or cache/refcount mutation; returned timing records are detached copies, and the payload exposes no object graphs, raw URLs/cache keys, local paths, or credentials. Rich diagnostics are not required by the proof.
+- **Cache/refcount result:** Every one of the nine reload snapshots was coherent with registry size 8, active-required count 8, parsed cache 8 entries / 13 active references, and prepared cache 12 entries / 7 active references. Five distinct prepared variants remained at zero references under the documented bounded 32-entry LRU policy; reloads 2 and 3 did not grow either cache. All active entries were current, converged, ready, and positively referenced; aggregate refcounts matched lifecycle ownership and never became negative.
+- **Performance-stage result:** Reload phases used 20,251–22,178 ms. Measured per-model maxima were response 696.1 ms, parse/decode 287.7 ms, normalization 8.4 ms, per-instance material/geometry cloning 0.3 ms, material setup 168.5 ms, bounds 4.0 ms, prerequisite-to-post-commit scene attachment 97.4 ms, and ready publication 0.1 ms. Separate acquisition outcomes included prepared miss/parsed miss, prepared miss/parsed hit, and direct parsed hit; no duplicate in-document loader generation, disposal/stale-completion event, bounds computation, preparation stage, or attachment interval explains the multi-second gaps. Event-loop values attached to stages are same-boundary observations rather than causal attribution; historical Resource Timing response ends intentionally carry no loop sample. The measured long-delay category is **main-thread scheduling**, amplified on the external runner; CI CPU contention is a plausible environment contributor, not asserted as the only cause.
+- **70-second contract:** Two distinct values remain unchanged. The canonical `model-responses-and-readiness` operation has a hard 70,000 ms budget. Separately, the reload phase's `performanceWarningThresholdMs: 70_000` is explicitly emitted as a **non-failing performance observation threshold** by `runtime-smoke-phase-budget.mjs`; it is neither an authoritative product requirement nor an independent release gate. CH-0028 can therefore complete on lifecycle/cache correctness while the latency remains reported as CH-0029.
+- **Coverage:** Deterministic checks cover bounded no-mutation snapshots, split scheduling/execution/serialization timing, atomic epochs/generations/active keys/counts/refcounts, shared acquisition/release and nonnegative bounded retention, remount/true reload, failure eviction and stale completion, clone isolation, BFCache retention, and independence from the obsolete rich global. The runtime smoke retains each exact fixture identity, 8-ready gating, cumulative response totals 6/9/12, three reloads, and zero retry/skip without changing any timeout.
 - **Three isolated runs:** Three separate PostgreSQL databases each received all 42 migrations. Each production-mode run passed furnished-template and health/catalog 2/2, with zero failed/flaky/skipped/retried tests and exit 0.
 
-| Run | Bounds | Remount | Reload 1 | Reload 2 | Reload 3 |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| 1 | 6,823/103,000 | 10,572/165,000 | 19,917/308,000 | 21,581/308,000 | 22,064/308,000 |
-| 2 | 6,894/103,000 | 10,864/165,000 | 22,939/308,000 | 21,064/308,000 | 21,311/308,000 |
-| 3 | 6,861/103,000 | 11,294/165,000 | 21,414/308,000 | 21,210/308,000 | 20,404/308,000 |
+| Run | Semantic | Bounds | Remount | Reload 1 | Reload 2 | Reload 3 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 1,867/80,000 | 6,892/103,000 | 12,537/165,000 | 20,765/308,000 | 20,860/308,000 | 20,708/308,000 |
+| 2 | 6,759/80,000 | 6,878/103,000 | 12,210/165,000 | 20,639/308,000 | 22,178/308,000 | 20,251/308,000 |
+| 3 | 7,328/80,000 | 7,406/103,000 | 12,186/165,000 | 20,876/308,000 | 20,489/308,000 | 21,029/308,000 |
 
-- **Boundaries/rollback:** No CH-0017 contract, timeout, retry, skip, assertion, workflow, ruleset, PR, schema, migration, dependency, catalog, deployment, or CH-0004 change. Revert the single CH-0028 commit; no data rollback is needed. The exact local commit must receive a detached production evidence proof and separate required-only external verification before any release claim.
+- **Boundaries/rollback:** No CH-0017 contract/evidence assertion, timeout, retry, skip, workflow, ruleset, PR, schema, migration, dependency, catalog, deployment, or CH-0004 change. CH-0028 assertions were strengthened to enforce exact eight-model state, response totals, and split cache outcomes. Revert the single CH-0028 commit; no data rollback is needed. The exact local commit must receive a detached production evidence proof and separate required-only external verification before any release claim.
+
+### CH-0029 — constrained-runner reload latency
+
+- **Status/classification:** `OPEN_MEASUREMENT`, P2 performance; explicitly separate from CH-0028 correctness and not selected for implementation in this batch.
+- **Evidence:** Required-only run `30752899319` used 119,031 ms for reload 1 even though lifecycle readiness had converged. Final local production smokes used 20,251–22,178 ms per reload but recorded 9.6–11.3 second browser event-loop stalls while every measured model pipeline/attachment interval remained sub-second. This is a real end-to-end latency observation, presently classified as main-thread scheduling under constrained execution.
+- **Next proof:** Re-run the exact CH-0028 commit through required-only workflow dispatch and retain the new milestone-separated snapshot evidence. If external scheduling remains elevated, capture runner CPU/process/render timing before changing application cache policy or budgets. Do not convert the non-failing 70,000 ms observation threshold into a correctness gate without an approved product/release requirement.
+- **Boundary:** No CH-0029 optimization, timeout change, runner change, cache-retention increase, workflow mutation, or release claim is included in CH-0028.
 
 ## Four inherited failure groups
 
@@ -233,18 +244,19 @@ Risk order includes blocked findings so decisions are visible; `READY` ordering 
 5. `CH-0016` — `RESOLVED` (production-equivalent artifact evidence repository remediation complete; external execution remains unverified).
 6. `CH-0017` — `RESOLVED/FROZEN` (truthfulness and external workflow verified at `8e0260f`).
 7. `CH-0028` — `LOCAL_REMEDIATION_COMPLETE`, **selected active batch** (required-only external verification pending).
-8. `CH-0018` — `BLOCKED_DEPENDENCY` (populated upgrade/data-loss evidence).
-9. `CH-0010` — `REQUIRES_PRODUCT_DECISION` (permanent share revocation and auto-sharing).
-10. `CH-0011` — `REQUIRES_PRODUCT_DECISION` (privacy consent/masking and external PostHog state).
-11. `CH-0004` — `READY`, not started (trusted event provenance).
-12. `CH-0006` — `BLOCKED_DEPENDENCY` (legacy public API consumers).
-13. `CH-0003` — `REQUIRES_PRODUCT_DECISION` (distributed cost budgets/outage policy).
-14. `CH-0005` — `REQUIRES_PRODUCT_DECISION` (retirement authority).
-15. `CH-0013` — `READY` (surface drift/schema gates, then payload).
-16. `CH-0015` — `READY` (accessible overlay ownership).
-17. `CH-0019` — `READY` in bounded baseline batches and required before architectural refactoring.
+8. `CH-0029` — `OPEN_MEASUREMENT`, P2 performance follow-up; no implementation authorized in this batch.
+9. `CH-0018` — `BLOCKED_DEPENDENCY` (populated upgrade/data-loss evidence).
+10. `CH-0010` — `REQUIRES_PRODUCT_DECISION` (permanent share revocation and auto-sharing).
+11. `CH-0011` — `REQUIRES_PRODUCT_DECISION` (privacy consent/masking and external PostHog state).
+12. `CH-0004` — `READY`, not started (trusted event provenance).
+13. `CH-0006` — `BLOCKED_DEPENDENCY` (legacy public API consumers).
+14. `CH-0003` — `REQUIRES_PRODUCT_DECISION` (distributed cost budgets/outage policy).
+15. `CH-0005` — `REQUIRES_PRODUCT_DECISION` (retirement authority).
+16. `CH-0013` — `READY` (surface drift/schema gates, then payload).
+17. `CH-0015` — `READY` (accessible overlay ownership).
+18. `CH-0019` — `READY` in bounded baseline batches and required before architectural refactoring.
 
-`CH-0009` and `CH-0014` remain queued as P2; neither competes in the P1 decision rule. Baseline A/B/C should be accumulated as independent reviewed fixes before architectural refactoring. CH-0028 is the only active finding in this batch; CH-0004 was not started.
+`CH-0009`, `CH-0014`, and `CH-0029` remain queued as P2; none competes in the P1 decision rule. Baseline A/B/C should be accumulated as independent reviewed fixes before architectural refactoring. CH-0028 is the only active implementation in this batch; CH-0004 was not started.
 
 ## Completed batch record: CH-0012 only
 

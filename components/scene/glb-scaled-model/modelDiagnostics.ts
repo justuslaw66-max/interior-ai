@@ -1,7 +1,16 @@
 import type { GLBLocalRenderBoundsObservation } from "./localRenderBounds";
 import { createModelDiagnosticSnapshot } from "./createModelDiagnosticSnapshot";
+import {
+  bumpDiagnosticRegistryVersion,
+  getDiagnosticStore,
+  getReloadGeneration,
+  markDiagnosticTransition,
+  nextMountInstanceId,
+  transitionTimestampMs,
+} from "./modelDiagnosticRuntime";
 import type {
   GLBModelCacheStatus,
+  GLBModelCacheAcquisitionStatus,
   GLBModelDiagnosticSnapshot,
   GLBModelLifecycleHandle,
   GLBModelLoadState,
@@ -16,75 +25,7 @@ export { evaluateRequiredGLBModelReadiness } from "./modelReadiness";
 export const GLB_MATERIAL_BOUNDS_CHANGE_WARNING_THRESHOLD = 6;
 const MAX_INACTIVE_GLB_DIAGNOSTICS = 128;
 
-type GLBDiagnosticsGlobal = typeof globalThis & {
-  __INTERIOR_AI_ENABLE_GLB_DIAGNOSTICS__?: boolean;
-  __INTERIOR_AI_GLB_DIAGNOSTICS__?: Record<
-    string,
-    GLBModelDiagnosticSnapshot
-  >;
-  __INTERIOR_AI_GLB_DIAGNOSTICS_GENERATION__?: number;
-  __INTERIOR_AI_GLB_DIAGNOSTICS_MOUNT_SEQUENCE__?: number;
-};
-
-const RELOAD_GENERATION_SESSION_KEY =
-  "interior-ai:glb-diagnostics-reload-generation";
 let disabledDiagnosticsMountSequence = 0;
-
-function transitionTimestampMs() {
-  return typeof performance !== "undefined" &&
-    Number.isFinite(performance.now())
-    ? Math.max(0, Math.round(performance.now()))
-    : 0;
-}
-
-function getReloadGeneration(diagnosticsGlobal: GLBDiagnosticsGlobal) {
-  if (
-    Number.isInteger(
-      diagnosticsGlobal.__INTERIOR_AI_GLB_DIAGNOSTICS_GENERATION__
-    )
-  ) {
-    return diagnosticsGlobal.__INTERIOR_AI_GLB_DIAGNOSTICS_GENERATION__ as number;
-  }
-
-  let generation = 1;
-  try {
-    const previous = Number.parseInt(
-      window.sessionStorage.getItem(RELOAD_GENERATION_SESSION_KEY) ?? "0",
-      10
-    );
-    generation = Number.isInteger(previous) && previous >= 0 ? previous + 1 : 1;
-    window.sessionStorage.setItem(
-      RELOAD_GENERATION_SESSION_KEY,
-      String(generation)
-    );
-  } catch {
-    // Sandboxed documents can deny session storage. The per-document default
-    // still prevents identities from crossing a JavaScript global boundary.
-  }
-  diagnosticsGlobal.__INTERIOR_AI_GLB_DIAGNOSTICS_GENERATION__ = generation;
-  return generation;
-}
-
-function getDiagnosticStore() {
-  const diagnosticsGlobal = globalThis as GLBDiagnosticsGlobal;
-  const enabled =
-    process.env.NODE_ENV !== "production" ||
-    diagnosticsGlobal.__INTERIOR_AI_ENABLE_GLB_DIAGNOSTICS__ === true;
-  if (!enabled || typeof window === "undefined") return null;
-
-  getReloadGeneration(diagnosticsGlobal);
-  diagnosticsGlobal.__INTERIOR_AI_GLB_DIAGNOSTICS__ ??= {};
-  return diagnosticsGlobal.__INTERIOR_AI_GLB_DIAGNOSTICS__;
-}
-
-function nextMountInstanceId(
-  diagnosticsGlobal: GLBDiagnosticsGlobal,
-  reloadGeneration: number
-) {
-  diagnosticsGlobal.__INTERIOR_AI_GLB_DIAGNOSTICS_MOUNT_SEQUENCE__ =
-    (diagnosticsGlobal.__INTERIOR_AI_GLB_DIAGNOSTICS_MOUNT_SEQUENCE__ ?? 0) + 1;
-  return `g${reloadGeneration}:m${diagnosticsGlobal.__INTERIOR_AI_GLB_DIAGNOSTICS_MOUNT_SEQUENCE__}`;
-}
 
 function currentDiagnostic(handle: GLBModelLifecycleHandle) {
   const store = getDiagnosticStore();
@@ -95,14 +36,13 @@ function currentDiagnostic(handle: GLBModelLifecycleHandle) {
     diagnostic.mountInstanceId !== handle.mountInstanceId ||
     diagnostic.reloadGeneration !== handle.reloadGeneration
   ) {
-    if (diagnostic) diagnostic.ignoredStaleTransitionCount += 1;
+    if (diagnostic) {
+      diagnostic.ignoredStaleTransitionCount += 1;
+      bumpDiagnosticRegistryVersion();
+    }
     return { diagnosticsEnabled: true, diagnostic: null };
   }
   return { diagnosticsEnabled: true, diagnostic };
-}
-
-function markTransition(diagnostic: GLBModelDiagnosticSnapshot) {
-  diagnostic.lastTransitionAtMs = transitionTimestampMs();
 }
 
 function hasTerminalLoadState(diagnostic: GLBModelDiagnosticSnapshot) {
@@ -129,6 +69,7 @@ function pruneInactiveDiagnostics(
     .sort((left, right) => left.lastTransitionAtMs - right.lastTransitionAtMs);
   for (const diagnostic of inactive.slice(0, -MAX_INACTIVE_GLB_DIAGNOSTICS)) {
     delete store[diagnostic.key];
+    bumpDiagnosticRegistryVersion();
   }
 }
 
@@ -143,7 +84,6 @@ export function recordGLBModelMount(
     requiredForReadiness: true,
   }
 ): GLBModelLifecycleHandle {
-  const diagnosticsGlobal = globalThis as GLBDiagnosticsGlobal;
   const store = getDiagnosticStore();
   if (!store) {
     disabledDiagnosticsMountSequence += 1;
@@ -156,11 +96,8 @@ export function recordGLBModelMount(
     };
   }
 
-  const reloadGeneration = getReloadGeneration(diagnosticsGlobal);
-  const mountInstanceId = nextMountInstanceId(
-    diagnosticsGlobal,
-    reloadGeneration
-  );
+  const reloadGeneration = getReloadGeneration(globalThis);
+  const mountInstanceId = nextMountInstanceId(reloadGeneration);
   const previous = store[key];
   const previousWasActive = Boolean(previous?.active);
   if (previousWasActive && previous) {
@@ -168,7 +105,7 @@ export function recordGLBModelMount(
     previous.loadState = "cancelled";
     previous.pendingStage = "cancelled";
     previous.cancellationState = "superseded";
-    markTransition(previous);
+    markDiagnosticTransition(previous, "cancelled");
   }
 
   store[key] = createModelDiagnosticSnapshot({
@@ -181,6 +118,7 @@ export function recordGLBModelMount(
     previousWasActive,
     transitionAtMs: transitionTimestampMs(),
   });
+  bumpDiagnosticRegistryVersion();
 
   return { key, url, mountInstanceId, reloadGeneration, terminalState: null };
 }
@@ -195,7 +133,7 @@ export function recordGLBModelUnmount(handle: GLBModelLifecycleHandle) {
   diagnostic.loadState = "cancelled";
   diagnostic.pendingStage = "cancelled";
   diagnostic.cancellationState = "unmounted";
-  markTransition(diagnostic);
+  markDiagnosticTransition(diagnostic, "cancelled");
   if (store) pruneInactiveDiagnostics(store);
 }
 
@@ -211,17 +149,64 @@ export function recordGLBModelMetadata(
   diagnostic.variantId = metadata.variantId;
   diagnostic.readinessKey = metadata.readinessKey;
   diagnostic.requiredForReadiness = metadata.requiredForReadiness;
+  markDiagnosticTransition(diagnostic, "metadata-updated");
 }
 
 export function recordGLBModelRender(handle: GLBModelLifecycleHandle | null) {
   if (!handle) return;
   const { diagnostic } = currentDiagnostic(handle);
-  if (diagnostic) diagnostic.renderCount += 1;
+  if (diagnostic) {
+    diagnostic.renderCount += 1;
+    bumpDiagnosticRegistryVersion();
+  }
+}
+
+export function recordGLBModelResourceAcquired(
+  handle: GLBModelLifecycleHandle,
+  resourceKind: "parsed" | "prepared",
+  resourceKeyHash: string,
+  cacheAcquisition: {
+    parsed: GLBModelCacheAcquisitionStatus | null;
+    prepared: GLBModelCacheAcquisitionStatus | null;
+  },
+) {
+  const { diagnostic } = currentDiagnostic(handle);
+  if (!diagnostic) return;
+  diagnostic.resourceKind = resourceKind;
+  diagnostic.resourceKeyHash = resourceKeyHash;
+  diagnostic.resourceAcquiredAtMs = transitionTimestampMs();
+  diagnostic.resourceReleasedAtMs = null;
+  diagnostic.parsedCacheStatus = cacheAcquisition.parsed;
+  diagnostic.preparedCacheStatus = cacheAcquisition.prepared;
+  markDiagnosticTransition(diagnostic, "resource-acquired");
+}
+
+export function recordGLBModelParsedCacheStatus(
+  handle: GLBModelLifecycleHandle,
+  parsedCacheStatus: GLBModelCacheAcquisitionStatus | null,
+) {
+  const { diagnostic } = currentDiagnostic(handle);
+  if (!diagnostic) return;
+  diagnostic.parsedCacheStatus = parsedCacheStatus;
+  bumpDiagnosticRegistryVersion();
+}
+
+export function recordGLBModelResourceReleased(
+  handle: GLBModelLifecycleHandle
+) {
+  const { diagnostic } = currentDiagnostic(handle);
+  if (!diagnostic) return;
+  diagnostic.resourceReleasedAtMs = transitionTimestampMs();
+  markDiagnosticTransition(diagnostic, "resource-released");
 }
 
 type PipelineStageRecorder = (
   diagnostic: GLBModelDiagnosticSnapshot,
-  options: { cacheStatus?: GLBModelCacheStatus }
+  options: {
+    cacheStatus?: GLBModelCacheStatus;
+    atMs?: number;
+    eventLoopDelayMs?: number | null;
+  }
 ) => void;
 const PIPELINE_STAGE_RECORDERS: Record<
   GLBModelPipelineStage,
@@ -253,6 +238,8 @@ const PIPELINE_STAGE_RECORDERS: Record<
     diagnostic.normalizationState = "complete";
     diagnostic.pendingStage = "materials";
   },
+  "material-cloning-started": () => {},
+  "material-cloning-complete": () => {},
   "materials-started": (diagnostic) => {
     diagnostic.materialState = "pending";
     diagnostic.pendingStage = "materials";
@@ -278,14 +265,23 @@ const PIPELINE_STAGE_RECORDERS: Record<
 export function recordGLBModelPipelineStage(
   handle: GLBModelLifecycleHandle,
   stage: GLBModelPipelineStage,
-  options: { cacheStatus?: GLBModelCacheStatus } = {}
+  options: {
+    cacheStatus?: GLBModelCacheStatus;
+    atMs?: number;
+    eventLoopDelayMs?: number | null;
+  } = {}
 ) {
   const { diagnostic } = currentDiagnostic(handle);
   if (!diagnostic) return;
   if (hasTerminalLoadState(diagnostic)) return;
 
   PIPELINE_STAGE_RECORDERS[stage](diagnostic, options);
-  markTransition(diagnostic);
+  markDiagnosticTransition(
+    diagnostic,
+    stage,
+    options.atMs,
+    options.eventLoopDelayMs,
+  );
 }
 
 export function recordGLBBoundsObservation(
@@ -307,6 +303,7 @@ export function recordGLBBoundsObservation(
     diagnostic.boundsInvalidCount += 1;
   }
   if (published) diagnostic.boundsPublicationCount += 1;
+  bumpDiagnosticRegistryVersion();
 }
 
 export function recordGLBSelectionOutlineVisibility(
@@ -315,7 +312,10 @@ export function recordGLBSelectionOutlineVisibility(
 ) {
   if (!handle) return;
   const { diagnostic } = currentDiagnostic(handle);
-  if (diagnostic) diagnostic.selectionOutlineVisible = visible;
+  if (diagnostic) {
+    diagnostic.selectionOutlineVisible = visible;
+    bumpDiagnosticRegistryVersion();
+  }
 }
 
 function markTerminalStage(
@@ -363,7 +363,10 @@ function applyDiagnosticLoadState(
     diagnostic.loadErrorCode = null;
     if (state === "ready") diagnostic.pendingStage = null;
   }
-  markTransition(diagnostic);
+  markDiagnosticTransition(
+    diagnostic,
+    state === "ready" ? "ready" : state === "error" ? "error" : "loading"
+  );
   return true;
 }
 
@@ -390,5 +393,8 @@ export function recordGLBExcessiveBoundsWarning(
 ) {
   if (!handle) return;
   const { diagnostic } = currentDiagnostic(handle);
-  if (diagnostic) diagnostic.excessiveBoundsWarningCount += 1;
+  if (diagnostic) {
+    diagnostic.excessiveBoundsWarningCount += 1;
+    bumpDiagnosticRegistryVersion();
+  }
 }

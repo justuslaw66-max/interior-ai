@@ -23,13 +23,35 @@ function priorCount(
   return previous?.[counter] ?? 0;
 }
 
-function safeUrlHash(url: string) {
+export function safeGLBResourceHash(value: string) {
   let hash = 0x811c9dc5;
-  for (let index = 0; index < url.length; index += 1) {
-    hash ^= url.charCodeAt(index);
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
     hash = Math.imul(hash, 0x01000193);
   }
   return `fnv1a-${(hash >>> 0).toString(16).padStart(8, "0")}`;
+}
+
+function initialLifecycleTiming(transitionAtMs: number) {
+  return {
+    lastTransitionName: "mounted" as const,
+    lastTransitionAtMs: transitionAtMs,
+    stageTimings: {
+      mounted: { atMs: transitionAtMs, eventLoopDelayMs: null },
+    },
+  };
+}
+
+function initialResourceState() {
+  return {
+    cacheStatus: "unknown" as const,
+    parsedCacheStatus: null,
+    preparedCacheStatus: null,
+    resourceKind: null,
+    resourceKeyHash: null,
+    resourceAcquiredAtMs: null,
+    resourceReleasedAtMs: null,
+  };
 }
 
 export function createModelDiagnosticSnapshot({
@@ -55,7 +77,7 @@ export function createModelDiagnosticSnapshot({
     key,
     ...metadata,
     url,
-    urlHash: safeUrlHash(url),
+    urlHash: safeGLBResourceHash(url),
     mountInstanceId,
     reloadGeneration,
     active: true,
@@ -76,14 +98,14 @@ export function createModelDiagnosticSnapshot({
     pendingStage: "request-start",
     requestStarted: false,
     responseCompleted: false,
-    cacheStatus: "unknown",
+    ...initialResourceState(),
     parseDecodeState: "not-started",
     normalizationState: "not-started",
     materialState: "not-started",
     boundsState: "not-started",
     sceneAttachmentState: "not-started",
     cancellationState: "active",
-    lastTransitionAtMs: transitionAtMs,
+    ...initialLifecycleTiming(transitionAtMs),
     terminalErrorCategory: null,
     loadErrorCode: null,
   };

@@ -1,5 +1,6 @@
 export type GLBModelLoadState = "loading" | "ready" | "error" | "cancelled";
 export type GLBModelCacheStatus = "unknown" | "network" | "cache-hit";
+export type GLBModelCacheAcquisitionStatus = "hit" | "miss";
 export type GLBModelPipelineState =
   | "not-started"
   | "pending"
@@ -21,11 +22,29 @@ export type GLBModelPipelineStage =
   | "parse-complete"
   | "normalization-started"
   | "normalization-complete"
+  | "material-cloning-started"
+  | "material-cloning-complete"
   | "materials-started"
   | "materials-complete"
   | "bounds-started"
   | "bounds-complete"
   | "scene-attached";
+
+export type GLBModelTransitionName =
+  | GLBModelPipelineStage
+  | "mounted"
+  | "metadata-updated"
+  | "resource-acquired"
+  | "resource-released"
+  | "loading"
+  | "ready"
+  | "error"
+  | "cancelled";
+
+export type GLBModelStageTiming = {
+  atMs: number;
+  eventLoopDelayMs: number | null;
+};
 
 export type GLBModelMountMetadata = {
   sceneItemId: string;
@@ -72,13 +91,21 @@ export type GLBModelDiagnosticSnapshot = {
   requestStarted: boolean;
   responseCompleted: boolean;
   cacheStatus: GLBModelCacheStatus;
+  parsedCacheStatus: GLBModelCacheAcquisitionStatus | null;
+  preparedCacheStatus: GLBModelCacheAcquisitionStatus | null;
   parseDecodeState: GLBModelPipelineState;
   normalizationState: GLBModelPipelineState;
   materialState: GLBModelPipelineState;
   boundsState: GLBModelPipelineState;
   sceneAttachmentState: GLBModelPipelineState;
   cancellationState: "active" | "unmounted" | "superseded";
+  resourceKind: "parsed" | "prepared" | null;
+  resourceKeyHash: string | null;
+  resourceAcquiredAtMs: number | null;
+  resourceReleasedAtMs: number | null;
+  lastTransitionName: GLBModelTransitionName;
   lastTransitionAtMs: number;
+  stageTimings: Partial<Record<GLBModelTransitionName, GLBModelStageTiming>>;
   terminalErrorCategory: GLBModelTerminalErrorCategory | null;
   loadErrorCode: GLBModelTerminalErrorCategory | null;
 };

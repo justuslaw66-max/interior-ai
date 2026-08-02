@@ -42,21 +42,22 @@ materials, and measured local bounds for an equivalent render configuration.
 Each cache has a 32-entry maximum, ref-counted leases, failed-load eviction,
 inactive least-recently-used pruning, and one disposal path per entry.
 
-Component instances clone the prepared scene graph but share cache-owned
-geometry/material resources and therefore do not dispose them. Prepared entries
-retain their parsed-source lease until eviction. `pagehide` clears prepared
+Component instances deep-clone the prepared scene graph, geometry, and
+materials, then dispose those instance-owned resources on release; immutable
+texture references remain cache-owned. Prepared entries retain their
+parsed-source lease until eviction. `pagehide` clears prepared
 entries before parsed entries so a true document reload starts a new resource
 and lifecycle generation; a BFCache-preserved `pagehide` retains both caches.
 Cache hits still emit the same lifecycle stages as a network load; they never
 synthesize `ready`.
 
-## CH-0028 external failure and classification
+## CH-0028 external evidence and current classification
 
-At source `8e0260f5654126ec21b669d0471bcfb3c0f5cf5b`, required run
-`30745386331` truthfully failed reload 1 after 70,001/70,000 ms in
-`model-responses-and-readiness`. All nine observed responses were complete,
-zero responses were outstanding, and these three current required fixture
-records remained loading:
+The initial required run `30745386331` at source
+`8e0260f5654126ec21b669d0471bcfb3c0f5cf5b` truthfully failed reload 1 after
+70,001/70,000 ms in `model-responses-and-readiness`. All nine observed
+responses were complete, zero responses were outstanding, and these three
+current required fixture records remained loading:
 
 | Diagnostic key | Product | Variant | Safe resource identity |
 | --- | --- | --- | --- |
@@ -64,29 +65,53 @@ records remained loading:
 | `runtime-smoke-model-2` | `sofa-real-castlery-jaron-3s` | `runtime-smoke-sofa-real-castlery-jaron-3s` | `/assets/models/sofa-real-castlery-jaron-3s.glb`, `fnv1a-a7623e72` |
 | `runtime-smoke-model-3` | `sofa-real-castlery-auburn-performance-fabric-3-seater-sofa` | `runtime-smoke-sofa-real-castlery-auburn-performance-fabric-3-seater-sofa` | `/assets/models/sofa-real-castlery-auburn-performance-fabric-3-seater-sofa.glb`, `fnv1a-3fa7f0e6` |
 
-Verified classification is **F — genuine performance condition**. Exact-stage
-instrumentation on the same production path ruled out stale generations,
-unmounted blockers, ignored current completion, optional-entry scoping, cache-
-hit transition loss, and unterminated parse/normalization/bounds errors. The
-pre-fix component created a fresh loader and repeated parse/decode,
-normalization, material cloning, and bounds work for the forced in-document
-2D→3D remount. The external response count of nine against six required
-responses confirms that extra remount generation before reload 1. The external
-artifact retained aggregate loading state, not the exact post-response stage.
-Controlled same-path production traces completed the current-generation stages;
-combined with the external response count and timing, that supports the F
-classification rather than claiming an unretained stage trace from the runner.
+That evidence established the original redundant-remount performance condition.
+CH-0028 removed the extra in-document loader generation through bounded caches
+without changing any timing or readiness contract.
 
-CH-0028 removes that redundant remount work through the bounded caches. It does
-not change the 70,000 ms operation budget, 308,000 ms reload budget, retry/skip
-policy, three reloads, response requirements, or any readiness assertion.
+The authoritative follow-up is required-only run `30752899319` at exact source
+`c0ccd0d5f4c4d20b058712e4c6e20c3146f02068`. It proved eight active-required
+models ready, zero loading/error, six cumulative fixture responses on reload 1,
+the three exact identities above, stable active keys and registry equality, and
+current-generation readiness. Models-ready occurred around 71.3 seconds and
+bounds-settled around 109.6 seconds, but the final required snapshot exceeded
+its unchanged 5,000 ms budget. Its safe three-file artifact is `8835124580`.
+
+The final-snapshot failure is classified **B — browser main-thread starvation**.
+The five-second timeout alone did not establish this: the retained external
+timeline showed earlier diagnostic callbacks delayed for tens of seconds, and
+the replacement snapshot now separates host request, callback entry,
+computation start/end, explicit serialization completion, and host receipt.
+Across the final nine clean local reloads, callback scheduling used 510–674 ms,
+the metadata snapshot computed in 0–0.2 ms, JSON serialization used 0 ms, and
+transfer used 255–448 ms, while the browser event-loop probe observed
+9,557.2–11,320.3 ms stalls. Per-model maxima were parse/decode 287.7 ms,
+normalization 8.4 ms, isolated material/geometry cloning 0.3 ms, material setup
+168.5 ms, bounds 4.0 ms, prerequisite-to-post-commit scene attachment 97.4 ms,
+and ready publication 0.1 ms. Per-stage loop samples are same-boundary
+observations, not causal attribution; historical Resource Timing response ends
+carry no mismatched loop sample. The measured long-delay category is
+main-thread scheduling, not snapshot traversal, cache inconsistency, payload
+serialization, stale observation, repeated parse/preparation, bounds,
+attachment, disposal, or cache misses.
+
+The canonical 70,000 ms `model-responses-and-readiness` operation budget
+remains hard and unchanged. The separate reload
+`performanceWarningThresholdMs: 70_000` is explicitly a non-failing
+performance observation threshold, not an authoritative product-performance
+or independent release requirement. Lifecycle/cache correctness remains
+CH-0028; constrained-runner end-to-end reload latency is tracked separately as
+CH-0029.
 
 ## Safe diagnostics
 
 Production diagnostics are enabled only by the existing explicit smoke flag.
-Records may contain scene/product/variant/readiness identifiers, safe URL/hash,
-mount instance, reload generation, required/active status, closed stage states,
-cancellation state, monotonic transition time, and closed terminal category.
+The optional in-page registry may retain the loader URL for lifecycle debugging;
+the required snapshot and its logs expose only the safe resource hash. Required
+records may contain controlled scene/product/variant/readiness identifiers,
+mount instance, reload generation, required/active status, separate parsed and
+prepared acquisition outcomes, closed stage states, cancellation state,
+monotonic transition time, and closed terminal category.
 They must not contain credentials, environment values, machine-local paths,
 user content, raw response bodies, or loader error objects.
 
