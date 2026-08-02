@@ -1,0 +1,172 @@
+brand: "Castlery"
+retailer: "Castlery Singapore"
+source_url: "https://www.castlery.com/sg/products/seb-dining-table?length=1_8m"
+category: "dining_table"
+
+product_family: "Seb"
+product_name: "Seb Dining Table"
+variant: "180cm Muted Honey"
+
+price_usd: 799
+price_band: "mid"
+brand_tier: "premium_mid"
+
+design_zone: "dining_zone"
+anchor_role: "dining_anchor"
+
+dimensions:
+  width_cm: 180
+  depth_cm: 90
+  height_cm: 75
+
+seat_capacity: 6
+size_class: "large"
+
+shape: "rectangular"
+base_type: "four_leg"
+
+material_family: "wood"
+material_mix: "solid_acacia_wood"
+
+materials:
+  tabletop:
+    structure: "solid_wood"
+    wood_species: "acacia"
+    surface: "solid_wood"
+  base:
+    structure: "solid_wood"
+    wood_species: "acacia"
+    surface: "solid_wood"
+
+finish:
+  tabletop_finish: "muted_honey"
+  base_finish: "muted_honey"
+  protective_coating: "lacquer"
+  surface_finish: "wire_brush_distressed"
+  finish_color: "muted_honey"
+
+color_family: "brown"
+tone: "warm"
+
+style_cluster: "midcentury_modern"
+style_secondary: "rustic"
+design_era: "midcentury"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "straight"
+  silhouette: "linear"
+  form_language: "organic"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  chair_pullback_cm: 60
+  walkway_clearance_cm: 90
+
+room_compatibility:
+  - "dining_room"
+  - "open_plan"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: true
+
+design_pairings:
+  - "dining_chair"
+  - "dining_bench"
+  - "pendant_light"
+  - "dining_rug"
+  - "sideboard"
+
+product_details:
+  material:
+    - label: "Material"
+      value: "Solid acacia wood"
+    - label: "Leg frame"
+      value: "Solid acacia wood"
+    - label: "Finish"
+      value: "Muted honey tone and wire brush distressed finish"
+    - label: "Care"
+      value: "Wooden table"
+    - label: "Colour variance"
+      value: "Natural variations"
+    - label: "Material & safety standards"
+      value: "Formaldehyde safe"
+    - label: "Sustainability"
+      value: "Responsibly sourced"
+  dimensions:
+    - label: "Dimension"
+      value: "W180 x D90 x H75cm"
+    - label: "Leg to leg distance (at height 45cm)"
+      value: "153cm"
+    - label: "Capacity"
+      value: "Sits 6 people comfortably"
+    - label: "Packaging dimensions"
+      value: "1 box"
+    - label: "Levellers"
+      value: "Included (max 2cm)"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Delivery type"
+      value: "White Glove"
+    - label: "Warranty"
+      value: "5-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+
+assets:
+  asset_id: "dining-real-castlery-seb-dining-table-180"
+  model_url: "/assets/models/dining-real-castlery-seb-dining-table-180.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1664534471/crusader/variants/40550094/Seb-Dining-Table-180cm-Front-1664534468.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1639132406/crusader/variants/40550094/Seb-Dining-Table-Set_1.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1664534471/crusader/variants/40550094/Seb-Dining-Table-180cm-Front-1664534468.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1624965970/crusader/variants/40550094/Seb-Dining-Table-Set2.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1655220845/crusader/variants/40550094/Seb-Dining-Table-180-Dim-1655220842.jpg"
+
+ai_flags:
+  isStarterEligible: false
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+
+variants:
+  - variant: "180cm Muted Honey"
+    size_label: "180"
+    finish_code: "muted_honey"
+    finish_label: "Muted Honey"
+    swatch_group: "wood_finish"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1664534471/crusader/variants/40550094/Seb-Dining-Table-180cm-Front-1664534468.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1639132406/crusader/variants/40550094/Seb-Dining-Table-Set_1.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1664534471/crusader/variants/40550094/Seb-Dining-Table-180cm-Front-1664534468.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1624965970/crusader/variants/40550094/Seb-Dining-Table-Set2.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1655220845/crusader/variants/40550094/Seb-Dining-Table-180-Dim-1655220842.jpg"
+    price_usd: 799
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 180
+      depth_cm: 90
+      height_cm: 75
+    seat_capacity: 6
+    size_class: "large"
+    color_family: "brown"
+    tone: "warm"
+    materials:
+      tabletop:
+        structure: "solid_wood"
+        wood_species: "acacia"
+        surface: "solid_wood"
+      base:
+        structure: "solid_wood"
+        wood_species: "acacia"
+        surface: "solid_wood"
+    finish:
+      tabletop_finish: "muted_honey"
+      base_finish: "muted_honey"
+      protective_coating: "lacquer"
+      surface_finish: "wire_brush_distressed"
+      finish_color: "muted_honey"

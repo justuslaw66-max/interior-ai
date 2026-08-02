@@ -1,56 +1,68 @@
 import { NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { parseDesignClaimPayload } from "@/lib/design-route-payload";
+import { rateLimit } from "@/lib/rateLimit";
+import {
+  ApiBoundaryError,
+  apiErrorResponse,
+  apiSuccessHeaders,
+  createOperationId,
+  readJsonRequest,
+} from "@/lib/api-boundary";
 
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
-  const body = await req.json().catch(() => ({}));
-  const {
-    anonymousId,
-    designSnapshot,
-    roomType,
-    itemsCount,
-  } = body ?? {};
+  const operation = "design.claim_guest";
+  const operationId = createOperationId();
+  const startedAt = Date.now();
+  try {
+  const body = await readJsonRequest(req, 5 * 1024 * 1024);
+  const parsed = parseDesignClaimPayload(body);
 
-  if (!anonymousId || !designSnapshot) {
-    return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+  if (!parsed.ok) {
+    throw new ApiBoundaryError(parsed.status, "BAD_REQUEST", parsed.error);
   }
-
-  const {
-    title,
-    roomWidth,
-    roomDepth,
-    items,
-    style,
-    budget,
-    mode,
-    notes,
-  } = designSnapshot ?? {};
-
-  if (
-    typeof roomWidth !== "number" ||
-    typeof roomDepth !== "number" ||
-    !Array.isArray(items)
-  ) {
-    return NextResponse.json({ error: "Invalid snapshot" }, { status: 400 });
+  const { anonymousId, roomType, itemsCount, design: payload } = parsed.value;
+  const rl = rateLimit(`guest-claim:${anonymousId}`, 3, 60 * 60_000);
+  if (!rl.ok) {
+    throw new ApiBoundaryError(429, "RATE_LIMITED", "Too many guest save attempts.");
+  }
+  const existingCount = await prisma.design.count({
+    where: { anonymousId, userId: null },
+  });
+  if (existingCount >= 3) {
+    throw new ApiBoundaryError(429, "RATE_LIMITED", "Guest design limit reached.");
   }
 
   const design = await prisma.design.create({
     data: {
       anonymousId,
-      title: typeof title === "string" ? title : "Guest Design",
-      roomWidth: Number(roomWidth),
-      roomDepth: Number(roomDepth),
-      items: JSON.parse(JSON.stringify(items)),
-      style: typeof style === "string" ? style : null,
-      budget: typeof budget === "string" ? budget : null,
-      mode: typeof mode === "string" ? mode : "homeowner",
-      notes: typeof notes === "string" ? notes : null,
+      title: payload.title,
+      roomWidth: payload.roomWidth,
+      roomDepth: payload.roomDepth,
+      items: payload.items as Prisma.InputJsonValue,
+      ...(payload.snapshot
+        ? { snapshot: payload.snapshot as unknown as Prisma.InputJsonValue }
+        : {}),
+      zones: payload.zones as Prisma.InputJsonValue,
+      savedViews: payload.savedViews as Prisma.InputJsonValue,
+      style: payload.style,
+      budget: payload.budget,
+      mode: payload.mode,
+      notes: payload.notes,
       shareEnabled: false,
       shareToken: null,
-    } as any,
+    },
     select: { id: true },
   });
 
-  return NextResponse.json({ designId: design.id, roomType, itemsCount });
+  return NextResponse.json(
+    { designId: design.id, roomType, itemsCount },
+    { headers: apiSuccessHeaders(operationId) }
+  );
+  } catch (error) {
+    return apiErrorResponse(error, { operation, operationId, startedAt });
+  }
 }

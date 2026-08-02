@@ -1,12 +1,18 @@
 #!/usr/bin/env node
 
-const { exec } = require('child_process');
-const path = require('path');
+let exec;
+
+async function ensureExec() {
+  if (exec) return exec;
+  ({ exec } = await import('node:child_process'));
+  return exec;
+}
 
 async function queryDatabase(sqlQuery) {
+  const execFn = await ensureExec();
   return new Promise((resolve, reject) => {
     const command = `cd /Users/justus/Documents/Interior-AI/interior-ai && npx prisma db execute --stdin`;
-    const child = exec(command, (error, stdout, stderr) => {
+    const child = execFn(command, (error, stdout) => {
       if (error) {
         reject(error);
       } else {

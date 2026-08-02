@@ -1,0 +1,66 @@
+brand: "Example Brand"
+category: "sofa"
+
+product_family: "Canonical Outdoor"
+product_name: "Canonical Outdoor Sofa"
+variant: "3-Seater"
+
+price_usd: 1899
+price_band: "premium"
+brand_tier: "premium_mid"
+
+design_zone: "outdoor_zone"
+anchor_role: "sofa_anchor"
+
+dimensions:
+  width_cm: 220
+  depth_cm: 95
+  height_cm: 78
+
+seat_capacity: 3
+size_class: "large"
+material_family: "mixed"
+color_family: "grey"
+tone: "cool"
+style_cluster: "coastal"
+
+room_compatibility:
+  - "outdoor"
+
+design_pairings:
+  - "coffee_table"
+  - "rug"
+  - "side_table"
+
+assets:
+  asset_id: "example-outdoor-sofa"
+  model_url: "/assets/models/example-outdoor-sofa.glb"
+  thumbnail_url: "/assets/thumbs/example-outdoor-sofa.png"
+
+variants:
+  - variant: "Storm"
+    finish_code: "storm"
+    finish_label: "Storm"
+    swatch_group: "upholstery"
+    price_usd: 1899
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 220
+      depth_cm: 95
+      height_cm: 78
+    seat_capacity: 3
+    size_class: "large"
+    color_family: "grey"
+    tone: "cool"
+    materials:
+      frame:
+        structure: "metal"
+        surface: "powder_coated_metal"
+      upholstery:
+        structure: "fabric"
+        surface: "performance_fabric"
+    finish:
+      color_finish: "storm"
+      surface_finish: "matte"
+      finish_color: "storm"

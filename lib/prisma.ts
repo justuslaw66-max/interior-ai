@@ -1,31 +1,21 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
+import fs from "node:fs";
+import path from "node:path";
 
 // Resolve DATABASE_URL synchronously BEFORE Prisma initializes
 const resolvedDatabaseUrl = (() => {
-  const fs = require("fs");
-  const path = require("path");
   const appEnv = (process.env.APP_ENV || process.env.NODE_ENV || "development").toLowerCase();
 
   if (process.env.DATABASE_URL) {
     return process.env.DATABASE_URL;
   }
 
-  const possiblePaths = [
-    path.resolve(process.cwd(), `.env.${appEnv}`),
-    path.resolve(process.cwd(), ".env.local"),
-    path.resolve(process.cwd(), ".env"),
-    path.resolve(process.cwd(), "interior-ai", ".env.local"),
-    path.resolve(process.cwd(), "interior-ai", `.env.${appEnv}`),
-    path.join(__dirname, "..", ".env.local"),
-    path.join(__dirname, "..", `.env.${appEnv}`),
-    path.join(__dirname, "..", ".env"),
-    path.join(__dirname, "..", "..", "interior-ai", ".env.local"),
-    path.join(__dirname, "..", "..", "interior-ai", `.env.${appEnv}`),
-  ];
+  const envFileNames = [`.env.${appEnv}`, ".env.local", ".env"];
 
-  for (const envPath of possiblePaths) {
+  for (const envFileName of envFileNames) {
+    const envPath = path.resolve(/* turbopackIgnore: true */ process.cwd(), envFileName);
     try {
       if (!fs.existsSync(envPath)) continue;
       const content = fs.readFileSync(envPath, "utf-8");

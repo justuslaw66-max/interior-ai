@@ -1,0 +1,2849 @@
+status: "published"
+brand: "Castlery"
+retailer: "Castlery Singapore"
+source_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+category: "armchair"
+
+product_family: "Lena"
+product_name: "Lena Armchair"
+slug: "castlery-lena-armchair"
+variant: "Armchair / Hugo Greige Fabric / Brass Legs"
+
+price_usd: 699
+price_band: "mid_premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "secondary"
+
+dimensions:
+  width_cm: 96
+  depth_cm: 95
+  height_cm: 84
+
+seat_capacity: 1
+size_class: "medium"
+shape: "rectangular"
+base_type: "legged"
+
+material_family: "upholstered"
+material_mix: "upholstered_metal"
+material_mix_components:
+  - "solid_wood"
+  - "plywood"
+  - "metal"
+  - "performance_fabric"
+  - "leather"
+
+materials:
+  frame:
+    structure:
+      - "solid_wood"
+      - "plywood"
+  leg:
+    structure: "metal"
+    finish: "Brass or Matte Black"
+  upholstery:
+    material_type: "performance_fabric"
+    label: "Performance Multi-Tone Twill (Hugo), Light Grey (Greige)"
+    composition: "68% polyester, 32% recycled polyester"
+
+color_family: "grey"
+tone: "neutral"
+style_cluster: "contemporary"
+style_secondary: "modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "rounded"
+  silhouette: "rounded_armchair"
+  form_language: "soft_tailored"
+  descriptors:
+    - "shelter_arm"
+    - "loose_back_cushion"
+    - "metal_legs"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  walkway_clearance_cm: 60
+  descriptors:
+    - "accent_lounge_chair"
+    - "reading_corner_suitable"
+    - "living_room_pairing"
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+  - "bedroom"
+  - "open_plan"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: false
+  floating_layout_supported: true
+  recommended_in_front_of:
+    - "side_table"
+    - "floor_lamp"
+    - "rug"
+    - "coffee_table"
+  clearance_guidance:
+    chair_to_table_cm_min: 20
+    circulation_cm_min: 60
+
+design_pairings:
+  - "side_table"
+  - "floor_lamp"
+  - "rug"
+  - "sofa"
+  - "coffee_table"
+
+authoring_notes:
+  category_confidence: "high"
+  source_checked: "Castlery Singapore product pages, 2026-06-21"
+  source_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+  leather_source_url: "https://www.castlery.com/sg/products/lena-leather-armchair"
+  note: "Castlery SG exposes stocked Hugo fabrics, custom fabric choices, Marche Cocoa leather, and Brass/Matte Black leg finishes on the Lena armchair PDPs. Local GLBs are reused per leg finish while every material option uses the actual PDP swatch card."
+
+shipping_and_warranty:
+  cancellation: "Free - 5 working days before delivery"
+  warranty: "Frame 3 years; Foam 2 years; Leather/Fabric 1 year"
+  return_policy: "100-day returns for eligible non-clearance items"
+
+summary:
+  short_description: "A rounded lounge armchair with plush cushioning, tailored upholstery, and selectable brass or matte black metal legs."
+  long_description: "Lena pairs a soft, rounded lounge silhouette with durable upholstery choices and refined metal legs for living rooms, bedrooms, and reading corners."
+  key_features:
+    - "Performance fabric and leather model choices from the Lena armchair family"
+    - "Brass and Matte Black leg finish choices"
+    - "Loose cushion lounge silhouette"
+    - "Compact single-seat footprint for accent seating"
+
+product_details:
+  material:
+    - label: "Frame"
+      value: "Solid wood and plywood frame"
+    - label: "Leg frame"
+      value: "Metal legs, available in Brass or Matte Black"
+    - label: "Fabric composition"
+      value: "68% Polyester, 32% Recycled Polyester. (PFAS free)"
+    - label: "Leather"
+      value: "Top grain leather with match crafted from American hides"
+  dimensions:
+    - label: "Overall"
+      value: "W96 x D95 x H84 cm"
+    - label: "Seating depth"
+      value: "53 cm"
+    - label: "Seatable width"
+      value: "58 cm"
+    - label: "Seating height"
+      value: "46 cm"
+    - label: "Packaging"
+      value: "W100 x D99 x H88 cm"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free - 5 working days before delivery"
+    - label: "Warranty"
+      value: "Frame 3 years; Foam 2 years; Leather/Fabric 1 year"
+    - label: "Fabric care"
+      value: "Gentle machine wash with cold water; do not tumble dry, bleach or iron; do not dry clean; line dry only."
+    - label: "Leather care"
+      value: "Blot spills immediately, avoid direct heat and sunlight, dust regularly, and condition every 6 to 12 months."
+
+product_details_by_material_type:
+  fabric:
+    material:
+      - label: "Frame"
+        value: "Solid wood and plywood frame"
+      - label: "Leg frame"
+        value: "Metal legs, available in Brass or Matte Black"
+      - label: "Fabric collection"
+        value: "Performance Multi-Tone Twill (Hugo)"
+      - label: "Fabric composition"
+        value: "68% Polyester, 32% Recycled Polyester. (PFAS free)"
+    dimensions:
+      - label: "Overall"
+        value: "W96 x D95 x H84 cm"
+      - label: "Seating depth"
+        value: "53 cm"
+      - label: "Seatable width"
+        value: "58 cm"
+      - label: "Seating height"
+        value: "46 cm"
+      - label: "Packaging"
+        value: "W100 x D99 x H88 cm"
+    delivery_and_warranty:
+      - label: "Cancellation"
+        value: "Free - 5 working days before delivery"
+      - label: "Warranty"
+        value: "Frame 3 years; Foam 2 years; Fabric 1 year"
+      - label: "Care"
+        value: "Gentle machine wash with cold water; do not tumble dry, bleach or iron; do not dry clean; line dry only."
+  leather:
+    material:
+      - label: "Frame"
+        value: "Solid wood and plywood frame"
+      - label: "Leg frame"
+        value: "Metal legs, available in Brass or Matte Black"
+      - label: "Leather"
+        value: "Top grain leather with match crafted from American hides"
+      - label: "Natural leather marks"
+        value: "Colour variations, wrinkles, and creases are normal characteristics of genuine leather."
+    dimensions:
+      - label: "Overall"
+        value: "W96 x D95 x H84 cm"
+      - label: "Seating depth"
+        value: "53 cm"
+      - label: "Seatable width"
+        value: "58 cm"
+      - label: "Seating height"
+        value: "46 cm"
+      - label: "Packaging"
+        value: "W100 x D99 x H88 cm"
+    delivery_and_warranty:
+      - label: "Cancellation"
+        value: "Free - 5 working days before delivery"
+      - label: "Warranty"
+        value: "Frame 3 years; Foam 2 years; Leather 1 year"
+      - label: "Care"
+        value: "Blot spills immediately, avoid direct heat and sunlight, dust regularly, and condition every 6 to 12 months."
+
+comfort_profile:
+  seat_comfort:
+    label: "Balanced"
+    value: 3
+    min_label: "Soft"
+    max_label: "Firm"
+  seat_depth:
+    label: "Medium"
+    value: 3
+    min_label: "Upright"
+    max_label: "Deep"
+  seat_height:
+    label: "Standard"
+    value: 3
+    min_label: "Low"
+    max_label: "High"
+
+assets:
+  asset_id: "armchair-real-castlery-lena-leather-armchair-cocoa-brass-legs"
+  model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-brass-legs.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1758786944/crusader/variants/AS-000936-PH4001-GD/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Square-Set_1-1758786944.jpg"
+    - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438644/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Angle.jpg"
+    - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,c_fit/v1779864442/pim/converting/1779864439281/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Dim.jpg"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+  room_anchor_weight: 0.5
+  requires_sofa_pairing: false
+  good_for_small_spaces: true
+  avoid_blocking_paths: true
+
+upholstery_options:
+  - upholstery_code: "performance_hugo_greige"
+    color_label: "Light Grey (Greige)"
+    upholstery_label: "Performance Multi-Tone Twill (Hugo), Light Grey (Greige)"
+    fabric_family: "Performance Multi-Tone Twill (Hugo)"
+    collection_type: "stocked_fabric"
+    swatch_group: "upholstery_option"
+    material_type: "performance_fabric"
+    color_family: "grey"
+    tone: "cool"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/upload/w_800,f_auto,q_auto/v1780036051/pim/converting/1780036047878/Tavi-Wood-Back-Dining-Chair-Performance-Hugo-Greige-Walnut-Det_2-1.jpg"
+  - upholstery_code: "performance_hugo_cream"
+    color_label: "Cream"
+    upholstery_label: "Performance Multi-Tone Twill (Hugo), Cream"
+    fabric_family: "Performance Multi-Tone Twill (Hugo)"
+    collection_type: "stocked_fabric"
+    swatch_group: "upholstery_option"
+    material_type: "performance_fabric"
+    color_family: "cream"
+    tone: "neutral"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770099199/crusader/variants/PH-4002/PH4002-Performance-Hugo-Cream-1770099196.jpg"
+  - upholstery_code: "infinity_boucle_cream"
+    color_label: "Cream"
+    upholstery_label: "Performance Infinity Boucle, Cream"
+    fabric_family: "Performance Infinity Boucle"
+    collection_type: "custom_fabric"
+    swatch_group: "upholstery_option"
+    material_type: "performance_fabric"
+    color_family: "cream"
+    tone: "neutral"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770191309/crusader/variants/IN-4005/IN4005-Cream-1770191306.jpg"
+  - upholstery_code: "infinity_boucle_white_quartz"
+    color_label: "Light Grey (White Quartz)"
+    upholstery_label: "Performance Infinity Boucle, Light Grey (White Quartz)"
+    fabric_family: "Performance Infinity Boucle"
+    collection_type: "custom_fabric"
+    swatch_group: "upholstery_option"
+    material_type: "performance_fabric"
+    color_family: "cream"
+    tone: "neutral"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1640236351/crusader/variants/IN-4001/White-Quartz_1.jpg"
+  - upholstery_code: "infinity_boucle_moss"
+    color_label: "Moss"
+    upholstery_label: "Performance Infinity Boucle, Moss"
+    fabric_family: "Performance Infinity Boucle"
+    collection_type: "custom_fabric"
+    swatch_group: "upholstery_option"
+    material_type: "performance_fabric"
+    color_family: "green"
+    tone: "cool"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770098928/crusader/variants/IN-4004/IN4004-Moss-1770098923.jpg"
+  - upholstery_code: "infinity_boucle_ginger"
+    color_label: "Rust (Ginger)"
+    upholstery_label: "Performance Infinity Boucle, Rust (Ginger)"
+    fabric_family: "Performance Infinity Boucle"
+    collection_type: "custom_fabric"
+    swatch_group: "upholstery_option"
+    material_type: "performance_fabric"
+    color_family: "brown"
+    tone: "warm"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710492060/crusader/variants/IN-4003/Marlow-Armless-2-Seater-Sofa-Performance-Ginger-Caramel-Square-Det_3-1710492057.jpg"
+  - upholstery_code: "peyton_ivory"
+    color_label: "Ivory (Cream)"
+    upholstery_label: "Performance Fleece (Peyton), Ivory (Cream)"
+    fabric_family: "Performance Fleece (Peyton)"
+    collection_type: "custom_fabric"
+    swatch_group: "upholstery_option"
+    material_type: "performance_fabric"
+    color_family: "cream"
+    tone: "neutral"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722322775/crusader/variants/PY-4001/Ivory-1722322773.jpg"
+  - upholstery_code: "peyton_dove_grey"
+    color_label: "Medium Grey (Dove Grey)"
+    upholstery_label: "Performance Fleece (Peyton), Medium Grey (Dove Grey)"
+    fabric_family: "Performance Fleece (Peyton)"
+    collection_type: "custom_fabric"
+    swatch_group: "upholstery_option"
+    material_type: "performance_fabric"
+    color_family: "grey"
+    tone: "cool"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722322647/crusader/variants/PY-4002/Dove-Grey-1722322645.jpg"
+  - upholstery_code: "peyton_moss"
+    color_label: "Moss"
+    upholstery_label: "Performance Fleece (Peyton), Moss"
+    fabric_family: "Performance Fleece (Peyton)"
+    collection_type: "custom_fabric"
+    swatch_group: "upholstery_option"
+    material_type: "performance_fabric"
+    color_family: "green"
+    tone: "cool"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722320266/crusader/variants/PY-4003/Moss-1722320263.jpg"
+  - upholstery_code: "peyton_cumin"
+    color_label: "Caramel (Cumin)"
+    upholstery_label: "Performance Fleece (Peyton), Caramel (Cumin)"
+    fabric_family: "Performance Fleece (Peyton)"
+    collection_type: "custom_fabric"
+    swatch_group: "upholstery_option"
+    material_type: "performance_fabric"
+    color_family: "brown"
+    tone: "warm"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1721120972/crusader/variants/PY-4004/Cumin-Swathc_1-1721120969.jpg"
+  - upholstery_code: "genova_oat"
+    color_label: "Sand (Oat)"
+    upholstery_label: "Performance Linen Weave (Genova), Sand (Oat)"
+    fabric_family: "Performance Linen Weave (Genova)"
+    collection_type: "custom_fabric"
+    swatch_group: "upholstery_option"
+    material_type: "performance_fabric"
+    color_family: "beige"
+    tone: "warm"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1757063296/crusader/variants/PG-4002/Mori-Armchair-Oat-Walnut-Leg-Det_2-1757063296.jpg"
+  - upholstery_code: "genova_cream"
+    color_label: "Cream"
+    upholstery_label: "Performance Linen Weave (Genova), Cream"
+    fabric_family: "Performance Linen Weave (Genova)"
+    collection_type: "custom_fabric"
+    swatch_group: "upholstery_option"
+    material_type: "performance_fabric"
+    color_family: "cream"
+    tone: "neutral"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770188184/crusader/variants/PG-4003/PG4003-Cream-1770188182.jpg"
+  - upholstery_code: "genova_light_grey"
+    color_label: "Light Grey"
+    upholstery_label: "Performance Linen Weave (Genova), Light Grey"
+    fabric_family: "Performance Linen Weave (Genova)"
+    collection_type: "custom_fabric"
+    swatch_group: "upholstery_option"
+    material_type: "performance_fabric"
+    color_family: "grey"
+    tone: "cool"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770188172/crusader/variants/PG-4004/PG4004-Light-Grey-1770188170.jpg"
+  - upholstery_code: "performance_creamy_white"
+    color_label: "Creamy White"
+    upholstery_label: "Performance Creamy White"
+    fabric_family: "Performance Twill"
+    collection_type: "custom_fabric"
+    swatch_group: "upholstery_option"
+    material_type: "performance_fabric"
+    color_family: "cream"
+    tone: "neutral"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1774943787/crusader/variants/PT-4001/PT4001-Performance-Twill-Creamy-White-1774943785.jpg"
+  - upholstery_code: "performance_twill_pearl_beige"
+    color_label: "Pearl Beige"
+    upholstery_label: "Performance Twill, Pearl Beige"
+    fabric_family: "Performance Twill"
+    collection_type: "custom_fabric"
+    swatch_group: "upholstery_option"
+    material_type: "performance_fabric"
+    color_family: "beige"
+    tone: "warm"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1747116409/crusader/variants/PT-4002/Levi-Office-Chair-Twill-Pearl-Beige-Square-Det_4-1747116407.jpg"
+  - upholstery_code: "performance_twill_medium_grey"
+    color_label: "Medium Grey"
+    upholstery_label: "Performance Twill, Medium Grey"
+    fabric_family: "Performance Twill"
+    collection_type: "custom_fabric"
+    swatch_group: "upholstery_option"
+    material_type: "performance_fabric"
+    color_family: "grey"
+    tone: "cool"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1769061840/crusader/variants/PT-4005/PT4005-Performance-Twill-Dove-Grey-1769061838.jpg"
+  - upholstery_code: "performance_twill_slate"
+    color_label: "Slate"
+    upholstery_label: "Performance Twill, Slate"
+    fabric_family: "Performance Twill"
+    collection_type: "custom_fabric"
+    swatch_group: "upholstery_option"
+    material_type: "performance_fabric"
+    color_family: "grey"
+    tone: "cool"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1756361613/crusader/variants/PT-4003/Performance-Twill-Slate-1756361610.jpg"
+  - upholstery_code: "performance_twill_moss"
+    color_label: "Moss"
+    upholstery_label: "Performance Twill, Moss"
+    fabric_family: "Performance Twill"
+    collection_type: "custom_fabric"
+    swatch_group: "upholstery_option"
+    material_type: "performance_fabric"
+    color_family: "green"
+    tone: "cool"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1756438801/crusader/variants/PT-4004/Moss-1756438798.jpg"
+  - upholstery_code: "washed_chenille_cream"
+    color_label: "Cream"
+    upholstery_label: "Washed Chenille, Cream"
+    fabric_family: "Washed Chenille"
+    collection_type: "custom_fabric"
+    swatch_group: "upholstery_option"
+    material_type: "performance_fabric"
+    color_family: "cream"
+    tone: "neutral"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1769054456/crusader/variants/GR-4001/GR4001-Greta-Ivory-1769054453.jpg"
+  - upholstery_code: "washed_chenille_sand"
+    color_label: "Sand"
+    upholstery_label: "Washed Chenille, Sand"
+    fabric_family: "Washed Chenille"
+    collection_type: "custom_fabric"
+    swatch_group: "upholstery_option"
+    material_type: "performance_fabric"
+    color_family: "beige"
+    tone: "warm"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770188296/crusader/variants/GR-4002/GR4002-Latte-1770188293.jpg"
+  - upholstery_code: "washed_chenille_caramel"
+    color_label: "Caramel"
+    upholstery_label: "Washed Chenille, Caramel"
+    fabric_family: "Washed Chenille"
+    collection_type: "custom_fabric"
+    swatch_group: "upholstery_option"
+    material_type: "performance_fabric"
+    color_family: "brown"
+    tone: "warm"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1769054464/crusader/variants/GR-4003/GR4003-Greta-Mustard-Brown-1769054461.jpg"
+  - upholstery_code: "washed_chenille_moss"
+    color_label: "Moss"
+    upholstery_label: "Washed Chenille, Moss"
+    fabric_family: "Washed Chenille"
+    collection_type: "custom_fabric"
+    swatch_group: "upholstery_option"
+    material_type: "performance_fabric"
+    color_family: "green"
+    tone: "cool"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1769054472/crusader/variants/GR-4004/GR4004-Greta-Moss-1769054469.jpg"
+  - upholstery_code: "marche_cocoa"
+    color_label: "Cocoa"
+    upholstery_label: "Marche, Cocoa"
+    fabric_family: "Marche Leather"
+    collection_type: "stocked_leather"
+    swatch_group: "upholstery_option"
+    material_type: "leather"
+    color_family: "brown"
+    tone: "warm"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1741163167/crusader/variants/LE-4023/Cocoa_Swatch-1741163165.jpg"
+
+finish_options:
+  - finish_code: "brass"
+    finish_label: "Brass"
+    material_structure: "metal"
+    swatch_image_url: "https://production-static-images.s3.amazonaws.com/swatches/brass-leg.jpg"
+  - finish_code: "matte_black"
+    finish_label: "Matte Black"
+    material_structure: "metal"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/upload/w_800,f_auto,q_auto/v1747129020/knight/cms/swatch/Leg-Color/Leon-Office-Chair-Performance-Twill-Pearl-Beige-Matte-black-Det_3.jpg"
+
+variants:
+
+  - variant: Armchair / Hugo Greige Fabric / Brass Legs
+    sku: AS-000936-PH4001-GD
+    size_label: 96x95
+    finish_code: hugo_greige_brass
+    finish_label: Light Grey (Greige) / Brass Legs
+    upholstery_code: performance_hugo_greige
+    upholstery_label: Performance Multi-Tone Twill (Hugo), Light Grey (Greige)
+    leg_finish_code: brass
+    leg_finish_label: Brass
+    thumbnail_url: https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg
+      - https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1758786944/crusader/variants/AS-000936-PH4001-GD/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Square-Set_1-1758786944.jpg
+      - https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438644/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Angle.jpg
+      - https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864441/pim/converting/1779864438385/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Side.jpg
+      - https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438556/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Back.jpg
+      - https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,c_fit/v1779864442/pim/converting/1779864439281/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Dim.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#d6d6cf"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1758786944/crusader/variants/AS-000936-PH4001-GD/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Square-Set_1-1758786944.jpg
+    color_family: grey
+    tone: neutral
+    price_usd: 699
+    price_band: mid_premium
+    brand_tier: premium_mid
+    affiliate_url: https://www.castlery.com/sg/products/lena-performance-fabric-armchair
+    purchase_options:
+      - label: Single
+        quantity: 1
+        price_usd: 699
+        affiliate_url: https://www.castlery.com/sg/products/lena-performance-fabric-armchair
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: fabric
+        structure: performance_multi_tone_twill
+        color: Light Grey (Greige)
+      leg:
+        structure: metal
+        finish: Brass
+    model_url: /assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-brass-legs.glb
+    render_assets:
+      base_color_map: https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1758786944/crusader/variants/AS-000936-PH4001-GD/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Square-Set_1-1758786944.jpg
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: Light Grey (Greige)
+      leg_finish: Brass
+
+  - variant: Armchair / Hugo Greige Fabric / Matte Black Legs
+    sku: AS-000936-PH4001-BLK
+    size_label: 96x95
+    finish_code: hugo_greige_matte_black
+    finish_label: Light Grey (Greige) / Matte Black Legs
+    upholstery_code: performance_hugo_greige
+    upholstery_label: Performance Multi-Tone Twill (Hugo), Light Grey (Greige)
+    leg_finish_code: matte_black
+    leg_finish_label: Matte Black
+    thumbnail_url: https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#d6d6cf"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1758786944/crusader/variants/AS-000936-PH4001-GD/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Square-Set_1-1758786944.jpg
+    color_family: grey
+    tone: neutral
+    price_usd: 699
+    price_band: mid_premium
+    brand_tier: premium_mid
+    affiliate_url: https://www.castlery.com/sg/products/lena-performance-fabric-armchair
+    purchase_options:
+      - label: Single
+        quantity: 1
+        price_usd: 699
+        affiliate_url: https://www.castlery.com/sg/products/lena-performance-fabric-armchair
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: fabric
+        structure: performance_multi_tone_twill
+        color: Light Grey (Greige)
+      leg:
+        structure: metal
+        finish: Matte Black
+    model_url: /assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-black-legs.glb
+    render_assets:
+      base_color_map: https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1758786944/crusader/variants/AS-000936-PH4001-GD/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Square-Set_1-1758786944.jpg
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: Light Grey (Greige)
+      leg_finish: Matte Black
+
+  - variant: Armchair / Hugo Cream Fabric / Brass Legs
+    sku: AS-000936-PH4002-GD
+    size_label: 96x95
+    finish_code: hugo_cream_brass
+    finish_label: Cream / Brass Legs
+    upholstery_code: performance_hugo_cream
+    upholstery_label: Performance Multi-Tone Twill (Hugo), Cream
+    leg_finish_code: brass
+    leg_finish_label: Brass
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1767680772/crusader/variants/AS-000936-PH4002-GD/Lena-Armchair-Sofa-Performance-Hugo-Cream-Brass-Legs-Front-1767680770.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1767680772/crusader/variants/AS-000936-PH4002-GD/Lena-Armchair-Sofa-Performance-Hugo-Cream-Brass-Legs-Front-1767680770.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#eee6d7"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1770099199/crusader/variants/PH-4002/PH4002-Performance-Hugo-Cream-1770099196.jpg
+    color_family: cream
+    tone: warm
+    price_usd: 699
+    price_band: mid_premium
+    brand_tier: premium_mid
+    affiliate_url: https://www.castlery.com/sg/products/lena-performance-fabric-armchair
+    purchase_options:
+      - label: Single
+        quantity: 1
+        price_usd: 699
+        affiliate_url: https://www.castlery.com/sg/products/lena-performance-fabric-armchair
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: fabric
+        structure: performance_multi_tone_twill
+        color: Cream
+      leg:
+        structure: metal
+        finish: Brass
+    model_url: /assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-brass-legs.glb
+    render_assets:
+      base_color_map: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1770099199/crusader/variants/PH-4002/PH4002-Performance-Hugo-Cream-1770099196.jpg
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: Cream
+      leg_finish: Brass
+
+  - variant: Armchair / Hugo Cream Fabric / Matte Black Legs
+    sku: AS-000936-PH4002-BLK
+    size_label: 96x95
+    finish_code: hugo_cream_matte_black
+    finish_label: Cream / Matte Black Legs
+    upholstery_code: performance_hugo_cream
+    upholstery_label: Performance Multi-Tone Twill (Hugo), Cream
+    leg_finish_code: matte_black
+    leg_finish_label: Matte Black
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1767680837/crusader/variants/AS-000936-PH4002-BLK/Lena-Armchair-Sofa-Performance-Hugo-Cream-Matte-Black-Legs-Front-1767680834.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1767680837/crusader/variants/AS-000936-PH4002-BLK/Lena-Armchair-Sofa-Performance-Hugo-Cream-Matte-Black-Legs-Front-1767680834.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#eee6d7"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1770099199/crusader/variants/PH-4002/PH4002-Performance-Hugo-Cream-1770099196.jpg
+    color_family: cream
+    tone: warm
+    price_usd: 699
+    price_band: mid_premium
+    brand_tier: premium_mid
+    affiliate_url: https://www.castlery.com/sg/products/lena-performance-fabric-armchair
+    purchase_options:
+      - label: Single
+        quantity: 1
+        price_usd: 699
+        affiliate_url: https://www.castlery.com/sg/products/lena-performance-fabric-armchair
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: fabric
+        structure: performance_multi_tone_twill
+        color: Cream
+      leg:
+        structure: metal
+        finish: Matte Black
+    model_url: /assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-black-legs.glb
+    render_assets:
+      base_color_map: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1770099199/crusader/variants/PH-4002/PH4002-Performance-Hugo-Cream-1770099196.jpg
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: Cream
+      leg_finish: Matte Black
+
+  - variant: "Armchair / Performance Infinity Boucle, Cream / Brass Legs"
+    sku: "AS-000936-IN4005-GD"
+    size_label: "96x95"
+    finish_code: "infinity_boucle_cream_brass"
+    finish_label: "Cream / Brass Legs"
+    upholstery_code: "infinity_boucle_cream"
+    upholstery_label: "Performance Infinity Boucle, Cream"
+    leg_finish_code: "brass"
+    leg_finish_label: "Brass"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1758786944/crusader/variants/AS-000936-PH4001-GD/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Square-Set_1-1758786944.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438644/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Angle.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864441/pim/converting/1779864438385/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Side.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438556/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Back.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,c_fit/v1779864442/pim/converting/1779864439281/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Dim.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770191309/crusader/variants/IN-4005/IN4005-Cream-1770191306.jpg"
+    color_family: "cream"
+    tone: "neutral"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-IN4005-GD"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "performance_infinity_boucle"
+        color: "Cream"
+      leg:
+        structure: "metal"
+        finish: "Brass"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-brass-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770191309/crusader/variants/IN-4005/IN4005-Cream-1770191306.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Cream"
+      leg_finish: "Brass"
+
+  - variant: "Armchair / Performance Infinity Boucle, Cream / Matte Black Legs"
+    sku: "AS-000936-IN4005-BLK"
+    size_label: "96x95"
+    finish_code: "infinity_boucle_cream_matte_black"
+    finish_label: "Cream / Matte Black Legs"
+    upholstery_code: "infinity_boucle_cream"
+    upholstery_label: "Performance Infinity Boucle, Cream"
+    leg_finish_code: "matte_black"
+    leg_finish_label: "Matte Black"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770191309/crusader/variants/IN-4005/IN4005-Cream-1770191306.jpg"
+    color_family: "cream"
+    tone: "neutral"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-IN4005-BLK"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "performance_infinity_boucle"
+        color: "Cream"
+      leg:
+        structure: "metal"
+        finish: "Matte Black"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-black-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770191309/crusader/variants/IN-4005/IN4005-Cream-1770191306.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Cream"
+      leg_finish: "Matte Black"
+
+  - variant: "Armchair / Performance Infinity Boucle, Light Grey (White Quartz) / Brass Legs"
+    sku: "AS-000936-IN4002-GD"
+    size_label: "96x95"
+    finish_code: "infinity_boucle_white_quartz_brass"
+    finish_label: "Light Grey (White Quartz) / Brass Legs"
+    upholstery_code: "infinity_boucle_white_quartz"
+    upholstery_label: "Performance Infinity Boucle, Light Grey (White Quartz)"
+    leg_finish_code: "brass"
+    leg_finish_label: "Brass"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1758786944/crusader/variants/AS-000936-PH4001-GD/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Square-Set_1-1758786944.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438644/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Angle.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864441/pim/converting/1779864438385/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Side.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438556/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Back.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,c_fit/v1779864442/pim/converting/1779864439281/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Dim.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1640236351/crusader/variants/IN-4001/White-Quartz_1.jpg"
+    color_family: "cream"
+    tone: "neutral"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-IN4002-GD"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "performance_infinity_boucle"
+        color: "Light Grey (White Quartz)"
+      leg:
+        structure: "metal"
+        finish: "Brass"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-brass-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1640236351/crusader/variants/IN-4001/White-Quartz_1.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Light Grey (White Quartz)"
+      leg_finish: "Brass"
+
+  - variant: "Armchair / Performance Infinity Boucle, Light Grey (White Quartz) / Matte Black Legs"
+    sku: "AS-000936-IN4002-BLK"
+    size_label: "96x95"
+    finish_code: "infinity_boucle_white_quartz_matte_black"
+    finish_label: "Light Grey (White Quartz) / Matte Black Legs"
+    upholstery_code: "infinity_boucle_white_quartz"
+    upholstery_label: "Performance Infinity Boucle, Light Grey (White Quartz)"
+    leg_finish_code: "matte_black"
+    leg_finish_label: "Matte Black"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1640236351/crusader/variants/IN-4001/White-Quartz_1.jpg"
+    color_family: "cream"
+    tone: "neutral"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-IN4002-BLK"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "performance_infinity_boucle"
+        color: "Light Grey (White Quartz)"
+      leg:
+        structure: "metal"
+        finish: "Matte Black"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-black-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1640236351/crusader/variants/IN-4001/White-Quartz_1.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Light Grey (White Quartz)"
+      leg_finish: "Matte Black"
+
+  - variant: "Armchair / Performance Infinity Boucle, Moss / Brass Legs"
+    sku: "AS-000936-IN4004-GD"
+    size_label: "96x95"
+    finish_code: "infinity_boucle_moss_brass"
+    finish_label: "Moss / Brass Legs"
+    upholstery_code: "infinity_boucle_moss"
+    upholstery_label: "Performance Infinity Boucle, Moss"
+    leg_finish_code: "brass"
+    leg_finish_label: "Brass"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1758786944/crusader/variants/AS-000936-PH4001-GD/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Square-Set_1-1758786944.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438644/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Angle.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864441/pim/converting/1779864438385/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Side.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438556/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Back.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,c_fit/v1779864442/pim/converting/1779864439281/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Dim.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770098928/crusader/variants/IN-4004/IN4004-Moss-1770098923.jpg"
+    color_family: "green"
+    tone: "cool"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-IN4004-GD"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "performance_infinity_boucle"
+        color: "Moss"
+      leg:
+        structure: "metal"
+        finish: "Brass"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-brass-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770098928/crusader/variants/IN-4004/IN4004-Moss-1770098923.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Moss"
+      leg_finish: "Brass"
+
+  - variant: "Armchair / Performance Infinity Boucle, Moss / Matte Black Legs"
+    sku: "AS-000936-IN4004-BLK"
+    size_label: "96x95"
+    finish_code: "infinity_boucle_moss_matte_black"
+    finish_label: "Moss / Matte Black Legs"
+    upholstery_code: "infinity_boucle_moss"
+    upholstery_label: "Performance Infinity Boucle, Moss"
+    leg_finish_code: "matte_black"
+    leg_finish_label: "Matte Black"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770098928/crusader/variants/IN-4004/IN4004-Moss-1770098923.jpg"
+    color_family: "green"
+    tone: "cool"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-IN4004-BLK"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "performance_infinity_boucle"
+        color: "Moss"
+      leg:
+        structure: "metal"
+        finish: "Matte Black"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-black-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770098928/crusader/variants/IN-4004/IN4004-Moss-1770098923.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Moss"
+      leg_finish: "Matte Black"
+
+  - variant: "Armchair / Performance Infinity Boucle, Rust (Ginger) / Brass Legs"
+    sku: "AS-000936-IN4003-GD"
+    size_label: "96x95"
+    finish_code: "infinity_boucle_ginger_brass"
+    finish_label: "Rust (Ginger) / Brass Legs"
+    upholstery_code: "infinity_boucle_ginger"
+    upholstery_label: "Performance Infinity Boucle, Rust (Ginger)"
+    leg_finish_code: "brass"
+    leg_finish_label: "Brass"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1758786944/crusader/variants/AS-000936-PH4001-GD/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Square-Set_1-1758786944.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438644/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Angle.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864441/pim/converting/1779864438385/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Side.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438556/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Back.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,c_fit/v1779864442/pim/converting/1779864439281/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Dim.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710492060/crusader/variants/IN-4003/Marlow-Armless-2-Seater-Sofa-Performance-Ginger-Caramel-Square-Det_3-1710492057.jpg"
+    color_family: "brown"
+    tone: "warm"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-IN4003-GD"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "performance_infinity_boucle"
+        color: "Rust (Ginger)"
+      leg:
+        structure: "metal"
+        finish: "Brass"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-brass-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710492060/crusader/variants/IN-4003/Marlow-Armless-2-Seater-Sofa-Performance-Ginger-Caramel-Square-Det_3-1710492057.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Rust (Ginger)"
+      leg_finish: "Brass"
+
+  - variant: "Armchair / Performance Infinity Boucle, Rust (Ginger) / Matte Black Legs"
+    sku: "AS-000936-IN4003-BLK"
+    size_label: "96x95"
+    finish_code: "infinity_boucle_ginger_matte_black"
+    finish_label: "Rust (Ginger) / Matte Black Legs"
+    upholstery_code: "infinity_boucle_ginger"
+    upholstery_label: "Performance Infinity Boucle, Rust (Ginger)"
+    leg_finish_code: "matte_black"
+    leg_finish_label: "Matte Black"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710492060/crusader/variants/IN-4003/Marlow-Armless-2-Seater-Sofa-Performance-Ginger-Caramel-Square-Det_3-1710492057.jpg"
+    color_family: "brown"
+    tone: "warm"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-IN4003-BLK"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "performance_infinity_boucle"
+        color: "Rust (Ginger)"
+      leg:
+        structure: "metal"
+        finish: "Matte Black"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-black-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710492060/crusader/variants/IN-4003/Marlow-Armless-2-Seater-Sofa-Performance-Ginger-Caramel-Square-Det_3-1710492057.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Rust (Ginger)"
+      leg_finish: "Matte Black"
+
+  - variant: "Armchair / Performance Fleece (Peyton), Ivory (Cream) / Brass Legs"
+    sku: "AS-000936-PY4001-GD"
+    size_label: "96x95"
+    finish_code: "peyton_ivory_brass"
+    finish_label: "Ivory (Cream) / Brass Legs"
+    upholstery_code: "peyton_ivory"
+    upholstery_label: "Performance Fleece (Peyton), Ivory (Cream)"
+    leg_finish_code: "brass"
+    leg_finish_label: "Brass"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1758786944/crusader/variants/AS-000936-PH4001-GD/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Square-Set_1-1758786944.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438644/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Angle.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864441/pim/converting/1779864438385/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Side.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438556/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Back.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,c_fit/v1779864442/pim/converting/1779864439281/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Dim.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722322775/crusader/variants/PY-4001/Ivory-1722322773.jpg"
+    color_family: "cream"
+    tone: "neutral"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-PY4001-GD"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "performance_fleece_peyton"
+        color: "Ivory (Cream)"
+      leg:
+        structure: "metal"
+        finish: "Brass"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-brass-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722322775/crusader/variants/PY-4001/Ivory-1722322773.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Ivory (Cream)"
+      leg_finish: "Brass"
+
+  - variant: "Armchair / Performance Fleece (Peyton), Ivory (Cream) / Matte Black Legs"
+    sku: "AS-000936-PY4001-BLK"
+    size_label: "96x95"
+    finish_code: "peyton_ivory_matte_black"
+    finish_label: "Ivory (Cream) / Matte Black Legs"
+    upholstery_code: "peyton_ivory"
+    upholstery_label: "Performance Fleece (Peyton), Ivory (Cream)"
+    leg_finish_code: "matte_black"
+    leg_finish_label: "Matte Black"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722322775/crusader/variants/PY-4001/Ivory-1722322773.jpg"
+    color_family: "cream"
+    tone: "neutral"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-PY4001-BLK"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "performance_fleece_peyton"
+        color: "Ivory (Cream)"
+      leg:
+        structure: "metal"
+        finish: "Matte Black"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-black-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722322775/crusader/variants/PY-4001/Ivory-1722322773.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Ivory (Cream)"
+      leg_finish: "Matte Black"
+
+  - variant: "Armchair / Performance Fleece (Peyton), Medium Grey (Dove Grey) / Brass Legs"
+    sku: "AS-000936-PY4002-GD"
+    size_label: "96x95"
+    finish_code: "peyton_dove_grey_brass"
+    finish_label: "Medium Grey (Dove Grey) / Brass Legs"
+    upholstery_code: "peyton_dove_grey"
+    upholstery_label: "Performance Fleece (Peyton), Medium Grey (Dove Grey)"
+    leg_finish_code: "brass"
+    leg_finish_label: "Brass"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1758786944/crusader/variants/AS-000936-PH4001-GD/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Square-Set_1-1758786944.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438644/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Angle.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864441/pim/converting/1779864438385/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Side.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438556/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Back.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,c_fit/v1779864442/pim/converting/1779864439281/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Dim.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722322647/crusader/variants/PY-4002/Dove-Grey-1722322645.jpg"
+    color_family: "grey"
+    tone: "cool"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-PY4002-GD"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "performance_fleece_peyton"
+        color: "Medium Grey (Dove Grey)"
+      leg:
+        structure: "metal"
+        finish: "Brass"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-brass-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722322647/crusader/variants/PY-4002/Dove-Grey-1722322645.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Medium Grey (Dove Grey)"
+      leg_finish: "Brass"
+
+  - variant: "Armchair / Performance Fleece (Peyton), Medium Grey (Dove Grey) / Matte Black Legs"
+    sku: "AS-000936-PY4002-BLK"
+    size_label: "96x95"
+    finish_code: "peyton_dove_grey_matte_black"
+    finish_label: "Medium Grey (Dove Grey) / Matte Black Legs"
+    upholstery_code: "peyton_dove_grey"
+    upholstery_label: "Performance Fleece (Peyton), Medium Grey (Dove Grey)"
+    leg_finish_code: "matte_black"
+    leg_finish_label: "Matte Black"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722322647/crusader/variants/PY-4002/Dove-Grey-1722322645.jpg"
+    color_family: "grey"
+    tone: "cool"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-PY4002-BLK"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "performance_fleece_peyton"
+        color: "Medium Grey (Dove Grey)"
+      leg:
+        structure: "metal"
+        finish: "Matte Black"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-black-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722322647/crusader/variants/PY-4002/Dove-Grey-1722322645.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Medium Grey (Dove Grey)"
+      leg_finish: "Matte Black"
+
+  - variant: "Armchair / Performance Fleece (Peyton), Moss / Brass Legs"
+    sku: "AS-000936-PY4003-GD"
+    size_label: "96x95"
+    finish_code: "peyton_moss_brass"
+    finish_label: "Moss / Brass Legs"
+    upholstery_code: "peyton_moss"
+    upholstery_label: "Performance Fleece (Peyton), Moss"
+    leg_finish_code: "brass"
+    leg_finish_label: "Brass"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1758786944/crusader/variants/AS-000936-PH4001-GD/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Square-Set_1-1758786944.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438644/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Angle.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864441/pim/converting/1779864438385/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Side.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438556/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Back.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,c_fit/v1779864442/pim/converting/1779864439281/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Dim.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722320266/crusader/variants/PY-4003/Moss-1722320263.jpg"
+    color_family: "green"
+    tone: "cool"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-PY4003-GD"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "performance_fleece_peyton"
+        color: "Moss"
+      leg:
+        structure: "metal"
+        finish: "Brass"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-brass-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722320266/crusader/variants/PY-4003/Moss-1722320263.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Moss"
+      leg_finish: "Brass"
+
+  - variant: "Armchair / Performance Fleece (Peyton), Moss / Matte Black Legs"
+    sku: "AS-000936-PY4003-BLK"
+    size_label: "96x95"
+    finish_code: "peyton_moss_matte_black"
+    finish_label: "Moss / Matte Black Legs"
+    upholstery_code: "peyton_moss"
+    upholstery_label: "Performance Fleece (Peyton), Moss"
+    leg_finish_code: "matte_black"
+    leg_finish_label: "Matte Black"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722320266/crusader/variants/PY-4003/Moss-1722320263.jpg"
+    color_family: "green"
+    tone: "cool"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-PY4003-BLK"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "performance_fleece_peyton"
+        color: "Moss"
+      leg:
+        structure: "metal"
+        finish: "Matte Black"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-black-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722320266/crusader/variants/PY-4003/Moss-1722320263.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Moss"
+      leg_finish: "Matte Black"
+
+  - variant: "Armchair / Performance Fleece (Peyton), Caramel (Cumin) / Brass Legs"
+    sku: "AS-000936-PY4004-GD"
+    size_label: "96x95"
+    finish_code: "peyton_cumin_brass"
+    finish_label: "Caramel (Cumin) / Brass Legs"
+    upholstery_code: "peyton_cumin"
+    upholstery_label: "Performance Fleece (Peyton), Caramel (Cumin)"
+    leg_finish_code: "brass"
+    leg_finish_label: "Brass"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1758786944/crusader/variants/AS-000936-PH4001-GD/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Square-Set_1-1758786944.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438644/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Angle.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864441/pim/converting/1779864438385/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Side.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438556/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Back.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,c_fit/v1779864442/pim/converting/1779864439281/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Dim.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1721120972/crusader/variants/PY-4004/Cumin-Swathc_1-1721120969.jpg"
+    color_family: "brown"
+    tone: "warm"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-PY4004-GD"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "performance_fleece_peyton"
+        color: "Caramel (Cumin)"
+      leg:
+        structure: "metal"
+        finish: "Brass"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-brass-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1721120972/crusader/variants/PY-4004/Cumin-Swathc_1-1721120969.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Caramel (Cumin)"
+      leg_finish: "Brass"
+
+  - variant: "Armchair / Performance Fleece (Peyton), Caramel (Cumin) / Matte Black Legs"
+    sku: "AS-000936-PY4004-BLK"
+    size_label: "96x95"
+    finish_code: "peyton_cumin_matte_black"
+    finish_label: "Caramel (Cumin) / Matte Black Legs"
+    upholstery_code: "peyton_cumin"
+    upholstery_label: "Performance Fleece (Peyton), Caramel (Cumin)"
+    leg_finish_code: "matte_black"
+    leg_finish_label: "Matte Black"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1721120972/crusader/variants/PY-4004/Cumin-Swathc_1-1721120969.jpg"
+    color_family: "brown"
+    tone: "warm"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-PY4004-BLK"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "performance_fleece_peyton"
+        color: "Caramel (Cumin)"
+      leg:
+        structure: "metal"
+        finish: "Matte Black"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-black-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1721120972/crusader/variants/PY-4004/Cumin-Swathc_1-1721120969.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Caramel (Cumin)"
+      leg_finish: "Matte Black"
+
+  - variant: "Armchair / Performance Linen Weave (Genova), Sand (Oat) / Brass Legs"
+    sku: "AS-000936-PG4002-GD"
+    size_label: "96x95"
+    finish_code: "genova_oat_brass"
+    finish_label: "Sand (Oat) / Brass Legs"
+    upholstery_code: "genova_oat"
+    upholstery_label: "Performance Linen Weave (Genova), Sand (Oat)"
+    leg_finish_code: "brass"
+    leg_finish_label: "Brass"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1758786944/crusader/variants/AS-000936-PH4001-GD/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Square-Set_1-1758786944.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438644/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Angle.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864441/pim/converting/1779864438385/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Side.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438556/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Back.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,c_fit/v1779864442/pim/converting/1779864439281/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Dim.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1757063296/crusader/variants/PG-4002/Mori-Armchair-Oat-Walnut-Leg-Det_2-1757063296.jpg"
+    color_family: "beige"
+    tone: "warm"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-PG4002-GD"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "performance_linen_weave_genova"
+        color: "Sand (Oat)"
+      leg:
+        structure: "metal"
+        finish: "Brass"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-brass-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1757063296/crusader/variants/PG-4002/Mori-Armchair-Oat-Walnut-Leg-Det_2-1757063296.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Sand (Oat)"
+      leg_finish: "Brass"
+
+  - variant: "Armchair / Performance Linen Weave (Genova), Sand (Oat) / Matte Black Legs"
+    sku: "AS-000936-PG4002-BLK"
+    size_label: "96x95"
+    finish_code: "genova_oat_matte_black"
+    finish_label: "Sand (Oat) / Matte Black Legs"
+    upholstery_code: "genova_oat"
+    upholstery_label: "Performance Linen Weave (Genova), Sand (Oat)"
+    leg_finish_code: "matte_black"
+    leg_finish_label: "Matte Black"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1757063296/crusader/variants/PG-4002/Mori-Armchair-Oat-Walnut-Leg-Det_2-1757063296.jpg"
+    color_family: "beige"
+    tone: "warm"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-PG4002-BLK"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "performance_linen_weave_genova"
+        color: "Sand (Oat)"
+      leg:
+        structure: "metal"
+        finish: "Matte Black"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-black-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1757063296/crusader/variants/PG-4002/Mori-Armchair-Oat-Walnut-Leg-Det_2-1757063296.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Sand (Oat)"
+      leg_finish: "Matte Black"
+
+  - variant: "Armchair / Performance Linen Weave (Genova), Cream / Brass Legs"
+    sku: "AS-000936-PG4003-GD"
+    size_label: "96x95"
+    finish_code: "genova_cream_brass"
+    finish_label: "Cream / Brass Legs"
+    upholstery_code: "genova_cream"
+    upholstery_label: "Performance Linen Weave (Genova), Cream"
+    leg_finish_code: "brass"
+    leg_finish_label: "Brass"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1758786944/crusader/variants/AS-000936-PH4001-GD/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Square-Set_1-1758786944.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438644/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Angle.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864441/pim/converting/1779864438385/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Side.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438556/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Back.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,c_fit/v1779864442/pim/converting/1779864439281/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Dim.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770188184/crusader/variants/PG-4003/PG4003-Cream-1770188182.jpg"
+    color_family: "cream"
+    tone: "neutral"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-PG4003-GD"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "performance_linen_weave_genova"
+        color: "Cream"
+      leg:
+        structure: "metal"
+        finish: "Brass"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-brass-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770188184/crusader/variants/PG-4003/PG4003-Cream-1770188182.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Cream"
+      leg_finish: "Brass"
+
+  - variant: "Armchair / Performance Linen Weave (Genova), Cream / Matte Black Legs"
+    sku: "AS-000936-PG4003-BLK"
+    size_label: "96x95"
+    finish_code: "genova_cream_matte_black"
+    finish_label: "Cream / Matte Black Legs"
+    upholstery_code: "genova_cream"
+    upholstery_label: "Performance Linen Weave (Genova), Cream"
+    leg_finish_code: "matte_black"
+    leg_finish_label: "Matte Black"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770188184/crusader/variants/PG-4003/PG4003-Cream-1770188182.jpg"
+    color_family: "cream"
+    tone: "neutral"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-PG4003-BLK"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "performance_linen_weave_genova"
+        color: "Cream"
+      leg:
+        structure: "metal"
+        finish: "Matte Black"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-black-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770188184/crusader/variants/PG-4003/PG4003-Cream-1770188182.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Cream"
+      leg_finish: "Matte Black"
+
+  - variant: "Armchair / Performance Linen Weave (Genova), Light Grey / Brass Legs"
+    sku: "AS-000936-PG4004-GD"
+    size_label: "96x95"
+    finish_code: "genova_light_grey_brass"
+    finish_label: "Light Grey / Brass Legs"
+    upholstery_code: "genova_light_grey"
+    upholstery_label: "Performance Linen Weave (Genova), Light Grey"
+    leg_finish_code: "brass"
+    leg_finish_label: "Brass"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1758786944/crusader/variants/AS-000936-PH4001-GD/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Square-Set_1-1758786944.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438644/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Angle.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864441/pim/converting/1779864438385/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Side.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438556/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Back.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,c_fit/v1779864442/pim/converting/1779864439281/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Dim.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770188172/crusader/variants/PG-4004/PG4004-Light-Grey-1770188170.jpg"
+    color_family: "grey"
+    tone: "cool"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-PG4004-GD"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "performance_linen_weave_genova"
+        color: "Light Grey"
+      leg:
+        structure: "metal"
+        finish: "Brass"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-brass-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770188172/crusader/variants/PG-4004/PG4004-Light-Grey-1770188170.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Light Grey"
+      leg_finish: "Brass"
+
+  - variant: "Armchair / Performance Linen Weave (Genova), Light Grey / Matte Black Legs"
+    sku: "AS-000936-PG4004-BLK"
+    size_label: "96x95"
+    finish_code: "genova_light_grey_matte_black"
+    finish_label: "Light Grey / Matte Black Legs"
+    upholstery_code: "genova_light_grey"
+    upholstery_label: "Performance Linen Weave (Genova), Light Grey"
+    leg_finish_code: "matte_black"
+    leg_finish_label: "Matte Black"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770188172/crusader/variants/PG-4004/PG4004-Light-Grey-1770188170.jpg"
+    color_family: "grey"
+    tone: "cool"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-PG4004-BLK"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "performance_linen_weave_genova"
+        color: "Light Grey"
+      leg:
+        structure: "metal"
+        finish: "Matte Black"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-black-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770188172/crusader/variants/PG-4004/PG4004-Light-Grey-1770188170.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Light Grey"
+      leg_finish: "Matte Black"
+
+  - variant: "Armchair / Performance Creamy White / Brass Legs"
+    sku: "AS-000936-PT4001-GD"
+    size_label: "96x95"
+    finish_code: "performance_creamy_white_brass"
+    finish_label: "Creamy White / Brass Legs"
+    upholstery_code: "performance_creamy_white"
+    upholstery_label: "Performance Creamy White"
+    leg_finish_code: "brass"
+    leg_finish_label: "Brass"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1758786944/crusader/variants/AS-000936-PH4001-GD/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Square-Set_1-1758786944.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438644/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Angle.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864441/pim/converting/1779864438385/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Side.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438556/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Back.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,c_fit/v1779864442/pim/converting/1779864439281/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Dim.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1774943787/crusader/variants/PT-4001/PT4001-Performance-Twill-Creamy-White-1774943785.jpg"
+    color_family: "cream"
+    tone: "neutral"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-PT4001-GD"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "performance_twill"
+        color: "Creamy White"
+      leg:
+        structure: "metal"
+        finish: "Brass"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-brass-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1774943787/crusader/variants/PT-4001/PT4001-Performance-Twill-Creamy-White-1774943785.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Creamy White"
+      leg_finish: "Brass"
+
+  - variant: "Armchair / Performance Creamy White / Matte Black Legs"
+    sku: "AS-000936-PT4001-BLK"
+    size_label: "96x95"
+    finish_code: "performance_creamy_white_matte_black"
+    finish_label: "Creamy White / Matte Black Legs"
+    upholstery_code: "performance_creamy_white"
+    upholstery_label: "Performance Creamy White"
+    leg_finish_code: "matte_black"
+    leg_finish_label: "Matte Black"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1774943787/crusader/variants/PT-4001/PT4001-Performance-Twill-Creamy-White-1774943785.jpg"
+    color_family: "cream"
+    tone: "neutral"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-PT4001-BLK"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "performance_twill"
+        color: "Creamy White"
+      leg:
+        structure: "metal"
+        finish: "Matte Black"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-black-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1774943787/crusader/variants/PT-4001/PT4001-Performance-Twill-Creamy-White-1774943785.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Creamy White"
+      leg_finish: "Matte Black"
+
+  - variant: "Armchair / Performance Twill, Pearl Beige / Brass Legs"
+    sku: "AS-000936-PT4002-GD"
+    size_label: "96x95"
+    finish_code: "performance_twill_pearl_beige_brass"
+    finish_label: "Pearl Beige / Brass Legs"
+    upholstery_code: "performance_twill_pearl_beige"
+    upholstery_label: "Performance Twill, Pearl Beige"
+    leg_finish_code: "brass"
+    leg_finish_label: "Brass"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1758786944/crusader/variants/AS-000936-PH4001-GD/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Square-Set_1-1758786944.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438644/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Angle.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864441/pim/converting/1779864438385/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Side.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438556/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Back.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,c_fit/v1779864442/pim/converting/1779864439281/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Dim.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1747116409/crusader/variants/PT-4002/Levi-Office-Chair-Twill-Pearl-Beige-Square-Det_4-1747116407.jpg"
+    color_family: "beige"
+    tone: "warm"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-PT4002-GD"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "performance_twill"
+        color: "Pearl Beige"
+      leg:
+        structure: "metal"
+        finish: "Brass"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-brass-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1747116409/crusader/variants/PT-4002/Levi-Office-Chair-Twill-Pearl-Beige-Square-Det_4-1747116407.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Pearl Beige"
+      leg_finish: "Brass"
+
+  - variant: "Armchair / Performance Twill, Pearl Beige / Matte Black Legs"
+    sku: "AS-000936-PT4002-BLK"
+    size_label: "96x95"
+    finish_code: "performance_twill_pearl_beige_matte_black"
+    finish_label: "Pearl Beige / Matte Black Legs"
+    upholstery_code: "performance_twill_pearl_beige"
+    upholstery_label: "Performance Twill, Pearl Beige"
+    leg_finish_code: "matte_black"
+    leg_finish_label: "Matte Black"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1747116409/crusader/variants/PT-4002/Levi-Office-Chair-Twill-Pearl-Beige-Square-Det_4-1747116407.jpg"
+    color_family: "beige"
+    tone: "warm"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-PT4002-BLK"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "performance_twill"
+        color: "Pearl Beige"
+      leg:
+        structure: "metal"
+        finish: "Matte Black"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-black-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1747116409/crusader/variants/PT-4002/Levi-Office-Chair-Twill-Pearl-Beige-Square-Det_4-1747116407.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Pearl Beige"
+      leg_finish: "Matte Black"
+
+  - variant: "Armchair / Performance Twill, Medium Grey / Brass Legs"
+    sku: "AS-000936-PT4005-GD"
+    size_label: "96x95"
+    finish_code: "performance_twill_medium_grey_brass"
+    finish_label: "Medium Grey / Brass Legs"
+    upholstery_code: "performance_twill_medium_grey"
+    upholstery_label: "Performance Twill, Medium Grey"
+    leg_finish_code: "brass"
+    leg_finish_label: "Brass"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1758786944/crusader/variants/AS-000936-PH4001-GD/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Square-Set_1-1758786944.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438644/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Angle.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864441/pim/converting/1779864438385/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Side.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438556/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Back.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,c_fit/v1779864442/pim/converting/1779864439281/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Dim.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1769061840/crusader/variants/PT-4005/PT4005-Performance-Twill-Dove-Grey-1769061838.jpg"
+    color_family: "grey"
+    tone: "cool"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-PT4005-GD"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "performance_twill"
+        color: "Medium Grey"
+      leg:
+        structure: "metal"
+        finish: "Brass"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-brass-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1769061840/crusader/variants/PT-4005/PT4005-Performance-Twill-Dove-Grey-1769061838.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Medium Grey"
+      leg_finish: "Brass"
+
+  - variant: "Armchair / Performance Twill, Medium Grey / Matte Black Legs"
+    sku: "AS-000936-PT4005-BLK"
+    size_label: "96x95"
+    finish_code: "performance_twill_medium_grey_matte_black"
+    finish_label: "Medium Grey / Matte Black Legs"
+    upholstery_code: "performance_twill_medium_grey"
+    upholstery_label: "Performance Twill, Medium Grey"
+    leg_finish_code: "matte_black"
+    leg_finish_label: "Matte Black"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1769061840/crusader/variants/PT-4005/PT4005-Performance-Twill-Dove-Grey-1769061838.jpg"
+    color_family: "grey"
+    tone: "cool"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-PT4005-BLK"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "performance_twill"
+        color: "Medium Grey"
+      leg:
+        structure: "metal"
+        finish: "Matte Black"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-black-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1769061840/crusader/variants/PT-4005/PT4005-Performance-Twill-Dove-Grey-1769061838.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Medium Grey"
+      leg_finish: "Matte Black"
+
+  - variant: "Armchair / Performance Twill, Slate / Brass Legs"
+    sku: "AS-000936-PT4003-GD"
+    size_label: "96x95"
+    finish_code: "performance_twill_slate_brass"
+    finish_label: "Slate / Brass Legs"
+    upholstery_code: "performance_twill_slate"
+    upholstery_label: "Performance Twill, Slate"
+    leg_finish_code: "brass"
+    leg_finish_label: "Brass"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1758786944/crusader/variants/AS-000936-PH4001-GD/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Square-Set_1-1758786944.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438644/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Angle.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864441/pim/converting/1779864438385/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Side.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438556/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Back.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,c_fit/v1779864442/pim/converting/1779864439281/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Dim.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1756361613/crusader/variants/PT-4003/Performance-Twill-Slate-1756361610.jpg"
+    color_family: "grey"
+    tone: "cool"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-PT4003-GD"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "performance_twill"
+        color: "Slate"
+      leg:
+        structure: "metal"
+        finish: "Brass"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-brass-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1756361613/crusader/variants/PT-4003/Performance-Twill-Slate-1756361610.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Slate"
+      leg_finish: "Brass"
+
+  - variant: "Armchair / Performance Twill, Slate / Matte Black Legs"
+    sku: "AS-000936-PT4003-BLK"
+    size_label: "96x95"
+    finish_code: "performance_twill_slate_matte_black"
+    finish_label: "Slate / Matte Black Legs"
+    upholstery_code: "performance_twill_slate"
+    upholstery_label: "Performance Twill, Slate"
+    leg_finish_code: "matte_black"
+    leg_finish_label: "Matte Black"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1756361613/crusader/variants/PT-4003/Performance-Twill-Slate-1756361610.jpg"
+    color_family: "grey"
+    tone: "cool"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-PT4003-BLK"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "performance_twill"
+        color: "Slate"
+      leg:
+        structure: "metal"
+        finish: "Matte Black"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-black-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1756361613/crusader/variants/PT-4003/Performance-Twill-Slate-1756361610.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Slate"
+      leg_finish: "Matte Black"
+
+  - variant: "Armchair / Performance Twill, Moss / Brass Legs"
+    sku: "AS-000936-PT4004-GD"
+    size_label: "96x95"
+    finish_code: "performance_twill_moss_brass"
+    finish_label: "Moss / Brass Legs"
+    upholstery_code: "performance_twill_moss"
+    upholstery_label: "Performance Twill, Moss"
+    leg_finish_code: "brass"
+    leg_finish_label: "Brass"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1758786944/crusader/variants/AS-000936-PH4001-GD/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Square-Set_1-1758786944.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438644/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Angle.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864441/pim/converting/1779864438385/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Side.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438556/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Back.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,c_fit/v1779864442/pim/converting/1779864439281/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Dim.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1756438801/crusader/variants/PT-4004/Moss-1756438798.jpg"
+    color_family: "green"
+    tone: "cool"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-PT4004-GD"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "performance_twill"
+        color: "Moss"
+      leg:
+        structure: "metal"
+        finish: "Brass"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-brass-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1756438801/crusader/variants/PT-4004/Moss-1756438798.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Moss"
+      leg_finish: "Brass"
+
+  - variant: "Armchair / Performance Twill, Moss / Matte Black Legs"
+    sku: "AS-000936-PT4004-BLK"
+    size_label: "96x95"
+    finish_code: "performance_twill_moss_matte_black"
+    finish_label: "Moss / Matte Black Legs"
+    upholstery_code: "performance_twill_moss"
+    upholstery_label: "Performance Twill, Moss"
+    leg_finish_code: "matte_black"
+    leg_finish_label: "Matte Black"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1756438801/crusader/variants/PT-4004/Moss-1756438798.jpg"
+    color_family: "green"
+    tone: "cool"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-PT4004-BLK"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "performance_twill"
+        color: "Moss"
+      leg:
+        structure: "metal"
+        finish: "Matte Black"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-black-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1756438801/crusader/variants/PT-4004/Moss-1756438798.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Moss"
+      leg_finish: "Matte Black"
+
+  - variant: "Armchair / Washed Chenille, Cream / Brass Legs"
+    sku: "AS-000936-GR4001-GD"
+    size_label: "96x95"
+    finish_code: "washed_chenille_cream_brass"
+    finish_label: "Cream / Brass Legs"
+    upholstery_code: "washed_chenille_cream"
+    upholstery_label: "Washed Chenille, Cream"
+    leg_finish_code: "brass"
+    leg_finish_label: "Brass"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1758786944/crusader/variants/AS-000936-PH4001-GD/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Square-Set_1-1758786944.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438644/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Angle.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864441/pim/converting/1779864438385/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Side.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438556/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Back.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,c_fit/v1779864442/pim/converting/1779864439281/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Dim.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1769054456/crusader/variants/GR-4001/GR4001-Greta-Ivory-1769054453.jpg"
+    color_family: "cream"
+    tone: "neutral"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-GR4001-GD"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "washed_chenille"
+        color: "Cream"
+      leg:
+        structure: "metal"
+        finish: "Brass"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-brass-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1769054456/crusader/variants/GR-4001/GR4001-Greta-Ivory-1769054453.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Cream"
+      leg_finish: "Brass"
+
+  - variant: "Armchair / Washed Chenille, Cream / Matte Black Legs"
+    sku: "AS-000936-GR4001-BLK"
+    size_label: "96x95"
+    finish_code: "washed_chenille_cream_matte_black"
+    finish_label: "Cream / Matte Black Legs"
+    upholstery_code: "washed_chenille_cream"
+    upholstery_label: "Washed Chenille, Cream"
+    leg_finish_code: "matte_black"
+    leg_finish_label: "Matte Black"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1769054456/crusader/variants/GR-4001/GR4001-Greta-Ivory-1769054453.jpg"
+    color_family: "cream"
+    tone: "neutral"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-GR4001-BLK"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "washed_chenille"
+        color: "Cream"
+      leg:
+        structure: "metal"
+        finish: "Matte Black"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-black-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1769054456/crusader/variants/GR-4001/GR4001-Greta-Ivory-1769054453.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Cream"
+      leg_finish: "Matte Black"
+
+  - variant: "Armchair / Washed Chenille, Sand / Brass Legs"
+    sku: "AS-000936-GR4002-GD"
+    size_label: "96x95"
+    finish_code: "washed_chenille_sand_brass"
+    finish_label: "Sand / Brass Legs"
+    upholstery_code: "washed_chenille_sand"
+    upholstery_label: "Washed Chenille, Sand"
+    leg_finish_code: "brass"
+    leg_finish_label: "Brass"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1758786944/crusader/variants/AS-000936-PH4001-GD/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Square-Set_1-1758786944.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438644/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Angle.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864441/pim/converting/1779864438385/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Side.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438556/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Back.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,c_fit/v1779864442/pim/converting/1779864439281/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Dim.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770188296/crusader/variants/GR-4002/GR4002-Latte-1770188293.jpg"
+    color_family: "beige"
+    tone: "warm"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-GR4002-GD"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "washed_chenille"
+        color: "Sand"
+      leg:
+        structure: "metal"
+        finish: "Brass"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-brass-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770188296/crusader/variants/GR-4002/GR4002-Latte-1770188293.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Sand"
+      leg_finish: "Brass"
+
+  - variant: "Armchair / Washed Chenille, Sand / Matte Black Legs"
+    sku: "AS-000936-GR4002-BLK"
+    size_label: "96x95"
+    finish_code: "washed_chenille_sand_matte_black"
+    finish_label: "Sand / Matte Black Legs"
+    upholstery_code: "washed_chenille_sand"
+    upholstery_label: "Washed Chenille, Sand"
+    leg_finish_code: "matte_black"
+    leg_finish_label: "Matte Black"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770188296/crusader/variants/GR-4002/GR4002-Latte-1770188293.jpg"
+    color_family: "beige"
+    tone: "warm"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-GR4002-BLK"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "washed_chenille"
+        color: "Sand"
+      leg:
+        structure: "metal"
+        finish: "Matte Black"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-black-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770188296/crusader/variants/GR-4002/GR4002-Latte-1770188293.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Sand"
+      leg_finish: "Matte Black"
+
+  - variant: "Armchair / Washed Chenille, Caramel / Brass Legs"
+    sku: "AS-000936-GR4003-GD"
+    size_label: "96x95"
+    finish_code: "washed_chenille_caramel_brass"
+    finish_label: "Caramel / Brass Legs"
+    upholstery_code: "washed_chenille_caramel"
+    upholstery_label: "Washed Chenille, Caramel"
+    leg_finish_code: "brass"
+    leg_finish_label: "Brass"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1758786944/crusader/variants/AS-000936-PH4001-GD/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Square-Set_1-1758786944.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438644/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Angle.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864441/pim/converting/1779864438385/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Side.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438556/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Back.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,c_fit/v1779864442/pim/converting/1779864439281/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Dim.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1769054464/crusader/variants/GR-4003/GR4003-Greta-Mustard-Brown-1769054461.jpg"
+    color_family: "brown"
+    tone: "warm"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-GR4003-GD"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "washed_chenille"
+        color: "Caramel"
+      leg:
+        structure: "metal"
+        finish: "Brass"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-brass-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1769054464/crusader/variants/GR-4003/GR4003-Greta-Mustard-Brown-1769054461.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Caramel"
+      leg_finish: "Brass"
+
+  - variant: "Armchair / Washed Chenille, Caramel / Matte Black Legs"
+    sku: "AS-000936-GR4003-BLK"
+    size_label: "96x95"
+    finish_code: "washed_chenille_caramel_matte_black"
+    finish_label: "Caramel / Matte Black Legs"
+    upholstery_code: "washed_chenille_caramel"
+    upholstery_label: "Washed Chenille, Caramel"
+    leg_finish_code: "matte_black"
+    leg_finish_label: "Matte Black"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1769054464/crusader/variants/GR-4003/GR4003-Greta-Mustard-Brown-1769054461.jpg"
+    color_family: "brown"
+    tone: "warm"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-GR4003-BLK"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "washed_chenille"
+        color: "Caramel"
+      leg:
+        structure: "metal"
+        finish: "Matte Black"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-black-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1769054464/crusader/variants/GR-4003/GR4003-Greta-Mustard-Brown-1769054461.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Caramel"
+      leg_finish: "Matte Black"
+
+  - variant: "Armchair / Washed Chenille, Moss / Brass Legs"
+    sku: "AS-000936-GR4004-GD"
+    size_label: "96x95"
+    finish_code: "washed_chenille_moss_brass"
+    finish_label: "Moss / Brass Legs"
+    upholstery_code: "washed_chenille_moss"
+    upholstery_label: "Washed Chenille, Moss"
+    leg_finish_code: "brass"
+    leg_finish_label: "Brass"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864438/pim/converting/1779864435282/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1758786944/crusader/variants/AS-000936-PH4001-GD/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Square-Set_1-1758786944.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438644/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Angle.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864441/pim/converting/1779864438385/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Side.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1779864442/pim/converting/1779864438556/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Back.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1000,f_auto,q_auto,c_fit/v1779864442/pim/converting/1779864439281/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Dim.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1769054472/crusader/variants/GR-4004/GR4004-Greta-Moss-1769054469.jpg"
+    color_family: "green"
+    tone: "cool"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-GR4004-GD"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "washed_chenille"
+        color: "Moss"
+      leg:
+        structure: "metal"
+        finish: "Brass"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-brass-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1769054472/crusader/variants/GR-4004/GR4004-Greta-Moss-1769054469.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Moss"
+      leg_finish: "Brass"
+
+  - variant: "Armchair / Washed Chenille, Moss / Matte Black Legs"
+    sku: "AS-000936-GR4004-BLK"
+    size_label: "96x95"
+    finish_code: "washed_chenille_moss_matte_black"
+    finish_label: "Moss / Matte Black Legs"
+    upholstery_code: "washed_chenille_moss"
+    upholstery_label: "Washed Chenille, Moss"
+    leg_finish_code: "matte_black"
+    leg_finish_label: "Matte Black"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1779864334/pim/converting/1779864331973/Lena-Armchair-Sofa-Performance-Hugo-Greige-Matte-Black-Legs-Front.jpg"
+    swatch_group: "upholstery_option"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1769054472/crusader/variants/GR-4004/GR4004-Greta-Moss-1769054469.jpg"
+    color_family: "green"
+    tone: "cool"
+    collection_type: "custom_fabric"
+    price_usd: 699
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    purchase_options:
+      - label: "Single"
+        quantity: 1
+        sku: "AS-000936-GR4004-BLK"
+        price_usd: 699
+        affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "washed_chenille"
+        color: "Moss"
+      leg:
+        structure: "metal"
+        finish: "Matte Black"
+    model_url: "/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-black-legs.glb"
+    render_assets:
+      base_color_map: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1769054472/crusader/variants/GR-4004/GR4004-Greta-Moss-1769054469.jpg"
+      tile_scale:
+        x: 2
+        y: 2
+    finish:
+      color_finish: "Moss"
+      leg_finish: "Matte Black"
+
+  - variant: Armchair / Marche Cocoa Leather / Brass Legs
+    sku: AS-000936-LE4023-GD
+    size_label: 96x95
+    finish_code: marche_cocoa_brass
+    finish_label: Marche Cocoa / Brass Legs
+    upholstery_code: marche_cocoa
+    upholstery_label: Marche Leather, Cocoa
+    leg_finish_code: brass
+    leg_finish_label: Brass
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1767682069/crusader/variants/AS-000936-LE4023-GD/Lena-Leather-Armchair-Sofa-Marche-Cocoa-Brass-Legs-Front-1767682067.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1767682069/crusader/variants/AS-000936-LE4023-GD/Lena-Leather-Armchair-Sofa-Marche-Cocoa-Brass-Legs-Front-1767682067.jpg
+      - https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1768816069/crusader/variants/AS-000936-LE4023-GD/Lena-Leather-Armchair-Sofa-Marche-Cocoa-Brass-Legs-Set_1-1768816067.jpg
+      - https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1767682070/crusader/variants/AS-000936-LE4023-GD/Lena-Leather-Armchair-Sofa-Marche-Cocoa-Brass-Legs-Angle-1767682067.jpg
+      - https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1767682069/crusader/variants/AS-000936-LE4023-GD/Lena-Leather-Armchair-Sofa-Marche-Cocoa-Brass-Legs-Side-1767682067.jpg
+      - https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1767682069/crusader/variants/AS-000936-LE4023-GD/Lena-Leather-Armchair-Sofa-Marche-Cocoa-Brass-Legs-Back-1767682067.jpg
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1768518521/crusader/variants/TAS-000936-LE/Lena-Leather-Armchair-Sofa-Performance-Hugo-Greige-Black-Legs-Dim__1_-1768518519.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#6f4b39"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1741163167/crusader/variants/LE-4023/Cocoa_Swatch-1741163165.jpg
+    color_family: brown
+    tone: warm
+    price_usd: 1199
+    price_band: premium
+    brand_tier: premium_mid
+    affiliate_url: https://www.castlery.com/sg/products/lena-leather-armchair
+    purchase_options:
+      - label: Single
+        quantity: 1
+        price_usd: 1199
+        affiliate_url: https://www.castlery.com/sg/products/lena-leather-armchair
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: leather
+        structure: top_grain_leather_with_match
+        color: Cocoa
+      leg:
+        structure: metal
+        finish: Brass
+    model_url: /assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-brass-legs.glb
+    render_assets:
+      base_color_map: https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1741163167/crusader/variants/LE-4023/Cocoa_Swatch-1741163165.jpg
+      tile_scale:
+        x: 1.5
+        y: 1.5
+    finish:
+      color_finish: Cocoa
+      leg_finish: Brass
+
+  - variant: Armchair / Marche Cocoa Leather / Matte Black Legs
+    sku: AS-000936-LE4023-BLK
+    size_label: 96x95
+    finish_code: marche_cocoa_matte_black
+    finish_label: Marche Cocoa / Matte Black Legs
+    upholstery_code: marche_cocoa
+    upholstery_label: Marche Leather, Cocoa
+    leg_finish_code: matte_black
+    leg_finish_label: Matte Black
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1767682114/crusader/variants/AS-000936-LE4023-BLK/Lena-Leather-Armchair-Sofa-Marche-Cocoa-Black-Legs-Front-1767682111.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1767682114/crusader/variants/AS-000936-LE4023-BLK/Lena-Leather-Armchair-Sofa-Marche-Cocoa-Black-Legs-Front-1767682111.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#6f4b39"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1741163167/crusader/variants/LE-4023/Cocoa_Swatch-1741163165.jpg
+    color_family: brown
+    tone: warm
+    price_usd: 1199
+    price_band: premium
+    brand_tier: premium_mid
+    affiliate_url: https://www.castlery.com/sg/products/lena-leather-armchair
+    purchase_options:
+      - label: Single
+        quantity: 1
+        price_usd: 1199
+        affiliate_url: https://www.castlery.com/sg/products/lena-leather-armchair
+    dimensions:
+      width_cm: 96
+      depth_cm: 95
+      height_cm: 84
+    materials:
+      upholstery:
+        material_type: leather
+        structure: top_grain_leather_with_match
+        color: Cocoa
+      leg:
+        structure: metal
+        finish: Matte Black
+    model_url: /assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-black-legs.glb
+    render_assets:
+      base_color_map: https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1741163167/crusader/variants/LE-4023/Cocoa_Swatch-1741163165.jpg
+      tile_scale:
+        x: 1.5
+        y: 1.5
+    finish:
+      color_finish: Cocoa
+      leg_finish: Matte Black

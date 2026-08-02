@@ -1,0 +1,170 @@
+brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/forma-round-dining-table"
+category: "dining_table"
+
+product_family: "Forma"
+product_name: "Forma Round Dining Table"
+variant: "Round 120"
+
+price_usd: 1049
+price_band: "premium"
+brand_tier: "premium_mid"
+
+design_zone: "dining_zone"
+anchor_role: "dining_anchor"
+
+dimensions:
+  width_cm: 120
+  depth_cm: 120
+  height_cm: 75.1
+
+seat_capacity: 4
+size_class: "medium"
+
+shape: "round"
+base_type: "pedestal"
+
+material_family: "mixed"
+material_mix: "wood_metal"
+
+materials:
+  tabletop:
+    structure: "solid_wood"
+    wood_species: "american_walnut"
+    surface: "solid_walnut"
+  base:
+    structure: "metal"
+    surface: "powder_coated_metal"
+
+finish:
+  tabletop_finish: "natural_walnut"
+  base_finish: "black"
+  protective_coating: "pu"
+  surface_finish: "low_gloss"
+  finish_color: "walnut_black"
+
+color_family: "brown"
+tone: "warm"
+
+style_cluster: "contemporary"
+style_secondary: "midcentury_modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "rounded"
+  silhouette: "sculptural"
+  form_language: "soft"
+
+spatial_attributes:
+  footprint_shape: "round"
+  chair_pullback_cm: 60
+  walkway_clearance_cm: 90
+
+room_compatibility:
+  - "dining_room"
+  - "open_plan"
+  - "small_space"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: true
+
+design_pairings:
+  - "dining_chair"
+  - "pendant_light"
+  - "dining_rug"
+  - "sideboard"
+
+product_details:
+  material:
+    - label: "Material"
+      value: "Tabletop: solid American walnut; Base: metal"
+    - label: "Finish"
+      value: "Tabletop: PU finish in natural walnut with 5% gloss; Base: powder coating in black"
+    - label: "Care"
+      value: "Wooden table"
+    - label: "Colour variance"
+      value: "Natural variations"
+    - label: "Material & safety standards"
+      value: "Formaldehyde safe"
+  dimensions:
+    - label: "Dimension"
+      value: "W120 x D120 x H75.1cm"
+    - label: "Capacity"
+      value: "Sits 4 people comfortably"
+    - label: "Product weight"
+      value: "53kg"
+    - label: "Packaging dimensions"
+      value: "2 boxes"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Warranty"
+      value: "5-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Table top and base to be fitted"
+
+assets:
+  asset_id: "dining-real-castlery-forma-round-120"
+  model_url: "/assets/models/dining-real-castlery-forma-round-120.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050193/crusader/variants/AS-001038-WA/Forma-Round-Dining-Table-120cm-Walnut-Front-1769050191.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050193/crusader/variants/AS-001038-WA/Forma-Round-Dining-Table-120cm-Walnut-Front-1769050191.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050233/crusader/variants/AS-001037-WA/Forma-Round-Dining-Table-120cm-Walnut-With-4-Tavi-Wood-Back-Dining-Chair-Greige-Walnut-Set_3-1769050231.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050778/crusader/variants/AS-001037-WA/Forma-Round-Dining-Table-150cm-Walnut-With-2-Tavi-Wood-Back-Dining-Chair-Greige-Walnut-Dining-Room-Campaingn-Det_2-1769050776.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050233/crusader/variants/AS-001037-WA/Froma-Round-Dining-Table-120cm-Walnut-With-4-Lira-Dining-Chairs-Brown-Black-Set_1-1769050231.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050036/crusader/variants/AS-001038-OA/Forma-Round-Dining-Table-120cm-Walnut-Det_2-1769050034.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050029/crusader/variants/AS-001038-OA/Forma-Round-Dining-Table-120cm-Walnut-Det_1-1769050027.jpg"
+    - "https://res.cloudinary.com/castlery/image/upload/w_1200,f_auto,q_auto/v1774002983/knight/USP/2026/Forma-Round-Dining-Table-120cm-Walnut-With-4-Tavi-Wood-Back-Dining-Chair-Greige-Walnut-Set_3.jpg"
+    - "https://res.cloudinary.com/castlery/image/upload/w_1200,f_auto,q_auto/v1774003084/knight/USP/2026/Forma-Round-Dining-Table-120cm-Oak-Det_2.jpg"
+
+variants:
+  - variant: "Round 120"
+    size_label: "120"
+    finish_code: "natural_walnut"
+    finish_label: "Natural Walnut"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050193/crusader/variants/AS-001038-WA/Forma-Round-Dining-Table-120cm-Walnut-Front-1769050191.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050193/crusader/variants/AS-001038-WA/Forma-Round-Dining-Table-120cm-Walnut-Front-1769050191.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050233/crusader/variants/AS-001037-WA/Forma-Round-Dining-Table-120cm-Walnut-With-4-Tavi-Wood-Back-Dining-Chair-Greige-Walnut-Set_3-1769050231.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050778/crusader/variants/AS-001037-WA/Forma-Round-Dining-Table-150cm-Walnut-With-2-Tavi-Wood-Back-Dining-Chair-Greige-Walnut-Dining-Room-Campaingn-Det_2-1769050776.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050233/crusader/variants/AS-001037-WA/Froma-Round-Dining-Table-120cm-Walnut-With-4-Lira-Dining-Chairs-Brown-Black-Set_1-1769050231.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050036/crusader/variants/AS-001038-OA/Forma-Round-Dining-Table-120cm-Walnut-Det_2-1769050034.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050029/crusader/variants/AS-001038-OA/Forma-Round-Dining-Table-120cm-Walnut-Det_1-1769050027.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1200,f_auto,q_auto/v1774002983/knight/USP/2026/Forma-Round-Dining-Table-120cm-Walnut-With-4-Tavi-Wood-Back-Dining-Chair-Greige-Walnut-Set_3.jpg"
+      - "https://res.cloudinary.com/castlery/image/upload/w_1200,f_auto,q_auto/v1774003084/knight/USP/2026/Forma-Round-Dining-Table-120cm-Oak-Det_2.jpg"
+    price_usd: 1049
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 120
+      depth_cm: 120
+      height_cm: 75.1
+    seat_capacity: 4
+    size_class: "medium"
+    color_family: "brown"
+    tone: "warm"
+    materials:
+      tabletop:
+        structure: "solid_wood"
+        wood_species: "american_walnut"
+        surface: "solid_walnut"
+      base:
+        structure: "metal"
+        surface: "powder_coated_metal"
+    finish:
+      tabletop_finish: "natural_walnut"
+      base_finish: "black"
+      protective_coating: "pu"
+      surface_finish: "low_gloss"
+      finish_color: "walnut_black"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true

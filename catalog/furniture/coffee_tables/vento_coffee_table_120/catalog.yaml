@@ -1,0 +1,233 @@
+brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/vento-coffee-table"
+category: "coffee_table"
+
+product_family: "Vento"
+product_name: "Vento Coffee Table"
+slug: "castlery-vento-coffee-table"
+variant: "Vento Coffee Table / Waterbase Natural Walnut"
+
+price_usd: 599
+price_band: "mid_premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "secondary"
+
+dimensions:
+  width_cm: 120
+  depth_cm: 60
+  height_cm: 35
+
+size_class: "medium"
+shape: "rectangular"
+base_type: "frame"
+
+material_family: "wood"
+material_mix:
+  - "engineered_wood"
+  - "walnut_veneer"
+  - "solid_rubberwood"
+
+color_family: "brown"
+tone: "warm"
+
+style_cluster: "modern"
+style_secondary: "japandi"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "grounded"
+  edge_profile: "square_softened"
+  silhouette: "low_profile_block"
+  form_language: "clean_linear_softened_edges"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  storage_integrated: true
+  low_height: true
+  center_table_suitable: true
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+  - "open_plan"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: true
+
+design_pairings:
+  - "sofa"
+  - "sectional_sofa"
+  - "loveseat"
+  - "side_table"
+  - "media_console"
+  - "rug"
+  - "floor_lamp"
+  - "accent_chair"
+
+compatibility:
+  related_products:
+    - product_family: "Jaron"
+      product_name: "Jaron Recliner Sofa"
+      relationship: "recommended_with"
+      strength: "strong"
+    - product_family: "Madison"
+      product_name: "Madison Sofa"
+      relationship: "recommended_with"
+      strength: "strong"
+
+recommendation_metadata:
+  recommendation_role: "living_room_surface"
+  primary_use_cases:
+    - "sofa_pairing"
+    - "centerpiece_surface"
+    - "storage_coffee_table"
+
+bundle_metadata:
+  bundle_role: "accent"
+  can_bundle_with:
+    - "sofa"
+    - "sectional_sofa"
+    - "side_table"
+    - "media_console"
+    - "rug"
+    - "floor_lamp"
+    - "accent_chair"
+  recommended_with_products:
+    - product_family: "Jaron"
+      product_name: "Jaron Recliner Sofa"
+      relationship: "recommended_with"
+      strength: "strong"
+    - product_family: "Madison"
+      product_name: "Madison Sofa"
+      relationship: "recommended_with"
+      strength: "strong"
+  set_behavior:
+    supports_sofa_pairing: true
+    supports_storage_surface_pairing: true
+    supports_media_console_pairing: true
+    supports_rug_grounding: true
+
+authoring_notes:
+  category_confidence: "high"
+  single_variant_expected: true
+  preset_family: "table"
+  major_family_example_candidate: true
+
+product_details:
+  material:
+    - label: "Material"
+      value: "Engineered wood with walnut veneer and solid rubber wood"
+    - label: "Finish"
+      value: "Waterbase natural walnut"
+    - label: "Care"
+      value: "Wooden table"
+    - label: "Colour variance"
+      value: "Natural variations"
+    - label: "Material & safety standards"
+      value: "Low formaldehyde"
+  dimensions:
+    - label: "Dimension"
+      value: "W120 x D60 x H35cm"
+    - label: "Table top thickness"
+      value: "2.5cm"
+    - label: "Product weight"
+      value: "37kg"
+    - label: "Packaging dimensions"
+      value: "1 box"
+    - label: "Levellers"
+      value: "Included"
+    - label: "Max bearing support"
+      value: "100kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Warranty"
+      value: "5-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Fully assembled"
+
+assets:
+  asset_id: "coffee-real-castlery-vento-coffee-table-120"
+  model_url: "/assets/models/coffee-real-castlery-vento-coffee-table-120.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770256447/crusader/variants/44250004/Vento-Coffee-Table-120cm-Front_1-1770256444.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770256447/crusader/variants/44250004/Vento-Coffee-Table-120cm-Front_1-1770256444.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770625846/crusader/variants/44250004/Vento-Coffee-Table-120cm-Set_1-1770625844.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770625832/crusader/variants/44250004/Ollie-Storage-Chaise-Sectional-Sofa-Right-Facing-Moss-With-Vento-Coffee-Table-Set_1-1770625830.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770625923/crusader/variants/44250004/Ollie-Storage-Chaise-Sectional-Sofa-Left-Facing-Ivory-With-Vento-Coffee-Table-Set_1-1770625921.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770625846/crusader/variants/44250004/Vento-Coffee-Table-120cm-Det_3-1770625844.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770625846/crusader/variants/44250004/Vento-Coffee-Table-120cm-Det_2-1770625844.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770256447/crusader/variants/44250004/Vento-Coffee-Table-120cm-Angle-1770256444.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770256447/crusader/variants/44250004/Vento-Coffee-Table-120cm-Angle_1-1770256444.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770256446/crusader/variants/44250004/Vento-Coffee-Table-120cm-Side-1770256444.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770256500/crusader/variants/T44250004/Vento-Coffee-Table-120cm-Dim-1770256499.jpg"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+
+variants:
+  - variant: "Vento Coffee Table / Waterbase Natural Walnut"
+    sku: null
+    size_label: "120x60"
+    finish_code: "waterbase_natural_walnut"
+    finish_label: "Waterbase Natural Walnut"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770256447/crusader/variants/44250004/Vento-Coffee-Table-120cm-Front_1-1770256444.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770256447/crusader/variants/44250004/Vento-Coffee-Table-120cm-Front_1-1770256444.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770625846/crusader/variants/44250004/Vento-Coffee-Table-120cm-Set_1-1770625844.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770625846/crusader/variants/44250004/Vento-Coffee-Table-120cm-Det_3-1770625844.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770256447/crusader/variants/44250004/Vento-Coffee-Table-120cm-Angle-1770256444.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770256446/crusader/variants/44250004/Vento-Coffee-Table-120cm-Side-1770256444.jpg"
+    swatch_group: "wood_finish"
+
+    price_usd: 599
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+
+    dimensions:
+      width_cm: 120
+      depth_cm: 60
+      height_cm: 35
+
+    size_class: "medium"
+    color_family: "brown"
+    tone: "warm"
+
+    materials:
+      tabletop:
+        structure: "engineered_wood"
+        surface: "walnut_veneer"
+      body:
+        structure: "engineered_wood"
+        surface: "walnut_veneer"
+      slatted_panel:
+        structure: "solid_rubberwood"
+        surface: "walnut_finish"
+      legs:
+        structure: "solid_rubberwood"
+        surface: "walnut_finish"
+
+    finish:
+      color_finish: "natural_walnut"
+      finish_color: "natural_walnut"
+      surface_finish: "matte"
+      protective_coating: "waterbase"
+      finish_system: "waterbase_finish"
+
+    storage:
+      has_storage: true
+      storage_type:
+        - "open_shelf"
+        - "enclosed_compartment"
+      door_type: "sliding_slatted_panel"
+
+    set_compatibility: []

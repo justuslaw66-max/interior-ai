@@ -1,0 +1,110 @@
+schema_version: 1
+surface_material:
+  supplier: gardenia_orchidea
+  brand: Gardenia Orchidea
+  collection: La Geoteca
+  material_id: gardenia-wall-tile-la-geoteca-bourgogne-beige-pf60016059-60x120-nat-90437-0
+  product_name: Gardenia La Geoteca Bourgogne Beige 60x120 Nat
+  slug: gardenia-wall-tile-la-geoteca-bourgogne-beige-pf60016059-60x120-nat-90437-0
+  surface_category: wall_tile
+  material_family: tile
+source:
+  supplier_region: international
+  source_url: https://www.gardenia.it/en/collection/la-geoteca
+  sample_request_url: null
+  currency: EUR
+  license_status: confirmed
+  notes:
+    - Imported from Gardenia RealityRemod configurator with user-confirmed permission on 2026-07-04.
+    - Gardenia tile item GARDENIA/PF60016059/0/90437 for wall use.
+    - "Configurator format: 60x120 Nat; surface destination: ENTRAMBE."
+    - "Configurator pattern IDs: pieno_01, pieno_05."
+    - "Collection page technology: Porcelain slabs."
+    - "Collection page thicknesses: 6, 8.5, 20 mm."
+    - "Collection page sizes: 120x280, 120x120, 80x80, 60x120."
+    - "Collection page color availability for Bourgogne beige: Bourgogne beige 6mm: 120x280 (48\"x110\") - 120x120 (48\"x48\") - 60x120 (24\"x48\") | 8,5mm: 120x120 (48\"x48\") - 60x120 (24\"x48\") - 80x80 (32\"x32\") | 20mm R11: 80x80 (32\"x32\")."
+    - "Available configurator formats: PF60016057 120x120 Nat ENTRAMBE patterns pieno_01,pieno_05; PF60016059 60x120 Nat ENTRAMBE patterns pieno_01,pieno_05; PF60016055 120x280 Nat ENTRAMBE patterns pieno_01,pieno_05; PF60016026 80x80 ENTRAMBE patterns pieno_01,pieno_05; PF60016061 80x80 Nat ENTRAMBE patterns pieno_01,pieno_05."
+    - The configurator API did not expose slip rating, package quantity, price, or seamless texture QA data.
+classification:
+  flooring_type: tile
+  design_effect: stone
+  color_family: beige
+  tone:
+    - neutral
+    - durable
+    - clean
+    - natural
+    - warm
+    - textured
+  style_cluster:
+    - contemporary
+    - modern
+    - hospitality
+    - japandi
+    - commercial
+  room_suitability:
+    - kitchen
+    - bathroom
+    - living_room
+    - commercial
+    - hospitality
+physical_specs:
+  plank_or_tile_format: tile
+  plank_width_mm: null
+  plank_length_mm: null
+  tile_width_mm: 1200
+  tile_length_mm: 600
+  total_thickness_mm: null
+  wear_layer_mm: null
+  installation_method:
+    - direct_stick
+  waterproof: null
+  slip_rating: null
+  suitable_for_wet_area: null
+  suitable_for_outdoor: null
+  commercial_grade: null
+texture_assets:
+  swatch_url: /assets/catalog/surface-materials/gardenia/la-geoteca/pf60016057.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/la-geoteca/pf60016057.webp
+  normal_url: null
+  roughness_url: null
+  ao_url: null
+  preview_room_url: null
+  tileable: needs_confirmation
+  texture_repeat_size_cm:
+    width: 120
+    height: 60
+rendering:
+  default_rotation_deg: 0
+  roughness: 0.62
+  metalness: 0
+  normal_strength: 0.15
+  scale_mode: physical_repeat
+  seam_strategy: repeat_texture
+  source_pattern_ids:
+    - pieno_01
+    - pieno_05
+  available_pattern_layouts:
+    - straight
+    - vertical_brick
+commerce:
+  purchase_mode: unknown
+  price_per_sqm:
+    currency: EUR
+    amount: null
+  sample_available: unknown
+  sample_request_url: null
+  direct_checkout: false
+import_governance:
+  publish_status: draft
+  publish_blockers:
+    - confirm_physical_dimensions
+    - confirm_texture_tileability
+    - confirm_price_per_sqm_or_quote_mode
+  qa_flags:
+    - gardenia_realityremod_import
+    - gardenia_tile_item_variant
+    - user_confirmed_permission
+    - configurator_preview_asset
+    - gardenia_collection_page_enriched
+    - surface_target_specific_entry

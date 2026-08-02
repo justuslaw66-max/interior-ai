@@ -1,0 +1,262 @@
+brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/madison-ottoman"
+category: "ottoman"
+
+product_family: "Madison"
+product_name: "Madison Ottoman"
+variant: "Ottoman"
+
+price_usd: 499
+price_band: "mid_premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "secondary"
+
+dimensions:
+  width_cm: 86.5
+  depth_cm: 65
+  height_cm: 45.5
+
+seat_capacity: 1
+size_class: "small"
+shape: "rectangular"
+base_type: "frame"
+
+material_family: "upholstered"
+material_mix: "upholstered_wood"
+
+color_family: "beige"
+tone: "neutral"
+
+style_cluster: "contemporary"
+style_secondary: "modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "light"
+  edge_profile: "rounded"
+  silhouette: "linear"
+  form_language: "soft"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  walkway_clearance_cm: 60
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: true
+  clearance_sensitive: false
+  center_room_preferred: false
+
+product_details_by_material_type:
+  fabric:
+    material:
+      - label: "Material"
+        value: "Laminated veneer lumber and plywood, rubber wood leg"
+      - label: "Filling"
+        value: "Foam, fibre and pocket spring filled seat"
+      - label: "Care"
+        value: "Fabric sofa, wooden legs"
+      - label: "Suspension"
+        value: "Sinuous spring"
+      - label: "Cover type"
+        value: "Non-removable"
+      - label: "Colour variance"
+        value: "Disclaimer"
+      - label: "Material & safety standards"
+        value: "Low formaldehyde"
+    dimensions:
+      - label: "Dimension"
+        value: "W86.5 x D65 x H45.5cm"
+      - label: "Seating depth"
+        value: "65cm"
+      - label: "Seatable width"
+        value: "86.5cm"
+      - label: "Seating height"
+        value: "45.5cm"
+      - label: "Leg height"
+        value: "17cm"
+      - label: "Product weight"
+        value: "14.5kg"
+      - label: "Packaging dimensions"
+        value: "1 box"
+      - label: "Max bearing support"
+        value: "150kg"
+    delivery_and_warranty:
+      - label: "Cancellation"
+        value: "Clearance—no cancellation"
+      - label: "Warranty"
+        value: "Frame 10 years; Fabric 1 year; Foam 2 years"
+      - label: "Return policy"
+        value: "Clearance—no return or exchange"
+      - label: "Assembly"
+        value: "Legs to be fitted"
+  leather:
+    material:
+      - label: "Material"
+        value: "Laminated veneer lumber with plywood frame, solid rubber wood leg"
+      - label: "Filling"
+        value: "Foam, fibre and pocket spring filled seat"
+      - label: "Finish"
+        value: "Walnut stain on wood"
+      - label: "Care"
+        value: "Leather sofa, wooden legs"
+      - label: "Suspension"
+        value: "Sinuous spring"
+      - label: "Cover type"
+        value: "Removable seat cushion, fixed seat cushion covers"
+      - label: "Colour variance"
+        value: "Leather variations"
+      - label: "Material & safety standards"
+        value: "Low formaldehyde"
+      - label: "Material details"
+        value: "Top grain leather. Crafted from American hides."
+    dimensions:
+      - label: "Dimension"
+        value: "W83 x D64 x H49cm"
+      - label: "Seating depth"
+        value: "64cm"
+      - label: "Seatable width"
+        value: "83cm"
+      - label: "Seating height"
+        value: "49cm"
+      - label: "Leg height"
+        value: "17cm"
+      - label: "Product weight"
+        value: "11.8kg"
+      - label: "Packaging dimensions"
+        value: "1 box"
+      - label: "Max bearing support"
+        value: "150kg"
+    delivery_and_warranty:
+      - label: "Cancellation"
+        value: "Free—5 working days before delivery"
+      - label: "Warranty"
+        value: "Frame 10 years; Leather 1 year; Foam 2 years"
+      - label: "Return policy"
+        value: "30-day returns"
+      - label: "Assembly"
+        value: "Legs to be fitted"
+
+design_pairings:
+  - "sofa"
+  - "accent_chair"
+  - "side_table"
+
+assets:
+  asset_id: "sofa-real-castlery-madison-ottoman"
+  model_url: "/assets/models/sofa-real-castlery-madison-ottoman.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1645673995/crusader/variants/50440732-AM4001/Madison-Ottoman-Bisque-Front.png"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1645673995/crusader/variants/50440732-AM4001/Madison-Ottoman-Bisque-Front.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1645674049/crusader/variants/50440732-AM4001/Madison-Ottoman-Bisque-Set_1.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1645674166/crusader/variants/50440732-AM4001/Madison-Armchair-With-Ottoman-Bisque-Square-Set_4.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1645673995/crusader/variants/50440732-AM4001/Madison-Ottoman-Bisque-Angle.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1645673995/crusader/variants/50440732-AM4001/Madison-Ottoman-Bisque-Side.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1645674203/crusader/variants/50440732-AM4001/Madison-Ottoman-Bisque-Det_1.jpg"
+
+variants:
+  - variant: "Bisque (Fabric)"
+    finish_code: "bisque_fabric"
+    finish_label: "Bisque"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1645673995/crusader/variants/50440732-AM4001/Madison-Ottoman-Bisque-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1645673995/crusader/variants/50440732-AM4001/Madison-Ottoman-Bisque-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1645674049/crusader/variants/50440732-AM4001/Madison-Ottoman-Bisque-Set_1.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1645674166/crusader/variants/50440732-AM4001/Madison-Armchair-With-Ottoman-Bisque-Square-Set_4.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1645673995/crusader/variants/50440732-AM4001/Madison-Ottoman-Bisque-Angle.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1645673995/crusader/variants/50440732-AM4001/Madison-Ottoman-Bisque-Side.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1645674203/crusader/variants/50440732-AM4001/Madison-Ottoman-Bisque-Det_1.jpg"
+    swatch_group: "upholstery"
+    price_usd: 499
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 86.5
+      depth_cm: 65
+      height_cm: 45.5
+    seat_capacity: 1
+    size_class: "small"
+    color_family: "beige"
+    tone: "neutral"
+    materials:
+      upholstery:
+        structure: "fabric"
+        surface: "woven_fabric"
+    finish:
+      color_finish: "bisque"
+      surface_finish: "matte"
+      finish_color: "bisque_fabric"
+
+  - variant: "Camille, Forest (Fabric)"
+    finish_code: "camille_forest_fabric"
+    finish_label: "Camille, Forest"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1757405686/crusader/variants/50440732-CM4001/Madison-Ottoman-Forest-Front-1757405686.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1757405686/crusader/variants/50440732-CM4001/Madison-Ottoman-Forest-Front-1757405686.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1760166041/crusader/variants/50440732-CM4001/Madison-Armchair-With-Ottoman-Forest-Square-Set_1-1760166041.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1760166041/crusader/variants/50440732-CM4001/Madison-Ottoman-Forest-Square-Set_1-1760166041.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1760166041/crusader/variants/50440732-CM4001/Madison-Right-Facing-Chaise-Sectional-Sofa-With-Ottoman-Forest-Square-Set_1-1760166041.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1757405686/crusader/variants/50440732-CM4001/Madison-Ottoman-Forest-Angle-1757405686.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1757405686/crusader/variants/50440732-CM4001/Madison-Ottoman-Forest-Side-1757405686.jpg"
+    swatch_group: "upholstery"
+    price_usd: 549
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 86.5
+      depth_cm: 65
+      height_cm: 45.5
+    seat_capacity: 1
+    size_class: "small"
+    color_family: "green"
+    tone: "cool"
+    materials:
+      upholstery:
+        structure: "fabric"
+        surface: "woven_fabric"
+    finish:
+      color_finish: "camille_forest"
+      surface_finish: "matte"
+      finish_color: "camille_forest_fabric"
+
+  - variant: "Caramel (Leather)"
+    finish_code: "caramel_leather"
+    finish_label: "Caramel"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1642587660/crusader/variants/50440732-LE4016/Madison-ottoman-Caramel-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1642587660/crusader/variants/50440732-LE4016/Madison-ottoman-Caramel-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1642587710/crusader/variants/50440732-LE4016/Madison-Ottoman-Caramel-Square-Set_1.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1642587777/crusader/variants/50440732-LE4016/Madison-Leather-Armchair-With-Ottoman-Caramel-Square-Set_2.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1642587659/crusader/variants/50440732-LE4016/Madison-ottoman-Caramel-Angle.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1642587660/crusader/variants/50440732-LE4016/Madison-ottoman-Caramel-Side.jpg"
+    swatch_group: "upholstery"
+    price_usd: 649
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 83
+      depth_cm: 64
+      height_cm: 49
+    seat_capacity: 1
+    size_class: "small"
+    color_family: "brown"
+    tone: "warm"
+    materials:
+      upholstery:
+        structure: "leather"
+        surface: "top_grain_leather"
+    finish:
+      color_finish: "caramel"
+      surface_finish: "satin"
+      finish_color: "caramel_leather"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true

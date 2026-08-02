@@ -37,6 +37,14 @@ type CatalogItemRef = {
 
 type CatalogLookup = Map<string, CatalogItemSchema> | Record<string, CatalogItemSchema>;
 
+function getDetailString(
+  details: Record<string, unknown> | undefined,
+  key: string
+): string | undefined {
+  const value = details?.[key];
+  return typeof value === "string" ? value : undefined;
+}
+
 function resolveCatalogId(item: CatalogItemRef): string | undefined {
   return item.catalogItemId ?? item.productId;
 }
@@ -89,24 +97,32 @@ export function validateCartItem(
   }
 
   // Build resolved info
-  const result: any = {
-    buyable: true,
-    commerce: {
-      type: commerce.type,
-    },
-  };
-
   if (commerce.type === "shopify") {
-    result.commerce.productId = commerce.details?.productId;
-    result.commerce.variantId = commerce.details?.variantId;
+    return {
+      buyable: true,
+      commerce: {
+        type: "shopify",
+        productId: getDetailString(commerce.details, "productId"),
+        variantId: getDetailString(commerce.details, "variantId"),
+      },
+    };
   }
 
   if (commerce.type === "affiliate") {
-    result.commerce.url = commerce.url;
-    result.commerce.retailer = commerce.details?.retailer;
+    return {
+      buyable: true,
+      commerce: {
+        type: "affiliate",
+        url: commerce.url,
+        retailer: getDetailString(commerce.details, "retailer"),
+      },
+    };
   }
 
-  return result;
+  return {
+    buyable: false,
+    warning: `${item.title} is not available for purchase`,
+  };
 }
 
 export function reconcileCart<T extends CatalogItemRef>(
@@ -220,7 +236,7 @@ export function createCommerceEvent(
       commerce.type !== "not_buyable"
         ? {
             type: commerce.type,
-            retailer: commerce.details?.retailer,
+            retailer: getDetailString(commerce.details, "retailer"),
           }
         : undefined,
     timestamp: Date.now(),

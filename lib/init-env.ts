@@ -50,7 +50,7 @@ export function initializeEnvironment() {
           return;
         }
       }
-    } catch (err) {
+    } catch {
       // Try next path
       continue;
     }

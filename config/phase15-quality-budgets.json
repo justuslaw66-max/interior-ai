@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "interior_ai.quality_budgets.v1",
+  "policy": "baseline_first",
+  "recordedAt": "2026-07-22",
+  "notes": [
+    "Product conversion targets remain unset until representative production-like baselines exist.",
+    "Phase 8 limits remain safety guardrails, not claimed production percentiles.",
+    "Asset failures and rendering crashes are zero-tolerance release blockers."
+  ],
+  "productMetrics": {
+    "activation": null,
+    "timeToFirstRoomMs": null,
+    "timeToFirstPlacementMs": null,
+    "goldenPathCompletionRate": null,
+    "saveSuccessRate": null,
+    "reloadSuccessRate": null,
+    "recoverySuccessRate": null,
+    "crashFreeEditingRate": null,
+    "viewSuccessRate": null,
+    "shoppingListEngagementRate": null,
+    "purchaseClickThroughRate": null,
+    "returningUseRate": null,
+    "userConfidence": null
+  },
+  "performanceSafetyGuardrails": {
+    "maxEditorInteractiveMs": 6000,
+    "maxDragLatencyMs": 6000,
+    "maxFrameP95Ms": 250,
+    "maxSaveDurationMs": 2500,
+    "maxLargeProjectSerializedBytes": 700000,
+    "maxProjectHeapBytes": 150000000,
+    "maxRetainedAfterCloseBytes": 2000000,
+    "maxAssetFailures": 0,
+    "maxRenderingCrashes": 0
+  },
+  "baselineSources": [
+    "npm run benchmark:phase8:projects",
+    "npm run benchmark:phase8:browser",
+    "npm run test:phase8-performance",
+    "npm run validate:product-assets"
+  ]
+}

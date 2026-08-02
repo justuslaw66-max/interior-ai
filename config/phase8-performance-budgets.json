@@ -1,0 +1,52 @@
+{
+  "evidenceDate": "2026-07-19",
+  "projectBenchmarks": {
+    "small": {
+      "maxSerializedBytes": 8000,
+      "maxP95Ms": {
+        "fingerprintCold": 0.25,
+        "fingerprintCached": 0.05,
+        "save": 0.1,
+        "load": 0.5
+      }
+    },
+    "medium": {
+      "maxSerializedBytes": 120000,
+      "maxP95Ms": {
+        "fingerprintCold": 1.5,
+        "fingerprintCached": 0.05,
+        "save": 0.5,
+        "load": 2.5
+      }
+    },
+    "large": {
+      "maxSerializedBytes": 700000,
+      "maxP95Ms": {
+        "fingerprintCold": 6,
+        "fingerprintCached": 0.05,
+        "save": 2.5,
+        "load": 10
+      }
+    }
+  },
+  "bundle": {
+    "initialJsRawBytes": 6955000,
+    "initialJsBrotliBytes": 1130000,
+    "initialCssRawBytes": 140000,
+    "initialCssBrotliBytes": 19000,
+    "cabinetryStudioRawBytes": 500000,
+    "cabinetryStudioBrotliBytes": 85000,
+    "gltfExporterRawBytes": 40000,
+    "gltfExporterBrotliBytes": 11000
+  },
+  "browserReference": {
+    "maxEditorInteractiveMs": 6000,
+    "maxPointerSweepMs": 6000,
+    "maxSwitchToPlan2dMs": 3000,
+    "maxLocalAutosaveMs": 2500,
+    "maxFrameP95Ms": 250,
+    "maxProjectHeapBytes": 150000000,
+    "maxRetainedAfterCloseBytes": 2000000,
+    "maxConsumerLoadedProChunks": 0
+  }
+}

@@ -1,0 +1,257 @@
+brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/rochelle-performance-boucle-bed"
+category: "bed"
+
+product_family: "Rochelle"
+product_name: "Rochelle Performance Boucle Bed"
+variant: "Queen - Standard Bedframe - White Quartz Boucle"
+
+price_usd: 1299
+compare_at_price_usd: 1299
+price_band: "premium"
+brand_tier: "premium_mid"
+
+design_zone: "sleeping_zone"
+anchor_role: "bed_anchor"
+
+dimensions:
+  width_cm: 170
+  depth_cm: 218
+  height_cm: 105
+
+size_class: "large"
+shape: "rectangular"
+material_family: "upholstered"
+material_mix: "boucle_wood"
+
+color_family: "white"
+tone: "neutral"
+
+style_cluster: "modern"
+style_secondary: "soft_modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "rounded"
+  silhouette: "padded_platform"
+  form_language: "soft_modern"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  walkway_clearance_cm: 90
+  wall_clearance_cm: 0
+
+room_compatibility:
+  - "bedroom"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: true
+  clearance_sensitive: true
+  center_room_preferred: false
+
+design_pairings:
+  - "nightstand"
+  - "table_lamp"
+  - "rug"
+  - "dresser"
+
+product_details:
+  material:
+    - label: "Upholstery"
+      value: "Performance Infinity Boucle, Light Grey (White Quartz)"
+    - label: "Standard frame"
+      value: "Engineered wood with plywood, PU foam and fibre"
+    - label: "Storage frame"
+      value: "Plywood with engineered wood, PU foam and fibre, gas-lift storage"
+    - label: "Leg finish"
+      value: "White wash finish"
+  dimensions:
+    - label: "Standard Queen dimension"
+      value: "W170 x D218 x H105cm"
+    - label: "Standard King dimension"
+      value: "W200 x D218 x H105cm"
+    - label: "Storage Super Single dimension"
+      value: "W125 x D214.5 x H110cm"
+    - label: "Storage Queen dimension"
+      value: "W170 x D214.5 x H110cm"
+    - label: "Storage King dimension"
+      value: "W200 x D214.5 x H110cm"
+    - label: "Recommended mattress thickness"
+      value: "20-35cm"
+    - label: "Packaging dimensions"
+      value: "2 boxes"
+  delivery_and_warranty:
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Warranty"
+      value: "Frame 10 years; Fabric 1 year; Foam 2 years"
+    - label: "Assembly"
+      value: "Assembly required"
+
+assets:
+  asset_id: "bed-real-castlery-rochelle-boucle"
+  model_url: "/assets/models/bed-real-castlery-rochelle-standard-queen-white-quartz-boucle.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1676542514/crusader/variants/50440795-IN4002/Rochelle-Boucle-Queen-Size-Bed-White-Quartz-Front-1676542511.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1676542514/crusader/variants/50440795-IN4002/Rochelle-Boucle-Queen-Size-Bed-White-Quartz-Front-1676542511.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1676543546/crusader/variants/T50440795/Rochelle-Boucle-Queen-Size-Bed-White-Quartz-Front-Dim-SG-1676543543.jpg"
+
+variants:
+  - variant: "Queen - Standard Bedframe - White Quartz Boucle"
+    size_label: "Queen"
+    source_sku: "50440795-IN4002"
+    finish_code: "standard_white_quartz_boucle"
+    finish_label: "Standard bedframe - White Quartz Boucle"
+    swatch_group: "upholstery"
+    swatch_hex: "#ece7de"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1640236351/crusader/variants/IN-4001/White-Quartz_1.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-rochelle-standard-queen-white-quartz-boucle.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/rochelle-performance-boucle-bed?bed_frame_size=queen&material=performance_white_quartz_boucle_new"
+    available: true
+    price_usd: 1299
+    compare_at_price_usd: 1299
+    dimensions: &standard_queen_dims
+      width_cm: 170
+      depth_cm: 218
+      height_cm: 105
+    size_class: "large"
+    color_family: "white"
+    tone: "neutral"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1676542514/crusader/variants/50440795-IN4002/Rochelle-Boucle-Queen-Size-Bed-White-Quartz-Front-1676542511.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1676542514/crusader/variants/50440795-IN4002/Rochelle-Boucle-Queen-Size-Bed-White-Quartz-Front-1676542511.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1676543546/crusader/variants/T50440795/Rochelle-Boucle-Queen-Size-Bed-White-Quartz-Front-Dim-SG-1676543543.jpg"
+    materials: &rochelle_boucle_materials
+      upholstery:
+        structure: "fabric"
+        surface: "performance_boucle"
+      frame:
+        structure: "engineered_wood_plywood"
+        surface: "upholstered"
+      legs:
+        structure: "wood"
+        surface: "white_wash"
+    finish: &standard_boucle_finish
+      color_finish: "white_quartz_boucle"
+      surface_finish: "boucle"
+      finish_color: "standard_white_quartz_boucle"
+
+  - variant: "King - Standard Bedframe - White Quartz Boucle"
+    size_label: "King"
+    source_sku: "50440796-IN4002"
+    finish_code: "standard_white_quartz_boucle"
+    finish_label: "Standard bedframe - White Quartz Boucle"
+    swatch_group: "upholstery"
+    swatch_hex: "#ece7de"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1640236351/crusader/variants/IN-4001/White-Quartz_1.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-rochelle-standard-king-white-quartz-boucle.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/rochelle-performance-boucle-bed?bed_frame_size=king&material=performance_white_quartz_boucle_new"
+    available: true
+    price_usd: 1399
+    compare_at_price_usd: 1399
+    dimensions: &standard_king_dims
+      width_cm: 200
+      depth_cm: 218
+      height_cm: 105
+    size_class: "large"
+    color_family: "white"
+    tone: "neutral"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1676543184/crusader/variants/50440796-IN4002/Rochelle-Boucle-King-Size-Bed-White-Quartz-Front-1676543181.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1676543184/crusader/variants/50440796-IN4002/Rochelle-Boucle-King-Size-Bed-White-Quartz-Front-1676543181.jpg"
+    materials: *rochelle_boucle_materials
+    finish: *standard_boucle_finish
+
+  - variant: "Super Single - Storage Bedframe - White Quartz Boucle"
+    size_label: "Super Single"
+    source_sku: "50440945-IN4002"
+    finish_code: "storage_white_quartz_boucle"
+    finish_label: "Storage bedframe - White Quartz Boucle"
+    swatch_group: "upholstery"
+    swatch_hex: "#ece7de"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1640236351/crusader/variants/IN-4001/White-Quartz_1.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-rochelle-storage-super-single-white-quartz-boucle.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/rochelle-storage-bed?bed_frame_size=super_single&material=performance_white_quartz_boucle_new"
+    available: true
+    price_usd: 1399
+    compare_at_price_usd: 1399
+    dimensions: &storage_super_single_dims
+      width_cm: 125
+      depth_cm: 214.5
+      height_cm: 110
+    size_class: "medium"
+    color_family: "white"
+    tone: "neutral"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740629356/crusader/variants/50440945-IN4002/Rochelle-Super-Single-Storage-Bed-Performance-Infinity-White-Quartz-Boucle-Front-1740629354.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740629356/crusader/variants/50440945-IN4002/Rochelle-Super-Single-Storage-Bed-Performance-Infinity-White-Quartz-Boucle-Front-1740629354.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740629458/crusader/variants/T50440945/Rochelle-Super-Single-Storage-Bed-Performance-Infinity-White-Quartz-Boucle-Dim-SG-1740629456.jpg"
+    materials: *rochelle_boucle_materials
+    finish: &storage_boucle_finish
+      color_finish: "white_quartz_boucle"
+      surface_finish: "boucle"
+      finish_color: "storage_white_quartz_boucle"
+
+  - variant: "Queen - Storage Bedframe - White Quartz Boucle"
+    size_label: "Queen"
+    source_sku: "50440947-IN4002"
+    finish_code: "storage_white_quartz_boucle"
+    finish_label: "Storage bedframe - White Quartz Boucle"
+    swatch_group: "upholstery"
+    swatch_hex: "#ece7de"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1640236351/crusader/variants/IN-4001/White-Quartz_1.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-rochelle-storage-queen-white-quartz-boucle.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/rochelle-storage-bed?bed_frame_size=queen&material=performance_white_quartz_boucle_new"
+    available: true
+    price_usd: 1599
+    compare_at_price_usd: 1599
+    dimensions: &storage_queen_dims
+      width_cm: 170
+      depth_cm: 214.5
+      height_cm: 110
+    size_class: "large"
+    color_family: "white"
+    tone: "neutral"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740629169/crusader/variants/50440947-IN4002/Rochelle-Queen-Storage-Bed-Performance-Infinity-White-Quartz-Boucle-Front-1740629167.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740629169/crusader/variants/50440947-IN4002/Rochelle-Queen-Storage-Bed-Performance-Infinity-White-Quartz-Boucle-Front-1740629167.jpg"
+    materials: *rochelle_boucle_materials
+    finish: *storage_boucle_finish
+
+  - variant: "King - Storage Bedframe - White Quartz Boucle"
+    size_label: "King"
+    source_sku: "50440948-IN4002"
+    finish_code: "storage_white_quartz_boucle"
+    finish_label: "Storage bedframe - White Quartz Boucle"
+    swatch_group: "upholstery"
+    swatch_hex: "#ece7de"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1640236351/crusader/variants/IN-4001/White-Quartz_1.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-rochelle-storage-king-white-quartz-boucle.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/rochelle-storage-bed?bed_frame_size=king&material=performance_white_quartz_boucle_new"
+    available: true
+    price_usd: 1699
+    compare_at_price_usd: 1699
+    dimensions: &storage_king_dims
+      width_cm: 200
+      depth_cm: 214.5
+      height_cm: 110
+    size_class: "large"
+    color_family: "white"
+    tone: "neutral"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740629229/crusader/variants/50440948-IN4002/Rochelle-King-Storage-Bed-Performance-Infinity-White-Quartz-Boucle-Front-1740629227.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1740629229/crusader/variants/50440948-IN4002/Rochelle-King-Storage-Bed-Performance-Infinity-White-Quartz-Boucle-Front-1740629227.jpg"
+    materials: *rochelle_boucle_materials
+    finish: *storage_boucle_finish
+
+placement_notes:
+  - "Use as the bedroom anchor against a main wall."
+  - "Storage variants need clearance for lift access."
+  - "Pair with low rounded bedside tables to keep the soft Rochelle silhouette."

@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { isAdminEmail } from "@/lib/admin";
+import { canAccessAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { createImportJob } from "@/lib/import-jobs/create-import-job";
+import { readJsonRequest } from "@/lib/api-boundary";
 
 type ImportJobListRow = {
   id: string;
@@ -21,7 +22,7 @@ type ImportJobListRow = {
 
 export async function GET() {
   const session = await auth();
-  if (!session?.user?.email || !isAdminEmail(session.user.email)) {
+  if (!canAccessAdmin(session?.user?.email)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -55,11 +56,15 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const session = await auth();
-  if (!session?.user?.email || !isAdminEmail(session.user.email)) {
+  if (!canAccessAdmin(session?.user?.email)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const body = (await request.json()) as {
+  const rawBody = await readJsonRequest(request, 256 * 1024).catch(() => null);
+  if (!rawBody || typeof rawBody !== "object" || Array.isArray(rawBody)) {
+    return NextResponse.json({ error: "Invalid import request" }, { status: 400 });
+  }
+  const body = rawBody as {
     sourceFileName?: string;
     sourceFileUrl?: string;
     sourceBrand?: string;
@@ -71,11 +76,45 @@ export async function POST(request: Request) {
   const sourceFileName = body.sourceFileName?.trim();
   const sourceFileUrl = body.sourceFileUrl?.trim();
 
-  if (!sourceFileName || !sourceFileUrl) {
+  if (
+    !sourceFileName ||
+    sourceFileName.length > 255 ||
+    /[\0/\\]/.test(sourceFileName) ||
+    !/\.(glb|gltf)$/i.test(sourceFileName) ||
+    !sourceFileUrl ||
+    sourceFileUrl.length > 2_048
+  ) {
     return NextResponse.json(
-      { error: "sourceFileName and sourceFileUrl are required" },
+      { error: "A safe GLB/glTF filename and HTTPS source URL are required" },
       { status: 400 }
     );
+  }
+  try {
+    const url = new URL(sourceFileUrl);
+    const hostname = url.hostname.toLowerCase().replace(/^\[|\]$/g, "");
+    if (
+      url.protocol !== "https:" ||
+      url.username ||
+      url.password ||
+      hostname === "localhost" ||
+      hostname.endsWith(".local") ||
+      /^(127\.|10\.|192\.168\.|169\.254\.|0\.)/.test(hostname) ||
+      /^172\.(1[6-9]|2\d|3[01])\./.test(hostname) ||
+      hostname === "::1" ||
+      hostname.startsWith("fc") ||
+      hostname.startsWith("fd") ||
+      hostname.startsWith("fe80")
+    ) throw new Error();
+  } catch {
+    return NextResponse.json({ error: "Source URL must be a public HTTPS URL" }, { status: 400 });
+  }
+  if (
+    (body.sourceBrand !== undefined &&
+      (typeof body.sourceBrand !== "string" || body.sourceBrand.length > 100)) ||
+    (body.notes !== undefined &&
+      (typeof body.notes !== "string" || body.notes.length > 2_000))
+  ) {
+    return NextResponse.json({ error: "Import metadata is invalid" }, { status: 400 });
   }
 
   const job = await createImportJob({
@@ -83,7 +122,7 @@ export async function POST(request: Request) {
     sourceFileUrl,
     sourceBrand: body.sourceBrand,
     notes: body.notes,
-    uploadedByUserId: body.uploadedByUserId,
+    uploadedByUserId: session?.user?.id,
     rawMetadataJson: body.rawMetadataJson,
   });
 

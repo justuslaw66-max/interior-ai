@@ -12,7 +12,7 @@ export default function ShareTracking({
 }) {
   useEffect(() => {
     track("share_link_opened", {
-      share_token: shareToken,
+      shared_context: Boolean(shareToken),
       design_id: designId ?? null,
     });
 

@@ -4,11 +4,14 @@ import { execFileSync } from "node:child_process";
 import type { ImportQaLimits } from "../importQaPolicy";
 import type { PipelineStepResult } from "./types";
 
+const COMMAND_TIMEOUT_MS = Number(process.env.GLTF_TRANSFORM_TIMEOUT_MS || 15_000);
+
 function runPipelineCommand(args: string[]): { ok: boolean; output: string } {
   try {
     const output = execFileSync("npx", ["-y", "@gltf-transform/cli", ...args], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"],
+      timeout: COMMAND_TIMEOUT_MS,
     });
     return { ok: true, output };
   } catch (error) {
@@ -31,6 +34,8 @@ function summarizePipelineFailure(output: string): { reason: string; toolUnavail
     lower.includes("enoent") ||
     lower.includes("could not determine executable") ||
     lower.includes("not recognized as an internal or external command") ||
+    lower.includes("timed out") ||
+    lower.includes("etimedout") ||
     lower.includes("eai_again") ||
     lower.includes("enotfound");
 

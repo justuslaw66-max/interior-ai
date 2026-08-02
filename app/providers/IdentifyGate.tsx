@@ -7,11 +7,18 @@ import { getAnonId } from "@/lib/anon";
 import { loadGuestDesigns, clearGuestDesigns } from "@/lib/guestDesigns";
 import { track } from "@/lib/analytics";
 
-export function IdentifyGate({ children }: { children: React.ReactNode }) {
+export function IdentifyGate({
+  children,
+  analyticsDisabled = false,
+}: {
+  children: React.ReactNode;
+  analyticsDisabled?: boolean;
+}) {
   const { me, isLoading } = useMe();
   const identifiedRef = useRef(false);
 
   useEffect(() => {
+    if (analyticsDisabled) return;
     if (identifiedRef.current) return;
     if (!isLoading && me?.id) {
       identifyUser({
@@ -21,7 +28,7 @@ export function IdentifyGate({ children }: { children: React.ReactNode }) {
       });
       identifiedRef.current = true;
     }
-  }, [isLoading, me?.id, me?.email, me?.plan]);
+  }, [analyticsDisabled, isLoading, me?.id, me?.email, me?.plan]);
 
   useEffect(() => {
     if (!me?.id) return;

@@ -1,4 +1,4 @@
-import { config } from "@/lib/config";
+import { getApplicationEnvironment } from "@/lib/config";
 
 type AdminCheck = {
   email?: string | null;
@@ -6,18 +6,23 @@ type AdminCheck = {
 
 export function isAdminEmail(email?: string | null) {
   if (!email) return false;
-  const list = (process.env.ADMIN_EMAILS ?? "")
-    .split(",")
-    .map((s) => s.trim().toLowerCase())
-    .filter(Boolean);
+  if (!getApplicationEnvironment()) return false;
 
-  if (config.isDev && list.length === 0) return true;
+  const rawAdminEmails = process.env.ADMIN_EMAILS;
+  if (!rawAdminEmails?.trim()) return false;
 
-  return list.includes(email.toLowerCase());
+  const list = rawAdminEmails.split(",").map((entry) => entry.trim().toLowerCase());
+  if (list.some((entry) => !/^[^\s,@]+@[^\s,@]+\.[^\s,@]+$/.test(entry))) return false;
+
+  return list.includes(email.trim().toLowerCase());
+}
+
+export function canAccessAdmin(email?: string | null) {
+  return isAdminEmail(email);
 }
 
 export function requireAdmin({ email }: AdminCheck) {
-  if (!isAdminEmail(email)) {
+  if (!canAccessAdmin(email)) {
     throw new Error("Admin access required");
   }
 }

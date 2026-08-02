@@ -1,0 +1,600 @@
+brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/joseph-bed"
+category: "bed"
+
+product_family: "Joseph"
+product_name: "Joseph Bed"
+variant: "Queen - Fabric Bedframe - Stone Grey"
+
+price_usd: 1069
+compare_at_price_usd: 1099
+price_band: "mid_premium"
+brand_tier: "premium_mid"
+
+design_zone: "sleeping_zone"
+anchor_role: "bed_anchor"
+
+dimensions:
+  width_cm: 161.2
+  depth_cm: 210.6
+  height_cm: 96
+
+size_class: "large"
+shape: "rectangular"
+material_family: "upholstered"
+material_mix: "upholstered_wood"
+
+color_family: "grey"
+tone: "neutral"
+
+style_cluster: "modern"
+style_secondary: "contemporary"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "rounded"
+  silhouette: "low_platform"
+  form_language: "soft_modern"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  walkway_clearance_cm: 90
+  wall_clearance_cm: 0
+
+room_compatibility:
+  - "bedroom"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: true
+  clearance_sensitive: true
+  center_room_preferred: false
+
+design_pairings:
+  - "nightstand"
+  - "table_lamp"
+  - "rug"
+  - "dresser"
+
+product_details:
+  material:
+    - label: "Frame"
+      value: "Engineered wood wrapped in upholstery or American walnut veneer"
+    - label: "Fabric bedframe"
+      value: "70% polyester, 30% acrylic"
+    - label: "Boucle bedframe"
+      value: "Snow boucle upholstery"
+    - label: "Walnut bedframe"
+      value: "American walnut veneer"
+    - label: "Material & safety standards"
+      value: "Low formaldehyde"
+  dimensions:
+    - label: "Fabric Queen dimension"
+      value: "W161.2 x D210.6 x H96cm"
+    - label: "Fabric King dimension"
+      value: "W191.2 x D210.6 x H96cm"
+    - label: "Boucle Queen dimension"
+      value: "W161.2 x D210.6 x H96cm"
+    - label: "Boucle King dimension"
+      value: "W191.2 x D210.6 x H96cm"
+    - label: "Walnut Queen dimension"
+      value: "W159.2 x D210.6 x H100cm"
+    - label: "Walnut King dimension"
+      value: "W189.2 x D210.6 x H100cm"
+    - label: "Recommended mattress thickness"
+      value: "20-30cm"
+    - label: "Packaging dimensions"
+      value: "2 boxes"
+  delivery_and_warranty:
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Bedframe needs assembly"
+
+assets:
+  asset_id: "bed-real-castlery-joseph"
+  model_url: "/assets/models/bed-real-castlery-joseph-fabric-queen-stone-grey.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1630051320/crusader/variants/52460070-TE4004/Joseph-Queen-Size-Bed-Stone-Grey-Front-SG.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1630051320/crusader/variants/52460070-TE4004/Joseph-Queen-Size-Bed-Stone-Grey-Front-SG.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1655220653/crusader/variants/52460070-TE4004/Joseph-Queen-Size-Bed-Stone-Grey-SG-Dim-1655220650.jpg"
+
+variants:
+  - variant: "Queen - Fabric Bedframe - Stone Grey"
+    size_label: "Queen"
+    source_sku: "52460070-TE4004"
+    finish_code: "fabric_stone_grey"
+    finish_label: "Fabric bedframe - Stone Grey"
+    swatch_group: "upholstery"
+    swatch_hex: "#8b8983"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1653637272/crusader/variants/TE-4004/Ethan-Armchair-Sofa-Stone-Grey-Square-Det_2-1653637269.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-joseph-fabric-queen-stone-grey.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/joseph-bed?bed_frame_size=queen&material=stone_grey"
+    available: true
+    price_usd: 1069
+    compare_at_price_usd: 1099
+    dimensions: &fabric_queen_dims
+      width_cm: 161.2
+      depth_cm: 210.6
+      height_cm: 96
+    size_class: "large"
+    color_family: "grey"
+    tone: "neutral"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1630051320/crusader/variants/52460070-TE4004/Joseph-Queen-Size-Bed-Stone-Grey-Front-SG.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1630051320/crusader/variants/52460070-TE4004/Joseph-Queen-Size-Bed-Stone-Grey-Front-SG.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1655220653/crusader/variants/52460070-TE4004/Joseph-Queen-Size-Bed-Stone-Grey-SG-Dim-1655220650.jpg"
+    materials: &fabric_materials
+      upholstery:
+        structure: "fabric"
+        surface: "polyester_acrylic"
+      frame:
+        structure: "engineered_wood"
+        surface: "upholstered"
+    finish:
+      color_finish: "stone_grey"
+      surface_finish: "matte"
+      finish_color: "fabric_stone_grey"
+
+  - variant: "King - Fabric Bedframe - Stone Grey"
+    size_label: "King"
+    source_sku: "52460071-TE4004"
+    finish_code: "fabric_stone_grey"
+    finish_label: "Fabric bedframe - Stone Grey"
+    swatch_group: "upholstery"
+    swatch_hex: "#8b8983"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1653637272/crusader/variants/TE-4004/Ethan-Armchair-Sofa-Stone-Grey-Square-Det_2-1653637269.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-joseph-fabric-king-stone-grey.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/joseph-bed?bed_frame_size=king&material=stone_grey"
+    available: true
+    price_usd: 1199
+    dimensions:
+      width_cm: 191.2
+      depth_cm: 210.6
+      height_cm: 96
+    size_class: "large"
+    color_family: "grey"
+    tone: "neutral"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1630051320/crusader/variants/52460070-TE4004/Joseph-Queen-Size-Bed-Stone-Grey-Front-SG.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1630051320/crusader/variants/52460070-TE4004/Joseph-Queen-Size-Bed-Stone-Grey-Front-SG.jpg"
+    materials: *fabric_materials
+    finish:
+      color_finish: "stone_grey"
+      surface_finish: "matte"
+      finish_color: "fabric_stone_grey"
+
+  - variant: "Queen - Fabric Bedframe - Ivory Beige"
+    size_label: "Queen"
+    source_sku: "52460070-LW4001"
+    finish_code: "fabric_ivory_beige"
+    finish_label: "Fabric bedframe - Ivory Beige"
+    swatch_group: "upholstery"
+    swatch_hex: "#d8d0c4"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1627631594/crusader/variants/LW-4001/Ivory-Beige_1.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-joseph-fabric-queen-ivory-beige.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/joseph-bed?bed_frame_size=queen&material=ivory_beige"
+    available: true
+    price_usd: 1069
+    compare_at_price_usd: 1099
+    dimensions: *fabric_queen_dims
+    size_class: "large"
+    color_family: "beige"
+    tone: "warm"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1630050274/crusader/variants/52460070-LW4001/Joseph-Queen-Size-Bed-Ivory-Beige-Front-SG.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1630050274/crusader/variants/52460070-LW4001/Joseph-Queen-Size-Bed-Ivory-Beige-Front-SG.jpg"
+    materials: *fabric_materials
+    finish:
+      color_finish: "ivory_beige"
+      surface_finish: "matte"
+      finish_color: "fabric_ivory_beige"
+
+  - variant: "King - Fabric Bedframe - Ivory Beige"
+    size_label: "King"
+    source_sku: "52460071-LW4001"
+    finish_code: "fabric_ivory_beige"
+    finish_label: "Fabric bedframe - Ivory Beige"
+    swatch_group: "upholstery"
+    swatch_hex: "#d8d0c4"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1627631594/crusader/variants/LW-4001/Ivory-Beige_1.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-joseph-fabric-king-ivory-beige.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/joseph-bed?bed_frame_size=king&material=ivory_beige"
+    available: true
+    price_usd: 1199
+    dimensions:
+      width_cm: 191.2
+      depth_cm: 210.6
+      height_cm: 96
+    size_class: "large"
+    color_family: "beige"
+    tone: "warm"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1629959758/crusader/variants/52460071-LW4001/Joseph-King-Size-Bed-Ivory-Beige-Front-SG.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1629959758/crusader/variants/52460071-LW4001/Joseph-King-Size-Bed-Ivory-Beige-Front-SG.jpg"
+    materials: *fabric_materials
+    finish:
+      color_finish: "ivory_beige"
+      surface_finish: "matte"
+      finish_color: "fabric_ivory_beige"
+
+  - variant: "Queen - Boucle Bedframe - Snow Boucle"
+    size_label: "Queen"
+    source_sku: "52460070-LP4001"
+    finish_code: "boucle_snow"
+    finish_label: "Boucle bedframe - Snow Boucle"
+    swatch_group: "upholstery"
+    swatch_hex: "#ece7de"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1640236351/crusader/variants/IN-4001/White-Quartz_1.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-joseph-boucle-queen-snow.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/joseph-bed-boucle?bed_frame_size=queen"
+    available: true
+    price_usd: 959
+    compare_at_price_usd: 1099
+    dimensions: *fabric_queen_dims
+    size_class: "large"
+    color_family: "white"
+    tone: "neutral"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1630050060/crusader/variants/52460070-LP4001/Joseph-Queen-Size-Bed-Boucle-Front-SG.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1630050060/crusader/variants/52460070-LP4001/Joseph-Queen-Size-Bed-Boucle-Front-SG.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1655220994/crusader/variants/52460070-LP4001/Joseph-Queen-Size-Bed-Boucle-SG-Dim-1655220992.jpg"
+    materials: &boucle_materials
+      upholstery:
+        structure: "boucle_fabric"
+        surface: "snow_boucle"
+      frame:
+        structure: "engineered_wood"
+        surface: "upholstered"
+    finish:
+      color_finish: "snow_boucle"
+      surface_finish: "textured"
+      finish_color: "boucle_snow"
+
+  - variant: "King - Boucle Bedframe - Snow Boucle"
+    size_label: "King"
+    source_sku: "52460071-LP4001"
+    finish_code: "boucle_snow"
+    finish_label: "Boucle bedframe - Snow Boucle"
+    swatch_group: "upholstery"
+    swatch_hex: "#ece7de"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1640236351/crusader/variants/IN-4001/White-Quartz_1.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-joseph-boucle-king-snow.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/joseph-bed-boucle?bed_frame_size=king"
+    available: true
+    price_usd: 1049
+    compare_at_price_usd: 1199
+    dimensions:
+      width_cm: 191.2
+      depth_cm: 210.6
+      height_cm: 96
+    size_class: "large"
+    color_family: "white"
+    tone: "neutral"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1629945882/crusader/variants/52460071-LP4001/Joseph-King-Size-Bed-Boucle-Front-SG.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1629945882/crusader/variants/52460071-LP4001/Joseph-King-Size-Bed-Boucle-Front-SG.jpg"
+    materials: *boucle_materials
+    finish:
+      color_finish: "snow_boucle"
+      surface_finish: "textured"
+      finish_color: "boucle_snow"
+
+  - variant: "Queen - Walnut Bedframe"
+    size_label: "Queen"
+    source_sku: "52460077"
+    finish_code: "walnut_bedframe"
+    finish_label: "Walnut bedframe"
+    swatch_group: "wood_finish"
+    swatch_hex: "#6f4a2e"
+    swatch_image_url: "https://s3-ap-southeast-1.amazonaws.com/production-static-images/swatches/walnut-wood.png"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-joseph-walnut-queen.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/joseph-bed-walnut?bed_frame_size=queen"
+    available: true
+    price_usd: 1039
+    compare_at_price_usd: 1199
+    dimensions: &walnut_queen_dims
+      width_cm: 159.2
+      depth_cm: 210.6
+      height_cm: 100
+    size_class: "large"
+    color_family: "brown"
+    tone: "warm"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1624516194/crusader/variants/52460077/Joseph-Queen-Size-Bed-Walnut-Front-3-SG.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1624516194/crusader/variants/52460077/Joseph-Queen-Size-Bed-Walnut-Front-3-SG.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1655220935/crusader/variants/52460077/Joseph-Queen-Size-Bed-Walnut-Dim-SG-1655220933.jpg"
+    materials: &walnut_materials
+      frame:
+        structure: "engineered_wood"
+        surface: "american_walnut_veneer"
+      slats:
+        structure: "wood"
+        surface: "slatted"
+    finish:
+      color_finish: "walnut"
+      wood_finish: "american_walnut"
+      surface_finish: "matte"
+      finish_color: "walnut_bedframe"
+
+  - variant: "King - Walnut Bedframe"
+    size_label: "King"
+    source_sku: "52460078"
+    finish_code: "walnut_bedframe"
+    finish_label: "Walnut bedframe"
+    swatch_group: "wood_finish"
+    swatch_hex: "#6f4a2e"
+    swatch_image_url: "https://s3-ap-southeast-1.amazonaws.com/production-static-images/swatches/walnut-wood.png"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-joseph-walnut-king.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/joseph-bed-walnut?bed_frame_size=king"
+    available: true
+    price_usd: 1129
+    compare_at_price_usd: 1299
+    dimensions:
+      width_cm: 189.2
+      depth_cm: 210.6
+      height_cm: 100
+    size_class: "large"
+    color_family: "brown"
+    tone: "warm"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1624516255/crusader/variants/52460078/Joseph-King-Size-Bed-Walnut-Front-3-SG.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1624516255/crusader/variants/52460078/Joseph-King-Size-Bed-Walnut-Front-3-SG.jpg"
+    materials: *walnut_materials
+    finish:
+      color_finish: "walnut"
+      wood_finish: "american_walnut"
+      surface_finish: "matte"
+      finish_color: "walnut_bedframe"
+
+  - variant: "Queen - Fabric Set - Stone Grey"
+    size_label: "Queen"
+    source_sku: "52460070-TE4004+2x-bedside"
+    finish_code: "fabric_set_stone_grey"
+    finish_label: "Fabric set - Stone Grey"
+    swatch_group: "upholstery"
+    swatch_hex: "#8b8983"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1653637272/crusader/variants/TE-4004/Ethan-Armchair-Sofa-Stone-Grey-Square-Det_2-1653637269.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-joseph-fabric-set-queen-stone-grey.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/joseph-bed-with-2-bedside-tables?bed_frame_size=queen&material=stone_grey"
+    available: true
+    price_usd: 1929
+    compare_at_price_usd: 2097
+    dimensions:
+      width_cm: 281.2
+      depth_cm: 210.6
+      height_cm: 96
+    size_class: "large"
+    color_family: "grey"
+    tone: "neutral"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1630051320/crusader/variants/52460070-TE4004/Joseph-Queen-Size-Bed-Stone-Grey-Front-SG.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1630051320/crusader/variants/52460070-TE4004/Joseph-Queen-Size-Bed-Stone-Grey-Front-SG.jpg"
+    materials: *fabric_materials
+    finish:
+      color_finish: "stone_grey"
+      surface_finish: "matte"
+      finish_color: "fabric_set_stone_grey"
+
+  - variant: "King - Fabric Set - Stone Grey"
+    size_label: "King"
+    source_sku: "52460071-TE4004+2x-bedside"
+    finish_code: "fabric_set_stone_grey"
+    finish_label: "Fabric set - Stone Grey"
+    swatch_group: "upholstery"
+    swatch_hex: "#8b8983"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1653637272/crusader/variants/TE-4004/Ethan-Armchair-Sofa-Stone-Grey-Square-Det_2-1653637269.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-joseph-fabric-set-king-stone-grey.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/joseph-bed-with-2-bedside-tables?bed_frame_size=king&material=stone_grey"
+    available: true
+    price_usd: 2059
+    dimensions:
+      width_cm: 311.2
+      depth_cm: 210.6
+      height_cm: 96
+    size_class: "large"
+    color_family: "grey"
+    tone: "neutral"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1630051320/crusader/variants/52460070-TE4004/Joseph-Queen-Size-Bed-Stone-Grey-Front-SG.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1630051320/crusader/variants/52460070-TE4004/Joseph-Queen-Size-Bed-Stone-Grey-Front-SG.jpg"
+    materials: *fabric_materials
+    finish:
+      color_finish: "stone_grey"
+      surface_finish: "matte"
+      finish_color: "fabric_set_stone_grey"
+
+  - variant: "Queen - Fabric Set - Ivory Beige"
+    size_label: "Queen"
+    source_sku: "52460070-LW4001+2x-bedside"
+    finish_code: "fabric_set_ivory_beige"
+    finish_label: "Fabric set - Ivory Beige"
+    swatch_group: "upholstery"
+    swatch_hex: "#d8d0c4"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1627631594/crusader/variants/LW-4001/Ivory-Beige_1.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-joseph-fabric-set-queen-ivory-beige.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/joseph-bed-with-2-bedside-tables?bed_frame_size=queen&material=ivory_beige"
+    available: true
+    price_usd: 1929
+    compare_at_price_usd: 2097
+    dimensions:
+      width_cm: 281.2
+      depth_cm: 210.6
+      height_cm: 96
+    size_class: "large"
+    color_family: "beige"
+    tone: "warm"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1630050274/crusader/variants/52460070-LW4001/Joseph-Queen-Size-Bed-Ivory-Beige-Front-SG.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1630050274/crusader/variants/52460070-LW4001/Joseph-Queen-Size-Bed-Ivory-Beige-Front-SG.jpg"
+    materials: *fabric_materials
+    finish:
+      color_finish: "ivory_beige"
+      surface_finish: "matte"
+      finish_color: "fabric_set_ivory_beige"
+
+  - variant: "King - Fabric Set - Ivory Beige"
+    size_label: "King"
+    source_sku: "52460071-LW4001+2x-bedside"
+    finish_code: "fabric_set_ivory_beige"
+    finish_label: "Fabric set - Ivory Beige"
+    swatch_group: "upholstery"
+    swatch_hex: "#d8d0c4"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1627631594/crusader/variants/LW-4001/Ivory-Beige_1.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-joseph-fabric-set-king-ivory-beige.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/joseph-bed-with-2-bedside-tables?bed_frame_size=king&material=ivory_beige"
+    available: true
+    price_usd: 2059
+    dimensions:
+      width_cm: 311.2
+      depth_cm: 210.6
+      height_cm: 96
+    size_class: "large"
+    color_family: "beige"
+    tone: "warm"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1629959758/crusader/variants/52460071-LW4001/Joseph-King-Size-Bed-Ivory-Beige-Front-SG.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1629959758/crusader/variants/52460071-LW4001/Joseph-King-Size-Bed-Ivory-Beige-Front-SG.jpg"
+    materials: *fabric_materials
+    finish:
+      color_finish: "ivory_beige"
+      surface_finish: "matte"
+      finish_color: "fabric_set_ivory_beige"
+
+  - variant: "Queen - Boucle Set - Snow Boucle"
+    size_label: "Queen"
+    source_sku: "52460070-LP4001+2x-bedside"
+    finish_code: "boucle_set_snow"
+    finish_label: "Boucle set - Snow Boucle"
+    swatch_group: "upholstery"
+    swatch_hex: "#ece7de"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1640236351/crusader/variants/IN-4001/White-Quartz_1.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-joseph-boucle-set-queen-snow.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/joseph-bed-boucle-with-2-joseph-bedside-tables?bed_frame_size=queen"
+    available: true
+    price_usd: 1989
+    compare_at_price_usd: 2097
+    dimensions:
+      width_cm: 281.2
+      depth_cm: 210.6
+      height_cm: 96
+    size_class: "large"
+    color_family: "white"
+    tone: "neutral"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1630050060/crusader/variants/52460070-LP4001/Joseph-Queen-Size-Bed-Boucle-Front-SG.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1630050060/crusader/variants/52460070-LP4001/Joseph-Queen-Size-Bed-Boucle-Front-SG.jpg"
+    materials: *boucle_materials
+    finish:
+      color_finish: "snow_boucle"
+      surface_finish: "textured"
+      finish_color: "boucle_set_snow"
+
+  - variant: "King - Boucle Set - Snow Boucle"
+    size_label: "King"
+    source_sku: "52460071-LP4001+2x-bedside"
+    finish_code: "boucle_set_snow"
+    finish_label: "Boucle set - Snow Boucle"
+    swatch_group: "upholstery"
+    swatch_hex: "#ece7de"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1640236351/crusader/variants/IN-4001/White-Quartz_1.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-joseph-boucle-set-king-snow.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/joseph-bed-boucle-with-2-joseph-bedside-tables?bed_frame_size=king"
+    available: true
+    price_usd: 2079
+    dimensions:
+      width_cm: 311.2
+      depth_cm: 210.6
+      height_cm: 96
+    size_class: "large"
+    color_family: "white"
+    tone: "neutral"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1629945882/crusader/variants/52460071-LP4001/Joseph-King-Size-Bed-Boucle-Front-SG.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1629945882/crusader/variants/52460071-LP4001/Joseph-King-Size-Bed-Boucle-Front-SG.jpg"
+    materials: *boucle_materials
+    finish:
+      color_finish: "snow_boucle"
+      surface_finish: "textured"
+      finish_color: "boucle_set_snow"
+
+  - variant: "Queen - Walnut Set"
+    size_label: "Queen"
+    source_sku: "52460077+2x-bedside"
+    finish_code: "walnut_set"
+    finish_label: "Walnut set"
+    swatch_group: "wood_finish"
+    swatch_hex: "#6f4a2e"
+    swatch_image_url: "https://s3-ap-southeast-1.amazonaws.com/production-static-images/swatches/walnut-wood.png"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-joseph-walnut-set-queen.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/joseph-bed-walnut-with-2-bedside-tables?bed_frame_size=queen"
+    available: true
+    price_usd: 1799
+    compare_at_price_usd: 2197
+    dimensions:
+      width_cm: 279.2
+      depth_cm: 210.6
+      height_cm: 100
+    size_class: "large"
+    color_family: "brown"
+    tone: "warm"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1624516194/crusader/variants/52460077/Joseph-Queen-Size-Bed-Walnut-Front-3-SG.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1624516194/crusader/variants/52460077/Joseph-Queen-Size-Bed-Walnut-Front-3-SG.jpg"
+    materials: *walnut_materials
+    finish:
+      color_finish: "walnut"
+      wood_finish: "american_walnut"
+      surface_finish: "matte"
+      finish_color: "walnut_set"
+
+  - variant: "King - Walnut Set"
+    size_label: "King"
+    source_sku: "52460078+2x-bedside"
+    finish_code: "walnut_set"
+    finish_label: "Walnut set"
+    swatch_group: "wood_finish"
+    swatch_hex: "#6f4a2e"
+    swatch_image_url: "https://s3-ap-southeast-1.amazonaws.com/production-static-images/swatches/walnut-wood.png"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-joseph-walnut-set-king.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/joseph-bed-walnut-with-2-bedside-tables?bed_frame_size=king"
+    available: true
+    price_usd: 1889
+    dimensions:
+      width_cm: 309.2
+      depth_cm: 210.6
+      height_cm: 100
+    size_class: "large"
+    color_family: "brown"
+    tone: "warm"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1624516255/crusader/variants/52460078/Joseph-King-Size-Bed-Walnut-Front-3-SG.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1624516255/crusader/variants/52460078/Joseph-King-Size-Bed-Walnut-Front-3-SG.jpg"
+    materials: *walnut_materials
+    finish:
+      color_finish: "walnut"
+      wood_finish: "american_walnut"
+      surface_finish: "matte"
+      finish_color: "walnut_set"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true

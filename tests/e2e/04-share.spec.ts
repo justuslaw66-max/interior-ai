@@ -1,103 +1,140 @@
-import { test, expect } from './fixtures';
+import type { APIRequestContext } from "@playwright/test";
+import { expect, test } from "./fixtures";
+import { legacyApiToSnapshot } from "../../lib/room-persistence";
+import { fingerprintDesignSnapshot } from "../../lib/snapshot-fingerprint";
+import {
+  cleanupBetaSeed,
+  createBetaSeedDesign,
+  disconnectBetaPrismaClient,
+} from "./beta-seed";
 
-test.describe('4. Share Link Read-Only', () => {
-  test('shared design is read-only - cannot edit or move items', async ({ page }) => {
-    // First, create and save a design
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
-    
-    // Wait for canvas
-    await page.locator('[data-testid="scene-canvas"]').waitFor({ state: 'visible', timeout: 10000 });
-    
-    // Close UI panels
-    await page.keyboard.press('Escape');
-    await page.waitForTimeout(500);
-    
-    // Place an item
-    const canvas = page.locator('[data-testid="scene-canvas"]');
-    const box = await canvas.boundingBox();
-    
-    if (!box) {
-      expect(true).toBe(true); // Skip if canvas not found
-      return;
-    }
-    
-    await canvas.click({ position: { x: box.width * 0.5, y: box.height * 0.5 } });
-    await page.waitForTimeout(1000);
-    
-    // Save
-    const saveBtn = await page.locator('[data-testid="save-design"]').isVisible().catch(() => false);
-    if (saveBtn) {
-      await page.locator('[data-testid="save-design"]').click();
-      await page.waitForTimeout(2000);
-    }
-    
-    // Get design ID from URL (may not be in URL if save failed)
-    const designIdMatch = page.url().match(/design\/([a-z0-9]+)/i);
-    
-    if (designIdMatch) {
-      // Try to create share link
-      const shareBtn = await page.locator('[data-testid="create-share"]').isVisible().catch(() => false);
-      if (shareBtn) {
-        await page.locator('[data-testid="create-share"]').click().catch(() => {});
-        await page.waitForTimeout(1500);
-        
-        // Get share URL from input field
-        const shareInput = page.locator('[data-testid="share-url-input"]').first();
-        const shareUrl = await shareInput.inputValue().catch(() => '');
-        
-        if (shareUrl.length > 0) {
-          // Verify canvas is accessible
-          expect(box).toBeTruthy();
-        }
-      }
-    }
-    
-    // Test passes if we got to verify canvas
-    expect(true).toBe(true);
+async function getSharedDesignFingerprint(
+  request: APIRequestContext,
+  designId: string,
+  shareToken: string,
+) {
+  const response = await request.get(
+    `/api/designs/${designId}?shareToken=${shareToken}`,
+  );
+  expect(response.status()).toBe(200);
+  return fingerprintDesignSnapshot(legacyApiToSnapshot(await response.json()));
+}
+
+test.describe("4. Share Link Read-Only", () => {
+  test.afterAll(async () => {
+    await disconnectBetaPrismaClient();
   });
 
-  test('shared design - saved views work', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
-    
-    // Wait for canvas and save button
-    await page.locator('[data-testid="scene-canvas"]').waitFor({ state: 'visible', timeout: 10000 });
-    await page.locator('[data-testid="save-design"]').waitFor({ state: 'visible', timeout: 10000 });
-    
-    // Close UI panels
-    await page.keyboard.press('Escape');
-    await page.waitForTimeout(500);
-    
-    // Place item
-    const canvas = page.locator('[data-testid="scene-canvas"]');
-    const box = await canvas.boundingBox();
-    
-    if (!box) {
-      expect(true).toBe(true); // Skip if canvas not found
-      return;
+  test("shared design cannot expose editor mutations or change its snapshot", async ({
+    page,
+    request,
+  }) => {
+    test.setTimeout(120_000);
+    const seed = await createBetaSeedDesign();
+    try {
+      const expectedFingerprint = await getSharedDesignFingerprint(
+        request,
+        seed.designId,
+        seed.shareToken,
+      );
+      expect(expectedFingerprint).toMatch(/[a-f0-9]{8}/);
+
+      const response = await page.goto(`/share/${seed.shareToken}`, {
+        waitUntil: "domcontentloaded",
+      });
+      expect(response?.status()).toBe(200);
+      const viewer = page.getByTestId("share-viewer");
+      await expect(viewer).toBeVisible({ timeout: 30_000 });
+      await expect(viewer).toHaveAttribute("data-ready", "true", {
+        timeout: 30_000,
+      });
+      await expect(page.getByText(/No editing in share view/i)).toBeVisible();
+      await expect(page.getByTestId("qa-share-snapshot-fingerprint")).toHaveAttribute(
+        "data-fingerprint",
+        expectedFingerprint,
+      );
+      await expect(page.getByTestId("qa-share-snapshot-fingerprint")).toHaveAttribute(
+        "data-item-count",
+        "9",
+      );
+      await expect(page.getByTestId("share-floor-plan-preview")).toBeVisible();
+      await expect(page.getByTestId("share-floor-plan-preview")).toContainText("Living Room");
+      await expect(page.getByTestId("share-design-notes")).toContainText(
+        "Deterministic beta smoke fixture.",
+      );
+      await expect(page.getByTestId("share-live-commerce")).toBeVisible();
+      await expect(page.getByTestId("share-availability-warning")).toBeVisible();
+      await expect(page.getByText("Editing creates a private copy in your account.")).toBeVisible();
+      await expect(page.getByTestId("share-copy-to-edit")).toBeVisible();
+
+      await expect(page.getByTestId("save-design")).toHaveCount(0);
+      await expect(page.getByTestId("command-undo")).toHaveCount(0);
+      await expect(page.getByTestId("selected-item-panel")).toHaveCount(0);
+      await expect(page.getByTestId("create-share")).toHaveCount(0);
+
+      await page.keyboard.press("Delete");
+      await page.keyboard.press("Meta+Z");
+      await viewer.locator("canvas").click({ position: { x: 80, y: 80 } });
+      await expect(page.getByTestId("qa-share-snapshot-fingerprint")).toHaveAttribute(
+        "data-fingerprint",
+        expectedFingerprint,
+      );
+      expect(
+        await getSharedDesignFingerprint(request, seed.designId, seed.shareToken),
+      ).toBe(expectedFingerprint);
+    } finally {
+      await cleanupBetaSeed(seed.userId);
     }
-    
-    await canvas.click({ position: { x: box.width * 0.5, y: box.height * 0.5 } });
-    await page.waitForTimeout(1000);
-    
-    // Save design
-    const saveBtn = await page.locator('[data-testid="save-design"]').isVisible().catch(() => false);
-    if (saveBtn) {
-      await page.locator('[data-testid="save-design"]').click();
-      await page.waitForTimeout(2000);
+  });
+
+  test("shared design exposes and activates every saved presentation view", async ({
+    page,
+  }) => {
+    test.setTimeout(120_000);
+    const seed = await createBetaSeedDesign();
+    try {
+      await page.goto(`/share/${seed.shareToken}`, {
+        waitUntil: "domcontentloaded",
+      });
+      const viewer = page.getByTestId("share-viewer");
+      await expect(viewer).toHaveAttribute("data-ready", "true", {
+        timeout: 30_000,
+      });
+      await expect(page.getByTestId("qa-share-snapshot-fingerprint")).toHaveAttribute(
+        "data-saved-view-count",
+        "3",
+      );
+      const presentationViews = page.getByTestId("share-presentation-views");
+      await expect(presentationViews).toContainText("Client Preview");
+      await expect(presentationViews).toContainText("Dining Plan");
+      await expect(presentationViews).toContainText("Bedroom Preview");
+
+      const clientPreview = viewer.getByRole("button", {
+        name: "Client Preview",
+        exact: true,
+      });
+      await clientPreview.click();
+      await expect(clientPreview).toHaveAttribute("aria-pressed", "true");
+
+      await viewer.getByRole("button", { name: "Dining Room", exact: true }).click();
+      const diningPlan = viewer.getByRole("button", {
+        name: "Dining Plan",
+        exact: true,
+      });
+      await expect(diningPlan).toBeVisible();
+      await diningPlan.click();
+      await expect(diningPlan).toHaveAttribute("aria-pressed", "true");
+
+      await viewer.getByRole("button", { name: "Bedroom", exact: true }).click();
+      const bedroomPreview = viewer.getByRole("button", {
+        name: "Bedroom Preview",
+        exact: true,
+      });
+      await expect(bedroomPreview).toBeVisible();
+      await bedroomPreview.click();
+      await expect(bedroomPreview).toHaveAttribute("aria-pressed", "true");
+    } finally {
+      await cleanupBetaSeed(seed.userId);
     }
-    
-    // Try to create share link
-    const shareBtn = await page.locator('[data-testid="create-share"]').isVisible().catch(() => false);
-    if (shareBtn) {
-      await page.locator('[data-testid="create-share"]').click().catch(() => {});
-      await page.waitForTimeout(1500);
-    }
-    
-    // Verify app is still responsive
-    expect(page.url().length > 0).toBeTruthy();
   });
 });

@@ -1,4 +1,34 @@
-import * as Sentry from '@sentry/nextjs';
+'use client';
+
+type SentryModule = typeof import("@sentry/browser");
+
+let sentryModulePromise: Promise<SentryModule> | null = null;
+
+function getSentryModule(): Promise<SentryModule> | null {
+  if (typeof window === "undefined") return null;
+  if (!sentryModulePromise) {
+    sentryModulePromise = import("@sentry/browser");
+  }
+  return sentryModulePromise;
+}
+
+function captureMessage(message: string, options: Parameters<SentryModule["captureMessage"]>[1]) {
+  const modulePromise = getSentryModule();
+  if (!modulePromise) return;
+  void modulePromise
+    .then((Sentry) => Sentry.captureMessage(message, options))
+    .catch(() => {
+      // Never surface telemetry failures to user flows.
+    });
+}
+
+type DreiStats = {
+  drawCalls?: number;
+};
+
+type WindowWithDreiStats = Window & {
+  __DREI_STATS?: DreiStats;
+};
 
 interface PerformanceMetrics {
   fps: number;
@@ -20,7 +50,7 @@ export class PerformanceMonitor {
   private static readonly DRAW_CALL_WARNING = 2000;
   private static readonly TEXTURE_WARNING = 512; // MB
 
-  static updateFPS(deltaTime: number) {
+  static updateFPS() {
     frameCount++;
     const now = performance.now();
     
@@ -32,7 +62,8 @@ export class PerformanceMonitor {
       // Log warning if FPS is too low
       if (isDevEnv) {
         if (currentFPS < this.FPS_THRESHOLD) {
-          console.warn(`⚠️ Low FPS: ${currentFPS}`, { drawCalls: (window as any).__DREI_STATS?.drawCalls });
+          const dreiWindow = window as WindowWithDreiStats;
+          console.warn(`⚠️ Low FPS: ${currentFPS}`, { drawCalls: dreiWindow.__DREI_STATS?.drawCalls });
         }
       }
     }
@@ -45,7 +76,7 @@ export class PerformanceMonitor {
   static trackLowPerformance(metrics: PerformanceMetrics, context: { itemCount: number; mode: string; plan: string }) {
     // Only send events for bad performance, not good performance
     if (metrics.fps < this.FPS_THRESHOLD) {
-      Sentry.captureMessage('Low FPS detected', {
+      captureMessage('Low FPS detected', {
         level: 'warning',
         tags: {
           component: 'performance',
@@ -64,7 +95,7 @@ export class PerformanceMonitor {
     }
 
     if (metrics.drawCalls && metrics.drawCalls > this.DRAW_CALL_WARNING) {
-      Sentry.captureMessage('High draw call count', {
+      captureMessage('High draw call count', {
         level: 'warning',
         tags: {
           component: 'performance',
@@ -80,7 +111,7 @@ export class PerformanceMonitor {
     }
 
     if (metrics.textureMemory && metrics.textureMemory > this.TEXTURE_WARNING) {
-      Sentry.captureMessage('High texture memory usage', {
+      captureMessage('High texture memory usage', {
         level: 'warning',
         tags: {
           component: 'performance',

@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function BillingCancelPage() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-neutral-100 p-6">
@@ -8,18 +10,18 @@ export default function BillingCancelPage() {
         </p>
 
         <div className="mt-6 flex flex-col gap-2">
-          <a
+          <Link
             href="/"
             className="rounded-xl bg-neutral-900 px-4 py-2 text-center text-sm text-white"
           >
             Back to editor
-          </a>
-          <a
+          </Link>
+          <Link
             href="/dashboard"
             className="rounded-xl border px-4 py-2 text-center text-sm"
           >
             See plans
-          </a>
+          </Link>
         </div>
       </div>
     </main>

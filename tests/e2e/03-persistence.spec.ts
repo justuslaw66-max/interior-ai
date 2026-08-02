@@ -1,62 +1,442 @@
-import { test, expect } from './fixtures';
+import type { Page } from "@playwright/test";
+import { expect, test } from "./fixtures";
+import { fingerprintDesignSnapshot } from "../../lib/snapshot-fingerprint";
+import { legacyApiToSnapshot } from "../../lib/room-persistence";
+import {
+  addAuthCookies,
+  cleanupBetaSeed,
+  createBetaSeedDesign,
+  disconnectBetaPrismaClient,
+} from "./beta-seed";
+import { selectEditorWorkspace } from "./variant-test-utils";
 
-test.describe('3. Save + Reload Persistence', () => {
-  test('save design persists items, zones, and views after reload', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1000);
-    
-    // Wait for save button
-    await page.locator('[data-testid="save-design"]').waitFor({ state: 'visible', timeout: 10000 });
-    
-    // Click save
-    await page.locator('[data-testid="save-design"]').click();
-    await page.waitForTimeout(1000);
-    
-    // Get item count
-    const itemCount = await page.locator('[data-testid="item-in-scene"]').count();
-    const zoneCount = await page.locator('[data-testid="seating-zone"]').count();
-    
-    // Reload page
-    await page.reload();
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1000);
-    
-    // Verify items and zones persist
-    const reloadedItemCount = await page.locator('[data-testid="item-in-scene"]').count();
-    const reloadedZoneCount = await page.locator('[data-testid="seating-zone"]').count();
-    
-    expect(reloadedItemCount).toBe(itemCount);
-    expect(reloadedZoneCount).toBe(zoneCount);
+async function readStableFingerprint(page: Page): Promise<string> {
+  const marker = page.getByTestId("qa-editor-snapshot-fingerprint");
+  await expect(marker).toHaveAttribute("data-fingerprint", /[a-f0-9]{8}/, {
+    timeout: 30_000,
+  });
+  let previous = "";
+  let stableSamples = 0;
+  // Local backup hydration can precede the authenticated cloud snapshot by
+  // more than 500 ms. Require two seconds of quiescence before comparing.
+  for (let attempt = 0; attempt < 80; attempt += 1) {
+    const current = (await marker.getAttribute("data-fingerprint")) ?? "";
+    if (current === previous) {
+      stableSamples += 1;
+      if (stableSamples >= 8) return current;
+    } else {
+      previous = current;
+      stableSamples = 0;
+    }
+    await page.waitForTimeout(250);
+  }
+  throw new Error("Editor snapshot fingerprint did not stabilize");
+}
+
+async function expectPersistedFingerprint(
+  page: Page,
+  designId: string,
+  expectedFingerprint: string,
+) {
+  await expect
+    .poll(
+      async () => {
+        const response = await page.request.get(`/api/designs/${designId}`);
+        if (response.status() !== 200) return `http-${response.status()}`;
+        return fingerprintDesignSnapshot(
+          legacyApiToSnapshot(await response.json()),
+        );
+      },
+      { timeout: 60_000 },
+    )
+    .toBe(expectedFingerprint);
+}
+
+async function openMyDesigns(page: Page) {
+  const accountButton = page.getByTestId("editor-command-account");
+  const accountMenu = page.getByTestId("editor-command-account-menu");
+  await expect(async () => {
+    if (!(await accountMenu.isVisible())) {
+      await accountButton.click();
+    }
+    await expect(accountMenu).toBeVisible({ timeout: 1_000 });
+  }).toPass({ timeout: 30_000 });
+  await expect(page.getByTestId("editor-command-sign-out")).toBeVisible({
+    timeout: 30_000,
+  });
+  await accountButton.click();
+
+  await page.getByTestId("editor-command-overflow").click();
+  const loadDesigns = page.getByTestId("editor-command-overflow-load");
+  await expect(loadDesigns).toBeVisible();
+  await loadDesigns.click();
+  await expect(page.getByTestId("load-designs-modal")).toBeVisible();
+}
+
+async function loadSeedDesign(
+  page: Page,
+  seed: Awaited<ReturnType<typeof createBetaSeedDesign>>,
+) {
+  await page.goto("/design", { waitUntil: "domcontentloaded" });
+  await addAuthCookies(page.context(), new URL(page.url()).origin, seed.sessionToken);
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
+    timeout: 30_000,
+  });
+  await openMyDesigns(page);
+  await page.getByTestId(`load-design-${seed.designId}`).click();
+  await expect(page.getByTestId("load-designs-modal")).toBeHidden({
+    timeout: 30_000,
+  });
+  await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
+    "3 rooms",
+  );
+}
+
+async function openFurnishPanel(page: Page) {
+  await selectEditorWorkspace(page, "editor-workflow-furnish");
+  await expect(page.getByTestId("furnish-room-target-select")).toBeVisible();
+}
+
+async function openPresentExport(page: Page) {
+  await selectEditorWorkspace(page, "editor-workflow-export");
+  const cameraViewName = page.getByTestId("camera-view-name-input");
+  if (await cameraViewName.isVisible().catch(() => false)) return;
+  await page.getByTestId("editor-command-overflow").click();
+  await page.getByTestId("editor-command-overflow-present-export").click();
+  await expect(cameraViewName).toBeVisible();
+}
+
+async function closePresentExport(page: Page) {
+  const close = page.getByRole("button", { name: "Close export panel" });
+  await expect(close).toBeVisible();
+  await expect(close).toBeEnabled();
+  await close.evaluate((button) => (button as HTMLButtonElement).click());
+  await expect(close).toBeHidden();
+}
+
+test.describe("3. Save + Reload Persistence", () => {
+  test.afterAll(async () => {
+    await disconnectBetaPrismaClient();
   });
 
-  test('multi-room state isolation - switch rooms without leaking state', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1000);
-    
-    // Check if room switcher exists
-    const roomButtons = await page.locator('[data-testid="room-select"]').count();
-    
-    if (roomButtons > 1) {
-      // Get initial item count
-      const initialItems = await page.locator('[data-testid="item-in-scene"]').count();
-      
-      // Switch to another room
-      const roomOptions = page.locator('[data-testid="room-select"]');
-      await roomOptions.nth(1).click();
-      await page.waitForTimeout(500);
-      
-      // Get items in second room
-      const secondRoomItems = await page.locator('[data-testid="item-in-scene"]').count();
-      
-      // Switch back to first room  
-      await roomOptions.nth(0).click();
-      await page.waitForTimeout(500);
-      
-      // Verify first room state is restored
-      const restoredItems = await page.locator('[data-testid="item-in-scene"]').count();
-      expect(restoredItems).toBe(initialItems);
+  test("cloud save preserves items, zones, and named views after reload", async ({
+    page,
+  }) => {
+    test.setTimeout(180_000);
+    const seed = await createBetaSeedDesign();
+    let designCreateRequests = 0;
+    page.on("request", (request) => {
+      if (
+        request.method() === "POST" &&
+        new URL(request.url()).pathname === "/api/designs"
+      ) {
+        designCreateRequests += 1;
+      }
+    });
+    try {
+      await loadSeedDesign(page, seed);
+      const loadedFingerprint = await readStableFingerprint(page);
+      expect(loadedFingerprint).toMatch(/^[a-f0-9]{8}$/);
+      await expect(page.getByTestId("qa-editor-zone-state")).toHaveAttribute(
+        "data-zone-count",
+        "1",
+      );
+
+      await openFurnishPanel(page);
+      await expect(page.getByTestId("furnish-room-bom-item")).toHaveCount(4);
+
+      await openPresentExport(page);
+      await expect(page.getByTestId("saved-camera-view-list")).toContainText(
+        "Client Preview",
+      );
+      await page.getByTestId("camera-view-name-input").fill("Persistence E2E View");
+      await page.getByTestId("save-named-camera-view").click();
+      await expect(page.getByTestId("saved-camera-view-list")).toContainText(
+        "Persistence E2E View",
+      );
+      await closePresentExport(page);
+
+      const saveButton = page.getByTestId("save-design");
+      await expect(saveButton).toBeVisible();
+      await saveButton.click();
+      const saveStatus = page.getByTestId("save-status");
+      await expect(saveStatus).toHaveAttribute("data-status", "saved", {
+        timeout: 30_000,
+      });
+      await expect(saveStatus).toHaveAttribute("data-source", "cloud");
+      await expect(saveStatus).toContainText("Cloud saved");
+      expect(designCreateRequests).toBe(0);
+      const savedFingerprint = await readStableFingerprint(page);
+      expect(savedFingerprint).not.toBe(fingerprintDesignSnapshot(seed.snapshot));
+      await expectPersistedFingerprint(page, seed.designId, savedFingerprint);
+
+      await page.reload({ waitUntil: "domcontentloaded" });
+      await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
+        timeout: 30_000,
+      });
+      await expect
+        .poll(() =>
+          page.evaluate(
+            ({ key, designId }) => {
+              const raw = window.localStorage.getItem(key);
+              return raw ? JSON.parse(raw)?.designId === designId : false;
+            },
+            {
+              key: "interior-ai:v1:livingroom-design",
+              designId: seed.designId,
+            },
+          ),
+        )
+        .toBe(true);
+      await expect(page.getByTestId("qa-editor-cloud-design")).toHaveAttribute(
+        "data-design-id",
+        seed.designId,
+        {
+          timeout: 30_000,
+        },
+      );
+      const reloadedFingerprint = await readStableFingerprint(page);
+      expect(reloadedFingerprint).toMatch(/^[a-f0-9]{8}$/);
+      await expect(page.getByTestId("qa-editor-zone-state")).toHaveAttribute(
+        "data-zone-count",
+        "1",
+      );
+      await openFurnishPanel(page);
+      await expect(page.getByTestId("furnish-room-bom-item")).toHaveCount(4);
+      await openPresentExport(page);
+      await expect(page.getByTestId("saved-camera-view-list")).toContainText(
+        "Persistence E2E View",
+      );
+      await closePresentExport(page);
+      await saveButton.click();
+      await expect(saveStatus).toHaveAttribute("data-status", "saved", {
+        timeout: 30_000,
+      });
+      expect(designCreateRequests).toBe(0);
+      const fingerprintBeforeSecondReload = await readStableFingerprint(page);
+      await expectPersistedFingerprint(
+        page,
+        seed.designId,
+        fingerprintBeforeSecondReload,
+      );
+      await page.reload({ waitUntil: "domcontentloaded" });
+      await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
+        timeout: 30_000,
+      });
+      await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute(
+        "data-fingerprint",
+        fingerprintBeforeSecondReload,
+        { timeout: 60_000 },
+      );
+    } finally {
+      await cleanupBetaSeed(seed.userId);
+    }
+  });
+
+  test("cloud save failure stays visible and recovers through retry", async ({ page }) => {
+    test.setTimeout(120_000);
+    const seed = await createBetaSeedDesign();
+    try {
+      await loadSeedDesign(page, seed);
+      let rejectedWrite = false;
+      const designRoute = `**/api/designs/${seed.designId}`;
+      await page.route(designRoute, async (route) => {
+        if (route.request().method() === "PUT") {
+          rejectedWrite = true;
+          await route.fulfill({
+            status: 503,
+            contentType: "application/json",
+            headers: { "x-operation-id": "phase7-save-failure" },
+            body: JSON.stringify({
+              error: "Cloud save is temporarily unavailable.",
+              code: "INTERNAL_ERROR",
+              operationId: "phase7-save-failure",
+            }),
+          });
+          return;
+        }
+        await route.continue();
+      });
+
+      const widthInput = page.getByRole("spinbutton", { name: "Width mm" }).first();
+      await widthInput.fill("5900");
+      await widthInput.press("Enter");
+      await expect(widthInput).toHaveValue("5900");
+
+      const saveStatus = page.getByTestId("save-status");
+      await expect(saveStatus).toHaveAttribute("data-status", "failed", {
+        timeout: 30_000,
+      });
+      await expect(saveStatus).toContainText("Cloud save failed");
+      await expect(page.getByTestId("save-status-retry")).toBeVisible();
+      expect(rejectedWrite).toBe(true);
+
+      await page.unroute(designRoute);
+      await page.getByTestId("save-status-retry").click();
+      await expect(saveStatus).toHaveAttribute("data-status", "saved", {
+        timeout: 30_000,
+      });
+      await expect(saveStatus).toContainText("Cloud saved");
+    } finally {
+      await cleanupBetaSeed(seed.userId);
+    }
+  });
+
+  test("cloud conflict pauses autosave and preserves local work as a new copy", async ({
+    page,
+  }) => {
+    test.setTimeout(150_000);
+    const seed = await createBetaSeedDesign();
+    try {
+      await loadSeedDesign(page, seed);
+      let rejectedWrites = 0;
+      await page.route(`**/api/designs/${seed.designId}`, async (route) => {
+        if (route.request().method() === "PUT") {
+          rejectedWrites += 1;
+          await route.fulfill({
+            status: 409,
+            contentType: "application/json",
+            body: JSON.stringify({
+              error: "This design changed in another session.",
+              code: "CONFLICT",
+            }),
+          });
+          return;
+        }
+        await route.continue();
+      });
+
+      const widthInput = page.getByRole("spinbutton", { name: "Width mm" }).first();
+      await widthInput.fill("5900");
+      await widthInput.press("Enter");
+      const localFingerprint = await readStableFingerprint(page);
+
+      const dialog = page.getByTestId("cloud-save-conflict-dialog");
+      await expect(dialog).toBeVisible({ timeout: 30_000 });
+      await expect(page.getByTestId("cloud-conflict-save-copy")).toBeFocused();
+      const saveStatus = page.getByTestId("save-status");
+      await expect(saveStatus).toHaveAttribute("data-status", "conflict");
+      await expect(saveStatus).toHaveAttribute(
+        "data-last-successful-save-at",
+        /\d{4}-\d{2}-\d{2}T/
+      );
+
+      const writesAtConflict = rejectedWrites;
+      await page.waitForTimeout(2_200);
+      expect(rejectedWrites).toBe(writesAtConflict);
+
+      await page.getByTestId("cloud-conflict-save-copy").click();
+      await expect(dialog).toBeHidden({ timeout: 30_000 });
+      await expect(page.getByTestId("qa-editor-cloud-design")).not.toHaveAttribute(
+        "data-design-id",
+        seed.designId
+      );
+      await expect(saveStatus).toHaveAttribute("data-status", "saved");
+      await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute(
+        "data-fingerprint",
+        localFingerprint
+      );
+    } finally {
+      await cleanupBetaSeed(seed.userId);
+    }
+  });
+
+  test("cloud conflict reload requires an explicit destructive choice", async ({
+    page,
+  }) => {
+    test.setTimeout(150_000);
+    const seed = await createBetaSeedDesign();
+    try {
+      await loadSeedDesign(page, seed);
+      const loadedCloudFingerprint = await readStableFingerprint(page);
+      await page.route(`**/api/designs/${seed.designId}`, async (route) => {
+        if (route.request().method() === "PUT") {
+          await route.fulfill({
+            status: 409,
+            contentType: "application/json",
+            body: JSON.stringify({
+              error: "This design changed in another session.",
+              code: "CONFLICT",
+            }),
+          });
+          return;
+        }
+        await route.continue();
+      });
+
+      const widthInput = page.getByRole("spinbutton", { name: "Width mm" }).first();
+      await widthInput.fill("5900");
+      await widthInput.press("Enter");
+      const dialog = page.getByTestId("cloud-save-conflict-dialog");
+      await expect(dialog).toBeVisible({ timeout: 30_000 });
+      await expect(dialog).toContainText("Autosave is paused");
+      await page.keyboard.press("Escape");
+      await expect(dialog).toBeVisible();
+
+      await page.getByTestId("cloud-conflict-reload").click();
+      await expect(dialog).toBeHidden({ timeout: 30_000 });
+      await expect(widthInput).toHaveValue("5800");
+      await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute(
+        "data-fingerprint",
+        loadedCloudFingerprint,
+        { timeout: 30_000 }
+      );
+      await expect(page.getByTestId("save-status")).toHaveAttribute(
+        "data-status",
+        "saved"
+      );
+    } finally {
+      await cleanupBetaSeed(seed.userId);
+    }
+  });
+
+  test("switching rooms restores each room's isolated items and zones", async ({
+    page,
+  }) => {
+    test.setTimeout(120_000);
+    const seed = await createBetaSeedDesign();
+    try {
+      await loadSeedDesign(page, seed);
+      const loadedFingerprint = await readStableFingerprint(page);
+      await openFurnishPanel(page);
+      const roomSelect = page.getByTestId("furnish-room-target-select");
+
+      await roomSelect.selectOption("beta-dining");
+      await expect(page.getByTestId("furnish-active-room-name")).toContainText(
+        "Dining Room",
+      );
+      await expect(page.getByTestId("furnish-room-bom-item")).toHaveCount(3);
+      await expect(page.getByTestId("qa-editor-zone-state")).toHaveAttribute(
+        "data-manual-zone-items",
+        "beta-sloane-table-1",
+      );
+
+      await roomSelect.selectOption("beta-bedroom");
+      await expect(page.getByTestId("furnish-active-room-name")).toContainText(
+        "Bedroom",
+      );
+      await expect(page.getByTestId("furnish-room-bom-item")).toHaveCount(2);
+      await expect(page.getByTestId("qa-editor-zone-state")).toHaveAttribute(
+        "data-manual-zone-items",
+        "beta-bedroom-chair-1,beta-bedroom-hugg-table-1",
+      );
+
+      await roomSelect.selectOption("beta-living");
+      await expect(page.getByTestId("furnish-active-room-name")).toContainText(
+        "Living Room",
+      );
+      await expect(page.getByTestId("furnish-room-bom-item")).toHaveCount(4);
+      await expect(page.getByTestId("qa-editor-zone-state")).toHaveAttribute(
+        "data-manual-zone-items",
+        "beta-avery-chair-2,beta-dawson-chair-1,beta-hugg-side-table-1,beta-hugg-table-1",
+      );
+      const cycledFingerprint = await readStableFingerprint(page);
+      expect(cycledFingerprint).toMatch(/^[a-f0-9]{8}$/);
+      expect(cycledFingerprint).not.toBe(fingerprintDesignSnapshot(seed.snapshot));
+      expect(loadedFingerprint).toMatch(/^[a-f0-9]{8}$/);
+    } finally {
+      await cleanupBetaSeed(seed.userId);
     }
   });
 });

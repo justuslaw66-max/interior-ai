@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 export default function DesignerGridOverlay({
   enabled,
   pulse,
@@ -9,22 +7,13 @@ export default function DesignerGridOverlay({
   enabled: boolean;
   pulse?: boolean;
 }) {
-  const [pulseActive, setPulseActive] = useState(false);
-
-  useEffect(() => {
-    if (!pulse) return;
-    setPulseActive(true);
-    const t = window.setTimeout(() => setPulseActive(false), 240);
-    return () => window.clearTimeout(t);
-  }, [pulse]);
-
   if (!enabled) return null;
 
   return (
     <div className="pointer-events-none absolute inset-0">
       <div
         className={`designer-grid-mask absolute inset-0 ${
-          pulseActive ? "designer-grid-pulse" : ""
+          pulse ? "designer-grid-pulse" : ""
         }`}
         style={{
           transform: "perspective(900px) rotateX(55deg)",

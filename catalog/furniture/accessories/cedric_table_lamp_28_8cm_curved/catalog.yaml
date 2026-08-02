@@ -1,0 +1,181 @@
+status: "live"
+brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/cedric-table-lamp?quantity=single&design=curved&height=28.8cm"
+category: "table_lamp"
+
+product_family: "Cedric"
+product_name: "Cedric Table Lamp 28.8cm"
+variant: "Curved"
+
+price_usd: 99
+price_band: "mid"
+brand_tier: "premium_mid"
+
+design_zone: "lighting_zone"
+anchor_role: "lighting_anchor"
+
+dimensions:
+  width_cm: 20.2
+  depth_cm: 21.6
+  height_cm: 28.8
+
+size_class: "small"
+shape: "organic"
+base_type: "curved_metal_frame"
+
+material_family: "mixed"
+material_mix:
+  - "metal"
+  - "glass"
+
+color_family: "yellow"
+tone: "warm"
+
+style_cluster: "modern"
+style_secondary: "mid_century"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "small"
+  edge_profile: "rounded"
+  silhouette: "compact_curved_table_lamp_with_glass_globe"
+  form_language: "minimal_sculptural"
+  descriptors:
+    - "curved_brushed_brass_frame"
+    - "milk_glass_globe"
+    - "compact_table_lamp"
+    - "cedric_family_lighting"
+
+spatial_attributes:
+  footprint_shape: "organic"
+  descriptors:
+    - "tabletop_only"
+    - "bedside_or_side_table_lighting"
+    - "console_or_coffee_table_accent"
+
+room_compatibility:
+  - "living_room"
+  - "bedroom"
+  - "home_office"
+  - "entryway"
+
+placement_rules:
+  floor_only: false
+  surface_only: true
+  required_surface_categories:
+    - "side_table"
+    - "coffee_table"
+    - "dining_table"
+    - "tv_console"
+  surface_inset_mm: 30
+  clearance_sensitive: false
+  center_room_preferred: false
+  placement_note: "Table lamp must remain freely movable within a valid table or console surface and never sit directly on the floor."
+
+design_pairings:
+  - "side_table"
+  - "coffee_table"
+  - "dining_table"
+  - "tv_console"
+  - "bed"
+  - "sofa"
+  - "accent_chair"
+  - "floor_lamp"
+
+recommendation_metadata:
+  recommendation_role: "table_lamp"
+  primary_use_cases:
+    - "tabletop_ambient_light"
+    - "bedside_lighting"
+    - "console_table_accent"
+    - "compact_surface_lighting"
+  suggest_when_scene_has:
+    - "side_table_without_lamp"
+    - "bed_without_table_lamp"
+    - "tv_console_without_accent_lighting"
+    - "reading_corner_without_lighting"
+  avoid_when_scene_has:
+    - "no_valid_table_surface"
+
+feature_flags:
+  is_tabletop_only: true
+  has_light: true
+  has_inline_switch: true
+
+product_details:
+  material:
+    - label: "Material"
+      value: "Metal frame, glass shade"
+    - label: "Finish"
+      value: "Brushed brass"
+    - label: "Eco-friendly packaging"
+      value: "Free of styrofoam"
+    - label: "Bulb recommendation"
+      value: "<=6W LED"
+    - label: "Certification"
+      value: "Safety Mark"
+    - label: "Lightbulb"
+      value: "Not included"
+    - label: "Switch"
+      value: "Inline switch"
+    - label: "Bulb type"
+      value: "E14"
+  dimensions:
+    - label: "Dimension"
+      value: "W20.2 x D21.6 x H28.8cm"
+    - label: "Product weight"
+      value: "0.9kg"
+    - label: "Packaging dimensions"
+      value: "1 box"
+    - label: "Max bulb"
+      value: "Max Bulb Dia. 4cm; Height 12cm"
+  delivery_and_warranty:
+    - label: "Warranty"
+      value: "2-year limited warranty"
+    - label: "Assembly"
+      value: "Body to be assembled and shade to be fitted"
+
+assets:
+  asset_id: "accessory-real-castlery-cedric-table-lamp-28-8cm-curved"
+  model_url: "/assets/models/accessory-real-castlery-cedric-table-lamp-28-8cm-curved.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769048978/crusader/variants/52240032/Cedric-Small-Table-Lamp-Front-1769048976.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769048978/crusader/variants/52240032/Cedric-Small-Table-Lamp-Front-1769048976.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769048977/crusader/variants/52240032/Cedric-Small-Table-Lamp-Front_1-1769048976.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769048982/crusader/variants/52240032/Cedric-Small-Table-Lamp-Side-1769048981.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769053510/crusader/variants/52240032/Cedric-Small-Table-Lamp-Set_2_-1769053508.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769048978/crusader/variants/52240032/Cedric-Small-Table-Lamp-Det_1-1769048976.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769048978/crusader/variants/52240032/Cedric-Small-Table-Lamp-Det_2-1769048976.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770793720/crusader/variants/T50230014/Cedric-Small-Table-Lamp-Dim-1770793718.jpg"
+
+variants:
+  - variant: "28.8cm Curved"
+    finish_code: "288_curved_brushed_brass_glass"
+    finish_label: "Curved brushed brass and glass shade"
+    swatch_group: "material"
+    swatch_hex: "#b79a68"
+    color_family: "yellow"
+    tone: "warm"
+    materials:
+      primary: "metal"
+      secondary: "glass shade"
+    finish:
+      code: "288_curved_brushed_brass_glass"
+      label: "Curved brushed brass and glass shade"
+    model_url: "/assets/models/accessory-real-castlery-cedric-table-lamp-28-8cm-curved.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/cedric-table-lamp?quantity=single&design=curved&height=28.8cm"
+    available: true
+    price_usd: 99
+    dimensions:
+      width_cm: 20.2
+      depth_cm: 21.6
+      height_cm: 28.8
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769048978/crusader/variants/52240032/Cedric-Small-Table-Lamp-Front-1769048976.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769048978/crusader/variants/52240032/Cedric-Small-Table-Lamp-Front-1769048976.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769048977/crusader/variants/52240032/Cedric-Small-Table-Lamp-Front_1-1769048976.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769048982/crusader/variants/52240032/Cedric-Small-Table-Lamp-Side-1769048981.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769053510/crusader/variants/52240032/Cedric-Small-Table-Lamp-Set_2_-1769053508.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769048978/crusader/variants/52240032/Cedric-Small-Table-Lamp-Det_1-1769048976.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769048978/crusader/variants/52240032/Cedric-Small-Table-Lamp-Det_2-1769048976.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770793720/crusader/variants/T50230014/Cedric-Small-Table-Lamp-Dim-1770793718.jpg"

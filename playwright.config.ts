@@ -1,34 +1,162 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from "@playwright/test";
+import { readFileSync } from "node:fs";
+import path from "node:path";
+
+const localBaseURL = "http://127.0.0.1:3000";
+const releaseBaseURL = process.env.PLAYWRIGHT_RELEASE_BASE_URL?.trim().replace(
+  /\/+$/,
+  ""
+);
+const useProductionServer = process.env.PLAYWRIGHT_USE_PRODUCTION_SERVER === "1";
+const productionEvidenceManifestPath = process.env.PRODUCTION_EVIDENCE_MANIFEST?.trim();
+const productionEvidenceReportPath = process.env.PLAYWRIGHT_JSON_OUTPUT_FILE?.trim();
+const requiredTestGateId = process.env.REQUIRED_TEST_GATE_ID?.trim();
+const requiredTestReportPath = process.env.REQUIRED_TEST_REPORT_PATH?.trim();
+
+if (requiredTestGateId && !/^[a-z0-9][a-z0-9.-]+$/.test(requiredTestGateId)) {
+  throw new Error("REQUIRED_TEST_GATE_ID is invalid.");
+}
+if (requiredTestGateId && productionEvidenceManifestPath) {
+  throw new Error("Required-test and production-artifact evidence modes cannot be combined.");
+}
+
+function repositoryPath(relativePath: string, description: string) {
+  if (path.isAbsolute(relativePath)) {
+    throw new Error(`${description} must be repository-relative.`);
+  }
+  const root = process.cwd();
+  const resolved = path.resolve(root, relativePath);
+  if (!resolved.startsWith(`${root}${path.sep}`)) {
+    throw new Error(`${description} must remain inside the repository.`);
+  }
+  return resolved;
+}
+
+const productionArtifactEvidence = productionEvidenceManifestPath
+  ? (() => {
+      if (!useProductionServer) {
+        throw new Error(
+          "Production artifact evidence requires PLAYWRIGHT_USE_PRODUCTION_SERVER=1."
+        );
+      }
+      if (releaseBaseURL) {
+        throw new Error(
+          "Local production artifact evidence cannot be presented as HTTPS deployment evidence."
+        );
+      }
+      if (!productionEvidenceReportPath) {
+        throw new Error(
+          "PLAYWRIGHT_JSON_OUTPUT_FILE is required for production artifact evidence."
+        );
+      }
+      repositoryPath(productionEvidenceReportPath, "Production evidence report path");
+      const manifest = JSON.parse(
+        readFileSync(
+          repositoryPath(
+            productionEvidenceManifestPath,
+            "Production evidence manifest path"
+          ),
+          "utf8"
+        )
+      );
+      if (manifest.schema !== "interior-ai.production-artifact-evidence.v1") {
+        throw new Error("Unsupported production artifact evidence manifest.");
+      }
+      return {
+        schema: manifest.schema,
+        sourceCommitSha: manifest.source?.commitSha,
+        artifactSha256: manifest.artifact?.sha256,
+        nextBuildId: manifest.build?.nextBuildId,
+        serverCommand: "npm run evidence:production:serve",
+        buildMode: manifest.build?.mode,
+      };
+    })()
+  : null;
+
+if (releaseBaseURL) {
+  const parsedURL = new URL(releaseBaseURL);
+
+  if (parsedURL.protocol !== "https:") {
+    throw new Error(
+      "PLAYWRIGHT_RELEASE_BASE_URL must use HTTPS for release-candidate testing."
+    );
+  }
+}
+
+const baseURL = releaseBaseURL ?? localBaseURL;
+
+if (requiredTestGateId && !requiredTestReportPath) {
+  throw new Error("REQUIRED_TEST_REPORT_PATH is required for required-test evidence.");
+}
+if (requiredTestReportPath) {
+  repositoryPath(requiredTestReportPath, "Required-test report path");
+}
 
 export default defineConfig({
-  testDir: './tests/e2e',
-  fullyParallel: true,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
-  reporter: [
-    ['html', { outputFolder: 'playwright-report' }],
-    ['json', { outputFile: 'test-results/results.json' }],
-    ['junit', { outputFile: 'test-results/junit.xml' }],
-  ],
-  use: {
-    baseURL: 'http://localhost:3000',
-    trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+  testDir: "./tests/e2e",
+  captureGitInfo: { commit: false, diff: false },
+  forbidOnly: true,
+  outputDir: productionArtifactEvidence
+    ? ".local/production-artifact-evidence/playwright-output"
+    : requiredTestGateId
+      ? `.local/required-test-evidence/${requiredTestGateId}/playwright-output`
+    : "test-results",
+  fullyParallel: false,
+  retries: 0,
+  workers: 1,
+  reporter: productionArtifactEvidence
+    ? [
+        ["list"],
+        ["json", { outputFile: productionEvidenceReportPath }],
+      ]
+    : requiredTestGateId
+      ? [
+          ["list"],
+          ["json", { outputFile: requiredTestReportPath }],
+        ]
+      : [["list"]],
+  metadata: {
+    gateA3ReleaseBaseURL: releaseBaseURL ?? null,
+    productionArtifactEvidence,
+    requiredTestEvidence: requiredTestGateId
+      ? {
+          schema: "interior-ai.required-test-evidence.v1",
+          gateId: requiredTestGateId,
+          sourceCommitSha: process.env.REQUIRED_TEST_SOURCE_COMMIT_SHA?.trim() || null,
+          artifactSha256: process.env.REQUIRED_TEST_ARTIFACT_SHA256?.trim() || null,
+          releaseCandidateId:
+            process.env.REQUIRED_TEST_RELEASE_CANDIDATE_ID?.trim() || null,
+          releaseEnvironment:
+            process.env.REQUIRED_TEST_RELEASE_ENVIRONMENT?.trim() || null,
+        }
+      : null,
   },
-
+  use: {
+    baseURL,
+    actionTimeout: 30000,
+    navigationTimeout: 60000,
+    trace: "retain-on-failure",
+    screenshot: "only-on-failure",
+    video: "retain-on-failure",
+  },
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
     },
   ],
-
-  webServer: {
-    command: 'APP_ENV=development npx next start -p 3000',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
-  },
+  ...(releaseBaseURL
+    ? {}
+    : {
+        webServer: {
+          command: productionArtifactEvidence
+            ? "npm run evidence:production:serve"
+            : useProductionServer
+              ? "npm run start"
+              : "npm run dev",
+          url: localBaseURL,
+          reuseExistingServer: productionArtifactEvidence ? false : !process.env.CI,
+          timeout: 120000,
+        },
+      }),
 });

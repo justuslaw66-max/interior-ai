@@ -254,7 +254,7 @@ export function evaluateConstraints(opts: {
   }
 
   // Wall placement sanity
-  const wallItems = new Set<ProductCategory>(["sofa", "tv_console"]);
+  const wallItems = new Set<ProductCategory>(["sofa", "tv_console", "sideboard"]);
   if (wallItems.has(movedProduct.category)) {
     const wallGapCm = Math.round(nearestWallGap(movedAabb, room) * 100);
     if (wallGapCm <= 10 && wallGapCm >= 2) {

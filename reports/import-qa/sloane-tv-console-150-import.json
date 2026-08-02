@@ -1,0 +1,10 @@
+{
+  "assetId": "tv-real-castlery-sloane-tv-console-150",
+  "srcGlbPath": "public/assets/models/tv-real-castlery-sloane-tv-console-150.glb",
+  "dimsMm": { "w": 1500, "d": 400, "h": 580 },
+  "brandName": "Castlery",
+  "approved": false,
+  "generateThumbnail": true,
+  "generateHeroThumbnail": true,
+  "optimizeModel": true
+}

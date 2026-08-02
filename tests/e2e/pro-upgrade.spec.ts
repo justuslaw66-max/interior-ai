@@ -6,8 +6,6 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import { test, expect } from "./fixtures";
 
-const baseURL = "http://localhost:3000";
-
 function resolveDatabaseUrl() {
   if (process.env.DATABASE_URL) {
     return process.env.DATABASE_URL;
@@ -65,12 +63,12 @@ test.describe("Pro Upgrade Flow", () => {
       });
       designId = design.id;
 
-      await page.goto(`${baseURL}/share/${shareToken}/export`);
+      await page.goto(`/share/${shareToken}/export`);
 
       await expect(page.getByRole("heading", { name: "Playwright Export Pack" })).toBeVisible();
-      await expect(page.getByRole("button", { name: /Print \/ Save as PDF/i })).toBeVisible();
+      await expect(page.getByRole("button", { name: /Download PDF(?: \(Pro\))?/i })).toBeVisible();
       await expect(page.getByRole("heading", { name: "Practical Checks" })).toBeVisible();
-      await expect(page.getByText("Walkways: Clear and accessible")).toBeVisible();
+      await expect(page.getByText(/Measurements: 12 m2 captured across 1 room/i)).toBeVisible();
     } finally {
       if (designId) {
         await prisma.design.deleteMany({ where: { id: designId } });

@@ -7,24 +7,27 @@ datasource db {
 }
 
 model Design {
-  id           String   @id @default(cuid())
-  title        String   @default("Untitled Living Room")
-  roomWidth    Float
-  roomDepth    Float
-  items        Json
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  userId       String?
-  shareEnabled Boolean  @default(false)
-  shareToken   String?  @unique
-  style        String?
-  budget       String?
-  mode         String?
-  notes        String?
-  anonymousId  String?  @db.VarChar(64)
-  savedViews   Json?
-  zones        Json?
-  user         User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                 String                    @id @default(cuid())
+  title              String                    @default("Untitled Living Room")
+  roomWidth          Float
+  roomDepth          Float
+  items              Json
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
+  userId             String?
+  shareEnabled       Boolean                   @default(false)
+  shareToken         String?                   @unique
+  style              String?
+  budget             String?
+  mode               String?
+  notes              String?
+  anonymousId        String?                   @db.VarChar(64)
+  savedViews         Json?
+  zones              Json?
+  snapshot           Json?
+  user               User?                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  floorPlanImportJob FloorPlanImportJob?       @relation("FloorPlanAppliedDesign")
+  floorPlanReference FloorPlanDesignReference?
 
   @@index([userId])
   @@index([anonymousId])
@@ -87,21 +90,22 @@ model AppEvent {
 }
 
 model User {
-  id                   String    @id @default(cuid())
+  id                   String               @id @default(cuid())
   name                 String?
-  email                String?   @unique
+  email                String?              @unique
   emailVerified        DateTime?
   image                String?
-  plan                 String    @default("free")
+  plan                 String               @default("free")
   invitedByCode        String?
-  referralCode         String?   @unique
-  createdAt            DateTime  @default(now())
-  stripeCustomerId     String?   @unique
-  stripeSubscriptionId String?   @unique
-  updatedAt            DateTime  @updatedAt
+  referralCode         String?              @unique
+  createdAt            DateTime             @default(now())
+  stripeCustomerId     String?              @unique
+  stripeSubscriptionId String?              @unique
+  updatedAt            DateTime             @updatedAt
   accounts             Account[]
   designs              Design[]
   importJobs           ImportJob[]
+  floorPlanImportJobs  FloorPlanImportJob[]
   sessions             Session[]
 
   @@index([invitedByCode])
@@ -178,29 +182,36 @@ model ModelAsset {
 }
 
 model ImportJob {
-  id                String          @id @default(cuid())
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-  status            ImportJobStatus @default(received)
-  sourceBrand       String?
-  sourceFileName    String
-  sourceFileUrl     String
-  uploadedByUserId  String?
-  notes             String?
-  errorMessage      String?
-  rawMetadataJson   Json?
-  reportJson        Json?
-  rawFileUrl        String?
-  normalizedFileUrl String?
-  optimizedFileUrl  String?
-  thumbnailUrl      String?
-  metadataReportUrl String?
-  qaReportUrl       String?
-  normalizedAssetId String?
-  catalogItemId     String?
-  uploadedBy        User?           @relation(fields: [uploadedByUserId], references: [id], onDelete: SetNull)
-  normalizedAsset   ModelAsset?     @relation(fields: [normalizedAssetId], references: [id], onDelete: SetNull)
-  catalogItem       CatalogItem?    @relation(fields: [catalogItemId], references: [id], onDelete: SetNull)
+  id                           String          @id @default(cuid())
+  createdAt                    DateTime        @default(now())
+  updatedAt                    DateTime        @updatedAt
+  status                       ImportJobStatus @default(received)
+  workflowStage                String?         @default("intake")
+  workflowBlockers             String[]        @default([])
+  nextAction                   String?
+  reviewNotes                  String?
+  dimensionsVerificationStatus String?
+  sourceBrand                  String?
+  sourceSku                    String?
+  sourceProductUrl             String?
+  sourceFileName               String
+  sourceFileUrl                String
+  uploadedByUserId             String?
+  notes                        String?
+  errorMessage                 String?
+  rawMetadataJson              Json?
+  reportJson                   Json?
+  rawFileUrl                   String?
+  normalizedFileUrl            String?
+  optimizedFileUrl             String?
+  thumbnailUrl                 String?
+  metadataReportUrl            String?
+  qaReportUrl                  String?
+  normalizedAssetId            String?
+  catalogItemId                String?
+  uploadedBy                   User?           @relation(fields: [uploadedByUserId], references: [id], onDelete: SetNull)
+  normalizedAsset              ModelAsset?     @relation(fields: [normalizedAssetId], references: [id], onDelete: SetNull)
+  catalogItem                  CatalogItem?    @relation(fields: [catalogItemId], references: [id], onDelete: SetNull)
 
   @@index([status])
   @@index([createdAt])
@@ -209,14 +220,422 @@ model ImportJob {
   @@index([catalogItemId])
 }
 
+model FloorPlanSourceAsset {
+  id                    String                         @id @default(cuid())
+  createdAt             DateTime                       @default(now())
+  sha256                String                         @db.VarChar(64)
+  dedupeKey             String                         @unique @db.VarChar(64)
+  ownerScope            String
+  fileName              String
+  mimeType              String                         @db.VarChar(80)
+  byteLength            Int
+  storageProvider       FloorPlanSourceStorageProvider @default(database)
+  storageKey            String                         @unique
+  bytes                 Bytes?
+  externalUrl           String?
+  contentDeletedAt      DateTime?
+  contentDeletionReason String?                        @db.VarChar(40)
+  importJobs            FloorPlanImportJob[]
+  supplementaryUses     FloorPlanSupplementarySource[]
+  constructionUses      FloorPlanConstructionSource[]
+  deletionOutbox        FloorPlanObjectDeletionOutbox?
+
+  @@index([sha256])
+  @@index([ownerScope, createdAt])
+}
+
+model FloorPlanDerivedAsset {
+  id                    String                         @id @default(cuid())
+  createdAt             DateTime                       @default(now())
+  jobId                 String
+  fileName              String
+  mimeType              String                         @db.VarChar(80)
+  byteLength            Int
+  sha256                String                         @db.VarChar(64)
+  storageProvider       FloorPlanSourceStorageProvider @default(database)
+  storageKey            String                         @unique
+  bytes                 Bytes?
+  externalUrl           String?
+  contentDeletedAt      DateTime?
+  contentDeletionReason String?                        @db.VarChar(40)
+  job                   FloorPlanImportJob             @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  deletionOutbox        FloorPlanObjectDeletionOutbox?
+
+  @@index([jobId])
+  @@index([sha256])
+}
+
+model FloorPlanImportJob {
+  id                              String                         @id @default(cuid())
+  createdAt                       DateTime                       @default(now())
+  updatedAt                       DateTime                       @updatedAt
+  userId                          String
+  sourceAssetId                   String
+  status                          FloorPlanImportJobStatus       @default(received)
+  statusChangedAt                 DateTime?
+  adapterId                       String?
+  extractionVersion               String?
+  progress                        Int                            @default(5)
+  renderedPagesJson               Json                           @default("[]")
+  candidateJson                   Json?
+  sourceManifestJson              Json?
+  sourceObservationManifestJson   Json?
+  sourceObservationVersion        Int                            @default(0)
+  reviewIssuesJson                Json                           @default("[]")
+  correctionLogJson               Json                           @default("[]")
+  candidateVersion                Int                            @default(0)
+  errorMessage                    String?
+  trainingBenchmarkOptIn          Boolean                        @default(false)
+  trainingBenchmarkOptInAt        DateTime?
+  trainingBenchmarkConsentVersion String?                        @db.VarChar(80)
+  trainingBenchmarkRevokedAt      DateTime?
+  sourceRetentionExpiresAt        DateTime                       @default(dbgenerated("CURRENT_TIMESTAMP + INTERVAL '30 days'"))
+  sourceDeletionRequestedAt       DateTime?
+  historyDeletedAt                DateTime?
+  leaseToken                      String?                        @db.VarChar(64)
+  leaseOwner                      String?                        @db.VarChar(160)
+  leaseExpiresAt                  DateTime?
+  heartbeatAt                     DateTime?
+  attemptCount                    Int                            @default(0)
+  retryCount                      Int                            @default(0)
+  maxAttempts                     Int                            @default(5)
+  nextAttemptAt                   DateTime?
+  lastAttemptAt                   DateTime?
+  lastErrorAt                     DateTime?
+  lastRecoveredAt                 DateTime?
+  confirmedAt                     DateTime?
+  appliedDesignId                 String?                        @unique
+  user                            User                           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sourceAsset                     FloorPlanSourceAsset           @relation(fields: [sourceAssetId], references: [id], onDelete: Restrict)
+  appliedDesign                   Design?                        @relation("FloorPlanAppliedDesign", fields: [appliedDesignId], references: [id], onDelete: SetNull)
+  revision                        FloorPlanRevision?
+  derivedAssets                   FloorPlanDerivedAsset[]
+  supplementarySources            FloorPlanSupplementarySource[]
+  constructionSources             FloorPlanConstructionSource[]
+  designReferences                FloorPlanDesignReference[]
+  stageEvents                     FloorPlanImportStageEvent[]
+  etaPredictions                  FloorPlanImportEtaPrediction[]
+
+  @@index([userId, createdAt])
+  @@index([userId, historyDeletedAt, createdAt])
+  @@index([userId, status])
+  @@index([sourceAssetId])
+  @@index([status, updatedAt])
+  @@index([sourceRetentionExpiresAt])
+  @@index([sourceAssetId, sourceRetentionExpiresAt])
+  @@index([status, nextAttemptAt, leaseExpiresAt])
+  @@index([leaseToken])
+}
+
+/// Independently uploaded evidence (for example an official block/unit
+/// distribution brochure) that supports an import without becoming the
+/// geometry/calibration authority. The immutable canonical document must
+/// explicitly reference the durable source asset before approval can use it.
+model FloorPlanSupplementarySource {
+  id                    String               @id @default(cuid())
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  jobId                 String
+  sourceAssetId         String
+  purpose               String               @default("address_binding_evidence") @db.VarChar(64)
+  renderedPagesJson     Json                 @default("[]")
+  uploadedByEmail       String?
+  attachedToCandidateAt DateTime?
+  attachedByEmail       String?
+  job                   FloorPlanImportJob   @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  sourceAsset           FloorPlanSourceAsset @relation(fields: [sourceAssetId], references: [id], onDelete: Restrict)
+
+  @@unique([jobId, sourceAssetId])
+  @@index([jobId, createdAt])
+  @@index([sourceAssetId])
+}
+
+/// Unit-specific CAD, as-built documents, or signed site-measurement reports
+/// that are explicitly authorized to support construction verification. These
+/// sources are separate from address-binding brochures and from the primary
+/// extraction source, neither of which may unlock construction verification.
+model FloorPlanConstructionSource {
+  id                    String               @id @default(cuid())
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  jobId                 String
+  sourceAssetId         String
+  evidenceKind          String               @db.VarChar(32)
+  renderedPagesJson     Json                 @default("[]")
+  authorizedAt          DateTime             @default(now())
+  authorizedByEmail     String?
+  attachedToCandidateAt DateTime             @default(now())
+  job                   FloorPlanImportJob   @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  sourceAsset           FloorPlanSourceAsset @relation(fields: [sourceAssetId], references: [id], onDelete: Restrict)
+
+  @@unique([jobId, sourceAssetId])
+  @@index([jobId, createdAt])
+  @@index([sourceAssetId])
+  @@index([evidenceKind])
+}
+
+/// Durable hand-off between the retention transaction and private object
+/// storage. An external object is deleted outside a database transaction; the
+/// matching asset is tombstoned only when a leased worker confirms success.
+model FloorPlanObjectDeletionOutbox {
+  id               String                        @id @default(cuid())
+  createdAt        DateTime                      @default(now())
+  updatedAt        DateTime                      @updatedAt
+  kind             FloorPlanObjectDeletionKind
+  sourceAssetId    String?                       @unique
+  derivedAssetId   String?                       @unique
+  storageKey       String
+  deletionReason   String                        @db.VarChar(40)
+  status           FloorPlanObjectDeletionStatus @default(pending)
+  attemptCount     Int                           @default(0)
+  maxAttempts      Int                           @default(10)
+  nextAttemptAt    DateTime?                     @default(now())
+  leaseToken       String?                       @db.VarChar(64)
+  leaseOwner       String?                       @db.VarChar(160)
+  leaseExpiresAt   DateTime?
+  lastAttemptAt    DateTime?
+  lastErrorAt      DateTime?
+  lastErrorMessage String?                       @db.VarChar(2000)
+  completedAt      DateTime?
+  sourceAsset      FloorPlanSourceAsset?         @relation(fields: [sourceAssetId], references: [id], onDelete: Cascade)
+  derivedAsset     FloorPlanDerivedAsset?        @relation(fields: [derivedAssetId], references: [id], onDelete: Cascade)
+
+  @@unique([kind, storageKey])
+  @@index([status, nextAttemptAt, createdAt])
+  @@index([status, leaseExpiresAt])
+  @@index([leaseToken])
+}
+
+model FloorPlanRevision {
+  id                            String                           @id @default(cuid())
+  createdAt                     DateTime                         @default(now())
+  updatedAt                     DateTime                         @updatedAt
+  sourceJobId                   String                           @unique
+  geometryHash                  String                           @db.VarChar(64)
+  documentJson                  Json
+  sourceManifestJson            Json
+  sourceObservationManifestJson Json?
+  constructionEvidenceJson      Json?
+  verificationTier              FloorPlanVerificationTier        @default(unverified)
+  publicationStatus             FloorPlanPublicationStatus       @default(draft)
+  approvedAt                    DateTime?
+  approvedByEmail               String?
+  publishedAt                   DateTime?
+  publishedByEmail              String?
+  sourceJob                     FloorPlanImportJob               @relation(fields: [sourceJobId], references: [id], onDelete: Restrict)
+  addressBindings               FloorPlanAddressBinding[]
+  auditEvents                   FloorPlanRevisionAuditEvent[]
+  designReferences              FloorPlanDesignReference[]
+  authoredVariantOptions        FloorPlanAuthoredVariantOption[]
+  publicMetadata                FloorPlanRevisionPublicMetadata?
+
+  @@index([publicationStatus, publishedAt])
+  @@index([geometryHash])
+}
+
+/// Strict public browse/display fields approved with an immutable canonical
+/// revision. Internal source manifests, filenames and reviewer notes are never
+/// projected through this record.
+model FloorPlanRevisionPublicMetadata {
+  revisionId      String            @id
+  createdAt       DateTime          @default(now())
+  projectName     String            @db.VarChar(160)
+  label           String            @db.VarChar(160)
+  flatType        String            @db.VarChar(80)
+  floorAreaSqm    Float?
+  previewUrl      String            @db.VarChar(2048)
+  sourceUrl       String?           @db.VarChar(2048)
+  sourceTitle     String?           @db.VarChar(200)
+  sourcePage      Int?
+  publisher       String            @db.VarChar(160)
+  approvedAt      DateTime
+  approvedByEmail String            @db.VarChar(320)
+  revision        FloorPlanRevision @relation(fields: [revisionId], references: [id], onDelete: Restrict)
+
+  @@index([projectName])
+  @@index([flatType])
+}
+
+model FloorPlanRevisionAuditEvent {
+  id                 String                          @id @default(cuid())
+  createdAt          DateTime                        @default(now())
+  occurredAt         DateTime
+  revisionId         String
+  eventType          FloorPlanRevisionAuditEventType
+  actorEmail         String?
+  sourceEvidenceJson Json
+  metadataJson       Json?
+  revision           FloorPlanRevision               @relation(fields: [revisionId], references: [id], onDelete: Restrict)
+
+  @@unique([revisionId, eventType])
+  @@index([revisionId, occurredAt])
+  @@index([eventType, occurredAt])
+}
+
+model FloorPlanAddressBinding {
+  id                     String                           @id @default(cuid())
+  createdAt              DateTime                         @default(now())
+  revisionId             String
+  countryCode            String                           @db.Char(2)
+  addressNormalized      String
+  block                  String
+  street                 String
+  postalCode             String?
+  stack                  String?
+  floorMin               Int?
+  floorMax               Int?
+  transform              FloorPlanAddressTransform        @default(normal)
+  role                   FloorPlanAddressBindingRole      @default(catalog)
+  sourceEvidenceJson     Json?
+  revision               FloorPlanRevision                @relation(fields: [revisionId], references: [id], onDelete: Cascade)
+  designReferences       FloorPlanDesignReference[]
+  authoredVariantOptions FloorPlanAuthoredVariantOption[]
+
+  @@index([countryCode, addressNormalized])
+  @@index([block, street, stack])
+  @@index([revisionId])
+}
+
+/// Maker-approved relationship between complete immutable floor-plan
+/// revisions. Geometry is never synthesized from an annotation: every option
+/// points at its own published revision and exact address binding.
+model FloorPlanAuthoredVariantGroup {
+  id                String                           @id @default(cuid())
+  createdAt         DateTime                         @default(now())
+  updatedAt         DateTime                         @updatedAt
+  groupKey          String                           @unique @db.VarChar(200)
+  label             String                           @db.VarChar(200)
+  publicationStatus FloorPlanPublicationStatus       @default(draft)
+  approvedAt        DateTime?
+  approvedByEmail   String?                          @db.VarChar(320)
+  publishedAt       DateTime?
+  publishedByEmail  String?                          @db.VarChar(320)
+  retiredAt         DateTime?
+  retiredByEmail    String?                          @db.VarChar(320)
+  retirementReason  String?                          @db.VarChar(1000)
+  options           FloorPlanAuthoredVariantOption[]
+
+  @@index([publicationStatus, publishedAt])
+}
+
+model FloorPlanAuthoredVariantOption {
+  id                 String                        @id @default(cuid())
+  createdAt          DateTime                      @default(now())
+  groupId            String
+  optionKey          String                        @db.VarChar(200)
+  label              String                        @db.VarChar(200)
+  revisionId         String
+  addressBindingId   String
+  geometryHash       String                        @db.Char(64)
+  sourceId           String                        @db.VarChar(200)
+  sourcePage         Int?
+  defaultSelected    Boolean                       @default(false)
+  sourceEvidenceJson Json
+  group              FloorPlanAuthoredVariantGroup @relation(fields: [groupId], references: [id], onDelete: Restrict)
+  revision           FloorPlanRevision             @relation(fields: [revisionId], references: [id], onDelete: Restrict)
+  addressBinding     FloorPlanAddressBinding       @relation(fields: [addressBindingId], references: [id], onDelete: Restrict)
+
+  @@unique([groupId, optionKey])
+  @@unique([groupId, revisionId])
+  @@unique([groupId, addressBindingId])
+  @@index([revisionId])
+  @@index([addressBindingId])
+}
+
+/// Indexed, owner-validated lineage for a saved design. Snapshot JSON remains
+/// the editable payload; this one-to-one projection is the queryable source of
+/// truth for revision usage and private-import retention decisions.
+model FloorPlanDesignReference {
+  designId          String                     @id
+  createdAt         DateTime                   @default(now())
+  updatedAt         DateTime                   @updatedAt
+  revisionId        String?
+  sourceJobId       String?
+  sourceAssetSha256 String?                    @db.Char(64)
+  geometryHash      String?                    @db.Char(64)
+  addressBindingId  String?
+  transform         FloorPlanAddressTransform?
+  design            Design                     @relation(fields: [designId], references: [id], onDelete: Cascade)
+  revision          FloorPlanRevision?         @relation(fields: [revisionId], references: [id], onDelete: SetNull)
+  sourceJob         FloorPlanImportJob?        @relation(fields: [sourceJobId], references: [id], onDelete: SetNull)
+  addressBinding    FloorPlanAddressBinding?   @relation(fields: [addressBindingId], references: [id], onDelete: SetNull)
+
+  @@index([revisionId])
+  @@index([sourceJobId])
+  @@index([sourceAssetSha256])
+  @@index([addressBindingId])
+  @@index([geometryHash])
+}
+
+/// Privacy-safe operational facts about committed import-stage transitions.
+/// Metrics are sanitized to bounded numeric/boolean/null values before write;
+/// source names, hashes, addresses, labels, text and geometry are never stored.
+model FloorPlanImportStageEvent {
+  id                 String                   @id @default(cuid())
+  createdAt          DateTime                 @default(now())
+  jobId              String
+  adapterId          String?                  @db.VarChar(160)
+  extractionVersion  String?                  @db.VarChar(160)
+  fromStatus         FloorPlanImportJobStatus
+  toStatus           FloorPlanImportJobStatus
+  durationMs         Int
+  issueCount         Int
+  criticalIssueCount Int
+  warningIssueCount  Int
+  metricsJson        Json                     @default("{}")
+  job                FloorPlanImportJob       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId, createdAt])
+  @@index([toStatus, createdAt])
+  @@index([adapterId, extractionVersion, fromStatus, createdAt])
+}
+
+/// Privacy-safe ETA calibration facts. These rows contain timing and
+/// operational version identifiers only; never source names, text or geometry.
+model FloorPlanImportEtaPrediction {
+  id                 String                    @id @default(cuid())
+  createdAt          DateTime                  @default(now())
+  completedAt        DateTime?
+  jobId              String
+  fromStatus         FloorPlanImportJobStatus
+  outcomeStatus      FloorPlanImportJobStatus?
+  adapterId          String?                   @db.VarChar(160)
+  extractionVersion  String?                   @db.VarChar(160)
+  lowerMs            Int
+  upperMs            Int
+  confidence         String?                   @db.VarChar(16)
+  sampleCount        Int                       @default(0)
+  actualRemainingMs  Int?
+  job                FloorPlanImportJob        @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, fromStatus])
+  @@index([adapterId, extractionVersion, fromStatus, createdAt])
+}
+
+/// Fixed-window counters shared by every application instance. Keys are
+/// keyed SHA-256 digests of the scope, private subject and window start so raw
+/// user identifiers are not stored or cheaply enumerable from this table.
+model ApiRateLimitBucket {
+  key         String   @id @db.Char(64)
+  scope       String   @db.VarChar(80)
+  windowStart DateTime
+  expiresAt   DateTime
+  count       Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([expiresAt])
+  @@index([scope, windowStart])
+}
+
 model CatalogItem {
-  id                 String           @id
-  slug               String           @unique
+  id                 String                 @id
+  slug               String                 @unique
   title              String
   description        String?
   defaultVariantId   String?
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @updatedAt
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
   aiRolesJson        Json?
   assetId            String
   clearanceRulesJson Json?
@@ -224,13 +643,13 @@ model CatalogItem {
   dimsHmm            Int
   dimsWmm            Int
   placementRulesJson Json?
-  tags               String[]         @default([])
+  tags               String[]               @default([])
   variantsJson       Json?
   category           CatalogCategory
-  styleTags          String[]         @default([])
-  toneTags           String[]         @default([])
-  roomTags           String[]         @default([])
-  asset              ModelAsset       @relation(fields: [assetId], references: [id])
+  styleTags          String[]               @default([])
+  toneTags           String[]               @default([])
+  roomTags           String[]               @default([])
+  asset              ModelAsset             @relation(fields: [assetId], references: [id])
   commerce           CommerceMapping?
   brandFinishes      BrandFinish[]
   finishMappings     VariantFinishMapping[]
@@ -238,16 +657,16 @@ model CatalogItem {
 }
 
 model BrandFinish {
-  id             String          @id @default(cuid())
+  id             String                 @id @default(cuid())
   catalogItemId  String
   brandName      String
   sourceLabel    String
   sourceCode     String?
   materialFamily MaterialFamily?
   notes          String?
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  catalogItem    CatalogItem     @relation(fields: [catalogItemId], references: [id], onDelete: Cascade)
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+  catalogItem    CatalogItem            @relation(fields: [catalogItemId], references: [id], onDelete: Cascade)
   mappings       VariantFinishMapping[]
 
   @@index([catalogItemId])
@@ -256,7 +675,7 @@ model BrandFinish {
 }
 
 model NormalizedFinish {
-  id                String          @id
+  id                String                 @id
   label             String
   presentationLabel String
   materialFamily    MaterialFamily
@@ -264,9 +683,9 @@ model NormalizedFinish {
   tone              Tone
   surface           Surface
   pattern           Pattern?
-  isActive          Boolean         @default(true)
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
+  isActive          Boolean                @default(true)
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
   mappings          VariantFinishMapping[]
 
   @@index([materialFamily])
@@ -407,4 +826,71 @@ enum ImportJobStatus {
   approved
   published
   failed
+}
+
+enum FloorPlanImportJobStatus {
+  received
+  rendered
+  extracted
+  selecting_page
+  scale_solved
+  topology_built
+  validating
+  needs_review
+  ready
+  applied
+  published
+  failed
+}
+
+enum FloorPlanSourceStorageProvider {
+  database
+  external
+}
+
+enum FloorPlanObjectDeletionKind {
+  source
+  derived
+}
+
+enum FloorPlanObjectDeletionStatus {
+  pending
+  processing
+  completed
+  dead_letter
+}
+
+enum FloorPlanVerificationTier {
+  unverified
+  source_verified
+  construction_verified
+}
+
+enum FloorPlanPublicationStatus {
+  draft
+  approved
+  published
+  retired
+}
+
+enum FloorPlanRevisionAuditEventType {
+  revision_approved
+  revision_published
+  revision_retired
+}
+
+enum FloorPlanAddressTransform {
+  normal
+  mirror_x
+  mirror_z
+  rotate_90
+  rotate_180
+  rotate_270
+  mirror_x_rotate_90
+  mirror_x_rotate_270
+}
+
+enum FloorPlanAddressBindingRole {
+  catalog
+  authored_variant
 }

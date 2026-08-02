@@ -1,0 +1,224 @@
+brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/kelsey-marble-dining-table-white-wash"
+category: "dining_table"
+
+product_family: "Kelsey"
+product_name: "Kelsey Marble Dining Table"
+variant: "160 White Wash"
+
+price_usd: 1599
+price_band: "premium"
+brand_tier: "premium_mid"
+
+design_zone: "dining_zone"
+anchor_role: "dining_anchor"
+
+dimensions:
+  width_cm: 160
+  depth_cm: 90
+  height_cm: 76
+
+seat_capacity: 4
+size_class: "medium"
+
+shape: "rectangular"
+base_type: "four_leg"
+
+material_family: "mixed"
+material_mix: "stone_wood"
+
+color_family: "white"
+tone: "neutral"
+
+style_cluster: "midcentury_modern"
+style_secondary: "contemporary"
+design_era: "midcentury_inspired"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "rounded"
+  silhouette: "light"
+  form_language: "soft"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  chair_pullback_cm: 60
+  walkway_clearance_cm: 90
+
+room_compatibility:
+  - "dining_room"
+  - "open_plan"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: true
+
+design_pairings:
+  - "dining_chair"
+  - "pendant_light"
+  - "dining_rug"
+  - "sideboard"
+
+product_details:
+  material:
+    - label: "Leg frame"
+      value: "Solid rubber wood with copper feet caps"
+    - label: "Table top"
+      value: "6mm carrara marble with plywood core"
+    - label: "Care"
+      value: "Marble table"
+    - label: "Colour variance"
+      value: "Marble variations"
+    - label: "Material & safety standards"
+      value: "Formaldehyde safe"
+  dimensions:
+    - label: "Dimension"
+      value: "W160 x D90 x H76cm"
+    - label: "Table top thickness"
+      value: "2.5cm"
+    - label: "Leg height"
+      value: "73cm"
+    - label: "Leg to leg distance (at height 45cm)"
+      value: "113cm (at height 45cm)"
+    - label: "Capacity"
+      value: "Sits 4 people comfortably"
+    - label: "Product weight"
+      value: "54kg"
+    - label: "Packaging dimensions"
+      value: "2 boxes"
+    - label: "Levellers"
+      value: "Included (max 2cm)"
+    - label: "Max bearing support"
+      value: "200kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Warranty"
+      value: "5-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Legs to be fitted, protective wood frame to be dismantled."
+
+assets:
+  asset_id: "dining-real-castlery-kelsey-marble-160"
+  model_url: "/assets/models/dining-real-castlery-kelsey-marble-160.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660199612/crusader/variants/52460092/Kelsey-Marble-Dining-Table-160-Natural-Front-1660199609.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660199612/crusader/variants/52460092/Kelsey-Marble-Dining-Table-160-Natural-Front-1660199609.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660202377/crusader/variants/52460092/Kelsey-Dining-Chair-Power-Wash-Set_3-1660202375.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1670404574/crusader/variants/52460092/Kelsey-Dining-Chair-Power-Wash-Set_2-1670404571.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1707028088/crusader/variants/52460092/Kelsey-Dining-Chair-Power-Wash-Det_15-1707028084.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660202528/crusader/variants/52460092/Kelsey-Dining-Chair-Power-Wash-Det_14-1660202526.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660199611/crusader/variants/52460092/Kelsey-Marble-Dining-Table-160-Natural-Angle-1660199609.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660199612/crusader/variants/52460092/Kelsey-Marble-Dining-Table-160-Natural-Side-1660199609.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660199660/crusader/variants/T52460092/Kelsey-Marble-Dining-Table-160-Natural-Dim-1660199658.jpg"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+
+variants:
+  - variant: "160 White Wash"
+    size_label: "160"
+    finish_code: "white_wash"
+    finish_label: "White Wash"
+    swatch_group: "wood_finish"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660199612/crusader/variants/52460092/Kelsey-Marble-Dining-Table-160-Natural-Front-1660199609.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660199612/crusader/variants/52460092/Kelsey-Marble-Dining-Table-160-Natural-Front-1660199609.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660202377/crusader/variants/52460092/Kelsey-Dining-Chair-Power-Wash-Set_3-1660202375.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1670404574/crusader/variants/52460092/Kelsey-Dining-Chair-Power-Wash-Set_2-1670404571.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1707028088/crusader/variants/52460092/Kelsey-Dining-Chair-Power-Wash-Det_15-1707028084.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660202528/crusader/variants/52460092/Kelsey-Dining-Chair-Power-Wash-Det_14-1660202526.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660199611/crusader/variants/52460092/Kelsey-Marble-Dining-Table-160-Natural-Angle-1660199609.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660199612/crusader/variants/52460092/Kelsey-Marble-Dining-Table-160-Natural-Side-1660199609.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660199660/crusader/variants/T52460092/Kelsey-Marble-Dining-Table-160-Natural-Dim-1660199658.jpg"
+
+    price_usd: 1599
+    price_band: "premium"
+    brand_tier: "premium_mid"
+
+    dimensions:
+      width_cm: 160
+      depth_cm: 90
+      height_cm: 76
+
+    seat_capacity: 4
+    size_class: "medium"
+
+    color_family: "white"
+    tone: "neutral"
+
+    materials:
+      tabletop:
+        structure: "stone_composite"
+        surface: "carrara_marble"
+        core: "plywood"
+      base:
+        structure: "solid_wood"
+        wood_species: "rubberwood"
+        surface: "stained_wood"
+      feet_caps:
+        structure: "metal"
+        finish: "copper"
+
+    finish:
+      tabletop_finish: "lightly_polished_marble"
+      tabletop_sealant: "none"
+      base_finish: "white_wash"
+      protective_coating: "none"
+      surface_finish: "lightly_polished"
+      finish_color: "marble_white_wash"
+
+  - variant: "160 Dark Walnut"
+    size_label: "160"
+    finish_code: "dark_walnut"
+    finish_label: "Dark Walnut"
+    swatch_group: "wood_finish"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1624443066/crusader/variants/52460082/Kelsey-Marble-Dining-Table-160cm-Walnut-Stain-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1624443066/crusader/variants/52460082/Kelsey-Marble-Dining-Table-160cm-Walnut-Stain-Front.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660208090/crusader/variants/52460089/Kelsey-Marble-Dining-Table-180cm-Walnut-Stain-Lifestyle-Crop-1660208088.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1672284071/crusader/variants/52460089/Kelsey-Dining-Table-with-6-Chairs-Caramel-Walnut-Square-Set_1-1672284068.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1673853279/crusader/variants/52460089/Kelsey_Marble_Dining_Table-Shared_1-1673853276.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1632476927/crusader/variants/52460084/Kelsey-Marble.jpg"
+
+    price_usd: 1599
+    price_band: "premium"
+    brand_tier: "premium_mid"
+
+    dimensions:
+      width_cm: 160
+      depth_cm: 90
+      height_cm: 76
+
+    seat_capacity: 4
+    size_class: "medium"
+
+    color_family: "brown"
+    tone: "warm"
+
+    materials:
+      tabletop:
+        structure: "stone_composite"
+        surface: "carrara_marble"
+        core: "plywood"
+      base:
+        structure: "solid_wood"
+        wood_species: "rubberwood"
+        surface: "stained_wood"
+      feet_caps:
+        structure: "metal"
+        finish: "copper"
+
+    finish:
+      tabletop_finish: "lightly_polished_marble"
+      tabletop_sealant: "none"
+      base_finish: "dark_walnut"
+      protective_coating: "none"
+      surface_finish: "lightly_polished"
+      finish_color: "marble_dark_walnut"

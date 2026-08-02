@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { config } from "@/lib/config";
 import { rateLimit } from "@/lib/rateLimit";
+import { logAppEvent } from "@/lib/app-events";
+import { trackMonetization } from "@/lib/monetization-tracking";
 
 function getStripeClient() {
   const secretKey = process.env.STRIPE_SECRET_KEY;
@@ -13,7 +15,8 @@ function getStripeClient() {
 }
 
 // Lazy load prisma to avoid initialization issues
-let prisma: any = null;
+type PrismaModule = typeof import("@/lib/prisma");
+let prisma: PrismaModule["prisma"] | null = null;
 async function getPrisma() {
   if (!prisma) {
     const { prisma: p } = await import("@/lib/prisma");
@@ -49,23 +52,30 @@ export async function POST(req: Request) {
     }
 
     const stripe = getStripeClient();
-    const origin = req.headers.get("origin") || process.env.APP_ORIGIN || "http://localhost:3000";
+    const origin = process.env.APP_ORIGIN || new URL(req.url).origin;
 
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: dbUser.stripeCustomerId,
-      return_url: `${origin}?refresh_plan=true`,
+      return_url: `${origin}/design?refresh_plan=true`,
     });
 
-    console.log("Portal session created:", {
-      customerId: dbUser.stripeCustomerId,
-      returnUrl: `${origin}?refresh_plan=true`,
-    });
+    await Promise.allSettled([
+      logAppEvent({
+        eventType: "billing_portal_opened",
+        userId: dbUser.id,
+      }),
+      trackMonetization("billing_portal_opened", dbUser.id, {
+        plan: dbUser.plan === "pro" ? "pro" : "free",
+      }),
+    ]);
 
     return NextResponse.json({ url: portalSession.url });
-  } catch (error: any) {
-    console.error("Stripe portal error:", error?.message || error);
+  } catch (error: unknown) {
+    console.error("Stripe portal request failed", {
+      errorType: error instanceof Error ? error.name : "unknown",
+    });
     return NextResponse.json(
-      { error: error?.message || "Unable to create portal session" },
+      { error: "Unable to create portal session. Please try again." },
       { status: 500 }
     );
   }

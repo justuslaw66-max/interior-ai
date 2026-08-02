@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { isAdminEmail } from "@/lib/admin";
+import { canAccessAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
-import { updateImportJobStatus } from "@/lib/import-jobs/update-import-job-status";
+import {
+  ImportJobUpdateValidationError,
+  updateImportJobStatus,
+} from "@/lib/import-jobs/update-import-job-status";
 import type { ImportJobStatus } from "@/lib/import-jobs/types";
 
 type ImportJobDetailRow = {
@@ -51,7 +54,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  if (!session?.user?.email || !isAdminEmail(session.user.email)) {
+  if (!canAccessAdmin(session?.user?.email)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -101,7 +104,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  if (!session?.user?.email || !isAdminEmail(session.user.email)) {
+  if (!canAccessAdmin(session?.user?.email)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -119,14 +122,21 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
 
-  await updateImportJobStatus({
-    id,
-    to: status,
-    notes: body.notes,
-    errorMessage: body.errorMessage,
-    normalizedAssetId: body.normalizedAssetId,
-    catalogItemId: body.catalogItemId,
-  });
+  try {
+    await updateImportJobStatus({
+      id,
+      to: status,
+      notes: body.notes,
+      errorMessage: body.errorMessage,
+      normalizedAssetId: body.normalizedAssetId,
+      catalogItemId: body.catalogItemId,
+    });
+  } catch (error) {
+    if (error instanceof ImportJobUpdateValidationError) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+    throw error;
+  }
 
   return NextResponse.json({ ok: true });
 }

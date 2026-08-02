@@ -1,12 +1,20 @@
 import ConfirmOrderClient from "./confirm-client";
+import Link from "next/link";
+import { buildDesignEditorUrl } from "@/lib/design-editor-url";
 
 export default async function CheckoutSuccessPage({
   searchParams,
 }: {
-  searchParams: { order_id?: string; orderId?: string; designId?: string };
+  searchParams: Promise<{
+    order_id?: string;
+    orderId?: string;
+    designId?: string;
+  }>;
 }) {
-  const orderRef = searchParams.order_id ?? searchParams.orderId ?? "";
-  const designId = searchParams.designId ?? null;
+  const resolvedSearchParams = await searchParams;
+  const orderRef =
+    resolvedSearchParams.order_id ?? resolvedSearchParams.orderId ?? "";
+  const designId = resolvedSearchParams.designId ?? null;
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-neutral-100 p-6">
@@ -14,12 +22,13 @@ export default async function CheckoutSuccessPage({
         <h1 className="text-2xl font-semibold">Thank you 🎉</h1>
 
         <p className="mt-2 text-sm text-neutral-600">
-          Your order has been placed successfully.
+          You returned from Shopify. Use the confirmation from Shopify as the
+          authoritative receipt and order status.
         </p>
 
         {orderRef && (
           <div className="mt-3 rounded-lg bg-neutral-50 p-3 text-xs font-mono">
-            Order Ref: {orderRef}
+            Checkout Ref: {orderRef}
           </div>
         )}
 
@@ -27,27 +36,27 @@ export default async function CheckoutSuccessPage({
 
         <div className="mt-6 flex flex-col gap-2">
           {designId ? (
-            <a
-              href={`/design/${designId}`}
+            <Link
+              href={buildDesignEditorUrl({ designId })}
               className="rounded-xl bg-neutral-900 px-4 py-2 text-center text-sm text-white"
             >
               Back to this design
-            </a>
+            </Link>
           ) : (
-            <a
+            <Link
               href="/"
               className="rounded-xl bg-neutral-900 px-4 py-2 text-center text-sm text-white"
             >
               Back to my design
-            </a>
+            </Link>
           )}
 
-          <a
+          <Link
             href="/dashboard"
             className="rounded-xl border px-4 py-2 text-center text-sm"
           >
             View my designs
-          </a>
+          </Link>
         </div>
 
         <p className="mt-4 text-xs text-neutral-500">

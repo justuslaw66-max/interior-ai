@@ -73,14 +73,14 @@ Call in root layout or before scene initialization.
 # From workspace root
 node scripts/import-model.ts \
   --file path/to/sofa-model.glb \
-  --slug sofa-scandi-01 \
+  --slug sofa-real-castlery-dawson-3s \
   --output public/assets
 
 # Expected output:
-# ✓ Import complete for: sofa-scandi-01
+# ✓ Import complete for: sofa-real-castlery-dawson-3s
 # Metadata:
 # {
-#   "slug": "sofa-scandi-01",
+#   "slug": "sofa-real-castlery-dawson-3s",
 #   "dimensionsMm": { "w": 2400, "d": 900, "h": 800 },
 #   ...
 # }

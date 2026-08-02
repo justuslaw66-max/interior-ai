@@ -1,0 +1,86 @@
+brand: "Castlery"
+status: "draft"
+source_url: "https://www.castlery.com/sg/products/panes-glass-tv-console?glass_type=fluted_glass"
+category: "tv_console"
+subcategory: "media_console"
+
+product_family: "Panes"
+product_name: "Panes Fluted Glass TV Console"
+variant: "Fluted glass draft import"
+
+price_usd: 799
+price_band: "mid"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "media_anchor"
+
+dimensions:
+  width_cm: 180
+  depth_cm: 40
+  height_cm: 60
+
+size_class: "large"
+shape: "rectangular"
+base_type: "frame"
+material_family: "mixed"
+color_family: "brown"
+tone: "neutral"
+style_cluster: "contemporary"
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+design_pairings:
+  - "sofa"
+  - "rug"
+  - "side_table"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: true
+  clearance_sensitive: true
+  center_room_preferred: false
+
+materials:
+  body:
+    structure: "mixed"
+finish:
+  color_finish: "fluted_glass"
+  finish_label: "Fluted Glass"
+
+assets:
+  asset_id: "tv-real-castlery-panes-glass-tv-console-fluted"
+  model_url: "/assets/models/tv-real-castlery-panes-glass-tv-console-fluted.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770189819/crusader/variants/51250009/Panes-Fluted-Glass-TV-Console-180cm-Front-1770189816.jpg"
+
+variants:
+  - variant: "Fluted glass draft import"
+    finish_code: "fluted_glass"
+    finish_label: "Fluted Glass"
+    price_usd: 799
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 180
+      depth_cm: 40
+      height_cm: 60
+    materials:
+      body:
+        structure: "mixed"
+    finish:
+      color_finish: "fluted_glass"
+      finish_label: "Fluted Glass"
+    color_family: "brown"
+    tone: "neutral"
+
+publish_blockers:
+  - "confirm_exact_product_source_url"
+  - "confirm_price_and_variant_metadata"
+  - "confirm_catalog_dimensions_against_supplier_specs"
+  - "confirm_local_model_asset_availability"
+  - "complete_product_details"
+
+notes:
+  - "Draft mapping for an approved imported ModelAsset so governance can track publication readiness."
+  - "Do not publish until product metadata, pricing, dimensions, and local model availability are confirmed."

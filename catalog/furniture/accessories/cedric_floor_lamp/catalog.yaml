@@ -1,0 +1,176 @@
+status: "live"
+brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/cedric-floor-lamp"
+category: "floor_lamp"
+
+product_family: "Cedric"
+product_name: "Cedric Floor Lamp"
+variant: "Curved"
+
+price_usd: 149
+price_band: "mid"
+brand_tier: "premium_mid"
+
+design_zone: "lighting_zone"
+anchor_role: "lighting_anchor"
+
+dimensions:
+  width_cm: 25.4
+  depth_cm: 25.4
+  height_cm: 154
+
+size_class: "large"
+shape: "round"
+base_type: "slender_curved_metal"
+
+material_family: "mixed"
+material_mix:
+  - "metal"
+  - "glass"
+
+color_family: "yellow"
+tone: "warm"
+
+style_cluster: "modern"
+style_secondary: "mid_century"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "light"
+  edge_profile: "rounded"
+  silhouette: "slender_curved_floor_lamp_with_glass_globe"
+  form_language: "minimal_sculptural"
+  descriptors:
+    - "curved_brushed_brass_frame"
+    - "milk_glass_globe"
+    - "small_space_floor_lamp"
+    - "cedric_family_lighting"
+
+spatial_attributes:
+  footprint_shape: "round"
+  descriptors:
+    - "floor_standing"
+    - "compact_corner_lighting"
+    - "reading_or_sofa_side_lamp"
+
+room_compatibility:
+  - "living_room"
+  - "bedroom"
+  - "home_office"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  wall_mountable: false
+  min_wall_gap_mm: 100
+  allow_rug_overlap: false
+  snap_margin_mm: 0
+  clearance_sensitive: false
+  center_room_preferred: false
+  placement_note: "Floor lamp should stand directly on the floor near seating, reading, or bedroom zones."
+
+design_pairings:
+  - "sofa"
+  - "accent_chair"
+  - "bed"
+  - "side_table"
+  - "coffee_table"
+  - "floor_lamp"
+
+recommendation_metadata:
+  recommendation_role: "floor_lamp"
+  primary_use_cases:
+    - "ambient_floor_light"
+    - "reading_corner_light"
+    - "compact_space_lighting"
+  suggest_when_scene_has:
+    - "sofa_without_floor_lamp"
+    - "reading_corner_without_lighting"
+    - "bedroom_without_ambient_lighting"
+  avoid_when_scene_has:
+    - "tight_walkway"
+
+feature_flags:
+  is_floor_lamp: true
+  has_light: true
+  has_inline_switch: true
+
+product_details:
+  material:
+    - label: "Material"
+      value: "Metal frame, glass shade"
+    - label: "Finish"
+      value: "Brushed brass"
+    - label: "Eco-friendly packaging"
+      value: "Free of styrofoam"
+    - label: "Bulb recommendation"
+      value: "<=6W LED"
+    - label: "Certification"
+      value: "Safety Mark"
+    - label: "Lightbulb"
+      value: "Not included"
+    - label: "Switch"
+      value: "Online switch"
+    - label: "Bulb type"
+      value: "E14"
+  dimensions:
+    - label: "Dimension"
+      value: "W25.4 x D25.4 x H154cm"
+    - label: "Cable length"
+      value: "213cm"
+    - label: "Product weight"
+      value: "4.1kg"
+    - label: "Packaging dimensions"
+      value: "1 box"
+    - label: "Max bulb"
+      value: "Max Bulb Dia. 4cm; Height 12cm"
+  delivery_and_warranty:
+    - label: "Warranty"
+      value: "2-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Body to be assembled and shade to be fitted"
+
+assets:
+  asset_id: "accessory-real-castlery-cedric-floor-lamp"
+  model_url: "/assets/models/accessory-real-castlery-cedric-floor-lamp.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1756370174/crusader/variants/52240027/Cedric-Floor-Lamp-Front_1-1756370170.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1756370174/crusader/variants/52240027/Cedric-Floor-Lamp-Front_1-1756370170.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1756370172/crusader/variants/52240027/Cedric-Floor-Lamp-Front-1756370170.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1756440738/crusader/variants/52240027/Cedric-Floor-Lamp-Square-Set_1-1756440735.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1756370172/crusader/variants/52240027/Cedric-Floor-Lamp-Front-Det_2-1756370170.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1756370172/crusader/variants/52240027/Cedric-Floor-Lamp-Front-Det_1-1756370170.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1697702753/crusader/variants/T50230011/Cedric-Floor-Lamp-Dim-1697702751.jpg"
+
+variants:
+  - variant: "Curved"
+    finish_code: "curved_brushed_brass_glass"
+    finish_label: "Brushed brass and glass shade"
+    swatch_group: "material"
+    swatch_hex: "#b79a68"
+    color_family: "yellow"
+    tone: "warm"
+    materials:
+      primary: "metal"
+      secondary: "glass shade"
+    finish:
+      code: "curved_brushed_brass_glass"
+      label: "Brushed brass and glass shade"
+    model_url: "/assets/models/accessory-real-castlery-cedric-floor-lamp.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/cedric-floor-lamp"
+    available: true
+    price_usd: 149
+    dimensions:
+      width_cm: 25.4
+      depth_cm: 25.4
+      height_cm: 154
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1756370174/crusader/variants/52240027/Cedric-Floor-Lamp-Front_1-1756370170.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1756370174/crusader/variants/52240027/Cedric-Floor-Lamp-Front_1-1756370170.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1756370172/crusader/variants/52240027/Cedric-Floor-Lamp-Front-1756370170.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1756440738/crusader/variants/52240027/Cedric-Floor-Lamp-Square-Set_1-1756440735.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1756370172/crusader/variants/52240027/Cedric-Floor-Lamp-Front-Det_2-1756370170.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1756370172/crusader/variants/52240027/Cedric-Floor-Lamp-Front-Det_1-1756370170.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1697702753/crusader/variants/T50230011/Cedric-Floor-Lamp-Dim-1697702751.jpg"

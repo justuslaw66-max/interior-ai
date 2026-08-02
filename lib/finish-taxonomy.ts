@@ -277,7 +277,7 @@ function validateMapping(
   const mappingId = asString(mapping.id) || "(missing-id)";
   const component = asString(mapping.component) || "primary";
   const normalizedFinishId = asString(mapping.normalizedFinishId);
-  const presentationLabel = asString(mapping.presentationLabel);
+  const _presentationLabel = asString(mapping.presentationLabel);
 
   if (!includesLiteral(FINISH_COMPONENTS, component)) {
     errors.push({

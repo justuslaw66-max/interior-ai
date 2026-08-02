@@ -1,0 +1,145 @@
+status: "published"
+brand: "Castlery"
+retailer: "Castlery Singapore"
+source_url: "https://www.castlery.com/sg/products/hamilton-3-seater-sofa"
+category: "sofa"
+
+product_family: "Hamilton"
+product_name: "Hamilton 3 Seater Sofa"
+slug: "castlery-hamilton-3-seater"
+variant: "3 Seater"
+
+price_usd: 1599
+price_band: "premium"
+brand_tier: "premium_mid"
+design_zone: "living_zone"
+anchor_role: "sofa_anchor"
+
+dimensions:
+  width_cm: 203.5
+  depth_cm: 100
+  height_cm: 82
+
+seat_capacity: 3
+size_class: "large"
+shape: "rectangular"
+base_type: "low_metal_leg"
+material_family: "upholstered"
+material_mix: "upholstered_metal"
+color_family: "white"
+tone: "neutral"
+style_cluster: "contemporary"
+style_secondary: "modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "rounded"
+  silhouette: "rectangular"
+  form_language: "soft"
+spatial_attributes:
+  footprint_shape: "rectangular"
+  walkway_clearance_cm: 75
+room_compatibility: ["living_room", "family_room", "open_plan"]
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  floating_layout_supported: true
+design_pairings: ["coffee_table", "side_table", "floor_lamp", "rug", "accent_chair"]
+
+summary:
+  short_description: "Hamilton 3 Seater Sofa in Performance Marcel Brilliant White, with product-specific fabric and leather availability."
+  key_features:
+    - "Deep foam, fibre and pocket-spring seating"
+    - "Removable frame, seat and back cushion covers"
+    - "27 verified upholstery choices: 22 fabric and 5 leather"
+
+feature_flags:
+  has_removable_cover: true
+  has_removable_cushion: true
+  is_configurable: true
+
+authoring_notes:
+  category_confidence: "high"
+  source_checked: "Castlery Singapore fabric and leather product pages, 2026-07-30"
+  source_url: "https://www.castlery.com/sg/products/hamilton-leather-3-seater-sofa"
+  local_source_model: "/Users/justus/Desktop/Webapp project/castlery/Sofa/Hamilton /3 Seater.glb"
+  note: "The supplied GLB is the baked Performance Marcel Brilliant White geometry. Castlery SG exposes the same 3 Seater configuration on separate fabric and leather listings; runtime variants include the 22 verified fabric choices and 5 verified leather choices."
+
+shipping_and_warranty:
+  free_delivery_threshold_sgd: 500
+  warranty: "Frame 10 years; Fabric 1 year; Foam 2 years"
+  return_policy: "30-day returns"
+
+product_details:
+  material:
+    - { label: "Frame", value: "Laminated veneer lumber and plywood" }
+    - { label: "Leg frame", value: "Stainless steel" }
+    - { label: "Filling", value: "Foam, fibre and pocket spring filled seat; fibre filled back" }
+    - { label: "Cover type", value: "Removable frame, seat and back cushions" }
+  dimensions:
+    - { label: "Dimension", value: "W203.5 x D100 x H82cm" }
+    - { label: "Seating height", value: "42cm" }
+    - { label: "Leg height", value: "4.5cm" }
+
+comfort_profile:
+  seat_comfort: { label: "Relaxed", value: 2, min_label: "Relaxed", max_label: "Upright" }
+  seat_depth: { label: "Deep", value: 4, min_label: "Shallow", max_label: "Deep" }
+  seat_height: { label: "Medium", value: 3, min_label: "Low", max_label: "High" }
+  seat_softness: { label: "Soft", value: 2, min_label: "Soft", max_label: "Firm" }
+
+upholstery_library_ref: "hamilton"
+supported_upholstery_codes:
+  - "marcel_brilliant_white"
+  - "marcel_smoke_grey"
+  - "infinity_boucle_cream"
+  - "infinity_boucle_white_quartz"
+  - "infinity_boucle_moss"
+  - "infinity_boucle_ginger"
+  - "peyton_ivory"
+  - "peyton_dove_grey"
+  - "peyton_moss"
+  - "peyton_cumin"
+  - "genova_oat"
+  - "genova_cream"
+  - "genova_light_grey"
+  - "performance_creamy_white"
+  - "performance_twill_pearl_beige"
+  - "performance_twill_medium_grey"
+  - "performance_twill_slate"
+  - "performance_twill_moss"
+  - "washed_chenille_cream"
+  - "washed_chenille_sand"
+  - "washed_chenille_caramel"
+  - "washed_chenille_moss"
+  - "marche_ivory_leather"
+  - "marche_graphite_leather"
+  - "caramel_leather"
+  - "warm_taupe_leather"
+  - "marche_cocoa_leather"
+
+assets:
+  asset_id: "sofa-real-castlery-hamilton-3-seater"
+  model_url: "/assets/models/sofas/sofa-real-castlery-hamilton-3-seater.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1000/v1634798906/crusader/variants/50440764-MC4002/Hamilton-3-Seater-Sofa-Brilliant-White-Front-SG.png"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1000/v1634798906/crusader/variants/50440764-MC4002/Hamilton-3-Seater-Sofa-Brilliant-White-Front-SG.png"
+  media_presentation: "studio"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+
+variants:
+  - variant: "3 Seater / Performance Marcel, Brilliant White"
+    sku: "sofa-real-castlery-hamilton-3-seater-marcel-brilliant-white"
+    model_asset_id: "sofa-real-castlery-hamilton-3-seater"
+    model_url: "/assets/models/sofas/sofa-real-castlery-hamilton-3-seater.glb"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1000/v1634798906/crusader/variants/50440764-MC4002/Hamilton-3-Seater-Sofa-Brilliant-White-Front-SG.png"
+    swatch_group: "upholstery_option"
+    price_usd: 1599
+    dimensions: { width_cm: 203.5, depth_cm: 100, height_cm: 82 }
+    affiliate_url: "https://www.castlery.com/sg/products/hamilton-3-seater-sofa"
+    available: true

@@ -1,0 +1,642 @@
+{
+  "schema": "interior-ai.required-test-manifest.v1",
+  "sourceInventories": [
+    {
+      "id": "script-tests",
+      "root": "scripts",
+      "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
+      "classification": "risk-triggered",
+      "expectedFileCount": 245,
+      "expectedPathSha256": "5e4e1801c18a04a65c1fb78c341c57aadbab18dd4da4ba6dfd0da4dd65d60352"
+    },
+    {
+      "id": "browser-specs",
+      "root": "tests/e2e",
+      "filePattern": "\\.spec\\.ts$",
+      "classification": "release-only",
+      "expectedFileCount": 98,
+      "expectedPathSha256": "f9acea5af11f0689d7a53de1cd04a5ed35dcfa0c6463961d6d740aefca4a09e9"
+    },
+    {
+      "id": "cabinetry-browser-modules",
+      "root": "tests/e2e/cabinetry-studio",
+      "filePattern": "\\.ts$",
+      "classification": "release-only-imported-test-modules",
+      "expectedFileCount": 6,
+      "expectedPathSha256": "805b0ec8a0d24658c0cb5e01616fb1a684c8dc2aae81b6338f3d1b87fd6fafa9"
+    },
+    {
+      "id": "multi-room-browser-modules",
+      "root": "tests/e2e/multi-room",
+      "filePattern": "\\.ts$",
+      "classification": "release-only-imported-test-modules",
+      "expectedFileCount": 8,
+      "expectedPathSha256": "e701b0ff04421c8eca749fdd8e6daffcd0c0fbb987226ec2319bdcee8d368851"
+    },
+    {
+      "id": "cabinetry-script-modules",
+      "root": "scripts/cabinetry-tests",
+      "filePattern": "\\.ts$",
+      "classification": "merge-required-imported-test-modules",
+      "expectedFileCount": 8,
+      "expectedPathSha256": "55ed53e1acde7854a321a3a6480aba3c2c89636d9227057d66341bfd845d6696"
+    }
+  ],
+  "gates": [
+    {
+      "id": "ci.secret-scan",
+      "invariant": "The complete checked-out Git history is scanned for committed secrets before merge.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "gitleaks/gitleaks-action@v2",
+      "runner": "github-action",
+      "requiredSources": [
+        ".github/workflows/ci.yml",
+        "scripts/gitleaks-artifact.mjs"
+      ],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "github-check",
+      "artifactBinding": "source-history",
+      "ci": {
+        "job": "secret-scan",
+        "step": "gitleaks/gitleaks-action@v2",
+        "invocation": "uses: gitleaks/gitleaks-action@v2"
+      }
+    },
+    {
+      "id": "ci.required-test-truthfulness",
+      "invariant": "The canonical required-test inventory, command wiring, and negative truthfulness contract remain valid.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run test:required-test-truthfulness",
+      "packageScript": "test:required-test-truthfulness",
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "a63f8a3c477cedbe71fea9dc36e6ab1bda3eb228ce36352f2d6b5e942d1283e6" },
+      "runner": "node",
+      "requiredSources": [
+        "scripts/required-test-manifest.json",
+        "scripts/required-test-truthfulness.mjs",
+        "scripts/test-required-test-truthfulness.mjs"
+      ],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "process-exit",
+      "artifactBinding": "none",
+      "ci": { "job": "stable-checks", "step": "Verify required-test and lightweight advisory truthfulness" }
+    },
+    {
+      "id": "ci.code-quality",
+      "invariant": "Production size, complexity, suppression, unsafe-TypeScript, and cycle ratchets do not regress.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run check:code-quality",
+      "packageScript": "check:code-quality",
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "099078f332ea2801748b635c031df32cc42f49efcdaaf73d88944533749113ff" },
+      "runner": "node",
+      "requiredSources": [
+        "scripts/code-quality/check.mjs",
+        "scripts/test-code-quality-ratchet.mjs"
+      ],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "process-exit",
+      "artifactBinding": "none",
+      "ci": { "job": "stable-checks", "step": "Enforce code-quality ratchets" }
+    },
+    {
+      "id": "ci.production-artifact-contract",
+      "invariant": "The CH-0016 source, artifact, runtime, report, and external-claim evidence contract fails closed.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run test:production-artifact-evidence",
+      "packageScript": "test:production-artifact-evidence",
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "2c72a65b5affbfbb1c5d94377bad6d0b2135181d25b5fcd56fac3c389a1cd5c7" },
+      "runner": "node",
+      "requiredSources": [
+        "scripts/production-artifact-evidence.mjs",
+        "scripts/runtime-smoke-failure-evidence.mjs",
+        "scripts/runtime-smoke-operation-contracts.mjs",
+        "scripts/runtime-smoke-operation-deadline.mjs",
+        "scripts/runtime-smoke-phase-budget.mjs",
+        "scripts/test-production-artifact-evidence.mjs"
+      ],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "process-exit",
+      "artifactBinding": "ch-0016-source-artifact-report",
+      "ci": { "job": "stable-checks", "step": "Verify production artifact evidence contract" }
+    },
+    {
+      "id": "ci.production-artifact-build",
+      "invariant": "One strict clean-source production artifact is built and bound to its dependency and trace closure.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run evidence:production:build",
+      "packageScript": "evidence:production:build",
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "b7ba610a68ce331c0879a5ab80d10390a877d3756173910dc6987986c9f08258" },
+      "runner": "node",
+      "requiredSources": ["scripts/production-artifact-evidence.mjs"],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "production-evidence-manifest",
+      "artifactBinding": "ch-0016-source-artifact-report",
+      "ci": { "job": "stable-checks", "step": "Build strict production-equivalent artifact evidence" }
+    },
+    {
+      "id": "ci.production-runtime-smoke",
+      "invariant": "The exact CH-0016 production artifact starts and satisfies both runtime readiness identities.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run evidence:production:smoke",
+      "packageScript": "evidence:production:smoke",
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "d9971664dba648e6b1026b61fbf13ad8bf14f6faa052b3d0e5eed4d8cc7fd2b1" },
+      "runner": "playwright",
+      "requiredSources": [
+        "tests/e2e/00-runtime-smoke.spec.ts",
+        "scripts/runtime-smoke-failure-evidence.mjs",
+        "scripts/runtime-smoke-operation-contracts.mjs",
+        "scripts/runtime-smoke-operation-deadline.mjs",
+        "scripts/runtime-smoke-phase-budget.mjs"
+      ],
+      "requiredTests": [
+        {
+          "id": "runtime.template-stability",
+          "file": "tests/e2e/00-runtime-smoke.spec.ts",
+          "title": "furnished template remains stable without a render loop"
+        },
+        {
+          "id": "runtime.health-catalog-ready",
+          "file": "tests/e2e/00-runtime-smoke.spec.ts",
+          "title": "health and catalog endpoints report ready"
+        }
+      ],
+      "requiredProjects": ["chromium"],
+      "allowSkips": false,
+      "allowRetries": false,
+      "allowAnnotations": false,
+      "reportType": "playwright-json",
+      "artifactBinding": "ch-0016-source-artifact-report",
+      "playwright": {
+        "config": "playwright.config.ts",
+        "args": ["playwright", "test", "tests/e2e/00-runtime-smoke.spec.ts", "--project=chromium"]
+      },
+      "ci": { "job": "stable-checks", "step": "Run runtime smoke tests" }
+    },
+    {
+      "id": "ci.authorization-boundaries",
+      "invariant": "Deployment classification and every inventoried admin/security boundary deny invalid or unauthorized access.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run test:auth-env-hardening",
+      "packageScript": "test:auth-env-hardening",
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "d2a92b4f2ee3191abb9d4fc30f5d8497b9da0b1c59dfc1d6333101fb9d398e84" },
+      "runner": "ts-node",
+      "requiredSources": [
+        "lib/auth-env.ts",
+        "scripts/ci-auth-fixture.json",
+        "scripts/ci-auth-fixture.ts",
+        "scripts/test-auth-env-hardening.ts",
+        "scripts/test-admin-authorization.ts"
+      ],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "process-exit",
+      "artifactBinding": "none",
+      "ci": { "job": "stable-checks", "step": "Verify fail-closed authentication and admin environment policy" }
+    },
+    {
+      "id": "ci.database-migrations",
+      "invariant": "The configured CI database accepts the repository migration chain before dependent required checks run.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run gate:a3:db",
+      "packageScript": "gate:a3:db",
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "f075521ce17b8ea6466796237f70d8b9e3359cd01ebb9d8beac64433846de1c7" },
+      "runner": "node",
+      "requiredSources": ["scripts/provision-gate-a3-database.mjs"],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "process-exit",
+      "artifactBinding": "database-target",
+      "ci": { "job": "stable-checks", "step": "Apply database migrations" }
+    },
+    {
+      "id": "ci.critical-domain-contracts",
+      "invariant": "Security, persistence, billing, product-flow, telemetry, Consumer/Pro, and cabinetry contracts remain merge-blocking.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run test:critical-required",
+      "packageScript": "test:critical-required",
+      "packageClosure": { "expectedScriptCount": 41, "expectedSha256": "dc376b8f529d5243a506925e0037debba1e5319e53f785fd5a447263728d63d4" },
+      "runner": "npm-chain",
+      "supportingInventories": ["cabinetry-script-modules"],
+      "requiredSources": [
+        "scripts/test-phase7-security-boundaries.ts",
+        "scripts/test-design-document-compatibility.ts",
+        "scripts/test-design-page-local-backup-recovery.ts",
+        "scripts/test-stripe-pro-billing.ts",
+        "scripts/test-pro-billing-ui.ts",
+        "scripts/test-phase14-product-flow.ts",
+        "scripts/test-phase15.ts",
+        "scripts/test-editor-capabilities-accessibility.ts",
+        "scripts/test-cabinetry.ts",
+        "scripts/cabinetry-tests/export-behavior.ts",
+        "scripts/test-cabinetry-release-evidence.ts"
+      ],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "process-exit",
+      "artifactBinding": "none",
+      "ci": { "job": "stable-checks", "step": "Verify critical domain contracts" }
+    },
+    {
+      "id": "ci.design-cleanup",
+      "invariant": "The canonical design-page static and behavior guard manifest executes without masked child failures.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run test:design-page-cleanup",
+      "packageScript": "test:design-page-cleanup",
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "2649e75478c4214608459c1c4cfe063e69f07246b2341bfb484f8584a9697b49" },
+      "runner": "node",
+      "requiredSources": ["scripts/run-design-page-cleanup-tests.mjs"],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "process-exit",
+      "artifactBinding": "none",
+      "ci": { "job": "stable-checks", "step": "Verify design-page cleanup guards" }
+    },
+    {
+      "id": "ci.typecheck",
+      "invariant": "Production TypeScript compiles under the repository strict configuration.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run typecheck",
+      "packageScript": "typecheck",
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "b43579a2174ed4e7ee7f7129cb8edbb2b10c02d5e9aeee9099621be7b3b90d9f" },
+      "runner": "tsc",
+      "requiredSources": ["tsconfig.json"],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "process-exit",
+      "artifactBinding": "none",
+      "ci": { "job": "stable-checks", "step": "Typecheck" }
+    },
+    {
+      "id": "ci.lint",
+      "invariant": "Repository lint completes with zero warnings.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run lint -- --max-warnings=0",
+      "packageScript": "lint",
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "9d4b756f63d86d3dbfa77b655cb12478f23d5efff0466b3e233736393e8bdbea" },
+      "runner": "eslint",
+      "requiredSources": ["eslint.config.mjs"],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "process-exit",
+      "artifactBinding": "none",
+      "ci": { "job": "stable-checks", "step": "Lint (zero warnings)" }
+    },
+    {
+      "id": "ci.floor-plan-required",
+      "invariant": "The complete required floor-plan platform, persistence progress, security, storage, telemetry, parity, performance, and architecture checks execute.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run test:floor-plan-required",
+      "packageScript": "test:floor-plan-required",
+      "packageClosure": { "expectedScriptCount": 55, "expectedSha256": "c7939de350af5aa1f7be49616ec6dbabde2f0fbe708a0a3b23d3faff57944cfa" },
+      "runner": "npm-chain",
+      "requiredSources": [
+        "scripts/test-floor-plan-live-progress.ts",
+        "scripts/test-floor-plan-multifloor-parity.ts",
+        "scripts/test-floor-plan-render-parity.ts",
+        "scripts/test-floor-plan-serving-integrity.ts",
+        "scripts/test-floor-plan-private-source-retention.ts"
+      ],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "process-exit",
+      "artifactBinding": "none",
+      "ci": { "job": "stable-checks", "step": "Verify complete floor-plan platform" }
+    },
+    {
+      "id": "ci.catalog-materials",
+      "invariant": "Catalog quality, registry/media identities, retailer mappings, and required asset availability remain strict.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run test:catalog-audit && npm run test:catalog-asset-availability",
+      "packageScripts": ["test:catalog-audit", "test:catalog-asset-availability"],
+      "packageClosure": { "expectedScriptCount": 8, "expectedSha256": "a0354533f0992678a6264a37233a3ef0a6562502d6aa9565247db438a6ea1bda" },
+      "runner": "npm-chain",
+      "requiredSources": [
+        "scripts/test-catalog-quality-audit.ts",
+        "scripts/test-catalog-registry-sync.ts",
+        "scripts/test-catalog-asset-availability.ts"
+      ],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "process-exit",
+      "artifactBinding": "none",
+      "ci": {
+        "job": "stable-checks",
+        "steps": ["Audit catalog quality", "Audit catalog asset availability"]
+      }
+    },
+    {
+      "id": "ci.asset-inventory",
+      "invariant": "Required public/model assets resolve under the strict asset inventory policy.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run assets:inventory:strict",
+      "packageScript": "assets:inventory:strict",
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "474f6817f74b6072bc7e366a8b48c5db5ca8c89ccb2a670fd839ece38d0603a1" },
+      "runner": "node",
+      "requiredSources": ["scripts/asset-inventory.mjs"],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "process-exit",
+      "artifactBinding": "none",
+      "ci": { "job": "stable-checks", "step": "Verify asset inventory" }
+    },
+    {
+      "id": "ci.pro-visual-static",
+      "invariant": "Consumer/Pro theme contrast and Cabinet Preview renderer policies execute before browser coverage.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run test:designer-theme-contrast && npm run test:cabinetry-preview-renderer",
+      "packageScripts": ["test:designer-theme-contrast", "test:cabinetry-preview-renderer"],
+      "packageClosure": { "expectedScriptCount": 2, "expectedSha256": "0908541015653b673b36cc89a5067873e130b354e7273df75ec6956e05a20534" },
+      "runner": "npm-chain",
+      "requiredSources": [
+        "scripts/test-designer-theme-contrast.ts",
+        "scripts/test-cabinetry-preview-renderer.ts"
+      ],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "process-exit",
+      "artifactBinding": "none",
+      "ci": { "job": "stable-checks", "step": "Verify Pro visual and Cabinet Preview policies" }
+    },
+    {
+      "id": "ci.pro-visual-policy",
+      "invariant": "Consumer and Pro visual policy executes in both required desktop browser engines with no focus, skip, retry, or flake.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run test:pro-visual-policy",
+      "packageScript": "test:pro-visual-policy",
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "e405cb73f95c111fb19dd7bbb4886c760841f8a08afcf0ba5bdb7e99482e3fa3" },
+      "runner": "playwright",
+      "requiredSources": ["tests/e2e/pro-visual-policy.spec.ts"],
+      "requiredTests": [
+        {
+          "id": "visual.consumer-pro-theme",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "uses the consumer visual theme with a clear Pro mode indicator"
+        },
+        {
+          "id": "visual.cabinet-preview-policy",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "keeps all recommended Cabinet Preview templates readable under the RC-5 policy"
+        }
+      ],
+      "requiredProjects": ["chromium", "webkit"],
+      "allowSkips": false,
+      "allowRetries": false,
+      "allowAnnotations": false,
+      "reportType": "required-test-evidence",
+      "reportPath": ".local/required-test-evidence/ci.pro-visual-policy/evidence.json",
+      "maxAgeMinutes": 240,
+      "artifactBinding": "none",
+      "playwright": {
+        "config": "playwright.pro-visual.config.ts",
+        "args": ["playwright", "test", "-c", "playwright.pro-visual.config.ts"]
+      },
+      "ci": { "job": "stable-checks", "step": "Run Pro visual policy matrix" }
+    },
+    {
+      "id": "ci.merge-gate",
+      "invariant": "Merge eligibility requires secret-scan, stable-checks, and advisory-contract-preflight to conclude successfully.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "GitHub Actions merge-gate result aggregation",
+      "runner": "github-actions",
+      "requiredSources": [".github/workflows/ci.yml"],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "github-check",
+      "artifactBinding": "source-workflow-results",
+      "ci": {
+        "job": "merge-gate",
+        "step": "Check required results",
+        "invocations": [
+          "needs: [secret-scan, stable-checks, advisory-contract-preflight]",
+          "if [ \"$SECRET_SCAN_RESULT\" != \"success\" ] || [ \"$STABLE_CHECKS_RESULT\" != \"success\" ] || [ \"$ADVISORY_CONTRACT_PREFLIGHT_RESULT\" != \"success\" ]; then",
+          "exit 1"
+        ]
+      }
+    },
+    {
+      "id": "advisory.full-e2e",
+      "invariant": "The broad development/staging browser inventory remains visible without being represented as merge or release certification.",
+      "cadence": "advisory",
+      "blocking": false,
+      "command": "npm run test:e2e:advisory",
+      "packageScript": "test:e2e:advisory",
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "814167f721e8d3bc126e455a00cf30975a211f45fa4edf83b0905b8b54d679fb" },
+      "runner": "playwright",
+      "requiredInventory": "browser-specs",
+      "supportingInventories": [
+        "cabinetry-browser-modules",
+        "multi-room-browser-modules"
+      ],
+      "reportOwnershipRegistrations": [
+        "cabinetry-browser-registrations",
+        "multi-room-browser-registrations"
+      ],
+      "requiredSources": [],
+      "requiredTests": [
+        { "id": "commerce.shopify-cart-checkout", "file": "tests/e2e/05-buy.spec.ts", "title": "add Shopify-mapped item to cart and checkout link works" },
+        { "id": "commerce.affiliate-checkout", "file": "tests/e2e/05-buy.spec.ts", "title": "affiliate checkout works" },
+        { "id": "commerce.imported-buyer-controls", "file": "tests/e2e/05-buy.spec.ts", "title": "imported catalog item can be added and reaches buyer controls" },
+        { "id": "catalog.kelsey-160-dropdown", "file": "tests/e2e/07-kelsey-variants.spec.ts", "title": "Kelsey 160 appears in imported furniture dropdown" },
+        { "id": "catalog.kelsey-variant-api", "file": "tests/e2e/07-kelsey-variants.spec.ts", "title": "API returns White Wash and Dark Walnut variants for both Kelsey sizes" },
+        { "id": "catalog.kelsey-dark-walnut-swatch", "file": "tests/e2e/07-kelsey-variants.spec.ts", "title": "Kelsey 160 Dark Walnut swatch is clickable when scene is ready" }
+      ],
+      "requiredProjects": ["chromium"],
+      "allowSkips": true,
+      "allowRetries": true,
+      "allowAnnotations": true,
+      "reportType": "required-test-evidence",
+      "reportPath": ".local/required-test-evidence/advisory.full-e2e/evidence.json",
+      "maxAgeMinutes": 1440,
+      "artifactBinding": "none",
+      "playwright": { "config": "playwright.config.ts", "args": ["playwright", "test"] },
+      "ci": {
+        "workflow": ".github/workflows/full-advisory-e2e.yml",
+        "job": "e2e-full",
+        "step": "Run advisory full E2E inventory"
+      }
+    },
+    {
+      "id": "release.gate-a3",
+      "invariant": "The complete checked-in Playwright spec inventory executes against one staged immutable artifact with no focus, filter, skip, retry, flake, failure, or not-run result.",
+      "cadence": "release-blocking",
+      "blocking": true,
+      "command": "npm run test:e2e:release",
+      "packageScript": "test:e2e:release",
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "e52bf0d5b54a97f622095dd017039c8faf3a55016dd5b707a9985249de800dab" },
+      "runner": "playwright",
+      "requiredInventory": "browser-specs",
+      "supportingInventories": [
+        "cabinetry-browser-modules",
+        "multi-room-browser-modules"
+      ],
+      "reportOwnershipRegistrations": [
+        "cabinetry-browser-registrations",
+        "multi-room-browser-registrations"
+      ],
+      "requiredSources": [],
+      "requiredTests": [
+        { "id": "commerce.shopify-cart-checkout", "file": "tests/e2e/05-buy.spec.ts", "title": "add Shopify-mapped item to cart and checkout link works" },
+        { "id": "commerce.affiliate-checkout", "file": "tests/e2e/05-buy.spec.ts", "title": "affiliate checkout works" },
+        { "id": "commerce.imported-buyer-controls", "file": "tests/e2e/05-buy.spec.ts", "title": "imported catalog item can be added and reaches buyer controls" },
+        { "id": "catalog.kelsey-160-dropdown", "file": "tests/e2e/07-kelsey-variants.spec.ts", "title": "Kelsey 160 appears in imported furniture dropdown" },
+        { "id": "catalog.kelsey-variant-api", "file": "tests/e2e/07-kelsey-variants.spec.ts", "title": "API returns White Wash and Dark Walnut variants for both Kelsey sizes" },
+        { "id": "catalog.kelsey-dark-walnut-swatch", "file": "tests/e2e/07-kelsey-variants.spec.ts", "title": "Kelsey 160 Dark Walnut swatch is clickable when scene is ready" }
+      ],
+      "requiredProjects": ["chromium"],
+      "allowSkips": false,
+      "allowRetries": false,
+      "allowAnnotations": false,
+      "reportType": "required-test-evidence",
+      "reportPath": ".vercel/gate-a3-required-test-evidence.json",
+      "maxAgeMinutes": 1440,
+      "artifactBinding": "vercel-prebuilt-source-artifact",
+      "playwright": { "config": "playwright.config.ts", "args": ["playwright", "test"] }
+    },
+    {
+      "id": "release.cabinetry-browser",
+      "invariant": "Every named Consumer/Pro cabinetry workflow executes in Chromium against the release candidate without focus, skip, retry, flake, failure, or not-run results.",
+      "cadence": "release-blocking",
+      "blocking": true,
+      "command": "npm run test:e2e:cabinetry-release",
+      "packageScript": "test:e2e:cabinetry-release",
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "21953753f89d99e6e1d9c07447e2648cb8e042e3a830467fc4a40fc7a08c82b4" },
+      "runner": "playwright",
+      "supportingInventories": ["cabinetry-browser-modules"],
+      "reportOwnershipRegistrations": ["cabinetry-browser-registrations"],
+      "requiredSources": ["tests/e2e/cabinetry-studio.spec.ts"],
+      "requiredTests": [
+        { "id": "cabinetry.wardrobe-selection", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "Detailed wardrobe selection stays coherent from module to shelf and back" },
+        { "id": "cabinetry.guided-preview-layout", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "Guided preview chrome does not overlap selection or dimension controls" },
+        { "id": "cabinetry.guided-new-designer", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "new designer can configure a valid drawer cabinet in Guided setup" },
+        { "id": "cabinetry.returning-pro", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "returning Pro users keep their chosen entry workspace and dismissed help" },
+        { "id": "cabinetry.module-drag-reorder", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "module drag reordering is committed once and remains undoable" },
+        { "id": "cabinetry.guided-recovery", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "guided Fit, locks, and validation recovery stay reversible" },
+        { "id": "cabinetry.numeric-drafts", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "detailed numeric drafts keep the last valid model and preview until committed" },
+        { "id": "cabinetry.wardrobe-semantics", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "Guided wardrobe arrangements and illustrated choices expose semantic state" },
+        { "id": "cabinetry.keyboard-preview", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "preview controls remain keyboard-operable across responsive layouts" },
+        { "id": "cabinetry.pro-template-catalog", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "Pro designer can enter Detailed mode and validate the template catalog" },
+        { "id": "cabinetry.core-construction", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "Pro designer can configure core and architectural construction controls" },
+        { "id": "cabinetry.room-systems", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "Pro designer can configure built-in storage and room-system controls" },
+        { "id": "cabinetry.lifestyle-controls", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "Pro designer can configure lifestyle, hospitality, and seating controls" },
+        { "id": "cabinetry.base-construction", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "Pro designer can configure detailed base-cabinet construction options" },
+        { "id": "cabinetry.fabrication-export", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "Pro designer can export a cabinet-run fabrication package" },
+        { "id": "cabinetry.place-project", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "Pro designer can place a cabinet run with complete project metadata" },
+        { "id": "cabinetry.installer-export", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "Pro designer can export placed, installer, and field-finish packages" },
+        { "id": "cabinetry.commercial-export", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "Pro designer can export project commercial and release-readiness packages" },
+        { "id": "cabinetry.handoff-export", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "Pro designer can export project approval, production, and handoff packages" },
+        { "id": "cabinetry.persistence", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "Pro designer can transform, edit, persist, and restore a placed cabinet run" },
+        { "id": "cabinetry.placed-3d-drag", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "placed millwork can be repositioned by dragging it in the 3D canvas" },
+        { "id": "cabinetry.placed-2d-3d-parity", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "placed cabinet identity and transform stay consistent between 2D and 3D" },
+        { "id": "cabinetry.consumer-boundary", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "homeowner/free mode gets Guided millwork, an estimate, and no Pro controls" }
+      ],
+      "requiredProjects": ["chromium"],
+      "allowSkips": false,
+      "allowRetries": false,
+      "allowAnnotations": false,
+      "reportType": "required-test-evidence",
+      "reportPath": ".local/required-test-evidence/release.cabinetry-browser/evidence.json",
+      "maxAgeMinutes": 1440,
+      "artifactBinding": "cabinetry-release-candidate",
+      "playwright": {
+        "config": "playwright.config.ts",
+        "args": ["playwright", "test", "tests/e2e/cabinetry-studio.spec.ts", "--project=chromium"]
+      }
+    }
+  ],
+  "requiredRegistrations": [
+    {
+      "id": "cabinetry-script-registrations",
+      "entry": "scripts/test-cabinetry.ts",
+      "registrations": [
+        { "module": "./cabinetry-tests/architectural-preset-contracts", "symbol": "runArchitecturalPresetContractTests" },
+        { "module": "./cabinetry-tests/core-rendering-contracts", "symbol": "runCoreRenderingContractTests" },
+        { "module": "./cabinetry-tests/export-behavior", "symbol": "runExportBehaviorTests" },
+        { "module": "./cabinetry-tests/fabrication-contracts", "symbol": "runFabricationContractTests" },
+        { "module": "./cabinetry-tests/layout-validation", "symbol": "runLayoutAndValidationTests" },
+        { "module": "./cabinetry-tests/preset-contracts", "symbol": "runPresetContractTests" },
+        { "module": "./cabinetry-tests/specialty-preset-contracts", "symbol": "runSpecialtyPresetContractTests" }
+      ]
+    },
+    {
+      "id": "cabinetry-browser-registrations",
+      "entry": "tests/e2e/cabinetry-studio.spec.ts",
+      "registrations": [
+        { "module": "./cabinetry-studio/detailed", "symbol": "registerDetailedTests" },
+        { "module": "./cabinetry-studio/export", "symbol": "registerExportTests" },
+        { "module": "./cabinetry-studio/guided", "symbol": "registerGuidedTests" },
+        { "module": "./cabinetry-studio/placement", "symbol": "registerPlacementTests" },
+        { "module": "./cabinetry-studio/selection", "symbol": "registerSelectionTests" }
+      ]
+    },
+    {
+      "id": "multi-room-browser-registrations",
+      "entry": "tests/e2e/18-multi-room-whole-home.spec.ts",
+      "registrations": [
+        { "module": "./multi-room/drawing", "symbol": "registerDrawingTests" },
+        { "module": "./multi-room/editing", "symbol": "registerEditingTests" },
+        { "module": "./multi-room/start-and-floors", "symbol": "registerStartAndFloorTests" },
+        { "module": "./multi-room/templates", "symbol": "registerTemplateTests" },
+        { "module": "./multi-room/upload", "symbol": "registerUploadTests" },
+        { "module": "./multi-room/viewport-navigation", "symbol": "registerViewportNavigationTests" },
+        { "module": "./multi-room/workspace", "symbol": "registerWorkspaceTests" }
+      ]
+    }
+  ],
+  "staticPolicies": {
+    "forbidFocusedTestsIn": ["tests/e2e"],
+    "failClosedPrerequisiteSources": [
+      "tests/e2e/05-buy.spec.ts",
+      "tests/e2e/07-kelsey-variants.spec.ts"
+    ]
+  },
+  "externalControls": [
+    {
+      "id": "github.required-checks",
+      "status": "not-verified",
+      "reason": "Branch-protection required-check selection and workflow execution require GitHub platform evidence."
+    },
+    {
+      "id": "github.artifact-retention",
+      "status": "not-verified",
+      "reason": "Actual upload retention and downloadable hashes require GitHub platform evidence."
+    }
+  ]
+}

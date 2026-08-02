@@ -1,0 +1,1303 @@
+import { CATALOG_ITEMS, CATALOG_ITEMS_MAP } from "@/lib/catalog";
+import {
+  CATEGORY_DEFAULTS,
+  getCategoryDefaults,
+  type AdjustablePendantHeightMetadata,
+  type PlacementRules,
+  type CatalogItemSchema,
+  type ProductCategory,
+  type RoomTag,
+} from "@/lib/catalog-schema";
+import { normalizeImportedVariants } from "@/lib/catalog/imported-variant-normalization";
+import {
+  normalizeCatalogMediaPresentationMode,
+  selectPreferredCatalogThumbnail,
+} from "@/lib/catalog/media-policy";
+import { IMPORTED_VARIANT_PIPELINE_REVISION } from "@/lib/catalog/variant-normalization";
+
+export type ImportedConfigurationEntry = {
+  configuration_code?: string;
+  configuration_label?: string;
+  state_type?: string;
+  description?: string;
+  model_asset_id?: string;
+  model_url?: string;
+  dimensions?: {
+    width_cm?: number;
+    depth_cm?: number;
+    height_cm?: number;
+  };
+  dimensions_estimate?: {
+    width_cm?: number;
+    depth_cm?: number;
+    height_cm?: number;
+  };
+  dimensions_recommended_planning?: {
+    width_cm?: number;
+    depth_cm?: number;
+    height_cm?: number;
+  };
+  planning_bounds_cm?: {
+    width?: number;
+    width_cm?: number;
+    depth?: number;
+    depth_cm?: number;
+    height?: number;
+    height_cm?: number;
+  };
+  visual_bounds_cm?: {
+    width?: number;
+    width_cm?: number;
+    depth?: number;
+    depth_cm?: number;
+    height?: number;
+    height_cm?: number;
+  };
+  placement_footprint?: {
+    planning_width_cm?: number;
+    planning_depth_cm?: number;
+  };
+  estimation_note?: string;
+  node_transforms?: Record<string, unknown>;
+};
+
+export type ImportedProductInfoRow = {
+  label?: string;
+  value?: string;
+};
+
+export type ImportedProductDetails = {
+  material?: ImportedProductInfoRow[];
+  dimensions?: ImportedProductInfoRow[];
+  delivery_and_warranty?: ImportedProductInfoRow[];
+};
+
+export type ImportedComfortAxis = {
+  label?: string;
+  value?: number;
+  min_label?: string;
+  max_label?: string;
+};
+
+export type ImportedComfortProfile = {
+  seat_comfort?: ImportedComfortAxis;
+  seat_depth?: ImportedComfortAxis;
+  seat_height?: ImportedComfortAxis;
+  seat_softness?: ImportedComfortAxis;
+};
+
+export type ImportedModelCatalog = {
+  brand?: string;
+  retailer?: string;
+  source_url?: string;
+  sourceUrl?: string;
+  productName?: string;
+  productFamily?: string;
+  variant?: string;
+  assets?: {
+    assetId?: string;
+    asset_id?: string;
+    modelUrl?: string;
+    model_url?: string;
+    thumbnailUrl?: string;
+    thumbnail_url?: string;
+    galleryImages?: string[];
+    gallery_images?: string[];
+    mediaPresentation?: string;
+    media_presentation?: string;
+  };
+  mediaPresentation?: string;
+  media_presentation?: string;
+  category?: string;
+  subCategory?: string;
+  priceUsd?: number;
+  priceBand?: string;
+  seatCapacity?: number;
+  sizeClass?: string;
+  shape?: string;
+  baseType?: string;
+  materialFamily?: string;
+  material_mix?: unknown;
+  materials?: unknown;
+  finish?: unknown;
+  colorFamily?: string;
+  tone?: string;
+  styleCluster?: string;
+  styleSecondary?: string;
+  designEra?: string;
+  visualAttributes?: unknown;
+  spatialAttributes?: unknown;
+  roomCompatibility?: string[];
+  placementRules?: unknown;
+  designPairings?: string[];
+  featureFlags?: {
+    is_configurable?: boolean;
+    [key: string]: unknown;
+  };
+  configurableMetadata?: {
+    is_configurable?: boolean;
+    default_configuration?: string;
+    configuration_ui?: {
+      type?: string;
+      label?: string;
+      options?: string[];
+      option_labels?: Record<string, string>;
+      helper_text?: string;
+    };
+    configuration_behavior?: {
+      affects_visual_footprint?: boolean;
+      affects_space_planning?: boolean;
+      affects_collision_bounds?: boolean;
+      affects_recommendation_logic?: boolean;
+    };
+    configuration_model_assets?: Record<string, Record<string, string>>;
+  };
+  configurations?: ImportedConfigurationEntry[];
+  compatibility?: {
+    related_products?: Array<{
+      product_name?: string;
+    }>;
+  } | null;
+  product_details?: ImportedProductDetails;
+  product_details_by_material_type?: Record<string, ImportedProductDetails>;
+  comfort_profile?: ImportedComfortProfile;
+  upholstery_options?: Array<{
+    upholstery_code?: string;
+    upholstery_label?: string;
+    collection_type?: string;
+    fabric_family?: string;
+    fabric_label?: string;
+    color_label?: string;
+    texture_type?: string;
+    swatch_group?: string;
+    render_assets?: {
+      base_color_map?: string;
+      normal_map?: string;
+      roughness_map?: string;
+      tile_scale?: {
+        x?: number;
+        y?: number;
+      };
+    };
+  }>;
+  bundleMetadata?: unknown;
+  authoring_notes?: {
+    source_url?: string;
+  };
+  authoringNotes?: {
+    sourceUrl?: string;
+  };
+  variants?: Array<{
+    variant?: string;
+    size_label?: string;
+    finish_code?: string;
+    finish_label?: string;
+    model_asset_id?: string;
+    model_url?: string;
+    upholstery_code?: string;
+    upholstery_label?: string;
+    collection_type?: string;
+    thumbnail_url?: string;
+    thumbnailUrl?: string;
+    swatch_group?: string;
+    color_family?: string;
+    tone?: string;
+    set_compatibility?: unknown;
+    dimensions?: {
+      width_cm?: number;
+      depth_cm?: number;
+      height_cm?: number;
+    };
+    materials?: Record<string, unknown>;
+    finish?: Record<string, unknown>;
+    state_assets?: Record<
+      string,
+      {
+        model_asset_id?: string;
+        model_url?: string;
+      }
+    >;
+  }>;
+  shipping_and_warranty?: Record<string, unknown>;
+  aiFlags?: unknown;
+};
+
+export type ImportedModelOption = {
+  id: string;
+  title: string;
+  familyKey: string;
+  familyLabel: string;
+  pickerLabel: string;
+  modelUrl: string;
+  thumbUrl?: string;
+  dimsWmm: number;
+  dimsDmm: number;
+  dimsHmm: number;
+  catalog?: ImportedModelCatalog | null;
+};
+
+export type ImportedModelEntry = {
+  id?: string;
+  modelUrl?: string;
+  thumbUrl?: string;
+  dimsWmm?: number;
+  dimsDmm?: number;
+  dimsHmm?: number;
+  catalog?: ImportedModelCatalog | null;
+};
+
+export type ImportedProductConfig = {
+  title?: string;
+  modelLabel?: string;
+  category?: ProductCategory;
+  roomTags?: RoomTag[];
+  tags?: string[];
+};
+
+export type ImportedVariantFallback = { label: string; colorHex: string };
+
+type BuildImportedModelOptionsInput = {
+  models: ImportedModelEntry[];
+  importedProductConfigById: Record<string, ImportedProductConfig>;
+};
+
+type BuildImportedCatalogItemInput = {
+  productId: string;
+  imported: ImportedModelOption;
+  importedProductConfigById: Record<string, ImportedProductConfig>;
+  importedVariantByProductId: Record<string, ImportedVariantFallback>;
+  importedVariantsByProductId: Record<string, ImportedVariantFallback[]>;
+};
+
+export function normalizeImportedFamilyName(value: string): string {
+  return value
+    .replace(/\b(recliner|sofa|dining table|dining bench|ottoman)\b/gi, "")
+    .replace(/\bcollection\b/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function normalizeOfficialImportedProductName(
+  catalog: ImportedModelCatalog | null | undefined,
+): string | null {
+  const rawName = String(catalog?.productName ?? "").trim();
+  if (!rawName) return null;
+
+  const brand = String(catalog?.brand ?? "").trim();
+  const withoutBrand = brand
+    ? rawName.replace(new RegExp(`^${escapeRegExp(brand)}\\s+`, "i"), "")
+    : rawName;
+
+  return withoutBrand
+    .replace(/\s*\((?:Left|Right) Facing\)\s*/gi, " ")
+    .replace(/\bPerformance Boucle\b/g, "Performance Bouclé")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function buildImportedModelTitle(id: string, catalog: ImportedModelCatalog | null | undefined): string {
+  const officialProductName = normalizeOfficialImportedProductName(catalog);
+  if (officialProductName) {
+    return officialProductName;
+  }
+
+  return id
+    .replace(/^sofa-real-castlery-/, "Castlery Sofa: ")
+    .replace(/^dining-real-castlery-/, "Castlery Dining: ")
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function buildImportedPickerLabel(id: string, title: string): string {
+  const armStyleLabel = id.includes("wide-arm")
+    ? "Wide Arm"
+    : id.startsWith("sofa-real-castlery-jaron-")
+      ? "Slim Arm"
+      : null;
+  const cushionLabel = id.includes("no-cushion")
+    ? "No Cushion"
+    : id.includes("leather-cushion")
+      ? "Leather Cushion"
+      : null;
+  const pickerParts = [armStyleLabel, cushionLabel].filter(Boolean);
+  return pickerParts.length > 0 ? `${title} (${pickerParts.join(", ")})` : title;
+}
+
+function buildApiImportedModelOptions({
+  models,
+  importedProductConfigById,
+}: BuildImportedModelOptionsInput): ImportedModelOption[] {
+  return models
+    .map((model) => {
+      const id = String(model.id ?? "").trim();
+      const modelUrl = String(model.modelUrl ?? "").trim();
+      const dimsWmm = Number(model.dimsWmm ?? 0);
+      const dimsDmm = Number(model.dimsDmm ?? 0);
+      const dimsHmm = Number(model.dimsHmm ?? 0);
+      if (!id || !modelUrl) return null;
+      if (!(dimsWmm > 0 && dimsDmm > 0 && dimsHmm > 0)) return null;
+
+      const importedConfig = importedProductConfigById[id];
+      const title = buildImportedModelTitle(id, model.catalog);
+      const familyName = String(
+        model.catalog?.productFamily ?? model.catalog?.productName ?? importedConfig?.title ?? id
+      ).trim();
+      const normalizedFamilyName = normalizeImportedFamilyName(familyName) || "Imported";
+      const familyLabel = `${model.catalog?.brand ?? "Castlery"} ${normalizedFamilyName} Collection`.trim();
+
+      return {
+        id,
+        modelUrl,
+        thumbUrl: model.thumbUrl ?? undefined,
+        dimsWmm,
+        dimsDmm,
+        dimsHmm,
+        catalog: model.catalog ?? null,
+        title,
+        familyKey: `${String(model.catalog?.brand ?? "castlery").toLowerCase()}::${normalizedFamilyName.toLowerCase()}`,
+        familyLabel,
+        pickerLabel: buildImportedPickerLabel(id, title),
+      } satisfies ImportedModelOption;
+    })
+    .filter((option): option is NonNullable<typeof option> => option !== null);
+}
+
+function buildFallbackCatalogOptions(): ImportedModelOption[] {
+  const sideboardFallbacks = Object.values(CATALOG_ITEMS)
+    .filter((item) => item.id.startsWith("castlery-sloane-sideboard-"))
+    .map((item) => {
+      const familyName = "Sloane";
+      const normalizedFamilyName = normalizeImportedFamilyName(familyName) || "Imported";
+      const familyLabel = `Castlery ${normalizedFamilyName} Collection`.trim();
+      const sizeLabel = `${Math.round(item.dimsMm.w / 10)}CM`;
+
+      return {
+        id: item.id,
+        modelUrl: item.assets.modelUrl ?? "",
+        thumbUrl: item.assets.thumbUrl,
+        dimsWmm: item.dimsMm.w,
+        dimsDmm: item.dimsMm.d,
+        dimsHmm: item.dimsMm.h,
+        catalog: {
+          brand: "Castlery",
+          category: "sideboard",
+          productName: item.title,
+          productFamily: familyName,
+          variant: sizeLabel,
+          variants: [
+            {
+              size_label: sizeLabel,
+              dimensions: {
+                width_cm: Math.round(item.dimsMm.w / 10),
+                depth_cm: Math.round(item.dimsMm.d / 10),
+                height_cm: Math.round(item.dimsMm.h / 10),
+              },
+            },
+          ],
+        } satisfies ImportedModelCatalog,
+        title: item.title,
+        familyKey: `castlery::${normalizedFamilyName.toLowerCase()}`,
+        familyLabel,
+        pickerLabel: item.title,
+      } satisfies ImportedModelOption;
+    });
+
+  const dawsonStorageOttomanFallback: ImportedModelOption = {
+    id: "sofa-real-castlery-dawson-storage-ottoman",
+    modelUrl: "/assets/models/sofa-real-castlery-dawson-storage-ottoman-closed.glb",
+    thumbUrl:
+      "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1634715643/crusader/variants/54000045-NG4001/Dawson-Ottoman-Beach-Linen-Front.jpg",
+    dimsWmm: 930,
+    dimsDmm: 930,
+    dimsHmm: 450,
+    catalog: {
+      brand: "Castlery",
+      category: "ottoman",
+      productName: "Dawson Storage Ottoman",
+      productFamily: "Dawson",
+      variant: "Standard",
+      priceUsd: 649,
+      priceBand: "mid",
+      featureFlags: {
+        is_configurable: true,
+        has_storage: true,
+      },
+      upholstery_options: [
+        {
+          upholstery_code: "beach_linen",
+          color_label: "Cream",
+          upholstery_label: "Slub Linen Weave (Navagio), Cream (Beach Linen)",
+          collection_type: "stocked_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "seagull",
+          color_label: "Grey",
+          upholstery_label: "Slub Linen Weave (Navagio), Medium Grey (Seagull)",
+          collection_type: "stocked_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "infinity_boucle_cream",
+          color_label: "Cream",
+          upholstery_label: "Performance Infinity Boucle, Cream",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "infinity_boucle_white_quartz",
+          color_label: "Light Grey",
+          upholstery_label: "Performance Infinity Boucle, Light Grey (White Quartz)",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "infinity_boucle_moss",
+          color_label: "Moss",
+          upholstery_label: "Performance Infinity Boucle, Moss",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "infinity_boucle_ginger",
+          color_label: "Rust",
+          upholstery_label: "Performance Infinity Boucle, Rust (Ginger)",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "fleece_peyton_cream",
+          color_label: "Cream",
+          upholstery_label: "Performance Fleece (Peyton), Ivory (Cream)",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "fleece_peyton_dove_grey",
+          color_label: "Grey",
+          upholstery_label: "Performance Fleece (Peyton), Medium Grey (Dove Grey)",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "fleece_peyton_moss",
+          color_label: "Moss",
+          upholstery_label: "Performance Fleece (Peyton), Moss",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "fleece_peyton_cumin",
+          color_label: "Caramel",
+          upholstery_label: "Performance Fleece (Peyton), Caramel (Cumin)",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "linen_weave_genova_oat",
+          color_label: "Sand",
+          upholstery_label: "Performance Linen Weave (Genova), Sand (Oat)",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "linen_weave_genova_cream",
+          color_label: "Cream",
+          upholstery_label: "Performance Linen Weave (Genova), Cream",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "linen_weave_genova_light_grey",
+          color_label: "Light Grey",
+          upholstery_label: "Performance Linen Weave (Genova), Light Grey",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "performance_creamy_white",
+          color_label: "Cream",
+          upholstery_label: "Performance Creamy White",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "performance_twill_pearl_beige",
+          color_label: "Beige",
+          upholstery_label: "Performance Twill, Pearl Beige",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "performance_twill_medium_grey",
+          color_label: "Grey",
+          upholstery_label: "Performance Twill, Medium Grey",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "performance_twill_slate",
+          color_label: "Slate",
+          upholstery_label: "Performance Twill, Slate",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "performance_twill_moss",
+          color_label: "Moss",
+          upholstery_label: "Performance Twill, Moss",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "washed_chenille_cream",
+          color_label: "Cream",
+          upholstery_label: "Washed Chenille, Cream",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "washed_chenille_sand",
+          color_label: "Sand",
+          upholstery_label: "Washed Chenille, Sand",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "washed_chenille_caramel",
+          color_label: "Caramel",
+          upholstery_label: "Washed Chenille, Caramel",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "washed_chenille_moss",
+          color_label: "Moss",
+          upholstery_label: "Washed Chenille, Moss",
+          collection_type: "custom_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "cocoa",
+          color_label: "Cocoa",
+          upholstery_label: "Cocoa Leather",
+          collection_type: "stocked_leather",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "caramel",
+          color_label: "Caramel",
+          upholstery_label: "Caramel Leather",
+          collection_type: "custom_leather",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "warm_taupe",
+          color_label: "Taupe",
+          upholstery_label: "Warm Taupe Leather",
+          collection_type: "custom_leather",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "marche_ivory",
+          color_label: "Ivory",
+          upholstery_label: "Marche Leather, Ivory",
+          collection_type: "custom_leather",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "marche_graphite",
+          color_label: "Graphite",
+          upholstery_label: "Marche Leather, Graphite",
+          collection_type: "custom_leather",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "marche_cocoa",
+          color_label: "Cocoa",
+          upholstery_label: "Marche Leather, Cocoa",
+          collection_type: "custom_leather",
+          swatch_group: "upholstery_option",
+        },
+      ],
+      configurableMetadata: {
+        is_configurable: true,
+        default_configuration: "closed",
+        configuration_ui: {
+          type: "segmented_control",
+          label: "Storage state",
+          options: ["closed", "open_storage"],
+          option_labels: {
+            closed: "Closed",
+            open_storage: "Open",
+          },
+          helper_text:
+            "Open state is for visualization only. Cart and checkout still use the selected purchasable size variant.",
+        },
+        configuration_behavior: {
+          affects_visual_footprint: false,
+          affects_space_planning: false,
+          affects_collision_bounds: false,
+          affects_recommendation_logic: false,
+        },
+      },
+      variants: [
+        {
+          variant: "Dawson Storage Ottoman / 93cm",
+          size_label: "93x93",
+          model_asset_id: "sofa-real-castlery-dawson-storage-ottoman",
+          model_url: "/assets/models/sofa-real-castlery-dawson-storage-ottoman-closed.glb",
+          thumbnail_url:
+            "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1692451017/crusader/variants/54000132-NG4001/Dawson-Square-Ottoman-Front_-1692451014.jpg",
+          swatch_group: "upholstery_option",
+          collection_type: "all_materials",
+          dimensions: {
+            width_cm: 93,
+            depth_cm: 93,
+            height_cm: 45,
+          },
+          state_assets: {
+            closed: {
+              model_url: "/assets/models/sofa-real-castlery-dawson-storage-ottoman-closed.glb",
+            },
+            open_storage: {
+              model_url: "/assets/models/sofa-real-castlery-dawson-storage-ottoman-open.glb",
+            },
+          },
+        },
+        {
+          variant: "Dawson Storage Ottoman / 114cm",
+          size_label: "114x93",
+          model_asset_id: "sofa-real-castlery-dawson-storage-ottoman",
+          model_url: "/assets/models/sofa-real-castlery-dawson-storage-ottoman-114-closed.glb",
+          thumbnail_url:
+            "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1634715643/crusader/variants/54000045-NG4001/Dawson-Ottoman-Beach-Linen-Front.jpg",
+          swatch_group: "upholstery_option",
+          collection_type: "all_materials",
+          dimensions: {
+            width_cm: 114,
+            depth_cm: 93,
+            height_cm: 45,
+          },
+          state_assets: {
+            closed: {
+              model_url: "/assets/models/sofa-real-castlery-dawson-storage-ottoman-114-closed.glb",
+            },
+            open_storage: {
+              model_url: "/assets/models/sofa-real-castlery-dawson-storage-ottoman-114-open.glb",
+            },
+          },
+        },
+      ],
+      configurations: [
+        {
+          configuration_code: "closed",
+          configuration_label: "Closed",
+          state_type: "storage_closed",
+          description: "Ottoman in closed position",
+          planning_bounds_cm: { width: 93, depth: 93, height: 45 },
+          visual_bounds_cm: { width: 93, depth: 93, height: 45 },
+        },
+        {
+          configuration_code: "open_storage",
+          configuration_label: "Open",
+          state_type: "storage_open",
+          description: "Ottoman in open position with lid raised",
+          planning_bounds_cm: { width: 93, depth: 93, height: 105 },
+          visual_bounds_cm: { width: 93, depth: 93, height: 94 },
+        },
+      ],
+      assets: {
+        asset_id: "sofa-real-castlery-dawson-storage-ottoman",
+        model_url: "/assets/models/sofa-real-castlery-dawson-storage-ottoman-closed.glb",
+        thumbnail_url:
+          "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1634715643/crusader/variants/54000045-NG4001/Dawson-Ottoman-Beach-Linen-Front.jpg",
+      },
+    } satisfies ImportedModelCatalog,
+    title: "Castlery Dawson Storage Ottoman",
+    familyKey: "castlery::dawson",
+    familyLabel: "Castlery Dawson Collection",
+    pickerLabel: "Castlery Dawson Storage Ottoman",
+  };
+
+  const ollieStorageOttomanFallback: ImportedModelOption = {
+    id: "sofa-real-castlery-ollie-storage-ottoman",
+    modelUrl: "/assets/models/sofa-real-castlery-ollie-storage-ottoman-closed.glb",
+    thumbUrl:
+      "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1768210734/crusader/variants/AS-001017-GR4001/Ollie-Storage-Ottoman-Iovry-Front-1768210732.jpg",
+    dimsWmm: 930,
+    dimsDmm: 770,
+    dimsHmm: 440,
+    catalog: {
+      brand: "Castlery",
+      category: "ottoman",
+      productName: "Ollie Storage Ottoman",
+      productFamily: "Ollie",
+      variant: "Standard",
+      priceUsd: 499,
+      priceBand: "mid",
+      featureFlags: {
+        is_configurable: true,
+        has_storage: true,
+      },
+      upholstery_options: [
+        {
+          upholstery_code: "greta_ivory",
+          color_label: "Ivory",
+          upholstery_label: "Washed Chenille, Cream (Greta Ivory)",
+          collection_type: "stocked_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "greta_caramel",
+          color_label: "Caramel",
+          upholstery_label: "Washed Chenille, Mustard Brown (Greta Caramel)",
+          collection_type: "stocked_fabric",
+          swatch_group: "upholstery_option",
+        },
+        {
+          upholstery_code: "greta_moss",
+          color_label: "Moss",
+          upholstery_label: "Washed Chenille, Moss (Greta Moss)",
+          collection_type: "stocked_fabric",
+          swatch_group: "upholstery_option",
+        },
+      ],
+      configurableMetadata: {
+        is_configurable: true,
+        default_configuration: "closed",
+        configuration_ui: {
+          type: "segmented_control",
+          label: "Storage state",
+          options: ["closed", "open_storage"],
+          option_labels: {
+            closed: "Closed",
+            open_storage: "Open",
+          },
+          helper_text:
+            "Open state is for visualization only. Cart and checkout still use the selected purchasable size variant.",
+        },
+        configuration_behavior: {
+          affects_visual_footprint: false,
+          affects_space_planning: false,
+          affects_collision_bounds: false,
+          affects_recommendation_logic: false,
+        },
+      },
+      variants: [
+        {
+          variant: "Ollie Storage Ottoman",
+          size_label: "93x77",
+          model_asset_id: "sofa-real-castlery-ollie-storage-ottoman",
+          model_url: "/assets/models/sofa-real-castlery-ollie-storage-ottoman-closed.glb",
+          thumbnail_url:
+            "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1768210734/crusader/variants/AS-001017-GR4001/Ollie-Storage-Ottoman-Iovry-Front-1768210732.jpg",
+          swatch_group: "upholstery_option",
+          collection_type: "all_materials",
+          dimensions: {
+            width_cm: 93,
+            depth_cm: 77,
+            height_cm: 44,
+          },
+          state_assets: {
+            closed: {
+              model_url: "/assets/models/sofa-real-castlery-ollie-storage-ottoman-closed.glb",
+            },
+            open_storage: {
+              model_url: "/assets/models/sofa-real-castlery-ollie-storage-ottoman-open.glb",
+            },
+          },
+        },
+      ],
+      configurations: [
+        {
+          configuration_code: "closed",
+          configuration_label: "Closed",
+          state_type: "storage_closed",
+          description: "Ottoman in closed position",
+          planning_bounds_cm: { width: 93, depth: 77, height: 44 },
+          visual_bounds_cm: { width: 93, depth: 77, height: 44 },
+        },
+        {
+          configuration_code: "open_storage",
+          configuration_label: "Open",
+          state_type: "storage_open",
+          description: "Ottoman in open position with lid raised",
+          planning_bounds_cm: { width: 93, depth: 77, height: 89 },
+          visual_bounds_cm: { width: 93, depth: 77, height: 89 },
+        },
+      ],
+      assets: {
+        asset_id: "sofa-real-castlery-ollie-storage-ottoman",
+        model_url: "/assets/models/sofa-real-castlery-ollie-storage-ottoman-closed.glb",
+        thumbnail_url:
+          "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1768210734/crusader/variants/AS-001017-GR4001/Ollie-Storage-Ottoman-Iovry-Front-1768210732.jpg",
+      },
+    } satisfies ImportedModelCatalog,
+    title: "Castlery Ollie Storage Ottoman",
+    familyKey: "castlery::ollie",
+    familyLabel: "Castlery Ollie Collection",
+    pickerLabel: "Castlery Ollie Storage Ottoman",
+  };
+
+  return [...sideboardFallbacks, dawsonStorageOttomanFallback, ollieStorageOttomanFallback];
+}
+
+function collectConfigurationAssetIds(options: ImportedModelOption[]): Set<string> {
+  const configurationAssetIds = new Set<string>();
+  for (const option of options) {
+    const byConfig = option.catalog?.configurableMetadata?.configuration_model_assets;
+    if (!byConfig) continue;
+    for (const mapping of Object.values(byConfig)) {
+      for (const assetId of Object.values(mapping ?? {})) {
+        if (typeof assetId === "string" && assetId.trim()) {
+          configurationAssetIds.add(assetId.trim());
+        }
+      }
+    }
+  }
+  return configurationAssetIds;
+}
+
+export function buildImportedModelOptions({
+  models,
+  importedProductConfigById,
+}: BuildImportedModelOptionsInput): {
+  options: ImportedModelOption[];
+  modelUrlByAssetId: Record<string, string>;
+} {
+  const optionsFromApi = buildApiImportedModelOptions({ models, importedProductConfigById });
+  const fallbackCatalogOptions = buildFallbackCatalogOptions();
+
+  const optionById = new Map<string, ImportedModelOption>();
+  for (const option of optionsFromApi) {
+    optionById.set(option.id, option);
+  }
+  for (const option of fallbackCatalogOptions) {
+    if (!optionById.has(option.id)) {
+      optionById.set(option.id, option);
+    }
+  }
+
+  const options = Array.from(optionById.values());
+  const configurationAssetIds = collectConfigurationAssetIds(options);
+  const normalizedOptions = options.filter((option) => {
+    if (option.catalog) return true;
+    return !configurationAssetIds.has(option.id);
+  });
+
+  const modelUrlByAssetId: Record<string, string> = {};
+  for (const option of options) {
+    if (option.id && option.modelUrl) {
+      modelUrlByAssetId[option.id] = option.modelUrl;
+    }
+  }
+
+  return {
+    options: normalizedOptions,
+    modelUrlByAssetId,
+  };
+}
+
+function isInjectedImportedCatalogItem(item: CatalogItemSchema | undefined): boolean {
+  return Boolean(item && String(item.defaultVariantId ?? "").startsWith("imported-"));
+}
+
+export function shouldRefreshImportedCatalogItem(
+  existing: CatalogItemSchema | undefined,
+  option: ImportedModelOption,
+): boolean {
+  const expectedPriceHint = Number(option.catalog?.priceUsd ?? 0);
+  const existingPriceHint =
+    existing?.commerce.type === "affiliate" ? Number(existing.commerce.data.priceHint ?? 0) : 0;
+  const existingVariantPipelineRevision = String(existing?.metadata?.importedVariantPipelineRevision ?? "");
+  const yamlCategory = option.catalog?.category;
+  const isKnownYamlCategory = Boolean(
+    yamlCategory && Object.prototype.hasOwnProperty.call(CATEGORY_DEFAULTS, yamlCategory)
+  );
+  const inferredCategory = inferImportedCategoryFromProductId(option.id);
+  const expectedCategory = (isKnownYamlCategory ? (yamlCategory as ProductCategory) : undefined)
+    ?? inferredCategory
+    ?? existing?.category;
+  const categoryMismatch = Boolean(existing && expectedCategory && existing.category !== expectedCategory);
+  const expectedPendantHeight = resolveAdjustablePendantHeightMetadata(option.catalog);
+  const currentPendantHeight = existing?.metadata?.adjustablePendantHeight;
+  const pendantHeightMismatch =
+    JSON.stringify(currentPendantHeight ?? null) !== JSON.stringify(expectedPendantHeight ?? null);
+
+  return (
+    !existing ||
+    categoryMismatch ||
+    pendantHeightMismatch ||
+    (isInjectedImportedCatalogItem(existing) &&
+      (existingVariantPipelineRevision !== IMPORTED_VARIANT_PIPELINE_REVISION ||
+        (expectedPriceHint > 0 && existingPriceHint !== expectedPriceHint)))
+  );
+}
+
+function resolveInjectedTemplateId(productId: string): string {
+  const fallbackTemplateId =
+    Object.values(CATALOG_ITEMS)[0]?.id ?? "castlery-sloane-sideboard-150cm";
+
+  const lower = productId.toLowerCase();
+  const inferredCategory = inferImportedCategoryFromProductId(productId);
+  if (inferredCategory) {
+    const categoryTemplateId = Object.values(CATALOG_ITEMS).find((item) => item.category === inferredCategory)?.id;
+    if (categoryTemplateId) return categoryTemplateId;
+  }
+
+  if (lower.includes("bench") || lower.startsWith("sofa-")) {
+    const sofaTemplateId = Object.values(CATALOG_ITEMS).find((item) => item.category === "sofa")?.id;
+    if (sofaTemplateId) return sofaTemplateId;
+  }
+
+  return fallbackTemplateId;
+}
+
+function resolveImportedThumbUrl(imported: ImportedModelOption, productId: string): string {
+  if (productId === "sofa-real-castlery-dawson-wide-chaise-sectional-left") {
+    // Keep card imagery aligned with default cream fabric and left orientation.
+    return "/assets/thumbs/sofa-real-castlery-dawson-wide-chaise-sectional-left.png";
+  }
+
+  const assets = imported.catalog?.assets;
+  const galleryImages = assets?.galleryImages ?? assets?.gallery_images ?? [];
+  return selectPreferredCatalogThumbnail({
+    thumbnailUrl: assets?.thumbnailUrl ?? assets?.thumbnail_url ?? imported.thumbUrl,
+    galleryImages,
+  }) ?? `/assets/thumbs/${productId}.png`;
+}
+
+function resolveImportedSourceUrl(yamlCatalog: ImportedModelCatalog | null | undefined): string | null {
+  const candidates = [
+    yamlCatalog?.source_url,
+    yamlCatalog?.sourceUrl,
+    yamlCatalog?.authoring_notes?.source_url,
+    yamlCatalog?.authoringNotes?.sourceUrl,
+  ];
+
+  for (const candidate of candidates) {
+    const value = String(candidate ?? "").trim();
+    if (/^https?:\/\//i.test(value)) return value;
+  }
+
+  return null;
+}
+
+function resolveAdjustablePendantHeightMetadata(
+  yamlCatalog: ImportedModelCatalog | null | undefined
+): AdjustablePendantHeightMetadata | undefined {
+  const flags = yamlCatalog?.featureFlags;
+  if (!flags || flags.is_height_adjustable !== true) return undefined;
+
+  const minCm = Number(flags.adjustable_height_min_cm);
+  const maxCm = Number(flags.adjustable_height_max_cm);
+  const defaultCm = Number(flags.adjustable_height_default_cm);
+  const cableStartRatio = Number(flags.cable_start_ratio);
+  const cableEndRatio = Number(flags.cable_end_ratio);
+  if (
+    !Number.isFinite(minCm) ||
+    !Number.isFinite(maxCm) ||
+    !Number.isFinite(defaultCm) ||
+    !Number.isFinite(cableStartRatio) ||
+    !Number.isFinite(cableEndRatio) ||
+    minCm <= 0 ||
+    maxCm <= minCm ||
+    defaultCm < minCm ||
+    defaultCm > maxCm ||
+    cableStartRatio < 0 ||
+    cableEndRatio <= cableStartRatio ||
+    cableEndRatio > 1
+  ) {
+    return undefined;
+  }
+
+  return { minCm, maxCm, defaultCm, cableStartRatio, cableEndRatio };
+}
+
+function inferImportedCategoryFromProductId(productId: string): ProductCategory | undefined {
+  const lower = productId.toLowerCase();
+
+  if (lower.includes("ottoman")) return "ottoman";
+  if (lower.includes("armchair")) return "accent_chair";
+  if (lower.startsWith("sofa-")) return "sofa";
+
+  if (lower.startsWith("dining-") && lower.includes("bench")) return "dining_bench";
+  if (lower.startsWith("dining-")) return "dining_table";
+
+  if (lower.startsWith("coffee-")) return "coffee_table";
+  if (lower.includes("console")) return "tv_console";
+  if (lower.includes("sideboard")) return "sideboard";
+  if (lower.includes("pendant") || lower.includes("ceiling-light") || lower.includes("ceiling_light")) {
+    return "pendant_light";
+  }
+  if (lower.includes("table-lamp") || lower.includes("table_lamp")) return "table_lamp";
+  if (lower.includes("lamp")) return "floor_lamp";
+
+  return undefined;
+}
+
+function normalizeImportedSurfacePlacementRules(
+  placementRules: unknown,
+  defaults: PlacementRules
+): PlacementRules {
+  if (!placementRules || typeof placementRules !== "object") return defaults;
+  const raw = placementRules as Record<string, unknown>;
+  const ceilingOnly = raw.ceiling_only === true || raw.ceilingOnly === true;
+  if (ceilingOnly) {
+    return {
+      ...defaults,
+      floorOnly: false,
+      wallSnappable: false,
+      wallMountable: false,
+      minWallGapMm: 0,
+      allowRugOverlap: false,
+      snapMarginMm: 0,
+      surfaceOnly: false,
+      ceilingOnly: true,
+    };
+  }
+  const surfaceOnly = raw.surface_only === true || raw.surfaceOnly === true;
+  if (!surfaceOnly) return defaults;
+
+  const rawCategories = Array.isArray(raw.required_surface_categories)
+    ? raw.required_surface_categories
+    : Array.isArray(raw.requiredSurfaceCategories)
+      ? raw.requiredSurfaceCategories
+      : [];
+  const requiredSurfaceCategories = rawCategories
+    .map((value) => String(value ?? "").trim())
+    .filter((value): value is ProductCategory =>
+      Boolean(value) && Object.prototype.hasOwnProperty.call(CATEGORY_DEFAULTS, value)
+    );
+  const surfaceInsetMm = Number(raw.surface_inset_mm ?? raw.surfaceInsetMm ?? 80);
+
+  return {
+    ...defaults,
+    floorOnly: false,
+    wallSnappable: false,
+    wallMountable: false,
+    minWallGapMm: 0,
+    allowRugOverlap: false,
+    snapMarginMm: 0,
+    surfaceOnly: true,
+    requiredSurfaceCategories:
+      requiredSurfaceCategories.length > 0
+        ? requiredSurfaceCategories
+        : ["side_table", "coffee_table", "dining_table", "tv_console"],
+    surfaceInsetMm: Number.isFinite(surfaceInsetMm) && surfaceInsetMm >= 0 ? surfaceInsetMm : 80,
+  };
+}
+
+export function buildImportedCatalogItem({
+  productId,
+  imported,
+  importedProductConfigById,
+  importedVariantByProductId,
+  importedVariantsByProductId,
+}: BuildImportedCatalogItemInput): CatalogItemSchema | undefined {
+  const templateId = resolveInjectedTemplateId(productId);
+  const template = CATALOG_ITEMS[templateId] ?? Object.values(CATALOG_ITEMS)[0];
+  if (!template) return undefined;
+
+  const importedConfig = importedProductConfigById[productId];
+  const yamlCatalog = imported.catalog;
+  const yamlCategory = yamlCatalog?.category;
+  const isKnownCategory = Boolean(
+    yamlCategory && Object.prototype.hasOwnProperty.call(CATEGORY_DEFAULTS, yamlCategory),
+  );
+  const inferredCategory = inferImportedCategoryFromProductId(productId);
+  const category = (isKnownCategory ? (yamlCategory as ProductCategory) : undefined)
+    ?? importedConfig?.category
+    ?? inferredCategory
+    ?? template.category;
+  const categoryDefaults = getCategoryDefaults(category);
+  const placementRules = normalizeImportedSurfacePlacementRules(
+    yamlCatalog?.placementRules,
+    categoryDefaults.placement,
+  );
+
+  const officialProductTitle = normalizeOfficialImportedProductName(yamlCatalog);
+  const title =
+    officialProductTitle ??
+    importedConfig?.title ??
+    buildImportedModelTitle(productId, yamlCatalog) ??
+    productId
+      .replace(/^sofa-real-castlery-/, "Castlery Sofa: ")
+      .replace(/^dining-real-castlery-/, "Castlery Dining: ")
+      .replace(/-/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  const normalizedTitle =
+    productId === "sofa-real-castlery-dawson-wide-chaise-sectional-left"
+      ? title.replace(/\s*\(Left Facing\)\s*/i, "").trim()
+      : productId === "sofa-real-castlery-dawson-wide-chaise-sectional"
+        ? title.replace(/\s*\(Right Facing\)\s*/i, "").trim()
+        : title;
+
+  const fallbackVariant = importedVariantByProductId[productId] ?? {
+    label: "Imported",
+    colorHex: "#c4b8a7",
+  };
+
+  const yamlVariants = Array.isArray(yamlCatalog?.variants) ? yamlCatalog.variants : [];
+  const widthCm = imported.dimsWmm / 10;
+  const hasVariantLevelModelMapping = yamlVariants.some(
+    (entry) =>
+      Boolean(String(entry?.model_asset_id ?? "").trim()) ||
+      Boolean(String(entry?.model_url ?? "").trim())
+  );
+  const sizeMatchedYamlVariants = yamlVariants.filter((entry) => {
+    const entryWidth = Number(entry?.dimensions?.width_cm ?? 0);
+    return Number.isFinite(entryWidth) && Math.abs(entryWidth - widthCm) <= 0.5;
+  });
+  const yamlPreferredVariants = hasVariantLevelModelMapping
+    ? yamlVariants
+    : sizeMatchedYamlVariants.length > 0
+      ? sizeMatchedYamlVariants
+      : yamlVariants;
+  const firstYamlVariant = (yamlPreferredVariants[0] ?? null) as
+    | { price_usd?: number; priceUsd?: number }
+    | null;
+  const resolvedPriceUsd = Number(
+    yamlCatalog?.priceUsd ?? firstYamlVariant?.priceUsd ?? firstYamlVariant?.price_usd ?? 0,
+  );
+  const fallbackPriceHint = template.commerce.type === "affiliate" ? (template.commerce.data.priceHint ?? 0) : 0;
+  const importedPriceHint =
+    Number.isFinite(resolvedPriceUsd) && resolvedPriceUsd > 0 ? resolvedPriceUsd : fallbackPriceHint;
+  const importedSourceUrl = resolveImportedSourceUrl(yamlCatalog);
+  const importedRetailer =
+    String(yamlCatalog?.retailer ?? "").trim() ||
+    (template.commerce.type === "affiliate"
+      ? template.commerce.data.retailer
+      : "External retailer");
+
+  const preferredVariants = importedVariantsByProductId[productId] ?? [];
+  const sharedUpholsteryOptions = Array.isArray(yamlCatalog?.upholstery_options)
+    ? yamlCatalog.upholstery_options
+    : [];
+  const yamlGalleryImages = yamlCatalog?.assets?.galleryImages ?? yamlCatalog?.assets?.gallery_images;
+  const fallbackThumbnailUrl = resolveImportedThumbUrl(imported, productId);
+  const normalizedImportedVariants = normalizeImportedVariants({
+    productId,
+    sourceUrl: importedSourceUrl ?? undefined,
+    variantEntries: yamlPreferredVariants,
+    sharedUpholsteryOptions,
+    fallbackThumbnailUrl,
+    fallbackGalleryImages: Array.isArray(yamlGalleryImages) ? yamlGalleryImages : [],
+  });
+
+  const dynamicVariants = normalizedImportedVariants.length > 0
+    ? normalizedImportedVariants.filter(Boolean)
+    : preferredVariants.length > 0
+      ? preferredVariants.map((entry, index) => ({
+          id: `imported-${productId}-${index + 1}`,
+          label: entry.label,
+          colorHex: entry.colorHex,
+          thumbnailUrl: fallbackThumbnailUrl,
+        }))
+      : [
+          {
+            id: `imported-${productId}`,
+            label: fallbackVariant.label,
+            colorHex: fallbackVariant.colorHex,
+            thumbnailUrl: fallbackThumbnailUrl,
+          },
+        ];
+
+  const defaultImportedVariantId = dynamicVariants[0]?.id ?? `imported-${productId}`;
+  const mediaPresentationMode = normalizeCatalogMediaPresentationMode(
+    yamlCatalog?.assets?.media_presentation ??
+      yamlCatalog?.assets?.mediaPresentation ??
+      yamlCatalog?.media_presentation ??
+      yamlCatalog?.mediaPresentation,
+  );
+
+  return {
+    ...template,
+    id: productId,
+    slug: productId,
+    title: normalizedTitle,
+    category,
+    dimsMm: {
+      w: imported.dimsWmm,
+      d: imported.dimsDmm,
+      h: imported.dimsHmm,
+    },
+    dimensionsMm: {
+      w: imported.dimsWmm,
+      d: imported.dimsDmm,
+      h: imported.dimsHmm,
+    },
+    bounds: {
+      type: "aabb",
+      size: {
+        w: imported.dimsWmm / 1000,
+        d: imported.dimsDmm / 1000,
+        h: imported.dimsHmm / 1000,
+      },
+      center: [0, imported.dimsHmm / 2000, 0],
+    },
+    variants: dynamicVariants,
+    defaultVariantId: defaultImportedVariantId,
+    commerce: {
+      type: "affiliate",
+      data: {
+        url: importedSourceUrl ?? (template.commerce.type === "affiliate" ? template.commerce.data.url : ""),
+        retailer: importedRetailer,
+        priceHint: importedPriceHint,
+      },
+    },
+    placementRules,
+    clearanceRules: categoryDefaults.clearance,
+    aiRoles: categoryDefaults.aiRoles,
+    roomTags: importedConfig?.roomTags ?? template.roomTags,
+    tags: importedConfig?.tags ?? template.tags,
+    metadata: {
+      ...template.metadata,
+      brand: yamlCatalog?.brand ?? "Castlery",
+      productFamily: yamlCatalog?.productFamily,
+      productName: yamlCatalog?.productName,
+      importedVariantPipelineRevision: IMPORTED_VARIANT_PIPELINE_REVISION,
+      modelLabel: importedConfig?.modelLabel ?? yamlCatalog?.variant,
+      styleCluster: yamlCatalog?.styleCluster,
+      styleSecondary: yamlCatalog?.styleSecondary,
+      designEra: yamlCatalog?.designEra,
+      colorFamily: yamlCatalog?.colorFamily,
+      tone: yamlCatalog?.tone,
+      priceUsd: yamlCatalog?.priceUsd,
+      priceBand: yamlCatalog?.priceBand,
+      seatCapacity: yamlCatalog?.seatCapacity,
+      materialFamily: yamlCatalog?.materialFamily,
+      designPairings: yamlCatalog?.designPairings,
+      compatibility: yamlCatalog?.compatibility,
+      bundleMetadata: yamlCatalog?.bundleMetadata,
+      comfortProfile: yamlCatalog?.comfort_profile,
+      adjustablePendantHeight: resolveAdjustablePendantHeightMetadata(yamlCatalog),
+      galleryImages: Array.isArray(yamlGalleryImages)
+        ? yamlGalleryImages.filter(
+            (value): value is string => typeof value === "string" && value.trim().length > 0,
+          )
+        : undefined,
+      mediaPresentationMode,
+    },
+    assets: {
+      ...template.assets,
+      assetId: productId,
+      modelUrl: imported.modelUrl,
+      thumbUrl: fallbackThumbnailUrl,
+    },
+  } satisfies CatalogItemSchema;
+}
+
+export function upsertImportedCatalogItem(input: BuildImportedCatalogItemInput): CatalogItemSchema | undefined {
+  const injected = buildImportedCatalogItem(input);
+  if (!injected) return undefined;
+
+  CATALOG_ITEMS[input.productId] = injected;
+  CATALOG_ITEMS_MAP.set(input.productId, injected);
+  return injected;
+}

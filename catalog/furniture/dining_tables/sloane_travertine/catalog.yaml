@@ -1,0 +1,188 @@
+brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/sloane-travertine-dining-table?leg_color=grey_oak&length=2_25m"
+category: "dining_table"
+
+product_family: "Sloane"
+product_name: "Sloane Travertine Dining Table"
+variant: "225 Grey Oak"
+
+price_usd: 2599
+price_band: "luxury"
+brand_tier: "premium_high"
+
+design_zone: "dining_zone"
+anchor_role: "dining_anchor"
+
+dimensions:
+  width_cm: 225
+  depth_cm: 100
+  height_cm: 76
+
+seat_capacity: 8
+size_class: "extra_large"
+
+shape: "rectangular"
+base_type: "dual_panel"
+
+material_family: "mixed"
+material_mix: "stone_wood"
+
+color_family: "grey"
+tone: "cool"
+
+style_cluster: "contemporary_luxury"
+style_secondary: "minimalist"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "heavy"
+  edge_profile: "straight"
+  silhouette: "monolithic"
+  form_language: "linear"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  chair_pullback_cm: 60
+  walkway_clearance_cm: 90
+
+room_compatibility:
+  - "dining_room"
+  - "open_plan"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: true
+
+design_pairings:
+  - "dining_chair"
+  - "dining_bench"
+  - "pendant_light"
+  - "dining_rug"
+  - "sideboard"
+
+compatibility:
+  related_products:
+    - product_family: "Sloane"
+      product_name: "Sloane Dining Bench"
+      relationship: "matching_companion"
+      strength: "strong"
+
+bundle_metadata:
+  can_bundle_with:
+    - "Sloane Dining Bench"
+  bundle_role: "dining_anchor"
+  set_behavior:
+    supports_with_or_without_cushion: true
+
+product_details:
+  material:
+    - label: "Material"
+      value: "Tabletop: 6mm travertine stone over aluminium honeycomb backing; Leg: engineered wood with oak veneer"
+    - label: "Finish"
+      value: "Grey oak finish"
+    - label: "Care"
+      value: "Wooden table"
+    - label: "Colour variance"
+      value: "Natural variations"
+    - label: "Material & safety standards"
+      value: "Low formaldehyde"
+  dimensions:
+    - label: "Dimension"
+      value: "W225 x D100 x H76cm"
+    - label: "Table top thickness"
+      value: "5cm"
+    - label: "Leg height"
+      value: "71cm"
+    - label: "Leg to leg distance (at height 45cm)"
+      value: "159cm"
+    - label: "Leg room - height clearance"
+      value: "71cm"
+    - label: "Capacity"
+      value: "Sits 6-8 people comfortably"
+    - label: "Product weight"
+      value: "97kg"
+    - label: "Packaging dimensions"
+      value: "3 boxes"
+    - label: "Levellers"
+      value: "Included (max 1cm)"
+    - label: "Max bearing support"
+      value: "100kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free—5 working days before delivery"
+    - label: "Warranty"
+      value: "5-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Legs to be fitted"
+
+ai_flags:
+  isStarterEligible: false
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+
+assets:
+  asset_id: "dining-real-castlery-sloane-travertine-225"
+  model_url: "/assets/models/dining-real-castlery-sloane-travertine-225.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723777218/crusader/variants/AS-000565/Sloane-Travertine-Dining-Table-225cm-Front-1723777216.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723776978/crusader/variants/AS-000564/Dining-Room-2-Bradley-Sideboard-With-Sloane-Travertine-Dining-Table_-With-Sonia-Square-Set_1-1723776975.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723777218/crusader/variants/AS-000565/Sloane-Travertine-Dining-Table-225cm-Angle-1723777216.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723776981/crusader/variants/AS-000564/Dining-Room-2-Bradley-Sideboard-With-Sloane-Travertine-Dining-Table_-With-Sonia-Square-Set_2-1723776976.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723776983/crusader/variants/AS-000564/Sloane-Travertine-Dining-Table-Square-Set_1_-1723776976.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1725529605/crusader/variants/AS-000565/Sloane-Travertine-Dining-Table-Square-Det_9-1725529602.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723776871/crusader/variants/AS-000564/Sloane-Travertine-Dining-Table-Det_2-1723776868.jpg"
+
+variants:
+  - variant: "225 Grey Oak"
+    size_label: "225"
+    finish_code: "grey_oak"
+    finish_label: "Grey Oak"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723777218/crusader/variants/AS-000565/Sloane-Travertine-Dining-Table-225cm-Front-1723777216.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723776978/crusader/variants/AS-000564/Dining-Room-2-Bradley-Sideboard-With-Sloane-Travertine-Dining-Table_-With-Sonia-Square-Set_1-1723776975.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723777218/crusader/variants/AS-000565/Sloane-Travertine-Dining-Table-225cm-Angle-1723777216.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723776981/crusader/variants/AS-000564/Dining-Room-2-Bradley-Sideboard-With-Sloane-Travertine-Dining-Table_-With-Sonia-Square-Set_2-1723776976.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723776983/crusader/variants/AS-000564/Sloane-Travertine-Dining-Table-Square-Set_1_-1723776976.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1725529605/crusader/variants/AS-000565/Sloane-Travertine-Dining-Table-Square-Det_9-1725529602.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723776871/crusader/variants/AS-000564/Sloane-Travertine-Dining-Table-Det_2-1723776868.jpg"
+
+    price_usd: 2599
+    price_band: "luxury"
+    brand_tier: "premium_high"
+
+    dimensions:
+      width_cm: 225
+      depth_cm: 100
+      height_cm: 76
+
+    seat_capacity: 8
+    size_class: "extra_large"
+
+    color_family: "grey"
+    tone: "cool"
+
+    materials:
+      tabletop:
+        structure: "stone_composite"
+        surface: "travertine"
+        core: "aluminium_honeycomb"
+      base:
+        structure: "engineered_wood"
+        surface: "oak_veneer"
+
+    finish:
+      tabletop_finish: "travertine"
+      base_finish: "grey_oak"
+      protective_coating: "none"
+      surface_finish: "matte"
+      finish_color: "travertine_grey_oak"
+
+    set_compatibility:
+      recommended_with_products:
+        - product_name: "Sloane Dining Bench"
+          recommended_bench_sizes:
+            - 180

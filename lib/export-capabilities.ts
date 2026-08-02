@@ -1,10 +1,16 @@
 /**
  * Export Tier Capabilities
  * 
- * Centralized entitlement logic for export features.
+ * Centralized UI capability logic for export features. Server routes still
+ * enforce export entitlements independently.
  * Follow this rule: Never check user.plan directly in components.
  * Always use getExportCapabilities().
  */
+
+import {
+  getEditorPlanLabel,
+  resolveEditorCapabilities,
+} from "@/lib/editor-capabilities";
 
 export type UserPlan = "free" | "pro";
 
@@ -28,20 +34,20 @@ export interface ExportCapabilities {
  * Get export capabilities based on user's plan
  */
 export function getExportCapabilities(plan: UserPlan): ExportCapabilities {
-  const isPro = plan === "pro";
+  const capabilities = resolveEditorCapabilities(plan);
   
   return {
     // Free tier shows watermark, Pro removes it
-    watermark: !isPro,
+    watermark: !capabilities.exportWithoutWatermark,
     
     // Pro-only features
-    customBranding: isPro,
-    pdfDownload: isPro,
-    extendedAiNotes: isPro,
-    clientNameField: isPro,
-    designerLogoUpload: isPro,
-    multiRoomCover: isPro,
-    editableDesignerNotes: isPro,
+    customBranding: capabilities.useCustomExportBranding,
+    pdfDownload: capabilities.exportPdf,
+    extendedAiNotes: capabilities.applyAiSuggestions,
+    clientNameField: capabilities.useCustomExportBranding,
+    designerLogoUpload: capabilities.useCustomExportBranding,
+    multiRoomCover: capabilities.exportMultipleViews,
+    editableDesignerNotes: capabilities.createTechnicalAnnotations,
   };
 }
 
@@ -49,14 +55,14 @@ export function getExportCapabilities(plan: UserPlan): ExportCapabilities {
  * Check if user has pro plan
  */
 export function isProPlan(plan: UserPlan): boolean {
-  return plan === "pro";
+  return resolveEditorCapabilities(plan).manageSubscription;
 }
 
 /**
  * Get plan display name
  */
 export function getPlanDisplayName(plan: UserPlan): string {
-  return plan === "pro" ? "Pro" : "Free";
+  return getEditorPlanLabel(plan).replace(" plan", "");
 }
 
 /**

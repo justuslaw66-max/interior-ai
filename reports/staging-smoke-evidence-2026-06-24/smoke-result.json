@@ -1,0 +1,102 @@
+{
+  "base": "https://interior-ai-justuslaw66-max-justuslaw66-maxs-projects.vercel.app",
+  "generatedAt": "2026-06-24T13:52:37.346Z",
+  "latestRetestBase": "https://interior-d8xiqnj42-justuslaw66-maxs-projects.vercel.app",
+  "latestRetestDeploymentId": "dpl_5GpxSyYngLa2GbQ7LyMaNAoaPxpe",
+  "latestFeedbackBase": "https://interior-hr2bpyza0-justuslaw66-maxs-projects.vercel.app",
+  "latestFeedbackDeploymentId": "dpl_9e2Pi2wjB3yopf5oLWKcYtuUmGdw",
+  "stableAlias": "https://interior-ai-justuslaw66-max-justuslaw66-maxs-projects.vercel.app",
+  "stableAliasTarget": "https://interior-hr2bpyza0-justuslaw66-maxs-projects.vercel.app",
+  "stableAliasPromotionEvidence": "reports/staging-smoke-evidence-2026-06-24/stable-alias-promotion-result.json",
+  "rows": {
+    "open_design_signed_out": {
+      "status": "PASS",
+      "evidence": "reports/staging-smoke-evidence-2026-06-24/01-editor-open.png",
+      "notes": "HTTP 200 with Vercel bypass header."
+    },
+    "start_from_template": {
+      "status": "PASS",
+      "evidence": "reports/staging-smoke-evidence-2026-06-24/03-template-applied.png",
+      "notes": "Applied Alcove studio; room count text: 4 rooms. Template picker evidence: reports/staging-smoke-evidence-2026-06-24/02-template-picker.png."
+    },
+    "edit_room_2d": {
+      "status": "PASS",
+      "evidence": "reports/staging-smoke-evidence-2026-06-24/04-opening-edited.png",
+      "notes": "Opening width changed from 1.20m to 1.35m in the 2D inspector."
+    },
+    "manual_furniture": {
+      "status": "PASS",
+      "evidence": "reports/staging-smoke-evidence-2026-06-24/06-furniture-confirmed.png",
+      "notes": "Confirmed Avery armchair placement. Summary: Furnishing roomLiving / SleepLiving Room · 4 rooms in this homeActive room1Placed1Shoppable0ReviewRoom completeness2/6 essentials ready33%SeatingSurfacesLightingRugStorageShopping readinessShopping readyPrices, checkout links, and cart inclusion are ready.ReadyComplete under $2,000$1,451 left · add sofaBrowseHugg Nesti."
+    },
+    "smart_placement": {
+      "status": "PASS",
+      "evidence": "reports/staging-smoke-evidence-2026-06-24/06-placement-preview.png",
+      "notes": "Placement panel showed status \"Valid placement\", score 68/100, walking path warning, and visible find/center/nudge/rotate/confirm controls. Local guard `npm run test:placement-keyboard-shortcuts` passed for Enter, R/Shift+R, and arrow nudge handling."
+    },
+    "shopping_readiness": {
+      "status": "PASS",
+      "evidence": "reports/staging-smoke-evidence-2026-06-24/12-share-page.png; reports/staging-smoke-evidence-2026-06-24/14-shopping-list.csv",
+      "notes": "Seeded share/export shopping readiness showed 9 retailer-link rows, 0 needs-review rows, and CSV rows with product IDs, retailer URLs, included status, and unit/line prices. First data row hash: 78d100aeca809c84."
+    },
+    "save_reload": {
+      "status": "PASS",
+      "evidence": "reports/staging-smoke-evidence-2026-06-24/11-signed-editor-loaded.png; reports/staging-smoke-evidence-2026-06-24/18-retest-editor-fingerprint.png",
+      "notes": "Signed-in seeded design cmqs5pruw00010occ75d0h737 loaded from cloud with 3 rooms. Fresh retest design cmqs6rzfn0001plccy2obuoh4 exposed editor marker a21f6aec, matching the pre-autosave cloud fingerprint; after editor load/autosave, the current persisted API fingerprint became 46c9dc79. Guest local reload evidence: reports/staging-smoke-evidence-2026-06-24/08-reloaded-local-design.png."
+    },
+    "share_link": {
+      "status": "PASS",
+      "evidence": "reports/staging-smoke-evidence-2026-06-24/12-share-page.png; reports/staging-smoke-evidence-2026-06-24/19-retest-share-fingerprint.png",
+      "notes": "Seeded share token share-1782310604353-0630bf78 rendered the public share page with shopping readiness: 0 cart-ready, 9 retailer links, 0 needs review. Fresh retest share token share-1782312387100-6e33d3ec exposed share marker 46c9dc79, matching the current persisted API/handoff fingerprint after editor load/autosave."
+    },
+    "export_pdf": {
+      "status": "PASS",
+      "evidence": "reports/staging-smoke-evidence-2026-06-24/12-share-export.pdf",
+      "notes": "PDF returned HTTP 200, application/pdf, %PDF magic, and 6925 bytes."
+    },
+    "export_csv": {
+      "status": "PASS",
+      "evidence": "reports/staging-smoke-evidence-2026-06-24/14-shopping-list.csv",
+      "notes": "Downloaded beta-smoke-whole-home-shopping-list.csv; expected header present; first data row hash 78d100aeca809c84."
+    },
+    "export_plan_artifacts": {
+      "status": "PASS",
+      "evidence": "reports/staging-smoke-evidence-2026-06-24/15-2d-plan.svg; reports/staging-smoke-evidence-2026-06-24/16-2d-plan.png",
+      "notes": "SVG downloaded as beta-smoke-whole-home-1f-2d-plan.svg with 8042 bytes; PNG downloaded as beta-smoke-whole-home-1f-2d-plan.png with 98061 bytes and a valid PNG header."
+    },
+    "retailer_link": {
+      "status": "PASS",
+      "evidence": "reports/staging-smoke-evidence-2026-06-24/17-cart-retailer-ready.png",
+      "notes": "Editor cart retailer link opened www.castlery.com with both clickKey and utm_source=interior-ai present."
+    },
+    "checkout_boundary": {
+      "status": "PASS",
+      "evidence": "reports/staging-smoke-evidence-2026-06-24/retest-checkout-fingerprint-result.json",
+      "notes": "Fresh preview retest returned HTTP 503 checkout-boundary diagnostics for Stripe provider connectivity, with no checkout URL. No checkout page was opened and no payment was attempted."
+    }
+  },
+  "fields": {
+    "savedDesignId": "cmqs5pruw00010occ75d0h737",
+    "shareToken": "share-1782310604353-0630bf78",
+    "retestSavedDesignId": "cmqs6rzfn0001plccy2obuoh4",
+    "retestShareToken": "share-1782312387100-6e33d3ec",
+    "editorSnapshotFingerprint": "a21f6aec",
+    "currentPersistedSnapshotFingerprint": "46c9dc79",
+    "shareSnapshotFingerprint": "46c9dc79",
+    "exportSnapshotFingerprint": "46c9dc79",
+    "pdfFilename": "share-export.pdf",
+    "csvFilename": "beta-smoke-whole-home-shopping-list.csv",
+    "pngFilename": "beta-smoke-whole-home-1f-2d-plan.png",
+    "svgFilename": "beta-smoke-whole-home-1f-2d-plan.svg",
+    "checkoutBoundaryResponseMode": "boundary blocked via HTTP 503",
+    "feedbackReportId": "cmqs789xw000004johhrwar9s",
+    "feedbackEvidence": "reports/staging-smoke-evidence-2026-06-24/feedback-reference-result.json"
+  },
+  "notes": [
+    "QA fingerprint markers are visible in the fresh preview retest. The editor marker matched the pre-autosave cloud fingerprint a21f6aec; share/export markers match the current persisted API/handoff fingerprint 46c9dc79 after editor load/autosave.",
+    "Checkout boundary retest passed with redacted HTTP 503 diagnostics, no checkout URL, no checkout page, and no payment attempt.",
+    "Feedback reference upgrade returned persisted beta feedback event id cmqs789xw000004johhrwar9s from deployment dpl_9e2Pi2wjB3yopf5oLWKcYtuUmGdw.",
+    "Stable staging alias now points to deployment dpl_9e2Pi2wjB3yopf5oLWKcYtuUmGdw; Deployment Protection remains enabled on no-bypass /design probes."
+  ],
+  "error": null
+}

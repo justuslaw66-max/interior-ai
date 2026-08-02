@@ -1,3 +1,5 @@
+import type { DesignItem } from "@/lib/room-types";
+
 export type AISuggestionAction =
   | { type: "RUG_RESIZE_TO_SOFA"; sofaItemId?: string }
   | { type: "MAKE_CHEAPER"; percent?: number }
@@ -8,9 +10,9 @@ type DesignSnapshot = {
 };
 
 type EditorContext = {
-  getItemById: (id: string) => any | null;
-  findFirstByCategory: (cat: string) => any | null;
-  resizeRugToSofaRule: (sofa: any, rug?: any) => DesignSnapshot | void;
+  getItemById: (id: string) => DesignItem | null;
+  findFirstByCategory: (cat: string) => DesignItem | null;
+  resizeRugToSofaRule: (sofa: DesignItem, rug?: DesignItem) => DesignSnapshot | void;
   makeRoomCheaper: (percent?: number) => Promise<void> | void;
   addLampNearReadingCorner: () => Promise<void> | void;
   commitDesignSnapshot: (next: DesignSnapshot) => void;

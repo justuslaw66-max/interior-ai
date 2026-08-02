@@ -5,9 +5,6 @@
  * Checks if all Prisma models are created in the database
  */
 
-const fs = require('fs');
-const path = require('path');
-
 async function verifyTables() {
   console.log('╔════════════════════════════════════════════════════════════╗');
   console.log('║           Database Table Verification                      ║');
@@ -15,7 +12,7 @@ async function verifyTables() {
 
   try {
     // Import Prisma client
-    const { PrismaClient } = require('@prisma/client');
+    const { PrismaClient } = await import('@prisma/client');
     const prisma = new PrismaClient();
 
     console.log('📋 Checking Database Tables...\n');

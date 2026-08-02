@@ -3,12 +3,26 @@
  * Usage: node scripts/seed-test-data.js
  */
 
-require("dotenv").config();
-const { PrismaClient } = require("@prisma/client");
-
-const prisma = new PrismaClient();
-
 async function seedTestData() {
+  await import("dotenv/config");
+  if (process.env.APP_ENV?.trim().toLowerCase() !== "development") {
+    throw new Error("Test catalog seeding is allowed only with APP_ENV=development");
+  }
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) throw new Error("DATABASE_URL is required for test catalog seeding");
+  let databaseHost;
+  try {
+    databaseHost = new URL(databaseUrl).hostname;
+  } catch {
+    throw new Error("DATABASE_URL must be a valid URL for test catalog seeding");
+  }
+  if (!["localhost", "127.0.0.1", "[::1]"].includes(databaseHost)) {
+    throw new Error("Test catalog seeding requires a local database");
+  }
+
+  const { PrismaClient } = await import("@prisma/client");
+  const prisma = new PrismaClient();
+
   try {
     console.log("🌱 Seeding test catalog data...\n");
 
@@ -110,7 +124,8 @@ async function seedTestData() {
     console.log(`  • CommerceMapping: shopify\n`);
 
   } catch (error) {
-    console.error("❌ Error seeding data:", error.message);
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("❌ Error seeding data:", message);
     process.exit(1);
   } finally {
     await prisma.$disconnect();

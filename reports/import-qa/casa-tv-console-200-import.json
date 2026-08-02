@@ -1,0 +1,10 @@
+{
+  "assetId": "tv-real-castlery-casa-tv-console-200",
+  "srcGlbPath": "public/assets/models/tv-real-castlery-casa-tv-console-200.glb",
+  "dimsMm": { "w": 2000, "d": 450, "h": 590 },
+  "brandName": "Castlery",
+  "approved": false,
+  "generateThumbnail": true,
+  "generateHeroThumbnail": true,
+  "optimizeModel": true
+}

@@ -1,0 +1,61 @@
+brand: "Example Brand"
+category: "bed"
+
+product_family: "Canonical Bed"
+product_name: "Canonical Queen Bed"
+variant: "Queen"
+
+price_usd: 1299
+price_band: "premium"
+brand_tier: "premium_mid"
+
+design_zone: "sleeping_zone"
+anchor_role: "bed_anchor"
+
+dimensions:
+  width_cm: 165
+  depth_cm: 215
+  height_cm: 105
+
+size_class: "large"
+material_family: "upholstered"
+color_family: "beige"
+tone: "neutral"
+style_cluster: "contemporary"
+
+room_compatibility:
+  - "bedroom"
+
+design_pairings:
+  - "nightstand"
+  - "table_lamp"
+  - "rug"
+
+assets:
+  asset_id: "example-bed-queen"
+  model_url: "/assets/models/example-bed-queen.glb"
+  thumbnail_url: "/assets/thumbs/example-bed-queen.png"
+
+variants:
+  - variant: "Queen"
+    finish_code: "oat_fabric"
+    finish_label: "Oat Fabric"
+    swatch_group: "upholstery"
+    price_usd: 1299
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 165
+      depth_cm: 215
+      height_cm: 105
+    size_class: "large"
+    color_family: "beige"
+    tone: "neutral"
+    materials:
+      frame:
+        structure: "engineered_wood"
+        surface: "fabric"
+    finish:
+      color_finish: "oat"
+      surface_finish: "matte"
+      finish_color: "oat_fabric"

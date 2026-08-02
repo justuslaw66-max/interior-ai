@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { isAdminEmail } from "@/lib/admin";
+import { canAccessAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import ImportJobActions from "./ImportJobActions";
 
@@ -57,7 +57,7 @@ export default async function ImportJobDetailPage(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  if (!session?.user?.email || !isAdminEmail(session.user.email)) {
+  if (!canAccessAdmin(session?.user?.email)) {
     redirect("/");
   }
 

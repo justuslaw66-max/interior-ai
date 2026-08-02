@@ -3,19 +3,68 @@
 import posthog from "posthog-js";
 import { PostHogProvider as PHProvider } from "posthog-js/react";
 import { useEffect } from "react";
+import { setClientAnalyticsDisabled } from "@/lib/analytics";
+import { isUsablePostHogKey } from "@/lib/posthog-config";
 
-export function PostHogProvider({ children }: { children: React.ReactNode }) {
+function resolvePostHogIngestHost(rawHost?: string): string {
+  const fallback = "https://us.i.posthog.com";
+  const host = (rawHost ?? fallback).trim();
+  if (!host) return fallback;
+
+  const normalized = host.replace(/\/$/, "").toLowerCase();
+
+  if (
+    normalized === "https://app.posthog.com" ||
+    normalized === "https://us.posthog.com" ||
+    normalized === "app.posthog.com" ||
+    normalized === "us.posthog.com"
+  ) {
+    return fallback;
+  }
+
+  if (normalized === "https://eu.posthog.com" || normalized === "eu.posthog.com") {
+    return "https://eu.i.posthog.com";
+  }
+
+  return host.replace(/\/$/, "");
+}
+
+export function PostHogProvider({
+  children,
+  analyticsDisabled = false,
+}: {
+  children: React.ReactNode;
+  analyticsDisabled?: boolean;
+}) {
+  const postHogKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
+  const effectiveAnalyticsDisabled =
+    analyticsDisabled || !isUsablePostHogKey(postHogKey);
+
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (!process.env.NEXT_PUBLIC_POSTHOG_KEY) return;
+    setClientAnalyticsDisabled(effectiveAnalyticsDisabled);
 
-    posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
-      api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+    if (typeof window === "undefined") return;
+    if (effectiveAnalyticsDisabled || !isUsablePostHogKey(postHogKey)) return;
+
+    const isDevelopment = process.env.NODE_ENV === "development";
+    const ingestHost = resolvePostHogIngestHost(process.env.NEXT_PUBLIC_POSTHOG_HOST);
+    const uiHost = process.env.NEXT_PUBLIC_POSTHOG_UI_HOST || "https://us.posthog.com";
+
+    posthog.init(postHogKey, {
+      // In local dev, call PostHog directly to avoid flaky local proxy timeouts.
+      api_host: isDevelopment ? ingestHost : "/ingest",
+      ui_host: uiHost,
       capture_pageview: false,
       autocapture: false,
       capture_exceptions: true,
+      // Reduce noisy recorder traffic/errors in development.
+      disable_session_recording: isDevelopment,
     });
-  }, []);
+  }, [effectiveAnalyticsDisabled, postHogKey]);
+
+  if (effectiveAnalyticsDisabled) {
+    return <>{children}</>;
+  }
 
   return <PHProvider client={posthog}>{children}</PHProvider>;
 }

@@ -3,6 +3,12 @@
 import { signIn, signOut } from "next-auth/react";
 
 export function AuthButtons({ isAuthed }: { isAuthed: boolean }) {
+  const signInWithReturn = () => {
+    const callbackUrl =
+      typeof window !== "undefined" ? window.location.href : "/";
+    signIn("google", { callbackUrl });
+  };
+
   return (
     <div className="flex gap-2">
       {isAuthed ? (
@@ -15,7 +21,7 @@ export function AuthButtons({ isAuthed }: { isAuthed: boolean }) {
       ) : (
         <button
           className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-blue-700 border border-blue-700"
-          onClick={() => signIn("google")}
+          onClick={signInWithReturn}
         >
           Sign in with Google
         </button>

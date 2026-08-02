@@ -2,11 +2,14 @@
 
 import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
-import { Grid, OrbitControls } from "@react-three/drei";
+import { Grid } from "@react-three/drei/core/Grid";
+import { OrbitControls } from "@react-three/drei/core/OrbitControls";
 import { useMemo } from "react";
 import Link from "next/link";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
+import { ViewerLighting } from "@/components/editor/design-page/lighting";
+import { DEFAULT_DESIGN_LIGHTING_SETTINGS } from "@/lib/lightingPresets";
 
 type PlacedItem = {
   instanceId: string;
@@ -40,8 +43,8 @@ function Room({
   const floorMat = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
-        color: "#e9e4dc",
-        roughness: 0.9,
+        color: "#e8decc",
+        roughness: 0.86,
         metalness: 0.0,
       }),
     []
@@ -50,8 +53,8 @@ function Room({
   const wallMat = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
-        color: "#f6f6f6",
-        roughness: 0.95,
+        color: "#f2eee6",
+        roughness: 0.92,
         metalness: 0.0,
       }),
     []
@@ -173,19 +176,10 @@ export default function DesignerCanvas({
         shadows
         camera={{ position: [4.5, 3.2, 5.5], fov: 45, near: 0.1, far: 100 }}
       >
-        <ambientLight intensity={0.4} />
-        <directionalLight
-          position={[6, 8, 4]}
-          intensity={1.0}
-          castShadow
-          shadow-mapSize-width={2048}
-          shadow-mapSize-height={2048}
-          shadow-camera-near={1}
-          shadow-camera-far={25}
-          shadow-camera-left={-10}
-          shadow-camera-right={10}
-          shadow-camera-top={10}
-          shadow-camera-bottom={-10}
+        <ViewerLighting
+          settings={DEFAULT_DESIGN_LIGHTING_SETTINGS}
+          roomWidth={roomWidth}
+          roomDepth={roomDepth}
         />
 
         <Room width={roomWidth} depth={roomDepth} />
