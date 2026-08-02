@@ -17,6 +17,7 @@ import path from "node:path";
 import process from "node:process";
 import { validateRequiredTestReport } from "./required-test-truthfulness.mjs";
 import {
+  FURNISHED_TEMPLATE_PHASE_CONTRACTS,
   RUNTIME_SMOKE_OVERHEAD_BUDGETS,
   RUNTIME_SMOKE_PHASE_BUDGETS,
   RUNTIME_SMOKE_PHASE_TIMING_SCHEMA,
@@ -1088,8 +1089,11 @@ function readRuntimeSmokePhaseTimings(repositoryRoot, test, issues, environment)
             "elapsedMs",
             "outcome",
             "timeoutBudgetMs",
+            "performanceWarningThresholdMs",
+            "performanceWarningExceeded",
             "finalLifecycleState",
             "safeDiagnosticCategory",
+            "progressCheckpoints",
           ]) ||
           phase.outcome !== "passed" ||
           phase.safeDiagnosticCategory !== "none" ||
@@ -1101,7 +1105,37 @@ function readRuntimeSmokePhaseTimings(repositoryRoot, test, issues, environment)
           !Number.isSafeInteger(phase.elapsedMs) ||
           phase.elapsedMs < 0 ||
           phase.elapsedMs > phase.timeoutBudgetMs ||
-          phase.timeoutBudgetMs !== RUNTIME_SMOKE_PHASE_BUDGETS[index]?.timeoutMs,
+          phase.timeoutBudgetMs !== RUNTIME_SMOKE_PHASE_BUDGETS[index]?.timeoutMs ||
+          phase.performanceWarningThresholdMs !==
+            (FURNISHED_TEMPLATE_PHASE_CONTRACTS[phase.name]
+              ?.performanceWarningThresholdMs ?? null) ||
+          phase.performanceWarningExceeded !==
+            (phase.performanceWarningThresholdMs !== null &&
+              phase.elapsedMs > phase.performanceWarningThresholdMs) ||
+          !Array.isArray(phase.progressCheckpoints) ||
+          phase.progressCheckpoints.length < 2 ||
+          phase.progressCheckpoints.some(
+            (checkpoint) =>
+              !exactKeys(checkpoint, [
+                "name",
+                "elapsedMs",
+                "finalLifecycleState",
+              ]) ||
+              typeof checkpoint.name !== "string" ||
+              !/^[a-z0-9][a-z0-9-]{0,95}$/.test(checkpoint.name) ||
+              !Number.isSafeInteger(checkpoint.elapsedMs) ||
+              checkpoint.elapsedMs < 0 ||
+              checkpoint.elapsedMs > phase.elapsedMs ||
+              !["not-observed", "loading", "ready", "stable", "persisted"].includes(
+                checkpoint.finalLifecycleState,
+              ),
+          ) ||
+          phase.progressCheckpoints[0]?.name !== "phase-start" ||
+          phase.progressCheckpoints.at(-1)?.name !== "phase-complete" ||
+          phase.progressCheckpoints.some((checkpoint, checkpointIndex) =>
+            checkpointIndex > 0 &&
+            checkpoint.elapsedMs < phase.progressCheckpoints[checkpointIndex - 1].elapsedMs
+          ),
       )
     ) {
       issues.push("runtime-smoke phase timing outcomes are invalid");

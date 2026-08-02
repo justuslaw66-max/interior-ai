@@ -2,24 +2,185 @@ import { mkdirSync, renameSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 export const RUNTIME_SMOKE_PHASE_TIMING_SCHEMA =
-  "interior-ai.runtime-smoke-phase-timings.v1";
+  "interior-ai.runtime-smoke-phase-timings.v2";
 
-export const RUNTIME_SMOKE_PHASE_BUDGETS = Object.freeze([
-  { name: "test-body-setup", timeoutMs: 5_000 },
-  { name: "initial-navigation", timeoutMs: 45_000 },
-  { name: "fixture-creation", timeoutMs: 50_000 },
-  { name: "fixture-reload-2d-readiness", timeoutMs: 60_000 },
-  { name: "initial-glb-loading-and-selection-verification", timeoutMs: 45_000 },
-  { name: "semantic-readiness", timeoutMs: 65_000 },
-  { name: "bounds-verification", timeoutMs: 45_000 },
-  { name: "render-loop-assertions", timeoutMs: 5_000 },
-  { name: "remount", timeoutMs: 60_000 },
-  { name: "reload-1", timeoutMs: 70_000 },
-  { name: "reload-2", timeoutMs: 70_000 },
-  { name: "reload-3", timeoutMs: 70_000 },
-  { name: "persistence-assertions", timeoutMs: 10_000 },
-  { name: "final-body-state-assertions", timeoutMs: 10_000 },
-]);
+function freezePhaseContract({
+  operations,
+  orchestrationMarginMs,
+  noProgressTimeoutMs,
+  performanceWarningThresholdMs,
+}) {
+  return Object.freeze({
+    operations: Object.freeze(
+      operations.map((operation) => Object.freeze({ ...operation })),
+    ),
+    orchestrationMarginMs,
+    noProgressTimeoutMs,
+    performanceWarningThresholdMs,
+  });
+}
+
+export function deriveFurnishedTemplatePhaseTimeout(contract) {
+  return sumNonNegativeIntegers(
+    [
+      ...contract.operations.map((operation) => operation.timeoutMs),
+      contract.orchestrationMarginMs,
+    ],
+    "furnished-template phase contract",
+  );
+}
+
+export function runtimeSmokeAggregateLifecycleState({
+  expectedModelCount,
+  readyModelCount,
+  loadingModelCount,
+  terminalErrorModelCount,
+  combinedReadinessSatisfied,
+}) {
+  if (terminalErrorModelCount > 0) return "error";
+  if (
+    combinedReadinessSatisfied &&
+    readyModelCount === expectedModelCount &&
+    loadingModelCount === 0
+  ) {
+    return "ready";
+  }
+  return "loading";
+}
+
+export const FURNISHED_TEMPLATE_RELOAD_CONTRACT = freezePhaseContract({
+  operations: [
+    { name: "navigation", timeoutMs: 60_000 },
+    { name: "bootstrap-readiness", timeoutMs: 30_000 },
+    { name: "view-state-read", timeoutMs: 30_000 },
+    { name: "view-activation", timeoutMs: 30_000 },
+    { name: "model-responses-and-readiness", timeoutMs: 70_000 },
+    { name: "body-state-assertion", timeoutMs: 5_000 },
+    { name: "diagnostics-settle", timeoutMs: 10_000 },
+    { name: "post-settle-observation", timeoutMs: 1_000 },
+  ],
+  orchestrationMarginMs: 30_000,
+  noProgressTimeoutMs: 75_000,
+  performanceWarningThresholdMs: 70_000,
+});
+
+const FURNISHED_TEMPLATE_BOUNDS_CONTRACT = freezePhaseContract({
+  operations: [
+    { name: "diagnostics-settle", timeoutMs: 10_000 },
+    { name: "post-settle-observation", timeoutMs: 1_000 },
+    { name: "diagnostic-snapshot-and-assertions", timeoutMs: 30_000 },
+  ],
+  orchestrationMarginMs: 30_000,
+  noProgressTimeoutMs: 60_000,
+  performanceWarningThresholdMs: 45_000,
+});
+
+const FURNISHED_TEMPLATE_REMOUNT_CONTRACT = freezePhaseContract({
+  operations: [
+    { name: "activate-2d", timeoutMs: 30_000 },
+    { name: "verify-2d", timeoutMs: 5_000 },
+    { name: "activate-3d", timeoutMs: 30_000 },
+    { name: "verify-3d", timeoutMs: 5_000 },
+    { name: "verify-selection", timeoutMs: 5_000 },
+    { name: "model-readiness", timeoutMs: 60_000 },
+  ],
+  orchestrationMarginMs: 30_000,
+  noProgressTimeoutMs: 75_000,
+  performanceWarningThresholdMs: 60_000,
+});
+
+export const FURNISHED_TEMPLATE_PHASE_CONTRACTS = Object.freeze({
+  "test-body-setup": freezePhaseContract({
+    operations: [{ name: "instrumentation-registration", timeoutMs: 30_000 }],
+    orchestrationMarginMs: 5_000,
+    noProgressTimeoutMs: 30_000,
+    performanceWarningThresholdMs: 5_000,
+  }),
+  "initial-navigation": freezePhaseContract({
+    operations: [
+      { name: "navigation", timeoutMs: 60_000 },
+      { name: "scene-readiness", timeoutMs: 30_000 },
+    ],
+    orchestrationMarginMs: 15_000,
+    noProgressTimeoutMs: 75_000,
+    performanceWarningThresholdMs: 45_000,
+  }),
+  "fixture-creation": freezePhaseContract({
+    operations: [
+      { name: "entry-selection-branch", timeoutMs: 40_000 },
+      { name: "template-application", timeoutMs: 73_000 },
+      { name: "room-and-item-readiness", timeoutMs: 30_000 },
+      { name: "local-backup-readiness", timeoutMs: 30_000 },
+      { name: "fixture-mutation", timeoutMs: 30_000 },
+    ],
+    orchestrationMarginMs: 30_000,
+    noProgressTimeoutMs: 90_000,
+    performanceWarningThresholdMs: 50_000,
+  }),
+  "fixture-reload-2d-readiness": freezePhaseContract({
+    operations: [
+      { name: "navigation", timeoutMs: 60_000 },
+      { name: "bootstrap-readiness", timeoutMs: 30_000 },
+      { name: "view-2d-readiness", timeoutMs: 30_000 },
+      { name: "selection-readiness", timeoutMs: 30_000 },
+    ],
+    orchestrationMarginMs: 30_000,
+    noProgressTimeoutMs: 75_000,
+    performanceWarningThresholdMs: 60_000,
+  }),
+  "initial-glb-loading-and-selection-verification": freezePhaseContract({
+    operations: [
+      { name: "plan-selection-click", timeoutMs: 35_000 },
+      { name: "plan-selection-assertion", timeoutMs: 35_000 },
+      { name: "view-activation-click", timeoutMs: 35_000 },
+      { name: "view-activation-assertion", timeoutMs: 35_000 },
+      { name: "model-responses", timeoutMs: 45_000 },
+      { name: "selection-verification", timeoutMs: 5_000 },
+    ],
+    orchestrationMarginMs: 30_000,
+    noProgressTimeoutMs: 60_000,
+    performanceWarningThresholdMs: 45_000,
+  }),
+  "semantic-readiness": freezePhaseContract({
+    operations: [{ name: "model-readiness", timeoutMs: 65_000 }],
+    orchestrationMarginMs: 15_000,
+    noProgressTimeoutMs: 70_000,
+    performanceWarningThresholdMs: 65_000,
+  }),
+  "bounds-verification": FURNISHED_TEMPLATE_BOUNDS_CONTRACT,
+  "render-loop-assertions": freezePhaseContract({
+    operations: [{ name: "render-count-assertions", timeoutMs: 5_000 }],
+    orchestrationMarginMs: 5_000,
+    noProgressTimeoutMs: 8_000,
+    performanceWarningThresholdMs: 5_000,
+  }),
+  remount: FURNISHED_TEMPLATE_REMOUNT_CONTRACT,
+  "reload-1": FURNISHED_TEMPLATE_RELOAD_CONTRACT,
+  "reload-2": FURNISHED_TEMPLATE_RELOAD_CONTRACT,
+  "reload-3": FURNISHED_TEMPLATE_RELOAD_CONTRACT,
+  "persistence-assertions": freezePhaseContract({
+    operations: [
+      { name: "local-backup-read", timeoutMs: 30_000 },
+      { name: "identity-assertion", timeoutMs: 5_000 },
+    ],
+    orchestrationMarginMs: 10_000,
+    noProgressTimeoutMs: 35_000,
+    performanceWarningThresholdMs: 10_000,
+  }),
+  "final-body-state-assertions": freezePhaseContract({
+    operations: [{ name: "final-assertions", timeoutMs: 5_000 }],
+    orchestrationMarginMs: 10_000,
+    noProgressTimeoutMs: 10_000,
+    performanceWarningThresholdMs: 10_000,
+  }),
+});
+
+export const RUNTIME_SMOKE_PHASE_BUDGETS = Object.freeze(
+  Object.entries(FURNISHED_TEMPLATE_PHASE_CONTRACTS).map(([name, contract]) => ({
+    name,
+    timeoutMs: deriveFurnishedTemplatePhaseTimeout(contract),
+  })),
+);
 
 export const RUNTIME_SMOKE_OVERHEAD_BUDGETS = Object.freeze({
   fixtureSetupMs: 15_000,
@@ -83,9 +244,19 @@ export class RuntimeSmokePhaseTimeoutError extends Error {
   }
 }
 
+export class RuntimeSmokeNoProgressError extends Error {
+  constructor(phaseName, timeoutMs) {
+    super(`Runtime-smoke phase ${phaseName} made no progress for ${timeoutMs}ms`);
+    this.name = "RuntimeSmokeNoProgressError";
+    this.phaseName = phaseName;
+    this.timeoutMs = timeoutMs;
+  }
+}
+
 function diagnosticCategory(error) {
   if (error instanceof RuntimeSmokeTerminalError) return error.safeCategory;
   if (error instanceof RuntimeSmokePhaseTimeoutError) return "phase-timeout";
+  if (error instanceof RuntimeSmokeNoProgressError) return "lack-of-progress";
   if (error?.name === "AssertionError") return "assertion-failure";
   return "unexpected-test-error";
 }
@@ -117,6 +288,8 @@ export function createRuntimeSmokePhaseRecorder({
   setTimer = setTimeout,
   clearTimer = clearTimeout,
   phaseBudgets = RUNTIME_SMOKE_PHASE_BUDGETS,
+  phaseContracts = FURNISHED_TEMPLATE_PHASE_CONTRACTS,
+  writePerformanceWarning = (message) => console.warn(message),
 }) {
   const testStartedAt = now();
   const records = [];
@@ -153,48 +326,114 @@ export function createRuntimeSmokePhaseRecorder({
         throw new Error(`Runtime-smoke phase ${phaseName} was recorded more than once`);
       }
       const timeoutMs = runtimeSmokePhaseBudget(phaseName, phaseBudgets);
+      const phaseContract = phaseContracts[phaseName] ?? null;
       const startedAt = now();
       let timeoutHandle;
+      let noProgressHandle;
+      let rejectNoProgress;
+      let acceptsProgressCheckpoints = true;
+      const progressCheckpoints = [];
       const timeout = new Promise((_, reject) => {
         timeoutHandle = setTimer(
           () => reject(new RuntimeSmokePhaseTimeoutError(phaseName, timeoutMs)),
           timeoutMs,
         );
       });
-      try {
-        const result = await Promise.race([Promise.resolve().then(task), timeout]);
-        records.push({
+      const noProgress = phaseContract
+        ? new Promise((_, reject) => {
+            rejectNoProgress = reject;
+          })
+        : null;
+      const scheduleNoProgressTimeout = () => {
+        if (!phaseContract || !rejectNoProgress) return;
+        if (noProgressHandle !== undefined) clearTimer(noProgressHandle);
+        noProgressHandle = setTimer(
+          () => rejectNoProgress(
+            new RuntimeSmokeNoProgressError(
+              phaseName,
+              phaseContract.noProgressTimeoutMs,
+            ),
+          ),
+          phaseContract.noProgressTimeoutMs,
+        );
+      };
+      const checkpoint = (
+        name,
+        lifecycleState = safeLifecycleState(finalLifecycleState()),
+      ) => {
+        if (!acceptsProgressCheckpoints) return;
+        if (!/^[a-z0-9][a-z0-9-]{0,95}$/.test(name)) {
+          throw new Error("Runtime-smoke progress checkpoint name is unsafe");
+        }
+        progressCheckpoints.push({
+          name,
+          elapsedMs: Math.max(0, now() - startedAt),
+          finalLifecycleState: safeLifecycleState(lifecycleState),
+        });
+        scheduleNoProgressTimeout();
+      };
+      const createRecord = ({ outcome, safeDiagnosticCategory }) => {
+        const elapsedMs = Math.max(0, now() - startedAt);
+        const performanceWarningThresholdMs =
+          phaseContract?.performanceWarningThresholdMs ?? null;
+        const performanceWarningExceeded =
+          performanceWarningThresholdMs !== null &&
+          elapsedMs > performanceWarningThresholdMs;
+        if (performanceWarningExceeded) {
+          writePerformanceWarning(
+            `Runtime-smoke phase ${phaseName} completed in ${elapsedMs}ms; ` +
+              `the non-failing performance observation threshold is ` +
+              `${performanceWarningThresholdMs}ms.`,
+          );
+        }
+        return {
           name: phaseName,
           startTimeRelativeMs: startedAt - testStartedAt,
-          elapsedMs: Math.max(0, now() - startedAt),
-          outcome: "passed",
+          elapsedMs,
+          outcome,
           timeoutBudgetMs: timeoutMs,
+          performanceWarningThresholdMs,
+          performanceWarningExceeded,
           finalLifecycleState: safeLifecycleState(finalLifecycleState()),
+          safeDiagnosticCategory,
+          progressCheckpoints,
+        };
+      };
+      checkpoint("phase-start");
+      try {
+        const racers = [
+          Promise.resolve().then(() => task({ checkpoint })),
+          timeout,
+        ];
+        if (noProgress) racers.push(noProgress);
+        const result = await Promise.race(racers);
+        checkpoint("phase-complete");
+        records.push(createRecord({
+          outcome: "passed",
           safeDiagnosticCategory: "none",
-        });
+        }));
         completedNames.add(phaseName);
         write();
         return result;
       } catch (error) {
-        records.push({
-          name: phaseName,
-          startTimeRelativeMs: startedAt - testStartedAt,
-          elapsedMs: Math.max(0, now() - startedAt),
+        records.push(createRecord({
           outcome:
             error instanceof RuntimeSmokePhaseTimeoutError
               ? "timed-out"
+              : error instanceof RuntimeSmokeNoProgressError
+                ? "stalled"
               : error instanceof RuntimeSmokeTerminalError
                 ? "terminal-error"
                 : "failed",
-          timeoutBudgetMs: timeoutMs,
-          finalLifecycleState: safeLifecycleState(finalLifecycleState()),
           safeDiagnosticCategory: diagnosticCategory(error),
-        });
+        }));
         completedNames.add(phaseName);
         write();
         throw error;
       } finally {
+        acceptsProgressCheckpoints = false;
         if (timeoutHandle !== undefined) clearTimer(timeoutHandle);
+        if (noProgressHandle !== undefined) clearTimer(noProgressHandle);
       }
     },
     records,

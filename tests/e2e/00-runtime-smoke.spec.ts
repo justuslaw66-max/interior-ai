@@ -2,14 +2,43 @@ import { expect, test } from "./fixtures";
 import { confirmPlanTemplateReplacementIfNeeded } from "./plan-template-test-utils";
 import { getSelectedItemPanel } from "./variant-test-utils";
 import {
+  FURNISHED_TEMPLATE_PHASE_CONTRACTS,
+  FURNISHED_TEMPLATE_RELOAD_CONTRACT,
   RUNTIME_SMOKE_WHOLE_TEST_TIMEOUT_MS,
   RuntimeSmokePhaseTimeoutError,
   RuntimeSmokeTerminalError,
   createRuntimeSmokePhaseRecorder,
+  runtimeSmokeAggregateLifecycleState,
   runtimeSmokePhaseBudget,
 } from "../../scripts/runtime-smoke-phase-budget.mjs";
 
 const DESIGN_STORAGE_KEY = "interior-ai:v1:livingroom-design";
+
+type RuntimeSmokeCheckpoint = (
+  name: string,
+  lifecycleState?: string,
+) => void;
+
+function reloadOperationTimeout(name: string): number {
+  const operation = FURNISHED_TEMPLATE_RELOAD_CONTRACT.operations.find(
+    (candidate) => candidate.name === name,
+  );
+  if (!operation) throw new Error(`Unknown reload operation: ${name}`);
+  return operation.timeoutMs;
+}
+
+function phaseOperationTimeout(
+  phaseName: keyof typeof FURNISHED_TEMPLATE_PHASE_CONTRACTS,
+  operationName: string,
+): number {
+  const operation = FURNISHED_TEMPLATE_PHASE_CONTRACTS[
+    phaseName
+  ].operations.find((candidate) => candidate.name === operationName);
+  if (!operation) {
+    throw new Error(`Unknown ${phaseName} operation: ${operationName}`);
+  }
+  return operation.timeoutMs;
+}
 
 const MODEL_FIXTURES = [
   {
@@ -87,24 +116,38 @@ test.describe("00. Runtime smoke", () => {
       minimumMountCount,
       phaseName,
       requireAuburnSelectionOutline = true,
+      operationTimeoutMs,
+      checkpoint,
     }: {
       minimumMountCount: number;
       phaseName: string;
       requireAuburnSelectionOutline?: boolean;
+      operationTimeoutMs?: number;
+      checkpoint?: RuntimeSmokeCheckpoint;
     }) => {
       const startedAt = Date.now();
-      const timeoutMs = runtimeSmokePhaseBudget(phaseName);
+      const timeoutMs = operationTimeoutMs ?? runtimeSmokePhaseBudget(phaseName);
       let lastDiagnostics = await readModelDiagnostics();
+      let previousProgressSignature = "";
       while (Date.now() - startedAt < timeoutMs) {
         lastDiagnostics = await readModelDiagnostics();
-        const terminalErrors = lastDiagnostics.filter(
-          ({ diagnostic }) => diagnostic?.loadState === "error"
-        );
-        if (terminalErrors.length > 0) {
-          finalLifecycleState = "error";
-          throw new RuntimeSmokeTerminalError(phaseName);
-        }
-        const ready = lastDiagnostics.every(
+        const progressSignature = lastDiagnostics
+          .map(({ diagnostic }) =>
+            diagnostic
+              ? `${diagnostic.loadState}-${diagnostic.mountCount}-${diagnostic.boundsMaterialChangeCount}`
+              : "missing",
+          )
+          .join("-");
+        const loadingModelCount = lastDiagnostics.filter(
+          ({ diagnostic }) => diagnostic?.loadState === "loading",
+        ).length;
+        const readyModelCount = lastDiagnostics.filter(
+          ({ diagnostic }) => diagnostic?.loadState === "ready",
+        ).length;
+        const terminalErrorModelCount = lastDiagnostics.filter(
+          ({ diagnostic }) => diagnostic?.loadState === "error",
+        ).length;
+        const diagnosticsReady = lastDiagnostics.every(
           ({ key, diagnostic }) =>
             diagnostic?.loadState === "ready" &&
             diagnostic.mountCount >= minimumMountCount &&
@@ -114,9 +157,28 @@ test.describe("00. Runtime smoke", () => {
             diagnostic.excessiveBoundsWarningCount === 0 &&
             (!requireAuburnSelectionOutline ||
               key !== "runtime-smoke-model-3" ||
-              diagnostic.selectionOutlineVisible)
+              diagnostic.selectionOutlineVisible),
         );
-        if (ready) {
+        const aggregateLifecycleState = runtimeSmokeAggregateLifecycleState({
+          expectedModelCount: diagnosticKeys.length,
+          readyModelCount,
+          loadingModelCount,
+          terminalErrorModelCount,
+          combinedReadinessSatisfied: diagnosticsReady,
+        });
+        if (progressSignature !== previousProgressSignature) {
+          checkpoint?.(
+            `diagnostics-loading-${loadingModelCount}-ready-${readyModelCount}` +
+              `-error-${terminalErrorModelCount}`,
+            aggregateLifecycleState,
+          );
+          previousProgressSignature = progressSignature;
+        }
+        if (terminalErrorModelCount > 0) {
+          finalLifecycleState = "error";
+          throw new RuntimeSmokeTerminalError(phaseName);
+        }
+        if (diagnosticsReady) {
           finalLifecycleState = "ready";
           return lastDiagnostics;
         }
@@ -125,12 +187,28 @@ test.describe("00. Runtime smoke", () => {
       }
       throw new RuntimeSmokePhaseTimeoutError(phaseName, timeoutMs);
     };
-    const waitForModelDiagnosticsToSettle = async () => {
+    const waitForModelDiagnosticsToSettle = async (
+      checkpoint?: RuntimeSmokeCheckpoint,
+      timeoutMs = 10_000,
+    ) => {
       let previous = await readModelDiagnostics();
       let stableSamples = 0;
-      for (let sampleIndex = 0; sampleIndex < 20; sampleIndex += 1) {
+      let previousProgressSignature = "";
+      const maximumSamples = Math.ceil(timeoutMs / 500);
+      for (let sampleIndex = 0; sampleIndex < maximumSamples; sampleIndex += 1) {
         await page.waitForTimeout(500);
         const current = await readModelDiagnostics();
+        const progressSignature = current
+          .map(({ diagnostic }) =>
+            diagnostic
+              ? `${diagnostic.loadState}-${diagnostic.renderCount}-${diagnostic.boundsMaterialChangeCount}`
+              : "missing",
+          )
+          .join("-");
+        if (progressSignature !== previousProgressSignature) {
+          checkpoint?.(`diagnostics-sample-${sampleIndex + 1}`);
+          previousProgressSignature = progressSignature;
+        }
         const stable = current.every(({ key, diagnostic }, index) => {
           const previousDiagnostic = previous[index]?.diagnostic;
           return (
@@ -151,15 +229,107 @@ test.describe("00. Runtime smoke", () => {
         `GLB diagnostics did not settle: ${JSON.stringify(previous)}`
       );
     };
-    const waitForModelResponsesOrTerminal = async ({
+    const waitForReloadModelsReady = async ({
       minimumResponseCount,
       phaseName,
+      checkpoint,
     }: {
       minimumResponseCount: number;
       phaseName: string;
+      checkpoint: RuntimeSmokeCheckpoint;
     }) => {
-      const timeoutMs = runtimeSmokePhaseBudget(phaseName);
+      const timeoutMs = reloadOperationTimeout("model-responses-and-readiness");
       const startedAt = Date.now();
+      let previousProgressSignature = "";
+      while (Date.now() - startedAt < timeoutMs) {
+        const diagnostics = await readModelDiagnostics();
+        const loadingModelCount = diagnostics.filter(
+          ({ diagnostic }) => diagnostic?.loadState === "loading",
+        ).length;
+        const readyModelCount = diagnostics.filter(
+          ({ diagnostic }) => diagnostic?.loadState === "ready",
+        ).length;
+        const terminalErrorModelCount = diagnostics.filter(
+          ({ diagnostic }) => diagnostic?.loadState === "error",
+        ).length;
+        const totalResponses = MODEL_FIXTURES.reduce(
+          (total, { modelPath }) =>
+            total + (modelResponseCounts.get(modelPath) ?? 0),
+          0,
+        );
+        const totalRequests = MODEL_FIXTURES.reduce(
+          (total, { modelPath }) =>
+            total + (modelRequestCounts.get(modelPath) ?? 0),
+          0,
+        );
+        const requiredResponses = MODEL_FIXTURES.length * minimumResponseCount;
+        const responsesReady = MODEL_FIXTURES.every(
+          ({ modelPath }) =>
+            (modelResponseCounts.get(modelPath) ?? 0) >= minimumResponseCount,
+        );
+        const diagnosticsReady = diagnostics.every(
+          ({ diagnostic }) =>
+            diagnostic?.loadState === "ready" &&
+            diagnostic.mountCount >= 1 &&
+            diagnostic.boundsMaterialChangeCount >= 1 &&
+            diagnostic.boundsPublicationCount === 0 &&
+            diagnostic.boundsInvalidCount === 0 &&
+            diagnostic.excessiveBoundsWarningCount === 0,
+        );
+        const combinedReadinessSatisfied = responsesReady && diagnosticsReady;
+        const aggregateLifecycleState = runtimeSmokeAggregateLifecycleState({
+          expectedModelCount: MODEL_FIXTURES.length,
+          readyModelCount,
+          loadingModelCount,
+          terminalErrorModelCount,
+          combinedReadinessSatisfied,
+        });
+        const progressSignature = [
+          loadingModelCount,
+          readyModelCount,
+          terminalErrorModelCount,
+          totalResponses,
+          totalRequests,
+          fatalErrors.length,
+        ].join("-");
+        if (progressSignature !== previousProgressSignature) {
+          checkpoint(
+            `models-loading-${loadingModelCount}-ready-${readyModelCount}` +
+              `-error-${terminalErrorModelCount}-responses-${totalResponses}` +
+              `-required-${requiredResponses}-outstanding-${Math.max(0, totalRequests - totalResponses)}` +
+              `-browser-errors-${fatalErrors.length}`,
+            aggregateLifecycleState,
+          );
+          previousProgressSignature = progressSignature;
+        }
+        if (terminalErrorModelCount > 0) {
+          finalLifecycleState = "error";
+          throw new RuntimeSmokeTerminalError(phaseName);
+        }
+        if (combinedReadinessSatisfied) {
+          finalLifecycleState = "ready";
+          checkpoint("models-ready", "ready");
+          return diagnostics;
+        }
+        finalLifecycleState = aggregateLifecycleState;
+        await page.waitForTimeout(500);
+      }
+      throw new RuntimeSmokePhaseTimeoutError(phaseName, timeoutMs);
+    };
+    const waitForModelResponsesOrTerminal = async ({
+      minimumResponseCount,
+      phaseName,
+      operationTimeoutMs,
+      checkpoint,
+    }: {
+      minimumResponseCount: number;
+      phaseName: string;
+      operationTimeoutMs?: number;
+      checkpoint?: RuntimeSmokeCheckpoint;
+    }) => {
+      const timeoutMs = operationTimeoutMs ?? runtimeSmokePhaseBudget(phaseName);
+      const startedAt = Date.now();
+      let previousResponseCount = -1;
       while (Date.now() - startedAt < timeoutMs) {
         const diagnostics = await readModelDiagnostics();
         if (
@@ -176,7 +346,17 @@ test.describe("00. Runtime smoke", () => {
               (modelResponseCounts.get(modelPath) ?? 0) >= minimumResponseCount
           )
         ) {
+          checkpoint?.("model-responses-ready", finalLifecycleState);
           return;
+        }
+        const totalResponses = MODEL_FIXTURES.reduce(
+          (total, { modelPath }) =>
+            total + (modelResponseCounts.get(modelPath) ?? 0),
+          0,
+        );
+        if (totalResponses !== previousResponseCount) {
+          checkpoint?.(`model-responses-${totalResponses}`, finalLifecycleState);
+          previousResponseCount = totalResponses;
         }
         finalLifecycleState = diagnostics.some(
           ({ diagnostic }) => diagnostic?.loadState === "loading"
@@ -188,7 +368,7 @@ test.describe("00. Runtime smoke", () => {
       throw new RuntimeSmokePhaseTimeoutError(phaseName, timeoutMs);
     };
 
-    await phaseRecorder.run("test-body-setup", async () => {
+    await phaseRecorder.run("test-body-setup", async ({ checkpoint }) => {
       page.on("pageerror", (error) => fatalErrors.push(error.message));
       page.on("console", (message) => {
         if (message.type() === "error") {
@@ -234,19 +414,23 @@ test.describe("00. Runtime smoke", () => {
         window.sessionStorage.clear();
         window.localStorage.setItem(clearSentinel, "1");
       });
+      checkpoint("instrumentation-registered");
     });
 
-    await phaseRecorder.run("initial-navigation", async () => {
+    await phaseRecorder.run("initial-navigation", async ({ checkpoint }) => {
       const initialResponse = await page.goto("/design", {
         waitUntil: "domcontentloaded",
+        timeout: phaseOperationTimeout("initial-navigation", "navigation"),
       });
       expect(initialResponse?.status()).toBe(200);
+      checkpoint("route-design-loaded");
       await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
-        timeout: 30_000,
+        timeout: phaseOperationTimeout("initial-navigation", "scene-readiness"),
       });
+      checkpoint("scene-ready");
     });
 
-    await phaseRecorder.run("fixture-creation", async () => {
+    await phaseRecorder.run("fixture-creation", async ({ checkpoint }) => {
       const betaStartTemplate = page.getByTestId("beta-start-template");
       if (await betaStartTemplate.isVisible({ timeout: 5_000 }).catch(() => false)) {
         await betaStartTemplate.click();
@@ -262,20 +446,30 @@ test.describe("00. Runtime smoke", () => {
           (control as HTMLButtonElement).click()
         );
       }
+      checkpoint("entry-selected");
 
       const studioTemplate = page.getByTestId("apply-furnished-template-studio");
       if (await studioTemplate.isVisible({ timeout: 5_000 }).catch(() => false)) {
         await studioTemplate.click();
         await confirmPlanTemplateReplacementIfNeeded(page);
       }
+      checkpoint("template-applied");
 
-      await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
-        "4 rooms",
-        { timeout: 30_000 }
+      const fixtureReadinessTimeoutMs = phaseOperationTimeout(
+        "fixture-creation",
+        "room-and-item-readiness",
       );
-      await expect(page.getByTestId("room-setup-step-furnish-meta")).toHaveText(
-        /[1-9]\d* items?/
-      );
+      await Promise.all([
+        expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
+          "4 rooms",
+          { timeout: fixtureReadinessTimeoutMs },
+        ),
+        expect(page.getByTestId("room-setup-step-furnish-meta")).toHaveText(
+          /[1-9]\d* items?/,
+          { timeout: fixtureReadinessTimeoutMs },
+        ),
+      ]);
+      checkpoint("fixture-room-items-ready");
 
       await expect
         .poll(
@@ -284,9 +478,15 @@ test.describe("00. Runtime smoke", () => {
               (storageKey) => Boolean(window.localStorage.getItem(storageKey)),
               DESIGN_STORAGE_KEY
             ),
-          { timeout: 30_000 }
+          {
+            timeout: phaseOperationTimeout(
+              "fixture-creation",
+              "local-backup-readiness",
+            ),
+          }
         )
         .toBe(true);
+      checkpoint("local-backup-ready");
       await page.evaluate(
       ({ fixtures, storageKey }) => {
         const raw = window.localStorage.getItem(storageKey);
@@ -337,6 +537,7 @@ test.describe("00. Runtime smoke", () => {
       },
         { fixtures: MODEL_FIXTURES, storageKey: DESIGN_STORAGE_KEY }
       );
+      checkpoint("fixture-models-persisted", "persisted");
     }, () => "persisted");
 
     const view2d = page.locator('[data-testid="editor-view-2d"]:visible').first();
@@ -346,20 +547,34 @@ test.describe("00. Runtime smoke", () => {
       .getByTestId("plan-item-keyboard-target")
       .filter({ hasText: "Auburn" });
 
-    await phaseRecorder.run("fixture-reload-2d-readiness", async () => {
-      const fixtureReload = await page.reload({ waitUntil: "domcontentloaded" });
-      expect(fixtureReload?.status()).toBe(200);
-      await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
-        timeout: 30_000,
+    await phaseRecorder.run("fixture-reload-2d-readiness", async ({ checkpoint }) => {
+      const fixtureReload = await page.reload({
+        waitUntil: "domcontentloaded",
+        timeout: phaseOperationTimeout(
+          "fixture-reload-2d-readiness",
+          "navigation",
+        ),
       });
-      await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
-        "4 rooms",
-        { timeout: 30_000 }
+      expect(fixtureReload?.status()).toBe(200);
+      checkpoint("route-design-reloaded");
+      const fixtureReloadReadinessMs = phaseOperationTimeout(
+        "fixture-reload-2d-readiness",
+        "bootstrap-readiness",
       );
-      await expect(page.getByTestId("room-setup-step-furnish-meta")).toHaveText(
-        "8 items",
-        { timeout: 30_000 }
-      );
+      await Promise.all([
+        expect(page.getByTestId("scene-canvas").first()).toBeVisible({
+          timeout: fixtureReloadReadinessMs,
+        }),
+        expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
+          "4 rooms",
+          { timeout: fixtureReloadReadinessMs },
+        ),
+        expect(page.getByTestId("room-setup-step-furnish-meta")).toHaveText(
+          "8 items",
+          { timeout: fixtureReloadReadinessMs },
+        ),
+      ]);
+      checkpoint("fixture-bootstrap-ready");
       await expect(async () => {
         if ((await view2d.getAttribute("aria-pressed")) !== "true") {
           await view2d.evaluate((button) =>
@@ -372,38 +587,94 @@ test.describe("00. Runtime smoke", () => {
         await expect(layoutDebug).toHaveAttribute("data-view-mode", "2d", {
           timeout: 2_000,
         });
-      }).toPass({ timeout: 30_000 });
-      await expect(auburnPlanTarget).toBeVisible({ timeout: 30_000 });
+      }).toPass({
+        timeout: phaseOperationTimeout(
+          "fixture-reload-2d-readiness",
+          "view-2d-readiness",
+        ),
+      });
+      checkpoint("view-2d-ready");
+      await expect(auburnPlanTarget).toBeVisible({
+        timeout: phaseOperationTimeout(
+          "fixture-reload-2d-readiness",
+          "selection-readiness",
+        ),
+      });
+      checkpoint("auburn-plan-item-ready");
     }, () => finalLifecycleState);
 
-    await phaseRecorder.run("initial-glb-loading-and-selection-verification", async () => {
-      await auburnPlanTarget.click();
-      await expect(getSelectedItemPanel(page)).toContainText("Auburn");
-      await view3d.click();
-      await expect(layoutDebug).toHaveAttribute("data-view-mode", "3d");
+    await phaseRecorder.run("initial-glb-loading-and-selection-verification", async ({ checkpoint }) => {
+      const selectionClickTimeoutMs = phaseOperationTimeout(
+        "initial-glb-loading-and-selection-verification",
+        "plan-selection-click",
+      );
+      await auburnPlanTarget.click({ timeout: selectionClickTimeoutMs });
+      checkpoint("auburn-selection-clicked");
+      await expect(getSelectedItemPanel(page)).toContainText("Auburn", {
+        timeout: phaseOperationTimeout(
+          "initial-glb-loading-and-selection-verification",
+          "plan-selection-assertion",
+        ),
+      });
+      checkpoint("auburn-selected");
+      await view3d.click({
+        timeout: phaseOperationTimeout(
+          "initial-glb-loading-and-selection-verification",
+          "view-activation-click",
+        ),
+      });
+      checkpoint("view-3d-clicked");
+      await expect(layoutDebug).toHaveAttribute("data-view-mode", "3d", {
+        timeout: phaseOperationTimeout(
+          "initial-glb-loading-and-selection-verification",
+          "view-activation-assertion",
+        ),
+      });
+      checkpoint("view-3d-active");
       await waitForModelResponsesOrTerminal({
         minimumResponseCount: 1,
         phaseName: "initial-glb-loading-and-selection-verification",
+        operationTimeoutMs: phaseOperationTimeout(
+          "initial-glb-loading-and-selection-verification",
+          "model-responses",
+        ),
+        checkpoint,
       });
       expect(
         MODEL_FIXTURES.every(
           ({ modelPath }) => (modelRequestCounts.get(modelPath) ?? 0) >= 1
         )
       ).toBe(true);
-      await expect(getSelectedItemPanel(page)).toContainText("Auburn");
+      await expect(getSelectedItemPanel(page)).toContainText("Auburn", {
+        timeout: phaseOperationTimeout(
+          "initial-glb-loading-and-selection-verification",
+          "selection-verification",
+        ),
+      });
+      checkpoint("initial-model-selection-verified");
     }, () => finalLifecycleState);
 
-    await phaseRecorder.run("semantic-readiness", async () => {
+    await phaseRecorder.run("semantic-readiness", async ({ checkpoint }) => {
       await waitForModelDiagnosticsReady({
         minimumMountCount: 1,
         phaseName: "semantic-readiness",
+        operationTimeoutMs: phaseOperationTimeout(
+          "semantic-readiness",
+          "model-readiness",
+        ),
+        checkpoint,
       });
+      checkpoint("semantic-models-ready", "ready");
     }, () => finalLifecycleState);
 
     let settledDiagnosticsBefore: Awaited<ReturnType<typeof readModelDiagnostics>> = [];
     let settledDiagnosticsAfter: Awaited<ReturnType<typeof readModelDiagnostics>> = [];
-    await phaseRecorder.run("bounds-verification", async () => {
-      settledDiagnosticsBefore = await waitForModelDiagnosticsToSettle();
+    await phaseRecorder.run("bounds-verification", async ({ checkpoint }) => {
+      settledDiagnosticsBefore = await waitForModelDiagnosticsToSettle(
+        checkpoint,
+        phaseOperationTimeout("bounds-verification", "diagnostics-settle"),
+      );
+      checkpoint("bounds-baseline-settled", "ready");
       await page.waitForTimeout(1_000);
       settledDiagnosticsAfter = await readModelDiagnostics();
       settledDiagnosticsAfter.forEach(({ key, diagnostic }, index) => {
@@ -417,9 +688,10 @@ test.describe("00. Runtime smoke", () => {
         ).toBe(0);
       });
       finalLifecycleState = "stable";
+      checkpoint("bounds-verified", "stable");
     }, () => finalLifecycleState);
 
-    await phaseRecorder.run("render-loop-assertions", async () => {
+    await phaseRecorder.run("render-loop-assertions", async ({ checkpoint }) => {
       settledDiagnosticsAfter.forEach(({ key, diagnostic }, index) => {
         const before = settledDiagnosticsBefore[index]?.diagnostic;
         expect(
@@ -427,56 +699,115 @@ test.describe("00. Runtime smoke", () => {
           `${key} should stop React-rendering once its GLB settles`
         ).toBe(0);
       });
+      checkpoint("render-loop-stable", "stable");
     }, () => finalLifecycleState);
 
-    await phaseRecorder.run("remount", async () => {
-      await view2d.click();
-      await expect(layoutDebug).toHaveAttribute("data-view-mode", "2d");
-      await view3d.click();
-      await expect(layoutDebug).toHaveAttribute("data-view-mode", "3d");
-      await expect(getSelectedItemPanel(page)).toContainText("Auburn");
+    await phaseRecorder.run("remount", async ({ checkpoint }) => {
+      await view2d.click({
+        timeout: phaseOperationTimeout("remount", "activate-2d"),
+      });
+      await expect(layoutDebug).toHaveAttribute("data-view-mode", "2d", {
+        timeout: phaseOperationTimeout("remount", "verify-2d"),
+      });
+      checkpoint("view-2d-active");
+      await view3d.click({
+        timeout: phaseOperationTimeout("remount", "activate-3d"),
+      });
+      await expect(layoutDebug).toHaveAttribute("data-view-mode", "3d", {
+        timeout: phaseOperationTimeout("remount", "verify-3d"),
+      });
+      await expect(getSelectedItemPanel(page)).toContainText("Auburn", {
+        timeout: phaseOperationTimeout("remount", "verify-selection"),
+      });
+      checkpoint("view-3d-selection-restored");
       const remountedDiagnostics = await waitForModelDiagnosticsReady({
         minimumMountCount: 2,
         phaseName: "remount",
+        operationTimeoutMs: phaseOperationTimeout("remount", "model-readiness"),
       });
       expect(
         remountedDiagnostics.every(
           ({ diagnostic }) => (diagnostic?.unmountCount ?? 0) >= 1
         )
       ).toBe(true);
+      checkpoint("models-remounted", finalLifecycleState);
     }, () => finalLifecycleState);
 
     for (let reloadIndex = 0; reloadIndex < 3; reloadIndex += 1) {
       const phaseName = `reload-${reloadIndex + 1}`;
-      await phaseRecorder.run(phaseName, async () => {
-        const reloadResponse = await page.reload({ waitUntil: "domcontentloaded" });
-        expect(reloadResponse?.status()).toBe(200);
-        await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
-          timeout: 30_000,
+      finalLifecycleState = "not-observed";
+      await phaseRecorder.run(phaseName, async ({ checkpoint }) => {
+        const reloadResponse = await page.reload({
+          waitUntil: "domcontentloaded",
+          timeout: reloadOperationTimeout("navigation"),
         });
-        await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
-          /^\d+ rooms?$/
+        expect(reloadResponse?.status()).toBe(200);
+        finalLifecycleState = "loading";
+        checkpoint("route-design-loaded", "loading");
+        const bootstrapReadinessTimeoutMs = reloadOperationTimeout(
+          "bootstrap-readiness",
+        );
+        await Promise.all([
+          expect(page.getByTestId("scene-canvas").first()).toBeVisible({
+            timeout: bootstrapReadinessTimeoutMs,
+          }),
+          expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
+            /^\d+ rooms?$/,
+            { timeout: bootstrapReadinessTimeoutMs },
+          ),
+        ]);
+        const restoredIdentity = await page.evaluate((storageKey) => {
+          const raw = window.localStorage.getItem(storageKey);
+          if (!raw) return { designId: null, roomCount: 0, itemCount: 0 };
+          const stored = JSON.parse(raw) as {
+            designId?: string;
+            rooms?: Array<{ items?: unknown[] }>;
+          };
+          return {
+            designId: stored.designId ?? null,
+            roomCount: stored.rooms?.length ?? 0,
+            itemCount: (stored.rooms ?? []).reduce(
+              (total, room) => total + (room.items?.length ?? 0),
+              0,
+            ),
+          };
+        }, DESIGN_STORAGE_KEY);
+        expect(restoredIdentity.designId).toBeNull();
+        checkpoint(
+          `local-fixture-hydrated-rooms-${restoredIdentity.roomCount}` +
+            `-items-${restoredIdentity.itemCount}`,
+          "loading",
         );
         const reloadedView3d = page
           .locator('[data-testid="editor-view-3d"]:visible')
           .first();
-        if ((await reloadedView3d.getAttribute("aria-pressed")) !== "true") {
-          await reloadedView3d.click();
+        if (
+          (await reloadedView3d.getAttribute("aria-pressed", {
+            timeout: reloadOperationTimeout("view-state-read"),
+          })) !== "true"
+        ) {
+          await reloadedView3d.click({
+            timeout: reloadOperationTimeout("view-activation"),
+          });
         }
-        await waitForModelResponsesOrTerminal({
+        checkpoint("view-3d-active", "loading");
+        await waitForReloadModelsReady({
           minimumResponseCount: reloadIndex + 2,
           phaseName,
-        });
-        await waitForModelDiagnosticsReady({
-          minimumMountCount: 1,
-          phaseName,
-          requireAuburnSelectionOutline: false,
+          checkpoint,
         });
         await expect(page.locator("body")).not.toContainText(
-          "Maximum update depth exceeded"
+          "Maximum update depth exceeded",
+          { timeout: reloadOperationTimeout("body-state-assertion") },
         );
-        const reloadSettledBefore = await waitForModelDiagnosticsToSettle();
-        await page.waitForTimeout(1_000);
+        const reloadSettledBefore = await waitForModelDiagnosticsToSettle(
+          checkpoint,
+          reloadOperationTimeout("diagnostics-settle"),
+        );
+        checkpoint("bounds-settled", "ready");
+        await page.waitForTimeout(
+          reloadOperationTimeout("post-settle-observation"),
+        );
         const reloadSettledAfter = await readModelDiagnostics();
         reloadSettledAfter.forEach(({ key, diagnostic }, index) => {
           const before = reloadSettledBefore[index]?.diagnostic;
@@ -495,10 +826,11 @@ test.describe("00. Runtime smoke", () => {
           ).toBe(0);
         });
         finalLifecycleState = "stable";
+        checkpoint("reload-assertions-complete", "stable");
       }, () => finalLifecycleState);
     }
 
-    await phaseRecorder.run("persistence-assertions", async () => {
+    await phaseRecorder.run("persistence-assertions", async ({ checkpoint }) => {
       const persistedFixtureIds = await page.evaluate((storageKey) => {
         const raw = window.localStorage.getItem(storageKey);
         if (!raw) return [];
@@ -513,11 +845,13 @@ test.describe("00. Runtime smoke", () => {
           )
           .sort();
       }, DESIGN_STORAGE_KEY);
+      checkpoint("local-backup-read", "persisted");
       expect(persistedFixtureIds).toEqual(diagnosticKeys);
       finalLifecycleState = "persisted";
+      checkpoint("fixture-identities-persisted", "persisted");
     }, () => finalLifecycleState);
 
-    await phaseRecorder.run("final-body-state-assertions", async () => {
+    await phaseRecorder.run("final-body-state-assertions", async ({ checkpoint }) => {
       expect(
         MODEL_FIXTURES.every(
           ({ modelPath }) =>
@@ -529,6 +863,7 @@ test.describe("00. Runtime smoke", () => {
         "Maximum update depth exceeded"
       );
       expect(fatalErrors).toEqual([]);
+      checkpoint("final-assertions-complete", finalLifecycleState);
     }, () => finalLifecycleState);
   });
 

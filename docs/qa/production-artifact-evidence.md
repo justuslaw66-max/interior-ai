@@ -71,13 +71,32 @@ lifecycle to diagnostics. The test fails immediately on a terminal load code,
 waits boundedly for semantic readiness, and then applies the original bounds,
 selection, remount, three reload, persistence, render-idle, and final-state
 assertions. After exact-head run `30707099465` exhausted the former 20,000 ms
-bounds phase ceiling, three clean CI-like executions measured unchanged bounds
-completion at 7,476/7,108/7,253 ms. A canonical 610,000 ms sequential phase
-budget now includes a bounded 45,000 ms bounds ceiling; plus 75,000 ms of named
-setup/teardown/assertion/orchestration overhead it derives the 685,000 ms
-whole-test timeout. This fixes the external phase-envelope defect without
-adding retries, seeding a test-only success state, changing `npm run start`, or
-weakening the required identity.
+bounds phase ceiling, exact-head run at
+`d295e98c4abe3b00d02507cc3820df20439b2134` exhausted reload-1 at
+70,001/70,000 ms. The retained report proved only that remount was the last
+completed phase and the coarse lifecycle remained `ready`; it did not retain
+the reload's current scene/model/network state or a safe progress timeline.
+Contract audit found 311,000 ms of configured finite sequential waits inside
+each 70,000 ms reload budget, plus an unbounded browser evaluation. The
+70-second value was a hang ceiling, not an authoritative product-performance
+requirement, and the GLBs are repository-owned local production assets rather
+than external network dependencies.
+
+One canonical 14-phase contract now derives every correctness timeout from its
+named nested operations plus an explicit orchestration margin. Reload-1,
+reload-2, and reload-3 share the same 236,000 ms legal operation envelope plus
+30,000 ms margin, for 266,000 ms each. A separate non-failing 70,000 ms
+performance observation threshold records regressions without redefining test
+correctness. Safe progress checkpoints reset a bounded 75,000 ms no-progress
+watchdog, while terminal model errors still fail immediately. The canonical
+1,957,000 ms sequential sum plus 75,000 ms of named whole-test overhead derives
+the 2,032,000 ms whole-test timeout. Three clean CI-like runs of this exact
+corrected tree used 7,111–7,502/71,000 ms for bounds,
+11,911–12,677/165,000 ms for remount, and 22,141–28,099/266,000 ms for each
+reload, with no performance warning. This
+fixes the invalid parent/nested phase contract without adding retries, seeding
+a test-only success state, changing `npm run start`, or weakening the required
+identity.
 
 Generated output is written only under the ignored directory
 `.local/production-artifact-evidence/`:

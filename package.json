@@ -20,6 +20,7 @@
     "test:required-test-truthfulness": "node scripts/test-required-test-truthfulness.mjs",
     "evidence:required-tests:prepare-upload": "node scripts/required-test-truthfulness.mjs prepare-upload",
     "test:production-artifact-evidence": "node scripts/test-production-artifact-evidence.mjs",
+    "test:runtime-smoke-phase-budget": "node scripts/test-production-artifact-evidence.mjs --phase-budget-contract-only",
     "ci:auth-fixture:export": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/ci-auth-fixture.ts export-github-env",
     "ci:auth-fixture:validate": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/ci-auth-fixture.ts validate-env",
     "ci:auth-fixture:preflight": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/ci-auth-fixture.ts preflight",

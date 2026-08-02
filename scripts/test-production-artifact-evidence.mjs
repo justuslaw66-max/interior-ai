@@ -36,13 +36,19 @@ import {
   verifyGitleaksArtifact,
 } from "./gitleaks-artifact.mjs";
 import {
+  FURNISHED_TEMPLATE_PHASE_CONTRACTS,
+  FURNISHED_TEMPLATE_RELOAD_CONTRACT,
   RUNTIME_SMOKE_OVERHEAD_BUDGETS,
   RUNTIME_SMOKE_PHASE_BUDGETS,
   RUNTIME_SMOKE_PHASE_TIMING_SCHEMA,
   RUNTIME_SMOKE_WHOLE_TEST_TIMEOUT_MS,
+  RuntimeSmokeNoProgressError,
   RuntimeSmokeTerminalError,
   createRuntimeSmokePhaseRecorder,
+  deriveFurnishedTemplatePhaseTimeout,
   deriveRuntimeSmokeWholeTestTimeout,
+  runtimeSmokeAggregateLifecycleState,
+  runtimeSmokePhaseBudget,
 } from "./runtime-smoke-phase-budget.mjs";
 
 const sequentialRuntimeSmokeBudgetMs = RUNTIME_SMOKE_PHASE_BUDGETS.reduce(
@@ -56,7 +62,62 @@ const boundsPhaseBudgets = RUNTIME_SMOKE_PHASE_BUDGETS.filter(
   (phase) => phase.name === "bounds-verification",
 );
 assert.equal(boundsPhaseBudgets.length, 1, "bounds-verification must have one canonical budget");
-assert.equal(boundsPhaseBudgets[0]?.timeoutMs, 45_000);
+assert.equal(boundsPhaseBudgets[0]?.timeoutMs, 71_000);
+const reloadOperationEnvelopeMs = FURNISHED_TEMPLATE_RELOAD_CONTRACT.operations.reduce(
+  (total, operation) => total + operation.timeoutMs,
+  0,
+);
+assert.equal(reloadOperationEnvelopeMs, 236_000);
+assert.equal(FURNISHED_TEMPLATE_RELOAD_CONTRACT.orchestrationMarginMs, 30_000);
+assert.equal(
+  deriveFurnishedTemplatePhaseTimeout(FURNISHED_TEMPLATE_RELOAD_CONTRACT),
+  266_000,
+  "reload correctness timeout must equal the legal nested envelope plus margin",
+);
+assert.equal(FURNISHED_TEMPLATE_RELOAD_CONTRACT.performanceWarningThresholdMs, 70_000);
+assert.equal(
+  runtimeSmokeAggregateLifecycleState({
+    expectedModelCount: 3,
+    readyModelCount: 1,
+    loadingModelCount: 0,
+    terminalErrorModelCount: 0,
+    combinedReadinessSatisfied: false,
+  }),
+  "loading",
+  "partial ready diagnostics with missing models must not claim aggregate ready",
+);
+assert.equal(
+  runtimeSmokeAggregateLifecycleState({
+    expectedModelCount: 3,
+    readyModelCount: 3,
+    loadingModelCount: 0,
+    terminalErrorModelCount: 0,
+    combinedReadinessSatisfied: true,
+  }),
+  "ready",
+);
+assert.ok(
+  FURNISHED_TEMPLATE_RELOAD_CONTRACT.performanceWarningThresholdMs <
+    deriveFurnishedTemplatePhaseTimeout(FURNISHED_TEMPLATE_RELOAD_CONTRACT),
+  "performance observation must remain separate from correctness",
+);
+for (const phaseName of ["reload-1", "reload-2", "reload-3"]) {
+  assert.equal(
+    FURNISHED_TEMPLATE_PHASE_CONTRACTS[phaseName],
+    FURNISHED_TEMPLATE_RELOAD_CONTRACT,
+    `${phaseName} must consume the one canonical reload contract`,
+  );
+  assert.equal(runtimeSmokePhaseBudget(phaseName), 266_000);
+}
+assert.equal(runtimeSmokePhaseBudget("remount"), 165_000);
+assert.ok(
+  runtimeSmokePhaseBudget("bounds-verification") - 43_432 >= 25_000,
+  "bounds verification needs meaningful GitHub-runner headroom",
+);
+assert.ok(
+  runtimeSmokePhaseBudget("remount") - 53_769 >= 100_000,
+  "remount needs meaningful GitHub-runner headroom",
+);
 assert.equal(
   RUNTIME_SMOKE_WHOLE_TEST_TIMEOUT_MS,
   sequentialRuntimeSmokeBudgetMs + runtimeSmokeOverheadBudgetMs,
@@ -70,6 +131,29 @@ const increasedPhaseBudgets = RUNTIME_SMOKE_PHASE_BUDGETS.map((phase) =>
   phase.name === "bounds-verification"
     ? { ...phase, timeoutMs: phase.timeoutMs + 7_000 }
     : phase,
+);
+
+const changedReloadContract = {
+  ...FURNISHED_TEMPLATE_RELOAD_CONTRACT,
+  operations: FURNISHED_TEMPLATE_RELOAD_CONTRACT.operations.map((operation) =>
+    operation.name === "model-responses-and-readiness"
+      ? { ...operation, timeoutMs: operation.timeoutMs + 11_000 }
+      : operation,
+  ),
+};
+assert.equal(
+  deriveFurnishedTemplatePhaseTimeout(changedReloadContract),
+  deriveFurnishedTemplatePhaseTimeout(FURNISHED_TEMPLATE_RELOAD_CONTRACT) + 11_000,
+);
+const changedReloadPhaseBudgets = RUNTIME_SMOKE_PHASE_BUDGETS.map((phase) =>
+  phase.name.startsWith("reload-")
+    ? { ...phase, timeoutMs: deriveFurnishedTemplatePhaseTimeout(changedReloadContract) }
+    : phase,
+);
+assert.equal(
+  deriveRuntimeSmokeWholeTestTimeout({ phases: changedReloadPhaseBudgets }),
+  RUNTIME_SMOKE_WHOLE_TEST_TIMEOUT_MS + 33_000,
+  "one reload-contract change must update all three reloads and the whole envelope",
 );
 assert.equal(
   deriveRuntimeSmokeWholeTestTimeout({ phases: increasedPhaseBudgets }),
@@ -131,6 +215,75 @@ assert.equal(
   );
 }
 
+{
+  const warnings = [];
+  let clock = 0;
+  const progressRecorder = createRuntimeSmokePhaseRecorder({
+    repositoryRoot: process.cwd(),
+    now: () => clock++,
+    phaseBudgets: [{ name: "reload-1", timeoutMs: 100 }],
+    phaseContracts: {
+      "reload-1": {
+        operations: [{ name: "work", timeoutMs: 20 }],
+        orchestrationMarginMs: 80,
+        noProgressTimeoutMs: 50,
+        performanceWarningThresholdMs: 0,
+      },
+    },
+    writePerformanceWarning: (message) => warnings.push(message),
+  });
+  await progressRecorder.run("reload-1", async ({ checkpoint }) => {
+    checkpoint("navigation-complete", "loading");
+    checkpoint("models-ready", "ready");
+  }, () => "ready");
+  assert.equal(progressRecorder.records[0]?.outcome, "passed");
+  assert.equal(progressRecorder.records[0]?.performanceWarningExceeded, true);
+  assert.equal(warnings.length, 1);
+  assert.deepEqual(
+    progressRecorder.records[0]?.progressCheckpoints.map(({ name }) => name),
+    ["phase-start", "navigation-complete", "models-ready", "phase-complete"],
+  );
+}
+
+{
+  let lateCheckpoint;
+  const noProgressRecorder = createRuntimeSmokePhaseRecorder({
+    repositoryRoot: process.cwd(),
+    phaseBudgets: [{ name: "reload-1", timeoutMs: 100 }],
+    phaseContracts: {
+      "reload-1": {
+        operations: [{ name: "work", timeoutMs: 5 }],
+        orchestrationMarginMs: 95,
+        noProgressTimeoutMs: 5,
+        performanceWarningThresholdMs: 70,
+      },
+    },
+    writePerformanceWarning: () => undefined,
+  });
+  await assert.rejects(
+    noProgressRecorder.run(
+      "reload-1",
+      ({ checkpoint }) => {
+        lateCheckpoint = checkpoint;
+        return new Promise(() => {});
+      },
+      () => "loading",
+    ),
+    RuntimeSmokeNoProgressError,
+  );
+  assert.equal(noProgressRecorder.records[0]?.outcome, "stalled");
+  assert.equal(
+    noProgressRecorder.records[0]?.safeDiagnosticCategory,
+    "lack-of-progress",
+  );
+  lateCheckpoint("late-task-progress", "ready");
+  assert.deepEqual(
+    noProgressRecorder.records[0]?.progressCheckpoints.map(({ name }) => name),
+    ["phase-start"],
+    "a task that outlives its failed phase must not mutate retained progress",
+  );
+}
+
 const runtimeSmokeSource = readFileSync(
   path.join(process.cwd(), "tests/e2e/00-runtime-smoke.spec.ts"),
   "utf8",
@@ -141,6 +294,78 @@ assert.match(
   "the required identity must consume the derived timeout without duplicating a number",
 );
 assert.doesNotMatch(runtimeSmokeSource, /test\.slow\(|test\.skip\(|retries\s*:/);
+const reloadLoop = runtimeSmokeSource.slice(
+  runtimeSmokeSource.indexOf("for (let reloadIndex"),
+  runtimeSmokeSource.indexOf('await phaseRecorder.run("persistence-assertions"'),
+);
+assert.match(reloadLoop, /waitForReloadModelsReady/);
+assert.doesNotMatch(reloadLoop, /waitForModelResponsesOrTerminal/);
+assert.doesNotMatch(reloadLoop, /waitForModelDiagnosticsReady/);
+assert.match(reloadLoop, /Promise\.all\(\[/);
+for (const operation of FURNISHED_TEMPLATE_RELOAD_CONTRACT.operations) {
+  const uses = runtimeSmokeSource.match(
+    new RegExp(
+      `reloadOperationTimeout\\(\\s*["']${operation.name}["']\\s*,?\\s*\\)`,
+      "g",
+    ),
+  ) ?? [];
+  assert.equal(
+    uses.length,
+    1,
+    `${operation.name} must be consumed once per reload implementation`,
+  );
+}
+const phaseOperationUseCount = (phaseName, operationName) =>
+  runtimeSmokeSource.match(
+    new RegExp(
+      `phaseOperationTimeout\\(\\s*["']${phaseName}["']\\s*,\\s*` +
+        `["']${operationName}["']\\s*,?\\s*\\)`,
+      "g",
+    ),
+  )?.length ?? 0;
+for (const phaseName of [
+  "initial-glb-loading-and-selection-verification",
+  "remount",
+]) {
+  for (const operation of FURNISHED_TEMPLATE_PHASE_CONTRACTS[phaseName].operations) {
+    assert.equal(
+      phaseOperationUseCount(phaseName, operation.name),
+      1,
+      `${phaseName}/${operation.name} must own exactly one sequential call budget`,
+    );
+  }
+}
+assert.match(
+  reloadLoop,
+  /finalLifecycleState\s*=\s*["']not-observed["'];\s*await phaseRecorder\.run/,
+  "every reload phase must reset lifecycle evidence before phase-start",
+);
+for (const checkpoint of [
+  "route-design-loaded",
+  "local-fixture-hydrated",
+  "view-3d-active",
+  "models-ready",
+  "bounds-settled",
+  "reload-assertions-complete",
+]) {
+  assert.match(runtimeSmokeSource, new RegExp(checkpoint));
+}
+for (const modelPath of [
+  "public/assets/models/sofa-real-castlery-dawson-ottoman.glb",
+  "public/assets/models/sofa-real-castlery-jaron-3s.glb",
+  "public/assets/models/sofa-real-castlery-auburn-performance-fabric-3-seater-sofa.glb",
+]) {
+  assert.equal(
+    existsSync(path.join(process.cwd(), modelPath)),
+    true,
+    `${modelPath} must remain a repository-controlled production fixture`,
+  );
+}
+
+if (process.argv.includes("--phase-budget-contract-only")) {
+  console.log("CH-0017 runtime-smoke phase-budget contract tests passed.");
+  process.exit(0);
+}
 
 {
   const root = mkdtempSync(path.join(tmpdir(), "ch-0017-gitleaks-artifact-"));
@@ -527,8 +752,24 @@ async function fixture({ environmentOverrides = {}, publicArtifactText = "public
         elapsedMs: 10,
         outcome: "passed",
         timeoutBudgetMs: phase.timeoutMs,
+        performanceWarningThresholdMs:
+          FURNISHED_TEMPLATE_PHASE_CONTRACTS[phase.name]
+            ?.performanceWarningThresholdMs ?? null,
+        performanceWarningExceeded: false,
         finalLifecycleState: index < 5 ? "loading" : "stable",
         safeDiagnosticCategory: "none",
+        progressCheckpoints: [
+          {
+            name: "phase-start",
+            elapsedMs: 0,
+            finalLifecycleState: index < 5 ? "loading" : "stable",
+          },
+          {
+            name: "phase-complete",
+            elapsedMs: 10,
+            finalLifecycleState: index < 5 ? "loading" : "stable",
+          },
+        ],
       })),
       complete: true,
     }, null, 2)}\n`,
@@ -627,6 +868,31 @@ async function expectRejected(context, expectedText) {
   const context = await fixture();
   await rewritePhaseTimings(context, (timing) => {
     timing.phases[0].finalLifecycleState = "credential-bearing-private-state";
+  });
+  await expectRejected(context, "phase timing outcomes are invalid");
+}
+
+{
+  const context = await fixture();
+  await rewritePhaseTimings(context, (timing) => {
+    timing.phases[0].performanceWarningThresholdMs += 1;
+    timing.phases[0].performanceWarningExceeded = true;
+  });
+  await expectRejected(context, "phase timing outcomes are invalid");
+}
+
+{
+  const context = await fixture();
+  await rewritePhaseTimings(context, (timing) => {
+    timing.phases[0].progressCheckpoints[1].name = "unsafe checkpoint/name";
+  });
+  await expectRejected(context, "phase timing outcomes are invalid");
+}
+
+{
+  const context = await fixture();
+  await rewritePhaseTimings(context, (timing) => {
+    timing.phases[0].progressCheckpoints.pop();
   });
   await expectRejected(context, "phase timing outcomes are invalid");
 }

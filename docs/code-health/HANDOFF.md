@@ -615,3 +615,92 @@ Rollback the workflow-only commit containing this record first, then
 CH-0017 order. No application, test identity, expectation, ruleset, PR,
 deployment, schema, migration, dependency, catalog, product, or production-data
 state changed. No push is included; CH-0004 remains paused.
+
+## CH-0017 exact-head d295 reload phase-contract follow-up — 2026-08-02
+
+Scope remains CH-0017 only. Exact-head GitHub execution at
+`d295e98c4abe3b00d02507cc3820df20439b2134` verified the frozen checkout,
+workspace isolation, OAuth masking, Gitleaks identity, truthfulness manifest,
+diagnostic upload, required/advisory separation, and aggregation controls up to
+required runtime smoke. The furnished-template identity then failed reload-1
+at 70,001/70,000 ms. Artifact `8828579681` was safe and source-bound, but its
+timing record said only that remount was the last completed phase and its coarse
+final lifecycle was `ready`. It contained no reload URL, current design
+identity, room/item counts, per-model lifecycle counts, selection/bounds or
+hydration state, outstanding requests, browser/server errors, or safe progress
+timeline. Therefore it cannot prove final-ten-second progress, near-readiness,
+or an unsurfaced terminal state.
+
+Classification is **A — CH-0017 PHASE-BUDGET DEFECT**. Before this correction,
+each 70,000 ms reload enclosed 311,000 ms of configured finite sequential waits:
+60,000 ms navigation; 30,000 ms canvas; 5,000 ms room lookup; 30,000 ms item
+lookup; 30,000 ms view activation; up to 70,000 ms model responses; up to
+70,000 ms semantic diagnostics; 5,000 ms body state; 10,000 ms settling; and
+1,000 ms post-settle observation. A browser evaluation also lacked its own
+finite bound. Reload-2 and reload-3 were identical copies of the same invalid
+contract. No authoritative product SLO makes 70 seconds a correctness limit;
+the existing product metric remains observation-before-target. All GLBs used by
+the fixture are checked-in root-relative production assets with embedded
+content, not uncontrolled external URLs, CDNs, or services.
+
+The one canonical furnished-template contract now derives all 14 parent
+budgets from named nested operations plus explicit margins. All three reloads
+share a 236,000 ms legal operation envelope—60,000 ms navigation, 30,000 ms
+bootstrap, 30,000 ms view-state read, 30,000 ms view activation, one combined
+70,000 ms model-response and semantic-readiness observation, 5,000 ms body
+assertion, 10,000 ms settle, and 1,000 ms post-settle observation—plus 30,000 ms
+orchestration margin, for 266,000 ms.
+The combined model loop removes duplicate serial observation without removing
+an assertion. A separate non-failing 70,000 ms performance threshold records
+the measured duration. Safe checkpoints reset a 75,000 ms no-progress timer;
+terminal GLB lifecycle errors remain immediate failures. Bounds now derive to
+71,000 ms and remount to 165,000 ms. The complete 1,957,000 ms sequential phase
+sum plus 75,000 ms named setup/teardown/assertion/orchestration overhead derives
+the 2,032,000 ms whole-test timeout. Retries and skips remain zero; selection,
+bounds, remount, three reloads, persistence, render-loop, and final-body
+assertions remain required.
+
+Three clean CI-like executions used an isolated PostgreSQL database with all 42
+migrations and passed furnished-template plus health/catalog 2/2 with process
+exit 0. Long-phase measurements were:
+
+| Run | Bounds | Remount | Reload 1 | Reload 2 | Reload 3 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 1 | 7,199/71,000 | 12,677/165,000 | 28,099/266,000 | 24,521/266,000 | 23,637/266,000 |
+| 2 | 7,111/71,000 | 11,923/165,000 | 23,416/266,000 | 24,294/266,000 | 22,141/266,000 |
+| 3 | 7,502/71,000 | 11,911/165,000 | 24,737/266,000 | 23,113/266,000 | 23,189/266,000 |
+
+Every phase completed with terminal `phase-complete` evidence, each reload
+retained at least 12 safe checkpoints beginning at `not-observed`, no
+performance warning fired, and no terminal
+lifecycle error occurred. Focused contract, production-artifact, truthfulness,
+GLB bounds, persistence, scene-boundary/layer, typecheck, zero-warning ESLint,
+syntax, and diff-hygiene checks passed. The independent reviewer record and
+detached exact-commit production build/smoke/bundle/standalone-verification
+result are recorded in the final local report for the commit containing this
+entry.
+
+The first independent implementation review found three actionable contract
+gaps before commit: sequential click/assertion waits reused one named timeout
+and could consume the claimed orchestration margin; reload phase-start evidence
+could inherit the prior phase's `stable` lifecycle; and the v2 validator lacked
+negative mutations of its new warning/checkpoint fields. The correction splits
+every affected sequential wait into its own named budget, adds initial-GLB
+checkpoints so the no-progress watchdog cannot truncate a legal child envelope,
+resets every reload to `not-observed`, rejects late post-failure checkpoints,
+and adds wrong-warning, unsafe-checkpoint, missing-phase-complete, and operation-
+consumption regressions. A final review also found that partial ready diagnostics
+with missing peers could be labeled aggregate `ready`; one shared aggregate
+lifecycle helper now permits `ready` only when every expected diagnostic and
+required response satisfies the full readiness predicate, with a focused
+partial-ready/missing-model negative. The three clean smoke executions above were rerun only
+after these corrections; the tracked Playwright last-run marker was restored.
+The final read-only review inspected the complete eight-file diff and returned
+**PASS — no remaining actionable CH-0017 findings**.
+
+Rollback the single phase-contract commit containing this entry before the
+earlier CH-0017 commits. No workflow trigger, evidence identity, auth control,
+ruleset, PR state, deployment, product behavior, schema, migration, dependency,
+catalog, or production data changes are included. No push is included; a new
+exact-head required run and unchanged-ruleset verification are still required,
+and CH-0004 remains paused.
