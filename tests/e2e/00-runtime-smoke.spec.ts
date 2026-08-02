@@ -6,6 +6,7 @@ import {
   FURNISHED_TEMPLATE_RELOAD_CONTRACT,
   RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT,
   RUNTIME_SMOKE_WHOLE_TEST_TIMEOUT_MS,
+  RuntimeSmokeOperationAttemptTimeoutError,
   RuntimeSmokeOperationTimeoutError,
   RuntimeSmokeTerminalError,
   createRuntimeSmokeOperationDeadline,
@@ -13,6 +14,7 @@ import {
   runRuntimeSmokeBoundedOperation,
   runtimeSmokeAggregateLifecycleState,
   runtimeSmokeOperationAttempt,
+  waitForRuntimeSmokeOperationDeadline,
 } from "../../scripts/runtime-smoke-phase-budget.mjs";
 
 const DESIGN_STORAGE_KEY = "interior-ai:v1:livingroom-design";
@@ -225,10 +227,17 @@ test.describe("00. Runtime smoke", () => {
             parentAttempt.attemptTimeoutMs,
           );
         } catch (error) {
+          if (error instanceof RuntimeSmokeOperationAttemptTimeoutError) {
+            await waitForRuntimeSmokeOperationDeadline({
+              operationAttempt: parentAttempt,
+              cause: error,
+            });
+          }
           if (!(error instanceof RuntimeSmokeOperationTimeoutError)) throw error;
-          if (settleContext.remainingMs() > 0) throw error;
+          if (!settleContext.deadlineReached()) throw error;
           throw new RuntimeSmokeOperationTimeoutError({
             operationAttempt: parentAttempt,
+            cause: error,
           });
         }
       };

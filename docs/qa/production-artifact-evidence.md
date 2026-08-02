@@ -210,6 +210,25 @@ canonical budget. Schema version 3 validates both timing classes and rejects an
 attempt greater than its recorded remaining allowance, remaining allowance
 greater than the canonical budget, or canonical-budget drift.
 
+The deadline context uses one high-resolution monotonic clock for start,
+remaining allowance, integer attempt conversion, and final expiration. A
+canonical nested timeout persists `operationElapsedPreciseMs`, its floored
+portable `operationElapsedMs`, and `deadlineReached=true`; the verifier requires
+all three to agree with the registered budget. An early full-window timer wakeup
+waits for the residual monotonic interval while the browser task remains live.
+A capped attempt that expires materially before the canonical deadline is not
+relabelled as operation expiration. This preserves a valid runtime report and
+the exact three-file safe failure archive at the one-millisecond display
+boundary without weakening rejection of genuinely early or contradictory
+evidence.
+
+When a final `diagnostics-settle-evaluation` attempt is capped by the remaining
+42,000 ms parent window, its internal timeout remains noncanonical. The parent
+handler waits through any residual integer-timer granularity and emits the
+branded `diagnostics-settle` timeout only after the parent monotonic deadline is
+reached, preserving the correct operation identity instead of an unstructured
+failure.
+
 The 10,000 ms `diagnostics-settle-evaluation` child and 42,000 ms
 `diagnostics-settle` parent are distinct canonical operations. The verifier also
 rechecks the manifest sidecar/canonical form, current clean checkout, artifact
