@@ -859,6 +859,13 @@ function validateGateShape(gate, issues) {
   if (!Array.isArray(gate.requiredSources) || !Array.isArray(gate.requiredProjects)) {
     issues.push(`gate ${gate.id} has malformed required source or project coverage`);
   }
+  if (
+    gate.ci?.workflow !== undefined &&
+    (typeof gate.ci.workflow !== "string" ||
+      !/^\.github\/workflows\/[A-Za-z0-9._-]+\.ya?ml$/.test(gate.ci.workflow))
+  ) {
+    issues.push(`gate ${gate.id} has an invalid CI workflow owner`);
+  }
   const requirementIds = new Set();
   for (const requirement of gate.requiredTests ?? []) {
     if (!/^[a-z0-9][a-z0-9.-]+$/.test(requirement.id ?? "")) {
@@ -1070,37 +1077,73 @@ export function validateRequiredTestRepository({
     }
   }
 
-  const workflowPath = path.join(root, ".github/workflows/ci.yml");
-  if (!existsSync(workflowPath)) {
-    issues.push("required CI workflow .github/workflows/ci.yml is missing");
-  } else {
-    const workflow = readFileSync(workflowPath, "utf8");
-    for (const gate of manifest.gates.filter((entry) => entry.ci)) {
-      const job = extractWorkflowJob(workflow, gate.ci.job);
-      if (!job) {
-        issues.push(`CI job ${gate.ci.job} for gate ${gate.id} is missing`);
+  const workflowCache = new Map();
+  for (const gate of manifest.gates.filter((entry) => entry.ci)) {
+    const workflowRelativePath = gate.ci.workflow ?? ".github/workflows/ci.yml";
+    let workflow = workflowCache.get(workflowRelativePath);
+    if (workflow === undefined) {
+      let workflowPath;
+      try {
+        workflowPath = repositoryPath(
+          root,
+          workflowRelativePath,
+          `gate ${gate.id} CI workflow`,
+        );
+      } catch (error) {
+        issues.push(error instanceof Error ? error.message : String(error));
+        workflowCache.set(workflowRelativePath, null);
         continue;
       }
-      if (gate.blocking && /continue-on-error:\s*true/.test(job)) {
-        issues.push(`blocking CI job ${gate.ci.job} for gate ${gate.id} cannot continue on error`);
+      workflow = existsSync(workflowPath) && statSync(workflowPath).isFile()
+        ? readFileSync(workflowPath, "utf8")
+        : null;
+      workflowCache.set(workflowRelativePath, workflow);
+    }
+    if (workflow === null) {
+      issues.push(`CI workflow ${workflowRelativePath} for gate ${gate.id} is missing`);
+      continue;
+    }
+    const job = extractWorkflowJob(workflow, gate.ci.job);
+    if (!job) {
+      issues.push(
+        `CI job ${gate.ci.job} for gate ${gate.id} is missing from ${workflowRelativePath}`,
+      );
+      continue;
+    }
+    if (gate.blocking && /continue-on-error:\s*true/.test(job)) {
+      issues.push(`blocking CI job ${gate.ci.job} for gate ${gate.id} cannot continue on error`);
+    }
+    if (
+      !gate.blocking &&
+      workflowRelativePath === ".github/workflows/ci.yml" &&
+      !/continue-on-error:\s*true/.test(job)
+    ) {
+      issues.push(
+        `advisory CI job ${gate.ci.job} in required CI must remain explicitly non-blocking`,
+      );
+    }
+    if (
+      !gate.blocking &&
+      workflowRelativePath !== ".github/workflows/ci.yml" &&
+      /continue-on-error:\s*true/.test(job)
+    ) {
+      issues.push(
+        `separate advisory CI job ${gate.ci.job} must preserve its real failure conclusion`,
+      );
+    }
+    for (const scriptName of packageScriptNames(gate)) {
+      if (!job.includes(`npm run ${scriptName}`)) {
+        issues.push(`CI job ${gate.ci.job} does not invoke gate ${gate.id} (${scriptName})`);
       }
-      if (!gate.blocking && !/continue-on-error:\s*true/.test(job)) {
-        issues.push(`advisory CI job ${gate.ci.job} must remain explicitly non-blocking`);
-      }
-      for (const scriptName of packageScriptNames(gate)) {
-        if (!job.includes(`npm run ${scriptName}`)) {
-          issues.push(`CI job ${gate.ci.job} does not invoke gate ${gate.id} (${scriptName})`);
-        }
-      }
-      const requiredInvocations = Array.isArray(gate.ci.invocations)
-        ? gate.ci.invocations
-        : gate.ci.invocation
-          ? [gate.ci.invocation]
-          : [];
-      for (const invocation of requiredInvocations) {
-        if (!job.includes(invocation)) {
-          issues.push(`CI job ${gate.ci.job} does not contain gate ${gate.id} invocation`);
-        }
+    }
+    const requiredInvocations = Array.isArray(gate.ci.invocations)
+      ? gate.ci.invocations
+      : gate.ci.invocation
+        ? [gate.ci.invocation]
+        : [];
+    for (const invocation of requiredInvocations) {
+      if (!job.includes(invocation)) {
+        issues.push(`CI job ${gate.ci.job} does not contain gate ${gate.id} invocation`);
       }
     }
   }

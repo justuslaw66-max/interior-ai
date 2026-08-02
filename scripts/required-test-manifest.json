@@ -84,7 +84,7 @@
       "allowRetries": false,
       "reportType": "process-exit",
       "artifactBinding": "none",
-      "ci": { "job": "stable-checks", "step": "Verify required-test truthfulness" }
+      "ci": { "job": "stable-checks", "step": "Verify required-test and lightweight advisory truthfulness" }
     },
     {
       "id": "ci.code-quality",
@@ -481,7 +481,11 @@
       "maxAgeMinutes": 1440,
       "artifactBinding": "none",
       "playwright": { "config": "playwright.config.ts", "args": ["playwright", "test"] },
-      "ci": { "job": "e2e-full", "step": "Run advisory full E2E inventory" }
+      "ci": {
+        "workflow": ".github/workflows/full-advisory-e2e.yml",
+        "job": "e2e-full",
+        "step": "Run advisory full E2E inventory"
+      }
     },
     {
       "id": "release.gate-a3",

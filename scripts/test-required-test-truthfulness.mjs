@@ -1595,23 +1595,27 @@ assert.equal(
 }
 
 {
-  const workflow = readFileSync(
+  const requiredWorkflow = readFileSync(
     path.join(process.cwd(), ".github/workflows/ci.yml"),
     "utf8",
   );
+  const advisoryWorkflow = readFileSync(
+    path.join(process.cwd(), ".github/workflows/full-advisory-e2e.yml"),
+    "utf8",
+  );
   const exactHeadCheckouts = [
-    ...workflow.matchAll(
+    ...`${requiredWorkflow}\n${advisoryWorkflow}`.matchAll(
       /uses:\s*actions\/checkout@v4[\s\S]{0,180}?ref:\s*\$\{\{ github\.event\.pull_request\.head\.sha \|\| github\.sha \}\}/g,
     ),
   ];
   assert.equal(
     exactHeadCheckouts.length,
-    3,
-    "every CI checkout must bind pull-request execution to the exact head commit",
+    2,
+    "both required-lane checkouts must bind pull-request execution to the exact head commit",
   );
-  const stableJob = workflow.slice(
-    workflow.indexOf("  stable-checks:"),
-    workflow.indexOf("  e2e-full:"),
+  const stableJob = requiredWorkflow.slice(
+    requiredWorkflow.indexOf("  stable-checks:"),
+    requiredWorkflow.indexOf("  merge-gate:"),
   );
   assert.ok(
     stableJob.indexOf("Apply database migrations") <
@@ -1633,11 +1637,23 @@ assert.equal(
         stableJob.indexOf("Apply database migrations"),
     "stable CI must validate GITHUB_ENV propagation immediately after export",
   );
-  assert.doesNotMatch(stableJob, /^\s+GOOGLE_CLIENT_(?:ID|SECRET):/m);
-  const advisoryJob = workflow.slice(
-    workflow.indexOf("  e2e-full:"),
-    workflow.indexOf("  merge-gate:"),
+  assert.ok(
+    stableJob.indexOf("Apply database migrations") <
+      stableJob.indexOf("npm run ci:auth-fixture:preflight") &&
+      stableJob.indexOf("npm run ci:auth-fixture:preflight") <
+        stableJob.indexOf("npm run test:auth-env-hardening") &&
+      stableJob.indexOf("npm run test:auth-env-hardening") <
+        stableJob.indexOf("npm run test:required-test-truthfulness") &&
+      stableJob.indexOf("npm run test:required-test-truthfulness") <
+        stableJob.indexOf("Build strict production-equivalent artifact evidence"),
+    "the required lane must run the lightweight advisory auth/evidence preflight before the expensive build",
   );
+  assert.match(stableJob, /Verify standalone production evidence bundle/);
+  assert.match(stableJob, /verify-standalone/);
+  assert.doesNotMatch(stableJob, /^\s+GOOGLE_CLIENT_(?:ID|SECRET):/m);
+  assert.doesNotMatch(requiredWorkflow, /^  e2e-full:\s*$/m);
+  assert.doesNotMatch(requiredWorkflow, /npm run test:e2e:advisory/);
+  const advisoryJob = advisoryWorkflow.slice(advisoryWorkflow.indexOf("  e2e-full:"));
   assert.ok(
     advisoryJob.indexOf("Prepare portable advisory evidence") <
       advisoryJob.indexOf("Upload test results"),
@@ -1667,15 +1683,45 @@ assert.equal(
     "raw Playwright evidence must not be uploaded",
   );
   assert.match(
-    workflow,
-    /e2e-full:[\s\S]*?if:\s*always\(\)[^\n]*github\.event_name == 'pull_request'/,
-    "the non-blocking advisory inventory must still execute on the verification PR",
+    advisoryWorkflow,
+    /pull_request:\n\s+branches:\s*\[main, develop, staging\]\n\s+types:\s*\[labeled\]/,
+    "ordinary PR synchronize events must not launch the full advisory workflow",
   );
-  assert.match(workflow, /merge-gate:\n\s+name:\s*merge-gate\n/);
-  assert.match(workflow, /merge-gate:[\s\S]*needs:\s*\[secret-scan, stable-checks\]/);
-  const secretScanJob = workflow.slice(
-    workflow.indexOf("  secret-scan:"),
-    workflow.indexOf("  stable-checks:"),
+  assert.doesNotMatch(advisoryWorkflow, /types:\s*\[[^\]]*synchronize/);
+  assert.match(advisoryWorkflow, /github\.event\.label\.name == 'run-full-e2e'/);
+  assert.match(advisoryWorkflow, /workflow_dispatch:[\s\S]*source_sha:[\s\S]*required:\s*true/);
+  assert.match(advisoryWorkflow, /schedule:[\s\S]*cron:/);
+  assert.match(advisoryWorkflow, /'refs\/heads\/staging'/);
+  assert.match(
+    advisoryWorkflow,
+    /ref:\s*\$\{\{[^\n]*github\.event\.pull_request\.head\.sha[^\n]*inputs\.source_sha[^\n]*refs\/heads\/staging[^\n]*\}\}/,
+    "label, manual, and scheduled full-advisory runs must select an explicit source",
+  );
+  assert.ok(
+    advisoryJob.indexOf("Verify full-advisory source identity") <
+      advisoryJob.indexOf("Apply database migrations") &&
+      advisoryJob.indexOf("EXPECTED_SOURCE_SHA") <
+        advisoryJob.indexOf("Run advisory full E2E inventory"),
+    "the deliberate full suite must verify the exact checkout before execution",
+  );
+  assert.match(advisoryWorkflow, /group:\s*full-advisory-/);
+  assert.match(advisoryWorkflow, /cancel-in-progress:\s*true/);
+  assert.doesNotMatch(advisoryWorkflow, /group:\s*ci-/);
+  assert.doesNotMatch(
+    advisoryJob,
+    /continue-on-error:\s*true/,
+    "the separate informational workflow must preserve a real failed job conclusion",
+  );
+  assert.match(advisoryJob, /if:\s*always\(\) && !cancelled\(\)/);
+  assert.match(requiredWorkflow, /merge-gate:\n\s+name:\s*merge-gate\n/);
+  assert.match(requiredWorkflow, /merge-gate:[\s\S]*needs:\s*\[secret-scan, stable-checks\]/);
+  assert.doesNotMatch(
+    requiredWorkflow.slice(requiredWorkflow.indexOf("  merge-gate:")),
+    /e2e-full|full-advisory|test:e2e:advisory/,
+  );
+  const secretScanJob = requiredWorkflow.slice(
+    requiredWorkflow.indexOf("  secret-scan:"),
+    requiredWorkflow.indexOf("  stable-checks:"),
   );
   assert.match(secretScanJob, /GITLEAKS_ENABLE_UPLOAD_ARTIFACT:\s*"false"/);
   assert.doesNotMatch(secretScanJob, /^\s+GITHUB_SHA:/m);
@@ -1692,6 +1738,37 @@ assert.equal(
   assert.match(secretScanJob, /node scripts\/gitleaks-artifact\.mjs prepare/);
   assert.match(secretScanJob, /path:\s*\.local\/gitleaks-upload\//);
   assert.match(secretScanJob, /retention-days:\s*90/);
+}
+
+{
+  const context = makeRepository();
+  const advisoryGate = context.manifest.gates.find((gate) => gate.id === "advisory.fixture");
+  advisoryGate.ci.workflow = ".github/workflows/full-advisory-e2e.yml";
+  write(
+    context.root,
+    "scripts/required-test-manifest.json",
+    `${JSON.stringify(context.manifest, null, 2)}\n`,
+  );
+  write(
+    context.root,
+    ".github/workflows/full-advisory-e2e.yml",
+    `jobs:
+  e2e-full:
+    steps:
+      - name: Advisory
+        run: npm run test:advisory
+`,
+  );
+  assert.deepEqual(
+    validateRequiredTestRepository({ repositoryRoot: context.root }).issues,
+    [],
+    "an advisory gate may have a separate explicit workflow owner",
+  );
+  rmSync(path.join(context.root, ".github/workflows/full-advisory-e2e.yml"));
+  expectIssue(
+    validateRequiredTestRepository({ repositoryRoot: context.root }),
+    "CI workflow .github/workflows/full-advisory-e2e.yml for gate advisory.fixture is missing",
+  );
 }
 
 const realRepository = validateRequiredTestRepository({ repositoryRoot: process.cwd() });

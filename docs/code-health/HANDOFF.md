@@ -326,12 +326,12 @@ Repository-controlled contract and flow:
 
 - `scripts/required-test-manifest.json` is the single classification and evidence owner for 21 gates. It locks sorted inventories of 245 `scripts/test-*` files, 98 E2E specs, 14 imported cabinetry/multi-room browser modules, and 8 imported cabinetry script-test modules; declares merge-required, release-blocking, and advisory ownership; maps package and CI entry points; and records exact files, projects, runner/config, skip/retry, report, stable-identity, source, artifact, and external-control expectations. Split-suite import/call registrations and recursively reachable package-script closure hashes prevent unchanged test modules or nested umbrella commands from disappearing. The required Git-history secret scan, database migration process, and final merge-result aggregation are inventoried alongside executable repository tests instead of remaining implicit workflow-only checks.
 - `scripts/required-test-truthfulness.mjs` fails closed on inventory drift, missing or unreachable commands, wrong CI wiring, `.only`, annotated-away prerequisites, missing/renamed/extra/duplicate files or stable tests, zero discovery, wrong/missing projects, filtering/sharding, skip/fixme/annotations, retry/flaky/failed/not-run outcomes, aggregate/per-test disagreement, nonzero runner exit, missing/malformed/truncated/stale/future evidence, report substitution, source/artifact mismatch, and secret-bearing report fields. It deletes stale output before execution, writes a small evidence envelope on failure, and preserves the Playwright process result.
-- `test:e2e:advisory` remains visibly nonblocking only through the named CI `continue-on-error` boundary. `test:e2e:release`, Pro visual policy, CH-0016 runtime smoke, and cabinetry release evidence are required and process-bound. Gate A3 certification now consumes the evidence envelope and exact source/artifact/staged-URL binding instead of raw aggregate JSON.
+- `test:e2e:advisory` remains visible but non-required through its separately owned full-advisory workflow; its real failure or cancellation is preserved without `continue-on-error`. `test:e2e:release`, Pro visual policy, CH-0016 runtime smoke, and cabinetry release evidence are required and process-bound. Gate A3 certification now consumes the evidence envelope and exact source/artifact/staged-URL binding instead of raw aggregate JSON.
 - The CH-0016 production-artifact validator retains its source, lock, generated-source, trace-closure, build, runtime, and report protections and now additionally requires both stable runtime-smoke identities with exact project/config semantics. Gate A3 locks the six repaired commerce/Kelsey identities in addition to owning the complete 98-spec browser inventory. Cabinetry evidence requires all 23 registered stable tests and consumes the process-captured wrapper envelope plus its bound report, source, artifact SHA-256, candidate/environment, and URL instead of a minimum total or hand-entered child status. The canonical runner/envelope contract is reused rather than replacing either domain-specific release record.
 - `05-buy.spec.ts` and `07-kelsey-variants.spec.ts` now assert every required prerequisite and outcome. Missing catalog cards, variants, swatches, buyer controls, checkout, or cart state is a real failure. The GLB export behavior check installs a deterministic Node `FileReader` shim and always performs the export assertion; it no longer warns and returns success without exercising export.
 - `test:floor-plan-required` now invokes `test:floor-plan-live-progress`. `test:critical-required` names the security, persistence, billing, product-flow, telemetry, capability/accessibility, cabinetry, and cabinetry-evidence umbrellas that CI actually requires.
 
-Negative coverage uses the real exported validators with temporary repositories and reports. It proves a valid report passes and rejects missing/renamed required source, removed split-suite registration, changed nested package closure, zero discovery, missing/wrong projects, filtered or wrong files, renamed stable identities, skip, retry/flaky results, `.only`, annotated returns, a nonzero process with passing JSON, a zero process with failed JSON, missing/malformed/truncated/stale or substituted evidence, source/artifact/URL mismatch, wrong exact config/root, merge-aggregation drift, machine-local fields, and secret-bearing fields or values. Missing, malformed, or unsafe reports and their Playwright output are removed before CI artifact upload; valid non-sensitive failed reports remain available for diagnosis. The suite separately proves advisory failure is visible but nonblocking only at its explicit CI owner. CH-0016 and cabinetry validator suites use complete per-test fixtures and add missing/renamed stable identity, focus, retry, project, process, source, artifact, URL, and promotion-certification negatives.
+Negative coverage uses the real exported validators with temporary repositories and reports. It proves a valid report passes and rejects missing/renamed required source, removed split-suite registration, changed nested package closure, zero discovery, missing/wrong projects, filtered or wrong files, renamed stable identities, skip, retry/flaky results, `.only`, annotated returns, a nonzero process with passing JSON, a zero process with failed JSON, missing/malformed/truncated/stale or substituted evidence, source/artifact/URL mismatch, wrong exact config/root, merge-aggregation drift, machine-local fields, and secret-bearing fields or values. Missing, malformed, or unsafe reports and their Playwright output are removed before CI artifact upload; valid non-sensitive failed reports remain available for diagnosis. The suite separately proves advisory failure remains visible at its explicit non-required workflow owner. CH-0016 and cabinetry validator suites use complete per-test fixtures and add missing/renamed stable identity, focus, retry, project, process, source, artifact, URL, and promotion-certification negatives.
 
 Independent read-only review disposition: **PASS — no remaining repository-controlled blockers**. The reviewer inspected the complete current diff and verified `git diff --check`, the 21-gate/365-source manifest, and JavaScript syntax. Review findings closed during the batch covered imported browser/script-module registration, recursive package closure, the six repaired commerce/Kelsey identities, exact config/root and mandatory source/artifact validation, filtered-run coverage, merge-result aggregation, Gate A3 certification/promotion binding, cabinetry source/artifact/URL/process/report hardening, CI evidence uploads, and deletion of unsafe or unparseable raw artifacts before upload. The reviewer made no edits. GitHub workflow execution, required-check selection, artifact retention/download hashes, and inherited CH-0016 platform controls remain correctly external and unverified.
 
@@ -575,3 +575,43 @@ Ruleset `13671593` remains active with the same pull-request/thread-resolution
 policy and no required-status-check rule. No ruleset, PR state, deployment,
 product, schema, migration, dependency, catalog, or production data was changed;
 CH-0004 remains paused.
+
+## CH-0017 required/advisory workflow separation — 2026-08-02
+
+Starting commit `53a0c98bab4d5a211c93fd1f4f5057806e074bbd` was clean and one commit ahead of
+the remote CH-0017 branch. Before this workflow-only follow-up,
+`.github/workflows/ci.yml` launched `secret-scan`, `stable-checks`, the complete
+`e2e-full` inventory, and `merge-gate` on every ordinary PR synchronize. The
+aggregation graph already excluded `e2e-full`, but the roughly two-hour suite
+still ran for narrow updates and shared the required workflow's cancellation
+group.
+
+The required PR workflow now contains only `secret-scan`, `stable-checks`, and
+`merge-gate`; aggregation still needs exactly the first two. Stable checks keep
+the complete existing required lane and now run the structured auth-session
+preflight plus auth/evidence hardening before the expensive build, and verify a
+fresh extraction of the standalone production evidence bundle after smoke. The
+existing truthfulness suite is the lightweight advisory-contract preflight: it
+tests mask-before-`GITHUB_ENV`, no checkout transport, representative failing
+advisory evidence, truthful safe retention/omission, exact archive inventory,
+and prohibited credential/environment/path/content rejection without running
+the broad browser suite.
+
+The unchanged full runner moved to
+`.github/workflows/full-advisory-e2e.yml`. It runs deliberately by exact-SHA
+`workflow_dispatch`, adding PR label `run-full-e2e`, or a nightly staging
+checkout. Ordinary synchronize is not a trigger. A pre-browser step verifies
+the actual checkout against the PR head or required manual SHA; scheduled runs
+record resolved staging HEAD. Its separate `full-advisory-*` concurrency group
+can cancel only an obsolete advisory run for the same PR/ref. The separate job
+has no `continue-on-error`: child failures remain failed but non-required,
+cancellation remains cancelled, and safe evidence preparation/upload remains
+unchanged. The manifest now owns this workflow path explicitly, so missing or
+renamed workflow/job/step fails validation. No gate/source moved: 21 gates and
+365 classified sources remain.
+
+Rollback the workflow-only commit containing this record first, then
+`53a0c98bab4d5a211c93fd1f4f5057806e074bbd` and the previously documented
+CH-0017 order. No application, test identity, expectation, ruleset, PR,
+deployment, schema, migration, dependency, catalog, product, or production-data
+state changed. No push is included; CH-0004 remains paused.

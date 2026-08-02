@@ -111,12 +111,18 @@ jobs:
           GATE_A3_DATABASE_URL: ${{ env.DATABASE_URL }}
         run: npm run gate:a3:db
 
+      - name: Preflight advisory authentication environment
+        run: npm run ci:auth-fixture:preflight
+
+      - name: Verify fail-closed authentication and admin environment policy
+        run: npm run test:auth-env-hardening
+
       - name: Enforce code-quality ratchets
         env:
           CODE_QUALITY_BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: npm run check:code-quality
 
-      - name: Verify required-test truthfulness
+      - name: Verify required-test and lightweight advisory truthfulness
         run: npm run test:required-test-truthfulness
 
       - name: Verify production artifact evidence contract
@@ -138,8 +144,20 @@ jobs:
       - name: Prepare standalone production evidence bundle
         run: npm run evidence:production:bundle
 
-      - name: Verify fail-closed authentication and admin environment policy
-        run: npm run test:auth-env-hardening
+      - name: Verify standalone production evidence bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run evidence:production:verify
+          extract_root="$(mktemp -d "$RUNNER_TEMP/ch0016-ch0017-evidence.XXXXXX")"
+          trap 'rm -rf "$extract_root"' EXIT
+          tested_source_sha="$(git rev-parse HEAD)"
+          tar -xzf .local/production-artifact-evidence/upload/ch0016-ch0017-evidence-bundle.tar.gz -C "$extract_root"
+          (
+            cd "$extract_root"
+            PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA="$tested_source_sha" \
+              node scripts/production-artifact-evidence.mjs verify-standalone
+          )
 
       - name: Verify critical domain contracts
         run: npm run test:critical-required
@@ -185,85 +203,6 @@ jobs:
           if-no-files-found: error
           retention-days: 14
           compression-level: 0
-
-  e2e-full:
-    name: Full E2E (informational)
-    if: always() && (github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request' || github.ref == 'refs/heads/staging')
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: test
-          POSTGRES_DB: interior_ai_test
-        options: >-
-          --health-cmd "pg_isready -U test -d interior_ai_test"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-    env:
-      CI: "true"
-      CI_AUTH_FIXTURE_MODE: "1"
-      APP_ENV: development
-      DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
-      AUTH_SECRET: ci-only-auth-secret-at-least-32-characters
-      NEXTAUTH_SECRET: ci-only-auth-secret-at-least-32-characters
-      NEXTAUTH_URL: http://127.0.0.1:3000
-      APP_ORIGIN: http://127.0.0.1:3000
-      AUTH_TRUST_HOST: "true"
-      ADMIN_EMAILS: gate-a3-admin@example.test
-      PLAYWRIGHT_ADMIN_EMAIL: gate-a3-admin@example.test
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          lfs: true
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Configure synthetic CI OAuth fixture
-        run: npm run ci:auth-fixture:export
-
-      - name: Validate synthetic CI OAuth fixture
-        run: npm run ci:auth-fixture:validate
-
-      - name: Apply database migrations
-        env:
-          GATE_A3_DATABASE_URL: ${{ env.DATABASE_URL }}
-        run: npm run gate:a3:db
-
-      - name: Preflight advisory authentication environment
-        run: npm run ci:auth-fixture:preflight
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
-
-      - name: Run advisory full E2E inventory
-        run: npm run test:e2e:advisory
-
-      - name: Prepare portable advisory evidence
-        if: always()
-        run: npm run evidence:required-tests:prepare-upload
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-full-results
-          path: .local/required-test-upload/
-          if-no-files-found: error
-          retention-days: 30
 
   merge-gate:
     name: merge-gate

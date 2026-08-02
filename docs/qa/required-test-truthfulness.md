@@ -3,7 +3,9 @@
 Status: CH-0017 remains reopened after Outcome-C run `30707099465` at
 `8cb7cae37d6bb49cd66d61f5523927dc7b64283d`. Its repository-controlled bounds
 budget and unmasked synthetic OAuth transport defects are remediated by the
-follow-up containing this record. A new exact-head GitHub run, downloaded
+follow-up at `53a0c98bab4d5a211c93fd1f4f5057806e074bbd`. The workflow-only
+follow-up containing this record separates ordinary required PR execution from
+the deliberate full advisory lane. A new exact-head GitHub run, downloaded
 artifact inspection, and required-check configuration remain external controls
 and are not marked verified here.
 
@@ -38,9 +40,11 @@ Repository-controlled cadence is explicit:
   and shell/process failure remains blocking;
 - `release-blocking`: evidence is validated before Vercel Gate A3 certification
   or by the existing cabinetry release-evidence validator;
-- `advisory`: the full development/staging E2E inventory runs in the explicitly
-  `continue-on-error` job, but its child failure and dishonest evidence remain
-  visible and are never accepted as release certification.
+- `advisory`: the full development/staging E2E inventory runs only by required
+  manual exact-SHA dispatch, PR label `run-full-e2e`, or nightly staging
+  schedule in its own non-required workflow; its real failed or cancelled
+  conclusion and dishonest evidence remain visible and are never accepted as
+  release certification.
 
 The 21-gate inventory includes the required Git-history secret scan, code
 quality, CH-0016 artifact-contract and runtime smoke, authorization/security,
@@ -312,6 +316,49 @@ wrong mask/value binding, non-allowlisted keys, CR/LF, workspace/symlink
 transports, mismatched pair fingerprints, production use, and the retired fixed
 fixture pair in both production and non-activated development.
 
+## Required and full-advisory workflow separation
+
+Previously `.github/workflows/ci.yml` owned `secret-scan`, `stable-checks`,
+`e2e-full`, and `merge-gate`; every ordinary `pull_request` synchronize event
+made the `e2e-full` condition true. Although `merge-gate` already needed only
+`secret-scan` and `stable-checks`, the approximately two-hour advisory suite ran
+on every narrow branch update and shared the required workflow's cancellation
+domain.
+
+The required workflow now owns only `secret-scan`, `stable-checks`, and
+`merge-gate`. Every relevant PR update retains exact-head checkout, migrations,
+masked OAuth export and structural validation, a live structured
+`/api/auth/session` preflight, auth hardening, code-quality and truthfulness
+contracts, strict production build, unchanged `npm run start` smoke identities,
+evidence bundling, fresh standalone extraction verification, the remaining
+required checks, and aggregation. The truthfulness step is the lightweight
+advisory evidence preflight: its fixture cases preserve a representative failed
+process/report pair, safe retained content, hashed omissions including redundant
+`.last-run.json`, exact archive inventory, and rejection of hidden, extra,
+environment, OAuth, credential, database, binary, or raw Playwright content. It
+does not launch the application-wide E2E suite.
+
+`.github/workflows/full-advisory-e2e.yml` is the canonical owner for
+`advisory.full-e2e`. It is triggered only by a required exact `source_sha`
+manual dispatch, adding `run-full-e2e` to a PR, or a nightly checkout of
+`refs/heads/staging`; ordinary PR synchronize is not an event type. Label runs
+checkout and compare the PR head SHA, manual runs compare the required input,
+and scheduled runs record the resolved staging HEAD before migrations or
+browsers. The full suite retains the canonical `npm run test:e2e:advisory`
+runner, all 98 spec sources/current discovered records, real child exit and
+counts, sanitized evidence, omission inventory, exact archive agreement, and
+30-day upload. The separate job has no `continue-on-error`, so a child failure
+remains a failed workflow without becoming merge-required. Its
+`full-advisory-*` concurrency group can cancel an obsolete full-advisory run for
+the same PR/ref but cannot cancel or gate required CI; a cancelled job skips
+evidence preparation/upload and remains cancelled.
+
+The manifest records the advisory workflow path as part of CI ownership. A
+missing or renamed file, job, step, or package invocation fails repository
+validation. Gate/source inventories remain 21/365, no required gate changed
+cadence, and `merge-gate` still depends exactly on `secret-scan` and
+`stable-checks`.
+
 ## External controls and rollback
 
 Repository checks cannot verify which GitHub checks branch protection requires,
@@ -319,7 +366,8 @@ whether the workflow ran for the candidate, or whether uploaded evidence was
 retained for the requested duration. Attach the actual workflow/run/settings
 evidence before treating those controls as verified.
 
-Rollback the Outcome-C follow-up first, then
+Rollback the workflow-separation follow-up first, then the Outcome-C follow-up
+`53a0c98bab4d5a211c93fd1f4f5057806e074bbd`, then
 `8cb7cae37d6bb49cd66d61f5523927dc7b64283d`, then the follow-up containing the
 exact-head 701aaa remediation, then
 the Outcome-D commit, then
