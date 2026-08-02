@@ -1,3 +1,5 @@
+import { RuntimeSmokeOperationTimeoutError } from "./runtime-smoke-operation-deadline.mjs";
+
 const SAFE_ID = /^[a-z0-9][a-z0-9-]{0,95}$/;
 const SAFE_ERROR_NAME = /^[A-Za-z][A-Za-z0-9]{0,95}$/;
 
@@ -29,37 +31,6 @@ function safeId(value, description) {
     throw new Error(`${description} is unsafe`);
   }
   return value;
-}
-
-export class RuntimeSmokeOperationTimeoutError extends Error {
-  constructor({
-    phaseId,
-    operationId,
-    operationElapsedMs,
-    operationBudgetMs,
-    cause,
-  }) {
-    const safePhaseId = safeId(phaseId, "Runtime-smoke phase ID");
-    const safeOperationId = safeId(operationId, "Runtime-smoke operation ID");
-    const safeElapsedMs = nonNegativeInteger(
-      operationElapsedMs,
-      "Runtime-smoke operation elapsed time",
-    );
-    const safeBudgetMs = positiveInteger(
-      operationBudgetMs,
-      "Runtime-smoke operation budget",
-    );
-    super(
-      `Runtime-smoke phase ${safePhaseId} operation ${safeOperationId} ` +
-        `timed out after ${safeElapsedMs}ms against its ${safeBudgetMs}ms budget`,
-      cause instanceof Error ? { cause } : undefined,
-    );
-    this.name = "RuntimeSmokeOperationTimeoutError";
-    this.phaseId = safePhaseId;
-    this.operationId = safeOperationId;
-    this.operationElapsedMs = safeElapsedMs;
-    this.operationBudgetMs = safeBudgetMs;
-  }
 }
 
 export class RuntimeSmokePhaseTimeoutError extends Error {
@@ -114,6 +85,8 @@ function safeOriginalCause(error) {
     originalCause.operationId = cause.operationId;
     originalCause.operationElapsedMs = cause.operationElapsedMs;
     originalCause.operationBudgetMs = cause.operationBudgetMs;
+    originalCause.attemptTimeoutMs = cause.attemptTimeoutMs;
+    originalCause.remainingAtAttemptStartMs = cause.remainingAtAttemptStartMs;
   }
   return originalCause;
 }
@@ -179,6 +152,9 @@ export function createRuntimeSmokeFailureProvenance({
     operationOutcome: operationTimeout ? "timed-out" : null,
     operationElapsedMs: operationTimeout?.operationElapsedMs ?? null,
     operationBudgetMs: operationTimeout?.operationBudgetMs ?? null,
+    attemptTimeoutMs: operationTimeout?.attemptTimeoutMs ?? null,
+    remainingAtAttemptStartMs:
+      operationTimeout?.remainingAtAttemptStartMs ?? null,
     watchdogBudgetMs: noProgressFailure?.noProgressBudgetMs ?? null,
     lastSafeCheckpoint: progressCheckpoints.at(-1)?.name ?? null,
     safeLifecycleState,
@@ -197,6 +173,8 @@ export function runtimeSmokeFailureExactKeys() {
     "operationOutcome",
     "operationElapsedMs",
     "operationBudgetMs",
+    "attemptTimeoutMs",
+    "remainingAtAttemptStartMs",
     "watchdogBudgetMs",
     "lastSafeCheckpoint",
     "safeLifecycleState",
@@ -248,6 +226,8 @@ export function validateRuntimeSmokeFailureProvenance({
       "operationId",
       "operationElapsedMs",
       "operationBudgetMs",
+      "attemptTimeoutMs",
+      "remainingAtAttemptStartMs",
     ].sort();
     const isBasicCause =
       JSON.stringify(causeKeys) === JSON.stringify(basicCauseKeys);
@@ -273,6 +253,15 @@ export function validateRuntimeSmokeFailureProvenance({
             failure.originalCause.operationBudgetMs ||
           !Number.isSafeInteger(failure.originalCause.operationBudgetMs) ||
           failure.originalCause.operationBudgetMs !== causeOperation?.timeoutMs ||
+          !Number.isSafeInteger(failure.originalCause.attemptTimeoutMs) ||
+          failure.originalCause.attemptTimeoutMs < 0 ||
+          !Number.isSafeInteger(
+            failure.originalCause.remainingAtAttemptStartMs,
+          ) ||
+          failure.originalCause.remainingAtAttemptStartMs <
+            failure.originalCause.attemptTimeoutMs ||
+          failure.originalCause.remainingAtAttemptStartMs >
+            failure.originalCause.operationBudgetMs ||
           failure.originalCause.operationElapsedMs > failure.phaseElapsedMs))
     ) {
       issues.push("runtime-smoke original cause is not safely serializable");
@@ -307,6 +296,11 @@ export function validateRuntimeSmokeFailureProvenance({
       !Number.isSafeInteger(failure.operationElapsedMs) ||
       failure.operationElapsedMs < failure.operationBudgetMs ||
       failure.operationElapsedMs > failure.phaseElapsedMs ||
+      !Number.isSafeInteger(failure.attemptTimeoutMs) ||
+      failure.attemptTimeoutMs < 0 ||
+      !Number.isSafeInteger(failure.remainingAtAttemptStartMs) ||
+      failure.remainingAtAttemptStartMs < failure.attemptTimeoutMs ||
+      failure.remainingAtAttemptStartMs > failure.operationBudgetMs ||
       failure.phaseElapsedMs > failure.phaseBudgetMs
     ) {
       issues.push("runtime-smoke nested operation timeout is non-canonical");
@@ -315,7 +309,9 @@ export function validateRuntimeSmokeFailureProvenance({
     failure.operationId !== null ||
     failure.operationOutcome !== null ||
     failure.operationElapsedMs !== null ||
-    failure.operationBudgetMs !== null
+    failure.operationBudgetMs !== null ||
+    failure.attemptTimeoutMs !== null ||
+    failure.remainingAtAttemptStartMs !== null
   ) {
     issues.push("runtime-smoke non-operation failure invents operation provenance");
   }

@@ -118,6 +118,8 @@
       "requiredSources": [
         "scripts/production-artifact-evidence.mjs",
         "scripts/runtime-smoke-failure-evidence.mjs",
+        "scripts/runtime-smoke-operation-contracts.mjs",
+        "scripts/runtime-smoke-operation-deadline.mjs",
         "scripts/runtime-smoke-phase-budget.mjs",
         "scripts/test-production-artifact-evidence.mjs"
       ],
@@ -157,6 +159,8 @@
       "requiredSources": [
         "tests/e2e/00-runtime-smoke.spec.ts",
         "scripts/runtime-smoke-failure-evidence.mjs",
+        "scripts/runtime-smoke-operation-contracts.mjs",
+        "scripts/runtime-smoke-operation-deadline.mjs",
         "scripts/runtime-smoke-phase-budget.mjs"
       ],
       "requiredTests": [

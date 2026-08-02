@@ -857,3 +857,54 @@ change the staging ruleset, required-check configuration, workflow trigger, PR
 state, application behavior, schema, migration, dependency, deployment, or
 secret. CH-0004 remains paused. The single local commit containing this entry
 requires separate authorization before any push or exact-head external run.
+
+## CH-0017 canonical operation-budget provenance correction — 2026-08-02
+
+Exact-head run at `bc26cb18d7de7a99f3a36e2c57751979f2dbde25`
+exposed one producer defect after the version-3 validator correctly rejected
+the result. `waitForReloadModelsReady` started the registered 70,000 ms
+`model-responses-and-readiness` operation, but the diagnostic-read helper
+accepted one ambiguous raw timeout. A read beginning about 4,493 ms later was
+given the 65,507 ms remaining allowance; the helper restarted its clock and
+used that allowance as `operationBudgetMs`. The rejected test record then left
+the safe failure-diagnostic producer without a canonical input.
+
+The replacement API gives every registered operation one frozen deadline with
+its phase/operation identity, canonical contract budget, start, and deadline.
+Each polling iteration derives a branded attempt whose `attemptTimeoutMs` and
+`remainingAtAttemptStartMs` may decrease. A structured timeout can be created
+only from that attempt: `operationElapsedMs` comes from the canonical start and
+`operationBudgetMs` comes from the registered contract. Callers can no longer
+construct the timeout by supplying an arbitrary budget. Independent leaf
+operations such as `diagnostics-settle-evaluation` retain their own registered
+10,000 ms identity; exhaustion of the enclosing settle deadline remains the
+42,000 ms `diagnostics-settle` operation.
+
+The closed schema-v3 failure object now also carries the two attempt fields and
+rejects attempt/remaining values that exceed one another or the registered
+canonical budget. Deterministic regression coverage reproduces a 70,000 ms
+canonical operation with a 65,507 ms attempt, validates reload-1 as a failed
+308,000 ms parent with `nested-operation-timeout`, and separately rejects the
+old 65,507-as-canonical representation. It also proves changing polling
+allowances, the 42,000/10,000 settle boundary, true phase timeout, 75,000 ms
+watchdog, terminal failure, assertion failure, exact safe three-file staging,
+and stable-evidence withholding.
+
+No timeout value changed: settle remains 42,000 ms, bounds 103,000 ms, combined
+reload readiness 70,000 ms, each reload 308,000 ms, the whole test 2,190,000
+ms, and the reload no-progress watchdog 75,000 ms. Retries remain zero and all
+three reloads, selection, bounds, persistence, render-loop, terminal-error, and
+final-state assertions remain intact. This correction changes no product code,
+workflow trigger, ruleset, required check, PR state, deployment, migration,
+dependency, or secret. CH-0004 remains paused and pushing still requires
+separate authorization.
+
+Final isolated-database focused runtime validation passed both required
+identities 2/2 with no failure provenance: bounds used 7,344/103,000 ms and the
+three reloads used 23,930, 23,443, and 23,625/308,000 ms. Production-evidence,
+required-test truthfulness, auth hardening, GLB bounds/lifecycle, typecheck,
+targeted zero-warning lint, JavaScript syntax, and tracked/untracked diff
+hygiene also passed. The independent read-only review first found a public raw
+branding escape hatch, missing split-module bundle/source ownership, and a
+missing capped-poll assertion. All were corrected; final disposition was
+**PASS — no actionable findings**.

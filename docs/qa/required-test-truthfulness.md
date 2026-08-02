@@ -367,10 +367,21 @@ Runtime smoke timing uses schema version 3 and a closed failure-kind enum:
 failure carries phase identity, elapsed time and budget, last safe checkpoint,
 safe lifecycle state, progress observation, and a bounded safe cause summary.
 Nested-operation failures additionally require the canonical operation identity,
-elapsed time, budget, and `operationOutcome=timed-out`; their parent phase must
-be `failed`. A true phase timeout requires parent `timed-out` and forbids child
-identity. Validators reject missing, extra, unknown, unsafe, budget-drifted, or
-cross-record-inconsistent fields.
+elapsed time, budget, current `attemptTimeoutMs`,
+`remainingAtAttemptStartMs`, and `operationOutcome=timed-out`; their parent
+phase must be `failed`. A true phase timeout requires parent `timed-out` and
+forbids child identity. Validators reject missing, extra, unknown, unsafe,
+budget-drifted, or cross-record-inconsistent fields.
+
+The producer owns one immutable deadline per registered operation. Its
+`operationBudgetMs` is resolved from the phase contract, its elapsed time starts
+when that operation starts, and polling iterations receive branded attempts
+whose decreasing allowances are recorded only in the attempt fields. Neither a
+browser evaluation nor the timeout-error constructor can promote its remaining
+allowance into canonical evidence. The exact external regression—70,000 ms
+canonical reload readiness with a 65,507 ms leaf allowance—remains a validator
+negative when 65,507 is presented as the operation budget and is a valid
+structured failure when the two values occupy their correct fields.
 
 `diagnostics-settle-evaluation` is a canonical 10,000 ms child of the 42,000 ms
 `diagnostics-settle` operation. A child evaluation timeout remains attributed to

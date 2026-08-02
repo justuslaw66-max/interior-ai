@@ -199,6 +199,17 @@ subset; successful production evidence continues to require process exit zero,
 two passed identities, zero failures/flakes/skips, complete timing, and null
 failure provenance.
 
+Each bounded runtime operation now starts from an immutable registered deadline
+containing its operation ID, canonical budget, start, and deadline. Polling may
+derive a smaller `attemptTimeoutMs` and records its
+`remainingAtAttemptStartMs`, but `operationElapsedMs` is always measured from
+the canonical start and `operationBudgetMs` always comes from the registered
+phase contract. The timeout constructor accepts only the branded operation
+attempt; a leaf caller cannot substitute a decreasing allowance as the
+canonical budget. Schema version 3 validates both timing classes and rejects an
+attempt greater than its recorded remaining allowance, remaining allowance
+greater than the canonical budget, or canonical-budget drift.
+
 The 10,000 ms `diagnostics-settle-evaluation` child and 42,000 ms
 `diagnostics-settle` parent are distinct canonical operations. The verifier also
 rechecks the manifest sidecar/canonical form, current clean checkout, artifact

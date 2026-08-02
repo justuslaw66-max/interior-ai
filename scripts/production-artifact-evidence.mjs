@@ -2088,6 +2088,8 @@ export async function createProductionEvidenceBundle({
     "scripts/production-artifact-evidence.mjs",
     "scripts/runtime-smoke-phase-budget.mjs",
     "scripts/runtime-smoke-failure-evidence.mjs",
+    "scripts/runtime-smoke-operation-contracts.mjs",
+    "scripts/runtime-smoke-operation-deadline.mjs",
     "scripts/required-test-truthfulness.mjs",
     "scripts/required-test-manifest.json",
     manifestPath,
