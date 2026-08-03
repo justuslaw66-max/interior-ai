@@ -125,7 +125,7 @@
       "limit": 250
     },
     "components/catalog/CatalogPanel.tsx": {
-      "lines": 1177,
+      "lines": 1160,
       "limit": 250
     },
     "components/editor/ConsumerRoomSetupCard.tsx": {
@@ -221,7 +221,7 @@
       "limit": 250
     },
     "components/editor/DesignControlsFurnishPanel.tsx": {
-      "lines": 1311,
+      "lines": 1309,
       "limit": 250
     },
     "components/editor/DesignControlsPanel.tsx": {
@@ -1669,7 +1669,7 @@
     "components/catalog/CatalogPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 999
+        "maximum": 980
       },
       "complexFunctions": {
         "count": 1,
@@ -2123,11 +2123,11 @@
     "components/editor/DesignControlsFurnishPanel.tsx": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 1195
+        "maximum": 1191
       },
       "complexFunctions": {
         "count": 2,
-        "maximum": 73
+        "maximum": 72
       }
     },
     "components/editor/DesignControlsPanel.tsx": {

@@ -291,7 +291,7 @@ export default function FloorPlanImportAssistant({
     } finally {
       setSubmitting(false);
     }
-  }, [activeJob, onActiveJobIdChange, router, setState, title]);
+  }, [activeJob, onActiveJobIdChange, router, title]);
 
   const optionalConfigurationCount = useMemo(
     () => candidate ? inspectFloorPlanOptionalConfigurations(candidate).length : 0,

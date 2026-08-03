@@ -15,8 +15,7 @@ export type BuildDesignPagePanelWorkspaceRegistrationInput = {
 export function buildDesignPagePanelWorkspaceRegistration({
   boundaries: { presentation },
 }: BuildDesignPagePanelWorkspaceRegistrationInput) {
-  const { aiWorkspace, commerceOnboarding, selection } =
-    presentation.boundaries;
+  const { aiWorkspace, commerceOnboarding, selection } = presentation.boundaries;
   const {
     coreShell,
     documentSelection,
@@ -25,7 +24,7 @@ export function buildDesignPagePanelWorkspaceRegistration({
     persistence,
     aiPanel,
   } = aiWorkspace.boundaries;
-  const { base, viewportShell } = coreShell.boundaries;
+  const { base, snapshotDocument, viewportShell } = coreShell.boundaries;
   const { importedModels } = base.boundaries;
   const { planDocument, floorPlanDocument, surfaceState } =
     viewportShell.boundaries;
@@ -57,6 +56,7 @@ export function buildDesignPagePanelWorkspaceRegistration({
         plan: base.state.access.plan,
         rooms: coreShell.state.document.designSnapshot.rooms,
         activeRoomId: coreShell.state.document.designSnapshot.activeRoomId,
+        catalogRoomNavigationRevision: snapshotDocument.state.catalogRoomNavigationRevision,
         authenticated: Boolean(base.state.identity.session?.user),
       },
       editor: {

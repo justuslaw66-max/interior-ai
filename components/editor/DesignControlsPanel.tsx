@@ -43,7 +43,6 @@ import type { FloorPlanTool } from "./FloorPlanToolStrip";
 type Budget = "$" | "$$" | "$$$";
 type ConsumerPanelMode = "plan" | "furnish" | "ai";
 type SurfaceTargetMode = "floor" | "walls" | "selected_wall" | "ceiling";
-
 type ImportedFamilyOption = {
   familyKey: string;
   familyLabel: string;
@@ -128,6 +127,7 @@ export type DesignControlsPanelProps = {
   planOpeningCount: number;
   activeRoomName: string;
   activeRoomId: string;
+  catalogRoomNavigationRevision: number;
   rooms: Array<{ id: string; name: string }>;
   activeRoomType: RoomType;
   activeRoomTypeLabel: string;
@@ -348,6 +348,7 @@ export default function DesignControlsPanel({
   planOpeningCount,
   activeRoomName,
   activeRoomId,
+  catalogRoomNavigationRevision,
   rooms,
   activeRoomType,
   activeRoomTypeLabel,
@@ -901,8 +902,7 @@ export default function DesignControlsPanel({
           <DesignControlsFurnishPanel
             dark={dark}
             canEdit={canEdit}
-            activeRoomName={activeRoomName}
-            activeRoomId={activeRoomId}
+            {...{ activeRoomName, activeRoomId, catalogRoomNavigationRevision }}
             rooms={rooms}
             activeRoomTypeLabel={activeRoomTypeLabel}
             activeRoomItemCount={planItemCount}

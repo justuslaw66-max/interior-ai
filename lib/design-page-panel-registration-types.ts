@@ -44,6 +44,7 @@ export type BuildDesignPagePanelRegistrationInput = {
       plan: ShoppingInput["state"]["cart"]["plan"];
       rooms: SelectionInput["item"]["state"]["document"]["rooms"];
       activeRoomId: string;
+      catalogRoomNavigationRevision: number;
       authenticated: boolean;
     };
     editor: {

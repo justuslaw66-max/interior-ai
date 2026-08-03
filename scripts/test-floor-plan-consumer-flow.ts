@@ -411,6 +411,11 @@ assert.match(
 );
 assert.match(
   assistant,
+  /const createDesign = useCallback\(async \(\) => \{[\s\S]*?\}, \[activeJob, onActiveJobIdChange, router, title\]\);/,
+  "Design creation should refresh for current job, title, navigation, and active-job ownership without depending on an unused session setter."
+);
+assert.match(
+  assistant,
   /Current design unchanged[\s\S]*?Create editable plan/,
   "The ready state should make the editable outcome and non-destructive creation clear."
 );

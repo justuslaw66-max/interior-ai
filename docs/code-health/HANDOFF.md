@@ -1461,3 +1461,68 @@ zero-warning ESLint, code-quality, strict production-build, and diff-hygiene
 checks pass. Full E2E was not run. The exact final two-commit CH-0029 branch
 head still requires a renewed normal-push authorization and the existing
 required-only `workflow_dispatch`; no external verification claim is made.
+
+## Baseline A inherited React-hook diagnostics — 2026-08-03
+
+Baseline A started from exact clean source
+`7158b5152336565a1d2b8caa42c2adab108268d2` on
+`fix/baseline-react-hook-diagnostics`. The CH-0030 profiling source
+`d7a50698707153b43df0a982766288060c24b997` remained isolated. No push,
+deployment, Full E2E, external-control change, or work on another finding was
+performed.
+
+Exact detached starting-source lint reproduced only
+`components/catalog/CatalogPanel.tsx:358`
+`react-hooks/set-state-in-effect` and
+`components/editor/FloorPlanImportAssistant.tsx:294`
+`react-hooks/exhaustive-deps`. Catalog results already omitted the sofa-only
+capacity bucket outside sofa scope, but a synchronous effect then deleted the
+stored bucket and reset scroll after navigation. The controlled category
+transaction and central design-snapshot setter now
+advance semantic revisions for active-room ID, name, and room-type changes from
+every established snapshot path. A sofa filter records its selection revision, so incompatible navigation removes it from results,
+chips, drawer state, and counts without an effect and it cannot resurrect after
+returning to sofa. Search, Brand and other filters, selection/variant state, and
+memory scope remain mounted. The main-group scope also excludes unavailable
+categories. `createDesign` does not read `setState`; removing only that stable
+unnecessary dependency preserves current job/title, completion navigation,
+error cleanup, and callback freshness.
+
+Focused tests now cover sofa-scope retention, non-sofa category/group cleanup,
+controlled room/category invalidation, non-resurrection, unrelated-filter
+preservation, valid post-navigation results, repeat-navigation identity,
+production revision wiring, and the exact current-data dependency list. Existing floor-plan
+consumer coverage continues to exercise progress, error, cancellation/failed
+polling termination, retry, completion, routing, and private-source behavior.
+Production-browser verification applied Brand plus `3 seater`, switched Living
+/ Sleep -> Kitchenette -> Living / Sleep, observed Brand retained and the seat
+chip removed without resurrection, saw seven valid dining-table results, kept
+the two placed items unchanged, and recorded zero browser errors.
+
+Validation results:
+
+- clean detached baseline `npm run lint -- --max-warnings=0`: expected FAIL,
+  exactly one error and one warning above;
+- targeted ESLint for both production files and their focused guards with
+  `--max-warnings=0`: PASS;
+- catalog logic and floor-plan consumer-flow focused guards: PASS;
+- `npm run test:floor-plan-live-progress`,
+  `npm run test:design-editor-routing`, and
+  `npm run test:floor-plan-private-source-retention`: PASS;
+- final `npm run lint -- --max-warnings=0`: PASS, zero warnings;
+- `npm run typecheck`: PASS;
+- `npm run check:code-quality`: PASS after structurally lowering `CatalogPanel`
+  lines 1177 -> 1160 and overlong maximum 999 -> 980, plus
+  `DesignControlsFurnishPanel` lines 1311 -> 1309, overlong maximum 1195 ->
+  1191, and complexity maximum 73 -> 72;
+- `APP_ENV=development npm run build`: PASS outside the sandbox; the inherited
+  floor-plan NFT trace warning and lenient catalog notices remain;
+- `npm run test:design-page-cleanup`: expected FAIL only at the untouched
+  `scripts/test-command-bar-save-status.ts:34` after the catalog guard passed;
+- focused production-browser catalog transition: PASS; Full E2E not run.
+
+Remaining inherited work is unchanged: Baseline B command-bar save-status is
+next; Hamilton vocabulary, architecture ratchets, Phase 8 initial-JavaScript
+budget, Full E2E, CH-0017, CH-0028, CH-0029, CH-0030, CH-0004, and unrelated
+findings were not modified. The implementation is the single local branch-head
+commit containing this entry.

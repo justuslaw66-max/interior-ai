@@ -41,6 +41,7 @@ import {
   getCatalogMainGroupCategories,
   type CatalogMainGroupId,
 } from "@/lib/catalog/category-taxonomy";
+import { useCatalogFilterNavigation } from "@/lib/catalog/filter-navigation";
 
 const CARD_ROW_HEIGHT = 252;
 const GRID_HEIGHT = 540;
@@ -97,6 +98,7 @@ type Props = {
   recommendedCategoryIds?: CatalogTopCategory[];
   selectedCategory?: CatalogTopCategory;
   onSelectedCategoryChange?: (category: CatalogTopCategory) => void;
+  navigationRevision?: string;
   activeRoomProductQuantities?: Record<string, number>;
   activeRoomVariantQuantities?: Record<string, number>;
   activeRoomCategoryCounts?: Partial<Record<CatalogTopCategory, number>>;
@@ -190,6 +192,7 @@ export default function CatalogPanel({
   recommendedCategoryIds = [],
   selectedCategory: controlledSelectedCategory,
   onSelectedCategoryChange,
+  navigationRevision = "catalog:0",
   activeRoomProductQuantities = {},
   activeRoomVariantQuantities = {},
   activeRoomCategoryCounts = {},
@@ -201,7 +204,6 @@ export default function CatalogPanel({
     controlledSelectedCategory ?? pickInitialCategory(items)
   );
   const selectedCategory = controlledSelectedCategory ?? internalSelectedCategory;
-  const [filters, setFilters] = useState<CatalogFilterState>(() => ({}));
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedFinishId, setSelectedFinishId] = useState<string | undefined>(undefined);
@@ -275,6 +277,13 @@ export default function CatalogPanel({
     [categoryCounts, selectedCategory, selectedMainGroupId]
   );
   const showSofaSeatCapacityFilter = selectedCategoryScope.includes("sofa");
+  const {
+    applicableFilters,
+    clearAllFilters: clearCatalogFilters,
+    clearFilterKey: clearCatalogFilterKey,
+    clearFiltersForScope,
+    patchFilters,
+  } = useCatalogFilterNavigation(selectedCategoryScope, navigationRevision);
   const selectedCategoryLabel = selectedMainGroup?.allLabel ?? getTopCategoryLabel(selectedCategory);
   const recommendedCategorySet = useMemo(
     () => new Set(recommendedCategoryIds),
@@ -288,8 +297,8 @@ export default function CatalogPanel({
     [categoryCounts, recommendedCategoryIds]
   );
   const hasSearchTerm = rawSearch.trim().length > 0;
-  const hasActiveFilters = useMemo(() => hasActiveCatalogFilters(filters), [filters]);
-  const activeFilterCount = useMemo(() => countActiveCatalogFilters(filters), [filters]);
+  const hasActiveFilters = useMemo(() => hasActiveCatalogFilters(applicableFilters), [applicableFilters]);
+  const activeFilterCount = useMemo(() => countActiveCatalogFilters(applicableFilters), [applicableFilters]);
   const hasActiveSmartFilters = smartFilters.length > 0;
   const showEmptyCategoryRecovery = !hasSearchTerm && !hasActiveFilters && !hasActiveSmartFilters;
   const emptyRecoveryCategories = useMemo(() => {
@@ -313,11 +322,10 @@ export default function CatalogPanel({
   const effectiveFilters = useMemo<CatalogFilterState>(() => {
     const nextFilters: CatalogFilterState =
       memoryScope === "all"
-        ? { ...filters, category: selectedCategoryScope }
-        : { ...filters, category: undefined };
-    if (!showSofaSeatCapacityFilter) delete nextFilters.sofaSeatCapacityBuckets;
+        ? { ...applicableFilters, category: selectedCategoryScope }
+        : { ...applicableFilters, category: undefined };
     return nextFilters;
-  }, [filters, memoryScope, selectedCategoryScope, showSofaSeatCapacityFilter]);
+  }, [applicableFilters, memoryScope, selectedCategoryScope]);
 
   const searchScopedFilters = useMemo(() => {
     if (!debouncedSearch.trim()) return effectiveFilters;
@@ -352,20 +360,6 @@ export default function CatalogPanel({
   const filteredItems = useMemo(() => {
     return filterCatalogItems(scopedItems, debouncedSearch, searchScopedFilters);
   }, [scopedItems, debouncedSearch, searchScopedFilters]);
-
-  useEffect(() => {
-    if (showSofaSeatCapacityFilter || !filters.sofaSeatCapacityBuckets?.length) return;
-    setFilters((prev) => {
-      const next = { ...prev };
-      delete next.sofaSeatCapacityBuckets;
-      return next;
-    });
-    resetCatalogScroll();
-  }, [
-    filters.sofaSeatCapacityBuckets,
-    resetCatalogScroll,
-    showSofaSeatCapacityFilter,
-  ]);
 
   useEffect(() => {
     const term = debouncedSearch.trim();
@@ -652,37 +646,24 @@ export default function CatalogPanel({
   const bottomPad = Math.max(0, (totalRows - endRow) * CARD_ROW_HEIGHT);
 
   const clearFilterKey = (key: keyof CatalogFilterState) => {
-    setFilters((prev) => {
-      const next = { ...prev };
-      if (key === "priceMin") {
-        delete next.priceMin;
-        delete next.priceMax;
-        return next;
-      }
-      if (key === "widthMinCm") {
-        delete next.widthMinCm;
-        delete next.widthMaxCm;
-        return next;
-      }
-      delete next[key];
-      return next;
-    });
+    clearCatalogFilterKey(key);
     resetCatalogScroll();
   };
 
   const clearAllFilters = () => {
-    setFilters({});
+    clearCatalogFilters();
     setSmartFilters([]);
     resetCatalogScroll();
   };
 
   const handleFilterPatch = (patch: Partial<CatalogFilterState>) => {
-    setFilters((prev) => ({ ...prev, ...patch }));
+    patchFilters(patch);
     resetCatalogScroll();
   };
 
   const handleSelectCategory = (nextCategory: CatalogTopCategory) => {
     setMemoryScope("all");
+    clearFiltersForScope([nextCategory]);
     setGroupSelectionByRoom((prev) => {
       const next = { ...prev };
       delete next[activeRoomLabel];
@@ -694,7 +675,9 @@ export default function CatalogPanel({
   };
 
   const handleSelectMainGroup = (groupId: CatalogMainGroupId) => {
+    const nextCategoryScope = getCatalogMainGroupCategories(groupId).filter((category) => (categoryCounts[category] ?? 0) > 0);
     setMemoryScope("all");
+    clearFiltersForScope(nextCategoryScope);
     setGroupSelectionByRoom((prev) => ({
       ...prev,
       [activeRoomLabel]: { groupId, anchorCategory: selectedCategory },
@@ -703,7 +686,7 @@ export default function CatalogPanel({
     track("catalog_main_group_select", {
       group: groupId,
       room: activeRoomLabel,
-      categories: getCatalogMainGroupCategories(groupId),
+      categories: nextCategoryScope,
     });
   };
 
@@ -930,7 +913,7 @@ export default function CatalogPanel({
 
       <CatalogFilterDrawer
         open={filtersOpen}
-        filters={filters}
+        filters={applicableFilters}
         brands={facets.brands}
         styles={facets.styles}
         materials={facets.materials}

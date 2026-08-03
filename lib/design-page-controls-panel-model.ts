@@ -34,6 +34,7 @@ type RoomState = StateSlice<
   | "roomDepth"
   | "activeRoomName"
   | "activeRoomId"
+  | "catalogRoomNavigationRevision"
   | "rooms"
   | "activeRoomType"
   | "activeRoomTypeLabel"

@@ -187,7 +187,6 @@ export function buildDesignPagePanelRegistration({
       },
     },
   });
-
   const designControlsPanelModel = buildDesignControlsPanelModel({
     access: {
       dark: configuration.designerTheme,
@@ -210,6 +209,7 @@ export function buildDesignPagePanelRegistration({
         roomDepth: room.roomDepth,
         activeRoomName: room.activeRoom?.name ?? "Current room",
         activeRoomId: state.document.activeRoomId,
+        catalogRoomNavigationRevision: state.document.catalogRoomNavigationRevision,
         rooms: state.document.rooms.map(({ id, name }) => ({ id, name })),
         activeRoomType: room.activeRoom?.roomType ?? "living",
         activeRoomTypeLabel: room.activeRoom

@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { CATALOG_ITEMS } from "../lib/catalog";
 import type { CatalogItemSchema } from "../lib/catalog-schema";
 import {
@@ -9,6 +11,7 @@ import {
   mapToTopCategory,
   matchesSofaSeatCapacityBuckets,
   TOP_CATEGORY_ORDER,
+  type CatalogFilterState,
 } from "../lib/catalog/view-builders";
 import {
   CATALOG_MAIN_GROUPS,
@@ -19,10 +22,101 @@ import {
   buildCatalogRoomGuidance,
   getSimilarItems,
 } from "../lib/catalog/recommendations";
+import {
+  clearInapplicableCatalogFilters,
+  hasCatalogRoomNavigationChanged,
+} from "../lib/catalog/filter-navigation";
 
 function run(): void {
+  const catalogPanelSource = readFileSync(
+    path.join(process.cwd(), "components/catalog/CatalogPanel.tsx"),
+    "utf8",
+  );
+  const furnishPanelSource = readFileSync(
+    path.join(process.cwd(), "components/editor/DesignControlsFurnishPanel.tsx"),
+    "utf8",
+  );
+  const filterNavigationSource = readFileSync(
+    path.join(process.cwd(), "lib/catalog/filter-navigation.ts"),
+    "utf8",
+  );
+  const documentStateSource = readFileSync(
+    path.join(process.cwd(), "lib/useDesignPageDocumentStateController.ts"),
+    "utf8",
+  );
+  const panelRegistrationSource = readFileSync(
+    path.join(process.cwd(), "lib/design-page-panel-workspace-registration.ts"),
+    "utf8",
+  );
+  assert.match(
+    filterNavigationSource,
+    /sofaFilterNavigationRevision === navigationRevision/,
+    "Catalog filter state must invalidate a sofa filter when semantic navigation advances",
+  );
+  assert.match(
+    catalogPanelSource,
+    /filters=\{applicableFilters\}/,
+    "Filter controls must not count or display a navigation-invalidated sofa bucket",
+  );
+  assert.match(
+    catalogPanelSource,
+    /hasActiveCatalogFilters\(applicableFilters\)/,
+    "Navigation-invalidated sofa filters must not contribute to the active-filter state",
+  );
+  assert.match(
+    catalogPanelSource,
+    /countActiveCatalogFilters\(applicableFilters\)/,
+    "Navigation-invalidated sofa filters must not contribute to the active-filter count",
+  );
+  assert.match(
+    filterNavigationSource,
+    /revision: previous\.revision \+ 1/,
+    "The controlled category transaction must advance catalog filter navigation",
+  );
+  assert.match(
+    furnishPanelSource,
+    /navigationRevision=\{`\$\{catalogRoomNavigationRevision\}:\$\{catalogCategoryNavigationRevision\}`\}/,
+    "Controlled room and category navigation revisions must reach CatalogPanel",
+  );
+  assert.match(
+    documentStateSource,
+    /hasCatalogRoomNavigationChanged\(designSnapshotRef\.current, resolved\)[\s\S]*?setCatalogRoomNavigationRevision\(\(revision\) => revision \+ 1\)/,
+    "The central snapshot transaction must advance navigation for every catalog-relevant room change",
+  );
+  assert.match(
+    panelRegistrationSource,
+    /catalogRoomNavigationRevision: snapshotDocument\.state\.catalogRoomNavigationRevision/,
+    "The panel must consume the central document room revision rather than a partial controller",
+  );
+
   const items = Object.values(CATALOG_ITEMS);
   assert(items.length > 0, "Expected catalog to contain at least one item");
+
+  const livingRoomContext = {
+    activeRoomId: "room-a",
+    rooms: [{ id: "room-a", name: "Living", roomType: "living" }],
+  };
+  assert.equal(
+    hasCatalogRoomNavigationChanged(livingRoomContext, {
+      ...livingRoomContext,
+      rooms: [{ id: "room-a", name: "Kitchen", roomType: "kitchen" }],
+    }),
+    true,
+    "Changing the active room type under the same id must invalidate its prior catalog filter revision",
+  );
+  assert.equal(
+    hasCatalogRoomNavigationChanged(livingRoomContext, {
+      ...livingRoomContext,
+      rooms: [{ id: "room-a", name: "Renamed living room", roomType: "living" }],
+    }),
+    true,
+    "Changing the room recommendation key under the same id must advance catalog navigation",
+  );
+  assert.equal(
+    hasCatalogRoomNavigationChanged(livingRoomContext, livingRoomContext),
+    false,
+    "Unrelated snapshot updates must not invalidate applicable catalog filters",
+  );
 
   const taxonomyCategories = CATALOG_MAIN_GROUPS.flatMap((group) => group.categories);
   assert.equal(
@@ -87,6 +181,47 @@ function run(): void {
     makeSeatFixture("seat-filter-unknown", "Unmapped Sofa", undefined, { widthMm: 0 }),
     makeSeatFixture("seat-filter-table", "Dining Table", 4, { category: "dining_table" }),
   ];
+
+  const sofaNavigationFilters = {
+    brandIds: ["brand-a"],
+    priceMin: 100,
+    sofaSeatCapacityBuckets: ["3"],
+  } satisfies CatalogFilterState;
+  assert.strictEqual(
+    clearInapplicableCatalogFilters(sofaNavigationFilters, ["sofa"]),
+    sofaNavigationFilters,
+    "Sofa navigation must retain an applicable seat-capacity filter without another state update",
+  );
+  assert.deepEqual(
+    clearInapplicableCatalogFilters(sofaNavigationFilters, ["sofa"], false),
+    { brandIds: ["brand-a"], priceMin: 100 },
+    "Returning to sofa after controlled navigation must not resurrect its prior seat filter",
+  );
+  const tableNavigationFilters = clearInapplicableCatalogFilters(
+    sofaNavigationFilters,
+    getCatalogMainGroupCategories("tables"),
+  );
+  assert.deepEqual(
+    tableNavigationFilters,
+    { brandIds: ["brand-a"], priceMin: 100 },
+    "Leaving sofa scope must clear only the sofa-only filter",
+  );
+  assert.strictEqual(
+    clearInapplicableCatalogFilters(tableNavigationFilters, ["dining_table"]),
+    tableNavigationFilters,
+    "Repeated non-sofa navigation must be idempotent instead of scheduling another render",
+  );
+  assert.deepEqual(
+    filterCatalogItems(seatFixtures, "", {
+      ...clearInapplicableCatalogFilters(
+        { sofaSeatCapacityBuckets: ["3"] },
+        ["dining_table"],
+      ),
+      category: ["dining_table"],
+    }).map((item) => item.id),
+    ["seat-filter-table"],
+    "Category navigation must not leave a stale sofa filter hiding valid products",
+  );
 
   assert.equal(
     deriveSeatCount(seatFixtures[2]),

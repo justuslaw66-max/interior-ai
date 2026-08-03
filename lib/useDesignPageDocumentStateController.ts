@@ -21,6 +21,7 @@ import {
   migrateToV3,
   type DesignSnapshot,
 } from "@/lib/room-types";
+import { hasCatalogRoomNavigationChanged } from "@/lib/catalog/filter-navigation";
 import { useDesignPageFloorPlanAssets } from "@/lib/useDesignPageFloorPlanAssets";
 import { useDesignPageFloorPlanWorkflowState } from "@/lib/useDesignPageFloorPlanWorkflowState";
 import type { DesignPageHistorySnapshot } from "@/lib/useDesignPageHistory";
@@ -269,6 +270,8 @@ export function useDesignPageSnapshotDocumentState() {
 
   const [designSnapshot, setDesignSnapshotState] =
     useState<DesignSnapshot>(defaultSnapshot);
+  const [catalogRoomNavigationRevision, setCatalogRoomNavigationRevision] =
+    useState(0);
   const designSnapshotRef = useRef(designSnapshot);
   const setDesignSnapshot = useCallback(
     (
@@ -282,6 +285,9 @@ export function useDesignPageSnapshotDocumentState() {
               designSnapshotRef.current
             )
           : next;
+      if (hasCatalogRoomNavigationChanged(designSnapshotRef.current, resolved)) {
+        setCatalogRoomNavigationRevision((revision) => revision + 1);
+      }
       designSnapshotRef.current = resolved;
       setDesignSnapshotState(resolved);
     },
@@ -290,7 +296,7 @@ export function useDesignPageSnapshotDocumentState() {
   const [localBackupHydrated, setLocalBackupHydrated] = useState(false);
 
   return {
-    state: { designSnapshot, localBackupHydrated },
+    state: { designSnapshot, catalogRoomNavigationRevision, localBackupHydrated },
     actions: { setDesignSnapshot, setLocalBackupHydrated },
     refs: { designSnapshotRef },
   };

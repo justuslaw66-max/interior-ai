@@ -17,6 +17,7 @@ import {
   mapToTopCategory,
   type CatalogTopCategory,
 } from "@/lib/catalog/view-builders";
+import { useCatalogCategoryNavigation } from "@/lib/catalog/filter-navigation";
 
 type ImportedFamilyOption = {
   familyKey: string;
@@ -28,6 +29,7 @@ type DesignControlsFurnishPanelProps = {
   canEdit: boolean;
   activeRoomName: string;
   activeRoomId: string;
+  catalogRoomNavigationRevision: number;
   rooms: Array<{ id: string; name: string }>;
   activeRoomTypeLabel: string;
   activeRoomItemCount: number;
@@ -119,6 +121,7 @@ export default function DesignControlsFurnishPanel({
   canEdit,
   activeRoomName,
   activeRoomId,
+  catalogRoomNavigationRevision,
   rooms,
   activeRoomTypeLabel,
   activeRoomItemCount,
@@ -159,9 +162,6 @@ export default function DesignControlsFurnishPanel({
   onSelectedImportedProductChange,
 }: DesignControlsFurnishPanelProps) {
   const roomRecommendationKey = `${activeRoomName}:${activeRoomTypeLabel}`;
-  const [selectedCatalogCategoryByRoom, setSelectedCatalogCategoryByRoom] = useState<
-    Record<string, CatalogTopCategory>
-  >({});
   const [experienceMode, setExperienceMode] = useState<FurnishExperienceMode>("catalog");
   const catalogPanelRef = useRef<HTMLElement>(null);
   const focusCatalogAfterModeChangeRef = useRef(false);
@@ -200,14 +200,11 @@ export default function DesignControlsFurnishPanel({
       .map(([category]) => category);
   }, [activeRoomTypeLabel, catalogCategoryCounts]);
   const defaultCatalogCategory = recommendedCategories[0];
-  const activeCatalogCategory =
-    selectedCatalogCategoryByRoom[roomRecommendationKey] ?? defaultCatalogCategory;
-  const handleCatalogCategoryChange = (category: CatalogTopCategory) => {
-    setSelectedCatalogCategoryByRoom((prev) => ({
-      ...prev,
-      [roomRecommendationKey]: category,
-    }));
-  };
+  const {
+    activeCategory: activeCatalogCategory,
+    revision: catalogCategoryNavigationRevision,
+    selectCategory: handleCatalogCategoryChange,
+  } = useCatalogCategoryNavigation(roomRecommendationKey, defaultCatalogCategory);
   const handleBrowseCatalogCategory = (category: CatalogTopCategory) => {
     handleCatalogCategoryChange(category);
     focusCatalogAfterModeChangeRef.current = true;
@@ -861,6 +858,7 @@ export default function DesignControlsFurnishPanel({
             title="Browse catalog"
             selectedCategory={activeCatalogCategory}
             onSelectedCategoryChange={handleCatalogCategoryChange}
+            navigationRevision={`${catalogRoomNavigationRevision}:${catalogCategoryNavigationRevision}`}
             activeRoomProductQuantities={activeRoomProductQuantities}
             activeRoomVariantQuantities={activeRoomVariantQuantities}
             activeRoomCategoryCounts={activeRoomCategoryCounts}
