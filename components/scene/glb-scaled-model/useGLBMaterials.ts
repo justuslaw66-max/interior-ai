@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import type { GLBUpholsteryTextures } from "./normalizeGLBScene";
+import { measureGLBMainThreadWork } from "./glbMainThreadTelemetry";
 
 type RenderAssets = CatalogItemSchema["variants"][number]["renderAssets"];
 type MaterialControl = { cancelled: boolean; ownedTextures: THREE.Texture[] };
@@ -120,13 +121,15 @@ export function useGLBMaterials({
       renderAssets,
       repeat
     ).then((results) =>
-      finishMaterialLoad({
-        results,
-        control,
-        diagnosticKey,
-        identity: materialKey,
-        publish: setState,
-      })
+      measureGLBMainThreadWork("material-texture-setup", () =>
+        finishMaterialLoad({
+          results,
+          control,
+          diagnosticKey,
+          identity: materialKey,
+          publish: setState,
+        }),
+      ),
     );
     return () => {
       control.cancelled = true;

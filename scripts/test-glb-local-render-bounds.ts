@@ -205,7 +205,7 @@ assert.match(
 );
 assert.match(
   loadedResourceSource,
-  /clonePreparedGLBForMount\(prepared\.scene\)/,
+  /function clonePreparedModel[\s\S]*clonePreparedGLBForMount\(scene\)[\s\S]*const model = clonePreparedModel\(prepared\.scene\)/,
   "each scene item must receive an isolated prepared scene, geometry, and material clone."
 );
 assert.match(

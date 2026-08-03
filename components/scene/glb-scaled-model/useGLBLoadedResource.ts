@@ -23,6 +23,7 @@ import type {
   GLBModelLifecycleHandle,
 } from "./modelLifecycleTypes";
 import type { GLBResourceCacheStatus } from "./glbResourceCache";
+import { measureGLBMainThreadWork } from "./glbMainThreadTelemetry";
 
 type RenderAssets = CatalogItemSchema["variants"][number]["renderAssets"];
 type LoadStateCallback = (state: "loading" | "ready" | "error") => void;
@@ -37,6 +38,12 @@ function observedEventLoopDelayMs() {
       __INTERIOR_AI_GLB_EVENT_LOOP_PROBE__?: { lastDelayMs: number };
     }
   ).__INTERIOR_AI_GLB_EVENT_LOOP_PROBE__?.lastDelayMs ?? null;
+}
+
+function clonePreparedModel(scene: Parameters<typeof clonePreparedGLBForMount>[0]) {
+  return measureGLBMainThreadWork("prepared-model-clone", () =>
+    clonePreparedGLBForMount(scene),
+  );
 }
 
 function attachLeaseRelease(
@@ -130,7 +137,7 @@ async function loadPreparedForMount(
   });
   const materialCloningStartedAtMs = performance.now();
   const materialCloningStartedEventLoopDelayMs = observedEventLoopDelayMs();
-  const model = clonePreparedGLBForMount(prepared.scene);
+  const model = clonePreparedModel(prepared.scene);
   const materialCloningCompletedAtMs = performance.now();
   const materialCloningCompletedEventLoopDelayMs = observedEventLoopDelayMs();
   publish({

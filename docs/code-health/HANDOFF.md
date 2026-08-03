@@ -1,6 +1,6 @@
 # Code health audit handoff
 
-Current superseding status: CH-0001, CH-0012, and CH-0016 repository remediation are complete. CH-0017 is **TRUTHFULNESS AND EXTERNAL WORKFLOW VERIFIED — IMPLEMENTATION FROZEN** at `8e0260f5654126ec21b669d0471bcfb3c0f5cf5b`. CH-0028 is the separate active runtime remediation, with constrained-runner reload latency recorded separately as CH-0029; CH-0004 was not started. The latest implementation record is at the end of this handoff.
+Current superseding status: CH-0001, CH-0012, and CH-0016 repository remediation are complete. CH-0017 is **TRUTHFULNESS AND REQUIRED EXTERNAL WORKFLOW VERIFIED — IMPLEMENTATION FROZEN**. CH-0028 is **EXTERNALLY VERIFIED — RESOLVED** at verified source `db346a51718967bd4dc1605b07c0850e02fd08d1`. CH-0029 is **OPEN — POST-RESPONSE BROWSER/MAIN-THREAD STARVATION** with local remediation complete and required-only external verification pending; CH-0004 was not started. The latest implementation record is at the end of this handoff.
 
 Audit date: 2026-07-31
 Canonical repository: `/Users/justus/Developer/interior-ai`
@@ -1275,3 +1275,137 @@ sleep, schema, workflow, ruleset, PR, deployment, migration, dependency,
 catalog, cache-policy, CH-0004, or Full E2E change is included. The exact local
 follow-up commit still requires detached production proof and required-only
 external workflow dispatch before CH-0028 can be closed.
+
+## CH-0029 post-response browser/main-thread starvation — 2026-08-03
+
+This entry supersedes every earlier current-status sentence for CH-0017,
+CH-0028, and CH-0029 without rewriting their historical evidence:
+
+- **CH-0017:** TRUTHFULNESS AND REQUIRED EXTERNAL WORKFLOW VERIFIED —
+  IMPLEMENTATION FROZEN.
+- **CH-0028:** EXTERNALLY VERIFIED — RESOLVED at verified source
+  `db346a51718967bd4dc1605b07c0850e02fd08d1`.
+- **CH-0029:** OPEN — POST-RESPONSE BROWSER/MAIN-THREAD STARVATION. Local
+  remediation is complete; exact-commit required-only external verification
+  remains required.
+
+Work began on `fix/ch-0029-main-thread-starvation` from exact clean source
+`db346a51718967bd4dc1605b07c0850e02fd08d1`. Before edits, the CH-0028 branch
+was synchronized 0/0 with its remote, PR #27 and ruleset 13671593 were read
+only and unchanged, and `lsof` confirmed the active Node listener belonged to
+the canonical `/Users/justus/Developer/interior-ai` checkout.
+
+### Root evidence and exact owner
+
+Authoritative required-only run `30787561725` had all 6/6 responses complete,
+zero outstanding requests, the current generation, eight active required
+models, seven at bounds and one at materials, and no terminal error. Parsed
+cache was 8 entries / 13 references and prepared cache 12 / 7 with five
+bounded zero-reference variants; reference counts were valid and no stale
+current entry existed. Work progressed whenever the browser admitted it.
+The largest completed heartbeat gap was 11,747 ms, maximum admitted callback
+delay 5,281 ms, and the final requested callback never entered. In-page body
+computation, callback execution, and serialization were at most 0/3/0 ms.
+
+Bounded instrumentation measured the work before the behavior change. The
+matched local run recorded a 10,736 ms long task, approximately 11,010 ms
+heartbeat delay, and 11,109 ms callback admission. The long task was correctly
+`unattributed`: `r3f-render` accounted for 320 calls, 387.9 ms total, and
+148.1 ms maximum, while normalization and bounds remained single-digit
+milliseconds. The exact measured owner is therefore the hidden Canvas's
+complete mounted per-frame subscriber workload plus renderer/GPU submission,
+competing with Playwright trace/video and other host work. The
+classification is the permitted inseparable **C/G React/R3F render-work and
+host/test-contention cluster**, not a claim that `WebGLRenderer.render`
+synchronously blocked for 10.736 seconds.
+
+### Minimal correction and telemetry
+
+`DesignSceneCanvas` now uses demand rendering only while the loading veil
+hides the scene, then restores the existing continuous `always` mode before
+visible interaction. The stable runtime-smoke spec disables trace and video
+locally; global Playwright failure-diagnostic defaults and CH-0017's safe
+structured evidence contract remain unchanged. This removes unnecessary
+hidden frame and recording concentration without adding a sleep, yield loop,
+retry, bypass, or timeout.
+
+A 96-entry bounded metadata ring records fixed categories for callback,
+cache, clone, normalization, bounds, material/texture, attachment, render, and
+disposal work plus long tasks, heartbeat/frame gaps, safe generation/stage
+counts, synchronous-operation concurrency, lifecycle/store/React counters,
+and observer overhead. Production collection requires the existing explicit
+diagnostic flag. Buffered entries that precede initialization are excluded,
+nested task context is detached in snapshots, attribution requires at least
+80% measured overlap, and no graph, URL, path, geometry, material, texture,
+credential, GLB byte, environment value, or user datum is retained. Focused
+measurement recorded 0.5–0.8 ms for 10,000 bounded ring writes.
+
+Lifecycle ordering, current-generation ownership, cancellation, supersession,
+terminal failures, cache/refcount behavior, per-item clone isolation, BFCache,
+and real reload response generation are unchanged. Telemetry wrappers are
+synchronous metadata observations only.
+
+### Production measurements
+
+Three final-code production smokes used three separate local PostgreSQL
+databases, each with all 42 migrations. Every run passed furnished-template
+and health/catalog 2/2 with zero failed, flaky, skipped, or retried cases:
+
+| Run | Reload 1 | Reload 2 | Reload 3 |
+| --- | ---: | ---: | ---: |
+| 1 | 10,196 ms | 10,822 ms | 10,485 ms |
+| 2 | 11,262 ms | 10,684 ms | 10,832 ms |
+| 3 | 11,354 ms | 10,192 ms | 10,570 ms |
+
+All nine reloads executed and retained cumulative responses 6/9/12, 8 ready /
+0 loading / 0 error, current generations, registry coherence, parsed cache
+8 entries / 13 references, prepared cache 12 / 7, five bounded zero-reference
+variants, nonnegative refcounts, no stale active entries, and the unchanged
+70,000 ms model-readiness correctness contract. Across the final pristine
+runs, the largest observed heartbeat delay was 6,858 ms and callback admission
+6,406 ms; every requested callback entered.
+
+The final controlled-pressure run kept two `yes` processes at approximately
+98% CPU each while Chromium was also active. It passed 2/2 with reloads
+12,725/11,859/12,048 ms and the same response, lifecycle, cache, and refcount
+invariants. Its largest event-loop heartbeat delay was 8,102 ms and admitted
+callback delay 7,168 ms. At the readiness observation the longest categorized
+task was `r3f-render` at 139 ms; no measured multi-second GLB operation owned
+the interval. The pressure result was retained rather than normalized away.
+
+The external heartbeat improved from 11,747 ms to 6,858 ms pristine and
+8,102 ms under pressure, and the requested-but-never-entered failure was
+eliminated. Callback admission is bounded but its 6,406/7,168 ms maxima are not
+numerically below the external 5,281 ms admitted maximum, so no such claim is
+made. The longest JavaScript task remains unattributed, and a stricter
+user-experience responsiveness target requires a separate product decision.
+
+### Validation, review, and rollback
+
+Focused telemetry, loading-frameloop, smoke-resource isolation, lifecycle,
+cache/refcount, generation/supersession, cancellation/unmount, clone/mutation
+isolation, GLB bounds, design persistence, CH-0017 truthfulness, production
+artifact, typecheck, targeted zero-warning ESLint, code-quality ratchet,
+strict production build, and diff hygiene checks pass. The inherited broad
+Turbopack/NFT trace warning remains reported. Representative Phase 8 project
+budgets pass, but the inherited raw initial-JS gate remains separately red at
+7,100,273/6,955,000 bytes and was not repaired. Full E2E was not run.
+The frozen 21 gate identities, cadences, and truthfulness semantics are
+unchanged; the discovery inventory advanced from 365 to 368 classified sources
+because the manifest now includes the three CH-0029 risk-triggered scripts,
+for 248 script tests in total.
+
+Independent read-only review is **PASS — no remaining actionable finding**
+after five corrections: avoid over-attributing the 10.736-second task; avoid a
+false numeric external callback claim; exclude pre-initialization long tasks
+and preserve safe maximum-task context; remove an unmeasured invalidation
+counter; and deeply detach nested task-stage metadata. The reviewer also
+verified lifecycle/cache/cancellation/rendering safety and the spec-local
+trace/video boundary.
+
+Rollback is one `git revert` of the focused CH-0029 commit. That restores
+continuous hidden-Canvas rendering and stable-smoke trace/video capture; no
+data, schema, migration, dependency, cache policy, timeout, retry, workflow,
+ruleset, PR, deployment, or CH-0004 rollback exists. The exact commit SHA and
+detached exact-commit production proof are reported after the commit because a
+commit cannot contain its own content-derived identity. No push is authorized.

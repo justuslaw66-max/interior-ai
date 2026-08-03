@@ -1,4 +1,10 @@
 import { createGLBRequiredSnapshot } from "./glbRequiredSnapshot";
+import {
+  createGLBMainThreadTelemetryContext,
+  initializeGLBMainThreadTelemetry,
+  recordGLBEventLoopGap,
+  recordGLBMainThreadCounter,
+} from "./glbMainThreadTelemetry";
 import type {
   GLBModelDiagnosticSnapshot,
   GLBModelStageTiming,
@@ -78,6 +84,7 @@ function ensureEventLoopProbe(diagnosticsGlobal: GLBDiagnosticsGlobal) {
       probe.lastDelayMs = delayMs;
       probe.maximumDelayMs = Math.max(probe.maximumDelayMs, delayMs);
     }
+    recordGLBEventLoopGap(expectedAtMs, delayMs);
     expectedAtMs = observedAtMs + EVENT_LOOP_SAMPLE_INTERVAL_MS;
   }, EVENT_LOOP_SAMPLE_INTERVAL_MS);
 }
@@ -92,6 +99,12 @@ export function getDiagnosticStore() {
   const reloadGeneration = getReloadGeneration(diagnosticsGlobal);
   diagnosticsGlobal.__INTERIOR_AI_GLB_DIAGNOSTICS__ ??= {};
   diagnosticsGlobal.__INTERIOR_AI_GLB_DIAGNOSTICS_VERSION__ ??= 0;
+  initializeGLBMainThreadTelemetry(() =>
+    createGLBMainThreadTelemetryContext(
+      diagnosticsGlobal.__INTERIOR_AI_GLB_DIAGNOSTICS__ ?? {},
+      reloadGeneration,
+    ),
+  );
   ensureEventLoopProbe(diagnosticsGlobal);
   diagnosticsGlobal.__INTERIOR_AI_GLB_REQUIRED_SNAPSHOT__ = () =>
     createGLBRequiredSnapshot({
@@ -122,6 +135,7 @@ export function bumpDiagnosticRegistryVersion() {
   const diagnosticsGlobal = globalThis as GLBDiagnosticsGlobal;
   diagnosticsGlobal.__INTERIOR_AI_GLB_DIAGNOSTICS_VERSION__ =
     (diagnosticsGlobal.__INTERIOR_AI_GLB_DIAGNOSTICS_VERSION__ ?? 0) + 1;
+  recordGLBMainThreadCounter("diagnosticStoreUpdates");
 }
 
 export function markDiagnosticTransition(
@@ -130,6 +144,7 @@ export function markDiagnosticTransition(
   atMs?: number,
   eventLoopDelayMs?: number | null,
 ) {
+  recordGLBMainThreadCounter("lifecycleTransitions");
   const diagnosticsGlobal = globalThis as GLBDiagnosticsGlobal;
   const observedAtMs = transitionTimestampMs();
   const timing: GLBModelStageTiming = {

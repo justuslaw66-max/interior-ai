@@ -53,6 +53,11 @@ synthesize `ready`.
 
 ## CH-0028 external evidence and current classification
 
+Current status: **EXTERNALLY VERIFIED — RESOLVED** at verified source
+`db346a51718967bd4dc1605b07c0850e02fd08d1`. The run history below is retained
+as provenance; CH-0029 begins from that resolved source and does not alter
+CH-0028 lifecycle or cache ownership.
+
 The initial required run `30745386331` at source
 `8e0260f5654126ec21b669d0471bcfb3c0f5cf5b` truthfully failed reload 1 after
 70,001/70,000 ms in `model-responses-and-readiness`. All nine observed
@@ -115,6 +120,44 @@ readiness callback and asserted afterward on the host, avoiding a second
 browser admission without weakening the assertion. Relative timing retains
 host invocation/receipt and browser entry/exit/serialization separately;
 constrained-runner scheduling remains owned by CH-0029.
+
+## CH-0029 hidden-frame scheduling and diagnostics
+
+CH-0029 remains **OPEN — POST-RESPONSE BROWSER/MAIN-THREAD STARVATION** pending
+required-only external verification. Its measured classification is the
+inseparable **C/G React/R3F render-work and host/test-contention cluster**.
+During the loading veil, the hidden Canvas previously ran the complete mounted
+per-frame subscriber workload plus renderer/GPU submission while trace/video and
+the production server competed on the same constrained host. The matched
+10,736 ms long task remained `unattributed`; measured renderer calls totaled
+387.9 ms and peaked at 148.1 ms, so the long task is not assigned directly to
+`WebGLRenderer.render` or any lifecycle/cache stage.
+
+While the loading veil is active, Canvas now uses demand rendering. It returns
+to continuous rendering when the scene becomes visible and interactive. The
+change does not defer or synthesize any lifecycle transition: response,
+parse/decode, normalization, material, bounds, attachment, and ready ordering
+remain exactly as above. Cache leases, cancellation, supersession, terminal
+errors, clone ownership, BFCache preservation, and real-reload cache clearing
+are unchanged.
+
+Optional diagnostic collection uses the existing explicit production flag and
+a 96-entry bounded metadata ring. Categories, relative times, safe current
+generation/stage counts, long tasks, heartbeat/frame gaps, counters, and
+observer overhead are retained; raw Three.js objects, assets, URLs, paths, and
+user/environment data are not. Long-task attribution requires at least 80%
+measured overlap, entries predating initialization are excluded, and returned
+nested stage maps are detached from internal state. Stable-smoke logs expose a
+safe aggregate and safe required snapshot rather than raw registries.
+
+Final pristine production smokes completed reloads in 10,192–11,354 ms with
+6/9/12 responses and the established eight-ready/cache/refcount invariants.
+The maximum heartbeat delay was 6,858 ms and every callback entered; a two-CPU
+pressure run passed with 12,725/11,859/12,048 ms reloads, 8,102 ms heartbeat,
+and 7,168 ms callback admission. These improve the authoritative 11,747 ms
+heartbeat and eliminate its requested-but-never-entered callback. They do not
+prove an admitted-callback maximum below the external 5,281 ms maximum, and
+the longest JavaScript task remains unattributed.
 
 ## Safe diagnostics
 

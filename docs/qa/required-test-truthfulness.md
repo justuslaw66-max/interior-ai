@@ -1,13 +1,11 @@
 # Required-test truthfulness
 
-Status: CH-0017 remains reopened after Outcome-C run `30707099465` at
-`8cb7cae37d6bb49cd66d61f5523927dc7b64283d`. Its repository-controlled bounds
-budget and unmasked synthetic OAuth transport defects are remediated by the
-follow-up at `53a0c98bab4d5a211c93fd1f4f5057806e074bbd`. The workflow-only
-follow-up containing this record separates ordinary required PR execution from
-the deliberate full advisory lane. A new exact-head GitHub run, downloaded
-artifact inspection, and required-check configuration remain external controls
-and are not marked verified here.
+Status: **TRUTHFULNESS AND REQUIRED EXTERNAL WORKFLOW VERIFIED —
+IMPLEMENTATION FROZEN**. CH-0029 changes no gate identity, cadence,
+truthfulness semantic, workflow owner, evidence contract, or external control.
+Its three risk-triggered focused scripts necessarily advance the discovery
+fingerprint from 365 to 368 classified sources; that inventory update is not a
+change to frozen CH-0017 behavior.
 
 ## Canonical inventory
 
@@ -16,7 +14,7 @@ required and advisory gate classification. `package.json` remains the command
 owner; the manifest points to those commands and verifies their recursive test
 sources instead of duplicating their shell bodies.
 
-The manifest currently classifies 245 `scripts/test-*` files as risk-triggered
+The manifest currently classifies 248 `scripts/test-*` files as risk-triggered
 tests, 98 Playwright specs as release-only browser inventory, 14 imported
 cabinetry/multi-room browser modules, and 8 imported cabinetry script-test
 modules. The sorted path-set hashes make a new,
@@ -355,9 +353,10 @@ evidence preparation/upload and remains cancelled.
 
 The manifest records the advisory workflow path as part of CI ownership. A
 missing or renamed file, job, step, or package invocation fails repository
-validation. Gate/source inventories remain 21/365, no required gate changed
-cadence, and `merge-gate` still depends exactly on `secret-scan` and
-`stable-checks`.
+validation. The gate inventory remains 21 and no required gate changed cadence.
+The source inventory advanced from 365 to 368 solely because CH-0029 added
+three risk-triggered focused scripts; `merge-gate` still depends exactly on
+`secret-scan` and `stable-checks`.
 
 ## Runtime failure provenance
 

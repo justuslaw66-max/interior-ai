@@ -28,6 +28,11 @@ import {
 import type { GLBRequiredSnapshot } from "../../components/scene/glb-scaled-model/glbRequiredSnapshot";
 import { calculateGLBRequiredSnapshotTransportTiming } from "../../components/scene/glb-scaled-model/glbSnapshotTiming";
 
+test.use({
+  trace: "off",
+  video: "off",
+});
+
 const DESIGN_STORAGE_KEY = "interior-ai:v1:livingroom-design";
 const EXPECTED_ACTIVE_REQUIRED_MODEL_COUNT = 8;
 
@@ -159,6 +164,31 @@ test.describe("00. Runtime smoke", () => {
         bodyStateComputationMs: number;
       };
     };
+    type MainThreadTelemetrySummary = {
+      schema: "interior-ai.glb-main-thread-telemetry-summary.v1";
+      timingCount: number;
+      timingAggregates: Record<
+        string,
+        { count: number; totalDurationMs: number; maximumDurationMs: number }
+      >;
+      longTaskCount: number;
+      heartbeatGapCount: number;
+      frameGapCount: number;
+      maximumTiming: { category: string; durationMs: number } | null;
+      maximumLongTask: {
+        category: string;
+        durationMs: number;
+        startRelativeMs: number;
+        reloadGeneration: number;
+        activeRequiredCount: number;
+        modelStageCounts: Record<string, number>;
+      } | null;
+      maximumHeartbeatGapMs: number;
+      maximumFrameGapMs: number;
+      maximumSynchronousOperationsActive: number;
+      counters: Record<string, number>;
+      maximumTelemetryCallbackDurationMs: number;
+    };
     let lastRequiredSnapshot: GLBRequiredSnapshot | null = null;
     let lastRequiredSnapshotTiming: RequiredSnapshotTiming | null = null;
     let requiredSnapshotMilestoneCheckpoint: RuntimeSmokeCheckpoint | null = null;
@@ -175,6 +205,7 @@ test.describe("00. Runtime smoke", () => {
     let lastBrowserHeartbeat: BrowserHeartbeat | null = null;
     let diagnosticSnapshotRequestSequence = 0;
     let lastBodyStateObservation: BodyStateObservation | null = null;
+    let lastMainThreadTelemetrySummary: MainThreadTelemetrySummary | null = null;
     const immediatePostReadinessSnapshots: GLBRequiredSnapshot[] = [];
     const recordBrowserSnapshotMilestone = (milestone: RequiredSnapshotMilestone) => {
       const checkpoint = requiredSnapshotMilestoneCheckpoint;
@@ -324,6 +355,96 @@ test.describe("00. Runtime smoke", () => {
               __INTERIOR_AI_GLB_REQUIRED_SNAPSHOT__?: () => unknown;
             }
           ).__INTERIOR_AI_GLB_REQUIRED_SNAPSHOT__?.();
+          const mainThreadTelemetry = (
+            globalThis as typeof globalThis & {
+              __INTERIOR_AI_GLB_MAIN_THREAD_SNAPSHOT__?: () => {
+                timings: Array<{ category: string; durationMs: number }>;
+                timingAggregates: Record<
+                  string,
+                  {
+                    count: number;
+                    totalDurationMs: number;
+                    maximumDurationMs: number;
+                  }
+                >;
+                longTasks: Array<{
+                  category: string;
+                  durationMs: number;
+                  startRelativeMs: number;
+                  reloadGeneration: number;
+                  activeRequiredCount: number;
+                  modelStageCounts: Record<string, number>;
+                }>;
+                heartbeatGaps: Array<{ durationMs: number }>;
+                frameGaps: Array<{ durationMs: number }>;
+                maximumSynchronousOperationsActive: number;
+                counters: Record<string, number>;
+                maximumTelemetryCallbackDurationMs: number;
+              };
+            }
+          ).__INTERIOR_AI_GLB_MAIN_THREAD_SNAPSHOT__?.();
+          const maximumByDuration = <T extends { durationMs: number }>(
+            entries: T[],
+          ) =>
+            entries.reduce<T | null>(
+              (maximum, entry) =>
+                !maximum || entry.durationMs > maximum.durationMs
+                  ? entry
+                  : maximum,
+              null,
+            );
+          const maximumTiming = mainThreadTelemetry
+            ? maximumByDuration(mainThreadTelemetry.timings)
+            : null;
+          const maximumLongTask = mainThreadTelemetry
+            ? maximumByDuration(mainThreadTelemetry.longTasks)
+            : null;
+          const telemetrySummary: MainThreadTelemetrySummary | null =
+            mainThreadTelemetry
+              ? {
+                  schema:
+                    "interior-ai.glb-main-thread-telemetry-summary.v1",
+                  timingCount: mainThreadTelemetry.timings.length,
+                  timingAggregates: mainThreadTelemetry.timingAggregates,
+                  longTaskCount: mainThreadTelemetry.longTasks.length,
+                  heartbeatGapCount:
+                    mainThreadTelemetry.heartbeatGaps.length,
+                  frameGapCount: mainThreadTelemetry.frameGaps.length,
+                  maximumTiming: maximumTiming
+                    ? {
+                        category: maximumTiming.category,
+                        durationMs: maximumTiming.durationMs,
+                      }
+                    : null,
+                  maximumLongTask: maximumLongTask
+                    ? {
+                        category: maximumLongTask.category,
+                        durationMs: maximumLongTask.durationMs,
+                        startRelativeMs: maximumLongTask.startRelativeMs,
+                        reloadGeneration: maximumLongTask.reloadGeneration,
+                        activeRequiredCount: maximumLongTask.activeRequiredCount,
+                        modelStageCounts: maximumLongTask.modelStageCounts,
+                      }
+                    : null,
+                  maximumHeartbeatGapMs: Math.max(
+                    0,
+                    ...mainThreadTelemetry.heartbeatGaps.map(
+                      (entry) => entry.durationMs,
+                    ),
+                  ),
+                  maximumFrameGapMs: Math.max(
+                    0,
+                    ...mainThreadTelemetry.frameGaps.map(
+                      (entry) => entry.durationMs,
+                    ),
+                  ),
+                  maximumSynchronousOperationsActive:
+                    mainThreadTelemetry.maximumSynchronousOperationsActive,
+                  counters: mainThreadTelemetry.counters,
+                  maximumTelemetryCallbackDurationMs:
+                    mainThreadTelemetry.maximumTelemetryCallbackDurationMs,
+                }
+              : null;
           const computationCompletedAtUnixMs = Date.now();
           emitBrowserCallbackMilestone("snapshot-complete");
           emitMilestone({
@@ -358,6 +479,7 @@ test.describe("00. Runtime smoke", () => {
             computationCompletedAtUnixMs,
             serializationCompletedAtUnixMs,
             serializedSnapshot,
+            telemetrySummary,
             hasMaximumDepthError,
             browserCallbackDurationMs: Math.max(
               0,
@@ -387,6 +509,7 @@ test.describe("00. Runtime smoke", () => {
       activeBrowserCallbackTiming = null;
       const {
         serializedSnapshot,
+        telemetrySummary,
         hasMaximumDepthError,
         browserCallbackDurationMs,
         bodyStateComputationMs,
@@ -422,6 +545,7 @@ test.describe("00. Runtime smoke", () => {
           bodyStateComputationMs,
         },
       };
+      lastMainThreadTelemetrySummary = telemetrySummary;
       lastRequiredSnapshotTiming = {
         ...transferMilestones,
         hostResultReceivedAtUnixMs,
@@ -463,6 +587,7 @@ test.describe("00. Runtime smoke", () => {
             serializationDurationMs: Math.round(snapshotSerializationDurationMs),
           },
           lastHeartbeat: lastBrowserHeartbeat,
+          mainThreadTelemetry: telemetrySummary,
         }),
       );
       if (!serializedSnapshot) {
@@ -805,7 +930,37 @@ test.describe("00. Runtime smoke", () => {
       }
       console.info(
         "[runtime-smoke-required-snapshot]",
-        JSON.stringify({ phaseName, timing, snapshot }),
+        JSON.stringify({
+          phaseName,
+          timing,
+          mainThreadTelemetry: lastMainThreadTelemetrySummary,
+          snapshotSummary: {
+            schema: snapshot.schema,
+            registryCoherent: snapshot.registryCoherent,
+            registryEntryCount: snapshot.registryEntryCount,
+            activeRequiredCount: snapshot.activeRequiredCount,
+            lifecycle: {
+              ready: activeRequired.filter((model) => model.loadState === "ready")
+                .length,
+              loading: activeRequired.filter(
+                (model) => model.loadState === "loading",
+              ).length,
+              error: activeRequired.filter((model) => model.loadState === "error")
+                .length,
+            },
+            caches: {
+              parsedEntries: snapshot.caches.parsed.entryCount,
+              parsedReferences: snapshot.caches.parsed.activeReferenceCount,
+              preparedEntries: snapshot.caches.prepared.entryCount,
+              preparedReferences:
+                snapshot.caches.prepared.activeReferenceCount,
+              preparedZeroReferenceEntries:
+                snapshot.caches.prepared.zeroReferenceEntryCount,
+            },
+            consistency: snapshot.consistency,
+            safeReadinessSummary: snapshot.safeReadinessSummary,
+          },
+        }),
       );
     };
     const waitForModelDiagnosticsReady = async ({

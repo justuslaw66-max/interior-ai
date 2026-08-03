@@ -24,6 +24,7 @@ import {
 } from "./glb-scaled-model/modelDiagnostics";
 import { useGLBModelLifecycle } from "./glb-scaled-model/useGLBModelLifecycle";
 import { useGLBMaterials } from "./glb-scaled-model/useGLBMaterials";
+import { reportGLBSceneAttachmentReady } from "./glb-scaled-model/glbSceneAttachmentTelemetry";
 
 export {
   areGLBLocalRenderBoundsEquivalent,
@@ -138,8 +139,7 @@ export const GLBScaledModel = memo(function GLBScaledModel({
   const handleAttachmentReady = useCallback(() => {
     const handle = handleRef.current;
     if (!handle) return;
-    recordGLBModelPipelineStage(handle, "scene-attached");
-    reportGLBModelLoadState(handle, "ready", onLoadStateChangeRef.current);
+    reportGLBSceneAttachmentReady(handle, onLoadStateChangeRef.current);
   }, [handleRef]);
   const handleAttachmentError = useCallback(() => {
     const handle = handleRef.current;

@@ -27,6 +27,10 @@ import type {
 } from "./modelLifecycleTypes";
 import type { GLBUpholsteryTextures } from "./normalizeGLBScene";
 import { useGLBLoadedResource } from "./useGLBLoadedResource";
+import {
+  measureGLBMainThreadWork,
+  recordGLBMainThreadCounter,
+} from "./glbMainThreadTelemetry";
 
 type GLBModelLifecycleInput = {
   url: string;
@@ -86,7 +90,10 @@ function useLifecycleHandle(
       if (handleRef.current === handle) handleRef.current = null;
     };
   }, [lifecycleKey, input.resolvedDiagnosticKey, input.url]);
-  useEffect(() => recordGLBModelRender(handleRef.current));
+  useEffect(() => {
+    recordGLBMainThreadCounter("reactRenders");
+    recordGLBModelRender(handleRef.current);
+  });
   return handleRef;
 }
 
@@ -260,7 +267,10 @@ export function useGLBModelLifecycle(input: GLBModelLifecycleInput) {
   );
   useEffect(() => {
     if (!modelResult.model || !modelResult.ownsResources) return;
-    return () => disposeObjectGeometryAndMaterials(modelResult.model!);
+    return () =>
+      measureGLBMainThreadWork("resource-disposal", () =>
+        disposeObjectGeometryAndMaterials(modelResult.model!),
+      );
   }, [modelResult.model, modelResult.ownsResources]);
   return {
     model: modelResult.model,

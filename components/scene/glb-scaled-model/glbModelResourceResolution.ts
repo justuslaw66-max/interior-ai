@@ -7,6 +7,7 @@ import {
   type GLBModelNormalizationConfig,
 } from "./glbModelResources";
 import type { GLBLocalRenderBounds } from "./localRenderBounds";
+import { recordGLBMainThreadTiming } from "./glbMainThreadTelemetry";
 import type { GLBModelTerminalErrorCategory } from "./modelLifecycleTypes";
 import {
   normalizeGLBScene,
@@ -92,6 +93,7 @@ function normalizeParsedResource(
       upholsteryTextures,
     });
     const completedAtMs = performance.now();
+    recordGLBMainThreadTiming("normalization", startedAtMs, completedAtMs);
     const completedEventLoopDelayMs = observedEventLoopDelayMs();
     return {
       model,
@@ -160,7 +162,7 @@ export function boundsForResource(
   const startedAtMs = performance.now();
   const startedEventLoopDelayMs = observedEventLoopDelayMs();
   try {
-    return {
+    const result = {
       bounds: measureGLBLocalRenderBounds(model),
       errorCode: null,
       timing: {
@@ -170,6 +172,12 @@ export function boundsForResource(
         completedEventLoopDelayMs: observedEventLoopDelayMs(),
       },
     };
+    recordGLBMainThreadTiming(
+      "bounds-computation",
+      startedAtMs,
+      result.timing.completedAtMs,
+    );
+    return result;
   } catch (error) {
     return {
       bounds: null,

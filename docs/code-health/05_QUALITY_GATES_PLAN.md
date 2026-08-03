@@ -125,7 +125,7 @@ Architecture limits are not style goals by themselves. A module can remain large
 ## Test-result truthfulness
 
 CH-0017 implements this policy in `scripts/required-test-manifest.json` and
-`scripts/required-test-truthfulness.mjs`. The manifest currently locks 245
+`scripts/required-test-truthfulness.mjs`. The manifest currently locks 248
 script-test paths, 98 Playwright spec paths, 14 imported browser-module paths,
 8 imported cabinetry script-test module paths, and 21 merge/release/advisory gates. It also locks split-suite
 registrations, recursive package-command closures, all 23 cabinetry identities,

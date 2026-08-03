@@ -106,7 +106,7 @@ Rollback is one `git revert cbed3550026e2803675f740b49be5fb15f15612b`. Generated
 
 ### CH-0017 implementation record
 
-Status: **TRUTHFULNESS AND EXTERNAL WORKFLOW VERIFIED — IMPLEMENTATION FROZEN** at `8e0260f5654126ec21b669d0471bcfb3c0f5cf5b`. Original implementation `c840c06dc2c5e67f463542292bb7391b0f93d731` and its bounded follow-ups culminate in that frozen source. `scripts/required-test-manifest.json` remains the single required/advisory gate inventory, while `package.json` remains the executable command owner. CH-0028 is a separate runtime finding and changes none of CH-0017's evidence, source binding, workflow isolation, OAuth transport, artifact safety, registry, or timeout provenance.
+Status: **TRUTHFULNESS AND REQUIRED EXTERNAL WORKFLOW VERIFIED — IMPLEMENTATION FROZEN**. Original implementation `c840c06dc2c5e67f463542292bb7391b0f93d731` and its bounded follow-ups culminate in the frozen source. `scripts/required-test-manifest.json` remains the single required/advisory gate inventory, while `package.json` remains the executable command owner. CH-0028 and CH-0029 change no CH-0017 gate identity, cadence, truthfulness semantic, source binding, workflow isolation, OAuth transport, artifact safety, or timeout provenance; CH-0029's three focused scripts only advance the discovery fingerprint from 365 to 368 classified sources.
 
 The fail-closed runner deletes stale output, records the real Playwright process exit, canonicalizes paths, hashes JSON, and validates required files, identities, projects, configuration, per-test outcomes, aggregate agreement, source/artifact/deployment binding, timestamps, and secret-free structure. CH-0016 runtime evidence and cabinetry release evidence consume the same identities. Gate A3 certification now accepts the process-bound evidence envelope instead of raw aggregate JSON. Broad staging E2E remains explicitly advisory and cannot be mistaken for release certification.
 
@@ -124,7 +124,7 @@ CH-0017's external truthfulness behavior is verified and its implementation is f
 
 ### CH-0028 implementation record
 
-Status: **REPOSITORY REMEDIATION COMPLETE LOCALLY — REQUIRED-ONLY EXTERNAL VERIFICATION REQUIRED**. This separate runtime batch starts from exact frozen source `8e0260f5654126ec21b669d0471bcfb3c0f5cf5b` on `fix/ch-0028-reload-model-readiness`.
+Status: **EXTERNALLY VERIFIED — RESOLVED** at verified source `db346a51718967bd4dc1605b07c0850e02fd08d1`. The implementation history below predates and is superseded by that external status.
 
 Classification is **F — genuine performance condition**. The authoritative run completed all required model responses but left the three exact current fixture identities loading when the unchanged 70-second nested operation expired; it retained aggregate state, not an exact post-response stage trace. New safe diagnostics prove exact key/mount/generation ownership on controlled same-path runs and rule out stale registry entries, old-generation callbacks, optional scoping, cache-transition loss, and unterminated parse/normalization/bounds errors. The pre-fix forced in-document remount repeated parse/decode, normalization/material cloning, and bounds work; the external nine-versus-six response count proves that extra generation. The controlled trace plus external timing supports the F classification.
 
@@ -132,10 +132,20 @@ The smallest canonical fix retains `modelDiagnostics` as the only lifecycle regi
 
 Three clean production-mode smokes against three separate 42-migration PostgreSQL databases passed furnished-template and health/catalog 2/2, exit 0. Reload totals were 19,917/21,581/22,064 ms; 22,939/21,064/21,311 ms; and 21,414/21,210/20,404 ms against the unchanged 308,000 ms parent budget. Focused lifecycle/cache/bounds, design persistence, production-evidence, truthfulness, typecheck, targeted zero-warning lint, code-quality, strict build, and diff checks pass. Exact detached-commit evidence and independent review are recorded in the final handoff entry. Rollback is the one CH-0028 commit; no data migration or external rollback exists.
 
+### CH-0029 implementation record
+
+Status: **OPEN — POST-RESPONSE BROWSER/MAIN-THREAD STARVATION**. The bounded local remediation starts from exact verified CH-0028 source `db346a51718967bd4dc1605b07c0850e02fd08d1` on `fix/ch-0029-main-thread-starvation`; required-only external verification is still required.
+
+The verified root is the inseparable **C/G React/R3F render-work and host/test-contention cluster**. While the loading veil hid the scene, Canvas still ran all continuous R3F frame subscribers and renderer/GPU submission while Playwright retained trace/video work. The matched 10,736 ms long task remained `unattributed`; renderer instrumentation measured 387.9 ms total and 148.1 ms maximum, so the correction does not claim a single 10.7-second synchronous renderer call.
+
+The smallest correction changes only hidden loading frames to `frameloop="demand"`, restores `always` when the scene becomes visible, and disables trace/video only for the stable smoke. Bounded production-gated telemetry retains safe fixed-category metadata, long-task context, heartbeat/frame gaps, concurrency, and lifecycle/store/render counters. It excludes pre-initialization tasks, deeply detaches nested snapshot metadata, and exposes no raw asset or user information.
+
+Three final-code 42-migration production smokes passed furnished-template and health/catalog 2/2 with all reloads at 10,192–11,354 ms. A two-worker CPU-pressure run passed with reloads 12,725/11,859/12,048 ms. All runs retained responses 6/9/12, eight current ready models, zero loading/error, coherent cache/refcounts, no stale active entry, and zero retry/skip. External heartbeat 11,747 ms fell to at most 6,858 ms pristine and 8,102 ms under pressure, and every callback entered; callback admission reached 6,406/7,168 ms, so no numeric improvement over the external 5,281 ms admitted maximum is claimed. Rollback is the one CH-0029 commit; no timeout, schema, data, workflow, ruleset, PR, or deployment rollback exists.
+
 ## Phase 3 — Canonical saved-design routing
 
 **Finding:** CH-0012.
-**Status:** RESOLVED — repository-controlled remediation complete at `2c9e8b4d2322484a8d80873019d2c3495dd862f5`. CH-0016 was subsequently completed as the bounded P2-E evidence batch at `cbed3550026e2803675f740b49be5fb15f15612b`; CH-0017 is now verified and frozen at `8e0260f5654126ec21b669d0471bcfb3c0f5cf5b`.
+**Status:** RESOLVED — repository-controlled remediation complete at `2c9e8b4d2322484a8d80873019d2c3495dd862f5`. CH-0016 was subsequently completed as the bounded P2-E evidence batch at `cbed3550026e2803675f740b49be5fb15f15612b`; CH-0017 is **TRUTHFULNESS AND REQUIRED EXTERNAL WORKFLOW VERIFIED — IMPLEMENTATION FROZEN**.
 **Implemented batch:** characterized a modern v3 document through every discovered entry; added `lib/design-editor-url.ts`; made `/design/[id]` a temporary canonical redirect; updated dashboard, duplicate, checkout-success, My Designs, and floor-plan revision-copy navigation; made denied/superseded/unmounted loads restore or retain the correct identity; and removed all legacy rendering from the compatibility route.
 
 Expected first routing files:

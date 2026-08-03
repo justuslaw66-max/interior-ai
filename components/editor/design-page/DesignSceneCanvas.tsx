@@ -1,7 +1,5 @@
 "use client";
-
 /* eslint-disable react-hooks/refs -- This shell intentionally forwards grouped ref objects to Three.js bridge components. */
-
 import * as THREE from "three";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Grid } from "@react-three/drei/core/Grid";
@@ -20,6 +18,7 @@ import {
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 
 import { CanvasErrorBoundary } from "@/components/CanvasErrorBoundary";
+import { instrumentGLBMainThreadRenderer } from "@/components/scene/glb-scaled-model/glbMainThreadTelemetry";
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
 import EditorCamera2D, {
   WHOLE_HOME_FIT_ZOOM_SCALE,
@@ -150,6 +149,7 @@ type WorkspacePlanningGridProps = {
   shadowsEnabled: boolean;
   size: number;
 };
+const loadingFrameloop = (showSceneLoadingVeil: boolean) => showSceneLoadingVeil ? "demand" : "always";
 
 function WorkspacePlanningGrid({
   centerX,
@@ -277,7 +277,6 @@ export function DesignSceneCanvas({
   children,
 }: DesignSceneCanvasProps) {
   const [clientHydrated, setClientHydrated] = useState(false);
-
   useEffect(() => {
     setClientHydrated(true);
   }, []);
@@ -450,9 +449,11 @@ export function DesignSceneCanvas({
         }}
         shadows={effectiveShadowsEnabled ? QUALITY_SHADOW_FILTER : false}
         dpr={state.liteSceneEnabled ? [1, 1] : [1, 2]}
+        frameloop={loadingFrameloop(state.showSceneLoadingVeil)}
         gl={{
           antialias: true,
         }}
+        onCreated={({ gl }) => instrumentGLBMainThreadRenderer(gl)}
         camera={{
           position: [...configuration.initialCameraView.pos],
           fov: configuration.initialCameraView.fov,
@@ -526,7 +527,6 @@ export function DesignSceneCanvas({
         ) : null}
 
         <Suspense fallback={<RoomSkeleton />}>{children}</Suspense>
-
         <CameraCapture
           cameraRef={sceneRefs.camera}
           canvasRef={sceneRefs.canvas}

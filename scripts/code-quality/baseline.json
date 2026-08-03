@@ -2641,7 +2641,7 @@
     "components/scene/GLBScaledModel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 160
+        "maximum": 159
       },
       "complexFunctions": {
         "count": 1,
