@@ -1205,3 +1205,73 @@ ruleset, PR state, deployment, and CH-0004 remain untouched.
 
 This integration does not change operation budgets, retries, required/advisory
 workflow separation, PR state, rulesets, deployment state, or CH-0004.
+
+## CH-0028 post-readiness browser-admission correction — 2026-08-03
+
+This entry supersedes the earlier CH-0028 final-snapshot classification without
+modifying frozen CH-0017. Work began from exact clean source
+`af9873253d41901d884e29a09b0b92af17fc2eb6` on
+`fix/ch-0028-reload-model-readiness`; before edits, `lsof` confirmed that the
+active Node listener's working directory was the canonical
+`/Users/justus/Developer/interior-ai` checkout. Required-only run
+`30780102332`, artifact `8843450138`, reached reload-1 `models-ready` after
+approximately 9.268 seconds with 8 ready / 0 loading / 0 error and exactly six
+fixture responses, then retained `models-ready` as its last checkpoint for the
+full unchanged 75-second no-progress interval. It never requested the final
+required snapshot.
+
+The exact first awaited step was the negative body-text locator assertion. It
+ran as a Playwright host promise with a nominal 5,000 ms matcher timeout but no
+canonical hard host boundary or browser-entry milestone. A controlled
+production run made the blocked boundary conclusive: reload 1 reached
+`models-ready` and captured a coherent immediate snapshot at 2,051 ms, invoked
+the separate body-state browser call at 2,053 ms, never observed browser
+callback entry, and failed at 7,055 ms with the unchanged canonical 5,000 ms
+`body-state-assertion` deadline. The safe failure provenance named
+`body-state-browser-call-invoked` rather than `models-ready`. This classifies
+the cause exactly as **C — browser main-thread starvation**. It is not snapshot
+computation, serialization, registry/cache incoherence, stale observation, or
+missing progress reporting.
+
+The minimal correction observes the unchanged `Maximum update depth exceeded`
+condition inside the atomic metadata callback that already proves readiness,
+then performs the required assertion in the existing hard-bounded host
+operation after `models-ready`. This removes only the second browser-admission
+dependency; it does not skip or weaken the assertion. Each later await now has
+truthful started/completed checkpoints, while the immediate diagnostic copy
+retains generation, eight active keys, ready/loading/error/stale totals,
+response total, per-model last transition, registry size, parsed/prepared
+entries and references, and bounded zero-reference retention. The final
+required snapshot remains mandatory.
+
+Host and browser timing are recorded separately with relative monotonic
+values. Across the final nine reloads, host-observed callback entry ranged from
+11 to 10,719 ms and host result receipt from 1,508 to 11,276 ms. Once admitted,
+the in-page callback/body computation used 0–0.6 ms and serialization used
+0–0.1 ms. One run also observed callback entry at 11 ms followed by host result
+receipt at 10,830 ms, independently separating browser execution from host
+receipt. The long component is scheduling/admission, while underlying
+constrained-runner latency remains the separate CH-0029 performance finding.
+
+Three final-source production-mode smokes used three separate local PostgreSQL
+databases, each with all 42 migrations. Every run passed furnished-template
+and health/catalog 2/2 with zero failed, flaky, skipped, or retried tests:
+
+| Run | Reload 1 | Reload 2 | Reload 3 |
+| --- | ---: | ---: | ---: |
+| 1 | 20,279 ms | 21,685 ms | 20,240 ms |
+| 2 | 20,585 ms | 19,484 ms | 19,880 ms |
+| 3 | 22,201 ms | 27,956 ms | 28,707 ms |
+
+All nine reloads retained 8 ready / 0 loading / 0 error, cumulative response
+totals 6/9/12, both immediate and final snapshots, registry 8, parsed cache 8
+entries / 13 references, prepared cache 12 entries / 7 references, and five
+bounded zero-reference prepared variants. Focused post-readiness ordering and
+failure provenance, lifecycle/snapshot/reload-generation, resource-cache and
+refcount, GLB bounds, persistence, frozen CH-0017 truthfulness/deadline,
+production-artifact evidence, typecheck, targeted zero-warning ESLint,
+code-quality, strict staging build, and diff checks pass. No timeout, retry,
+sleep, schema, workflow, ruleset, PR, deployment, migration, dependency,
+catalog, cache-policy, CH-0004, or Full E2E change is included. The exact local
+follow-up commit still requires detached production proof and required-only
+external workflow dispatch before CH-0028 can be closed.

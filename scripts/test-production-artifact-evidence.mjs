@@ -60,6 +60,10 @@ import {
   runtimeSmokePhaseBudget,
   waitForRuntimeSmokeOperationDeadline,
 } from "./runtime-smoke-phase-budget.mjs";
+import {
+  captureImmediatePostReadinessSnapshot,
+  runRuntimeSmokePostReadinessOperation,
+} from "./runtime-smoke-post-readiness.mjs";
 
 const sequentialRuntimeSmokeBudgetMs = RUNTIME_SMOKE_PHASE_BUDGETS.reduce(
   (total, phase) => total + phase.timeoutMs,
@@ -794,6 +798,124 @@ assert.equal(
   );
 }
 
+{
+  const postReadinessRecorder = createRuntimeSmokePhaseRecorder({
+    repositoryRoot: process.cwd(),
+    phaseBudgets: [{ name: "reload-1", timeoutMs: 100 }],
+    phaseContracts: {
+      "reload-1": {
+        operations: [{ name: "work", timeoutMs: 5 }],
+        orchestrationMarginMs: 95,
+        noProgressTimeoutMs: 5,
+        performanceWarningThresholdMs: 70,
+      },
+    },
+    writePerformanceWarning: () => undefined,
+  });
+  await assert.rejects(
+    postReadinessRecorder.run(
+      "reload-1",
+      ({ checkpoint }) =>
+        runRuntimeSmokePostReadinessOperation({
+          checkpoint,
+          startedCheckpoint: "post-ready-settle-started",
+          completedCheckpoint: "post-ready-settle-complete",
+          task: () => new Promise(() => {}),
+        }),
+      () => "ready",
+    ),
+    RuntimeSmokeNoProgressError,
+  );
+  assert.equal(postReadinessRecorder.records[0]?.outcome, "stalled");
+  assert.equal(
+    postReadinessRecorder.records[0]?.failure?.failureKind,
+    "no-progress-watchdog",
+  );
+  assert.equal(
+    postReadinessRecorder.records[0]?.failure?.lastSafeCheckpoint,
+    "post-ready-settle-started",
+  );
+  assert.deepEqual(
+    postReadinessRecorder.records[0]?.progressCheckpoints.map(
+      ({ name }) => name,
+    ),
+    ["phase-start", "post-ready-settle-started"],
+    "a stalled post-readiness await must retain its exact started checkpoint",
+  );
+}
+
+{
+  const checkpoints = [];
+  const diagnostics = [];
+  const sourceSnapshot = {
+    schema: "interior-ai.glb-required-snapshot.v1",
+    reloadGeneration: 2,
+    registryEntryCount: 1,
+    activeRequiredCount: 1,
+    activeRequiredModelIds: ["runtime-smoke-model-1"],
+    models: [
+      {
+        key: "runtime-smoke-model-1",
+        active: true,
+        requiredForReadiness: true,
+        loadState: "ready",
+        generationState: "current",
+        lastTransitionName: "ready",
+        lastTransitionAtMs: 123.4,
+      },
+    ],
+    caches: {
+      parsed: { entryCount: 1, activeReferenceCount: 1 },
+      prepared: {
+        entryCount: 1,
+        activeReferenceCount: 1,
+        zeroReferenceEntryCount: 0,
+      },
+    },
+  };
+  const detachedSnapshot = captureImmediatePostReadinessSnapshot({
+    checkpoint: (name, lifecycleState) =>
+      checkpoints.push({ name, lifecycleState }),
+    phaseName: "reload-1",
+    responseTotal: 6,
+    snapshot: sourceSnapshot,
+    timing: {
+      hostRequestStartedAtUnixMs: 99,
+      schedulingDelayMs: 1,
+      computationDurationMs: 2,
+      serializationDurationMs: 3,
+      transferDurationMs: 4,
+    },
+    writeDiagnostic: (message) => diagnostics.push(message),
+  });
+  sourceSnapshot.models[0].loadState = "error";
+  assert.equal(detachedSnapshot.models[0].loadState, "ready");
+  assert.deepEqual(
+    checkpoints.map(({ name }) => name),
+    [
+      "immediate-snapshot-captured",
+      "immediate-generation-2",
+      "immediate-registry-1-required-1-ready-1-loading-0-error-0-stale-0",
+      "immediate-cache-parsed-1-refs-1-prepared-1-refs-1-retained-0",
+      "immediate-response-total-6",
+      "immediate-active-key-1-runtime-smoke-model-1",
+      "immediate-model-1-transition-ready-at-123",
+      "immediate-snapshot-wait-1-compute-2-serialize-3-transfer-4",
+    ],
+  );
+  assert.equal(
+    diagnostics[0]?.startsWith(
+      "[runtime-smoke-immediate-post-readiness-snapshot] ",
+    ),
+    true,
+  );
+  assert.doesNotMatch(
+    diagnostics[0],
+    /hostRequestStartedAtUnixMs/,
+    "immediate evidence must retain relative timing only",
+  );
+}
+
 const runtimeSmokeSource = readFileSync(
   path.join(process.cwd(), "tests/e2e/00-runtime-smoke.spec.ts"),
   "utf8",
@@ -809,6 +931,12 @@ const reloadLoop = runtimeSmokeSource.slice(
   runtimeSmokeSource.indexOf('await phaseRecorder.run("persistence-assertions"'),
 );
 assert.match(reloadLoop, /waitForReloadModelsReady/);
+assert.match(reloadLoop, /reloadIndex\s*<\s*3/);
+assert.match(
+  reloadLoop,
+  /MODEL_FIXTURES\.length\s*\*\s*\(reloadIndex\s*\+\s*2\)/,
+  "three reloads must retain cumulative response totals 6, 9, and 12",
+);
 assert.doesNotMatch(reloadLoop, /waitForModelResponsesOrTerminal/);
 assert.doesNotMatch(reloadLoop, /waitForModelDiagnosticsReady/);
 assert.match(reloadLoop, /Promise\.all\(\[/);
@@ -817,6 +945,95 @@ assert.doesNotMatch(
   /await\s+readModelDiagnostics\(\)/,
   "reload diagnostics must not bypass a named wall-clock operation bound",
 );
+assert.doesNotMatch(
+  reloadLoop,
+  /expect\(page\.locator\(["']body["']\)\)\.not\.toContainText/,
+  "reload body verification must use the canonical hard-bounded host operation",
+);
+assert.doesNotMatch(
+  runtimeSmokeSource,
+  /__INTERIOR_AI_GLB_DIAGNOSTICS__/,
+  "runtime smoke must not invoke the legacy rich diagnostics global",
+);
+const postReadinessCaptureIndex = reloadLoop.indexOf(
+  "captureImmediatePostReadinessSnapshot",
+);
+const postReadinessResponseIndex = reloadLoop.lastIndexOf(
+  "const responseTotal =",
+  postReadinessCaptureIndex,
+);
+assert.ok(postReadinessResponseIndex >= 0 && postReadinessCaptureIndex >= 0);
+assert.doesNotMatch(
+  reloadLoop.slice(postReadinessResponseIndex, postReadinessCaptureIndex),
+  /\bawait\b/,
+  "the immediate snapshot must be captured before any later awaited action",
+);
+const orderedPostReadinessTokens = [
+  "captureImmediatePostReadinessSnapshot",
+  "response-total-verification-started",
+  "response-total-verification-complete",
+  "generation-verification-started",
+  "generation-verification-complete",
+  "active-key-verification-started",
+  "active-key-verification-complete",
+  "body-state-verification-started",
+  "body-state-verification-complete",
+  "post-ready-settle-started",
+  "post-ready-settle-complete",
+  "post-settle-observation-started",
+  "post-settle-observation-complete",
+  "required-snapshot-requested",
+  "required-snapshot-returned",
+  "required-snapshot-assertions-complete",
+];
+let previousPostReadinessTokenIndex = -1;
+for (const token of orderedPostReadinessTokens) {
+  const tokenIndex = reloadLoop.indexOf(token);
+  assert.ok(
+    tokenIndex > previousPostReadinessTokenIndex,
+    `${token} must retain ordered post-readiness control flow`,
+  );
+  previousPostReadinessTokenIndex = tokenIndex;
+}
+const bodyStateOperationSource = runtimeSmokeSource.slice(
+  runtimeSmokeSource.indexOf("const verifyBodyStateAfterReadiness"),
+  runtimeSmokeSource.indexOf("const waitForReloadModelsReady"),
+);
+assert.match(bodyStateOperationSource, /runRuntimeSmokeBoundedOperation/);
+assert.match(bodyStateOperationSource, /operationName:\s*["']body-state-assertion["']/);
+assert.match(bodyStateOperationSource, /performance\.now\(\)/);
+assert.doesNotMatch(
+  bodyStateOperationSource,
+  /page\.evaluate/,
+  "the body-state assertion must not require a second post-readiness browser admission",
+);
+for (const milestone of [
+  "entered-browser",
+  "callback-exited",
+  "serialization-complete",
+]) {
+  assert.match(bodyStateOperationSource, new RegExp(milestone));
+}
+const diagnosticSnapshotSource = runtimeSmokeSource.slice(
+  runtimeSmokeSource.indexOf("const readModelDiagnostics ="),
+  runtimeSmokeSource.indexOf("let expectedLifecycleRegistrySize"),
+);
+assert.match(
+  diagnosticSnapshotSource,
+  /document\.body\.textContent\?\.includes/,
+  "body state must be observed inside the atomic readiness callback",
+);
+assert.match(
+  diagnosticSnapshotSource,
+  /operationName:\s*["']diagnostic-snapshot["']/,
+);
+assert.match(
+  diagnosticSnapshotSource,
+  /browserCallbackEnteredMs[\s\S]*browserCallbackExitedMs[\s\S]*serializationCompletedMs[\s\S]*resultReceivedMs/,
+  "host and browser timing attribution must remain separate and relative",
+);
+assert.match(reloadLoop, /recordRequiredSnapshotProof\(phaseName, checkpoint\)/);
+assert.match(runtimeSmokeSource, /expect\(immediatePostReadinessSnapshots\)\.toHaveLength\(3\)/);
 assert.doesNotMatch(
   runtimeSmokeSource,
   /maximumSamples/,
@@ -856,6 +1073,7 @@ for (const operation of FURNISHED_TEMPLATE_RELOAD_CONTRACT.operations.filter(
   ({ name }) => ![
     "hydration-snapshot",
     "model-responses-and-readiness",
+    "body-state-assertion",
     "diagnostics-settle",
     "final-diagnostics-snapshot",
   ].includes(name),
@@ -905,6 +1123,7 @@ for (const operationName of [
   "diagnostics-settle",
   "diagnostics-settle-evaluation",
   "model-responses-and-readiness",
+  "body-state-assertion",
   "model-responses",
   "diagnostic-snapshot-and-assertions",
   "hydration-snapshot",
@@ -945,6 +1164,11 @@ for (const modelPath of [
 
 if (process.argv.includes("--deadline-boundary-contract-only")) {
   console.log("CH-0017 runtime-smoke deadline-boundary contract tests passed.");
+  process.exit(0);
+}
+
+if (process.argv.includes("--post-readiness-contract-only")) {
+  console.log("CH-0028 runtime-smoke post-readiness contract tests passed.");
   process.exit(0);
 }
 

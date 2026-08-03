@@ -16,6 +16,10 @@ import {
   runtimeSmokeOperationAttempt,
   waitForRuntimeSmokeOperationDeadline,
 } from "../../scripts/runtime-smoke-phase-budget.mjs";
+import {
+  captureImmediatePostReadinessSnapshot,
+  runRuntimeSmokePostReadinessOperation,
+} from "../../scripts/runtime-smoke-post-readiness.mjs";
 import type { GLBRequiredSnapshot } from "../../components/scene/glb-scaled-model/glbRequiredSnapshot";
 import { calculateGLBRequiredSnapshotTransportTiming } from "../../components/scene/glb-scaled-model/glbSnapshotTiming";
 
@@ -113,9 +117,43 @@ test.describe("00. Runtime smoke", () => {
       computationCompletedAtUnixMs?: number;
       serializationCompletedAtUnixMs?: number;
     };
+    type PostReadinessBrowserMilestone = {
+      operationName: "diagnostic-snapshot";
+      requestId: number;
+      stage: "entered-browser" | "callback-exited" | "serialization-complete";
+    };
+    type BodyStateObservation = {
+      hasMaximumDepthError: boolean;
+      hostRequestStartedAt: number;
+      hostTiming: {
+        requestStartedMs: 0;
+        browserCallInvokedMs: number;
+        browserCallbackEnteredMs: number | null;
+        browserCallbackExitedMs: number | null;
+        serializationCompletedMs: number | null;
+        resultReceivedMs: number;
+      };
+      browserTiming: {
+        callbackEnteredMs: 0;
+        callbackExitedMs: number;
+        serializationCompletedMs: number;
+        bodyStateComputationMs: number;
+      };
+    };
     let lastRequiredSnapshot: GLBRequiredSnapshot | null = null;
     let lastRequiredSnapshotTiming: RequiredSnapshotTiming | null = null;
     let requiredSnapshotMilestoneCheckpoint: RuntimeSmokeCheckpoint | null = null;
+    let activePostReadinessBrowserTiming: {
+      requestId: number;
+      hostStartedAt: number;
+      browserCallInvokedAt: number;
+      milestones: Partial<
+        Record<PostReadinessBrowserMilestone["stage"], number>
+      >;
+    } | null = null;
+    let diagnosticSnapshotRequestSequence = 0;
+    let lastBodyStateObservation: BodyStateObservation | null = null;
+    const immediatePostReadinessSnapshots: GLBRequiredSnapshot[] = [];
     const recordBrowserSnapshotMilestone = (milestone: RequiredSnapshotMilestone) => {
       const checkpoint = requiredSnapshotMilestoneCheckpoint;
       if (!checkpoint) return;
@@ -126,11 +164,26 @@ test.describe("00. Runtime smoke", () => {
         )}`,
         "ready",
       );
+      checkpoint(
+        `required-snapshot-entered-browser-after-${Math.max(
+          0,
+          milestone.callbackEnteredAtUnixMs - milestone.hostRequestStartedAtUnixMs,
+        )}`,
+        "ready",
+      );
       if (milestone.computationCompletedAtUnixMs !== undefined) {
         checkpoint(
           `snapshot-computation-complete-${Math.max(
             0,
             milestone.computationCompletedAtUnixMs - milestone.computationStartedAtUnixMs,
+          )}`,
+          "ready",
+        );
+        checkpoint(
+          `required-snapshot-callback-exited-after-${Math.max(
+            0,
+            milestone.computationCompletedAtUnixMs -
+              milestone.hostRequestStartedAtUnixMs,
           )}`,
           "ready",
         );
@@ -145,16 +198,52 @@ test.describe("00. Runtime smoke", () => {
           )}`,
           "ready",
         );
+        checkpoint(
+          `required-snapshot-serialization-complete-after-${Math.max(
+            0,
+            milestone.serializationCompletedAtUnixMs -
+              milestone.hostRequestStartedAtUnixMs,
+          )}`,
+          "ready",
+        );
       }
+    };
+    const recordPostReadinessBrowserMilestone = (
+      milestone: PostReadinessBrowserMilestone,
+    ) => {
+      const timing = activePostReadinessBrowserTiming;
+      if (
+        !timing ||
+        milestone.operationName !== "diagnostic-snapshot" ||
+        milestone.requestId !== timing.requestId
+      ) {
+        return;
+      }
+      timing.milestones[milestone.stage] = Math.max(
+        0,
+        performance.now() - timing.hostStartedAt,
+      );
     };
     const readModelDiagnostics = async (
       milestoneCheckpoint: RuntimeSmokeCheckpoint | null = null,
     ) => {
+      const hostRequestStartedAt = performance.now();
       const hostRequestStartedAtUnixMs = Date.now();
+      const postReadinessRequestId = ++diagnosticSnapshotRequestSequence;
       requiredSnapshotMilestoneCheckpoint = milestoneCheckpoint;
       milestoneCheckpoint?.("snapshot-host-request-started", "ready");
+      activePostReadinessBrowserTiming = {
+        requestId: postReadinessRequestId,
+        hostStartedAt: hostRequestStartedAt,
+        browserCallInvokedAt: performance.now(),
+        milestones: {},
+      };
       const transfer = await page.evaluate(
-        ({ captureMilestones, hostRequestStartedAtUnixMs }) => {
+        ({
+          captureMilestones,
+          hostRequestStartedAtUnixMs,
+          postReadinessRequestId,
+        }) => {
           const emitMilestone = (milestone: RequiredSnapshotMilestone) => {
             if (!captureMilestones) return;
             console.info(
@@ -162,6 +251,20 @@ test.describe("00. Runtime smoke", () => {
               JSON.stringify(milestone),
             );
           };
+          const emitPostReadinessMilestone = (
+            stage: PostReadinessBrowserMilestone["stage"],
+          ) => {
+            console.info(
+              "[runtime-smoke-post-readiness-milestone]",
+              JSON.stringify({
+                operationName: "diagnostic-snapshot",
+                requestId: postReadinessRequestId,
+                stage,
+              }),
+            );
+          };
+          const callbackEnteredAt = performance.now();
+          emitPostReadinessMilestone("entered-browser");
           const callbackEnteredAtUnixMs = Date.now();
           const computationStartedAtUnixMs = Date.now();
           emitMilestone({
@@ -181,7 +284,16 @@ test.describe("00. Runtime smoke", () => {
             computationStartedAtUnixMs,
             computationCompletedAtUnixMs,
           });
+          const bodyStateComputationStartedAt = performance.now();
+          const hasMaximumDepthError =
+            document.body.textContent?.includes(
+              "Maximum update depth exceeded",
+            ) ?? false;
+          const bodyStateComputationCompletedAt = performance.now();
+          emitPostReadinessMilestone("callback-exited");
+          const snapshotSerializationStartedAt = performance.now();
           const serializedSnapshot = snapshot ? JSON.stringify(snapshot) : null;
+          const snapshotSerializationCompletedAt = performance.now();
           const serializationCompletedAtUnixMs = Date.now();
           emitMilestone({
             hostRequestStartedAtUnixMs,
@@ -190,6 +302,7 @@ test.describe("00. Runtime smoke", () => {
             computationCompletedAtUnixMs,
             serializationCompletedAtUnixMs,
           });
+          emitPostReadinessMilestone("serialization-complete");
           return {
             hostRequestStartedAtUnixMs,
             callbackEnteredAtUnixMs,
@@ -197,16 +310,69 @@ test.describe("00. Runtime smoke", () => {
             computationCompletedAtUnixMs,
             serializationCompletedAtUnixMs,
             serializedSnapshot,
+            hasMaximumDepthError,
+            browserCallbackDurationMs: Math.max(
+              0,
+              bodyStateComputationCompletedAt - callbackEnteredAt,
+            ),
+            bodyStateComputationMs: Math.max(
+              0,
+              bodyStateComputationCompletedAt - bodyStateComputationStartedAt,
+            ),
+            snapshotSerializationDurationMs: Math.max(
+              0,
+              snapshotSerializationCompletedAt - snapshotSerializationStartedAt,
+            ),
           };
         },
         {
           captureMilestones: milestoneCheckpoint !== null,
           hostRequestStartedAtUnixMs,
+          postReadinessRequestId,
         },
       );
+      const hostResultReceivedAt = performance.now();
       const hostResultReceivedAtUnixMs = Date.now();
       requiredSnapshotMilestoneCheckpoint = null;
-      const { serializedSnapshot, ...transferMilestones } = transfer;
+      const browserTiming = activePostReadinessBrowserTiming;
+      activePostReadinessBrowserTiming = null;
+      const {
+        serializedSnapshot,
+        hasMaximumDepthError,
+        browserCallbackDurationMs,
+        bodyStateComputationMs,
+        snapshotSerializationDurationMs,
+        ...transferMilestones
+      } = transfer;
+      lastBodyStateObservation = {
+        hasMaximumDepthError,
+        hostRequestStartedAt,
+        hostTiming: {
+          requestStartedMs: 0,
+          browserCallInvokedMs: Math.max(
+            0,
+            (browserTiming?.browserCallInvokedAt ?? hostRequestStartedAt) -
+              hostRequestStartedAt,
+          ),
+          browserCallbackEnteredMs:
+            browserTiming?.milestones["entered-browser"] ?? null,
+          browserCallbackExitedMs:
+            browserTiming?.milestones["callback-exited"] ?? null,
+          serializationCompletedMs:
+            browserTiming?.milestones["serialization-complete"] ?? null,
+          resultReceivedMs: Math.max(
+            0,
+            hostResultReceivedAt - hostRequestStartedAt,
+          ),
+        },
+        browserTiming: {
+          callbackEnteredMs: 0,
+          callbackExitedMs: browserCallbackDurationMs,
+          serializationCompletedMs:
+            browserCallbackDurationMs + snapshotSerializationDurationMs,
+          bodyStateComputationMs,
+        },
+      };
       lastRequiredSnapshotTiming = {
         ...transferMilestones,
         hostResultReceivedAtUnixMs,
@@ -617,10 +783,12 @@ test.describe("00. Runtime smoke", () => {
           );
         } catch (error) {
           if (error instanceof RuntimeSmokeOperationAttemptTimeoutError) {
+            checkpoint?.("diagnostics-settle-parent-deadline-wait-started");
             await waitForRuntimeSmokeOperationDeadline({
               operationAttempt: parentAttempt,
               cause: error,
             });
+            checkpoint?.("diagnostics-settle-parent-deadline-wait-complete");
           }
           if (!(error instanceof RuntimeSmokeOperationTimeoutError)) throw error;
           if (!settleContext.deadlineReached()) throw error;
@@ -630,17 +798,23 @@ test.describe("00. Runtime smoke", () => {
           });
         }
       };
+      checkpoint?.("diagnostics-settle-baseline-started");
       let previous = await readSettleSample();
+      checkpoint?.("diagnostics-settle-baseline-complete");
       let stableSamples = 0;
       let previousProgressSignature = "";
       for (let sampleIndex = 0; ; sampleIndex += 1) {
+        checkpoint?.(`diagnostics-settle-wait-${sampleIndex + 1}-started`);
         await page.waitForTimeout(
           runtimeSmokeOperationAttempt(
             settleContext,
             RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT.sampleIntervalMs,
           ).attemptTimeoutMs,
         );
+        checkpoint?.(`diagnostics-settle-wait-${sampleIndex + 1}-complete`);
+        checkpoint?.(`diagnostics-settle-sample-${sampleIndex + 1}-started`);
         const current = await readSettleSample();
+        checkpoint?.(`diagnostics-settle-sample-${sampleIndex + 1}-complete`);
         const progressSignature = current
           .map(({ diagnostic }) =>
             diagnostic
@@ -674,6 +848,94 @@ test.describe("00. Runtime smoke", () => {
         previous = current;
       }
     };
+    const verifyBodyStateAfterReadiness = async ({
+      phaseName,
+      checkpoint,
+    }: {
+      phaseName: string;
+      checkpoint: RuntimeSmokeCheckpoint;
+    }) =>
+      runRuntimeSmokeBoundedOperation({
+        operationAttempt: runtimeSmokeOperationAttempt(
+          createRuntimeSmokeOperationDeadline({
+            phaseName,
+            operationName: "body-state-assertion",
+          }),
+        ),
+        task: async () => {
+          const observation = lastBodyStateObservation;
+          expect(
+            observation,
+            `${phaseName} should retain the body state observed with readiness`,
+          ).not.toBeNull();
+          if (!observation) return;
+          checkpoint("body-state-readiness-observation-available", "ready");
+          checkpoint(
+            `body-state-browser-call-invoked-after-${Math.round(
+              observation.hostTiming.browserCallInvokedMs,
+            )}`,
+            "ready",
+          );
+          if (observation.hostTiming.browserCallbackEnteredMs !== null) {
+            checkpoint(
+              `body-state-entered-browser-after-${Math.round(
+                observation.hostTiming.browserCallbackEnteredMs,
+              )}`,
+              "ready",
+            );
+          }
+          if (observation.hostTiming.browserCallbackExitedMs !== null) {
+            checkpoint(
+              `body-state-callback-exited-after-${Math.round(
+                observation.hostTiming.browserCallbackExitedMs,
+              )}`,
+              "ready",
+            );
+          }
+          if (observation.hostTiming.serializationCompletedMs !== null) {
+            checkpoint(
+              `body-state-serialization-complete-after-${Math.round(
+                observation.hostTiming.serializationCompletedMs,
+              )}`,
+              "ready",
+            );
+          }
+          checkpoint(
+            `body-state-host-result-after-${Math.max(
+              0,
+              Math.round(observation.hostTiming.resultReceivedMs),
+            )}`,
+            "ready",
+          );
+          checkpoint(
+            `body-state-browser-compute-${Math.round(
+              observation.browserTiming.callbackExitedMs,
+            )}-serialize-${Math.round(
+              observation.browserTiming.serializationCompletedMs -
+                observation.browserTiming.callbackExitedMs,
+            )}`,
+            "ready",
+          );
+          expect(observation.hasMaximumDepthError).toBe(false);
+          const assertionCompletedMs = Math.max(
+            0,
+            performance.now() - observation.hostRequestStartedAt,
+          );
+          console.info(
+            "[runtime-smoke-post-readiness-timing]",
+            JSON.stringify({
+              phaseName,
+              operationName: "coalesced-body-state-assertion",
+              hostTiming: {
+                ...observation.hostTiming,
+                assertionCompletedMs,
+              },
+              browserTiming: observation.browserTiming,
+            }),
+          );
+          checkpoint("body-state-assertion-complete", "ready");
+        },
+      });
     const waitForReloadModelsReady = async ({
       minimumResponseCount,
       minimumReloadGeneration,
@@ -860,6 +1122,19 @@ test.describe("00. Runtime smoke", () => {
             );
           } catch {
             fatalErrors.push("Malformed required snapshot milestone");
+          }
+        }
+        const postReadinessMilestonePrefix =
+          "[runtime-smoke-post-readiness-milestone] ";
+        if (message.text().startsWith(postReadinessMilestonePrefix)) {
+          try {
+            recordPostReadinessBrowserMilestone(
+              JSON.parse(
+                message.text().slice(postReadinessMilestonePrefix.length),
+              ) as PostReadinessBrowserMilestone,
+            );
+          } catch {
+            fatalErrors.push("Malformed post-readiness browser milestone");
           }
         }
         if (message.type() === "error") {
@@ -1309,30 +1584,91 @@ test.describe("00. Runtime smoke", () => {
           phaseName,
           checkpoint,
         });
-        completedReloadGeneration =
-          reloadDiagnostics[0]?.diagnostic?.reloadGeneration ??
-          completedReloadGeneration;
-        await expect(page.locator("body")).not.toContainText(
-          "Maximum update depth exceeded",
-          { timeout: reloadOperationTimeout("body-state-assertion") },
+        const responseTotal = MODEL_FIXTURES.reduce(
+          (total, { modelPath }) =>
+            total + (modelResponseCounts.get(modelPath) ?? 0),
+          0,
         );
-        const reloadSettledBefore = await waitForModelDiagnosticsToSettle(
+        const immediateSnapshot = captureImmediatePostReadinessSnapshot({
+          checkpoint,
           phaseName,
-          checkpoint,
+          responseTotal,
+          snapshot: lastRequiredSnapshot,
+          timing: lastRequiredSnapshotTiming,
+        }) as GLBRequiredSnapshot;
+        immediatePostReadinessSnapshots.push(immediateSnapshot);
+
+        checkpoint("response-total-verification-started", "ready");
+        expect(responseTotal).toBe(MODEL_FIXTURES.length * (reloadIndex + 2));
+        expect(
+          MODEL_FIXTURES.every(
+            ({ modelPath }) =>
+              (modelResponseCounts.get(modelPath) ?? 0) === reloadIndex + 2,
+          ),
+        ).toBe(true);
+        checkpoint("response-total-verification-complete", "ready");
+
+        checkpoint("generation-verification-started", "ready");
+        const observedReloadGeneration =
+          reloadDiagnostics[0]?.diagnostic?.reloadGeneration;
+        expect(observedReloadGeneration).toBe(immediateSnapshot.reloadGeneration);
+        expect(observedReloadGeneration ?? 0).toBeGreaterThan(
+          completedReloadGeneration,
         );
+        completedReloadGeneration =
+          observedReloadGeneration ?? completedReloadGeneration;
+        checkpoint("generation-verification-complete", "ready");
+
+        checkpoint("active-key-verification-started", "ready");
+        expect(immediateSnapshot.activeRequiredModelIds).toEqual(
+          expectedActiveRequiredKeys,
+        );
+        expect(immediateSnapshot.activeRequiredModelIds).toHaveLength(
+          EXPECTED_ACTIVE_REQUIRED_MODEL_COUNT,
+        );
+        checkpoint("active-key-verification-complete", "ready");
+
+        await runRuntimeSmokePostReadinessOperation({
+          checkpoint,
+          startedCheckpoint: "body-state-verification-started",
+          completedCheckpoint: "body-state-verification-complete",
+          task: () => verifyBodyStateAfterReadiness({ phaseName, checkpoint }),
+        });
+        const reloadSettledBefore = await runRuntimeSmokePostReadinessOperation({
+          checkpoint,
+          startedCheckpoint: "post-ready-settle-started",
+          completedCheckpoint: "post-ready-settle-complete",
+          task: () => waitForModelDiagnosticsToSettle(phaseName, checkpoint),
+        });
         checkpoint("bounds-settled", "ready");
-        await page.waitForTimeout(
-          reloadOperationTimeout("post-settle-observation"),
-        );
-        const reloadSettledAfter = await readModelDiagnosticsWithin(
-          createRuntimeSmokeOperationDeadline({
-            phaseName,
-            operationName: "final-diagnostics-snapshot",
-          }),
-          undefined,
+        await runRuntimeSmokePostReadinessOperation({
           checkpoint,
-        );
+          startedCheckpoint: "post-settle-observation-started",
+          completedCheckpoint: "post-settle-observation-complete",
+          task: () =>
+            page.waitForTimeout(
+              reloadOperationTimeout("post-settle-observation"),
+            ),
+        });
+        const reloadSettledAfter = await runRuntimeSmokePostReadinessOperation({
+          checkpoint,
+          startedCheckpoint: "required-snapshot-requested",
+          completedCheckpoint: "required-snapshot-returned",
+          task: () =>
+            readModelDiagnosticsWithin(
+              createRuntimeSmokeOperationDeadline({
+                phaseName,
+                operationName: "final-diagnostics-snapshot",
+              }),
+              undefined,
+              checkpoint,
+            ),
+        });
         recordRequiredSnapshotProof(phaseName, checkpoint);
+        expect(lastRequiredSnapshot?.reloadGeneration).toBe(
+          immediateSnapshot.reloadGeneration,
+        );
+        checkpoint("required-snapshot-assertions-complete", "ready");
         reloadSettledAfter.forEach(({ key, diagnostic }, index) => {
           const before = reloadSettledBefore[index]?.diagnostic;
           expect(diagnostic, `${key} should remount with diagnostics`).not.toBeNull();
@@ -1383,6 +1719,12 @@ test.describe("00. Runtime smoke", () => {
             (modelResponseCounts.get(modelPath) ?? 0) === 4
         )
       ).toBe(true);
+      expect(immediatePostReadinessSnapshots).toHaveLength(3);
+      expect(
+        immediatePostReadinessSnapshots.map(
+          (snapshot) => snapshot.reloadGeneration,
+        ),
+      ).toEqual([1, 2, 3].map((offset) => completedReloadGeneration - 3 + offset));
       await expect(page.locator("body")).not.toContainText(
         "Maximum update depth exceeded"
       );

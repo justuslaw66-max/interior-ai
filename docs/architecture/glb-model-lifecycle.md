@@ -77,7 +77,8 @@ current-generation readiness. Models-ready occurred around 71.3 seconds and
 bounds-settled around 109.6 seconds, but the final required snapshot exceeded
 its unchanged 5,000 ms budget. Its safe three-file artifact is `8835124580`.
 
-The final-snapshot failure is classified **B — browser main-thread starvation**.
+The final-snapshot failure was classified **B — browser main-thread starvation**
+under the earlier follow-up taxonomy.
 The five-second timeout alone did not establish this: the retained external
 timeline showed earlier diagnostic callbacks delayed for tens of seconds, and
 the replacement snapshot now separates host request, callback entry,
@@ -102,6 +103,18 @@ performance observation threshold, not an authoritative product-performance
 or independent release requirement. Lifecycle/cache correctness remains
 CH-0028; constrained-runner end-to-end reload latency is tracked separately as
 CH-0029.
+
+Required-only run `30780102332` superseded that boundary: reload 1 reached
+`models-ready` with eight ready models and six responses, then stalled before
+requesting the final snapshot. A controlled hard-bound reproduction proved
+that the separate post-readiness body-state call was invoked but its browser
+callback could not enter within the unchanged 5,000 ms operation deadline.
+Under the current required A–F taxonomy this is **C — browser main-thread
+starvation**. The body-text condition is now observed inside the atomic
+readiness callback and asserted afterward on the host, avoiding a second
+browser admission without weakening the assertion. Relative timing retains
+host invocation/receipt and browser entry/exit/serialization separately;
+constrained-runner scheduling remains owned by CH-0029.
 
 ## Safe diagnostics
 

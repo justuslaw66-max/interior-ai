@@ -22,6 +22,7 @@
     "test:production-artifact-evidence": "node scripts/test-production-artifact-evidence.mjs",
     "test:runtime-smoke-phase-budget": "node scripts/test-production-artifact-evidence.mjs --phase-budget-contract-only",
     "test:runtime-smoke-deadline-boundary": "node scripts/test-production-artifact-evidence.mjs --deadline-boundary-contract-only",
+    "test:runtime-smoke-post-readiness": "node scripts/test-production-artifact-evidence.mjs --post-readiness-contract-only",
     "ci:auth-fixture:export": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/ci-auth-fixture.ts export-github-env",
     "ci:auth-fixture:validate": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/ci-auth-fixture.ts validate-env",
     "ci:auth-fixture:preflight": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/ci-auth-fixture.ts preflight",
