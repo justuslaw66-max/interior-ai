@@ -6,6 +6,17 @@ export type GLBModelPipelineState =
   | "pending"
   | "complete"
   | "error";
+export type GLBModelPendingStage =
+  | "request-start"
+  | "response"
+  | "parse-decode"
+  | "normalization"
+  | "materials"
+  | "bounds"
+  | "scene-attachment"
+  | "ready-commit"
+  | "terminal-error"
+  | "cancelled";
 export type GLBModelTerminalErrorCategory =
   | "gltf-load-failed"
   | "gltf-loader-import-failed"
@@ -87,7 +98,7 @@ export type GLBModelDiagnosticSnapshot = {
   excessiveBoundsWarningCount: number;
   selectionOutlineVisible: boolean;
   loadState: GLBModelLoadState;
-  pendingStage: string | null;
+  pendingStage: GLBModelPendingStage | null;
   requestStarted: boolean;
   responseCompleted: boolean;
   cacheStatus: GLBModelCacheStatus;

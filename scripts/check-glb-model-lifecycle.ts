@@ -55,6 +55,32 @@ const first = diagnostics.recordGLBModelMount(
     requiredForReadiness: true,
   }
 );
+const preReadinessSnapshot =
+  diagnosticsGlobal.__INTERIOR_AI_GLB_REQUIRED_SNAPSHOT__?.();
+assert.ok(preReadinessSnapshot);
+assert.equal(
+  preReadinessSnapshot.safeReadinessSummary.schema,
+  "interior-ai.glb-safe-readiness-summary.v1",
+);
+assert.equal(preReadinessSnapshot.safeReadinessSummary.activeRequiredCount, 1);
+assert.equal(
+  preReadinessSnapshot.safeReadinessSummary.models[0]?.pendingStage,
+  "request-start",
+);
+assert.equal(
+  preReadinessSnapshot.safeReadinessSummary.models[0]?.stageAtMs.responseCompleted,
+  null,
+);
+assert.equal(
+  preReadinessSnapshot.safeReadinessSummary.models[0]?.cache.delivery,
+  "unknown",
+);
+assert.equal(
+  JSON.stringify(preReadinessSnapshot.safeReadinessSummary).includes(
+    "/assets/models/",
+  ),
+  false,
+);
 diagnostics.recordGLBModelResourceAcquired(
   first,
   "parsed",
@@ -108,6 +134,15 @@ assert.equal(requiredSnapshot.registryCoherent, true);
 assert.equal(requiredSnapshot.registryVersionStart, requiredSnapshot.registryVersionEnd);
 assert.equal(requiredSnapshot.registryEntryCount, 1);
 assert.deepEqual(requiredSnapshot.activeRequiredModelIds, ["scene-item-1"]);
+assert.equal(requiredSnapshot.safeReadinessSummary.includedModelCount, 1);
+assert.equal(
+  requiredSnapshot.safeReadinessSummary.models[0]?.stageAtMs.ready !== null,
+  true,
+);
+assert.equal(
+  requiredSnapshot.safeReadinessSummary.models[0]?.cache.parsedAcquisition,
+  "miss",
+);
 assert.equal(requiredSnapshot.consistency.cacheSnapshotsCoherent, true);
 assert.equal(requiredSnapshot.consistency.cacheReferenceTotalsAgree, true);
 assert.equal(requiredSnapshot.consistency.referenceCountsNonNegative, true);
@@ -511,6 +546,34 @@ assert.equal(
   failedRequiredSnapshot.consistency.activeRequiredModelsConverged,
   true,
 );
+
+resetDocumentGeneration();
+for (let index = 0; index < 17; index += 1) {
+  diagnostics.recordGLBModelMount(
+    `bounded-required-${index}`,
+    `/assets/models/bounded-required-${index}.glb`,
+    {
+      sceneItemId: `bounded-required-${index}`,
+      productId: `bounded-product-${index}`,
+      variantId: `bounded-variant-${index}`,
+      readinessKey: `room-1:bounded-required-${index}:bounded-product-${index}:bounded-variant-${index}:standard`,
+      requiredForReadiness: true,
+    },
+  );
+}
+const boundedRequiredSnapshot =
+  diagnosticsGlobal.__INTERIOR_AI_GLB_REQUIRED_SNAPSHOT__?.();
+assert.ok(boundedRequiredSnapshot);
+assert.equal(boundedRequiredSnapshot.safeReadinessSummary.activeRequiredCount, 17);
+assert.equal(boundedRequiredSnapshot.safeReadinessSummary.includedModelCount, 16);
+assert.equal(boundedRequiredSnapshot.safeReadinessSummary.omittedModelCount, 1);
+assert.equal(boundedRequiredSnapshot.safeReadinessSummary.models.length, 16);
+const boundedSafeJson = JSON.stringify(
+  boundedRequiredSnapshot.safeReadinessSummary,
+);
+assert.equal(boundedSafeJson.includes("/assets/models/"), false);
+assert.equal(boundedSafeJson.includes("bounded-product"), false);
+assert.equal(boundedSafeJson.includes("bounded-variant"), false);
 
 const snapshotContract = await import(
   "../components/scene/glb-scaled-model/glbSnapshotTiming"

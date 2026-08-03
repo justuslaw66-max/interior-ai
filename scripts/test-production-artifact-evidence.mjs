@@ -64,6 +64,11 @@ import {
   captureImmediatePostReadinessSnapshot,
   runRuntimeSmokePostReadinessOperation,
 } from "./runtime-smoke-post-readiness.mjs";
+import { createRuntimeSmokeReadinessObservation } from "./runtime-smoke-readiness-diagnostics.mjs";
+import {
+  projectRuntimeSmokeBrowserCallbackMilestone,
+  projectRuntimeSmokeBrowserHeartbeat,
+} from "./runtime-smoke-browser-diagnostics.mjs";
 
 const sequentialRuntimeSmokeBudgetMs = RUNTIME_SMOKE_PHASE_BUDGETS.reduce(
   (total, phase) => total + phase.timeoutMs,
@@ -77,6 +82,225 @@ const boundsPhaseBudgets = RUNTIME_SMOKE_PHASE_BUDGETS.filter(
 );
 assert.equal(boundsPhaseBudgets.length, 1, "bounds-verification must have one canonical budget");
 assert.equal(boundsPhaseBudgets[0]?.timeoutMs, 103_000);
+
+{
+  const safeReadinessSummary = {
+    schema: "interior-ai.glb-safe-readiness-summary.v1",
+    reloadGeneration: 2,
+    registryVersion: 41,
+    activeSetHash: "fnv1a-1234abcd",
+    activeRequiredCount: 1,
+    includedModelCount: 1,
+    omittedModelCount: 0,
+    eventLoopDelayMs: { last: 7, maximum: 31 },
+    cacheTotals: {
+      parsedEntries: 1,
+      parsedReferences: 1,
+      preparedEntries: 1,
+      preparedReferences: 1,
+    },
+    models: [
+      {
+        ordinal: 1,
+        identityHash: "fnv1a-abcd1234",
+        active: true,
+        requiredForReadiness: true,
+        reloadGeneration: 2,
+        generationState: "current",
+        loadState: "loading",
+        pendingStage: "parse-decode",
+        lastTransitionName: "response-complete",
+        lastTransitionAtMs: 125,
+        stageAtMs: {
+          mounted: 10,
+          requestStarted: 12,
+          responseCompleted: 125,
+          parseCompleted: null,
+          normalizationStarted: null,
+          normalizationCompleted: null,
+          materialsStarted: 11,
+          materialsCompleted: 13,
+          boundsStarted: null,
+          boundsCompleted: null,
+          sceneAttached: null,
+          ready: null,
+          error: null,
+          cancelled: null,
+        },
+        cache: {
+          delivery: "network",
+          parsedAcquisition: "miss",
+          preparedAcquisition: "miss",
+          resourceKind: "prepared",
+          selectedEntry: { state: "pending", referenceCount: 1 },
+          parsedEntry: { state: "pending", referenceCount: 1 },
+          preparedEntry: { state: "pending", referenceCount: 1 },
+          acquiredAtMs: 12,
+          releasedAtMs: null,
+        },
+        counters: {
+          mounts: 1,
+          unmounts: 0,
+          supersededMounts: 0,
+          ignoredStaleTransitions: 0,
+        },
+      },
+    ],
+  };
+  const observation = createRuntimeSmokeReadinessObservation({
+    phaseName: "reload-1",
+    snapshot: { safeReadinessSummary },
+    responseTotal: 6,
+    responseRequired: 6,
+    requestTotal: 6,
+    browserErrorCount: 0,
+  });
+  assert.match(observation.signature, /fnv1a-1234abcd/);
+  assert.ok(observation.checkpoints.length >= 8);
+  assert.equal(
+    observation.checkpoints.every((name) =>
+      /^[a-z0-9][a-z0-9-]{0,95}$/.test(name),
+    ),
+    true,
+  );
+  assert.equal(
+    JSON.stringify(observation.diagnostic).includes("/assets/models/"),
+    false,
+  );
+  assert.notEqual(
+    createRuntimeSmokeReadinessObservation({
+      phaseName: "reload-1",
+      snapshot: { safeReadinessSummary },
+      responseTotal: 7,
+      responseRequired: 9,
+      requestTotal: 7,
+      browserErrorCount: 0,
+    }).signature,
+    observation.signature,
+    "response changes must create meaningful readiness progress",
+  );
+  assert.notEqual(
+    createRuntimeSmokeReadinessObservation({
+      phaseName: "reload-1",
+      snapshot: { safeReadinessSummary },
+      responseTotal: 6,
+      responseRequired: 6,
+      requestTotal: 7,
+      browserErrorCount: 0,
+    }).signature,
+    observation.signature,
+    "request changes must retain outstanding-request progress",
+  );
+  assert.throws(
+    () =>
+      createRuntimeSmokeReadinessObservation({
+        phaseName: "reload-1",
+        snapshot: {
+          safeReadinessSummary: {
+            ...safeReadinessSummary,
+            url: "https://unsafe.example.test/model.glb",
+          },
+        },
+        responseTotal: 6,
+        responseRequired: 6,
+        requestTotal: 6,
+        browserErrorCount: 0,
+      }),
+    /safe readiness summary is malformed/,
+    "unknown summary fields must never reach retained diagnostics",
+  );
+  assert.throws(
+    () =>
+      createRuntimeSmokeReadinessObservation({
+        phaseName: "reload-1",
+        snapshot: {
+          safeReadinessSummary: {
+            ...safeReadinessSummary,
+            models: [
+              {
+                ...safeReadinessSummary.models[0],
+                token: "unsafe",
+              },
+            ],
+          },
+        },
+        responseTotal: 6,
+        responseRequired: 6,
+        requestTotal: 6,
+        browserErrorCount: 0,
+      }),
+    /safe readiness model is malformed/,
+    "unknown model fields must never reach retained diagnostics",
+  );
+}
+
+{
+  const callback = projectRuntimeSmokeBrowserCallbackMilestone({
+    schema: "interior-ai.runtime-smoke-browser-callback.v1",
+    phaseName: "reload-1",
+    operationName: "model-responses-and-readiness",
+    requestId: 3,
+    stage: "snapshot-complete",
+  });
+  assert.deepEqual(callback, {
+    schema: "interior-ai.runtime-smoke-browser-callback.v1",
+    phaseName: "reload-1",
+    operationName: "model-responses-and-readiness",
+    requestId: 3,
+    stage: "snapshot-complete",
+  });
+  assert.throws(
+    () =>
+      projectRuntimeSmokeBrowserCallbackMilestone({
+        ...callback,
+        url: "https://unsafe.example.test/model.glb",
+      }),
+    /callback milestone is unsafe/,
+  );
+  for (const invalidCallback of [
+    { ...callback, schema: "unsafe.callback.v1" },
+    { ...callback, requestId: 0 },
+    { ...callback, stage: "raw-payload-ready" },
+  ]) {
+    assert.throws(
+      () => projectRuntimeSmokeBrowserCallbackMilestone(invalidCallback),
+      /callback milestone is unsafe/,
+      "invalid callback values must be rejected before host logging",
+    );
+  }
+  const heartbeat = projectRuntimeSmokeBrowserHeartbeat({
+    schema: "interior-ai.runtime-smoke-browser-heartbeat.v1",
+    kind: "interval",
+    sequence: 4,
+    observedAtMs: 2_000,
+    eventLoopDelayMs: 7,
+    maximumEventLoopDelayMs: 12,
+  });
+  assert.deepEqual(heartbeat, {
+    schema: "interior-ai.runtime-smoke-browser-heartbeat.v1",
+    kind: "interval",
+    sequence: 4,
+    observedAtMs: 2_000,
+    eventLoopDelayMs: 7,
+    maximumEventLoopDelayMs: 12,
+  });
+  assert.throws(
+    () => projectRuntimeSmokeBrowserHeartbeat({ ...heartbeat, token: "unsafe" }),
+    /browser heartbeat is unsafe/,
+  );
+  for (const invalidHeartbeat of [
+    { ...heartbeat, schema: "unsafe.heartbeat.v1" },
+    { ...heartbeat, sequence: 0 },
+    { ...heartbeat, eventLoopDelayMs: -1 },
+    { ...heartbeat, maximumEventLoopDelayMs: 6 },
+  ]) {
+    assert.throws(
+      () => projectRuntimeSmokeBrowserHeartbeat(invalidHeartbeat),
+      /browser heartbeat is unsafe/,
+      "invalid heartbeats must be rejected before host logging",
+    );
+  }
+}
 assert.deepEqual(RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT, {
   requiredStableSamples: 2,
   sampleIntervalMs: 500,
@@ -926,6 +1150,25 @@ assert.match(
   "the required identity must consume the derived timeout without duplicating a number",
 );
 assert.doesNotMatch(runtimeSmokeSource, /test\.slow\(|test\.skip\(|retries\s*:/);
+const heartbeatHandlerSource = runtimeSmokeSource.slice(
+  runtimeSmokeSource.indexOf("const browserHeartbeatPrefix"),
+  runtimeSmokeSource.indexOf('if (message.type() === "error")'),
+);
+assert.match(
+  heartbeatHandlerSource,
+  /projectRuntimeSmokeBrowserHeartbeat/,
+  "browser heartbeats must cross an exact safe projection boundary",
+);
+assert.doesNotMatch(
+  heartbeatHandlerSource,
+  /fatalErrors\.push|checkpoint\(/,
+  "invalid or delayed heartbeats must never fail or reset progress",
+);
+assert.match(
+  runtimeSmokeSource,
+  /projectRuntimeSmokeBrowserCallbackMilestone/,
+  "browser callback milestones must be projected before host logging",
+);
 const reloadLoop = runtimeSmokeSource.slice(
   runtimeSmokeSource.indexOf("for (let reloadIndex"),
   runtimeSmokeSource.indexOf('await phaseRecorder.run("persistence-assertions"'),
@@ -1025,7 +1268,18 @@ assert.match(
 );
 assert.match(
   diagnosticSnapshotSource,
-  /operationName:\s*["']diagnostic-snapshot["']/,
+  /operation:\s*\{\s*phaseName:\s*string;\s*operationName:\s*string\s*\}/,
+  "every diagnostic callback must carry its canonical phase and operation identity",
+);
+assert.match(
+  diagnosticSnapshotSource,
+  /interior-ai\.runtime-smoke-browser-callback\.v1/,
+  "diagnostic callbacks must expose fixed-stage browser timing observations",
+);
+assert.match(
+  diagnosticSnapshotSource,
+  /runtime-smoke-browser-callback-requested[\s\S]*page\.evaluate/,
+  "host evidence must identify callback requests before browser admission",
 );
 assert.match(
   diagnosticSnapshotSource,
@@ -1169,6 +1423,11 @@ if (process.argv.includes("--deadline-boundary-contract-only")) {
 
 if (process.argv.includes("--post-readiness-contract-only")) {
   console.log("CH-0028 runtime-smoke post-readiness contract tests passed.");
+  process.exit(0);
+}
+
+if (process.argv.includes("--readiness-diagnostics-contract-only")) {
+  console.log("CH-0028 runtime-smoke readiness diagnostic contract tests passed.");
   process.exit(0);
 }
 

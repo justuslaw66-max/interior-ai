@@ -20,6 +20,11 @@ import {
   captureImmediatePostReadinessSnapshot,
   runRuntimeSmokePostReadinessOperation,
 } from "../../scripts/runtime-smoke-post-readiness.mjs";
+import { createRuntimeSmokeReadinessObservation } from "../../scripts/runtime-smoke-readiness-diagnostics.mjs";
+import {
+  projectRuntimeSmokeBrowserCallbackMilestone,
+  projectRuntimeSmokeBrowserHeartbeat,
+} from "../../scripts/runtime-smoke-browser-diagnostics.mjs";
 import type { GLBRequiredSnapshot } from "../../components/scene/glb-scaled-model/glbRequiredSnapshot";
 import { calculateGLBRequiredSnapshotTransportTiming } from "../../components/scene/glb-scaled-model/glbSnapshotTiming";
 
@@ -117,10 +122,24 @@ test.describe("00. Runtime smoke", () => {
       computationCompletedAtUnixMs?: number;
       serializationCompletedAtUnixMs?: number;
     };
-    type PostReadinessBrowserMilestone = {
-      operationName: "diagnostic-snapshot";
+    type BrowserCallbackMilestone = {
+      schema: "interior-ai.runtime-smoke-browser-callback.v1";
+      phaseName: string;
+      operationName: string;
       requestId: number;
-      stage: "entered-browser" | "callback-exited" | "serialization-complete";
+      stage:
+        | "entered-browser"
+        | "snapshot-complete"
+        | "callback-exited"
+        | "serialization-complete";
+    };
+    type BrowserHeartbeat = {
+      schema: "interior-ai.runtime-smoke-browser-heartbeat.v1";
+      kind: "started" | "interval";
+      sequence: number;
+      observedAtMs: number;
+      eventLoopDelayMs: number;
+      maximumEventLoopDelayMs: number;
     };
     type BodyStateObservation = {
       hasMaximumDepthError: boolean;
@@ -143,14 +162,17 @@ test.describe("00. Runtime smoke", () => {
     let lastRequiredSnapshot: GLBRequiredSnapshot | null = null;
     let lastRequiredSnapshotTiming: RequiredSnapshotTiming | null = null;
     let requiredSnapshotMilestoneCheckpoint: RuntimeSmokeCheckpoint | null = null;
-    let activePostReadinessBrowserTiming: {
+    let activeBrowserCallbackTiming: {
+      phaseName: string;
+      operationName: string;
       requestId: number;
       hostStartedAt: number;
       browserCallInvokedAt: number;
       milestones: Partial<
-        Record<PostReadinessBrowserMilestone["stage"], number>
+        Record<BrowserCallbackMilestone["stage"], number>
       >;
     } | null = null;
+    let lastBrowserHeartbeat: BrowserHeartbeat | null = null;
     let diagnosticSnapshotRequestSequence = 0;
     let lastBodyStateObservation: BodyStateObservation | null = null;
     const immediatePostReadinessSnapshots: GLBRequiredSnapshot[] = [];
@@ -208,13 +230,14 @@ test.describe("00. Runtime smoke", () => {
         );
       }
     };
-    const recordPostReadinessBrowserMilestone = (
-      milestone: PostReadinessBrowserMilestone,
+    const recordBrowserCallbackMilestone = (
+      milestone: BrowserCallbackMilestone,
     ) => {
-      const timing = activePostReadinessBrowserTiming;
+      const timing = activeBrowserCallbackTiming;
       if (
         !timing ||
-        milestone.operationName !== "diagnostic-snapshot" ||
+        milestone.phaseName !== timing.phaseName ||
+        milestone.operationName !== timing.operationName ||
         milestone.requestId !== timing.requestId
       ) {
         return;
@@ -223,17 +246,39 @@ test.describe("00. Runtime smoke", () => {
         0,
         performance.now() - timing.hostStartedAt,
       );
+      console.info(
+        "[runtime-smoke-browser-callback-observation]",
+        JSON.stringify({
+          schema: milestone.schema,
+          phaseName: milestone.phaseName,
+          operationName: milestone.operationName,
+          requestId: milestone.requestId,
+          stage: milestone.stage,
+          hostObservedAfterMs: Math.round(timing.milestones[milestone.stage] ?? 0),
+        }),
+      );
     };
     const readModelDiagnostics = async (
+      operation: { phaseName: string; operationName: string },
       milestoneCheckpoint: RuntimeSmokeCheckpoint | null = null,
     ) => {
       const hostRequestStartedAt = performance.now();
       const hostRequestStartedAtUnixMs = Date.now();
-      const postReadinessRequestId = ++diagnosticSnapshotRequestSequence;
+      const requestId = ++diagnosticSnapshotRequestSequence;
       requiredSnapshotMilestoneCheckpoint = milestoneCheckpoint;
       milestoneCheckpoint?.("snapshot-host-request-started", "ready");
-      activePostReadinessBrowserTiming = {
-        requestId: postReadinessRequestId,
+      console.info(
+        "[runtime-smoke-browser-callback-requested]",
+        JSON.stringify({
+          schema: "interior-ai.runtime-smoke-browser-callback-request.v1",
+          phaseName: operation.phaseName,
+          operationName: operation.operationName,
+          requestId,
+        }),
+      );
+      activeBrowserCallbackTiming = {
+        ...operation,
+        requestId,
         hostStartedAt: hostRequestStartedAt,
         browserCallInvokedAt: performance.now(),
         milestones: {},
@@ -242,7 +287,8 @@ test.describe("00. Runtime smoke", () => {
         ({
           captureMilestones,
           hostRequestStartedAtUnixMs,
-          postReadinessRequestId,
+          operation,
+          requestId,
         }) => {
           const emitMilestone = (milestone: RequiredSnapshotMilestone) => {
             if (!captureMilestones) return;
@@ -251,20 +297,21 @@ test.describe("00. Runtime smoke", () => {
               JSON.stringify(milestone),
             );
           };
-          const emitPostReadinessMilestone = (
-            stage: PostReadinessBrowserMilestone["stage"],
+          const emitBrowserCallbackMilestone = (
+            stage: BrowserCallbackMilestone["stage"],
           ) => {
             console.info(
-              "[runtime-smoke-post-readiness-milestone]",
+              "[runtime-smoke-browser-callback-milestone]",
               JSON.stringify({
-                operationName: "diagnostic-snapshot",
-                requestId: postReadinessRequestId,
+                schema: "interior-ai.runtime-smoke-browser-callback.v1",
+                ...operation,
+                requestId,
                 stage,
               }),
             );
           };
           const callbackEnteredAt = performance.now();
-          emitPostReadinessMilestone("entered-browser");
+          emitBrowserCallbackMilestone("entered-browser");
           const callbackEnteredAtUnixMs = Date.now();
           const computationStartedAtUnixMs = Date.now();
           emitMilestone({
@@ -278,6 +325,7 @@ test.describe("00. Runtime smoke", () => {
             }
           ).__INTERIOR_AI_GLB_REQUIRED_SNAPSHOT__?.();
           const computationCompletedAtUnixMs = Date.now();
+          emitBrowserCallbackMilestone("snapshot-complete");
           emitMilestone({
             hostRequestStartedAtUnixMs,
             callbackEnteredAtUnixMs,
@@ -290,7 +338,7 @@ test.describe("00. Runtime smoke", () => {
               "Maximum update depth exceeded",
             ) ?? false;
           const bodyStateComputationCompletedAt = performance.now();
-          emitPostReadinessMilestone("callback-exited");
+          emitBrowserCallbackMilestone("callback-exited");
           const snapshotSerializationStartedAt = performance.now();
           const serializedSnapshot = snapshot ? JSON.stringify(snapshot) : null;
           const snapshotSerializationCompletedAt = performance.now();
@@ -302,7 +350,7 @@ test.describe("00. Runtime smoke", () => {
             computationCompletedAtUnixMs,
             serializationCompletedAtUnixMs,
           });
-          emitPostReadinessMilestone("serialization-complete");
+          emitBrowserCallbackMilestone("serialization-complete");
           return {
             hostRequestStartedAtUnixMs,
             callbackEnteredAtUnixMs,
@@ -328,14 +376,15 @@ test.describe("00. Runtime smoke", () => {
         {
           captureMilestones: milestoneCheckpoint !== null,
           hostRequestStartedAtUnixMs,
-          postReadinessRequestId,
+          operation,
+          requestId,
         },
       );
       const hostResultReceivedAt = performance.now();
       const hostResultReceivedAtUnixMs = Date.now();
       requiredSnapshotMilestoneCheckpoint = null;
-      const browserTiming = activePostReadinessBrowserTiming;
-      activePostReadinessBrowserTiming = null;
+      const browserTiming = activeBrowserCallbackTiming;
+      activeBrowserCallbackTiming = null;
       const {
         serializedSnapshot,
         hasMaximumDepthError,
@@ -381,6 +430,41 @@ test.describe("00. Runtime smoke", () => {
           hostResultReceivedAtUnixMs,
         }),
       };
+      console.info(
+        "[runtime-smoke-browser-callback-timing]",
+        JSON.stringify({
+          schema: "interior-ai.runtime-smoke-browser-callback-timing.v1",
+          ...operation,
+          requestId,
+          hostTiming: {
+            callbackEnteredAfterMs:
+              browserTiming?.milestones["entered-browser"] === undefined
+                ? null
+                : Math.round(browserTiming.milestones["entered-browser"]),
+            snapshotCompletedAfterMs:
+              browserTiming?.milestones["snapshot-complete"] === undefined
+                ? null
+                : Math.round(browserTiming.milestones["snapshot-complete"]),
+            callbackExitedAfterMs:
+              browserTiming?.milestones["callback-exited"] === undefined
+                ? null
+                : Math.round(browserTiming.milestones["callback-exited"]),
+            serializationCompletedAfterMs:
+              browserTiming?.milestones["serialization-complete"] === undefined
+                ? null
+                : Math.round(browserTiming.milestones["serialization-complete"]),
+            resultReceivedAfterMs: Math.round(
+              Math.max(0, hostResultReceivedAt - hostRequestStartedAt),
+            ),
+          },
+          browserTiming: {
+            callbackDurationMs: Math.round(browserCallbackDurationMs),
+            bodyStateComputationMs: Math.round(bodyStateComputationMs),
+            serializationDurationMs: Math.round(snapshotSerializationDurationMs),
+          },
+          lastHeartbeat: lastBrowserHeartbeat,
+        }),
+      );
       if (!serializedSnapshot) {
         lastRequiredSnapshot = null;
         return diagnosticKeys.map((key) => ({
@@ -520,17 +604,6 @@ test.describe("00. Runtime smoke", () => {
         )
       );
     };
-    const pendingStageCheckpoint = (
-      diagnostics: Awaited<ReturnType<typeof readModelDiagnostics>>,
-    ) =>
-      `pending-${diagnostics
-        .map(
-          ({ diagnostic }, index) =>
-            `m${index + 1}-${(diagnostic?.pendingStage ?? "missing")
-              .toLowerCase()
-              .replace(/[^a-z0-9-]/g, "-")}`,
-        )
-        .join("-")}`.slice(0, 96);
     const readModelDiagnosticsWithin = async (
       operationContext: ReturnType<typeof createRuntimeSmokeOperationDeadline>,
       maximumAttemptMs?: number,
@@ -541,8 +614,70 @@ test.describe("00. Runtime smoke", () => {
           operationContext,
           maximumAttemptMs,
         ),
-        task: () => readModelDiagnostics(milestoneCheckpoint),
+        task: () =>
+          readModelDiagnostics(
+            {
+              phaseName: operationContext.phaseId,
+              operationName: operationContext.operationId,
+            },
+            milestoneCheckpoint,
+          ),
       })) as Awaited<ReturnType<typeof readModelDiagnostics>>;
+    const readinessModelSignatures = new Map<string, Map<number, string>>();
+    const recordReadinessObservation = ({
+      phaseName,
+      checkpoint,
+      previousSignature,
+      responseRequired,
+      lifecycleState,
+    }: {
+      phaseName: string;
+      checkpoint?: RuntimeSmokeCheckpoint;
+      previousSignature: string;
+      responseRequired: number;
+      lifecycleState: string;
+    }) => {
+      const snapshot = lastRequiredSnapshot;
+      if (!snapshot) return previousSignature;
+      const responseTotal = MODEL_FIXTURES.reduce(
+        (total, { modelPath }) =>
+          total + (modelResponseCounts.get(modelPath) ?? 0),
+        0,
+      );
+      const requestTotal = MODEL_FIXTURES.reduce(
+        (total, { modelPath }) =>
+          total + (modelRequestCounts.get(modelPath) ?? 0),
+        0,
+      );
+      const observation = createRuntimeSmokeReadinessObservation({
+        phaseName,
+        snapshot,
+        responseTotal,
+        responseRequired,
+        requestTotal,
+        browserErrorCount: fatalErrors.length,
+      });
+      if (observation.signature === previousSignature) {
+        return previousSignature;
+      }
+      observation.aggregateCheckpoints.forEach((name) =>
+        checkpoint?.(name, lifecycleState),
+      );
+      const previousModelSignatures =
+        readinessModelSignatures.get(phaseName) ?? new Map<number, string>();
+      const nextModelSignatures = new Map<number, string>();
+      observation.modelCheckpointGroups.forEach((group) => {
+        nextModelSignatures.set(group.ordinal, group.signature);
+        if (previousModelSignatures.get(group.ordinal) === group.signature) return;
+        group.checkpoints.forEach((name) => checkpoint?.(name, lifecycleState));
+      });
+      readinessModelSignatures.set(phaseName, nextModelSignatures);
+      console.info(
+        "[runtime-smoke-readiness-observation]",
+        JSON.stringify(observation.diagnostic),
+      );
+      return observation.signature;
+    };
     const recordRequiredSnapshotProof = (
       phaseName: string,
       checkpoint: RuntimeSmokeCheckpoint,
@@ -690,15 +825,9 @@ test.describe("00. Runtime smoke", () => {
       });
       let lastDiagnostics = await readModelDiagnosticsWithin(operationContext);
       let previousProgressSignature = "";
-      let previousPendingStageCheckpoint = "";
       while (true) {
         lastDiagnostics = await readModelDiagnosticsWithin(operationContext);
         const activeRequired = activeRequiredDiagnosticsFor(lastDiagnostics);
-        const progressSignature = activeRequired
-          .map((diagnostic) =>
-            `${diagnostic.key}-${diagnostic.loadState}-${diagnostic.pendingStage}`,
-          )
-          .join("-");
         const loadingModelCount = activeRequired.filter(
           (diagnostic) => diagnostic.loadState === "loading",
         ).length;
@@ -729,22 +858,13 @@ test.describe("00. Runtime smoke", () => {
           terminalErrorModelCount,
           combinedReadinessSatisfied: diagnosticsReady,
         });
-        if (progressSignature !== previousProgressSignature) {
-          checkpoint?.(
-            `diagnostics-loading-${loadingModelCount}-ready-${readyModelCount}` +
-              `-error-${terminalErrorModelCount}`,
-            aggregateLifecycleState,
-          );
-          previousProgressSignature = progressSignature;
-        }
-        const pendingCheckpoint = pendingStageCheckpoint(lastDiagnostics);
-        if (
-          !diagnosticsReady &&
-          pendingCheckpoint !== previousPendingStageCheckpoint
-        ) {
-          checkpoint?.(pendingCheckpoint, aggregateLifecycleState);
-          previousPendingStageCheckpoint = pendingCheckpoint;
-        }
+        previousProgressSignature = recordReadinessObservation({
+          phaseName,
+          checkpoint,
+          previousSignature: previousProgressSignature,
+          responseRequired: MODEL_FIXTURES.length,
+          lifecycleState: aggregateLifecycleState,
+        });
         if (terminalErrorModelCount > 0) {
           finalLifecycleState = "error";
           throw new RuntimeSmokeTerminalError(phaseName);
@@ -798,23 +918,30 @@ test.describe("00. Runtime smoke", () => {
           });
         }
       };
-      checkpoint?.("diagnostics-settle-baseline-started");
       let previous = await readSettleSample();
-      checkpoint?.("diagnostics-settle-baseline-complete");
       let stableSamples = 0;
-      let previousProgressSignature = "";
+      let previousReadinessSignature = "";
+      let previousSettleSignature = "";
+      const settledResponseTotal = MODEL_FIXTURES.reduce(
+        (total, { modelPath }) =>
+          total + (modelResponseCounts.get(modelPath) ?? 0),
+        0,
+      );
+      previousReadinessSignature = recordReadinessObservation({
+        phaseName,
+        checkpoint,
+        previousSignature: previousReadinessSignature,
+        responseRequired: settledResponseTotal,
+        lifecycleState: finalLifecycleState,
+      });
       for (let sampleIndex = 0; ; sampleIndex += 1) {
-        checkpoint?.(`diagnostics-settle-wait-${sampleIndex + 1}-started`);
         await page.waitForTimeout(
           runtimeSmokeOperationAttempt(
             settleContext,
             RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT.sampleIntervalMs,
           ).attemptTimeoutMs,
         );
-        checkpoint?.(`diagnostics-settle-wait-${sampleIndex + 1}-complete`);
-        checkpoint?.(`diagnostics-settle-sample-${sampleIndex + 1}-started`);
         const current = await readSettleSample();
-        checkpoint?.(`diagnostics-settle-sample-${sampleIndex + 1}-complete`);
         const progressSignature = current
           .map(({ diagnostic }) =>
             diagnostic
@@ -822,9 +949,15 @@ test.describe("00. Runtime smoke", () => {
               : "missing",
           )
           .join("-");
-        if (progressSignature !== previousProgressSignature) {
-          checkpoint?.(`diagnostics-sample-${sampleIndex + 1}`);
-          previousProgressSignature = progressSignature;
+        if (progressSignature !== previousSettleSignature) {
+          previousReadinessSignature = recordReadinessObservation({
+            phaseName,
+            checkpoint,
+            previousSignature: previousReadinessSignature,
+            responseRequired: settledResponseTotal,
+            lifecycleState: finalLifecycleState,
+          });
+          previousSettleSignature = progressSignature;
         }
         const stable = current.every(({ key, diagnostic }, index) => {
           const previousDiagnostic = previous[index]?.diagnostic;
@@ -952,7 +1085,6 @@ test.describe("00. Runtime smoke", () => {
         operationName: "model-responses-and-readiness",
       });
       let previousProgressSignature = "";
-      let previousPendingStageCheckpoint = "";
       while (true) {
         const diagnostics = await readModelDiagnosticsWithin(operationContext);
         const activeRequired = activeRequiredDiagnosticsFor(diagnostics);
@@ -965,16 +1097,6 @@ test.describe("00. Runtime smoke", () => {
         const terminalErrorModelCount = activeRequired.filter(
           (diagnostic) => diagnostic.loadState === "error",
         ).length;
-        const totalResponses = MODEL_FIXTURES.reduce(
-          (total, { modelPath }) =>
-            total + (modelResponseCounts.get(modelPath) ?? 0),
-          0,
-        );
-        const totalRequests = MODEL_FIXTURES.reduce(
-          (total, { modelPath }) =>
-            total + (modelRequestCounts.get(modelPath) ?? 0),
-          0,
-        );
         const requiredResponses = MODEL_FIXTURES.length * minimumResponseCount;
         const responsesOverExpected = MODEL_FIXTURES.filter(
           ({ modelPath }) =>
@@ -1015,32 +1137,13 @@ test.describe("00. Runtime smoke", () => {
           terminalErrorModelCount,
           combinedReadinessSatisfied,
         });
-        const progressSignature = [
-          loadingModelCount,
-          readyModelCount,
-          terminalErrorModelCount,
-          totalResponses,
-          totalRequests,
-          fatalErrors.length,
-        ].join("-");
-        if (progressSignature !== previousProgressSignature) {
-          checkpoint(
-            `models-loading-${loadingModelCount}-ready-${readyModelCount}` +
-              `-error-${terminalErrorModelCount}-responses-${totalResponses}` +
-              `-required-${requiredResponses}-outstanding-${Math.max(0, totalRequests - totalResponses)}` +
-              `-browser-errors-${fatalErrors.length}`,
-            aggregateLifecycleState,
-          );
-          previousProgressSignature = progressSignature;
-        }
-        const pendingCheckpoint = pendingStageCheckpoint(diagnostics);
-        if (
-          !diagnosticsReady &&
-          pendingCheckpoint !== previousPendingStageCheckpoint
-        ) {
-          checkpoint(pendingCheckpoint, aggregateLifecycleState);
-          previousPendingStageCheckpoint = pendingCheckpoint;
-        }
+        previousProgressSignature = recordReadinessObservation({
+          phaseName,
+          checkpoint,
+          previousSignature: previousProgressSignature,
+          responseRequired: requiredResponses,
+          lifecycleState: aggregateLifecycleState,
+        });
         if (terminalErrorModelCount > 0) {
           finalLifecycleState = "error";
           throw new RuntimeSmokeTerminalError(phaseName);
@@ -1124,17 +1227,37 @@ test.describe("00. Runtime smoke", () => {
             fatalErrors.push("Malformed required snapshot milestone");
           }
         }
-        const postReadinessMilestonePrefix =
-          "[runtime-smoke-post-readiness-milestone] ";
-        if (message.text().startsWith(postReadinessMilestonePrefix)) {
+        const browserCallbackMilestonePrefix =
+          "[runtime-smoke-browser-callback-milestone] ";
+        if (message.text().startsWith(browserCallbackMilestonePrefix)) {
           try {
-            recordPostReadinessBrowserMilestone(
-              JSON.parse(
-                message.text().slice(postReadinessMilestonePrefix.length),
-              ) as PostReadinessBrowserMilestone,
+            recordBrowserCallbackMilestone(
+              projectRuntimeSmokeBrowserCallbackMilestone(
+                JSON.parse(
+                  message.text().slice(browserCallbackMilestonePrefix.length),
+                ),
+              ) as BrowserCallbackMilestone,
             );
           } catch {
-            fatalErrors.push("Malformed post-readiness browser milestone");
+            fatalErrors.push("Malformed browser callback milestone");
+          }
+        }
+        const browserHeartbeatPrefix =
+          "[runtime-smoke-browser-heartbeat] ";
+        if (message.text().startsWith(browserHeartbeatPrefix)) {
+          try {
+            const heartbeat = projectRuntimeSmokeBrowserHeartbeat(
+              JSON.parse(
+                message.text().slice(browserHeartbeatPrefix.length),
+              ),
+            ) as BrowserHeartbeat;
+            lastBrowserHeartbeat = heartbeat;
+            console.info(
+              "[runtime-smoke-browser-heartbeat-observation]",
+              JSON.stringify(heartbeat),
+            );
+          } catch {
+            // Heartbeats are observation-only and never fail or extend the smoke.
           }
         }
         if (message.type() === "error") {
@@ -1169,11 +1292,43 @@ test.describe("00. Runtime smoke", () => {
       });
 
       await page.addInitScript(() => {
-        (
-          globalThis as typeof globalThis & {
-            __INTERIOR_AI_ENABLE_GLB_DIAGNOSTICS__?: boolean;
-          }
-        ).__INTERIOR_AI_ENABLE_GLB_DIAGNOSTICS__ = true;
+        const diagnosticsGlobal = globalThis as typeof globalThis & {
+          __INTERIOR_AI_ENABLE_GLB_DIAGNOSTICS__?: boolean;
+          __INTERIOR_AI_RUNTIME_SMOKE_HEARTBEAT__?: boolean;
+        };
+        diagnosticsGlobal.__INTERIOR_AI_ENABLE_GLB_DIAGNOSTICS__ = true;
+        if (!diagnosticsGlobal.__INTERIOR_AI_RUNTIME_SMOKE_HEARTBEAT__) {
+          diagnosticsGlobal.__INTERIOR_AI_RUNTIME_SMOKE_HEARTBEAT__ = true;
+          let sequence = 0;
+          let maximumEventLoopDelayMs = 0;
+          let expectedAtMs = performance.now();
+          const emitHeartbeat = (kind: BrowserHeartbeat["kind"]) => {
+            const observedAtMs = performance.now();
+            const eventLoopDelayMs = Math.max(0, observedAtMs - expectedAtMs);
+            maximumEventLoopDelayMs = Math.max(
+              maximumEventLoopDelayMs,
+              eventLoopDelayMs,
+            );
+            sequence += 1;
+            console.info(
+              "[runtime-smoke-browser-heartbeat]",
+              JSON.stringify({
+                schema: "interior-ai.runtime-smoke-browser-heartbeat.v1",
+                kind,
+                sequence,
+                observedAtMs: Math.max(0, Math.round(observedAtMs)),
+                eventLoopDelayMs: Math.max(0, Math.round(eventLoopDelayMs)),
+                maximumEventLoopDelayMs: Math.max(
+                  0,
+                  Math.round(maximumEventLoopDelayMs),
+                ),
+              } satisfies BrowserHeartbeat),
+            );
+            expectedAtMs = observedAtMs + 1_000;
+          };
+          emitHeartbeat("started");
+          window.setInterval(() => emitHeartbeat("interval"), 1_000);
+        }
         const clearSentinel = "__e2e_runtime_smoke_storage_cleared";
         if (window.localStorage.getItem(clearSentinel) === "1") return;
         window.localStorage.clear();
@@ -1515,6 +1670,7 @@ test.describe("00. Runtime smoke", () => {
       const phaseName = `reload-${reloadIndex + 1}`;
       finalLifecycleState = "not-observed";
       await phaseRecorder.run(phaseName, async ({ checkpoint }) => {
+        lastBrowserHeartbeat = null;
         const reloadResponse = await page.reload({
           waitUntil: "domcontentloaded",
           timeout: reloadOperationTimeout("navigation"),

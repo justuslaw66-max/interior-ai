@@ -1,12 +1,16 @@
-import {
-  snapshotGLBResourceCaches,
-} from "./glbModelResources";
+import { snapshotGLBResourceCaches } from "./glbModelResources";
 import type { GLBResourceCacheMetadataSnapshot } from "./glbResourceCacheMetadata";
+import {
+  createGLBSafeReadinessSummary,
+  type GLBSafeReadinessSummary,
+} from "./glbSafeReadinessSummary";
 import type {
   GLBModelDiagnosticSnapshot,
   GLBModelStageTiming,
   GLBModelTransitionName,
 } from "./modelLifecycleTypes";
+
+export type { GLBSafeReadinessSummary, GLBSafeRequiredModelSummary } from "./glbSafeReadinessSummary";
 
 type RequiredCacheEntryState = {
   state: "pending" | "ready";
@@ -100,6 +104,7 @@ export type GLBRequiredSnapshot = {
   activeRequiredModelIds: string[];
   activeRequiredCount: number;
   eventLoopProbe: { lastDelayMs: number; maximumDelayMs: number };
+  safeReadinessSummary: GLBSafeReadinessSummary;
   models: GLBRequiredModelSnapshot[];
   caches: ReturnType<typeof snapshotGLBResourceCaches>;
   consistency: {
@@ -380,6 +385,13 @@ export function createGLBRequiredSnapshot({
     activeRequiredModelIds: activeRequiredModels.map((model) => model.key),
     activeRequiredCount: activeRequiredModels.length,
     eventLoopProbe: { ...eventLoopProbe },
+    safeReadinessSummary: createGLBSafeReadinessSummary({
+      activeRequiredModels,
+      caches,
+      eventLoopProbe,
+      registryVersion: registryVersionEnd,
+      reloadGeneration,
+    }),
     models,
     caches,
     consistency: snapshotConsistency(models, caches),
