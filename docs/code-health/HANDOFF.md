@@ -1154,3 +1154,54 @@ validation still requires one focused commit and a detached exact-commit
 production evidence proof. After those steps, the exact commit is ready for
 another required-only `workflow_dispatch`; no external verification or release
 claim is made by this entry.
+## CH-0017 monotonic timeout-boundary provenance correction — 2026-08-03
+
+The CH-0028 exact source `fb0e06ee9de1d2fa5126acadd0e1d8073f9adebc`
+exposed one remaining CH-0017 producer boundary defect without changing any
+canonical budget. The host attempt timer fired after its recorded 65,458 ms
+allowance while the separate integer `Date.now()` evidence clock still read
+69,999/70,000 ms. `runRuntimeSmokeBoundedOperation` immediately constructed a
+canonical timeout without re-reading or proving the canonical deadline, so the
+schema-v3 validator correctly rejected the premature record and no safe
+three-file diagnostic could be staged.
+
+The operation owner now uses one immutable high-resolution monotonic context
+with `operationId`, registered `canonicalBudgetMs`, `monotonicStartedAt`, and
+`monotonicDeadlineAt`. Remaining allowance is rounded up only when converted to
+the integer host-timer delay, while persisted `operationElapsedMs` is the floor
+of retained `operationElapsedPreciseMs`. A canonical timeout additionally
+requires `deadlineReached=true`. If a full-remaining attempt fires at the
+69,999 ms display boundary, the producer keeps the pending browser task alive
+and schedules the residual interval from the same monotonic context; a
+materially early capped attempt becomes a distinct internal-attempt failure
+instead of canonical expiration.
+
+The final diagnostics-settle leaf can be capped below its own 10,000 ms budget
+when the 42,000 ms parent has less time remaining. That leaf now waits for its
+own precise attempt boundary, remains explicitly noncanonical, and the settle
+handler converts it to the branded parent timeout only after the same monotonic
+clock proves the parent deadline. It can no longer bypass parent conversion as
+an `unexpected-error` with null operation provenance.
+
+Deterministic fake-clock coverage reproduces the external 65,458 ms attempt at
+69,999.75 ms, proves that no timeout is emitted there, advances to 70,000.25 ms,
+and validates persisted 70,000/70,000 ms canonical evidence with the reload-1
+parent still `failed` at its unchanged 308,000 ms budget. Negative cases retain
+rejection of missing identity/deadline proof, early expiration, attempt-budget
+substitution, incorrect parent outcome, and report/timing contradictions. The
+forced failure path verifies the exact manifest/report/timing archive and
+withholds stable evidence. CH-0028 product code, all timeout values, retries,
+ruleset, PR state, deployment, and CH-0004 remain untouched.
+
+## CH-0017/CH-0028 combined local integration status — 2026-08-03
+
+- **CH-0017:** TRUTHFULNESS AND REQUIRED EXTERNAL WORKFLOW VERIFIED —
+  IMPLEMENTATION FROZEN at `b06714267b35203185fdd5ba1c189ab74933ffc7`.
+- **CH-0028:** OPEN — COMBINED REQUIRED-ONLY EXTERNAL VERIFICATION PENDING.
+  The local merge retains the atomic metadata-only required snapshot together
+  with the verified monotonic deadline and canonical failure provenance. Local
+  evidence alone does not close this finding.
+- **CH-0029:** OPEN — END-TO-END RELOAD / MAIN-THREAD SCHEDULING PERFORMANCE.
+
+This integration does not change operation budgets, retries, required/advisory
+workflow separation, PR state, rulesets, deployment state, or CH-0004.

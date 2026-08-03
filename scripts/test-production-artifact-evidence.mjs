@@ -46,6 +46,7 @@ import {
   RUNTIME_SMOKE_PHASE_TIMING_SCHEMA,
   RUNTIME_SMOKE_WHOLE_TEST_TIMEOUT_MS,
   RuntimeSmokeNoProgressError,
+  RuntimeSmokeOperationAttemptTimeoutError,
   RuntimeSmokeOperationTimeoutError,
   RuntimeSmokePhaseTimeoutError,
   RuntimeSmokeTerminalError,
@@ -57,6 +58,7 @@ import {
   runtimeSmokeAggregateLifecycleState,
   runtimeSmokeOperationAttempt,
   runtimeSmokePhaseBudget,
+  waitForRuntimeSmokeOperationDeadline,
 } from "./runtime-smoke-phase-budget.mjs";
 
 const sequentialRuntimeSmokeBudgetMs = RUNTIME_SMOKE_PHASE_BUDGETS.reduce(
@@ -153,6 +155,21 @@ assert.throws(
   /operation attempt is invalid/,
   "callers must not be able to construct timeout evidence from an arbitrary budget",
 );
+{
+  let clock = 0;
+  const operationContext = createRuntimeSmokeOperationDeadline({
+    phaseName: "reload-1",
+    operationName: "hydration-snapshot",
+    now: () => clock,
+  });
+  const operationAttempt = runtimeSmokeOperationAttempt(operationContext);
+  clock = 4_999.75;
+  assert.throws(
+    () => new RuntimeSmokeOperationTimeoutError({ operationAttempt }),
+    /requires a reached deadline/,
+    "a valid branded attempt must not mint canonical evidence before its deadline",
+  );
+}
 for (const phaseName of ["reload-1", "reload-2", "reload-3"]) {
   assert.equal(
     FURNISHED_TEMPLATE_PHASE_CONTRACTS[phaseName],
@@ -199,8 +216,10 @@ assert.ok(
       error.operationId === "hydration-snapshot" &&
       error.operationBudgetMs === 5_000 &&
       error.operationElapsedMs === 5_000 &&
+      error.operationElapsedPreciseMs === 5_000 &&
       error.attemptTimeoutMs === 5_000 &&
-      error.remainingAtAttemptStartMs === 5_000,
+      error.remainingAtAttemptStartMs === 5_000 &&
+      error.deadlineReached === true,
   );
   assert.equal(clearedHandle, 17);
 }
@@ -214,8 +233,8 @@ assert.ok(
     now: () => clock,
   });
   assert.equal(operationContext.canonicalBudgetMs, 70_000);
-  assert.equal(operationContext.operationStartedAt, 0);
-  assert.equal(operationContext.operationDeadlineAt, 70_000);
+  assert.equal(operationContext.monotonicStartedAt, 0);
+  assert.equal(operationContext.monotonicDeadlineAt, 70_000);
   clock = 1_000;
   const firstPollingAttempt = runtimeSmokeOperationAttempt(operationContext);
   assert.equal(firstPollingAttempt.attemptTimeoutMs, 69_000);
@@ -249,15 +268,198 @@ assert.ok(
       error instanceof RuntimeSmokeOperationTimeoutError &&
       error.operationBudgetMs === 70_000 &&
       error.operationElapsedMs === 70_001 &&
+      error.operationElapsedPreciseMs === 70_001 &&
       error.attemptTimeoutMs === 65_507 &&
-      error.remainingAtAttemptStartMs === 65_507,
+      error.remainingAtAttemptStartMs === 65_507 &&
+      error.deadlineReached === true,
     "a dynamic attempt allowance must not replace the canonical operation budget",
   );
 }
 
 {
   let clock = 0;
+  let nextHandle = 0;
+  const timers = new Map();
+  const scheduledDelays = [];
+  const setTimer = (callback, delayMs) => {
+    const handle = ++nextHandle;
+    timers.set(handle, callback);
+    scheduledDelays.push(delayMs);
+    return handle;
+  };
+  const clearTimer = (handle) => timers.delete(handle);
+  const fireLatestTimer = () => {
+    const handle = Math.max(...timers.keys());
+    const callback = timers.get(handle);
+    assert.equal(typeof callback, "function");
+    timers.delete(handle);
+    callback();
+  };
+  const operationContext = createRuntimeSmokeOperationDeadline({
+    phaseName: "reload-1",
+    operationName: "model-responses-and-readiness",
+    now: () => clock,
+  });
+  clock = 4_542;
+  const operationAttempt = runtimeSmokeOperationAttempt(operationContext);
+  assert.equal(operationAttempt.attemptTimeoutMs, 65_458);
+  assert.equal(operationAttempt.remainingAtAttemptStartMs, 65_458);
+  let settled = false;
+  const operation = runRuntimeSmokeBoundedOperation({
+    operationAttempt,
+    task: () => new Promise(() => {}),
+    setTimer,
+    clearTimer,
+  }).finally(() => {
+    settled = true;
+  });
+  clock = 69_999.75;
+  fireLatestTimer();
+  await Promise.resolve();
+  assert.equal(
+    settled,
+    false,
+    "an integer display boundary must not emit an early canonical timeout",
+  );
+  assert.deepEqual(scheduledDelays, [65_458, 1]);
+  clock = 70_000.25;
+  fireLatestTimer();
+  await assert.rejects(
+    operation,
+    (error) =>
+      error instanceof RuntimeSmokeOperationTimeoutError &&
+      error.operationBudgetMs === 70_000 &&
+      error.operationElapsedMs === 70_000 &&
+      error.operationElapsedPreciseMs === 70_000.25 &&
+      error.attemptTimeoutMs === 65_458 &&
+      error.remainingAtAttemptStartMs === 65_458 &&
+      error.deadlineReached === true,
+    "the producer must wait for the monotonic deadline before persisting a timeout",
+  );
+}
+
+{
+  let clock = 0;
   let fireTimeout;
+  const operationContext = createRuntimeSmokeOperationDeadline({
+    phaseName: "reload-1",
+    operationName: "model-responses-and-readiness",
+    now: () => clock,
+  });
+  const operationAttempt = runtimeSmokeOperationAttempt(
+    operationContext,
+    500,
+  );
+  const operation = runRuntimeSmokeBoundedOperation({
+    operationAttempt,
+    task: () => new Promise(() => {}),
+    setTimer: (callback, timeoutMs) => {
+      assert.equal(timeoutMs, 500);
+      fireTimeout = callback;
+      return 31;
+    },
+    clearTimer: () => {},
+  });
+  clock = 500;
+  fireTimeout();
+  await assert.rejects(
+    operation,
+    (error) =>
+      error instanceof RuntimeSmokeOperationAttemptTimeoutError &&
+      !(error instanceof RuntimeSmokeOperationTimeoutError) &&
+      error.attemptTimeoutMs === 500 &&
+      error.remainingAtAttemptStartMs === 70_000 &&
+      error.deadlineReached === false,
+    "a materially early capped attempt must not impersonate canonical expiration",
+  );
+}
+
+{
+  let clock = 0;
+  let fireTimeout;
+  const recorder = createRuntimeSmokePhaseRecorder({
+    repositoryRoot: process.cwd(),
+    now: () => clock,
+    phaseBudgets: [{ name: "reload-1", timeoutMs: 308_000 }],
+  });
+  await assert.rejects(
+    recorder.run(
+      "reload-1",
+      () => {
+        const operationContext = createRuntimeSmokeOperationDeadline({
+          phaseName: "reload-1",
+          operationName: "model-responses-and-readiness",
+          now: () => clock,
+        });
+        const operation = runRuntimeSmokeBoundedOperation({
+          operationAttempt: runtimeSmokeOperationAttempt(
+            operationContext,
+            500,
+          ),
+          task: () => new Promise(() => {}),
+          setTimer: (callback) => {
+            fireTimeout = callback;
+            return 37;
+          },
+          clearTimer: () => {},
+        });
+        clock = 500;
+        fireTimeout();
+        return operation;
+      },
+      () => "loading",
+    ),
+    RuntimeSmokeOperationAttemptTimeoutError,
+  );
+  const failure = recorder.records[0]?.failure;
+  assert.equal(recorder.records[0]?.outcome, "failed");
+  assert.equal(recorder.records[0]?.timeoutBudgetMs, 308_000);
+  assert.equal(failure?.failureKind, "unexpected-error");
+  assert.equal(failure?.operationId, null);
+  assert.equal(failure?.operationBudgetMs, null);
+  assert.equal(failure?.operationElapsedMs, null);
+  assert.equal(failure?.operationElapsedPreciseMs, null);
+  assert.equal(failure?.deadlineReached, null);
+}
+
+{
+  let clock = 10.25;
+  const operationContext = createRuntimeSmokeOperationDeadline({
+    phaseName: "reload-1",
+    operationName: "model-responses-and-readiness",
+    now: () => clock,
+  });
+  assert.equal(operationContext.monotonicStartedAt, 10.25);
+  assert.equal(operationContext.monotonicDeadlineAt, 70_010.25);
+  clock = 4_552.5;
+  const operationAttempt = runtimeSmokeOperationAttempt(operationContext);
+  assert.equal(
+    operationAttempt.remainingAtAttemptStartMs,
+    65_458,
+    "remaining allowance must round up so integer conversion cannot shorten the deadline",
+  );
+  assert.equal(operationAttempt.attemptTimeoutMs, 65_458);
+}
+
+{
+  let clock = 0;
+  let nextHandle = 0;
+  const timers = new Map();
+  const scheduledDelays = [];
+  const setTimer = (callback, delayMs) => {
+    const handle = ++nextHandle;
+    timers.set(handle, callback);
+    scheduledDelays.push(delayMs);
+    return handle;
+  };
+  const clearTimer = (handle) => timers.delete(handle);
+  const fireLatestTimer = () => {
+    const handle = Math.max(...timers.keys());
+    const callback = timers.get(handle);
+    assert.equal(typeof callback, "function");
+    timers.delete(handle);
+    callback();
+  };
   const settleContext = createRuntimeSmokeOperationDeadline({
     phaseName: "bounds-verification",
     operationName: "diagnostics-settle",
@@ -269,17 +471,44 @@ assert.ok(
     RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT.evaluationTimeoutMs,
   );
   assert.equal(settleAttempt.attemptTimeoutMs, 7_000);
-  const operation = runRuntimeSmokeBoundedOperation({
-    operationAttempt: settleAttempt,
-    task: () => new Promise(() => {}),
-    setTimer: (callback) => {
-      fireTimeout = callback;
-      return 29;
-    },
-    clearTimer: () => {},
+  const evaluationContext = createRuntimeSmokeOperationDeadline({
+    phaseName: "bounds-verification",
+    operationName: "diagnostics-settle-evaluation",
+    now: () => clock,
   });
-  clock = 42_000;
-  fireTimeout();
+  const evaluationAttempt = runtimeSmokeOperationAttempt(
+    evaluationContext,
+    settleAttempt.attemptTimeoutMs,
+  );
+  const evaluation = runRuntimeSmokeBoundedOperation({
+    operationAttempt: evaluationAttempt,
+    task: () => new Promise(() => {}),
+    setTimer,
+    clearTimer,
+  });
+  let evaluationSettled = false;
+  evaluation.finally(() => {
+    evaluationSettled = true;
+  }).catch(() => {});
+  clock = 41_999.75;
+  fireLatestTimer();
+  await Promise.resolve();
+  assert.equal(
+    evaluationSettled,
+    false,
+    "a capped leaf attempt must not expire before its monotonic attempt deadline",
+  );
+  clock = 42_000.25;
+  fireLatestTimer();
+  const attemptError = await evaluation.catch((error) => error);
+  assert.ok(attemptError instanceof RuntimeSmokeOperationAttemptTimeoutError);
+  assert.equal(attemptError.deadlineReached, false);
+  const operation = waitForRuntimeSmokeOperationDeadline({
+    operationAttempt: settleAttempt,
+    cause: attemptError,
+    setTimer,
+    clearTimer,
+  });
   await assert.rejects(
     operation,
     (error) =>
@@ -287,9 +516,13 @@ assert.ok(
       error.operationId === "diagnostics-settle" &&
       error.operationBudgetMs === 42_000 &&
       error.operationElapsedMs === 42_000 &&
-      error.attemptTimeoutMs === 7_000,
-    "a diagnostics evaluation allowance must not replace its parent operation budget",
+      error.operationElapsedPreciseMs === 42_000.25 &&
+      error.attemptTimeoutMs === 7_000 &&
+      error.deadlineReached === true &&
+      error.cause === attemptError,
+    "a capped diagnostics leaf timeout must retain its expired parent provenance",
   );
+  assert.deepEqual(scheduledDelays, [7_000, 1]);
 }
 
 {
@@ -325,8 +558,10 @@ assert.ok(
   assert.equal(record?.failure?.operationId, "diagnostics-settle");
   assert.equal(record?.failure?.operationOutcome, "timed-out");
   assert.equal(record?.failure?.operationBudgetMs, 42_000);
+  assert.equal(record?.failure?.operationElapsedPreciseMs, 42_000);
   assert.equal(record?.failure?.attemptTimeoutMs, 42_000);
   assert.equal(record?.failure?.remainingAtAttemptStartMs, 42_000);
+  assert.equal(record?.failure?.deadlineReached, true);
   assert.equal(record?.failure?.phaseBudgetMs, 103_000);
 }
 assert.ok(
@@ -591,6 +826,25 @@ assert.match(runtimeSmokeSource, /createRuntimeSmokeOperationDeadline/);
 assert.match(runtimeSmokeSource, /runtimeSmokeOperationAttempt/);
 assert.match(runtimeSmokeSource, /runRuntimeSmokeBoundedOperation/);
 assert.match(runtimeSmokeSource, /RuntimeSmokeOperationTimeoutError/);
+const settleSampleSource = runtimeSmokeSource.slice(
+  runtimeSmokeSource.indexOf("const readSettleSample"),
+  runtimeSmokeSource.indexOf("let previous = await readSettleSample"),
+);
+assert.match(
+  settleSampleSource,
+  /RuntimeSmokeOperationAttemptTimeoutError/,
+  "a capped settle leaf must be distinguished from canonical expiration",
+);
+assert.match(
+  settleSampleSource,
+  /waitForRuntimeSmokeOperationDeadline/,
+  "a capped settle leaf at the parent boundary must retain parent provenance",
+);
+assert.match(
+  settleSampleSource,
+  /settleContext\.deadlineReached\(\)/,
+  "settle timeout conversion must prove the parent monotonic deadline",
+);
 assert.doesNotMatch(runtimeSmokeSource, /operationBudgetMs\s*:/);
 assert.doesNotMatch(runtimeSmokeSource, /remainingOperationTimeout/);
 assert.doesNotMatch(
@@ -687,6 +941,11 @@ for (const modelPath of [
     true,
     `${modelPath} must remain a repository-controlled production fixture`,
   );
+}
+
+if (process.argv.includes("--deadline-boundary-contract-only")) {
+  console.log("CH-0017 runtime-smoke deadline-boundary contract tests passed.");
+  process.exit(0);
 }
 
 if (process.argv.includes("--phase-budget-contract-only")) {
@@ -1190,9 +1449,11 @@ async function runtimeFailureFixture({
   phaseElapsedMs = 42_000,
   operationId = "diagnostics-settle",
   operationElapsedMs = 42_000,
+  operationElapsedPreciseMs = operationElapsedMs,
   operationBudgetMs = 42_000,
   attemptTimeoutMs = 42_000,
   remainingAtAttemptStartMs = 42_000,
+  deadlineReached = true,
 } = {}) {
   const context = await fixture();
   await rewriteManifest(context.root, context.manifestPath, (manifest) => {
@@ -1233,9 +1494,11 @@ async function runtimeFailureFixture({
     operationId,
     operationOutcome: "timed-out",
     operationElapsedMs,
+    operationElapsedPreciseMs,
     operationBudgetMs,
     attemptTimeoutMs,
     remainingAtAttemptStartMs,
+    deadlineReached,
     watchdogBudgetMs: null,
     lastSafeCheckpoint: "phase-start",
     safeLifecycleState: "ready",
@@ -1317,10 +1580,11 @@ async function expectRejected(context, expectedText) {
     phaseName: "reload-1",
     phaseElapsedMs: 70_001,
     operationId: "model-responses-and-readiness",
-    operationElapsedMs: 70_001,
+    operationElapsedMs: 70_000,
+    operationElapsedPreciseMs: 70_000.25,
     operationBudgetMs: 70_000,
-    attemptTimeoutMs: 65_507,
-    remainingAtAttemptStartMs: 65_507,
+    attemptTimeoutMs: 65_458,
+    remainingAtAttemptStartMs: 65_458,
   });
   const verified = await verifyRuntimeSmokeFailureEvidence({
     repositoryRoot: context.root,
@@ -1333,9 +1597,11 @@ async function expectRejected(context, expectedText) {
   assert.equal(verified.failure.phaseBudgetMs, 308_000);
   assert.equal(verified.failure.operationId, "model-responses-and-readiness");
   assert.equal(verified.failure.operationBudgetMs, 70_000);
-  assert.equal(verified.failure.operationElapsedMs, 70_001);
-  assert.equal(verified.failure.attemptTimeoutMs, 65_507);
-  assert.equal(verified.failure.remainingAtAttemptStartMs, 65_507);
+  assert.equal(verified.failure.operationElapsedMs, 70_000);
+  assert.equal(verified.failure.operationElapsedPreciseMs, 70_000.25);
+  assert.equal(verified.failure.attemptTimeoutMs, 65_458);
+  assert.equal(verified.failure.remainingAtAttemptStartMs, 65_458);
+  assert.equal(verified.failure.deadlineReached, true);
   assert.equal(verified.timing.schema, "interior-ai.runtime-smoke-phase-timings.v3");
   assert.equal(verified.timing.phases.at(-1).outcome, "failed");
   assert.notEqual(verified.timing.phases.at(-1).outcome, "timed-out");
@@ -1390,6 +1656,7 @@ async function expectRejected(context, expectedText) {
     phaseElapsedMs: 70_001,
     operationId: "model-responses-and-readiness",
     operationElapsedMs: 70_001,
+    operationElapsedPreciseMs: 70_001.25,
     operationBudgetMs: 70_000,
     attemptTimeoutMs: 65_507,
     remainingAtAttemptStartMs: 65_507,
@@ -1398,6 +1665,7 @@ async function expectRejected(context, expectedText) {
     const failure = timing.phases.at(-1).failure;
     failure.phaseElapsedMs = 65_508;
     failure.operationElapsedMs = 65_508;
+    failure.operationElapsedPreciseMs = 65_508;
     failure.operationBudgetMs = 65_507;
     timing.phases.at(-1).elapsedMs = 65_508;
     timing.failure = failure;
@@ -1422,6 +1690,7 @@ async function expectRejected(context, expectedText) {
     failure.phaseElapsedMs = 12_088;
     failure.operationId = "diagnostics-settle-evaluation";
     failure.operationElapsedMs = 10_000;
+    failure.operationElapsedPreciseMs = 10_000.5;
     failure.operationBudgetMs = 10_000;
     failure.attemptTimeoutMs = 10_000;
     failure.remainingAtAttemptStartMs = 10_000;
@@ -1449,9 +1718,11 @@ async function expectRejected(context, expectedText) {
     failure.operationId = null;
     failure.operationOutcome = null;
     failure.operationElapsedMs = null;
+    failure.operationElapsedPreciseMs = null;
     failure.operationBudgetMs = null;
     failure.attemptTimeoutMs = null;
     failure.remainingAtAttemptStartMs = null;
+    failure.deadlineReached = null;
     failure.watchdogBudgetMs = 60_000;
     timing.phases.at(-1).elapsedMs = 60_000;
     timing.phases.at(-1).outcome = "stalled";
@@ -1479,9 +1750,11 @@ async function expectRejected(context, expectedText) {
     failure.operationId = null;
     failure.operationOutcome = null;
     failure.operationElapsedMs = null;
+    failure.operationElapsedPreciseMs = null;
     failure.operationBudgetMs = null;
     failure.attemptTimeoutMs = null;
     failure.remainingAtAttemptStartMs = null;
+    failure.deadlineReached = null;
     timing.phases.at(-1).elapsedMs = 12_088;
     timing.failure = failure;
     report.runtimeSmokeFailure = failure;
@@ -1529,9 +1802,11 @@ async function expectRejected(context, expectedText) {
     failure.operationId = null;
     failure.operationOutcome = null;
     failure.operationElapsedMs = null;
+    failure.operationElapsedPreciseMs = null;
     failure.operationBudgetMs = null;
     failure.attemptTimeoutMs = null;
     failure.remainingAtAttemptStartMs = null;
+    failure.deadlineReached = null;
     timing.phases.at(-1).elapsedMs = 103_000;
     timing.phases.at(-1).outcome = "timed-out";
     timing.failure = failure;
@@ -1559,6 +1834,27 @@ for (const mutate of [
     timing.phases.at(-1).failure.operationBudgetMs = 10_000;
     report.runtimeSmokeFailure.operationBudgetMs = 10_000;
   },
+  ({ report, timing }) => {
+    timing.failure.operationElapsedMs = 69_999;
+    timing.failure.operationElapsedPreciseMs = 69_999.75;
+    timing.failure.deadlineReached = false;
+    timing.phases.at(-1).failure.operationElapsedMs = 69_999;
+    timing.phases.at(-1).failure.operationElapsedPreciseMs = 69_999.75;
+    timing.phases.at(-1).failure.deadlineReached = false;
+    report.runtimeSmokeFailure.operationElapsedMs = 69_999;
+    report.runtimeSmokeFailure.operationElapsedPreciseMs = 69_999.75;
+    report.runtimeSmokeFailure.deadlineReached = false;
+  },
+  ({ report, timing }) => {
+    timing.failure.operationElapsedPreciseMs = 42_999.5;
+    timing.phases.at(-1).failure.operationElapsedPreciseMs = 42_999.5;
+    report.runtimeSmokeFailure.operationElapsedPreciseMs = 42_999.5;
+  },
+  ({ report, timing }) => {
+    delete timing.failure.deadlineReached;
+    delete timing.phases.at(-1).failure.deadlineReached;
+    delete report.runtimeSmokeFailure.deadlineReached;
+  },
   ({ timing }) => {
     timing.phases.at(-1).outcome = "timed-out";
   },
@@ -1569,9 +1865,11 @@ for (const mutate of [
     failure.operationId = null;
     failure.operationOutcome = null;
     failure.operationElapsedMs = null;
+    failure.operationElapsedPreciseMs = null;
     failure.operationBudgetMs = null;
     failure.attemptTimeoutMs = null;
     failure.remainingAtAttemptStartMs = null;
+    failure.deadlineReached = null;
     timing.phases.at(-1).outcome = "timed-out";
     timing.failure = failure;
     report.runtimeSmokeFailure = failure;
@@ -1599,9 +1897,11 @@ for (const mutate of [
     failure.operationId = null;
     failure.operationOutcome = null;
     failure.operationElapsedMs = null;
+    failure.operationElapsedPreciseMs = null;
     failure.operationBudgetMs = null;
     failure.attemptTimeoutMs = null;
     failure.remainingAtAttemptStartMs = null;
+    failure.deadlineReached = null;
     failure.watchdogBudgetMs = 60_000;
     timing.phases.at(-1).elapsedMs = 59_999;
     timing.phases.at(-1).outcome = "stalled";
@@ -1615,9 +1915,11 @@ for (const mutate of [
     failure.operationId = null;
     failure.operationOutcome = null;
     failure.operationElapsedMs = null;
+    failure.operationElapsedPreciseMs = null;
     failure.operationBudgetMs = null;
     failure.attemptTimeoutMs = null;
     failure.remainingAtAttemptStartMs = null;
+    failure.deadlineReached = null;
     timing.phases.at(-1).outcome = "terminal-error";
     timing.failure = failure;
     report.runtimeSmokeFailure = failure;
@@ -1629,9 +1931,11 @@ for (const mutate of [
     failure.operationId = null;
     failure.operationOutcome = null;
     failure.operationElapsedMs = null;
+    failure.operationElapsedPreciseMs = null;
     failure.operationBudgetMs = null;
     failure.attemptTimeoutMs = null;
     failure.remainingAtAttemptStartMs = null;
+    failure.deadlineReached = null;
     timing.phases.at(-1).elapsedMs = 103_001;
     timing.phases.at(-1).outcome = "failed";
     timing.phases.at(-1).performanceWarningExceeded = true;
@@ -1658,9 +1962,11 @@ for (const mutate of [
       name: "RuntimeSmokeOperationTimeoutError",
       operationId: "diagnostics-settle-evaluation",
       operationElapsedMs: 9_999,
+      operationElapsedPreciseMs: 9_999.75,
       operationBudgetMs: 10_000,
       attemptTimeoutMs: 10_000,
       remainingAtAttemptStartMs: 10_000,
+      deadlineReached: false,
       message: "unbounded cause text is not portable evidence",
     };
     timing.failure.originalCause = unsafeCause;

@@ -1,14 +1,24 @@
+import { performance } from "node:perf_hooks";
+
 import {
   FURNISHED_TEMPLATE_PHASE_CONTRACTS,
 } from "./runtime-smoke-operation-contracts.mjs";
 
 const SAFE_ID = /^[a-z0-9][a-z0-9-]{0,95}$/;
 const operationDeadlineContexts = new WeakSet();
-const operationAttempts = new WeakSet();
+const operationDeadlineClocks = new WeakMap();
+const operationAttempts = new WeakMap();
 
 function nonNegativeInteger(value, description) {
   if (!Number.isSafeInteger(value) || value < 0) {
     throw new Error(`${description} must be a non-negative integer`);
+  }
+  return value;
+}
+
+function nonNegativeFinite(value, description) {
+  if (!Number.isFinite(value) || value < 0) {
+    throw new Error(`${description} must be a non-negative finite number`);
   }
   return value;
 }
@@ -37,10 +47,39 @@ function runtimeSmokeOperationContract(phaseName, operationName) {
   return operation;
 }
 
+function operationClockSnapshot(operationContext) {
+  if (!operationDeadlineContexts.has(operationContext)) {
+    throw new Error("Runtime-smoke operation deadline context is invalid");
+  }
+  const monotonicNow = nonNegativeFinite(
+    operationDeadlineClocks.get(operationContext)?.(),
+    "Runtime-smoke monotonic operation time",
+  );
+  const operationElapsedPreciseMs = Math.max(
+    0,
+    monotonicNow - operationContext.monotonicStartedAt,
+  );
+  const remainingPreciseMs = Math.max(
+    0,
+    Math.min(
+      operationContext.canonicalBudgetMs,
+      operationContext.monotonicDeadlineAt - monotonicNow,
+    ),
+  );
+  return Object.freeze({
+    monotonicNow,
+    operationElapsedPreciseMs,
+    operationElapsedMs: Math.floor(operationElapsedPreciseMs),
+    remainingPreciseMs,
+    remainingMs: Math.ceil(remainingPreciseMs),
+    deadlineReached: monotonicNow >= operationContext.monotonicDeadlineAt,
+  });
+}
+
 export function createRuntimeSmokeOperationDeadline({
   phaseName,
   operationName,
-  now = Date.now,
+  now = performance.now.bind(performance),
 }) {
   const safePhaseId = safeId(phaseName, "Runtime-smoke phase ID");
   const safeOperationId = safeId(operationName, "Runtime-smoke operation ID");
@@ -51,26 +90,27 @@ export function createRuntimeSmokeOperationDeadline({
     safePhaseId,
     safeOperationId,
   ).timeoutMs;
-  const operationStartedAt = nonNegativeInteger(
+  const monotonicStartedAt = nonNegativeFinite(
     now(),
-    "Runtime-smoke operation start time",
+    "Runtime-smoke monotonic operation start time",
   );
-  const operationDeadlineAt = operationStartedAt + canonicalBudgetMs;
-  if (!Number.isSafeInteger(operationDeadlineAt)) {
-    throw new Error("Runtime-smoke operation deadline must be a safe integer");
+  const monotonicDeadlineAt = monotonicStartedAt + canonicalBudgetMs;
+  if (!Number.isFinite(monotonicDeadlineAt)) {
+    throw new Error("Runtime-smoke monotonic operation deadline must be finite");
   }
   const context = Object.freeze({
     phaseId: safePhaseId,
     operationId: safeOperationId,
     canonicalBudgetMs,
-    operationStartedAt,
-    operationDeadlineAt,
-    elapsedMs: () => Math.max(0, now() - operationStartedAt),
-    remainingMs: () => Math.max(
-      0,
-      Math.min(canonicalBudgetMs, operationDeadlineAt - now()),
-    ),
+    monotonicStartedAt,
+    monotonicDeadlineAt,
+    preciseElapsedMs: () =>
+      operationClockSnapshot(context).operationElapsedPreciseMs,
+    elapsedMs: () => operationClockSnapshot(context).operationElapsedMs,
+    remainingMs: () => operationClockSnapshot(context).remainingMs,
+    deadlineReached: () => operationClockSnapshot(context).deadlineReached,
   });
+  operationDeadlineClocks.set(context, now);
   operationDeadlineContexts.add(context);
   return context;
 }
@@ -88,9 +128,11 @@ export function runtimeSmokeOperationAttempt(
   ) {
     throw new Error("Runtime-smoke maximum attempt timeout must be a positive integer");
   }
-  const remainingAtAttemptStartMs = nonNegativeInteger(
-    operationContext.remainingMs(),
-    "Runtime-smoke remaining operation allowance",
+  const clock = operationClockSnapshot(operationContext);
+  const remainingAtAttemptStartMs = clock.remainingMs;
+  const monotonicAttemptDeadlineAt = Math.min(
+    operationContext.monotonicDeadlineAt,
+    clock.monotonicNow + (maximumAttemptMs ?? remainingAtAttemptStartMs),
   );
   const attemptTimeoutMs = Math.min(
     remainingAtAttemptStartMs,
@@ -100,8 +142,10 @@ export function runtimeSmokeOperationAttempt(
     operationContext,
     attemptTimeoutMs,
     remainingAtAttemptStartMs,
+    coversCanonicalDeadline:
+      monotonicAttemptDeadlineAt >= operationContext.monotonicDeadlineAt,
   });
-  operationAttempts.add(attempt);
+  operationAttempts.set(attempt, Object.freeze({ monotonicAttemptDeadlineAt }));
   if (attemptTimeoutMs === 0) {
     throw new RuntimeSmokeOperationTimeoutError({ operationAttempt: attempt });
   }
@@ -115,14 +159,40 @@ function assertRuntimeSmokeOperationAttempt(operationAttempt) {
   return operationAttempt;
 }
 
+function operationAttemptClockSnapshot(operationAttempt) {
+  const safeAttempt = assertRuntimeSmokeOperationAttempt(operationAttempt);
+  const clock = operationClockSnapshot(safeAttempt.operationContext);
+  const monotonicAttemptDeadlineAt = operationAttempts.get(
+    safeAttempt,
+  ).monotonicAttemptDeadlineAt;
+  return Object.freeze({
+    ...clock,
+    attemptDeadlineReached: clock.monotonicNow >= monotonicAttemptDeadlineAt,
+    attemptRemainingMs: Math.ceil(
+      Math.max(0, monotonicAttemptDeadlineAt - clock.monotonicNow),
+    ),
+  });
+}
+
 export class RuntimeSmokeOperationTimeoutError extends Error {
   constructor({ operationAttempt, cause }) {
     const safeAttempt = assertRuntimeSmokeOperationAttempt(operationAttempt);
     const operationContext = safeAttempt.operationContext;
+    const clock = operationClockSnapshot(operationContext);
+    if (!clock.deadlineReached) {
+      throw new Error(
+        "Runtime-smoke canonical operation timeout requires a reached deadline",
+      );
+    }
     const operationElapsedMs = nonNegativeInteger(
-      operationContext.elapsedMs(),
+      clock.operationElapsedMs,
       "Runtime-smoke operation elapsed time",
     );
+    if (operationElapsedMs < operationContext.canonicalBudgetMs) {
+      throw new Error(
+        "Runtime-smoke persisted operation elapsed time precedes its reached deadline",
+      );
+    }
     super(
       `Runtime-smoke phase ${operationContext.phaseId} operation ` +
         `${operationContext.operationId} timed out after ${operationElapsedMs}ms ` +
@@ -134,9 +204,40 @@ export class RuntimeSmokeOperationTimeoutError extends Error {
     this.phaseId = operationContext.phaseId;
     this.operationId = operationContext.operationId;
     this.operationElapsedMs = operationElapsedMs;
+    this.operationElapsedPreciseMs = clock.operationElapsedPreciseMs;
     this.operationBudgetMs = operationContext.canonicalBudgetMs;
     this.attemptTimeoutMs = safeAttempt.attemptTimeoutMs;
     this.remainingAtAttemptStartMs = safeAttempt.remainingAtAttemptStartMs;
+    this.deadlineReached = true;
+  }
+}
+
+export class RuntimeSmokeOperationAttemptTimeoutError extends Error {
+  constructor({ operationAttempt }) {
+    const safeAttempt = assertRuntimeSmokeOperationAttempt(operationAttempt);
+    const operationContext = safeAttempt.operationContext;
+    const clock = operationAttemptClockSnapshot(safeAttempt);
+    if (clock.deadlineReached) {
+      throw new Error(
+        "Runtime-smoke internal attempt timeout cannot represent a reached canonical deadline",
+      );
+    }
+    if (!clock.attemptDeadlineReached) {
+      throw new Error(
+        "Runtime-smoke internal attempt timeout requires a reached attempt deadline",
+      );
+    }
+    super(
+      `Runtime-smoke phase ${operationContext.phaseId} operation ` +
+        `${operationContext.operationId} exhausted its ${safeAttempt.attemptTimeoutMs}ms ` +
+        `internal attempt before the canonical deadline`,
+    );
+    this.name = "RuntimeSmokeOperationAttemptTimeoutError";
+    this.phaseId = operationContext.phaseId;
+    this.operationId = operationContext.operationId;
+    this.attemptTimeoutMs = safeAttempt.attemptTimeoutMs;
+    this.remainingAtAttemptStartMs = safeAttempt.remainingAtAttemptStartMs;
+    this.deadlineReached = false;
   }
 }
 
@@ -151,18 +252,77 @@ export async function runRuntimeSmokeBoundedOperation({
     throw new Error("Runtime-smoke bounded operation task must be callable");
   }
   let timeoutHandle;
+  const scheduleTimeout = (reject, delayMs) => {
+    timeoutHandle = setTimer(() => {
+      try {
+        const clock = operationAttemptClockSnapshot(safeAttempt);
+        if (clock.deadlineReached) {
+          reject(new RuntimeSmokeOperationTimeoutError({
+            operationAttempt: safeAttempt,
+          }));
+          return;
+        }
+        if (clock.attemptDeadlineReached) {
+          reject(new RuntimeSmokeOperationAttemptTimeoutError({
+            operationAttempt: safeAttempt,
+          }));
+          return;
+        }
+        scheduleTimeout(
+          reject,
+          Math.max(1, Math.min(clock.remainingMs, clock.attemptRemainingMs)),
+        );
+      } catch (error) {
+        reject(error);
+      }
+    }, delayMs);
+  };
   const timeout = new Promise((_, reject) => {
-    timeoutHandle = setTimer(
-      () => reject(
-        new RuntimeSmokeOperationTimeoutError({
-          operationAttempt: safeAttempt,
-        }),
-      ),
-      safeAttempt.attemptTimeoutMs,
-    );
+    scheduleTimeout(reject, safeAttempt.attemptTimeoutMs);
   });
   try {
     return await Promise.race([Promise.resolve().then(task), timeout]);
+  } finally {
+    if (timeoutHandle !== undefined) clearTimer(timeoutHandle);
+  }
+}
+
+export async function waitForRuntimeSmokeOperationDeadline({
+  operationAttempt,
+  cause,
+  setTimer = setTimeout,
+  clearTimer = clearTimeout,
+}) {
+  const safeAttempt = assertRuntimeSmokeOperationAttempt(operationAttempt);
+  if (!safeAttempt.coversCanonicalDeadline) {
+    throw new Error(
+      "Runtime-smoke canonical deadline wait requires an attempt that covers the deadline",
+    );
+  }
+  let timeoutHandle;
+  const deadline = new Promise((_, reject) => {
+    const scheduleDeadline = () => {
+      try {
+        const clock = operationClockSnapshot(safeAttempt.operationContext);
+        if (clock.deadlineReached) {
+          reject(new RuntimeSmokeOperationTimeoutError({
+            operationAttempt: safeAttempt,
+            cause,
+          }));
+          return;
+        }
+        timeoutHandle = setTimer(
+          scheduleDeadline,
+          Math.max(1, clock.remainingMs),
+        );
+      } catch (error) {
+        reject(error);
+      }
+    };
+    scheduleDeadline();
+  });
+  try {
+    await deadline;
   } finally {
     if (timeoutHandle !== undefined) clearTimer(timeoutHandle);
   }

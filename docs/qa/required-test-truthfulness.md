@@ -383,6 +383,25 @@ canonical reload readiness with a 65,507 ms leaf allowance—remains a validator
 negative when 65,507 is presented as the operation budget and is a valid
 structured failure when the two values occupy their correct fields.
 
+Canonical expiration also requires `deadlineReached=true`. The owner uses a
+high-resolution monotonic start and deadline, retains
+`operationElapsedPreciseMs`, and floors only the portable integer
+`operationElapsedMs`; remaining allowance is rounded up for the integer timer
+conversion so conversion cannot shorten the canonical window. A full-remaining
+attempt that fires while integer display is still 69,999/70,000 ms continues
+against the same owner until the deadline is actually reached. A materially
+early capped attempt is an internal-attempt/unexpected failure and cannot carry
+canonical operation-timeout fields. Schema v3 rejects missing deadline proof,
+premature precise elapsed values, and integer/precise rounding disagreement.
+
+A final settle evaluation capped below its own 10,000 ms contract is an
+internal attempt, not a child canonical timeout. At the 42,000 ms parent
+boundary the handler retains that distinction, waits through any fractional
+timer residual, and constructs parent timeout evidence only after the parent
+deadline predicate succeeds. The failure therefore remains a canonical
+`diagnostics-settle` record rather than `unexpected-error` with null operation
+fields.
+
 `diagnostics-settle-evaluation` is a canonical 10,000 ms child of the 42,000 ms
 `diagnostics-settle` operation. A child evaluation timeout remains attributed to
 that child; only exhaustion of the complete settle envelope is attributed to the

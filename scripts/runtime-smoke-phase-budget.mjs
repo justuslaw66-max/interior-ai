@@ -17,10 +17,12 @@ export {
   RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT,
 } from "./runtime-smoke-operation-contracts.mjs";
 export {
+  RuntimeSmokeOperationAttemptTimeoutError,
   RuntimeSmokeOperationTimeoutError,
   createRuntimeSmokeOperationDeadline,
   runRuntimeSmokeBoundedOperation,
   runtimeSmokeOperationAttempt,
+  waitForRuntimeSmokeOperationDeadline,
 } from "./runtime-smoke-operation-deadline.mjs";
 export {
   RuntimeSmokeNoProgressError,
