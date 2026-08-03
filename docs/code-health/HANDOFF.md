@@ -1526,3 +1526,87 @@ next; Hamilton vocabulary, architecture ratchets, Phase 8 initial-JavaScript
 budget, Full E2E, CH-0017, CH-0028, CH-0029, CH-0030, CH-0004, and unrelated
 findings were not modified. The implementation is the single local branch-head
 commit containing this entry.
+
+## Baseline B command-bar save-status contract — 2026-08-03
+
+Baseline B began from exact clean Baseline A source
+`fe668ab31340d8092f4306361736a7b3015a2533` on
+`fix/baseline-save-status-contract`. Entry status, diff, diff check, diff stat,
+and untracked output were empty. `lsof` resolved the active Node listener to
+the canonical `/Users/justus/Developer/interior-ai` checkout. No work was
+discarded and no push, deployment, Full E2E, dependency, catalog, architecture,
+or product implementation change was made.
+
+The exact inherited failure was `scripts/test-command-bar-save-status.ts:34`:
+the static regex expected `h-7`, while `EditorCommandBar` rendered
+`hidden h-[30px] ... md:flex`. This predates Baseline A, whose diff contains no
+command-bar or save-status file. History independently establishes the intended
+geometry: the compact-toolbar checkpoint changed the bar to 36 px and aligned
+its controls, including save status, at approximately 30 px, then added a
+Chromium geometry test that measures 29–31 px at wide and 900 px desktop
+widths. The same checkpoint accidentally changed only the static expectation
+from its prior `h-9` value to `h-7` instead of the implemented 30 px token.
+
+The verified product contract remains unchanged. `useDesignPagePersistence`
+owns manual cloud save, local backup, delayed cloud autosave, success/error
+timestamps, conflicts, reconnect retry, and project identity transitions;
+`getDesignPageSaveStatus` derives the presentation state; the presentation
+facade, design-page wrapper, and `EditorCommandBar` only forward and render it.
+The existing states cover initial local/cloud pending, scheduled/saving,
+local/cloud success, local/cloud failure, conflict, authenticated cloud design,
+signed-out local backup, and reconnect retry. Offline has no duplicate state:
+it surfaces through the cloud error and the existing browser `online` listener
+retries the canonical write. Consumer and Pro use the same owner and state
+model, with theme-only visual differences.
+
+The chip is intentionally hidden below `md`, visible from `md`, and exactly
+30 px high inside the 36 px desktop bar. Its dot appears at `md`, label at
+`lg`, and detail/retry at `xl`; the compact/mobile bar retains the Save action.
+The desktop element exposes status, source, and last-success metadata, a title
+and aria-label, `role="status"`, and `aria-live="polite"`; the dot is
+decorative. No floating copy or duplicate state owner exists.
+
+Classification is **A — STALE STATIC TEST**. The implementation is correct and
+unchanged. The corrected static guard extracts the save-status element and its
+class tokens, requires `hidden` plus `md:flex` independently of order, and
+requires its only height token to be exactly `h-[30px]`. The accessibility
+assertions target that same element. The guard still fails on geometry,
+breakpoint, element, or announcement regression and no assertion was removed.
+
+Validation on the changed tree:
+
+- PASS: exact command-bar save-status contract; design-page save-status unit
+  test; command-bar wrapper and floating-overlay/layout guards;
+  `npm run verify:design-persistence`.
+- PASS: targeted ESLint with `--max-warnings=0`; full repository lint with
+  zero warnings; `npm run typecheck`; `npm run check:code-quality` over 1,035
+  production files with no allowance, cycle, suppression, or unsafe-TypeScript
+  regression.
+- PASS: focused Chromium compact-toolbar layout, 2/2, proving approximately
+  30 px save-status geometry at wide and 900 px desktop widths in Consumer and
+  Pro.
+- PASS: `APP_ENV=development CATALOG_STRICT_VALIDATION=true npm run build`, all
+  57 pages. The inherited floor-plan NFT whole-project tracing warning remains.
+- PARTIAL/EXPECTED INHERITED FAIL: `npm run test:design-page-cleanup` passes the
+  catalog and save-status guards, then stops at
+  `scripts/test-design-page-presentation-workspace-registration.ts:87` because
+  `lib/useDesignPagePresentationWorkspaceRegistration.ts` is 455 physical
+  lines (456 newline-split entries) against `<= 380`. It is recorded separately
+  and not modified.
+
+Independent read-only review first found compound/important/arbitrary Tailwind
+overrides that escaped the literal token filter, unchecked dynamic class
+contributors, and an unnecessary `<div>` dependency. The accepted correction
+audits all display and height/min/max/size contributors, constrains and inspects
+the conditional and tone-helper returns, and extracts the opening element
+generically. Mutation checks prove each reported regression fails while a
+behavior-preserving element-type change remains allowed. Final disposition is
+**PASS — no actionable findings**: no weakened assertion, CSS substitution,
+product/save change, duplicate state, accessibility or Baseline A regression,
+unrelated cleanup, or scope creep.
+
+Baseline C — Hamilton controlled vocabulary — is the next baseline batch.
+Architecture ratchets, Phase 8 initial JavaScript, Cabinet Preview visibility,
+Full E2E, CH-0017 through CH-0030, CH-0004, and unrelated findings remain
+untouched. The single focused local implementation commit is the commit
+containing this entry; its resolved SHA is reported after creation.
