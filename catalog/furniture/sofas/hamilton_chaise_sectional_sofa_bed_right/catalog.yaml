@@ -22,7 +22,7 @@ dimensions:
 
 seat_capacity: 4
 size_class: "extra_large"
-shape: "l_shaped"
+shape: "rectangular"
 base_type: "low_metal_leg"
 material_family: "upholstered"
 material_mix: "upholstered_metal"
@@ -40,7 +40,7 @@ visual_attributes:
 spatial_attributes:
   footprint_shape: "l_shaped"
   walkway_clearance_cm: 75
-room_compatibility: ["living_room", "family_room", "open_plan", "guest_room"]
+room_compatibility: ["living_room", "family_room", "open_plan", "bedroom"]
 placement_rules:
   floor_only: true
   wall_snappable: false

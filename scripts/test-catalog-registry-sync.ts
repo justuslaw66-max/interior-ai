@@ -12,6 +12,24 @@ import {
 } from "../lib/catalog-publication";
 import { buildImportedModelsPayload } from "../lib/catalog/imported-models-payload";
 
+const HAMILTON_SLEEPER_EXPECTATIONS = [
+  {
+    id: "sofa-real-castlery-hamilton-3-seater-sofa-bed",
+    dimensionsCm: { width: 206, depth: 98, height: 86 },
+    footprintShape: "rectangular",
+  },
+  {
+    id: "sofa-real-castlery-hamilton-chaise-sectional-sofa-bed-left",
+    dimensionsCm: { width: 296, depth: 171, height: 86 },
+    footprintShape: "l_shaped",
+  },
+  {
+    id: "sofa-real-castlery-hamilton-chaise-sectional-sofa-bed-right",
+    dimensionsCm: { width: 296, depth: 171, height: 86 },
+    footprintShape: "l_shaped",
+  },
+] as const;
+
 function getAssetId(entry: CatalogYamlEntry): string {
   return String(entry.assets?.asset_id ?? "").trim();
 }
@@ -124,6 +142,43 @@ async function runRegistrySyncAudit(): Promise<void> {
         : [{ id, yamlSeatCapacity, payloadSeatCapacity }];
     }
   );
+
+  for (const expected of HAMILTON_SLEEPER_EXPECTATIONS) {
+    const source = liveById.get(expected.id);
+    const generated = payloadById.get(expected.id);
+    assert.ok(source, `${expected.id} must remain present in source YAML`);
+    assert.ok(generated, `${expected.id} must remain present in the imported-model API payload`);
+    assert.equal(generated.catalog?.shape, source.shape);
+    assert.deepEqual(generated.catalog?.roomCompatibility, source.room_compatibility);
+    assert.deepEqual(generated.catalog?.spatialAttributes, source.spatial_attributes);
+    assert.equal(generated.catalog?.shape, "rectangular");
+    assert.deepEqual(generated.catalog?.roomCompatibility, [
+      "living_room",
+      "family_room",
+      "open_plan",
+      "bedroom",
+    ]);
+    assert.equal(
+      (generated.catalog?.spatialAttributes as { footprint_shape?: string })
+        ?.footprint_shape,
+      expected.footprintShape,
+    );
+    assert.deepEqual(
+      {
+        width: Number(generated.dimsWmm) / 10,
+        depth: Number(generated.dimsDmm) / 10,
+        height: Number(generated.dimsHmm) / 10,
+      },
+      expected.dimensionsCm,
+      "Imported-model API payload dimensions must remain unchanged",
+    );
+    assert.equal(
+      Array.isArray(generated.catalog?.variants)
+        ? generated.catalog.variants.length
+        : 0,
+      1,
+    );
+  }
 
   assert.deepEqual(
     missingLiveIds,

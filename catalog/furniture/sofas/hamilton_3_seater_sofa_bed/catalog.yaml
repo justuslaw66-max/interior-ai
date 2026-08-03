@@ -40,7 +40,7 @@ visual_attributes:
 spatial_attributes:
   footprint_shape: "rectangular"
   walkway_clearance_cm: 75
-room_compatibility: ["living_room", "family_room", "open_plan", "guest_room"]
+room_compatibility: ["living_room", "family_room", "open_plan", "bedroom"]
 placement_rules:
   floor_only: true
   wall_snappable: false

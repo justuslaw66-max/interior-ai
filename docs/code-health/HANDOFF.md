@@ -1610,3 +1610,91 @@ Architecture ratchets, Phase 8 initial JavaScript, Cabinet Preview visibility,
 Full E2E, CH-0017 through CH-0030, CH-0004, and unrelated findings remain
 untouched. The single focused local implementation commit is the commit
 containing this entry; its resolved SHA is reported after creation.
+
+## Baseline C Hamilton controlled vocabulary — 2026-08-04
+
+Baseline C began from exact clean source
+`6f63c11d9b0697f55c39e7ffefcfdf67c5624276` on
+`fix/baseline-hamilton-controlled-vocabulary`. Baselines A and B were preserved,
+the active Node listener's cwd matched the canonical checkout, and no work was
+discarded or carried from another branch.
+
+The standard and strict pre-edit audits independently reproduced exactly five
+failures, zero warnings, and zero duplicate IDs across exactly three Hamilton
+sources. `hamilton_3_seater_sofa_bed/catalog.yaml` used unsupported
+`room_compatibility[3]: guest_room`. The left and right Hamilton chaise sleeper
+files each used both unsupported `room_compatibility[3]: guest_room` and
+unsupported top-level `shape: l_shaped`.
+
+The frozen YAML vocabulary and typed catalog room boundary contain `bedroom`
+and no `guest_room` alias. The top-level product-shape vocabulary contains
+`rectangular`, not `l_shaped`; related Hamilton, Jaron, Owen, and Auburn chaise
+sources establish the same canonical-product-form versus spatial-footprint
+distinction. The three room values are now `bedroom`, and the two top-level
+shape values are now `rectangular`. Both chaise sources retain the separate
+`spatial_attributes.footprint_shape: "l_shaped"`. No vocabulary, schema, audit
+rule, placement rule, clearance, dimension, price, link, finish, description,
+model path, asset, stock, ID, SKU, orientation, or unrelated tag changed.
+
+The unchanged product IDs are
+`sofa-real-castlery-hamilton-3-seater-sofa-bed`,
+`sofa-real-castlery-hamilton-chaise-sectional-sofa-bed-left`, and
+`sofa-real-castlery-hamilton-chaise-sectional-sofa-bed-right`; their SKUs remain
+`50441101-PM4002`, `50441102-PM4002`, and `50441103-PM4002`. Each retains one
+authored variant. Derived runtime variant IDs remain
+`imported-<product-id>-marcel-brilliant-white__marcel-brilliant-white` because
+identity derives from the unchanged product, upholstery, and finish codes.
+Closed/open bounds remain 206×98×86 / 206×227×63 cm for the straight sleeper
+and 296×171×86 / 296×227×86 cm for each oriented chaise sleeper.
+
+`buildImportedModelsPayload` derives the imported-model API payload in memory
+from YAML; there is no tracked generated catalog-runtime file or package
+generation command. The canonical registry-sync check proved direct
+source/API-payload parity for top-level shape, room compatibility, spatial
+footprint, dimensions, and variants with 144 YAML entries, 139 live entries,
+five drafts, and 139 payload entries. New negative coverage proves `guest_room`
+and top-level `l_shaped` remain rejected while `bedroom` is accepted and the
+independent L-shaped footprint remains unrejected and unchanged. Focused
+Hamilton coverage proves all three products, all three variants, preset
+auto-metadata, sleeper states, model files, retailer links, and orientation
+selectors remain stable.
+
+Independent review confirmed an inherited consumer limitation at the starting
+SHA. Final imported catalog assembly derives `CatalogItemSchema.roomTags` from
+static configuration/template data rather than YAML `roomCompatibility`; these
+three Hamilton sleepers have no static configuration and therefore assemble
+with empty room tags, while filters and recommendation scoring consume that
+final field. `CatalogItemSchema` has no spatial-footprint property, and no
+placement/collision consumer reads the YAML footprint. Resolving those gaps
+requires a separate catalog adapter plus schema/placement-contract batch. This
+source-only batch therefore does not claim bedroom filter/recommendation
+consumption or L-shaped footprint placement consumption.
+
+Validation passed for standard and strict catalog audit (144 files; zero
+failures, warnings, or duplicate IDs), catalog editor coverage, Hamilton import,
+Castlery finish/retailer mapping (548 normalized variants), asset availability,
+catalog filters and placement, live catalog, Phase 14 product flow,
+full-catalog furnish, zero-warning full lint, typecheck, code quality, and the
+strict 57-page production build. Asset availability remains 812 references,
+519 unique URLs, and 145 checked local URLs with the same five draft-only
+missing TV-console GLBs. The build retains only the inherited floor-plan NFT
+trace warning. `test:design-page-cleanup` clears the catalog and save-status
+guards, then reaches the unchanged 455-line
+`useDesignPagePresentationWorkspaceRegistration.ts` versus 380-line
+architecture assertion. The generic filter and placement suites are regression
+checks only; they do not consume the corrected Hamilton source fields described
+above.
+
+Two broader inherited checks remain explicitly separate. Database governance
+found zero duplicates, parse errors, and missing asset IDs, then failed because
+the local database has zero approved `ModelAsset` rows, making all 139 live YAML
+IDs environmental orphans. The legacy strict Phase 14 asset preflight had zero
+contract errors and zero invalid variant assets but retained 30 static-registry
+`MEMORY_DISPOSAL_UNVERIFIED` errors; no Hamilton product appears in that report.
+
+The next bounded batch is the presentation-workspace architecture ratchet.
+That file, the separate Phase 8 budget, Full E2E, CH-0017 through CH-0030,
+CH-0004, unrelated catalog products, workflows, and dependencies were not
+modified. No push or deployment was performed. The single local Baseline C
+commit is the commit containing this entry; its resolved SHA is reported after
+creation.
