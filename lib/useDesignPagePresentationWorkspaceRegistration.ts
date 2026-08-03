@@ -1,26 +1,15 @@
 "use client";
 
-import { useCallback } from "react";
-
-import {
-  resolveDesignLightingSettings,
-  updateDesignLightingSettings,
-} from "@/lib/design-lighting-settings";
-import type {
-  DesignLightingSettings,
-  LightingPreset,
-} from "@/lib/lightingPresets";
-import { LIGHTING_PRESETS } from "@/lib/lightingPresets";
 import type { DesignPageAiWorkspaceRegistration } from "@/lib/useDesignPageAiWorkspaceRegistration";
 import type { DesignPageCommerceOnboardingRegistration } from "@/lib/useDesignPageCommerceOnboardingRegistration";
 import type { useDesignPageWorkspaceDeferredPaywallRegistration } from "@/lib/useDesignPagePaywallRegistrationFacade";
 import type { DesignPagePresentationBackupRegistrationFacade } from "@/lib/useDesignPagePresentationBackupRegistrationFacade";
+import { useDesignPagePresentationLightingRegistration } from "@/lib/useDesignPagePresentationLightingRegistration";
 import {
   useDesignPagePresentationQaFacade,
   type DesignPagePresentationQaFacade,
 } from "@/lib/useDesignPagePresentationQaFacade";
 import type { DesignPageSelectionWorkspaceRegistration } from "@/lib/useDesignPageSelectionWorkspaceRegistration";
-import { resolveFixturePhotometrics } from "@/lib/resolve-lighting-scene";
 
 type DeferredPaywallRegistration = ReturnType<
   typeof useDesignPageWorkspaceDeferredPaywallRegistration
@@ -66,65 +55,11 @@ export function useDesignPagePresentationWorkspaceRegistration({
   const placement = selection.boundaries.placement;
   const cabinetry = selection.boundaries.cabinetry;
   const aiPanel = aiWorkspace.boundaries.aiPanel;
-  const lightingSettings = resolveDesignLightingSettings(
-    coreShell.state.document.designSnapshot
-  );
-  const placedFixtureEntries =
-    coreShell.state.document.designSnapshot.rooms.flatMap((room) =>
-      room.items
-        .map((item) => ({
-          item,
-          metadata: resolveFixturePhotometrics(item),
-        }))
-        .filter(
-          (
-            entry
-          ): entry is typeof entry & {
-            metadata: NonNullable<typeof entry.metadata>;
-          } => entry.metadata !== null
-        )
-    );
-  const activeFixtureCount =
-    lightingSettings.fixtureMasterEnabled &&
-    lightingSettings.fixtureMasterLevel > 0
-      ? placedFixtureEntries.filter(
-          ({ item }) =>
-            (item.fixtureLight?.isOn ??
-              LIGHTING_PRESETS[lightingSettings.preset].fixtureDefaultOn) &&
-            (item.fixtureLight?.dimmer ?? 1) > 0
-        ).length
-      : 0;
-  const updateLightingSettings = useCallback(
-    (
-      patch: Partial<DesignLightingSettings>,
-      transactionName: string
-    ) => {
-      documentRoom.actions.history.runHistoryTransaction(
-        transactionName,
-        () => {
-          coreShell.actions.document.setDesignSnapshot((snapshot) =>
-            updateDesignLightingSettings(snapshot, patch)
-          );
-        }
-      );
-    },
-    [
-      coreShell.actions.document,
-      documentRoom.actions.history,
-    ]
-  );
-  const changeLightingPreset = useCallback(
-    (preset: LightingPreset) => {
-      updateLightingSettings({ preset }, "Change lighting preset");
-    },
-    [updateLightingSettings]
-  );
-  const changeShadowsEnabled = useCallback(
-    (shadowsEnabled: boolean) => {
-      updateLightingSettings({ shadowsEnabled }, "Toggle scene shadows");
-    },
-    [updateLightingSettings]
-  );
+  const presentationLighting = useDesignPagePresentationLightingRegistration({
+    designSnapshot: coreShell.state.document.designSnapshot,
+    setDesignSnapshot: coreShell.actions.document.setDesignSnapshot,
+    runHistoryTransaction: documentRoom.actions.history.runHistoryTransaction,
+  });
 
   const presentationQa = useDesignPagePresentationQaFacade({
     state: {
@@ -171,15 +106,7 @@ export function useDesignPagePresentationWorkspaceRegistration({
         cameraViewNameInput: presentationState.state.cameraViewNameInput,
         layoutVersionNameInput: presentationState.state.layoutVersionNameInput,
         simplePlanControls: viewportShell.state.plan.simplePlanControls,
-        lightingPreset: lightingSettings.preset,
-        lightingSettings,
-        lightingStatus: {
-          placedFixtureCount: placedFixtureEntries.length,
-          activeFixtureCount,
-          estimatedFixtureCount: placedFixtureEntries.filter(
-            ({ metadata }) => metadata.verification === "estimated"
-          ).length,
-        },
+        ...presentationLighting.state,
         sharingDesign: persistence.state.persistence.sharingDesign,
         exportStylePreset: viewportShell.state.plan.exportStylePreset,
         isExporting: presentationBackup.state.isExporting,
@@ -411,14 +338,10 @@ export function useDesignPagePresentationWorkspaceRegistration({
         changeMode:
           sceneRoomRead.actions.scene.handleScenePerformanceModeChange,
       },
-      lighting: {
-        changeShadowsEnabled,
-        updateSettings: (patch: Partial<DesignLightingSettings>) =>
-          updateLightingSettings(patch, "Change lighting settings"),
-      },
+      lighting: presentationLighting.actions.lighting,
       betaStart: documentSelection.actions.betaStart,
       presentation: {
-        changeLightingPreset,
+        ...presentationLighting.actions.presentation,
         createShareLink:
           persistence.actions.persistence.createShareLinkAndCopy,
         setExportStylePreset: viewportShell.actions.plan.setExportStylePreset,

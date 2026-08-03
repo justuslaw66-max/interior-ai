@@ -1698,3 +1698,73 @@ CH-0004, unrelated catalog products, workflows, and dependencies were not
 modified. No push or deployment was performed. The single local Baseline C
 commit is the commit containing this entry; its resolved SHA is reported after
 creation.
+
+## Presentation workspace registration architecture ratchet — 2026-08-04
+
+This bounded batch began from exact clean source
+`9ba876b0e8fb53a676bfaf5898bf8e548aacbb79` on
+`refactor/presentation-workspace-registration`. Baselines A-C are direct
+ancestors. Entry status, tracked diff, diff check, diff stat, and untracked
+checks were empty, and the only listening Node application resolved by `lsof`
+to `/Users/justus/Developer/interior-ai`, matching the canonical edit target.
+No work was discarded or carried across branches.
+
+The ownership inventory found one 406-line hook with ten import sources and
+eleven nested arrow functions. Its original presentation/QA composition was
+360 lines. Two smaller catalog/cabinetry adjustments brought it to 368;
+persisted lighting then added 48 net lines, and later fixture-status/chrome
+additions added 39, producing the current 455-line result. State reads span the
+existing core shell, document/selection, plan, scene, persistence, onboarding,
+cabinetry, paywall, and export registrations. The hook performs no direct
+external effect: it composes the presentation/QA facade, while its lighting
+callbacks explicitly delegate one history transaction and canonical snapshot
+update. Downstream scene, panel, and viewport registrations consume the returned
+boundaries; the viewport remains the owner of selected-fixture-light derivation
+and viewport-region assembly.
+
+The selected extraction is presentation lighting registration. Before, the
+parent hook derived canonical lighting settings and all-room fixture status,
+wrapped lighting edits in document history, and composed the presentation/QA
+facade. After, `useDesignPagePresentationLightingRegistration.ts` owns only
+that lighting adapter: a pure deterministic read-model builder plus a
+history-aware command adapter over three explicit inputs. It owns no state,
+environment read, analytics, registry, viewport region, or hidden side effect;
+document mutations remain explicit through the injected canonical setter and
+history runner. `useDesignPagePresentationWorkspaceRegistration.ts` continues
+to own hook order and final presentation/QA composition and consumes the
+extracted state/actions through a typed boundary.
+
+The original file is 378 physical lines, down from 455; the new module is 129
+lines. The code-quality baseline removes the original file's 455-line allowance
+and lowers its one overlong-function maximum from 406 to 340. The new file has
+no size or function exception. Existing lighting coverage now directly proves
+zero fixtures, an item override without fixture photometrics, a valid estimated
+fixture, active counts, multi-room/all-document counting across an active-room
+switch, fixture-master disablement, and zero dimmer. Existing presentation,
+Consumer/Pro, client-preview, selection, room-plan, persistence, local-backup,
+and export contracts remain green.
+
+Validation on the final production/test change before documentation:
+
+- PASS: focused lighting, presentation-workspace, presentation/export,
+  persistence/presentation, selection-workspace, room-plan, editor-command-bar,
+  Consumer/Pro capability/accessibility, and `verify:design-persistence` checks.
+- PASS: targeted ESLint with `--max-warnings=0`, full repository lint with zero
+  warnings, typecheck, and the lowered code-quality gate.
+- PASS: strict `APP_ENV=development CATALOG_STRICT_VALIDATION=true npm run
+  build` outside the sandbox, all 57 pages. The first sandboxed attempt failed
+  only because Turbopack could not bind its internal helper port; the inherited
+  floor-plan NFT whole-project tracing warning remains.
+- PARTIAL/EXPECTED INHERITED FAIL: `test:design-page-cleanup` clears the
+  remediated presentation guard and next fails the untouched
+  `test-design-page-scene-layers.ts` GLB local-bounds source assertion. A direct
+  `test-design-page-viewport-workspace-registration.ts` run passes its semantic
+  assertions and then retains its existing 361-physical-line/362-entry versus
+  280-entry size failure. Neither is changed or reclassified.
+
+The implementation commit is the single focused local commit containing this
+record; its resolved SHA and final clean status are reported after creation.
+Rollback is one local revert. Full E2E was not run. No push, deployment, Phase
+8 work, CH-0004, other CH-0017 through CH-0030 work, Hamilton adapter/schema
+limitation, workflow, dependency, schema, migration, catalog, or
+production-data change is included.

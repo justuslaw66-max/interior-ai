@@ -736,10 +736,6 @@
       "lines": 509,
       "limit": 400
     },
-    "lib/useDesignPagePresentationWorkspaceRegistration.ts": {
-      "lines": 455,
-      "limit": 400
-    },
     "lib/useDesignPageProductConfiguration.ts": {
       "lines": 1824,
       "limit": 400
@@ -4943,7 +4939,7 @@
     "lib/useDesignPagePresentationWorkspaceRegistration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 406
+        "maximum": 340
       }
     },
     "lib/useDesignPagePresentExportController.ts": {

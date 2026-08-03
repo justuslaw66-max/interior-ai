@@ -277,3 +277,29 @@ Suggested batches:
 - CH-0027: formatter choice.
 
 Until a decision is recorded, implementation may add characterization, telemetry, or fail-safe guards that do not reclassify valid product behavior, but must not silently choose policy.
+
+## Phase 0 presentation-workspace architecture ratchet — 2026-08-04
+
+This bounded CH-0019/CH-0020 batch starts from exact clean source
+`9ba876b0e8fb53a676bfaf5898bf8e548aacbb79` after Baselines A-C. It extracts
+the presentation lighting read model and history-aware lighting commands from
+`useDesignPagePresentationWorkspaceRegistration.ts` into the focused
+`useDesignPagePresentationLightingRegistration.ts` module. The parent hook
+remains the orchestration and presentation/QA composition owner; canonical
+document state, history, fixture state, Consumer/Pro access, client preview,
+viewport regions, selection, persistence, and export owners are unchanged.
+
+The original module falls from 455 to 378 physical lines. The code-quality
+baseline removes its oversized-file allowance and lowers its one overlong
+function maximum from 406 to 340. Direct deterministic lighting coverage now
+locks empty and non-fixture documents, valid and estimated fixtures, active
+fixture policy, multi-room/room-switch behavior, and master/dimmer disablement.
+The presentation guard, focused lighting and editor contracts, persistence,
+zero-warning lint, typecheck, code quality, and strict production build pass.
+`test:design-page-cleanup` clears the remediated presentation guard and next
+stops at the inherited GLB local-bounds source assertion in
+`test-design-page-scene-layers.ts`; a direct later viewport guard also retains
+its existing 361-line versus 280-line failure. Neither inherited area is part
+of this batch. Full E2E, Phase 8, CH-0004, other CH-0017 through CH-0030 work,
+Hamilton adapter limitations, workflows, dependencies, schema, and migrations
+remain untouched.

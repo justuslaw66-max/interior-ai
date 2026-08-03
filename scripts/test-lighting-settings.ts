@@ -6,6 +6,7 @@ import {
   resolveDesignLightingSettings,
   updateDesignLightingSettings,
 } from "@/lib/design-lighting-settings";
+import { buildDesignPagePresentationLightingState } from "@/lib/useDesignPagePresentationLightingRegistration";
 import {
   snapshotToStored,
   storedToSnapshot,
@@ -311,6 +312,144 @@ const fixtureSnapshot = makeSnapshot({
     },
   ],
 });
+const emptyPresentationLighting = buildDesignPagePresentationLightingState(
+  makeSnapshot()
+);
+assert.deepEqual(emptyPresentationLighting.lightingStatus, {
+  placedFixtureCount: 0,
+  activeFixtureCount: 0,
+  estimatedFixtureCount: 0,
+});
+
+const fixtureProductSnapshot = fixtureItem.productSnapshot;
+assert.ok(fixtureProductSnapshot);
+const nonFixtureItem: DesignItem = {
+  ...fixtureItem,
+  instanceId: "chair-1",
+  productId: "reference-chair",
+  productSnapshot: {
+    ...fixtureProductSnapshot,
+    productId: "reference-chair",
+    name: "Reference chair",
+    category: "chair",
+    lighting: undefined,
+  },
+  fixtureLight: { isOn: true, dimmer: 1 },
+};
+assert.deepEqual(
+  buildDesignPagePresentationLightingState(
+    makeSnapshot({
+      rooms: [
+        {
+          ...createRoom("room-1", "Living room"),
+          items: [nonFixtureItem],
+        },
+      ],
+    })
+  ).lightingStatus,
+  {
+    placedFixtureCount: 0,
+    activeFixtureCount: 0,
+    estimatedFixtureCount: 0,
+  },
+  "An item-level light override without fixture photometrics must not create a fixture-light entry."
+);
+
+const fixturePresentationLighting = buildDesignPagePresentationLightingState(
+  fixtureSnapshot
+);
+assert.equal(fixturePresentationLighting.lightingPreset, "studio");
+assert.deepEqual(fixturePresentationLighting.lightingStatus, {
+  placedFixtureCount: 1,
+  activeFixtureCount: 1,
+  estimatedFixtureCount: 1,
+});
+
+const fixtureUsingPresetDefault = {
+  ...fixtureItem,
+  fixtureLight: { dimmer: 1 },
+};
+const warmDefaultFixtureLighting = buildDesignPagePresentationLightingState({
+  ...fixtureSnapshot,
+  lighting: { ...DEFAULT_DESIGN_LIGHTING_SETTINGS, preset: "warm" },
+  rooms: [
+    {
+      ...fixtureSnapshot.rooms[0],
+      items: [fixtureUsingPresetDefault],
+    },
+  ],
+});
+assert.equal(warmDefaultFixtureLighting.lightingStatus.activeFixtureCount, 1);
+const explicitlyOffFixtureLighting = buildDesignPagePresentationLightingState({
+  ...fixtureSnapshot,
+  lighting: { ...DEFAULT_DESIGN_LIGHTING_SETTINGS, preset: "warm" },
+  rooms: [
+    {
+      ...fixtureSnapshot.rooms[0],
+      items: [
+        {
+          ...fixtureUsingPresetDefault,
+          fixtureLight: { isOn: false, dimmer: 1 },
+        },
+      ],
+    },
+  ],
+});
+assert.equal(
+  explicitlyOffFixtureLighting.lightingStatus.activeFixtureCount,
+  0,
+  "A per-fixture off override should win over the active preset default."
+);
+
+const multiRoomFixtureSnapshot = makeSnapshot({
+  rooms: [
+    { ...createRoom("room-1", "Living room"), items: [] },
+    {
+      ...createRoom("room-2", "Bedroom"),
+      items: [{ ...fixtureItem, instanceId: "fixture-room-2" }],
+    },
+  ],
+  activeRoomId: "room-1",
+});
+const inactiveRoomFixtureLighting =
+  buildDesignPagePresentationLightingState(multiRoomFixtureSnapshot);
+const switchedRoomFixtureLighting = buildDesignPagePresentationLightingState({
+  ...multiRoomFixtureSnapshot,
+  activeRoomId: "room-2",
+});
+assert.deepEqual(
+  switchedRoomFixtureLighting,
+  inactiveRoomFixtureLighting,
+  "Fixture status should cover the canonical multi-room document and remain stable across room switches."
+);
+
+const fixturesDisabledLighting = buildDesignPagePresentationLightingState({
+  ...fixtureSnapshot,
+  lighting: {
+    ...DEFAULT_DESIGN_LIGHTING_SETTINGS,
+    preset: "warm",
+    fixtureMasterEnabled: false,
+  },
+});
+assert.equal(fixturesDisabledLighting.lightingStatus.placedFixtureCount, 1);
+assert.equal(fixturesDisabledLighting.lightingStatus.activeFixtureCount, 0);
+assert.equal(fixturesDisabledLighting.lightingStatus.estimatedFixtureCount, 1);
+
+const dimmedOffLighting = buildDesignPagePresentationLightingState({
+  ...fixtureSnapshot,
+  rooms: [
+    {
+      ...fixtureSnapshot.rooms[0],
+      items: [
+        {
+          ...fixtureItem,
+          fixtureLight: { ...fixtureItem.fixtureLight, dimmer: 0 },
+        },
+      ],
+    },
+  ],
+});
+assert.equal(dimmedOffLighting.lightingStatus.activeFixtureCount, 0);
 const fixtureRoundTrip = storedToSnapshot(
   snapshotToStored(fixtureSnapshot)
 );
@@ -619,6 +758,9 @@ const canvasSource = read(
 const presentationSource = read(
   "lib/useDesignPagePresentationWorkspaceRegistration.ts"
 );
+const presentationLightingSource = read(
+  "lib/useDesignPagePresentationLightingRegistration.ts"
+);
 
 assert.match(
   commandBarSource,
@@ -681,9 +823,24 @@ assert.match(
   "The subtle workspace shadow catcher should turn off with shadows."
 );
 assert.match(
-  presentationSource,
+  presentationLightingSource,
   /runHistoryTransaction\([\s\S]*?updateDesignLightingSettings/,
   "Lighting edits should enter the design history transaction."
+);
+for (const transactionName of [
+  "Change lighting preset",
+  "Toggle scene shadows",
+  "Change lighting settings",
+] as const) {
+  assert.ok(
+    presentationLightingSource.includes(`"${transactionName}"`),
+    `Lighting commands should retain the ${transactionName} history label.`
+  );
+}
+assert.match(
+  presentationSource,
+  /useDesignPagePresentationLightingRegistration\(\{[\s\S]*?\.\.\.presentationLighting\.state[\s\S]*?lighting: presentationLighting\.actions\.lighting/,
+  "Presentation composition should consume the focused lighting registration without duplicating lighting state."
 );
 const lightingSystemSource = read(
   "components/editor/design-page/lighting/LightingSystem.tsx"
