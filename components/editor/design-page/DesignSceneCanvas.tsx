@@ -18,7 +18,7 @@ import {
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 
 import { CanvasErrorBoundary } from "@/components/CanvasErrorBoundary";
-import { instrumentGLBMainThreadRenderer } from "@/components/scene/glb-scaled-model/glbMainThreadTelemetry";
+import { instrumentGLBMainThreadRenderer } from "@/components/scene/glb-scaled-model/glbMainThreadTelemetryFacade";
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
 import EditorCamera2D, {
   WHOLE_HOME_FIT_ZOOM_SCALE,

@@ -23,7 +23,7 @@ import type {
   GLBModelLifecycleHandle,
 } from "./modelLifecycleTypes";
 import type { GLBResourceCacheStatus } from "./glbResourceCache";
-import { measureGLBMainThreadWork } from "./glbMainThreadTelemetry";
+import { measureGLBMainThreadWork } from "./glbMainThreadTelemetryFacade";
 
 type RenderAssets = CatalogItemSchema["variants"][number]["renderAssets"];
 type LoadStateCallback = (state: "loading" | "ready" | "error") => void;

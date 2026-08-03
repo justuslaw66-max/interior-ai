@@ -30,7 +30,7 @@ import { useGLBLoadedResource } from "./useGLBLoadedResource";
 import {
   measureGLBMainThreadWork,
   recordGLBMainThreadCounter,
-} from "./glbMainThreadTelemetry";
+} from "./glbMainThreadTelemetryFacade";
 
 type GLBModelLifecycleInput = {
   url: string;

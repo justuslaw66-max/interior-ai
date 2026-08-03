@@ -1,10 +1,9 @@
 import { createGLBRequiredSnapshot } from "./glbRequiredSnapshot";
 import {
-  createGLBMainThreadTelemetryContext,
   initializeGLBMainThreadTelemetry,
   recordGLBEventLoopGap,
   recordGLBMainThreadCounter,
-} from "./glbMainThreadTelemetry";
+} from "./glbMainThreadTelemetryFacade";
 import type {
   GLBModelDiagnosticSnapshot,
   GLBModelStageTiming,
@@ -99,12 +98,7 @@ export function getDiagnosticStore() {
   const reloadGeneration = getReloadGeneration(diagnosticsGlobal);
   diagnosticsGlobal.__INTERIOR_AI_GLB_DIAGNOSTICS__ ??= {};
   diagnosticsGlobal.__INTERIOR_AI_GLB_DIAGNOSTICS_VERSION__ ??= 0;
-  initializeGLBMainThreadTelemetry(() =>
-    createGLBMainThreadTelemetryContext(
-      diagnosticsGlobal.__INTERIOR_AI_GLB_DIAGNOSTICS__ ?? {},
-      reloadGeneration,
-    ),
-  );
+  initializeGLBMainThreadTelemetry();
   ensureEventLoopProbe(diagnosticsGlobal);
   diagnosticsGlobal.__INTERIOR_AI_GLB_REQUIRED_SNAPSHOT__ = () =>
     createGLBRequiredSnapshot({

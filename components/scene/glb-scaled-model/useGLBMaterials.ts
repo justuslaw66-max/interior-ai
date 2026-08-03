@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import type { GLBUpholsteryTextures } from "./normalizeGLBScene";
-import { measureGLBMainThreadWork } from "./glbMainThreadTelemetry";
+import { measureGLBMainThreadWork } from "./glbMainThreadTelemetryFacade";
 
 type RenderAssets = CatalogItemSchema["variants"][number]["renderAssets"];
 type MaterialControl = { cancelled: boolean; ownedTextures: THREE.Texture[] };

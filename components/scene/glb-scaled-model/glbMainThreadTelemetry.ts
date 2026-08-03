@@ -2,12 +2,15 @@ import type {
   GLBModelDiagnosticSnapshot,
   GLBModelPendingStage,
 } from "./modelLifecycleTypes";
-import type * as THREE from "three";
 import {
   BoundedMetadataRing,
+  GLB_MAIN_THREAD_COUNTERS,
   GLB_MAIN_THREAD_TELEMETRY_CAPACITY,
   GLB_MAIN_THREAD_TIMING_CATEGORIES,
   attributeGLBLongTaskCategory,
+  createGLBMainThreadTimingEntry,
+  type GLBMainThreadCounter,
+  type GLBMainThreadTelemetryBootstrap,
   type GLBMainThreadTimingCategory,
   type GLBMainThreadTimingEntry,
 } from "./glbMainThreadTelemetryCore";
@@ -17,6 +20,7 @@ export {
   GLB_MAIN_THREAD_TELEMETRY_CAPACITY,
   GLB_MAIN_THREAD_TIMING_CATEGORIES,
   attributeGLBLongTaskCategory,
+  createGLBMainThreadTimingEntry,
   type GLBMainThreadTimingCategory,
   type GLBMainThreadTimingEntry,
 } from "./glbMainThreadTelemetryCore";
@@ -56,7 +60,6 @@ type LongTaskEntry = GapEntry &
   TelemetryContext & {
     category: GLBMainThreadTimingCategory | "unattributed";
   };
-
 type GLBMainThreadTelemetryState = {
   startedAtMs: number;
   timings: BoundedMetadataRing<GLBMainThreadTimingEntry>;
@@ -67,23 +70,21 @@ type GLBMainThreadTelemetryState = {
   readContext: () => TelemetryContext;
   synchronousOperationsActive: number;
   maximumSynchronousOperationsActive: number;
-  counters: {
-    lifecycleTransitions: number;
-    diagnosticStoreUpdates: number;
-    reactRenders: number;
-    sceneAttachments: number;
-    rendererCalls: number;
-  };
+  counters: Record<GLBMainThreadCounter, number>;
+  bootstrapEventsFlushed: number;
   maximumTelemetryCallbackDurationMs: number;
   initialized: boolean;
 };
-
 type TelemetryGlobal = typeof globalThis & {
   __INTERIOR_AI_ENABLE_GLB_DIAGNOSTICS__?: boolean;
+  __INTERIOR_AI_GLB_DIAGNOSTICS__?: Record<
+    string,
+    GLBModelDiagnosticSnapshot
+  >;
+  __INTERIOR_AI_GLB_DIAGNOSTICS_GENERATION__?: number;
   __INTERIOR_AI_GLB_MAIN_THREAD_TELEMETRY__?: GLBMainThreadTelemetryState;
   __INTERIOR_AI_GLB_MAIN_THREAD_SNAPSHOT__?: () => GLBMainThreadTelemetrySnapshot;
 };
-
 export type GLBMainThreadTelemetrySnapshot = {
   schema: "interior-ai.glb-main-thread-telemetry.v1";
   capacity: number;
@@ -95,9 +96,9 @@ export type GLBMainThreadTelemetrySnapshot = {
   synchronousOperationsActive: number;
   maximumSynchronousOperationsActive: number;
   counters: GLBMainThreadTelemetryState["counters"];
+  bootstrapEventsFlushed: number;
   maximumTelemetryCallbackDurationMs: number;
 };
-
 function nowMs() {
   return typeof performance === "undefined" ? 0 : performance.now();
 }
@@ -182,6 +183,14 @@ export function createGLBMainThreadTelemetryContext(
   return { reloadGeneration, activeRequiredCount, modelStageCounts };
 }
 
+function readCurrentTelemetryContext() {
+  const telemetryGlobal = globalThis as TelemetryGlobal;
+  return createGLBMainThreadTelemetryContext(
+    telemetryGlobal.__INTERIOR_AI_GLB_DIAGNOSTICS__ ?? {},
+    telemetryGlobal.__INTERIOR_AI_GLB_DIAGNOSTICS_GENERATION__ ?? 1,
+  );
+}
+
 function recordObserverCost(state: GLBMainThreadTelemetryState, startedAtMs: number) {
   state.maximumTelemetryCallbackDurationMs = Math.max(
     state.maximumTelemetryCallbackDurationMs,
@@ -239,24 +248,19 @@ function startFrameGapObserver(state: GLBMainThreadTelemetryState) {
   requestAnimationFrame(observeFrame);
 }
 
-export function initializeGLBMainThreadTelemetry(
-  readContext: () => TelemetryContext,
-) {
+export function initializeGLBMainThreadTelemetry(startedAtMs = nowMs()) {
   if (!telemetryEnabled()) return;
   const telemetryGlobal = globalThis as TelemetryGlobal;
   const existing = telemetryGlobal.__INTERIOR_AI_GLB_MAIN_THREAD_TELEMETRY__;
-  if (existing) {
-    existing.readContext = readContext;
-    return;
-  }
+  if (existing) return;
   const state: GLBMainThreadTelemetryState = {
-    startedAtMs: nowMs(),
+    startedAtMs,
     timings: new BoundedMetadataRing(GLB_MAIN_THREAD_TELEMETRY_CAPACITY),
     timingAggregates: emptyTimingAggregates(),
     longTasks: new BoundedMetadataRing(GLB_MAIN_THREAD_TELEMETRY_CAPACITY),
     heartbeatGaps: new BoundedMetadataRing(GLB_MAIN_THREAD_TELEMETRY_CAPACITY),
     frameGaps: new BoundedMetadataRing(GLB_MAIN_THREAD_TELEMETRY_CAPACITY),
-    readContext,
+    readContext: readCurrentTelemetryContext,
     synchronousOperationsActive: 0,
     maximumSynchronousOperationsActive: 0,
     counters: {
@@ -266,6 +270,7 @@ export function initializeGLBMainThreadTelemetry(
       sceneAttachments: 0,
       rendererCalls: 0,
     },
+    bootstrapEventsFlushed: 0,
     maximumTelemetryCallbackDurationMs: 0,
     initialized: true,
   };
@@ -283,11 +288,14 @@ export function recordGLBMainThreadTiming(
 ) {
   const state = currentState();
   if (!state) return;
-  state.timings.push({
-    startRelativeMs: Math.max(0, startedAtMs - state.startedAtMs),
-    durationMs: Math.max(0, completedAtMs - startedAtMs),
-    category,
-  });
+  state.timings.push(
+    createGLBMainThreadTimingEntry(
+      category,
+      startedAtMs,
+      completedAtMs,
+      state.startedAtMs,
+    ),
+  );
   const durationMs = Math.max(0, completedAtMs - startedAtMs);
   const aggregate = state.timingAggregates[category];
   aggregate.count += 1;
@@ -318,22 +326,6 @@ export function measureGLBMainThreadWork<T>(
   }
 }
 
-const instrumentedRenderers = new WeakSet<THREE.WebGLRenderer>();
-
-export function instrumentGLBMainThreadRenderer(
-  renderer: THREE.WebGLRenderer,
-) {
-  if (!telemetryEnabled() || instrumentedRenderers.has(renderer)) return;
-  instrumentedRenderers.add(renderer);
-  const render = renderer.render.bind(renderer);
-  renderer.render = (scene, camera) => {
-    recordGLBMainThreadCounter("rendererCalls");
-    return measureGLBMainThreadWork("r3f-render", () =>
-      render(scene, camera),
-    );
-  };
-}
-
 export function recordGLBEventLoopGap(startedAtMs: number, durationMs: number) {
   const state = currentState();
   if (!state || durationMs < RESPONSIVE_GAP_THRESHOLD_MS) return;
@@ -343,11 +335,27 @@ export function recordGLBEventLoopGap(startedAtMs: number, durationMs: number) {
   });
 }
 
-export function recordGLBMainThreadCounter(
-  counter: keyof GLBMainThreadTelemetryState["counters"],
-) {
+export function recordGLBMainThreadCounter(counter: GLBMainThreadCounter) {
   const state = currentState();
   if (state) state.counters[counter] += 1;
+}
+
+export function hydrateGLBMainThreadTelemetryBootstrap(
+  bootstrap: GLBMainThreadTelemetryBootstrap,
+) {
+  const state = currentState();
+  if (!state) return;
+  for (const event of bootstrap.events) {
+    if (event.type === "timing") {
+      recordGLBMainThreadTiming(event.category, event.startedAtMs, event.completedAtMs);
+    } else recordGLBEventLoopGap(event.startedAtMs, event.durationMs);
+  }
+  let flushedCounterCount = 0;
+  for (const counter of GLB_MAIN_THREAD_COUNTERS) {
+    state.counters[counter] += bootstrap.counters[counter];
+    flushedCounterCount += bootstrap.counters[counter];
+  }
+  state.bootstrapEventsFlushed += bootstrap.events.length + flushedCounterCount;
 }
 
 export function snapshotGLBMainThreadTelemetry(): GLBMainThreadTelemetrySnapshot {
@@ -370,6 +378,7 @@ export function snapshotGLBMainThreadTelemetry(): GLBMainThreadTelemetrySnapshot
         sceneAttachments: 0,
         rendererCalls: 0,
       },
+      bootstrapEventsFlushed: 0,
       maximumTelemetryCallbackDurationMs: 0,
     };
   }
@@ -385,6 +394,7 @@ export function snapshotGLBMainThreadTelemetry(): GLBMainThreadTelemetrySnapshot
     maximumSynchronousOperationsActive:
       state.maximumSynchronousOperationsActive,
     counters: { ...state.counters },
+    bootstrapEventsFlushed: state.bootstrapEventsFlushed,
     maximumTelemetryCallbackDurationMs: state.maximumTelemetryCallbackDurationMs,
   };
 }

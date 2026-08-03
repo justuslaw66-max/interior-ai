@@ -1409,3 +1409,55 @@ data, schema, migration, dependency, cache policy, timeout, retry, workflow,
 ruleset, PR, deployment, or CH-0004 rollback exists. The exact commit SHA and
 detached exact-commit production proof are reported after the commit because a
 commit cannot contain its own content-derived identity. No push is authorized.
+
+## CH-0029 pre-push bundle-gate correction — 2026-08-03
+
+The mandatory pre-push Phase 8 comparison correctly stopped external work for
+`696a735a1c3c07125da8e45689611ac16c8b1d4a`. Identical clean detached builds at
+Node 24.13.0/npm 11.6.2 measured the CH-0028 base at 7,092,223 raw / 1,166,410
+Brotli initial-JS bytes and that first CH-0029 commit at 7,100,281 / 1,168,510,
+an explained but avoidable +8,058 raw / +2,100 Brotli regression. The complete
+collector had remained eager even though its runtime work was production-gated.
+No push or workflow dispatch occurred.
+
+The follow-up correction keeps only a small synchronous facade in the initial
+graph and loads the complete collector through an explicit diagnostics-only
+dynamic import. A repeated clean detached comparison measures 7,096,918 raw /
+1,168,050 Brotli, or +4,695 raw / +1,640 Brotli from the CH-0028 base. Both
+builds contain 26 initial JavaScript chunks. The independently identified full
+collector is `1a39505_z1u2r.js` at 6,205 bytes and does not occur in the
+`/design` client-reference manifest. The only newly introduced initial module
+is the minimal facade; its required 96-event bootstrap ring and five capped
+counters plus the truthful bootstrap epoch explain the +780 raw / +256 Brotli
+increase over the pre-review lazy
+candidate. The collector's long-task/frame observers, aggregate state, bounded
+evidence rings, and snapshot implementation are not duplicated into it. The
+Phase 8 budget remains unchanged at 6,955,000 raw / 1,130,000 Brotli, so 7,096,918 /
+6,955,000 remains the separate inherited Phase 8 failure. The residual CH-0029
+delta is accounted for here and belongs to the later dedicated bundle
+optimization, not to a threshold increase in this batch.
+
+Production-browser checks prove the lazy contract in both directions. An
+ordinary `/design` navigation with diagnostics disabled made zero collector
+script insertions and installed no snapshot hook. The explicit QA path installs
+the snapshot hook and records timing, lifecycle-transition, and renderer-call
+activity. A strictly bounded metadata-only bootstrap retains at most 96 fixed
+timing/gap events plus five fixed counters capped at 96 while the import is in
+flight. One monotonic scalar activation epoch preserves distinct relative start
+times when the buffer flushes; the flush count is reported. Required runtime smoke
+asserts a nonzero flush plus timing/lifecycle/render activity in the initial
+document and in each of three new reload realms. Renderer instrumentation uses
+a `WeakSet` and retains no renderer or raw WebGL graph. Aborting the collector
+request left the scene canvas mounted, installed no snapshot hook, made no
+second request, emitted no page error, and did not change any
+lifecycle, readiness, cache, refcount, cancellation, supersession, terminal
+error, timeout, retry, or frameloop behavior. Import rejection permanently
+clears the bounded bootstrap metadata for that document and fails closed.
+
+Focused telemetry/lazy-boundary, loading-frameloop, smoke-isolation, lifecycle,
+cache/refcount, generation/cancellation/supersession, GLB bounds, CH-0017
+truthfulness, CH-0016 evidence-contract, Phase 8 project, typecheck, targeted
+zero-warning ESLint, code-quality, strict production-build, and diff-hygiene
+checks pass. Full E2E was not run. The exact final two-commit CH-0029 branch
+head still requires a renewed normal-push authorization and the existing
+required-only `workflow_dispatch`; no external verification claim is made.

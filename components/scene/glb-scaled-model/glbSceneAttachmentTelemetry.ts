@@ -6,7 +6,7 @@ import type { GLBModelLifecycleHandle } from "./modelLifecycleTypes";
 import {
   measureGLBMainThreadWork,
   recordGLBMainThreadCounter,
-} from "./glbMainThreadTelemetry";
+} from "./glbMainThreadTelemetryFacade";
 
 export function reportGLBSceneAttachmentReady(
   handle: GLBModelLifecycleHandle,

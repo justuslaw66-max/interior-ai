@@ -19,7 +19,46 @@ export type GLBMainThreadTimingEntry = {
   category: GLBMainThreadTimingCategory;
 };
 
+export const GLB_MAIN_THREAD_COUNTERS = [
+  "lifecycleTransitions",
+  "diagnosticStoreUpdates",
+  "reactRenders",
+  "sceneAttachments",
+  "rendererCalls",
+] as const;
+export type GLBMainThreadCounter = (typeof GLB_MAIN_THREAD_COUNTERS)[number];
+export type GLBMainThreadBootstrapEvent =
+  | {
+      type: "timing";
+      category: GLBMainThreadTimingCategory;
+      startedAtMs: number;
+      completedAtMs: number;
+    }
+  | {
+      type: "event-loop-gap";
+      startedAtMs: number;
+      durationMs: number;
+    };
+export type GLBMainThreadTelemetryBootstrap = {
+  startedAtMs: number;
+  events: GLBMainThreadBootstrapEvent[];
+  counters: Record<GLBMainThreadCounter, number>;
+};
+
 export const GLB_MAIN_THREAD_TELEMETRY_CAPACITY = 96;
+
+export function createGLBMainThreadTimingEntry(
+  category: GLBMainThreadTimingCategory,
+  startedAtMs: number,
+  completedAtMs: number,
+  telemetryStartedAtMs: number,
+): GLBMainThreadTimingEntry {
+  return {
+    startRelativeMs: Math.max(0, startedAtMs - telemetryStartedAtMs),
+    durationMs: Math.max(0, completedAtMs - startedAtMs),
+    category,
+  };
+}
 
 export class BoundedMetadataRing<T> {
   private readonly values: T[] = [];

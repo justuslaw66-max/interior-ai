@@ -7,7 +7,7 @@ import {
   type GLBModelNormalizationConfig,
 } from "./glbModelResources";
 import type { GLBLocalRenderBounds } from "./localRenderBounds";
-import { recordGLBMainThreadTiming } from "./glbMainThreadTelemetry";
+import { recordGLBMainThreadTiming } from "./glbMainThreadTelemetryFacade";
 import type { GLBModelTerminalErrorCategory } from "./modelLifecycleTypes";
 import {
   normalizeGLBScene,

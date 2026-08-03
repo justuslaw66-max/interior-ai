@@ -1819,6 +1819,45 @@ test.describe("00. Runtime smoke", () => {
         )
       ).toBe(true);
       checkpoint("models-remounted", finalLifecycleState);
+      const telemetryBeforeFirstReload = await page.evaluate(() => {
+        const snapshot = (
+          globalThis as typeof globalThis & {
+            __INTERIOR_AI_GLB_MAIN_THREAD_SNAPSHOT__?: () => {
+              timings: Array<{ category: string; durationMs: number }>;
+              bootstrapEventsFlushed: number;
+              counters: {
+                lifecycleTransitions: number;
+                rendererCalls: number;
+              };
+            };
+          }
+        ).__INTERIOR_AI_GLB_MAIN_THREAD_SNAPSHOT__?.();
+        return snapshot
+          ? {
+              timingCount: snapshot.timings.length,
+              bootstrapEventsFlushed: snapshot.bootstrapEventsFlushed,
+              lifecycleTransitions: snapshot.counters.lifecycleTransitions,
+              rendererCalls: snapshot.counters.rendererCalls,
+            }
+          : null;
+      });
+      expect(
+        telemetryBeforeFirstReload,
+        "QA telemetry must finish lazy initialization before reload 1 begins",
+      ).not.toBeNull();
+      expect(telemetryBeforeFirstReload?.timingCount ?? 0).toBeGreaterThan(0);
+      expect(
+        telemetryBeforeFirstReload?.bootstrapEventsFlushed ?? 0,
+      ).toBeGreaterThan(0);
+      expect(
+        telemetryBeforeFirstReload?.lifecycleTransitions ?? 0,
+      ).toBeGreaterThan(0);
+      expect(telemetryBeforeFirstReload?.rendererCalls ?? 0).toBeGreaterThan(0);
+      console.info(
+        "[runtime-smoke-telemetry-pre-reload]",
+        JSON.stringify(telemetryBeforeFirstReload),
+      );
+      checkpoint("telemetry-loaded-before-reload-1", finalLifecycleState);
     }, () => finalLifecycleState);
 
     for (let reloadIndex = 0; reloadIndex < 3; reloadIndex += 1) {
@@ -1845,6 +1884,62 @@ test.describe("00. Runtime smoke", () => {
             { timeout: bootstrapReadinessTimeoutMs },
           ),
         ]);
+        await page.waitForFunction(
+          () => {
+            const snapshot = (
+              globalThis as typeof globalThis & {
+                __INTERIOR_AI_GLB_MAIN_THREAD_SNAPSHOT__?: () => {
+                  timings: unknown[];
+                  bootstrapEventsFlushed: number;
+                  counters: {
+                    lifecycleTransitions: number;
+                    rendererCalls: number;
+                  };
+                };
+              }
+            ).__INTERIOR_AI_GLB_MAIN_THREAD_SNAPSHOT__?.();
+            return Boolean(
+              snapshot &&
+                snapshot.bootstrapEventsFlushed > 0 &&
+                snapshot.timings.length > 0 &&
+                snapshot.counters.lifecycleTransitions > 0 &&
+                snapshot.counters.rendererCalls > 0,
+            );
+          },
+          undefined,
+          { timeout: bootstrapReadinessTimeoutMs },
+        );
+        const reloadTelemetry = await page.evaluate(() => {
+          const snapshot = (
+            globalThis as typeof globalThis & {
+              __INTERIOR_AI_GLB_MAIN_THREAD_SNAPSHOT__?: () => {
+                timings: unknown[];
+                bootstrapEventsFlushed: number;
+                counters: {
+                  lifecycleTransitions: number;
+                  rendererCalls: number;
+                };
+              };
+            }
+          ).__INTERIOR_AI_GLB_MAIN_THREAD_SNAPSHOT__?.();
+          return snapshot
+            ? {
+                timingCount: snapshot.timings.length,
+                bootstrapEventsFlushed: snapshot.bootstrapEventsFlushed,
+                lifecycleTransitions: snapshot.counters.lifecycleTransitions,
+                rendererCalls: snapshot.counters.rendererCalls,
+              }
+            : null;
+        });
+        expect(
+          reloadTelemetry,
+          `QA telemetry must flush bounded bootstrap metadata in ${phaseName}`,
+        ).not.toBeNull();
+        console.info(
+          "[runtime-smoke-telemetry-bootstrap]",
+          JSON.stringify({ phaseName, ...reloadTelemetry }),
+        );
+        checkpoint("telemetry-bootstrap-flushed", "loading");
         const restoredIdentity = (await runRuntimeSmokeBoundedOperation({
           operationAttempt: runtimeSmokeOperationAttempt(
             createRuntimeSmokeOperationDeadline({

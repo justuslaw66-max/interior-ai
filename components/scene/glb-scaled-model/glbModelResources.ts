@@ -19,7 +19,7 @@ import {
   GLBSourceLoadError,
 } from "./glbSourceLoadError";
 import type { GLBLocalRenderBounds } from "./localRenderBounds";
-import { measureGLBMainThreadWork, recordGLBMainThreadTiming } from "./glbMainThreadTelemetry";
+import { measureGLBMainThreadWork, recordGLBMainThreadTiming } from "./glbMainThreadTelemetryFacade";
 import type { GLBModelCacheStatus } from "./modelLifecycleTypes";
 import {
   normalizeGLBScene,
