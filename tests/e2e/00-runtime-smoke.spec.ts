@@ -27,11 +27,13 @@ import {
 } from "../../scripts/runtime-smoke-browser-diagnostics.mjs";
 import type { GLBRequiredSnapshot } from "../../components/scene/glb-scaled-model/glbRequiredSnapshot";
 import { calculateGLBRequiredSnapshotTransportTiming } from "../../components/scene/glb-scaled-model/glbSnapshotTiming";
+import { CH0029RuntimeProfiler } from "./ch0029-runtime-profiler";
 
 test.use({
   trace: "off",
   video: "off",
 });
+if (process.env.CH0029_RUNTIME_PROFILE === "1") test.use({ screenshot: "off" });
 
 const DESIGN_STORAGE_KEY = "interior-ai:v1:livingroom-design";
 const EXPECTED_ACTIVE_REQUIRED_MODEL_COUNT = 8;
@@ -93,6 +95,7 @@ const MODEL_FIXTURES = [
 test.describe("00. Runtime smoke", () => {
   test("furnished template remains stable without a render loop", async ({ page }) => {
     test.setTimeout(RUNTIME_SMOKE_WHOLE_TEST_TIMEOUT_MS);
+    const ch0029Profiler = new CH0029RuntimeProfiler(page);
     let finalLifecycleState = "not-observed";
     const phaseRecorder = createRuntimeSmokePhaseRecorder({
       repositoryRoot: process.cwd(),
@@ -277,6 +280,9 @@ test.describe("00. Runtime smoke", () => {
         0,
         performance.now() - timing.hostStartedAt,
       );
+      if (milestone.stage === "entered-browser") {
+        ch0029Profiler.recordCallbackEntered(milestone.requestId);
+      }
       console.info(
         "[runtime-smoke-browser-callback-observation]",
         JSON.stringify({
@@ -307,6 +313,11 @@ test.describe("00. Runtime smoke", () => {
           requestId,
         }),
       );
+      ch0029Profiler.recordCallbackRequested({
+        phaseName: operation.phaseName,
+        operationName: operation.operationName,
+        requestId,
+      });
       activeBrowserCallbackTiming = {
         ...operation,
         requestId,
@@ -319,6 +330,7 @@ test.describe("00. Runtime smoke", () => {
           captureMilestones,
           hostRequestStartedAtUnixMs,
           operation,
+          profileCallbackEntered,
           requestId,
         }) => {
           const emitMilestone = (milestone: RequiredSnapshotMilestone) => {
@@ -342,6 +354,9 @@ test.describe("00. Runtime smoke", () => {
             );
           };
           const callbackEnteredAt = performance.now();
+          if (profileCallbackEntered) {
+            performance.mark("ch0029:diagnostics-callback-entered");
+          }
           emitBrowserCallbackMilestone("entered-browser");
           const callbackEnteredAtUnixMs = Date.now();
           const computationStartedAtUnixMs = Date.now();
@@ -499,6 +514,10 @@ test.describe("00. Runtime smoke", () => {
           captureMilestones: milestoneCheckpoint !== null,
           hostRequestStartedAtUnixMs,
           operation,
+          profileCallbackEntered: ch0029Profiler.shouldMarkCallbackEntered(
+            operation.phaseName,
+            operation.operationName,
+          ),
           requestId,
         },
       );
@@ -1367,6 +1386,7 @@ test.describe("00. Runtime smoke", () => {
     };
 
     await phaseRecorder.run("test-body-setup", async ({ checkpoint }) => {
+      await ch0029Profiler.install();
       page.on("pageerror", (error) => fatalErrors.push(error.message));
       page.on("console", (message) => {
         const snapshotMilestonePrefix =
@@ -1862,9 +1882,11 @@ test.describe("00. Runtime smoke", () => {
 
     for (let reloadIndex = 0; reloadIndex < 3; reloadIndex += 1) {
       const phaseName = `reload-${reloadIndex + 1}`;
+      const profileThisReload = reloadIndex === 0 && ch0029Profiler.enabled;
       finalLifecycleState = "not-observed";
       await phaseRecorder.run(phaseName, async ({ checkpoint }) => {
         lastBrowserHeartbeat = null;
+        if (profileThisReload) await ch0029Profiler.mark("reload-1-start");
         const reloadResponse = await page.reload({
           waitUntil: "domcontentloaded",
           timeout: reloadOperationTimeout("navigation"),
@@ -1974,22 +1996,34 @@ test.describe("00. Runtime smoke", () => {
         const reloadedView3d = page
           .locator('[data-testid="editor-view-3d"]:visible')
           .first();
-        if (
+        const requires3dActivation =
           (await reloadedView3d.getAttribute("aria-pressed", {
             timeout: reloadOperationTimeout("view-state-read"),
-          })) !== "true"
-        ) {
+          })) !== "true";
+        if (profileThisReload) {
+          await ch0029Profiler.startTrace();
+          await ch0029Profiler.markOrdered("3d-activation-requested");
+        }
+        if (requires3dActivation) {
           await reloadedView3d.click({
             timeout: reloadOperationTimeout("view-activation"),
           });
         }
         checkpoint("view-3d-active", "loading");
+        if (profileThisReload) await ch0029Profiler.mark("bounds-start");
         const reloadDiagnostics = await waitForReloadModelsReady({
           minimumResponseCount: reloadIndex + 2,
           minimumReloadGeneration: completedReloadGeneration + 1,
           phaseName,
           checkpoint,
         });
+        if (profileThisReload) {
+          await ch0029Profiler.markMany([
+            "responses-complete",
+            "models-ready",
+            "bounds-complete",
+          ]);
+        }
         const responseTotal = MODEL_FIXTURES.reduce(
           (total, { modelPath }) =>
             total + (modelResponseCounts.get(modelPath) ?? 0),
@@ -2040,6 +2074,9 @@ test.describe("00. Runtime smoke", () => {
           completedCheckpoint: "body-state-verification-complete",
           task: () => verifyBodyStateAfterReadiness({ phaseName, checkpoint }),
         });
+        if (profileThisReload) {
+          await ch0029Profiler.mark("diagnostics-settle-requested");
+        }
         const reloadSettledBefore = await runRuntimeSmokePostReadinessOperation({
           checkpoint,
           startedCheckpoint: "post-ready-settle-started",
@@ -2070,6 +2107,9 @@ test.describe("00. Runtime smoke", () => {
               checkpoint,
             ),
         });
+        if (profileThisReload) {
+          await ch0029Profiler.mark("diagnostics-complete");
+        }
         recordRequiredSnapshotProof(phaseName, checkpoint);
         expect(lastRequiredSnapshot?.reloadGeneration).toBe(
           immediateSnapshot.reloadGeneration,
@@ -2093,7 +2133,18 @@ test.describe("00. Runtime smoke", () => {
         });
         finalLifecycleState = "stable";
         checkpoint("reload-assertions-complete", "stable");
-      }, () => finalLifecycleState);
+      }, () => finalLifecycleState).then(
+        async () => {
+          if (profileThisReload) await ch0029Profiler.stop("completed");
+        },
+        async (error: unknown) => {
+          if (profileThisReload) {
+            await ch0029Profiler.mark("failure");
+            await ch0029Profiler.stop("failure");
+          }
+          throw error;
+        },
+      );
     }
 
     await phaseRecorder.run("persistence-assertions", async ({ checkpoint }) => {

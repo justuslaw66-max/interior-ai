@@ -4,13 +4,13 @@ Triage date: 2026-07-31 (Asia/Singapore)
 
 Repository: `/Users/justus/Developer/interior-ai`
 
-Branch: `fix/ch-0029-main-thread-starvation`
+Branch: `test/ch-0030-ci-renderer-gpu-profile`
 
 CH-0017 starting HEAD: `cea0cabe53742da8b47c1e119d889033351a1fdf`
 
 Post-triage documentation checkpoint: `195deacba6e22293b4e887dd4b4bb5203028c0fb`
 
-Current superseding statuses are: CH-0017 **TRUTHFULNESS AND REQUIRED EXTERNAL WORKFLOW VERIFIED — IMPLEMENTATION FROZEN**; CH-0028 **EXTERNALLY VERIFIED — RESOLVED** at verified source `db346a51718967bd4dc1605b07c0850e02fd08d1`; and CH-0029 **OPEN — POST-RESPONSE BROWSER/MAIN-THREAD STARVATION**. CH-0029 began from that exact clean CH-0028 source on `fix/ch-0029-main-thread-starvation`; before edits, `lsof` resolved the active Node listener to `/Users/justus/Developer/interior-ai`, matching the canonical checkout. This batch authorizes no push, deployment, external-control change, release promotion, CH-0004 work, or Full E2E.
+Current superseding statuses are: CH-0017 **TRUTHFULNESS AND REQUIRED EXTERNAL WORKFLOW VERIFIED — IMPLEMENTATION FROZEN**; CH-0028 **EXTERNALLY VERIFIED — RESOLVED** at verified source `db346a51718967bd4dc1605b07c0850e02fd08d1`; CH-0029 **APPLICATION REMEDIATION COMPLETE — IMPLEMENTATION FROZEN; EXTERNAL ENVIRONMENT VERIFICATION PENDING**; and CH-0030 **EXTERNAL VERIFICATION BLOCKED — ISOLATED RUNNER AVAILABILITY/AUTHORIZATION UNCONFIRMED**. CH-0030 began from authoritative application source `7158b5152336565a1d2b8caa42c2adab108268d2` on `test/ch-0030-ci-renderer-gpu-profile`, preserving the pre-existing dirty test-only profiling work. Before edits, `lsof` resolved the active Node listener to `/Users/justus/Developer/interior-ai`, matching the canonical checkout. This batch authorizes no production change, push, workflow dispatch, runner change, deployment, external-control change, release promotion, CH-0004 work, or Full E2E.
 
 ## Counts and selected action
 
@@ -18,7 +18,7 @@ Current superseding statuses are: CH-0017 **TRUTHFULNESS AND REQUIRED EXTERNAL W
 - Unresolved P1: **13**.
 - Resolved P1: **5** (`CH-0001`, `CH-0012`, `CH-0016`, `CH-0017`, `CH-0028`).
 - Former P1 findings downgraded with current evidence: **2** (`CH-0009`, `CH-0014`).
-- Selected active batch: **CH-0029 post-response browser/main-thread starvation**. CH-0004 was not started.
+- Selected active batch: **CH-0030 required-smoke CI renderer/GPU contention**. CH-0029 application work is frozen and CH-0004 was not started.
 
 ## Classification summary
 
@@ -44,7 +44,8 @@ Current superseding statuses are: CH-0017 **TRUTHFULNESS AND REQUIRED EXTERNAL W
 | CH-0018 | P1 | BLOCKED_DEPENDENCY | Supported predecessor versions and a representative sanitized fixture owner are required. |
 | CH-0019 | P1 release / P2 code health | READY | Several bounded baseline batches are independent; failures must remain separate from CH-0001. |
 | CH-0028 | P1 release/runtime, resolved | RESOLVED | EXTERNALLY VERIFIED — RESOLVED at verified source `db346a51718967bd4dc1605b07c0850e02fd08d1`. |
-| CH-0029 | P2 performance | OPEN | OPEN — POST-RESPONSE BROWSER/MAIN-THREAD STARVATION. A local C/G contention correction is complete; required-only external verification remains required. |
+| CH-0029 | P2 performance | FROZEN | APPLICATION REMEDIATION COMPLETE — IMPLEMENTATION FROZEN; EXTERNAL ENVIRONMENT VERIFICATION PENDING. |
+| CH-0030 | P2 test infrastructure | BLOCKED | EXTERNAL VERIFICATION BLOCKED — ISOLATED RUNNER AVAILABILITY/AUTHORIZATION UNCONFIRMED. The measured owner is CI/browser/GPU execution-environment contention. |
 
 ## Finding evidence and remediation boundaries
 
@@ -220,13 +221,23 @@ Current superseding statuses are: CH-0017 **TRUTHFULNESS AND REQUIRED EXTERNAL W
 
 ### CH-0029 — post-response browser/main-thread starvation
 
-- **Status:** `OPEN — POST-RESPONSE BROWSER/MAIN-THREAD STARVATION`. Local remediation is complete and remains open until required-only external `workflow_dispatch` verifies the exact final two-commit branch head. The mandatory pre-push bundle comparison stopped `696a735a1c3c07125da8e45689611ac16c8b1d4a` before any push because its full telemetry collector remained eager; a separate local follow-up now lazy-loads that collector. CH-0017 remains frozen and CH-0028 remains externally resolved at `db346a51718967bd4dc1605b07c0850e02fd08d1`.
+- **Status:** `APPLICATION REMEDIATION COMPLETE — IMPLEMENTATION FROZEN; EXTERNAL ENVIRONMENT VERIFICATION PENDING`. The mandatory pre-push bundle comparison stopped `696a735a1c3c07125da8e45689611ac16c8b1d4a` before any push because its full telemetry collector remained eager; the separate follow-up lazy-loads that collector. No further application, frameloop, GLB lifecycle/cache/readiness/refcount, timeout, retry, or workflow change is authorized under CH-0029. CH-0017 remains frozen, CH-0028 remains externally resolved at `db346a51718967bd4dc1605b07c0850e02fd08d1`, and CH-0030 owns the remaining execution-environment verification.
 - **Measured classification and owner:** **C/G — React/R3F render work plus host/test contention**, an inseparable aggregate resource-contention cluster. Before the behavior change, the hidden loading Canvas continuously executed the complete mounted per-frame subscriber workload plus renderer/GPU submission while Playwright retained trace/video work on the same constrained host. The 10,736 ms long task was correctly `unattributed`; measured `r3f-render` work was 320 calls, 387.9 ms total, and 148.1 ms maximum. No evidence attributes the 10.736-second task directly to `WebGLRenderer.render` or to one GLB pipeline stage.
 - **Before/after scheduling:** While the scene loading veil is active, Canvas now uses demand rendering; once the scene is visible and interactive it restores the existing continuous `always` mode. Trace and video are disabled only for this stable smoke, leaving global failure-diagnostic defaults and the safe CH-0017 structured artifact contract unchanged. No readiness, lifecycle, cache, timeout, retry, or product interaction behavior changed.
 - **Measurements:** Authoritative external run `30787561725` retained an 11,747 ms heartbeat gap, a maximum admitted callback delay of 5,281 ms, and a final requested callback that never entered. Matched local pre-fix tracing observed a 10,736 ms unattributed long task, about 11,010 ms heartbeat delay, and 11,109 ms callback admission. Final-code pristine runs observed maxima of 6,858 ms heartbeat and 6,406 ms admitted callback; all callbacks entered. Under two controlled ~98% CPU workers, the final run observed 8,102 ms heartbeat and 7,168 ms callback admission and still passed. This proves bounded admission and removes the no-entry failure; it does not establish a numeric callback-gap improvement over the external 5,281 ms admitted maximum.
 - **Telemetry and lazy evidence boundary:** A 96-entry metadata-only ring records fixed timing categories, long tasks, heartbeat/frame gaps, current safe stage counts, synchronous-operation concurrency, and lifecycle/store/render counters. Production collection requires the existing explicit diagnostic flag, and the complete collector now resides only in diagnostics-loaded chunk `1a39505_z1u2r.js` (6,205 bytes); ordinary production navigation inserts no collector script and installs no snapshot hook. During the import, the facade retains at most 96 fixed timing/gap events plus five fixed counters capped at 96 and one monotonic scalar epoch, then flushes once without collapsing distinct relative start times. Required QA asserts a nonzero flush plus timing/lifecycle/render activity in the initial document and all three new reload realms. Import failure is terminal and non-failing for the document, clears bootstrap metadata, creates no retry, and leaves lifecycle/readiness/cache/refcount behavior unchanged. Renderer identity is tracked only in a `WeakSet`; no renderer or raw WebGL graph is retained. Nested snapshot metadata is detached, and 10,000 bounded ring writes cost 0.5–1.2 ms in focused checks. URLs, paths, materials, textures, credentials, arbitrary payloads, and user data are not retained.
 - **Validation:** Three fresh 42-migration production smokes passed furnished-template and health/catalog 2/2 with no failure, flake, skip, or retry. Reloads were 10,196/10,822/10,485 ms; 11,262/10,684/10,832 ms; and 11,354/10,192/10,570 ms. Every reload retained responses 6/9/12, 8 ready / 0 loading / 0 error, parsed cache 8/13, prepared cache 12/7, five bounded zero-reference variants, current generations, coherent refcounts, and no stale active entries. The pressure reloads were 12,725/11,859/12,048 ms with the same invariants and the unchanged 70,000 ms correctness contract. A focused final lazy-candidate smoke also passed furnished-template and health/catalog 2/2 while asserting bootstrap hydration in each reload realm. The pre-push clean bundle proof measures the corrected candidate at 7,096,918 raw / 1,168,050 Brotli versus the CH-0028 base at 7,092,223 / 1,166,410, with 26 initial chunks in both and the full collector absent from the corrected initial graph.
 - **Limits and rollback:** Stricter user-experience responsiveness remains a product decision; the longest JavaScript task remains unattributed and constrained-host admission can still exceed five seconds. The unchanged 6,955,000-byte Phase 8 raw budget remains separately red at 7,096,918 and was not repaired or rebaselined; the residual +4,695 raw / +1,640 Brotli CH-0029 delta belongs to the later dedicated bundle optimization. Roll back the separate lazy-collector commit and then the original CH-0029 commit to restore eager diagnostics plus continuous hidden-Canvas rendering and stable-smoke trace/video capture; no data, schema, cache-policy, timeout, workflow, ruleset, PR, or deployment rollback is needed.
+
+### CH-0030 — required-smoke CI renderer/GPU contention
+
+- **Status and boundary:** `EXTERNAL VERIFICATION BLOCKED — ISOLATED RUNNER AVAILABILITY/AUTHORIZATION UNCONFIRMED`. Title: “Required Chromium runtime smoke suffers renderer/GPU execution contention on the standard CI runner.” The finding starts from authoritative application source `7158b5152336565a1d2b8caa42c2adab108268d2`; it adds only opt-in test profiling, focused contracts, configuration, and documentation. Production behavior, frameloop, GLB lifecycle/cache/readiness/refcount, timeout, retry, CH-0017, CH-0028, CH-0029, workflow, and Full E2E contracts are frozen.
+- **External evidence:** Required-only run `30805127205` ran on GitHub-hosted `ubuntu-latest` with Node 24.13.0/npm 11.6.2, PostgreSQL 15, Playwright 1.60.0, and Chrome for Testing 148.0.7778.96. It retained an 8,223 ms unattributed interval and a final reload-1 diagnostics callback that was requested but never entered. The exact-source artifact `8852605576` reports retries 0 and exit 1; health/catalog and preceding truthfulness, migration, authentication, code-quality, and strict-build controls passed.
+- **Measured owner:** The pristine profile measured callback wait 6,432.420 ms and renderer-main wall/CPU/residual durations of 6,926.106/238.011/6,688.095 ms. Controlled pressure measured 6,044.089 ms callback wait and 6,040.329/198.334/5,841.995 ms wall/CPU/residual. Both traces resolve to `RunTask → BeginMainFrame → Commit → DoUpdateLayers → GLES2::ReadPixels → WaitForCmd / Finish / WaitForGetOffset`. Style/layout was 0.257–0.308 ms, paint/raster 0.278–0.286 ms, GC zero, maximum Long Animation Frame duration/blocking 57.7/2.259 ms pristine and 199.4/37.402 ms under pressure, forced layout zero, observer overhead at most 0.2 ms, and trace loss absent. Sampled first-party stacks do not own the interval.
+- **Classification:** **CI/browser/GPU execution-environment contention**. Renderer-main is directly waiting for GPU command completion. The trace cannot split GPU-process/software-renderer contention from all host scheduling effects, so pure OS descheduling is not claimed.
+- **Profiler evidence boundary:** The opt-in E2E profiler uses `page.addInitScript`, fixed-category CDP tracing bounded to 45,000 ms/256 MiB, 64 Long Animation Frame entries and eight scripts per frame, User Timing marks, a 64-callback ring, hashed first-party identities, and a 512 KiB hard sanitized-summary limit. Trace/video/screenshot recording is disabled while profiling. Raw mode-0600 traces live only under ignored `.local/ch0029-runtime-profile/`, are deleted before summary publication, and are never committed. Summaries exclude raw URLs/paths, source text, object graphs, screenshots, video, bodies, cookies, environment values, credentials, and user data. Same-machine strict builds of the dirty test-only tree and clean detached authoritative source each produced 26 initial JavaScript files at 7,096,910 raw / 1,167,760 Brotli bytes, exact delta 0/0.
+- **Read-only runner inventory:** All checked-in Actions jobs use `ubuntu-latest`; none declares self-hosted, larger, dedicated browser/performance, or runner-group labels. The repository is user-owned, the required workflow fixes its jobs to `ubuntu-latest`, and the only exact-SHA input is in the prohibited Full E2E advisory workflow. The connector lacks a runner-list endpoint, local `gh` authentication is invalid, and no signed-in runner-settings browser session is available. An administrator must provide the Actions runner list with online status/labels/groups, any larger-runner entitlement and exact label, and any other authorized isolated exact-source environment.
+- **Exact A/B and outcomes:** After separate authorization, run only required CI with the application source, profiler commit, workflow revision, Node/npm, PostgreSQL/migrations, Chromium/Playwright, flags, production build/start, smoke identity, canonical budgets/watchdog/retries, trace/video configuration, and environment shape held constant. Vary only standard `ubuntu-latest` versus the identified isolated runner class. Record runner identity/class, safe CPU/memory and GPU metadata, exact SHAs, wall/CPU/residual and GLES2 wait, heartbeat/callback/reload timings, both runtime identities, all three reload outcomes, and stable/failure evidence. A requires both identities and all reloads to pass, no callback requested-but-never-entered, no model-readiness timeout or no-progress watchdog, independently verified stable evidence, and materially reduced/non-blocking GPU wait; only the GPU-sensitive required smoke may then move. B means the wait persists under isolation and browser/GPU configuration is next. Application ownership reopens only if a new trace names a specific first-party callback absent here. D remains current while isolation is unavailable or unauthorized; required testing is not weakened.
 
 ## Four inherited failure groups
 
@@ -250,19 +261,20 @@ Risk order includes blocked findings so decisions are visible; `READY` ordering 
 5. `CH-0016` — `RESOLVED` (production-equivalent artifact evidence repository remediation complete; external execution remains unverified).
 6. `CH-0017` — `TRUTHFULNESS AND REQUIRED EXTERNAL WORKFLOW VERIFIED — IMPLEMENTATION FROZEN`.
 7. `CH-0028` — `EXTERNALLY VERIFIED — RESOLVED` at `db346a51718967bd4dc1605b07c0850e02fd08d1`.
-8. `CH-0029` — `OPEN — POST-RESPONSE BROWSER/MAIN-THREAD STARVATION`, **selected active batch**; local remediation complete, external verification pending.
-9. `CH-0018` — `BLOCKED_DEPENDENCY` (populated upgrade/data-loss evidence).
-10. `CH-0010` — `REQUIRES_PRODUCT_DECISION` (permanent share revocation and auto-sharing).
-11. `CH-0011` — `REQUIRES_PRODUCT_DECISION` (privacy consent/masking and external PostHog state).
-12. `CH-0004` — `READY`, not started (trusted event provenance).
-13. `CH-0006` — `BLOCKED_DEPENDENCY` (legacy public API consumers).
-14. `CH-0003` — `REQUIRES_PRODUCT_DECISION` (distributed cost budgets/outage policy).
-15. `CH-0005` — `REQUIRES_PRODUCT_DECISION` (retirement authority).
-16. `CH-0013` — `READY` (surface drift/schema gates, then payload).
-17. `CH-0015` — `READY` (accessible overlay ownership).
-18. `CH-0019` — `READY` in bounded baseline batches and required before architectural refactoring.
+8. `CH-0029` — `APPLICATION REMEDIATION COMPLETE — IMPLEMENTATION FROZEN; EXTERNAL ENVIRONMENT VERIFICATION PENDING`.
+9. `CH-0030` — `EXTERNAL VERIFICATION BLOCKED — ISOLATED RUNNER AVAILABILITY/AUTHORIZATION UNCONFIRMED`, **selected active finding**.
+10. `CH-0018` — `BLOCKED_DEPENDENCY` (populated upgrade/data-loss evidence).
+11. `CH-0010` — `REQUIRES_PRODUCT_DECISION` (permanent share revocation and auto-sharing).
+12. `CH-0011` — `REQUIRES_PRODUCT_DECISION` (privacy consent/masking and external PostHog state).
+13. `CH-0004` — `READY`, not started (trusted event provenance).
+14. `CH-0006` — `BLOCKED_DEPENDENCY` (legacy public API consumers).
+15. `CH-0003` — `REQUIRES_PRODUCT_DECISION` (distributed cost budgets/outage policy).
+16. `CH-0005` — `REQUIRES_PRODUCT_DECISION` (retirement authority).
+17. `CH-0013` — `READY` (surface drift/schema gates, then payload).
+18. `CH-0015` — `READY` (accessible overlay ownership).
+19. `CH-0019` — `READY` in bounded baseline batches and required before architectural refactoring.
 
-`CH-0009`, `CH-0014`, and `CH-0029` remain P2 findings; none competes in the P1 decision rule. Baseline A/B/C should be accumulated as independent reviewed fixes before architectural refactoring. CH-0029 is the only active implementation in this batch; CH-0004 was not started.
+`CH-0009`, `CH-0014`, `CH-0029`, and `CH-0030` remain P2 findings; none competes in the P1 decision rule. Baseline A/B/C should be accumulated as independent reviewed fixes before architectural refactoring. CH-0030 is blocked at the external-environment boundary; no application implementation is active and CH-0004 was not started.
 
 ## Completed batch record: CH-0012 only
 

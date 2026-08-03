@@ -1,6 +1,6 @@
 # Code health audit handoff
 
-Current superseding status: CH-0001, CH-0012, and CH-0016 repository remediation are complete. CH-0017 is **TRUTHFULNESS AND REQUIRED EXTERNAL WORKFLOW VERIFIED — IMPLEMENTATION FROZEN**. CH-0028 is **EXTERNALLY VERIFIED — RESOLVED** at verified source `db346a51718967bd4dc1605b07c0850e02fd08d1`. CH-0029 is **OPEN — POST-RESPONSE BROWSER/MAIN-THREAD STARVATION** with local remediation complete and required-only external verification pending; CH-0004 was not started. The latest implementation record is at the end of this handoff.
+Current superseding status: CH-0001, CH-0012, and CH-0016 repository remediation are complete. CH-0017 is **TRUTHFULNESS AND REQUIRED EXTERNAL WORKFLOW VERIFIED — IMPLEMENTATION FROZEN**. CH-0028 is **EXTERNALLY VERIFIED — RESOLVED** at verified source `db346a51718967bd4dc1605b07c0850e02fd08d1`. CH-0029 is **APPLICATION REMEDIATION COMPLETE — IMPLEMENTATION FROZEN; EXTERNAL ENVIRONMENT VERIFICATION PENDING**. CH-0030 is **EXTERNAL VERIFICATION BLOCKED — ISOLATED RUNNER AVAILABILITY/AUTHORIZATION UNCONFIRMED**; CH-0004 was not started. The latest implementation record is at the end of this handoff.
 
 Audit date: 2026-07-31
 Canonical repository: `/Users/justus/Developer/interior-ai`
@@ -1461,3 +1461,120 @@ zero-warning ESLint, code-quality, strict production-build, and diff-hygiene
 checks pass. Full E2E was not run. The exact final two-commit CH-0029 branch
 head still requires a renewed normal-push authorization and the existing
 required-only `workflow_dispatch`; no external verification claim is made.
+
+## CH-0030 required-smoke CI renderer/GPU contention — 2026-08-03
+
+CH-0030 is titled “Required Chromium runtime smoke suffers renderer/GPU
+execution contention on the standard CI runner.” Work began on
+`test/ch-0030-ci-renderer-gpu-profile` at authoritative application source
+`7158b5152336565a1d2b8caa42c2adab108268d2`, preserving the existing dirty
+test-only profiling work. `lsof` confirmed that the listening Node process
+belongs to the canonical `/Users/justus/Developer/interior-ai` checkout.
+There is no production, frameloop, GLB lifecycle/cache/readiness/refcount,
+timeout, retry, workflow, ruleset, deployment, or Full E2E change. CH-0017 and
+CH-0028 remain frozen/resolved, and CH-0029 application implementation is now
+explicitly frozen.
+
+### External failure and measured attribution
+
+Required-only GitHub Actions run `30805127205` used exact source
+`7158b5152336565a1d2b8caa42c2adab108268d2`, GitHub-hosted `ubuntu-latest`,
+Node 24.13.0/npm 11.6.2, PostgreSQL 15, Playwright 1.60.0, and Chrome for
+Testing 148.0.7778.96. The furnished-template identity failed after an 8,223
+ms unattributed interval when reload-1 diagnostics-settle evaluation was
+requested but never entered. Health/catalog and the prior truthfulness,
+migration, authentication, code-quality, and strict-build controls passed.
+Safe artifact `8852605576` binds the failure to the exact source, retries 0,
+and process exit 1.
+
+The pristine local trace measured a 6,432.420 ms callback wait and a 6,926.106
+ms renderer-main `RunTask`, comprising 238.011 ms thread CPU and 6,688.095 ms
+non-CPU residual. The controlled-pressure trace measured a 6,044.089 ms
+callback wait and a 6,040.329 ms task, comprising 198.334 ms CPU and 5,841.995
+ms residual. Both traces name:
+
+`RunTask → BeginMainFrame → Commit → DoUpdateLayers → GLES2::ReadPixels → WaitForCmd / Finish / WaitForGetOffset`.
+
+Pristine versus pressure style/layout was 0.257/0.308 ms, paint/raster
+0.278/0.286 ms, and GC zero. Maximum Long Animation Frame duration/blocking
+was 57.7/2.259 ms and 199.4/37.402 ms; forced layout was zero, observer
+overhead at most 0.2 ms, trace data loss absent, and sampled first-party CPU
+stacks empty for the multi-second owner. The bounded classification is
+**CI/browser/GPU execution-environment contention**: renderer-main is waiting
+for GPU command completion. The evidence cannot distinguish GPU-process or
+software-renderer contention from every host scheduling contribution, so it
+does not claim pure OS descheduling.
+
+### Opt-in profiler and evidence boundary
+
+The test-only profiler uses `page.addInitScript`, a 64-frame/eight-script Long
+Animation Frames projection, a 64-callback ring, test-only User Timing marks,
+hashed first-party source identities, and fixed-category CDP tracing bounded
+to 45 seconds and 256 MiB. Sanitized JSON is hard-bounded to 512 KiB. Profiling
+turns trace, video, and screenshot capture off. Raw trace files use mode 0600
+under ignored `.local/ch0029-runtime-profile/`, are deleted before sanitized
+summary publication, and remain uncommitted. Summaries exclude raw URLs and
+paths, source text, object graphs, screenshots, video, network bodies, cookies,
+environment values, credentials, and user data. The focused contract covers
+opt-in behavior, trace/category/time/size/ring bounds, source/path
+sanitization, direct GPU-wait classification, and oversized-summary rejection.
+
+### Read-only runner inventory and exact A/B
+
+Every checked-in Actions job uses `ubuntu-latest`; no workflow names a
+self-hosted, larger, dedicated browser/performance, or runner-group label. The
+repository is user-owned. The required workflow supports manual dispatch but
+fixes every job to `ubuntu-latest`; the only exact-SHA workflow input belongs
+to the prohibited Full E2E advisory lane. The GitHub connector has no
+runner-list endpoint, the local `gh` credential is invalid, and no signed-in
+runner-settings browser session was available. Therefore repository runners,
+online state/labels/groups, larger-runner entitlement, and any other authorized
+external exact-source environment remain unconfirmed. No external mutation
+was attempted.
+
+An administrator must first supply an online isolated runner class and exact
+label/group. After separate workflow/run authorization, execute only required
+CI with the application source, profiler commit, workflow revision, Node/npm,
+PostgreSQL/migrations, Playwright/Chromium, flags, production build/start path,
+runtime-smoke identities, canonical budgets/watchdog/retry count, trace/video
+configuration, and environment shape held constant. Vary only standard
+`ubuntu-latest` versus that isolated runner. Record exact SHAs, runner
+identity/class, safe CPU/memory and browser/GPU metadata, renderer wall/CPU and
+non-CPU residual, GLES2/ReadPixels wait, heartbeat/callback/reload timing, both
+runtime identity outcomes, all three reloads, and stable/failure evidence.
+
+Outcome A requires both required runtime identities and all three reloads to
+pass, no callback requested-but-never-entered, no model-readiness timeout or
+no-progress watchdog, independently verified stable evidence, and materially
+reduced/non-blocking GPU-command wait or non-CPU residual; only the
+GPU-sensitive required smoke may then move to the isolated class. Outcome B
+means the wait persists under adequate isolation and browser/GPU configuration
+is the next owner. Application ownership may reopen only if a new trace
+identifies a specific first-party callback absent from the present profiles.
+Outcome D is current because a suitable isolated environment is unavailable or
+unauthorized. Do not weaken required testing.
+
+### Validation before review
+
+The focused profiler/sanitization/boundedness contract, CH-0017 truthfulness,
+CH-0028 lifecycle/cache/readiness/post-readiness diagnostics, CH-0029 telemetry,
+resource-isolation and hidden-frameloop contracts, typecheck, targeted
+zero-warning ESLint, code-quality ratchet, strict staging-shaped production
+build, and diff hygiene pass. The first sandboxed build attempt failed only
+because Turbopack could not bind its internal worker port; the authorized
+outside-sandbox build passed with the inherited broad NFT trace warning. Full
+E2E was not run.
+
+A same-machine strict build of this test-only working tree and a clean detached
+build of exact source `7158b5152336565a1d2b8caa42c2adab108268d2` produced the
+same 26 initial `/design` JavaScript files and exactly 7,096,910 raw / 1,167,760
+Brotli bytes in both builds. The production source/config/lockfile diff is empty
+and the measured initial-JS delta is exactly 0 raw / 0 Brotli bytes.
+
+Independent read-only review initially found two P2 harness defects: an
+arbitrary environment-derived profile label could be retained, and failure
+before `Tracing.start` could leave the newly created CDP session attached. The
+final code uses only a fixed non-environment label and wraps category discovery,
+empty-category rejection, listener setup, and trace start in one bounded
+detach/reset failure path. Focused tests were rerun, and the separate read-only
+re-review is **PASS — no remaining actionable finding**.

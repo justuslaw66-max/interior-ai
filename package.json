@@ -43,6 +43,7 @@
     "test:glb-main-thread-telemetry": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-glb-main-thread-telemetry.ts",
     "test:runtime-smoke-resource-isolation": "node scripts/test-runtime-smoke-resource-isolation.mjs",
     "test:design-scene-loading-frameloop": "node scripts/test-design-scene-loading-frameloop.mjs",
+    "test:ch0030-ci-renderer-profile": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' tests/e2e/support/test-ch0029-runtime-profile.ts",
     "test:wall-paint-catalog": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-wall-paint-catalog.ts",
     "test:lighting-settings": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-lighting-settings.ts",
     "test:phase13-batch5": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-phase13-batch5-sharing.ts",
