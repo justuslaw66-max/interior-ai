@@ -1,10 +1,18 @@
 # P0/P1 remediation queue
 
+## Current bounded dependency-security batch
+
+- Branch: `security/dependency-auth-next-compatibility`.
+- Exact starting source: `55bc4b65c121c1a6646fd2d8b38bb93f9061c372`.
+- Scope: direct-production Next.js/Auth.js advisory remediation only; CH-0004 and every queued finding below remain unchanged.
+- Result: minimum same-line/same-channel patches remove all 13 unique direct-package Next/Auth advisory IDs from fresh full and omit-dev audits; critical package nodes fall from 2 to 0. Five unresolved tool-path advisory IDs remain explicitly classified and are not hidden by the lockfile.
+- Evidence: `docs/security/P1_DEPENDENCY_AUTH_NEXT_COMPATIBILITY.md` contains the advisory inventory, compatibility matrix, remaining paths, gates, budgets, rollback, and external-verification boundary.
+
 Triage date: 2026-07-31 (Asia/Singapore)
 
 Repository: `/Users/justus/Developer/interior-ai`
 
-Branch: `fix/ch-0029-main-thread-starvation`
+Prior CH-0029 branch: `fix/ch-0029-main-thread-starvation`
 
 CH-0017 starting HEAD: `cea0cabe53742da8b47c1e119d889033351a1fdf`
 

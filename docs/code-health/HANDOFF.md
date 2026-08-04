@@ -1,5 +1,9 @@
 # Code health audit handoff
 
+## Latest bounded implementation record — Next.js/Auth.js security compatibility
+
+Branch `security/dependency-auth-next-compatibility` starts exactly at clean frozen source `55bc4b65c121c1a6646fd2d8b38bb93f9061c372`. It updates Next 16.2.10 -> 16.2.11, next-auth beta.30 -> beta.32, Prisma adapter 2.11.1 -> 2.11.3 with one core 0.41.3, aligned eslint-config-next, and PostCSS 8.5.20 -> 8.5.23. Fresh full audit moves 16 -> 11 package nodes (critical 2 -> 0); omit-dev moves 12 -> 7, with no remaining Next/Auth/PostCSS advisory node. Required local gates, focused real-session authorization, 57-page build, built runtime health/session, and Phase 8 budgets pass. The only compatibility code change strengthens the existing test-only auth preflight for providers, CSRF, Google sign-in/PKCE/callback URL, sign-out, and redirects. Full evidence, remaining advisory classifications, and rollback are in `docs/security/P1_DEPENDENCY_AUTH_NEXT_COMPATIBILITY.md`. No Full E2E, CH-0004, push, deployment, schema, provider, or platform-setting change occurred.
+
 Current superseding status: CH-0001, CH-0012, and CH-0016 repository remediation are complete. CH-0017 is **TRUTHFULNESS AND REQUIRED EXTERNAL WORKFLOW VERIFIED — IMPLEMENTATION FROZEN**. CH-0028 is **EXTERNALLY VERIFIED — RESOLVED** at verified source `db346a51718967bd4dc1605b07c0850e02fd08d1`. CH-0029 is **OPEN — POST-RESPONSE BROWSER/MAIN-THREAD STARVATION** with local remediation complete and required-only external verification pending; CH-0004 was not started. The latest implementation record is at the end of this handoff.
 
 Audit date: 2026-07-31

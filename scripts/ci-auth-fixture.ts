@@ -63,7 +63,8 @@ export type CiAuthFixtureTransportEvent = Readonly<
 
 const PREFLIGHT_HOST = "127.0.0.1";
 const PREFLIGHT_PORT = 3317;
-const PREFLIGHT_URL = `http://${PREFLIGHT_HOST}:${PREFLIGHT_PORT}/api/auth/session`;
+const PREFLIGHT_AUTH_URL = `http://${PREFLIGHT_HOST}:${PREFLIGHT_PORT}/api/auth`;
+const PREFLIGHT_URL = `${PREFLIGHT_AUTH_URL}/session`;
 const PREFLIGHT_TIMEOUT_MS = 120_000;
 
 function assertExplicitFixtureScope(environment: NodeJS.ProcessEnv): void {
@@ -304,6 +305,97 @@ async function stopServer(server: ChildProcess): Promise<void> {
   if (server.exitCode === null) server.kill("SIGKILL");
 }
 
+async function fetchAuthJson(
+  pathName: string,
+  init?: RequestInit,
+): Promise<{ payload: unknown; response: Response }> {
+  const response = await fetch(`${PREFLIGHT_AUTH_URL}/${pathName}`, init);
+  const contentType = response.headers.get("content-type") ?? "";
+  if (response.status !== 200 || !contentType.toLowerCase().includes("application/json")) {
+    throw new Error(`Advisory auth ${pathName} endpoint did not return structured JSON`);
+  }
+  try {
+    return { payload: JSON.parse(await response.text()) as unknown, response };
+  } catch {
+    throw new Error(`Advisory auth ${pathName} endpoint returned HTML or malformed JSON`);
+  }
+}
+
+function requireRecord(value: unknown, description: string): Record<string, unknown> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error(`Advisory auth ${description} response has an unexpected shape`);
+  }
+  return value as Record<string, unknown>;
+}
+
+async function assertAuthInteractionCompatibility(
+  expectedGoogleClientId: string,
+): Promise<void> {
+  const { payload: providersPayload } = await fetchAuthJson("providers");
+  const providers = requireRecord(providersPayload, "providers");
+  const google = requireRecord(providers.google, "Google provider");
+  const signInUrl = new URL(String(google.signinUrl));
+  const callbackUrl = new URL(String(google.callbackUrl));
+  if (
+    google.id !== "google" ||
+    signInUrl.pathname !== "/api/auth/signin/google" ||
+    callbackUrl.pathname !== "/api/auth/callback/google" ||
+    signInUrl.origin !== callbackUrl.origin
+  ) {
+    throw new Error("Advisory auth Google provider routes changed unexpectedly");
+  }
+
+  const { payload: csrfPayload, response: csrfResponse } = await fetchAuthJson("csrf");
+  const csrfToken = requireRecord(csrfPayload, "CSRF").csrfToken;
+  if (typeof csrfToken !== "string" || csrfToken.length < 32) {
+    throw new Error("Advisory auth CSRF response did not contain a valid token");
+  }
+  const cookie = csrfResponse.headers
+    .getSetCookie()
+    .map((value) => value.split(";", 1)[0])
+    .join("; ");
+  if (!cookie.includes("authjs.csrf-token=")) {
+    throw new Error("Advisory auth CSRF cookie was not issued");
+  }
+
+  const requestHeaders = {
+    Cookie: cookie,
+    "Content-Type": "application/x-www-form-urlencoded",
+    "X-Auth-Return-Redirect": "1",
+  };
+  const { payload: signOutPayload } = await fetchAuthJson("signout", {
+    method: "POST",
+    headers: requestHeaders,
+    body: new URLSearchParams({ csrfToken }),
+    redirect: "manual",
+  });
+  const signOutUrl = new URL(String(requireRecord(signOutPayload, "sign-out").url));
+  if (signOutUrl.origin !== signInUrl.origin || signOutUrl.pathname !== "/") {
+    throw new Error("Advisory auth sign-out redirect changed unexpectedly");
+  }
+
+  const { payload: signInPayload } = await fetchAuthJson("signin/google", {
+    method: "POST",
+    headers: requestHeaders,
+    body: new URLSearchParams({
+      csrfToken,
+      callbackUrl: new URL("/design", signInUrl.origin).href,
+    }),
+    redirect: "manual",
+  });
+  const authorizationUrl = new URL(String(requireRecord(signInPayload, "sign-in").url));
+  if (
+    authorizationUrl.protocol !== "https:" ||
+    authorizationUrl.hostname !== "accounts.google.com" ||
+    authorizationUrl.searchParams.get("client_id") !== expectedGoogleClientId ||
+    authorizationUrl.searchParams.get("redirect_uri") !== callbackUrl.href ||
+    authorizationUrl.searchParams.get("response_type") !== "code" ||
+    !authorizationUrl.searchParams.get("code_challenge")
+  ) {
+    throw new Error("Advisory auth Google authorization redirect changed unexpectedly");
+  }
+}
+
 async function preflightAuthSession(environment: NodeJS.ProcessEnv): Promise<void> {
   assertExplicitFixtureScope(environment);
   const authEnvironment = getAuthEnvOrThrow();
@@ -377,10 +469,13 @@ async function preflightAuthSession(environment: NodeJS.ProcessEnv): Promise<voi
     if (payload !== null && (typeof payload !== "object" || Array.isArray(payload))) {
       throw new Error("Advisory auth session endpoint returned an unexpected JSON shape");
     }
+    await assertAuthInteractionCompatibility(authEnvironment.googleClientId);
     if (outputCategory !== "clean") {
       throw new Error(`Advisory auth preflight detected ${outputCategory}`);
     }
-    console.log("Advisory auth preflight passed with a structured anonymous session response.");
+    console.log(
+      "Advisory auth preflight passed for anonymous session, Google sign-in, and sign-out routes.",
+    );
   } finally {
     await stopServer(server);
   }

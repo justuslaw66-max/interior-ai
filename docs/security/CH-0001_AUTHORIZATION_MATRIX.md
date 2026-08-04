@@ -2,6 +2,10 @@
 
 Status: repository remediation implemented; external deployment controls remain subject to the companion checklist.
 
+## Dependency compatibility revalidation (2026-08-05)
+
+The bounded security update from `next-auth@5.0.0-beta.30` to beta.32, `@auth/prisma-adapter@2.11.1` to 2.11.3, and split `@auth/core` 0.41.0/0.41.1 to one 0.41.3 preserves this matrix. Missing/malformed credentials and production synthetic-fixture attempts still fail closed; real database-session browser coverage still distinguishes signed-out, forged, expired, ordinary, Pro non-admin, malformed, and allowlisted administrator callers; and direct authorization remains before side effects. The strengthened Auth.js preflight additionally validates structured anonymous session JSON, provider/callback routes, CSRF, Google authorization/PKCE, sign-out, and same-origin redirects. No role, entitlement, session schema, OAuth setting, or middleware authority changed. See `docs/security/P1_DEPENDENCY_AUTH_NEXT_COMPATIBILITY.md` for the complete compatibility and advisory record.
+
 ## Verified root cause and policy
 
 Before CH-0001, `lib/config.ts` mapped an absent or unrecognized `APP_ENV`, `NEXT_PUBLIC_APP_ENV`, or `VERCEL_ENV` to `development`. `lib/admin.ts` then treated every nonempty authenticated email as an administrator when `ADMIN_EMAILS` was empty. `canAccessAdmin` separately allowed an unauthenticated development caller unless `ADMIN_REQUIRE_AUTH` was exactly `true`. Two catalog-audit handlers also accepted a query/header development bypass. The behavior was reproduced with `NODE_ENV=production`: both a missing classifier and `APP_ENV=not-a-real-environment` authorized `ordinary@example.com` while `ADMIN_EMAILS` was absent. Independent review also reproduced two surrounding enforcement gaps: GitHub Actions flags activated fixed/missing/short Auth.js credential fallbacks even under `APP_ENV=production`, and malformed reviewer/publisher lists retained their valid-looking subset.

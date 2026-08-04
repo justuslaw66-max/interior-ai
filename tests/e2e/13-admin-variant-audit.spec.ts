@@ -26,6 +26,7 @@ const cookieNames = [
 type AuthFixture = {
   adminCookie: string;
   ordinaryCookie: string;
+  ordinarySessionToken: string | null;
   proCookie: string;
   expiredCookie: string;
   createdUserIds: string[];
@@ -87,6 +88,7 @@ async function createAuthFixture(): Promise<AuthFixture> {
   return {
     adminCookie: sessionCookie(adminToken),
     ordinaryCookie: sessionCookie(ordinaryToken),
+    ordinarySessionToken: ordinaryToken,
     proCookie: sessionCookie(proToken),
     expiredCookie: sessionCookie(expiredToken),
     createdUserIds,
@@ -117,6 +119,7 @@ function createRemoteAuthFixture(): AuthFixture {
 
   return {
     ...cookies,
+    ordinarySessionToken: null,
     createdUserIds: [],
     sessionTokens: [],
   };
@@ -135,6 +138,43 @@ async function expectIdentityProjection(
 async function expectDenied(response: import("@playwright/test").APIResponse): Promise<void> {
   expect(response.status()).toBe(403);
   expect(await response.text()).not.toContain("variantResolution");
+}
+
+async function expectAuthenticatedSignOut(
+  request: import("@playwright/test").APIRequestContext,
+  cookie: string,
+  sessionToken: string,
+): Promise<void> {
+  const csrfResponse = await request.get(`${baseURL}/api/auth/csrf`, {
+    headers: { Cookie: cookie },
+  });
+  expect(csrfResponse.status()).toBe(200);
+  const csrfPayload = (await csrfResponse.json()) as { csrfToken?: unknown };
+  expect(typeof csrfPayload.csrfToken).toBe("string");
+  const csrfCookies = csrfResponse
+    .headersArray()
+    .filter(({ name }) => name.toLowerCase() === "set-cookie")
+    .map(({ value }) => value.split(";", 1)[0])
+    .join("; ");
+  expect(csrfCookies).toContain("authjs.csrf-token=");
+
+  const signOutResponse = await request.post(`${baseURL}/api/auth/signout`, {
+    headers: {
+      Cookie: `${cookie}; ${csrfCookies}`,
+      "X-Auth-Return-Redirect": "1",
+    },
+    form: { csrfToken: String(csrfPayload.csrfToken) },
+  });
+  expect(signOutResponse.status()).toBe(200);
+  const signOutPayload = (await signOutResponse.json()) as { url?: unknown };
+  expect(new URL(String(signOutPayload.url)).pathname).toBe("/");
+  expect(await getPrisma().session.findUnique({ where: { sessionToken } })).toBeNull();
+
+  const sessionResponse = await request.get(`${baseURL}/api/auth/session`, {
+    headers: { Cookie: cookie },
+  });
+  expect(sessionResponse.status()).toBe(200);
+  expect(await sessionResponse.json()).toBeNull();
 }
 
 test.describe("13. Admin authorization and variant audit", () => {
@@ -196,6 +236,14 @@ test.describe("13. Admin authorization and variant audit", () => {
       headers: { Cookie: sessionCookie("malformed-session-token") },
     });
     await expectDenied(malformed);
+
+    if (authFixture.ordinarySessionToken) {
+      await expectAuthenticatedSignOut(
+        request,
+        authFixture.ordinaryCookie,
+        authFixture.ordinarySessionToken,
+      );
+    }
   });
 
   test("an allowlisted authenticated administrator reaches the direct route", async ({ request }) => {
