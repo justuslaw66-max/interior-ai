@@ -42,6 +42,7 @@ assertSourceOrder(
     "useDesignPagePlanAuthoringRegistration({",
     "useDesignPageEditorInteractionRegistration({",
     "useDesignPagePersistenceWorkspaceRegistration({",
+    "useDesignPageRequestedDesignWorkspaceRegistration({",
     "useDesignPageAiWorkspaceRegistration({",
   ],
   "Workspace should preserve core, document, presentation, paywall, authoring, interaction, persistence, and AI registration order"

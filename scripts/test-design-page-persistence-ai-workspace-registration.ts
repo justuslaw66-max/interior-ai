@@ -37,6 +37,7 @@ assertSourceOrder(
     "useDesignPagePlanAuthoringRegistration({",
     "useDesignPageEditorInteractionRegistration({",
     "useDesignPagePersistenceWorkspaceRegistration({",
+    "useDesignPageRequestedDesignWorkspaceRegistration({",
     "useDesignPageAiWorkspaceRegistration({",
     "useDesignPagePlacementWorkspaceRegistration({",
   ],

@@ -249,6 +249,7 @@ assertSourceOrder(
     "useDesignPageDocumentSelectionRegistrationFacade({",
     "useDesignPagePlanAuthoringRegistration({",
     "useDesignPagePersistenceWorkspaceRegistration({",
+    "useDesignPageRequestedDesignWorkspaceRegistration({",
   ],
   "Late callback bridges should bind in dependency order"
 );

@@ -180,6 +180,25 @@ Each batch must be independently reviewable and green before the next begins.
 
 ## Compatibility constraints
 
+### Requested-design route ownership
+
+`useDesignPageRequestedDesignWorkspaceRegistration` is the canonical
+route-to-document coordinator. It composes after the existing persistence
+workspace, reads the opaque `designId` query value, waits for authentication
+and local backup hydration, delegates loading, cancels pending work when route
+intent disappears, restores the prior canonical URL after failed loads, and
+owns My Designs navigation. The lower-level
+`design-page-requested-design-load-coordinator.ts` owns the unique request token
+and `AbortController`; persistence calls it before every network load and gates
+all response mutation on its current token. Document state, response
+translation, network access, and autosave remain in `useDesignPagePersistence`.
+Consumer and Pro use this same route and persistence path.
+
+At the 2026-08-04 ratchet the workspace is 543 physical lines, and both the
+specialized architecture guard and code-quality baseline record that decrease
+from 594. The registration is 125 lines, its pure request arbiter is 43 lines,
+and neither creates application/document state.
+
 ### Hooks and effects
 
 - Hooks remain unconditional. Do not call hooks inside builders, callbacks, or

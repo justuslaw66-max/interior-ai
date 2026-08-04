@@ -22,7 +22,7 @@ const physicalLineCount = (relativePath) => {
 
 const lineLimits = new Map([
   ["app/design/page.tsx", 30],
-  ["components/editor/design-page/DesignPageWorkspace.tsx", 550],
+  ["components/editor/design-page/DesignPageWorkspace.tsx", 543],
   ["components/editor/design-page/DesignPageComposition.tsx", 700],
   ["components/editor/design-page/DesignPageSceneRegion.tsx", 700],
   ["components/editor/design-page/DesignPageEditorChrome.tsx", 700],

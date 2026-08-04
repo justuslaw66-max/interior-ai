@@ -1,5 +1,4 @@
 "use client";
-import { useEffect } from "react";
 import { DesignPageComposition } from "@/components/editor/design-page/DesignPageComposition";
 import { DesignPageEditorChrome } from "@/components/editor/design-page/DesignPageEditorChrome";
 import { DesignPageDialogLayer } from "@/components/editor/design-page/DesignPageDialogLayer";
@@ -27,10 +26,10 @@ import { useDesignPageDocumentSelectionRegistrationFacade } from "@/lib/useDesig
 import { useDesignPagePlanAuthoringRegistration } from "@/lib/useDesignPagePlanAuthoringRegistration";
 import { useDesignPageEditorInteractionRegistration } from "@/lib/useDesignPageEditorInteractionRegistration";
 import { useDesignPagePersistenceWorkspaceRegistration } from "@/lib/useDesignPagePersistenceWorkspaceRegistration";
+import { useDesignPageRequestedDesignWorkspaceRegistration } from "@/lib/useDesignPageRequestedDesignWorkspaceRegistration";
 import { useDesignPagePresentationWorkspaceRegistration } from "@/lib/useDesignPagePresentationWorkspaceRegistration";
 import { useDesignPageWorkspaceDeferredPaywallRegistration } from "@/lib/useDesignPagePaywallRegistrationFacade";
 import { useDesignPageFloorPlanLifecycleRegistration } from "@/lib/useDesignPageFloorPlanLifecycleRegistration";
-import { buildDesignEditorUrl } from "@/lib/design-editor-url";
 
 export function DesignPageWorkspace() {
   const coreShellRegistration = useDesignPageCoreShellRegistration({
@@ -51,7 +50,6 @@ export function DesignPageWorkspace() {
         layoutConfidence,
         visibleConstraints,
       },
-      document: { localBackupHydrated },
     },
     derived: {
       access: {
@@ -232,70 +230,18 @@ export function DesignPageWorkspace() {
         planAuthoring: planAuthoringRegistration,
       },
     });
-  const {
-    state: {
-      persistence: {
-        shareSuccessToast,
-        shareErrorToast,
-        shareLinkFallback,
-        showMyDesigns,
-        myDesigns,
-        loadingDesigns,
-        selectedSavedDesignIds,
-        deletingDesignIds,
-        pendingDeleteDesign,
-        cloudSaveConflict,
-        allSavedDesignIds,
-        selectedSavedDesignCount,
-        allSavedDesignsSelected,
-        guestPromptReason,
+  const requestedDesignWorkspaceRegistration =
+    useDesignPageRequestedDesignWorkspaceRegistration({
+      boundaries: {
+        coreShell: coreShellRegistration,
+        persistence: persistenceWorkspaceRegistration,
       },
-      newPlan: { startingNewPlan, newPlanStartError },
-    },
-    actions: {
-      persistence: {
-        closeShareLinkFallback,
-        copyFallbackShareLink,
-        openFallbackShareLink,
-        closeMyDesigns,
-        loadDesign,
-        toggleSavedDesignSelection,
-        toggleAllSavedDesignSelection,
-        requestDeleteSavedDesigns,
-        cancelDeleteSavedDesigns,
-        handleDeleteSavedDesign,
-        handleGuestPromptNotNow,
-        handleGuestSaveAndContinue,
-        saveConflictAsNewCopy,
-        reloadCloudAfterConflict,
-      },
-      newPlan: {
-        openNewPlanPicker,
-        cancelPendingPlanChoice,
-        replaceCurrentPlanFromChoice,
-        saveCurrentAndStartNewPlan,
-      },
-    },
-  } = persistenceWorkspaceRegistration;
-  const requestedDesignId = searchParams.get("designId") ?? "";
-
-  useEffect(() => {
-    if (
-      !requestedDesignId ||
-      !session?.user ||
-      !localBackupHydrated ||
-      designId === requestedDesignId
-    ) return;
-    let active = true;
-    void loadDesign(requestedDesignId).then((result) => {
-      if (!active || result === "loaded" || result === "superseded") return;
-      router.replace(designId ? buildDesignEditorUrl({ designId, context: searchParams }) : "/design");
     });
-    return () => { active = false; };
-  }, [
-    designId, localBackupHydrated, loadDesign, requestedDesignId, router,
-    searchParams, session?.user,
-  ]);
+  const persistenceState = persistenceWorkspaceRegistration.state.persistence;
+  const newPlanState = persistenceWorkspaceRegistration.state.newPlan;
+  const persistenceActions =
+    persistenceWorkspaceRegistration.actions.persistence;
+  const newPlanActions = persistenceWorkspaceRegistration.actions.newPlan;
   const floorPlanLifecycleRegistration = useDesignPageFloorPlanLifecycleRegistration({
     boundaries: { coreShell: coreShellRegistration, documentSelection: documentSelectionRegistration, persistence: persistenceWorkspaceRegistration },
   });
@@ -477,24 +423,25 @@ export function DesignPageWorkspace() {
       plansActions: { onClose: closePlansDialog, onManageBilling: manageBillingFromPlans, onStartCheckout: startCheckoutFromPlans },
     },
     persistence: {
-      guestSave: { open: Boolean(guestPromptReason), onNotNow: handleGuestPromptNotNow, onSaveAndContinue: handleGuestSaveAndContinue },
+      guestSave: { open: Boolean(persistenceState.guestPromptReason), onNotNow: persistenceActions.handleGuestPromptNotNow, onSaveAndContinue: persistenceActions.handleGuestSaveAndContinue },
       myDesigns: {
-        data: { open: showMyDesigns, designs: myDesigns, loading: loadingDesigns, allDesignIds: allSavedDesignIds,
-          selectedDesignIds: selectedSavedDesignIds, selectedDesignCount: selectedSavedDesignCount,
-          allDesignsSelected: allSavedDesignsSelected, deletingDesignIds, pendingDeleteDesign },
-        actions: { onClose: closeMyDesigns, onOpenTemplates: openNewPlanPicker, onToggleAll: toggleAllSavedDesignSelection,
-          onToggleSelection: toggleSavedDesignSelection,
-          onLoadDesign: (id) => {
-            closeMyDesigns(); router.push(buildDesignEditorUrl({ designId: id, context: searchParams }));
-          },
-          onRequestDelete: requestDeleteSavedDesigns,
-          onCancelDelete: cancelDeleteSavedDesigns, onConfirmDelete: handleDeleteSavedDesign },
+        data: { open: persistenceState.showMyDesigns, designs: persistenceState.myDesigns, loading: persistenceState.loadingDesigns, allDesignIds: persistenceState.allSavedDesignIds,
+          selectedDesignIds: persistenceState.selectedSavedDesignIds, selectedDesignCount: persistenceState.selectedSavedDesignCount,
+          allDesignsSelected: persistenceState.allSavedDesignsSelected, deletingDesignIds: persistenceState.deletingDesignIds,
+          pendingDeleteDesign: persistenceState.pendingDeleteDesign },
+        actions: { onClose: persistenceActions.closeMyDesigns, onOpenTemplates: newPlanActions.openNewPlanPicker,
+          onToggleAll: persistenceActions.toggleAllSavedDesignSelection,
+          onToggleSelection: persistenceActions.toggleSavedDesignSelection,
+          onLoadDesign: requestedDesignWorkspaceRegistration.actions.openSavedDesign,
+          onRequestDelete: persistenceActions.requestDeleteSavedDesigns,
+          onCancelDelete: persistenceActions.cancelDeleteSavedDesigns,
+          onConfirmDelete: persistenceActions.handleDeleteSavedDesign },
       },
       templateChoice: {
         data: { open: Boolean(pendingPlanTemplateReplacement), templateLabel: pendingPlanTemplateReplacement?.template.label ?? "this floor plan",
-          busy: startingNewPlan, errorMessage: newPlanStartError },
-        actions: { onCancel: cancelPendingPlanChoice, onReplaceCurrent: replaceCurrentPlanFromChoice,
-          onSaveCurrentAndStartNew: saveCurrentAndStartNewPlan, onSignIn: signInWithReturn },
+          busy: newPlanState.startingNewPlan, errorMessage: newPlanState.newPlanStartError },
+        actions: { onCancel: newPlanActions.cancelPendingPlanChoice, onReplaceCurrent: newPlanActions.replaceCurrentPlanFromChoice,
+          onSaveCurrentAndStartNew: newPlanActions.saveCurrentAndStartNewPlan, onSignIn: signInWithReturn },
       },
     },
     ai: { notes: { open: showAINotes, data: aiNotesData, onApplySuggestion: applySuggestion, onClose: closeAiNotes } },
@@ -525,11 +472,13 @@ export function DesignPageWorkspace() {
     },
     feedback: {
       beta: { open: feedbackOpen, context: betaFeedbackContext, onOpenChange: setFeedbackOpen },
-      toasts: { ruleMessage: ruleToast, nudgeMessage: nextBestActionNudge, shareCopied: shareSuccessToast, shareErrorMessage: shareErrorToast },
+      toasts: { ruleMessage: ruleToast, nudgeMessage: nextBestActionNudge,
+        shareCopied: persistenceState.shareSuccessToast, shareErrorMessage: persistenceState.shareErrorToast },
       validation: { constraints: visibleConstraints, confidence: layoutConfidence,
         ...floorPlanLifecycleRegistration.derived.validation },
     },
-    sharing: { url: shareLinkFallback, onClose: closeShareLinkFallback, onCopy: copyFallbackShareLink, onOpen: openFallbackShareLink },
+    sharing: { url: persistenceState.shareLinkFallback, onClose: persistenceActions.closeShareLinkFallback,
+      onCopy: persistenceActions.copyFallbackShareLink, onOpen: persistenceActions.openFallbackShareLink },
     cabinetry: {
       state: cabinetryStudioState, access: { enabled: canUseCabinetryStudio, accessLevel: cabinetryAccessLevel },
       configuration: { measurementUnit: planMeasurementUnit, availableSpaces: cabinetryAvailableSpaces,
@@ -584,10 +533,10 @@ export function DesignPageWorkspace() {
         actions={presentationBackupRegistration.actions.localBackupRecovery}
       />
       <CloudSaveConflictDialog
-        state={cloudSaveConflict}
+        state={persistenceState.cloudSaveConflict}
         dark={showDesignerTheme}
-        onSaveAsNewCopy={saveConflictAsNewCopy}
-        onReloadCloudCopy={reloadCloudAfterConflict}
+        onSaveAsNewCopy={persistenceActions.saveConflictAsNewCopy}
+        onReloadCloudCopy={persistenceActions.reloadCloudAfterConflict}
       />
     </DesignPageComposition>
   );

@@ -37,6 +37,7 @@ assertSourceOrder(
   [
     "useDesignPageEditorInteractionRegistration({",
     "useDesignPagePersistenceWorkspaceRegistration({",
+    "useDesignPageRequestedDesignWorkspaceRegistration({",
     "useDesignPageAiWorkspaceRegistration({",
   ],
   "Workspace should preserve interaction, persistence, and AI registration order"

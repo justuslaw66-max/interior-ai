@@ -46,6 +46,7 @@ const typescriptGuardFiles = [
   "test-design-page-plan-quality-controller.ts",
   "test-design-page-presentation-export-runtime.ts",
   "test-design-page-presentation-workspace-registration.ts",
+  "test-design-page-requested-design-workspace-registration.ts",
   "test-design-page-room-placement-operations.ts",
   "test-design-page-room-plan-controller.ts",
   "test-design-page-save-status.ts",

@@ -8,6 +8,10 @@ const pageSource = fs.readFileSync(
   path.join(root, "components", "editor", "design-page", "DesignPageWorkspace.tsx"),
   "utf8"
 );
+const requestedDesignRegistrationSource = fs.readFileSync(
+  path.join(root, "lib", "useDesignPageRequestedDesignWorkspaceRegistration.ts"),
+  "utf8"
+);
 const controllerSource = fs.readFileSync(
   path.join(root, "lib", "useDesignPagePersistence.ts"),
   "utf8"
@@ -46,6 +50,12 @@ assert.ok(
     pageSource.indexOf("useDesignPagePersistenceWorkspaceRegistration({"),
   "Persistence effects must remain mounted after editor interaction registration."
 );
+assert.ok(
+  pageSource.indexOf("useDesignPagePersistenceWorkspaceRegistration({") <
+    pageSource.indexOf("useDesignPageRequestedDesignWorkspaceRegistration({"),
+  "The requested-design route effect must mount after persistence."
+);
+assert.match(requestedDesignRegistrationSource, /useEffect\(\(\) => \{/);
 assert.match(
   editorInteractionRegistrationSource,
   /useDesignPageZoneController\(\{/,
@@ -103,7 +113,7 @@ assert.match(
 );
 assert.match(
   controllerSource,
-  /requestEpoch !== documentEpochRef\.current\) return "superseded";[\s\S]*?error\.kind === "aborted"[\s\S]*?return "superseded";[\s\S]*?error\.kind === "forbidden" \|\| error\.kind === "not_found"[\s\S]*?\? "missing"[\s\S]*?: "unavailable"/,
+  /!designLoadRequest\.isCurrent\(request\)\) return "superseded";[\s\S]*?isSupersededDesignPageLoadError[\s\S]*?return "superseded";[\s\S]*?error\.kind === "forbidden" \|\| error\.kind === "not_found"[\s\S]*?\? "missing"[\s\S]*?: "unavailable"/,
   "Cloud loads should distinguish superseded and transient requests from missing designs."
 );
 

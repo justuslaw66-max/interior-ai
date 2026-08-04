@@ -613,7 +613,7 @@ assert.ok(
 
 assert.match(
   designPageSource,
-  /useDesignPagePersistenceWorkspaceRegistration\(\{[\s\S]*?state: \{[\s\S]*?newPlan: \{ startingNewPlan, newPlanStartError \}[\s\S]*?actions: \{[\s\S]*?newPlan: \{[\s\S]*?openNewPlanPicker,[\s\S]*?saveCurrentAndStartNewPlan,[\s\S]*?\} = persistenceWorkspaceRegistration/,
+  /useDesignPagePersistenceWorkspaceRegistration\(\{[\s\S]*?useDesignPageRequestedDesignWorkspaceRegistration\(\{[\s\S]*?const newPlanState = persistenceWorkspaceRegistration\.state\.newPlan[\s\S]*?const newPlanActions = persistenceWorkspaceRegistration\.actions\.newPlan/,
   "Workspace should consume the persistence registration's new-plan state and actions."
 );
 assert.match(
@@ -750,7 +750,7 @@ assert.match(
 
 assert.match(
   persistenceControllerSource,
-  /const loadDesign = useCallback[\s\S]*?const requestEpoch = documentEpochRef\.current;[\s\S]*?requestEpoch !== documentEpochRef\.current[\s\S]*?documentEpochRef\.current \+= 1;[\s\S]*?setDesignSnapshot\(snapshot\)/,
+  /const loadDesign = useCallback[\s\S]*?const request = designLoadRequest\.start\(\);[\s\S]*?!designLoadRequest\.isCurrent\(request\)[\s\S]*?documentEpochRef\.current \+= 1;[\s\S]*?setDesignSnapshot\(snapshot\)/,
   "Loading another design should invalidate stale document requests and autosaves before changing identity."
 );
 

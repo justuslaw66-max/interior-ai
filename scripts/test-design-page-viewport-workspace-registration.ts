@@ -61,6 +61,6 @@ assert.match(
 
 assert.ok(registrationSource.split("\n").length <= 280);
 assert.ok(readModelSource.split("\n").length <= 400);
-assert.ok(workspaceSource.split("\n").length <= 550);
+assert.ok(workspaceSource.trimEnd().split("\n").length <= 543);
 
 console.log("design page viewport workspace registration guardrails passed");

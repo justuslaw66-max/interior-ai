@@ -347,3 +347,53 @@ remain out of scope.
 Independent read-only review corrected two documentation-only count/coverage
 descriptions and then passed the current complete diff with no actionable
 architecture, state-ownership, behavior, test, ratchet, or scope findings.
+
+## Phase 0 DesignPageWorkspace architecture ratchet — 2026-08-04
+
+This bounded CH-0019/CH-0020 batch starts from exact clean source
+`f95b7e27f6729a36372f00ae0e78b93ea6fd1901`. The reproduced failure was
+`DesignPageWorkspace.tsx` at 594 physical lines against its 550-line maximum.
+The pre-edit map found that the workspace directly owned only route identity
+intake and late-navigation suppression; request epochs, abort controllers,
+cloud response translation, canonical document handoff, and autosave gates
+already belonged to `useDesignPagePersistence`. Moving those lower-level
+owners would have split the established persistence state machine.
+
+The selected extraction is requested-design loading coordination. The new
+`useDesignPageRequestedDesignWorkspaceRegistration.ts` composes after the
+unchanged persistence workspace, evaluates the canonical `designId` route
+decision, cancels pending route work, restores the prior canonical URL after
+missing or unavailable loads, and owns My Designs navigation. Its pure
+`design-page-requested-design-load-coordinator.ts` support owns a unique request
+token plus abort controller so an adapter that ignores abort still cannot
+commit stale data. Persistence remains the sole network, response-translation,
+document-handoff, and autosave owner. Consumer/Pro, authentication, document,
+project/room, analytics, and network paths are unchanged.
+
+The workspace is 543 physical lines, the route registration is 125, the pure
+arbiter is 43, and persistence also decreases from 1,360 to 1,359. The
+specialized architecture maximum tightens from 550 to 543; code quality lowers
+the workspace file count from 594 to 543 and its overlong function maximum from
+560 to 510, while persistence maxima also decrease. No allowance, exception,
+suppression, unsafe TypeScript construct, dependency, or cycle is added.
+
+Deterministic coordinator coverage locks absent, signed-out, hydration-waiting,
+current, valid, repeated, missing, unavailable, aborted/superseded, route-change,
+and unmounted completion decisions. Deferred controlled adapters prove B beats
+A and route removal invalidates A even when abort is ignored. Browser routing
+coverage retains canonical save/reload identity, My Designs history/project
+switching, duplicate response identity, Consumer/Pro entitlement, checkout,
+and denied-design fallback. Focused checks, full zero-warning lint, typecheck,
+code quality, direct architecture, and the strict 57-page production build
+pass. The focused Chromium routing spec passes 6/6 in 2.9 minutes. The cleanup suite clears
+the workspace guard and next stops at the untouched inherited
+`test-editor-3d-floor-cutaway.ts:82` `floorWorldY` assertion. Full E2E, Phase 8,
+CH-0004, CH-0017 through CH-0030, and unrelated editor work remain out of scope.
+
+Initial read-only review found that route cleanup only suppressed navigation,
+concurrent loads reused a document epoch, and the new test did not exercise a
+deferred race. The corrections added route cancellation, the unique-token
+arbiter, and controlled adapters that ignore abort. Final read-only review is
+**PASS — no actionable findings**; all three findings are resolved, ownership
+and hook order remain canonical, ratchets and docs are accurate, and the
+remaining absence of a rendered-hook race test is non-blocking.

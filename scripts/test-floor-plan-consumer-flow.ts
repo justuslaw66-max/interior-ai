@@ -64,6 +64,9 @@ const coreShellBase = read("lib/useDesignPageCoreShellBaseRegistration.ts");
 const designWorkspace = read(
   "components/editor/design-page/DesignPageWorkspace.tsx"
 );
+const requestedDesignWorkspace = read(
+  "lib/useDesignPageRequestedDesignWorkspaceRegistration.ts"
+);
 const underlayController = read(
   "lib/useDesignPageFloorPlanUnderlayController.ts"
 );
@@ -445,8 +448,8 @@ assert.match(
   "Import history must reopen an applied plan in the canonical 2D furnish editor."
 );
 assert.match(
-  designWorkspace,
-  /searchParams\.get\("designId"\)[\s\S]*?localBackupHydrated[\s\S]*?loadDesign\(requestedDesignId\)/,
+  requestedDesignWorkspace,
+  /searchParams\.get\("designId"\)[\s\S]*?localBackupHydrated[\s\S]*?loadDesign\(decision\.designId\)/,
   "The canonical editor should hydrate the saved design requested by the import handoff."
 );
 assert.match(

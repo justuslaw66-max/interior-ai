@@ -165,7 +165,7 @@
       "limit": 250
     },
     "components/editor/design-page/DesignPageWorkspace.tsx": {
-      "lines": 594,
+      "lines": 543,
       "limit": 250
     },
     "components/editor/design-page/DesignSceneCanvas.tsx": {
@@ -717,7 +717,7 @@
       "limit": 400
     },
     "lib/useDesignPagePersistence.ts": {
-      "lines": 1360,
+      "lines": 1359,
       "limit": 400
     },
     "lib/useDesignPagePlanActions.ts": {
@@ -1845,7 +1845,7 @@
     "components/editor/design-page/DesignPageWorkspace.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 560
+        "maximum": 510
       }
     },
     "components/editor/design-page/DesignSceneCanvas.tsx": {
@@ -4803,11 +4803,11 @@
     "lib/useDesignPagePersistence.ts": {
       "overlongFunctions": {
         "count": 7,
-        "maximum": 1210
+        "maximum": 1205
       },
       "complexFunctions": {
         "count": 2,
-        "maximum": 26
+        "maximum": 24
       }
     },
     "lib/useDesignPagePersistenceRegistration.ts": {

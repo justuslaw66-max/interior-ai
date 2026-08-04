@@ -65,6 +65,9 @@ const floorPlanLifecycle = read(
 const canonicalWorkspace = read(
   "components/editor/design-page/DesignPageWorkspace.tsx"
 );
+const requestedDesignWorkspace = read(
+  "lib/useDesignPageRequestedDesignWorkspaceRegistration.ts"
+);
 const ownedDesignApi = read("app/api/designs/[id]/route.ts");
 
 assert.match(legacyRoute, /redirect\(buildDesignEditorUrl\(\{/);
@@ -123,28 +126,28 @@ for (const source of [floorPlanAssistant, floorPlanHistory]) {
 }
 
 assert.match(
-  canonicalWorkspace,
+  requestedDesignWorkspace,
   /searchParams\.get\("designId"\) \?\? ""/,
   "The canonical loader should preserve the opaque query value without trimming it."
 );
 assert.match(
-  canonicalWorkspace,
-  /loadDesign\(requestedDesignId\)[\s\S]*?router\.replace/,
+  requestedDesignWorkspace,
+  /loadDesign\(decision\.designId\)[\s\S]*?router\.replace/,
   "The canonical editor should continue loading the requested persisted design."
 );
 assert.match(
-  canonicalWorkspace,
-  /result === "loaded" \|\| result === "superseded"[\s\S]*?return;[\s\S]*?router\.replace/,
+  requestedDesignWorkspace,
+  /!input\.active \|\| input\.result === "loaded" \|\| input\.result === "superseded"[\s\S]*?kind: "unchanged"/,
   "A superseded route load must not pull navigation back to a stale design."
 );
 assert.match(
-  canonicalWorkspace,
-  /router\.replace\(designId \? buildDesignEditorUrl\(\{ designId, context: searchParams \}\) : "\/design"\)/,
+  requestedDesignWorkspace,
+  /currentDesignId[\s\S]*?buildDesignEditorUrl\(\{[\s\S]*?designId: input\.currentDesignId,[\s\S]*?context: input\.context[\s\S]*?: "\/design"/,
   "A denied route load should restore the previous design with allowed editor context."
 );
 assert.match(
-  canonicalWorkspace,
-  /onLoadDesign: \(id\)[\s\S]*?router\.push\(buildDesignEditorUrl\(\{ designId: id/,
+  requestedDesignWorkspace,
+  /closeMyDesigns\(\);[\s\S]*?router\.push\(buildDesignEditorUrl\(\{ designId, context: searchParams \}\)\)/,
   "The in-editor My Designs list should navigate with the canonical URL before loading."
 );
 assert.match(
@@ -153,7 +156,7 @@ assert.match(
   "A successfully loaded floor-plan revision copy should replace the source URL identity."
 );
 assert.doesNotMatch(
-  `${canonicalWorkspace}\n${floorPlanLifecycle}`,
+  `${canonicalWorkspace}\n${requestedDesignWorkspace}\n${floorPlanLifecycle}`,
   /import\("@\/lib\/design-editor-url"\)/,
   "Client navigation should not resume from a late helper import after unmount."
 );

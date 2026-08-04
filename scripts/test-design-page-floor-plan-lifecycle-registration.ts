@@ -33,6 +33,7 @@ assertSourceOrder(
   workspaceSource,
   [
     "useDesignPagePersistenceWorkspaceRegistration({",
+    "useDesignPageRequestedDesignWorkspaceRegistration({",
     "useDesignPageFloorPlanLifecycleRegistration({",
     "useDesignPageAiWorkspaceRegistration({",
   ],

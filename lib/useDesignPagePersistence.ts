@@ -33,6 +33,10 @@ import {
 } from "@/lib/room-persistence";
 import { fingerprintDesignSnapshot } from "@/lib/snapshot-fingerprint";
 import type { DesignItem, DesignSnapshot, ZoneMin } from "@/lib/room-types";
+import {
+  createDesignPageLoadRequestCoordinator,
+  isSupersededDesignPageLoadError,
+} from "@/lib/design-page-requested-design-load-coordinator";
 
 type Budget = "$" | "$$" | "$$$";
 type DesignMode = "homeowner" | "designer";
@@ -217,7 +221,7 @@ export function useDesignPagePersistence({
   const cloudWriteTailRef = useRef<Promise<unknown>>(Promise.resolve());
   const shareStatusAbortRef = useRef<AbortController | null>(null);
   const designListAbortRef = useRef<AbortController | null>(null);
-  const designLoadAbortRef = useRef<AbortController | null>(null);
+  const [designLoadRequest] = useState(createDesignPageLoadRequestCoordinator);
 
   const enqueueCloudWrite = useCallback(<T,>(operation: () => Promise<T>): Promise<T> => {
     const queued = cloudWriteTailRef.current
@@ -542,7 +546,7 @@ export function useDesignPagePersistence({
   const detachCurrentDesignForNewDraft = useCallback(() => {
     documentEpochRef.current += 1;
     shareStatusAbortRef.current?.abort();
-    designLoadAbortRef.current?.abort();
+    designLoadRequest.cancel();
     setDesignId(null);
     setShareToken(null);
     setShareEnabled(false);
@@ -567,6 +571,7 @@ export function useDesignPagePersistence({
       // The next local-backup effect will retry with the new draft.
     }
   }, [
+    designLoadRequest,
     setDesignId,
     setNotes,
     setSavedViews,
@@ -786,13 +791,10 @@ export function useDesignPagePersistence({
       id: string,
       options?: { notFoundMessage?: string }
     ): Promise<DesignPageCloudLoadResult> => {
-      const requestEpoch = documentEpochRef.current;
-      designLoadAbortRef.current?.abort();
-      const controller = new AbortController();
-      designLoadAbortRef.current = controller;
+      const request = designLoadRequest.start();
       try {
-        const data = await designApi.get(id, controller.signal);
-        if (requestEpoch !== documentEpochRef.current) return "superseded";
+        const data = await designApi.get(id, request.controller.signal);
+        if (!designLoadRequest.isCurrent(request)) return "superseded";
         documentEpochRef.current += 1;
         const snapshot = legacyApiToSnapshot(data);
         setLastPersistedSnapshotFingerprint(fingerprintDesignSnapshot(snapshot));
@@ -813,13 +815,8 @@ export function useDesignPagePersistence({
         const nextMode =
           data?.mode === "designer" ? "designer" : "homeowner";
         setMode(nextMode);
-        setNotes(
-          typeof data?.notes === "string"
-            ? data.notes : ""
-        );
-        setSavedViews(
-          sanitizeDesignPageSavedViews(data?.savedViews)
-        );
+        setNotes(typeof data?.notes === "string" ? data.notes : "");
+        setSavedViews(sanitizeDesignPageSavedViews(data?.savedViews));
         if (
           typeof data?.style === "string" &&
           STYLES.includes(data.style as Style)
@@ -839,7 +836,9 @@ export function useDesignPagePersistence({
         showRuleToast(`Loaded ${data.title}`);
         return "loaded";
       } catch (error) {
-        if (error instanceof DesignApiError && error.kind === "aborted") {
+        if (isSupersededDesignPageLoadError(
+          designLoadRequest.isCurrent(request), error
+        )) {
           return "superseded";
         }
         showRuleToast(
@@ -856,13 +855,12 @@ export function useDesignPagePersistence({
           ? "missing"
           : "unavailable";
       } finally {
-        if (designLoadAbortRef.current === controller) {
-          designLoadAbortRef.current = null;
-        }
+        designLoadRequest.finish(request);
       }
     },
     [
       clearHistory,
+      designLoadRequest,
       enableShare,
       fetchShareStatus,
       hydratePersistedFloorPlanState,
@@ -1051,9 +1049,9 @@ export function useDesignPagePersistence({
     return () => {
       shareStatusAbortRef.current?.abort();
       designListAbortRef.current?.abort();
-      designLoadAbortRef.current?.abort();
+      designLoadRequest.cancel();
     };
-  }, []);
+  }, [designLoadRequest]);
 
   useEffect(() => {
     if (
@@ -1340,6 +1338,7 @@ export function useDesignPagePersistence({
       reloadCloudAfterConflict,
       retrySaveStatus,
       loadDesign,
+      cancelDesignLoad: designLoadRequest.cancel,
       clearPersistedSnapshotFingerprint,
       createShareLinkAndCopy,
       closeShareLinkFallback,

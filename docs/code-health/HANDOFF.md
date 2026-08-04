@@ -1962,3 +1962,106 @@ workspace architecture failure is recorded only and not fixed. No Phase 8,
 CH-0004, CH-0017 through CH-0030, dependency, workflow, schema, migration,
 catalog, presentation-lighting, GLB, unrelated editor/scene cleanup, push, or
 deployment change is included.
+
+## DesignPageWorkspace requested-design architecture ratchet — 2026-08-04
+
+This bounded remediation began from exact clean source
+`f95b7e27f6729a36372f00ae0e78b93ea6fd1901` on
+`refactor/design-page-workspace`. Entry status, tracked diff, diff check, diff
+stat, and untracked checks were empty; the completed baseline commits were
+ancestors. `lsof` resolved the listening Node application to the canonical
+`/Users/justus/Developer/interior-ai` checkout. No work was discarded, carried
+from another branch, pushed, or deployed.
+
+The inherited failure reproduced exactly: `DesignPageWorkspace.tsx` was 594
+physical lines against the direct architecture maximum of 550, and the cleanup
+suite stopped at the corresponding viewport guard. Targeted ESLint and focused
+persistence/core-shell registrations were green. The responsibility map found
+that the workspace registered the core shell, document/selection, backup,
+paywall, plan, editor interaction, persistence, floor-plan, AI, placement,
+commerce, cabinetry, selection, presentation, scene, panel, dialog, and render
+regions. Its only direct external synchronization was a 19-line requested-ID
+effect. Network/database calls, request epochs, abort controllers, stale
+response rejection, canonical document replacement, errors, autosave, and
+cleanup already lived in the persistence owner.
+
+The chosen extraction is requested-design workspace registration. Before, the
+workspace mounted persistence, exploded its UI-facing state/actions, parsed the
+canonical `designId`, triggered load, repaired failed navigation, and separately
+wired My Designs navigation. After,
+`useDesignPageRequestedDesignWorkspaceRegistration.ts` composes immediately
+after the same persistence registration, makes pure deterministic route and
+completion decisions, owns route cleanup/cancellation, and closes My Designs
+before synchronously pushing the selected canonical ID. Its lower-level
+`design-page-requested-design-load-coordinator.ts` support claims a unique token
+before each request, aborts its predecessor, and invalidates pending tokens on
+route cleanup. Persistence invokes that arbiter but remains the sole network,
+document handoff, missing/denied/unavailable translation, share, save,
+local-backup, and autosave owner.
+
+No duplicate design state, route parser, entitlement path, network adapter, or
+generic helper was introduced. The route ID remains opaque and canonical;
+older/aborted loads cannot replace newer state even when an adapter ignores its
+abort signal; unmounted or superseded effects
+cannot restore stale navigation; failed loads restore the prior canonical
+design or `/design`; My Designs, duplicate, checkout, legacy bookmarks, refresh,
+and back/forward retain the canonical URL. Consumer and Pro share the same
+loading and persistence system, URL mode cannot grant Pro, and signed-out/local
+behavior continues to wait rather than invoking cloud loading. Persistence and
+autosave remain gated by the existing hydration and current-design identity.
+
+The workspace is now 543 physical lines, down 51 and below 550. The route
+registration is 125 lines and its pure request arbiter is 43; neither creates
+application or document state. The direct architecture maximum tightens to 543,
+and code quality lowers the workspace entry from 594 to 543 plus its overlong
+maximum from 560 to 510. Persistence also decreases from 1,360 to 1,359 lines,
+its overlong maximum from 1,210 to 1,205, and complex maximum from 26 to 24. No
+file or function allowance was raised; no exception, suppression, explicit `any`,
+TypeScript suppression, unexplained assertion, dependency, barrel, or cycle was
+added.
+
+Validation on the production/test change before this documentation:
+
+- PASS: deterministic requested-design decisions plus deferred controlled
+  adapters proving B supersedes A and route removal invalidates A even if abort
+  is ignored; canonical routing;
+  persistence controller, AI/persistence, presentation/persistence, editor,
+  core shell, floor-plan lifecycle, scene-order, viewport, local-backup, save
+  status, and design persistence checks.
+- PASS: focused Chromium `design-editor-routing.spec.ts`, 6/6 in 2.9 minutes,
+  including save/reload, Consumer/Pro entitlement, My Designs history/project
+  switching, duplicate response identity, checkout continuation, and denied-ID
+  fallback.
+- PASS: targeted ESLint and full repository lint with zero warnings; typecheck;
+  code quality across 1,040 production files; direct design architecture across
+  262 design-page files with no cycle; and strict production build across all
+  57 pages. The sandboxed build failed only because Turbopack could not bind its
+  helper port; the approved outside-sandbox rerun passed with the inherited
+  floor-plan NFT trace warning.
+- PARTIAL/EXPECTED INHERITED FAIL: `npm run test:design-page-cleanup` clears the
+  original workspace guard and all preceding requested-design/viewport checks,
+  then stops at untouched `scripts/test-editor-3d-floor-cutaway.ts:82`, whose
+  static `floorWorldY` assertion was already recorded by the preceding viewport
+  batch. It was not modified. A direct broader plan-template script also retains
+  its earlier moved-test-ID assertion and is not part of this batch.
+
+Initial independent read-only review returned three valid findings: cleanup
+suppressed late navigation without invalidating the pending request, concurrent
+A/B loads could reuse the same document epoch if an adapter ignored abort, and
+the focused test covered pure decisions without a controlled deferred race.
+The final implementation addresses each with route cleanup cancellation, a
+unique-token request arbiter claimed before predecessor abort, mutation gates in
+persistence, and production-arbiter deferred cases for B-over-A and route
+removal. Final review is **PASS — no actionable findings**. It confirms the
+boundary, canonical owners, Consumer/Pro equivalence, hook order, URL/error/
+hydration behavior, ratchets, cycle checks, documentation, test strength, and
+scope. A dedicated rendered-hook race test is noted only as non-blocking
+residual risk because the production arbiter, source integration, and focused
+browser path are already covered.
+
+The implementation commit is the single focused local commit containing this
+record; its resolved SHA and final clean status are reported after creation.
+Rollback is one local revert. Full E2E was not run. No Phase 8, CH-0004,
+CH-0017 through CH-0030, viewport, presentation lighting, GLB, catalog,
+workflow, dependency, schema, migration, production-data, unrelated editor,
+push, or deployment change is included.
