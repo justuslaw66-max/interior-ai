@@ -2752,3 +2752,36 @@ GLB lifecycle/cache/telemetry, schema, migration, budget raise, Full E2E, push,
 or deployment is included. The implementation commit is the one focused commit
 containing this record; resolve its SHA after creation. Rollback is one local
 revert.
+
+## RC47-RC55 archival disposition handoff — 2026-08-05
+
+Starting from exact clean candidate
+`7016da0ad74c7d463a07ec061259b50d757031e0`, a bounded read-only audit recovered
+all nine retained RC47-RC55 commits and compared every complete patch and intent
+with current source and focused existing coverage. The CH-0030 profiler commit
+`d7a50698707153b43df0a982766288060c24b997` remained excluded. No archival
+commit was cherry-picked, and no application or test source changed.
+
+The decision is **B. ARCHIVAL DISPOSITION COMPLETE — ADDITIONAL BOUNDED
+REMEDIATION REQUIRED**. All nine primary dispositions are G. They consolidate
+to P1 cloud normalized-baseline and queued-revision freshness; P2 centralized
+rotation keyboard ownership, compare persistence across filtering, and drawer
+focus across hydration; and P3 drawer selector truthfulness, responsive share
+room projections/layout readiness, and shared-duplicate projection comparison.
+Do not create the final integration branch from the audited candidate.
+
+Ten focused static suites passed. Focused Chromium catalog/rotation coverage
+passed 5/5 through the current mixed keyboard ownership. Product specs 104 and
+143 passed 5 cases and failed 2 cases, both exactly reproducing the obsolete
+`complementary` drawer-role assertion. Database-mutating persistence browser
+coverage was not authorized for this read-only audit. Full E2E was not run.
+
+A separate read-only reviewer confirmed reference completeness, all nine G
+dispositions, P1/P2/P3 severity, and result B. Its corrections are incorporated:
+RC50 completes RC49's baseline acknowledgment, RC54 remains G because the
+required smoke assertion is still wrong, RC48 must preserve current analytics/
+history semantics, and RC52 needs a pre-hydration opening regression. The
+detailed ledger is
+`docs/code-health/07_RC47_RC55_ARCHIVAL_DISPOSITION.md`. This audit branch and
+its one documentation-only commit are local only; no push or external change is
+authorized.

@@ -429,3 +429,29 @@ Rollback: revert the single CH-0012 implementation commit. If callers must be is
 - **Validation:** the final required wrapper passed 4/4 with truthfulness validation. Direct projects passed Chromium 2/2 and WebKit 2/2. All 78 design-page cleanup guards, required-test truthfulness, CH-0016 production-artifact evidence, editor command/capability/accessibility, cabinetry controller/runtime/composition/header/accessibility/preview-renderer checks, targeted and full zero-warning lint, typecheck, code quality, diff hygiene, and the strict 57-page production build passed. No force click, DOM click, sleep, timeout increase, skip, retry, allowance, suppression, workflow, dependency, or budget change was added. Required inventory remains 21 gates / 370 classified sources.
 - **Bundle and separate next blocker:** identical strict builds measure initial JS from 7,101,416 raw / 1,169,365 Brotli at the starting SHA to 7,103,302 raw / 1,169,257 Brotli, an explained +1,886 raw / -108 Brotli accessibility correction. Initial CSS remains 143,779 raw, preserving the 3,779-byte excess. Cabinetry Studio remains one lazy 492,639 raw / 84,899 Brotli chunk; there is no eager duplicate or new dependency. The standard Phase 8 check passes representative project timings and then remains separately red at 7,103,302/6,955,000 raw; no Phase 8 implementation or budget was changed.
 - **Review, scope, and rollback:** independent read-only review found two actionable gaps: the modal did not consume Escape through its canonical dismissal path, and the Consumer browser phase inherited a mocked Pro plan. Follow-up found that an inner control's already-prevented Escape could still reach background shortcuts. All findings were corrected with unconditional modal Escape isolation, dismissal only for an otherwise-unhandled Escape, and a real Free-plan `?mode=designer` downgrade case; affected static checks, Chromium, WebKit, the 4/4 wrapper, lint/typecheck/code quality, cleanup, and the strict build reran successfully. Final complete-diff disposition: **PASS — no actionable findings**. The one residual non-blocking limitation is that inner-control `defaultPrevented` isolation is protected by an exact source guard rather than a separate browser case; generic Escape dismissal and focus return are browser-covered. Revert the one focused local implementation commit for rollback. Full E2E was not run. No Phase 8 remediation, CH-0004, CH-0017 through CH-0030 behavior, geometry/export, GLB lifecycle/cache/telemetry, viewport/presentation architecture, catalog, workflow, dependency, lockfile, schema, migration, push, or deployment work is included.
+
+### RC47-RC55 archival P1 persistence queue — 2026-08-05
+
+- **`ARCH-RC49-50-CLOUD-BASELINE` — P1, open:** current load fingerprints the
+  raw API snapshot before canonical post-commit normalization, and recovery-copy
+  immediately installs its fingerprint. No pending baseline survives through
+  the acknowledging render and blocks autosave. A normal load or new recovery
+  copy can therefore appear dirty and schedule an unintended write. RC49 starts
+  the historical protocol and RC50 completes it; treat them as one bounded
+  current-architecture remediation.
+- **`ARCH-RC53-CLOUD-REVISION` — P1, open:** manual and autosave operations
+  capture `lastCloudRevision` before entering the serialized write queue. A
+  later operation can execute after its predecessor committed while still
+  submitting the old revision, producing a false 409 and stranding the latest
+  edit. Read the current committed revision at execution time and reject stale
+  autosave generations without weakening the server's `expectedUpdatedAt`
+  compare-and-swap.
+- **Severity boundary:** strong server CAS, local backup/offline handling,
+  request coordination, and document-epoch rejection prevent evidence of silent
+  cross-session overwrite or cross-design mutation. They do not make the two
+  same-client persistence gaps safe. P1 reflects production reach, edit-loss/
+  stranding potential, and weak detectability; no P0 is established.
+- **Gate:** these findings block a final integration branch. The related P2/P3
+  items and full RC inventory are recorded in
+  `docs/code-health/07_RC47_RC55_ARCHIVAL_DISPOSITION.md`. No remediation was
+  implemented during the audit.

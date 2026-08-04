@@ -429,3 +429,34 @@ arbiter, and controlled adapters that ignore abort. Final read-only review is
 **PASS — no actionable findings**; all three findings are resolved, ownership
 and hook order remain canonical, ratchets and docs are accurate, and the
 remaining absence of a rendered-hook race test is non-blocking.
+
+## RC47-RC55 bounded remediation sequence — 2026-08-05
+
+The archival audit at source `7016da0ad74c7d463a07ec061259b50d757031e0`
+found eight unresolved invariants across all nine RC commits. This is not an
+authorization to implement or integrate them. If approved, sequence the work as
+follows so high-reach persistence contracts settle before certification-only
+changes:
+
+1. P1 cloud baseline and revision freshness: resolve
+   `ARCH-RC49-50-CLOUD-BASELINE` and `ARCH-RC53-CLOUD-REVISION` while preserving
+   server compare-and-swap, local backup, request coordination, and document
+   epoch rejection.
+2. P2 editor/catalog ownership: centralize the intended furniture rotation
+   keyboard contract (`ARCH-RC48-KEYBOARD`), resolve comparison from the full
+   product map (`ARCH-RC51-COMPARE`), and preserve drawer opener/category focus
+   across hydration (`ARCH-RC52-DRAWER-FOCUS`).
+3. P3 release truthfulness and responsive projection: correct the drawer role
+   assertions (`ARCH-RC47-ASSERTIONS`), compare shared duplicates through like-
+   for-like projections (`ARCH-RC54-PROJECTION-ASSERTION`), and implement plus
+   stabilize the mobile/desktop share-room projections
+   (`ARCH-RC53-55-SHARE-RESPONSIVE`).
+4. Use focused checks during each batch. Certify only the final immutable
+   artifact under the established release cadence; any later code change
+   invalidates that certification.
+
+Do not replay the RC chain as a unit. RC49 and RC50 form one baseline protocol;
+RC53 contains two separable concerns; RC54 needs only its certification
+correction; and RC48 must be adapted to current controller and analytics/history
+ownership. Detailed proof is in
+`docs/code-health/07_RC47_RC55_ARCHIVAL_DISPOSITION.md`.

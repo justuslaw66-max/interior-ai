@@ -399,3 +399,32 @@ CH-0001, CH-0012, and CH-0016 are closed for repository-controlled remediation. 
 - Floor-plan processing already includes durable limiting/outbox/recovery patterns that can serve as models for broader services.
 
 These strengths argue for incremental extraction behind existing contracts, not a rewrite.
+
+## RC47-RC55 archival disposition — 2026-08-05
+
+Exact candidate `7016da0ad74c7d463a07ec061259b50d757031e0` was audited read-only
+against the retained RC47-RC55 chain. All nine references were recovered, but
+none is an ancestor or patch-equivalent of the candidate. Each disposition is
+**G — STILL_REQUIRED**, consolidated into eight stable findings:
+
+- P1 `ARCH-RC49-50-CLOUD-BASELINE`: loaded and recovery-copy state lacks a
+  normalized, render-acknowledged autosave baseline.
+- P1 `ARCH-RC53-CLOUD-REVISION`: serialized writes can execute with a revision
+  captured before the preceding write committed.
+- P2 `ARCH-RC48-KEYBOARD`: furniture rotation remains split across per-item and
+  central keyboard owners with conflicting Shift+R semantics.
+- P2 `ARCH-RC51-COMPARE`: compared products resolve through the filtered map and
+  disappear after category/filter changes.
+- P2 `ARCH-RC52-DRAWER-FOCUS`: catalog hydration can unmount the drawer opener
+  before focus restoration.
+- P3 `ARCH-RC47-ASSERTIONS`: two product specs still query the drawer's obsolete
+  `complementary` role.
+- P3 `ARCH-RC53-55-SHARE-RESPONSIVE`: share rooms lack distinct mobile/table
+  projections and stable layout readiness coverage.
+- P3 `ARCH-RC54-PROJECTION-ASSERTION`: beta smoke compares owner-visible and
+  public-projection fingerprints rather than like-for-like public projections.
+
+The integration result is **B. ARCHIVAL DISPOSITION COMPLETE — ADDITIONAL
+BOUNDED REMEDIATION REQUIRED**. No integration branch should be created yet.
+The exact commit inventory, semantic evidence, validation results, and
+independent review are in `docs/code-health/07_RC47_RC55_ARCHIVAL_DISPOSITION.md`.
