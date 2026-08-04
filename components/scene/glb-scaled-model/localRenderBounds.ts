@@ -5,12 +5,22 @@ export type GLBLocalRenderBounds = {
 
 export const GLB_LOCAL_RENDER_BOUNDS_EPSILON_METERS = 1e-6;
 
+export function copyGLBLocalRenderBounds(
+  bounds: GLBLocalRenderBounds
+): GLBLocalRenderBounds {
+  return {
+    center: [...bounds.center],
+    size: [...bounds.size],
+  };
+}
+
 export function isValidGLBLocalRenderBounds(
   bounds: GLBLocalRenderBounds
 ): boolean {
   return (
     bounds.center.every(Number.isFinite) &&
-    bounds.size.every((value) => Number.isFinite(value) && value >= 0)
+    bounds.size.every((value) => Number.isFinite(value) && value >= 0) &&
+    bounds.size.some((value) => value > 0)
   );
 }
 
@@ -87,10 +97,7 @@ export function observeGLBLocalRenderBounds(
     };
   }
 
-  const snapshot: GLBLocalRenderBounds = {
-    center: [...nextBounds.center],
-    size: [...nextBounds.size],
-  };
+  const snapshot = copyGLBLocalRenderBounds(nextBounds);
   tracker.lastBounds = snapshot;
   tracker.materialChangeCount += 1;
   return { outcome: "changed", bounds: snapshot };

@@ -24,6 +24,7 @@ import type {
 } from "./modelLifecycleTypes";
 import type { GLBResourceCacheStatus } from "./glbResourceCache";
 import { measureGLBMainThreadWork } from "./glbMainThreadTelemetryFacade";
+import { copyGLBLocalRenderBounds } from "./localRenderBounds";
 
 type RenderAssets = CatalogItemSchema["variants"][number]["renderAssets"];
 type LoadStateCallback = (state: "loading" | "ready" | "error") => void;
@@ -143,7 +144,7 @@ async function loadPreparedForMount(
   publish({
     kind: "prepared",
     model,
-    localRenderBounds: prepared.localRenderBounds,
+    localRenderBounds: copyGLBLocalRenderBounds(prepared.localRenderBounds),
     preparationTimings: {
       ...prepared.preparationTimings,
       materialCloningStartedAtMs,

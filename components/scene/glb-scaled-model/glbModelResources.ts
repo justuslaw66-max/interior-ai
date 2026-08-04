@@ -20,6 +20,7 @@ import {
 } from "./glbSourceLoadError";
 import type { GLBLocalRenderBounds } from "./localRenderBounds";
 import { measureGLBMainThreadWork, recordGLBMainThreadTiming } from "./glbMainThreadTelemetryFacade";
+import { measureGLBLocalRenderBounds } from "./measureGLBLocalRenderBounds";
 import type { GLBModelCacheStatus } from "./modelLifecycleTypes";
 import {
   normalizeGLBScene,
@@ -75,6 +76,7 @@ export {
   disposeObjectGeometryAndMaterials,
 } from "./glbSceneResourceOwnership";
 export { categorizeGLBBoundsFailure, GLBSourceLoadError } from "./glbSourceLoadError";
+export { measureGLBLocalRenderBounds } from "./measureGLBLocalRenderBounds";
 
 const parsedCache = createGLBResourceCache<CachedGLBSource>({
   maximumEntries: 32,
@@ -255,23 +257,6 @@ async function loadGLBSource(
   } finally {
     disposeDecoders();
   }
-}
-
-export function measureGLBLocalRenderBounds(
-  normalizedModel: THREE.Object3D
-): GLBLocalRenderBounds {
-  const detachedModel = normalizedModel.clone(true);
-  detachedModel.updateWorldMatrix(true, true);
-  const bounds = new THREE.Box3().setFromObject(detachedModel, true);
-  if (bounds.isEmpty()) throw new GLBSourceLoadError("glb-empty-bounds");
-  const center = new THREE.Vector3();
-  const size = new THREE.Vector3();
-  bounds.getCenter(center);
-  bounds.getSize(size);
-  return {
-    center: [center.x, center.y, center.z],
-    size: [size.x, size.y, size.z],
-  };
 }
 
 export function acquireParsedGLB(

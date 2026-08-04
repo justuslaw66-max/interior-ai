@@ -59,8 +59,26 @@ const selectionOutlineSource = readSource(
 const localRenderBoundsSource = readSource(
   "components/scene/glb-scaled-model/localRenderBounds.ts"
 );
+const glbModelResourcesSource = readSource(
+  "components/scene/glb-scaled-model/glbModelResources.ts"
+);
+const measureGLBLocalRenderBoundsSource = readSource(
+  "components/scene/glb-scaled-model/measureGLBLocalRenderBounds.ts"
+);
+const glbModelResourceResolutionSource = readSource(
+  "components/scene/glb-scaled-model/glbModelResourceResolution.ts"
+);
+const glbModelLifecycleSource = readSource(
+  "components/scene/glb-scaled-model/useGLBModelLifecycle.ts"
+);
+const glbLoadedResourceSource = readSource(
+  "components/scene/glb-scaled-model/useGLBLoadedResource.ts"
+);
 const modelDiagnosticsSource = readSource(
   "components/scene/glb-scaled-model/modelDiagnostics.ts"
+);
+const modelLifecycleTypesSource = readSource(
+  "components/scene/glb-scaled-model/modelLifecycleTypes.ts"
 );
 const cameraNavigationSource = readSource(
   "lib/useDesignPageCameraNavigation.ts"
@@ -691,9 +709,39 @@ assert.match(
   "Selected 3D furniture should use a memoized, always-visible full box derived from primitive model-local bounds."
 );
 assert.match(
-  [localRenderBoundsSource, scaledModelSource].join("\n"),
-  /GLB_LOCAL_RENDER_BOUNDS_EPSILON_METERS = 1e-6[\s\S]*areGLBLocalRenderBoundsEquivalent[\s\S]*observeGLBLocalRenderBounds[\s\S]*onLocalBoundsChange\?: \(bounds: GLBLocalRenderBounds\)[\s\S]*localBoundsTrackerRef[\s\S]*const detachedModel = normalizedModel\.clone\(true\)[\s\S]*new THREE\.Box3\(\)\.setFromObject\(detachedModel, true\)[\s\S]*const observation = observeGLBLocalRenderBounds[\s\S]*observation\.outcome !== "changed"[\s\S]*onLocalBoundsChangeRef\.current\?\.\(observation\.bounds\)/,
-  "GLB selection bounds should be measured in local space, semantically tracked, and published only after a material bounds change."
+  localRenderBoundsSource,
+  /GLB_LOCAL_RENDER_BOUNDS_EPSILON_METERS = 1e-6[\s\S]*copyGLBLocalRenderBounds[\s\S]*isValidGLBLocalRenderBounds[\s\S]*bounds\.size\.some\(\(value\) => value > 0\)[\s\S]*areGLBLocalRenderBoundsEquivalent[\s\S]*observeGLBLocalRenderBounds[\s\S]*copyGLBLocalRenderBounds\(nextBounds\)/,
+  "GLB local bounds should remain valid primitive semantic values with a copied comparison baseline."
+);
+assert.match(
+  measureGLBLocalRenderBoundsSource,
+  /export function measureGLBLocalRenderBounds[\s\S]*normalizedModel\.clone\(true\)[\s\S]*updateWorldMatrix\(true, true\)[\s\S]*new THREE\.Box3\(\)\.setFromObject\(detachedModel, true\)[\s\S]*glb-empty-bounds[\s\S]*isValidGLBLocalRenderBounds\(localRenderBounds\)[\s\S]*glb-bounds-failed/,
+  "The canonical owner should measure normalized scene-item-local bounds and reject empty or invalid results."
+);
+assert.match(
+  glbModelResourcesSource,
+  /measureGLBLocalRenderBounds\(scene\)[\s\S]*localRenderBounds: bounds\.bounds/,
+  "Prepared resources should retain the canonical measured local-bounds value."
+);
+assert.match(
+  glbLoadedResourceSource,
+  /const model = clonePreparedModel\(prepared\.scene\)[\s\S]*localRenderBounds: copyGLBLocalRenderBounds\(prepared\.localRenderBounds\)/,
+  "Each prepared mount should publish an isolated primitive local-bounds value."
+);
+assert.match(
+  glbModelResourceResolutionSource,
+  /export function boundsForResource[\s\S]*resource\?\.kind === "prepared"[\s\S]*resource\.localRenderBounds[\s\S]*measureGLBLocalRenderBounds\(model\)/,
+  "Prepared cache hits and fresh normalized models should resolve through the same local-bounds contract."
+);
+assert.match(
+  glbModelLifecycleSource,
+  /const boundsResult = useMemo\([\s\S]*boundsForResource\(resource, modelResult\.model\)[\s\S]*bounds: boundsResult\.bounds/,
+  "The GLB lifecycle should expose canonical local bounds to the renderer."
+);
+assert.match(
+  scaledModelSource,
+  /onLocalBoundsChange\?: \(bounds: GLBLocalRenderBounds\)[\s\S]*localBoundsTrackerRef[\s\S]*const observation = observeGLBLocalRenderBounds[\s\S]*observation\.outcome !== "changed"[\s\S]*onLocalBoundsChangeRef\.current\?\.\(observation\.bounds\)/,
+  "The GLB renderer should semantically track and publish only material local-bounds changes."
 );
 assert.doesNotMatch(
   furnitureSource,
@@ -701,14 +749,24 @@ assert.doesNotMatch(
   "Furniture should not mirror model-derived bounds into React state."
 );
 assert.match(
-  [furnitureSource, scaledModelSource].join("\n"),
-  /setReportedModelLoad\(\(current\) =>[\s\S]*current\.url === runtimeModelUrl && current\.state === nextState[\s\S]*diagnosticKey=\{instanceId\}[\s\S]*showSelectionOutline=\{Boolean\([\s\S]*selectionOutlineVisible[\s\S]*<FurnitureSelectionOutline localRenderBounds=\{localRenderBounds\}/,
-  "Model load synchronization should be idempotent while the model owns its precise selection outline."
+  furnitureSource,
+  /setReportedModelLoad\(\(current\) =>[\s\S]*current\.url === runtimeModelUrl && current\.state === nextState[\s\S]*diagnosticKey=\{instanceId\}[\s\S]*showSelectionOutline=\{Boolean\(/,
+  "Furniture model-load synchronization should remain idempotent and delegate precise selection to the GLB renderer."
+);
+assert.match(
+  scaledModelSource,
+  /const selectionOutlineVisible = Boolean\([\s\S]*showSelectionOutline && bounds && model && materialsReady[\s\S]*<FurnitureSelectionOutline localRenderBounds=\{bounds\}/,
+  "The GLB renderer should own its precise selection outline from canonical local bounds."
+);
+assert.match(
+  modelLifecycleTypesSource,
+  /boundsMaterialChangeCount: number[\s\S]*boundsPublicationCount: number[\s\S]*excessiveBoundsWarningCount: number[\s\S]*selectionOutlineVisible: boolean/,
+  "Development diagnostic snapshots should expose bounds churn, publications, warnings, and selection-outline visibility."
 );
 assert.match(
   modelDiagnosticsSource,
-  /GLB_MATERIAL_BOUNDS_CHANGE_WARNING_THRESHOLD = 6[\s\S]*boundsMaterialChangeCount[\s\S]*boundsPublicationCount[\s\S]*excessiveBoundsWarningCount[\s\S]*selectionOutlineVisible/,
-  "Development diagnostics should expose excessive bounds churn, publications, and selection-outline visibility."
+  /GLB_MATERIAL_BOUNDS_CHANGE_WARNING_THRESHOLD = 6[\s\S]*recordGLBBoundsObservation[\s\S]*boundsMaterialChangeCount \+= 1[\s\S]*boundsPublicationCount \+= 1[\s\S]*recordGLBSelectionOutlineVisibility[\s\S]*selectionOutlineVisible = visible[\s\S]*recordGLBExcessiveBoundsWarning[\s\S]*excessiveBoundsWarningCount \+= 1/,
+  "Development diagnostics should record each local-bounds observation and outline visibility transition."
 );
 assert.match(
   [scaledModelSource, normalizeGLBSceneSource].join("\n"),

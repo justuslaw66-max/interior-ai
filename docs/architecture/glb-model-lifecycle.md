@@ -11,6 +11,26 @@ A lifecycle identity is the tuple of diagnostic key, mount instance ID, and
 reload generation. A model URL is resource identity only: two scene items may
 share one URL and cached resource while retaining distinct lifecycle identities.
 
+## Bounds vocabulary
+
+| Concept | Coordinate/transform contract | Owner and consumers | Persistence |
+| --- | --- | --- | --- |
+| Raw asset bounds | Temporary `Box3` in decoded asset coordinates, before catalog target dimensions, calibration, or scene-item transforms. | `normalizeGLBScene` uses it only to fit and center the decoded scene. | Never persisted or exposed as canonical bounds. |
+| Normalized scene-item-local bounds | `GLBLocalRenderBounds` measured by `measureGLBLocalRenderBounds` from a detached normalized model. Catalog target scale, calibration, root/node transforms, and normalization offsets are already applied exactly once. The enclosing furniture translation and durable Y rotation are not applied. | A prepared resource owns the reusable primitive value and each prepared mount receives copied center/size tuples; an uncached/texture-configured instance resolves the same value from its normalized model through `boundsForResource`. `useGLBModelLifecycle` exposes it to `GLBScaledModel`, semantic bounds diagnostics, and `FurnitureSelectionOutline`. | Ephemeral and never written to the design document. |
+| Selection bounds | Padding derived from normalized scene-item-local center/size. It remains under the furniture group, so Three.js applies the current item translation and Y rotation when rendering the outline. | `FurnitureSelectionOutline`; no second React or document bounds state. | Never persisted. |
+| Transformed world bounds | A transient projection of local bounds through the current item transform when a world-space axis-aligned result is required. Translation or rotation must not overwrite the canonical local value. | There is no persisted GLB world-bounds registry. Scene rendering derives transforms through the parent group. | Never persisted. |
+| Placement/collision footprint | XZ planning width/depth from catalog dimensions or `planningBoundsMm`, rotated about Y by the canonical item transform. It is intentionally independent of visual GLB bounds. | Furniture placement, room clamping, snapping, and collision/selection-transform controllers. | The document persists item position and canonical `rotationDeg`; it does not persist a derived AABB. |
+| Diagnostic bounds state | Closed lifecycle stages, error category, change/publication counts, and safe timings; not a geometry payload. | `modelDiagnostics` and the required metadata snapshot. | In-memory and generation-scoped only. |
+
+Prepared cache hits and fresh parsed loads must produce equivalent normalized
+scene-item-local bounds. Prepared scene graphs, geometry, and materials are
+deep-cloned per mount, and the cached primitive bounds are copied at the same
+mount boundary. Semantic observations are also copied per model tracker, so one
+item's transform or published observation cannot mutate another item or the
+cache. Geometry without bounds terminates as `glb-empty-bounds`; non-finite or
+all-zero results terminate as `glb-bounds-failed`. A planar result with one
+zero axis remains valid when at least one extent is positive.
+
 ## Required terminal invariant
 
 Every active required identity must terminate as `ready` or `error`. An

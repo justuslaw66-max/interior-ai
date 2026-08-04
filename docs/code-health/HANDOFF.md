@@ -1768,3 +1768,80 @@ Rollback is one local revert. Full E2E was not run. No push, deployment, Phase
 8 work, CH-0004, other CH-0017 through CH-0030 work, Hamilton adapter/schema
 limitation, workflow, dependency, schema, migration, catalog, or
 production-data change is included.
+
+## GLB local-bounds scene-layer contract — 2026-08-04
+
+This bounded baseline remediation began from exact clean source
+`9e8efa4c2a56ca1ea2526f9421c3069841e5499e` on
+`fix/baseline-glb-local-bounds-contract`. Entry status, branch, HEAD, tracked
+diff, diff check, diff stat, and untracked checks were clean, and the listening
+Node application cwd matched the canonical `/Users/justus/Developer/interior-ai`
+checkout. No work was discarded, copied from an RC, pushed, or deployed.
+
+The inherited failure was `scripts/test-design-page-scene-layers.ts:693`:
+its source regex required the detached normalized-model clone and `Box3`
+measurement inside the old `GLBScaledModel` source boundary. History shows the
+guard originated at `08bdfe0c`, while CH-0028 commit `c0ccd0d` moved the same
+logic into exported `measureGLBLocalRenderBounds` in `glbModelResources.ts` and
+routed both prepared-cache and fresh normalized resources through
+`boundsForResource`. The focused runtime bounds test already passed at the
+starting SHA. The exact failure was stale, but independent review then
+reproduced shared mutable prepared-bounds tuples across mounts and acceptance
+of non-finite or all-zero measurements at the production measurement boundary.
+Classification is therefore **E — CODE AND TEST BOTH REQUIRE CORRECTION**. No
+user-visible selection or placement/collision defect was reproduced.
+
+The canonical value is normalized scene-item-local `GLBLocalRenderBounds`.
+Catalog target dimensions, calibration, normalization centering, intrinsic
+normalization rotation, and configured root/node transforms are applied once
+before measurement. The enclosing furniture translation and canonical Y
+rotation are not part of that value; Three.js applies them to the local
+selection outline, and any world AABB is a transient derivation. Placement,
+snapping, and collision instead consume the separate XZ planning footprint
+from catalog or `planningBoundsMm` plus the canonical item transform. Prepared
+resources reuse the primitive local value while each mount deep-clones its
+scene, geometry, and materials and receives copied center/size tuples; semantic
+publication creates another per-model snapshot. Empty geometry is
+`glb-empty-bounds`; non-finite and all-zero measurements are
+`glb-bounds-failed`; a planar result with one zero axis remains valid. No bounds
+representation is persisted.
+
+The scene-layer guard now checks the stable semantic boundaries separately:
+measurement and validity ownership, prepared-mount tuple copying,
+prepared/fresh resolution, lifecycle exposure, semantic publication, precise
+selection consumption, and split diagnostic APIs. Production measurement now
+rejects invalid results, and prepared publication copies primitive bounds per
+mount. The focused bounds test loads a checked-in GLB, runs two independent
+normalizations, proves exact target dimensions, translation and Y-rotation
+world projection without canonical-local mutation, actual cache
+miss/hit/remount/reload parity, two-item resource and tuple isolation,
+empty/non-finite/all-zero failure, valid planar bounds, tolerance, and tracker
+remount behavior. Cache policy, lifecycle ordering, frameloop, telemetry,
+timeouts, retries, placement, and persistence are unchanged.
+
+The independent read-only review first found shared prepared tuple ownership,
+non-finite/all-zero measurement acceptance, synthetic-only parity/remount
+coverage, and the resulting resource-module size-ratchet failure. Each finding
+was corrected without a quality exception or cache/lifecycle expansion. Its
+final complete-diff disposition is **PASS — no actionable findings**.
+
+Validation passes the exact scene-layer and GLB local/render-bounds guards,
+GLB lifecycle and cache/refcount suites, runtime clone-isolation contract,
+selection-transform and viewport-selection checks, direct catalog/room
+placement checks, design persistence, targeted zero-warning ESLint, full
+zero-warning lint, typecheck, code quality, and the strict 57-page production
+build. The sandboxed build failed only on Turbopack's prohibited helper-port
+bind; the approved outside-sandbox rerun passed with the inherited floor-plan
+NFT trace warning. `test:design-page-cleanup` now clears the GLB guard and stops
+at the known out-of-scope viewport registration limit: 361 physical lines (362
+newline-split entries) versus 280. Full E2E was not run and the viewport
+extraction was not started.
+
+The single focused local commit containing this record changes three existing
+focused GLB production modules, extracts the 28-line measurement owner to keep
+the resource module below the standard size limit, and changes two test scripts,
+`docs/architecture/glb-model-lifecycle.md`, and these two records only. Its
+resolved SHA and final clean status are reported after commit. Rollback is one
+local revert. No Phase 8, CH-0004, CH-0017 through CH-0030, workflow,
+dependency, schema, migration, catalog, production-data, push, or deployment
+change is included.
