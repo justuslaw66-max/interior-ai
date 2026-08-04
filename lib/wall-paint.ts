@@ -1,10 +1,9 @@
 import {
-  NIPPON_PAINT_COLOURS,
   NIPPON_PAINT_COLOUR_COUNT,
   NIPPON_PAINT_FAMILIES,
   NIPPON_PAINT_SOURCE_URL,
   type NipponPaintFamily,
-} from "./nippon-paint-colours";
+} from "./nippon-paint-catalog";
 
 export type WallPaintFamily = NipponPaintFamily;
 export type WallPaintSource = "curated" | "nippon";
@@ -19,6 +18,15 @@ export type WallPaintSwatch = {
   brand?: string;
   code?: string;
   sourcePath?: string;
+};
+
+export type WallPaintCatalogColour = {
+  id: string;
+  name: string;
+  code: string;
+  hex: string;
+  family: WallPaintFamily;
+  sourcePath: string;
 };
 
 export const CURATED_WALL_PAINT_SWATCHES: WallPaintSwatch[] = [
@@ -38,21 +46,26 @@ export const CURATED_WALL_PAINT_SWATCHES: WallPaintSwatch[] = [
 
 export const NIPPON_WALL_PAINT_SOURCE_URL = NIPPON_PAINT_SOURCE_URL;
 export const NIPPON_WALL_PAINT_COLOUR_COUNT = NIPPON_PAINT_COLOUR_COUNT;
-export const NIPPON_WALL_PAINT_SWATCHES: WallPaintSwatch[] = NIPPON_PAINT_COLOURS.map((colour) => ({
-  id: colour.id,
-  name: colour.name,
-  code: colour.code,
-  hex: colour.hex,
-  family: colour.family,
-  source: "nippon",
-  brand: "Nippon Paint",
-  sourcePath: colour.sourcePath,
-}));
+export const WALL_PAINT_SWATCHES: WallPaintSwatch[] = CURATED_WALL_PAINT_SWATCHES;
 
-export const WALL_PAINT_SWATCHES: WallPaintSwatch[] = [
-  ...CURATED_WALL_PAINT_SWATCHES,
-  ...NIPPON_WALL_PAINT_SWATCHES,
-];
+export function createNipponWallPaintSwatches(
+  colours: readonly WallPaintCatalogColour[]
+): readonly WallPaintSwatch[] {
+  return Object.freeze(
+    colours.map((colour) =>
+      Object.freeze({
+        id: colour.id,
+        name: colour.name,
+        code: colour.code,
+        hex: colour.hex,
+        family: colour.family,
+        source: "nippon" as const,
+        brand: "Nippon Paint",
+        sourcePath: colour.sourcePath,
+      })
+    )
+  );
+}
 
 export const DEFAULT_WALL_PAINT_SWATCH = CURATED_WALL_PAINT_SWATCHES[0];
 
@@ -104,15 +117,21 @@ export function normalizeWallPaintName(value: unknown, fallback = "Custom paint"
   return trimmed.slice(0, 80);
 }
 
-export function getWallPaintSwatchById(id: string | null | undefined): WallPaintSwatch | null {
+export function getWallPaintSwatchById(
+  id: string | null | undefined,
+  swatches: readonly WallPaintSwatch[] = WALL_PAINT_SWATCHES
+): WallPaintSwatch | null {
   if (!id) return null;
-  return WALL_PAINT_SWATCHES.find((swatch) => swatch.id === id) ?? null;
+  return swatches.find((swatch) => swatch.id === id) ?? null;
 }
 
-export function getWallPaintSwatchByHex(hex: string | null | undefined): WallPaintSwatch | null {
+export function getWallPaintSwatchByHex(
+  hex: string | null | undefined,
+  swatches: readonly WallPaintSwatch[] = WALL_PAINT_SWATCHES
+): WallPaintSwatch | null {
   const normalized = normalizeWallPaintColorHex(hex);
   if (!normalized) return null;
-  return WALL_PAINT_SWATCHES.find((swatch) => swatch.hex.toUpperCase() === normalized) ?? null;
+  return swatches.find((swatch) => swatch.hex.toUpperCase() === normalized) ?? null;
 }
 
 export function getWallPaintSwatchLabel(swatch: WallPaintSwatch): string {
@@ -129,9 +148,13 @@ export function getWallPaintSwatchSearchText(swatch: WallPaintSwatch): string {
   ].filter(Boolean).join(" ").toLowerCase();
 }
 
-export function getWallPaintDisplayName(hex: string | null | undefined, name?: string | null): string {
+export function getWallPaintDisplayName(
+  hex: string | null | undefined,
+  name?: string | null,
+  swatches: readonly WallPaintSwatch[] = WALL_PAINT_SWATCHES
+): string {
   const normalized = normalizeWallPaintColorHex(hex);
   if (!normalized) return "No wall paint";
-  const swatch = getWallPaintSwatchByHex(normalized);
+  const swatch = getWallPaintSwatchByHex(normalized, swatches);
   return name?.trim() || (swatch ? getWallPaintSwatchLabel(swatch) : "Custom paint");
 }

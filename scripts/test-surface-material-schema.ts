@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import fs from "node:fs";
 import {
   auditSurfaceMaterialEntry,
   buildSurfaceMaterialAdminAuditSummaries,
@@ -19,7 +19,10 @@ import {
   buildSurfaceMaterialCsvRows,
 } from "../lib/share-shopping-csv";
 import { buildRoomSurfaceMaterialBomRows } from "../lib/surface-material-bom";
-import { getRuntimeSurfaceMaterialById } from "../lib/surface-material-runtime";
+import {
+  SURFACE_MATERIAL_RENDER_REGISTRY,
+  getRuntimeSurfaceMaterialById,
+} from "../lib/surface-material-runtime";
 import { clampFloorPatternScale, normalizeFloorRotationDeg } from "../lib/floor-materials";
 import {
   DEFAULT_FLOOR_JOINT_COLOR,
@@ -32,18 +35,21 @@ import {
 } from "../lib/surface-settings";
 import {
   NIPPON_WALL_PAINT_COLOUR_COUNT,
-  NIPPON_WALL_PAINT_SWATCHES,
   WALL_PAINT_SWATCHES,
+  createNipponWallPaintSwatches,
   getWallPaintDisplayName,
   getWallPaintSwatchById,
   getWallPaintSwatchLabel,
   getWallPaintSwatchSearchText,
   normalizeWallPaintColorHex,
 } from "../lib/wall-paint";
+import { NIPPON_PAINT_COLOURS } from "../lib/nippon-paint-colours";
 import {
-  PRODUCTION_SURFACE_MATERIAL_RENDER_REGISTRY,
+  PRODUCTION_SURFACE_MATERIAL_CATALOG_METADATA,
+} from "../lib/generated/surface-material-catalog.generated";
+import {
   TEST_FIXTURE_SURFACE_MATERIAL_RENDER_REGISTRY,
-} from "../lib/generated/surface-material-runtime.generated";
+} from "../tests/fixtures/surface-material-runtime.generated";
 import type { RoomSnapshot } from "../lib/room-types";
 import { resolveSurfaceTextureRepeat } from "../lib/surface-material-texture-repeat";
 import { buildHousePlan2D } from "../lib/design-page-house-plan";
@@ -95,7 +101,7 @@ function buildValidPublishedFixture(source: SurfaceMaterial): SurfaceMaterial {
 }
 
 function findRuntimeMaterialFixture(materialId: string) {
-  const material = PRODUCTION_SURFACE_MATERIAL_RENDER_REGISTRY.find(
+  const material = SURFACE_MATERIAL_RENDER_REGISTRY.find(
     (entry) => entry.surface_material.material_id === materialId
   );
   assert.ok(material, `expected runtime surface material ${materialId}`);
@@ -600,8 +606,11 @@ assert.equal(result.hasFailures, false, [
 ].join("\n"));
 
 const goodrichEntries = entries.filter((entry) => entry.surface_material.supplier === "goodrich_global");
-const productionRuntimeIds = PRODUCTION_SURFACE_MATERIAL_RENDER_REGISTRY.map(
+const productionRuntimeIds = SURFACE_MATERIAL_RENDER_REGISTRY.map(
   (entry) => entry.surface_material.material_id
+);
+const productionCatalogIds = PRODUCTION_SURFACE_MATERIAL_CATALOG_METADATA.map(
+  (entry) => entry.material_id
 );
 const testFixtureRuntimeIds = TEST_FIXTURE_SURFACE_MATERIAL_RENDER_REGISTRY.map(
   (entry) => entry.surface_material.material_id
@@ -617,6 +626,11 @@ assert.ok(
 assert.ok(
   !productionRuntimeIds.includes("test-only-published-flooring"),
   "test-only published flooring fixture must not be in production runtime data"
+);
+assert.deepEqual(
+  productionCatalogIds,
+  productionRuntimeIds,
+  "generated render and lazy catalog projections must preserve identical IDs and ordering"
 );
 
 const grandMarble = findRuntimeMaterialFixture("goodrich-geff-novaclick-gnv-018-grand-marble");
@@ -726,29 +740,10 @@ assert.equal(
   null,
   "default runtime must exclude test-only published flooring unless fixture gate is enabled"
 );
-execFileSync(
-  process.execPath,
-  [
-    "-r",
-    "ts-node/register/transpile-only",
-    "-r",
-    "tsconfig-paths/register",
-    "-e",
-    [
-      "process.env.NODE_ENV='test';",
-      "const { getRuntimeSurfaceMaterialById } = require('./lib/surface-material-runtime');",
-      "const fixture = getRuntimeSurfaceMaterialById('test-only-published-flooring');",
-      "if (!fixture || fixture.import_governance.publish_status !== 'published') process.exit(1);",
-    ].join(" "),
-  ],
-  {
-    cwd: process.cwd(),
-    env: {
-      ...process.env,
-      TS_NODE_COMPILER_OPTIONS: '{"module":"CommonJS","moduleResolution":"node"}',
-    },
-    stdio: "pipe",
-  }
+assert.doesNotMatch(
+  fs.readFileSync("lib/surface-material-runtime.ts", "utf8"),
+  /surface-material-runtime\.generated|TEST_FIXTURE_SURFACE_MATERIAL/,
+  "production runtime must not import test-only generated fixtures"
 );
 assert.ok(
   getDraftFlooringMaterialsForAdmin().length >= goodrichEntries.length,
@@ -1020,15 +1015,20 @@ assert.equal(normalizeWallPaintColorHex("#xyz123"), null, "invalid wall paint co
 assert.equal(getWallPaintDisplayName("#F5F1E8", "  "), "Soft Gallery White", "known paint swatches should resolve display labels");
 assert.equal(NIPPON_WALL_PAINT_COLOUR_COUNT, 2484, "Nippon Paint live colour import count should stay pinned");
 assert.equal(
-  NIPPON_WALL_PAINT_SWATCHES.length,
+  NIPPON_PAINT_COLOURS.length,
   NIPPON_WALL_PAINT_COLOUR_COUNT,
-  "all imported Nippon Paint colours must be exposed as wall paint swatches"
+  "all imported Nippon Paint colours must remain available to the lazy catalog"
 );
-assert.ok(
-  WALL_PAINT_SWATCHES.length > NIPPON_WALL_PAINT_COLOUR_COUNT,
-  "wall paint swatches must include curated colours plus Nippon Paint colours"
+assert.equal(
+  WALL_PAINT_SWATCHES.length,
+  12,
+  "only curated wall paint defaults should remain in the eager registry"
 );
-const nipponAngelPink = getWallPaintSwatchById("nippon-1162-angel-pink");
+const nipponWallPaintSwatches = createNipponWallPaintSwatches(NIPPON_PAINT_COLOURS);
+const nipponAngelPink = getWallPaintSwatchById(
+  "nippon-1162-angel-pink",
+  nipponWallPaintSwatches
+);
 assert.ok(nipponAngelPink, "expected Nippon Paint Angel Pink swatch");
 assert.equal(nipponAngelPink.hex, "#FBF1F2", "Nippon Paint swatch hex should be imported");
 assert.equal(getWallPaintSwatchLabel(nipponAngelPink), "Angel Pink (1162)", "Nippon Paint labels should include codes");
@@ -1038,7 +1038,7 @@ assert.ok(
   "Nippon Paint swatches should be searchable by brand and code"
 );
 assert.equal(
-  getWallPaintDisplayName("#FBF1F2", null),
+  getWallPaintDisplayName("#FBF1F2", null, nipponWallPaintSwatches),
   "Angel Pink (1162)",
   "known Nippon Paint swatches should resolve display labels"
 );

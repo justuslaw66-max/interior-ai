@@ -9,7 +9,7 @@ import type {
 } from "@/lib/room-types";
 import {
   getSurfaceMaterialTextureSource,
-  type SurfaceMaterialRenderInfo,
+  type SurfaceMaterialCatalogRecord,
 } from "@/lib/surface-material-runtime";
 
 export type SurfaceBrowserTab = "tiles" | "rooms";
@@ -64,8 +64,8 @@ export type SurfaceSummaryRow = {
 export type SurfaceMaterialProductGroup = {
   id: string;
   key: string;
-  primary: SurfaceMaterialRenderInfo;
-  variants: SurfaceMaterialRenderInfo[];
+  primary: SurfaceMaterialCatalogRecord;
+  variants: SurfaceMaterialCatalogRecord[];
 };
 
 export function getFloorMaterialSwatchStyle(material: FloorMaterial): CSSProperties {
@@ -108,11 +108,11 @@ export function formatSurfaceMaterialValue(value: string) {
   return value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
-export function getSurfaceMaterialSupplierLabel(material: SurfaceMaterialRenderInfo) {
+export function getSurfaceMaterialSupplierLabel(material: SurfaceMaterialCatalogRecord) {
   return material.surface_material.brand ?? formatSurfaceMaterialValue(material.surface_material.supplier);
 }
 
-export function getSurfaceMaterialCollectionLabel(material: SurfaceMaterialRenderInfo) {
+export function getSurfaceMaterialCollectionLabel(material: SurfaceMaterialCatalogRecord) {
   return (
     material.surface_material.collection ??
     material.surface_material.brand ??
@@ -120,7 +120,7 @@ export function getSurfaceMaterialCollectionLabel(material: SurfaceMaterialRende
   );
 }
 
-export function getSurfaceMaterialSizeLabel(material: SurfaceMaterialRenderInfo) {
+export function getSurfaceMaterialSizeLabel(material: SurfaceMaterialCatalogRecord) {
   const specs = material.physical_specs;
   if (specs?.tile_width_mm && specs?.tile_length_mm) {
     return `${Math.round(specs.tile_width_mm)}x${Math.round(specs.tile_length_mm)} mm`;
@@ -131,18 +131,18 @@ export function getSurfaceMaterialSizeLabel(material: SurfaceMaterialRenderInfo)
   return "Size TBC";
 }
 
-export function getSurfaceMaterialEffectLabel(material: SurfaceMaterialRenderInfo) {
+export function getSurfaceMaterialEffectLabel(material: SurfaceMaterialCatalogRecord) {
   return formatSurfaceMaterialValue(material.classification?.design_effect ?? "unknown");
 }
 
-function getSurfaceMaterialThicknessLabel(material: SurfaceMaterialRenderInfo) {
+function getSurfaceMaterialThicknessLabel(material: SurfaceMaterialCatalogRecord) {
   const thickness = material.physical_specs?.total_thickness_mm;
   return typeof thickness === "number" && Number.isFinite(thickness)
     ? `${thickness.toLocaleString(undefined, { maximumFractionDigits: 2 })} mm thick`
     : null;
 }
 
-function getSurfaceMaterialDisplayName(material: SurfaceMaterialRenderInfo) {
+function getSurfaceMaterialDisplayName(material: SurfaceMaterialCatalogRecord) {
   const productName = material.surface_material.product_name.trim();
   const prefixes = [
     material.surface_material.brand,
@@ -158,7 +158,7 @@ function getSurfaceMaterialDisplayName(material: SurfaceMaterialRenderInfo) {
   return productName;
 }
 
-export function getSurfaceMaterialProductDisplayName(material: SurfaceMaterialRenderInfo) {
+export function getSurfaceMaterialProductDisplayName(material: SurfaceMaterialCatalogRecord) {
   const displayName = getSurfaceMaterialDisplayName(material);
   const withoutSize = displayName
     .replace(
@@ -169,7 +169,7 @@ export function getSurfaceMaterialProductDisplayName(material: SurfaceMaterialRe
   return withoutSize || displayName;
 }
 
-export function getSurfaceMaterialSizeOptionLabel(material: SurfaceMaterialRenderInfo) {
+export function getSurfaceMaterialSizeOptionLabel(material: SurfaceMaterialCatalogRecord) {
   const displayName = getSurfaceMaterialDisplayName(material);
   const match = displayName.match(
     /(\d+(?:[.,]\d+)?x\d+(?:[.,]\d+)?(?:\s+(?:nat|natural|soft|lux|rett|ret|rect|lappato|lapp|mat|matt|polished|grip|out|outdoor|antique|3d|decor|dec|mix|r\d+))*)$/i
@@ -178,7 +178,7 @@ export function getSurfaceMaterialSizeOptionLabel(material: SurfaceMaterialRende
   return getSurfaceMaterialSizeLabel(material).replace(/\s*mm$/i, " mm");
 }
 
-function getSurfaceMaterialGroupKey(material: SurfaceMaterialRenderInfo) {
+function getSurfaceMaterialGroupKey(material: SurfaceMaterialCatalogRecord) {
   return [
     material.surface_material.supplier,
     material.surface_material.brand,
@@ -193,25 +193,25 @@ function getSurfaceMaterialGroupKey(material: SurfaceMaterialRenderInfo) {
     .join("|");
 }
 
-function getSurfaceMaterialVariantAreaMm(material: SurfaceMaterialRenderInfo) {
+function getSurfaceMaterialVariantAreaMm(material: SurfaceMaterialCatalogRecord) {
   const specs = material.physical_specs;
   const width = specs?.tile_width_mm ?? specs?.plank_width_mm ?? 0;
   const length = specs?.tile_length_mm ?? specs?.plank_length_mm ?? 0;
   return width * length;
 }
 
-function compareSurfaceMaterialVariants(a: SurfaceMaterialRenderInfo, b: SurfaceMaterialRenderInfo) {
+function compareSurfaceMaterialVariants(a: SurfaceMaterialCatalogRecord, b: SurfaceMaterialCatalogRecord) {
   const areaDelta = getSurfaceMaterialVariantAreaMm(b) - getSurfaceMaterialVariantAreaMm(a);
   if (areaDelta !== 0) return areaDelta;
   return getSurfaceMaterialSizeOptionLabel(a).localeCompare(getSurfaceMaterialSizeOptionLabel(b));
 }
 
 export function buildSurfaceMaterialProductGroups(
-  materials: SurfaceMaterialRenderInfo[],
+  materials: readonly SurfaceMaterialCatalogRecord[],
   preferredMaterialIds: Array<string | null | undefined> = []
 ) {
   const preferredIds = new Set(preferredMaterialIds.filter(Boolean) as string[]);
-  const groups = new Map<string, SurfaceMaterialRenderInfo[]>();
+  const groups = new Map<string, SurfaceMaterialCatalogRecord[]>();
   for (const material of materials) {
     const key = getSurfaceMaterialGroupKey(material);
     groups.set(key, [...(groups.get(key) ?? []), material]);
@@ -254,13 +254,13 @@ export function getSurfaceMaterialGroupMetaLabel(group: SurfaceMaterialProductGr
     .join(" · ");
 }
 
-export function getSurfaceMaterialColorLabel(material: SurfaceMaterialRenderInfo) {
+export function getSurfaceMaterialColorLabel(material: SurfaceMaterialCatalogRecord) {
   return formatSurfaceMaterialValue(material.classification?.color_family ?? "unknown");
 }
 
 export function buildFacetOptions(
-  materials: SurfaceMaterialRenderInfo[],
-  getValue: (material: SurfaceMaterialRenderInfo) => string
+  materials: readonly SurfaceMaterialCatalogRecord[],
+  getValue: (material: SurfaceMaterialCatalogRecord) => string
 ) {
   return Array.from(new Set(materials.map(getValue).filter(Boolean))).sort((a, b) =>
     a.localeCompare(b)
@@ -286,12 +286,18 @@ export function getSurfaceRoomWallFaceAreaSqm(room: SurfaceRoomSummary, faceId: 
   return Math.max(0, Math.max(room.width, room.depth) * height);
 }
 
-export function getSurfaceMaterialPrimaryId(material: SurfaceMaterialRenderInfo | null) {
+export function getSurfaceMaterialPrimaryId(material: SurfaceMaterialCatalogRecord | null) {
   return material?.surface_material.material_id ?? null;
 }
 
+export function getSurfaceMaterialSampleUrl(
+  material: SurfaceMaterialCatalogRecord | undefined
+) {
+  return material?.commerce.sample_request_url ?? material?.source.sample_request_url ?? null;
+}
+
 export function getSurfaceMaterialSwatchStyle(
-  material: SurfaceMaterialRenderInfo
+  material: SurfaceMaterialCatalogRecord
 ): CSSProperties {
   const textureSource = getSurfaceMaterialTextureSource(material);
   if (textureSource) {

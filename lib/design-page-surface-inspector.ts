@@ -145,7 +145,7 @@ function compareFlooringInspectorVariants(
 }
 
 export function getFlooringInspectorMaterialGroup(
-  materials: SurfaceMaterialRenderInfo[],
+  materials: readonly SurfaceMaterialRenderInfo[],
   material: SurfaceMaterialRenderInfo | null
 ): FlooringInspectorMaterialGroup | null {
   if (!material) return null;

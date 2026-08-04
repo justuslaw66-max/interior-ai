@@ -229,7 +229,7 @@
       "limit": 250
     },
     "components/editor/DesignControlsPlanPanel.tsx": {
-      "lines": 3914,
+      "lines": 3911,
       "limit": 250
     },
     "components/editor/DraggableFloatingPanel.tsx": {
@@ -2139,10 +2139,10 @@
     "components/editor/DesignControlsPlanPanel.tsx": {
       "overlongFunctions": {
         "count": 7,
-        "maximum": 3807
+        "maximum": 3803
       },
       "complexFunctions": {
-        "count": 7,
+        "count": 6,
         "maximum": 251
       }
     },

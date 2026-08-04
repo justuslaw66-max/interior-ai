@@ -2542,3 +2542,106 @@ CH-0004, CH-0017 through CH-0030 behavior, geometry/export, GLB lifecycle/cache/
 telemetry, viewport/presentation architecture, CatalogPanel, catalog sources,
 workflows, dependencies, lockfile, schema, migrations, push, and deployment
 remain untouched.
+
+## Phase 8A surface-material initial-JS boundary — 2026-08-04
+
+This bounded batch began from exact clean source
+`101f25d095c6e205e2d40e1ad843a24210696e40` on
+`perf/phase8-surface-material-initial-js`. The listening Node process resolved
+through `lsof` to the canonical `/Users/justus/Developer/interior-ai` checkout.
+The entry tree had no tracked diff or untracked files, and the required
+cumulative commits were ancestors. No work was discarded, carried from an RC,
+pushed, or deployed.
+
+The clean detached before build reproduced 26 `/design` initial JS chunks at
+7,103,302 raw / 1,169,257 Brotli bytes and 143,779 raw / 18,417 Brotli CSS.
+The dominant initial chunk was 3,788,924 raw / 428,408 Brotli. Source
+composition proved the former 92,044-line, 2,518,834-byte combined generated
+surface runtime as the leading raw owner; after splitting that data, the
+remaining Brotli miss was traced to the statically imported 2,484-row Nippon
+paint browser catalog. Both are surface-workspace browse metadata owners, not
+renderer or persistence state.
+
+The canonical audited generator now emits:
+
+- `surface-material-render.generated.ts`: compact eager render tuples;
+- `surface-material-catalog.generated.ts`: lazy descriptive/sample metadata;
+- `tests/fixtures/surface-material-runtime.generated.ts`: isolated test data.
+
+All 980 production IDs are unique and identical across render and catalog
+projections in deterministic material-ID order. The eager facade keeps stable
+identity, category/family, selected-material labels, physical plank/tile
+dimensions, every texture asset, every rendering parameter, and publication
+status/blockers. The former runtime type declared optional `collection`, but
+the former generator did not emit it; the split preserves the actual fallback
+and grouping behavior instead of newly activating YAML collection labels. The
+lazy projection keeps source/sample/license data, tone, style, room suitability,
+thickness/wear/water/outdoor/commercial attributes, and browser commerce/sample
+data. The same loader dynamically imports Nippon paint rows; one small eager
+contract remains canonical for its family order, count, source URL, and import
+date. Wider price/currency/installation/admin fields remain on canonical
+YAML and the server `catalog-registry`; BOM/share/export behavior does not
+depend on or eagerly import the client catalog. The exhaustive matrix is in
+`docs/architecture/surface-material-runtime-boundary.md`.
+
+The loader is triggered only when a user explicitly opens the room-finish
+surface workspace. Both the contextual room card and Pro standalone floor-
+finish card require that Change/Browse transition before rendering the browser.
+Consumer or Pro `/design` mount, room hydration, a saved selected material, and
+2D/3D switching do not trigger it. One cached promise
+prevents duplicate requests. A rejected promise stays rejected until explicit
+Retry; the bounded error UI states that current finishes are unchanged, and
+the synchronous render registry remains available throughout. Search, filters,
+supplier, swatches, source links, and sample links use the joined
+records after success. Twelve curated paint defaults remain eager; the full
+Nippon browser data does not.
+
+The final clean strict measurement is 5,790,970 raw / 1,104,573 Brotli initial
+JS across the same 26 chunks: reductions of 1,312,332 raw and 64,684 Brotli,
+passing the unchanged 6,955,000 / 1,130,000 limits. Full surface catalog data
+is in a 633,154 raw / 9,397 Brotli lazy chunk; Nippon paint is in a 274,965 raw /
+58,679 Brotli lazy chunk. The semantic guard proves both absent initially, one
+real render material present initially, and test fixtures absent everywhere.
+Cabinetry Studio and GLTFExporter lazy chunks are unchanged. Exact inventories
+and largest-chunk evidence are recorded in the Phase 8 performance document.
+
+Validation passes: generator drift and surface schema (980 records; 25
+Goodrich draft fixtures), wall-paint catalog, texture scale/pattern and 2D/3D
+identity, surface persistence/save/reload, BOM/export, strict catalog audit,
+asset availability, required-test truthfulness (21 gates / 370 sources), all
+78 design-page cleanup checks, Pro visual policy 4/4 in Chromium/WebKit,
+targeted and full zero-warning lint, typecheck, code quality, semantic bundle
+boundary checks, project performance budgets, diff hygiene, and the strict
+57-page production build. The sandboxed build failed only because Turbopack
+could not bind its helper port; the approved outside-sandbox rerun passed with
+the inherited NFT broad-trace warning. Full E2E was not run.
+
+The focused Chromium surface suite is green across all six affected behaviors:
+apply/reload, Gardenia variant selection, apply-all Nippon paint, ceiling paint
+filtering, bottom-up 3D ceiling targeting, and share-export BOM. A final run
+first exposed a duplicate test identity on the new standalone trigger; four
+unaffected cases passed, the identity was made unique, and both affected cases
+then passed on rerun. The required Pro visual-policy wrapper passed 4/4 again
+across Chromium and WebKit after the final UI boundary change.
+
+Independent read-only review found and closed five architectural issues: the
+standalone Pro browser needed an explicit open transition instead of an idle
+spinner or mount-time import; YAML `collection` would have newly changed
+baseline grouping; Nippon constants had been duplicated; the semantic guard
+needed a real lazy-only metadata value in addition to a marker; and the test-
+fixture generated header named the wrong source root. The final reviewer
+rechecked the complete diff, 980/980 projection parity, lazy loader/cache/error
+contract, source-of-truth boundaries, fixture isolation, code-quality ratchet,
+measurements, and documentation. Final disposition: **PASS — no actionable
+findings**. The reviewer made no edits, commits, pushes, or deployments.
+
+Phase 8A is green for its owned raw and Brotli JavaScript acceptance. CSS is
+exactly unchanged at 143,779 raw / 18,417 Brotli, leaving the existing
+3,779-byte raw CSS excess. Consequently the combined Phase 8 `--check` stops
+only on CSS, as expected. Phase 8B CSS is the next bounded performance batch;
+it was not started and no budget was raised. No CH-0004, CH-0017-through-
+CH-0030 behavior, furniture/catalog source, GLB lifecycle/cache/telemetry,
+Custom Millwork, DesignPageWorkspace architecture, dependency, lockfile,
+schema, migration, workflow, push, or deployment change is included. The
+implementation commit is the single focused commit containing this record;
+resolve its SHA after creation. Rollback is one local revert.

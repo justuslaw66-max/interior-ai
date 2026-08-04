@@ -26,10 +26,10 @@ import {
 } from "@/lib/floor-materials";
 import type { RoomPlanShape, RoomType } from "@/lib/room-types";
 import {
-  SURFACE_MATERIAL_RENDER_REGISTRY,
   getSurfaceMaterialTextureSource,
   getRuntimeSurfaceMaterialById,
 } from "@/lib/surface-material-runtime";
+import { useSurfaceMaterialCatalog } from "@/lib/useSurfaceMaterialCatalog";
 import {
   DEFAULT_FLOOR_JOINT_COLOR,
   DEFAULT_FLOOR_JOINT_SIZE_MM,
@@ -44,7 +44,6 @@ import {
 } from "@/lib/surface-settings";
 import {
   DEFAULT_WALL_PAINT_SWATCH,
-  NIPPON_WALL_PAINT_SWATCHES,
   getWallPaintDisplayName,
   getWallPaintSwatchSearchText,
   normalizeWallPaintColorHex,
@@ -68,6 +67,7 @@ import {
   type CollapsiblePlanSection,
 } from "./design-controls-plan/PlanToolComponents";
 import { WallPaintPicker } from "./design-controls-plan/WallPaintPicker";
+import { SurfaceMaterialCatalogBoundary } from "./design-controls-plan/SurfaceMaterialCatalogBoundary";
 import {
   SURFACE_MATERIAL_INITIAL_VISIBLE_COUNT,
   SURFACE_MATERIAL_VISIBLE_INCREMENT,
@@ -83,6 +83,7 @@ import {
   getSurfaceMaterialGroupSizeLabels,
   getSurfaceMaterialPrimaryId,
   getSurfaceMaterialProductDisplayName,
+  getSurfaceMaterialSampleUrl,
   getSurfaceMaterialSizeLabel,
   getSurfaceMaterialSizeOptionLabel,
   getSurfaceMaterialSupplierLabel,
@@ -681,6 +682,7 @@ export default function DesignControlsPlanPanel({
   const showPlanProgressPanel = showPlanDetails && !showRoomSetupWizard;
   const showPlanNextActionCard = showPlanDetails && !showRoomSetupWizard;
   const showStandaloneFloorFinishPanel = hasRooms && showPlanDetails && !showRoomSetupWizard;
+  const surfaceCatalog = useSurfaceMaterialCatalog(roomFinishPanelOpen);
   useEffect(() => {
     if (!planCompletionSignal || isDesigner) return;
 
@@ -917,7 +919,7 @@ export default function DesignControlsPlanPanel({
   const surfaceMaterialDraftsVisible = isDesigner || process.env.NODE_ENV !== "production";
   const visibleSurfaceMaterials = useMemo(
     () =>
-      SURFACE_MATERIAL_RENDER_REGISTRY.filter((material) => {
+      surfaceCatalog.records.filter((material) => {
         const category = material.surface_material.surface_category;
         const matchesTarget =
           activeSurfaceTarget === "floor"
@@ -933,13 +935,13 @@ export default function DesignControlsPlanPanel({
           material.import_governance.publish_status === "published";
         return matchesTarget && matchesVisibility;
       }),
-    [activeSurfaceTarget, surfaceMaterialDraftsVisible]
+    [activeSurfaceTarget, surfaceCatalog.records, surfaceMaterialDraftsVisible]
   );
   const selectedSurfaceMaterial =
     visibleSurfaceMaterials.find(
       (material) => material.surface_material.material_id === selectedSurfaceMaterialId
     ) ??
-    activeSurfaceMaterial ??
+    surfaceCatalog.byId.get(activeTargetMaterialId) ??
     null;
   const selectedSurfaceMaterialPrimaryId = getSurfaceMaterialPrimaryId(selectedSurfaceMaterial);
   const surfaceMaterialProductGroups = buildSurfaceMaterialProductGroups(visibleSurfaceMaterials, [
@@ -986,8 +988,8 @@ export default function DesignControlsPlanPanel({
     [wallPaintFamilyFilter, wallPaintSearchTokens]
   );
   const filteredNipponWallPaintSwatches = useMemo(
-    () => NIPPON_WALL_PAINT_SWATCHES.filter(swatchMatchesWallPaintFilters),
-    [swatchMatchesWallPaintFilters]
+    () => surfaceCatalog.wallPaintSwatches.filter(swatchMatchesWallPaintFilters),
+    [surfaceCatalog.wallPaintSwatches, swatchMatchesWallPaintFilters]
   );
   const visibleNipponWallPaintSwatches = useMemo(
     () => filteredNipponWallPaintSwatches.slice(0, wallPaintVisibleLimit),
@@ -1242,7 +1244,7 @@ export default function DesignControlsPlanPanel({
         : "Starter finish",
       areaSqm: getSurfaceRoomAreaSqm(room),
       status: floorMaterial?.import_governance.publish_status ?? "not_orderable",
-      sampleUrl: floorMaterial?.commerce?.sample_request_url ?? floorMaterial?.source?.sample_request_url ?? null,
+      sampleUrl: getSurfaceMaterialSampleUrl(surfaceCatalog.byId.get(floorMaterialId)),
       settings: {
         pattern: floorSettings.floorPattern,
         rotationDeg: floorSettings.floorRotationDeg,
@@ -1321,7 +1323,7 @@ export default function DesignControlsPlanPanel({
             : "Paint colour",
         areaSqm: defaultWallArea,
         status: material?.import_governance.publish_status ?? (starter ? "not_orderable" : "visual_finish"),
-        sampleUrl: material?.commerce?.sample_request_url ?? material?.source?.sample_request_url ?? null,
+        sampleUrl: getSurfaceMaterialSampleUrl(surfaceCatalog.byId.get(wallDefaultSettings.materialId)),
         settings: {
           pattern: wallDefaultSettings.pattern,
           rotationDeg: wallDefaultSettings.rotationDeg,
@@ -1358,7 +1360,7 @@ export default function DesignControlsPlanPanel({
             : "Paint colour",
         areaSqm: getSurfaceRoomWallFaceAreaSqm(room, faceId),
         status: material?.import_governance.publish_status ?? (starter ? "not_orderable" : "visual_finish"),
-        sampleUrl: material?.commerce?.sample_request_url ?? material?.source?.sample_request_url ?? null,
+        sampleUrl: getSurfaceMaterialSampleUrl(surfaceCatalog.byId.get(settings.materialId)),
         settings: {
           pattern: settings.pattern,
           rotationDeg: settings.rotationDeg,
@@ -1517,17 +1519,12 @@ export default function DesignControlsPlanPanel({
     ].join(" ");
   };
   const renderSurfaceMaterialBrowser = () => (
-    <div
+    <SurfaceMaterialCatalogBoundary
       ref={surfaceWorkspaceRef}
-      data-testid="room-surfaces-floor-panel"
-      data-floor-material-id={activeRoomFloorMaterialId}
-      data-surface-target={activeSurfaceTarget}
-      data-surface-material-id={activeTargetMaterialId ?? ""}
-      className={
-        dark
-          ? "designer-raised mt-2 rounded-lg p-2"
-          : "mt-2 rounded-lg border border-neutral-200 bg-neutral-50 p-2"
-      }
+      data-testid="room-surfaces-floor-panel" data-floor-material-id={activeRoomFloorMaterialId}
+      data-surface-target={activeSurfaceTarget} data-surface-material-id={activeTargetMaterialId ?? ""}
+      open={roomFinishPanelOpen} status={surfaceCatalog.status} dark={dark} retryActionClass={progressSecondaryActionClass} onRetry={surfaceCatalog.retry}
+      className={dark ? "designer-raised mt-2 rounded-lg p-2" : "mt-2 rounded-lg border border-neutral-200 bg-neutral-50 p-2"}
     >
       {!hasRooms ? (
         <div data-testid="surfaces-start-state" className={dark ? "designer-recessed rounded-lg p-3" : "rounded-lg border border-neutral-200 bg-white p-3"}>
@@ -2127,7 +2124,7 @@ export default function DesignControlsPlanPanel({
           </div>
         </div>
       ) : null}
-    </div>
+    </SurfaceMaterialCatalogBoundary>
   );
   const startDrawRoomSetup = () => {
     track("launch_path_selected", {
@@ -3258,14 +3255,14 @@ export default function DesignControlsPlanPanel({
                 {activeFloorDisplayName} in {activeRoomName}.
               </div>
             </div>
-            <button
-              type="button"
-              className={progressSecondaryActionClass}
-              disabled={!canEdit}
-              onClick={() => onApplyFloorMaterialToAllRooms(activeSurfaceMaterial?.surface_material.material_id ?? activeFloorMaterial.id)}
-            >
-              Apply all
-            </button>
+            <div className="flex gap-2">
+              <button type="button" data-testid="standalone-change-floor-finish" className={progressSecondaryActionClass} disabled={!canEdit} aria-expanded={roomFinishPanelOpen} onClick={() => setRoomFinishPanelOpen((open) => !open)}>Browse / hide</button>
+              <button
+                type="button" className={progressSecondaryActionClass} disabled={!canEdit} onClick={() => onApplyFloorMaterialToAllRooms(activeSurfaceMaterial?.surface_material.material_id ?? activeFloorMaterial.id)}
+              >
+                Apply all
+              </button>
+            </div>
           </div>
           {renderSurfaceMaterialBrowser()}
             <div

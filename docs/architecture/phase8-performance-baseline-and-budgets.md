@@ -187,3 +187,75 @@ latency, mobile/touch hardware, reduced-memory devices, and throttled networks
 are not measured by this Phase 8 harness. Draw calls, Three geometry/texture
 counts, JS heap, frames, pointer sweep, and long tasks are measured; the missing
 dimensions are explicitly not presented as passing performance claims.
+
+## Phase 8A surface-catalog initial-JS remediation — 2026-08-04
+
+This bounded batch began at exact source
+`101f25d095c6e205e2d40e1ad843a24210696e40`. Both authoritative measurements
+used clean detached worktrees, Node 24.13.0, npm 11.6.2,
+`npm ci --include=dev`, the same non-secret strict environment, `npm run build`,
+and `node scripts/measure-phase8-bundle.mjs`.
+
+| `/design` production metric | Before | After | Limit | Result |
+| --- | ---: | ---: | ---: | --- |
+| Initial JS raw | 7,103,302 B | 5,790,970 B | 6,955,000 B | PASS; -1,312,332 B |
+| Initial JS Brotli | 1,169,257 B | 1,104,573 B | 1,130,000 B | PASS; -64,684 B |
+| Initial JS chunks | 26 | 26 | informational | No new eager chunk |
+| Initial CSS raw | 143,779 B | 143,779 B | 140,000 B | Unchanged; separate Phase 8B blocker |
+| Initial CSS Brotli | 18,417 B | 18,417 B | 19,000 B | Unchanged |
+| Cabinetry Studio lazy | 492,639 / 84,899 B | 492,639 / 84,899 B | 500,000 / 85,000 B | Unchanged |
+| GLTFExporter lazy | 34,525 / 8,970 B | 34,525 / 8,970 B | 40,000 / 11,000 B | Unchanged |
+
+The starting dominant chunk was `32way5mecu96l.js` at 3,788,924 raw /
+428,408 Brotli bytes. Source-map composition identified the former combined
+surface runtime as its dominant source owner and the 2,484-row Nippon paint
+catalog as the remaining surface-browser metadata owner. The old generated
+runtime was 92,044 lines and 2,518,834 source bytes; its 980 production records
+and one test fixture were statically reachable. The replacement eager render
+source is 666,766 raw / 15,734 Brotli source bytes. Full surface metadata is a
+670,766 raw / 9,388 Brotli generated source and a 633,154 raw / 9,397 Brotli
+lazy production chunk. Nippon rows are 294,991 raw / 59,620 Brotli source bytes
+and a separate 274,965 raw / 58,679 Brotli lazy chunk; their eager canonical
+contract is only 492 raw / 238 Brotli source bytes. The one 1,379-byte generated test
+fixture has no production chunk membership.
+
+The exact before initial-JS inventory was:
+
+```text
+02iynxgmi-nbh.js  0514mblmz6830.js  0bqt9hlwk6krg.js
+0bsph-x3dyobe.js  0cz1d0mv5g_q7.js  0eusmj441hy3n.js
+0hucplppa7o5c.js  0w9hwmfpin3n5.js  12b4ay8feturj.js
+1cgx8te15zv_g.js  1e097gkishc94.js  1rf82mie-t5k2.js
+1ucz4vcm7xkvs.js  1ws37m2fjosbm.js  2efnbfqwlu6md.js
+2ejk_26znfoeu.js  2hjhuw_z24-ql.js  2o4cgl9syntkb.js
+3299thjrimaon.js  32way5mecu96l.js  39-oykeu_fmtw.js
+3iekndwd3e69a.js  3nc6x0_y5iwnk.js  3w8dn4-zxwo2r.js
+43_qdpbkaeb5w.js  turbopack-1qqm9sd0q_nj6.js
+```
+
+The exact after initial-JS inventory was:
+
+```text
+02iynxgmi-nbh.js  0514mblmz6830.js  0bqt9hlwk6krg.js
+0bsph-x3dyobe.js  0cz1d0mv5g_q7.js  0eusmj441hy3n.js
+0hucplppa7o5c.js  0w9hwmfpin3n5.js  12b4ay8feturj.js
+12gglxc7sibtu.js  1cgx8te15zv_g.js  1e097gkishc94.js
+1mgrxrdj11nne.js  1rf82mie-t5k2.js  1ws37m2fjosbm.js
+2efnbfqwlu6md.js  2ejk_26znfoeu.js  2hjhuw_z24-ql.js
+2o4cgl9syntkb.js  3299thjrimaon.js  39-oykeu_fmtw.js
+3iekndwd3e69a.js  3nc6x0_y5iwnk.js  3w8dn4-zxwo2r.js
+43_qdpbkaeb5w.js  turbopack-1qqm9sd0q_nj6.js
+```
+
+The largest after chunk is `12gglxc7sibtu.js` at 2,476,040 raw / 363,521
+Brotli bytes; it retains the compact synchronous render data needed for saved
+material hydration and 2D/3D rendering. No equivalent descriptive, sample, or
+Nippon catalog data appears in the initial graph. The generated ownership,
+field matrix, trigger, failure, and BOM/export contracts are detailed in
+`docs/architecture/surface-material-runtime-boundary.md`.
+
+Phase 8A resolves the owned raw and Brotli JavaScript budgets. The unchanged
+combined `--check` command still exits nonzero solely because raw CSS is 3,779
+bytes above its 140,000-byte limit. Per scope, CSS was not changed or
+rebaselined; a separately reviewed Phase 8B CSS remediation is the next bounded
+performance batch.

@@ -225,6 +225,22 @@ Suggested batches:
 **Rollback:** preserve facade and legacy loader behind an internal switch for one preview; revert per asset class; resource cache must be safe to disable.
 **Compatibility:** exact visual, transform, material, selection, persistence, and export parity.
 
+**Phase 8A checkpoint (2026-08-04):** P6-A and the surface-material portion of
+P6-B are complete from exact source
+`101f25d095c6e205e2d40e1ad843a24210696e40`. The canonical generator now emits
+one compact synchronous 980-record render projection, one same-ID lazy catalog
+projection, and a separate test-only fixture. A single-flight loader owns the
+only production dynamic imports for full surface metadata and the 2,484-row
+Nippon browser catalog; it loads only after explicit surface-workspace open and
+has bounded loading/error/retry behavior. Saved selection, hydration, 2D/3D
+rendering, UV scale, application, persistence, BOM/export identity, search,
+and Consumer/Pro contracts pass. Clean strict measurements changed `/design`
+initial JS from 7,103,302 raw / 1,169,257 Brotli to 5,790,970 /
+1,104,573 across the same 26 chunks, so both JavaScript budgets are green
+without a rebaseline. CSS is unchanged at 143,779 raw and remains the separate
+3,779-byte Phase 8B blocker. P6-C through P6-G remain separate; this checkpoint
+does not start scene-resource, CH-0004, or CH-0017-through-CH-0030 work.
+
 ## Phase 7 — Editor/plan/cabinetry ownership and accessible overlays
 
 **Findings:** CH-0015 and CH-0020.

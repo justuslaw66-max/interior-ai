@@ -1,22 +1,12 @@
-export const NIPPON_PAINT_FAMILIES = [
-  "white",
-  "beige",
-  "neutral",
-  "red",
-  "pink",
-  "orange",
-  "yellow",
-  "green",
-  "blue-green",
-  "blue",
-  "purple",
-  "brown",
-  "grey",
-  "black",
-  "accent",
-] as const;
+import { type NipponPaintFamily } from "./nippon-paint-catalog";
 
-export type NipponPaintFamily = (typeof NIPPON_PAINT_FAMILIES)[number];
+export {
+  NIPPON_PAINT_COLOUR_COUNT,
+  NIPPON_PAINT_FAMILIES,
+  NIPPON_PAINT_IMPORTED_AT,
+  NIPPON_PAINT_SOURCE_URL,
+  type NipponPaintFamily,
+} from "./nippon-paint-catalog";
 
 export type NipponPaintColour = {
   id: string;
@@ -26,10 +16,6 @@ export type NipponPaintColour = {
   family: NipponPaintFamily;
   sourcePath: string;
 };
-
-export const NIPPON_PAINT_SOURCE_URL = "https://nipponpaint.com.sg/colours/find-your-colour/";
-export const NIPPON_PAINT_COLOUR_COUNT = 2484;
-export const NIPPON_PAINT_IMPORTED_AT = "2026-07-05";
 
 const NIPPON_PAINT_COLOUR_ROWS: string[][] = [
   ["nippon-1162-angel-pink", "1162", "Angel Pink", "#FBF1F2", "white", "1162/angel-pink"],
