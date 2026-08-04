@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import type { MutableRefObject } from "react";
 
+import { CabinetryStudioDialog } from "@/components/editor/design-page/CabinetryStudioDialog";
 import { track } from "@/lib/analytics";
 import type { CabinetryStudioProps } from "@/features/cabinetry/components/CabinetryStudio.contract";
 import { CabinetMeasurementUnitProvider } from "@/features/cabinetry/components/CabinetMeasurementUnitContext";
@@ -76,7 +77,7 @@ export function CabinetryStudioOverlay({
   };
 
   return (
-    <div className="fixed inset-0 z-[80] bg-black/45 p-4 backdrop-blur-sm">
+    <CabinetryStudioDialog mode={state.mode} onDismiss={handleCancel}>
       <div className="h-full overflow-hidden rounded-xl bg-white shadow-2xl">
         <CabinetMeasurementUnitProvider unit={measurementUnit}>
           <CabinetryStudio
@@ -91,6 +92,6 @@ export function CabinetryStudioOverlay({
           />
         </CabinetMeasurementUnitProvider>
       </div>
-    </div>
+    </CabinetryStudioDialog>
   );
 }

@@ -2429,3 +2429,116 @@ Rollback is one local revert. Full E2E, Pro remediation, Phase 8 optimization,
 CH-0004, CH-0017 through CH-0030 behavior, workflows, rulesets, runners, pull
 requests, deployments, external settings, production code, and test behavior
 remain untouched.
+
+## Pro visual-policy Cabinet Preview access contract — 2026-08-04
+
+This bounded required-gate remediation began from exact clean source
+`8cec1f0afe5da80f7cedd149c91586f930bb7738` on
+`fix/baseline-pro-visual-policy`. Entry status, tracked diff, diff check, diff
+stat, and untracked checks were empty, and the requested starting commit and
+completed cumulative baseline were already local ancestors. `lsof` resolved
+the listening Node process to the canonical
+`/Users/justus/Developer/interior-ai` checkout. No work was carried from the
+prior branch, discarded, pushed, or deployed.
+
+The exact `APP_ENV=development npm run test:pro-visual-policy` reproduction ran
+all four identities. The Consumer/Pro theme case passed in Chromium and
+WebKit. Each Cabinet Preview case failed at the same direct interaction with
+`open-custom-millwork-studio`: the locator resolved to one span, but its owning
+Workspace menu was closed and the span was hidden for the full 30-second
+expectation. The Cabinet case was at `/design?mode=designer`, `/api/me` supplied
+the Pro plan, and the supported non-production default enabled Custom Millwork
+Studio. Opening `editor-command-workspace` made one
+`editor-workflow-millwork` menu item and its legacy nested identity visible in
+both engines; pointer activation opened one Pro Studio.
+
+The final classification is **F — CODE AND TEST BOTH REQUIRE CORRECTION**. The
+test interaction was stale because it treated the nested legacy identity as a
+visible action before opening its owner. Independent manual browser inspection
+also found genuine product accessibility defects: the lazy Studio had no
+dialog semantics, did not take or trap focus, and did not return focus on
+close. During strengthened required coverage, WebKit additionally demonstrated
+that native Tab behavior did not give the menu a deterministic cross-engine
+button path. These facts make a test-only locator update incomplete.
+
+The verified product flow is one canonical chain:
+
+1. activate the visible Workspace button;
+2. expose the Workspace menu and its one visible Custom Millwork action;
+3. activate `editor-workflow-millwork` through pointer or keyboard;
+4. open one lazy Custom Millwork Studio dialog.
+
+`open-custom-millwork-studio` remains a legacy child identity only. It is not
+clickable while the menu is closed, does not own a second handler, and is not
+an authorization boundary. The required spec's focused
+`openCustomMillworkStudioFromWorkspace` helper proves closed/hidden state,
+unique ownership, visible/actionable state, real pointer or keyboard
+activation, one ready Studio, access level, dialog focus, and closed-menu state.
+The existing theme and complete Cabinet Preview template/view screenshot
+assertions remain intact. The keyboard path uses button activation, receives
+deterministic first-menu-item focus, reaches Millwork with ArrowDown, activates
+it with Enter, closes the dialog back to Workspace, and reopens once.
+
+Production changes are limited to this verified focus contract. The command
+bar focuses the first menu item for keyboard-generated activation, provides
+ArrowUp/ArrowDown movement, returns focus on Escape and before a workflow
+action, and retains one opener. The extracted Studio dialog owns `role=dialog`,
+an accessible name, modal semantics, initial focus, Tab containment, guarded
+Escape dismissal through the canonical cancellation owner, focus return, and
+protection against a stale close callback stealing focus from a replacement
+dialog. The original dynamic import and accessible loading state remain intact.
+A mocked Free plan deliberately requests `?mode=designer` and remains Consumer,
+Guided, without the Pro indicator or Detailed control; Pro retains Detailed
+capability. `CABINETRY_STUDIO_FEATURE_ENABLED` remains the canonical public
+feature flag with fail-closed production default, client preview still removes
+the Workspace action, and entitlement remains server/domain controlled rather
+than URL-, locator-, visibility-, analytics-, or client-state-controlled.
+
+Final validation:
+
+- PASS: canonical required wrapper, 4/4, including truthfulness validation;
+- PASS: direct Chromium project, 2/2; direct WebKit project, 2/2;
+- PASS: pointer, keyboard, menu focus, dialog focus/trap/return, close/reopen,
+  uniqueness, Consumer Guided/no-Detailed, Pro access, feature-flag and client-
+  preview source contracts;
+- PASS: all 78 design-page cleanup guards; required-test truthfulness; CH-0016
+  production-artifact evidence; editor command/capability/accessibility; and
+  focused cabinetry controller, runtime, composition, header, accessibility,
+  and preview-renderer checks;
+- PASS: targeted and full lint with zero warnings, typecheck, code quality with
+  no raised allowance/suppression, diff hygiene, and the strict production
+  build with all 57 pages. The sandboxed build failed only because Turbopack
+  could not bind its helper port; the approved outside-sandbox build passed
+  with the inherited floor-plan NFT trace warning;
+- PASS: required-test inventory remains 21 gates / 370 classified sources.
+
+The exact identical-build bundle comparison is 7,101,416 → 7,103,302 raw
+initial-JS bytes (+1,886) and 1,169,365 → 1,169,257 Brotli bytes (-108). This is
+a small explained accessibility/menu correction, not a dependency or Cabinetry
+duplication: initial CSS is unchanged at 143,779 raw bytes, and Cabinetry Studio
+remains one lazy chunk at 492,639 raw / 84,899 Brotli. The standard Phase 8
+check passes all representative project timings, then remains separately red
+at 7,103,302/6,955,000 raw bytes; the 1,169,257/1,130,000 Brotli and 3,779-byte
+CSS excesses also remain. No performance budget or Phase 8 implementation was
+changed or rebaselined.
+
+Independent read-only review found two actionable gaps: the new modal did not
+consume Escape through the canonical cancellation owner, and the Consumer
+browser phase still inherited the Pro API mock. Follow-up then found that an
+inner control's already-prevented Escape could still reach background editor
+shortcuts. All findings were corrected with unconditional modal Escape
+isolation, dismissal only for an otherwise-unhandled Escape, and a Free-plan
+`?mode=designer` downgrade proof. Affected static checks, direct Chromium/
+WebKit projects, the final 4/4 wrapper, lint/typecheck/code quality, cleanup,
+and the strict build reran successfully. Final complete-diff disposition is
+**PASS — no actionable findings**. The residual non-blocking limitation is
+that inner-control `defaultPrevented` isolation is source-contract covered
+rather than a separate browser case; generic Escape dismissal and focus return
+are browser-covered. The implementation commit is the single focused local
+commit containing this record; its resolved SHA and final clean status are
+reported after creation. Rollback is one local revert. Full E2E was not run.
+Phase 8 remediation,
+CH-0004, CH-0017 through CH-0030 behavior, geometry/export, GLB lifecycle/cache/
+telemetry, viewport/presentation architecture, CatalogPanel, catalog sources,
+workflows, dependencies, lockfile, schema, migrations, push, and deployment
+remain untouched.

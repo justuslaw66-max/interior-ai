@@ -15,6 +15,10 @@ const overlaySource = readFileSync(
   resolve(root, "components/editor/design-page/CabinetryStudioOverlay.tsx"),
   "utf8"
 );
+const dialogSource = readFileSync(
+  resolve(root, "components/editor/design-page/CabinetryStudioDialog.tsx"),
+  "utf8"
+);
 
 assert.match(
   contractSource,
@@ -45,6 +49,30 @@ assert.match(
   overlaySource,
   /loading:[\s\S]*?role="status"[\s\S]*?aria-live="polite"[\s\S]*?Loading cabinetry studio/,
   "The lazy boundary must expose an accessible loading state."
+);
+for (const required of [
+  'role="dialog"',
+  'aria-modal="true"',
+  'aria-label="Custom Millwork Studio"',
+  "handleDialogKeyDown(event, onDismiss)",
+  "dialogRef.current?.focus()",
+  "returnFocus?.isConnected",
+  "returnFocus.focus()",
+]) {
+  assert.ok(
+    dialogSource.includes(required),
+    `The Studio overlay must preserve its focus/dialog contract (${required}).`
+  );
+}
+assert.match(
+  dialogSource,
+  /if \(event\.key === "Escape"\) \{\s*event\.stopPropagation\(\);\s*if \(!event\.defaultPrevented\) \{\s*event\.preventDefault\(\);\s*onDismiss\(\);\s*\}\s*return;/,
+  "Every modal Escape must be isolated while only an unhandled Escape dismisses the Studio."
+);
+assert.match(
+  overlaySource,
+  /<CabinetryStudioDialog mode=\{state\.mode\} onDismiss=\{handleCancel\}>/,
+  "The modal Escape path must use the canonical Studio cancellation owner."
 );
 
 console.log("Cabinetry studio contract and lazy runtime boundary checks passed.");

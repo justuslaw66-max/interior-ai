@@ -24,8 +24,24 @@ const commandBarWrapperSource = readFileSync(
   join(root, "components/editor/design-page/DesignPageEditorCommandBar.tsx"),
   "utf8"
 );
+const commandBarSource = readFileSync(
+  join(root, "components/editor/EditorCommandBar.tsx"),
+  "utf8"
+);
+const workspaceMenuKeyboardSource = readFileSync(
+  join(root, "components/editor/workspaceMenuKeyboard.ts"),
+  "utf8"
+);
 const editorChromeControllerSource = readFileSync(
   join(root, "lib/useDesignPageEditorChromeController.ts"),
+  "utf8"
+);
+const cabinetryFeatureFlagSource = readFileSync(
+  join(root, "features/cabinetry/designPageFeatureFlags.ts"),
+  "utf8"
+);
+const cabinetryControllerSource = readFileSync(
+  join(root, "features/cabinetry/useDesignPageCabinetry.ts"),
   "utf8"
 );
 
@@ -115,6 +131,21 @@ assert.match(
   "The command wrapper should preserve the millwork state and action contract."
 );
 assert.match(
+  commandBarSource,
+  /data-testid="editor-command-workspace"[\s\S]*?workspaceRef\.current\?\.querySelector<HTMLElement>\("button"\)\?\.focus\(\);[\s\S]*?setWorkspaceOpen\(false\);[\s\S]*?step\.onClick\(\)/,
+  "Workspace actions should return focus to their visible trigger before opening the selected workflow."
+);
+assert.match(
+  commandBarSource,
+  /event\.detail === 0[\s\S]*?\[role="menuitem"\][\s\S]*?\.focus\(\)[\s\S]*?onKeyDown=\{handleWorkspaceMenuKeyDown\}/,
+  "Keyboard activation should move focus into the visible Workspace menu."
+);
+assert.match(
+  workspaceMenuKeyboardSource,
+  /event\.key !== "ArrowDown" && event\.key !== "ArrowUp"[\s\S]*?event\.preventDefault\(\);[\s\S]*?items\[nextIndex\]\.focus\(\)/,
+  "Workspace menu items should provide deterministic Arrow-key navigation."
+);
+assert.match(
   presentationWorkspaceSource,
   /useDesignPagePresentationQaFacade\(\{[\s\S]*?millworkActive:\s*cabinetry\.state\.studio !== null[\s\S]*?canUseCabinetryStudio:\s*cabinetry\.state\.canUseStudio[\s\S]*?openStudio:\s*cabinetry\.actions\.openCreateStudio/,
   "The presentation workspace should inject millwork state, capability, and opening at the presentation/QA boundary."
@@ -123,6 +154,16 @@ assert.match(
   editorChromeControllerSource,
   /onMillwork: configuration\.canUseCabinetryStudio[\s\S]*?\? actions\.cabinetry\.openStudio[\s\S]*?: undefined/,
   "The editor-chrome controller should preserve the command wrapper's millwork availability policy."
+);
+assert.match(
+  cabinetryFeatureFlagSource,
+  /CABINETRY_STUDIO_FEATURE_ENABLED = flagFromPublicEnv\([\s\S]*?NEXT_PUBLIC_FEATURE_CUSTOM_MILLWORK_STUDIO[\s\S]*?NEXT_PUBLIC_FEATURE_CABINETRY_STUDIO[\s\S]*?publicAppEnv !== "production"/,
+  "The Studio must remain behind its canonical public feature flag and fail closed by default in production."
+);
+assert.match(
+  cabinetryControllerSource,
+  /const canUseStudio = CABINETRY_STUDIO_FEATURE_ENABLED && !isClientPreview/,
+  "A disabled Studio flag or client preview must remove the canonical Workspace action."
 );
 assert.doesNotMatch(
   workspaceSource,

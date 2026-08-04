@@ -125,7 +125,7 @@ does not replace the observed usability scenarios or the manual release signoff 
 ### Consumer / Free
 
 1. Open `/design` as a signed-out or Free user with the Custom Millwork Studio feature flag enabled.
-2. Confirm `Custom Millwork Studio` is available from the normal design controls and opens in Guided setup.
+2. Open `Workspace`, choose the single `Custom Millwork Studio` menu item, and confirm it opens in Guided setup.
 3. Confirm Detailed editor, construction locks, manual bay sizing, custom shelf/door/drawer modes, clearance overlays, BOM, schedules, fabrication data, and export controls are not shown.
 4. Complete Type, Space, Size, Layout, Style, and Review. Confirm the preliminary estimate updates from the same definition and clearly says that final pricing can change.
 5. Place the design, select it, and confirm the inspector shows a simple preliminary estimate plus placement, Edit, and Delete controls without fabrication-level summaries or downloads.
@@ -133,7 +133,7 @@ does not replace the observed usability scenarios or the manual release signoff 
 
 ### Pro
 
-1. Open `/design?mode=designer` as a Pro user.
+1. Open `/design?mode=designer` as a Pro user, then open `Workspace` and choose the single `Custom Millwork Studio` menu item.
 2. Confirm Guided setup can switch to Detailed editor and that BOM, schedules, clearances, fabrication details, and output downloads remain available.
 3. Open a design first created in Consumer mode and confirm revealing Pro controls does not change its visible result or underlying definition.
 4. Choose Detailed editor, close the Studio, and start another Pro creation. Confirm it enters Detailed directly; choose Guided setup and repeat to confirm the preference changes without changing the definition. Edit mode should still open Detailed for Pro, while Consumer remains Guided.

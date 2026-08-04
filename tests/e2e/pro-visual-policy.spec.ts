@@ -12,12 +12,13 @@ const RECOMMENDED_CABINET_TEMPLATES = [
 
 const CABINET_VIEWS = ["perspective", "front", "side", "top"] as const;
 
-async function mockProPlan(page: Page) {
+async function mockPlan(page: Page, plan: "free" | "pro") {
+  await page.unroute("**/api/me");
   await page.route("**/api/me", async (route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify({ plan: "pro", source: "playwright" }),
+      body: JSON.stringify({ plan, source: "playwright" }),
     });
   });
 }
@@ -36,6 +37,61 @@ async function dismissBlockingPrompt(page: Page) {
     await closeButton.click();
     await expect(overlay).toBeHidden({ timeout: 5000 });
   }
+}
+
+async function openCustomMillworkStudioFromWorkspace(
+  page: Page,
+  options: {
+    accessLevel: "consumer" | "pro";
+    activation: "keyboard" | "pointer";
+  }
+) {
+  const workspace = page.getByTestId("editor-command-workspace");
+  const menu = page.getByTestId("editor-command-workspace-menu");
+  const workflow = page.getByTestId("editor-workflow-millwork");
+  const legacyLabel = page.getByTestId("open-custom-millwork-studio");
+
+  await page.waitForLoadState("networkidle");
+  await dismissBlockingPrompt(page);
+  await expect(workspace).toBeVisible();
+  await expect(menu).toBeHidden();
+  await expect(workflow).toHaveCount(1);
+  await expect(workflow).toBeHidden();
+  await expect(legacyLabel).toHaveCount(1);
+  await expect(legacyLabel).toBeHidden();
+
+  if (options.activation === "keyboard") {
+    await workspace.focus();
+    await expect(workspace).toBeFocused();
+    await workspace.press("Enter");
+  } else {
+    await workspace.click();
+  }
+
+  await expect(workspace).toHaveAttribute("aria-expanded", "true");
+  await expect(menu).toBeVisible();
+  await expect(workflow).toBeVisible();
+  await expect(workflow).toHaveAccessibleName("Custom Millwork Studio");
+  await expect(legacyLabel).toBeVisible();
+
+  if (options.activation === "keyboard") {
+    await expect(page.getByTestId("editor-workflow-plan")).toBeFocused();
+    await page.keyboard.press("ArrowDown");
+    await expect(workflow).toBeFocused();
+    await workflow.press("Enter");
+  } else {
+    await workflow.click();
+  }
+
+  const studio = page.getByTestId("custom-millwork-studio");
+  const dialog = page.getByRole("dialog", { name: "Custom Millwork Studio" });
+  await expect(studio).toBeVisible({ timeout: 15_000 });
+  await expect(studio).toHaveCount(1);
+  await expect(studio).toHaveAttribute("data-access-level", options.accessLevel);
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toBeFocused();
+  await expect(menu).toBeHidden();
+  await expect(workspace).toHaveAttribute("aria-expanded", "false");
 }
 
 async function readThemeTokens(page: Page) {
@@ -215,7 +271,7 @@ test.describe("Pro visual policy", () => {
   test("uses the consumer visual theme with a clear Pro mode indicator", async ({
     page,
   }, testInfo) => {
-    await mockProPlan(page);
+    await mockPlan(page, "pro");
     await page.goto("/design?mode=designer", { waitUntil: "domcontentloaded" });
     await expect(page.getByTestId("editor-command-bar")).toBeVisible({ timeout: 30_000 });
 
@@ -260,30 +316,42 @@ test.describe("Pro visual policy", () => {
       .click();
     await expect(sceneCanvas).toHaveCSS("background-color", "rgb(255, 255, 255)");
 
-    await page.goto("/design", { waitUntil: "domcontentloaded" });
+    await mockPlan(page, "free");
+    await page.goto("/design?mode=designer", { waitUntil: "domcontentloaded" });
     await expect(page.locator('[data-theme="default"]')).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByTestId("pro-mode-indicator")).toHaveCount(0);
     const consumerTokens = await readThemeTokens(page);
     expect(consumerTokens).toEqual(proTokens);
     await expect(page.getByTestId("scene-canvas").first()).toHaveCSS(
       "background-color",
       "rgb(244, 242, 237)"
     );
+
+    await openCustomMillworkStudioFromWorkspace(page, {
+      accessLevel: "consumer",
+      activation: "pointer",
+    });
+    const consumerStudio = page.getByTestId("custom-millwork-studio");
+    await expect(consumerStudio).toHaveAttribute("data-experience", "guided");
+    await expect(page.getByTestId("cabinet-experience-detailed")).toHaveCount(0);
+    await page.keyboard.press("Escape");
+    await expect(consumerStudio).toHaveCount(0);
+    await expect(page.getByTestId("editor-command-workspace")).toBeFocused();
   });
 
   test("keeps all recommended Cabinet Preview templates readable under the RC-5 policy", async ({
     page,
   }, testInfo) => {
     test.setTimeout(300_000);
-    await mockProPlan(page);
+    await mockPlan(page, "pro");
     await page.goto("/design?mode=designer", { waitUntil: "domcontentloaded" });
     await expect(page.locator('[data-theme="default"]')).toBeVisible({ timeout: 30_000 });
     await expect(page.getByTestId("pro-mode-indicator")).toBeVisible();
     await expect(page.getByTestId("editor-command-bar")).toBeVisible();
-    const openStudio = page.getByTestId("open-custom-millwork-studio");
-    await expect(openStudio).toBeVisible({ timeout: 30_000 });
-    await dismissBlockingPrompt(page);
-    await openStudio.click();
-    await expect(page.getByTestId("custom-millwork-studio")).toBeVisible({ timeout: 15_000 });
+    await openCustomMillworkStudioFromWorkspace(page, {
+      accessLevel: "pro",
+      activation: "pointer",
+    });
 
     const renderer = page
       .locator('[data-cabinet-preview-renderer="rc5"]:visible')
@@ -324,5 +392,15 @@ test.describe("Pro visual policy", () => {
       await expectRenderedScene(screenshot, `Wardrobe ${view}`);
       if (view === "front") await expectWardrobeFrontFitsViewport(screenshot);
     }
+
+    const studio = page.getByTestId("custom-millwork-studio");
+    await page.getByTestId("cabinetry-studio-close").click();
+    await expect(studio).toHaveCount(0);
+    await expect(page.getByTestId("editor-command-workspace")).toBeFocused();
+    await openCustomMillworkStudioFromWorkspace(page, {
+      accessLevel: "pro",
+      activation: "keyboard",
+    });
+    await expect(page.getByTestId("custom-millwork-studio")).toHaveCount(1);
   });
 });

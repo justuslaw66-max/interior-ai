@@ -2,6 +2,7 @@
 
 import EditorViewToggle, { type EditorViewMode } from "@/components/editor/EditorViewToggle";
 import { LightingSettingsDrawer } from "@/components/editor/design-page/LightingSettingsDrawer";
+import { handleWorkspaceMenuKeyDown } from "@/components/editor/workspaceMenuKeyboard";
 import { ChevronDown, Ellipsis, PanelLeft, Plus, UserRound } from "lucide-react";
 import { signIn, signOut } from "next-auth/react";
 import {
@@ -11,7 +12,6 @@ import {
   useState,
   type ReactNode,
 } from "react";
-
 type EditorMode = "design" | "adjust" | "ai" | "buy" | "present";
 
 export type EditorSaveStatus = {
@@ -143,8 +143,7 @@ export default function EditorCommandBar({
   const accountRef = useRef<HTMLDivElement | null>(null);
   const moreButtonRef = useRef<HTMLButtonElement | null>(null);
   const closeLightingSettings = useCallback(
-    () => setLightingSettingsOpen(false),
-    []
+    () => setLightingSettingsOpen(false), []
   );
 
   useEffect(() => {
@@ -164,6 +163,7 @@ export default function EditorCommandBar({
     };
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
+        if (workspaceOpen) workspaceRef.current?.querySelector<HTMLElement>("button")?.focus();
         setWorkspaceOpen(false);
         setOverflowOpen(false);
         setAccountOpen(false);
@@ -240,13 +240,9 @@ export default function EditorCommandBar({
       active: !millworkActive && editorMode === "present",
     },
   ];
-  const activeWorkflowStep =
-    workflowSteps.find((step) => step.active) ?? workflowSteps[0];
+  const activeWorkflowStep = workflowSteps.find((step) => step.active) ?? workflowSteps[0];
   const designSidebarToggleVisible =
-    !millworkActive &&
-    (editorMode === "design" ||
-      editorMode === "adjust" ||
-      editorMode === "ai");
+    !millworkActive && (editorMode === "design" || editorMode === "adjust" || editorMode === "ai");
   const menuButtonClass = dark
     ? "designer-work-control flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-semibold"
     : "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-semibold text-neutral-800 hover:bg-neutral-100";
@@ -342,10 +338,12 @@ export default function EditorCommandBar({
                 ? "designer-control inline-flex h-[30px] items-center gap-1.5 rounded-lg border px-2.5 text-sm font-semibold leading-none sm:px-3"
                 : "inline-flex h-[30px] items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-2.5 text-sm font-semibold leading-none text-neutral-800 shadow-sm hover:bg-neutral-50 sm:px-3"
             }
-            onClick={() => {
+            onClick={(event) => {
               setWorkspaceOpen((value) => !value);
               setOverflowOpen(false);
               setAccountOpen(false);
+              if (!workspaceOpen && event.detail === 0)
+                window.requestAnimationFrame(() => workspaceRef.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus());
             }}
           >
             <span className="hidden text-xs font-medium opacity-60 lg:inline">
@@ -363,6 +361,7 @@ export default function EditorCommandBar({
             data-testid="editor-command-workspace-menu"
             role="menu"
             aria-label="Workspace"
+            onKeyDown={handleWorkspaceMenuKeyDown}
             className={`${workspaceMenuPanelClass} ${
               workspaceOpen ? "" : "hidden"
             }`}
@@ -382,6 +381,7 @@ export default function EditorCommandBar({
                 title={step.title}
                 className={menuButtonClass}
                 onClick={() => {
+                  workspaceRef.current?.querySelector<HTMLElement>("button")?.focus();
                   setWorkspaceOpen(false);
                   step.onClick();
                 }}
