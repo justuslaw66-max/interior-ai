@@ -2317,3 +2317,115 @@ requested-design coordinator, viewport/presentation registration, GLB,
 CatalogPanel, command-bar, Hamilton, Phase 8, CH-0004, CH-0017 through CH-0030,
 workflow, dependency, lockfile, schema, migration, catalog, push, or deployment
 change is included.
+
+## Required-test inventory synchronization — 2026-08-04
+
+This bounded required-gate metadata remediation began from exact clean source
+`69a762727a45c145b9ea645f5a397c382accbd7e` on
+`fix/baseline-plan-template-access-contract`, whose commit is the completed
+plan-template selector batch. Entry status, tracked diff, diff check, diff
+stat, and untracked checks were empty. The requested
+`fix/required-test-inventory-sync` branch was created from that exact SHA.
+`lsof` resolved the only listening Node application to the canonical
+`/Users/justus/Developer/interior-ai` checkout. No work was discarded or
+carried from another branch, and nothing was pushed or deployed.
+
+The canonical manifest check reproduced one mismatch only: `script-tests`
+expected 248 paths and
+`5103c2f9d54bf97fdca1b9d8a7a420a810f7e4290c708c49ee85bb6deb80ba9f`,
+but current discovery found 250 paths and
+`0c033fb44f2e336b0433288d5fbee96f8948813fdf769be8d078aead8ff66d5c`.
+The repository has no inventory updater or generated inventory artifact; its
+supported CLI modes are `check`, `run`, `verify`, `prepare-upload`, and
+`verify-upload`. The implementation recursively walks each declared root,
+normalizes separators to `/`, sorts the paths, and hashes the newline-joined
+inventory with a final newline. Running that implementation independently
+produced 250 normalized script-test paths, 370 total unique classified
+sources, 21 gates, and zero duplicate, unowned, or multiply classified paths.
+All other inventory counts and hashes matched the manifest.
+
+The two paths absent from the stale fingerprint are:
+
+- `scripts/test-design-page-requested-design-workspace-registration.ts`;
+- `scripts/test-design-page-viewport-workspace-read-model.ts`.
+
+Both files are tracked, hand-authored TypeScript assertion programs with
+production imports, deterministic fixtures, and pass/fail output. They contain
+no generated header, are not helpers or fixtures, and their creation commits
+are the reviewed requested-design and viewport read-model extractions. Each
+appears exactly once in the 77-TypeScript-plus-one-architecture-guard array in
+`scripts/run-design-page-cleanup-tests.mjs`. The array rejects duplicate names
+and missing sources before execution. The existing required owner is
+`ci.design-cleanup`, through the exact package-command closure
+`npm run test:design-page-cleanup` →
+`node scripts/run-design-page-cleanup-tests.mjs`; that closure remains one
+package script with SHA-256
+`2649e75478c4214608459c1c4cfe063e69f07246b2341bfb484f8584a9697b49`.
+No other package command or source registration names either test. Registering
+the discovered paths in the manifest fingerprint therefore adds no execution
+path, owner, imported module, or double count. An in-memory deletion proof
+changed the inventory to 249 paths and a different hash for either file; an
+in-memory rename retained 250 paths but changed the hash. Both cases are
+rejected by truthfulness without altering either test.
+
+The synchronization changes only `script-tests.expectedFileCount` from 248 to
+250 and `expectedPathSha256` to the verified current hash. The QA document now
+records 250 script tests and 370 complete classified sources instead of 248
+and 368. All 21 gate identities, owners, required/advisory classifications,
+browser projects, skip/retry/flaky policies, stable requirements,
+source/artifact bindings, package-command closures, zero-test rejection, and
+Full E2E's advisory status remain unchanged. No production file, test
+implementation, test assertion, workflow, dependency, threshold, allowance,
+suppression, or generated file changed.
+
+Validation after synchronization:
+
+- PASS: `npm run test:required-test-truthfulness`; the registered negative
+  manifest/inventory suite completed and the checked-in contract validated.
+- PASS: `node scripts/required-test-truthfulness.mjs check`, reporting 21 gates
+  and 370 classified test sources.
+- PASS: `npm run test:production-artifact-evidence`.
+- PASS: `npm run test:design-page-cleanup`, all 78 registered guards. Both
+  synchronized tests are visible in the runner output exactly once.
+- PASS: `npm run lint -- --max-warnings=0`, zero warnings; `npm run typecheck`;
+  and `npm run check:code-quality` across 1,040 production files, with 197
+  oversized-file, 554 function-debt, and 19 suppression baselines unchanged,
+  no static runtime cycle, and no unsafe TypeScript suppression.
+- PASS: `git diff --check`. No allowance or suppression was raised. Full E2E
+  was not run.
+
+The separate read-only reviewer independently reproduced 250 script tests,
+370 unique classified sources, the current normalized script hash, and the
+exact stale 248/hash pair when both files are removed. It confirmed 21
+unchanged gates, zero classification gaps or overlaps, one required execution
+owner and one runner occurrence for each synchronized test, unchanged package
+closure/cadence/classification, correct current documentation, the persisted
+2/4 Pro-policy evidence, and a complete diff limited to the four authorized
+metadata/documentation files. Its independent truthfulness, direct check,
+production-evidence, 78/78 cleanup, typecheck, and diff-hygiene reruns passed.
+Final disposition: **PASS — no actionable findings**. Older 248/368 records are
+historical CH snapshots and remain intentionally unchanged.
+
+The literal local `npm run test:pro-visual-policy` wrapper first proved its
+fail-closed environment boundary by refusing to start without explicit
+`APP_ENV` or `VERCEL_ENV`. With the minimal explicit local
+`APP_ENV=development`, the same registered required wrapper discovered and ran
+all four identities. The Consumer/Pro theme case passed in Chromium and WebKit.
+The Cabinet Preview case failed in both engines at
+`tests/e2e/pro-visual-policy.spec.ts:283` because
+`open-custom-millwork-studio` resolved to a hidden element. The truthful result
+is 2 passed / 2 failed, process exit nonzero, with the required evidence naming
+both failed project identities. Because `ci.pro-visual-policy` is a
+merge-required blocking gate, its bounded remediation is the next local batch;
+it was not started.
+
+Phase 8 was not rerun or modified. Its retained status remains 7,101,416 raw
+initial-JS bytes against 6,955,000 (146,416 excess), 1,169,365 Brotli bytes
+against 1,130,000, and 3,779 bytes of latent initial-CSS excess. The required
+gate graph places Pro visual-policy before this separate optimization work.
+The implementation commit is the single focused local commit containing this
+record; its resolved SHA and final clean status are reported after creation.
+Rollback is one local revert. Full E2E, Pro remediation, Phase 8 optimization,
+CH-0004, CH-0017 through CH-0030 behavior, workflows, rulesets, runners, pull
+requests, deployments, external settings, production code, and test behavior
+remain untouched.
