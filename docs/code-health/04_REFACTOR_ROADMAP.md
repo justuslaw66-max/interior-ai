@@ -241,6 +241,18 @@ without a rebaseline. CSS is unchanged at 143,779 raw and remains the separate
 3,779-byte Phase 8B blocker. P6-C through P6-G remain separate; this checkpoint
 does not start scene-resource, CH-0004, or CH-0017-through-CH-0030 work.
 
+**Phase 8B checkpoint (2026-08-04):** the bounded initial-CSS blocker is green
+from exact source `299536fee37fe68b3fde38c02984f5aba21a6231`. Tailwind
+ownership now follows the existing `/admin`, `/tools`, and dynamically imported
+Cabinetry Studio boundaries. Exact clean measurements changed `/design` initial
+CSS from 143,779 raw / 18,417 Brotli to 129,803 / 17,182 while keeping one
+initial CSS chunk. Initial JS remains 26 chunks and passes at 5,791,004 raw /
+1,104,582 Brotli; the 34 raw / 9 Brotli delta is the deterministic stylesheet
+edge, while the measured Cabinetry Studio JS chunk is byte-identical. Shared
+first-paint, material-browser, focus, responsive, modal, print/export, Consumer,
+and Pro styling remain global. The complete Phase 8 gate is green without a
+raised baseline. P6-C through P6-G remain separate and were not started.
+
 ## Phase 7 — Editor/plan/cabinetry ownership and accessible overlays
 
 **Findings:** CH-0015 and CH-0020.

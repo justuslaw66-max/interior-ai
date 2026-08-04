@@ -1,9 +1,13 @@
 @import "tailwindcss" source(none);
 
 @source ".";
+@source not "./admin";
+@source not "./tools";
 @source "../components";
 @source "../features";
+@source not "../features/cabinetry";
 @source "../lib";
+@source inline("bg-amber-900 bg-blue-700 gap-5 max-h-40 min-w-[760px] sm:col-span-2 text-3xl text-red-950 xl:grid-cols-2 xl:grid-cols-4");
 
 :root {
   --bg-canvas: #ffffff;

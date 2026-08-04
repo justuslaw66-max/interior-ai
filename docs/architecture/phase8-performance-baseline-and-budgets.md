@@ -146,7 +146,7 @@ product promises:
   magnitude regressions. Thirty large samples keep p95 from becoming one
   scheduler outlier.
 - Bundle ceilings are just above the measured production baseline: 6,955,000
-  raw / 1,130,000 Brotli JS; 140,000 raw / 19,000 Brotli CSS; 500,000 raw /
+  raw / 1,130,000 Brotli JS; 140,000 raw / 18,000 Brotli CSS; 500,000 raw /
   85,000 Brotli Studio; and 40,000 raw / 11,000 Brotli exporter.
 - Browser ceilings are based on repeated development and production runs:
   6,000 ms interactive, 6,000 ms for the synthetic 30-step pointer sweep,
@@ -202,7 +202,7 @@ and `node scripts/measure-phase8-bundle.mjs`.
 | Initial JS Brotli | 1,169,257 B | 1,104,573 B | 1,130,000 B | PASS; -64,684 B |
 | Initial JS chunks | 26 | 26 | informational | No new eager chunk |
 | Initial CSS raw | 143,779 B | 143,779 B | 140,000 B | Unchanged; separate Phase 8B blocker |
-| Initial CSS Brotli | 18,417 B | 18,417 B | 19,000 B | Unchanged |
+| Initial CSS Brotli | 18,417 B | 18,417 B | 18,000 B | Unchanged; separate Phase 8B blocker |
 | Cabinetry Studio lazy | 492,639 / 84,899 B | 492,639 / 84,899 B | 500,000 / 85,000 B | Unchanged |
 | GLTFExporter lazy | 34,525 / 8,970 B | 34,525 / 8,970 B | 40,000 / 11,000 B | Unchanged |
 
@@ -254,8 +254,83 @@ Nippon catalog data appears in the initial graph. The generated ownership,
 field matrix, trigger, failure, and BOM/export contracts are detailed in
 `docs/architecture/surface-material-runtime-boundary.md`.
 
-Phase 8A resolves the owned raw and Brotli JavaScript budgets. The unchanged
-combined `--check` command still exits nonzero solely because raw CSS is 3,779
-bytes above its 140,000-byte limit. Per scope, CSS was not changed or
-rebaselined; a separately reviewed Phase 8B CSS remediation is the next bounded
-performance batch.
+Phase 8A resolves the owned raw and Brotli JavaScript budgets. At that
+checkpoint the machine-readable CSS Brotli ceiling was still the stale 19,000
+bytes, so its combined `--check` command exited nonzero solely because raw CSS
+was 3,779 bytes above 140,000. Against Phase 8B's authoritative 18,000-byte
+ceiling, the same unchanged artifact was also 417 Brotli bytes over. Phase 8A
+did not change or rebaseline CSS; the separately reviewed Phase 8B remediation
+below owns both CSS failures.
+
+## Phase 8B initial-CSS ownership remediation — 2026-08-04
+
+This bounded batch began at exact source
+`299536fee37fe68b3fde38c02984f5aba21a6231`. The before artifact was reproduced
+in a clean detached worktree with Node 24.13.0, npm 11.6.2,
+`npm ci --include=dev`, the strict 57-page production build, and
+`node scripts/measure-phase8-bundle.mjs`. The initial CSS result matched the
+required baseline exactly: one `/design` CSS chunk at 143,779 raw / 18,417
+Brotli bytes.
+
+The starting machine-readable file still encoded the superseded 19,000-byte
+Brotli value even though this batch's authoritative acceptance ceiling is
+18,000. Phase 8B changes that guard only downward to 18,000; no measured value
+was adopted as a baseline and no CSS or JavaScript ceiling was raised.
+
+The selected correction makes Tailwind ownership follow existing route and
+lazy-code boundaries. The 53 admin-only and 20 GLB-optimizer-only candidates
+now load from their route layouts. The 98 candidates used only by Custom
+Millwork Studio load from the already-dynamic `CabinetryStudio`
+implementation. Ten candidates used by multiple excluded owners remain once
+in the root sheet. Shared editor, material-browser, accessibility, responsive,
+modal, and export candidates also stay global. No selector was deleted to meet
+the number, and no style was moved into runtime JavaScript. Identical Tailwind
+property registrations are stripped only from scoped outputs after the guard
+proves their root registrations and load ordering.
+
+| `/design` production metric | Before | After | Limit | Result |
+| --- | ---: | ---: | ---: | --- |
+| Initial CSS raw | 143,779 B | 129,803 B | 140,000 B | PASS; -13,976 B; 10,197 B headroom |
+| Initial CSS Brotli | 18,417 B | 17,182 B | 18,000 B | PASS; -1,235 B; 818 B headroom |
+| Initial CSS chunks | 1 | 1 | informational | No new eager CSS chunk |
+| Initial JS raw | 5,790,970 B | 5,791,004 B | 6,955,000 B | PASS; explained +34 B stylesheet edge |
+| Initial JS Brotli | 1,104,573 B | 1,104,582 B | 1,130,000 B | PASS; explained +9 B stylesheet edge |
+| Initial JS chunks | 26 | 26 | informational | One deterministic chunk hash changed; count preserved |
+| Cabinetry Studio lazy JS | 492,639 / 84,899 B | 492,639 / 84,899 B | 500,000 / 85,000 B | Unchanged |
+| GLTFExporter lazy JS | 34,525 / 8,970 B | 34,525 / 8,970 B | 40,000 / 11,000 B | Unchanged |
+
+The exact clean before CSS inventory was:
+
+```text
+3p037ihv70l6o.css  143,779 raw / 18,417 Brotli  /design initial
+1pg4g3scc5f8v.css   30,366 raw /  3,966 Brotli  admin module only
+```
+
+The post-change strict-build CSS inventory was:
+
+```text
+2ot--cpfioh0t.css  129,803 raw / 17,182 Brotli  /design initial global/shared
+10lj_rzo51l97.css   13,197 raw /  2,345 Brotli  lazy Cabinetry Studio
+38jk95zqo9_e1.css    5,639 raw /  1,304 Brotli  /admin Tailwind owner
+1aj5did-ynuj4.css     2,693 raw /    623 Brotli  /tools Tailwind owner
+1pg4g3scc5f8v.css    30,366 raw /  3,966 Brotli  /admin CSS module
+```
+
+The route manifest maps `/design` only to the 129,803-byte global/shared chunk.
+Admin maps to that shared chunk plus its Tailwind and module chunks; the GLB
+optimizer maps to the shared chunk plus its tools chunk. Cabinetry CSS is not
+in the initial route manifest and arrives with the existing lazy Studio
+implementation. Exact ownership categories, selectors, triggers, conservative
+global decisions, and no-FOUC evidence are recorded in
+`phase8-css-ownership.md`.
+
+The boundary guard uses Tailwind's scanner and design system to recompute every
+valid global, cross-owner, and exclusive candidate; rejects overlap, omission,
+or drift; checks compiled semantic selector membership without depending on
+chunk hashes; and proves scoped property registrations are neither duplicated
+nor missing. The complete
+Phase 8 gate, 78 design-page cleanup checks, full Cabinetry verification,
+editor accessibility, Chromium/WebKit Pro visual policy 4/4, required-test
+truthfulness, production-artifact evidence, zero-warning lint, typecheck, code
+quality, and strict build pass. The inherited Turbopack/NFT broad-trace warning
+remains. Full E2E was not run.

@@ -1,6 +1,6 @@
 "use client";
-
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import "../cabinetry-tailwind.css";
 import { CABINET_HARDWARE } from "../catalog/hardware";
 import { CABINET_MATERIALS } from "../catalog/materials";
 import {

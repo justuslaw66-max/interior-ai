@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { __unstable__loadDesignSystem, optimize } from "@tailwindcss/node";
+import { Scanner } from "@tailwindcss/oxide";
 
 import {
   PRODUCTION_SURFACE_MATERIAL_CATALOG_METADATA,
@@ -20,6 +22,267 @@ import {
 } from "../lib/surface-material-runtime";
 
 const read = (filePath: string) => fs.readFileSync(filePath, "utf8");
+
+const TAILWIND_SOURCE_PATTERNS = [
+  "app/**/*.{ts,tsx}",
+  "components/**/*.{ts,tsx}",
+  "features/**/*.{ts,tsx}",
+  "lib/**/*.{ts,tsx}",
+] as const;
+
+function scanTailwindCandidates(
+  includedPatterns: readonly string[] = TAILWIND_SOURCE_PATTERNS,
+  excludedPatterns: readonly string[] = []
+): Set<string> {
+  const sources: Array<{ base: string; pattern: string; negated: boolean }> =
+    includedPatterns.map((pattern) => ({
+      base: process.cwd(),
+      pattern,
+      negated: false,
+    }));
+  for (const pattern of excludedPatterns) {
+    sources.push({ base: process.cwd(), pattern, negated: true });
+  }
+  return new Set(new Scanner({ sources }).scan());
+}
+
+function readInlineCandidates(filePath: string): string[] {
+  const matches = Array.from(read(filePath).matchAll(/@source inline\("([^"]+)"\);/g));
+  assert.equal(matches.length, 1, `${filePath} must declare one explicit inline source`);
+  return (matches[0]?.[1] ?? "").split(/\s+/).filter(Boolean).sort();
+}
+
+function cssChunksForRoute(manifestPath: string): Set<string> {
+  return new Set(
+    Array.from(
+      read(manifestPath).matchAll(/(static\/chunks\/[^"\\]+\.css)/g),
+      (match) => match[1]
+    )
+  );
+}
+
+function candidateRulePattern(candidate: string, candidateCss: string): RegExp {
+  const selector = `.${candidate.replace(/([^a-zA-Z0-9_-])/g, "\\$1")}`;
+  const optimizedCss = optimize(candidateCss, { minify: true }).code;
+  const selectorIndex = optimizedCss.indexOf(selector);
+  assert.notEqual(selectorIndex, -1, `${candidate} must compile to a class selector`);
+  const ruleStartIndex =
+    Math.max(
+      optimizedCss.lastIndexOf("{", selectorIndex),
+      optimizedCss.lastIndexOf("}", selectorIndex)
+    ) + 1;
+  const ruleEndIndex = optimizedCss.indexOf("{", selectorIndex);
+  assert.notEqual(ruleEndIndex, -1, `${candidate} must compile to a CSS rule`);
+  const ruleStart = optimizedCss.slice(ruleStartIndex, ruleEndIndex + 1);
+  return new RegExp(ruleStart.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+}
+
+function tailwindPropertyRules(candidateCss: string): string[] {
+  return Array.from(
+    optimize(candidateCss, { minify: true }).code.matchAll(/@property --tw-[^{]+\{[^}]*\}/g),
+    (match) => match[0]
+  );
+}
+
+async function assertRouteCssOwnershipBoundary(): Promise<void> {
+  const globalCss = read("app/globals.css");
+  assert.match(globalCss, /@source not "\.\/admin";/);
+  assert.match(globalCss, /@source not "\.\/tools";/);
+  assert.match(globalCss, /@source not "\.\.\/features\/cabinetry";/);
+
+  const ownershipBoundaries = [
+    {
+      name: "admin",
+      excludedPattern: "app/admin/**/*.{ts,tsx}",
+      cssPath: "app/admin/admin-tailwind.css",
+      ownerPath: "app/admin/layout.tsx",
+      importPattern: /import ["']\.\/admin-tailwind\.css["']/,
+      manifestPath: ".next/server/app/admin/page_client-reference-manifest.js",
+    },
+    {
+      name: "tools",
+      excludedPattern: "app/tools/**/*.{ts,tsx}",
+      cssPath: "app/tools/tools-tailwind.css",
+      ownerPath: "app/tools/layout.tsx",
+      importPattern: /import ["']\.\/tools-tailwind\.css["']/,
+      manifestPath: ".next/server/app/tools/glb-optimizer/page_client-reference-manifest.js",
+    },
+    {
+      name: "cabinetry",
+      excludedPattern: "features/cabinetry/**/*.{ts,tsx}",
+      cssPath: "features/cabinetry/cabinetry-tailwind.css",
+      ownerPath: "features/cabinetry/components/CabinetryStudio.tsx",
+      importPattern: /import ["']\.\.\/cabinetry-tailwind\.css["']/,
+      manifestPath: null,
+    },
+  ] as const;
+  const designSystem = await __unstable__loadDesignSystem('@import "tailwindcss";', {
+    base: process.cwd(),
+  });
+  const allValidCandidates = Array.from(scanTailwindCandidates())
+    .filter((candidate) => designSystem.candidatesToCss([candidate])[0] !== null)
+    .sort();
+  const globallyScannedCandidates = new Set(
+    Array.from(
+      scanTailwindCandidates(
+        TAILWIND_SOURCE_PATTERNS,
+        ownershipBoundaries.map((boundary) => boundary.excludedPattern)
+      )
+    ).filter((candidate) => designSystem.candidatesToCss([candidate])[0] !== null)
+  );
+  const ownerCandidates = new Map(
+    ownershipBoundaries.map((boundary) => [
+      boundary.name,
+      Array.from(scanTailwindCandidates([boundary.excludedPattern]))
+        .filter((candidate) => designSystem.candidatesToCss([candidate])[0] !== null)
+        .sort(),
+    ])
+  );
+  const scopedOwnerCounts = new Map<string, number>();
+  for (const candidates of ownerCandidates.values()) {
+    for (const candidate of candidates) {
+      scopedOwnerCounts.set(candidate, (scopedOwnerCounts.get(candidate) ?? 0) + 1);
+    }
+  }
+  const expectedGlobalScopedSharedCandidates = Array.from(scopedOwnerCounts)
+    .filter(
+      ([candidate, ownerCount]) => ownerCount > 1 && !globallyScannedCandidates.has(candidate)
+    )
+    .map(([candidate]) => candidate)
+    .sort();
+  const globalScopedSharedCandidates = readInlineCandidates("app/globals.css");
+  assert.deepEqual(
+    globalScopedSharedCandidates,
+    expectedGlobalScopedSharedCandidates,
+    "global inline CSS must contain every and only utility shared by multiple scoped owners"
+  );
+  const globallyRetainedCandidates = new Set([
+    ...globallyScannedCandidates,
+    ...globalScopedSharedCandidates,
+  ]);
+  const declaredByRoute = new Map<string, string[]>();
+
+  for (const boundary of ownershipBoundaries) {
+    assert.match(read(boundary.ownerPath), boundary.importPattern);
+    const ownerScopedCandidates = (ownerCandidates.get(boundary.name) ?? [])
+      .filter((candidate) => !globallyRetainedCandidates.has(candidate))
+      .sort();
+    const declaredCandidates = readInlineCandidates(boundary.cssPath);
+    assert.deepEqual(
+      declaredCandidates,
+      ownerScopedCandidates,
+      `${boundary.name} CSS must contain every and only utility its owner needs outside global CSS`
+    );
+    declaredByRoute.set(boundary.name, declaredCandidates);
+  }
+
+  const declaredScopedCandidates = new Set(
+    Array.from(declaredByRoute.values()).flatMap((candidates) => candidates)
+  );
+  const removedFromGlobalCandidates = allValidCandidates.filter(
+    (candidate) => !globallyRetainedCandidates.has(candidate)
+  );
+  assert.deepEqual(
+    Array.from(declaredScopedCandidates).sort(),
+    removedFromGlobalCandidates,
+    "scoped CSS union must replace every valid utility removed from global CSS"
+  );
+  assert.ok(
+    Array.from(declaredScopedCandidates).every(
+      (candidate) => !globallyRetainedCandidates.has(candidate)
+    ),
+    "no scoped utility may remain in the global candidate set"
+  );
+  for (const [ownerName, candidates] of declaredByRoute) {
+    for (const [otherOwnerName, otherCandidates] of declaredByRoute) {
+      if (ownerName === otherOwnerName) continue;
+      const otherCandidateSet = new Set(otherCandidates);
+      assert.ok(
+        candidates.every((candidate) => !otherCandidateSet.has(candidate)),
+        `${ownerName} and ${otherOwnerName} CSS must not duplicate scoped utilities`
+      );
+    }
+  }
+
+  const designManifestPath = ".next/server/app/design/page_client-reference-manifest.js";
+  if (!fs.existsSync(designManifestPath)) return;
+  const designChunks = cssChunksForRoute(designManifestPath);
+  const designCss = Array.from(designChunks, (chunk) => read(path.join(".next", chunk))).join("\n");
+  for (const candidate of globalScopedSharedCandidates) {
+    const candidateCss = designSystem.candidatesToCss([candidate])[0];
+    assert.ok(candidateCss);
+    assert.match(
+      designCss,
+      candidateRulePattern(candidate, candidateCss),
+      `${candidate} must remain in /design CSS as a shared scoped-owner utility`
+    );
+  }
+
+  const loadableManifest = JSON.parse(
+    read(".next/server/app/design/page/react-loadable-manifest.json")
+  ) as Record<string, { files: string[] }>;
+  const cabinetryCssChunks = Array.from(
+    new Set(
+      Object.values(loadableManifest)
+        .filter((entry) =>
+          entry.files.some(
+            (file) =>
+              file.endsWith(".js") &&
+              /CabinetryStudio|cabinetry-studio/.test(read(path.join(".next", file)))
+          )
+        )
+        .flatMap((entry) => entry.files.filter((file) => file.endsWith(".css")))
+    )
+  );
+  assert.ok(
+    cabinetryCssChunks.length > 0,
+    "the Cabinetry Studio dynamic import must own a lazy CSS chunk"
+  );
+  for (const boundary of ownershipBoundaries) {
+    const ownedChunks = boundary.manifestPath
+      ? (() => {
+          assert.ok(
+            fs.existsSync(boundary.manifestPath),
+            `${boundary.name} route manifest must exist in the production build`
+          );
+          const routeChunks = cssChunksForRoute(boundary.manifestPath);
+          for (const designChunk of designChunks) {
+            assert.ok(
+              routeChunks.has(designChunk),
+              `${boundary.name} must load the root CSS registrations before scoped CSS`
+            );
+          }
+          return Array.from(routeChunks).filter((chunk) => !designChunks.has(chunk));
+        })()
+      : cabinetryCssChunks.filter((chunk) => !designChunks.has(chunk));
+    assert.ok(ownedChunks.length > 0, `${boundary.name} must load owned CSS outside /design`);
+    const ownedCss = ownedChunks
+      .map((chunk) => read(path.join(".next", chunk)))
+      .join("\n");
+    assert.doesNotMatch(
+      ownedCss,
+      /@property --tw-/,
+      `${boundary.name} CSS must reuse rather than duplicate initial Tailwind property registrations`
+    );
+    for (const candidate of declaredByRoute.get(boundary.name) ?? []) {
+      const candidateCss = designSystem.candidatesToCss([candidate])[0];
+      assert.ok(candidateCss);
+      for (const propertyRule of tailwindPropertyRules(candidateCss)) {
+        assert.ok(
+          designCss.includes(propertyRule),
+          `${candidate} requires a Tailwind property registration that must remain initial`
+        );
+      }
+      const selectorPattern = candidateRulePattern(candidate, candidateCss);
+      assert.match(ownedCss, selectorPattern, `${candidate} must compile into ${boundary.name} CSS`);
+      assert.doesNotMatch(
+        designCss,
+        selectorPattern,
+        `${candidate} must be absent from /design initial CSS`
+      );
+    }
+  }
+}
 
 function findProductionTypeScriptFiles(root: string): string[] {
   if (!fs.existsSync(root)) return [];
@@ -283,6 +546,7 @@ async function main(): Promise<void> {
   }
 
   await assertSurfaceMaterialRuntimeBoundary();
+  await assertRouteCssOwnershipBoundary();
   assertSurfaceCatalogChunkBoundary();
   console.log("Phase 8 performance boundary checks passed.");
 }

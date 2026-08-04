@@ -2645,3 +2645,106 @@ Custom Millwork, DesignPageWorkspace architecture, dependency, lockfile,
 schema, migration, workflow, push, or deployment change is included. The
 implementation commit is the single focused commit containing this record;
 resolve its SHA after creation. Rollback is one local revert.
+
+## Phase 8B initial-CSS ownership boundary — 2026-08-04
+
+This batch began from exact clean source
+`299536fee37fe68b3fde38c02984f5aba21a6231` on
+`perf/phase8-initial-css`. Before editing, the branch, status, diff, untracked
+inventory, and exact SHA were recorded; the tree was clean. `lsof` confirmed
+the listening Node process belonged to the canonical
+`/Users/justus/Developer/interior-ai` checkout. Nothing was carried from an RC
+or evidence directory, and nothing was pushed or deployed.
+
+The clean detached before worktree used Node 24.13.0, npm 11.6.2,
+`npm ci --include=dev`, non-secret strict build placeholders, the strict
+57-page build, and the exact Phase 8 bundle measurement. It reproduced one
+`/design` initial CSS chunk at 143,779 raw / 18,417 Brotli bytes. The only other
+CSS output was the existing 30,366 raw / 3,966 Brotli admin module. `/design`
+initial JS reproduced Phase 8A exactly at 5,790,970 raw / 1,104,573 Brotli
+across 26 chunks; Cabinetry Studio and GLTFExporter remained lazy.
+
+The starting JSON guard still said 19,000 Brotli bytes while the authoritative
+Phase 8B ceiling is 18,000. The one config edit tightens that stale value to
+18,000; it does not adopt the result as a baseline or raise any budget.
+
+The root cause was source ownership, not minification: `app/globals.css`
+scanned every `app` route and all of `features`, so 53 admin-only utilities, 20
+GLB-optimizer-only utilities, and 98 already-dynamic Cabinetry Studio utilities
+were compiled into the initial editor stylesheet. The correction adds explicit
+negative source boundaries and three scoped Tailwind owners. Admin and tools
+import their owners from route layouts. The existing dynamic
+`CabinetryStudio` implementation imports its owner, so CSS follows the same
+lazy interaction boundary as its UI and JavaScript. Ten candidates used by
+multiple excluded owners remain once in the root sheet. No selector was
+removed, renamed, hidden in JavaScript, or copied into a second eager sheet.
+Shared first-paint, surface browser, focus-visible, responsive, reduced-motion,
+modal, Consumer/Pro, and share/export styling remain in the root owner.
+
+The post-change strict build maps `/design` only to a 129,803 raw / 17,182
+Brotli global/shared chunk. The lazy Studio CSS chunk is 13,197 / 2,345; admin
+Tailwind is 5,639 / 1,304; tools Tailwind is 2,693 / 623; the existing admin
+module is unchanged at 30,366 / 3,966. Initial CSS therefore improves by
+13,976 raw / 1,235 Brotli and has 10,197 / 818 bytes of headroom against the
+140,000 / 18,000 ceilings. Initial JS remains 26 chunks at 5,791,004 raw /
+1,104,582 Brotli. The explained +34 raw / +9 Brotli delta is the new
+stylesheet dependency edge; the measured 492,639 / 84,899 Cabinetry Studio and
+34,525 / 8,970 GLTFExporter JS chunks are byte-identical to Phase 8A.
+
+The focused guard was written before the production change and first failed on
+the missing negative ownership directive. It now uses Tailwind's scanner and
+design system to require the exact global, cross-owner, and exclusive candidate
+inventories; reject overlap, omission, and drift; and inspect compiled selector
+membership without naming a hash. It proves admin/tools/Cabinetry rules load
+outside the initial design CSS graph. A scoped PostCSS transform removes
+duplicate Tailwind property registrations only after the guard proves every
+required registration remains in root CSS and every route loads that root
+sheet. The detailed A–F ownership matrix, conservative global decisions,
+inventories, and compiler-registration contract are in
+`docs/architecture/phase8-css-ownership.md` and
+`docs/architecture/phase8-performance-baseline-and-budgets.md`.
+
+Manual testing used the strict production artifact. Before open, `/design` had
+one stylesheet, no Studio dialog, and no `min-h-[680px]` Studio rule. Requesting
+Custom Millwork first showed the bounded loading status; the lazy stylesheet
+then appeared before the interactive Studio, where the exclusive target
+computed to 680px and a shared `gap-5` consumer computed to 20px. Close/reopen
+retained two unique stylesheet URLs and restored the same geometry. This covers
+the no-FOUC, cache, shared-utility, and duplicate-request contract at the
+affected boundary.
+
+Validation passes: the complete Phase 8 combined gate; full Cabinetry
+verification including accessibility/performance/runtime boundaries; all 78
+design-page cleanup guards including presentation/export runtime; editor
+capability/accessibility; Chromium and WebKit Pro visual policy 4/4; required-
+test truthfulness; production-artifact evidence; full zero-warning lint;
+typecheck; code quality; diff hygiene; and the strict production build. The
+sandboxed policy runner was unable to bind port 3000; its approved local-port
+rerun passed. A final policy invocation without the repository-required
+`APP_ENV` was rejected before test discovery; the corrected
+`APP_ENV=development` run passed all four Chromium/WebKit cases in 2.7 minutes.
+The ignored TypeScript incremental cache briefly referenced removed
+`.next/dev` types; `tsc --build --clean` regenerated no source and the exact
+`npm run typecheck` rerun passed. The inherited Turbopack/NFT broad-trace
+warning, informational Babel large-generated-file notices, policy-runner
+`NO_COLOR` notices, and request-reset messages during browser turnover remain.
+Full E2E was not run.
+
+The separate read-only reviewer initially returned changes required after
+finding that per-boundary subtraction dropped 10 utilities shared only by two
+or more excluded owners. It also challenged duplicated Tailwind property
+registrations and required explicit root-sheet ordering evidence. The corrected
+guard now covers the full candidate union, retains the 10 shared utilities once,
+binds Cabinetry CSS to its semantic lazy entry, removes scoped registration
+copies, and proves root availability. The reviewer reran the measurement and
+compiled guards, reviewed the complete source and documentation diff, and
+returned **PASS — no remaining findings**. It made no edits or commits.
+
+Phase 8B has no remaining owned blocker: both CSS and JavaScript bundle limits
+and the combined gate are green. P6-C through P6-G, CH-0003's product decision,
+CH-0004, and CH-0017-through-CH-0030 behavior remain separate and were not
+started. No workflow, dependency, lockfile, surface contract/data, material ID,
+GLB lifecycle/cache/telemetry, schema, migration, budget raise, Full E2E, push,
+or deployment is included. The implementation commit is the one focused commit
+containing this record; resolve its SHA after creation. Rollback is one local
+revert.
