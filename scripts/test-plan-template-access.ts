@@ -508,8 +508,8 @@ assert.match(
 
 assert.match(
   cameraControllerSource,
-  /pending3DViewRef\.current = hasWholeHousePlan[\s\S]*?getWholeHome3DView\(\)[\s\S]*?defaultCameraView;[\s\S]*?setViewMode\(next\);/,
-  "Switching to 3D should queue the fitted view instead of applying it to the still-mounted 2D camera."
+  /pending3DViewRef\.current = hasWholeHousePlan[\s\S]*?getWholeHome3DView\(\)[\s\S]*?singleRoomDefaultCameraView;[\s\S]*?setViewMode\(next\);/,
+  "Switching to 3D should queue the floor-relative fitted view instead of applying it to the still-mounted 2D camera."
 );
 
 assert.match(

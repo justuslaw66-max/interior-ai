@@ -689,7 +689,7 @@
       "limit": 400
     },
     "lib/useDesignPageCameraNavigation.ts": {
-      "lines": 1301,
+      "lines": 1299,
       "limit": 400
     },
     "lib/useDesignPageCatalogPlacement.ts": {
@@ -4499,7 +4499,7 @@
     "lib/useDesignPageCameraNavigation.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 1165
+        "maximum": 1160
       },
       "complexFunctions": {
         "count": 1,

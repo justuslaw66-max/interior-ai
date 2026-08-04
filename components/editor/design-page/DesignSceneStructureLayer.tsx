@@ -82,6 +82,7 @@ export type DesignSceneStructureLayerState = {
     selectedSurfaceTarget: WholeHomeRendererProps["selectedSurfaceTarget"];
   };
   singleRoom: {
+    floorWorldY: number;
     width: number;
     depth: number;
     height: number;
@@ -94,7 +95,6 @@ export type DesignSceneStructureLayerState = {
     ceilingColor: string;
   };
 };
-
 export type DesignSceneStructureLayerConfiguration = {
   editorMode: DesignPageEditorMode;
   isClientPreview: boolean;
@@ -434,9 +434,9 @@ export function DesignSceneStructureLayer({
       </>
     );
   }
-
   return (
     <Room
+      floorWorldY={state.singleRoom.floorWorldY}
       width={state.singleRoom.width}
       depth={state.singleRoom.depth}
       height={state.singleRoom.height}

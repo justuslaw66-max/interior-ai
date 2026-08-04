@@ -10,6 +10,7 @@ import {
   normalizeFloorRotationDeg,
   type FloorMaterial,
 } from "@/lib/floor-materials";
+import { resolveFloorUndersideCutawayElevationMeters } from "@/lib/floor-plan-scene-elevation";
 import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
 import { normalizeFloorSurfaceSettings } from "@/lib/surface-settings";
 import { useSurfaceMaterialTexture } from "../useSurfaceMaterialTexture";
@@ -50,8 +51,7 @@ export function LegacyFloorSlabMesh({ slab }: { slab: LegacyFloorSlab3D }) {
   const shapes = useMemo(() => legacyPlanarShape(slab.polygons), [slab.polygons]);
   useFrame(() => {
     if (!slabRef.current) return;
-    slabRef.current.visible =
-      camera.position.y > slab.elevationMeters - slab.thicknessMeters * 0.35;
+    slabRef.current.visible = camera.position.y > resolveFloorUndersideCutawayElevationMeters(slab.elevationMeters, slab.thicknessMeters);
   });
   return (
     <mesh
@@ -282,7 +282,7 @@ export function RoomFloorMesh({
   );
 
   useFrame(() => {
-    const floorVisible = camera.position.y > floorWorldY - slabThickness * 0.35;
+    const floorVisible = camera.position.y > resolveFloorUndersideCutawayElevationMeters(floorWorldY, slabThickness);
     if (floorSurfaceRef.current) floorSurfaceRef.current.visible = floorVisible;
     if (floorBandRef.current) floorBandRef.current.visible = floorVisible;
     floorPickEnabledRef.current = floorVisible;

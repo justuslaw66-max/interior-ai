@@ -86,6 +86,7 @@ export type BuildDesignPageSceneRegionAdapterInput = {
       wholeHomeEnabled: StructureState["wholeHome"]["enabled"];
       wholeHomeRooms: StructureState["wholeHome"]["rooms"];
       selectedSurfaceTarget: StructureState["wholeHome"]["selectedSurfaceTarget"];
+      floorWorldY: StructureState["singleRoom"]["floorWorldY"];
       width: StructureState["singleRoom"]["width"];
       depth: StructureState["singleRoom"]["depth"];
       height: StructureState["singleRoom"]["height"];
@@ -154,7 +155,6 @@ export function buildDesignPageSceneRegionAdapter({
     state;
   const { selectItem, trackFirstInteraction, applyItemRotation, ...itemActions } =
     actions.items;
-
   return buildDesignPageSceneCanvasRegionModel({
     state: {
       canvas: {
@@ -199,6 +199,7 @@ export function buildDesignPageSceneRegionAdapter({
           selectedSurfaceTarget: room.selectedSurfaceTarget,
         },
         singleRoom: {
+          floorWorldY: room.floorWorldY,
           width: room.width,
           depth: room.depth,
           height: room.height,

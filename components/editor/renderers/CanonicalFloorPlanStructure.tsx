@@ -29,6 +29,7 @@ import {
   canonicalWallCutawayKey,
   type CanonicalCutawayTarget,
 } from "@/lib/floor-plan-camera-cutaway";
+import { resolveFloorUndersideCutawayElevationMeters } from "@/lib/floor-plan-scene-elevation";
 import { clampFloorPatternScale, normalizeFloorRotationDeg } from "@/lib/floor-materials";
 import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
 import { getWallFaceSurfaceSettings } from "@/lib/surface-settings";
@@ -426,8 +427,7 @@ function CanonicalFloorSlab3D({
   const thicknessMeters = Math.max(0.01, floor.slabThicknessMm / 1000);
   useFrame(() => {
     if (!slabRef.current) return;
-    slabRef.current.visible =
-      camera.position.y > floor.elevationMm / 1000 - thicknessMeters * 0.35;
+    slabRef.current.visible = camera.position.y > resolveFloorUndersideCutawayElevationMeters(floor.elevationMm / 1000, thicknessMeters);
   });
   if (!shapes.length) return null;
   return (

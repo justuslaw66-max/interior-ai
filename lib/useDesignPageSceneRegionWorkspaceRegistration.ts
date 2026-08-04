@@ -8,6 +8,7 @@ import {
   EDITOR_3D_MIN_CAMERA_DISTANCE,
   EDITOR_3D_MIN_POLAR_ANGLE,
 } from "@/lib/design-page-editor-configuration";
+import { resolveCameraViewForFloorWorldY, resolveCanonicalFloorElevationMeters } from "@/lib/floor-plan-scene-elevation";
 import { useDesignPageSceneItemDrag } from "@/lib/useDesignPageSceneItemDrag";
 import type { DesignPagePresentationWorkspaceRegistration } from "@/lib/useDesignPagePresentationWorkspaceRegistration";
 
@@ -16,7 +17,6 @@ export type UseDesignPageSceneRegionWorkspaceRegistrationInput = {
     presentation: DesignPagePresentationWorkspaceRegistration;
   };
 };
-
 /**
  * Registers scene-item drag behavior and builds the scene canvas region from
  * existing feature boundaries. It owns no document state and keeps hot refs
@@ -86,7 +86,6 @@ export function useDesignPageSceneRegionWorkspaceRegistration({
   const lightingSettings = resolveDesignLightingSettings(
     coreShell.state.document.designSnapshot
   );
-
   const region = buildDesignPageSceneRegionAdapter({
     state: {
       editor: {
@@ -195,6 +194,7 @@ export function useDesignPageSceneRegionWorkspaceRegistration({
         wholeHomeRooms: scene.sceneHousePlanRooms3D,
         selectedSurfaceTarget:
           viewportShell.state.surface.selectedRendererSurfaceTarget,
+        floorWorldY: resolveCanonicalFloorElevationMeters(room.activeRoom ?? {}) ?? 0,
         width: room.roomWidth,
         depth: room.roomDepth,
         height: room.roomHeight,
@@ -260,7 +260,7 @@ export function useDesignPageSceneRegionWorkspaceRegistration({
       },
     },
     configuration: {
-      initialCameraView: DEFAULT_EDITOR_CAMERA_VIEW,
+      initialCameraView: resolveCameraViewForFloorWorldY(DEFAULT_EDITOR_CAMERA_VIEW, scene.usesHousePlanScene ? 0 : resolveCanonicalFloorElevationMeters(room.activeRoom ?? {}) ?? 0),
       orbit: {
         minDistance: EDITOR_3D_MIN_CAMERA_DISTANCE,
         maxDistance: Math.max(24, Math.max(plan.planViewWidth, plan.planViewDepth) * 6),

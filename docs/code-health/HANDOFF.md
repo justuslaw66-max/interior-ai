@@ -2065,3 +2065,120 @@ Rollback is one local revert. Full E2E was not run. No Phase 8, CH-0004,
 CH-0017 through CH-0030, viewport, presentation lighting, GLB, catalog,
 workflow, dependency, schema, migration, production-data, unrelated editor,
 push, or deployment change is included.
+
+## 3D floor-cutaway `floorWorldY` contract — 2026-08-04
+
+This bounded remediation began from exact clean source
+`2a6a979f34b6c1c0e6ea8a09c6cfdc86ac370617` on
+`fix/baseline-3d-floor-cutaway-contract`. Entry status, tracked diff, diff
+check, diff stat, and untracked checks were empty; completed baseline commits
+were ancestors. `lsof` resolved the listening Node application (`PID 24623`)
+to the canonical `/Users/justus/Developer/interior-ai` checkout, matching the
+edit target. No work was discarded, carried from another branch, pushed, or
+deployed.
+
+The exact inherited static guard failed at
+`scripts/test-editor-3d-floor-cutaway.ts:82`: it expected
+`/floorWorldY: number;/` in `HousePlanRenderer3D.tsx`. The underside-cutaway
+test was added by `53e2546`; later extraction `08bdfe0` moved the floor mesh
+and its `floorWorldY` contract to `house-plan-3d/surfaceMeshes.tsx` without
+updating the source guard. Cleanup reproduced the same failure. The initial
+stale-owner diagnosis was incomplete: independent read-only review traced a
+real one-room product divergence. A default rectangular, floor-target room can
+use the single-room renderer even when its canonical `floorElevationMm` is
+nonzero. The item scene domain already added that elevation to furniture, but
+`RoomEnvironment` rendered the floor, slab, walls, and ceiling around world Y
+zero.
+
+The batch is therefore **E — CODE AND TEST BOTH REQUIRE CORRECTION**. Canonical
+`FloorPlanDocumentV2.floors[].elevationMm`, projected as
+`RoomSnapshot.floorElevationMm`, is the persisted integer-millimetre owner of
+the finished-floor world plane. `floorWorldY` is only its renderer-boundary
+metre projection. The slab top is `floorWorldY`; its center and bottom are
+`floorWorldY - thickness / 2` and `floorWorldY - thickness`. Wall base/top are
+`floorWorldY` and `floorWorldY + wallHeight`. The visible finish uses a local
+`0.006 m` anti-z-fighting offset that changes neither placement nor persistence.
+Furniture remains room-local at rest; spatial 3D adds the room elevation, 2D
+preserves XZ plus local Y, and saving removes the world elevation. The floor
+underside visibility threshold is the derived
+`floorWorldY - slabThickness * 0.35`; it is not slab bottom or a clipping
+plane. Wall cutaway remains camera-facing XZ omission/hiding, opening dragging
+uses a horizontal plane at `floorWorldY`, and this path has no Three.js
+material clipping plane. Consumer and Pro use the same scene model.
+
+`resolveFloorUndersideCutawayElevationMeters` now owns the threshold and is
+consumed by the single-room shell, compatibility whole-home floor meshes, and
+canonical slab renderer. The scene workspace projects the active single room's
+canonical elevation once, the existing region adapter and structure layer
+preserve `floorWorldY`, and `Room` positions the complete structural group on
+that plane. Its floor and ceiling visibility comparisons are world-relative.
+The same validated active-room value reaches camera navigation. A pure,
+non-mutating camera projector adds `floorWorldY` to both preset position and
+target exactly once for initial single-room readiness, 3D entry, Fit Room,
+eye-level, item-focus, and selected canonical-room framing. Saved/restored
+world camera views still transition without projection. A stable
+design/room/floor initialization key prevents viewport, safe-area, or plan-bound
+changes from resetting a user-positioned single-room camera, while whole-home
+fitting retains its responsive key. Whole-home slab/floor positions, wall
+bases, material settings, selection-aware raycasts, opening plane, furniture
+projection, and persistence formulas remain otherwise unchanged. No arbitrary
+offset, second state owner, per-frame position calculation, broad extraction,
+or quality allowance was introduced.
+
+The focused guard now executes the canonical projection for zero, +3.475 m,
+-1.25 m, and malformed/non-integer inputs; executes the slab-relative threshold
+for default, positive, and negative floors; reads the extracted mesh owners;
+and binds single-room, whole-home, merged-slab, and canonical-slab assertions
+to the actual visibility assignments. It also guards the one-room projection,
+adapter handoff, shell transform, ceiling plane, furniture/picking boundaries,
+camera projection at +3.475 m and -1.25 m, stable single-room versus responsive
+whole-home initialization keys, raw world-view restoration, 3D entry/fit/eye/
+focus integrations, and the existing semantic geometry API. The directly
+affected downstream camera assertion in `test-plan-template-access.ts` now
+expects the floor-relative preset; its earlier failing plan-tool test-ID
+assertion is untouched. Exact cutaway, editor registration, scene-layer,
+room-floor, camera navigation/2D invariant, presentation/export, canonical
+2D/3D render parity, multifloor parity, legacy watertight rendering, canonical
+finishes/openings, room-placement, v3 floor-plan migration, and
+design-persistence checks pass.
+
+Validation also passes direct design architecture across 262 source files,
+floor-plan architecture with its 30 existing oversized-file warnings,
+targeted ESLint with zero warnings, full lint with zero warnings, typecheck,
+and code quality across 1,040 production files with no raised allowance, new
+cycle, unsafe TypeScript, or suppression. The camera controller ratchet lowers
+from 1,301 to 1,299 lines and its maximum function from 1,165 to 1,160. The strict
+`APP_ENV=development CATALOG_STRICT_VALIDATION=true npm run build` passes all
+57 pages outside the sandbox; the sandboxed attempt failed only because
+Turbopack could not bind its internal helper port, and the inherited floor-plan
+NFT whole-project trace warning remains. `npm run test:design-page-cleanup`
+clears the floor-cutaway guard and next stops at the untouched
+`scripts/test-plan-template-access.ts:188` assertion that plan tool sections
+expose stable test IDs. A separate scene-domain script retains its earlier
+unrelated GLB disposal-source assertion. Neither failing assertion was
+modified; only the later directly affected camera source guard in the
+plan-template script changed.
+The in-app browser was isolated from the local listener despite a temporary
+development server reaching Ready, and Chrome control was unavailable, so no
+manual visual pass is claimed; the server was stopped and deterministic path
+and geometry checks cover this batch.
+
+Independent review initially returned two valid findings: the nonzero
+single-room structure/item mismatch, and new source checks that proved helper
+calls without proving the visibility assignments consumed their results. Its
+first rereview then found default/fit/eye/focus cameras still based at Y zero;
+the next rereview found the initial single-room key incorrectly reused the
+responsive whole-home resize inputs and identified incomplete records. All
+findings are corrected with the shared elevation handoff, assignment-bound
+guards, camera projection, stable single-room lifecycle key, lowered ratchet,
+and this precise record. The affected focused, type, architecture, quality,
+lint, cleanup, and build checks were rerun. Final complete-diff review is
+**PASS — no actionable findings**.
+
+The implementation commit is the single focused local commit containing this
+record; its resolved SHA and final clean status are reported after creation.
+Rollback is one local revert. Full E2E was not run. No Phase 8, CH-0004,
+CH-0017 through CH-0030, plan-template implementation or failing test-ID
+assertion, GLB lifecycle/cache/bounds, workflow, dependency, schema, migration,
+catalog, frameloop, telemetry, unrelated scene, push, or deployment change is
+included.

@@ -55,6 +55,32 @@ permissions, subscriptions, pricing, checkout, persistence, or canonical
 geometry. Renderer callbacks return projected coordinates to the domain
 boundary before document mutation.
 
+## Floor and cutaway vertical contract
+
+The canonical room/floor elevation is the world-space finished-floor plane.
+Canonical floor-plan documents own it as integer `elevationMm`; the room
+snapshot retains the same value as `floorElevationMm`. Renderer adapters derive
+metres from that persisted value and do not infer elevation from material or
+slab geometry.
+
+| Value | Space and unit | Elevation, slab, and finish meaning | Owner, persistence, and consumers |
+| --- | --- | --- | --- |
+| Room floor elevation | World Y, integer mm at rest | The finished-floor plane; it includes no slab thickness or render-only finish offset. | `FloorPlanDocumentV2.floors[].elevationMm`, projected to `RoomSnapshot.floorElevationMm`; persisted and consumed by structural, item, persistence, and export adapters. |
+| `floorWorldY` | World Y, m | The renderer projection of the canonical finished-floor plane. | Derived by the canonical scene-elevation helpers; never persisted separately; supplied to single-room and whole-home floor, wall, opening, and ceiling adapters. |
+| Floor surface mesh | Room-local Y, m | Structural surface is local `0`; the visible finish is offset `0.006 m` only to prevent z-fighting. | Renderer-owned and ephemeral. The offset does not change room elevation, placement, or persistence. |
+| Slab | Room-local/world Y, m | Slab top is the finished-floor plane, center is `floorWorldY - thickness / 2`, and bottom is `floorWorldY - thickness`. | Thickness is persisted canonically in integer mm and projected to metres; renderers derive positions. |
+| Wall base and top | Room-local/world Y, m | Base is local `0` / world `floorWorldY`; top is `floorWorldY + wallHeight`. | Structural render model plus room renderer; no competing wall elevation is persisted. |
+| Furniture position | Room-local at rest; world in spatial 3D, m | Saved item Y excludes room elevation. Spatial projection adds `floorWorldY`; plan projection preserves local Y. | `design-page-scene-domain.ts` and `design-page-scene-projection.ts`; persistence removes the world elevation before saving. |
+| Floor underside cutaway | World Y, m | Visibility threshold is derived by `resolveFloorUndersideCutawayElevationMeters(floorWorldY, slabThickness)`. It is neither slab bottom nor a clipping plane. | Pure scene-elevation owner consumed by single-room, legacy whole-home, and canonical slab renderers; ephemeral. |
+| Wall cutaway | Plan XZ, m/mm | Camera-facing exterior walls are omitted or hidden from render and picking; this has no independent vertical elevation. | `floor-plan-camera-cutaway.ts` and `design-page-wall-cutaway.ts`; ephemeral and selection-aware. |
+| Opening drag plane | World Y, m | Horizontal picking plane at exactly `floorWorldY`; it is not a material clipping plane. | Opening interaction adapter; ephemeral. |
+
+There is no Three.js material clipping plane in this floor-cutaway path.
+Consumer and Pro modes share these values. Two-dimensional editing selects one
+canonical floor and operates on XZ without adding or mutating its vertical
+elevation; three-dimensional rendering consumes every authored floor at its
+independent elevation.
+
 ## Numeric policy
 
 Editor geometry tolerances live in `editor-geometry-tolerances.ts`. The named

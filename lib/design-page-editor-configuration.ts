@@ -6,6 +6,18 @@ export const DEFAULT_EDITOR_CAMERA_VIEW: CameraView = {
   fov: 45,
 };
 
+export function resolveEditorInitial3DFitKey(input: {
+  activeRoomId: string | null;
+  designId: string | null;
+  floorWorldY: number;
+  hasWholeHousePlan: boolean;
+  wholeHomeResponsiveKey: string;
+}): string {
+  return input.hasWholeHousePlan
+    ? `whole-home:${input.wholeHomeResponsiveKey}`
+    : `single-room:${input.designId ?? input.activeRoomId ?? "local"}:${input.floorWorldY.toFixed(3)}`;
+}
+
 export const EDITOR_3D_MIN_CAMERA_DISTANCE = 1.4;
 export const EDITOR_3D_MIN_POLAR_ANGLE = 0.02;
 export const EDITOR_3D_MAX_POLAR_ANGLE = Math.PI - 0.02;

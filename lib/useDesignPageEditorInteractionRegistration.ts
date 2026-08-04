@@ -8,6 +8,7 @@ import {
   EDITOR_3D_MAX_POLAR_ANGLE,
   EDITOR_3D_MIN_POLAR_ANGLE,
 } from "@/lib/design-page-editor-configuration";
+import { resolveCanonicalFloorElevationMeters } from "@/lib/floor-plan-scene-elevation";
 import type { DesignPageCoreShellRegistration } from "@/lib/useDesignPageCoreShellRegistration";
 import type { DesignPageDocumentSelectionRegistrationFacade } from "@/lib/useDesignPageDocumentSelectionRegistrationFacade";
 import type { DesignPagePlanAuthoringRegistration } from "@/lib/useDesignPagePlanAuthoringRegistration";
@@ -48,7 +49,7 @@ export function useDesignPageEditorInteractionRegistration({
   const { cameraBridge } = planViewport.boundaries;
   const snapshotDocument = documentSelection.boundaries.snapshotDocument;
   const history = documentRoom.boundaries.history.refs.history;
-  const { items, zones, roomWidth, roomDepth, roomHeight, wallThickness } =
+  const { activeRoom, items, zones, roomWidth, roomDepth, roomHeight, wallThickness } =
     documentRoom.derived.room;
   const { housePlan2D, planViewWidth, planViewDepth } =
     documentRoom.derived.plan;
@@ -62,7 +63,6 @@ export function useDesignPageEditorInteractionRegistration({
   const { selectedZoneId } = documentSelection.state;
   const { setViewMode } = base.actions.editor;
   const { showRuleToast } = coreShell.actions.feedback;
-
   const camera = useDesignPageCameraWorkspaceFacade({
     state: {
       cameraView: planViewport.state.camera.cameraView,
@@ -96,6 +96,7 @@ export function useDesignPageEditorInteractionRegistration({
           planWorkspace.derived.floatingPlanOverlayStackVisible,
         floatingPlanOverlayStackWidthPx:
           planAuthoring.configuration.floatingOverlayStackWidthPx,
+        activeRoomFloorWorldY: resolveCanonicalFloorElevationMeters(activeRoom ?? {}) ?? 0,
         roomHeight,
         planViewWidth,
         planViewDepth,

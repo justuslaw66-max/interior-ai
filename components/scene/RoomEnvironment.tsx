@@ -3,10 +3,11 @@
 import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useMemo, useEffect, useRef } from "react";
-
+import { resolveFloorUndersideCutawayElevationMeters } from "@/lib/floor-plan-scene-elevation";
 export const ROOM_FLOOR_SURFACE_OFFSET = 0.006;
 
 type RoomProps = {
+  floorWorldY?: number;
   width?: number;
   depth?: number;
   height?: number;
@@ -19,8 +20,8 @@ type RoomProps = {
   ceilingColor?: string;
   renderQuality?: "standard" | "lite";
 };
-
 export function Room({
+  floorWorldY = 0,
   width = 5,
   depth = 4,
   height = 2.6,
@@ -160,7 +161,6 @@ export function Room({
   const backZ = halfD - wallThickness / 2;
   const leftX = -halfW + wallThickness / 2;
   const rightX = halfW - wallThickness / 2;
-
   useFrame(() => {
     const outsideBuffer = 0.02;
 
@@ -189,16 +189,16 @@ export function Room({
     if (backWallRef.current) backWallRef.current.visible = !hiddenWallSet.has("back");
     if (leftWallRef.current) leftWallRef.current.visible = !hiddenWallSet.has("left");
     if (rightWallRef.current) rightWallRef.current.visible = !hiddenWallSet.has("right");
-    const floorVisible = camera.position.y > -slabThickness * 0.35;
+    const floorVisible = camera.position.y > resolveFloorUndersideCutawayElevationMeters(floorWorldY, slabThickness);
     if (floorSurfaceRef.current) floorSurfaceRef.current.visible = floorVisible;
     if (slabRef.current) slabRef.current.visible = floorVisible;
     if (ceilingRef.current) {
-      ceilingRef.current.visible = camera.position.y <= height + wallThickness + outsideBuffer;
+      ceilingRef.current.visible = camera.position.y <= floorWorldY + height + wallThickness + outsideBuffer;
     }
   });
 
   return (
-    <group>
+    <group position={[0, floorWorldY, 0]}>
       <mesh
         ref={floorSurfaceRef}
         receiveShadow
