@@ -1,13 +1,28 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { renderToStaticMarkup } from "react-dom/server";
 
+import {
+  PlanToolSection,
+  type CollapsiblePlanSection,
+} from "../components/editor/design-controls-plan/PlanToolComponents";
 import { buildDesignControlsPanelModel } from "../lib/design-page-controls-panel-model";
 import { buildDesignPageDialogLayerModel } from "../lib/design-page-dialog-layer-model";
 import { resolveEditorCapabilities } from "../lib/editor-capabilities";
 
 const planPanelPath = path.join(process.cwd(), "components", "editor", "DesignControlsPlanPanel.tsx");
 const source = fs.readFileSync(planPanelPath, "utf8");
+const planToolComponentsSource = fs.readFileSync(
+  path.join(
+    process.cwd(),
+    "components",
+    "editor",
+    "design-controls-plan",
+    "PlanToolComponents.tsx"
+  ),
+  "utf8"
+);
 const consumerRoomSetupSource = fs.readFileSync(
   path.join(process.cwd(), "components", "editor", "ConsumerRoomSetupCard.tsx"),
   "utf8"
@@ -185,10 +200,73 @@ assert.match(
   "Opening templates from either the panel or command bar should scroll to the starter floor plan picker."
 );
 
-assert.match(
+const planToolSectionContracts = [
+  { section: "importFloorPlan", title: "Import floor plan" },
+  { section: "drawRoom", title: "Draw room" },
+  { section: "openings", title: "Place doors and windows" },
+  { section: "templates", title: "Templates" },
+] as const satisfies ReadonlyArray<{
+  section: CollapsiblePlanSection;
+  title: string;
+}>;
+const wiredPlanToolSections = Array.from(
+  source.matchAll(/renderPlanToolSection\(\{\s*section: "([^"]+)"/g),
+  (match) => match[1]
+);
+assert.deepStrictEqual(
+  wiredPlanToolSections,
+  planToolSectionContracts.map(({ section }) => section),
+  "The plan panel should wire each stable plan-tool section exactly once."
+);
+
+const renderedPlanToolSections = planToolSectionContracts.map(
+  ({ section, title }) => ({
+    section,
+    title,
+    markup: renderToStaticMarkup(
+      PlanToolSection({
+        dark: false,
+        section,
+        title,
+        collapsed: true,
+        onToggle: () => undefined,
+        children: "Collapsed section content",
+      })
+    ),
+  })
+);
+const renderedPlanToolSectionMarkup = renderedPlanToolSections
+  .map(({ markup }) => markup)
+  .join("");
+
+for (const { section, title, markup } of renderedPlanToolSections) {
+  const testId = `plan-tool-section-${section}`;
+  assert.strictEqual(
+    renderedPlanToolSectionMarkup.match(
+      new RegExp(`data-testid="${testId}"`, "g")
+    )?.length,
+    1,
+    `${testId} should identify exactly one rendered plan-tool section.`
+  );
+  assert.match(
+    markup,
+    /<button type="button"[^>]*aria-expanded="false"[^>]*>/,
+    `${testId} should retain native keyboard activation and collapsed state.`
+  );
+  assert.ok(
+    markup.includes(`>${title}</span>`),
+    `${testId} should keep its accessible visible section name independent from its test ID.`
+  );
+}
+assert.doesNotMatch(
   source,
-  /data-testid=\{`plan-tool-section-\$\{section\}`\}/,
-  "Plan tool sections should expose stable test ids."
+  /data-testid=\{`plan-tool-section-/,
+  "The plan panel should delegate stable section identity to PlanToolSection."
+);
+assert.match(
+  planToolComponentsSource,
+  /export function PlanToolSection\([\s\S]*?<button[\s\S]*?type="button"[\s\S]*?aria-expanded=\{!collapsed\}[\s\S]*?onClick=\{onToggle\}/,
+  "The stable plan-tool section owner should route native pointer and keyboard activation through onToggle."
 );
 
 assert.match(
@@ -198,8 +276,8 @@ assert.match(
 );
 
 assert.match(
-  source,
-  /const planToolSectionClass =[\s\S]*border-b[\s\S]*last:border-b-0[\s\S]*const planToolSectionHeaderClass =[\s\S]*px-3 py-2\.5/,
+  planToolComponentsSource,
+  /const sectionClass =[\s\S]*border-b[\s\S]*last:border-b-0[\s\S]*const headerClass =[\s\S]*px-3 py-2\.5/,
   "Plan subcategory rows should remain compact secondary tools inside the Room setup umbrella."
 );
 
@@ -289,13 +367,13 @@ assert.match(
 );
 
 assert.match(
-  source,
-  /const planToolTileClass =[\s\S]*?rounded-\[2px\][\s\S]*?bg-\[#f6f6f7\][\s\S]*?hover:bg-\[#f1f2f3\]/,
+  planToolComponentsSource,
+  /const className = \[[\s\S]*?rounded-\[2px\][\s\S]*?bg-\[#f6f6f7\][\s\S]*?hover:bg-\[#f1f2f3\]/,
   "Plan tool cards should keep the flat, compact architectural-tool treatment."
 );
 
 assert.doesNotMatch(
-  source,
+  planToolComponentsSource,
   /min-h-\[6\.5rem\]|block min-h-8 text-\[12px\]/,
   "Plan tool cards and labels should stay content-driven so one-line tools remain shorter."
 );
@@ -313,7 +391,7 @@ assert.match(
 );
 
 assert.match(
-  source,
+  planToolComponentsSource,
   /aria-pressed=\{typeof active === "boolean" \? active : undefined\}[\s\S]*?aria-keyshortcuts=\{shortcut\}/,
   "Selectable plan tools should expose pressed state and keyboard shortcuts."
 );

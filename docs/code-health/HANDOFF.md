@@ -2182,3 +2182,138 @@ CH-0017 through CH-0030, plan-template implementation or failing test-ID
 assertion, GLB lifecycle/cache/bounds, workflow, dependency, schema, migration,
 catalog, frameloop, telemetry, unrelated scene, push, or deployment change is
 included.
+
+## Plan-template access stable test-ID contract — 2026-08-04
+
+This required-baseline remediation began from exact clean source
+`bb22590ed5728c6868aa18e0738152fc7f36cfdc` on
+`fix/baseline-plan-template-access-contract`. Entry status, tracked diff, diff
+check, diff stat, and untracked checks were empty; all completed baseline
+commits were ancestors. `lsof` resolved the listening Node application (PID
+24623) to `/Users/justus/Developer/interior-ai`, matching the canonical edit
+target. No work was discarded, carried from another branch, pushed, or
+deployed.
+
+The exact original assertion was:
+
+```ts
+assert.match(
+  source,
+  /data-testid=\{`plan-tool-section-\$\{section\}`\}/,
+  "Plan tool sections should expose stable test ids."
+);
+```
+
+It searched only `DesignControlsPlanPanel.tsx`. The actual production owner is
+the exported `PlanToolSection` in
+`components/editor/design-controls-plan/PlanToolComponents.tsx`, which already
+rendered the exact expected `plan-tool-section-${section}` value. The prior
+floor-cutaway batch changed only this script's later camera assertion. Its
+complete diff changed neither line 188 nor its surrounding plan-tool guard, and
+the directly relevant production-file diff was empty. Clean detached runs at
+`2a6a979f34b6c1c0e6ea8a09c6cfdc86ac370617` and
+`bb22590ed5728c6868aa18e0738152fc7f36cfdc` both exited 1 at line 188 with the
+same assertion message and expected regular expression. After normalizing the
+detached path, the diagnostics were byte-for-byte identical. The failure is
+therefore inherited; the floor-cutaway commit merely exposed it.
+
+Classification is **C — BRITTLE SOURCE GUARD**. The stable identity is a QA and
+automation selector. Accessible behavior remains owned by native buttons,
+visible labels/headings, `aria-expanded`, the named picker region and dialog,
+and deterministic focus movement. `launch_path_selected` separately uses the
+fixed semantic `template` path plus Consumer/Pro source; analytics never reads
+the test ID. Neither selector visibility nor analytics grants capability or
+authorization.
+
+Relevant selector inventory:
+
+| Selector | Canonical owner and purpose | Mode / enabled state | Keyboard and focus | Direct consumers | Status |
+| --- | --- | --- | --- | --- | --- |
+| `plan-tool-section-${section}` | `PlanToolSection`; scopes the four grouped Consumer plan-tool sections | Consumer grouped tools; deterministic while collapsed or expanded | Native toggle button with `aria-expanded`; pointer and keyboard share `onToggle` | plan-template guard; Consumer room-setup; multi-room upload/drawing specs | Canonical; one rendered owner per fixed section key |
+| `plan-start-template` | `DesignControlsPlanPanel.openTemplatePicker`, projected by `ConsumerRoomSetupCard` or the Pro start panel | Consumer/Pro projections are mutually exclusive; button remains identifiable while disabled by `!canEdit` | Native button; opening records the invoker and focuses the picker heading | runtime/beta/smart-placement/zone/multi-room helpers and Consumer setup | Canonical shared action; two mode-specific source projections, one active scope |
+| `editor-command-new-plan` | `EditorCommandBar`; begins the shared New plan workflow that resolves to the panel picker | Consumer/Pro shared command bar; always mounted while its command surface is active | Native button; keyboard/pointer share `onNewPlan`; picker opening records it for Escape focus return | editor, Phase 14, floating-overlay and plan-template guards/specs | Canonical command entry projection |
+| `beta-start-template` | `BetaStartPanel.StartPathButton`; first-run shortcut to the shared template action | Public-beta fast-start projection while that panel is visible | Native button; keyboard/pointer share `actions.chooseTemplate` | blocking runtime smoke | Canonical beta entry projection |
+| `load-designs-open-templates` | `MyDesignsDialog`; direct shortcut from saved designs to the shared template picker | Shared Load dialog projection; remains enabled while the shortcut is rendered | Native button; keyboard/pointer share `onOpenTemplates`; picker receives heading focus | plan-template guard and blocking beta smoke | Canonical Load-dialog entry projection |
+| `starter-floor-plan-picker` | `DesignControlsPlanPanel`; named region for address and starter templates | Shared Consumer/Pro picker when `planStartMode === "template"` | Heading receives focus on open; Escape closes and returns focus to the connected invoker | editor, beta, template, load-design shortcut, runtime smoke | Canonical shared region |
+| `skip-to-starter-layouts` | `DesignControlsPlanPanel`; bypasses address search | Shared and enabled while picker is open | Native activation focuses the first empty-layout action | editor focus spec and accessibility guard | Canonical focus shortcut |
+| `apply-plan-template-${template.id}` | Template card in `DesignControlsPlanPanel`; applies an empty layout | Shared; persists while disabled by `!canEdit` | Native button; the first stable action is the skip target | editor, multi-room, mobile, Phase 14, zone and surface specs | Canonical per stable template ID |
+| `apply-furnished-template-${template.id}` | Template card in `DesignControlsPlanPanel`; applies the resolved furnishing pack | Shared; persists while disabled for no edit capability, pack, or pack items | Native button; same application owner as pointer activation | beta/runtime/staging/smart-placement/template specs | Canonical per stable template ID |
+| `new-plan-choice-dialog` and `new-plan-*` actions | `PlanTemplateChoiceDialog`; protects meaningful existing work | Shared; action IDs persist while `busy` disables all actions and sets `aria-busy` | Initial focus on the primary action, trapped Tab order, guarded Escape, focus return | editor/new-plan/template/persistence guards and specs | Canonical replacement/preservation boundary |
+
+The supposedly duplicated `plan-start-template` source strings are deliberate
+mode projections and never render together: Consumer owns the guided room-setup
+button, while Pro owns its start-panel button. Both invoke the same panel-owned
+action and use the same ID because the product contract defines one template
+entry action. The command-bar, beta-fast-start, and Load-dialog IDs name their
+distinct entry surfaces; each routes to the shared picker instead of duplicating
+the picker or apply handler. The failing `plan-tool-section-*` identity has only
+one component owner. No selector depends on translated text, an array index,
+randomness, or time. Template-card suffixes use the existing stable authored
+template ID, not display copy or catalog availability. Loading/disabled states
+leave IDs mounted, and no hidden duplicate element exists.
+
+The correction changes no production code. The guard now imports and
+server-renders `PlanToolSection`, proves exactly one occurrence of each fixed
+`importFloorPlan`, `drawRoom`, `openings`, and `templates` selector, separately
+checks the native collapsed button and visible label, binds the button to the
+canonical `onToggle` action, proves the parent wires those four keys exactly
+once, and rejects a second parent-owned section ID.
+The few adjacent section/tile assertions stranded by the same component
+extraction now inspect the actual exported owner. The assertions for compact
+layout, content-driven height, pressed state, and keyboard shortcut remain in
+force; none was deleted or replaced by a component-exists check.
+
+Product behavior remains unchanged. Consumer and Pro open the same picker and
+apply through the same floor-plan controller. The first template action becomes
+the deterministic focus target after filters render; source/guard inspection
+proves disabled actions remain addressable and all entry projections converge on
+one shared apply-controller path. Existing focused browser coverage proves the
+replacement outcome and resulting document/persistence state; this batch does
+not claim a browser-level disabled-transition or invocation-count assertion.
+Template application behavior and project/room identity, history, local backup,
+cloud identity, and save/reload owners remain unchanged.
+
+Validation on the final code/test change before independent review:
+
+- PASS: exact `scripts/test-plan-template-access.ts` guard and targeted ESLint
+  with zero warnings;
+- PASS: `npm run test:design-page-cleanup`, all 78 registered guards; there is
+  no next inherited cleanup failure;
+- PASS: focused Chromium Consumer starter-template creation (1/1), Pro
+  template entry/application through the selected-item fixture (1/1), and New
+  plan heading/first-action/Escape focus lifecycle (1/1);
+- PASS: editor capability/accessibility and complete design-persistence
+  verification;
+- PASS: direct design architecture (262 source files, no cycles) and floor-plan
+  architecture (30 existing oversized-file warnings only);
+- PASS: full repository lint with zero warnings, typecheck, code quality, and
+  strict production build across all 57 pages. The sandboxed build failed only
+  on Turbopack's helper-port restriction; the approved outside-sandbox rerun
+  passed with the inherited floor-plan NFT trace warning.
+- RECORDED OUT-OF-SCOPE BROWSER FAILURE: the broader Consumer room-setup case
+  first passed all four `plan-tool-section-*` selector/expanded-state checks,
+  then failed before template opening because keyboard activation left
+  `room-setup-unit-cm` at `aria-pressed="false"`. Neither production nor that
+  spec was touched. The dedicated Consumer template workflow passed, and this
+  separate measurement-state issue was not repaired or reclassified here.
+
+Independent read-only review initially found that server-rendered native-button
+markup alone did not prove `onToggle` wiring and that the queue overstated
+browser evidence for disabled identity and exactly-once application. The guard
+now binds the semantic owner to `onClick={onToggle}`, and both records distinguish
+focused browser results from source/guard inspection while explicitly declining
+to claim a disabled-transition or invocation-count browser assertion. Exact
+guard, targeted ESLint, all 78 cleanup guards, full zero-warning lint, and
+typecheck reran after those corrections. Final complete-diff review passed with
+no remaining actionable finding; it confirmed inherited proof, rendered
+uniqueness, Consumer/Pro projections, accessibility wiring, unchanged
+apply/persistence paths, floor-cutaway non-regression, and scope control.
+
+The implementation commit is the single focused local commit containing this
+record; its resolved SHA and final clean status are reported after creation.
+Rollback is one local revert. Full E2E was not run. No production component,
+product/permission behavior, floor-cutaway, DesignPageWorkspace,
+requested-design coordinator, viewport/presentation registration, GLB,
+CatalogPanel, command-bar, Hamilton, Phase 8, CH-0004, CH-0017 through CH-0030,
+workflow, dependency, lockfile, schema, migration, catalog, push, or deployment
+change is included.
